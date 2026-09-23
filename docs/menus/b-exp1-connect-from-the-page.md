@@ -73,7 +73,8 @@ choose. **(6)** no match → **LOST**, kept and marked.
 >
 > **SO THE LAWFUL MINIMAL FORM IS SHAPE A's MODEL IN ONE ADDITIVE NULLABLE JSONB COLUMN** — the shape
 > `boxes`, `strokes`, `tags`, `tutor` and `page_settings` already are — **plus its two mapper lines.**
-> **That is a SCHEMA CHANGE: it stops at chat 1 and goes to Nick as a yes/no** (EXP1-Q1).
+> **✅ ANSWERED 2026-09-23 — NICK'S WORD, VERBATIM: *"1. Yes"*** (to *"The links column: yes or no?"*).
+> **THE SCHEMA GATE IS OPEN. The column is approved and this build is no longer blocked on it.**
 > **Shape B stays the planned graduation, with its ticket open.**
 >
 > **⚠ AND IT IS ONE COLUMN UNDER THREE NAMES — the ledger of 2026-09-23 records the fork explicitly**
@@ -84,6 +85,14 @@ choose. **(6)** no match → **LOST**, kept and marked.
 > halves (anchors and links are one record set, useless apart), it is the feature's own word, and it is
 > already the name in Fable's drawing (`aria-label="This page's connections"`).* **Chat 1 or Fable rules
 > the name; NICK's yes/no is about the COLUMN, not its spelling, and must not be spent on this.**
+>
+> **⚠ SUPERSEDED 2026-09-23 — FABLE RULED: the column is `page_links`, JS `pageLinks`.** *"Connection(s)"
+> was already taken, four times over, in this same tree — the board hairline (`Box` kind `'connection'`),
+> the card footer's lines and its toggle, and the page↔board connections `getBoardsConnecting` reads —
+> and this desk's own proposal above picked the one word already doing other work.* **The paragraph above
+> is kept as written, superseded rather than erased, because the desk's own reasoning for `connections`
+> is what the ruling overturns.** **§2's code block and §Q's ruled list, below, carry the ruled name; this
+> paragraph does not, on purpose.**
 
 ### SHAPE A — **one additive nullable jsonb column carrying the model below** · **the desk's lean for an EXPERIMENT**
 ```ts
@@ -107,15 +116,22 @@ export interface Link {
   body?: string;            // a note's own words (kind 'note')
   createdAt: string; updatedAt: string; deletedAt?: string;
 }
-// on JournalEntry:  connections?: { anchors: Anchor[]; links: Link[] };
-//   → ONE column:  alter table journal_entries add column if not exists connections jsonb
-//   → TWO mapper lines, both directions, or the field is dropped in silence:
-//        rowToJournalEntry:     connections: r.connections ?? undefined,
-//        upsertJournalEntries:  connections (in the column list) + $n::jsonb + excluded.connections
+// on JournalEntry:  pageLinks?: { anchors: Anchor[]; links: Link[] };
+//   → ONE column:  alter table journal_entries add column if not exists page_links jsonb
+//   → FIVE edit sites, both directions, or the field is dropped in silence:
+//        rowToJournalEntry:     pageLinks: r.page_links ?? undefined,          (the read mapper)
+//        upsertJournalEntries:  page_links in the INSERT column list,
+//                                $n::jsonb in the VALUES placeholder list,
+//                                page_links in ON CONFLICT DO UPDATE SET,
+//                                and the value in the positional parameter array
 ```
-**⚠ THE TWO MAPPER LINES ARE NOT A DETAIL — they are the defect this correction exists to avoid.** *A
-column without its mappers behaves exactly like the silent loss above.* **The harness asserts a round
-trip through the server double, not merely a local write.**
+**⚠ NAMED `page_links` (JS `pageLinks`), RULED 2026-09-23 — superseding `connections` above.** **⚠ FIVE
+EDIT SITES, NOT TWO — corrected 2026-09-23.** *This brief's original "TWO mapper lines" undercounted the
+write path: the `page_settings` precedent at `apps/server/src/migrate.ts:168` and `sync.ts:247` shows
+FOUR write-path edits (insert list, values placeholders, `on conflict do update set`, parameter array)
+plus the read mapper — five edits to carry one column, not two.* **Neither correction is a detail — a
+column missing any one of the five behaves exactly like the silent loss above.** **The harness asserts a
+round trip through the server double, not merely a local write.**
 **Why it is still the lean for an experiment:** **one column and two mapper lines** is the smallest
 lawful change; it rides the record the anchor belongs to, it is **hidden by one flag**, and **deleting
 nothing is trivial**. *`boxes`, `strokes` and `page_settings` already prove the shape at this scale.*
@@ -318,26 +334,36 @@ Fable's own drawing already binds it.
 > layout active** to prove the AltGr finding rather than cite it. **Ask chat 1 for the slot.**
 
 ## §Q · FOR NICK
-- **⛔ EXP1-Q1 — THE SCHEMA, and it is the only one that gates the build.** **One additive nullable jsonb
-  column** (`journal_entries.connections`) **plus its two mapper lines** — the shape `boxes`, `strokes` and
-  `page_settings` already are. **Yes or no?** *There is no zero-schema road: §2 shows the server drops
-  unknown entry fields in both directions, silently.* **Shape B (the tables) is the planned graduation,
-  ticket open — not this build.**
-- **EXP1-Q5 — OVERLAPPING ANCHORS** *(new, from the pass on Fable's drawing)*. **Painting the mark makes
-  overlap possible; the drawing's wrapping made it impossible** and refused it in words. **May a writer
-  link a phrase inside an already-linked sentence?** **Desk's lean: YES**, with the rail listing what
-  covers a spot. *For a book with a bibliography, quoting inside a sourced sentence is ordinary.*
-- **EXP1-Q6 — THE SPOT-NOTE'S GUTTER MARK** *(new)*. A note taken at a caret has no words to tint, and
+**⛔ NOTHING IN THIS BRIEF NOW GATES THE BUILD.** *EXP1-Q1, Q5 and Q6 are all answered — see the ruled
+list below. No open question in this section stops a builder starting.*
+
+**⚠ THIS SECTION NO LONGER HOLDS OPEN QUESTIONS.** *Q5 and Q6, as put to him and as ruled, moved to the
+ruled list below on 2026-09-23. Kept here as a record of what was asked, not as a live ask.*
+- ~~**EXP1-Q5 — OVERLAPPING ANCHORS**~~ *(new, from the pass on Fable's drawing)*. **Painting the mark
+  makes overlap possible; the drawing's wrapping made it impossible** and refused it in words. **May a
+  writer link a phrase inside an already-linked sentence?** **Desk's lean: YES**, with the rail listing
+  what covers a spot. *For a book with a bibliography, quoting inside a sourced sentence is ordinary.*
+- ~~**EXP1-Q6 — THE SPOT-NOTE'S GUTTER MARK**~~ *(new)*. A note taken at a caret has no words to tint, and
   **§6b forbids a character in the text**. **A tick in the margin beside the paragraph** — confirm.
   *Raised because it is the one mark this desk adds that he did not ask for, and it exists only because
   the glyph cannot stay.*
 
 **RULED SINCE THIS BRIEF WAS WRITTEN — recorded here so the list is not re-asked:**
+- **~~EXP1-Q1 — the schema.~~** **ANSWERED BY NICK, 2026-09-23: *"1. Yes"*.** **ONE additive nullable jsonb
+  column, `journal_entries.page_links` (JS `pageLinks`), plus its FIVE EDIT SITES.** *`connections` is
+  SUPERSEDED as the column's name — Fable ruled `page_links` on 2026-09-23; see §2.* **§2 is now a build
+  instruction, not a proposal.**
 - **~~EXP1-Q2 — Make a card with no board.~~** **RULED (Fable): it lands on the page's OWN PLAN BOARD,
   created quietly.** §4.
 - **~~EXP1-Q3 — the mark.~~** **RULED (Fable): a FAINT TINT ON THE WORDS** — not an underline (F2 holds),
   not a gutter mark except for a spot-note. §6.
 - **~~EXP1-Q4 — the key.~~** **RULED (Fable): `Ctrl/Cmd+Enter` EVERYWHERE**, no desktop-only `Ctrl+N`. §7.
+- **~~EXP1-Q5 — overlapping anchors.~~** **RULED BY NICK, 2026-09-23, verbatim: *"1. Yes, go with the
+  defaults."*** **This is a RULING, not a default — he was offered the skip and declined it.** **LINKS MAY
+  OVERLAP, and the rail lists EVERYTHING covering a spot.**
+- **~~EXP1-Q6 — the spot-note's gutter mark.~~** **RULED BY NICK, 2026-09-23, verbatim: *"1. Yes, go with
+  the defaults."*** **This is a RULING, not a default.** **A spot-note shows A MARGIN TICK beside its
+  paragraph.**
 
 ## §CO · WHAT IS NOT IN THIS BRIEF
 **~~The pass on `wrizo-page-first.html`.~~ THE FILE LANDED** (47,395 bytes, 23:45) **and the pass is
