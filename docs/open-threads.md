@@ -8851,7 +8851,163 @@ AFTER.**
 empty)? **Fable leans YES — a blank page has no prose to convert**, so the risk the retirement is meant to
 remove (converting or de-converting PROSE) never arises for it.
 
+## THE THREE COMMITTEES — A REPORT RECEIVED, NOT YET COMMITTED — 2026-09-22
+
+**`C:\Users\nickh\Downloads\wrizo-three-committees-review.md`, 278 lines.** *"Prepared by Fable for Nick,
+2026-09-22. Input to the double pass by Wrizo's Experts (TUTOR desk) and Architects (PLAN DESK)."* **Three
+committees of composite working writers — Fiction; Journalists and creative nonfiction; Academics and
+researchers — walk the Pages / Boards / Drawers system through one project from first idea to finished
+work.**
+
+**IT IS NOT IN THE REPO. Chat 1 does NOT commit another desk's document** — it is recorded here as
+RECEIVED, and becomes a **docs-only offer when a desk commits it.**
+
+**ITS OWN CAVEAT, VERBATIM — carried because the record must not read as user research:**
+
+> **An honest caveat before anything else.** The committee members are composite personas, written from
+> this project's record and from well-documented working-writer practice. This is a structured thought
+> experiment, not user research. Where a committee claims something about "writers," read it as a
+> hypothesis to test in a sitting, not a finding. The value here is coverage — three very different ways
+> of working, run against one system — not authority.
+
+## THE CENTRAL FINDING — AND CHAT 1's CHECK OF IT ON DISK — 2026-09-22
+
+**The report's OWN words (convergence 1), not the relay's paraphrase:**
+
+> **One structure, not two.** Fiction: the board's card order versus the manuscript's chapter order.
+> Journalism: the section board versus the draft. Academia: the outline versus the dissertation. Every
+> committee hit the same wall — *the plan and the manuscript are different objects, and they drift.* The
+> fix is a single ordered spine that the manuscript is made of and that the plan is a view of.
+
+*(The relay rendered this as "two objects that drift, with no single ordered spine"; "single ordered
+spine" is the report's proposed FIX, not its statement of the wall. Recorded from the document.)*
+
+**CHAT 1 TESTED THE CLAIM AGAINST THE CODE RATHER THAN RELAYING IT. IT IS TRUE — AND SHARPER THAN THE
+WORDING, which flattens an asymmetry:**
+- **The loose Journal HAS an order:** `JournalEntry.orderIndex`, a sparse float falling back to
+  `Date.parse(createdAt)` (`pageOrder.ts:12-21`), scoped by its own comment to *"the loose Journal only
+  — binder pages + the Shelf keep their orderings."*
+- **THE MANUSCRIPT DOES NOT. Binder pages have NO ordering field at all** — and are sorted THREE
+  DIFFERENT WAYS: `getBinderPages` by `updatedAt` DESC (`persistence.ts:2034`, re-verified by chat 1),
+  `ProjectHome` by `createdAt` ASC, the export by `createdAt` ASC again. **`pageExport.ts` names the
+  divergence in its own comment.**
+- **A SPINE PRIMITIVE ALREADY EXISTS IN THE SCHEMA AND IS DEAD:** `Fragment` carries `role: 'spine' |
+  'branch' | 'loose'` and `spineOrder` (`types/index.ts:59-60`, re-verified) — *"one privileged ordered
+  path (the spine)"* — with **ZERO `.tsx` callers**; its own type file says *"no UI reads it until CW2."*
+- **`Box.seq` orders CARDS on ONE board** (`boardStructure.ts`) and never reaches `JournalEntry`. **A
+  board relates to pages only through `page-pin` boxes; `getBoardsPinning` returns `{id,title}` with no
+  position, and card x/y are purely spatial — nothing reads them back into page order.**
+
+**SO: no single ordered spine for a manuscript, confirmed at the source — and the house already owns an
+unused one.** *(That is a fact for the double pass, not a ruling: whether CW2's spine is the answer, or
+is the wrong shape, is PLAN DESK's to argue.)*
+
+## THREE QUESTIONS PUT TO NICK — NOT REVERSALS — 2026-09-22
+
+**The report's own framing, verbatim:** *"Nick asked for what's deficient, and some findings press on his
+own rulings. They're named here so he can rule on them knowingly, not so they're treated as settled."*
+**Recorded as QUESTIONS. Nothing below reverses anything; every standing ruling stands until he speaks.**
+
+**⚠ THE THREE DO NOT HAVE EQUAL STANDING, and a record that presented them as three of a kind would be
+wrong. Chat 1 checked each against its source:**
+
+**(1) "TYPES CANNOT CHANGE AFTER BIRTH" — FOUNDER WORD, and the question does not ask to reverse it.**
+Nick's own part 3b, 2026-09-19, filed to item 172; no supersede marker. The report proposes a **MIDDLE
+PATH**: *"the type stays fixed, but 'make a new board of type X from this one' is always one act."*
+§6F asks PLAN DESK: *"Can 'types cannot change after birth' stand if types become configurations? The
+ruling is Nick's; lay out the trade."*
+
+**(2) "CARDS ARE COPIED, NEVER MOVED" — A TWO-LAYER RECORD.** Item 123's copy semantics is a **DESK**
+ruling (Fable, 2026-09-07) derived from Nick's word *"Transferrable"*; **the founder's own first text
+saying "copied" is his 3B of 2026-09-22** — which arrived as the RESOLUTION of the move-vs-copy conflict,
+three days ago. The report does not ask to undo it; it argues **REFERENCE should be a different OBJECT:**
+*"Copy-only is right for scratch cards and wrong for sources of truth. The two may simply be different
+objects: a card is a copy; a record is a reference."*
+
+**(3) "THE BOOK TYPE ORDERS BY DATE" — ⚠ THIS IS NOT A STANDING RULING. THE LEDGER NOWHERE SAYS IT.**
+**Measured twice, independently** (chat 1's own grep, and a separate reader): **zero lines tie the Book
+type to date ordering.** What the record actually holds:
+- **Nick, on the Book type:** pages *"become a new surface that gets flipped through like a book instead
+  of being all laid out on a surface at the same time"* — a DISPLAY clause, not an order.
+- **Nick's 3c PARKED the question:** *"Maybe in the future, but let's not worry about adding page
+  arrangement right now"* (item 172's parked clause). **Ordering in a Book is UNSPECIFIED, by his own
+  choice.**
+- **The date rule that DOES exist belongs to the JOURNAL, a different object, and predates item 172:**
+  Nick answered *"1. Written"* on 2026-09-13 — recorded as **JOURNAL ORDER = DAY WRITTEN.**
+- **The other "date default" on the recent record is Shelf/Trash ROWS** (his 3C, 2026-09-22) — **which
+  must not be read back as a Book ruling either.**
+
+**So the third question presses on a TWO-STEP INFERENCE** — *the Journal orders by day written, and the
+Journal is a Book-type board* — **that no line in the ledger makes.** **It still goes to Nick, but as
+what it is: a question about an UNSPECIFIED ordering and an implementation default, not a challenge to a
+ruling he gave.** *(Stating it as a ruling would invite him to overturn something he never said.)*
+
+## THE PAUSE — PLAN DESK, BOARD-STRUCTURE DESIGN — 2026-09-22
+
+**PLAN DESK PAUSES NEW BOARD-STRUCTURE DESIGN — items 172, 144, 169, and the Shelf/Trash rows — until its
+double-pass answer returns.** **TUTOR and PLAN DESK run the double pass IN PARALLEL.**
+
+**CHAT 1 MEASURED WHAT THE PAUSE ACTUALLY STOPS, rather than announcing it into the dark:**
+- **Nothing is in flight.** Of **44 `plan-*` branches on `origin`, exactly ONE is unmerged.** **No BUILD
+  exists on any paused item** — no branch, product file or harness anywhere touches them.
+- **THE ONE UNMERGED BRANCH: `origin/plan-multi-board` @ `641f728`** — *"multiple boards — two options and
+  what is already planned (pass + mock)"*, **2 files, both `docs/menus/`, 0 non-docs.** **It is PLAN
+  DESK's answer to Nick's part 4a, and it spans 144 / 165 / 169 / 172 — the paused items.**
+  **CHAT 1 HAS NOT MERGED IT.** Filing is not ruling, and a docs merge would normally be chat 1's own
+  call — **but this document IS paused-area design, and it was never offered in a relay.** **Fable to
+  say: merge it as the record of work already done, or hold it with the pause?**
+- **ITEM 165 IS IMPLICATED BY ADJACENCY though the pause does not name it** — that branch covers it.
+  **Flagged, not assumed.**
+
+**⚠ THE REPORT's OWN PAUSE LIST IS LONGER THAN THE PAUSE.** §6G asks PLAN DESK which in-flight items
+should pause and names **SIX**: *"board types (172), the tab bar (144), split screen (169), Shelf and
+Trash as rows, Duplicate, the right-click menu."* **The pause as ruled names FOUR — Duplicate (185) and
+the right-click menu (186) are NOT in it.** *(They are three days old and 186 is chartered to PLAN DESK,
+so a desk could reasonably read either way.)* **Chat 1 does not extend a pause on its own. Fable to
+confirm whether 185 and 186 are in or out.**
+
+## NOT PAUSED — BUILDS AND FIXES CONTINUE, WITH THEIR STATE AS CHAT 1 FINDS IT — 2026-09-22
+
+- **Batch Four: SHIPPED** — `283013e` · railway `664604e6`, SUCCESS, served-vs-stamped MD5 matched on both
+  assets. **Done, not pending.**
+- **PW's item 176 re-stamp: GRANTED, NOT RUN** — and **its corrected tree `1bda06d` is NOT ON `origin`**
+  (origin sits 2 commits behind at `78a8329`). **PW pushes when the pair begins.**
+- **FIX: 159 is pushed; 158 and 160 have NO BRANCH yet.**
+- **INK: 157 and 171-A are both built and on `origin`, unmerged.**
+- **TOOLS: 154 is built and pushed, its pair not started; 161/162 unbuilt; 147/148 built behind them.**
+  **TOOLS' presence is still unconfirmed on the record.**
+
+## THE DOUBLE PASS — WHAT IT OWES — 2026-09-22
+
+**TUTOR (the Experts):** validate or correct each committee's walkthrough against real practice and **flag
+any member who is a straw figure**; sort every need into **universal / genre / niche**; name the presets
+for item 165 and what each creates on day one.
+
+**PLAN DESK (the Architects):** seven questions, **A–G** — the primitive set (a candidate is offered:
+**Page · Record · Board · Spine · Tags · Links**), the two-orders problem, reference versus copy,
+anchors below the page, the four groupers (Drawer / Project / Board / Tag), reversibility, and which
+in-flight items pause.
+
+**THE DELIVERABLE: TWO ALTERNATIVE ARCHITECTURES — one CONSERVATIVE (extend what is built), one BOLDER
+(primitives plus presets)** — each with a migration story from today's build, a mockup showing one
+project from each committee living in it, and **the list of standing rulings it would ask Nick to
+revisit, stated plainly.** **Into Downloads, as with the other mocks.**
+
+## ⚠ CHAT 1's PROCESS NOTE — THIS RECORD IS SINGLE-PASS, NOT ADVERSARIALLY VERIFIED — 2026-09-22
+
+**Chat 1 ran a verification workflow over this report: four independent readers (the document, the
+ledger's own text for the three rulings, the spine claim against source, the pause's real scope) and then
+an adversarial pass over every load-bearing claim, plus a completeness critic.** **THE READ LANES
+COMPLETED. THE ADVERSARIAL PASS AND THE CRITIC DID NOT — all 84 of those agents died on a session limit.**
+
+**So the findings above are FIRST READINGS plus chat 1's OWN re-measurements**, not refuted-and-survived
+claims. **What chat 1 verified with its own hands is marked as such** (the Book-ordering greps, the
+`updatedAt` sort, the dead `spineOrder` type, the unmerged branch's file list). **Everything else is one
+careful reader's work.** *(Said plainly because the distinction is exactly what this desk's record is
+for: a claim that survived an attempt to kill it and a claim nobody attacked are not the same claim.)*
+
 Registry: next free **187**.
+
 
 
 
