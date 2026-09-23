@@ -75,6 +75,15 @@ choose. **(6)** no match → **LOST**, kept and marked.
 > `boxes`, `strokes`, `tags`, `tutor` and `page_settings` already are — **plus its two mapper lines.**
 > **That is a SCHEMA CHANGE: it stops at chat 1 and goes to Nick as a yes/no** (EXP1-Q1).
 > **Shape B stays the planned graduation, with its ticket open.**
+>
+> **⚠ AND IT IS ONE COLUMN UNDER THREE NAMES — the ledger of 2026-09-23 records the fork explicitly**
+> *("the links column" and "the anchors column" are the same column; the handoff writes it `links
+> (anchors)`)* **so that no desk builds two and nobody asks Nick twice.** **This brief's `connections` is
+> THAT COLUMN, not a third thing.**
+> **The desk's proposal, because a fork left open is how two get built: `connections`** — *it carries BOTH
+> halves (anchors and links are one record set, useless apart), it is the feature's own word, and it is
+> already the name in Fable's drawing (`aria-label="This page's connections"`).* **Chat 1 or Fable rules
+> the name; NICK's yes/no is about the COLUMN, not its spelling, and must not be spent on this.**
 
 ### SHAPE A — **one additive nullable jsonb column carrying the model below** · **the desk's lean for an EXPERIMENT**
 ```ts
@@ -249,9 +258,15 @@ web build's undeclared target, the Edge harness) **plus a plainly stated absent 
 
 **⚠ AND ONE COLLISION, NAMED NOW RATHER THAN DISCOVERED: A TINT IS INVISIBLE UNDER SELECTION.** *Custom
 highlights paint BELOW `::selection` (spec §4.2.4, and no priority lifts them above it), and item 122's
-selection is OPAQUE brass.* **Accepted here, where it cost item 145 its acceptance test:** *the writer
-has just selected those words — the mark they need is the rail answering, not the tint under their own
-selection.* **It is only a defect if a resting page hides a mark, and a resting page has no selection.**
+selection is OPAQUE brass.*
+**THE SAME COLLISION IS ALREADY A QUESTION WITH NICK — item 145's Q-OV1, and it is OPEN.** *This brief
+does not pre-empt it.*
+> **WHAT EXPERIMENT 1 NEEDS IS WEAKER THAN WHAT 145 NEEDED, WHICH IS WHY IT SHIPS EITHER WAY:** *145's
+> acceptance test REQUIRED a tagged term to stay legible under a selection; a link tint does not.* **The
+> writer has just selected those words — the mark they need is the rail answering, not the tint under
+> their own selection.** **It is only a defect if a RESTING page hides a mark, and a resting page has no
+> selection.**
+> **SO: whatever Nick answers on Q-OV1, Experiment 1 takes it and does not need it decided first.**
 
 ## §7 · THE HARNESS — `apps/desktop/scripts/harness/exp1.mjs`
 Standing laws: **drivers never assume existence** · **real pointer events** · **release where the writer
