@@ -110,6 +110,13 @@ function rowToJournalEntry(r: any) {
     // never an empty object, so a page never dressed stays byte-identical to
     // today and the app's own defaults govern it.
     pageSettings: r.page_settings ?? undefined,
+    // EXPERIMENT 1 — the page's own links. The exact
+    // origin/script/tutor/pageSettings recipe: SQL null → JS undefined,
+    // never `null` and never an empty array, so a page that has never been
+    // linked stays byte-identical to today. NOTHING WRITES DURING A READ:
+    // this mapper hands the stored array straight back and resolves no
+    // anchor — resolution is the client's, and it is pure.
+    pageLinks: r.page_links ?? undefined,
     tags: r.tags ?? undefined,
     routedProjectIds: r.routed_project_ids ?? undefined,
     strokes: r.strokes ?? undefined,
@@ -251,8 +258,8 @@ async function upsertJournalEntries(userId: string, records: any[]): Promise<voi
       await pool.query(
         `insert into journal_entries
            (id, user_id, project_id, text, session_id, starred, source, shelved, beat_id, page_type,
-            order_index, imported_at, boxes, script, origin, tutor, tags, routed_project_ids, strokes, deleted_at, created_at, updated_at, plan_board_id, page_settings)
-         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb,$15,$16::jsonb,$17::jsonb,$18::jsonb,$19::jsonb,$20,$21,$22,$23,$24::jsonb)
+            order_index, imported_at, boxes, script, origin, tutor, tags, routed_project_ids, strokes, deleted_at, created_at, updated_at, plan_board_id, page_settings, page_links)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb,$15,$16::jsonb,$17::jsonb,$18::jsonb,$19::jsonb,$20,$21,$22,$23,$24::jsonb,$25::jsonb)
          on conflict (id) do update set
            project_id = excluded.project_id, text = excluded.text, session_id = excluded.session_id,
            starred = excluded.starred, source = excluded.source, shelved = excluded.shelved,
@@ -264,13 +271,19 @@ async function upsertJournalEntries(userId: string, records: any[]): Promise<voi
            /* ITEM 83 M2 (R6) — the page's own sheet dress, riding the same
               last-writer-wins guard (the updated_at comparison below) as
               every column above it. No special-casing: dress is page data. */
-           page_settings = excluded.page_settings
+           page_settings = excluded.page_settings,
+           /* EXPERIMENT 1 — the page's own links, riding the SAME
+              last-writer-wins guard (the updated_at comparison below) as
+              every column above it. A LINK CHANGE IS A PAGE CHANGE, so
+              there is nothing to special-case: links are page data.
+              Whole-column resolution is the known limit — see migrate.ts. */
+           page_links = excluded.page_links
          where journal_entries.user_id = excluded.user_id
            and excluded.updated_at > journal_entries.updated_at`,
         [e.id, userId, e.projectId ?? null, e.text ?? '', e.sessionId ?? null,
          e.starred ?? null, e.source ?? null, e.shelved ?? false, e.beatId ?? null, e.pageType ?? null,
          e.orderIndex ?? null, e.importedAt ?? null, JSON.stringify(e.boxes ?? null), JSON.stringify(e.script ?? null), e.origin ?? null, JSON.stringify(e.tutor ?? null), JSON.stringify(e.tags ?? null), JSON.stringify(e.routedProjectIds ?? null), JSON.stringify(e.strokes ?? null),
-         e.deletedAt ?? null, e.createdAt, e.updatedAt, e.planBoardId ?? null, JSON.stringify(e.pageSettings ?? null)],
+         e.deletedAt ?? null, e.createdAt, e.updatedAt, e.planBoardId ?? null, JSON.stringify(e.pageSettings ?? null), JSON.stringify(e.pageLinks ?? null)],
       );
     } catch (err) {
       console.error('[sync] journal_entry upsert failed', e.id, err);
