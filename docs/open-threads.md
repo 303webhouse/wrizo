@@ -21635,3 +21635,35 @@ token `chat1-fix159-20260924`. Next pair per Fable’s order: TOOLS’ 195
 stamp. Short-use slots noted for between pairs: INK’s 196 (`item196-download-wait` @
 `6e61980`, a de-flake — eligible to merge between pairs once verified, per the refined rule),
 PW’s paint-layer measurement, TOOLS’ splash frame, 194’s report-only run, the note-key test.
+
+## RECORDS — PW’S TIGHTENED §1b RATIFIED, ANCHORS.TS ACCEPTED, EXPERIMENT 1’S TWO BRANCHES, AND THE PROOF-SCRATCH CHECK — 2026-09-24 (chat 1)
+
+**RATIFIED (Fable): PW’s tightening of §1b.** A context match counts only if it is UNIQUE, at
+every step; a non-unique match falls through to the counting steps. Lost and ambiguous
+resolutions carry no start/end, so nothing can paint a guess. **The never-guess law, applied at
+every step.**
+
+**ACCEPTED (Fable): `store/anchors.ts` implemented for real**, not declare-only signatures.
+Declare emits nothing, so TOOLS would have compiled against a module undefined at runtime.
+
+**EXPERIMENT 1 SPANS TWO BRANCHES, neither merges alone:** `exp1-connect-text` (PW) @
+`78d4529` and `item190-exp1-rail` (TOOLS) @ `410b2e4`. **Neither merges until Experiment 1 is
+offered whole** — TOOLS merges PW’s branch into its own to build the Linked list.
+
+**PROOF-SCRATCH CHECK, for the assembled-diff review.** PW committed, then removed, a proof
+scratch directory. Verified here: `apps/desktop/scripts/.exp1-b-proof/` was added at
+`c5ed5d3`, removed at `505218a` (moved to the OS temp dir — the `railway up` uploads-the-tree
+hazard named in that commit’s own message), and **confirmed ABSENT at the branch tip**
+`78d4529` by `git ls-tree -r` — only `apps/desktop/scripts/exp1-b-proof.mjs` remains.
+
+**MERGE.** `plan-171b-revise-v2` @ `846224e` — one file,
+`docs/menus/item171b-design-pass.md`, docs-only by diff-stat. **Merged on this desk’s own
+verification.**
+
+**BOX.** PW relayed READY for the paint-layer measurement (item 145 + Experiment 1, one short
+use) — relayed by Fable since PW can’t address a chat 1 session directly. **Grant file still
+names FIX**, token `chat1-fix159-20260924` — no stamp for FIX’s 159 is on the ledger yet, so
+the box is not idle and PW is NOT granted here. **Slotting order on FIX’s stamp: PW’s short use
+first, then TOOLS’ 195** (`item195-sliver-grip`, now on tip `02eecd1` — the sub-1100 width
+added), **between pairs, announced by the grant file** — order otherwise unchanged (FIX 158 →
+INK 157 → INK 171-A → TOOLS 154).
