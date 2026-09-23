@@ -63,11 +63,38 @@ const INK_PLACEHOLDER = '[Hand-drawn ink — not exported as text.]';
 // card species can never vanish silently from a claimed-complete export.
 const UNKNOWN_KIND_PLACEHOLDER = '[A card of an unrecognized kind — not exported as text.]';
 
+// EXPERIMENT 1 — the honest placeholder for the page's links. THE THIRD
+// APPLICATION OF THIS MODULE'S OWN LAW, not a new idea: ink earns a named line,
+// an unrecognised card kind earns a named line, and links are page content this
+// exporter cannot render as text either. Fable ruled it exactly that way —
+// "extend its own law" — so an export that claims to be complete never drops
+// them in silence. A RICHER EXPORT (the links themselves, with their targets)
+// waits for records and for Nick; this is the honest note in the meantime.
+const LINKS_PLACEHOLDER = '[Connections — not exported as text.]';
+
 function withInkNote(body: string, entry: JournalEntry): string {
   if (entry.strokes && entry.strokes.length > 0) {
     return `${body}\n\n${INK_PLACEHOLDER} (this page also carries hand-drawn ink alongside the text above)`;
   }
   return body;
+}
+
+// Counted from LIVE links only — a page whose every link was removed is not a
+// page with connections, and would otherwise carry a note about nothing.
+function liveLinkCount(entry: JournalEntry): number {
+  return (entry.pageLinks?.links ?? []).filter(l => !l.deletedAt).length;
+}
+
+function withLinksNote(body: string, entry: JournalEntry): string {
+  const n = liveLinkCount(entry);
+  if (n === 0) return body;
+  const plural = n === 1 ? 'connection' : 'connections';
+  return `${body}\n\n${LINKS_PLACEHOLDER} (this page carries ${n} ${plural} to other pages, boards or cards)`;
+}
+
+// Both notes, in a fixed order so an export is byte-stable for the same page.
+function withNotes(body: string, entry: JournalEntry): string {
+  return withLinksNote(withInkNote(body, entry), entry);
 }
 
 // A Board's honest export: a plain list of its cards' text, with titles
@@ -179,8 +206,8 @@ export function exportPageFiles(entry: JournalEntry): PageExportFiles {
   const base = `${title} (${entry.id.slice(-6)})`;
   return {
     base,
-    md: withInkNote(pageBodyFormatted(entry), entry),
-    txt: withInkNote(pageBodyPlain(entry), entry),
+    md: withNotes(pageBodyFormatted(entry), entry),
+    txt: withNotes(pageBodyPlain(entry), entry),
   };
 }
 
@@ -201,7 +228,7 @@ function pageBlock(entry: JournalEntry): string {
   const title = firstLine(entry.text ?? '');
   const project = entry.projectId ? getProject(entry.projectId) : null;
   const { homeLabel } = describePageHome(entry, project);
-  const body = withInkNote(pageBodyFormatted(entry), entry);
+  const body = withNotes(pageBodyFormatted(entry), entry);
   return `# ${title}\n\n_${homeLabel}_\n\n${body}`;
 }
 

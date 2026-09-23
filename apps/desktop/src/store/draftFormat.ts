@@ -176,6 +176,57 @@ function toggleLinePrefix(text: string, at: number, prefix: string, exclusiveWit
 // learn a rule the other did not and the pair would stop being a pair without
 // anything failing. Sharing the code is the only version of that guarantee
 // that survives the next edit.
+// EXPERIMENT 1 (b) — THE PARAGRAPH ENUMERATOR, NOW EXPORTED.
+//
+// WHAT A PARAGRAPH IS was already settled here (see the comment above
+// `paragraphScope`): `entry.text` is plain text whose only structural mark is
+// the blank line `insertSpacing` writes, so a paragraph is A RUN OF CONSECUTIVE
+// NON-BLANK LINES. That definition lived INSIDE this module and was never
+// exported, so Experiment 1's `Anchor.paraIndex` had no way to mean the same
+// thing as indent's paragraph without re-implementing it — and a re-implemented
+// definition is a definition that will drift.
+//
+// Ruled by Fable: export it, and have indent use it too, proven unchanged.
+// `paragraphScope` below now derives its expansion from this function rather
+// than walking the lines itself, so the two cannot disagree — the same reason
+// E3 lifted `paragraphScope` out of `indentParagraphs` in the first place
+// ("sharing the code is the only version of that guarantee that survives the
+// next edit").
+export interface ParagraphRange {
+  /** Ordinal among the text's paragraphs — this is `Anchor.paraIndex`. */
+  index: number;
+  /** Inclusive line indices. */
+  startLine: number;
+  endLine: number;
+  /** Character offsets into the text passed in; `end` is exclusive. */
+  start: number;
+  end: number;
+}
+
+export function paragraphRanges(text: string): ParagraphRange[] {
+  const lines = text.split('\n');
+  const startsAt: number[] = [];
+  let off = 0;
+  for (const l of lines) { startsAt.push(off); off += l.length + 1; }
+  const out: ParagraphRange[] = [];
+  let i = 0;
+  while (i < lines.length) {
+    if (lines[i].trim().length === 0) { i++; continue; }
+    const startLine = i;
+    while (i + 1 < lines.length && lines[i + 1].trim().length > 0) i++;
+    const endLine = i;
+    out.push({
+      index: out.length,
+      startLine,
+      endLine,
+      start: startsAt[startLine],
+      end: startsAt[endLine] + lines[endLine].length,
+    });
+    i++;
+  }
+  return out;
+}
+
 function paragraphScope(lines: string[], selStart: number, selEnd: number) {
   const startsAt: number[] = [];
   let off = 0;
@@ -193,8 +244,16 @@ function paragraphScope(lines: string[], selStart: number, selEnd: number) {
   // that line — the ordinary editor convention.
   if (selEnd > selStart && last > first && selEnd === startsAt[last]) last--;
 
-  if (hasInk(first)) while (first > 0 && hasInk(first - 1)) first--;
-  if (hasInk(last)) while (last < lines.length - 1 && hasInk(last + 1)) last++;
+  // The expansion, now read off the shared enumerator instead of walked here.
+  // Identical by construction: a line with ink belongs to exactly one run of
+  // consecutive non-blank lines, and expanding to that run's ends is what the
+  // two while-loops did.
+  const paras = paragraphRanges(lines.join('\n'));
+  const paraOf = (line: number) => paras.find(p => line >= p.startLine && line <= p.endLine);
+  const pFirst = hasInk(first) ? paraOf(first) : undefined;
+  if (pFirst) first = pFirst.startLine;
+  const pLast = hasInk(last) ? paraOf(last) : undefined;
+  if (pLast) last = pLast.endLine;
 
   const affected = new Set<number>();
   for (let i = first; i <= last; i++) if (hasInk(i)) affected.add(i);
@@ -352,7 +411,171 @@ export function applyFormat(text: string, selStart: number, selEnd: number, acti
 // honest plain reading text. Order matters (bold's `**` before italic's `*`,
 // mirroring draftDecoration.ts's own inline-scan priority) so a bold run's
 // asterisks are never left half-stripped by the italic pass.
+// EXPERIMENT 1 (b) — THE ONE STRIPPER, AND WHY THERE IS ONLY ONE.
+//
+// Experiment 1 anchors a span to the words AS THE WRITER SEES THEM (markers
+// stripped) and maps back to raw offsets ONLY to paint. Matching needs the
+// stripped string; painting needs the mapping. `stripMarkdownConventions`
+// below could serve the first and never the second — it is a chain of
+// `String.replace` calls, so positions are discarded.
+//
+// ⛔ THE HAZARD THAT DECIDED THE SHAPE: TWO STRIPPERS THAT DISAGREE PUT THE
+// TINT ON THE WRONG WORDS. The order of these rules is already load-bearing
+// and documented as such below (alignment before block-quote, longer mark
+// before shorter). A second, parallel implementation that drifted by one rule
+// would mis-paint silently. So there is ONE definition of "what the writer
+// sees" — this function — and `stripMarkdownConventions` is now its WRAPPER.
+// Ruled by Fable, with byte-identity to today's output required and proven.
+//
+// EVERY RULE HERE ONLY EVER DELETES CHARACTERS. Nothing is inserted, nothing
+// is reordered. That is what makes an index map possible at all, and it is
+// asserted rather than assumed: `map` is built by replaying these exact
+// regexes in this exact order and recording what each one removed.
+export interface VisibleText {
+  /** The text with markers removed — what the writer sees. */
+  text: string;
+  /**
+   * `map[i]` is the RAW offset of visible character `i`. Length is
+   * `text.length + 1`; the final entry is `raw.length`, so an end offset
+   * always maps. Strictly increasing.
+   *
+   * To paint a visible span `[start, end)` use `toRawRange` — NOT `map[end]`
+   * directly, which is the raw offset of the character AT `end` and skips any
+   * markers sitting between the span's last character and the next one.
+   */
+  map: number[];
+}
+
+// The five line-prefix rules, in the order the original chain applied them.
+// ALL FIVE ARE `^`-ANCHORED and each fires at most once, so their combined
+// effect on a line is the deletion of ONE CONTIGUOUS PREFIX — which is what
+// makes the replay below exact rather than approximate.
+const LINE_PREFIX_RULES: RegExp[] = [
+  /^#{1,2}\s+/,
+  // ITEM 83 M5 (R4/F3) — the new line directives strip with the rest.
+  // ORDER MATTERS and is the reason these are one chained pass per line:
+  // the alignment tokens (`>< `, `>> `) both begin with `>`, so a naive
+  // block-quote strip run first would eat their first character and leave
+  // `< ` / `> ` behind as visible litter in "Copy My Words". Alignment is
+  // therefore removed BEFORE the quote mark. Indent's leading tab goes
+  // last — it can legitimately sit after a quote or bullet prefix.
+  /^>< |^>> /,
+  /^> /,
+  /^- /,
+  /^\t+/,
+];
+
+// The three inline pair rules, in order. Each is symmetric — the same marker
+// opens and closes — which the replay asserts.
+const INLINE_PAIR_RULES: RegExp[] = [
+  /\*\*([\s\S]+?)\*\*/g,
+  // ITEM 83 M4 (R1/F2) — underline's `__word__` strips beside bold/italic.
+  // Placed after `**` (the pre-existing order rule: the longer mark first)
+  // and before the single `*`, for the same reason.
+  /__([\s\S]+?)__/g,
+  /\*([\s\S]+?)\*/g,
+];
+
+export function visibleText(raw: string): VisibleText {
+  // `kept` holds the raw index of every character still present. Deletions
+  // only, so it stays strictly increasing and no bookkeeping can reorder it.
+  let kept: number[] = [];
+  for (let i = 0; i < raw.length; i++) kept.push(i);
+  const render = (idx: number[]) => {
+    let out = '';
+    for (const i of idx) out += raw[i];
+    return out;
+  };
+  // Remove ranges given in CURRENT coordinates (ascending, non-overlapping).
+  const cut = (idx: number[], ranges: Array<[number, number]>): number[] => {
+    if (ranges.length === 0) return idx;
+    const out: number[] = [];
+    let r = 0;
+    for (let i = 0; i < idx.length; i++) {
+      while (r < ranges.length && i >= ranges[r][1]) r++;
+      if (r < ranges.length && i >= ranges[r][0]) continue;
+      out.push(idx[i]);
+    }
+    return out;
+  };
+
+  // --- stage 1: the line prefixes -----------------------------------------
+  // Newlines are never removed, so line boundaries are stable within a pass.
+  {
+    const cur = render(kept);
+    const ranges: Array<[number, number]> = [];
+    let lineStart = 0;
+    for (;;) {
+      const nl = cur.indexOf('\n', lineStart);
+      const lineEnd = nl < 0 ? cur.length : nl;
+      let rest = cur.slice(lineStart, lineEnd);
+      let take = 0;
+      for (const re of LINE_PREFIX_RULES) {
+        const m = rest.match(re);
+        if (m) {
+          take += m[0].length;
+          rest = rest.slice(m[0].length);
+        }
+      }
+      if (take > 0) ranges.push([lineStart, lineStart + take]);
+      if (nl < 0) break;
+      lineStart = nl + 1;
+    }
+    kept = cut(kept, ranges);
+  }
+
+  // --- stage 2: the inline pairs, each a full pass in order ---------------
+  for (const re of INLINE_PAIR_RULES) {
+    const cur = render(kept);
+    const ranges: Array<[number, number]> = [];
+    const rx = new RegExp(re.source, re.flags);
+    let m: RegExpExecArray | null;
+    while ((m = rx.exec(cur)) !== null) {
+      const whole = m[0].length;
+      const inner = m[1].length;
+      const marker = (whole - inner) / 2;
+      // Symmetry is the premise of the arithmetic, so it is checked, not
+      // trusted. A future rule with unequal delimiters must not silently
+      // produce an off-by-one map.
+      if (!Number.isInteger(marker) || marker <= 0) continue;
+      ranges.push([m.index, m.index + marker]);
+      ranges.push([m.index + whole - marker, m.index + whole]);
+    }
+    kept = cut(kept, ranges);
+  }
+
+  const text = render(kept);
+  const map = kept.slice();
+  map.push(raw.length);
+  return { text, map };
+}
+
+/**
+ * The raw range to paint for a visible span `[start, end)`.
+ *
+ * Deliberately NOT `[map[start], map[end])`: `map[end]` is the raw offset of
+ * the character AT `end`, which includes any markers that sit between the
+ * span's last character and the next kept one — so a span ending just before
+ * `**bold**` would paint over the `**`. The exclusive raw end is one past the
+ * span's LAST character.
+ */
+export function toRawRange(v: VisibleText, start: number, end: number): [number, number] {
+  if (end <= start) {
+    const at = v.map[Math.max(0, Math.min(start, v.map.length - 1))];
+    return [at, at];
+  }
+  return [v.map[start], v.map[end - 1] + 1];
+}
+
 export function stripMarkdownConventions(text: string): string {
+  return visibleText(text).text;
+}
+
+// The original chain, kept ONLY as the reference the equivalence proof runs
+// against (scripts/exp1-b-proof.mjs). It is not called by app code — the
+// wrapper above is the one definition. Deleting this would not change
+// behaviour; it would delete the evidence.
+export function stripMarkdownConventionsReference(text: string): string {
   const noHeadings = text
     .split('\n')
     .map(line => line

@@ -167,4 +167,61 @@ export async function runMigrations(): Promise<void> {
   // brief named a table this schema does not have. Disk wins (§1.10).
   await pool.query(`alter table journal_entries add column if not exists page_settings jsonb`);
   await pool.query(`alter table users add column if not exists page_defaults jsonb`);
+
+  // EXPERIMENT 1 ("connect from the page") — ONE additive nullable jsonb
+  // column, and the only schema this experiment asks for.
+  //
+  // WHY IT HAD TO BE ASKED FOR AT ALL. /sync copies journal entries field by
+  // field — an insert list, a placeholder list, an on-conflict set, a
+  // parameter array and a read mapper, all five written out by hand. A field
+  // no column knows about is therefore DROPPED SILENTLY, IN BOTH
+  // DIRECTIONS: the push discards it on the way up and the pull cannot
+  // return it on the way down. Links stored only on the client would
+  // survive locally and vanish through sync with no error anywhere. That is
+  // why "zero schema" was true of the client and false of the system, and
+  // why this column is Nick's own yes (EXP1-Q1), not a desk's choice.
+  //
+  // THE NAME. `page_links`, JS `pageLinks` — Fable's ruling, superseding the
+  // amended brief's `connections`. Links = anchors = `page_links`;
+  // `store/anchors.ts` keeps its own name.
+  //
+  // The exact `page_settings` / `tutor` recipe above: no default, no CHECK,
+  // no backfill, additive-only. Null on every existing row — a page that has
+  // never been linked reads null → JS undefined → byte-identical to today
+  // (the grandfather fixed point this whole file rests on).
+  //
+  // Shape, TAKEN FROM THE BRIEF (docs/menus/b-exp1-connect-from-the-page.md
+  // §2, Shape A) rather than paraphrased — documented here because jsonb has
+  // no shape of its own; types/index.ts carries the TS mirror. It is ONE
+  // OBJECT WITH TWO ARRAYS, not a flat list: anchors and links are separate
+  // record sets, and one anchor may carry SEVERAL links ("the source(s)
+  // linked", plural, his word).
+  //
+  //   { anchors: [ { id, paraIndex, quote, prefix, suffix, startHint,
+  //                  status?: 'moved'|'ambiguous'|'lost',   // absent = FOUND
+  //                  createdAt, updatedAt, deletedAt? } ],
+  //     links:   [ { id, anchorId,
+  //                  kind: 'source'|'note'|'card',
+  //                  targetEntryId?,   // a page or a board
+  //                  targetBoxId?,     // a card on that board
+  //                  body?,            // a note's own words (kind 'note')
+  //                  createdAt, updatedAt, deletedAt? } ] }
+  //
+  // `quote` is the anchor's TRUTH; `paraIndex` and `startHint` are HINTS,
+  // never the truth. Matching is on the words AS THE WRITER SEES THEM,
+  // markers stripped; raw offsets are derived only to paint.
+  //
+  // A LINK CHANGE IS A PAGE CHANGE: links ride the entry's own `updated_at`
+  // and its last-writer-wins guard, exactly like `page_settings`.
+  //
+  // THE KNOWN LIMIT, STATED PRECISELY. Every anchor and link DOES carry its
+  // own `updatedAt`/`deletedAt` in the model above — but NOTHING HERE READS
+  // THEM. This column resolves WHOLE, by the entry's single `updated_at`, so
+  // two writers who edit DIFFERENT links on one page inside one sync window
+  // do not merge: the later `updated_at` replaces the whole column and the
+  // other writer's link is gone, with no conflict reported. Per-item
+  // reconciliation is what Shape B's tables would buy. Fable ruled this is
+  // STATED IN THE OFFER, NOT GUARDED HERE — recorded so the next reader does
+  // not mistake the per-item fields for per-item merging.
+  await pool.query(`alter table journal_entries add column if not exists page_links jsonb`);
 }
