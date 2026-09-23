@@ -20914,3 +20914,62 @@ this time.
 **Offered for merge — harness/test-seam work, chat 1's verification is the
 gate per the standing amendment.** Branch `item151-silent-acts`, tip
 `c46d498`, pushed. Nothing further owed on tools' side.
+
+## PW's FINDING — S0: WHEN A POINTER'S REACH IS THE CLAIM — 2026-09-22
+(tools lane; branch `click-reach`; item number PROPOSED 195 — the splash proposes 194, chat 1 assigns both)
+
+**S0 ONLY, no behaviour change.** Full record: `docs/menus/click-reach-s0-survey.md`.
+Three strata, one sharp slice, and the sharpest instance is not a `.click()` at all.
+
+**THE NUMBER IS NOT THE POPULATION, SAID FIRST.** `.click()` occurs **630 times across 70
+files** — a CANDIDATE LIST. Most are fixtures (press a tab to reach a surface); the offender
+is where the CHECK'S OWN CLAIM is about the pointer getting there. This survey holds itself
+to that band against its own tool: the reach-claim census returns **130** candidates and
+**2** are reported, because I read them and 128 use a reach word in another sense.
+
+**STRATUM 1 — ONE HELPER, 129 CALL SITES.** `app.click(label)` is used **129 times across 53
+files** and every one routes through `__click` in `runtime-verify.mjs`, which ends in
+`el.click()`. It ALREADY carries item 151's fix (absent = named throw, never silent). What it
+does not do is HIT-TEST: a synthetic click has no coordinates and no compositing, so **a
+control that is present and completely covered still reports success.** The leverage is the
+helper, not the 129 — the same shape as item 151's Shape A — and the instrument already
+exists on main (`trusted-point.mjs`, landed by item 151, proven by `tp1.mjs`). **Unlike item
+154 this needs no exemption table:** hit-testing cannot break a fixture pressing a genuinely
+reachable control; it changes behaviour only where the fixture was already reporting a
+success no user could have had.
+
+**STRATUM 3 — THE CLAIM SAYS "REACHABLE", THE INSTRUMENT SAYS "PRESENT."** New committed tool
+`scripts/reach-claims.mjs` reads every `ok()`/`pok()` whose CLAIM TEXT carries a reach word,
+resolves the verdict one level (item 154's method, refusing ambiguous names) and reports what
+it is actually proven by: **0 proven by a hit-test**, 3 by EXISTENCE (2 genuine), 127 needing
+a human read. The two: `e3.mjs:76` *"the Counsel grip is reachable"* proven by
+`!!querySelector('.wz-tutor-grip')`, and `item133.mjs:198` *"the page's displayed name is
+reachable"* proven by `!!querySelector('.wz-pageface-title-reach')`. **An element can exist
+and be entirely covered — which is exactly what item 130 found: 54% of the strip unreachable
+while fully present in the DOM.**
+
+**THE FLAGSHIP — `item133.mjs:194-199` stacks three defects in five lines:** it presses
+`.wz-strip-item` (item 130's OWN control) with a synthetic click; the `?.click()` is silent
+if absent (item 154's population, built but not yet merged, so still live on main); and the
+claim is "reachable" while the proof is that a node exists. **The check's own words say it
+exists because a sitting found an INERT `<div>` — present but unusable. The check written to
+catch "present but not usable" tests presence.**
+
+**THE SHARP SLICE — 32 SITES, 17 FILES, ON THE ONE CONTROL WITH A HISTORY.**
+`.wz-strip-item` is pressed by synthetic `.click()` at 32 sites. `index.css:2714` states the
+hazard in the codebase's own voice: *"Every harness had reached these controls with
+`.click()`, which never consults the hit-testing stack, so nothing caught it until pw1.mjs
+drove real pointer events."* **That comment is past tense; the present tense is 32 sites.**
+Item 130's fix was a `z-index:1`; if it regressed, all 32 would keep passing — only `pw1` and
+`vw1` would go red. **The suite's guard against item 130 is two files, not thirty-four.**
+
+**PROPOSED (not built — the item is queued behind the splash frames):** fix `__click` at the
+helper via the existing trusted-point instrument (one function, 129 sites inherit it — and
+note `__click` runs page-side and cannot dispatch CDP itself, so `app.click` moves
+outer-side, a real change to a load-bearing facade that wants its own pair); convert the 32
+strip sites so item 130's guard is the whole suite; and **invert the durability check rather
+than enumerate it** (VW1 check 7's shape) — any check whose CLAIM carries a reachability word
+is an offender unless proven by a hit-test, with named exemptions for the other senses.
+
+**NOTHING HEADFUL RAN.** Box is PW2's (`pw2-item176-corrected-20260922`), 0 harness browsers
+observed throughout.
