@@ -21719,3 +21719,55 @@ file, 8 insertions, docs-only by diff-stat. **Merged on this desk’s verificati
 **BOX.** Grant file still names FIX (`chat1-fix159-20260924`); no stamp for 159 on the ledger.
 **Order: FIX 159 → PW’s short use → TOOLS 195 → as queued. INK’s 196 run is a short use
 too** — slotted after PW’s, between pairs. Nothing granted here; the box is not idle.
+
+## RECORDS — NICK’S WORDS ON THE WORD FOR PAGE LINKS, CONNECT BOARD, AND THE SPLASH SIZE; 144 AMENDMENT MERGED — 2026-09-24 night (chat 1)
+
+**NICK, verbatim as relayed by Fable — the writer’s word for page links:**
+
+> “"Links" works for the backend, at least. Not sure that needs to be used in the UI,
+> though.”
+
+**Fable’s proposal (DEFAULT, vetoable, NOT founder text):** no noun on screen — the menu verb
+“Link to…”, “Unlink”, the rail tab “Linked” with its count, the export line “Linked material
+isn’t included.” `page_links` stays the column. **Later relay: the default STOOD BY SKIP** — PW
+rewrites the six strings. (Still a default taken by silence, not a ruling.)
+
+**NICK, verbatim as relayed — Connect Board, and the splash size** (the “|” and “Note:” are as
+relayed; two answers in one relay):
+
+> “2. Let's add a third option to "Connect Board" with a toggle-open menu that lists all
+> boards from recently opened to oldest. | Note: OK, let's make it ~1/4 the screen size.
+> Doesn't need to be exact, but that should be big enough to see the text a bit better, no?”
+
+**144’s “+” menu, as it now stands:** Add Board (new, inside), New Board (new, beside,
+connected), and **Connect Board** — a toggle-open list of ALL boards, most recently opened
+first. **Fable’s reading, FLAGGED:** Connect Board connects an EXISTING board beside this one —
+the relationship New Board starts with. Add/New stand as he wrote them (default by skip). If
+“recently opened” isn’t already recorded it is kept per device; **a column would stop for Nick.**
+**STILL WITH NICK:** Add Board vs New Board — default is his literal words (Add = new board
+inside; New = new board beside, connected); PLAN DESK’s reading (Add nests an EXISTING board)
+goes to him as the alternative.
+
+**ITEM 187 — SIZE.** His “~1/4 the screen size” SUPERSEDES the earlier “at most 1/5” (ledger
+line 9022, left as written). **Fable’s default, sent to him, vetoable:** a quarter of the AREA
+(about half the width) — a quarter of the width would grow the handwriting only a quarter. The
+check asserts a BAND around a quarter, not a pixel, plus the four-sided blurred margin.
+**RATIFIED (Fable): TOOLS’ 60%-of-viewport height cap** — it only shrinks the emblem and keeps his
+purpose (the blurred app on all four sides). The cap stands.
+
+**THE “RENUMBER 194 → 187” ORDER, AND WHAT I FOUND.** The ledger is append-only, so it is
+not renumbered in place. **Checked: the ledger has NO splash-numbered-194 line** — the one hit
+(line 21637) reads “TOOLS’ splash frame, 194’s report-only run”, two different items. **The
+mislabel lives elsewhere:** `docs/wrizo-alpha/seeds/tools.md:82` and a product-file comment
+(`index.css`, “THE SPLASH (item 194)”, per that seed). **Neither is edited here** — the seed is
+TOOLS’ own note and the comment is product code; **routed to TOOLS to correct when it next
+touches them** (the comment with the 187 build).
+
+**ITEM 197, THIRD OCCURRENCE (Fable).** `item126` hung 7241s inside FIX’s full run, then passed
+alone in 100s on the identical bundle (`index-BGbwUOFl.js/588429b`). The runner’s ~two-hour
+per-file budget is what lets one hang eat the box. **Logged; STILL UNOWNED.**
+
+**171-B’s design is merged** (`846224e` + `9873bea`); INK starts the build.
+
+**MERGE.** `plan-144-amend` @ `ccbc99a` — five files under `docs/menus/`, 234 insertions, all
+docs — **merged on this desk’s verification**; TOOLS builds 144 from it.
