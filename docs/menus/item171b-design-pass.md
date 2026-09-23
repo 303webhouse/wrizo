@@ -1,89 +1,152 @@
-# ITEM 171-B — DESIGN PASS ON THE LEANS
-### PLAN desk · 2026-09-24 · **design pass — written on the leans while 171B-Q1/Q2/Q3 are with Nick**
+# ITEM 171-B — DESIGN PASS, REVISED TO NICK'S RULINGS
+### PLAN desk · 2026-09-24 · **revision — 171B-Q1/Q2/Q3 answered (ledger `0c8838c`); supersedes the pass on the leans**
 
-> **⚠ 171B-Q1, Q2 and Q3 are not answered as this pass is written.** Fable relays them to Nick today, by
-> their own numbers, in the charter's §Q. **This pass does not wait on the answer** — it works out the
-> build on the charter's own leans, and marks exactly what changes if 171B-Q1 — *the hinge, "everything
-> else here follows from this one"* — comes back differently. **Nothing here is a brief; nothing here
-> gates a builder.** Read `item171b-ink-on-boards-and-cards-charter.md` first — this pass does not repeat
-> its measurements, only its leans.
+**His words, verbatim, relayed by Fable:**
+> **Q1.** *"1. Yes, on a desktop you must select INK (unless you have a stylus connected, perhaps? But I
+> don't know how that works). On a mobile device, stylus's or Apple Pens, etc., automatically activate
+> the drawing surface. This should only work on Free Write mode and on Boards or inside Cards."*
+> **Q2.** *"2. Right on the card."*
+> **Q3.** *"3. Users should be able to draw directly on Board. If they move cards around after that, they
+> can erase the INK they no longer want (which also means we need an eraser if we don't already have
+> one. The eraser should be scalable, as well)."*
 
-**171B-F1 is recorded** (the pen-inert reversal, ledger `d74a61b`). **171B-F2 is confirmed** (171-B does
-not gate 171-A). Neither is this pass's concern.
+**171B-F1 recorded, 171B-F2 confirmed — unchanged, this pass's concern is Q1–Q3 only.**
 
 ---
 
-## §1 · THE THREE LEANS THIS PASS ASSUMES
+## §1 · THE THREE ANSWERS, AGAINST THE LEANS THEY REVERSE
 
-| charter §Q label | what it decides | the lean |
+**The table below is the version this revision supersedes, kept as written because the delta IS the
+story:**
+
+| charter §Q label | the lean this pass carried | HIS RULING |
 |---|---|---|
-| **171B-Q1** *(the hinge — charter's internal §4/"Q3")* | how a pen shares the board's surface with select-and-drag | **(A) an explicit pen, armed on the board's tools**, plus **(B) as an accelerator — a stylus draws without arming, a mouse must arm** |
-| **171B-Q2** *(charter's internal §3/"Q2")* | what a card's ink IS | **(ii) a LOCKED PAIR** via `groupId` for what ink IS; **(iii) authored only in the OPENED card** for where it is drawn |
-| **171B-Q3** *(charter's internal §2/"Q1")* | the coordinate basis on a board | **(a) BOX-LOCAL** — a stroke belongs to an ink box, normalized to that box's own width |
+| **171B-Q1** | (A) an explicit pen armed on the board's tools, (B) a stylus accelerator | **REVERSED IN SHAPE, not in spirit: no new "arm" control. Desktop selects INK first (mouse/trackpad); a stylus draws without selecting anything, on desktop AND mobile. A finger never draws by itself.** Scoped to **Free Write, Boards, and inside Cards** only. |
+| **171B-Q2** | (ii) a LOCKED PAIR via `groupId`, ink and card as two objects | **REVERSED to (i): the ink is ON the card — the card's own strokes, one object, not a pair.** |
+| **171B-Q3** | (a) BOX-LOCAL — ink always belongs to a box | **REVERSED to (b): a board-wide, CANVAS-LOCAL pen.** Ink is drawn free on the board surface, independent of any card; moving a card does not move ink drawn near it; **the writer erases what no longer applies.** |
 
 ---
 
-## §2 · THE BUILD SHAPE UNDER THE LEANS
+## §2 · Q1, REVISED — SELECTING INK IS REUSED, NOT INVENTED
 
-**Mounting.** `InkStratum` mounts on the board canvas exactly as it mounts on a page today, with
-`permission` as the seam Q1 already names. **Armed** (a tools-dock control, per the acceptance test's
-item 5) sets `permission: 'edit'`; **disarmed** sets `permission: 'inert'`. **Lean B's accelerator is a
-second path into the same prop**, not a second engine: a `pointerdown` with `pointerType === 'pen'`
-requests `'edit'` for that gesture without touching the armed toggle's own state, and releases back to
-whatever the toggle says when the stroke ends. **The toggle is the source of truth for mouse and touch;
-the stylus has a side door that never changes the toggle's displayed state.**
+**The house already has the exact control his words describe: `InkSwitch`**, Free Write's own TEXT/INK
+toggle (`PageEditor.tsx`, rendered when `mode === 'journal'`). **His "you must select INK" is that
+control, generalized** — not a new tools-dock "arm the pen" button, which was this desk's own invention
+and is now withdrawn. **The board's tool dock and a card's own tool surface gain the SAME two-state
+selector**, under item 166's R1.
 
-**Where a stroke lands (Q1's rule 1, §2 of the charter).** The surface under the `pointerdown` decides:
-empty canvas births a new ink box (bounds = stroke bounds + margin, Q3's box-local shape); a card already
-under the pointer routes the stroke to **that card's locked ink pair** (Q2-ii), creating one via `groupId`
-on first stroke if none exists yet. **A stroke that grows past its box grows the box** (charter's rule 2)
-— this holds regardless of which surface it started on.
+**The pointer rule, stated once:**
+- **Desktop, mouse or trackpad:** draws only while the surface's `InkSwitch` reads INK. Selecting TEXT
+  (or its board/card equivalent) returns the surface to select-and-drag.
+- **Any device, a stylus (`pointerType === 'pen'`):** draws immediately, **without** the switch reading
+  INK — a side door into the same `permission` prop, exactly as this pass's prior draft proposed, except
+  it is now the RULED behavior rather than an accelerator layered onto an invented control. **This is
+  Fable's fill for the piece Nick left open** (*"unless you have a stylus connected, perhaps? But I don't
+  know how that works"*) — **marked VETOABLE**, since it answers a question he raised, not one he settled.
+- **A finger never draws by itself, on any device** — touch is always select/scroll, whether or not a
+  pen has been seen this session. **This is STRICTER than `InkStratum`'s existing page contract** (which
+  lets touch draw once no pen has appeared), so a board's touch handling is a new, separate rule from the
+  page's — not an inheritance.
 
-**The five collisions, resolved under lean A:**
-1. **Select/drag while the pen owns the surface: NOTHING.** `permission: 'edit'` on `InkStratum` is the
-   same flag that already suppresses the page's own text-selection handlers; the board's pointer handlers
-   check the identical flag before dispatching a select or a drag start.
-2. **Touch, with a pen seen this session: stays a scroll/long-press, never a stroke.** Inherited from
-   `InkStratum`'s own contract (§1 of the charter) — no new rule, one flag shared across page and board.
-3. **The eraser rubs out strokes only.** `eraserArmed` clears points within its radius; a card is never
-   removed by an erase gesture — deletion is item 168's drag-to-Trash, a different control entirely.
-4. **Undo: one stack.** A committed stroke pushes the board's own `snapshot` history, exactly as a card
-   move or resize does today. A writer undoing a stroke and undoing a drag use the same key and the same
-   mental model.
-5. **The control lives in the board's tool dock**, sized and placed under item 166's R1 (size to the
-   margin) — no new panel column, no exception to the one-panel-per-side law.
-
-**Q2's popup authorship (iii).** The card's opened view is a surface exactly like a page — `InkStratum`
-mounts there too, at `permission: 'edit'` unconditionally (opening the card is itself the arming act, so
-there's no toggle to forget). **On the closed canvas, the card's ink RENDERS** (as `BoardInkBox` already
-paints ported strokes) **but is never authored there** — Q3's the-real-question intersects here at zero
-cost, because a card's own ink pair is Q2's box, not the canvas's, so §2's coordinate basis question
-(canvas-wide ring vs on-a-thing) never arises for a card's own ink.
+**The five collisions, restated under this rule (charter §4's acceptance test):**
+1. **Select/drag while the switch reads INK, or a stylus is down: NOTHING.** Same flag, new trigger.
+2. **Touch never draws**, so there is no "pen seen this session" state to track on a board at all —
+   simpler than the page's own rule, not an inheritance of it.
+3. **The eraser rubs out ink only — see §4.** *(Corrected from the prior draft: an erase is not "points
+   cleared within a radius." It is captured as an ordinary stroke, flagged `eraser: true`, and painted
+   `destination-out` at render time — `store/ink.ts`'s `widthOf` and the composite mode. Nothing is
+   deleted from stored data; a later erase can be undone like any other stroke.)*
+4. **Undo: one stack**, unchanged from the prior draft.
+5. **The control is `InkSwitch` itself**, not a new dock button — one surface fewer to design than the
+   prior draft needed.
 
 ---
 
-## §3 · WHAT 171B-Q1 WOULD CHANGE
+## §3 · THE SCOPE CLAUSE, CHECKED AGAINST SOURCE
 
-**This is the marking Fable asked for.** The lean is (A)+(B)-accelerator. Naming the delta for each rival
-the charter itself scored, against the shape in §2 above:
+**His clause: *"This should only work on Free Write mode and on Boards or inside Cards."*** **Checked
+against `PageEditor.tsx`'s `inkPermission`** (line 214): today, ink is **`edit`/`inert` in Free Write**
+(exactly his scope) but **`movable` in Draft and Revise** — existing strokes can be dragged and grouped
+there (item 126 B1: *"Once the user switches to Draft or Revise mode, INK no longer becomes directly
+editable but can be moved around"*), though no NEW stroke can ever be started in either mode.
 
-| if 171B-Q1 rules... | what §2 changes |
-|---|---|
-| **(B) alone — the instrument decides, no arming control** | **§2's "mounting" section loses its toggle entirely.** `permission` becomes a pure function of `pointerType` per gesture; there is no persistent armed/disarmed state and **the tools-dock control in collision 5 is deleted, not built.** A mouse writer permanently loses the ability to draw — the charter's own objection stands, and it is this pass's objection too: nothing else in §2 needs a mouse-drawing path if this is picked, which is the whole cost. |
-| **(C) a transient pen — one stroke, then back to select** | **§2's mounting gains a THIRD transition**: `'edit'` → one committed stroke → forced return to `'inert'`, driven by `onCommit` rather than a pointer or a toggle. Collision 4 (undo) is unaffected; collision 1 barely matters because the window is one stroke wide. **A sketch of ten strokes costs ten re-arms** — the charter's own cost, and it falls hardest on Q2's popup authorship, which would need its OWN exemption from the transient rule (opening a card is not "one stroke") or lose the convenience §2 gives it for free under lean A. |
-| **(D) a held modifier — hold a key to draw** | **§2's mounting drops the tools-dock control (collision 5 has nothing to point at) and gains a keydown/keyup listener instead**, scoped to the board canvas. Collision 2 (touch) is unanswered by the charter itself under D — *"no key on touch or tablet"* — so §2's touch line would need a **second, separate rule** for touch that (A) does not need, because (A)'s tools-dock control works identically for every pointer type. |
+**NO CONFLICT ON THIS DESK'S READING, AND NOTHING IS REMOVED:** his clause names where the **drawing
+surface activates** — where a writer can put down new ink. Draft and Revise never offered that; `movable`
+only lets a writer nudge marks already made in Free Write. **Lean: `movable` in Draft/Revise stands,
+untouched by this ruling**, because rearranging existing ink is not "the drawing surface" his sentence
+describes.
 
-**The unmeasured risk stays where the charter put it**, regardless of which rival is chosen: nobody has
-measured how often a stray stylus tap or a resting palm would arm a stroke by accident on a board full of
-cards to select and drag. **`InkStratum`'s inherited palm defence (§1 of the charter) is inherited by every
-option above except (D)**, which has no pen-vs-touch discrimination question to defend against in the
-first place — its risk is the missing touch rule, not a false arm.
+**The alternative, named:** ink could be frozen solid (no `movable` either) outside Free Write, Boards
+and Cards. **Its cost:** a writer who drew a note in Free Write and then flips to Draft could no longer
+nudge a stray mark clear of a paragraph — reversing a shipped behavior (item 126 B1) that his sentence
+does not ask to reverse. **This desk's lean is the first reading; the alternative is the strict one, and
+it is his call if the first reading is wrong.**
 
 ---
 
-## §4 · WHAT THIS PASS DOES NOT DO
+## §4 · Q2 AND Q3, TOGETHER — THE COLLISION RULE FOR WHERE A STROKE STARTS
 
-**No mockup.** The charter names the coordinate-basis hazard (§1's three bases) as a driver/renderer
-concern, not a drawing one — a picture would show one basis and imply an answer to 171B-Q3 nobody has
-given yet. **No harness, no code, no worktree build** — docs only, per the desk's standing law. **Does not
-re-open F1 or F2** — both are settled and this pass treats them as closed inputs.
+**Two ink populations now exist on a board, and Fable asked for the rule that keeps them from competing
+for the same gesture:**
+
+- **CARD INK (Q2):** the card's own strokes, box-local, stored on the card, moving and resizing with it
+  exactly as a ported page's ink is *"re-normalized to the box"* (charter §1). **Authored only when the
+  card is OPENED** — its own surface, gaining `InkSwitch` the way a page does. This is unchanged from the
+  prior draft's Q2-iii; only WHAT the ink IS (one object, not a locked pair) reversed.
+- **BOARD INK (Q3):** canvas-local, drawn on the open board itself, belonging to no card. **Authored only
+  when the BOARD CANVAS is the active surface — nothing opened.**
+
+**THE RULE: a stroke's population is decided by which surface is ACTIVE when the gesture starts, never by
+what the pointer happens to be over.** A stroke begun on the open board, even directly above a card
+sitting closed on the canvas, is board ink — the card underneath is untouched, and moving that card later
+reveals the ink was never attached to it. **This is exactly his own worked example** (*"draw directly on
+Board. If they move cards around after that, they can erase the INK they no longer want"*) — the example
+only makes sense if the ink was independent of the card all along. A stroke can become a card's OWN ink
+only by first opening the card; **there is no path from a closed card's face to that card's ink.**
+
+**The alternative, named:** hit-test the pointer's start position against every card's rect on the board
+and route a stroke that lands on a closed card's face to that card's own ink instead of the canvas. **Its
+cost, beyond a hit-test on every stroke start:** it contradicts his own example directly — under this
+alternative, drawing over a card and then moving the card away would take the ink WITH it, and there
+would be nothing left to erase. **This desk leans against it for that reason**, not only for its cost.
+
+---
+
+## §5 · THE ERASER — SCALABLE, AND WHAT A HOLE DOES WHEN INK MOVES
+
+**Today: one fixed size everywhere.** `ERASER_WIDTH = 22` (`store/ink.ts:17`) is read by `widthOf`
+(`:129`) for every erase stroke's render width, **and separately hardcoded into TWO ring-preview UIs**
+that must both change for "every ink surface" to be literally true: `InkStratum.tsx` (the shared
+component boards and cards will use) and `JournalEntry.tsx` (Free Write's own, older inline pen/eraser
+toggle — a second site, not a duplicate of the first, and easy to fix one and miss the other).
+
+**THE LEAN: one additive optional field, the house's own grammar for exactly this** — `Stroke.eraserWidth?:
+number`, written only on strokes flagged `eraser: true`. `widthOf` reads it as `stroke.eraserWidth ??
+ERASER_WIDTH`, so **every existing erase on disk renders identically forever** — absence means the old
+fixed size, the same law `tip`/`nib`/`ink` were added under (charter's own citation, item 121 I1). **A
+size control sits beside the existing eraser toggle** on whichever surface is active (Free Write's own UI,
+`InkStratum`'s dock control on boards and cards) and sets the width for the NEXT erase stroke drawn — not
+a global constant, a per-gesture choice, exactly like choosing a pen's nib already is.
+
+**WHAT A HOLE DOES WHEN THE INK UNDER IT MOVES — the house already answered this, and this pass reuses
+the answer rather than inventing one.** An erase is not a persistent hole in stored geometry; **it is a
+stroke**, painted `destination-out`. Item 126 B4's `strokeGroupAt` already carries a co-located erase
+stroke along with whatever ink-group it overlaps whenever that group is dragged as a unit — *"if the ink
+moves and its erases stay behind, the rubbed-out parts REAPPEAR"* is the exact hazard that law exists to
+prevent, and it prevents it by moving both together.
+
+- **For CARD ink (Q2):** a card's strokes and its erases are already normalized to the SAME box-local
+  space (§1). Moving or resizing the card moves and rescales both as one unit — nothing new to build; the
+  hazard is already closed by the same mechanism that closes it for a ported page's ink.
+- **For BOARD ink (Q3):** the hazard cannot occur, because board ink never moves — Nick's own ruling.
+  There is no group-drag to carry an erase along, because there is nothing to drag. **The scenario his
+  own words describe (move the card, then erase the stray ink by hand) is not the hazard; it is the
+  intended use.**
+
+---
+
+## §6 · WHAT THIS PASS STILL DOES NOT DO
+
+**No mockup, no code, no harness, no worktree build.** F1 and F2 remain closed inputs. **This revision
+does not touch Experiment 1's separate, unrelated ledger entry** (the revised link-target shape,
+`0c8838c`) — different subject, different item.
