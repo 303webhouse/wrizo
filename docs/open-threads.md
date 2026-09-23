@@ -9310,6 +9310,9 @@ number for it later.)*
 full migration wave.** **The other schema experiments (188, 189, 192) still ride ONE wave with 136 and
 172.**
 
+**✓ THE STOP WAS RIGHT (Fable), AND THE REASON IS WORSE THAN THE RULE** — see *WHY THE STOP MATTERED*,
+below: "zero schema" was not zero schema in effect. The paragraph that follows is kept as written.
+
 **⚠ CHAT 1 STOPS ON THE SCHEMA, per the standing law, and hands it up rather than letting it pass:**
 Fable's block says *"Fable reviews the anchors schema."* **The standing constraint on this ledger is that
 ANY SCHEMA STOPS AT CHAT 1 AND GOES TO NICK** — Fable's review is in addition to that stop, not instead
@@ -9317,6 +9320,10 @@ of it. **Nick's [3] says "All confirmed. Let's push what we've come up with so I
 out."** **Chat 1 does not read a general "all confirmed" as the founder's word on a NEW TABLE.** **THE
 QUESTION, to Fable and Nick: does [3] cover the anchors table as a schema approval, or does the table
 still owe him its own stop?** **No table is built until that is answered.**
+
+**⚠ RECONCILED 2026-09-22, NOT ADOPTED AS GIVEN** — Fable split the work TEXT-SIDE / RAIL-SIDE rather
+than store/interface. See *LANES FOR EXPERIMENT 1 — RULED*, below. The proposal that follows is kept as
+written, including the reasoning Fable answered.
 
 **CHAT 1's PROPOSAL ON LANES (asked for; Fable and the desks may veto):**
 - **THE STORE — the anchors table, its read/write seam, and the span model — to FIX.** It owns
@@ -9360,6 +9367,9 @@ day-one contents; the right-strip automation pass).
 **FABLE's MOCKUPS:** `https://claude.ai/artifact/5ekkqSTXDAJvA4YqiWN4ZY` and
 `https://claude.ai/artifact/2WogxzEkDfFtkiSeH9Nx38`.
 
+**✓ RESOLVED 2026-09-22 — Nick re-saved it. `wrizo-page-first.html` is now PRESENT (47,395 bytes),
+confirmed by chat 1.** The paragraph that follows is kept as written.
+
 **⚠ ONE OF THE TWO FILES IS NOT IN DOWNLOADS. CHECKED, not assumed:** `wrizo-three-writers.html` is
 **PRESENT (64,421 bytes)**; **`wrizo-page-first.html` is ABSENT** — the Downloads folder holds no file of
 that name. **The described-but-not-attached shape again**, and named as such under the relay law.
@@ -9375,7 +9385,111 @@ blocks cannot itself tell him which ones were unreceived.**
 **QUEUE UNCHANGED OTHERWISE. Experiment 1's lanes slot in on the proposal above.** **PW's corrected tree
 `1bda06d` is STILL NOT ON `origin`** — and PW's own band now names the rule it is standing on.
 
-Registry: next free **194**.
+## WHY THE SCHEMA STOP MATTERED — "ZERO SCHEMA" WAS NOT ZERO SCHEMA — 2026-09-22
+
+**Fable: chat 1's stop was RIGHT, and the review adds the reason.** **PLAN DESK's Shape A — "additive
+optional fields on the entry, zero schema" — IS NOT ZERO SCHEMA IN EFFECT.** FIX's item-136 S0
+established that the server's `rowToJournalEntry` and `upsertJournalEntries` are **EXPLICIT COLUMN LISTS**
+that **DROP AN UNKNOWN FIELD IN BOTH DIRECTIONS WITHOUT ERRORING.** **So anchors stored as new entry
+fields would SURVIVE LOCALLY AND VANISH ON THE NEXT PULL, SILENTLY — the one failure Experiment 1 cannot
+have.**
+
+**CHAT 1 VERIFIED THIS AT THE SOURCE rather than carrying it:**
+- **`apps/server/src/sync.ts:84` — `rowToJournalEntry` is a field-by-field mapper** (`id`, `text`,
+  `projectId`, `sessionId`, `starred`… each named). **An unknown column is never returned.**
+- **`apps/server/src/sync.ts:247` — `upsertJournalEntries` names its columns in the `insert`, in the
+  `on conflict do update set`, and in the positional parameter array — three places, all explicit.** **A
+  field not in that list is never written.**
+- **So the silent-loss path is real in both directions, and it is SILENT: the write is not rejected and
+  the read does not error.** *(A defect that announces itself is survivable; this one would look exactly
+  like a writer's note never existing.)*
+
+**THE LAWFUL MINIMAL FORM: ONE ADDITIVE NULLABLE `jsonb` COLUMN on `journal_entries`** — boot-time
+add-column, the whitelist edits, SQL null → JS undefined: **item 136's own recipe.** **Shape B's tables
+are the PLANNED GRADUATION, not the first step.**
+
+**THAT IS SCHEMA, AND IT IS WITH NICK NOW AS A PLAIN YES/NO. NOTHING BUILDS UNTIL HIS WORD.** **Fable
+reviews the column when it is offered.**
+
+*(Worth keeping: the phrase "zero schema" was true of the CLIENT and false of the SYSTEM. A claim about
+cost that stops at the boundary it happens to be measured from is the same shape as a census that sees
+only the spellings it knows.)*
+
+## LANES FOR EXPERIMENT 1 — RULED — 2026-09-22
+
+**Fable's ruling reconciles chat 1's split with PLAN DESK's:**
+- **TEXT SIDE → PW:** capture, **the anchors store**, re-finding, the right-click menu, the strip's
+  connect tools, the mark. **PW is the SINGLE WRITER of `store/anchors.ts`.**
+- **RAIL SIDE AND THE EXPERIMENTS SWITCH → TOOLS:** zone 5, the list, filter, sort, popups, unlink, and
+  item 190's switch. **Zone geometry is TOOLS' own ground.**
+- **FIX KEEPS ITS QUEUE (159, 158, 160, 184) AND ITEM 136** — *FIX's queue is the longest.*
+- **ITEM 138 WAITS BEHIND EXPERIMENT 1.**
+
+**CHAT 1's store/interface CONCERN IS ANSWERED, not dismissed: Fable reviews the store, and PLAN DESK's
+ONE-WRITER SEAM covers what the split was meant to protect.** *(The concern was that a lane owning both
+halves proves the half it understands; a single named writer plus an outside reviewer is a different
+mechanism for the same risk, and it costs FIX's queue nothing.)*
+
+## ITEM 194 — `.click()` SKIPS THE HIT-TEST IN item9192 — OPENS — 2026-09-22
+
+**OPENS. TOOLS' class.** **PW found `item9192.mjs` drives the sliver with `.click()`, which SKIPS
+HIT-TESTING** — **item 130's concealment surviving inside a PASSING harness.**
+
+*(This is item 151's population arriving from the other side. 151 gated every COORDINATE dispatch behind
+a hit-test; a `.click()` never needed one, because the DOM will dispatch it onto a covered element
+without complaint. A green check that presses through an occluder is the exact thing 151 was built to
+make impossible — and it was never in 151's census, because 151 counted coordinate dispatches.)*
+
+## THREE REGISTERED, AND ONE MORE FABLE ERROR — 2026-09-22
+
+**FABLE's ERROR (the fifth on the record this week): the mockups INSERT MARKER ELEMENTS WITH TEXT** —
+three-writers' margin labels, page-first's `✎` note marker. **TUTOR caught that under TRR14 those
+CHARACTERS WOULD BE SAVED INTO THE MANUSCRIPT.** **THE REAL BUILD MARKS WITH CSS ONLY.** *(A mockup that
+draws a marker as text is proposing to write into the writer's own words — the page-is-primary canon
+broken by the illustration of it.)*
+
+**REGISTERED:**
+- **FIX's 158** — Tab reuses THE ONE FORMATTER; **the rail's Draft-only guard is KEPT as 112-A's safety
+  net.**
+- **INK's `980360c`** — the bare menu; **item 183 resolved at ALL FOUR LINEAGE SITES.**
+- **PW's THIRD 176 RED IS ITS INSTRUMENT, not the product:** receded chrome is `pointer-events: none`,
+  and its fixture **never called `wakeChrome`.** *(The known shape: "the chrome looks present while being
+  inert to the pointer" — the same fact FIX's own 170 offer recorded.)*
+
+## THE BOX — PW's FOURTH PAIR GRANTED, AND THE QUEUE — 2026-09-22
+
+**PW's branch IS NOW ON `origin` (`292f661`) — it pushed, as told.** **PW's spent grant cleared; a FOURTH
+176 PAIR GRANTED with its new diagnostics.** Box was idle (0 runners, no grant held by a running lane).
+
+**⚠ THE FOURTH IS THE LAST PATCH. Fable leaves the call to chat 1, and chat 1 states it in advance so it
+is not decided under the disappointment of a red: IF 176 GOES RED A FOURTH TIME, PW STOPS PATCHING THE
+FIXTURE AND REDESIGNS THE CHECK's ROUTE.** Three reds on one check, each with a different local cause
+(the collapsed sliver's door, the beginnings door 144 retires, a fixture that never woke the chrome), is
+no longer three bugs — **it is a route that keeps finding new ways to be wrong, which is a design
+problem.** *(m3's law, applied to an instrument instead of a distribution: measure the pattern before
+calling the next instance variance.)*
+
+**THE QUEUE, chat 1's to sequence (announced as each lane is ready, not granted blind):**
+**PW's fourth 176 pair — RUNNING NOW** → **FIX's 159 and 158** → **INK's 157, then 171-A** → **TOOLS'
+splash frames (item 187)** and **PLAN DESK's note-key test**.
+
+**CHAT 1's NOTE ON THE LAST TWO:** the splash frames and the note-key test are **SHORT box uses, not
+pairs** — a render and a probe. **Neither is granted yet, because chat 1 has not confirmed either is
+built**; they are announced when their lanes say ready, and they can take a slot between pairs without
+disturbing the order. **PLAN DESK's note-key test answers a question already on the record:** `Ctrl+N` is
+unavailable to a page, `Ctrl`/`Cmd`+`Enter` stands in, and the test finds the final key.
+
+## MERGES AND THE FILE THAT CAME BACK — 2026-09-22
+
+**Merged at `c6cb04d`, both verified docs-only (0 non-docs), trial merges clean:** **`plan-exp1-connect` @
+`a15f856`** (PLAN DESK's Experiment 1 brief) and **`item84/tutor-menus` @ `3b58b27`** (TUTOR's checker
+report and claim tiers).
+
+**`wrizo-page-first.html` IS BACK — Nick re-saved it; chat 1 confirms it present at 47,395 bytes.** The
+missing-file flag above is marked resolved in place.
+
+Registry: next free **195**.
+
 
 
 
