@@ -9456,6 +9456,10 @@ broken by the illustration of it.)*
 - **FIX's 158** — Tab reuses THE ONE FORMATTER; **the rail's Draft-only guard is KEPT as 112-A's safety
   net.**
 - **INK's `980360c`** — the bare menu; **item 183 resolved at ALL FOUR LINEAGE SITES.**
+- **✗ FALSIFIED 2026-09-23 BY PW's OWN DIAGNOSTIC — REOPENED, NOT REFILED.** The wake-chrome theory below
+  is DEAD: the diagnostic measured one grip, a real rect, chrome NOT receded, `pointer-events: auto`.
+  **Red 3's cause is unknown again** — and likely the geometry defect now at item 195. The line below is
+  kept as written.
 - **PW's THIRD 176 RED IS ITS INSTRUMENT, not the product:** receded chrome is `pointer-events: none`,
   and its fixture **never called `wakeChrome`.** *(The known shape: "the chrome looks present while being
   inert to the pointer" — the same fact FIX's own 170 offer recorded.)*
@@ -9464,6 +9468,12 @@ broken by the illustration of it.)*
 
 **PW's branch IS NOW ON `origin` (`292f661`) — it pushed, as told.** **PW's spent grant cleared; a FOURTH
 176 PAIR GRANTED with its new diagnostics.** Box was idle (0 runners, no grant held by a running lane).
+
+**⚠ HALF RIGHT, AND THE WRONG HALF WAS CHAT 1's — CORRECTED 2026-09-23.** The stop rule's FIRST clause
+fired correctly (PW stopped patching). **Its SECOND clause — "redesigns the check's route" — IS NOT
+APPLIED, because the fourth red is THE PRODUCT.** **A stop rule stops the PATCHING, not the FINDING.**
+See *ITEM 176's FOURTH RED*, below. The paragraph is kept as written, with its error visible: chat 1
+bundled two acts into one rule, and only one of them belonged there.
 
 **⚠ THE FOURTH IS THE LAST PATCH. Fable leaves the call to chat 1, and chat 1 states it in advance so it
 is not decided under the disappointment of a red: IF 176 GOES RED A FOURTH TIME, PW STOPS PATCHING THE
@@ -9897,7 +9907,88 @@ chat 1's own doing: `2>/dev/null` is how a silent instrument stays silent.)*
 **`page_links` STANDS — unmoved through all of it, and now evidenced by a count whose instrument is
 written down exactly enough to re-run.**
 
-Registry: next free **195**.
+## ITEM 176's FOURTH RED — THE PRODUCT, NOT THE ROUTE — 2026-09-23
+
+**PW's diagnostic MEASURED the refusal — `{"found":false,"why":"occluded","by":"wz-strip-item"}` — and
+FALSIFIED ITS OWN WAKE-CHROME THEORY in the same run: one grip, a real rect, chrome NOT receded,
+`pointer-events: auto`.** **On a board at 1280, 15 OF THE SLIVER GRIP's 16px SIT UNDER THE STRIP and
+hit-test to it.**
+
+**CHAT 1 CONFIRMED BOTH CAUSES ON `main`, AND THEY ARE LIVE IN PRODUCTION** — `0` product files have
+changed since the deploy (`283013e` → `1459c2a`), so what is on `main` is what writers have:
+- **`index.css:2792` — `.desk-frame-stage { … isolation:isolate }`** seals the stage, **so nothing inside
+  it can outrank the strip.**
+- **`index.css:3136` — `--sliver-paper-pad: 0px`** on the board variant **pulls the grip into the strip's
+  band.**
+
+**THE RULING: THE STOP RULE DID ITS JOB — PW STOPPED PATCHING. THE ROUTE IS NOT REDESIGNED.** **It is the
+WRITER's OWN DOOR, and it found a REAL DEFECT. Rerouting around it would HIDE THE BUG — the one outcome
+worse than a red.** **176 waits on the fix, then re-runs its pair THROUGH THE SAME DOOR.**
+
+> **A STOP RULE STOPS THE PATCHING, NOT THE FINDING. WHEN THE RED IS THE PRODUCT, KEEP THE ROUTE AND FIX
+> THE PRODUCT.**
+
+*(Chat 1 wrote the stop rule as one act — "stop patching AND redesign the route" — and the second half was
+wrong. A route that keeps failing is either a bad instrument or a good instrument pointed at something
+broken, and the rule as written could not tell the difference. Marked at its own entry rather than
+quietly amended.)*
+
+**REOPEN, DON'T REFILE:** **red 3's diagnosis is FALSIFIED** — its "fixture that never woke the chrome"
+cannot be the cause, because the chrome was awake. **Red 1's "collapsed sliver's door" MAY BE THIS SAME
+DEFECT.** **BOTH MARKED REOPENED, NOT CONFIRMED** — *an explanation that a later measurement kills does
+not get to stay on the shelf as history; the red goes back to unexplained.*
+
+## ITEM 195 — THE GRIP UNDER THE STRIP — OPENS — 2026-09-23
+
+**OPENS. OWNER TOOLS, FIRST IN ITS QUEUE — AHEAD OF ZONE 5.**
+
+**KEEP THE RATIFIED STACKING: the strip sits OUTSIDE the stage and ABOVE it.** **THE DEFECT IS GEOMETRY —
+a stage control DRIFTING INTO THE STRIP's BAND, where stacking only decides which one loses.**
+
+**THE RULE FOR THE FIX, AND FOR ZONE 5 AFTER IT: NO INTERACTIVE CONTROL INSIDE THE STAGE EVER SITS IN A
+STRIP's BAND — at ANY tested width, in PROSE, SCREENPLAY or BOARD.** **PROOF BY REAL HIT-TEST AT EACH
+CONTROL's CENTRE ACROSS THAT WHOLE MATRIX; PW MEASURED BOARD ONLY.** **PW's restart note §7 carries the
+full diagnosis.**
+
+**PROVENANCE, ESTABLISHED FROM HISTORY RATHER THAN ASSUMED (chat 1):** **BOTH causes entered in ONE
+commit — `32e6721`, 2026-07-18, FX4's `index.css` chrome/geometry slice.** **The only later touch,
+`3beef4d` (2026-09-13, PW2 S2), added a COMMENT about where `isolation:isolate` is deliberately NOT set —
+a DIFFERENT rule; it did not put the property on `.desk-frame-stage`.**
+
+**SO THE DEFECT HAS BEEN LIVE SINCE 2026-07-18 — over two months, through every pair and four deploys —
+because NOTHING EVER HIT-TESTED A STAGE CONTROL AGAINST THE STRIP's BAND.** *(Item 151 gated coordinate
+dispatches; item 194 caught `.click()` skipping the hit-test. This is the third face of one family: the
+house could not see an occluded control until a check refused to press one.)*
+
+## ITEM 196 — e1's DOWNLOAD RACE — OPENS — 2026-09-23
+
+**OPENS. OWNER INK — which runs dry after its two pairs. HARNESS-ONLY, so it MERGES ON CHAT 1's
+VERIFICATION.**
+
+**e1's FOUR OFFLINE DOWNLOAD CHECKS FAILED ON THE PARKED LEG ONLY** — the same bundle passed in default.
+**They READ THE DOWNLOADS DIRECTORY WHILE CHROMIUM IS STILL WRITING A `.crdownload` FILE. FIXTURE, NOT
+PRODUCT.**
+
+**THE FIX IS A LAW ALREADY ON THE BOOKS: WAIT ON OBSERVABLE STATE — the final file PRESENT, the
+`.crdownload` GONE — NEVER ON ELAPSED TIME.** *(The same law the minifier episode wrote: a wait that
+depends on elapsed time is a wait that can be optimised away or outrun.)*
+
+## ITEM 197 — 0-BYTE-LOG TIMEOUTS — OPENS, UNOWNED — 2026-09-23
+
+**OPENS, OPEN AND UNOWNED FOR NOW.** **`item84` TIMEOUT in pair 4 with a 0-BYTE DEFAULT LOG** — the parked
+leg passed 57 on the IDENTICAL BUNDLE. **The same class as pair 1's `fx5`/`item83e`.**
+
+**PW's attribution to environment BY BUNDLE IDENTITY IS SOUND — but a SECOND OCCURRENCE MAKES IT A
+PATTERN.** **A 0-BYTE LOG IS AN INSTRUMENT THAT NEVER STARTED.** **WHOEVER NEXT SEES ONE CAPTURES WHY
+BEFORE ATTRIBUTING IT.**
+
+*(Chat 1 met this exact shape hours ago in its own hands: `grep -P` returned `0 lines / 0 files` and had
+never run, because `-P` is unavailable in this locale and a `2>/dev/null` ate the reason. **A zero from a
+thing that never started is indistinguishable from a clean result — unless someone keeps the stderr.**
+That is the capture this item is asking for.)*
+
+Registry: next free **198**.
+
 
 
 
