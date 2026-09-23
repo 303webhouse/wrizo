@@ -5257,3 +5257,40 @@ a:focus-visible,
 .board-popup-dock-h{ font-size:9px; letter-spacing:2px; text-transform:uppercase;
   color:var(--accent-rest); text-align:center; padding-bottom:2px; }
 @media (prefers-reduced-motion:reduce){ .board-popup-dock{ transition:none; } }
+
+/* ITEM 144 — THE BOARD TABS (components/BoardTabs.tsx). A row of DOORS below the
+   board, attached to it (Nick: "below the Board but attached to it"). The current
+   tab's marker is OLIVE (--accent-rest, a where-you-are marker); structure lines
+   are --line; nothing here is orange (tags) or brass. Quiet text-scale chrome —
+   a tab is a door, and a door is a word. The row scrolls horizontally inside
+   itself; it never scrolls away with the canvas, and its menu opens in its own
+   band (it grows) rather than over the canvas (item 166). */
+.board-tabs{ display:flex; flex-direction:column; gap:4px; margin-top:6px; }
+.board-tabs-strip{ display:flex; align-items:flex-end; gap:2px; overflow-x:auto; padding-bottom:2px; }
+.board-tabs-label{ flex:0 0 auto; font-size:10px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--text-low); padding:0 8px 4px 0; white-space:nowrap; cursor:default; }
+.board-tab-wrap{ flex:0 0 auto; display:inline-flex; align-items:flex-end; }
+.board-tab-wrap[data-depth='1'], .board-tab-wrap[data-depth='2'], .board-tab-wrap[data-depth='3']{
+  border-left:1px solid var(--line, var(--ink-border)); margin-left:2px; padding-left:2px; }
+.board-tab{ background:none; border:0; border-bottom:2px solid transparent; color:var(--text-mid);
+  font-family:var(--font-ui); font-size:13px; cursor:pointer; padding:4px 8px; transition:.15s;
+  display:flex; flex-direction:column; align-items:flex-start; max-width:220px; }
+.board-tab:hover{ color:var(--text-hi); }
+.board-tab.current{ color:var(--text-hi); border-bottom-color:var(--accent-rest); cursor:default; }
+.board-tab-name{ max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.board-tab-in{ font-size:10px; color:var(--text-low); max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.board-tab-plus{ background:none; border:0; color:var(--text-low); font-size:15px; line-height:1;
+  cursor:pointer; padding:4px 6px; transition:.15s; }
+.board-tab-plus:hover, .board-tab-plus[aria-expanded='true']{ color:var(--text-hi); }
+.board-tabs-band{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; padding:4px 0;
+  border-top:1px solid var(--line, var(--ink-border)); }
+.board-tabs-connect{ flex-direction:column; align-items:stretch; gap:2px; max-height:220px; overflow-y:auto; }
+.board-tabs-menuitem{ background:none; border:0; color:var(--text-mid); font-family:var(--font-ui);
+  font-size:12px; cursor:pointer; padding:4px 6px; text-align:left; transition:.15s; }
+.board-tabs-menuitem:hover{ color:var(--text-hi); background:var(--ink-800); }
+.board-tabs-connect-row{ display:flex; align-items:baseline; gap:8px; background:none; border:0;
+  color:var(--text-mid); font-family:var(--font-ui); font-size:13px; cursor:pointer; padding:4px 6px; text-align:left; }
+.board-tabs-connect-row:hover:not(.inert){ color:var(--text-hi); background:var(--ink-800); }
+.board-tabs-connect-row.inert{ color:var(--text-low); cursor:default; }
+.board-tabs-connect-in, .board-tabs-connect-note{ font-size:10px; color:var(--text-low); }
+.board-tabs-empty{ font-size:12px; color:var(--text-low); padding:4px 6px; }

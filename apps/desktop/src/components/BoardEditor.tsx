@@ -7,8 +7,9 @@ import {
   getSystemKind, reconcileSystemBoard, restoreEntry, getJournalEntryIncludingDeleted, subscribe,
   getPairedPageId, pairBoardWithPage,
   setPinDisplayed,
-  boardNestChain,
+  boardNestChain, createBoardPage,
 } from '../store/persistence';
+import { BoardTabs } from './BoardTabs';
 import { SURVEY_DRAG_TYPE } from './CascadeSurvey';
 import { useBoardMode } from '../store/boardMode';
 import { StoryboardProjection, OutlineProjection } from './BoardProjection';
@@ -979,7 +980,13 @@ export function BoardEditor({ id }: { id: string }) {
       raf = 0;
       // Never collapse: a very short viewport gets a small wrap that scrolls its
       // content, never a fall-back to the width-only 78vh.
-      const avail = Math.max(160, Math.round(stage.getBoundingClientRect().bottom - el.getBoundingClientRect().top - 2));
+      // ITEM 144 (T1, THE ROOM LAW) — the board tabs sit BELOW this wrap and must
+      // stay in the room, so the measurement subtracts the row's own RENDERED
+      // height (read from its rect, never a constant — it grows when its band
+      // opens). Absent row (system boards) subtracts nothing: byte-identical.
+      const tabsRow = stage.querySelector('[data-board-tabs]');
+      const tabsH = tabsRow ? tabsRow.getBoundingClientRect().height + 6 : 0; // + the row's own 6px top margin
+      const avail = Math.max(160, Math.round(stage.getBoundingClientRect().bottom - el.getBoundingClientRect().top - 2 - tabsH));
       // THRASH GUARD (the deskFrameActive race lineage): the ResizeObserver
       // watches the STAGE, never the wrap, and the stage is `flex:1;
       // min-height:0` — its height is fixed by the flex column, NOT by the
@@ -996,6 +1003,9 @@ export function BoardEditor({ id }: { id: string }) {
     apply(); // initial synchronous measure (post-layout, in an effect)
     const ro = new ResizeObserver(schedule);
     ro.observe(stage);
+    // ITEM 144 — the tabs row grows and shrinks (its band opens); re-measure then.
+    const tabsEl = stage.querySelector('[data-board-tabs]');
+    if (tabsEl) ro.observe(tabsEl);
     window.addEventListener('resize', schedule);
     return () => { if (raf) cancelAnimationFrame(raf); ro.disconnect(); window.removeEventListener('resize', schedule); };
   }, []);
@@ -1803,6 +1813,19 @@ export function BoardEditor({ id }: { id: string }) {
   // pull that put it in the wrong place.
   const [renaming, setRenaming] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
+  // ITEM 144 — "New Board ... born with its name field in focus" (item 136's
+  // ruling). The birth door travels here with `state.nameFocus`; consume it
+  // once (open the crumb's rename with an EMPTY draft — a nameless board gives
+  // a nameless field) and replace history so a refresh never re-opens it.
+  useEffect(() => {
+    const state = location.state as { nameFocus?: boolean } | null;
+    if (state?.nameFocus) {
+      setNameDraft('');
+      setRenaming(true);
+      navigate(location.pathname + location.search, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!initialEntry) return null;
 
@@ -2322,6 +2345,40 @@ export function BoardEditor({ id }: { id: string }) {
   // mechanism, not two. The board's own geometry (pageWidthPx,
   // canvasHeightPx, every box's x/y/w/h) never reads `deckWizardOpen`
   // anywhere — b3.mjs asserts this explicitly, not merely by omission.
+  // ITEM 144 — the board tabs' three acts. Every one goes through the store's own
+  // writers; the two that MAKE a membership append the new pin to THIS component's
+  // own live boxes, never assign the store's copy (item 92: the local `boxes` may
+  // hold cards the autosave has not written, and the unmount save would otherwise
+  // write the pre-pin array back over the pin).
+  const appendLivePin = (updated: JournalEntry | null, childId: string) => {
+    const pin = (updated?.boxes ?? []).find(b => b.kind === 'page-pin' && b.entryId === childId);
+    if (pin && !boxesRef.current.some(b => b.id === pin.id)) {
+      const next = [...boxesRef.current, pin];
+      setBoxes(next);
+      boxesRef.current = next;
+    }
+  };
+  // A press on a tab TRAVELS — flush the board's pending edits, then go. No
+  // membership is written (T3).
+  const travelToBoard = (targetId: string) => { flushNow(); navigate(`/page/${targetId}`); };
+  // "Add Board": an existing board becomes a nested one, on THIS canvas. The
+  // list already refused self / already-inside / ancestors; `pinPageToBoard`
+  // still runs its own guard, so the two can never disagree.
+  const nestExistingBoard = (chosenId: string) => {
+    appendLivePin(pinPageToBoard(chosenId, id, { display: true }), chosenId);
+  };
+  // "New Board": born in this drawer, nested inside this one, name field
+  // focused, and the writer travels to it.
+  const newNestedBoard = () => {
+    const born = createBoardPage(initialEntry?.projectId ?? '');
+    if (!initialEntry?.projectId) patchJournalEntry(born.id, born.text, { projectId: null });
+    appendLivePin(pinPageToBoard(born.id, id, { display: true }), born.id);
+    navigate(`/page/${born.id}`, { state: { nameFocus: true } });
+  };
+  const boardTabs = !isSystemBoard ? (
+    <BoardTabs boardId={id} onTravel={travelToBoard} onAddBoard={nestExistingBoard} onNewBoard={newNestedBoard} />
+  ) : null;
+
   const boardBody = (
     <>
       {boardActionRow}
@@ -2670,6 +2727,7 @@ export function BoardEditor({ id }: { id: string }) {
               room than prose's 720/760 measure); mirrored here. */}
           <div style={{ width: 'min(100%, 1100px)', display: 'flex', flexDirection: 'column' }}>
             {boardContent}
+            {boardTabs}
           </div>
         </DeskFrame>
 
@@ -2700,6 +2758,7 @@ export function BoardEditor({ id }: { id: string }) {
       <div style={{ height: 16 }} />
 
       {boardContent}
+      {boardTabs}
       {actionToast.node}
     </div>
   );

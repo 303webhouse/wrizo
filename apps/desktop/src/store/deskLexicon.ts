@@ -105,6 +105,11 @@ export type DeskTermId =
   // a term that went missing.
   | 'cascadePlanBoardsConnected' | 'cascadePlanRelationOwn' | 'cascadePlanOwnSuffix'
   | 'cascadePlanNoDrawer' | 'cascadeOpenBoard' | 'cascadePlanCaptionIn'
+  // ITEM 144 — the board tabs (components/BoardTabs.tsx). "＋" carries NO visible
+  // word (Nick: "Scrap 'Board.' Just a '+'"); `boardTabsAddTo` is the accessible
+  // name's direction only ("Add a board to Characters").
+  | 'boardTabsNavLabel' | 'boardTabsAddTo' | 'boardTabsAddBoard' | 'boardTabsNewBoard'
+  | 'boardTabsBack' | 'boardTabsNoOtherBoards' | 'boardTabsAlreadyInside' | 'boardTabsContainsThis'
   | 'cascadeCardCopyTo' | 'cascadeCardCopyTitle' | 'cascadeCardCopyNote'
   | 'cascadeCardCopiedFrom' | 'cascadeCardRemove' | 'cascadeCardOnlyBoard'
   | 'cascadePlanSectionCards' | 'cascadePlanSectionPages'
@@ -677,6 +682,14 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadePlanNoDrawer: 'Not in a drawer',
   // PW2 S2 — the BOARDS CONNECTED zone's caption on a board.
   cascadePlanCaptionIn: 'in',
+  boardTabsNavLabel: 'Boards in',
+  boardTabsAddTo: 'Add a board to',
+  boardTabsAddBoard: 'Add Board',
+  boardTabsNewBoard: 'New Board',
+  boardTabsBack: 'Back',
+  boardTabsNoOtherBoards: 'No other boards yet.',
+  boardTabsAlreadyInside: 'already inside',
+  boardTabsContainsThis: 'contains this board',
   // PW2 S3 (item 123) — card transfer. COPY ONLY: Move is an ownership
   // transfer and a different act, deferred by name.
   cascadeCardCopyTo: 'Copy to a board…',

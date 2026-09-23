@@ -20,6 +20,7 @@ import { requestLogout } from '../store/logoutRequest';
 import { useTheme, setTheme, type ThemeId } from '../store/theme';
 import { FullscreenToggle, SyncIndicator } from './ChromeControls';
 import { PageFace, type PageFaceSubject } from './PageFace';
+import { drawerCaptionFor } from '../store/boardTabs';
 import { PlacesPanel } from './PlacesPanel';
 import { AddToSheet } from './AddToSheet';
 import { PinToBoardSheet } from './PinToBoardSheet';
@@ -659,12 +660,9 @@ export function resolveStickyPlanSurvey(page: JournalEntry): CascadeSurveyKind |
   return row ? { category: 'plan-board', boardId: row.id, boardTitle: row.title } : null;
 }
 
-// PW2 S2 — the zone's caption on a board: "in <drawer>". Names where this
-// board lives; a board with no drawer says so rather than borrowing a name.
-function drawerCaptionFor(board: JournalEntry): string {
-  const name = board.projectId ? (getProject(board.projectId)?.title || 'Untitled') : null;
-  return name ? `${deskTerm('cascadePlanCaptionIn')} ${name}` : deskTerm('cascadePlanNoDrawer');
-}
+// PW2 S2 — the zone's caption on a board: "in <drawer>". ITEM 144 moved the
+// helper to store/boardTabs.ts (imported above) so the tabs and this row share
+// ONE definition of "in X" (144 S0(d)).
 
 // PW1 S1/S2 — one board row. ONE ACT PER ROW (PP4): a press opens that board's
 // contents and does nothing else. Double-click TRAVELS to the board (Nick, Q4),
