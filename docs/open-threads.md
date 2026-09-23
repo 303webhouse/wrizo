@@ -9397,6 +9397,10 @@ have.**
 **CHAT 1 VERIFIED THIS AT THE SOURCE rather than carrying it:**
 - **`apps/server/src/sync.ts:84` — `rowToJournalEntry` is a field-by-field mapper** (`id`, `text`,
   `projectId`, `sessionId`, `starred`… each named). **An unknown column is never returned.**
+- **⚠ CORRECTED 2026-09-23 — chat 1's own count was ONE SHORT.** The write path has **FOUR** edit sites,
+  not three: the `insert` column list (`:254`), **the `values` PLACEHOLDER list (`:255`)** — a new column
+  needs a new `$N` — the `on conflict do update set` (`:267`), and the parameter array (`:273`). **Fable's
+  "three write lists plus the parameter array" is the precise form.** The bullet below is kept as written.
 - **`apps/server/src/sync.ts:247` — `upsertJournalEntries` names its columns in the `insert`, in the
   `on conflict do update set`, and in the positional parameter array — three places, all explicit.** **A
   field not in that list is never written.**
@@ -9586,6 +9590,9 @@ each page, empty by default and used only for links"**, with link TABLES later a
 
 > 1. Yes
 
+**⚠ THE SPELLING IS NOW RULED: `page_links` — see *THE COLUMN IS NAMED*, below.** `connections` is
+superseded as the column's name. The paragraph that follows is kept as written.
+
 **THE SCHEMA STOP IS ANSWERED. ONE COLUMN, UNDER THREE NAMES:** **links = anchors =
 `journal_entries.connections`** in PLAN DESK's amended brief. **HIS YES COVERS THE COLUMN, NOT A
 SPELLING.** *(The naming fork chat 1 flagged at the handoff is now closed by the founder's answer rather
@@ -9667,7 +9674,88 @@ yet**, which is what going last looks like from here. **PW's fourth pair has not
 exist** and will refresh its own note against the state of the moment before committing — *a restart note
 that is one relay stale is worse than none, because it reads as current.*
 
+## THE COLUMN IS NAMED — `page_links` — 2026-09-23
+
+**RULED (Fable): the column is `page_links`, JS `pageLinks`** — **superseding the amended brief's
+`connections`.** **THE FORK CLOSES ON THIS SPELLING: links = anchors = `page_links`.**
+
+**THE REASON, and it is a measurement:** *"connection(s)"* is already taken, four times over — the board
+**hairline** (`Box` kind `'connection'`), the **card footer's lines and their toggle**, and the
+**page↔board connections** the cascade and `getBoardsConnecting` read.
+
+**CHAT 1 RE-DERIVED FABLE's COUNT RATHER THAN CARRYING IT, and it reproduces EXACTLY: 25 OCCURRENCES
+ACROSS 7 FILES.** **The scope, recorded so anyone can re-derive it:** `apps/desktop/src` +
+`apps/server/src`, **including `.css`**, counting **OCCURRENCES, not matching lines** (24 lines hold the
+25 — one line carries it twice). *(Chat 1's first cut — `.ts`/`.tsx` only — gave 21 across 6, and the
+difference is the scope, not a disagreement: a count is a claim about an instrument before it is a claim
+about a codebase. The singular `'connection'` adds 27 more sites.)*
+
+**THE RULE UNDER THE RULING: A COLUMN CANNOT BE RENAMED LATER WITHOUT NICK's WORD AGAIN, SO IT IS NAMED
+ONCE, BEFORE IT IS WRITTEN.** **His yes covered the COLUMN, NOT A SPELLING** — so choosing the spelling
+now is a desk's job done inside his ruling, not a second question put to him.
+
+## THE SERVER HALF — APPROVED — 2026-09-23
+
+**APPROVED (Fable):** the **boot-time column** on the **`page_settings` precedent** — **jsonb, no default,
+no backfill, no `NOT NULL`** — **the three write lists plus the parameter array**, **the read mapper**, and
+**both null paths landing on `undefined`.**
+
+**CHAT 1 VERIFIED THE PRECEDENT AT THE SOURCE:** `apps/server/src/migrate.ts:168` reads **`alter table
+journal_entries add column if not exists page_settings jsonb`** — **bare `jsonb`; no `default`, no `not
+null`, no backfill.** **The shape Fable names is the shape on disk.**
+
+**AND IT CORRECTED CHAT 1's OWN EARLIER COUNT (marked in place above): the write path has FOUR edit
+sites, not three** — the `insert` list, **the `values` placeholder list**, the `on conflict do update
+set`, and the parameter array — **plus the read mapper at `:112`. Five edits to carry one column.**
+*(Chat 1 had folded the placeholders in when it verified the silent-loss path; the conclusion was right
+and the count was one short. Recorded because a builder will work from the number.)*
+
+**PW WRITES IT AFTER CONFIRMING CHAT 1's RECORD ON `main`** — the record of Nick's yes is at **`a089bd2`**,
+and this record follows it. **THE INNER SHAPE IS APPROVED IN PRINCIPLE, with SEVEN CONDITIONS PW ANSWERS
+BEFORE THE STORE WRITES ANY REAL LINK.**
+
+## SHAPE B's GRADUATION TRIGGER — "A REVERSE READER SHIPS" — 2026-09-23
+
+**PW's flag, ACCEPTED (Fable): the first feature that asks WHAT LINKS POINT AT a card or page MOVES LINKS
+INTO THEIR OWN TABLES** — because that question means **SCANNING EVERY PAGE**, *a second scan of the
+`getBoardsConnecting` shape.*
+
+**CHAT 1 CONFIRMS THE ANALOGY IS EXACT, from its own earlier measurement:** `getBoardsConnecting` filters
+`getBoardsPinning`, and **`getBoardsPinning` is a bare `cache.journalEntries.filter(...)` with no index
+and no sort** — **a full scan of every entry to answer one backward question.** **So the trigger is not a
+guess about future cost; it names a scan the house already runs and declines to run twice.**
+
+*(A graduation trigger stated as an OBSERVABLE EVENT — "a reverse reader ships" — rather than a size
+threshold is the useful form: nobody has to agree on how many links are too many, and the first builder
+who needs the backward question is the one who trips it.)*
+
+## PW's FOURTH 176 PAIR — THE REAL START, OBSERVED — 2026-09-23
+
+**Chat 1 owed the real start after correcting its own "RUNNING NOW." HERE IT IS, and it is OBSERVED, NOT
+CONFIRMED:** the pair's runner started **00:29 on 2026-09-23** (PID 41492), writing to PW's own session
+scratchpad; at chat 1's reading it was working through `sc1.mjs`. **PW has not yet reported it. The
+distinction is the whole point of the correction — chat 1 records what it can SEE, and PW's own report
+remains the record of the run.**
+
+**IT RUNS IN PW's OWN WORKTREE**, so chat 1's records commits to the primary checkout cannot dirty its
+stamp — *a worktree isolates FILES, which is the half of that law that governs writes.*
+
+## THE CLEARING — FIVE OF SIX SEEDS IN; PW's IS THE GATE — 2026-09-23
+
+**`C:\Users\nickh\.wrizo\seeds\` now holds FIVE:** `fix.md` (12,861 b) · `ink.md` (7,839 b) ·
+`plan-desk.md` (12,121 b) · `tools.md` (12,968 b) · `tutor.md` (10,703 b).
+
+**MISSING: `pw.md` — and CORRECTLY SO.** **PW is mid-run**, and the rule is that **no lane is cleared
+mid-run; PW only after its pair reports.** **The gate is doing exactly what it was written to do.**
+
+**CHAT 1 STILL GOES LAST and still holds the commit:** `chat1.md` is written against the state of the
+minute it is committed, not now, and the seven land in `docs/wrizo-alpha/seeds/` in ONE records commit —
+whose SHA goes to Nick with "nothing running." **"Nothing running" will be TRUE when it is said: at this
+reading it is false, because PW's pair is running.**
+
 Registry: next free **195**.
+
+
 
 
 
