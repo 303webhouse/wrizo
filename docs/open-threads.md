@@ -9683,6 +9683,13 @@ that is one relay stale is worse than none, because it reads as current.*
 **hairline** (`Box` kind `'connection'`), the **card footer's lines and their toggle**, and the
 **page↔board connections** the cascade and `getBoardsConnecting` read.
 
+**✗ CORRECTED 2026-09-23 — "IT REPRODUCES EXACTLY" IS WITHDRAWN. IT WAS NOT A REPRODUCTION.** Fable's
+count came from a DIFFERENT INSTRUMENT (case-insensitive, `.ts`/`.tsx` only, under `apps/`, counting
+matching LINES). **Two different instruments landing on the same two numbers is a COINCIDENCE, not a
+confirmation** — see *THREE NUMBERS, THREE INSTRUMENTS*, below. **The ruling does not move.** The
+paragraph is kept as written, wrong, because the error is the lesson: chat 1 invoked the
+census-is-a-claim-about-an-instrument law in the same breath as breaking it.
+
 **CHAT 1 RE-DERIVED FABLE's COUNT RATHER THAN CARRYING IT, and it reproduces EXACTLY: 25 OCCURRENCES
 ACROSS 7 FILES.** **The scope, recorded so anyone can re-derive it:** `apps/desktop/src` +
 `apps/server/src`, **including `.css`**, counting **OCCURRENCES, not matching lines** (24 lines hold the
@@ -9753,7 +9760,98 @@ minute it is committed, not now, and the seven land in `docs/wrizo-alpha/seeds/`
 whose SHA goes to Nick with "nothing running." **"Nothing running" will be TRUE when it is said: at this
 reading it is false, because PW's pair is running.**
 
+## THREE NUMBERS, THREE INSTRUMENTS — AND THE RULING SURVIVES ALL OF THEM — 2026-09-23
+
+**Fable's note, and it is the sharper catch: its 25-in-7 and chat 1's 25-in-7 were NOT THE SAME
+MEASUREMENT.** **Chat 1 ran Fable's stated instrument to see, and found a THIRD number:**
+
+| instrument | scope | counts | result |
+| --- | --- | --- | --- |
+| **Fable, as reported** | — | — | **25 in 7** |
+| **Fable, as described** (case-insensitive · `.ts`/`.tsx` · under `apps/`) | includes the harness tree | matching **LINES** | **26 in 8** |
+| **Chat 1** (case-sensitive · `src` + `.css`) | `apps/desktop/src` + `apps/server/src` | **OCCURRENCES** | **25 in 7** |
+
+**SO THE DESCRIBED INSTRUMENT DOES NOT REPRODUCE ITS OWN REPORTED NUMBER EITHER.** *(Said without
+accusation — it STRENGTHENS Fable's point rather than denting it: a count drifts from its own description
+this easily, and neither desk would have seen it without running the other's.)*
+
+**THE TWO FILE SETS OVERLAP IN SIX AND EACH HOLDS ONE THE OTHER MISSES — and chat 1 opened both, because
+a count is only as good as what it counted:**
+- **`store/boardStructure.ts:25`, caught ONLY by the case-insensitive scan:** *"A content card — the
+  structural unit. **Connections** (hairlines) and board-meta…"* — **a TRUE hit, and the capital-C
+  hairline sense the ruling cites.** **Chat 1's case-sensitivity missed a line that SUPPORTS the
+  ruling.**
+- **`server/src/db.ts:7`, caught ONLY by the case-insensitive scan:** `connectionString: env.databaseUrl`
+  — **a FALSE hit. It is the POSTGRES CONNECTION STRING, a different sense of the word entirely**, and it
+  matched only because case-insensitive substring search crosses the camelCase boundary in
+  `connection`+`String`.
+- **`index.css`, caught only by chat 1's scope** — inside the collision's own sense.
+
+**THE RULING IS UNMOVED AND BETTER EVIDENCED THAN EITHER COUNT ALONE:** *"connection(s)"* is taken under
+**every** instrument tried — **21, 24, 25, 26, and 51 across widening scopes**, plus **27 more** for the
+singular — **and the one hit that turned out not to be the collision was a database connection string,
+which is itself an argument for the rename.** **`page_links` stands.**
+
+> **A COUNT IS A CLAIM ABOUT AN INSTRUMENT BEFORE IT IS A CLAIM ABOUT A TREE — AND TWO INSTRUMENTS
+> AGREEING ON A NUMBER HAVE NOT AGREED ON ANYTHING.**
+
+*(The house already had the first half of that line. The second half is what this exchange bought: chat 1
+read its own 25/7 beside Fable's 25/7 and called it a reproduction, which is the listing-trap in its most
+flattering form — the numbers MATCHED, so nobody looks. Recording both instruments is what makes the next
+one re-derivable.)*
+
+## EXP1-Q5 AND EXP1-Q6 — RULED BY NICK, NOT TAKEN BY SILENCE — 2026-09-23
+
+**As put to him:** **Q5** — *"Can one link sit inside another?"* (default yes) · **Q6** — *"Should a note
+made with nothing selected show as a small tick in the margin beside its paragraph?"* (default yes). His
+to-do line read: *"1. Answer Q5 and Q6, or skip them."*
+
+**HIS ANSWER, VERBATIM:**
+
+> 1. Yes, go with the defaults.
+
+**EXP1-Q5 — YES: LINKS MAY OVERLAP, and the rail lists EVERYTHING covering a spot.**
+**EXP1-Q6 — YES: a spot-note shows A MARGIN TICK beside its paragraph.**
+
+**⚠ THESE ARE RULINGS, NOT DEFAULTS.** **He was offered the skip and DECLINED IT — he answered.** **The
+ledger records them as his word**, and no later reader may treat them as *"Fable's defaults, vetoable"*
+the way the six on the earlier list are. *(The distinction is small in the moment and decisive later: a
+default invites a builder to re-open it; a ruling does not.)*
+
+## ITEM 187 — THE SPLASH SIZE CLOSES — 2026-09-23
+
+**His original word, as this ledger recorded it:** *"at most 1/5 the size of the screen, with the regular
+app interface blurred out behind it."*
+
+**HIS ANSWER NOW, VERBATIM:**
+
+> 5. I'm not super picky on the splash size. I just want it to be smaller than the background so it's
+> clear it's just a popup over the real app.
+
+**FABLE's RULING WITHIN IT: A FIFTH OF THE SCREEN's WIDTH.** **It satisfies BOTH readings of *"at most
+1/5"*** — a fifth of the width is well under a fifth of the AREA — **so no reading of his words is
+broken.** *(The area-or-width question is answered without having to decide which he meant, which is the
+cheapest possible close: pick the value that is legal under every reading.)*
+
+**THE CHECK ASSERTS HIS PURPOSE, NOT A PIXEL: at every tested screen size, THE BLURRED APP SHOWS ON ALL
+FOUR SIDES OF THE SPLASH.** *("Smaller than the background so it's clear it's just a popup" is a claim
+about what a writer SEES, and a four-sided margin is that claim in a form a harness can fail on. A
+pixel assertion would have gone red on the first screen nobody tested.)*
+
+**TOOLS RENDERS ONE FRAME — for the COMPOSITING CHECK — not two for a founder pick.** **The two-frame
+question is withdrawn: he was not picky, so there is nothing to pick.**
+
+## THE CLEARING — STILL FIVE OF SIX; PW's PAIR STILL RUNNING — 2026-09-23
+
+**Unchanged at this reading: `fix.md` · `ink.md` · `plan-desk.md` · `tools.md` · `tutor.md` are in;
+`pw.md` is not; PW's fourth 176 pair is STILL RUNNING** (2 processes on the box). **Chat 1 holds.**
+
+**THESE THREE ENTRIES ARE RECORDED BEFORE `chat1.md` IS WRITTEN, AS ORDERED — so the fresh lanes boot
+against a ledger that already carries them.** **Fable carries both founder answers to PW, TOOLS and PLAN
+DESK in its replies to their boot reports.**
+
 Registry: next free **195**.
+
 
 
 
