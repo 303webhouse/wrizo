@@ -9470,6 +9470,11 @@ problem.** *(m3's law, applied to an instrument instead of a distribution: measu
 calling the next instance variance.)*
 
 **THE QUEUE, chat 1's to sequence (announced as each lane is ready, not granted blind):**
+**⚠ CORRECTED 2026-09-23 — "RUNNING NOW" WAS AHEAD OF THE FACT.** Chat 1 wrote it on granting the turn;
+**PW had not started.** The grant is not the run. **The real start is recorded when PW confirms it.** The
+line below is kept as written, wrong, because the error is the point: a desk that grants the box must not
+narrate it as used.
+
 **PW's fourth 176 pair — RUNNING NOW** → **FIX's 159 and 158** → **INK's 157, then 171-A** → **TOOLS'
 splash frames (item 187)** and **PLAN DESK's note-key test**.
 
@@ -9572,7 +9577,98 @@ the screen's AREA or its WIDTH — TOOLS renders both frames), item 145's tag hi
 on conflict — but it only knows what reached it. The five defaults above are the measure of that: they
 were real decisions, correctly made, and one chat-reset away from vanishing. Relay what you rule.)*
 
+## NICK's WORD ON EXP1-Q1 — THE LINKS COLUMN — PRIMARY TEXT, VERBATIM — 2026-09-23
+
+**Fable's question, as put to him:** *"1. The links column: yes or no?"* — explained as **"one new slot on
+each page, empty by default and used only for links"**, with link TABLES later as their own step.
+
+**HIS ANSWER, VERBATIM:**
+
+> 1. Yes
+
+**THE SCHEMA STOP IS ANSWERED. ONE COLUMN, UNDER THREE NAMES:** **links = anchors =
+`journal_entries.connections`** in PLAN DESK's amended brief. **HIS YES COVERS THE COLUMN, NOT A
+SPELLING.** *(The naming fork chat 1 flagged at the handoff is now closed by the founder's answer rather
+than by a desk picking one — and the amended brief's `connections` is the third name, not a fourth
+thing.)*
+
+**NOTHING WRITES IT UNTIL PW's S0 SHAPE REPORT CLEARS FABLE's REVIEW.** *(The yes opens the column; it
+does not open the build.)*
+
+## WITH NICK NOW — TWO DESIGN QUESTIONS, A SKIP TAKES THE DEFAULT — 2026-09-23
+
+**EXP1-Q5 — OVERLAPPING LINKS (default YES)** · **EXP1-Q6 — THE SPOT-NOTE's MARGIN TICK (default YES).**
+**Design questions, so silence takes the default; Fable relays his words when they come.**
+
+## THE GRANT FILE — BOTH READS WERE RIGHT — 2026-09-23
+
+**Fable read `C:\Users\nickh\.wrizo\box-turn.json` itself: lane PW2, token `pw2-item176-fourth-20260922`,
+time `2026-09-23T05:47:18.680Z`.** **PW's refusal had read the SPENT "corrected" token
+(`2026-09-22T22:29:08Z`) — BEFORE chat 1's write.** **BOTH RIGHT AT THEIR READ-TIMES; NOTHING TO FIX.**
+
+*(The disk-wins law working as intended, twice: each party read the file rather than a description of it,
+and the apparent conflict was only two true readings of two moments. The file is the announcement — and a
+file has a time.)*
+
+**ONE LEDGER CORRECTION, chat 1's own error, marked in place above: "RUNNING NOW" was written when the
+turn was GRANTED, not when the pair started.** **PW had not begun.**
+
+**THE COUNT: PW called it "pair three"; THE LEDGER's COUNT — FOURTH — STANDS**, and Fable has told PW so.
+*(The three that ran: the original red, the beginnings-door fix, the fixture that never woke the chrome.
+A lane counting its own attempts from the last one it remembers is how a fourth-red rule gets applied to
+a third red.)*
+
+## FABLE's RULINGS — 2026-09-23
+
+- **ITEM 194 — TOOLS' §6 APPROVED. THE HELPER FLIPS IN TWO MOVES:** a **REPORT-ONLY CENSUS FIRST** (a
+  short box use), **then the fixtures are fixed**, **then it fails on anything unreachable.** **⚠ IT
+  CHANGES THE INSTRUMENT UNDER EVERY LANE's STAMPS, SO IT LANDS AT A BATCH BOUNDARY.** *(The same care
+  item 151's hit-test earned: a guard that every other lane's green depends on cannot arrive mid-queue.)*
+- **THE MOCKUP's TABBED RIGHT COLUMN IS THE APPROVED "ONE PANEL COLUMN PER SIDE"** — the Tutor and the
+  rail's lists **TAKE TURNS IN IT.** **NO THIRD SURFACE. NOT A QUESTION FOR NICK.**
+- **FN5 — THE SHIPPED "Ask a question…" STAYS**; the mockup's placeholder was **a drawing shortcut**, not
+  a proposal. *(The fifth mockup-reads-as-spec correction on this record.)*
+- **TUTOR's SINGLE CHECKS SECTION — ACCEPTED.**
+- **THE FIVE-ZONE PENCIL STAYS DOWN — the Experiment 1 build is the next thing Nick clicks.**
+- **RATIFIED, chat 1's line:** *"'zero schema' was true of the client and false of the system."* **A COST
+  CLAIM IS MEASURED AT THE SYSTEM's EDGE, NOT AT THE EDGE IT WAS MEASURED FROM.**
+
+## THE QUEUE — 2026-09-23
+
+**BOX ORDER UNCHANGED:** **PW's 176 pair** → **FIX's 159, then 158 — EACH WITH ITS FALSIFICATION RUN** →
+**INK's 157, then 171-A.**
+
+**SHORT USES, as lanes say ready:** TOOLS' splash frames · the note-key test · **PW's PAINT-LAYER
+MEASUREMENT — ONE measurement serving BOTH item 145 and Experiment 1.** **FIX's 160 when ready.**
+
+**LANE ORDER CHANGES:** **PW takes Experiment 1 AHEAD OF 163** · **TOOLS takes Experiment 1's RAIL SIDE
+first, 194 after** · **PLAN DESK takes 171-B's design next if its charter is ready.**
+
+## MERGED — 2026-09-23
+
+**At `fc8de60`, both verified docs-only (0 non-docs), trial merges clean:** **`plan-exp1-amend` @
+`b52e151`** (the amended Experiment 1 brief, with `journal_entries.connections` and the page-first rail
+pass) and **`item84/tutor-menus` @ `a31af53`** (TUTOR's strip checked against the page-first mockup).
+
+## THE CLEARING — SEVEN RESTART NOTES — 2026-09-23
+
+**Nick asked; Fable said yes.** **Each lane writes its restart note (its session seed) to
+`C:\Users\nickh\.wrizo\seeds\`** — `fix.md`, `pw.md`, `tools.md`, `ink.md`, `plan-desk.md`, `tutor.md` —
+**and tells Nick "Restart note saved, nothing running."**
+
+**CHAT 1 GOES LAST:** write `chat1.md`, **commit ALL SEVEN into `docs/wrizo-alpha/seeds/` in ONE records
+commit**, then give Nick **its SHA and "nothing running."**
+
+**NO LANE IS CLEARED MID-RUN. PW ONLY AFTER ITS PAIR REPORTS.**
+
+**STATE AT THIS WRITING:** **`C:\Users\nickh\.wrizo\seeds\` DOES NOT EXIST — no lane has written a seed
+yet**, which is what going last looks like from here. **PW's fourth pair has not started** (grant held,
+0 runners), **so the gate on PW's clearing is still shut.** **Chat 1 holds the commit until all seven
+exist** and will refresh its own note against the state of the moment before committing — *a restart note
+that is one relay stale is worse than none, because it reads as current.*
+
 Registry: next free **195**.
+
 
 
 
