@@ -9488,7 +9488,92 @@ report and claim tiers).
 **`wrizo-page-first.html` IS BACK — Nick re-saved it; chat 1 confirms it present at 47,395 bytes.** The
 missing-file flag above is marked resolved in place.
 
+## THE FABLE HANDOFF — COMMITTED, AND RECONCILED AGAINST THE LEDGER — 2026-09-23
+
+**Nick is moving the Fable role to a fresh chat.** The outgoing Fable's handoff is **COMMITTED at
+`docs/wrizo-alpha/fable-handoff-2026-09-23.md`** (`1331892`), **byte-identical to the Downloads original**
+(18,911 bytes, verified by `cmp`), **named for its own stated date — the document says 2026-09-23, not the
+22nd.**
+
+**⚠ A STRAY WAS ALREADY IN THE WORKING TREE.** An untracked, never-committed, byte-identical copy sat at
+`docs/wrizo-fable-handoff.md`, dropped straight into the primary checkout. **REMOVED, not left:**
+`railway up` **uploads the WORKING DIRECTORY**, so an untracked stray in this checkout can SHIP TO
+PRODUCTION, and the standing law is that **the tree is bare at upload.** *(Checked before deleting:
+identical bytes, in no branch, and the Downloads original untouched — so nothing was lost.)* **One
+canonical copy is kept.**
+
+## THE STATE REPORT — the new Fable's first ask, answered in advance — 2026-09-23
+
+| | |
+| --- | --- |
+| **PRODUCTION STAMP** | **`283013e` · railway `664604e6-fdbd-4caa-b4e3-505c19cfa190`** — Batch Four, SUCCESS, served-vs-stamped MD5 matched on both assets. **Rollback target: `448fc6c` · `5e06974f`.** |
+| **REGISTRY** | **NEXT FREE 195.** |
+| **WHO HOLDS THE BOX** | **PW2**, token `pw2-item176-fourth-20260922`, for **item 176's FOURTH pair** — granted after PW pushed (`292f661`). **No run was active at this reading.** |
+| **BATCH IN ASSEMBLY** | **NONE.** Batch Four shipped and closed; **Batch Five has not been assembled and holds nothing yet.** |
+
+**MAIN at `1331892`, local == origin, tree clean.**
+
+## WHERE THE HANDOFF AND THE LEDGER DISAGREE — THE LEDGER WINS — 2026-09-23
+
+**1 · REGISTRY — THE ONLY HARD DISCREPANCY.** The handoff says *"Next free item number: **194**"*; **the
+ledger says 195.** **Item 194 was opened after the handoff was written** — `.click()` skips the hit-test in
+`item9192`, TOOLS' class, item 130's concealment inside a passing harness. **NEXT FREE IS 195.**
+
+**2 · "THE LINKS COLUMN" AND "THE ANCHORS COLUMN" ARE THE SAME COLUMN.** The handoff's own §2.1 writes it
+as *"links (anchors)"*. **Not a disagreement — a naming fork, recorded so no desk builds two columns or
+asks Nick twice.** **One additive nullable `jsonb` column on `journal_entries`, still awaiting his plain
+yes/no.**
+
+**3 · EVERYTHING ELSE CHECKED MATCHES:** the production stamp and rollback target, the four batches and
+what each shipped, the box model, the lane roster, and the box order chat 1 proposed. **No other
+contradiction found.**
+
+## DEFAULTS THE HANDOFF CARRIES THAT THE LEDGER NEVER RECEIVED — 2026-09-23
+
+**⚠ THE REAL FIND, and the reason a handoff gets read rather than filed: the handoff lists DEFAULTS that
+reached no relay and are in NO ledger entry.** With the outgoing Fable's context about to end, **anything
+living only in that document would have been lost.** **Recorded here as FABLE's DEFAULTS — vetoable,
+NOT founder text:**
+- **A card made on a page that is on no board goes to the page's OWN PLAN BOARD** — it does not become a
+  note.
+- **LINKED WORDS TAKE A FAINT TINT ON THE WORDS THEMSELVES, NOT AN UNDERLINE** — underline is the
+  writer's (item 122). *(PLAN DESK had proposed a margin-only mark.)* **This is also the CSS-only marking
+  the mockups got wrong — the two corrections agree.**
+- **SPELLCHECK IS OFF IN FREE WRITE, ON ELSEWHERE**, using the browser's checker until Wrizo's own lands.
+- **THE SPLASH SHOWS ON EVERY OPEN** (item 187).
+- **A BLANK, NEVER-WRITTEN PAGE CHOOSING SCREENPLAY COUNTS AS CHOOSING BEFORE STARTING.**
+
+**⚠ WATCH THE LAST ONE.** It sits beside a default Nick's own word SUPERSEDED — *"a blank page may still
+become a screenplay"* — and the two are not the same claim. **Nick retired CONVERSION ENTIRELY: there is
+no converting written prose, and copy-and-paste is the path.** **Choosing Screenplay on a page that has
+never been written is a CHOICE, not a conversion, so the default is consistent** — **but it must never be
+read as reviving in-place conversion (item 184).** *(Recorded in full rather than quietly dropped: the
+distinction is one word wide and a builder will meet it.)*
+
+**THE HANDOFF's OTHER DEFAULTS were already on this ledger and match:** the note key (`Ctrl`/`Cmd`+`Enter`,
+`Ctrl+N` impossible in a browser), "Pages" everywhere including Flux, the tablet carry's cancel, Draft's
+bare menu with the typewriter on, and the screenplay typewriter returning only with its engine.
+
+## WHAT DOES NOT CHANGE — 2026-09-23
+
+**Every standing ruling and the whole queue HOLD.** **Experiment 1 still waits on Nick's yes/no on the
+links column** — and **chat 1's schema stop is recorded as the REASON nothing has been built**, with the
+server evidence beside it (`sync.ts:84` and `:247`, explicit column lists in both directions).
+
+**THE QUEUE, unchanged:** **PW's fourth 176 pair (holding the box)** → **FIX's 159 and 158** → **INK's 157,
+then 171-A** → **TOOLS' splash frames and PLAN DESK's note-key test.** **The fourth-red rule stands: if 176
+reds again, PW stops patching the fixture and the check's route is redesigned.**
+
+**ALSO STILL OPEN WITH NICK, from the handoff's own list and this ledger's:** the splash's size (a fifth of
+the screen's AREA or its WIDTH — TOOLS renders both frames), item 145's tag highlight under a selection
+(Q-OV1), and item 146's rhizome question (guaranteed every edge, or usually).
+
+*(A note for the incoming Fable, from the desk that keeps this file: the ledger is the record, and it wins
+on conflict — but it only knows what reached it. The five defaults above are the measure of that: they
+were real decisions, correctly made, and one chat-reset away from vanishing. Relay what you rule.)*
+
 Registry: next free **195**.
+
 
 
 
