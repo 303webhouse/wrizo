@@ -79,6 +79,10 @@ const seedLinkedFixture = async (app) => {
       id: 'exp1-target-page', text: 'A Source Page\\nsome body text', tags: ['research', 'characters'], createdAt: t(0), origin: null,
     });
     window.wrizoCreateJournalPage({
+      id: 'exp1-target-imported', text: 'An Imported Draft', createdAt: t(0), origin: null,
+    });
+    window.wrizoPatchEntry('exp1-target-imported', { importedAt: t(0) });
+    window.wrizoCreateJournalPage({
       id: 'exp1-target-board', text: 'A Linked Board', pageType: 'board', tags: ['plot'], createdAt: t(0), origin: null,
       boxes: [{ id: 'exp1-card-1', kind: 'text', text: 'A Card', x: 0, y: 0, w: 100, h: 60, z: 1 }],
     });
@@ -90,6 +94,7 @@ const seedLinkedFixture = async (app) => {
           { id: 'a2', paraIndex: 1, quote: 'Second', prefix: '', suffix: ' paragraph.', startHint: 0, createdAt: t(0), updatedAt: t(0) },
         ],
         links: [
+          { id: 'link-imported', anchorId: 'a1', kind: 'source', targetEntryId: 'exp1-target-imported', createdAt: t(0), updatedAt: t(0) },
           { id: 'link-source', anchorId: 'a1', kind: 'source', targetEntryId: 'exp1-target-page', createdAt: t(0), updatedAt: t(1) },
           { id: 'link-board', anchorId: 'a2', kind: 'source', targetEntryId: 'exp1-target-board', createdAt: t(0), updatedAt: t(2) },
           { id: 'link-card', anchorId: 'a1', kind: 'card', targetEntryId: 'exp1-target-board', targetBoxId: 'exp1-card-1', createdAt: t(0), updatedAt: t(3) },
@@ -183,8 +188,9 @@ await withHarness(async (app) => {
     { kind: 'Card', label: 'A Card' },
     { kind: 'Board', label: 'A Linked Board' },
     { kind: 'Page', label: 'A Source Page' },
+    { kind: 'Imported', label: 'An Imported Draft' },
   ];
-  ok('§7.5 (a): the resting list, default sort (recency) — 4 rows, most-recently-connected first',
+  ok('§7.5 (a): the resting list, default sort (recency) — 5 rows, most-recently-connected first',
     JSON.stringify(recencyRows) === JSON.stringify(wantRecency), JSON.stringify(recencyRows));
 
   // (b) kind sort — real hit-tested press, item 151's own instrument (not
@@ -193,8 +199,8 @@ await withHarness(async (app) => {
   if (pressedKind) {
     await sleep(150);
     const kindRows = await railRows(app);
-    ok("§7.5 (b): kind sort — Page, Board, Card, Note (store/linkedRail.ts's own KIND_ORDER)",
-      JSON.stringify(kindRows.map(r => r.kind)) === JSON.stringify(['Page', 'Board', 'Card', 'Note']), JSON.stringify(kindRows));
+    ok("§7.5 (b): kind sort — Page, Imported, Board, Card, Note (store/linkedRail.ts's own KIND_ORDER)",
+      JSON.stringify(kindRows.map(r => r.kind)) === JSON.stringify(['Page', 'Imported', 'Board', 'Card', 'Note']), JSON.stringify(kindRows));
   }
 
   // (c) THE GROUPING LAW, a third time: by tag GROUPS, an item with N tags
@@ -225,8 +231,8 @@ await withHarness(async (app) => {
   if (removePressed) {
     await sleep(150);
     const afterRemove = await railRows(app);
-    ok('§7.5 (d): remove — the row is gone immediately, 3 remain',
-      afterRemove.length === 3 && !afterRemove.some(r => r.label === 'A bare note'), JSON.stringify(afterRemove));
+    ok('§7.5 (d): remove — the row is gone immediately, 4 remain',
+      afterRemove.length === 4 && !afterRemove.some(r => r.label === 'A bare note'), JSON.stringify(afterRemove));
 
     await app.reload();
     await app.evalJs("location.hash = '#/page/exp1-page'");
@@ -235,7 +241,7 @@ await withHarness(async (app) => {
     await openLinkedTab(app);
     const afterReload = await railRows(app);
     ok('§7.5 (d): remove is a real write — the row stays gone after a reload, not an optimistic-only removal',
-      afterReload.length === 3 && !afterReload.some(r => r.label === 'A bare note'), JSON.stringify(afterReload));
+      afterReload.length === 4 && !afterReload.some(r => r.label === 'A bare note'), JSON.stringify(afterReload));
 
     // The anchor and the target both survive unlink — Nick's word ("Remove
     // unlinks and never deletes"). The anchor still lives in pageLinks.anchors
