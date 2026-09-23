@@ -73,7 +73,8 @@ choose. **(6)** no match → **LOST**, kept and marked.
 >
 > **SO THE LAWFUL MINIMAL FORM IS SHAPE A's MODEL IN ONE ADDITIVE NULLABLE JSONB COLUMN** — the shape
 > `boxes`, `strokes`, `tags`, `tutor` and `page_settings` already are — **plus its two mapper lines.**
-> **That is a SCHEMA CHANGE: it stops at chat 1 and goes to Nick as a yes/no** (EXP1-Q1).
+> **✅ ANSWERED 2026-09-23 — NICK'S WORD, VERBATIM: *"1. Yes"*** (to *"The links column: yes or no?"*).
+> **THE SCHEMA GATE IS OPEN. The column is approved and this build is no longer blocked on it.**
 > **Shape B stays the planned graduation, with its ticket open.**
 >
 > **⚠ AND IT IS ONE COLUMN UNDER THREE NAMES — the ledger of 2026-09-23 records the fork explicitly**
@@ -318,11 +319,8 @@ Fable's own drawing already binds it.
 > layout active** to prove the AltGr finding rather than cite it. **Ask chat 1 for the slot.**
 
 ## §Q · FOR NICK
-- **⛔ EXP1-Q1 — THE SCHEMA, and it is the only one that gates the build.** **One additive nullable jsonb
-  column** (`journal_entries.connections`) **plus its two mapper lines** — the shape `boxes`, `strokes` and
-  `page_settings` already are. **Yes or no?** *There is no zero-schema road: §2 shows the server drops
-  unknown entry fields in both directions, silently.* **Shape B (the tables) is the planned graduation,
-  ticket open — not this build.**
+**⛔ NOTHING IN THIS BRIEF NOW GATES THE BUILD.** *EXP1-Q1 is answered; Q5 and Q6 are with Nick and a skip
+takes the lean, so neither stops a builder starting.*
 - **EXP1-Q5 — OVERLAPPING ANCHORS** *(new, from the pass on Fable's drawing)*. **Painting the mark makes
   overlap possible; the drawing's wrapping made it impossible** and refused it in words. **May a writer
   link a phrase inside an already-linked sentence?** **Desk's lean: YES**, with the rail listing what
@@ -333,6 +331,10 @@ Fable's own drawing already binds it.
   the glyph cannot stay.*
 
 **RULED SINCE THIS BRIEF WAS WRITTEN — recorded here so the list is not re-asked:**
+- **~~EXP1-Q1 — the schema.~~** **ANSWERED BY NICK, 2026-09-23: *"1. Yes"*.** **ONE additive nullable jsonb
+  column, `journal_entries.connections`, plus its TWO MAPPER LINES.** *The name is settled by adoption —
+  chat 1's merge of this brief names the column in its own subject line.* **§2 is now a build instruction,
+  not a proposal.**
 - **~~EXP1-Q2 — Make a card with no board.~~** **RULED (Fable): it lands on the page's OWN PLAN BOARD,
   created quietly.** §4.
 - **~~EXP1-Q3 — the mark.~~** **RULED (Fable): a FAINT TINT ON THE WORDS** — not an underline (F2 holds),
