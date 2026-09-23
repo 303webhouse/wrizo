@@ -21534,3 +21534,46 @@ this time.
 **Offered for merge — harness/test-seam work, chat 1's verification is the
 gate per the standing amendment.** Branch `item151-silent-acts`, tip
 `c46d498`, pushed. Nothing further owed on tools' side.
+
+## RECORDS — 171-B’S REVERSAL, TUTOR IDLE, THE STANDING REPORT-LENGTH RULE — 2026-09-24 (chat 1)
+
+**171B-F1 — RECORDED AS A REVERSAL.** `docs/menus/item171b-ink-on-boards-and-cards-charter.md`
+§1b names it and §Q relays it to Nick; his answer 5, quoted there byte-identical (typo
+his):
+
+> *"Ink needs to available, though, on  Boards and Cards."*
+
+**That REVERSES the standing law** — *"today the pen is inert on every non-Journal surface. A
+stylus tap on a Page or a chapter does absolutely nothing — not even caret placement"* — but
+**only for boards and cards.** The pen stays inert on a Page and a chapter; nothing else moves
+with the reversal. This entry is the recording the 171-B charter’s §F asked for and that was
+never actioned until now.
+
+**171B-F2 — CONFIRMED.** 171-B does not gate 171, as relayed.
+
+**171B-Q1, Q2, Q3** — with Nick today, by their own numbers (the charter’s §Q). Fable relays
+his words when they land; none are answered yet.
+
+**PLAN DESK’s restart note — stale twice, per Fable, told to PLAN DESK directly; recorded here
+so the ledger carries it too.** The column is `page_links`, not `connections` (Records,
+`218050c`). “The MOVE” is not held open — it was RESOLVED AS COPY on 2026-09-22 (3B). The
+ledger outranks the note.
+
+**TUTOR — idle today, Fable’s call, to save usage.** Its queue is unchanged.
+
+**NEW STANDING RULE, every lane, usage:** chat reports run 10 lines or fewer unless asked;
+detail goes to disk.
+
+**MERGES.**
+- `pw2-nesting-transfer` @ `d226e09` — one file, `docs/menus/pw2-nesting-transfer-offer-2026-09-17.md`,
+  30 insertions, nothing else touched. **DOCS-ONLY, verified by diff-stat. Merging on this
+  desk’s own verification**, per the standing amendment.
+- `plan-exp1-q1` @ `d9f688e` — **NOT merged.** Fable’s instruction is to merge once, after PLAN
+  DESK adds its amendment as a SECOND COMMIT on this same branch. Checked: `plan-exp1-amend`
+  (tip `b52e151`) is not built atop `d9f688e` — its parent chain runs `b52e151` → `f0b4726` →
+  `14d0b90`, a different base entirely. The amendment has not landed on `plan-exp1-q1` yet.
+  Holding; will merge when the second commit appears there.
+
+**BOX.** Grant file (`~/.wrizo/box-turn.json`) written naming **FIX**, token
+`chat1-fix159-20260924`, per Fable’s order (159 → 158 → INK 157 → INK 171-A → TOOLS 154, item
+195 ahead of the queue whenever TOOLS says ready, 176 re-runs after 195 merges).
