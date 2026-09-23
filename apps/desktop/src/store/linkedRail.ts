@@ -19,18 +19,12 @@ import type { Link, JournalEntry, Box } from '../types';
 // Nick's own words, verbatim (2026-09-24): "sources or pages or cards or
 // boards or images or imported docs". Images are their own later item (no
 // image kind, no upload path exists yet — Fable's own finding, same date).
-// This lane can derive THREE of the remaining four honestly from today's
-// schema: 'board' (JournalEntry.pageType === 'board'), 'card' (a Box), and
-// 'note' (a Link with no target at all — the writer's own words, `Link.
-// kind === 'note'`, §3's "Note This" act). 'page' vs 'source' vs 'imported
-// doc' among ordinary (non-board) entries has NO field to tell them apart
-// with today — JournalEntry.pageType's own union has no such member, and
-// nothing else on the entry marks it. Rather than guess (this project's
-// own standing law: a classification you cannot defend per site is not a
-// population), every non-board entry target reports 'page' here, and the
-// gap is named in LinkedRail.tsx's own header rather than silently
-// resolved by a heuristic.
-export type RailKind = 'page' | 'board' | 'card' | 'note';
+// RULED (Fable, 2026-09-24): derive what exists. Board = pageType 'board';
+// Imported = `importedAt` set (the writer's own imported drafts); a card is a
+// Box; a note is a Link with no target; everything else = Page.
+// KNOWN LIMIT, named: nothing marks an entry as a "source" today, so there is
+// no Source label — it arrives with records (item 192), no new field now.
+export type RailKind = 'page' | 'board' | 'imported' | 'card' | 'note';
 
 export interface ResolvedLink {
   link: Link;
@@ -70,15 +64,17 @@ export function resolveLink(link: Link): ResolvedLink {
     return { link, kind: 'card', label, tags: [], recency: link.updatedAt, entry: null, box, boardEntry: entry };
   }
 
-  // An entry target: a board, or (today) 'page' for everything else — see
-  // the RailKind comment above for why the finer split isn't made here.
+  // An entry target: board / imported / page — see the RailKind comment.
   if (!entry) {
     return { link, kind: 'page', label: 'Removed page', tags: [], recency: link.updatedAt, entry: null, box: null, boardEntry: null };
   }
   const isBoard = entry.pageType === 'board';
+  // Fable, 2026-09-24: Board = pageType 'board'; Imported = `importedAt` set
+  // (the writer's own imported drafts); everything else = Page.
+  const kind: RailKind = isBoard ? 'board' : entry.importedAt ? 'imported' : 'page';
   return {
     link,
-    kind: isBoard ? 'board' : 'page',
+    kind,
     label: isBoard ? boardName(entry.text, 'Untitled board') : firstLine(entry.text ?? ''),
     tags: entry.tags ?? [],
     recency: link.updatedAt,
@@ -95,7 +91,7 @@ export function sortByRecency(items: ResolvedLink[]): ResolvedLink[] {
   return [...items].sort((a, b) => b.recency.localeCompare(a.recency));
 }
 
-const KIND_ORDER: RailKind[] = ['page', 'board', 'card', 'note'];
+const KIND_ORDER: RailKind[] = ['page', 'imported', 'board', 'card', 'note'];
 
 export function sortByKind(items: ResolvedLink[]): ResolvedLink[] {
   return [...items].sort((a, b) => {
