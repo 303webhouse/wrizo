@@ -8902,6 +8902,9 @@ WORDING, which flattens an asymmetry:**
 unused one.** *(That is a fact for the double pass, not a ruling: whether CW2's spine is the answer, or
 is the wrong shape, is PLAN DESK's to argue.)*
 
+**✓ QUESTION (3) RESOLVED 2026-09-22 — Fable accepts chat 1's correction and records it as FABLE's ERROR.**
+See *FOUR ERRORS IN THE REPORT*, below. Questions (1) and (2) stand as put.
+
 ## THREE QUESTIONS PUT TO NICK — NOT REVERSALS — 2026-09-22
 
 **The report's own framing, verbatim:** *"Nick asked for what's deficient, and some findings press on his
@@ -8941,6 +8944,10 @@ type to date ordering.** What the record actually holds:
 Journal is a Book-type board* — **that no line in the ledger makes.** **It still goes to Nick, but as
 what it is: a question about an UNSPECIFIED ordering and an implementation default, not a challenge to a
 ruling he gave.** *(Stating it as a ruling would invite him to overturn something he never said.)*
+
+**✓ SCOPED, THEN LIFTED — 2026-09-22. Scoped:** Duplicate (185) IN, right-click menu (186) OUT; 172's
+IMMUTABILITY CLAUSE and 144's POPULATION QUESTION paused; 169, 166, Shelf/Trash rows, 177–179 and 108/143
+continue. **Then LIFTED the same day by Nick's architecture choice — see *CONSERVATIVE CHOSEN*, below.**
 
 ## THE PAUSE — PLAN DESK, BOARD-STRUCTURE DESIGN — 2026-09-22
 
@@ -9006,7 +9013,163 @@ claims. **What chat 1 verified with its own hands is marked as such** (the Book-
 careful reader's work.** *(Said plainly because the distinction is exactly what this desk's record is
 for: a claim that survived an attempt to kill it and a claim nobody attacked are not the same claim.)*
 
-Registry: next free **187**.
+## NICK's WORD — THE SPLASH, THE FIVE ANSWERS, THE ARCHITECTURE, THE LAYOUT — PRIMARY TEXT, VERBATIM — 2026-09-22
+
+**Five messages, his own words, read from a plain file and proved byte-identical per part before writing.**
+Typos and spacing are his (the triple hyphen in the layout text; `1)`/`2)`/`3)` as he numbered them).
+
+**A · THE SPLASH**
+> Yeah, I think so. Let's do it. And I would like the opening splash screen to be at most 1/5 the size
+> of the screen with the regular app interface blurred out in the background.
+
+**B · THE FIVE ANSWERS**
+> 1. I'm not entirely sure what I'm looking at. Is this a completely new kind of board UI, or am I not
+> seeing the UI but the architecture behind the UI? 2. Approve 3. Yes 4. Drop it 5. Yes
+
+**C · THE ARCHITECTURE CHOICE**
+> What if we make a Wrizo v2 that uses the conservative architecture that will allow me to experiment
+> with this to see what's better and what I think has been lost from the original design?
+
+**D · THE LAYOUT**
+> 1) Good 2) I would be open to a new menu on the far right-hand side as a parallel to the current
+> left-hand rail that lists things like cited sources, related chapters/boards/cards, etc. Let's think
+> of it this way for v2: The left-hand rail is the overall organization and options for everything the
+> User is writing or could want to write/organize. The right-hand rail is for all of the page-specific
+> sources, plans, resources, etc. The two-hand strips stay the same---the right for text styling,
+> bullets, and whatever options a writer might need to present text the way they want it to look; the
+> right-hand is the AI tutor + app automation that unblocks the writer
+
+**E · EXPERIMENTS**
+> 3) Experiments inside the real app approved
+
+## CONSERVATIVE CHOSEN — THE ARCHITECTURE PAUSE LIFTS — 2026-09-22
+
+**Nick's own words (C above) are the ruling: a Wrizo v2 on the CONSERVATIVE architecture, so he can
+experiment and see "what's better and what I think has been lost from the original design."**
+
+**THE ARCHITECTURE PAUSE LIFTS.** Its paused items — **Duplicate (185), 172's IMMUTABILITY CLAUSE, and
+144's POPULATION QUESTION** — **go to PLAN DESK to answer UNDER CONSERVATIVE.**
+
+*(The pause's full scope, for the record of what it was: 185 IN because a duplicated board's contents
+could not be settled before reference-vs-copy; 186 OUT because it gains verbs under either answer and
+loses none; 172's TYPE FIELD ITSELF proceeded while its immutability clause paused; 169, 166, Shelf/Trash
+rows, 177–179 and 108/143 never stopped. **It held for part of one day.**)*
+
+## NICK's FIVE ANSWERS — FILED BY SUBJECT — 2026-09-22
+
+| # | his word | subject | filed as |
+| --- | --- | --- | --- |
+| 1 | *"I'm not entirely sure what I'm looking at..."* | the architecture mock | **A QUESTION, answered by Fable** — the mock demonstrates the ARCHITECTURE, not a proposed screen; its three-column layout is SCAFFOLDING |
+| 2 | *"Approve"* | the Experts' presets | **APPROVED as TUTOR named them — under item 165** |
+| 3 | *"Yes"* | the beat sheet's name | **SHIPS UNDER A GENERIC NAME — "Save the Cat!" is a trademark** |
+| 4 | *"Drop it"* | locked pages | **DROPPED. No item; not built.** |
+| 5 | *"Yes"* | versions | **A UNIVERSAL FEATURE — ITEM 189 opens** |
+
+**THE PRESETS, APPROVED AS NAMED (under item 165):** **Storytelling** — Three-Act · The Fifteen Beats ·
+The Hero's Journey. **Screenwriting** — Feature Three-Act with page gates · the Sequence Method · TV
+Pilot. **Outline** — Traditional · Mind Map · "From My Pages" (the reverse outline).
+
+## FOUR ERRORS IN THE THREE-COMMITTEES REPORT — 2026-09-22
+
+**1 · "THE BOOK TYPE ORDERS BY DATE" — FABLE's ERROR, as chat 1 found.** Fable INFERRED it in the report
+from a display clause, 3c's deferral, and the Journal's "Written" — **no line in the ledger says it.** It
+goes to Nick, IF AT ALL, as a question about an ordering he left UNSPECIFIED.
+
+**2 · THE PDF-IS-NOT-AN-IMAGE LINE** · **3 · THE COPY-PHRASING** · **4 · 165's MISSING BOOK AMENDMENT** —
+**all three caught by TUTOR.** *(Recorded as named; chat 1 has not independently re-derived these three,
+and says so rather than implying it checked them.)*
+
+**CHAT 1's STANDING DISTINCTIONS ARE CONFIRMED: 3b IS FOUNDER WORD; COPY-ONLY IS A DESK RULING HE
+RESOLVED IN 3B.**
+
+## NEW ITEMS — 2026-09-22
+
+**ITEM 187 — THE SPLASH SCREEN (TOOLS).** Nick's word (A above): **at most 1/5 THE SIZE OF THE SCREEN,
+with the regular app interface BLURRED OUT behind it.** His hand-drawn sketch, **linework isolated by
+Fable, BRASS ON TEXT (confirmed)**; assets at `C:\Users\nickh\Downloads\wrizo-sketch-for-dark-theme.png`
+and `...-light-theme.png` — **both confirmed present by chat 1 (298,066 and 297,901 bytes).**
+
+**ITEM 188 — CHAPTER ORDER IS NOT STORED.** **Chat 1's own measurement, on disk, now an item so it is not
+rediscovered:** binder pages have **NO ordering field**; `getBinderPages` sorts `updatedAt` DESC,
+`ProjectHome` and the export sort `createdAt` ASC — **and `pageExport.ts` names the divergence itself.**
+**A NOVELIST CANNOT REORDER CHAPTERS, AND ONE SURFACE DISAGREES WITH THE OTHER TWO.** **It is the
+committees' convergence 1 IN THE CODE.** **ROUTING WAITS on the architecture answer** — the promoted
+spine answers it.
+
+**ITEM 189 — VERSIONS.** Nick's "Yes": **keeping old drafts across every writing form — a UNIVERSAL
+feature, not a genre one.**
+
+**ITEM 190 — EXPERIMENTS (inside the real app).** Nick: *"Experiments inside the real app approved."* **A
+SETTINGS SECTION, ONE SWITCH PER EXPERIMENT, OFF BY DEFAULT, and each experiment's data HIDDEN — NEVER
+DELETED — when switched off.**
+
+**ITEM 191 — THE RIGHT RAIL.** Page-specific **sources, plans, resources, related chapters/boards/cards**
+— a parallel to the left-hand rail. From Nick's layout text (D above).
+
+**ITEM 192 — RECORDS** (characters, sources) — **a structured record with fields, distinct from a page of
+prose.** Named as a first experiment; **no existing item held this subject, so it takes a number** (chat
+1's ratified rule).
+
+**ITEM 193 — PARAGRAPH ANCHORS** (quote / claim / note / citation) — **ARCH-Q2's paragraph identity.**
+Named as a first experiment; **new subject, so a new number.**
+
+**THE FIRST EXPERIMENTS, FILED BY CHAT 1's NUMBERING RULE** *(a new subject gets a number; a ruling that
+amends an existing item goes under it)*: **the board sets the chapter order → UNDER ITEM 188** (the
+chapter-order item, already open); **records → ITEM 192** (new); **versions → UNDER ITEM 189** (already
+open); **paragraph anchors → ITEM 193** (new).
+
+**⚠ ONE MIGRATION WAVE, REVIEWED AS ONE BATCH:** the **SCHEMA-BEARING** experiments — **chapter order
+(188), records (192), versions (189), anchors (193)** — ride **ONE migration wave with item 136's TITLES
+and 172's TYPE FIELD, where their S0s allow.** **Fable reviews it as ONE batch.** **STANDING CONSTRAINT
+UNCHANGED: any schema STOPS at chat 1 and goes to Nick** — an S0 may establish that a field costs no
+column, but a column is never a builder's call.
+
+## ⚠ THE LAYOUT — THE TEXT AS GIVEN, THE READING AS FABLE's — 2026-09-22
+
+**Nick's layout text is recorded VERBATIM at D above. FABLE FLAGS A READING, PENDING NICK's ONE WORD, and
+it is recorded AS FABLE's, not as his meaning:** in *"The two-hand strips stay the same---the right for
+text styling, bullets... the right-hand is the AI tutor + app automation"*, **the FIRST "the right" reads
+as LEFT** — the styling strip is on the left today, and the second clause names the right as the Tutor's.
+
+**CHAT 1 DID NOT CONFIRM THAT FROM THE CODE.** A quick search of `index.css` and the components did not
+settle which hand carries styling versus the Tutor in the time available; **chat 1 states that as a limit
+rather than dressing an unchecked reading as verified.** **Nick's one word settles it either way.**
+
+**WHAT IS NOT IN QUESTION, from the same text:** *"The left-hand rail is the overall organization and
+options for everything the User is writing or could want to write/organize. The right-hand rail is for
+all of the page-specific sources, plans, resources, etc."* — **that is item 191's charter, in his own
+words.** **And "1) Good" approves what it answers.**
+
+## FABLE's DEFAULTS ON FOUNDER SILENCE — VETOABLE, NOT FOUNDER TEXT — 2026-09-22
+
+**Marked as FABLE's DEFAULTS. None of these is Nick's word; each stands only until he says otherwise:**
+- **A blank page may still become a screenplay** — FIX's provisional build stands.
+- **"Pages" everywhere, Flux included** (item 178).
+- **A tablet carry cancels by tapping anywhere that isn't a drawer** (item 180).
+- **Journal images use proper storage — A SCHEMA QUESTION, riding with 136's batch** (item 181).
+- **Draft + typewriter = the bare menu** (INK, already built).
+- **The screenplay typewriter returns WITH ITS ENGINE; the switch stays hidden until then** (INK, already
+  built).
+
+*(Recorded this way deliberately: two of the six are ALREADY BUILT, so a later reader could mistake a
+default for a ruling. The distinction is the record's job.)*
+
+## MERGES AND THE BOX — 2026-09-22
+
+**Merged at `13b5289`, all three verified docs-only (0 non-docs files each), trial merges clean:**
+- **`plan-multi-board` @ `641f728`** — **MERGED as the record of work Nick has already seen; a design doc
+  is not a build, and holding it would leave his mock without its record.** **MARKED: HELD IN THE
+  ARCHITECTURE PAUSE** *(which has since lifted — the mark records what it was filed under).*
+- **`plan-architecture-pass` @ `47d0331`** — the double pass and its mock.
+- **`item84/tutor-menus` @ `f1f6fa2`** — TUTOR's committees/experts double pass.
+
+**PW: its corrected tree `1bda06d` is STILL NOT ON `origin`** (origin sits at `78a8329`). **PW is told to
+PUSH** — *an offer that exists only on your disk is not yet an offer.* Its grant stands.
+
+**THE SPLASH (187) AND THE BUG-FIX QUEUES ARE UNAFFECTED by any of the above.**
+
+Registry: next free **194**.
+
 
 
 
