@@ -25,6 +25,7 @@
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 
@@ -36,7 +37,10 @@ const BASE = process.env.EXP1_PROOF_BASE || 'origin/main';
 const require = createRequire(join(repo, 'apps/server/package.json'));
 const ts = require('typescript');
 
-const tmp = join(here, '.exp1-b-proof');
+// Transpile output goes to the OS temp dir, never into the repo: `railway up`
+// uploads the working directory, so a build artifact left in the tree is a
+// stray that can ship. (It was committed once; that is why this says so.)
+const tmp = join(tmpdir(), 'wrizo-exp1-b-proof');
 mkdirSync(tmp, { recursive: true });
 
 function transpileToModule(tsSource, name) {
