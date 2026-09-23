@@ -601,6 +601,13 @@ await withHarness(async (app) => {
   // WITHDRAWAL of a capability he named: ITEM 183, with NICK himself, because a
   // disagreement between two of his own rulings is his to resolve. 171-A does
   // not wait on his answer.
+  // ITEM 183 — RESOLVED 2026-09-22: the control stays ABSENT on this surface and
+  // the engine is not wired inside 171-A. Draft regained the typewriter (default
+  // off) in the same amendment, and a screenplay is Draft-posture — but this
+  // surface's engine was removed for a MEASURED defect (SC-V4: the start-offset
+  // pad pushing a fresh script page's caret to 38.2% of the box), so offering
+  // the option here again without it would restore the lie. R12's engine
+  // hook-up is its own item. This park stands until then.
   // ⚠ NOTE WHAT THIS DOES TO THIS FILE'S OWN HISTORY: the check R12 parked
   // just above — SC1 S3's original "the option does not present itself here" —
   // describes the product again. It is NOT un-parked (a parked original stays

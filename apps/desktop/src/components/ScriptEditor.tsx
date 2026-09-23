@@ -1156,9 +1156,20 @@ export function ScriptEditor({ id }: { id: string }) {
              grounds that his LATEST words govern (item 127's own F1 default):
              the typewriter is now Free Write's, text-only, inkless, and a
              screenplay's posture is Draft.
-             THIS IS ITEM 183, and it is with NICK — not with a lane, because
-             it is a disagreement between two of his own rulings (R12 and 171).
-             171-A does not wait on his answer. If
+             THIS IS ITEM 183, and it was with NICK — a disagreement between
+             two of his own rulings (R12 and 171).
+             ITEM 183 — RESOLVED 2026-09-22 (Fable, on the amendment): the
+             control STAYS ABSENT here, and the engine is NOT wired inside
+             171-A. The amendment gives Draft the typewriter back with its
+             default OFF, and a screenplay is Draft-posture — but this surface
+             stopped calling useTypewriterFade for a MEASURED defect (SC1 S3:
+             the static start-offset pad was the root of SC-V4, an
+             unconditional 183px pushing a fresh script page's caret to 38.2%
+             of the box). Restoring the option without the engine would put
+             back the lying affordance; restoring the engine is R12's own
+             flagged hook-up, and it is ITS OWN ITEM, not a rider on this one.
+             So: absent here, by ruling, until that item lands.
+             If
              he wants it back, the answer is R12's flagged engine hook-up, not
              this prop — and `typewriterAvailable` is the one line to revisit.
              ab2.mjs's R12 successor is PARKED with this same lineage. */

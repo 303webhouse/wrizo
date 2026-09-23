@@ -39,6 +39,7 @@
 //   T11 the two values do not leak into each other (Draft's own, Free Write's
 //       shared) — the whole reason the amendment needs a second stored value
 //   T12 the page's text-start furniture leaves when INK is selected
+//   T13 the BARE MENU: Draft's tools empty while its typewriter is on
 //
 // WHAT THIS FILE DOES NOT COVER: the script surface, whose own assertions live
 // in ab2.mjs, fx3.mjs and sc1.mjs (parked and succeeded there, where they are);
@@ -401,6 +402,55 @@ await withHarness(async (app) => {
   const fwAfterDraftOn = await twDom(app);
   ok('T11: and Free Write is unchanged by Draft\'s choice — it still runs on its own value, so the writer who turned the typewriter on in Draft did not quietly change the surface they were not on',
     fwAfterDraftOn === 'true', JSON.stringify({ fwAfterDraftOn }));
+
+  // ==========================================================================
+  // T13 — THE BARE MENU (reading A, ruled 2026-09-22). Nick: turning the
+  // typewriter on in Draft "should make the tool menu options revert to what's
+  // available in Free Write excluding any INK options" — and Free Write with
+  // the typewriter ON is item 127's ruled roster, "Typewriter on/off … nothing
+  // else". So Draft's tools body empties, and fills again when it goes off.
+  //
+  // Reading B (Free Write's literal roster minus ink) was REFUSED because
+  // `forwardLock` is journal-only and not read in Draft: it would have mounted
+  // a dead toggle, the exact defect this ticket exists to close.
+  // ==========================================================================
+  await freshPage(app, W1, H1);
+  await toMode(app, 'draft');
+  await sleep(300);
+  const tools = () => app.evalJs(`(() => {
+    const secs = [...document.querySelectorAll('.wz-sliver-section')];
+    const heads = secs.map(x => ((x.querySelector('.wz-sliver-h') || {}).textContent || '').trim()).filter(Boolean);
+    return { sections: secs.length, heads, structure: !!document.querySelector('.wz-sliver-structure-zone') }; })()`);
+  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await sleep(300);
+  const toolsOff = await tools();
+  // Turn Draft's typewriter ON through the foot's own switch.
+  await app.evalJs(`(() => { const row = document.querySelector('.wz-sliver-instruments-row');
+    const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label') || '').startsWith('Typewriter'));
+    if (b) b.click(); })()`);
+  await sleep(220);
+  await app.evalJs(`(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')];
+    const row = rows.find(r => ((r.querySelector('span') || {}).textContent || '') === 'Typewriter');
+    if (!row) return; const on = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on'));
+    if (on) on.click(); })()`);
+  await sleep(500);
+  const toolsOn = await tools();
+  const domOn = await twDom(app);
+  ok('T13: (precondition) with Draft\'s typewriter OFF the tool menu carries its Draft sections — Structure among them, so there is something to empty',
+    toolsOff.structure === true && toolsOff.sections > 0, JSON.stringify(toolsOff));
+  ok('T13: turning the typewriter ON in Draft EMPTIES the tool menu — no Structure zone, no format bar, no page-kind chips: "the tool menu options revert to what\'s available in Free Write", which with the typewriter on is nothing but the typewriter itself (item 127\'s roster)',
+    domOn === 'true' && toolsOn.structure === false && toolsOn.sections === 0, JSON.stringify({ domOn, toolsOn }));
+  // ...and back, because a menu that could not return would be a trapdoor.
+  await app.evalJs(`(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')];
+    const row = rows.find(r => ((r.querySelector('span') || {}).textContent || '') === 'Typewriter');
+    if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on'));
+    if (off) off.click(); })()`);
+  await sleep(500);
+  const toolsBack = await tools();
+  ok('T13: and turning it OFF again brings Draft\'s own tools back — the menu is emptied by a setting, never destroyed by it',
+    toolsBack.structure === true && toolsBack.sections === toolsOff.sections, JSON.stringify({ toolsOff, toolsBack }));
+  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await sleep(200);
 
   // ==========================================================================
   // T12 — THE PAGE'S TEXT-START FURNITURE LEAVES WITH THE TYPEWRITER. Nick:

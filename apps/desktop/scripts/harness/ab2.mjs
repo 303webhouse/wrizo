@@ -1200,8 +1200,13 @@ if (process.env.HARNESS_PARKED === '1') {
   // flagged its engine hook-up as a later brief); 171 says the typewriter is
   // Free Write's alone, text-only and inkless, and absent from Draft and
   // Revise — which a screenplay's posture is. His latest words govern (item
-  // 127's own F1 default), and the withdrawal is ITEM 183 — with NICK, since it
-  // is a disagreement between two of his own rulings. 171-A does not wait.
+  // 127's own F1 default), and the withdrawal is ITEM 183.
+  // RESOLVED 2026-09-22: the control stays ABSENT here. Draft regained the
+  // typewriter (default off) in the same amendment and a screenplay is
+  // Draft-posture — but this surface's engine was removed for a MEASURED defect
+  // (SC-V4: the start-offset pad pushing a fresh script page's caret to 38.2% of
+  // the box), so the option cannot return before R12's engine hook-up, which is
+  // its own item. This park stands until then.
   pok('PARKED (was "SC1 S3 [R12 successor]: the typewriter option IS PRESENT on a screenplay page") — ITEM 171-A: it is not offered here any more. This WITHDRAWS a capability Nick named in R12; if he wants it back the answer is R12\'s own flagged engine hook-up, not this line',
     Array.isArray(PARK171.scriptFootLabels) && !PARK171.scriptFootLabels.includes('Typewriter'),
     JSON.stringify({ scriptFootLabels: PARK171.scriptFootLabels, gearRow: PARK171.gearRow }));

@@ -52,6 +52,7 @@ import { setFirstRunGateActive } from '../store/firstRunGateActive';
 import { useMonotonicWordCount, FirstRunVeil, FirstRunGateBanner, FirstRunGlow } from '../components/FirstRunGate';
 import { UnlockCeremony } from '../components/UnlockCeremony';
 import type { ThemeId } from '../store/theme';
+import { useWritingSettings } from '../store/writingSettings';
 // ITEM 171-A — `seedTypewriterDefault`, `DRAFT_TYPEWRITER_LINE_THRESHOLD` and
 // `countLineEquivalents` left this file with the Draft-open seed they served.
 // The store still exports them; see writingSettings.ts, where they are marked
@@ -184,6 +185,10 @@ function PageEditorView({ id }: { id: string }) {
   // remembered INK would open unable to type, which is the wrong failure for a
   // writing app, and one word reverses this if Nick wants it remembered.
   const [instrument, setInstrument] = useState<'text' | 'ink'>('text');
+  // ITEM 171-A AMENDED — SUBSCRIBED, not read once: the bare-menu state below
+  // has to change the moment the writer flips Draft's typewriter, and a bare
+  // `typewriterValueFor` read would not re-render this page when it did.
+  const writingSettings = useWritingSettings();
   // The page's ink, seeded from the row. Held in state (not read from `entry`
   // each render) for the same reason the Journal holds it: the stratum owns
   // the paint loop and a re-seed mid-stroke would fight it.
@@ -981,6 +986,13 @@ function PageEditorView({ id }: { id: string }) {
       : mode === 'drafting'
         ? {
             kind: 'draft',
+            // ITEM 171-A AMENDED (Nick, 2026-09-22) — with Draft's typewriter
+            // ON the tool menu "reverts to what's available in Free Write",
+            // which by item 127's roster is the typewriter and nothing else. So
+            // the tools body empties; the foot stays, because Free Write has a
+            // foot too. `typewriterAvailable` carries the ink rules, so a Draft
+            // page that HAS ink cannot reach this state at all.
+            bare: typewriterAvailable && writingSettings.typewriterDraft,
             structure: 'prose',
             onSwitchStructure,
             format: {

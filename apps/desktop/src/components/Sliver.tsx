@@ -120,6 +120,21 @@ export type SliverContent =
       // walkthrough opened item 114 out of the DRAFT structure redesign; if he
       // wants the row on screenplay too, it is four props and a default, and
       // the offer says so.
+      /**
+       * ITEM 171-A AMENDED (Nick, 2026-09-22) — THE BARE MENU. True when this
+       * Draft page's typewriter is ON: the tools body renders NOTHING, because
+       * "the tool menu options revert to what's available in Free Write", and
+       * Free Write with the typewriter on is item 127's ruled roster —
+       * "Typewriter on/off … nothing else".
+       *
+       * The KIND stays 'draft' deliberately. The foot's typewriter control
+       * reads and writes the value THIS MODE owns, and it decides which by
+       * `content.kind`; handing the sliver an 'empty' or 'freewrite' content to
+       * blank the body would silently move Draft's switch onto Free Write's
+       * stored value. The body is what the ruling empties, not the surface's
+       * own identity.
+       */
+      bare?: boolean;
       pageKind?: PageKindSetting;
       onPickKind?: (next: PageKindSetting) => void;
       styleGuide?: StyleGuide;
@@ -564,7 +579,7 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           (TypewriterToggle's own aria-label, WritingIncentives.tsx,
           unchanged) even though no visible text remains anywhere. */}
 
-      {content.kind === 'draft' && content.format && (
+      {content.kind === 'draft' && !content.bare && content.format && (
         <div className="wz-sliver-section">
           <div className="wz-sliver-h">{t('railFormat')}</div>
           {/* onMouseDown preventDefault — a sliver button is OUTSIDE the
@@ -635,7 +650,11 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           and reads its ABSENCE as the proof the picker is gone; reusing the
           name made a live assertion false without any ruling having changed.
           Caught by the suite. The picker's name stays retired. */}
-      {content.kind === 'draft' && (
+      {/* ITEM 171-A AMENDED — `!content.bare`: with Draft's typewriter ON the
+          tools body is empty (reading A, ruled). Structure, the format bar and
+          item 114's page-kind chips all go together; what remains is the foot,
+          which Free Write carries too. */}
+      {content.kind === 'draft' && !content.bare && (
         <div className="wz-sliver-section wz-sliver-structure-zone">
           <div className="wz-sliver-h">{t('railStructure')}</div>
 
