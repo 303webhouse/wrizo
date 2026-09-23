@@ -9110,6 +9110,10 @@ DELETED — when switched off.**
 prose.** Named as a first experiment; **no existing item held this subject, so it takes a number** (chat
 1's ratified rule).
 
+**⚠ RE-SCOPED 2026-09-22 — ANCHORS ARE SPANS, NOT PARAGRAPHS.** Nick: *"writers often use only partial
+quotes or the User may want to select a phrase."* **A paragraph identity is too coarse; the anchor is the
+SELECTED SPAN.** See *ANCHORS ARE SPANS*, below. The line that follows is kept as written.
+
 **ITEM 193 — PARAGRAPH ANCHORS** (quote / claim / note / citation) — **ARCH-Q2's paragraph identity.**
 Named as a first experiment; **new subject, so a new number.**
 
@@ -9123,6 +9127,11 @@ open); **paragraph anchors → ITEM 193** (new).
 and 172's TYPE FIELD, where their S0s allow.** **Fable reviews it as ONE batch.** **STANDING CONSTRAINT
 UNCHANGED: any schema STOPS at chat 1 and goes to Nick** — an S0 may establish that a field costs no
 column, but a column is never a builder's call.
+
+**✓ SETTLED 2026-09-22 BY NICK's OWN TEXT — Fable's reading was right, and chat 1's refusal to confirm it
+from code cost nothing.** His [2]: *"the left-hand tools strip menu should allow the User to link sources"*
+and *"One way to think of the left-hand strip menu is that every clickable tool in it..."* — **THE TOOLS
+STRIP IS ON THE LEFT.** See *THE LEFT-STRIP LAW*, below. The section that follows is kept as written.
 
 ## ⚠ THE LAYOUT — THE TEXT AS GIVEN, THE READING AS FABLE's — 2026-09-22
 
@@ -9143,6 +9152,10 @@ words.** **And "1) Good" approves what it answers.**
 ## FABLE's DEFAULTS ON FOUNDER SILENCE — VETOABLE, NOT FOUNDER TEXT — 2026-09-22
 
 **Marked as FABLE's DEFAULTS. None of these is Nick's word; each stands only until he says otherwise:**
+- **✗ OVERTAKEN 2026-09-22 BY FOUNDER WORD — the default below is SUPERSEDED.** Nick: *"it's fine to
+  expect a user to select into writing a screenplay before they start one. If they want to 'convert'
+  something they've already written, they can always copy and paste it into a screenplay surface."*
+  **CONVERSION IS RETIRED ENTIRELY (item 184); there is no in-place conversion, blank or otherwise.**
 - **A blank page may still become a screenplay** — FIX's provisional build stands.
 - **"Pages" everywhere, Flux included** (item 178).
 - **A tablet carry cancels by tapping anywhere that isn't a drawer** (item 180).
@@ -9168,7 +9181,202 @@ PUSH** — *an offer that exists only on your disk is not yet an offer.* Its gra
 
 **THE SPLASH (187) AND THE BUG-FIX QUEUES ARE UNAFFECTED by any of the above.**
 
+## NICK's THREE TEXTS — THE PAGE IS PRIMARY — PRIMARY TEXT, VERBATIM — 2026-09-22
+
+**His own words, read from a plain file and proved byte-identical per part before writing.** Typos and
+spacing are his (*"Cntrl + N"*; the `|` he used to separate the two halves of [2]).
+
+**[1] THE DESKS' ANSWERS, AND THE REVISION**
+> Response to the desks' answers: A. Approved B. So the Experts want the app to be able to fact-check
+> claims being made in the text? This would have to be an AI-connected feature, right? Because the
+> grammar/spellcheck "error-checking" is something that should be hard-coded into the app (or pulled
+> from a reliably available open source repo of some kind). I agree that the app should not notice a
+> writer is stuck or make suggestions unprompted. C. I don't know what's meant here by "experiments."
+> But I have a revision that may be relevant: Right now, it seems that a whole sentence or paragraph
+> gets highlighted and can then be attached to various "cards" or "boards." This won't work because
+> writers often use only partial quotes or the User may want to select a phrase and create a card that
+> explains or tracks its use. It seems like the best way to incorporate all of these connections from
+> the in-line page text to external sources, cards, or other sections is by highlighting and
+> right-clicking to bring up a menu of options that includes basic styling (bolding, sizing, etc.) as
+> well as the option to create or connect the highlighted section to the external surfaces. Let's use
+> the right-hand rail for displaying supplemental surfaces whenever possible and the right-click menu
+> for directly connecting or modifying text. A principle that we need to get back to is that the text,
+> or page, is primary. We want a writer to be able to start blasting out text, realize they want to
+> come back to something, make a quick note of it that gets seamlessly tracked, noted, and visible for
+> future expansion and organization. For writers who plan extensively before writing anything, they
+> should be able to build out their boards and plans without ever writing a single paragraph on a Page
+> surface, but when they go to start writing, they need to be able to start where they want and not
+> lose the organization they've put painstaking effort into. Every architectural choice we make needs
+> to respect both pantsers and plotters without forcing either writer to go down a set path from the
+> outset. That is the hard problem we're trying to solve here
+
+**[2] THE FIVE, AND THE CONSEQUENCES**
+> 1. Yes, but one quick exception: Screenplays. I think it's fine to expect a user to select into
+> writing a screenplay before they start one. If they want to "convert" something they've already
+> written, they can always copy and paste it into a screenplay surface. 2. Confirmed 3. Yes, but one
+> other place also. Once a block of text is linked, the linked text should be clickable and the linked
+> external sources should appear in the right-hand rail and be removable (the right-click menu should
+> also have a Remove option similar to the way links can be added/removed to text in WordPress, say).
+> Also, the left-hand tools strip menu should allow the User to link sources, etc. when text is
+> highlighted (just like with bolding). One way to think of the left-hand strip menu is that every
+> clickable tool in it (other than INK or settings) is something that happens to a portion of the page
+> that is selected (or in the case of an indent or bullet, something that happens where the cursor is
+> currently positioned). 4. That seems good for now. The external sources should be listed when
+> nothing in particular in the text has been clicked on. This list should be sortable by recency,
+> kind, and tag. When the User clicks on a linked portion of text, only the source(s) linked. The User
+> should then be able to double click on the source's thumbnail to bring up a popup of that source (if
+> a card, the card popup. If a page, a full-sized, scrollable page, etc.) This would be a good place
+> to have the Architects do a pass on the best way to utilize the right-hand rail based on my
+> suggestions. 5. Yes | As for your consequences: A) Yes. B) Agreed. How about "Cntrl + N" and a "Note
+> This" option in the right-click menu?
+
+**[3] PUSH IT**
+> All confirmed. Let's push what we've come up with so I can start trying it out. Should I relay all
+> of the text blocks that you haven't received a response back from yet?
+
+## CANON — THE PAGE IS PRIMARY — 2026-09-22
+
+**His words, and they are canon:**
+
+> A principle that we need to get back to is that the text, or page, is primary. We want a writer to be
+> able to start blasting out text, realize they want to come back to something, make a quick note of it
+> that gets seamlessly tracked, noted, and visible for future expansion and organization. For writers who
+> plan extensively before writing anything, they should be able to build out their boards and plans
+> without ever writing a single paragraph on a Page surface, but when they go to start writing, they need
+> to be able to start where they want and not lose the organization they've put painstaking effort into.
+> **Every architectural choice we make needs to respect both pantsers and plotters without forcing either
+> writer to go down a set path from the outset. That is the hard problem we're trying to solve here.**
+
+*(It is a TEST, not a slogan: any design that makes one of the two start somewhere they did not choose
+fails it. It arrives the day Conservative was chosen, and it governs what Conservative is FOR.)*
+
+## WHAT THE THREE TEXTS RULE — 2026-09-22
+
+- **ONE PANEL COLUMN PER SIDE — APPROVED** ([1] A; Fable's reading).
+- **GRAMMAR AND SPELLING ARE NEVER AI** — built in, or from a reliably available open-source repo. **NO
+  STALL DETECTOR** — his: *"the app should not notice a writer is stuck or make suggestions unprompted."*
+  **CLAIM-CHECKING, split by what it needs:** *"has a source"* and *"matches the source"* need NO AI;
+  only *"is it true"* would, **and that waits for him.**
+- **ANCHORS ARE SPANS** — item 193 re-scoped (marked in place). **Linked text is CLICKABLE. REMOVE
+  UNLINKS ONLY, NEVER DELETES** — confirmed by [3]. *(His WordPress analogy is the model: a link comes
+  off the text without the text going with it.)*
+- **THE RIGHT-CLICK MENU (item 186) IS THE DOOR** for connecting or modifying text, and carries **"Note
+  This"** and **Remove**. *(186 was OUT of the architecture pause; it is now load-bearing.)*
+- **THE RIGHT RAIL (item 191) DISPLAYS CONNECTIONS:** external sources listed when nothing is selected,
+  **sortable by RECENCY, KIND and TAG**; **clicking a linked span NARROWS the list to that span's
+  sources**; **double-clicking a thumbnail opens a popup** (a card opens the card popup; a page opens
+  full-sized and scrollable). **Nick asks the Architects for a pass on the rail from his suggestions.**
+- **166 GAINS AN EXCEPTION, in his words:** popups of connected surfaces opened FROM THE RAIL. *(The
+  no-popout-overlaps-the-page law now has three exceptions: the right-click menu, the card popup, and
+  these.)*
+- **FREE WRITE CONNECTS AND NOTES, NEVER STYLES.** *(Consistent with the analog law: the typewriter
+  offers no typeface, but it never stopped a writer marking what to come back to.)*
+- **SCREENPLAY: CHOSEN BEFORE STARTING. CONVERSION RETIRED ENTIRELY (item 184); COPY AND PASTE IS THE
+  PATH.** **This SUPERSEDES Fable's default of yesterday** (blank-page conversion), marked in place.
+- **THE NOTE KEY:** Nick proposed **Ctrl+N**; **it is technically impossible in a browser** — it opens a
+  window and a page cannot take it. **`Ctrl`/`Cmd`+`Enter` is the STAND-IN (confirmed); the desk finds the
+  final key.** *(Recorded as a constraint of the platform, not a rejection of his idea.)*
+
+## CANON — THE LEFT-STRIP LAW — 2026-09-22
+
+**His words:**
+
+> One way to think of the left-hand strip menu is that every clickable tool in it (other than INK or
+> settings) is something that happens to a portion of the page that is selected (or in the case of an
+> indent or bullet, something that happens where the cursor is currently positioned).
+
+**THE STRIP IS THE TOOLS STRIP, ON THE LEFT** — his [2] confirms Fable's earlier reading, which chat 1
+had declined to confirm from code. **It GAINS: Link · Note this · Make a card.** **Forward lock, goal,
+full screen and print sit behind ONE `Page settings` row (confirmed).**
+
+*(The law is a TEST for the strip, the way the page-is-primary canon is a test for the architecture: a
+tool that does not act on a selection or a caret position does not belong on it — which is why INK and
+settings are named as the exceptions rather than quietly tolerated.)*
+
+## EXPERIMENT 1 — "CONNECT FROM THE PAGE" — 2026-09-22
+
+**THE FIRST THING HE TRIES. ONE SWITCH** (under item 190's framework), and **A THIN WORKING SLICE, NOT
+FOUNDATIONS FIRST:**
+- **span anchors stored OUTSIDE `entry.text`** (item 193),
+- **the right-click menu** (item 186),
+- **the left strip's connect tools** (the left-strip law),
+- **the right rail's Linked list** (item 191).
+
+**FILED UNDER ITEM 190, WITH NO NEW NUMBER** — by chat 1's ratified rule, it is a composition of items
+186 / 190 / 191 / 193 plus the strip, not a new subject. *(Said explicitly so nobody opens a duplicate
+number for it later.)*
+
+**⚠ ITS ANCHORS TABLE SHIPS FIRST AND ALONE**, with the Experiments switch — **it does NOT wait for the
+full migration wave.** **The other schema experiments (188, 189, 192) still ride ONE wave with 136 and
+172.**
+
+**⚠ CHAT 1 STOPS ON THE SCHEMA, per the standing law, and hands it up rather than letting it pass:**
+Fable's block says *"Fable reviews the anchors schema."* **The standing constraint on this ledger is that
+ANY SCHEMA STOPS AT CHAT 1 AND GOES TO NICK** — Fable's review is in addition to that stop, not instead
+of it. **Nick's [3] says "All confirmed. Let's push what we've come up with so I can start trying it
+out."** **Chat 1 does not read a general "all confirmed" as the founder's word on a NEW TABLE.** **THE
+QUESTION, to Fable and Nick: does [3] cover the anchors table as a schema approval, or does the table
+still owe him its own stop?** **No table is built until that is answered.**
+
+**CHAT 1's PROPOSAL ON LANES (asked for; Fable and the desks may veto):**
+- **THE STORE — the anchors table, its read/write seam, and the span model — to FIX.** It owns
+  `persistence.ts`'s recent work, built item 170 against it, and the span anchor must survive an edit to
+  the text around it, which is a persistence problem before it is an interface one.
+- **THE INTERFACE — the right-click menu, the strip's connect tools, the rail's Linked list — to PW.** It
+  built the card/board transfer and the Plan hand's surfaces, and this is the same family of work: a
+  control that connects one surface to another.
+- **THE SWITCH — item 190's Experiments section in Settings — to TOOLS**, whose lane already holds the
+  harness and the settings-adjacent plumbing.
+- **PLAN DESK briefs it**, as ruled, and its brief should settle the boundary between the store's span
+  model and the interface before either lane starts. *(Chat 1's reason for splitting store from interface
+  across two lanes rather than one: the two halves fail differently — a lost anchor is data, a clumsy
+  menu is design — and the arc's own record says a lane that owns both tends to prove the half it
+  understands.)*
+
+## RATIFIED FROM PLAN DESK's v2 PASS, AND FOUR BANDS — 2026-09-22
+
+**RATIFIED:** **Duplicate's carry rules** · **172's middle path** · **144's population** · **versions in
+their own rows.** *(All four were paused items or their neighbours; they return answered under
+Conservative.)*
+
+> **EVERY COMMIT THAT CHANGES THE CERTIFIED TREE REACHES `origin` BEFORE THE PAIR RUNS.** (PW)
+
+> **AUTOMATION MAY PREPARE SILENTLY; IT MAY NOT SPEAK UNBIDDEN.** (TUTOR)
+
+> **SIZE A MARK BY ITS INK, NOT ITS CANVAS.** (TOOLS)
+
+> **A SPLASH NEVER EATS THE FIRST KEYSTROKE.** (TOOLS)
+
+*(TUTOR's line is the general form of Nick's own "the app should not notice a writer is stuck or make
+suggestions unprompted" — a desk band and a founder ruling arriving at the same sentence from two
+directions.)*
+
+## MERGES, MOCKUPS, AND ONE MISSING FILE — 2026-09-22
+
+**Merged at `a2b45c7`, both verified docs-only (0 non-docs), trial merges clean:** **`plan-v2-conservative`
+@ `c400203`** (the v2 conservative design) and **`item84/tutor-menus` @ `44cd0db`** (item 165's preset
+day-one contents; the right-strip automation pass).
+
+**FABLE's MOCKUPS:** `https://claude.ai/artifact/5ekkqSTXDAJvA4YqiWN4ZY` and
+`https://claude.ai/artifact/2WogxzEkDfFtkiSeH9Nx38`.
+
+**⚠ ONE OF THE TWO FILES IS NOT IN DOWNLOADS. CHECKED, not assumed:** `wrizo-three-writers.html` is
+**PRESENT (64,421 bytes)**; **`wrizo-page-first.html` is ABSENT** — the Downloads folder holds no file of
+that name. **The described-but-not-attached shape again**, and named as such under the relay law.
+**Requested.** *(The artifact link may still serve it; the FILE the block names is not there.)*
+
+## OPEN, AND NOT CHAT 1's TO ANSWER — 2026-09-22
+
+**Nick's [3] ends with a question to Fable:** *"Should I relay all of the text blocks that you haven't
+received a response back from yet?"* **Recorded as OUTSTANDING so it is not lost in the consolidation —
+it is Fable's to answer, and chat 1 notes only that a consolidated block which supersedes unreceived
+blocks cannot itself tell him which ones were unreceived.**
+
+**QUEUE UNCHANGED OTHERWISE. Experiment 1's lanes slot in on the proposal above.** **PW's corrected tree
+`1bda06d` is STILL NOT ON `origin`** — and PW's own band now names the rule it is standing on.
+
 Registry: next free **194**.
+
 
 
 
