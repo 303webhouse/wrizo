@@ -33,6 +33,8 @@ brief's lean; T5 keeps its 108 gate) · **BT-Q3** (both doors stay — the brief
 
 ## §1 · THE "＋" — no word on it, two things behind it
 
+> **⚠ §1's TWO-ROW TABLE AND ITS "READING FLAGGED" PARAGRAPH ARE SUPERSEDED BY §9 (three rows; Add Board = a NEW board inside, per his literal words). Kept as written below.**
+
 **The control** is a bare **"＋" beside the CURRENT board's tab** (the placement the tab-bar amendment §5(4)
 already took from his earlier words, unchanged). **No visible word.** **Its accessible name keeps stating
 the direction** (the standing law, and the only place the word survives): *"Add a board to Characters."*
@@ -224,3 +226,129 @@ Numbers continue the merged brief's S2 list; **each is a check by name.**
   drag (§3)**; *"dragging a tab anywhere (reserved for 169)"* **still holds.**
 - **Unchanged:** the stable row, the drawer's name as its label, `role=navigation`, condition boards
   excluded, colour, T5's 108 gate.
+
+---
+
+## §9 · SECOND AMENDMENT, 2026-09-24 night/late — the three rows, "beside", and Connect Board's recents
+
+> **Fable's rulings, and Nick's word (verbatim, relayed): *"2. Let's add a third option to "Connect Board"
+> with a toggle-open menu that lists all boards from recently opened to oldest."*** **This section
+> SUPERSEDES §1's two-row table and its "READING FLAGGED" paragraph** (both kept as written above).
+> **Recorded as relayed; chat 1's ledger entry governs if the two differ.**
+
+### 9.1 · THE "＋" MENU — three rows
+
+| row | does | direction |
+|---|---|---|
+| **Add Board** | creates a **NEW board inside this one** (born in this drawer, name field focused) | inside |
+| **New Board** | creates a **NEW board BESIDE this one — connected, not inside** | beside |
+| **Connect Board** | a **toggle-open list of ALL boards, most recently opened first**; picking one **connects it BESIDE this one** | beside |
+
+**Add Board / New Board are set to his LITERAL words** (Fable: *a default never overrides his words, even
+when the reading is cheap to swap*). **The reading §1 flagged — Add Board nests an EXISTING board — goes
+to Nick as the alternative, not the default.** **Its cost, stated once so it is a choice and not a
+surprise:** under the literal reading **the tabs have no path that nests an existing board into the
+current one** (the Plan menu's Connect Board runs the other way — the current board goes inside the
+chosen one — and he said to keep it; item 169's drag, 169-Q7(c), is a second route once that builds).
+
+### 9.2 · ⚠ "BESIDE, CONNECTED, NOT INSIDE" HAS NO STORED MEANING TODAY — MEASURED, HANDED UP
+
+**Checked against the data model (`types/index.ts`, `store/persistence.ts`):** the **only** board-to-board
+relations are **`page-pin` membership (a nest — inside/outside)** and **drawer membership
+(`projectId`)**. **The `'connection'` box is a hairline between two CARDS, not boards.** **There is no
+peer relation between two boards.** *"Connected", everywhere in the record so far, means the nest
+relation seen from either end (`getBoardsConnecting` = parents).* **So "beside, connected, not inside"
+names a thing the record cannot store — and a new peer relation is a column or a table: a SCHEMA STOP,
+chat 1 → Nick, not a builder's call.**
+
+**What CAN be built with zero schema — this desk's lean, offered so TOOLS is not stopped:**
+- **"Beside" = a remembered PAIR, per device**, the class item 169-Q9 already leans to (*"remembered,
+  client-local, the way a board's view is — BM1 S3"*, `wrizo-board-mode`'s own `localStorage` recipe).
+- **New Board** = a board **born in THIS DRAWER** (so it is a tab in the stable row at once — *the
+  drawer's row is where "beside" is already visible*), **plus** a remembered pair with the current board.
+  **It does NOT nest** and **does NOT travel**: the writer stays where they are; **a whisper says where
+  it went** (*"New board added beside Characters — open it from its tab."*). **Where item 169 has more
+  than one pane (§5's rule), it also opens in the next pane.**
+- **Connect Board** = the same **remembered pair** for the picked board (any drawer), opened in the next
+  pane where one exists. **It moves nothing between drawers and nests nothing.** *(Rejected: "beside" as
+  a drawer change for the picked board — that relocates another board, which is not a connection.)*
+
+**What the lean costs, said plainly:** the pair is **not synced** and **is lost with the device's storage**;
+**and until item 169 builds, "beside" is a tab and a whisper, not a second board on screen.** **If Nick
+means a LASTING link that follows him between devices, that is the schema stop — one yes/no:**
+*"Should two boards connected beside each other be remembered everywhere you sign in, or is
+remembering it on this device enough?"* **Default until he speaks: this device.**
+
+**The rival readings of his words, in their strongest form** (none built without his word):
+**(i)** a stored peer link (needs the schema stop above — the most literal reading of "connected");
+**(ii)** "beside" as **siblings under the current board's PARENT** (uses the existing nest relation, no
+schema — its cost: it does nothing for a top-level board and re-parents by side effect);
+**(iii)** the new board **contains** the current one (the Plan menu's Connect Board direction — the only
+existing relation that is "connected" and not "inside" *from the current board's seat*, and exactly what
+his phrase "not inside" argues against). **This desk leans to the lean above because it is the only
+reading a builder can start on today, not because it is the likeliest to be what he pictured.**
+**The unmeasured risk sits on this desk's reading:** nobody has shown him what "beside" looks like.
+
+### 9.3 · ⚠ "CONNECT BOARD" — TWO CONTROLS, ONE NAME, OPPOSITE DIRECTIONS (Fable's reading, flagged)
+
+**Fable reads "connect" as "connect BESIDE", and that reading is flagged here as Fable's, not his.**
+**The collision it creates:** **the Plan menu's existing Connect Board** (item 165, kept by his word) **puts
+the current page/board INSIDE the chosen one; the "＋" menu's Connect Board would put the chosen board
+BESIDE the current one.** **Same name, different act, one screen apart.** *(A second reading of his
+sentence: "add a third option TO Connect Board" could mean the existing Plan-menu control gains a
+recents-ordered list — the words don't say which menu.)* **The house's own rule is that two lists deciding
+"where may this go" must share one guard** (`BoardConnectList`, T4) — **so the LIST is built once (§9.4)
+and mounted with a direction, as T4 already says; what is open is only whether the two mountings may
+share a name.** **Lean: keep his word on both, and let each mounting's inert-row text state its
+direction** (*"already beside"* / *"contains this board"* etc.) — **rival: rename the "＋" row ("Open
+beside…")**, which costs his word. **One yes/no rides with the Add Board question.**
+
+### 9.4 · "RECENTLY OPENED" — NOT RECORDED TODAY; KEPT PER DEVICE; NO COLUMN
+
+**Measured:** no `lastOpened`/`openedAt` on `JournalEntry` or any board record (only a session-log
+`deskOpenedAt`, one-shot, unrelated). **`updatedAt` is not "opened"** — *it moves when a board is edited,
+and the merged brief already refused it as an order for that reason (T2).*
+
+**Per Fable's ruling — keep it per device; if it needs a column, it stops for Nick. IT DOES NOT NEED ONE:**
+- **A bounded most-recent-first list of board ids in `localStorage`** (a new key beside
+  `wrizo-board-mode`, the same read/write/try-catch recipe; **cap ~100**, prune deleted boards on read).
+  **Written when a board MOUNTS** (`BoardEditor`, `key={id}`), **moving that id to the front.**
+- **The list = every user board** (condition boards excluded, as T4), **most-recently-opened first**;
+  **boards this device has never opened follow, newest-touched first (`updatedAt` descending) — a stated
+  FALLBACK, not a claim about opening** — *(his "to oldest" then holds: the tail is the least-recently
+  touched).* **Self is absent; states/refusals exactly as T4** (already-beside, would-cycle only for
+  the inside direction).
+- **Named limits, so nobody discovers them:** **it does not sync; a new device starts with the fallback
+  order; a cleared cache resets it.** **A synced version needs a column — not proposed, not needed to
+  ship.**
+- **Toggle-open:** the row opens/closes the list **in the row's own band** (item 166 — never over the
+  canvas), scrollable, a thumbnail each in its **type's proportion** (172 §4), name, and the "in X" line.
+
+### 9.5 · THE SIBLING-ROW BRIEF'S "108 MERGED" GATE — re-read against BT-Q2 (chat 1 asked)
+
+`b144-sibling-row-build-brief.md` §CLOSE 1 says **"Confirm the gate — 108 merged."** **Chat 1 measured
+it: only 108's BUILD BRIEF is merged; no product build exists; the gate is unmet as written.**
+**BT-Q2 — *"Ship now, tags later"* — is the recorded word that the tabs ship without tags**, so **the gate
+SPLITS, and this desk states the split so a builder does not stop on it:**
+- **UNGATED, build now:** the row, the door and everything in `b144-board-tabs-build-brief.md`
+  **T1–T4, T6, T7** (already ungated there by S1's lean, now his word) — **and this amendment's §§1–9.**
+- **STILL GATED on 108's build:** **T5** (the tag population, ALL narrowing, its empty sentence), the
+  **strip of tagged pages and cards** (SR-Q1), and the sibling-row brief's tag-colour checks.
+  **A builder confirms 108's status at the start and ships without them — "tags later" is a recorded
+  word, not a wait.**
+
+### 9.6 · THE HARNESS — additions (same standing laws)
+- **P9 — the menu has THREE rows**, in the order Add Board · New Board · Connect Board; **no Unlink row.**
+- **P10 — Add Board** creates a board **nested inside** the current one (the pin exists; the card survives
+  edit + `AUTOSAVE_MS` + reload). **New Board** creates a board **in this drawer**, **NOT nested** (**no
+  `page-pin` written in either board**), the writer **stays put**, the whisper appears, and **its tab is in
+  the row.**
+- **P11 — Connect Board's list order:** open board A, then B, then C on one device; the list reads
+  **C, B, A, then the never-opened boards by `updatedAt` descending**; **the current board is absent.**
+  **Read the list by ids, never positions.**
+- **P12 — no schema:** **no column, no table, no `sync.ts` mapper touched**; the recents live only in
+  `localStorage`. **A check asserts that clearing it changes nothing in the store.**
+- **P13 — the pair survives a reload on the same device** and is **absent on a fresh profile** (the named
+  limit, asserted rather than assumed).
+- **Parks:** P1's "**exactly two rows**" assertion is **SUPERSEDED with a pointer to P9, kept verbatim —
+  never edited**; **audit the park COUNT.**
