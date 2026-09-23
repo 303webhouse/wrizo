@@ -3086,8 +3086,47 @@ a:focus-visible,
   --sliver-margin: max(0px, calc(50% - var(--sliver-paper-half) + var(--frame-host-pad-x) - var(--strip-width) - var(--frame-gap)));
   --sliver-overflow: clamp(0px, calc(160px - var(--sliver-margin)), var(--sliver-paper-pad));
   --sliver-anchor-w: min(200px, calc(var(--sliver-margin) + var(--sliver-overflow)));
+  /* ITEM 195 — THE GRIP'S OWN CLEARANCE FLOOR, independent of paper padding.
+     `.wz-sliver-grip{right:0; width:16px}` (below) sits inside `.wz-sliver`
+     (`width:100%` of THIS anchor) — its screen position is therefore set
+     ENTIRELY by this anchor's own RIGHT EDGE (`left + width`), never by
+     `--sliver-anchor-w` alone; a narrow or zero-width anchor still places
+     the grip exactly at that right edge, extending left by its own fixed
+     16px. Before this fix, that right edge (`50% - paper-half + overflow`,
+     see `left:` below) tracked only the paper's own left edge plus
+     whatever `--sliver-overflow`'s padding-dip allowed — and for `--board`
+     (`--sliver-paper-pad:0`, no padding to dip into, above) that dip is
+     always zero BY CONSTRUCTION, so the grip's clearance from the strip
+     was an accident of how much room the OTHER terms happened to leave,
+     never a guarantee. Measured failing (item 176 pair 4, item 195's own
+     diagnosis): at 1280px board, grip x 69..85 landed 15 of its 16px
+     inside `.desk-frame-strip`'s own x 0..84 band — `elementFromPoint`
+     resolved to the strip, not the grip, because `.desk-frame-stage`'s own
+     `isolation:isolate` (above) traps every z-index inside it below the
+     strip regardless of number (the ratified stacking; unchanged here —
+     this fix is geometry only). `--sliver-strip-right` restates the
+     strip's own right edge in this SAME stage-relative frame
+     `--sliver-margin` already translates it into (S10's own correction,
+     two lines up); `--sliver-anchor-right` then floors the anchor's right
+     edge at "the strip's right edge, plus the grid's own breathing-room
+     gap, plus one grip-width" — carrying `--sliver-margin`'s own floor one
+     step further, to where the grip actually lives. It is a MAX, so it can
+     only push the grip FURTHER from the strip than the padding-dip formula
+     already does — prose/screenplay, whose `--sliver-paper-half` is far
+     smaller and whose margin is never this tight, never feel it; additive,
+     not a rewrite of the case that already worked. Applies uniformly to
+     every `--sliver-paper-half`/`--sliver-paper-pad` variant below (one
+     rule, not a per-kind special case) — board is what measured the
+     failure, but the same floor holds for prose and screenplay at any
+     width narrow enough to tighten their own margin the same way. */
+  --sliver-strip-right: calc(-1 * var(--frame-host-pad-x) + var(--strip-width));
+  --sliver-grip-w: 16px;   /* .wz-sliver-grip{width:16px} — hand-synced, same convention --sliver-paper-pad already is */
+  --sliver-anchor-right: max(
+      calc(50% - var(--sliver-paper-half) + var(--sliver-overflow)),
+      calc(var(--sliver-strip-right) + var(--frame-gap) + var(--sliver-grip-w))
+    );
   width: var(--sliver-anchor-w);
-  left: calc(50% - var(--sliver-paper-half) + var(--sliver-overflow) - var(--sliver-anchor-w));
+  left: calc(var(--sliver-anchor-right) - var(--sliver-anchor-w));
 }
 /* Prose keeps the base rule's own half-measure (FX1 S2's "both surfaces share
    `.mode-pagecol`" is still true of the CLASS) — kept as a hook only
