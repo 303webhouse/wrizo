@@ -3865,6 +3865,19 @@ a:focus-visible,
    selector (a real list joins this rule once PW's store/anchors.ts lands;
    the CONTAINER doesn't change under it). */
 .wz-linked-rail{ display:flex; flex-direction:column; gap:6px; }
+/* The Linked tab's own sort/group tabs (recency/kind/tag) — the SAME
+   `.wz-tutor-tab` look one level up (Tutor/Linked), given a little
+   breathing room so the two tab rows don't read as one continuous bar. */
+.wz-linked-rail-sort{ margin-top:2px; }
+/* One connected row: the open target (a quiet text-scale press, the exact
+   `.wz-tutor-frag-item` look) plus its own remove control (the exact
+   `.wz-tutor-dock-btn` look), never brass at rest — the same "chrome, not
+   an evental action" posture the dock button already holds. */
+.wz-linked-rail-item{ display:flex; align-items:center; gap:4px; }
+.wz-linked-rail-item-open{ flex:1; display:flex; align-items:baseline; gap:6px; min-width:0; }
+.wz-linked-rail-item-kind{ flex:0 0 auto; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--text-low); }
+.wz-linked-rail-item-label{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wz-linked-rail-item-remove{ flex:0 0 auto; }
 .wz-tutor-section{ display:flex; flex-direction:column; gap:6px; }
 .wz-tutor-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
 .wz-tutor-note{ font-size:11px; color:var(--text-low); }

@@ -1,4 +1,10 @@
-# ITEM 190 — the Experiments switch + zone 5's geometry · OFFER (tools lane; branch `item190-exp1-rail`)
+# ITEM 190 — the Experiments switch, zone 5, and the Linked list · OFFER (tools lane; branch `item190-exp1-rail`)
+
+**UPDATE, 2026-09-24 afternoon:** merged PW's `exp1-connect-text` @ `78d4529`
+(`store/anchors.ts` is real now) per Fable's instruction. The Linked list's
+own content — filter/sort/group-by-tag, remove/unlink — is built below,
+reading `anchors.ts` through its own exported functions only, never writing
+through it. Re-merges when PW moves the store further, as ruled.
 
 §8's split (`docs/menus/b-exp1-connect-from-the-page.md`): PW owns the text
 side; **TOOLS owns "item 190's Experiments switch and everything it hides ·
@@ -15,6 +21,51 @@ note warns against, just approached from the read side instead of the write
 side.
 
 ## What's built
+
+**0. The Linked list itself — `store/linkedRail.ts` + `components/LinkedRail.tsx`,
+against the real `store/anchors.ts`.**
+- `resolveLink(link)` — reads `getJournalEntry` (the same reader every
+  other surface uses) to turn a bare `Link` into what the rail shows: a
+  label, a `RailKind`, tags, recency. **Tags are read from the TARGET at
+  display time, never the link** (the ruling, twice over — PW's revised
+  report and the type's own comment). A card's target has no tags at all
+  (`Box` carries none) — real, not an omission.
+- **`RailKind` is honestly narrower than Nick's five-way list.** He named
+  *"sources or pages or cards or boards or imported docs"* — this lane can
+  derive **board** (`pageType==='board'`), **card** (a `Box`), and **note**
+  (a bare `Link` with no target — §3's "Note This") from real fields today.
+  **'page' vs 'source' vs 'imported doc' among ordinary entries has no
+  field to tell them apart** — `JournalEntry.pageType`'s union has no such
+  member. Every non-board entry target reports `'page'`. Not a guess at the
+  finer split — the schema doesn't carry it yet, stated in
+  `linkedRail.ts`'s own header rather than resolved by a heuristic.
+- **Sort**: recency (default) and kind, both in `linkedRail.ts`.
+- **THE GROUPING LAW, a third time**: `groupByTag` — an item with N tags
+  appears under N groups; zero tags means zero groups, not a fallback
+  bucket.
+- **Remove = unlink**: calls `anchors.ts`'s own exported `unlink(pageId,
+  linkId)` — a sanctioned write through the seam's own function (§8: *"if B
+  needs a write, it asks A for a function rather than reaching past the
+  seam"* — PW already built this one), never a direct mutation of
+  `PageLinks`. The control's own wording says which of the two it does
+  ("Remove this link — {label}"), never a bare "Remove" (§3/§5's law).
+- **Open, partial.** A page/board target navigates via `routeForEntry`. **A
+  card target navigates to its board, not a card popup** —
+  `BoardCardPopup` is a local, unexported function in `BoardEditor.tsx`;
+  reusing it needs that file to export it (or a rail-appropriate preview of
+  its own), out of this build's scope. Named, not silently degraded.
+- **The selected state is NOT built** — "click a linked span → only its
+  source(s)" needs PW's painted-mark click detection (§6c,
+  `CSS.highlights`), which doesn't exist on this branch. The rail renders
+  the RESTING state only.
+
+**Test seam widened, precedented.** `store/persistence.ts`'s
+`JournalPageSeed` (item 85-C's own closed whitelist) gained one field,
+`pageLinks?: PageLinks`, presence-checked exactly like every field beside
+it — the harness had no way to seed a page WITH connections already on it,
+the identical gap item 129/85-C already closed for `boxes`/`tags`/etc. This
+never touches `anchors.ts`'s own write path; it rides the same
+`saveJournalEntry` call every other seeded field already does.
 
 **1. `store/experiments.ts` — the one flag, per §8's own law** ("Both read
 the flag from ONE place, so 'off' cannot be half-true"). Mirrors
@@ -70,40 +121,68 @@ partial, on purpose, stated in its own header).** Two proofs:
   on) — so the OFF-absence checks are proven against a real gate, not a
   dead, always-false prop.
 
-**Checks 2-7 of §7 are NOT in this file** — they cover the right-click
-menu, the left strip's three acts, the re-finding branches, and the Linked
-list's own filter/sort/group behavior, all either PW's side of §8's split
-or blocked on `store/anchors.ts`. `exp1.mjs`'s own header states this
-outright so a thin file doesn't read as a finished one.
+**5. `§7` check 5, PARTIAL — the resting list — `scripts/harness/exp1.mjs`.**
+A four-link fixture (page/board/card/note, one of each `RailKind`, spaced
+recency, `research`+`characters`+`plot` tags), seeded through the widened
+`pageLinks` seed field — real pointer presses (`trustedDispatch`, item 151's
+own instrument) throughout, never `.click()`:
+- (a) default sort (recency) — 4 rows, most-recently-connected first.
+- (b) kind sort — Page, Board, Card, Note, `linkedRail.ts`'s own
+  `KIND_ORDER`.
+- (c) **the grouping law** — three tag groups, alphabetical; the card and
+  the note in neither.
+- (d) remove = unlink — the row disappears immediately, survives a
+  reload (a real write, not optimistic-only), and a fourth check confirms
+  the soft-delete shape itself: the link's `deletedAt` is set, its anchor
+  survives, the target's own row is untouched (Nick's word: "Remove unlinks
+  and never deletes").
+- (e) the honest empty state, for a page with no links at all.
+
+**Checks 2-4 of §7, and the selected-state/popup halves of check 5, are NOT
+in this file** — the right-click menu, the left strip's three acts, the
+re-finding branches, PW's own side of §8's split, plus the painted-mark
+click detection and `BoardCardPopup`'s own export, neither of which exists
+yet. `exp1.mjs`'s own header states this outright so a partial file doesn't
+read as finished.
 
 ## Verified without the box
 
-- Fresh worktree, `pnpm install` clean (285 packages).
-- `tsc --noEmit`: **0 errors** (all TS edits: `experiments.ts`,
-  `CascadePanels.tsx`, `deskLexicon.ts`, `Tutor.tsx`, `LinkedRail.tsx`).
-- `pnpm run build:web`: **clean**, re-run after the CSS edit too.
-- New CSS classes (`wz-tutor-tabs`, `wz-tutor-tab`, `wz-linked-rail`)
-  confirmed present in the built CSS; the new store key
-  (`wrizo-experiments`) and lexicon string ("Nothing linked yet") confirmed
-  present in the built JS.
-- `node --check scripts/harness/exp1.mjs`: clean.
+- Fresh worktree, `pnpm install` clean (285 packages), re-verified after
+  the merge.
+- `tsc --noEmit`: **0 errors**, `apps/desktop` (all TS edits) **and**
+  `apps/server` (PW's merged `migrate.ts`/`sync.ts`, sanity-checked since
+  this branch now carries them).
+- `pnpm run build:web`: **clean**, re-run three times (after the CSS edit,
+  and again after the Linked-list build).
+- New CSS classes (`wz-tutor-tabs`, `wz-tutor-tab`, `wz-linked-rail`,
+  `wz-linked-rail-item`) and the new store key (`wrizo-experiments`) and
+  lexicon strings confirmed present in the built bundle.
+- `node --check` clean on `exp1.mjs` and (sanity) PW's merged
+  `exp1-b-mutate.mjs`/`exp1-b-proof.mjs`.
 
 ## Named residuals, not silently carried
 
-- **The Linked list's own content** — filter, sort, group-by-tag, open
-  (both popups), remove/unlink — waits on PW's `store/anchors.ts`
-  signatures, per Fable's own instruction. `LinkedRailBody` is the single
-  file that changes when it lands.
-- **§7 checks 2-7** — same dependency, plus PW's own menu/strip work.
+- **The 'page'/'source'/'imported doc' three-way split** Nick asked for has
+  no field in `JournalEntry` to derive it from today — every non-board
+  entry target reports `'page'`. Stated in `linkedRail.ts`'s own header,
+  not resolved by a heuristic. A schema question for PW/Fable, not a build
+  gap this lane can close alone.
+- **Open, for a card target, goes to its board, not a card popup.**
+  `BoardCardPopup` is local/unexported in `BoardEditor.tsx`. Wiring the real
+  popup needs that file to export it, or a rail-appropriate preview.
+- **The selected state** ("click a linked span → only its source(s)") waits
+  on PW's painted-mark click detection (§6c).
+- **§7 checks 2-4** — PW's own side of §8's split.
 - **Zone 5's tab-state doesn't persist across page navigation** (local
   `useState`, resets to "Tutor" on every mount) — a deliberate choice
-  (§ justification in `Tutor.tsx`'s own comment: "no state you didn't ask
-  for," the same posture `open`/`docked` already have), named here in case
-  a later reviewer expects otherwise.
+  (`Tutor.tsx`'s own comment: "no state you didn't ask for," the same
+  posture `open`/`docked` already have), named here in case a later
+  reviewer expects otherwise.
 
 ## Status
 
-**BUILT (switch + zone 5 geometry + §7 check 1).** tsc 0 / build:web 0 /
-new markers confirmed in bundle / harness syntax-checked. Not run — needs
-the box, and needs PW's `store/anchors.ts` before the rest of §7 can be
-written. Offered now so the switch/geometry piece isn't waiting on either.
+**BUILT: switch + zone 5 geometry + the Linked list's resting state (sort/
+group/remove) + §7 checks 1 and 5-partial.** tsc 0 (desktop + server) /
+build:web 0 / new markers confirmed in bundle / harness syntax-checked. Not
+run — needs the box. Re-merges from `exp1-connect-text` when PW moves the
+store further, as ruled.

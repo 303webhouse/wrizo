@@ -128,6 +128,9 @@ export type DeskTermId =
   // the DOM, so §0's "OFF is v1, byte-identical" claim is untouched by its
   // mere existence here.
   | 'tutorTabTutor' | 'tutorTabLinked' | 'zoneLinked' | 'zoneLinkedWaiting'
+  // ITEM 190 §5 — "sortable by recency, kind, and tag." Three sort/group
+  // views over the resting-state list.
+  | 'zoneLinkedSort' | 'zoneLinkedSortRecency' | 'zoneLinkedSortKind' | 'zoneLinkedSortTag' | 'zoneLinkedNoTags'
   | 'cascadeThemeTitle'
   // CD2 S2/S4 — the survey layer + the dock.
   | 'cascadeSurveyEmpty' | 'cascadeSurveyCurrent' | 'cascadeDockClose' | 'cascadeDockReopen'
@@ -740,6 +743,11 @@ const CANONICAL: Record<DeskTermId, string> = {
   // there for exactly this region, kept rather than re-coined.
   zoneLinked: "This page's connections",
   zoneLinkedWaiting: 'Nothing linked yet.',
+  zoneLinkedSort: 'Sort',
+  zoneLinkedSortRecency: 'Recent',
+  zoneLinkedSortKind: 'Kind',
+  zoneLinkedSortTag: 'Tag',
+  zoneLinkedNoTags: 'Nothing tagged yet.',
   cascadeThemeTitle: 'Theme',
   cascadeSurveyEmpty: 'Nothing here yet.',
   cascadeSurveyCurrent: 'Current',
