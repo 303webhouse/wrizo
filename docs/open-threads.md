@@ -21577,3 +21577,61 @@ detail goes to disk.
 **BOX.** Grant file (`~/.wrizo/box-turn.json`) written naming **FIX**, token
 `chat1-fix159-20260924`, per Fable’s order (159 → 158 → INK 157 → INK 171-A → TOOLS 154, item
 195 ahead of the queue whenever TOOLS says ready, 176 re-runs after 195 merges).
+
+## RECORDS — 160’s INTERIM, EXPERIMENT 1’S REVISED SHAPE, AND NICK’S ANSWERS ON 171-B AND EXTERNAL SOURCES — 2026-09-24 (chat 1)
+
+**MERGE RULE, refined (Fable).** A harness change that can only turn a false red green (a
+de-flake) merges between pairs once verified. One that can turn a green red waits for a batch
+boundary.
+
+**ITEM 160 — PARTIAL INTERIM, NOT COMPLETE (Fable, reading FIX’s S0 at
+`C:\Users\nickh\.wrizo\notes\item160-s0-popup-ambiguity.md`).** Remove moves into
+`BoardCardPopup` for hand-typed cards; every other kind keeps it in the action row until 168.
+**The hard line — never ship without card deletion — outranks the interim placement.**
+
+**EXPERIMENT 1 — REVISED SHAPE, from PW’s report (Fable’s rulings):** link targets are
+**entries and cards only** — plans, drawers, projects and beats are not link targets here. The
+rail reads tags from the TARGET, never from the link. One position-preserving stripper, with
+`stripMarkdownConventions` as its wrapper, proven byte-identical; one exported paragraph
+enumerator. Spot-notes use PW’s caret reading plus one-sided exact fallbacks, never the
+ambiguity path. `pageLinks` joins `BirthContent`; **a link never births a page.** Export names
+links it leaves out, as it already does for ink. A link change moving the resume pointer:
+**accepted.**
+
+**FOUNDER ANSWERS, quoted verbatim, relayed by Fable — not paraphrased.**
+
+**“External sources” (the rail).** *“2. I meant sources or pages or cards or boards or images
+or imported docs that all serve as supplemental material to the text being written on the page
+surface”.* So Experiment 1 links to sources, pages, cards, boards and imported docs. **IMAGES:
+the app has no way to hold a writer’s own images today** (checked two ways — no image kind, no
+upload/attachment path). **NEW ITEM REGISTERED: the writer’s own images**, so they can be added
+and linked — planned after Experiment 1 (his default, taken by skip); the schema/storage change
+will need his word separately.
+
+**171B-Q1 (how the pen starts on a board).** *“1. Yes, on a desktop you must select INK (unless
+you have a stylus connected, perhaps? But I don’t know how that works). On a mobile device,
+stylus’s or Apple Pens, etc., automatically activate the drawing surface. This should only work
+on Free Write mode and on Boards or inside Cards.”* Fable’s default on the open question (a
+stylus draws by itself on any device; a mouse/trackpad selects INK first; a finger never draws by
+itself) is marked VETOABLE. His “only work on” clause is flagged as a READING (ink works only
+in Free Write, on boards, inside cards) — PLAN DESK checks it against where ink works today;
+any conflict goes back to Nick and nothing is removed on a reading alone.
+
+**171B-Q2 (a card’s ink).** *“2. Right on the card”.*
+
+**171B-Q3 (drawing across a board) — REVERSES the desk’s lean.** *“3. Users should be able to
+draw directly on Board. If they move cards around after that, they can erase the INK they no
+longer want (which also means we need an eraser if we don’t already have one. The eraser should
+be scalable, as well).”* An eraser exists today at one fixed size (`ERASER_WIDTH = 22`,
+`store/ink.ts:17`). **A scalable eraser, on every ink surface, joins 171-B’s scope.**
+
+**MERGES, this relay.** `plan-exp1-q1` @ `551dba4` (both commits, `d9f688e` + the amendment) and
+`plan-171b-design-pass` @ `d04ce54` — both docs-only by diff-stat, **merged on this desk’s
+verification.** PLAN DESK’s revised 171-B pass, once pushed, merges the same way.
+
+**BOX, unchanged by this entry.** FIX’s 159 is still running; grant file still names FIX,
+token `chat1-fix159-20260924`. Next pair per Fable’s order: TOOLS’ 195
+(`item195-sliver-grip` @ `917e6c4`), ahead of the queue as ruled — to be granted at FIX’s
+stamp. Short-use slots noted for between pairs: INK’s 196 (`item196-download-wait` @
+`6e61980`, a de-flake — eligible to merge between pairs once verified, per the refined rule),
+PW’s paint-layer measurement, TOOLS’ splash frame, 194’s report-only run, the note-key test.
