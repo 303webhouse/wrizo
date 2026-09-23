@@ -9768,6 +9768,7 @@ MEASUREMENT.** **Chat 1 ran Fable's stated instrument to see, and found a THIRD 
 | instrument | scope | counts | result |
 | --- | --- | --- | --- |
 | **Fable, as reported** | — | — | **25 in 7** |
+| **Fable, EXACT** — `pageLinks\|page_links\|connections\b`, `-i`, `.ts`/`.tsx`, `apps/` | — | matching **LINES** | **25 in 7** ✓ *(run by chat 1; see below)* |
 | **Fable, as described** (case-insensitive · `.ts`/`.tsx` · under `apps/`) | includes the harness tree | matching **LINES** | **26 in 8** |
 | **Chat 1** (case-sensitive · `src` + `.css`) | `apps/desktop/src` + `apps/server/src` | **OCCURRENCES** | **25 in 7** |
 
@@ -9850,7 +9851,54 @@ question is withdrawn: he was not picky, so there is nothing to pick.**
 against a ledger that already carries them.** **Fable carries both founder answers to PW, TOOLS and PLAN
 DESK in its replies to their boot reports.**
 
+## THE EXACT INSTRUMENT — RUN, AND IT RETURNS FABLE's NUMBER — 2026-09-23
+
+**Fable's count was RIGHT; only its DESCRIPTION was wrong.** **The instrument, exactly:** pattern
+**`pageLinks|page_links|connections\b`**, case-insensitive, files `*.ts|*.tsx`, root `apps/`, counting
+**matching LINES**. **The trailing `\b` is what the paraphrase dropped** — and it is exactly what excludes
+`server/src/db.ts`'s `connectionString`, because **an `s` followed by a `t` is no word boundary.**
+
+**CHAT 1 RAN IT: 25 LINES IN 7 FILES. FABLE's REPORTED NUMBER REPRODUCES.** **26 minus that one line is
+25; 8 minus `db.ts` is 7 — the arithmetic Fable predicted, confirmed on disk.**
+
+**AND CHAT 1 RAN IT THROUGH TWO INDEPENDENT REGEX ENGINES, because this exchange is about exactly this:**
+- **GNU `grep -E`** (ERE, `\b` as a GNU extension) → **25 lines / 7 files**
+- **Node/V8's own regex engine**, walking `apps/` itself and applying `/pageLinks|page_links|connections\b/i`
+  per line → **25 lines / 7 files**
+
+**TWO ENGINES, ONE PATTERN, SAME ANSWER — THAT IS A REPRODUCTION.** *(Unlike the earlier 25/7 meeting
+25/7, which was two different patterns, two scopes and two counting units arriving at one pair of numbers
+by accident. The distinction is the whole lesson: same instrument, different engine = confirmation;
+different instrument, same number = coincidence.)*
+
+> **AN INSTRUMENT IS DESCRIBED BY ITS EXACT PATTERN, NEVER A PARAPHRASE OF IT.** (Fable)
+
+*(Chat 1's 26-in-8 was not a wrong measurement — it was a FAITHFUL measurement OF THE PARAPHRASE. The
+paraphrase was a second instrument, and it behaved exactly as written. Both halves of this exchange did
+their job: Fable's number survived, chat 1's number survived, and the thing that was wrong was the
+SENTENCE BETWEEN THEM.)*
+
+## ⚠ A THIRD ENGINE RETURNED ZERO, AND IT NEVER RAN — 2026-09-23
+
+**Chat 1's first cut used THREE engines. The third, `grep -P` (PCRE), returned `0 lines / 0 files`.** **It
+was not a measurement. It was an instrument that never ran:** `grep: -P supports only unibyte and UTF-8
+locales` — **and chat 1's own `2>/dev/null` had swallowed that error, leaving a clean, confident,
+meaningless zero.**
+
+**CAUGHT BY THIS LEDGER's OWN BAND, ONE EXCHANGE AFTER IT WAS WRITTEN:** *"an empty result is a finding,
+not an outcome — a needle that matched nothing is investigated before it is believed."* **Chat 1
+re-ran it with stderr unsuppressed rather than reporting the zero.**
+
+*(Recorded because it is the third distinct failure mode in one small question — a paraphrase that was a
+different instrument, two instruments coinciding by accident, and an instrument that never started while
+reporting a number. All three would have passed unnoticed as "the count." And the swallowed stderr was
+chat 1's own doing: `2>/dev/null` is how a silent instrument stays silent.)*
+
+**`page_links` STANDS — unmoved through all of it, and now evidenced by a count whose instrument is
+written down exactly enough to re-run.**
+
 Registry: next free **195**.
+
 
 
 
