@@ -58,13 +58,25 @@ updated). **(3)** the same, anywhere on the page → **moved**. **(4)** `quote` 
 on the page → **moved**. **(5)** `quote` alone, **several matches** → **AMBIGUOUS: the anchor is kept,
 marked, and the rail says *"these words appear 3 times now — point me at the right one"*** with a press to
 choose. **(6)** no match → **LOST**, kept and marked.
-> **⛔ THE LAW UNDER IT: AN ANCHOR NEVER MOVES ITSELF TO A GUESS.** *Steps 5 and 6 are where a lazy
+> **⛔ RATIFIED AND BANDED (Fable, 2026-09-22): AN ANCHOR NEVER MOVES ITSELF TO A GUESS.** *Steps 5 and 6 are where a lazy
 > implementation would silently pick the first match, and that is how a quote ends up attached to the
 > wrong sentence — the one failure this feature cannot have.*
 
 ## §2 · THE SCHEMA, NAMED PRECISELY — two shapes, one lean (⚠ Fable reviews; a table is Nick's to clear)
 
-### SHAPE A — **additive fields on the entry (jsonb), zero schema** · **the desk's lean for an EXPERIMENT**
+> **⛔ CORRECTED ON FABLE's REVIEW, AND VERIFIED HERE: SHAPE A IS NOT ZERO SCHEMA IN EFFECT.**
+> **`apps/server/src/sync.ts` maps journal entries through EXPLICIT COLUMN LISTS IN BOTH DIRECTIONS** —
+> `rowToJournalEntry` names every field it returns, and `upsertJournalEntries`' insert names every column
+> it writes. **A new optional field on the entry would be written locally, never sent, and dropped on the
+> next pull — silently, without erroring.** *(FIX's item-136 S0 found it; this desk read both functions
+> and confirms it.)*
+>
+> **SO THE LAWFUL MINIMAL FORM IS SHAPE A's MODEL IN ONE ADDITIVE NULLABLE JSONB COLUMN** — the shape
+> `boxes`, `strokes`, `tags`, `tutor` and `page_settings` already are — **plus its two mapper lines.**
+> **That is a SCHEMA CHANGE: it stops at chat 1 and goes to Nick as a yes/no** (EXP1-Q1).
+> **Shape B stays the planned graduation, with its ticket open.**
+
+### SHAPE A — **one additive nullable jsonb column carrying the model below** · **the desk's lean for an EXPERIMENT**
 ```ts
 // types/index.ts — additive-optional, absent on every existing row (the onCanvas?/systemKind precedent)
 export interface Anchor {
@@ -86,11 +98,18 @@ export interface Link {
   body?: string;            // a note's own words (kind 'note')
   createdAt: string; updatedAt: string; deletedAt?: string;
 }
-// on JournalEntry:  anchors?: Anchor[];  links?: Link[];
+// on JournalEntry:  connections?: { anchors: Anchor[]; links: Link[] };
+//   → ONE column:  alter table journal_entries add column if not exists connections jsonb
+//   → TWO mapper lines, both directions, or the field is dropped in silence:
+//        rowToJournalEntry:     connections: r.connections ?? undefined,
+//        upsertJournalEntries:  connections (in the column list) + $n::jsonb + excluded.connections
 ```
-**Why it is the lean for an experiment:** **it ships without a schema gate**, it rides the record the
-anchor belongs to, it is **hidden by one flag**, and **deleting nothing is trivial**. *`boxes` and
-`strokes` already prove this shape at this scale.*
+**⚠ THE TWO MAPPER LINES ARE NOT A DETAIL — they are the defect this correction exists to avoid.** *A
+column without its mappers behaves exactly like the silent loss above.* **The harness asserts a round
+trip through the server double, not merely a local write.**
+**Why it is still the lean for an experiment:** **one column and two mapper lines** is the smallest
+lawful change; it rides the record the anchor belongs to, it is **hidden by one flag**, and **deleting
+nothing is trivial**. *`boxes`, `strokes` and `page_settings` already prove the shape at this scale.*
 **Its cost, named:** a reverse question — *"what links point AT this card?"* — means reading pages.
 **At today's scale that is a scan of one cache; it will not survive growth**, which is why Shape B exists.
 
@@ -134,8 +153,12 @@ migration of storage and not of meaning.*
   links use it; the target is untouched.* **The menu says which of the two it will do** — *"Remove this
   link"*, never a bare "Remove".
 - **Make a card** creates a card **on the board this page is connected to** if there is exactly one, and
-  **asks which** if there are several. *With none, it makes a scrap card on a new board? **NO** — it makes
-  a NOTE instead and says so.* **A pantser must not be handed a board they did not ask for** (his test).
+  **asks which** if there are several. **WITH NONE: the card lands on THIS PAGE's OWN PLAN BOARD, created
+  quietly** — **Fable's lean, adopted, and it corrects this desk's first answer.** *He asked for a card,
+  and a card that becomes a note is not that.* **The plan board is the page's own** — `getOrCreatePlanBoard(pageId)`
+  in `store/persistence.ts` already births and pairs it (1:1, `planBoardId`) — **so nothing is invented
+  and no drawer is chosen for him** — *which is what the pantser test
+  actually asked for.*
 
 ## §4 · THE LEFT STRIP — the three acts, and the audit his law demands
 **His law, verbatim:** *"every clickable tool in it (other than INK or settings) is something that happens
@@ -185,9 +208,50 @@ scrollable page, etc.)"*
   `__word__` the writer's own mark). **A dotted underline is still an underline.**
 - **NOT ORANGE** — orange is **tags** (item 108) and **selection** (item 122). **NOT OLIVE** — olive is
   **where you are.**
-> **THE MARK IS IN THE MARGIN, NOT IN THE WORDS: a small tick in the gutter beside the line**, plus **a
-> light ground on the span itself while the pointer is over it.** *The text keeps its own face — which is
-> what "the text is primary" means where a writer can see it.*
+> **THE MARK IS A FAINT TINT ON THE WORDS THEMSELVES** — **Fable's lean, adopted, and it corrects this
+> desk's first answer.** **His own words decide it: *"the linked text should be clickable"*, and a
+> margin-only mark leaves the clickable words invisible.** *A tint is not an underline, so F2 holds.*
+>
+> **AND THE GUTTER MARK EARNS ITS PLACE IN EXACTLY ONE CASE: A NOTE WITH NO WORDS.** *A note taken at a
+> caret has no span to tint, and §6b forbids putting a character in the text to stand for it — so the
+> paragraph carries a gutter tick, and the note hangs off the paragraph.* **Words get a tint; a spot gets
+> a gutter mark; nothing gets a glyph.**
+
+### ⛔ §6b · THE SHAPE THAT IS FORBIDDEN — TUTOR's catch, verified in the drawing
+**`wrizo-page-first.html` marks a note by inserting an element that CARRIES A CHARACTER:**
+`m.className='nmark'; m.textContent='✎'; r.insertNode(m)`.
+> **UNDER TRR14 THOSE CHARACTERS ARE SAVED INTO THE MANUSCRIPT.** **A mark may never be a character in the
+> writer's text.** **Marks are CSS on a wrapping span; words live in the panel.**
+**And the same rule answers the case the glyph was solving** (a note with no words): **the gutter, above.**
+
+### ⛔ §6c · AND IN THE APP, THE MARK IS PAINTED — NOT WRAPPED
+**The drawing wraps a span around the selection and calls `text.normalize()`.** *Lawful in a mock.*
+**In the app the page is a live `contenteditable`, and wrapping is a DOM REWRITE of the writer's text —
+the exact hazard `draftDecoration`'s RULE 1 names, in its own comment** (`store/draftDecoration.ts`,
+rule 1 of four): *"A NON-COLLAPSED SELECTION IS LEFT ALONE. Redecorating rewrites `el.innerHTML` and then
+restores a COLLAPSED caret — so running it while the writer has text selected destroys the selection."*
+**A mark built as wrapper spans inside that surface inherits the hazard, and the connect gesture BEGINS
+with a non-collapsed selection — which is the worst possible moment to rewrite the DOM.**
+> **SO: the register COMPUTES the ranges; `CSS.highlights` + `::highlight(link-span)` PAINTS the tint.
+> Painting touches no DOM, so it cannot disturb a selection, a caret offset, or the marker reveal.
+> Nothing is inserted into the page, and `entry.text` is never touched.**
+
+**⚠ STATED PRECISELY, BECAUSE THIS IS A SHARED DEPENDENCY AND NOT A BUILT ONE:** **item 145's brief
+(merged) CHOSE this split, but its ratification is CONDITIONAL — `CSS.highlights` / `::highlight()`
+appear NOWHERE in the tree**, and **Fable's condition is a measurement** (Electron 31's Chromium, the
+web build's undeclared target, the Edge harness) **plus a plainly stated absent behaviour.**
+> **SO EXPERIMENT 1 EITHER RIDES 145's MEASUREMENT OR TAKES IT — and it is the same measurement, done
+> once.** *Whichever item gets there first records it for both; neither builds on an assumption.*
+> **The absent behaviour here matches 145's recommendation (i): NO PAINT where the API is missing —
+> the anchors and links still work, the rail still lists them, the words simply carry no tint.**
+> *A DOM-rewrite fallback is refused for the reason 145 refuses it: it reintroduces the hazard the API
+> was chosen to avoid.*
+
+**⚠ AND ONE COLLISION, NAMED NOW RATHER THAN DISCOVERED: A TINT IS INVISIBLE UNDER SELECTION.** *Custom
+highlights paint BELOW `::selection` (spec §4.2.4, and no priority lifts them above it), and item 122's
+selection is OPAQUE brass.* **Accepted here, where it cost item 145 its acceptance test:** *the writer
+has just selected those words — the mark they need is the rail answering, not the tint under their own
+selection.* **It is only a defect if a resting page hides a mark, and a resting page has no selection.**
 
 ## §7 · THE HARNESS — `apps/desktop/scripts/harness/exp1.mjs`
 Standing laws: **drivers never assume existence** · **real pointer events** · **release where the writer
@@ -207,12 +271,12 @@ releases** · **seed through the seams** · **absolute worktree path** · **sele
 7. **Both `HARNESS_PARKED` settings CLEAN; park count audited.**
 
 ## §8 · THE TWO-BUILDER SPLIT — where it cuts cleanly
-| builder | owns |
-|---|---|
-| **A — THE TEXT SIDE** | span capture · the storage shape · **the re-finding algorithm and its five branches** · the right-click menu · the left strip's three acts + the audit · the gutter mark |
-| **B — THE RAIL SIDE** | the Experiments switch and everything it hides · zone 5 and the width budget · the Linked list (filter · sort · group-by-tag) · open (both popups) · remove/unlink |
+| lane | builder | owns |
+|---|---|---|
+| **A — THE TEXT SIDE** | **PW** | span capture · the storage shape and **its two mapper lines** · **the re-finding algorithm and its five branches** · the right-click menu · the left strip's three acts + the audit · **the painted tint and the gutter mark** |
+| **B — THE RAIL SIDE** | **TOOLS** | **item 190's Experiments switch** and everything it hides · zone 5 and the width budget · the Linked list (filter · sort · group-by-tag) · open (both popups) · remove/unlink |
 
-**THE SEAM IS ONE MODULE, AND ONLY A WRITES IT:** **`store/anchors.ts`** — `createAnchor`,
+**THE SEAM IS ONE MODULE, AND ONLY PW WRITES IT:** **`store/anchors.ts`** — `createAnchor`,
 `addLink`, `removeLink`, `resolveAnchors(entryId)`, `getLinksForPage(entryId)`,
 `getLinksForAnchor(anchorId)`. **B reads it and never writes through it.**
 > **⚠ THE HAZARD, NAMED: two builders and one new module is how a double-write gets in.** *A writes; B
@@ -229,9 +293,9 @@ take it.** **In the desktop app it is ours** — Electron owns the window and ca
 | **`Ctrl+N` in the desktop app only** | **impossible** | **his key** | **two keys to teach — the same app answers differently in two places** |
 | a third key, e.g. `Ctrl+Shift+L` | **plausible, unmeasured** | free | `Ctrl+Shift+I/J/P/N` are taken; **`Ctrl+Alt+…` is AltGr on international layouts and is out** |
 
-**THIS DESK BRINGS HIM ONE: `Ctrl/Cmd+Enter` everywhere** — *one key, both surfaces, already confirmed as
-the stand-in* — **with `Ctrl+N` additionally honoured in the desktop app if he wants his own key there,
-and the cost of two keys stated rather than hidden.**
+**RULED (Fable): `Ctrl/Cmd+Enter` EVERYWHERE, and NO desktop-only `Ctrl+N`.** *One key, both surfaces —
+the two-keys option is closed, and this brief drops it.* **`Ctrl/Cmd+K` opens the link picker**, as
+Fable's own drawing already binds it.
 > **⛔ AND THE MEASUREMENT IS NOT DONE: "test candidates in the browser and the desktop app" IS A BOX
 > RUN.** **This desk has launched nothing and will not take the box without a turn.** **The test, ready to
 > run:** a page that logs `keydown` (key, code, ctrl/meta/alt/shift, `defaultPrevented`) in **Edge** (the
@@ -239,19 +303,34 @@ and the cost of two keys stated rather than hidden.**
 > layout active** to prove the AltGr finding rather than cite it. **Ask chat 1 for the slot.**
 
 ## §Q · FOR NICK
-- **EXP1-Q1 — the storage shape.** Ship on **fields in the page's record** (no schema, ships now) with the
-  **tables planned as the graduation** (lean), or **go straight to tables**, which is a schema change and
-  **yours to clear**?
-- **EXP1-Q2 — Make a card with no board.** A pantser selects a phrase and presses *Make a card* with no
-  board anywhere: **it becomes a NOTE and says so** (lean — you are never handed a board you did not ask
-  for), or **it makes a board**?
-- **EXP1-Q3 — the mark.** A linked span is marked **in the gutter, not in the words** (lean — underline is
-  the writer's mark and orange is tags). **Acceptable, or do you want the words themselves marked?**
-- **EXP1-Q4 — the key.** **`Ctrl/Cmd+Enter` everywhere** (lean), or **`Ctrl+N` in the desktop app and
-  `Ctrl/Cmd+Enter` in the browser**?
+- **⛔ EXP1-Q1 — THE SCHEMA, and it is the only one that gates the build.** **One additive nullable jsonb
+  column** (`journal_entries.connections`) **plus its two mapper lines** — the shape `boxes`, `strokes` and
+  `page_settings` already are. **Yes or no?** *There is no zero-schema road: §2 shows the server drops
+  unknown entry fields in both directions, silently.* **Shape B (the tables) is the planned graduation,
+  ticket open — not this build.**
+- **EXP1-Q5 — OVERLAPPING ANCHORS** *(new, from the pass on Fable's drawing)*. **Painting the mark makes
+  overlap possible; the drawing's wrapping made it impossible** and refused it in words. **May a writer
+  link a phrase inside an already-linked sentence?** **Desk's lean: YES**, with the rail listing what
+  covers a spot. *For a book with a bibliography, quoting inside a sourced sentence is ordinary.*
+- **EXP1-Q6 — THE SPOT-NOTE'S GUTTER MARK** *(new)*. A note taken at a caret has no words to tint, and
+  **§6b forbids a character in the text**. **A tick in the margin beside the paragraph** — confirm.
+  *Raised because it is the one mark this desk adds that he did not ask for, and it exists only because
+  the glyph cannot stay.*
+
+**RULED SINCE THIS BRIEF WAS WRITTEN — recorded here so the list is not re-asked:**
+- **~~EXP1-Q2 — Make a card with no board.~~** **RULED (Fable): it lands on the page's OWN PLAN BOARD,
+  created quietly.** §4.
+- **~~EXP1-Q3 — the mark.~~** **RULED (Fable): a FAINT TINT ON THE WORDS** — not an underline (F2 holds),
+  not a gutter mark except for a spot-note. §6.
+- **~~EXP1-Q4 — the key.~~** **RULED (Fable): `Ctrl/Cmd+Enter` EVERYWHERE**, no desktop-only `Ctrl+N`. §7.
 
 ## §CO · WHAT IS NOT IN THIS BRIEF
-**The pass on `wrizo-page-first.html` — the file is NOT at that path** (`C:\Users\nickh\Downloads\`
-holds `wrizo-three-writers.html`, 22:18, which is the three-writers drawing, not the page-first layout).
-**This desk does not pass on a drawing it cannot see, and does not design the five zones from a summary of
-one.** *Send it and the pass follows.*
+**~~The pass on `wrizo-page-first.html`.~~ THE FILE LANDED** (47,395 bytes, 23:45) **and the pass is
+written: `page-first-rail-pass.md`, offered beside this brief.** *It reads the drawing line by line and
+finds five changes — one of which, the note glyph, is §6b's forbidden shape in the drawing's own code.*
+**Two of its findings amend THIS brief and are already folded in above: the painted mark (§6c) and the
+overlap it makes possible (EXP1-Q5).**
+
+**STILL NOT IN THIS BRIEF:** **the five-zone mockup** — *Fable may redraw its own first, and this desk
+holds the pencil until it says which of us draws it.* **And the note-key MEASUREMENT** — *the test is
+written and this desk has launched nothing; it needs a box turn, which is chat 1's to give.*
