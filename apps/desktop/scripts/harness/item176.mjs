@@ -241,7 +241,32 @@ await withHarness(async (app) => {
   // So: open the sliver, then assert the panel is OPEN and the door
   // HIT-TESTS TO ITSELF, before anything presses it. Those two preconditions
   // are what turn "the check went red" into "the check says which step broke".
+  // ⚠ WAKE THE CHROME FIRST. The sliver lives in `.desk-frame-corkboard
+  // chrome-fade`, and receded chrome is `pointer-events:none` — genuinely
+  // unreachable, correctly so, until a pointer stirs. The STRIP carries no
+  // chrome-fade (DeskFrame says so in its own header) and stays hittable, so a
+  // probe against a receded sliver reads "occluded by wz-strip-item" and looks
+  // exactly like a product defect. It is not one: it is a fixture that never
+  // moved the pointer. `openPlan` has always done this; this fixture reaches
+  // the board directly and so has to do it itself.
+  await wakeChrome(app);
+  // Reported whether or not the press succeeds, because the first two pairs
+  // left one thing unexplained — a LEFT-side strip item answering at a
+  // RIGHT-side grip's coordinates — and a probe that measures the rect settles
+  // it on the next run instead of inviting a third guess.
+  const gripGeom = await app.evalJs(`(() => {
+    const g = document.querySelector('.wz-sliver-grip');
+    const n = document.querySelectorAll('.wz-sliver-grip').length;
+    if (!g) return { count: n, rect: null };
+    const r = g.getBoundingClientRect();
+    const host = document.querySelector('.desk-frame-host');
+    return { count: n, rect: { x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) },
+             receded: host?.getAttribute('data-chrome-receded'),
+             pe: getComputedStyle(g).pointerEvents, vw: innerWidth };
+  })()`);
   const gripPressed = await pressEl(app, "document.querySelector('.wz-sliver-grip')", 'the board sliver grip opens the panel');
+  ok('ITEM 176 (diagnostic): the sliver grip is measured — its rect, its count, the chrome-recede state and its computed pointer-events — so a refusal names WHICH of those it was rather than leaving it to inference',
+    !!gripGeom && gripGeom.rect !== null, JSON.stringify(gripGeom));
   await sleep(400);
   const sliverOpen = await app.evalJs("document.querySelector('.wz-sliver')?.getAttribute('data-open')");
   ok('ITEM 176 (precondition): the board sliver is OPEN before its door is pressed — the first pair failed precisely here, with the door occluded by the strip because the panel had never been opened',
