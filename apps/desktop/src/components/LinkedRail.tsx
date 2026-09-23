@@ -11,16 +11,13 @@
 //   mechanism (§6c, `CSS.highlights`), PW's own side of §8's split, and
 //   it isn't built on this branch yet. This file renders the RESTING
 //   state only — "everything this page is connected to."
-// - The 'page' vs 'source' vs 'imported doc' split Nick asked for has no
-//   field to derive it from today (see `store/linkedRail.ts`'s own
-//   `RailKind` comment for the full reasoning) — every non-board entry
-//   target reports as 'page' here, not a guess at the finer three-way
-//   split.
+// - KNOWN LIMIT: no 'Source' label — nothing marks an entry as a source
+//   today; it arrives with records (item 192). Kinds are Page / Imported /
+//   Board / Card / Note (see `store/linkedRail.ts`, RULED by Fable).
 // - OPEN for a card target navigates to its board, not a card popup.
-//   `BoardCardPopup` (components/BoardEditor.tsx) is a local, unexported
-//   function there — reusing it means BoardEditor.tsx exporting it (or a
-//   rail-appropriate preview of its own), which is out of this build's
-//   own scope. Named here rather than silently degraded without saying so.
+//   `BoardCardPopup` (components/BoardEditor.tsx) is local and unexported;
+//   BoardEditor.tsx is under FIX's item 160, so it is NOT touched until 160
+//   merges — then an opener is exported and wired here (Fable's ruling).
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getJournalEntry } from '../store/persistence';
@@ -30,7 +27,7 @@ import { routeForEntry } from '../store/routeForEntry';
 import { useDeskLexicon } from '../store/deskLexicon';
 
 const KIND_LABEL: Record<ResolvedLink['kind'], string> = {
-  page: 'Page', board: 'Board', card: 'Card', note: 'Note',
+  page: 'Page', board: 'Board', imported: 'Imported', card: 'Card', note: 'Note',
 };
 
 function LinkedRailRow({ item, onOpen, onRemove }: { item: ResolvedLink; onOpen: () => void; onRemove: () => void }) {
@@ -71,7 +68,7 @@ export function LinkedRailBody({ entryId }: { entryId: string }) {
   const resolved = entry ? pageConnections(entry.pageLinks).map(resolveLink) : [];
 
   const openTarget = (item: ResolvedLink) => {
-    if (item.kind === 'page' || item.kind === 'board') {
+    if (item.kind === 'page' || item.kind === 'board' || item.kind === 'imported') {
       if (item.entry) navigate(routeForEntry(item.entry));
       return;
     }
