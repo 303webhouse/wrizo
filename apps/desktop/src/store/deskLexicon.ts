@@ -565,33 +565,31 @@ export type DeskTermId =
   // must say which of the two it will do, because REMOVE UNLINKS AND NEVER
   // DELETES.
   | 'connectMenuLink' | 'connectMenuNoteThis' | 'connectMenuMakeCard'
-  | 'connectMenuRemove'
-  | 'connectRailTitle' | 'connectRailRestingEmpty' | 'connectRailSelectedEmpty'
-  | 'connectRailRemove'
-  | 'connectTermOne' | 'connectTermMany'
+  | 'connectMenuUnlink'
+  | 'connectRailTab' | 'connectRailRestingEmpty' | 'connectRailSelectedEmpty'
+  | 'connectRailUnlink'
+  | 'connectExportNote'
   | 'connectAnchorAmbiguous' | 'connectAnchorLost';
 
-// EXPERIMENT 1 — THE WRITER'S NOUN FOR A PAGE CONNECTION, DEFINED ONCE.
+// EXPERIMENT 1 — THERE IS NO NOUN ON SCREEN. Nick's word, verbatim: *"'Links'
+// works for the backend, at least. Not sure that needs to be used in the UI,
+// though."* Fable's default on that, which he did not object to: **no noun in
+// the UI at all.** Only ACTS and a STATE — "Link to…", "Unlink", "Linked".
 //
-// ⚠ AWAITING NICK'S WORD. Fable's stated default is "links", and that is what
-// is built here — a desk default, vetoable, not founder text. When he answers,
-// THESE TWO LINES are the whole change: every string below composes from them,
-// so the English cannot end up half-migrated.
-//
-// WHY IT IS NOT "CONNECTIONS", which was this desk's first choice and was
-// overruled: THE BOARD ALREADY OWNS THAT WORD. `boardFooterToggle` is "Show
-// connections" and sits with `boardThreadGrab` ("Drag to connect") and the
-// thread strings; it toggles the THREADS BETWEEN CARDS. There is also a
-// `'connection'` Box kind meaning exactly that — a link between two cards,
-// holding none of the writer's own words (see pageExport's boardBody, which
-// skips it BY NAME). Reusing the word for a page's links would make one word
-// mean two different things to the same writer, in the same app, on adjacent
-// surfaces — the collision the code was already careful to avoid.
-//
-// Note the verb is untouched by this: "Link" is the ACT in the right-click
-// menu, and "Drag to connect" stays the board's own act. One noun each.
-const CONNECT_NOUN_ONE = 'link';
-const CONNECT_NOUN_MANY = 'links';
+// So there is nothing here to define. This desk twice proposed a noun and was
+// twice corrected, and the sequence is worth keeping because it explains the
+// shape:
+//   1. "connections" — REFUSED. The board already owns that word:
+//      `boardFooterToggle` is "Show connections", sitting with `boardThreadGrab`
+//      ("Drag to connect"), and there is a `'connection'` Box KIND meaning
+//      exactly that — a thread between two cards, holding none of the writer's
+//      own words (pageExport's boardBody skips it BY NAME). One word would have
+//      meant two things on adjacent surfaces.
+//   2. "links" — right for the COLUMN, unnecessary on screen. `page_links`
+//      stays the column's name and appears nowhere a writer can see.
+// A writer never has to learn a word for this: they link something, they
+// unlink it, and a tab tells them what is linked. The noun was the desk's
+// habit, not the writer's need.
 
 const CANONICAL: Record<DeskTermId, string> = {
   // BM1 — the Board's Own Modes.
@@ -1231,29 +1229,34 @@ const CANONICAL: Record<DeskTermId, string> = {
   publishDownloadFailed: 'That download couldn’t be made — nothing was lost, try again.',
   publishComingSoon: 'Publishing options — tailored to this work’s type, destination, and format — are coming soon.',
 
-  // EXPERIMENT 1 — connecting from the page. EVERY writer-facing noun here
-  // composes from CONNECT_NOUN_ONE/MANY above, so Nick's word lands in one
-  // place. The three menu ACTS are his own list, in his order (styling · Make
-  // a card · Link · Note This · Remove) and are verbs, not the noun.
-  connectMenuLink: 'Link',
+  // EXPERIMENT 1 — connecting from the page. ACTS AND A STATE, NO NOUN.
+  // Nick's menu list, in his order: styling · Make a card · Link · Note This ·
+  // Remove. "Link to…" carries the ellipsis because it opens a chooser rather
+  // than acting immediately.
+  connectMenuLink: 'Link to…',
   connectMenuNoteThis: 'Note This',
   connectMenuMakeCard: 'Make a card',
-  // Never a bare "Remove" — the act UNLINKS and never deletes, so the menu
-  // says which of the two it will do.
-  connectMenuRemove: `Remove this ${CONNECT_NOUN_ONE}`,
-  connectRailTitle: `This page’s ${CONNECT_NOUN_MANY}`,
-  connectRailRestingEmpty: `This page has no ${CONNECT_NOUN_MANY} yet.`,
-  connectRailSelectedEmpty: `These words have no ${CONNECT_NOUN_MANY}.`,
-  connectRailRemove: `Remove this ${CONNECT_NOUN_ONE}`,
-  // The counting words the export and the rail share, so "1 link" and
-  // "3 links" are never spelled two ways by two callers.
-  connectTermOne: CONNECT_NOUN_ONE,
-  connectTermMany: CONNECT_NOUN_MANY,
-  // §1b's two honest refusals. The anchor is KEPT in both cases and its links
-  // still open their targets — neither of these is a deletion, and neither is
-  // worded so it could be read as one.
+  // "Unlink" replaces what was a bare "Remove". It is strictly better than the
+  // wording it replaces: REMOVE UNLINKS AND NEVER DELETES was previously
+  // enforced by adding words to "Remove" ("Remove this link"), where the verb
+  // now says it by itself, and says it without a noun.
+  connectMenuUnlink: 'Unlink',
+  // The rail's tab. A STATE, not a heading — the count rides beside it as a
+  // number, which is why no plural has to be spelled at all.
+  connectRailTab: 'Linked',
+  connectRailRestingEmpty: 'Nothing is linked to this page yet.',
+  connectRailSelectedEmpty: 'Nothing is linked to these words.',
+  connectRailUnlink: 'Unlink',
+  // The exported file's honest line — the third application of pageExport's own
+  // law (ink and unrecognised card kinds already earn one). "material" is
+  // deliberately not a name for the feature: it describes what is missing from
+  // the file without teaching the writer a term.
+  connectExportNote: 'Linked material isn’t included.',
+  // §1b's two honest refusals. The anchor is KEPT in both cases and still opens
+  // what it points at — neither is a deletion, and neither is worded so it
+  // could be read as one.
   connectAnchorAmbiguous: 'These words appear more than once now — point me at the right one.',
-  connectAnchorLost: `The words this was attached to are gone. The ${CONNECT_NOUN_ONE} is kept.`,
+  connectAnchorLost: 'The words this was attached to are gone. It is kept, and still opens.',
 };
 
 // Flux registers its own capture-module name (the app's other live theme

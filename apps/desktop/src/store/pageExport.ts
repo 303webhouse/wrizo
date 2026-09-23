@@ -72,19 +72,22 @@ const UNKNOWN_KIND_PLACEHOLDER = '[A card of an unrecognized kind — not export
 // never drops them in silence. A RICHER EXPORT (the connections themselves,
 // with their targets) waits for records and for Nick.
 //
-// ⚠ THE WORD IS THE WRITER'S, NOT THE STORAGE'S. Fable: "the export's third
-// line is words the writer reads — use the same term the right-click menu and
-// the rail use, not a code name." `pageLinks`/`page_links` is the column's
-// name and appears nowhere a writer can see. The term comes from the lexicon
-// through `canonicalDeskTerm`, which does NO theme resolution — so this file
-// keeps the theme-independence its header comment requires (an exported file
-// must not say 'Log' because the writer was in Flux when they pressed
-// Download) while still speaking the same word as the menu and the rail. One
-// definition of the word; no drift to detect later.
-const CONNECTIONS_TERM_ONE = canonicalDeskTerm('connectTermOne');
-const CONNECTIONS_TERM_MANY = canonicalDeskTerm('connectTermMany');
-const LINKS_PLACEHOLDER =
-  `[${CONNECTIONS_TERM_MANY.charAt(0).toUpperCase()}${CONNECTIONS_TERM_MANY.slice(1)} — not exported as text.]`;
+// ⚠ THE WORDS ARE THE WRITER'S, NOT THE STORAGE'S — AND THERE IS NO NOUN.
+// Nick: *"'Links' works for the backend, at least. Not sure that needs to be
+// used in the UI, though."* So the file says what is missing without naming a
+// feature: "Linked material isn't included." `pageLinks`/`page_links` is the
+// column's name and appears nowhere a writer can see.
+//
+// The sentence comes from the lexicon through `canonicalDeskTerm`, which does
+// NO theme resolution — so this file keeps the theme-independence its header
+// comment requires (an exported file must not say 'Log' because the writer
+// happened to be in Flux when they pressed Download) while still speaking the
+// same words as the menu and the rail. One definition; no drift to detect.
+//
+// NO COUNT. The earlier version said "carries 3 connections", which needed a
+// plural noun to exist. The note's job is to stop a silent omission, and it
+// does that without teaching the writer a term or asserting a number.
+const LINKS_PLACEHOLDER = `[${canonicalDeskTerm('connectExportNote')}]`;
 
 function withInkNote(body: string, entry: JournalEntry): string {
   if (entry.strokes && entry.strokes.length > 0) {
@@ -100,10 +103,8 @@ function liveLinkCount(entry: JournalEntry): number {
 }
 
 function withLinksNote(body: string, entry: JournalEntry): string {
-  const n = liveLinkCount(entry);
-  if (n === 0) return body;
-  const plural = n === 1 ? CONNECTIONS_TERM_ONE : CONNECTIONS_TERM_MANY;
-  return `${body}\n\n${LINKS_PLACEHOLDER} (this page carries ${n} ${plural} to other pages, boards or cards)`;
+  if (liveLinkCount(entry) === 0) return body;
+  return `${body}\n\n${LINKS_PLACEHOLDER}`;
 }
 
 // Both notes, in a fixed order so an export is byte-stable for the same page.

@@ -1,20 +1,23 @@
 // EXPERIMENT 1 — THE WORD GUARD.
 //
-// Fable caught this desk reusing the board's own word: `boardFooterToggle` is
-// "Show connections" and it toggles the THREADS BETWEEN CARDS (there is even a
-// `'connection'` Box kind meaning exactly that). Calling a page's links
-// "connections" too would make one word mean two things to the same writer on
-// adjacent surfaces.
+// The on-screen rule, after two corrections to this desk:
+//   1. "connections" — REFUSED. The board already owns that word.
+//      `boardFooterToggle` is "Show connections", sitting with `boardThreadGrab`
+//      ("Drag to connect"), and there is a `'connection'` Box KIND meaning
+//      exactly that — a thread between two cards (pageExport's boardBody skips
+//      it BY NAME). One word would have meant two things on adjacent surfaces.
+//   2. "links" — right for the COLUMN, unnecessary on screen. Nick, verbatim:
+//      *"'Links' works for the backend, at least. Not sure that needs to be used
+//      in the UI, though."*
+// So: NO NOUN ON SCREEN. Acts and a state — "Link to…", "Unlink", "Linked".
+// `page_links` stays the column's name and appears nowhere a writer can see.
 //
 // A ruling that lives only in a reviewer's memory gets undone by the next hand,
-// so this asserts it mechanically, in BOTH directions, and also proves the claim
-// that the English lives in ONE place — because "it composes from one constant"
-// is worth nothing if a later edit quietly hardcodes the noun again.
+// so it is asserted mechanically here, in both directions.
 //
 // Browserless: transpiles deskLexicon.ts with the real compiler and stubs its
 // two imports (react, theme) — nothing here needs either.
 
-import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -33,14 +36,13 @@ let js = ts.transpileModule(src, {
   compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.ESNext },
 }).outputText;
 // Stub the two imports. Asserted rather than assumed: if the import list ever
-// grows, the replace below stops matching and this guard fails loudly instead
-// of silently testing a stale copy.
-const before = js;
+// grows, this fails loudly instead of silently testing a stale copy.
+const beforeStub = js;
 js = js.replace(/^import \{ useEffect, useState \} from 'react';$/m,
   'const useEffect = () => {}; const useState = () => [0, () => {}];');
 js = js.replace(/^import \{ useTheme.*from '\.\/theme';$/m,
   "const useTheme = () => 'plateau';");
-if (js === before || /^import /m.test(js)) {
+if (js === beforeStub || /^import /m.test(js)) {
   console.log('FAIL — deskLexicon.ts imports changed; this guard could not stub them.');
   console.log('       unstubbed: ' + (js.match(/^import .*$/gm) || []).join(' | '));
   process.exit(1);
@@ -48,20 +50,27 @@ if (js === before || /^import /m.test(js)) {
 
 const tmp = join(tmpdir(), 'wrizo-exp1-lexicon-guard');
 mkdirSync(tmp, { recursive: true });
-const p = join(tmp, 'deskLexicon.mjs');
-writeFileSync(p, js, 'utf8');
-const lex = await import(pathToFileURL(p).href);
+const modPath = join(tmp, 'deskLexicon.mjs');
+writeFileSync(modPath, js, 'utf8');
+const lex = await import(pathToFileURL(modPath).href);
 
-const T = (id) => lex.canonicalDeskTerm(id);
 let failures = 0;
 const fail = (msg) => { failures++; console.log('  FAIL ' + msg); };
 const ok = (msg) => console.log('  ok   ' + msg);
 
-// The two vocabularies that must not overlap.
+const T = (id) => {
+  const v = lex.canonicalDeskTerm(id);
+  // A missing term must be a failure, not `undefined` flowing into a regex and
+  // quietly passing — or worse, throwing halfway and leaving later claims unrun.
+  if (typeof v !== 'string') { fail(`${id} has no canonical string (got ${String(v)})`); return ''; }
+  return v;
+};
+
+// Everything this feature says on screen, or in an exported file.
 const CONNECT_IDS = [
-  'connectMenuLink', 'connectMenuNoteThis', 'connectMenuMakeCard', 'connectMenuRemove',
-  'connectRailTitle', 'connectRailRestingEmpty', 'connectRailSelectedEmpty',
-  'connectRailRemove', 'connectTermOne', 'connectTermMany',
+  'connectMenuLink', 'connectMenuNoteThis', 'connectMenuMakeCard', 'connectMenuUnlink',
+  'connectRailTab', 'connectRailRestingEmpty', 'connectRailSelectedEmpty',
+  'connectRailUnlink', 'connectExportNote',
   'connectAnchorAmbiguous', 'connectAnchorLost',
 ];
 // The board's thread vocabulary — the words that already mean "a thread between
@@ -70,69 +79,76 @@ const BOARD_THREAD_IDS = [
   'boardFooterToggle', 'boardThreadGrab', 'boardThreadPrefix', 'boardThreadUntitled',
 ];
 
-const word = (w) => new RegExp(`\\b${w}\\b`, 'i');
-
-console.log('CLAIM 1 — the page\'s noun is NOT the board\'s noun');
+console.log("CLAIM 1 — the page side uses NO noun at all (Nick's word)");
 {
-  const one = T('connectTermOne');
-  const many = T('connectTermMany');
-  console.log(`  page's noun: "${one}" / "${many}"`);
-  for (const forbidden of ['connection', 'connections']) {
-    if (word(forbidden).test(one) || word(forbidden).test(many)) {
-      fail(`the page's noun is "${forbidden}" — that is the board's word for a card thread`);
-    }
-  }
-  // and no connect* string may smuggle it back in
+  // This no longer checks that a noun is used consistently; it checks that there
+  // is none. Two families are forbidden: the board's noun, and any noun for this
+  // feature itself. "Link to…", "Unlink" and "Linked" are an ACT and a STATE and
+  // must pass — so the patterns are narrow rather than banning the stem.
+  const FORBIDDEN = [
+    [/\bconnections?\b/i, "the board's noun for a card thread"],
+    [/\blinks\b/i, 'a plural noun for this feature'],
+    [/\b(a|the|this|its)\s+link\b/i, 'a singular noun for this feature'],
+  ];
+  const before = failures;
   for (const id of CONNECT_IDS) {
     const v = T(id);
-    for (const forbidden of ['connection', 'connections']) {
-      if (word(forbidden).test(v)) fail(`${id} says "${forbidden}": ${JSON.stringify(v)}`);
+    for (const [re, why] of FORBIDDEN) {
+      if (re.test(v)) fail(`${id} uses ${why}: ${JSON.stringify(v)}`);
     }
   }
-  if (failures === 0) ok('no connect* term uses the board\'s noun');
+  if (failures === before) ok("no noun on the page side, and none of the board's vocabulary");
 }
 
-console.log('CLAIM 2 — and the board has not taken the page\'s noun either');
+console.log("CLAIM 2 — and the board has not taken the page side's words either");
 {
   const before = failures;
-  const one = T('connectTermOne');
-  const many = T('connectTermMany');
+  // The reverse direction still matters: a board string saying "Unlink" or
+  // "Linked" would read as this feature on the wrong surface.
   for (const id of BOARD_THREAD_IDS) {
     const v = T(id);
-    if (word(one).test(v) || word(many).test(v)) {
-      fail(`${id} says the page's noun: ${JSON.stringify(v)} — the collision, reversed`);
+    if (/\b(unlink|linked)\b/i.test(v)) {
+      fail(`${id} speaks the page side's words: ${JSON.stringify(v)} — the collision, reversed`);
     }
   }
-  if (failures === before) ok(`board thread terms avoid "${one}"/"${many}"`);
+  if (failures === before) ok('board thread terms avoid "Unlink"/"Linked"');
 }
 
-console.log('CLAIM 3 — the English lives in ONE place: every noun COMPOSES');
+console.log('CLAIM 3 — the ruled strings are exactly what was ruled');
 {
   const before = failures;
-  const one = T('connectTermOne');
-  const many = T('connectTermMany');
-  // Each of these must contain the shared noun rather than a hardcoded copy, so
-  // that changing the two constants changes all of them.
-  const mustContainMany = ['connectRailTitle', 'connectRailRestingEmpty', 'connectRailSelectedEmpty'];
-  const mustContainOne = ['connectMenuRemove', 'connectRailRemove', 'connectAnchorLost'];
-  for (const id of mustContainMany) {
-    if (!word(many).test(T(id))) fail(`${id} does not use connectTermMany ("${many}"): ${JSON.stringify(T(id))}`);
+  // Pinned, because these five ARE the ruling. A later "improvement" to any of
+  // them is a change to a decision, not to a string.
+  const RULED = {
+    connectMenuLink: 'Link to…',
+    connectMenuUnlink: 'Unlink',
+    connectRailUnlink: 'Unlink',
+    connectRailTab: 'Linked',
+    connectExportNote: 'Linked material isn’t included.',
+  };
+  for (const [id, want] of Object.entries(RULED)) {
+    if (T(id) !== want) fail(`${id} is ${JSON.stringify(T(id))}, ruled ${JSON.stringify(want)}`);
   }
-  for (const id of mustContainOne) {
-    if (!word(one).test(T(id))) fail(`${id} does not use connectTermOne ("${one}"): ${JSON.stringify(T(id))}`);
-  }
-  if (failures === before) ok('all six composed strings carry the shared noun');
+  if (failures === before) ok('all five ruled strings verbatim');
 }
 
-console.log('CLAIM 4 — "Remove" is never bare (it unlinks, and must say so)');
+console.log('CLAIM 4 — the take-off act names itself; never a bare "Remove"');
 {
   const before = failures;
-  for (const id of ['connectMenuRemove', 'connectRailRemove']) {
+  // The standing rule is REMOVE UNLINKS AND NEVER DELETES. It used to be kept by
+  // adding words to "Remove" ("Remove this link"); "Unlink" keeps it in the verb.
+  // Either satisfies it. A BARE "Remove" never does — it does not say which of
+  // the two it will do.
+  for (const id of ['connectMenuUnlink', 'connectRailUnlink']) {
     const v = T(id).trim();
-    if (/^remove$/i.test(v)) fail(`${id} is a bare "Remove" — the menu must say which of the two it does`);
-    if (!/^remove\b/i.test(v)) fail(`${id} no longer begins with "Remove": ${JSON.stringify(v)}`);
+    if (/^remove$/i.test(v)) {
+      fail(`${id} is a bare "Remove" — it must say which of the two it does`);
+    } else if (!/^unlink$/i.test(v) && !/^remove\s+\S/i.test(v)) {
+      fail(`${id} is neither "Unlink" nor "Remove <something>": ${JSON.stringify(v)}`);
+    }
+    if (/\bdelete/i.test(v)) fail(`${id} says delete; the act unlinks`);
   }
-  if (failures === before) ok('both remove terms name what they remove');
+  if (failures === before) ok('both take-off labels name the act');
 }
 
 console.log('CLAIM 5 — neither refusal reads as a deletion');
@@ -140,14 +156,16 @@ console.log('CLAIM 5 — neither refusal reads as a deletion');
   const before = failures;
   for (const id of ['connectAnchorAmbiguous', 'connectAnchorLost']) {
     const v = T(id);
-    if (/\b(deleted|removed|discarded|lost forever|gone for good)\b/i.test(v)) {
+    if (/\b(deleted|discarded|lost forever|gone for good)\b/i.test(v)) {
       fail(`${id} reads as a deletion: ${JSON.stringify(v)}`);
     }
   }
-  // the lost wording must positively say the link survives
-  if (!/\bkept\b/i.test(T('connectAnchorLost'))) {
-    fail('connectAnchorLost does not say the link is KEPT — §1 rule 4 requires it');
-  }
+  // §1 rule 4: a lost anchor is KEPT, is marked, and STILL OPENS its target.
+  // Saying only "gone" would read as a deletion however it was meant, so the
+  // wording has to carry both halves positively.
+  const lost = T('connectAnchorLost');
+  if (!/\bkept\b/i.test(lost)) fail('connectAnchorLost does not say it is KEPT — §1 rule 4 requires it');
+  if (!/\bopens?\b/i.test(lost)) fail('connectAnchorLost does not say it still OPENS — §1 rule 4 requires that too');
   if (failures === before) ok('both refusals keep the anchor, in words');
 }
 
