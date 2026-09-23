@@ -8,19 +8,23 @@
 // everything it hides, zone 5 and the width budget, the Linked list, open,
 // remove/unlink) — reading `store/anchors.ts`, never writing through it.
 //
-// THIS FILE IS BUILT PARTIAL, ON PURPOSE, NOT SILENTLY: only §7 check 1
-// (switch OFF = v1) is buildable today. Checks 2-7 depend on machinery this
-// lane does not own and that does not exist on this branch yet —
-// `store/anchors.ts` (PW writes it; §8's own hazard note: "if B needs a
-// write, it asks A for a function rather than reaching past the seam" —
-// reading past an absent one is the same hazard, so this file does not
-// import or mock it), the right-click menu, and the left strip's three
-// acts (all PW's side). Extending this file to cover them is PW's own
-// commit or a later one once `store/anchors.ts` lands — recorded here so a
-// reader of a thin exp1.mjs knows it is incomplete BY DESIGN, not by
-// oversight (this project's own park-count law: state what's missing,
-// never let a short file read as a finished one).
+// GROWS WITH THE LINKED LIST (Fable, 2026-09-24): §7 check 1 (switch OFF =
+// v1) plus a PARTIAL §7 check 5 — the resting list's own sort/group/remove,
+// now that `store/anchors.ts` is real (merged from PW's `exp1-connect-text`
+// @ 78d4529). STILL NOT HERE, because the machinery for them does not exist
+// on this branch: §7 check 2 (capture), check 3 (re-finding), check 4 (the
+// menu's Remove), the SELECTED-state half of check 5 ("click a linked span
+// -> only its source(s)" — detecting the click is PW's painted-mark
+// mechanism, §6c, blocked on the `CSS.highlights` measurement), and the
+// "double-click opens the right popup" half of check 5's OPEN clause (a
+// card target navigates to its board here, not a card popup — see
+// LinkedRail.tsx's own header for why). Extending this file further is
+// PW's own commit (checks 2-4) or a later one once §6c's painted mark and
+// BoardCardPopup's own export land — recorded here so a reader of a
+// still-partial exp1.mjs knows it by design, not by oversight (park-count
+// law: state what's missing, never let a partial file read as finished).
 import { withHarness } from '../runtime-verify.mjs';
+import { trustedDispatch } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -57,6 +61,64 @@ const setExperimentFlag = (app, on) =>
 
 const panelOuterHTML = (app) =>
   app.evalJs("document.querySelector('.wz-tutor-panel')?.outerHTML ?? null");
+
+// §7 check 5's own fixture: one prose page with FOUR links, one of each
+// RailKind (store/linkedRail.ts) — a plain page (tagged), a board (tagged),
+// a card on that board (no tags — Box has none), and a bare note (no
+// target, no tags). Seeded through `wrizoCreateJournalPage`'s own
+// `pageLinks` field, this ticket's own additive widening of that seam
+// (persistence.ts, JournalPageSeed) — never a raw localStorage write, the
+// standing law. `updatedAt` values are spaced a full second apart so
+// recency order is unambiguous rather than relying on wall-clock ordering
+// of near-simultaneous seeds.
+const seedLinkedFixture = async (app) => {
+  await freshDesk(app, 1280, 900);
+  await app.evalJs(`(() => {
+    const t = (n) => new Date(Date.UTC(2026, 8, 24, 12, 0, n)).toISOString();
+    window.wrizoCreateJournalPage({
+      id: 'exp1-target-page', text: 'A Source Page\\nsome body text', tags: ['research', 'characters'], createdAt: t(0), origin: null,
+    });
+    window.wrizoCreateJournalPage({
+      id: 'exp1-target-board', text: 'A Linked Board', pageType: 'board', tags: ['plot'], createdAt: t(0), origin: null,
+      boxes: [{ id: 'exp1-card-1', kind: 'text', text: 'A Card', x: 0, y: 0, w: 100, h: 60, z: 1 }],
+    });
+    window.wrizoCreateJournalPage({
+      id: 'exp1-page', text: 'The main page.\\n\\nSecond paragraph.', createdAt: t(0), origin: null,
+      pageLinks: {
+        anchors: [
+          { id: 'a1', paraIndex: 0, quote: 'main', prefix: 'The ', suffix: ' page.', startHint: 4, createdAt: t(0), updatedAt: t(0) },
+          { id: 'a2', paraIndex: 1, quote: 'Second', prefix: '', suffix: ' paragraph.', startHint: 0, createdAt: t(0), updatedAt: t(0) },
+        ],
+        links: [
+          { id: 'link-source', anchorId: 'a1', kind: 'source', targetEntryId: 'exp1-target-page', createdAt: t(0), updatedAt: t(1) },
+          { id: 'link-board', anchorId: 'a2', kind: 'source', targetEntryId: 'exp1-target-board', createdAt: t(0), updatedAt: t(2) },
+          { id: 'link-card', anchorId: 'a1', kind: 'card', targetEntryId: 'exp1-target-board', targetBoxId: 'exp1-card-1', createdAt: t(0), updatedAt: t(3) },
+          { id: 'link-note', anchorId: 'a2', kind: 'note', body: 'A bare note', createdAt: t(0), updatedAt: t(4) },
+        ],
+      },
+    });
+  })()`);
+  await app.reload();
+  await app.evalJs("location.hash = '#/page/exp1-page'");
+  await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'exp1 page framed' });
+  await sleep(300);
+  await setExperimentFlag(app, true);
+  await app.reload();
+  await app.evalJs("location.hash = '#/page/exp1-page'");
+  await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'exp1 page re-framed, switch on' });
+  await sleep(300);
+};
+
+const openLinkedTab = async (app) => {
+  await openTutor(app);
+  await app.evalJs("document.querySelector('#wz-tutor-tab-linked').click()");
+  await sleep(200);
+};
+
+const railRows = (app) => app.evalJs(`Array.from(document.querySelectorAll('.wz-linked-rail-item')).map(row => ({
+  kind: row.querySelector('.wz-linked-rail-item-kind')?.textContent ?? null,
+  label: row.querySelector('.wz-linked-rail-item-label')?.textContent ?? null,
+}))`);
 
 await withHarness(async (app) => {
   // ==========================================================================
@@ -105,6 +167,108 @@ await withHarness(async (app) => {
   const offAgainHTML = await panelOuterHTML(app);
   ok('§7.1 (b): switch OFF again, after having been ON once this session — byte-identical to the first OFF read (a-round-trip-is-a-no-op)',
     offAgainHTML === offHTML, JSON.stringify({ same: offAgainHTML === offHTML, offLen: offHTML?.length, offAgainLen: offAgainHTML?.length }));
+
+  // ==========================================================================
+  // §7 check 5 (PARTIAL) — the resting list: sort, group-by-tag, remove/
+  // unlink. NOT covered here (see this file's own header): the SELECTED
+  // state and the popup half of OPEN.
+  // ==========================================================================
+  await seedLinkedFixture(app);
+  await openLinkedTab(app);
+
+  // (a) default sort is recency, most-recently-connected first.
+  const recencyRows = await railRows(app);
+  const wantRecency = [
+    { kind: 'Note', label: 'A bare note' },
+    { kind: 'Card', label: 'A Card' },
+    { kind: 'Board', label: 'A Linked Board' },
+    { kind: 'Page', label: 'A Source Page' },
+  ];
+  ok('§7.5 (a): the resting list, default sort (recency) — 4 rows, most-recently-connected first',
+    JSON.stringify(recencyRows) === JSON.stringify(wantRecency), JSON.stringify(recencyRows));
+
+  // (b) kind sort — real hit-tested press, item 151's own instrument (not
+  // `.click()`, which cannot see whether a control is genuinely reachable).
+  const pressedKind = await trustedDispatch(app, "document.querySelector('#wz-linked-sort-kind')", 'Linked rail: Kind sort tab', { report: ok });
+  if (pressedKind) {
+    await sleep(150);
+    const kindRows = await railRows(app);
+    ok("§7.5 (b): kind sort — Page, Board, Card, Note (store/linkedRail.ts's own KIND_ORDER)",
+      JSON.stringify(kindRows.map(r => r.kind)) === JSON.stringify(['Page', 'Board', 'Card', 'Note']), JSON.stringify(kindRows));
+  }
+
+  // (c) THE GROUPING LAW, a third time: by tag GROUPS, an item with N tags
+  // appears under N groups; an item with none (the card, the note) appears
+  // in none.
+  const pressedTag = await trustedDispatch(app, "document.querySelector('#wz-linked-sort-tag')", 'Linked rail: Tag sort tab', { report: ok });
+  if (pressedTag) {
+    await sleep(150);
+    const tagGroups = await app.evalJs(`Array.from(document.querySelectorAll('.wz-linked-rail .wz-tutor-section')).map(sec => ({
+      tag: sec.querySelector('.wz-tutor-h')?.textContent ?? null,
+      labels: Array.from(sec.querySelectorAll('.wz-linked-rail-item-label')).map(el => el.textContent),
+    }))`);
+    const wantGroups = [
+      { tag: 'characters', labels: ['A Source Page'] },
+      { tag: 'plot', labels: ['A Linked Board'] },
+      { tag: 'research', labels: ['A Source Page'] },
+    ];
+    ok('§7.5 (c): the grouping law — three tag groups, alphabetical, the card and the note in NEITHER (Box carries no tags; a bare note has none)',
+      JSON.stringify(tagGroups) === JSON.stringify(wantGroups), JSON.stringify(tagGroups));
+  }
+
+  // (d) remove = unlink (§5's own wording law: the control says which of
+  // the two it does), and it's a REAL write — survives a reload, not an
+  // optimistic-only UI removal.
+  await trustedDispatch(app, "document.querySelector('#wz-linked-sort-recency')", 'Linked rail: back to recency sort', { report: ok });
+  await sleep(150);
+  const removePressed = await trustedDispatch(app, "document.querySelector('[aria-label=\"Remove this link — A bare note\"]')", 'Linked rail: remove the note link', { report: ok });
+  if (removePressed) {
+    await sleep(150);
+    const afterRemove = await railRows(app);
+    ok('§7.5 (d): remove — the row is gone immediately, 3 remain',
+      afterRemove.length === 3 && !afterRemove.some(r => r.label === 'A bare note'), JSON.stringify(afterRemove));
+
+    await app.reload();
+    await app.evalJs("location.hash = '#/page/exp1-page'");
+    await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'exp1 page re-framed after unlink' });
+    await sleep(300);
+    await openLinkedTab(app);
+    const afterReload = await railRows(app);
+    ok('§7.5 (d): remove is a real write — the row stays gone after a reload, not an optimistic-only removal',
+      afterReload.length === 3 && !afterReload.some(r => r.label === 'A bare note'), JSON.stringify(afterReload));
+
+    // The anchor and the target both survive unlink — Nick's word ("Remove
+    // unlinks and never deletes"). The anchor still lives in pageLinks.anchors
+    // (soft-deleted links only ever touch `links`, never `anchors`), and the
+    // target page is untouched (still readable, unaffected).
+    const survivors = await app.evalJs(`(() => {
+      const raw = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+      const page = raw.find(e => e.id === 'exp1-page');
+      const target = raw.find(e => e.id === 'exp1-target-page');
+      return {
+        anchorA2Present: !!page?.pageLinks?.anchors?.some(a => a.id === 'a2' && !a.deletedAt),
+        linkNoteSoftDeleted: !!page?.pageLinks?.links?.find(l => l.id === 'link-note')?.deletedAt,
+        targetUntouched: !!target && target.text === 'A Source Page\\nsome body text',
+      };
+    })()`);
+    ok("§7.5 (d): unlink is soft — the link is marked deletedAt, its anchor survives, and the target's own row is untouched",
+      survivors.anchorA2Present && survivors.linkNoteSoftDeleted && survivors.targetUntouched, JSON.stringify(survivors));
+  }
+
+  // (e) the honest empty state — a page with no links at all shows the
+  // waiting text, not an empty list that looks finished.
+  await app.evalJs(`(() => {
+    const now = new Date().toISOString();
+    window.wrizoCreateJournalPage({ id: 'exp1-empty-page', text: 'Nothing linked here.', createdAt: now, origin: null });
+  })()`);
+  await app.reload();
+  await app.evalJs("location.hash = '#/page/exp1-empty-page'");
+  await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'exp1 empty page framed' });
+  await sleep(300);
+  await openLinkedTab(app);
+  const emptyText = await app.evalJs("document.querySelector('.wz-linked-rail .wz-tutor-empty')?.textContent ?? null");
+  ok("§7.5 (e): a page with no links shows the honest waiting state ('Nothing linked yet.'), not a fabricated empty list",
+    emptyText === 'Nothing linked yet.', String(emptyText));
 
   return checks;
 });
