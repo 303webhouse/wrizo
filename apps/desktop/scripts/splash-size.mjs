@@ -77,7 +77,19 @@ for (const v of VIEWPORTS) {
   );
 }
 
-console.log('\nA is ' + (1 / 0.2 ** 0.5).toFixed(2) + 'x B in linear size and 5.00x in area '
-  + '(a fifth of the WIDTH is a twenty-fifth of the AREA at any aspect).');
+// CORRECTED 2026-09-22. This line first read: "A is 2.24x B in linear size and
+// 5.00x in area (a fifth of the WIDTH is a twenty-fifth of the AREA at any
+// aspect)." Both numbers were a CONSTANT I wrote (1/sqrt(0.2)), not a value
+// derived from the two readings beside them — and they hold only when the
+// emblem's aspect equals the SCREEN's, i.e. a 5:4 monitor. The table directly
+// above already disproved the claim: B's share of area varies 3.8%-5.7% across
+// these viewports and is a flat "twenty-fifth" at none of them. Derived now:
+const ratio = (v) => Math.sqrt(5 * ASPECT / (v.w / v.h));
+const lo = VIEWPORTS.reduce((m, v) => Math.min(m, ratio(v)), Infinity);
+const hi = VIEWPORTS.reduce((m, v) => Math.max(m, ratio(v)), 0);
+console.log('\nA/B linear = sqrt(5 * emblemAspect / screenAspect)  ->  '
+  + lo.toFixed(2) + 'x to ' + hi.toFixed(2) + 'x across the viewports above ('
+  + (lo * lo).toFixed(2) + 'x to ' + (hi * hi).toFixed(2) + 'x in area).');
+console.log('The gap DEPENDS ON SCREEN SHAPE — wider screens narrow it, taller ones widen it.');
 console.log('At reading B the handwritten labels land near or below the ~7px floor where a');
 console.log('hand-drawn stroke stops reading as a word — which is the "texture" the brief names.');

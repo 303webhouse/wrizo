@@ -5257,3 +5257,59 @@ a:focus-visible,
 .board-popup-dock-h{ font-size:9px; letter-spacing:2px; text-transform:uppercase;
   color:var(--accent-rest); text-align:center; padding-bottom:2px; }
 @media (prefers-reduced-motion:reduce){ .board-popup-dock{ transition:none; } }
+
+/* THE SPLASH (item 194) — Nick's own hand-drawn Wrizo over the live app.
+   "at most 1/5 the size of the screen with the regular app interface blurred
+   out in the background."
+
+   IT CANNOT BLOCK WRITING, BY CONSTRUCTION. `pointer-events:none` on the
+   container and on both children means this overlay is invisible to hit
+   testing: a click during the splash reaches whatever is underneath exactly as
+   if the splash were not mounted. Dismissal is driven by PASSIVE window
+   listeners in Splash.tsx, never by this layer catching anything. It is also
+   what lets the backdrop probe read THROUGH the overlay to measure the app's
+   real ground (store/backdropTone.ts).
+
+   z-index 400 sits above the app's whole existing stack (modals, backdrops
+   and toasts top out at 300) — deliberately, because at boot this is the
+   frontmost thing on the screen and nothing should paint over it.
+
+   The SIZE is not set here. A fifth of the AREA needs the geometric mean of
+   the viewport's dimensions, which CSS cannot express portably, so Splash.tsx
+   computes width/height inline off the asset's measured INK bounding box
+   (3077x2458 inside a 3374x2699 canvas). A vw/vh approximation would be right
+   at one aspect ratio and quietly wrong at the rest. */
+.wz-splash{
+  position:fixed; inset:0; z-index:400; pointer-events:none;
+  display:flex; align-items:center; justify-content:center;
+}
+/* The blur is the app itself, live — a real backdrop-filter, never a
+   screenshot (the app is local-first and paints immediately, so any captured
+   frame would already be stale by the time it showed). This is the FIRST
+   backdrop-filter in this stylesheet; the -webkit- pair is kept because the
+   property is still prefixed in parts of the Chromium line this app ships on. */
+.wz-splash-veil{
+  position:absolute; inset:0; pointer-events:none;
+  -webkit-backdrop-filter:blur(18px);
+  backdrop-filter:blur(18px);
+  opacity:1; transition:opacity .38s ease;
+}
+/* The emblem is a SIBLING of the veil, not a child, so it paints on top of the
+   blur at full clarity — the interface goes soft, the drawing does not. */
+.wz-splash-mark{
+  position:relative; pointer-events:none; user-select:none;
+  max-width:none; max-height:none;
+  opacity:1; transition:opacity .38s ease;
+}
+/* NO ANIMATED ENTRANCE, in either motion mode — the emblem is simply there at
+   first paint. Only the LEAVING is eased, and only when motion is welcome. */
+.wz-splash[data-leaving='true'] .wz-splash-veil,
+.wz-splash[data-leaving='true'] .wz-splash-mark{ opacity:0; }
+
+@media (prefers-reduced-motion:reduce){
+  /* A plain appear and disappear, exactly as briefed: the hold is unchanged,
+     the fade is removed. Splash.tsx carries a timer floor as well as the
+     transitionend, precisely because this rule can stop that event ever
+     arriving. */
+  .wz-splash-veil, .wz-splash-mark{ transition:none; }
+}

@@ -16,6 +16,7 @@ import { PageEditor, UnbornPage } from './pages/PageEditor';
 import { ImportDraft } from './pages/ImportDraft';
 import { VoiceWallWhisper } from './components/VoiceWallWhisper';
 import { ThemeEffectsLayer } from './components/ThemeEffectsLayer';
+import { Splash } from './components/Splash';
 import { FluxBlockCaret } from './components/FluxBlockCaret';
 import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
 import { subscribe, resetLocalData, getOrCreateSystemBoard } from './store/persistence';
@@ -260,6 +261,12 @@ export function App() {
         <DeskRail />
         <GlobalHeader onLogout={handleLogout} authed={authState === 'authed'} />
         <BrandMark />
+        {/* Item 194 — the splash. Mounted at app root rather than on a route:
+            it belongs to the app OPENING, not to '/' (and Fable's ruling is
+            every open, not first-run-only). It renders once per app load, is
+            pointer-events:none throughout, and blurs whatever is genuinely
+            mounted behind it — which at boot is Arrival, the Threshold. */}
+        <Splash />
         <VoiceWallWhisper />
         <ThemeEffectsLayer />
         <FluxBlockCaret />

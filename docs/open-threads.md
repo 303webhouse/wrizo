@@ -20728,8 +20728,12 @@ different scale and retires none of it. No park, no successor.
 BBOX, not the canvas** — sizing the canvas lands the visible mark at 83.1% of the
 intended area.
 
-**THE TWO READINGS ARE 5.00x APART IN AREA (2.24x linear)** — a fifth of the WIDTH is a
-twenty-fifth of the AREA, at any aspect. Computed at real viewports by committed tool
+**THE TWO READINGS ARE ~2x APART LINEARLY** — **CORRECTED, see the build entry below: this
+first read "5.00x apart in area (2.24x linear) … a twenty-fifth of the AREA at any aspect",
+and both figures were wrong** (a constant, `1/sqrt(0.2)`, not a derived value; true only on a
+5:4 screen). Correct: **A/B linear = sqrt(5 * emblemAspect / screenAspect)**, i.e. 1.88x-2.28x
+(3.52x-5.22x in area) across these viewports, and B's area share is 0.04 * screenAspect /
+emblemAspect. Computed at real viewports by committed tool
 `scripts/splash-size.mjs`. **The finding for Nick's eye: "at most 1/5" is a CEILING and
 the readings disagree about whether AREA is inside it** — by area it sits exactly at the
 ceiling; measured across the screen it spans **37.5-45.7% of the WIDTH**, ~2.2x over a
@@ -20775,3 +20779,66 @@ mounted.
 (`pw2-item176-corrected-20260922`). Nothing headful ran. **Owed on a grant:** the two
 headful frames into `Downloads` for Nick's choice, and the `backdrop-filter` compositing
 check.
+
+## THE SPLASH (item 194) — BUILT, NOT YET RUN; AND AN S0 ERROR CORRECTED —
+2026-09-22 (tools lane; branch `splash-screen`)
+
+**ALL FIVE RULINGS RECEIVED AND BUILT TO:** asset follows measured backdrop luminance at
+mount; short hold with any input dismissing early and passing through untouched; every
+open; Arrival is what sits blurred behind at boot; size by AREA until Nick picks.
+
+**S0 ERROR, CORRECTED BEFORE ANYTHING WAS BUILT ON IT.** The S0 entry above claimed the two
+readings differ by "5.00x in area (2.24x linear) — a fifth of the WIDTH is a twenty-fifth of
+the AREA **at any aspect**". **Both numbers were wrong.** They came from a constant written
+into the tool (`1/sqrt(0.2)`), not from the two readings beside them, and they hold only when
+the emblem's aspect equals the SCREEN's (a 5:4 monitor). **The per-viewport table in the same
+section already disproved the claim** — B's share of area varies 3.8%-5.7% there and is a flat
+4% at none of them. **Caught by a no-browser algebra check written to protect the box turn**,
+which re-derived the ratio rather than trusting the summary. Correct closed form: **A/B linear
+= sqrt(5 * emblemAspect / screenAspect)** = 1.88x-2.28x (3.52x-5.22x area) across these
+viewports; **B area share = 0.04 * screenAspect / emblemAspect**. The table was always right;
+only the generalisation drawn from it was wrong. Corrected in place in the survey, the ledger
+and the tool, each saying what it used to say.
+
+> **A SUMMARY LINE IS A CLAIM, NOT A CAPTION — IF IT WAS NOT DERIVED FROM THE MEASUREMENT
+> PRINTED BESIDE IT, IT IS UNVERIFIED NO MATTER HOW CAREFULLY THE TABLE ABOVE IT WAS MADE.**
+> *(proposed band, tools' words — the same shape as "byte-identical to intent is not correct",
+> one level up: the numbers were right and the sentence about them was not.)*
+
+**BUILT (no behaviour yet verified headfully):**
+- `components/Splash.tsx` — overlay at app root, **`pointer-events:none` throughout**, so it
+  is invisible to hit-testing and a click during the splash reaches the app exactly as if it
+  were not mounted. Dismissal is PASSIVE, non-capturing `window` listeners: they observe input
+  and let go of it. Sized in JS off the asset's measured INK bbox (a fifth of the AREA needs
+  the geometric mean of the viewport's dimensions, which CSS cannot express portably).
+- `store/backdropTone.ts` — measures the tone BEHIND via `elementFromPoint` at the emblem's
+  own centre, walking up to the first ≥50%-opaque background, falling back to the themed
+  `--ink-950` and then the root. Threshold is the **WCAG crossover 0.179**, not a 0.5 midpoint
+  (0.5 would call a mid-grey dark and print cream on it). It reads THROUGH the overlay
+  precisely because the overlay is pointer-events:none.
+- `index.css` — the app's **first `backdrop-filter`** (18px), on a veil SIBLING to the emblem
+  so the interface goes soft and the drawing does not; z-index 400 (the app's stack tops at
+  300); **no animated entrance in either motion mode**, fade-out only, removed under reduced
+  motion.
+- `public/brand/wrizo-sketch-for-*-theme.png` — copied **byte-identical** to Fable's originals
+  (sha256 verified, no resample, no recolour), names kept verbatim for traceability.
+- `harness/splash.mjs` — 18 checks. The load-bearing ones are the NEGATIVES: S2 asserts
+  `elementFromPoint` at the emblem's dead centre returns the app, not the splash; **S3 types a
+  key WHILE THE SPLASH IS LIVE and asserts it arrives un-prevented** (the silent loss guarded
+  against: a writer opens Wrizo, types, and the first character is eaten as the dismiss
+  gesture); S4 checks the fifth holds at TWO aspect ratios, which is the proof the size is real
+  arithmetic and not a vw/vh approximation right at one window shape.
+- `harness/splash-frames.mjs` — renders BOTH readings at one viewport, **from the shipping
+  component** via a documented localStorage frame seam (a script drawing its own emblem would
+  show Nick a picture of something that does not exist). Refuses to write a frame that is
+  leaving, undecoded, or not the size it is named after.
+
+**VERIFIED WITHOUT THE BOX:** `tsc` 0, `build:web` 0, assets and the blur both present in the
+built bundle, `node --check` on all three tools, and the sizing algebra falsified over six
+viewports (exact to 1e-12, aspect preserved, never larger than the screen) — which is what
+caught the S0 error.
+
+**NOT RUN. The box turn is still PW2's** (`pw2-item176-corrected-20260922`; 0 harness browsers
+at every check, so nothing was disturbed — the install/tsc/build ran only against a
+demonstrably idle box). **Owed on a grant, unchanged:** the two frames into `Downloads`, the
+`backdrop-filter` compositing check, and `splash.mjs` itself.
