@@ -21635,3 +21635,87 @@ token `chat1-fix159-20260924`. Next pair per Fable’s order: TOOLS’ 195
 stamp. Short-use slots noted for between pairs: INK’s 196 (`item196-download-wait` @
 `6e61980`, a de-flake — eligible to merge between pairs once verified, per the refined rule),
 PW’s paint-layer measurement, TOOLS’ splash frame, 194’s report-only run, the note-key test.
+
+## RECORDS — PW’S TIGHTENED §1b RATIFIED, ANCHORS.TS ACCEPTED, EXPERIMENT 1’S TWO BRANCHES, AND THE PROOF-SCRATCH CHECK — 2026-09-24 (chat 1)
+
+**RATIFIED (Fable): PW’s tightening of §1b.** A context match counts only if it is UNIQUE, at
+every step; a non-unique match falls through to the counting steps. Lost and ambiguous
+resolutions carry no start/end, so nothing can paint a guess. **The never-guess law, applied at
+every step.**
+
+**ACCEPTED (Fable): `store/anchors.ts` implemented for real**, not declare-only signatures.
+Declare emits nothing, so TOOLS would have compiled against a module undefined at runtime.
+
+**EXPERIMENT 1 SPANS TWO BRANCHES, neither merges alone:** `exp1-connect-text` (PW) @
+`78d4529` and `item190-exp1-rail` (TOOLS) @ `410b2e4`. **Neither merges until Experiment 1 is
+offered whole** — TOOLS merges PW’s branch into its own to build the Linked list.
+
+**PROOF-SCRATCH CHECK, for the assembled-diff review.** PW committed, then removed, a proof
+scratch directory. Verified here: `apps/desktop/scripts/.exp1-b-proof/` was added at
+`c5ed5d3`, removed at `505218a` (moved to the OS temp dir — the `railway up` uploads-the-tree
+hazard named in that commit’s own message), and **confirmed ABSENT at the branch tip**
+`78d4529` by `git ls-tree -r` — only `apps/desktop/scripts/exp1-b-proof.mjs` remains.
+
+**MERGE.** `plan-171b-revise-v2` @ `846224e` — one file,
+`docs/menus/item171b-design-pass.md`, docs-only by diff-stat. **Merged on this desk’s own
+verification.**
+
+**BOX.** PW relayed READY for the paint-layer measurement (item 145 + Experiment 1, one short
+use) — relayed by Fable since PW can’t address a chat 1 session directly. **Grant file still
+names FIX**, token `chat1-fix159-20260924` — no stamp for FIX’s 159 is on the ledger yet, so
+the box is not idle and PW is NOT granted here. **Slotting order on FIX’s stamp: PW’s short use
+first, then TOOLS’ 195** (`item195-sliver-grip`, now on tip `02eecd1` — the sub-1100 width
+added), **between pairs, announced by the grant file** — order otherwise unchanged (FIX 158 →
+INK 157 → INK 171-A → TOOLS 154).
+
+## RECORDS — NICK’S WORDS ON ITEM 144’S TABS AND ITEM 169’S SIDE-BY-SIDE, THE QUESTION-STRIKING RULE, AND FABLE’S CORRECTION — 2026-09-24 evening (chat 1)
+
+**NICK’S WORDS, verbatim as relayed by Fable (typos his) — item 144’s tabs (BT-Q1..Q3):**
+
+> “BT- Q1: The tabs should stay fixed from left to right. BT-Q2: Ship now, tags later.
+> BT-Q3: Scrap "Board." Just a "+" next to the current board. Give the user these options
+> when "+" is clicked: Add Board (creates a nested board), New Board (which creates a new
+> board that starts its life connected to the current board), or Unlink Board. Open to
+> questions/concerns. And keep the Plan menu controls, too. And let's keep it to three
+> boards visible on the surface at a time. If the User double-clicks on a nested board, the
+> nested board should replace the parent board in the UI with a back arrow icon.”
+
+**His answers to Fable’s three concerns:**
+
+> “1. Confirmed. 2. Let's stick with "Add Board." The User can always drag the nested board
+> off the surface is they want to un-nest it, right? 3. Agreed. Two for laptops/tablets,
+> three for desktops.”
+
+**WHAT FABLE READS FROM THEM:** Unlink moves to each board’s OWN tab (concern 1, confirmed);
+the labels stay Add Board / New Board; side by side is **two on laptops and tablets, three on
+desktops** (SUPERSEDES “up to four”); his “+” supersedes the older “+ BOARD”. **Un-nesting by
+drag is NOT in the record** — PLAN DESK designs it; Unlink on a nested board’s tab un-nests it.
+(His “right?” there is a question back to the desk, not a ruling.)
+
+**OPEN WITH NICK:** the writer’s word for page links — “links” or “connections” (Fable’s
+default: links; “connections” stays the board-thread word). Fable relays his answer.
+
+**RULE (Fable), for the record:** a question the founder’s recorded words already answer is
+STRUCK, not re-asked, and a default never overrides his words.
+
+**CORRECTION, Fable’s own, left visible:** Fable told TOOLS it “never writes through”
+`store/anchors.ts`. The law is narrower: **only PW edits that module, and every change to links
+goes through its functions.** The rail’s Remove calling PW’s `unlink()` is that law working.
+
+**ITEM 108’s STATUS, asked by Fable for PLAN DESK (item 144’s sibling-row brief gates its build
+on “108 merged”).** Two things carry the number; the one meant is **108 — TAGS AS SORTING**
+(the colour tokens, the shared tag list, card tags; ledger line 5707: “BUILDS FIRST” and gates
+143/144/145). **Checked on `main` and on origin: only its BUILD BRIEF is merged (docs —
+`22ad29e`, `1bdf06b`, `827dacd`, `755da18`). No product build branch exists and no tag
+work is on `main`. So “108 merged” is NOT true today** — the gate is unmet as written. **But
+Nick’s BT-Q2, “Ship now, tags later,” is the recorded word that 144’s tabs ship without
+tags** — PLAN DESK should re-read the gate against that (a struck question, per the rule
+above), not hold on it. The OTHER 108, the Tutor memory arc (line 1111), is separate and
+unbuilt; it gates only the Tutor’s model phase.
+
+**MERGE.** `plan-171b-revise-v2` @ `9873bea` (the census line for `Stroke.eraserWidth`) — one
+file, 8 insertions, docs-only by diff-stat. **Merged on this desk’s verification.**
+
+**BOX.** Grant file still names FIX (`chat1-fix159-20260924`); no stamp for 159 on the ledger.
+**Order: FIX 159 → PW’s short use → TOOLS 195 → as queued. INK’s 196 run is a short use
+too** — slotted after PW’s, between pairs. Nothing granted here; the box is not idle.
