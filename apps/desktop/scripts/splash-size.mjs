@@ -1,4 +1,5 @@
-// ITEM (proposed) 194 — THE SPLASH'S TWO SIZE READINGS, COMPUTED.
+// ITEM 187 — THE SPLASH'S TWO SIZE READINGS, COMPUTED (S0 survey tool; the
+// build is now ruled to a fifth of the WIDTH, so reading B is the shipped one).
 //
 // Nick: "at most 1/5 the size of the screen". Two readings, and they are not
 // close: a fifth of the screen's AREA, or a fifth of its WIDTH. This prints
