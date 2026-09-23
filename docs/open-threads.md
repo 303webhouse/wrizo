@@ -20706,3 +20706,72 @@ this time.
 **Offered for merge — harness/test-seam work, chat 1's verification is the
 gate per the standing amendment.** Branch `item151-silent-acts`, tip
 `c46d498`, pushed. Nothing further owed on tools' side.
+
+## THE SPLASH SCREEN — S0 LANDED, NOTHING HEADFUL RUN — 2026-09-22 (tools lane;
+branch `splash-screen`; item number PROPOSED 194, chat 1 assigns)
+
+**S0 ONLY, no behaviour change.** Full record: `docs/menus/splash-s0-survey.md`.
+**Assets verified first, per the brief's own stop condition:** both present in
+`Downloads`, both `3374x2699`, both real RGBA. Colours untouched.
+
+**WHAT IT REPLACES: NOTHING — it is purely additive.** `splash` occurs ZERO times in
+the app source. The plain-text loading screen it might have replaced was already retired
+by **HB1**, which made `Arrival` (route `/`, "the Threshold") both boot screen and front
+door — a destination with a real-readiness boot bar, not a loading state. A brand mark
+already ships (`/brand/wrizo-logo.png`: `.brand-mark` 88px bottom-right everywhere except
+`/`, and Arrival's own 80px `.wz-mark`); Nick's sketch is a different artefact at a
+different scale and retires none of it. No park, no successor.
+
+**THE ASSET, MEASURED (alpha walked, both files identical to the pixel):** canvas
+`3374x2699`, ink bbox `3077x2458` = **91.2% x 91.1%**, aspect **1.252**, ink coverage
+**4.5%** of the bbox, brass `TEXT` box at 45.0% across / 57.4% down. **Sizing targets the
+BBOX, not the canvas** — sizing the canvas lands the visible mark at 83.1% of the
+intended area.
+
+**THE TWO READINGS ARE 5.00x APART IN AREA (2.24x linear)** — a fifth of the WIDTH is a
+twenty-fifth of the AREA, at any aspect. Computed at real viewports by committed tool
+`scripts/splash-size.mjs`. **The finding for Nick's eye: "at most 1/5" is a CEILING and
+the readings disagree about whether AREA is inside it** — by area it sits exactly at the
+ceiling; measured across the screen it spans **37.5-45.7% of the WIDTH**, ~2.2x over a
+width reading. And the legibility half, by arithmetic not assumption: labels land at
+**~10-16px** under AREA and **~5.3-8.6px** under WIDTH — at or under the floor where a
+hand-drawn stroke stops reading as a word, which is exactly the "texture" the brief
+predicted. **Building to AREA until Nick chooses**, as instructed; both frames still owed
+headfully.
+
+**BRIEF ITEM (3) DOESN'T MAP ONTO THE APP AS BUILT — HANDED UP WITH A LEAN.** There are
+exactly two registered themes and **BOTH are dark-ground** (`plateau` `#110600` "deep
+espresso"; `flux` `#04141A`). Neither is a light theme. The light/dark axis that exists is
+**`data-page`** (default `light`) — but it governs the **paper**, not the chrome the
+splash floats over, and Plateau's dark pair is a flagged debt (canon §11). **So the DARK
+asset is correct in every configuration the app ships today, and a literal `data-theme`
+map would never select the light one. LEAN: derive from the measured luminance behind the
+splash at mount, not a theme→asset map** — `theme.ts` itself anticipates Volant/Nomad/
+Machina, a stale map shows **cream ink on a cream ground (invisible art)**, and no
+"did it mount" check would catch that.
+
+**`backdrop-filter` HAS ZERO USES IN THIS APP** — the brief's live blur would be its
+first. Whether it blurs what we intend, against a stacking context tuned to z-index 300
+(item 130's `z-index:1` strip, ThemeEffectsLayer, `.app-immersive`), is a **headful**
+question, and the first thing a box turn checks.
+
+**DISMISSAL, PROPOSED WITH REASONING (item 4): a short hold that dismisses itself, which
+ANY input also dismisses early — and that input STILL REACHES THE APP.** First-paint is
+rejected (HB1 made boot instant; the emblem would flash ~2 frames); click-only is rejected
+(an overlay requiring a gesture IS a block). **The trap this closes: a writer who opens
+Wrizo and immediately types must not have that first character eaten as the dismiss
+gesture** — so the splash listens PASSIVELY (no preventDefault, no capture, pointer-events
+none where possible): it observes the input and leaves, never consumes it. **Reduced
+motion (item 5): plain appear/disappear, no animated entrance**, following the app's 45
+existing `prefers-reduced-motion` blocks.
+
+**TWO THINGS FLAGGED RATHER THAN ASSUMED:** (a) *"the opening splash screen"* reads as
+EVERY app open, not first-run-only — `store/firstRun.ts` is a different concept and is not
+reused; (b) at boot the *"regular app interface"* behind the blur is **Arrival/the
+Threshold**, not the writing room. Lean on both: every open, and blur what is genuinely
+mounted.
+
+**BOX: PRE-FLIGHT WAS NOT ZERO, SO I STOPPED.** `~/.wrizo/box-turn.json` names **lane PW2**
+(`pw2-item176-corrected-20260922`). Nothing headful ran. **Owed on a grant:** the two
+headful frames into `Downloads` for Nick's choice, and the `backdrop-filter` compositing
+check.
