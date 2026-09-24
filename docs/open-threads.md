@@ -21990,3 +21990,40 @@ Nick’s machine timed out twice — and goes into Batch Five’s assembled-diff
 Ordering is unchanged: 160 first (both edit `BoardEditor.tsx`); whichever of `page_links` /
 `beside_links` merges second renumbers its placeholder and re-runs its pairing check at that merge.
 **Not merged here** — 160 is not on origin yet. The `plan-144-nest` slip stands as logged.
+
+## ITEM 198 — NICK’S SCHEMA WORD (“Yes”); 159’S FALSIFICATION NOW ON DISK — 2026-09-24 (chat 1)
+
+**NICK’S SCHEMA WORD, verbatim as relayed.** The question as put: *“may FIX change the database
+to fix the sync bug?”* — explained as: each of the six storage tables gains one new column where
+the server records when it received each change; devices pull by the server’s clock; missed
+writing is repaired; nothing visible to him. Fable recommended yes. His answer:
+
+> “Yes”
+
+**It covers FIX’s S0 shape** (`item198-s0` @ `94ae43f`): `synced_at timestamptz not null default
+now()` on the six tables. **Nothing writes until FIX’s build clears Fable’s byte review.** *(A
+schema word: it stopped here and is recorded as his.)*
+
+**198 does NOT wait for 136’s and 172’s schema wave** — it is a data-loss fix. **When it clears
+review, the batch is proposed at once, with whatever else is merged by then** (Fable).
+
+**MERGED, on verification.** `item198-s0` @ `94ae43f`: `docs/menus/item198-sync-cursor-s0.md` +
+`apps/desktop/scripts/sync-incremental-pull-proof.mjs` (398 insertions). **Fable called it docs;
+one file is a script, so I read it:** a standalone, browserless measurement (real `sync.ts`
+router bundled to the OS temp dir, a fake pool, two real client-store instances, no box turn, no
+DB, no browser); **referenced by no roster and no `package.json`**, and `git diff --stat
+5603d52 HEAD -- apps/desktop/src packages` is empty — **no product file touched.** I did NOT run it.
+**And `item159-falsification-evidence` @ `3abc134`** (`docs/evidence/item159/`, 7 files, +114).
+
+**159’S FALSIFICATION — NOW ON DISK, and checked against the report.** Old code
+(`0c8838c+1dirty`, `index-BDZr-D5R.js/588012b`): **`ITEM159 VERIFY: FAIL — 6/9 failed`**, with S1
+(“the ticket”), S1’s grip, S2, **S3 the overlap**, S4 and S5 red — **matching what FIX reported
+(6 of 9, S1 and the S3 overlap among them)**. New code (`e31b43a`): PASS 9, both legs. **FIX’s own
+README says plainly** that the old-code tree stamp reads `+1dirty` because `item159.mjs` was
+overlaid onto a main checkout (the file does not exist on main), that a first `--only` attempt
+matched zero files (a vacuous pass, excluded), and that only two of the six reds are independent
+falsifiers. **The `*.log` gitignore hid the runner logs; they are `.log.txt`** (the memory
+note’s hazard, met again).
+
+**RECONCILED:** my earlier entry (“FIX-reported, not on disk — owed before Fable’s review”) is
+discharged; left as written.
