@@ -22245,3 +22245,20 @@ frames then. **Still with Nick:** item 201’s `purged_at` (no default).
 also carries **a correction PLAN DESK made to its own item-201 design** (33 lines added to
 `b168-rulings-and-item201-delete-permanently.md`) — **I did not read that correction; it is docs, and
 the `purged_at` design stays with Nick regardless.**
+
+## ITEM 201 — NICK’S SCHEMA WORD (“1. Yes”) — 2026-09-24 (chat 1)
+
+**NICK’S SCHEMA WORD, verbatim as relayed.** The question as put: *“May Wrizo add one column so
+“Delete Permanently” sticks on every device?”* — explained as: a permanent delete wipes the item’s
+content but keeps a small “permanently deleted” marker every device learns and respects; pages need
+one new column, cards need none; Fable recommended yes. His answer:
+
+> “1. Yes”
+
+**It covers `purged_at` on `journal_entries`**, per PLAN DESK’s design (`plan-168-delete-permanently`
+@ `87eae9a`): the row stays, the server blanks its content, and the mark never reverses. **Nothing
+writes until the builder’s S0 shape report and Fable’s byte review.** **Builder: FIX, after 198’s
+cursor refinement and 184.** *(A schema word: it stopped here and is recorded as his; this closes the
+“WITH NICK” line in the entry above — left as written.)*
+
+**ALSO THIS TURN:** the `plan-vw2-rows` merge (`496c20d`) and its rulings are on the ledger above.
