@@ -45,3 +45,16 @@ Real select-all, real pointer presses on the sliver buttons, stored text read af
 - Screenplay: `#/page/new?structure=screenplay` did not reach a screenplay surface in the run (row recorded, no `.script-page`); the screenplay frames need a different route and stay open.
 
 ## Fix step 1 (as ruled by Fable): rendering of bullets, quotes, alignment in Draft AND Revise, plus the decorator running in Free Write. Only the tools stay where ruled.
+
+### Open notes (Fable, 2026-09-24)
+
+- **Unexplained: the "dark" page-tone pref left the paper cream.** The frames set `wrizo-theme-prefs` to `{page:'dark'}` before load and the paper stayed cream in every mode. Not investigated; it may be that the pref is read by a control that was never mounted in these frames, or that the paper is fixed by the theme. To be checked before anyone claims a dark-page frame.
+- **Screenplay route found.** `#/page/new?structure=screenplay` is the unborn DOOR: it only opens the "make this a screenplay" confirm (`requestScreenplay`, PageEditor.tsx:493) and births on confirmation, so it never showed a script surface. The real surface is a page with `pageType:'script'` (PageEditor.tsx:1320 delegates to ScriptEditor): seed one through `wrizoCreateJournalPage({... pageType:'script'})` and navigate to `#/page/<id>`. The next frame run uses that.
+
+## Step 1 landed (item-writing-r1 @ 1cf842c)
+
+Bullets, quotes, centre and right alignment now render in Draft and Revise, and Free Write runs the same decorator (rendering only). Mechanism: `decorateLineForCard` peels line prefixes (after any leading tabs; stackable, e.g. `> - `), wraps each in an inline-block `.md-line` (never display:block: the joining `\n` would draw a blank line) and collapses the stored prefix with `.md-mark-hidden`, revealed while the caret is at it. Bullet = hanging glyph in a 1.4em gutter; quote = 3px rule from `currentColor` + italic; alignment = `text-align`. Free Write: unstruck runs are decorated with a null caret, struck runs stay plain struck spans, `.fo-run` wrapper kept.
+
+Evidence: `scripts/harness/writing-r1.mjs` 25/25 on the new build, 12/25 on the parent's `src` (13 fail: every render check; the 12 that pass are the storage-invariant, no-blank-line and typing checks that did not depend on the change). Regression: reveal 16, underline 7, strike 7, outdent 9, item83f 34, item121 43, fx5 62, fx6 37, ab2 33, fx1 23, j5 37, all PASS. NOT run: the full suite pair.
+
+Known trade-off, stated: a stray `*` pair in Free Write prose ("2 * 3 and 4 * 5") now collapses its asterisks, as Draft and the cards already do. Forward-only cannot repair it.
