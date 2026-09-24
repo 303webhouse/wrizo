@@ -21771,3 +21771,54 @@ per-file budget is what lets one hang eat the box. **Logged; STILL UNOWNED.**
 
 **MERGE.** `plan-144-amend` @ `ccbc99a` — five files under `docs/menus/`, 234 insertions, all
 docs — **merged on this desk’s verification**; TOOLS builds 144 from it.
+
+## RECORDS — NICK’S SCHEMA WORD ON BESIDE-CONNECTIONS, HIS “BESIDE” CONFIRMATION, AND 144’S CORRECTION IN FLIGHT — 2026-09-24 late (chat 1)
+
+**NICK, verbatim as relayed — confirming the reading:**
+
+> “1. Yes, beside 2. Done.”
+
+“1” confirms Fable’s reading that **Connect Board connects the chosen board BESIDE this one**;
+“2” is the relays. The quarter-of-the-area splash default **stood by skip** (a default, not a
+ruling).
+
+**NICK’S SCHEMA WORD — verbatim.** The question as put (as relayed): *“Should Wrizo store which
+boards are connected, so they match on every device?”* — options *“Store them properly”* (one
+small database change; connections sync) or *“Remember them per device”* (no database change;
+devices won’t match); Fable recommended storing them. His answer:
+
+> “1. Store them properly”
+
+**What it covers:** storing “beside” board connections in the database. **What it does NOT
+yet do: nothing writes until TOOLS’ S0 shape report clears Fable’s review.** If the minimum
+lawful shape is a NEW TABLE rather than a column, Fable tells Nick in plain words before
+anything is written. **This is a schema word: it stopped here and is recorded as his.**
+
+**STILL OPEN with Nick, verbatim so far:**
+
+> “2. Can't we just call Plan menu's option "Add Board" too? It can be greyed out unless
+> there is already a board opened”
+
+Fable’s catch: the Plan menu’s control moves an EXISTING board inside another, so renaming it Add
+Board and making it create one removes the only door for nesting an existing board. **Default
+proposed (vetoable, not founder text): do as he says, and nest an existing board by DRAGGING it
+onto another board, mirroring drag-off to un-nest.** Also open: (b) the two “Connect Board”
+controls do opposite things — default: the Plan menu’s becomes “Put inside…” and the “+” keeps
+“Connect Board”. **Both pending his reply.**
+
+**CORRECTION IN FLIGHT (Fable).** TOOLS’ 144 stage 1 (`b6f4efc`) built Add Board as “pick an
+existing board to nest” — the ALTERNATIVE reading. TOOLS swaps to his literal words: Add Board
+= a NEW board inside this one. (That build is on TOOLS’ branch, unmerged; nothing on `main`.)
+
+**RATIFIED (Fable):** TOOLS’ 70% width cap on the splash (at 390x844 the quarter-area left 9%
+side margins). 169’s gutter at 28px. Nick’s pane counts are the requirement; TOOLS tunes the
+split-view constants to reach them.
+
+**MERGE ORDER (Fable): 144 merges AFTER FIX’s 160 — both edit `BoardEditor.tsx`.**
+
+**NOTE for Experiment 1’s assembly:** PW’s lexicon guard must allow Nick’s own “Unlink Board”
+on board tabs (TOOLS’ 144); the guard’s reverse check covers thread terms only.
+
+**MERGE.** `plan-144-amend` @ `cc48193` — the second commit, one file
+(`docs/menus/b144-plus-menu-and-unnest-amendment.md`), 128 insertions, docs-only — **merged on
+this desk’s verification.**
