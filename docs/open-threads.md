@@ -22226,3 +22226,22 @@ lists and when opened, not on the card’s face.
 **MERGES.** `plan-168-delete-permanently` @ `87eae9a` (2 docs files, +223) and `plan-menus-rulings` @
 `137dc6e` (3 files under `docs/menus/`, +33/−3, incl. `plan-menu-mock.html` marked STALE) — all under
 `docs/`, merged by fetched SHA on this desk’s verification.
+
+## RECORDS — THE TRASH’S TWO CONTROLS, SECTIONED ROWS, VW2’S LOOK HELD — 2026-09-24 (chat 1)
+
+**RULED (Fable): the Trash’s two controls are both “Delete Permanently”** — his own words named it for
+single items and for the entire bin (ledger: 168-Q1, above), so the “Empty Trash” rival is STRUCK, not
+asked. **The bin’s confirm follows VW4’s form:** in place at the Trash foot, never a modal, with a
+lawful count. **VW4’s “no per-item permanent delete” is SUPERSEDED by his words** (VW4’s brief is
+left as written, marked at its head by PLAN DESK).
+
+**RULED (Fable): Shelf and Trash rows are SECTIONED — Boards, Pages, Cards.** That satisfies both his
+2026-09-13 “section off Boards from Pages” and his 3C rows; nothing to ask.
+
+**HELD:** the Shelf-ledge vs Trash-well LOOK waits until VW2 is scheduled to build; Fable draws the two
+frames then. **Still with Nick:** item 201’s `purged_at` (no default).
+
+**MERGE.** `plan-vw2-rows` @ `496c20d` — 4 docs files under `docs/menus/`, +198, by fetched SHA; it
+also carries **a correction PLAN DESK made to its own item-201 design** (33 lines added to
+`b168-rulings-and-item201-delete-permanently.md`) — **I did not read that correction; it is docs, and
+the `purged_at` design stays with Nick regardless.**
