@@ -1,4 +1,4 @@
-# ITEM 144 — THE BOARD TABS · OFFER, STAGE 2 (tools lane; branch `item144-board-tabs`)
+# ITEM 144 — THE BOARD TABS · OFFER, STAGES 1–3 (tools lane; branch `item144-board-tabs`)
 
 Built from `plan-144-amend` (`b144-board-tabs-build-brief.md` as amended by `b144-plus-menu-and-unnest-amendment.md`
 **§8 and §9 govern**). **Nothing here has run — it needs a box turn.** Stage 1 (`b6f4efc`) built Add Board as
@@ -19,10 +19,9 @@ callback, so any reading swap is one line):
 
 **"Beside" storage — the seam** (`store/boardBeside.ts`: `getBoardsBeside` / `isBeside` / `connectBeside` /
 `unlinkBeside`). Nick: *"Store them properly."* The client half is written against **the exact shape in
-`item144-beside-storage-s0.md`** (a column, `besideLinks` on board rows, one-ended with a reverse read; the S0
-report is the hard stop **for the server half, which is NOT written**). It persists locally and is the final shape;
-**if you rule a table, only these four functions change.** ⚠ **Until the server column lands, `besideLinks` never
-leaves the device and a newer pulled row can replace it — 144 must not deploy without the server half.**
+`item144-beside-storage-s0.md`** (a column, `besideLinks` on board rows, one-ended with a reverse read). **S0 approved; the
+server half is written (stage 3, below) and proved by a two-device round trip.** **If a table is ever ruled, only these
+four functions change.** ⚠ **144 must not deploy without the server half** — it is on this branch, so it ships with it.
 
 **"Recently opened"** (`store/boardRecents.ts`): a bounded (100) most-recent-first list of board ids in
 `localStorage` (`wrizo-board-recents`), written when a board **mounts**; never-opened boards follow by `updatedAt`
