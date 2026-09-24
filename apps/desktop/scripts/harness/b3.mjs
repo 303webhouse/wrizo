@@ -284,7 +284,10 @@ await withHarness(async (app) => {
     // Delete one — no protest, genuinely gone.
     await selectBox(app, resolutionBox.id);
     await app.waitFor("!!document.querySelector('.board-action-row')", { label: `card selected for delete @${width}px` });
-    await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
+    // ITEM 160 - Remove left the board surface for a hand-typed card (it lives in the card's own
+    // popup until 168), so this driver reaches the removal THROUGH THE SEAM (wrizoBoard.removeSelected,
+    // the same removeIds path every button calls). The button's own reachability is item160.mjs's claim.
+    await app.evalJs('window.wrizoBoard.removeSelected()');
     await sleep(200);
     const boxesAfterDelete = await app.evalJs('window.wrizoBoard()');
     ok(`@${width}px: a dealt card is genuinely DELETABLE — Remove takes it out with no protest, no special case`,

@@ -333,7 +333,10 @@ await withHarness(async (app) => {
   await app.evalJs(POINTER_HELPER);
   await selectBox(app, inertCard.id);
   await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'inert card selected' });
-  await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
+  // ITEM 160 - Remove left the board surface for a hand-typed card (it lives in the card's own
+  // popup until 168), so this driver reaches the removal THROUGH THE SEAM (wrizoBoard.removeSelected,
+  // the same removeIds path every button calls). The button's own reachability is item160.mjs's claim.
+  await app.evalJs('window.wrizoBoard.removeSelected()');
   await sleep(300);
   const boxesAfterInertRemove = await app.evalJs('window.wrizoBoard()');
   ok('S1: hand-delete (Remove) on a derived Shelf card is an INERT, quiet no-op — the exact same card set survives the click',

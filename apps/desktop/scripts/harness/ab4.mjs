@@ -248,7 +248,10 @@ await withHarness(async (app) => {
       await app.evalJs(`document.querySelector('[data-box-id="${pinBox.id}"]').dispatchEvent(new PointerEvent('pointerdown', { clientX: 1, clientY: 1, pointerId: 1, pointerType: 'mouse', bubbles: true, isPrimary: true }))`);
       await app.evalJs(`document.querySelector('[data-box-id="${pinBox.id}"]').dispatchEvent(new PointerEvent('pointerup', { clientX: 1, clientY: 1, pointerId: 1, pointerType: 'mouse', bubbles: true, isPrimary: true }))`);
       await sleep(150);
-      await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Remove')?.click()");
+      // ITEM 160 - Remove left the board surface for a hand-typed card (it lives in the card's own
+      // popup until 168), so this driver reaches the removal THROUGH THE SEAM (wrizoBoard.removeSelected,
+      // the same removeIds path every button calls). The button's own reachability is item160.mjs's claim.
+      await app.evalJs('window.wrizoBoard.removeSelected()');
       await sleep(200);
       const boxesAfterUnpin = await app.evalJs('window.wrizoBoard ? window.wrizoBoard() : null');
       ok('S2 (PW1 successor of "unpinning removes the card from the board"): the board card\'s own Remove still ends the MEMBERSHIP outright — unchanged mechanic, new precondition. It is deliberately a different act, and a different word, from the rail\'s "Hide from the board", which ends only the display',

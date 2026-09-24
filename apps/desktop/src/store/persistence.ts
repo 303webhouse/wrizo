@@ -296,7 +296,9 @@ export function flushNow(): void {
 //
 // PRODUCT CODE IS UNTOUCHED: it calls these store functions DIRECTLY and keeps
 // its own debounced cadence. This makes the SEAM durable, not the store eager.
-function durableSeam<A extends unknown[], R>(fn: (...args: A) => R): (...args: A) => R {
+// ITEM 160: exported so a seam that lives in a COMPONENT (wrizoBoard.removeSelected) is
+// wrapped by the very same helper as every store seam, not a second copy of it.
+export function durableSeam<A extends unknown[], R>(fn: (...args: A) => R): (...args: A) => R {
   return (...args: A): R => { const out = fn(...args); flushNow(); return out; };
 }
 

@@ -2,7 +2,7 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { boardName } from '../store/entryText';
 import {
-  getJournalEntry, saveBoardBoxes, flushNow, getDrawer, getProject,
+  getJournalEntry, saveBoardBoxes, flushNow, durableSeam, getDrawer, getProject,
   patchJournalEntry, getBoardsConnecting, generateId, createLooseHomePage, pinPageToBoard,
   getSystemKind, reconcileSystemBoard, restoreEntry, getJournalEntryIncludingDeleted, subscribe,
   getPairedPageId, pairBoardWithPage,
@@ -342,11 +342,14 @@ function BoardTextBox({
 // Voice Wall stands: foreign paste/drop is blocked + whispered; an allowed
 // own-ink paste proceeds natively (Draft's own law, unchanged here).
 function BoardCardPopup({
-  initialText, onCommit, onClose,
+  initialText, onCommit, onClose, onRemove,
 }: {
   initialText: string;
   onCommit: (text: string) => void;
   onClose: () => void;
+  // ITEM 160 (interim, until 168) - Remove lives HERE for a hand-typed card. The
+  // caller passes it only for that kind; absent, no Remove renders.
+  onRemove?: () => void;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const elRef = useRef<HTMLDivElement | null>(null);
@@ -688,6 +691,7 @@ function BoardCardPopup({
         <div className="board-popup-foot">
           {/* CD4.1 — "Done" retired: the card-edit popup's close control is a door
               word now, not a completion word (the class board-popup-done is kept). */}
+          {onRemove && <button type="button" className="btn-quiet board-popup-remove" onClick={onRemove}>Remove</button>}
           <button type="button" className="btn-brass board-popup-done" onClick={onClose}>Close</button>
         </div>
       </div>
@@ -1202,18 +1206,28 @@ export function BoardEditor({ id }: { id: string }) {
   // button stays visibly present (the brief's own wording: "Delete ON ONE
   // must be an inert quiet no-op" describes the CLICK's effect, not the
   // button's presence) — clicking it on a system Board simply does nothing.
-  const removeSelected = () => {
-    if (!selectedBox) return;
-    if (isSystemBoard) return;
+  // ITEM 160 - the removal itself, keyed by a set of ids, so the action row's Remove,
+  // the card popup's Remove and the harness seam are ONE mechanism. Returns the
+  // resulting cards (null when inert) so the seam can persist them synchronously.
+  const removeIds = (idsToRemove: Set<string>): Box[] | null => {
+    if (isSystemBoard) return null;
     snapshot('remove');
-    const idsToRemove = selectedIds;
-    setBoxes(prev => prev.filter(b => {
+    const without = (list: Box[]) => list.filter(b => {
       if (idsToRemove.has(b.id)) return false;
       if (b.kind === 'connection' && (idsToRemove.has(b.connA ?? '') || idsToRemove.has(b.connB ?? ''))) return false;
       return true;
-    }));
+    });
+    const next = without(boxesRef.current);
+    setBoxes(prev => without(prev));
     setSelectedId(null);
+    return next;
   };
+  const removeSelected = (): Box[] | null => {
+    if (!selectedBox) return null;
+    return removeIds(selectedIds);
+  };
+  const removeSelectedRef = useRef(removeSelected);
+  removeSelectedRef.current = removeSelected;
 
   // AB4 S3 — thread deletion: confirm-free (a thread is cheap; re-drawing is
   // one gesture, the brief's own words).
@@ -1816,9 +1830,26 @@ export function BoardEditor({ id }: { id: string }) {
 
   // Harness inspection seam (matches the wrizoNotebook/wrizoVocab convention).
   useEffect(() => {
-    (window as unknown as { wrizoBoard?: unknown }).wrizoBoard = () => boxesRef.current;
+    // ITEM 160 - the seam stays a function returning the cards (every existing
+    // window.wrizoBoard() caller is untouched) and now also CARRIES removeSelected, so a
+    // driver can remove without depending on where the verb's button lives (it moved
+    // off the board surface). It WRITES, so it is wrapped in durableSeam, and it persists
+    // the result itself: a box removal otherwise reaches storage only through the 2000ms
+    // autosave, which a flush at call time would run BEFORE.
+    const seam = Object.assign(() => boxesRef.current, {
+      removeSelected: durableSeam((): boolean => {
+        const next = removeSelectedRef.current();
+        if (next && !unbornRef.current) {
+          boxesRef.current = next;
+          saveBoardBoxes(id, next);
+          lastSavedRef.current = next;
+        }
+        return next !== null;
+      }),
+    });
+    (window as unknown as { wrizoBoard?: unknown }).wrizoBoard = seam;
     return () => { delete (window as unknown as { wrizoBoard?: unknown }).wrizoBoard; };
-  }, []);
+  }, [id]);
 
   // ITEM 133 — THE RENAME STATE LIVES HERE, WITH EVERY OTHER HOOK, and above
   // the early return below. It was first written beside the `title` derivation
@@ -1983,8 +2014,15 @@ export function BoardEditor({ id }: { id: string }) {
   // card anymore).
   // B1 S4 — the Trash Board's own Restore, joining the row's existing
   // conditional buttons exactly the way ungroup/Edit-copy already do.
+  // ITEM 160 (interim, ratified) - a hand-typed card's Remove lives in its own popup, so
+  // the row omits it there; every other kind keeps it here until 168's drag-to-trash and
+  // right-click menu. THE ROW NEVER SHIFTS THE BOARD: it was a normal-flow row with
+  // marginBottom:10, rendered whenever any card was selected, so selecting pushed the
+  // whole board down. It is now an overlay hung above a zero-height anchor.
+  const removeInPopup = !!selectedBox && selectedBox.kind === 'text' && !selectedBox.sourceEntryId;
   const boardActionRow = selectedBox && (
-    <div className="board-action-row" style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
+    <div className="board-action-row-anchor" style={{ position: 'relative', height: 0 }}>
+    <div className="board-action-row" style={{ position: 'absolute', left: 0, bottom: '100%', zIndex: 5, display: 'flex', gap: 12, paddingBottom: 4 }}>
       {selectedBox.groupId && <button type="button" className="btn-quiet" onClick={ungroup}>Ungroup</button>}
       {selectedBox.kind === 'text' && selectedBox.sourceEntryId && (
         <button type="button" className="btn-quiet" onClick={() => setPopupBoxId(selectedBox.id)}>{t('boardEditCopy')}</button>
@@ -2000,7 +2038,8 @@ export function BoardEditor({ id }: { id: string }) {
       {systemKind === 'shelf' && selectedBox.kind === 'page-pin' && selectedBox.entryId && (
         <button type="button" className="btn-quiet" onClick={() => setShelfPinEntryId(selectedBox.entryId!)}>{t('pageFacePin')}</button>
       )}
-      <button type="button" className="btn-quiet" onClick={removeSelected}>Remove</button>
+      {!removeInPopup && <button type="button" className="btn-quiet" onClick={() => { removeSelected(); }}>Remove</button>}
+    </div>
     </div>
   );
 
@@ -2364,6 +2403,9 @@ export function BoardEditor({ id }: { id: string }) {
           initialText={popupBox.text ?? ''}
           onCommit={text => commitText(popupBox.id, text)}
           onClose={() => setPopupBoxId(null)}
+          onRemove={popupBox.kind === 'text' && !popupBox.sourceEntryId
+            ? () => { setPopupBoxId(null); removeIds(selectedBox && selectedBox.id === popupBox.id ? selectedIds : new Set([popupBox.id])); }
+            : undefined}
         />
       )}
       {deckWizardOpen && (

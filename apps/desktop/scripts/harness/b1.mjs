@@ -353,7 +353,10 @@ await withHarness(async (app) => {
   const someCardId = boxesBeforeInertDelete.find((b) => b.kind === 'page-pin')?.id;
   await selectBox(app, someCardId);
   await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'a Journal card selected' });
-  await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
+  // ITEM 160 - Remove left the board surface for a hand-typed card (it lives in the card's own
+  // popup until 168), so this driver reaches the removal THROUGH THE SEAM (wrizoBoard.removeSelected,
+  // the same removeIds path every button calls). The button's own reachability is item160.mjs's claim.
+  await app.evalJs('window.wrizoBoard.removeSelected()');
   await sleep(300);
   const boxesAfterInertDelete = await app.evalJs('window.wrizoBoard()');
   ok('S3: hand-delete (Remove) on a derived card is an INERT, quiet no-op — the exact same card set survives the click, byte-identical',
@@ -430,7 +433,10 @@ await withHarness(async (app) => {
   await app.evalJs(POINTER_HELPER);
   await selectBox(app, 'b1-user-card');
   await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'user board card selected' });
-  await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
+  // ITEM 160 - Remove left the board surface for a hand-typed card (it lives in the card's own
+  // popup until 168), so this driver reaches the removal THROUGH THE SEAM (wrizoBoard.removeSelected,
+  // the same removeIds path every button calls). The button's own reachability is item160.mjs's claim.
+  await app.evalJs('window.wrizoBoard.removeSelected()');
   await sleep(250);
   const userBoardAfterDelete = await app.evalJs('window.wrizoBoard()');
   ok('S3: hand-delete on an ORDINARY board card genuinely REMOVES it — untouched by this ticket\'s inert-delete guard (scoped to system Boards only)',

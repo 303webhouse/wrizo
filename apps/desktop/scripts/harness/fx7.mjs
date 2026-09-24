@@ -588,21 +588,38 @@ await withHarness(async (app) => {
   const selectedShape = await app.evalJs(`document.querySelector('[data-box-id="${toRemove.id}"]').dataset.selected`);
   ok('S6 ROOT-CAUSED (not a code defect — S5\'s own downstream symptom, disclosed plainly): a single genuinely trusted click SELECTS a dealt card correctly — selection was never touched by the S5 regression at all',
     selectedShape === 'true', selectedShape);
-  const removeBtnRect = await app.evalJs(`(() => {
-    const btns = [...document.querySelectorAll('.board-action-row button')];
-    const btn = btns.find(b => b.textContent === 'Remove');
-    if (!btn) return null;
-    const r = btn.getBoundingClientRect();
-    return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) };
-  })()`);
-  ok('S6: the board-action-row\'s own Remove button is present once a dealt card is selected', !!removeBtnRect, JSON.stringify(removeBtnRect));
-  if (removeBtnRect) {
+  // ---- PARKED — SUPERSEDED by item 160 (Remove leaves the board surface), 2026-09-24 ----
+  // Kept VERBATIM below and no longer run. A dealt card is a hand-typed text card, and for
+  // that kind Remove now lives in the card's own popup (interim, until 168's drag-to-trash and
+  // right-click menu), so `.board-action-row` carries NO Remove for it and this presence
+  // assertion is genuinely falsified. The deletion claim survives and is re-made below through
+  // the seam; reachability of the button by a real pointer is item160.mjs's own claim.
+  //
+  // const removeBtnRect = await app.evalJs(`(() => {
+  //   const btns = [...document.querySelectorAll('.board-action-row button')];
+  //   const btn = btns.find(b => b.textContent === 'Remove');
+  //   if (!btn) return null;
+  //   const r = btn.getBoundingClientRect();
+  //   return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) };
+  // })()`);
+  // ok('S6: the board-action-row\'s own Remove button is present once a dealt card is selected', !!removeBtnRect, JSON.stringify(removeBtnRect));
+  // if (removeBtnRect) {
+  //   const countBefore = await app.evalJs('window.wrizoBoard().length');
+  //   await clickAt(app, removeBtnRect.x, removeBtnRect.y);
+  //   await sleep(400);
+  //   const stillThere = await app.evalJs(`!!document.querySelector('[data-box-id="${toRemove.id}"]')`);
+  //   const countAfter = await app.evalJs('window.wrizoBoard()?.length');
+  //   ok('S6: clicking Remove genuinely deletes the ACTUAL dealt card (and its own thread, if any) — already fully functional, confirmed live on the real door, not assumed from the hand-typed baseline alone',
+  //     !stillThere && countAfter < countBefore, JSON.stringify({ stillThere, countBefore, countAfter }));
+  // }
+  // ------------------------------------------------------------------
+  {
     const countBefore = await app.evalJs('window.wrizoBoard().length');
-    await clickAt(app, removeBtnRect.x, removeBtnRect.y);
+    await app.evalJs('window.wrizoBoard.removeSelected()');
     await sleep(400);
     const stillThere = await app.evalJs(`!!document.querySelector('[data-box-id="${toRemove.id}"]')`);
     const countAfter = await app.evalJs('window.wrizoBoard()?.length');
-    ok('S6: clicking Remove genuinely deletes the ACTUAL dealt card (and its own thread, if any) — already fully functional, confirmed live on the real door, not assumed from the hand-typed baseline alone',
+    ok('S6 [item 160 successor]: Remove (through the seam) genuinely deletes the ACTUAL dealt card (and its own thread, if any) — the deletion claim of the parked block above, unchanged; only the road to it moved',
       !stillThere && countAfter < countBefore, JSON.stringify({ stillThere, countBefore, countAfter }));
   }
 

@@ -1656,7 +1656,7 @@ a:focus-visible,
   outline:none; font-family:var(--font-prose); font-size:16px; line-height:1.6;
   white-space:pre-wrap; color:var(--ink-on-paper);
 }
-.board-popup-foot{ display:flex; justify-content:flex-end; padding:12px 16px 18px; }
+.board-popup-foot{ display:flex; justify-content:flex-end; gap:12px; padding:12px 16px 18px; }
 
 /* J5 — the lens row: square corners, quiet borders, brass ONLY on the
    active chip. No transitions (reduced-motion is a non-issue: none used). */
