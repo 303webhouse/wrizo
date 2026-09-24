@@ -1,5 +1,11 @@
 # Item 198 — /sync's incremental pull misses edits — S0 (FIX)
 
+> **UPDATE 2026-09-24 — BUILT, on Nick's "Yes" to the column:** see `docs/menus/item198-synced-at-offer.md`.
+> The instrument this document describes was rewritten: the `--semantics server-cursor` mode (a *model* of the
+> fix at the pool) is gone, replaced by a pool that interprets the REAL SQL from its own text, with a
+> forward-moving clock, K1 on all six collections, K2, K3 and 15 mutants. The S0 numbers below are the
+> measurement as it stood, and the original fault is still reproduced by the "pull filters on `updated_at`" mutant.
+
 **Status: MEASURED, not fixed.** The fault is real, reproduced without forging a clock, and it is
 worse than the report said (the overwrite destroys the edit on BOTH devices). The smallest fix
 that actually closes it **needs a column** — so, per the brief, this **stops here for Nick.**
