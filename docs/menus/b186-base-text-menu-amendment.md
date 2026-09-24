@@ -2,7 +2,7 @@
 ### PLAN desk · 2026-09-24 · **amendment to `b-exp1-connect-from-the-page.md` §3** (the door, item 186) · owner **PW**; the switch is **TOOLS'** (item 190)
 
 > **⚠ SYMBOLS ARE THE ANCHOR.** Read at `52578ee`. Line numbers are a courtesy.
-> **Nothing in the Experiment 1 brief is rewritten in place** — §7 names what is superseded, kept as written.
+> **Nothing in the Experiment 1 brief is rewritten in place** — §8 names what is superseded, kept as written.
 > **The record:** Nick's words below reached this desk verbatim in Fable's relay; the ledger governs if the two differ.
 
 ---
