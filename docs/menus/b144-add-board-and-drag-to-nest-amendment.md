@@ -32,6 +32,8 @@ default; it no longer is one).
   accessible name and tooltip: *"Open a board to add a board to it"*) — *the house's grammar is "absent, not
   greyed" for a nonsense act, and his sentence overrides that grammar for this one row; the reason keeps it
   from being a mute grey.* **When the open subject is a PAGE, it is greyed** (a page contains nothing).
+- **✅ CONFIRMED — Nick, verbatim: *"Yes, keep both"* (2026-09-24; chat 1, `9d1e6dd`) — a RULING, not pending.** **The Plan menu keeps
+  "Create a Board" BESIDE "Add Board".** *The paragraph that follows was written while it was marked pending; it is kept as written.*
 - **⚠ CORRECTION (Fable, 2026-09-24): THE PLAN MENU KEEPS "Create a Board" BESIDE "Add Board"** — **PENDING
   HIS ANSWER**, and **the default now with him, from his own *"keep the Plan menu controls, too"*.**
   **Why it must stay:** **"Add Board" is greyed unless a board is open, so with "Create a Board" gone
@@ -43,8 +45,8 @@ default; it no longer is one).
   **The rows sit together, in that order, and the pair is what the Plan menu offers for making a
   board.** *(Item 165's Create Board presets — Default, Worldbuilding, Storyboard — are how "Create a
   Board" grows; nothing here changes them, and "Add Board" takes no presets.)* **This desk's amendment
-  above had silently assumed the rename REPLACED the row; it does not.** **Marked pending — it rests on his
-  keep-the-controls sentence and has not been put to him as a question of its own.**
+  above had silently assumed the rename REPLACED the row; it does not.** **~~Marked pending — it rests on his
+  keep-the-controls sentence and has not been put to him as a question of its own.~~** **SUPERSEDED: he answered *"Yes, keep both"* (above).**
 - **The Plan menu's "Connected Boards" list beneath it stays** (it shows what a board is inside and what is
   inside it). **What the rename retires is only the act "put THIS board inside the chosen one" from the Plan
   menu.**
