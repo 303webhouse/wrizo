@@ -241,7 +241,7 @@ export type DeskTermId =
   // ('boardNewPageCard'): a real page, created AND pinned to this board in
   // one act. 'boardCanvasEmpty' is the empty board's own quiet one-line
   // pointer at both board-side tools (S2c).
-  | 'cascadePageNewPage' | 'cascadePlanJustAPage' | 'boardNewPageCard' | 'boardCanvasEmpty'
+  | 'cascadePageNewPage' | 'cascadePageNewScreenplay' | 'cascadePlanJustAPage' | 'boardNewPageCard' | 'boardCanvasEmpty'
   // ITEM 83 M3 (R6) — the Page drawer's PAGE SETUP zone: the sheet's own
   // dimension (margins, leading, numbers, headers, footers), as opposed to
   // Revise's face+size, which is the page's VOICE (the F5 split). Every
@@ -265,14 +265,13 @@ export type DeskTermId =
   // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
   | 'draftHeading' | 'draftBullet' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
-  | 'draftConvertToScreenplay' | 'draftConvertToProse'
   // ITEM 114 (item 83 errata E4) — the page's declared KIND and, under
   // Research, its style guide. Two sub-labels join them, and they are the
   // load-bearing half of the answer to the Screenplay name collision: one zone
   // now says plainly which of its controls describes the page and which one
   // ACTS on it, so a kind chip reading "Screenplay" cannot be read as the
   // conversion door standing beside it.
-  | 'structureKindLabel' | 'structureActLabel' | 'structureStyleGuideLabel'
+  | 'structureKindLabel' | 'structureStyleGuideLabel'
   | 'kindNormal' | 'kindScreenplay' | 'kindResearch'
   | 'styleGuideMla' | 'styleGuideApa' | 'styleGuideChicago' | 'styleGuideAp'
   // ITEM 83 M6 (R13.ii) — the board's Place-page list. The heading is a VERB
@@ -823,6 +822,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorMeterTokensOnly: 'This turn (tokens only — no cost estimate for this model), est.:',
   tutorMeterTokensUnit: 'tokens',
   cascadePageNewPage: 'New Page',
+  // ITEM 184 - the door that makes conversion unnecessary: you choose a screenplay BEFORE you start one.
+  cascadePageNewScreenplay: 'New Screenplay',
   // ITEM 83 M3 (R6). Sentence case on rows, engraved-uppercase on the heading
   // (§1.4) — the heading's dress is CSS, so the term itself stays readable.
   pageSetupHeading: 'Page setup',
@@ -889,15 +890,12 @@ const CANONICAL: Record<DeskTermId, string> = {
   draftAlignLeft: 'Align left',
   draftAlignCenter: 'Align centre',
   draftAlignRight: 'Align right',
-  draftConvertToScreenplay: 'Convert to Screenplay…',
-  draftConvertToProse: 'Convert to Prose…',
   // ITEM 114 (item 83 errata E4). The two sub-labels are written as the
   // DIFFERENCE between the controls they head, not as decoration: one names
   // what the page IS, the other names an act performed ON it. See Sliver.tsx's
   // Structure zone for the whole reasoning, and the offer record for the seam
   // this half-answers and does not resolve.
   structureKindLabel: 'This page is',
-  structureActLabel: 'Change the page itself',
   structureStyleGuideLabel: 'Style guide',
   kindNormal: 'Normal',
   kindScreenplay: 'Screenplay',

@@ -46,6 +46,9 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+// ITEM 184 - the successors of this file's parked assertions, recorded as they run so the PARKED leg can
+// re-report them by count (the park count is the check, not the colour).
+const parkedFromMain = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -631,15 +634,33 @@ await withHarness(async (app) => {
       sameClass: !!(chip && act) && chip.className === act.className,
     };
   })()`);
-  ok('E4 (seam): BOTH Screenplays stand, and NEITHER was renamed or merged — the kind chip still reads "Screenplay" and the act still reads "Convert to Screenplay…" with its dialog promise intact',
-    seam.chipText === 'Screenplay' && seam.actText === 'Convert to Screenplay…'
-      && seam.actPopup === 'dialog',
-    JSON.stringify(seam));
-  ok('E4 (seam): they are told apart three ways at once — separate sub-labels naming the difference in words, different control shapes (a radio chip vs a full-width action), and a rule between them',
-    seam.subs[0] === 'This page is' && seam.subs[seam.subs.length - 1] === 'Change the page itself'
-      && seam.chipRole === 'radio' && seam.actRole === null
-      && seam.sameClass === false && seam.ruleBetween === true,
-    JSON.stringify(seam));
+  // ---- PARKED — SUPERSEDED by item 184 (Convert to Screenplay retires), 2026-09-24 ----
+  // Nick, verbatim: "I think it's fine to expect a user to select into writing a screenplay before they
+  // start one. If they want to 'convert' something they've already written, they can always copy and
+  // paste it into a screenplay surface." Kept VERBATIM below and no longer run: the Structure verb, its
+  // confirmations and the way back to prose are gone. The claim's successor is named on each entry.
+  //
+  // ok('E4 (seam): BOTH Screenplays stand, and NEITHER was renamed or merged — the kind chip still reads "Screenplay" and the act still reads "Convert to Screenplay…" with its dialog promise intact',
+    // seam.chipText === 'Screenplay' && seam.actText === 'Convert to Screenplay…'
+      // && seam.actPopup === 'dialog',
+    // JSON.stringify(seam));
+  // ------------------------------------------------------------------
+  { const __ok = seam.chipText === 'Screenplay' && seam.actText === null; parkedFromMain.push({ name: 'PARKED (was "E4 (seam): BOTH Screenplays stand, and NEITHER was renamed or merged...") - ITEM 184: the kind chip still reads "Screenplay" and the act is GONE (no conversion row in the zone)', pass: __ok, detail: JSON.stringify(seam) });
+    ok('PARKED (was "E4 (seam): BOTH Screenplays stand, and NEITHER was renamed or merged...") - ITEM 184: the kind chip still reads "Screenplay" and the act is GONE (no conversion row in the zone)', __ok, JSON.stringify(seam)); }
+  // ---- PARKED — SUPERSEDED by item 184 (Convert to Screenplay retires), 2026-09-24 ----
+  // Nick, verbatim: "I think it's fine to expect a user to select into writing a screenplay before they
+  // start one. If they want to 'convert' something they've already written, they can always copy and
+  // paste it into a screenplay surface." Kept VERBATIM below and no longer run: the Structure verb, its
+  // confirmations and the way back to prose are gone. The claim's successor is named on each entry.
+  //
+  // ok('E4 (seam): they are told apart three ways at once — separate sub-labels naming the difference in words, different control shapes (a radio chip vs a full-width action), and a rule between them',
+    // seam.subs[0] === 'This page is' && seam.subs[seam.subs.length - 1] === 'Change the page itself'
+      // && seam.chipRole === 'radio' && seam.actRole === null
+      // && seam.sameClass === false && seam.ruleBetween === true,
+    // JSON.stringify(seam));
+  // ------------------------------------------------------------------
+  { const __ok = seam.subs[0] === 'This page is' && !seam.subs.includes('Change the page itself') && seam.chipRole === 'radio' && seam.ruleBetween === false; parkedFromMain.push({ name: 'PARKED (was "E4 (seam): they are told apart three ways at once...") - ITEM 184: nothing left to tell apart - the first sub-label of the zone still reads "This page is", "Change the page itself" and the rule that separated it are gone, and the chip is still a radio', pass: __ok, detail: JSON.stringify(seam) });
+    ok('PARKED (was "E4 (seam): they are told apart three ways at once...") - ITEM 184: nothing left to tell apart - the first sub-label of the zone still reads "This page is", "Change the page itself" and the rule that separated it are gone, and the chip is still a radio', __ok, JSON.stringify(seam)); }
 
   // ==========================================================================
   // E4 — THE SCOPE DECISION, measured so it cannot be a silent narrowing. The
@@ -661,10 +682,19 @@ await withHarness(async (app) => {
       actText: zone ? (zone.querySelector('.wz-cascade-action') || {}).textContent : null,
     };
   })()`);
-  ok('E4 (scope, disclosed): the framed SCREENPLAY surface keeps its Structure zone and its conversion row, and carries NO kind chips — absent from the DOM, never greyed',
-    onScript.structureZonePresent === true && onScript.kindChips === 0 && onScript.guides === 0
-      && typeof onScript.actText === 'string' && onScript.actText.length > 0,
-    JSON.stringify(onScript));
+  // ---- PARKED — SUPERSEDED by item 184 (Convert to Screenplay retires), 2026-09-24 ----
+  // Nick, verbatim: "I think it's fine to expect a user to select into writing a screenplay before they
+  // start one. If they want to 'convert' something they've already written, they can always copy and
+  // paste it into a screenplay surface." Kept VERBATIM below and no longer run: the Structure verb, its
+  // confirmations and the way back to prose are gone. The claim's successor is named on each entry.
+  //
+  // ok('E4 (scope, disclosed): the framed SCREENPLAY surface keeps its Structure zone and its conversion row, and carries NO kind chips — absent from the DOM, never greyed',
+    // onScript.structureZonePresent === true && onScript.kindChips === 0 && onScript.guides === 0
+      // && typeof onScript.actText === 'string' && onScript.actText.length > 0,
+    // JSON.stringify(onScript));
+  // ------------------------------------------------------------------
+  { const __ok = onScript.structureZonePresent === false && onScript.kindChips === 0 && onScript.guides === 0; parkedFromMain.push({ name: 'PARKED (was "E4 (scope, disclosed): the framed SCREENPLAY surface keeps its Structure zone and its conversion row...") - ITEM 184: the framed screenplay surface has NO Structure zone at all (it held only the conversion row), and still carries no kind chips and no style guides', pass: __ok, detail: JSON.stringify(onScript) });
+    ok('PARKED (was "E4 (scope, disclosed): the framed SCREENPLAY surface keeps its Structure zone and its conversion row...") - ITEM 184: the framed screenplay surface has NO Structure zone at all (it held only the conversion row), and still carries no kind chips and no style guides', __ok, JSON.stringify(onScript)); }
   return checks;
 }, { label: 'item83f' });
 
@@ -673,19 +703,17 @@ console.log(JSON.stringify(checks, null, 2));
 
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
-  // Nothing to park. This file is NEW and supersedes no assertion of its own.
-  // The assertions this WAVE superseded live where they were written and are
-  // parked there, in their own files, beside their successors:
-  //   · fx3.mjs — FIVE: S5's two keystroke-dissolve checks (E1 reverses the
-  //     trigger), S5's two three-icons-per-row counts (E2 moves Full Screen out
-  //     of that row), and the gated generation-3 count.
-  //   · ab2.mjs — ONE: its own gated generation-3 count, same E2 reason.
-  //   Each stands verbatim beside its successor, in its own file.
-  // The count is the check, not the colour: an empty list here is a CLAIM that
-  // this file falsified nothing, and it is auditable against the wave's own
-  // offer record, which names every park by file and count.
+  // ITEM 184 PARKS THREE ASSERTIONS, all E4's, all falsified by the same ruling: the conversion row left the
+  // Structure zone (and, on a screenplay page, took the whole zone with it). Each stands verbatim beside its
+  // live successor above; the successors are re-reported here by count. Before 184 this block said the file
+  // parked nothing of its own - true then, and no longer.
+  for (const c of parkedFromMain) parkedChecks.push(c);
   // eslint-disable-next-line no-console
-  console.log('\nITEM83F PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; this file parks nothing of its own. The wave\'s six parks live in fx3.mjs (five) and ab2.mjs (one), each beside its successor.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  // eslint-disable-next-line no-console
+  console.log(parkedChecks.length === 3 && parkedChecks.every((c) => c.pass)
+    ? `\nITEM83F PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item 184's three parks, each successor green`
+    : `\nITEM83F PARKED: FAIL — expected 3 parked successors, got ${parkedChecks.length}, ${parkedChecks.filter((c) => !c.pass).length} failed`);
 }
 
 const allChecks = checks.concat(parkedChecks);

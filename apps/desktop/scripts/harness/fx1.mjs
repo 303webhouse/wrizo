@@ -19,6 +19,8 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+// ITEM 184 - see item83f.mjs: successors of parked assertions, recorded as they run.
+const parkedFromMain = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -395,8 +397,17 @@ await withHarness(async (app) => {
   // ok('CD1 S2 (was "S6: the active Structure button\'s computed background is not brass"): the active Structure button (in the sliver) is not brass', structureBtnBg !== 'rgb(255, 152, 0)', structureBtnBg);
   // ------------------------------------------------------------------
   const structureRowBg = await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => /^Convert to/.test(x.textContent)); return b ? getComputedStyle(b).backgroundColor : 'none'; })()");
-  ok('CD1 S2 [DR3 successor, R7-strengthened]: the Structure control (now the Convert row) is not brass at rest - menus rest olive',
-    structureRowBg !== 'rgb(255, 152, 0)', structureRowBg);
+  // ---- PARKED — SUPERSEDED by item 184 (Convert to Screenplay retires), 2026-09-24 ----
+  // Nick, verbatim: "I think it's fine to expect a user to select into writing a screenplay before they
+  // start one. If they want to 'convert' something they've already written, they can always copy and
+  // paste it into a screenplay surface." Kept VERBATIM below and no longer run: the Structure verb, its
+  // confirmations and the way back to prose are gone. The claim's successor is named on each entry.
+  //
+  // ok('CD1 S2 [DR3 successor, R7-strengthened]: the Structure control (now the Convert row) is not brass at rest - menus rest olive',
+    // structureRowBg !== 'rgb(255, 152, 0)', structureRowBg);
+  // ------------------------------------------------------------------
+  { const __ok = structureRowBg === 'none'; parkedFromMain.push({ name: 'PARKED (was "CD1 S2 [DR3 successor, R7-strengthened]: the Structure control (now the Convert row) is not brass at rest - menus rest olive") - ITEM 184: there is no Convert row to be brass or olive - the probe above finds none (it read \"none\" and this assertion passed VACUOUSLY)', pass: __ok, detail: structureRowBg });
+    ok('PARKED (was "CD1 S2 [DR3 successor, R7-strengthened]: the Structure control (now the Convert row) is not brass at rest - menus rest olive") - ITEM 184: there is no Convert row to be brass or olive - the probe above finds none (it read \"none\" and this assertion passed VACUOUSLY)', __ok, structureRowBg); }
 
   const eyebrowColor = await app.evalJs("getComputedStyle(document.querySelector('.wz-sliver-h')).color");
   ok('CD1 S2 (was "S6: an eyebrow label\'s computed color is not brass"): an eyebrow label (in the sliver) is not brass', eyebrowColor !== 'rgb(255, 152, 0)', eyebrowColor);
@@ -727,6 +738,7 @@ if (process.env.HARNESS_PARKED === '1') {
 
     return parkedChecks;
   });
+  for (const c of parkedFromMain) parkedChecks.push(c); // ITEM 184 - one recorded successor
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);

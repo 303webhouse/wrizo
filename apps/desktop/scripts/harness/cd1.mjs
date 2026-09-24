@@ -20,6 +20,8 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+// ITEM 184 - see item83f.mjs: successors of parked assertions, recorded as they run.
+const parkedFromMain = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -211,8 +213,19 @@ await withHarness(async (app) => {
   // ok('S2/S7: opening the sliver on script carries the structure picker (script\'s own hand tool)', scriptStructureCheck, String(scriptStructureCheck));
   // ------------------------------------------------------------------
   const scriptStructureRow = await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].some(b => /^Convert to/.test(b.textContent))");
-  ok('S2/S7 [DR3 successor]: opening the sliver on script still carries its structure control - now the confirm-gated Convert row, not the retired tablist',
-    scriptStructureRow, String(scriptStructureRow));
+  // ---- PARKED — SUPERSEDED by item 184 (Convert to Screenplay retires), 2026-09-24 ----
+  // Nick, verbatim: "I think it's fine to expect a user to select into writing a screenplay before they
+  // start one. If they want to 'convert' something they've already written, they can always copy and
+  // paste it into a screenplay surface." Kept VERBATIM below and no longer run: the Structure verb, its
+  // confirmations and the way back to prose are gone. The claim's successor is named on each entry.
+  //
+  // ok('S2/S7 [DR3 successor]: opening the sliver on script still carries its structure control - now the confirm-gated Convert row, not the retired tablist',
+    // scriptStructureRow, String(scriptStructureRow));
+  // ------------------------------------------------------------------
+  { const __zone = await app.evalJs("!!document.querySelector('.wz-sliver-structure-zone')");
+    const __ok = scriptStructureRow === false && __zone === false;
+    parkedFromMain.push({ name: 'PARKED (was "S2/S7 [DR3 successor]: opening the sliver on script still carries its structure control - now the confirm-gated Convert row, not the retired tablist") - ITEM 184: the script sliver carries NO structure control - no Convert row, and no Structure zone', pass: __ok, detail: JSON.stringify({ scriptStructureRow, zone: __zone }) });
+    ok('PARKED (was "S2/S7 [DR3 successor]: opening the sliver on script still carries its structure control - now the confirm-gated Convert row, not the retired tablist") - ITEM 184: the script sliver carries NO structure control - no Convert row, and no Structure zone', __ok, JSON.stringify({ scriptStructureRow, zone: __zone })); }
 
   // ==========================================================================
   // S7 — ScriptEditor gains the drawer too (Page + Places), mirroring prose.
@@ -656,6 +669,7 @@ if (process.env.HARNESS_PARKED === '1') {
 
     return parkedChecks;
   });
+  for (const c of parkedFromMain) parkedChecks.push(c); // ITEM 184 - one recorded successor
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);

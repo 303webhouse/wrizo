@@ -1,6 +1,6 @@
 import { Fragment, memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getJournalEntry, saveScriptDoc, saveJournalEntry, patchJournalEntry, flushNow, getDrawer, getProject, getBoardsConnecting } from '../store/persistence';
+import { getJournalEntry, saveScriptDoc, patchJournalEntry, flushNow, getDrawer, getProject, getBoardsConnecting } from '../store/persistence';
 import { describePageHome } from '../store/pageHome';
 import { flattenScenes, groupIntoScenes, createEmptyScriptDoc, newElement } from '../store/scriptDoc';
 import { serializeScriptDoc, plainScriptWords } from '../store/scriptText';
@@ -30,7 +30,6 @@ import { useCascade } from './Cascade';
 import type { PageFaceSubject } from './PageFace';
 import { PortToBoardSheet } from './PortToBoardSheet';
 import { PinToBoardSheet } from './PinToBoardSheet';
-import { isScriptEmpty } from '../store/structureConvert';
 import type { Scene, ScriptEl, ScriptElType, Project } from '../types';
 import { LocationCrumb } from './LocationCrumb';
 
@@ -484,9 +483,6 @@ export function ScriptEditor({ id }: { id: string }) {
   // dialog uses (ActionToast, reused — not a second pattern).
   const publishToast = useActionToast();
   const { t: dt } = useDeskLexicon();
-  // AB2 S4 — the Structure picker's one-way warning (screenplay -> prose;
-  // element types don't survive the trip). Switching an empty script is free.
-  const [structureConfirm, setStructureConfirm] = useState(false);
   // AB2 S2 DoD — the typewriter option used to reach the script surface's
   // Draft posture through the rail, with its hold-band targeting the bounded
   // scroll-cap AB1's containment fix (finding 4) gives this surface.
@@ -918,32 +914,10 @@ export function ScriptEditor({ id }: { id: string }) {
     publishToast.show(ok ? dt('publishDownloadConfirm') : dt('publishDownloadFailed'));
   };
 
-  // AB2 S4 — Structure picker, screenplay -> prose. entry.text (the derived
-  // shadow, kept current by every autosave above) IS the prose rendering;
-  // adopt it verbatim. Element types do not survive — the one-way warning
-  // this gates. Mechanical only: no AI, nothing here rewrites a word.
-  const convertToProse = () => {
-    const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
-    const doc = { v: 1 as const, scenes };
-    saveScriptDoc(id, doc); // flush the live doc + its shadow first
-    const latest = getJournalEntry(id);
-    if (!latest) return;
-    saveJournalEntry({ ...latest, pageType: 'manuscript', script: undefined });
-  };
-  const requestProse = () => {
-    const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
-    if (isScriptEmpty({ v: 1, scenes })) { convertToProse(); return; }
-    setStructureConfirm(true);
-  };
-  const onSwitchStructure = (next: 'prose' | 'screenplay') => {
-    if (next === 'screenplay') return; // already screenplay — nothing to do here
-    requestProse();
-  };
-  const sliverContent: SliverContent = {
-    kind: 'draft',
-    structure: 'screenplay',
-    onSwitchStructure,
-  };
+  // ITEM 184 (Nick, verbatim: "I think it's fine to expect a user to select into writing a screenplay before they start one. If they want to 'convert' something they've already written, they can always copy and paste it into a screenplay surface.")
+  // The screenplay -> prose direction and its one-way warning RETIRE with the act. A converted or born
+  // screenplay is one and the same document and is edited here exactly as before.
+  const sliverContent: SliverContent = { kind: 'draft' };
   // CD1 S6 — the goal system's live text for this surface: the script's
   // elements read as lines (matches the deterministic hard-newline
   // splitting store/lineEquivalents.ts already does for prose — one
@@ -1181,27 +1155,6 @@ export function ScriptEditor({ id }: { id: string }) {
           </div>
         )}
 
-        {structureConfirm && (
-          <div className="sprint-modal-backdrop structure-confirm-modal" onClick={() => setStructureConfirm(false)}>
-            <div className="sprint-modal card" role="dialog" aria-label="Convert to Prose" onClick={e => e.stopPropagation()}>
-              <div className="card-title">Convert to Prose?</div>
-              <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
-                This is one-way: element types (scene/character/dialogue/…) will not survive the trip — only the
-                plain text carries over, verbatim.
-              </p>
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                <button type="button" className="btn-quiet" onClick={() => setStructureConfirm(false)}>Cancel</button>
-                <button
-                  type="button"
-                  className="btn-brass structure-confirm-prose"
-                  onClick={() => { setStructureConfirm(false); convertToProse(); }}
-                >
-                  Convert
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     );
   }

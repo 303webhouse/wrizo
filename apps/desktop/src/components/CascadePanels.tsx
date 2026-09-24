@@ -269,6 +269,12 @@ function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: 
   // means the front-door writing posture, and CD1 S8's Free Write default for it
   // is deliberate and untouched.
   const newPage = () => navigate(unbornHref({ origin: 'loose' }));
+  // ITEM 184 - THE SCREENPLAY DOOR. Conversion retired (Nick: expect a writer to select into a
+  // screenplay before starting one), so a screenplay is only ever CHOSEN at the door. This is that
+  // door: the address carries `structure=screenplay` and item 104's birth path - already built, and
+  // until now without a caller - opens the screenplay room at zero words. It lands in the SAME commit
+  // that retires conversion; there is no build in which a loose screenplay cannot be made.
+  const newScreenplay = () => navigate(unbornHref({ origin: 'loose', structure: 'screenplay' }));
   // ITEM 83 M6 (R13.i/ii) — on a BOARD, the Page face is the board's own
   // page-side hand: the sliver does not mount here (R13.iv), so New page and
   // Place-page live in this drawer instead.
@@ -281,6 +287,9 @@ function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: 
       <div style={{ padding: '10px 14px 0' }}>
         <button type="button" className="wz-cascade-action wz-cascade-action-door" onClick={newPage}>
           {t('cascadePageNewPage')}
+        </button>
+        <button type="button" className="wz-cascade-action" onClick={newScreenplay}>
+          {t('cascadePageNewScreenplay')}
         </button>
       </div>
       {/* ITEM 170 — on EVERY surface, not only a board: this is the way to

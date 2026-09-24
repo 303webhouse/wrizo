@@ -253,9 +253,6 @@ function PageEditorView({ id }: { id: string }) {
   // The mechanism they used (Draft's FORMAT_MARK conventions and
   // ForwardOnlyEditor's `insertMarkerRef` escape hatch) is Draft's and stays;
   // only this surface's door onto it closes. See Sliver.tsx's I6 comment.
-  // AB2 S4 — the Structure picker's one-time confirmation (prose page with
-  // words -> screenplay). Switching an empty page is free (no modal).
-  const [structureConfirm, setStructureConfirm] = useState(false);
   // BG1 S2 — the beginnings row's own dismissal (the first keystroke, a door
   // taken, or Esc). Per mount, never persisted: this is not a preference, it
   // is "the writer is past it on this page." The zero-words gate is the other
@@ -808,11 +805,14 @@ function PageEditorView({ id }: { id: string }) {
   };
 
 
-  // AB2 S4 — the Structure picker. Prose -> Screenplay: free on an empty
-  // page, one plain confirmation otherwise (mechanical mapping only, no AI —
-  // store/structureConvert.ts). Screenplay -> Prose has no code path here
-  // (this surface only ever renders prose); ScriptEditor.tsx owns that
-  // direction's one-way warning.
+  // ITEM 184 (Nick, verbatim: "I think it's fine to expect a user to select into writing a screenplay before they start one. If they want to 'convert' something they've already written, they can always copy and paste it into a screenplay surface.")
+  // CONVERSION RETIRES: there is no Structure verb, no confirmation for a written page and no
+  // way back to prose (ScriptEditor's own retired with it). What is KEPT is choosing Screenplay
+  // BEFORE starting: an unborn page births a script (below), and a page with zero words converts
+  // free - the same durable commitment made at the same moment, not a conversion of anything
+  // written. A page that already has words has no path here at all; the writer copies it into a
+  // screenplay surface. Existing converted pages are untouched: a script page is pageType 'script'
+  // + `script` + the `text` shadow, indistinguishable from one born a screenplay.
   const convertToScreenplay = () => {
     const latest = getJournalEntry(id);
     if (!latest) return;
@@ -837,12 +837,7 @@ function PageEditorView({ id }: { id: string }) {
     flush(); flushNow();
     const latest = getJournalEntry(id);
     if (!latest) return;
-    if (isProseEmpty(latest.text)) { convertToScreenplay(); return; }
-    setStructureConfirm(true);
-  };
-  const onSwitchStructure = (next: 'prose' | 'screenplay') => {
-    if (next === 'prose') return; // already prose — nothing to do on this surface
-    requestScreenplay();
+    if (isProseEmpty(latest.text)) convertToScreenplay(); // zero words: choosing BEFORE starting. Any words: no path (184).
   };
 
   // ITEM 104 — A DOOR THAT DECLARED SCREENPLAY OPENS THE SCREENPLAY ROOM.
@@ -927,8 +922,6 @@ function PageEditorView({ id }: { id: string }) {
       : mode === 'drafting'
         ? {
             kind: 'draft',
-            structure: 'prose',
-            onSwitchStructure,
             format: {
               onFormat: applyRailFormat,
               boldOn: draftMarks.bold, italicOn: draftMarks.italic,
@@ -969,27 +962,6 @@ function PageEditorView({ id }: { id: string }) {
         // which belong to the drawer on every surface and are not Revise tenants.
         // Empty of TENANTS is what was ruled; empty of everything was not.
         : { kind: 'empty' };
-
-  const structureConfirmDialog = structureConfirm && (
-    <div className="sprint-modal-backdrop structure-confirm-modal" onClick={() => setStructureConfirm(false)}>
-      <div className="sprint-modal card" role="dialog" aria-label="Convert to Screenplay" onClick={e => e.stopPropagation()}>
-        <div className="card-title">Convert to Screenplay?</div>
-        <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
-          Each paragraph becomes an action line in a fresh script. Mechanical only — no AI — your words move verbatim.
-        </p>
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button type="button" className="btn-quiet" onClick={() => setStructureConfirm(false)}>Cancel</button>
-          <button
-            type="button"
-            className="btn-brass structure-confirm-screenplay"
-            onClick={() => { setStructureConfirm(false); convertToScreenplay(); }}
-          >
-            Convert
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 
   // E1 S2 — both Copy buttons now AWAIT copyText's own success/failure
   // (store/clipboard.ts's S1 fix) and say so, through the house's existing
@@ -1246,7 +1218,6 @@ function PageEditorView({ id }: { id: string }) {
         {gateReached && <UnlockCeremony onChoose={handleChooseTheme} />}
 
         {publishDialog}
-        {structureConfirmDialog}
         {pageFaceSheets}
       </div>
     );

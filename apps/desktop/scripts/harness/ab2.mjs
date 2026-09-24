@@ -36,6 +36,27 @@ const freshProsePage = async (app) => {
   await sleep(200);
 };
 
+// ITEM 184 - conversion retired, so the script surface is reached the only way it can be now: a page that IS a
+// screenplay. Seeded through the seam (item 129), never raw storage; navigated to like any page. This is the
+// same fixture item83f.mjs's freshScriptPage uses, under this file's own id.
+const freshBornScript = async (app) => {
+  await app.goto('/');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before born-script fixture' });
+  await app.emulateDpr(1, 1400, 900);
+  await app.evalJs(`(() => {
+    const now = new Date().toISOString();
+    const headingId = 'ab2-script-heading';
+    window.wrizoCreateJournalPage({ id: 'ab2-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, source: null, origin: null });
+  })()`);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after script seed' });
+  await app.evalJs("location.hash = '#/page/ab2-script'");
+  await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'born script framed' });
+  await sleep(300);
+};
+
 const selectAllInEditor = (sel) => `(() => {
   const el = document.querySelector(${JSON.stringify(sel)});
   el.focus();
@@ -91,6 +112,8 @@ const structureZone = (app) => app.evalJs(
 // instead of counting to it. `.wz-cascade-action` scoped to this zone is that
 // name; the comment above is right that the class is generic app-wide, which is
 // precisely why the zone scope is kept and only the ordinal is dropped.
+// ITEM 184 - `structureRowLabel` and `clickStructureRow` below have NO LIVE CALLER: the Structure row they name
+// was retired. They are kept because the PARKED block in S4 quotes the assertions that used them verbatim.
 const structureRowLabel = (app) => app.evalJs(
   "(() => { const sec = [...document.querySelectorAll('.wz-sliver-section')].find(s =>"
   + " /^structure$/i.test(((s.querySelector('.wz-sliver-h') || {}).textContent || '').trim()));"
@@ -297,19 +320,30 @@ await withHarness(async (app) => {
   // The negative half matters as much as the positive: a bare 'Convert' is the
   // bench's named enemy, so the assertion requires the DESTINATION in the label
   // and not merely the verb.
-  const proseRowLabel = await structureRowLabel(app);
-  ok('DR3 (labelling claim restored): on a PROSE page the Structure row names its DESTINATION — "Convert to Screenplay…", never a bare "Convert"',
-    typeof proseRowLabel === 'string' && /^Convert to Screenplay/.test(proseRowLabel) && proseRowLabel !== 'Convert',
-    `label=${JSON.stringify(proseRowLabel)}`);
+  // ---- PARKED — SUPERSEDED by item 184 (Convert to Screenplay retires), 2026-09-24 ----
+  // Nick, verbatim: "I think it's fine to expect a user to select into writing a screenplay before they
+  // start one. If they want to 'convert' something they've already written, they can always copy and
+  // paste it into a screenplay surface." The whole S4 conversion chain below - the Structure row and its
+  // label, the confirmation, Cancel, Convert, the mechanical mapping, the empty-page switch, the one-way
+  // warning and the adopted text - is kept VERBATIM and no longer run: the verb, its dialogs and the way
+  // back to prose are gone. TEN assertions are parked here (10 ok() calls, counted from the source),
+  // and each has a recorded successor in this file's PARKED block (a prose Draft sliver with no Convert
+  // row; a born screenplay with no Structure zone, no Convert row and a sane sheet). The claims that
+  // needed a script surface were re-made on a BORN one - see freshBornScript and S5 (script) below.
+  //
+  // const proseRowLabel = await structureRowLabel(app);
+  // ok('DR3 (labelling claim restored): on a PROSE page the Structure row names its DESTINATION — "Convert to Screenplay…", never a bare "Convert"',
+    // typeof proseRowLabel === 'string' && /^Convert to Screenplay/.test(proseRowLabel) && proseRowLabel !== 'Convert',
+    // `label=${JSON.stringify(proseRowLabel)}`);
 
-  await clickStructureRow(app);
-  await sleep(150);
-  ok('S4: a non-empty page requesting Screenplay shows the confirmation (gated, does not act yet)',
-    await app.evalJs("!!document.querySelector('.structure-confirm-modal')"));
-  await app.evalJs("[...document.querySelectorAll('.structure-confirm-modal button')].find(b => b.textContent === 'Cancel').click()");
-  await sleep(150);
-  ok('S4: after Cancel, the surface is still prose (forward-only-editor present, no script-sheet)',
-    await app.evalJs("!!document.querySelector('.forward-only-editor') && !document.querySelector('.script-sheet')"));
+  // await clickStructureRow(app);
+  // await sleep(150);
+  // ok('S4: a non-empty page requesting Screenplay shows the confirmation (gated, does not act yet)',
+    // await app.evalJs("!!document.querySelector('.structure-confirm-modal')"));
+  // await app.evalJs("[...document.querySelectorAll('.structure-confirm-modal button')].find(b => b.textContent === 'Cancel').click()");
+  // await sleep(150);
+  // ok('S4: after Cancel, the surface is still prose (forward-only-editor present, no script-sheet)',
+    // await app.evalJs("!!document.querySelector('.forward-only-editor') && !document.querySelector('.script-sheet')"));
 
   // ---- PARKED — SUPERSEDED by item 83 M5 (DR3), 2026-08-25 -------------
   // Kept VERBATIM and no longer run. DR3 retired the Prose|Screenplay
@@ -324,36 +358,36 @@ await withHarness(async (app) => {
   //
   // await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
   // ----------------------------------------------------------------------
-  await clickStructureRow(app);
-  await sleep(150);
-  await app.evalJs("document.querySelector('.structure-confirm-screenplay').click()");
-  await sleep(300);
-  ok('S4: Convert produces a script surface (script-sheet mounts, forward-only-editor is gone)',
-    await app.evalJs("!!document.querySelector('.script-sheet') && !document.querySelector('.forward-only-editor')"));
+  // await clickStructureRow(app);
+  // await sleep(150);
+  // await app.evalJs("document.querySelector('.structure-confirm-screenplay').click()");
+  // await sleep(300);
+  // ok('S4: Convert produces a script surface (script-sheet mounts, forward-only-editor is gone)',
+    // await app.evalJs("!!document.querySelector('.script-sheet') && !document.querySelector('.forward-only-editor')"));
 
   // The other half of the same claim, on the other side of the conversion.
   // ScriptEditor hands the sliver `kind: 'draft'` with `structure: 'screenplay'`,
   // so the SAME row renders with the RETURN destination named. Asserting only the
   // prose side would leave the claim half-made — which is how it was lost.
-  const scriptRowLabel = await structureRowLabel(app);
-  ok('DR3 (labelling claim restored): on the SCRIPT surface the same row names the RETURN destination — "Convert to Prose…"',
-    typeof scriptRowLabel === 'string' && /^Convert to Prose/.test(scriptRowLabel),
-    `label=${JSON.stringify(scriptRowLabel)}`);
-  const scriptRect = await app.evalJs(rectOf('.script-sheet'));
-  ok('F2 geometry: framed script sheet renders a sane width (>=400)', scriptRect.width >= 400, JSON.stringify(scriptRect));
-  const convertedElements = await app.evalJs("[...document.querySelectorAll('.script-el')].map(e => ({ type: e.dataset.type, text: (e.textContent||'').trim() }))");
-  ok('S4: the mechanical mapping produced action elements matching the source paragraph verbatim (including its ** conventions — mechanical only, nothing stripped)',
-    Array.isArray(convertedElements) && convertedElements.some(e => e.type === 'action' && e.text === '**plain words**'),
-    JSON.stringify(convertedElements));
+  // const scriptRowLabel = await structureRowLabel(app);
+  // ok('DR3 (labelling claim restored): on the SCRIPT surface the same row names the RETURN destination — "Convert to Prose…"',
+    // typeof scriptRowLabel === 'string' && /^Convert to Prose/.test(scriptRowLabel),
+    // `label=${JSON.stringify(scriptRowLabel)}`);
+  // const scriptRect = await app.evalJs(rectOf('.script-sheet'));
+  // ok('F2 geometry: framed script sheet renders a sane width (>=400)', scriptRect.width >= 400, JSON.stringify(scriptRect));
+  // const convertedElements = await app.evalJs("[...document.querySelectorAll('.script-el')].map(e => ({ type: e.dataset.type, text: (e.textContent||'').trim() }))");
+  // ok('S4: the mechanical mapping produced action elements matching the source paragraph verbatim (including its ** conventions — mechanical only, nothing stripped)',
+    // Array.isArray(convertedElements) && convertedElements.some(e => e.type === 'action' && e.text === '**plain words**'),
+    // JSON.stringify(convertedElements));
 
   // -- S4: an EMPTY page switches structure for free (no confirmation). ------
   // CD1 S2 — a fresh page mounts a fresh (closed) sliver; open it before
   // reaching for the structure picker inside it.
-  await freshProsePage(app);
-  await openSliver(app);
-  await sleep(150);
-  await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft').click()");
-  await sleep(100);
+  // await freshProsePage(app);
+  // await openSliver(app);
+  // await sleep(150);
+  // await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft').click()");
+  // await sleep(100);
   // ---- PARKED — SUPERSEDED by item 83 M5 (DR3), 2026-08-25 -------------
   // Kept VERBATIM and no longer run. DR3 retired the Prose|Screenplay
   // TABLIST from the sliver panel: a tablist's dress promises free
@@ -367,14 +401,14 @@ await withHarness(async (app) => {
   //
   // await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
   // ----------------------------------------------------------------------
-  await clickStructureRow(app);
-  await sleep(300);
-  const emptySwitchState = await app.evalJs(`({
-    modal: !!document.querySelector('.structure-confirm-modal'),
-    scriptSheet: !!document.querySelector('.script-sheet'),
-  })`);
-  ok('S4: empty-page structure switch is free — no modal, conversion happened immediately',
-    !emptySwitchState.modal && emptySwitchState.scriptSheet, JSON.stringify(emptySwitchState));
+  // await clickStructureRow(app);
+  // await sleep(300);
+  // const emptySwitchState = await app.evalJs(`({
+    // modal: !!document.querySelector('.structure-confirm-modal'),
+    // scriptSheet: !!document.querySelector('.script-sheet'),
+  // })`);
+  // ok('S4: empty-page structure switch is free — no modal, conversion happened immediately',
+    // !emptySwitchState.modal && emptySwitchState.scriptSheet, JSON.stringify(emptySwitchState));
 
   // -- S4: Screenplay -> Prose carries a one-way warning before acting. ------
   // Type the scene heading (auto-uppercases — UPPERCASE_TYPES, unrelated to
@@ -384,13 +418,13 @@ await withHarness(async (app) => {
   // CD1 S7 — the empty-page conversion above forced a remount into
   // ScriptEditor (a different component tree); its OWN sliver mounts fresh
   // (closed) — open it before reaching for the structure picker again.
-  await openSliver(app);
-  await sleep(150);
-  await app.evalJs("document.querySelector('.script-el-active').focus()");
-  await app.typeKeys('int. office - day');
-  await app.key('Enter');
-  await app.typeKeys('A line of action.');
-  await sleep(150);
+  // await openSliver(app);
+  // await sleep(150);
+  // await app.evalJs("document.querySelector('.script-el-active').focus()");
+  // await app.typeKeys('int. office - day');
+  // await app.key('Enter');
+  // await app.typeKeys('A line of action.');
+  // await sleep(150);
   // ---- PARKED — SUPERSEDED by item 83 M5 (DR3), 2026-08-25 -------------
   // Kept VERBATIM and no longer run. DR3 retired the Prose|Screenplay
   // TABLIST from the sliver panel: a tablist's dress promises free
@@ -404,18 +438,19 @@ await withHarness(async (app) => {
   //
   // await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Prose').click()");
   // ----------------------------------------------------------------------
-  await clickStructureRow(app);
-  await sleep(150);
-  ok('S4: a non-empty script requesting Prose shows the one-way warning (gated)',
-    await app.evalJs("!!document.querySelector('.structure-confirm-modal') && document.body.innerText.includes('one-way')"));
-  await app.evalJs("document.querySelector('.structure-confirm-prose').click()");
-  await sleep(300);
-  const proseAdopted = await app.evalJs(`({
-    hasEditor: !!document.querySelector('.forward-only-editor'),
-    text: document.querySelector('.forward-only-editor')?.innerText ?? '',
-  })`);
-  ok('S4: Screenplay -> Prose adopts entry.text (the derived shadow) as the prose rendering, verbatim',
-    proseAdopted.hasEditor && proseAdopted.text.includes('A line of action.'), JSON.stringify(proseAdopted));
+  // await clickStructureRow(app);
+  // await sleep(150);
+  // ok('S4: a non-empty script requesting Prose shows the one-way warning (gated)',
+    // await app.evalJs("!!document.querySelector('.structure-confirm-modal') && document.body.innerText.includes('one-way')"));
+  // await app.evalJs("document.querySelector('.structure-confirm-prose').click()");
+  // await sleep(300);
+  // const proseAdopted = await app.evalJs(`({
+    // hasEditor: !!document.querySelector('.forward-only-editor'),
+    // text: document.querySelector('.forward-only-editor')?.innerText ?? '',
+  // })`);
+  // ok('S4: Screenplay -> Prose adopts entry.text (the derived shadow) as the prose rendering, verbatim',
+    // proseAdopted.hasEditor && proseAdopted.text.includes('A line of action.'), JSON.stringify(proseAdopted));
+  // ------------------------------------------------------------------
 
   // === S2 — the forward lock: an explicit persisted toggle, default ON
   // (today's shipped Free Write behavior), OFF swaps to a real erase. ========
@@ -492,6 +527,7 @@ await withHarness(async (app) => {
 
   // === S5 (script) — "Copy Formatted" reuses the existing copy-script-text
   // rendering; "Copy My Words" is its honest, convention-free inverse. =======
+  // (ITEM 184: the two lines below are STALE - conversion and its confirmation gate are retired; the driver was re-routed.)
   // This page already carries "**hello**" from the prose check above, so the
   // Structure picker's confirmation gate fires — click through it.
   // ---- PARKED — SUPERSEDED by item 83 M5 (DR3), 2026-08-25 -------------
@@ -507,11 +543,19 @@ await withHarness(async (app) => {
   //
   // await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
   // ----------------------------------------------------------------------
-  await clickStructureRow(app);
-  await sleep(150);
-  await app.evalJs("document.querySelector('.structure-confirm-screenplay')?.click()");
-  await sleep(300);
-  await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'script surface after S5 conversion' });
+  // ITEM 184 - DRIVER RE-ROUTED, not an assertion: this used to convert the prose page above into a screenplay
+  // through the Structure row and its confirmation. Kept VERBATIM below. The claim this section makes is about
+  // COPY on the script surface, so it now reaches that surface the only way that exists: a page that IS one.
+  // await clickStructureRow(app);
+  // await sleep(150);
+  // await app.evalJs("document.querySelector('.structure-confirm-screenplay')?.click()");
+  // await sleep(300);
+  // await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'script surface after S5 conversion' });
+  await freshBornScript(app);
+  await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'script surface (born screenplay, item 184)' });
+  const bornRect = await app.evalJs(rectOf('.script-sheet'));
+  ok('F2 geometry [item 184 - a BORN screenplay, not a converted one]: framed script sheet renders a sane width (>=400) - the successor of the parked S4 geometry check, on the fixture that exists now',
+    bornRect.width >= 400, JSON.stringify(bornRect));
   await app.evalJs("document.querySelector('.script-el-active').focus()");
   await app.typeKeys('int. office - day');
   await app.key('Enter');
@@ -1154,6 +1198,49 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "PAGE IS PRIMARY: the tool-rail track rect is byte-identical across a mode switch, even though its CONTENTS changed", reading .desk-frame-toolrail) — CD2 S1/S5: the SAME comparison, .desk-frame-strip now, same truth',
       JSON.stringify(stripRectBeforeNow) === JSON.stringify(stripRectAfterNow),
       `${JSON.stringify(stripRectBeforeNow)} -> ${JSON.stringify(stripRectAfterNow)}`);
+
+    // ==== ITEM 184 - THE TEN PARKS OF S4's CONVERSION CHAIN (see the PARKED note in the live body). ====
+    // Two probes, because the ten successors are two facts: on a PROSE Draft page the Structure zone holds the
+    // kind chips and NO conversion verb; on a BORN screenplay there is no Structure zone and no verb at all.
+    await freshProsePage(app);
+    await openSliver(app);
+    await sleep(150);
+    await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft')?.click()");
+    await sleep(400);
+    const probeA = await app.evalJs(`(() => ({
+      zone: !!document.querySelector('.wz-sliver-structure-zone'),
+      kindChips: document.querySelectorAll('[data-page-kind]').length,
+      convertRow: [...document.querySelectorAll('.wz-cascade-action, .wz-sliver button')].some(b => /^Convert to/.test(b.textContent)),
+      modal: !!document.querySelector('.structure-confirm-modal'),
+      prose: !!document.querySelector('.forward-only-editor') && !document.querySelector('.script-sheet'),
+    }))()`);
+    await freshBornScript(app);
+    await openSliver(app);
+    await sleep(300);
+    const probeB = await app.evalJs(`(() => {
+      const sheet = document.querySelector('.script-sheet');
+      const r = sheet ? sheet.getBoundingClientRect() : null;
+      return {
+        zone: !!document.querySelector('.wz-sliver-structure-zone'),
+        convertRow: [...document.querySelectorAll('.wz-cascade-action, .wz-sliver button')].some(b => /^Convert to/.test(b.textContent)),
+        modal: !!document.querySelector('.structure-confirm-modal'),
+        scriptSheet: !!sheet, proseEditor: !!document.querySelector('.forward-only-editor'),
+        width: r ? Math.round(r.width) : 0,
+      };
+    })()`);
+    const proseNoVerb = probeA.zone === true && probeA.kindChips > 0 && probeA.convertRow === false && probeA.modal === false;
+    const scriptNoVerb = probeB.zone === false && probeB.convertRow === false && probeB.modal === false;
+    const D184 = ' - ITEM 184: ';
+    pok('PARKED (was "DR3 (labelling claim restored): on a PROSE page the Structure row names its DESTINATION - Convert to Screenplay...")' + D184 + 'there is no Structure row on a prose page: the zone holds the kind chips and no Convert verb', proseNoVerb, JSON.stringify(probeA));
+    pok('PARKED (was "S4: a non-empty page requesting Screenplay shows the confirmation (gated, does not act yet)")' + D184 + 'nothing requests it any more - no verb, and no confirmation dialog in the DOM', probeA.convertRow === false && probeA.modal === false, JSON.stringify(probeA));
+    pok('PARKED (was "S4: after Cancel, the surface is still prose")' + D184 + 'a prose page is still prose - forward-only editor, no script sheet - with nothing to cancel', probeA.prose === true, JSON.stringify(probeA));
+    pok('PARKED (was "S4: Convert produces a script surface (script-sheet mounts, forward-only-editor is gone)")' + D184 + 'a script surface is reached by BEING a screenplay: a born one mounts the sheet and has no prose editor', probeB.scriptSheet === true && probeB.proseEditor === false, JSON.stringify(probeB));
+    pok('PARKED (was "DR3 (labelling claim restored): on the SCRIPT surface the same row names the RETURN destination - Convert to Prose...")' + D184 + 'the screenplay surface has no Structure zone and no Convert row', scriptNoVerb, JSON.stringify(probeB));
+    pok('PARKED (was "F2 geometry: framed script sheet renders a sane width (>=400)")' + D184 + 'the same geometry claim on a born screenplay (also live in S5 (script) as "F2 geometry [item 184 - a BORN screenplay]")', probeB.width >= 400, JSON.stringify(probeB));
+    pok('PARKED (was "S4: the mechanical mapping produced action elements matching the source paragraph verbatim")' + D184 + 'the mapping is retired with the act: no Convert verb exists on prose to run it', probeA.convertRow === false, JSON.stringify(probeA));
+    pok('PARKED (was "S4: empty-page structure switch is free - no modal, conversion happened immediately")' + D184 + 'no Structure switch on a prose page; choosing Screenplay BEFORE starting is the Beginnings door and the New Screenplay door (bg1.mjs S2 and item184.mjs)', probeA.convertRow === false && probeA.modal === false, JSON.stringify(probeA));
+    pok('PARKED (was "S4: a non-empty script requesting Prose shows the one-way warning (gated)")' + D184 + 'a screenplay has no way back to prose: no Convert verb, no warning dialog', scriptNoVerb, JSON.stringify(probeB));
+    pok('PARKED (was "S4: Screenplay -> Prose adopts entry.text (the derived shadow) as the prose rendering, verbatim")' + D184 + 'no such path exists on the screenplay surface (no Convert row) - a writer copies the text into a prose page', probeB.convertRow === false, JSON.stringify(probeB));
 
     return parkedChecks;
   });

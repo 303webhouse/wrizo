@@ -71,6 +71,12 @@ const typewriterDom = (app) => app.evalJs("document.querySelector('.mode-scroll'
 // thing the assertion is actually about and survives the swap either way, so it
 // needs no second edit on the day DR3 lands.
 //
+// CORRECTION, ITEM 184 (2026-09-24) - a stale comment, not a park: the row named above,
+// "Convert to Screenplay...", DID ship (DR3) and has since RETIRED (item 184: Nick - a writer selects
+// into a screenplay BEFORE starting one; an existing page is copied into a screenplay surface). The
+// assertion below never depended on it: it measures the Structure ZONE, which survives on a prose
+// Draft page (it holds the page's kind chips). Nothing in this file changed.
+//
 // `railStructure` has a single lexicon definition ('Structure') with no theme
 // overrides, so the heading text is stable to match on.
 const structureVisible = (app) => app.evalJs(

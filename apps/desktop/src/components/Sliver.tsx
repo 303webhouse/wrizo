@@ -16,7 +16,7 @@ import { countLineEquivalents } from '../store/lineEquivalents';
 import { SettingsPanel, Seg, GearIcon } from './ModeStage';
 import { FullscreenToggle } from './ChromeControls';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
-import type { FormatAction, StructureKind } from '../store/draftFormat';
+import type { FormatAction } from '../store/draftFormat';
 import type { PageKindSetting, StyleGuide } from '../types';
 import type { InkPen } from './InkStratum';
 import { INKS, NIBS, TIPS } from '../store/ink';
@@ -91,8 +91,6 @@ export type SliverContent =
     }
   | {
       kind: 'draft';
-      structure: StructureKind;
-      onSwitchStructure: (next: StructureKind) => void;
       // ITEM 122 — the Draft rail gains an active state it never had. Optional,
       // so a caller that does not track a caret simply renders unlit buttons
       // exactly as before.
@@ -611,7 +609,11 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           and reads its ABSENCE as the proof the picker is gone; reusing the
           name made a live assertion false without any ruling having changed.
           Caught by the suite. The picker's name stays retired. */}
-      {content.kind === 'draft' && (
+      {/* ITEM 184 (Nick, verbatim: "I think it's fine to expect a user to select into writing a screenplay before they start one. If they want to 'convert' something they've already written, they can always copy and paste it into a screenplay surface.")
+          The zone now exists only where it has something to hold: a PROSE page's declared KIND (and, for
+          Research, its style guide). A script page's Structure zone held nothing but the conversion row, so
+          it goes with it - a bare heading over nothing is not a zone. */}
+      {content.kind === 'draft' && content.pageKind && content.onPickKind && (
         <div className="wz-sliver-section wz-sliver-structure-zone">
           <div className="wz-sliver-h">{t('railStructure')}</div>
 
@@ -695,30 +697,6 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           )}
           </>)}
 
-          <div className="wz-sliver-rule" aria-hidden="true" />
-          <div className="wz-sliver-sub">{t('structureActLabel')}</div>
-          {/* ITEM 83 M5 (DR3's default, per the brief's §0) — the Prose |
-              Screenplay TABLIST retires from the panel. A tablist's dress
-              promises free switching; conversion is a consequential one-way
-              act behind its own confirm dialog. Its HOME was always right (an
-              instrument acting on the work — G1 puts it in the hand); only its
-              clothes were mode clothes on a non-mode. One verb row now, with
-              its destination named in the control itself — never a bare
-              "Convert", which is the bench's named enemy. The surface itself
-              says where you are: the courier measure announces screenplay
-              louder than any tab could.
-              ITEM 83 ERRATA E4 — UNCHANGED, deliberately. The name stays
-              (destination-named verbs are the bench law that put it there), the
-              ellipsis stays, the confirm stays. Only its neighbourhood grew a
-              label saying what it is. */}
-          <button
-            type="button"
-            className="wz-cascade-action"
-            aria-haspopup="dialog"
-            onClick={() => content.onSwitchStructure(content.structure === 'prose' ? 'screenplay' : 'prose')}
-          >
-            {content.structure === 'prose' ? t('draftConvertToScreenplay') : t('draftConvertToProse')}
-          </button>
         </div>
       )}
 
