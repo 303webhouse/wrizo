@@ -167,4 +167,37 @@ export async function runMigrations(): Promise<void> {
   // brief named a table this schema does not have. Disk wins (§1.10).
   await pool.query(`alter table journal_entries add column if not exists page_settings jsonb`);
   await pool.query(`alter table users add column if not exists page_defaults jsonb`);
+
+  // ITEM 144 — "BESIDE" BOARD CONNECTIONS. ONE additive nullable jsonb column, the
+  // exact `page_settings` / `tutor` recipe: no default, no CHECK, no backfill,
+  // additive-only. Nick's own word ("Store them properly") and Fable's approval of
+  // the S0 shape report (docs/menus/item144-beside-storage-s0.md) — the name
+  // `beside_links` (JS `besideLinks`) is Fable's ruling.
+  //
+  // WHY IT HAD TO BE ASKED FOR AT ALL: /sync copies journal entries field by field
+  // in both directions (an insert list, a placeholder list, an on-conflict set, a
+  // parameter array and a read mapper). A field no site knows is DROPPED SILENTLY:
+  // discarded on the push, unable to return on the pull, with no error anywhere.
+  //
+  // PRESENT ON BOARD ROWS ONLY (`page_type = 'board'`); null on every other row and on
+  // every board that has never had a beside connection. SQL null -> JS undefined, so
+  // a board never connected stays byte-identical to today (the grandfather fixed point).
+  //
+  // SHAPE (jsonb has none of its own; types/index.ts carries the TS mirror). One
+  // object with one array, so a second array can join later without changing the
+  // outer shape:
+  //   { links: [ { id, boardId,          // boardId = the OTHER board
+  //                createdAt, updatedAt,
+  //                deletedAt? } ] }      // an unlink is a soft delete
+  // "Beside" is an UNORDERED PAIR with NO OWNER: the record rides the row of the
+  // board the writer stood on (storage locality, never meaning) and the other end
+  // reads it by a reverse scan. Nothing is written to the other end.
+  //
+  // THE KNOWN LIMIT, stated precisely (the page_links limit, unchanged): the column
+  // resolves WHOLE, by the row's single `updated_at`. Each record carries its own
+  // updatedAt/deletedAt but NOTHING HERE READS THEM — two devices adding different
+  // partners on the SAME board inside one sync window do not merge; the later
+  // `updated_at` replaces the whole column. Stated, not guarded. Per-pair
+  // reconciliation is what a `board_links` table would buy (the named graduation).
+  await pool.query(`alter table journal_entries add column if not exists beside_links jsonb`);
 }

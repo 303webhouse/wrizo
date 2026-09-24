@@ -471,10 +471,10 @@ await withHarness(async (app) => {
   if (await press(app, '[data-category="plan"]', 'the Plan rail item')) {
     await sleep(300);
     const on = await app.evalJs(`(() => { const b = document.querySelector('[data-plan-add-board]'); return b ? { text: b.textContent.trim(), disabled: b.disabled, aria: b.getAttribute('aria-disabled') } : null; })()`);
-    ok('P14: on an OPEN BOARD the Plan menu\'s button reads "Add Board" and is enabled (the retired "Create a Board" text is gone)',
+    ok('P14: on an OPEN BOARD the Plan menu has an enabled "Add Board" button',
       !!on && on.text === 'Add Board' && on.disabled === false && on.aria === null, JSON.stringify(on));
-    const gone = await app.evalJs("![...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent.trim() === 'Create a Board')");
-    ok('P14: no "Create a Board" button remains in the Plan menu', gone === true);
+    const both = await app.evalJs("(() => { const t = [...document.querySelectorAll('.wz-cascade-action')].map(b => b.textContent.trim()); return t.indexOf('Create a Board') >= 0 && t.indexOf('Create a Board') < t.indexOf('Add Board'); })()");
+    ok('P14: "Create a Board" is still there, BESIDE "Add Board" (it is what makes a brand-new board when none is open)', both === true);
     const idsBefore3 = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').map(e => e.id)");
     if (await press(app, '[data-plan-add-board]', 'the Plan menu\'s Add Board')) {
       await app.waitFor("location.hash !== '#/page/b-lore'", { label: 'travelled to the new inside board' });
@@ -497,6 +497,8 @@ await withHarness(async (app) => {
     const off = await app.evalJs(`(() => { const b = document.querySelector('[data-plan-add-board]'); return b ? { disabled: b.disabled, aria: b.getAttribute('aria-disabled') } : null; })()`);
     ok('P14: with NO board open (a page) the Plan menu\'s "Add Board" is GREYED OUT — disabled and aria-disabled, exactly his word',
       !!off && off.disabled === true && off.aria === 'true', JSON.stringify(off));
+    const createStill = await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent.trim() === 'Create a Board' && !b.disabled)");
+    ok('P14: and "Create a Board" is still ENABLED there — the door that makes a brand-new board when none is open', createStill === true);
   }
 
   // ==========================================================================

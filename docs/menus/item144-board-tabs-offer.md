@@ -115,8 +115,53 @@ test's fault — two bundles each inlined their own fake store; one bundle passe
 - **Overshoot while merely rearranging a nested board's card** is the desk's named unmeasured risk; the 32px
   hysteresis, the band and Undo are the three defences, none a measurement.
 
+## STAGE 3 (2026-09-24 night) — the server half, the two-device proof, and "Create a Board" put back
+
+**S0 APPROVED (Fable): `beside_links` / `besideLinks`.** The **server half is written exactly per the S0 table**:
+`migrate.ts` (`alter table journal_entries add column if not exists beside_links jsonb`, with the shape and the
+known limit documented at the site) and the **five `sync.ts` sites** — the read mapper (`besideLinks: r.beside_links ??
+undefined`, SQL null → JS undefined), the INSERT column list, the VALUES placeholder (`$25::jsonb` — **on `main` today
+`page_settings` is `$24`; whichever of this branch and PW's `page_links` merges second renumbers `$N` and re-runs the proof
+below, which IS the pairing check**), the on-conflict SET (`beside_links = excluded.beside_links`, riding the same
+`excluded.updated_at >` guard) and the parameter array. **Server `tsc` 0.** Fable's defaults stand: a duplicated board
+starts unconnected; a plan board connects like any other.
+
+**The round trip — `apps/desktop/scripts/beside-roundtrip-proof.mjs` (browserless; `node` and done; no box, no browser,
+no Postgres).** What runs is the **real code on both sides**: the actual `apps/server/src/sync.ts` router (esbuild-bundled,
+its `/sync` handler called directly; only the pool and auth faked) and **two independent instances of the actual client
+store** (`persistence.ts` + `boardBeside.ts`, each with its own localStorage) driven through the real
+`getDirtyRecords` / `applyRemoteRecords` / `markClean` — `store/sync.ts`'s own `syncOnce` loop minus the network. **The fake
+pool interprets `/sync`'s SQL from its own text** (column list, placeholder list, on-conflict SET list) rather than from a
+re-typed model of what they should be, so a missing site or an off-by-one `$N` is seen exactly as Postgres would see it.
+
+| Fable's condition | result |
+|---|---|
+| **PAIRING** — columns = placeholders = parameters (25/25/25), `beside_links` in the columns **and** the conflict clause | **PASS** |
+| **connect on A → B pulls → BOTH boards show it** (X directly; Y, which stored nothing, by the reverse read); the record crosses the wire intact | **PASS** |
+| **unlink on B → A pulls → gone at both ends**; it arrives as a **tombstone** (`deletedAt`), not a vanished column | **PASS** |
+| **null → undefined**: a board never connected round-trips with `besideLinks` **absent** (SQL null; never `null`, never `{}`) | **PASS** |
+| **same-moment double connect** (A: X→Y, B: Y→X, before either syncs): **two live records, ONE connection shown**, on both devices | **PASS** |
+| **one unlink clears both records**; B shows nothing after it syncs | **PASS** |
+| **FALSIFICATION — the server's six edits removed one at a time, each mutant MUST go red, and for its own reason:** M1 read mapper → *"B shows X beside Y"* red · M2 column list → *"PAIRING: 24 columns but 25 placeholders"* · M3 placeholder → *"25 columns but 24 placeholders"* · M4 on-conflict → *"B shows X beside Y"* red · M5 parameter → *"25 columns but 24 parameters"* · M6 wrong value in the right slot → *"B shows X beside Y"* red | **6 of 6 killed** (first run had M2/M3/M5 dying on a *downstream crash*, not their own error — the fake now re-raises the pool's own recorded PAIRING error, so each goes red for its own reason) |
+
+**⚠ A FINDING THE DOUBLE-CONNECT SCENARIO SURFACED — pre-existing, NOT caused or worsened by `besideLinks`:** `/sync`'s
+**incremental pull filters on the CLIENT-stamped `updated_at > lastSyncAt`.** In the same-moment scenario B stamped its
+edit *before* A's last sync, so **A's ordinary pull never returns it** (A held 1 live record after its incremental sync
+and 2 only after a **full** pull). It holds for **every collection**, not just this one: *an edit made offline and stamped
+earlier than another device's last sync is invisible to that device until a full pull or until the row changes again.*
+The proof therefore has A take a full pull (the `syncOnce(fullPull=true)` path the app has) before judging the feature, and
+**reports the incremental result as a line, not a pass/fail.** This is Fable's to route; I have not touched sync.
+
+**"Create a Board" is PUT BACK** in the Plan menu, **beside "Add Board"** (Fable: Nick said "keep the Plan menu controls,
+too", and without it nothing makes a brand-new board when none is open — "Add Board" is greyed out there). Both variants
+of the panel restore PB1's unborn-board door; `i144.mjs` P14 now asserts it is present, ordered before "Add Board", and
+**still enabled on a page** where "Add Board" is greyed. His answer on the pair is pending; this is the default.
+
+**Not built, as ordered:** drag-to-nest (PLAN DESK's design, `plan-144-nest` @ `943f9f9`) — **after FIX's 160 merges**;
+`160` has not merged. 
+
 ## Status
 
 **BUILT, STAGE 2.** Add/New swapped to Nick's words; Connect Board on the seam; beside connections stored
 (client half); Unlink for nested **and** beside; un-nesting by drag; the back arrow; 169's constants tuned and proved.
-**HELD:** the server column (gated on Fable's S0 review). Push, do not merge — **a founder sitting is owed**.
+**The server half is written (S0 approved) and the two-device round trip passes with 6 of 6 mutants killed** (see STAGE 3). Push, do not merge — **a founder sitting is owed**.
