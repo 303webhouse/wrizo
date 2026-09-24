@@ -22316,3 +22316,40 @@ earlier tips `fde98fc` / `55d29e1`; these are the follow-ups): `plan-180-carry-p
 files, +19/−3 — the Shelf row’s button is “File Page”, 180-Q1 struck) and `plan-181-file-pass` @
 `d073275` (1 docs file, +12/−1 — 181-Q1 ruled, server storage, the schema stop cleared per his “181:
 Yes” above).
+
+## RECORDS — PW’S MEASUREMENT DONE, THE BOX PASSES TO INK; 198’S REFINEMENT PASSES; 203 AND 201 S0s — 2026-09-24 (chat 1)
+
+**PW’S PAINT-LAYER MEASUREMENT: DONE, 12/12 (`3320c76`, on `exp1-connect-text`).** Its commit names the
+grant it ran under (`pw-paintlayer-20260924b`, the one this desk wrote), which matches the file. **It also
+meets item 145’s condition: the Custom Highlight API paints in the app’s engine.** 145’s Q-OV1 stays
+with Nick. *(I have not re-run or re-read the 12 checks.)*
+
+**GRANT PASSED at 09:26 local:** the file now names **INK** for its 196 run (short) — PW’s grant is
+replaced in the same write. **Checked first:** no run-suite / harness node process on the box. **Seen and
+NOT a harness:** two short-lived `chrome-headless-shell` processes from a **Python Playwright driver**
+(`PythonSoftwareFoundation…/playwright/driver/node.exe`, parent chain outside this repo), recycling
+every few seconds — **not a lane’s harness and not in the reaper’s `ws-runtime-verify` signature; I did not
+kill or touch them**, and it is unknown whose they are. If INK’s pre-flight refuses on foreign browsers,
+that is why. **Order behind INK 196 (Fable):** TOOLS’ 195 → FIX’s 160 (unblocks 144’s merge and 201’s
+UI) → FIX’s 158 → FIX’s 184 → TOOLS’ 194 report run (short) → TOOLS’ 187 frame (short) → INK’s 157
+→ INK’s 171-A → TOOLS’ 154 → the note-key test.
+
+**BYTE REVIEW (Fable) PASSES: 198’s refinement `item198-db-clock` @ `ad02ff3`** — the cursor is Postgres’s
+own `now()`, read after the pushes and before the pulls; the overlap is kept; stamp and cursor now count
+one clock. **It ships in the NEXT batch, with 203’s fix. NOT merged here** (a product change —
+`sync.ts` — and the next batch assembles later).
+
+**203 — FIX’s S0 @ `52c29f5` (`item203-s0`), MEASURED (Fable’s relay):** one heavy ink page, or several pushed
+together after time offline, exceeds the 5 MB limit; **the refusal is a bare 500, the writer sees
+“Offline” while online, the fat record is re-sent forever, and every later edit is refused with it.**
+**RULED: P1 + P2 first, then P5. The batch ships the moment it clears review — the same urgency as 198.**
+*(That is a live data-loss shape in production today; I have not read the S0 or its proof.)*
+
+**201 — S0 @ `e2e7f60` (`item201-s0`) APPROVED (Fable):** **Q1** accept the card window (168-F1) · **Q2**
+201 owns a pin to a PURGED page rendering nothing; **168-B owns hiding a TRASHED page’s cards on other
+boards, per his 168-Q1 answer to the question as put (“off every board it’s on”) — superseding B1 S4’s
+“place, not a blank” there** · **Q3** no purge for binders or drawers in 201 (the bin lists pages, boards
+and cards) · **Q4** the leak guard stays as a permanent check.
+
+**NOT MERGED, and why:** `item203-s0` and `item201-s0` are docs + evidence scripts and could merge on
+verification, but Fable did not ask; **held for the next merge instruction.**
