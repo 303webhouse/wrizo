@@ -21822,3 +21822,53 @@ on board tabs (TOOLS’ 144); the guard’s reverse check covers thread terms on
 **MERGE.** `plan-144-amend` @ `cc48193` — the second commit, one file
 (`docs/menus/b144-plus-menu-and-unnest-amendment.md`), 128 insertions, docs-only — **merged on
 this desk’s verification.**
+
+## RECORDS — NICK’S WORDS ON ITEM 166 (A GUIDELINE, NOT A HARD RULE), THE PLAN MENU’S “ADD BOARD” SETTLED BY SKIP — 2026-09-24 late (chat 1)
+
+**RELAY DUPLICATES, noted.** The first three blocks of this relay (“1. Yes, beside 2. Done.”,
+the 144 merge at `cc48193`, and the “Store them properly” schema word) were ALREADY recorded in
+the entry just above and merged (`4187cfb`); nothing re-recorded.
+
+**NICK, verbatim as relayed — item 166 (typos and the “---” his):**
+
+> “166-Q1: Just have it overlap the page in these fringe cases. 166-Q2: I don't see how this
+> would work if side panels from both sides are opened at the same time. If we're only
+> allowing one menu to be open at a time, the menus should be able to fit next to the board.
+> If they can't because the window has been shrank or the user is on a small laptop screen,
+> then let's have the menus just overlap the board. There should always be enough room on
+> either side of the board, though, for the strip menus to open without the board being
+> moved or overlapped. 166-Q4: This is fine on the narrowest screens. It's a guideline ---
+> not a hard-and-fast rule.”
+
+**WHAT IT RULES (Fable):** 166’s “no pop-out covers the page” is a GUIDELINE, not a hard rule (his
+words). Side panels sit BESIDE the page or board when there is room; on a shrunk window or a
+small screen they OVERLAP it. **The strips always have room on both sides of the board to open
+without moving or overlapping it — he states that one as “always”.** The narrow-screen toolbar
+overlap stays. (Reads consistently with the page-primacy canon in `AGENTS.md`: tools overlay
+without displacing — the page’s rect never changes. Not re-ruled here; flagged so a builder
+does not read “overlap” as licence to move the page.)
+
+**WITH NICK NOW (Fable’s question, from his Q2):** one side panel open at a time IN TOTAL, or one
+per side as today? **Default (vetoable, not founder text): one per side** (the approved rule),
+with his fit-or-overlap rule applying either way.
+
+**166-Q1, Q2, Q4 are with Nick per defaults on PLAN DESK’s sheet** — his words above answer them;
+**166-Q3 and 166-Q5 go BACK TO PLAN DESK** to re-base their defaults on 166’s own law (no
+pop-out ever covers the page), so a skip cannot carve an exception. *(Ordering note: Fable’s
+earlier relay listed Q1/Q2/Q4 as “with Nick” and this one records his answers — the answers
+supersede; the default-listing is left as relayed.)*
+
+**SETTLED BY SKIP — the Plan menu’s “Add Board” (a default taken by silence, NOT a ruling).** His own
+words:
+
+> “Can't we just call Plan menu's option "Add Board" too? It can be greyed out unless there
+> is already a board opened”
+
+The Plan menu’s button becomes “Add Board” — a NEW board inside the open one, greyed out when
+none is open. Nesting an EXISTING board happens by DRAGGING it onto another board, mirroring
+drag-off to un-nest (Fable’s default). **The earlier “Put inside…” rename is WITHDRAWN**; his
+proposal replaced it. *(This is the third default on 144’s names by skip — keep marking them.)*
+
+**MERGE.** `plan-144-amend3` @ `8c213bb` — one file
+(`docs/menus/b144-plus-menu-and-unnest-amendment.md`), 34 insertions, docs-only — **merged on
+this desk’s verification.**
