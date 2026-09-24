@@ -294,8 +294,8 @@ async function upsertJournalEntries(userId: string, records: any[]): Promise<voi
 // device edited the same record, last-writer-wins on the same client stamp destroyed the edit
 // it had never been shown - on the server AND on both devices. `synced_at` is stamped by
 // Postgres (`now()`, on insert by the column default and in every on-conflict set), never a
-// parameter and never from a client, so it and the cursor now count the same time. `updated_at`
-// is untouched: it stays the last-writer-wins key.
+// parameter and never from a client, and the cursor is Postgres's own `now()` too (dbNow), so
+// stamp and cursor count the SAME clock. `updated_at` is untouched: it stays the LWW key.
 //
 // THE IN-FLIGHT WINDOW, NAMED. `now()` is the START of the writing transaction. A write whose
 // transaction starts before this pull and COMMITS after it is invisible to this pull's snapshot
@@ -303,13 +303,28 @@ async function upsertJournalEntries(userId: string, records: any[]): Promise<voi
 // would miss it for good. The window is exactly (commit - stamp): each upsert is one statement
 // in its own implicit transaction, so it is that statement's run time (a lock wait on the same
 // row counts; queueing for a pooled connection does not - it happens before the statement
-// starts) plus any skew between this process's clock (which makes the cursor) and Postgres's
-// (which makes the stamp). PULL_OVERLAP_MS is 10s: it reaches back that far, so a write that
+// starts). Because the cursor now comes from the same Postgres clock as the stamp, there is NO
+// app-versus-database clock skew in that window any more - only the statement's own run time.
+// PULL_OVERLAP_MS is 10s: it reaches back that far, so a write that
 // commits within 10s of its own stamp is always caught by the next pull. It is cheap because
 // the client skips any record that is not newer than the one it holds (applyCollection), so the
 // price is a few re-sent rows per pull, only those written in the last 10 seconds. It is a
 // BOUND, not magic: a statement that runs longer than 10s can still slip past it.
 const PULL_OVERLAP_MS = 10_000;
+
+// ITEM 198 (refinement, Fable) - THE CURSOR IS POSTGRES'S CLOCK. It was `new Date()` in this
+// process, while every synced_at stamp is Postgres's `now()`: two machines' clocks again, only
+// smaller. A skew beyond the overlap would have missed writes exactly as the client-stamp did.
+// `select now()` is one cheap round trip per sync. It is read AFTER the pushes and BEFORE the
+// pulls, so it is never later than any pull's snapshot: a row that commits in between is
+// returned now and again next time (harmless - the client skips what is not newer), never
+// missed. `now()` is the start of that statement, so this is a lower bound on the moment the
+// pulls ran, which is the safe direction. node-pg hands the timestamptz back as a Date (whole
+// milliseconds, truncated DOWN), which again errs toward returning more, not less.
+async function dbNow(): Promise<string> {
+  const { rows } = await pool.query(`select now() as t`);
+  return new Date(rows[0].t).toISOString();
+}
 
 async function pull(table: string, userId: string, lastSyncAt: string | null) {
   const { rows } = await pool.query(
@@ -357,6 +372,10 @@ syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {
   const userId = req.session.userId as string;
   const lastSyncAt: string | null = req.body?.lastSyncAt ?? null;
   const push = req.body?.push ?? {};
+  // ITEM 203 (P2) - a CHUNKED push sends several requests; only the last needs the pull. `pull: false` is a
+  // push-only request: the upserts run and the six pulls do not. Absent (every existing client, and the ordinary
+  // one-request sync) it is exactly what it always was.
+  const wantPull = req.body?.pull !== false;
 
   await upsertProjects(userId, Array.isArray(push.projects) ? push.projects : []);
   await upsertStoryPlans(userId, Array.isArray(push.storyPlans) ? push.storyPlans : []);
@@ -365,15 +384,17 @@ syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {
   await upsertDrawers(userId, Array.isArray(push.drawers) ? push.drawers : []);
   await upsertJournalEntries(userId, Array.isArray(push.journalEntries) ? push.journalEntries : []);
 
+  // ITEM 198 - the cursor is POSTGRES's clock, taken after the pushes and before the pulls (see dbNow).
+  const serverTime = await dbNow();
   res.json({
-    serverTime: new Date().toISOString(),
-    pull: {
+    serverTime,
+    pull: wantPull ? {
       projects: (await pull('projects', userId, lastSyncAt)).map(rowToProject),
       storyPlans: (await pull('story_plans', userId, lastSyncAt)).map(rowToStoryPlan),
       sessions: (await pull('sessions_log', userId, lastSyncAt)).map(rowToSession),
       drafts: (await pull('drafts', userId, lastSyncAt)).map(rowToDraft),
       drawers: (await pull('drawers', userId, lastSyncAt)).map(rowToDrawer),
       journalEntries: (await pull('journal_entries', userId, lastSyncAt)).map(rowToJournalEntry),
-    },
+    } : { projects: [], storyPlans: [], sessions: [], drafts: [], drawers: [], journalEntries: [] },
   });
 }));

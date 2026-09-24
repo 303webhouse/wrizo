@@ -68,12 +68,22 @@ export async function apiLogout(): Promise<void> {
   }
 }
 
+// ITEM 203 - the HTTP status survives the throw. `syncOnce` used to see only "sync failed" and treat EVERY failure as
+// offline; a 413 (the server refusing a body over its limit) is a different fact from a dead network and is handled
+// differently (split the push, or name the record that cannot travel).
+export class SyncHttpError extends Error {
+  constructor(public readonly status: number) { super(`sync failed: ${status}`); }
+}
+
 export async function apiSync(payload: {
   lastSyncAt: string | null;
-  push: DirtyRecords;
+  // A CHUNK carries only some collections; the server reads each with Array.isArray, so absent is empty.
+  push: Partial<DirtyRecords>;
+  // `false` = a push-only request (a non-final chunk): the server runs the upserts and skips the six pulls.
+  pull?: false;
 }): Promise<SyncResponse> {
   const res = await postJson('/api/sync', payload);
-  if (!res.ok) throw new Error(`sync failed: ${res.status}`);
+  if (!res.ok) throw new SyncHttpError(res.status);
   return (await res.json()) as SyncResponse;
 }
 

@@ -10,7 +10,7 @@
 // That dependency lives in ANOTHER repo (c:\Users\nickh\wrizo-read), so this file is kept here as evidence
 // of a run and is not wired into any suite. Run:  node docs/evidence/item198/real-postgres-check.mjs
 //
-// The OLD server is `git show origin/main:` of the two files as they stood before 198, so the fault is
+// The OLD server is `git show 481894f:` of the two files as they stood before 198 (pinned - main moves), so the fault is
 // reproduced on real SQL and the fix is measured against it in the same database.
 import { mkdirSync, writeFileSync, copyFileSync, rmSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -41,12 +41,15 @@ rmSync(tmp, { recursive: true, force: true });
 mkdirSync(join(tmp, 'dist'), { recursive: true });
 mkdirSync(join(tmp, 'migrations'), { recursive: true });
 copyFileSync(join(repo, 'apps/server/migrations/001_init.sql'), join(tmp, 'migrations', '001_init.sql'));
-const gitShow = (p) => execSync(`git show origin/main:apps/server/src/${p}`, { cwd: repo, encoding: 'utf8', maxBuffer: 1 << 24 });
+// THE PRE-198 SERVER, PINNED. origin/main moves (198 itself is on it now), so the control is a fixed commit: 481894f,
+// the base 198 was built on. The guard below refuses to run if that commit is not actually the old server.
+const PRE_198 = '481894f';
+const gitShow = (p) => execSync(`git show ${PRE_198}:apps/server/src/${p}`, { cwd: repo, encoding: 'utf8', maxBuffer: 1 << 24 });
 const OLD = { sync: gitShow('sync.ts'), migrate: gitShow('migrate.ts') };
 const NEW = { sync: null, migrate: null };
 const readNew = (p) => readFileSync(join(serverSrc, p), 'utf8');
 NEW.sync = readNew('sync.ts'); NEW.migrate = readNew('migrate.ts');
-if (!OLD.sync.includes('updated_at > $2') || OLD.sync.includes('synced_at')) throw new Error('origin/main is not the pre-198 server - the OLD control would be meaningless');
+if (!OLD.sync.includes('updated_at > $2') || OLD.sync.includes('synced_at')) throw new Error(`${PRE_198} is not the pre-198 server - the OLD control would be meaningless`);
 
 writeFileSync(join(tmp, 'db.cjs'), `const { Pool } = require(${JSON.stringify(pgPath)}); exports.pool = new Pool({ connectionString: process.env.DATABASE_URL }); exports.pool.on('error', () => {});`);
 writeFileSync(join(tmp, 'auth.cjs'), `exports.requireAuth = (_q, _s, next) => next();`);
@@ -143,6 +146,18 @@ try {
   await syncWith(R, USER, { lastSyncAt: null, push: { journalEntries: [{ id: 'P2', text: 'STALE', createdAt: old5, updatedAt: old5, pageType: 'page' }] } });
   const lie3 = (await admin.query(`select synced_at, text from journal_entries where id = 'P2'`)).rows[0];
   check('...(the LWW guard is untouched: a stale write neither changes the text nor bumps synced_at)', lie3.text === 'later' && ms(lie3.synced_at) === ms(lie2.synced_at), JSON.stringify(lie3));
+
+  // ---- 3b. THE CURSOR IS POSTGRES'S OWN now() (the refinement) ---------------------------------------
+  const dbBefore = (await admin.query(`select now() as t`)).rows[0].t;
+  const cursorResp = await syncWith(R, USER, { lastSyncAt: null, push: {} });
+  const dbAfter = (await admin.query(`select now() as t`)).rows[0].t;
+  check('CURSOR FROM POSTGRES: serverTime is bracketed by two `select now()` reads taken around the call, and is a whole-millisecond ISO string',
+    ms(cursorResp.serverTime) >= ms(dbBefore) - 1 && ms(cursorResp.serverTime) <= ms(dbAfter) && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(cursorResp.serverTime),
+    JSON.stringify({ before: dbBefore, serverTime: cursorResp.serverTime, after: dbAfter }));
+  await syncWith(R, USER, { lastSyncAt: null, push: { drafts: [{ id: 'CUR', text: 'c', updatedAt: old5 }] } });
+  const stampCur = (await admin.query(`select synced_at from drafts where id = 'CUR'`)).rows[0].synced_at;
+  check('...and a row written AFTER that response is stamped by the same clock and is NEWER than the cursor it handed out (so the next pull returns it with no overlap needed)',
+    ms(stampCur) >= ms(cursorResp.serverTime), JSON.stringify({ serverTime: cursorResp.serverTime, stamp: stampCur }));
 
   // ---- 4. THE IN-FLIGHT WINDOW, on real transaction semantics --------------------------------------
   // A writer opens a transaction and writes (its now() = the START of that transaction), and has NOT
