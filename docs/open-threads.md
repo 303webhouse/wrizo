@@ -22201,3 +22201,28 @@ Registry: next free **202**.
 
 **MERGE.** `plan-165-amend` @ `7aa644c` (2 docs files, +143) — docs-only by diff-stat, merged by its
 fetched SHA on this desk’s verification.
+
+## ITEM 201 — THE TOMBSTONE, WITH NICK; 168-F1’S KNOWN LIMIT; ITEM 202 REGISTERED — 2026-09-24 (chat 1)
+
+**WITH NICK NOW — A SCHEMA WORD, NO DEFAULT (a column).** Item 201’s `purged_at` on `journal_entries`,
+the tombstone PLAN DESK designed (`docs/menus/b168-rulings-and-item201-delete-permanently.md`): **a
+permanent delete KEEPS the row, the server BLANKS its content, and the mark NEVER reverses.** (This
+is the answer to the design problem I flagged on item 201: a hard delete leaves no row to carry a
+tombstone — so the row stays.) **Nothing writes until his word; Fable relays it.**
+
+**RULED (Fable), 168-F1 — A KNOWN LIMIT, STATED:** accept the **bounded resurrection window for purged
+cards** — an offline edit of the same board, stamped later, can bring a purged card back to the Trash.
+It is the same **whole-board last-writer-wins** limit every board edit already has.
+
+**ITEM 202 — A PER-CARD SERVER MERGE OF A BOARD’S BOXES — REGISTERED, UNSCHEDULED.** It would close
+168-F1’s window and concurrent board edits generally. No owner. Registry: next free **203**.
+
+**DEFAULTS TAKEN BY SKIP, VETOABLE — NOT founder text (Fable):** **167-Q1** a new blank card shows as
+“Card N” in lists until renamed · **167-Q2** only new cards are numbered · **167-Q3** the name shows in
+lists and when opened, not on the card’s face.
+
+**201’s BUILDER** is assigned when a lane frees up; **FIX, the sync lane, is the likely owner.**
+
+**MERGES.** `plan-168-delete-permanently` @ `87eae9a` (2 docs files, +223) and `plan-menus-rulings` @
+`137dc6e` (3 files under `docs/menus/`, +33/−3, incl. `plan-menu-mock.html` marked STALE) — all under
+`docs/`, merged by fetched SHA on this desk’s verification.
