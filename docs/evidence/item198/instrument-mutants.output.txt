@@ -1,0 +1,42 @@
+PASS  [CONTROL] C1: when A syncs its edit BEFORE B's next pull, B's ordinary incremental pull receives it - the instrument can see a healthy incremental pull  A OFFLINE EDIT
+PASS  [CLAIM] K1 [projects]: an edit stamped BEFORE B's last sync, pushed after it, reaches B's next INCREMENTAL pull  {"B":"A OFFLINE EDIT","want":"A OFFLINE EDIT"}
+PASS  [CLAIM] K1 [story_plans]: an edit stamped BEFORE B's last sync, pushed after it, reaches B's next INCREMENTAL pull  {"B":"A OFFLINE EDIT","want":"A OFFLINE EDIT"}
+PASS  [CLAIM] K1 [sessions_log]: an edit stamped BEFORE B's last sync, pushed after it, reaches B's next INCREMENTAL pull  {"B":999,"want":999}
+PASS  [CLAIM] K1 [drafts]: an edit stamped BEFORE B's last sync, pushed after it, reaches B's next INCREMENTAL pull  {"B":"A OFFLINE EDIT","want":"A OFFLINE EDIT"}
+PASS  [CLAIM] K1 [drawers]: an edit stamped BEFORE B's last sync, pushed after it, reaches B's next INCREMENTAL pull  {"B":"A OFFLINE EDIT","want":"A OFFLINE EDIT"}
+PASS  [CLAIM] K1 [journal_entries]: an edit stamped BEFORE B's last sync, pushed after it, reaches B's next INCREMENTAL pull  {"B":"A OFFLINE EDIT","want":"A OFFLINE EDIT"}
+PASS  [CONTROL] C2: the CLIENT stamp is before B's cursor by MORE than the 10s overlap - a scenario the overlap alone could not rescue (the offline period passed on the one clock; nothing was back-dated)  {"editStampedAt":"2026-09-24T05:29:12.676Z","bCursor":"2026-09-24T05:34:12.723Z","gapMs":300047}
+PASS  [CLAIM] K2: B edits on top of what it holds, and A's earlier edit was already pulled - A's words survive SOMEWHERE (server, A or B), never silently destroyed  {"bHeldBeforeEditing":"A OFFLINE EDIT","bWrote":"A OFFLINE EDIT + B EDIT","server":"A OFFLINE EDIT + B EDIT","A":"A OFFLINE EDIT + B EDIT","B":"A OFFLINE EDIT + B EDIT"}
+PASS  [CONTROL] C4: last-writer-wins still does its job on the stamps - the server holds exactly what B wrote (so a loss is the cursor, not a broken LWW guard)  {"server":"A OFFLINE EDIT + B EDIT","bWrote":"A OFFLINE EDIT + B EDIT"}
+PASS  [CONTROL] C3: a FULL pull always recovers a row the server holds  A OFFLINE EDIT + B EDIT
+PASS  [CONTROL] C5: the write's stamp really is OLDER than the cursor B took while it was in flight (the window was reproduced, not assumed)  {"stamp":"2026-09-24T05:34:12.881Z","bCursorTakenInFlight":"2026-09-24T05:34:12.912Z"}
+PASS  [CLAIM] K3: a write in flight across another device's pull is still delivered by that device's NEXT pull (the 10s overlap on the cursor)  {"B":"A OFFLINE EDIT"}
+PASS  [CONTROL] C6: the overlap is a BOUND - a write stamped 11s before the cursor (a clock skew or a statement longer than 10s) is NOT caught by it; a full pull still recovers it  {"B_incremental":"v0"}
+PASS  [CONTROL] C7 (COST): an idle second sync re-sends the rows written in the last 10s (here 1) and the client skips them - the store is byte-identical after  {"resent":1}
+PASS  [CENSUS] N1: every one of the six upserts writes `synced_at = now()` in its on-conflict set  {"missing":[]}
+PASS  [CENSUS] N2: the stamp is NEVER a parameter and NEVER a client value - not in any insert column list, not assigned from `excluded`  {"inInsert":[],"clientVal":false}
+PASS  [CENSUS] N3: the ONE pull() filters on synced_at against the cursor minus the overlap, and no `updated_at > $2` remains  {"pullOk":true}
+PASS  [CENSUS] N4: the overlap is 10s (PULL_OVERLAP_MS = 10_000) and is passed to the pull as $3  {"overlap":true}
+PASS  [CENSUS] N5: migrate.ts adds `synced_at ... default now()` to all six tables  {"have":["projects","story_plans","sessions_log","drafts","drawers","journal_entries"]}
+PASS  [CENSUS] N6: every collection /sync returns still goes through the ONE pull()  {"pulls":["projects","story_plans","sessions_log","drafts","drawers","journal_entries"]}
+
+BASELINE: GREEN (21 checks: 8 claim, 7 control, 6 census)
+
+MUTANTS - each server edit removed ALONE (every one must go red on a DYNAMIC claim check K1..K3; the census is reported beside it):
+RED    pull filters on updated_at again (= the S0 fault)  ->  K1[projects], K1[story_plans], K1[sessions_log], K1[drafts], K1[drawers], K1[journal_entries], K2   census: N3
+RED    overlap removed  ->  K3   census: N3,N4
+RED    projects: upsert no longer writes synced_at = now()  ->  K1[projects]   census: N1
+RED    story_plans: upsert no longer writes synced_at = now()  ->  K1[story_plans]   census: N1
+RED    sessions_log: upsert no longer writes synced_at = now()  ->  K1[sessions_log]   census: N1
+RED    drafts: upsert no longer writes synced_at = now()  ->  K1[drafts]   census: N1
+RED    drawers: upsert no longer writes synced_at = now()  ->  K1[drawers]   census: N1
+RED    journal_entries: upsert no longer writes synced_at = now()  ->  K1[journal_entries]   census: N1
+RED    projects: column not added by migrate.ts  ->  K1[projects], K1[story_plans], K1[sessions_log], K1[drafts], K1[drawers], K1[journal_entries], K2, K3   census: N5   [column "synced_at" of relation "projects" does not exist]
+RED    story_plans: column not added by migrate.ts  ->  K1[projects], K1[story_plans], K1[sessions_log], K1[drafts], K1[drawers], K1[journal_entries], K2, K3   census: N5   [column "synced_at" of relation "story_plans" does not exist]
+RED    sessions_log: column not added by migrate.ts  ->  K1[projects], K1[story_plans], K1[sessions_log], K1[drafts], K1[drawers], K1[journal_entries], K2, K3   census: N5   [column "synced_at" of relation "sessions_log" does not exist]
+RED    drafts: column not added by migrate.ts  ->  K1[projects], K1[story_plans], K1[sessions_log], K1[drafts], K1[drawers], K1[journal_entries], K2, K3   census: N5   [column "synced_at" of relation "drafts" does not exist]
+RED    drawers: column not added by migrate.ts  ->  K1[projects], K1[story_plans], K1[sessions_log], K1[drafts], K1[drawers], K1[journal_entries], K2, K3   census: N5   [column "synced_at" of relation "drawers" does not exist]
+RED    journal_entries: column not added by migrate.ts  ->  K1[projects], K1[story_plans], K1[sessions_log], K1[drafts], K1[drawers], K1[journal_entries], K2, K3   census: N5   [column "synced_at" of relation "journal_entries" does not exist]
+RED    server stamp replaced by the client stamp (journal_entries)  ->  K1[journal_entries], K2   census: N1,N2
+
+MUTANTS: every edit is load-bearing - each, removed alone, turns a dynamic claim check (K1..K3) red

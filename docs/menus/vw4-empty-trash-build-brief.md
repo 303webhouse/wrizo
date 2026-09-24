@@ -1,6 +1,8 @@
 # VW4 BUILD BRIEF — EMPTY TRASH: THE CONFIRM, AND ITS COUNT
 ### PLAN desk · 2026-09-13 · item 134, brief 4 of 4 · decision-complete **to its seam**
 
+> **⚠ AMENDED 2026-09-24 — `b168-rulings-and-item201-delete-permanently.md` §9** (Nick: *"Delete Permanently" per item and for the whole bin*; the hard-delete seam is now specified as a TOMBSTONE, item 201). **S4's "no per-item permanent delete" is SUPERSEDED; §0's "hard delete" premise is replaced by the tombstone (the stop rule stands until the `purged_at` column is answered); the confirm stays IN PLACE. Kept as written below.**
+
 **WORKTREE:** `.claude/worktrees/vw4-empty` · **BRANCH:** `vw4-empty` · **OFF:** `origin/main`.
 **Never the primary checkout.** **This lane pushes its BRANCH.**
 

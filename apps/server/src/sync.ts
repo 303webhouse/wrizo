@@ -149,7 +149,8 @@ async function upsertProjects(userId: string, records: any[]): Promise<void> {
            last_activity_type = excluded.last_activity_type,
            last_active_page_id = excluded.last_active_page_id,
            deleted_at = excluded.deleted_at, updated_at = excluded.updated_at,
-           tutor = excluded.tutor
+           tutor = excluded.tutor,
+           synced_at = now()
          where projects.user_id = excluded.user_id
            and excluded.updated_at > projects.updated_at`,
         // TU5 S1 — tutor rides as the 15th param, `JSON.stringify(p.tutor ?? null)`
@@ -177,7 +178,8 @@ async function upsertStoryPlans(userId: string, records: any[]): Promise<void> {
          on conflict (id) do update set
            project_id = excluded.project_id, framework_id = excluded.framework_id,
            current_beat_id = excluded.current_beat_id, beat_notes = excluded.beat_notes,
-           deleted_at = excluded.deleted_at, updated_at = excluded.updated_at
+           deleted_at = excluded.deleted_at, updated_at = excluded.updated_at,
+           synced_at = now()
          where story_plans.user_id = excluded.user_id
            and excluded.updated_at > story_plans.updated_at`,
         [s.id, userId, s.projectId ?? '', s.frameworkId ?? '', s.currentBeatId ?? null,
@@ -203,7 +205,8 @@ async function upsertSessions(userId: string, records: any[]): Promise<void> {
            first_keystroke_at = excluded.first_keystroke_at, ended_at = excluded.ended_at,
            words = excluded.words, duration_sec = excluded.duration_sec,
            surface = excluded.surface, desk_opened_at = excluded.desk_opened_at,
-           updated_at = excluded.updated_at
+           updated_at = excluded.updated_at,
+           synced_at = now()
          where sessions_log.user_id = excluded.user_id
            and excluded.updated_at > sessions_log.updated_at`,
         [s.id, userId, s.projectId ?? null, s.startedAt ?? null, s.firstKeystrokeAt ?? null,
@@ -223,7 +226,8 @@ async function upsertDrafts(userId: string, records: any[]): Promise<void> {
         `insert into drafts (id, user_id, text, updated_at)
          values ($1,$2,$3,$4)
          on conflict (id) do update set
-           text = excluded.text, updated_at = excluded.updated_at
+           text = excluded.text, updated_at = excluded.updated_at,
+           synced_at = now()
          where drafts.user_id = excluded.user_id
            and excluded.updated_at > drafts.updated_at`,
         [d.id, userId, d.text ?? '', d.updatedAt],
@@ -244,7 +248,8 @@ async function upsertDrawers(userId: string, records: any[]): Promise<void> {
          values ($1,$2,$3,$4,$5,$6,$7)
          on conflict (id) do update set
            name = excluded.name, "order" = excluded."order",
-           deleted_at = excluded.deleted_at, updated_at = excluded.updated_at
+           deleted_at = excluded.deleted_at, updated_at = excluded.updated_at,
+           synced_at = now()
          where drawers.user_id = excluded.user_id
            and excluded.updated_at > drawers.updated_at`,
         [d.id, userId, d.name ?? '', d.order ?? 0, d.deletedAt ?? null, d.createdAt, d.updatedAt],
@@ -281,7 +286,16 @@ async function upsertJournalEntries(userId: string, records: any[]): Promise<voi
               every column above it. A LINK CHANGE IS A PAGE CHANGE, so
               there is nothing to special-case: links are page data.
               Whole-column resolution is the known limit — see migrate.ts. */
-           page_links = excluded.page_links
+           page_links = excluded.page_links,
+           /* ITEM 198 — the server's own sync cursor, stamped by Postgres and
+              never by a client. It sits INSIDE the last-writer-wins guard
+              below, so only an ACCEPTED write moves it. Kept last in this set
+              deliberately: it is the only assignment here that is NOT of the
+              form column = excluded.column, and a reader scanning for the
+              column list should not have to step over it.
+              (No backticks in this comment on purpose — it lives INSIDE a
+              template literal, and a backtick here ends the SQL string.) */
+           synced_at = now()
          where journal_entries.user_id = excluded.user_id
            and excluded.updated_at > journal_entries.updated_at`,
         [e.id, userId, e.projectId ?? null, e.text ?? '', e.sessionId ?? null,
@@ -297,11 +311,37 @@ async function upsertJournalEntries(userId: string, records: any[]): Promise<voi
 
 // --- pulls (everything updated since lastSyncAt) --------------------------
 
+// ITEM 198 - THE PULL FILTERS ON THE SERVER'S OWN CLOCK, WITH AN OVERLAP.
+//
+// It used to filter on `updated_at`: a CLIENT stamp, compared against a cursor that is the
+// SERVER's serverTime. An edit stamped before another device's last sync and pushed after it
+// (the ordinary offline-edit shape) was on the server and never returned; and when that other
+// device edited the same record, last-writer-wins on the same client stamp destroyed the edit
+// it had never been shown - on the server AND on both devices. `synced_at` is stamped by
+// Postgres (`now()`, on insert by the column default and in every on-conflict set), never a
+// parameter and never from a client, so it and the cursor now count the same time. `updated_at`
+// is untouched: it stays the last-writer-wins key.
+//
+// THE IN-FLIGHT WINDOW, NAMED. `now()` is the START of the writing transaction. A write whose
+// transaction starts before this pull and COMMITS after it is invisible to this pull's snapshot
+// yet carries a stamp OLDER than the cursor this response hands back - so a plain `> cursor`
+// would miss it for good. The window is exactly (commit - stamp): each upsert is one statement
+// in its own implicit transaction, so it is that statement's run time (a lock wait on the same
+// row counts; queueing for a pooled connection does not - it happens before the statement
+// starts) plus any skew between this process's clock (which makes the cursor) and Postgres's
+// (which makes the stamp). PULL_OVERLAP_MS is 10s: it reaches back that far, so a write that
+// commits within 10s of its own stamp is always caught by the next pull. It is cheap because
+// the client skips any record that is not newer than the one it holds (applyCollection), so the
+// price is a few re-sent rows per pull, only those written in the last 10 seconds. It is a
+// BOUND, not magic: a statement that runs longer than 10s can still slip past it.
+const PULL_OVERLAP_MS = 10_000;
+
 async function pull(table: string, userId: string, lastSyncAt: string | null) {
   const { rows } = await pool.query(
     `select * from ${table}
-     where user_id = $1 and ($2::timestamptz is null or updated_at > $2)`,
-    [userId, lastSyncAt],
+     where user_id = $1
+       and ($2::timestamptz is null or synced_at > $2::timestamptz - ($3::int * interval '1 millisecond'))`,
+    [userId, lastSyncAt, PULL_OVERLAP_MS],
   );
   return rows;
 }

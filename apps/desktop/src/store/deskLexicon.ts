@@ -256,7 +256,7 @@ export type DeskTermId =
   | 'pageSetupOn' | 'pageSetupOff' | 'pageSetupExportNote'
   // ITEM 83 M4 — STYLING (R1), the Typewriter menu (R3, names per F1's
   // default), and the three-instrument foot (R5/R12).
-  | 'stylingHeading' | 'stylingBold' | 'stylingItalic' | 'stylingUnderline'
+  | 'stylingHeading' | 'stylingOpen' | 'stylingClose' | 'stylingBold' | 'stylingItalic' | 'stylingUnderline'
   | 'stylingStrike'
   | 'twMenuHeading' | 'twForwardLock' | 'twForwardLockWindow'
   | 'twUnitWords' | 'twUnitSentences' | 'twLineFade' | 'twLineFadeLines'
@@ -888,6 +888,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   // ITEM 83 M4 (R1) — Free Write's STYLING zone. Underline joins Bold and
   // Italic by founder word, overruling Chamber 1's "nothing else".
   stylingHeading: 'Styling',
+  stylingOpen: 'Open Styling',
+  stylingClose: 'Close Styling',
   stylingBold: 'Bold',
   stylingItalic: 'Italic',
   stylingUnderline: 'Underline',

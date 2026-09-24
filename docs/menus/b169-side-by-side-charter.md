@@ -12,6 +12,8 @@
 drag between them.* **This charter answers none of them. It sets them up so that Nick's answers can be
 built, and it adds the questions the history makes necessary.**
 
+> **⚠ AMENDED 2026-09-24 — `b144-plus-menu-and-unnest-amendment.md` §5/§7.** **169-Q2 is ANSWERED by his words: two boards visible on laptops/tablets, three on desktops (supersedes "up to four"), the boundary set by measurement.** **169-Q1 was already answered** (board beside board; see the note at 169-Q6). **Both struck from the open list; the questions below are kept as written.**
+
 ---
 
 ## §0 · ⚠ THIS IS THE THIRD TIME SIDE-BY-SIDE HAS BEEN ASKED FOR — AND IT HAS MEANT TWO THINGS

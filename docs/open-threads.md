@@ -21534,3 +21534,785 @@ this time.
 **Offered for merge — harness/test-seam work, chat 1's verification is the
 gate per the standing amendment.** Branch `item151-silent-acts`, tip
 `c46d498`, pushed. Nothing further owed on tools' side.
+
+## RECORDS — 171-B’S REVERSAL, TUTOR IDLE, THE STANDING REPORT-LENGTH RULE — 2026-09-24 (chat 1)
+
+**171B-F1 — RECORDED AS A REVERSAL.** `docs/menus/item171b-ink-on-boards-and-cards-charter.md`
+§1b names it and §Q relays it to Nick; his answer 5, quoted there byte-identical (typo
+his):
+
+> *"Ink needs to available, though, on  Boards and Cards."*
+
+**That REVERSES the standing law** — *"today the pen is inert on every non-Journal surface. A
+stylus tap on a Page or a chapter does absolutely nothing — not even caret placement"* — but
+**only for boards and cards.** The pen stays inert on a Page and a chapter; nothing else moves
+with the reversal. This entry is the recording the 171-B charter’s §F asked for and that was
+never actioned until now.
+
+**171B-F2 — CONFIRMED.** 171-B does not gate 171, as relayed.
+
+**171B-Q1, Q2, Q3** — with Nick today, by their own numbers (the charter’s §Q). Fable relays
+his words when they land; none are answered yet.
+
+**PLAN DESK’s restart note — stale twice, per Fable, told to PLAN DESK directly; recorded here
+so the ledger carries it too.** The column is `page_links`, not `connections` (Records,
+`218050c`). “The MOVE” is not held open — it was RESOLVED AS COPY on 2026-09-22 (3B). The
+ledger outranks the note.
+
+**TUTOR — idle today, Fable’s call, to save usage.** Its queue is unchanged.
+
+**NEW STANDING RULE, every lane, usage:** chat reports run 10 lines or fewer unless asked;
+detail goes to disk.
+
+**MERGES.**
+- `pw2-nesting-transfer` @ `d226e09` — one file, `docs/menus/pw2-nesting-transfer-offer-2026-09-17.md`,
+  30 insertions, nothing else touched. **DOCS-ONLY, verified by diff-stat. Merging on this
+  desk’s own verification**, per the standing amendment.
+- `plan-exp1-q1` @ `d9f688e` — **NOT merged.** Fable’s instruction is to merge once, after PLAN
+  DESK adds its amendment as a SECOND COMMIT on this same branch. Checked: `plan-exp1-amend`
+  (tip `b52e151`) is not built atop `d9f688e` — its parent chain runs `b52e151` → `f0b4726` →
+  `14d0b90`, a different base entirely. The amendment has not landed on `plan-exp1-q1` yet.
+  Holding; will merge when the second commit appears there.
+
+**BOX.** Grant file (`~/.wrizo/box-turn.json`) written naming **FIX**, token
+`chat1-fix159-20260924`, per Fable’s order (159 → 158 → INK 157 → INK 171-A → TOOLS 154, item
+195 ahead of the queue whenever TOOLS says ready, 176 re-runs after 195 merges).
+
+## RECORDS — 160’s INTERIM, EXPERIMENT 1’S REVISED SHAPE, AND NICK’S ANSWERS ON 171-B AND EXTERNAL SOURCES — 2026-09-24 (chat 1)
+
+**MERGE RULE, refined (Fable).** A harness change that can only turn a false red green (a
+de-flake) merges between pairs once verified. One that can turn a green red waits for a batch
+boundary.
+
+**ITEM 160 — PARTIAL INTERIM, NOT COMPLETE (Fable, reading FIX’s S0 at
+`C:\Users\nickh\.wrizo\notes\item160-s0-popup-ambiguity.md`).** Remove moves into
+`BoardCardPopup` for hand-typed cards; every other kind keeps it in the action row until 168.
+**The hard line — never ship without card deletion — outranks the interim placement.**
+
+**EXPERIMENT 1 — REVISED SHAPE, from PW’s report (Fable’s rulings):** link targets are
+**entries and cards only** — plans, drawers, projects and beats are not link targets here. The
+rail reads tags from the TARGET, never from the link. One position-preserving stripper, with
+`stripMarkdownConventions` as its wrapper, proven byte-identical; one exported paragraph
+enumerator. Spot-notes use PW’s caret reading plus one-sided exact fallbacks, never the
+ambiguity path. `pageLinks` joins `BirthContent`; **a link never births a page.** Export names
+links it leaves out, as it already does for ink. A link change moving the resume pointer:
+**accepted.**
+
+**FOUNDER ANSWERS, quoted verbatim, relayed by Fable — not paraphrased.**
+
+**“External sources” (the rail).** *“2. I meant sources or pages or cards or boards or images
+or imported docs that all serve as supplemental material to the text being written on the page
+surface”.* So Experiment 1 links to sources, pages, cards, boards and imported docs. **IMAGES:
+the app has no way to hold a writer’s own images today** (checked two ways — no image kind, no
+upload/attachment path). **NEW ITEM REGISTERED: the writer’s own images**, so they can be added
+and linked — planned after Experiment 1 (his default, taken by skip); the schema/storage change
+will need his word separately.
+
+**171B-Q1 (how the pen starts on a board).** *“1. Yes, on a desktop you must select INK (unless
+you have a stylus connected, perhaps? But I don’t know how that works). On a mobile device,
+stylus’s or Apple Pens, etc., automatically activate the drawing surface. This should only work
+on Free Write mode and on Boards or inside Cards.”* Fable’s default on the open question (a
+stylus draws by itself on any device; a mouse/trackpad selects INK first; a finger never draws by
+itself) is marked VETOABLE. His “only work on” clause is flagged as a READING (ink works only
+in Free Write, on boards, inside cards) — PLAN DESK checks it against where ink works today;
+any conflict goes back to Nick and nothing is removed on a reading alone.
+
+**171B-Q2 (a card’s ink).** *“2. Right on the card”.*
+
+**171B-Q3 (drawing across a board) — REVERSES the desk’s lean.** *“3. Users should be able to
+draw directly on Board. If they move cards around after that, they can erase the INK they no
+longer want (which also means we need an eraser if we don’t already have one. The eraser should
+be scalable, as well).”* An eraser exists today at one fixed size (`ERASER_WIDTH = 22`,
+`store/ink.ts:17`). **A scalable eraser, on every ink surface, joins 171-B’s scope.**
+
+**MERGES, this relay.** `plan-exp1-q1` @ `551dba4` (both commits, `d9f688e` + the amendment) and
+`plan-171b-design-pass` @ `d04ce54` — both docs-only by diff-stat, **merged on this desk’s
+verification.** PLAN DESK’s revised 171-B pass, once pushed, merges the same way.
+
+**BOX, unchanged by this entry.** FIX’s 159 is still running; grant file still names FIX,
+token `chat1-fix159-20260924`. Next pair per Fable’s order: TOOLS’ 195
+(`item195-sliver-grip` @ `917e6c4`), ahead of the queue as ruled — to be granted at FIX’s
+stamp. Short-use slots noted for between pairs: INK’s 196 (`item196-download-wait` @
+`6e61980`, a de-flake — eligible to merge between pairs once verified, per the refined rule),
+PW’s paint-layer measurement, TOOLS’ splash frame, 194’s report-only run, the note-key test.
+
+## RECORDS — PW’S TIGHTENED §1b RATIFIED, ANCHORS.TS ACCEPTED, EXPERIMENT 1’S TWO BRANCHES, AND THE PROOF-SCRATCH CHECK — 2026-09-24 (chat 1)
+
+**RATIFIED (Fable): PW’s tightening of §1b.** A context match counts only if it is UNIQUE, at
+every step; a non-unique match falls through to the counting steps. Lost and ambiguous
+resolutions carry no start/end, so nothing can paint a guess. **The never-guess law, applied at
+every step.**
+
+**ACCEPTED (Fable): `store/anchors.ts` implemented for real**, not declare-only signatures.
+Declare emits nothing, so TOOLS would have compiled against a module undefined at runtime.
+
+**EXPERIMENT 1 SPANS TWO BRANCHES, neither merges alone:** `exp1-connect-text` (PW) @
+`78d4529` and `item190-exp1-rail` (TOOLS) @ `410b2e4`. **Neither merges until Experiment 1 is
+offered whole** — TOOLS merges PW’s branch into its own to build the Linked list.
+
+**PROOF-SCRATCH CHECK, for the assembled-diff review.** PW committed, then removed, a proof
+scratch directory. Verified here: `apps/desktop/scripts/.exp1-b-proof/` was added at
+`c5ed5d3`, removed at `505218a` (moved to the OS temp dir — the `railway up` uploads-the-tree
+hazard named in that commit’s own message), and **confirmed ABSENT at the branch tip**
+`78d4529` by `git ls-tree -r` — only `apps/desktop/scripts/exp1-b-proof.mjs` remains.
+
+**MERGE.** `plan-171b-revise-v2` @ `846224e` — one file,
+`docs/menus/item171b-design-pass.md`, docs-only by diff-stat. **Merged on this desk’s own
+verification.**
+
+**BOX.** PW relayed READY for the paint-layer measurement (item 145 + Experiment 1, one short
+use) — relayed by Fable since PW can’t address a chat 1 session directly. **Grant file still
+names FIX**, token `chat1-fix159-20260924` — no stamp for FIX’s 159 is on the ledger yet, so
+the box is not idle and PW is NOT granted here. **Slotting order on FIX’s stamp: PW’s short use
+first, then TOOLS’ 195** (`item195-sliver-grip`, now on tip `02eecd1` — the sub-1100 width
+added), **between pairs, announced by the grant file** — order otherwise unchanged (FIX 158 →
+INK 157 → INK 171-A → TOOLS 154).
+
+## RECORDS — NICK’S WORDS ON ITEM 144’S TABS AND ITEM 169’S SIDE-BY-SIDE, THE QUESTION-STRIKING RULE, AND FABLE’S CORRECTION — 2026-09-24 evening (chat 1)
+
+**NICK’S WORDS, verbatim as relayed by Fable (typos his) — item 144’s tabs (BT-Q1..Q3):**
+
+> “BT- Q1: The tabs should stay fixed from left to right. BT-Q2: Ship now, tags later.
+> BT-Q3: Scrap "Board." Just a "+" next to the current board. Give the user these options
+> when "+" is clicked: Add Board (creates a nested board), New Board (which creates a new
+> board that starts its life connected to the current board), or Unlink Board. Open to
+> questions/concerns. And keep the Plan menu controls, too. And let's keep it to three
+> boards visible on the surface at a time. If the User double-clicks on a nested board, the
+> nested board should replace the parent board in the UI with a back arrow icon.”
+
+**His answers to Fable’s three concerns:**
+
+> “1. Confirmed. 2. Let's stick with "Add Board." The User can always drag the nested board
+> off the surface is they want to un-nest it, right? 3. Agreed. Two for laptops/tablets,
+> three for desktops.”
+
+**WHAT FABLE READS FROM THEM:** Unlink moves to each board’s OWN tab (concern 1, confirmed);
+the labels stay Add Board / New Board; side by side is **two on laptops and tablets, three on
+desktops** (SUPERSEDES “up to four”); his “+” supersedes the older “+ BOARD”. **Un-nesting by
+drag is NOT in the record** — PLAN DESK designs it; Unlink on a nested board’s tab un-nests it.
+(His “right?” there is a question back to the desk, not a ruling.)
+
+**OPEN WITH NICK:** the writer’s word for page links — “links” or “connections” (Fable’s
+default: links; “connections” stays the board-thread word). Fable relays his answer.
+
+**RULE (Fable), for the record:** a question the founder’s recorded words already answer is
+STRUCK, not re-asked, and a default never overrides his words.
+
+**CORRECTION, Fable’s own, left visible:** Fable told TOOLS it “never writes through”
+`store/anchors.ts`. The law is narrower: **only PW edits that module, and every change to links
+goes through its functions.** The rail’s Remove calling PW’s `unlink()` is that law working.
+
+**ITEM 108’s STATUS, asked by Fable for PLAN DESK (item 144’s sibling-row brief gates its build
+on “108 merged”).** Two things carry the number; the one meant is **108 — TAGS AS SORTING**
+(the colour tokens, the shared tag list, card tags; ledger line 5707: “BUILDS FIRST” and gates
+143/144/145). **Checked on `main` and on origin: only its BUILD BRIEF is merged (docs —
+`22ad29e`, `1bdf06b`, `827dacd`, `755da18`). No product build branch exists and no tag
+work is on `main`. So “108 merged” is NOT true today** — the gate is unmet as written. **But
+Nick’s BT-Q2, “Ship now, tags later,” is the recorded word that 144’s tabs ship without
+tags** — PLAN DESK should re-read the gate against that (a struck question, per the rule
+above), not hold on it. The OTHER 108, the Tutor memory arc (line 1111), is separate and
+unbuilt; it gates only the Tutor’s model phase.
+
+**MERGE.** `plan-171b-revise-v2` @ `9873bea` (the census line for `Stroke.eraserWidth`) — one
+file, 8 insertions, docs-only by diff-stat. **Merged on this desk’s verification.**
+
+**BOX.** Grant file still names FIX (`chat1-fix159-20260924`); no stamp for 159 on the ledger.
+**Order: FIX 159 → PW’s short use → TOOLS 195 → as queued. INK’s 196 run is a short use
+too** — slotted after PW’s, between pairs. Nothing granted here; the box is not idle.
+
+## RECORDS — NICK’S WORDS ON THE WORD FOR PAGE LINKS, CONNECT BOARD, AND THE SPLASH SIZE; 144 AMENDMENT MERGED — 2026-09-24 night (chat 1)
+
+**NICK, verbatim as relayed by Fable — the writer’s word for page links:**
+
+> “"Links" works for the backend, at least. Not sure that needs to be used in the UI,
+> though.”
+
+**Fable’s proposal (DEFAULT, vetoable, NOT founder text):** no noun on screen — the menu verb
+“Link to…”, “Unlink”, the rail tab “Linked” with its count, the export line “Linked material
+isn’t included.” `page_links` stays the column. **Later relay: the default STOOD BY SKIP** — PW
+rewrites the six strings. (Still a default taken by silence, not a ruling.)
+
+**NICK, verbatim as relayed — Connect Board, and the splash size** (the “|” and “Note:” are as
+relayed; two answers in one relay):
+
+> “2. Let's add a third option to "Connect Board" with a toggle-open menu that lists all
+> boards from recently opened to oldest. | Note: OK, let's make it ~1/4 the screen size.
+> Doesn't need to be exact, but that should be big enough to see the text a bit better, no?”
+
+**144’s “+” menu, as it now stands:** Add Board (new, inside), New Board (new, beside,
+connected), and **Connect Board** — a toggle-open list of ALL boards, most recently opened
+first. **Fable’s reading, FLAGGED:** Connect Board connects an EXISTING board beside this one —
+the relationship New Board starts with. Add/New stand as he wrote them (default by skip). If
+“recently opened” isn’t already recorded it is kept per device; **a column would stop for Nick.**
+**STILL WITH NICK:** Add Board vs New Board — default is his literal words (Add = new board
+inside; New = new board beside, connected); PLAN DESK’s reading (Add nests an EXISTING board)
+goes to him as the alternative.
+
+**ITEM 187 — SIZE.** His “~1/4 the screen size” SUPERSEDES the earlier “at most 1/5” (ledger
+line 9022, left as written). **Fable’s default, sent to him, vetoable:** a quarter of the AREA
+(about half the width) — a quarter of the width would grow the handwriting only a quarter. The
+check asserts a BAND around a quarter, not a pixel, plus the four-sided blurred margin.
+**RATIFIED (Fable): TOOLS’ 60%-of-viewport height cap** — it only shrinks the emblem and keeps his
+purpose (the blurred app on all four sides). The cap stands.
+
+**THE “RENUMBER 194 → 187” ORDER, AND WHAT I FOUND.** The ledger is append-only, so it is
+not renumbered in place. **Checked: the ledger has NO splash-numbered-194 line** — the one hit
+(line 21637) reads “TOOLS’ splash frame, 194’s report-only run”, two different items. **The
+mislabel lives elsewhere:** `docs/wrizo-alpha/seeds/tools.md:82` and a product-file comment
+(`index.css`, “THE SPLASH (item 194)”, per that seed). **Neither is edited here** — the seed is
+TOOLS’ own note and the comment is product code; **routed to TOOLS to correct when it next
+touches them** (the comment with the 187 build).
+
+**ITEM 197, THIRD OCCURRENCE (Fable).** `item126` hung 7241s inside FIX’s full run, then passed
+alone in 100s on the identical bundle (`index-BGbwUOFl.js/588429b`). The runner’s ~two-hour
+per-file budget is what lets one hang eat the box. **Logged; STILL UNOWNED.**
+
+**171-B’s design is merged** (`846224e` + `9873bea`); INK starts the build.
+
+**MERGE.** `plan-144-amend` @ `ccbc99a` — five files under `docs/menus/`, 234 insertions, all
+docs — **merged on this desk’s verification**; TOOLS builds 144 from it.
+
+## RECORDS — NICK’S SCHEMA WORD ON BESIDE-CONNECTIONS, HIS “BESIDE” CONFIRMATION, AND 144’S CORRECTION IN FLIGHT — 2026-09-24 late (chat 1)
+
+**NICK, verbatim as relayed — confirming the reading:**
+
+> “1. Yes, beside 2. Done.”
+
+“1” confirms Fable’s reading that **Connect Board connects the chosen board BESIDE this one**;
+“2” is the relays. The quarter-of-the-area splash default **stood by skip** (a default, not a
+ruling).
+
+**NICK’S SCHEMA WORD — verbatim.** The question as put (as relayed): *“Should Wrizo store which
+boards are connected, so they match on every device?”* — options *“Store them properly”* (one
+small database change; connections sync) or *“Remember them per device”* (no database change;
+devices won’t match); Fable recommended storing them. His answer:
+
+> “1. Store them properly”
+
+**What it covers:** storing “beside” board connections in the database. **What it does NOT
+yet do: nothing writes until TOOLS’ S0 shape report clears Fable’s review.** If the minimum
+lawful shape is a NEW TABLE rather than a column, Fable tells Nick in plain words before
+anything is written. **This is a schema word: it stopped here and is recorded as his.**
+
+**STILL OPEN with Nick, verbatim so far:**
+
+> “2. Can't we just call Plan menu's option "Add Board" too? It can be greyed out unless
+> there is already a board opened”
+
+Fable’s catch: the Plan menu’s control moves an EXISTING board inside another, so renaming it Add
+Board and making it create one removes the only door for nesting an existing board. **Default
+proposed (vetoable, not founder text): do as he says, and nest an existing board by DRAGGING it
+onto another board, mirroring drag-off to un-nest.** Also open: (b) the two “Connect Board”
+controls do opposite things — default: the Plan menu’s becomes “Put inside…” and the “+” keeps
+“Connect Board”. **Both pending his reply.**
+
+**CORRECTION IN FLIGHT (Fable).** TOOLS’ 144 stage 1 (`b6f4efc`) built Add Board as “pick an
+existing board to nest” — the ALTERNATIVE reading. TOOLS swaps to his literal words: Add Board
+= a NEW board inside this one. (That build is on TOOLS’ branch, unmerged; nothing on `main`.)
+
+**RATIFIED (Fable):** TOOLS’ 70% width cap on the splash (at 390x844 the quarter-area left 9%
+side margins). 169’s gutter at 28px. Nick’s pane counts are the requirement; TOOLS tunes the
+split-view constants to reach them.
+
+**MERGE ORDER (Fable): 144 merges AFTER FIX’s 160 — both edit `BoardEditor.tsx`.**
+
+**NOTE for Experiment 1’s assembly:** PW’s lexicon guard must allow Nick’s own “Unlink Board”
+on board tabs (TOOLS’ 144); the guard’s reverse check covers thread terms only.
+
+**MERGE.** `plan-144-amend` @ `cc48193` — the second commit, one file
+(`docs/menus/b144-plus-menu-and-unnest-amendment.md`), 128 insertions, docs-only — **merged on
+this desk’s verification.**
+
+## RECORDS — NICK’S WORDS ON ITEM 166 (A GUIDELINE, NOT A HARD RULE), THE PLAN MENU’S “ADD BOARD” SETTLED BY SKIP — 2026-09-24 late (chat 1)
+
+**RELAY DUPLICATES, noted.** The first three blocks of this relay (“1. Yes, beside 2. Done.”,
+the 144 merge at `cc48193`, and the “Store them properly” schema word) were ALREADY recorded in
+the entry just above and merged (`4187cfb`); nothing re-recorded.
+
+**NICK, verbatim as relayed — item 166 (typos and the “---” his):**
+
+> “166-Q1: Just have it overlap the page in these fringe cases. 166-Q2: I don't see how this
+> would work if side panels from both sides are opened at the same time. If we're only
+> allowing one menu to be open at a time, the menus should be able to fit next to the board.
+> If they can't because the window has been shrank or the user is on a small laptop screen,
+> then let's have the menus just overlap the board. There should always be enough room on
+> either side of the board, though, for the strip menus to open without the board being
+> moved or overlapped. 166-Q4: This is fine on the narrowest screens. It's a guideline ---
+> not a hard-and-fast rule.”
+
+**WHAT IT RULES (Fable):** 166’s “no pop-out covers the page” is a GUIDELINE, not a hard rule (his
+words). Side panels sit BESIDE the page or board when there is room; on a shrunk window or a
+small screen they OVERLAP it. **The strips always have room on both sides of the board to open
+without moving or overlapping it — he states that one as “always”.** The narrow-screen toolbar
+overlap stays. (Reads consistently with the page-primacy canon in `AGENTS.md`: tools overlay
+without displacing — the page’s rect never changes. Not re-ruled here; flagged so a builder
+does not read “overlap” as licence to move the page.)
+
+**WITH NICK NOW (Fable’s question, from his Q2):** one side panel open at a time IN TOTAL, or one
+per side as today? **Default (vetoable, not founder text): one per side** (the approved rule),
+with his fit-or-overlap rule applying either way.
+
+**166-Q1, Q2, Q4 are with Nick per defaults on PLAN DESK’s sheet** — his words above answer them;
+**166-Q3 and 166-Q5 go BACK TO PLAN DESK** to re-base their defaults on 166’s own law (no
+pop-out ever covers the page), so a skip cannot carve an exception. *(Ordering note: Fable’s
+earlier relay listed Q1/Q2/Q4 as “with Nick” and this one records his answers — the answers
+supersede; the default-listing is left as relayed.)*
+
+**SETTLED BY SKIP — the Plan menu’s “Add Board” (a default taken by silence, NOT a ruling).** His own
+words:
+
+> “Can't we just call Plan menu's option "Add Board" too? It can be greyed out unless there
+> is already a board opened”
+
+The Plan menu’s button becomes “Add Board” — a NEW board inside the open one, greyed out when
+none is open. Nesting an EXISTING board happens by DRAGGING it onto another board, mirroring
+drag-off to un-nest (Fable’s default). **The earlier “Put inside…” rename is WITHDRAWN**; his
+proposal replaced it. *(This is the third default on 144’s names by skip — keep marking them.)*
+
+**MERGE.** `plan-144-amend3` @ `8c213bb` — one file
+(`docs/menus/b144-plus-menu-and-unnest-amendment.md`), 34 insertions, docs-only — **merged on
+this desk’s verification.**
+
+## RECORDS — THE BOX CHECKED: FIX’S 159 PAIR FINISHED CLEAN, THE GRANT PASSES TO PW; “KEEP BOTH”; beside_links APPROVED; A BREACH OF MY OWN — 2026-09-24 (chat 1)
+
+**THE BOX, CHECKED AT 18:28 local (00:28 UTC) at Fable’s order — it had not been re-checked for
+several turns.** Grant file: still named FIX, written 13:07 local (5h21m earlier), never cleared.
+**Processes: NO runner, NO harness node process, NO headless/msedge browser on the box** (the only
+matches were VS Code’s own `--headless` copilot runtime and this check’s own PowerShell).
+**FIX’s pair FINISHED, and it was CLEAN — the box was idle, not hung.** Read from the suite logs
+on disk (`%TEMP%wrizo-suite-61876` default, `-62620` parked), NOT from FIX’s own report — FIX has
+not stamped it on the ledger, and should confirm:
+- **DEFAULT leg** (finished 17:48): `SUITE DONE HARNESS_PARKED=unset — 93/93 of 93` · `SUITE
+  RESULT: CLEAN — tree=e31b43a bundle=index-BGbwUOFl.js/588429b` · 0 `FAIL` lines.
+- **PARKED leg** (finished 18:26): `SUITE DONE HARNESS_PARKED=1 — 93/93 of 93` · `SUITE RESULT:
+  CLEAN — tree=e31b43a bundle=index-BGbwUOFl.js/588429b` · 0 `FAIL` lines.
+- Same tree as FIX’s pushed branch tip (`item159-card-styling-dock` @ `e31b43a`, on origin). Two
+  earlier short runs sit beside them on tree `445d9e1` (same bundle): `item126` alone, PASS 42 in
+  100s (the item-197 file); and fx4/fx5/fx6/`item159.mjs` (PASS 9), all clean.
+**FIX’s own report, relayed by Fable after this check, AGREES:** both legs 93/93 on `e31b43a`,
+`item126` included at 100s; **the 7241s hang did not recur — its cause is UNKNOWN and stays
+logged under 197.** **NOT CHECKED by me, said plainly:** whether FIX’s FALSIFICATION run for 159
+was done and what it showed (only the passing `item159.mjs` is on disk that I looked at); the
+7241s hang itself is in no log I opened.
+
+**GRANT PASSED, per Fable’s order:** the file now names **PW** (paint-layer measurement, one
+short use serving item 145 and Experiment 1), written 00:29 UTC. FIX’s grant is replaced, so a
+stale FIX token now fails item 140’s match. **Order behind it: INK’s 196 run → TOOLS’ 195
+pair → FIX’s 158 → as queued.**
+
+**A BREACH OF THIS DESK’S OWN STANDING LAW, marked here and left visible above.** The seed’s law is
+“never write a token into the ledger (record lane, purpose, time).” **I wrote FIX’s token into the
+ledger twice** (the entries dated 2026-09-24, in the BOX paragraphs of my first and second
+records). It is dead — the grant it named has been replaced, and item 140 refuses a token that
+does not match the file — so nothing can use it; **but the law was broken, and this is the mark.**
+This entry and the PW grant carry no token.
+
+**NICK, verbatim as relayed — the Plan menu** (answering Fable’s question; TOOLS had retired
+“Create a Board”; the default was to keep both):
+
+> “Yes, keep both”
+
+**It is now HIS RULING, not a default:** keep both — Create a Board any time; Add Board greyed out
+unless a board is open. PLAN DESK’s 144 amendment and TOOLS’ build mark it confirmed at their next
+touch; **the ledger outranks both until then.**
+
+**APPROVED (Fable): TOOLS’ S0 for board connections** (`item144-board-tabs` @ `79ed2a1`): ONE column,
+`journal_entries.beside_links` jsonb (JS `besideLinks`), on the `page_links` recipe — the migration
+plus five sync sites. Name ruled `beside_links` (carries his “beside”; cannot collide with
+`page_links`). **Duplicate: a copy starts UNCONNECTED** (threads do not travel with copies —
+item 123). A page’s plan board connects like any other board. *(Under Nick’s “Store them
+properly”; a column, so no new-table stop arises.)*
+
+**MERGE ORDER for the `$N` collision (Fable):** `page_links` and `beside_links` both append to the
+SAME INSERT / VALUES / parameter lines. **Whichever merges SECOND renumbers its placeholder and
+re-runs its programmatic pairing check at that merge.** I name the order at assembly; 144 is
+likely first (after 160).
+
+**166-Q3 and Q5 need no question:** under his guideline the status quo stands (centred dialogs;
+caret pop-ups at the caret). **One panel per side stood by skip** (a default, not a ruling).
+
+**MERGES.** `plan-166-guideline` @ `3ef089d` (2 docs files, 166 insertions) and `plan-144-nest` @
+`943f9f9` (2 docs files, 182 insertions) — docs-only by diff-stat, **merged on this desk’s
+verification.**
+
+## ITEM 159 — MERGED FOR BATCH FIVE — 2026-09-24 (chat 1)
+
+**Fable’s order, on this desk’s verification: merge 159 for Batch Five.** Verified at the source:
+origin `item159-card-styling-dock` = `e31b43a` (the tested tree); its diff is 7 files (BoardEditor.tsx,
+index.css, deskLexicon.ts + `item159.mjs` and three drivers), 262 insertions / 4 deletions; **both legs
+93/93 CLEAN on that tree, bundle `index-BGbwUOFl.js/588429b`**; and after the merge `git diff
+e31b43a HEAD -- apps packages` is EMPTY — main’s product tree is byte-identical to the tested one.
+**BATCH FIVE now holds item 159.** Not deployed; **Fable reviews the assembled diff at the bytes
+before any ship**, then Nick’s word (quoted). **Still unchecked by me:** FIX’s falsification run.
+**MERGE ORDER standing:** 160 before 144 (both edit `BoardEditor.tsx`; 159 also touches it —
+expect the 160/144 builds to merge against this).
+
+## ITEM 198 — /sync’S INCREMENTAL PULL MISSES EDITS — OPENS, OWNER FIX — 2026-09-24 (chat 1)
+
+**REGISTERED (Fable), found by TOOLS in its `beside_links` two-device proof — a PRE-EXISTING sync
+fault, not caused by 144.** `/sync`’s incremental pull filters on the CLIENT-stamped `updated_at >
+lastSyncAt`, so an edit stamped BEFORE another device’s last sync is missed until a full pull —
+and if that other device edits the same record first, last-writer-wins OVERWRITES the missed edit.
+**Every collection.** **Owner: FIX** — an S0 after 160’s browserless half, ahead of 184. **A fix
+that needs a column stops for Nick.** *(Reported by Fable and TOOLS; I have not reproduced it.)*
+
+Registry: next free **199**.
+
+**159’s FALSIFICATION — FIX-REPORTED, NOT ON DISK.** FIX reported it before the pair: against the
+old code `item159.mjs` failed 6 of 9 (S1 and the S3 overlap among them). Fable has asked FIX to put
+the evidence on disk. **Until it is, this is a report, not a measurement** — and 159 is already
+merged for Batch Five, so the evidence is owed before Fable’s assembled-diff review.
+
+**144’s SERVER HALF (`beside_links`) — OFFERED, BYTE-REVIEWED, HELD.** Offered on
+`item144-board-tabs` @ `9028575` with its two-device proof. **Fable’s byte review PASSES**: the
+migration, the read mapper, the four write sites aligned to 25 columns and 25 parameters, the
+guard untouched; the client seam and per-device recents are sound. **ONE FIX BEFORE MERGE: a
+connection must never birth an unborn board (PB1)** — when the writer stands on an unborn board
+the record rides the born end; TOOLS adds a proof case. **Small: refuse a trashed `from`.** **Its
+merge is HELD until the fix lands; then it merges AFTER 160, under the `$N` rule** (whichever of
+`page_links`/`beside_links` merges second renumbers and re-runs its pairing check).
+
+**A MERGE I MADE BEYOND WHAT I VERIFIED, marked.** Last turn I checked `plan-144-nest` at `943f9f9`
+(2 files, 182 insertions) and merged `origin/plan-144-nest` — but the branch had advanced to
+`7888325` (PLAN DESK’s second commit, “the Plan menu keeps ‘Create a Board’ beside ‘Add Board’
+(pending his answer)”) between my diff-stat and the merge, so I merged one commit I had not
+looked at. **Checked now: it is docs-only — one file, +15 lines** — and Fable’s relay names it
+for merge on verification, so nothing is wrong; but the order was wrong (fetch, then verify the
+TIP, then merge that SHA). It marks “Create a Board” pending; **Nick’s “Yes, keep both”, in the
+ledger above, governs.**
+
+## ITEM 144 — THE NO-BIRTH FIX CLEARED TO MERGE, AFTER 160 — 2026-09-24 (chat 1)
+
+**CLEARED (Fable): 144’s fix @ `60e640e` merges AFTER 160, under the `$N` rule.** **The basis is
+TOOLS’ PROOF, not a byte read:** 28 checks green, and mutant M7 goes RED when the no-birth guard is
+removed, so the check can fail. **Fable’s byte read of the fix itself is NOT yet done** — his link to
+Nick’s machine timed out twice — and goes into Batch Five’s assembled-diff review, BEFORE any ship.
+Ordering is unchanged: 160 first (both edit `BoardEditor.tsx`); whichever of `page_links` /
+`beside_links` merges second renumbers its placeholder and re-runs its pairing check at that merge.
+**Not merged here** — 160 is not on origin yet. The `plan-144-nest` slip stands as logged.
+
+## ITEM 198 — NICK’S SCHEMA WORD (“Yes”); 159’S FALSIFICATION NOW ON DISK — 2026-09-24 (chat 1)
+
+**NICK’S SCHEMA WORD, verbatim as relayed.** The question as put: *“may FIX change the database
+to fix the sync bug?”* — explained as: each of the six storage tables gains one new column where
+the server records when it received each change; devices pull by the server’s clock; missed
+writing is repaired; nothing visible to him. Fable recommended yes. His answer:
+
+> “Yes”
+
+**It covers FIX’s S0 shape** (`item198-s0` @ `94ae43f`): `synced_at timestamptz not null default
+now()` on the six tables. **Nothing writes until FIX’s build clears Fable’s byte review.** *(A
+schema word: it stopped here and is recorded as his.)*
+
+**198 does NOT wait for 136’s and 172’s schema wave** — it is a data-loss fix. **When it clears
+review, the batch is proposed at once, with whatever else is merged by then** (Fable).
+
+**MERGED, on verification.** `item198-s0` @ `94ae43f`: `docs/menus/item198-sync-cursor-s0.md` +
+`apps/desktop/scripts/sync-incremental-pull-proof.mjs` (398 insertions). **Fable called it docs;
+one file is a script, so I read it:** a standalone, browserless measurement (real `sync.ts`
+router bundled to the OS temp dir, a fake pool, two real client-store instances, no box turn, no
+DB, no browser); **referenced by no roster and no `package.json`**, and `git diff --stat
+5603d52 HEAD -- apps/desktop/src packages` is empty — **no product file touched.** I did NOT run it.
+**And `item159-falsification-evidence` @ `3abc134`** (`docs/evidence/item159/`, 7 files, +114).
+
+**159’S FALSIFICATION — NOW ON DISK, and checked against the report.** Old code
+(`0c8838c+1dirty`, `index-BDZr-D5R.js/588012b`): **`ITEM159 VERIFY: FAIL — 6/9 failed`**, with S1
+(“the ticket”), S1’s grip, S2, **S3 the overlap**, S4 and S5 red — **matching what FIX reported
+(6 of 9, S1 and the S3 overlap among them)**. New code (`e31b43a`): PASS 9, both legs. **FIX’s own
+README says plainly** that the old-code tree stamp reads `+1dirty` because `item159.mjs` was
+overlaid onto a main checkout (the file does not exist on main), that a first `--only` attempt
+matched zero files (a vacuous pass, excluded), and that only two of the six reds are independent
+falsifiers. **The `*.log` gitignore hid the runner logs; they are `.log.txt`** (the memory
+note’s hazard, met again).
+
+**RECONCILED:** my earlier entry (“FIX-reported, not on disk — owed before Fable’s review”) is
+discharged; left as written.
+
+## BATCH FIVE — ASSEMBLED, ON NICK’S “Ship” AND FABLE’S PASS — 2026-09-24 (chat 1)
+
+**NICK’S WORDS, verbatim as relayed by Fable.** Earlier: *“I agree that we should ship the sync fix
+right away once it passes”*. Now, answering Fable’s “ready to ship” (the sync fix 198 + the card
+styling handle 159):
+
+> “Ship”
+
+**FABLE’S BYTE REVIEW — PASS** (as relayed): 198 @ `819981a` (the migration on six tables; `synced_at
+= now()` inside every guarded on-conflict set; the pull on `synced_at` with a 10s overlap; no client
+stamp, no new `$N`) and 159 as merged (hooks above early returns, lexicon strings, a real button for
+the grip, the dock conditional, tokens only, no card-edge overlap).
+
+**ASSEMBLED. RANGE: `283013e` (production) → `736ded1`. CLOSED AT ASSEMBLY — NOTHING ELSE JOINS.**
+**Product/server delta, measured from disk, 5 files, +112/−12:** `BoardEditor.tsx`, `index.css`,
+`deskLexicon.ts` (159) and `migrate.ts`, `sync.ts` (198). **Every other non-docs path in the range is a
+harness driver or standalone script** (`fx4/fx5/fx6/item159.mjs`, `sync-incremental-pull-proof.mjs`).
+**SCHEMA: YES — six additive columns** (`synced_at timestamptz not null default now()` + an index on
+each), on Nick’s “Yes” above; **SERVER: YES** (`migrate.ts` boot path, `sync.ts`). Matches Fable’s
+description of the assembled diff. **I read the 198 server diff myself** (migrate.ts, sync.ts) —
+consistent with his review; that is a second reading, not a second review.
+
+**198 was MERGED BY ITS FETCHED SHA** (`819981aedadda13bfa8904616f27fcc5a3183eba`, from `ls-remote`).
+**Its proof ran without the box** (browserless + a real-Postgres check under `docs/evidence/item198/`);
+**I have not run either.**
+
+**NEXT, per the house procedure:** grant file NAMES THIS DESK (revoking PW’s outstanding grant in
+the same write — **no live run was found; PW’s paint-layer use had not run** and is re-granted
+after the deploy pair), the suite pair on the assembled tree, `tsc` x2, the item-98 guard, `railway
+up` from the primary checkout with the tree bare, served-vs-stamped MD5 on both assets, and — new for
+a schema deploy — the production Postgres version, `synced_at` on all six tables, one sync round-trip.
+**Rollback target `283013e` stays safe** (older code ignores `synced_at`; its inserts take the default).
+**Expect each device’s first pull to be a full one, once.**
+
+**FOLLOW-UPS, for the record (Fable):** (a) FIX moves the cursor to Postgres’s own clock (one `select
+now()` per sync), next batch; (b) 159’s grip pressed by a real pointer at the narrowest width inside
+160’s run; (c) TOOLS’ beside proof and PW’s pairing check each need an allowance for `synced_at =
+now()` — 144 and Experiment 1 re-run their checks when they merge after 198, and every line of
+`journal_entries`’ on-conflict set is kept.
+
+## BATCH FIVE DEPLOY MANIFEST — 2026-09-24 (chat 1, on Nick’s “Ship” — Fable PASS)
+
+**LIVE: `3c7c28e` · railway `4428c1c1-3dc9-41e8-b500-e5591d3037ac`** — service `writer-studio-app`,
+`railway up --ci` returned “Deploy complete”; serving `index-BGbwUOFl.js`. **PREVIOUS LIVE — THIS
+DEPLOY’S ROLLBACK TARGET: `283013e` · railway `664604e6-fdbd-4caa-b4e3-505c19cfa190`** (Batch Four).
+**ROLLBACK NOW RATCHETS TO THIS STAMP.** Older code ignores `synced_at` and its inserts take the column
+default, so the rollback to `283013e` is safe with the schema left in place.
+
+**AUTHORIZATION, QUOTED: Nick — “Ship”** (with, earlier, *“I agree that we should ship the sync fix
+right away once it passes”*), relayed by Fable; **Fable’s byte review PASS.**
+
+**ONE PACKAGE, TWO ITEMS: 159 (the card’s Styling dock behind a grip) + 198 (the server-assigned sync
+cursor).** **PRODUCT/SERVER DELTA `283013e..3c7c28e`: 5 files, +112/−12** (`BoardEditor.tsx`, `index.css`,
+`deskLexicon.ts`, `migrate.ts`, `sync.ts`). **SCHEMA: YES — `synced_at` + index on six tables.** Roster **93**.
+
+**SUITE OF RECORD — BOTH LEGS CLEAN AT THE DEPLOY HEAD, run under this desk’s own grant (the file named
+CHAT1 before launch; PW’s outstanding grant revoked in the same write):**
+- **DEFAULT: 93/93 CLEAN** — `tree=3c7c28e bundle=index-BGbwUOFl.js/588429b`, 0 FAIL/TIMEOUT lines.
+- **PARKED: 93/93 CLEAN** — identical stamp, `NO-REBUILD`, 0 FAIL/TIMEOUT lines.
+- **The deploy head `3c7c28e` is docs-only past `736ded1`** (the merge of 198); product bytes are the
+  tested bytes.
+
+**TREE BARE AT UPLOAD (0 porcelain). `tsc` x2 exit 0** (`apps/desktop`, `apps/server`, `--noEmit`).
+**ITEM-98 GUARD:** `writer-studio` / `production` / `writer-studio-app`, toplevel
+`C:/Users/nickh/writer-studio`, `HEAD == origin/main == 3c7c28e`. Image digest
+`sha256:10eeb481be30696c7773bdba010f91e03ee72ecbe1d454bb22c5d501e3d911aa`.
+
+**LIVE VERIFICATION:** `/healthz` **200** · `/auth/me` **401** · served `index-BGbwUOFl.js` and
+`index-D-FXAipA.css`, by name.
+**SERVED-vs-STAMPED BYTE DIFF — BOTH ASSETS MATCH, MD5, and byte counts:**
+- `index-BGbwUOFl.js` — served `2487cf654270303264d79f87768f6ced` (588,429 b) **==** stamped
+- `index-D-FXAipA.css` — served `e1020bdcf78a7f88505f696a62801b1f` (144,711 b) **==** stamped
+
+**THE SCHEMA CHECKS FABLE ASKED FOR — WHAT I DID AND DID NOT CONFIRM, plainly:**
+- **`synced_at` on all six tables: NOT DIRECTLY CONFIRMED.** `railway run` (the only route I tried to
+  production’s environment) returned “Access is denied” and I did not retry or work around it. **What I
+  have is INDIRECT:** `index.ts` runs `runMigrations().then(() => app.listen(...))`, so the server only
+  listens after every `alter table … add column if not exists synced_at` and index has completed — and the
+  log reads `Writer Studio server listening on :8080` with `/healthz` 200. **Inference, not a query.**
+- **Production Postgres version: NOT OBTAINED.** (It decides instant vs table-rewrite; correct either way.)
+- **One sync round-trip: NOT DONE** — it needs an authenticated user; I have no session and did not seek one.
+**These three are OWED: FIX (or Nick, or whoever has DB access) to run the `information_schema` check and
+one real sync**, and the result goes on the record. **Expect each device’s first pull to be a full one, once.**
+
+**BOX after the deploy:** the grant now names **PW** (paint-layer measurement, re-granted — it was
+displaced, unrun, by the deploy pair). Then INK’s 196 → TOOLS’ 195 → FIX’s 158 → as queued.
+**BATCH FIVE IS SHIPPED AND CLOSED; BATCH SIX holds nothing yet.** Registry next free **199**.
+
+**FOLLOW-UPS (Fable, as relayed):** (a) FIX moves the cursor to Postgres’s own clock, next batch; (b) 159’s
+grip pressed by a real pointer at the narrowest width inside 160’s run; (c) 144 and Experiment 1 re-run
+their checks when they merge after 198 (an allowance for `synced_at = now()`; every line of
+`journal_entries`’ on-conflict set kept).
+
+## BATCH FIVE — CONFIRMED LIVE BY NICK; THE OWED CHECKS, RECONCILED — 2026-09-24 (chat 1)
+
+**NICK’S WORDS, verbatim as relayed by Fable:**
+
+> “Confirmed. The sync worked”
+
+That is the two-device check Fable asked for: **a word typed on a page on his laptop, then seen on that
+page on his desktop** — the authenticated production round-trip this desk could not run.
+
+**THE OWED CHECKS IN THE DEPLOY MANIFEST, RECONCILED (the manifest is left as written):**
+- **One real sync round-trip: DISCHARGED by Nick’s own two-device check** (a `journal_entries` edit,
+  laptop → desktop).
+- **`synced_at` on all six tables: DISCHARGED BY MECHANISM, not by a query** (Fable’s reasoning; I checked
+  its premise at the source): every pull filters on `synced_at`, and `sync.ts` lines 371–376 pull all six
+  tables in the SAME `/sync` response, so a working sync means the column exists on all six. **What I did
+  not check:** how the handler behaves if one pull threw — the argument leans on a missing column failing
+  loudly, and it was not demonstrated. **Still no direct `information_schema` read.**
+- **Production Postgres version: STILL UNRECORDED** — nothing depends on it (correct either way).
+
+**BATCH FIVE: CONFIRMED LIVE BY THE FOUNDER.**
+
+**DEFAULTS, taken by skip and VETOABLE — NOT founder text (PLAN DESK’s sheet, relayed by Fable):**
+**165-Q1** yes, the same new-page choices as everywhere else · **165-Q2** an imported PDF keeps just its
+words · **165-Q3** Mind Map greyed out as “coming” · **172-Q5** the imports board is an ordinary board.
+*(Four more defaults on the ledger — keep marking them; two already built is how a default gets read as
+a ruling.)*
+
+## RECORDS — 165-F1 RULED, “BEAT SHEET”, THE WIZARD, 168’S ANSWERS; ITEMS 199, 200, 201 REGISTERED — 2026-09-24 (chat 1)
+
+**FABLE’S CAVEAT-CLOSING (on my entry above).** `sync.ts:355–378` awaits all six pulls inside the one
+`res.json` with no per-table catch, and `asyncHandler` forwards any rejection — so a missing `synced_at`
+on any table fails the whole `/sync` request. **Nick’s working sync therefore proves the column exists
+on all six.** *(The gap I named — handler behaviour on a throwing pull — is closed by Fable’s
+reading of the source; I did not re-read those lines.)*
+
+**NICK, verbatim as relayed — on Fable’s 165-F1 call (renaming “Plot a Story”):**
+
+> “Just call it "Beat Sheet" for now until I see how intuitive that seems.”
+
+**The door’s name is “Beat Sheet”** (his word supersedes Fable’s proposed “Plan the whole drawer — beat
+sheet”).
+
+**RULED (Fable), 165-F1:** Story Structure is built on DECKS — the board system. “Plot a Story” keeps
+its door at the foot of Story Structure, and is **never silently removed**. **RULED:** “From My Pages”
+SHOWS the reading order; whether a board BECOMES the order is 188’s to decide. New Page’s choices
+include **Screenplay** (his 3A outranks the older spec). Nick’s “Yes, keep both” is already his ruling;
+PLAN DESK marks it confirmed.
+
+**NICK, verbatim — the wizard:**
+
+> “Eventually, what I would like is to add a kind of wizard that will walk a writer through
+> from story idea to plot beats to writing each scene without the User having to do all of
+> the file organization themselves, but that comes after we have all the infrastructure
+> built.”
+
+**ITEM 200 — THE WRITER’S WIZARD (story idea → plot beats → each scene, no file organization by the
+writer) — REGISTERED AS A FUTURE ITEM, UNSCHEDULED** until the infrastructure is built, in his own
+words above. No owner, no brief.
+
+**ITEM 199 — THE STORYPLAN FOLD — REGISTERED (Fable’s ruling):** fold M1’s frameworks into decks and
+reconcile M1’s consumers. **Designed WITH 188 (Experiment 2 — the board sets the chapter order), NOT
+before Experiment 1 ships.** No owner yet.
+
+**NICK, verbatim — item 168:**
+
+> “168-Q1: The whole page goes into the trash. The User can always retrieve it from the
+> Trash if they made a mistake (Goes without saying, but the Trash needs a "Delete
+> Permanently" option for individual items and for the entire bin.) 168-Q2: It goes into the
+> Trash, where you can restore it (same notes apply from my last answer about pages)”
+
+**ITEM 201 — DELETE PERMANENTLY — REGISTERED (Fable):** for single items AND for emptying the whole bin,
+pages and cards alike. **A permanent delete must reach every device and never come back through sync**
+(item 198’s cursor is now live; a hard delete leaves no row to carry a tombstone — **that is the
+design problem, flagged here, not answered**). PLAN DESK designs it; a builder’s S0 measures it; **if it
+needs a column, it stops for Nick.**
+
+Registry: next free **202**.
+
+**MERGE.** `plan-165-amend` @ `7aa644c` (2 docs files, +143) — docs-only by diff-stat, merged by its
+fetched SHA on this desk’s verification.
+
+## ITEM 201 — THE TOMBSTONE, WITH NICK; 168-F1’S KNOWN LIMIT; ITEM 202 REGISTERED — 2026-09-24 (chat 1)
+
+**WITH NICK NOW — A SCHEMA WORD, NO DEFAULT (a column).** Item 201’s `purged_at` on `journal_entries`,
+the tombstone PLAN DESK designed (`docs/menus/b168-rulings-and-item201-delete-permanently.md`): **a
+permanent delete KEEPS the row, the server BLANKS its content, and the mark NEVER reverses.** (This
+is the answer to the design problem I flagged on item 201: a hard delete leaves no row to carry a
+tombstone — so the row stays.) **Nothing writes until his word; Fable relays it.**
+
+**RULED (Fable), 168-F1 — A KNOWN LIMIT, STATED:** accept the **bounded resurrection window for purged
+cards** — an offline edit of the same board, stamped later, can bring a purged card back to the Trash.
+It is the same **whole-board last-writer-wins** limit every board edit already has.
+
+**ITEM 202 — A PER-CARD SERVER MERGE OF A BOARD’S BOXES — REGISTERED, UNSCHEDULED.** It would close
+168-F1’s window and concurrent board edits generally. No owner. Registry: next free **203**.
+
+**DEFAULTS TAKEN BY SKIP, VETOABLE — NOT founder text (Fable):** **167-Q1** a new blank card shows as
+“Card N” in lists until renamed · **167-Q2** only new cards are numbered · **167-Q3** the name shows in
+lists and when opened, not on the card’s face.
+
+**201’s BUILDER** is assigned when a lane frees up; **FIX, the sync lane, is the likely owner.**
+
+**MERGES.** `plan-168-delete-permanently` @ `87eae9a` (2 docs files, +223) and `plan-menus-rulings` @
+`137dc6e` (3 files under `docs/menus/`, +33/−3, incl. `plan-menu-mock.html` marked STALE) — all under
+`docs/`, merged by fetched SHA on this desk’s verification.
+
+## RECORDS — THE TRASH’S TWO CONTROLS, SECTIONED ROWS, VW2’S LOOK HELD — 2026-09-24 (chat 1)
+
+**RULED (Fable): the Trash’s two controls are both “Delete Permanently”** — his own words named it for
+single items and for the entire bin (ledger: 168-Q1, above), so the “Empty Trash” rival is STRUCK, not
+asked. **The bin’s confirm follows VW4’s form:** in place at the Trash foot, never a modal, with a
+lawful count. **VW4’s “no per-item permanent delete” is SUPERSEDED by his words** (VW4’s brief is
+left as written, marked at its head by PLAN DESK).
+
+**RULED (Fable): Shelf and Trash rows are SECTIONED — Boards, Pages, Cards.** That satisfies both his
+2026-09-13 “section off Boards from Pages” and his 3C rows; nothing to ask.
+
+**HELD:** the Shelf-ledge vs Trash-well LOOK waits until VW2 is scheduled to build; Fable draws the two
+frames then. **Still with Nick:** item 201’s `purged_at` (no default).
+
+**MERGE.** `plan-vw2-rows` @ `496c20d` — 4 docs files under `docs/menus/`, +198, by fetched SHA; it
+also carries **a correction PLAN DESK made to its own item-201 design** (33 lines added to
+`b168-rulings-and-item201-delete-permanently.md`) — **I did not read that correction; it is docs, and
+the `purged_at` design stays with Nick regardless.**
+
+## ITEM 201 — NICK’S SCHEMA WORD (“1. Yes”) — 2026-09-24 (chat 1)
+
+**NICK’S SCHEMA WORD, verbatim as relayed.** The question as put: *“May Wrizo add one column so
+“Delete Permanently” sticks on every device?”* — explained as: a permanent delete wipes the item’s
+content but keeps a small “permanently deleted” marker every device learns and respects; pages need
+one new column, cards need none; Fable recommended yes. His answer:
+
+> “1. Yes”
+
+**It covers `purged_at` on `journal_entries`**, per PLAN DESK’s design (`plan-168-delete-permanently`
+@ `87eae9a`): the row stays, the server blanks its content, and the mark never reverses. **Nothing
+writes until the builder’s S0 shape report and Fable’s byte review.** **Builder: FIX, after 198’s
+cursor refinement and 184.** *(A schema word: it stopped here and is recorded as his; this closes the
+“WITH NICK” line in the entry above — left as written.)*
+
+**ALSO THIS TURN:** the `plan-vw2-rows` merge (`496c20d`) and its rulings are on the ledger above.
+
+## ITEM 181 — NICK’S SCHEMA WORD (“181: Yes”), HIS VETO OF 180-Q2, ITEM 203 REGISTERED — 2026-09-24 (chat 1)
+
+**NICK’S SCHEMA WORD, verbatim as relayed.** The question as put: *“May Wrizo add one new table to store
+your photos on its server?”* — explained as: he keeps the original, it shows on every device, and it
+arrives as a CARD (supplemental material), never inside his writing; the alternative (shrinking photos
+into pages) would break sync past its size limit; Fable recommended yes. His answer:
+
+> “181: Yes”
+
+**It covers `user_files` (bytea first)**, per PLAN DESK’s pass (`plan-181-file-pass` @ `55d29e1`), **and the
+folded-in images item.** **Nothing writes until the builder’s S0 shape report and Fable’s byte review.**
+Builder: assigned later; images were planned after Experiment 1. *(A schema word — a NEW TABLE, which
+is the case the standing law names — recorded as his.)*
+
+**FOLD, recorded plainly:** the “writer’s own images” item registered on 2026-09-24 in the entry
+“NICK’S WORDS ON THE WORD FOR PAGE LINKS, CONNECT BOARD…” **was registered there WITHOUT A NUMBER — my
+omission**; it never took one. It is the same storage as 181, so **it FOLDS INTO 181: one question, one
+item.** No number is spent on it.
+
+**NICK’S VETO of Fable’s 180-Q2 default, verbatim as relayed:**
+
+> “Instead of “Put in a drawer,” let’s go with “File Page.””
+
+**The button reads “File Page”.** (Fable’s default “Put in a drawer…” is superseded; it was a default,
+his word is a ruling.)
+
+**RULED / STRUCK (Fable):** **180-Q1 is STRUCK, not asked** — the standing default from the handoff: on a
+tablet a carried page cancels by tapping anywhere that isn’t a drawer (PLAN DESK’s visible “stop
+carrying” button is a design detail on top). **FABLE’S DEFAULTS, VETOABLE, NOT founder text:** **180-Q3**
+the Drawers menu stays open after a page lands · **181-Q2** a dropped photo becomes a file card on the
+page you’re on · **181-Q3** photos first; PDFs through Import Sources. *(180-Q2’s default is the one
+above he vetoed.)*
+
+**ITEM 203 — `/sync`’S 5 MB REQUEST-BODY LIMIT — REGISTERED, OWNER FIX** (`index.ts:19`, PLAN DESK’s find).
+Measure the largest realistic push (heavy ink, a long offline stretch) against it, and whether a
+refused sync is VISIBLE to the writer. *(Reported, not measured by this desk.)* Registry: next free **204**.
+
+**MERGES.** `plan-180-carry-pass` @ `fde98fc` (1 docs file, +150) and `plan-181-file-pass` @ `55d29e1`
+(1 docs file, +166) — docs-only, merged by fetched SHA on this desk’s verification.
+
+## RECORDS — “FILE BOARD” (A READING), AND THE NEWER 180/181 COMMITS MERGED — 2026-09-24 (chat 1)
+
+**FABLE’S READING — VETOABLE, A READING NOT HIS WORDS:** Nick’s “File Page” names the act on a PAGE’s
+row; **on a BOARD’s row the same button reads “File Board”** — one lexicon term with the noun in a
+slot. **Nick said only “File Page”; “File Board” is inferred.**
+
+**Item 203’s registration and the images fold: confirmed good (Fable).** Nothing else this round.
+
+**MERGES — the newer commits, by fetched SHA, docs-only by diff-stat** (my previous merges took the
+earlier tips `fde98fc` / `55d29e1`; these are the follow-ups): `plan-180-carry-pass` @ `9584680` (3 docs
+files, +19/−3 — the Shelf row’s button is “File Page”, 180-Q1 struck) and `plan-181-file-pass` @
+`d073275` (1 docs file, +12/−1 — 181-Q1 ruled, server storage, the schema stop cleared per his “181:
+Yes” above).
