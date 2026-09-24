@@ -38,10 +38,11 @@ function LinkedRailRow({ item, onOpen, onRemove }: { item: ResolvedLink; onOpen:
         <span className="wz-linked-rail-item-label">{item.label}</span>
       </button>
       {/* §3/§5's own wording law: the control says which of the two things
-          it does — "Remove this link", never a bare "Remove". Unlink only;
+          it does. SUPERSEDED wording "Remove this link" -> the lexicon's
+          "Unlink" (Fable, 2026-09-24, from PW). Unlink only;
           the target and the anchor both survive (anchors.ts's own unlink,
           Nick's word). */}
-      <button type="button" className="wz-tutor-dock-btn wz-linked-rail-item-remove" aria-label={`Remove this link — ${item.label}`} onClick={onRemove}>
+      <button type="button" className="wz-tutor-dock-btn wz-linked-rail-item-remove" aria-label={`Unlink — ${item.label}`} onClick={onRemove}>
         ×
       </button>
     </div>

@@ -227,7 +227,10 @@ await withHarness(async (app) => {
   // optimistic-only UI removal.
   await trustedDispatch(app, "document.querySelector('#wz-linked-sort-recency')", 'Linked rail: back to recency sort', { report: ok });
   await sleep(150);
-  const removePressed = await trustedDispatch(app, "document.querySelector('[aria-label=\"Remove this link — A bare note\"]')", 'Linked rail: remove the note link', { report: ok });
+  // SUPERSEDED 2026-09-24 (the label moved to the lexicon's "Unlink"). ORIGINAL, verbatim, parked below:
+  //   const removePressed = await trustedDispatch(app, "document.querySelector('[aria-label=\"Remove this link — A bare note\"]')", 'Linked rail: remove the note link', { report: ok });
+  // SUCCESSOR:
+  const removePressed = await trustedDispatch(app, "document.querySelector('[aria-label=\"Unlink — A bare note\"]')", 'Linked rail: unlink the note link', { report: ok });
   if (removePressed) {
     await sleep(150);
     const afterRemove = await railRows(app);
@@ -283,14 +286,17 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// None. This file is new; it falsifies no prior assertion. Emitted anyway
-// per this lane's own standing law: park COUNT, not green.
+// ONE: the remove press's verbatim label "Remove this link — A bare note", falsified by the move to the lexicon's
+// "Unlink" (its successor is the live press above). Park COUNT, not green.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  parkedChecks.push({ name: 'PARKED (SUPERSEDED): a control labelled "Remove this link — A bare note" exists on the rail (successor: "Unlink — A bare note", pressed live above)', pass: true, detail: 'parked verbatim, not measured; the live press proves the successor' });
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   // eslint-disable-next-line no-console
-  console.log(`\nEXP1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, nothing parked in this file`);
+  console.log(parkedChecks.every((c) => c.pass)
+    ? `\nEXP1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed`
+    : `\nEXP1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 const allChecks = checks.concat(parkedChecks);
