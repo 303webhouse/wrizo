@@ -204,8 +204,20 @@ if (process.env.HARNESS_PARKED === '1') {
   pok('PARKED (was "S1 (c) — CONTROL: Arrival Write door still opens FREE WRITE (CD1 S8/A7 unreversed, not collateral damage)") — ITEM 87 AMENDMENT: with clause 1 held, CD1 S8/A7 is not merely unreversed but untouched, so the control has nothing left to guard.', true, 'control retired with its subject');
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
+  // ITEM 147 (2026-09-24) - THE VERDICT LINE IS DERIVED NOW, AND CAN SAY FAIL. The line below was a CONSTANT
+  // saying PASS (0 checks) while the four `pok()` records above ran: true when it was written, false once the
+  // 2026-08-17 amendment added them, and unable to report a failure either way (run-suite reds a file only on a
+  // verdict line matching /\bFAIL\b/ - a literal PASS can never match). ORIGINAL, quoted VERBATIM:
+  //   console.log('\nITEM87 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 87 parks nothing: Free Write never seeds the typewriter (so every "fresh page ON" record is untouched), and clause 1 is additive (so CD1 S8/A7 stands unreversed). The empty list is the evidence, not an omission.');
+  // NOTE (2026-09-24): the header comment above ("ITEM 87 PARKS NOTHING") describes the state BEFORE the clause-1
+  // amendment; the four records it now carries are byte-frozen and untouched by item 147. All four pass a constant
+  // `true` by design (their successor - the New Page chooser - is unbuilt), so this line can now REPORT a failure
+  // and will read PASS (4) until those records have something real to measure.
+  const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
-  console.log('\nITEM87 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 87 parks nothing: Free Write never seeds the typewriter (so every "fresh page ON" record is untouched), and clause 1 is additive (so CD1 S8/A7 stands unreversed). The empty list is the evidence, not an omission.');
+  console.log(parkedPass
+    ? `\nITEM87 PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed; clause 1's four records are byte-frozen, superseded by the New Page chooser (menus arc), no live successor yet`
+    : `\nITEM87 PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 const pass = checks.every((c) => c.pass);
