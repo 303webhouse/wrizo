@@ -167,4 +167,21 @@ export async function runMigrations(): Promise<void> {
   // brief named a table this schema does not have. Disk wins (§1.10).
   await pool.query(`alter table journal_entries add column if not exists page_settings jsonb`);
   await pool.query(`alter table users add column if not exists page_defaults jsonb`);
+
+  // ITEM 198 (Nick's word: "Yes" to a column) - THE SERVER'S OWN SYNC CURSOR, on all six sync tables.
+  // `/sync` used to pull by the client-stamped `updated_at`; see pull() in sync.ts for the whole
+  // argument. `synced_at` is stamped by Postgres and never by a client: the column DEFAULT covers an
+  // insert, and every upsert's on-conflict set writes `now()` (inside the last-writer-wins guard, so
+  // only an ACCEPTED write moves it). Same idempotent boot path as every add above - not a versioned
+  // migration.
+  //
+  // THE ONE-TIME COST, and it is also the cure. `add column ... default now()` gives every EXISTING row
+  // the one moment this statement first ran (`now()` is evaluated once per statement, so every row
+  // gets the same value), which is NEWER than every device's cursor: each device's next pull returns everything once
+  // - a full pull, one download, once. That is what heals the rows this fault has already stranded on
+  // devices that never saw them. Later boots find the column and change nothing.
+  for (const t of ['projects', 'story_plans', 'sessions_log', 'drafts', 'drawers', 'journal_entries']) {
+    await pool.query(`alter table ${t} add column if not exists synced_at timestamptz not null default now()`);
+    await pool.query(`create index if not exists ${t}_user_synced on ${t} (user_id, synced_at)`);
+  }
 }
