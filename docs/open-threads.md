@@ -22262,3 +22262,43 @@ cursor refinement and 184.** *(A schema word: it stopped here and is recorded as
 “WITH NICK” line in the entry above — left as written.)*
 
 **ALSO THIS TURN:** the `plan-vw2-rows` merge (`496c20d`) and its rulings are on the ledger above.
+
+## ITEM 181 — NICK’S SCHEMA WORD (“181: Yes”), HIS VETO OF 180-Q2, ITEM 203 REGISTERED — 2026-09-24 (chat 1)
+
+**NICK’S SCHEMA WORD, verbatim as relayed.** The question as put: *“May Wrizo add one new table to store
+your photos on its server?”* — explained as: he keeps the original, it shows on every device, and it
+arrives as a CARD (supplemental material), never inside his writing; the alternative (shrinking photos
+into pages) would break sync past its size limit; Fable recommended yes. His answer:
+
+> “181: Yes”
+
+**It covers `user_files` (bytea first)**, per PLAN DESK’s pass (`plan-181-file-pass` @ `55d29e1`), **and the
+folded-in images item.** **Nothing writes until the builder’s S0 shape report and Fable’s byte review.**
+Builder: assigned later; images were planned after Experiment 1. *(A schema word — a NEW TABLE, which
+is the case the standing law names — recorded as his.)*
+
+**FOLD, recorded plainly:** the “writer’s own images” item registered on 2026-09-24 in the entry
+“NICK’S WORDS ON THE WORD FOR PAGE LINKS, CONNECT BOARD…” **was registered there WITHOUT A NUMBER — my
+omission**; it never took one. It is the same storage as 181, so **it FOLDS INTO 181: one question, one
+item.** No number is spent on it.
+
+**NICK’S VETO of Fable’s 180-Q2 default, verbatim as relayed:**
+
+> “Instead of “Put in a drawer,” let’s go with “File Page.””
+
+**The button reads “File Page”.** (Fable’s default “Put in a drawer…” is superseded; it was a default,
+his word is a ruling.)
+
+**RULED / STRUCK (Fable):** **180-Q1 is STRUCK, not asked** — the standing default from the handoff: on a
+tablet a carried page cancels by tapping anywhere that isn’t a drawer (PLAN DESK’s visible “stop
+carrying” button is a design detail on top). **FABLE’S DEFAULTS, VETOABLE, NOT founder text:** **180-Q3**
+the Drawers menu stays open after a page lands · **181-Q2** a dropped photo becomes a file card on the
+page you’re on · **181-Q3** photos first; PDFs through Import Sources. *(180-Q2’s default is the one
+above he vetoed.)*
+
+**ITEM 203 — `/sync`’S 5 MB REQUEST-BODY LIMIT — REGISTERED, OWNER FIX** (`index.ts:19`, PLAN DESK’s find).
+Measure the largest realistic push (heavy ink, a long offline stretch) against it, and whether a
+refused sync is VISIBLE to the writer. *(Reported, not measured by this desk.)* Registry: next free **204**.
+
+**MERGES.** `plan-180-carry-pass` @ `fde98fc` (1 docs file, +150) and `plan-181-file-pass` @ `55d29e1`
+(1 docs file, +166) — docs-only, merged by fetched SHA on this desk’s verification.
