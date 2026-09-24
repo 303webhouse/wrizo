@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useReducer, useRef } from 'react';
 import type { Run } from '../types';
 import { append, derivedText, eraseTail, isBoundary, seedContent, strikeStep } from '../store/forwardOnly';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
+import { formatShortcutAction, type FormatAction } from '../store/draftFormat';
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
 import { getCaretOffset as getPlainOffset, setCaretOffset as setPlainOffset } from '../store/caretOffset';
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
@@ -89,10 +90,13 @@ interface Props {
   // rail-driven insertion at all this ticket — its Desk drawer is empty
   // until 112-C).
   insertMarkerRef?: React.MutableRefObject<((text: string) => void) | null>;
+  // WRITING-SURFACE S0 STEP 2 - Ctrl/Cmd+B/I/U in the free-edit branch call this, and the host routes it to the SAME formatter its
+  // toolbar buttons use. Absent (Free Write, Revise, or any host with no styling tools) the keys are left alone.
+  onFormatKey?: (action: FormatAction) => void;
 }
 
 export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function ForwardOnlyEditor(
-  { initialText, onChange, mode = 'journal', onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, penColor, forwardLock = true, style, insertMarkerRef },
+  { initialText, onChange, mode = 'journal', onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, penColor, forwardLock = true, style, insertMarkerRef, onFormatKey },
   ref,
 ) {
   // ITEM 112-A — the branch this flag selects is FREE-EDIT vs FORWARD-ONLY, and
@@ -117,6 +121,8 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   onChangeRef.current = onChange;
   const onForwardRef = useRef(onForward);
   onForwardRef.current = onForward;
+  const onFormatKeyRef = useRef(onFormatKey);
+  onFormatKeyRef.current = onFormatKey;
   // AB2 S2 — the native listeners below attach once ([] deps), so a toggle
   // flipped mid-session (the rail's forward-lock switch) must reach
   // handleBackspace through a ref, not the closed-over prop value.
@@ -331,6 +337,16 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         onChangeRef.current(snap.text);
         redecorate(snap.text, snap.caret);
       };
+      // WRITING-SURFACE S0 STEP 2 - Ctrl/Cmd+B/I/U: only where the host supplied a formatter, and always owning the keystroke
+      // then (so the browser's own contenteditable bold never runs and gets discarded by the next redecorate).
+      const onFormatKeyDraft = (e: KeyboardEvent) => {
+        const fmt = onFormatKeyRef.current;
+        if (!fmt) return;
+        const action = formatShortcutAction(e);
+        if (!action) return;
+        e.preventDefault();
+        fmt(action);
+      };
       // VW Slice 4 — own ink passes silently: simply don't preventDefault, and
       // the browser's native paste/drop proceeds (Draft owns its contenteditable).
       const onBeforeInputDraft = (e: InputEvent) => {
@@ -424,6 +440,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       el.addEventListener('beforeinput', onBeforeInputDraft as EventListener);
       el.addEventListener('keydown', onKeyDownDraft);
       el.addEventListener('keydown', onUndoRedoKeyDraft);
+      el.addEventListener('keydown', onFormatKeyDraft);
       el.addEventListener('compositionstart', onCompStartDraft);
       el.addEventListener('compositionend', onCompEndDraft);
       el.addEventListener('paste', blockPaste);
@@ -434,6 +451,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         el.removeEventListener('beforeinput', onBeforeInputDraft as EventListener);
         el.removeEventListener('keydown', onKeyDownDraft);
         el.removeEventListener('keydown', onUndoRedoKeyDraft);
+        el.removeEventListener('keydown', onFormatKeyDraft);
         el.removeEventListener('compositionstart', onCompStartDraft);
         el.removeEventListener('compositionend', onCompEndDraft);
         el.removeEventListener('paste', blockPaste);

@@ -18,8 +18,8 @@ import { useUnborn } from './UnbornSurface';
 import { unbornHref } from '../store/unbornPage';
 import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
-import { getSelectionOffsets, getCaretOffset, setCaretOffset } from '../store/caretOffset';
-import { applyFormat, type FormatAction } from '../store/draftFormat';
+import { getSelectionOffsets, getCaretOffset, setCaretOffset, setSelectionOffsets } from '../store/caretOffset';
+import { applyFormat, formatShortcutAction, type FormatAction } from '../store/draftFormat';
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, type EditKind, type TextUndoStack } from '../store/textUndo';
@@ -463,6 +463,13 @@ function BoardCardPopup({
     // FX6 S1 — the real undo/redo keybindings, the SAME contract
     // ForwardOnlyEditor.tsx's own onUndoRedoKeyDraft uses (see that file's
     // own comment — not repeated here).
+    // WRITING-SURFACE S0 STEP 2 - Ctrl/Cmd+B/I/U on the card, the same map and the same formatter as the dock's buttons.
+    const onFormatKey = (e: KeyboardEvent) => {
+      const action = formatShortcutAction(e);
+      if (!action) return;
+      e.preventDefault();
+      applyBoardFormatRef.current(action);
+    };
     const onUndoRedoKey = (e: KeyboardEvent) => {
       if (e.isComposing) return;
       if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
@@ -560,6 +567,7 @@ function BoardCardPopup({
     el.addEventListener('input', onInput);
     el.addEventListener('keydown', onKeyDown);
     el.addEventListener('keydown', onUndoRedoKey);
+    el.addEventListener('keydown', onFormatKey);
     document.addEventListener('selectionchange', onSelectionReveal);
     el.addEventListener('compositionstart', onCompStart);
     el.addEventListener('compositionend', onCompEnd);
@@ -573,6 +581,7 @@ function BoardCardPopup({
       el.removeEventListener('input', onInput);
       el.removeEventListener('keydown', onKeyDown);
       el.removeEventListener('keydown', onUndoRedoKey);
+      el.removeEventListener('keydown', onFormatKey);
       document.removeEventListener('selectionchange', onSelectionReveal);
       el.removeEventListener('compositionstart', onCompStart);
       el.removeEventListener('compositionend', onCompEnd);
@@ -609,6 +618,7 @@ function BoardCardPopup({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onClose]);
 
+  const applyBoardFormatRef = useRef<(action: FormatAction) => void>(() => {});
   const applyBoardFormat = (action: FormatAction) => {
     const el = elRef.current;
     if (!el) return;
@@ -622,8 +632,12 @@ function BoardCardPopup({
     undoStackRef.current?.record({ text: result.text, caret: result.start }, 'atomic');
     textRef.current = result.text;
     onCommit(result.text);
-    decorateEditorFor(el, result.text, result.start, setCaretOffset, text => decorateMarkdownForCard(text, result.start));
+    const collapsed = result.end <= result.start;
+    decorateEditorFor(el, result.text, result.start, setCaretOffset, text => decorateMarkdownForCard(text, collapsed ? result.start : null));
+    if (!collapsed) setSelectionOffsets(el, result.start, result.end);
   };
+
+  applyBoardFormatRef.current = applyBoardFormat;
 
   return (
     <div className="board-popup-backdrop" role="presentation" onClick={onClose}>

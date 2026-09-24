@@ -18,7 +18,7 @@ import { useFirstLineInvite } from '../components/useFirstLineInvite';
 import { UnbornProvider, useUnborn } from '../components/UnbornSurface';
 import { BeginningsRow, type BeginningDoor } from '../components/BeginningsRow';
 import { useWayBack } from '../components/useWayBack';
-import { setCaretOffset, getCaretOffset, getSelectionOffsets } from '../store/caretOffset';
+import { setCaretOffset, setSelectionOffsets, getCaretOffset, getSelectionOffsets } from '../store/caretOffset';
 import type { Stroke } from '../types';
 import { projectMilestones } from '../store/milestones';
 import { copyText } from '../store/clipboard';
@@ -43,7 +43,7 @@ import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import { applyFormat, marksAt, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
-import { decorateEditorFor, readEditorPlainText } from '../store/draftDecoration';
+import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
 import { getRegisteredUndoStack } from '../store/textUndo';
 import { proseTextToScriptDoc, isProseEmpty } from '../store/structureConvert';
 import { serializeScriptDoc } from '../store/scriptText';
@@ -702,6 +702,7 @@ function PageEditorView({ id }: { id: string }) {
         mode={mode}
         autoFocus={initialText.trim() === ''}
         onChange={onTextChange}
+        onFormatKey={mode === 'drafting' ? applyRailFormat : undefined}
         onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); invite.dismiss(); setBeginningsDismissed(true); }}
         onFocus={() => setFocused(true)}
         onBlur={() => { setFocused(false); flush(); }}
@@ -804,7 +805,11 @@ function PageEditorView({ id }: { id: string }) {
     // Always atomic: a format toggle never coalesces with anything else.
     getRegisteredUndoStack(el)?.record({ text: result.text, caret: result.start }, 'atomic');
     setText(result.text);
-    decorateEditorFor(el, result.text, result.start, setCaretOffset);
+    // STEP 2: a marked SELECTION stays selected (so the same press can undo itself), and while a range is selected no marker
+    // pair is revealed - the reveal belongs to a caret.
+    const collapsed = result.end <= result.start;
+    decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, collapsed ? result.start : null));
+    if (!collapsed) setSelectionOffsets(el, result.start, result.end);
   };
 
 

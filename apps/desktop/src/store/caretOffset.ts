@@ -99,6 +99,19 @@ export function rangeFromPlainOffsets(el: HTMLElement, start: number, end: numbe
   return range;
 }
 
+// WRITING-SURFACE S0 STEP 2 - restore a (possibly non-collapsed) SELECTION by linear offsets. A format press that leaves the
+// selection on the content it just marked is what lets the same press be the inverse of itself: without it the redecorate
+// collapsed the caret to the selection's start, so a second Bold acted on the first line alone.
+export function setSelectionOffsets(el: HTMLElement, start: number, end: number): void {
+  if (end <= start) { setCaretOffset(el, start); return; }
+  const range = rangeFromPlainOffsets(el, start, end);
+  const sel = window.getSelection();
+  if (!range || !sel) { setCaretOffset(el, start); return; }
+  sel.removeAllRanges();
+  sel.addRange(range);
+  el.focus();
+}
+
 // Place the caret at a linear offset within `el`, clamping to the end if the
 // target exceeds the current content (e.g. the page changed elsewhere since
 // the offset was captured — never throw, just land somewhere reasonable).
