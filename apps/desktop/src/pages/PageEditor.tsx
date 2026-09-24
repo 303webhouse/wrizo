@@ -7,6 +7,7 @@ import { LocationCrumb } from '../components/LocationCrumb';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
 import { ConnectMenu, type ConnectMenuState } from '../components/ConnectMenu';
+import { LinkedMarks } from '../components/LinkedMarks';
 import { useExperiments } from '../store/experiments';
 import { domSelectionToVisible, linkIdsCovering, anchorSelection, anchorSpot, addLink, unlink } from '../store/anchors';
 import { useSurfaceSelection } from '../components/useSurfaceSelection';
@@ -835,6 +836,19 @@ function PageEditorView({ id }: { id: string }) {
           fontSize: 'calc(17px * var(--paper-scale))', lineHeight: 1.7,
         }}
       />
+      {/* EXPERIMENT 1 §6 — THE MARK. Rendered inside the editor's own relative
+          wrapper so its gutter ticks displace nothing; the tint itself occupies
+          no space at all (a paint, not an element). It re-registers its ranges
+          after EVERY render, because a range detaches when the editor rebuilds
+          its text nodes — measured on the box, not assumed. */}
+      {connectOn && (
+        <LinkedMarks
+          editorRef={editorRef}
+          text={entry.text ?? ''}
+          pageLinks={entry.pageLinks}
+          active={connectOn}
+        />
+      )}
       {/* EXPERIMENT 1 §3 — the connect menu. `position: fixed`, so it overlays
           and displaces nothing: the editor's rect cannot change because this
           renders, and the editor never unmounts (PAGE IS PRIMARY, and item 166

@@ -3603,6 +3603,34 @@ a:focus-visible,
   border:1px solid var(--ink-border); font-family:var(--font-ui); cursor:pointer; transition:.15s; }
 .wz-sliver-item-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-sliver-format{ display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
+/* EXPERIMENT 1 §6 — THE MARK IN THE TEXT.
+   A FAINT TINT ON THE WORDS THEMSELVES, and nothing else:
+     · NOT an underline — F2 holds, and a tint is not a decoration line.
+     · NOT a character in the text — §6b. A ::highlight() pseudo paints a
+       range and inserts nothing, which is the whole reason this mechanism
+       was chosen and measured (exp1-paint.mjs, 12/12).
+     · NOT ORANGE — orange is tags (item 108) and selection (item 122).
+     · NOT OLIVE — olive is where-you-are (--accent-rest / --accent-door).
+   So the tint is a muted violet: adjacent to neither claimed meaning, and low
+   enough in alpha that the words stay the darkest thing on the paper. The
+   writer's own text colour is untouched — only the ground behind it shifts,
+   which is what makes it survive INK's pen colours too.
+   TEXT-DECORATION IS EXPLICITLY NONE: a future hand adding one here would be
+   reintroducing the underline F2 ruled out, so the refusal is written down. */
+:root{ --wz-linked-tint: rgba(116, 92, 168, .16); --wz-linked-tick: rgba(116, 92, 168, .55); }
+::highlight(wz-linked){ background-color: var(--wz-linked-tint); text-decoration: none; }
+
+/* EXPERIMENT 1 §6 / EXP1-Q6 — THE SPOT-NOTE'S GUTTER TICK. A note taken at a
+   caret has no words to tint, and §6b forbids putting a character in the text to
+   stand for it — so the paragraph carries a tick in the margin instead.
+   ABSOLUTE inside the editor's already-relative wrapper and `pointer-events:none`:
+   it displaces nothing (PAGE IS PRIMARY) and can never intercept a press meant
+   for the words. `aria-hidden` in the component — the note itself is announced by
+   the rail, not by a decoration. */
+.wz-linked-gutter{ position:absolute; left:0; top:0; bottom:0; width:0; pointer-events:none; }
+.wz-linked-tick{ position:absolute; left:-14px; width:3px; height:14px; border-radius:2px;
+  background:var(--wz-linked-tick); pointer-events:none; }
+
 /* EXPERIMENT 1 §4 — the connect zone's three acts. A COLUMN, not the format
    row's wrap: these are worded acts ("Link to…", "Note This", "Make a card"),
    not glyph buttons, and they reuse .wz-sliver-item — the same dress the Board

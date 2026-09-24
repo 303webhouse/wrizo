@@ -301,6 +301,47 @@ export function domSelectionToVisible(editor: HTMLElement, rawText: string): { f
 }
 
 /**
+ * A RAW text range, as a DOM Range inside the editor. The other direction of
+ * `domSelectionToVisible`, and the last step before anything can be painted.
+ *
+ * Returns null rather than a partial range when the offsets fall outside the
+ * editor's text — a half-built Range would paint over the wrong words, which is
+ * worse than not painting.
+ */
+export function rawRangeToDomRange(editor: HTMLElement, rawStart: number, rawEnd: number): Range | null {
+  if (rawEnd < rawStart) return null;
+  const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
+  let acc = 0;
+  let startNode: Text | null = null;
+  let startOffset = 0;
+  let endNode: Text | null = null;
+  let endOffset = 0;
+  while (walker.nextNode()) {
+    const node = walker.currentNode as Text;
+    const len = node.textContent?.length ?? 0;
+    if (startNode === null && rawStart <= acc + len) {
+      startNode = node;
+      startOffset = rawStart - acc;
+    }
+    if (rawEnd <= acc + len) {
+      endNode = node;
+      endOffset = rawEnd - acc;
+      break;
+    }
+    acc += len;
+  }
+  if (!startNode || !endNode) return null;
+  const range = document.createRange();
+  try {
+    range.setStart(startNode, Math.max(0, Math.min(startOffset, startNode.textContent?.length ?? 0)));
+    range.setEnd(endNode, Math.max(0, Math.min(endOffset, endNode.textContent?.length ?? 0)));
+  } catch {
+    return null;
+  }
+  return range;
+}
+
+/**
  * The live links covering a spot, for the menu's "Unlink" — which is offered
  * only when there is something to unlink. Pure.
  */
