@@ -33,7 +33,7 @@ Heading, plain bold, plain italic, plain underline, plain strike and unindent wo
 
 Default theme and one dark theme, for each of Free Write / Draft / Revise (and screenplay where the toolbar exists): each tool applied by a real pointer press and by Ctrl+B/I/U; screenshot, `innerHTML` and stored `entry.text` after the debounce and a reload. The script for it is NOT written yet; it is the next step once a grant is named. Fonts are PLAN DESK's.
 
-## Browser frames (run 2026-09-24, box turn FIX; 98 frames, `docs/evidence/writing-s0/frames.json` + PNGs; script `apps/desktop/scripts/harness/writing-s0-frames.mjs`)
+## Browser frames (run 2026-09-24, box turn FIX; 98 frames, `docs/evidence/writing-s0/frames.json` + PNGs; script `apps/desktop/scripts/writing-s0-frames.mjs`)
 
 Real select-all, real pointer presses on the sliver buttons, stored text read after the debounces settled. Both themes were run (default; and prefs page=dark). Note both show the same dark chrome with the same cream page: the "dark" page-tone pref did not change the paper in these frames, so no theme-specific defect surfaced; every defect below is theme-independent.
 
