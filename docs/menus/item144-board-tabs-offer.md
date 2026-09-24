@@ -151,6 +151,17 @@ earlier than another device's last sync is invisible to that device until a full
 The proof therefore has A take a full pull (the `syncOnce(fullPull=true)` path the app has) before judging the feature, and
 **reports the incremental result as a line, not a pass/fail.** This is Fable's to route; I have not touched sync.
 
+**Fable's byte review (`9028575`) — PASSED at the bytes; ONE FIX + one small, both done.** *A connection can birth an
+unborn board:* `connectBeside` wrote onto `from`'s row, and when the board the writer stands on is **unborn** (fresh from
+Create a Board) `getJournalEntry` returns the slot and `saveJournalEntry` births it with no box — against PB1 ("a board when
+it has a box"). **Rule, now built: a connection never births a board.** If `from` is unborn the record **rides the born
+end** (storage locality, never meaning — S0 §8.1); if **both** ends are unborn nothing is written. A **trashed `from` is
+refused** exactly as a trashed `other` was (stated with an explicit `deletedAt` test, not left to `getJournalEntry`'s null).
+**Proof, in the same browserless file (scenario 3):** connect from an unborn board → **still no row** and the record sits on the
+born board; give it a first box → **both ends show the connection**, and on the **other device** after a sync; unborn↔unborn
+writes nothing; a trashed board on either end is refused. **Falsification M7** — the guard removed (the record always rides
+`from`) — **goes red at "the unborn board was NOT birthed"**, so the guard is load-bearing in the test. **28 checks, 7 mutants killed.**
+
 **"Create a Board" is PUT BACK** in the Plan menu, **beside "Add Board"** (Fable: Nick said "keep the Plan menu controls,
 too", and without it nothing makes a brand-new board when none is open — "Add Board" is greyed out there). Both variants
 of the panel restore PB1's unborn-board door; `i144.mjs` P14 now asserts it is present, ordered before "Add Board", and

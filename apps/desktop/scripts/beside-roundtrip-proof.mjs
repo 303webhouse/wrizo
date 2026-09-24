@@ -133,12 +133,16 @@ async function buildServer(name, transform) {
   return createRequire(import.meta.url)(out).syncRouter;
 }
 
-async function buildDevice(name) {
-  const out = join(tmp, `device-${name}.mjs`);
+const BESIDE_PATH = join(desktopSrc, 'store/boardBeside.ts');
+async function buildDevice(name, mutate) {
+  const out = join(tmp, `device-${name}${mutate ? '-mut' : ''}.mjs`);
   await esbuild.build({
     stdin: { contents: "export * from './store/persistence'; export * from './store/boardBeside';", resolveDir: desktopSrc, loader: 'ts' },
     bundle: true, platform: 'node', format: 'esm', outfile: out, logLevel: 'silent',
-    plugins: [{ name: 'lex', setup(b) { b.onResolve({ filter: /^\.\/deskLexicon$/ }, () => ({ path: join(stubs, 'lexicon.mjs') })); } }],
+    plugins: [{ name: 'lex', setup(b) {
+      b.onResolve({ filter: /^\.\/deskLexicon$/ }, () => ({ path: join(stubs, 'lexicon.mjs') }));
+      if (mutate) b.onLoad({ filter: /boardBeside\.ts$/ }, () => ({ contents: mutate(readFileSync(BESIDE_PATH, 'utf8')), loader: 'ts', resolveDir: join(desktopSrc, 'store') }));
+    } }],
   });
   return out;
 }
@@ -157,8 +161,8 @@ globalThis.localStorage = {
 globalThis.setTimeout = () => 0;
 globalThis.clearTimeout = () => {};
 
-async function loadDevice(name) {
-  const file = await buildDevice(name);
+async function loadDevice(name, mutate) {
+  const file = await buildDevice(name, mutate);
   current = name;
   return import(pathToFileURL(file).href);
 }
@@ -166,7 +170,7 @@ async function loadDevice(name) {
 // ---------------------------------------------------------------------------
 // THE SYNC LOOP — store/sync.ts's `syncOnce`, minus the network.
 // ---------------------------------------------------------------------------
-async function makeWorld(serverRouter) {
+async function makeWorld(serverRouter, deviceMutate) {
   const pool = makePool();
   globalThis.__fakePool = pool;
   const layer = serverRouter.stack.find((l) => l.route && l.route.path === '/sync' && l.route.methods.post);
@@ -175,7 +179,7 @@ async function makeWorld(serverRouter) {
   const call = (body) => new Promise((resolve, reject) => {
     handle({ session: { userId: 'u1' }, body }, { json: resolve }, (e) => reject(e || new Error('handler called next()')));
   });
-  const devices = { A: await loadDevice('A'), B: await loadDevice('B') };
+  const devices = { A: await loadDevice('A', deviceMutate), B: await loadDevice('B', deviceMutate) };
   const lastSync = { A: null, B: null };
   const on = (name) => { current = name; return devices[name]; };
   const sync = async (name, fullPull = false) => {
@@ -258,21 +262,54 @@ async function scenarioDoubleConnect(w, log) {
 // means a PAIRING error would otherwise surface downstream as an unrelated missing row. Silence the
 // log and re-raise the pool's own recorded error so a mutant goes red FOR ITS OWN REASON.
 const realConsoleError = console.error;
-async function runAll(serverRouter) {
-  console.error = () => {};
-  try { return await runAllInner(serverRouter); } finally { console.error = realConsoleError; }
+// SCENARIO 3 — A CONNECTION NEVER BIRTHS A BOARD (Fable, byte review). The board the writer stands on is
+// UNBORN (fresh from "Create a Board": a record-shaped slot, no row — PB1, "a board when it has a box").
+// Connecting from it must not write it. The record rides the BORN end; once the unborn board is born (its
+// first box), BOTH ends show the connection — on this device and, after a sync, on the other.
+async function scenarioUnborn(w, log) {
+  await seedBoards(w);
+  const A = w.on('A');
+  const slot = { id: 'U', text: '', projectId: null, source: 'page', origin: 'loose', pageType: 'board', boxes: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  A.setUnbornEntry(slot);
+  const rowsBefore = A.getAllUserBoards().length;
+  const wrote = A.connectBeside('U', 'X'); // from = the unborn board
+  const hasRow = A.getAllUserBoards().some((b) => b.id === 'U');
+  log('3a: connecting FROM an unborn board wrote the connection (it rode the born end)', wrote === true);
+  log('3a: … and the unborn board was NOT birthed — still no row (a connection never births a board)', hasRow === false && A.getAllUserBoards().length === rowsBefore, `rows ${rowsBefore}->${A.getAllUserBoards().length}`);
+  log('3a: the record lives on X (the born end), naming U', (A.getJournalEntry('X')?.besideLinks?.links ?? []).some((l) => !l.deletedAt && l.boardId === 'U'));
+  log('3a: X shows the unborn board beside it — and the unborn board sees X (the reverse read)', idsBeside(A, 'X') === 'U' && idsBeside(A, 'U') === 'X', `${idsBeside(A, 'X')}|${idsBeside(A, 'U')}`);
+  log('3b: connecting an unborn board to ANOTHER unborn board writes nothing (no born end to carry it)', (() => { A.setUnbornEntry({ ...slot, id: 'U2' }); const r = A.connectBeside('U2', 'U'); A.setUnbornEntry(slot); return r === false; })());
+  // Give it its first box — the ordinary birth: the row is written WITH content, then the slot clears.
+  A.saveJournalEntry({ ...slot, boxes: [{ id: 'first', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'a first card' }] });
+  A.setUnbornEntry(null);
+  await sleep(3);
+  log('3c: once it has a box it is born — and BOTH ends show the connection', idsBeside(A, 'U') === 'X' && idsBeside(A, 'X') === 'U' && A.getAllUserBoards().some((b) => b.id === 'U'), `${idsBeside(A, 'U')}|${idsBeside(A, 'X')}`);
+  await w.sync('A'); await w.sync('B');
+  const B = w.on('B');
+  log('3d: and on the OTHER device after a sync — both ends show it', idsBeside(B, 'U') === 'X' && idsBeside(B, 'X') === 'U', `${idsBeside(B, 'U')}|${idsBeside(B, 'X')}`);
+  // A trashed board on either end is refused.
+  A.softDeleteEntry('Y');
+  log('3e: connecting FROM a trashed board is refused (as a trashed OTHER already was)', w.on('A').connectBeside('Y', 'X') === false && w.on('A').connectBeside('X', 'Y') === false);
 }
-async function runAllInner(serverRouter) {
+
+async function runAll(serverRouter, deviceMutate) {
+  console.error = () => {};
+  try { return await runAllInner(serverRouter, deviceMutate); } finally { console.error = realConsoleError; }
+}
+async function runAllInner(serverRouter, deviceMutate) {
   const results = [];
   const log = (name, pass, detail = '') => results.push({ name, pass: !!pass, detail });
-  let world = await makeWorld(serverRouter);
+  let world = await makeWorld(serverRouter, deviceMutate);
   // A pool error is the ROOT cause; whatever crashes downstream of a swallowed failed upsert is its shadow.
   const rootCause = (w, e) => { throw new Error(w.pool.stats.errors[0] ?? String(e && e.message)); };
   try { await scenarioRoundTrip(world, log); } catch (e) { rootCause(world, e); }
   const stats1 = world.pool.stats;
   if (stats1.errors.length) throw new Error(stats1.errors[0]);
-  world = await makeWorld(serverRouter);
+  world = await makeWorld(serverRouter, deviceMutate);
   try { await scenarioDoubleConnect(world, log); } catch (e) { rootCause(world, e); }
+  if (world.pool.stats.errors.length) throw new Error(world.pool.stats.errors[0]);
+  world = await makeWorld(serverRouter, deviceMutate);
+  try { await scenarioUnborn(world, log); } catch (e) { rootCause(world, e); }
   if (world.pool.stats.errors.length) throw new Error(world.pool.stats.errors[0]);
   return { results, pairing: stats1.pairing };
 }
@@ -322,6 +359,24 @@ for (const m of MUTANTS) {
   if (!red) allPass = false;
 }
 
+// CLIENT MUTANT — the unborn guard removed: the record rides `from` even when `from` is unborn, so
+// saving that row BIRTHS a board with no box. Scenario 3 must go red at 3a.
+{
+  const src = readFileSync(BESIDE_PATH, 'utf8');
+  const mut = (t) => t.replace('const [rowId, partnerId] = fromUnborn ? [otherId, fromId] : [fromId, otherId];', 'const [rowId, partnerId] = [fromId, otherId];');
+  if (mut(src) === src) { report.push({ name: 'M7 the mutation LANDED', pass: false, detail: 'source unchanged' }); allPass = false; }
+  else {
+    let red = false; let why = '';
+    try {
+      const { results } = await runAll(realRouter, mut);
+      const failed = results.filter((r) => !r.pass);
+      red = failed.length > 0; why = red ? `red: ${failed[0].name}` : 'GREEN — the unborn guard is not load-bearing in the test';
+    } catch (e) { red = true; why = `red: ${String(e.message).slice(0, 110)}`; }
+    report.push({ name: 'FALSIFICATION M7 the unborn guard removed (the record always rides `from`) — must go RED', pass: red, detail: why });
+    if (!red) allPass = false;
+  }
+}
+
 for (const r of report) console.log(`${r.pass ? 'PASS' : 'FAIL'}  ${r.name}${r.detail ? `  [${r.detail}]` : ''}`);
-console.log(allPass ? `\nBESIDE ROUND TRIP: PASS (${report.length} checks, ${MUTANTS.length} mutants killed)` : `\nBESIDE ROUND TRIP: FAIL — ${report.filter((r) => !r.pass).length}/${report.length}`);
+console.log(allPass ? `\nBESIDE ROUND TRIP: PASS (${report.length} checks, ${MUTANTS.length + 1} mutants killed)` : `\nBESIDE ROUND TRIP: FAIL — ${report.filter((r) => !r.pass).length}/${report.length}`);
 process.exit(allPass ? 0 : 1);

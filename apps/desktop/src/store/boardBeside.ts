@@ -20,7 +20,7 @@
 // `wouldNestCycle`; the only refusals are self, a missing/deleted/condition board,
 // and (idempotently) a pair that is already connected.
 import type { BesideLink, JournalEntry } from '../types';
-import { getJournalEntry, getAllUserBoards, saveJournalEntry, generateId, getSystemKind } from './persistence';
+import { getJournalEntry, getAllUserBoards, saveJournalEntry, generateId, getSystemKind, isUnborn } from './persistence';
 
 const live = (e: JournalEntry): BesideLink[] => (e.besideLinks?.links ?? []).filter(l => !l.deletedAt);
 
@@ -46,20 +46,35 @@ export function isBeside(a: string, b: string): boolean {
 }
 
 /**
- * Connect `otherId` beside `fromId`, stored on `fromId`'s row. Returns true when
- * a record was written; false for a refusal or an already-connected pair (a
- * no-write no-op — idempotent).
+ * Connect `otherId` beside `fromId`. Returns true when a record was written; false for a
+ * refusal or an already-connected pair (a no-write no-op — idempotent).
+ *
+ * THE RECORD RIDES A BORN BOARD. Normally it is stored on `fromId`'s row (the board the
+ * writer stood on). But an UNBORN board (fresh from Create a Board) has no row — "a board
+ * is born when it has a box" (PB1) — and `saveJournalEntry` on the unborn slot would BIRTH
+ * it with no box. A connection must never birth a board (Fable, byte review). So when
+ * `fromId` is unborn the record rides the OTHER end — storage locality, never meaning
+ * (the S0 report: "beside" has no owner side). The reverse read is what makes that
+ * invisible: once the unborn board is born, both ends show the connection. When BOTH ends
+ * are unborn there is no born row to carry it, so nothing is written.
+ *
+ * A TRASHED board on either end is refused (`getJournalEntry` answers null for a deleted
+ * row; the `deletedAt` tests below state it rather than lean on that).
  */
 export function connectBeside(fromId: string, otherId: string): boolean {
   if (fromId === otherId) return false;
   const from = getJournalEntry(fromId);
   const other = getJournalEntry(otherId);
-  if (!from || from.pageType !== 'board' || getSystemKind(from) !== undefined) return false;
-  if (!other || other.pageType !== 'board' || other.deletedAt || getSystemKind(other) !== undefined) return false;
+  const lawful = (e: JournalEntry | null) => !!e && e.pageType === 'board' && !e.deletedAt && getSystemKind(e) === undefined;
+  if (!lawful(from) || !lawful(other)) return false;
+  const fromUnborn = isUnborn(fromId);
+  if (fromUnborn && isUnborn(otherId)) return false; // no born end to carry it
   if (isBeside(fromId, otherId)) return false;
+  const [rowId, partnerId] = fromUnborn ? [otherId, fromId] : [fromId, otherId];
+  const row = getJournalEntry(rowId) as JournalEntry;
   const now = new Date().toISOString();
-  const rec: BesideLink = { id: generateId(), boardId: otherId, createdAt: now, updatedAt: now };
-  saveJournalEntry({ ...from, besideLinks: { links: [...(from.besideLinks?.links ?? []), rec] } });
+  const rec: BesideLink = { id: generateId(), boardId: partnerId, createdAt: now, updatedAt: now };
+  saveJournalEntry({ ...row, besideLinks: { links: [...(row.besideLinks?.links ?? []), rec] } });
   return true;
 }
 
