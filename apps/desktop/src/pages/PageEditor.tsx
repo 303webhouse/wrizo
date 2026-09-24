@@ -319,6 +319,21 @@ function PageEditorView({ id }: { id: string }) {
     const el = editorRef.current;
     if (!el) return;
     const onContextMenu = (e: MouseEvent) => {
+      // ⛔ SHIFT + RIGHT-CLICK FALLS THROUGH TO THE NATIVE MENU (Fable's ruling).
+      // A menu that preventDefaults every right-click takes the browser's own
+      // menu away for as long as the experiment is on — cut/copy/paste, look-up,
+      // and (where a surface has spellcheck) its spelling suggestions. Shift is
+      // the conventional escape hatch, and it costs one line. Bringing the
+      // browser's suggestions INTO this menu is a later item, not this slice.
+      //
+      // ⚠ ONE CORRECTION TO THE PREMISE, because it is checkable and it matters:
+      // on THIS surface there are no spelling suggestions to lose.
+      // ForwardOnlyEditor hardcodes `spellCheck={false}` (line 652) and nothing
+      // overrides it, on this host or any other. So the fallthrough is right for
+      // the REST of the native menu, and the spellcheck question is a separate,
+      // larger one that is NOT this slice's to answer — handed up rather than
+      // quietly assumed settled.
+      if (e.shiftKey) { setConnectMenu(null); return; }
       // The writer's own selection decides which acts exist, so it is read
       // BEFORE the default menu is suppressed — and if it cannot be read
       // honestly, the menu does not open at all rather than opening over an

@@ -250,22 +250,21 @@ console.log('CLAIM 6 — and the ruling cannot be broken by a LITERAL in a compo
   // and why it still stands, so it stays visible and COUNTED; a NEW site fails.
   // That is the park discipline applied to a guard: the exception is recorded
   // verbatim rather than the check being quietly narrowed around it.
-  const DECLARED = [
-    {
-      file: 'apps/desktop/src/components/LinkedRail.tsx',
-      // ⚠ THE EXACT LITERAL, not a substring of it. Declaring the PHRASE excused
-      // the whole file for anything containing it: a mutation adding a NEW
-      // "Remove this link now" elsewhere in this same file SURVIVED, hiding
-      // behind the declaration. An exception that broadens itself is not an
-      // exception, it is a hole. (This is the template's head text — the
-      // `${item.label}` hole is a value, not words.)
-      literal: 'Remove this link — ',
-      owner: 'TOOLS (item190-exp1-rail)',
-      why: 'Superseded by the no-noun ruling ("Unlink"), but this is TOOLS\' file AND '
-        + 'exp1.mjs asserts the string verbatim, so changing it here would falsify '
-        + 'another lane\'s harness assertion. Handed up for routing; park, never edit.',
-    },
-  ];
+  // ⚠ EMPTY, AND THAT IS THE POINT. One declaration lived here: LinkedRail.tsx's
+  // `Remove this link — ${item.label}`, superseded by the no-noun ruling but
+  // untouchable from this lane because exp1.mjs asserted the string verbatim.
+  // Fable routed it; TOOLS changed the label to the lexicon's "Unlink" and
+  // PARKED their original assertion verbatim with its successor
+  // (exp1.mjs §230-233). Merged at da17af8, so the declaration is dropped.
+  //
+  // It came out on the guard's own word, not on memory: the check FAILS when a
+  // declaration matches nothing, so the moment TOOLS' fix landed this file said
+  // "a DECLARED exception matched nothing" instead of passing with a dead
+  // exemption still in it. An allowlist that cannot tell you it is stale is how
+  // a temporary exception becomes permanent.
+  //
+  // The shape stays for the next one: exact literal, named owner, stated reason.
+  const DECLARED = [];
   const FORBIDDEN_IN_SOURCE = [
     [/\bconnections?\b/i, "the board's noun for a card thread"],
     [/Remove this link/, 'the superseded take-off wording (now "Unlink")'],
@@ -329,8 +328,10 @@ console.log('CLAIM 6 — and the ruling cannot be broken by a LITERAL in a compo
   if (failures === before) {
     ok(`${scanned} source files scanned; ${declaredHits} declared exception(s), no new violations`);
   }
-  if (declaredHits === 0) {
-    fail('a DECLARED exception matched nothing — it is either fixed (remove it from DECLARED) or the matcher has gone blind');
+  // Only meaningful while something IS declared: a stale exemption must announce
+  // itself, but an EMPTY allowlist is the healthy state, not a fault.
+  if (DECLARED.length > 0 && declaredHits !== DECLARED.length) {
+    fail(`a DECLARED exception matched nothing (${declaredHits}/${DECLARED.length}) — it is either fixed (remove it) or the matcher has gone blind`);
   }
 }
 
