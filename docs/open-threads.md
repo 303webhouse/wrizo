@@ -22401,3 +22401,63 @@ boundary — NOT in Batch Six.**
 **NEXT ON THE BOX:** the batch pair on the assembled tree (default, then parked, `;` between), ahead of
 TOOLS’ 195. Then TOOLS’ 195 → FIX’s 160 → as queued. **The Python Playwright browsers seen earlier are
 still recycling on the box; not a lane’s, not touched.**
+
+## BATCH SIX DEPLOY MANIFEST — 2026-09-24 (chat 1, on Nick’s “Ship” — Fable PASS)
+
+**LIVE: `5f0691f` · railway `fca24f67-b4a4-427c-8fd9-2a127a4fdabe`** — service `writer-studio-app`, `railway up
+--ci` returned “Deploy complete”. **PREVIOUS LIVE — THIS DEPLOY’S ROLLBACK TARGET: `3c7c28e` · railway
+`4428c1c1-3dc9-41e8-b500-e5591d3037ac`** (Batch Five). **ROLLBACK NOW RATCHETS TO THIS STAMP.** Old servers
+ignore `pull:false` and always pull, so the rollback is safe with the schema and clients as they are.
+
+**AUTHORIZATION, QUOTED: Nick — “Ship”** (answering Fable’s “Ready to ship: Batch Six” — the sync size fix
+203, 198’s one-clock refinement, and INK’s 196 de-flake), relayed by Fable. **Fable’s BYTE REVIEW: PASS** on the
+assembled product diff `3c7c28e → 5f0691f` (as relayed: server — a real 413 with `limitBytes`, a 400 for
+malformed bodies, `pull:false` skipping only the six pulls, the cursor `dbNow()`; client — dirty records
+packed smallest-first into ~1 MB chunks, each cleaned as it lands, a 413 halving a chunk or quarantining a
+lone record, an unsendable record named and never retried, `SyncIndicator` “Offline” only for offline, the
+list cleared on logout).
+
+**ONE PACKAGE: 203 (P1 a real 413, P2 ~1 MB chunked push, P5 a record too big to send is named and kept on the
+device) + 198’s Postgres-clock refinement + 196 (harness).** **PRODUCT/SERVER DELTA `3c7c28e..5f0691f`: 7 files,
++259/−29.** **SCHEMA: NONE NEW. SERVER: YES.** Roster **93**.
+
+**SUITE OF RECORD — BOTH LEGS CLEAN AT THE DEPLOY HEAD, under this desk’s own grant (the file named CHAT1
+before launch):** **DEFAULT 93/93 CLEAN** — `tree=5f0691f bundle=index-FStjXUJg.js/590981b`; **PARKED 93/93
+CLEAN** — identical stamp, `NO-REBUILD`; 0 FAIL/TIMEOUT lines either leg. (`e1.mjs` PASS 41 in the default leg;
+`item126` PASS 42 at 100s; `fx5` 62; `item83e` 13 — the item-197 files all passed.)
+
+**TREE BARE AT UPLOAD (0 porcelain). `tsc` x2 exit 0. ITEM-98 GUARD:** `writer-studio` / `production` /
+`writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`, `HEAD == origin/main == 5f0691f`. Image digest
+`sha256:bd779bc623e3247243f15783a5d3d0717ce12ee989bb75ee5e65bc2f28777498`.
+
+**LIVE VERIFICATION:** `/healthz` **200** · `/auth/me` **401** · served `index-FStjXUJg.js` and
+`index-D-FXAipA.css`. **SERVED-vs-STAMPED BYTE DIFF — BOTH MATCH, MD5 and bytes:** JS
+`51c57dcdb5408bd4f193203095918d6a` (590,981 b) **==** stamped; CSS `e1020bdcf78a7f88505f696a62801b1f`
+(144,711 b) **==** stamped (the CSS did not change).
+**P1 PROVEN LIVE, by FIX’s safe unauthenticated probe at 5.25 MiB (one request, run by this desk):**
+**BEFORE the deploy: `500` `{“error”:“Internal server error”}`; AFTER: `413`
+`{“error”:“payload too large”,“limitBytes”:5242880}`.** **NOT proven by that probe:** P2 (chunking) and
+P5 (the named record) — those need an authenticated push of a large record. **Nick repeats his two-device
+check once this desk confirms — confirmed here:** the deploy is live.
+
+**BOX after the deploy:** the grant now names **TOOLS** for its 195 pair. Then FIX’s 160 (unblocks 144’s merge
+and 201’s UI) → FIX’s 158 → 184 → TOOLS’ 194 report run → 187 frame → INK’s 157 → 171-A → TOOLS’ 154 (then
+161/162) → the note-key test. **BATCH SIX IS SHIPPED AND CLOSED. TOOLS’ 147 lands at the next batch
+boundary.** **FOLLOW-UPS to FIX, not in this batch (Fable):** the notice’s title substitution, and “pages”
+wording in the plural notice.
+
+**NICK, verbatim as relayed — spellcheck (has been OFF on every host, against the recorded default “on
+outside Free Write”; the default offered was “on outside Free Write”):**
+
+> “Red squiggles for typos/misspellings, olive green squiggles for grammar errors, and only
+> when the User is in Revise mode”
+
+**His ruling SUPERSEDES the recorded default: proofing marks show ONLY in Revise — never in Free Write or
+Draft.** His standing law still binds it: **grammar and spelling are never AI** — built in, or a reliable
+open-source library.
+
+**ITEM 204 — REVISE-MODE PROOFING — REGISTERED, in two parts.** **Part 1 — spelling, red, from the
+browser’s built-in checker, on in Revise only:** small; owner INK, after 171-B’s browserless slice.
+**Part 2 — grammar, olive green:** needs an offline open-source engine; TUTOR’s S0 measures the candidates
+(**un-paused for this**), PLAN DESK designs how the marks and suggestions appear, and a builder follows.
+Registry: next free **205**.
