@@ -10,6 +10,7 @@ The database cluster will be initialized with this locale configuration:
   LC_MONETARY: English_United States.1252
   LC_NUMERIC:  English_United States.1252
   LC_TIME:     English_United States.1252
+
 The default database encoding has accordingly been set to "WIN1252".
 The default text search configuration will be set to "english".
 
@@ -19,6 +20,7 @@ Data page checksums are enabled.
 
 creating directory C:/Users/nickh/AppData/Local/Temp/wrizo-198-real-pg/data ... 
 ok
+
 creating subdirectories ... 
 ok
 
@@ -29,6 +31,7 @@ selecting default "shared_buffers" ...
 128MB
 selecting default time zone ... 
 America/Denver
+
 creating configuration files ... 
 ok
 running bootstrap script ... 
@@ -45,31 +48,33 @@ Success. You can now start the database server using:
     ^"C^:^\Users^\nickh^\wrizo^-read^\node^_modules^\^.pnpm^\^@embedded^-postgres^+windows^-x64^@18^.4^.0^-beta^.17^\node^_modules^\^@embedded^-postgres^\windows^-x64^\native^\bin^\pg^_ctl^" -D ^"C^:^\Users^\nickh^\AppData^\Local^\Temp^\wrizo^-198^-real^-pg^\data^" -l logfile start
 
 
-2026-09-23 22:58:54.389 MDT [37676] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+2026-09-24 08:51:30.235 MDT [44396] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
 
-2026-09-23 22:58:54.392 MDT [37676] LOG:  listening on IPv6 address "::1", port 54377
+2026-09-24 08:51:30.238 MDT [44396] LOG:  listening on IPv6 address "::1", port 54377
 
-2026-09-23 22:58:54.392 MDT [37676] LOG:  listening on IPv4 address "127.0.0.1", port 54377
+2026-09-24 08:51:30.238 MDT [44396] LOG:  listening on IPv4 address "127.0.0.1", port 54377
 
-2026-09-23 22:58:54.453 MDT [51104] LOG:  database system was shut down at 2026-09-23 22:58:52 MDT
+2026-09-24 08:51:30.294 MDT [448] LOG:  database system was shut down at 2026-09-24 08:51:27 MDT
 
-2026-09-23 22:58:54.459 MDT [37676] LOG:  database system is ready to accept connections
+2026-09-24 08:51:30.302 MDT [44396] LOG:  database system is ready to accept connections
 
 [migrate] applied 001_init.sql
 PASS  OLD server (origin/main), REAL Postgres: an edit stamped 5 min before B's cursor and pushed after it is on the server and NOT returned to B's incremental pull - the fault, on real SQL  {"journalReturned":0,"projectsReturned":0}
 PASS  ...and the row IS on the server (only the incremental filter withheld it)  {"id":"P","text":"A OFFLINE EDIT"}
 PASS  NEW migrate.ts on the populated DB: `synced_at timestamptz NOT NULL default now()` exists on all six tables  ["drafts","drawers","journal_entries","projects","sessions_log","story_plans"]
 PASS  ...and the six `<table>_user_synced` indexes exist  ["drafts_user_synced","drawers_user_synced","journal_entries_user_synced","projects_user_synced","sessions_log_user_synced","story_plans_user_synced"]
-PASS  THE ONE-TIME COST: every EXISTING row got a synced_at NEWER than every cursor handed out before the migration (so each device's next pull is a full one)  [{"id":"P","synced_at":"2026-09-24T04:58:56.356Z"},{"id":"PR","synced_at":"2026-09-24T04:58:56.341Z"}]
+PASS  THE ONE-TIME COST: every EXISTING row got a synced_at NEWER than every cursor handed out before the migration (so each device's next pull is a full one)  [{"id":"P","synced_at":"2026-09-24T14:51:32.047Z"},{"id":"PR","synced_at":"2026-09-24T14:51:32.034Z"}]
 PASS  ...and it HEALS: the row the OLD server never returned is returned by the very next pull with the same old cursor  {"journal":1,"projects":1}
 PASS  A second boot is a no-op: synced_at is unchanged (idempotent)
 PASS  NEW server, REAL Postgres: all six upserts execute (no swallowed "[sync] ... upsert failed")  []
 PASS  K1 on real SQL, ALL SIX collections: rows stamped 5 min before B's cursor, pushed after it, ARE returned by B's incremental pull  {"projects":true,"storyPlans":true,"sessions":true,"drafts":true,"drawers":true,"journalEntries":true}
-PASS  THE STAMP IS THE SERVER'S: a pushed record that carries its own syncedAt / synced_at is ignored - the row's synced_at is now(), not the client's value  {"synced_at":"2026-09-24T04:58:56.460Z"}
-PASS  ON CONFLICT: an accepted update moves synced_at forward; a REJECTED (older) write does not  {"synced_at":"2026-09-24T04:58:56.465Z","text":"later"}
-PASS  ...(the LWW guard is untouched: a stale write neither changes the text nor bumps synced_at)  {"synced_at":"2026-09-24T04:58:56.465Z","text":"later"}
-PASS  IN-FLIGHT (real transaction): B's pull does not see the uncommitted write, and B's cursor is LATER than the write's stamp (now() = the transaction START)  {"stamp":"2026-09-24T04:58:56.509Z","cursor":"2026-09-24T04:58:56.923Z"}
-PASS  IN-FLIGHT: after the write commits, B's NEXT pull with that cursor returns it - the 10s overlap catches a stamp OLDER than the cursor  {"returned":["D","IF"]}
+PASS  THE STAMP IS THE SERVER'S: a pushed record that carries its own syncedAt / synced_at is ignored - the row's synced_at is now(), not the client's value  {"synced_at":"2026-09-24T14:51:32.139Z"}
+PASS  ON CONFLICT: an accepted update moves synced_at forward; a REJECTED (older) write does not  {"synced_at":"2026-09-24T14:51:32.144Z","text":"later"}
+PASS  ...(the LWW guard is untouched: a stale write neither changes the text nor bumps synced_at)  {"synced_at":"2026-09-24T14:51:32.144Z","text":"later"}
+PASS  CURSOR FROM POSTGRES: serverTime is bracketed by two `select now()` reads taken around the call, and is a whole-millisecond ISO string  {"before":"2026-09-24T14:51:32.150Z","serverTime":"2026-09-24T14:51:32.150Z","after":"2026-09-24T14:51:32.152Z"}
+PASS  ...and a row written AFTER that response is stamped by the same clock and is NEWER than the cursor it handed out (so the next pull returns it with no overlap needed)  {"serverTime":"2026-09-24T14:51:32.150Z","stamp":"2026-09-24T14:51:32.153Z"}
+PASS  IN-FLIGHT (real transaction): B's pull does not see the uncommitted write, and B's cursor is LATER than the write's stamp (now() = the transaction START)  {"stamp":"2026-09-24T14:51:32.191Z","cursor":"2026-09-24T14:51:32.600Z"}
+PASS  IN-FLIGHT: after the write commits, B's NEXT pull with that cursor returns it - the 10s overlap catches a stamp OLDER than the cursor  {"returned":["D","CUR","IF"]}
 PASS  ...and WITHOUT the overlap the same pull misses it (so the overlap is what does the work, on real SQL)  {"withoutOverlap":[]}
 
-REAL POSTGRES (PostgreSQL 18.4): PASS (15 checks)
+REAL POSTGRES (PostgreSQL 18.4): PASS (17 checks)

@@ -8,7 +8,8 @@
 //
 // THE FIX UNDER TEST (Nick: "Yes" to a column): `synced_at timestamptz not null default now()` on the
 // six sync tables, stamped by Postgres and never by a client (the column default on insert, `now()` in
-// every on-conflict set); the pull filters on it with a 10s overlap on the cursor.
+// every on-conflict set); the cursor is Postgres's own now() too; the pull filters on synced_at with a 10s
+// overlap on the cursor.
 //
 // BROWSERLESS: no box turn, no browser, no Postgres. The SERVER is the real apps/server/src/sync.ts
 // router bundled with esbuild, its /sync handler called directly; the DEVICES are two real instances of
@@ -22,12 +23,12 @@
 // edit that is missing changes what the fake sees exactly as it would change what Postgres does (a
 // column that does not exist THROWS; a SET that does not write it leaves it stale) - it is never a
 // hand-written model of what the SQL should be. Its only invented thing is the clock: REAL time,
-// moved FORWARD by `advance()` to let an offline period pass, plus a skew (C6 only) that defaults to zero.
+// moved FORWARD by `advance()` to let time pass, plus a skew (K4 only) between Postgres's clock and the app's that defaults to zero.
 //
 // FALSIFICATION IS PART OF THE VERDICT (`--mutants`): the server source is re-run with EACH edit
 // removed ALONE - the pull filter, the overlap, each of the six tables' `synced_at = now()`, each of
-// the six tables' column add, and the server stamp replaced by a client value. Every mutant MUST go
-// red on a DYNAMIC claim check (K1..K3) - the static census is reported beside it, never instead of it. A green mutant means that edit is
+// the six tables' column add, the cursor back on the app clock, and the server stamp replaced by a client value. Every mutant MUST go
+// red on a DYNAMIC claim check (K1..K4) - the static census is reported beside it, never instead of it. A green mutant means that edit is
 // not load-bearing in this instrument, which would be a defect in the instrument, reported as such.
 // (The "pull filter back to updated_at" mutant IS the original S0 fault: it reproduces K1 and K2.)
 //
@@ -128,6 +129,7 @@ function makePool(migrateText) {
         }
         return { rows: [] };
       }
+      if (/^select now\(\) as t$/i.test(s)) return { rows: [{ t: new Date(pool.clock()) }] };   // Postgres's own clock, as node-pg returns it
       m = /^select \* from (\w+) where user_id = \$1 and \(\$2::timestamptz is null or (\w+) > \$2(?:::timestamptz)?( - \(\$3::int \* interval '1 millisecond'\))?\)$/i.exec(s);
       if (m) {
         const [, t, col, hasOverlap] = m;
@@ -352,8 +354,26 @@ async function runScenarios(router, migrateText, log) {
       ops.read(w.on('B'), id) === MARK, JSON.stringify({ B: ops.read(w.on('B'), id) }));
   });
 
-  // C6 - THE OVERLAP IS A BOUND, NOT MAGIC. The same shape with the write's stamp 11s in the past
-  // (Postgres's clock 11s behind this process's) slips past a 10s overlap. Stated, and measured.
+  // K4 - THE APP CLOCK AND POSTGRES'S CLOCK DISAGREE. Postgres runs 60s BEHIND this process (far beyond the
+  // 10s overlap). Stamps come from Postgres; if the cursor came from THIS process it would sit 60s ahead of the
+  // stamps and an edit pushed after B's sync would be stamped BEFORE B's cursor. With the cursor from Postgres too,
+  // both count the same clock and the skew is irrelevant.
+  await guard('CLAIM', 'K4', async () => {
+    const w = await makeWorld(router, migrateText);
+    w.pool.skewMs = -60_000;
+    const ops = OPS.journal_entries;
+    const id = ops.mk(w.on('A'));
+    await sleep(3); await w.sync('A'); await w.sync('B');
+    ops.edit(w.on('A'), id);
+    await sleep(3); advance(OFFLINE_MS);
+    await w.sync('B'); await w.sync('A'); await w.sync('B');
+    log('CLAIM', "K4: with Postgres's clock 60s behind the app's, an edit pushed after B's last sync still reaches B's next INCREMENTAL pull (stamp and cursor count the SAME clock)",
+      ops.read(w.on('B'), id) === MARK, JSON.stringify({ B: ops.read(w.on('B'), id), dbClockSkewMs: -60000 }));
+  });
+
+  // C6 - THE OVERLAP IS A BOUND, NOT MAGIC. The same in-flight shape, but the writing statement runs for
+  // 11 seconds (a long lock wait, say): its stamp is the statement START, so by the time it commits the cursor B
+  // took is 11s newer than the stamp - past a 10s overlap. Stated, and measured.
   await guard('CONTROL', 'C6', async () => {
     const w = await makeWorld(router, migrateText);
     const ops = OPS.journal_entries;
@@ -361,11 +381,14 @@ async function runScenarios(router, migrateText, log) {
     await sleep(3); await w.sync('A'); await w.sync('B');
     ops.edit(w.on('A'), id);
     await sleep(3);
-    w.pool.skewMs = -11000;                             // the stamp comes out 11s in the past
-    await w.sync('B'); await w.sync('A');
-    w.pool.skewMs = 0;
+    let release; w.pool.gate = new Promise((r) => { release = r; });
+    const aSync = w.sync('A');                          // stamps at statement start, then runs long
+    await sleep(20);
+    advance(11_000);                                    // 11 seconds pass while it is still uncommitted
+    await w.sync('B');                                  // B pulls; its cursor is 11s past the stamp
+    release(); await aSync;                             // it commits
     await w.sync('B');
-    log('CONTROL', 'C6: the overlap is a BOUND - a write stamped 11s before the cursor (a clock skew or a statement longer than 10s) is NOT caught by it; a full pull still recovers it',
+    log('CONTROL', 'C6: the overlap is a BOUND - a write whose statement ran 11s (longer than the 10s overlap) is NOT caught by it; a full pull still recovers it',
       ops.read(w.on('B'), id) !== MARK, JSON.stringify({ B_incremental: ops.read(w.on('B'), id) }));
   });
 
@@ -408,6 +431,8 @@ function census(syncText, migrateText, log) {
   log('CENSUS', 'N4: the overlap is 10s (PULL_OVERLAP_MS = 10_000) and is passed to the pull as $3', overlap && /\[userId, lastSyncAt, PULL_OVERLAP_MS\]/.test(syncText), JSON.stringify({ overlap }));
   const cols = syncedAtTablesFrom(migrateText);
   log('CENSUS', `N5: migrate.ts adds \`synced_at ... default now()\` to all six tables${cols.size !== 6 ? ' - HAS: ' + [...cols].join(',') : ''}`, TABLES.every((t) => cols.has(t)) && /create index if not exists \$\{t\}_user_synced on \$\{t\} \(user_id, synced_at\)/.test(migrateText), JSON.stringify({ have: [...cols] }));
+  const cursorFromDb = /const serverTime = await dbNow\(\);/.test(syncText) && /select now\(\) as t/.test(syncText) && !/serverTime: new Date\(\)/.test(syncText);
+  log('CENSUS', "N7: the cursor (serverTime) comes from Postgres's own now(), taken after the pushes and before the pulls - not from this process's clock", cursorFromDb, JSON.stringify({ cursorFromDb }));
   const pulls = [...syncText.matchAll(/await pull\('(\w+)'/g)].map((m) => m[1]);
   log('CENSUS', 'N6: every collection /sync returns still goes through the ONE pull()', pulls.length === 6 && [...syncText.matchAll(/async function pull\(/g)].length === 1, JSON.stringify({ pulls }));
 }
@@ -442,6 +467,7 @@ function mutants() {
       return m.replace(re, `for (const t of [${mm[1].replace(new RegExp(`'${t}',?\\s*`), '').replace(/,\s*$/, '')}])`);
     });
   }
+  sub('cursor from the app clock again (new Date())', (s) => must(s, 'const serverTime = await dbNow();', 'const serverTime = new Date().toISOString();'));
   sub('server stamp replaced by the client stamp (journal_entries)', (s) => {
     const [a, b] = stmtRange(s, 'journal_entries');
     const seg = s.slice(a, b);
@@ -472,7 +498,7 @@ async function runOnce(syncText, migrateText) {
   console.log(`\nBASELINE: ${baseRed.length === 0 ? `GREEN (${base.length} checks: ${base.filter((r) => r.group === 'CLAIM').length} claim, ${base.filter((r) => r.group === 'CONTROL').length} control, ${base.filter((r) => r.group === 'CENSUS').length} census)` : `RED - ${baseRed.length} of ${base.length}`}`);
   let mutantsOk = true;
   if (RUN_MUTANTS) {
-    console.log('\nMUTANTS - each server edit removed ALONE (every one must go red on a DYNAMIC claim check K1..K3; the census is reported beside it):');
+    console.log('\nMUTANTS - each server edit removed ALONE (every one must go red on a DYNAMIC claim check K1..K4; the census is reported beside it):');
     for (const mu of mutants()) {
       const res = await runOnce(mu.sync, mu.migrate);
       const red = res.filter((r) => !r.pass);
@@ -483,7 +509,7 @@ async function runOnce(syncText, migrateText) {
       if (!ok) mutantsOk = false;
       console.log(`${ok ? 'RED  ' : 'GREEN'}  ${mu.name}  ->  ${proof.map(label).join(', ') || '(none)'}   census: ${censusRed.map((r) => r.name.split(':')[0]).join(',') || '-'}${(proof[0] && /THREW/.test(proof[0].detail)) ? `   [${proof[0].detail.replace(/^THREW: /, '').slice(0, 80)}]` : ''}`);
     }
-    console.log(`\nMUTANTS: ${mutantsOk ? 'every edit is load-bearing - each, removed alone, turns a dynamic claim check (K1..K3) red' : 'A MUTANT STAYED GREEN - an edit is not load-bearing in this instrument'}`);
+    console.log(`\nMUTANTS: ${mutantsOk ? 'every edit is load-bearing - each, removed alone, turns a dynamic claim check (K1..K4) red' : 'A MUTANT STAYED GREEN - an edit is not load-bearing in this instrument'}`);
   }
   process.exit(baseRed.length === 0 && mutantsOk ? 0 : 1);
 })().catch((e) => { console.error('INSTRUMENT ERROR:', e && e.stack || e); process.exit(2); });

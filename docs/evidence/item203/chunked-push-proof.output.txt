@@ -1,0 +1,46 @@
+PASS  [CLAIM] K1a: THE WEDGE IS GONE - a tiny page written AFTER a 6 MB page reaches the server (it used to be refused with it)  {"upserts":["TINY"],"dirty":["FAT"]}
+PASS  [CLAIM] K1b: the fat page is NEVER SENT - not one request in the whole sync carries more than the limit (the client knows it cannot fit and does not upload it to be refused)  {"maxBodyBytes":226,"requests":1}
+PASS  [CLAIM] K1c: it is NAMED - listed as too large, by its own title, with its size (P5)  [{"id":"FAT","title":"A heavy ink page","bytes":6514038}]
+PASS  [CLAIM] K1d: and the sync is NOT "offline" - everything that could travel did, so the status ends synced (offline would be a lie)  ["pending","synced"]
+PASS  [CLAIM] K1e: NEVER RE-SENT FOREVER - five more syncs upload nothing the size of the fat page (each request is a tiny pull), and it stays listed and dirty locally  {"maxBodyBytes":51,"requests":5,"dirty":["FAT"]}
+PASS  [CLAIM] K5: SELF-HEALING - the writer erases most of the ink, and the very next sync sends the page, the list clears, nothing was needed but the edit  {"before":1,"upserts":["FAT"],"list":0,"dirty":[]}
+PASS  [CLAIM] K2a: 12 MB of dirty pages - which used to be ONE refused body - ALL sync, in chunks: 30 upserts on the server, nothing left dirty, nothing listed  {"upserts":30,"dirty":0,"listed":0}
+PASS  [CLAIM] K2b: no request is bigger than a chunk (~1 MB target) - measured over every request the sync made  {"maxBodyBytes":849081,"requests":16,"pushOnly":15}
+PASS  [CLAIM] K2c: ONLY THE LAST REQUEST PULLS - the six pulls ran exactly once for the whole chunked sync, not once per chunk  {"serverPullQueries":6,"requestsThatPull":1}
+PASS  [CLAIM] K3a: the small page syncs around them, and a lower limit nobody predicted costs exactly ONE refused upload - the second big page is skipped on what the first taught (learned limit), not sent to be refused too  {"upserts":["C03"],"refusedRequests":1,"requests":["0.31MB:200","1.86MB:413","0.00MB:200"]}
+PASS  [CLAIM] K3b: both big pages are NAMED, and neither is re-sent - the next sync uploads nothing over the proxy's limit  ["A18","B19"]
+PASS  [CLAIM] K3c: NEVER RE-SENT - the sync after that made no request above the proxy's limit at all  ["0.00MB:200"]
+PASS  [CLAIM] K4a (P1): an over-limit body is answered with a real HTTP 413 and the limit in the body - not the bare 500 it used to be  {"status":413,"body":{"error":"payload too large","limitBytes":5242880}}
+PASS  [CLAIM] K4b (P1): a malformed JSON body is a 400 - a client mistake no longer masquerades as a server fault (500)  {"status":400}
+PASS  [CLAIM] K6: the ordinary sync is byte-for-byte the old shape - ONE request carries the push AND the pull, and it lands  {"requests":1,"upserts":["ONE"],"pulls":6}
+PASS  [CLAIM] K7: with the network genuinely down the status is OFFLINE (that word is still true), the fat page is STILL named (it was known before any request), and nothing was cleaned  {"statuses":["pending","offline"],"listed":1,"dirty":["FAT","TINY"]}
+PASS  [CONTROL] C1: when the network returns, the same client syncs the small page and stays honest about the big one  {"upserts":["TINY"],"statuses":["pending","offline","pending","synced"]}
+PASS  [CLAIM] K8: progress survives a later failure - the chunks that landed are CLEAN and stay clean, only the rest remain dirty, and the status is offline (a chunk failing mid-sync loses nothing already sent)  {"landed":["Q1","Q4"],"dirty":["Q0","Q2","Q3","Q5"],"statuses":["pending","offline"]}
+PASS  [CLAIM] K9: THE ONE-TIME JOURNAL BACKFILL - it re-dirties EVERY page (here 30, 12 MB) and the sync it schedules used to be one refused body; it now goes out in chunks, every request stays under a chunk, and the device ends clean  {"redirtiedByBackfill":30,"dirtyAfter":0,"maxBodyBytes":848960,"requests":32}
+PASS  [CLAIM] K10a: one page too large is NAMED in the writer's words and told it is safe: “A heavy ink page” is too large to sync — it is saved on this device  "“A heavy ink page” is too large to sync — it is saved on this device"
+PASS  [CLAIM] K10b: several are counted, not listed: "2 pages are too large to sync — they are saved on this device"  "2 pages are too large to sync — they are saved on this device"
+PASS  [CLAIM] K10c: it is NOT called offline (the network is fine); and while the network really is down, offline still wins - it is the broader truth  {"tooLarge":"“A heavy ink page” is too large to sync — it is saved on this device","offline":"Offline — saved here","none":null}
+PASS  [CLAIM] K11: logging out clears the too-large list - one account's page names must not appear for the next  {"before":1,"after":0}
+PASS  [CENSUS] N1 (P1): the server error handler honours 413 and answers with limitBytes; it is no longer one blanket 500
+PASS  [CENSUS] N2 (P2): /sync honours `pull: false` (a push-only request runs no pulls)
+PASS  [CENSUS] N3 (P2): the client mirrors the limit (5 MiB), chunks at 1 MiB, and marks non-final chunks `pull: false`
+PASS  [CENSUS] N4 (P5): a record over the effective limit is never packed into a request
+
+BASELINE: GREEN (27 checks: 22 claim, 1 control, 4 census)
+
+MUTANTS - each edit removed ALONE (each must turn a DYNAMIC claim red):
+RED    P1: the server error handler stops honouring 413 (back to a blanket 500)  ->  K4a (P1)   census: -
+RED    P1: malformed JSON stops being a 400  ->  K4b (P1)   census: -
+RED    P2: the server ignores `pull: false` (every chunk pulls)  ->  K2c   census: -
+RED    P2: no chunking (one chunk holds everything)  ->  K2b, K2c, K3a, K8, K9   census: -
+RED    P2: the single-chunk shortcut removed (a separate pull request always)  ->  K6   census: -
+RED    P2: a landed chunk is no longer cleaned when it lands  ->  K2a, K8, K9   census: -
+RED    P5: the pre-check removed (a record over the limit is sent to be refused)  ->  K1b, K1e, K3a, K3c, K7   census: -
+RED    P5: a 413 the client did not predict is treated as offline (the old wedge)  ->  K3b, K3c   census: -
+RED    P5: a lower limit is not learned (the second big page is sent to be refused too)  ->  K3a   census: -
+RED    P5: a refused lone record is not remembered as too large (it is dropped from the list)  ->  K3b   census: -
+RED    P5: the notice calls a too-large page "Offline" again (the old lie)  ->  K10a, K10b, K10c   census: -
+RED    P5: logout no longer clears the too-large list  ->  K11   census: -
+RED    P5: the too-large list is never set (the writer is never told)  ->  K1c, K1e, K5, K3b, K7, K11   census: -
+
+MUTANTS: every edit is load-bearing - each, removed alone, turns a dynamic claim red
