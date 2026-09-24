@@ -32,6 +32,19 @@ default; it no longer is one).
   accessible name and tooltip: *"Open a board to add a board to it"*) — *the house's grammar is "absent, not
   greyed" for a nonsense act, and his sentence overrides that grammar for this one row; the reason keeps it
   from being a mute grey.* **When the open subject is a PAGE, it is greyed** (a page contains nothing).
+- **⚠ CORRECTION (Fable, 2026-09-24): THE PLAN MENU KEEPS "Create a Board" BESIDE "Add Board"** — **PENDING
+  HIS ANSWER**, and **the default now with him, from his own *"keep the Plan menu controls, too"*.**
+  **Why it must stay:** **"Add Board" is greyed unless a board is open, so with "Create a Board" gone
+  NOTHING would make a brand-new board when none is open** — *a writer on a page, or on the Desk, could
+  not start one.* **Measured today:** the row is `cascadePlanCreateBoard`, **"Create a Board"**
+  (`deskLexicon.ts`; `PlanPanel` in `CascadePanels.tsx`), and it makes **an UNBORN, EMPTY board in the
+  drawer, NOT nested** (`unbornHref({ kind: 'board', binderId })`). **The two rows are different acts and
+  both stay:** **Create a Board = a new top-level board · Add Board = a new board INSIDE the open one.**
+  **The rows sit together, in that order, and the pair is what the Plan menu offers for making a
+  board.** *(Item 165's Create Board presets — Default, Worldbuilding, Storyboard — are how "Create a
+  Board" grows; nothing here changes them, and "Add Board" takes no presets.)* **This desk's amendment
+  above had silently assumed the rename REPLACED the row; it does not.** **Marked pending — it rests on his
+  keep-the-controls sentence and has not been put to him as a question of its own.**
 - **The Plan menu's "Connected Boards" list beneath it stays** (it shows what a board is inside and what is
   inside it). **What the rename retires is only the act "put THIS board inside the chosen one" from the Plan
   menu.**
@@ -135,6 +148,7 @@ find.**
 
 ## §3 · THE HARNESS — additions to `i144.mjs` (drivers never assume existence · real pointer events · select by name · release where the writer releases)
 
+- **N1a — "Create a Board" is still present beside "Add Board"** (in that order) **and, with no board open, is enabled while "Add Board" is greyed** — *the pair is what guarantees a board can always be made;* **it makes an unborn, empty, NOT-nested board** (no `page-pin` written anywhere).
 - **N1 — the Plan menu's "Add Board":** present, **greyed with its stated reason when no board is open and on
   a page**, enabled on a board; pressing it creates a **new board nested inside the open one** (a
   `page-pin` exists; survives edit + `AUTOSAVE_MS` + reload) — **the same board the "＋" menu's Add Board
@@ -176,5 +190,6 @@ drag code, so the drag lands after 160 by the same reason.*
   the current board, so the "＋" menu's **Connect Board (beside)** is the only one.
 - **The merged board-tabs brief's T4 "one list, two mountings … the Plan panel's Connect Board runs the other
   way"** → **superseded for the Plan panel** (§1); the tabs' side stands as the second amendment has it.
+- **§1's implication that the rename REPLACES "Create a Board"** → **corrected: both rows stay (§1's correction), pending his answer.**
 - **Unchanged:** Unlink, un-nest by drag, the back arrow, the three-row "＋" menu, the recents list, the
   pane rule, and the storage gate.
