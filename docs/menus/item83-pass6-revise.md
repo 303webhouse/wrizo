@@ -54,6 +54,8 @@ Alignment and indentation are *absent* — not grayed, not "coming later": the
 chamber's own deferral, rendered by G3's law (an unruled capability shows
 nothing). The smallest section in the arc, on purpose.
 
+> **⚠ SUPERSEDED IN PART 2026-09-24 — `item207-fonts-design.md`** (Nick: *"Users still do not have basic font options with the option to add fonts, too"* — chat 1, `e8b7101`, resolved RV3: **the custom-font door IS offered**). **The "renders no row … never offered" lines here are SUPERSEDED; everything else (RV1, RV2, RV4, R6, the analog law) stands. Kept as written.**
+
 **The sought door renders no row.** Custom font upload lives *inside the type
 controls* — Chamber 1's placement — and is **never offered**: no row, no hint,
 no locked door wearing paint. "Never offered" is strict; any visible affordance
