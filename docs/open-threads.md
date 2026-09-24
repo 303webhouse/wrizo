@@ -22514,3 +22514,53 @@ Registry: next free **208**.
 for 195 had been written at 14:05 local — 7 minutes earlier — and was UNUSED: no runner process and no new
 suite directory since. Checked before the rewrite; a live run would have outranked the reorder.** TOOLS keeps
 its place after 158, not its hold on the box.
+
+## ITEM 207 — NICK’S RULINGS ON FONTS (Q1, Q2, Q3, Q5), THE MINIMAL-INTERFACE LAW; 206’S FIX ORDER; 204 PART 2’S CEILING — 2026-09-24 (chat 1)
+
+**NICK’S WORDS ON FONTS, verbatim as relayed (Q1, Q2, Q3 and Q5 as put):**
+
+> “Q1: We also need Times New Roman, add to Atkinson Hyperlegible a more standard sans serif
+> like Arial. Q2: Have Free Write show all fonts that have been added previously, too, but
+> do not include an option in Free Write to add new fonts. That feature should only be
+> available in Draft and Revise mode. Q3: Cards should default to the everyday font, but the
+> font options should be available in the Card's tool strip menu, but the interface should
+> be as minimal as possible (same goes for all strip menus). Q5. Let's make font size
+> adjustable with a "+" and "-" symbol that also moves the font size number. The number
+> should be able to be manually adjusted, too, though, because sometimes writers are
+> following style guides with precise font styles/sizes. Leave the manual number selector
+> off of the Free Write options, though. Keep that just a plus/minus with no number
+> displayed. The steps on the +/- should start at 11 and go up and down in one point
+> increments with limits: lower limit should be 6pt, and the upper limit should be 18 at
+> which point fonts should get larger in 2pt increments up to 30, and then 4pt increments up
+> to some reasonable limit (120pt, maybe?)”
+
+**RECORDED AS RULINGS (Fable).** **His Q2 and Q3 SUPERSEDE PLAN DESK’s defaults** (no font choice in Free
+Write; no per-card fonts): Free Write SHOWS fonts already added but offers no way to add new ones (that
+lives only in Draft and Revise); cards default to the everyday font, with font options in the Card’s
+tool strip menu. **Times New Roman is required; a more standard sans like Arial joins Atkinson
+Hyperlegible.** **Size:** “+”/“−” with the number moving with it, the number also typeable (style guides),
+**no number in Free Write** (plus/minus only); steps start at 11 in 1pt increments, floor 6pt, up to 18,
+then 2pt increments to 30, then 4pt increments to a limit he leaves open (“120pt, maybe?”).
+
+**A STANDING LAW, in his words: “the interface should be as minimal as possible (same goes for all strip menus)”.**
+
+**WITH NICK — one wrinkle, no ruling yet:** 4pt steps from 30 land on **118, never 120**. **Default
+(vetoable, not founder text): “+” tops out at 118; a typed size may go to 120.** **Q4 (uploading font
+files) WAITS until uploads are next.** **“Card-level fonts: none in v1” was FABLE’s framing, NOT his —
+and his Q3 says card font options DO exist in the card’s strip menu; PLAN DESK reconciles.** **Fonts 207-Q1,
+Q2, Q3, Q5 were with Nick and are now answered above.**
+
+**RULED (Fable), 206’s FIX ORDER:** FIX’s order, with one change — step 1 adds his #10: **styled text
+RENDERS in every mode (Free Write and Revise included); only the styling TOOLS stay where they were
+ruled. Rendering is not styling.**
+
+**RULED (Fable), 204 PART 2:** harper’s CEILING is recorded — **no pronoun-case rule exists (“between you
+and I” is never caught).** “Style off” is built as a read-time drop on `lint_kind()`; “Miscellaneous”
+maps to olive. **TUTOR writes the engine half of the build brief; PLAN DESK designs the writer-facing
+half** (the dictionary, the dialect, where suggestions appear).
+
+**MERGES, by fetched SHA, verified:** `plan-207-fonts` @ `3bfb70a` (3 docs files, +224) ·
+`item204-part2-s0` @ `5ef55e0` (1 docs file, +331) · `item-writing-s0` @ `b4c3da3` (the audit doc +
+`apps/desktop/scripts/writing-engine-audit.mjs`, +138; **I read that the script writes only to the OS
+temp dir and no roster or `package.json` references it; I did not run it**). **Fable’s note: the box
+order in `e8b7101` stands; no further reorders except for a live defect.**
