@@ -21946,3 +21946,37 @@ e31b43a HEAD -- apps packages` is EMPTY — main’s product tree is byte-identi
 before any ship**, then Nick’s word (quoted). **Still unchecked by me:** FIX’s falsification run.
 **MERGE ORDER standing:** 160 before 144 (both edit `BoardEditor.tsx`; 159 also touches it —
 expect the 160/144 builds to merge against this).
+
+## ITEM 198 — /sync’S INCREMENTAL PULL MISSES EDITS — OPENS, OWNER FIX — 2026-09-24 (chat 1)
+
+**REGISTERED (Fable), found by TOOLS in its `beside_links` two-device proof — a PRE-EXISTING sync
+fault, not caused by 144.** `/sync`’s incremental pull filters on the CLIENT-stamped `updated_at >
+lastSyncAt`, so an edit stamped BEFORE another device’s last sync is missed until a full pull —
+and if that other device edits the same record first, last-writer-wins OVERWRITES the missed edit.
+**Every collection.** **Owner: FIX** — an S0 after 160’s browserless half, ahead of 184. **A fix
+that needs a column stops for Nick.** *(Reported by Fable and TOOLS; I have not reproduced it.)*
+
+Registry: next free **199**.
+
+**159’s FALSIFICATION — FIX-REPORTED, NOT ON DISK.** FIX reported it before the pair: against the
+old code `item159.mjs` failed 6 of 9 (S1 and the S3 overlap among them). Fable has asked FIX to put
+the evidence on disk. **Until it is, this is a report, not a measurement** — and 159 is already
+merged for Batch Five, so the evidence is owed before Fable’s assembled-diff review.
+
+**144’s SERVER HALF (`beside_links`) — OFFERED, BYTE-REVIEWED, HELD.** Offered on
+`item144-board-tabs` @ `9028575` with its two-device proof. **Fable’s byte review PASSES**: the
+migration, the read mapper, the four write sites aligned to 25 columns and 25 parameters, the
+guard untouched; the client seam and per-device recents are sound. **ONE FIX BEFORE MERGE: a
+connection must never birth an unborn board (PB1)** — when the writer stands on an unborn board
+the record rides the born end; TOOLS adds a proof case. **Small: refuse a trashed `from`.** **Its
+merge is HELD until the fix lands; then it merges AFTER 160, under the `$N` rule** (whichever of
+`page_links`/`beside_links` merges second renumbers and re-runs its pairing check).
+
+**A MERGE I MADE BEYOND WHAT I VERIFIED, marked.** Last turn I checked `plan-144-nest` at `943f9f9`
+(2 files, 182 insertions) and merged `origin/plan-144-nest` — but the branch had advanced to
+`7888325` (PLAN DESK’s second commit, “the Plan menu keeps ‘Create a Board’ beside ‘Add Board’
+(pending his answer)”) between my diff-stat and the merge, so I merged one commit I had not
+looked at. **Checked now: it is docs-only — one file, +15 lines** — and Fable’s relay names it
+for merge on verification, so nothing is wrong; but the order was wrong (fetch, then verify the
+TIP, then merge that SHA). It marks “Create a Board” pending; **Nick’s “Yes, keep both”, in the
+ledger above, governs.**
