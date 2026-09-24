@@ -1,6 +1,8 @@
 # ITEM 144 BUILD BRIEF — THE SIBLING TAB ROW
 ### PLAN desk · 2026-09-16 · decision-complete · **GATED ON 108**
 
+> **⚠ AMENDED 2026-09-24 — `b144-plus-menu-and-unnest-amendment.md`** (Nick's words on BT-Q1/Q2/Q3: a bare "＋" with Add Board / New Board, Unlink on each nested tab, un-nesting by drag, double-click replaces the parent with a back arrow). **Where this file's "＋ BOARD" / connect-list / double-click / "not in this brief: disconnecting" lines disagree, that file governs (its §8 lists them). Kept as written below.**
+
 > **⚠ SUPERSEDED IN PART, 2026-09-19 — by `b144-board-tabs-build-brief.md` (item 144 AMENDED: THE BOARD
 > TABS).** Kept verbatim below. **Superseded:** S1's *"Self is ABSENT — never listed"* (the current board
 > is now a tab, marked where-you-are); **S3's separation of the two lists by RELATION** (membership is now

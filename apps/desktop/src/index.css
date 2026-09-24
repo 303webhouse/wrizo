@@ -5248,12 +5248,30 @@ a:focus-visible,
    height/max-height tie), because "the dock is the card's companion, not its
    prisoner". No foot here: page instruments stay on page-writing surfaces. */
 .board-popup{ position:relative; }
-.board-popup-dock{
-  position:absolute; right:100%; top:50%; transform:translateY(-50%);
-  display:flex; flex-direction:column; align-items:stretch; gap:4px;
-  padding:8px 6px; margin-right:-1px;
+/* ITEM 159 — THE GRIP SITS AT THE CARD'S EDGE AND THE DOCK OPENS BEYOND IT.
+   Nick also reported the STYLING tab "slightly overlapping the card edge": the
+   dock carried `margin-right:-1px`, deliberately pulling it one pixel ONTO the
+   card to share its border seam. With a grip between the two there is no seam
+   to share, so the negative margin goes and neither piece of chrome crosses the
+   card's rect. That is a consequence of the redesign, not a guess at his
+   pixel — the harness MEASURES both rects against the card's.
+   NOTE: item 166's law ("no pop-out overlaps the page") does not govern this
+   pair; it names the Card pop-up AND its Styling dock as an exception. The
+   overlap being fixed here is dock-against-CARD, a different pair of rects. */
+.board-popup-dock-grip{
+  position:absolute; right:calc(100% + 2px); top:50%; transform:translateY(-50%); z-index:2;
+  width:18px; box-sizing:border-box; padding:10px 0; text-align:center; line-height:1;
   background:var(--desk-ground); border:1px solid var(--ink-border);
-  border-right:none; border-radius:var(--radius-md) 0 0 var(--radius-md); }
+  border-radius:var(--radius-md) 0 0 var(--radius-md);
+  color:var(--accent-rest); cursor:pointer; font-size:12px; }
+.board-popup-dock-grip:hover, .board-popup-dock-grip[aria-expanded='true']{ color:var(--text-hi); }
+.board-popup-dock-grip:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
+.board-popup-dock{
+  position:absolute; right:calc(100% + 22px); top:50%; transform:translateY(-50%);
+  display:flex; flex-direction:column; align-items:stretch; gap:4px;
+  padding:8px 6px;
+  background:var(--desk-ground); border:1px solid var(--ink-border);
+  border-radius:var(--radius-md); }
 .board-popup-dock-h{ font-size:9px; letter-spacing:2px; text-transform:uppercase;
   color:var(--accent-rest); text-align:center; padding-bottom:2px; }
 @media (prefers-reduced-motion:reduce){ .board-popup-dock{ transition:none; } }

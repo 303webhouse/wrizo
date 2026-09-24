@@ -67,6 +67,7 @@ re-invented for the Journal's list or the Plan menu's rows when he asks next.* *
 - **⭐ 180-Q1 — TOUCH AND PEN HAVE NO RIGHT-CLICK.** Your cancel is a right-click. On a tablet there is
   none. **Should the open menu carry a visible "stop carrying" affordance** *(lean — a gesture whose only
   exit is a mouse button has no exit on a tablet)*, **or should the carry be mouse-only for now?**
+- **✅ 180-Q2 — RULED by Nick, 2026-09-24: *"Instead of "Put in a drawer," let's go with "File Page.""* — the Shelf row's button reads "File Page" (see `b180-carry-design-pass.md`).** *The lean below is kept as written.*
 - **180-Q2 — the obvious option's words.** On a Shelf row: **"Put in a drawer…"** (lean), or your own
   wording?
 - **180-Q3 — after it lands.** Does the Drawers menu **stay open** so the writer can file several things

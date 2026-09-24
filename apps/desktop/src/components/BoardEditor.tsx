@@ -355,6 +355,20 @@ function BoardCardPopup({
   // ITEM 83 M9 — the desk lexicon, for the dock's own strings (§1.4: every
   // user-facing string is themable, never a literal in JSX).
   const { t: dt } = useDeskLexicon();
+  // ITEM 159 — THE STYLING DOCK STARTS CLOSED, like the Page's and the Board's.
+  // Nick: "The styling tab starts open when a card is opened -- it should be
+  // closed by default just like on the Page and Board."
+  //
+  // It had no open state AT ALL: the dock was always rendered, so there was no
+  // flag to flip — the closed state had to be built. `Sliver` is the pattern
+  // being matched, and it is `useState(false)` behind a grip; this is the same
+  // shape at card scale, not a second mechanism.
+  //
+  // Declared HERE, with the other hooks, and not beside the dock markup it
+  // serves — item 133's lesson, written into the code that learned it: state
+  // belongs with the HOOKS, because proximity to its own feature is the pull
+  // that puts it below an early return.
+  const [dockOpen, setDockOpen] = useState(false);
   // FX6 S1 — the real undo/redo stack (store/textUndo.ts's own header
   // comment carries the full mechanism-choice + coalescing-granularity +
   // em-dash-shim-fold reasoning, shared verbatim with ForwardOnlyEditor.
@@ -636,12 +650,29 @@ function BoardCardPopup({
             Links/tags are F10's default (IN) but need a data model no ticket
             in this brief creates, so they are deferred by §0 rather than
             faked; nothing renders for them. */}
+        {/* ITEM 159 — THE GRIP. `onMouseDown` is prevented for the same reason
+            the dock's own is: a card's Bold acts on the EDITOR's selection, and
+            a mousedown that moved focus would collapse the very selection the
+            next click is about to style. */}
+        <button
+          type="button"
+          className="board-popup-dock-grip"
+          aria-label={dockOpen ? dt('stylingClose') : dt('stylingOpen')}
+          title={dockOpen ? dt('stylingClose') : dt('stylingOpen')}
+          aria-expanded={dockOpen}
+          onMouseDown={e => e.preventDefault()}
+          onClick={() => setDockOpen(o => !o)}
+        >
+          <span className="board-popup-dock-grip-glyph" aria-hidden="true">{dockOpen ? '\u203a' : '\u2039'}</span>
+        </button>
+        {dockOpen && (
         <div className="board-popup-dock" onMouseDown={e => e.preventDefault()}>
           <div className="board-popup-dock-h">{dt('stylingHeading')}</div>
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingBold')} onClick={() => applyBoardFormat('bold')}><b>B</b></button>
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingItalic')} onClick={() => applyBoardFormat('italic')}><i>I</i></button>
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingUnderline')} onClick={() => applyBoardFormat('underline')}><u>U</u></button>
         </div>
+        )}
         <div className="board-popup-strip">
           <span className="eyebrow board-popup-eyebrow">Card</span>
         </div>
