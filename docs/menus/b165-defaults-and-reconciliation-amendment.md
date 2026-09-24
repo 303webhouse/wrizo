@@ -84,7 +84,7 @@ recorded as a default exception, NOT as precedent, and it does not widen the law
 stays absent unless he names it.* **The reason it is defensible:** *his own list names Mind Map, and TUTOR's
 approved presets carry it; hiding a thing he asked for reads as dropping it.*
 **The check flips:** the merged §10 item 6 (*"Mind Map … ABSENT"*) **is SUPERSEDED with a pointer here, kept
-verbatim — never edited** (§5).
+verbatim — never edited** (§6).
 
 ## §5 · "FROM MY PAGES" — ROUTED TO THIS DESK AND NEVER ANSWERED (TUTOR's §3.3)
 
