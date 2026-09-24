@@ -22488,3 +22488,29 @@ its own item, **not Experiment 1.** No owner. Registry: next free **206**.
 formatting screenshot run (short) → FIX’s 158 → FIX’s 160** → as queued. **160 now follows 158** (it was
 ahead of it before; 160 still gates 144’s merge and 201’s UI). **The writing surface comes first.** The grant
 names TOOLS for 195 and has not changed.
+
+## PRIORITY CHANGE — THE WRITING SURFACE FIRST; NICK’S WORDS ON FORMATTING AND FONTS; ITEMS 206, 207; THE GRANT MOVES TO FIX — 2026-09-24 (chat 1)
+
+**NICK, verbatim as relayed by Fable:**
+
+> “While they're building, most of the text formatting options (B-I-U, bulleting, indenting,
+> etc.) are not displaying correctly. Users still do not have basic font options with the
+> option to add fonts, too. We really need to get the basic writing experience cleaned up
+> before I will be able to do thorough testing of the app since every time I write in the
+> app, I hit formatting issues.”
+
+**PRIORITY (Fable): THE WRITING SURFACE COMES FIRST.** **REGISTERED (two items):**
+- **ITEM 206 — THE FORMATTING AUDIT AND FIXES:** every styling tool, every mode, with screenshots, fixed
+  most-used first. **Owner FIX, starting now.**
+- **ITEM 207 — FONTS:** basic choices plus adding one’s own. **PLAN DESK designs.**
+Registry: next free **208**.
+
+**RV3 RESOLVED by his words (“with the option to add fonts, too”):** the custom-font door IS offered,
+**superseding item 83’s “renders no row and is never offered”** (item 83’s entry is left as written).
+
+**BOX ORDER, superseding the two orders above (Fable):** FIX’s formatting screenshot run (short) → FIX’s
+158 (Tab indents) → TOOLS’ 195 → FIX’s 160 → the rest as queued.
+**GRANT MOVED at 14:12 local: the file now names FIX** (for the formatting screenshot run). **TOOLS’ grant
+for 195 had been written at 14:05 local — 7 minutes earlier — and was UNUSED: no runner process and no new
+suite directory since. Checked before the rewrite; a live run would have outranked the reorder.** TOOLS keeps
+its place after 158, not its hold on the box.
