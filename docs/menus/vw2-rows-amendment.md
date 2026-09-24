@@ -85,6 +85,7 @@ sections by kind; the second reads as one list.
 
 ## §3 · THE ROW'S ACTS
 
+- **✅ THE BUTTON'S WORD IS RULED: "File Page" (Nick, 2026-09-24) — every "Put in a drawer…" in this section and in §4 is SUPERSEDED, kept as written; a board's row reads "File Board" (a reading handed up in `b180-carry-design-pass.md`).**
 - **Shelf row:** **press = open** *(the flip posture, S3)* · **"Put in a drawer…"** *(item 180's obvious option; its
   wording is 180-Q2 — still open)* · **the row is a drag SOURCE** *(180: drag to the Drawers rail icon)*.
 - **Trash row:** **`Restore to Novel`** / **`Restore — its drawer is gone; goes Loose`** *(TV1: the destination named
