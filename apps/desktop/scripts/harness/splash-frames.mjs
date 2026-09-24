@@ -77,9 +77,12 @@ await withHarness(async (app) => {
   if (!/blur\(/.test(state.backdrop || '')) throw new Error(`frame: no backdrop blur is computed (${state.backdrop})`);
   if (Math.min(margins.l, margins.r, margins.t, margins.b) <= 0) throw new Error('frame: the app does not show on all four sides');
 
-  const shot = await app.screenshot();
+  // `app.screenshot()` returns BASE64 TEXT (CDP's Page.captureScreenshot `data`), not bytes: writing it
+  // as-is would leave a text file named .png that no viewer opens. Decode first.
+  const shot = Buffer.from(await app.screenshot(), 'base64');
   const file = path.join(OUT_DIR, `wrizo-splash-${VIEW.w}x${VIEW.h}.png`);
   writeFileSync(file, shot);
+  if (shot.length < 8 || shot.readUInt32BE(0) !== 0x89504e47) throw new Error('frame: the captured bytes are not a PNG');
   note = { file, widthPct: widthPct.toFixed(1), areaPct: areaPct.toFixed(1), inkW: Math.round(inkW), inkH: Math.round(inkH),
     margins: Object.fromEntries(Object.entries(margins).map(([k, v]) => [k, Math.round(v)])),
     tone: state.tone, backdrop: state.backdrop, bytes: shot.length };
