@@ -296,7 +296,7 @@ export function flushNow(): void {
 //
 // PRODUCT CODE IS UNTOUCHED: it calls these store functions DIRECTLY and keeps
 // its own debounced cadence. This makes the SEAM durable, not the store eager.
-function durableSeam<A extends unknown[], R>(fn: (...args: A) => R): (...args: A) => R {
+export function durableSeam<A extends unknown[], R>(fn: (...args: A) => R): (...args: A) => R {
   return (...args: A): R => { const out = fn(...args); flushNow(); return out; };
 }
 
@@ -2358,9 +2358,12 @@ if (typeof window !== 'undefined') {
     planBoardId: getPlanBoardId,
     pairedPageId: getPairedPageId,
     isPaired: isPairedPlanBoard,
-    birth: getOrCreatePlanBoard,
-    pair: pairBoardWithPage,
-    unpair: unpairPlanBoard,
+    // ITEM 148 — the three WRITERS flush before they return (durableSeam): each reaches
+    // saveJournalEntry -> scheduleFlush (debounced), and a fixture that reloads past the
+    // debounce loses the row. The readers above stay as they were.
+    birth: durableSeam(getOrCreatePlanBoard),
+    pair: durableSeam(pairBoardWithPage),
+    unpair: durableSeam(unpairPlanBoard),
   };
   // Derived-membership read seam (the wrizoNotebook precedent) — lets bm1.mjs
   // assert Journal/Shelf counts are unaffected by pairing, and that a plan

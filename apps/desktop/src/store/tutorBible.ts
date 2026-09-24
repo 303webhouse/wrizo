@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getProject, saveProject, generateId, subscribe } from './persistence';
+import { getProject, saveProject, generateId, subscribe, durableSeam } from './persistence';
 import type { Fact, TutorBible } from '../types';
 
 // TU5 S2 — the client store for the book's Bible (L4 of the Tutor's memory):
@@ -79,6 +79,9 @@ export function useBibleFacts(projectId: string | null): Fact[] {
 // self-registers in its own store module). Never read by app code.
 if (typeof window !== 'undefined') {
   (window as unknown as { wrizoBible?: unknown }).wrizoBible = {
-    get: getBibleFacts, add: addFact, edit: editFact, delete: deleteFact,
+    // ITEM 148 — the three writers flush before they return (each reaches saveProject ->
+    // scheduleFlush, debounced); `get` is the reader. Product code calls addFact/editFact/
+    // deleteFact directly and keeps its own cadence.
+    get: getBibleFacts, add: durableSeam(addFact), edit: durableSeam(editFact), delete: durableSeam(deleteFact),
   };
 }
