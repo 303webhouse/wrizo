@@ -1760,7 +1760,8 @@ export function getJournalEntries(): JournalEntry[] {
 // row, so nothing on this path can resurrect or mutate a trashed page.
 export function getDeletedEntries(): JournalEntry[] {
   return cache.journalEntries
-    .filter(e => !!e.deletedAt && getSystemKind(e) === undefined)
+    // ITEM 201: a purge tombstone is deleted (the server sets deleted_at) but is NOT in the Trash - it is in no list.
+    .filter(e => !!e.deletedAt && !e.purgedAt && getSystemKind(e) === undefined)
     .map(clone);
 }
 
@@ -2383,6 +2384,8 @@ if (typeof window !== 'undefined') {
 // single card on the Trash Board. Read-only; never used to gate a write.
 export function getJournalEntryIncludingDeleted(id: string): JournalEntry | null {
   const entry = cache.journalEntries.find(e => e.id === id);
+  // ITEM 201: deleted-INCLUSIVE, but never purged-inclusive - a tombstone has no title, no text and no Restore.
+  if (entry && entry.purgedAt) return null;
   return entry ? clone(entry) : null;
 }
 
@@ -2398,9 +2401,22 @@ export function getJournalEntryIncludingDeleted(id: string): JournalEntry | null
 // discipline this file's own TutorThread comment names.
 export function restoreEntry(id: string): void {
   const entry = getJournalEntryIncludingDeleted(id);
-  if (!entry || !entry.deletedAt) return;
+  // ITEM 201: a purged item cannot be restored (getJournalEntryIncludingDeleted already says null; stated, not implied).
+  if (!entry || entry.purgedAt || !entry.deletedAt) return;
   const { deletedAt: _deletedAt, ...rest } = entry;
   saveJournalEntry(rest as JournalEntry);
+}
+
+// ITEM 201 (Nick: "Delete Permanently" per item and for the whole bin, and "1. Yes" to one column): DELETE PERMANENTLY, the store half. A Trash act - only an item that is ALREADY in the Trash can be
+// purged. The local record is replaced by the TOMBSTONE (text '', no payload, deletedAt kept, purgedAt set): the flush
+// re-serialises the cache wholesale, so nothing of the content is left in localStorage either. It is then an ordinary
+// dirty record, so the next sync pushes it and the SERVER blanks the row itself. Returns whether anything was purged.
+export function purgeEntry(id: string): boolean {
+  const entry = cache.journalEntries.find(e => e.id === id);
+  if (!entry || !entry.deletedAt || entry.purgedAt) return false;
+  const now = new Date().toISOString();
+  saveJournalEntry({ id: entry.id, text: '', projectId: null, createdAt: entry.createdAt, updatedAt: now, deletedAt: entry.deletedAt, purgedAt: now });
+  return true;
 }
 
 // --- B1 — System Boards (the Journal Board, the Trash Board) --------------
@@ -2524,7 +2540,8 @@ function qualifyingPagesFor(kind: SystemBoardKind, systemBoardId: string): Journ
   // never cards itself" is true by construction, not merely by the absence
   // of a path today.
   return cache.journalEntries
-    .filter(e => !!e.deletedAt && getSystemKind(e) === undefined)
+    // ITEM 201: a purge tombstone is deleted (the server sets deleted_at) but is NOT in the Trash - it is in no list.
+    .filter(e => !!e.deletedAt && !e.purgedAt && getSystemKind(e) === undefined)
     .map(clone);
 }
 
@@ -2751,6 +2768,10 @@ if (typeof window !== 'undefined') {
   // other product path and needs it landed before a reload.
   seams.wrizoFlushNow = () => flushNow();
 
+  // ITEM 201 - Delete Permanently's driver seam. It WRITES, so it is wrapped in durableSeam like every other mutating seam:
+  // a harness that purges and then reloads must not lose the tombstone to the debounce. Returns whether anything was purged.
+  seams.wrizoPurgeEntry = durableSeam(purgeEntry);
+
   // ITEM 85-C — ESTABLISH RECENCY BY TOUCHING, NOT BY ASSERTING A TIMESTAMP.
   //
   // `upsert` stamps `updatedAt` on every write, so a seeded value never
@@ -2908,6 +2929,18 @@ function applyCollection<T extends { id: string; updatedAt: string }>(
   let changed = false;
   for (const rec of remote) {
     if (!rec || !rec.id) continue;
+    // ITEM 201 (Nick: "Delete Permanently" per item and for the whole bin, and "1. Yes" to one column): A PURGE TOMBSTONE ALWAYS APPLIES - the ONE named exception to both rules below. It replaces the
+    // local record ignoring "newer only" AND "a local unsynced edit wins": an edit to an item that was permanently
+    // deleted elsewhere is discarded on arrival (that loss is the deletion he asked for), and the id's dirty flag is
+    // cleared so the device does not push the blank record back. Monotone: a copy that is already a tombstone here is left alone.
+    if ((rec as { purgedAt?: string }).purgedAt) {
+      const at = collection.findIndex(r => r.id === rec.id);
+      dirty[name].delete(rec.id);
+      if (at >= 0 && (collection[at] as { purgedAt?: string }).purgedAt) continue;
+      if (at >= 0) collection[at] = clone(rec); else collection.push(clone(rec));
+      changed = true;
+      continue;
+    }
     if (dirty[name].has(rec.id)) continue; // local unsynced edit wins
     const index = collection.findIndex(r => r.id === rec.id);
     if (index < 0) {

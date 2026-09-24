@@ -206,6 +206,10 @@ export interface JournalEntry {
   createdAt: string; // set once on commit, never mutated
   updatedAt: string;
   deletedAt?: string;
+  // ITEM 201 (Nick: "Delete Permanently" per item and for the whole bin, and "1. Yes" to one column): present = PERMANENTLY deleted. A tombstone: text '', no payload, deletedAt set, and the mark can
+  // never be cleared - the server refuses every later write to it and every device replaces its copy on arrival.
+  // Absent on every page that was never purged (SQL null -> undefined; no backfill).
+  purgedAt?: string;
   // Emergent organization (J6) — light, optional, never forced. All additive and
   // synced via the existing journalEntries path; the entry's text is never
   // touched. `routedProjectIds` records which projects a scrap has been

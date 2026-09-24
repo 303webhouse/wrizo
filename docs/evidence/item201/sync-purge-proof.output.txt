@@ -1,0 +1,37 @@
+PASS  [CLAIM] P1a: A purges a page B holds; B's next pull REPLACES its copy with the tombstone - blank text, no payload, purgedAt set - in B's own storage  {"heldByB":true,"purged":true,"bStored":{"id":"P","text":"","projectId":null,"shelved":false,"deletedAt":"2026-09-24T16:00:23.985Z","purgedAt":"2026-09-24T16:00:23.985Z","createdAt":"2026-09-24T16:00:23.921Z","updatedAt":"2026-09-24T16:00:23.985Z"}}
+PASS  [CLAIM] P1b: the item is absent from EVERY list on B: not readable, not in the Trash, no Restore  {"live":null,"incl":null,"trash":[]}
+PASS  [CLAIM] P1c: and A's own storage holds no content either - the flush re-serialises the cache wholesale, so nothing of the words is left in localStorage
+PASS  [CLAIM] P1d: the server row is a TOMBSTONE: content blank, id and stamps kept, purged_at and deleted_at set, and no payload column still holds anything  {"id":"P","user_id":"u1","project_id":null,"text":"","session_id":null,"starred":null,"source":null,"shelved":false,"beat_id":null,"page_type":null,"order_index":null,"imported_at":null,"boxes":null,"script":null,"origin":null,"tutor":null,"tags":null,"routed_project_ids":null,"strokes":null,"deleted_at":"2026-09-24T16:00:23.985Z","created_at":"2026-09-24T16:00:23.921Z","updated_at":"2026-09-24T16:00:23.985Z","plan_board_id":null,"page_settings":null,"synced_at":"2026-09-24T16:00:24.000Z","purged_at":"2026-09-24T16:00:23.985Z"}
+PASS  [CLAIM] P2a (design checks 2+3): the long-offline device's push is REFUSED - the server row is unchanged, still blank, still purged  {"cDirtyBefore":true,"serverText":"","purged":true}
+PASS  [CLAIM] P2b: and its very next pull REPLACES its dirty copy with the tombstone - its unsynced edit is DISCARDED on arrival (the loss is the deletion he asked for) and the item is gone from C  {"live":null,"stored":{"id":"P","text":"","projectId":null,"shelved":false,"deletedAt":"2026-09-24T16:00:24.111Z","purgedAt":"2026-09-24T16:00:24.111Z","createdAt":"2026-09-24T16:00:24.042Z","updatedAt":"2026-09-24T16:00:24.111Z"}}
+PASS  [CLAIM] P2c: C does not push the blank record back forever - its dirty flag for it is CLEARED  []
+PASS  [CLAIM] P4: a "restore" of a purged item - a push with a NEWER updated_at and no deleted_at - changes nothing; and purging again cannot move purged_at (the first purge time stays)  {"text":"","boxes":null,"purgedBefore":"2026-09-24T16:00:24.219Z","purgedAfter":"2026-09-24T16:00:24.219Z"}
+PASS  [CLAIM] P5 (design check 5): a purge pushed WITH the full record - every payload column - leaves the server row blank: the server ignores the client's content, so a client cannot purge "halfway"  {"beforeText":true,"text":"","shelved":false,"purged":true,"deleted":true,"created":true,"stillSet":[],"swallowed":[]}
+PASS  [CLAIM] P7: a purge of an id the server NEVER saw inserts a tombstone (a page created and purged offline), so a device that still holds it cannot INSERT it back later - its push is refused  {"tombstone":true,"textAfterLatePush":""}
+PASS  [CLAIM] P8a: purge is a TRASH act - a page that is not in the Trash cannot be purged, a purged one cannot be purged again  {"liveRefused":true,"okPurged":true,"twice":true}
+PASS  [CLAIM] P8b: the Trash lists the trashed page and NOT the tombstone, and Restore on a tombstone does nothing  {"trash":["TRASHED"]}
+PASS  [CONTROL] C1: an ordinary trashed page still restores (the guard freezes only purged items)
+PASS  [CLAIM] P9: an ordinary edit to a page that was never purged still lands and reaches the other device - the freeze applies only to purged rows  {"server":"an ordinary edit","b":"an ordinary edit"}
+PASS  [CENSUS] N1 THE LEAK GUARD: the purge blanks EVERY journal_entries column that is not identity or a stamp - derived from migrate.ts and sync.ts, so a column added later (page_links, beside_links) that the purge forgot turns this red instead of leaking content  {"liveColumns":19,"blanked":19,"missing":[],"extra":[]}
+PASS  [CENSUS] N2 (design check 6): NO HARD DELETE on any synced table anywhere in apps/server/src - the guard that stops the obvious build from ever being written  {"filesWithDeleteFrom":[]}
+PASS  [CENSUS] N3: the ordinary upsert freezes a purged row (`and journal_entries.purged_at is null`) and a record carrying purgedAt is routed to purgeJournalEntry, never the ordinary upsert
+PASS  [CENSUS] N4: purged_at is ONE nullable column added by migrate.ts (no default, no NOT NULL) and mapped SQL-null -> JS-undefined
+
+BASELINE: GREEN (18 checks: 13 claim, 1 control, 4 census)
+
+MUTANTS - each edit removed ALONE (each must turn a DYNAMIC claim red):
+RED    E1: the purged_at column is not added  ->  P1a:, P1b:, P1d:, P2a, P2b:, P4:, P5, P7:, P9:   census: N4:
+RED    E2: the ordinary upsert no longer freezes a purged row  ->  P2a, P2b:, P7:   census: N3:
+RED    E3: a purge is not routed to its own statement (it goes through the ordinary upsert)  ->  P1a:, P1b:, P1d:, P2a, P2b:, P4:, P5, P7:   census: N3:
+RED    E4: the purge no longer blanks the board cards (boxes)  ->  P1a:, P1d:, P4:, P5   census: N1
+RED    E4: the purge no longer blanks the text  ->  P1a:, P1d:, P2a, P2b:, P4:, P5   census: N1
+RED    E4: the purge no longer keeps its FIRST purged_at (coalesce -> the incoming value)  ->  P4:   census: -
+RED    E4: the server no longer sets deleted_at itself  ->  P1b:, P1d:, P2b:, P5   census: -
+RED    E5: the mapper drops purged_at (the tombstone reaches a device as an ordinary blank deleted page)  ->  P1a:, P1b:, P2b:   census: N4:
+RED    C1: applyCollection no longer lets a tombstone through (it obeys "newer only" and "local dirty wins" again)  ->  P2b:   census: -
+RED    C2: a replaced record keeps its dirty flag (the device pushes the blank record back)  ->  P2c:   census: -
+RED    C3: the Trash lists tombstones (getDeletedEntries no longer excludes purged)  ->  P1b:, P8b:   census: -
+RED    C4: purgeEntry no longer requires the item to be in the Trash  ->  P8a:   census: -
+RED    C5: the deleted-inclusive reader returns a tombstone  ->  P1b:, P8b:   census: -
+
+MUTANTS: every edit is load-bearing - each, removed alone, turns a dynamic claim red

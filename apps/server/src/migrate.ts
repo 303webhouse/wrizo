@@ -184,4 +184,11 @@ export async function runMigrations(): Promise<void> {
     await pool.query(`alter table ${t} add column if not exists synced_at timestamptz not null default now()`);
     await pool.query(`create index if not exists ${t}_user_synced on ${t} (user_id, synced_at)`);
   }
+
+  // ITEM 201 (Nick: "Delete Permanently" per item and for the whole bin, and "1. Yes" to one column): THE ONE COLUMN.
+  // `purged_at` marks a page or board as PERMANENTLY deleted. It is a TOMBSTONE, never an absence: the row stays
+  // (content blanked, id and stamps kept) because sync is built on rows that exist - a hard delete would leave no row
+  // to tell another device, and a device still holding the item would simply INSERT it back. Nullable, no default, no
+  // backfill, no NOT NULL: the page_settings recipe. Every existing row reads null (not purged) and is untouched.
+  await pool.query(`alter table journal_entries add column if not exists purged_at timestamptz`);
 }

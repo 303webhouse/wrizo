@@ -96,7 +96,7 @@ function makePool(migrateText) {
     async query(sql, params = []) {
       const s = norm(sql);
       const need = (t) => { if (!syncedAt.has(t)) throw new Error(`column "synced_at" of relation "${t}" does not exist`); };
-      let m = /^insert into (\w+) \(([^)]*)\) values \((.*?)\) on conflict \(id\) do update set (.*?) where \1\.user_id = excluded\.user_id and excluded\.updated_at > \1\.updated_at$/i.exec(s);
+      let m = /^insert into (\w+) \(([^)]*)\) values \((.*?)\) on conflict \(id\) do update set (.*?) where \1\.user_id = excluded\.user_id( and \1\.purged_at is null)? and excluded\.updated_at > \1\.updated_at$/i.exec(s);   // item 201's frozen-row guard is an optional conjunct; this instrument never purges, so it is always null here
       if (m) {
         const [, t, colsTxt, phsTxt, setTxt] = m;
         if (!tables.has(t)) throw new Error(`fake pool: no model for table ${t}`);
@@ -392,9 +392,11 @@ async function runScenarios(router, migrateText, log) {
 // ---------------------------------------------------------------------------
 function census(syncText, migrateText, log) {
   const stmt = (t) => {
-    const a = syncText.indexOf(`insert into ${t}\n`);
-    const a2 = a >= 0 ? a : syncText.search(new RegExp(`insert into ${t}[\\s(]`));
-    const b = syncText.indexOf(`excluded.updated_at > ${t}.updated_at`, a2);
+    // THE ORDINARY UPSERT, anchored on its own guard and walked BACK to its `insert into`: since item 201 there is a second
+    // `insert into journal_entries` (the purge tombstone) EARLIER in the file, so "the first insert into t" read the wrong
+    // statement - and this check could not have seen the ordinary upsert lose its `synced_at = now()`.
+    const b = syncText.indexOf(`excluded.updated_at > ${t}.updated_at`);
+    const a2 = b >= 0 ? syncText.lastIndexOf(`insert into ${t}`, b) : -1;
     return a2 >= 0 && b >= 0 ? syncText.slice(a2, b) : '';
   };
   const bad = TABLES.filter((t) => !/\bsynced_at = now\(\)/.test(stmt(t)));
@@ -416,8 +418,9 @@ function census(syncText, migrateText, log) {
 // MUTANTS - each server edit, removed ALONE.
 // ---------------------------------------------------------------------------
 function stmtRange(text, t) {
-  const a = text.search(new RegExp(`insert into ${t}[\\s(]`));
-  const b = text.indexOf(`excluded.updated_at > ${t}.updated_at`, a);
+  // The ordinary upsert: anchored on its own guard, walked back to its `insert into` (item 201 added a purge statement earlier in the file).
+  const b = text.indexOf(`excluded.updated_at > ${t}.updated_at`);
+  const a = b >= 0 ? text.lastIndexOf(`insert into ${t}`, b) : -1;
   return [a, b];
 }
 function mutants() {

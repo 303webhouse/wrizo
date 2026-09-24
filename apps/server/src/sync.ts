@@ -114,6 +114,8 @@ function rowToJournalEntry(r: any) {
     routedProjectIds: r.routed_project_ids ?? undefined,
     strokes: r.strokes ?? undefined,
     deletedAt: iso(r.deleted_at) ?? undefined,
+    // ITEM 201 (Nick: "Delete Permanently" per item and for the whole bin, and "1. Yes" to one column): the tombstone's mark. SQL null -> JS undefined (never null), the recipe every additive column keeps.
+    purgedAt: iso(r.purged_at) ?? undefined,
     createdAt: iso(r.created_at),
     updatedAt: iso(r.updated_at),
   };
@@ -249,9 +251,60 @@ async function upsertDrawers(userId: string, records: any[]): Promise<void> {
   }
 }
 
+// ITEM 201 (Nick: "Delete Permanently" per item and for the whole bin, and "1. Yes" to one column) - A PURGE IS A TOMBSTONE, NEVER AN ABSENCE.
+//
+// ONE statement, so a client can never purge "halfway": it INSERTS a blank row for an id the server never saw (a page
+// created and purged offline - without it a device still holding that page could later INSERT it back), or BLANKS the
+// existing row in place. The client pushed a FULL record; none of its content is read here. `deleted_at` is set by the
+// server if it is not already (so every reader that already hides deleted things hides a purged one, by construction),
+// `purged_at` and `deleted_at` keep their FIRST value (coalesce - the mark is monotone), and `synced_at = now()` makes
+// every device whose cursor is older receive the tombstone through the ordinary pull (item 198).
+//
+// THE BLANK LIST IS EXPLICIT, and that is the danger: a column added to journal_entries and forgotten HERE would leak
+// its content through a "permanent" delete, silently. Two are already in flight (page_links, beside_links). The guard
+// is sync-purge-proof.mjs's leak check, which derives the live column list from migrate.ts and this file and goes red
+// if any column that is not identity or a stamp is missing from this list.
+async function purgeJournalEntry(userId: string, e: any): Promise<void> {
+  await pool.query(
+    `insert into journal_entries (id, user_id, text, created_at, updated_at, deleted_at, purged_at)
+     values ($1, $2, '', $3, $4, $5, $5)
+     on conflict (id) do update set
+       project_id = null,
+       text = '',
+       session_id = null,
+       starred = null,
+       source = null,
+       shelved = false,
+       beat_id = null,
+       page_type = null,
+       order_index = null,
+       imported_at = null,
+       boxes = null,
+       script = null,
+       origin = null,
+       tutor = null,
+       tags = null,
+       routed_project_ids = null,
+       strokes = null,
+       plan_board_id = null,
+       page_settings = null,
+       deleted_at = coalesce(journal_entries.deleted_at, excluded.deleted_at),
+       purged_at = coalesce(journal_entries.purged_at, excluded.purged_at),
+       updated_at = greatest(journal_entries.updated_at, excluded.updated_at),
+       synced_at = now()
+     where journal_entries.user_id = excluded.user_id`,
+    [e.id, userId, e.createdAt, e.updatedAt, e.purgedAt],
+  );
+}
+
 async function upsertJournalEntries(userId: string, records: any[]): Promise<void> {
   for (const e of records) {
     if (!e?.id || !e?.updatedAt || !e?.createdAt) continue;
+    // ITEM 201 (Nick: "Delete Permanently" per item and for the whole bin, and "1. Yes" to one column): a record carrying purgedAt is a PURGE - routed to its own statement, never the ordinary upsert.
+    if (e.purgedAt) {
+      try { await purgeJournalEntry(userId, e); } catch (err) { console.error('[sync] journal_entry purge failed', e.id, err); }
+      continue;
+    }
     try {
       await pool.query(
         `insert into journal_entries
@@ -272,6 +325,7 @@ async function upsertJournalEntries(userId: string, records: any[]): Promise<voi
            page_settings = excluded.page_settings,
            synced_at = now()
          where journal_entries.user_id = excluded.user_id
+           and journal_entries.purged_at is null
            and excluded.updated_at > journal_entries.updated_at`,
         [e.id, userId, e.projectId ?? null, e.text ?? '', e.sessionId ?? null,
          e.starred ?? null, e.source ?? null, e.shelved ?? false, e.beatId ?? null, e.pageType ?? null,

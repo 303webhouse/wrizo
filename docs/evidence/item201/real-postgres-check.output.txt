@@ -1,0 +1,73 @@
+The files belonging to this database system will be owned by user "nickh".
+This user must also own the server process.
+
+
+The database cluster will be initialized with this locale configuration:
+  locale provider:   libc
+  LC_COLLATE:  English_United States.1252
+  LC_CTYPE:    English_United States.1252
+  LC_MESSAGES: C
+  LC_MONETARY: English_United States.1252
+  LC_NUMERIC:  English_United States.1252
+  LC_TIME:     English_United States.1252
+The default database encoding has accordingly been set to "WIN1252".
+The default text search configuration will be set to "english".
+
+Data page checksums are enabled.
+
+creating directory C:/Users/nickh/AppData/Local/Temp/wrizo-201-s0/data ... 
+ok
+
+creating subdirectories ... 
+ok
+
+selecting dynamic shared memory implementation ... windows
+selecting default "max_connections" ... 
+100
+selecting default "shared_buffers" ... 
+128MB
+selecting default time zone ... 
+America/Denver
+creating configuration files ... 
+ok
+running bootstrap script ... 
+ok
+
+performing post-bootstrap initialization ... 
+ok
+syncing data to disk ... 
+ok
+
+
+Success. You can now start the database server using:
+
+    ^"C^:^\Users^\nickh^\wrizo^-read^\node^_modules^\^.pnpm^\^@embedded^-postgres^+windows^-x64^@18^.4^.0^-beta^.17^\node^_modules^\^@embedded^-postgres^\windows^-x64^\native^\bin^\pg^_ctl^" -D ^"C^:^\Users^\nickh^\AppData^\Local^\Temp^\wrizo^-201^-s0^\data^" -l logfile start
+
+
+2026-09-24 09:57:42.477 MDT [36244] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-09-24 09:57:42.480 MDT [36244] LOG:  listening on IPv6 address "::1", port 54378
+
+2026-09-24 09:57:42.480 MDT [36244] LOG:  listening on IPv4 address "127.0.0.1", port 54378
+
+2026-09-24 09:57:42.541 MDT [56592] LOG:  database system was shut down at 2026-09-24 09:57:40 MDT
+
+2026-09-24 09:57:42.547 MDT [36244] LOG:  database system is ready to accept connections
+
+[migrate] applied 001_init.sql
+PASS  E1: the REAL migrate.ts adds purged_at as ONE nullable timestamptz with no default and no NOT NULL - additive, no backfill, idempotent across two boots  {"data_type":"timestamp with time zone","is_nullable":"YES","column_default":null}
+PASS  THE LEAK GUARD: the purge blanks EVERY journal_entries column that is not identity or a stamp - derived from the live schema, so a column added later (page_links, beside_links...) that the purge forgot turns this red instead of leaking content  {"liveColumnsNotIdentityOrStamp":["beat_id","boxes","imported_at","order_index","origin","page_settings","page_type","plan_board_id","project_id","routed_project_ids","script","session_id","shelved","source","starred","strokes","tags","text","tutor"],"purgeBlanks":["beat_id","boxes","imported_at","order_index","origin","page_settings","page_type","plan_board_id","project_id","routed_project_ids","script","session_id","shelved","source","starred","strokes","tags","text","tutor"],"missing":[],"extra":[]}
+PASS  E4 blanks in place: text is empty, every other payload column is null (shelved false), and NONE of the incoming content was kept - the client pushed a FULL record and the server ignored its content  {"text":"","stillSet":[]}
+PASS  ...and identity and stamps are kept: id, user_id, created_at survive; purged_at and deleted_at are set (the server set deleted_at itself); synced_at moved  {"purged_at":"2026-09-24T15:57:43.706Z","deleted_at":"2026-09-24T15:57:43.706Z","synced_at":"2026-09-24T15:57:43.706Z","cursorBeforePurge":"2026-09-24T15:57:43.701Z"}
+PASS  E4 inserts a tombstone for an id the server never saw (a page created and purged offline) - so a device that still holds it cannot INSERT it back later  {"id":"GHOST","text":"","purged_at":"2026-09-24T15:57:43.706Z","deleted_at":"2026-09-24T15:57:43.706Z","boxes":null}
+PASS  ...and a later push of that id from a device that still holds it is REFUSED (the row stays blank)  {"text":""}
+PASS  E2 (design checks 2 and 4): a stale device pushing the WHOLE record with a NEWER updated_at and deleted_at cleared - a "restore" of a purged item - changes NOTHING: still blank, still purged, still deleted  {"text":"","boxes":null,"purged_at":"2026-09-24T15:57:43.706Z","deleted_at":"2026-09-24T15:57:43.706Z","updated_at":"2026-09-24T15:57:43.706Z"}
+PASS  ...and purging AGAIN cannot move the stamp: purged_at is monotone - the first purge time stays  {"purged_at":"2026-09-24T15:57:43.706Z","deleted_at":"2026-09-24T15:57:43.706Z"}
+PASS  THE PULL (design check 1/3): a device whose cursor is older than the purge receives the tombstone - the ordinary pull, no new channel - as a record with blank content  {"found":true,"text":""}
+PASS  E5: the REAL mapper carries the mark - the pulled row has purgedAt AND deletedAt (SQL null -> JS undefined elsewhere), so the client can tell a tombstone from an emptied page  {"purgedAt":"2026-09-24T15:57:43.706Z","deletedAt":"2026-09-24T15:57:43.706Z"}
+PASS  ...and a page that was never purged pulls back with purgedAt undefined - never null (the fixed point that keeps untouched pages byte-identical)  {"found":true}
+PASS  OWNERSHIP: another user pushing a purge for an id that is not theirs changes nothing (the row keeps its content and its owner)  {"text":"SECRET WORDS","purged_at":null,"user_id":"e098bda5-d5f1-47b8-96db-64dfb9251cd4"}
+PASS  CONTROL: an ordinary edit to a page that was never purged still lands (E2 only freezes purged rows)  {"text":"edited","purged_at":null}
+PASS  NOTHING was swallowed: no "[sync] ... failed" was logged by any of the above  []
+
+REAL POSTGRES (PostgreSQL 18.4): PASS (14 checks)
