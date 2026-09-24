@@ -45,7 +45,7 @@ PLAN                                     ⋯   ×      ← ⋯ holds the tags (�
   restructure, today's "Create a Board" row IS "Create Board ›"** — its presets submenu — **and its
   "Default" option makes the same unborn, empty, not-nested board the old row made.** **There is ONE such
   row.** *(His note says "Create Board"; the lexicon says "Create a Board" — `cascadePlanCreateBoard`; the
-  builder keeps one term and does not ship both.)* **Still pending his answer**, exactly as the 144 amendment marks it.
+  builder keeps one term and does not ship both.)* **~~Still pending his answer~~ — CONFIRMED: Nick, *"Yes, keep both"* — a ruling (§7).**
 - **Add Board sits in the "new subsection" his note gave Connect Board** — below the four, above Connected
   Boards — *his placement, the new row.*
 
@@ -139,3 +139,30 @@ down; Fable draws if a redraw is wanted)*.
 **§3's "Mind Map … 165-Q3" and the lean "out until built"** → §4 · merged **§7(b) "whether the chooser survives is his"** →
 §2's default · merged **§Q** → **Q1–Q3 and 172-Q5 are defaults taken (§0); 165-Q4 was already dissolved.**
 **Unchanged:** §3's type-resolution (minus Book, which was withdrawn), §4's column, §6's tags, §7(a) and (c), §8's Experts' review.
+
+---
+
+## §7 · RULED SINCE THIS AMENDMENT WAS WRITTEN (chat 1, `9d1e6dd`; Fable's rulings and Nick's words)
+
+- **165-F1 — RULED (Fable): STORY STRUCTURE IS BUILT ON DECKS** *(the board system, the projection seam the house
+  calls non-negotiable).* **§6's "165-F1 — still with Fable; nothing in the ledger answers it" is SUPERSEDED.**
+  **165-C's gate loses F1; it keeps the Experts' content and his approval.**
+- **THE DOOR IS NAMED "Beat Sheet" — Nick, verbatim: *"Just call it "Beat Sheet" for now until I see how
+  intuitive that seems."*** **His word supersedes Fable's proposed "Plan the whole drawer — beat sheet" and merged §7(c)'s
+  wording.** **It keeps its place at the FOOT of Story Structure and is never silently removed.** **"For now" is
+  his, and it is a trial: the label lives in the lexicon (one term, every surface), so renaming it later is one
+  edit.** **Sweep the behaviour, not the string:** *PW1's checks that read "Plot a Story" by that label are
+  PARKS (superseded with a pointer here, kept verbatim — never edited), and the census counts every surface that
+  shows the old name (the door, the wizard's own heading, any hint line).*
+- **ITEM 199 — THE STORYPLAN FOLD — REGISTERED (Fable):** *fold M1's frameworks into decks and reconcile M1's
+  consumers.* **Designed WITH 188 (Experiment 2 — the board sets the chapter order), NOT before Experiment 1
+  ships.** **Nothing in 165 depends on it.** *(§5's "From My Pages" already leaves the arrangement in reading
+  order so 188 can adopt it.)*
+- **"FROM MY PAGES" — RULED (Fable): it SHOWS the reading order; whether a board BECOMES the order is 188's.**
+  **§5's lean is now the ruling; the "one yes/no to Nick" is NOT needed.**
+- **NEW PAGE'S CHOICES INCLUDE SCREENPLAY — RULED (Fable): his 3A outranks the 2026-08-17 spec.** **§2's S0 census
+  still confirms which doors already offer it.**
+- **ITEM 200 — THE WRITER'S WIZARD** *(story idea → plot beats → each scene, with no file organization by the
+  writer)* **is a registered FUTURE item, unscheduled, no design — his words: "that comes after we have all the
+  infrastructure built."** **Nothing here anticipates it,** *except that "Beat Sheet" is the door it would one day
+  sit behind — a reason the name is a lexicon term and not a string.*
