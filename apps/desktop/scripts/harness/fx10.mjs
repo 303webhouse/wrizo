@@ -128,6 +128,7 @@ const openTutor = async (app) => {
 const rectOf = async (app, sel) =>
   app.evalJs(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return null; const r = el.getBoundingClientRect(); return { left:r.left, right:r.right, top:r.top, bottom:r.bottom, width:r.width, height:r.height }; })()`);
 
+const boardOpenGrip = []; // ITEM 161 — recorded for the gated, parked successor below
 await withHarness(async (app) => {
   // ==========================================================================
   // S1 — geometry: three widths (1100 floor mandatory / 1280 / 2200), BOTH
@@ -151,7 +152,16 @@ await withHarness(async (app) => {
       const panelOpen = await rectOf(app, '.wz-tutor-panel');
       const paperOpen = await rectOf(app, paperSel);
       const gripOpen = await rectOf(app, '.wz-tutor-grip');
-      ok(`S1 geometry @${width}px/${surface}: grip-flush (open) — the grip never moves once the panel opens`,
+      // ITEM 161 (2026-09-24) — ON A BOARD THE TAB NOW TRAVELS WITH THE OPEN PANEL (Nick: the pop-out
+      // "overlaps the Board edge, including even the clickable tab that opens it"). The assertion below is
+      // therefore FALSE for the board surface and stays TRUE for the page: it runs live on the page and is
+      // PARKED for the board — quoted VERBATIM, with its measurements recorded for the gated successor at
+      // the foot of this file (and the live successor in item161-162.mjs).
+      //   ORIGINAL (live until item 161):
+      //   ok(`S1 geometry @${width}px/${surface}: grip-flush (open) — the grip never moves once the panel opens`,
+      //     Math.abs(gripOpen.left - paperOpen.right) < 1.5, JSON.stringify({ gripLeft: gripOpen.left, paperRight: paperOpen.right }));
+      if (surface === 'board') boardOpenGrip.push({ width, gripOpen, panelOpen, paperOpen });
+      else ok(`S1 geometry @${width}px/${surface}: grip-flush (open) — the grip never moves once the panel opens`,
         Math.abs(gripOpen.left - paperOpen.right) < 1.5, JSON.stringify({ gripLeft: gripOpen.left, paperRight: paperOpen.right }));
       ok(`S1 geometry @${width}px/${surface}: paper rect BYTE-IDENTICAL, closed -> open`,
         JSON.stringify(paperClosed) === JSON.stringify(paperOpen), JSON.stringify({ paperClosed, paperOpen }));
@@ -648,12 +658,19 @@ console.log(JSON.stringify(checks, null, 2));
 // own precedent for an armed-but-empty gate on a brand-new file.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  // ITEM 161 — THREE parked checks (the board leg of S1's "grip-flush (open)", one per width), each with its
+  // successor beside it: on a board the tab TRAVELS with the open panel, joined to its near edge. Park COUNT: 3.
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  for (const g of boardOpenGrip) {
+    pok(`PARKED (was "S1 geometry @${g.width}px/board: grip-flush (open) — the grip never moves once the panel opens") — item 161: on a BOARD the tab travels with the open panel; successor: the grip's right edge meets the panel's left edge (live successor: item161-162.mjs)`,
+      !!g.gripOpen && !!g.panelOpen && Math.abs(g.gripOpen.right - g.panelOpen.left) < 1.5, JSON.stringify({ gripRight: g.gripOpen && g.gripOpen.right, panelLeft: g.panelOpen && g.panelOpen.left }));
+  }
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nFX10 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, nothing parked out of fx10.mjs itself`
+    ? `\nFX10 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item 161 parks the board leg of S1's open grip-flush (3 widths)`
     : `\nFX10 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 

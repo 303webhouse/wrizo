@@ -2747,7 +2747,19 @@ a:focus-visible,
    in place of the percentage (below). Nothing else here moves - ITEM 130's
    `z-index:1` on this same rule is untouched, and its hit-test coverage runs
    beside the new pin check in item137.mjs so the two cannot trade places. */
-.desk-frame-strip{ position:absolute; top:-16px; left:calc(-1 * var(--frame-host-pad-x)); width:var(--strip-width); z-index:1;
+/* ITEM 162 (Nick: "The theme and trash options should be all the way at the bottom of
+   the screen, not floating on the rail" — founder-ruled: the VERY BOTTOM OF THE SCREEN).
+   Item 137 pinned Themes/Trash to the strip's foot, but the strip's height was only
+   `min-height:70vh`, so the FOOT floated wherever 70vh happened to end (mid-screen on any
+   tall window). The strip now reaches the bottom of the HOST: `bottom:-3rem` is the host's
+   own bottom padding (`.desk-frame-host{padding:... 3rem ...}`), and `--fx3-chrome-budget`
+   already states that host's height is the viewport's (40 top + 63 nav + 16 spacer + the
+   stage + 48 bottom = 100vh), so the strip's bottom edge is the screen's. Taken from the
+   host's own padding rather than from `100vh - N`, so it follows the layout instead of a
+   second hand-synced constant. `min-height:70vh` stays as the floor. ADDITIVE — item 130's
+   z-index and item 137's flex column are untouched; the strip stays `position:absolute`
+   at x=0, so the paper does not move. */
+.desk-frame-strip{ position:absolute; top:-16px; bottom:-3rem; left:calc(-1 * var(--frame-host-pad-x)); width:var(--strip-width); z-index:1;
   display:flex; flex-direction:column;
   min-height:70vh; background:var(--desk-ground);
   border:1px solid var(--ink-border); border-top:none; border-radius:0 0 var(--radius-md) var(--radius-md); overflow:hidden; }
@@ -2790,7 +2802,10 @@ a:focus-visible,
    the in-flow paper (a normal descendant, unaffected) but above whatever
    sits further out (the desk-ground texture), never behind it. */
 .desk-frame-stage{ position:relative; display:flex; justify-content:center; min-width:0;
-  flex:1 1 auto; min-height:0; isolation:isolate; }
+  flex:1 1 auto; min-height:0; isolation:isolate;
+  /* ITEM 161 — FX10 S1's ruled width, declared ONCE here (it lived on
+     `.desk-frame-tutor-panel-anchor`) so `.desk-frame-tutor-anchor--board` can read it too. */
+  --tutor-panel-open-w: clamp(320px, 34vw, 460px); }
 /* Review fix — the actual flex ITEM of .desk-frame-stage is .mode-stage
    (ModeStage's own root div; .mode-row/.mode-pagecol are further BLOCK
    descendants of it, not flex items of the stage themselves). .mode-stage
@@ -3253,6 +3268,29 @@ a:focus-visible,
   --tutor-paper-half: min(50%, 550px);
   --tutor-paper-pad: 0px;
 }
+/* ITEM 161 (Nick: "the Tutor strip menu on the Board ... is misaligned with the Board edge.
+   When I open it, the pop-out menu overlaps the Board edge, including even the clickable tab
+   that opens it") — and PLAN DESK's 166 guideline amendment, safeguard (1): "an overlaying
+   panel never covers the control that opened it".
+   MEASURED BY ARITHMETIC (docs/menus/item161-162-s0.md): the board's content wrapper is
+   `min(100%, 1100px)` and the stage is capped at `--frame-max` 1720, so the margin beside
+   the board is at most 310px while the panel is `clamp(320px, 34vw, 460px)` — THE PANEL
+   OVERLAYS THE BOARD AT EVERY WIDTH the app can have (150-383px), and the tab, left
+   at the board's edge, ended up in the MIDDLE of the panel it opens.
+   THE FIX: while the panel is open the TAB TRAVELS WITH IT — it sits on the panel's own near
+   edge (the joined-tab shape `.wz-tutor-panel{border-left:none}` was always drawn for), so
+   the panel can never cover it, wherever the panel lies. Closed, the tab stays flush to the
+   board's own edge, as before. The board itself never moves (the panel is absolute).
+   Docked, the panel is `clamp(120px, margin, open-w)` wide, so the tab rides that edge.
+   `:has()` reads the grip's own `data-open`/`data-docked` (Tutor.tsx already writes both),
+   so no JS and no prop is added. Board only: prose and screenplay measure the margin in JS
+   (FX18 S2) and stay flush to the paper as they are. */
+.desk-frame-tutor-anchor--board:has(.wz-tutor-grip[data-open='true']){
+  width:16px; right:var(--tutor-panel-open-w);
+}
+.desk-frame-tutor-anchor--board:has(.wz-tutor-grip[data-open='true'][data-docked='true']){
+  right:clamp(120px, var(--tutor-margin), var(--tutor-panel-open-w));
+}
 .desk-frame-tutor-panel-anchor{
   position:absolute; top:0; left:0; right:0; height:100%; z-index:6;
   display:flex; align-items:stretch; justify-content:flex-end; pointer-events:none;
@@ -3269,7 +3307,9 @@ a:focus-visible,
      resolution gap). Declared ONCE here so both the open rule and the
      docked rule's own ceiling (below) read the identical value — never two
      copies of the formula to drift apart. */
-  --tutor-panel-open-w: clamp(320px, 34vw, 460px);
+  /* ITEM 161 — `--tutor-panel-open-w` moved to `.desk-frame-stage` (below) so the GRIP's
+     anchor can read the SAME value: one declaration, two readers (this panel's width and,
+     on a board, where its tab sits). */
 }
 .desk-frame-tutor-panel-anchor--prose{ /* intentionally empty — prose uses the base measure */ }
 /* FX18 S2 (SV26): the screenplay page is 8.5in wide, so its panel MARGIN must use the
