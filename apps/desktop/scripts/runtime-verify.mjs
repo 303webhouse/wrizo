@@ -31,7 +31,7 @@
 import http from 'node:http';
 import { spawn, execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
-import { existsSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, appendFileSync } from 'node:fs';
 // ITEM 99 — the canonical dead-owner sweep. Imported here as well as in
 // run-suite.mjs because EVERY browser this repo launches comes through
 // withHarness below: the probe, selftest-quiescence, and any harness a lane
@@ -40,6 +40,7 @@ import { existsSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { classifyReach } from './reach-classify.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_DIST = path.resolve(HERE, '..', 'dist-web');
@@ -386,13 +387,39 @@ window.__diag = () => ({
   buttons: [...document.querySelectorAll('button, a, [role=button]')].map(b => b.textContent.trim()).filter(Boolean),
   body: (document.body ? document.body.innerText : '').slice(0, 300),
 });
-window.__click = (label) => {
+window.__clickTarget = (label) => {
   const els = [...document.querySelectorAll('button, a, [role=button]')];
   const el = els.find(x => x.textContent.trim() === label) || els.find(x => x.textContent.includes(label));
   if (!el) throw new Error('clickable not found: ' + label + ' :: have [' + els.map(x => x.textContent.trim()).filter(Boolean).join(' | ') + ']');
+  return el;
+};
+window.__click = (label) => {
+  const el = __clickTarget(label);
   el.click();
   return true;
 };
+// ITEM 194 (REPORT-ONLY) - a PURE SAMPLE of whether a real pointer could reach a control, read
+// without scrolling, focusing or writing anything. It asks elementFromPoint at the same 5x5 fractions
+// trusted-point.mjs scans, over the part of the control INSIDE the viewport, and returns raw counts;
+// the verdict is decided outer-side (reach-classify.mjs). Used only when HARNESS_REACH_REPORT is set.
+window.__reachSample = (el) => {
+  var r = el.getBoundingClientRect(), cs = getComputedStyle(el), vw = innerWidth, vh = innerHeight;
+  var s = { tag: el.tagName, cls: typeof el.className === 'string' ? el.className.split(' ')[0] : '', text: (el.textContent || '').trim().slice(0, 40),
+    disabled: !!el.disabled || el.getAttribute('aria-disabled') === 'true', display: cs.display, visibility: cs.visibility, pe: cs.pointerEvents,
+    rect: { l: r.left, t: r.top, w: r.width, h: r.height }, vw: vw, vh: vh, hits: 0, total: 0, centerHit: null, by: {} };
+  var l = Math.max(r.left, 0), t = Math.max(r.top, 0), rr = Math.min(r.right, vw), b = Math.min(r.bottom, vh);
+  if (rr <= l || b <= t) return s;
+  var fr = [0.5, 0.25, 0.75, 0.12, 0.88];
+  for (var i = 0; i < fr.length; i++) for (var j = 0; j < fr.length; j++) {
+    var fy = fr[i], fx = fr[j], x = l + (rr - l) * fx, y = t + (b - t) * fy;
+    var top = document.elementFromPoint(x, y), hit = !!top && (top === el || el.contains(top));
+    s.total++;
+    if (hit) s.hits++; else { var d = top ? top.tagName + '.' + (typeof top.className === 'string' ? top.className.split(' ')[0] : '') : 'null'; s.by[d] = (s.by[d] || 0) + 1; }
+    if (fx === 0.5 && fy === 0.5) s.centerHit = hit;
+  }
+  return s;
+};
+window.__reachFor = (label) => __reachSample(__clickTarget(label));
 window.__setText = (text, sel) => {
   const el = document.querySelector(sel || 'textarea');
   if (!el) throw new Error('element not found: ' + (sel || 'textarea') + '; diag=' + JSON.stringify(window.__diag()));
@@ -418,7 +445,20 @@ function makeApp(base, cdp, waitEvent) {
     /** Re-inject page helpers (call after a full reload). */
     injectHelpers,
     /** Click a button/link/role=button by exact-then-substring visible text. */
-    click: (label) => evalJs(`__click(${JSON.stringify(label)})`),
+    click: async (label) => {
+      // ITEM 194 REPORT-ONLY MODE - off unless HARNESS_REACH_REPORT names a file. When on, ONE read-only
+      // probe runs BEFORE the press and appends a JSON line; the press itself is UNCHANGED (`el.click()`),
+      // so no verdict can move. The probe can never break a press: any failure of the instrument is
+      // swallowed here, and an absent target still throws from the press exactly as before.
+      const reportTo = process.env.HARNESS_REACH_REPORT;
+      if (reportTo) {
+        try {
+          const sample = await evalJs(`__reachFor(${JSON.stringify(label)})`);
+          appendFileSync(reportTo, JSON.stringify({ file: path.basename(process.argv[1] || 'unknown'), label, ...classifyReach(sample) }) + '\n');
+        } catch { /* the instrument never changes a verdict */ }
+      }
+      return evalJs(`__click(${JSON.stringify(label)})`);
+    },
     /** Set a React-controlled input/textarea's value (selector defaults to 'textarea'). */
     setText: (text, sel) => evalJs(`__setText(${JSON.stringify(text)}, ${sel ? JSON.stringify(sel) : 'undefined'})`),
     /**

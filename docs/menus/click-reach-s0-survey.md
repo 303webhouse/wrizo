@@ -179,3 +179,52 @@ would go red. **The suite's guard against item 130 is two files, not 34.**
 no browser) and this survey. **Nothing headful has run** — the box turn is
 PW2's (`pw2-item176-corrected-20260922`), 0 harness browsers observed
 throughout.
+
+---
+
+## §8 · MOVE ONE BUILT — THE REPORT-ONLY MODE (2026-09-24) · **BUILT, NOT RUN; needs ONE short box use**
+
+Fable's ruling (2026-09-23, §6 step 1 made TWO MOVES): *first a report-only mode that records which of the 129 presses a person
+could not have made; each one found is a fixture skipping a person's step or a real finding; only then make the helper fail.*
+**"No exemption table" was my prediction; this run measures it.** Built on `click-reach` (main merged in; the branch carries only
+this survey and the tools below — the ledger is chat 1's).
+
+**What it is.** `HARNESS_REACH_REPORT=<file>` turns it on; unset, `app.click` is what it was. When on, `app.click(label)` runs ONE
+read-only probe **before** the press and appends a JSON line; **the press is still `el.click()`, so no verdict can move** (the
+probe's failures are swallowed — the instrument never changes a check). The page-side sampler asks `elementFromPoint` at the same
+5×5 fractions `trusted-point.mjs` scans, over the part of the control inside the viewport, **without scrolling, focusing or
+writing**, and returns raw counts. **The verdict is decided in Node** (`scripts/reach-classify.mjs`, pure): `reachable` ·
+`partial` (with `centerHit` — a person aims at the centre) · `covered` (item 130's defect, naming the coverer) · `offscreen` (a
+person would scroll first — the likeliest fixture-skips-a-step bucket) · `not-rendered` · `disabled`; flags for
+`pointer-events:none` and a control partly below the fold.
+
+**`__click` was refactored** into `__clickTarget` (the same exact-then-substring resolution and the same thrown message) + the same
+`el.click()` so the probe and the press resolve the SAME element.
+
+**Proved without the box (`node scripts/reach-classify-proof.mjs` — 21 checks):**
+- **A** — the refactor changed nothing: the page helpers are read from `origin/main` (git, not re-typed) and the current file,
+  run against the same fake document; same return, same element pressed, same thrown message, on an exact label, a
+  substring-only label and an absent one.
+- **B** — the sampler, on synthetic geometry: a clear control 25/25; covered 0/25 naming its coverer; covered on the left half only
+  (partial, centre reaches / centre misses — the two differ); wholly off-screen takes **no** samples; half below the fold is
+  sampled over its visible part and flagged; zero-size / hidden / disabled; **read-only** (its only calls are 25 `elementFromPoint`).
+- **C** — the classifier case by case, then **falsified: six mutants, each asserted to have landed, each must go red.** The first
+  run had two **green** mutants — one was *semantically equivalent* (`!hits && !total` ≡ `!total`, so not a mutant at all) and one
+  exposed a **missing case** (a lone hit is partial, not covered). Both fixed; 6/6 red.
+
+**`scripts/reach-report.mjs <file>`** reads a run and prints: presses, **the coverage number beside the count** (the 129-site static
+census against the files that actually produced a press — **every file with sites and no press is listed UNCOVERED**, because a run
+that never reached them says nothing about them), the counts by verdict, **the list of presses a person could not have made**
+(one line each, by file — read each, do not batch), and any press seen under two verdicts (a state-dependent reach). Stratum 2
+(630 in-string `.click()`) is **not** measured here and stays a candidate list.
+
+**THE ONE SHORT BOX USE — for chat 1 to grant.** Verdicts cannot move, so the run is an ordinary default leg with one env var.
+**Write the report OUTSIDE the tree** (a file inside it marks the stamped run `+dirty`): 
+`HARNESS_REACH_REPORT=%USERPROFILE%\Downloadseach-report.jsonl` then `node apps\desktop\scriptsun-suite.mjs` (default leg only; no cap,
+no `timeout` wrapper), then `node apps\desktop\scriptseach-report.mjs %USERPROFILE%\Downloadseach-report.jsonl`. **What the box adds:** the only
+thing not provable here — that `elementFromPoint` answers in a real page as the fake did. **Two-move law, unchanged:** this
+lands as an instrument that reports; **the helper does not fail** until each found press is a fixture fixed or a finding, and
+that step **changes the instrument under every lane's stamps, so chat 1 lands it at a batch boundary.** *(Fable's refined
+merge rule: a change that can only turn a false red green merges between pairs — this can turn neither, but it does change
+`runtime-verify.mjs`, so it should not ride into the middle of a stamping pair either.)*
+
