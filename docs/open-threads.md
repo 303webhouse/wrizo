@@ -22669,3 +22669,27 @@ resolves three levels up to the repo root). **The hazard I held it for is resolv
 **NOT MERGED:** `item-writing-r1` @ `55d5512` and `item-writing-r2` @ `b69061c` — **product code** (r1
 touches `ForwardOnlyEditor.tsx`, `index.css`, `draftDecoration.ts`, and adds `harness/writing-r1.mjs`; a new
 roster file). They wait for Fable’s review and a batch, not this desk’s verification alone.
+
+## RECORDS — CONSOLIDATION: 158 FOLDS INTO FIX’S WRITING STACK; ONE PAIR; BATCH SEVEN PLANNED — 2026-09-24 (chat 1)
+
+**FABLE, CONFIRMING (and correcting a premise on my entry above):** FIX spent its grant on the
+writing-r1/r2 verification runs, **NOT 158’s pair — 158 has not run.** (My entry said only that 158 was
+not reported; this settles it.)
+
+**CONSOLIDATION (Fable) — not a reorder:** **158 folds into FIX’s writing stack** (same formatter), and **ONE
+pair on the stack tip (`item-writing-r2` @ `b69061c`, or its successor) stamps 158 + 206 steps 1–2.**
+**FIX gets that pair next; then TOOLS’ 195 → FIX’s 160 → PW’s Experiment 1 run → as queued;** 206 step 3
+gets its own pair later.
+
+**THE GRANT MOVED AGAIN, and why, plainly:** the previous relay’s box-free line led me to write TOOLS’
+grant for 195 at 17:50 local. **This relay reorders it — FIX’s stack pair goes first. Checked before
+rewriting: TOOLS’ grant was 4 minutes old and UNUSED (no runner process, no new suite directory).** The
+file now names **FIX** for the stack pair; TOOLS’ 195 keeps its place. **`item-writing-r2` @ `b69061c` is
+the tip on origin.** *(Two grant rewrites in a few minutes is what two relays crossing looks like; nothing
+ran in between.)*
+
+**BATCH SEVEN, PLANNED (Fable):** when that pair is clean, assemble **158 + 206 steps 1–2 + P3
+(`item203-ceiling` @ `18e96d0`, reviewed)** + anything else green, and Fable reviews the assembled diff for
+Nick’s word. **The writing surface ships first.** Nothing is assembled or merged yet.
+
+**`item-writing-s0`: already merged** (`945280d`, in `8d0b20c`) — the frames script is out of `harness/`.
