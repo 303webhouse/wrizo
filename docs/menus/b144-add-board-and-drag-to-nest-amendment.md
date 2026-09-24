@@ -45,7 +45,8 @@ default; it no longer is one).
   **The rows sit together, in that order, and the pair is what the Plan menu offers for making a
   board.** *(Item 165's Create Board presets — Default, Worldbuilding, Storyboard — are how "Create a
   Board" grows; nothing here changes them, and "Add Board" takes no presets.)* **This desk's amendment
-  above had silently assumed the rename REPLACED the row; it does not.** **~~Marked pending~~ — SUPERSEDED: he answered *"Yes, keep both"* (above).**
+  above had silently assumed the rename REPLACED the row; it does not.** **~~Marked pending — it rests on his
+  keep-the-controls sentence and has not been put to him as a question of its own.~~** **SUPERSEDED: he answered *"Yes, keep both"* (above).**
 - **The Plan menu's "Connected Boards" list beneath it stays** (it shows what a board is inside and what is
   inside it). **What the rename retires is only the act "put THIS board inside the chosen one" from the Plan
   menu.**
