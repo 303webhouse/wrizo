@@ -212,3 +212,44 @@ ships without the row; 207b adds the row and the route at once**; RV3's door is 
 - **112-C §11 Amendment 1's Free Write exclusion** → **narrowed by his words (§3).** **177-Q3** → **struck.**
 - **Unchanged:** RV1, RV2, RV4, R6, the page-primacy rect invariance, precedence (page → user default → voice → theme),
   the load-on-choose strategy, Route A/B's shape, the `generic` fallback class, item 205/206's territory.
+
+---
+
+## §11 · THIRD NOTE, 2026-09-24 late — Source Serif 4 joins; TUTOR's review folded in; size ruled
+
+**Nick, verbatim (Fable's relay): *"3. Add Source Serif confirmed."*** **Fable's rulings: Source Serif 4 joins the roster;
+EB Garamond STAYS** *(he approved the list — a demotion is not on offer);* **size is RULED: 11 means today's rendering, the
+number is the printed size, the screen is a zoom — lean (R) of §4 adopted, and the "true Letter sheet" question is NOT
+asked of Nick.** **TUTOR's craft review (`tutor/item207-fonts-tutor-craft-review.md`) is folded in below.**
+
+- **THE ROSTER IS NINE:** **Crimson Pro** *(default)* · **Lora** · **EB Garamond** · **Source Serif 4** · **Times New Roman**
+  *(named-first, Tinos fallback)* · **Figtree** · **Atkinson Hyperlegible** · **Arial** *(named-first, Arimo fallback)* ·
+  **Courier Prime.** **There is no "core" and "optional" tier** *(TUTOR's request to move EB Garamond out of a core slot
+  is moot — he approved the list; the constraint it argued from, "legibility outranks taste", stands for any FUTURE
+  addition).* **Merged §2's "seven at most, five to start" is WITHDRAWN.**
+- **⚠ A NUMBER THIS DESK GOT WRONG, CORRECTED (TUTOR, measured from the packages):** *merged §2 said each family is
+  "~100–300 KB per style".* **Measured: ONE style is ~20.7 KB; a family's whole prose set (regular, bold, italic, bold
+  italic) is 45–99 KB; all seven families × four styles is 534 KB.** **The figure was off by roughly five to fifteen times,
+  and the byte-fear it fed was the reason for the cap. The cap is withdrawn. Load-on-choose with the default eager STAYS —
+  on its own merits, not on a mis-stated cost.** *(The two Croscore fallbacks and Source Serif 4 add to that;
+  the S0 total is a measurement, not a claim.)*
+- **THE LOADER IS MIXED-MODE (TUTOR §1.1) — one line for the brief so a builder does not discover it at the import.**
+  *Today two of the five bundled families are `@fontsource-variable/` (Figtree, Crimson Pro) and three are static
+  `@fontsource/` (Courier Prime, Rajdhani, Chakra Petch).* **Variable packages EXIST for Lora, EB Garamond and Source Serif
+  4; they do NOT exist for Atkinson Hyperlegible or Courier Prime (both 404).** **So the roster is necessarily
+  variable-and-static, the two forms are different `@font-face` blocks and cost models, and §3's per-face `size-adjust`
+  must be written for both.**
+- **COURIER PRIME IS THE WORST CASE in §3's chars-per-line measurement** *(a monospace face moves characters-per-line
+  far more than any proportional face — the S0 names it and reports it separately; an average across the roster would
+  understate the one face that breaks the measure).*
+- **OPENDYSLEXIC: the exclusion is UPHELD** *(Atkinson Hyperlegible answers the need it is usually reached for; TUTOR flags
+  its "no measurable benefit" evidence claim as UNVERIFIED — this desk does not assert it as fact).* **Italics: all
+  families have the four prose styles; all are OFL-1.1** *(the two proprietary faces are named, never shipped — §2).*
+- **SIZE — RULED (Fable): no question to Nick.** **§4's fork is CLOSED: (R). 11 = today's rendering (`17px` at scale 1);
+  the number is the printed size; the screen is a uniform zoom. The rival (a true Letter prose sheet) is NOT taken; it
+  stays available as a separate future item if he ever asks, and §8's "for Fable to decide whether to ask" line is
+  STRUCK.** *Check 3 of §9 (11 = today) is therefore live, not a park.*
+- **THE FACE ACROSS MODES (TUTOR §5, offered as Nick's reading) is SETTLED by his own words and a ruling** *(his Q2: Free Write
+  shows the picker; Fable's 206 ruling: styled text renders in every mode)* — **a page's face renders in every mode; the
+  rival ("Free Write always renders the machine's face") is not taken.**
+- **Q4 (uploads) still WAITS.** **207a is unchanged in scope; the roster it ships is nine.**
