@@ -22371,3 +22371,33 @@ nobody kills a process it cannot name** — which is also what this desk did.
 This”, “Make a card”, “Unlink” — appearing only with the switch ON. **Styling stays where it is today** and
 joins the menu with item 186’s own build. **The switch is TOOLS’** (item 190, `store/experiments.ts` on
 `item190-exp1-rail`); **PW builds no second gate.**
+
+## BATCH SIX — ASSEMBLED (196 + 203, carrying 198’S REFINEMENT) — 2026-09-24 (chat 1)
+
+**196’s PAIR — CLEAN, read from the suite logs on disk, not from INK’s report:** `e1.mjs` **DEFAULT PASS (41
+checks)** and the **PARKED leg CLEAN**, both `tree=6e61980` (a single-file run on the older Batch-Four
+bundle `index-BDZr-D5R.js/588012b`). **It is a de-flake — it can only turn a false red green — so it merged
+on verification** (harness-only: `e1.mjs`, +36/−17), by fetched SHA `6e61980`. *(Fable’s “44 parked = 41 + 3
+parks”: I saw the parked leg CLEAN and PARK lines; I did not count the 44.)* **INK’s grant is cleared at
+this stamp** — the file is rewritten naming this desk for the batch pair.
+
+**203, MERGED BY ITS FETCHED SHA** (`item203-chunked-push` @ `47c082a8d395475493bc9e729809ac93d7185608`);
+**it carries 198’s reviewed refinement `ad02ff3`** (the merge `7b59dd2` is inside it). **Fable’s byte review
+of 203 is STILL OWED** — his link to Nick’s machine is down. **Deploy only after BOTH the clean pair AND
+his PASS, on Nick’s word.**
+
+**RANGE `3c7c28e` (LIVE, Batch Five) → the assembly head. CLOSED AT ASSEMBLY — NOTHING ELSE JOINS.**
+**Product/server delta, from disk, 7 files:** client `ChromeControls.tsx`, `api.ts`, `deskLexicon.ts`,
+`sync.ts`, `syncNotice.ts` (new); server `index.ts`, `sync.ts`. **Every other non-docs path is a harness
+driver or standalone proof** (`e1.mjs`, `sync-chunked-push-proof.mjs`, `sync-incremental-pull-proof.mjs`).
+**SCHEMA: NONE beyond Batch Five’s `synced_at`. SERVER: YES.** No new roster file.
+
+**RECORDED FOR THE SHIP (Fable):** **P1** a real 413 · **P2** the push in ~1 MB chunks, so one fat
+record can no longer block the rest · **P5** a record too big to send is named to the writer and kept on
+the device; the status no longer says “Offline”. **FIX’s proxy probe: nothing upstream refuses below 5
+MiB.** **TOOLS’ 147 changes what a parked line can print (it can now say FAIL), so it lands at a batch
+boundary — NOT in Batch Six.**
+
+**NEXT ON THE BOX:** the batch pair on the assembled tree (default, then parked, `;` between), ahead of
+TOOLS’ 195. Then TOOLS’ 195 → FIX’s 160 → as queued. **The Python Playwright browsers seen earlier are
+still recycling on the box; not a lane’s, not touched.**
