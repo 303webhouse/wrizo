@@ -22353,3 +22353,21 @@ and cards) · **Q4** the leak guard stays as a permanent check.
 
 **NOT MERGED, and why:** `item203-s0` and `item201-s0` are docs + evidence scripts and could merge on
 verification, but Fable did not ask; **held for the next merge instruction.**
+
+## RECORDS — 203 AND 201 S0s MERGED; EXPERIMENT 1’S RIGHT-CLICK MENU RULED; 161/162 QUEUED — 2026-09-24 (chat 1)
+
+**MERGED, docs + evidence scripts, by fetched SHA:** `item203-s0` @ `6fb5923` and `item201-s0` @ `e2e7f60`
+(3 files each, all under `docs/`; nothing under `apps/`). **A deviation from the relay, stated:** Fable
+named `item203-s0` @ `52c29f5`; the branch tip is **`6fb5923`** — one further commit, “pin the measured
+code to the pre-fix commit so the record survives the fix” — evidence-only, and I merged the tip, not
+the named SHA. **I did not run either evidence script.**
+
+**BOX (Fable):** the grant names INK for 196 — unchanged. The queue is unchanged; **TOOLS’ 161/162
+(`item161-162-strip-geometry` @ `e692e53`) JOINS AFTER TOOLS’ 154.** **The two Python-driven Playwright
+browsers are NOT a lane’s** (Fable). If INK’s pre-flight refuses on them, **INK reports it and WAITS;
+nobody kills a process it cannot name** — which is also what this desk did.
+
+**RULED (Fable) — EXPERIMENT 1’S RIGHT-CLICK MENU:** connect acts ONLY in this slice — “Link to…”, “Note
+This”, “Make a card”, “Unlink” — appearing only with the switch ON. **Styling stays where it is today** and
+joins the menu with item 186’s own build. **The switch is TOOLS’** (item 190, `store/experiments.ts` on
+`item190-exp1-rail`); **PW builds no second gate.**
