@@ -21872,3 +21872,65 @@ proposal replaced it. *(This is the third default on 144’s names by skip — k
 **MERGE.** `plan-144-amend3` @ `8c213bb` — one file
 (`docs/menus/b144-plus-menu-and-unnest-amendment.md`), 34 insertions, docs-only — **merged on
 this desk’s verification.**
+
+## RECORDS — THE BOX CHECKED: FIX’S 159 PAIR FINISHED CLEAN, THE GRANT PASSES TO PW; “KEEP BOTH”; beside_links APPROVED; A BREACH OF MY OWN — 2026-09-24 (chat 1)
+
+**THE BOX, CHECKED AT 18:28 local (00:28 UTC) at Fable’s order — it had not been re-checked for
+several turns.** Grant file: still named FIX, written 13:07 local (5h21m earlier), never cleared.
+**Processes: NO runner, NO harness node process, NO headless/msedge browser on the box** (the only
+matches were VS Code’s own `--headless` copilot runtime and this check’s own PowerShell).
+**FIX’s pair FINISHED, and it was CLEAN — the box was idle, not hung.** Read from the suite logs
+on disk (`%TEMP%wrizo-suite-61876` default, `-62620` parked), NOT from FIX’s own report — FIX has
+not stamped it on the ledger, and should confirm:
+- **DEFAULT leg** (finished 17:48): `SUITE DONE HARNESS_PARKED=unset — 93/93 of 93` · `SUITE
+  RESULT: CLEAN — tree=e31b43a bundle=index-BGbwUOFl.js/588429b` · 0 `FAIL` lines.
+- **PARKED leg** (finished 18:26): `SUITE DONE HARNESS_PARKED=1 — 93/93 of 93` · `SUITE RESULT:
+  CLEAN — tree=e31b43a bundle=index-BGbwUOFl.js/588429b` · 0 `FAIL` lines.
+- Same tree as FIX’s pushed branch tip (`item159-card-styling-dock` @ `e31b43a`, on origin). Two
+  earlier short runs sit beside them on tree `445d9e1` (same bundle): `item126` alone, PASS 42 in
+  100s (the item-197 file); and fx4/fx5/fx6/`item159.mjs` (PASS 9), all clean.
+**FIX’s own report, relayed by Fable after this check, AGREES:** both legs 93/93 on `e31b43a`,
+`item126` included at 100s; **the 7241s hang did not recur — its cause is UNKNOWN and stays
+logged under 197.** **NOT CHECKED by me, said plainly:** whether FIX’s FALSIFICATION run for 159
+was done and what it showed (only the passing `item159.mjs` is on disk that I looked at); the
+7241s hang itself is in no log I opened.
+
+**GRANT PASSED, per Fable’s order:** the file now names **PW** (paint-layer measurement, one
+short use serving item 145 and Experiment 1), written 00:29 UTC. FIX’s grant is replaced, so a
+stale FIX token now fails item 140’s match. **Order behind it: INK’s 196 run → TOOLS’ 195
+pair → FIX’s 158 → as queued.**
+
+**A BREACH OF THIS DESK’S OWN STANDING LAW, marked here and left visible above.** The seed’s law is
+“never write a token into the ledger (record lane, purpose, time).” **I wrote FIX’s token into the
+ledger twice** (the entries dated 2026-09-24, in the BOX paragraphs of my first and second
+records). It is dead — the grant it named has been replaced, and item 140 refuses a token that
+does not match the file — so nothing can use it; **but the law was broken, and this is the mark.**
+This entry and the PW grant carry no token.
+
+**NICK, verbatim as relayed — the Plan menu** (answering Fable’s question; TOOLS had retired
+“Create a Board”; the default was to keep both):
+
+> “Yes, keep both”
+
+**It is now HIS RULING, not a default:** keep both — Create a Board any time; Add Board greyed out
+unless a board is open. PLAN DESK’s 144 amendment and TOOLS’ build mark it confirmed at their next
+touch; **the ledger outranks both until then.**
+
+**APPROVED (Fable): TOOLS’ S0 for board connections** (`item144-board-tabs` @ `79ed2a1`): ONE column,
+`journal_entries.beside_links` jsonb (JS `besideLinks`), on the `page_links` recipe — the migration
+plus five sync sites. Name ruled `beside_links` (carries his “beside”; cannot collide with
+`page_links`). **Duplicate: a copy starts UNCONNECTED** (threads do not travel with copies —
+item 123). A page’s plan board connects like any other board. *(Under Nick’s “Store them
+properly”; a column, so no new-table stop arises.)*
+
+**MERGE ORDER for the `$N` collision (Fable):** `page_links` and `beside_links` both append to the
+SAME INSERT / VALUES / parameter lines. **Whichever merges SECOND renumbers its placeholder and
+re-runs its programmatic pairing check at that merge.** I name the order at assembly; 144 is
+likely first (after 160).
+
+**166-Q3 and Q5 need no question:** under his guideline the status quo stands (centred dialogs;
+caret pop-ups at the caret). **One panel per side stood by skip** (a default, not a ruling).
+
+**MERGES.** `plan-166-guideline` @ `3ef089d` (2 docs files, 166 insertions) and `plan-144-nest` @
+`943f9f9` (2 docs files, 182 insertions) — docs-only by diff-stat, **merged on this desk’s
+verification.**
