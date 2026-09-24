@@ -219,3 +219,36 @@ addition. Is that OK?"* **Default: none — a schema word is his alone.**
 - **Charter §6 — 168-B's gate "168-Q2"** → **met.** **§Q — Q1, Q2 ANSWERED.** **§F2** → **resolved (§1a).** **§F1** → **still open.**
 - **Charter §7 check 1's "(or, under (iii), the fork appears)"** → **the fork variant is dead; only "the act happens".**
 - **Unchanged:** the two verbs, the drag to the icon and its sources, memberships outliving deletion (§3(c)), the right-click menu (168-C), pages' first Delete.
+
+---
+
+## §9 · ⚠ CORRECTION, 2026-09-24 — `vw4-empty-trash-build-brief.md` ALREADY DESIGNS THE BIN'S CONFIRM; THIS DESK WROTE §5 WITHOUT READING IT
+
+**Recorded as this desk's error and kept visible** *(the same class as the sheet's 169 lines: a design written
+against the ledger and the code, not against the brief that already owned the surface).* **Where §5 above and
+VW4 disagree, THIS SECTION governs; §5 is kept as written.**
+
+| §5 above said | VW4 (brief 4, ruled 2026-09-13, "3. Show it.") says | it now reads |
+|---|---|---|
+| **a dialog** naming the thing | **"Never a modal over the writer's work. Never a surface switch."** — the confirm opens **IN PLACE, in the Trash view's foot**, reusing the built `wz-cascade-confirm` family; *pressing the control replaces it with the confirm* | **IN-PLACE confirm, both the bin and each item** (the item's confirm replaces the row's actions in the row; the bin's replaces the foot control). **No dialog.** |
+| destructive button "Delete N items permanently"; question "Delete everything in the Trash permanently?" | **`Empty the Trash? 12 items, permanently.` · `Empty` · `Cancel`**; **destructive colour ONLY inside the confirm** | **VW4's form stands for the bin;** the count **may carry the kind breakdown** (`7 pages, 3 boards, 12 cards` — the 168 charter's own wording) **because a count is lawful INSIDE a destructive confirmation and nowhere else** (A14/A18's ruled exception). **The number is computed from the same source the view renders, never a second query.** |
+| "Keep in Trash" default-focused | VW4: `Empty` · `Cancel` | **Cancel is the default focus; Enter never confirms** *(this desk's addition, accepted by Fable — VW4 is silent on focus)*; the item confirm reads *"Delete "Chapter 3" permanently?" · `Delete permanently` · `Cancel`.* |
+| the bin's control at the view's **head** | **the foot**, where VW2's posture instrument also lives | **the foot.** |
+| per-item Delete Permanently | **S4/TV5: "No per-item permanent delete · no multi-select · no auto-purge."** *(a DESK ruling from item 134's pass, not Nick's word)* | **SUPERSEDED by his 2026-09-24 words** (*"a 'Delete Permanently' option for individual items and for the entire bin"*). **Still in force from S4: no multi-select, no auto-purge, no "older than…".** |
+| §2: *"VW4's `emptyTrash()` seam is UNBUILT"* | **§0: "EMPTY TRASH = HARD DELETE = its own persistence item … STOP AND REPORT; a named no-op stub is acceptable, asserted as a no-op."** | **VW4's premise — HARD DELETE — is what §2–§3 above REPLACE with the tombstone.** **The seam VW4 stops at is now specified: `purgeItems(ids)` = §3's purge write.** **VW4's stop rule STANDS until §4's column is answered: build the confirm against the named no-op and assert it is one (VW4 check 8).** |
+
+**The control's LABEL — handed up, with his words as the default.** His sentence names **one** label for **both**
+acts — *"Delete Permanently … for individual items and for the entire bin."* VW4 called the bin's control
+**"Empty"** (the confirm question is *"Empty the Trash?"*). **Default (his words): the per-item control reads
+"Delete Permanently"; the bin's control reads "Delete Permanently" too, and its confirm keeps VW4's question,
+*"Empty the Trash? 12 items, permanently."*** **The rival:** *"Empty Trash" on the bin* — **it reads as the
+plain thing a bin has, and "Delete Permanently" on a whole bin asks "delete what?" until the confirm
+answers.** **It costs his literal word, so it is his to choose; one yes/no rides with the column question.**
+**One term per surface, in the lexicon** (item 136's model), *so the choice is one edit.*
+
+**Checks:** §7 item 9's *"dialog"* → *"in-place confirm"*; **VW4 checks 1–7 apply unchanged to the bin**
+(no modal, the count TRUE against two fixtures and against the DOM, no count anywhere else, Cancel restores
+the control, ABSENT when empty, destructive colour only inside the confirm); **VW4 check 8's stub assertion
+holds until the purge write lands.** **New:** *the per-item confirm replaces that row's actions in place and
+leaves every other row untouched.* **Parks:** VW4's S4 line *"No per-item permanent delete"* is **SUPERSEDED with a
+pointer here, kept verbatim — never edited; audit the park COUNT.**
