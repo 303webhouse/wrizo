@@ -22120,3 +22120,30 @@ displaced, unrun, by the deploy pair). Then INK’s 196 → TOOLS’ 195 → FIX
 grip pressed by a real pointer at the narrowest width inside 160’s run; (c) 144 and Experiment 1 re-run
 their checks when they merge after 198 (an allowance for `synced_at = now()`; every line of
 `journal_entries`’ on-conflict set kept).
+
+## BATCH FIVE — CONFIRMED LIVE BY NICK; THE OWED CHECKS, RECONCILED — 2026-09-24 (chat 1)
+
+**NICK’S WORDS, verbatim as relayed by Fable:**
+
+> “Confirmed. The sync worked”
+
+That is the two-device check Fable asked for: **a word typed on a page on his laptop, then seen on that
+page on his desktop** — the authenticated production round-trip this desk could not run.
+
+**THE OWED CHECKS IN THE DEPLOY MANIFEST, RECONCILED (the manifest is left as written):**
+- **One real sync round-trip: DISCHARGED by Nick’s own two-device check** (a `journal_entries` edit,
+  laptop → desktop).
+- **`synced_at` on all six tables: DISCHARGED BY MECHANISM, not by a query** (Fable’s reasoning; I checked
+  its premise at the source): every pull filters on `synced_at`, and `sync.ts` lines 371–376 pull all six
+  tables in the SAME `/sync` response, so a working sync means the column exists on all six. **What I did
+  not check:** how the handler behaves if one pull threw — the argument leans on a missing column failing
+  loudly, and it was not demonstrated. **Still no direct `information_schema` read.**
+- **Production Postgres version: STILL UNRECORDED** — nothing depends on it (correct either way).
+
+**BATCH FIVE: CONFIRMED LIVE BY THE FOUNDER.**
+
+**DEFAULTS, taken by skip and VETOABLE — NOT founder text (PLAN DESK’s sheet, relayed by Fable):**
+**165-Q1** yes, the same new-page choices as everywhere else · **165-Q2** an imported PDF keeps just its
+words · **165-Q3** Mind Map greyed out as “coming” · **172-Q5** the imports board is an ordinary board.
+*(Four more defaults on the ledger — keep marking them; two already built is how a default gets read as
+a ruling.)*
