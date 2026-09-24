@@ -3,7 +3,8 @@
 // This file supplies what only a browser can: what the page SHOWS (screenshot + computed style), what the DOM holds, and what is
 // STORED after the debounce, for every styling tool in every mode, in the default theme and a dark one.
 //
-// Run: node scripts/harness/writing-s0-frames.mjs   (from apps/desktop, dist-web built, box turn granted)
+// NOT in harness/: run-suite runs every .mjs there, and this writes ~98 PNGs into the tracked tree. A survey, run by hand.
+// Run: node scripts/writing-s0-frames.mjs   (from apps/desktop, dist-web built, box turn granted)
 // Output: docs/evidence/writing-s0/<theme>/<mode>-<frame>.png plus frames.json (one row per frame). It is a SURVEY: it
 // reports, it does not pass/fail a fix. The rows are the evidence for docs/menus/writing-surface-s0.md.
 //
@@ -13,10 +14,10 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { withHarness } from '../runtime-verify.mjs';
+import { withHarness } from './runtime-verify.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const OUT = join(here, '..', '..', '..', '..', 'docs', 'evidence', 'writing-s0');
+const OUT = join(here, '..', '..', '..', 'docs', 'evidence', 'writing-s0');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const rows = [];
 
