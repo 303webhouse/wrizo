@@ -22624,3 +22624,25 @@ grant nevertheless still named FIX at 17:12 — **I did not clear it at the stam
 158 pair** (`item158-tab-indent` @ `0a36a7b` is on origin). **Order behind it, unchanged (Fable): TOOLS’ 195 →
 FIX’s 160 → INSERT PW’s Experiment 1 harness run (with TUTOR’s gate: does a wavy underline paint through
 `::highlight()`) → the rest as queued. An insertion, not a reorder.**
+
+## RECORDS — THE BOX-FREE LINE, 206’S PAIR INSERTED, B/I/U DRAFT-ONLY SETTLED BY SKIP — 2026-09-24 (chat 1)
+
+**FABLE CONFIRMS THE HOLD:** FIX moves `writing-s0-frames.mjs` out of `harness/` (as `mockup170.mjs` was), on
+`item-writing-s0` AND on `item-writing-r1` (which branched from it); **merge after the re-push.** My lapse
+(the idle grant) is recorded as I wrote it.
+
+**A STRUCTURAL FIX, so the box does not rest on a relay (Fable):** from now on **a lane whose box run finishes
+opens its report with “→ CHAT 1: box free — <lane>, <run>”, and Nick pastes that line straight to this
+desk. On that line, this desk clears the grant and writes the next one.**
+
+**BOX (Fable):** 158 is running. **INSERT FIX’s 206 step-1 pair (`item-writing-r1`) right after 158** — the
+writing surface comes first, by Nick’s word; an insertion, not a reorder. **Then TOOLS’ 195 → FIX’s 160 → PW’s
+Experiment 1 run → the rest as queued.** The grant names FIX (158) and is unchanged.
+
+**SETTLED BY SKIP (a default taken by silence, NOT a ruling):** B/I/U stay **Draft-only** (Revise unchanged, as
+ruled).
+
+**MERGED, docs-only, by fetched SHA, verified by name-only diff (the NEWER tips — the earlier ones were in
+`52578ee`):** `plan-207-amend` @ `d4415f3` (`item207-fonts-amendment-nicks-rulings.md`) · `plan-204-proofing`
+@ `3f40677` (`item204-part2-writer-facing-design.md`) · `plan-186-base-menu` @ `e52a265` (2 docs files: the 186
+amendment and `b-exp1-connect-from-the-page.md`).
