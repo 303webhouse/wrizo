@@ -582,7 +582,7 @@ export type DeskTermId =
   // must say which of the two it will do, because REMOVE UNLINKS AND NEVER
   // DELETES.
   | 'railConnect'
-  | 'connectMenuLabel'
+  | 'menuWritingLabel'
   | 'connectMenuLink' | 'connectMenuNoteThis' | 'connectMenuMakeCard'
   | 'connectMenuUnlink'
   // The rail's tab and its resting empty line are TOOLS' `tutorTabLinked` and
@@ -1293,7 +1293,16 @@ const CANONICAL: Record<DeskTermId, string> = {
   // duplicate of any button: the menu's act is "Link to…", with the ellipsis
   // that says it opens a chooser.
   railConnect: 'Link',
-  connectMenuLabel: 'Link, note, or make a card',
+  // ITEM 186 — the writing surface's own menu, and its accessible name. It
+  // needs one of its own: labelling the menu with one of its items tells a
+  // screen-reader user the container IS that act.
+  //
+  // RENAMED FROM `connectMenuLabel` when item 186's base menu joined the app:
+  // the menu is no longer the connect acts' menu — styling is its base and the
+  // connect acts are the switch's addition. A name that outlives what it names
+  // is how the next hand learns the wrong shape. "Writing actions" deliberately
+  // avoids "Page menu", which item 83's drawer already owns.
+  menuWritingLabel: 'Writing actions',
   connectMenuLink: 'Link to…',
   connectMenuNoteThis: 'Note This',
   connectMenuMakeCard: 'Make a card',

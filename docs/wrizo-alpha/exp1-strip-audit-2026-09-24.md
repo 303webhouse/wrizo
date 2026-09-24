@@ -109,6 +109,14 @@ the real app safe:
 > **WITH THE SWITCH OFF, THE APP IS v1.** *The existing suite passes unchanged, and the page renders
 > with no mark on it.*
 
+**⚠ THAT CLAIM HAS SINCE MOVED, BY RULING — recorded here rather than left to read as current.**
+Item 186's base menu joined the app on Nick's word (*"Is B-I-U included in the right-click menu? If
+not, it should be."*), so **OFF is now v1 PLUS the base menu**: a right-click opens Wrizo's menu with
+B/I/U wherever styling is allowed, whatever the switch says, and the connect acts are what the switch
+adds. The harness asserts the new claim in both directions — OFF shows B/I/U and **no** connect acts.
+**The reasoning below is unaffected:** a *move* of existing chrome is still not gated by any switch,
+which is precisely why it stays its own item. The claim changed; the argument did not.
+
 A move cannot be gated on the flag without the strip rearranging itself when an experiment is
 switched on, which is a worse outcome than either state. And ungated, it changes v1 whether the
 experiment is on or off. **So the moves belong to their own item, exactly as styling was ruled to

@@ -322,6 +322,69 @@ await withHarness(async (app) => {
   ok(`M6: and whether the tint is still PAINTED after the editor rebuilds its spans — measured. delta-from-unpainted=${survived} (>12 means still painted, <=12 means the range detached and the mark must be recomputed on every render)`,
     survived >= 0, JSON.stringify({ deltaFromUnpainted: survived, afterTypeRect }));
 
+  // ==========================================================================
+  // M7 — FOR TUTOR's 204 (Fable's ask): does a WAVY text-decoration paint
+  // through ::highlight()? It gates the grammar squiggle.
+  //
+  // WHY IT BELONGS IN THIS RUN AND NOT ITS OWN: the box turn is already spent
+  // on this surface with a page of real words on it, and the question is the
+  // same question this file was written to answer — "does the API actually paint
+  // THIS property", measured in pixels with a control, not read off a support
+  // table. `::highlight()` accepts only a restricted property set, and which
+  // properties a given engine honours is exactly the sort of thing a
+  // compatibility note gets right in general and wrong for the build in front
+  // of you.
+  //
+  // ⚠ AND THIS IS A MEASUREMENT, NOT A VERDICT ON THE SQUIGGLE. A wavy underline
+  // that paints is not thereby the right mark for a grammar hint; F2 rules the
+  // UNDERLINE out for a LINK, and whether a squiggle is lawful on this surface is
+  // TUTOR's and Fable's question. This answers only whether the mechanism can
+  // draw one at all.
+  {
+    const rect2 = await safe(app, wordRect('nothing'));
+    const have2 = rect2 && !rect2.__err && rect2.width > 0;
+    ok('M7 (premise): a second, untouched word has a rect to sample — the wavy probe must not reuse the tinted word, or the tint would be in both frames',
+      !!have2, JSON.stringify(rect2));
+
+    let wavyDelta = -1;
+    let ctrl2 = -1;
+    if (have2) {
+      await safe(app, "CSS.highlights.clear()");
+      await sleep(150);
+      const beforeWavy = await app.screenshot();
+      const bw = await sampleOf(app, beforeWavy, rect2);
+      const ctrlRect2 = await safe(app, wordRect('street'));
+      const cb2 = ctrlRect2 && !ctrlRect2.__err ? await sampleOf(app, beforeWavy, ctrlRect2) : null;
+
+      // A decoration ONLY — no background — so anything that changes in those
+      // pixels is the decoration and not a tint leaking in.
+      await app.evalJs(`(() => {
+        const s = document.createElement('style');
+        s.id = 'exp1-wavy-probe-css';
+        s.textContent = '::highlight(wz-exp1-wavy-probe) { text-decoration: underline wavy rgb(220, 40, 40); text-decoration-skip-ink: none; }';
+        document.head.appendChild(s);
+      })()`);
+      await safe(app, paintWord('nothing', 'wz-exp1-wavy-probe'));
+      await sleep(250);
+      const afterWavy = await app.screenshot();
+      const aw = await sampleOf(app, afterWavy, rect2);
+      wavyDelta = dist(bw, aw);
+      const ca2 = ctrlRect2 && !ctrlRect2.__err ? await sampleOf(app, afterWavy, ctrlRect2) : null;
+      ctrl2 = dist(cb2, ca2);
+      await safe(app, "CSS.highlights.clear(); document.getElementById('exp1-wavy-probe-css')?.remove()");
+    }
+
+    // Reported as a MEASUREMENT: the check passes when the number was obtained,
+    // and the number itself is the answer TUTOR's 204 needs. A check that only
+    // passed on "it paints" would turn a legitimate negative finding into a red
+    // against the product, which is not what a gating measurement is for.
+    ok(`M7 ⛔ THE 204 GATE — a WAVY text-decoration through ::highlight(): meanChannelDelta=${wavyDelta} on the marked word, control=${ctrl2}. `
+      + `>12 with a quiet control means the engine DOES paint a wavy decoration through a highlight, and the grammar squiggle has a mechanism; <=12 means it does not, and 204 needs a different one. `
+      + `Measured in pixels with a control, on the app's own surface — not read off a support table.`,
+      wavyDelta >= 0 && ctrl2 >= 0 && ctrl2 <= 12,
+      JSON.stringify({ wavyDelta, control: ctrl2, verdict: wavyDelta > 12 ? 'WAVY PAINTS' : 'WAVY DOES NOT PAINT' }));
+  }
+
   // Leave the box as it was found.
   await app.evalJs("CSS.highlights.clear(); document.getElementById('exp1-paint-probe-css')?.remove()");
 });

@@ -102,7 +102,7 @@ const T = (id) => {
 // on the way in.
 const CONNECT_IDS = [
   'railConnect',
-  'connectMenuLabel',
+  'menuWritingLabel',
   'connectMenuLink', 'connectMenuNoteThis', 'connectMenuMakeCard', 'connectMenuUnlink',
   'connectRailSelectedEmpty', 'connectRailUnlink', 'connectExportNote',
   'connectAnchorAmbiguous', 'connectAnchorLost',

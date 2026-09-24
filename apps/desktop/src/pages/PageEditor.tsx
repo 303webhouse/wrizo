@@ -6,7 +6,7 @@ import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
-import { ConnectMenu, type ConnectMenuState } from '../components/ConnectMenu';
+import { WritingMenu, writingMenuHasItems, type WritingMenuState } from '../components/WritingMenu';
 import { LinkedMarks } from '../components/LinkedMarks';
 import { useExperiments } from '../store/experiments';
 import { domSelectionToVisible, linkIdsCovering, anchorSelection, anchorSpot, addLink, unlink } from '../store/anchors';
@@ -308,15 +308,24 @@ function PageEditorView({ id }: { id: string }) {
   // `editorRef` is already this surface's handle on the editor node, so the
   // listener is attached here and the blast radius stays on this page.
   //
-  // §0's ACCEPTANCE CLAIM — "with the switch OFF, the app IS v1" — is kept by
-  // construction rather than by care: with the flag off this effect returns
-  // before it registers anything, and `connectMenu` stays null so no markup
-  // exists. Off, this feature costs the page one `if`.
+  // ⚠ §0's CLAIM HAS MOVED, BY RULING (item 186, from Nick's "Is B-I-U included
+  // in the right-click menu? If not, it should be."). It is no longer "with the
+  // switch OFF, the app IS v1": **OFF is v1 PLUS THE BASE MENU.** Wrizo's own
+  // menu now opens on the writing surface whatever the switch says, carrying
+  // B/I/U wherever styling is allowed; the connect acts are what the switch
+  // adds. So this effect NO LONGER RETURNS EARLY when the flag is off — that
+  // would take the base menu away with it. The harness asserts the new claim in
+  // both directions: OFF shows B/I/U and no connect acts.
   const experiments = useExperiments();
   const connectOn = experiments.connectFromThePage;
-  const [connectMenu, setConnectMenu] = useState<ConnectMenuState | null>(null);
+  // Styling is allowed on Draft today (whether Revise joins is with Nick).
+  // ABSENT, not inert, anywhere else: item 121 I6 retired styling from Free
+  // Write on Nick's analog law, BY ABSENCE, and `applyRailFormat`'s own internal
+  // `mode !== 'drafting'` guard would only make the buttons do nothing — which is
+  // exactly G3's locked door wearing paint.
+  const canStyle = mode === 'drafting';
+  const [connectMenu, setConnectMenu] = useState<WritingMenuState | null>(null);
   useEffect(() => {
-    if (!connectOn) return;
     const el = editorRef.current;
     if (!el) return;
     const onContextMenu = (e: MouseEvent) => {
@@ -335,6 +344,12 @@ function PageEditorView({ id }: { id: string }) {
       // larger one that is NOT this slice's to answer — handed up rather than
       // quietly assumed settled.
       if (e.shiftKey) { setConnectMenu(null); return; }
+      // ⛔ A MENU WITH NOTHING IN IT MUST NOT OPEN, AND MUST NOT SUPPRESS THE
+      // NATIVE ONE TO SHOW NOTHING. That is a real case today, not a hypothetical:
+      // Free Write with the switch off allows no styling and offers no connect
+      // acts. Checked BEFORE preventDefault, so the writer keeps the browser's
+      // own menu wherever Wrizo has nothing to say.
+      if (!writingMenuHasItems({ canStyle, connectOn })) return;
       // The writer's own selection decides which acts exist, so it is read
       // BEFORE the default menu is suppressed — and if it cannot be read
       // honestly, the menu does not open at all rather than opening over an
@@ -349,13 +364,16 @@ function PageEditorView({ id }: { id: string }) {
         y: e.clientY,
         from: sel.from,
         to: sel.to,
-        // "Unlink" is offered only when something is actually covered.
-        coveringLinkIds: linkIdsCovering(latest.text ?? '', latest.pageLinks, sel.from),
+        // "Unlink" is offered only when something is actually covered — and only
+        // read at all when the switch is on, so an off switch costs nothing.
+        coveringLinkIds: connectOn
+          ? linkIdsCovering(latest.text ?? '', latest.pageLinks, sel.from)
+          : [],
       });
     };
     el.addEventListener('contextmenu', onContextMenu);
     return () => { el.removeEventListener('contextmenu', onContextMenu); };
-  }, [connectOn, id]);
+  }, [connectOn, canStyle, id]);
 
   // EXPERIMENT 1 §4 — the strip's connect zone needs to know whether the writer
   // has WORDS selected, because the two acts that need them are ABSENT without
@@ -849,30 +867,35 @@ function PageEditorView({ id }: { id: string }) {
           active={connectOn}
         />
       )}
-      {/* EXPERIMENT 1 §3 — the connect menu. `position: fixed`, so it overlays
-          and displaces nothing: the editor's rect cannot change because this
-          renders, and the editor never unmounts (PAGE IS PRIMARY, and item 166
-          exception (a) sanctions a pointer-positioned popup over the page).
-          Absent entirely when the switch is off. */}
-      {connectOn && (
-        <ConnectMenu
-          state={connectMenu}
-          onClose={() => setConnectMenu(null)}
-          // THE SAME THREE FUNCTIONS THE STRIP CALLS. Two doors to one act must
-          // not become two behaviours, and the only way to guarantee that is to
-          // share the function rather than to write it twice and compare.
-          // (They re-read the selection at click time, so the menu does not need
-          // to hand its own offsets back in.)
-          onNoteThis={() => connectActs.onNote()}
-          onLinkTo={() => connectActs.onLink()}
-          onMakeCard={() => connectActs.onMakeCard()}
-          onUnlink={(s) => {
-            // Nick's word: remove UNLINKS and never deletes. The anchor survives
-            // if other links use it, and the target is untouched.
-            for (const linkId of s.coveringLinkIds) unlink(id, linkId);
-          }}
-        />
-      )}
+      {/* ITEM 186 — WRIZO'S OWN MENU ON THE WRITING SURFACE. Rendered whatever
+          the switch says, because the base menu is the app's and not this
+          experiment's. `position: fixed`, so it overlays and displaces nothing:
+          the editor's rect cannot change because this renders, and the editor
+          never unmounts (PAGE IS PRIMARY; item 166 exception (a) sanctions a
+          pointer-positioned popup over the page). */}
+      <WritingMenu
+        state={connectMenu}
+        onClose={() => setConnectMenu(null)}
+        // ONE FORMATTER, TWO DOORS. The menu's B/I/U call the SAME
+        // `applyRailFormat` the strip calls, so FIX's 206 fixes (toggles,
+        // cross-paragraph, Ctrl+B/I/U) arrive at both doors rather than needing
+        // to be applied twice and compared. Undefined where styling is not
+        // allowed, which is what makes the items ABSENT there rather than inert.
+        onFormat={canStyle ? applyRailFormat : undefined}
+        // THE SAME THREE FUNCTIONS THE STRIP CALLS, for the same reason: two
+        // doors to one act must not become two behaviours, and sharing the
+        // function is the only version of that guarantee that survives an edit.
+        // (They re-read the selection at click time, so the menu hands no
+        // offsets back in.) Present only when the switch is on.
+        connect={connectOn ? {
+          onLink: connectActs.onLink,
+          onNote: connectActs.onNote,
+          onMakeCard: connectActs.onMakeCard,
+          // Nick's word: remove UNLINKS and never deletes. The anchor survives
+          // if other links use it, and the target is untouched.
+          onUnlink: (linkIds: string[]) => { for (const linkId of linkIds) unlink(id, linkId); },
+        } : undefined}
+      />
       {/* HB1 S3 — the gate's instruction is the threshold's one sanctioned
           utterance; the first-line invite (F6) would speak a second one on
           this exact (empty) page. gateActive is only ever true when framed
