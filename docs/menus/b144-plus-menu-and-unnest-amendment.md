@@ -6,6 +6,8 @@
 > **The ledger entry for them had not landed when this was written**; where this amendment says "ruled" it
 > means *"his recorded words, as relayed"*, and chat 1's entry governs if the two differ.
 
+> **⚠ AMENDED 2026-09-24 late — `b144-add-board-and-drag-to-nest-amendment.md`** (the Plan menu's button becomes "Add Board"; nesting an existing board is by DRAG). **The third-amendment default "Put inside…" is WITHDRAWN; §9.3's two-Connect-Boards collision dissolves. Kept as written.**
+
 **Where this sits:** the three 144 briefs and the tab-bar amendment stand **as written** except where §8
 below names a line as superseded. Nothing is rewritten in place; each brief carries a one-paragraph
 pointer to this file.
