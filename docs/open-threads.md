@@ -22302,3 +22302,17 @@ refused sync is VISIBLE to the writer. *(Reported, not measured by this desk.)* 
 
 **MERGES.** `plan-180-carry-pass` @ `fde98fc` (1 docs file, +150) and `plan-181-file-pass` @ `55d29e1`
 (1 docs file, +166) — docs-only, merged by fetched SHA on this desk’s verification.
+
+## RECORDS — “FILE BOARD” (A READING), AND THE NEWER 180/181 COMMITS MERGED — 2026-09-24 (chat 1)
+
+**FABLE’S READING — VETOABLE, A READING NOT HIS WORDS:** Nick’s “File Page” names the act on a PAGE’s
+row; **on a BOARD’s row the same button reads “File Board”** — one lexicon term with the noun in a
+slot. **Nick said only “File Page”; “File Board” is inferred.**
+
+**Item 203’s registration and the images fold: confirmed good (Fable).** Nothing else this round.
+
+**MERGES — the newer commits, by fetched SHA, docs-only by diff-stat** (my previous merges took the
+earlier tips `fde98fc` / `55d29e1`; these are the follow-ups): `plan-180-carry-pass` @ `9584680` (3 docs
+files, +19/−3 — the Shelf row’s button is “File Page”, 180-Q1 struck) and `plan-181-file-pass` @
+`d073275` (1 docs file, +12/−1 — 181-Q1 ruled, server storage, the schema stop cleared per his “181:
+Yes” above).
