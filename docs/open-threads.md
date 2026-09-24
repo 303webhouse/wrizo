@@ -22646,3 +22646,26 @@ ruled).
 `52578ee`):** `plan-207-amend` @ `d4415f3` (`item207-fonts-amendment-nicks-rulings.md`) · `plan-204-proofing`
 @ `3f40677` (`item204-part2-writer-facing-design.md`) · `plan-186-base-menu` @ `e52a265` (2 docs files: the 186
 amendment and `b-exp1-connect-from-the-page.md`).
+
+## THE BOX-FREE LINE, FIRST USE — FIX’S writing-r1/r2 RUNS; THE GRANT PASSES TO TOOLS — 2026-09-24 (chat 1)
+
+**THE LINE ARRIVED:** “→ CHAT 1: box free — FIX, writing-r1/r2 verification runs (grant still on file; clear at
+stamp).” **Checked before acting:** the grant file named FIX (written for its 158 pair, 17:13 local); **no
+runner or harness node process on the box; no harness browser** (the 19 `msedge` processes are Windows’
+own WebView2, from Sep 14 — grouped by command line, none carries `ws-runtime-verify`). **This desk did NOT
+see the results** of those runs (they are not in a `wrizo-suite-*` temp dir I can read) — they are FIX’s to
+report. **ALSO NOT ON THE LINE: 158’s own pair** (the grant was written for it); Fable’s order was 158 →
+206 step-1 (`r1`). FIX’s report should say whether 158 ran; if it did not, FIX keeps its place.
+
+**GRANT PASSED at 17:5x local: the file now names TOOLS for its 195 pair** (`item195-sliver-grip` @ `02eecd1`
+is on origin), per Fable’s order (TOOLS’ 195 → FIX’s 160 → PW’s Experiment 1 run → as queued). **The
+writing-r1/r2 grant is thereby cleared.**
+
+**MERGED: `item-writing-s0` @ `945280d`** — the S0 doc, the 98 frames as evidence, `frames.json`, and
+`apps/desktop/scripts/writing-s0-frames.mjs`, **now OUTSIDE `harness/`** (verified on the branch: no path
+under `scripts/harness/` in the diff; the import and the `OUT` path were fixed for the new depth — `OUT`
+resolves three levels up to the repo root). **The hazard I held it for is resolved.** I did not run the script.
+
+**NOT MERGED:** `item-writing-r1` @ `55d5512` and `item-writing-r2` @ `b69061c` — **product code** (r1
+touches `ForwardOnlyEditor.tsx`, `index.css`, `draftDecoration.ts`, and adds `harness/writing-r1.mjs`; a new
+roster file). They wait for Fable’s review and a batch, not this desk’s verification alone.
