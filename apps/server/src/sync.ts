@@ -357,6 +357,10 @@ syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {
   const userId = req.session.userId as string;
   const lastSyncAt: string | null = req.body?.lastSyncAt ?? null;
   const push = req.body?.push ?? {};
+  // ITEM 203 (P2) - a CHUNKED push sends several requests; only the last needs the pull. `pull: false` is a
+  // push-only request: the upserts run and the six pulls do not. Absent (every existing client, and the ordinary
+  // one-request sync) it is exactly what it always was.
+  const wantPull = req.body?.pull !== false;
 
   await upsertProjects(userId, Array.isArray(push.projects) ? push.projects : []);
   await upsertStoryPlans(userId, Array.isArray(push.storyPlans) ? push.storyPlans : []);
@@ -367,13 +371,13 @@ syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {
 
   res.json({
     serverTime: new Date().toISOString(),
-    pull: {
+    pull: wantPull ? {
       projects: (await pull('projects', userId, lastSyncAt)).map(rowToProject),
       storyPlans: (await pull('story_plans', userId, lastSyncAt)).map(rowToStoryPlan),
       sessions: (await pull('sessions_log', userId, lastSyncAt)).map(rowToSession),
       drafts: (await pull('drafts', userId, lastSyncAt)).map(rowToDraft),
       drawers: (await pull('drawers', userId, lastSyncAt)).map(rowToDrawer),
       journalEntries: (await pull('journal_entries', userId, lastSyncAt)).map(rowToJournalEntry),
-    },
+    } : { projects: [], storyPlans: [], sessions: [], drafts: [], drawers: [], journalEntries: [] },
   });
 }));
