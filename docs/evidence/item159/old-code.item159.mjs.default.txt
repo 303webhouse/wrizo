@@ -1,0 +1,11 @@
+PASS  setup: the board and its one card are seeded through the seam and landed
+PASS  setup: the card opens into its popup
+FAIL  S1 THE TICKET: opening a card shows the Styling dock CLOSED — it used to render always, with no closed state at all to flip  [{"card":true,"dock":true,"tools":3}]
+FAIL  S1: and a grip stands in its place, so the dock is reachable rather than merely gone — the Sliver pattern at card scale  [{"grip":false,"expanded":null}]
+FAIL  S2: a REAL press on the grip opens the dock with its three tools  [{"dock":true,"tools":3,"expanded":null}]
+FAIL  S3 THE OVERLAP, MEASURED: with the dock OPEN, its rect does not intersect the card - the pixel Nick saw was a deliberate negative margin sharing the card border seam, and the redesign removes the seam to share  [{"dockRect":{"left":373,"right":437,"top":387,"bottom":514},"cardRect":{"left":435,"right":955,"top":309,"bottom":592},"overlaps":true}]
+PASS  S3: and the GRIP does not cross the card either - it is what a writer sees when the dock is closed, so an overlap there would be the same complaint in a smaller piece of chrome  [{"gripRect":null,"overlaps":false}]
+FAIL  S4: the dock still styles through the grip - selecting a word and pressing Bold writes the markers, so opening the dock did not cost the editor the selection it acts on  [{"stored":"Plain card words"}]
+FAIL  S5: pressing the grip again closes the dock - the state the card opens in is reachable again without reopening the card  [{"dock":true,"expanded":null}]
+
+ITEM159 VERIFY: FAIL — 6/9 failed
