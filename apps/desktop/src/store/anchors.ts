@@ -379,7 +379,11 @@ export function addLink(
  * UNLINK — and it never deletes anything else. Nick's word: "Remove unlinks and
  * never deletes." The link is soft-deleted; the ANCHOR survives if other links
  * still use it; the TARGET is untouched. The caller's wording must say which of
- * the two it will do ("Remove this link", never a bare "Remove").
+ * the two it will do — and since the no-noun ruling that wording is simply
+ * "Unlink" (`connectMenuUnlink`/`connectRailUnlink`), which carries the
+ * distinction in the verb. It is NEVER a bare "Remove". This comment said
+ * "Remove this link" until 2026-09-24; a stale instruction in a comment is how
+ * a fix gets undone by the next hand.
  *
  * An anchor left with no live links is KEPT, not swept. Sweeping it would make
  * "remove" delete something the writer did not point at, and a lost anchor is

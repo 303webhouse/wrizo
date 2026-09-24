@@ -583,8 +583,9 @@ export type DeskTermId =
   // DELETES.
   | 'connectMenuLink' | 'connectMenuNoteThis' | 'connectMenuMakeCard'
   | 'connectMenuUnlink'
-  | 'connectRailTab' | 'connectRailRestingEmpty' | 'connectRailSelectedEmpty'
-  | 'connectRailUnlink'
+  // The rail's tab and its resting empty line are TOOLS' `tutorTabLinked` and
+  // `zoneLinkedWaiting` — not duplicated here. See the CANONICAL block.
+  | 'connectRailSelectedEmpty' | 'connectRailUnlink'
   | 'connectExportNote'
   | 'connectAnchorAmbiguous' | 'connectAnchorLost';
 
@@ -776,10 +777,24 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadeSettingsExpConnectFromPage: 'Experiments: Connect from the page',
   tutorTabTutor: 'Tutor',
   tutorTabLinked: 'Linked',
-  // ITEM 190 §5 — matches Fable's own drawing verbatim
-  // (aria-label="This page's connections"), the name already established
-  // there for exactly this region, kept rather than re-coined.
-  zoneLinked: "This page's connections",
+  // ITEM 190 §5 — the rail region's accessible name.
+  //
+  // ⚠ SUPERSEDED, 2026-09-24, and the reason is recorded rather than the value
+  // quietly changed. TOOLS took this string from Fable's drawing verbatim
+  // (aria-label="This page's connections"), which was correct when it was
+  // written. Fable then ruled TWICE on the writer's vocabulary, both after that
+  // drawing:
+  //   1. "connections" is THE BOARD's word — `boardFooterToggle` is "Show
+  //      connections" and there is a `'connection'` Box kind meaning a thread
+  //      between two cards. One word must not mean two things on adjacent
+  //      surfaces.
+  //   2. NO NOUN on screen at all (Nick: "'Links' works for the backend, at
+  //      least. Not sure that needs to be used in the UI, though."). Acts and a
+  //      state only — "Link to…", "Unlink", "Linked".
+  // So this is now a state plus its scope, with no noun. A screen reader is a
+  // writer-facing surface like any other; an aria-label is not a code name.
+  // The drawing is no longer the authority here — the ruling is.
+  zoneLinked: 'Linked to this page',
   zoneLinkedWaiting: 'Nothing linked yet.',
   zoneLinkedSort: 'Sort',
   zoneLinkedSortRecency: 'Recent',
@@ -1273,10 +1288,22 @@ const CANONICAL: Record<DeskTermId, string> = {
   // enforced by adding words to "Remove" ("Remove this link"), where the verb
   // now says it by itself, and says it without a noun.
   connectMenuUnlink: 'Unlink',
-  // The rail's tab. A STATE, not a heading — the count rides beside it as a
-  // number, which is why no plural has to be spelled at all.
-  connectRailTab: 'Linked',
-  connectRailRestingEmpty: 'Nothing is linked to this page yet.',
+  // ⚠ TWO OF MY KEYS WERE DELETED HERE, NOT KEPT BESIDE TOOLS'. When
+  // item190-exp1-rail merged in, its rail already shipped the same two strings
+  // under its own ids — `tutorTabLinked: 'Linked'` (the tab Tutor.tsx actually
+  // renders) and `zoneLinkedWaiting: 'Nothing linked yet.'` (asserted by
+  // exp1.mjs §7.5(e)). Keeping mine as well would be TWO KEYS FOR ONE WORD,
+  // which is the exact "one place" failure this vocabulary was gathered to
+  // prevent — and the duplicate with no caller is the one that rots.
+  //
+  // So the RAIL's vocabulary is TOOLS' (shipped, and harness-asserted), and the
+  // MENU's is mine. `connectRailTab` and `connectRailRestingEmpty` are gone;
+  // the guard now pins the ruled string on `tutorTabLinked`, the key that
+  // actually reaches the DOM.
+  //
+  // These two remain because the rail has no equivalent yet: a SELECTED-state
+  // empty line (a span with nothing linked to it — TOOLS' waiting string is the
+  // resting state only), and the unlink label the ruling requires.
   connectRailSelectedEmpty: 'Nothing is linked to these words.',
   connectRailUnlink: 'Unlink',
   // The exported file's honest line — the third application of pageExport's own
@@ -1335,6 +1362,14 @@ export function deskTerm(term: DeskTermId, theme?: ThemeId): string {
  * ⚠ Only for durable artifacts. Anything on screen uses `deskTerm`/
  * `useDeskLexicon`, or it will not follow the theme.
  */
+/**
+ * Every canonical term id. Exported so a guard can enumerate the WHOLE
+ * vocabulary instead of a roster someone hand-listed — a default-deny check
+ * needs the real population or it silently covers a subset. (The window seam
+ * below already exposed this to harnesses; browserless checks need it too.)
+ */
+export const CANONICAL_IDS: DeskTermId[] = Object.keys(CANONICAL) as DeskTermId[];
+
 export function canonicalDeskTerm(term: DeskTermId): string {
   return CANONICAL[term];
 }
