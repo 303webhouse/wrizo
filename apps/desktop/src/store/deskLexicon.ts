@@ -581,6 +581,7 @@ export type DeskTermId =
   // Remove. 'connectMenuRemove' is deliberately not a bare "Remove": the menu
   // must say which of the two it will do, because REMOVE UNLINKS AND NEVER
   // DELETES.
+  | 'connectMenuLabel'
   | 'connectMenuLink' | 'connectMenuNoteThis' | 'connectMenuMakeCard'
   | 'connectMenuUnlink'
   // The rail's tab and its resting empty line are TOOLS' `tutorTabLinked` and
@@ -1280,6 +1281,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   // Nick's menu list, in his order: styling · Make a card · Link · Note This ·
   // Remove. "Link to…" carries the ellipsis because it opens a chooser rather
   // than acting immediately.
+  // The menu's own accessible name. It needs one of its own: labelling the menu
+  // with one of its items ("Link to…") tells a screen-reader user the container
+  // IS that act. Named by its acts, so it stays noun-free.
+  connectMenuLabel: 'Link, note, or make a card',
   connectMenuLink: 'Link to…',
   connectMenuNoteThis: 'Note This',
   connectMenuMakeCard: 'Make a card',

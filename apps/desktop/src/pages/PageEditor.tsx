@@ -6,6 +6,9 @@ import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
+import { ConnectMenu, type ConnectMenuState } from '../components/ConnectMenu';
+import { useExperiments } from '../store/experiments';
+import { domSelectionToVisible, linkIdsCovering, anchorSelection, anchorSpot, addLink, unlink } from '../store/anchors';
 import { useSurfaceSelection } from '../components/useSurfaceSelection';
 import { ModeSwitcher } from '../components/ModeSwitcher';
 import { ModeStage, PEN_INKS } from '../components/ModeStage';
@@ -295,6 +298,48 @@ function PageEditorView({ id }: { id: string }) {
   // seam rather than swept on this lane's authority.
   const surfaceRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
+
+  // EXPERIMENT 1 §3 — the right-click menu's connect acts.
+  //
+  // WIRED FROM HERE, NOT FROM ForwardOnlyEditor, deliberately. That component is
+  // rendered by three other hosts (Board, Script, this page); adding a listener
+  // or a prop to it would put this experiment's surface area inside all of them.
+  // `editorRef` is already this surface's handle on the editor node, so the
+  // listener is attached here and the blast radius stays on this page.
+  //
+  // §0's ACCEPTANCE CLAIM — "with the switch OFF, the app IS v1" — is kept by
+  // construction rather than by care: with the flag off this effect returns
+  // before it registers anything, and `connectMenu` stays null so no markup
+  // exists. Off, this feature costs the page one `if`.
+  const experiments = useExperiments();
+  const connectOn = experiments.connectFromThePage;
+  const [connectMenu, setConnectMenu] = useState<ConnectMenuState | null>(null);
+  useEffect(() => {
+    if (!connectOn) return;
+    const el = editorRef.current;
+    if (!el) return;
+    const onContextMenu = (e: MouseEvent) => {
+      // The writer's own selection decides which acts exist, so it is read
+      // BEFORE the default menu is suppressed — and if it cannot be read
+      // honestly, the menu does not open at all rather than opening over an
+      // unknown range (domSelectionToVisible refuses instead of guessing).
+      const latest = getJournalEntry(id);
+      if (!latest) return;
+      const sel = domSelectionToVisible(el, latest.text ?? '');
+      if (!sel) return;
+      e.preventDefault();
+      setConnectMenu({
+        x: e.clientX,
+        y: e.clientY,
+        from: sel.from,
+        to: sel.to,
+        // "Unlink" is offered only when something is actually covered.
+        coveringLinkIds: linkIdsCovering(latest.text ?? '', latest.pageLinks, sel.from),
+      });
+    };
+    el.addEventListener('contextmenu', onContextMenu);
+    return () => { el.removeEventListener('contextmenu', onContextMenu); };
+  }, [connectOn, id]);
 
   // Warm start (F2) — captured once at mount (the hook strips the one-shot state).
   const location = useLocation();
@@ -723,6 +768,37 @@ function PageEditorView({ id }: { id: string }) {
           fontSize: 'calc(17px * var(--paper-scale))', lineHeight: 1.7,
         }}
       />
+      {/* EXPERIMENT 1 §3 — the connect menu. `position: fixed`, so it overlays
+          and displaces nothing: the editor's rect cannot change because this
+          renders, and the editor never unmounts (PAGE IS PRIMARY, and item 166
+          exception (a) sanctions a pointer-positioned popup over the page).
+          Absent entirely when the switch is off. */}
+      {connectOn && (
+        <ConnectMenu
+          state={connectMenu}
+          onClose={() => setConnectMenu(null)}
+          onNoteThis={(s) => {
+            // A bare caret makes a SPOT-NOTE; a selection anchors its words.
+            // Both are anchors; the note itself is the link that hangs off one.
+            const a = s.to > s.from ? anchorSelection(id, s.from, s.to)[0] : anchorSpot(id, s.from);
+            if (a) addLink(id, a.id, { kind: 'note', body: '' });
+          }}
+          onLinkTo={(s) => {
+            // The chooser is the next slice; the ANCHOR is made now so the act
+            // is never a no-op, and the link is attached when a target is
+            // picked. Recorded as a seam rather than a stub that loses the words.
+            anchorSelection(id, s.from, s.to);
+          }}
+          onMakeCard={(s) => {
+            anchorSelection(id, s.from, s.to);
+          }}
+          onUnlink={(s) => {
+            // Nick's word: remove UNLINKS and never deletes. The anchor survives
+            // if other links use it, and the target is untouched.
+            for (const linkId of s.coveringLinkIds) unlink(id, linkId);
+          }}
+        />
+      )}
       {/* HB1 S3 — the gate's instruction is the threshold's one sanctioned
           utterance; the first-line invite (F6) would speak a second one on
           this exact (empty) page. gateActive is only ever true when framed

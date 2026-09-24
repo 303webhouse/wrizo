@@ -198,6 +198,37 @@ console.log('CLAIM 2 — the index map only deletes, is strictly increasing, and
   console.log(`  sound on ${checked} inputs`);
 }
 
+// --- claim 2b · the inverse map round-trips -----------------------------
+// `toVisibleOffset` crosses the raw↔visible boundary that the DOM selection sits
+// on. If it is wrong by one, every anchor is off by one character and the tint
+// lands beside the word instead of on it — a fault that looks like a rendering
+// quirk and is actually a coordinate bug.
+console.log('CLAIM 2b — toVisibleOffset is a true inverse of the index map');
+{
+  let checked = 0;
+  for (const [name, input] of Object.entries(CASES).concat(fuzz(600, 4242).map((t, i) => [`fuzz${i}`, t]))) {
+    const v = current.visibleText(input);
+    let ok = true;
+    // Every VISIBLE index must survive the round trip visible -> raw -> visible.
+    for (let i = 0; i < v.text.length; i++) {
+      const back = current.toVisibleOffset(v, v.map[i]);
+      if (back !== i) { fail(`round trip "${name}"`, `visible ${i} -> raw ${v.map[i]} -> visible ${back}`); ok = false; break; }
+    }
+    if (!ok) continue;
+    // And every RAW offset must map into range, monotonically — a marker
+    // character has no visible position of its own and must resolve forward.
+    let prev = -1;
+    for (let r = 0; r <= input.length; r++) {
+      const vis = current.toVisibleOffset(v, r);
+      if (vis < 0 || vis > v.text.length) { fail(`range "${name}"`, `raw ${r} -> ${vis}`); ok = false; break; }
+      if (vis < prev) { fail(`monotonic "${name}"`, `raw ${r} went backwards`); ok = false; break; }
+      prev = vis;
+    }
+    if (ok) checked++;
+  }
+  console.log(`  inverse holds on ${checked} inputs`);
+}
+
 // --- claim 3 · indent/outdent's paragraph scope is unchanged ------------
 // Proven through the PUBLIC behaviour, because `paragraphScope` is private:
 // indentParagraphs/outdentParagraphs ARE the scope, observably.

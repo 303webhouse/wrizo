@@ -26,7 +26,7 @@
 // disagree.
 
 import type { Anchor, Link, PageLinks } from '../types';
-import { visibleText, paragraphRanges } from './draftFormat';
+import { visibleText, paragraphRanges, toVisibleOffset } from './draftFormat';
 import { getJournalEntry, saveJournalEntry, generateId } from './persistence';
 
 /** How much context either side of a span is recorded, per the brief. */
@@ -251,6 +251,63 @@ export function anchorsCovering(resolved: ResolvedAnchor[], offset: number): Res
  */
 export function pageConnections(pageLinks: PageLinks | undefined): Link[] {
   return (pageLinks?.links ?? []).filter(l => !l.deletedAt);
+}
+
+/**
+ * The writer's current selection, in VISIBLE offsets — the coordinates anchors
+ * live in. Returns null when there is no usable selection.
+ *
+ * THE BOUNDARY THIS CROSSES, stated because mixing the two spaces is the bug
+ * that would be hardest to see: the editor's DOM holds the RAW text (a
+ * convention like `**` is a character in the manuscript, not a decoration added
+ * at render time), so a DOM selection gives RAW offsets. Anchors are recorded in
+ * VISIBLE offsets, markers stripped. `toVisibleOffset` is the only crossing.
+ *
+ * ⛔ AND IT REFUSES RATHER THAN GUESSES. The whole conversion rests on one
+ * premise — that the editor's text IS the entry's text. If they ever diverge
+ * (a decoration that adds characters, a stale render, a different surface
+ * mounted), every offset computed here would be wrong by an unknown amount and
+ * an anchor would be recorded against words the writer never selected. So the
+ * premise is CHECKED, and a mismatch returns null instead of a plausible number.
+ */
+export function domSelectionToVisible(editor: HTMLElement, rawText: string): { from: number; to: number } | null {
+  const sel = typeof window !== 'undefined' ? window.getSelection() : null;
+  if (!sel || sel.rangeCount === 0) return null;
+  const range = sel.getRangeAt(0);
+  if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) return null;
+  // The premise, checked rather than trusted.
+  if ((editor.textContent ?? '') !== rawText) return null;
+
+  const rawAt = (node: Node, offset: number): number | null => {
+    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
+    let acc = 0;
+    while (walker.nextNode()) {
+      if (walker.currentNode === node) return acc + offset;
+      acc += walker.currentNode.textContent?.length ?? 0;
+    }
+    // The container was not one of the editor's text nodes (an element-level
+    // boundary). Refuse rather than approximate.
+    return null;
+  };
+
+  const rawStart = rawAt(range.startContainer, range.startOffset);
+  const rawEnd = rawAt(range.endContainer, range.endOffset);
+  if (rawStart === null || rawEnd === null) return null;
+
+  const v = visibleText(rawText);
+  const a = toVisibleOffset(v, Math.min(rawStart, rawEnd));
+  const b = toVisibleOffset(v, Math.max(rawStart, rawEnd));
+  return { from: a, to: b };
+}
+
+/**
+ * The live links covering a spot, for the menu's "Unlink" — which is offered
+ * only when there is something to unlink. Pure.
+ */
+export function linkIdsCovering(text: string, pageLinks: PageLinks | undefined, offset: number): string[] {
+  const resolved = resolveAnchors(text, pageLinks?.anchors ?? []);
+  const hit = anchorsCovering(resolved, offset);
+  return hit.flatMap(r => linksForAnchor(pageLinks, r.anchor.id).map(l => l.id));
 }
 
 // --- writes (each one is an ordinary page change) ------------------------

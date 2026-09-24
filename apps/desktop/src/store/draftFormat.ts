@@ -567,6 +567,33 @@ export function toRawRange(v: VisibleText, start: number, end: number): [number,
   return [v.map[start], v.map[end - 1] + 1];
 }
 
+/**
+ * The inverse of `map`: a RAW offset in, a VISIBLE offset out.
+ *
+ * WHY IT IS NEEDED. The editor's DOM holds the RAW text — the writer's
+ * conventions are characters in the manuscript, not decorations added at render
+ * time — so a DOM selection yields RAW offsets. Anchors live in VISIBLE
+ * coordinates (the ruling: match on the words as the writer sees them, markers
+ * stripped). Something has to cross that boundary, and doing it by hand at each
+ * call site is how the two spaces get mixed.
+ *
+ * A raw offset that lands ON a marker character has no visible character of its
+ * own; it resolves to the next visible position, which is what a selection
+ * boundary should do — selecting from inside `**` starts at the word.
+ */
+export function toVisibleOffset(v: VisibleText, rawOffset: number): number {
+  // `map` is strictly increasing, so this is a binary search for the first
+  // visible index whose raw position is >= rawOffset.
+  let lo = 0;
+  let hi = v.text.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (v.map[mid] < rawOffset) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
 export function stripMarkdownConventions(text: string): string {
   return visibleText(text).text;
 }
