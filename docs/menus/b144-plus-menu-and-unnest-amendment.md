@@ -236,6 +236,20 @@ Numbers continue the merged brief's S2 list; **each is a check by name.**
 > SUPERSEDES §1's two-row table and its "READING FLAGGED" paragraph** (both kept as written above).
 > **Recorded as relayed; chat 1's ledger entry governs if the two differ.**
 
+> **⚠ THIRD AMENDMENT, 2026-09-24 late — three things the record now carries (chat 1's entry at `4187cfb`);
+> §9.2's per-device lean and §9.3's naming lean below are SUPERSEDED in part and kept as written:**
+> **(1) CONFIRMED BY NICK — *"1. Yes, beside"*: Connect Board connects the chosen board BESIDE this one.**
+> §9.3's "Fable's reading, flagged" is **no longer a reading — it is his word.**
+> **(2) STORAGE: his word is *"1. Store them properly"*** (to *"Should Wrizo store which boards are
+> connected, so they match on every device?"* — one small database change, connections sync). **That
+> WITHDRAWS §9.2's "Default until he speaks: this device" — he has spoken, and a default never
+> overrides his words.** **What it does NOT do yet: NOTHING WRITES until TOOLS' S0 shape report clears
+> Fable's review**, and **if the minimum lawful shape is a NEW TABLE rather than a column, Fable tells Nick
+> in plain words first.** *(Fable's relay of the same night lists this as still with Nick; the ledger
+> records his answer — this desk follows the ledger and flags the difference.)*
+> **(3) NAMES — with Nick, DEFAULT (vetoable, not his text): the Plan menu's Connect Board becomes
+> "Put inside…"; the "＋" menu keeps "Connect Board".** Supersedes §9.3's lean (keep the name on both).
+
 ### 9.1 · THE "＋" MENU — three rows
 
 | row | does | direction |
@@ -278,6 +292,7 @@ chat 1 → Nick, not a builder's call.**
 means a LASTING link that follows him between devices, that is the schema stop — one yes/no:**
 *"Should two boards connected beside each other be remembered everywhere you sign in, or is
 remembering it on this device enough?"* **Default until he speaks: this device.**
+**⚠ SUPERSEDED — he answered "1. Store them properly"; see the marker at the head of §9. The paragraph is kept as written.**
 
 **The rival readings of his words, in their strongest form** (none built without his word):
 **(i)** a stored peer link (needs the schema stop above — the most literal reading of "connected");
@@ -302,6 +317,7 @@ and mounted with a direction, as T4 already says; what is open is only whether t
 share a name.** **Lean: keep his word on both, and let each mounting's inert-row text state its
 direction** (*"already beside"* / *"contains this board"* etc.) — **rival: rename the "＋" row ("Open
 beside…")**, which costs his word. **One yes/no rides with the Add Board question.**
+**⚠ SUPERSEDED IN PART — "beside" is confirmed (his word); the naming default is now "Put inside…" on the Plan menu's row (marker at the head of §9).**
 
 ### 9.4 · "RECENTLY OPENED" — NOT RECORDED TODAY; KEPT PER DEVICE; NO COLUMN
 
@@ -352,3 +368,21 @@ SPLITS, and this desk states the split so a builder does not stop on it:**
   limit, asserted rather than assumed).
 - **Parks:** P1's "**exactly two rows**" assertion is **SUPERSEDED with a pointer to P9, kept verbatim —
   never edited**; **audit the park COUNT.**
+
+### 9.7 · WHAT A BUILDER MAY START, WHILE THE STORAGE SHAPE IS UNREVIEWED
+
+**Not gated by the schema word:** the "＋" and its menu chrome · **Add Board** (a NEW board inside — the
+`page-pin` write already exists) · **Unlink** (tab and drag) · the **back arrow** · the **recents list**
+(§9.4 — per device, by Fable's separate ruling, and not a connection at all) · the **Connect Board
+list's rows and order** (a read, no write) · the naming.
+**GATED on TOOLS' S0 shape report clearing Fable's review — build the read, write nothing:** **what
+"pick a board" and "New Board" STORE** (the beside-connection itself). **Until the shape clears: New
+Board still creates its board in this drawer, un-nested (§9.2) — that is a board, not a connection —
+and Connect Board's pick opens no lasting link.**
+**A note the shape report should answer, so it is not discovered late:** **`beside` is a peer relation
+(A—B), not a parent/child one** — *which side owns the row? is it one record or two? does deleting either
+board end it (item 168: deleting hides, never removes)? must a pair be unique?* **and — the house's
+own recurring trap — every client site that copies or rebuilds a board record must carry the new field or
+table's rows** (the `page_links` and `eraserWidth` censuses, applied). **The harness's P12 ("no
+schema") is SUPERSEDED with a pointer here, kept verbatim — never edited; P13's "same device" becomes
+"every device" once the shape is built.** **Audit the park count.**
