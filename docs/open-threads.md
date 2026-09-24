@@ -21980,3 +21980,13 @@ looked at. **Checked now: it is docs-only — one file, +15 lines** — and Fabl
 for merge on verification, so nothing is wrong; but the order was wrong (fetch, then verify the
 TIP, then merge that SHA). It marks “Create a Board” pending; **Nick’s “Yes, keep both”, in the
 ledger above, governs.**
+
+## ITEM 144 — THE NO-BIRTH FIX CLEARED TO MERGE, AFTER 160 — 2026-09-24 (chat 1)
+
+**CLEARED (Fable): 144’s fix @ `60e640e` merges AFTER 160, under the `$N` rule.** **The basis is
+TOOLS’ PROOF, not a byte read:** 28 checks green, and mutant M7 goes RED when the no-birth guard is
+removed, so the check can fail. **Fable’s byte read of the fix itself is NOT yet done** — his link to
+Nick’s machine timed out twice — and goes into Batch Five’s assembled-diff review, BEFORE any ship.
+Ordering is unchanged: 160 first (both edit `BoardEditor.tsx`); whichever of `page_links` /
+`beside_links` merges second renumbers its placeholder and re-runs its pairing check at that merge.
+**Not merged here** — 160 is not on origin yet. The `plan-144-nest` slip stands as logged.
