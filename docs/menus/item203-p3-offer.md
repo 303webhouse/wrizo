@@ -69,9 +69,24 @@ The 198 instrument is still green on this tree (23 checks).
   is one line to lower. **I would want Nick or Fable to say what Railway gives the service before this deploys.**
 - **A record over 16 MiB** is still named and never sent (≈ 41+ min of continuous pen contact at 120 Hz). **P4 is what slows the growth toward it.**
 - **The full-pull response is still uncapped** (S0 §4): a 16 MiB record is now *stored*, so a fresh device's full pull returns it — in one
-  JSON response, in one piece. Not measured.
-- **Real Postgres and the pool**: a 16 MiB `jsonb` parameter is well within Postgres's limits, and the fake pool does not model it; **not run
-  against a real database at that size.**
+  JSON response, in one piece. **Measured (§6): it works, it is ~16 MiB, it took 0.43 s** — not small, not broken. Still uncapped.
 - **Old clients** keep mirroring 5 MiB and simply never send a record over it — unchanged behaviour, not a regression.
 - **The probes stop being a probe of the sync route's body handling**: after this deploys an anonymous `/api/sync` request is 401 at every size,
   so the ceiling ladder would read 401 (it now accepts that as "the application's answer"). Its result stands as the pre-P3 measurement.
+
+## 6 · Fable's condition (b) — a 16 MiB jsonb parameter on a REAL Postgres (done)
+
+`docs/evidence/item203/real-postgres-16mib.mjs` (output beside it): the **real** `migrate.ts` and `sync.ts` on **PostgreSQL 18.4**, driven with a
+request body of **15.996 MiB** (287,722 real-shaped points — its per-point size *measured for those very points*, after my first sizing used the
+average and built a 16.56 MiB body that the check itself refused). **6/6:**
+
+| step | result |
+|---|---|
+| the real ordinary upsert takes the ~16 MiB `jsonb` parameter | **accepted**, nothing swallowed; **2.2–2.5 s** |
+| stored faithfully | **all 287,722 points**; 17.6 MiB as `jsonb` text, **7.8 MiB on disk** (TOAST-compressed) |
+| the real pull returns it through the real mapper | every point intact; a fresh device's **full-pull response is 16.00 MiB, in one piece, 0.43 s** |
+| an UPDATE of the same row (the on-conflict path) | goes through; the stored count follows (2.2 s) |
+| the Node process | peak RSS 148 → 222 MiB after the upsert, 317 MiB over the run — **an upper bound for the handler's own share**, since the same process built the 16 MiB body |
+
+**What this does not settle:** Postgres's own memory for the parameter (the embedded server's process was not instrumented), and **whether the
+production service has the ~117–235 MiB to spare — condition (a), which is Nick's answer, not a measurement I can make.**
