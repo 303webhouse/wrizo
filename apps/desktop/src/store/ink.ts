@@ -15,6 +15,13 @@ import type { Stroke, StrokeInk, StrokeNib, StrokeTip } from '../types';
 
 export const INK_LINE_WIDTH = 1.4; // thin
 export const ERASER_WIDTH = 22; // S25 pass tunes this
+// ITEM 171-B — the scalable eraser's bounds, in CSS px. ERASER_WIDTH stays the
+// default (a stroke with no eraserWidth). The bounds are this build's proposal,
+// not a ruling: the floor keeps an erase at least a hair wider than the nib
+// widths so it can always rub a line out; the ceiling keeps one stroke from
+// wiping a whole card. Tunable in one place, alongside the S25 pass.
+export const ERASER_WIDTH_MIN = 8;
+export const ERASER_WIDTH_MAX = 96;
 
 // ITEM 121 I1 — THE READ-SIDE DEFAULTS, and the whole of the migration.
 // A stroke with no tip/nib/ink is `pen · regular · the theme's default ink`,
@@ -120,13 +127,26 @@ const TIP_ALPHA: Record<StrokeTip, number> = {
 };
 
 /**
+ * ITEM 171-B — an erase stroke's diameter, read through the boundary. Absent,
+ * non-numeric, NaN, infinite or non-positive all mean the old fixed ERASER_WIDTH (so an erase
+ * written before this field, or by a client that writes it wrongly, paints exactly
+ * as it always did); a positive finite number is clamped into [MIN, MAX]. Only ever asked
+ * of an eraser stroke — strokeWidth is its one caller.
+ */
+export function eraserWidthOf(stroke: Stroke): number {
+  const w = stroke.eraserWidth;
+  if (typeof w !== 'number' || !Number.isFinite(w) || w <= 0) return ERASER_WIDTH;
+  return Math.min(ERASER_WIDTH_MAX, Math.max(ERASER_WIDTH_MIN, w));
+}
+
+/**
  * ITEM 121 I5 — the painted width of a stroke, tip and nib resolved through
  * the read-boundary defaults. Exported because the thumbnail renderer needs
  * the same number, and two places computing a width independently is exactly
  * how a marker ends up thin in browse and broad on the page.
  */
 export function strokeWidth(stroke: Stroke): number {
-  if (stroke.eraser) return ERASER_WIDTH; // the eraser ignores tip and nib
+  if (stroke.eraser) return eraserWidthOf(stroke); // the eraser ignores tip and nib
   return NIB_WIDTHS[tipOf(stroke)][nibOf(stroke)];
 }
 

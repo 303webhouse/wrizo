@@ -188,7 +188,27 @@ export interface Stroke {
   tip?: StrokeTip;
   nib?: StrokeNib;
   ink?: StrokeInk;
+  // ITEM 171-B — a SCALABLE eraser (Nick, 171B-Q3: "The eraser should be
+  // scalable, as well"). The diameter, in CSS px, of THIS erase stroke; meaningful
+  // only on a stroke flagged `eraser: true` and ignored on any other. Additive and
+  // optional in the house's own grammar (tip/nib/ink above): ABSENT means the old
+  // fixed ERASER_WIDTH, so every erase already on disk renders identically
+  // forever — no backfill, no DDL. Unknown/out-of-range values are coerced at
+  // PAINT time (store/ink.ts eraserWidthOf), the same read-boundary validation.
+  eraserWidth?: number;
 }
+
+// ITEM 171-B — WHICH COORDINATE BASIS a set of strokes is in. Three now exist and
+// a wrong one passes quietly (the penStroke-y-vs-StrokePoint-y trap), so code that
+// moves strokes between surfaces names its basis instead of assuming it.
+//   'sheet'  — a page: x and y both normalized by the SHEET's width (J8).
+//   'canvas' — a board's own surface: x and y both in BOX UNITS, i.e. fractions
+//              of pageWidthPx, the same unit as Box.x / Box.y / Box.w / Box.h, so a
+//              stroke and the cards it rings share one scale. NOT normalized by
+//              canvasW (a persisted, resizable px width).
+//   'box'    — one card: x and y both normalized by THAT BOX's width, origin at
+//              its top-left; moves and rescales with the box.
+export type StrokeBasis = 'sheet' | 'canvas' | 'box';
 
 // Journal entry (J1) — a permanent, timestamped record of a completed sprint's
 // text. Unlike a Draft (the volatile in-flight buffer, overwritten by the next
@@ -426,7 +446,7 @@ export interface Box {
   z: number;
   groupId?: string;
   text?: string;      // kind 'text'
-  strokes?: Stroke[];  // kind 'ink' (incl. erases) — re-normalized to the box on port
+  strokes?: Stroke[];  // kind 'ink' (incl. erases) — re-normalized to the box on port. ITEM 171-B: ALSO on a 'text' card (the card's OWN ink, basis 'box', Nick's Q2 "right on the card") and on the 'board-meta' box (the board's free ink, basis 'canvas', his Q3). Absent everywhere else = no ink.
   sourceEntryId?: string;
   portedAt?: string;
   entryId?: string;    // kind 'page-pin' — the referenced JournalEntry's id
