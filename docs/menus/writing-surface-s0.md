@@ -32,3 +32,16 @@ Heading, plain bold, plain italic, plain underline, plain strike and unindent wo
 ## Frames the box has to supply (short grant, after Batch Six)
 
 Default theme and one dark theme, for each of Free Write / Draft / Revise (and screenplay where the toolbar exists): each tool applied by a real pointer press and by Ctrl+B/I/U; screenshot, `innerHTML` and stored `entry.text` after the debounce and a reload. The script for it is NOT written yet; it is the next step once a grant is named. Fonts are PLAN DESK's.
+
+## Browser frames (run 2026-09-24, box turn FIX; 98 frames, `docs/evidence/writing-s0/frames.json` + PNGs; script `apps/desktop/scripts/writing-s0-frames.mjs`)
+
+Real select-all, real pointer presses on the sliver buttons, stored text read after the debounces settled. Both themes were run (default; and prefs page=dark). Note both show the same dark chrome with the same cream page: the "dark" page-tone pref did not change the paper in these frames, so no theme-specific defect surfaced; every defect below is theme-independent.
+
+- **#10 CONFIRMED, cause found.** Free Write renders the stored page as one raw `.fo-run` span: `**bold**`, `# Heading`, `- bullet`, `> quote`, `>< ` all show as typed (frame `default/render-FreeWrite.png`). Draft and Revise both run the decorator (bold/italic/underline/strike/headings render, marks hidden; bullets, quotes, alignment still raw in both, as ranked 1-3). So styled text renders in Revise but NOT in Free Write: the decorator is not running there.
+- **Ctrl+B / Ctrl+I / Ctrl+U: no effect in any mode** (stored text unchanged, DOM unchanged, immediately or settled). Rank 9 confirmed as "nothing happens", not "native bold discarded".
+- **Two-line select-all + Bold stores `**Plain words here\nSecond line here**`** and Draft renders it with no bold at all (classes none): the cross-paragraph defect (7) is what a writer hits first, since select-all is the natural gesture. Pressing Bold again gives `******Plain…**` (4).
+- Bullet, quote, Center store correctly and render as raw prefixes (`- `, `> `, `>< `); Indent stores a tab per selected line and renders a dim tab.
+- Free Write and Revise: no format toolbar (ruled); recorded as ABSENT rows.
+- Screenplay: `#/page/new?structure=screenplay` did not reach a screenplay surface in the run (row recorded, no `.script-page`); the screenplay frames need a different route and stay open.
+
+## Fix step 1 (as ruled by Fable): rendering of bullets, quotes, alignment in Draft AND Revise, plus the decorator running in Free Write. Only the tools stay where ruled.
