@@ -57,9 +57,15 @@ export interface WritingMenuState {
 }
 
 export interface WritingMenuConnectActs {
-  onLink: () => void;
-  onNote: () => void;
-  onMakeCard: () => void;
+  // ⚠ THEY TAKE THE CAPTURED OFFSETS, not a re-read. A menu item is a
+  // non-editable element outside the contenteditable: pressing it COLLAPSES the
+  // selection in Chromium, which is the whole reason the strip's format row
+  // carries `onMouseDown preventDefault`. A re-read here would find a collapsed
+  // selection and turn "Link to…" into a spot-note, silently. The authoritative
+  // selection is the one that existed when the writer RIGHT-CLICKED.
+  onLink: (from: number, to: number) => void;
+  onNote: (from: number, to: number) => void;
+  onMakeCard: (from: number, to: number) => void;
   onUnlink: (linkIds: string[]) => void;
 }
 
@@ -72,6 +78,12 @@ export interface WritingMenuProps {
    * rather than inert.
    */
   onFormat?: (action: FormatAction) => void;
+  /**
+   * ITEM 186 — Cut and Copy. Present wherever the menu replaces a native one
+   * that would have offered them; NO PASTE, because the paste rail owns that
+   * door. They take the captured offsets for the same reason the connect acts do.
+   */
+  onClipboard?: (kind: 'cut' | 'copy', from: number, to: number) => void;
   /** Present ONLY when the experiment switch is on. */
   connect?: WritingMenuConnectActs;
 }
@@ -82,11 +94,13 @@ export interface WritingMenuProps {
  * take the browser's own menu away to show nothing. (Free Write with the switch
  * off is exactly that case today.)
  */
-export function writingMenuHasItems(opts: { canStyle: boolean; connectOn: boolean }): boolean {
-  return opts.canStyle || opts.connectOn;
+export function writingMenuHasItems(opts: { canStyle: boolean; connectOn: boolean; hasWords: boolean }): boolean {
+  // Cut/Copy count as items, but only with WORDS — so a bare caret on Free Write
+  // with the switch off still has nothing to show, and still falls through.
+  return opts.canStyle || opts.connectOn || opts.hasWords;
 }
 
-export function WritingMenu({ state, onClose, onFormat, connect }: WritingMenuProps) {
+export function WritingMenu({ state, onClose, onFormat, onClipboard, connect }: WritingMenuProps) {
   const { t: dt } = useDeskLexicon();
   const ref = useRef<HTMLDivElement>(null);
 
@@ -133,6 +147,14 @@ export function WritingMenu({ state, onClose, onFormat, connect }: WritingMenuPr
     <div
       ref={ref}
       className="dz-menu wz-writing-menu"
+      /* ⛔ THE SAME GUARD THE STRIP'S FORMAT ROW CARRIES, and for the same
+         measured reason: these buttons are OUTSIDE the contenteditable, so a
+         press's mousedown would blur it and collapse the writer's selection
+         before the click handler ran. Belt and braces beside the captured
+         offsets — the acts no longer DEPEND on the selection surviving, but a
+         surviving selection is what lets Cut and Copy act without the writer
+         seeing their words flash deselected. */
+      onMouseDown={e => e.preventDefault()}
       role="menu"
       aria-label={dt('menuWritingLabel')}
       /* position/right live in .wz-writing-menu; only the pointer's own
@@ -156,19 +178,36 @@ export function WritingMenu({ state, onClose, onFormat, connect }: WritingMenuPr
         </>
       )}
 
+      {/* ITEM 186 — CUT and COPY, after B/I/U (PLAN DESK's brief). They are here
+          because replacing the native menu would otherwise TAKE THEM AWAY ON THE
+          WEB. NO PASTE: the paste rail owns that door.
+          Both need WORDS, so both are absent on a bare caret — never greyed. */}
+      {onClipboard && hasWords && (
+        <>
+          <button type="button" className="dz-menu-item" role="menuitem"
+            onClick={run(() => onClipboard('cut', state.from, state.to))}>
+            {dt('menuCut')}
+          </button>
+          <button type="button" className="dz-menu-item" role="menuitem"
+            onClick={run(() => onClipboard('copy', state.from, state.to))}>
+            {dt('menuCopy')}
+          </button>
+        </>
+      )}
+
       {/* THE ADDITION: the connect acts, only when the switch is on. */}
       {connect && hasWords && (
-        <button type="button" className="dz-menu-item" role="menuitem" onClick={run(connect.onLink)}>
+        <button type="button" className="dz-menu-item" role="menuitem" onClick={run(() => connect.onLink(state.from, state.to))}>
           {dt('connectMenuLink')}
         </button>
       )}
       {connect && (
-        <button type="button" className="dz-menu-item" role="menuitem" onClick={run(connect.onNote)}>
+        <button type="button" className="dz-menu-item" role="menuitem" onClick={run(() => connect.onNote(state.from, state.to))}>
           {dt('connectMenuNoteThis')}
         </button>
       )}
       {connect && hasWords && (
-        <button type="button" className="dz-menu-item" role="menuitem" onClick={run(connect.onMakeCard)}>
+        <button type="button" className="dz-menu-item" role="menuitem" onClick={run(() => connect.onMakeCard(state.from, state.to))}>
           {dt('connectMenuMakeCard')}
         </button>
       )}

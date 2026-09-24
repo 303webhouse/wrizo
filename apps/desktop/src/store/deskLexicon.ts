@@ -582,7 +582,7 @@ export type DeskTermId =
   // must say which of the two it will do, because REMOVE UNLINKS AND NEVER
   // DELETES.
   | 'railConnect'
-  | 'menuWritingLabel'
+  | 'menuWritingLabel' | 'menuCut' | 'menuCopy'
   | 'connectMenuLink' | 'connectMenuNoteThis' | 'connectMenuMakeCard'
   | 'connectMenuUnlink'
   // The rail's tab and its resting empty line are TOOLS' `tutorTabLinked` and
@@ -1303,6 +1303,12 @@ const CANONICAL: Record<DeskTermId, string> = {
   // is how the next hand learns the wrong shape. "Writing actions" deliberately
   // avoids "Page menu", which item 83's drawer already owns.
   menuWritingLabel: 'Writing actions',
+  // ITEM 186 — Cut and Copy. They exist in this menu because REPLACING the
+  // native menu would otherwise take them away on the web; on the Electron
+  // shell there is no native menu at all today, so there they are new.
+  // NO PASTE key on purpose: the paste rail owns that door.
+  menuCut: 'Cut',
+  menuCopy: 'Copy',
   connectMenuLink: 'Link to…',
   connectMenuNoteThis: 'Note This',
   connectMenuMakeCard: 'Make a card',
