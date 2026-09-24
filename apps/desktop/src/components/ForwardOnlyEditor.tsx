@@ -636,7 +636,14 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     ? decorateMarkdownForCard(initialText, null)
     : isEmpty
       ? ''
-      : content.map(run => `<span class="${run.struck ? 'fo-run fo-struck' : 'fo-run'}">${escHtml(run.text)}</span>`).join('')
+      // WRITING-SURFACE S0 STEP 1 - Free Write RENDERS what the writer has stored (bold, headings, bullets, quotes, alignment),
+      // through the same decorator Draft and Revise use. Rendering only: forward-only editing, the runway and the tools are
+      // untouched. A STRUCK run is history, not prose, so it stays a plain struck span and a mark pair cannot reach across it;
+      // an unstruck run is decorated with a null caret (the runway owns the caret, so nothing is ever revealed here). The
+      // `.fo-run` wrapper is kept, so a reader of its textContent still gets every character.
+      : content.map(run => run.struck
+        ? `<span class="fo-run fo-struck">${escHtml(run.text)}</span>`
+        : `<span class="fo-run">${decorateMarkdownForCard(run.text, null)}</span>`).join('')
         + `<span class="fo-word">${escHtml(word)}</span>`;
 
   return (

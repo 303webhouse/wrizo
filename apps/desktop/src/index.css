@@ -4574,6 +4574,20 @@ a:focus-visible,
 .md-h1{ font-size:1.3em; font-weight:600; }
 .md-h2{ font-size:1.14em; font-weight:600; }
 
+/* WRITING-SURFACE S0 STEP 1 - the line directives (draftDecoration.ts decorateLineForCard). `.md-line` is an INLINE-BLOCK on
+   purpose: the '\n' between lines is a real text character, and a display:block wrapper would make it draw a blank line. Width
+   is the full column so text-align has a box to align within. Nothing here reads a theme: the rule colour is derived from the
+   run's own ink, so it follows every theme and page tone. */
+.md-line{ display:inline-block; width:100%; box-sizing:border-box; vertical-align:top; }
+.md-align-center{ text-align:center; }
+.md-align-right{ text-align:right; }
+.md-quote{ padding-left:.9em; border-left:3px solid color-mix(in srgb, currentColor 38%, transparent); font-style:italic; }
+/* the bullet: a hanging glyph in a 1.4em gutter, so a wrapped line returns to the text, not under the bullet. The stored `- `
+   stays a real (collapsed) character; while the caret is at it (`.md-revealed`) the literal hyphen shows instead of the glyph. */
+.md-bullet{ padding-left:1.4em; text-indent:-1.4em; }
+.md-bullet::before{ content:'\2022'; display:inline-block; width:1.4em; text-indent:0; }
+.md-bullet.md-revealed::before{ content:none; }
+
 /* AB2 S2 DoD — the typewriter's hold-band on the SCRIPT surface, container-
    mode (the sheet lives inside the bounded .desk-frame-scroll-cap — finding
    4's containment fix — not the window), same fade recipe as .mode-scroll's
