@@ -22461,3 +22461,30 @@ browser’s built-in checker, on in Revise only:** small; owner INK, after 171-B
 **Part 2 — grammar, olive green:** needs an offline open-source engine; TUTOR’s S0 measures the candidates
 (**un-paused for this**), PLAN DESK designs how the marks and suggestions appear, and a builder follows.
 Registry: next free **205**.
+
+## RECORDS — 204 PART 2 RULED (harper.js), PW’S STRIP AUDIT RULED, ITEM 205 REGISTERED, THE BOX ORDER CHANGES — 2026-09-24 (chat 1)
+
+**Batch Six live: recorded (Fable). Nick repeats his two-device check now** — his result, when it comes,
+goes on the record; none is on it yet.
+
+**RULED (Fable) — ITEM 204 PART 2:** the grammar engine is **harper.js (slim), Apache-2.0**, run in a WORKER,
+**loaded only when Revise is entered and cached**; style / readability / enhancement rules OFF; **the colour map
+comes from the RULE (spelling/typo → red, the rest → olive)**; **a per-writer dictionary is required.** **The
+browser’s built-in checker exposes no ranges to JS, so once harper lands it owns BOTH colours and the native
+checker goes off.** **INK’s one-liner (`revise-spelling` @ `cbd4dc6`) is the INTERIM red until then; its branch
+is item 204 part 1** — not merged; not yet offered to this desk. **The 7.7 MB web download is accepted
+(Revise-only, cached).** *(A new dependency — ruled by Fable under the ticket; Nick’s standing law that grammar
+and spelling are never AI is met: harper is a rule engine, not a model.)*
+
+**RULED (Fable) — PW’S STRIP AUDIT:** **(a)** page-setup chips are settings, excepted · **(b)** the
+Prose→Screenplay Structure verb is RETIRED by item 184 (FIX, `11b93b0`, awaiting its run), per his ruling —
+no exception needed · **(c)** board-strip tools are out of this slice; PLAN DESK states the board reading
+later · the typewriter toggle sits with the settings gear, excepted as a setting.
+
+**ITEM 205 — REGISTERED (Fable):** **forward lock and the writing goal move behind ONE Page settings row** —
+its own item, **not Experiment 1.** No owner. Registry: next free **206**.
+
+**BOX ORDER CHANGES (Fable), superseding the order in the entries above:** after TOOLS’ 195 → **FIX’s
+formatting screenshot run (short) → FIX’s 158 → FIX’s 160** → as queued. **160 now follows 158** (it was
+ahead of it before; 160 still gates 144’s merge and 201’s UI). **The writing surface comes first.** The grant
+names TOOLS for 195 and has not changed.
