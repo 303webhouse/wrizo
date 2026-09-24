@@ -171,6 +171,8 @@ words,"* which is far above this ticket's authority. Emphasis stays Draft's mark
 
 ## §6 · RV3'S SOUGHT DOOR — DESIGNED, NOT BUILT
 
+> **⚠ SUPERSEDED IN PART 2026-09-24 — `item207-fonts-design.md`** (Nick: *"Users still do not have basic font options with the option to add fonts, too"* — chat 1, `e8b7101`, resolved RV3: **the custom-font door IS offered**). **The "renders no row … never offered" lines here are SUPERSEDED; everything else (RV1, RV2, RV4, R6, the analog law) stands. Kept as written.**
+
 Custom font upload **renders no row and is never offered.** It lives inside the type
 controls and opens only to seeking. **Two gesture shapes are named and neither is
 chosen** — the typed-name seek, and the asked-and-answered path. **The shape is Nick's,
