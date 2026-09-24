@@ -23,7 +23,7 @@ doc"* means **the doc stays attached to the cursor AFTER the drag reaches the ic
 to keep a button down while choosing. **That is a picked-up mode, not a drag in progress.** *(A drag whose
 button is held while a menu is aimed at is ordinary drag-and-drop and needs no "hold" and no cancel gesture at
 all; his right-click exit only means something if no button is down.)* **The rival reading — a single unbroken
-drag, released on a drawer row — is supported too (§2, entry B) and costs nothing extra.**
+drag, released on a drawer row — is supported too (§1, door B) and costs nothing extra.**
 
 ## §1 · THE CARRY IS A MODE: `placing <thing>`
 
