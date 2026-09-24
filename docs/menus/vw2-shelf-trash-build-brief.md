@@ -1,6 +1,8 @@
 # VW2 BUILD BRIEF — SHELF AND TRASH, ONE VIEW
 ### PLAN desk · 2026-09-13 · item 134, brief 2 of 4 · decision-complete
 
+> **⚠ AMENDED 2026-09-24 — `vw2-rows-amendment.md`** (Nick's 3C: the Shelf and Trash are ROWS with sortable columns, not a thumbnail grid; cards join the Trash; the Trash gains Delete Permanently). **Where S2's grid, S5's roster or S6 checks 2 and 8 disagree, that file governs (its §7 lists them). Kept as written below.**
+
 **WORKTREE:** `.claude/worktrees/vw2-conditions` · **BRANCH:** `vw2-conditions` · **OFF:**
 `origin/main` at build time. **Never the primary checkout.** **This lane pushes its BRANCH.**
 
