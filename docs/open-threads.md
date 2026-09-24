@@ -22067,3 +22067,56 @@ now()` per sync), next batch; (b) 159’s grip pressed by a real pointer at the 
 160’s run; (c) TOOLS’ beside proof and PW’s pairing check each need an allowance for `synced_at =
 now()` — 144 and Experiment 1 re-run their checks when they merge after 198, and every line of
 `journal_entries`’ on-conflict set is kept.
+
+## BATCH FIVE DEPLOY MANIFEST — 2026-09-24 (chat 1, on Nick’s “Ship” — Fable PASS)
+
+**LIVE: `3c7c28e` · railway `4428c1c1-3dc9-41e8-b500-e5591d3037ac`** — service `writer-studio-app`,
+`railway up --ci` returned “Deploy complete”; serving `index-BGbwUOFl.js`. **PREVIOUS LIVE — THIS
+DEPLOY’S ROLLBACK TARGET: `283013e` · railway `664604e6-fdbd-4caa-b4e3-505c19cfa190`** (Batch Four).
+**ROLLBACK NOW RATCHETS TO THIS STAMP.** Older code ignores `synced_at` and its inserts take the column
+default, so the rollback to `283013e` is safe with the schema left in place.
+
+**AUTHORIZATION, QUOTED: Nick — “Ship”** (with, earlier, *“I agree that we should ship the sync fix
+right away once it passes”*), relayed by Fable; **Fable’s byte review PASS.**
+
+**ONE PACKAGE, TWO ITEMS: 159 (the card’s Styling dock behind a grip) + 198 (the server-assigned sync
+cursor).** **PRODUCT/SERVER DELTA `283013e..3c7c28e`: 5 files, +112/−12** (`BoardEditor.tsx`, `index.css`,
+`deskLexicon.ts`, `migrate.ts`, `sync.ts`). **SCHEMA: YES — `synced_at` + index on six tables.** Roster **93**.
+
+**SUITE OF RECORD — BOTH LEGS CLEAN AT THE DEPLOY HEAD, run under this desk’s own grant (the file named
+CHAT1 before launch; PW’s outstanding grant revoked in the same write):**
+- **DEFAULT: 93/93 CLEAN** — `tree=3c7c28e bundle=index-BGbwUOFl.js/588429b`, 0 FAIL/TIMEOUT lines.
+- **PARKED: 93/93 CLEAN** — identical stamp, `NO-REBUILD`, 0 FAIL/TIMEOUT lines.
+- **The deploy head `3c7c28e` is docs-only past `736ded1`** (the merge of 198); product bytes are the
+  tested bytes.
+
+**TREE BARE AT UPLOAD (0 porcelain). `tsc` x2 exit 0** (`apps/desktop`, `apps/server`, `--noEmit`).
+**ITEM-98 GUARD:** `writer-studio` / `production` / `writer-studio-app`, toplevel
+`C:/Users/nickh/writer-studio`, `HEAD == origin/main == 3c7c28e`. Image digest
+`sha256:10eeb481be30696c7773bdba010f91e03ee72ecbe1d454bb22c5d501e3d911aa`.
+
+**LIVE VERIFICATION:** `/healthz` **200** · `/auth/me` **401** · served `index-BGbwUOFl.js` and
+`index-D-FXAipA.css`, by name.
+**SERVED-vs-STAMPED BYTE DIFF — BOTH ASSETS MATCH, MD5, and byte counts:**
+- `index-BGbwUOFl.js` — served `2487cf654270303264d79f87768f6ced` (588,429 b) **==** stamped
+- `index-D-FXAipA.css` — served `e1020bdcf78a7f88505f696a62801b1f` (144,711 b) **==** stamped
+
+**THE SCHEMA CHECKS FABLE ASKED FOR — WHAT I DID AND DID NOT CONFIRM, plainly:**
+- **`synced_at` on all six tables: NOT DIRECTLY CONFIRMED.** `railway run` (the only route I tried to
+  production’s environment) returned “Access is denied” and I did not retry or work around it. **What I
+  have is INDIRECT:** `index.ts` runs `runMigrations().then(() => app.listen(...))`, so the server only
+  listens after every `alter table … add column if not exists synced_at` and index has completed — and the
+  log reads `Writer Studio server listening on :8080` with `/healthz` 200. **Inference, not a query.**
+- **Production Postgres version: NOT OBTAINED.** (It decides instant vs table-rewrite; correct either way.)
+- **One sync round-trip: NOT DONE** — it needs an authenticated user; I have no session and did not seek one.
+**These three are OWED: FIX (or Nick, or whoever has DB access) to run the `information_schema` check and
+one real sync**, and the result goes on the record. **Expect each device’s first pull to be a full one, once.**
+
+**BOX after the deploy:** the grant now names **PW** (paint-layer measurement, re-granted — it was
+displaced, unrun, by the deploy pair). Then INK’s 196 → TOOLS’ 195 → FIX’s 158 → as queued.
+**BATCH FIVE IS SHIPPED AND CLOSED; BATCH SIX holds nothing yet.** Registry next free **199**.
+
+**FOLLOW-UPS (Fable, as relayed):** (a) FIX moves the cursor to Postgres’s own clock, next batch; (b) 159’s
+grip pressed by a real pointer at the narrowest width inside 160’s run; (c) 144 and Experiment 1 re-run
+their checks when they merge after 198 (an allowance for `synced_at = now()`; every line of
+`journal_entries`’ on-conflict set kept).
