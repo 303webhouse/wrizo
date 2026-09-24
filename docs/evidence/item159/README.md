@@ -61,6 +61,6 @@ both fixes.
 ## Files
 
 - `old-code.item159.mjs.default.txt` — per-check output, old code (6/9 red).
-- `old-code.runner.log` — the runner's log for that run, stamp included.
+- `old-code.runner.log.txt` — the runner's log for that run, stamp included.
 - `new-code.pair-default.item159.mjs.default.txt`, `new-code.pair-parked.item159.mjs.parked.txt` — per-check output, final pair.
-- `new-code.pair-*.runner-excerpt.log` — the SUITE START / item159 / SUITE RESULT lines of each leg (the full logs are 93 files each and not copied).
+- `new-code.pair-*.runner-excerpt.log.txt` — the SUITE START / item159 / SUITE RESULT lines of each leg (the full logs are 93 files each and not copied).
