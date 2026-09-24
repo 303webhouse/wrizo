@@ -12,6 +12,7 @@
 //
 // Run: node docs/evidence/item203/body-limit-proof.mjs
 import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -21,6 +22,11 @@ const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, '..', '..', '..');
 const desktopSrc = join(repo, 'apps/desktop/src');
 const serverSrc = join(repo, 'apps/server/src');
+// THE FAULT IS PINNED. This file measures the PRE-FIX code, and must go on doing so after item 203's fix merges (which
+// it would otherwise measure and go red against). The four files that carry the behaviour are read from the last
+// commit before the fix, with `git show`, instead of from the working tree. `b71fc94` is main as the fix was built on it.
+const PRE_FIX = 'b71fc94';
+const pinned = (relPath) => execSync(`git show ${PRE_FIX}:${relPath}`, { cwd: repo, encoding: 'utf8', maxBuffer: 1 << 26 });
 const PORT = 47831;
 const BASE = `http://127.0.0.1:${PORT}`;
 const MB = 1024 * 1024;
@@ -84,7 +90,11 @@ exports.pool = { query: async (sql) => { if (/^\\s*insert into/i.test(sql)) glob
 const stubMap = { './env': 'env.cjs', './migrate': 'migrate.cjs', './session': 'session.cjs', './auth': 'auth.cjs', './tutor': 'tutor.cjs', './db': 'db.cjs' };
 await esbuild.build({
   entryPoints: [join(serverSrc, 'index.ts')], bundle: true, platform: 'node', format: 'cjs', outfile: join(tmp, 'server.cjs'), logLevel: 'silent', external: ['pg-native'],
-  plugins: [{ name: 's', setup(b) { b.onResolve({ filter: /^\.\/(env|migrate|session|auth|tutor|db)$/ }, (a) => ({ path: join(tmp, stubMap[a.path]) })); } }],
+  plugins: [{ name: 's', setup(b) {
+    b.onResolve({ filter: /^\.\/(env|migrate|session|auth|tutor|db)$/ }, (a) => ({ path: join(tmp, stubMap[a.path]) }));
+    b.onLoad({ filter: /[\\/]index\.ts$/ }, () => ({ contents: pinned('apps/server/src/index.ts'), loader: 'ts', resolveDir: serverSrc }));
+    b.onLoad({ filter: /[\\/]sync\.ts$/ }, () => ({ contents: pinned('apps/server/src/sync.ts'), loader: 'ts', resolveDir: serverSrc }));
+  } }],
 });
 const serverLogs = [];
 const realErr = console.error; console.error = (...a) => { serverLogs.push(a.map((x) => (x && x.message) || String(x)).join(' ').slice(0, 160)); };
@@ -144,7 +154,11 @@ const out = join(tmp, 'client.mjs');
 await esbuild.build({
   stdin: { contents: "export * from './store/sync'; export * from './store/persistence';", resolveDir: desktopSrc, loader: 'ts' },
   bundle: true, platform: 'node', format: 'esm', outfile: out, logLevel: 'silent',
-  plugins: [{ name: 'lex', setup(b) { b.onResolve({ filter: /^\.\/deskLexicon$/ }, () => ({ path: join(tmp, 'lex.mjs') })); } }],
+  plugins: [{ name: 'lex', setup(b) {
+    b.onResolve({ filter: /^\.\/deskLexicon$/ }, () => ({ path: join(tmp, 'lex.mjs') }));
+    b.onLoad({ filter: /[\\/]store[\\/]sync\.ts$/ }, () => ({ contents: pinned('apps/desktop/src/store/sync.ts'), loader: 'ts', resolveDir: join(desktopSrc, 'store') }));
+    b.onLoad({ filter: /[\\/]store[\\/]api\.ts$/ }, () => ({ contents: pinned('apps/desktop/src/store/api.ts'), loader: 'ts', resolveDir: join(desktopSrc, 'store') }));
+  } }],
 });
 const C = await import(pathToFileURL(out).href);
 const statuses = [];
