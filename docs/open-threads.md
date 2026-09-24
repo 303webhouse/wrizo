@@ -22564,3 +22564,63 @@ half** (the dictionary, the dialect, where suggestions appear).
 `apps/desktop/scripts/writing-engine-audit.mjs`, +138; **I read that the script writes only to the OS
 temp dir and no roster or `package.json` references it; I did not run it**). **Fable’s note: the box
 order in `e8b7101` stands; no further reorders except for a live defect.**
+
+## RECORDS — NICK’S 118/120, 204-P1 SCHEMA WORD, DICTIONARY, SOURCE SERIF, THE RIGHT-CLICK B/I/U; A HAZARD IN item-writing-s0; THE BOX — 2026-09-24 evening (chat 1)
+
+**NICK, verbatim as relayed — the 118/120 wrinkle:** “2. Default”. The “+” button stops at 118; a typed size may
+go to 120.
+
+**NICK’S SCHEMA WORD, 204-P1, verbatim.** The question as put:
+
+> “When you tell the spellchecker to "learn this word," a character name for example, should that list be saved on the server so it follows you to every device? It's one new database column.”
+
+Fable recommended yes. His answer:
+
+> “1. Yes”
+
+**It covers `users.proofing`** per PLAN DESK’s design (`plan-204-proofing` @ `a731e1f`). **Nothing writes until
+the builder’s S0 shape report and Fable’s byte review.** *(A schema word: recorded as his.)*
+
+**204-P2:** “2. One for all writing” — one dictionary across all his work. **Fonts:** “3. Add Source Serif confirmed.” — Source Serif 4 joins the
+roster; EB Garamond stays.
+
+**NICK, verbatim — the right-click menu:**
+
+> “As for FIX's adjustments: Is B-I-U included in the right-click menu? If not, it should be.”
+
+**RULED (Fable):** item 186’s base menu joins the app itself — right-click on the writing surface opens Wrizo’s
+menu with B/I/U wherever styling is allowed, whatever the experiment switch says; Experiment 1’s connect acts join
+it only when the switch is ON; **Shift + right-click keeps the native menu.** **Owner PW.** Its styling acts call
+the same formatter as the strip, so FIX’s 206 fixes carry to both doors. **WITH NICK: should B/I/U work in
+Revise too? (Default, vetoable: Draft only, as ruled.)**
+
+**RULED (Fable), 206:** step 1 as ruled (bullets, quotes, alignment, and the decorator running in Free Write);
+step 2 now carries the toggles (4, 5), the cross-paragraph selection (7 — select-all then Bold is the first
+thing a writer hits) and Ctrl+B/I/U (9 — no handler exists); step 3 carries nested marks (6) and the indent
+look (8). **RULED, 207’s size:** 11 means today’s rendering; the number is the printed size and the screen is a
+zoom, so no page shrinks. A true Letter prose sheet is a separate, larger item, not asked now.
+
+**WITH NICK NOW (defaults, vetoable):** 204-P2 one dictionary (now answered above), and adding Source Serif 4
+(now answered above) — **both closed by his words.**
+
+**MERGED, docs-only, by fetched SHA, verified by name-only diff:** `item204-part2-brief` @ `365a922` ·
+`item207-fonts-tutor-review` @ `95a1d75` · `plan-207-amend` @ `5acdabc` · `plan-204-proofing` @ `a731e1f`.
+
+**NOT MERGED — `item-writing-s0` @ `9189927` — A HAZARD, HANDED UP WITH A LEAN.** Fable named it “the frames
+script and evidence”. **The script is `apps/desktop/scripts/harness/writing-s0-frames.mjs` — INSIDE `harness/`.**
+**`run-suite.mjs:286` enumerates `harness/*.mjs` with no exclusion list**, so merging it would (1) make it the
+**94th roster file, run by every default and parked leg**; (2) have it **write ~98 PNGs and `frames.json` into
+the TRACKED `docs/evidence/writing-s0/` tree during the suite** — dirtying the tree under a stamped pair (the
+`+Ndirty` stamp) and breaking “tree bare at upload”; and (3) add a file that **never passes or fails** (its own
+header: “it is a SURVEY”). The house precedent is the opposite: `mockup170.mjs` was kept OUTSIDE `harness/`.
+**LEAN: FIX moves the script out of `harness/` (beside `writing-engine-audit.mjs`), fixing its `OUT` path and
+the `../runtime-verify.mjs` import, and re-pushes; then it merges as docs + evidence + a standalone script.**
+*(Both readings: merge as named, or hold — the merge as named carries a real cost to the next pair, which is
+why I held. This is a branch I do not own and did not edit.)* **The 98 PNGs are evidence, not the problem.**
+
+**THE BOX, plainly.** **FIX’s formatting screenshot run FINISHED at ~14:57 local** (its `9189927` commit); the
+grant nevertheless still named FIX at 17:12 — **I did not clear it at the stamp, so the box sat granted and idle
+~2h15m.** No runner process and no new suite directory existed. **Now: the grant is rewritten naming FIX for its
+158 pair** (`item158-tab-indent` @ `0a36a7b` is on origin). **Order behind it, unchanged (Fable): TOOLS’ 195 →
+FIX’s 160 → INSERT PW’s Experiment 1 harness run (with TUTOR’s gate: does a wavy underline paint through
+`::highlight()`) → the rest as queued. An insertion, not a reorder.**
