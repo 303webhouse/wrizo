@@ -110,6 +110,12 @@ export interface CascadeContext {
   // navigates. Every travel originated from inside the cascade goes through
   // here; ordinary navigation elsewhere is untouched.
   travelFromCascade: (entry: JournalEntry) => void;
+  // ITEM 144 — the Plan menu's "Add Board" (Nick's own proposal: call it Add Board
+  // too, greyed out unless a board is already open). Present ONLY when a mounted
+  // BoardEditor supplied it — the write must go through that editor's LIVE boxes
+  // (item 92's law), the same act the tabs' "＋ → Add Board" runs — so every other
+  // surface leaves it undefined and the button reads greyed out.
+  addBoardInside?: () => void;
 }
 
 function itemTitle(entry: JournalEntry): string {
@@ -696,7 +702,7 @@ function BoardConnectedRow({ row, onOpenContents, onTravel }: { row: ConnectedBo
   );
 }
 
-function PlanPanel({ subject, project, navigate, openSurvey, travelFromCascade }: CascadeContext) {
+function PlanPanel({ subject, project, navigate, openSurvey, travelFromCascade, addBoardInside }: CascadeContext) {
   const { t } = useDeskLexicon();
 
   // CD2 build call (flag at review): a page with no project yet has no
@@ -755,13 +761,35 @@ function PlanPanel({ subject, project, navigate, openSurvey, travelFromCascade }
     </div>
   ) : null;
 
+  // ITEM 144 — the Plan menu's button IS "Add Board" now (Nick: "Can't we just
+  // call Plan menu's option 'Add Board' too? It can be greyed out unless there is
+  // already a board opened"; Fable: standing). It makes a NEW board INSIDE the open
+  // one; with no board open — a page, a script — it is greyed out, exactly his word
+  // (`disabled` + `aria-disabled`, the precedent at the card menu's inert Remove).
+  // Nesting an EXISTING board (dragging it onto another) follows PLAN DESK's design
+  // and is not built here.
+  const canAddBoard = subject.entry.pageType === 'board' && !!addBoardInside;
+  const addBoardButton = (
+    <button
+      type="button"
+      className={`wz-cascade-action${canAddBoard ? '' : ' wz-cascade-inert'}`}
+      data-plan-add-board
+      aria-disabled={canAddBoard ? undefined : 'true'}
+      disabled={!canAddBoard}
+      onClick={() => { if (canAddBoard) addBoardInside?.(); }}
+    >
+      {t('boardTabsAddBoard')}
+    </button>
+  );
+
   if (!project) {
     const seedTitle = firstLine(subject.entry.text).slice(0, 60) || 'Untitled';
     const promote = () => createQuickSprintProject(subject.entry.text, seedTitle);
-    // PB1 (item 71) — an UNTITLED board is the duplicate-empty-board source named
-    // in the door census: no row until it has a box. (A titled board is born at
-    // once — a name is content, ruling 3 — and does not come through here.)
-    const createBoard = () => { const proj = promote(); navigate(unbornHref({ kind: 'board', binderId: proj.id })); };
+    // ITEM 144 — "Create a Board" (PB1's unborn-board door, item 71) RETIRES from
+    // this menu: Nick's word is that the button is "Add Board" — a new board INSIDE
+    // the one that is open (see `addBoardButton` below). Kept as a pointer so the
+    // retirement is legible: the door was
+    //   const createBoard = () => { const proj = promote(); navigate(unbornHref({ kind: 'board', binderId: proj.id })); };
     const plotStory = () => { const proj = promote(); navigate(`/project/${proj.id}/wizard`); };
     return (
       <div className="wz-cascade-panel-body">
@@ -781,7 +809,7 @@ function PlanPanel({ subject, project, navigate, openSurvey, travelFromCascade }
             law the zone itself obeys (PW9: absent, never empty). Nothing
             announces a prerequisite the writer has already met. */}
         {!zone && <div className="wz-cascade-empty" style={{ padding: 0 }}>{t('cascadePlanNoProject')}</div>}
-        <button type="button" className="wz-cascade-action" onClick={createBoard}>{t('cascadePlanCreateBoard')}</button>
+        {addBoardButton}
         <button type="button" className="wz-cascade-action" onClick={plotStory}>{t('cascadePlanPlotStory')}</button>
         {/* FX6 S2c — a quiet one-line pointer at the OTHER new door: a
             writer who just wants a page (not a whole board/plan) currently
@@ -792,8 +820,9 @@ function PlanPanel({ subject, project, navigate, openSurvey, travelFromCascade }
     );
   }
 
-  // PB1 (item 71) — no row until the board has a box (see the door census).
-  const createBoard = () => navigate(unbornHref({ kind: 'board', binderId: project.id }));
+  // ITEM 144 — the retired "Create a Board" door (PB1, item 71) was
+  //   const createBoard = () => navigate(unbornHref({ kind: 'board', binderId: project.id }));
+  // and is replaced by `addBoardButton` (above): a board INSIDE the open one.
   const plotStory = () => navigate(`/project/${project.id}/wizard`);
 
   // PW1 S1/PW3 — THE PANEL *IS* THE LIST, and "Open…" retires with the zone
@@ -823,7 +852,7 @@ function PlanPanel({ subject, project, navigate, openSurvey, travelFromCascade }
   return (
     <div className="wz-cascade-panel-body">
       {zone}
-      <button type="button" className="wz-cascade-action" onClick={createBoard}>{t('cascadePlanCreateBoard')}</button>
+      {addBoardButton}
       <button type="button" className="wz-cascade-action" onClick={plotStory}>{t('cascadePlanPlotStory')}</button>
     </div>
   );

@@ -951,7 +951,14 @@ export function BoardEditor({ id }: { id: string }) {
     onOpenPortToBoard: () => setPortOpen(true),
     onOpenPin: isSystemBoard ? () => {} : () => setPinOpen(true),
   };
-  const cascade = useCascade({ subject: pageFaceSubject, project, navigate });
+  // ITEM 144 — the Plan menu's "Add Board" (a new board INSIDE this one). The act
+  // lives further down (it needs this component's live boxes — item 92), after this
+  // hook runs, so the cascade gets a stable thunk and the ref is filled at render.
+  const addBoardInsideRef = useRef<(() => void) | null>(null);
+  const cascade = useCascade({
+    subject: pageFaceSubject, project, navigate,
+    addBoardInside: isSystemBoard ? undefined : () => addBoardInsideRef.current?.(),
+  });
 
   // Measure the WRAP's own natural available width (unchanged mechanism) —
   // this feeds pageWidthPx only when the writer has never dragged the
@@ -2477,6 +2484,7 @@ export function BoardEditor({ id }: { id: string }) {
     appendLivePin(pinPageToBoard(born.id, id, { display: true }), born.id);
     navigate(`/page/${born.id}`, { state: { nameFocus: true } });
   };
+  addBoardInsideRef.current = addBoardInside;
   const newBoardBeside = () => {
     const born = bornBoardHere();
     connectBeside(id, born.id);

@@ -459,6 +459,47 @@ await withHarness(async (app) => {
   }
 
   // ==========================================================================
+  // P14 · THE PLAN MENU'S BUTTON IS "Add Board" (Nick's own proposal, standing): a
+  // NEW board INSIDE the open one; GREYED OUT when no board is open. It runs the
+  // SAME act as the tabs' "＋ → Add Board" (through the mounted editor's live
+  // boxes), so item 92 holds here too.
+  // ==========================================================================
+  await freshDesk(app);
+  await seed(app);
+  await app.reload();
+  await openBoard(app, 'b-lore');
+  if (await press(app, '[data-category="plan"]', 'the Plan rail item')) {
+    await sleep(300);
+    const on = await app.evalJs(`(() => { const b = document.querySelector('[data-plan-add-board]'); return b ? { text: b.textContent.trim(), disabled: b.disabled, aria: b.getAttribute('aria-disabled') } : null; })()`);
+    ok('P14: on an OPEN BOARD the Plan menu\'s button reads "Add Board" and is enabled (the retired "Create a Board" text is gone)',
+      !!on && on.text === 'Add Board' && on.disabled === false && on.aria === null, JSON.stringify(on));
+    const gone = await app.evalJs("![...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent.trim() === 'Create a Board')");
+    ok('P14: no "Create a Board" button remains in the Plan menu', gone === true);
+    const idsBefore3 = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').map(e => e.id)");
+    if (await press(app, '[data-plan-add-board]', 'the Plan menu\'s Add Board')) {
+      await app.waitFor("location.hash !== '#/page/b-lore'", { label: 'travelled to the new inside board' });
+      await sleep(700);
+      const bornId = await app.evalJs("location.hash.replace('#/page/', '')");
+      const lore = await rawEntry(app, 'b-lore');
+      ok('P14: it made a NEW board, NESTED inside the open one (a page-pin on Lore) — the same act as the tabs\' Add Board',
+        !idsBefore3.includes(bornId) && (lore?.boxes ?? []).some(b => b.kind === 'page-pin' && b.entryId === bornId), JSON.stringify({ bornId }));
+    }
+  }
+  // Greyed out where no board is open: a loose PAGE.
+  await freshDesk(app);
+  await app.evalJs(`(() => { window.wrizoCreateJournalPage({ id: 'p14-page', text: 'A page, not a board', createdAt: new Date().toISOString(), origin: null }); })()`);
+  await app.reload();
+  await app.evalJs("location.hash = '#/page/p14-page'");
+  await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'a page, framed' });
+  await sleep(300);
+  if (await press(app, '[data-category="plan"]', 'the Plan rail item (page)')) {
+    await sleep(300);
+    const off = await app.evalJs(`(() => { const b = document.querySelector('[data-plan-add-board]'); return b ? { disabled: b.disabled, aria: b.getAttribute('aria-disabled') } : null; })()`);
+    ok('P14: with NO board open (a page) the Plan menu\'s "Add Board" is GREYED OUT — disabled and aria-disabled, exactly his word',
+      !!off && off.disabled === true && off.aria === 'true', JSON.stringify(off));
+  }
+
+  // ==========================================================================
   // 10 · THE MODE STRIP IS UNTOUCHED, and nothing in the row claims a tablist.
   // 11 · COLOUR: the current tab's marker is the OLIVE (--accent-rest).
   // ==========================================================================

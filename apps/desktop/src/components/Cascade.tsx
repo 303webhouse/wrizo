@@ -70,6 +70,8 @@ export interface CascadeProps {
   subject: PageFaceSubject;
   project: Project | null;
   navigate: NavigateFunction;
+  // ITEM 144 — supplied only by a mounted BoardEditor (see CascadeContext).
+  addBoardInside?: () => void;
 }
 
 interface CategorySpec { id: CategoryId; labelTerm: DeskTermId; icon: ReactNode }
@@ -163,7 +165,7 @@ function availableCascadeMargin(): number {
   return (paperRect.left - stageRect.left) + gap;
 }
 
-export function useCascade({ subject, project, navigate }: CascadeProps): { strip: ReactNode; layers: ReactNode } {
+export function useCascade({ subject, project, navigate, addBoardInside }: CascadeProps): { strip: ReactNode; layers: ReactNode } {
   const { t } = useDeskLexicon();
   // PW1 S4 — THE CASCADE SURVIVES TRAVEL. This state is per-surface: a travel
   // unmounts the whole hook, so before this the destination always mounted at
@@ -286,7 +288,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
     navigate(routeForEntry(entry), { state: { fromBoardId: subject.entry.id, fromBoardTitle: originTitle(subject.entry) } });
   };
 
-  const ctx: CascadeContext = { subject, project, navigate, openSurvey, closeSurvey, travelFromCascade };
+  const ctx: CascadeContext = { subject, project, navigate, openSurvey, closeSurvey, travelFromCascade, addBoardInside };
 
   const strip = (
     <div className="wz-strip">
