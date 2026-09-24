@@ -22027,3 +22027,43 @@ note’s hazard, met again).
 
 **RECONCILED:** my earlier entry (“FIX-reported, not on disk — owed before Fable’s review”) is
 discharged; left as written.
+
+## BATCH FIVE — ASSEMBLED, ON NICK’S “Ship” AND FABLE’S PASS — 2026-09-24 (chat 1)
+
+**NICK’S WORDS, verbatim as relayed by Fable.** Earlier: *“I agree that we should ship the sync fix
+right away once it passes”*. Now, answering Fable’s “ready to ship” (the sync fix 198 + the card
+styling handle 159):
+
+> “Ship”
+
+**FABLE’S BYTE REVIEW — PASS** (as relayed): 198 @ `819981a` (the migration on six tables; `synced_at
+= now()` inside every guarded on-conflict set; the pull on `synced_at` with a 10s overlap; no client
+stamp, no new `$N`) and 159 as merged (hooks above early returns, lexicon strings, a real button for
+the grip, the dock conditional, tokens only, no card-edge overlap).
+
+**ASSEMBLED. RANGE: `283013e` (production) → `736ded1`. CLOSED AT ASSEMBLY — NOTHING ELSE JOINS.**
+**Product/server delta, measured from disk, 5 files, +112/−12:** `BoardEditor.tsx`, `index.css`,
+`deskLexicon.ts` (159) and `migrate.ts`, `sync.ts` (198). **Every other non-docs path in the range is a
+harness driver or standalone script** (`fx4/fx5/fx6/item159.mjs`, `sync-incremental-pull-proof.mjs`).
+**SCHEMA: YES — six additive columns** (`synced_at timestamptz not null default now()` + an index on
+each), on Nick’s “Yes” above; **SERVER: YES** (`migrate.ts` boot path, `sync.ts`). Matches Fable’s
+description of the assembled diff. **I read the 198 server diff myself** (migrate.ts, sync.ts) —
+consistent with his review; that is a second reading, not a second review.
+
+**198 was MERGED BY ITS FETCHED SHA** (`819981aedadda13bfa8904616f27fcc5a3183eba`, from `ls-remote`).
+**Its proof ran without the box** (browserless + a real-Postgres check under `docs/evidence/item198/`);
+**I have not run either.**
+
+**NEXT, per the house procedure:** grant file NAMES THIS DESK (revoking PW’s outstanding grant in
+the same write — **no live run was found; PW’s paint-layer use had not run** and is re-granted
+after the deploy pair), the suite pair on the assembled tree, `tsc` x2, the item-98 guard, `railway
+up` from the primary checkout with the tree bare, served-vs-stamped MD5 on both assets, and — new for
+a schema deploy — the production Postgres version, `synced_at` on all six tables, one sync round-trip.
+**Rollback target `283013e` stays safe** (older code ignores `synced_at`; its inserts take the default).
+**Expect each device’s first pull to be a full one, once.**
+
+**FOLLOW-UPS, for the record (Fable):** (a) FIX moves the cursor to Postgres’s own clock (one `select
+now()` per sync), next batch; (b) 159’s grip pressed by a real pointer at the narrowest width inside
+160’s run; (c) TOOLS’ beside proof and PW’s pairing check each need an allowance for `synced_at =
+now()` — 144 and Experiment 1 re-run their checks when they merge after 198, and every line of
+`journal_entries`’ on-conflict set is kept.
