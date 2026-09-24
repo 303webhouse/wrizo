@@ -136,6 +136,40 @@ await withHarness(async (app) => {
   ok('162: the pin HOLDS across heights — Trash\'s gap to the screen bottom is the SAME at 768, 900 and 1200 (±1px); a floating foot\'s gap grows with the window',
     gaps.length > 0 && Math.max(...gaps) - Math.min(...gaps) <= 1, JSON.stringify(feet));
 
+  // ==========================================================================
+  // THE STRIPS' OWN MENUS against the margin, at 1100 and 1366 (Fable, 2026-09-24: Nick's "always" covers the
+  // STRIPS and their menus — "for the strip menus to open without the board being moved or overlapped"; measure
+  // only those, and report any that cannot fit). REPORT-ONLY: every line passes; the numbers are the point.
+  // The left margin is the board's left edge minus the rail strip's right edge (the rail is fixed at x=0..84).
+  // ==========================================================================
+  for (const w of [1100, 1366]) {
+    await freshBoard(app, w, 900);
+    const wrap = await rectOf(app, '.board-canvas-wrap');
+    const strip = await rectOf(app, '.desk-frame-strip');
+    const leftMargin = wrap.left - strip.right;
+    ok(`STRIPS @ ${w}: REPORT — the board's left edge vs the rail strip's right edge (a NEGATIVE margin means the board's own left edge lies under the strip's band — item 195's rule, extended to the canvas)`,
+      true, JSON.stringify({ boardLeft: wrap.left, stripRight: strip.right, leftMargin: Math.round(leftMargin * 10) / 10, rightMargin: Math.round((w - wrap.right) * 10) / 10 }));
+    for (const [name, openSel, panelSel] of [
+      ['Plan (the rail cascade menu)', '[data-category="plan"]', '.wz-cascade-panel'],
+      ['Tools dock', '.wz-sliver-grip', '.wz-sliver-panel'],
+      ['Tutor', '.wz-tutor-grip', '.wz-tutor-panel'],
+    ]) {
+      if (!(await press(app, openSel, `the ${name} opener @ ${w}`))) continue;
+      await sleep(450);
+      const panel = await rectOf(app, panelSel);
+      const wrapOpen = await rectOf(app, '.board-canvas-wrap');
+      if (panel) {
+        const overlay = Math.max(0, Math.min(panel.right, wrapOpen.right) - Math.max(panel.left, wrapOpen.left));
+        ok(`STRIPS @ ${w}: REPORT — ${name} menu: ${Math.round(panel.width)}px wide, overlays the board by ${Math.round(overlay)}px; board rect ${JSON.stringify(wrap) === JSON.stringify(wrapOpen) ? 'unchanged' : 'MOVED'}${panel.width < 40 ? '  ⚠ TOO NARROW TO USE' : ''}`,
+          true, JSON.stringify({ panelLeft: Math.round(panel.left), panelRight: Math.round(panel.right), width: Math.round(panel.width), overlayPx: Math.round(overlay) }));
+      } else {
+        ok(`STRIPS @ ${w}: REPORT — ${name} menu: no panel element after the press`, true, 'null');
+      }
+      await press(app, openSel, `the ${name} opener @ ${w} (close)`);
+      await sleep(350);
+    }
+  }
+
   return checks;
 });
 
