@@ -649,7 +649,14 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         role="textbox"
         aria-multiline="true"
         aria-label={ariaLabel ?? 'Writing surface'}
-        spellCheck={false}
+        // REVISE SPELLING — the browser's own red squiggle, in Revise ONLY (Nick:
+        // "Red squiggles for typos/misspellings ... only when the User is in Revise
+        // mode"). Free Write is forward-only drafting where a squiggle is a nag and
+        // Draft is still generative, so both stay off, as does every other host of
+        // this editor (HomeFlow's gate never passes a mode; QuickSprint cannot reach
+        // 'revise'). The squiggle is the browser's, so nothing here draws it; the
+        // attribute IS the whole of this change, and the harness asserts it by mode.
+        spellCheck={mode === 'revise'}
         onFocus={onFocus}
         onBlur={onBlur}
         style={{ flex: 1, minHeight: 0, outline: 'none', whiteSpace: 'pre-wrap', cursor: 'text', ...(penColor ? { color: penColor, caretColor: penColor } : null) }}
