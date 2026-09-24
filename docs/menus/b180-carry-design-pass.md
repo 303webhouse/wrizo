@@ -9,6 +9,20 @@
 > (*"a tablet carry cancels by tapping anywhere that isn't a drawer"*) is a VETOABLE DEFAULT, not his word, and is
 > designed in below as the touch path.**
 
+> **✅ RULED SINCE THIS PASS WAS WRITTEN (Fable's relay of 2026-09-24):**
+> **180-Q1 — STRUCK: the tap-away cancel on a tablet is a STANDING DEFAULT from the handoff** *(this pass's
+> "Fable's default" wording stands; the chip's ✕ is a detail on top of it, welcome).*
+> **180-Q2 — VETOED BY NICK, verbatim: *"181: Yes. Instead of "Put in a drawer," let's go with "File Page.""*
+> — the Shelf row's button reads "File Page".** **His word, not a default.** **Every "Put in a drawer…" below is
+> SUPERSEDED (§1 door C, §6 Q2's row, §7 check 1); kept as written.**
+> **180-Q3 — Fable's default, vetoable, taken as a call (the menu stays open).**
+> **⚠ READING, HANDED UP TO FABLE (not to Nick):** *his label is "File Page", and the Shelf holds BOARDS as well.*
+> **This pass keeps his words exactly on a page's row and reads the noun as a SLOT — "File Board" on a board's row
+> — one lexicon term with a kind word in it (item 178 makes "Pages" the general term for documents, and a board is
+> not a page).** **Rival: "File Page" on both, literally** *(it costs a wrong noun on every board row, and is
+> what he wrote).* **No ellipsis: his label has none; its accessible name adds the act — "File Page — choose a
+> drawer."**
+
 ---
 
 ## §0 · HIS SENTENCE, AND THE READING THIS PASS TAKES
@@ -47,7 +61,7 @@ are the same mode entered two ways.)*
 - **(B) ONE UNBROKEN DRAG.** *Hover the icon during the drag → the menu opens (after a short dwell, so a
   drag merely passing over the rail opens nothing) → keep dragging onto a drawer row → release = lands.* **No
   carry mode is entered; the ordinary drag lands directly.**
-- **(C) THE OBVIOUS OPTION — "Put in a drawer…"** on the Shelf row *(his first half)*: **it sets the SAME
+- **(C) THE OBVIOUS OPTION — "File Page" (his word; was "Put in a drawer…")** on the Shelf row *(his first half)*: **it sets the SAME
   `placing`**, with no ghost (there is no pointer gesture to continue). **This door is also the KEYBOARD path
   and the SCREEN-READER path** — *a pointer nicety must never be the only way to do the act.*
 
@@ -130,11 +144,11 @@ the builder must not discover:**
 | question | the LEAN this pass is built on | if it comes back the other way |
 |---|---|---|
 | **180-Q1 — touch/pen have no right-click** | **a visible "stop carrying" ✕ in the chip, and on touch a tap on a non-drawer cancels** *(Fable's default; the charter's lean is the ✕)* | **"MOUSE-ONLY FOR NOW":** *the chip's ✕ and the touch tap-away are deleted; door (A) and (B) are disabled on touch (a finger cannot start a Shelf-row drag to the rail);* **door (C) — "Put in a drawer…" — is the ONLY touch path and is built in full** *(it needs no cancel: the panel has its own close).* **Nothing else in §1–§4 moves.** **The unmeasured risk sits on the lean:** *tap-anywhere-cancels can cancel by accident on a small screen where a drawer row is near the edge* — **a drawer row's hit target must be padded, and S0 measures at 768px.** |
-| **180-Q2 — the option's words** | **"Put in a drawer…"** | **a one-line lexicon edit** *(the term is one entry, one term per surface)*; **no structural change.** |
+| **180-Q2 — the option's words** | ~~**"Put in a drawer…"**~~ **→ RULED: "File Page" (his veto)** | **a one-line lexicon edit** *(the term is one entry, one term per surface)*; **no structural change.** |
 | **180-Q3 — after it lands** | **the Drawers menu STAYS OPEN** *(file several)* | **CLOSES on the first landing:** *the mode ends and the panel closes with it; §4's "the row leaves in place" no longer matters (the writer re-opens to file the next).* **A one-line behaviour change; the rest stands.** |
 
 ## §7 · THE CHECKS OWED (standing laws: drivers never assume existence · real pointer events · seed through the seams · absolute worktree path · select by name · **release where the writer releases** · **park, never edit; audit the park COUNT**)
-1. **Door C:** the Shelf row's "Put in a drawer…" sets `placing`; the panel opens; the chip names the thing; **pressing a drawer files it and the row leaves the Shelf.**
+1. **Door C:** the Shelf row's "File Page" ("File Board" on a board row) sets `placing`; the panel opens; the chip names the thing; **pressing a drawer files it and the row leaves the Shelf.**
 2. **Door A:** drag a Shelf row and **release ON the Drawers icon** → nothing is filed; `placing` is set; the ghost follows a pointer that has NO button down; **a click on a drawer row files it.**
 3. **Door B:** hover the icon mid-drag (past the dwell) → the menu opens; **release on a drawer row files it, with no carry mode entered.** **A drag that merely PASSES over the rail opens nothing.**
 4. **Every exit, each asserted to leave nothing stuck:** right-click · Escape · the ✕ · **a click on nothing does NOT cancel on a pointer device** · **a tap on a non-drawer cancels on touch.** **After each, `placing` is unset, the ghost is gone, and the Shelf row is still there, unfiled.**
