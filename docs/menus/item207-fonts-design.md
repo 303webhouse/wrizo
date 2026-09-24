@@ -7,6 +7,8 @@
 > **Nothing here is a build. No schema is written. No mockup** *(the pencil is down; two faces on one page is a
 > picture a builder can render in an hour — Fable draws if he wants the roster seen first).*
 
+> **⚠ AMENDED 2026-09-24 — `item207-fonts-amendment-nicks-rulings.md`** (Nick's Q1/Q2/Q3/Q5: Times New Roman and Arial; Free Write shows the picker and +/− but never the add door; per-card font options in the card's tool strip; size in points with a typeable number; and his law — every strip menu as minimal as possible). **Where §2, §3, §6, §8 or 207d disagree, that file governs (its §10 lists them). Kept as written below.**
+
 ---
 
 ## §0 · HIS WORDS, AND WHAT THEY DO TO THE RECORD
