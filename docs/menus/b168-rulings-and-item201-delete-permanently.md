@@ -42,7 +42,7 @@
 - **"Same notes apply from my last answer about pages"** = *restorable from the Trash, and permanent delete is
   a Trash act* — **both now designed below.**
 - **§3(d) "No 'are you sure?'" STANDS for the soft delete** — *a drag to the Trash never asks whether; it is
-  restorable.* **Delete Permanently ALWAYS asks (§4).** **The two never share a gesture:** *dragging is never
+  restorable.* **Delete Permanently ALWAYS asks (§5).** **The two never share a gesture:** *dragging is never
   permanent; permanent is a button inside the Trash.*
 
 ---
