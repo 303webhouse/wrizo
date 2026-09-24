@@ -1,84 +1,91 @@
 apps/desktop/src/components/Sliver.tsx
-sections: 8 | clickables: 31
+sections: 9 | clickables: 34
 
 SECTIONS (in order):
-  line  395  {t('inkTip')}
-  line  416  {t('inkNib')}
-  line  436  {t('railInk')}
-  line  525  {t('railControls')}
-  line  545  {t('railFormat')}
-  line  616  {t('railStructure')}
-  line  727  {t('corkboardJournalTab')}
-  line  740  {t('railBoard')}
+  line  431  {t('inkTip')}
+  line  452  {t('inkNib')}
+  line  472  {t('railInk')}
+  line  572  {t('railConnect')}
+  line  590  {t('railControls')}
+  line  610  {t('railFormat')}
+  line  681  {t('railStructure')}
+  line  792  {t('corkboardJournalTab')}
+  line  805  {t('railBoard')}
 
 CLICKABLES, by section:
 
   [(not in a sectioned component)]
-     272  <button> wz-sliver-grip   [fn=Sliver]
+     308  <button> wz-sliver-grip   [fn=Sliver]
 
   [{t('inkTip')}]
-     398  <button role=radio> mode-tbtn wz-ink-tip   [fn=SliverInkZone]
+     434  <button role=radio> mode-tbtn wz-ink-tip   [fn=SliverInkZone]
 
   [{t('inkNib')}]
-     420  <button role=radio> mode-tbtn wz-ink-nib   [fn=SliverInkZone]
+     456  <button role=radio> mode-tbtn wz-ink-nib   [fn=SliverInkZone]
 
   [{t('railInk')}]
-     439  <button role=radio> {`mode-swatch wz-ink-swatch${opts.pen.ink ==   [fn=SliverInkZone]
-     459  <button> mode-tbtn wz-ink-eraser   [fn=SliverInkZone]
+     475  <button role=radio> {`mode-swatch wz-ink-swatch${opts.pen.ink ==   [fn=SliverInkZone]
+     495  <button> mode-tbtn wz-ink-eraser   [fn=SliverInkZone]
+
+  [{t('railConnect')}]
+     575  <button> wz-sliver-item wz-sliver-item-btn   [fn=SliverToolsBody]
+     578  <button> wz-sliver-item wz-sliver-item-btn   [fn=SliverToolsBody]
+     581  <button> wz-sliver-item wz-sliver-item-btn   [fn=SliverToolsBody]
 
   [{t('railFormat')}]
-     552  <button> mode-tbtn   [fn=SliverToolsBody]
-     553  <button> mode-tbtn   [fn=SliverToolsBody]
-     554  <button> mode-tbtn   [fn=SliverToolsBody]
-     560  <button> mode-tbtn   [fn=SliverToolsBody]
-     561  <button> mode-tbtn   [fn=SliverToolsBody]
-     570  <button> mode-tbtn   [fn=SliverToolsBody]
-     571  <button> mode-tbtn   [fn=SliverToolsBody]
-     585  <button> mode-tbtn   [fn=SliverToolsBody]
-     586  <button> mode-tbtn   [fn=SliverToolsBody]
-     587  <button> mode-tbtn   [fn=SliverToolsBody]
-     590  <button> mode-tbtn   [fn=SliverToolsBody]
-     591  <button> mode-tbtn   [fn=SliverToolsBody]
-     592  <button> mode-tbtn   [fn=SliverToolsBody]
+     617  <button> mode-tbtn   [fn=SliverToolsBody]
+     618  <button> mode-tbtn   [fn=SliverToolsBody]
+     619  <button> mode-tbtn   [fn=SliverToolsBody]
+     625  <button> mode-tbtn   [fn=SliverToolsBody]
+     626  <button> mode-tbtn   [fn=SliverToolsBody]
+     635  <button> mode-tbtn   [fn=SliverToolsBody]
+     636  <button> mode-tbtn   [fn=SliverToolsBody]
+     650  <button> mode-tbtn   [fn=SliverToolsBody]
+     651  <button> mode-tbtn   [fn=SliverToolsBody]
+     652  <button> mode-tbtn   [fn=SliverToolsBody]
+     655  <button> mode-tbtn   [fn=SliverToolsBody]
+     656  <button> mode-tbtn   [fn=SliverToolsBody]
+     657  <button> mode-tbtn   [fn=SliverToolsBody]
 
   [{t('railStructure')}]
-     655  <button role=radio> wz-page-setup-chip   [fn=SliverToolsBody]
-     681  <button role=radio> wz-page-setup-chip   [fn=SliverToolsBody]
-     714  <button> wz-cascade-action   [fn=SliverToolsBody]
+     720  <button role=radio> wz-page-setup-chip   [fn=SliverToolsBody]
+     746  <button role=radio> wz-page-setup-chip   [fn=SliverToolsBody]
+     779  <button> wz-cascade-action   [fn=SliverToolsBody]
 
   [{t('railBoard')}]
-     742  <button> wz-sliver-item wz-sliver-item-btn   [fn=SliverToolsBody]
-     749  <button> wz-sliver-item wz-sliver-item-btn   [fn=SliverToolsBody]
-     755  <button> wz-sliver-item wz-sliver-item-btn   [fn=SliverToolsBody]
-     762  <button> wz-sliver-item wz-sliver-item-btn   [fn=SliverToolsBody]
+     807  <button> wz-sliver-item wz-sliver-item-btn   [fn=SliverToolsBody]
+     814  <button> wz-sliver-item wz-sliver-item-btn   [fn=SliverToolsBody]
+     820  <button> wz-sliver-item wz-sliver-item-btn   [fn=SliverToolsBody]
+     827  <button> wz-sliver-item wz-sliver-item-btn   [fn=SliverToolsBody]
 
   [(not in a sectioned component)]
-     781  <button> {`wz-sliver-toggle${className ? ` ${classNam   [fn=SliverToggle]
-     879  <button> wz-sliver-goal-edit-commit   [fn=SliverGoalFoot]
-     880  <button> wz-sliver-goal-edit-clear   [fn=SliverGoalFoot]
-     883  <button> wz-sliver-goal-edit   [fn=SliverGoalFoot]
-    1023  <button> wz-sliver-instruments-btn   [fn=SliverInstrumentRow]
-    1030  <button> wz-sliver-instruments-btn   [fn=SliverInstrumentRow]
+     846  <button> {`wz-sliver-toggle${className ? ` ${classNam   [fn=SliverToggle]
+     944  <button> wz-sliver-goal-edit-commit   [fn=SliverGoalFoot]
+     945  <button> wz-sliver-goal-edit-clear   [fn=SliverGoalFoot]
+     948  <button> wz-sliver-goal-edit   [fn=SliverGoalFoot]
+    1088  <button> wz-sliver-instruments-btn   [fn=SliverInstrumentRow]
+    1095  <button> wz-sliver-instruments-btn   [fn=SliverInstrumentRow]
 
 COMPONENT TOOL SLOTS inside sections (a tool need not be a <button> here):
 
   [{t('railInk')}]
-     500  <SliverInkZone> 
+     536  <SliverInkZone> 
 
   [{t('railControls')}]
-     526  <SliverToggle> {t('railForwardLock')}
+     591  <SliverToggle> {t('railForwardLock')}
 
   [{t('railBoard')}]
-     767  <SliverToggle> {t('boardFooterToggle')}
+     832  <SliverToggle> {t('boardFooterToggle')}
 
 COUNT BY SECTION:
    13  {t('railFormat')}
     7  (not in a sectioned component)
     4  {t('railBoard')}
+    3  {t('railConnect')}
     3  {t('railStructure')}
     2  {t('railInk')}
     1  {t('inkTip')}
     1  {t('inkNib')}
 
-The brief's seeded table named 7 rows; the parsed population is 31 clickables across 8 sections.
+The brief's seeded table named 7 rows; the parsed population is 34 clickables across 9 sections.
 Verdicts against his law are a READING and live in the offer, not here.

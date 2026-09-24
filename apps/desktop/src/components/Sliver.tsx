@@ -87,6 +87,24 @@ export type SliverContent =
         eraserArmed: boolean;
         onToggleEraser: () => void;
       };
+      // EXPERIMENT 1 §4 — the three connect acts. OPTIONAL, and the absence is
+      // the gate: PageEditor passes these ONLY when the switch is on, so with it
+      // off they are undefined and the zone is ABSENT FROM THE DOM — never
+      // hidden, never greyed (G3, the same law `inkOptions` and `onAddCard`
+      // already follow). The Sliver reads no flag itself; one gate, at the host.
+      //
+      // ALL THREE ARE SELECTION-BASED, which is what makes them lawful under
+      // Nick's strip law. `onConnectNote` additionally survives a bare caret —
+      // the law's SECOND case (the indent/bullet class) and the only door to
+      // EXP1-Q6's caret note.
+      connect?: {
+        onLink: () => void;
+        onNote: () => void;
+        onMakeCard: () => void;
+        // True when the writer has words selected. The two acts that need words
+        // are absent without it; `onNote` is offered either way.
+        hasSelection: boolean;
+      };
       captureItems: readonly string[];
     }
   | {
@@ -120,6 +138,24 @@ export type SliverContent =
       // walkthrough opened item 114 out of the DRAFT structure redesign; if he
       // wants the row on screenplay too, it is four props and a default, and
       // the offer says so.
+      // EXPERIMENT 1 §4 — the three connect acts. OPTIONAL, and the absence is
+      // the gate: PageEditor passes these ONLY when the switch is on, so with it
+      // off they are undefined and the zone is ABSENT FROM THE DOM — never
+      // hidden, never greyed (G3, the same law `inkOptions` and `onAddCard`
+      // already follow). The Sliver reads no flag itself; one gate, at the host.
+      //
+      // ALL THREE ARE SELECTION-BASED, which is what makes them lawful under
+      // Nick's strip law. `onConnectNote` additionally survives a bare caret —
+      // the law's SECOND case (the indent/bullet class) and the only door to
+      // EXP1-Q6's caret note.
+      connect?: {
+        onLink: () => void;
+        onNote: () => void;
+        onMakeCard: () => void;
+        // True when the writer has words selected. The two acts that need words
+        // are absent without it; `onNote` is offered either way.
+        hasSelection: boolean;
+      };
       pageKind?: PageKindSetting;
       onPickKind?: (next: PageKindSetting) => void;
       styleGuide?: StyleGuide;
@@ -519,6 +555,35 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           The menus wave's tests that asserted Free Write's B·I·U get the park
           treatment: original assertions kept verbatim with a successor
           pointer, never rewritten in place. */}
+
+      {/* EXPERIMENT 1 §4 — THE CONNECT ZONE. Present on both text surfaces
+          (Free Write and Draft) and absent entirely when the switch is off.
+          ⚠ `onMouseDown preventDefault` IS LOAD-BEARING, and the reason is
+          already written above the format row: a sliver button is OUTSIDE the
+          contenteditable, so a normal click's mousedown blurs it and COLLAPSES
+          whatever text was selected. Without this, every "Link to…" and
+          "Make a card" would act on an empty selection — silently turning each
+          one into a spot-note instead of failing loudly. Borrowed from the
+          neighbour that learned it.
+          The zone heads with a VERB, not the noun of its domain: see
+          deskLexicon's own note on `railConnect`. */}
+      {(content.kind === 'freewrite' || content.kind === 'draft') && content.connect && (
+        <div className="wz-sliver-section">
+          <div className="wz-sliver-h">{t('railConnect')}</div>
+          <div className="wz-sliver-connect" onMouseDown={e => e.preventDefault()}>
+            {content.connect.hasSelection && (
+              <button type="button" className="wz-sliver-item wz-sliver-item-btn"
+                onClick={() => content.connect!.onLink()}>{t('connectMenuLink')}</button>
+            )}
+            <button type="button" className="wz-sliver-item wz-sliver-item-btn"
+              onClick={() => content.connect!.onNote()}>{t('connectMenuNoteThis')}</button>
+            {content.connect.hasSelection && (
+              <button type="button" className="wz-sliver-item wz-sliver-item-btn"
+                onClick={() => content.connect!.onMakeCard()}>{t('connectMenuMakeCard')}</button>
+            )}
+          </div>
+        </div>
+      )}
 
       {content.kind === 'freewrite' && content.forwardLock && (
         <div className="wz-sliver-section">

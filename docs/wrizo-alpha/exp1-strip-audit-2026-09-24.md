@@ -123,8 +123,25 @@ touches nothing standing. *Same shape, same reason — consistency, not convenie
 first case. **"Note This" additionally survives a bare caret**, which is the law's SECOND case (the
 indent/bullet class) and is the only door to EXP1-Q6's caret note. Ruled by Fable, 2026-09-24.
 
-**AND FREE WRITE: *connects and notes, never styles*** — in Free Write the strip shows the three acts
-and no styling. That is the analog law arriving in a new place, not a new exception. Built next.
+**AND FREE WRITE: *connects and notes, never styles*** — **the "never styles" half is ALREADY THE
+SHIPPED STATE, and it was not this experiment that made it so.** Free Write's content member carries
+**no `format` at all**: item 121 I6 retired styling from that surface on Nick's own analog law
+("no digital styling, no fonts, no formatting on that surface"), by absence rather than by a disabled
+mount. So §4's line describes something already true for a different and older reason, and this slice
+has **no removal to make** — only the three acts to add. Said plainly so nobody implements a
+subtraction that would be a second, redundant retirement.
+
+**BUILT.** The zone is `railConnect`, on both text surfaces, rendered only when the host passes
+`connect` — which it does only when the switch is on, so with it off the zone is absent from the DOM
+rather than hidden. The audit re-run shows it: **34 clickables across 9 sections**, three of them in
+`railConnect`.
+
+**⚠ AND ONE TRAP THE NEIGHBOURS HAD ALREADY LEARNED.** The zone carries
+`onMouseDown={e => e.preventDefault()}`, because a sliver button is **outside the contenteditable** and
+a normal click's mousedown blurs it and **collapses the selection** — the format row says exactly this
+above itself. Without it, "Link to…" and "Make a card" would every time act on an empty selection and
+**silently become spot-notes** instead of failing loudly. Borrowed from the neighbour rather than
+rediscovered.
 
 ---
 

@@ -101,6 +101,7 @@ const T = (id) => {
 // keys is exactly how `zoneLinked: "This page's connections"` passed this guard
 // on the way in.
 const CONNECT_IDS = [
+  'railConnect',
   'connectMenuLabel',
   'connectMenuLink', 'connectMenuNoteThis', 'connectMenuMakeCard', 'connectMenuUnlink',
   'connectRailSelectedEmpty', 'connectRailUnlink', 'connectExportNote',

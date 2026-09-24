@@ -3603,6 +3603,12 @@ a:focus-visible,
   border:1px solid var(--ink-border); font-family:var(--font-ui); cursor:pointer; transition:.15s; }
 .wz-sliver-item-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-sliver-format{ display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
+/* EXPERIMENT 1 §4 — the connect zone's three acts. A COLUMN, not the format
+   row's wrap: these are worded acts ("Link to…", "Note This", "Make a card"),
+   not glyph buttons, and they reuse .wz-sliver-item — the same dress the Board
+   section's worded actions already wear. Nothing here positions the strip or
+   changes its width, so the writing surface is untouched by its presence. */
+.wz-sliver-connect{ display:flex; flex-direction:column; align-items:stretch; gap:2px; }
 /* FX7 S2 — Free Write's own Bold/Italic two-press bracket: the mark is
    "open" (leading marker inserted, awaiting its close) for exactly the same
    reason a toggle switch reads "on" — olive marks where-you-are, matching

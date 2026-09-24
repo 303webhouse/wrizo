@@ -581,6 +581,7 @@ export type DeskTermId =
   // Remove. 'connectMenuRemove' is deliberately not a bare "Remove": the menu
   // must say which of the two it will do, because REMOVE UNLINKS AND NEVER
   // DELETES.
+  | 'railConnect'
   | 'connectMenuLabel'
   | 'connectMenuLink' | 'connectMenuNoteThis' | 'connectMenuMakeCard'
   | 'connectMenuUnlink'
@@ -1284,6 +1285,14 @@ const CANONICAL: Record<DeskTermId, string> = {
   // The menu's own accessible name. It needs one of its own: labelling the menu
   // with one of its items ("Link to…") tells a screen-reader user the container
   // IS that act. Named by its acts, so it stays noun-free.
+  // The STRIP's connect zone heading. ⚠ A TENSION WORTH SEEING: every other
+  // zone in the strip is headed by the NOUN of its domain — Format, Structure,
+  // Controls, Ink, Board — and this zone's noun is the one word the ruling
+  // takes off screen. So it is headed by the act family's VERB instead, which
+  // is noun-free and reads as "ways to link" above its three items. It is not a
+  // duplicate of any button: the menu's act is "Link to…", with the ellipsis
+  // that says it opens a chooser.
+  railConnect: 'Link',
   connectMenuLabel: 'Link, note, or make a card',
   connectMenuLink: 'Link to…',
   connectMenuNoteThis: 'Note This',

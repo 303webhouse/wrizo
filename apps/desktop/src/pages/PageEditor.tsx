@@ -356,6 +356,58 @@ function PageEditorView({ id }: { id: string }) {
     return () => { el.removeEventListener('contextmenu', onContextMenu); };
   }, [connectOn, id]);
 
+  // EXPERIMENT 1 §4 — the strip's connect zone needs to know whether the writer
+  // has WORDS selected, because the two acts that need them are ABSENT without
+  // them (never greyed). Tracked from `selectionchange`, and only while the
+  // switch is on — off, no listener is registered at all.
+  const [connectHasSelection, setConnectHasSelection] = useState(false);
+  useEffect(() => {
+    if (!connectOn) { setConnectHasSelection(false); return; }
+    const read = () => {
+      const el = editorRef.current;
+      const latest = el ? getJournalEntry(id) : null;
+      if (!el || !latest) { setConnectHasSelection(false); return; }
+      const sel = domSelectionToVisible(el, latest.text ?? '');
+      setConnectHasSelection(!!sel && sel.to > sel.from);
+    };
+    read();
+    document.addEventListener('selectionchange', read);
+    return () => { document.removeEventListener('selectionchange', read); };
+  }, [connectOn, id]);
+
+  // The three acts, shared by the strip and the menu so the two doors cannot
+  // drift into two behaviours for one act. Each reads the selection AT CLICK
+  // TIME rather than trusting the tracked flag — the flag decides what is
+  // OFFERED, the read decides what HAPPENS, and only the read can be authoritative.
+  const connectActs = {
+    onLink: () => {
+      const el = editorRef.current;
+      const latest = el ? getJournalEntry(id) : null;
+      if (!el || !latest) return;
+      const sel = domSelectionToVisible(el, latest.text ?? '');
+      if (!sel || sel.to <= sel.from) return;
+      anchorSelection(id, sel.from, sel.to);
+    },
+    onNote: () => {
+      const el = editorRef.current;
+      const latest = el ? getJournalEntry(id) : null;
+      if (!el || !latest) return;
+      const sel = domSelectionToVisible(el, latest.text ?? '');
+      if (!sel) return;
+      const a = sel.to > sel.from ? anchorSelection(id, sel.from, sel.to)[0] : anchorSpot(id, sel.from);
+      if (a) addLink(id, a.id, { kind: 'note', body: '' });
+    },
+    onMakeCard: () => {
+      const el = editorRef.current;
+      const latest = el ? getJournalEntry(id) : null;
+      if (!el || !latest) return;
+      const sel = domSelectionToVisible(el, latest.text ?? '');
+      if (!sel || sel.to <= sel.from) return;
+      anchorSelection(id, sel.from, sel.to);
+    },
+    hasSelection: connectHasSelection,
+  };
+
   // Warm start (F2) — captured once at mount (the hook strips the one-shot state).
   const location = useLocation();
   const warmRef = useRef(!!(location.state as { warmStart?: boolean } | null)?.warmStart);
@@ -792,21 +844,14 @@ function PageEditorView({ id }: { id: string }) {
         <ConnectMenu
           state={connectMenu}
           onClose={() => setConnectMenu(null)}
-          onNoteThis={(s) => {
-            // A bare caret makes a SPOT-NOTE; a selection anchors its words.
-            // Both are anchors; the note itself is the link that hangs off one.
-            const a = s.to > s.from ? anchorSelection(id, s.from, s.to)[0] : anchorSpot(id, s.from);
-            if (a) addLink(id, a.id, { kind: 'note', body: '' });
-          }}
-          onLinkTo={(s) => {
-            // The chooser is the next slice; the ANCHOR is made now so the act
-            // is never a no-op, and the link is attached when a target is
-            // picked. Recorded as a seam rather than a stub that loses the words.
-            anchorSelection(id, s.from, s.to);
-          }}
-          onMakeCard={(s) => {
-            anchorSelection(id, s.from, s.to);
-          }}
+          // THE SAME THREE FUNCTIONS THE STRIP CALLS. Two doors to one act must
+          // not become two behaviours, and the only way to guarantee that is to
+          // share the function rather than to write it twice and compare.
+          // (They re-read the selection at click time, so the menu does not need
+          // to hand its own offsets back in.)
+          onNoteThis={() => connectActs.onNote()}
+          onLinkTo={() => connectActs.onLink()}
+          onMakeCard={() => connectActs.onMakeCard()}
           onUnlink={(s) => {
             // Nick's word: remove UNLINKS and never deletes. The anchor survives
             // if other links use it, and the target is untouched.
@@ -1014,6 +1059,12 @@ function PageEditorView({ id }: { id: string }) {
           // typewriter's text was the same class of thing as bolding it.
           // `applyFreeWriteFormat` and `freeWriteMarks` go with them.
           captureItems: journalFurniture ? CAPTURE_ITEMS : [],
+          // EXPERIMENT 1 §4 — undefined when the switch is off, which is what
+          // makes the zone absent from the DOM rather than hidden. Free Write
+          // already carries NO styling (item 121 I6 retired it on Nick's analog
+          // law), so "connects and notes, never styles" is the shipped state
+          // here plus these three acts — not a removal this slice has to make.
+          connect: connectOn ? connectActs : undefined,
         }
       : mode === 'drafting'
         ? {
@@ -1032,6 +1083,9 @@ function PageEditorView({ id }: { id: string }) {
             onPickKind: kind => patchPageSettings({ kind }),
             styleGuide: entry.pageSettings?.styleGuide ?? STYLE_GUIDE_DEFAULT,
             onPickStyleGuide: styleGuide => patchPageSettings({ styleGuide }),
+            // EXPERIMENT 1 §4 — same gate, same absence. Draft keeps its
+            // styling roster; the connect zone is additive beside it.
+            connect: connectOn ? connectActs : undefined,
           }
         // ITEM 112-A — REVISE'S DESK DRAWER OPENS, AND IT OPENS ONTO NOTHING.
         //
