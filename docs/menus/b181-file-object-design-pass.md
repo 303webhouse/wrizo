@@ -10,6 +10,17 @@
 > "external sources" (images as supplemental material on the rail) is the SAME storage as this item.* **Ask Nick
 > once** *(I did not find that item's number in the entry I read; Fable/chat 1 merge the two questions).*
 
+> **✅ RULED SINCE THIS PASS WAS WRITTEN — 181-Q1: Nick, verbatim (Fable's relay, 2026-09-24): *"181: Yes."*** —
+> **the file is stored on the SERVER (`user_files`), the lean of §2, and the schema stop is CLEARED.** **Fable also
+> accepted §2's shape (the `file` card; `bytea` first with an object store named as the alternative; the device
+> cache; images only in v1); the mark-and-sweep GRACE (§6) is the builder's to measure.** **Chat 1 folded the
+> earlier writer's-own-images item into 181 — one storage decision, asked once (the header note above is now
+> settled).** **181-Q2 and Q3 are FABLE's DEFAULTS, taken as calls, vetoable — not questions to Nick.**
+> **Still true, and still the builder's:** *nothing writes until the builder's S0 shape report clears Fable's
+> review, and a new table is a migration — the standing law holds.* **§8's "if it comes back the other way" rows
+> for Q1 are moot; Q2 and Q3's rows stand as the record of what each default costs if vetoed.**
+> **Also registered by chat 1 for FIX: the 5 MB `/sync` limit (§1), to be measured beyond photos.**
+
 ---
 
 ## §0 · HIS WORDS, AND THE ACT
@@ -138,7 +149,7 @@ already say "not available on this device" rather than pretend.**
 | **181-Q3 — images first** | **images in v1; PDFs are Import Sources' job** | **BOTH AT ONCE:** *§3's PDF refusal is deleted and a document viewer (pages, scroll, its own dependency) joins §5 — a build of its own, and it overlaps 165-B's parser; this desk would ask that the two share one dependency review.* |
 
 **The plain-English lines for Nick (Fable checks against his words; Q1 marked as the schema stop):**
-- **181-Q1 (schema stop, no default):** *To keep a real photo on your Journal page — visible on every device —
+- **~~181-Q1 (schema stop, no default):~~ RULED "Yes" (server storage) — the line below is kept as written:** *To keep a real photo on your Journal page — visible on every device —
   Wrizo needs to store the photo on its server: one new database table and an upload path. The alternative is to
   shrink photos and tuck them inside the page itself, which is smaller but can't keep the original. Which?*
   **Lean: store it on the server.** *(The same storage would also let you add your own images as sources in the
