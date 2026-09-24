@@ -1,0 +1,30 @@
+--- A. HOW BIG IS A REALISTIC PUSH ---
+  measured: 56.3 bytes per stored point (JSON, 200,000 generated points, x/y unrounded doubles, pressure 80% present)
+  measured: 48.4 bytes per point when the device reports no pressure
+  hypothetical: 31.7 bytes per point if x and y were rounded to 4 decimals at capture (44% smaller) - for sizing only
+  => the 5 MB limit is reached at ~93,058 points in ONE request (whole records are pushed, all dirty records in one body)
+  => continuous pen contact at 60 Hz: 25.8 min; at 120 Hz: 12.9 min  (pointermove is one point per event: InkStratum.tsx onMove pushes normPoint(e), no decimation - a fact of the source, read)
+  ASSUMPTIONS (not measured - a script cannot know how a person writes; plug your own):
+    a full handwritten page = 300 words x 6 strokes x 40 pts = 72,000 pts = 3.87 MB of ONE record
+PASS  A: the limit is reachable by ONE realistic record - a dense handwritten page (~72k points, under the stated assumptions) is ~77% of 5 MB by itself, so two such pages in one push are refused  3.87 MB per page; two = 7.74 MB
+
+--- B. WHAT THE SERVER DOES AT THE LIMIT (the real index.ts) ---
+Writer Studio server listening on :47831
+PASS  B: a body just UNDER the limit (5 MB - 4 KB) is accepted and the record reaches the upsert  {"status":200,"upserts":1}
+PASS  B: a body just OVER the limit (5 MB + 4 KB) is REFUSED, and NOTHING of it reached the database (the whole push is all-or-nothing)  {"status":500,"upserts":1}
+PASS  B: the refusal is a bare HTTP 500 {"error":"Internal server error"} - NOT a 413. Express raised PayloadTooLargeError (status 413) and the server's final error middleware discards err.status and answers 500 for everything, logging it as a "[server error]"  {"status":500,"body":"{\"error\":\"Internal server error\"}","log":["[server error] request entity too large"]}
+  the server's own log for the refusal: ["[server error] request entity too large"]
+  the exact boundary: the largest accepted body is 5,242,880 bytes (= 5 MiB is 5,242,880; the limit counts the raw request body, headers not included)
+PASS  B: the limit is 5 MiB of RAW BODY BYTES (5,242,880), not 5,000,000  boundary=5242880
+
+--- C. WHAT THE WRITER SEES, and what the client does (the real store/sync.ts) ---
+PASS  C: the client sends the fat push and the server refuses it (HTTP 500); the client treats ANY failure as "offline"  {"attempts":[{"path":"/api/sync","bytes":6289937,"status":500}],"statuses":["pending","offline"]}
+  the writer's ONLY signal is SyncIndicator (ChromeControls.tsx): status 'offline' renders the muted text "Offline — saved here" - while the writer is ONLINE. It says nothing about other devices, and nothing that it will never clear.
+PASS  C: the fat record is STILL DIRTY after the refusal (persistent dirty set, item 89) - it will be re-sent in full on every retry  {"dirtyIds":["FAT"]}
+  6 attempts so far, 36.0 MB uploaded, 0 succeeded. Backoff delays scheduled (ms): [300,5000,10000,20000,40000,80000,120000]  [the client's cap is 120,000ms]
+PASS  C: it RETRIES FOREVER with the same body - every attempt re-uploads the full fat push and every attempt fails; the backoff climbs to a 2-minute cap and never stops  {"attempts":6,"maxDelayMs":120000}
+  at the 120s cap that is 30 attempts/hour x 6.0 MB = ~180 MB/hour of upload that can never succeed (mobile data)
+PASS  C: HEAD-OF-LINE BLOCKING - a tiny, unrelated page written AFTER the fat one is pushed in the SAME body and refused with it; one fat record wedges every other edit on the device  {"attempts":[{"path":"/api/sync","bytes":6290116,"status":500}],"tinyStillDirty":true}
+PASS  C: soft-deleting the fat page does NOT unblock it (a soft delete keeps the row and its strokes, so the record is still pushed whole)  {"attempts":[{"path":"/api/sync","bytes":6290155,"status":500}]}
+
+BODY LIMIT: PASS (10 checks)
