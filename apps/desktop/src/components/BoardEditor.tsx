@@ -7,8 +7,10 @@ import {
   getSystemKind, reconcileSystemBoard, restoreEntry, getJournalEntryIncludingDeleted, subscribe,
   getPairedPageId, pairBoardWithPage,
   setPinDisplayed,
-  boardNestChain, createBoardPage,
+  boardNestChain, createBoardPage, unpinPageFromBoard,
 } from '../store/persistence';
+import { connectBeside, unlinkBeside } from '../store/boardBeside';
+import { noteBoardOpened } from '../store/boardRecents';
 import { BoardTabs } from './BoardTabs';
 import { SURVEY_DRAG_TYPE } from './CascadeSurvey';
 import { useBoardMode } from '../store/boardMode';
@@ -67,6 +69,8 @@ import type { JournalEntry, Box, Project } from '../types';
 // of the standing `pageKind="prose"` placeholder a prior ticket flagged.
 
 const AUTOSAVE_MS = 2000;
+// ITEM 144 §4 — one frame of the back stack: a parent board as it was LEFT.
+interface BackFrame { id: string; title: string; scrollTop: number; selectedId: string | null }
 const LONG_PRESS_MS = 350;         // mirrors the S25-verified Spread gesture
 const MOUSE_DRAG_THRESHOLD = 6;
 const TOUCH_CANCEL_THRESHOLD = 12;
@@ -665,7 +669,11 @@ function BoardCardPopup({
   );
 }
 
-type LastAction = { type: 'move' | 'resize' | 'remove' | 'ungroup'; before: Box[] } | null;
+type LastAction = { type: 'move' | 'resize' | 'remove' | 'ungroup' | 'unnest'; before: Box[] } | null;
+// ITEM 144 §3 — the drag is ARMED when the POINTER has travelled this far beyond the
+// canvas's visible edge (hysteresis: a card dragged TO the edge does nothing, and
+// no 1px overshoot arms it). The card itself never leaves the canvas (item 118).
+const UNNEST_ARM_PX = 32;
 
 export function BoardEditor({ id }: { id: string }) {
   const navigate = useNavigate();
@@ -800,6 +808,11 @@ export function BoardEditor({ id }: { id: string }) {
   // 'connection' Box creation/storage below is UNCHANGED from AB4 — only
   // the gesture that triggers it is new.
   const [threadArmedFrom, setThreadArmedFrom] = useState<string | null>(null);
+  // ITEM 144 §3 — un-nesting by dragging. The band is `position:fixed` over the
+  // canvas wrap's own rect (so it never displaces the page and reads no scroll
+  // offset); the ref carries "armed" into the pointer effect's closures.
+  const unnestArmedRef = useRef(false);
+  const [unnestBand, setUnnestBand] = useState<{ left: number; width: number; top: number } | null>(null);
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
   // AB4 S2 — the Page face's sending sheets (Port, Pin) — Board never had
   // these before that ticket (S5's own "every surface carries the same
@@ -1368,7 +1381,12 @@ export function BoardEditor({ id }: { id: string }) {
     const target = getJournalEntry(entryId);
     if (!target) return;
     flushNow();
-    navigate(routeForEntry(target), { state: { fromBoardId: id, fromBoardTitle: title } });
+    // ITEM 144 §4 — a board target arrives with a back frame (this board as it is
+    // being left); a page/script target keeps only the existing chip's state.
+    const frame: BackFrame = { id, title, scrollTop: wrapRef.current?.scrollTop ?? 0, selectedId };
+    navigate(routeForEntry(target), {
+      state: { fromBoardId: id, fromBoardTitle: title, ...(target.pageType === 'board' ? { boardBack: { stack: [...backStack, frame] } } : {}) },
+    });
   };
   const travelToPin = (box: Box) => travelToEntry(box.entryId);
 
@@ -1387,6 +1405,24 @@ export function BoardEditor({ id }: { id: string }) {
     let resizeStart: { w: number; h: number; aspect: number; kind: Box['kind'] } | null = null;
 
     const clearTimer = () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } };
+
+    // ITEM 144 §3 — THE RULE: THE CARD STOPS; THE POINTER LEAVES. Only a NESTED
+    // BOARD's card can arm (a page-pin whose entry is a board, on THIS board);
+    // every other card keeps exactly today's hard stop and never arms anything.
+    // Arming reads the POINTER against the wrap's visible rect — never the scroll
+    // offset — so edge auto-scroll cannot arm it from its own motion.
+    const nestedBoardPin = (): Box | null => {
+      if (movingIds.length !== 1) return null;
+      const box = startBoxes.find(b => b.id === movingIds[0]);
+      if (!box || box.kind !== 'page-pin' || !box.entryId) return null;
+      return getJournalEntry(box.entryId)?.pageType === 'board' ? box : null;
+    };
+    const setUnnestArmed = (armed: boolean) => {
+      if (armed === unnestArmedRef.current) return;
+      unnestArmedRef.current = armed;
+      const wr = wrapRef.current?.getBoundingClientRect();
+      setUnnestBand(armed && wr ? { left: wr.left, width: wr.width, top: wr.top } : null);
+    };
 
     // FX4 S6 — the live preview line's endpoint, updated imperatively
     // (previewLineRef) so a thread-drag never triggers a React render on
@@ -1456,6 +1492,7 @@ export function BoardEditor({ id }: { id: string }) {
 
     const finish = (commit: boolean) => {
       clearTimer();
+      setUnnestArmed(false); // nothing is ever left armed after a release, a cancel or a revert
       if (activePointerId != null && canvas.hasPointerCapture(activePointerId)) {
         try { canvas.releasePointerCapture(activePointerId); } catch { /* already released */ }
       }
@@ -1625,6 +1662,13 @@ export function BoardEditor({ id }: { id: string }) {
       }
       if (phase === 'dragging') {
         e.preventDefault();
+        if (nestedBoardPin()) {
+          const wr = wrapRef.current?.getBoundingClientRect();
+          if (wr) {
+            const beyond = Math.max(wr.left - e.clientX, e.clientX - wr.right, wr.top - e.clientY, e.clientY - wr.bottom);
+            setUnnestArmed(beyond >= UNNEST_ARM_PX); // moving back inside DISARMS, with no effect
+          }
+        }
         const dxRaw = (e.clientX - startX) / pageWidthPx;
         const dyRaw = (e.clientY - startY) / pageWidthPx;
         const ids = new Set(movingIds);
@@ -1708,8 +1752,34 @@ export function BoardEditor({ id }: { id: string }) {
       }
     };
 
+    // ITEM 144 §3 — RELEASE WHILE ARMED = UNLINK, with the collisions named in the
+    // amendment: the trash icon wins (item 168 owns Delete; a release ON it is never
+    // an Unlink — `[data-trash-target]` is 168's to add, and is a no-op until it
+    // exists), and a release over a TAB does nothing (a tab's drag is reserved for
+    // 169). Both revert the card. Anything else — the strips, the rail, the blank —
+    // counts as "off the surface". A release over ANOTHER PANE is 169-Q7(c) (the
+    // board gains a membership there); no second pane exists yet.
+    const commitUnnest = (e: PointerEvent) => {
+      const pin = nestedBoardPin();
+      const before = startBoxes;
+      const over = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+      const blocked = !!over?.closest('[data-trash-target], [data-board-tabs]');
+      finish(false); // ends the gesture and reverts the card to its pre-drag place
+      if (blocked || !pin?.entryId) return;
+      unpinPageFromBoard(pin.entryId, id);
+      const next = before.filter(b => b.id !== pin.id);
+      boxesRef.current = next;
+      setBoxes(next);
+      // Undo is the drag's own start snapshot — the board's own one-level Undo.
+      lastActionRef.current = { type: 'unnest', before };
+      setCanUndo(true);
+      const child = boardName(getJournalEntry(pin.entryId)?.text, 'Untitled');
+      const parent = boardName(getJournalEntry(id)?.text, 'Untitled');
+      actionToast.show(`${child} — unlinked from ${parent}. Undo restores it.`);
+    };
     const onUp = (e: PointerEvent) => {
       if (phase === 'threadDrag') { finishThreadDrag(e); return; }
+      if (phase === 'dragging' && unnestArmedRef.current) { commitUnnest(e); return; }
       finish(true);
     };
     const onCancel = () => {
@@ -1813,6 +1883,29 @@ export function BoardEditor({ id }: { id: string }) {
   // pull that put it in the wrong place.
   const [renaming, setRenaming] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
+  // ITEM 144 §4 — the back stack this arrival carries (see goBack below). One
+  // frame per departure through a nested board's double-click.
+  const backStack: BackFrame[] = (location.state as { boardBack?: { stack: BackFrame[] } } | null)?.boardBack?.stack ?? [];
+  // A return lands here with `state.restore`: put the canvas scroll and the
+  // selection back exactly as they were left, once, then replace history so a
+  // refresh never re-applies it (keeping the stack, so a parent that is itself a
+  // child still has its own back arrow).
+  useEffect(() => {
+    const st = location.state as { boardBack?: { stack: BackFrame[] }; restore?: { scrollTop: number; selectedId: string | null } } | null;
+    if (!st?.restore) return;
+    const r = st.restore;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (wrapRef.current) wrapRef.current.scrollTop = r.scrollTop;
+      setSelectedId(r.selectedId);
+    }));
+    navigate(location.pathname + location.search, { replace: true, state: st.boardBack ? { boardBack: st.boardBack } : null });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // ITEM 144 §9.4 — "recently opened", per device: written when a board MOUNTS.
+  useEffect(() => {
+    const e = getJournalEntry(id);
+    if (e && e.pageType === 'board' && getSystemKind(e) === undefined) noteBoardOpened(id);
+  }, [id]);
   // ITEM 144 — "New Board ... born with its name field in focus" (item 136's
   // ruling). The birth door travels here with `state.nameFocus`; consume it
   // once (open the crumb's rename with an EMPTY draft — a nameless board gives
@@ -2092,6 +2185,7 @@ export function BoardEditor({ id }: { id: string }) {
           className="board-canvas"
           data-thread-armed={threadArmedFrom != null ? 'true' : 'false'}
           data-dragging={isDragging ? 'true' : 'false'}
+          data-unnest-armed={unnestBand ? 'true' : 'false'}
           style={{ position: 'relative', width: pageWidthPx, height: canvasHeightPx, background: 'var(--paper)' }}
           // PW1 S3 (item 125) — the DRAG half of the two display acts (Nick,
           // Q4): a membership row dragged from the rail's survey lands WHERE
@@ -2345,11 +2439,17 @@ export function BoardEditor({ id }: { id: string }) {
   // mechanism, not two. The board's own geometry (pageWidthPx,
   // canvasHeightPx, every box's x/y/w/h) never reads `deckWizardOpen`
   // anywhere — b3.mjs asserts this explicitly, not merely by omission.
-  // ITEM 144 — the board tabs' three acts. Every one goes through the store's own
-  // writers; the two that MAKE a membership append the new pin to THIS component's
-  // own live boxes, never assign the store's copy (item 92: the local `boxes` may
-  // hold cards the autosave has not written, and the unmount save would otherwise
-  // write the pre-pin array back over the pin).
+  // ITEM 144 — the board tabs' acts (Nick's literal words, PLAN DESK §9.1):
+  //   Add Board .... a NEW board INSIDE this one (born here, name focused, you travel to it)
+  //   New Board .... a NEW board BESIDE this one (connected, not inside; you STAY)
+  //   Connect Board  the picked board, connected BESIDE this one
+  // Every one goes through the store's own writers. The one that makes a MEMBERSHIP
+  // appends the new pin to THIS component's own live boxes, never assigns the store's
+  // copy — and the one that removes a membership removes it from the live boxes too
+  // (item 92: the local `boxes` may hold cards the autosave has not written, and the
+  // unmount save would otherwise write the stale array back over the change). A
+  // BESIDE connection needs neither: it lives in `besideLinks`, and
+  // `saveBoardBoxes` merges `boxes` into the LATEST record, so it cannot clobber it.
   const appendLivePin = (updated: JournalEntry | null, childId: string) => {
     const pin = (updated?.boxes ?? []).find(b => b.kind === 'page-pin' && b.entryId === childId);
     if (pin && !boxesRef.current.some(b => b.id === pin.id)) {
@@ -2358,25 +2458,72 @@ export function BoardEditor({ id }: { id: string }) {
       boxesRef.current = next;
     }
   };
+  const removeLivePin = (childId: string) => {
+    const next = boxesRef.current.filter(b => !(b.kind === 'page-pin' && b.entryId === childId));
+    if (next.length !== boxesRef.current.length) { setBoxes(next); boxesRef.current = next; }
+  };
+  const nameOf = (entryId: string) => boardName(getJournalEntry(entryId)?.text, 'Untitled');
+  // A new board born in THIS drawer (a loose board births loose).
+  const bornBoardHere = () => {
+    const born = createBoardPage(initialEntry?.projectId ?? '');
+    if (!initialEntry?.projectId) patchJournalEntry(born.id, born.text, { projectId: null });
+    return born;
+  };
   // A press on a tab TRAVELS — flush the board's pending edits, then go. No
   // membership is written (T3).
   const travelToBoard = (targetId: string) => { flushNow(); navigate(`/page/${targetId}`); };
-  // "Add Board": an existing board becomes a nested one, on THIS canvas. The
-  // list already refused self / already-inside / ancestors; `pinPageToBoard`
-  // still runs its own guard, so the two can never disagree.
-  const nestExistingBoard = (chosenId: string) => {
-    appendLivePin(pinPageToBoard(chosenId, id, { display: true }), chosenId);
-  };
-  // "New Board": born in this drawer, nested inside this one, name field
-  // focused, and the writer travels to it.
-  const newNestedBoard = () => {
-    const born = createBoardPage(initialEntry?.projectId ?? '');
-    if (!initialEntry?.projectId) patchJournalEntry(born.id, born.text, { projectId: null });
+  const addBoardInside = () => {
+    const born = bornBoardHere();
     appendLivePin(pinPageToBoard(born.id, id, { display: true }), born.id);
     navigate(`/page/${born.id}`, { state: { nameFocus: true } });
   };
+  const newBoardBeside = () => {
+    const born = bornBoardHere();
+    connectBeside(id, born.id);
+    actionToast.show(`${t('boardTabsWhisperNewBeside')} ${title} — open it from its tab.`);
+  };
+  const connectBoardBeside = (chosenId: string) => {
+    if (connectBeside(id, chosenId)) actionToast.show(`${nameOf(chosenId)} — ${t('boardTabsWhisperConnected')} ${title}.`);
+  };
+  const unlinkNestedBoard = (childId: string, parentId: string) => {
+    unpinPageFromBoard(childId, parentId);
+    if (parentId === id) removeLivePin(childId);
+    actionToast.show(`${nameOf(childId)} — ${t('boardTabsWhisperUnlinked')} ${nameOf(parentId)}.`);
+  };
+  const unlinkBesideBoard = (otherId: string) => {
+    unlinkBeside(id, otherId);
+    actionToast.show(`${nameOf(otherId)} — ${t('boardTabsWhisperUnlinked')} ${title}.`);
+  };
   const boardTabs = !isSystemBoard ? (
-    <BoardTabs boardId={id} onTravel={travelToBoard} onAddBoard={nestExistingBoard} onNewBoard={newNestedBoard} />
+    <BoardTabs boardId={id} onTravel={travelToBoard} onAddBoard={addBoardInside} onNewBoard={newBoardBeside}
+      onConnectBoard={connectBoardBeside} onUnlinkNested={unlinkNestedBoard} onUnlinkBeside={unlinkBesideBoard} />
+  ) : null;
+
+  // ITEM 144 §4 — DOUBLE-CLICK A NESTED BOARD: it replaces its parent, with a back
+  // arrow. The child travels in (the route the double-click already took), carrying
+  // a STACK of frames — the parent's id, name, canvas scroll and selection at the
+  // moment of departure. The back arrow pops one frame and returns the parent AS IT
+  // WAS LEFT (the stateful return AGENTS.md's page-primacy canon asks of every
+  // departure); the per-board mode already persists per board (wrizo-board-mode),
+  // so it returns for free. It stacks: child -> grandchild -> back is one level each.
+  // The crumb's "way up" (boardNestChain) is unchanged and still jumps directly —
+  // the arrow is "where I just was", the crumb is "where this sits". A tab press
+  // pushes NO frame (a door, not a descent). The builder's S0 question — swap the
+  // pane's content under one route, or navigate — is answered as: navigate, with the
+  // state carried in route state (no second surface, one route per board).
+  const topBack = backStack.length > 0 ? backStack[backStack.length - 1] : null;
+  const goBack = () => {
+    if (!topBack) return;
+    flushNow();
+    const target = getJournalEntry(topBack.id);
+    navigate(target ? routeForEntry(target) : `/page/${topBack.id}`, {
+      state: { boardBack: { stack: backStack.slice(0, -1) }, restore: { scrollTop: topBack.scrollTop, selectedId: topBack.selectedId } },
+    });
+  };
+  const boardBackArrow = topBack ? (
+    <button type="button" className="board-back-arrow" data-board-back
+      aria-label={`${t('boardTabsBackTo')} ${topBack.title}`} title={`${t('boardTabsBackTo')} ${topBack.title}`}
+      onClick={goBack}>←</button>
   ) : null;
 
   const boardBody = (
@@ -2385,6 +2532,12 @@ export function BoardEditor({ id }: { id: string }) {
       <div className={`board-canvas-blur-wrap${(popupBox || deckWizardOpen) ? ' board-canvas-blurred' : ''}`}>
         {boardCanvas}
       </div>
+      {unnestBand && (
+        <div className="board-unnest-band" data-unnest-band role="status"
+          style={{ left: unnestBand.left, width: unnestBand.width, top: unnestBand.top }}>
+          {t('boardTabsReleaseToUnlink')} {title}
+        </div>
+      )}
       {popupBox && (
         <BoardCardPopup
           initialText={popupBox.text ?? ''}
@@ -2726,6 +2879,7 @@ export function BoardEditor({ id }: { id: string }) {
               board-page container caps at maxWidth:1100 (board wants more
               room than prose's 720/760 measure); mirrored here. */}
           <div style={{ width: 'min(100%, 1100px)', display: 'flex', flexDirection: 'column' }}>
+            {boardBackArrow}
             {boardContent}
             {boardTabs}
           </div>
@@ -2757,6 +2911,7 @@ export function BoardEditor({ id }: { id: string }) {
 
       <div style={{ height: 16 }} />
 
+      {boardBackArrow}
       {boardContent}
       {boardTabs}
       {actionToast.node}

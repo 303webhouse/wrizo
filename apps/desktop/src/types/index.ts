@@ -252,6 +252,12 @@ export interface JournalEntry {
   // J4 — the Board's positioned content, when pageType === 'board'. A JSON
   // column exactly like strokes; absent on every non-Board page (no backfill).
   boxes?: Box[];
+  // ITEM 144 — "BESIDE" board connections (Nick: "Store them properly"; S0 shape
+  // report docs/menus/item144-beside-storage-s0.md). ONE additive nullable jsonb
+  // column, `beside_links`, on BOARD rows only. An UNORDERED pair of boards; the
+  // record rides the board the writer was standing on and the other end reads it
+  // by a reverse scan (store/boardBeside.ts). Absent on every existing row.
+  besideLinks?: BesideLinks;
   // S1 — the Screenplay Room's document, when pageType === 'script'. A JSON
   // column exactly like boxes; absent on every non-script page (no backfill).
   script?: ScriptDoc;
@@ -676,3 +682,16 @@ export interface WizardAnswers {
   characterFocus?: string;
   pacing?: string;
 }
+
+// ITEM 144 — one record per beside connection. `boardId` is the OTHER board; the
+// row this lives on is one end. An unlink is a soft delete. Per-record
+// updatedAt/deletedAt are in the model but the column resolves WHOLE by the
+// row's updated_at (the page_links known limit) — nothing reads them for merging.
+export interface BesideLink {
+  id: string;
+  boardId: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+export interface BesideLinks { links: BesideLink[] }

@@ -3,14 +3,21 @@
 // Run: node apps/desktop/scripts/harness/i144.mjs   (repo root, dist-web freshly
 // built via `pnpm run build:web`; needs a box turn — it opens a real browser).
 //
-// BUILT SO FAR (stated, never implied): the row, its order and stability, a
-// press that travels, the bare "＋" with its two-row menu (Add Board / New
-// Board), the connect list's states, item 92's survival at the new door, the
-// room law, and item 169's stage-width measurement. NOT BUILT YET, and so NOT
-// CHECKED HERE: Unlink on a nested tab (§2), un-nesting by drag (§3, P4-P6),
-// double-click-replaces-parent with a back arrow (§4, P7), the third "Connect
-// Board" menu row (PLAN DESK's amendment has not landed), T5's tag narrowing
-// (gated on item 108). A reader of a short i144.mjs knows it by design.
+// BUILT (stated, never implied): the row, its order and stability, a press that
+// travels, the bare "＋" with its THREE rows in Nick's literal words (Add Board = a
+// NEW board inside; New Board = a NEW board beside; Connect Board = a recents-first
+// toggle list connecting BESIDE), beside connections STORED in `besideLinks` (the
+// client half; the server column is gated on Fable's S0 review), Unlink on each
+// tab's ⋯ (nested and beside), un-nesting by dragging the POINTER off the canvas
+// (the card stops — item 118), double-click-replaces-parent with a back arrow, item
+// 92's survival at the new door, the room law, and item 169's stage-width
+// measurement. NOT BUILT, and so NOT CHECKED: the trash-icon collision (item 168
+// owns Delete; `[data-trash-target]` does not exist yet), a release over ANOTHER
+// PANE (169 — no second pane exists), T5's tag narrowing (gated on item 108).
+// The stage-1 checks for "Add Board picks an existing board" (the connect list's
+// already-inside / contains-this-board rows) targeted the alternative reading; that
+// build never ran and is rewritten, not parked — the Plan menu's Connect Board
+// ("Put inside…") is where that list belongs.
 //
 // Standing laws: drivers never assume existence · real pointer events (every
 // press is a hit-tested `trustedDispatch`, never `.click()`) · seed through the
@@ -133,125 +140,322 @@ await withHarness(async (app) => {
   }
 
   // ==========================================================================
-  // P1 · THE "＋": no visible word, the direction in its accessible name; its
-  // menu has EXACTLY two rows (Add Board, New Board) and no Unlink.
+  // P9 · THE "＋": no visible word, the direction in its accessible name; its menu
+  // has THREE rows in Nick's literal words — Add Board (a NEW board INSIDE), New
+  // Board (a NEW board BESIDE), Connect Board (a toggle-open list) — and NO Unlink.
+  // (Supersedes the stage-1 "exactly two rows" reading, which was built to the
+  // alternative reading before the second amendment landed; it never ran, so it is
+  // rewritten rather than parked.)
   // ==========================================================================
   await freshDesk(app);
   await seed(app);
   await app.reload();
+  // This device opens Characters, then Plot, then Lore — so the recents list is [Lore, Plot, Characters].
+  await openBoard(app, 'b-cast');
+  await openBoard(app, 'b-plot');
   await openBoard(app, 'b-lore');
   const plus = await app.evalJs(`(() => { const b = document.querySelector('[data-board-plus]'); return b ? { text: b.textContent.trim(), name: b.getAttribute('aria-label') } : null; })()`);
-  ok('P1: the "＋" carries NO visible word — a bare glyph — and its accessible name states the direction ("Add a board to Lore")',
+  ok('P9: the "＋" carries NO visible word — a bare glyph — and its accessible name states the direction ("Add a board to Lore")',
     !!plus && plus.text === '＋' && plus.name === 'Add a board to Lore', JSON.stringify(plus));
   const besideCurrent = await app.evalJs(`(() => { const p = document.querySelector('[data-board-plus]'); const c = document.querySelector('[data-board-tab][aria-current="page"]'); return !!p && !!c && p.previousElementSibling === c; })()`);
-  ok('P1: the "＋" sits beside the CURRENT board\'s tab (not at the row\'s end)', besideCurrent === true);
+  ok('P9: the "＋" sits beside the CURRENT board\'s tab (not at the row\'s end)', besideCurrent === true);
   if (await press(app, '[data-board-plus]', 'the ＋ beside the current tab')) {
     await sleep(150);
     const menu = await app.evalJs(`(() => { const m = document.querySelector('[data-board-menu]'); return m ? { items: Array.from(m.querySelectorAll('[role=menuitem]')).map(e => e.getAttribute('data-board-menu-item') + ':' + e.textContent.trim()), hasUnlink: /unlink/i.test(m.textContent) } : null; })()`);
-    ok('P1: the menu has EXACTLY two rows, Add Board then New Board — and NO Unlink row (Unlink acts on a particular board; the ＋ belongs to the board you stand on)',
-      !!menu && JSON.stringify(menu.items) === JSON.stringify(['add:Add Board', 'new:New Board']) && menu.hasUnlink === false, JSON.stringify(menu));
+    ok('P9: the menu has EXACTLY three rows in order — Add Board, New Board, Connect Board — and NO Unlink row (Unlink acts on a particular board; the ＋ belongs to the board you stand on)',
+      !!menu && JSON.stringify(menu.items) === JSON.stringify(['add:Add Board', 'new:New Board', 'connect:Connect Board']) && menu.hasUnlink === false, JSON.stringify(menu));
 
     // ========================================================================
-    // Add Board → the connect list, with T4's row states. From Lore: Notes is
-    // ALREADY INSIDE; Plot and Characters are pressable (Characters contains
-    // Plot, not Lore). No self row.
+    // P11 · CONNECT BOARD's list order. This device opens Characters, Plot, Lore
+    // (in that order, so the fallback tail is by updatedAt). The list on Lore reads
+    // by ids: most-recently-opened first (Plot, then Characters), then the boards
+    // this device has NEVER opened by updatedAt descending; the current board is
+    // ABSENT.
     // ========================================================================
-    if (await press(app, '[data-board-menu-item="add"]', 'Add Board')) {
+    if (await press(app, '[data-board-menu-item="connect"]', 'Connect Board')) {
       await sleep(150);
       const rows = await app.evalJs(`Array.from(document.querySelectorAll('[data-board-connect-row]')).map(e => [e.getAttribute('data-board-connect-row'), e.getAttribute('data-state')])`);
-      const m = Object.fromEntries(rows);
-      ok('T4: the connect list has NO row for the current board itself (self is ABSENT — nonsense, not a refusal)', !('b-lore' in m), JSON.stringify(rows));
-      ok('T4/7: a board already inside is present, inert, and says so', m['b-notes'] === 'already-inside', JSON.stringify(rows));
-      ok('T4: any other board is pressable', m['b-cast'] === 'pressable' && m['b-plot'] === 'pressable', JSON.stringify(rows));
-      const noteText = await app.evalJs("document.querySelector('[data-board-connect-row=\"b-notes\"] .board-tabs-connect-note')?.textContent ?? null");
-      ok('T4/7: the inert row reads "already inside"', noteText === 'already inside', String(noteText));
+      const orderIds = rows.map(r => r[0]);
+      ok('P11: the list reads Plot, Characters (most-recently OPENED first — opened Characters, then Plot, then Lore), then Notes (never opened here: the updatedAt fallback tail); the current board is ABSENT — read by ids, never positions',
+        JSON.stringify(orderIds) === JSON.stringify(['b-plot', 'b-cast', 'b-notes']), JSON.stringify(orderIds));
       // 9 · the band never lays a panel over the canvas (item 166).
       const wrap = await rectOf(app, '.board-canvas-wrap');
       const list = await rectOf(app, '[data-board-connect-list]');
       ok('9: the open list never overlays the canvas — the wrap\'s rect and the list\'s rect do not intersect (item 166; the room law re-measured the wrap)',
         !!wrap && !!list && !intersects(wrap, list), JSON.stringify({ wrap, list }));
-      // Pressing an inert row writes nothing.
-      const loreNow = JSON.stringify((await rawEntry(app, 'b-lore'))?.boxes);
-      await press(app, '[data-board-connect-row="b-notes"]', 'the inert already-inside row');
-      await sleep(2500);
-      ok('T4/7: pressing an inert row writes nothing', JSON.stringify((await rawEntry(app, 'b-lore'))?.boxes) === loreNow);
 
       // ======================================================================
-      // 5 · ⛔ CONNECT, AND IT SURVIVES (item 92, asserted at the new door).
-      // Press Characters: its card is on the canvas WITHOUT a remount; then move
-      // ANOTHER card, wait past AUTOSAVE_MS, reload — the pin is still there.
+      // Connect: press Characters. It is connected BESIDE Lore — a record on
+      // LORE's row (where the writer stood), nothing on Characters' row, NO
+      // page-pin written in either board — and BOTH boards show the connection:
+      // Lore's tab shows Characters as besideCurrent, and Characters (the reverse
+      // read) lists Lore as a tab too.
       // ======================================================================
+      const castBoxesBefore = JSON.stringify((await rawEntry(app, 'b-cast'))?.boxes);
       if (await press(app, '[data-board-connect-row="b-cast"]', 'connect row b-cast')) {
-        await sleep(300);
-        const live = await app.evalJs("(window.wrizoBoard ? window.wrizoBoard() : []).some(b => b.kind === 'page-pin' && b.entryId === 'b-cast')");
-        ok('5: the chosen board\'s card is on the canvas WITHOUT a remount (appended to the component\'s own live boxes — item 92\'s law)', live === true);
-        const drag = await hittablePointBy(app, "document.querySelector('[data-box-id=\"lore-t1\"]')");
-        if (drag && drag.found) {
-          await app.mouseDown(drag.x, drag.y);
-          await app.mouseMove(drag.x + 20, drag.y + 12);
-          await app.mouseMove(drag.x + 40, drag.y + 24);
-          await app.mouseUp(drag.x + 40, drag.y + 24);
-        } else {
-          ok('5 (driver): a card to edit is reachable by a real pointer', false, JSON.stringify(drag));
-        }
-        await sleep(2600); // past AUTOSAVE_MS
+        await sleep(700);
+        const lore = await rawEntry(app, 'b-lore');
+        const cast = await rawEntry(app, 'b-cast');
+        const rec = (lore?.besideLinks?.links ?? []).filter(l => !l.deletedAt && l.boardId === 'b-cast');
+        ok('Connect: the connection is STORED on the board the writer stood on (a live `besideLinks` record on Lore naming Characters)',
+          rec.length === 1, JSON.stringify(lore?.besideLinks));
+        ok('Connect: the OTHER end stores nothing (Characters\' row has no besideLinks) — both read it by the reverse scan',
+          cast?.besideLinks === undefined, JSON.stringify(cast?.besideLinks));
+        ok('Connect: it is BESIDE, not INSIDE — no page-pin was written on either board, and Characters\' boxes are byte-identical',
+          !(lore?.boxes ?? []).some(b => b.kind === 'page-pin' && b.entryId === 'b-cast') && JSON.stringify(cast?.boxes) === castBoxesBefore);
+        const stay = await app.evalJs('location.hash');
+        ok('Connect: the writer STAYS on the board (no travel)', stay === '#/page/b-lore', String(stay));
+        await sleep(2500);
         await app.reload();
         await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'b-lore after reload' });
         await sleep(300);
-        const after = await rawEntry(app, 'b-lore');
-        const pinKept = (after?.boxes ?? []).some(b => b.kind === 'page-pin' && b.entryId === 'b-cast');
-        const moved = (after?.boxes ?? []).find(b => b.id === 'lore-t1');
-        ok('5 ⛔ item 92 at the new door: after editing another card, waiting past AUTOSAVE_MS and reloading, the nested board\'s pin is STILL there (a check that stops at the store write passes while the card is erased)',
-          pinKept === true && !!moved && moved.x > 0.05, JSON.stringify({ pinKept, movedX: moved?.x }));
+        const afterReload = await rawEntry(app, 'b-lore');
+        ok('P13: the connection survives a reload on the same device', (afterReload?.besideLinks?.links ?? []).some(l => !l.deletedAt && l.boardId === 'b-cast'));
+        // The reverse read: from Characters, Lore is a tab that is beside the current board.
+        await openBoard(app, 'b-cast');
+        const loreBesideCast = await app.evalJs(`(() => { const t = document.querySelector('[data-board-tab="b-lore"]'); const more = document.querySelector('[data-board-tab-more="b-lore"]'); return { tab: !!t, unlinkable: !!more }; })()`);
+        ok('Connect: from CHARACTERS the connection shows too (the reverse read) — Lore\'s tab carries the Unlink ⋯ ("beside the current board")',
+          loreBesideCast.tab === true && loreBesideCast.unlinkable === true, JSON.stringify(loreBesideCast));
       }
     }
   }
 
   // ==========================================================================
-  // 6 · THE CYCLE, MET. From Plot (inside Characters): Characters is present,
-  // inert, "contains this board"; pressing it writes nothing.
-  // ==========================================================================
-  await freshDesk(app);
-  await seed(app);
-  await app.reload();
-  await openBoard(app, 'b-plot');
-  if (await press(app, '[data-board-plus]', 'the ＋ on Plot') && await press(app, '[data-board-menu-item="add"]', 'Add Board (on Plot)')) {
-    await sleep(150);
-    const rows = Object.fromEntries(await app.evalJs(`Array.from(document.querySelectorAll('[data-board-connect-row]')).map(e => [e.getAttribute('data-board-connect-row'), e.getAttribute('data-state')])`));
-    ok('6: an ANCESTOR (Characters contains Plot) is present, inert, reads "contains this board" — item 128\'s invariant met where the writer meets it',
-      rows['b-cast'] === 'contains-this-board', JSON.stringify(rows));
-    const plotBefore = JSON.stringify((await rawEntry(app, 'b-plot'))?.boxes);
-    const castBefore2 = JSON.stringify((await rawEntry(app, 'b-cast'))?.boxes);
-    await press(app, '[data-board-connect-row="b-cast"]', 'the inert ancestor row');
-    await sleep(2500);
-    ok('6: pressing the ancestor row writes nothing — neither board\'s boxes changed',
-      JSON.stringify((await rawEntry(app, 'b-plot'))?.boxes) === plotBefore && JSON.stringify((await rawEntry(app, 'b-cast'))?.boxes) === castBefore2);
-  }
-
-  // ==========================================================================
-  // 8 · NEW BOARD: born in this drawer, nested inside this one, name field
-  // focused, and the writer travels to it.
+  // P10 · ADD BOARD = a NEW board INSIDE this one; NEW BOARD = a NEW board BESIDE.
   // ==========================================================================
   await freshDesk(app);
   await seed(app);
   await app.reload();
   await openBoard(app, 'b-lore');
   const idsBefore = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').map(e => e.id)");
-  if (await press(app, '[data-board-plus]', 'the ＋ on Lore') && await press(app, '[data-board-menu-item="new"]', 'New Board')) {
-    await app.waitFor("location.hash !== '#/page/b-lore'", { label: 'travelled to the new board' });
+  if (await press(app, '[data-board-plus]', 'the ＋ on Lore') && await press(app, '[data-board-menu-item="add"]', 'Add Board')) {
+    await app.waitFor("location.hash !== '#/page/b-lore'", { label: 'travelled to the new inside board' });
     await sleep(700);
     const bornId = await app.evalJs("location.hash.replace('#/page/', '')");
     const born = await rawEntry(app, bornId);
     const lore = await rawEntry(app, 'b-lore');
-    const novelId = await app.evalJs('window.__i144?.novel ?? null');
-    ok('8: the new board is born a BOARD, in THIS drawer',
-      !!born && born.pageType === 'board' && !idsBefore.includes(bornId) && born.projectId === (lore?.projectId ?? null), JSON.stringify({ bornId, projectId: born?.projectId, loreProject: lore?.projectId, novelId }));
-    ok('8: and NESTED inside the board it was made from — Lore holds a page-pin to it',
+    ok('P10 Add Board: a NEW board, born a BOARD in THIS drawer',
+      !!born && born.pageType === 'board' && !idsBefore.includes(bornId) && born.projectId === (lore?.projectId ?? null), JSON.stringify({ bornId, projectId: born?.projectId, loreProject: lore?.projectId }));
+    ok('P10 Add Board: NESTED INSIDE the board it was made from — Lore holds a page-pin to it',
       (lore?.boxes ?? []).some(b => b.kind === 'page-pin' && b.entryId === bornId), JSON.stringify((lore?.boxes ?? []).map(b => b.kind + ':' + (b.entryId ?? ''))));
+    ok('P10 Add Board: no BESIDE record was written (inside is not beside)', lore?.besideLinks === undefined, JSON.stringify(lore?.besideLinks));
     const focused = await app.evalJs("document.activeElement?.classList?.contains('crumb-rename') === true");
-    ok('8: its name field is FOCUSED on arrival (item 136\'s ruling — a nameless board gives a nameless field)', focused === true);
+    ok('P10 Add Board: its name field is FOCUSED on arrival (item 136\'s ruling — a nameless board gives a nameless field)', focused === true);
     const state = await app.evalJs('history.state && history.state.usr ? JSON.stringify(history.state.usr) : null');
-    ok('8: the one-shot birth flag is consumed — a refresh never re-opens the name field', state === null || !/nameFocus/.test(state), String(state));
+    ok('P10 Add Board: the one-shot birth flag is consumed — a refresh never re-opens the name field', state === null || !/nameFocus/.test(state), String(state));
+    // ⛔ item 92 at THIS door: edit another card on the parent, wait past AUTOSAVE_MS, reload — the pin holds.
+    await openBoard(app, 'b-lore');
+    const drag = await hittablePointBy(app, "document.querySelector('[data-box-id=\"lore-t1\"]')");
+    if (drag && drag.found) {
+      await app.mouseDown(drag.x, drag.y);
+      await app.mouseMove(drag.x + 20, drag.y + 12);
+      await app.mouseMove(drag.x + 40, drag.y + 24);
+      await app.mouseUp(drag.x + 40, drag.y + 24);
+    } else ok('P10 (driver): a card to edit is reachable by a real pointer', false, JSON.stringify(drag));
+    await sleep(2600);
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'b-lore after reload' });
+    await sleep(300);
+    const after = await rawEntry(app, 'b-lore');
+    const moved = (after?.boxes ?? []).find(b => b.id === 'lore-t1');
+    ok('P10 ⛔ item 92 at the new door: after editing another card, waiting past AUTOSAVE_MS and reloading, the new nested board\'s pin is STILL there (a check that stops at the store write passes while the card is erased)',
+      (after?.boxes ?? []).some(b => b.kind === 'page-pin' && b.entryId === bornId) && !!moved && moved.x > 0.05, JSON.stringify({ movedX: moved?.x }));
+  }
+
+  await freshDesk(app);
+  await seed(app);
+  await app.reload();
+  await openBoard(app, 'b-lore');
+  const idsBefore2 = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').map(e => e.id)");
+  const loreBoxesBefore = JSON.stringify((await rawEntry(app, 'b-lore'))?.boxes);
+  if (await press(app, '[data-board-plus]', 'the ＋ on Lore') && await press(app, '[data-board-menu-item="new"]', 'New Board')) {
+    await sleep(900);
+    const newIds = (await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').map(e => e.id)")).filter(x => !idsBefore2.includes(x));
+    const bornId = newIds[0];
+    const born = await rawEntry(app, bornId);
+    const lore = await rawEntry(app, 'b-lore');
+    ok('P10 New Board: exactly ONE new board, born a BOARD in THIS drawer', newIds.length === 1 && born?.pageType === 'board' && born?.projectId === lore?.projectId, JSON.stringify({ newIds }));
+    ok('P10 New Board: NOT nested — no page-pin written in either board (beside is not inside)',
+      JSON.stringify(lore?.boxes) === loreBoxesBefore && !(born?.boxes ?? []).some(b => b.kind === 'page-pin'), JSON.stringify(lore?.boxes?.map(b => b.kind + ':' + (b.entryId ?? ''))));
+    ok('P10 New Board: CONNECTED beside — a live record on Lore naming the new board',
+      (lore?.besideLinks?.links ?? []).some(l => !l.deletedAt && l.boardId === bornId), JSON.stringify(lore?.besideLinks));
+    ok('P10 New Board: the writer STAYS put (no travel)', (await app.evalJs('location.hash')) === '#/page/b-lore');
+    const tab = await app.evalJs(`!!document.querySelector('[data-board-tab="${bornId}"]')`);
+    ok('P10 New Board: its tab is in the row at once', tab === true);
+    const whisper = await app.evalJs("document.querySelector('.action-toast')?.textContent ?? null");
+    ok('P10 New Board: a whisper says where it went', typeof whisper === 'string' && /added beside Lore/.test(whisper), String(whisper));
+  }
+
+  // ==========================================================================
+  // P3 · UNLINK, on each tab's own ⋯ — present ONLY on a nested (or beside) tab,
+  // reads "Unlink from <parent>", writes MEMBERSHIP ONLY. From Characters: Plot is
+  // nested (Unlink from Characters); Lore is a plain drawer sibling (NO ⋯ at all —
+  // absent, not greyed).
+  // ==========================================================================
+  await freshDesk(app);
+  await seed(app);
+  await app.reload();
+  await openBoard(app, 'b-cast');
+  const mores = await app.evalJs("Array.from(document.querySelectorAll('[data-board-tab-more]')).map(e => e.getAttribute('data-board-tab-more'))");
+  ok('P3: the ⋯ is present ONLY on tabs with something to unlink — Plot (nested in Characters) and Notes (nested in Lore) — and ABSENT on Characters and Lore (absent, not greyed)',
+    JSON.stringify(mores.slice().sort()) === JSON.stringify(['b-notes', 'b-plot']), JSON.stringify(mores));
+  const plotBefore = JSON.stringify(await rawEntry(app, 'b-plot'));
+  const notesBefore = JSON.stringify(await rawEntry(app, 'b-notes'));
+  if (await press(app, '[data-board-tab-more="b-plot"]', 'the ⋯ on Plot')) {
+    await sleep(150);
+    const acts = await app.evalJs("Array.from(document.querySelectorAll('[data-board-unlink-tab=\"b-plot\"]')).map(e => e.textContent.trim())");
+    ok('P3: the act reads with its parent NAMED — "Unlink from Characters", never a bare "Unlink"', JSON.stringify(acts) === JSON.stringify(['Unlink from Characters']), JSON.stringify(acts));
+    if (await press(app, '[data-board-unlink="nested"][data-board-unlink-tab="b-plot"]', 'Unlink from Characters')) {
+      await sleep(2600);
+      const cast = await rawEntry(app, 'b-cast');
+      ok('P3: it wrote MEMBERSHIP ONLY — Characters no longer holds Plot\'s pin; Plot\'s own record and Notes are byte-identical (nothing deleted)',
+        !(cast?.boxes ?? []).some(b => b.kind === 'page-pin' && b.entryId === 'b-plot')
+          && JSON.stringify(await rawEntry(app, 'b-plot')) === plotBefore && JSON.stringify(await rawEntry(app, 'b-notes')) === notesBefore);
+      const depth = await app.evalJs("document.querySelector('[data-board-tab=\"b-plot\"]')?.closest('.board-tab-wrap')?.getAttribute('data-depth')");
+      ok('P3: after Unlink the tab takes its birth-order place at the ROOT of the drawer row (depth 0), still in the row', depth === '0', String(depth));
+    }
+  }
+
+  // ==========================================================================
+  // Unlink a BESIDE connection (Nick answered the storage question: stored, so
+  // this is buildable). Connect Lore beside Characters from Lore, then Unlink from
+  // the Lore tab's ⋯ on Characters' board.
+  // ==========================================================================
+  await freshDesk(app);
+  await seed(app);
+  await app.evalJs(`(() => { const t = new Date().toISOString(); window.wrizoPatchEntry('b-lore', { besideLinks: { links: [{ id: 'seed-beside', boardId: 'b-cast', createdAt: t, updatedAt: t }] } }); })()`);
+  await app.reload();
+  await openBoard(app, 'b-cast');
+  if (await press(app, '[data-board-tab-more="b-lore"]', 'the ⋯ on Lore (beside Characters)')) {
+    await sleep(150);
+    const acts = await app.evalJs("Array.from(document.querySelectorAll('[data-board-unlink-tab=\"b-lore\"]')).map(e => e.getAttribute('data-board-unlink') + ':' + e.textContent.trim())");
+    ok('P3 beside: the act reads "Unlink from Characters" (the CURRENT board named)', JSON.stringify(acts) === JSON.stringify(['beside:Unlink from Characters']), JSON.stringify(acts));
+    if (await press(app, '[data-board-unlink="beside"][data-board-unlink-tab="b-lore"]', 'Unlink from Characters (beside)')) {
+      await sleep(2600);
+      const lore = await rawEntry(app, 'b-lore');
+      const rec = (lore?.besideLinks?.links ?? []).find(l => l.id === 'seed-beside');
+      ok('P3 beside: the record is SOFT-DELETED (deletedAt set) on the row that stored it — not removed, and no board deleted',
+        !!rec && !!rec.deletedAt && !!(await rawEntry(app, 'b-cast')) && !!lore, JSON.stringify(rec));
+      const gone = await app.evalJs("!document.querySelector('[data-board-tab-more=\"b-lore\"]')");
+      ok('P3 beside: the ⋯ is gone — absent, not greyed — once nothing remains to unlink', gone === true);
+    }
+  }
+
+  // ==========================================================================
+  // P4/P5 · THE DRAG. A nested board's card: the card STOPS at the canvas edge
+  // (item 118) and only the POINTER leaves. Real pointer events; released where a
+  // writer would release (outside the element).
+  // ==========================================================================
+  await freshDesk(app);
+  await seed(app);
+  await app.reload();
+  await openBoard(app, 'b-cast');
+  const wrapR = await rectOf(app, '.board-canvas-wrap');
+  const pinPoint = await hittablePointBy(app, "document.querySelector('[data-box-id=\"pin-plot\"]')");
+  if (wrapR && pinPoint && pinPoint.found) {
+    const y = pinPoint.y;
+    // P5 · NOT armed: to the edge and released INSIDE — nothing written; no band ever.
+    await app.mouseDown(pinPoint.x, y);
+    await app.mouseMove(pinPoint.x + 30, y + 4);
+    await app.mouseMove(wrapR.r - 8, y + 4);
+    const bandInside = await app.evalJs("!!document.querySelector('[data-unnest-band]')");
+    await app.mouseUp(wrapR.r - 8, y + 4);
+    await sleep(2600);
+    ok('P5: dragged to the edge and released INSIDE — the band never showed and NOTHING was unlinked (a card dragged TO the edge does nothing)',
+      bandInside === false && (await rawEntry(app, 'b-cast'))?.boxes?.some(b => b.kind === 'page-pin' && b.entryId === 'b-plot') === true);
+  }
+
+  await freshDesk(app);
+  await seed(app);
+  await app.reload();
+  await openBoard(app, 'b-cast');
+  {
+    const wr = await rectOf(app, '.board-canvas-wrap');
+    const pp = await hittablePointBy(app, "document.querySelector('[data-box-id=\"pin-plot\"]')");
+    if (wr && pp && pp.found) {
+      const y = pp.y;
+      await app.mouseDown(pp.x, y);
+      await app.mouseMove(pp.x + 30, y + 4);
+      await app.mouseMove(wr.r + 60, y + 4); // the POINTER goes 60px past the canvas's edge
+      await sleep(120);
+      const armed = await app.evalJs(`(() => {
+        const band = document.querySelector('[data-unnest-band]');
+        const canvas = document.querySelector('.board-canvas')?.getBoundingClientRect();
+        const card = document.querySelector('[data-box-id="pin-plot"]')?.getBoundingClientRect();
+        return { band: band ? band.textContent.trim() : null, cardInside: !!card && !!canvas && card.right <= canvas.right + 1 && card.left >= canvas.left - 1 };
+      })()`);
+      ok('P4: the pointer 60px past the edge ARMS it — a band reading "Release to unlink from Characters" (the parent named)',
+        typeof armed.band === 'string' && /Release to unlink from Characters/.test(armed.band), JSON.stringify(armed));
+      ok('P4: and the CARD never left the canvas — item 118\'s hard stop holds; only the pointer left', armed.cardInside === true, JSON.stringify(armed));
+      await app.mouseUp(wr.r + 60, y + 4); // released OUTSIDE the element
+      await sleep(2600);
+      const cast = await rawEntry(app, 'b-cast');
+      ok('P4: released while armed = UNLINK — Characters no longer holds Plot\'s pin, and Plot\'s own record is untouched',
+        !(cast?.boxes ?? []).some(b => b.kind === 'page-pin' && b.entryId === 'b-plot') && !!(await rawEntry(app, 'b-plot')));
+      const left = await app.evalJs("({ band: !!document.querySelector('[data-unnest-band]'), armed: document.querySelector('.board-canvas')?.getAttribute('data-unnest-armed') })");
+      ok('P4: NOTHING is left armed after release (no band, data-unnest-armed=false)', left.band === false && left.armed === 'false', JSON.stringify(left));
+      const undo = await trustedDispatch(app, "Array.from(document.querySelectorAll('button')).find(b => b.textContent.trim() === 'Undo')", 'the board\'s Undo', { report: ok });
+      if (undo) {
+        await sleep(2600);
+        ok('P4: the board\'s own Undo restores it — the drag\'s start snapshot, the pin is back',
+          (await rawEntry(app, 'b-cast'))?.boxes?.some(b => b.kind === 'page-pin' && b.entryId === 'b-plot') === true);
+      }
+    }
+  }
+  // A plain TEXT card dragged past the edge arms nothing.
+  await freshDesk(app);
+  await seed(app);
+  await app.reload();
+  await openBoard(app, 'b-lore');
+  {
+    const wr = await rectOf(app, '.board-canvas-wrap');
+    const tp = await hittablePointBy(app, "document.querySelector('[data-box-id=\"lore-t1\"]')");
+    if (wr && tp && tp.found) {
+      await app.mouseDown(tp.x, tp.y);
+      await app.mouseMove(tp.x + 30, tp.y + 4);
+      await app.mouseMove(wr.r + 60, tp.y + 4);
+      await sleep(120);
+      const band = await app.evalJs("!!document.querySelector('[data-unnest-band]')");
+      await app.mouseUp(wr.r + 60, tp.y + 4);
+      ok('P5: a plain TEXT card dragged past the edge arms NOTHING — only a nested board\'s card can', band === false);
+    }
+  }
+
+  // ==========================================================================
+  // P7 · DOUBLE-CLICK a nested board: the child replaces the parent, with a back
+  // arrow named for the parent; ONE press returns the parent AS IT WAS LEFT — its
+  // canvas scroll and its selection — and the tabs' ids are identical throughout.
+  // ==========================================================================
+  await freshDesk(app);
+  await seed(app);
+  await app.reload();
+  await openBoard(app, 'b-lore');
+  {
+    const idsStart = await tabIds(app);
+    await app.evalJs("(() => { const w = document.querySelector('.board-canvas-wrap'); w.scrollTop = 180; })()");
+    const sel = await hittablePointBy(app, "document.querySelector('[data-box-id=\"lore-t1\"]')");
+    if (sel && sel.found) { await app.mouseDown(sel.x, sel.y); await app.mouseUp(sel.x, sel.y); }
+    await sleep(150);
+    const pin = await hittablePointBy(app, "document.querySelector('[data-box-id=\"pin-notes\"]')");
+    // Read AFTER hittablePointBy: it scrolls its target into view, and the frame records the scroll at departure.
+    const scrollBefore = await app.evalJs("document.querySelector('.board-canvas-wrap').scrollTop");
+    if (pin && pin.found) {
+      await app.doubleClick(pin.x, pin.y);
+      await app.waitFor("location.hash === '#/page/b-notes'", { label: 'the child replaced the parent' });
+      await sleep(400);
+      const arrow = await app.evalJs("document.querySelector('[data-board-back]')?.getAttribute('aria-label') ?? null");
+      ok('P7: the child replaces the parent and an icon-only back arrow appears, named for the parent ("Back to Lore")', arrow === 'Back to Lore', String(arrow));
+      ok('P7: the tabs\' ids are identical throughout — entering the child moved only the olive marker', JSON.stringify(await tabIds(app)) === JSON.stringify(idsStart) && (await currentTab(app)) === 'b-notes');
+      if (await press(app, '[data-board-back]', 'the back arrow')) {
+        await app.waitFor("location.hash === '#/page/b-lore'", { label: 'returned to the parent' });
+        await sleep(600);
+        const back = await app.evalJs(`({ scroll: document.querySelector('.board-canvas-wrap').scrollTop, sel: document.querySelector('[data-box-id="pin-notes"]')?.getAttribute('data-selected') ?? null })`);
+        ok('P7: ONE press returns the parent AS IT WAS LEFT — canvas scroll and the selection (the card pressed to make the double-click) restored (the stateful return page-primacy asks of every departure)',
+          Math.abs(back.scroll - scrollBefore) <= 2 && back.sel === 'true', JSON.stringify({ back, scrollBefore }));
+        ok('P7: the tabs\' ids are still identical after the return', JSON.stringify(await tabIds(app)) === JSON.stringify(idsStart));
+        ok('P7: the parent has no back arrow of its own (it was not entered through a nested board)', (await app.evalJs("!!document.querySelector('[data-board-back]')")) === false);
+      }
+    }
   }
 
   // ==========================================================================
@@ -278,16 +482,17 @@ await withHarness(async (app) => {
     !!colour.marker && colour.marker === colour.olive, JSON.stringify(colour));
 
   // ==========================================================================
-  // S0 (item 169) — THE STAGE WIDTHS, MEASURED, and the pane rule applied to them.
-  // Amendment §5: panes = the largest n <= 3 such that n x CANVAS_MIN_W (560) +
-  // (n-1) x gutter <= the stage's measured width. The gutter is NOT ruled; this
-  // uses --frame-gap (28px), the only gap token the frame has, and states it.
-  // The check is that the MEASURED stage width equals the CSS arithmetic
-  // (min(viewport - 2 x --frame-host-pad-x, --frame-max = 1720)) — so the
-  // derivation the table rests on is itself proved rather than assumed.
+  // S0 (item 169) — THE STAGE WIDTHS, MEASURED, and the pane rule applied to them
+  // with the TUNED constants (store/splitPanes.ts): pane minimum 480, gutter 28
+  // (accepted). Nick's counts are the REQUIREMENT — two panes on laptops and
+  // tablets, three on desktops. The measured stage width must equal the CSS
+  // arithmetic (min(viewport - 2 x host padding, --frame-max = 1720)), so the table
+  // rests on a proved derivation. The constants are restated here INDEPENDENTLY of
+  // the module, so a change to one cannot quietly move the other's goalposts.
   // ==========================================================================
-  const CANVAS_MIN_W = 560, GUTTER = 28, FRAME_MAX = 1720;
-  const paneRule = (stageW) => { let n = 1; for (const k of [2, 3]) if (k * CANVAS_MIN_W + (k - 1) * GUTTER <= stageW) n = k; return n; };
+  const PANE_MIN = 480, GUTTER = 28, FRAME_MAX = 1720;
+  const paneRule = (stageW) => { let n = 1; for (const k of [2, 3]) if (k * PANE_MIN + (k - 1) * GUTTER <= stageW) n = k; return n; };
+  const wantPanes = { 1100: 2, 1280: 2, 1366: 2, 1440: 2, 1680: 3, 1920: 3, 2200: 3 };
   const table = [];
   for (const w of [1100, 1280, 1366, 1440, 1680, 1920, 2200]) {
     await freshDesk(app, w, 900);
@@ -300,10 +505,12 @@ await withHarness(async (app) => {
     })()`);
     const expected = Math.min(m.vw - 2 * m.hostPad, FRAME_MAX);
     table.push({ w, vw: m.vw, stage: Math.round(m.stage), expected: Math.round(expected), panes: paneRule(m.stage) });
-    ok(`S0 (169) @ ${w}: the measured stage width equals min(viewport - 2 x host padding, --frame-max) — the arithmetic the pane table rests on (±2px); panes by the rule = ${paneRule(m.stage)}`,
+    ok(`S0 (169) @ ${w}: the measured stage width equals min(viewport - 2 x host padding, --frame-max) (±2px)`,
       m.stage != null && Math.abs(m.stage - expected) <= 2, JSON.stringify({ stage: m.stage, expected, vw: m.vw, hostPad: m.hostPad }));
+    ok(`S0 (169) @ ${w}: Nick's count is REACHABLE — ${wantPanes[w]} panes (${wantPanes[w] === 2 ? 'laptop/tablet' : 'desktop'}); the rule gives ${paneRule(m.stage)} from the MEASURED stage`,
+      paneRule(m.stage) === wantPanes[w], JSON.stringify({ stage: m.stage, panes: paneRule(m.stage) }));
   }
-  ok('S0 (169) REPORT — stage width and pane count at each tested width (the rule, with a 28px gutter and 560 per pane)', true, JSON.stringify(table));
+  ok('S0 (169) REPORT — measured stage width and pane count at each tested width (pane min 480, gutter 28, frame max 1720)', true, JSON.stringify(table));
 
   return checks;
 });

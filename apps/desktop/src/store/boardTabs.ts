@@ -17,6 +17,8 @@ import {
 } from './persistence';
 import { boardName } from './entryText';
 import { deskTerm } from './deskLexicon';
+import { getBoardsBeside, isBeside } from './boardBeside';
+import { orderByRecents } from './boardRecents';
 
 // S0(d) — THE ONE "in X" HELPER. Item 163 wrote it locally in CascadePanels.tsx
 // for the Plan row; the brief says whichever lands first builds it and the
@@ -65,6 +67,10 @@ export interface BoardTab {
   parentId: string | null;
   /** "in Research": present only when the board lives somewhere other than the row's drawer. */
   inLine: string | null;
+  /** The parent's NAME as the row draws it (the one this tab hangs beneath), or null — for "Unlink from <parent>". */
+  parentTitle: string | null;
+  /** True when this tab is connected BESIDE the current board (never the current tab itself) — for "Unlink from <current>". */
+  besideCurrent: boolean;
 }
 
 export interface BoardTabRow {
@@ -119,6 +125,10 @@ export function boardTabRow(currentId: string): BoardTabRow | null {
       }
     }
   }
+  // ITEM 144 — boards connected BESIDE the current one (either end stored it).
+  // The row is "every connected board" (Nick), so a beside board is a tab even
+  // from another drawer (it then wears its "in X" line).
+  getBoardsBeside(currentId).forEach(add);
   // Every descendant of anything already in the row.
   {
     const seen = new Set<string>();
@@ -136,6 +146,7 @@ export function boardTabRow(currentId: string): BoardTabRow | null {
 
   // Rule 3 — a board sits under the FIRST parent `boardNestChain` names, and
   // only if that parent is itself in the row; otherwise it is a root.
+  const besideIds = new Set(getBoardsBeside(currentId).map(b => b.id));
   const parentOf = new Map<string, string | null>();
   for (const e of inRow.values()) {
     const first = getBoardsConnecting(e.id).find(p => p.id !== e.id && inRow.has(p.id));
@@ -154,6 +165,8 @@ export function boardTabRow(currentId: string): BoardTabRow | null {
       id: e.id, title: boardTabTitle(e), depth, isCurrent: e.id === currentId,
       parentId: parentOf.get(e.id) ?? null,
       inLine: foreign ? drawerCaptionFor(e) : null,
+      parentTitle: parentOf.get(e.id) ? boardTabTitle(inRow.get(parentOf.get(e.id) as string) as JournalEntry) : null,
+      besideCurrent: e.id !== currentId && besideIds.has(e.id),
     });
     childrenOf(e.id).forEach(c => emit(c, depth + 1));
   };
@@ -204,5 +217,34 @@ export function connectListRows(currentId: string): ConnectRow[] {
       state: insideIds.has(b.id) ? 'already-inside'
         : wouldNestCycle(b.id, currentId) ? 'contains-this-board'
           : 'pressable',
+    }));
+}
+
+// --- CONNECT BOARD (the "+" menu's third row) — a toggle-open list of ALL boards,
+// most recently opened first, connecting the pick BESIDE the current board
+// (docs/menus/b144-plus-menu-and-unnest-amendment.md §9.1/§9.4).
+export type BesideRowState = 'pressable' | 'already-beside';
+
+export interface BesideRow {
+  id: string;
+  title: string;
+  inLine: string;
+  state: BesideRowState;
+}
+
+/**
+ * Every user board except the current one, ordered by `orderByRecents` (opened
+ * on this device first, then never-opened by `updatedAt` — a stated fallback).
+ * Self is ABSENT (nonsense, not a refusal); a board already beside this one is
+ * present and inert, so a writer looking for it finds it. There is no cycle
+ * state: "beside" contains nothing.
+ */
+export function connectBoardRows(currentId: string): BesideRow[] {
+  return orderByRecents(getAllUserBoards().filter(b => b.id !== currentId))
+    .map<BesideRow>(b => ({
+      id: b.id,
+      title: boardTabTitle(b),
+      inLine: drawerCaptionFor(b),
+      state: isBeside(currentId, b.id) ? 'already-beside' : 'pressable',
     }));
 }

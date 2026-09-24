@@ -5294,3 +5294,21 @@ a:focus-visible,
 .board-tabs-connect-row.inert{ color:var(--text-low); cursor:default; }
 .board-tabs-connect-in, .board-tabs-connect-note{ font-size:10px; color:var(--text-low); }
 .board-tabs-empty{ font-size:12px; color:var(--text-low); padding:4px 6px; }
+/* ITEM 144 — the tab's own ⋯ (Unlink), shown always on the CURRENT tab and on
+   hover/focus for the rest ("absent, not greyed" — the row renders it only when
+   the tab has an act at all), and the back arrow that replaces a parent board. */
+.board-tab-more{ background:none; border:0; color:var(--text-low); font-size:13px; line-height:1;
+  cursor:pointer; padding:4px 4px; opacity:0; transition:.15s; }
+.board-tab-wrap:hover .board-tab-more, .board-tab-wrap:focus-within .board-tab-more,
+.board-tab-more.current, .board-tab-more[aria-expanded='true']{ opacity:1; }
+.board-tab-more:hover{ color:var(--text-hi); }
+.board-back-arrow{ background:none; border:0; color:var(--text-mid); font-size:16px; line-height:1;
+  cursor:pointer; padding:2px 8px 6px 0; align-self:flex-start; transition:.15s; }
+.board-back-arrow:hover{ color:var(--text-hi); }
+/* ITEM 144 §3 — the armed drag-off: a labelled band over the canvas wrap's own top
+   edge (position:fixed, so it displaces nothing) and a lifted look on the card in
+   flight. Unlink and Delete must read differently (168's drop state is its own). */
+.board-unnest-band{ position:fixed; z-index:60; pointer-events:none; text-align:center; padding:6px 10px;
+  font-family:var(--font-ui); font-size:12px; letter-spacing:.5px; color:var(--text-hi);
+  background:var(--ink-800); border:1px dashed var(--accent-rest); }
+.board-canvas[data-unnest-armed='true'] .board-box[data-selected='true']{ opacity:.7; outline:2px dashed var(--accent-rest); transform:scale(1.03); }

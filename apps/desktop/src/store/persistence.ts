@@ -1,4 +1,4 @@
-import type { Project, StoryPlan, SessionLog, Draft, BeatNote, JournalEntry, Fragment, FragmentLink, Drawer, Box, Stroke, ScriptDoc, TutorThread, TutorMessage } from '../types';
+import type { Project, StoryPlan, SessionLog, Draft, BeatNote, JournalEntry, Fragment, FragmentLink, Drawer, Box, Stroke, ScriptDoc, TutorThread, TutorMessage, BesideLinks } from '../types';
 import { sortNotebook, notebookKey, midpoint, gapExhausted, respread } from './pageOrder';
 import { serializeScriptDoc } from './scriptText';
 import { createEmptyScriptDoc } from './scriptDoc';
@@ -869,6 +869,9 @@ export interface JournalPageSeed {
   deletedAt?: string;
   shelved?: boolean;
   orderIndex?: number;
+  // ITEM 144 — same discipline, one more field: a board born WITH beside
+  // connections already on it (test seeding; the boxes/tags precedent).
+  besideLinks?: BesideLinks;
 }
 
 export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
@@ -930,6 +933,7 @@ export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
   if (seed?.deletedAt !== undefined) entry.deletedAt = seed.deletedAt;
   if (seed?.shelved !== undefined) entry.shelved = seed.shelved;
   if (seed?.orderIndex !== undefined) entry.orderIndex = seed.orderIndex;
+  if (seed?.besideLinks !== undefined) entry.besideLinks = seed.besideLinks;
   // NO `updatedAt` ASSIGNMENT, DELIBERATELY. It was here, and it was a lie:
   // `saveJournalEntry` below reaches `upsert`, which stamps `updatedAt` from
   // the wall clock unconditionally, so whatever was assigned here never

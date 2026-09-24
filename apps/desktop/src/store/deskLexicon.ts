@@ -110,6 +110,8 @@ export type DeskTermId =
   // name's direction only ("Add a board to Characters").
   | 'boardTabsNavLabel' | 'boardTabsAddTo' | 'boardTabsAddBoard' | 'boardTabsNewBoard'
   | 'boardTabsBack' | 'boardTabsNoOtherBoards' | 'boardTabsAlreadyInside' | 'boardTabsContainsThis'
+  | 'boardTabsConnectBoard' | 'boardTabsAlreadyBeside' | 'boardTabsMoreFor' | 'boardTabsUnlinkFrom'
+  | 'boardTabsReleaseToUnlink' | 'boardTabsBackTo' | 'boardTabsWhisperNewBeside' | 'boardTabsWhisperConnected' | 'boardTabsWhisperUnlinked'
   | 'cascadeCardCopyTo' | 'cascadeCardCopyTitle' | 'cascadeCardCopyNote'
   | 'cascadeCardCopiedFrom' | 'cascadeCardRemove' | 'cascadeCardOnlyBoard'
   | 'cascadePlanSectionCards' | 'cascadePlanSectionPages'
@@ -690,6 +692,15 @@ const CANONICAL: Record<DeskTermId, string> = {
   boardTabsNoOtherBoards: 'No other boards yet.',
   boardTabsAlreadyInside: 'already inside',
   boardTabsContainsThis: 'contains this board',
+  boardTabsConnectBoard: 'Connect Board',
+  boardTabsAlreadyBeside: 'already beside',
+  boardTabsMoreFor: 'More for',
+  boardTabsUnlinkFrom: 'Unlink from',
+  boardTabsReleaseToUnlink: 'Release to unlink from',
+  boardTabsBackTo: 'Back to',
+  boardTabsWhisperNewBeside: 'New board added beside',
+  boardTabsWhisperConnected: 'Connected beside',
+  boardTabsWhisperUnlinked: 'Unlinked from',
   // PW2 S3 (item 123) — card transfer. COPY ONLY: Move is an ownership
   // transfer and a different act, deferred by name.
   cascadeCardCopyTo: 'Copy to a board…',
