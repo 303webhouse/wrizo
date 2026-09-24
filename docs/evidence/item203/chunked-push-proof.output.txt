@@ -1,11 +1,11 @@
 PASS  [CLAIM] K1a: THE WEDGE IS GONE - a tiny page written AFTER a 20 MB page reaches the server (it used to be refused with it)  {"upserts":["TINY"],"dirty":["FAT"]}
 PASS  [CLAIM] K1b: the fat page is NEVER SENT - not one request in the whole sync carries more than the limit (the client knows it cannot fit and does not upload it to be refused)  {"maxBodyBytes":226,"requests":1}
-PASS  [CLAIM] K1c: it is NAMED - listed as too large, by its own title, with its size (P5)  [{"id":"FAT","title":"A heavy ink page","bytes":21715399}]
+PASS  [CLAIM] K1c: it is NAMED - listed as too large, by its own title, with its size (P5)  [{"id":"FAT","title":"A heavy ink page","bytes":21714680}]
 PASS  [CLAIM] K1d: and the sync is NOT "offline" - everything that could travel did, so the status ends synced (offline would be a lie)  ["pending","synced"]
 PASS  [CLAIM] K1e: NEVER RE-SENT FOREVER - five more syncs upload nothing the size of the fat page (each request is a tiny pull), and it stays listed and dirty locally  {"maxBodyBytes":51,"requests":5,"dirty":["FAT"]}
 PASS  [CLAIM] K5: SELF-HEALING - the writer erases most of the ink, and the very next sync sends the page, the list clears, nothing was needed but the edit  {"before":1,"upserts":["FAT"],"list":0,"dirty":[]}
 PASS  [CLAIM] K2a: 12 MB of dirty pages - which used to be ONE refused body - ALL sync, in chunks: 30 upserts on the server, nothing left dirty, nothing listed  {"upserts":30,"dirty":0,"listed":0}
-PASS  [CLAIM] K2b: no request is bigger than a chunk (~1 MB target) - measured over every request the sync made  {"maxBodyBytes":849119,"requests":16,"pushOnly":15}
+PASS  [CLAIM] K2b: no request is bigger than a chunk (~1 MB target) - measured over every request the sync made  {"maxBodyBytes":848915,"requests":16,"pushOnly":15}
 PASS  [CLAIM] K2c: ONLY THE LAST REQUEST PULLS - the six pulls ran exactly once for the whole chunked sync, not once per chunk  {"serverPullQueries":6,"requestsThatPull":1}
 PASS  [CLAIM] K3a: the small page syncs around them, and a lower limit nobody predicted costs exactly ONE refused upload - the second big page is skipped on what the first taught (learned limit), not sent to be refused too  {"upserts":["C03"],"refusedRequests":1,"requests":["0.31MB:200","1.86MB:413","0.00MB:200"]}
 PASS  [CLAIM] K3b: both big pages are NAMED, and neither is re-sent - the next sync uploads nothing over the proxy's limit  ["A18","B19"]
@@ -15,14 +15,15 @@ PASS  [CLAIM] K4b (P1): a malformed JSON body is a 400 - a client mistake no lon
 PASS  [CLAIM] K6: the ordinary sync is byte-for-byte the old shape - ONE request carries the push AND the pull, and it lands  {"requests":1,"upserts":["ONE"],"pulls":6}
 PASS  [CLAIM] K7: with the network genuinely down the status is OFFLINE (that word is still true), the fat page is STILL named (it was known before any request), and nothing was cleaned  {"statuses":["pending","offline"],"listed":1,"dirty":["FAT","TINY"]}
 PASS  [CONTROL] C1: when the network returns, the same client syncs the small page and stays honest about the big one  {"upserts":["TINY"],"statuses":["pending","offline","pending","synced"]}
-PASS  [CLAIM] K8: progress survives a later failure - the chunks that landed are CLEAN and stay clean, only the rest remain dirty, and the status is offline (a chunk failing mid-sync loses nothing already sent)  {"landed":["Q5","Q0"],"dirty":["Q1","Q2","Q3","Q4"],"statuses":["pending","offline"]}
-PASS  [CLAIM] K9: THE ONE-TIME JOURNAL BACKFILL - it re-dirties EVERY page (here 30, 12 MB) and the sync it schedules used to be one refused body; it now goes out in chunks, every request stays under a chunk, and the device ends clean  {"redirtiedByBackfill":30,"dirtyAfter":0,"maxBodyBytes":849010,"requests":32}
+PASS  [CLAIM] K8: progress survives a later failure - the chunks that landed are CLEAN and stay clean, only the rest remain dirty, and the status is offline (a chunk failing mid-sync loses nothing already sent)  {"landed":["Q3","Q0"],"dirty":["Q1","Q2","Q4","Q5"],"statuses":["pending","offline"]}
+PASS  [CLAIM] K9: THE ONE-TIME JOURNAL BACKFILL - it re-dirties EVERY page (here 30, 12 MB) and the sync it schedules used to be one refused body; it now goes out in chunks, every request stays under a chunk, and the device ends clean  {"redirtiedByBackfill":30,"dirtyAfter":0,"maxBodyBytes":849062,"requests":32}
 PASS  [CLAIM] K10a: one page too large is NAMED in the writer's words and told it is safe: “A heavy ink page” is too large to sync — it is saved on this device  "“A heavy ink page” is too large to sync — it is saved on this device"
-PASS  [CLAIM] K10b: several are counted, not listed: "2 pages are too large to sync — they are saved on this device"  "2 pages are too large to sync — they are saved on this device"
+PASS  [CLAIM] K10b: several are counted, not listed, and the noun is NEUTRAL (what cannot travel may be a project or a drawer, not only a page): "2 items are too large to sync — they are saved on this device"  "2 items are too large to sync — they are saved on this device"
+PASS  [CLAIM] K10d: a title containing $&, $1, $' and $$ (and the template's own {n} / {title}) comes out LITERALLY - the notice uses a replacer function, not a replacement string  "“Q&A $& $1 $' $$ {n} {title}” is too large to sync — it is saved on this device"
 PASS  [CLAIM] K10c: it is NOT called offline (the network is fine); and while the network really is down, offline still wins - it is the broader truth  {"tooLarge":"“A heavy ink page” is too large to sync — it is saved on this device","offline":"Offline — saved here","none":null}
 PASS  [CLAIM] K11: logging out clears the too-large list - one account's page names must not appear for the next  {"before":1,"after":0}
 PASS  [CLAIM] K4c (P3): every OTHER route still refuses over 5 MiB (its limit is unchanged) and its 413 says so - the larger limit is /api/sync's alone  {"status":413,"body":{"error":"payload too large","limitBytes":5242880}}
-PASS  [CLAIM] K12 (P3): a LONE record over the old 5 MiB limit (6 MB - a dense handwritten page and a bit) now reaches the server, is not listed as too large, and the device ends clean  {"upserts":["TINY","MID"],"listed":0,"dirty":[],"maxBodyBytes":6514520}
+PASS  [CLAIM] K12 (P3): a LONE record over the old 5 MiB limit (6 MB - a dense handwritten page and a bit) now reaches the server, is not listed as too large, and the device ends clean  {"upserts":["TINY","MID"],"listed":0,"dirty":[],"maxBodyBytes":6514808}
 PASS  [CLAIM] K13 (P3): an ANONYMOUS request is answered 401 at EVERY size - including one over the sync limit, where the body-first order would have said 413. The server does not buffer a byte of a body it has not authenticated  {"1KB":401,"6MB":401,"17MB":401}
 PASS  [CENSUS] N1 (P1): the server error handler honours 413 and answers with limitBytes; it is no longer one blanket 500
 PASS  [CENSUS] N2 (P2): /sync honours `pull: false` (a push-only request runs no pulls)
@@ -30,7 +31,7 @@ PASS  [CENSUS] N3 (P2): the client mirrors the limit (5 MiB), chunks at 1 MiB, a
 PASS  [CENSUS] N5 (P3): the client's mirror of the limit EQUALS the server's /api/sync limit (a mirror that drifts sends bodies the server refuses, or hides records it would take)  {"server":"16","client":"16"}
 PASS  [CENSUS] N4 (P5): a record over the effective limit is never packed into a request
 
-BASELINE: GREEN (31 checks: 25 claim, 1 control, 5 census)
+BASELINE: GREEN (32 checks: 26 claim, 1 control, 5 census)
 
 MUTANTS - each edit removed ALONE (each must turn a DYNAMIC claim red):
 RED    P3: the larger limit is applied to EVERY route (not /api/sync alone)  ->  K4c (P3)   census: -
@@ -47,7 +48,9 @@ RED    P5: the pre-check removed (a record over the limit is sent to be refused)
 RED    P5: a 413 the client did not predict is treated as offline (the old wedge)  ->  K3b, K3c   census: -
 RED    P5: a lower limit is not learned (the second big page is sent to be refused too)  ->  K3a   census: -
 RED    P5: a refused lone record is not remembered as too large (it is dropped from the list)  ->  K3b   census: -
-RED    P5: the notice calls a too-large page "Offline" again (the old lie)  ->  K10a, K10b, K10c   census: -
+RED    P5: the notice splices the title with a replacement STRING (a title of "$&" is mangled)  ->  K10d   census: -
+RED    P5: the plural names them "pages" again (a project or drawer is not a page)  ->  K10b   census: -
+RED    P5: the notice calls a too-large page "Offline" again (the old lie)  ->  K10a, K10b, K10d, K10c   census: -
 RED    P5: logout no longer clears the too-large list  ->  K11   census: -
 RED    P5: the too-large list is never set (the writer is never told)  ->  K1c, K1e, K5, K3b, K7, K11   census: -
 

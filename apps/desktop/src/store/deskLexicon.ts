@@ -826,7 +826,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadePageNewPage: 'New Page',
   // ITEM 203 - a record too large to sync is NAMED, and the writer is told it is safe here. {title} / {n} are filled in.
   syncTooLargeOne: '\u201C{title}\u201D is too large to sync \u2014 it is saved on this device',
-  syncTooLargeMany: '{n} pages are too large to sync \u2014 they are saved on this device',
+  // NOUN-NEUTRAL on purpose: what cannot travel is any synced record (a page, a project, a drawer), so "pages" would sometimes lie.
+  syncTooLargeMany: '{n} items are too large to sync \u2014 they are saved on this device',
   // ITEM 83 M3 (R6). Sentence case on rows, engraved-uppercase on the heading
   // (§1.4) — the heading's dress is CSS, so the term itself stays readable.
   pageSetupHeading: 'Page setup',

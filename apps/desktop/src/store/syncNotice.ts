@@ -15,7 +15,10 @@ export function syncNoticeText(
 ): string | null {
   if (status === 'offline') return 'Offline — saved here';
   if (tooLarge.length === 0) return null;
+  // A REPLACER FUNCTION, not a replacement string. String.prototype.replace gives `$&`, `$1`, `$'` and `$$` special meaning in a
+  // replacement STRING, and the title is WHATEVER THE WRITER TYPED - a page called "Q&A $& notes" would have come out mangled (with
+  // the template's own `{title}` spliced into it). A function's return value is taken literally.
   return tooLarge.length === 1
-    ? t('syncTooLargeOne').replace('{title}', tooLarge[0].title)
-    : t('syncTooLargeMany').replace('{n}', String(tooLarge.length));
+    ? t('syncTooLargeOne').replace('{title}', () => tooLarge[0].title)
+    : t('syncTooLargeMany').replace('{n}', () => String(tooLarge.length));
 }

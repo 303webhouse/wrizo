@@ -35,6 +35,7 @@ const INDEX_TEXT = readFileSync(join(serverSrc, 'index.ts'), 'utf8').replace(/\r
 const SSYNC_TEXT = readFileSync(join(serverSrc, 'sync.ts'), 'utf8').replace(/\r\n/g, '\n');
 const CSYNC_TEXT = readFileSync(join(desktopSrc, 'store/sync.ts'), 'utf8').replace(/\r\n/g, '\n');
 const NOTICE_TEXT = readFileSync(join(desktopSrc, 'store/syncNotice.ts'), 'utf8').replace(/\r\n/g, '\n');
+let LEX_CUR = null;
 const LEX_TEXT = readFileSync(join(desktopSrc, 'store/deskLexicon.ts'), 'utf8').replace(/\r\n/g, '\n');
 const MB = 1024 * 1024;
 const LIMIT = 16 * MB;   // /api/sync's body limit since P3 (every other route keeps 5 MiB)
@@ -265,14 +266,18 @@ async function scenarios(run) {
   await guard('CLAIM', 'K10', async () => {
     const w = await newWorld(run); const C = w.C;
     // The templates are read FROM THE SHIPPED LEXICON SOURCE, so it is the real words that are tested.
-    const tpl = (key) => { const m = new RegExp(`${key}: '([^']*)'`).exec(LEX_TEXT); if (!m) throw new Error('no lexicon default for ' + key); return new Function(`return '${m[1]}';`)(); };
+    const tpl = (key) => { const m = new RegExp(`${key}: '([^']*)'`).exec(LEX_CUR || LEX_TEXT); if (!m) throw new Error('no lexicon default for ' + key); return new Function(`return '${m[1]}';`)(); };
     const t = (k) => tpl(k);
     const one = [{ id: 'FAT', title: 'A heavy ink page', bytes: 6e6 }];
     const two = [...one, { id: 'F2', title: 'Another', bytes: 7e6 }];
     const a = C.syncNoticeText('synced', one, t);
     const b = C.syncNoticeText('synced', two, t);
     log('CLAIM', 'K10a: one page too large is NAMED in the writer\'s words and told it is safe: \u201CA heavy ink page\u201D is too large to sync \u2014 it is saved on this device', a === '\u201CA heavy ink page\u201D is too large to sync \u2014 it is saved on this device', JSON.stringify(a));
-    log('CLAIM', 'K10b: several are counted, not listed: "2 pages are too large to sync \u2014 they are saved on this device"', b === '2 pages are too large to sync \u2014 they are saved on this device', JSON.stringify(b));
+    log('CLAIM', 'K10b: several are counted, not listed, and the noun is NEUTRAL (what cannot travel may be a project or a drawer, not only a page): "2 items are too large to sync \u2014 they are saved on this device"', b === '2 items are too large to sync \u2014 they are saved on this device', JSON.stringify(b));
+    // The title is whatever the writer typed - including the sequences String.replace treats specially in a replacement STRING.
+    const nasty = "Q&A $& $1 $' $$ {n} {title}";
+    const c = C.syncNoticeText('synced', [{ id: 'X', title: nasty, bytes: 6e6 }], t);
+    log('CLAIM', 'K10d: a title containing $&, $1, $\' and $$ (and the template\'s own {n} / {title}) comes out LITERALLY - the notice uses a replacer function, not a replacement string', c === `\u201C${nasty}\u201D is too large to sync \u2014 it is saved on this device`, JSON.stringify(c));
     log('CLAIM', 'K10c: it is NOT called offline (the network is fine); and while the network really is down, offline still wins - it is the broader truth', !/offline/i.test(a) && C.syncNoticeText('offline', one, t) === 'Offline \u2014 saved here' && C.syncNoticeText('synced', [], t) === null, JSON.stringify({ tooLarge: a, offline: C.syncNoticeText('offline', one, t), none: C.syncNoticeText('synced', [], t) }));
   });
 
@@ -351,6 +356,8 @@ function mutantList() {
   out.push({ name: 'P5: a 413 the client did not predict is treated as offline (the old wedge)', o: { csync: (t) => must(must(t, 'if (e instanceof SyncHttpError && e.status === 413) { await onRefused(batch); return; }', ''), 'if (!(e instanceof SyncHttpError && e.status === 413)) throw e;', 'throw e;') } });
   out.push({ name: 'P5: a lower limit is not learned (the second big page is sent to be refused too)', o: { csync: (t) => must(t, 'if (batch.length === 1 && isTooLarge(batch[0])) { quarantined.push(batch[0]); return; }', '') } });
   out.push({ name: 'P5: a refused lone record is not remembered as too large (it is dropped from the list)', o: { csync: (t) => must(t, "setTooLarge([...big, ...quarantined].map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));", 'setTooLarge(big.map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));') } });
+  out.push({ name: 'P5: the notice splices the title with a replacement STRING (a title of "$&" is mangled)', o: { cnotice: (t) => must(t, "() => tooLarge[0].title", "tooLarge[0].title") } });
+  out.push({ name: 'P5: the plural names them "pages" again (a project or drawer is not a page)', o: { lex: (t) => must(t, '{n} items are too large', '{n} pages are too large') } });
   out.push({ name: 'P5: the notice calls a too-large page "Offline" again (the old lie)', o: { cnotice: (t) => must(t, 'if (tooLarge.length === 0) return null;', "if (tooLarge.length === 0) return null;\n  return 'Offline \u2014 saved here';") } });
   out.push({ name: 'P5: logout no longer clears the too-large list', o: { csync: (t) => must(t, "  learnedLimitBytes = Number.POSITIVE_INFINITY;\n  setTooLarge([]);\n  setStatus('pending');", "  learnedLimitBytes = Number.POSITIVE_INFINITY;\n  setStatus('pending');") } });
   out.push({ name: 'P5: the too-large list is never set (the writer is never told)', o: { csync: (t) => must(must(t, "setTooLarge(big.map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));\n    const quarantined", "const quarantined"), "setTooLarge([...big, ...quarantined].map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));", '') } });
@@ -359,6 +366,7 @@ function mutantList() {
 
 async function runOnce(opts) {
   results.length = 0;
+  LEX_CUR = opts && opts.lex ? opts.lex(LEX_TEXT) : null;
   const run = await startRun(opts);
   await scenarios(run);
   census((g, n, p, d) => log(g, n, p, d));

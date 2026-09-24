@@ -90,3 +90,15 @@ average and built a 16.56 MiB body that the check itself refused). **6/6:**
 
 **What this does not settle:** Postgres's own memory for the parameter (the embedded server's process was not instrumented), and **whether the
 production service has the ~117–235 MiB to spare — condition (a), which is Nick's answer, not a measurement I can make.**
+
+## 7 · The two follow-ups Fable asked for, on this same branch (Batch Seven carries them)
+
+- **The notice's replacer function.** `syncNoticeText` spliced the title in with `String.replace(pattern, <string>)`, and a replacement
+  STRING gives `$&`, `$1`, `$'` and `$$` special meaning — so a page the writer called *"Q&A $& notes"* would have come out mangled, with
+  the template's own `{title}` spliced into it. Both substitutions are now replacer *functions* (`() => title`), whose return value is taken
+  literally. **K10d** feeds it `Q&A $& $1 $' $$ {n} {title}` and requires it back verbatim; **the mutant that restores the string form goes red on K10d alone.**
+- **The noun-neutral plural.** What cannot travel is any synced record — a page, a project, a drawer — so *"2 pages are too large…"* would
+  sometimes lie. The lexicon default is now **"{n} items are too large to sync — they are saved on this device"**; the singular already
+  names the record by its own title. **K10b** pins the words; **the mutant that restores "pages" goes red on K10b alone.**
+
+Instrument now: **32 checks green; 19 mutants**, each edit removed alone, each red on its own claims.
