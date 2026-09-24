@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
+import { useExperiments } from '../store/experiments';
+import { LinkedRailBody } from './LinkedRail';
 import type { JournalEntry, Project, Fact } from '../types';
 import { generateId, getBinderPages, getJournalEntry, appendTutorMessage, advanceTutorCursor, isUnborn } from '../store/persistence';
 import { getTutorDisclosureSeen, setTutorDisclosureSeen } from '../store/tutorDisclosure';
@@ -283,6 +285,17 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [docked, setDocked] = useState(false);
+  // ITEM 190 — zone 5: "Tutor and the rail's lists TAKE TURNS IN IT... NO
+  // THIRD SURFACE" (Fable's ruling on the mockup's tabbed right column).
+  // Local to this panel, exactly like `open`/`docked` above — the switch
+  // does not need to survive a remount, and a fresh page opening the panel
+  // back on "Tutor" (not wherever the last page's tab happened to be) is
+  // the same "no state you didn't ask for" posture `open`/`docked` already
+  // have. Read once per render, never stored — the tab bar itself is
+  // gated on it below, so this line alone changes nothing when the switch
+  // is off.
+  const experimentsOn = useExperiments().connectFromThePage;
+  const [activeTab, setActiveTab] = useState<'tutor' | 'linked'>('tutor');
   // FX18 S2 (Fable's ruling) — the OPEN panel's live width in px on a WRITING surface,
   // MEASURED (the FX13 measure-effect pattern), or null to defer to CSS. Occupy-margin uses
   // the TRUE geometric margin (stage.right - paper.right) so the panel sits FLUSH to the
@@ -906,6 +919,30 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
               </button>
             </div>
 
+            {/* ITEM 190 — zone 5's tab bar. Additive only: absent entirely
+                when the switch is off, so §0's "DOM byte-identical to the
+                pre-change build" claim holds regardless of what's below —
+                a reader diffing the DOM with the switch off sees no trace
+                of this block having ever been written. */}
+            {experimentsOn && (
+              <div className="wz-tutor-tabs" role="tablist" aria-label={t('tutorTitle')}>
+                <button type="button" role="tab" id="wz-tutor-tab-tutor" aria-selected={activeTab === 'tutor'} aria-controls="wz-tutor-tabpanel-tutor"
+                  className={`wz-tutor-tab${activeTab === 'tutor' ? ' active' : ''}`} onClick={() => setActiveTab('tutor')}>
+                  {t('tutorTabTutor')}
+                </button>
+                <button type="button" role="tab" id="wz-tutor-tab-linked" aria-selected={activeTab === 'linked'} aria-controls="wz-tutor-tabpanel-linked"
+                  className={`wz-tutor-tab${activeTab === 'linked' ? ' active' : ''}`} onClick={() => setActiveTab('linked')}>
+                  {t('tutorTabLinked')}
+                </button>
+              </div>
+            )}
+
+            {/* ITEM 190 — the existing Tutor body, now shown when the tab
+                bar is absent (switch off — unconditionally true, identical
+                to before this ticket) OR when it's present and "Tutor" is
+                selected. Wrapping an existing ~250-line block in one more
+                condition, nothing inside it moved or changed. */}
+            {(!experimentsOn || activeTab === 'tutor') && (<>
             {/* FX10 S1 — the conversation is now the panel's own center of
                 gravity ("with the room this much wider, the composer and
                 the exchange must read as the main event, the lenses as
@@ -1163,6 +1200,21 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             {meterState && (
               <div className="wz-tutor-meter" data-fading={meterState.fading ? 'true' : 'false'}>
                 {meterState.text}
+              </div>
+            )}
+            </>)}
+
+            {/* ITEM 190 — the Linked tab's own body, zone 5's actual content.
+                Placeholder only: §8's own split assigns this lane the
+                switch/zone-5 geometry and "the Linked list follows once PW
+                lands store/anchors.ts's signatures" (Fable) — that module
+                does not exist on this branch yet, so LinkedRailBody renders
+                the empty/waiting state honestly rather than a fabricated
+                list. Swapping in the real list later touches LinkedRail.tsx
+                only; nothing here changes. */}
+            {experimentsOn && activeTab === 'linked' && (
+              <div id="wz-tutor-tabpanel-linked" role="tabpanel" aria-labelledby="wz-tutor-tab-linked">
+                <LinkedRailBody entryId={entry.id} />
               </div>
             )}
             </div>

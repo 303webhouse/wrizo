@@ -114,6 +114,23 @@ export type DeskTermId =
   | 'cascadeBoardDeleteCancel' | 'cascadeBoardDeleteQuestion'
   | 'cascadeDrawersChoose' | 'cascadeDrawersEmpty'
   | 'cascadeShelfBrowse' | 'cascadeSettingsTitle' | 'cascadeSettingsSignOut'
+  // ITEM 190 — §0's switch, "Settings -> Experiments -> Connect from the
+  // page". One key, not a separate section-heading key: this panel's own
+  // "invent nothing" law (CascadePanels.tsx's CascadeSettingsPanel header
+  // comment) folds "Experiments" into the toggle's own label instead of a
+  // new heading element.
+  | 'cascadeSettingsExpConnectFromPage'
+  // ITEM 190 — zone 5's own tab pair, inside Tutor's existing panel (the
+  // ratified "one panel column per side" rule: Tutor and the rail's lists
+  // take turns in it, no third surface). Only rendered when the switch is
+  // on (Tutor.tsx gates the whole tab bar on useExperiments().
+  // connectFromThePage) — off, this string is imported but never reaches
+  // the DOM, so §0's "OFF is v1, byte-identical" claim is untouched by its
+  // mere existence here.
+  | 'tutorTabTutor' | 'tutorTabLinked' | 'zoneLinked' | 'zoneLinkedWaiting'
+  // ITEM 190 §5 — "sortable by recency, kind, and tag." Three sort/group
+  // views over the resting-state list.
+  | 'zoneLinkedSort' | 'zoneLinkedSortRecency' | 'zoneLinkedSortKind' | 'zoneLinkedSortTag' | 'zoneLinkedNoTags'
   | 'cascadeThemeTitle'
   // CD2 S2/S4 — the survey layer + the dock.
   | 'cascadeSurveyEmpty' | 'cascadeSurveyCurrent' | 'cascadeDockClose' | 'cascadeDockReopen'
@@ -756,6 +773,19 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadeShelfBrowse: 'Browse the Shelf →',
   cascadeSettingsTitle: 'Settings',
   cascadeSettingsSignOut: 'Sign out',
+  cascadeSettingsExpConnectFromPage: 'Experiments: Connect from the page',
+  tutorTabTutor: 'Tutor',
+  tutorTabLinked: 'Linked',
+  // ITEM 190 §5 — matches Fable's own drawing verbatim
+  // (aria-label="This page's connections"), the name already established
+  // there for exactly this region, kept rather than re-coined.
+  zoneLinked: "This page's connections",
+  zoneLinkedWaiting: 'Nothing linked yet.',
+  zoneLinkedSort: 'Sort',
+  zoneLinkedSortRecency: 'Recent',
+  zoneLinkedSortKind: 'Kind',
+  zoneLinkedSortTag: 'Tag',
+  zoneLinkedNoTags: 'Nothing tagged yet.',
   cascadeThemeTitle: 'Theme',
   cascadeSurveyEmpty: 'Nothing here yet.',
   cascadeSurveyCurrent: 'Current',

@@ -1,4 +1,4 @@
-import type { Project, StoryPlan, SessionLog, Draft, BeatNote, JournalEntry, Fragment, FragmentLink, Drawer, Box, Stroke, ScriptDoc, TutorThread, TutorMessage } from '../types';
+import type { Project, StoryPlan, SessionLog, Draft, BeatNote, JournalEntry, Fragment, FragmentLink, Drawer, Box, Stroke, ScriptDoc, TutorThread, TutorMessage, PageLinks } from '../types';
 import { sortNotebook, notebookKey, midpoint, gapExhausted, respread } from './pageOrder';
 import { serializeScriptDoc } from './scriptText';
 import { createEmptyScriptDoc } from './scriptDoc';
@@ -869,6 +869,16 @@ export interface JournalPageSeed {
   deletedAt?: string;
   shelved?: boolean;
   orderIndex?: number;
+  // ITEM 190 — same discipline, one more field. `store/anchors.ts` is the
+  // only place `pageLinks` is normally written (its own `mutate` helper),
+  // and this seam does not bypass that law: nothing here calls into
+  // anchors.ts, and this is the identical presence-checked pass-through
+  // every other field above already gets, riding the SAME
+  // `saveJournalEntry` write anchors.ts's own writes ride. Added because
+  // exp1.mjs's Linked-list checks need a page born WITH connections
+  // already on it, and the seam could not express one — the same gap
+  // item 129/85-C already closed for `boxes`/`tags`/etc., one field wider.
+  pageLinks?: PageLinks;
 }
 
 export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
@@ -930,6 +940,7 @@ export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
   if (seed?.deletedAt !== undefined) entry.deletedAt = seed.deletedAt;
   if (seed?.shelved !== undefined) entry.shelved = seed.shelved;
   if (seed?.orderIndex !== undefined) entry.orderIndex = seed.orderIndex;
+  if (seed?.pageLinks !== undefined) entry.pageLinks = seed.pageLinks;
   // NO `updatedAt` ASSIGNMENT, DELIBERATELY. It was here, and it was a lie:
   // `saveJournalEntry` below reaches `upsert`, which stamps `updatedAt` from
   // the wall clock unconditionally, so whatever was assigned here never

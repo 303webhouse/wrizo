@@ -3847,6 +3847,37 @@ a:focus-visible,
 .wz-tutor-dock-btn{ background:none; border:0; color:var(--text-low); font-family:var(--font-ui);
   font-size:11px; cursor:pointer; padding:2px 4px; transition:.15s; }
 .wz-tutor-dock-btn:hover{ color:var(--text-hi); }
+/* ITEM 190 — zone 5's tab bar, "Tutor and the rail's lists take turns in
+   it" (Fable). Quiet text-scale tabs, matching this panel's own chrome
+   (`.wz-tutor-dock-btn`'s font/size/cursor), never brass at rest — the
+   active tab gets an underline in the accent, the same "text-scale until
+   it's the thing you're looking at" posture the dock button already
+   holds. Only ever mounted when the switch is on (Tutor.tsx gates the
+   whole block), so this rule costs nothing when it isn't. */
+.wz-tutor-tabs{ display:flex; gap:4px; border-bottom:1px solid var(--ink-border); }
+.wz-tutor-tab{ background:none; border:0; border-bottom:2px solid transparent; color:var(--text-low);
+  font-family:var(--font-ui); font-size:11px; letter-spacing:1px; text-transform:uppercase;
+  cursor:pointer; padding:6px 4px; transition:.15s; }
+.wz-tutor-tab:hover{ color:var(--text-hi); }
+.wz-tutor-tab.active{ color:var(--text-hi); border-bottom-color:var(--accent-rest); }
+/* The Linked tab's own body — same section rhythm as `.wz-tutor-section`
+   below (gap:6px), a sibling shape for a sibling job, not a copy of its
+   selector (a real list joins this rule once PW's store/anchors.ts lands;
+   the CONTAINER doesn't change under it). */
+.wz-linked-rail{ display:flex; flex-direction:column; gap:6px; }
+/* The Linked tab's own sort/group tabs (recency/kind/tag) — the SAME
+   `.wz-tutor-tab` look one level up (Tutor/Linked), given a little
+   breathing room so the two tab rows don't read as one continuous bar. */
+.wz-linked-rail-sort{ margin-top:2px; }
+/* One connected row: the open target (a quiet text-scale press, the exact
+   `.wz-tutor-frag-item` look) plus its own remove control (the exact
+   `.wz-tutor-dock-btn` look), never brass at rest — the same "chrome, not
+   an evental action" posture the dock button already holds. */
+.wz-linked-rail-item{ display:flex; align-items:center; gap:4px; }
+.wz-linked-rail-item-open{ flex:1; display:flex; align-items:baseline; gap:6px; min-width:0; }
+.wz-linked-rail-item-kind{ flex:0 0 auto; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--text-low); }
+.wz-linked-rail-item-label{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wz-linked-rail-item-remove{ flex:0 0 auto; }
 .wz-tutor-section{ display:flex; flex-direction:column; gap:6px; }
 .wz-tutor-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
 .wz-tutor-note{ font-size:11px; color:var(--text-low); }

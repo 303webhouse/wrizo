@@ -17,6 +17,7 @@ import { PAGE_SETTINGS_FALLBACK, type PageSettings } from '../types';
 import type { Box } from '../types';
 import { getCurrentUser } from '../store/currentUser';
 import { requestLogout } from '../store/logoutRequest';
+import { useExperiments, setExperiments } from '../store/experiments';
 import { useTheme, setTheme, type ThemeId } from '../store/theme';
 import { FullscreenToggle, SyncIndicator } from './ChromeControls';
 import { PageFace, type PageFaceSubject } from './PageFace';
@@ -1041,10 +1042,32 @@ function TrashPanel({ navigate }: { navigate: NavigateFunction }) {
 function CascadeSettingsPanel({ navigate }: { navigate: NavigateFunction }) {
   const { t } = useDeskLexicon();
   const authed = !!getCurrentUser();
+  const experiments = useExperiments();
   return (
     <div className="wz-cascade-panel-body">
       <div className="wz-cascade-row"><FullscreenToggle /></div>
       <div className="wz-cascade-row"><SyncIndicator /></div>
+      {/* ITEM 190 — §0's own switch: "Settings → Experiments → Connect
+          from the page", OFF by default. Site-wide (this category, not the
+          per-page gear — the same distinction this file's own header
+          comment already draws for Sign out/Sync/Fullscreen above), because
+          the flag is read by BOTH builders across every page a writer
+          opens, not one page's own chrome. A single toggle button, the
+          same aria-pressed/active shape CascadeThemePanel's own buttons
+          below already use — no new heading/control family invented for
+          one switch, matching this panel's own "invent nothing" law
+          (header comment above): "Experiments" names it in the button's
+          own label rather than a new section wrapper. */}
+      <div className="wz-cascade-row">
+        <button
+          type="button"
+          className={`wz-cascade-action${experiments.connectFromThePage ? ' active' : ''}`}
+          aria-pressed={experiments.connectFromThePage}
+          onClick={() => setExperiments({ connectFromThePage: !experiments.connectFromThePage })}
+        >
+          {t('cascadeSettingsExpConnectFromPage')} — {experiments.connectFromThePage ? t('pageSetupOn') : t('pageSetupOff')}
+        </button>
+      </div>
       {authed && (
         <button
           type="button"
