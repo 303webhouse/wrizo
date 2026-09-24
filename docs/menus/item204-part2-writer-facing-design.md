@@ -220,3 +220,42 @@ and per writer, its shape and merge, where it lives (one column, stopped for Nic
 seam), the dialect and its two doors, and the marks' behaviour.** **Leaves, named: the paint layer (PW's measurement),
 red's contrast, whether Revise mounts on a script page, the idle delay and the ignore cap (both unmeasured), and the two
 hand-ups in §5.** **Does NOT touch part 1** *(INK's interim red — `revise-spelling` @ `cbd4dc6`, not merged).*
+
+---
+
+## §8 · RULED SINCE THIS DESIGN WAS WRITTEN — Nick's P1 and P2, and the olive reconciliation
+
+**Nick, verbatim (Fable's relay): *"1. Yes 2. One for all writing 3. Add Source Serif confirmed."*** *("1" and "2" answer P1 and
+P2 of §5; "3" is item 207's.)* **Chat 1 records "yes" as his schema word.**
+
+- **P1 — RULED YES: `users.proofing` is cleared as a column** *(§2's option 1, the lean).* **What that does NOT do: nothing
+  writes until the builder's S0 shape report clears Fable's review** *(the standing sequence, as item 201's `purged_at`
+  and item 181's `user_files`)*, **and if the minimum lawful shape turns out to be a table rather than a column, Fable
+  tells Nick in plain words first.** **The per-device interim (§2) is now ONLY the bridge until the column ships; its
+  migration is the union already designed — no word is lost to the switch.** **Five edit sites and the client census**
+  *(the `page_links` recipe)* **plus the per-key merge are the builder's; §2's merge function is part of the build, not
+  a follow-up.**
+- **P2 — RULED: ONE DICTIONARY FOR ALL HIS WRITING.** **§2's lean is now his word: the record is per writer, not per
+  project or drawer; the rival (per-project) is not taken and needs no column axis.** **§5's two "Nick" lines are
+  STRUCK.**
+- **What is left with nobody:** *the calls in §5 (vetoable, not asked), the two hand-ups for Fable (a "next issue" key; a
+  first-load dialect question), and the S0 items in §7.*
+
+### THE OLIVE RECONCILIATION (Fable, item 5 of his relay — PW reports olive already means "where you are")
+**His ruling is unchanged: grammar squiggles are OLIVE.** **This design does not change his colour.** **It keeps the two
+meanings apart by FORM and by PLACE, and makes that assertable:**
+- **FORM.** *The proofing mark is ONLY ever a thin WAVY UNDERLINE drawn on writer text* **(a `text-decoration` on the
+  paint layer); the "where you are" olive (`--accent-rest`) is ONLY ever a SOLID fill, a solid rule, or a solid marker
+  on chrome** *(the current tab, the current row, the olive ring).* **The two never share a shape: a wavy olive line is
+  never a "you are here" and a solid olive block is never an error.**
+- **PLACE.** *The proofing mark exists only INSIDE THE PAPER, only in Revise, only on the writer's own words.* **The
+  "where you are" markers exist only in CHROME (rails, tabs, rows, the two hands) and never on the paper's text.**
+  **The single overlap — the Counsel hand and the paper sit in one view in Revise — is separated by the page's own
+  edge: nothing wavy is drawn outside the paper; nothing solid-olive is drawn inside its text column.**
+- **A colour-blind-safe reading is already in the design** *(§4: the grammar stroke is lighter and thinner than the
+  spelling stroke, and the card names the category in words)* — **which also helps a writer who cannot tell olive from a
+  chrome marker.**
+- **Checks (added to §6):** *(a) every proofing mark's computed `text-decoration-style` is `wavy` and its
+  `background`/`border` is never the olive token; (b) no element outside the paper (`.mode-page`) carries a wavy decoration in Revise;
+  (c) no `--accent-rest` where-you-are marker is wavy.* **The unmeasured risk, named: an olive squiggle beside an
+  olive current-row in the Counsel on a narrow window — S0 looks at 1100/1280 in Revise with both visible.**
