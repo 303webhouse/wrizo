@@ -169,6 +169,8 @@ not discovered.** *The field names above are deliberately the same on both sides
 migration of storage and not of meaning.*
 
 ## §3 · THE RIGHT-CLICK MENU — the door (item 186)
+
+> **⚠ AMENDED 2026-09-24 — `b186-base-text-menu-amendment.md`** (Nick: *"Is B-I-U included in the right-click menu? If not, it should be."* — the menu is now THE APP'S: a base menu — Bold · Italic · Underline, then Cut · Copy — present with every switch off; the four connect acts below appear only with the switch ON; "with every switch off = v1" now reads "v1 plus exactly the base menu"). **Where this section's list or the switch-off assertion disagree, that file governs (its §8 lists them). Kept as written below.**
 **His list, in his order: styling · Make a card · Link · Note This · Remove.**
 - **It opens at the pointer and may lie over the page — item 166's exception (a), and his popups extend
   those exceptions by his word.**
