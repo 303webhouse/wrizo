@@ -21934,3 +21934,15 @@ caret pop-ups at the caret). **One panel per side stood by skip** (a default, no
 **MERGES.** `plan-166-guideline` @ `3ef089d` (2 docs files, 166 insertions) and `plan-144-nest` @
 `943f9f9` (2 docs files, 182 insertions) — docs-only by diff-stat, **merged on this desk’s
 verification.**
+
+## ITEM 159 — MERGED FOR BATCH FIVE — 2026-09-24 (chat 1)
+
+**Fable’s order, on this desk’s verification: merge 159 for Batch Five.** Verified at the source:
+origin `item159-card-styling-dock` = `e31b43a` (the tested tree); its diff is 7 files (BoardEditor.tsx,
+index.css, deskLexicon.ts + `item159.mjs` and three drivers), 262 insertions / 4 deletions; **both legs
+93/93 CLEAN on that tree, bundle `index-BGbwUOFl.js/588429b`**; and after the merge `git diff
+e31b43a HEAD -- apps packages` is EMPTY — main’s product tree is byte-identical to the tested one.
+**BATCH FIVE now holds item 159.** Not deployed; **Fable reviews the assembled diff at the bytes
+before any ship**, then Nick’s word (quoted). **Still unchecked by me:** FIX’s falsification run.
+**MERGE ORDER standing:** 160 before 144 (both edit `BoardEditor.tsx`; 159 also touches it —
+expect the 160/144 builds to merge against this).
