@@ -22147,3 +22147,57 @@ page on his desktop** — the authenticated production round-trip this desk coul
 words · **165-Q3** Mind Map greyed out as “coming” · **172-Q5** the imports board is an ordinary board.
 *(Four more defaults on the ledger — keep marking them; two already built is how a default gets read as
 a ruling.)*
+
+## RECORDS — 165-F1 RULED, “BEAT SHEET”, THE WIZARD, 168’S ANSWERS; ITEMS 199, 200, 201 REGISTERED — 2026-09-24 (chat 1)
+
+**FABLE’S CAVEAT-CLOSING (on my entry above).** `sync.ts:355–378` awaits all six pulls inside the one
+`res.json` with no per-table catch, and `asyncHandler` forwards any rejection — so a missing `synced_at`
+on any table fails the whole `/sync` request. **Nick’s working sync therefore proves the column exists
+on all six.** *(The gap I named — handler behaviour on a throwing pull — is closed by Fable’s
+reading of the source; I did not re-read those lines.)*
+
+**NICK, verbatim as relayed — on Fable’s 165-F1 call (renaming “Plot a Story”):**
+
+> “Just call it "Beat Sheet" for now until I see how intuitive that seems.”
+
+**The door’s name is “Beat Sheet”** (his word supersedes Fable’s proposed “Plan the whole drawer — beat
+sheet”).
+
+**RULED (Fable), 165-F1:** Story Structure is built on DECKS — the board system. “Plot a Story” keeps
+its door at the foot of Story Structure, and is **never silently removed**. **RULED:** “From My Pages”
+SHOWS the reading order; whether a board BECOMES the order is 188’s to decide. New Page’s choices
+include **Screenplay** (his 3A outranks the older spec). Nick’s “Yes, keep both” is already his ruling;
+PLAN DESK marks it confirmed.
+
+**NICK, verbatim — the wizard:**
+
+> “Eventually, what I would like is to add a kind of wizard that will walk a writer through
+> from story idea to plot beats to writing each scene without the User having to do all of
+> the file organization themselves, but that comes after we have all the infrastructure
+> built.”
+
+**ITEM 200 — THE WRITER’S WIZARD (story idea → plot beats → each scene, no file organization by the
+writer) — REGISTERED AS A FUTURE ITEM, UNSCHEDULED** until the infrastructure is built, in his own
+words above. No owner, no brief.
+
+**ITEM 199 — THE STORYPLAN FOLD — REGISTERED (Fable’s ruling):** fold M1’s frameworks into decks and
+reconcile M1’s consumers. **Designed WITH 188 (Experiment 2 — the board sets the chapter order), NOT
+before Experiment 1 ships.** No owner yet.
+
+**NICK, verbatim — item 168:**
+
+> “168-Q1: The whole page goes into the trash. The User can always retrieve it from the
+> Trash if they made a mistake (Goes without saying, but the Trash needs a "Delete
+> Permanently" option for individual items and for the entire bin.) 168-Q2: It goes into the
+> Trash, where you can restore it (same notes apply from my last answer about pages)”
+
+**ITEM 201 — DELETE PERMANENTLY — REGISTERED (Fable):** for single items AND for emptying the whole bin,
+pages and cards alike. **A permanent delete must reach every device and never come back through sync**
+(item 198’s cursor is now live; a hard delete leaves no row to carry a tombstone — **that is the
+design problem, flagged here, not answered**). PLAN DESK designs it; a builder’s S0 measures it; **if it
+needs a column, it stops for Nick.**
+
+Registry: next free **202**.
+
+**MERGE.** `plan-165-amend` @ `7aa644c` (2 docs files, +143) — docs-only by diff-stat, merged by its
+fetched SHA on this desk’s verification.
