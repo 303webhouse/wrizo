@@ -27,7 +27,7 @@ import { useWayBack } from './useWayBack';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useLexicon } from '../store/themeLexicon';
 import { useDeskLexicon, deskTerm } from '../store/deskLexicon';
-import { describePageHome } from '../store/pageHome';
+import { describePageHome, boardDrawerLine } from '../store/pageHome';
 import { routeForEntry } from '../store/routeForEntry';
 import { useCascade } from './Cascade';
 import { PortToBoardSheet } from './PortToBoardSheet';
@@ -193,10 +193,10 @@ function notecardExcerpt(text: string): { title: string; excerpt: string } {
 // PW2 S2 — a board-card's second line names the DRAWER it lives in, the same
 // fact the Plan panel's board rows carry, so one board reads the same on both
 // of its faces. A board with no drawer says so rather than borrowing a name.
-function boardDrawerLine(entry: JournalEntry): string {
-  if (!entry.projectId) return deskTerm('cascadePlanNoDrawer');
-  return getProject(entry.projectId)?.title || 'Untitled';
-}
+// ITEM 163 — the local copy is GONE, not corrected in place. It returned the
+// drawer name bare; the ruled form is "in <drawer>", and the same fact was spelled
+// twice more in CascadePanels. All three now call the one reader in
+// store/pageHome.ts, so the next change lands once.
 
 function BoardPinBox({ box }: { box: Box }) {
   const { t: lex } = useLexicon();

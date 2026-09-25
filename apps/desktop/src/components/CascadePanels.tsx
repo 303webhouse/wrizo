@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon, deskTerm } from '../store/deskLexicon';
+import { boardDrawerLine } from '../store/pageHome';
 import { firstLine } from '../store/entryText';
 import { useSectionFold } from '../store/sectionFold';
 import {
@@ -603,13 +604,11 @@ function planBoardTitleFor(board: JournalEntry, page: JournalEntry): string {
   return `${pageTitle} ${deskTerm('cascadePlanOwnSuffix')}`;
 }
 
-// The drawer a pinning board itself lives in — "which is also, quietly, half
-// the answer to 'where is it stored'" (PW10). A board with no drawer says so
-// honestly rather than borrowing a name it does not have.
-function drawerNameFor(board: JournalEntry): string {
-  if (!board.projectId) return deskTerm('cascadePlanNoDrawer');
-  return getProject(board.projectId)?.title || 'Untitled';
-}
+// ITEM 163 — RETIRED IN FAVOUR OF ONE READER. This returned the drawer name
+// BARE, which is the defect Nick read as a subtitle; `drawerCaptionFor` below
+// already returned the ruled "in <drawer>" form for the zone caption. Two
+// spellings of one fact, one right and one wrong. Both now call `boardDrawerLine`
+// (store/pageHome.ts) — 131(a)'s shape, fix the class.
 
 // PW1 S1 + Fable's ruling 2 — computed from the PAGE ALONE, deliberately
 // independent of `project`. A loose page can own a plan board (minted with
@@ -635,7 +634,7 @@ function connectedBoardsFor(page: JournalEntry): ConnectedBoard[] {
     seen.add(pinned.id);
     const board = getJournalEntry(pinned.id);
     if (!board) continue;
-    rows.push({ id: board.id, title: pinned.title, relation: drawerNameFor(board), own: false });
+    rows.push({ id: board.id, title: pinned.title, relation: boardDrawerLine(board), own: false });
   }
   return rows;
 }
@@ -660,12 +659,10 @@ export function resolveStickyPlanSurvey(page: JournalEntry): CascadeSurveyKind |
   return row ? { category: 'plan-board', boardId: row.id, boardTitle: row.title } : null;
 }
 
-// PW2 S2 — the zone's caption on a board: "in <drawer>". Names where this
-// board lives; a board with no drawer says so rather than borrowing a name.
-function drawerCaptionFor(board: JournalEntry): string {
-  const name = board.projectId ? (getProject(board.projectId)?.title || 'Untitled') : null;
-  return name ? `${deskTerm('cascadePlanCaptionIn')} ${name}` : deskTerm('cascadePlanNoDrawer');
-}
+// PW2 S2 / ITEM 163 — the zone's caption on a board, and now the board ROW's
+// second line and the canvas board-card too, all from `boardDrawerLine`. This
+// function's body moved there VERBATIM: the caption was already the correct form,
+// so the shared reader is the code that was already right, not a new invention.
 
 // PW1 S1/S2 — one board row. ONE ACT PER ROW (PP4): a press opens that board's
 // contents and does nothing else. Double-click TRAVELS to the board (Nick, Q4),
@@ -750,7 +747,7 @@ function PlanPanel({ subject, project, navigate, openSurvey, travelFromCascade }
           ⚠ SUCCESSOR, RECORDED HERE SO IT IS ADDED DELIBERATELY RATHER THAN
           DISCOVERED MISSING: the day the drawer's own surface ships, this
           caption becomes the door to it. */}
-      {subject.entry.pageType === 'board' && <div className="wz-cascade-plan-caption">{drawerCaptionFor(subject.entry)}</div>}
+      {subject.entry.pageType === 'board' && <div className="wz-cascade-plan-caption">{boardDrawerLine(subject.entry)}</div>}
       {rows.map((row) => (
         <BoardConnectedRow key={row.id} row={row} onOpenContents={() => openContents(row)} onTravel={() => travelToBoard(row)} />
       ))}
