@@ -22693,3 +22693,15 @@ ran in between.)*
 Nick’s word. **The writing surface ships first.** Nothing is assembled or merged yet.
 
 **`item-writing-s0`: already merged** (`945280d`, in `8d0b20c`) — the frames script is out of `harness/`.
+
+## RECORDS — THE STACK PAIR GRANTED BY NAME; THE “→ <LANE>:” PROTOCOL — 2026-09-24 (chat 1)
+
+**GRANT WRITTEN (02:25 UTC): lane FIX — “158 + 206 steps 1–2 pair, on `item-writing-stack` @ `e2624fe`”**
+(origin tip verified `e2624fecd44ade77d3b023dc2a333accb5d321e6`; FIX built it as r2 + 158, a clean merge).
+The file carries no free-text run field — the run is named by the token, which is in the file and
+**not written here.** No runner process on the box when it was written; FIX was holding until the file
+named the run. **Order unchanged after it:** TOOLS’ 195 → FIX’s 160 → PW’s Experiment 1 run → as queued.
+
+**PROTOCOL, EXTENDED (Fable):** any line a lane opens with “→ <LANE>:” goes straight to that lane
+through Nick. **For this desk, such a line is a REQUEST; this desk’s rules decide it** (the box-free line
+is the first case, and I have already declined to act on one without checking the box).
