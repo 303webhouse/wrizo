@@ -131,7 +131,11 @@ function run(mod) {
   const { readLead, stripLine, createTabChord, CHORD_HOLD_MS } = mod;
   check('TABS: three Tab presses are three first-line levels, in the stored text', press('One', 1, 1, 'indent', 'indent', 'indent').text, '\t\t\tOne');
   check('TABS: Shift+Tab (outdent) takes one level back, floored at zero', [press('\t\tOne', 3, 3, 'outdent').text, press('One', 1, 1, 'outdent').text], ['\tOne', 'One']);
-  check('BLOCK: one press puts one `>| ` on EVERY line of the paragraph (its wrapped continuation is the same line)', press('One\nTwo', 1, 1, 'block-indent').text, '>| One\n>| Two');
+  check('BLOCK: one press puts one `>| ` on the CARET\'S LINE only - a line is a paragraph, so its neighbours are untouched (Nick 2026-09-25)', press('One\nTwo', 1, 1, 'block-indent').text, '>| One\nTwo');
+  const P3 = 'first\nsecond\nthird';
+  check('SCOPE: Tab (indent) on the middle of three single-newline paragraphs indents THAT LINE ONLY - it used to indent all three', [press(P3, 8, 8, 'indent').text, press(P3, 8, 8, 'indent', 'indent').text], ['first\n\tsecond\nthird', 'first\n\t\tsecond\nthird']);
+  check('SCOPE: Shift+Tab (outdent) and the block levels have the same scope', [press('\ta\n\tb\n\tc', 4, 4, 'outdent').text, press(P3, 8, 8, 'block-indent', 'block-indent').text, press('>| a\n>| b\n>| c', 6, 6, 'block-outdent').text], ['\ta\nb\n\tc', 'first\n>| >| second\nthird', '>| a\nb\n>| c']);
+  check('SCOPE: with a selection, one level per SELECTED line - and no line outside it', [press(P3, 6, 14, 'indent').text, press(P3, 6, 14, 'block-indent').text], ['first\n\tsecond\n\tthird', 'first\n>| second\n>| third']);
   check('BLOCK: a second press is a second level; an outdent removes ONE', [press('One', 1, 1, 'block-indent', 'block-indent').text, press('One', 1, 1, 'block-indent', 'block-indent', 'block-outdent').text], ['>| >| One', '>| One']);
   check('BLOCK: outdent is floored at zero and leaves an un-blocked paragraph alone', press('One', 1, 1, 'block-outdent').text, 'One');
   check('BLOCK: only the caret\'s paragraph changes (the blank line ends it)', press('A\n\nB', 0, 0, 'block-indent').text, '>| A\n\nB');

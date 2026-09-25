@@ -427,8 +427,9 @@ function paragraphScope(lines: string[], selStart: number, selEnd: number) {
   // that line — the ordinary editor convention.
   if (selEnd > selStart && last > first && selEnd === startsAt[last]) last--;
 
-  if (hasInk(first)) while (first > 0 && hasInk(first - 1)) first--;
-  if (hasInk(last)) while (last < lines.length - 1 && hasInk(last + 1)) last++;
+  // NICK'S RULING (2026-09-25, chat 1's flag): ENTER MAKES NO PARAGRAPH GAP, SO A LINE IS A PARAGRAPH. The scope used to walk up and
+  // down across every consecutive inked line, so Tab on one of three lines indented all three. It is now the caret's own line - or,
+  // with a selection, each selected line - and nothing beside it. (The two walks that stood here are removed, not disabled.)
 
   const affected = new Set<number>();
   for (let i = first; i <= last; i++) if (hasInk(i)) affected.add(i);

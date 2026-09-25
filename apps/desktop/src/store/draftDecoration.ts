@@ -129,13 +129,17 @@ function decorateLineForCard(rawLine: string, caret: number | null): string {
   let close = '';
   let head = '';                     // what is emitted so far INSIDE the innermost open wrapper
   let heading: { text: string } | null = null;
+  let tabRun = '';                   // consecutive tabs are ONE mark span, as they always were (item83f's E3 counts spans)
+  const flushTabs = () => { if (tabRun) { head += `<span class="md-mark">${escHtml(tabRun)}</span>`; tabRun = ''; } };
   for (const t of lead.tokens) {
     if (t.kind === 'tab') {
       // The indent mark never collapses (see decorateMarkdownForCard's own note): a tab IS the layout.
-      head += `<span class="md-mark">${escHtml(t.text)}</span>`;
+      tabRun += t.text;
     } else if (t.kind === 'heading') {
+      flushTabs();
       heading = { text: t.text };
     } else {
+      flushTabs();
       const reveal = caret !== null && caret >= t.start && caret <= t.end;
       const markCls = reveal ? 'md-mark' : 'md-mark md-mark-hidden';
       open += head + `<span class="md-line ${LINE_CLASS[t.kind]}${reveal ? ' md-revealed' : ''}"><span class="${markCls}">${escHtml(t.text)}</span>`;
@@ -143,6 +147,7 @@ function decorateLineForCard(rawLine: string, caret: number | null): string {
       close = '</span>' + close;
     }
   }
+  flushTabs();
   const at = caret === null ? null : caret - lead.length;
   const rest = rawLine.slice(lead.length);
   const inline = decorateInlineForCard(rest, at);
