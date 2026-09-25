@@ -22796,3 +22796,23 @@ must say whether run `-29204` is its own and intended.** If it is FIX’s supers
 stops ITS OWN driver; **then, on FIX’s box-free line, this desk clears and writes the grant naming
 `d4dc32e`, both legs.** If it finishes clean on `faeeb59`, it is still not the SHA to stamp — the verdict-line
 commit is in `d4dc32e` only.
+
+## THE BOX-FREE LINE FROM FIX; THE d4dc32e PAIR GRANTED — 2026-09-24 23:18 local (chat 1)
+
+**FIX’S ANSWER (from its box-free line): the live run WAS its own** — `wrizo-suite-29204` was FIX’s pair-3
+re-run on `faeeb59`, started 22:59:01, **stopped by FIX with TaskStop after Fable’s diagnosis; the stop did
+not reach the grandchildren.** The ten `msedge` processes were owned by harness child node `40796`, not by the
+runner PID. **FIX ran the committed reaper’s `reapOrphans` (no by-name kills):** it reported owner 40796
+verified dead and every browser past the 300s floor, enumerated all ten by PID, and said **one reaped and nine
+failed to kill** — yet the recheck read 0. **FIX’s own reading (“the nine died with the first”) is
+UNCONFIRMED by FIX, and I did not confirm it either.** *(That a verified-dead-owner sweep is lawful when
+logged is the standing rule; it is logged here.)* **Cost, FIX’s own words: the stop should have been “runner
+first, then browsers” — a TaskStop on a background chain does not reach the grandchildren.**
+
+**VERIFIED BY THIS DESK BEFORE GRANTING:** **0 harness-signature processes** (`run-suite` / `scripts.harness` /
+`ws-runtime-verify`) at 23:18 local; `item-writing-stack` on origin is **still `d4dc32efa77e02598c64582a74b5d91bc4a82f54`**.
+
+**GRANT WRITTEN: lane FIX — the fresh pair on `item-writing-stack` @ `d4dc32e`, BOTH LEGS** (the file’s token
+names the run; not written here). **The parked leg runs even after a red default (`;`, never `&&`).** FIX said
+it would add nothing to the tree meanwhile. **Order unchanged after it: TOOLS’ 195 → FIX’s 160 → PW’s
+Experiment 1 run → as queued.**
