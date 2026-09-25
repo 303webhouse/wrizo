@@ -142,6 +142,23 @@ console.log('CLAIM 2c — SCALAR ties break by VALUE, so the merge is EXACTLY co
   if (failures === before) ok('stamped and unstamped ties both resolve the same from either side');
 }
 
+console.log('CLAIM 2c-ii — equal stamps AND equal lists still resolve without POSITION');
+{
+  // Fable's optional close. `engine` follows whichever side won `ignored`, so equal
+  // lists with equal stamps and DIFFERENT engines were resolved by position — the
+  // last asymmetry, and a contradiction of the merge's own claim that position
+  // decides nothing. A second tiebreak key closes it.
+  const before = failures;
+  const at = iso(2 * DAY);
+  const e1 = { ...rec({}), ignored: '["same"]', ignoredAt: at, engine: 'harper-1' };
+  const e2 = { ...rec({}), ignored: '["same"]', ignoredAt: at, engine: 'harper-2' };
+  const ab = P.mergeProofing(e1, e2);
+  const ba = P.mergeProofing(e2, e1);
+  if (ab.engine !== ba.engine) fail(`engine resolves by POSITION: ${ab.engine} vs ${ba.engine}`);
+  else ok(`equal stamps, equal lists, different engines resolve to "${ab.engine}" from either side`);
+  if (failures === before) ok('the merge is now total: no input pair is decided by argument order');
+}
+
 console.log('CLAIM 2d — a MALFORMED remote merges as null, never as a record');
 {
   // Fable's review, 3. The remote comes from the wire and the PUT deliberately does

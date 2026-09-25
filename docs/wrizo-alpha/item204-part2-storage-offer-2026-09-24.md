@@ -84,14 +84,25 @@ export function mergeRemote(remote: ProofingRecord | null): ProofingRecord {
 ### (d.ii) the scalar rule, inside `mergeProofing` — `apps/desktop/src/store/proofing.ts:104`
 
 ```ts
-  const pickSide = (aAt: string | undefined, bAt: string | undefined, aVal: string, bVal: string): 'a' | 'b' => {
+  // The tiebreak takes a SECOND value, and Fable's review is why: `engine` follows
+  // whichever side won `ignored`, so two records with equal lists AND equal stamps
+  // but different engines were still resolved BY POSITION — the one asymmetry left
+  // after the value tiebreak, and a direct contradiction of this block's own claim
+  // that position decides nothing. A second key closes it: equal stamps, equal
+  // lists, then the larger `engine` wins. Arbitrary, symmetric, total.
+  const pickSide = (
+    aAt: string | undefined, bAt: string | undefined,
+    aVal: string, bVal: string,
+    aTie = '', bTie = '',
+  ): 'a' | 'b' => {
     const aS = aAt ?? '';
     const bS = bAt ?? '';
     if (aS !== bS) return bS > aS ? 'b' : 'a';
-    return bVal > aVal ? 'b' : 'a';
+    if (aVal !== bVal) return bVal > aVal ? 'b' : 'a';
+    return bTie > aTie ? 'b' : 'a';
   };
   const dSide = pickSide(a.dialectAt, b.dialectAt, a.dialect, b.dialect);
-  const iSide = pickSide(a.ignoredAt, b.ignoredAt, a.ignored, b.ignored);
+  const iSide = pickSide(a.ignoredAt, b.ignoredAt, a.ignored, b.ignored, a.engine, b.engine);
   const dWin = dSide === 'b' ? b : a;
   const iWin = iSide === 'b' ? b : a;
   const dLose = dSide === 'b' ? a : b;
