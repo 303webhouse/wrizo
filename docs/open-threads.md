@@ -22919,3 +22919,42 @@ chars-per-line re-measure). **0 harness processes on the box when written.**
 `main` before the deploy the pair is stale and re-runs; docs-only commits do not.** Rollback target stays
 `5f0691f` (Batch Six). **The 158 / 206 changes write the manuscript; they are the reason this batch is reviewed
 at the bytes.**
+
+## BATCH SEVEN DEPLOY MANIFEST — 2026-09-25 (chat 1, on Nick’s “1. Yes” — Fable byte review CLEARED)
+
+**LIVE: `8223b29` (product bytes = the pair-stamped `89a4cb1`) · railway `912aa82f-c97d-42d7-9818-359f314dd8d2`** —
+service `writer-studio-app`, `railway up --ci` returned “Deploy complete”. **PREVIOUS LIVE — THIS DEPLOY’S
+ROLLBACK TARGET: `5f0691f` · railway `fca24f67-b4a4-427c-8fd9-2a127a4fdabe`** (Batch Six). **ROLLBACK NOW
+RATCHETS TO THIS STAMP.** No schema in this batch, so a rollback is a clean redeploy.
+
+**AUTHORIZATION, QUOTED: Nick — “1. Yes”**, to Fable’s question *“Should Batch Seven go live once my review
+clears? Reply “yes,” and I’ll give chat 1 the go-ahead right after my review”* (as relayed).
+**FABLE’S BYTE REVIEW: CLEARED**, from the extract of whole-file diffs — every write path keeps the writer’s words;
+the toggles, per-line marks and line tools move only markers and prefixes; each press records one atomic undo
+step; my two observations (the strip loop; Free Write’s Tab on a blank line only) **accepted as designed**; **four
+non-blocking follow-ups go to FIX for step 3.** *(Fable reviewed my extract, not the branch; the extract’s last
+hunk in my chat paste ended with a garbled line I flagged at the time — the committed file was the source.)*
+
+**ONE PACKAGE: 158 (Tab indents) + 206 steps 1–2 (bullets/quotes/alignment render, inline toggles, cross-line
+selection, Ctrl+B/I/U) + P3 (`/api/sync` may carry 16 MiB after authentication) + the notice’s two follow-ups.**
+**PRODUCT/SERVER DELTA `5f0691f..89a4cb1`: 11 files, +558/−82. SCHEMA: NONE. SERVER: `index.ts` only.** Roster **96**.
+
+**SUITE OF RECORD — BOTH LEGS CLEAN at the assembled tree, under this desk’s own grant:** **DEFAULT 96/96 CLEAN**
+and **PARKED 96/96 CLEAN**, `tree=89a4cb1 bundle=index-CsedhZ4m.js/596709b`, 0 FAIL/NOVERDICT/TIMEOUT.
+**Deploy head `8223b29` is docs-only past it: `git diff --stat 89a4cb1 HEAD -- apps packages` is EMPTY at the
+deploy** (and no product commit landed on `main` after the pair).
+
+**TREE BARE AT UPLOAD (0 porcelain). `tsc` x2 exit 0. ITEM-98 GUARD:** `writer-studio` / `production` /
+`writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`, `HEAD == origin/main == 8223b29`. Image digest
+`sha256:ac996f99fb472bfffea99d6e28d84d7fe69fead3ff9945bf261932268cf286bc`.
+
+**LIVE VERIFICATION:** `/healthz` **200** · `/auth/me` **401** · served `index-CsedhZ4m.js` and `index-BiZkP_2T.css`.
+**SERVED-vs-STAMPED BYTE DIFF — BOTH MATCH, MD5 and bytes:** JS `9fbee2cbb1c935b0415a6a450b84e786` (596,709 b) **==**
+stamped; CSS `810dec5f30e7b9f2df75fa3fe6276914` (145,148 b) **==** stamped (the CSS changed: 144,711 → 145,148).
+**NOT DONE, plainly:** no authenticated request, so **P3’s 16 MiB path and the writing changes are not exercised
+live by this desk** — that is Nick’s check. **No production probe was sent** (P1’s 413 was proven at Batch Six).
+
+**OWED BY NICK:** the writing-surface check on this deploy **and Batch Six’s two-device check, which is STILL
+OWED** (Fable). **BOX:** the grant still names TOOLS (195’s pair, then `item207.mjs`); this deploy needed no
+box turn. **BATCH SEVEN IS SHIPPED AND CLOSED; BATCH EIGHT** (PW’s storage half `d1abca7`, a schema change)
+**holds nothing yet.**
