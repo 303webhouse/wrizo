@@ -97,6 +97,15 @@ export function faceStack(stored: StoredFace | undefined): string | undefined {
   return `${quote(stored.name)}, ${GENERIC_STACK[generic]}`;
 }
 
+/** The name of the FIRST family in a CSS font-family value, the way a writer would say it: quotes dropped and the package's
+ *  " Variable" suffix removed ("'Crimson Pro Variable', Georgia, serif" -> "Crimson Pro"; "'Chakra Petch', sans-serif" ->
+ *  "Chakra Petch"). Null when there is no family to name. Used to label the face that ACTUALLY renders when a page never chose. */
+export function faceNameFromStack(stack: string | null | undefined): string | null {
+  if (!stack) return null;
+  const first = stack.split(',')[0]?.trim().replace(/^['"]|['"]$/g, '').replace(/ Variable$/, '').trim();
+  return first ? first : null;
+}
+
 const inflight = new Map<string, Promise<unknown>>();
 /** Fetch a face's CSS if it is not already present. Memoised; a failed load is dropped so a later choose retries, and
  *  never throws - the page renders in the stack's fallback meanwhile. */

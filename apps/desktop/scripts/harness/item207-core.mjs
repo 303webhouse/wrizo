@@ -146,6 +146,12 @@ ok('MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (
   shape.buttons === 3 && shape.inputs === 1 && shape.inputGuardedByFullForm, JSON.stringify(shape));
 ok('MINIMAL: no caption or heading of any kind in the control (no label, legend or heading element, no eyebrow class) — a control\'s name lives in its aria-label', !shape.caption, JSON.stringify(shape));
 ok('NO ADD DOOR (207a): the control carries no "Add a font…" row — it arrives with Route A (207b), and Free Write never gets it (his Q2)', !shape.addDoor, '');
+const LBL = M.faceNameFromStack;
+ok('LABEL: the unchosen face is named from what ACTUALLY renders — the first family of the resolved --font-prose, quotes and " Variable" removed (Crimson Pro, Figtree, and under the Flux voice Chakra Petch — never the voice dial\'s own word)',
+  LBL("'Crimson Pro Variable', Georgia, serif") === 'Crimson Pro' && LBL("'Figtree Variable', system-ui, sans-serif") === 'Figtree' && LBL("'Chakra Petch', sans-serif") === 'Chakra Petch' && LBL('Georgia, serif') === 'Georgia' && LBL('') === null && LBL(null) === null && LBL('  ') === null,
+  JSON.stringify([LBL("'Crimson Pro Variable', Georgia, serif"), LBL("'Chakra Petch', sans-serif"), LBL('')]));
+ok('LABEL: the control reads the resolved --font-prose, not the voice attribute (no data-voice lookup remains in it)',
+  /getPropertyValue\('--font-prose'\)/.test(src('components/TypeControl.tsx')) && !/data-voice/.test(noComments(src('components/TypeControl.tsx'))), '');
 const sliverSrc = src('components/Sliver.tsx');
 const mount = sliverSrc.match(/content\.type && \(\s*<div className="wz-sliver-section wz-sliver-type">[\s\S]*?<\/div>\s*\)\}/);
 ok('MOUNT: the sliver mounts the control on the Free Write, Draft and Revise arms only, in one section with no heading',
@@ -179,6 +185,7 @@ await mutant('M4 a face is size-adjusted (the literal-points ruling broken)', { 
 await mutant('M5 the fallback stops being faithful in kind (a serif falls back to a sans)', { 'store/fontRoster.ts': swap("serif: 'Georgia, serif',", "serif: 'system-ui, sans-serif',") }, (W) => !/serif$/.test(W.faceStack({ name: 'Q', generic: 'serif', source: 'device' })) || /system-ui/.test(W.faceStack({ name: 'Q', generic: 'serif', source: 'device' })));
 await mutant('M6 a name is no longer sanitised (a hostile font name breaks out of the value)', { 'store/fontRoster.ts': swap("n.replace(/['\\\\]/g, '')", 'n') }, (W) => (W.faceStack({ name: "A'; } body { x:", generic: 'serif', source: 'device' }).match(/'/g) || []).length !== 2);
 await mutant('M7 Times New Roman loses its open fallback', { 'store/fontRoster.ts': swap("stack: \"'Times New Roman', 'Tinos', Times, serif\"", "stack: \"'Times New Roman', Times, serif\"") }, (W) => !/'Tinos'/.test(W.rosterFace('Times New Roman').stack));
+await mutant('M11 the unchosen label keeps the " Variable" suffix (the package\'s name leaks to the writer)', { 'store/fontRoster.ts': swap(".replace(/ Variable$/, '')", '') }, (W) => W.faceNameFromStack("'Crimson Pro Variable', Georgia, serif") !== 'Crimson Pro');
 
 {
   const t = src('components/TypeControl.tsx');

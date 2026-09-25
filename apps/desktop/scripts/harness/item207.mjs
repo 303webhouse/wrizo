@@ -117,6 +117,11 @@ await withHarness(async (app) => {
   // ==== 3 · SIZE — the buttons, the typed number, the limits, and what is written ===================================
   await openDrawer(app);
   const numAt = () => app.evalJs("(document.querySelector('.wz-type-num') || {}).value");
+  const labelNow = await app.evalJs(`(() => { const b = document.querySelector('.wz-type-face'); const e = document.querySelector('.forward-only-editor'); if (!b || !e) return null;
+    const first = getComputedStyle(e).fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').replace(/ Variable$/, '');
+    return { label: b.textContent, rendered: first, buttonFamily: getComputedStyle(b).fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').replace(/ Variable$/, '') }; })()`);
+  ok('LABEL: on a page that never chose, the face button names the face that ACTUALLY renders (the first family the editor computes) and is set in it',
+    labelNow && labelNow.label === labelNow.rendered && labelNow.buttonFamily === labelNow.rendered, JSON.stringify(labelNow));
   ok('SIZE: the number field opens at 11', (await numAt()) === '11', String(await numAt()));
   await press(app, "document.querySelectorAll('.wz-type-step')[1]", 'the `+` button');
   await sleep(300);

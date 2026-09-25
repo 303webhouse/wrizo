@@ -18,7 +18,7 @@
 // Buttons preventDefault on mousedown so pressing one never steals the caret from a writing surface.
 import { useEffect, useRef, useState } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
-import { ROSTER, faceStack, rosterFace, storedFaceFor, ensureFaceLoaded, DEFAULT_FACE_NAME, type StoredFace } from '../store/fontRoster';
+import { ROSTER, faceStack, faceNameFromStack, storedFaceFor, ensureFaceLoaded, DEFAULT_FACE_NAME, type StoredFace } from '../store/fontRoster';
 import { stepUp, stepDown, normalizeTypedSize, formatSize } from '../store/fontSize';
 
 export interface TypeControlProps {
@@ -31,9 +31,10 @@ export interface TypeControlProps {
   onSize: (points: number) => void;
 }
 
-/** The everyday face's name when nothing is chosen: the voice dial's serif (Crimson Pro) or sans (Figtree). */
+/** The face that ACTUALLY renders when nothing is chosen: the first family of the resolved `--font-prose` (voice dial and
+ *  theme already applied), never the dial's own label - under the Chakra Petch voice this says Chakra Petch. */
 function everydayFaceName(): string {
-  try { return document.documentElement.getAttribute('data-voice') === 'sans' ? 'Figtree' : DEFAULT_FACE_NAME; } catch { return DEFAULT_FACE_NAME; }
+  try { return faceNameFromStack(getComputedStyle(document.documentElement).getPropertyValue('--font-prose')) ?? DEFAULT_FACE_NAME; } catch { return DEFAULT_FACE_NAME; }
 }
 
 export function TypeControl({ form, face, size, onPickFace, onSize }: TypeControlProps) {
@@ -41,7 +42,8 @@ export function TypeControl({ form, face, size, onPickFace, onSize }: TypeContro
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const currentName = face?.name ?? everydayFaceName();
-  const currentStack = faceStack(face) ?? faceStack(storedFaceFor(rosterFace(currentName) ?? ROSTER[0]));
+  // Unchosen: the button wears whatever the page really wears (`--font-prose`), roster face or not.
+  const currentStack = faceStack(face) ?? 'var(--font-prose)';
   const [draft, setDraft] = useState<string | null>(null);
 
   useEffect(() => {
