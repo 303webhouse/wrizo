@@ -3,6 +3,7 @@ import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsConnecting, inJournalView, getOrCreatePlanBoard } from '../store/persistence';
 import { setPageDress } from '../store/pageDress';
 import { pageTypeStyle, ensureFaceLoaded } from '../store/fontRoster';
+import { SIZE_DEFAULT } from '../store/fontSize';
 import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
 import { firstLine } from '../store/entryText';
@@ -38,7 +39,7 @@ import { GoalGlow } from '../components/GoalGlow';
 import { DeskInstrument } from '../components/DeskInstrument';
 import { useCascade } from '../components/Cascade';
 import type { PageFaceSubject } from '../components/PageFace';
-import type { JournalEntry, PageKindSetting, PageSettings, StyleGuide } from '../types';
+import type { JournalEntry, PageKindSetting, PageSettings, StoredFace, StyleGuide } from '../types';
 import { PAGE_KIND_DEFAULT, PAGE_SETTINGS_FALLBACK, STYLE_GUIDE_DEFAULT } from '../types';
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { PinToBoardSheet } from '../components/PinToBoardSheet';
@@ -905,12 +906,24 @@ function PageEditorView({ id }: { id: string }) {
     saveJournalEntry({ ...entry, pageSettings: { ...base, ...next }, updatedAt: new Date().toISOString() });
   };
 
+  // ITEM 207 - the Type control's props, one funnel into the page's own page_settings (the same patch every page-level
+  // choice uses). `size` reads through the default 11 and is written as the number of points; a face is written whole.
+  const typeMember = (form: 'small' | 'full') => ({
+    form,
+    face: pageFace,
+    size: entry.pageSettings?.size ?? SIZE_DEFAULT,
+    onPickFace: (face: StoredFace) => patchPageSettings({ face }),
+    onSize: (size: number) => patchPageSettings({ size }),
+  });
+
   const sliverContent: SliverContent = !framed
     ? { kind: 'empty' }
     : mode === 'journal'
       ? {
           kind: 'freewrite',
           forwardLock: { on: forwardLock, onToggle: setForwardLock },
+          // ITEM 207 - the smallest form (a face button and -/+, no number). Absent in INK: a pen page has no typeface.
+          type: instrument === 'ink' ? undefined : typeMember('small'),
           // ITEM 121 I4 — THE INK OPTIONS, PASSED ONLY IN INK. This `undefined`
           // in TEXT is the whole of "absent, never greyed": the Sliver renders
           // the zone only when the member is present, so in TEXT there is
@@ -936,6 +949,7 @@ function PageEditorView({ id }: { id: string }) {
             kind: 'draft',
             structure: 'prose',
             onSwitchStructure,
+            type: typeMember('full'),
             format: {
               onFormat: applyRailFormat,
               boldOn: draftMarks.bold, italicOn: draftMarks.italic,
@@ -975,7 +989,8 @@ function PageEditorView({ id }: { id: string }) {
         // sliver's OWN standing furniture — the goal block, the instruments row —
         // which belong to the drawer on every surface and are not Revise tenants.
         // Empty of TENANTS is what was ruled; empty of everything was not.
-        : { kind: 'empty' };
+        // ITEM 207 - 112-A's empty Revise drawer takes its one tenant: the Type control, full form.
+        : { kind: 'revise', type: typeMember('full') };
 
   const structureConfirmDialog = structureConfirm && (
     <div className="sprint-modal-backdrop structure-confirm-modal" onClick={() => setStructureConfirm(false)}>

@@ -442,6 +442,10 @@ export interface Box {
   z: number;
   groupId?: string;
   text?: string;      // kind 'text'
+  // ITEM 207 - a TEXT card's own face and size (Nick's Q3: the options live in the card's tool strip; the default is the
+  // everyday font). Additive inside `boxes` (jsonb) - zero schema - and ABSENT on every card that never chose.
+  fontFace?: StoredFace;
+  fontSize?: number;  // points; read through the default 11 (= today's card rendering)
   strokes?: Stroke[];  // kind 'ink' (incl. erases) — re-normalized to the box on port
   sourceEntryId?: string;
   portedAt?: string;

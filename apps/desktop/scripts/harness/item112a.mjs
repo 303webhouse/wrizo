@@ -33,6 +33,10 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+// ITEM 207 - the parked recorder, hoisted from the park block at the foot so the two assertions below (one of them inside
+// the REFERENCE loop) can park where they stand. Same shape as item84b.mjs's.
+const parkedChecks = [];
+const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // THE TWO REFERENCE WIDTHS, and they are law for this ticket (brief §5): the frame's
@@ -303,9 +307,12 @@ await withHarness(async (app) => {
     // furniture — that distinction is the ruling, and asserting the wrong one would
     // quietly forbid the goal block every surface carries.
     const deskBody = await app.evalJs("(() => ({ toolsBody: document.querySelectorAll('.wz-sliver-body').length, sections: document.querySelectorAll('.wz-sliver-section').length, goalFoot: !!document.querySelector('.wz-sliver-panel') }))()");
-    ok(`S7 (@ ${w}x${h}): and the Desk drawer is empty OF TENANTS — zero tool sections render (no Type section, no Draft rail inherited down the else-branch) while the drawer itself still stands open`,
-      deskBody.toolsBody === 0 && deskBody.sections === 0 && deskBody.goalFoot === true,
-      JSON.stringify(deskBody));
+    pok(`PARKED (was, VERBATIM: "S7 (@ ${w}x${h}): and the Desk drawer is empty OF TENANTS — zero tool sections render (no Type section, no Draft rail inherited down the else-branch) while the drawer itself still stands open") - SUPERSEDED by ITEM 207: Revise's drawer now carries ONE tenant, the Type control (112-A named it: '112-C fills this drawer with 83's Type section'); the successor is the next check, same fixture`,
+      true, 'superseded by item 207; successor asserts exactly one tool section and that it is the Type control');
+    const deskTenant = await app.evalJs("(() => ({ toolsBody: document.querySelectorAll('.wz-sliver-body').length, sections: document.querySelectorAll('.wz-sliver-section').length, types: document.querySelectorAll('.wz-sliver-section .wz-type').length, typeInputs: document.querySelectorAll('.wz-type input').length }))()");
+    ok(`S7 SUCCESSOR (@ ${w}x${h}, item 207): the Desk drawer's ONE tenant is the Type control - exactly one tool section, and it is the full-form Type control (a number field), while the drawer itself still stands open`,
+      deskTenant.toolsBody === 1 && deskTenant.sections === 1 && deskTenant.types === 1 && deskTenant.typeInputs === 1,
+      JSON.stringify(deskTenant));
 
     // §8's exit names OPEN AND CLOSE by their own grips, so the close is asserted
     // as well. A drawer that opens and will not shut is not a walkable room, and
@@ -618,8 +625,10 @@ await withHarness(async (app) => {
       };
     })()`);
 
-    ok('S8 (§7.8): NO TYPE SECTION and no inherited Draft rail render in Revise — the Desk drawer stands open and carries zero tool sections. 112-C fills it; this ticket ships the room',
-      empty.sliverSections === 0 && empty.sliverFormat === 0,
+    pok('PARKED (was, VERBATIM: "S8 (§7.8): NO TYPE SECTION and no inherited Draft rail render in Revise — the Desk drawer stands open and carries zero tool sections. 112-C fills it; this ticket ships the room") - SUPERSEDED by ITEM 207: the 112-C Type section is now filled; what stays true (no INHERITED Draft rail) is the successor below',
+      true, 'superseded by item 207; successor keeps the no-Draft-rail half and asserts the one Type tenant');
+    ok('S8 SUCCESSOR (item 207): the Revise drawer carries no INHERITED Draft rail (no .wz-sliver-format) and exactly ONE tool section, the Type control',
+      empty.sliverFormat === 0 && empty.sliverSections === 1 && empty.structureBtn === 0,
       JSON.stringify(empty));
     ok("S8 (§7.8): NO ROSTER renders in Revise — neither the Draft asks nor Free Write's presets, and no Revise roster of its own. That is 112-D, and §6 forbids it appearing early",
       empty.askChips === 0 && empty.mentionsSelection === false,
@@ -715,15 +724,16 @@ console.log(JSON.stringify(checks, null, 2));
 //   - menus-probe.mjs is not in scripts/harness and is not run by run-suite.mjs.
 //
 // PARKED COUNT FOR THIS TICKET: 1 (in item84b.mjs). THIS FILE parks 0 of its own.
+// ITEM 207 (2026-09-24) parks THREE here: S7's 'empty OF TENANTS' at 1100 and 1366, and S8's 'NO TYPE SECTION' - Revise's drawer
+// now carries the Type control, exactly the tenant 112-A said 112-C would bring. Each keeps its text VERBATIM in its parked record.
 // ---------------------------------------------------------------------------
-const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nITEM112A PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; this FILE parks 0 of its own. The ticket's ONE park is in item84b.mjs (the file that owns the assertion): "the Revise tab is inert", superseded by Revise standing up. See this file's park block for why the first sweep counted 0 and how the suite corrected it.`
+    ? `\nITEM112A PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; this FILE parks 3 since ITEM 207 (S7 at the two reference widths, S8 once) - and, before it, 0 of its own; the ticket's ONE original park is in item84b.mjs (the file that owns the assertion): "the Revise tab is inert", superseded by Revise standing up. See this file's park block for why the first sweep counted 0 and how the suite corrected it.`
     : `\nITEM112A PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);

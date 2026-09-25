@@ -1389,7 +1389,7 @@ a:focus-visible,
   width:100%; height:100%; overflow:auto; padding:6px 8px; box-sizing:border-box;
   border:1px solid var(--card-hairline); border-radius:0; background:var(--card-stock);
   box-shadow:2px 2px 0 var(--card-hairline), 4px 5px 10px rgba(43,39,33,.16);
-  color:var(--ink-on-paper); font-family:var(--font-prose); font-size:15px; line-height:1.6;
+  color:var(--ink-on-paper); font-family:var(--font-prose); font-size:calc(15px * var(--card-type-k, 1)); line-height:1.6;
   white-space:pre-wrap;
   /* FX8 S3 — "whenever the cursor is over the bounds of a box... the
      cursor should change showing that the user can now move the card
@@ -1653,9 +1653,12 @@ a:focus-visible,
 .board-popup-tool{ width:30px; height:28px; font-family:var(--font-prose); font-size:14px; }
 .board-popup-editor{
   display:block; width:100%; min-height:170px; padding:18px 22px 6px; box-sizing:border-box;
-  outline:none; font-family:var(--font-prose); font-size:16px; line-height:1.6;
+  outline:none; font-family:var(--font-prose); font-size:calc(16px * var(--card-type-k, 1)); line-height:1.6;
   white-space:pre-wrap; color:var(--ink-on-paper);
 }
+/* ITEM 207 - the card's Type control inside the styling dock: a column, no wider than the dock needs. */
+.board-popup-dock .wz-type{ flex-direction:column; align-items:stretch; width:9.5rem; }
+.board-popup-dock .wz-type-size{ justify-content:center; }
 .board-popup-foot{ display:flex; justify-content:flex-end; padding:12px 16px 18px; }
 
 /* J5 — the lens row: square corners, quiet borders, brass ONLY on the
@@ -3603,6 +3606,21 @@ a:focus-visible,
   border:1px solid var(--ink-border); font-family:var(--font-ui); cursor:pointer; transition:.15s; }
 .wz-sliver-item-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-sliver-format{ display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
+/* ITEM 207 - THE TYPE CONTROL (TypeControl.tsx). As minimal as a strip menu gets: a face button, a `-` `+` pair, and in
+   the full form a number between them. No heading, no caption. The listbox drops in FLOW inside the drawer (never a
+   second floating panel), each row set in its own face, the current one olive (where you are - the sliver's rest law). */
+.wz-type{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.wz-type-face{ flex:1 1 auto; min-width:0; text-align:left; padding:4px 8px; background:none; color:var(--text-hi);
+  border:1px solid var(--ink-border); cursor:pointer; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wz-type-face:hover{ border-color:var(--ink-border-strong); }
+.wz-type-list{ flex:1 0 100%; list-style:none; margin:0; padding:2px 0; border:1px solid var(--ink-border); }
+.wz-type-row{ padding:4px 8px; font-size:14px; cursor:pointer; color:var(--text-hi); }
+.wz-type-row:hover{ background:var(--ink-800, rgba(0,0,0,.06)); }
+.wz-type-row[data-current='true']{ color:var(--accent-rest); }
+.wz-type-size{ display:flex; align-items:center; gap:2px; }
+.wz-type-step[aria-disabled='true']{ opacity:.35; cursor:default; }
+.wz-type-num{ width:3.2em; text-align:center; padding:3px 2px; background:none; color:var(--text-hi);
+  border:1px solid var(--ink-border); font:inherit; font-size:13px; }
 /* FX7 S2 — Free Write's own Bold/Italic two-press bracket: the mark is
    "open" (leading marker inserted, awaiting its close) for exactly the same
    reason a toggle switch reads "on" — olive marks where-you-are, matching

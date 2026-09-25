@@ -43,7 +43,10 @@ import { DECKS } from '../decks/library';
 import { materializeDeck } from '../decks/engine';
 import type { DeckDefinition, DeckAnswers } from '../decks/types';
 import { armStartHere, getStartHereCardId, noteDealtCardEdited } from '../store/deckHint';
-import type { JournalEntry, Box, Project } from '../types';
+import type { JournalEntry, Box, Project, StoredFace } from '../types';
+import { TypeControl } from './TypeControl';
+import { cardTypeStyle, ensureFaceLoaded } from '../store/fontRoster';
+import { SIZE_DEFAULT } from '../store/fontSize';
 
 // J4 — the Board: a canvas of positioned boxes (I2/I3 realized). Boxes only
 // ever arrive via a port (J4 Slice 2) or, AB4 S2/S5, a pin (a membership
@@ -269,12 +272,15 @@ function BoardPinBox({ box }: { box: Box }) {
 // completely untouched — their own organic grow-as-you-type is FX4 S4's
 // intended, correct behavior, not a defect.
 function BoardTextBox({
-  boxId, initialText, measureRef, sourceEntryId,
+  boxId, initialText, measureRef, sourceEntryId, typeStyle,
 }: {
   boxId: string;
   initialText: string;
   measureRef: (id: string, el: HTMLDivElement | null) => void;
   sourceEntryId?: string;
+  // ITEM 207 - the card's own face/size (store/fontRoster.ts cardTypeStyle); undefined on a card that never chose, so its
+  // element carries no style attribute at all.
+  typeStyle?: React.CSSProperties;
 }) {
   const { t } = useDeskLexicon();
   if (sourceEntryId) {
@@ -321,6 +327,7 @@ function BoardTextBox({
     <div
       ref={el => measureRef(boxId, el)}
       className="board-text"
+      style={typeStyle}
       dangerouslySetInnerHTML={{ __html: decorateMarkdownForCard(initialText, null) }}
     />
   );
@@ -342,11 +349,15 @@ function BoardTextBox({
 // Voice Wall stands: foreign paste/drop is blocked + whispered; an allowed
 // own-ink paste proceeds natively (Draft's own law, unchanged here).
 function BoardCardPopup({
-  initialText, onCommit, onClose,
+  initialText, onCommit, onClose, fontFace, fontSize, onType,
 }: {
   initialText: string;
   onCommit: (text: string) => void;
   onClose: () => void;
+  // ITEM 207 - the card's own face/size and the one funnel that writes them (BoardEditor.commitType).
+  fontFace?: StoredFace;
+  fontSize?: number;
+  onType: (patch: { fontFace?: StoredFace; fontSize?: number }) => void;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const elRef = useRef<HTMLDivElement | null>(null);
@@ -671,6 +682,8 @@ function BoardCardPopup({
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingBold')} onClick={() => applyBoardFormat('bold')}><b>B</b></button>
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingItalic')} onClick={() => applyBoardFormat('italic')}><i>I</i></button>
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingUnderline')} onClick={() => applyBoardFormat('underline')}><u>U</u></button>
+          {/* ITEM 207 - the card's face and size: the smallest form (a face button and -/+, no number, no heading). */}
+          <TypeControl form="small" face={fontFace} size={fontSize ?? SIZE_DEFAULT} onPickFace={face => onType({ fontFace: face })} onSize={size => onType({ fontSize: size })} />
         </div>
         )}
         <div className="board-popup-strip">
@@ -684,6 +697,7 @@ function BoardCardPopup({
           role="textbox"
           aria-multiline="true"
           aria-label={`${lex('board')} text box`}
+          style={cardTypeStyle(fontFace, fontSize)}
         />
         <div className="board-popup-foot">
           {/* CD4.1 — "Done" retired: the card-edit popup's close control is a door
@@ -847,6 +861,9 @@ export function BoardEditor({ id }: { id: string }) {
   const [existingPageOpen, setExistingPageOpen] = useState(false);
 
   const boxesRef = useRef(boxes);
+  // ITEM 207 - a card that wears a non-eager face fetches it when the board opens (or when a card arrives wearing one).
+  const cardFaceNames = boxes.map(b => b.fontFace?.name ?? '').filter(Boolean).sort().join('|');
+  useEffect(() => { cardFaceNames.split('|').forEach(n => { if (n) void ensureFaceLoaded(n); }); }, [cardFaceNames]);
   boxesRef.current = boxes;
   const selectedIdRef = useRef(selectedId);
   selectedIdRef.current = selectedId;
@@ -1162,6 +1179,12 @@ export function BoardEditor({ id }: { id: string }) {
     // state) keeps this component honest about storage's own truth.
     noteDealtCardEdited(id, boxId);
     setStartHereCardId(getStartHereCardId(id));
+  };
+
+  // ITEM 207 - a card's own face and size: the same functional setBoxes every card edit uses, touching this Box only.
+  const commitType = (boxId: string, patch: { fontFace?: StoredFace; fontSize?: number }) => {
+    if (patch.fontFace) void ensureFaceLoaded(patch.fontFace.name);
+    setBoxes(prev => prev.map(b => (b.id === boxId ? { ...b, ...patch } : b)));
   };
 
   const snapshot = (type: NonNullable<LastAction>['type']) => {
@@ -2267,6 +2290,7 @@ export function BoardEditor({ id }: { id: string }) {
                   initialText={box.text ?? ''}
                   measureRef={measureRef}
                   sourceEntryId={box.sourceEntryId}
+                  typeStyle={cardTypeStyle(box.fontFace, box.fontSize)}
                 />
               )}
               {/* FX5 S5 — the olive pin: the connection grab, on every card,
@@ -2363,6 +2387,9 @@ export function BoardEditor({ id }: { id: string }) {
         <BoardCardPopup
           initialText={popupBox.text ?? ''}
           onCommit={text => commitText(popupBox.id, text)}
+          fontFace={popupBox.fontFace}
+          fontSize={popupBox.fontSize}
+          onType={patch => commitType(popupBox.id, patch)}
           onClose={() => setPopupBoxId(null)}
         />
       )}

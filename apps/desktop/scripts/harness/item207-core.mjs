@@ -125,6 +125,45 @@ const eagerBytes = files.filter((f) => eagerCss.includes(f.rel) || /assets\/inde
 ok('REPORT: eager entry bytes (the entry JS + eager CSS) — recorded so the next change can be compared, not judged', true, `${Math.round(eagerBytes / 1024)} KB across ${eagerCss.length + 1} files; lazy font CSS ${cssFiles.length - eagerCss.length} chunk(s)`);
 
 // ---------------------------------------------------------------------------
+// HIS LAW, MADE ASSERTABLE STATICALLY — the control's elements and where it is mounted (the rendered counts are item207.mjs's)
+// ---------------------------------------------------------------------------
+const src = (rel) => readFileSync(join(SRC, rel), 'utf8').replace(/\r\n/g, '\n');
+const noComments = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+const ctlShape = (t) => {
+  const code = noComments(t);
+  const inputs = (code.match(/<input\b/g) || []).length;
+  const guarded = /form === 'full' && \(\s*<input\b/.test(code);
+  return {
+    buttons: (code.match(/<button\b/g) || []).length,
+    inputs,
+    inputGuardedByFullForm: inputs === 0 || guarded,
+    addDoor: /add a font|addFont/i.test(code),
+    caption: /wz-sliver-h|<label\b|<h[1-6]\b|<legend\b/.test(code),
+  };
+};
+const shape = ctlShape(src('components/TypeControl.tsx'));
+ok('MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form',
+  shape.buttons === 3 && shape.inputs === 1 && shape.inputGuardedByFullForm, JSON.stringify(shape));
+ok('MINIMAL: no caption or heading of any kind in the control (no label, legend or heading element, no eyebrow class) — a control\'s name lives in its aria-label', !shape.caption, JSON.stringify(shape));
+ok('NO ADD DOOR (207a): the control carries no "Add a font…" row — it arrives with Route A (207b), and Free Write never gets it (his Q2)', !shape.addDoor, '');
+const sliverSrc = src('components/Sliver.tsx');
+const mount = sliverSrc.match(/content\.type && \(\s*<div className="wz-sliver-section wz-sliver-type">[\s\S]*?<\/div>\s*\)\}/);
+ok('MOUNT: the sliver mounts the control on the Free Write, Draft and Revise arms only, in one section with no heading',
+  !!mount && /content\.kind === 'freewrite' \|\| content\.kind === 'draft' \|\| content\.kind === 'revise'/.test(sliverSrc) && !/wz-sliver-h/.test(mount[0]), mount ? 'found' : 'mount block not found');
+const pe = src('pages/PageEditor.tsx');
+ok('FORMS: Free Write passes the SMALL form (and none in INK), Draft and Revise pass the FULL form',
+  /type: instrument === 'ink' \? undefined : typeMember\('small'\)/.test(pe) && /kind: 'draft',[\s\S]{0,200}type: typeMember\('full'\)/.test(pe) && /kind: 'revise', type: typeMember\('full'\)/.test(pe), '');
+ok('SCREENPLAY: absent, not greyed — the screenplay editor passes no `type` to its sliver content (its face is the format\'s)',
+  !/\btype:\s*(typeMember|\{)/.test(noComments(src('components/ScriptEditor.tsx'))), '');
+const be = src('components/BoardEditor.tsx');
+ok('CARD: the card\'s styling dock mounts the SMALL form (no number), in the popup only', /<TypeControl form="small"/.test(be) && !/<TypeControl form="full"/.test(be), '');
+const per = src('store/persistence.ts');
+ok('CARD COPY: copyCardToBoard carries fontFace and fontSize (a copy that came back in the everyday font is not the same card)',
+  /fontFace !== undefined \? \{ fontFace: box\.fontFace \}/.test(per) && /fontSize !== undefined \? \{ fontSize: box\.fontSize \}/.test(per), '');
+ok('NO SCHEMA (207a): the server is untouched — no migration or sync.ts mapper mentions face or size',
+  !/fontFace|fontSize|pageSettings\.face/.test(readFileSync(join(desktop, '..', 'server', 'src', 'sync.ts'), 'utf8')) && !/fontFace|font_face/.test(readFileSync(join(desktop, '..', 'server', 'src', 'migrate.ts'), 'utf8')), '');
+
+// ---------------------------------------------------------------------------
 // FALSIFICATION — mutate the SHIPPED source in memory; each mutation asserted to land; each must turn a check red
 // ---------------------------------------------------------------------------
 const mutant = async (name, overrides, red) => {
@@ -140,6 +179,17 @@ await mutant('M4 a face is size-adjusted (the literal-points ruling broken)', { 
 await mutant('M5 the fallback stops being faithful in kind (a serif falls back to a sans)', { 'store/fontRoster.ts': swap("serif: 'Georgia, serif',", "serif: 'system-ui, sans-serif',") }, (W) => !/serif$/.test(W.faceStack({ name: 'Q', generic: 'serif', source: 'device' })) || /system-ui/.test(W.faceStack({ name: 'Q', generic: 'serif', source: 'device' })));
 await mutant('M6 a name is no longer sanitised (a hostile font name breaks out of the value)', { 'store/fontRoster.ts': swap("n.replace(/['\\\\]/g, '')", 'n') }, (W) => (W.faceStack({ name: "A'; } body { x:", generic: 'serif', source: 'device' }).match(/'/g) || []).length !== 2);
 await mutant('M7 Times New Roman loses its open fallback', { 'store/fontRoster.ts': swap("stack: \"'Times New Roman', 'Tinos', Times, serif\"", "stack: \"'Times New Roman', Times, serif\"") }, (W) => !/'Tinos'/.test(W.rosterFace('Times New Roman').stack));
+
+{
+  const t = src('components/TypeControl.tsx');
+  const landed = (mutated) => mutated !== t;
+  const extraButton = t.replace('</div>\n  );\n}', '<button type="button">Add a font</button></div>\n  );\n}');
+  ok('FALSIFICATION M8 an extra button (an add door) is added to the control — must go RED', landed(extraButton) && (ctlShape(extraButton).buttons !== 3 || ctlShape(extraButton).addDoor), '');
+  const unguarded = t.replace("{form === 'full' && (", '{(');
+  ok('FALSIFICATION M9 the number input is shown in EVERY form (Free Write would gain it) — must go RED', landed(unguarded) && !ctlShape(unguarded).inputGuardedByFullForm, '');
+  const captioned = t.replace('<div className="wz-type"', '<div className="wz-sliver-h">Type</div><div className="wz-type"');
+  ok('FALSIFICATION M10 a heading is added above the control — must go RED', landed(captioned) && ctlShape(captioned).caption, '');
+}
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 300)}]` : ''}`);
 const parkedChecks = [];

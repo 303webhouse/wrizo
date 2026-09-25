@@ -1491,6 +1491,9 @@ export function copyCardToBoard(sourceBoardId: string, boxId: string, targetBoar
   //   w, h              — the card's authored SIZE, part of how it reads
   //                       (shape teaches the kind), so a copy is recognisably
   //                       the same card.
+  //   fontFace/fontSize — ITEM 207: the card's own typeface and point size are
+  //                       how it READS, exactly as w/h are; a copy that came
+  //                       back in the everyday font would not be the same card.
   //   copiedFromBoardId — the new lineage, this act's own record.
   // Deliberately NOT carried:
   //   x, y, z           — a position on ANOTHER board's canvas. The target
@@ -1512,6 +1515,8 @@ export function copyCardToBoard(sourceBoardId: string, boxId: string, targetBoar
     w: box.w, h: box.h,
     ...(box.text !== undefined ? { text: box.text } : {}),
     ...(box.strokes !== undefined ? { strokes: box.strokes } : {}),
+    ...(box.fontFace !== undefined ? { fontFace: box.fontFace } : {}),
+    ...(box.fontSize !== undefined ? { fontSize: box.fontSize } : {}),
     copiedFromBoardId: sourceBoardId,
   };
   saveJournalEntry({ ...target, boxes: [...existing, copy] });

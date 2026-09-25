@@ -267,6 +267,9 @@ export type DeskTermId =
   | 'draftHeading' | 'draftBullet' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
   | 'draftConvertToScreenplay' | 'draftConvertToProse'
+  // ITEM 207 — the Type control's accessible names. NO visible captions: his law is a strip menu with the fewest marks,
+  // so each control's name lives in its aria-label, never as helper text.
+  | 'typeGroup' | 'typeFace' | 'typeSmaller' | 'typeLarger' | 'typeSize'
   // ITEM 114 (item 83 errata E4) — the page's declared KIND and, under
   // Research, its style guide. Two sub-labels join them, and they are the
   // load-bearing half of the answer to the Screenplay name collision: one zone
@@ -889,6 +892,11 @@ const CANONICAL: Record<DeskTermId, string> = {
   draftIndent: 'Indent',
   draftOutdent: 'Outdent',
   draftSpacing: 'Line spacing',
+  typeGroup: 'Type',
+  typeFace: 'Typeface',
+  typeSmaller: 'Smaller',
+  typeLarger: 'Larger',
+  typeSize: 'Size in points',
   draftAlignment: 'Alignment',
   draftAlignLeft: 'Align left',
   draftAlignCenter: 'Align centre',

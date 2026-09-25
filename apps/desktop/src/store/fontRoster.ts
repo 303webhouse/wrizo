@@ -111,6 +111,18 @@ export function ensureFaceLoaded(name: string | undefined): Promise<unknown> {
   return p;
 }
 
+/** A card's style: its own face, and its size as a MULTIPLIER on the card's existing rule (`--card-type-k`, read by
+ *  `.board-text` and the popup editor), so 11 is today's card exactly and a card that never chose emits nothing. */
+export function cardTypeStyle(face: StoredFace | undefined, size: number | undefined): Record<string, string> | undefined {
+  const out: Record<string, string> = {};
+  const stack = faceStack(face);
+  if (stack) out.fontFamily = stack;
+  const adjust = rosterFace(face?.name)?.sizeAdjust ?? 1;
+  const points = size ?? SIZE_DEFAULT;
+  if (points !== SIZE_DEFAULT || adjust !== 1) out['--card-type-k'] = String((points / SIZE_DEFAULT) * adjust);
+  return Object.keys(out).length ? out : undefined;
+}
+
 /** The inline style a writing surface applies for its page's own face and size; empty when the page never chose, which
  *  is what keeps an untouched page byte-identical. `size` is points; 11 is today's rendering. */
 export function pageTypeStyle(face: StoredFace | undefined, size: number | undefined): { fontFamily?: string; fontSize?: string } {
