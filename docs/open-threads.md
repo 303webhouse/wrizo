@@ -22875,3 +22875,26 @@ A: keep Fable’s stated order — TOOLS’ two runs, then the batch pair. Readi
 precedent, and “the writing surface first”). My lean: B — the batch pair is the shortest path to shipping
 what Nick called the blocker to his testing — but it is Fable’s to rule.** TOOLS has not started (grant just
 written); if Fable rules B before it does, I rewrite the file.
+
+## BATCH SEVEN — THE PAIR GOES BEFORE TOOLS (RULED); THE BYTE-REVIEW EXTRACT; THE STORAGE HALF IS BATCH EIGHT — 2026-09-25 (chat 1)
+
+**RULED (Fable): YES — Batch Seven’s pair goes BEFORE TOOLS’ runs** (the writing surface ships first, by
+Nick’s word) — reading B, my lean. **The grant file is rewritten naming THIS DESK for the batch pair on the
+assembled tree, both legs** (TOOLS’ unused grant, written 07:37 local, is replaced; no runner was on the box
+and no suite directory had appeared since 00:39). **TOOLS’ turn moves behind the pair; its two runs (195, then
+`item207.mjs`) follow.**
+
+**BYTE REVIEW, SCOPED (Fable): only what can change a writer’s words.** **The extract is a COMMITTED FILE:
+`docs/menus/batch7-byte-review-extract.md`** — (a) the 11 files with their +/− counts (**+558/−82**),
+(b) the FULL diff (`git diff -U3 5f0691f b14c961`, unedited) of the five files that write the manuscript:
+`draftFormat.ts` (the formatter, its toggle, the line tools, 158’s Tab indent, and
+`stripMarkdownConventions` — the Copy My Words stripping), `PageEditor.tsx` (the Ctrl+B/I/U wiring, the Tab
+handler effect with its deps, `!!realEntry` — the moved hook), `ForwardOnlyEditor.tsx`, `BoardEditor.tsx`
+(the card’s formatter door), `caretOffset.ts`. **Whole-file diffs, a superset of the writing hunks — nothing
+was filtered by hand.** **Not extracted, stated:** `draftDecoration.ts`, `index.css`, `deskLexicon.ts` (render /
+strings — ride the harness evidence) and `sync.ts`, `syncNotice.ts`, `server/index.ts` (P3, `18e96d0`, already
+reviewed). **I checked that the labels hold** — the Tab effect, its `!!realEntry` deps and the Ctrl+B/I/U chord
+function are in the extract; **I did not review the code.**
+
+**THE STORAGE HALF (PW, `d1abca7`) does NOT join Batch Seven.** It is a schema change and rides **BATCH EIGHT
+after Fable’s byte review.**
