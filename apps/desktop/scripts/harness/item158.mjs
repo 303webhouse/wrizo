@@ -23,7 +23,7 @@ const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const PAGE = 'i158-page';
+let PAGE = 'i158-page';
 const PARA = 'The paragraph that should indent.';
 
 const freshDesk = async (app) => {
@@ -54,10 +54,21 @@ const openPage = async (app) => {
 
 // The stored text is the subject: the indent is a character in `entry.text`,
 // not a margin. Read after the debounced flush (the settled-state law).
-const stored = (app) => app.evalJs(`(() => {
+const storedNow = (app) => app.evalJs(`(() => {
   const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(x => x.id === '${PAGE}');
   return e ? e.text : null;
 })()`);
+
+// SETTLED, not sampled: two debounces sit between a keystroke and the stored text (an editor write, then the store's flush), so
+// a fixed 700-900ms sleep reads the state BEFORE the write and reports a working indent as missing. This file's first run (the
+// pair on item-writing-stack) failed 3/12 for exactly that reason - on the branch's own tip too. The read now waits past the
+// debounces and then for the value to stop changing.
+const stored = async (app) => {
+  await sleep(1800);
+  let last = await storedNow(app); let same = 0;
+  for (let i = 0; i < 30 && same < 4; i += 1) { await sleep(150); const n = await storedNow(app); same = n === last ? same + 1 : 0; last = n; }
+  return last;
+};
 
 const focusInEditor = (app) => app.evalJs(`(() => {
   const el = document.querySelector('.forward-only-editor');
@@ -136,8 +147,12 @@ await withHarness(async (app) => {
   // line it is an insertion at the caret, which is the typewriter's own tab.
   // ==========================================================================
   await freshDesk(app);
+  PAGE = 'i158-freewrite';   // a NEW id: the Revise section left its indented text in the app's in-memory cache under the old one
   ok('setup: a fresh page for Free Write', await seed(app, PARA));
-  await openPage(app);                          // journal-origin opens in Free Write
+  await openPage(app);
+  // Chosen, not assumed: the first run showed a fresh page did NOT necessarily open in Free Write (the mode strip read null and
+  // Tab indented the written line, which is Draft's law), so the section that tests Free Write's law puts the page there itself.
+  await toMode(app, 'Free Write');
   const mode = await app.evalJs("(document.querySelector('.mode-strip .active, .desk-frame-modestrip .active') || {}).textContent || null");
   await caretTo(app, PARA.length);              // end of the written line
   await app.key('Tab');
@@ -149,7 +164,9 @@ await withHarness(async (app) => {
 
   // A blank line: type a real Enter, then Tab.
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
-  await app.key('Enter');
+  // typeKeys, not key(): a bare rawKeyDown Enter carries no text, and Free Write's forward-only input path ignores it (measured: the
+  // stored and displayed text were unchanged after it), so the blank line this check needs was never made.
+  await app.typeKeys('\n');
   await sleep(300);
   await app.key('Tab');
   await sleep(900);
