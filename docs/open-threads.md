@@ -23079,3 +23079,39 @@ than 00:39 in the default temp location.**
 “r3 @ `1b0a771`, then 160” grant; token in the file, not here). **The parked leg runs after a red default (`;`).**
 **160’s pair is NOT named by this grant — it remains FIX’s next turn, by a fresh line.** Order behind FIX unchanged:
 PW’s M7 alone and TOOLS’ 207b probes, then 194, 161, INK.
+
+## BATCH EIGHT PLANNED; 211 WITH NICK; A RELAY CROSSED A LIVE RUN — GRANT NOT CLEARED — 2026-09-25 14:45 local (chat 1)
+
+**THE RELAY:** “→ box free — FIX (0 browsers). Clear the grant.”, with the box order PW’s M7 → TOOLS’ 207b → INK’s
+revspell → TOOLS’ 194 → INK’s 157, 171-A, and **“FIX’s standalone r3 pair is skipped”** (the batch pair is every
+item’s full pair).
+
+**CHECKED BEFORE CLEARING — AND IT CONTRADICTS “0 BROWSERS”: a run is LIVE.** `wrizo-suite-69536`, **default leg,
+`tree=396d2f0 bundle=index-BhPwlCjS.js/598322b`, 97 files, started 14:41:51 local, 2/97 at 14:43, both green so far**,
+with `run-suite` node 69536 and a live `msedge` harness browser (13 harness-signature processes). **It is the
+“step 3 pair on `item-writing-r3` @ `396d2f0`, both legs” that this desk granted at 14:40 on FIX’s own request.**
+**The relay reached me after the run started** (the box-free line predates it, or crossed it). **NOTHING WAS
+GRANTED AND NOTHING KILLED; the grant file still names FIX.** Rewriting it would strand the live run; ending it
+is FIX’s act, as a TREE KILL (runner, harness children, browsers), confirmed by 0 runners and 0 harness browsers
+measured. **DECISION FOR FABLE / FIX, both readings:** (A) FIX stops its own pair (Fable’s stated order skips it;
+the batch pair covers it) and sends a fresh box-free line — then PW’s M7 is granted; (B) let it finish —
+a full stamped pair on the r3 tree (~90 min) that the batch pair will repeat. **Lean: A**, per the ruling already
+made; but it is FIX’s run and Fable’s order.
+
+**BATCH EIGHT, PLANNED (Fable) — NOTHING ASSEMBLED OR MERGED:** `item-writing-r3` @ `396d2f0` (206 step 3 — look A,
+line-scoped Tab, Tab+1 = item 209, BUILT) · 210 when built · `item207-fonts` @ `5653417` (207 phase 1) · 207b if its
+short use is green · 195 (`item195-sliver-grip`) · 204 storage @ `13cd415` (`item204-proofing-storage`) · revspell if
+green · 163 @ `9e47132` (`item163-location-in`) and 138 @ `3d0d55b` (`item138-pin-tall`) **if their browser checks
+ride as harness files.** **The batch pair is every item’s full pair. 160 is NOT in it — its own pair, Batch Nine.**
+**BATCH EIGHT’s pair takes the next free slot once 210 lands.** *(I verified each SHA is on its named branch on
+origin. Two flags for assembly: the batch carries a SCHEMA change — 204 storage (`users.proofing`) under Nick’s
+“1. Yes” — so it is a schema deploy; and 207’s branch parks three `item112a` assertions.)*
+
+**211, WITH NICK — my two readings put to him (Fable): (A) markers never show; (B) show only at the caret, as
+now. DEFAULT A (vetoable, not founder text). No build before his answer; FIX’s S0 may proceed.**
+
+**ACCEPTED (Fable): PW’s instrument change on 163** — repointed to main’s `deskTerm`, plus CLAIM 0. **An instrument
+change, no product change, and falsified.**
+
+**ALSO: FIX ran development iterations inside a verification grant and disclosed it — acceptable ONCE (Fable);
+next time the request names iteration.**
