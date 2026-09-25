@@ -22991,3 +22991,12 @@ the decorator, Copy My Words’ strip, and Experiment 1’s anchor text (PW’s 
 merge until `visibleText` derives from it, with a proof.**
 
 **WITH NICK — NO DEFAULT:** the indent look — first line only, or the whole paragraph as a block.
+
+**⚠ CORRECTED, same turn (chat 1) — TOOLS’ RUN LOGS FOUND.** The entry above says I could not show what TOOLS’ runs were.
+A wider search finished and found them in the default temp directory as **`i195-default.log.txt`,
+`i195-parked.log.txt`, `i207-default.log.txt`, `i207-parked.log.txt`** (12:26–12:33 local today), read now:
+**`ITEM195 VERIFY: PASS (49 checks)` on both legs; `ITEM207 VERIFY: PASS (41 checks)` on both legs.** **They are
+SINGLE-HARNESS runs — no `SUITE START` / `SUITE DONE` / `SUITE RESULT` stamp line, no file count, no `tree=` /
+`bundle=`.** **So the conclusion stands and is now shown, not inferred: NEITHER is a full-suite stamped pair; both
+are green on their own files only; the owed full pair (default + parked, 96+ files, stamped) is the Batch Eight
+pair on the assembled tree.** The earlier sentence is left as written.
