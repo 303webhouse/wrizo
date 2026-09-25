@@ -134,7 +134,11 @@ console.log('CLAIM 5 — ONE READER: no bare-name spelling survives anywhere');
     const src = readFileSync(f, 'utf8');
     for (const m of src.matchAll(BARE)) {
       const line = src.slice(0, m.index).split('\n').length;
-      hits.push({ f: f.replace(repo.replace(/\\/g, '/'), '').replace(/\\/g, '/'), line, text: m[0] });
+      // Normalise the separators BEFORE stripping the prefix, or the strip never
+      // matches on Windows and every failure prints an absolute path — a message
+      // about someone else's machine instead of a file a reader can open.
+      const rel = f.replace(/\\/g, '/').replace(repo.replace(/\\/g, '/') + '/', '');
+      hits.push({ f: rel, line, text: m[0] });
     }
   }
   // Exactly ONE is lawful: the reader itself, in pageHome.ts.
