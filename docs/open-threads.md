@@ -23115,3 +23115,26 @@ change, no product change, and falsified.**
 
 **ALSO: FIX ran development iterations inside a verification grant and disclosed it — acceptable ONCE (Fable);
 next time the request names iteration.**
+
+## ITEM 211 — NICK’S RULING: “A” (MARKERS NEVER SHOW) — 2026-09-25 (chat 1)
+
+**THE QUESTION AS PUT TO NICK (as relayed by Fable):**
+
+> “(A) Never show. The page always looks like a finished book page. You change styles only
+> with the buttons, the right-click menu and shortcuts, like in Word. (B) Show only while
+> your cursor is inside a styled word. That's how it works now, and it lets you edit the
+> marks by hand. I recommend A. Default: A.”
+
+**HIS ANSWER, verbatim:**
+
+> “A”
+
+**RECORDED AS A RULING (Fable):** **markers never show — on the page in EVERY mode and on cards — and
+reveal-at-caret is RETIRED.** **Hand-editing markers goes with it, as the question said.** *(This settles the
+“two readings” I flagged on the 211 entry: reading (1), Fable’s, is Nick’s. The default and his answer
+agree; it is his word, not a default taken by skip.)* **FIX’s S0 shape report comes to Fable BEFORE any build;
+if it calls for a NEW EDITOR MODEL, it goes to Nick in plain words first.** *(Fable’s own conditions.)*
+
+**A NOTE, mine:** this changes what is LIVE (Batch Seven): the
+reveal-at-caret Nick saw in his screenshot is shipped behaviour, so 211 is a behaviour reversal of a shipped
+design, not a bug fix in the narrow sense.
