@@ -7,8 +7,7 @@ import {
   getSystemKind, reconcileSystemBoard, restoreEntry, getJournalEntryIncludingDeleted, subscribe,
   getPairedPageId, pairBoardWithPage,
   setPinDisplayed,
-  boardNestChain,
-} from '../store/persistence';
+  boardNestChain, pinAspectFor } from '../store/persistence';
 import { SURVEY_DRAG_TYPE } from './CascadeSurvey';
 import { useBoardMode } from '../store/boardMode';
 import { StoryboardProjection, OutlineProjection } from './BoardProjection';
@@ -73,6 +72,13 @@ const MIN_TEXT_W = 0.15;
 const MIN_INK_W = 0.08;
 // AB4 S4 — a page-pin card resizes freeform on both axes (no aspect lock —
 // it's not a drawing; no text-reflow — it's not live prose).
+// ⚠ SUPERSEDED IN PART BY ITEM 138 (2026-09-24) — kept as written, marked here
+// rather than rewritten, because the sentence was true when it was written and a
+// reader tracing the freeform decision should find it. WHAT CHANGED: a page-pin
+// DOES now take an aspect lock, on RESIZE only, and the aspect comes from the
+// PINNED ENTRY's kind (page → vertical, board → horizontal) rather than from the
+// card. The no-text-reflow half stands unchanged. See the `page-pin` branch in
+// the resizing handler below, and `pinAspectFor` in store/persistence.ts.
 // FX4 S4 — text now resizes freeform on both axes too (height was
 // reflow-only before this ticket): MIN_TEXT_H is the same "about one
 // line" floor persistence.ts's own BOARD_LINE_H already uses for a fresh
@@ -1419,7 +1425,7 @@ export function BoardEditor({ id }: { id: string }) {
     let movingIds: string[] = [];
     let startBoxes: Box[] = [];
     let resizingId: string | null = null;
-    let resizeStart: { w: number; h: number; aspect: number; kind: Box['kind'] } | null = null;
+    let resizeStart: { w: number; h: number; aspect: number; kind: Box['kind']; pinAspect: number | null } | null = null;
 
     const clearTimer = () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } };
 
@@ -1481,7 +1487,20 @@ export function BoardEditor({ id }: { id: string }) {
       phase = 'resizing';
       resizingId = boxId;
       startBoxes = boxesRef.current;
-      resizeStart = { w: box.w, h: box.h, aspect: box.h / box.w, kind: box.kind };
+      // ITEM 138 — the LOCK's aspect, resolved from the PINNED ENTRY, never from
+      // the box. A nested board's card is the same `page-pin` box as a page's, so
+      // keying on `box.kind` here would flip every board card to tall and undo
+      // Nick's wide-board ruling (138's ratified exclusion clause).
+      // `getJournalEntryIncludingDeleted` because a Trash card is still a card
+      // whose shape must stay lawful while it is on the wall.
+      const pinnedEntry = box.kind === 'page-pin' && box.entryId
+        ? getJournalEntryIncludingDeleted(box.entryId)
+        : null;
+      resizeStart = {
+        w: box.w, h: box.h, aspect: box.h / box.w, kind: box.kind,
+        // null for every non-pin box, so the branch below cannot reach them.
+        pinAspect: box.kind === 'page-pin' ? pinAspectFor(pinnedEntry) : null,
+      };
       // FX7 S7 — see activeResizeIdRef's own header comment (above, near
       // measureEls): the auto-grow reflow-floor effect stands down for
       // THIS box id until the drag ends (finish(), below).
@@ -1728,6 +1747,26 @@ export function BoardEditor({ id }: { id: string }) {
         setBoxes(startBoxes.map(b => {
           if (b.id !== resizingId) return b;
           if (b.kind === 'ink') return { ...b, w: newW, h: newW * resizeStart!.aspect };
+          // ITEM 138 — A PAGE-PIN TAKES ITS KIND'S ASPECT THE MOMENT IT IS
+          // RESIZED. This supersedes AB4 S4's freeform-both-axes for this box
+          // kind (that comment is marked at its own site).
+          //
+          // CONSTRAIN FORWARD, NEVER SNAP — and this line is where the whole
+          // distinction lives. The lock is applied ONLY here, inside a resize the
+          // writer is performing: not on load, not on a move, not when a limit
+          // arrives. An existing wide card opens exactly as it was left and keeps
+          // its stored geometry indefinitely; it takes the shape at the moment the
+          // writer themselves changes that shape. "Resized only" counts as
+          // touched (Nick's ruling) — a move alone is not a touch, which is why
+          // this is in the resizing branch and nowhere near the moving one.
+          //
+          // The aspect is the KIND's canonical one, not the card's own captured
+          // aspect (which is what `ink` preserves above): the point is to bring a
+          // hand-widened page card back to the page silhouette, not to preserve
+          // whatever it currently is.
+          if (b.kind === 'page-pin' && resizeStart!.pinAspect != null) {
+            return { ...b, w: newW, h: Math.max(MIN_PIN_H, newW * resizeStart!.pinAspect) };
+          }
           // FX4 S4 — text now resizes freeform on BOTH axes too (height was
           // reflow-only before this ticket): dragging taller sets an
           // explicit `h` the reflow-as-minimum effect above will only ever

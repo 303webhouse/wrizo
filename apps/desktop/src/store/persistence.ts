@@ -1265,8 +1265,23 @@ export function wouldNestCycle(sourceId: string, targetBoardId: string): boolean
 // the exact same `Box[]`/`saveBoardBoxes` recipe as every other card (zero
 // schema — see the `Box` interface's own AB4 S2/S3 comments in types/index.ts
 // for the full reasoning on why this stays inside the existing column).
-const BOARD_PIN_W = 0.28;
-const BOARD_PIN_H = 0.12;
+// ITEM 138 — PAGE-PINS ARE TALL. Nick's thumbnail law reaches the canvas:
+// "horizontal rectangles for Boards, vertical rectangles for Pages."
+//
+// THE NUMBERS ARE DERIVED, NOT PICKED. The ratified rail thumbnails are 22×30
+// for a page (aspect h/w = 1.36) and 34×20 for a board (0.59) — index.css's own
+// PW2 S2 amendment. This page silhouette is 0.16 × 0.22, aspect 1.375: the rail's
+// page ratio, at very nearly the footprint the old wide default had
+// (0.28 × 0.12 = 0.0336 of the canvas; 0.16 × 0.22 = 0.0352), so a card changes
+// SHAPE without suddenly claiming more wall.
+//
+// ⚠ BOTH w AND h ARE FRACTIONS OF THE CANVAS **WIDTH** — BoardEditor renders
+// `width: box.w * pageWidthPx, height: box.h * pageWidthPx`, the same scalar
+// twice. So the aspect is simply `h / w`, and "taller than wide" means `h > w`
+// with no viewport arithmetic. Stated because reading `h` as a fraction of
+// HEIGHT would make every number here mean something else.
+const BOARD_PIN_W = 0.16;
+const BOARD_PIN_H = 0.22;
 // PW2 S2 AMENDMENT (Nick) — A BOARD IS WIDER THAN TALL WHEREVER IT APPEARS.
 // The rail draws a board's thumbnail as a horizontal rectangle and a page's as
 // a vertical one; a nested board's card on the CANVAS obeys the same law, so
@@ -1276,6 +1291,45 @@ const BOARD_PIN_H = 0.12;
 // glance, not on measurement.
 const BOARD_CARD_W = 0.32;
 const BOARD_CARD_H = 0.10;
+
+// ITEM 138 — THE SILHOUETTE, AND ITS TYPE RIDER.
+//
+// The two shapes are a KEYED RECORD rather than four loose constants, and that is
+// the rider the ledger asked for: a caller cannot reach for the wrong pair,
+// because it has to NAME which kind it is placing. The old form
+// (`nesting ? BOARD_CARD_W : BOARD_PIN_W`) spelled the choice twice per site and
+// would have spelled it a third time at the resize lock below.
+//
+// ⛔ AND IT KEYS ON THE **ENTRY** KIND, NEVER THE BOX KIND — 138's ratified
+// exclusion clause. A nested board's card is the SAME `page-pin` box as a page's,
+// so a builder keying on `box.kind` would flip EVERY board card to tall and undo
+// Nick's own wide-board ruling. The signature takes an entry (or null) precisely
+// so a box cannot be passed to it by mistake.
+export interface PinSilhouette { w: number; h: number }
+const PIN_SILHOUETTE: { page: PinSilhouette; board: PinSilhouette } = {
+  page: { w: BOARD_PIN_W, h: BOARD_PIN_H },    // vertical — a page
+  board: { w: BOARD_CARD_W, h: BOARD_CARD_H }, // horizontal — a board
+};
+
+/** The birth shape for a card pinning `entry`. Keyed on the ENTRY's kind. */
+export function pinSilhouetteFor(entry: Pick<JournalEntry, 'pageType'> | null | undefined): PinSilhouette {
+  return entry?.pageType === 'board' ? PIN_SILHOUETTE.board : PIN_SILHOUETTE.page;
+}
+
+/**
+ * The aspect (h / w) a pinning card is LOCKED to once the writer resizes it —
+ * item 138's constrain-forward lock.
+ *
+ * CONSTRAIN FORWARD, NEVER SNAP. This is not applied on load, on a move, or on
+ * any arrival of a limit: an existing card keeps its stored geometry until the
+ * writer RESIZES it (Nick's ruling — "resized only" counts as touched; a move
+ * alone is not a touch). At that moment the shape the writer is already changing
+ * takes the lock. Nothing the writer laid out is ever rewritten underneath them.
+ */
+export function pinAspectFor(entry: Pick<JournalEntry, 'pageType'> | null | undefined): number {
+  const s = pinSilhouetteFor(entry);
+  return s.h / s.w;
+}
 
 // PW1 S3 (item 125) — `display` splits the two acts that share this function.
 //
@@ -1372,9 +1426,13 @@ export function pinPageToBoard(entryId: string, boardEntryId: string, opts?: { d
   // A nested board's card takes the board silhouette; a page's keeps the page
   // one. Existing arranged boards are untouched — every box stores its own
   // w/h, so this changes the DEFAULT a new card is born at and nothing else.
-  const nesting = source.pageType === 'board';
+  // ITEM 138 — the silhouette comes from the ENTRY, through the one reader.
+  // The old `nesting` boolean is gone with the pair of per-axis ternaries it fed;
+  // the comment above still describes the behaviour, which has not changed —
+  // a nested board's card takes the board silhouette, a page's takes the page one.
+  const silhouette = pinSilhouetteFor(source);
   const pin: Box = { id: generateId(), kind: 'page-pin', x: 0.05, y: startY,
-    w: nesting ? BOARD_CARD_W : BOARD_PIN_W, h: nesting ? BOARD_CARD_H : BOARD_PIN_H,
+    w: silhouette.w, h: silhouette.h,
     z: startZ, entryId, onCanvas: opts?.display === true };
   saveJournalEntry({ ...board, boxes: [...existing, pin] });
   return getJournalEntry(boardEntryId);
