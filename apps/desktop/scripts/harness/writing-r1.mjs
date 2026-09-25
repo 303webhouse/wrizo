@@ -97,5 +97,6 @@ await withHarness(async (app) => {
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);
 const passed = checks.filter((c) => c.pass).length;
-console.log(`\n${passed}/${checks.length} checks passed`);
+// The runner reads a "VERIFY: PASS|FAIL" verdict line; a count alone is NOVERDICT (the stack pair's first run said so).
+console.log(passed === checks.length ? `\nWRITING-R1 VERIFY: PASS (${checks.length} checks)` : `\nWRITING-R1 VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);
