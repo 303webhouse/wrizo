@@ -22724,3 +22724,38 @@ not verified those two commits on origin from this relay — not offered to this
 I then did: **both exist on `origin/exp1-connect-text`** (`4c25dec` “ITEM 138: page-pins are tall…” and
 `c60e4b4` “ITEM 163 proof…”). That branch is Experiment 1’s PW half, which merges only when Experiment 1 is
 offered whole; **nothing merged.** The earlier sentence is left as written.
+
+## FIX’S STACK PAIR — NOT CLEAN, BOTH LEGS, READ FROM DISK (chat 1, unprompted by any report) — 2026-09-24 night
+
+**FOUND ON RESUME, NOT REPORTED TO THIS DESK.** After the grant I wrote at 02:25 UTC, two suite directories
+appeared: `wrizo-suite-69528` (default, done 21:10 local) and `wrizo-suite-49116` (parked, done 21:50). **No
+runner is on the box now; the grant file still names FIX; FIX has not sent a box-free line.** I read the logs.
+
+**THE TREE IS NOT THE ONE I GRANTED:** both legs are `tree=16c7ce8 bundle=index-Acuf8KJ-.js/596702b`, **96
+files**, and `item-writing-stack` on origin is now **`16c7ce8`** — one commit past `e2624fe` (“Item 158
+harness: settled reads, own page id for Free Write, real Enter — its first run failed 3/12 on the branch’s
+own tip for timing reasons”). So **FIX ran a newer tip than the one the grant named**, and the grant’s
+wording (“@ `e2624fe`”) was not the run — **a discrepancy, recorded, not a violation this desk can
+attribute** (the file carries no run field; the token is what the guard checks).
+
+**RESULT: `NOT CLEAN` ON BOTH LEGS, IDENTICAL: 91/96 in each.** **The same five files in default AND parked —
+so this is not a flake** (the known-flake list is empty, and “it passes alone” is retired as clearance):
+- **`hooks-order.mjs` (1/2) and `hooks-order-ast.mjs` (1/7) — A REAL PRODUCT FINDING:** the guard reports
+  `src/pages/PageEditor.tsx PageEditorView: useEffect at :861 below early return :649` — **a hook called
+  below an early return** (React’s rules of hooks; the guard exists because that class of bug crashes a
+  route). **Batch Six was 93/93 with both guards green, so this is introduced by the stack.**
+- **`item83f.mjs` (1/34):** the check named *“E3 (fence): pressing TAB changes nothing — Tab-as-indent is
+  item 102 and was NOT built here”* is **FALSIFIED BY 158 (Tab now indents: `afterTab` gained a tab). That
+  is an expected supersession, NOT a bug — but the harness law is PARK, never edit: original kept verbatim +
+  SUPERSEDED + a successor, and the park sweep for 158 missed this assertion** (“parks count, not green”).
+- **`writing-r1.mjs` and `writing-r2.mjs`: NOVERDICT, both legs** — yet their own output ends **“25/25
+  checks passed” and “13/13 checks passed”**. **They pass; they do not print the runner’s verdict line
+  (`… VERIFY: PASS`). A format defect in FIX’s two NEW roster files**, not a product red — but the
+  runner counts it red.
+
+**WHAT THIS MEANS:** the stack pair did NOT stamp 158 + 206 steps 1–2; **Batch Seven cannot assemble on this
+evidence.** **The findings are FIX’s to diagnose and fix (hooks-order first — the only product defect;
+then the item83f park and the verdict lines), then a fresh pair. FIX diagnoses; nobody re-rolls.** **The box
+stays granted to FIX** (it must run the next pair); if FIX reports the box free, it passes to TOOLS’ 195.
+**NOT CHECKED by me:** why `PageEditor.tsx` acquired a hook below `:649` (which of r1/r2/158), or whether the
+newer tip changed any of it — the diagnosis is my reading of the guard’s own detail lines, not a bisect.
