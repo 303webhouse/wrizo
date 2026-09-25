@@ -22958,3 +22958,36 @@ live by this desk** — that is Nick’s check. **No production probe was sent**
 OWED** (Fable). **BOX:** the grant still names TOOLS (195’s pair, then `item207.mjs`); this deploy needed no
 box turn. **BATCH SEVEN IS SHIPPED AND CLOSED; BATCH EIGHT** (PW’s storage half `d1abca7`, a schema change)
 **holds nothing yet.**
+
+## THE BOX-FREE LINE FROM TOOLS; THE GRANT PASSES TO FIX (r3 THEN 160); WHAT TOOLS’ RUNS WERE; markRuns.ts RULED; e20dc0d CLEARED — 2026-09-25 midday (chat 1)
+
+**TOOLS’ BOX-FREE LINE** (195’s pair + `item207.mjs`, “both legs clean; 0 browsers”). **Checked: 0 harness-signature
+processes at 12:48 local; the grant file named TOOLS (written 15:00Z).** **The grant is rewritten, so cleared.**
+
+**FABLE ASKED: WERE TOOLS’ RUNS FULL-SUITE PAIRS?** **I cannot show that they were.** No `wrizo-suite-*` directory in
+the default temp location is newer than 00:40 (FIX’s d4dc32e pair); a wider search timed out and I did not repeat
+it. **What the branches say:** `item207-fonts` @ `5653417`’s own commit reads **“box turn — `item207.mjs` 41/41 both
+legs” — i.e. ONE FILE, both legs, NOT a 96-file stamped pair** (and the branch modifies `item112a.mjs` — three
+superseded assertions parked — and adds `item207-core.mjs`, `item207.mjs`). `item195-sliver-grip` is still
+`02eecd1` (unchanged since 2026-09-23) and I found no evidence file for its run. **So: NEITHER is shown to be
+offer-ready.** **THE OWED PAIR, named: a full-suite pair (default + parked) with each of them in the tree — which the
+Batch Eight pair on the assembled tree will be, if both join it.** *(TOOLS may hold stamps elsewhere; if so it names
+the SHA and the stamp lines and I read them.)*
+
+**GRANT PASSED, per Fable: lane FIX, ONE TURN, TWO RUNS IN SEQUENCE — (1) step-3 verification on `item-writing-r3` @
+`1b0a7711e368109da550a89335a6e891d46fc9e9` (verified the origin tip; `writing-r3.mjs` plus the regression
+subset), then (2) 160’s pair.** The token is in the file, not here. **Then (Fable): TOOLS’ two small uses (194
+report-only, 161’s frames) → INK’s queue → the rest. PW’s Experiment 1 run moves behind its `visibleText`
+re-derivation; PW will ask when ready.**
+
+**CLEARED (Fable byte review): PW’s `users.proofing` storage half at `e20dc0d`** (verified: the commit is on
+`origin/exp1-connect-text`) **for BATCH EIGHT.** It carries a schema change under Nick’s “1. Yes” (recorded above).
+**Not merged** — Experiment 1’s branch does not merge until Experiment 1 is offered whole; how the storage half
+joins Batch Eight from that branch is **a question for Fable when Batch Eight is assembled** (I will not cherry-pick
+out of a branch I was told does not merge).
+
+**RULED (Fable): `markRuns.ts` (FIX, r3) is the ONE reader for inline marks, with FOUR consumers — the formatter,
+the decorator, Copy My Words’ strip, and Experiment 1’s anchor text (PW’s `visibleText`).** **Experiment 1 does not
+merge until `visibleText` derives from it, with a proof.**
+
+**WITH NICK — NO DEFAULT:** the indent look — first line only, or the whole paragraph as a block.
