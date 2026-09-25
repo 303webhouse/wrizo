@@ -20,11 +20,14 @@ const SRC = join(desktop, 'src');
 const { build } = createRequire(createRequire(join(desktop, 'package.json')).resolve('vite'))('esbuild');
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
+// ITEM 207b - the parked recorder, hoisted so the one falsified 207a assertion parks where it stood.
+const parkedChecks = [];
+const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass, detail });
 
 // Bundle store/fontRoster.ts (which pulls fontSize.ts) with optional source overrides; CSS imports resolve to empty.
 async function load(overrides = {}) {
   const res = await build({
-    stdin: { contents: "export * from './store/fontRoster'; export * from './store/fontSize';", resolveDir: SRC, loader: 'ts' }, bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'silent',
+    stdin: { contents: "export * from './store/fontRoster'; export * from './store/fontSize'; export * from './store/deviceFonts';", resolveDir: SRC, loader: 'ts' }, bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'silent',
     loader: { '.css': 'empty' },
     plugins: [{ name: 'ov', setup(b) {
       b.onResolve({ filter: /\.css$/ }, (a) => ({ path: a.path, namespace: 'css-stub' }));
@@ -137,7 +140,10 @@ const ctlShape = (t) => {
     buttons: (code.match(/<button\b/g) || []).length,
     inputs,
     inputGuardedByFullForm: inputs === 0 || guarded,
-    addDoor: /add a font|addFont/i.test(code),
+    // 207b: the door exists, and must be reachable ONLY in the full form and only where the browser can do it.
+    doorPresent: /typeAddFont/.test(code),
+    doorGuardedToFullForm: !/typeAddFont/.test(code) || (/const canAdd = form === 'full' && localFontsSupported\(\);/.test(code) && /\{canAdd && \(/.test(code)),
+    enumeratesOnLoad: /useEffect\(\s*\(\)\s*=>[^;]*listInstalledFamilies/.test(code),
     caption: /wz-sliver-h|<label\b|<h[1-6]\b|<legend\b/.test(code),
   };
 };
@@ -145,7 +151,13 @@ const shape = ctlShape(src('components/TypeControl.tsx'));
 ok('MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form',
   shape.buttons === 3 && shape.inputs === 1 && shape.inputGuardedByFullForm, JSON.stringify(shape));
 ok('MINIMAL: no caption or heading of any kind in the control (no label, legend or heading element, no eyebrow class) — a control\'s name lives in its aria-label', !shape.caption, JSON.stringify(shape));
-ok('NO ADD DOOR (207a): the control carries no "Add a font…" row — it arrives with Route A (207b), and Free Write never gets it (his Q2)', !shape.addDoor, '');
+pok('PARKED (was, VERBATIM: "NO ADD DOOR (207a): the control carries no \"Add a font…\" row — it arrives with Route A (207b), and Free Write never gets it (his Q2)") - SUPERSEDED by ITEM 207b: the door now ships, in the FULL form only; the successors below keep his Q2 (never in Free Write or a card) and add its guards', true, 'superseded by item 207b');
+ok('DOOR (207b): "Add a font…" is the roster\'s door in the FULL form only — guarded by `form === \'full\' && localFontsSupported()`, so it is absent (never greyed) in Free Write, on a card, and on a browser without Local Font Access (his Q2)', shape.doorPresent && shape.doorGuardedToFullForm, JSON.stringify({ present: shape.doorPresent, guarded: shape.doorGuardedToFullForm }));
+ok('DOOR (207b): the door is a ROW, not a button — the control is still exactly three buttons (the minimal law holds with the door in)', shape.buttons === 3, JSON.stringify({ buttons: shape.buttons }));
+ok('NOT ON LOAD (207b, design check 8): the control never enumerates fonts from an effect — Local Font Access is asked only from the writer\'s own click on the door', !shape.enumeratesOnLoad && /const openAdd = async \(\) =>/.test(noComments(src('components/TypeControl.tsx'))) && /onClick=\{\(\) => \{ void openAdd\(\); \}\}/.test(noComments(src('components/TypeControl.tsx'))), JSON.stringify({ enumeratesOnLoad: shape.enumeratesOnLoad }));
+const dfSrc = noComments(src('store/deviceFonts.ts'));
+ok('PRIVACY (207b): names only — the only call into the API is `queryLocalFonts()` inside listInstalledFamilies, and no font bytes are ever read (no `.blob(`)', (dfSrc.match(/queryLocalFonts\(\)/g) || []).length === 1 && !/\.blob\(/.test(dfSrc) && !/arrayBuffer|FontFace\(/.test(dfSrc), '');
+ok('NO SCHEMA (207b): the device library is per-device localStorage and nothing here touches the server or sync', /localStorage/.test(dfSrc) && !/\bfetch\(|apiFetch|from '\.\/(persistence|sync)/.test(dfSrc), '');
 const LBL = M.faceNameFromStack;
 ok('LABEL: the unchosen face is named from what ACTUALLY renders — the first family of the resolved --font-prose, quotes and " Variable" removed (Crimson Pro, Figtree, and under the Flux voice Chakra Petch — never the voice dial\'s own word)',
   LBL("'Crimson Pro Variable', Georgia, serif") === 'Crimson Pro' && LBL("'Figtree Variable', system-ui, sans-serif") === 'Figtree' && LBL("'Chakra Petch', sans-serif") === 'Chakra Petch' && LBL('Georgia, serif') === 'Georgia' && LBL('') === null && LBL(null) === null && LBL('  ') === null,
@@ -169,6 +181,42 @@ ok('CARD COPY: copyCardToBoard carries fontFace and fontSize (a copy that came b
 ok('NO SCHEMA (207a): the server is untouched — no migration or sync.ts mapper mentions face or size',
   !/fontFace|fontSize|pageSettings\.face/.test(readFileSync(join(desktop, '..', 'server', 'src', 'sync.ts'), 'utf8')) && !/fontFace|font_face/.test(readFileSync(join(desktop, '..', 'server', 'src', 'migrate.ts'), 'utf8')), '');
 
+
+// ---------------------------------------------------------------------------
+// THE DEVICE LIBRARY, BEHAVIOUR (the shipped module, a fake localStorage and a fake Local Font Access)
+// ---------------------------------------------------------------------------
+const fakeStore = () => { const m = new Map(); return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => { m.set(k, String(v)); }, _m: m }; };
+globalThis.window = globalThis.window || {};
+globalThis.localStorage = fakeStore();
+const DF = M;   // the same bundle: it now exports the library too
+DF.addDeviceFont('Garamond Premier', 'serif'); DF.addDeviceFont('Iosevka', 'monospace');
+ok('LIBRARY: a font added on this device is listed, in the order it was added, with its class', JSON.stringify(DF.getDeviceFonts()) === JSON.stringify([{ name: 'Garamond Premier', generic: 'serif' }, { name: 'Iosevka', generic: 'monospace' }]), JSON.stringify(DF.getDeviceFonts()));
+DF.addDeviceFont('Garamond Premier', 'sans-serif');
+ok('LIBRARY: adding a family again REFRESHES it (one entry, new class, moved to the end) — never a duplicate', JSON.stringify(DF.getDeviceFonts().map((f) => f.name)) === JSON.stringify(['Iosevka', 'Garamond Premier']) && DF.getDeviceFonts().find((f) => f.name === 'Garamond Premier').generic === 'sans-serif', JSON.stringify(DF.getDeviceFonts()));
+ok('LIBRARY: an unacceptable name or class is refused and stores nothing', DF.addDeviceFont('', 'serif') === null && DF.addDeviceFont('   ', 'serif') === null && DF.addDeviceFont('X'.repeat(121), 'serif') === null && DF.addDeviceFont('Ok', 'cursive') === null && DF.getDeviceFonts().length === 2, String(DF.getDeviceFonts().length));
+localStorage.setItem(DF.DEVICE_FONTS_KEY, '{not json');
+ok('LIBRARY: a corrupt stored value is an EMPTY library, never a throw', JSON.stringify(DF.getDeviceFonts()) === '[]', '');
+localStorage.setItem(DF.DEVICE_FONTS_KEY, JSON.stringify([{ name: 'A', generic: 'serif' }, { name: 'A', generic: 'serif' }, { name: 'B', generic: 'nope' }, null, 7, { name: 'C', generic: 'monospace' }]));
+ok('LIBRARY: a hand-edited value keeps only the sane, de-duplicated entries', JSON.stringify(DF.getDeviceFonts()) === JSON.stringify([{ name: 'A', generic: 'serif' }, { name: 'C', generic: 'monospace' }]), JSON.stringify(DF.getDeviceFonts()));
+localStorage.setItem(DF.DEVICE_FONTS_KEY, '[]');
+for (let i = 0; i < 230; i += 1) DF.addDeviceFont(`Family ${i}`, 'serif');
+ok('LIBRARY: the library is capped (200), keeping the most recent', DF.getDeviceFonts().length === 200 && DF.getDeviceFonts()[199].name === 'Family 229', String(DF.getDeviceFonts().length));
+ok('STORED SHAPE: a device font is stored on a page as source "device" with its class and NO fallback file (the class IS the fallback); it renders as its name then its class',
+  JSON.stringify(DF.storedFaceForDevice({ name: 'Iosevka', generic: 'monospace' })) === JSON.stringify({ name: 'Iosevka', generic: 'monospace', source: 'device' }) && /^'Iosevka', 'Courier New', monospace$/.test(DF.faceStack(DF.storedFaceForDevice({ name: 'Iosevka', generic: 'monospace' }))), DF.faceStack(DF.storedFaceForDevice({ name: 'Iosevka', generic: 'monospace' })));
+let blobTouched = false;
+const faces = [{ family: 'Zed', get blob() { blobTouched = true; return () => null; } }, { family: 'Alpha' }, { family: 'Zed' }, { family: '  ' }, { family: 'Beta' }];
+delete globalThis.window.queryLocalFonts;
+const unsupported = await DF.listInstalledFamilies();
+ok('SUPPORT: without Local Font Access the result is "unsupported" and localFontsSupported() is false (the door is then absent)', unsupported.ok === false && unsupported.reason === 'unsupported' && DF.localFontsSupported() === false, JSON.stringify(unsupported));
+globalThis.window.queryLocalFonts = async () => faces;
+const listed = await DF.listInstalledFamilies();
+ok('ENUMERATION: installed families come back UNIQUE and SORTED, blanks dropped, and a face\'s bytes (`blob`) are never touched', listed.ok && JSON.stringify(listed.families) === JSON.stringify(['Alpha', 'Beta', 'Zed']) && blobTouched === false && DF.localFontsSupported() === true, JSON.stringify(listed));
+globalThis.window.queryLocalFonts = async () => { const e = new Error('nope'); e.name = 'NotAllowedError'; throw e; };
+const denied = await DF.listInstalledFamilies();
+ok('REFUSAL: a permission refusal is a VALUE (reason "denied"), not an exception — the roster is left untouched', denied.ok === false && denied.reason === 'denied', JSON.stringify(denied));
+globalThis.window.queryLocalFonts = async () => { throw new Error('boom'); };
+ok('REFUSAL: any other failure is a value too (reason "failed")', (await DF.listInstalledFamilies()).reason === 'failed', '');
+delete globalThis.window.queryLocalFonts;
 // ---------------------------------------------------------------------------
 // FALSIFICATION — mutate the SHIPPED source in memory; each mutation asserted to land; each must turn a check red
 // ---------------------------------------------------------------------------
@@ -185,13 +233,20 @@ await mutant('M4 a face is size-adjusted (the literal-points ruling broken)', { 
 await mutant('M5 the fallback stops being faithful in kind (a serif falls back to a sans)', { 'store/fontRoster.ts': swap("serif: 'Georgia, serif',", "serif: 'system-ui, sans-serif',") }, (W) => !/serif$/.test(W.faceStack({ name: 'Q', generic: 'serif', source: 'device' })) || /system-ui/.test(W.faceStack({ name: 'Q', generic: 'serif', source: 'device' })));
 await mutant('M6 a name is no longer sanitised (a hostile font name breaks out of the value)', { 'store/fontRoster.ts': swap("n.replace(/['\\\\]/g, '')", 'n') }, (W) => (W.faceStack({ name: "A'; } body { x:", generic: 'serif', source: 'device' }).match(/'/g) || []).length !== 2);
 await mutant('M7 Times New Roman loses its open fallback', { 'store/fontRoster.ts': swap("stack: \"'Times New Roman', 'Tinos', Times, serif\"", "stack: \"'Times New Roman', Times, serif\"") }, (W) => !/'Tinos'/.test(W.rosterFace('Times New Roman').stack));
+await mutant('M14 re-adding a family no longer refreshes its class (the write side stops replacing the old entry)', { 'store/deviceFonts.ts': swap("getDeviceFonts().filter((x) => x.name !== f.name)", "getDeviceFonts().filter(() => true)") }, (W) => { globalThis.localStorage = fakeStore(); W.addDeviceFont('Q', 'serif'); W.addDeviceFont('Q', 'sans-serif'); const q = W.getDeviceFonts().find((f) => f.name === 'Q'); return !q || q.generic !== 'sans-serif' || W.getDeviceFonts().length !== 1; });
+await mutant('M15 the enumeration reads a face\'s bytes (the privacy boundary crossed)', { 'store/deviceFonts.ts': swap("for (const f of faces) if (f && typeof f.family === 'string'", "for (const f of faces) if (f && (f as { blob?: unknown }).blob && typeof f.family === 'string'") }, async (W) => { let touched = false; globalThis.window.queryLocalFonts = async () => [{ family: 'A', get blob() { touched = true; return () => null; } }]; await W.listInstalledFamilies(); delete globalThis.window.queryLocalFonts; return touched; });
+await mutant('M16 a refusal throws instead of returning a value', { 'store/deviceFonts.ts': swap("return { ok: false, reason: name === 'NotAllowedError'", "throw e; return { ok: false, reason: name === 'NotAllowedError'") }, async (W) => { globalThis.window.queryLocalFonts = async () => { const e = new Error('x'); e.name = 'NotAllowedError'; throw e; }; try { await W.listInstalledFamilies(); return false; } catch { return true; } finally { delete globalThis.window.queryLocalFonts; } });
 await mutant('M11 the unchosen label keeps the " Variable" suffix (the package\'s name leaks to the writer)', { 'store/fontRoster.ts': swap(".replace(/ Variable$/, '')", '') }, (W) => W.faceNameFromStack("'Crimson Pro Variable', Georgia, serif") !== 'Crimson Pro');
 
 {
   const t = src('components/TypeControl.tsx');
   const landed = (mutated) => mutated !== t;
-  const extraButton = t.replace('</div>\n  );\n}', '<button type="button">Add a font</button></div>\n  );\n}');
-  ok('FALSIFICATION M8 an extra button (an add door) is added to the control — must go RED', landed(extraButton) && (ctlShape(extraButton).buttons !== 3 || ctlShape(extraButton).addDoor), '');
+  const extraButton = t.replace('</div>\n  );\n}', '<button type="button">Extra</button></div>\n  );\n}');
+  ok('FALSIFICATION M8 an extra button is added to the control — must go RED', landed(extraButton) && ctlShape(extraButton).buttons !== 3, '');
+  const unguardedDoor = t.replace("const canAdd = form === 'full' && localFontsSupported();", 'const canAdd = localFontsSupported();');
+  ok('FALSIFICATION M12 the door loses its full-form guard (Free Write and cards would gain "Add a font…") — must go RED', landed(unguardedDoor) && !ctlShape(unguardedDoor).doorGuardedToFullForm, '');
+  const onLoad = t.replace("useEffect(() => subscribeDeviceFonts(", "useEffect(() => { void listInstalledFamilies(); }, []);\n  useEffect(() => subscribeDeviceFonts(");
+  ok('FALSIFICATION M13 the control enumerates installed fonts on load (a fingerprinting surface, and a permission prompt nobody asked for) — must go RED', landed(onLoad) && ctlShape(onLoad).enumeratesOnLoad, '');
   const unguarded = t.replace("{form === 'full' && (", '{(');
   ok('FALSIFICATION M9 the number input is shown in EVERY form (Free Write would gain it) — must go RED', landed(unguarded) && !ctlShape(unguarded).inputGuardedByFullForm, '');
   const captioned = t.replace('<div className="wz-type"', '<div className="wz-sliver-h">Type</div><div className="wz-type"');
@@ -199,11 +254,11 @@ await mutant('M11 the unchosen label keeps the " Variable" suffix (the package\'
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 300)}]` : ''}`);
-const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
-  // Parks nothing: the roster, loader and ladder are new; no prior assertion is falsified by them.
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  // ONE park (item 207b): 207a's 'NO ADD DOOR' - superseded by the door 207b ships, in the full form only. Kept verbatim above.
   console.log(parkedChecks.every((c) => c.pass)
-    ? `\nITEM207-CORE PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; nothing parked`
+    ? `\nITEM207-CORE PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed`
     : `\nITEM207-CORE PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const all = checks.concat(parkedChecks);

@@ -3613,7 +3613,13 @@ a:focus-visible,
 .wz-type-face{ flex:1 1 auto; min-width:0; text-align:left; padding:4px 8px; background:none; color:var(--text-hi);
   border:1px solid var(--ink-border); cursor:pointer; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .wz-type-face:hover{ border-color:var(--ink-border-strong); }
-.wz-type-list{ flex:1 0 100%; list-style:none; margin:0; padding:2px 0; border:1px solid var(--ink-border); }
+.wz-type-list{ flex:1 0 100%; list-style:none; margin:0; padding:2px 0; border:1px solid var(--ink-border);
+  max-height:16rem; overflow-y:auto; }
+/* 207b - a device can hold hundreds of families, each row set in its own face: paint only what is scrolled into view. */
+.wz-type-list--add .wz-type-row{ content-visibility:auto; contain-intrinsic-size:auto 26px; }
+.wz-type-door{ color:var(--text-lo, var(--text-hi)); border-top:1px solid var(--ink-border); }
+.wz-type-note{ cursor:default; font-style:italic; }
+.wz-type-face[data-substituted='true']{ font-style:italic; opacity:.75; }
 .wz-type-row{ padding:4px 8px; font-size:14px; cursor:pointer; color:var(--text-hi); }
 .wz-type-row:hover{ background:var(--ink-800, rgba(0,0,0,.06)); }
 .wz-type-row[data-current='true']{ color:var(--accent-rest); }
