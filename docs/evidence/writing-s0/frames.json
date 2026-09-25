@@ -1,0 +1,4098 @@
+[
+  {
+    "kind": "render",
+    "theme": "default",
+    "mode": "Free Write",
+    "seeded": true,
+    "modeClicked": true,
+    "attrs": {
+      "theme": "plateau",
+      "body": "rgba(0, 0, 0, 0)",
+      "page": "{\"theme\":\"plateau\",\"voice\":\"serif\",\"page\":\"light\",\"fade\":\"on\"}"
+    },
+    "dom": {
+      "html": "<span class=\"fo-run\">A plain line of prose.\n**bold** *italic* __underline__ ~~strike~~\n***bold italic*** **__bold under__**\n# Heading one\n## Heading two\n- a bullet\n- another bullet\n&gt; a block quote\n&gt;&lt; a centred line\n&gt;&gt; a right line\n\tan indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging</span><span class=\"fo-word\"></span>",
+      "text": "A plain line of prose.\n**bold** *italic* __underline__ ~~strike~~\n***bold italic*** **__bold under__**\n# Heading one\n## Heading two\n- a bullet\n- another bullet\n> a block quote\n>< a centred line\n>> a right line\n\tan indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "A plain line of prose.\n**bold** *italic* __underline__ ~~strike~~\n***bold italic*** **__bold under__**\n# Heading one\n## Heading two\n- a bullet\n- another bullet\n> a block quote\n>< a centred line\n>> a right line\n\tan indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging",
+    "shot": "default/render-FreeWrite.png"
+  },
+  {
+    "kind": "render",
+    "theme": "default",
+    "mode": "Draft",
+    "seeded": true,
+    "modeClicked": true,
+    "attrs": {
+      "theme": "plateau",
+      "body": "rgba(0, 0, 0, 0)",
+      "page": "{\"theme\":\"plateau\",\"voice\":\"serif\",\"page\":\"light\",\"fade\":\"on\"}"
+    },
+    "dom": {
+      "html": "A plain line of prose.\n<span class=\"md-bold\"><span class=\"md-mark md-mark-hidden\">**</span>bold<span class=\"md-mark md-mark-hidden\">**</span></span> <span class=\"md-italic\"><span class=\"md-mark md-mark-hidden\">*</span>italic<span class=\"md-mark md-mark-hidden\">*</span></span> <span class=\"md-underline\"><span class=\"md-mark md-mark-hidden\">__</span>underline<span class=\"md-mark md-mark-hidden\">__</span></span> <span class=\"md-strike\"><span class=\"md-mark md-mark-hidden\">~~</span>strike<span class=\"md-mark md-mark-hidden\">~~</span></span>\n<span class=\"md-bold\"><span class=\"md-mark md-mark-hidden\">**</span>*bold italic<span class=\"md-mark md-mark-hidden\">**</span></span><span class=\"md-italic\"><span class=\"md-mark md-mark-hidden\">*</span> <span class=\"md-mark md-mark-hidden\">*</span></span><span class=\"md-italic\"><span class=\"md-mark md-mark-hidden\">*</span>__bold under__<span class=\"md-mark md-mark-hidden\">*</span></span>*\n<span class=\"md-h1\"><span class=\"md-mark\"># </span>Heading one</span>\n<span class=\"md-h2\"><span class=\"md-mark\">## </span>Heading two</span>\n- a bullet\n- another bullet\n&gt; a block quote\n&gt;&lt; a centred line\n&gt;&gt; a right line\n<span class=\"md-mark\">\t</span>an indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging",
+      "text": "A plain line of prose.\n**bold** *italic* __underline__ ~~strike~~\n***bold italic*** **__bold under__**\n# Heading one\n## Heading two\n- a bullet\n- another bullet\n> a block quote\n>< a centred line\n>> a right line\n\tan indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging",
+      "classes": [
+        "md-bold",
+        "md-mark",
+        "md-mark-hidden",
+        "md-italic",
+        "md-underline",
+        "md-strike",
+        "md-h1",
+        "md-h2"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": [
+        {
+          "c": "md-bold",
+          "s": {
+            "fw": "700",
+            "fs": "normal",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-italic",
+          "s": {
+            "fw": "400",
+            "fs": "italic",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-underline",
+          "s": {
+            "fw": "400",
+            "fs": "normal",
+            "td": "underline",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-strike",
+          "s": {
+            "fw": "400",
+            "fs": "normal",
+            "td": "line-through",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-bold",
+          "s": {
+            "fw": "700",
+            "fs": "normal",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-italic",
+          "s": {
+            "fw": "400",
+            "fs": "italic",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        }
+      ]
+    },
+    "stored": "A plain line of prose.\n**bold** *italic* __underline__ ~~strike~~\n***bold italic*** **__bold under__**\n# Heading one\n## Heading two\n- a bullet\n- another bullet\n> a block quote\n>< a centred line\n>> a right line\n\tan indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging",
+    "shot": "default/render-Draft.png"
+  },
+  {
+    "kind": "render",
+    "theme": "default",
+    "mode": "Revise",
+    "seeded": true,
+    "modeClicked": true,
+    "attrs": {
+      "theme": "plateau",
+      "body": "rgba(0, 0, 0, 0)",
+      "page": "{\"theme\":\"plateau\",\"voice\":\"serif\",\"page\":\"light\",\"fade\":\"on\"}"
+    },
+    "dom": {
+      "html": "A plain line of prose.\n<span class=\"md-bold\"><span class=\"md-mark md-mark-hidden\">**</span>bold<span class=\"md-mark md-mark-hidden\">**</span></span> <span class=\"md-italic\"><span class=\"md-mark md-mark-hidden\">*</span>italic<span class=\"md-mark md-mark-hidden\">*</span></span> <span class=\"md-underline\"><span class=\"md-mark md-mark-hidden\">__</span>underline<span class=\"md-mark md-mark-hidden\">__</span></span> <span class=\"md-strike\"><span class=\"md-mark md-mark-hidden\">~~</span>strike<span class=\"md-mark md-mark-hidden\">~~</span></span>\n<span class=\"md-bold\"><span class=\"md-mark md-mark-hidden\">**</span>*bold italic<span class=\"md-mark md-mark-hidden\">**</span></span><span class=\"md-italic\"><span class=\"md-mark md-mark-hidden\">*</span> <span class=\"md-mark md-mark-hidden\">*</span></span><span class=\"md-italic\"><span class=\"md-mark md-mark-hidden\">*</span>__bold under__<span class=\"md-mark md-mark-hidden\">*</span></span>*\n<span class=\"md-h1\"><span class=\"md-mark\"># </span>Heading one</span>\n<span class=\"md-h2\"><span class=\"md-mark\">## </span>Heading two</span>\n- a bullet\n- another bullet\n&gt; a block quote\n&gt;&lt; a centred line\n&gt;&gt; a right line\n<span class=\"md-mark\">\t</span>an indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging",
+      "text": "A plain line of prose.\n**bold** *italic* __underline__ ~~strike~~\n***bold italic*** **__bold under__**\n# Heading one\n## Heading two\n- a bullet\n- another bullet\n> a block quote\n>< a centred line\n>> a right line\n\tan indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging",
+      "classes": [
+        "md-bold",
+        "md-mark",
+        "md-mark-hidden",
+        "md-italic",
+        "md-underline",
+        "md-strike",
+        "md-h1",
+        "md-h2"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": [
+        {
+          "c": "md-bold",
+          "s": {
+            "fw": "700",
+            "fs": "normal",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-italic",
+          "s": {
+            "fw": "400",
+            "fs": "italic",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-underline",
+          "s": {
+            "fw": "400",
+            "fs": "normal",
+            "td": "underline",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-strike",
+          "s": {
+            "fw": "400",
+            "fs": "normal",
+            "td": "line-through",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-bold",
+          "s": {
+            "fw": "700",
+            "fs": "normal",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-italic",
+          "s": {
+            "fw": "400",
+            "fs": "italic",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        }
+      ]
+    },
+    "stored": "A plain line of prose.\n**bold** *italic* __underline__ ~~strike~~\n***bold italic*** **__bold under__**\n# Heading one\n## Heading two\n- a bullet\n- another bullet\n> a block quote\n>< a centred line\n>> a right line\n\tan indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging",
+    "shot": "default/render-Revise.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Free Write",
+    "tool": "bold",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/FreeWrite-bold-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Free Write",
+    "tool": "italic",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/FreeWrite-italic-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Free Write",
+    "tool": "underline",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/FreeWrite-underline-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Free Write",
+    "tool": "strike",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/FreeWrite-strike-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Free Write",
+    "tool": "heading",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/FreeWrite-heading-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Free Write",
+    "tool": "bullet",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/FreeWrite-bullet-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Free Write",
+    "tool": "quote",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/FreeWrite-quote-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Free Write",
+    "tool": "outdent",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/FreeWrite-outdent-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Free Write",
+    "tool": "indent",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/FreeWrite-indent-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Free Write",
+    "tool": "align-left",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/FreeWrite-align-left-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Free Write",
+    "tool": "align-center",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/FreeWrite-align-center-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Free Write",
+    "tool": "align-right",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/FreeWrite-align-right-no-toolbar.png"
+  },
+  {
+    "kind": "key",
+    "theme": "default",
+    "mode": "Free Write",
+    "key": "ctrl-b",
+    "domImmediately": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "shot": "default/FreeWrite-ctrl-b.png"
+  },
+  {
+    "kind": "key",
+    "theme": "default",
+    "mode": "Free Write",
+    "key": "ctrl-i",
+    "domImmediately": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "shot": "default/FreeWrite-ctrl-i.png"
+  },
+  {
+    "kind": "key",
+    "theme": "default",
+    "mode": "Free Write",
+    "key": "ctrl-u",
+    "domImmediately": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "shot": "default/FreeWrite-ctrl-u.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Draft",
+    "tool": "bold",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "**Plain words here\nSecond line here**",
+    "dom": {
+      "html": "**Plain words here\nSecond line here**",
+      "text": "**Plain words here\nSecond line here**",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Draft-bold.png",
+    "storedAfterSecondPress": "******Plain words here\nSecond line here**",
+    "domAfterSecondPress": {
+      "html": "<span class=\"md-bold\"><span class=\"md-mark\">**</span><span class=\"md-mark\">**</span></span>**Plain words here\nSecond line here**",
+      "text": "******Plain words here\nSecond line here**",
+      "classes": [
+        "md-bold",
+        "md-mark"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": [
+        {
+          "c": "md-bold",
+          "s": {
+            "fw": "700",
+            "fs": "normal",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Draft",
+    "tool": "italic",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "*Plain words here\nSecond line here*",
+    "dom": {
+      "html": "*Plain words here\nSecond line here*",
+      "text": "*Plain words here\nSecond line here*",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Draft-italic.png",
+    "storedAfterSecondPress": "***Plain words here\nSecond line here*",
+    "domAfterSecondPress": {
+      "html": "***Plain words here\nSecond line here*",
+      "text": "***Plain words here\nSecond line here*",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    }
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Draft",
+    "tool": "underline",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "__Plain words here\nSecond line here__",
+    "dom": {
+      "html": "__Plain words here\nSecond line here__",
+      "text": "__Plain words here\nSecond line here__",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Draft-underline.png",
+    "storedAfterSecondPress": "______Plain words here\nSecond line here__",
+    "domAfterSecondPress": {
+      "html": "<span class=\"md-underline\"><span class=\"md-mark\">__</span><span class=\"md-mark\">__</span></span>__Plain words here\nSecond line here__",
+      "text": "______Plain words here\nSecond line here__",
+      "classes": [
+        "md-underline",
+        "md-mark"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": [
+        {
+          "c": "md-underline",
+          "s": {
+            "fw": "400",
+            "fs": "normal",
+            "td": "underline",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Draft",
+    "tool": "strike",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "~~Plain words here\nSecond line here~~",
+    "dom": {
+      "html": "~~Plain words here\nSecond line here~~",
+      "text": "~~Plain words here\nSecond line here~~",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Draft-strike.png",
+    "storedAfterSecondPress": "~~~~~~Plain words here\nSecond line here~~",
+    "domAfterSecondPress": {
+      "html": "<span class=\"md-strike\"><span class=\"md-mark\">~~</span><span class=\"md-mark\">~~</span></span>~~Plain words here\nSecond line here~~",
+      "text": "~~~~~~Plain words here\nSecond line here~~",
+      "classes": [
+        "md-strike",
+        "md-mark"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": [
+        {
+          "c": "md-strike",
+          "s": {
+            "fw": "400",
+            "fs": "normal",
+            "td": "line-through",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Draft",
+    "tool": "heading",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "# Plain words here\nSecond line here",
+    "dom": {
+      "html": "<span class=\"md-h1\"><span class=\"md-mark\"># </span>Plain words here</span>\nSecond line here",
+      "text": "# Plain words here\nSecond line here",
+      "classes": [
+        "md-h1",
+        "md-mark"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": [
+        {
+          "c": "md-h1",
+          "s": {
+            "fw": "600",
+            "fs": "normal",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "22.1px",
+            "color": "rgb(43, 32, 20)"
+          }
+        }
+      ]
+    },
+    "shot": "default/Draft-heading.png",
+    "storedAfterSecondPress": "## Plain words here\nSecond line here",
+    "domAfterSecondPress": {
+      "html": "<span class=\"md-h2\"><span class=\"md-mark\">## </span>Plain words here</span>\nSecond line here",
+      "text": "## Plain words here\nSecond line here",
+      "classes": [
+        "md-h2",
+        "md-mark"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": [
+        {
+          "c": "md-h2",
+          "s": {
+            "fw": "600",
+            "fs": "normal",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "19.38px",
+            "color": "rgb(43, 32, 20)"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Draft",
+    "tool": "bullet",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "- Plain words here\nSecond line here",
+    "dom": {
+      "html": "- Plain words here\nSecond line here",
+      "text": "- Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Draft-bullet.png",
+    "storedAfterSecondPress": "Plain words here\nSecond line here",
+    "domAfterSecondPress": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    }
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Draft",
+    "tool": "quote",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "> Plain words here\nSecond line here",
+    "dom": {
+      "html": "&gt; Plain words here\nSecond line here",
+      "text": "> Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Draft-quote.png",
+    "storedAfterSecondPress": "Plain words here\nSecond line here",
+    "domAfterSecondPress": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    }
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Draft",
+    "tool": "outdent",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "Plain words here\nSecond line here",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Draft-outdent.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Draft",
+    "tool": "indent",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "\tPlain words here\n\tSecond line here",
+    "dom": {
+      "html": "<span class=\"md-mark\">\t</span>Plain words here\n<span class=\"md-mark\">\t</span>Second line here",
+      "text": "\tPlain words here\n\tSecond line here",
+      "classes": [
+        "md-mark"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Draft-indent.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Draft",
+    "tool": "align-left",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "Plain words here\nSecond line here",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Draft-align-left.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Draft",
+    "tool": "align-center",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": ">< Plain words here\nSecond line here",
+    "dom": {
+      "html": "&gt;&lt; Plain words here\nSecond line here",
+      "text": ">< Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Draft-align-center.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Draft",
+    "tool": "align-right",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": ">> Plain words here\nSecond line here",
+    "dom": {
+      "html": "&gt;&gt; Plain words here\nSecond line here",
+      "text": ">> Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Draft-align-right.png"
+  },
+  {
+    "kind": "key",
+    "theme": "default",
+    "mode": "Draft",
+    "key": "ctrl-b",
+    "domImmediately": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Draft-ctrl-b.png"
+  },
+  {
+    "kind": "key",
+    "theme": "default",
+    "mode": "Draft",
+    "key": "ctrl-i",
+    "domImmediately": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Draft-ctrl-i.png"
+  },
+  {
+    "kind": "key",
+    "theme": "default",
+    "mode": "Draft",
+    "key": "ctrl-u",
+    "domImmediately": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Draft-ctrl-u.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Revise",
+    "tool": "bold",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/Revise-bold-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Revise",
+    "tool": "italic",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/Revise-italic-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Revise",
+    "tool": "underline",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/Revise-underline-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Revise",
+    "tool": "strike",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/Revise-strike-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Revise",
+    "tool": "heading",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/Revise-heading-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Revise",
+    "tool": "bullet",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/Revise-bullet-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Revise",
+    "tool": "quote",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/Revise-quote-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Revise",
+    "tool": "outdent",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/Revise-outdent-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Revise",
+    "tool": "indent",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/Revise-indent-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Revise",
+    "tool": "align-left",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/Revise-align-left-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Revise",
+    "tool": "align-center",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/Revise-align-center-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "default",
+    "mode": "Revise",
+    "tool": "align-right",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "default/Revise-align-right-no-toolbar.png"
+  },
+  {
+    "kind": "key",
+    "theme": "default",
+    "mode": "Revise",
+    "key": "ctrl-b",
+    "domImmediately": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Revise-ctrl-b.png"
+  },
+  {
+    "kind": "key",
+    "theme": "default",
+    "mode": "Revise",
+    "key": "ctrl-i",
+    "domImmediately": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Revise-ctrl-i.png"
+  },
+  {
+    "kind": "key",
+    "theme": "default",
+    "mode": "Revise",
+    "key": "ctrl-u",
+    "domImmediately": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "default/Revise-ctrl-u.png"
+  },
+  {
+    "kind": "screenplay",
+    "theme": "default",
+    "surface": {
+      "scriptPage": false,
+      "editable": false,
+      "sliverButtons": [
+        "Open hand tools (Ctrl/Cmd+/)",
+        "Typewriter",
+        "Progress"
+      ]
+    },
+    "shot": "default/screenplay.png"
+  },
+  {
+    "kind": "render",
+    "theme": "dark",
+    "mode": "Free Write",
+    "seeded": true,
+    "modeClicked": true,
+    "attrs": {
+      "theme": "plateau",
+      "body": "rgba(0, 0, 0, 0)",
+      "page": "{\"theme\":\"plateau\",\"voice\":\"serif\",\"page\":\"dark\",\"fade\":\"on\"}"
+    },
+    "dom": {
+      "html": "<span class=\"fo-run\">A plain line of prose.\n**bold** *italic* __underline__ ~~strike~~\n***bold italic*** **__bold under__**\n# Heading one\n## Heading two\n- a bullet\n- another bullet\n&gt; a block quote\n&gt;&lt; a centred line\n&gt;&gt; a right line\n\tan indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging</span><span class=\"fo-word\"></span>",
+      "text": "A plain line of prose.\n**bold** *italic* __underline__ ~~strike~~\n***bold italic*** **__bold under__**\n# Heading one\n## Heading two\n- a bullet\n- another bullet\n> a block quote\n>< a centred line\n>> a right line\n\tan indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "A plain line of prose.\n**bold** *italic* __underline__ ~~strike~~\n***bold italic*** **__bold under__**\n# Heading one\n## Heading two\n- a bullet\n- another bullet\n> a block quote\n>< a centred line\n>> a right line\n\tan indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging",
+    "shot": "dark/render-FreeWrite.png"
+  },
+  {
+    "kind": "render",
+    "theme": "dark",
+    "mode": "Draft",
+    "seeded": true,
+    "modeClicked": true,
+    "attrs": {
+      "theme": "plateau",
+      "body": "rgba(0, 0, 0, 0)",
+      "page": "{\"theme\":\"plateau\",\"voice\":\"serif\",\"page\":\"dark\",\"fade\":\"on\"}"
+    },
+    "dom": {
+      "html": "A plain line of prose.\n<span class=\"md-bold\"><span class=\"md-mark md-mark-hidden\">**</span>bold<span class=\"md-mark md-mark-hidden\">**</span></span> <span class=\"md-italic\"><span class=\"md-mark md-mark-hidden\">*</span>italic<span class=\"md-mark md-mark-hidden\">*</span></span> <span class=\"md-underline\"><span class=\"md-mark md-mark-hidden\">__</span>underline<span class=\"md-mark md-mark-hidden\">__</span></span> <span class=\"md-strike\"><span class=\"md-mark md-mark-hidden\">~~</span>strike<span class=\"md-mark md-mark-hidden\">~~</span></span>\n<span class=\"md-bold\"><span class=\"md-mark md-mark-hidden\">**</span>*bold italic<span class=\"md-mark md-mark-hidden\">**</span></span><span class=\"md-italic\"><span class=\"md-mark md-mark-hidden\">*</span> <span class=\"md-mark md-mark-hidden\">*</span></span><span class=\"md-italic\"><span class=\"md-mark md-mark-hidden\">*</span>__bold under__<span class=\"md-mark md-mark-hidden\">*</span></span>*\n<span class=\"md-h1\"><span class=\"md-mark\"># </span>Heading one</span>\n<span class=\"md-h2\"><span class=\"md-mark\">## </span>Heading two</span>\n- a bullet\n- another bullet\n&gt; a block quote\n&gt;&lt; a centred line\n&gt;&gt; a right line\n<span class=\"md-mark\">\t</span>an indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging",
+      "text": "A plain line of prose.\n**bold** *italic* __underline__ ~~strike~~\n***bold italic*** **__bold under__**\n# Heading one\n## Heading two\n- a bullet\n- another bullet\n> a block quote\n>< a centred line\n>> a right line\n\tan indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging",
+      "classes": [
+        "md-bold",
+        "md-mark",
+        "md-mark-hidden",
+        "md-italic",
+        "md-underline",
+        "md-strike",
+        "md-h1",
+        "md-h2"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": [
+        {
+          "c": "md-bold",
+          "s": {
+            "fw": "700",
+            "fs": "normal",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-italic",
+          "s": {
+            "fw": "400",
+            "fs": "italic",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-underline",
+          "s": {
+            "fw": "400",
+            "fs": "normal",
+            "td": "underline",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-strike",
+          "s": {
+            "fw": "400",
+            "fs": "normal",
+            "td": "line-through",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-bold",
+          "s": {
+            "fw": "700",
+            "fs": "normal",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-italic",
+          "s": {
+            "fw": "400",
+            "fs": "italic",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        }
+      ]
+    },
+    "stored": "A plain line of prose.\n**bold** *italic* __underline__ ~~strike~~\n***bold italic*** **__bold under__**\n# Heading one\n## Heading two\n- a bullet\n- another bullet\n> a block quote\n>< a centred line\n>> a right line\n\tan indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging",
+    "shot": "dark/render-Draft.png"
+  },
+  {
+    "kind": "render",
+    "theme": "dark",
+    "mode": "Revise",
+    "seeded": true,
+    "modeClicked": true,
+    "attrs": {
+      "theme": "plateau",
+      "body": "rgba(0, 0, 0, 0)",
+      "page": "{\"theme\":\"plateau\",\"voice\":\"serif\",\"page\":\"dark\",\"fade\":\"on\"}"
+    },
+    "dom": {
+      "html": "A plain line of prose.\n<span class=\"md-bold\"><span class=\"md-mark md-mark-hidden\">**</span>bold<span class=\"md-mark md-mark-hidden\">**</span></span> <span class=\"md-italic\"><span class=\"md-mark md-mark-hidden\">*</span>italic<span class=\"md-mark md-mark-hidden\">*</span></span> <span class=\"md-underline\"><span class=\"md-mark md-mark-hidden\">__</span>underline<span class=\"md-mark md-mark-hidden\">__</span></span> <span class=\"md-strike\"><span class=\"md-mark md-mark-hidden\">~~</span>strike<span class=\"md-mark md-mark-hidden\">~~</span></span>\n<span class=\"md-bold\"><span class=\"md-mark md-mark-hidden\">**</span>*bold italic<span class=\"md-mark md-mark-hidden\">**</span></span><span class=\"md-italic\"><span class=\"md-mark md-mark-hidden\">*</span> <span class=\"md-mark md-mark-hidden\">*</span></span><span class=\"md-italic\"><span class=\"md-mark md-mark-hidden\">*</span>__bold under__<span class=\"md-mark md-mark-hidden\">*</span></span>*\n<span class=\"md-h1\"><span class=\"md-mark\"># </span>Heading one</span>\n<span class=\"md-h2\"><span class=\"md-mark\">## </span>Heading two</span>\n- a bullet\n- another bullet\n&gt; a block quote\n&gt;&lt; a centred line\n&gt;&gt; a right line\n<span class=\"md-mark\">\t</span>an indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging",
+      "text": "A plain line of prose.\n**bold** *italic* __underline__ ~~strike~~\n***bold italic*** **__bold under__**\n# Heading one\n## Heading two\n- a bullet\n- another bullet\n> a block quote\n>< a centred line\n>> a right line\n\tan indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging",
+      "classes": [
+        "md-bold",
+        "md-mark",
+        "md-mark-hidden",
+        "md-italic",
+        "md-underline",
+        "md-strike",
+        "md-h1",
+        "md-h2"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": [
+        {
+          "c": "md-bold",
+          "s": {
+            "fw": "700",
+            "fs": "normal",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-italic",
+          "s": {
+            "fw": "400",
+            "fs": "italic",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-underline",
+          "s": {
+            "fw": "400",
+            "fs": "normal",
+            "td": "underline",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-strike",
+          "s": {
+            "fw": "400",
+            "fs": "normal",
+            "td": "line-through",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-bold",
+          "s": {
+            "fw": "700",
+            "fs": "normal",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        },
+        {
+          "c": "md-italic",
+          "s": {
+            "fw": "400",
+            "fs": "italic",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        }
+      ]
+    },
+    "stored": "A plain line of prose.\n**bold** *italic* __underline__ ~~strike~~\n***bold italic*** **__bold under__**\n# Heading one\n## Heading two\n- a bullet\n- another bullet\n> a block quote\n>< a centred line\n>> a right line\n\tan indented paragraph that is long enough that it will wrap onto a second line in a narrow editor column, to see the hanging",
+    "shot": "dark/render-Revise.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Free Write",
+    "tool": "bold",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/FreeWrite-bold-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Free Write",
+    "tool": "italic",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/FreeWrite-italic-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Free Write",
+    "tool": "underline",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/FreeWrite-underline-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Free Write",
+    "tool": "strike",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/FreeWrite-strike-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Free Write",
+    "tool": "heading",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/FreeWrite-heading-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Free Write",
+    "tool": "bullet",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/FreeWrite-bullet-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Free Write",
+    "tool": "quote",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/FreeWrite-quote-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Free Write",
+    "tool": "outdent",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/FreeWrite-outdent-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Free Write",
+    "tool": "indent",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/FreeWrite-indent-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Free Write",
+    "tool": "align-left",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/FreeWrite-align-left-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Free Write",
+    "tool": "align-center",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/FreeWrite-align-center-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Free Write",
+    "tool": "align-right",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/FreeWrite-align-right-no-toolbar.png"
+  },
+  {
+    "kind": "key",
+    "theme": "dark",
+    "mode": "Free Write",
+    "key": "ctrl-b",
+    "domImmediately": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "shot": "dark/FreeWrite-ctrl-b.png"
+  },
+  {
+    "kind": "key",
+    "theme": "dark",
+    "mode": "Free Write",
+    "key": "ctrl-i",
+    "domImmediately": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "shot": "dark/FreeWrite-ctrl-i.png"
+  },
+  {
+    "kind": "key",
+    "theme": "dark",
+    "mode": "Free Write",
+    "key": "ctrl-u",
+    "domImmediately": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "<span class=\"fo-run\">Plain words here\nSecond line here</span><span class=\"fo-word\"></span>",
+      "text": "Plain words here\nSecond line here",
+      "classes": [
+        "fo-run",
+        "fo-word"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(26, 15, 6)"
+      },
+      "spans": []
+    },
+    "shot": "dark/FreeWrite-ctrl-u.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Draft",
+    "tool": "bold",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "**Plain words here\nSecond line here**",
+    "dom": {
+      "html": "**Plain words here\nSecond line here**",
+      "text": "**Plain words here\nSecond line here**",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Draft-bold.png",
+    "storedAfterSecondPress": "******Plain words here\nSecond line here**",
+    "domAfterSecondPress": {
+      "html": "<span class=\"md-bold\"><span class=\"md-mark\">**</span><span class=\"md-mark\">**</span></span>**Plain words here\nSecond line here**",
+      "text": "******Plain words here\nSecond line here**",
+      "classes": [
+        "md-bold",
+        "md-mark"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": [
+        {
+          "c": "md-bold",
+          "s": {
+            "fw": "700",
+            "fs": "normal",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Draft",
+    "tool": "italic",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "*Plain words here\nSecond line here*",
+    "dom": {
+      "html": "*Plain words here\nSecond line here*",
+      "text": "*Plain words here\nSecond line here*",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Draft-italic.png",
+    "storedAfterSecondPress": "***Plain words here\nSecond line here*",
+    "domAfterSecondPress": {
+      "html": "***Plain words here\nSecond line here*",
+      "text": "***Plain words here\nSecond line here*",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    }
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Draft",
+    "tool": "underline",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "__Plain words here\nSecond line here__",
+    "dom": {
+      "html": "__Plain words here\nSecond line here__",
+      "text": "__Plain words here\nSecond line here__",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Draft-underline.png",
+    "storedAfterSecondPress": "______Plain words here\nSecond line here__",
+    "domAfterSecondPress": {
+      "html": "<span class=\"md-underline\"><span class=\"md-mark\">__</span><span class=\"md-mark\">__</span></span>__Plain words here\nSecond line here__",
+      "text": "______Plain words here\nSecond line here__",
+      "classes": [
+        "md-underline",
+        "md-mark"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": [
+        {
+          "c": "md-underline",
+          "s": {
+            "fw": "400",
+            "fs": "normal",
+            "td": "underline",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Draft",
+    "tool": "strike",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "~~Plain words here\nSecond line here~~",
+    "dom": {
+      "html": "~~Plain words here\nSecond line here~~",
+      "text": "~~Plain words here\nSecond line here~~",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Draft-strike.png",
+    "storedAfterSecondPress": "~~~~~~Plain words here\nSecond line here~~",
+    "domAfterSecondPress": {
+      "html": "<span class=\"md-strike\"><span class=\"md-mark\">~~</span><span class=\"md-mark\">~~</span></span>~~Plain words here\nSecond line here~~",
+      "text": "~~~~~~Plain words here\nSecond line here~~",
+      "classes": [
+        "md-strike",
+        "md-mark"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": [
+        {
+          "c": "md-strike",
+          "s": {
+            "fw": "400",
+            "fs": "normal",
+            "td": "line-through",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "17px",
+            "color": "rgb(43, 32, 20)"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Draft",
+    "tool": "heading",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "# Plain words here\nSecond line here",
+    "dom": {
+      "html": "<span class=\"md-h1\"><span class=\"md-mark\"># </span>Plain words here</span>\nSecond line here",
+      "text": "# Plain words here\nSecond line here",
+      "classes": [
+        "md-h1",
+        "md-mark"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": [
+        {
+          "c": "md-h1",
+          "s": {
+            "fw": "600",
+            "fs": "normal",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "22.1px",
+            "color": "rgb(43, 32, 20)"
+          }
+        }
+      ]
+    },
+    "shot": "dark/Draft-heading.png",
+    "storedAfterSecondPress": "## Plain words here\nSecond line here",
+    "domAfterSecondPress": {
+      "html": "<span class=\"md-h2\"><span class=\"md-mark\">## </span>Plain words here</span>\nSecond line here",
+      "text": "## Plain words here\nSecond line here",
+      "classes": [
+        "md-h2",
+        "md-mark"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": [
+        {
+          "c": "md-h2",
+          "s": {
+            "fw": "600",
+            "fs": "normal",
+            "td": "none",
+            "ta": "start",
+            "pl": "0px",
+            "ml": "0px",
+            "ti": "0px",
+            "fz": "19.38px",
+            "color": "rgb(43, 32, 20)"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Draft",
+    "tool": "bullet",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "- Plain words here\nSecond line here",
+    "dom": {
+      "html": "- Plain words here\nSecond line here",
+      "text": "- Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Draft-bullet.png",
+    "storedAfterSecondPress": "Plain words here\nSecond line here",
+    "domAfterSecondPress": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    }
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Draft",
+    "tool": "quote",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "> Plain words here\nSecond line here",
+    "dom": {
+      "html": "&gt; Plain words here\nSecond line here",
+      "text": "> Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Draft-quote.png",
+    "storedAfterSecondPress": "Plain words here\nSecond line here",
+    "domAfterSecondPress": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    }
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Draft",
+    "tool": "outdent",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "Plain words here\nSecond line here",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Draft-outdent.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Draft",
+    "tool": "indent",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "\tPlain words here\n\tSecond line here",
+    "dom": {
+      "html": "<span class=\"md-mark\">\t</span>Plain words here\n<span class=\"md-mark\">\t</span>Second line here",
+      "text": "\tPlain words here\n\tSecond line here",
+      "classes": [
+        "md-mark"
+      ],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Draft-indent.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Draft",
+    "tool": "align-left",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": "Plain words here\nSecond line here",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Draft-align-left.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Draft",
+    "tool": "align-center",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": ">< Plain words here\nSecond line here",
+    "dom": {
+      "html": "&gt;&lt; Plain words here\nSecond line here",
+      "text": ">< Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Draft-align-center.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Draft",
+    "tool": "align-right",
+    "sliverOpen": true,
+    "toolbar": "pressed",
+    "stored": ">> Plain words here\nSecond line here",
+    "dom": {
+      "html": "&gt;&gt; Plain words here\nSecond line here",
+      "text": ">> Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Draft-align-right.png"
+  },
+  {
+    "kind": "key",
+    "theme": "dark",
+    "mode": "Draft",
+    "key": "ctrl-b",
+    "domImmediately": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Draft-ctrl-b.png"
+  },
+  {
+    "kind": "key",
+    "theme": "dark",
+    "mode": "Draft",
+    "key": "ctrl-i",
+    "domImmediately": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Draft-ctrl-i.png"
+  },
+  {
+    "kind": "key",
+    "theme": "dark",
+    "mode": "Draft",
+    "key": "ctrl-u",
+    "domImmediately": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Draft-ctrl-u.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Revise",
+    "tool": "bold",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/Revise-bold-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Revise",
+    "tool": "italic",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/Revise-italic-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Revise",
+    "tool": "underline",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/Revise-underline-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Revise",
+    "tool": "strike",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/Revise-strike-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Revise",
+    "tool": "heading",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/Revise-heading-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Revise",
+    "tool": "bullet",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/Revise-bullet-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Revise",
+    "tool": "quote",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/Revise-quote-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Revise",
+    "tool": "outdent",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/Revise-outdent-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Revise",
+    "tool": "indent",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/Revise-indent-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Revise",
+    "tool": "align-left",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/Revise-align-left-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Revise",
+    "tool": "align-center",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/Revise-align-center-no-toolbar.png"
+  },
+  {
+    "kind": "tool",
+    "theme": "dark",
+    "mode": "Revise",
+    "tool": "align-right",
+    "sliverOpen": true,
+    "toolbar": "ABSENT",
+    "dom": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "shot": "dark/Revise-align-right-no-toolbar.png"
+  },
+  {
+    "kind": "key",
+    "theme": "dark",
+    "mode": "Revise",
+    "key": "ctrl-b",
+    "domImmediately": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Revise-ctrl-b.png"
+  },
+  {
+    "kind": "key",
+    "theme": "dark",
+    "mode": "Revise",
+    "key": "ctrl-i",
+    "domImmediately": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Revise-ctrl-i.png"
+  },
+  {
+    "kind": "key",
+    "theme": "dark",
+    "mode": "Revise",
+    "key": "ctrl-u",
+    "domImmediately": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "stored": "Plain words here\nSecond line here",
+    "domSettled": {
+      "html": "Plain words here\nSecond line here",
+      "text": "Plain words here\nSecond line here",
+      "classes": [],
+      "editorClass": "forward-only-editor",
+      "editable": true,
+      "firstStyle": {
+        "fw": "400",
+        "fs": "normal",
+        "td": "none",
+        "ta": "start",
+        "pl": "0px",
+        "ml": "0px",
+        "ti": "0px",
+        "fz": "17px",
+        "color": "rgb(43, 32, 20)"
+      },
+      "spans": []
+    },
+    "shot": "dark/Revise-ctrl-u.png"
+  },
+  {
+    "kind": "screenplay",
+    "theme": "dark",
+    "surface": {
+      "scriptPage": false,
+      "editable": false,
+      "sliverButtons": [
+        "Open hand tools (Ctrl/Cmd+/)",
+        "Typewriter",
+        "Progress"
+      ]
+    },
+    "shot": "dark/screenplay.png"
+  }
+]

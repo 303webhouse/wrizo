@@ -16,7 +16,11 @@ if (env.isProd) {
   app.set('trust proxy', 1);
 }
 
-app.use(express.json({ limit: '5mb' }));
+// ITEM 203 - the limit is a NUMBER the error handler can hand back, and the client mirrors it (store/sync.ts).
+// 'bytes' parses '5mb' as 5 * 1024 * 1024 = 5,242,880 - the boundary measured on this very middleware.
+const BODY_LIMIT = '5mb';
+const BODY_LIMIT_BYTES = 5 * 1024 * 1024;
+app.use(express.json({ limit: BODY_LIMIT }));
 
 // Health check — no DB, no session, always cheap.
 app.get('/healthz', (_req: Request, res: Response) => {
@@ -58,6 +62,23 @@ app.use((req: Request, res: Response) => {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  // ITEM 203 (P1) - THIS HANDLER USED TO DISCARD err.status AND ANSWER 500 FOR EVERYTHING. body-parser raises
+  // PayloadTooLargeError (status 413, type 'entity.too.large') for an over-limit push, and a 413 is exactly what a
+  // client needs to tell 'this push is too big' from 'the server is down'. It is honoured now, with the limit in the
+  // body. Any OTHER client error the framework marks `expose` (malformed JSON is a 400) keeps its own status too,
+  // instead of masquerading as a server fault; everything else is still a logged 500.
+  const e = err as { status?: number; statusCode?: number; type?: string; expose?: boolean };
+  const status = e.status ?? e.statusCode;
+  if (status === 413 || e.type === 'entity.too.large') {
+    // eslint-disable-next-line no-console
+    console.error('[server] refused a request body over the limit (413)');
+    res.status(413).json({ error: 'payload too large', limitBytes: BODY_LIMIT_BYTES });
+    return;
+  }
+  if (typeof status === 'number' && status >= 400 && status < 500 && e.expose) {
+    res.status(status).json({ error: 'bad request' });
+    return;
+  }
   // eslint-disable-next-line no-console
   console.error('[server error]', err);
   res.status(500).json({ error: 'Internal server error' });

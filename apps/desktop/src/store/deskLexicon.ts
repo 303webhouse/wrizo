@@ -258,6 +258,7 @@ export type DeskTermId =
   // ('boardNewPageCard'): a real page, created AND pinned to this board in
   // one act. 'boardCanvasEmpty' is the empty board's own quiet one-line
   // pointer at both board-side tools (S2c).
+  | 'syncTooLargeOne' | 'syncTooLargeMany'
   | 'cascadePageNewPage' | 'cascadePlanJustAPage' | 'boardNewPageCard' | 'boardCanvasEmpty'
   // ITEM 83 M3 (R6) — the Page drawer's PAGE SETUP zone: the sheet's own
   // dimension (margins, leading, numbers, headers, footers), as opposed to
@@ -908,6 +909,9 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorMeterTokensOnly: 'This turn (tokens only — no cost estimate for this model), est.:',
   tutorMeterTokensUnit: 'tokens',
   cascadePageNewPage: 'New Page',
+  // ITEM 203 - a record too large to sync is NAMED, and the writer is told it is safe here. {title} / {n} are filled in.
+  syncTooLargeOne: '\u201C{title}\u201D is too large to sync \u2014 it is saved on this device',
+  syncTooLargeMany: '{n} pages are too large to sync \u2014 they are saved on this device',
   // ITEM 83 M3 (R6). Sentence case on rows, engraved-uppercase on the heading
   // (§1.4) — the heading's dress is CSS, so the term itself stays readable.
   pageSetupHeading: 'Page setup',
