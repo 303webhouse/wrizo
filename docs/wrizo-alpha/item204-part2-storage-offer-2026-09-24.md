@@ -1,7 +1,12 @@
 # ITEM 204 PART 2 — THE STORAGE HALF · OFFER
 ### PW build lane · 2026-09-24 · offered for Fable's BYTE REVIEW
 
-**BRANCH:** `exp1-connect-text` · **TREE:** see the ledger entry's SHA · **BASE:** `origin/main` @ `38f5aa0`
+**BRANCH:** `exp1-connect-text` · **BASE:** `origin/main` @ `38f5aa0`
+**THE TREE UNDER REVIEW: `63c0895`** — the last commit that touches product code (the round trip and
+the K4 scalar fix). The two commits after it are this offer and its verbatim check, which add no
+product code: `git diff 63c0895..HEAD --stat` is docs plus one script, and the check script proves the
+pasted blocks still match. *A record that names the wrong tree certifies nothing, and one that names no
+tree is only slightly better.*
 **NOTHING MERGES OR DEPLOYS BY MY HAND.**
 
 **WHAT THIS IS:** the storage half of item 204 part 2 — **one nullable jsonb column, `users.proofing`**,
