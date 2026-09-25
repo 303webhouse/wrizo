@@ -22838,3 +22838,40 @@ named with the residuals.**
 **BOX (Fable):** after FIX’s `d4dc32e` pair, **TOOLS’ turn names TWO runs in sequence — 195’s pair, then
 `item207.mjs` with the chars-per-line re-measure** — then FIX’s 160 → PW’s Experiment 1 run → the rest. **The
 grant names FIX and is unchanged.**
+
+## BATCH SEVEN — ASSEMBLED (158 + 206 STEPS 1–2 + P3); FIX’S STACK PAIR CLEAN; THE GRANT PASSES TO TOOLS — 2026-09-25 (chat 1)
+
+**FIX’S BOX-FREE LINE (“both legs CLEAN 96/96 on `item-writing-stack` @ `d4dc32e`, the SHA the grant named”) —
+VERIFIED FROM DISK, not taken from the line:** `wrizo-suite-15008` (default, done 23:59 local) — `SUITE DONE
+HARNESS_PARKED=unset — 96/96`, `SUITE RESULT: CLEAN — tree=d4dc32e bundle=index-BbdX9JN0.js/596700b`; `wrizo-suite-28192`
+(parked, done 00:40) — `96/96`, `CLEAN`, identical stamp. **0 FAIL / NOVERDICT / TIMEOUT lines in either.** **The
+tree and the SHA the grant named are the same this time.** **0 harness-signature processes at 07:37 local** —
+the box had been idle since 00:40; this desk acts on the line, and the line arrived at 07:37. **The five reds
+of the previous pair are gone** (hooks-order pair, item83f, writing-r1/r2 verdict lines) — by FIX’s two
+commits `faeeb59` and `d4dc32e`. *(I did not re-read the hooks-order fix in the source.)*
+
+**BATCH SEVEN, ASSEMBLED per Fable’s standing plan (“when that pair is clean, assemble 158 + 206 steps 1–2 +
+P3 + anything else green”) — by fetched SHA, both merges clean, tree bare:** `item-writing-stack` @
+`d4dc32efa77e02598c64582a74b5d91bc4a82f54` and `item203-ceiling` @ `18e96d0512859e9bcbfe5e79f9703168f0b5e274`
+(P3: `/api/sync` alone may carry 16 MiB after authentication; a real-Postgres 16 MiB check; the notice’s replacer
+function and noun-neutral plural). **Nothing else was known green, so nothing else joins; the batch is CLOSED AT
+ASSEMBLY.** **Assembly head `b14c961`** (before this entry).
+
+**RANGE `5f0691f` (LIVE, Batch Six) → `b14c961`. Product/server delta, from disk, 11 files, +558/−82:**
+`BoardEditor.tsx`, `ForwardOnlyEditor.tsx`, `index.css`, `PageEditor.tsx`, `caretOffset.ts`, `deskLexicon.ts`,
+`draftDecoration.ts`, `draftFormat.ts` (+367/−, the biggest), `sync.ts`, `syncNotice.ts`; server `index.ts`.
+**Other non-docs paths are harness or standalone scripts** (`item158.mjs`, `writing-r1.mjs`, `writing-r2.mjs`
+are NEW ROSTER FILES — **roster 96**; `item83f.mjs` carries the park; four standalone proofs/audits).
+**SCHEMA: NONE. SERVER: `index.ts` only** (the 16 MiB ceiling).
+
+**THE STACK PAIR DOES NOT COVER P3** — it ran on `d4dc32e`, which lacks the 203 P3 commits. **A BATCH PAIR ON THE
+ASSEMBLED TREE IS STILL OWED** (default + parked, both legs, this desk’s own grant), **and Fable’s byte review of
+the assembled diff** (the writing changes are 8 product files in the editor core), **then Nick’s word, quoted.**
+
+**THE GRANT PASSED, and a question handed up.** FIX’s grant is cleared; **the file now names TOOLS** for its two
+runs in sequence (195’s pair, then `item207.mjs` with the chars-per-line re-measure), **per Fable’s standing
+order.** **But Nick said the writing surface ships first, and Batch Six’s pair ran AHEAD of TOOLS’ 195. Reading
+A: keep Fable’s stated order — TOOLS’ two runs, then the batch pair. Reading B: the batch pair goes first (the
+precedent, and “the writing surface first”). My lean: B — the batch pair is the shortest path to shipping
+what Nick called the blocker to his testing — but it is Fable’s to rule.** TOOLS has not started (grant just
+written); if Fable rules B before it does, I rewrite the file.
