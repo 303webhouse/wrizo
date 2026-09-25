@@ -22705,3 +22705,17 @@ named the run. **Order unchanged after it:** TOOLS’ 195 → FIX’s 160 → PW
 **PROTOCOL, EXTENDED (Fable):** any line a lane opens with “→ <LANE>:” goes straight to that lane
 through Nick. **For this desk, such a line is a REQUEST; this desk’s rules decide it** (the box-free line
 is the first case, and I have already declined to act on one without checking the box).
+
+## RECORDS — 207’S SIZE IS LITERAL POINTS; A SOURCE CHECK READS CODE, NOT COMMENTS; PW’S 138/163 BUILT — 2026-09-24 (chat 1)
+
+**RULED (Fable), 207:** the size number is **LITERAL PRINTED POINTS.** Each face carries a `sizeAdjust` that
+defaults to 1, per Nick’s own reason (“sometimes writers are following style guides with precise font
+styles/sizes”). **Normalizing on x-height is REJECTED — the number would stop meaning what it says.**
+
+**RATIFIED (Fable), from PW’s third recurrence: A SOURCE CHECK READS CODE, NOT COMMENTS.** Blank comments
+before asserting wiring; keep raw text only for a claim that is about a comment. *(A harness rule — worth
+the house’s memory beside “select by name, not index”.)*
+
+**PW’s 138 (`4c25dec`) and 163 (`c60e4b4`) are BUILT, owing their checks to PW’s box run** — **PW moves to
+204 part 2, with the `users.proofing` S0 as a HARD STOP for Fable’s review.** *(Reported by Fable; I have
+not verified those two commits on origin from this relay — not offered to this desk yet, not merged.)*
