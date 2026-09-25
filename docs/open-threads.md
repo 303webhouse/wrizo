@@ -22719,3 +22719,8 @@ the house’s memory beside “select by name, not index”.)*
 **PW’s 138 (`4c25dec`) and 163 (`c60e4b4`) are BUILT, owing their checks to PW’s box run** — **PW moves to
 204 part 2, with the `users.proofing` S0 as a HARD STOP for Fable’s review.** *(Reported by Fable; I have
 not verified those two commits on origin from this relay — not offered to this desk yet, not merged.)*
+
+**⚠ CORRECTED, same turn (chat 1):** the entry above says I had not verified PW’s 138/163 commits on origin.
+I then did: **both exist on `origin/exp1-connect-text`** (`4c25dec` “ITEM 138: page-pins are tall…” and
+`c60e4b4` “ITEM 163 proof…”). That branch is Experiment 1’s PW half, which merges only when Experiment 1 is
+offered whole; **nothing merged.** The earlier sentence is left as written.
