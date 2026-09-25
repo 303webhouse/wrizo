@@ -22898,3 +22898,24 @@ function are in the extract; **I did not review the code.**
 
 **THE STORAGE HALF (PW, `d1abca7`) does NOT join Batch Seven.** It is a schema change and rides **BATCH EIGHT
 after Fable’s byte review.**
+
+## BATCH SEVEN — THE PAIR IS CLEAN; THE GRANT PASSES TO TOOLS; AWAITING FABLE’S PASS AND NICK’S WORD — 2026-09-25 (chat 1)
+
+**THE BATCH PAIR ON THE ASSEMBLED TREE — BOTH LEGS CLEAN, under this desk’s own grant (the file named CHAT1
+before launch), 0 FAIL / NOVERDICT / TIMEOUT lines in either:**
+- **DEFAULT: 96/96 CLEAN** — `tree=89a4cb1 bundle=index-CsedhZ4m.js/596709b`
+- **PARKED: 96/96 CLEAN** — identical stamp, `NO-REBUILD`
+- **The files the previous pair failed — all PASS here:** `hooks-order` (2), `item83f` (34), `writing-r1` (25),
+  `writing-r2` (13); **and the new `item158` (12).** The item-197 files also passed: `item126` (42, 100s), `fx5`
+  (62), `item83e` (13), `e1` (41).
+- **`89a4cb1` = the assembly head `b14c961` + docs-only commits** (the ledger and the byte-review extract);
+  the product bytes are the assembled bytes.
+
+**GRANT PASSED: the file now names TOOLS** for its two runs in sequence (195’s pair, then `item207.mjs` with the
+chars-per-line re-measure). **0 harness processes on the box when written.**
+
+**NOT DEPLOYED. STILL OWED before any ship:** **Fable’s byte review of the writing changes** (the extract is
+`docs/menus/batch7-byte-review-extract.md`) **and Nick’s word, quoted.** **If any product commit lands on
+`main` before the deploy the pair is stale and re-runs; docs-only commits do not.** Rollback target stays
+`5f0691f` (Batch Six). **The 158 / 206 changes write the manuscript; they are the reason this batch is reviewed
+at the bytes.**
