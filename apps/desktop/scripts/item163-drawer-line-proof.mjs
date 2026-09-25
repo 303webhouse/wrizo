@@ -68,9 +68,54 @@ globalThis.__projects = {
 };
 const home = await import(pathToFileURL(join(tmp, 'pageHome.mjs')).href);
 
-const IN = lex.canonicalDeskTerm('cascadePlanCaptionIn');
-const NO_DRAWER = lex.canonicalDeskTerm('cascadePlanNoDrawer');
-const OWN = lex.canonicalDeskTerm('cascadePlanRelationOwn');
+// ⛔ THE CANONICAL READ, REPOINTED — AND WHY THAT NEEDED A NEW CLAIM.
+// `canonicalDeskTerm` does not exist on main: it arrived with Experiment 1's
+// lexicon commit (61f537a), and this proof was written on that branch. Item 163
+// now rides its own branch off main, where the available reader is `deskTerm`,
+// so the three terms are read through it — with the theme named EXPLICITLY
+// rather than left to `resolveTheme`'s no-document fallback, because a proof
+// should not depend on which globals Node happens to lack.
+//
+// The swap costs one thing and CLAIM 0 pays it back. `canonicalDeskTerm` read
+// the CANONICAL map directly, so it was an INDEPENDENT witness; `deskTerm` is
+// the same function the reader under test calls, so if a theme override ever
+// shadowed one of these terms the comparison would drift toward comparing the
+// reader against itself. So the three terms are asserted THEME-INVARIANT across
+// every theme the app defines, with the theme list PARSED from theme.ts rather
+// than hand-listed here. If an override lands on one of them, this fails loudly
+// instead of quietly going green about the wrong string.
+const THEMES = (() => {
+  const src = readFileSync(join(repo, 'apps/desktop/src/store/theme.ts'), 'utf8');
+  const m = src.match(/export type ThemeId = ([^;]+);/);
+  if (!m) {
+    console.log('FAIL — could not parse ThemeId out of theme.ts; refusing to hand-list the themes, because a hand-list is the thing that goes stale.');
+    process.exit(1);
+  }
+  const ids = m[1].split('|').map((s) => s.trim().replace(/^'|'$/g, '')).filter(Boolean);
+  if (ids.length === 0) {
+    console.log('FAIL — parsed zero themes; a population of zero proves nothing.');
+    process.exit(1);
+  }
+  return ids;
+})();
+
+const TERMS = ['cascadePlanCaptionIn', 'cascadePlanNoDrawer', 'cascadePlanRelationOwn'];
+
+console.log('CLAIM 0 — the three terms are THEME-INVARIANT, so deskTerm IS a canonical read');
+for (const t of TERMS) {
+  const seen = [...new Set(THEMES.map((th) => lex.deskTerm(t, th)))];
+  if (seen.length !== 1) {
+    fail(`${t} differs by theme (${JSON.stringify(seen)}) — an override has landed, so this file may no longer treat deskTerm as a canonical read`);
+  } else if (!seen[0]) {
+    fail(`${t} reads empty under every theme — the term is missing from the lexicon`);
+  } else {
+    ok(`${t} is ${JSON.stringify(seen[0])} under all ${THEMES.length} themes (${THEMES.join(', ')})`);
+  }
+}
+
+const IN = lex.deskTerm('cascadePlanCaptionIn', 'plateau');
+const NO_DRAWER = lex.deskTerm('cascadePlanNoDrawer', 'plateau');
+const OWN = lex.deskTerm('cascadePlanRelationOwn', 'plateau');
 
 console.log(`lexicon: in="${IN}" | noDrawer="${NO_DRAWER}" | own="${OWN}"\n`);
 
