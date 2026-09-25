@@ -485,6 +485,65 @@ function PageEditorView({ id }: { id: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ITEM 158, RE-HOMED BY THE PAIR: this hook lives ABOVE the early return below, deliberately (item 104's law, and the
+  // hooks-order guards that enforce it - the first pair run went red on exactly this: it had been written beneath the
+  // guard). The effect body reads `applyFormatAt`, defined far below: safe, since an effect body runs after the render
+  // function has finished. And because the editor only mounts once the entry exists, the deps carry `!!realEntry` so the
+  // listener is attached when it does, not only when the mode changes.
+  // ITEM 158 — TAB INDENTS THE PARAGRAPH.
+  //
+  // Nick: on the writing surface Tab moved BROWSER FOCUS instead of indenting.
+  // It did, because nothing on this surface handled Tab at all and the browser
+  // was free to do what it does with an unhandled Tab.
+  //
+  // THE INDENT IS NOT INVENTED HERE. `draftFormat.ts` already defines it, in as
+  // many words: "Indent is a leading tab" — one leading `\t` on every line of
+  // the paragraph, levels counted in tabs, blank separator lines left alone,
+  // the caret keeping the character it sat on, and `^\t+` already stripped on
+  // export. Tab runs that SAME action through the SAME formatter the rail's
+  // arrows use, so a keystroke and a click cannot drift apart, and one atomic
+  // undo step covers either.
+  //
+  // FREE WRITE IS FORWARD-ONLY, AND THAT DECIDES ITS LAW. A leading tab on a
+  // line that already has words is an insertion BEHIND the caret, which the
+  // forward law forbids. On an EMPTY line it is an insertion at the caret —
+  // the typewriter's paragraph tab, lawful and ordinary. So: Tab indents a
+  // blank line, does nothing on a written one, and Shift+Tab does nothing at
+  // all there (an outdent is a deletion).
+  //
+  // WHAT IT COSTS, RECORDED RATHER THAN GLOSSED: capturing Tab means a
+  // keyboard-only writer can no longer Tab OUT of the editor to the chrome.
+  // That is the standard trade every text editor makes — and the card popup
+  // already traps Tab deliberately — but it is a real cost, not a free win,
+  // and Escape is what leaves the surface.
+  useEffect(() => {
+    const el = editorRef.current;
+    if (!el) return;
+    const onTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (mode === 'drafting' || mode === 'revise') {
+        e.preventDefault();
+        applyFormatAt(e.shiftKey ? 'outdent' : 'indent');
+        return;
+      }
+      if (mode !== 'journal') return;          // not a writing surface of ours
+      // Free Write: never let the browser move focus, whatever we do next.
+      e.preventDefault();
+      if (e.shiftKey) return;                  // an outdent is a deletion; forward-only forbids it
+      const caret = getCaretOffset(el);
+      if (caret == null) return;
+      const text = textRef.current;
+      const lineStart = text.lastIndexOf('\n', Math.max(0, caret - 1)) + 1;
+      const lineEnd = text.indexOf('\n', caret);
+      const line = text.slice(lineStart, lineEnd === -1 ? text.length : lineEnd);
+      if (line.trim().length > 0) return;      // words already here: the tab would land behind the caret
+      insertMarkerRef.current?.('\t');
+    };
+    el.addEventListener('keydown', onTab);
+    return () => el.removeEventListener('keydown', onTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, !!realEntry]);
+
   // ITEM 104 HOTFIX — THESE TWO HOOKS LIVE ABOVE THE GUARD BELOW, DELIBERATELY.
   //
   // React counts hooks per render. Any hook below an early return runs a
@@ -832,59 +891,6 @@ function PageEditorView({ id }: { id: string }) {
     applyFormatAt(action);
   };
 
-  // ITEM 158 — TAB INDENTS THE PARAGRAPH.
-  //
-  // Nick: on the writing surface Tab moved BROWSER FOCUS instead of indenting.
-  // It did, because nothing on this surface handled Tab at all and the browser
-  // was free to do what it does with an unhandled Tab.
-  //
-  // THE INDENT IS NOT INVENTED HERE. `draftFormat.ts` already defines it, in as
-  // many words: "Indent is a leading tab" — one leading `\t` on every line of
-  // the paragraph, levels counted in tabs, blank separator lines left alone,
-  // the caret keeping the character it sat on, and `^\t+` already stripped on
-  // export. Tab runs that SAME action through the SAME formatter the rail's
-  // arrows use, so a keystroke and a click cannot drift apart, and one atomic
-  // undo step covers either.
-  //
-  // FREE WRITE IS FORWARD-ONLY, AND THAT DECIDES ITS LAW. A leading tab on a
-  // line that already has words is an insertion BEHIND the caret, which the
-  // forward law forbids. On an EMPTY line it is an insertion at the caret —
-  // the typewriter's paragraph tab, lawful and ordinary. So: Tab indents a
-  // blank line, does nothing on a written one, and Shift+Tab does nothing at
-  // all there (an outdent is a deletion).
-  //
-  // WHAT IT COSTS, RECORDED RATHER THAN GLOSSED: capturing Tab means a
-  // keyboard-only writer can no longer Tab OUT of the editor to the chrome.
-  // That is the standard trade every text editor makes — and the card popup
-  // already traps Tab deliberately — but it is a real cost, not a free win,
-  // and Escape is what leaves the surface.
-  useEffect(() => {
-    const el = editorRef.current;
-    if (!el) return;
-    const onTab = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab' || e.ctrlKey || e.metaKey || e.altKey) return;
-      if (mode === 'drafting' || mode === 'revise') {
-        e.preventDefault();
-        applyFormatAt(e.shiftKey ? 'outdent' : 'indent');
-        return;
-      }
-      if (mode !== 'journal') return;          // not a writing surface of ours
-      // Free Write: never let the browser move focus, whatever we do next.
-      e.preventDefault();
-      if (e.shiftKey) return;                  // an outdent is a deletion; forward-only forbids it
-      const caret = getCaretOffset(el);
-      if (caret == null) return;
-      const text = textRef.current;
-      const lineStart = text.lastIndexOf('\n', Math.max(0, caret - 1)) + 1;
-      const lineEnd = text.indexOf('\n', caret);
-      const line = text.slice(lineStart, lineEnd === -1 ? text.length : lineEnd);
-      if (line.trim().length > 0) return;      // words already here: the tab would land behind the caret
-      insertMarkerRef.current?.('\t');
-    };
-    el.addEventListener('keydown', onTab);
-    return () => el.removeEventListener('keydown', onTab);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
 
 
   // AB2 S4 — the Structure picker. Prose -> Screenplay: free on an empty
