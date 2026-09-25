@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsConnecting, inJournalView, getOrCreatePlanBoard } from '../store/persistence';
 import { setPageDress } from '../store/pageDress';
+import { pageTypeStyle, ensureFaceLoaded } from '../store/fontRoster';
 import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
 import { firstLine } from '../store/entryText';
@@ -117,6 +118,12 @@ function PageEditorView({ id }: { id: string }) {
     setPageDress(entry?.pageSettings ?? null);
     return () => setPageDress(null);
   }, [entry?.id, entry?.pageSettings]);
+  // ITEM 207 — the page's own face and size. Both are ABSENT on a page that never chose, and then `typeStyle` is
+  // empty and the editor's style below is the one it always had (byte-identical). A face other than the eager three
+  // is fetched when a page that uses it OPENS (here) or when the writer chooses it (the Type control).
+  const pageFace = entry?.pageSettings?.face;
+  const typeStyle = pageTypeStyle(pageFace, entry?.pageSettings?.size);
+  useEffect(() => { void ensureFaceLoaded(pageFace?.name); }, [pageFace?.name]);
   // M1 — null on any plan-less project (Journal pages never reach this
   // surface at all); ModeStage silently degrades Progress:Project to Words
   // when this is null, per the canon's no-greyed-states rule.
@@ -711,7 +718,7 @@ function PageEditorView({ id }: { id: string }) {
         forwardLock={mode === 'journal' ? forwardLock : true}
         style={{
           width: '100%', minHeight: '100%', color: 'var(--ink-on-paper)',
-          fontFamily: 'var(--font-prose)',
+          fontFamily: typeStyle.fontFamily ?? 'var(--font-prose)',
           // FX3 S2 — scales with --paper-scale (index.css) so the editor's
           // own rendered type grows in lockstep with the paper (Law 1: the
           // measure, not the pixel width, is the constant). Reaches the
@@ -720,7 +727,7 @@ function PageEditorView({ id }: { id: string }) {
           // `.forward-only-editor-wrap`, not the `.forward-only-editor`
           // node itself — font-size is an inherited property, so this
           // still works).
-          fontSize: 'calc(17px * var(--paper-scale))', lineHeight: 1.7,
+          fontSize: typeStyle.fontSize ?? 'calc(17px * var(--paper-scale))', lineHeight: 1.7,
         }}
       />
       {/* HB1 S3 — the gate's instruction is the threshold's one sanctioned

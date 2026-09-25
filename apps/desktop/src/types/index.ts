@@ -339,6 +339,18 @@ export type StyleGuide = 'mla' | 'apa' | 'chicago' | 'ap';
 export const PAGE_KIND_DEFAULT: PageKindSetting = 'normal';
 export const STYLE_GUIDE_DEFAULT: StyleGuide = 'mla';
 
+// ITEM 207 — a page's own typeface and size. `face` is how a face reaches the page: 'bundled' ships with the app,
+// 'named' is installed-first with a bundled metric-compatible fallback (Times New Roman -> Tinos, Arial -> Arimo),
+// 'device' and 'file' are the writer's own additions (207b/207c - the shape is reserved, nothing writes them yet).
+export type FaceGeneric = 'serif' | 'sans-serif' | 'monospace';
+export type FaceSource = 'bundled' | 'named' | 'device' | 'file';
+export interface StoredFace {
+  name: string;
+  generic: FaceGeneric;
+  source: FaceSource;
+  fallback?: string;
+}
+
 export interface PageSettings {
   margins: 'normal' | 'narrow' | 'wide';
   lineSpacing: number;
@@ -353,6 +365,10 @@ export interface PageSettings {
   // PAGE_KIND_DEFAULT / STYLE_GUIDE_DEFAULT instead.
   kind?: PageKindSetting;
   styleGuide?: StyleGuide;
+  // ITEM 207 — absent, never null, on every page that never chose (read through the defaults: the theme's face, 11 pt).
+  // NOT added to PAGE_SETTINGS_FALLBACK, for the reason kind and styleGuide are not. `size` is the number of POINTS.
+  face?: StoredFace;
+  size?: number;
 }
 
 // The app's own floor, used wherever a page carries no settings and no user
