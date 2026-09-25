@@ -22816,3 +22816,25 @@ first, then browsers” — a TaskStop on a background chain does not reach the 
 names the run; not written here). **The parked leg runs even after a red default (`;`, never `&&`).** FIX said
 it would add nothing to the tree meanwhile. **Order unchanged after it: TOOLS’ 195 → FIX’s 160 → PW’s
 Experiment 1 run → as queued.**
+
+## RECORDS — A STOP IS A TREE KILL; ITEM 208 REGISTERED; users.proofing’S SCALAR STAMPS; TOOLS’ TWO-RUN TURN — 2026-09-24 (chat 1)
+
+**RATIFIED (Fable), from FIX’s stop: STOPPING A RUN IS A TREE KILL** — runner, its harness children, their
+browsers. **A task stop on a background chain does not reach grandchildren.** **The stop is confirmed by 0
+runners and 0 harness browsers, MEASURED, before “box free”.** (This desk measured exactly that before
+granting `d4dc32e`.)
+
+**ITEM 208 — `reapOrphans` REPORTS “FAILED TO KILL” FOR A PROCESS THAT HAD ALREADY EXITED — REGISTERED
+(small; owner: whoever holds the reaper).** Re-check liveness before calling a kill failed, so its report can be
+read as fact. *(FIX’s sweep reported “one reaped, nine failed” and the recheck read 0 — recorded above.)*
+Registry: next free **209**.
+
+**RULED (Fable), 204 part 2 — AN AMENDMENT to the approved `users.proofing` shape (PW, `63c0895`):** the
+scalars carry stamps — **`dialectAt` and `ignoredAt`, optional, later wins, the same rule as words; an absent
+stamp loses to a present one.** **Same column, no schema change.** Found by PW’s round trip (K4): without it a
+writer could never save a dialect. **The stamps are device clocks; a skewed clock can win a scalar, and that is
+named with the residuals.**
+
+**BOX (Fable):** after FIX’s `d4dc32e` pair, **TOOLS’ turn names TWO runs in sequence — 195’s pair, then
+`item207.mjs` with the chars-per-line re-measure** — then FIX’s 160 → PW’s Experiment 1 run → the rest. **The
+grant names FIX and is unchanged.**
