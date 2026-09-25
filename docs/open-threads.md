@@ -23000,3 +23000,28 @@ SINGLE-HARNESS runs — no `SUITE START` / `SUITE DONE` / `SUITE RESULT` stamp l
 `bundle=`.** **So the conclusion stands and is now shown, not inferred: NEITHER is a full-suite stamped pair; both
 are green on their own files only; the owed full pair (default + parked, 96+ files, stamped) is the Batch Eight
 pair on the assembled tree.** The earlier sentence is left as written.
+
+## NICK’S RULING ON THE INDENT LOOK (TAB = FIRST LINE); ITEM 209 REGISTERED — 2026-09-25 (chat 1)
+
+**NICK, verbatim as relayed** (answering the indent-look question: A first line only · B the whole paragraph as a
+block):
+
+> “Tab question: A. Let's add a keystroke shortcut where TAB + "1" indents the whole
+> paragraph. All Tab keystrokes should keep indenting the text further, too, even if it has
+> already been indented once.”
+
+**RECORDED AS RULINGS (Fable):**
+1. **Tab = first-line indent (A), one level per press, repeatable** (“All Tab keystrokes should keep indenting the
+   text further, too, even if it has already been indented once”).
+2. **ITEM 209 — TAB + “1” INDENTS THE WHOLE PARAGRAPH, one level per press — REGISTERED, owner FIX, riding with 206
+   step 3.** It needs **a new stored token — a text-grammar change, NOT a schema change — read through the one
+   reader** (`markRuns.ts`). Registry: next free **210**.
+
+**DEFAULTS, VETOABLE, NOT founder text (Fable):** Shift+Tab removes one first-line level; Shift+Tab+1 removes one
+block level. Draft and Revise; **Free Write on a blank line only** (the forward law). **The rail’s indent arrow stays
+the same act as Tab; no new control** (his minimal-interface law).
+
+**A NOTE FOR THE BUILDER, mine, not a ruling:** what is live since Batch Seven is 158’s Tab — which per its own
+comment indents “one leading tab on every line of the paragraph”, i.e. the WHOLE-PARAGRAPH look (B), not the
+first-line look he has now chosen (A). **So this ruling changes what a live Tab does.** *(From the source I pasted
+to Fable; I have not re-checked it against the running app.)*
