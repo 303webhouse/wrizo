@@ -32,7 +32,31 @@ import { createRequire } from 'node:module';
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, '..', '..', '..');
 const REL = 'apps/desktop/src/store/draftFormat.ts';
-const BASE = process.env.EXP1_PROOF_BASE || 'origin/main';
+// ⚠ THE BASE IS THE MERGE-BASE, NOT `origin/main`, AND THAT DISTINCTION IS A
+// FINDING THIS FILE MADE.
+//
+// CLAIM 1 asks ONE question: is `visibleText` byte-identical to THE CHAIN IT
+// REPLACED? That chain is the one on the commit this work was derived from. Using
+// `origin/main` instead made the proof answer a DIFFERENT question — "does my
+// replay match whatever main's stripper is right now" — and on 2026-09-25 it
+// correctly went red for that reason: FIX's writing-surface step 2 (`e95d037`)
+// rewrote the prefix rules on main into a single combined regex
+// `^(?:#{1,2} |>< |>> |> |- |\t)`, where the chain I replayed used `^#{1,2}\s+`
+// and `^\t+`. Different rules, so three corpus cases and 668 fuzz inputs diverged.
+//
+// Nothing in MY tree was wrong; the question was. So the base is pinned to the
+// merge-base, and the drift against current main is reported SEPARATELY below —
+// because "my replay is faithful" and "main has moved under me" are two facts and
+// a single red light cannot mean both.
+const BASE = process.env.EXP1_PROOF_BASE || (() => {
+  try {
+    return execFileSync('git', ['merge-base', 'HEAD', 'origin/main'], {
+      cwd: repo, encoding: 'utf8',
+    }).trim();
+  } catch {
+    return 'origin/main';
+  }
+})();
 
 const require = createRequire(join(repo, 'apps/server/package.json'));
 const ts = require('typescript');
@@ -297,6 +321,34 @@ console.log('CLAIM 4 — paragraphRanges is exactly "runs of consecutive non-bla
     if (ok) checked++;
   }
   console.log(`  agrees on ${checked} inputs`);
+}
+
+// --- THE DRIFT NOTICE, reported separately from the claims -----------------
+// "My replay is faithful to what I replaced" and "main's stripper has moved under
+// me" are two different facts, and one red light cannot mean both. The claims
+// above answer the first. This answers the second, as a NOTICE rather than a
+// failure — main moving is not my build being wrong, but shipping without
+// re-deriving would be, so it has to be loud.
+{
+  let mainText = null;
+  try {
+    mainText = execFileSync('git', ['show', `origin/main:${REL}`], { cwd: repo, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  } catch { /* no origin/main to compare against */ }
+  if (mainText) {
+    const rulesOf = (t) => (t.match(/replace\(\/\^[^)]*\)/g) || []).join('  |  ');
+    const mainRules = rulesOf(mainText);
+    const baseRules = rulesOf(originalSrc);
+    if (mainRules !== baseRules) {
+      console.log("\n⚠ DRIFT NOTICE — origin/main's stripper differs from the chain this proof replays.");
+      console.log('   replayed : ' + (baseRules || '(none found)'));
+      console.log('   on main  : ' + (mainRules || '(none found)'));
+      console.log('   The claims above remain valid for what was REPLACED. But `visibleText` must be');
+      console.log("   RE-DERIVED from main's rules before this merges, or two strippers will disagree —");
+      console.log('   which is the exact hazard the one-stripper refactor exists to prevent.');
+    } else {
+      console.log("\nno drift: origin/main's prefix rules match the chain this proof replays.");
+    }
+  }
 }
 
 console.log('\n' + (failures === 0

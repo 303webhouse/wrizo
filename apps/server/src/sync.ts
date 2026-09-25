@@ -410,6 +410,12 @@ syncRouter.put('/page-defaults', asyncHandler(async (req: Request, res: Response
 // that safe here is on the client: its boot pull MERGES and never replaces, and
 // its store exposes no way to replace. The residual is named in the offer — a word
 // can be briefly missing on another device until the device that added it syncs.
+// ⛔ BOTH ROUTES ARE BEHIND `requireAuth`, AND THE MOUNT IS THE ONLY REASON THEY
+// CAN CAST. `syncRouter.use(requireAuth)` at the top of this file (line 11) guards
+// every route on this router, which is what makes `req.session.userId as string`
+// safe here rather than a hopeful cast — the request cannot reach a handler
+// unauthenticated. Cited because the cast is the kind of line a reader should be
+// able to justify without leaving the function (Fable's review, 5).
 syncRouter.get('/proofing', asyncHandler(async (req: Request, res: Response) => {
   const userId = req.session.userId as string;
   const { rows } = await pool.query(`select proofing from users where id = $1`, [userId]);
@@ -421,8 +427,14 @@ syncRouter.put('/proofing', asyncHandler(async (req: Request, res: Response) => 
   // The body is the MERGED record, or null to clear. Stored as-is: the shape is
   // documented at migrate.ts's own column comment and mirrored in types/index.ts.
   const next = req.body?.proofing ?? null;
+  // ⛔ A CLEAR WRITES SQL NULL, NOT jsonb 'null' (Fable's review, 4).
+  // `JSON.stringify(null)` is the STRING "null", which Postgres stores as a jsonb
+  // null — a value that is not SQL NULL. The column would then have two different
+  // "empty" states: absent (never proofed) and a jsonb null (cleared), which
+  // `rows[0]?.proofing ?? null` cannot tell apart and which no reader should have
+  // to. Passing a real null keeps the column's NULL meaning exactly one thing.
   await pool.query(`update users set proofing = $2::jsonb where id = $1`,
-    [userId, JSON.stringify(next)]);
+    [userId, next == null ? null : JSON.stringify(next)]);
   res.json({ proofing: next });
 }));
 

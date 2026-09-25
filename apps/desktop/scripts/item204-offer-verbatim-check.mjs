@@ -56,7 +56,9 @@ const required = [
   ['the GET handler and its SELECT', /syncRouter\.get\('\/proofing'[\s\S]*select proofing from users where id = \$1/],
   ['the PUT handler and its UPDATE', /syncRouter\.put\('\/proofing'[\s\S]*update users set proofing = \$2::jsonb where id = \$1/],
   ['mergeRemote', /export function mergeRemote\(/],
-  ['the scalar rule', /const laterOf = /],
+  ['the scalar rule', /const pickSide = /],
+  ['the shape validator', /export function isProofingRecord\(/],
+  ['the requireAuth citation', /syncRouter\.use\(requireAuth\)/],
 ];
 console.log('');
 for (const [name, re] of required) {

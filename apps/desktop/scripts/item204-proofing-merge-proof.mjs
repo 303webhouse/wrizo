@@ -101,6 +101,69 @@ console.log('CLAIM 2 — the merge is COMMUTATIVE and IDEMPOTENT');
   else ok('re-merging changes nothing — the same function can serve the pull AND the push');
 }
 
+console.log('CLAIM 2b — a LATER STAMPED CLEAR survives the merge, in BOTH orders');
+{
+  // Fable's review, 1. The `||` fallback chain could not represent a clear: un-ignore
+  // the last item on A (`ignored: ''` with a later stamp) and `'' || a || b` quietly
+  // resurrected B's older list. A clear is a WRITE; a merge that cannot carry one
+  // silently undoes the writer.
+  const before = failures;
+  const cleared = { ...rec({}), ignored: '', ignoredAt: iso(1 * DAY), engine: '' };
+  const stale = { ...rec({}), ignored: '["old","list"]', ignoredAt: iso(5 * DAY), engine: 'h1' };
+  for (const [label, m] of [['clear first', P.mergeProofing(cleared, stale)], ['clear second', P.mergeProofing(stale, cleared)]]) {
+    if (m.ignored !== '') fail(`a later stamped CLEAR lost (${label}): ignored is ${JSON.stringify(m.ignored)}`);
+    if (m.engine !== '') fail(`engine came from the losing side (${label}): ${JSON.stringify(m.engine)} — a version must describe the blob it arrived with`);
+  }
+  // And the reverse must still hold: a later stamped VALUE beats an older clear.
+  const older = { ...rec({}), ignored: '', ignoredAt: iso(9 * DAY) };
+  const newer = { ...rec({}), ignored: '["kept"]', ignoredAt: iso(1 * DAY), engine: 'h2' };
+  if (P.mergeProofing(older, newer).ignored !== '["kept"]') fail('a later stamped value lost to an older clear');
+  if (failures === before) ok('a stamped clear wins in both orders, and a later value still beats an older clear');
+}
+
+console.log('CLAIM 2c — SCALAR ties break by VALUE, so the merge is EXACTLY commutative');
+{
+  // Fable's review, 2. Local-wins-on-tie made merge(a,b) != merge(b,a) whenever
+  // stamps tied and values differed, so two devices could each keep their own value
+  // forever — every merge confirming its own side. Breaking by value is arbitrary but
+  // SYMMETRIC, and symmetry is the property that converges.
+  const before = failures;
+  const at = iso(2 * DAY);
+  const x = { ...rec({}), dialect: 'en-GB', dialectAt: at };
+  const y = { ...rec({}), dialect: 'en-US', dialectAt: at };
+  const xy = P.mergeProofing(x, y);
+  const yx = P.mergeProofing(y, x);
+  if (xy.dialect !== yx.dialect) fail(`a tied scalar is not commutative: ${xy.dialect} vs ${yx.dialect} — each device would keep its own forever`);
+  else ok(`a tied dialect resolves to "${xy.dialect}" from either side`);
+  // Unstamped ties too — the pre-amendment record.
+  const u1 = { ...rec({}), dialect: 'en-AU' };
+  const u2 = { ...rec({}), dialect: 'en-CA' };
+  if (P.mergeProofing(u1, u2).dialect !== P.mergeProofing(u2, u1).dialect) fail('an UNSTAMPED tied scalar is not commutative');
+  if (failures === before) ok('stamped and unstamped ties both resolve the same from either side');
+}
+
+console.log('CLAIM 2d — a MALFORMED remote merges as null, never as a record');
+{
+  // Fable's review, 3. The remote comes from the wire and the PUT deliberately does
+  // not validate a shape the client owns, so the client is the only place that can.
+  const before = failures;
+  const good = rec({ keep: { display: 'Keep', addedAt: iso(1 * DAY) } });
+  for (const junk of ['a string', 42, [], [1, 2], null, undefined, true, { dialect: 'en-US' }, { words: {} }]) {
+    let m;
+    try { m = P.mergeProofing(good, junk); }
+    catch (e) { fail(`a malformed remote THREW instead of merging as null: ${JSON.stringify(junk)} -> ${e.message}`); continue; }
+    if (!P.proofingWordSet(m).has('keep')) fail(`a malformed remote destroyed the good record: ${JSON.stringify(junk)}`);
+  }
+  // ...and in the other position too.
+  for (const junk of ['x', 7, [], { words: {} }]) {
+    try {
+      const m = P.mergeProofing(junk, good);
+      if (!P.proofingWordSet(m).has('keep')) fail(`a malformed LOCAL record lost the good remote: ${JSON.stringify(junk)}`);
+    } catch (e) { fail(`a malformed local record THREW: ${JSON.stringify(junk)} -> ${e.message}`); }
+  }
+  if (failures === before) ok('13 malformed inputs merge as absent — none threw, none destroyed the good record');
+}
+
 console.log('CLAIM 3 — a REMOVE is a tombstone, and the LATER act wins either way');
 {
   const before = failures;

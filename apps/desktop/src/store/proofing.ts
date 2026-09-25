@@ -51,7 +51,15 @@ export function emptyProofing(): ProofingRecord {
  * A word's later stamp wins, so a re-ADD after a remove beats the tombstone and a
  * remove after an add beats the entry — whichever the writer did last.
  */
-export function mergeProofing(a: ProofingRecord | null, b: ProofingRecord | null): ProofingRecord {
+export function mergeProofing(aIn: ProofingRecord | null, bIn: ProofingRecord | null): ProofingRecord {
+  // ⛔ A MALFORMED RECORD MERGES AS NULL (Fable's review, 3). The remote arrives
+  // from the wire and the server does not validate a shape the client owns — so a
+  // string, an array, a number or a record missing `words` must be treated as
+  // ABSENT, not merged. Merging one would throw inside `Object.entries` or, worse,
+  // yield a record with no word map at all and overwrite a real one on the next
+  // push. Validated HERE rather than at the caller, so every path is covered.
+  const a = isProofingRecord(aIn) ? aIn : null;
+  const b = isProofingRecord(bIn) ? bIn : null;
   if (!a) return b ? compactProofing(b) : emptyProofing();
   if (!b) return compactProofing(a);
 
@@ -64,31 +72,80 @@ export function mergeProofing(a: ProofingRecord | null, b: ProofingRecord | null
     words[key] = lastActAt(theirs) > lastActAt(mine) ? theirs : mine;
   }
 
-  // ⛔ THE SCALARS MERGE LATER-WINS, AND THE FIRST VERSION OF THIS DID NOT.
-  // It said "the incoming value wins when non-empty" — which meant the SERVER'S
-  // EXISTING dialect always beat a local change, so a writer could never save one.
-  // The round trip's K4 caught it. A scalar cannot converge without a clock any
-  // more than a set can, so `dialect` and `ignored` each carry their own stamp and
-  // use the same rule `words` uses. An ABSENT stamp loses to a present one: the
-  // device that stamped it is the one that chose.
+  // ⛔ THE SCALARS MERGE LATER-WINS, AND THIS RULE HAS BEEN WRONG TWICE.
+  //
+  // First it said "the incoming value wins when non-empty", which meant the
+  // SERVER'S EXISTING dialect always beat a local change — a writer could never
+  // save one (the round trip's K4 caught it).
+  //
+  // Then it won by stamp but kept a `||` fallback chain, and Fable's byte review
+  // found what that does: A STAMPED EMPTY COULD NOT WIN. Un-ignore the last item
+  // on device A (`ignored: ''`, later stamp) and `'' || a.ignored || b.ignored`
+  // quietly resurrected B's older list on the next merge. A clear is a WRITE, and
+  // a merge that cannot represent one silently undoes it.
+  //
+  // So: the winner is chosen by stamp, and A STAMPED WINNER'S VALUE IS TAKEN
+  // AS-IS, `''` INCLUDED. The fallback chain now applies ONLY when the winner
+  // carries no stamp at all — which is the pre-amendment record, where an empty
+  // value means "never set" rather than "cleared".
+  //
+  // AND A TIE IS BROKEN BY VALUE, NOT BY POSITION (Fable's review, 2). Local-wins
+  // -on-tie made merge(a,b) ≠ merge(b,a) whenever stamps tied and values differed,
+  // so two devices could each keep their own value FOREVER — each merge confirming
+  // its own side. The lexicographically larger value wins instead, which is
+  // arbitrary but SYMMETRIC, and symmetric is the property that makes the set
+  // converge. Position must never decide anything here.
   //
   // `ignored` is still never merged PER KEY — it is opaque, whole-value, and the
   // design's own words are "an ignore is a convenience, never data." A stale blob
-  // is harmless because it matches nothing.
-  const laterOf = (aAt: string | undefined, bAt: string | undefined): 'a' | 'b' =>
-    ((bAt ?? '') > (aAt ?? '') ? 'b' : 'a');
-  const dialectWinner = laterOf(a.dialectAt, b.dialectAt);
-  const ignoredWinner = laterOf(a.ignoredAt, b.ignoredAt);
-  const dialectFrom = dialectWinner === 'b' ? b : a;
-  const ignoredFrom = ignoredWinner === 'b' ? b : a;
+  // is harmless because it matches nothing. `engine` is taken from the SAME side
+  // that won `ignored`, never picked separately: a version must describe the blob
+  // it arrived with, or it describes nothing.
+  const pickSide = (aAt: string | undefined, bAt: string | undefined, aVal: string, bVal: string): 'a' | 'b' => {
+    const aS = aAt ?? '';
+    const bS = bAt ?? '';
+    if (aS !== bS) return bS > aS ? 'b' : 'a';
+    return bVal > aVal ? 'b' : 'a';
+  };
+  const dSide = pickSide(a.dialectAt, b.dialectAt, a.dialect, b.dialect);
+  const iSide = pickSide(a.ignoredAt, b.ignoredAt, a.ignored, b.ignored);
+  const dWin = dSide === 'b' ? b : a;
+  const iWin = iSide === 'b' ? b : a;
+  const dLose = dSide === 'b' ? a : b;
+  const iLose = iSide === 'b' ? a : b;
   return compactProofing({
-    dialect: dialectFrom.dialect || a.dialect || b.dialect || PROOFING_DEFAULT_DIALECT,
-    dialectAt: dialectFrom.dialectAt ?? a.dialectAt ?? b.dialectAt,
+    // A stamped winner is authoritative, empty or not. Unstamped, fall back.
+    dialect: dWin.dialectAt
+      ? dWin.dialect
+      : (dWin.dialect || dLose.dialect || PROOFING_DEFAULT_DIALECT),
+    dialectAt: dWin.dialectAt ?? dLose.dialectAt,
     words,
-    ignored: ignoredFrom.ignored || a.ignored || b.ignored || '',
-    engine: ignoredFrom.engine || a.engine || b.engine || '',
-    ignoredAt: ignoredFrom.ignoredAt ?? a.ignoredAt ?? b.ignoredAt,
+    ignored: iWin.ignoredAt ? iWin.ignored : (iWin.ignored || iLose.ignored || ''),
+    engine: iWin.ignoredAt ? iWin.engine : (iWin.engine || iLose.engine || ''),
+    ignoredAt: iWin.ignoredAt ?? iLose.ignoredAt,
   });
+}
+
+/**
+ * Is this actually a proofing record? (Fable's review, 3.)
+ *
+ * The remote arrives from the wire, and the PUT route deliberately does not
+ * validate a shape the client owns — so the client is the only place that can.
+ * A string, an array, a number, a null, or an object with no `words` map is not a
+ * record and must merge as ABSENT rather than be merged: `Object.entries` on the
+ * wrong thing either throws or yields nonsense that would then be pushed back over
+ * a good record.
+ *
+ * Deliberately SHALLOW: it checks the shape the merge depends on, not every word
+ * entry. A malformed individual entry degrades to "this word has no usable stamp"
+ * inside `lastActAt`, which loses a comparison rather than corrupting the set.
+ */
+export function isProofingRecord(v: unknown): v is ProofingRecord {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return false;
+  const r = v as Record<string, unknown>;
+  if (typeof r.dialect !== 'string') return false;
+  if (!r.words || typeof r.words !== 'object' || Array.isArray(r.words)) return false;
+  return true;
 }
 
 function lastActAt(w: ProofingWord): string {

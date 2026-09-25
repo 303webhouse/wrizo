@@ -21,7 +21,11 @@ and the **K4 amendment** (`dialectAt`/`ignoredAt`, later-wins, same column).
 
 ---
 
-## 1 · THE FOUR PIECES, VERBATIM — this is what the byte review reads
+## 1 · THE PIECES, VERBATIM — this is what the byte review reads
+
+**RE-EXTRACTED AFTER THE REVIEW.** Fable's five changes moved two of these blocks, and the offer's own
+verbatim check **went red on exactly those two** before they were regenerated — which is what it exists
+for. A fifth block joins them: the shape validator that change 3 required.
 
 ### (a) the migration line — `apps/server/src/migrate.ts:197`
 
@@ -29,12 +33,15 @@ and the **K4 amendment** (`dialectAt`/`ignoredAt`, later-wins, same column).
 await pool.query(`alter table users add column if not exists proofing jsonb`);
 ```
 
-*Additive, nullable, no default, no CHECK, no backfill — `users.page_defaults`' recipe exactly. Null on
-every existing writer, so a writer who has never proofed is byte-identical to today.*
-
-### (b) + (c) both SQL statements, inside both route handlers — `apps/server/src/sync.ts:413`
+### (b) + (c) both handlers, both statements, and the `requireAuth` citation — `apps/server/src/sync.ts:413`
 
 ```ts
+// ⛔ BOTH ROUTES ARE BEHIND `requireAuth`, AND THE MOUNT IS THE ONLY REASON THEY
+// CAN CAST. `syncRouter.use(requireAuth)` at the top of this file (line 11) guards
+// every route on this router, which is what makes `req.session.userId as string`
+// safe here rather than a hopeful cast — the request cannot reach a handler
+// unauthenticated. Cited because the cast is the kind of line a reader should be
+// able to justify without leaving the function (Fable's review, 5).
 syncRouter.get('/proofing', asyncHandler(async (req: Request, res: Response) => {
   const userId = req.session.userId as string;
   const { rows } = await pool.query(`select proofing from users where id = $1`, [userId]);
@@ -46,16 +53,19 @@ syncRouter.put('/proofing', asyncHandler(async (req: Request, res: Response) => 
   // The body is the MERGED record, or null to clear. Stored as-is: the shape is
   // documented at migrate.ts's own column comment and mirrored in types/index.ts.
   const next = req.body?.proofing ?? null;
+  // ⛔ A CLEAR WRITES SQL NULL, NOT jsonb 'null' (Fable's review, 4).
+  // `JSON.stringify(null)` is the STRING "null", which Postgres stores as a jsonb
+  // null — a value that is not SQL NULL. The column would then have two different
+  // "empty" states: absent (never proofed) and a jsonb null (cleared), which
+  // `rows[0]?.proofing ?? null` cannot tell apart and which no reader should have
+  // to. Passing a real null keeps the column's NULL meaning exactly one thing.
   await pool.query(`update users set proofing = $2::jsonb where id = $1`,
-    [userId, JSON.stringify(next)]);
+    [userId, next == null ? null : JSON.stringify(next)]);
   res.json({ proofing: next });
 }));
 ```
 
-*Outside `/sync` for the reason `page_defaults` is: a singleton on the user row with no id and no clock.
-The per-key stamps inside `words` are the merge's own data, never a record clock.*
-
-### (d) `mergeRemote` — `apps/desktop/src/store/proofing.ts:159`
+### (d) `mergeRemote` — `apps/desktop/src/store/proofing.ts:216`
 
 ```ts
 /**
@@ -71,24 +81,82 @@ export function mergeRemote(remote: ProofingRecord | null): ProofingRecord {
 }
 ```
 
-### (d.ii) and its scalar rule, inside `mergeProofing` — `apps/desktop/src/store/proofing.ts:78`
+### (d.ii) the scalar rule, inside `mergeProofing` — `apps/desktop/src/store/proofing.ts:104`
 
 ```ts
-  const laterOf = (aAt: string | undefined, bAt: string | undefined): 'a' | 'b' =>
-    ((bAt ?? '') > (aAt ?? '') ? 'b' : 'a');
-  const dialectWinner = laterOf(a.dialectAt, b.dialectAt);
-  const ignoredWinner = laterOf(a.ignoredAt, b.ignoredAt);
-  const dialectFrom = dialectWinner === 'b' ? b : a;
-  const ignoredFrom = ignoredWinner === 'b' ? b : a;
+  const pickSide = (aAt: string | undefined, bAt: string | undefined, aVal: string, bVal: string): 'a' | 'b' => {
+    const aS = aAt ?? '';
+    const bS = bAt ?? '';
+    if (aS !== bS) return bS > aS ? 'b' : 'a';
+    return bVal > aVal ? 'b' : 'a';
+  };
+  const dSide = pickSide(a.dialectAt, b.dialectAt, a.dialect, b.dialect);
+  const iSide = pickSide(a.ignoredAt, b.ignoredAt, a.ignored, b.ignored);
+  const dWin = dSide === 'b' ? b : a;
+  const iWin = iSide === 'b' ? b : a;
+  const dLose = dSide === 'b' ? a : b;
+  const iLose = iSide === 'b' ? a : b;
   return compactProofing({
-    dialect: dialectFrom.dialect || a.dialect || b.dialect || PROOFING_DEFAULT_DIALECT,
-    dialectAt: dialectFrom.dialectAt ?? a.dialectAt ?? b.dialectAt,
+    // A stamped winner is authoritative, empty or not. Unstamped, fall back.
+    dialect: dWin.dialectAt
+      ? dWin.dialect
+      : (dWin.dialect || dLose.dialect || PROOFING_DEFAULT_DIALECT),
+    dialectAt: dWin.dialectAt ?? dLose.dialectAt,
     words,
-    ignored: ignoredFrom.ignored || a.ignored || b.ignored || '',
-    engine: ignoredFrom.engine || a.engine || b.engine || '',
-    ignoredAt: ignoredFrom.ignoredAt ?? a.ignoredAt ?? b.ignoredAt,
+    ignored: iWin.ignoredAt ? iWin.ignored : (iWin.ignored || iLose.ignored || ''),
+    engine: iWin.ignoredAt ? iWin.engine : (iWin.engine || iLose.engine || ''),
+    ignoredAt: iWin.ignoredAt ?? iLose.ignoredAt,
   });
 ```
+
+### (e) the shape validator, added by change 3 — `apps/desktop/src/store/proofing.ts:129`
+
+```ts
+/**
+ * Is this actually a proofing record? (Fable's review, 3.)
+ *
+ * The remote arrives from the wire, and the PUT route deliberately does not
+ * validate a shape the client owns — so the client is the only place that can.
+ * A string, an array, a number, a null, or an object with no `words` map is not a
+ * record and must merge as ABSENT rather than be merged: `Object.entries` on the
+ * wrong thing either throws or yields nonsense that would then be pushed back over
+ * a good record.
+ *
+ * Deliberately SHALLOW: it checks the shape the merge depends on, not every word
+ * entry. A malformed individual entry degrades to "this word has no usable stamp"
+ * inside `lastActAt`, which loses a comparison rather than corrupting the set.
+ */
+export function isProofingRecord(v: unknown): v is ProofingRecord {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return false;
+  const r = v as Record<string, unknown>;
+  if (typeof r.dialect !== 'string') return false;
+  if (!r.words || typeof r.words !== 'object' || Array.isArray(r.words)) return false;
+  return true;
+}
+```
+
+---
+
+## 1b · THE FIVE REVIEW CHANGES, EACH WITH ITS CLAIM
+
+| # | the finding | what changed | the claim that now holds it |
+|---|---|---|---|
+| 1 | **a stamped empty could not win** — `'' \|\| a \|\| b` resurrected a cleared `ignored` | the fallback chain applies ONLY when the winner carries no stamp; a stamped winner's value is taken as-is, `''` included. Same for `dialect` and `engine` | **CLAIM 2b** — a later stamped clear survives in BOTH orders, and a later value still beats an older clear |
+| 2 | **ties broke by position**, so `merge(a,b) ≠ merge(b,a)` and two devices could each keep their own value forever | a tie breaks by VALUE (lexicographically larger) — arbitrary but SYMMETRIC, which is the property that converges | **CLAIM 2c** — stamped and unstamped ties resolve identically from either side |
+| 3 | a **malformed remote** would throw or be merged as a record | `isProofingRecord` gates both sides inside `mergeProofing`, so every path is covered | **CLAIM 2d** — 13 malformed inputs merge as absent; none threw, none destroyed the good record |
+| 4 | a clear wrote **jsonb `'null'`**, giving the column two indistinguishable empty states | `next == null ? null : JSON.stringify(next)` | **K6** — a clear passes a real SQL NULL, driven through the route |
+| 5 | the handlers **cast `userId`** with no visible justification | the mount is cited: `syncRouter.use(requireAuth)`, `sync.ts:11` (line number verified, not remembered) | — |
+
+**AND A MUTANT THAT SURVIVED, REPORTED RATHER THAN DELETED.** The old mutant "the client pushes its own
+record instead of the merged one" swapped `proofing: merged` for `proofing: current` — **byte-identical**,
+because `mergeRemote` assigns `current = mergeProofing(...)`. It tested nothing and stayed green. By
+198's own standard a green mutant is a defect in the INSTRUMENT, so it is replaced by one that actually
+removes the merge. **Two other mutants' anchors had rotted** on the review's edits and reported
+*"MUTATION DID NOT LAND"* rather than passing quietly — the branch that exists for exactly that.
+
+**AND THE MUTANT REPORT MIS-ATTRIBUTED ONE.** It printed only the first failing claim, crediting the
+SQL-NULL mutation to K3 when it breaks **K6 and nothing else**. It now lists every failing claim, which
+also surfaces a mutant that breaks MORE than it should — itself a finding.
 
 ---
 

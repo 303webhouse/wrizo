@@ -70,7 +70,7 @@ function makePool(migrateText) {
   const hasColumn = proofingColumnExists(migrateText);
   const users = new Map([['u1', { id: 'u1' }]]);
   return {
-    hasColumn, users, writes: 0, reads: 0,
+    hasColumn, users, writes: 0, reads: 0, lastPutParam: undefined,
     async query(sql, params = []) {
       const s = norm(sql);
       const need = () => {
@@ -83,6 +83,9 @@ function makePool(migrateText) {
       }
       if (/^update users set proofing = \$2::jsonb where id = \$1$/.test(s)) {
         need(); this.writes += 1;
+        // Recorded EXACTLY as passed, so a claim can tell SQL NULL from the STRING
+        // "null" — Postgres stores the latter as a jsonb null, which is not NULL.
+        this.lastPutParam = params[1];
         const row = users.get(params[0]);
         if (row) row.proofing = params[1] == null ? null : JSON.parse(params[1]);
         return { rows: [] };
@@ -184,7 +187,7 @@ async function makeWorld(syncText, migrateText, proofingText) {
   const A = await buildDevice(proofingText);
   const B = await buildDevice(proofingText);
   const on = async (dev, fn) => { current = dev; return fn(); };
-  return { pool, A, B, on };
+  return { pool, A, B, on, handlers: handlersFrom(router) };
 }
 
 // --- claims ---------------------------------------------------------------
@@ -228,6 +231,16 @@ async function runClaims(w, report) {
     const bDialect = await w.on('B', () => w.B.getProofing().dialect);
     ok('K4: the dialect set on A reaches B through the same round trip', bDialect === 'en-GB', JSON.stringify({ bDialect }));
 
+    // K6 — A CLEAR WRITES SQL NULL, NOT jsonb 'null' (Fable's review, 4). Driven
+    // through the ROUTE directly, because the client never PUTs null: this is the
+    // route's own contract. `JSON.stringify(null)` is the string "null", which
+    // Postgres stores as a jsonb null — a value that is NOT SQL NULL, so the column
+    // would have two indistinguishable "empty" states.
+    await call(w.handlers.put, { proofing: null });
+    const cleared = w.pool.lastPutParam;
+    ok('K6: clearing the record passes a real SQL NULL, not the string "null" — so a NULL column means exactly one thing',
+      cleared === null, JSON.stringify({ passed: cleared, type: typeof cleared }));
+
     // K5 — the column was actually used: reads and writes happened.
     ok('K5: the real SQL ran — the pool served reads and writes it interpreted from the endpoints\' own statements',
       w.pool.reads > 0 && w.pool.writes > 0, JSON.stringify({ reads: w.pool.reads, writes: w.pool.writes }));
@@ -263,14 +276,21 @@ if (RUN_MUTANTS) {
         '/* mutant: column add removed */'),
     },
     {
+      // ⚠ RE-ANCHORED after the byte review changed this line (it now passes a real
+      // null on a clear). The old pattern stopped matching and the run reported
+      // "MUTATION DID NOT LAND" rather than going quietly green — which is the whole
+      // reason that branch exists. A mutant whose anchor rots is a mutant that
+      // silently stops testing.
       name: 'the PUT stores nothing (the write is dropped)',
-      sync: (t) => t.replace(/await pool\.query\(`update users set proofing = \$2::jsonb where id = \$1`,\s*\[userId, JSON\.stringify\(next\)\]\);/s,
+      sync: (t) => t.replace(/await pool\.query\(`update users set proofing = \$2::jsonb where id = \$1`,\s*\[userId, next == null \? null : JSON\.stringify\(next\)\]\);/s,
         '/* mutant: write dropped */'),
     },
     {
+      // Re-anchored too: the signature is now `aIn`/`bIn`, because the review added
+      // shape validation in front of the merge.
       name: 'the client merge becomes a REPLACE (incoming wins whole)',
-      proofing: (t) => t.replace(/export function mergeProofing\(a: ProofingRecord \| null, b: ProofingRecord \| null\): ProofingRecord \{/,
-        'export function mergeProofing(a: ProofingRecord | null, b: ProofingRecord | null): ProofingRecord {\n  if (b) return compactProofing(b);   // mutant: replace, not merge'),
+      proofing: (t) => t.replace(/export function mergeProofing\(aIn: ProofingRecord \| null, bIn: ProofingRecord \| null\): ProofingRecord \{/,
+        'export function mergeProofing(aIn: ProofingRecord | null, bIn: ProofingRecord | null): ProofingRecord {\n  if (bIn) return compactProofing(bIn as ProofingRecord);   // mutant: replace, not merge'),
     },
     {
       name: 'a remove DELETES instead of tombstoning',
@@ -278,8 +298,18 @@ if (RUN_MUTANTS) {
         'const { [key]: _gone, ...rest } = current.words; current = { ...current, words: rest };   // mutant: hard delete'),
     },
     {
-      name: 'the client PUSHES its own record instead of the merged one',
-      proofing: (t) => t.replace(/body: JSON\.stringify\(\{ proofing: merged \}\),/, 'body: JSON.stringify({ proofing: current }),   // mutant'),
+      name: 'a CLEAR writes the STRING "null" instead of SQL NULL',
+      sync: (t) => t.replace('[userId, next == null ? null : JSON.stringify(next)]);', '[userId, JSON.stringify(next)]);'),
+    },
+    {
+      // ⚠ REPLACED, BECAUSE THE OLD MUTANT TESTED NOTHING AND SURVIVED — reported
+      // here rather than deleted quietly. It swapped `proofing: merged` for
+      // `proofing: current`, which are BYTE-IDENTICAL: `mergeRemote` assigns
+      // `current = mergeProofing(...)` and returns it, so both expressions are the
+      // merged record. A green mutant is a defect in the INSTRUMENT (198's own
+      // standard), and the honest fix is a mutation that actually removes the merge.
+      name: 'syncProofing skips the merge and pushes the LOCAL record',
+      proofing: (t) => t.replace(/const merged = mergeRemote\(remote\);/, 'const merged = current;   // mutant: never merge the remote'),
     },
   ];
 
@@ -295,9 +325,15 @@ if (RUN_MUTANTS) {
     try {
       const w = await makeWorld(s, mi, pr);
       const results = await runClaims(w, null);
-      const bad = results.find((r) => !r.pass);
-      red = !!bad;
-      why = bad ? bad.name.split(':')[0] : '';
+      const bad = results.filter((r) => !r.pass);
+      red = bad.length > 0;
+      // ⚠ EVERY failing claim, not the first. The first version printed only
+      // `find()`'s hit, which MIS-ATTRIBUTED a mutant: the SQL-NULL mutation breaks
+      // K6 and nothing else, but the report credited it to K3. A verdict that names
+      // the wrong claim invites the next reader to draw the wrong conclusion about
+      // what a check covers — and it hides the case where a mutant breaks MORE than
+      // it should, which is itself a finding.
+      why = bad.map((r) => r.name.split(':')[0]).join(', ');
     } catch (e) {
       red = true; why = 'threw: ' + String(e && e.message || e).slice(0, 60);
     }
