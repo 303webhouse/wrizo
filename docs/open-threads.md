@@ -23064,3 +23064,18 @@ Experiment 1** (its Cut/Copy rides the seams under re-derivation).
 **BOX, short uses after FIX’s turn (Fable):** PW’s **M7 (the wavy-underline measurement) alone** — it gates the
 grammar paint and does not need Experiment 1’s harness — and **TOOLS’ 207b probes.** Then 194, 161, INK, as
 queued. **The grant names FIX (r3 then 160) and is unchanged.**
+
+## THE STEP 3 PAIR GRANTED — FIX, item-writing-r3 @ 396d2f0, BOTH LEGS — 2026-09-25 14:40 local (chat 1)
+
+**FIX’S REQUEST (“→ CHAT 1: box free, 0 browsers”):** grant lane FIX “step 3 pair on `item-writing-r3` @ `396d2f0`
+(both legs)”. **The message arrived cut off mid-sentence (“I”) — nothing after it was seen.**
+**CHECKED:** `396d2f0f837d255fc5bb13fd33a9a51777a47b64` is the origin tip (three commits past the `1b0a771` the
+earlier grant named: `9f06cc6` step 3c — first-line indent look, the `>|` block-indent token, Tab as a chord
+state machine, Copy My Words through the shared reader; `b899c37` `writing-r3` 33 checks; `396d2f0` line-scope
+Tab/block indent, item83f E3 parked x4 with successors); **0 harness-signature processes; no suite directory newer
+than 00:39 in the default temp location.**
+
+**GRANT REWRITTEN: lane FIX — the step 3 pair on `item-writing-r3` @ `396d2f0`, BOTH LEGS** (replacing the earlier
+“r3 @ `1b0a771`, then 160” grant; token in the file, not here). **The parked leg runs after a red default (`;`).**
+**160’s pair is NOT named by this grant — it remains FIX’s next turn, by a fresh line.** Order behind FIX unchanged:
+PW’s M7 alone and TOOLS’ 207b probes, then 194, 161, INK.
