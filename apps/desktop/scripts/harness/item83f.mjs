@@ -46,6 +46,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+let tabFence = null;   // the E3 Tab fence's observation, kept for its parked record below
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -396,8 +397,18 @@ await withHarness(async (app) => {
   await app.key('Tab');
   await sleep(250);
   const afterTab = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
-  ok('E3 (fence): pressing TAB changes nothing — Tab-as-indent is item 102 and was NOT built here; the arrow is the only door this wave opens',
-    afterTab === beforeTab, JSON.stringify({ beforeTab, afterTab }));
+  // ---- PARKED - SUPERSEDED by item 158, 2026-09-25 ------------------------
+  // Kept VERBATIM and no longer run. Nick's report ("Tab moved browser focus instead of indenting") built the very thing this
+  // fence said had not been built: Tab now indents the caret's paragraph in Draft, through the SAME formatter the arrow uses.
+  // The fence's own reasoning ("the arrow is the only door this wave opens") was true of THIS wave and is not a law; its
+  // successor asserts the new truth, on the same fixture and the same keystroke.
+  //
+  // ok('E3 (fence): pressing TAB changes nothing — Tab-as-indent is item 102 and was NOT built here; the arrow is the only door this wave opens',
+  //   afterTab === beforeTab, JSON.stringify({ beforeTab, afterTab }));
+  // ------------------------------------------------------------------
+  tabFence = { beforeTab, afterTab };
+  ok('E3 (fence) [158 successor]: pressing TAB now INDENTS the caret\'s paragraph by exactly one level (item 158) - the same tab the arrow writes, on the same fixture',
+    afterTab === beforeTab.replace('\n\tBeta one', '\n\t\tBeta one'), JSON.stringify({ beforeTab, afterTab }));
 
   // The control: E3 rewired ONE action. The other line-prefix directives still
   // run through toggleLinePrefix and still toggle, so the change did not leak
@@ -673,7 +684,8 @@ console.log(JSON.stringify(checks, null, 2));
 
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
-  // Nothing to park. This file is NEW and supersedes no assertion of its own.
+  // ONE PARK (item 158): the E3 Tab fence, superseded when Tab was built. Otherwise this file is NEW and supersedes nothing of its own.
+  parkedChecks.push({ name: 'PARKED (was "E3 (fence): pressing TAB changes nothing - Tab-as-indent is item 102 and was NOT built here; the arrow is the only door this wave opens") - item 158 built Tab-as-indent: the SAME keystroke on the SAME fixture now indents the caret paragraph by one level (its default-leg successor is the check named "E3 (fence) [158 successor]")', pass: !!tabFence && tabFence.afterTab === tabFence.beforeTab.replace('\n\tBeta one', '\n\t\tBeta one'), detail: JSON.stringify(tabFence) });
   // The assertions this WAVE superseded live where they were written and are
   // parked there, in their own files, beside their successors:
   //   · fx3.mjs — FIVE: S5's two keystroke-dissolve checks (E1 reverses the
@@ -685,7 +697,7 @@ if (process.env.HARNESS_PARKED === '1') {
   // this file falsified nothing, and it is auditable against the wave's own
   // offer record, which names every park by file and count.
   // eslint-disable-next-line no-console
-  console.log('\nITEM83F PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; this file parks nothing of its own. The wave\'s six parks live in fx3.mjs (five) and ab2.mjs (one), each beside its successor.');
+  console.log('\nITEM83F PARKED: 1 check (the E3 Tab-fence park of item 158, above) — HARNESS_PARKED=1 armed; the rest of this file parks nothing of its own. The wave\'s six parks live in fx3.mjs (five) and ab2.mjs (one), each beside its successor.');
 }
 
 const allChecks = checks.concat(parkedChecks);

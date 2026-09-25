@@ -45,3 +45,28 @@ Real select-all, real pointer presses on the sliver buttons, stored text read af
 - Screenplay: `#/page/new?structure=screenplay` did not reach a screenplay surface in the run (row recorded, no `.script-page`); the screenplay frames need a different route and stay open.
 
 ## Fix step 1 (as ruled by Fable): rendering of bullets, quotes, alignment in Draft AND Revise, plus the decorator running in Free Write. Only the tools stay where ruled.
+
+### Open notes (Fable, 2026-09-24)
+
+- **Unexplained: the "dark" page-tone pref left the paper cream.** The frames set `wrizo-theme-prefs` to `{page:'dark'}` before load and the paper stayed cream in every mode. Not investigated; it may be that the pref is read by a control that was never mounted in these frames, or that the paper is fixed by the theme. To be checked before anyone claims a dark-page frame.
+- **Screenplay route found.** `#/page/new?structure=screenplay` is the unborn DOOR: it only opens the "make this a screenplay" confirm (`requestScreenplay`, PageEditor.tsx:493) and births on confirmation, so it never showed a script surface. The real surface is a page with `pageType:'script'` (PageEditor.tsx:1320 delegates to ScriptEditor): seed one through `wrizoCreateJournalPage({... pageType:'script'})` and navigate to `#/page/<id>`. The next frame run uses that.
+
+## Step 1 landed (item-writing-r1 @ 1cf842c)
+
+Bullets, quotes, centre and right alignment now render in Draft and Revise, and Free Write runs the same decorator (rendering only). Mechanism: `decorateLineForCard` peels line prefixes (after any leading tabs; stackable, e.g. `> - `), wraps each in an inline-block `.md-line` (never display:block: the joining `\n` would draw a blank line) and collapses the stored prefix with `.md-mark-hidden`, revealed while the caret is at it. Bullet = hanging glyph in a 1.4em gutter; quote = 3px rule from `currentColor` + italic; alignment = `text-align`. Free Write: unstruck runs are decorated with a null caret, struck runs stay plain struck spans, `.fo-run` wrapper kept.
+
+Evidence: `scripts/harness/writing-r1.mjs` 25/25 on the new build, 12/25 on the parent's `src` (13 fail: every render check; the 12 that pass are the storage-invariant, no-blank-line and typing checks that did not depend on the change). Regression: reveal 16, underline 7, strike 7, outdent 9, item83f 34, item121 43, fx5 62, fx6 37, ab2 33, fx1 23, j5 37, all PASS. NOT run: the full suite pair.
+
+Known trade-off, stated: a stray `*` pair in Free Write prose ("2 * 3 and 4 * 5") now collapses its asterisks, as Draft and the cards already do. Forward-only cannot repair it.
+
+## Step 2 (item-writing-r2, on top of step 1)
+
+Ruled: the toggles (4, 5), cross-paragraph selection (7), Ctrl+B/I/U (9), all through the one formatter the toolbar calls.
+
+- **Cause of 4/5/7 was one thing:** `wrapSelection` only ever wrapped, once, around the whole selection. Replaced by `toggleInline` (store/draftFormat.ts): per-line segments (prefixes `- `, `> `, `>< `, tabs, `# ` left in front of the mark), remove-from-all if every segment is already marked, otherwise apply-to-all; a part of a run splits it; star runs are read as bold/italic/both so `***x***` is understood (Italic un-marks it back to `**x**`).
+- **A second cause, found by the browser run, not the engine:** the toolbar and the shortcut restored a collapsed CARET after a press, so the selection the press had just marked was lost and the second press acted on line 1 alone. `setSelectionOffsets` (store/caretOffset.ts) now restores the selection; no marker pair is revealed while a range is selected.
+- **Line tools** (Bullet, Quote, Centre, Right, Left) now act on every line the selection touches (they changed the first line only), remove from all when all have it, find their token anywhere in a line's leading run, and insert after the tabs so Outdent still finds them.
+- **Ctrl/Cmd+B/I/U:** `formatShortcutAction` (one map) is called by the page's free-edit editor (Draft only: the host passes a formatter only there) and the card popup. Free Write and Revise leave the keys alone by ruling: measured, unchanged text, nothing bold.
+- **"Copy My Words"** stripped only `- ` at the very front, so an indented bullet kept its hyphen; it now strips stacked prefixes in any order. (Not asked for; the same defect class, in the same file.)
+- **Evidence:** `scripts/writing-format-proof.mjs` 42/42 checks, 8 mutants each removed alone and all killed; `harness/writing-r2.mjs` 13/13 on the new build, 6/13 on the parent's src (7 red); writing-r1 still 25/25; regressions ab2 33, e1 41, fx4 42, fx5 62, item118 10, item83f 34, underline 7, strike 7, outdent 9, reveal 16, item121 43, fx6 37, fx1 23, j5 37, fx7 44: all PASS. Not run: the full-suite pair.
+- **Known, deferred to step 3:** a mark nested inside another still stores correctly but the decorator does not paint it (`__*x*__` shows the underline markers). The toggles are ready for it.

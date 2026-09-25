@@ -18,7 +18,7 @@ import { useFirstLineInvite } from '../components/useFirstLineInvite';
 import { UnbornProvider, useUnborn } from '../components/UnbornSurface';
 import { BeginningsRow, type BeginningDoor } from '../components/BeginningsRow';
 import { useWayBack } from '../components/useWayBack';
-import { setCaretOffset, getCaretOffset, getSelectionOffsets } from '../store/caretOffset';
+import { setCaretOffset, setSelectionOffsets, getCaretOffset, getSelectionOffsets } from '../store/caretOffset';
 import type { Stroke } from '../types';
 import { projectMilestones } from '../store/milestones';
 import { copyText } from '../store/clipboard';
@@ -43,7 +43,7 @@ import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import { applyFormat, marksAt, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
-import { decorateEditorFor, readEditorPlainText } from '../store/draftDecoration';
+import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
 import { getRegisteredUndoStack } from '../store/textUndo';
 import { proseTextToScriptDoc, isProseEmpty } from '../store/structureConvert';
 import { serializeScriptDoc } from '../store/scriptText';
@@ -293,6 +293,14 @@ function PageEditorView({ id }: { id: string }) {
   // component three other hosts render to delete an API nobody currently
   // passes is past what R15 chartered. Disclosed in the offer as a now-unused
   // seam rather than swept on this lane's authority.
+  // ITEM 158 — THE SEAM ITEM 121 LEFT STANDING FINALLY HAS A CALLER. The note
+  // above records `insertMarkerRef` as a now-unused prop kept because it is
+  // ForwardOnlyEditor's own seam rather than this surface's chrome. Free
+  // Write's Tab is its first legitimate user: the editor sets it to its OWN
+  // input path in forward-only mode (and to null in Draft), so a tab inserted
+  // through it travels exactly the road a typed character does — persisted,
+  // undone and decorated by the same machinery, with no second write path.
+  const insertMarkerRef = useRef<((text: string) => void) | null>(null);
   const surfaceRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
 
@@ -476,6 +484,65 @@ function PageEditorView({ id }: { id: string }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ITEM 158, RE-HOMED BY THE PAIR: this hook lives ABOVE the early return below, deliberately (item 104's law, and the
+  // hooks-order guards that enforce it - the first pair run went red on exactly this: it had been written beneath the
+  // guard). The effect body reads `applyFormatAt`, defined far below: safe, since an effect body runs after the render
+  // function has finished. And because the editor only mounts once the entry exists, the deps carry `!!realEntry` so the
+  // listener is attached when it does, not only when the mode changes.
+  // ITEM 158 — TAB INDENTS THE PARAGRAPH.
+  //
+  // Nick: on the writing surface Tab moved BROWSER FOCUS instead of indenting.
+  // It did, because nothing on this surface handled Tab at all and the browser
+  // was free to do what it does with an unhandled Tab.
+  //
+  // THE INDENT IS NOT INVENTED HERE. `draftFormat.ts` already defines it, in as
+  // many words: "Indent is a leading tab" — one leading `\t` on every line of
+  // the paragraph, levels counted in tabs, blank separator lines left alone,
+  // the caret keeping the character it sat on, and `^\t+` already stripped on
+  // export. Tab runs that SAME action through the SAME formatter the rail's
+  // arrows use, so a keystroke and a click cannot drift apart, and one atomic
+  // undo step covers either.
+  //
+  // FREE WRITE IS FORWARD-ONLY, AND THAT DECIDES ITS LAW. A leading tab on a
+  // line that already has words is an insertion BEHIND the caret, which the
+  // forward law forbids. On an EMPTY line it is an insertion at the caret —
+  // the typewriter's paragraph tab, lawful and ordinary. So: Tab indents a
+  // blank line, does nothing on a written one, and Shift+Tab does nothing at
+  // all there (an outdent is a deletion).
+  //
+  // WHAT IT COSTS, RECORDED RATHER THAN GLOSSED: capturing Tab means a
+  // keyboard-only writer can no longer Tab OUT of the editor to the chrome.
+  // That is the standard trade every text editor makes — and the card popup
+  // already traps Tab deliberately — but it is a real cost, not a free win,
+  // and Escape is what leaves the surface.
+  useEffect(() => {
+    const el = editorRef.current;
+    if (!el) return;
+    const onTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (mode === 'drafting' || mode === 'revise') {
+        e.preventDefault();
+        applyFormatAt(e.shiftKey ? 'outdent' : 'indent');
+        return;
+      }
+      if (mode !== 'journal') return;          // not a writing surface of ours
+      // Free Write: never let the browser move focus, whatever we do next.
+      e.preventDefault();
+      if (e.shiftKey) return;                  // an outdent is a deletion; forward-only forbids it
+      const caret = getCaretOffset(el);
+      if (caret == null) return;
+      const text = textRef.current;
+      const lineStart = text.lastIndexOf('\n', Math.max(0, caret - 1)) + 1;
+      const lineEnd = text.indexOf('\n', caret);
+      const line = text.slice(lineStart, lineEnd === -1 ? text.length : lineEnd);
+      if (line.trim().length > 0) return;      // words already here: the tab would land behind the caret
+      insertMarkerRef.current?.('\t');
+    };
+    el.addEventListener('keydown', onTab);
+    return () => el.removeEventListener('keydown', onTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, !!realEntry]);
 
   // ITEM 104 HOTFIX — THESE TWO HOOKS LIVE ABOVE THE GUARD BELOW, DELIBERATELY.
   //
@@ -698,10 +765,12 @@ function PageEditorView({ id }: { id: string }) {
       <ForwardOnlyEditor
         key={`${id}-${mode}`}
         ref={editorRef}
+        insertMarkerRef={insertMarkerRef}
         initialText={modeSeed}
         mode={mode}
         autoFocus={initialText.trim() === ''}
         onChange={onTextChange}
+        onFormatKey={mode === 'drafting' ? applyRailFormat : undefined}
         onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); invite.dismiss(); setBeginningsDismissed(true); }}
         onFocus={() => setFocused(true)}
         onBlur={() => { setFocused(false); flush(); }}
@@ -787,9 +856,16 @@ function PageEditorView({ id }: { id: string }) {
   // (reachable here too: Spacing at the very end of the page inserts a
   // trailing blank line, landing the caret exactly in that state) — so a
   // rail click and a keystroke leave the surface in the identical state.
-  const applyRailFormat = (action: FormatAction) => {
+  // ITEM 158 — ONE IMPLEMENTATION, TWO GATES. Tab must indent in Draft AND
+  // Revise, but `applyRailFormat`'s own `mode !== 'drafting'` guard is
+  // load-bearing for a different reason (112-A: it is what would keep a leaked
+  // Revise rail INERT rather than live-looking), so widening it would quietly
+  // spend a safety net on an unrelated errand. Instead the body moves here and
+  // each caller brings its own scope: the rail stays Draft-only, the keybinding
+  // covers both editable modes, and there is still only one formatter.
+  const applyFormatAt = (action: FormatAction) => {
     const el = editorRef.current;
-    if (!el || mode !== 'drafting') return;
+    if (!el) return;
     el.focus();
     const sel = getSelectionOffsets(el) ?? { start: textRef.current.length, end: textRef.current.length };
     const result = applyFormat(textRef.current, sel.start, sel.end, action);
@@ -804,8 +880,17 @@ function PageEditorView({ id }: { id: string }) {
     // Always atomic: a format toggle never coalesces with anything else.
     getRegisteredUndoStack(el)?.record({ text: result.text, caret: result.start }, 'atomic');
     setText(result.text);
-    decorateEditorFor(el, result.text, result.start, setCaretOffset);
+    // STEP 2: a marked SELECTION stays selected (so the same press can undo itself), and while a range is selected no marker
+    // pair is revealed - the reveal belongs to a caret.
+    const collapsed = result.end <= result.start;
+    decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, collapsed ? result.start : null));
+    if (!collapsed) setSelectionOffsets(el, result.start, result.end);
   };
+  const applyRailFormat = (action: FormatAction) => {
+    if (mode !== 'drafting') return;   // 112-A's guard, unchanged in scope
+    applyFormatAt(action);
+  };
+
 
 
   // AB2 S4 — the Structure picker. Prose -> Screenplay: free on an empty
