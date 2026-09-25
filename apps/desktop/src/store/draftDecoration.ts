@@ -130,11 +130,13 @@ function decorateLineForCard(rawLine: string, caret: number | null): string {
   let open = '';
   let close = '';
   let head = '';                     // what is emitted so far INSIDE the innermost open wrapper
+  let tabs = 0;                      // leading tabs met before any directive (the indent LEVEL)
   for (;;) {
     const ind = rest.match(LEADING_TABS);
     if (ind) {
       // The indent mark never collapses (see decorateMarkdownForCard's own note): a tab IS the layout.
       head += `<span class="md-mark">${escHtml(ind[1])}</span>`;
+      if (open === '') tabs += ind[1].length;
       rest = ind[2];
       at = at === null ? null : at - ind[1].length;
       continue;
@@ -156,6 +158,13 @@ function decorateLineForCard(rawLine: string, caret: number | null): string {
   if (h2) body = `<span class="md-h2"><span class="md-mark">${escHtml(h2[1])}</span>${decorateInlineForCard(h2[2], at === null ? null : at - h2[1].length)}</span>`;
   else if (h1) body = `<span class="md-h1"><span class="md-mark">${escHtml(h1[1])}</span>${decorateInlineForCard(h1[2], at === null ? null : at - h1[1].length)}</span>`;
   else body = decorateInlineForCard(rest, at);
+  // STEP 3, THE INDENT LOOK: an indented paragraph HANGS. The stored tabs are unchanged (the indent is still one tab per level,
+  // exported and outdented as before); what changes is that the line's wrapped continuation lines return to the indent, not to
+  // the margin - `padding-left` carries the level for every line and a matching negative `text-indent` lets the first line's own
+  // tabs walk out to the same place. That is the outline reading Nick's indent ruling asked for ("the paragraph"), where the
+  // bare tab only ever indented a paragraph's FIRST line. A line that also carries a directive (a bullet, a quote) keeps the
+  // directive's own hanging and is left as it was.
+  if (open === '' && tabs > 0) return `<span class="md-line md-indent" style="--md-n:${tabs}">${head}${body}</span>`;
   return open + head + body + close;
 }
 
