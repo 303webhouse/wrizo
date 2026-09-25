@@ -10,6 +10,8 @@
 // input (only <span> wrapping is added), which is what lets a caller restore
 // a plain-text caret offset after re-decorating (see ForwardOnlyEditor.tsx).
 
+import { readMarks, type MarkKind, type MarkRun } from './markRuns';
+
 function escHtml(s: string): string {
   return s.replace(/[&<>]/g, c => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'));
 }
@@ -59,71 +61,34 @@ const LEADING_TABS = /^(\t+)([\s\S]*)$/;
 // always reports it faithfully; only the VISUAL presentation toggles based
 // on where the caret currently is.
 function decorateInlineForCard(text: string, caret: number | null): string {
-  let out = '';
-  let i = 0;
-  while (i < text.length) {
-    const boldStart = text.indexOf('**', i);
-    const italicStart = text.indexOf('*', i);
-    const underStart = text.indexOf('__', i);
-    const strikeStart = text.indexOf('~~', i);
-    // ITEM 122 — strike, same precedence, same reveal-adjacent marks.
-    if (strikeStart !== -1
-        && (boldStart === -1 || strikeStart < boldStart)
-        && (italicStart === -1 || strikeStart < italicStart)
-        && (underStart === -1 || strikeStart < underStart)) {
-      const close = text.indexOf('~~', strikeStart + 2);
-      if (close === -1) { out += escHtml(text.slice(i)); break; }
-      out += escHtml(text.slice(i, strikeStart));
-      const sEnd = close + 2;
-      const sReveal = caret !== null && caret >= strikeStart && caret <= sEnd;
-      const sCls = sReveal ? 'md-mark' : 'md-mark md-mark-hidden';
-      out += `<span class="md-strike"><span class="${sCls}">~~</span>${escHtml(text.slice(strikeStart + 2, close))}<span class="${sCls}">~~</span></span>`;
-      i = sEnd;
-      continue;
-    }
-    // Same precedence as the Draft pass above, plus this register's own
-    // reveal-adjacent-to-caret rule: the marks collapse unless the caret is
-    // within or beside the run. Collapsed via `md-mark-hidden` (font-size:0),
-    // never display/visibility — see this file's header for why that choice is
-    // load-bearing rather than stylistic.
-    if (underStart !== -1
-        && (boldStart === -1 || underStart < boldStart)
-        && (italicStart === -1 || underStart < italicStart)) {
-      const close = text.indexOf('__', underStart + 2);
-      if (close === -1) { out += escHtml(text.slice(i)); break; }
-      out += escHtml(text.slice(i, underStart));
-      const end = close + 2;
-      const reveal = caret !== null && caret >= underStart && caret <= end;
+  // STEP 3: the runs come from store/markRuns.ts - the SAME reader the formatter toggles from - so the page can nest marks
+  // (`__*x*__` paints underline AND italic, both collapsed) and cannot disagree with the formatter about what is a run. A run's
+  // markers reveal while the caret is within or beside THAT run (the register's own rule, unchanged), and every character of the
+  // text is still emitted exactly once, so the 1:1 count the caret restore depends on holds.
+  const runs = readMarks(text);
+  const cls: Record<MarkKind, string> = { bold: 'md-bold', italic: 'md-italic', underline: 'md-underline', strike: 'md-strike' };
+  const emit = (lo: number, hi: number, within: MarkRun[]): string => {
+    let out = '';
+    let cur = lo;
+    for (let i = 0; i < within.length; i++) {
+      const r = within[i];
+      const ml = r.mark.length;
+      const end = r.close + ml;
+      // the runs nested inside this one are the ones that follow it and end no later than it does
+      const kids: MarkRun[] = [];
+      while (i + 1 < within.length && within[i + 1].open >= r.open + ml && within[i + 1].close + within[i + 1].mark.length <= r.close) {
+        kids.push(within[i + 1]);
+        i++;
+      }
+      const reveal = caret !== null && caret >= r.open && caret <= end;
       const markCls = reveal ? 'md-mark' : 'md-mark md-mark-hidden';
-      out += `<span class="md-underline"><span class="${markCls}">__</span>${escHtml(text.slice(underStart + 2, close))}<span class="${markCls}">__</span></span>`;
-      i = end;
-      continue;
+      out += escHtml(text.slice(cur, r.open));
+      out += `<span class="${cls[r.kind]}"><span class="${markCls}">${escHtml(r.mark)}</span>${emit(r.open + ml, r.close, kids)}<span class="${markCls}">${escHtml(r.mark)}</span></span>`;
+      cur = end;
     }
-    if (boldStart === -1 && italicStart === -1 && underStart === -1) { out += escHtml(text.slice(i)); break; }
-    if (boldStart === -1 && italicStart === -1) { out += escHtml(text.slice(i)); break; }
-    if (boldStart !== -1 && (italicStart === -1 || boldStart <= italicStart)) {
-      const close = text.indexOf('**', boldStart + 2);
-      if (close === -1) { out += escHtml(text.slice(i)); break; }
-      out += escHtml(text.slice(i, boldStart));
-      const inner = text.slice(boldStart + 2, close);
-      const end = close + 2;
-      const reveal = caret !== null && caret >= boldStart && caret <= end;
-      const markCls = reveal ? 'md-mark' : 'md-mark md-mark-hidden';
-      out += `<span class="md-bold"><span class="${markCls}">**</span>${escHtml(inner)}<span class="${markCls}">**</span></span>`;
-      i = end;
-      continue;
-    }
-    const close = text.indexOf('*', italicStart + 1);
-    if (close === -1) { out += escHtml(text.slice(i)); break; }
-    out += escHtml(text.slice(i, italicStart));
-    const inner = text.slice(italicStart + 1, close);
-    const end = close + 1;
-    const reveal = caret !== null && caret >= italicStart && caret <= end;
-    const markCls = reveal ? 'md-mark' : 'md-mark md-mark-hidden';
-    out += `<span class="md-italic"><span class="${markCls}">*</span>${escHtml(inner)}<span class="${markCls}">*</span></span>`;
-    i = end;
-  }
-  return out;
+    return out + escHtml(text.slice(cur, hi));
+  };
+  return emit(0, text.length, runs);
 }
 
 /** Same shape as decorateMarkdown (headings render identically, via the

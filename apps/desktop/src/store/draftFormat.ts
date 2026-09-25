@@ -1,3 +1,5 @@
+import { runsOfMark } from './markRuns';
+
 // AB2 S3 — Draft's tools, operating as markdown conventions directly on
 // `entry.text` (S0's ruling: no separate rich-text state). Pure string
 // transforms given the full text + a selection's linear character offsets
@@ -96,41 +98,11 @@ function wrapSelection(text: string, start: number, end: number, marker: string)
 //    and un-marks it - which is what makes the second press the inverse of the first.
 interface MarkRun { open: number; close: number }
 
-/** The runs of `mark` on one line: `open`/`close` are the indices of the two markers, the interior lies between.
- *  Underline and strike pair by `indexOf`. Bold and italic share the asterisk, so they are read from the star RUNS: a run of
- *  1 star is an italic marker, 2 a bold marker, 3 both (bold outermost) - which is what lets `***word***` be read as bold AND
- *  italic instead of as garbage, and lets Italic un-mark it back to `**word**`. */
+/** The runs of `mark` on one line: `open`/`close` are the indices of the two markers, the interior lies between. STEP 3: this is
+ *  no longer a reader of its own - it asks store/markRuns.ts, the ONE reader the decorator paints from, so what the formatter
+ *  toggles is exactly what the page shows as a run ("2 * 3 * 4" has no run in either, and `***x***` is both bold and italic in both). */
 function runsOf(line: string, mark: string): MarkRun[] {
-  const out: MarkRun[] = [];
-  if (mark !== '*' && mark !== '**') {
-    let i = 0;
-    while (i < line.length) {
-      const o = line.indexOf(mark, i);
-      if (o === -1) break;
-      const c = line.indexOf(mark, o + mark.length);
-      if (c === -1) break;
-      out.push({ open: o, close: c });
-      i = c + mark.length;
-    }
-    return out;
-  }
-  const ends: Array<{ pos: number; len: number }> = [];
-  for (let i = 0; i < line.length; i++) {
-    if (line[i] !== '*') continue;
-    let j = i;
-    while (j < line.length && line[j] === '*') j++;
-    if (j - i <= 3) ends.push({ pos: i, len: j - i });
-    i = j - 1;
-  }
-  const bold = mark === '**';
-  const eligible = ends.filter(t => (bold ? t.len >= 2 : t.len === 1 || t.len === 3));
-  for (let k = 0; k + 1 < eligible.length; k += 2) {
-    const a = eligible[k];
-    const b = eligible[k + 1];
-    if (bold) out.push({ open: a.pos, close: b.pos + b.len - 2 });
-    else out.push({ open: a.len === 3 ? a.pos + 2 : a.pos, close: b.pos });
-  }
-  return out;
+  return runsOfMark(line, mark);
 }
 
 const LEAD_TOKENS: readonly string[] = ['>< ', '>> ', '> ', '- ', '# ', '## '];
@@ -169,10 +141,9 @@ function selectedSegments(text: string, start: number, end: number): Segment[] {
 function toggleInline(text: string, start: number, end: number, mark: string): FormatResult {
   const ml = mark.length;
   if (start === end) {
-    if (text.slice(start - ml, start) === mark && text.slice(start, start + ml) === mark) {
-      const caret = start - ml;
-      return { text: text.slice(0, caret) + text.slice(start + ml), start: caret, end: caret };
-    }
+    // (An empty pair `**|**` is an ordinary run to the shared reader, so the caret-inside-a-run branch below removes it - and Italic
+    // on that same caret finds no italic run, so it inserts its own pair INSIDE (`***|***`) instead of stripping one star from each
+    // side of the bold pair, which the old adjacent-characters test did.)
     const ls = text.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
     let le = text.indexOf('\n', start);
     if (le === -1) le = text.length;

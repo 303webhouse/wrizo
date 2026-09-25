@@ -520,6 +520,9 @@ function PageEditorView({ id }: { id: string }) {
     const el = editorRef.current;
     if (!el) return;
     const onTab = (e: KeyboardEvent) => {
+      // An IME candidate window uses Tab to move through candidates; owning it here would break composition (the chord map,
+      // formatShortcutAction, already refuses composing keys for the same reason).
+      if (e.isComposing) return;
       if (e.key !== 'Tab' || e.ctrlKey || e.metaKey || e.altKey) return;
       if (mode === 'drafting' || mode === 'revise') {
         e.preventDefault();
