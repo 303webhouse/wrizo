@@ -393,6 +393,39 @@ syncRouter.put('/page-defaults', asyncHandler(async (req: Request, res: Response
   res.json({ pageDefaults: next });
 }));
 
+// ITEM 204 PART 2 — PROOFING: the writer's dictionary, dialect and ignore blob.
+//
+// The same read/write PAIR as `page_defaults` above, and outside `/sync` for the
+// same reason: one singleton value on the user row with no id and no clock of its
+// own. The per-key stamps inside `words` are the MERGE's data, not a record clock.
+//
+// ⛔ THE SERVER DOES NOT MERGE, AND THAT IS A RULING, NOT AN OMISSION. Convergence
+// is the client's: it GETs, merges per key, and PUTs the MERGED set (an
+// LWW-element-set over `words`). A server-side merge was considered and REFUSED —
+// it would teach the server a shape the PUT above deliberately does not know ("the
+// server does not re-validate a shape the client owns"), and it buys only the
+// narrow window the client's merge already recovers from.
+//
+// So this PUT is a whole-blob overwrite, exactly like its neighbour. What makes
+// that safe here is on the client: its boot pull MERGES and never replaces, and
+// its store exposes no way to replace. The residual is named in the offer — a word
+// can be briefly missing on another device until the device that added it syncs.
+syncRouter.get('/proofing', asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.session.userId as string;
+  const { rows } = await pool.query(`select proofing from users where id = $1`, [userId]);
+  res.json({ proofing: rows[0]?.proofing ?? null });
+}));
+
+syncRouter.put('/proofing', asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.session.userId as string;
+  // The body is the MERGED record, or null to clear. Stored as-is: the shape is
+  // documented at migrate.ts's own column comment and mirrored in types/index.ts.
+  const next = req.body?.proofing ?? null;
+  await pool.query(`update users set proofing = $2::jsonb where id = $1`,
+    [userId, JSON.stringify(next)]);
+  res.json({ proofing: next });
+}));
+
 syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {
   const userId = req.session.userId as string;
   const lastSyncAt: string | null = req.body?.lastSyncAt ?? null;

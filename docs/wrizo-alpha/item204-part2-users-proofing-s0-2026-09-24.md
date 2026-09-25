@@ -88,12 +88,19 @@ wrong — only that it buys a narrower case than it costs.**
 ```
 users.proofing jsonb, nullable, no default, no backfill        -- migrate.ts, one line
 {
-  dialect: 'en-US' | 'en-GB' | 'en-CA' | 'en-AU' | 'en-NZ',    -- §3 of the design; default American
+  dialect: 'en-US' | 'en-GB' | 'en-AU' | 'en-CA' | 'en-IN',    -- §3 of the design; default American
   words:   { "<lower-cased word>": { display: string, addedAt: string, removedAt?: string } },
   ignored: string,                                              -- harper's export, OPAQUE
   engine:  string,                                              -- the version that wrote `ignored`
 }
 ```
+
+**⚠ CORRECTED 2026-09-24, AFTER APPROVAL — the fifth dialect is INDIAN, not New Zealand.** The
+design's §3 names harper's five as *American, British, Australian, Canadian, Indian*; my first draft of
+this block wrote `en-NZ` from memory instead of reading the line. The shape was approved with my error
+in it, so the correction is recorded here rather than made quietly — and the build uses the five the
+design actually names. *A shape report that paraphrases the document it is reporting on is the same
+fault as a comment written from a restart note.*
 
 **Five shape notes, each with its reason:**
 

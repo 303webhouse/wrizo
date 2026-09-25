@@ -423,6 +423,53 @@ export type StyleGuide = 'mla' | 'apa' | 'chicago' | 'ap';
 export const PAGE_KIND_DEFAULT: PageKindSetting = 'normal';
 export const STYLE_GUIDE_DEFAULT: StyleGuide = 'mla';
 
+// ITEM 204 PART 2 — PROOFING: the writer's dictionary, dialect and ignore blob.
+// Rides ONE nullable jsonb column, `users.proofing` (Nick's schema word), on
+// `users.page_defaults`' recipe — per WRITER, not per page, so it is neither
+// `pageSettings` nor a second tenant of `page_defaults` (that column is the
+// starting DRESS; proofing is a different concept and would overload it).
+
+/**
+ * harper's five, and only these five — the design's §3, read from the document
+ * rather than remembered. (A first draft of the shape report wrote `en-NZ` from
+ * memory; the fifth is INDIAN.)
+ */
+export type ProofingDialect = 'en-US' | 'en-GB' | 'en-AU' | 'en-CA' | 'en-IN';
+
+/** Fable's stated default, changeable and never prompted for. */
+export const PROOFING_DEFAULT_DIALECT: ProofingDialect = 'en-US';
+
+/**
+ * A removed word's tombstone expires after this many days (Fable's ruling:
+ * compaction, not a cap). Named rather than inlined because the consequence is
+ * a behaviour a reader should be able to find: a device offline longer than this
+ * can bring a removed word back.
+ */
+export const PROOFING_TOMBSTONE_DAYS = 180;
+
+/**
+ * One word in the personal dictionary. `display` keeps the writer's own casing
+ * while the MAP KEY is lower-cased for matching — two facts, so two fields.
+ * `removedAt` is a TOMBSTONE, never a delete: a bare list cannot converge across
+ * devices, and dropping the entry outright would let the other device's older
+ * add win and resurrect it.
+ */
+export interface ProofingWord {
+  display: string;
+  addedAt: string;
+  removedAt?: string;
+}
+
+export interface ProofingRecord {
+  dialect: ProofingDialect;
+  /** Keyed LOWER-CASED. An LWW-element-set: merged per key by the later stamp. */
+  words: Record<string, ProofingWord>;
+  /** harper's own exported ignore list, OPAQUE. Never merged per key. */
+  ignored: string;
+  /** The engine version that wrote `ignored`, so a future engine can drop it. */
+  engine: string;
+}
+
 export interface PageSettings {
   margins: 'normal' | 'narrow' | 'wide';
   lineSpacing: number;

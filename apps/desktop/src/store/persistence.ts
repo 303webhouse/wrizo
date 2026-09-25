@@ -4,6 +4,7 @@ import { serializeScriptDoc } from './scriptText';
 import { createEmptyScriptDoc } from './scriptDoc';
 import { deskTerm, type DeskTermId } from './deskLexicon';
 import { getUserPageDefaults } from './pageDefaults';
+import { clearProofingLocal } from './proofing';
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -3025,5 +3026,16 @@ export function resetLocalData(): void {
   } catch {
     // ignore
   }
+
+  // ITEM 204 PART 2 — the writer's PROOFING mirror goes out with everything else
+  // (Fable's ruling: "a signed-out device keeps nothing of the writer's; it goes
+  // out the same way every other writer record does"). It lives in its own store,
+  // so it is cleared through that store's own function rather than by spelling its
+  // storage key a second time here.
+  //
+  // ⚠ THE COST, NAMED: words added on this device and never pushed go out with
+  // it. That is the ruled trade — the alternative was one account's dictionary
+  // outliving its session on a shared device, which is worse.
+  clearProofingLocal();
   notify();
 }

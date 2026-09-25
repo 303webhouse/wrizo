@@ -168,6 +168,34 @@ export async function runMigrations(): Promise<void> {
   await pool.query(`alter table journal_entries add column if not exists page_settings jsonb`);
   await pool.query(`alter table users add column if not exists page_defaults jsonb`);
 
+  // ITEM 204 PART 2 — PROOFING. Nick's schema word ("1. Yes"): ONE additive
+  // nullable jsonb column on `users`, the EXACT `page_defaults` recipe one line
+  // above — no default, no CHECK, no backfill. Null on every existing writer, so
+  // a writer who has never proofed is byte-identical to today.
+  //
+  // WHY IT IS NOT `page_defaults`: that column is the writer's starting DRESS,
+  // written only by the explicit "set as my defaults" act. Proofing is a
+  // different concept and would overload it.
+  //
+  // WHY IT IS NOT `/sync`: like `page_defaults` it is one singleton value on the
+  // user row with no id and no clock of its own — sync.ts's own comment refuses
+  // that shape for exactly this reason. The per-key stamps INSIDE `words` are the
+  // merge's own data, not a record clock.
+  //
+  // Shape (types/index.ts carries the TS mirror):
+  //   { dialect: 'en-US'|'en-GB'|'en-AU'|'en-CA'|'en-IN',
+  //     words:   { "<lower-cased>": { display, addedAt, removedAt? } },
+  //     ignored: "<harper's export, opaque>",
+  //     engine:  "<version that wrote `ignored`>" }
+  //
+  // ⚠ CONVERGENCE IS THE CLIENT'S, AND DELIBERATELY SO. `words` is an
+  // LWW-element-set merged PER KEY: the client GETs, merges, and PUTs the merged
+  // set, and its boot pull merges rather than replaces. The server stores the blob
+  // and does not know the shape — the same boundary `page_defaults`' own PUT keeps
+  // ("the server does not re-validate a shape the client owns"). A server-side
+  // merge was considered and refused for that reason.
+  await pool.query(`alter table users add column if not exists proofing jsonb`);
+
   // EXPERIMENT 1 ("connect from the page") — ONE additive nullable jsonb
   // column, and the only schema this experiment asks for.
   //
