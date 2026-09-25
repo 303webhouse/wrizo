@@ -64,15 +64,30 @@ export function mergeProofing(a: ProofingRecord | null, b: ProofingRecord | null
     words[key] = lastActAt(theirs) > lastActAt(mine) ? theirs : mine;
   }
 
-  // The scalars: later-wins is not available (they carry no stamp of their own),
-  // so the INCOMING value wins when it is non-empty. `ignored` is opaque and must
-  // never be merged per-key — the design: "an ignore is a convenience, never
-  // data." A stale blob is harmless because it matches nothing.
+  // ⛔ THE SCALARS MERGE LATER-WINS, AND THE FIRST VERSION OF THIS DID NOT.
+  // It said "the incoming value wins when non-empty" — which meant the SERVER'S
+  // EXISTING dialect always beat a local change, so a writer could never save one.
+  // The round trip's K4 caught it. A scalar cannot converge without a clock any
+  // more than a set can, so `dialect` and `ignored` each carry their own stamp and
+  // use the same rule `words` uses. An ABSENT stamp loses to a present one: the
+  // device that stamped it is the one that chose.
+  //
+  // `ignored` is still never merged PER KEY — it is opaque, whole-value, and the
+  // design's own words are "an ignore is a convenience, never data." A stale blob
+  // is harmless because it matches nothing.
+  const laterOf = (aAt: string | undefined, bAt: string | undefined): 'a' | 'b' =>
+    ((bAt ?? '') > (aAt ?? '') ? 'b' : 'a');
+  const dialectWinner = laterOf(a.dialectAt, b.dialectAt);
+  const ignoredWinner = laterOf(a.ignoredAt, b.ignoredAt);
+  const dialectFrom = dialectWinner === 'b' ? b : a;
+  const ignoredFrom = ignoredWinner === 'b' ? b : a;
   return compactProofing({
-    dialect: b.dialect || a.dialect || PROOFING_DEFAULT_DIALECT,
+    dialect: dialectFrom.dialect || a.dialect || b.dialect || PROOFING_DEFAULT_DIALECT,
+    dialectAt: dialectFrom.dialectAt ?? a.dialectAt ?? b.dialectAt,
     words,
-    ignored: b.ignored || a.ignored || '',
-    engine: b.engine || a.engine || '',
+    ignored: ignoredFrom.ignored || a.ignored || b.ignored || '',
+    engine: ignoredFrom.engine || a.engine || b.engine || '',
+    ignoredAt: ignoredFrom.ignoredAt ?? a.ignoredAt ?? b.ignoredAt,
   });
 }
 
@@ -200,7 +215,8 @@ export function removeProofingWord(word: string): ProofingRecord {
 }
 
 export function setProofingDialect(dialect: ProofingDialect): ProofingRecord {
-  current = { ...current, dialect };
+  // Stamped, or the merge cannot tell this choice from the server's older one.
+  current = { ...current, dialect, dialectAt: new Date().toISOString() };
   writeLocal(current);
   notify();
   return current;
@@ -208,7 +224,7 @@ export function setProofingDialect(dialect: ProofingDialect): ProofingRecord {
 
 /** harper's own export, stored opaque with the version that wrote it. */
 export function setProofingIgnored(ignored: string, engine: string): ProofingRecord {
-  current = { ...current, ignored, engine };
+  current = { ...current, ignored, engine, ignoredAt: new Date().toISOString() };
   writeLocal(current);
   notify();
   return current;

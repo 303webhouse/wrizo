@@ -462,12 +462,28 @@ export interface ProofingWord {
 
 export interface ProofingRecord {
   dialect: ProofingDialect;
+  /**
+   * ⚠ AN AMENDMENT TO THE APPROVED SHAPE, and it exists because the round-trip
+   * proof caught a real defect. The approved record had no stamp on its scalars,
+   * so the merge could only say "the incoming value wins when non-empty" — which
+   * means THE SERVER'S EXISTING DIALECT ALWAYS BEAT A LOCAL CHANGE, and a writer
+   * could never save one. K4 of item204-proofing-roundtrip-proof.mjs is that bug.
+   *
+   * A scalar cannot converge without a clock, exactly as `words` cannot. So the
+   * dialect carries its own stamp and merges LATER-WINS, the same rule the word
+   * set already uses. Optional, so a record written before this reads unchanged
+   * (an absent stamp loses to a present one, which is the right way round: the
+   * device that stamped it is the one that chose).
+   */
+  dialectAt?: string;
   /** Keyed LOWER-CASED. An LWW-element-set: merged per key by the later stamp. */
   words: Record<string, ProofingWord>;
   /** harper's own exported ignore list, OPAQUE. Never merged per key. */
   ignored: string;
   /** The engine version that wrote `ignored`, so a future engine can drop it. */
   engine: string;
+  /** Same clock, same reason, for the ignore blob. */
+  ignoredAt?: string;
 }
 
 export interface PageSettings {
