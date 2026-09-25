@@ -339,6 +339,69 @@ export type StyleGuide = 'mla' | 'apa' | 'chicago' | 'ap';
 export const PAGE_KIND_DEFAULT: PageKindSetting = 'normal';
 export const STYLE_GUIDE_DEFAULT: StyleGuide = 'mla';
 
+// ITEM 204 PART 2 — PROOFING: the writer's dictionary, dialect and ignore blob.
+// Rides ONE nullable jsonb column, `users.proofing` (Nick's schema word), on
+// `users.page_defaults`' recipe — per WRITER, not per page, so it is neither
+// `pageSettings` nor a second tenant of `page_defaults` (that column is the
+// starting DRESS; proofing is a different concept and would overload it).
+
+/**
+ * harper's five, and only these five — the design's §3, read from the document
+ * rather than remembered. (A first draft of the shape report wrote `en-NZ` from
+ * memory; the fifth is INDIAN.)
+ */
+export type ProofingDialect = 'en-US' | 'en-GB' | 'en-AU' | 'en-CA' | 'en-IN';
+
+/** Fable's stated default, changeable and never prompted for. */
+export const PROOFING_DEFAULT_DIALECT: ProofingDialect = 'en-US';
+
+/**
+ * A removed word's tombstone expires after this many days (Fable's ruling:
+ * compaction, not a cap). Named rather than inlined because the consequence is
+ * a behaviour a reader should be able to find: a device offline longer than this
+ * can bring a removed word back.
+ */
+export const PROOFING_TOMBSTONE_DAYS = 180;
+
+/**
+ * One word in the personal dictionary. `display` keeps the writer's own casing
+ * while the MAP KEY is lower-cased for matching — two facts, so two fields.
+ * `removedAt` is a TOMBSTONE, never a delete: a bare list cannot converge across
+ * devices, and dropping the entry outright would let the other device's older
+ * add win and resurrect it.
+ */
+export interface ProofingWord {
+  display: string;
+  addedAt: string;
+  removedAt?: string;
+}
+
+export interface ProofingRecord {
+  dialect: ProofingDialect;
+  /**
+   * ⚠ AN AMENDMENT TO THE APPROVED SHAPE, and it exists because the round-trip
+   * proof caught a real defect. The approved record had no stamp on its scalars,
+   * so the merge could only say "the incoming value wins when non-empty" — which
+   * means THE SERVER'S EXISTING DIALECT ALWAYS BEAT A LOCAL CHANGE, and a writer
+   * could never save one. K4 of item204-proofing-roundtrip-proof.mjs is that bug.
+   *
+   * A scalar cannot converge without a clock, exactly as `words` cannot. So the
+   * dialect carries its own stamp and merges LATER-WINS, the same rule the word
+   * set already uses. Optional, so a record written before this reads unchanged
+   * (an absent stamp loses to a present one, which is the right way round: the
+   * device that stamped it is the one that chose).
+   */
+  dialectAt?: string;
+  /** Keyed LOWER-CASED. An LWW-element-set: merged per key by the later stamp. */
+  words: Record<string, ProofingWord>;
+  /** harper's own exported ignore list, OPAQUE. Never merged per key. */
+  ignored: string;
+  /** The engine version that wrote `ignored`, so a future engine can drop it. */
+  engine: string;
+  /** Same clock, same reason, for the ignore blob. */
+  ignoredAt?: string;
+}
+
 export interface PageSettings {
   margins: 'normal' | 'narrow' | 'wide';
   lineSpacing: number;
