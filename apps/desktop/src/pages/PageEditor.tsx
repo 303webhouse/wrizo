@@ -43,6 +43,8 @@ import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import { applyFormat, marksAt, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
+import { createTabChord, type TabAct } from '../store/tabChord';
+import { BLOCK_TOKEN } from '../store/markRuns';
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
 import { getRegisteredUndoStack } from '../store/textUndo';
 import { proseTextToScriptDoc, isProseEmpty } from '../store/structureConvert';
@@ -516,34 +518,50 @@ function PageEditorView({ id }: { id: string }) {
   // That is the standard trade every text editor makes — and the card popup
   // already traps Tab deliberately — but it is a real cost, not a free win,
   // and Escape is what leaves the surface.
+  //
+  // STEP 3 (Nick, 2026-09-25) - TAB IS NOW A STATE MACHINE (store/tabChord.ts, proved without a browser): every Tab tap is one more
+  // first-line level ("keep indenting the text further"), Shift+Tab one level back, and Tab HELD + 1 is one WHOLE-PARAGRAPH (block)
+  // level per press of the 1 (Shift+Tab held + 1 one back). A tap is applied on release; a quick Tab-then-1 (a numbered list) types
+  // its 1. Draft and Revise act everywhere; Free Write acts on a BLANK line only and never outdents (a deletion), and there a 1 is
+  // always just typed unless the chord may act.
   useEffect(() => {
     const el = editorRef.current;
     if (!el) return;
-    const onTab = (e: KeyboardEvent) => {
-      // An IME candidate window uses Tab to move through candidates; owning it here would break composition (the chord map,
-      // formatShortcutAction, already refuses composing keys for the same reason).
-      if (e.isComposing) return;
-      if (e.key !== 'Tab' || e.ctrlKey || e.metaKey || e.altKey) return;
-      if (mode === 'drafting' || mode === 'revise') {
-        e.preventDefault();
-        applyFormatAt(e.shiftKey ? 'outdent' : 'indent');
-        return;
-      }
-      if (mode !== 'journal') return;          // not a writing surface of ours
-      // Free Write: never let the browser move focus, whatever we do next.
-      e.preventDefault();
-      if (e.shiftKey) return;                  // an outdent is a deletion; forward-only forbids it
+    const blankHere = (): boolean => {
       const caret = getCaretOffset(el);
-      if (caret == null) return;
-      const text = textRef.current;
-      const lineStart = text.lastIndexOf('\n', Math.max(0, caret - 1)) + 1;
-      const lineEnd = text.indexOf('\n', caret);
-      const line = text.slice(lineStart, lineEnd === -1 ? text.length : lineEnd);
-      if (line.trim().length > 0) return;      // words already here: the tab would land behind the caret
-      insertMarkerRef.current?.('\t');
+      if (caret == null) return false;
+      const t = textRef.current;
+      const lineStart = t.lastIndexOf('\n', Math.max(0, caret - 1)) + 1;
+      const lineEnd = t.indexOf('\n', caret);
+      return t.slice(lineStart, lineEnd === -1 ? t.length : lineEnd).trim().length === 0;   // words already here: the tab would land behind the caret
     };
-    el.addEventListener('keydown', onTab);
-    return () => el.removeEventListener('keydown', onTab);
+    const chord = createTabChord((shift) => mode !== 'journal' || (!shift && blankHere()));
+    const perform = (act: TabAct) => {
+      if (mode === 'drafting' || mode === 'revise') { applyFormatAt(act); return; }
+      if (mode !== 'journal') return;
+      if (act === 'outdent' || act === 'block-outdent') return;   // an outdent is a deletion; forward-only forbids it
+      if (!blankHere()) return;
+      insertMarkerRef.current?.(act === 'block-indent' ? BLOCK_TOKEN : '\t');
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      const step = chord.keydown(e);
+      if (step.preventDefault) e.preventDefault();
+      step.acts.forEach(perform);
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      const step = chord.keyup(e);
+      if (step.preventDefault) e.preventDefault();
+      step.acts.forEach(perform);
+    };
+    const onBlur = () => chord.reset();
+    el.addEventListener('keydown', onKeyDown);
+    el.addEventListener('blur', onBlur);
+    window.addEventListener('keyup', onKeyUp, true);
+    return () => {
+      el.removeEventListener('keydown', onKeyDown);
+      el.removeEventListener('blur', onBlur);
+      window.removeEventListener('keyup', onKeyUp, true);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, !!realEntry]);
 

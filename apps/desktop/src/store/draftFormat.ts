@@ -1,4 +1,4 @@
-import { runsOfMark } from './markRuns';
+import { readLead, runsOfMark, stripLine, BLOCK_TOKEN } from './markRuns';
 
 // AB2 S3 — Draft's tools, operating as markdown conventions directly on
 // `entry.text` (S0's ruling: no separate rich-text state). Pure string
@@ -13,7 +13,7 @@ import { runsOfMark } from './markRuns';
 // names itself" — the founder just named it). Underline joins from R1.
 export type FormatAction =
   | 'bold' | 'italic' | 'underline' | 'strike' | 'heading' | 'spacing'
-  | 'bullet' | 'quote' | 'indent' | 'outdent'
+  | 'bullet' | 'quote' | 'indent' | 'outdent' | 'block-indent' | 'block-outdent'
   | 'align-left' | 'align-center' | 'align-right';
 export type StructureKind = 'prose' | 'screenplay';
 
@@ -105,17 +105,10 @@ function runsOf(line: string, mark: string): MarkRun[] {
   return runsOfMark(line, mark);
 }
 
-const LEAD_TOKENS: readonly string[] = ['>< ', '>> ', '> ', '- ', '# ', '## '];
-
-/** How many leading characters of `line` are structure, not prose: tabs and line directives, in any order. */
+/** How many leading characters of `line` are structure, not prose: tabs, line directives and a heading mark. Read by the ONE
+ *  reader (store/markRuns.ts readLead), which the decorator and Copy My Words use too. */
 function leadLength(line: string): number {
-  let i = 0;
-  for (;;) {
-    if (line[i] === '\t') { i++; continue; }
-    const tok = LEAD_TOKENS.find(t => line.startsWith(t, i));
-    if (!tok) return i;
-    i += tok.length;
-  }
+  return readLead(line).length;
 }
 
 interface Segment { a: number; b: number; ls: number; }
@@ -314,19 +307,9 @@ export const LINE_DIRECTIVE = {
 // If every touched line already has the token the press removes it from all; otherwise it adds it to those that lack it.
 // Alignment is exclusive: applying one drops the other, since a line cannot be both. Blank lines in a multi-line selection are
 // left blank; a caret on a lone blank line still acts on it, so the level can be set before typing.
-const DIRECTIVE_TOKENS: readonly string[] = ['>< ', '>> ', '> ', '- '];
-
 function leadTokens(line: string): { tokens: string[]; length: number } {
-  const tokens: string[] = [];
-  let i = 0;
-  for (;;) {
-    if (line[i] === '\t') { tokens.push('\t'); i++; continue; }
-    const tok = DIRECTIVE_TOKENS.find(t => line.startsWith(t, i));
-    if (!tok) break;
-    tokens.push(tok);
-    i += tok.length;
-  }
-  return { tokens, length: i };
+  const lead = readLead(line, { headings: false });
+  return { tokens: lead.tokens.map(t => t.text), length: lead.length };
 }
 
 function touchedLines(text: string, start: number, end: number): Array<{ ls: number; le: number }> {
@@ -481,7 +464,10 @@ function outdentParagraphs(text: string, selStart: number, selEnd: number): Form
   const TAB = LINE_DIRECTIVE.indent;
   const removed = new Set<number>();
   const nextLines = lines.map((l, i) => {
-    if (affected.has(i) && l.startsWith(TAB)) { removed.add(i); return l.slice(TAB.length); }
+    if (affected.has(i)) {
+      const tab = readLead(l, { headings: false }).tokens.find(t => t.kind === 'tab');
+      if (tab) { removed.add(i); return l.slice(0, tab.start) + l.slice(tab.end); }
+    }
     return l;
   });
   const next = nextLines.join('\n');
@@ -508,7 +494,9 @@ function indentParagraphs(text: string, selStart: number, selEnd: number): Forma
   const { affected, lineOf } = paragraphScope(lines, selStart, selEnd);
 
   const TAB = LINE_DIRECTIVE.indent;
-  const next = lines.map((l, i) => (affected.has(i) ? TAB + l : l)).join('\n');
+  // the tab goes AFTER any block-indent tokens (the block is outermost; the first-line tab sits inside it)
+  const blockLen = (l: string) => { let n = 0; while (l.startsWith(BLOCK_TOKEN, n)) n += BLOCK_TOKEN.length; return n; };
+  const next = lines.map((l, i) => (affected.has(i) ? l.slice(0, blockLen(l)) + TAB + l.slice(blockLen(l)) : l)).join('\n');
   // Every tab inserted at or above a position pushes it right by one, so the
   // caret keeps the character it was sitting on — including a caret parked at
   // the very start of an indented line, which lands after its new tab.
@@ -519,6 +507,22 @@ function indentParagraphs(text: string, selStart: number, selEnd: number): Forma
     return n * TAB.length;
   };
   return { text: next, start: selStart + shift(selStart), end: selEnd + shift(selEnd) };
+}
+
+// STEP 3 - THE BLOCK INDENT (Nick: "TAB + 1 indents the whole paragraph"). One `>| ` token per level at the front of every line of
+// the paragraph (the same paragraph scope the tab indent uses, shared above), so a wrapped line follows the block. Outdent removes
+// ONE token, floored at zero. Read and painted through the same line reader as every other structure token.
+function blockShift(text: string, selStart: number, selEnd: number, dir: 1 | -1): FormatResult {
+  const lines = text.split('\n');
+  const { affected } = paragraphScope(lines, selStart, selEnd);
+  const objs: Array<{ ls: number; le: number }> = [];
+  let off = 0;
+  lines.forEach((l, i) => { if (affected.has(i)) objs.push({ ls: off, le: off + l.length }); off += l.length + 1; });
+  return rewriteLeads(text, selStart, selEnd, objs, (tokens) => {
+    if (dir === 1) return [BLOCK_TOKEN, ...tokens];
+    const at = tokens.indexOf(BLOCK_TOKEN);
+    return at === -1 ? tokens : [...tokens.slice(0, at), ...tokens.slice(at + 1)];
+  });
 }
 
 const ALIGN_PREFIXES = [LINE_DIRECTIVE['align-center'], LINE_DIRECTIVE['align-right']] as const;
@@ -580,6 +584,8 @@ export function applyFormat(text: string, selStart: number, selEnd: number, acti
   // including the way back and the outdent question held for Nick's word.
   if (action === 'indent') return indentParagraphs(text, start, end);
   if (action === 'outdent') return outdentParagraphs(text, start, end);
+  if (action === 'block-indent') return blockShift(text, start, end, 1);
+  if (action === 'block-outdent') return blockShift(text, start, end, -1);
   if (action === 'align-center') return toggleLines(text, start, end, LINE_DIRECTIVE['align-center'], ALIGN_PREFIXES);
   if (action === 'align-right') return toggleLines(text, start, end, LINE_DIRECTIVE['align-right'], ALIGN_PREFIXES);
   // 'align-left' is the UNMARKED state, not a third token: clearing both
@@ -594,24 +600,8 @@ export function applyFormat(text: string, selStart: number, selEnd: number, acti
 // mirroring draftDecoration.ts's own inline-scan priority) so a bold run's
 // asterisks are never left half-stripped by the italic pass.
 export function stripMarkdownConventions(text: string): string {
-  const noHeadings = text
-    .split('\n')
-    .map(line => {
-      // STEP 2: prefixes stack in any order (`\t- `, `- > `, `>< # `), so they are stripped as a LOOP, not one fixed chain.
-      // Alignment is tried before quote for the reason given above (`>< ` and `>> ` both begin with `>`).
-      let l = line;
-      for (;;) {
-        const n = l.replace(/^(?:#{1,2} |>< |>> |> |- |\t)/, '');
-        if (n === l) return l;
-        l = n;
-      }
-    })
-    .join('\n');
-  return noHeadings
-    .replace(/\*\*([\s\S]+?)\*\*/g, '$1')
-    // ITEM 83 M4 (R1/F2) — underline's `__word__` strips beside bold/italic.
-    // Placed after `**` (the pre-existing order rule: the longer mark first)
-    // and before the single `*`, for the same reason.
-    .replace(/__([\s\S]+?)__/g, '$1')
-    .replace(/\*([\s\S]+?)\*/g, '$1');
+  // STEP 3: per line, through the ONE reader (store/markRuns.ts stripLine): structure tokens in any order, then only the emphasis
+  // markers the page actually paints - so "2 * 3 * 4" exports as it shows, `~~strike~~` is stripped like the rest (the old
+  // regex copy never stripped it), and a `>| ` block token goes with the other structure.
+  return text.split('\n').map(stripLine).join('\n');
 }

@@ -4579,11 +4579,12 @@ a:focus-visible,
    is the full column so text-align has a box to align within. Nothing here reads a theme: the rule colour is derived from the
    run's own ink, so it follows every theme and page tone. */
 .md-line{ display:inline-block; width:100%; box-sizing:border-box; vertical-align:top; }
-/* STEP 3 - the indent hangs (draftDecoration.ts decorateLineForCard): N tabs = N levels of 2em, carried by padding on every line
-   and walked back out by a matching negative text-indent so the first line's own tabs land on the same edge. `tab-size` makes a tab
-   exactly one level wide (the browser default is 8 characters, which is not a length the padding could match). */
+/* STEP 3 - THE INDENT LOOK (Nick's ruling): a leading tab is a FIRST-LINE indent - the first visual line moves in one step per
+   tab and wrapped lines return to the margin - so a tab must be one fixed step wide. `tab-size` makes it 2em (the browser default,
+   8 characters, varies with the typeface). The WHOLE-PARAGRAPH indent is the separate `>| ` block token below. */
 .forward-only-editor, .board-popup-editor{ tab-size:2em; }
-.md-indent{ padding-left:calc(var(--md-n) * 2em); text-indent:calc(var(--md-n) * -2em); }
+/* one `>| ` = one block level: the paragraph's lines (wrapped ones too) sit 2em further in. Levels stack, each a wrapper. */
+.md-block{ padding-left:2em; }
 .md-align-center{ text-align:center; }
 .md-align-right{ text-align:right; }
 .md-quote{ padding-left:.9em; border-left:3px solid color-mix(in srgb, currentColor 38%, transparent); font-style:italic; }

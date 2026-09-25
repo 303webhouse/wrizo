@@ -100,3 +100,59 @@ export function readMarks(line: string): MarkRun[] {
 export function runsOfMark(line: string, mark: string): Array<{ open: number; close: number }> {
   return readMarks(line).filter(r => r.mark === mark).map(r => ({ open: r.open, close: r.close }));
 }
+
+// ---- THE LINE'S OWN STRUCTURE, read once (step 3) ------------------------------------------------------------------------
+// A line's front is a run of structure tokens: leading tabs (the FIRST-LINE indent, one per level), the line directives
+// (`>< ` centre, `>> ` right, `>| ` BLOCK indent - one per level, `> ` quote, `- ` bullet) in any order, and last of all a heading
+// mark (`# `, `## `), after which the rest of the line is text. This used to be spelled four times (the formatter's two copies,
+// the decorator's, and Copy My Words' regex chain); it is read here, with POSITIONS, and every consumer takes it from here.
+export type LeadKind = 'tab' | 'align-center' | 'align-right' | 'block' | 'quote' | 'bullet' | 'heading';
+export interface LeadToken { kind: LeadKind; text: string; start: number; end: number }
+
+/** The block-indent token. `>| ` at the start of a line is the whole-paragraph indent: one token per level, the paragraph's lines all
+ *  carry it, wrapped lines follow. Chosen because ordinary prose never starts a line with `>|` and a space - a quoted `>` is `> `,
+ *  a shell redirect mid-line is not at the start - so no existing page parses as it. */
+export const BLOCK_TOKEN = '>| ';
+
+const DIRECTIVES: ReadonlyArray<{ kind: LeadKind; text: string }> = [
+  { kind: 'align-center', text: '>< ' },
+  { kind: 'align-right', text: '>> ' },
+  { kind: 'block', text: BLOCK_TOKEN },
+  { kind: 'quote', text: '> ' },
+  { kind: 'bullet', text: '- ' },
+];
+
+export function readLead(line: string, opts: { headings?: boolean } = {}): { tokens: LeadToken[]; length: number } {
+  const headings = opts.headings !== false;
+  const tokens: LeadToken[] = [];
+  let i = 0;
+  for (;;) {
+    if (line[i] === '\t') { tokens.push({ kind: 'tab', text: '\t', start: i, end: i + 1 }); i++; continue; }
+    const d = DIRECTIVES.find(x => line.startsWith(x.text, i));
+    if (d) { tokens.push({ kind: d.kind, text: d.text, start: i, end: i + d.text.length }); i += d.text.length; continue; }
+    if (headings) {
+      const h = line.startsWith('## ', i) ? '## ' : line.startsWith('# ', i) ? '# ' : null;
+      if (h) { tokens.push({ kind: 'heading', text: h, start: i, end: i + h.length }); i += h.length; }
+    }
+    break;
+  }
+  return { tokens, length: i };
+}
+
+/** `text` with the markers of `runs` taken out (positions from readMarks on that same text): what the page SHOWS, as plain text. */
+export function removeMarkers(text: string, runs: MarkRun[]): string {
+  const cut = new Set<number>();
+  for (const r of runs) {
+    for (let k = 0; k < r.mark.length; k++) { cut.add(r.open + k); cut.add(r.close + k); }
+  }
+  let out = '';
+  for (let i = 0; i < text.length; i++) if (!cut.has(i)) out += text[i];
+  return out;
+}
+
+/** One line as plain reading text: its structure tokens gone, its emphasis markers gone, and ONLY those the reader accepts - so
+ *  "2 * 3 * 4" exports exactly as it is shown. (Copy My Words uses this; the decorator paints from the same two readers.) */
+export function stripLine(line: string): string {
+  const rest = line.slice(readLead(line).length);
+  return removeMarkers(rest, readMarks(rest));
+}

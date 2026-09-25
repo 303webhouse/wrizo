@@ -10,7 +10,7 @@
 // input (only <span> wrapping is added), which is what lets a caller restore
 // a plain-text caret offset after re-decorating (see ForwardOnlyEditor.tsx).
 
-import { readMarks, type MarkKind, type MarkRun } from './markRuns';
+import { readLead, readMarks, type MarkKind, type MarkRun } from './markRuns';
 
 function escHtml(s: string): string {
   return s.replace(/[&<>]/g, c => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'));
@@ -117,54 +117,38 @@ function decorateInlineForCard(text: string, caret: number | null): string {
 // Character count stays 1:1: the prefix is still a real character, collapsed with `.md-mark-hidden` (font-size:0, never
 // display/visibility - see decorateInlineForCard's header) and revealed while the caret is within or beside it, so the
 // writer can still reach and delete it. Prefixes may stack (`> - `, `>< ` over a heading) and may follow leading tabs.
-const LINE_DIRECTIVES: Array<{ re: RegExp; cls: string }> = [
-  { re: /^(>< )/, cls: 'md-align-center' },
-  { re: /^(>> )/, cls: 'md-align-right' },
-  { re: /^(> )/, cls: 'md-quote' },
-  { re: /^(- )/, cls: 'md-bullet' },
-];
+const LINE_CLASS: Record<string, string> = {
+  'align-center': 'md-align-center', 'align-right': 'md-align-right', block: 'md-block', quote: 'md-quote', bullet: 'md-bullet',
+};
 
 function decorateLineForCard(rawLine: string, caret: number | null): string {
-  let rest = rawLine;
-  let at = caret;                    // caret relative to `rest`, or null
+  // STEP 3: the line's structure comes from the ONE reader (store/markRuns.ts readLead), with positions - so the caret-adjacent
+  // reveal is a comparison against a token's own span, and this file no longer owns a copy of the token list.
+  const lead = readLead(rawLine);
   let open = '';
   let close = '';
   let head = '';                     // what is emitted so far INSIDE the innermost open wrapper
-  let tabs = 0;                      // leading tabs met before any directive (the indent LEVEL)
-  for (;;) {
-    const ind = rest.match(LEADING_TABS);
-    if (ind) {
+  let heading: { text: string } | null = null;
+  for (const t of lead.tokens) {
+    if (t.kind === 'tab') {
       // The indent mark never collapses (see decorateMarkdownForCard's own note): a tab IS the layout.
-      head += `<span class="md-mark">${escHtml(ind[1])}</span>`;
-      if (open === '') tabs += ind[1].length;
-      rest = ind[2];
-      at = at === null ? null : at - ind[1].length;
-      continue;
+      head += `<span class="md-mark">${escHtml(t.text)}</span>`;
+    } else if (t.kind === 'heading') {
+      heading = { text: t.text };
+    } else {
+      const reveal = caret !== null && caret >= t.start && caret <= t.end;
+      const markCls = reveal ? 'md-mark' : 'md-mark md-mark-hidden';
+      open += head + `<span class="md-line ${LINE_CLASS[t.kind]}${reveal ? ' md-revealed' : ''}"><span class="${markCls}">${escHtml(t.text)}</span>`;
+      head = '';
+      close = '</span>' + close;
     }
-    const d = LINE_DIRECTIVES.find(x => x.re.test(rest));
-    if (!d) break;
-    const prefix = (rest.match(d.re) as RegExpMatchArray)[1];
-    const reveal = at !== null && at >= 0 && at <= prefix.length;
-    const markCls = reveal ? 'md-mark' : 'md-mark md-mark-hidden';
-    open += head + `<span class="md-line ${d.cls}${reveal ? ' md-revealed' : ''}"><span class="${markCls}">${escHtml(prefix)}</span>`;
-    head = '';
-    close = '</span>' + close;
-    rest = rest.slice(prefix.length);
-    at = at === null ? null : at - prefix.length;
   }
-  const h2 = rest.match(H2);
-  const h1 = h2 ? null : rest.match(H1);
-  let body: string;
-  if (h2) body = `<span class="md-h2"><span class="md-mark">${escHtml(h2[1])}</span>${decorateInlineForCard(h2[2], at === null ? null : at - h2[1].length)}</span>`;
-  else if (h1) body = `<span class="md-h1"><span class="md-mark">${escHtml(h1[1])}</span>${decorateInlineForCard(h1[2], at === null ? null : at - h1[1].length)}</span>`;
-  else body = decorateInlineForCard(rest, at);
-  // STEP 3, THE INDENT LOOK: an indented paragraph HANGS. The stored tabs are unchanged (the indent is still one tab per level,
-  // exported and outdented as before); what changes is that the line's wrapped continuation lines return to the indent, not to
-  // the margin - `padding-left` carries the level for every line and a matching negative `text-indent` lets the first line's own
-  // tabs walk out to the same place. That is the outline reading Nick's indent ruling asked for ("the paragraph"), where the
-  // bare tab only ever indented a paragraph's FIRST line. A line that also carries a directive (a bullet, a quote) keeps the
-  // directive's own hanging and is left as it was.
-  if (open === '' && tabs > 0) return `<span class="md-line md-indent" style="--md-n:${tabs}">${head}${body}</span>`;
+  const at = caret === null ? null : caret - lead.length;
+  const rest = rawLine.slice(lead.length);
+  const inline = decorateInlineForCard(rest, at);
+  const body = heading
+    ? `<span class="${heading.text === '## ' ? 'md-h2' : 'md-h1'}"><span class="md-mark">${escHtml(heading.text)}</span>${inline}</span>`
+    : inline;
   return open + head + body + close;
 }
 

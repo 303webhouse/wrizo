@@ -17,7 +17,7 @@ import { createRequire } from 'node:module';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SRC = join(here, '..', 'src');
-const FILES = ['draftFormat.ts', 'markRuns.ts', 'draftDecoration.ts'];
+const FILES = ['draftFormat.ts', 'markRuns.ts', 'draftDecoration.ts', 'tabChord.ts'];
 const requireDesktop = createRequire(join(here, '..', 'package.json'));
 const esbuild = createRequire(requireDesktop.resolve('vite'))('esbuild');
 const tmp = join(tmpdir(), 'wrizo-format-proof');
@@ -36,7 +36,7 @@ async function load(tag, mutant) {
     }
     writeFileSync(join(dir, f), source);
   }
-  writeFileSync(join(dir, 'entry.ts'), "export * from './draftFormat'; export { readMarks } from './markRuns'; export { decorateMarkdownForCard } from './draftDecoration';");
+  writeFileSync(join(dir, 'entry.ts'), "export * from './draftFormat'; export { readMarks } from './markRuns'; export { decorateMarkdownForCard } from './draftDecoration'; export { readLead, stripLine } from './markRuns'; export { createTabChord, CHORD_HOLD_MS } from './tabChord';");
   const outfile = join(dir, 'out.mjs');
   await esbuild.build({ entryPoints: [join(dir, 'entry.ts')], bundle: true, platform: 'node', format: 'esm', outfile, logLevel: 'silent' });
   return import(pathToFileURL(outfile).href + `?t=${Date.now()}`);
@@ -127,6 +127,48 @@ function run(mod) {
 
   // ---- STRIP ----
   check('STRIP: "Copy My Words" removes stacked prefixes in ANY order (bullet inside an indent, quote inside a bullet)', stripMarkdownConventions('\t- one\n- > two\n>< **three**'), 'one\ntwo\nthree');
+  // ---- BLOCK INDENT, FIRST-LINE LEVELS, THE LINE READER (step 3, Nick's Tab ruling) ----
+  const { readLead, stripLine, createTabChord, CHORD_HOLD_MS } = mod;
+  check('TABS: three Tab presses are three first-line levels, in the stored text', press('One', 1, 1, 'indent', 'indent', 'indent').text, '\t\t\tOne');
+  check('TABS: Shift+Tab (outdent) takes one level back, floored at zero', [press('\t\tOne', 3, 3, 'outdent').text, press('One', 1, 1, 'outdent').text], ['\tOne', 'One']);
+  check('BLOCK: one press puts one `>| ` on EVERY line of the paragraph (its wrapped continuation is the same line)', press('One\nTwo', 1, 1, 'block-indent').text, '>| One\n>| Two');
+  check('BLOCK: a second press is a second level; an outdent removes ONE', [press('One', 1, 1, 'block-indent', 'block-indent').text, press('One', 1, 1, 'block-indent', 'block-indent', 'block-outdent').text], ['>| >| One', '>| One']);
+  check('BLOCK: outdent is floored at zero and leaves an un-blocked paragraph alone', press('One', 1, 1, 'block-outdent').text, 'One');
+  check('BLOCK: only the caret\'s paragraph changes (the blank line ends it)', press('A\n\nB', 0, 0, 'block-indent').text, '>| A\n\nB');
+  check('BLOCK: a first-line tab goes INSIDE the block (after its tokens), and Outdent still finds it there', [press('>| One', 4, 4, 'indent').text, press('>| One', 4, 4, 'indent', 'outdent').text], ['>| \tOne', '>| One']);
+  check('BLOCK: the caret keeps the character it was on', (() => { const r = press('One', 2, 2, 'block-indent'); return r.text.slice(r.start - 1, r.start); })(), 'n');
+  const lead = (l) => readLead(l).tokens.map(t => `${t.kind}@${t.start}-${t.end}`);
+  check('LEAD: tabs, the block token, a bullet and a heading are read in order, with positions', lead('\t>| - # x'), ['tab@0-1', 'block@1-4', 'bullet@4-6', 'heading@6-8']);
+  check('LEAD: ordinary prose never parses as a block token - `>|x`, a mid-line `>| `, a lone `>|`, `|> `', ['>|x y', 'a >| b', '>|', '|> x', '>||', ' >| x'].map(l => lead(l)), [[], [], [], [], [], []]);
+  check('STRIP: Copy My Words removes structure in any order, block tokens included', stripMarkdownConventions('>| >| \tone\n- > two\n>< **three**\n# ~~four~~'), 'one\ntwo\nthree\nfour');
+  check('STRIP: "2 * 3 * 4" exports as it shows (the regex copy would have paired the stars); a real run is stripped', stripMarkdownConventions('2 * 3 * 4 and *real* and __u__'), '2 * 3 * 4 and real and u');
+  check('STRIP: heading text is text - only the mark goes', stripMarkdownConventions('## A - not a bullet'), 'A - not a bullet');
+  check('DECORATOR: `>| ` paints a block level with its marker collapsed, and two levels are two wrappers', [D('>| x').includes('md-block'), (D('>| >| x').match(/md-block/g) || []).length, visible(D('>| >| x'))], [true, 2, 'x']);
+  check('DECORATOR: block, tab and marks together still emit every character once', chars(D('>| >| \tx **y**')).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&') === '>| >| \tx **y**', true);
+
+  // ---- THE TAB KEY, as a state machine ----
+  const K = (o) => ({ code: o.key === '1' ? 'Digit1' : `Key${(o.key || '').toUpperCase()}`, repeat: false, shiftKey: false, ctrlKey: false, metaKey: false, altKey: false, isComposing: false, ...o });
+  const tab = (t, o = {}) => K({ key: 'Tab', code: 'Tab', timeStamp: t, ...o });
+  const one = (t, o = {}) => K({ key: '1', code: 'Digit1', timeStamp: t, ...o });
+  const flat = (steps) => steps.map(x => x.acts.join('+') || '-').join(' ');
+  const play = (chord, evs) => evs.map(([kind, e]) => (kind === 'd' ? chord.keydown(e) : chord.keyup(e)));
+  {
+    const c = createTabChord();
+    const st = play(c, [['d', tab(0)], ['u', { key: 'Tab' }], ['d', tab(500)], ['u', { key: 'Tab' }], ['d', tab(900)], ['u', { key: 'Tab' }]]);
+    check('TABKEY: three taps are three `indent` acts - each applied on RELEASE, Tab itself never moves focus', [flat(st), st.every(x => x.preventDefault)], ['- indent - indent - indent', true]);
+  }
+  check('TABKEY: Shift+Tab is one `outdent` on release', flat(play(createTabChord(), [['d', tab(0, { shiftKey: true })], ['u', { key: 'Tab' }]])), '- outdent');
+  check('TABKEY: a HELD Tab auto-repeating is ONE press, one level (repeats are swallowed)', flat(play(createTabChord(), [['d', tab(0)], ['d', tab(500, { repeat: true })], ['d', tab(530, { repeat: true })], ['d', tab(560, { repeat: true })], ['u', { key: 'Tab' }]])), '- - - - indent');
+  check(`TABKEY: Tab held past ${CHORD_HOLD_MS} ms then 1 is a BLOCK indent, consumes the 1, and the release adds no Tab level`, (() => { const st = play(createTabChord(), [['d', tab(0)], ['d', one(400)], ['u', { key: 'Tab' }]]); return [flat(st), st[1].preventDefault]; })(), ['- block-indent -', true]);
+  check('TABKEY: one level per press of the 1 while Tab stays held; the 1 auto-repeating adds none', flat(play(createTabChord(), [['d', tab(0)], ['d', one(400)], ['d', one(700)], ['d', one(730, { repeat: true })], ['u', { key: 'Tab' }]])), '- block-indent block-indent - -');
+  check('TABKEY: Shift+Tab held + 1 is one block OUTDENT', flat(play(createTabChord(), [['d', tab(0, { shiftKey: true })], ['d', one(400, { shiftKey: true })], ['u', { key: 'Tab' }]])), '- block-outdent -');
+  check('TABKEY: a fast rollover (Tab then 1 inside the window) applies the Tab FIRST and leaves the 1 to be TYPED', (() => { const st = play(createTabChord(), [['d', tab(0)], ['d', one(60)], ['u', { key: 'Tab' }]]); return [flat(st), st[1].preventDefault]; })(), ['- indent -', false]);
+  check(`TABKEY: the threshold is exact - ${CHORD_HOLD_MS - 1} ms is rollover, ${CHORD_HOLD_MS} ms is a chord`, [flat(play(createTabChord(), [['d', tab(0)], ['d', one(CHORD_HOLD_MS - 1)]])), flat(play(createTabChord(), [['d', tab(0)], ['d', one(CHORD_HOLD_MS)]]))], ['- indent', '- block-indent']);
+  check('TABKEY: any other key after a Tab proves it was a tap - the Tab lands first, the key types', (() => { const st = play(createTabChord(), [['d', tab(0)], ['d', K({ key: 'a', timeStamp: 50 })]]); return [flat(st), st[1].preventDefault]; })(), ['- indent', false]);
+  check('TABKEY: where the chord may not act (Free Write on a written line) the held-Tab 1 is just TYPED, after the pending Tab', (() => { const st = play(createTabChord(() => false), [['d', tab(0)], ['d', one(400)], ['u', { key: 'Tab' }]]); return [flat(st), st[1].preventDefault]; })(), ['- indent -', false]);
+  check('TABKEY: Ctrl/Meta/Alt+Tab and an IME composition are left entirely alone', [play(createTabChord(), [['d', tab(0, { ctrlKey: true })]])[0], play(createTabChord(), [['d', tab(0, { isComposing: true })]])[0]], [{ preventDefault: false, acts: [] }, { preventDefault: false, acts: [] }]);
+  check('TABKEY: a modifier pressed while Tab is held does not count as "another key"', flat(play(createTabChord(), [['d', tab(0)], ['d', K({ key: 'Shift', code: 'ShiftLeft', timeStamp: 30 })], ['u', { key: 'Tab' }]])), '- - indent');
+
   return results;
 }
 
@@ -149,6 +191,12 @@ if (process.argv.includes('--mutants')) {
     ['READER: a three-star run is not both bold and italic', 'markRuns.ts', (s) => s.replace("if (n >= 1 && n <= 3) push(ch, i, n);", "if (n >= 1 && n <= 2) push(ch, i, n);")],
     ['READER: crossing runs are all kept', 'markRuns.ts', (s) => s.replace('if (!crosses) accepted.push(r);', 'accepted.push(r);')],
     ['READER: an empty pair (four stars) is text', 'markRuns.ts', (s) => s.replace('else if (n === 4) { push(ch, i, 2); push(ch, i + 2, 2); }', '')],
+    ['TABKEY: the hold threshold is not enforced (any 1 while Tab is down chords)', 'tabChord.ts', (s) => s.replace('e.timeStamp - at >= CHORD_HOLD_MS', 'true')],
+    ['TABKEY: auto-repeat is not swallowed', 'tabChord.ts', (s) => s.replace('if (down) return { preventDefault: true, acts: [] };', '')],
+    ['TABKEY: a rollover 1 does not apply the Tab first', 'tabChord.ts', (s) => s.replace("if (pending) { pending = false; return { preventDefault: false, acts: [tabAct()] }; }", '')],
+    ['LEAD: the block token is not read', 'markRuns.ts', (s) => s.replace("  { kind: 'block', text: BLOCK_TOKEN },\n", '').replace("  { kind: 'block', text: BLOCK_TOKEN },\r\n", '')],
+    ['STRIP: Copy My Words does not go through the shared reader', 'draftFormat.ts', (s) => s.replace("return text.split('\\n').map(stripLine).join('\\n');", "return text.split('\\n').map(l => l.replace(/\\*([^*]+)\\*/g, '$1')).join('\\n');")],
+    ['BLOCK: outdent removes every level', 'draftFormat.ts', (s) => s.replace('return at === -1 ? tokens : [...tokens.slice(0, at), ...tokens.slice(at + 1)];', 'return tokens.filter(t => t !== BLOCK_TOKEN);')],
     ['DECORATOR: marks are not nested (a run inside another is dropped)', 'draftDecoration.ts', (s) => s.replace(/kids\.push\(within\[i \+ 1\]\);\s*i\+\+;/, 'i++;')],
   ];
   for (const [name, file, fn] of M) {
