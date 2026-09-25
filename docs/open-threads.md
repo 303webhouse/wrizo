@@ -22775,3 +22775,24 @@ writes until Fable’s byte review at offer.**
 
 **TOOLS’ 207 steps 1–3 (`76696cb`): recorded; step 4 next.** *(Reported by Fable; not merged — product code, a
 feature branch.)*
+
+## RECORDS — FIX’S FRESH-PAIR REQUEST ARRIVED WHILE A RUN IS LIVE ON A DIFFERENT SHA; NOT GRANTED — 2026-09-24 23:05 local (chat 1)
+
+**THE REQUEST (“→ CHAT 1”, from FIX):** a fresh pair on `item-writing-stack` @ `d4dc32efa77e02598c64582a74b5d91bc4a82f54`
+(both legs), “no grant is running”. **Verified: `d4dc32e` is the origin tip** (two commits past `16c7ce8`:
+`faeeb59` “Item 158 pair fixes: Tab effect re-homed above the early return … E3 Tab fence parked”, then
+`d4dc32e` “writing-r1/r2: emit the runner’s VERIFY verdict line”).
+
+**CHECKED BEFORE ACTING, AS THE RULE SAYS — AND IT CONTRADICTS “NO GRANT IS RUNNING”:** the grant file names
+FIX (the 02:25Z token, never cleared) and **a run IS LIVE:** `wrizo-suite-29204`, default leg, **`tree=faeeb59
+bundle=index-BbdX9JN0.js/596700b`, 96 files, 44/96 at 23:04 local (all green so far)**, with a live `msedge`
+harness browser (profile `ws-runtime-verify-40796`, created 22:59). A second suite directory, `-8320`, is a
+**parked leg refused at its pre-flight** (“wait for the quiet window”) — a run launched beside the live one.
+**It is on `faeeb59`, not on the SHA FIX asked me to grant** (`d4dc32e` differs by the verdict-line commit).
+
+**NOT GRANTED, and NOTHING KILLED.** Rewriting the file now would change the token under a live run and
+make its remaining files refuse — destroying a stamping run; and it is not this desk’s run to end. **FIX
+must say whether run `-29204` is its own and intended.** If it is FIX’s superseded run on the older SHA, FIX
+stops ITS OWN driver; **then, on FIX’s box-free line, this desk clears and writes the grant naming
+`d4dc32e`, both legs.** If it finishes clean on `faeeb59`, it is still not the SHA to stamp — the verdict-line
+commit is in `d4dc32e` only.
