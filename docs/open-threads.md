@@ -22759,3 +22759,19 @@ then the item83f park and the verdict lines), then a fresh pair. FIX diagnoses; 
 stays granted to FIX** (it must run the next pair); if FIX reports the box free, it passes to TOOLS’ 195.
 **NOT CHECKED by me:** why `PageEditor.tsx` acquired a hook below `:649` (which of r1/r2/158), or whether the
 newer tip changed any of it — the diagnosis is my reading of the guard’s own detail lines, not a bisect.
+
+## RECORDS — FABLE CONFIRMS THE STACK-PAIR READ; users.proofing’S SHAPE APPROVED; 207 STEPS 1–3 — 2026-09-24 night (chat 1)
+
+**FABLE: my read of FIX’s pair is right, and so is holding Batch Seven.** **Dispositions sent to FIX:** the
+hooks-order defect is fixed at its source (commit named); item83f’s Tab check is PARKED as superseded by
+158; writing-r1/r2 emit the runner’s verdict line; **then a fresh pair on a SHA FIX NAMES TO THIS DESK
+FIRST** (which closes the gap where the grant named `e2624fe` and the run was `16c7ce8`). None of those
+commits is on this desk’s ledger yet.
+
+**RULED (Fable) — 204 part 2’s `users.proofing` SHAPE (PW, `3531243`): APPROVED** — convergence (A), a
+per-key merge on both sides, `mergeRemote` only; **tombstones compact at 180 days;** the proofing mirror
+sits inside `resetLocalData`’s logout sweep. **Nick’s schema word (“1. Yes”, recorded above) covers it; nothing
+writes until Fable’s byte review at offer.**
+
+**TOOLS’ 207 steps 1–3 (`76696cb`): recorded; step 4 next.** *(Reported by Fable; not merged — product code, a
+feature branch.)*
