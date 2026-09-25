@@ -23025,3 +23025,42 @@ the same act as Tab; no new control** (his minimal-interface law).
 comment indents “one leading tab on every line of the paragraph”, i.e. the WHOLE-PARAGRAPH look (B), not the
 first-line look he has now chosen (A). **So this ruling changes what a live Tab does.** *(From the source I pasted
 to Fable; I have not re-checked it against the running app.)*
+
+## NICK’S TWO-DEVICE CHECK (BATCHES SIX + SEVEN); HIS B-I-U BUG REPORT; ITEMS 210, 211 REGISTERED — 2026-09-25 (chat 1)
+
+**NICK’S TWO-DEVICE CHECK (Batches Six + Seven), verbatim as relayed:**
+
+> “I opened it on my phone app with a horizontal screen, and the page was updated”
+
+**That discharges the two-device check owed since Batch Six** (his earlier “confirmed the sync worked” was
+Batch Five’s). *(A phone app in landscape, the page updated — one collection, one direction as he described it.)*
+
+**NICK’S BUG REPORT, verbatim as relayed** (with a Draft screenshot; **Fable’s description of it:** title bar
+“**TESTING** THE *DATABASE* SYNC”, markers showing around TESTING with the caret inside it):
+
+> “my test page revealed more bugs with the B-I-U features. The title bar is still showing
+> the asterisks, and the asterisks on the page return with right-clicking or other kinds of
+> clicking around on the page”
+
+**REGISTERED (Fable), owner FIX, BOTH RIDING WITH 206:**
+- **ITEM 210 — EVERY DERIVED TITLE AND EXCERPT STRIPS MARKS through the one reader** (`markRuns.ts`): the title
+  bar, lists, board cards, tabs, export.
+- **ITEM 211 — MARKERS NEVER SHOW ON THE PAGE, IN ANY MODE.** **Fable: “His report retires reveal-at-caret.”
+  S0 first; it may be large.**
+Registry: next free **212**.
+
+**A FLAG, mine: 211’s “retires reveal-at-caret” is FABLE’S READING of his words, not his words.** He said the
+asterisks “return with right-clicking or other kinds of clicking around”; reveal-at-caret is a deliberate,
+earlier design (markers shown at the caret so a writer can edit them — the screenshot’s markers-with-the-caret-
+inside is exactly that behaviour). **Two readings: (1) reveal-at-caret is the bug and goes — markers never show;
+(2) it is meant to show at the caret, and the bug is that it shows in the TITLE and re-appears on clicks that
+should not reveal it.** Fable has ruled for (1); **if Nick’s next word suggests he meant (2), this is where to
+look.** Removing the reveal also removes the only way to hand-edit a marker.
+
+**RULED (Fable), PW’s branch question:** PW rebuilds the 204 storage half on its own branch off `origin/main`
+(one subject, one branch); 163 and 138 separate the same way if they apply clean; **186’s base menu stays with
+Experiment 1** (its Cut/Copy rides the seams under re-derivation).
+
+**BOX, short uses after FIX’s turn (Fable):** PW’s **M7 (the wavy-underline measurement) alone** — it gates the
+grammar paint and does not need Experiment 1’s harness — and **TOOLS’ 207b probes.** Then 194, 161, INK, as
+queued. **The grant names FIX (r3 then 160) and is unchanged.**
