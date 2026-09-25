@@ -1,7 +1,7 @@
 import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon, deskTerm } from '../store/deskLexicon';
-import { firstLine } from '../store/entryText';
+import { firstLine, plainLines } from '../store/entryText';
 import { useSectionFold } from '../store/sectionFold';
 import {
   getJournalPages, getJournalEntries, inJournalView, flushNow,
@@ -117,9 +117,7 @@ function itemTitle(entry: JournalEntry): string {
   return firstLine(entry.text).slice(0, 60);
 }
 function itemExcerpt(entry: JournalEntry): string | undefined {
-  const body = entry.text.trim();
-  if (!body) return undefined;
-  const lines = body.split('\n').filter((l) => l.trim());
+  const lines = plainLines(entry.text);   // item 210: excerpts are plain text
   return lines.slice(1, 3).join(' ').slice(0, 140) || undefined;
 }
 function byRecent(a: JournalEntry, b: JournalEntry): number {
@@ -1115,9 +1113,8 @@ function boardCardItem(box: Box, currentEntryId: string): SurveyItem {
     return { id: box.id, title: itemTitle(entry), excerpt: itemExcerpt(entry), current: entry.id === currentEntryId };
   }
   if (box.kind === 'ink') return { id: box.id, title: 'A sketch' };
-  const text = (box.text ?? '').trim();
-  if (!text) return { id: box.id, title: 'Untitled' };
-  const lines = text.split('\n').filter((l) => l.trim());
+  const lines = plainLines(box.text ?? '');   // item 210: a card's title and excerpt are plain text
+  if (lines.length === 0) return { id: box.id, title: 'Untitled' };
   return { id: box.id, title: lines[0].slice(0, 60), excerpt: lines.slice(1, 3).join(' ').slice(0, 140) || undefined };
 }
 

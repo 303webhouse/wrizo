@@ -17,7 +17,7 @@ import { createRequire } from 'node:module';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SRC = join(here, '..', 'src');
-const FILES = ['draftFormat.ts', 'markRuns.ts', 'draftDecoration.ts', 'tabChord.ts'];
+const FILES = ['draftFormat.ts', 'markRuns.ts', 'draftDecoration.ts', 'tabChord.ts', 'entryText.ts'];
 const requireDesktop = createRequire(join(here, '..', 'package.json'));
 const esbuild = createRequire(requireDesktop.resolve('vite'))('esbuild');
 const tmp = join(tmpdir(), 'wrizo-format-proof');
@@ -36,7 +36,7 @@ async function load(tag, mutant) {
     }
     writeFileSync(join(dir, f), source);
   }
-  writeFileSync(join(dir, 'entry.ts'), "export * from './draftFormat'; export { readMarks } from './markRuns'; export { decorateMarkdownForCard } from './draftDecoration'; export { readLead, stripLine } from './markRuns'; export { createTabChord, CHORD_HOLD_MS } from './tabChord';");
+  writeFileSync(join(dir, 'entry.ts'), "export * from './draftFormat'; export { readMarks } from './markRuns'; export { decorateMarkdownForCard } from './draftDecoration'; export { readLead, stripLine } from './markRuns'; export { createTabChord, CHORD_HOLD_MS } from './tabChord'; export { firstLine, firstPlainLine, plainLines, boardName, substantialLines } from './entryText';");
   const outfile = join(dir, 'out.mjs');
   await esbuild.build({ entryPoints: [join(dir, 'entry.ts')], bundle: true, platform: 'node', format: 'esm', outfile, logLevel: 'silent' });
   return import(pathToFileURL(outfile).href + `?t=${Date.now()}`);
@@ -125,6 +125,17 @@ function run(mod) {
   check('FORMAT: ...and Bold on that same caret removes the empty pair', press('****', 2, 2, 'bold').text, '');
   check('FORMAT: ...and Italic again on `***|***` removes only the italic pair', press('****', 2, 2, 'italic', 'italic').text, '****');
 
+  // ---- ITEM 210: TITLES AND EXCERPTS ARE PLAIN TEXT (Nick: the title bar read "**TESTING** THE *DATABASE* SYNC") ----
+  const { firstLine, plainLines, boardName, substantialLines } = mod;
+  check('TITLES: Nick\'s own title - `**TESTING** THE *DATABASE* SYNC` - derives as plain words', firstLine('**TESTING** THE *DATABASE* SYNC'), 'TESTING THE DATABASE SYNC');
+  check('TITLES: every kind of markup goes - heading mark, block token, bullet, quote, centring, tabs, strike, underline, nested', ['# Big Title', '>| >| Indented', '- a bullet', '> quoted', '>< centred', '\t\ttabbed', '~~struck~~ text', '__under__ *and* ***both***'].map(firstLine), ['Big Title', 'Indented', 'a bullet', 'quoted', 'centred', 'tabbed', 'struck text', 'under and both']);
+  check('TITLES: a line that is only markup has nothing to read, so the NEXT line is the title (like a blank one)', [firstLine('****\n>| \nReal words'), firstLine('**  **\n\nSecond')], ['Real words', '**  **']);
+  check('TITLES: and a page that is only markup is "Untitled" - never a stray asterisk', [firstLine('****'), firstLine('>| '), firstLine('   \n\n')], ['Untitled', 'Untitled', 'Untitled']);
+  check('TITLES: what the page shows as text stays text - "2 * 3 * 4" and a lone underscore name are NOT mangled', [firstLine('2 * 3 * 4'), firstLine('the file_name'), firstLine('an __unclosed run')], ['2 * 3 * 4', 'the file_name', 'an __unclosed run']);
+  check('TITLES: a board\'s name is the same derivation', [boardName('**Plot** board\nbody', 'Untitled'), boardName('****', 'Untitled'), boardName(undefined, 'A sketch')], ['Plot board', 'Untitled', 'A sketch']);
+  check('EXCERPTS: the lines a card face and a survey read are plain, blank and markup-only lines skipped', plainLines('**Title**\n\n- first *point*\n****\n> a quote'), ['Title', 'first point', 'a quote']);
+  check('EXCERPTS: the post-sprint echo line is plain text too', substantialLines('**short**\nthis is a **long enough** line to echo back to the writer', 24), ['this is a long enough line to echo back to the writer']);
+
   // ---- STRIP ----
   check('STRIP: "Copy My Words" removes stacked prefixes in ANY order (bullet inside an indent, quote inside a bullet)', stripMarkdownConventions('\t- one\n- > two\n>< **three**'), 'one\ntwo\nthree');
   // ---- BLOCK INDENT, FIRST-LINE LEVELS, THE LINE READER (step 3, Nick's Tab ruling) ----
@@ -202,6 +213,9 @@ if (process.argv.includes('--mutants')) {
     ['LEAD: the block token is not read', 'markRuns.ts', (s) => s.replace("  { kind: 'block', text: BLOCK_TOKEN },\n", '').replace("  { kind: 'block', text: BLOCK_TOKEN },\r\n", '')],
     ['STRIP: Copy My Words does not go through the shared reader', 'draftFormat.ts', (s) => s.replace("return text.split('\\n').map(stripLine).join('\\n');", "return text.split('\\n').map(l => l.replace(/\\*([^*]+)\\*/g, '$1')).join('\\n');")],
     ['BLOCK: outdent removes every level', 'draftFormat.ts', (s) => s.replace('return at === -1 ? tokens : [...tokens.slice(0, at), ...tokens.slice(at + 1)];', 'return tokens.filter(t => t !== BLOCK_TOKEN);')],
+    ['TITLES: firstLine no longer goes through the reader', 'entryText.ts', (s) => s.replace('return firstPlainLine(text) || \'Untitled\';', "return (text.split('\\n').map(l => l.trim()).find(Boolean)) || 'Untitled';")],
+    ['TITLES: markup-only lines are not skipped', 'entryText.ts', (s) => s.replace("return text.split('\\n').map(l => stripLine(l.trimStart()).trim()).filter(Boolean);", "return text.split('\\n').map(l => stripLine(l.trimStart()).trim());")],
+    ['TITLES: the board name keeps its own copy', 'entryText.ts', (s) => s.replace("const first = firstPlainLine(text ?? '');", "const first = (text ?? '').split('\\n').map(l => l.trim()).find(Boolean);")],
     ['DECORATOR: marks are not nested (a run inside another is dropped)', 'draftDecoration.ts', (s) => s.replace(/kids\.push\(within\[i \+ 1\]\);\s*i\+\+;/, 'i++;')],
   ];
   for (const [name, file, fn] of M) {

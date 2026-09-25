@@ -2,11 +2,26 @@
 // sprint surface is a <textarea>, not a rich-text editor — there is no Tiptap in
 // this codebase), so "extraction" is just line/whitespace work. Shared so J2 can
 // reuse firstLine() for routed-scene/project titles. No dependency.
+import { stripLine } from './markRuns';
 
-// The opening non-empty line — entries have no titles, so this derives a label.
+// ITEM 210 - TITLES AND EXCERPTS ARE PLAIN TEXT. A page's title, a card's excerpt, an echoed line and an exported heading are all
+// DERIVED from `entry.text`, and that text carries the writer's own markup (`**bold**`, `# Heading`, `- bullet`, `>| ` block).
+// Nick's screenshot: the title bar read "**TESTING** THE *DATABASE* SYNC". Every derivation now reads a line through the ONE reader
+// (store/markRuns.ts stripLine: structure tokens out, and only the emphasis markers the page actually paints), so a title is what the
+// page shows, and "2 * 3 * 4" is still "2 * 3 * 4". A line that is nothing but markup (`****`, `>| `) has nothing to read and is
+// skipped, like a blank one.
+export function plainLines(text: string): string[] {
+  return text.split('\n').map(l => stripLine(l.trimStart()).trim()).filter(Boolean);
+}
+
+/** The first line with anything to read, as plain text; undefined when there is none. */
+export function firstPlainLine(text: string): string | undefined {
+  return plainLines(text)[0];
+}
+
+// The opening non-empty line — entries have no titles, so this derives a label. (Plain text since item 210.)
 export function firstLine(text: string): string {
-  const line = text.split('\n').map(l => l.trim()).find(Boolean);
-  return line || 'Untitled';
+  return firstPlainLine(text) || 'Untitled';
 }
 
 // ITEM 133 — THE BOARD'S NAME, derived in ONE place.
@@ -41,7 +56,7 @@ export function firstLine(text: string): string {
 // which characters the name is. What each surface CALLS a nameless board stays
 // exactly as it was until one rule replaces all of them at once.
 export function boardName(text: string | undefined, fallback: string): string {
-  const first = (text ?? '').split('\n').map(l => l.trim()).find(Boolean);
+  const first = firstPlainLine(text ?? '');
   return first ? first.slice(0, 60) : fallback;
 }
 
@@ -62,7 +77,7 @@ export function matchesQuery(text: string, query: string): boolean {
 // Lines worth reflecting back (J7) — skip empty / very-short fragments so the
 // post-sprint echo never surfaces an awkward scrap.
 export function substantialLines(text: string, minChars = 24): string[] {
-  return text.split('\n').map(l => l.trim()).filter(l => l.length >= minChars);
+  return plainLines(text).filter(l => l.length >= minChars);   // item 210: the echoed line is shown to the writer, so it is plain text
 }
 
 // Pick one of the writer's own lines to echo at the finish moment, or null when

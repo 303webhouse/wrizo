@@ -1,6 +1,7 @@
 import { getJournalEntries, getBoardsPinning, pinPageToBoard, getSystemKind } from '../store/persistence';
 import { useLexicon } from '../store/themeLexicon';
 import type { JournalEntry } from '../types';
+import { firstLine } from '../store/entryText';
 
 // B2 S5 — the Board's own Add flow gains "Existing page…" beside FX6's New
 // page card: a quiet picker that PINS a chosen page onto this board —
@@ -14,7 +15,7 @@ import type { JournalEntry } from '../types';
 function itemTitle(e: JournalEntry): string {
   const hasInk = (e.strokes?.length ?? 0) > 0;
   if (!e.text.trim()) return hasInk ? 'A sketch' : 'Untitled';
-  return e.text.trim().split('\n')[0].slice(0, 60);
+  return firstLine(e.text).slice(0, 60);   // item 210: plain text, through the one reader
 }
 
 export function ExistingPagePicker({ boardId, onClose }: { boardId: string; onClose: () => void }) {
