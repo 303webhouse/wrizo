@@ -14,7 +14,8 @@ import { trustedDispatch, hittablePointBy } from '../trusted-point.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
-const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
+// Printed AS THEY LAND: a driver that dies mid-run must not take the checks already made with it.
+const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass, detail }); console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? `  [${String(detail).slice(0, 260)}]` : ''}`); };
 const NINE = ['Crimson Pro', 'Lora', 'EB Garamond', 'Source Serif 4', 'Times New Roman', 'Figtree', 'Atkinson Hyperlegible', 'Arial', 'Courier Prime'];
 // S0's predicted characters per line vs Crimson Pro (docs/menus/item207-s0-measure.md §2), for the real-engine re-measure.
 const S0_CPL_VS_TODAY = { 'Crimson Pro': 1, Lora: 0.85, 'EB Garamond': 1.05, 'Source Serif 4': 0.84, 'Times New Roman': 0.99, Figtree: 0.90, 'Atkinson Hyperlegible': 0.91, Arial: 0.90, 'Courier Prime': 0.65 };
@@ -70,11 +71,14 @@ const openPage = async (app, { id, mode, w = 1280, h = 900, settings = null, tex
   await sleep(500);
 };
 const openDrawer = async (app) => {
-  if (!(await app.evalJs("!!document.querySelector('.wz-type')"))) await press(app, "document.querySelector('.wz-sliver-grip')", 'the tool drawer grip');
+  // A CLOSED drawer keeps its body mounted (aria-hidden, pointer-events none), so the control's presence is not "open":
+  // read the panel's own state, and press the grip only when it is shut.
+  if ((await app.evalJs("(document.querySelector('.wz-sliver-panel') || {}).dataset && document.querySelector('.wz-sliver-panel').dataset.open")) !== 'true') await press(app, "document.querySelector('.wz-sliver-grip')", 'the tool drawer grip');
   await sleep(500);
 };
 
 await withHarness(async (app) => {
+ try {
   // ==== 1 · THE SHAPE OF THE CONTROL ON EACH SURFACE (his law, made assertable) ====================================
   await openPage(app, { id: 'i207-fw', mode: 'journal' });
   await openDrawer(app);
@@ -129,7 +133,7 @@ await withHarness(async (app) => {
   const r12 = await entryRow(app, 'i207-untouched');
   ok('SIZE: choosing wrote pageSettings.size = 12 (points, not a step index) and NO face key', r12 && r12.pageSettings && r12.pageSettings.size === 12 && !('face' in r12.pageSettings), JSON.stringify(r12 && r12.pageSettings));
   await typeInto(app, '24');
-  ok('SIZE: a typed 24 is taken', (await numAt()) === '24' && (await entryRow(app, 'i207-untouched')).pageSettings.size === 24, String(await numAt()));
+  ok('SIZE: a typed 24 is taken', (await numAt()) === '24' && ((await entryRow(app, 'i207-untouched')) || {}).pageSettings?.size === 24, String(await numAt()));
   await press(app, "document.querySelectorAll('.wz-type-step')[1]", 'the `+` button (from 24)');
   await sleep(250);
   ok('SIZE: `+` from a typed 24 goes to 26 (the two-point band)', (await numAt()) === '26', String(await numAt()));
@@ -153,7 +157,7 @@ await withHarness(async (app) => {
   ok('FACE: Lora\'s CSS was fetched ON CHOOSE — the family is now loaded in the document', await app.evalJs(`document.fonts.check('16px "Lora Variable"')`), '');
   await pickFace(app, 'Times New Roman');
   const tnr = await entryRow(app, 'i207-untouched');
-  ok('FACE: Times New Roman is stored as source "named" with fallback Tinos (installed-first; never shipped)', tnr && tnr.pageSettings.face.name === 'Times New Roman' && tnr.pageSettings.face.source === 'named' && tnr.pageSettings.face.fallback === 'Tinos', JSON.stringify(tnr && tnr.pageSettings.face));
+  ok('FACE: Times New Roman is stored as source "named" with fallback Tinos (installed-first; never shipped)', tnr && tnr.pageSettings && tnr.pageSettings.face && tnr.pageSettings.face.name === 'Times New Roman' && tnr.pageSettings.face.source === 'named' && tnr.pageSettings.face.fallback === 'Tinos', JSON.stringify(tnr && tnr.pageSettings));
   ok('FACE: the editor\'s font-family names Times New Roman first, Tinos next', /^"?'?Times New Roman/.test(String(await familyOfEditor(app)).replace(/^["']/, '')) && /Tinos/.test(String(await familyOfEditor(app))), String(await familyOfEditor(app)));
 
   // ==== 5 · RENDERING IN EVERY MODE (206: rendering is not styling) =================================================
@@ -177,14 +181,16 @@ await withHarness(async (app) => {
       await pickFace(app, name);
       const r = await rectOf(app, '.mode-pagecol'); rects.push(r);
       if (JSON.stringify(r) !== JSON.stringify(before)) rectStable = false;
-      // characters on the first line: walk the first text node's offsets until the client rect's top changes.
+      // characters per line, AVERAGED over the first 8 lines: a single first line moves by a whole word (about 6 characters,
+      // ~8%), which is wider than the tolerance this check asserts.
       cpl[name] = await app.evalJs(`(() => {
         const ed = document.querySelector('.forward-only-editor'); if (!ed) return null;
         const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n = null, t; while ((t = w.nextNode())) { if ((t.textContent || '').length > 120) { n = t; break; } }
         if (!n) return null;
-        const rg = document.createRange(); rg.setStart(n, 0); rg.setEnd(n, 1); const top0 = rg.getBoundingClientRect().top;
-        for (let i = 1; i < n.textContent.length; i++) { rg.setStart(n, i); rg.setEnd(n, i + 1); if (Math.abs(rg.getBoundingClientRect().top - top0) > 4) return i; }
-        return null;
+        const rg = document.createRange(); rg.setStart(n, 0); rg.setEnd(n, 1); let top = rg.getBoundingClientRect().top; const starts = [0];
+        for (let i = 1; i < n.textContent.length && starts.length < 9; i++) { rg.setStart(n, i); rg.setEnd(n, i + 1); const tp = rg.getBoundingClientRect().top; if (Math.abs(tp - top) > 4) { starts.push(i); top = tp; } }
+        if (starts.length < 9) return null;
+        return Math.round((starts[8] / 8) * 10) / 10;
       })()`);
     }
     ok(`PAGE PRIMACY @${w}: the paper's rect is byte-identical across all nine faces`, rectStable, JSON.stringify({ before, differing: rects.filter((r) => JSON.stringify(r) !== JSON.stringify(before)).slice(0, 2) }));
@@ -224,17 +230,18 @@ await withHarness(async (app) => {
     const popupFs = await app.evalJs("parseFloat(getComputedStyle(document.querySelector('.board-popup-editor')).fontSize)");
     ok('CARD: the popup editor renders 16 x 12/11 px after one `+`', Math.abs(popupFs - 16 * (12 / 11)) < 0.06, String(popupFs));
     await press(app, "document.querySelector('.board-popup-done')", 'Close the card popup');
-    await sleep(500);
-    const row = await entryRow(app, 'i207-board');
+    // The board editor saves on its own debounce and flushNow does not save the editor: poll the STORED row for the write.
+    let row = null;
+    for (let i = 0; i < 30; i += 1) { await sleep(200); row = await entryRow(app, 'i207-board'); if (row && (row.boxes || []).some((b) => b.fontSize === 12)) break; }
     const c1 = row && (row.boxes || []).find((b) => b.id === 'c1'); const c2 = row && (row.boxes || []).find((b) => b.id === 'c2');
     ok('CARD: fontSize 12 and the face were written to THAT Box only — the other card carries neither key', c1 && c1.fontSize === 12 && c1.fontFace && c1.fontFace.name === 'Atkinson Hyperlegible' && c2 && !('fontSize' in c2) && !('fontFace' in c2), JSON.stringify({ c1: c1 && [c1.fontSize, c1.fontFace && c1.fontFace.name], c2: c2 && [c2.fontSize, c2.fontFace] }));
     const after = await app.evalJs(`(() => { const els = [...document.querySelectorAll('.board-box .board-text')]; return els.map(e => [parseFloat(getComputedStyle(e).fontSize), getComputedStyle(e).fontFamily, e.getAttribute('style')]); })()`);
     ok('CARD: on the canvas the styled card renders at 15 x 12/11 in Atkinson Hyperlegible, and the other card is unchanged (15px, no style attribute)',
       Array.isArray(after) && after.length >= 2 && Math.abs(after[0][0] - 15 * (12 / 11)) < 0.06 && /Atkinson/.test(after[0][1]) && after[1][0] === 15 && !after[1][2], JSON.stringify(after));
   } else ok('DRIVER: a text card is reachable by a real pointer', false, JSON.stringify(cardPt));
+ } catch (e) { ok('DRIVER: the scenario ran to its end without a thrown error', false, String(e && e.stack || e).slice(0, 400)); }
 });
 
-for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 260)}]` : ''}`);
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   // Parks nothing: 207a adds a control and falsifies no earlier assertion. (Item 83's "the sought door is never offered" and
