@@ -35,9 +35,12 @@ const INDEX_TEXT = readFileSync(join(serverSrc, 'index.ts'), 'utf8').replace(/\r
 const SSYNC_TEXT = readFileSync(join(serverSrc, 'sync.ts'), 'utf8').replace(/\r\n/g, '\n');
 const CSYNC_TEXT = readFileSync(join(desktopSrc, 'store/sync.ts'), 'utf8').replace(/\r\n/g, '\n');
 const NOTICE_TEXT = readFileSync(join(desktopSrc, 'store/syncNotice.ts'), 'utf8').replace(/\r\n/g, '\n');
+let LEX_CUR = null;
 const LEX_TEXT = readFileSync(join(desktopSrc, 'store/deskLexicon.ts'), 'utf8').replace(/\r\n/g, '\n');
 const MB = 1024 * 1024;
-const LIMIT = 5 * MB;
+const LIMIT = 16 * MB;   // /api/sync's body limit since P3 (every other route keeps 5 MiB)
+const FAT = 20 * MB;     // a lone record that cannot fit even in the larger limit
+const OTHER_LIMIT = 5 * MB;
 
 const requireDesktop = createRequire(join(repo, 'apps/desktop/package.json'));
 const esbuild = createRequire(requireDesktop.resolve('vite'))('esbuild');
@@ -67,8 +70,8 @@ async function startRun({ index, ssync, csync, cnotice } = {}) {
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, 'env.cjs'), `exports.env = { isProd: false, port: ${port}, databaseUrl: '' };`);
   writeFileSync(join(dir, 'migrate.cjs'), `exports.runMigrations = async () => {};`);
-  writeFileSync(join(dir, 'session.cjs'), `exports.sessionMiddleware = (req, _res, next) => { req.session = { userId: 'u1' }; next(); };`);
-  writeFileSync(join(dir, 'auth.cjs'), `const express = require(${JSON.stringify(expressPath)}); exports.authRouter = express.Router(); exports.requireAuth = (_q, _s, next) => next();`);
+  writeFileSync(join(dir, 'session.cjs'), `exports.sessionMiddleware = (req, _res, next) => { req.session = req.headers['x-anon'] ? {} : { userId: 'u1' }; next(); };`);
+  writeFileSync(join(dir, 'auth.cjs'), `const express = require(${JSON.stringify(expressPath)}); exports.authRouter = express.Router(); exports.requireAuth = (req, res, next) => (req.session && req.session.userId ? next() : res.status(401).json({ error: 'Not authenticated' }));`);
   writeFileSync(join(dir, 'tutor.cjs'), `const express = require(${JSON.stringify(expressPath)}); exports.tutorRouter = express.Router();`);
   writeFileSync(join(dir, 'db.cjs'), `globalThis.__db = globalThis.__db || {};
 const st = globalThis.__db[${port}] = { upserts: [], pulls: 0 };
@@ -153,11 +156,11 @@ async function scenarios(run) {
   // ---- K1 THE WEDGE: a 6 MB page and a tiny page written after it ---------------------------------------------------
   await guard('CLAIM', 'K1', async () => {
     const w = await newWorld(run); const C = w.C;
-    mkPage(C, 'FAT', 'A heavy ink page', 6 * MB);
+    mkPage(C, 'FAT', 'A heavy ink page', FAT);
     mkPage(C, 'TINY', 'a small note written after', 0);
     await C.syncOnce();
     const onServer = run.db.upserts.slice();
-    log('CLAIM', 'K1a: THE WEDGE IS GONE - a tiny page written AFTER a 6 MB page reaches the server (it used to be refused with it)', onServer.includes('TINY') && !onServer.includes('FAT'), JSON.stringify({ upserts: onServer, dirty: dirtyIds(C) }));
+    log('CLAIM', 'K1a: THE WEDGE IS GONE - a tiny page written AFTER a 20 MB page reaches the server (it used to be refused with it)', onServer.includes('TINY') && !onServer.includes('FAT'), JSON.stringify({ upserts: onServer, dirty: dirtyIds(C) }));
     log('CLAIM', 'K1b: the fat page is NEVER SENT - not one request in the whole sync carries more than the limit (the client knows it cannot fit and does not upload it to be refused)', maxBody(w) < LIMIT, JSON.stringify({ maxBodyBytes: maxBody(w), requests: w.log.length }));
     const tl = C.getTooLargeRecords();
     log('CLAIM', 'K1c: it is NAMED - listed as too large, by its own title, with its size (P5)', tl.length === 1 && tl[0].id === 'FAT' && tl[0].title === 'A heavy ink page' && tl[0].bytes > LIMIT, JSON.stringify(tl));
@@ -170,7 +173,7 @@ async function scenarios(run) {
   // ---- K5 SELF-HEALING: the writer erases most of the strokes ---------------------------------------------------------
   await guard('CLAIM', 'K5', async () => {
     const w = await newWorld(run); const C = w.C;
-    mkPage(C, 'FAT', 'A heavy ink page', 6 * MB);
+    mkPage(C, 'FAT', 'A heavy ink page', FAT);
     await C.syncOnce();
     const before = C.getTooLargeRecords().length;
     const e = C.getJournalEntry('FAT');
@@ -228,7 +231,7 @@ async function scenarios(run) {
   // ---- K7 OFFLINE IS STILL OFFLINE, AND THE NAME SURVIVES ---------------------------------------------------------------
   await guard('CLAIM', 'K7', async () => {
     const w = await newWorld(run); const C = w.C;
-    mkPage(C, 'FAT', 'A heavy ink page', 6 * MB);
+    mkPage(C, 'FAT', 'A heavy ink page', FAT);
     mkPage(C, 'TINY', 'a small note', 0);
     w.hook = () => 'throw';
     await C.syncOnce();
@@ -263,14 +266,18 @@ async function scenarios(run) {
   await guard('CLAIM', 'K10', async () => {
     const w = await newWorld(run); const C = w.C;
     // The templates are read FROM THE SHIPPED LEXICON SOURCE, so it is the real words that are tested.
-    const tpl = (key) => { const m = new RegExp(`${key}: '([^']*)'`).exec(LEX_TEXT); if (!m) throw new Error('no lexicon default for ' + key); return new Function(`return '${m[1]}';`)(); };
+    const tpl = (key) => { const m = new RegExp(`${key}: '([^']*)'`).exec(LEX_CUR || LEX_TEXT); if (!m) throw new Error('no lexicon default for ' + key); return new Function(`return '${m[1]}';`)(); };
     const t = (k) => tpl(k);
     const one = [{ id: 'FAT', title: 'A heavy ink page', bytes: 6e6 }];
     const two = [...one, { id: 'F2', title: 'Another', bytes: 7e6 }];
     const a = C.syncNoticeText('synced', one, t);
     const b = C.syncNoticeText('synced', two, t);
     log('CLAIM', 'K10a: one page too large is NAMED in the writer\'s words and told it is safe: \u201CA heavy ink page\u201D is too large to sync \u2014 it is saved on this device', a === '\u201CA heavy ink page\u201D is too large to sync \u2014 it is saved on this device', JSON.stringify(a));
-    log('CLAIM', 'K10b: several are counted, not listed: "2 pages are too large to sync \u2014 they are saved on this device"', b === '2 pages are too large to sync \u2014 they are saved on this device', JSON.stringify(b));
+    log('CLAIM', 'K10b: several are counted, not listed, and the noun is NEUTRAL (what cannot travel may be a project or a drawer, not only a page): "2 items are too large to sync \u2014 they are saved on this device"', b === '2 items are too large to sync \u2014 they are saved on this device', JSON.stringify(b));
+    // The title is whatever the writer typed - including the sequences String.replace treats specially in a replacement STRING.
+    const nasty = "Q&A $& $1 $' $$ {n} {title}";
+    const c = C.syncNoticeText('synced', [{ id: 'X', title: nasty, bytes: 6e6 }], t);
+    log('CLAIM', 'K10d: a title containing $&, $1, $\' and $$ (and the template\'s own {n} / {title}) comes out LITERALLY - the notice uses a replacer function, not a replacement string', c === `\u201C${nasty}\u201D is too large to sync \u2014 it is saved on this device`, JSON.stringify(c));
     log('CLAIM', 'K10c: it is NOT called offline (the network is fine); and while the network really is down, offline still wins - it is the broader truth', !/offline/i.test(a) && C.syncNoticeText('offline', one, t) === 'Offline \u2014 saved here' && C.syncNoticeText('synced', [], t) === null, JSON.stringify({ tooLarge: a, offline: C.syncNoticeText('offline', one, t), none: C.syncNoticeText('synced', [], t) }));
   });
 
@@ -280,12 +287,42 @@ async function scenarios(run) {
     globalThis.document = { visibilityState: 'visible', addEventListener() {}, removeEventListener() {} };
     try {
       const w = await newWorld(run); const C = w.C;
-      mkPage(C, 'FAT', 'A heavy ink page', 6 * MB);
+      mkPage(C, 'FAT', 'A heavy ink page', FAT);
       await C.syncOnce();
       const before = C.getTooLargeRecords().length;
       C.stopSync();                                 // what logout does
       log('CLAIM', 'K11: logging out clears the too-large list - one account\'s page names must not appear for the next', before === 1 && C.getTooLargeRecords().length === 0, JSON.stringify({ before, after: C.getTooLargeRecords().length }));
     } finally { delete globalThis.window; delete globalThis.document; }
+  });
+
+  // ---- K4c THE OTHER ROUTES KEEP 5 MiB ----------------------------------------------------------------------------------
+  await guard('CLAIM', 'K4c', async () => {
+    const big = JSON.stringify({ pageDefaults: null }) + ' '.repeat(OTHER_LIMIT + 4096);
+    const r = await realFetch(`${run.base}/api/page-defaults`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: big });
+    const j = await r.json().catch(() => null);
+    log('CLAIM', 'K4c (P3): every OTHER route still refuses over 5 MiB (its limit is unchanged) and its 413 says so - the larger limit is /api/sync\'s alone', r.status === 413 && j && j.limitBytes === OTHER_LIMIT, JSON.stringify({ status: r.status, body: j }));
+  });
+
+  // ---- K12 A LONE RECORD OVER 5 MiB NOW CARRIES (P3) ----------------------------------------------------------------------
+  await guard('CLAIM', 'K12', async () => {
+    const w = await newWorld(run); const C = w.C;
+    mkPage(C, 'MID', 'a dense ink page, over 5 MiB', 6 * MB);
+    mkPage(C, 'TINY', 'a small note', 0);
+    await C.syncOnce();
+    log('CLAIM', 'K12 (P3): a LONE record over the old 5 MiB limit (6 MB - a dense handwritten page and a bit) now reaches the server, is not listed as too large, and the device ends clean', run.db.upserts.includes('MID') && run.db.upserts.includes('TINY') && C.getTooLargeRecords().length === 0 && dirtyIds(C).length === 0 && maxBody(w) > OTHER_LIMIT && maxBody(w) < LIMIT, JSON.stringify({ upserts: run.db.upserts, listed: C.getTooLargeRecords().length, dirty: dirtyIds(C), maxBodyBytes: maxBody(w) }));
+  });
+
+  // ---- K13 AUTHENTICATE FIRST, THEN READ THE BODY (P3) -----------------------------------------------------------------------
+  await guard('CLAIM', 'K13', async () => {
+    const post = async (bytes) => {
+      const b = JSON.stringify({ lastSyncAt: null, push: {} }) + ' '.repeat(bytes);
+      const r = await realFetch(`${run.base}/api/sync`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-anon': '1' }, body: b });
+      return r.status;
+    };
+    const small = await post(1024);
+    const mid = await post(6 * MB);
+    const huge = await post(LIMIT + 1 * MB);
+    log('CLAIM', 'K13 (P3): an ANONYMOUS request is answered 401 at EVERY size - including one over the sync limit, where the body-first order would have said 413. The server does not buffer a byte of a body it has not authenticated', small === 401 && mid === 401 && huge === 401, JSON.stringify({ '1KB': small, '6MB': mid, [`${(LIMIT / MB + 1)}MB`]: huge }));
   });
   console.error = realConsoleError;
 }
@@ -293,9 +330,11 @@ async function scenarios(run) {
 // ---------------------------------------------------------------------------------------------------------------------
 function census(log2) {
   const has = (t, re) => re.test(t);
-  log2('CENSUS', 'N1 (P1): the server error handler honours 413 and answers with limitBytes; it is no longer one blanket 500', has(INDEX_TEXT, /status === 413 \|\| e\.type === 'entity\.too\.large'/) && has(INDEX_TEXT, /res\.status\(413\)\.json\(\{ error: 'payload too large', limitBytes: BODY_LIMIT_BYTES \}\)/) && has(INDEX_TEXT, /const BODY_LIMIT_BYTES = 5 \* 1024 \* 1024;/), '');
+  log2('CENSUS', 'N1 (P1): the server error handler honours 413 and answers with limitBytes; it is no longer one blanket 500', has(INDEX_TEXT, /status === 413 \|\| e\.type === 'entity\.too\.large'/) && has(INDEX_TEXT, /limitBytes: req\.path === '\/api\/sync' \? SYNC_BODY_LIMIT_BYTES : BODY_LIMIT_BYTES/) && has(INDEX_TEXT, /const BODY_LIMIT_BYTES = 5 \* 1024 \* 1024;/), '');
   log2('CENSUS', 'N2 (P2): /sync honours `pull: false` (a push-only request runs no pulls)', has(SSYNC_TEXT, /const wantPull = req\.body\?\.pull !== false;/) && has(SSYNC_TEXT, /pull: wantPull \? \{/), '');
-  log2('CENSUS', 'N3 (P2): the client mirrors the limit (5 MiB), chunks at 1 MiB, and marks non-final chunks `pull: false`', has(CSYNC_TEXT, /const REQUEST_LIMIT_BYTES = 5 \* 1024 \* 1024;/) && has(CSYNC_TEXT, /const CHUNK_TARGET_BYTES = 1024 \* 1024;/) && has(CSYNC_TEXT, /pull: false/), '');
+  log2('CENSUS', 'N3 (P2): the client mirrors the limit (5 MiB), chunks at 1 MiB, and marks non-final chunks `pull: false`', has(CSYNC_TEXT, /const REQUEST_LIMIT_BYTES = 16 \* 1024 \* 1024;/) && has(CSYNC_TEXT, /const CHUNK_TARGET_BYTES = 1024 \* 1024;/) && has(CSYNC_TEXT, /pull: false/), '');
+  const srvLimit = /const SYNC_BODY_LIMIT_BYTES = (\d+) \* 1024 \* 1024;/.exec(INDEX_TEXT), cliLimit = /const REQUEST_LIMIT_BYTES = (\d+) \* 1024 \* 1024;/.exec(CSYNC_TEXT);
+  log2('CENSUS', 'N5 (P3): the client\'s mirror of the limit EQUALS the server\'s /api/sync limit (a mirror that drifts sends bodies the server refuses, or hides records it would take)', !!srvLimit && !!cliLimit && srvLimit[1] === cliLimit[1] && has(INDEX_TEXT, /app\.use\('\/api\/sync', requireAuth, express\.json\(\{ limit: SYNC_BODY_LIMIT \}\)\)/), JSON.stringify({ server: srvLimit && srvLimit[1], client: cliLimit && cliLimit[1] }));
   log2('CENSUS', 'N4 (P5): a record over the effective limit is never packed into a request', has(CSYNC_TEXT, /const sendable = items\.filter\(i => !isTooLarge\(i\)\);/), '');
 }
 
@@ -303,6 +342,10 @@ function census(log2) {
 function mutantList() {
   const out = [];
   const must = (t, a, b) => { if (!t.includes(a)) throw new Error(`MUTANT DID NOT LAND: ${a.slice(0, 70)}`); return t.replace(a, b); };
+  out.push({ name: 'P3: the larger limit is applied to EVERY route (not /api/sync alone)', o: { index: (t) => must(t, 'const smallJson = express.json({ limit: BODY_LIMIT });', 'const smallJson = express.json({ limit: SYNC_BODY_LIMIT });') } });
+  out.push({ name: 'P3: the sync body is read BEFORE authentication (anonymous requests make the server buffer)', o: { index: (t) => must(t, "app.use('/api/sync', requireAuth, express.json({ limit: SYNC_BODY_LIMIT }));", "app.use('/api/sync', express.json({ limit: SYNC_BODY_LIMIT }), requireAuth);") } });
+  out.push({ name: 'P3: the server limit is not raised (still 5 MiB on /api/sync)', o: { index: (t) => must(t, "const SYNC_BODY_LIMIT = '16mb';", "const SYNC_BODY_LIMIT = '5mb';") } });
+  out.push({ name: 'P3: the client keeps mirroring 5 MiB (a lone 6 MB record is called too large and never sent)', o: { csync: (t) => must(t, 'const REQUEST_LIMIT_BYTES = 16 * 1024 * 1024;', 'const REQUEST_LIMIT_BYTES = 5 * 1024 * 1024;') } });
   out.push({ name: 'P1: the server error handler stops honouring 413 (back to a blanket 500)', o: { index: (t) => must(t, "if (status === 413 || e.type === 'entity.too.large') {", 'if (false) {') } });
   out.push({ name: 'P1: malformed JSON stops being a 400', o: { index: (t) => must(t, "if (typeof status === 'number' && status >= 400 && status < 500 && e.expose) {", 'if (false) {') } });
   out.push({ name: 'P2: the server ignores `pull: false` (every chunk pulls)', o: { ssync: (t) => must(t, "const wantPull = req.body?.pull !== false;", 'const wantPull = true;') } });
@@ -313,6 +356,8 @@ function mutantList() {
   out.push({ name: 'P5: a 413 the client did not predict is treated as offline (the old wedge)', o: { csync: (t) => must(must(t, 'if (e instanceof SyncHttpError && e.status === 413) { await onRefused(batch); return; }', ''), 'if (!(e instanceof SyncHttpError && e.status === 413)) throw e;', 'throw e;') } });
   out.push({ name: 'P5: a lower limit is not learned (the second big page is sent to be refused too)', o: { csync: (t) => must(t, 'if (batch.length === 1 && isTooLarge(batch[0])) { quarantined.push(batch[0]); return; }', '') } });
   out.push({ name: 'P5: a refused lone record is not remembered as too large (it is dropped from the list)', o: { csync: (t) => must(t, "setTooLarge([...big, ...quarantined].map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));", 'setTooLarge(big.map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));') } });
+  out.push({ name: 'P5: the notice splices the title with a replacement STRING (a title of "$&" is mangled)', o: { cnotice: (t) => must(t, "() => tooLarge[0].title", "tooLarge[0].title") } });
+  out.push({ name: 'P5: the plural names them "pages" again (a project or drawer is not a page)', o: { lex: (t) => must(t, '{n} items are too large', '{n} pages are too large') } });
   out.push({ name: 'P5: the notice calls a too-large page "Offline" again (the old lie)', o: { cnotice: (t) => must(t, 'if (tooLarge.length === 0) return null;', "if (tooLarge.length === 0) return null;\n  return 'Offline \u2014 saved here';") } });
   out.push({ name: 'P5: logout no longer clears the too-large list', o: { csync: (t) => must(t, "  learnedLimitBytes = Number.POSITIVE_INFINITY;\n  setTooLarge([]);\n  setStatus('pending');", "  learnedLimitBytes = Number.POSITIVE_INFINITY;\n  setStatus('pending');") } });
   out.push({ name: 'P5: the too-large list is never set (the writer is never told)', o: { csync: (t) => must(must(t, "setTooLarge(big.map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));\n    const quarantined", "const quarantined"), "setTooLarge([...big, ...quarantined].map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));", '') } });
@@ -321,6 +366,7 @@ function mutantList() {
 
 async function runOnce(opts) {
   results.length = 0;
+  LEX_CUR = opts && opts.lex ? opts.lex(LEX_TEXT) : null;
   const run = await startRun(opts);
   await scenarios(run);
   census((g, n, p, d) => log(g, n, p, d));
