@@ -18,6 +18,7 @@ import type { Box } from '../types';
 import { getCurrentUser } from '../store/currentUser';
 import { requestLogout } from '../store/logoutRequest';
 import { useTheme, setTheme, type ThemeId } from '../store/theme';
+import { useThemePrefs, setThemePrefs } from '../store/themePrefs';
 import { FullscreenToggle, SyncIndicator } from './ChromeControls';
 import { PageFace, type PageFaceSubject } from './PageFace';
 import { PlacesPanel } from './PlacesPanel';
@@ -1059,14 +1060,16 @@ function CascadeSettingsPanel({ navigate }: { navigate: NavigateFunction }) {
 }
 
 // ---------------------------------------------------------------------------
-// Change Theme — the writer's AVAILABLE themes only (S3's own words);
-// future themes are ABSENT, not grayed. `themeOpts` below IS the full
-// available list — there is no third entry to hide.
+// Change Theme — the writer's AVAILABLE themes only. Future territories
+// (Nomad, Volant) stay absent, not grayed. Narrative order: Plateau,
+// Machina, Flux. Cast is Machina's own temperament and renders only
+// while Machina is the current theme.
 // ---------------------------------------------------------------------------
-const THEME_OPTS: [ThemeId, string][] = [['plateau', 'Plateau'], ['flux', 'Flux']];
+const THEME_OPTS: [ThemeId, string][] = [['plateau', 'Plateau'], ['machina', 'Machina'], ['flux', 'Flux']];
 
 function CascadeThemePanel() {
   const theme = useTheme();
+  const prefs = useThemePrefs();
   return (
     <div className="wz-cascade-panel-body wz-cascade-theme">
       {THEME_OPTS.map(([id, label]) => (
@@ -1080,6 +1083,22 @@ function CascadeThemePanel() {
           {label}
         </button>
       ))}
+      {theme === 'machina' && (
+        <div className="wz-cascade-theme-cast" role="group" aria-label="Cast">
+          <div className="wz-cascade-cast-label">Cast</div>
+          {(['cool', 'neutral'] as const).map(cast => (
+            <button
+              key={cast}
+              type="button"
+              className={`wz-cascade-action${prefs.cast === cast ? ' active' : ''}`}
+              aria-pressed={prefs.cast === cast}
+              onClick={() => setThemePrefs({ cast })}
+            >
+              {cast === 'cool' ? 'Cool' : 'Neutral'}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

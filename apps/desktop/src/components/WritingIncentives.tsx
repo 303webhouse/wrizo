@@ -13,6 +13,12 @@ import { createJitteredScheduler } from '../store/effectsScheduler';
 const SPARK_COUNT = 14;
 const SPARK_ANGLES = Array.from({ length: SPARK_COUNT }, (_, i) => (360 / SPARK_COUNT) * i);
 
+// Machina foundations §10 — eight hairline ticks, −90° to +90° in even
+// steps, 20ms stagger. Fixed, never random. Renders only while Machina
+// is celebrating; Plateau and Flux are untouched.
+const MACHINA_TICK_COUNT = 8;
+const MACHINA_TICKS = Array.from({ length: MACHINA_TICK_COUNT }, (_, i) => -90 + (180 / (MACHINA_TICK_COUNT - 1)) * i);
+
 // Shared incentive-layer pieces (glow + progress bar + typewriter toggle) used
 // by both ModeStage (Free write/Draft/Format) and JournalEntry (the ink-capable
 // Journal route) so the two writing surfaces the app actually has stop
@@ -123,6 +129,7 @@ export function ProgressBar({ frac, celebrating, label, metricLabel, hidden, rig
   // DOM cost on Plateau (sparks never render) or when not celebrating.
   const theme = useTheme();
   const fluxCelebrate = theme === 'flux' && celebrating;
+  const machinaCelebrate = theme === 'machina' && celebrating;
   return (
     <div className="mode-progress">
       {!hidden && (
@@ -138,6 +145,20 @@ export function ProgressBar({ frac, celebrating, label, metricLabel, hidden, rig
                     key={i}
                     className={`mode-pfill-spark${i % 3 === 0 ? ' lime' : ''}`}
                     style={{ ['--spark-angle' as CSSProperties & string]: `${deg}deg` } as CSSProperties}
+                  />
+                ))}
+              </span>
+            )}
+            {machinaCelebrate && (
+              <span className="mode-pfill-sparks" aria-hidden="true">
+                {MACHINA_TICKS.map((deg, i) => (
+                  <span
+                    key={i}
+                    className="mode-pfill-tick"
+                    style={{
+                      ['--spark-angle' as CSSProperties & string]: `${deg}deg`,
+                      animationDelay: `${i * 20}ms`,
+                    } as CSSProperties}
                   />
                 ))}
               </span>

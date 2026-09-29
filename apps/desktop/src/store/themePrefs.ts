@@ -16,15 +16,20 @@ import { useEffect, useState } from 'react';
 export type Voice = 'serif' | 'sans';
 export type PageTone = 'dark' | 'light';
 export type Fade = 'on' | 'off';
+// Machina-scoped temperament (foundations §3). Persisted with the other
+// prefs so it survives a theme switch, and meaningful only under
+// [data-theme='machina'] — other themes' CSS never reads data-cast.
+export type Cast = 'cool' | 'neutral';
 
 export interface ThemePrefs {
   voice: Voice;
   page: PageTone;
   fade: Fade;
+  cast: Cast;
 }
 
 const KEY = 'wrizo-theme-prefs';
-const DEFAULTS: ThemePrefs = { voice: 'serif', page: 'light', fade: 'on' };
+const DEFAULTS: ThemePrefs = { voice: 'serif', page: 'light', fade: 'on', cast: 'cool' };
 
 // Fable's A2 (TH1 review, folded in TH2) — a raw localStorage read is
 // untrusted input (hand-edited, a stale shape from a future version, or
@@ -36,7 +41,8 @@ function sanitize(parsed: Partial<Record<keyof ThemePrefs, unknown>>): ThemePref
   const voice: Voice = parsed.voice === 'serif' || parsed.voice === 'sans' ? parsed.voice : DEFAULTS.voice;
   const page: PageTone = parsed.page === 'dark' || parsed.page === 'light' ? parsed.page : DEFAULTS.page;
   const fade: Fade = parsed.fade === 'on' || parsed.fade === 'off' ? parsed.fade : DEFAULTS.fade;
-  return { voice, page, fade };
+  const cast: Cast = parsed.cast === 'cool' || parsed.cast === 'neutral' ? parsed.cast : DEFAULTS.cast;
+  return { voice, page, fade, cast };
 }
 
 function load(): ThemePrefs {
@@ -59,6 +65,7 @@ function applyAttributes(prefs: ThemePrefs) {
   root.setAttribute('data-voice', prefs.voice);
   root.setAttribute('data-page', prefs.page);
   root.setAttribute('data-fade', prefs.fade);
+  root.setAttribute('data-cast', prefs.cast);
 }
 
 export function getThemePrefs(): ThemePrefs {

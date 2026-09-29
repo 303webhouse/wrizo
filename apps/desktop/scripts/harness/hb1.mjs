@@ -161,10 +161,15 @@ await withHarness(async (app) => {
     future: [...document.querySelectorAll('.hb1-territory-future')].map(b => b.textContent),
   })`);
   ok('S3→S4: crossing 100 words mounts the unlock ceremony', at100.ceremony === true, JSON.stringify(at100));
-  ok('R1: the ceremony offers Plateau and Flux (Flux stands in for Machina, for now)',
-    JSON.stringify(at100.offered) === JSON.stringify(['Plateau', 'Flux']), JSON.stringify(at100));
-  ok('R1: Machina, Nomad, Volant are shown grayed as future territories, in that order',
-    JSON.stringify(at100.future) === JSON.stringify(['Machina', 'Nomad', 'Volant']), JSON.stringify(at100));
+  // ORIGINAL (Machina unarmed; Flux stood in):
+  //   ok('R1: the ceremony offers Plateau and Flux (Flux stands in for Machina, for now)',
+  //     JSON.stringify(at100.offered) === JSON.stringify(['Plateau', 'Flux']), JSON.stringify(at100));
+  //   ok('R1: Machina, Nomad, Volant are shown grayed as future territories, in that order',
+  //     JSON.stringify(at100.future) === JSON.stringify(['Machina', 'Nomad', 'Volant']), JSON.stringify(at100));
+  ok('R1 successor: the ceremony offers Plateau, Machina, Flux in narrative order',
+    JSON.stringify(at100.offered) === JSON.stringify(['Plateau', 'Machina', 'Flux']), JSON.stringify(at100));
+  ok('R1 successor: Nomad and Volant stay grayed, in that order',
+    JSON.stringify(at100.future) === JSON.stringify(['Nomad', 'Volant']), JSON.stringify(at100));
 
   // ==========================================================================
   // hb1.1 F-1 (Fable review) — the ceremony's focus containment. aria-modal

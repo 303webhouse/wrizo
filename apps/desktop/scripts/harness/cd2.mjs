@@ -334,15 +334,17 @@ await withHarness(async (app) => {
     settingsPanel.title === 'Settings' && settingsPanel.hasFullscreen, JSON.stringify(settingsPanel));
 
   // ==========================================================================
-  // S3 — Themes: EXACTLY the available themes (Plateau, Flux), no
-  // others; current marked olive (--accent-rest, not brass); one click
-  // switches and persists.
+  // S3 — Themes: EXACTLY the available themes, no others; current marked
+  // by the theme's own active edge; one click switches and persists.
+  // ORIGINAL (Machina unarmed):
+  //   ok('S3: the theme panel lists EXACTLY the available themes (Plateau, Flux) and no others',
+  //     JSON.stringify(themeList) === JSON.stringify(['Plateau', 'Flux']), JSON.stringify(themeList));
   // ==========================================================================
   await clickCategory(app, 'theme'); // Themes (Trash left for the foot; Themes is now index 6)
   await sleep(200);
   const themeList = await app.evalJs(`[...document.querySelectorAll('.wz-cascade-theme .wz-cascade-action')].map(b => b.textContent)`);
-  ok('S3: the theme panel lists EXACTLY the available themes (Plateau, Flux) and no others',
-    JSON.stringify(themeList) === JSON.stringify(['Plateau', 'Flux']), JSON.stringify(themeList));
+  ok('S3 successor: the theme panel lists Plateau, Machina, Flux and no others',
+    JSON.stringify(themeList) === JSON.stringify(['Plateau', 'Machina', 'Flux']), JSON.stringify(themeList));
   const activeBefore = await app.evalJs("document.querySelector('.wz-cascade-theme .wz-cascade-action.active')?.textContent");
   ok('S3: Plateau is marked current (olive) before any switch', activeBefore === 'Plateau', String(activeBefore));
   await app.evalJs("[...document.querySelectorAll('.wz-cascade-theme .wz-cascade-action')].find(b => b.textContent === 'Flux').click()");
