@@ -78,3 +78,20 @@ Lean APPROVED with conditions: probe first (`scripts/writing-hidden-marker-probe
 ## Consumers of store/markRuns.ts (keep stable)
 
 The PUB (Publish) arc reads marks only through `readLead`, `readMarks`, `stripLine` and `BLOCK_TOKEN`. Their names, signatures and token spans stay stable; any change is told to the PUB lane before it lands. Other consumers: draftFormat.ts (formatter), draftDecoration.ts (decorator), entryText.ts (titles/excerpts, item 210), stripMarkdownConventions (Copy My Words / .txt export), PW's Experiment 1 visible-raw map.
+
+## 211 probe, MEASURED (ef64554, box turn FIX 2026-09-30; `docs/evidence/item211/hidden-marker-probe-ef64554.log.txt`)
+
+Markers forced always-hidden by a probe-only stylesheet; everything else the shipped editor. `aa **bold** zz`:
+
+| # | Question | Measured | Verdict |
+|---|---|---|---|
+| P1 | Caret over a hidden `**` | ArrowRight 3→4→5, ArrowLeft 5→4→3: **two invisible stops** per marker | FAILS - caret must skip markers |
+| P2 | Typing at a styled word's end | raw 9 (inside) stores `**boldX**`, raw 11 (outside) `**bold**Y`; both look the same | NEEDS the left-char rule |
+| P3 | Backspace at a styled word's start | `aa *bold** zz` - **ate one star**, broke the pair | FAILS |
+| P4 | Delete at a styled word's end | `aa **bold* zz` - ate one star | FAILS |
+| P3b | Backspace on a one-letter styled word | `aa **** zz` - empty pair **left behind** | FAILS - pair must go with its last letter |
+| P5 | Copy | `" **bold** "` - **hidden markers ride the clipboard** | FAILS for plain-text paste targets |
+| P6 | Cut "bold" then paste | cut leaves `****`; paste inserts plain `bold` (style lost) | FAILS on both sides |
+| P7 | IME at a styled word's end | `**boldab**` - lands inside the pair (native caret was at raw 9) | OK here, but only by caret luck |
+
+So the current editor cannot keep markers hidden safely as it stands: 6 of the 8 fail, and the other 2 pass only by where the native caret happens to sit. The lean stands, with the probe as its evidence. Keep the contenteditable and raw text as the model, and own `keydown` (arrows, Backspace/Delete), `beforeinput` (insert at edges by the left-char rule), `copy`/`cut`/`paste` (visible text + a private raw payload for in-app paste), all through a visible-raw map from `readMarks`/`readLead`. IME composes natively and reconciles on commit. Behind a switch.

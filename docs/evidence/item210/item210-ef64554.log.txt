@@ -1,0 +1,15 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PASS  [the Desk] no derived label still carries the page's markup (no `**`, `*WORD*`, heading mark or block token as visible text)  [[]]
+PASS  [the Journal board] no derived label still carries the page's markup (no `**`, `*WORD*`, heading mark or block token as visible text)  [[]]
+PASS  [the Shelf board] no derived label still carries the page's markup (no `**`, `*WORD*`, heading mark or block token as visible text)  [[]]
+PASS  [the Spread] no derived label still carries the page's markup (no `**`, `*WORD*`, heading mark or block token as visible text)  [[]]
+PASS  [the Drawers page] no derived label still carries the page's markup (no `**`, `*WORD*`, heading mark or block token as visible text)  [[]]
+PASS  [the page, Draft, caret inside the bold word] the title bar / crumb / face read the plain words, and nothing outside the editor shows markup  [{"strayDraft":[],"bar":{"crumb":["In the Journal/TESTING THE DATABASE SYNC","In the Journal","/","TESTING THE DATABASE SYNC"],"face":[],"title":"Wrizo","hasEditorBold":true}}]
+PASS  [the page] the title is the WORDS: "TESTING THE DATABASE SYNC" appears in the chrome (a label was derived, not skipped)  [{"crumb":["In the Journal/TESTING THE DATABASE SYNC","In the Journal","/","TESTING THE DATABASE SYNC"],"face":[],"title":"Wrizo","hasEditorBold":true}]
+PASS  [the page, Free Write] no markup outside the editor  [[]]
+PASS  [the page, Revise] no markup outside the editor  [[]]
+PASS  [the page, a `# **Loose**` heading title] derived as "Loose page title"  [[]]
+PASS  [a board] its name and its card faces show no markup outside the decorated card bodies, and the name is "Plot board"  [{"sb":[],"name":true}]
+
+ITEM210 VERIFY: PASS (11 checks)
