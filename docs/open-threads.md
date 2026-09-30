@@ -23472,3 +23472,15 @@ Registry: next free **220**.
 the two edits Fable named (least-privilege `permissions:`, the Node version read from the same source
 production uses) is in it yet.** Advisory, `.github` + `docs/ci/README.md` only — **merges on verification
 once both land.**
+
+## TOOLS’ 207b BOX-FREE LINE; GRANT PASSES TO FIX’S item 210 + 211 PROBE AT ef64554 — 2026-09-30 (chat 1)
+
+**TOOLS’ BOX-FREE LINE, VERIFIED:** grant `tools-207b-probes-20260930` matched the file; **0
+`ws-runtime-verify` browsers, 0 `run-suite`/harness node processes.** **GRANT CLEARED.**
+
+**THE RESULT, from origin** (`item207b-device-fonts` @ `0eb1cfb`, not yet on this desk’s ledger in detail):
+“both S0 probes run (Electron needs no `main.ts` change, confirmed), `item207b.mjs` 20/20 both legs”.
+*(TOOLS’ own line carried no result; read from the branch.)*
+
+**GRANT PASSED: the file now names FIX for its item 210 + 211 probe, at `ef64554`** (verified still the
+origin tip of `item-writing-r3`). **Next after it: the Batch Eight pair.**
