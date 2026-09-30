@@ -23176,3 +23176,126 @@ Eight or ship on its own. **Nothing further is done here — no pair run, no mer
 it is already on `main`), no grant written for a build — until Fable or Nick says how this is to be treated.**
 **The standing box order (PW’s M7 → TOOLS’ 207b → INK’s revspell → …) and Batch Eight’s plan are UNCHANGED by
 this entry; they are what I return to once this is answered.**
+
+## THE CURSOR-PUSH INCIDENT, CLOSED: NICK’S SHIP WORD, TWO NEW LANES, HOUSE RULES ADDED TO AGENTS.md — 2026-09-30 (chat 1)
+
+**THE FIVE COMMITS ARE AUTHORIZED (Fable): Nick ran Cursor as a backup builder during the rate limit.**
+His word, verbatim, after seeing the window:
+
+> “Looks good. Let’s ship these changes.”
+
+**THE CURSOR LANE’S OFFER, recorded as written:** `aa11f58` supersedes `f1d8b01`, `ae39e4f`, `2aa01ed`,
+`782c642` (its own commit is a re-statement of all four: rail-foot and mode-tab sizing, Plan matched to the
+tabs in olive capitals, Text/Ink moved under Free Write on hover). **Display only; no schema; NOT deployed**
+(verified above — production still serves Batch Seven’s stamp). **Fable’s byte review of the product diff:
+display only, no write path.** **IT FOLDS INTO BATCH EIGHT; the batch pair is its suite** — no separate pair
+for it.
+
+**TWO NEW LANES, NAMED (Fable): CURSOR** (Nick’s backup builder) **and CLOUD** (Claude Code in the cloud; it
+wrote the Publish pass). **THE STRUCTURAL FIX: a “House rules for any lane” section is now in `AGENTS.md`**
+(committed this turn) — one subject one branch; never push or merge to `main`; no browser runs on the box
+without this desk’s grant; the ledger is this desk’s; Fable reviews; Nick’s ship word comes here.
+**CHECKED: no `CLAUDE.md` exists in this repo**, so nothing was added there.
+
+**CURSOR’S PR #1 (“Document cloud-agent setup caveats”, `cursor/dev-environment-setup-644d` @ `794c206`) —
+MERGED WITH the house-rules edit, as Fable allowed:** dev-env notes only (Node/Postgres/Vite setup on the
+cloud image), appended to `AGENTS.md`; no product file. **A second Cursor PR exists
+(`cursor/machina-theme-644d`, “Skin Machina onto the current desk”, DRAFT) — NOT named by Fable’s relay,
+NOT merged, flagged here so it isn’t lost.**
+
+## THE PUBLISH COMMITTEE PASS — §9’S SLATE, §11’S FIVE RULINGS, §12 VERBATIM — NICK’S WORDS OF 2026-09-30 (chat 1)
+
+**Source: `docs/publish/pub-committee-pass.md`, merged this turn** (`origin/claude/lucid-fermi-3s9hor` @
+`859985a`, docs-only — the file, plus two mockups `pub-mock-a-sheet.html` / `pub-mock-b-press.html`, by the
+CLOUD lane). Logged here per Fable’s instruction; quotes below are copied from the committed file, not
+retyped from a screenshot.
+
+**§9 — THE RATIFICATION SLATE, Nick verbatim, 2026-09-30:**
+
+> “1. Approved 2. Approved 3. Approved 4. Yes 5. Yes, they should stay in the Journal.”
+
+> “8. Yes 9. Yes 19. Yes 13. Yes 14. Sure 15. Yes”
+
+**“19. Yes” is READ as slate 10** (the open lines were 8, 9, 10, 13, 14, 15; 10 is the only one not otherwise
+answered) — **§9’s own words: “Recorded as that reading so Nick can correct it.” ONE READING WITH NICK,
+UNCONFIRMED: whether “19. Yes” does mean slate 10 (the Editions table in §2 as the starting set).** Fifteen
+lines ratified in all (build order engine→Press only, “B only”; the four named deps; PUB-A1–A5; the Publish
+profile on-device now; WordPress creds device-only; §11’s two follow-ups; §12’s three).
+
+**§11 — NICK’S FIVE RULINGS, verbatim, 2026-09-30 (his own heading: “for chat 1 to register”):**
+
+1. 
+> “Yeah, let's allow users to move a Page, Board, or Drawer to their Library (which will
+> also contain some preloaded writing knowledge as well as memory files the user would like
+> to add to train their AI Tutor.”
+
+2. 
+> “After 90 days, all unfiled Pages/Boards should be moved to the Shelf, which is where they
+> stay until/unless the User moves it somewhere else. Drawers stay where they are
+> until/unless the User moves them to the Library.”
+
+3. On whether writers can put work away by hand: 
+> “Answered above”. Yes, by the writer’s own move.
+
+4. On telling Fable the storage-full risk is urgent: 
+> “Yes.”
+
+5. On Journal pages and the Shelf: 
+> “Yes, they should stay in the Journal. But at some point, maybe the Journal should get
+> full, at which point it gets retired to the Library and listed in a pop-out menu when the
+> user hovers over the Journal icon? Open to suggestions from the Architects.”
+
+**Ruling 5’s first sentence is ratified (slate 12); the rest is his proposal, which §12 answers.** It amends
+ruling 2: **a full Journal volume becomes the one automatic move into the Library** — everything else moves
+there only by the writer’s own act.
+
+**§12 — THE JOURNAL FILLS, Nick’s proposal verbatim (repeated from §11 ruling 5), STATUS: RATIFIED
+2026-09-30** (slate 13–15: “Yes”, “Sure”, “Yes”):
+
+> “at some point, maybe the Journal should get full, at which point it gets retired to the
+> Library and listed in a pop-out menu when the user hovers over the Journal icon? Open to
+> suggestions from the Architects.”
+
+**The Architects’ answer (a 200-page volume; no counter ever shown; retiring at the page-201 edge with one
+quiet line; old volumes stay whole, searchable, linkable, publishable; a rail Volumes group everywhere, a
+short hover on mouse, a long-press on touch — the hover ruled “Yes”, slate 15) is §12 in full; not
+reproduced here — see the committed file.** **This is NOT a Publish ticket** — it belongs to whichever lane
+owns the Journal and the Library.
+
+## ITEMS 212–216 REGISTERED (PUB, DEVICE STORAGE, LIBRARY/SHELF/JOURNAL, TUTOR 20-MESSAGE FAILURE, CURSOR-PASS FOLLOW-UPS); THE BOX ORDER — 2026-09-30 (chat 1)
+
+**Registered in the order Fable gave, each taking the next free number:**
+
+**ITEM 212 — THE PUB ARC (Publish), independently shippable.** PUB0 through PUB12, plus **PUB-S**
+(`projects.publish` + `users.publish_profile`, synced — **a SCHEMA change, Nick’s word required**), per
+`docs/publish/pub-committee-pass.md` §7. **Its omission line for links uses the ruled words “Linked material
+isn’t included.”** (the same string ruled for Experiment 1, ledger above). **The `.wzo` file never carries a
+credential.** No owner yet; PUB1 needs FIX’s grant (after r3, for the door handler in `PageEditor.tsx` /
+`ScriptEditor.tsx`); PUB2 needs r3 merged (`markRuns.ts`) and 210; PUB3 needs 207’s faces; PUB5 needs 188.
+
+**ITEM 213 — DEVICE STORAGE, URGENT, owner TOOLS.** From `pub-committee-pass.md` §11: `persistence.ts:253`
+swallows a failed write silently, so a full localStorage (~5 MB) loses offline edits on reload, with no
+other copy for an account-less writer. Measured trigger: text at ~0.5–0.85M words, or **about one densely
+handwritten ink page** (item 203’s ~56 bytes/point). **Step 1: a failed save is never silent** (Fable’s own
+framing — say so honestly). **Step 2: the device store moves to IndexedDB.**
+
+**ITEM 214 — LIBRARY, SHELF AGING, JOURNAL VOLUMES.** Nick’s §11 rulings 1–2 (the Library container; the
+90-day Shelf age rule for unfiled Pages/Boards, Drawers exempt) and §12’s volumes design (200 pages, retire
+to the Library at the edge, the rail’s Volumes group, hover on mouse / long-press on touch). **PLAN DESK
+briefs. NOTHING BUILDS BEFORE (213)** — both `shelvedAt` and the volume boundary are schema/shape work that
+assumes storage is already safe.
+
+**ITEM 215 — THE TUTOR FAILS ON ANY CONVERSATION OVER 20 MESSAGES, on every send — owner INK.** Found in
+passing by the Publish pass (§11); filed separately because it is TUTOR-lane code
+(`apps/server/src/tutor.ts`, `components/Tutor.tsx`), not a Publish ticket.
+
+**ITEM 216 — CURSOR-PASS FOLLOW-UPS, owner TOOLS.** *(Named by Fable without detail; the detail is owed when
+TOOLS is assigned, or from Fable directly — not invented here.)*
+
+Registry: next free **217**.
+
+**BOX ORDER (Fable): PW’s M7 (short) → TOOLS’ 207b probes (short) → FIX’s item 210 + 211 probe (short) →
+THE BATCH EIGHT PAIR.** **GRANTED: lane PW, the M7 wavy-underline measurement** (no branch/SHA named yet;
+a short use, per its own precedent). **AT ASSEMBLY: FIX and TOOLS each merge `main` into `r3` and `195`
+FIRST** — Cursor’s `index.css` change overlaps both branches’ own `index.css` hunks. **Storage step 1 (213)
+joins Batch Eight IF OFFERED before the pair starts; otherwise it ships ALONE right after, on Nick’s word.**
