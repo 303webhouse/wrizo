@@ -23424,3 +23424,19 @@ file, not on `main`) — **does NOT unblock Experiment 1**, which still waits on
 **GRANT PASSED, per the standing box order: the file now names TOOLS for its 207b probes** (`item207b-
 device-fonts` @ `9c8ac53`: the Add-a-font door, the per-device library, the quiet substituted-mark). Order
 behind it unchanged: FIX’s item 210 + 211 probe (now at `ef64554`) → the Batch Eight pair.
+
+## 204 PART 2’S PAINT GATE CLEARED; A LIVE SPELLCHECK MISMATCH FOUND IN PASSING (INK’S FIX ALREADY WAITING) — 2026-09-30 (chat 1)
+
+**204 PART 2’S PAINT GATE: CLEARED (Fable).** PW’s M7 printed WAVY PAINTS (delta 18, control 0), and its own
+M7b proved the geometry — solid underline, 1 row; wavy, 5 rows with a 9-pixel wavelength. **Log:
+`docs/wrizo-alpha/exp1-m7-wavy-measurement-2026-09-30.log.txt`; landed `914e0b3` on `exp1-connect-text`.**
+**The squiggle is truly wavy, so it can never share pixels with F2’s forbidden straight link mark.**
+
+**A LIVE MISMATCH, FOUND IN PASSING (Fable):** nothing on `main` sets `spellcheck`, so **the browser’s red
+squiggles show in EVERY MODE today — against Nick’s ruling “only when the User is in Revise mode”**
+(recorded above, item 204). **INK’s `revise-spelling` @ `cbd4dc6`** (verified on origin: “the browser’s own
+spell-check on in Revise only”, item number pending from this desk at the time it was written) **is the fix,
+IN BATCH EIGHT.**
+
+**BOX:** on PW’s box-free line, cleared and moved on (recorded above) — TOOLS’ 207b probes → FIX’s short use
+(`ef64554`) → the Batch Eight pair. Unchanged by this entry.
