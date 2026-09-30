@@ -23202,3 +23202,62 @@ MERGED WITH the house-rules edit, as Fable allowed:** dev-env notes only (Node/P
 cloud image), appended to `AGENTS.md`; no product file. **A second Cursor PR exists
 (`cursor/machina-theme-644d`, “Skin Machina onto the current desk”, DRAFT) — NOT named by Fable’s relay,
 NOT merged, flagged here so it isn’t lost.**
+
+## THE PUBLISH COMMITTEE PASS — §9’S SLATE, §11’S FIVE RULINGS, §12 VERBATIM — NICK’S WORDS OF 2026-09-30 (chat 1)
+
+**Source: `docs/publish/pub-committee-pass.md`, merged this turn** (`origin/claude/lucid-fermi-3s9hor` @
+`859985a`, docs-only — the file, plus two mockups `pub-mock-a-sheet.html` / `pub-mock-b-press.html`, by the
+CLOUD lane). Logged here per Fable’s instruction; quotes below are copied from the committed file, not
+retyped from a screenshot.
+
+**§9 — THE RATIFICATION SLATE, Nick verbatim, 2026-09-30:**
+
+> “1. Approved 2. Approved 3. Approved 4. Yes 5. Yes, they should stay in the Journal.”
+
+> “8. Yes 9. Yes 19. Yes 13. Yes 14. Sure 15. Yes”
+
+**“19. Yes” is READ as slate 10** (the open lines were 8, 9, 10, 13, 14, 15; 10 is the only one not otherwise
+answered) — **§9’s own words: “Recorded as that reading so Nick can correct it.” ONE READING WITH NICK,
+UNCONFIRMED: whether “19. Yes” does mean slate 10 (the Editions table in §2 as the starting set).** Fifteen
+lines ratified in all (build order engine→Press only, “B only”; the four named deps; PUB-A1–A5; the Publish
+profile on-device now; WordPress creds device-only; §11’s two follow-ups; §12’s three).
+
+**§11 — NICK’S FIVE RULINGS, verbatim, 2026-09-30 (his own heading: “for chat 1 to register”):**
+
+1. 
+> “Yeah, let's allow users to move a Page, Board, or Drawer to their Library (which will
+> also contain some preloaded writing knowledge as well as memory files the user would like
+> to add to train their AI Tutor.”
+
+2. 
+> “After 90 days, all unfiled Pages/Boards should be moved to the Shelf, which is where they
+> stay until/unless the User moves it somewhere else. Drawers stay where they are
+> until/unless the User moves them to the Library.”
+
+3. On whether writers can put work away by hand: 
+> “Answered above”. Yes, by the writer’s own move.
+
+4. On telling Fable the storage-full risk is urgent: 
+> “Yes.”
+
+5. On Journal pages and the Shelf: 
+> “Yes, they should stay in the Journal. But at some point, maybe the Journal should get
+> full, at which point it gets retired to the Library and listed in a pop-out menu when the
+> user hovers over the Journal icon? Open to suggestions from the Architects.”
+
+**Ruling 5’s first sentence is ratified (slate 12); the rest is his proposal, which §12 answers.** It amends
+ruling 2: **a full Journal volume becomes the one automatic move into the Library** — everything else moves
+there only by the writer’s own act.
+
+**§12 — THE JOURNAL FILLS, Nick’s proposal verbatim (repeated from §11 ruling 5), STATUS: RATIFIED
+2026-09-30** (slate 13–15: “Yes”, “Sure”, “Yes”):
+
+> “at some point, maybe the Journal should get full, at which point it gets retired to the
+> Library and listed in a pop-out menu when the user hovers over the Journal icon? Open to
+> suggestions from the Architects.”
+
+**The Architects’ answer (a 200-page volume; no counter ever shown; retiring at the page-201 edge with one
+quiet line; old volumes stay whole, searchable, linkable, publishable; a rail Volumes group everywhere, a
+short hover on mouse, a long-press on touch — the hover ruled “Yes”, slate 15) is §12 in full; not
+reproduced here — see the committed file.** **This is NOT a Publish ticket** — it belongs to whichever lane
+owns the Journal and the Library.
