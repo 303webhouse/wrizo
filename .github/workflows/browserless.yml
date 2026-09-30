@@ -1,0 +1,89 @@
+# Advisory only. This workflow never deploys and never stands in for a
+# stamped pair on the Windows box. It is not a required status check.
+name: Browserless checks
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/browserless.yml'
+  pull_request:
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/browserless.yml'
+
+concurrency:
+  group: browserless-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  browserless:
+    name: Typecheck, web build, browserless scripts
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install from the lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck desktop
+        run: pnpm --filter @writer-studio/desktop exec tsc --noEmit -p tsconfig.json
+
+      - name: Typecheck server
+        run: pnpm --filter @writer-studio/server exec tsc --noEmit -p tsconfig.json
+
+      - name: Build the web app
+        run: pnpm --filter @writer-studio/desktop build:web
+
+      - name: Browserless scripts
+        working-directory: apps/desktop
+        run: |
+          set -u
+          fail=0
+          for s in \
+            scripts/harness/hooks-order.mjs \
+            scripts/harness/hooks-order-ast.mjs \
+            scripts/harness/seed-guard.mjs \
+            scripts/harness/tutor-mirror.mjs \
+            scripts/harness/item99.mjs \
+            scripts/harness/item135.mjs \
+            scripts/harness/item140.mjs \
+            scripts/harness/item141.mjs \
+            scripts/writing-format-proof.mjs \
+            scripts/writing-engine-audit.mjs \
+            scripts/sync-incremental-pull-proof.mjs \
+            scripts/sync-chunked-push-proof.mjs
+          do
+            echo "::group::$s"
+            if node "$s"; then
+              echo "PASS $s"
+            else
+              echo "FAIL $s"
+              fail=1
+            fi
+            echo "::endgroup::"
+          done
+          exit "$fail"
