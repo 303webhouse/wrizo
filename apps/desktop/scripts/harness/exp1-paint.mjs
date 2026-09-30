@@ -385,6 +385,218 @@ await withHarness(async (app) => {
       JSON.stringify({ wavyDelta, control: ctrl2, verdict: wavyDelta > 12 ? 'WAVY PAINTS' : 'WAVY DOES NOT PAINT' }));
   }
 
+  // M7b — AND IS THE WAVY ACTUALLY WAVY? THE DISCRIMINATING MEASUREMENT.
+  //
+  // ⚠ WHY M7 ALONE IS NOT ENOUGH, AND IT IS THE SAME DEFECT CLASS ITEM 138 JUST
+  // FOUND IN AB4. M7 declares "WAVY PAINTS" on `meanChannelDelta > 12` over the
+  // word's rect. But an engine that HONOURED `underline` and SILENTLY DROPPED
+  // `wavy` — painting a straight red rule — clears that bar just as easily: the
+  // pixels change either way. So M7's NAME asserts waviness while its CONDITION
+  // can only see "something red arrived". Measured at 19 against a threshold of
+  // 12, the margin is narrow enough that the question is not academic.
+  //
+  // THIS MATTERS TO 204 SPECIFICALLY. A grammar hint's whole legibility is that a
+  // squiggle is not an underline — F2 rules the straight underline out for a LINK,
+  // so a decoration that flattens to solid would put the grammar mark and the
+  // forbidden link mark in the same pixels. "A decoration paints" is not the
+  // finding TUTOR needs; "a WAVY decoration paints" is.
+  //
+  // So this measures the underline's GEOMETRY rather than its average colour.
+  // A solid rule occupies one y (plus antialiasing) at every column; a wave
+  // oscillates, so its reddish pixels span several rows AND their per-column
+  // position varies. Both probes are run on the same word, one after the other,
+  // and compared to each other — the comparison is the instrument, so neither
+  // probe has to be trusted on its own.
+  {
+    // Per-column geometry of the "reddish" pixels in a band around the word's
+    // baseline. The band reaches BELOW the rect, because an underline is drawn at
+    // the baseline and may sit outside the box the rect describes.
+    const redProfileOf = async (b64, rect) => {
+      const band = {
+        left: Math.round(rect.left),
+        top: Math.round(rect.top + Math.max(0, rect.height - 10)),
+        width: Math.round(rect.width),
+        height: 16,
+      };
+      const expr = `(async () => {
+        const img = new Image();
+        img.src = 'data:image/png;base64,' + ${JSON.stringify(b64)};
+        await img.decode();
+        const c = new OffscreenCanvas(img.width, img.height);
+        const g = c.getContext('2d');
+        g.drawImage(img, 0, 0);
+        const B = ${JSON.stringify(band)};
+        const d = g.getImageData(B.left, B.top, Math.max(1, B.width), Math.max(1, B.height)).data;
+        // "The probe's red", and the threshold is MEASURED, not guessed. The first
+        // version asked only for red dominance over 40, and its control went red: the
+        // band held 67 such pixels with NOTHING painted, scattered over 23 of 54
+        // columns and 9 rows. That is not a line, and it was not the native
+        // spellchecker either — switching spellcheck off changed the count by
+        // exactly zero. It is LCD SUBPIXEL ANTIALIASING on the glyph edges, which
+        // Chromium on Windows renders with colour fringes: a dark letter stem on
+        // light paper leaves reddish pixels down one side. The band overlaps the
+        // bottom 10px of the glyphs, so it was sampling those fringes.
+        //
+        // ⚠ AND TIGHTENING BRIGHTNESS WAS STILL NOT ENOUGH — the control named the
+        // real contaminant only once it printed the actual pixels. They were
+        // rgb(176,85,7), rgb(243,174,82), rgb(150,50,7): AMBER, the app's own
+        // accent under the text, not red at all. Red merely dominated, which is
+        // all the first two classifiers ever asked.
+        //
+        // THE SEPARATION THAT WORKS IS THE PROBE'S OWN SHAPE. rgb(220,40,40) has
+        // its green and blue channels EQUAL; amber has green far above blue (85 vs
+        // 7, 174 vs 82). So the test is red dominance over GREEN plus a small
+        // green-blue gap, which admits the probe and every antialiased shade of it
+        // while excluding the accent entirely. The lesson is the one this repo
+        // keeps relearning: when a matcher's population looks wrong, print the
+        // members before theorising about them.
+        //
+        // A fringe is a DARK red at low saturation; the probe is a BRIGHT red at
+        // high saturation. Requiring real brightness (r above 140) as well as
+        // dominance (>60 over both other channels) separates them, and the control
+        // below proves the separation rather than assuming it.
+        const cols = new Map();
+        const rows = new Set();
+        let count = 0;
+        for (let y = 0; y < B.height; y++) {
+          for (let x = 0; x < B.width; x++) {
+            const i = (y * B.width + x) * 4;
+            const r = d[i], gg = d[i + 1], b = d[i + 2];
+            if (r > 140 && r - gg > 60 && Math.abs(gg - b) < 30) {
+              count++;
+              rows.add(y);
+              if (!cols.has(x)) cols.set(x, []);
+              cols.get(x).push(y);
+            }
+          }
+        }
+        // DIAGNOSTIC: keep the first flagged pixels with their real colours, so a
+        // failing control can be IDENTIFIED instead of theorised about.
+        const samples = [];
+        for (let y = 0; y < B.height && samples.length < 14; y++) {
+          for (let x = 0; x < B.width && samples.length < 14; x++) {
+            const i2 = (y * B.width + x) * 4;
+            const r2 = d[i2], g2 = d[i2 + 1], b2 = d[i2 + 2];
+            if (r2 > 140 && r2 - g2 > 60 && Math.abs(g2 - b2) < 30) samples.push({ x, y, r: r2, g: g2, b: b2 });
+          }
+        }
+        const colMeanY = [...cols.entries()].map(([x, ys]) => ({ x, y: ys.reduce((a, v) => a + v, 0) / ys.length }));
+        const ys = colMeanY.map((c) => c.y);
+        const mean = ys.length ? ys.reduce((a, v) => a + v, 0) / ys.length : 0;
+        const variance = ys.length ? ys.reduce((a, v) => a + (v - mean) * (v - mean), 0) / ys.length : 0;
+        const allY = [...rows];
+        return {
+          count,
+          rows: allY.length,
+          yRange: allY.length ? Math.max(...allY) - Math.min(...allY) : 0,
+          columns: colMeanY.length,
+          colYVariance: Math.round(variance * 100) / 100,
+          samples,
+          band: B,
+        };
+      })()`;
+      return safe(app, expr);
+    };
+
+    const probeCss = async (id, decoration) => {
+      await safe(app, "CSS.highlights.clear(); document.getElementById('exp1-geom-probe-css')?.remove()");
+      await sleep(120);
+      await app.evalJs(`(() => {
+        const s = document.createElement('style');
+        s.id = 'exp1-geom-probe-css';
+        s.textContent = '::highlight(${id}) { text-decoration: ${decoration}; text-decoration-skip-ink: none; }';
+        document.head.appendChild(s);
+      })()`);
+      await safe(app, paintWord('nothing', id));
+      await sleep(250);
+      return app.screenshot();
+    };
+
+    const rect3 = await safe(app, wordRect('nothing'));
+    const have3 = rect3 && !rect3.__err && rect3.width > 0;
+    ok('M7b (premise): the probe word still has a rect to sample after M7 cleaned up',
+      !!have3, JSON.stringify(rect3));
+
+    if (have3) {
+      // BASELINE FIRST — with nothing painted, the band must hold almost no
+      // reddish pixels. Without this the two probes below could both be measuring
+      // something that was always there.
+      //
+      // ⚠ AND THE FIRST RUN OF THIS CONTROL WENT RED, WHICH IS THE FINDING.
+      // With nothing of ours painted, the band under "nothing" already held 67
+      // reddish pixels across 9 rows with a per-column y variance of 2.85 — the
+      // signature of a red wave, not of paper. The solid probe then measured
+      // rows=9 yRange=8 variance=2.56, i.e. INDISTINGUISHABLE from that baseline,
+      // so the comparison the check is built on was contaminated at both ends.
+      //
+      // THE SUSPECT, AND IT IS MEASURED HERE RATHER THAN ARGUED: nothing in
+      // apps/desktop/src sets `spellcheck` on the editor, so the contenteditable
+      // inherits Chromium's DEFAULT — spellcheck ON — and Edge paints its own
+      // RED WAVY UNDERLINE under any word it does not recognise. That is the same
+      // decoration, in the same colour, in the same place as the mark 204 wants.
+      // So the baseline is sampled TWICE, once as found and once with the native
+      // checker switched off, and the difference names the cause.
+      await safe(app, "CSS.highlights.clear(); document.getElementById('exp1-geom-probe-css')?.remove()");
+      await sleep(200);
+      const basePng = await app.screenshot();
+      const baseAsFound = await redProfileOf(basePng, rect3);
+
+      // Turn the native checker off and make the engine re-render the text, then
+      // look again. `spellcheck=false` alone does not always clear existing
+      // markers, so the editor is blurred as well.
+      await app.evalJs(`(() => {
+        const ed = document.querySelector('.forward-only-editor');
+        if (!ed) return false;
+        ed.setAttribute('spellcheck', 'false');
+        ed.blur();
+        return true;
+      })()`);
+      await sleep(450);
+      const basePng2 = await app.screenshot();
+      const base = await redProfileOf(basePng2, rect3);
+
+      ok(`M7b (THE DIAGNOSIS): the band's reddish pixels AS FOUND vs with native spellcheck OFF — as-found count=${baseAsFound?.count} rows=${baseAsFound?.rows} variance=${baseAsFound?.colYVariance}, spellcheck-off count=${base?.count} rows=${base?.rows} variance=${base?.colYVariance}. `
+        + `A large drop names Chromium's OWN red wavy spellcheck underline as the contaminant — which is a finding for 204 in its own right, because that is the same mark in the same colour in the same place.`,
+        baseAsFound && base && !baseAsFound.__err && !base.__err,
+        JSON.stringify({ asFound: baseAsFound, spellcheckOff: base }));
+
+      const solidPng = await probeCss('wz-exp1-solid-probe', 'underline solid rgb(220, 40, 40)');
+      const solid = await redProfileOf(solidPng, rect3);
+
+      const wavyPng = await probeCss('wz-exp1-wavy-probe2', 'underline wavy rgb(220, 40, 40)');
+      const wavy = await redProfileOf(wavyPng, rect3);
+
+      await safe(app, "CSS.highlights.clear(); document.getElementById('exp1-geom-probe-css')?.remove()");
+
+      ok('M7b (the control): with NOTHING painted the band holds essentially no reddish pixels — so both probes below are measuring paint that arrived, not paper',
+        base && !base.__err && base.count <= 2, JSON.stringify(base));
+
+      ok('M7b (premise): BOTH decorations paint — a comparison between two absences would prove nothing',
+        solid && wavy && !solid.__err && !wavy.__err && solid.count > 10 && wavy.count > 10,
+        JSON.stringify({ solidCount: solid?.count, wavyCount: wavy?.count }));
+
+      // THE DISCRIMINATOR. A straight rule sits at one y in every column: its
+      // per-column y variance is ~0 and it spans 1-3 rows with antialiasing. A
+      // wave oscillates: more rows, a wider y range, and a per-column variance
+      // that is unmistakably non-zero. If the engine flattened `wavy` to a solid
+      // rule, these two profiles are the SAME and this goes red — which is the
+      // finding, not a failure of the product.
+      const wavier = !!(solid && wavy && !solid.__err && !wavy.__err)
+        && wavy.yRange > solid.yRange
+        && wavy.colYVariance > solid.colYVariance + 0.25;
+
+      ok(`M7b ⛔ THE 204 GATE, SHARPENED — is the wavy decoration actually WAVY, or did the engine flatten it to a solid rule? `
+        + `solid: rows=${solid?.rows} yRange=${solid?.yRange} colYVariance=${solid?.colYVariance} | `
+        + `wavy: rows=${wavy?.rows} yRange=${wavy?.yRange} colYVariance=${wavy?.colYVariance}. `
+        + `A wave must span MORE rows than a rule and must OSCILLATE per column; equal profiles mean 'wavy' was silently dropped and 204's squiggle would render as the very underline F2 forbids for a link.`,
+        wavier,
+        JSON.stringify({
+          verdict: wavier ? 'WAVY IS GENUINELY WAVY' : 'WAVY FLATTENED TO SOLID — 204 needs a different mechanism',
+          solid, wavy,
+        }));
+    }
+  }
+
   // Leave the box as it was found.
   await app.evalJs("CSS.highlights.clear(); document.getElementById('exp1-paint-probe-css')?.remove()");
 });
