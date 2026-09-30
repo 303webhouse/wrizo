@@ -8,7 +8,7 @@ A red mark here is information. The workflow does not set branch protection, so 
 
 On this Linux machine, Node 22.14, dependencies already present, `main` at `a8dc256`: **26 seconds** wall clock. That was `pnpm install --frozen-lockfile` (no new downloads), both `tsc --noEmit` runs, `build:web` (1.3s), and these scripts. `item135.mjs` was found after that clock and added 0.1s. A cold GitHub runner spends most of its time on the install. Budget **3 minutes** a run.
 
-`engines.node` says `18.x`. The job uses Node 22, which is what this run was measured on. pnpm prints an unsupported-engine warning and continues.
+The job does not pin a Node number. `actions/setup-node` reads `node-version-file: package.json`, which is `engines.node`. Nixpacks uses that same field for production. Today it is `18.x`. `.nvmrc` is `18`, the same major. The workflow points at `package.json` so a later engines change moves CI and production together. The 26-second measurement above was taken on Node 22.14, before this pointer was set.
 
 ## Minutes
 
