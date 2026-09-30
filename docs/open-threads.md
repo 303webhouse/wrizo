@@ -23503,3 +23503,31 @@ alone.**
 unmerged). **The engine now lives on its OWN branch, `item204-engine` @ `dfb7ce4`** (“the 15.9 MB wasm DOES
 download once — measured on the wire, no server change”) — separating what was, last turn, two commits
 sitting on the storage branch. **Batch Eight still takes `13cd415`, unchanged.**
+
+## BATCH EIGHT ROSTER, NINE ITEMS BY FETCHED SHA — WAITING ON FIX’S BOX-FREE LINE BEFORE ASSEMBLY — 2026-09-30 (chat 1)
+
+**207b now RIDES Batch Eight, on top of 207 phase 1: `item207b-device-fonts` @ `6c09ea5`** (“fix
+`classifyGeneric` (Verdana/Tahoma misread as serif)”, its own check inside `item207b.mjs`) — **IN PLACE OF
+`5653417`.**
+
+**THE ROSTER, VERIFIED, by fetched SHA — each confirmed as the named branch’s tip:**
+- `item-writing-r3` @ `ef64554` (206 step 3, 209, 210)
+- `item207-fonts` + `item207b-device-fonts` @ `6c09ea5` (207 + 207b)
+- `item195-sliver-grip` @ `c59fc37` (“merge `origin/main`… merge-tree verified clean before assembly”)
+- `item204-engine` @ `13cd415` (204 storage half, rebuilt off `origin/main`)
+- `item-storage-full` @ `c648c56` (213 step 1)
+- `tutor20-live-defect` @ `d63853f` (215)
+- `revise-spelling` @ `cbd4dc6` (217)
+- `item163-location-in` @ `c9e07c2` (163)
+- `item138-pin-tall` @ `66baf6b` (138)
+**The Cursor display pass is already on `main`** (folded in at the incident-report merge, above). **IT IS A
+SCHEMA DEPLOY: `users.proofing`, one additive nullable column.**
+
+**ORDER (Fable): after FIX’s short use reports box free, assemble on a branch named `batch-eight`. Any
+conflict goes back to the item’s owner — this desk does not resolve product conflicts itself. Then grant the
+pair immediately and send Fable the assembly SHA: he reads the assembled diff WHILE the pair runs.**
+**BEFORE DEPLOY: a clean pair, his byte review, and Nick’s quoted word.**
+
+**CHECKED, NOT YET ACTED ON: FIX’s short use is STILL RUNNING** (1 `run-suite`/harness process, 16
+`ws-runtime-verify` browsers, grant unchanged — `fix-item210-211-probe-ef64554-20260930`). **Assembly
+waits for FIX’s box-free line.**
