@@ -58,12 +58,41 @@ const mk = (n) => Array.from({ length: n }, (_, i) => ({ id: `m${i}`, role: i % 
 for (const n of [1, 5, 19, 20, 21, 50, 100]) {
   const full = mk(n);
   const capped = capTutorHistory(full);
-  const expectLen = Math.min(n, TUTOR_MAX_MESSAGES);
+  // Reference, computed independently from the RULE in English (slice to the
+  // cap, then drop leading tutor turns) — not copied from tutorHistory.ts —
+  // so this is a real cross-check, not the implementation grading itself.
+  let refStart = n <= TUTOR_MAX_MESSAGES ? 0 : n - TUTOR_MAX_MESSAGES;
+  while (refStart < n && full[refStart].role === 'tutor') refStart++;
+  const expectLen = n - refStart;
   const orderKept = capped.every((m, i) => m.id === full[full.length - capped.length + i].id);
   const endsWithNewest = capped.length === 0 || capped[capped.length - 1].id === full[full.length - 1].id;
-  ok(`A${n}: n=${n} -> capped length ${expectLen}, order kept, ends with the newest (the writer's own just-sent message)`,
-    capped.length === expectLen && orderKept && endsWithNewest,
-    JSON.stringify({ n, cappedLen: capped.length, first: capped[0]?.id, last: capped[capped.length - 1]?.id }));
+  const opensOnWriter = capped.length === 0 || capped[0].role === 'writer';
+  ok(`A${n}: n=${n} -> capped length ${expectLen} (cap, then drop leading tutor turns), opens on a writer turn, order kept, ends with the newest`,
+    capped.length === expectLen && orderKept && endsWithNewest && opensOnWriter,
+    JSON.stringify({ n, expectLen, cappedLen: capped.length, first: capped[0]?.id, firstRole: capped[0]?.role, last: capped[capped.length - 1]?.id }));
+}
+
+// ---- THE AMENDMENT (Fable, 2026-09-30) — ALTERNATING THREADS, PROVEN -------
+// mk() above happens to open its 20-window on a tutor turn for SOME n (n=21)
+// and not others (n=50, n=100), depending on parity — not a deliberate
+// exercise of the amendment. mkAlt() below is built the way a real thread
+// actually is: alternating, and ALWAYS ending on the writer's own just-sent
+// message (Tutor.tsx appends it last, always) — which is exactly the shape
+// where a 20-message (even) window is GUARANTEED to open on a tutor turn,
+// every time, for every n tested. This is the shape the interim rule exists
+// for, proven directly, not as a side effect of another mock's parity.
+const mkAlt = (n) => Array.from({ length: n }, (_, i) => {
+  const fromEnd = n - 1 - i; // 0 at the newest (always 'writer')
+  return { id: `a${i}`, role: fromEnd % 2 === 0 ? 'writer' : 'tutor', text: `alt ${i}`, at: '' };
+});
+for (const n of [21, 50, 100]) {
+  const full = mkAlt(n);
+  ok(`A-alt-fixture${n}: the alternating mock itself ends on 'writer' (sanity on the fixture, not the product)`,
+    full[full.length - 1].role === 'writer', '');
+  const capped = capTutorHistory(full);
+  ok(`A-alt${n}: n=${n}, ALTERNATING — the first message SENT is the writer's, and the last is the new one (a strict 20-window here would have opened on tutor every time; the fix's own amendment is what prevents that)`,
+    capped[0]?.role === 'writer' && capped[capped.length - 1]?.id === full[full.length - 1].id,
+    JSON.stringify({ n, cappedLen: capped.length, firstRole: capped[0]?.role, first: capped[0]?.id, last: capped[capped.length - 1]?.id }));
 }
 ok('A-idempotent: capping an already-short thread (n=5) returns it completely unchanged — this fix never touches a normal-length conversation',
   capTutorHistory(mk(5)).length === 5, '');
@@ -121,6 +150,23 @@ for (const n of [21, 50, 100]) {
   const r = await callRoute({ messages: wire });
   ok(`B${n}: a thread of ${n} stored messages — which item 215's own S0 proved 400s uncapped — now CLEARS VALIDATION once capped (status !== 400), against the real, unmodified server route`,
     r.status !== 400, JSON.stringify(r));
+}
+
+// THE AMENDMENT, against the real route — the exact shape Fable named: a
+// strictly alternating thread, where an unamended slice(-20) would open on
+// a tutor turn (an assistant-first conversation) every time. tutor.ts's own
+// isValidBody() only checks length/role-enum/text-length — it does not (and
+// per this ticket's own ruling, cannot here) enforce "opens with a writer
+// turn," so clearing validation does not by itself prove the shape is right;
+// this checks the actual sent array's own first/last roles directly, THEN
+// confirms the real server still accepts it.
+for (const n of [21, 50, 100]) {
+  const full = mkAlt(n).map((m) => ({ role: m.role, text: m.text }));
+  const wire = capTutorHistory(full).map((m) => ({ role: m.role, text: m.text }));
+  const r = await callRoute({ messages: wire });
+  ok(`B-alt${n}: ALTERNATING thread of ${n} — the message actually sent opens with 'writer' and closes with the newest turn, and clears the real route (status !== 400)`,
+    wire[0]?.role === 'writer' && wire[wire.length - 1]?.text === full[full.length - 1].text && r.status !== 400,
+    JSON.stringify({ n, firstRole: wire[0]?.role, status: r.status }));
 }
 // The server's own validator, unmodified, still refuses an UNCAPPED thread —
 // proving this fix is client-side only, exactly as ruled ("the server is unchanged").

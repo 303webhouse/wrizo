@@ -28,16 +28,31 @@ export const TUTOR_MAX_MESSAGES = 20;
 /**
  * Cap a stored thread to at most `max` messages before it travels on the wire,
  * keeping the MOST RECENT ones and their existing order (a stored thread is
- * already chronological, so this is exactly `slice(-max)`; a length at or
- * under `max` returns unchanged). The writer's own message they just sent is
- * always the array's last element (Tutor.tsx appends it to storage before
+ * already chronological, so this starts as exactly `slice(-max)`; a length at
+ * or under `max` returns unchanged). The writer's own message they just sent
+ * is always the array's last element (Tutor.tsx appends it to storage before
  * assembling history), so it is always included as long as `max >= 1`.
+ *
+ * ITEM 215 AMENDMENT (Fable, 2026-09-30) — THE WINDOW MUST OPEN ON A WRITER
+ * TURN. A thread is not guaranteed to alternate in lockstep with `max`: in a
+ * strictly alternating writer/tutor thread, a 20-message cut can land ON a
+ * tutor turn (an odd total length slices to an even-length window whose first
+ * surviving element is the tutor's), which maps to an assistant-first
+ * conversation once role is translated to 'user'/'assistant' on the wire
+ * (tutor.ts). Some providers refuse that shape outright — env.tutorBaseUrl
+ * (DeepSeek by default) is untested against it, so this is not assumed safe;
+ * it is closed instead. After the slice, every LEADING tutor turn is dropped
+ * (a loop, not a single `shift`, since more than one could in principle
+ * precede the next writer turn) — the newest message is the array's last
+ * element and is never touched by this, so "ends with the newest" still
+ * holds; only the window's OPEN edge moves, and only when it must.
  */
 export function capTutorHistory<T extends { role: TutorRole; text: string }>(
   full: readonly T[],
   max: number = TUTOR_MAX_MESSAGES,
 ): T[] {
   if (max <= 0) return [];
-  if (full.length <= max) return full.slice();
-  return full.slice(full.length - max);
+  let capped = full.length <= max ? full.slice() : full.slice(full.length - max);
+  while (capped.length > 0 && capped[0].role === 'tutor') capped = capped.slice(1);
+  return capped;
 }
