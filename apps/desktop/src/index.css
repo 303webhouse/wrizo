@@ -3521,7 +3521,7 @@ a:focus-visible,
 .desk-mode-strip{ display:flex; align-items:center; gap:2px; background:none;
   border:none; padding:0; }
 .desk-mode-tab{ background:none; border:1px solid transparent; color:var(--text-mid);
-  font-family:var(--font-ui); font-size:13px; padding:9px 16px; cursor:pointer; transition:.15s;
+  font-family:var(--font-ui); font-size:10.4px; padding:9px 16px; cursor:pointer; transition:.15s;
   text-transform:uppercase; letter-spacing:.08em; }
 .desk-mode-tab:hover{ color:var(--text-hi); background:var(--ink-800); }
 .desk-mode-tab.active{ background:none; color:var(--text-hi); border-bottom:1px solid var(--accent-rest); }
@@ -4081,6 +4081,11 @@ a:focus-visible,
 .wz-strip-glyph svg{ display:block; width:21.6px; height:21.6px; }
 .wz-strip-label{ font-size:10.8px; letter-spacing:.4px; line-height:1.2; text-align:center;
   font-family:var(--font-contentLabel); } /* canon §4 — "cache/rack item names" */
+/* The foot group (Settings, Themes, Trash) is a third smaller than the
+   places above it: glyph 20.4 → 13.668, mark 21.6 → 14.472, label 10.8 → 7.236. */
+.wz-strip-foot .wz-strip-glyph{ font-size:13.668px; }
+.wz-strip-foot .wz-strip-glyph svg{ width:14.472px; height:14.472px; }
+.wz-strip-foot .wz-strip-label{ font-size:7.236px; }
 
 /* CD2 S2 — the cascade's overlay anchor (DeskFrame.tsx's `cascadeLayers`
    prop). Mirrors .desk-frame-sliver-anchor's own structural guarantee
