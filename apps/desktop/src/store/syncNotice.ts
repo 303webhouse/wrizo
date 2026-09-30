@@ -17,14 +17,16 @@
 //   * storage FAILED   - see (a)/(b)/(c) above; ahead of anything about the network, which is a separate question.
 //   * offline           - the network round trip is not happening. Everything IS saved on this device.
 //   * too large         - the network is FINE and everything else synced; ONE named page cannot travel in a request.
-//   * storage NEAR FULL - nothing has failed yet; a one-time heads-up before it does, urging the same "stay online"
-//                         act that would actually help if it does.
+//   * storage NEAR FULL - nothing has failed yet; a one-time heads-up before it does. Signed in, it urges the "stay
+//                         online" act that would actually help if it fails; signed out there is no account for
+//                         staying online to help reach, so it reads the same as (c) does — nothing else anywhere
+//                         holds a copy, so download one now, before it fails rather than after.
 import type { SyncStatus, TooLargeRecord } from './sync';
 
 export type SyncNoticeLexiconKey =
   | 'syncTooLargeOne' | 'syncTooLargeMany'
   | 'syncStorageFullPending' | 'syncStorageFullSynced' | 'syncStorageFullAnon'
-  | 'syncStorageNearFull';
+  | 'syncStorageNearFull' | 'syncStorageNearFullAnon';
 
 export function syncNoticeText(
   status: SyncStatus,
@@ -49,6 +51,6 @@ export function syncNoticeText(
       ? t('syncTooLargeOne').replace('{title}', () => tooLarge[0].title)
       : t('syncTooLargeMany').replace('{n}', () => String(tooLarge.length));
   }
-  if (storageNearFull) return t('syncStorageNearFull');
+  if (storageNearFull) return signedIn ? t('syncStorageNearFull') : t('syncStorageNearFullAnon');
   return null;
 }

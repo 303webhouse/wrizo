@@ -245,7 +245,8 @@ export type DeskTermId =
   // STORAGE-FULL STEP 1 (Fable's byte review, item 2) — an active local write failure, split by which of the three
   // true states it is (changes still not in the account / already all in the account / no account to reach at
   // all), plus the one-time near-full heads-up.
-  | 'syncStorageFullPending' | 'syncStorageFullSynced' | 'syncStorageFullAnon' | 'syncStorageNearFull'
+  | 'syncStorageFullPending' | 'syncStorageFullSynced' | 'syncStorageFullAnon'
+  | 'syncStorageNearFull' | 'syncStorageNearFullAnon'
   | 'cascadePageNewPage' | 'cascadePlanJustAPage' | 'boardNewPageCard' | 'boardCanvasEmpty'
   // ITEM 83 M3 (R6) — the Page drawer's PAGE SETUP zone: the sheet's own
   // dimension (margins, leading, numbers, headers, footers), as opposed to
@@ -836,8 +837,12 @@ const CANONICAL: Record<DeskTermId, string> = {
   // what is true and the one act that prevents loss, for the state it names.
   syncStorageFullPending: 'This device\u2019s storage is full \u2014 keep Wrizo open and online until these changes reach your account',
   syncStorageFullSynced: 'This device\u2019s storage is full \u2014 your changes have reached your account, though this device can no longer keep its own copy',
-  syncStorageFullAnon: 'This device\u2019s storage is full, and nothing else holds a copy of this writing \u2014 download it now',
+  // Fable, 2026-09-30, one string, cleared without re-review: names WHERE the download is.
+  syncStorageFullAnon: 'This device\u2019s storage is full, and nothing else holds a copy of this writing \u2014 download a copy now from Publish',
   syncStorageNearFull: 'This device is running low on storage \u2014 stay online so your writing reaches your account',
+  // Fable, 2026-09-30: "near-full reads the same way for a signed-out writer (nothing reaches an account there)" \u2014
+  // this desk's own wording, parallel to syncStorageFullAnon's cleared sentence; offered, not pre-cleared.
+  syncStorageNearFullAnon: 'This device is running low on storage, and nothing else holds a copy of this writing \u2014 download a copy now from Publish',
   // ITEM 83 M3 (R6). Sentence case on rows, engraved-uppercase on the heading
   // (§1.4) — the heading's dress is CSS, so the term itself stays readable.
   pageSetupHeading: 'Page setup',

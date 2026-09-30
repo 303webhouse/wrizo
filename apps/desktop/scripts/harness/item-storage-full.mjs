@@ -191,7 +191,7 @@ function installFakeEnv() {
   const t = (k) => ({
     syncTooLargeOne: '"{title}" is too large', syncTooLargeMany: '{n} items are too large',
     syncStorageFullPending: 'PENDING TEXT', syncStorageFullSynced: 'SYNCED TEXT', syncStorageFullAnon: 'ANON TEXT',
-    syncStorageNearFull: 'NEAR FULL TEXT',
+    syncStorageNearFull: 'NEAR FULL TEXT', syncStorageNearFullAnon: 'NEAR FULL ANON TEXT',
   }[k]);
   const notice = (status, tooLarge, failed, near, dirty, signedIn) => N.syncNoticeText(status, tooLarge, failed, near, dirty, signedIn, t);
   ok('WORDS (a): failed, signed in, changes NOT yet in the account — the pending text', notice('synced', [], true, false, true, true) === 'PENDING TEXT', notice('synced', [], true, false, true, true));
@@ -202,7 +202,8 @@ function installFakeEnv() {
   ok('PRIORITY: storage FAILED outranks too-large', notice('synced', [{ id: '1', title: 'X', bytes: 9 }], true, false, true, true) === 'PENDING TEXT', '');
   ok('PRIORITY: offline outranks too-large (unchanged from item 203)', notice('offline', [{ id: '1', title: 'X', bytes: 9 }], false, false, false, true) === 'Offline — saved here', '');
   ok('PRIORITY: too-large outranks near-full', notice('synced', [{ id: '1', title: 'X', bytes: 9 }], false, true, false, true) === '"X" is too large', '');
-  ok('PRIORITY: near-full shows only when nothing more urgent is true', notice('synced', [], false, true, false, true) === 'NEAR FULL TEXT', '');
+  ok('PRIORITY: near-full shows only when nothing more urgent is true, SIGNED IN', notice('synced', [], false, true, false, true) === 'NEAR FULL TEXT', '');
+  ok('WORDS (near-full, signed OUT): reads the same way as (c) — there is no account for "stay online" to help reach', notice('synced', [], false, true, false, false) === 'NEAR FULL ANON TEXT', '');
   ok('PRIORITY: nothing at all is null (no meter, no count, no notice)', notice('synced', [], false, false, false, true) === null, '');
 
   const src = deCRLF(readFileSync(join(SRC, 'store', 'syncNotice.ts'), 'utf8'));
@@ -222,6 +223,16 @@ function installFakeEnv() {
     ) });
     ok('FALSIFICATION M6 the anon check demoted below the dirty check — must go RED (a signed-out writer with nothing dirty would see "synced" instead of "anon")', W2.syncNoticeText('synced', [], true, false, false, false, t) !== 'SYNCED TEXT', '');
   } else ok('FALSIFICATION M6: the mutation LANDED', false, 'anchor text not found');
+
+  // M11 — Fable, 2026-09-30: near-full must read the anon text for a signed-out writer. Removing the split must go red.
+  if (src.includes("if (storageNearFull) return signedIn ? t('syncStorageNearFull') : t('syncStorageNearFullAnon');")) {
+    installFakeEnv();
+    const W3 = await load(['syncNotice'], { 'store/syncNotice.ts': swap(
+      "if (storageNearFull) return signedIn ? t('syncStorageNearFull') : t('syncStorageNearFullAnon');",
+      "if (storageNearFull) return t('syncStorageNearFull');"
+    ) });
+    ok('FALSIFICATION M11 the near-full anon split removed — must go RED (a signed-out writer would be told to "stay online" for an account that does not exist)', W3.syncNoticeText('synced', [], false, true, false, false, t) !== 'NEAR FULL ANON TEXT', '');
+  } else ok('FALSIFICATION M11: the mutation LANDED', false, 'anchor text not found');
 }
 
 // ===========================================================================================================
