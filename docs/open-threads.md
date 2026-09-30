@@ -22488,3 +22488,691 @@ its own item, **not Experiment 1.** No owner. Registry: next free **206**.
 formatting screenshot run (short) → FIX’s 158 → FIX’s 160** → as queued. **160 now follows 158** (it was
 ahead of it before; 160 still gates 144’s merge and 201’s UI). **The writing surface comes first.** The grant
 names TOOLS for 195 and has not changed.
+
+## PRIORITY CHANGE — THE WRITING SURFACE FIRST; NICK’S WORDS ON FORMATTING AND FONTS; ITEMS 206, 207; THE GRANT MOVES TO FIX — 2026-09-24 (chat 1)
+
+**NICK, verbatim as relayed by Fable:**
+
+> “While they're building, most of the text formatting options (B-I-U, bulleting, indenting,
+> etc.) are not displaying correctly. Users still do not have basic font options with the
+> option to add fonts, too. We really need to get the basic writing experience cleaned up
+> before I will be able to do thorough testing of the app since every time I write in the
+> app, I hit formatting issues.”
+
+**PRIORITY (Fable): THE WRITING SURFACE COMES FIRST.** **REGISTERED (two items):**
+- **ITEM 206 — THE FORMATTING AUDIT AND FIXES:** every styling tool, every mode, with screenshots, fixed
+  most-used first. **Owner FIX, starting now.**
+- **ITEM 207 — FONTS:** basic choices plus adding one’s own. **PLAN DESK designs.**
+Registry: next free **208**.
+
+**RV3 RESOLVED by his words (“with the option to add fonts, too”):** the custom-font door IS offered,
+**superseding item 83’s “renders no row and is never offered”** (item 83’s entry is left as written).
+
+**BOX ORDER, superseding the two orders above (Fable):** FIX’s formatting screenshot run (short) → FIX’s
+158 (Tab indents) → TOOLS’ 195 → FIX’s 160 → the rest as queued.
+**GRANT MOVED at 14:12 local: the file now names FIX** (for the formatting screenshot run). **TOOLS’ grant
+for 195 had been written at 14:05 local — 7 minutes earlier — and was UNUSED: no runner process and no new
+suite directory since. Checked before the rewrite; a live run would have outranked the reorder.** TOOLS keeps
+its place after 158, not its hold on the box.
+
+## ITEM 207 — NICK’S RULINGS ON FONTS (Q1, Q2, Q3, Q5), THE MINIMAL-INTERFACE LAW; 206’S FIX ORDER; 204 PART 2’S CEILING — 2026-09-24 (chat 1)
+
+**NICK’S WORDS ON FONTS, verbatim as relayed (Q1, Q2, Q3 and Q5 as put):**
+
+> “Q1: We also need Times New Roman, add to Atkinson Hyperlegible a more standard sans serif
+> like Arial. Q2: Have Free Write show all fonts that have been added previously, too, but
+> do not include an option in Free Write to add new fonts. That feature should only be
+> available in Draft and Revise mode. Q3: Cards should default to the everyday font, but the
+> font options should be available in the Card's tool strip menu, but the interface should
+> be as minimal as possible (same goes for all strip menus). Q5. Let's make font size
+> adjustable with a "+" and "-" symbol that also moves the font size number. The number
+> should be able to be manually adjusted, too, though, because sometimes writers are
+> following style guides with precise font styles/sizes. Leave the manual number selector
+> off of the Free Write options, though. Keep that just a plus/minus with no number
+> displayed. The steps on the +/- should start at 11 and go up and down in one point
+> increments with limits: lower limit should be 6pt, and the upper limit should be 18 at
+> which point fonts should get larger in 2pt increments up to 30, and then 4pt increments up
+> to some reasonable limit (120pt, maybe?)”
+
+**RECORDED AS RULINGS (Fable).** **His Q2 and Q3 SUPERSEDE PLAN DESK’s defaults** (no font choice in Free
+Write; no per-card fonts): Free Write SHOWS fonts already added but offers no way to add new ones (that
+lives only in Draft and Revise); cards default to the everyday font, with font options in the Card’s
+tool strip menu. **Times New Roman is required; a more standard sans like Arial joins Atkinson
+Hyperlegible.** **Size:** “+”/“−” with the number moving with it, the number also typeable (style guides),
+**no number in Free Write** (plus/minus only); steps start at 11 in 1pt increments, floor 6pt, up to 18,
+then 2pt increments to 30, then 4pt increments to a limit he leaves open (“120pt, maybe?”).
+
+**A STANDING LAW, in his words: “the interface should be as minimal as possible (same goes for all strip menus)”.**
+
+**WITH NICK — one wrinkle, no ruling yet:** 4pt steps from 30 land on **118, never 120**. **Default
+(vetoable, not founder text): “+” tops out at 118; a typed size may go to 120.** **Q4 (uploading font
+files) WAITS until uploads are next.** **“Card-level fonts: none in v1” was FABLE’s framing, NOT his —
+and his Q3 says card font options DO exist in the card’s strip menu; PLAN DESK reconciles.** **Fonts 207-Q1,
+Q2, Q3, Q5 were with Nick and are now answered above.**
+
+**RULED (Fable), 206’s FIX ORDER:** FIX’s order, with one change — step 1 adds his #10: **styled text
+RENDERS in every mode (Free Write and Revise included); only the styling TOOLS stay where they were
+ruled. Rendering is not styling.**
+
+**RULED (Fable), 204 PART 2:** harper’s CEILING is recorded — **no pronoun-case rule exists (“between you
+and I” is never caught).** “Style off” is built as a read-time drop on `lint_kind()`; “Miscellaneous”
+maps to olive. **TUTOR writes the engine half of the build brief; PLAN DESK designs the writer-facing
+half** (the dictionary, the dialect, where suggestions appear).
+
+**MERGES, by fetched SHA, verified:** `plan-207-fonts` @ `3bfb70a` (3 docs files, +224) ·
+`item204-part2-s0` @ `5ef55e0` (1 docs file, +331) · `item-writing-s0` @ `b4c3da3` (the audit doc +
+`apps/desktop/scripts/writing-engine-audit.mjs`, +138; **I read that the script writes only to the OS
+temp dir and no roster or `package.json` references it; I did not run it**). **Fable’s note: the box
+order in `e8b7101` stands; no further reorders except for a live defect.**
+
+## RECORDS — NICK’S 118/120, 204-P1 SCHEMA WORD, DICTIONARY, SOURCE SERIF, THE RIGHT-CLICK B/I/U; A HAZARD IN item-writing-s0; THE BOX — 2026-09-24 evening (chat 1)
+
+**NICK, verbatim as relayed — the 118/120 wrinkle:** “2. Default”. The “+” button stops at 118; a typed size may
+go to 120.
+
+**NICK’S SCHEMA WORD, 204-P1, verbatim.** The question as put:
+
+> “When you tell the spellchecker to "learn this word," a character name for example, should that list be saved on the server so it follows you to every device? It's one new database column.”
+
+Fable recommended yes. His answer:
+
+> “1. Yes”
+
+**It covers `users.proofing`** per PLAN DESK’s design (`plan-204-proofing` @ `a731e1f`). **Nothing writes until
+the builder’s S0 shape report and Fable’s byte review.** *(A schema word: recorded as his.)*
+
+**204-P2:** “2. One for all writing” — one dictionary across all his work. **Fonts:** “3. Add Source Serif confirmed.” — Source Serif 4 joins the
+roster; EB Garamond stays.
+
+**NICK, verbatim — the right-click menu:**
+
+> “As for FIX's adjustments: Is B-I-U included in the right-click menu? If not, it should be.”
+
+**RULED (Fable):** item 186’s base menu joins the app itself — right-click on the writing surface opens Wrizo’s
+menu with B/I/U wherever styling is allowed, whatever the experiment switch says; Experiment 1’s connect acts join
+it only when the switch is ON; **Shift + right-click keeps the native menu.** **Owner PW.** Its styling acts call
+the same formatter as the strip, so FIX’s 206 fixes carry to both doors. **WITH NICK: should B/I/U work in
+Revise too? (Default, vetoable: Draft only, as ruled.)**
+
+**RULED (Fable), 206:** step 1 as ruled (bullets, quotes, alignment, and the decorator running in Free Write);
+step 2 now carries the toggles (4, 5), the cross-paragraph selection (7 — select-all then Bold is the first
+thing a writer hits) and Ctrl+B/I/U (9 — no handler exists); step 3 carries nested marks (6) and the indent
+look (8). **RULED, 207’s size:** 11 means today’s rendering; the number is the printed size and the screen is a
+zoom, so no page shrinks. A true Letter prose sheet is a separate, larger item, not asked now.
+
+**WITH NICK NOW (defaults, vetoable):** 204-P2 one dictionary (now answered above), and adding Source Serif 4
+(now answered above) — **both closed by his words.**
+
+**MERGED, docs-only, by fetched SHA, verified by name-only diff:** `item204-part2-brief` @ `365a922` ·
+`item207-fonts-tutor-review` @ `95a1d75` · `plan-207-amend` @ `5acdabc` · `plan-204-proofing` @ `a731e1f`.
+
+**NOT MERGED — `item-writing-s0` @ `9189927` — A HAZARD, HANDED UP WITH A LEAN.** Fable named it “the frames
+script and evidence”. **The script is `apps/desktop/scripts/harness/writing-s0-frames.mjs` — INSIDE `harness/`.**
+**`run-suite.mjs:286` enumerates `harness/*.mjs` with no exclusion list**, so merging it would (1) make it the
+**94th roster file, run by every default and parked leg**; (2) have it **write ~98 PNGs and `frames.json` into
+the TRACKED `docs/evidence/writing-s0/` tree during the suite** — dirtying the tree under a stamped pair (the
+`+Ndirty` stamp) and breaking “tree bare at upload”; and (3) add a file that **never passes or fails** (its own
+header: “it is a SURVEY”). The house precedent is the opposite: `mockup170.mjs` was kept OUTSIDE `harness/`.
+**LEAN: FIX moves the script out of `harness/` (beside `writing-engine-audit.mjs`), fixing its `OUT` path and
+the `../runtime-verify.mjs` import, and re-pushes; then it merges as docs + evidence + a standalone script.**
+*(Both readings: merge as named, or hold — the merge as named carries a real cost to the next pair, which is
+why I held. This is a branch I do not own and did not edit.)* **The 98 PNGs are evidence, not the problem.**
+
+**THE BOX, plainly.** **FIX’s formatting screenshot run FINISHED at ~14:57 local** (its `9189927` commit); the
+grant nevertheless still named FIX at 17:12 — **I did not clear it at the stamp, so the box sat granted and idle
+~2h15m.** No runner process and no new suite directory existed. **Now: the grant is rewritten naming FIX for its
+158 pair** (`item158-tab-indent` @ `0a36a7b` is on origin). **Order behind it, unchanged (Fable): TOOLS’ 195 →
+FIX’s 160 → INSERT PW’s Experiment 1 harness run (with TUTOR’s gate: does a wavy underline paint through
+`::highlight()`) → the rest as queued. An insertion, not a reorder.**
+
+## RECORDS — THE BOX-FREE LINE, 206’S PAIR INSERTED, B/I/U DRAFT-ONLY SETTLED BY SKIP — 2026-09-24 (chat 1)
+
+**FABLE CONFIRMS THE HOLD:** FIX moves `writing-s0-frames.mjs` out of `harness/` (as `mockup170.mjs` was), on
+`item-writing-s0` AND on `item-writing-r1` (which branched from it); **merge after the re-push.** My lapse
+(the idle grant) is recorded as I wrote it.
+
+**A STRUCTURAL FIX, so the box does not rest on a relay (Fable):** from now on **a lane whose box run finishes
+opens its report with “→ CHAT 1: box free — <lane>, <run>”, and Nick pastes that line straight to this
+desk. On that line, this desk clears the grant and writes the next one.**
+
+**BOX (Fable):** 158 is running. **INSERT FIX’s 206 step-1 pair (`item-writing-r1`) right after 158** — the
+writing surface comes first, by Nick’s word; an insertion, not a reorder. **Then TOOLS’ 195 → FIX’s 160 → PW’s
+Experiment 1 run → the rest as queued.** The grant names FIX (158) and is unchanged.
+
+**SETTLED BY SKIP (a default taken by silence, NOT a ruling):** B/I/U stay **Draft-only** (Revise unchanged, as
+ruled).
+
+**MERGED, docs-only, by fetched SHA, verified by name-only diff (the NEWER tips — the earlier ones were in
+`52578ee`):** `plan-207-amend` @ `d4415f3` (`item207-fonts-amendment-nicks-rulings.md`) · `plan-204-proofing`
+@ `3f40677` (`item204-part2-writer-facing-design.md`) · `plan-186-base-menu` @ `e52a265` (2 docs files: the 186
+amendment and `b-exp1-connect-from-the-page.md`).
+
+## THE BOX-FREE LINE, FIRST USE — FIX’S writing-r1/r2 RUNS; THE GRANT PASSES TO TOOLS — 2026-09-24 (chat 1)
+
+**THE LINE ARRIVED:** “→ CHAT 1: box free — FIX, writing-r1/r2 verification runs (grant still on file; clear at
+stamp).” **Checked before acting:** the grant file named FIX (written for its 158 pair, 17:13 local); **no
+runner or harness node process on the box; no harness browser** (the 19 `msedge` processes are Windows’
+own WebView2, from Sep 14 — grouped by command line, none carries `ws-runtime-verify`). **This desk did NOT
+see the results** of those runs (they are not in a `wrizo-suite-*` temp dir I can read) — they are FIX’s to
+report. **ALSO NOT ON THE LINE: 158’s own pair** (the grant was written for it); Fable’s order was 158 →
+206 step-1 (`r1`). FIX’s report should say whether 158 ran; if it did not, FIX keeps its place.
+
+**GRANT PASSED at 17:5x local: the file now names TOOLS for its 195 pair** (`item195-sliver-grip` @ `02eecd1`
+is on origin), per Fable’s order (TOOLS’ 195 → FIX’s 160 → PW’s Experiment 1 run → as queued). **The
+writing-r1/r2 grant is thereby cleared.**
+
+**MERGED: `item-writing-s0` @ `945280d`** — the S0 doc, the 98 frames as evidence, `frames.json`, and
+`apps/desktop/scripts/writing-s0-frames.mjs`, **now OUTSIDE `harness/`** (verified on the branch: no path
+under `scripts/harness/` in the diff; the import and the `OUT` path were fixed for the new depth — `OUT`
+resolves three levels up to the repo root). **The hazard I held it for is resolved.** I did not run the script.
+
+**NOT MERGED:** `item-writing-r1` @ `55d5512` and `item-writing-r2` @ `b69061c` — **product code** (r1
+touches `ForwardOnlyEditor.tsx`, `index.css`, `draftDecoration.ts`, and adds `harness/writing-r1.mjs`; a new
+roster file). They wait for Fable’s review and a batch, not this desk’s verification alone.
+
+## RECORDS — CONSOLIDATION: 158 FOLDS INTO FIX’S WRITING STACK; ONE PAIR; BATCH SEVEN PLANNED — 2026-09-24 (chat 1)
+
+**FABLE, CONFIRMING (and correcting a premise on my entry above):** FIX spent its grant on the
+writing-r1/r2 verification runs, **NOT 158’s pair — 158 has not run.** (My entry said only that 158 was
+not reported; this settles it.)
+
+**CONSOLIDATION (Fable) — not a reorder:** **158 folds into FIX’s writing stack** (same formatter), and **ONE
+pair on the stack tip (`item-writing-r2` @ `b69061c`, or its successor) stamps 158 + 206 steps 1–2.**
+**FIX gets that pair next; then TOOLS’ 195 → FIX’s 160 → PW’s Experiment 1 run → as queued;** 206 step 3
+gets its own pair later.
+
+**THE GRANT MOVED AGAIN, and why, plainly:** the previous relay’s box-free line led me to write TOOLS’
+grant for 195 at 17:50 local. **This relay reorders it — FIX’s stack pair goes first. Checked before
+rewriting: TOOLS’ grant was 4 minutes old and UNUSED (no runner process, no new suite directory).** The
+file now names **FIX** for the stack pair; TOOLS’ 195 keeps its place. **`item-writing-r2` @ `b69061c` is
+the tip on origin.** *(Two grant rewrites in a few minutes is what two relays crossing looks like; nothing
+ran in between.)*
+
+**BATCH SEVEN, PLANNED (Fable):** when that pair is clean, assemble **158 + 206 steps 1–2 + P3
+(`item203-ceiling` @ `18e96d0`, reviewed)** + anything else green, and Fable reviews the assembled diff for
+Nick’s word. **The writing surface ships first.** Nothing is assembled or merged yet.
+
+**`item-writing-s0`: already merged** (`945280d`, in `8d0b20c`) — the frames script is out of `harness/`.
+
+## RECORDS — THE STACK PAIR GRANTED BY NAME; THE “→ <LANE>:” PROTOCOL — 2026-09-24 (chat 1)
+
+**GRANT WRITTEN (02:25 UTC): lane FIX — “158 + 206 steps 1–2 pair, on `item-writing-stack` @ `e2624fe`”**
+(origin tip verified `e2624fecd44ade77d3b023dc2a333accb5d321e6`; FIX built it as r2 + 158, a clean merge).
+The file carries no free-text run field — the run is named by the token, which is in the file and
+**not written here.** No runner process on the box when it was written; FIX was holding until the file
+named the run. **Order unchanged after it:** TOOLS’ 195 → FIX’s 160 → PW’s Experiment 1 run → as queued.
+
+**PROTOCOL, EXTENDED (Fable):** any line a lane opens with “→ <LANE>:” goes straight to that lane
+through Nick. **For this desk, such a line is a REQUEST; this desk’s rules decide it** (the box-free line
+is the first case, and I have already declined to act on one without checking the box).
+
+## RECORDS — 207’S SIZE IS LITERAL POINTS; A SOURCE CHECK READS CODE, NOT COMMENTS; PW’S 138/163 BUILT — 2026-09-24 (chat 1)
+
+**RULED (Fable), 207:** the size number is **LITERAL PRINTED POINTS.** Each face carries a `sizeAdjust` that
+defaults to 1, per Nick’s own reason (“sometimes writers are following style guides with precise font
+styles/sizes”). **Normalizing on x-height is REJECTED — the number would stop meaning what it says.**
+
+**RATIFIED (Fable), from PW’s third recurrence: A SOURCE CHECK READS CODE, NOT COMMENTS.** Blank comments
+before asserting wiring; keep raw text only for a claim that is about a comment. *(A harness rule — worth
+the house’s memory beside “select by name, not index”.)*
+
+**PW’s 138 (`4c25dec`) and 163 (`c60e4b4`) are BUILT, owing their checks to PW’s box run** — **PW moves to
+204 part 2, with the `users.proofing` S0 as a HARD STOP for Fable’s review.** *(Reported by Fable; I have
+not verified those two commits on origin from this relay — not offered to this desk yet, not merged.)*
+
+**⚠ CORRECTED, same turn (chat 1):** the entry above says I had not verified PW’s 138/163 commits on origin.
+I then did: **both exist on `origin/exp1-connect-text`** (`4c25dec` “ITEM 138: page-pins are tall…” and
+`c60e4b4` “ITEM 163 proof…”). That branch is Experiment 1’s PW half, which merges only when Experiment 1 is
+offered whole; **nothing merged.** The earlier sentence is left as written.
+
+## FIX’S STACK PAIR — NOT CLEAN, BOTH LEGS, READ FROM DISK (chat 1, unprompted by any report) — 2026-09-24 night
+
+**FOUND ON RESUME, NOT REPORTED TO THIS DESK.** After the grant I wrote at 02:25 UTC, two suite directories
+appeared: `wrizo-suite-69528` (default, done 21:10 local) and `wrizo-suite-49116` (parked, done 21:50). **No
+runner is on the box now; the grant file still names FIX; FIX has not sent a box-free line.** I read the logs.
+
+**THE TREE IS NOT THE ONE I GRANTED:** both legs are `tree=16c7ce8 bundle=index-Acuf8KJ-.js/596702b`, **96
+files**, and `item-writing-stack` on origin is now **`16c7ce8`** — one commit past `e2624fe` (“Item 158
+harness: settled reads, own page id for Free Write, real Enter — its first run failed 3/12 on the branch’s
+own tip for timing reasons”). So **FIX ran a newer tip than the one the grant named**, and the grant’s
+wording (“@ `e2624fe`”) was not the run — **a discrepancy, recorded, not a violation this desk can
+attribute** (the file carries no run field; the token is what the guard checks).
+
+**RESULT: `NOT CLEAN` ON BOTH LEGS, IDENTICAL: 91/96 in each.** **The same five files in default AND parked —
+so this is not a flake** (the known-flake list is empty, and “it passes alone” is retired as clearance):
+- **`hooks-order.mjs` (1/2) and `hooks-order-ast.mjs` (1/7) — A REAL PRODUCT FINDING:** the guard reports
+  `src/pages/PageEditor.tsx PageEditorView: useEffect at :861 below early return :649` — **a hook called
+  below an early return** (React’s rules of hooks; the guard exists because that class of bug crashes a
+  route). **Batch Six was 93/93 with both guards green, so this is introduced by the stack.**
+- **`item83f.mjs` (1/34):** the check named *“E3 (fence): pressing TAB changes nothing — Tab-as-indent is
+  item 102 and was NOT built here”* is **FALSIFIED BY 158 (Tab now indents: `afterTab` gained a tab). That
+  is an expected supersession, NOT a bug — but the harness law is PARK, never edit: original kept verbatim +
+  SUPERSEDED + a successor, and the park sweep for 158 missed this assertion** (“parks count, not green”).
+- **`writing-r1.mjs` and `writing-r2.mjs`: NOVERDICT, both legs** — yet their own output ends **“25/25
+  checks passed” and “13/13 checks passed”**. **They pass; they do not print the runner’s verdict line
+  (`… VERIFY: PASS`). A format defect in FIX’s two NEW roster files**, not a product red — but the
+  runner counts it red.
+
+**WHAT THIS MEANS:** the stack pair did NOT stamp 158 + 206 steps 1–2; **Batch Seven cannot assemble on this
+evidence.** **The findings are FIX’s to diagnose and fix (hooks-order first — the only product defect;
+then the item83f park and the verdict lines), then a fresh pair. FIX diagnoses; nobody re-rolls.** **The box
+stays granted to FIX** (it must run the next pair); if FIX reports the box free, it passes to TOOLS’ 195.
+**NOT CHECKED by me:** why `PageEditor.tsx` acquired a hook below `:649` (which of r1/r2/158), or whether the
+newer tip changed any of it — the diagnosis is my reading of the guard’s own detail lines, not a bisect.
+
+## RECORDS — FABLE CONFIRMS THE STACK-PAIR READ; users.proofing’S SHAPE APPROVED; 207 STEPS 1–3 — 2026-09-24 night (chat 1)
+
+**FABLE: my read of FIX’s pair is right, and so is holding Batch Seven.** **Dispositions sent to FIX:** the
+hooks-order defect is fixed at its source (commit named); item83f’s Tab check is PARKED as superseded by
+158; writing-r1/r2 emit the runner’s verdict line; **then a fresh pair on a SHA FIX NAMES TO THIS DESK
+FIRST** (which closes the gap where the grant named `e2624fe` and the run was `16c7ce8`). None of those
+commits is on this desk’s ledger yet.
+
+**RULED (Fable) — 204 part 2’s `users.proofing` SHAPE (PW, `3531243`): APPROVED** — convergence (A), a
+per-key merge on both sides, `mergeRemote` only; **tombstones compact at 180 days;** the proofing mirror
+sits inside `resetLocalData`’s logout sweep. **Nick’s schema word (“1. Yes”, recorded above) covers it; nothing
+writes until Fable’s byte review at offer.**
+
+**TOOLS’ 207 steps 1–3 (`76696cb`): recorded; step 4 next.** *(Reported by Fable; not merged — product code, a
+feature branch.)*
+
+## RECORDS — FIX’S FRESH-PAIR REQUEST ARRIVED WHILE A RUN IS LIVE ON A DIFFERENT SHA; NOT GRANTED — 2026-09-24 23:05 local (chat 1)
+
+**THE REQUEST (“→ CHAT 1”, from FIX):** a fresh pair on `item-writing-stack` @ `d4dc32efa77e02598c64582a74b5d91bc4a82f54`
+(both legs), “no grant is running”. **Verified: `d4dc32e` is the origin tip** (two commits past `16c7ce8`:
+`faeeb59` “Item 158 pair fixes: Tab effect re-homed above the early return … E3 Tab fence parked”, then
+`d4dc32e` “writing-r1/r2: emit the runner’s VERIFY verdict line”).
+
+**CHECKED BEFORE ACTING, AS THE RULE SAYS — AND IT CONTRADICTS “NO GRANT IS RUNNING”:** the grant file names
+FIX (the 02:25Z token, never cleared) and **a run IS LIVE:** `wrizo-suite-29204`, default leg, **`tree=faeeb59
+bundle=index-BbdX9JN0.js/596700b`, 96 files, 44/96 at 23:04 local (all green so far)**, with a live `msedge`
+harness browser (profile `ws-runtime-verify-40796`, created 22:59). A second suite directory, `-8320`, is a
+**parked leg refused at its pre-flight** (“wait for the quiet window”) — a run launched beside the live one.
+**It is on `faeeb59`, not on the SHA FIX asked me to grant** (`d4dc32e` differs by the verdict-line commit).
+
+**NOT GRANTED, and NOTHING KILLED.** Rewriting the file now would change the token under a live run and
+make its remaining files refuse — destroying a stamping run; and it is not this desk’s run to end. **FIX
+must say whether run `-29204` is its own and intended.** If it is FIX’s superseded run on the older SHA, FIX
+stops ITS OWN driver; **then, on FIX’s box-free line, this desk clears and writes the grant naming
+`d4dc32e`, both legs.** If it finishes clean on `faeeb59`, it is still not the SHA to stamp — the verdict-line
+commit is in `d4dc32e` only.
+
+## THE BOX-FREE LINE FROM FIX; THE d4dc32e PAIR GRANTED — 2026-09-24 23:18 local (chat 1)
+
+**FIX’S ANSWER (from its box-free line): the live run WAS its own** — `wrizo-suite-29204` was FIX’s pair-3
+re-run on `faeeb59`, started 22:59:01, **stopped by FIX with TaskStop after Fable’s diagnosis; the stop did
+not reach the grandchildren.** The ten `msedge` processes were owned by harness child node `40796`, not by the
+runner PID. **FIX ran the committed reaper’s `reapOrphans` (no by-name kills):** it reported owner 40796
+verified dead and every browser past the 300s floor, enumerated all ten by PID, and said **one reaped and nine
+failed to kill** — yet the recheck read 0. **FIX’s own reading (“the nine died with the first”) is
+UNCONFIRMED by FIX, and I did not confirm it either.** *(That a verified-dead-owner sweep is lawful when
+logged is the standing rule; it is logged here.)* **Cost, FIX’s own words: the stop should have been “runner
+first, then browsers” — a TaskStop on a background chain does not reach the grandchildren.**
+
+**VERIFIED BY THIS DESK BEFORE GRANTING:** **0 harness-signature processes** (`run-suite` / `scripts.harness` /
+`ws-runtime-verify`) at 23:18 local; `item-writing-stack` on origin is **still `d4dc32efa77e02598c64582a74b5d91bc4a82f54`**.
+
+**GRANT WRITTEN: lane FIX — the fresh pair on `item-writing-stack` @ `d4dc32e`, BOTH LEGS** (the file’s token
+names the run; not written here). **The parked leg runs even after a red default (`;`, never `&&`).** FIX said
+it would add nothing to the tree meanwhile. **Order unchanged after it: TOOLS’ 195 → FIX’s 160 → PW’s
+Experiment 1 run → as queued.**
+
+## RECORDS — A STOP IS A TREE KILL; ITEM 208 REGISTERED; users.proofing’S SCALAR STAMPS; TOOLS’ TWO-RUN TURN — 2026-09-24 (chat 1)
+
+**RATIFIED (Fable), from FIX’s stop: STOPPING A RUN IS A TREE KILL** — runner, its harness children, their
+browsers. **A task stop on a background chain does not reach grandchildren.** **The stop is confirmed by 0
+runners and 0 harness browsers, MEASURED, before “box free”.** (This desk measured exactly that before
+granting `d4dc32e`.)
+
+**ITEM 208 — `reapOrphans` REPORTS “FAILED TO KILL” FOR A PROCESS THAT HAD ALREADY EXITED — REGISTERED
+(small; owner: whoever holds the reaper).** Re-check liveness before calling a kill failed, so its report can be
+read as fact. *(FIX’s sweep reported “one reaped, nine failed” and the recheck read 0 — recorded above.)*
+Registry: next free **209**.
+
+**RULED (Fable), 204 part 2 — AN AMENDMENT to the approved `users.proofing` shape (PW, `63c0895`):** the
+scalars carry stamps — **`dialectAt` and `ignoredAt`, optional, later wins, the same rule as words; an absent
+stamp loses to a present one.** **Same column, no schema change.** Found by PW’s round trip (K4): without it a
+writer could never save a dialect. **The stamps are device clocks; a skewed clock can win a scalar, and that is
+named with the residuals.**
+
+**BOX (Fable):** after FIX’s `d4dc32e` pair, **TOOLS’ turn names TWO runs in sequence — 195’s pair, then
+`item207.mjs` with the chars-per-line re-measure** — then FIX’s 160 → PW’s Experiment 1 run → the rest. **The
+grant names FIX and is unchanged.**
+
+## BATCH SEVEN — ASSEMBLED (158 + 206 STEPS 1–2 + P3); FIX’S STACK PAIR CLEAN; THE GRANT PASSES TO TOOLS — 2026-09-25 (chat 1)
+
+**FIX’S BOX-FREE LINE (“both legs CLEAN 96/96 on `item-writing-stack` @ `d4dc32e`, the SHA the grant named”) —
+VERIFIED FROM DISK, not taken from the line:** `wrizo-suite-15008` (default, done 23:59 local) — `SUITE DONE
+HARNESS_PARKED=unset — 96/96`, `SUITE RESULT: CLEAN — tree=d4dc32e bundle=index-BbdX9JN0.js/596700b`; `wrizo-suite-28192`
+(parked, done 00:40) — `96/96`, `CLEAN`, identical stamp. **0 FAIL / NOVERDICT / TIMEOUT lines in either.** **The
+tree and the SHA the grant named are the same this time.** **0 harness-signature processes at 07:37 local** —
+the box had been idle since 00:40; this desk acts on the line, and the line arrived at 07:37. **The five reds
+of the previous pair are gone** (hooks-order pair, item83f, writing-r1/r2 verdict lines) — by FIX’s two
+commits `faeeb59` and `d4dc32e`. *(I did not re-read the hooks-order fix in the source.)*
+
+**BATCH SEVEN, ASSEMBLED per Fable’s standing plan (“when that pair is clean, assemble 158 + 206 steps 1–2 +
+P3 + anything else green”) — by fetched SHA, both merges clean, tree bare:** `item-writing-stack` @
+`d4dc32efa77e02598c64582a74b5d91bc4a82f54` and `item203-ceiling` @ `18e96d0512859e9bcbfe5e79f9703168f0b5e274`
+(P3: `/api/sync` alone may carry 16 MiB after authentication; a real-Postgres 16 MiB check; the notice’s replacer
+function and noun-neutral plural). **Nothing else was known green, so nothing else joins; the batch is CLOSED AT
+ASSEMBLY.** **Assembly head `b14c961`** (before this entry).
+
+**RANGE `5f0691f` (LIVE, Batch Six) → `b14c961`. Product/server delta, from disk, 11 files, +558/−82:**
+`BoardEditor.tsx`, `ForwardOnlyEditor.tsx`, `index.css`, `PageEditor.tsx`, `caretOffset.ts`, `deskLexicon.ts`,
+`draftDecoration.ts`, `draftFormat.ts` (+367/−, the biggest), `sync.ts`, `syncNotice.ts`; server `index.ts`.
+**Other non-docs paths are harness or standalone scripts** (`item158.mjs`, `writing-r1.mjs`, `writing-r2.mjs`
+are NEW ROSTER FILES — **roster 96**; `item83f.mjs` carries the park; four standalone proofs/audits).
+**SCHEMA: NONE. SERVER: `index.ts` only** (the 16 MiB ceiling).
+
+**THE STACK PAIR DOES NOT COVER P3** — it ran on `d4dc32e`, which lacks the 203 P3 commits. **A BATCH PAIR ON THE
+ASSEMBLED TREE IS STILL OWED** (default + parked, both legs, this desk’s own grant), **and Fable’s byte review of
+the assembled diff** (the writing changes are 8 product files in the editor core), **then Nick’s word, quoted.**
+
+**THE GRANT PASSED, and a question handed up.** FIX’s grant is cleared; **the file now names TOOLS** for its two
+runs in sequence (195’s pair, then `item207.mjs` with the chars-per-line re-measure), **per Fable’s standing
+order.** **But Nick said the writing surface ships first, and Batch Six’s pair ran AHEAD of TOOLS’ 195. Reading
+A: keep Fable’s stated order — TOOLS’ two runs, then the batch pair. Reading B: the batch pair goes first (the
+precedent, and “the writing surface first”). My lean: B — the batch pair is the shortest path to shipping
+what Nick called the blocker to his testing — but it is Fable’s to rule.** TOOLS has not started (grant just
+written); if Fable rules B before it does, I rewrite the file.
+
+## BATCH SEVEN — THE PAIR GOES BEFORE TOOLS (RULED); THE BYTE-REVIEW EXTRACT; THE STORAGE HALF IS BATCH EIGHT — 2026-09-25 (chat 1)
+
+**RULED (Fable): YES — Batch Seven’s pair goes BEFORE TOOLS’ runs** (the writing surface ships first, by
+Nick’s word) — reading B, my lean. **The grant file is rewritten naming THIS DESK for the batch pair on the
+assembled tree, both legs** (TOOLS’ unused grant, written 07:37 local, is replaced; no runner was on the box
+and no suite directory had appeared since 00:39). **TOOLS’ turn moves behind the pair; its two runs (195, then
+`item207.mjs`) follow.**
+
+**BYTE REVIEW, SCOPED (Fable): only what can change a writer’s words.** **The extract is a COMMITTED FILE:
+`docs/menus/batch7-byte-review-extract.md`** — (a) the 11 files with their +/− counts (**+558/−82**),
+(b) the FULL diff (`git diff -U3 5f0691f b14c961`, unedited) of the five files that write the manuscript:
+`draftFormat.ts` (the formatter, its toggle, the line tools, 158’s Tab indent, and
+`stripMarkdownConventions` — the Copy My Words stripping), `PageEditor.tsx` (the Ctrl+B/I/U wiring, the Tab
+handler effect with its deps, `!!realEntry` — the moved hook), `ForwardOnlyEditor.tsx`, `BoardEditor.tsx`
+(the card’s formatter door), `caretOffset.ts`. **Whole-file diffs, a superset of the writing hunks — nothing
+was filtered by hand.** **Not extracted, stated:** `draftDecoration.ts`, `index.css`, `deskLexicon.ts` (render /
+strings — ride the harness evidence) and `sync.ts`, `syncNotice.ts`, `server/index.ts` (P3, `18e96d0`, already
+reviewed). **I checked that the labels hold** — the Tab effect, its `!!realEntry` deps and the Ctrl+B/I/U chord
+function are in the extract; **I did not review the code.**
+
+**THE STORAGE HALF (PW, `d1abca7`) does NOT join Batch Seven.** It is a schema change and rides **BATCH EIGHT
+after Fable’s byte review.**
+
+## BATCH SEVEN — THE PAIR IS CLEAN; THE GRANT PASSES TO TOOLS; AWAITING FABLE’S PASS AND NICK’S WORD — 2026-09-25 (chat 1)
+
+**THE BATCH PAIR ON THE ASSEMBLED TREE — BOTH LEGS CLEAN, under this desk’s own grant (the file named CHAT1
+before launch), 0 FAIL / NOVERDICT / TIMEOUT lines in either:**
+- **DEFAULT: 96/96 CLEAN** — `tree=89a4cb1 bundle=index-CsedhZ4m.js/596709b`
+- **PARKED: 96/96 CLEAN** — identical stamp, `NO-REBUILD`
+- **The files the previous pair failed — all PASS here:** `hooks-order` (2), `item83f` (34), `writing-r1` (25),
+  `writing-r2` (13); **and the new `item158` (12).** The item-197 files also passed: `item126` (42, 100s), `fx5`
+  (62), `item83e` (13), `e1` (41).
+- **`89a4cb1` = the assembly head `b14c961` + docs-only commits** (the ledger and the byte-review extract);
+  the product bytes are the assembled bytes.
+
+**GRANT PASSED: the file now names TOOLS** for its two runs in sequence (195’s pair, then `item207.mjs` with the
+chars-per-line re-measure). **0 harness processes on the box when written.**
+
+**NOT DEPLOYED. STILL OWED before any ship:** **Fable’s byte review of the writing changes** (the extract is
+`docs/menus/batch7-byte-review-extract.md`) **and Nick’s word, quoted.** **If any product commit lands on
+`main` before the deploy the pair is stale and re-runs; docs-only commits do not.** Rollback target stays
+`5f0691f` (Batch Six). **The 158 / 206 changes write the manuscript; they are the reason this batch is reviewed
+at the bytes.**
+
+## BATCH SEVEN DEPLOY MANIFEST — 2026-09-25 (chat 1, on Nick’s “1. Yes” — Fable byte review CLEARED)
+
+**LIVE: `8223b29` (product bytes = the pair-stamped `89a4cb1`) · railway `912aa82f-c97d-42d7-9818-359f314dd8d2`** —
+service `writer-studio-app`, `railway up --ci` returned “Deploy complete”. **PREVIOUS LIVE — THIS DEPLOY’S
+ROLLBACK TARGET: `5f0691f` · railway `fca24f67-b4a4-427c-8fd9-2a127a4fdabe`** (Batch Six). **ROLLBACK NOW
+RATCHETS TO THIS STAMP.** No schema in this batch, so a rollback is a clean redeploy.
+
+**AUTHORIZATION, QUOTED: Nick — “1. Yes”**, to Fable’s question *“Should Batch Seven go live once my review
+clears? Reply “yes,” and I’ll give chat 1 the go-ahead right after my review”* (as relayed).
+**FABLE’S BYTE REVIEW: CLEARED**, from the extract of whole-file diffs — every write path keeps the writer’s words;
+the toggles, per-line marks and line tools move only markers and prefixes; each press records one atomic undo
+step; my two observations (the strip loop; Free Write’s Tab on a blank line only) **accepted as designed**; **four
+non-blocking follow-ups go to FIX for step 3.** *(Fable reviewed my extract, not the branch; the extract’s last
+hunk in my chat paste ended with a garbled line I flagged at the time — the committed file was the source.)*
+
+**ONE PACKAGE: 158 (Tab indents) + 206 steps 1–2 (bullets/quotes/alignment render, inline toggles, cross-line
+selection, Ctrl+B/I/U) + P3 (`/api/sync` may carry 16 MiB after authentication) + the notice’s two follow-ups.**
+**PRODUCT/SERVER DELTA `5f0691f..89a4cb1`: 11 files, +558/−82. SCHEMA: NONE. SERVER: `index.ts` only.** Roster **96**.
+
+**SUITE OF RECORD — BOTH LEGS CLEAN at the assembled tree, under this desk’s own grant:** **DEFAULT 96/96 CLEAN**
+and **PARKED 96/96 CLEAN**, `tree=89a4cb1 bundle=index-CsedhZ4m.js/596709b`, 0 FAIL/NOVERDICT/TIMEOUT.
+**Deploy head `8223b29` is docs-only past it: `git diff --stat 89a4cb1 HEAD -- apps packages` is EMPTY at the
+deploy** (and no product commit landed on `main` after the pair).
+
+**TREE BARE AT UPLOAD (0 porcelain). `tsc` x2 exit 0. ITEM-98 GUARD:** `writer-studio` / `production` /
+`writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`, `HEAD == origin/main == 8223b29`. Image digest
+`sha256:ac996f99fb472bfffea99d6e28d84d7fe69fead3ff9945bf261932268cf286bc`.
+
+**LIVE VERIFICATION:** `/healthz` **200** · `/auth/me` **401** · served `index-CsedhZ4m.js` and `index-BiZkP_2T.css`.
+**SERVED-vs-STAMPED BYTE DIFF — BOTH MATCH, MD5 and bytes:** JS `9fbee2cbb1c935b0415a6a450b84e786` (596,709 b) **==**
+stamped; CSS `810dec5f30e7b9f2df75fa3fe6276914` (145,148 b) **==** stamped (the CSS changed: 144,711 → 145,148).
+**NOT DONE, plainly:** no authenticated request, so **P3’s 16 MiB path and the writing changes are not exercised
+live by this desk** — that is Nick’s check. **No production probe was sent** (P1’s 413 was proven at Batch Six).
+
+**OWED BY NICK:** the writing-surface check on this deploy **and Batch Six’s two-device check, which is STILL
+OWED** (Fable). **BOX:** the grant still names TOOLS (195’s pair, then `item207.mjs`); this deploy needed no
+box turn. **BATCH SEVEN IS SHIPPED AND CLOSED; BATCH EIGHT** (PW’s storage half `d1abca7`, a schema change)
+**holds nothing yet.**
+
+## THE BOX-FREE LINE FROM TOOLS; THE GRANT PASSES TO FIX (r3 THEN 160); WHAT TOOLS’ RUNS WERE; markRuns.ts RULED; e20dc0d CLEARED — 2026-09-25 midday (chat 1)
+
+**TOOLS’ BOX-FREE LINE** (195’s pair + `item207.mjs`, “both legs clean; 0 browsers”). **Checked: 0 harness-signature
+processes at 12:48 local; the grant file named TOOLS (written 15:00Z).** **The grant is rewritten, so cleared.**
+
+**FABLE ASKED: WERE TOOLS’ RUNS FULL-SUITE PAIRS?** **I cannot show that they were.** No `wrizo-suite-*` directory in
+the default temp location is newer than 00:40 (FIX’s d4dc32e pair); a wider search timed out and I did not repeat
+it. **What the branches say:** `item207-fonts` @ `5653417`’s own commit reads **“box turn — `item207.mjs` 41/41 both
+legs” — i.e. ONE FILE, both legs, NOT a 96-file stamped pair** (and the branch modifies `item112a.mjs` — three
+superseded assertions parked — and adds `item207-core.mjs`, `item207.mjs`). `item195-sliver-grip` is still
+`02eecd1` (unchanged since 2026-09-23) and I found no evidence file for its run. **So: NEITHER is shown to be
+offer-ready.** **THE OWED PAIR, named: a full-suite pair (default + parked) with each of them in the tree — which the
+Batch Eight pair on the assembled tree will be, if both join it.** *(TOOLS may hold stamps elsewhere; if so it names
+the SHA and the stamp lines and I read them.)*
+
+**GRANT PASSED, per Fable: lane FIX, ONE TURN, TWO RUNS IN SEQUENCE — (1) step-3 verification on `item-writing-r3` @
+`1b0a7711e368109da550a89335a6e891d46fc9e9` (verified the origin tip; `writing-r3.mjs` plus the regression
+subset), then (2) 160’s pair.** The token is in the file, not here. **Then (Fable): TOOLS’ two small uses (194
+report-only, 161’s frames) → INK’s queue → the rest. PW’s Experiment 1 run moves behind its `visibleText`
+re-derivation; PW will ask when ready.**
+
+**CLEARED (Fable byte review): PW’s `users.proofing` storage half at `e20dc0d`** (verified: the commit is on
+`origin/exp1-connect-text`) **for BATCH EIGHT.** It carries a schema change under Nick’s “1. Yes” (recorded above).
+**Not merged** — Experiment 1’s branch does not merge until Experiment 1 is offered whole; how the storage half
+joins Batch Eight from that branch is **a question for Fable when Batch Eight is assembled** (I will not cherry-pick
+out of a branch I was told does not merge).
+
+**RULED (Fable): `markRuns.ts` (FIX, r3) is the ONE reader for inline marks, with FOUR consumers — the formatter,
+the decorator, Copy My Words’ strip, and Experiment 1’s anchor text (PW’s `visibleText`).** **Experiment 1 does not
+merge until `visibleText` derives from it, with a proof.**
+
+**WITH NICK — NO DEFAULT:** the indent look — first line only, or the whole paragraph as a block.
+
+**⚠ CORRECTED, same turn (chat 1) — TOOLS’ RUN LOGS FOUND.** The entry above says I could not show what TOOLS’ runs were.
+A wider search finished and found them in the default temp directory as **`i195-default.log.txt`,
+`i195-parked.log.txt`, `i207-default.log.txt`, `i207-parked.log.txt`** (12:26–12:33 local today), read now:
+**`ITEM195 VERIFY: PASS (49 checks)` on both legs; `ITEM207 VERIFY: PASS (41 checks)` on both legs.** **They are
+SINGLE-HARNESS runs — no `SUITE START` / `SUITE DONE` / `SUITE RESULT` stamp line, no file count, no `tree=` /
+`bundle=`.** **So the conclusion stands and is now shown, not inferred: NEITHER is a full-suite stamped pair; both
+are green on their own files only; the owed full pair (default + parked, 96+ files, stamped) is the Batch Eight
+pair on the assembled tree.** The earlier sentence is left as written.
+
+## NICK’S RULING ON THE INDENT LOOK (TAB = FIRST LINE); ITEM 209 REGISTERED — 2026-09-25 (chat 1)
+
+**NICK, verbatim as relayed** (answering the indent-look question: A first line only · B the whole paragraph as a
+block):
+
+> “Tab question: A. Let's add a keystroke shortcut where TAB + "1" indents the whole
+> paragraph. All Tab keystrokes should keep indenting the text further, too, even if it has
+> already been indented once.”
+
+**RECORDED AS RULINGS (Fable):**
+1. **Tab = first-line indent (A), one level per press, repeatable** (“All Tab keystrokes should keep indenting the
+   text further, too, even if it has already been indented once”).
+2. **ITEM 209 — TAB + “1” INDENTS THE WHOLE PARAGRAPH, one level per press — REGISTERED, owner FIX, riding with 206
+   step 3.** It needs **a new stored token — a text-grammar change, NOT a schema change — read through the one
+   reader** (`markRuns.ts`). Registry: next free **210**.
+
+**DEFAULTS, VETOABLE, NOT founder text (Fable):** Shift+Tab removes one first-line level; Shift+Tab+1 removes one
+block level. Draft and Revise; **Free Write on a blank line only** (the forward law). **The rail’s indent arrow stays
+the same act as Tab; no new control** (his minimal-interface law).
+
+**A NOTE FOR THE BUILDER, mine, not a ruling:** what is live since Batch Seven is 158’s Tab — which per its own
+comment indents “one leading tab on every line of the paragraph”, i.e. the WHOLE-PARAGRAPH look (B), not the
+first-line look he has now chosen (A). **So this ruling changes what a live Tab does.** *(From the source I pasted
+to Fable; I have not re-checked it against the running app.)*
+
+## NICK’S TWO-DEVICE CHECK (BATCHES SIX + SEVEN); HIS B-I-U BUG REPORT; ITEMS 210, 211 REGISTERED — 2026-09-25 (chat 1)
+
+**NICK’S TWO-DEVICE CHECK (Batches Six + Seven), verbatim as relayed:**
+
+> “I opened it on my phone app with a horizontal screen, and the page was updated”
+
+**That discharges the two-device check owed since Batch Six** (his earlier “confirmed the sync worked” was
+Batch Five’s). *(A phone app in landscape, the page updated — one collection, one direction as he described it.)*
+
+**NICK’S BUG REPORT, verbatim as relayed** (with a Draft screenshot; **Fable’s description of it:** title bar
+“**TESTING** THE *DATABASE* SYNC”, markers showing around TESTING with the caret inside it):
+
+> “my test page revealed more bugs with the B-I-U features. The title bar is still showing
+> the asterisks, and the asterisks on the page return with right-clicking or other kinds of
+> clicking around on the page”
+
+**REGISTERED (Fable), owner FIX, BOTH RIDING WITH 206:**
+- **ITEM 210 — EVERY DERIVED TITLE AND EXCERPT STRIPS MARKS through the one reader** (`markRuns.ts`): the title
+  bar, lists, board cards, tabs, export.
+- **ITEM 211 — MARKERS NEVER SHOW ON THE PAGE, IN ANY MODE.** **Fable: “His report retires reveal-at-caret.”
+  S0 first; it may be large.**
+Registry: next free **212**.
+
+**A FLAG, mine: 211’s “retires reveal-at-caret” is FABLE’S READING of his words, not his words.** He said the
+asterisks “return with right-clicking or other kinds of clicking around”; reveal-at-caret is a deliberate,
+earlier design (markers shown at the caret so a writer can edit them — the screenshot’s markers-with-the-caret-
+inside is exactly that behaviour). **Two readings: (1) reveal-at-caret is the bug and goes — markers never show;
+(2) it is meant to show at the caret, and the bug is that it shows in the TITLE and re-appears on clicks that
+should not reveal it.** Fable has ruled for (1); **if Nick’s next word suggests he meant (2), this is where to
+look.** Removing the reveal also removes the only way to hand-edit a marker.
+
+**RULED (Fable), PW’s branch question:** PW rebuilds the 204 storage half on its own branch off `origin/main`
+(one subject, one branch); 163 and 138 separate the same way if they apply clean; **186’s base menu stays with
+Experiment 1** (its Cut/Copy rides the seams under re-derivation).
+
+**BOX, short uses after FIX’s turn (Fable):** PW’s **M7 (the wavy-underline measurement) alone** — it gates the
+grammar paint and does not need Experiment 1’s harness — and **TOOLS’ 207b probes.** Then 194, 161, INK, as
+queued. **The grant names FIX (r3 then 160) and is unchanged.**
+
+## THE STEP 3 PAIR GRANTED — FIX, item-writing-r3 @ 396d2f0, BOTH LEGS — 2026-09-25 14:40 local (chat 1)
+
+**FIX’S REQUEST (“→ CHAT 1: box free, 0 browsers”):** grant lane FIX “step 3 pair on `item-writing-r3` @ `396d2f0`
+(both legs)”. **The message arrived cut off mid-sentence (“I”) — nothing after it was seen.**
+**CHECKED:** `396d2f0f837d255fc5bb13fd33a9a51777a47b64` is the origin tip (three commits past the `1b0a771` the
+earlier grant named: `9f06cc6` step 3c — first-line indent look, the `>|` block-indent token, Tab as a chord
+state machine, Copy My Words through the shared reader; `b899c37` `writing-r3` 33 checks; `396d2f0` line-scope
+Tab/block indent, item83f E3 parked x4 with successors); **0 harness-signature processes; no suite directory newer
+than 00:39 in the default temp location.**
+
+**GRANT REWRITTEN: lane FIX — the step 3 pair on `item-writing-r3` @ `396d2f0`, BOTH LEGS** (replacing the earlier
+“r3 @ `1b0a771`, then 160” grant; token in the file, not here). **The parked leg runs after a red default (`;`).**
+**160’s pair is NOT named by this grant — it remains FIX’s next turn, by a fresh line.** Order behind FIX unchanged:
+PW’s M7 alone and TOOLS’ 207b probes, then 194, 161, INK.
+
+## BATCH EIGHT PLANNED; 211 WITH NICK; A RELAY CROSSED A LIVE RUN — GRANT NOT CLEARED — 2026-09-25 14:45 local (chat 1)
+
+**THE RELAY:** “→ box free — FIX (0 browsers). Clear the grant.”, with the box order PW’s M7 → TOOLS’ 207b → INK’s
+revspell → TOOLS’ 194 → INK’s 157, 171-A, and **“FIX’s standalone r3 pair is skipped”** (the batch pair is every
+item’s full pair).
+
+**CHECKED BEFORE CLEARING — AND IT CONTRADICTS “0 BROWSERS”: a run is LIVE.** `wrizo-suite-69536`, **default leg,
+`tree=396d2f0 bundle=index-BhPwlCjS.js/598322b`, 97 files, started 14:41:51 local, 2/97 at 14:43, both green so far**,
+with `run-suite` node 69536 and a live `msedge` harness browser (13 harness-signature processes). **It is the
+“step 3 pair on `item-writing-r3` @ `396d2f0`, both legs” that this desk granted at 14:40 on FIX’s own request.**
+**The relay reached me after the run started** (the box-free line predates it, or crossed it). **NOTHING WAS
+GRANTED AND NOTHING KILLED; the grant file still names FIX.** Rewriting it would strand the live run; ending it
+is FIX’s act, as a TREE KILL (runner, harness children, browsers), confirmed by 0 runners and 0 harness browsers
+measured. **DECISION FOR FABLE / FIX, both readings:** (A) FIX stops its own pair (Fable’s stated order skips it;
+the batch pair covers it) and sends a fresh box-free line — then PW’s M7 is granted; (B) let it finish —
+a full stamped pair on the r3 tree (~90 min) that the batch pair will repeat. **Lean: A**, per the ruling already
+made; but it is FIX’s run and Fable’s order.
+
+**BATCH EIGHT, PLANNED (Fable) — NOTHING ASSEMBLED OR MERGED:** `item-writing-r3` @ `396d2f0` (206 step 3 — look A,
+line-scoped Tab, Tab+1 = item 209, BUILT) · 210 when built · `item207-fonts` @ `5653417` (207 phase 1) · 207b if its
+short use is green · 195 (`item195-sliver-grip`) · 204 storage @ `13cd415` (`item204-proofing-storage`) · revspell if
+green · 163 @ `9e47132` (`item163-location-in`) and 138 @ `3d0d55b` (`item138-pin-tall`) **if their browser checks
+ride as harness files.** **The batch pair is every item’s full pair. 160 is NOT in it — its own pair, Batch Nine.**
+**BATCH EIGHT’s pair takes the next free slot once 210 lands.** *(I verified each SHA is on its named branch on
+origin. Two flags for assembly: the batch carries a SCHEMA change — 204 storage (`users.proofing`) under Nick’s
+“1. Yes” — so it is a schema deploy; and 207’s branch parks three `item112a` assertions.)*
+
+**211, WITH NICK — my two readings put to him (Fable): (A) markers never show; (B) show only at the caret, as
+now. DEFAULT A (vetoable, not founder text). No build before his answer; FIX’s S0 may proceed.**
+
+**ACCEPTED (Fable): PW’s instrument change on 163** — repointed to main’s `deskTerm`, plus CLAIM 0. **An instrument
+change, no product change, and falsified.**
+
+**ALSO: FIX ran development iterations inside a verification grant and disclosed it — acceptable ONCE (Fable);
+next time the request names iteration.**
+
+## ITEM 211 — NICK’S RULING: “A” (MARKERS NEVER SHOW) — 2026-09-25 (chat 1)
+
+**THE QUESTION AS PUT TO NICK (as relayed by Fable):**
+
+> “(A) Never show. The page always looks like a finished book page. You change styles only
+> with the buttons, the right-click menu and shortcuts, like in Word. (B) Show only while
+> your cursor is inside a styled word. That's how it works now, and it lets you edit the
+> marks by hand. I recommend A. Default: A.”
+
+**HIS ANSWER, verbatim:**
+
+> “A”
+
+**RECORDED AS A RULING (Fable):** **markers never show — on the page in EVERY mode and on cards — and
+reveal-at-caret is RETIRED.** **Hand-editing markers goes with it, as the question said.** *(This settles the
+“two readings” I flagged on the 211 entry: reading (1), Fable’s, is Nick’s. The default and his answer
+agree; it is his word, not a default taken by skip.)* **FIX’s S0 shape report comes to Fable BEFORE any build;
+if it calls for a NEW EDITOR MODEL, it goes to Nick in plain words first.** *(Fable’s own conditions.)*
+
+**A NOTE, mine:** this changes what is LIVE (Batch Seven): the
+reveal-at-caret Nick saw in his screenshot is shipped behaviour, so 211 is a behaviour reversal of a shipped
+design, not a bug fix in the narrow sense.
+
+## RESUMED AFTER A RATE-LIMIT GAP — FIX’S r3 PAIR ABANDONED INCOMPLETE; FIVE UNREVIEWED COMMITS PUSHED STRAIGHT TO main OUTSIDE THIS DESK’S PROCESS — 2026-09-30 (chat 1)
+
+**THE GAP.** This desk was rate-limited; the conversation resumed 2026-09-30 with no memory of anything between
+the last entry (`b2b2dab`, 2026-09-25 ~14:45 local) and now. **Local `main` was 5 commits BEHIND `origin/main`
+— fast-forwarded clean, `b2b2dab..aa11f58`, no divergence.**
+
+**FIX’s STEP-3 PAIR, ABANDONED, NOT ABANDONED BY FIX — by this outage.** The grant this desk wrote at 14:40 on
+2026-09-25 (“step 3 pair, `item-writing-r3` @ `396d2f0`, both legs”) was still on the file, 5 days stale.
+**`wrizo-suite-69536`’s default leg stops at `[03/97]`** (`ab1`, `ab2`, `ab3`, all PASS) — **no `SUITE DONE`,
+no parked leg, no verdict.** **0 harness-signature processes now.** The run almost certainly died when this
+session was cut, not from a product or harness fault. **THE GRANT FILE HAS BEEN CLEARED** (`clearGrant()`,
+verified absent after) — **the box is FREE, but nothing is offered from that pair; it must be RE-RUN, not
+trusted from where it stopped.**
+
+**⚠ A SEPARATE AND MORE SERIOUS FINDING, found on the same fast-forward: FIVE COMMITS landed on `origin/main`
+BETWEEN 00:21 AND 04:47 UTC TODAY, authored by `Cursor Agent <cursoragent@cursor.com>` and
+`cursor[bot]`, co-authored `303webhouse` — OUTSIDE THIS DESK’S PROCESS ENTIRELY: no box grant, no suite pair,
+no Fable review, no Nick ship word, no ledger entry, until now.** *(The seed’s own law: “you are the ONLY
+lane that merges to main.” This did not go through a merge by this desk at all — it landed on `origin/main`
+directly.)* **The five, by title:** `f1d8b01` Pin the strip utilities and tuck Text/Ink under Free Write ·
+`ae39e4f` Shrink the rail foot and the writing-mode tabs · `2aa01ed` Tighten the mode tabs and paint Plan in
+olive capitals · `782c642` Match Plan to the mode tabs and lift the rail foot · `aa11f58` Ship the framed-desk
+display pass. **Product delta, 5 files: `Cascade.tsx`, `ModeStrip.tsx`, `index.css`, `PageEditor.tsx`, and —
+a harness file — `scripts/harness/item137.mjs` (touched alongside `ModeStrip.tsx`, 25 and 67 lines).**
+
+**VERIFIED BEFORE DOING ANYTHING ELSE:** **NOT LIVE** — production still serves Batch Seven’s stamp
+(`index-CsedhZ4m.js` / `index-BiZkP_2T.css`, unchanged); **these five commits are UNBUILT and undeployed.**
+**`tsc` x2 exit 0** on the fast-forwarded tree. **I have NOT run the suite on this tree, NOT read the
+`item137.mjs` diff for whether its own assertions still hold, and NOT reviewed the display changes at the
+bytes** — that is Fable’s door, per every batch before this one, and I am not opening it unilaterally.
+
+**HANDED UP, not resolved quietly.** This desk does not know: whether Nick authorized this path (a direct
+Cursor session) as a one-off or a new lane; whether Fable has seen it; whether it is meant to fold into Batch
+Eight or ship on its own. **Nothing further is done here — no pair run, no merge (there is nothing to merge;
+it is already on `main`), no grant written for a build — until Fable or Nick says how this is to be treated.**
+**The standing box order (PW’s M7 → TOOLS’ 207b → INK’s revspell → …) and Batch Eight’s plan are UNCHANGED by
+this entry; they are what I return to once this is answered.**

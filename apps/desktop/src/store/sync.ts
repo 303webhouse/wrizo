@@ -68,12 +68,12 @@ function stampMap(records: DirtyRecords): Map<string, string> {
 // the writer (SyncIndicator), and every other record syncs around it. The list is rebuilt from the dirty set on every
 // sync, so a record that shrinks - the writer erases strokes - goes out by itself.
 //
-// THE LIMIT IS LEARNED, NOT ONLY ASSUMED. REQUEST_LIMIT_BYTES mirrors the server's express.json limit, and production
-// was probed (docs/evidence/item203/proxy-probe.*): nothing upstream of Express refuses a body under it. But if a 413
+// THE LIMIT IS LEARNED, NOT ONLY ASSUMED. REQUEST_LIMIT_BYTES mirrors the server's /api/sync body limit (16 MiB since P3; it was
+// 5 MiB), and production was probed (docs/evidence/item203/proxy-*): nothing upstream of Express refuses a body up to 64 MiB. But if a 413
 // ever arrives for a body the client thought was fine (a lower proxy, a lowered limit), a multi-record chunk is split in
 // half and retried, and a lone record lowers `learnedLimitBytes` to its own size and is listed. The lesson is held in
 // memory only: it is re-learned on the next launch, at the price of at most one refused upload per fat record.
-const REQUEST_LIMIT_BYTES = 5 * 1024 * 1024;   // the server's express.json limit (index.ts BODY_LIMIT_BYTES)
+const REQUEST_LIMIT_BYTES = 16 * 1024 * 1024;  // the server's /api/sync body limit (index.ts SYNC_BODY_LIMIT_BYTES) - was 5 MiB before item 203's P3
 const ENVELOPE_BYTES = 1024;                    // {"lastSyncAt":...,"push":{...},"pull":false} and its commas: generous
 const CHUNK_TARGET_BYTES = 1024 * 1024;         // small records ride together up to this
 let learnedLimitBytes = Number.POSITIVE_INFINITY;
