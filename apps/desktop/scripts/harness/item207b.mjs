@@ -7,14 +7,24 @@
 //     which Free Write's roster then lists (without the door);
 //   · a refusal is one plain sentence and changes nothing;
 //   · a page in a face this device lacks renders its class fallback and is marked quietly (no toast, no extra element).
+// ALSO HERE (Fable, 2026-09-30, after a box-turn finding of two misclassified families): the classifier's own
+// known-family fixture, moved from the S0 probe INTO this file — it now stays in the standing suite Batch Eight's
+// own pair re-runs, so a classifier fix is confirmed by that run rather than a second one-off probe.
 // Every press is a hit-tested real pointer; fixtures go through the app's own seams; a thrown driver error is a FAILED check.
+import { createRequire } from 'node:module';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
 import { trustedDispatch } from '../trusted-point.mjs';
 
+const here = dirname(fileURLToPath(import.meta.url));
+const desktop = join(here, '..', '..');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
 const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass, detail }); console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? `  [${String(detail).slice(0, 280)}]` : ''}`); };
 const press = (app, expr, what) => trustedDispatch(app, expr, what, { report: ok });
+// Ground truth: Windows ships these; a family absent on the box running this is REPORTED, not counted against the classifier.
+const KNOWN_CLASSES = { 'Times New Roman': 'serif', Georgia: 'serif', Cambria: 'serif', 'Palatino Linotype': 'serif', Arial: 'sans-serif', Verdana: 'sans-serif', Calibri: 'sans-serif', 'Segoe UI': 'sans-serif', Tahoma: 'sans-serif', 'Courier New': 'monospace', Consolas: 'monospace', 'Lucida Console': 'monospace' };
 const PROSE = 'The garden had been quiet for a long time, and nobody who walked through it that autumn could have said exactly when the quiet began. ';
 // A family that is installed on any Windows box and whose class is known: the pick target.
 const TARGET = { name: 'Consolas', generic: 'monospace' };
@@ -47,8 +57,20 @@ const openDrawer = async (app) => {
 const openRoster = async (app) => { await press(app, "document.querySelector('.wz-type-face')", 'the face button'); await sleep(200); };
 const DRESSED = (face) => ({ margins: 'normal', lineSpacing: 1.6, pageNumbers: { on: false, placement: 'bottom-center' }, headers: { on: false, text: '' }, footers: { on: false, text: '' }, face, size: 12 });
 
+const { build } = createRequire(createRequire(join(desktop, 'package.json')).resolve('vite'))('esbuild');
+const fdBundle = (await build({ stdin: { contents: "export * from './store/fontDetect';", resolveDir: join(desktop, 'src'), loader: 'ts' }, bundle: true, write: false, format: 'iife', globalName: '__fd', logLevel: 'silent' })).outputFiles[0].text;
+
 await withHarness(async (app) => {
   try {
+    // ==== 0 · THE CLASSIFIER: the known-family fixture (moved here from the S0 probe, Fable's instruction) =========
+    await openPage(app, { id: 'i207b-classify', mode: 'drafting' });
+    await app.evalJs(fdBundle);
+    const classifyRows = await app.evalJs(`(() => { const out = {}; for (const n of ${JSON.stringify(Object.keys(KNOWN_CLASSES))}) out[n] = { installed: __fd.isFontAvailable(n), cls: __fd.classifyGeneric(n) }; return out; })()`);
+    const present = Object.keys(KNOWN_CLASSES).filter((n) => classifyRows[n]?.installed);
+    ok('CLASSIFY: at least six of the twelve known Windows families read as installed (an environment with none proves nothing about the fixture)', present.length >= 6, JSON.stringify(present));
+    const wrong = present.filter((n) => classifyRows[n].cls !== KNOWN_CLASSES[n]);
+    ok('CLASSIFY: every INSTALLED known family is classed correctly (serif / sans-serif / monospace) — the box-turn defect (Verdana/Tahoma as serif) confirmed fixed here, not re-guessed', wrong.length === 0, JSON.stringify(wrong.map((n) => [n, classifyRows[n].cls, 'expected', KNOWN_CLASSES[n]])));
+
     // ==== 1 · THE DOOR: where it is, and where it is not ==========================================================
     await openPage(app, { id: 'i207b-dr', mode: 'drafting' });
     const supported = await app.evalJs("typeof window.queryLocalFonts === 'function'");

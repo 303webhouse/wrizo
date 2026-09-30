@@ -53,8 +53,11 @@ await withHarness(async (app) => {
     ok('DETECT: a family that does not exist is reported NOT installed', rows['Wrizo Definitely Absent'].installed === false, JSON.stringify(rows['Wrizo Definitely Absent']));
     const present = Object.keys(KNOWN).filter((n) => rows[n].installed);
     ok('DETECT: at least six of the twelve known Windows families read as installed (an environment with none proves nothing about the detector)', present.length >= 6, JSON.stringify(present));
+    // CLASSIFY moved to item207b.mjs (Fable, 2026-09-30) — the known-family fixture now lives in the file Batch
+    // Eight's own pair re-runs, so a classifier fix is confirmed by the standing suite rather than a second
+    // one-off probe run. This S0 script stays the exploratory first read; REPORTED here, not asserted.
     const wrong = present.filter((n) => rows[n].cls !== KNOWN[n]);
-    ok('CLASSIFY: every INSTALLED known family is classed correctly (serif / sans-serif / monospace)', wrong.length === 0, JSON.stringify(wrong.map((n) => [n, rows[n].cls, 'expected', KNOWN[n]])));
+    report('CLASSIFY (informational — the real gate is in item207b.mjs)', wrong.map((n) => [n, rows[n].cls, 'expected', KNOWN[n]]));
 
     // 4 - the cost of the list at device scale: one row per unique family, each in its own face
     const cost = await app.evalJs(`(async () => { let names = []; try { names = [...new Set((await window.queryLocalFonts()).map(f => f.family))]; } catch (e) { return { skipped: String(e && e.name) }; }
