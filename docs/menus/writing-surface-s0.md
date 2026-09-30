@@ -70,3 +70,11 @@ Ruled: the toggles (4, 5), cross-paragraph selection (7), Ctrl+B/I/U (9), all th
 - **"Copy My Words"** stripped only `- ` at the very front, so an indented bullet kept its hyphen; it now strips stacked prefixes in any order. (Not asked for; the same defect class, in the same file.)
 - **Evidence:** `scripts/writing-format-proof.mjs` 42/42 checks, 8 mutants each removed alone and all killed; `harness/writing-r2.mjs` 13/13 on the new build, 6/13 on the parent's src (7 red); writing-r1 still 25/25; regressions ab2 33, e1 41, fx4 42, fx5 62, item118 10, item83f 34, underline 7, strike 7, outdent 9, reveal 16, item121 43, fx6 37, fx1 23, j5 37, fx7 44: all PASS. Not run: the full-suite pair.
 - **Known, deferred to step 3:** a mark nested inside another still stores correctly but the decorator does not paint it (`__*x*__` shows the underline markers). The toggles are ready for it.
+
+## 211 (never show markers): Fable's conditions, 2026-09-30
+
+Lean APPROVED with conditions: probe first (`scripts/writing-hidden-marker-probe.mjs`, measure caret / edge typing / Backspace-Delete / copy-cut-paste / IME); at an edge, typing takes the style of the character to its LEFT (the Word/Docs rule) and an empty pair made by a press takes the typing; build behind a temporary switch, default on once green, retired once proven; named IME, paste and undo checks; phone keyboards are Nick's live test. Not in Batch Eight.
+
+## Consumers of store/markRuns.ts (keep stable)
+
+The PUB (Publish) arc reads marks only through `readLead`, `readMarks`, `stripLine` and `BLOCK_TOKEN`. Their names, signatures and token spans stay stable; any change is told to the PUB lane before it lands. Other consumers: draftFormat.ts (formatter), draftDecoration.ts (decorator), entryText.ts (titles/excerpts, item 210), stripMarkdownConventions (Copy My Words / .txt export), PW's Experiment 1 visible-raw map.
