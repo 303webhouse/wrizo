@@ -20,3 +20,7 @@ The door loses its full-form guard · the control enumerates fonts from an effec
 
 ## Unmeasured, named
 The class detector's accuracy (display and script faces land in sans-serif by design); whether Electron's `file://` origin counts as a secure context for this API; and the CDP name for denying the permission (`local-fonts`) — the rendered refusal check reports a driver failure rather than assuming it.
+
+---
+## BOX TURN RESULT (2026-09-30, grant `tools-207b-probes-20260930`) — `item207b.mjs` PASS 20/20 on BOTH legs (park count 0)
+Full numbers in `item207b-s0-device-fonts.md` §3. Headline: the door, the per-click permission ask, the drill-in, the per-device library, the quiet substituted mark, and the plain refusal sentence all render and behave as designed. **Electron needs no `main.ts` change — confirmed, not assumed** (all three handler configurations show `asked: []`; Electron never routes this API through the permission-request system at all). **One live product fix from a box-turn finding**: a mid-session permission revocation resolves `queryLocalFonts()` successfully with zero entries rather than rejecting; `openAdd()` now treats that the same as a refusal. **One named, unfixed defect**: `classifyGeneric` misreads Verdana and Tahoma as serif — queued for a browserless fix + a short confirming box turn, not patched blind mid-turn.

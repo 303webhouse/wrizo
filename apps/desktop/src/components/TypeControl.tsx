@@ -90,7 +90,11 @@ export function TypeControl({ form, face, size, onPickFace, onSize }: TypeContro
   const openAdd = async () => {              // the writer's own click: the only place fonts are enumerated
     setView('add'); setInstalled(null); setAddError(null);
     const r = await listInstalledFamilies();
-    if (r.ok) setInstalled(r.families); else { setInstalled([]); setAddError(t('typeAddDenied')); }
+    // ITEM 207b — box turn finding (2026-09-30): a mid-session permission REVOCATION resolves `queryLocalFonts()`
+    // successfully with an EMPTY list rather than rejecting (measured live; the design's own reasoning assumed a
+    // rejection). A genuinely fontless OS is not a real scenario this app needs to render silently as "nothing
+    // here" either, so `ok: true` with zero families is treated the same as a refusal — one honest sentence either way.
+    if (r.ok && r.families.length > 0) setInstalled(r.families); else { setInstalled([]); setAddError(t('typeAddDenied')); }
   };
   const pickInstalled = (name: string) => {
     const f = addDeviceFont(name, classifyGeneric(name));
