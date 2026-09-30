@@ -23261,3 +23261,41 @@ quiet line; old volumes stay whole, searchable, linkable, publishable; a rail Vo
 short hover on mouse, a long-press on touch — the hover ruled “Yes”, slate 15) is §12 in full; not
 reproduced here — see the committed file.** **This is NOT a Publish ticket** — it belongs to whichever lane
 owns the Journal and the Library.
+
+## ITEMS 212–216 REGISTERED (PUB, DEVICE STORAGE, LIBRARY/SHELF/JOURNAL, TUTOR 20-MESSAGE FAILURE, CURSOR-PASS FOLLOW-UPS); THE BOX ORDER — 2026-09-30 (chat 1)
+
+**Registered in the order Fable gave, each taking the next free number:**
+
+**ITEM 212 — THE PUB ARC (Publish), independently shippable.** PUB0 through PUB12, plus **PUB-S**
+(`projects.publish` + `users.publish_profile`, synced — **a SCHEMA change, Nick’s word required**), per
+`docs/publish/pub-committee-pass.md` §7. **Its omission line for links uses the ruled words “Linked material
+isn’t included.”** (the same string ruled for Experiment 1, ledger above). **The `.wzo` file never carries a
+credential.** No owner yet; PUB1 needs FIX’s grant (after r3, for the door handler in `PageEditor.tsx` /
+`ScriptEditor.tsx`); PUB2 needs r3 merged (`markRuns.ts`) and 210; PUB3 needs 207’s faces; PUB5 needs 188.
+
+**ITEM 213 — DEVICE STORAGE, URGENT, owner TOOLS.** From `pub-committee-pass.md` §11: `persistence.ts:253`
+swallows a failed write silently, so a full localStorage (~5 MB) loses offline edits on reload, with no
+other copy for an account-less writer. Measured trigger: text at ~0.5–0.85M words, or **about one densely
+handwritten ink page** (item 203’s ~56 bytes/point). **Step 1: a failed save is never silent** (Fable’s own
+framing — say so honestly). **Step 2: the device store moves to IndexedDB.**
+
+**ITEM 214 — LIBRARY, SHELF AGING, JOURNAL VOLUMES.** Nick’s §11 rulings 1–2 (the Library container; the
+90-day Shelf age rule for unfiled Pages/Boards, Drawers exempt) and §12’s volumes design (200 pages, retire
+to the Library at the edge, the rail’s Volumes group, hover on mouse / long-press on touch). **PLAN DESK
+briefs. NOTHING BUILDS BEFORE (213)** — both `shelvedAt` and the volume boundary are schema/shape work that
+assumes storage is already safe.
+
+**ITEM 215 — THE TUTOR FAILS ON ANY CONVERSATION OVER 20 MESSAGES, on every send — owner INK.** Found in
+passing by the Publish pass (§11); filed separately because it is TUTOR-lane code
+(`apps/server/src/tutor.ts`, `components/Tutor.tsx`), not a Publish ticket.
+
+**ITEM 216 — CURSOR-PASS FOLLOW-UPS, owner TOOLS.** *(Named by Fable without detail; the detail is owed when
+TOOLS is assigned, or from Fable directly — not invented here.)*
+
+Registry: next free **217**.
+
+**BOX ORDER (Fable): PW’s M7 (short) → TOOLS’ 207b probes (short) → FIX’s item 210 + 211 probe (short) →
+THE BATCH EIGHT PAIR.** **GRANTED: lane PW, the M7 wavy-underline measurement** (no branch/SHA named yet;
+a short use, per its own precedent). **AT ASSEMBLY: FIX and TOOLS each merge `main` into `r3` and `195`
+FIRST** — Cursor’s `index.css` change overlaps both branches’ own `index.css` hunks. **Storage step 1 (213)
+joins Batch Eight IF OFFERED before the pair starts; otherwise it ships ALONE right after, on Nick’s word.**
