@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wrizo Press</title>
+<!--
+  PUB · MOCKUP B — "THE PRESS" (the door opens a display; one tap returns)
+  Publish lane · 2026-09-30 · CHOSEN BY NICK ("I like B better" → "B only", 2026-09-30).
+  Companion to docs/publish/pub-committee-pass.md (§3). Mockup A, the Sheet, was not chosen.
+
+  Nick, verbatim (2026-09-29): "…an entire book of chapters and titles pages and bibliographies."
+  Nick, verbatim (2026-09-30): "let's allow users to move a Page, Board, or Drawer to their Library"
+
+  B ONLY: THE PRESS OPENS AT THE SIZE OF WHAT YOU'RE ON (rig: "you came from").
+    * From a chapter: the whole binder (or where you last left it), with "Just this" one tap away.
+    * From a board card (or a loose page, or selected words): just that piece. The editions are
+      Post (X) · Quote card · Text, so a quick post is two taps: Publish, then the brass button.
+
+  WHAT THIS DRAWS:
+    * Publish → is a DOOR onto a DISPLAY (three-space canon), never a home. The band carries the
+      return chip; one tap puts the writer back on Ch. 7 with the caret where it was.
+    * LEFT HAND — the Running Order: front matter / body / back matter, each row included or not,
+      chapters open to their sections, any row can be published alone ("Just this"). Order is READ
+      from the binder (T1: Publish never keeps its own copy of chapter order).
+    * CENTRE — a live preview of the finished thing in the chosen edition, at true page geometry
+      (manuscript: Times 12, double-spaced, 1-inch margins, "Surname / TITLE / page"; screenplay:
+      Courier 12, 1.5-inch left margin; APA: title page and hanging-indent references).
+    * RIGHT HAND — Edition (kind-aware, at most three plus the Wrizo file) · Dress (at most three
+      toggles) · Deliver. One brass action. An unticked "Afterwards, move this to my Library".
+  The shape is ruled (B only). The details drawn here are still candidates for the build briefs.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=Courier+Prime&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  /* Layout: a mock rig on top, the Wrizo stage (1366×768, scaled to fit) in the middle, a caption below.
+     Palette: Wrizo's Plateau theme as the house mocks draw it — one deliberate dark look. Exported pages are white. */
+  :root{
+    color-scheme:dark;
+    --void:#000; --rig-line:#222; --rig-text:#9a9a9a; --rig-hi:#d8d8d8; --rig-btn:#141414; --rig-btn-line:#333;
+    --ok:#9fb36a; --cap-bg:#08080a; --cap-line:#1e1e22; --cap-text:#7e786e; --cap-hi:#b9b2a6;
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --row-hover:#1f1407;
+    --paper:#F3EDE1; --ink-on-paper:#2B2014; --ink-on-paper-low:#8A7C68;
+    --sheet:#FCFAF5; --sheet-ink:#1a1612; --sheet-low:#6d6458;
+    --brass:#FF9800; --brass-hover:#ffab33; --on-brass:#1C1610;
+    --accent-rest:#96a05a; --ember:#E0712C;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A; --text-dead:#4d443a; --line-dead:#2a1c0f;
+    --ui:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --prose:'Crimson Pro',Georgia,'Times New Roman',serif;
+    --ms:'Tinos','Times New Roman',Times,serif;
+    --script:'Courier Prime','Courier New',Courier,monospace;
+    --mono:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:var(--void);color:var(--text-hi);font-family:var(--ui);overflow:hidden;
+       display:flex;flex-direction:column;padding-inline:16px}
+  button{font:inherit;color:inherit}
+  :focus-visible{outline:2px solid var(--accent-rest);outline-offset:1px}
+
+  /* ---------- rig ---------- */
+  .rig{flex:none;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding-block:8px;
+       border-bottom:1px solid var(--rig-line);font-size:12px;color:var(--rig-text)}
+  .rig b{color:var(--rig-hi);font-weight:600;letter-spacing:.06em}
+  .rig .grp{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+  .rig button{color:var(--rig-hi);background:var(--rig-btn);border:1px solid var(--rig-btn-line);padding:3px 9px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#8a8a8a;color:#fff;background:#222}
+  #geom{margin-left:auto;font-size:11px;font-variant-numeric:tabular-nums;color:var(--ok)}
+  .fit{flex:1;min-height:0;position:relative;overflow:hidden}
+  .stage{position:absolute;left:50%;top:50%;width:1366px;height:768px;background:var(--ground);
+         transform-origin:center center;overflow:hidden;box-shadow:0 0 0 1px #000,0 24px 60px rgba(0,0,0,.8)}
+  .cap{flex:none;max-height:118px;overflow:auto;padding-block:9px;border-top:1px solid var(--cap-line);
+       background:var(--cap-bg);font-size:11.5px;line-height:1.55;color:var(--cap-text)}
+  .cap b{color:var(--cap-hi);font-weight:500}
+  @media (max-width:640px){ .cap{max-height:88px} }
+
+  /* ---------- frame ---------- */
+  .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 1fr;grid-template-rows:56px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;align-items:center;padding-top:14px;gap:2px}
+  .rail .cat{display:block;width:100%;text-align:center;padding:9px 0 8px;color:var(--text-low);font-size:10px;letter-spacing:.08em}
+  .rail .cat .glyph{display:block;font-size:15px;line-height:1;margin-bottom:3px;color:var(--text-mid)}
+  .rail .sep{width:44px;height:1px;background:var(--line);margin:6px 0}
+  .rail .foot{margin-top:auto;width:100%;padding-bottom:10px}
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:22px;padding:0 24px;border-bottom:1px solid var(--line)}
+  .ret{display:flex;align-items:center;gap:7px;background:none;border:1px solid var(--accent-rest);color:var(--text-hi);
+       font-size:12px;padding:5px 11px 5px 9px;cursor:pointer;white-space:nowrap}
+  .ret .g{color:var(--accent-rest);font-size:14px;line-height:1}
+  .ret:hover{background:var(--row-hover)}
+  .crumb{font-size:11.5px;color:var(--text-low);letter-spacing:.02em;white-space:nowrap}
+  .crumb b{color:var(--text-mid);font-weight:500}
+  .strip{display:flex;gap:22px;margin:0 auto}
+  .mode{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-mid);padding:6px 2px;
+        border:none;border-bottom:1px solid transparent;background:none}
+  .mode.active{color:var(--text-hi);border-bottom-color:var(--accent-rest)}
+  .mode.dark{color:var(--text-low)}
+  .mode.door{cursor:pointer}
+  .mode.door:hover,.mode.lit{color:var(--brass)}
+  .mode.lit{border-bottom-color:var(--brass)}
+  .room{grid-row:2;grid-column:2;position:relative;overflow:hidden}
+
+  /* ---------- the Press: three tracks ---------- */
+  .press{position:absolute;inset:0;display:grid;grid-template-columns:256px 1fr 288px}
+  .col{background:var(--panel);display:flex;flex-direction:column;min-height:0}
+  .col.l{border-right:1px solid var(--line)}
+  .col.r{border-left:1px solid var(--line)}
+  .hd{display:flex;align-items:baseline;gap:8px;padding:12px 14px 10px;border-bottom:1px solid var(--line)}
+  .engr{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--accent-rest);white-space:nowrap}
+  .hd .sub{font-size:11px;color:var(--text-low);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+  .ordernote{padding:8px 14px 2px;font-size:11px;color:var(--text-low);line-height:1.4}
+  .scroll{flex:1;overflow:auto;min-height:0;padding-bottom:8px}
+  .grp-h{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-low);padding:11px 14px 4px}
+  .part{font-size:11px;color:var(--text-low);padding:6px 14px 2px 36px;font-style:italic;font-family:var(--prose)}
+  .ro{display:flex;align-items:center;gap:8px;padding:4px 10px 4px 14px;font-size:12.5px;color:var(--text-mid);
+      border-left:2px solid transparent;cursor:pointer;min-height:26px}
+  .ro:hover{background:var(--row-hover)}
+  .ro.focus{border-left-color:var(--accent-rest);color:var(--text-hi);background:var(--row-hover)}
+  .ro.off{color:var(--text-low)}
+  .ro .bx{width:12px;height:12px;border:1px solid var(--text-low);display:grid;place-items:center;font-size:9px;color:var(--accent-rest);flex:none;
+          background:none;padding:0;cursor:pointer}
+  .ro .tw{width:10px;flex:none;color:var(--text-low);font-size:9px;background:none;border:none;padding:0;cursor:pointer}
+  .ro .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ro .src{font-size:10px;color:var(--text-low);white-space:nowrap}
+  .ro .src.warn{color:#a88f6a}
+  .ro .just{display:none;background:none;border:none;color:var(--accent-rest);font-size:11px;padding:0;cursor:pointer;white-space:nowrap}
+  .ro:hover .just,.ro.focus .just{display:inline}
+  .ro:hover .src,.ro.focus .src{display:none}
+  .sec{font-size:11.5px;color:var(--text-low);padding:2px 14px 2px 58px;font-family:var(--prose);font-style:italic}
+  .note{padding:10px 14px;font-size:11px;color:var(--text-low);line-height:1.45}
+  .link{background:none;border:none;color:var(--accent-rest);cursor:pointer;font-size:11px;padding:0}
+  .link:hover{text-decoration:underline}
+
+  /* centre: the preview */
+  .mid{display:flex;flex-direction:column;min-width:0;min-height:0;position:relative}
+  .mid-top{display:flex;align-items:center;gap:12px;padding:12px 20px 8px;font-size:11.5px;color:var(--text-low);font-variant-numeric:tabular-nums}
+  .mid-top b{color:var(--text-mid);font-weight:500}
+  .flip{background:none;border:1px solid var(--line);color:var(--accent-rest);width:26px;height:24px;cursor:pointer;font-size:15px;line-height:1}
+  .flip[disabled]{opacity:.3;cursor:default}
+  .scope{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .scope .pill{border:1px solid var(--accent-rest);color:var(--text-hi);padding:2px 8px;font-size:11px}
+  .spread{flex:1;min-height:0;display:flex;gap:18px;align-items:center;justify-content:center;padding:4px 16px 26px}
+  .pw{position:relative;overflow:hidden;flex:none;box-shadow:0 10px 30px rgba(0,0,0,.55);transition:opacity .16s ease}
+  .pw.turn{opacity:0}
+  @media (prefers-reduced-motion:reduce){ .pw{transition:none} }
+  .pg{position:absolute;top:0;left:0;transform-origin:0 0;background:var(--sheet);color:var(--sheet-ink);overflow:hidden}
+  .pgn{position:absolute;bottom:-20px;left:0;right:0;text-align:center;font-size:10.5px;color:var(--text-low);font-variant-numeric:tabular-nums}
+  .pwbox{position:relative;flex:none;padding-bottom:0}
+
+  /* manuscript (Letter, 96 dpi: 816×1056; 12 pt = 16 px; double-spaced) */
+  .ms{width:816px;height:1056px;padding:96px;font-family:var(--ms);font-size:16px;line-height:32px}
+  .ms .hdr{position:absolute;top:48px;right:96px;line-height:1}
+  .ms p{text-indent:48px}
+  .ms .chap{text-align:center;margin-top:224px;margin-bottom:32px}
+  .ms .sb{text-align:center;text-indent:0}
+  .ms .tp-l{line-height:16px} .ms .tp-r{position:absolute;top:96px;right:96px;line-height:16px}
+  .ms .tp-t{position:absolute;left:96px;right:96px;top:470px;text-align:center}
+  .ms .hang{padding-left:48px;text-indent:-48px}
+  .ms h4{font-weight:700;font-size:16px;text-align:center}
+  .ms.mla-hdr .hdr{top:48px}
+  /* e-reader screen */
+  .eb{width:390px;height:690px;padding:44px 34px;font-family:var(--ms);font-size:19px;line-height:1.55;background:#f7f3ea}
+  .eb p{text-indent:1.4em}
+  .eb p.first{text-indent:0}
+  .eb .sc{font-variant:small-caps;letter-spacing:.04em}
+  .eb .cn{text-align:center;font-size:14px;letter-spacing:.3em;margin-top:70px;color:var(--sheet-low)}
+  .eb .ct{text-align:center;font-size:30px;margin:10px 0 34px}
+  .eb .orn{text-align:center;margin:14px 0;color:var(--sheet-low)}
+  .eb .run{position:absolute;bottom:18px;left:0;right:0;text-align:center;font-family:var(--ui);font-size:12px;color:var(--sheet-low)}
+  .eb.cover{background:#2B2014;color:#F3EDE1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:40px}
+  /* reading copy — wears the page's own dress */
+  .rc{width:816px;height:1056px;padding:110px 120px;font-family:var(--prose);font-size:21px;line-height:1.62;background:var(--paper);color:var(--ink-on-paper)}
+  .rc p{margin-bottom:.9em}
+  .rc h3{font-weight:500;font-size:30px;margin-bottom:26px}
+  /* screenplay (Letter, Courier 12 pt; 1.5" left, 1" right) */
+  .sp{width:816px;height:1056px;padding:96px 96px 96px 144px;font-family:var(--script);font-size:16px;line-height:16px}
+  .sp .hdr{position:absolute;top:48px;right:96px}
+  .sp .sl{text-transform:uppercase;margin:16px 0}
+  .sp .ac{margin-bottom:16px}
+  .sp .ch{margin-left:211px}
+  .sp .dl{margin-left:96px;width:336px;margin-bottom:16px}
+  .sp .tr{text-align:right;margin:16px 0}
+  .sp .tpt{text-align:center;margin-top:320px}
+  .sp pre{font-family:var(--script);font-size:16px;line-height:16px;white-space:pre-wrap}
+  /* web post */
+  .wb{width:1000px;height:1240px;background:#fff;font-family:Georgia,'Times New Roman',serif;color:#222}
+  .wb .bar{height:44px;background:#ebe6dd;border-bottom:1px solid #d6cfc2;display:flex;align-items:center;padding:0 18px;gap:8px;font-family:var(--ui);font-size:15px;color:#6d6458}
+  .wb .bar i{width:12px;height:12px;border-radius:50%;background:#cfc6b6;display:inline-block}
+  .wb .url{margin-left:14px;background:#fff;border:1px solid #d6cfc2;padding:5px 12px;flex:1}
+  .wb .body{padding:70px 150px;font-size:22px;line-height:1.7}
+  .wb h1{font-size:46px;line-height:1.15;margin-bottom:10px;font-weight:700}
+  .wb .by{font-family:var(--ui);font-size:15px;color:#8a8175;margin-bottom:40px}
+  .wb h2{font-size:26px;margin:34px 0 12px}
+  .wb p{margin-bottom:22px}
+  .wb .draft{display:inline-block;margin-left:10px;border:1px solid #c9a15e;color:#9a7127;font-size:12px;padding:1px 7px;letter-spacing:.08em;text-transform:uppercase}
+  /* the Wrizo file card */
+  .wzo{width:560px;background:var(--panel);border:1px solid var(--accent-rest);padding:22px 24px;color:var(--text-mid);font-size:13px;line-height:1.55}
+  .wzo .fn{font-family:var(--mono);color:var(--text-hi);font-size:14px;margin-bottom:12px}
+  .wzo .r{display:grid;grid-template-columns:150px 1fr;gap:10px;padding:5px 0;border-top:1px solid var(--line)}
+  .wzo .r span:first-child{font-family:var(--mono);font-size:11.5px;color:var(--accent-rest)}
+  .tw-card{width:420px;border:1px solid var(--line);background:#15100b;padding:12px 14px;font-family:var(--prose);font-size:15px;line-height:1.4;color:var(--text-hi)}
+  .tw-card .pn{font-family:var(--ui);font-size:11px;color:var(--text-low);display:flex;justify-content:space-between;margin-bottom:4px;font-variant-numeric:tabular-nums}
+
+  /* right hand */
+  .sect{padding:10px 14px 12px;border-bottom:1px solid var(--line)}
+  .sect:last-child{border-bottom:none}
+  .sect .engr{display:block;margin-bottom:8px}
+  .ed{display:grid;grid-template-columns:1fr auto;gap:2px 8px;width:100%;text-align:left;background:none;border:none;border-left:2px solid transparent;
+      padding:6px 8px 7px;cursor:pointer;color:var(--text-mid)}
+  .ed:hover{background:var(--row-hover)}
+  .ed[aria-pressed="true"]{border-left-color:var(--accent-rest);color:var(--text-hi);background:var(--row-hover)}
+  .ed .nm{font-size:13px;font-weight:500}
+  .ed.quiet .nm{font-weight:400}
+  .ed .fm{font-family:var(--mono);font-size:9.5px;color:var(--text-low);border:1px solid var(--line);padding:1px 5px;align-self:center}
+  .ed .nt{grid-column:1/3;font-size:11px;color:var(--text-low);line-height:1.35}
+  .chips{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 2px 10px}
+  .chip{font-size:11.5px;padding:3px 8px;border:1px solid var(--line);background:none;color:var(--text-mid);cursor:pointer}
+  .chip.mono{font-family:var(--mono);font-size:10px}
+  .chip:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .chip[aria-pressed="true"]{color:var(--text-hi);border-color:var(--accent-rest)}
+  .tg{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;text-align:left;padding:4px 0;font-size:12px;color:var(--text-mid);cursor:pointer}
+  .tg .bx{width:12px;height:12px;border:1px solid var(--text-low);display:grid;place-items:center;font-size:9px;color:var(--accent-rest);flex:none}
+  .tg:hover{color:var(--text-hi)}
+  .dnote{font-size:11px;color:var(--text-low);line-height:1.4}
+  .dests{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+  .dest{font-size:11.5px;padding:6px 3px 5px;border:1px solid var(--line);background:none;color:var(--text-mid);cursor:pointer;
+        display:flex;flex-direction:column;align-items:center;gap:2px}
+  .dest .g{font-size:13px;line-height:1}
+  .dest:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .dest[aria-pressed="true"]{color:var(--text-hi);border-color:var(--accent-rest)}
+  .dest[aria-pressed="true"] .g{color:var(--accent-rest)}
+  .dest[disabled]{color:var(--text-dead);border-color:var(--line-dead);cursor:default}
+  .why{margin-top:6px;font-size:11px;color:var(--text-low);line-height:1.4}
+  .foot{border-top:1px solid var(--line);padding:11px 14px 12px;display:flex;flex-direction:column;gap:8px}
+  .btn-brass{background:var(--brass);color:var(--on-brass);border:none;font-weight:600;font-size:13px;padding:9px 12px;cursor:pointer;
+             box-shadow:0 0 22px rgba(255,152,0,.22)}
+  .btn-brass:hover{background:var(--brass-hover)}
+  .omit{font-size:11px;color:var(--text-low);line-height:1.4}
+  .omit b{color:var(--text-mid);font-weight:500}
+
+  /* the page, when you go back */
+  .paper-col{position:absolute;top:40px;bottom:52px;left:50%;width:604px;transform:translateX(-50%)}
+  .paper{position:absolute;inset:0;background:var(--paper);color:var(--ink-on-paper);border:1px solid var(--line);
+         padding:56px 62px;font-family:var(--prose);font-size:18.5px;line-height:1.62;overflow:hidden}
+  .paper h2{font-weight:500;font-size:22px;margin-bottom:18px}
+  .paper p{margin-bottom:.9em}
+  .paper.script{font-family:var(--script);font-size:14.5px;line-height:1.35}
+  .caret{display:inline-block;width:1px;height:1.05em;background:var(--ink-on-paper);vertical-align:-.15em;animation:blink 1.1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  @media (prefers-reduced-motion:reduce){ .caret{animation:none} }
+
+  /* came from a card: the board behind, and the card editions */
+  .table{position:absolute;inset:0;background-image:radial-gradient(circle,#2a1a0b 1px,transparent 1px);background-size:22px 22px}
+  .bcard{position:absolute;width:230px;background:#FBF6EA;border:1px solid #D9CFB6;border-top:2px solid #D9CFB6;padding:9px 11px 11px;
+         color:#4a3f2f;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+  .bcard .k{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:#8a7247;margin-bottom:4px}
+  .bcard .t{font-family:var(--prose);font-size:14.5px;line-height:1.35}
+  .bcard.sel{border-top-color:var(--accent-rest);outline:1px solid var(--accent-rest)}
+  .cardtxt{margin:6px 14px 4px 36px;padding:8px 10px;border-left:2px solid var(--accent-rest);font-family:var(--prose);font-size:14px;
+           line-height:1.4;color:var(--text-hi);background:var(--row-hover)}
+  .qcard{width:420px;height:420px;background:#2B2014;color:var(--paper);display:flex;flex-direction:column;justify-content:center;
+         padding:48px 44px;box-shadow:0 10px 30px rgba(0,0,0,.55)}
+  .qcard .q{font-family:var(--prose);font-style:italic;font-size:29px;line-height:1.3}
+  .qcard .by{margin-top:24px;font-family:var(--ui);font-size:13px;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
+  .qcard .mark{margin-top:auto;font-family:var(--prose);font-style:italic;font-size:15px;opacity:.35;align-self:flex-end}
+  .txtpg{width:460px;background:var(--sheet);color:var(--sheet-ink);font-family:var(--mono);font-size:14px;line-height:1.6;padding:28px 30px;
+         box-shadow:0 10px 30px rgba(0,0,0,.55);white-space:pre-wrap}
+  .toast{position:absolute;left:50%;bottom:20px;transform:translate(-50%,8px);width:max-content;max-width:520px;background:#1F1A16;border:1px solid var(--line);
+         color:var(--text-hi);font-size:13.5px;padding:9px 16px;opacity:0;transition:opacity .3s,transform .3s;z-index:9;pointer-events:none}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>PUBLISH · B — THE PRESS</b>
+  <span class="grp">kind:
+    <button type="button" id="k-book" aria-pressed="true">Book</button><button type="button" id="k-screenplay" aria-pressed="false">Screenplay</button><button type="button" id="k-essay" aria-pressed="false">Essay</button><button type="button" id="k-thesis" aria-pressed="false">Thesis</button>
+  </span>
+  <span class="grp">you came from:
+    <button type="button" id="f-chapter" aria-pressed="true">a chapter</button><button type="button" id="f-card" aria-pressed="false">a board card</button>
+  </span>
+  <span class="grp">where:
+    <button type="button" id="v-press" aria-pressed="true">in the Press</button><button type="button" id="v-page" aria-pressed="false">back where you were</button>
+  </span>
+  <span id="geom" aria-live="polite"></span>
+</div>
+
+<div class="fit" id="fit"><div class="stage" id="stage">
+  <div class="frame">
+    <nav class="rail" aria-label="Rail">
+      <span class="cat"><span class="glyph">▭</span>page</span>
+      <span class="cat"><span class="glyph">⌗</span>plan</span>
+      <span class="sep"></span>
+      <span class="cat"><span class="glyph">☰</span>drawers</span>
+      <span class="sep"></span>
+      <span class="cat"><span class="glyph">✶</span>journal</span>
+      <span class="cat"><span class="glyph">⌂</span>shelf</span>
+      <span class="cat"><span class="glyph">▤</span>library</span>
+      <div class="foot">
+        <span class="cat"><span class="glyph">⚙</span>settings</span>
+        <span class="cat"><span class="glyph">◐</span>theme</span>
+        <span class="cat"><span class="glyph">✕</span>trash</span>
+      </div>
+    </nav>
+    <div class="band" id="band"></div>
+    <div class="room" id="room"></div>
+    <div class="toast" id="toast" role="status"></div>
+  </div>
+</div></div>
+
+<div class="cap"><b>Nick's pick: B only.</b> <b>Publish → opens the Press</b>, a place you pass through, never a home. It
+<b>opens at the size of what you're on</b>: switch <b>you came from</b> to <b>a board card</b> and it opens on just that card,
+ready to post to X or save as a quote card in two taps. The chip at top left takes you
+straight back to where you were. <b>Left:</b> the running order: title page, dedication,
+chapters, sources. Tick what goes in; open a chapter to see its sections; click a row to jump the preview there, or
+<b>Just this</b> to publish that one piece. The order itself comes from your binder, so change it in Plan.
+<b>Centre:</b> the finished thing at true page shape; flip with ‹ ›. <b>Right:</b> the edition (it changes with the kind
+of writing), up to three dress choices, and where it goes. One orange button makes it. The unticked line under it moves
+the book to your <b>Library</b> afterwards, only if you tick it. Try each <b>Kind</b>, and the manuscript's
+<b>DOCX / PDF</b>, the screenplay's <b>Fountain</b>, and the thesis's <b>Style</b>.</div>
+
+<script>
+(function(){
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  // ---------- shared prose ----------
+  var CH1 = ['The snow came sideways that winter, the way it does when the old roads remember they were rivers once. Maren rode ahead, which was her habit, and said nothing, which was her other one.',
+             'Behind her Tobiah sang under his breath, a song their father had taught them and never finished. He sang it to the end of what he knew and then started over, and the horses flicked their ears as if they were waiting for the rest of it too.',
+             'By noon the ford was in sight. By one o’clock they could see that the ice had not held.'];
+  var CH1b = ['They stood at the edge a long time. The river went on under the broken plates as if nothing had asked it a question.',
+              'Tobiah said they could go round by the mill. Maren said the mill had burned in the spring. He said he knew that.'];
+  var CH1c = ['That night the innkeeper asked where they were bound, and Maren told him the truth, which surprised all three of them.'];
+  var CH7 = ['Maren took the lamp because nobody else would. The stairs went down farther than the house went up, and every step was colder than the one before it, as if cold were something you could wade into.',
+             'Tobiah followed three steps behind. He had stopped asking questions at the landing, which was how she knew he was afraid.',
+             'At the bottom the air smelled of iron and old wax. Their father’s name was already cut into the stone, the letters still pale, the way a word looks the first time you write it.'];
+  var CH7b = ['She held the lamp up to it and waited for the feeling to arrive. It didn’t. What arrived instead was the thought that someone had been paid to carve this, and had carved it well, and had gone home to supper.'];
+  var CH7c = ['Upstairs, the house had gone on without them. Somebody was laying the table.'];
+  var SRC_BOOK = ['Hale, Ruth. <i>Winter Roads of the North Country.</i> Northbridge Press, 1961.',
+                  'Orme, Daniel. “Fords and Ferries of the Upper Valley.” <i>Regional History Quarterly</i> 12, no. 3 (1978): 41–59.',
+                  'Parish records, St. Aldric’s, 1840–1852. Transcribed by the author.'];
+  var REFS = ['Csikszentmihalyi, M. (1990). <i>Flow: The psychology of optimal experience.</i> Harper &amp; Row.',
+              'Deleuze, G., &amp; Guattari, F. (1987). <i>A thousand plateaus: Capitalism and schizophrenia</i> (B. Massumi, Trans.). University of Minnesota Press.',
+              'hooks, b. (1994). <i>Teaching to transgress: Education as the practice of freedom.</i> Routledge.'];
+  var LIT = ['Deleuze and Guattari (1987) describe the rhizome as a structure without a center, in which “any point of a rhizome can be connected to anything other” (p. 7). Applied to the classroom, the figure has been read both as a model for student-led inquiry and as a warning against curricula that confuse coverage with understanding.',
+             'Csikszentmihalyi’s (1990) account of flow offers a complementary lens: learners reach absorption when challenge and skill rise together, a condition that rigid sequencing tends to break.'];
+  var ESSAY = { t:'Against Productivity', secs:[
+      ['I. The ledger',['Every productivity system I have tried begins with a ledger. Hours in, output out, and somewhere between them a number that is supposed to tell me whether the day was worth living.']],
+      ['II. Idle hands',['The trouble is that the best thing I wrote last year happened on an afternoon the ledger would have marked as wasted. I was lying on the floor. I was not, by any measure the app could see, working.','Idleness is not the opposite of work. It is the part of the work that doesn’t leave a receipt.']],
+      ['III. What the river keeps',['The river does not keep a ledger. It keeps everything, which is a different thing.']]] };
+
+  function P(arr, first){ return arr.map(function(t, i){ return '<p' + (first && i === 0 ? ' class="first"' : '') + '>' + t + '</p>'; }).join(''); }
+  function msHdr(n){ return '<div class="hdr">Castellan / THE LONG WINTER / ' + n + '</div>'; }
+
+  // ---------- the four binders ----------
+  var KINDS = {
+    book: {
+      binder:'The Long Winter', label:'Book', words:'about 84,200 words', back:'Ch. 7 · The crypt',
+      editions:['manuscript','ebook','reading','wzo'],
+      order:[
+        ['Front',[
+          { id:'title', nm:'Title page', src:'made for you', on:true },
+          { id:'copy', nm:'Copyright page', src:'made for you', on:true, only:['ebook'] },
+          { id:'ded', nm:'Dedication', src:'your page', on:true, not:['manuscript'] },
+          { id:'epi', nm:'Epigraph', src:'add a page', on:false }]],
+        ['Body',[
+          { part:'Part One — Snow' },
+          { id:'c1', nm:'1  The last ride', on:true, secs:['The ford','The mill road','The inn'] },
+          { id:'c2', nm:'2  Three letters', on:true }, { id:'c3', nm:'3  The ford', on:true }, { id:'c4', nm:'4  Salt', on:true },
+          { id:'c5', nm:'5  What the river kept', on:true }, { id:'c6', nm:'6  Lamps', on:true },
+          { part:'Part Two — Thaw' },
+          { id:'c7', nm:'7  The crypt', on:true, secs:['The lamp','Below','Supper'] },
+          { id:'c8', nm:'8  Supper', on:true }, { id:'c9', nm:'9  Ice road', on:true }, { id:'c10', nm:'10  The debt', on:true },
+          { id:'c11', nm:'11  The census', on:true }, { id:'c12', nm:'12  After', on:true }]],
+        ['Back',[
+          { id:'src', nm:'Sources', src:'your page', on:true },
+          { id:'about', nm:'About the author', src:'your page', on:false },
+          { id:'bible', nm:'Story-bible cards', src:'a board', on:false }]]
+      ],
+      orderNote:'Order comes from your binder. Change it in Plan ›' },
+    screenplay: {
+      binder:'Night Ferry', label:'Screenplay', words:'104 pages', back:'Sc. 2 · INT. FERRY CABIN',
+      editions:['screenplay','reading','wzo'],
+      order:[
+        ['Front',[{ id:'title', nm:'Title page', src:'from the script', on:true }]],
+        ['Body',[
+          { id:'s1', nm:'1  EXT. HARBOR — NIGHT', on:true }, { id:'s2', nm:'2  INT. FERRY CABIN — NIGHT', on:true },
+          { id:'s3', nm:'3  EXT. DECK — CONTINUOUS', on:true }, { id:'s4', nm:'4  INT. GALLEY — LATER', on:true },
+          { id:'s5', nm:'5  EXT. PIER — DAWN', on:true }, { id:'more', nm:'… 37 more scenes', on:true }]],
+        ['Back',[]]
+      ],
+      orderNote:'Scenes run in script order. Screenplays carry no back matter.' },
+    essay: {
+      binder:'Against Productivity', label:'Essay', words:'about 3,900 words', back:'II. Idle hands',
+      editions:['webpost','document','thread','wzo'],
+      order:[
+        ['Front',[{ id:'title', nm:'Title and byline', src:'made for you', on:true }]],
+        ['Body',[{ id:'e1', nm:'I. The ledger', on:true }, { id:'e2', nm:'II. Idle hands', on:true }, { id:'e3', nm:'III. What the river keeps', on:true }]],
+        ['Back',[{ id:'notes', nm:'Notes', src:'add a page', on:false }, { id:'src', nm:'Sources', src:'your page', on:true }]]
+      ],
+      orderNote:'Order comes from your binder. Change it in Plan ›' },
+    thesis: {
+      binder:'Rhizomes in the Classroom', label:'Thesis', words:'about 31,600 words', back:'Ch. 2 · Literature review',
+      editions:['paper','reading','wzo'],
+      order:[
+        ['Front',[{ id:'title', nm:'Title page', src:'made for you', on:true }, { id:'abs', nm:'Abstract', src:'your page', on:true }, { id:'ack', nm:'Acknowledgments', src:'your page', on:false }]],
+        ['Body',[{ id:'t1', nm:'1  Introduction', on:true }, { id:'t2', nm:'2  Literature review', on:true }, { id:'t3', nm:'3  Method', on:true },
+                 { id:'t4', nm:'4  Findings', on:true }, { id:'t5', nm:'5  Discussion', on:true }]],
+        ['Back',[{ id:'refs', nm:'References', src:'your page', on:true, warn:'as you wrote it' }, { id:'appA', nm:'Appendix A', src:'your page', on:false }]]
+      ],
+      orderNote:'Order comes from your binder. Change it in Plan ›' }
+  };
+
+  var ED = {
+    manuscript:{ nm:'Manuscript', f:['DOCX','PDF'], nt:'Standard manuscript format, for agents and editors', d:['download','share'], make:'Make the manuscript', noun:'manuscript',
+                 dress:[['num','Number chapters',true],['contact','Contact details on the title page',true]], omit:'2 ink drawings and 14 links, named on a last page. The dedication stays out: manuscripts carry only a title page.' },
+    ebook:{ nm:'E-book', f:['EPUB'], nt:'Reflows on any e-reader; chapters in the contents', d:['download','share'], make:'Make the e-book', noun:'e-book',
+            dress:[['num','Number chapters',true],['copy','Copyright page',true],['orn','Scene breaks as ⁂ (off: #)',true]], omit:'14 links, kept as plain words. Ink drawings go in as pictures.' },
+    reading:{ nm:'Reading copy', f:['HTML'], nt:'Wears your pages’ own look; print it from your browser', d:['download','share','copy'], make:'Make the reading copy', noun:'reading copy',
+              dress:[], omit:'nothing. Ink shows as pictures.' },
+    wzo:{ nm:'Wrizo file', f:['.wzo'], nt:'Keeps boards, cards, links and ink; opens back in Wrizo', d:['download'], make:'Make the Wrizo file', noun:'Wrizo file', quiet:true,
+          dress:[], omit:'nothing.' },
+    screenplay:{ nm:'Screenplay', f:['PDF','Fountain','FDX'], nt:'Industry format, 12-point Courier, page-true', d:['download','share'], make:'Make the screenplay', noun:'screenplay',
+                 dress:[['scn','Scene numbers',false],['tp','Title page',true]], omit:'1 ink sketch, named on a last page.' },
+    webpost:{ nm:'Web post', f:['HTML','MD'], nt:'For a blog or a newsletter', d:['download','share','copy','wordpress','substack'], make:'Make the post', noun:'post',
+              dress:[['serial','One post per section',false]], omit:'nothing.' },
+    document:{ nm:'Document', f:['DOCX','PDF'], nt:'Clean pages for any reader', d:['download','share'], make:'Make the document', noun:'document',
+               dress:[['nums','Number the sections',false]], omit:'nothing.' },
+    thread:{ nm:'Post / thread', f:['X'], nt:'Cut at sentences; your words unchanged', d:['copy','x'], make:'Open X with post 1', noun:'thread',
+             dress:[['np','Number the posts',false]], omit:'formatting (X shows plain text).' },
+    paper:{ nm:'Paper', f:['DOCX','PDF'], nt:'Laid out to your pages’ style guide', d:['download','share'], make:'Make the paper', noun:'paper',
+            dress:[['pn','Page numbers',true]], style:true, omit:'2 margin notes in ink, named at the end. Your References page goes in as you wrote it.' }
+  };
+  var DESTS = [['download','↓','Download'],['share','↪','Share…'],['copy','⎘','Copy'],['wordpress','W','WordPress'],['substack','S','Substack'],['x','𝕏','X']];
+
+  // ---------- came from a card (B only: the Press opens at the size of what you're on) ----------
+  var CARDS = {
+    book:       { text:'The name is already carved. Nobody tells her who paid for it.', board:'Chapter beats',
+                  others:['Maren carries the lamp. She always carries the light for someone else.', 'Tobiah stops asking questions. His fear shows up as silence.'] },
+    screenplay: { text:'Delia counts coins. She is always one short.', board:'Beat board',
+                  others:['Theo arrives soaked and grinning.', 'Act break: the ferry’s horn.'] },
+    essay:      { text:'Idleness is not the opposite of work. It is the part of the work that doesn’t leave a receipt.', board:'Argument map',
+                  others:['The ledger measures the wrong thing.', 'End on the river.'] },
+    thesis:     { text:'Coverage is not understanding. A curriculum can visit everything and learn nothing.', board:'Sources',
+                  others:['Deleuze & Guattari, 1987: the rhizome, p. 7', 'Csikszentmihalyi, 1990: flow'] }
+  };
+  var CED = {
+    post:{ nm:'Post', f:['X'], nt:'One post; a thread only if it runs long', d:['copy','x','share'], noun:'post', omit:'formatting (X shows plain text).' },
+    quote:{ nm:'Quote card', f:['PNG'], nt:'Your words set as an image', d:['download','share'], noun:'quote card', omit:'everything but these words.',
+            dress:[['name','Your name under the quote',true]] },
+    text:{ nm:'Text', f:['TXT','MD'], nt:'Plain words, nothing else', d:['download','copy','share'], noun:'text', omit:'nothing.' }
+  };
+
+  // ---------- state ----------
+  var st = { kind:'book', view:'press', from:'chapter', ed:'manuscript', fmt:0, dest:'download', start:0, focus:null, just:null, open:{ c7:true },
+             dress:{}, style:'APA', lib:false, inc:{}, ced:'post', cfmt:0, cdest:'x', cname:true };
+
+  // ---------- pages for the preview ----------
+  // Each page: { w, h, z, cls, html, n (label under the page), key (running-order id it belongs to) }
+  function pagesFor(){
+    var K = KINDS[st.kind], e = st.ed, dz = st.dress;
+    var on = function(id){ return included(id); };
+    var num = dress('num');
+    var L = function(cls, html, n, key){ return { w:816, h:1056, cls:cls, html:html, n:n, key:key }; };
+    var out = [];
+    if (st.kind === 'book'){
+      if (e === 'manuscript'){
+        var contact = dress('contact') ? '<div class="tp-l">Wren Castellan<br>14 Alder Row<br>Northbridge, VT 05601<br>wren@wrenwrites.blog</div>' : '';
+        out.push(L('ms', contact + '<div class="tp-r">about 84,200 words</div><div class="tp-t">THE LONG WINTER<br><br>by Wren Castellan</div>', 'title page', 'title'));
+        out.push(L('ms', msHdr(2) + '<div class="chap">' + (num ? 'Chapter One<br>' : '') + 'The Last Ride</div>' + P(CH1), 'p. 2', 'c1'));
+        out.push(L('ms', msHdr(3) + P(CH1b) + '<p class="sb">#</p>' + P(CH1c), 'p. 3', 'c1'));
+        out.push(L('ms', msHdr(131) + '<div class="chap">' + (num ? 'Chapter Seven<br>' : '') + 'The Crypt</div>' + P(CH7), 'p. 131', 'c7'));
+        out.push(L('ms', msHdr(132) + P(CH7b) + '<p class="sb">#</p>' + P(CH7c), 'p. 132', 'c7'));
+        if (on('src')) out.push(L('ms', msHdr(318) + '<div class="chap" style="margin-top:96px">Sources</div>' + SRC_BOOK.map(function(s){ return '<p class="hang">' + s + '</p>'; }).join(''), 'p. 318', 'src'));
+      } else if (e === 'ebook'){
+        var EB = function(cls, html, n, key){ return { w:390, h:690, cls:'eb ' + cls, html:html, n:n, key:key }; };
+        var brk = dress('orn') ? '⁂' : '#';
+        out.push(EB('cover', '<div style="font-size:13px;letter-spacing:.3em;opacity:.7">A NOVEL</div><div style="font-size:40px;line-height:1.1;margin:18px 0">The Long Winter</div><div style="width:40px;height:1px;background:#F3EDE1;opacity:.5;margin:8px auto 18px"></div><div style="font-size:16px;letter-spacing:.12em">WREN CASTELLAN</div>', 'cover', 'title'));
+        if (dress('copy')) out.push(EB('', '<div style="margin-top:360px;font-size:13px;line-height:1.6;color:var(--sheet-low)">Copyright © 2026 Wren Castellan<br>All rights reserved.<br><br>Written in Wrizo.</div>', 'copyright', 'copy'));
+        if (on('ded')) out.push(EB('', '<div style="margin-top:220px;text-align:center;font-style:italic">For T., who asked the questions.</div>', 'dedication', 'ded'));
+        out.push(EB('', '<div class="cn" style="margin-top:20px">CONTENTS</div><div style="font-size:15px;line-height:1.9;margin-top:20px">' + ['The Last Ride','Three Letters','The Ford','Salt','What the River Kept','Lamps','The Crypt','Supper','Ice Road','The Debt','The Census','After'].map(function(t, i){ return (num ? (i + 1) + '. ' : '') + t; }).join('<br>') + '<br>Sources</div>', 'contents', 'title'));
+        out.push(EB('', (num ? '<div class="cn">ONE</div>' : '<div style="height:90px"></div>') + '<div class="ct">The Last Ride</div><p class="first"><span class="sc">The snow came sideways</span> that winter, the way it does when the old roads remember they were rivers once.</p><div class="run">1 of 318</div>', 'ch. 1', 'c1'));
+        out.push(EB('', (num ? '<div class="cn">SEVEN</div>' : '<div style="height:90px"></div>') + '<div class="ct">The Crypt</div><p class="first"><span class="sc">Maren took the lamp</span> because nobody else would. The stairs went down farther than the house went up.</p><div class="run">131 of 318</div>', 'ch. 7', 'c7'));
+        out.push(EB('', '<p class="first">She held the lamp up to it and waited for the feeling to arrive. It didn’t.</p><div class="orn">' + brk + '</div><p class="first">Upstairs, the house had gone on without them. Somebody was laying the table.</p><div class="run">133 of 318</div>', 'ch. 7', 'c7'));
+        if (on('src')) out.push(EB('', '<div class="ct" style="margin-top:40px;font-size:24px">Sources</div><div style="font-size:14.5px;line-height:1.5">' + SRC_BOOK.map(function(s){ return '<p class="first" style="padding-left:1.4em;text-indent:-1.4em;margin-bottom:10px">' + s + '</p>'; }).join('') + '</div>', 'sources', 'src'));
+      } else if (e === 'reading'){
+        out.push(L('rc', '<div style="margin-top:320px;text-align:center"><h3 style="font-size:44px">The Long Winter</h3><div style="font-style:italic">Wren Castellan</div></div>', 'title', 'title'));
+        if (on('ded')) out.push(L('rc', '<div style="margin-top:300px;text-align:center;font-style:italic">For T., who asked the questions.</div>', 'dedication', 'ded'));
+        out.push(L('rc', '<h3>The last ride</h3>' + P(CH1), 'ch. 1', 'c1'));
+        out.push(L('rc', '<h3>The crypt</h3>' + P(CH7), 'ch. 7', 'c7'));
+        if (on('src')) out.push(L('rc', '<h3>Sources</h3>' + SRC_BOOK.map(function(s){ return '<p style="padding-left:1.4em;text-indent:-1.4em">' + s + '</p>'; }).join(''), 'sources', 'src'));
+      }
+    }
+    if (st.kind === 'screenplay'){
+      var f = ED.screenplay.f[st.fmt];
+      if (e === 'screenplay' && f === 'Fountain'){
+        out.push(L('sp', '<pre>Title: Night Ferry\nCredit: Written by\nAuthor: Wren Castellan\nContact: wren@wrenwrites.blog\n\n\nFADE IN:\n\nEXT. HARBOR - NIGHT\n\nWind off the water. A single ferry, lit like a lantern, rocks at the pier.\n\nDELIA (40s) hurries along the planks, coat buttoned to the throat.\n\nDELIA\n(to no one)\nNot tonight. Not this one.\n\n.INT. FERRY CABIN - NIGHT\n\nRain streaks the porthole. Delia counts coins on the bench beside her.\n\nDELIA\nFour. That\'s not enough for two.\n\nTHEO (O.S.)\nThen buy one and we\'ll share.</pre>', 'night-ferry.fountain', 's1'));
+      } else if (e === 'screenplay'){
+        if (dress('tp')) out.push(L('sp', '<div class="tpt">NIGHT FERRY<br><br>Written by<br><br>Wren Castellan</div><div style="position:absolute;left:144px;bottom:96px">wren@wrenwrites.blog</div>', 'title page', 'title'));
+        var sn = dress('scn');
+        out.push(L('sp', '<div>FADE IN:</div><div class="sl">' + (sn ? '1 ' : '') + 'EXT. HARBOR — NIGHT</div><div class="ac">Wind off the water. A single ferry, lit like a lantern, rocks at the pier.</div><div class="ac">DELIA (40s) hurries along the planks, coat buttoned to the throat.</div><div class="ch">DELIA</div><div class="ch" style="margin-left:154px">(to no one)</div><div class="dl">Not tonight. Not this one.</div><div class="tr">CUT TO:</div>', 'p. 1', 's1'));
+        out.push(L('sp', '<div class="hdr">2.</div><div class="sl">' + (sn ? '2 ' : '') + 'INT. FERRY CABIN — NIGHT</div><div class="ac">Rain streaks the porthole. Delia, coat still buttoned, counts coins on the bench beside her.</div><div class="ch">DELIA</div><div class="dl">Four. That’s not enough for two.</div><div class="ch">THEO (O.S.)</div><div class="dl">Then buy one and we’ll share.</div><div class="ac">She looks up. THEO stands in the doorway, soaked, grinning like he’s already won something.</div>', 'p. 2', 's2'));
+      } else {
+        out.push(L('rc', '<h3>Night Ferry</h3><p><b>EXT. HARBOR — NIGHT</b></p><p>Wind off the water. A single ferry, lit like a lantern, rocks at the pier.</p>', 'reading copy', 's1'));
+      }
+    }
+    if (st.kind === 'essay'){
+      if (e === 'webpost'){
+        var secs = dress('serial') ? [ESSAY.secs[1]] : ESSAY.secs;
+        var body = '<h1>' + (dress('serial') ? 'Against Productivity, part II: Idle hands' : ESSAY.t) + '</h1><div class="by">Wren Castellan <span class="draft">Draft</span></div>'
+          + secs.map(function(s){ return '<h2>' + s[0] + '</h2>' + s[1].map(function(p){ return '<p>' + p + '</p>'; }).join(''); }).join('');
+        out.push({ w:1000, h:1240, cls:'wb', html:'<div class="bar"><i></i><i></i><i></i><span class="url">wrenwrites.blog/wp-admin · draft preview</span></div><div class="body">' + body + '</div>', n:'web post', key:'e1' });
+      } else if (e === 'document'){
+        out.push(L('ms', '<h4 style="margin-top:40px">Against Productivity</h4><div style="text-align:center">Wren Castellan</div><h4 style="text-align:left;margin-top:32px">' + (dress('nums') ? '1. ' : '') + 'The ledger</h4>' + P(ESSAY.secs[0][1]), 'p. 1', 'e1'));
+        out.push(L('ms', '<h4 style="text-align:left">' + (dress('nums') ? '2. ' : '') + 'Idle hands</h4>' + P(ESSAY.secs[1][1]) + '<h4 style="text-align:left">' + (dress('nums') ? '3. ' : '') + 'What the river keeps</h4>' + P(ESSAY.secs[2][1]), 'p. 2', 'e2'));
+      } else if (e === 'thread'){
+        out.push({ thread:true, n:'thread', key:'e2' });
+      }
+    }
+    if (st.kind === 'thesis'){
+      if (e === 'paper'){
+        var apa = st.style === 'APA', pn = dress('pn');
+        var hdr = function(n){ return pn ? '<div class="hdr">' + (apa ? n : 'Castellan ' + n) + '</div>' : ''; };
+        if (apa){
+          out.push(L('ms', hdr(1) + '<div style="margin-top:160px;text-align:center"><b>Rhizomes in the Classroom:<br>Student-Led Inquiry and the Conditions of Flow</b><br><br>Wren Castellan<br>Department of Education, Lakeside University<br>EDUC 690: Thesis Seminar<br>Dr. A. Moreno<br>May 4, 2027</div>', 'title page', 'title'));
+        } else {
+          out.push(L('ms', hdr(1) + '<div>Wren Castellan<br>Dr. A. Moreno<br>EDUC 690<br>4 May 2027</div><div style="text-align:center">Rhizomes in the Classroom: Student-Led Inquiry and the Conditions of Flow</div>' + P(['This thesis asks what happens to inquiry when a classroom is arranged as a network rather than a sequence.']), 'first page (' + st.style + ')', 'title'));
+        }
+        if (on('abs')) out.push(L('ms', hdr(2) + '<h4>Abstract</h4><p style="text-indent:0">This thesis asks what happens to inquiry when a classroom is arranged as a network rather than a sequence. Drawing on Deleuze and Guattari’s rhizome and Csikszentmihalyi’s account of flow, it studies two seventh-grade classrooms across one semester.</p>', 'abstract', 'abs'));
+        out.push(L('ms', hdr(9) + '<h4>Chapter 2: Literature Review</h4>' + P(LIT), 'p. 9', 't2'));
+        if (on('refs')) out.push(L('ms', hdr(61) + '<h4>References</h4>' + REFS.map(function(r){ return '<p class="hang">' + r + '</p>'; }).join(''), 'p. 61', 'refs'));
+      } else if (e === 'reading'){
+        out.push(L('rc', '<h3>Chapter 2: Literature Review</h3>' + P(LIT), 'reading copy', 't2'));
+      }
+    }
+    if (e === 'wzo') out = [{ wzo:true, n:'', key:'title' }];
+    if (st.just){ var j = out.filter(function(p){ return p.key === st.just || p.thread || p.wzo; }); if (j.length) out = j; }
+    return out;
+  }
+  function dress(id){ var e = ED[st.ed]; if (!(id in st.dress)){ var d = (e.dress || []).filter(function(x){ return x[0] === id; })[0]; return d ? d[2] : false; } return st.dress[id]; }
+  function included(id){ var key = st.kind + ':' + id; if (key in st.inc) return st.inc[key]; var r = findRow(id); return r ? r.on : true; }
+  function findRow(id){ var K = KINDS[st.kind], hit = null; K.order.forEach(function(g){ g[1].forEach(function(r){ if (r.id === id) hit = r; }); }); return hit; }
+
+  // ---------- render ----------
+  function renderBand(){
+    var K = KINDS[st.kind], h = '';
+    if (st.from === 'card'){
+      var C = CARDS[st.kind];
+      if (st.view === 'press'){
+        h += '<button type="button" class="ret" id="ret"><span class="g">↩</span>' + esc(C.board) + ' · where you left off</button>';
+        h += '<div class="crumb">' + esc(K.binder) + ' &nbsp;/&nbsp; <b>The Press</b></div>';
+        h += '<div class="strip"><span class="mode lit">Publish</span></div>';
+      } else {
+        h += '<div class="crumb" style="min-width:250px">Board&nbsp; <b>' + esc(K.binder) + ' · Plan · ' + esc(C.board) + '</b></div>';
+        h += '<div class="strip"><button type="button" class="mode door" id="door">Publish →</button></div>';
+        h += '<span class="mode" style="letter-spacing:.14em">Page →</span>';
+      }
+      $('band').innerHTML = h;
+      if ($('ret')) $('ret').onclick = function(){ go('page'); toast('Back on ' + C.board + ', the card still selected.'); };
+      if ($('door')) $('door').onclick = function(){ go('press'); };
+      return;
+    }
+    if (st.view === 'press'){
+      h += '<button type="button" class="ret" id="ret"><span class="g">↩</span>' + esc(K.back) + ' · where you left off</button>';
+      h += '<div class="crumb">' + esc(K.binder) + ' &nbsp;/&nbsp; <b>The Press</b></div>';
+      h += '<div class="strip"><span class="mode">Free Write</span><span class="mode">Draft</span><span class="mode">Revise</span><span class="mode dark">Workshop</span><span class="mode lit">Publish</span></div>';
+    } else {
+      h += '<div class="crumb" style="min-width:250px">Location&nbsp; <b>' + esc(K.binder) + ' · ' + esc(K.back) + '</b></div>';
+      h += '<div class="strip"><span class="mode">Free Write</span><span class="mode active">Draft</span><span class="mode">Revise</span><span class="mode dark">Workshop</span><button type="button" class="mode door" id="door">Publish →</button></div>';
+      h += '<span class="mode" style="letter-spacing:.14em">Plan →</span>';
+    }
+    $('band').innerHTML = h;
+    if ($('ret')) $('ret').onclick = function(){ go('page'); toast('Back where you left off: ' + K.back + ', cursor where it was.'); };
+    if ($('door')) $('door').onclick = function(){ go('press'); };
+  }
+  function renderPage(){
+    var K = KINDS[st.kind], txt;
+    if (st.from === 'card'){
+      var C = CARDS[st.kind], spots = [[70, 60], [380, 170], [120, 330]];
+      var cards = [C.others[0], C.text, C.others[1]];
+      $('room').innerHTML = '<div class="table">' + cards.map(function(t, i){
+        var sel = i === 1;
+        return '<div class="bcard' + (sel ? ' sel' : '') + '" style="left:' + spots[i][0] + 'px;top:' + spots[i][1] + 'px"><div class="k">Card' + (sel ? ' · selected' : '') + '</div><div class="t">' + esc(t) + '</div></div>';
+      }).join('') + '</div>';
+      return;
+    }
+    if (st.kind === 'screenplay') txt = '<div style="text-transform:uppercase;margin:6px 0 10px">INT. FERRY CABIN — NIGHT</div><p>Rain streaks the porthole. DELIA (40s), coat still buttoned, counts coins on the bench beside her.<span class="caret"></span></p>';
+    else if (st.kind === 'essay') txt = '<h2>II. Idle hands</h2>' + P(ESSAY.secs[1][1]).replace(/<\/p>$/, '<span class="caret"></span></p>');
+    else if (st.kind === 'thesis') txt = '<h2>Chapter 2: Literature Review</h2>' + P(LIT).replace(/<\/p>$/, '<span class="caret"></span></p>');
+    else txt = '<h2>The crypt</h2>' + P(CH7.concat(['She held the lamp up to it and waited for the feeling to arrive. It didn’t. What arrived instead was the thought that someone had been paid to carve this'])).replace(/<\/p>$/, '<span class="caret"></span></p>');
+    $('room').innerHTML = '<div class="paper-col"><div class="paper' + (st.kind === 'screenplay' ? ' script' : '') + '">' + txt + '</div></div>';
+  }
+  function renderCardPress(){
+    var K = KINDS[st.kind], C = CARDS[st.kind], e = CED[st.ced];
+    if (e.d.indexOf(st.cdest) < 0) st.cdest = e.d[0];
+    var L = '<div class="col l"><div class="hd"><span class="engr">Running order</span><span class="sub">' + esc(K.binder) + '</span></div><div class="scroll">'
+      + '<div class="ordernote">Opened on just this card, because you came from a card. <button type="button" class="link" id="wholeBin">← whole ' + esc(K.label.toLowerCase()) + '</button></div>'
+      + '<div class="grp-h">Just this</div>'
+      + '<div class="ro focus"><span class="tw"></span><span class="bx">✓</span><span class="nm">Card</span><span class="src">from Plan · ' + esc(C.board) + '</span></div>'
+      + '<div class="cardtxt">' + esc(C.text) + '</div>'
+      + '<div class="note">From a card, a loose page, or words you’ve selected, the Press opens on just that piece. From a chapter, it opens where you last left that book.</div></div></div>';
+
+    var label = e.nm + (e.f.length > 1 ? ' (' + e.f[st.cfmt] + ')' : '');
+    var M = '<div class="mid"><div class="mid-top"><span><b>' + esc(label) + '</b> · one card</span>'
+      + '<span class="scope"><span class="pill">Just this card</span><button type="button" class="link" id="wholeBin2">← whole ' + esc(K.label.toLowerCase()) + '</button></span></div><div class="spread">';
+    if (st.ced === 'post'){
+      M += '<div style="display:flex;flex-direction:column;gap:10px"><div class="tw-card"><div class="pn"><span>1 post</span><span>' + C.text.length + ' characters</span></div>' + esc(C.text) + '</div>'
+        + '<div class="dnote">X opens with this filled in. You press Post there.</div></div>';
+    } else if (st.ced === 'quote'){
+      M += '<div class="qcard"><div class="q">“' + esc(C.text) + '”</div>' + (st.cname ? '<div class="by">Wren Castellan</div>' : '') + '<div class="mark">wrizo</div></div>';
+    } else {
+      M += '<div class="txtpg">' + esc(C.text) + '</div>';
+    }
+    M += '</div></div>';
+
+    var R = '<div class="col r"><div class="hd"><span class="engr">Edition</span><span class="sub">a card</span></div><div class="scroll"><div class="sect" style="padding-top:6px">';
+    ['post','quote','text'].forEach(function(id){
+      var x = CED[id];
+      R += '<button type="button" class="ed" data-ced="' + id + '" aria-pressed="' + (st.ced === id) + '"><span class="nm">' + esc(x.nm) + '</span><span class="fm">' + esc(x.f.join(' · ')) + '</span>'
+         + (st.ced === id ? '<span class="nt">' + esc(x.nt) + '</span>' : '') + '</button>';
+      if (st.ced === id && x.f.length > 1){
+        R += '<div class="chips">' + x.f.map(function(f, i){ return '<button type="button" class="chip mono" data-cfmt="' + i + '" aria-pressed="' + (st.cfmt === i) + '">' + esc(f) + '</button>'; }).join('') + '</div>';
+      }
+    });
+    R += '</div><div class="sect"><span class="engr">Dress</span>';
+    if (e.dress) R += '<button type="button" class="tg" id="cname"><span class="bx">' + (st.cname ? '✓' : '') + '</span>' + esc(e.dress[0][1]) + '</button>';
+    else R += '<div class="dnote">Nothing to dress. The words go as you wrote them.</div>';
+    R += '</div><div class="sect"><span class="engr">Deliver</span><div class="dests">';
+    DESTS.forEach(function(d){
+      var ok = e.d.indexOf(d[0]) >= 0;
+      R += '<button type="button" class="dest" data-cdest="' + d[0] + '" aria-pressed="' + (st.cdest === d[0]) + '"' + (ok ? '' : ' disabled') + '><span class="g">' + d[1] + '</span>' + esc(d[2]) + '</button>';
+    });
+    R += '</div>';
+    if (st.cdest === 'x') R += '<div class="why">X opens with your post filled in. Nothing goes out until you press Post there.</div>';
+    R += '<div class="why" style="color:#5d5246">Wrizo | Read (the Reading Room) comes later.</div></div></div>';
+    R += '<div class="foot"><div class="omit">Leaves out: <b>' + esc(e.omit) + '</b></div>'
+       + '<button type="button" class="btn-brass" id="make">' + esc(cardVerb()) + '</button></div></div>';
+
+    $('room').innerHTML = '<div class="press">' + L + M + R + '</div>';
+    var room = $('room');
+    Array.prototype.forEach.call(room.querySelectorAll('[data-ced]'), function(b){ b.onclick = function(){ st.ced = b.getAttribute('data-ced'); st.cfmt = 0; st.cdest = st.ced === 'post' ? 'x' : CED[st.ced].d[0]; renderCardPress(); }; });
+    Array.prototype.forEach.call(room.querySelectorAll('[data-cfmt]'), function(b){ b.onclick = function(){ st.cfmt = +b.getAttribute('data-cfmt'); renderCardPress(); }; });
+    Array.prototype.forEach.call(room.querySelectorAll('[data-cdest]'), function(b){ b.onclick = function(){ st.cdest = b.getAttribute('data-cdest'); renderCardPress(); }; });
+    if ($('cname')) $('cname').onclick = function(){ st.cname = !st.cname; renderCardPress(); };
+    $('wholeBin').onclick = $('wholeBin2').onclick = function(){ setFrom('chapter'); };
+    $('make').onclick = function(){
+      var ext = '.' + e.f[st.cfmt].toLowerCase(), name = '“' + C.text.split(' ').slice(0, 4).join(' ') + '… — ' + e.noun + ext + '”';
+      toast({ x:'X is open with your post. Press Post there when you’re ready.', copy:'Copied. Paste it wherever it’s going.',
+              share:'Made ' + name + '. Opening your share sheet…', download:'Saved ' + name }[st.cdest]);
+    };
+    geom();
+  }
+  function cardVerb(){
+    var e = CED[st.ced];
+    if (st.cdest === 'x') return 'Open X with your post';
+    if (st.cdest === 'copy') return 'Copy it';
+    if (st.cdest === 'share') return 'Make it, then share…';
+    return 'Download ' + e.noun + ' (.' + e.f[st.cfmt].toLowerCase() + ')';
+  }
+  function renderPress(){
+    if (st.from === 'card'){ renderCardPress(); return; }
+    var K = KINDS[st.kind];
+    if (K.editions.indexOf(st.ed) < 0){ st.ed = K.editions[0]; st.fmt = 0; }
+    var e = ED[st.ed];
+    // ---- left: running order
+    var L = '<div class="col l"><div class="hd"><span class="engr">Running order</span><span class="sub">' + esc(K.binder) + '</span></div><div class="scroll">'
+          + '<div class="ordernote">' + esc(K.orderNote).replace('Plan ›', '<button type="button" class="link" id="plan">Plan ›</button>') + '</div>';
+    K.order.forEach(function(g){
+      L += '<div class="grp-h">' + g[0] + '</div>';
+      if (!g[1].length){ L += '<div class="note" style="padding-top:2px">Nothing here for a screenplay.</div>'; }
+      g[1].forEach(function(r){
+        if (r.part){ L += '<div class="part">' + esc(r.part) + '</div>'; return; }
+        var inEd = !(r.not && r.not.indexOf(st.ed) >= 0) && !(r.only && r.only.indexOf(st.ed) < 0);
+        var on = included(r.id) && inEd;
+        var src = !inEd ? '<span class="src warn">not in this edition</span>' : r.warn ? '<span class="src warn">' + esc(r.warn) + '</span>' : r.src ? '<span class="src">' + esc(r.src) + '</span>' : '';
+        var tw = r.secs ? '<button type="button" class="tw" data-tw="' + r.id + '" aria-label="Show sections">' + (st.open[r.id] ? '▾' : '▸') + '</button>' : '<span class="tw"></span>';
+        L += '<div class="ro' + (st.focus === r.id ? ' focus' : '') + (on ? '' : ' off') + '" data-ro="' + r.id + '">' + tw
+           + '<button type="button" class="bx" role="checkbox" aria-checked="' + on + '" data-inc="' + r.id + '"' + (inEd ? '' : ' disabled') + '>' + (on ? '✓' : '') + '</button>'
+           + '<span class="nm">' + esc(r.nm) + '</span>' + src + '<button type="button" class="just" data-just="' + r.id + '">Just this ›</button></div>';
+        if (r.secs && st.open[r.id]) r.secs.forEach(function(s){ L += '<div class="sec">' + esc(s) + '</div>'; });
+      });
+    });
+    L += '<div class="note">Front and back matter are ordinary pages. The title page is made from the binder’s title and your pen name.' + (st.kind === 'thesis' ? ' Once Records lands, Wrizo can set each reference in APA, MLA or Chicago for you.' : '') + '</div></div></div>';
+
+    // ---- centre: preview
+    var pages = pagesFor(), label = e.nm + (e.f.length > 1 ? ' (' + e.f[st.fmt] + ')' : '');
+    if (st.start > pages.length - 1) st.start = 0;
+    var two = pages.length > 1 && !pages[0].thread && !pages[0].wzo && !(pages[st.start] && pages[st.start].w === 1000);
+    var shown = two ? pages.slice(st.start, st.start + 2) : pages.slice(st.start, st.start + 1);
+    var M = '<div class="mid"><div class="mid-top"><button type="button" class="flip" id="prev" aria-label="Previous"' + (st.start === 0 ? ' disabled' : '') + '>‹</button>'
+          + '<button type="button" class="flip" id="next" aria-label="Next"' + (st.start + shown.length >= pages.length ? ' disabled' : '') + '>›</button>'
+          + '<span><b>' + esc(label) + '</b> · ' + esc(K.words) + '</span>'
+          + '<span class="scope">' + (st.just ? '<span class="pill">Just: ' + esc(findRow(st.just).nm.replace(/^\d+\s+/, '')) + '</span><button type="button" class="link" id="whole">← whole ' + esc(K.label.toLowerCase()) + '</button>' : '<span class="pill">Whole ' + esc(K.label.toLowerCase()) + '</span>') + '</span></div>';
+    M += '<div class="spread" id="spread">';
+    var maxH = 540, maxW = two ? 350 : 560;
+    shown.forEach(function(p){
+      if (p.thread){
+        var posts = ['Every productivity system I have tried begins with a ledger. Hours in, output out, and somewhere between them a number that is supposed to tell me whether the day was worth living.',
+                     'The trouble is that the best thing I wrote last year happened on an afternoon the ledger would have marked as wasted. I was lying on the floor. I was not, by any measure the app could see, working.',
+                     'Idleness is not the opposite of work. It is the part of the work that doesn’t leave a receipt.'];
+        M += '<div style="display:flex;flex-direction:column;gap:8px">' + posts.map(function(t, i){ var b = dress('np') ? t + ' ' + (i + 1) + '/3' : t; return '<div class="tw-card"><div class="pn"><span>' + (i + 1) + ' of 3</span><span>' + b.length + ' characters</span></div>' + b + '</div>'; }).join('') + '<div class="dnote">From “II. Idle hands”. Joined back together, the posts are the passage exactly.</div></div>';
+        return;
+      }
+      if (p.wzo){
+        M += '<div class="wzo"><div class="fn">' + esc(K.binder) + '.wzo</div>'
+          + '<div class="r"><span>records/</span><span>every page, board and card in this binder, exactly as saved</span></div>'
+          + '<div class="r"><span>ink/</span><span>every stroke, as drawn</span></div>'
+          + '<div class="r"><span>links</span><span>every connection between pages and cards</span></div>'
+          + '<div class="r"><span>order.json</span><span>your binder’s order</span></div>'
+          + '<div class="r"><span>provenance.json</span><span>that it was written in Wrizo, and over how long</span></div>'
+          + '<div class="r"><span>preview/</span><span>a reading copy that opens in any browser</span></div>'
+          + '<div class="r"><span>manifest.json</span><span>a fingerprint for every file, so nothing can go missing unnoticed</span></div>'
+          + '<div class="dnote" style="margin-top:10px">Opens back in Wrizo whole. Made from <b>Everything</b>, it also carries your Library items and Tutor memory files, but not Wrizo’s built-in writing knowledge.</div></div>';
+        return;
+      }
+      var z = Math.min(maxH / p.h, maxW / p.w);
+      M += '<div class="pwbox"><div class="pw" style="width:' + Math.round(p.w * z) + 'px;height:' + Math.round(p.h * z) + 'px"><div class="pg ' + p.cls + '" style="transform:scale(' + z + ')">' + p.html + '</div></div><div class="pgn">' + esc(p.n) + '</div></div>';
+    });
+    M += '</div></div>';
+
+    // ---- right: edition · dress · deliver
+    var R = '<div class="col r"><div class="hd"><span class="engr">Edition</span><span class="sub">' + esc(K.label) + '</span></div><div class="scroll"><div class="sect" style="padding-top:6px">';
+    K.editions.forEach(function(id){
+      var x = ED[id];
+      R += '<button type="button" class="ed' + (x.quiet ? ' quiet' : '') + '" data-ed="' + id + '" aria-pressed="' + (st.ed === id) + '"><span class="nm">' + esc(x.nm) + '</span><span class="fm">' + esc(x.f.join(' · ')) + '</span>'
+         + (st.ed === id ? '<span class="nt">' + esc(x.nt) + '</span>' : '') + '</button>';
+      if (st.ed === id && (x.f.length > 1 || x.style)){
+        R += '<div class="chips">';
+        if (x.f.length > 1) x.f.forEach(function(f, i){ R += '<button type="button" class="chip mono" data-fmt="' + i + '" aria-pressed="' + (st.fmt === i) + '">' + esc(f) + '</button>'; });
+        if (x.style) R += '<button type="button" class="chip" id="style" title="From your pages’ own setting">Style: ' + st.style + ' ▾</button>';
+        R += '</div>';
+      }
+    });
+    R += '</div><div class="sect"><span class="engr">Dress</span>';
+    if (!e.dress.length) R += '<div class="dnote">' + (st.ed === 'wzo' ? 'Nothing to dress. Everything goes in as it is.' : 'Nothing to dress. It wears your pages’ own look.') + '</div>';
+    e.dress.forEach(function(d){ var v = dress(d[0]); R += '<button type="button" class="tg" data-dr="' + d[0] + '"><span class="bx">' + (v ? '✓' : '') + '</span>' + esc(d[1]) + '</button>'; });
+    R += '</div><div class="sect"><span class="engr">Deliver</span><div class="dests">';
+    var xBlocked = st.ed !== 'thread';
+    if (e.d.indexOf(st.dest) < 0) st.dest = e.d[0];
+    DESTS.forEach(function(d){
+      var ok = e.d.indexOf(d[0]) >= 0;
+      R += '<button type="button" class="dest" data-dest="' + d[0] + '" aria-pressed="' + (st.dest === d[0]) + '"' + (ok ? '' : ' disabled') + '><span class="g">' + d[1] + '</span>' + esc(d[2]) + '</button>';
+    });
+    R += '</div>';
+    if (xBlocked && st.kind !== 'essay') R += '<div class="why">X is for short pieces. Publish from the card or passage itself; the Press opens on just that (try <b>you came from: a board card</b>).</div>';
+    if (st.dest === 'wordpress') R += '<div class="why">Goes to <b>wrenwrites.blog</b> as a draft. You press Publish in WordPress.</div>';
+    if (st.dest === 'substack') R += '<div class="why">Substack has no way for apps to post. Wrizo copies it ready to paste, then opens Substack.</div>';
+    R += '<div class="why" style="color:#5d5246">Wrizo | Read (the Reading Room) comes later.</div></div></div>';
+    R += '<div class="foot"><div class="omit">Leaves out: <b>' + esc(e.omit) + '</b></div>'
+       + '<button type="button" class="btn-brass" id="make">' + esc(makeVerb()) + '</button>'
+       + '<button type="button" class="tg" id="lib"><span class="bx">' + (st.lib ? '✓' : '') + '</span><span>Afterwards, move <i>' + esc(K.binder) + '</i> to my Library</span></button></div></div>';
+
+    $('room').innerHTML = '<div class="press">' + L + M + R + '</div>';
+    wire(pages, shown.length);
+    geom(pages);
+  }
+  function makeVerb(){
+    var e = ED[st.ed];
+    if (st.dest === 'share') return 'Make it, then share…';
+    if (st.dest === 'copy') return 'Copy it';
+    if (st.dest === 'wordpress') return 'Send as a draft to WordPress';
+    if (st.dest === 'substack') return 'Copy for Substack';
+    if (st.dest === 'x') return 'Open X with post 1 of 3';
+    return e.make + (e.f.length > 1 ? ' (' + e.f[st.fmt] + ')' : '');
+  }
+  function fileName(){
+    var K = KINDS[st.kind], e = ED[st.ed], f = e.f[st.fmt];
+    var ext = f.charAt(0) === '.' ? f : '.' + f.toLowerCase();
+    var what = st.just ? findRow(st.just).nm.replace(/^\d+\s+/, '') : K.binder;
+    return what + ' — ' + e.noun + ext;
+  }
+  function wire(pages, per){
+    var room = $('room');
+    Array.prototype.forEach.call(room.querySelectorAll('[data-ed]'), function(b){ b.onclick = function(){ st.ed = b.getAttribute('data-ed'); st.fmt = 0; st.start = 0; st.dress = {}; renderPress(); }; });
+    Array.prototype.forEach.call(room.querySelectorAll('[data-fmt]'), function(b){ b.onclick = function(){ st.fmt = +b.getAttribute('data-fmt'); st.start = 0; renderPress(); }; });
+    Array.prototype.forEach.call(room.querySelectorAll('[data-dr]'), function(b){ b.onclick = function(){ var id = b.getAttribute('data-dr'); st.dress[id] = !dress(id); renderPress(); }; });
+    Array.prototype.forEach.call(room.querySelectorAll('[data-dest]'), function(b){ b.onclick = function(){ st.dest = b.getAttribute('data-dest'); renderPress(); }; });
+    Array.prototype.forEach.call(room.querySelectorAll('[data-tw]'), function(b){ b.onclick = function(ev){ ev.stopPropagation(); var id = b.getAttribute('data-tw'); st.open[id] = !st.open[id]; renderPress(); }; });
+    Array.prototype.forEach.call(room.querySelectorAll('[data-inc]'), function(b){ b.onclick = function(ev){ ev.stopPropagation(); var id = b.getAttribute('data-inc'); st.inc[st.kind + ':' + id] = !included(id); renderPress(); }; });
+    Array.prototype.forEach.call(room.querySelectorAll('[data-just]'), function(b){ b.onclick = function(ev){ ev.stopPropagation(); st.just = b.getAttribute('data-just'); st.focus = st.just; st.start = 0; renderPress(); }; });
+    Array.prototype.forEach.call(room.querySelectorAll('[data-ro]'), function(row){ row.onclick = function(){
+      var id = row.getAttribute('data-ro'); st.focus = id;
+      var all = pagesFor(), i = -1; all.forEach(function(p, k){ if (i < 0 && p.key === id) i = k; });
+      if (i >= 0) turn(function(){ st.start = i; }); else { renderPress(); toast('That part isn’t in the preview sample. In the real Press, every page is here.'); }
+    }; });
+    if ($('whole')) $('whole').onclick = function(){ st.just = null; st.start = 0; renderPress(); };
+    if ($('plan')) $('plan').onclick = function(){ toast('Plan opens with your binder’s chapter order. Reorder there; the Press follows.'); };
+    if ($('style')) $('style').onclick = function(){ st.style = { APA:'MLA', MLA:'Chicago', Chicago:'APA' }[st.style]; renderPress(); };
+    $('prev').onclick = function(){ turn(function(){ st.start = Math.max(0, st.start - per); }); };
+    $('next').onclick = function(){ turn(function(){ st.start = Math.min(pages.length - 1, st.start + per); }); };
+    $('lib').onclick = function(){ st.lib = !st.lib; renderPress(); };
+    $('make').onclick = function(){
+      var K = KINDS[st.kind], msg;
+      switch (st.dest){
+        case 'download': msg = 'Saved “' + fileName() + '”'; break;
+        case 'share': msg = 'Made “' + fileName() + '”. Opening your share sheet…'; break;
+        case 'copy': msg = 'Copied. Paste it wherever it’s going.'; break;
+        case 'wordpress': msg = 'Sent to wrenwrites.blog as a draft.'; break;
+        case 'substack': msg = 'Copied for Substack. Paste it into a new post.'; break;
+        case 'x': msg = 'X is open with post 1. Come back here for the next one.'; break;
+      }
+      if (st.lib) msg += ' ' + K.binder + ' is in your Library now, still searchable.';
+      toast(msg);
+    };
+  }
+  function turn(fn){
+    var boxes = document.querySelectorAll('.pw');
+    Array.prototype.forEach.call(boxes, function(b){ b.classList.add('turn'); });
+    setTimeout(function(){ fn(); renderPress(); }, boxes.length ? 150 : 0);
+  }
+  function geom(pages){
+    var K = KINDS[st.kind], e = ED[st.ed];
+    if (st.from === 'card'){
+      var C = CARDS[st.kind];
+      $('geom').textContent = st.view === 'press'
+        ? 'The Press · opened on just this card · ' + CED[st.ced].nm + ' · return chip armed: ' + C.board
+        : 'Back on the board · card still selected · Publish → opens the Press on just this card';
+      return;
+    }
+    $('geom').textContent = st.view === 'press'
+      ? 'The Press · ' + (st.just ? 'just ' + findRow(st.just).nm.replace(/^\d+\s+/, '') : 'whole ' + K.label.toLowerCase()) + ' · ' + e.nm + ' · return chip armed: ' + K.back
+      : 'Back on the page · caret restored · Publish → re-opens the Press as you left it';
+  }
+
+  // ---------- toast ----------
+  var tt = null;
+  function toast(m){ var t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(function(){ t.classList.remove('on'); }, 3600); }
+
+  // ---------- views + rig ----------
+  function go(v){
+    st.view = v;
+    ['press','page'].forEach(function(x){ $('v-' + x).setAttribute('aria-pressed', x === v); });
+    renderBand();
+    if (v === 'press') renderPress(); else { renderPage(); geom(); }
+  }
+  ['book','screenplay','essay','thesis'].forEach(function(k){
+    $('k-' + k).onclick = function(){
+      st.kind = k; st.ed = KINDS[k].editions[0]; st.fmt = 0; st.start = 0; st.just = null; st.focus = null; st.dress = {}; st.dest = 'download'; st.lib = false;
+      st.ced = 'post'; st.cfmt = 0; st.cdest = 'x';
+      ['book','screenplay','essay','thesis'].forEach(function(x){ $('k-' + x).setAttribute('aria-pressed', x === k); });
+      go(st.view);
+    };
+  });
+  function setFrom(f){
+    st.from = f; st.just = null; st.start = 0; st.ced = 'post'; st.cfmt = 0; st.cdest = 'x';
+    ['chapter','card'].forEach(function(x){ $('f-' + x).setAttribute('aria-pressed', x === f); });
+    go(st.view);
+  }
+  $('f-chapter').onclick = function(){ setFrom('chapter'); };
+  $('f-card').onclick = function(){ setFrom('card'); };
+  $('v-press').onclick = function(){ go('press'); };
+  $('v-page').onclick = function(){ go('page'); };
+  document.addEventListener('keydown', function(ev){
+    if (st.view !== 'press' || st.from === 'card') return;
+    if (ev.key === 'ArrowRight' && !$('next').disabled) $('next').click();
+    if (ev.key === 'ArrowLeft' && !$('prev').disabled) $('prev').click();
+  });
+  function layout(){
+    var fit = $('fit'), stg = $('stage');
+    var s = Math.min((fit.clientWidth - 8) / 1366, (fit.clientHeight - 8) / 768, 1);
+    stg.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+  }
+  window.addEventListener('resize', layout);
+  layout(); go('press');
+})();
+</script>
+</body>
+</html>
