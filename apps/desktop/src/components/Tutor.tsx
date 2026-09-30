@@ -14,6 +14,7 @@ import { useBibleFacts, getBibleFacts, addFact, editFact, deleteFact, FACT_TEXT_
 import type { EditorMode } from './ForwardOnlyEditor';
 import { FREE_WRITE_POOLS, DRAW_CEILING, REFILL_WORDS, drawFrom, recentMemoryFor, type FreeWritePresetId } from '../store/tutorFreeWriteDeck';
 import { useMonotonicWordCount } from './FirstRunGate';
+import { capTutorHistory } from '../store/tutorHistory';
 
 // TU1 S2/S3/S4/S5 — the Tutor. The sliver, mirrored, on the paper's RIGHT
 // edge — but rendered as TWO separate DeskFrame overlay anchors, not one
@@ -802,7 +803,13 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     const writerMsg = { id: generateId(), role: 'writer' as const, text, at: new Date().toISOString() };
     appendTutorMessage(entry.id, writerMsg);
     setSending(true);
-    const history = [...(getJournalEntry(entry.id)?.tutor?.messages ?? [])].map((m) => ({ role: m.role, text: m.text }));
+    // ITEM 215 — INTERIM RULE (Fable): send only the most recent messages
+    // within the server's own cap, always ending with the writer's message
+    // just appended above. The STORED thread (and everything rendered from
+    // it) is untouched — capTutorHistory only shapes what travels on THIS
+    // call's wire.
+    const fullHistory = getJournalEntry(entry.id)?.tutor?.messages ?? [];
+    const history = capTutorHistory(fullHistory).map((m) => ({ role: m.role, text: m.text }));
     // TU5 S4 — assemble the Bible at send time only (never ambiently): read the
     // project's saved facts fresh and join them; absent when there are none, so
     // JSON.stringify drops the key and the wire stays byte-free of any bible.
