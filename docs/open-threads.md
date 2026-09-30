@@ -23350,3 +23350,29 @@ dominant cost at scale: a pricing decision before any public launch.**
 
 **MERGES.** `plan-library-shelf-journal` @ `e669b84` (1 docs file, +348) and `pub0-survey` @ `5ebe73d` (1 docs
 file, +163) — docs-only by diff-stat, merged by fetched SHA on this desk’s verification.
+
+## BATCH EIGHT — 213 CLEARED, 215 CONDITIONALLY CLEARED, PUB1’S BROWSERLESS HALF HELD FOR PUB1 WHOLE — 2026-09-30 (chat 1)
+
+**CLEARED (Fable byte review) for Batch Eight: 213 step 1** — `item-storage-full` @ `2a3f605` (verified: the
+origin tip; 8004312 + 2a3f605, 12 files, +871/−19; `App.tsx`, `ChromeControls.tsx`, `beforeUnloadGuard.ts`,
+`currentUser.ts`, `deskLexicon.ts`, `persistence.ts`, `storageHealth.ts`, `sync.ts`, `syncNotice.ts`, plus a
+459-check harness file). **Every failed save reported (`dirtyJournal` included), three truthful states,
+`beforeunload` on the web only.** **ONE LEXICON STRING CHANGES** (`syncStorageFullAnon` says where to
+download) — **verify the string on its SUCCESSOR SHA; no re-review.** *(Not yet on that successor — the tip
+above is what exists now; the string-only follow-up is owed before Batch Eight assembles.)*
+
+**215 (INK, `tutor20-live-defect` @ `4ef1279`): CONDITIONALLY CLEARED — once the capped window starts with a
+writer message (one change, sent to INK).** **NOT YET ON THE TIP** (`4ef1279`’s own commit, “the interim fix —
+cap what travels, not what’s stored”, is what exists; I have not checked whether it already starts the
+window on a writer turn). **It joins Batch Eight AT THE SUCCESSOR SHA** — not this one.
+
+**NOT IN BATCH EIGHT: `pub1-skeleton` @ `06f41f0`** (INK’s PUB1 browserless half — `press/model.ts`,
+`press/render/wzo.ts`, `press/select/order.ts`, `press/select/scope.ts`, a 179-check harness file). **ACCEPTED,
+but lands with PUB1 WHOLE** (the browser half — the Press route, the door handler — needs FIX’s grant after
+r3, per §8).
+
+**BATCH EIGHT’S BYTE REVIEW OF r3 (206 step 3, 209, 210, at `ef64554`) AND OF THE FONT WRITES (207) HAPPENS AT
+ASSEMBLY — Fable reads the assembled diff himself; nothing is reviewed piecemeal before then.**
+
+**NOTHING MERGED THIS TURN** — all three are product branches awaiting successor commits or PUB1 whole; none
+was offered for a docs-only merge.
