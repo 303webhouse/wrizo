@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><title>Wrizo-like origin (probe)</title>
+<p>PUB9 probe page. The probe script drives window.wp9() from Playwright.</p>
+<script>
+// Exactly what a browser app would do: fetch with an Authorization header, credentials omitted (no WordPress cookies).
+window.wp9 = async function (url, { method = 'GET', auth = null, body = null } = {}) {
+  const headers = {};
+  if (auth) headers['Authorization'] = 'Basic ' + btoa(auth.user + ':' + auth.pass);
+  if (body) headers['Content-Type'] = 'application/json';
+  try {
+    const r = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined, mode: 'cors', credentials: 'omit' });
+    const text = await r.text(); let json = null; try { json = JSON.parse(text); } catch {}
+    const h = {}; r.headers.forEach((v, k) => { h[k] = v; });
+    return { ok: r.ok, status: r.status, exposedHeaders: h, json, text: json ? null : text.slice(0, 300) };
+  } catch (e) { return { ok: false, status: 0, error: String(e) }; }
+};
+</script>

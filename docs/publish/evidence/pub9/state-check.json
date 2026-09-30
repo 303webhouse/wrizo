@@ -1,0 +1,10 @@
+{
+  "approve": {
+    "addressBarOnArrival": "https://wrizo.test:5443/wp-return.html?state=st-4b1f9c2e7a&site_url=https%3A%2F%2Fwp.test%3A8443&user_login=probe-admin&password=%E2%80%B9redacted%E2%80%BA",
+    "stateKept": true
+  },
+  "reject": {
+    "addressBarOnArrival": "https://wrizo.test:5443/wp-return.html?state=st-4b1f9c2e7a&success=false",
+    "stateKept": true
+  }
+}

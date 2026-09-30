@@ -1,0 +1,12 @@
+{"t":"2026-09-30T19:45:24.972Z","method":"GET","url":"/probe.html","referer":null}
+{"t":"2026-09-30T19:45:29.766Z","method":"GET","url":"/wp-return.html?site_url=https%3A%2F%2Fwp.test%3A8443&user_login=probe-admin&password=‹redacted›","referer":"https://wp.test:8443/"}
+{"t":"2026-09-30T19:45:30.969Z","method":"GET","url":"/wp-return.html","referer":"https://wp.test:8443/"}
+{"t":"2026-09-30T19:45:32.048Z","method":"GET","url":"/wp-return.html?success=false","referer":"https://wp.test:8443/"}
+{"t":"2026-09-30T19:45:32.242Z","method":"GET","url":"/wp-return.html?site_url=x&user_login=probe-admin&password=‹redacted›","referer":null}
+{"t":"2026-09-30T19:45:32.283Z","method":"GET","url":"/probe.html","referer":null}
+{"t":"2026-09-30T19:46:22.634Z","method":"GET","url":"/probe.html","referer":null}
+{"t":"2026-09-30T19:46:22.694Z","method":"GET","url":"/favicon.ico","referer":null}
+{"t":"2026-09-30T19:46:22.710Z","method":"GET","url":"/wp-return.html?site_url=https%3A%2F%2Fwp.test%3A8443&user_login=probe-admin&password=‹redacted›","referer":null}
+{"t":"2026-09-30T19:46:22.872Z","method":"GET","url":"/probe.html","referer":null}
+{"t":"2026-09-30T19:49:56.748Z","method":"GET","url":"/wp-return.html?state=st-4b1f9c2e7a&site_url=https%3A%2F%2Fwp.test%3A8443&user_login=probe-admin&password=‹redacted›","referer":"https://wp.test:8443/"}
+{"t":"2026-09-30T19:49:57.734Z","method":"GET","url":"/wp-return.html?state=st-4b1f9c2e7a&success=false","referer":"https://wp.test:8443/"}
