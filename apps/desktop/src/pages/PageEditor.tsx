@@ -1204,8 +1204,13 @@ function PageEditorView({ id }: { id: string }) {
               onPublish={() => setShowPublish(true)}
               instrument={mode === 'journal' ? instrument : undefined}
               onInstrument={mode === 'journal' ? setInstrument : undefined}
+              end={(
+                <button type="button" className="btn-quiet page-plan-door" data-page-plan-door onClick={openPlanBoard}>
+                  {dt('pagePlanDoor')} <span aria-hidden="true">→</span>
+                </button>
+              )}
             />
-            <div className="sprint-actions">
+            {(project || fromBoard) && <div className="sprint-actions">
               {project && (
                 <div className="sprint-toggle" role="tablist" aria-label={`${lex('binder')} view`}>
                   {/* CD4 S2 — the elder "Plan" flight tab (→ the legacy StructureBoard) is
@@ -1221,13 +1226,7 @@ function PageEditorView({ id }: { id: string }) {
                   {fromBoardTitle ? `‹ Back to ${fromBoardTitle}` : '‹ Back to the board'}
                 </button>
               )}
-              {/* BM1 S3 — the PLAN → door, at the end of the page's bar (same
-                  arrow grammar as the board's PAGE →). First click on an
-                  unpaired page births the plan board (S2's lazy rule) and flips;
-                  later clicks resolve to it. No knock/badge/dot (A14). Bar chrome
-                  only — the paper's rect and text measure are never touched (S8). */}
-              <button type="button" className="btn-quiet page-plan-door" data-page-plan-door onClick={openPlanBoard}>{dt('pagePlanDoor')} <span aria-hidden="true">→</span></button>
-            </div>
+            </div>}
           </div>
         </FirstRunVeil>
 

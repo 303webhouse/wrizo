@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { InkSwitch, type Instrument } from './InkSwitch';
@@ -42,9 +42,11 @@ export interface ModeStripProps {
   // live mode — Draft and Revise do not mount it (absent, never greyed).
   instrument?: Instrument;
   onInstrument?: (next: Instrument) => void;
+  // Sits in the same row as the mode tabs so the row can space them evenly.
+  end?: ReactNode;
 }
 
-export function ModeStrip({ mode, onSwitch, onPublish, freeWriteEnabled = true, reviseEnabled = true, instrument, onInstrument }: ModeStripProps) {
+export function ModeStrip({ mode, onSwitch, onPublish, freeWriteEnabled = true, reviseEnabled = true, instrument, onInstrument, end }: ModeStripProps) {
   const { t } = useDeskLexicon();
   const [soon, setSoon] = useState<string | null>(null);
   const flashSoon = (label: string) => { setSoon(label); setTimeout(() => setSoon(null), 1800); };
@@ -69,7 +71,7 @@ export function ModeStrip({ mode, onSwitch, onPublish, freeWriteEnabled = true, 
   const inkMenu = mode === 'journal' && instrument != null && onInstrument != null;
 
   return (
-    <div className="desk-mode-strip" role="tablist" aria-label="Writing mode">
+    <div className={`desk-mode-strip${end ? ' desk-mode-strip--spread' : ''}`} role="tablist" aria-label="Writing mode">
       {items.map(it => {
         const tab = (
           <button
@@ -102,6 +104,7 @@ export function ModeStrip({ mode, onSwitch, onPublish, freeWriteEnabled = true, 
         );
       })}
       {soon && <span className="desk-mode-soon" role="status">{soon} — coming soon</span>}
+      {end}
     </div>
   );
 }

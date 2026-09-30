@@ -3520,6 +3520,11 @@ a:focus-visible,
    separator just underneath the Writing Modes tabs"); dropped here. */
 .desk-mode-strip{ display:flex; align-items:center; gap:1.6px; background:none;
   border:none; padding:0; }
+/* The page bar spreads Free Write through Plan across the space after the
+   address, so the gap between every one of them is the same. */
+.desk-frame-host .sprint-nav:has(.desk-mode-strip--spread){ justify-content:flex-start; }
+.desk-frame-host .sprint-nav:has(.desk-mode-strip--spread) .sprint-crumb{ margin-right:16px; }
+.desk-mode-strip--spread{ flex:1; justify-content:space-between; min-width:0; gap:0; }
 .desk-mode-tab{ background:none; border:1px solid transparent; color:var(--text-mid);
   font-family:var(--font-ui); font-size:10.4px; padding:9px 12.8px; cursor:pointer; transition:.15s;
   text-transform:uppercase; letter-spacing:.08em; }
@@ -4044,7 +4049,7 @@ a:focus-visible,
    definite to resolve against (see .desk-frame-strip above); stretching into a
    flex parent needs no definite height on that parent at all, which is why
    this is the geometry fix rather than inventing a height for the aside. */
-.wz-strip{ display:flex; flex-direction:column; flex:1; min-height:0; padding:8px 0; }
+.wz-strip{ display:flex; flex-direction:column; flex:1; min-height:0; padding:8px 0 5vh; }
 .wz-strip-section{ display:flex; flex-direction:column; }
 /* Hairline separators BETWEEN the four sections (A11's own roster) — not
    between the two items sharing one section (Page+Plan, Drawers+Shelf). */
@@ -5068,11 +5073,12 @@ a:focus-visible,
 .board-door:hover,.page-plan-door:hover{ color:var(--text-hi); }
 /* The page's Plan door matches the writing-mode tabs: capitals, same size.
    The word and the arrow stay olive (--accent-rest), including on hover. */
-.page-plan-door{
-  text-transform:uppercase; letter-spacing:.08em; font-size:10.4px;
-  color:var(--accent-rest);
+.sprint-nav .page-plan-door{
+  font-family:var(--font-ui); font-size:10.4px; padding:9px 0;
+  text-transform:uppercase; letter-spacing:.08em;
+  color:var(--accent-rest); text-decoration:none;
 }
-.page-plan-door:hover{ color:var(--accent-rest); }
+.sprint-nav .page-plan-door:hover{ color:var(--accent-rest); text-decoration:none; }
 /* FX18 S3 (SV27): the Board's top menu parallels the Page's mode strip — ALL CAPS.
    Scoped to the Board bar (.board-mode-tab + .board-door). The page Plan door
    is capped in the rule above, in olive. DOM textContent stays "Plan". */
