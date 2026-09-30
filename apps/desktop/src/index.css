@@ -2747,9 +2747,14 @@ a:focus-visible,
    in place of the percentage (below). Nothing else here moves - ITEM 130's
    `z-index:1` on this same rule is untouched, and its hit-test coverage runs
    beside the new pin check in item137.mjs so the two cannot trade places. */
-.desk-frame-strip{ position:absolute; top:-16px; left:calc(-1 * var(--frame-host-pad-x)); width:var(--strip-width); z-index:1;
+.desk-frame-strip{ position:fixed; left:0; bottom:0; z-index:1;
+  /* Flush under the top bar. --fx3-chrome-budget is pad + nav + spacer +
+     bottom pad; subtracting the spacer and the bottom pad leaves the nav's
+     own bottom edge, which is where this rail has always started. */
+  top:calc(var(--fx3-chrome-budget) - 16px - 3rem);
+  width:var(--strip-width);
   display:flex; flex-direction:column;
-  min-height:70vh; background:var(--desk-ground);
+  background:var(--desk-ground);
   border:1px solid var(--ink-border); border-top:none; border-radius:0 0 var(--radius-md) var(--radius-md); overflow:hidden; }
 /* FX3 S1 — the one definite, non-percentage height near the top of the
    chain (a flex/grid `height:100%` further down needs an explicit height
@@ -3523,6 +3528,15 @@ a:focus-visible,
 .desk-mode-tab.deferred{ color:var(--text-low); cursor:not-allowed; }
 .desk-mode-tab.deferred:hover{ background:none; color:var(--text-low); }
 .desk-mode-soon{ margin-left:10px; font-family:var(--font-ui); font-size:11px; color:var(--text-mid); font-style:italic; }
+/* Text and Ink live under Free Write. The menu is out of flow so the band
+   does not grow, and it opens when the pointer is on the tab or the menu. */
+.desk-mode-freewrite{ position:relative; display:flex; align-items:center; }
+.wz-ink-menu{ display:none; position:absolute; top:100%; left:0; z-index:40; padding-top:6px; }
+.desk-mode-freewrite:hover .wz-ink-menu,
+.desk-mode-freewrite:focus-within .wz-ink-menu{ display:block; }
+.wz-ink-menu .wz-ink-switch{ flex-direction:column; background:var(--ink-900); }
+.wz-ink-menu .wz-ink-switch-side{ text-align:left; }
+.wz-ink-menu .wz-ink-switch-side + .wz-ink-switch-side{ border-left:0; border-top:1px solid var(--ink-border); }
 
 /* CD1 S2/S7 — the sliver (components/Sliver.tsx). ToolRail's retired
    contents move here VERBATIM (same look — .mode-swatch/.mode-nib/

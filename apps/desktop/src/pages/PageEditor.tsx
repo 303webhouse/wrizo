@@ -10,7 +10,6 @@ import { useSurfaceSelection } from '../components/useSurfaceSelection';
 import { ModeSwitcher } from '../components/ModeSwitcher';
 import { ModeStage, PEN_INKS } from '../components/ModeStage';
 import { InkStratum, type InkPen, type InkPermission } from '../components/InkStratum';
-import { InkSwitch } from '../components/InkSwitch';
 import { INK_DEFAULT_PEN } from '../store/ink';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
@@ -1199,8 +1198,13 @@ function PageEditorView({ id }: { id: string }) {
                 Revise are not sketch pads, and a switch offering an instrument
                 the surface does not have would be the locked door wearing
                 paint. Absent, never disabled. */}
-            {mode === 'journal' && <InkSwitch value={instrument} onChange={setInstrument} />}
-            <ModeStrip mode={mode} onSwitch={switchMode} onPublish={() => setShowPublish(true)} />
+            <ModeStrip
+              mode={mode}
+              onSwitch={switchMode}
+              onPublish={() => setShowPublish(true)}
+              instrument={mode === 'journal' ? instrument : undefined}
+              onInstrument={mode === 'journal' ? setInstrument : undefined}
+            />
             <div className="sprint-actions">
               {project && (
                 <div className="sprint-toggle" role="tablist" aria-label={`${lex('binder')} view`}>
