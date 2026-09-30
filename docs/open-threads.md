@@ -23299,3 +23299,54 @@ THE BATCH EIGHT PAIR.** **GRANTED: lane PW, the M7 wavy-underline measurement** 
 a short use, per its own precedent). **AT ASSEMBLY: FIX and TOOLS each merge `main` into `r3` and `195`
 FIRST** — Cursor’s `index.css` change overlaps both branches’ own `index.css` hunks. **Storage step 1 (213)
 joins Batch Eight IF OFFERED before the pair starts; otherwise it ships ALONE right after, on Nick’s word.**
+
+## “19. YES” SETTLED AS A DEFAULT; MACHINA STAYS UNMERGED; 214’S SCHEMA WORD (“YES TO BOTH”); 215’S INTERIM RULED; THE ARCHITECTURE HORIZON — 2026-09-30 (chat 1)
+
+**“19. Yes” — SETTLED (Fable): no answer came from Nick, so the default stands — read as slate 10 (the
+Editions table in §2 as the starting set). RECORDED AS A DEFAULT, NOT HIS WORDS.** *(This closes the “one
+reading with Nick, unconfirmed” I logged above — not by an answer, by his silence.)*
+
+**MACHINA (`cursor/machina-theme-644d`): STAYS OPEN AND UNMERGED (Fable) — Nick did not approve it. It comes
+back only on his word.**
+
+**NICK’S SCHEMA WORDS, 214, verbatim as relayed.** The questions as put:
+
+> “Q1 · Library: when you move a page, board or drawer into your Library, may Wrizo save
+> that on the server, so your Library matches on every device? It's one new column for pages
+> and boards, and one for drawers.”
+
+> “Q2 · Shelf: when an untouched page or board moves to the Shelf after 90 days, may Wrizo
+> save the date it moved, so it stays on the Shelf even after you edit it, as you ruled?
+> It's one new column for pages and boards.”
+
+Fable recommended yes to both. His answer:
+
+> “Yes to both”
+
+**It covers 214-Q1 (Library membership — one column on `journal_entries`, one on `drawers`) and 214-Q2
+(`shelvedAt` on `journal_entries`)**, per PLAN DESK’s brief `library-shelf-aging-journal-volumes-build-brief.md`
+@ `e669b84` (merged above). **Nothing writes before 213 ships, then the builder’s S0 shape report and
+Fable’s byte review.** *(A schema word: it stopped here and is recorded as his.)*
+
+**RULED (Fable), ITEM 215’s INTERIM:** the CLIENT sends only the most recent messages within the SERVER’S
+existing cap of 20, always ending with the writer’s new one. **The thread on screen is unchanged, and the
+server is unchanged.** **The long-term rule (a token BUDGET, not a message count) is the TUTOR desk’s, later,
+with the memory files** (§11’s Tutor-memory item).
+
+**BOX: FIX’s short use (item 210 + 211 probe) now names `ef64554`, not `bdededb`** — verified: `ef64554` is
+the origin tip of `item-writing-r3`, one commit past a clean `Merge remote-tracking branch 'origin/main'`
+(the five Cursor commits + this desk’s incident-report merge are inside it). **This does not move FIX ahead
+in the order** — PW’s M7 (granted) and TOOLS’ 207b still come first. **BATCH EIGHT ALSO TAKES 215’s interim
+and 213’s step 1, EACH if offered before the pair starts** (else 213 ships alone right after, on Nick’s
+word — recorded above; 215’s interim has no such fallback stated).
+
+**ARCHITECTURE HORIZON (Fable), on Nick’s question about 500,000 users — recorded so nothing builds against
+it, not a ticket:** the shape stays a full copy on every device plus one cloud database for sync and the
+master copy — **never desktop-only.** **The staged path:** 213 (IndexedDB) → sync only what changed, with
+the Library on demand (§11 note 2) → ink and photos move to object storage with pointers in the database
+(**181’s “bytea first” is the FIRST STEP of this, not the end**) → multiple app servers and a managed
+Postgres with backups → optionally, an on-disk store for the desktop build. **The Tutor’s API cost is the
+dominant cost at scale: a pricing decision before any public launch.**
+
+**MERGES.** `plan-library-shelf-journal` @ `e669b84` (1 docs file, +348) and `pub0-survey` @ `5ebe73d` (1 docs
+file, +163) — docs-only by diff-stat, merged by fetched SHA on this desk’s verification.
