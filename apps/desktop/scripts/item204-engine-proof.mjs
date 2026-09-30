@@ -39,6 +39,73 @@ const ok = (name, pass, detail = '') => {
   console.log(`  ${pass ? 'ok  ' : 'FAIL'} ${name}${detail ? `  ${detail}` : ''}`);
 };
 
+// ⚠ E10 RUNS FIRST, AND THE MUTATION ROSTER IS WHY. E10 reads the engine's SOURCE,
+// so it needs no transpiled module — and when it sat further down, the mutant that
+// adds a static harper import killed the proof by CRASHING it: the transpiled module
+// cannot resolve a bare 'harper.js' from the OS temp dir, so the file died at import
+// time and E10a never ran. A mutant killed by a crash is not evidence that the check
+// works. Source checks therefore run before anything is imported.
+
+// ===========================================================================
+// E10 — THE LAZY LOAD IS A SOURCE PROPERTY, AND IT IS CHECKED AS ONE
+// ===========================================================================
+// §4: "Load on entry to Revise. Never at boot, never in Free Write, never in
+// Draft." E4c proves harper is not INSTANTIATED outside Revise. This proves the
+// other half — that it is not BUNDLED into the main chunk, which is where the 7.7 MB
+// would actually be paid by a writer who never opens Revise.
+//
+// ⚠ IT IS CHECKED AT THE SOURCE, NOT AT THE BUNDLE, AND THAT IS THE DURABLE CHOICE.
+// The bundle was measured once, by hand, with a temporary consumer wired into
+// main.tsx (the engine has no caller yet, so Rollup tree-shakes the whole module and
+// a bundle check on today's build would report "no harper" for the wrong reason —
+// green because nothing imports it, not because it splits). Measured that way:
+//
+//     main chunk        596.64 kB  ->  598.54 kB   (+1.9 kB: the import machinery)
+//     harper glue                     130.44 kB    (its own chunk)
+//     BinaryModule                     43.56 kB    (its own chunk)
+//     slimBinary                        0.24 kB    (its own chunk)
+//     harper_wasm_slim_bg.wasm     15,935.20 kB    (its own ASSET, fetched on demand)
+//
+// So the split is real. But that measurement cannot be re-run without editing
+// main.tsx, and a check that needs a source edit is a check nobody runs. What CAN be
+// asserted forever is the property that makes the split happen: the harper VALUE
+// imports must be dynamic. A single static `import { WorkerLinter } from 'harper.js'`
+// at the top of the engine would move all of it into the main chunk while every
+// function in the file still looked correct — the failure would be invisible in
+// review and invisible in behaviour, and only a writer's first page load would pay.
+{
+  const src = readFileSync(join(desktop, 'src/store/proofingEngine.ts'), 'utf8');
+  // Strip comments before matching: this file's own prose quotes the forbidden form,
+  // and a matcher that reads prose as code finds the description instead of the
+  // thing. (The house law, earned three times: a source check reads code, not
+  // comments.)
+  const code = src
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+
+  const staticValueImports = [...code.matchAll(/^\s*import\s+(?!type\b)[^;]*?from\s*'(harper\.js[^']*)'/gm)]
+    .map((m) => m[1]);
+  ok('E10a ⛔ NO static VALUE import of harper anywhere in the engine — this is the single line that would silently put 16 MB in the main chunk while every function still read correctly',
+    staticValueImports.length === 0, JSON.stringify(staticValueImports));
+
+  const typeImports = [...code.matchAll(/^\s*import\s+type\s+[^;]*?from\s*'(harper\.js[^']*)'/gm)].map((m) => m[1]);
+  ok('E10b: the harper types ARE imported statically, which is free — `import type` is erased at build time, so naming harper\'s own types costs no bytes and saves a hand-copied paraphrase',
+    typeImports.length >= 1, JSON.stringify(typeImports));
+
+  const dynamic = [...code.matchAll(/import\(\s*'(harper\.js[^']*)'\s*\)/g)].map((m) => m[1]).sort();
+  ok('E10c: and both harper modules arrive through dynamic import() — the form Vite splits',
+    JSON.stringify(dynamic) === JSON.stringify(['harper.js', 'harper.js/slimBinary']), JSON.stringify(dynamic));
+
+  ok('E10d: the INLINED binaries are never imported by the product — §4 forbids them (they base64 the wasm into JS and roughly triple the cost), and this proof\'s own use of slimBinaryInlined is a proof-only affordance that must not leak into src/',
+    !code.includes('Inlined'), '');
+
+  // The comment-blanking above must actually have worked, or E10a could be passing
+  // because it read nothing. A population of zero means nothing without coverage.
+  ok('E10e (the instrument, not the product): the blanked source still contains the engine\'s real code, so E10a searched something',
+    code.includes('export async function proofText') && code.length > 1500,
+    JSON.stringify({ blankedLength: code.length, rawLength: src.length }));
+}
+
 // --- transpile the REAL modules ---------------------------------------------
 const tmp = join(tmpdir(), 'wrizo-item204-engine-proof');
 mkdirSync(tmp, { recursive: true });
@@ -257,6 +324,42 @@ console.log('\nE5 — the dictionary drop, and E6 — no style ever reaches the 
     withDict.some((f) => f.colour === 'red' && NAME_TEXT.slice(f.start, f.end) === 'mispeling'),
     JSON.stringify(withDict.map((f) => [NAME_TEXT.slice(f.start, f.end), f.colour])));
 
+  // ⛔ E5d — THE READ-TIME DROP, ISOLATED FROM harper's OWN DICTIONARY.
+  //
+  // ⚠ E5a ABOVE DOES NOT PROVE WHAT IT SOUNDS LIKE, AND THE FALSIFICATION CAUGHT IT.
+  // Removing the read-time drop entirely left the proof CLEAN: `importWords` had
+  // already told harper the name was a word, so the mark was gone either way and E5a
+  // could not say WHICH mechanism removed it. A check that passes under both branches
+  // is not testing the branch it is named for.
+  //
+  // The read-time drop exists precisely for the case where the import DID NOT take —
+  // skipped, failed, or racing a dictionary edit. So that case is built here: a linter
+  // whose `importWords` is a no-op, which is exactly how a failed import behaves from
+  // the engine's side. If the drop is the guarantee it claims to be, the red mark is
+  // still gone; if it is decoration, this goes red. That is the difference between the
+  // two mechanisms, and it is the only assertion that can see it.
+  {
+    const deaf = await mkLinter();
+    const realImport = deaf.importWords.bind(deaf);
+    let importCalls = 0;
+    deaf.importWords = async (w) => { importCalls += 1; void w; /* swallowed on purpose */ };
+    E.__setProofingEngineForTests(deaf);
+
+    const rec2 = { dialect: 'en-US', words: { Aelinor: { addedAt: '2026-09-30T00:00:00.000Z' } } };
+    const deafResult = await E.proofText(NAME_TEXT, { mode: 'revise', language: 'plaintext', record: rec2 });
+
+    ok('E5d-pre: the engine DID try to hand the word to harper, and this fixture swallowed it — so what follows is measured with harper\'s own dictionary genuinely out of the picture',
+      importCalls === 1, String(importCalls));
+    ok('E5d ⛔ WITH harper\'s DICTIONARY DEAF, the read-time drop STILL removes the red mark on the writer\'s own name — the guarantee, isolated from the mechanism it backs up',
+      !deafResult.some((f) => NAME_TEXT.slice(f.start, f.end) === 'Aelinor'),
+      JSON.stringify(deafResult.map((f) => [NAME_TEXT.slice(f.start, f.end), f.colour])));
+    ok('E5e: and the deaf linter still reports the OTHER misspelling, so E5d is measured on a linter that was working',
+      deafResult.some((f) => NAME_TEXT.slice(f.start, f.end) === 'mispeling'),
+      JSON.stringify(deafResult.map((f) => [NAME_TEXT.slice(f.start, f.end), f.colour])));
+
+    deaf.importWords = realImport;
+  }
+
   // The dictionary says "this is a word", never "this phrase is grammatical".
   const GRAM = 'She don\u2019t know.';
   const gramRec = { dialect: 'en-US', words: { "don't": { addedAt: '2026-09-30T00:00:00.000Z' } } };
@@ -442,66 +545,6 @@ console.log('\nE9 — the handover shape, and A13');
   const writers = exported.filter((n) => /^(apply|set)(Suggestion|Text)/.test(n) || n === 'applySuggestion');
   ok('E9c ⛔ A13 — the engine exports NO way to write text back. Reading the page to lint it is fine; writing a correction is not, and the destructive form is simply unsayable through this module',
     writers.length === 0, JSON.stringify({ exports: exported, writers }));
-}
-
-// ===========================================================================
-// E10 — THE LAZY LOAD IS A SOURCE PROPERTY, AND IT IS CHECKED AS ONE
-// ===========================================================================
-// §4: "Load on entry to Revise. Never at boot, never in Free Write, never in
-// Draft." E4c proves harper is not INSTANTIATED outside Revise. This proves the
-// other half — that it is not BUNDLED into the main chunk, which is where the 7.7 MB
-// would actually be paid by a writer who never opens Revise.
-//
-// ⚠ IT IS CHECKED AT THE SOURCE, NOT AT THE BUNDLE, AND THAT IS THE DURABLE CHOICE.
-// The bundle was measured once, by hand, with a temporary consumer wired into
-// main.tsx (the engine has no caller yet, so Rollup tree-shakes the whole module and
-// a bundle check on today's build would report "no harper" for the wrong reason —
-// green because nothing imports it, not because it splits). Measured that way:
-//
-//     main chunk        596.64 kB  ->  598.54 kB   (+1.9 kB: the import machinery)
-//     harper glue                     130.44 kB    (its own chunk)
-//     BinaryModule                     43.56 kB    (its own chunk)
-//     slimBinary                        0.24 kB    (its own chunk)
-//     harper_wasm_slim_bg.wasm     15,935.20 kB    (its own ASSET, fetched on demand)
-//
-// So the split is real. But that measurement cannot be re-run without editing
-// main.tsx, and a check that needs a source edit is a check nobody runs. What CAN be
-// asserted forever is the property that makes the split happen: the harper VALUE
-// imports must be dynamic. A single static `import { WorkerLinter } from 'harper.js'`
-// at the top of the engine would move all of it into the main chunk while every
-// function in the file still looked correct — the failure would be invisible in
-// review and invisible in behaviour, and only a writer's first page load would pay.
-{
-  const src = readFileSync(join(desktop, 'src/store/proofingEngine.ts'), 'utf8');
-  // Strip comments before matching: this file's own prose quotes the forbidden form,
-  // and a matcher that reads prose as code finds the description instead of the
-  // thing. (The house law, earned three times: a source check reads code, not
-  // comments.)
-  const code = src
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/(^|[^:])\/\/.*$/gm, '$1');
-
-  const staticValueImports = [...code.matchAll(/^\s*import\s+(?!type\b)[^;]*?from\s*'(harper\.js[^']*)'/gm)]
-    .map((m) => m[1]);
-  ok('E10a ⛔ NO static VALUE import of harper anywhere in the engine — this is the single line that would silently put 16 MB in the main chunk while every function still read correctly',
-    staticValueImports.length === 0, JSON.stringify(staticValueImports));
-
-  const typeImports = [...code.matchAll(/^\s*import\s+type\s+[^;]*?from\s*'(harper\.js[^']*)'/gm)].map((m) => m[1]);
-  ok('E10b: the harper types ARE imported statically, which is free — `import type` is erased at build time, so naming harper\'s own types costs no bytes and saves a hand-copied paraphrase',
-    typeImports.length >= 1, JSON.stringify(typeImports));
-
-  const dynamic = [...code.matchAll(/import\(\s*'(harper\.js[^']*)'\s*\)/g)].map((m) => m[1]).sort();
-  ok('E10c: and both harper modules arrive through dynamic import() — the form Vite splits',
-    JSON.stringify(dynamic) === JSON.stringify(['harper.js', 'harper.js/slimBinary']), JSON.stringify(dynamic));
-
-  ok('E10d: the INLINED binaries are never imported by the product — §4 forbids them (they base64 the wasm into JS and roughly triple the cost), and this proof\'s own use of slimBinaryInlined is a proof-only affordance that must not leak into src/',
-    !code.includes('Inlined'), '');
-
-  // The comment-blanking above must actually have worked, or E10a could be passing
-  // because it read nothing. A population of zero means nothing without coverage.
-  ok('E10e (the instrument, not the product): the blanked source still contains the engine\'s real code, so E10a searched something',
-    code.includes('export async function proofText') && code.length > 1500,
-    JSON.stringify({ blankedLength: code.length, rawLength: src.length }));
 }
 
 console.log('\nSTATED BOUNDS — not provable here, and owed to the paint:');

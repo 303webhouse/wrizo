@@ -184,11 +184,21 @@ export function normalizeQuotes(text: string): string {
 }
 
 /**
- * Iterate UTF-16 CODE UNITS, not code points. `for (const c of text)` walks code
- * POINTS, which joins a surrogate pair into one two-unit string — and then a
- * `.length` comparison of input to output still passes while the loop has quietly
- * changed the unit of measurement. harper's spans are UTF-16 indices, so the walk
- * has to be too. Every key in QUOTE_MAP is BMP, so no pair is ever a candidate.
+ * Iterate UTF-16 CODE UNITS, not code points, because harper's spans are UTF-16
+ * indices and this walk is index-aligned with them BY CONSTRUCTION rather than by an
+ * argument about what the map happens to contain.
+ *
+ * ⚠ AN EARLIER VERSION OF THIS COMMENT OVERSTATED THE HAZARD, and the mutation
+ * roster is what corrected it. Swapping this for `for (const c of text)` — a
+ * code-POINT walk — was expected to break length invariance and did not: the pair
+ * is yielded as one two-unit string, no QUOTE_MAP key is a surrogate pair, so
+ * `QUOTE_MAP[pair]` misses and the pair is re-emitted unchanged. The two walks are
+ * SEMANTICALLY EQUIVALENT here, and the mutant survived because there was nothing to
+ * catch, not because a check was missing. Said plainly because a comment claiming a
+ * bug that cannot happen teaches the next reader something false.
+ *
+ * The code-unit walk stays: it is the unit harper measures in, so it needs no such
+ * argument to stay correct if a non-BMP character is ever added to the map.
  */
 function* splitUnits(text: string): Generator<string> {
   for (let i = 0; i < text.length; i += 1) yield text[i]!;
