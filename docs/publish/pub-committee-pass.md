@@ -1,8 +1,13 @@
 # PUB — Publish: the Experts + Architects committee pass
 
-**STATUS: CANDIDATES ONLY.** Nothing here is ruled until Nick says so, item by item. The one
-exception is §11: Nick ruled on the scale question on 2026-09-30. His words are quoted there
-verbatim for chat 1 to register.
+**STATUS: PARTLY RATIFIED (2026-09-30).**
+- **Ratified by Nick:** §9 slate items 1–7, 11 and 12 (build order, dependencies, the five
+  Publish laws, and the two Shelf defaults).
+- **Also ruled by Nick:** the §11 scale question.
+- **Still candidates:** everything else, including slate 8–10 and the §12 Journal-volume
+  suggestion.
+
+Nick's words are quoted verbatim in §9, §11 and §12 for chat 1 to register.
 **Desk:** Publish lane (new), 2026-09-30. This is design only. **No app source file is
 touched by this pass**, and everything it adds is new files under `docs/publish/`.
 **Companion mockups:**
@@ -34,22 +39,35 @@ bibliography.
 3. Later, grow **The Press** (Mockup B) for whole books: a full preview with the running order,
    title page and bibliography, and one tap back to where you were writing.
 
-**What you'll be asked to approve** (the full list is in §9):
+**What you've approved (2026-09-30)** (details in §9):
 
-| # | Decision | Committee's lean |
+| Decision | Your word |
+|---|---|
+| Build order: engine → Sheet (A) → Press (B) | "Approved" |
+| The code libraries for Word/e-book/PDF files (fflate, pdf-lib, fontkit), plus one test-only library | "Approved" |
+| The five Publish laws (PUB-A1 to A5 in §6), e.g. "every send lands as a draft — nothing goes live from Wrizo" | "Approved" |
+| The 90-day Shelf timer counts from the last edit | "Yes" |
+| Journal pages don't move to the Shelf | "Yes, they should stay in the Journal" |
+
+**Still open, for whenever you have a minute** (yes/no each, committee's lean in brackets):
+
+| # | Decision | Lean |
 |---|---|---|
-| 1 | Build order: engine → Sheet (A) → Press (B) | Yes |
-| 2 | Three small code libraries for Word/e-book/PDF files (fflate, pdf-lib, fontkit), plus one test-only library | Yes |
-| 3 | The five Publish laws (PUB-A1 to A5 in §6), e.g. "every send lands as a draft — nothing goes live from Wrizo" | Yes |
-| 4 | Where your pen name / contact details live: this device for now; synced to your account later (a database change) | Device now, sync later |
-| 5 | Two small Library/Shelf follow-ups (§11): does the 90 days count from the last edit, and do Journal pages age out too? | Last edit; Journal pages don't |
+| 8 | Your pen name / contact details live on this device for now; synced to your account later (a database change) | Yes |
+| 9 | WordPress sign-in stays on your device only, after a security review | Yes |
+| 10 | The starting list of Editions per kind of writing (§2) | Yes |
+| 13 | A Journal volume holds 200 pages (or: one volume per year) | 200 pages |
+| 14 | You can start a new Journal volume early (e.g. at New Year) | Yes |
+| 15 | On a computer, a short hover on the Journal icon peeks at its menu (volumes included); long-press on touch; tap/click works everywhere | Yes |
 
-**Your 2026-09-30 rulings, recorded** (§11):
+**Your 2026-09-30 rulings, recorded** (§11, §12):
 - You can move a Page, Board or Drawer to your Library. It also holds Wrizo's writing
   knowledge and your Tutor memory files.
 - Unfiled Pages and Boards move to the Shelf after 90 days and stay there until you move them.
 - Drawers stay put unless you move them.
 - Fable is told the storage-full risk is urgent.
+- Your idea: when the Journal gets full, it retires to the Library and is listed from the
+  Journal icon. The Architects' take on it is §12 ("Journal volumes").
 
 **Honest limits, found in research:**
 - **Substack** has no way for apps to post. Wrizo can copy your piece ready to paste and open
@@ -64,12 +82,15 @@ bibliography.
 - [x] Mockup A — The Publish Sheet
 - [x] Mockup B — The Press
 - [x] Nick's scale rulings recorded verbatim (§11)
+- [x] Nick ratified slate 1–7, 11, 12 (2026-09-30)
+- [x] The Architects' Journal-volumes suggestion written (§12)
 - [ ] **Nick:** pass the storage-full note in §11 to Fable (ANNEX IV)
 - [ ] **Nick:** look at both mockups; say which feels right (A first, B later is the lean)
-- [ ] **Nick:** answer the §9 slate (yes/no per line)
-- [ ] **chat 1:** assign an item number to PUB; register §11's rulings in the ledger
+- [ ] **Nick:** answer the still-open lines above (8, 9, 10, 13, 14, 15)
+- [ ] **chat 1:** assign an item number to PUB; register the §9, §11 and §12 rulings in the ledger
 - [ ] **Fable:** slot PUB0 (the survey) — it touches no code and can start any time
 - [ ] **Fable:** assign the IndexedDB storage fix (§11, urgent, not a Publish ticket)
+- [ ] **Fable:** give the Library, Shelf-aging and Journal-volume work (§11, §12) to the lane that owns the Journal and Library
 - [ ] Later: PUB1 → PUB12 per §7, each waiting on the lanes named there
 
 ---
@@ -594,20 +615,38 @@ same commit; report = push; Fable reviews; Nick's look closes.
 
 ## §9 · RATIFICATION SLATE (Nick: yes / no per line)
 
-1. Build order: **engine → Sheet (A) → Press (B)**.
+**Nick, verbatim, 2026-09-30,** answering the five decisions put to him in chat: "1. Approved
+2. Approved 3. Approved 4. Yes 5. Yes, they should stay in the Journal."
+
+His chat numbering maps onto this slate as:
+- chat 1 → slate 1;
+- chat 2 → slate 2;
+- chat 3 → slates 3–7;
+- chat 4 → slate 11;
+- chat 5 → slate 12.
+
+1. Build order: **engine → Sheet (A) → Press (B)**. **RATIFIED 2026-09-30 ("Approved").**
 2. The named dependency exception (T2): **fflate, pdf-lib, @pdf-lib/fontkit**, plus
-   **pdfjs-dist** (tests only).
-3. **PUB-A1** The file names its omissions.
-4. **PUB-A2** Sends are drafts.
-5. **PUB-A3** No numbers come back.
-6. **PUB-A4** Editions, not settings.
-7. **PUB-A5** One reader, one order.
+   **pdfjs-dist** (tests only). **RATIFIED 2026-09-30 ("Approved").**
+3. **PUB-A1** The file names its omissions. **RATIFIED 2026-09-30 ("Approved").**
+4. **PUB-A2** Sends are drafts. **RATIFIED 2026-09-30 ("Approved").**
+5. **PUB-A3** No numbers come back. **RATIFIED 2026-09-30 ("Approved").**
+6. **PUB-A4** Editions, not settings. **RATIFIED 2026-09-30 ("Approved").**
+7. **PUB-A5** One reader, one order. **RATIFIED 2026-09-30 ("Approved").**
 8. The Publish profile (pen name, contact) lives **on this device now**, synced later (PUB-S,
-   a schema change).
-9. WordPress credentials stay **on the device only**, behind a security review.
-10. The Editions table in §2 as the starting set.
-11. §11 follow-up (a): the 90 days counts from the **last edit**.
-12. §11 follow-up (b): **Journal pages do not** age out to the Shelf.
+   a schema change). *Open.*
+9. WordPress credentials stay **on the device only**, behind a security review. *Open.*
+10. The Editions table in §2 as the starting set. *Open.*
+11. §11 follow-up (a): the 90 days counts from the **last edit**. **RATIFIED 2026-09-30
+    ("Yes").**
+12. §11 follow-up (b): **Journal pages do not** age out to the Shelf. **RATIFIED 2026-09-30
+    ("Yes, they should stay in the Journal").**
+13. §12: a Journal volume holds **200 pages** (the alternative is one volume per year).
+    *Open.*
+14. §12: the writer can **start a new volume early** from the Journal panel. *Open.*
+15. §12: past volumes are listed in the Journal's rail panel on every device. A **short
+    hover** on the Journal icon peeks at that same panel on mouse devices, and a
+    **long-press** does it on touch. *Open.*
 
 ---
 
@@ -692,11 +731,21 @@ proposal his word replaced.
 3. On whether writers can put work away by hand: "Answered above". Yes, by the writer's own
    move.
 4. On telling Fable the storage-full risk is urgent: "Yes."
+5. On Journal pages and the Shelf: "Yes, they should stay in the Journal. But at some point,
+   maybe the Journal should get full, at which point it gets retired to the Library and listed
+   in a pop-out menu when the user hovers over the Journal icon? Open to suggestions from the
+   Architects."
+
+   The first sentence is ratified (slate 12). The rest is Nick's proposal; the Architects
+   answer it in §12. It **amends one default below**: a full Journal volume becomes the **one
+   automatic move into the Library**. Everything else still moves there only by the writer's
+   own act.
 
 ### What the rulings make the model
 
 - **The Library is a real container the writer chooses.** Pages, Boards and whole Drawers
-  move there only by the writer's own act. It holds three things:
+  move there only by the writer's own act. The one exception is a full Journal volume, per
+  ruling 5 and §12. It holds three things:
   - (a) the writer's moved work;
   - (b) **preloaded writing knowledge** from Wrizo, read-only and hideable (e.g. the story
     frameworks in `packages/modules-writing/data/frameworks`, style-guide references);
@@ -771,6 +820,97 @@ proposal his word replaced.
 > move the device store to IndexedDB and surface storage-full honestly. Full context:
 > `docs/publish/pub-committee-pass.md` §11. Nick's Library / Shelf rulings of the same day
 > are in §11 verbatim for chat 1 to register.
+>
+> Also: Nick proposed that a full Journal retires to the Library. The Architects' design,
+> "Journal volumes", is in §12, for whichever lane owns the Journal and the Library.
+
+---
+
+## §12 · THE JOURNAL FILLS — volumes (the Architects' suggestion to Nick's idea)
+
+**Nick's proposal (2026-09-30, verbatim in §11 ruling 5):** "at some point, maybe the Journal
+should get full, at which point it gets retired to the Library and listed in a pop-out menu
+when the user hovers over the Journal icon? Open to suggestions from the Architects."
+
+**STATUS: CANDIDATE.** This is the Architects' suggestion. Slate lines 13–15 carry the
+choices. It is not a Publish ticket: it belongs to whichever lane owns the Journal and the
+Library.
+
+### What the design stands on (read from code and canon)
+
+- **There is exactly one Journal board per account.** `getOrCreateSystemBoard('journal')` and
+  `findSystemBoard` (`apps/desktop/src/store/persistence.ts`) exist to prevent duplicates.
+- **Which pages are in the Journal is computed, not filed.** `inJournalView()` selects pages
+  with origin `journal` and no binder. The order is by day written (`store/pageOrder.ts`;
+  item 134: "a notebook's pages do not renumber themselves").
+- **What the Journal should look like:**
+  - Nick, 2026-09-11: it "should look sort of like a book that can be flipped through."
+  - Item 172 made it a **Book**-style board. That type is designed but not built.
+- **Nothing on volumes, page limits or a "full" journal exists yet.** J3's brief noted a
+  horizon: "revisit if a notebook exceeds ~200 pages".
+- **The rail today:**
+  - On wide screens the Journal opens a click panel (`JournalPanel`,
+    `components/CascadePanels.tsx`): Open the Journal · New page · Recent · All.
+  - **There is no hover behaviour anywhere on the rail.**
+  - On phones the rail becomes a bottom bar, with no room for a pop-out.
+  - Nick's tablet (S25 + S-Pen) has no hover.
+- **House rules in play:**
+  - "Cascades drill in; they never stack" (b166).
+  - "Nothing arrives unbidden" (FW6).
+  - "No counts in chrome": a count is lawful only inside a destructive confirmation.
+  - No completion states.
+- **Weight.** Journal pages carry the most ink (about 56 bytes per ink point; item 203). That
+  makes old volumes the biggest storage win once they rest in the Library.
+
+### The suggestion
+
+1. **A Journal is a notebook, and notebooks fill by pages.**
+   - A **volume holds 200 pages** (a common notebook size, and J3's own horizon).
+   - **No counter, meter or "nearly full" warning appears anywhere.** In the Book-style
+     Journal the spine and page edge simply thicken, and an endpaper follows the last page.
+   - Why pages rather than one volume per year (the alternative on slate 13): pages are what
+     a real notebook runs out of.
+2. **Retiring happens by itself, at an edge.**
+   - Starting page 201 opens **Volume II**, and Volume I moves to the Library, named for its
+     span, e.g. "Journal · Volume I · Mar 2026 – Jan 2027".
+   - One quiet line appears at that page turn, never mid-keystroke: "Volume I is full. It's in
+     your Library. This is Volume II."
+   - The writer can also **start a new volume early** from the Journal panel, e.g. at a new
+     year (slate 14).
+3. **Old volumes stay whole and alive.**
+   - A retired volume can still be flipped, searched, inked on and linked to. Pages keep
+     their identity, so pins and links elsewhere keep working (Law 3). It just takes no new
+     pages.
+   - **Publish a volume:** the Journal reading copy or e-book edition (§2) turns a filled
+     notebook into a finished book. That completion is a fact, not a judgment.
+   - Its heavy ink downloads only when opened, via the Library's on-demand loading (§11 build
+     notes 1–3).
+4. **Finding past volumes: Nick's pop-out, fitted to every device.**
+   - **Everywhere (tap or click):** the Journal's rail panel gains a **Volumes** group.
+     "This volume (II)" comes first, then the past volumes, each opening from the Library.
+     This is the one path that works on tablet, phone and desktop.
+   - **Mouse devices:** a short hover (about half a second) on the Journal icon opens *that
+     same panel* as a peek. It sits in the rail's panel track, so it never covers the page
+     and never stacks a second column. Moving away closes it.
+   - **Touch:** a long-press does the same.
+   - The hover is a shortcut, never the only way. Because FW6 says nothing arrives unbidden,
+     the hover-peek is Nick's call (slate 15).
+   - Past volumes also appear in the Library under a **Journals** section.
+5. **Data, for the builders** (the smallest honest shape):
+   - The current Journal stays the **one** system board.
+   - Volume boundaries live as a short list on its existing `board-meta` box, e.g.
+     `volumes: [{ n: 1, closedAt }]`. That is a field inside the already-JSON `boxes` column,
+     not a new table.
+   - A past volume's pages are **computed** by date range (the arrangement law), so no page
+     is ever re-filed. `inJournalView()` shows only pages after the last boundary.
+   - This changes `persistence.ts` and the shape of `board-meta`, so it goes through the
+     owning lane and a data-shape review via chat 1 / Fable.
+   - **Sequencing:** after the storage fix (§11 note 1) and the Library container (§11
+     note 3), ideally with the Book-style Journal (item 172).
+6. **The Experts' short verdict.**
+   - The Simulation gains its most physical truth: notebooks fill, and you start a new one.
+   - A fresh volume is a clean start that loses nothing, which helps focus.
+   - No number, badge or "nearly full" nag ever appears (Principle 5).
 
 ---
 
