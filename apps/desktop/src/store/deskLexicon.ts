@@ -515,6 +515,13 @@ export type DeskTermId =
   // silently swallowed" is a standing requirement regardless of how often
   // it fires.
   | 'publishCopyWordsConfirm' | 'publishCopyFormattedConfirm' | 'publishCopyFailed'
+  // PUB1 — the button LABELS (distinct from the confirm toasts above, which
+  // already had a lexicon home). The literal English — 'Copy My Words' /
+  // 'Copy Formatted' — is unchanged from what FIX's own PageEditor.tsx
+  // hardcodes today; only the Press shell's own housed buttons read these
+  // through the seam. PageEditor.tsx is not edited by this ticket (R2; the
+  // door handler is a later grant) and so does not read these yet.
+  | 'publishCopyWords' | 'publishCopyFormatted'
   // E1 S3 — the Download action, the ticket's own reason for existing. One
   // section label + one button label per scope; 'publishDownloadBinder'
   // only ever renders when the open page has a binder home (no project ->
@@ -552,7 +559,14 @@ export type DeskTermId =
   // 2026-07-25) — one word each, "Sprout" superseding "Start from a Spark".
   | 'beginNewCard' | 'beginNewPageCard' | 'beginLoadDeck' | 'beginConnectPage'
   | 'beginNewLane'
-  | 'beginScreenplay' | 'beginSprout' | 'beginPlan';
+  | 'beginScreenplay' | 'beginSprout' | 'beginPlan'
+  // PUB1 — the Press shell (docs/publish/pub-committee-pass.md §2/§3). A
+  // door onto a display you pass through, never a home (R1) — its own strip
+  // is short on purpose: a title, the return chip, the running-order's own
+  // "whole binder" fold-back, and the two housed sections (More formats,
+  // Copy) that E1's old Publish dialog retires into.
+  | 'pressTitle' | 'pressReturn' | 'pressRunningOrder' | 'pressJustThis'
+  | 'pressWholeBinder' | 'pressMoreFormats' | 'pressCopy' | 'pressEmpty';
 
 const CANONICAL: Record<DeskTermId, string> = {
   // BM1 — the Board's Own Modes.
@@ -1187,6 +1201,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   publishCopyWordsConfirm: 'Copied — your plain words are on the clipboard.',
   publishCopyFormattedConfirm: 'Copied — with formatting intact.',
   publishCopyFailed: 'Copy didn’t go through — try again, or use Download below.',
+  publishCopyWords: 'Copy My Words',
+  publishCopyFormatted: 'Copy Formatted',
 
   // E1 S3 — Download.
   publishDownloadTitle: 'Download',
@@ -1197,6 +1213,16 @@ const CANONICAL: Record<DeskTermId, string> = {
   publishDownloadConfirm: 'Downloading — check your downloads.',
   publishDownloadFailed: 'That download couldn’t be made — nothing was lost, try again.',
   publishComingSoon: 'Publishing options — tailored to this work’s type, destination, and format — are coming soon.',
+
+  // PUB1 — the Press shell's own chrome.
+  pressTitle: 'Publish',
+  pressReturn: 'Return to your page',
+  pressRunningOrder: 'Running order',
+  pressJustThis: 'Just this',
+  pressWholeBinder: '← whole binder',
+  pressMoreFormats: 'More formats',
+  pressCopy: 'Copy',
+  pressEmpty: 'Nothing to publish from here yet.',
 };
 
 // Flux registers its own capture-module name (the app's other live theme

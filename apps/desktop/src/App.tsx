@@ -1,6 +1,10 @@
-import { useEffect, useReducer, useState } from 'react';
+import { lazy, Suspense, useEffect, useReducer, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Arrival } from './components/Arrival';
+// PUB1 — lazy, per Pass 2's own budget ruling (pub-committee-pass.md §2):
+// "The main bundle carries only the route stub and the door's handler." Every
+// writer who never opens Publish never downloads the Press at all.
+const Press = lazy(() => import('./pages/Press'));
 import { DrawersPage } from './pages/Drawers';
 import { DeskRail } from './components/DeskRail';
 import { CreateProject } from './pages/CreateProject';
@@ -286,6 +290,7 @@ export function App() {
             with its descriptor in the query string and creates no row. */}
         <Route path="/page/new" element={<UnbornPage />} />
         <Route path="/page/:id" element={<PageEditor />} />
+        <Route path="/press" element={<Suspense fallback={null}><Press /></Suspense>} />
         </Routes>
         </AppMain>
       </HashRouter>
