@@ -9,6 +9,8 @@
 > same relay, so this charter treats it as primary on that basis — flagged, because the authorization named
 > the Plan notes.**
 
+> **⚠ AMENDED 2026-09-24 — `b168-rulings-and-item201-delete-permanently.md`** (Nick RULED 168-Q1 — the whole page goes to the Trash — and 168-Q2 — cards go into the Trash, restorable; and added **Delete Permanently**, per item and for the whole bin: item 201, designed there as a tombstone, with one column that stops for Nick). **Where this file's §2 "Empty Trash is the only permanent act", §3(a)/(b) forks, §6 gates, §7 check 1 or §Q disagree, that file governs (its §8 lists them). Kept as written below.**
+
 **THE CHARTER — Nick's CARD NOTE, verbatim:**
 > *"Also, The "Remove" button at the top of the Board moves the Board down when a card is clicked on.
 > That Remove option should be removed from the Board surface. If a User wants to delete a Board, Page,

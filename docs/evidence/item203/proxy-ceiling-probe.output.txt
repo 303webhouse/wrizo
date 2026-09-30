@@ -1,0 +1,7 @@
+target: https://writer-studio-app-production.up.railway.app/api/sync   (unauthenticated; no cookie; bodies above Express's 5 MiB, refused before anything is read)
+{"mib":8,"status":500,"server":"railway-hikari","type":"application/json; charset=utf-8","ms":714,"body":"{\"error\":\"Internal server error\"}","application":true}
+{"mib":16,"status":500,"server":"railway-hikari","type":"application/json; charset=utf-8","ms":668,"body":"{\"error\":\"Internal server error\"}","application":true}
+{"mib":32,"status":500,"server":"railway-hikari","type":"application/json; charset=utf-8","ms":1064,"body":"{\"error\":\"Internal server error\"}","application":true}
+{"mib":64,"status":500,"server":"railway-hikari","type":"application/json; charset=utf-8","ms":2079,"body":"{\"error\":\"Internal server error\"}","application":true}
+
+RESULT: every rung up to 64 MiB got the APPLICATION's own answer - no ceiling observed at or below 64 MiB (the edge carries at least 64 MiB; Express's own limit is the only ceiling in play).

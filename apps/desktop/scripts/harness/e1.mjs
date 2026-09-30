@@ -93,6 +93,33 @@ const mkDlDir = (tag) => fs.mkdtempSync(path.join(os.tmpdir(), `e1-${tag}-`));
 const filesIn = (dir) => fs.readdirSync(dir);
 const read = (dir, name) => fs.readFileSync(path.join(dir, name), 'utf8');
 
+// ITEM 196 — deterministic download-settle wait (the law on the books: wait
+// on observable state, never elapsed time — a fixed sleep can still expire
+// while Chromium holds the file open as '.crdownload'). Polls for the FINAL
+// name(s) — '.crdownload' temps excluded from every count — at the expected
+// count, then confirms each file's size is stable across two reads before
+// trusting it, matching the one site in this file that already had this
+// discipline (the DF1 hostile-corpus wait below). On timeout it returns
+// whatever is actually on disk (crdownload still excluded) so the caller's
+// assertion fails honestly against real observed state, never a fabricated
+// pass.
+const waitForDownloads = async (dir, expectedCount, { timeoutMs = 8000 } = {}) => {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    await sleep(50);
+    const names = filesIn(dir).filter((n) => !n.endsWith('.crdownload'));
+    if (names.length === expectedCount) {
+      try {
+        const sizes1 = names.map((n) => fs.statSync(path.join(dir, n)).size);
+        await sleep(40);
+        const sizes2 = names.map((n) => fs.statSync(path.join(dir, n)).size);
+        if (sizes1.every((s, i) => s > 0 && s === sizes2[i])) return names;
+      } catch { /* mid-rename; retry next tick */ }
+    }
+  }
+  return filesIn(dir).filter((n) => !n.endsWith('.crdownload'));
+};
+
 const NOW = '2026-07-21T12:00:00.000Z';
 
 // E1.1 — fixtures shared between the LIVE run and the PARKED re-verification
@@ -229,9 +256,8 @@ await withHarness(async (app) => {
   await trustedClick(app, 'This Page (.md)');
   await sleep(700);
   await trustedClick(app, 'This Page (.txt)');
-  await sleep(700);
 
-  const pageFiles = filesIn(pageDl);
+  const pageFiles = await waitForDownloads(pageDl, 2);
   // S1 (E1.1) — the "This Page" base filename now carries a stable id-suffix
   // drawn from the id's random TAIL ('e1-roundtrip'.slice(-6) === 'ndtrip'),
   // so the pre-suffix filename assertion ('Round Trip Title.md'/'.txt') is
@@ -277,15 +303,14 @@ await withHarness(async (app) => {
   await trustedClick(app, 'Publish');
   await sleep(250);
   await trustedClick(app, 'This Page (.md)');
-  await sleep(700);
+  await waitForDownloads(collisionDl, 1);
   await app.cdp('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
   await seedAndOpen(app, { entries: twoSameTitle, waitSel: '.forward-only-editor, textarea, [contenteditable]', hash: '#/page/dupehead-beta66', dlDir: collisionDl });
   await app.cdp('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
   await trustedClick(app, 'Publish');
   await sleep(250);
   await trustedClick(app, 'This Page (.md)');
-  await sleep(700);
-  const collisionFiles = filesIn(collisionDl);
+  const collisionFiles = await waitForDownloads(collisionDl, 2);
   ok('S1/S2 OFFLINE: two same-first-line pages whose ids share their head and differ only in the tail (the same-tick case) download as TWO DISTINCT files ("Same Title (alpha6).md" + "Same Title (beta66).md") — the tail-drawn id-suffix disambiguates; neither overwrites the other on disk',
     collisionFiles.length === 2 && collisionFiles.includes('Same Title (alpha6).md') && collisionFiles.includes('Same Title (beta66).md'),
     JSON.stringify(collisionFiles));
@@ -315,8 +340,7 @@ await withHarness(async (app) => {
   await trustedClick(app, 'Publish');
   await sleep(250);
   await trustedClick(app, 'This Page (.md)');
-  await sleep(700);
-  const inkFiles = filesIn(inkDl);
+  const inkFiles = await waitForDownloads(inkDl, 1);
   const inkBytes = inkFiles.length ? read(inkDl, inkFiles[0]) : '';
   ok('S3 OFFLINE: a page carrying hand-drawn ink alongside typed text exports the typed text PLUS a named placeholder line for the ink — never silently dropped',
     inkBytes.includes('Ink Alongside Text') && inkBytes.includes('[Hand-drawn ink — not exported as text.]'), inkBytes);
@@ -339,8 +363,7 @@ await withHarness(async (app) => {
   await trustedClick(app, 'Publish');
   await sleep(250);
   await trustedClick(app, 'This Page (.md)');
-  await sleep(700);
-  const illegalFiles = filesIn(illegalDl);
+  const illegalFiles = await waitForDownloads(illegalDl, 1);
   const ILLEGAL_RE = /[<>:"/\\|?*\x00-\x1f]/;
   ok('S5: a first line full of Windows/macOS-illegal filename characters (< > : " / \\ | ? *) produces exactly one safe, non-empty, successfully-written file — the illegal characters never reach the actual filename on disk',
     illegalFiles.length === 1 && !ILLEGAL_RE.test(illegalFiles[0]) && illegalFiles[0].length > 3,
@@ -372,8 +395,7 @@ await withHarness(async (app) => {
   const binderBtnPresent = await app.evalJs("__diag().buttons.includes('This Binder')");
   ok('S4: "This Binder" only appears when the open page actually has a binder home (no greyed states)', binderBtnPresent === true, String(binderBtnPresent));
   await trustedClick(app, 'This Binder');
-  await sleep(700);
-  const binderFiles = filesIn(binderDl);
+  const binderFiles = await waitForDownloads(binderDl, 1);
   const binderText = binderFiles.length ? read(binderDl, binderFiles[0]) : '';
   const chapterOrder = ['Chapter One', 'Chapter Two', 'Chapter Three'].map(t => binderText.indexOf(t));
   ok('S3 OFFLINE: "This Binder" wrote exactly one concatenated document (the disclosed builder\'s-call format — see the build report)',
@@ -405,8 +427,7 @@ await withHarness(async (app) => {
   await trustedClick(app, 'Publish');
   await sleep(250);
   await trustedClick(app, 'Everything');
-  await sleep(900);
-  const everythingFiles = filesIn(everythingDl);
+  const everythingFiles = await waitForDownloads(everythingDl, 1);
   const everythingText = everythingFiles.length ? read(everythingDl, everythingFiles[0]) : '';
   // DF1 S3 (E1 advisory 3) — anchor hardening, PARSER-SIDE ONLY (the exported
   // bytes never change; the artifact is the writer's). Split on the exporter's
@@ -691,8 +712,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await trustedClick(app, 'This Page (.md)');
     await sleep(700);
     await trustedClick(app, 'This Page (.txt)');
-    await sleep(700);
-    const parkPageFiles = filesIn(parkPageDl);
+    const parkPageFiles = await waitForDownloads(parkPageDl, 2);
     pok('PARKED (was "S3 OFFLINE: \'This Page\' produced exactly two files (.md + .txt), network fully unavailable throughout" — asserting the bare-title names "Round Trip Title.md/.txt") — S1/E1.1: every "This Page" filename now carries the stable id-suffix; the suffixed form "Round Trip Title (ndtrip).md/.txt" supersedes it — live successor: this file\'s own live S3 round-trip section',
       parkPageFiles.length === 2 && parkPageFiles.includes('Round Trip Title (ndtrip).md') && parkPageFiles.includes('Round Trip Title (ndtrip).txt')
         && !parkPageFiles.includes('Round Trip Title.md') && !parkPageFiles.includes('Round Trip Title.txt'),
@@ -705,8 +725,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await trustedClick(app, 'Publish');
     await sleep(250);
     await trustedClick(app, 'Everything');
-    await sleep(900);
-    const parkEvFiles = filesIn(parkEvDl);
+    const parkEvFiles = await waitForDownloads(parkEvDl, 1);
     const parkEvText = parkEvFiles.length ? read(parkEvDl, parkEvFiles[0]) : '';
     const parkTrashIdx = parkEvText.indexOf('## From the Trash');
     const parkLiveSection = parkTrashIdx >= 0 ? parkEvText.slice(0, parkTrashIdx) : parkEvText;

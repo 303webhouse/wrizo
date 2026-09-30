@@ -437,6 +437,10 @@ await withHarness(async (app) => {
   //
   // ok('S5: the card\'s own strip carries Bold and Italic ONLY (the frozen markdown set does not unfreeze)', toolCount === 2, String(toolCount));
   // ------------------------------------------------------------------
+  // ITEM 159 - the card's Styling dock starts CLOSED, so a driver that reaches a
+  // dock tool opens it first, with a REAL press on the grip (the standing law).
+  // The claim this file makes about the dock is unchanged; only its precondition is.
+  { const g = await app.evalJs("(() => { const el = document.querySelector('.board-popup-dock-grip'); if (!el || document.querySelector('.board-popup-dock')) return null; const r = el.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()"); if (g) { await app.mouseDown(g.x, g.y); await app.mouseUp(g.x, g.y); await sleep(300); } }
   const dockToolCount = await app.evalJs("document.querySelectorAll('.board-popup-dock .mode-tbtn').length");
   ok('S5 [R13.v+R1 successor]: the opened cards DOCK carries exactly B/I/U - three styling tools, moved off the strip and grown by Underline',
     dockToolCount === 3, String(dockToolCount));

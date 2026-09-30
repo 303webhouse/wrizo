@@ -328,6 +328,10 @@ await withHarness(async (app) => {
   //
   // await app.evalJs("document.querySelector('.board-popup-strip .mode-tbtn[title=\"Bold\"]').click()");
   // ------------------------------------------------------------------
+  // ITEM 159 - the card's Styling dock starts CLOSED, so a driver that reaches a
+  // dock tool opens it first, with a REAL press on the grip (the standing law).
+  // The claim this file makes about the dock is unchanged; only its precondition is.
+  { const g = await app.evalJs("(() => { const el = document.querySelector('.board-popup-dock-grip'); if (!el || document.querySelector('.board-popup-dock')) return null; const r = el.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()"); if (g) { await app.mouseDown(g.x, g.y); await app.mouseUp(g.x, g.y); await sleep(300); } }
   await app.evalJs("document.querySelector('.board-popup-dock .mode-tbtn[title=\"Bold\"]').click()");
   await sleep(150);
   const popupBolded = await app.evalJs("document.querySelector('.board-popup-editor').innerText");

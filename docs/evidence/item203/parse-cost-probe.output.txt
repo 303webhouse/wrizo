@@ -1,0 +1,5 @@
+body MiB | server RSS before | server PEAK RSS | growth | growth per body-MiB | parse+handler ms
+       5 |                63 MiB |           100 MiB |   38 MiB |                 7.3x | 190
+      10 |                62 MiB |           136 MiB |   74 MiB |                 7.1x | 274
+      25 |                62 MiB |           258 MiB |  195 MiB |                 7.5x | 619
+      50 |                62 MiB |           414 MiB |  351 MiB |                 6.8x | 1257

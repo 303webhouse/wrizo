@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { subscribeSyncStatus, type SyncStatus } from '../store/sync';
+import { subscribeSyncStatus, subscribeTooLarge, type SyncStatus, type TooLargeRecord } from '../store/sync';
+import { useDeskLexicon } from '../store/deskLexicon';
+import { syncNoticeText } from '../store/syncNotice';
 
 // CD2 S3 — SyncIndicator/FullscreenToggle, MOVED here verbatim from App.tsx
 // (their original home) so BOTH App.tsx's own corner cluster AND the
@@ -23,8 +25,15 @@ import { subscribeSyncStatus, type SyncStatus } from '../store/sync';
 export function SyncIndicator() {
   const [status, setStatus] = useState<SyncStatus>('pending');
   useEffect(() => subscribeSyncStatus(setStatus), []);
-  if (status !== 'offline') return null;
-  return <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Offline — saved here</span>;
+  // ITEM 203 - a record too large to sync speaks too: it is not "offline" (everything else DID sync), it is one named
+  // page that cannot travel. Offline still wins while the network is down - it is the broader truth.
+  const [tooLarge, setTooLarge] = useState<readonly TooLargeRecord[]>([]);
+  useEffect(() => subscribeTooLarge(setTooLarge), []);
+  const { t } = useDeskLexicon();
+  const style = { fontSize: '0.75rem', color: 'var(--color-text-muted)' } as const;
+  const text = syncNoticeText(status, tooLarge, t);
+  if (text === null) return null;
+  return <span style={style} data-sync-too-large={status === 'offline' ? undefined : tooLarge.length}>{text}</span>;
 }
 
 // Full-screen toggle (Fullscreen API). Works on desktop + Android and goes

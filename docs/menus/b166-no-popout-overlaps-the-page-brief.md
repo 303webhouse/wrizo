@@ -1,6 +1,8 @@
 # ITEM 166 — NO POP-OUT OVERLAPS THE PAGE
 ### PLAN desk · 2026-09-19 · brief · **a LAYOUT LAW, stated once, and its check**
 
+> **⚠ AMENDED 2026-09-24 — `b166-guideline-amendment.md`** (Nick's words on 166-Q1/Q2/Q4: the no-cover law is a GUIDELINE — beside when it fits, overlay on a shrunk window or small screen, the page never moves; R3 retired; the strips always keep room; Q3/Q5 re-based). **Where this file's law, R3, §3 lean or §4 assertion disagree, that file governs (its §7 lists them). Kept as written below.**
+
 **WORKTREE:** `.claude/worktrees/i166-no-overlap` · **BRANCH:** `i166-no-overlap` · **OFF:** `origin/main`.
 **Never the primary checkout. This lane pushes its BRANCH.**
 

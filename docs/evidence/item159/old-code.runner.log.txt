@@ -1,0 +1,9 @@
+BOX TURN: granted to lane "FIX" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=1 tree=0c8838c+1dirty bundle=index-BDZr-D5R.js/588012b out=C:\Users\nickh\AppData\Local\Temp\wrizo-suite-28656
+[01/1] FAIL      exit=1    7s item159.mjs :: ITEM159 VERIFY: FAIL — 6/9 failed
+
+SUITE DONE HARNESS_PARKED=unset — 0/1 of 1 returned a passing verdict
+  FAIL: item159.mjs — full output at C:\Users\nickh\AppData\Local\Temp\wrizo-suite-28656\item159.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=0c8838c+1dirty bundle=index-BDZr-D5R.js/588012b

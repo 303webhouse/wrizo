@@ -1,6 +1,8 @@
 # ITEM 144 — THE TAB BAR AFTER THE VIEWS RETIRE
 ### PLAN desk · 2026-09-19 · **amendment to `b144-board-tabs-build-brief.md`** (merged at `d87a230`)
 
+> **⚠ AMENDED 2026-09-24 — `b144-plus-menu-and-unnest-amendment.md`** (Nick's words on BT-Q1/Q2/Q3: a bare "＋" with Add Board / New Board, Unlink on each nested tab, un-nesting by drag, double-click replaces the parent with a back arrow). **Where this file's "＋ BOARD" / connect-list / double-click / "not in this brief: disconnecting" lines disagree, that file governs (its §8 lists them). Kept as written below.**
+
 > **⚠ SYMBOLS ARE THE ANCHOR.** Read at `d87a230`. Line numbers are a courtesy.
 
 **Fable, to PW:** *"Nick scrapped the board views, so the tabs retire, and your Q3 table is the only

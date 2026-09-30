@@ -1,0 +1,9 @@
+target: https://writer-studio-app-production.up.railway.app/api/sync   (unauthenticated; no cookie)
+{"bytes":1048576,"mib":1,"status":401,"server":"railway-hikari","type":"application/json; charset=utf-8","via":"railway-edge-headers-present","ms":510,"body":"{\"error\":\"Not authenticated\"}"}
+{"bytes":2097152,"mib":2,"status":401,"server":"railway-hikari","type":"application/json; charset=utf-8","via":"railway-edge-headers-present","ms":105,"body":"{\"error\":\"Not authenticated\"}"}
+{"bytes":3145728,"mib":3,"status":401,"server":"railway-hikari","type":"application/json; charset=utf-8","via":"railway-edge-headers-present","ms":111,"body":"{\"error\":\"Not authenticated\"}"}
+{"bytes":4194304,"mib":4,"status":401,"server":"railway-hikari","type":"application/json; charset=utf-8","via":"railway-edge-headers-present","ms":151,"body":"{\"error\":\"Not authenticated\"}"}
+{"bytes":5138022,"mib":4.9,"status":401,"server":"railway-hikari","type":"application/json; charset=utf-8","via":"railway-edge-headers-present","ms":176,"body":"{\"error\":\"Not authenticated\"}"}
+{"bytes":5505024,"mib":5.25,"status":500,"server":"railway-hikari","type":"application/json; charset=utf-8","via":"railway-edge-headers-present","ms":190,"body":"{\"error\":\"Internal server error\"}"}
+
+RESULT: every rung got the APPLICATION's own answer (401 below 5 MiB, Express's 500 at 5.25 MiB): no proxy limit below 5 MiB was observed. Express's 5 MiB is the effective ceiling.

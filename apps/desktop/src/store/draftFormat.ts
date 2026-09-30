@@ -36,6 +36,16 @@ export type StructureKind = 'prose' | 'screenplay';
 export const FORMAT_MARK: Record<'bold' | 'italic' | 'underline' | 'strike', string> =
   { bold: '**', italic: '*', underline: '__', strike: '~~' };
 
+// WRITING-SURFACE S0 STEP 2 - Ctrl/Cmd+B, +I, +U. The keyboard door to the SAME formatter the toolbar buttons call (the one
+// map, here, so the page and the card popup cannot drift). Until now these keys did nothing at all (frames Draft-ctrl-b/i/u:
+// stored text and DOM unchanged). Shift and Alt are excluded (Ctrl+Shift+U is a system unicode-entry chord on some
+// platforms), and so is an IME composition, whose candidate window may use these keys itself.
+export function formatShortcutAction(e: { key: string; ctrlKey: boolean; metaKey: boolean; altKey: boolean; shiftKey: boolean; isComposing?: boolean }): 'bold' | 'italic' | 'underline' | null {
+  if (e.isComposing || !(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey) return null;
+  const k = e.key.toLowerCase();
+  return k === 'b' ? 'bold' : k === 'i' ? 'italic' : k === 'u' ? 'underline' : null;
+}
+
 export interface FormatResult {
   text: string;
   start: number; // caret/selection to restore after the DOM is re-decorated
@@ -62,6 +72,220 @@ function wrapSelection(text: string, start: number, end: number, marker: string)
     return { text: next, start: caret, end: caret };
   }
   return { text: next, start: start + marker.length, end: end + marker.length };
+}
+
+// WRITING-SURFACE S0 STEP 2 - THE INLINE MARKS TOGGLE, AND A SELECTION MAY CROSS LINES.
+//
+// WHAT THE WRITER HIT (measured, docs/evidence/writing-s0/frames.json): Bold pressed twice stored `****word****`; Italic
+// pressed on an italic word stored `**word**` (a BOLD - the two single stars merged with the two the press added); and
+// select-all then Bold stored ONE pair around the whole selection, `**line one\nline two**`, which the renderer (per line)
+// never paints, so the asterisks stayed on the page. All three are one cause: `wrapSelection` only ever wrapped.
+//
+// THE RULES, in one place:
+//  - A press is judged against the LINES the selection touches. Every non-blank line contributes one SEGMENT: the selected
+//    part of it, with leading whitespace and the line's own prefixes (tabs, `- `, `> `, `>< `, `# `) left out - a mark placed
+//    before `- ` would stop it being a bullet - and trailing whitespace trimmed.
+//  - If EVERY segment is already carrying the mark, the press REMOVES it from all of them; otherwise it APPLIES it to all
+//    (the word-processor rule: a mixed selection becomes uniformly marked, then a second press clears it).
+//  - Applying to a segment first strips that mark from anything already inside it, so a run is never nested in itself.
+//  - Removing from part of a run SPLITS it: `**abc**` with `b` selected becomes `**a**b**c**`; when the part touches the run's
+//    edge the marker is dropped instead of leaving an empty pair.
+//  - A collapsed caret inside a run removes that run's markers; inside an empty pair `****` it removes the pair; elsewhere it
+//    inserts an empty pair with the caret between (unchanged).
+//  - The selection afterwards is the CONTENT (markers excluded), so pressing the same button again reads the run as "inner"
+//    and un-marks it - which is what makes the second press the inverse of the first.
+interface MarkRun { open: number; close: number }
+
+/** The runs of `mark` on one line: `open`/`close` are the indices of the two markers, the interior lies between.
+ *  Underline and strike pair by `indexOf`. Bold and italic share the asterisk, so they are read from the star RUNS: a run of
+ *  1 star is an italic marker, 2 a bold marker, 3 both (bold outermost) - which is what lets `***word***` be read as bold AND
+ *  italic instead of as garbage, and lets Italic un-mark it back to `**word**`. */
+function runsOf(line: string, mark: string): MarkRun[] {
+  const out: MarkRun[] = [];
+  if (mark !== '*' && mark !== '**') {
+    let i = 0;
+    while (i < line.length) {
+      const o = line.indexOf(mark, i);
+      if (o === -1) break;
+      const c = line.indexOf(mark, o + mark.length);
+      if (c === -1) break;
+      out.push({ open: o, close: c });
+      i = c + mark.length;
+    }
+    return out;
+  }
+  const ends: Array<{ pos: number; len: number }> = [];
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] !== '*') continue;
+    let j = i;
+    while (j < line.length && line[j] === '*') j++;
+    if (j - i <= 3) ends.push({ pos: i, len: j - i });
+    i = j - 1;
+  }
+  const bold = mark === '**';
+  const eligible = ends.filter(t => (bold ? t.len >= 2 : t.len === 1 || t.len === 3));
+  for (let k = 0; k + 1 < eligible.length; k += 2) {
+    const a = eligible[k];
+    const b = eligible[k + 1];
+    if (bold) out.push({ open: a.pos, close: b.pos + b.len - 2 });
+    else out.push({ open: a.len === 3 ? a.pos + 2 : a.pos, close: b.pos });
+  }
+  return out;
+}
+
+const LEAD_TOKENS: readonly string[] = ['>< ', '>> ', '> ', '- ', '# ', '## '];
+
+/** How many leading characters of `line` are structure, not prose: tabs and line directives, in any order. */
+function leadLength(line: string): number {
+  let i = 0;
+  for (;;) {
+    if (line[i] === '\t') { i++; continue; }
+    const tok = LEAD_TOKENS.find(t => line.startsWith(t, i));
+    if (!tok) return i;
+    i += tok.length;
+  }
+}
+
+interface Segment { a: number; b: number; ls: number; }
+
+function selectedSegments(text: string, start: number, end: number): Segment[] {
+  const out: Segment[] = [];
+  let ls = text.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
+  if (start === 0) ls = 0;
+  while (ls <= end) {
+    let le = text.indexOf('\n', ls);
+    if (le === -1) le = text.length;
+    let a = Math.max(start, ls, ls + leadLength(text.slice(ls, le)));
+    let b = Math.min(end, le);
+    while (a < b && /\s/.test(text[a])) a++;
+    while (b > a && /\s/.test(text[b - 1])) b--;
+    if (b > a) out.push({ a, b, ls });
+    if (le >= text.length) break;
+    ls = le + 1;
+  }
+  return out;
+}
+
+function toggleInline(text: string, start: number, end: number, mark: string): FormatResult {
+  const ml = mark.length;
+  if (start === end) {
+    if (text.slice(start - ml, start) === mark && text.slice(start, start + ml) === mark) {
+      const caret = start - ml;
+      return { text: text.slice(0, caret) + text.slice(start + ml), start: caret, end: caret };
+    }
+    const ls = text.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
+    let le = text.indexOf('\n', start);
+    if (le === -1) le = text.length;
+    const at = start - ls;
+    const run = runsOf(text.slice(ls, le), mark).find(r => at >= r.open && at <= r.close + ml);
+    if (!run) return wrapSelection(text, start, end, mark);
+    const o = ls + run.open;
+    const c = ls + run.close;
+    const next = text.slice(0, o) + text.slice(o + ml, c) + text.slice(c + ml);
+    const caret = start <= o + ml ? o : start >= c ? c - ml : start - ml;
+    return { text: next, start: caret, end: caret };
+  }
+
+  const segs = selectedSegments(text, start, end);
+  if (segs.length === 0) return { text, start, end };
+
+  interface Plan { a: number; b: number; inner: MarkRun | null; fulls: MarkRun[]; marked: boolean; ls: number }
+  const plans: Plan[] = segs.map(sg => {
+    const le0 = text.indexOf('\n', sg.ls);
+    const line = text.slice(sg.ls, le0 === -1 ? text.length : le0);
+    let A = sg.a - sg.ls;
+    let B = sg.b - sg.ls;
+    const runs = runsOf(line, mark);
+    const inner = runs.find(r => r.open + ml <= A && B <= r.close) ?? null;
+    if (!inner) {
+      // A selection edge that lands inside a run pulls the whole run in, so a half-selected run is never left half-marked.
+      for (const r of runs) {
+        if (A > r.open && A < r.close + ml) A = r.open;
+        if (B > r.open && B < r.close + ml) B = r.close + ml;
+      }
+      // ...and an edge that would cut ACROSS a different mark's run pulls that run in too, so a new mark lands OUTSIDE it
+      // (`__*x*__`, never `*__x*__`). A segment lying wholly INSIDE another run stays where it is: that is honest nesting.
+      for (const other of Object.values(FORMAT_MARK)) {
+        if (other === mark) continue;
+        for (const r of runsOf(line, other)) {
+          const rEnd = r.close + other.length;
+          const overlaps = A < rEnd && B > r.open;
+          const inside = A >= r.open + other.length && B <= r.close;
+          const covers = A <= r.open && B >= rEnd;
+          if (overlaps && !inside && !covers) { A = Math.min(A, r.open); B = Math.max(B, rEnd); }
+        }
+      }
+    }
+    const fulls = inner ? [] : runs.filter(r => A <= r.open && r.close + ml <= B);
+    // The segment is MARKED when every word-character in it sits inside one of its own runs. Whitespace and the mark
+    // characters themselves (`*`, `_`, `~` - another mark's markers) are not words, so a neighbouring mark never makes a
+    // fully-marked segment look half-plain.
+    let bare = 0;
+    for (let i = A; i < B; i++) {
+      if (/[\s*_~]/.test(line[i])) continue;
+      if (!fulls.some(r => i >= r.open && i < r.close + ml)) bare++;
+    }
+    const marked = !!inner || (fulls.length > 0 && bare === 0);
+    return { a: sg.ls + A, b: sg.ls + B, inner, fulls, marked, ls: sg.ls };
+  });
+  const removing = plans.every(pl => pl.marked);
+
+  let out = '';
+  let cursor = 0;
+  let firstStart = -1;
+  let lastEnd = -1;
+  for (const pl of plans) {
+    out += text.slice(cursor, pl.a);
+    const seg = text.slice(pl.a, pl.b);
+    // the segment's text with the markers of its OWN full runs taken out (relative offsets)
+    let stripped = '';
+    let from = 0;
+    for (const r of pl.fulls) {
+      const ro = pl.ls + r.open - pl.a;
+      const rc = pl.ls + r.close - pl.a;
+      stripped += seg.slice(from, ro) + seg.slice(ro + ml, rc);
+      from = rc + ml;
+    }
+    stripped += seg.slice(from);
+
+    let piece: string;
+    let contentAt: number;   // offset of the content inside `piece`
+    let contentLen: number;
+    if (removing && pl.inner) {
+      // split the run around the selected part; the run's own edges are consumed, not doubled
+      const r = pl.inner;
+      const io = pl.ls + r.open + ml;
+      const ic = pl.ls + r.close;
+      const before = text.slice(io, pl.a);
+      const mid = text.slice(pl.a, pl.b);
+      const after = text.slice(pl.b, ic);
+      // this segment replaces the WHOLE run, so its range is widened to the run's markers
+      out = out.slice(0, out.length - (pl.a - (pl.ls + r.open)));
+      // what is left of the run on either side is re-wrapped only if it holds words; a bare neighbouring mark (the italic
+      // inside a bold-italic, say) is kept as it is, not wrapped in a pair of its own
+      const wrapBefore = /[^\s*_~]/.test(before);
+      const wrapAfter = /[^\s*_~]/.test(after);
+      piece = (wrapBefore ? mark + before + mark : before) + mid + (wrapAfter ? mark + after + mark : after);
+      contentAt = wrapBefore ? ml + before.length + ml : before.length;
+      contentLen = mid.length;
+      const newStart = out.length + contentAt;
+      if (firstStart === -1) firstStart = newStart;
+      lastEnd = newStart + contentLen;
+      out += piece;
+      cursor = pl.ls + r.close + ml;
+      continue;
+    }
+    if (removing) { piece = stripped; contentAt = 0; contentLen = stripped.length; }
+    else if (pl.marked && pl.inner) { piece = seg; contentAt = 0; contentLen = seg.length; }   // already marked: leave it
+    else { piece = mark + stripped + mark; contentAt = ml; contentLen = stripped.length; }
+    const newStart = out.length + contentAt;
+    if (firstStart === -1) firstStart = newStart;
+    lastEnd = newStart + contentLen;
+    out += piece;
+    cursor = pl.b;
+  }
+  out += text.slice(cursor);
+  return { text: out, start: firstStart, end: lastEnd };
 }
 
 // Heading cycles the caret's LINE (S0 rider 1's frozen set is `#`/`##`):
@@ -112,26 +336,82 @@ export const LINE_DIRECTIVE = {
   'align-right': '>> ',
 } as const;
 
-/** Toggle a line prefix on the caret's own line. Toggling is what makes these
- *  honest: pressing twice returns the line to exactly what it was, so a writer
- *  can always get back to plain. Alignment prefixes are mutually exclusive —
- *  applying one clears the other, since a line cannot be both. */
-function toggleLinePrefix(text: string, at: number, prefix: string, exclusiveWith: readonly string[] = []): FormatResult {
-  const ls = text.lastIndexOf('\n', Math.max(0, at - 1)) + 1;
-  let le = text.indexOf('\n', at);
-  if (le === -1) le = text.length;
-  let line = text.slice(ls, le);
+// WRITING-SURFACE S0 STEP 2 - the line tools act on EVERY line the selection touches, not only the caret's. Select a list and
+// press Bullet and the first line alone used to change. A line's structure is a run of tokens at its front - tabs and the
+// directives `>< `, `>> `, `> `, `- ` in any order - and a toggle finds its token ANYWHERE in that run (so Bullet still finds the
+// `- ` behind a centring `>< `, and removes it), while a new token goes in AFTER the leading tabs (so Outdent still finds them).
+// If every touched line already has the token the press removes it from all; otherwise it adds it to those that lack it.
+// Alignment is exclusive: applying one drops the other, since a line cannot be both. Blank lines in a multi-line selection are
+// left blank; a caret on a lone blank line still acts on it, so the level can be set before typing.
+const DIRECTIVE_TOKENS: readonly string[] = ['>< ', '>> ', '> ', '- '];
 
-  const had = line.startsWith(prefix);
-  for (const other of exclusiveWith) {
-    if (line.startsWith(other)) line = line.slice(other.length);
+function leadTokens(line: string): { tokens: string[]; length: number } {
+  const tokens: string[] = [];
+  let i = 0;
+  for (;;) {
+    if (line[i] === '\t') { tokens.push('\t'); i++; continue; }
+    const tok = DIRECTIVE_TOKENS.find(t => line.startsWith(t, i));
+    if (!tok) break;
+    tokens.push(tok);
+    i += tok.length;
   }
-  const nextLine = had ? line.slice(prefix.length) : prefix + line;
+  return { tokens, length: i };
+}
 
-  const next = text.slice(0, ls) + nextLine + text.slice(le);
-  const delta = nextLine.length - (le - ls);
-  const caret = Math.max(ls, at + delta);
-  return { text: next, start: caret, end: caret };
+function touchedLines(text: string, start: number, end: number): Array<{ ls: number; le: number }> {
+  const all: Array<{ ls: number; le: number }> = [];
+  let ls = start === 0 ? 0 : text.lastIndexOf('\n', start - 1) + 1;
+  for (;;) {
+    let le = text.indexOf('\n', ls);
+    if (le === -1) le = text.length;
+    all.push({ ls, le });
+    if (le >= end || le >= text.length) break;
+    ls = le + 1;
+  }
+  // a selection that ends exactly ON a line's first character has not touched that line
+  if (end > start && all.length > 1 && all[all.length - 1].ls === end) all.pop();
+  if (all.length === 1) return all;
+  return all.filter(l => text.slice(l.ls, l.le).trim().length > 0);
+}
+
+function toggleLines(text: string, start: number, end: number, token: string, exclusive: readonly string[] = []): FormatResult {
+  const lines = touchedLines(text, start, end);
+  const has = lines.map(l => leadTokens(text.slice(l.ls, l.le)).tokens.includes(token));
+  const removing = lines.length > 0 && has.every(Boolean);
+  return rewriteLeads(text, start, end, lines, (tokens) => {
+    if (removing) return tokens.filter(t => t !== token);
+    const kept = tokens.filter(t => !exclusive.includes(t));
+    if (kept.includes(token)) return kept;
+    let at = 0;
+    while (at < kept.length && kept[at] === '\t') at++;
+    return [...kept.slice(0, at), token, ...kept.slice(at)];
+  });
+}
+
+/** Replace each touched line's leading tokens with `next(tokens)`, and carry the selection across the change. */
+function rewriteLeads(text: string, start: number, end: number, lines: Array<{ ls: number; le: number }>, next: (tokens: string[]) => string[]): FormatResult {
+  const edits: Array<{ at: number; del: number; ins: string }> = [];
+  for (const l of lines) {
+    const lead = leadTokens(text.slice(l.ls, l.le));
+    const ins = next(lead.tokens).join('');
+    if (ins !== text.slice(l.ls, l.ls + lead.length)) edits.push({ at: l.ls, del: lead.length, ins });
+  }
+  if (edits.length === 0) return { text, start, end };
+  let out = '';
+  let cursor = 0;
+  for (const e of edits) { out += text.slice(cursor, e.at) + e.ins; cursor = e.at + e.del; }
+  out += text.slice(cursor);
+  // a position inside (or at the end of) a rewritten lead lands after the new lead; after it, it shifts by the change
+  const map = (x: number): number => {
+    let shift = 0;
+    for (const e of edits) {
+      if (x < e.at) break;
+      if (x <= e.at + e.del) return e.at + shift + e.ins.length;
+      shift += e.ins.length - e.del;
+    }
+    return x + shift;
+  };
+  return { text: out, start: map(start), end: map(end) };
 }
 
 // ITEM 83 ERRATA E3 (2026-09-03) — THE ARROW INDENTS A WHOLE PARAGRAPH,
@@ -317,34 +597,24 @@ export function marksAt(text: string, caret: number): { bold: boolean; italic: b
 export function applyFormat(text: string, selStart: number, selEnd: number, action: FormatAction): FormatResult {
   const start = Math.min(selStart, selEnd);
   const end = Math.max(selStart, selEnd);
-  if (action === 'bold') return wrapSelection(text, start, end, FORMAT_MARK.bold);
-  if (action === 'italic') return wrapSelection(text, start, end, FORMAT_MARK.italic);
-  if (action === 'underline') return wrapSelection(text, start, end, FORMAT_MARK.underline);
-  if (action === 'strike') return wrapSelection(text, start, end, FORMAT_MARK.strike);
+  if (action === 'bold') return toggleInline(text, start, end, FORMAT_MARK.bold);
+  if (action === 'italic') return toggleInline(text, start, end, FORMAT_MARK.italic);
+  if (action === 'underline') return toggleInline(text, start, end, FORMAT_MARK.underline);
+  if (action === 'strike') return toggleInline(text, start, end, FORMAT_MARK.strike);
   if (action === 'heading') return cycleHeading(text, start);
-  if (action === 'bullet') return toggleLinePrefix(text, start, LINE_DIRECTIVE.bullet);
-  if (action === 'quote') return toggleLinePrefix(text, start, LINE_DIRECTIVE.quote);
+  if (action === 'bullet') return toggleLines(text, start, end, LINE_DIRECTIVE.bullet);
+  if (action === 'quote') return toggleLines(text, start, end, LINE_DIRECTIVE.quote);
   // ITEM 83 ERRATA E3 — paragraph-scoped and repeatable now, no longer a
   // single-line toggle. See indentParagraphs above for the whole reasoning,
   // including the way back and the outdent question held for Nick's word.
   if (action === 'indent') return indentParagraphs(text, start, end);
   if (action === 'outdent') return outdentParagraphs(text, start, end);
-  if (action === 'align-center') return toggleLinePrefix(text, start, LINE_DIRECTIVE['align-center'], ALIGN_PREFIXES);
-  if (action === 'align-right') return toggleLinePrefix(text, start, LINE_DIRECTIVE['align-right'], ALIGN_PREFIXES);
+  if (action === 'align-center') return toggleLines(text, start, end, LINE_DIRECTIVE['align-center'], ALIGN_PREFIXES);
+  if (action === 'align-right') return toggleLines(text, start, end, LINE_DIRECTIVE['align-right'], ALIGN_PREFIXES);
   // 'align-left' is the UNMARKED state, not a third token: clearing both
   // alignment prefixes IS left. A `<< ` token would be a lie about the
   // default — every unmarked line in every page ever written is already left.
-  if (action === 'align-left') {
-    const ls = text.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
-    let le = text.indexOf('\n', start);
-    if (le === -1) le = text.length;
-    let line = text.slice(ls, le);
-    const before = line.length;
-    for (const p of ALIGN_PREFIXES) if (line.startsWith(p)) line = line.slice(p.length);
-    const next = text.slice(0, ls) + line + text.slice(le);
-    const caret = Math.max(ls, start + (line.length - before));
-    return { text: next, start: caret, end: caret };
-  }
+  if (action === 'align-left') return rewriteLeads(text, start, end, touchedLines(text, start, end), tokens => tokens.filter(t => !ALIGN_PREFIXES.includes(t as typeof ALIGN_PREFIXES[number])));
   return insertSpacing(text, start, end);
 }
 
@@ -355,19 +625,16 @@ export function applyFormat(text: string, selStart: number, selEnd: number, acti
 export function stripMarkdownConventions(text: string): string {
   const noHeadings = text
     .split('\n')
-    .map(line => line
-      .replace(/^#{1,2}\s+/, '')
-      // ITEM 83 M5 (R4/F3) — the new line directives strip with the rest.
-      // ORDER MATTERS and is the reason these are one chained pass per line:
-      // the alignment tokens (`>< `, `>> `) both begin with `>`, so a naive
-      // block-quote strip run first would eat their first character and leave
-      // `< ` / `> ` behind as visible litter in "Copy My Words". Alignment is
-      // therefore removed BEFORE the quote mark. Indent's leading tab goes
-      // last — it can legitimately sit after a quote or bullet prefix.
-      .replace(/^>< |^>> /, '')
-      .replace(/^> /, '')
-      .replace(/^- /, '')
-      .replace(/^\t+/, ''))
+    .map(line => {
+      // STEP 2: prefixes stack in any order (`\t- `, `- > `, `>< # `), so they are stripped as a LOOP, not one fixed chain.
+      // Alignment is tried before quote for the reason given above (`>< ` and `>> ` both begin with `>`).
+      let l = line;
+      for (;;) {
+        const n = l.replace(/^(?:#{1,2} |>< |>> |> |- |\t)/, '');
+        if (n === l) return l;
+        l = n;
+      }
+    })
     .join('\n');
   return noHeadings
     .replace(/\*\*([\s\S]+?)\*\*/g, '$1')

@@ -1,6 +1,8 @@
 # ITEM 165 — THE PLAN MENU RESTRUCTURE
 ### PLAN desk · 2026-09-19 · brief · **absorbs 87 and 116** · **GATED ON 166 AND ON ITEM 172** · in parts (§9)
 
+> **⚠ AMENDED 2026-09-24 — `b165-defaults-and-reconciliation-amendment.md`** (Q1/Q2/Q3 and 172-Q5 are DEFAULTS taken, vetoable; the menu diagram is re-cut — Add Board replaces Connect Board, one "Create Board" row; Mind Map is greyed by default; "From My Pages" SHOWS; gates and harness re-read). **Where this file's §2, §5, §3's Mind Map lean, §10 items 4 and 6, or §Q disagree, that file governs (its §6 lists them). Kept as written below.**
+
 **WORKTREE:** `.claude/worktrees/i165-plan-menu` · **BRANCH:** `i165-plan-menu` · **OFF:** `origin/main`
 **after 166 has merged.** **Never the primary checkout. This lane pushes its BRANCH.**
 

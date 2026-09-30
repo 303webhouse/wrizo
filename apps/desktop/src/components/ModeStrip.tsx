@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { useDeskLexicon } from '../store/deskLexicon';
+import { InkSwitch, type Instrument } from './InkSwitch';
 
 // AB1 S2 — the real unified mode strip, ratified exact strings (title case):
 // Free Write · Draft · Revise · Workshop · Publish. Lives ABOVE the stage on
@@ -37,9 +38,15 @@ export interface ModeStripProps {
   onPublish: () => void;
   freeWriteEnabled?: boolean;
   reviseEnabled?: boolean;
+  // Free Write's Text | Ink choice. Passed only while Free Write is the
+  // live mode — Draft and Revise do not mount it (absent, never greyed).
+  instrument?: Instrument;
+  onInstrument?: (next: Instrument) => void;
+  // Sits in the same row as the mode tabs so the row can space them evenly.
+  end?: ReactNode;
 }
 
-export function ModeStrip({ mode, onSwitch, onPublish, freeWriteEnabled = true, reviseEnabled = true }: ModeStripProps) {
+export function ModeStrip({ mode, onSwitch, onPublish, freeWriteEnabled = true, reviseEnabled = true, instrument, onInstrument, end }: ModeStripProps) {
   const { t } = useDeskLexicon();
   const [soon, setSoon] = useState<string | null>(null);
   const flashSoon = (label: string) => { setSoon(label); setTimeout(() => setSoon(null), 1800); };
@@ -61,29 +68,43 @@ export function ModeStrip({ mode, onSwitch, onPublish, freeWriteEnabled = true, 
     { key: 'publish', label: t('modePublish'), live: true, active: false, onClick: onPublish },
   ];
 
+  const inkMenu = mode === 'journal' && instrument != null && onInstrument != null;
+
   return (
-    <div className="desk-mode-strip" role="tablist" aria-label="Writing mode">
-      {items.map(it => (
-        <button
-          key={it.key}
-          type="button"
-          role="tab"
-          /* ITEM 112-A — a CONTRACT MARKER, the same behaviour-free idiom
-             Sliver.tsx's own `data-menus-dock`/`data-menus-handle` already
-             establish, and here for the same reason: these labels come from
-             useDeskLexicon and are THEMEABLE, so an acceptance instrument that
-             bound to the word "Revise" would be testing a theme rather than the
-             ruled invariant. Nothing styles this attribute. */
-          data-mode-key={it.key}
-          aria-selected={it.active}
-          aria-disabled={!it.live}
-          className={`desk-mode-tab${it.active ? ' active' : ''}${it.live ? '' : ' deferred'}`}
-          onClick={it.onClick}
-        >
-          {it.label}
-        </button>
-      ))}
+    <div className={`desk-mode-strip${end ? ' desk-mode-strip--spread' : ''}`} role="tablist" aria-label="Writing mode">
+      {items.map(it => {
+        const tab = (
+          <button
+            key={it.key}
+            type="button"
+            role="tab"
+            /* ITEM 112-A — a CONTRACT MARKER, the same behaviour-free idiom
+               Sliver.tsx's own `data-menus-dock`/`data-menus-handle` already
+               establish, and here for the same reason: these labels come from
+               useDeskLexicon and are THEMEABLE, so an acceptance instrument that
+               bound to the word "Revise" would be testing a theme rather than the
+               ruled invariant. Nothing styles this attribute. */
+            data-mode-key={it.key}
+            aria-selected={it.active}
+            aria-disabled={!it.live}
+            className={`desk-mode-tab${it.active ? ' active' : ''}${it.live ? '' : ' deferred'}`}
+            onClick={it.onClick}
+          >
+            {it.label}
+          </button>
+        );
+        if (it.key !== 'freewrite' || !inkMenu) return tab;
+        return (
+          <div key={it.key} className="desk-mode-freewrite">
+            {tab}
+            <div className="wz-ink-menu">
+              <InkSwitch value={instrument} onChange={onInstrument} />
+            </div>
+          </div>
+        );
+      })}
       {soon && <span className="desk-mode-soon" role="status">{soon} — coming soon</span>}
+      {end}
     </div>
   );
 }

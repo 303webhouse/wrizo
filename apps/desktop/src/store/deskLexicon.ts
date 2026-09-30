@@ -241,6 +241,7 @@ export type DeskTermId =
   // ('boardNewPageCard'): a real page, created AND pinned to this board in
   // one act. 'boardCanvasEmpty' is the empty board's own quiet one-line
   // pointer at both board-side tools (S2c).
+  | 'syncTooLargeOne' | 'syncTooLargeMany'
   | 'cascadePageNewPage' | 'cascadePlanJustAPage' | 'boardNewPageCard' | 'boardCanvasEmpty'
   // ITEM 83 M3 (R6) — the Page drawer's PAGE SETUP zone: the sheet's own
   // dimension (margins, leading, numbers, headers, footers), as opposed to
@@ -256,7 +257,7 @@ export type DeskTermId =
   | 'pageSetupOn' | 'pageSetupOff' | 'pageSetupExportNote'
   // ITEM 83 M4 — STYLING (R1), the Typewriter menu (R3, names per F1's
   // default), and the three-instrument foot (R5/R12).
-  | 'stylingHeading' | 'stylingBold' | 'stylingItalic' | 'stylingUnderline'
+  | 'stylingHeading' | 'stylingOpen' | 'stylingClose' | 'stylingBold' | 'stylingItalic' | 'stylingUnderline'
   | 'stylingStrike'
   | 'twMenuHeading' | 'twForwardLock' | 'twForwardLockWindow'
   | 'twUnitWords' | 'twUnitSentences' | 'twLineFade' | 'twLineFadeLines'
@@ -823,6 +824,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorMeterTokensOnly: 'This turn (tokens only — no cost estimate for this model), est.:',
   tutorMeterTokensUnit: 'tokens',
   cascadePageNewPage: 'New Page',
+  // ITEM 203 - a record too large to sync is NAMED, and the writer is told it is safe here. {title} / {n} are filled in.
+  syncTooLargeOne: '\u201C{title}\u201D is too large to sync \u2014 it is saved on this device',
+  // NOUN-NEUTRAL on purpose: what cannot travel is any synced record (a page, a project, a drawer), so "pages" would sometimes lie.
+  syncTooLargeMany: '{n} items are too large to sync \u2014 they are saved on this device',
   // ITEM 83 M3 (R6). Sentence case on rows, engraved-uppercase on the heading
   // (§1.4) — the heading's dress is CSS, so the term itself stays readable.
   pageSetupHeading: 'Page setup',
@@ -850,6 +855,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   // ITEM 83 M4 (R1) — Free Write's STYLING zone. Underline joins Bold and
   // Italic by founder word, overruling Chamber 1's "nothing else".
   stylingHeading: 'Styling',
+  stylingOpen: 'Open Styling',
+  stylingClose: 'Close Styling',
   stylingBold: 'Bold',
   stylingItalic: 'Italic',
   stylingUnderline: 'Underline',

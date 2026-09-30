@@ -145,6 +145,55 @@ function decorateInlineForCard(text: string, caret: number | null): string {
 // not by review. The indent is ported into the pass below, and it deliberately
 // does NOT collapse: a tab IS the indentation, not syntax standing in for it.
 
+// WRITING-SURFACE S0 STEP 1 - THE LINE DIRECTIVES RENDER. `- `, `> `, `>< ` and `>> ` are what the bullet, quote, centre and
+// right-align tools STORE (store/draftFormat.ts LINE_DIRECTIVE), and until now nothing here recognised them: a writer pressed
+// Bullet and saw a literal hyphen. Each is now a line wrapper (`.md-line`, an INLINE-BLOCK, never display:block - a block
+// would make the '\n' this file joins lines with draw an extra blank line, and innerText would read one too many).
+// Character count stays 1:1: the prefix is still a real character, collapsed with `.md-mark-hidden` (font-size:0, never
+// display/visibility - see decorateInlineForCard's header) and revealed while the caret is within or beside it, so the
+// writer can still reach and delete it. Prefixes may stack (`> - `, `>< ` over a heading) and may follow leading tabs.
+const LINE_DIRECTIVES: Array<{ re: RegExp; cls: string }> = [
+  { re: /^(>< )/, cls: 'md-align-center' },
+  { re: /^(>> )/, cls: 'md-align-right' },
+  { re: /^(> )/, cls: 'md-quote' },
+  { re: /^(- )/, cls: 'md-bullet' },
+];
+
+function decorateLineForCard(rawLine: string, caret: number | null): string {
+  let rest = rawLine;
+  let at = caret;                    // caret relative to `rest`, or null
+  let open = '';
+  let close = '';
+  let head = '';                     // what is emitted so far INSIDE the innermost open wrapper
+  for (;;) {
+    const ind = rest.match(LEADING_TABS);
+    if (ind) {
+      // The indent mark never collapses (see decorateMarkdownForCard's own note): a tab IS the layout.
+      head += `<span class="md-mark">${escHtml(ind[1])}</span>`;
+      rest = ind[2];
+      at = at === null ? null : at - ind[1].length;
+      continue;
+    }
+    const d = LINE_DIRECTIVES.find(x => x.re.test(rest));
+    if (!d) break;
+    const prefix = (rest.match(d.re) as RegExpMatchArray)[1];
+    const reveal = at !== null && at >= 0 && at <= prefix.length;
+    const markCls = reveal ? 'md-mark' : 'md-mark md-mark-hidden';
+    open += head + `<span class="md-line ${d.cls}${reveal ? ' md-revealed' : ''}"><span class="${markCls}">${escHtml(prefix)}</span>`;
+    head = '';
+    close = '</span>' + close;
+    rest = rest.slice(prefix.length);
+    at = at === null ? null : at - prefix.length;
+  }
+  const h2 = rest.match(H2);
+  const h1 = h2 ? null : rest.match(H1);
+  let body: string;
+  if (h2) body = `<span class="md-h2"><span class="md-mark">${escHtml(h2[1])}</span>${decorateInlineForCard(h2[2], at === null ? null : at - h2[1].length)}</span>`;
+  else if (h1) body = `<span class="md-h1"><span class="md-mark">${escHtml(h1[1])}</span>${decorateInlineForCard(h1[2], at === null ? null : at - h1[1].length)}</span>`;
+  else body = decorateInlineForCard(rest, at);
+  return open + head + body + close;
+}
+
 export function decorateMarkdownForCard(text: string, caret: number | null): string {
   let consumed = 0;
   return text
@@ -169,18 +218,7 @@ export function decorateMarkdownForCard(text: string, caret: number | null): str
       // silently un-indent the paragraph — trading a missing marker for a
       // deleted layout. So it wears the plain `.md-mark` register, always
       // visible, exactly as it did before.
-      const ind = rawLine.match(LEADING_TABS);
-      const indent = ind ? `<span class="md-mark">${escHtml(ind[1])}</span>` : '';
-      const line = ind ? ind[2] : rawLine;
-      // The caret is measured against the FULL line, so every offset handed to
-      // the inline pass shifts left by the indent it no longer contains.
-      const indentLen = ind ? ind[1].length : 0;
-      const effCaret = effLine === null ? null : effLine - indentLen;
-      const h2 = line.match(H2);
-      if (h2) return `${indent}<span class="md-h2"><span class="md-mark">${escHtml(h2[1])}</span>${decorateInlineForCard(h2[2], effCaret === null ? null : effCaret - h2[1].length)}</span>`;
-      const h1 = line.match(H1);
-      if (h1) return `${indent}<span class="md-h1"><span class="md-mark">${escHtml(h1[1])}</span>${decorateInlineForCard(h1[2], effCaret === null ? null : effCaret - h1[1].length)}</span>`;
-      return indent + decorateInlineForCard(line, effCaret);
+      return decorateLineForCard(rawLine, effLine);
     })
     .join('\n');
 }

@@ -8,6 +8,8 @@
 > S2's check 10 ("exactly one `role=\"tablist\"` … and it is the mode strip") INVERTS and parks.**
 > **Until that is ruled, everything below stands exactly as written.**
 
+> **⚠ AMENDED 2026-09-24 — `b144-plus-menu-and-unnest-amendment.md`** (Nick's words on BT-Q1/Q2/Q3: a bare "＋" with Add Board / New Board, Unlink on each nested tab, un-nesting by drag, double-click replaces the parent with a back arrow). **Where this file's "＋ BOARD" / connect-list / double-click / "not in this brief: disconnecting" lines disagree, that file governs (its §8 lists them). Kept as written below.**
+
 **WORKTREE:** `.claude/worktrees/i144-board-tabs` · **BRANCH:** `i144-board-tabs` · **OFF:** `origin/main`.
 **Never the primary checkout. This lane pushes its BRANCH.**
 

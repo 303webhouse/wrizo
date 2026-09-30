@@ -194,6 +194,36 @@ FIX's granted pair. Item 139/140 now refuse that case structurally.
 
 ---
 
+## §6b · A KNOWN LIMIT — THE CRUMB STATES ONE ADDRESS OUT OF SEVERAL
+
+**Recorded as a limit, not a defect, and named here so it is not discovered.**
+
+`boardNestChain` walks ONE path: the first parent at each level, in
+`getBoardsConnecting`'s own order. That was deliberate — an address is one line,
+and the full parent set is what `BOARDS CONNECTED` is for — and the code says so
+at the site.
+
+**What the code does NOT say, and this record does:** a board may sit in several
+boards, which this branch established for itself by building the guard's walk as
+a **DAG** rather than a chain. So for a multi-parent board the crumb claims one
+address out of several, **chosen by array order** — and that order comes from
+`cache.journalEntries`, so **the address can change when membership changes**,
+including a change to some unrelated board. The writer is not told which of
+several addresses they are being shown, nor that it moved.
+
+Today this is nearly unreachable: nesting has just arrived, so multi-parent
+boards will be rare. **The day two parents are common, the crumb owes a RULE for
+which address it states** — most-recent, the one travelled from, an explicit
+pin, or a disclosure that there are others. That is a design question, not a
+build one, and it is not answered here.
+
+*(Fable's finding at the byte review, 2026-09-17. The code comment at
+`boardNestChain` records the one-path narrowing; it does not yet record the
+instability, and that addition rides this branch's next legitimate move rather
+than moving a stamped tree for a comment.)*
+
+---
+
 ## §7 · GATES AND SURFACE
 
 Browserless, before the turn: `pnpm install`, `tsc --noEmit`, `build:web`,

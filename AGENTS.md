@@ -127,6 +127,24 @@ the pre-AB3 grandfather shape. Pass `origin: null` / `source: null` to seed a ro
 without that field. The absence of a key is a value; counting a key's presence
 cannot see it — that mistake cost two of wave 1's three pairs.
 
+## House rules for any lane (ratified 2026-09-30, after direct pushes to `main`)
+This project is worked by more than one kind of agent — Claude-based build
+lanes, Nick's Cursor sessions, Claude Code in the cloud, and whatever comes
+next. Whatever runs here, on whatever tool:
+- **One subject, one branch.** Don't fold an unrelated fix into a ticket's
+  branch.
+- **Never push or merge to `main`.** Chat 1 is the only lane that merges to
+  `main` and the only one that deploys. Land your work on its own branch and
+  say so; chat 1 verifies and merges.
+- **No browser runs on the Windows box without chat 1's grant.** The grant
+  file (`~/.wrizo/box-turn.json`, `apps/desktop/scripts/box-grant.mjs`) is the
+  only announcement; a browserless check (`tsc`, `seed-guard.mjs`) needs no
+  grant.
+- **The ledger (`docs/open-threads.md`) is chat 1's.** Report your work to it
+  through chat 1, not by editing it yourself.
+- **Fable reviews; Nick's ship word comes to chat 1.** Build lanes don't
+  self-clear a build for deploy.
+
 ## Config changes: propose, never ship
 Changes to CC's own permissions, harness configuration, or session settings
 are proposed in a report and made only on Nick's explicit word — never shipped
@@ -161,3 +179,13 @@ Core tensions to convene against each other: reach vs principle, and metrics vs 
 - Brand/positioning strategist: differentiation, the anti-AI-slop identity, niche integrity, long-term equity; the principle pole and counterweight to growth.
 - Narrative/content strategist: the founding story (e.g. the logo drawn in-app), voice, emotional hooks.
 - Skeptical target-user advocate: the ADHD writer allergic to hype and marketing-speak; the customer's BS detector.
+
+## Cursor Cloud specific instructions
+
+- There is no lint script and no ESLint config. Typecheck with `pnpm --filter @writer-studio/desktop exec tsc --noEmit -p tsconfig.json` and `pnpm --filter @writer-studio/server exec tsc --noEmit -p tsconfig.json`. Browserless harness checks such as `node apps/desktop/scripts/harness/seed-guard.mjs` need no box turn. Browser harnesses (`verify:runtime`, `verify:suite`) refuse unless `WS_BOX_TURN` matches `~/.wrizo/box-turn.json` (`apps/desktop/scripts/box-grant.mjs`); clear the grant when the run ends. `verify:suite` also refuses while another harness browser is on the machine.
+- `.nvmrc` and `engines.node` say `18.x`. This image's Node is 22, `pnpm` warns, and install still succeeds (`engine-strict` is unset). Keep Node 22: `apps/desktop/scripts/runtime-verify.mjs` needs global `WebSocket`.
+- `pnpm-workspace.yaml` lists `electron` under `ignoredBuiltDependencies`, so `pnpm install` does not download the Electron binary. `node apps/desktop/node_modules/electron/install.js` is idempotent and required before `pnpm dev` can open a window. Vite still starts without it.
+- `pnpm dev` (see root `package.json`) serves Vite at `http://localhost:5173` on IPv6 only — `127.0.0.1:5173` refuses — then launches Electron. DBus and GPU errors in that log are non-fatal here; the window still loads. Routes are hash routes (`/#/`).
+- The server has no watch script. Build with `pnpm --filter @writer-studio/server build`, then `pnpm --filter @writer-studio/server start`. Boot requires `DATABASE_URL` and `SESSION_SECRET` (`apps/server/.env`, gitignored; copy from `apps/server/.env.example`). `GET /healthz` does not touch Postgres; migrations on boot do. Vite proxies `/auth` and `/api` to port 3000.
+- Postgres 16 is installed. systemd will not start it (`policy-rc.d` denies the service). Start the cluster with `sudo pg_ctlcluster 16 main start`. Local role `wrizo` / password `wrizo`, database `writer_studio`, URL `postgres://wrizo:wrizo@127.0.0.1:5432/writer_studio`.
+- Arrival → Write does not need an account. The first keystroke creates the page in local storage.

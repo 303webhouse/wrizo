@@ -45,12 +45,12 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 
 const WIDTH = 1366;
 const HEIGHTS = [768, 1200];
-// The residual gap is structural, not slack: `.wz-strip` carries `padding:8px 0`
-// and the aside a 1px border, so a perfectly pinned Trash still sits ~8.8px
-// above the aside's own bottom edge. The bound allows that and nothing like the
-// 303.6px the defect produced.
-const PIN_CEILING_PX = 14;
-const PIN_STABILITY_PX = 1.5;   // how far the gap may differ BETWEEN heights
+// The foot is pinned, then lifted by padding-bottom: 5vh on .wz-strip so Trash
+// sits about 5% of the window above the rail's bottom edge. The 1px border
+// rides in that gap. The lift SCALES with the window; what must not return is
+// the old content-tall strip (S2), whose gap grew by hundreds of pixels.
+const LIFT = 0.05;
+const LIFT_SLACK_PX = 8;
 const STRETCH_SLACK_PX = 2;     // aside.height - strip.height, border/padding only
 
 const freshProsePage = async (app, w, h) => {
@@ -110,8 +110,8 @@ await withHarness(async (app) => {
     if (!m || !m.ok) continue;
     seen.push({ h, ...m });
 
-    ok(`ITEM137 S1 @ ${WIDTH}x${h}: the Trash sits at the rail's foot — its bottom edge within ${PIN_CEILING_PX}px of the aside's own (the residual is .wz-strip's 8px padding plus the 1px border, not slack)`,
-      m.gapPx >= 0 && m.gapPx <= PIN_CEILING_PX, JSON.stringify(m));
+    ok(`ITEM137 S1 @ ${WIDTH}x${h}: Trash is pinned, then lifted ~5% of the window (${LIFT * 100}vh) above the rail's bottom edge`,
+      Math.abs(m.gapPx - h * LIFT) <= LIFT_SLACK_PX, JSON.stringify(m));
 
     ok(`ITEM137 S2 @ ${WIDTH}x${h}: THE MECHANISM — the strip STRETCHES to its parent (shortfall <= ${STRETCH_SLACK_PX}px). Before the fix it rendered a content-tall 544.4px at every height while the aside tracked 70vh, which is why margin-top:auto had nothing to push against`,
       Math.abs(m.stretchShortfallPx) <= STRETCH_SLACK_PX, JSON.stringify(m));
@@ -126,10 +126,11 @@ await withHarness(async (app) => {
   // broken build produced a small gap at 768 too. A pin is a gap that does not
   // care how tall the window is.
   if (seen.length === HEIGHTS.length) {
-    const drift = Math.abs(seen[1].gapPx - seen[0].gapPx);
-    ok(`ITEM137 S1 (the discriminating check): the gap is the SAME at ${HEIGHTS[0]} and ${HEIGHTS[1]} (within ${PIN_STABILITY_PX}px). The defective build read 8.8px then 303.6px — a bounded gap at ONE height would have passed against the bug, so stability across heights is the assertion that actually distinguishes pinned from accidentally-close`,
-      drift <= PIN_STABILITY_PX,
-      JSON.stringify({ at: seen.map(s => ({ h: s.h, gapPx: s.gapPx, stripH: s.stripH, asideH: s.asideH })), drift: +drift.toFixed(1) }));
+    const ratios = seen.map(s => s.gapPx / s.h);
+    const ratioDrift = Math.abs(ratios[1] - ratios[0]);
+    ok(`ITEM137 S1 (the discriminating check): the lift is ~5% of EACH window, so the gap grows with the viewport by that fraction and not by a content-tall strip. The defective build read 8.8px then 303.6px`,
+      ratios.every(r => Math.abs(r - LIFT) <= LIFT_SLACK_PX / HEIGHTS[0]) && ratioDrift < 0.02,
+      JSON.stringify({ at: seen.map(s => ({ h: s.h, gapPx: s.gapPx, ratio: +(s.gapPx / s.h).toFixed(3) })), ratioDrift: +ratioDrift.toFixed(3) }));
   }
 
   return checks;
