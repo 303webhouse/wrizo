@@ -161,3 +161,12 @@ Core tensions to convene against each other: reach vs principle, and metrics vs 
 - Brand/positioning strategist: differentiation, the anti-AI-slop identity, niche integrity, long-term equity; the principle pole and counterweight to growth.
 - Narrative/content strategist: the founding story (e.g. the logo drawn in-app), voice, emotional hooks.
 - Skeptical target-user advocate: the ADHD writer allergic to hype and marketing-speak; the customer's BS detector.
+
+## Cursor Cloud specific instructions
+
+House rules for Wrizo builds in Cursor, from Nick, 2026-09-30:
+
+- Work on a new branch named for the subject.
+- Never push or merge to `main`.
+- Do not run the test harness or open browsers on the Windows machine unless chat 1 has granted it.
+- When you finish, report the branch and the commit so Nick can pass them to Fable.
