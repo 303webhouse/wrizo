@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wrizo Publish Sheet</title>
+<!--
+  PUB · MOCKUP A — "THE PUBLISH SHEET" (the door opens a sheet)
+  Publish lane · 2026-09-30 · candidates only. Companion to docs/publish/pub-committee-pass.md.
+
+  Nick, verbatim (2026-09-29): "Writers needs the flexibility to export pieces of a project
+  like a single card, but also an entire book of chapters and titles pages and bibliographies."
+
+  WHAT THIS DRAWS:
+    * Publish → on the mode strip opens a SHEET in the right margin. The page never moves or
+      unmounts (PAGE IS PRIMARY); the rig's readout measures the page's rect with the sheet
+      open and shut. At 1100 wide the margin is narrower than the sheet, so it overlays the
+      page's edge instead (b166) — still never pushing it.
+    * Three questions, three decisions at most: WHAT (a selection or one card up to the whole
+      work, or Everything) · AS (kind-aware Editions — try the Kind buttons) · TO (Download,
+      Share, Copy, WordPress as a draft, Substack by paste, X one post at a time).
+    * Whole-work detail DRILLS IN inside the sheet (never a second pop-out).
+    * One brass action whose verb follows the choice; a quiet "Again" repeats the last one.
+    * Every edition names what it leaves out (PUB-A1). No numbers come back (PUB-A3).
+  Nothing here is a ruling. Committee lean: build this first; the Press (mockup B) comes later.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=Courier+Prime&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  /* Layout: a mock rig on top, the Wrizo stage (1366×768, scaled to fit) in the middle, a caption below.
+     Palette: Wrizo's Plateau theme as the house mocks draw it — one deliberate dark look. */
+  :root{
+    color-scheme:dark;
+    --void:#000; --rig-line:#222; --rig-text:#9a9a9a; --rig-hi:#d8d8d8; --rig-btn:#141414; --rig-btn-line:#333;
+    --ok:#9fb36a; --cap-bg:#08080a; --cap-line:#1e1e22; --cap-text:#7e786e; --cap-hi:#b9b2a6;
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --row-hover:#1f1407;
+    --paper:#F3EDE1; --paper-line:#d8c8b4; --ink-on-paper:#2B2014; --ink-on-paper-low:#8A7C68;
+    --card-stock:#FBF6EA; --card-hairline:#D9CFB6;
+    --brass:#FF9800; --brass-hover:#ffab33; --on-brass:#1C1610;
+    --accent-rest:#96a05a; --accent-door:#4F5730;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --prose:'Crimson Pro',Georgia,'Times New Roman',serif;
+    --ms:'Tinos','Times New Roman',Times,serif;
+    --script:'Courier Prime','Courier New',Courier,monospace;
+    --mono:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:var(--void);color:var(--text-hi);font-family:var(--ui);overflow:hidden;
+       display:flex;flex-direction:column;padding-inline:16px}
+  button{font:inherit;color:inherit}
+  :focus-visible{outline:2px solid var(--accent-rest);outline-offset:1px}
+
+  /* ---------- the rig (not Wrizo chrome) ---------- */
+  .rig{flex:none;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding-block:8px;
+       border-bottom:1px solid var(--rig-line);font-size:12px;color:var(--rig-text)}
+  .rig b{color:var(--rig-hi);font-weight:600;letter-spacing:.06em}
+  .rig .grp{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+  .rig button{color:var(--rig-hi);background:var(--rig-btn);border:1px solid var(--rig-btn-line);padding:3px 9px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#8a8a8a;color:#fff;background:#222}
+  #geom{margin-left:auto;font-size:11px;font-variant-numeric:tabular-nums;color:var(--ok)}
+  .fit{flex:1;min-height:0;position:relative;overflow:hidden}
+  .stage{position:absolute;left:50%;top:50%;width:1366px;height:768px;background:var(--ground);
+         transform-origin:center center;overflow:hidden;box-shadow:0 0 0 1px #000,0 24px 60px rgba(0,0,0,.8)}
+  .cap{flex:none;max-height:118px;overflow:auto;padding-block:9px;border-top:1px solid var(--cap-line);
+       background:var(--cap-bg);font-size:11.5px;line-height:1.55;color:var(--cap-text)}
+  .cap b{color:var(--cap-hi);font-weight:500}
+  @media (max-width:640px){ .cap{max-height:88px} }
+
+  /* ---------- the Wrizo frame ---------- */
+  .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 1fr;grid-template-rows:56px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;align-items:center;padding-top:14px;gap:2px}
+  .rail .cat{display:block;width:100%;text-align:center;padding:9px 0 8px;color:var(--text-low);font-size:10px;letter-spacing:.08em;
+             background:none;border:none;cursor:default}
+  .rail .cat .glyph{display:block;font-size:15px;line-height:1;margin-bottom:3px;color:var(--text-mid)}
+  .rail .sep{width:44px;height:1px;background:var(--line);margin:6px 0}
+  .rail .foot{margin-top:auto;width:100%;padding-bottom:10px}
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:26px;padding:0 30px;border-bottom:1px solid var(--line)}
+  .crumb{font-size:11.5px;color:var(--text-low);letter-spacing:.02em;min-width:250px}
+  .crumb b{color:var(--text-mid);font-weight:500}
+  .strip{display:flex;gap:24px;margin:0 auto}
+  .mode{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-mid);padding:6px 2px;
+        border:none;border-bottom:1px solid transparent;background:none;cursor:default}
+  .mode.active{color:var(--text-hi);border-bottom-color:var(--accent-rest)}
+  .mode.dark{color:var(--text-low)}
+  .mode.door{cursor:pointer;color:var(--text-mid)}
+  .mode.door:hover,.mode.door[aria-expanded="true"]{color:var(--brass)}
+  .doors{display:flex;gap:18px;min-width:120px;justify-content:flex-end}
+  .room{grid-row:2;grid-column:2;position:relative;overflow:hidden}
+
+  /* the page */
+  .paper-col{position:absolute;top:40px;bottom:52px;left:50%;width:604px;transform:translateX(-50%)}
+  .paper{position:absolute;inset:0;background:var(--paper);color:var(--ink-on-paper);border:1px solid var(--line);
+         padding:56px 62px;font-family:var(--prose);font-size:18.5px;line-height:1.62;overflow:hidden}
+  .paper h2{font-weight:500;font-size:22px;margin-bottom:18px}
+  .paper p{margin-bottom:.9em}
+  .paper.script{font-family:var(--script);font-size:14.5px;line-height:1.35;padding:56px 58px}
+  .paper.script .sl{text-transform:uppercase;margin:18px 0 10px}
+  .paper.script .ch{margin:14px 0 0 200px}
+  .paper.script .dl{margin:0 90px 0 110px}
+  .caret{display:inline-block;width:1px;height:1.05em;background:var(--ink-on-paper);vertical-align:-.15em;animation:blink 1.1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .hand{position:absolute;top:50%;width:14px;height:74px;margin-top:-37px;background:var(--panel);border:1px solid var(--line);
+        display:grid;place-items:center;color:var(--accent-rest);font-size:10px}
+  .hand.l{left:-15px} .hand.r{right:-15px}
+
+  /* the board (when you're on a card) */
+  .table{position:absolute;inset:0;background-image:radial-gradient(circle,#2a1a0b 1px,transparent 1px);background-size:22px 22px}
+  .bcard{position:absolute;width:210px;background:var(--card-stock);border:1px solid var(--card-hairline);
+         border-top:2px solid var(--card-hairline);padding:9px 11px 11px;color:#4a3f2f;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+  .bcard .k{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:#8a7247;margin-bottom:4px}
+  .bcard .t{font-family:var(--prose);font-size:14px;line-height:1.35}
+  .bcard.sel{border-top-color:var(--accent-rest);outline:1px solid var(--accent-rest)}
+
+  /* ---------- the Publish sheet ---------- */
+  .sheet{position:absolute;top:12px;right:10px;bottom:12px;width:316px;background:var(--panel);border:1px solid var(--line);
+         display:flex;flex-direction:column;z-index:5;opacity:0;transform:translateX(14px);pointer-events:none;
+         visibility:hidden;transition:opacity .22s cubic-bezier(.2,.8,.2,1),transform .22s cubic-bezier(.2,.8,.2,1),visibility 0s linear .22s}
+  .sheet.open{opacity:1;transform:none;pointer-events:auto;visibility:visible;transition-delay:0s}
+  .sheet.over{box-shadow:-14px 0 40px rgba(0,0,0,.55)}
+  @media (prefers-reduced-motion:reduce){ .sheet{transition:none} .caret{animation:none} }
+  .sh-head{display:flex;align-items:baseline;gap:8px;padding:12px 14px 10px;border-bottom:1px solid var(--line)}
+  .engr{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--accent-rest)}
+  .sh-head .sub{font-size:11px;color:var(--text-low);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+  .x{background:none;border:none;color:var(--text-low);cursor:pointer;font-size:15px;line-height:1;padding:0 2px}
+  .x:hover{color:var(--text-hi)}
+  .sh-body{flex:1;overflow:auto;padding:4px 0 8px}
+  .q{padding:9px 14px 10px;border-bottom:1px solid var(--line)}
+  .q:last-child{border-bottom:none}
+  .qh{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+  .qh .n{font-size:10px;color:var(--text-low);font-variant-numeric:tabular-nums}
+  .chips{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{font-size:12px;padding:4px 9px;border:1px solid var(--line);background:none;color:var(--text-mid);cursor:pointer}
+  .chip:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .chip[aria-pressed="true"]{color:var(--text-hi);border-color:var(--accent-rest)}
+  .chip[disabled]{color:#4d443a;border-color:#2a1c0f;cursor:default}
+  .eds{display:flex;flex-direction:column;gap:2px}
+  .ed{display:grid;grid-template-columns:1fr auto;gap:2px 8px;text-align:left;background:none;border:none;border-left:2px solid transparent;
+      padding:6px 8px 7px;cursor:pointer;color:var(--text-mid)}
+  .ed:hover{background:var(--row-hover)}
+  .ed[aria-pressed="true"]{border-left-color:var(--accent-rest);color:var(--text-hi);background:var(--row-hover)}
+  .ed .nm{font-size:13px;font-weight:500}
+  .ed .fm{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--text-low);border:1px solid var(--line);padding:1px 5px;align-self:center}
+  .ed .nt{grid-column:1/3;font-size:11px;color:var(--text-low);line-height:1.35}
+  .ed.quiet .nm{font-weight:400}
+  .fmts{display:flex;gap:4px;margin:6px 0 0 10px}
+  .fmts .chip{font-family:var(--mono);font-size:10px;padding:2px 7px}
+  .inc{margin-top:8px;display:flex;align-items:baseline;gap:6px;font-size:11.5px;color:var(--text-mid);line-height:1.4}
+  .inc .lbl{color:var(--text-low)}
+  .link{background:none;border:none;color:var(--accent-rest);cursor:pointer;font-size:11.5px;padding:0;white-space:nowrap}
+  .link:hover{text-decoration:underline}
+  .dests{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+  .dest{font-size:12px;padding:7px 4px 6px;border:1px solid var(--line);background:none;color:var(--text-mid);cursor:pointer;
+        display:flex;flex-direction:column;align-items:center;gap:2px}
+  .dest .g{font-size:14px;line-height:1;color:var(--text-mid)}
+  .dest:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .dest[aria-pressed="true"]{color:var(--text-hi);border-color:var(--accent-rest)}
+  .dest[aria-pressed="true"] .g{color:var(--accent-rest)}
+  .dest[disabled]{color:#4d443a;border-color:#2a1c0f;cursor:default}
+  .dest[disabled] .g{color:#4d443a}
+  .later{margin-top:6px;font-size:11px;color:#5d5246}
+  .detail{margin-top:10px;font-size:11.5px;color:var(--text-mid);line-height:1.45}
+  .detail .row{display:flex;gap:8px;align-items:baseline;margin-top:4px}
+  .thumbs{display:flex;gap:8px;align-items:flex-end;margin:2px 0 8px}
+  .th{background:var(--paper);border:1px solid var(--paper-line);color:var(--ink-on-paper);overflow:hidden;position:relative;flex:none}
+  .th.pg{width:62px;height:80px;padding:6px 6px}
+  .th.phone{width:46px;height:82px;border-radius:5px;border:3px solid #3b2a19;padding:5px 4px}
+  .th.web{width:104px;height:72px;padding:0}
+  .th.web .bar{height:9px;background:#e2d8c6;border-bottom:1px solid var(--paper-line)}
+  .th.sq{width:80px;height:80px;display:grid;place-items:center;padding:8px;background:#2B2014;border-color:#2B2014;color:var(--paper)}
+  .th.file{width:62px;height:80px;display:grid;place-items:center;background:var(--ground);border:1px solid var(--accent-rest);color:var(--accent-rest);
+           font-family:var(--mono);font-size:10px}
+  .ln{height:2px;background:#b8ab96;margin:3px 0}
+  .ln.s{width:60%} .ln.m{width:80%} .ln.c{margin-left:auto;margin-right:auto}
+  .tt{font-size:6px;text-align:center;letter-spacing:.06em;font-family:var(--ms);color:#2b2014}
+  .omit{margin-top:8px;font-size:11px;color:var(--text-low);line-height:1.4}
+  .omit b{color:var(--text-mid);font-weight:500}
+  .posts{display:flex;flex-direction:column;gap:5px;margin:4px 0 6px}
+  .post{border:1px solid var(--line);padding:6px 8px;font-family:var(--prose);font-size:12.5px;line-height:1.35;color:var(--text-hi)}
+  .post .pn{font-family:var(--ui);font-size:10px;color:var(--text-low);display:flex;justify-content:space-between;margin-bottom:2px;font-variant-numeric:tabular-nums}
+  .steps{display:flex;flex-direction:column;gap:5px;margin:6px 0}
+  .step{display:flex;align-items:center;gap:8px}
+  .step .sn{width:16px;height:16px;border:1px solid var(--line);font-size:9.5px;display:grid;place-items:center;color:var(--text-low);flex:none}
+  .btn-quiet{background:none;border:1px solid var(--line);color:var(--text-mid);font-size:12px;padding:4px 9px;cursor:pointer}
+  .btn-quiet:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .toggle{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--text-mid);cursor:pointer;background:none;border:none;padding:2px 0}
+  .toggle .bx{width:12px;height:12px;border:1px solid var(--text-low);display:grid;place-items:center;font-size:9px;color:var(--accent-rest)}
+  .sh-foot{border-top:1px solid var(--line);padding:11px 14px 12px;display:flex;flex-direction:column;gap:7px}
+  .btn-brass{background:var(--brass);color:var(--on-brass);border:none;font-weight:600;font-size:13px;padding:9px 12px;cursor:pointer;
+             box-shadow:0 0 22px rgba(255,152,0,.22)}
+  .btn-brass:hover{background:var(--brass-hover)}
+  .again{background:none;border:none;color:var(--text-low);font-size:11.5px;text-align:left;padding:0;cursor:pointer}
+  .again:hover{color:var(--text-mid)}
+  .again b{color:var(--text-mid);font-weight:500}
+  .drill-h{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line)}
+  .grp-h{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-low);padding:10px 14px 4px}
+  .ck{display:flex;align-items:center;gap:9px;width:100%;background:none;border:none;text-align:left;padding:5px 14px;font-size:12.5px;color:var(--text-mid);cursor:pointer}
+  .ck:hover{background:var(--row-hover)}
+  .ck .bx{width:12px;height:12px;border:1px solid var(--text-low);display:grid;place-items:center;font-size:9px;color:var(--accent-rest);flex:none}
+  .ck .src{margin-left:auto;font-size:10.5px;color:var(--text-low)}
+  .ck[aria-checked="false"]{color:var(--text-low)}
+  .note{padding:10px 14px;font-size:11px;color:var(--text-low);line-height:1.45}
+
+  .toast{position:absolute;left:40%;bottom:22px;transform:translate(-50%,8px);width:max-content;max-width:400px;background:#1F1A16;border:1px solid var(--line);
+         color:var(--text-hi);font-size:13.5px;padding:9px 16px;opacity:0;transition:opacity .3s,transform .3s;z-index:6;pointer-events:none}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  .mark{position:absolute;right:18px;bottom:12px;font-family:var(--prose);font-style:italic;font-size:22px;color:var(--text-hi);opacity:.1}
+</style>
+</head>
+<body>
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>PUBLISH · A — THE SHEET</b>
+  <span class="grp">kind:
+    <button type="button" id="k-book" aria-pressed="true">Book</button><button type="button" id="k-screenplay" aria-pressed="false">Screenplay</button><button type="button" id="k-essay" aria-pressed="false">Essay</button><button type="button" id="k-thesis" aria-pressed="false">Thesis</button>
+  </span>
+  <span class="grp">you're on:
+    <button type="button" id="w-page" aria-pressed="true">a page</button><button type="button" id="w-card" aria-pressed="false">a board card</button>
+  </span>
+  <span class="grp">width:
+    <button type="button" id="s-1366" aria-pressed="true">1366</button><button type="button" id="s-1100" aria-pressed="false">1100</button>
+  </span>
+  <span class="grp">sheet:
+    <button type="button" id="o-open" aria-pressed="true">open</button><button type="button" id="o-shut" aria-pressed="false">closed</button>
+  </span>
+  <span id="geom" aria-live="polite"></span>
+</div>
+
+<div class="fit" id="fit"><div class="stage" id="stage">
+  <div class="frame">
+    <nav class="rail" aria-label="Rail">
+      <span class="cat"><span class="glyph">▭</span>page</span>
+      <span class="cat"><span class="glyph">⌗</span>plan</span>
+      <span class="sep"></span>
+      <span class="cat"><span class="glyph">☰</span>drawers</span>
+      <span class="sep"></span>
+      <span class="cat"><span class="glyph">✶</span>journal</span>
+      <span class="cat"><span class="glyph">⌂</span>shelf</span>
+      <span class="cat"><span class="glyph">▤</span>library</span>
+      <div class="foot">
+        <span class="cat"><span class="glyph">⚙</span>settings</span>
+        <span class="cat"><span class="glyph">◐</span>theme</span>
+        <span class="cat"><span class="glyph">✕</span>trash</span>
+      </div>
+    </nav>
+    <div class="band" id="band"></div>
+    <div class="room" id="room">
+      <div id="surface"></div>
+      <aside class="sheet" id="sheet" aria-label="Publish"></aside>
+      <div class="toast" id="toast" role="status"></div>
+      <div class="mark" aria-hidden="true">wrizo</div>
+    </div>
+  </div>
+</div></div>
+
+<div class="cap"><b>Publish → opens a sheet beside the page.</b> The page never moves or closes: the green readout
+above measures it with the sheet open and shut. The sheet asks three things. <b>What</b>: from a selection or one
+card up to the whole work, or Everything. <b>As</b>: editions that change with the kind of writing (try the Kind
+buttons). <b>To</b>: Download, Share, Copy, WordPress (as a draft), Substack (by paste) or X (one post at a time).
+One orange button does it; <b>Again</b> repeats your last choice. Each edition says what it leaves out. At <b>1100</b>
+wide the margin is narrower than the sheet, so it lies over the page's edge instead of pushing it. Try <b>a board
+card</b> to publish a single card. <em>Committee lean: build this first; the Press (mockup B) comes later for whole books.</em></div>
+
+<script>
+(function(){
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+
+  // ---------- content ----------
+  var KINDS = {
+    book: { binder:'The Long Winter', label:'Book', whole:'Whole book', page:'Ch. 7 · The crypt', board:'Plan · Chapter beats',
+      paper:'<h2>The crypt</h2><p>Maren took the lamp because nobody else would. The stairs went down farther than the house went up, and every step was colder than the one before it, as if cold were something you could wade into.</p><p>Tobiah followed three steps behind. He had stopped asking questions at the landing, which was how she knew he was afraid.</p><p>At the bottom the air smelled of iron and old wax. Their father’s name was already cut into the stone, the letters still pale, the way a word looks the first time you write it.</p><p>She held the lamp up to it and waited for the feeling to arrive. It didn’t. What arrived instead was the thought that someone had been paid to carve this<span class="caret"></span></p>',
+      thread:'Maren took the lamp because nobody else would. The stairs went down farther than the house went up, and every step was colder than the one before it, as if cold were something you could wade into. Tobiah followed three steps behind. He had stopped asking questions at the landing, which was how she knew he was afraid. At the bottom the air smelled of iron and old wax. Their father’s name was already cut into the stone, the letters still pale, the way a word looks the first time you write it.',
+      cards:[['Beat','Maren carries the lamp. She always carries the light for someone else.',60,40],['Beat','The name is already carved. Nobody tells her who paid for it.',330,120],['Beat','Tobiah stops asking questions. His fear shows up as silence.',80,250],['Note','Ch. 8 opens at supper, the same night.',380,330],['Beat','Keep the stone cold; keep the grief late.',640,70]],
+      sel:1, includes:['Title page','Dedication','12 chapters','Sources'],
+      omit:{ manuscript:'2 ink drawings and 14 links — named on a last page', ebook:'14 links (kept as plain words); ink goes in as pictures', webpost:'2 ink drawings — named at the end' } },
+    screenplay: { binder:'Night Ferry', label:'Screenplay', whole:'Whole binder', page:'Night Ferry (script)', board:'Plan · Beat board',
+      paper:'<div class="sl">INT. FERRY CABIN — NIGHT</div><p>Rain streaks the porthole. DELIA (40s), coat still buttoned, counts coins on the bench beside her.</p><div class="ch">DELIA</div><div class="dl">Four. That’s not enough for two.</div><div class="ch">THEO (O.S.)</div><div class="dl">Then buy one and we’ll share.</div><p style="margin-top:14px">She looks up. THEO stands in the doorway, soaked, grinning like he’s already won something.<span class="caret"></span></p>',
+      thread:'Rain streaks the porthole. Delia, coat still buttoned, counts coins on the bench beside her. Four. That’s not enough for two. Then buy one and we’ll share.',
+      cards:[['Beat','Delia counts coins. She is always one short.',70,60],['Beat','Theo arrives soaked and grinning.',340,150],['Act break','The ferry’s horn.',110,280],['Note','Title page: add the WGA number before sending.',420,330]],
+      sel:1, includes:['Title page','42 scenes'],
+      omit:{ screenplay:'1 ink sketch — named on a last page' } },
+    essay: { binder:'Against Productivity', label:'Essay', whole:'Whole essay', page:'II. Idle hands', board:'Plan · Argument map',
+      paper:'<h2>II. Idle hands</h2><p>Every productivity system I have tried begins with a ledger. Hours in, output out, and somewhere between them a number that is supposed to tell me whether the day was worth living.</p><p>The trouble is that the best thing I wrote last year happened on an afternoon the ledger would have marked as wasted. I was lying on the floor. I was not, by any measure the app could see, working.</p><p>Idleness is not the opposite of work. It is the part of the work that doesn’t leave a receipt<span class="caret"></span></p>',
+      thread:'Every productivity system I have tried begins with a ledger. Hours in, output out, and somewhere between them a number that is supposed to tell me whether the day was worth living. The trouble is that the best thing I wrote last year happened on an afternoon the ledger would have marked as wasted. I was lying on the floor. I was not, by any measure the app could see, working. Idleness is not the opposite of work. It is the part of the work that doesn’t leave a receipt.',
+      cards:[['Claim','The ledger measures the wrong thing.',60,50],['Example','The afternoon on the floor.',330,140],['Line','Idleness leaves no receipt.',90,270],['Close','End on the river.',420,320]],
+      sel:2, includes:['Title and byline','3 sections','Sources'],
+      omit:{} },
+    thesis: { binder:'Rhizomes in the Classroom', label:'Thesis', whole:'Whole thesis', page:'Ch. 2 · Literature review', board:'Plan · Sources',
+      paper:'<h2>Chapter 2: Literature Review</h2><p>Deleuze and Guattari (1987) describe the rhizome as a structure without a center, in which “any point of a rhizome can be connected to anything other” (p. 7). Applied to the classroom, the figure has been read both as a model for student-led inquiry and as a warning against curricula that confuse coverage with understanding.</p><p>Csikszentmihalyi’s (1990) account of flow offers a complementary lens: learners reach absorption when challenge and skill rise together, a condition that rigid sequencing tends to break<span class="caret"></span></p>',
+      thread:'Deleuze and Guattari describe the rhizome as a structure without a center. Applied to the classroom, the figure has been read both as a model for student-led inquiry and as a warning against curricula that confuse coverage with understanding.',
+      cards:[['Source','Deleuze & Guattari, 1987 — the rhizome, p. 7',60,50],['Source','Csikszentmihalyi, 1990 — flow',330,140],['Source','hooks, 1994 — engaged pedagogy',90,270],['Gap','No classroom study tests both at once.',420,320]],
+      sel:0, includes:['Title page (APA)','Abstract','5 chapters','References'],
+      omit:{ paper:'2 margin notes in ink — named at the end' } }
+  };
+
+  // Editions: name, formats, one line, destinations, preview kind, noun for the verb.
+  var ED = {
+    manuscript:{ nm:'Manuscript', f:['DOCX','PDF'], nt:'Standard manuscript format, for agents and editors', d:['download','share'], pv:'ms', noun:'manuscript' },
+    ebook:{ nm:'E-book', f:['EPUB'], nt:'Reflows on any e-reader; chapters in the contents', d:['download','share'], pv:'ebook', noun:'e-book' },
+    reading:{ nm:'Reading copy', f:['HTML'], nt:'Wears your page’s own look; print it from your browser', d:['download','share','copy'], pv:'reading', noun:'reading copy' },
+    webpost:{ nm:'Web post', f:['HTML','MD'], nt:'For a blog or a newsletter', d:['download','share','copy','wordpress','substack'], pv:'web', noun:'post' },
+    thread:{ nm:'Post / thread', f:['X'], nt:'Cut at sentences; your words unchanged', d:['copy','x'], pv:'thread', noun:'thread' },
+    post:{ nm:'Post', f:['X'], nt:'One post, or a thread if it runs long', d:['copy','x','share'], pv:'thread', noun:'post' },
+    quote:{ nm:'Quote card', f:['PNG'], nt:'Your words set as an image', d:['download','share'], pv:'quote', noun:'quote card' },
+    text:{ nm:'Text', f:['TXT','MD'], nt:'Plain words, nothing else', d:['download','share','copy'], pv:'text', noun:'text' },
+    screenplay:{ nm:'Screenplay', f:['PDF','Fountain','FDX'], nt:'Industry format, 12-point Courier, page-true', d:['download','share'], pv:'script', noun:'screenplay' },
+    paper:{ nm:'Paper', f:['DOCX','PDF'], nt:'Laid out to this page’s style guide', d:['download','share'], pv:'apa', noun:'paper', style:true },
+    document:{ nm:'Document', f:['DOCX','PDF'], nt:'Clean pages for any reader', d:['download','share'], pv:'doc', noun:'document' },
+    outline:{ nm:'Outline', f:['DOCX','MD','HTML'], nt:'Lanes become parts; cards become headings', d:['download','share','copy'], pv:'outline', noun:'outline' },
+    wzo:{ nm:'Wrizo file', f:['.wzo'], nt:'Keeps boards, cards, links and ink; opens back in Wrizo', d:['download'], pv:'wzo', noun:'Wrizo file', quiet:true },
+    archive:{ nm:'Wrizo archive', f:['.wzo'], nt:'Everything you’ve written, ink included: your full backup', d:['download'], pv:'wzo', noun:'archive' },
+    everythingMd:{ nm:'Everything as text', f:['MD'], nt:'Every page, oldest first; ink named, not drawn', d:['download'], pv:'text', noun:'text' }
+  };
+  var DESTS = [
+    ['download','↓','Download'],['share','↪','Share…'],['copy','⎘','Copy'],
+    ['wordpress','W','WordPress'],['substack','S','Substack'],['x','𝕏','X']
+  ];
+
+  function scopesFor(kind, where){
+    var K = KINDS[kind];
+    if (where === 'card') return [['card','This card'],['board','This board'],['whole',K.whole],['everything','Everything']];
+    return [['selection','Selection',true],['page', kind==='screenplay' ? 'This script' : 'This page'],['whole',K.whole],['pick','Pick pages…'],['everything','Everything']];
+  }
+  function editionsFor(kind, scope){
+    if (scope === 'card' || scope === 'selection') return ['post','quote','text'];
+    if (scope === 'board') return ['outline','reading','wzo'];
+    if (scope === 'everything') return ['archive','everythingMd'];
+    if (kind === 'book') return scope === 'page' ? ['manuscript','webpost','reading','wzo'] : ['manuscript','ebook','reading','wzo'];
+    if (kind === 'screenplay') return scope === 'page' ? ['screenplay','wzo'] : ['screenplay','reading','wzo'];
+    if (kind === 'essay') return ['webpost','document','thread','wzo'];
+    return ['paper','reading','wzo'];
+  }
+
+  // ---------- state ----------
+  var st = { kind:'book', where:'page', width:1366, open:true, scope:'page', ed:'manuscript', fmt:0, dest:'download',
+             drill:null, numberPosts:false, style:'APA', again:{ ed:'ebook', fmt:0, dest:'download', scope:'whole' },
+             excluded:{}, baseline:null };
+
+  // ---------- helpers ----------
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function splitThread(text){
+    var parts = text.match(/[^.!?]+[.!?]+["”’)]*\s*/g) || [text];
+    var posts = [], cur = '';
+    parts.forEach(function(p){
+      if ((cur + p).trim().length > 270 && cur) { posts.push(cur.trim()); cur = ''; }
+      cur += p;
+    });
+    if (cur.trim()) posts.push(cur.trim());
+    return posts;
+  }
+  function threadText(){
+    var K = KINDS[st.kind];
+    return st.scope === 'card' ? K.cards[K.sel][1] : K.thread;
+  }
+  function omitFor(kind, ed){
+    var o = KINDS[kind].omit[ed]; if (o) return o;
+    switch (ed){
+      case 'text': case 'everythingMd': return 'ink (named, not drawn) and formatting';
+      case 'thread': case 'post': return 'formatting (X shows plain text)';
+      case 'quote': return 'everything but these words';
+      case 'outline': return 'where the cards sit on the board';
+    }
+    return 'nothing';
+  }
+  function fileName(){
+    var K = KINDS[st.kind], e = ED[st.ed], f = e.f[st.fmt] || e.f[0];
+    var ext = f.charAt(0) === '.' ? f : '.' + f.toLowerCase();
+    var what = st.scope === 'page' ? K.page.replace(/ · /g,' ') : st.scope === 'everything' ? 'Everything' : K.binder;
+    return what + ' — ' + e.noun + ext;
+  }
+  function verb(){
+    var e = ED[st.ed], f = e.f[st.fmt] || e.f[0];
+    var ext = f.charAt(0) === '.' ? f : '.' + f.toLowerCase();
+    switch (st.dest){
+      case 'download': return 'Download ' + e.noun + ' (' + ext + ')';
+      case 'share': return 'Make it, then share…';
+      case 'copy': return st.ed === 'webpost' ? 'Copy the post' : 'Copy your words';
+      case 'wordpress': return 'Send as a draft to WordPress';
+      case 'substack': return 'Copy for Substack';
+      case 'x': var n = splitThread(threadText()).length; return n > 1 ? 'Open X with post 1 of ' + n : 'Open X with your post';
+    }
+    return 'Publish';
+  }
+  function toastText(){
+    switch (st.dest){
+      case 'download': return 'Saved “' + fileName() + '”';
+      case 'share': return 'Made “' + fileName() + '”. Opening your share sheet…';
+      case 'copy': return 'Copied. Paste it wherever it’s going.';
+      case 'wordpress': return 'Sent to wrenwrites.blog as a draft. Publish it from WordPress when you’re ready.';
+      case 'substack': return 'Copied for Substack. Paste it into a new post.';
+      case 'x': return 'X is open with post 1. Come back here for the next one.';
+    }
+    return '';
+  }
+
+  // ---------- render: band + surface ----------
+  function renderBand(){
+    var K = KINDS[st.kind], h = '';
+    var door = '<button type="button" class="mode door" id="pubDoor" aria-expanded="' + st.open + '">Publish →</button>';
+    if (st.where === 'page'){
+      h += '<div class="crumb">Location&nbsp; <b>' + esc(K.binder) + ' · ' + esc(K.page) + '</b></div>';
+      h += '<div class="strip" role="tablist" aria-label="Writing mode">'
+        + '<span class="mode">Free Write</span><span class="mode active">Draft</span><span class="mode">Revise</span>'
+        + '<span class="mode dark">Workshop</span>' + door + '</div>';
+      h += '<div class="doors"><span class="mode" style="letter-spacing:.14em">Plan →</span></div>';
+    } else {
+      h += '<div class="crumb">Board&nbsp; <b>' + esc(K.binder) + ' · ' + esc(K.board) + '</b></div>';
+      h += '<div class="strip">' + door + '</div>';
+      h += '<div class="doors"><span class="mode" style="letter-spacing:.14em">Page →</span></div>';
+    }
+    $('band').innerHTML = h;
+    $('pubDoor').onclick = function(){ setOpen(!st.open); };
+  }
+  function renderSurface(){
+    var K = KINDS[st.kind];
+    if (st.where === 'page'){
+      $('surface').innerHTML = '<div class="paper-col" id="probe"><div class="paper' + (st.kind === 'screenplay' ? ' script' : '') + '">' + K.paper
+        + '</div><span class="hand l" aria-hidden="true">‹</span><span class="hand r" aria-hidden="true">›</span></div>';
+    } else {
+      var h = '<div class="table" id="probe">';
+      K.cards.forEach(function(c, i){
+        h += '<div class="bcard' + (i === K.sel ? ' sel' : '') + '" style="left:' + c[2] + 'px;top:' + c[3] + 'px"><div class="k">' + esc(c[0]) + (i === K.sel ? ' · selected' : '') + '</div><div class="t">' + esc(c[1]) + '</div></div>';
+      });
+      $('surface').innerHTML = h + '</div>';
+    }
+  }
+
+  // ---------- render: the sheet ----------
+  function thumbs(){
+    var pv = ED[st.ed].pv, K = KINDS[st.kind];
+    var lines = function(n, cls){ var s=''; for (var i=0;i<n;i++) s += '<div class="ln ' + (cls && i % 3 === 2 ? cls : '') + '"></div>'; return s; };
+    switch (pv){
+      case 'ms': return '<div class="th pg"><div class="tt" style="margin-top:22px">' + esc(K.binder.toUpperCase()) + '</div><div class="tt" style="margin-top:3px">by Wren Castellan</div></div>'
+                       + '<div class="th pg"><div class="tt" style="text-align:right">Castellan / ' + esc(K.binder.split(' ').pop().toUpperCase()) + ' / 2</div><div class="tt" style="margin-top:14px">Chapter Seven</div>' + lines(6) + '</div>';
+      case 'ebook': return '<div class="th phone"><div class="tt" style="margin-top:14px">' + esc(K.binder) + '</div></div><div class="th phone"><div class="tt">SEVEN</div>' + lines(8, 's') + '</div>';
+      case 'reading': return '<div class="th pg" style="font-family:var(--prose)"><div class="tt" style="font-family:var(--prose)">' + esc(K.page) + '</div>' + lines(9, 'm') + '</div>';
+      case 'web': return '<div class="th web"><div class="bar"></div><div style="padding:5px 8px"><div class="tt" style="text-align:left;font-size:7px">' + esc(K.page) + '</div>' + lines(5, 'm') + '</div></div>';
+      case 'thread': return '<div class="th web" style="width:92px;background:#15100b;border-color:var(--line)"><div style="padding:6px"><div class="ln" style="background:#6b5d4d"></div><div class="ln s" style="background:#6b5d4d"></div><div class="ln m" style="background:#6b5d4d;margin-top:9px"></div><div class="ln" style="background:#6b5d4d"></div></div></div>';
+      case 'quote': return '<div class="th sq"><div style="font-family:var(--prose);font-style:italic;font-size:8.5px;line-height:1.25;text-align:center">“' + esc(K.cards[K.sel][1].slice(0, 60)) + '”</div></div>';
+      case 'text': return '<div class="th pg" style="font-family:var(--mono)">' + lines(10) + '</div>';
+      case 'script': return '<div class="th pg"><div class="tt" style="margin-top:22px;font-family:var(--script)">NIGHT FERRY</div><div class="tt" style="font-family:var(--script)">Written by</div></div>'
+                          + '<div class="th pg" style="font-family:var(--script)"><div class="tt" style="text-align:left;font-family:var(--script)">INT. FERRY CABIN</div>' + lines(3) + '<div class="ln s c"></div><div class="ln m c"></div>' + lines(2) + '</div>';
+      case 'apa': return '<div class="th pg"><div class="tt" style="margin-top:18px;font-weight:700">' + esc(K.binder) + '</div><div class="tt">Wren Castellan</div><div class="tt">Lakeside University</div></div>'
+                       + '<div class="th pg"><div class="tt">References</div>' + lines(6) + '</div>';
+      case 'doc': return '<div class="th pg">' + lines(10, 'm') + '</div>';
+      case 'outline': return '<div class="th pg"><div class="tt" style="text-align:left">Part One</div><div class="ln s"></div><div class="ln s" style="margin-left:8px"></div><div class="ln s" style="margin-left:8px"></div><div class="tt" style="text-align:left;margin-top:4px">Part Two</div><div class="ln s" style="margin-left:8px"></div></div>';
+      case 'wzo': return '<div class="th file">.wzo</div><div class="detail" style="margin:0;font-size:10.5px;color:var(--text-low)">boards, cards,<br>links and ink,<br>whole</div>';
+    }
+    return '';
+  }
+  function detailFor(){
+    var K = KINDS[st.kind], e = ED[st.ed];
+    var omit = omitFor(st.kind, st.ed);
+    var omitLine = '<div class="omit">Leaves out: <b>' + esc(omit) + '</b>.</div>';
+    switch (st.dest){
+      case 'download':
+        return '<div class="thumbs">' + thumbs() + '</div><div>' + esc(fileName()) + '</div>' + omitLine;
+      case 'share':
+        return '<div>Opens your phone or tablet’s share sheet. PDFs, text, web pages and pictures go straight across. Word and e-book files are saved first, then shared from your files.</div>' + omitLine;
+      case 'copy':
+        return '<div>Copies the words. Bold, italics and headings come along wherever the paste can hold them.</div>' + omitLine;
+      case 'wordpress':
+        return '<div>Sends to <b>wrenwrites.blog</b> as a <b>draft</b>. You press Publish in WordPress.</div>'
+             + '<div class="row"><span style="color:var(--text-low)">Connected on this device only.</span><button type="button" class="link" id="forget">Forget this site</button></div>' + omitLine;
+      case 'substack':
+        return '<div>Substack has no way for apps to post, so Wrizo gets it ready to paste:</div>'
+             + '<div class="steps"><div class="step"><span class="sn">1</span><span>Copy the title</span><button type="button" class="btn-quiet" id="cpTitle" style="margin-left:auto">Copy title</button></div>'
+             + '<div class="step"><span class="sn">2</span><span>Copy the post (below)</span></div>'
+             + '<div class="step"><span class="sn">3</span><span>Paste into a new post</span><a class="link" href="https://substack.com" target="_blank" rel="noopener" style="margin-left:auto">Open Substack ↗</a></div></div>'
+             + '<div style="color:var(--text-low)">In Substack’s phone app, some formatting may flatten.</div>';
+      case 'x':
+        var posts = splitThread(threadText()), h = '<div class="posts">';
+        posts.forEach(function(p, i){
+          var body = st.numberPosts ? p + ' ' + (i + 1) + '/' + posts.length : p;
+          h += '<div class="post"><div class="pn"><span>' + (i + 1) + ' of ' + posts.length + '</span><span>' + body.length + ' characters</span></div>' + esc(body) + '</div>';
+        });
+        h += '</div><button type="button" class="toggle" id="numPosts"><span class="bx">' + (st.numberPosts ? '✓' : '') + '</span>Number the posts</button>';
+        return '<div>Cut at sentences. Your words don’t change; joined back together, the posts are the passage exactly.</div>' + h
+             + '<div class="omit">X opens with each post filled in. You press Post there, one at a time.</div>';
+    }
+    return '';
+  }
+  function renderSheet(){
+    var K = KINDS[st.kind], sh = $('sheet');
+    if (st.drill){ renderDrill(); return; }
+    var scopes = scopesFor(st.kind, st.where), eds = editionsFor(st.kind, st.scope);
+    if (eds.indexOf(st.ed) < 0){ st.ed = eds[0]; st.fmt = 0; }
+    var e = ED[st.ed];
+    if (e.d.indexOf(st.dest) < 0) st.dest = e.d[0];
+
+    var h = '<div class="sh-head"><span class="engr">Publish</span><span class="sub">' + esc(K.binder) + ' · ' + esc(K.label) + '</span>'
+          + '<button type="button" class="x" id="close" aria-label="Close Publish">×</button></div><div class="sh-body">';
+
+    // 1 · What
+    h += '<div class="q"><div class="qh"><span class="engr">What</span><span class="n">1 of 3</span></div><div class="chips">';
+    scopes.forEach(function(s){
+      h += '<button type="button" class="chip" data-scope="' + s[0] + '" aria-pressed="' + (st.scope === s[0]) + '"' + (s[2] ? ' disabled title="Select some words on the page first"' : '') + '>' + esc(s[1]) + '</button>';
+    });
+    h += '</div>';
+    if (st.scope === 'whole' || st.scope === 'pick'){
+      var inc = K.includes.filter(function(x){ return !st.excluded[st.kind + x]; });
+      h += '<div class="inc"><span class="lbl">Includes</span><span>' + esc(inc.join(' · ')) + '</span><button type="button" class="link" id="adjust">Adjust ›</button></div>';
+    }
+    if (st.scope === 'card') h += '<div class="inc"><span class="lbl">Card</span><span>“' + esc(K.cards[K.sel][1]) + '”</span></div>';
+    h += '</div>';
+
+    // 2 · As
+    h += '<div class="q"><div class="qh"><span class="engr">As</span><span class="n">2 of 3</span></div><div class="eds">';
+    eds.forEach(function(id){
+      var x = ED[id];
+      h += '<button type="button" class="ed' + (x.quiet ? ' quiet' : '') + '" data-ed="' + id + '" aria-pressed="' + (st.ed === id) + '"><span class="nm">' + esc(x.nm) + '</span>'
+         + '<span class="fm">' + esc(x.f.join(' · ')) + '</span>' + (st.ed === id ? '<span class="nt">' + esc(x.nt) + '</span>' : '') + '</button>';
+      if (st.ed === id && (x.f.length > 1 || x.style)){
+        h += '<div class="fmts">';
+        if (x.f.length > 1) x.f.forEach(function(f, i){ h += '<button type="button" class="chip" data-fmt="' + i + '" aria-pressed="' + (st.fmt === i) + '">' + esc(f) + '</button>'; });
+        if (x.style) h += '<button type="button" class="chip" id="style" aria-pressed="false" title="From this page’s own setting">Style: ' + st.style + ' ▾</button>';
+        h += '</div>';
+        if (x.style) h += '<div class="inc" style="margin-left:10px"><span class="lbl">References page</span><span style="color:var(--accent-rest)">✓</span><span style="color:var(--text-low)">goes in as you wrote it, hanging-indented</span></div>';
+      }
+    });
+    h += '</div></div>';
+
+    // 3 · To
+    h += '<div class="q"><div class="qh"><span class="engr">To</span><span class="n">3 of 3</span></div><div class="dests">';
+    DESTS.forEach(function(d){
+      var ok = e.d.indexOf(d[0]) >= 0;
+      h += '<button type="button" class="dest" data-dest="' + d[0] + '" aria-pressed="' + (st.dest === d[0]) + '"' + (ok ? '' : ' disabled title="Not for this edition"') + '><span class="g">' + d[1] + '</span>' + esc(d[2]) + '</button>';
+    });
+    h += '</div><div class="later">Wrizo | Read (the Reading Room) comes later.</div>';
+    h += '<div class="detail">' + detailFor() + '</div></div>';
+
+    h += '</div><div class="sh-foot"><button type="button" class="btn-brass" id="go">' + esc(verb()) + '</button>'
+       + '<button type="button" class="again" id="again">Again: <b>' + esc(ED[st.again.ed].nm) + ' → ' + esc(DESTS.filter(function(d){ return d[0] === st.again.dest; })[0][2]) + '</b></button></div>';
+    sh.innerHTML = h;
+    wireSheet();
+  }
+  function renderDrill(){
+    var K = KINDS[st.kind], sh = $('sheet');
+    var h = '<div class="drill-h"><button type="button" class="link" id="back">‹ Publish</button><span class="engr" style="margin-left:auto">' + (st.scope === 'pick' ? 'Pick pages' : 'Includes') + '</span></div><div class="sh-body">';
+    var groups = { book:[['Front',['Title page','Dedication','Epigraph']],['Body',['12 chapters']],['Back',['Sources','About the author']]],
+                   screenplay:[['Front',['Title page']],['Body',['42 scenes']],['Back',[]]],
+                   essay:[['Front',['Title and byline']],['Body',['3 sections']],['Back',['Sources','Notes']]],
+                   thesis:[['Front',['Title page (APA)','Abstract','Acknowledgments']],['Body',['5 chapters']],['Back',['References','Appendix A']]] }[st.kind];
+    groups.forEach(function(g){
+      if (!g[1].length){ h += '<div class="grp-h">' + g[0] + '</div><div class="note" style="padding-top:2px">Screenplays carry no back matter.</div>'; return; }
+      h += '<div class="grp-h">' + g[0] + '</div>';
+      g[1].forEach(function(x){
+        var known = K.includes.indexOf(x) >= 0, on = known && !st.excluded[st.kind + x];
+        var src = x.indexOf('Title page') === 0 ? 'made for you' : x === 'Sources' || x === 'References' ? 'your page' : /chapters|scenes|sections/.test(x) ? 'your binder' : known ? 'your page' : 'add a page';
+        h += '<button type="button" class="ck" role="checkbox" aria-checked="' + on + '" data-x="' + esc(x) + '"><span class="bx">' + (on ? '✓' : '') + '</span>' + esc(x) + '<span class="src">' + src + '</span></button>';
+      });
+    });
+    h += '<div class="note">Order comes from your binder. Change it in Plan ›<br>Front and back matter are ordinary pages; the title page is made from the binder’s title and your pen name.</div></div>';
+    sh.innerHTML = h;
+    $('back').onclick = function(){ st.drill = null; renderSheet(); };
+    Array.prototype.forEach.call(sh.querySelectorAll('.ck'), function(b){
+      b.onclick = function(){
+        var x = b.getAttribute('data-x');
+        if (KINDS[st.kind].includes.indexOf(x) < 0){ KINDS[st.kind].includes.push(x); }
+        else { st.excluded[st.kind + x] = !st.excluded[st.kind + x]; }
+        renderDrill();
+      };
+    });
+  }
+  function wireSheet(){
+    var sh = $('sheet');
+    $('close').onclick = function(){ setOpen(false); };
+    Array.prototype.forEach.call(sh.querySelectorAll('[data-scope]'), function(b){ b.onclick = function(){ st.scope = b.getAttribute('data-scope'); renderSheet(); }; });
+    Array.prototype.forEach.call(sh.querySelectorAll('[data-ed]'), function(b){ b.onclick = function(){ st.ed = b.getAttribute('data-ed'); st.fmt = 0; renderSheet(); }; });
+    Array.prototype.forEach.call(sh.querySelectorAll('[data-fmt]'), function(b){ b.onclick = function(){ st.fmt = +b.getAttribute('data-fmt'); renderSheet(); }; });
+    Array.prototype.forEach.call(sh.querySelectorAll('[data-dest]'), function(b){ b.onclick = function(){ st.dest = b.getAttribute('data-dest'); renderSheet(); }; });
+    if ($('adjust')) $('adjust').onclick = function(){ st.drill = true; renderSheet(); };
+    if ($('style')) $('style').onclick = function(){ st.style = { APA:'MLA', MLA:'Chicago', Chicago:'APA' }[st.style]; renderSheet(); };
+    if ($('numPosts')) $('numPosts').onclick = function(){ st.numberPosts = !st.numberPosts; renderSheet(); };
+    if ($('forget')) $('forget').onclick = function(){ toast('Forgot wrenwrites.blog on this device.'); };
+    if ($('cpTitle')) $('cpTitle').onclick = function(){ toast('Copied the title.'); };
+    $('go').onclick = function(){
+      toast(toastText());
+      st.again = { ed:st.ed, fmt:st.fmt, dest:st.dest, scope:st.scope };
+      renderSheet();
+    };
+    $('again').onclick = function(){
+      var a = st.again, scopes = scopesFor(st.kind, st.where).map(function(s){ return s[0]; });
+      if (scopes.indexOf(a.scope) >= 0) st.scope = a.scope;
+      if (editionsFor(st.kind, st.scope).indexOf(a.ed) >= 0){ st.ed = a.ed; st.fmt = a.fmt; st.dest = a.dest; }
+      renderSheet();
+      toast(toastText());
+    };
+  }
+
+  // ---------- toast ----------
+  var tTimer = null;
+  function toast(msg){
+    var t = $('toast'); t.textContent = msg; t.classList.add('on');
+    clearTimeout(tTimer); tTimer = setTimeout(function(){ t.classList.remove('on'); }, 3200);
+  }
+
+  // ---------- geometry: the page-primacy self-check ----------
+  var scale = 1;
+  function surfaceRect(){
+    var p = $('probe'), s = $('stage'); if (!p) return null;
+    var a = p.getBoundingClientRect(), b = s.getBoundingClientRect();
+    return { x:Math.round((a.left - b.left) / scale * 10) / 10, y:Math.round((a.top - b.top) / scale * 10) / 10,
+             w:Math.round(a.width / scale * 10) / 10, h:Math.round(a.height / scale * 10) / 10 };
+  }
+  function measure(){
+    var r = surfaceRect(); if (!r) return;
+    if (!st.open) st.baseline = r;
+    var same = st.baseline && st.baseline.x === r.x && st.baseline.y === r.y && st.baseline.w === r.w && st.baseline.h === r.h;
+    var what = st.where === 'page' ? 'page' : 'board';
+    var room = st.width - 84, over = st.where === 'page' && (room - 604) / 2 < 316 + 10;
+    $('sheet').classList.toggle('over', over);
+    var msg = what + ' rect ' + r.x + ',' + r.y + ' ' + r.w + '×' + r.h;
+    if (st.open) msg += st.baseline ? (same ? ' · same with the sheet open ✓' : ' · MOVED') : '';
+    if (st.open && st.where === 'page') msg += over ? ' · margin too narrow: sheet overlays (b166)' : ' · sheet sits beside the page';
+    $('geom').textContent = msg;
+    $('geom').style.color = (st.open && st.baseline && !same) ? '#e05c5c' : '';
+  }
+  function takeBaseline(){
+    var wasOpen = st.open, sh = $('sheet');
+    sh.classList.remove('open'); st.baseline = surfaceRect(); if (wasOpen) sh.classList.add('open');
+  }
+
+  // ---------- layout ----------
+  function layout(){
+    var fit = $('fit'), stg = $('stage'), H = st.width === 1366 ? 768 : 700;
+    stg.style.width = st.width + 'px'; stg.style.height = H + 'px';
+    scale = Math.min((fit.clientWidth - 8) / st.width, (fit.clientHeight - 8) / H, 1);
+    stg.style.transform = 'translate(-50%,-50%) scale(' + scale + ')';
+  }
+
+  // ---------- rig ----------
+  function press(group, id){ Array.prototype.forEach.call(document.querySelectorAll('[id^="' + group + '-"]'), function(b){ b.setAttribute('aria-pressed', b.id === group + '-' + id); }); }
+  function setOpen(v){
+    st.open = v; press('o', v ? 'open' : 'shut');
+    if (v) st.drill = null;
+    $('sheet').classList.toggle('open', v); renderBand(); if (v) renderSheet(); setTimeout(measure, 30);
+  }
+  function full(){ layout(); renderBand(); renderSurface(); takeBaseline(); renderSheet(); $('sheet').classList.toggle('open', st.open); setTimeout(measure, 30); }
+  ['book','screenplay','essay','thesis'].forEach(function(k){ $('k-' + k).onclick = function(){ st.kind = k; st.drill = null; st.scope = st.where === 'page' ? 'page' : 'card'; press('k', k); full(); }; });
+  $('w-page').onclick = function(){ st.where = 'page'; st.scope = 'page'; st.drill = null; press('w', 'page'); full(); };
+  $('w-card').onclick = function(){ st.where = 'card'; st.scope = 'card'; st.drill = null; press('w', 'card'); full(); };
+  $('s-1366').onclick = function(){ st.width = 1366; press('s', '1366'); full(); };
+  $('s-1100').onclick = function(){ st.width = 1100; press('s', '1100'); full(); };
+  $('o-open').onclick = function(){ setOpen(true); };
+  $('o-shut').onclick = function(){ setOpen(false); };
+  document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape' && st.open) setOpen(false); });
+  window.addEventListener('resize', function(){ layout(); setTimeout(measure, 30); });
+  full();
+})();
+</script>
+</body>
+</html>
