@@ -23176,3 +23176,29 @@ Eight or ship on its own. **Nothing further is done here — no pair run, no mer
 it is already on `main`), no grant written for a build — until Fable or Nick says how this is to be treated.**
 **The standing box order (PW’s M7 → TOOLS’ 207b → INK’s revspell → …) and Batch Eight’s plan are UNCHANGED by
 this entry; they are what I return to once this is answered.**
+
+## THE CURSOR-PUSH INCIDENT, CLOSED: NICK’S SHIP WORD, TWO NEW LANES, HOUSE RULES ADDED TO AGENTS.md — 2026-09-30 (chat 1)
+
+**THE FIVE COMMITS ARE AUTHORIZED (Fable): Nick ran Cursor as a backup builder during the rate limit.**
+His word, verbatim, after seeing the window:
+
+> “Looks good. Let’s ship these changes.”
+
+**THE CURSOR LANE’S OFFER, recorded as written:** `aa11f58` supersedes `f1d8b01`, `ae39e4f`, `2aa01ed`,
+`782c642` (its own commit is a re-statement of all four: rail-foot and mode-tab sizing, Plan matched to the
+tabs in olive capitals, Text/Ink moved under Free Write on hover). **Display only; no schema; NOT deployed**
+(verified above — production still serves Batch Seven’s stamp). **Fable’s byte review of the product diff:
+display only, no write path.** **IT FOLDS INTO BATCH EIGHT; the batch pair is its suite** — no separate pair
+for it.
+
+**TWO NEW LANES, NAMED (Fable): CURSOR** (Nick’s backup builder) **and CLOUD** (Claude Code in the cloud; it
+wrote the Publish pass). **THE STRUCTURAL FIX: a “House rules for any lane” section is now in `AGENTS.md`**
+(committed this turn) — one subject one branch; never push or merge to `main`; no browser runs on the box
+without this desk’s grant; the ledger is this desk’s; Fable reviews; Nick’s ship word comes here.
+**CHECKED: no `CLAUDE.md` exists in this repo**, so nothing was added there.
+
+**CURSOR’S PR #1 (“Document cloud-agent setup caveats”, `cursor/dev-environment-setup-644d` @ `794c206`) —
+MERGED WITH the house-rules edit, as Fable allowed:** dev-env notes only (Node/Postgres/Vite setup on the
+cloud image), appended to `AGENTS.md`; no product file. **A second Cursor PR exists
+(`cursor/machina-theme-644d`, “Skin Machina onto the current desk”, DRAFT) — NOT named by Fable’s relay,
+NOT merged, flagged here so it isn’t lost.**

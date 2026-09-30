@@ -127,6 +127,24 @@ the pre-AB3 grandfather shape. Pass `origin: null` / `source: null` to seed a ro
 without that field. The absence of a key is a value; counting a key's presence
 cannot see it — that mistake cost two of wave 1's three pairs.
 
+## House rules for any lane (ratified 2026-09-30, after direct pushes to `main`)
+This project is worked by more than one kind of agent — Claude-based build
+lanes, Nick's Cursor sessions, Claude Code in the cloud, and whatever comes
+next. Whatever runs here, on whatever tool:
+- **One subject, one branch.** Don't fold an unrelated fix into a ticket's
+  branch.
+- **Never push or merge to `main`.** Chat 1 is the only lane that merges to
+  `main` and the only one that deploys. Land your work on its own branch and
+  say so; chat 1 verifies and merges.
+- **No browser runs on the Windows box without chat 1's grant.** The grant
+  file (`~/.wrizo/box-turn.json`, `apps/desktop/scripts/box-grant.mjs`) is the
+  only announcement; a browserless check (`tsc`, `seed-guard.mjs`) needs no
+  grant.
+- **The ledger (`docs/open-threads.md`) is chat 1's.** Report your work to it
+  through chat 1, not by editing it yourself.
+- **Fable reviews; Nick's ship word comes to chat 1.** Build lanes don't
+  self-clear a build for deploy.
+
 ## Config changes: propose, never ship
 Changes to CC's own permissions, harness configuration, or session settings
 are proposed in a report and made only on Nick's explicit word — never shipped
