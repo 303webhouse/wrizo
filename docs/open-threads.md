@@ -23440,3 +23440,35 @@ IN BATCH EIGHT.**
 
 **BOX:** on PW’s box-free line, cleared and moved on (recorded above) — TOOLS’ 207b probes → FIX’s short use
 (`ef64554`) → the Batch Eight pair. Unchanged by this entry.
+
+## STANDING RULE ADOPTED; BATCH EIGHT PINNED TO 13cd415 EXACTLY; ITEM 217 (revise-spelling); ITEMS 218–219 REGISTERED; ci-browserless-checks HELD — 2026-09-30 (chat 1)
+
+**STANDING RULE, ADOPTED: every grant this desk writes opens its reply with “→ <LANE>: grant written —
+<run>”**, so Nick can pass it straight on. *(TOOLS’ 207b grant, written last turn, may be sitting unseen;
+Fable has pinged TOOLS through Nick. Going forward every grant in this session follows the rule; earlier
+ones in this thread did not all carry the arrow line — not restated retroactively.)*
+
+**BATCH EIGHT, CORRECTED: it takes 204’s storage half at `13cd415` EXACTLY** (“rebuilt on its own branch off
+`origin/main`”) — **NOT the branch’s current tip.** **PW’s two ENGINE commits, `ff2d227` (harper in a
+worker behind Revise) and `bb65223` (the falsification found three instrument defects, not product ones),
+now sit on the SAME branch and are NOT in the batch.** *(Verified: both are on `origin/item204-proofing-
+storage`, past `13cd415`.)*
+
+**ITEM 217 — `revise-spelling` @ `cbd4dc6`** (the browser’s own spell-check, on in Revise only) — its number,
+given per Fable’s instruction (the branch’s own commit message called it “item number pending from chat
+1”). Registry: next free **218**.
+
+**ITEM 218 — PRODUCTION RUNS NODE 18, END-OF-LIFE SINCE APRIL 2025** (`railway.json` → Nixpacks →
+`engines.node “18.x”`) — REGISTERED, owner this desk (config), scheduled AFTER Batch Eight. **Move
+`engines.node` and `.nvmrc` to 22.x in their own small batch, with a box pair and the usual rollback; fold
+in whatever Cloud’s security review adds.**
+
+**ITEM 219 — `tsconfig`’S `moduleResolution: "node"` → `"bundler"`** (PW’s finding; harper’s exports map) —
+REGISTERED, small, unowned.
+
+Registry: next free **220**.
+
+**`cursor/ci-browserless-checks` @ `23c7a3a` — HELD, NOT MERGED.** Checked the workflow file: **neither of
+the two edits Fable named (least-privilege `permissions:`, the Node version read from the same source
+production uses) is in it yet.** Advisory, `.github` + `docs/ci/README.md` only — **merges on verification
+once both land.**
