@@ -23401,3 +23401,26 @@ absence of a suite directory does not prove PW hasn’t started — only that no
 **Per Fable’s instruction: LEAVING THE GRANT AS IS** (no confirmation PW can’t take it); if PW answers
 through Nick that it never saw the notice, this desk moves the grant to TOOLS’ 207b and puts M7 after FIX’s
 short use.
+
+## PW’S M7/M7b: WAVY IS GENUINELY WAVY, MEASURED AS GEOMETRY; GRANT PASSES TO TOOLS’ 207b — 2026-09-30 (chat 1)
+
+**PW’S BOX-FREE LINE, VERIFIED:** grant `pw-m7-wavy-underline-20260930` matched the file; **0 real harness
+browsers** (the “4 processes matching `ws-runtime-verify`” my own check first returned were MY OWN shell
+and PowerShell commands, whose command line contained that search string — a false positive of my own,
+caught before trusting it; the 28 `msedge` processes are unrelated, Nick’s own browser). **GRANT CLEARED.**
+
+**THE RESULT (PW, `914e0b3` on `exp1-connect-text`): M7b supersedes M7’s own thin margin.** M7 reported
+“wavy paints” at `meanChannelDelta=18` against a threshold of 12 — **but M7’s own name outran its
+condition: it can only see that something red arrived, not that it waves** (the same defect class item 138
+just found in ab4, PW’s own file, one day earlier). **M7b measures the underline’s GEOMETRY instead** —
+solid: 51px, 1 row, zero y-variance; wavy: 144px, 5 rows, y-range 4, a visible 9-pixel-wavelength periodic
+pattern. **VERDICT: WAVY IS GENUINELY WAVY — 204’s squiggle has a mechanism**, distinct from a straight
+underline (which F2 forbids for a link, so the distinction is load-bearing). **The control went red three
+times first** before the right channel-shape filter (`r>140 && r-g>60 && |g-b|<30`) separated the probe from
+Chromium’s own spellcheck underline (falsified by measurement) and the app’s amber accent (printed by RGB,
+not assumed). **19 checks PASS; M1–M6 unchanged and still green.** **Lands on `exp1-connect-text`** (its own
+file, not on `main`) — **does NOT unblock Experiment 1**, which still waits on `markRuns.ts`.
+
+**GRANT PASSED, per the standing box order: the file now names TOOLS for its 207b probes** (`item207b-
+device-fonts` @ `9c8ac53`: the Add-a-font door, the per-device library, the quiet substituted-mark). Order
+behind it unchanged: FIX’s item 210 + 211 probe (now at `ef64554`) → the Batch Eight pair.
