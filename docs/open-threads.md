@@ -23138,3 +23138,41 @@ if it calls for a NEW EDITOR MODEL, it goes to Nick in plain words first.** *(Fa
 **A NOTE, mine:** this changes what is LIVE (Batch Seven): the
 reveal-at-caret Nick saw in his screenshot is shipped behaviour, so 211 is a behaviour reversal of a shipped
 design, not a bug fix in the narrow sense.
+
+## RESUMED AFTER A RATE-LIMIT GAP — FIX’S r3 PAIR ABANDONED INCOMPLETE; FIVE UNREVIEWED COMMITS PUSHED STRAIGHT TO main OUTSIDE THIS DESK’S PROCESS — 2026-09-30 (chat 1)
+
+**THE GAP.** This desk was rate-limited; the conversation resumed 2026-09-30 with no memory of anything between
+the last entry (`b2b2dab`, 2026-09-25 ~14:45 local) and now. **Local `main` was 5 commits BEHIND `origin/main`
+— fast-forwarded clean, `b2b2dab..aa11f58`, no divergence.**
+
+**FIX’s STEP-3 PAIR, ABANDONED, NOT ABANDONED BY FIX — by this outage.** The grant this desk wrote at 14:40 on
+2026-09-25 (“step 3 pair, `item-writing-r3` @ `396d2f0`, both legs”) was still on the file, 5 days stale.
+**`wrizo-suite-69536`’s default leg stops at `[03/97]`** (`ab1`, `ab2`, `ab3`, all PASS) — **no `SUITE DONE`,
+no parked leg, no verdict.** **0 harness-signature processes now.** The run almost certainly died when this
+session was cut, not from a product or harness fault. **THE GRANT FILE HAS BEEN CLEARED** (`clearGrant()`,
+verified absent after) — **the box is FREE, but nothing is offered from that pair; it must be RE-RUN, not
+trusted from where it stopped.**
+
+**⚠ A SEPARATE AND MORE SERIOUS FINDING, found on the same fast-forward: FIVE COMMITS landed on `origin/main`
+BETWEEN 00:21 AND 04:47 UTC TODAY, authored by `Cursor Agent <cursoragent@cursor.com>` and
+`cursor[bot]`, co-authored `303webhouse` — OUTSIDE THIS DESK’S PROCESS ENTIRELY: no box grant, no suite pair,
+no Fable review, no Nick ship word, no ledger entry, until now.** *(The seed’s own law: “you are the ONLY
+lane that merges to main.” This did not go through a merge by this desk at all — it landed on `origin/main`
+directly.)* **The five, by title:** `f1d8b01` Pin the strip utilities and tuck Text/Ink under Free Write ·
+`ae39e4f` Shrink the rail foot and the writing-mode tabs · `2aa01ed` Tighten the mode tabs and paint Plan in
+olive capitals · `782c642` Match Plan to the mode tabs and lift the rail foot · `aa11f58` Ship the framed-desk
+display pass. **Product delta, 5 files: `Cascade.tsx`, `ModeStrip.tsx`, `index.css`, `PageEditor.tsx`, and —
+a harness file — `scripts/harness/item137.mjs` (touched alongside `ModeStrip.tsx`, 25 and 67 lines).**
+
+**VERIFIED BEFORE DOING ANYTHING ELSE:** **NOT LIVE** — production still serves Batch Seven’s stamp
+(`index-CsedhZ4m.js` / `index-BiZkP_2T.css`, unchanged); **these five commits are UNBUILT and undeployed.**
+**`tsc` x2 exit 0** on the fast-forwarded tree. **I have NOT run the suite on this tree, NOT read the
+`item137.mjs` diff for whether its own assertions still hold, and NOT reviewed the display changes at the
+bytes** — that is Fable’s door, per every batch before this one, and I am not opening it unilaterally.
+
+**HANDED UP, not resolved quietly.** This desk does not know: whether Nick authorized this path (a direct
+Cursor session) as a one-off or a new lane; whether Fable has seen it; whether it is meant to fold into Batch
+Eight or ship on its own. **Nothing further is done here — no pair run, no merge (there is nothing to merge;
+it is already on `main`), no grant written for a build — until Fable or Nick says how this is to be treated.**
+**The standing box order (PW’s M7 → TOOLS’ 207b → INK’s revspell → …) and Batch Eight’s plan are UNCHANGED by
+this entry; they are what I return to once this is answered.**
