@@ -1,13 +1,12 @@
 # PUB — Publish: the Experts + Architects committee pass
 
-**STATUS: PARTLY RATIFIED (2026-09-30).**
-- **Ratified by Nick:** §9 slate items 1–7, 11 and 12 (build order, dependencies, the five
-  Publish laws, and the two Shelf defaults).
-- **Also ruled by Nick:** the §11 scale question.
-- **Still candidates:** everything else, including slate 8–10 and the §12 Journal-volume
-  suggestion.
+**STATUS: RATIFIED (2026-09-30).** Nick has ratified the whole §9 slate (items 1–15) and the
+§11 and §12 rulings. His words are quoted verbatim in §9, §11 and §12 for chat 1 to register.
 
-Nick's words are quoted verbatim in §9, §11 and §12 for chat 1 to register.
+What remains:
+- The PUB arc's build tickets (§7) still wait on the lanes named there.
+- The Library, Shelf-aging and Journal-volume work (§11, §12) belongs to the lane that owns
+  the Journal and the Library, not to Publish.
 **Desk:** Publish lane (new), 2026-09-30. This is design only. **No app source file is
 touched by this pass**, and everything it adds is new files under `docs/publish/`.
 **Companion mockups:**
@@ -48,17 +47,14 @@ bibliography.
 | The five Publish laws (PUB-A1 to A5 in §6), e.g. "every send lands as a draft — nothing goes live from Wrizo" | "Approved" |
 | The 90-day Shelf timer counts from the last edit | "Yes" |
 | Journal pages don't move to the Shelf | "Yes, they should stay in the Journal" |
+| Your pen name / contact details live on this device for now; synced to your account later | "Yes" |
+| WordPress sign-in stays on your device only, after a security review | "Yes" |
+| The starting list of Editions per kind of writing (§2) | "Yes" (you typed "19"; read as 10, the only open line left; tell us if you meant otherwise) |
+| A Journal volume holds 200 pages | "Yes" |
+| You can start a new Journal volume early (e.g. at New Year) | "Sure" |
+| A short hover (computer) or long-press (touch) on the Journal icon peeks at its menu, volumes included; tap/click works everywhere | "Yes" |
 
-**Still open, for whenever you have a minute** (yes/no each, committee's lean in brackets):
-
-| # | Decision | Lean |
-|---|---|---|
-| 8 | Your pen name / contact details live on this device for now; synced to your account later (a database change) | Yes |
-| 9 | WordPress sign-in stays on your device only, after a security review | Yes |
-| 10 | The starting list of Editions per kind of writing (§2) | Yes |
-| 13 | A Journal volume holds 200 pages (or: one volume per year) | 200 pages |
-| 14 | You can start a new Journal volume early (e.g. at New Year) | Yes |
-| 15 | On a computer, a short hover on the Journal icon peeks at its menu (volumes included); long-press on touch; tap/click works everywhere | Yes |
+**Nothing else is waiting on you** except choosing a mockup and pasting the §11 note to Fable.
 
 **Your 2026-09-30 rulings, recorded** (§11, §12):
 - You can move a Page, Board or Drawer to your Library. It also holds Wrizo's writing
@@ -67,7 +63,8 @@ bibliography.
 - Drawers stay put unless you move them.
 - Fable is told the storage-full risk is urgent.
 - Your idea: when the Journal gets full, it retires to the Library and is listed from the
-  Journal icon. The Architects' take on it is §12 ("Journal volumes").
+  Journal icon. It is now ratified as §12, "Journal volumes": 200 pages each, start one early
+  if you like, and past volumes are listed from the Journal icon.
 
 **Honest limits, found in research:**
 - **Substack** has no way for apps to post. Wrizo can copy your piece ready to paste and open
@@ -84,9 +81,9 @@ bibliography.
 - [x] Nick's scale rulings recorded verbatim (§11)
 - [x] Nick ratified slate 1–7, 11, 12 (2026-09-30)
 - [x] The Architects' Journal-volumes suggestion written (§12)
+- [x] Nick ratified slate 8, 9, 10, 13, 14, 15; the whole slate is closed (2026-09-30)
 - [ ] **Nick:** pass the storage-full note in §11 to Fable (ANNEX IV)
 - [ ] **Nick:** look at both mockups; say which feels right (A first, B later is the lean)
-- [ ] **Nick:** answer the still-open lines above (8, 9, 10, 13, 14, 15)
 - [ ] **chat 1:** assign an item number to PUB; register the §9, §11 and §12 rulings in the ledger
 - [ ] **Fable:** slot PUB0 (the survey) — it touches no code and can start any time
 - [ ] **Fable:** assign the IndexedDB storage fix (§11, urgent, not a Publish ticket)
@@ -625,6 +622,12 @@ His chat numbering maps onto this slate as:
 - chat 4 → slate 11;
 - chat 5 → slate 12.
 
+**Nick, verbatim, 2026-09-30,** answering the remaining open lines: "8. Yes 9. Yes 19. Yes
+13. Yes 14. Sure 15. Yes"
+
+"19" is read as **10**: the open lines were 8, 9, 10, 13, 14 and 15, and 10 is the only one
+not otherwise answered. Recorded as that reading so Nick can correct it.
+
 1. Build order: **engine → Sheet (A) → Press (B)**. **RATIFIED 2026-09-30 ("Approved").**
 2. The named dependency exception (T2): **fflate, pdf-lib, @pdf-lib/fontkit**, plus
    **pdfjs-dist** (tests only). **RATIFIED 2026-09-30 ("Approved").**
@@ -634,19 +637,22 @@ His chat numbering maps onto this slate as:
 6. **PUB-A4** Editions, not settings. **RATIFIED 2026-09-30 ("Approved").**
 7. **PUB-A5** One reader, one order. **RATIFIED 2026-09-30 ("Approved").**
 8. The Publish profile (pen name, contact) lives **on this device now**, synced later (PUB-S,
-   a schema change). *Open.*
-9. WordPress credentials stay **on the device only**, behind a security review. *Open.*
-10. The Editions table in §2 as the starting set. *Open.*
+   a schema change). **RATIFIED 2026-09-30 ("Yes").**
+9. WordPress credentials stay **on the device only**, behind a security review. **RATIFIED
+   2026-09-30 ("Yes").**
+10. The Editions table in §2 as the starting set. **RATIFIED 2026-09-30 ("19. Yes", read as
+    10).**
 11. §11 follow-up (a): the 90 days counts from the **last edit**. **RATIFIED 2026-09-30
     ("Yes").**
 12. §11 follow-up (b): **Journal pages do not** age out to the Shelf. **RATIFIED 2026-09-30
     ("Yes, they should stay in the Journal").**
-13. §12: a Journal volume holds **200 pages** (the alternative is one volume per year).
-    *Open.*
-14. §12: the writer can **start a new volume early** from the Journal panel. *Open.*
+13. §12: a Journal volume holds **200 pages** (the alternative was one volume per year).
+    **RATIFIED 2026-09-30 ("Yes").**
+14. §12: the writer can **start a new volume early** from the Journal panel. **RATIFIED
+    2026-09-30 ("Sure").**
 15. §12: past volumes are listed in the Journal's rail panel on every device. A **short
     hover** on the Journal icon peeks at that same panel on mouse devices, and a
-    **long-press** does it on touch. *Open.*
+    **long-press** does it on touch. **RATIFIED 2026-09-30 ("Yes").**
 
 ---
 
@@ -821,8 +827,10 @@ proposal his word replaced.
 > `docs/publish/pub-committee-pass.md` §11. Nick's Library / Shelf rulings of the same day
 > are in §11 verbatim for chat 1 to register.
 >
-> Also: Nick proposed that a full Journal retires to the Library. The Architects' design,
-> "Journal volumes", is in §12, for whichever lane owns the Journal and the Library.
+> Also, ratified by Nick the same day: "Journal volumes" (§12). A Journal holds 200 pages,
+> then retires to the Library by itself; writers can start a new volume early; past volumes
+> are listed from the Journal icon (tap/click everywhere, hover on mouse, long-press on
+> touch). For whichever lane owns the Journal and the Library.
 
 ---
 
@@ -832,9 +840,9 @@ proposal his word replaced.
 should get full, at which point it gets retired to the Library and listed in a pop-out menu
 when the user hovers over the Journal icon? Open to suggestions from the Architects."
 
-**STATUS: CANDIDATE.** This is the Architects' suggestion. Slate lines 13–15 carry the
-choices. It is not a Publish ticket: it belongs to whichever lane owns the Journal and the
-Library.
+**STATUS: RATIFIED 2026-09-30** (slate 13–15: "Yes", "Sure", "Yes"). This began as the
+Architects' suggestion and is now Nick's ruling. It is not a Publish ticket: it belongs to
+whichever lane owns the Journal and the Library.
 
 ### What the design stands on (read from code and canon)
 
@@ -894,7 +902,7 @@ Library.
      and never stacks a second column. Moving away closes it.
    - **Touch:** a long-press does the same.
    - The hover is a shortcut, never the only way. Because FW6 says nothing arrives unbidden,
-     the hover-peek is Nick's call (slate 15).
+     the hover-peek went to Nick, who ruled "Yes" (slate 15).
    - Past volumes also appear in the Library under a **Journals** section.
 5. **Data, for the builders** (the smallest honest shape):
    - The current Journal stays the **one** system board.
