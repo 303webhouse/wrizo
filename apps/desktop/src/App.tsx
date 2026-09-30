@@ -21,6 +21,7 @@ import { WritingSessionProvider, useWritingSession } from './components/WritingS
 import { subscribe, resetLocalData, getOrCreateSystemBoard } from './store/persistence';
 import { apiMe, apiLogout, type AuthUser } from './store/api';
 import { setCurrentUser } from './store/currentUser';
+import { installBeforeUnloadGuard } from './store/beforeUnloadGuard';
 import { startSync, stopSync, syncOnce, clearLastSyncAt } from './store/sync';
 import { useDeskFrameMounted } from './store/deskFrameActive';
 import { useFirstRunGateActive } from './store/firstRunGateActive';
@@ -203,6 +204,10 @@ export function App() {
   const [, forceRender] = useReducer((n: number) => n + 1, 0);
 
   useEffect(() => subscribe(forceRender), []);
+  // STORAGE-FULL STEP 1 (Fable's byte review, item 3) — installed once for the whole session (App.tsx mounts
+  // regardless of route or auth state), not tied to SyncIndicator's own mount, which the sync notice is rendered
+  // from in more than one place. See beforeUnloadGuard.ts for the reasoning and the Electron exclusion.
+  useEffect(() => installBeforeUnloadGuard(), []);
 
   useEffect(() => {
     let active = true;

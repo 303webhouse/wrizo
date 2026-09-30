@@ -30,6 +30,12 @@ const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass, deta
 const LF = String.fromCharCode(10);
 const CRLF = String.fromCharCode(13) + LF;
 const deCRLF = (t) => t.split(CRLF).join(LF);
+// Node 24 defines `globalThis.navigator` as a non-writable getter (a plain `=` assignment throws), so it must be
+// FORCE-redefined rather than assigned — the same shape a real Electron-vs-browser test needs regardless of Node's
+// own default.
+function setFakeUserAgent(ua) {
+  Object.defineProperty(globalThis, 'navigator', { value: { userAgent: ua }, configurable: true, writable: true });
+}
 
 const FAKE_API = `
   export class SyncHttpError extends Error { constructor(status, message) { super(message || 'http'); this.status = status; } }
@@ -75,15 +81,28 @@ const swap = (from, to) => (t) => { if (!t.includes(from)) throw new Error(`muta
 function installFakeEnv() {
   const map = new Map();
   const throwFor = new Set();
-  globalThis.window = {};
+  const windowListeners = new Map(); // event name -> Set(handler) — real enough for beforeUnloadGuard.ts's own addEventListener/removeEventListener
+  const win = {
+    addEventListener: (evt, fn) => { if (!windowListeners.has(evt)) windowListeners.set(evt, new Set()); windowListeners.get(evt).add(fn); },
+    removeEventListener: (evt, fn) => { windowListeners.get(evt)?.delete(fn); },
+  };
+  globalThis.window = win;
   globalThis.localStorage = {
     getItem: (k) => (map.has(k) ? map.get(k) : null),
     setItem: (k, v) => { if (throwFor.has(k)) { const e = new Error('The quota has been exceeded.'); e.name = 'QuotaExceededError'; throw e; } map.set(k, String(v)); },
     removeItem: (k) => { map.delete(k); },
     clear: () => map.clear(),
   };
+  setFakeUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/128 Safari/537.36'); // plain Chromium — NOT Electron
   globalThis.__apiSyncCalls = 0; globalThis.__apiSyncPayloads = []; globalThis.__forceOffline = false;
-  return { map, throwFor };
+  // Fires `evt`'s handlers with a fake event object that records whether preventDefault() was called and what
+  // returnValue was set to — everything a beforeunload test needs, without a real DOM.
+  const fireEvent = (evt) => {
+    const e = { defaultPrevented: false, preventDefault() { this.defaultPrevented = true; }, returnValue: undefined };
+    (windowListeners.get(evt) ?? new Set()).forEach((fn) => fn(e));
+    return e;
+  };
+  return { map, throwFor, win, fireEvent };
 }
 
 // ===========================================================================================================
@@ -168,26 +187,48 @@ function installFakeEnv() {
 {
   installFakeEnv();
   const N = await load(['syncNotice']);
-  const t = (k) => ({ syncTooLargeOne: '"{title}" is too large', syncTooLargeMany: '{n} items are too large', syncStorageFull: 'STORAGE FULL TEXT', syncStorageNearFull: 'NEAR FULL TEXT' }[k]);
-  ok('PRIORITY: storage FAILED outranks offline', N.syncNoticeText('offline', [], true, false, t) === 'STORAGE FULL TEXT', N.syncNoticeText('offline', [], true, false, t));
-  ok('PRIORITY: storage FAILED outranks too-large', N.syncNoticeText('synced', [{ id: '1', title: 'X', bytes: 9 }], true, false, t) === 'STORAGE FULL TEXT', '');
-  ok('PRIORITY: offline outranks too-large (unchanged from item 203)', N.syncNoticeText('offline', [{ id: '1', title: 'X', bytes: 9 }], false, false, t) === 'Offline — saved here', '');
-  ok('PRIORITY: too-large outranks near-full', N.syncNoticeText('synced', [{ id: '1', title: 'X', bytes: 9 }], false, true, t) === '"X" is too large', N.syncNoticeText('synced', [{ id: '1', title: 'X', bytes: 9 }], false, true, t));
-  ok('PRIORITY: near-full shows only when nothing more urgent is true', N.syncNoticeText('synced', [], false, true, t) === 'NEAR FULL TEXT', '');
-  ok('PRIORITY: nothing at all is null (no meter, no count, no notice)', N.syncNoticeText('synced', [], false, false, t) === null, '');
+  // signature: (status, tooLarge, storageFailed, storageNearFull, hasUnpushedDirty, signedIn, t)
+  const t = (k) => ({
+    syncTooLargeOne: '"{title}" is too large', syncTooLargeMany: '{n} items are too large',
+    syncStorageFullPending: 'PENDING TEXT', syncStorageFullSynced: 'SYNCED TEXT', syncStorageFullAnon: 'ANON TEXT',
+    syncStorageNearFull: 'NEAR FULL TEXT',
+  }[k]);
+  const notice = (status, tooLarge, failed, near, dirty, signedIn) => N.syncNoticeText(status, tooLarge, failed, near, dirty, signedIn, t);
+  ok('WORDS (a): failed, signed in, changes NOT yet in the account — the pending text', notice('synced', [], true, false, true, true) === 'PENDING TEXT', notice('synced', [], true, false, true, true));
+  ok('WORDS (a): the SAME text while offline (offline is one CAUSE of "not yet in the account", not a separate state)', notice('offline', [], true, false, true, true) === 'PENDING TEXT', '');
+  ok('WORDS (b): failed, signed in, EVERYTHING already pushed — the synced text, not the pending one', notice('synced', [], true, false, false, true) === 'SYNCED TEXT', '');
+  ok('WORDS (c): failed, SIGNED OUT — the anon text, regardless of dirty state (there is no account to be "pending" toward)', notice('synced', [], true, false, false, false) === 'ANON TEXT' && notice('synced', [], true, false, true, false) === 'ANON TEXT', '');
+  ok('PRIORITY: storage FAILED (any of a/b/c) outranks offline', notice('offline', [], true, false, false, true) === 'SYNCED TEXT', '');
+  ok('PRIORITY: storage FAILED outranks too-large', notice('synced', [{ id: '1', title: 'X', bytes: 9 }], true, false, true, true) === 'PENDING TEXT', '');
+  ok('PRIORITY: offline outranks too-large (unchanged from item 203)', notice('offline', [{ id: '1', title: 'X', bytes: 9 }], false, false, false, true) === 'Offline — saved here', '');
+  ok('PRIORITY: too-large outranks near-full', notice('synced', [{ id: '1', title: 'X', bytes: 9 }], false, true, false, true) === '"X" is too large', '');
+  ok('PRIORITY: near-full shows only when nothing more urgent is true', notice('synced', [], false, true, false, true) === 'NEAR FULL TEXT', '');
+  ok('PRIORITY: nothing at all is null (no meter, no count, no notice)', notice('synced', [], false, false, false, true) === null, '');
 
   const src = deCRLF(readFileSync(join(SRC, 'store', 'syncNotice.ts'), 'utf8'));
-  if (src.includes('if (storageFailed) return')) {
+  if (src.includes('if (storageFailed) {')) {
     installFakeEnv();
-    const W = await load(['syncNotice'], { 'store/syncNotice.ts': swap('if (storageFailed) return t(\'syncStorageFull\');\n  if (status === \'offline\')', 'if (status === \'offline\')') });
-    ok('FALSIFICATION M3 storage-failed priority removed — must go RED (offline would win instead)', W.syncNoticeText('offline', [], true, false, t) !== 'STORAGE FULL TEXT', '');
+    const W = await load(['syncNotice'], { 'store/syncNotice.ts': swap('if (storageFailed) {\n    if (!signedIn) return t(\'syncStorageFullAnon\');            // (c) — nothing else could ever hold a copy\n    return hasUnpushedDirty ? t(\'syncStorageFullPending\')       // (a) — the account does not have this yet\n      : t(\'syncStorageFullSynced\');                             // (b) — the account already does\n  }', '') });
+    ok('FALSIFICATION M3 storage-failed priority removed — must go RED (offline would win instead)', W.syncNoticeText('offline', [], true, false, true, true, t) !== 'PENDING TEXT', '');
   } else ok('FALSIFICATION M3: the mutation LANDED', false, 'anchor text not found');
+
+  // M6 — the anon check must come BEFORE the dirty check, or a signed-out writer would see "safe in your account"
+  // (SYNCED) instead of the anon text when they happen to have nothing dirty. Swapping the two branches must go red.
+  if (src.includes('if (!signedIn) return')) {
+    installFakeEnv();
+    const W2 = await load(['syncNotice'], { 'store/syncNotice.ts': swap(
+      "if (!signedIn) return t('syncStorageFullAnon');            // (c) — nothing else could ever hold a copy\n    return hasUnpushedDirty ? t('syncStorageFullPending')       // (a) — the account does not have this yet\n      : t('syncStorageFullSynced');                             // (b) — the account already does",
+      "if (hasUnpushedDirty) return t('syncStorageFullPending');\n    if (!signedIn) return t('syncStorageFullAnon');\n    return t('syncStorageFullSynced');"
+    ) });
+    ok('FALSIFICATION M6 the anon check demoted below the dirty check — must go RED (a signed-out writer with nothing dirty would see "synced" instead of "anon")', W2.syncNoticeText('synced', [], true, false, false, false, t) !== 'SYNCED TEXT', '');
+  } else ok('FALSIFICATION M6: the mutation LANDED', false, 'anchor text not found');
 }
 
 // ===========================================================================================================
 // 3 · persistence.ts + storageHealth.ts TOGETHER — the real flush() catching a real throw, per collection
 // ===========================================================================================================
 {
+  const persSrc = deCRLF(readFileSync(join(SRC, 'store', 'persistence.ts'), 'utf8'));
   const { throwFor } = installFakeEnv();
   const P = await load(['persistence', 'storageHealth']);
   const W = globalThis.window;
@@ -203,6 +244,52 @@ function installFakeEnv() {
   throwFor.delete('writer-studio-journal-entries');
   W.wrizoPatchEntry('a', { text: 'space freed' });
   ok('RECOVERY (through the real seam): the next successful write of the SAME collection clears it', P.getStorageFailedCollections().length === 0, JSON.stringify(P.getStorageFailedCollections()));
+
+  // Fable's byte review, item 1 — persistDirty()'s OWN write can fail even while the collection's own write
+  // succeeds (a real, separately-throwing key), and must report under its own name, not a collection's.
+  throwFor.add('writer-studio-dirty-v1');
+  W.wrizoPatchEntry('a', { text: 'edited while the dirty journal alone cannot be written' });
+  ok('DIRTY JOURNAL FAILURE: reported under its OWN name — a collection write succeeding does not hide the journal failing beside it', JSON.stringify(P.getStorageFailedCollections().sort()) === '["dirtyJournal"]', JSON.stringify(P.getStorageFailedCollections()));
+  ok('hasDirtyRecords(): true once a real edit is pending (through the same real seam)', P.hasDirtyRecords() === true, '');
+  throwFor.delete('writer-studio-dirty-v1');
+  W.wrizoPatchEntry('a', { text: 'space freed for the journal too' });
+  ok('DIRTY JOURNAL RECOVERY: clears the same way any collection does', P.getStorageFailedCollections().length === 0, JSON.stringify(P.getStorageFailedCollections()));
+
+  // Fable's byte review, item 1 (continued) — markClean() must itself notify() now (it did not before), or a
+  // reactive reader (the sync notice) never learns a push emptied the dirty set.
+  {
+    installFakeEnv();
+    const P3 = await load(['persistence', 'storageHealth']);
+    const w3 = globalThis.window;
+    w3.wrizoCreateJournalPage({ id: 'mc', text: 'x', createdAt: new Date().toISOString(), origin: null });
+    ok('markClean(): a fresh page is dirty', P3.hasDirtyRecords() === true, '');
+    const notes = []; const unsub = P3.subscribe(() => notes.push(P3.hasDirtyRecords()));
+    P3.markClean(['mc']);
+    unsub();
+    ok('markClean(): notify() fires (a subscriber sees the dirty set empty) and hasDirtyRecords() reflects it', notes.length >= 1 && notes[notes.length - 1] === false && P3.hasDirtyRecords() === false, JSON.stringify(notes));
+  }
+
+  const dirtyFailMut = async (name, from, to, probe) => {
+    if (!persSrc.includes(from)) { ok(`FALSIFICATION ${name}: the mutation LANDED`, false, 'anchor text not found'); return; }
+    const { throwFor: tf } = installFakeEnv();
+    const M = await load(['persistence', 'storageHealth'], { 'store/persistence.ts': swap(from, to) });
+    tf.add('writer-studio-dirty-v1');
+    globalThis.window.wrizoCreateJournalPage({ id: 'zz', text: 'y', createdAt: new Date().toISOString(), origin: null });
+    ok(`FALSIFICATION ${name} — must go RED`, await probe(M), '');
+  };
+  // The anchor starts right AFTER the setItem line on purpose (never spelling out "localStorage.setItem(DIRTY_KEY"
+  // in this file): seed-guard.mjs's 85-B scan reads any file for that literal shape as a raw collection write, with
+  // no way to tell a mutation-test STRING from real executable code doing one — a real false positive, not a raw
+  // write to exempt. The mutation itself only needs the two report-call lines it is actually removing.
+  await dirtyFailMut('M7 persistDirty() no longer reports its own failure (item 89\'s journal would go silent again)',
+    '\n    reportFlushOk(DIRTY_JOURNAL_REPORT_NAME);\n  } catch {\n    // Storage full/unavailable — never throw into a write path.\n    reportFlushFailed(DIRTY_JOURNAL_REPORT_NAME);\n  }',
+    '\n  } catch {\n    // Storage full/unavailable — never throw into a write path.\n  }',
+    (M) => M.getStorageFailedCollections().length === 0);
+  await dirtyFailMut('M8 markClean() no longer calls notify() (a reactive reader never learns a push emptied the dirty set)',
+    'persistDirty();\n  // STORAGE-FULL STEP 1 — a successful push',
+    'persistDirty(); return;\n  // STORAGE-FULL STEP 1 — a successful push',
+    (M) => { const w = globalThis.window; w.wrizoCreateJournalPage({ id: 'ntf', text: 'x', createdAt: new Date().toISOString(), origin: null });
+      const seen = []; const unsub = M.subscribe(() => seen.push(1)); M.markClean(['ntf']); unsub(); return seen.length === 0; });
 
   // Near-full, driven by real data through the real seam (no quota exception needed — just size).
   installFakeEnv();
@@ -222,7 +309,6 @@ function installFakeEnv() {
   globalThis.window.wrizoPatchEntry('big', { text: bigText });
   ok('NEAR-FULL, THROUGH THE REAL PIPE: a large page pushes the app past 80% of the assumed floor and the flag is set', P2.getStorageNearFull() === true, '');
 
-  const persSrc = deCRLF(readFileSync(join(SRC, 'store', 'persistence.ts'), 'utf8'));
   const failMut = async (name, from, to, probe) => {
     if (!persSrc.includes(from)) { ok(`FALSIFICATION ${name}: the mutation LANDED`, false, 'anchor text not found'); return; }
     const { throwFor: tf } = installFakeEnv();
@@ -274,6 +360,90 @@ function installFakeEnv() {
     await new Promise((r) => setTimeout(r, 30));
     ok('FALSIFICATION M5 the bridge subscription removed from sync.ts — must go RED (a failure pushes nothing)', globalThis.__apiSyncCalls === before2, `before=${before2} after=${globalThis.__apiSyncCalls}`);
   } else ok('FALSIFICATION M5: the mutation LANDED', false, 'anchor text not found');
+}
+
+// ===========================================================================================================
+// 5 · beforeUnloadGuard.ts — Fable's byte review, item 3: the web build asks first; Electron never does
+// ===========================================================================================================
+{
+  const guardSrc = deCRLF(readFileSync(join(SRC, 'store', 'beforeUnloadGuard.ts'), 'utf8'));
+
+  // (a) failed + dirty, signed in — risky
+  {
+    const { throwFor, fireEvent } = installFakeEnv();
+    const G = await load(['persistence', 'storageHealth', 'currentUser', 'beforeUnloadGuard']);
+    G.installBeforeUnloadGuard();
+    globalThis.window.wrizoCreateJournalPage({ id: 'g1', text: 'x', createdAt: new Date().toISOString(), origin: null });
+    ok('BASELINE: nothing failed yet — leaving is not risky, and beforeunload does nothing', fireEvent('beforeunload').defaultPrevented === false, '');
+    throwFor.add('writer-studio-journal-entries');
+    G.setCurrentUser({ id: 'u1', email: 'w@example.com' });
+    globalThis.window.wrizoPatchEntry('g1', { text: 'y' }); // fails to save, and stays dirty (never pushed in this fake env)
+    const ev = fireEvent('beforeunload');
+    ok('STATE (a): failed + signed in + dirty — beforeunload IS prevented (a real prompt would show)', ev.defaultPrevented === true && ev.returnValue === '', JSON.stringify(ev));
+  }
+  // (b) failed, everything already pushed (no dirty records), signed in — not risky
+  {
+    const { throwFor, fireEvent } = installFakeEnv();
+    const G = await load(['persistence', 'storageHealth', 'currentUser', 'beforeUnloadGuard']);
+    G.installBeforeUnloadGuard();
+    G.setCurrentUser({ id: 'u1', email: 'w@example.com' });
+    globalThis.window.wrizoCreateJournalPage({ id: 'g2', text: 'x', createdAt: new Date().toISOString(), origin: null });
+    G.markClean(['g2']); // simulates "the account already has it" — nothing dirty from here on
+    throwFor.add('writer-studio-journal-entries');
+    // `wrizoFlushNow()` re-serializes every collection unconditionally, WITHOUT touching any collection's dirty
+    // state (unlike a create/patch seam, which would dirty a new record and undermine exactly what this state means)
+    // — the honest shape of state (b): a routine re-write of already-synced data fails on a device that is simply full.
+    globalThis.window.wrizoFlushNow();
+    ok('STATE (b): failed but NOTHING dirty, signed in — beforeunload does nothing (nothing left to lose)', fireEvent('beforeunload').defaultPrevented === false && G.hasDirtyRecords() === false, JSON.stringify({ failed: G.getStorageFailedCollections(), dirty: G.hasDirtyRecords() }));
+  }
+  // (c) failed, signed OUT — risky regardless of dirty state
+  {
+    const { throwFor, fireEvent } = installFakeEnv();
+    const G = await load(['persistence', 'storageHealth', 'currentUser', 'beforeUnloadGuard']);
+    G.installBeforeUnloadGuard();
+    throwFor.add('writer-studio-journal-entries');
+    globalThis.window.wrizoCreateJournalPage({ id: 'g3', text: 'x', createdAt: new Date().toISOString(), origin: null }); // never signed in
+    ok('STATE (c): failed + signed OUT — beforeunload IS prevented (no account could ever hold a copy)', fireEvent('beforeunload').defaultPrevented === true, '');
+  }
+  // Electron — never asks, even in state (a)
+  {
+    const { throwFor, fireEvent } = installFakeEnv();
+    setFakeUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) wrizo/1.0 Chrome/128.0.0.0 Electron/31.0.0 Safari/537.36');
+    const G = await load(['persistence', 'storageHealth', 'currentUser', 'beforeUnloadGuard']);
+    ok('ELECTRON DETECTED: isElectronRenderer() reads true from Electron\'s own default user-agent token', G.isElectronRenderer() === true, '');
+    G.installBeforeUnloadGuard();
+    throwFor.add('writer-studio-journal-entries');
+    G.setCurrentUser({ id: 'u1', email: 'w@example.com' });
+    globalThis.window.wrizoCreateJournalPage({ id: 'g4', text: 'x', createdAt: new Date().toISOString(), origin: null });
+    ok('ELECTRON: no listener was ever installed — even in the riskiest state, beforeunload does nothing (a cancelled unload there traps the window silently)', fireEvent('beforeunload').defaultPrevented === false, '');
+  }
+
+  const guardMutant = async (name, from, to, probe) => {
+    if (!guardSrc.includes(from)) { ok(`FALSIFICATION ${name}: the mutation LANDED`, false, 'anchor text not found'); return; }
+    const { throwFor, fireEvent } = installFakeEnv();
+    const G = await load(['persistence', 'storageHealth', 'currentUser', 'beforeUnloadGuard'], { 'store/beforeUnloadGuard.ts': swap(from, to) });
+    G.installBeforeUnloadGuard();
+    throwFor.add('writer-studio-journal-entries');
+    G.setCurrentUser({ id: 'u1', email: 'w@example.com' });
+    globalThis.window.wrizoCreateJournalPage({ id: 'gm', text: 'x', createdAt: new Date().toISOString(), origin: null });
+    ok(`FALSIFICATION ${name} — must go RED`, await probe(fireEvent('beforeunload')), '');
+  };
+  await guardMutant('M9 the risk check inverted (state (a) would stop being flagged as risky)',
+    'if (getCurrentUser() === null) return true;\n  return hasDirtyRecords();',
+    'if (getCurrentUser() === null) return true;\n  return !hasDirtyRecords();',
+    (ev) => ev.defaultPrevented !== true);
+  // M10 — the Electron exclusion removed: must go RED specifically under Electron's own UA (a non-Electron UA is
+  // not the point; the guard exists precisely for the Electron case).
+  if (guardSrc.includes('if (isElectronRenderer()) return () => {};')) {
+    const { throwFor, fireEvent } = installFakeEnv();
+    setFakeUserAgent('Mozilla/5.0 wrizo Electron/31.0.0 Safari/537.36');
+    const G = await load(['persistence', 'storageHealth', 'currentUser', 'beforeUnloadGuard'], { 'store/beforeUnloadGuard.ts': swap('if (isElectronRenderer()) return () => {};\n  if (cleanup) return cleanup;', 'if (cleanup) return cleanup;') });
+    G.installBeforeUnloadGuard();
+    throwFor.add('writer-studio-journal-entries');
+    G.setCurrentUser({ id: 'u1', email: 'w@example.com' });
+    globalThis.window.wrizoCreateJournalPage({ id: 'gm2', text: 'x', createdAt: new Date().toISOString(), origin: null });
+    ok('FALSIFICATION M10 the Electron exclusion removed — must go RED under Electron\'s own UA (a cancelled unload there would now silently trap the window)', fireEvent('beforeunload').defaultPrevented === true, '');
+  } else ok('FALSIFICATION M10: the mutation LANDED', false, 'anchor text not found');
 }
 
 const parkedChecks = [];

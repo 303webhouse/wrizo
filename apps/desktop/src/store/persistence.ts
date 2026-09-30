@@ -133,13 +133,22 @@ function hydrateDirty(): Record<CollectionName, Set<string>> {
 // the same synchronous moment as the collection it describes: the two can
 // never disagree about a record that reached disk. `markClean()` and the
 // journal backfill call it directly, since neither touches a collection.
+// STORAGE-FULL STEP 1 (Fable's byte review, item 1) — this write is a save too, and it can fail on its own: a
+// collection's own write can succeed while THIS one — the record of which rows are still unpushed — does not. That
+// stamps a just-saved, still-unsynced record as indistinguishable from a clean one: nothing pushes it, nothing
+// notices, the exact silent class this step exists to end. Reported under its OWN name (never one of COLLECTIONS'
+// names) so a reader can tell "the record itself didn't save" from "the record saved, but sync doesn't know it
+// needs to" — both are real, and they are different repairs.
+const DIRTY_JOURNAL_REPORT_NAME = 'dirtyJournal';
 function persistDirty(): void {
   try {
     const out: Record<string, string[]> = {};
     for (const name of COLLECTIONS) out[name] = [...dirty[name]];
     localStorage.setItem(DIRTY_KEY, JSON.stringify(out));
+    reportFlushOk(DIRTY_JOURNAL_REPORT_NAME);
   } catch {
     // Storage full/unavailable — never throw into a write path.
+    reportFlushFailed(DIRTY_JOURNAL_REPORT_NAME);
   }
 }
 
@@ -175,6 +184,18 @@ export function markClean(ids: string[]): void {
     dirty.drawers.delete(id);
   }
   persistDirty();
+  // STORAGE-FULL STEP 1 — a successful push is the one thing that can move the sync notice from "changes not yet in
+  // the account" to "safe in the account" while storage stays failed; nothing previously told a reactive listener
+  // that dirty state had changed here (only a collection write or a subscribe-worthy read did). This was the one
+  // real gap: every other mutator already calls notify() (see upsert()); this is the one that did not.
+  notify();
+}
+
+// STORAGE-FULL STEP 1 — true while ANY collection still has a record the account does not have yet. Cheap: reads
+// each dirty Set's own size, no cloning (unlike getDirtyRecords(), built for pushing the records themselves, not
+// for answering "is there anything to push").
+export function hasDirtyRecords(): boolean {
+  return COLLECTIONS.some((name) => dirty[name].size > 0);
 }
 
 // Item 89 — test/inspection seam (this file's own established pattern; see
