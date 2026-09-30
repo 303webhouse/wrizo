@@ -6,10 +6,16 @@
 <title>Wrizo Press</title>
 <!--
   PUB · MOCKUP B — "THE PRESS" (the door opens a display; one tap returns)
-  Publish lane · 2026-09-30 · candidates only. Companion to docs/publish/pub-committee-pass.md.
+  Publish lane · 2026-09-30 · CHOSEN BY NICK ("I like B better" → "B only", 2026-09-30).
+  Companion to docs/publish/pub-committee-pass.md (§3). Mockup A, the Sheet, was not chosen.
 
   Nick, verbatim (2026-09-29): "…an entire book of chapters and titles pages and bibliographies."
   Nick, verbatim (2026-09-30): "let's allow users to move a Page, Board, or Drawer to their Library"
+
+  B ONLY: THE PRESS OPENS AT THE SIZE OF WHAT YOU'RE ON (rig: "you came from").
+    * From a chapter: the whole binder (or where you last left it), with "Just this" one tap away.
+    * From a board card (or a loose page, or selected words): just that piece. The editions are
+      Post (X) · Quote card · Text, so a quick post is two taps: Publish, then the brass button.
 
   WHAT THIS DRAWS:
     * Publish → is a DOOR onto a DISPLAY (three-space canon), never a home. The band carries the
@@ -22,7 +28,7 @@
       Courier 12, 1.5-inch left margin; APA: title page and hanging-indent references).
     * RIGHT HAND — Edition (kind-aware, at most three plus the Wrizo file) · Dress (at most three
       toggles) · Deliver. One brass action. An unticked "Afterwards, move this to my Library".
-  Nothing here is a ruling. Committee lean: the Sheet (mockup A) first; grow this for whole books.
+  The shape is ruled (B only). The details drawn here are still candidates for the build briefs.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=Courier+Prime&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap">
@@ -242,6 +248,22 @@
   @keyframes blink{50%{opacity:0}}
   @media (prefers-reduced-motion:reduce){ .caret{animation:none} }
 
+  /* came from a card: the board behind, and the card editions */
+  .table{position:absolute;inset:0;background-image:radial-gradient(circle,#2a1a0b 1px,transparent 1px);background-size:22px 22px}
+  .bcard{position:absolute;width:230px;background:#FBF6EA;border:1px solid #D9CFB6;border-top:2px solid #D9CFB6;padding:9px 11px 11px;
+         color:#4a3f2f;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+  .bcard .k{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:#8a7247;margin-bottom:4px}
+  .bcard .t{font-family:var(--prose);font-size:14.5px;line-height:1.35}
+  .bcard.sel{border-top-color:var(--accent-rest);outline:1px solid var(--accent-rest)}
+  .cardtxt{margin:6px 14px 4px 36px;padding:8px 10px;border-left:2px solid var(--accent-rest);font-family:var(--prose);font-size:14px;
+           line-height:1.4;color:var(--text-hi);background:var(--row-hover)}
+  .qcard{width:420px;height:420px;background:#2B2014;color:var(--paper);display:flex;flex-direction:column;justify-content:center;
+         padding:48px 44px;box-shadow:0 10px 30px rgba(0,0,0,.55)}
+  .qcard .q{font-family:var(--prose);font-style:italic;font-size:29px;line-height:1.3}
+  .qcard .by{margin-top:24px;font-family:var(--ui);font-size:13px;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
+  .qcard .mark{margin-top:auto;font-family:var(--prose);font-style:italic;font-size:15px;opacity:.35;align-self:flex-end}
+  .txtpg{width:460px;background:var(--sheet);color:var(--sheet-ink);font-family:var(--mono);font-size:14px;line-height:1.6;padding:28px 30px;
+         box-shadow:0 10px 30px rgba(0,0,0,.55);white-space:pre-wrap}
   .toast{position:absolute;left:50%;bottom:20px;transform:translate(-50%,8px);width:max-content;max-width:520px;background:#1F1A16;border:1px solid var(--line);
          color:var(--text-hi);font-size:13.5px;padding:9px 16px;opacity:0;transition:opacity .3s,transform .3s;z-index:9;pointer-events:none}
   .toast.on{opacity:1;transform:translate(-50%,0)}
@@ -254,8 +276,11 @@
   <span class="grp">kind:
     <button type="button" id="k-book" aria-pressed="true">Book</button><button type="button" id="k-screenplay" aria-pressed="false">Screenplay</button><button type="button" id="k-essay" aria-pressed="false">Essay</button><button type="button" id="k-thesis" aria-pressed="false">Thesis</button>
   </span>
+  <span class="grp">you came from:
+    <button type="button" id="f-chapter" aria-pressed="true">a chapter</button><button type="button" id="f-card" aria-pressed="false">a board card</button>
+  </span>
   <span class="grp">where:
-    <button type="button" id="v-press" aria-pressed="true">in the Press</button><button type="button" id="v-page" aria-pressed="false">back at the page</button>
+    <button type="button" id="v-press" aria-pressed="true">in the Press</button><button type="button" id="v-page" aria-pressed="false">back where you were</button>
   </span>
   <span id="geom" aria-live="polite"></span>
 </div>
@@ -283,8 +308,10 @@
   </div>
 </div></div>
 
-<div class="cap"><b>Publish → opens the Press</b>, a place you pass through, never a home. The chip at top left takes you
-straight back to Ch. 7 with your cursor where you left it. <b>Left:</b> the running order: title page, dedication,
+<div class="cap"><b>Nick's pick: B only.</b> <b>Publish → opens the Press</b>, a place you pass through, never a home. It
+<b>opens at the size of what you're on</b>: switch <b>you came from</b> to <b>a board card</b> and it opens on just that card,
+ready to post to X or save as a quote card in two taps. The chip at top left takes you
+straight back to where you were. <b>Left:</b> the running order: title page, dedication,
 chapters, sources. Tick what goes in; open a chapter to see its sections; click a row to jump the preview there, or
 <b>Just this</b> to publish that one piece. The order itself comes from your binder, so change it in Plan.
 <b>Centre:</b> the finished thing at true page shape; flip with ‹ ›. <b>Right:</b> the edition (it changes with the kind
@@ -407,9 +434,27 @@ the book to your <b>Library</b> afterwards, only if you tick it. Try each <b>Kin
   };
   var DESTS = [['download','↓','Download'],['share','↪','Share…'],['copy','⎘','Copy'],['wordpress','W','WordPress'],['substack','S','Substack'],['x','𝕏','X']];
 
+  // ---------- came from a card (B only: the Press opens at the size of what you're on) ----------
+  var CARDS = {
+    book:       { text:'The name is already carved. Nobody tells her who paid for it.', board:'Chapter beats',
+                  others:['Maren carries the lamp. She always carries the light for someone else.', 'Tobiah stops asking questions. His fear shows up as silence.'] },
+    screenplay: { text:'Delia counts coins. She is always one short.', board:'Beat board',
+                  others:['Theo arrives soaked and grinning.', 'Act break: the ferry’s horn.'] },
+    essay:      { text:'Idleness is not the opposite of work. It is the part of the work that doesn’t leave a receipt.', board:'Argument map',
+                  others:['The ledger measures the wrong thing.', 'End on the river.'] },
+    thesis:     { text:'Coverage is not understanding. A curriculum can visit everything and learn nothing.', board:'Sources',
+                  others:['Deleuze & Guattari, 1987: the rhizome, p. 7', 'Csikszentmihalyi, 1990: flow'] }
+  };
+  var CED = {
+    post:{ nm:'Post', f:['X'], nt:'One post; a thread only if it runs long', d:['copy','x','share'], noun:'post', omit:'formatting (X shows plain text).' },
+    quote:{ nm:'Quote card', f:['PNG'], nt:'Your words set as an image', d:['download','share'], noun:'quote card', omit:'everything but these words.',
+            dress:[['name','Your name under the quote',true]] },
+    text:{ nm:'Text', f:['TXT','MD'], nt:'Plain words, nothing else', d:['download','copy','share'], noun:'text', omit:'nothing.' }
+  };
+
   // ---------- state ----------
-  var st = { kind:'book', view:'press', ed:'manuscript', fmt:0, dest:'download', start:0, focus:null, just:null, open:{ c7:true },
-             dress:{}, style:'APA', lib:false, inc:{} };
+  var st = { kind:'book', view:'press', from:'chapter', ed:'manuscript', fmt:0, dest:'download', start:0, focus:null, just:null, open:{ c7:true },
+             dress:{}, style:'APA', lib:false, inc:{}, ced:'post', cfmt:0, cdest:'x', cname:true };
 
   // ---------- pages for the preview ----------
   // Each page: { w, h, z, cls, html, n (label under the page), key (running-order id it belongs to) }
@@ -500,6 +545,22 @@ the book to your <b>Library</b> afterwards, only if you tick it. Try each <b>Kin
   // ---------- render ----------
   function renderBand(){
     var K = KINDS[st.kind], h = '';
+    if (st.from === 'card'){
+      var C = CARDS[st.kind];
+      if (st.view === 'press'){
+        h += '<button type="button" class="ret" id="ret"><span class="g">↩</span>' + esc(C.board) + ' · where you left off</button>';
+        h += '<div class="crumb">' + esc(K.binder) + ' &nbsp;/&nbsp; <b>The Press</b></div>';
+        h += '<div class="strip"><span class="mode lit">Publish</span></div>';
+      } else {
+        h += '<div class="crumb" style="min-width:250px">Board&nbsp; <b>' + esc(K.binder) + ' · Plan · ' + esc(C.board) + '</b></div>';
+        h += '<div class="strip"><button type="button" class="mode door" id="door">Publish →</button></div>';
+        h += '<span class="mode" style="letter-spacing:.14em">Page →</span>';
+      }
+      $('band').innerHTML = h;
+      if ($('ret')) $('ret').onclick = function(){ go('page'); toast('Back on ' + C.board + ', the card still selected.'); };
+      if ($('door')) $('door').onclick = function(){ go('press'); };
+      return;
+    }
     if (st.view === 'press'){
       h += '<button type="button" class="ret" id="ret"><span class="g">↩</span>' + esc(K.back) + ' · where you left off</button>';
       h += '<div class="crumb">' + esc(K.binder) + ' &nbsp;/&nbsp; <b>The Press</b></div>';
@@ -515,13 +576,90 @@ the book to your <b>Library</b> afterwards, only if you tick it. Try each <b>Kin
   }
   function renderPage(){
     var K = KINDS[st.kind], txt;
+    if (st.from === 'card'){
+      var C = CARDS[st.kind], spots = [[70, 60], [380, 170], [120, 330]];
+      var cards = [C.others[0], C.text, C.others[1]];
+      $('room').innerHTML = '<div class="table">' + cards.map(function(t, i){
+        var sel = i === 1;
+        return '<div class="bcard' + (sel ? ' sel' : '') + '" style="left:' + spots[i][0] + 'px;top:' + spots[i][1] + 'px"><div class="k">Card' + (sel ? ' · selected' : '') + '</div><div class="t">' + esc(t) + '</div></div>';
+      }).join('') + '</div>';
+      return;
+    }
     if (st.kind === 'screenplay') txt = '<div style="text-transform:uppercase;margin:6px 0 10px">INT. FERRY CABIN — NIGHT</div><p>Rain streaks the porthole. DELIA (40s), coat still buttoned, counts coins on the bench beside her.<span class="caret"></span></p>';
     else if (st.kind === 'essay') txt = '<h2>II. Idle hands</h2>' + P(ESSAY.secs[1][1]).replace(/<\/p>$/, '<span class="caret"></span></p>');
     else if (st.kind === 'thesis') txt = '<h2>Chapter 2: Literature Review</h2>' + P(LIT).replace(/<\/p>$/, '<span class="caret"></span></p>');
     else txt = '<h2>The crypt</h2>' + P(CH7.concat(['She held the lamp up to it and waited for the feeling to arrive. It didn’t. What arrived instead was the thought that someone had been paid to carve this'])).replace(/<\/p>$/, '<span class="caret"></span></p>');
     $('room').innerHTML = '<div class="paper-col"><div class="paper' + (st.kind === 'screenplay' ? ' script' : '') + '">' + txt + '</div></div>';
   }
+  function renderCardPress(){
+    var K = KINDS[st.kind], C = CARDS[st.kind], e = CED[st.ced];
+    if (e.d.indexOf(st.cdest) < 0) st.cdest = e.d[0];
+    var L = '<div class="col l"><div class="hd"><span class="engr">Running order</span><span class="sub">' + esc(K.binder) + '</span></div><div class="scroll">'
+      + '<div class="ordernote">Opened on just this card, because you came from a card. <button type="button" class="link" id="wholeBin">← whole ' + esc(K.label.toLowerCase()) + '</button></div>'
+      + '<div class="grp-h">Just this</div>'
+      + '<div class="ro focus"><span class="tw"></span><span class="bx">✓</span><span class="nm">Card</span><span class="src">from Plan · ' + esc(C.board) + '</span></div>'
+      + '<div class="cardtxt">' + esc(C.text) + '</div>'
+      + '<div class="note">From a card, a loose page, or words you’ve selected, the Press opens on just that piece. From a chapter, it opens where you last left that book.</div></div></div>';
+
+    var label = e.nm + (e.f.length > 1 ? ' (' + e.f[st.cfmt] + ')' : '');
+    var M = '<div class="mid"><div class="mid-top"><span><b>' + esc(label) + '</b> · one card</span>'
+      + '<span class="scope"><span class="pill">Just this card</span><button type="button" class="link" id="wholeBin2">← whole ' + esc(K.label.toLowerCase()) + '</button></span></div><div class="spread">';
+    if (st.ced === 'post'){
+      M += '<div style="display:flex;flex-direction:column;gap:10px"><div class="tw-card"><div class="pn"><span>1 post</span><span>' + C.text.length + ' characters</span></div>' + esc(C.text) + '</div>'
+        + '<div class="dnote">X opens with this filled in. You press Post there.</div></div>';
+    } else if (st.ced === 'quote'){
+      M += '<div class="qcard"><div class="q">“' + esc(C.text) + '”</div>' + (st.cname ? '<div class="by">Wren Castellan</div>' : '') + '<div class="mark">wrizo</div></div>';
+    } else {
+      M += '<div class="txtpg">' + esc(C.text) + '</div>';
+    }
+    M += '</div></div>';
+
+    var R = '<div class="col r"><div class="hd"><span class="engr">Edition</span><span class="sub">a card</span></div><div class="scroll"><div class="sect" style="padding-top:6px">';
+    ['post','quote','text'].forEach(function(id){
+      var x = CED[id];
+      R += '<button type="button" class="ed" data-ced="' + id + '" aria-pressed="' + (st.ced === id) + '"><span class="nm">' + esc(x.nm) + '</span><span class="fm">' + esc(x.f.join(' · ')) + '</span>'
+         + (st.ced === id ? '<span class="nt">' + esc(x.nt) + '</span>' : '') + '</button>';
+      if (st.ced === id && x.f.length > 1){
+        R += '<div class="chips">' + x.f.map(function(f, i){ return '<button type="button" class="chip mono" data-cfmt="' + i + '" aria-pressed="' + (st.cfmt === i) + '">' + esc(f) + '</button>'; }).join('') + '</div>';
+      }
+    });
+    R += '</div><div class="sect"><span class="engr">Dress</span>';
+    if (e.dress) R += '<button type="button" class="tg" id="cname"><span class="bx">' + (st.cname ? '✓' : '') + '</span>' + esc(e.dress[0][1]) + '</button>';
+    else R += '<div class="dnote">Nothing to dress. The words go as you wrote them.</div>';
+    R += '</div><div class="sect"><span class="engr">Deliver</span><div class="dests">';
+    DESTS.forEach(function(d){
+      var ok = e.d.indexOf(d[0]) >= 0;
+      R += '<button type="button" class="dest" data-cdest="' + d[0] + '" aria-pressed="' + (st.cdest === d[0]) + '"' + (ok ? '' : ' disabled') + '><span class="g">' + d[1] + '</span>' + esc(d[2]) + '</button>';
+    });
+    R += '</div>';
+    if (st.cdest === 'x') R += '<div class="why">X opens with your post filled in. Nothing goes out until you press Post there.</div>';
+    R += '<div class="why" style="color:#5d5246">Wrizo | Read (the Reading Room) comes later.</div></div></div>';
+    R += '<div class="foot"><div class="omit">Leaves out: <b>' + esc(e.omit) + '</b></div>'
+       + '<button type="button" class="btn-brass" id="make">' + esc(cardVerb()) + '</button></div></div>';
+
+    $('room').innerHTML = '<div class="press">' + L + M + R + '</div>';
+    var room = $('room');
+    Array.prototype.forEach.call(room.querySelectorAll('[data-ced]'), function(b){ b.onclick = function(){ st.ced = b.getAttribute('data-ced'); st.cfmt = 0; st.cdest = st.ced === 'post' ? 'x' : CED[st.ced].d[0]; renderCardPress(); }; });
+    Array.prototype.forEach.call(room.querySelectorAll('[data-cfmt]'), function(b){ b.onclick = function(){ st.cfmt = +b.getAttribute('data-cfmt'); renderCardPress(); }; });
+    Array.prototype.forEach.call(room.querySelectorAll('[data-cdest]'), function(b){ b.onclick = function(){ st.cdest = b.getAttribute('data-cdest'); renderCardPress(); }; });
+    if ($('cname')) $('cname').onclick = function(){ st.cname = !st.cname; renderCardPress(); };
+    $('wholeBin').onclick = $('wholeBin2').onclick = function(){ setFrom('chapter'); };
+    $('make').onclick = function(){
+      var ext = '.' + e.f[st.cfmt].toLowerCase(), name = '“' + C.text.split(' ').slice(0, 4).join(' ') + '… — ' + e.noun + ext + '”';
+      toast({ x:'X is open with your post. Press Post there when you’re ready.', copy:'Copied. Paste it wherever it’s going.',
+              share:'Made ' + name + '. Opening your share sheet…', download:'Saved ' + name }[st.cdest]);
+    };
+    geom();
+  }
+  function cardVerb(){
+    var e = CED[st.ced];
+    if (st.cdest === 'x') return 'Open X with your post';
+    if (st.cdest === 'copy') return 'Copy it';
+    if (st.cdest === 'share') return 'Make it, then share…';
+    return 'Download ' + e.noun + ' (.' + e.f[st.cfmt].toLowerCase() + ')';
+  }
   function renderPress(){
+    if (st.from === 'card'){ renderCardPress(); return; }
     var K = KINDS[st.kind];
     if (K.editions.indexOf(st.ed) < 0){ st.ed = K.editions[0]; st.fmt = 0; }
     var e = ED[st.ed];
@@ -605,7 +743,7 @@ the book to your <b>Library</b> afterwards, only if you tick it. Try each <b>Kin
       R += '<button type="button" class="dest" data-dest="' + d[0] + '" aria-pressed="' + (st.dest === d[0]) + '"' + (ok ? '' : ' disabled') + '><span class="g">' + d[1] + '</span>' + esc(d[2]) + '</button>';
     });
     R += '</div>';
-    if (xBlocked && st.kind !== 'essay') R += '<div class="why">X is for short pieces. Send a passage or a card from its own page with the Publish sheet.</div>';
+    if (xBlocked && st.kind !== 'essay') R += '<div class="why">X is for short pieces. Publish from the card or passage itself; the Press opens on just that (try <b>you came from: a board card</b>).</div>';
     if (st.dest === 'wordpress') R += '<div class="why">Goes to <b>wrenwrites.blog</b> as a draft. You press Publish in WordPress.</div>';
     if (st.dest === 'substack') R += '<div class="why">Substack has no way for apps to post. Wrizo copies it ready to paste, then opens Substack.</div>';
     R += '<div class="why" style="color:#5d5246">Wrizo | Read (the Reading Room) comes later.</div></div></div>';
@@ -673,6 +811,13 @@ the book to your <b>Library</b> afterwards, only if you tick it. Try each <b>Kin
   }
   function geom(pages){
     var K = KINDS[st.kind], e = ED[st.ed];
+    if (st.from === 'card'){
+      var C = CARDS[st.kind];
+      $('geom').textContent = st.view === 'press'
+        ? 'The Press · opened on just this card · ' + CED[st.ced].nm + ' · return chip armed: ' + C.board
+        : 'Back on the board · card still selected · Publish → opens the Press on just this card';
+      return;
+    }
     $('geom').textContent = st.view === 'press'
       ? 'The Press · ' + (st.just ? 'just ' + findRow(st.just).nm.replace(/^\d+\s+/, '') : 'whole ' + K.label.toLowerCase()) + ' · ' + e.nm + ' · return chip armed: ' + K.back
       : 'Back on the page · caret restored · Publish → re-opens the Press as you left it';
@@ -692,14 +837,22 @@ the book to your <b>Library</b> afterwards, only if you tick it. Try each <b>Kin
   ['book','screenplay','essay','thesis'].forEach(function(k){
     $('k-' + k).onclick = function(){
       st.kind = k; st.ed = KINDS[k].editions[0]; st.fmt = 0; st.start = 0; st.just = null; st.focus = null; st.dress = {}; st.dest = 'download'; st.lib = false;
+      st.ced = 'post'; st.cfmt = 0; st.cdest = 'x';
       ['book','screenplay','essay','thesis'].forEach(function(x){ $('k-' + x).setAttribute('aria-pressed', x === k); });
       go(st.view);
     };
   });
+  function setFrom(f){
+    st.from = f; st.just = null; st.start = 0; st.ced = 'post'; st.cfmt = 0; st.cdest = 'x';
+    ['chapter','card'].forEach(function(x){ $('f-' + x).setAttribute('aria-pressed', x === f); });
+    go(st.view);
+  }
+  $('f-chapter').onclick = function(){ setFrom('chapter'); };
+  $('f-card').onclick = function(){ setFrom('card'); };
   $('v-press').onclick = function(){ go('press'); };
   $('v-page').onclick = function(){ go('page'); };
   document.addEventListener('keydown', function(ev){
-    if (st.view !== 'press') return;
+    if (st.view !== 'press' || st.from === 'card') return;
     if (ev.key === 'ArrowRight' && !$('next').disabled) $('next').click();
     if (ev.key === 'ArrowLeft' && !$('prev').disabled) $('prev').click();
   });

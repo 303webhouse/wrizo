@@ -3,6 +3,9 @@
 **STATUS: RATIFIED (2026-09-30).** Nick has ratified the whole §9 slate (items 1–15) and the
 §11 and §12 rulings. His words are quoted verbatim in §9, §11 and §12 for chat 1 to register.
 
+**Slate 1 was amended the same day: "B only".** Publish is the Press (Mockup B). The Sheet
+(Mockup A) is dropped and kept on file as the road not taken.
+
 What remains:
 - The PUB arc's build tickets (§7) still wait on the lanes named there.
 - The Library, Shelf-aging and Journal-volume work (§11, §12) belongs to the lane that owns
@@ -10,8 +13,10 @@ What remains:
 **Desk:** Publish lane (new), 2026-09-30. This is design only. **No app source file is
 touched by this pass**, and everything it adds is new files under `docs/publish/`.
 **Companion mockups:**
-- `docs/publish/pub-mock-a-sheet.html`: A, *The Publish Sheet* (a door that opens a sheet).
 - `docs/publish/pub-mock-b-press.html`: B, *The Press* (a door that opens a display).
+  **Chosen by Nick, 2026-09-30.**
+- `docs/publish/pub-mock-a-sheet.html`: A, *The Publish Sheet* (a door that opens a sheet).
+  *Not chosen*; kept on file.
 
 **Numbering:**
 - The arc prefix is **PUB**. "PB" is taken by PB1, item 71.
@@ -31,18 +36,21 @@ touched by this pass**, and everything it adds is new files under `docs/publish/
 It has to work at every size, from one card to a whole book with a title page, chapters and a
 bibliography.
 
-**What they recommend, in one breath:**
+**The plan, in one breath (your pick: B only):**
 1. Build one export engine that every format and destination shares.
-2. Ship the simple **Publish Sheet** first (Mockup A). It slides out beside your page and never
-   moves it, and asks three questions: **What** · **As** · **To**.
-3. Later, grow **The Press** (Mockup B) for whole books: a full preview with the running order,
-   title page and bibliography, and one tap back to where you were writing.
+2. Publish opens **The Press** (Mockup B). It's a full preview of the finished thing, with the
+   running order (title page, chapters, bibliography), the edition, and where it goes. One
+   tap takes you back to exactly where you were writing.
+3. The Press **opens at the size of what you're on**:
+   - from a card, a loose page or selected words, it opens on just that piece, so a quick
+     post is two taps: Publish, then the orange button;
+   - from a chapter, it opens where you last left it for that book.
 
 **What you've approved (2026-09-30)** (details in §9):
 
 | Decision | Your word |
 |---|---|
-| Build order: engine → Sheet (A) → Press (B) | "Approved" |
+| Build order: engine → the Press (B only; the Sheet is dropped) | "Approved", then "I like B better" → "B only" |
 | The code libraries for Word/e-book/PDF files (fflate, pdf-lib, fontkit), plus one test-only library | "Approved" |
 | The five Publish laws (PUB-A1 to A5 in §6), e.g. "every send lands as a draft — nothing goes live from Wrizo" | "Approved" |
 | The 90-day Shelf timer counts from the last edit | "Yes" |
@@ -54,7 +62,8 @@ bibliography.
 | You can start a new Journal volume early (e.g. at New Year) | "Sure" |
 | A short hover (computer) or long-press (touch) on the Journal icon peeks at its menu, volumes included; tap/click works everywhere | "Yes" |
 
-**Nothing else is waiting on you** except choosing a mockup and pasting the §11 note to Fable.
+**Nothing else is waiting on you** except pasting the §11 note to Fable. You picked the
+mockup: **B, the Press, and B only**.
 
 **Your 2026-09-30 rulings, recorded** (§11, §12):
 - You can move a Page, Board or Drawer to your Library. It also holds Wrizo's writing
@@ -76,14 +85,14 @@ bibliography.
 
 ### Publish TO-DO (living list — update as items close)
 - [x] Committee pass written (this file)
-- [x] Mockup A — The Publish Sheet
-- [x] Mockup B — The Press
+- [x] Mockup A — The Publish Sheet (not chosen; kept on file)
+- [x] Mockup B — The Press (**chosen, B only**, 2026-09-30; updated to show publishing a single card)
 - [x] Nick's scale rulings recorded verbatim (§11)
 - [x] Nick ratified slate 1–7, 11, 12 (2026-09-30)
 - [x] The Architects' Journal-volumes suggestion written (§12)
 - [x] Nick ratified slate 8, 9, 10, 13, 14, 15; the whole slate is closed (2026-09-30)
 - [ ] **Nick:** pass the storage-full note in §11 to Fable (ANNEX IV)
-- [ ] **Nick:** look at both mockups; say which feels right (A first, B later is the lean)
+- [x] Nick picked the mockup: "I like B better" → B only (2026-09-30)
 - [ ] **chat 1:** assign an item number to PUB; register the §9, §11 and §12 rulings in the ledger
 - [ ] **Fable:** slot PUB0 (the survey) — it touches no code and can start any time
 - [ ] **Fable:** assign the IndexedDB storage fix (§11, urgent, not a Publish ticket)
@@ -422,7 +431,7 @@ The only toggles are:
 - **Substack**
   - Substack has **no public posting API**, so there is **Copy for Substack** (rich HTML +
     plain text), a separate *Copy title*, and **Open Substack ↗**.
-  - The pasted formatting may flatten in Substack's phone app, and the sheet says so.
+  - The pasted formatting may flatten in Substack's phone app, and the Press says so.
 - **X**
   - One post (280 or fewer): the free web intent, pre-filled.
   - Longer: the **thread splitter** cuts at paragraphs, then sentences, never inside a word.
@@ -454,13 +463,17 @@ equal the canonical ledger **exactly**: nothing dropped, reordered or duplicated
 | 5 | Drag-to-reorder chapters in the Press | **Deferred to the spine.** It writes through item 188's order when that lands, never a copy (T1). |
 | 6 | A server relay for WordPress / X | **Deferred.** Browser-direct first; a relay needs Nick's word and a security review. |
 | 7 | Publish as a new top-level mode with its own home | **Rejected.** Nick: doors, not homes. The Press is a display you pass through, with a return chip. |
-| 8 | Main-bundle cost | **Budgeted.** Only the Sheet's shell is in the main bundle (≤15 KB gzipped, enforced by harness). Every writer loads lazily; PDF is about 400 KB and loads only when a PDF is made. |
+| 8 | Main-bundle cost | **Budgeted.** The Press is a lazy-loaded route. The main bundle carries only the route stub and the door's handler (≤15 KB gzipped, enforced by harness). Every writer loads lazily; PDF is about 400 KB and loads only when a PDF is made. *(Revised for "B only", 2026-09-30.)* |
 
 ---
 
 ## §3 · THE TWO SHAPES — the mockups
 
-**A · The Publish Sheet** (`pub-mock-a-sheet.html`): **Publish → opens a sheet.**
+**Nick chose B, "B only" (2026-09-30).** Both shapes are recorded below, with A kept as the
+road not taken.
+
+**A · The Publish Sheet** (`pub-mock-a-sheet.html`): **Publish → opens a sheet.** *Not
+chosen.*
 - The sheet docks in the right margin *beside* the paper where the margin allows (b166). At
   narrower widths it overlays the page edge. **The page never moves or unmounts.**
 - It asks three questions: **What** (selection · this card · this page · whole book · pick
@@ -470,7 +483,7 @@ equal the canonical ledger **exactly**: nothing dropped, reordered or duplicated
   "Again".
 - Whole-book detail drills in inside the sheet and never opens a second pop-out.
 
-**B · The Press** (`pub-mock-b-press.html`): **Publish → opens a display.**
+**B · The Press** (`pub-mock-b-press.html`): **Publish → opens a display.** **Chosen.**
 - It is navigation, so it carries the return chip ("↩ Back to Ch. 7 — where you left off").
 - **Left hand:** the **Running Order** (front / body / back matter, per-row include, "just
   this").
@@ -479,20 +492,38 @@ equal the canonical ledger **exactly**: nothing dropped, reordered or duplicated
 - **Right hand:** **Edition · Dress · Deliver**, plus the writer's-choice line "Afterwards,
   move this to my Library" (§11).
 
-**Recommendation: both, in order.**
-- A covers every scope from a card up to a chapter, and every destination. It is the smaller
-  build and touches the editor least.
-- B is where Law 7's assembly and the book-sized compile are *felt*: seeing it become a book
-  is itself the finishing reward.
-- A's "Whole book" row gains **"Open the Press ›"** once B exists.
-- Both run on the one engine, so nothing is built twice.
+**The committee's first recommendation was "both, in order"** (A first, then B). Nick's word
+replaced it: "I like B better", and asked what that means for the build, he chose **"B only"**.
+
+**How the Press covers everything the Sheet did (the Architects, 2026-09-30):**
+- **It opens at the size of what you're on.**
+  - From a **card**, a **loose page** (Shelf or Journal) or a **selection**, the Press opens
+    on **just that piece**. The running order collapses to that one item, with "← whole
+    binder" beside it. The editions are the card editions: Post (X), Quote card, Text.
+  - From a **page inside a binder**, it opens on the scope last used for that binder
+    ("Again"). If there's no history, it opens on the whole binder with that page highlighted
+    in the running order, and "Just this" is one tap away.
+- **A quick post is two taps:** Publish, then the brass button. The pantser's path and the
+  cognitive scientist's "three decisions at most" both hold.
+- **Page primacy holds.** The Press is navigation (a display), so it carries the return chip,
+  with scroll, caret and mode restored.
+- **E1's old Publish dialog retires.**
+  - Its downloads (.md / .txt / This Binder / Everything) move into the Press under **More
+    formats**.
+  - Copy My Words / Copy Formatted become the Press's **Copy** destination, with the same
+    words and the same behaviour.
+  - `apps/desktop/scripts/harness/e1.mjs` is updated by the ticket that does this, with the
+    editor owner's grant.
+- **One Publish place to learn and to build.** B is where Law 7's assembly and the book-sized
+  compile are *felt*: seeing it become a book is itself the finishing reward.
 
 ---
 
 ## §4 · THE RECOMMENDATION (single, unified)
 
-- **R1.** Publish is a **door**. The Sheet is its first room; the Press is its book room.
-  Neither is a home.
+- **R1.** Publish is a **door onto the Press**, a display you pass through with a one-tap
+  return, never a home. It **opens at the size of what you're on**: a card, a page, a
+  selection, or the whole binder (§3). *(Revised for Nick's "B only", 2026-09-30.)*
 - **R2.** One engine: Select → Assemble → Dress → Render → Deliver, in `apps/desktop/src/press/`.
   No other lane's file is edited to build it.
 - **R3.** Marks are read only through `markRuns.ts`; order is read only through
@@ -531,7 +562,9 @@ equal the canonical ledger **exactly**: nothing dropped, reordered or duplicated
 - **T3 · Door versus room.**
   - DR4 and "doors, not homes" pull toward a sheet; Law 7 and the plotter pull toward an
     assembly room.
-  - *Resolution:* both, in order (§3). The room is a display you pass through, never a home.
+  - *Resolution, by Nick (2026-09-30):* **the room**, "B only". You reach it through the
+    Publish door; it's a display you pass through, never a home. It opens at the size of what
+    you're on, so the Sheet's quick path survives inside it (§3).
 - **T4 · Local-first versus connected destinations.**
   - WordPress needs a credential, and Wrizo's server stores none.
   - *Resolution:* the credential stays on the device, only if asked, and can be forgotten.
@@ -567,11 +600,11 @@ same commit; report = push; Fable reviews; Nick's look closes.
 | Ticket | Scope | Schema | New deps | Waits on |
 |---|---|---|---|---|
 | **PUB0** | Survey, no code: bundle budget; S25 share-sheet file types; WordPress CORS on a test site; Substack editor URL; font licences; the named-dependency brief | — | — | — |
-| **PUB1** | Engine skeleton (model, scope, select, `chapterOrder()`); **.wzo** for page / binder / everything; the Sheet's shell; `triggerDownload` widened to accept a Blob | zero | fflate | — |
+| **PUB1** | Engine skeleton (model, scope, select, `chapterOrder()`); **.wzo** for page / binder / everything; **the Press shell**: route, return chip, read-only running order, opens at the size of what you're on, "More formats" housing E1's downloads, Copy housing E1's copy buttons; the Publish door navigates to the Press; `triggerDownload` widened to accept a Blob | zero | fflate | **FIX's grant** for the door handler in its files (after r3) |
 | **PUB2** | Marks via `inline.ts`; prose + Journal-board readers; txt / md / html; reading copy | zero | — | **FIX: r3 merged** (markRuns), 210 for titles |
 | **PUB3** | DOCX; Manuscript / Document / Paper dress; generated title page; device Publish profile | zero | — | 207 names faces (reading copy only) |
 | **PUB4** | Deliver: Share…, Copy for Substack, X post + thread splitter, quote card | zero | — | — |
-| **PUB5** | Role pages; slot contract; **the Press** route with return chip | zero | — | **188** (order seam swap) |
+| **PUB5** | Role pages; slot contract (the Press route itself moved to PUB1 under "B only") | zero | — | **188** (order seam swap) |
 | **PUB6** | EPUB 3 | zero | — | — |
 | **PUB7** | Prose PDF (Worker, vendored Tinos / Arimo) | zero | pdf-lib, fontkit (+ pdfjs-dist, dev) | 207 |
 | **PUB8** | Screenplay PDF · Fountain · FDX | zero | (PUB7's) | Screenplay lane: the printed-line function incl. (MORE) / (CONT'D) |
@@ -598,15 +631,20 @@ same commit; report = push; Fable reviews; Nick's look closes.
   (TUTOR's), and the Read repository.
 
 **Touch points, in order, each by its owner's grant:**
-1. **PUB1, after r3 merges:** in the two Publish dialogs (`PageEditor.tsx` about line 1143,
-   `ScriptEditor.tsx` about line 1176), only the `publishComingSoon` paragraph is replaced by
-   `<PressPanel/>`. E1's buttons and class names stay, so `e1.mjs` stays green.
+1. **PUB1, after r3 merges:** the Publish door's handler in `PageEditor.tsx` and
+   `ScriptEditor.tsx` (today `onPublish={() => setShowPublish(true)}`) navigates to the Press
+   instead of opening the stub dialog. The dialog retires.
+   - E1's downloads and copy buttons live on inside the Press with the same words and
+     behaviour.
+   - `apps/desktop/scripts/harness/e1.mjs` is updated in the same ticket.
+   - These are FIX's files, so this needs FIX's grant. *(Revised for "B only",
+     2026-09-30.)*
 2. **`store/download.ts`:** one additive widening (`string | Blob`). E1 is closed.
 3. **`deskLexicon.ts`:** an appended `press*` block per ticket. Flux's "Connect" and Nomad's
-   "Relay" come through `themeLexicon`. `publishComingSoon` retires at PUB5.
+   "Relay" come through `themeLexicon`. `publishComingSoon` retires at PUB1.
 4. **`package.json` / lockfile:** dependencies in their own commits; the lockfile is
    regenerated, never hand-merged (it races 207's font packages).
-5. **`App.tsx`:** one route for the Press (PUB5).
+5. **`App.tsx`:** one route for the Press (PUB1).
 
 ---
 
@@ -629,6 +667,9 @@ His chat numbering maps onto this slate as:
 not otherwise answered. Recorded as that reading so Nick can correct it.
 
 1. Build order: **engine → Sheet (A) → Press (B)**. **RATIFIED 2026-09-30 ("Approved").**
+   **AMENDED 2026-09-30:** Nick said "I like B better". Asked what that means for the build,
+   he chose **"B only"**. The build order is now **engine → the Press**, and the Sheet is
+   dropped (§3).
 2. The named dependency exception (T2): **fflate, pdf-lib, @pdf-lib/fontkit**, plus
    **pdfjs-dist** (tests only). **RATIFIED 2026-09-30 ("Approved").**
 3. **PUB-A1** The file names its omissions. **RATIFIED 2026-09-30 ("Approved").**
