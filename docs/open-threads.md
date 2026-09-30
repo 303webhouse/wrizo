@@ -23484,3 +23484,22 @@ once both land.**
 
 **GRANT PASSED: the file now names FIX for its item 210 + 211 probe, at `ef64554`** (verified still the
 origin tip of `item-writing-r3`). **Next after it: the Batch Eight pair.**
+
+## CI MERGED (a156304); 207b’S CONDITIONAL JOIN TO BATCH EIGHT; item204-proofing-storage RESET TO 13cd415, ENGINE NOW ITS OWN BRANCH — 2026-09-30 (chat 1)
+
+**MERGED: `cursor/ci-browserless-checks` @ `a156304` (PR #5).** **Fable’s correction:** the permissions block
+was already present at `23c7a3a` — his earlier “neither edit is in it” was his own miss, not Cursor’s.
+**Verified both edits directly before merging:** `permissions: contents: read` (least privilege) and
+`node-version-file: package.json` (“Same field Nixpacks reads: root `package.json` `engines.node`”, the
+workflow’s own comment). **Advisory, `.github` + `docs/ci/README.md` only** — its first GitHub run on the
+PR shows whether it actually works; not verified here.
+
+**BATCH EIGHT AND 207b, CONDITIONAL (Fable):** `item207b-device-fonts` joins ONLY IF TOOLS’ classifier fix
+(Verdana and Tahoma read as serif) lands WITH ITS CHECK inside `item207b.mjs` before the pair starts, so
+the batch pair confirms it. **Otherwise 207b goes to Batch Nine, and Eight takes 207 phase 1 (`5653417`)
+alone.**
+
+**`item204-proofing-storage`: RESET to `13cd415` exactly** (verified on origin — PW’s own act, its branch,
+unmerged). **The engine now lives on its OWN branch, `item204-engine` @ `dfb7ce4`** (“the 15.9 MB wasm DOES
+download once — measured on the wire, no server change”) — separating what was, last turn, two commits
+sitting on the storage branch. **Batch Eight still takes `13cd415`, unchanged.**
