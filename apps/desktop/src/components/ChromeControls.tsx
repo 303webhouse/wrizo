@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { subscribeSyncStatus, subscribeTooLarge, type SyncStatus, type TooLargeRecord } from '../store/sync';
+import { subscribeStorageFailed, subscribeStorageNearFull } from '../store/storageHealth';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { syncNoticeText } from '../store/syncNotice';
 
@@ -29,11 +30,24 @@ export function SyncIndicator() {
   // page that cannot travel. Offline still wins while the network is down - it is the broader truth.
   const [tooLarge, setTooLarge] = useState<readonly TooLargeRecord[]>([]);
   useEffect(() => subscribeTooLarge(setTooLarge), []);
+  // STORAGE-FULL STEP 1 - the closest thing this app has to an ACTIVE save failure: this device's own write, not the
+  // network's. It outranks every other notice below (storageHealth.ts / syncNotice.ts carry the reasoning).
+  const [storageFailed, setStorageFailed] = useState(false);
+  useEffect(() => subscribeStorageFailed((names) => setStorageFailed(names.length > 0)), []);
+  const [storageNearFull, setStorageNearFull] = useState(false);
+  useEffect(() => subscribeStorageNearFull(setStorageNearFull), []);
   const { t } = useDeskLexicon();
   const style = { fontSize: '0.75rem', color: 'var(--color-text-muted)' } as const;
-  const text = syncNoticeText(status, tooLarge, t);
+  const text = syncNoticeText(status, tooLarge, storageFailed, storageNearFull, t);
   if (text === null) return null;
-  return <span style={style} data-sync-too-large={status === 'offline' ? undefined : tooLarge.length}>{text}</span>;
+  return (
+    <span
+      style={style}
+      data-sync-too-large={status === 'offline' || storageFailed ? undefined : tooLarge.length}
+      data-storage-failed={storageFailed ? 'true' : undefined}
+      data-storage-near-full={storageFailed ? undefined : storageNearFull ? 'true' : undefined}
+    >{text}</span>
+  );
 }
 
 // Full-screen toggle (Fullscreen API). Works on desktop + Android and goes

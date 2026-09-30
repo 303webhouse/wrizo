@@ -242,6 +242,8 @@ export type DeskTermId =
   // one act. 'boardCanvasEmpty' is the empty board's own quiet one-line
   // pointer at both board-side tools (S2c).
   | 'syncTooLargeOne' | 'syncTooLargeMany'
+  // STORAGE-FULL STEP 1 — the two new sync-notice sentences: an active local write failure, and a one-time heads-up.
+  | 'syncStorageFull' | 'syncStorageNearFull'
   | 'cascadePageNewPage' | 'cascadePlanJustAPage' | 'boardNewPageCard' | 'boardCanvasEmpty'
   // ITEM 83 M3 (R6) — the Page drawer's PAGE SETUP zone: the sheet's own
   // dimension (margins, leading, numbers, headers, footers), as opposed to
@@ -828,6 +830,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   syncTooLargeOne: '\u201C{title}\u201D is too large to sync \u2014 it is saved on this device',
   // NOUN-NEUTRAL on purpose: what cannot travel is any synced record (a page, a project, a drawer), so "pages" would sometimes lie.
   syncTooLargeMany: '{n} items are too large to sync \u2014 they are saved on this device',
+  syncStorageFull: 'This device is out of storage \u2014 the latest changes are not saved here',
+  syncStorageNearFull: 'This device is running low on storage',
   // ITEM 83 M3 (R6). Sentence case on rows, engraved-uppercase on the heading
   // (§1.4) — the heading's dress is CSS, so the term itself stays readable.
   pageSetupHeading: 'Page setup',
