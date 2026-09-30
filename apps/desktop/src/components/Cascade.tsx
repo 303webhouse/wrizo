@@ -295,9 +295,10 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
       {renderSection(SECTION_B, state, toggleCategory, t)}
       <div className="wz-strip-sep" role="separator" aria-orientation="horizontal" />
       {renderSection(SECTION_C, state, toggleCategory, t)}
-      {/* the separator below Shelf, closing off the browsing places */}
-      <div className="wz-strip-sep" role="separator" aria-orientation="horizontal" />
+      {/* Settings, Themes and Trash pin to the window corner. The
+          separator travels with them so the space above the group is empty. */}
       <div className="wz-strip-foot">
+        <div className="wz-strip-sep" role="separator" aria-orientation="horizontal" />
         {renderSection(SECTION_D, state, toggleCategory, t)}
         {/* the thin line just above the Trash at the very foot */}
         <div className="wz-strip-sep" role="separator" aria-orientation="horizontal" />

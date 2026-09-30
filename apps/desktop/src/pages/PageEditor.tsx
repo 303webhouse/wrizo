@@ -10,7 +10,6 @@ import { useSurfaceSelection } from '../components/useSurfaceSelection';
 import { ModeSwitcher } from '../components/ModeSwitcher';
 import { ModeStage, PEN_INKS } from '../components/ModeStage';
 import { InkStratum, type InkPen, type InkPermission } from '../components/InkStratum';
-import { InkSwitch } from '../components/InkSwitch';
 import { INK_DEFAULT_PEN } from '../store/ink';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
@@ -1199,9 +1198,19 @@ function PageEditorView({ id }: { id: string }) {
                 Revise are not sketch pads, and a switch offering an instrument
                 the surface does not have would be the locked door wearing
                 paint. Absent, never disabled. */}
-            {mode === 'journal' && <InkSwitch value={instrument} onChange={setInstrument} />}
-            <ModeStrip mode={mode} onSwitch={switchMode} onPublish={() => setShowPublish(true)} />
-            <div className="sprint-actions">
+            <ModeStrip
+              mode={mode}
+              onSwitch={switchMode}
+              onPublish={() => setShowPublish(true)}
+              instrument={mode === 'journal' ? instrument : undefined}
+              onInstrument={mode === 'journal' ? setInstrument : undefined}
+              end={(
+                <button type="button" className="btn-quiet page-plan-door" data-page-plan-door onClick={openPlanBoard}>
+                  {dt('pagePlanDoor')} <span aria-hidden="true">→</span>
+                </button>
+              )}
+            />
+            {(project || fromBoard) && <div className="sprint-actions">
               {project && (
                 <div className="sprint-toggle" role="tablist" aria-label={`${lex('binder')} view`}>
                   {/* CD4 S2 — the elder "Plan" flight tab (→ the legacy StructureBoard) is
@@ -1217,13 +1226,7 @@ function PageEditorView({ id }: { id: string }) {
                   {fromBoardTitle ? `‹ Back to ${fromBoardTitle}` : '‹ Back to the board'}
                 </button>
               )}
-              {/* BM1 S3 — the PLAN → door, at the end of the page's bar (same
-                  arrow grammar as the board's PAGE →). First click on an
-                  unpaired page births the plan board (S2's lazy rule) and flips;
-                  later clicks resolve to it. No knock/badge/dot (A14). Bar chrome
-                  only — the paper's rect and text measure are never touched (S8). */}
-              <button type="button" className="btn-quiet page-plan-door" data-page-plan-door onClick={openPlanBoard}>{dt('pagePlanDoor')} <span aria-hidden="true">→</span></button>
-            </div>
+            </div>}
           </div>
         </FirstRunVeil>
 
