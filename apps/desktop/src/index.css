@@ -3518,10 +3518,10 @@ a:focus-visible,
    own. Their old container border drew a second line just under the tabs,
    redundant with the sprint-nav's own bottom line (Nick's "redundant
    separator just underneath the Writing Modes tabs"); dropped here. */
-.desk-mode-strip{ display:flex; align-items:center; gap:2px; background:none;
+.desk-mode-strip{ display:flex; align-items:center; gap:1.6px; background:none;
   border:none; padding:0; }
 .desk-mode-tab{ background:none; border:1px solid transparent; color:var(--text-mid);
-  font-family:var(--font-ui); font-size:10.4px; padding:9px 16px; cursor:pointer; transition:.15s;
+  font-family:var(--font-ui); font-size:10.4px; padding:9px 12.8px; cursor:pointer; transition:.15s;
   text-transform:uppercase; letter-spacing:.08em; }
 .desk-mode-tab:hover{ color:var(--text-hi); background:var(--ink-800); }
 .desk-mode-tab.active{ background:none; color:var(--text-hi); border-bottom:1px solid var(--accent-rest); }
@@ -5066,10 +5066,16 @@ a:focus-visible,
 .board-door,.page-plan-door{ background:none; border:0; color:var(--text-mid); cursor:pointer;
   font-family:var(--font-contentLabel); font-size:13px; padding:5px 10px; }
 .board-door:hover,.page-plan-door:hover{ color:var(--text-hi); }
+/* The page's Plan door matches the writing-mode tabs: capitals, same size.
+   The word and the arrow stay olive (--accent-rest), including on hover. */
+.page-plan-door{
+  text-transform:uppercase; letter-spacing:.08em; font-size:10.4px;
+  color:var(--accent-rest);
+}
+.page-plan-door:hover{ color:var(--accent-rest); }
 /* FX18 S3 (SV27): the Board's top menu parallels the Page's mode strip — ALL CAPS.
-   Scoped to the Board bar (.board-mode-tab + .board-door); the Page's own .page-plan-door
-   is deliberately NOT included. Mirrors .desk-mode-tab's transform; words/behaviour and the
-   DOM textContent are unchanged (paint only, the ab2-S7 discipline). */
+   Scoped to the Board bar (.board-mode-tab + .board-door). The page Plan door
+   is capped in the rule above, in olive. DOM textContent stays "Plan". */
 .board-mode-tab, .board-door{ text-transform:uppercase; letter-spacing:.08em; }
 .board-telos{ color:var(--text-low); font-family:var(--font-contentLabel); font-size:12px;
   letter-spacing:.02em; margin:2px 0 0; user-select:none; }
