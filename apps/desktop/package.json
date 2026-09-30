@@ -16,6 +16,7 @@
     "@fontsource/chakra-petch": "^5.2.7",
     "@fontsource/courier-prime": "^5.2.8",
     "@fontsource/rajdhani": "^5.2.7",
+    "harper.js": "2.10.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.13.0"
