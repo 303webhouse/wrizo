@@ -23376,3 +23376,28 @@ ASSEMBLY — Fable reads the assembled diff himself; nothing is reviewed pieceme
 
 **NOTHING MERGED THIS TURN** — all three are product branches awaiting successor commits or PUB1 whole; none
 was offered for a docs-only merge.
+
+## BATCH EIGHT — 213 AND 215 CLEARED AT THEIR SUCCESSOR SHAs; PUB1’S PRESS SHELL HELD; PW’S M7 GRANT UNCONFIRMED — 2026-09-30 (chat 1)
+
+**213 STEP 1, CLEARED AT ITS SUCCESSOR: `item-storage-full` @ `c648c56`.** Verified the diff from `2a3f605`:
+one hunk, `deskLexicon.ts` — `syncStorageFullAnon` now reads “…download a copy now from Publish” (Fable’s
+clause, cleared, no re-review) and a NEW term `syncStorageNearFullAnon` (TOOLS, for a signed-out writer
+near-full) — **ACCEPTED AS WORDED (Fable).**
+
+**215, CLEARED AT ITS SUCCESSOR: `tutor20-live-defect` @ `d63853f`** (“the capped window must open on a
+writer turn”). Verified from the commit: `capTutorHistory()` now drops every leading tutor turn after the
+slice, and `item215.mjs` adds `mkAlt(n)` — an ALWAYS-ends-on-writer thread, the real shape Tutor.tsx
+produces — proving for n=21/50/100 that the capped window opens on a writer turn and closes on the newest,
+against both a hand-derived reference and the real server route. **23/23, `tsc` clean**, as claimed.
+
+**`pub1-skeleton` @ `eef703e`** (the Press shell, browserless: route, return chip, running order, “More
+formats” + Copy, a 3.9 KB lazy chunk) — **ACCEPTED, HELD OUT OF BATCH EIGHT; lands with PUB1 whole.**
+
+**BOX, CHECKED (Fable asked): is PW’s M7 grant actually running?** Grant file: lane PW, written 12:47 UTC
+today (~13 min old at the check, NOT stale). **0 harness-signature processes; no new `wrizo-suite-*`
+directory since 2026-09-25; no file under the temp root newer than 12:40 names M7, wavy, paint or
+highlight.** **INCONCLUSIVE, stated plainly: M7 may be browserless (no `run-suite` signature to catch), so
+absence of a suite directory does not prove PW hasn’t started — only that no FULL-SUITE pair is running.**
+**Per Fable’s instruction: LEAVING THE GRANT AS IS** (no confirmation PW can’t take it); if PW answers
+through Nick that it never saw the notice, this desk moves the grant to TOOLS’ 207b and puts M7 after FIX’s
+short use.
