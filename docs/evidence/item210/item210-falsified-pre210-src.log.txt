@@ -1,0 +1,15 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PASS  [the Desk] no derived label still carries the page's markup (no `**`, `*WORD*`, heading mark or block token as visible text)  [[]]
+FAIL  [the Journal board] no derived label still carries the page's markup (no `**`, `*WORD*`, heading mark or block token as visible text)  [["**TESTING** THE *DATABASE* SYNC","and a body line with **bold** and *italic* words - a bullet **point**"]]
+FAIL  [the Shelf board] no derived label still carries the page's markup (no `**`, `*WORD*`, heading mark or block token as visible text)  [["# **Loose** page title","and a body line with **bold** and *italic* words - a bullet **point**"]]
+FAIL  [the Spread] no derived label still carries the page's markup (no `**`, `*WORD*`, heading mark or block token as visible text)  [["**TESTING** THE *DATABASE* SYNC"]]
+PASS  [the Drawers page] no derived label still carries the page's markup (no `**`, `*WORD*`, heading mark or block token as visible text)  [[]]
+FAIL  [the page, Draft, caret inside the bold word] the title bar / crumb / face read the plain words, and nothing outside the editor shows markup  [{"strayDraft":["**TESTING** THE *DATABASE* SYNC"],"bar":{"crumb":["In the Journal/**TESTING** THE *DATABASE* SYNC","In the Journal","/","**TESTING** THE *DATABASE* SYNC"],"face":[],"title":"Wrizo","hasEditorBold":true}}]
+FAIL  [the page] the title is the WORDS: "TESTING THE DATABASE SYNC" appears in the chrome (a label was derived, not skipped)  [{"crumb":["In the Journal/**TESTING** THE *DATABASE* SYNC","In the Journal","/","**TESTING** THE *DATABASE* SYNC"],"face":[],"title":"Wrizo","hasEditorBold":true}]
+FAIL  [the page, Free Write] no markup outside the editor  [["**TESTING** THE *DATABASE* SYNC"]]
+FAIL  [the page, Revise] no markup outside the editor  [["**TESTING** THE *DATABASE* SYNC"]]
+FAIL  [the page, a `# **Loose**` heading title] derived as "Loose page title"  [["# **Loose** page title"]]
+FAIL  [a board] its name and its card faces show no markup outside the decorated card bodies, and the name is "Plot board"  [{"sb":["**Plot** board"],"name":false}]
+
+ITEM210 VERIFY: FAIL - 9/11 failed

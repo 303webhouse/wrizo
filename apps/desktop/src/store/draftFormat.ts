@@ -1,3 +1,5 @@
+import { readLead, runsOfMark, stripLine, BLOCK_TOKEN } from './markRuns';
+
 // AB2 S3 — Draft's tools, operating as markdown conventions directly on
 // `entry.text` (S0's ruling: no separate rich-text state). Pure string
 // transforms given the full text + a selection's linear character offsets
@@ -11,7 +13,7 @@
 // names itself" — the founder just named it). Underline joins from R1.
 export type FormatAction =
   | 'bold' | 'italic' | 'underline' | 'strike' | 'heading' | 'spacing'
-  | 'bullet' | 'quote' | 'indent' | 'outdent'
+  | 'bullet' | 'quote' | 'indent' | 'outdent' | 'block-indent' | 'block-outdent'
   | 'align-left' | 'align-center' | 'align-right';
 export type StructureKind = 'prose' | 'screenplay';
 
@@ -96,54 +98,17 @@ function wrapSelection(text: string, start: number, end: number, marker: string)
 //    and un-marks it - which is what makes the second press the inverse of the first.
 interface MarkRun { open: number; close: number }
 
-/** The runs of `mark` on one line: `open`/`close` are the indices of the two markers, the interior lies between.
- *  Underline and strike pair by `indexOf`. Bold and italic share the asterisk, so they are read from the star RUNS: a run of
- *  1 star is an italic marker, 2 a bold marker, 3 both (bold outermost) - which is what lets `***word***` be read as bold AND
- *  italic instead of as garbage, and lets Italic un-mark it back to `**word**`. */
+/** The runs of `mark` on one line: `open`/`close` are the indices of the two markers, the interior lies between. STEP 3: this is
+ *  no longer a reader of its own - it asks store/markRuns.ts, the ONE reader the decorator paints from, so what the formatter
+ *  toggles is exactly what the page shows as a run ("2 * 3 * 4" has no run in either, and `***x***` is both bold and italic in both). */
 function runsOf(line: string, mark: string): MarkRun[] {
-  const out: MarkRun[] = [];
-  if (mark !== '*' && mark !== '**') {
-    let i = 0;
-    while (i < line.length) {
-      const o = line.indexOf(mark, i);
-      if (o === -1) break;
-      const c = line.indexOf(mark, o + mark.length);
-      if (c === -1) break;
-      out.push({ open: o, close: c });
-      i = c + mark.length;
-    }
-    return out;
-  }
-  const ends: Array<{ pos: number; len: number }> = [];
-  for (let i = 0; i < line.length; i++) {
-    if (line[i] !== '*') continue;
-    let j = i;
-    while (j < line.length && line[j] === '*') j++;
-    if (j - i <= 3) ends.push({ pos: i, len: j - i });
-    i = j - 1;
-  }
-  const bold = mark === '**';
-  const eligible = ends.filter(t => (bold ? t.len >= 2 : t.len === 1 || t.len === 3));
-  for (let k = 0; k + 1 < eligible.length; k += 2) {
-    const a = eligible[k];
-    const b = eligible[k + 1];
-    if (bold) out.push({ open: a.pos, close: b.pos + b.len - 2 });
-    else out.push({ open: a.len === 3 ? a.pos + 2 : a.pos, close: b.pos });
-  }
-  return out;
+  return runsOfMark(line, mark);
 }
 
-const LEAD_TOKENS: readonly string[] = ['>< ', '>> ', '> ', '- ', '# ', '## '];
-
-/** How many leading characters of `line` are structure, not prose: tabs and line directives, in any order. */
+/** How many leading characters of `line` are structure, not prose: tabs, line directives and a heading mark. Read by the ONE
+ *  reader (store/markRuns.ts readLead), which the decorator and Copy My Words use too. */
 function leadLength(line: string): number {
-  let i = 0;
-  for (;;) {
-    if (line[i] === '\t') { i++; continue; }
-    const tok = LEAD_TOKENS.find(t => line.startsWith(t, i));
-    if (!tok) return i;
-    i += tok.length;
-  }
+  return readLead(line).length;
 }
 
 interface Segment { a: number; b: number; ls: number; }
@@ -169,10 +134,9 @@ function selectedSegments(text: string, start: number, end: number): Segment[] {
 function toggleInline(text: string, start: number, end: number, mark: string): FormatResult {
   const ml = mark.length;
   if (start === end) {
-    if (text.slice(start - ml, start) === mark && text.slice(start, start + ml) === mark) {
-      const caret = start - ml;
-      return { text: text.slice(0, caret) + text.slice(start + ml), start: caret, end: caret };
-    }
+    // (An empty pair `**|**` is an ordinary run to the shared reader, so the caret-inside-a-run branch below removes it - and Italic
+    // on that same caret finds no italic run, so it inserts its own pair INSIDE (`***|***`) instead of stripping one star from each
+    // side of the bold pair, which the old adjacent-characters test did.)
     const ls = text.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
     let le = text.indexOf('\n', start);
     if (le === -1) le = text.length;
@@ -343,19 +307,9 @@ export const LINE_DIRECTIVE = {
 // If every touched line already has the token the press removes it from all; otherwise it adds it to those that lack it.
 // Alignment is exclusive: applying one drops the other, since a line cannot be both. Blank lines in a multi-line selection are
 // left blank; a caret on a lone blank line still acts on it, so the level can be set before typing.
-const DIRECTIVE_TOKENS: readonly string[] = ['>< ', '>> ', '> ', '- '];
-
 function leadTokens(line: string): { tokens: string[]; length: number } {
-  const tokens: string[] = [];
-  let i = 0;
-  for (;;) {
-    if (line[i] === '\t') { tokens.push('\t'); i++; continue; }
-    const tok = DIRECTIVE_TOKENS.find(t => line.startsWith(t, i));
-    if (!tok) break;
-    tokens.push(tok);
-    i += tok.length;
-  }
-  return { tokens, length: i };
+  const lead = readLead(line, { headings: false });
+  return { tokens: lead.tokens.map(t => t.text), length: lead.length };
 }
 
 function touchedLines(text: string, start: number, end: number): Array<{ ls: number; le: number }> {
@@ -473,8 +427,9 @@ function paragraphScope(lines: string[], selStart: number, selEnd: number) {
   // that line — the ordinary editor convention.
   if (selEnd > selStart && last > first && selEnd === startsAt[last]) last--;
 
-  if (hasInk(first)) while (first > 0 && hasInk(first - 1)) first--;
-  if (hasInk(last)) while (last < lines.length - 1 && hasInk(last + 1)) last++;
+  // NICK'S RULING (2026-09-25, chat 1's flag): ENTER MAKES NO PARAGRAPH GAP, SO A LINE IS A PARAGRAPH. The scope used to walk up and
+  // down across every consecutive inked line, so Tab on one of three lines indented all three. It is now the caret's own line - or,
+  // with a selection, each selected line - and nothing beside it. (The two walks that stood here are removed, not disabled.)
 
   const affected = new Set<number>();
   for (let i = first; i <= last; i++) if (hasInk(i)) affected.add(i);
@@ -510,7 +465,10 @@ function outdentParagraphs(text: string, selStart: number, selEnd: number): Form
   const TAB = LINE_DIRECTIVE.indent;
   const removed = new Set<number>();
   const nextLines = lines.map((l, i) => {
-    if (affected.has(i) && l.startsWith(TAB)) { removed.add(i); return l.slice(TAB.length); }
+    if (affected.has(i)) {
+      const tab = readLead(l, { headings: false }).tokens.find(t => t.kind === 'tab');
+      if (tab) { removed.add(i); return l.slice(0, tab.start) + l.slice(tab.end); }
+    }
     return l;
   });
   const next = nextLines.join('\n');
@@ -537,7 +495,9 @@ function indentParagraphs(text: string, selStart: number, selEnd: number): Forma
   const { affected, lineOf } = paragraphScope(lines, selStart, selEnd);
 
   const TAB = LINE_DIRECTIVE.indent;
-  const next = lines.map((l, i) => (affected.has(i) ? TAB + l : l)).join('\n');
+  // the tab goes AFTER any block-indent tokens (the block is outermost; the first-line tab sits inside it)
+  const blockLen = (l: string) => { let n = 0; while (l.startsWith(BLOCK_TOKEN, n)) n += BLOCK_TOKEN.length; return n; };
+  const next = lines.map((l, i) => (affected.has(i) ? l.slice(0, blockLen(l)) + TAB + l.slice(blockLen(l)) : l)).join('\n');
   // Every tab inserted at or above a position pushes it right by one, so the
   // caret keeps the character it was sitting on — including a caret parked at
   // the very start of an indented line, which lands after its new tab.
@@ -548,6 +508,22 @@ function indentParagraphs(text: string, selStart: number, selEnd: number): Forma
     return n * TAB.length;
   };
   return { text: next, start: selStart + shift(selStart), end: selEnd + shift(selEnd) };
+}
+
+// STEP 3 - THE BLOCK INDENT (Nick: "TAB + 1 indents the whole paragraph"). One `>| ` token per level at the front of every line of
+// the paragraph (the same paragraph scope the tab indent uses, shared above), so a wrapped line follows the block. Outdent removes
+// ONE token, floored at zero. Read and painted through the same line reader as every other structure token.
+function blockShift(text: string, selStart: number, selEnd: number, dir: 1 | -1): FormatResult {
+  const lines = text.split('\n');
+  const { affected } = paragraphScope(lines, selStart, selEnd);
+  const objs: Array<{ ls: number; le: number }> = [];
+  let off = 0;
+  lines.forEach((l, i) => { if (affected.has(i)) objs.push({ ls: off, le: off + l.length }); off += l.length + 1; });
+  return rewriteLeads(text, selStart, selEnd, objs, (tokens) => {
+    if (dir === 1) return [BLOCK_TOKEN, ...tokens];
+    const at = tokens.indexOf(BLOCK_TOKEN);
+    return at === -1 ? tokens : [...tokens.slice(0, at), ...tokens.slice(at + 1)];
+  });
 }
 
 const ALIGN_PREFIXES = [LINE_DIRECTIVE['align-center'], LINE_DIRECTIVE['align-right']] as const;
@@ -609,6 +585,8 @@ export function applyFormat(text: string, selStart: number, selEnd: number, acti
   // including the way back and the outdent question held for Nick's word.
   if (action === 'indent') return indentParagraphs(text, start, end);
   if (action === 'outdent') return outdentParagraphs(text, start, end);
+  if (action === 'block-indent') return blockShift(text, start, end, 1);
+  if (action === 'block-outdent') return blockShift(text, start, end, -1);
   if (action === 'align-center') return toggleLines(text, start, end, LINE_DIRECTIVE['align-center'], ALIGN_PREFIXES);
   if (action === 'align-right') return toggleLines(text, start, end, LINE_DIRECTIVE['align-right'], ALIGN_PREFIXES);
   // 'align-left' is the UNMARKED state, not a third token: clearing both
@@ -623,24 +601,8 @@ export function applyFormat(text: string, selStart: number, selEnd: number, acti
 // mirroring draftDecoration.ts's own inline-scan priority) so a bold run's
 // asterisks are never left half-stripped by the italic pass.
 export function stripMarkdownConventions(text: string): string {
-  const noHeadings = text
-    .split('\n')
-    .map(line => {
-      // STEP 2: prefixes stack in any order (`\t- `, `- > `, `>< # `), so they are stripped as a LOOP, not one fixed chain.
-      // Alignment is tried before quote for the reason given above (`>< ` and `>> ` both begin with `>`).
-      let l = line;
-      for (;;) {
-        const n = l.replace(/^(?:#{1,2} |>< |>> |> |- |\t)/, '');
-        if (n === l) return l;
-        l = n;
-      }
-    })
-    .join('\n');
-  return noHeadings
-    .replace(/\*\*([\s\S]+?)\*\*/g, '$1')
-    // ITEM 83 M4 (R1/F2) — underline's `__word__` strips beside bold/italic.
-    // Placed after `**` (the pre-existing order rule: the longer mark first)
-    // and before the single `*`, for the same reason.
-    .replace(/__([\s\S]+?)__/g, '$1')
-    .replace(/\*([\s\S]+?)\*/g, '$1');
+  // STEP 3: per line, through the ONE reader (store/markRuns.ts stripLine): structure tokens in any order, then only the emphasis
+  // markers the page actually paints - so "2 * 3 * 4" exports as it shows, `~~strike~~` is stripped like the rest (the old
+  // regex copy never stripped it), and a `>| ` block token goes with the other structure.
+  return text.split('\n').map(stripLine).join('\n');
 }
