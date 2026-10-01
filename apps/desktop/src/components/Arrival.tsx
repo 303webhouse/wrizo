@@ -6,6 +6,7 @@ import { setWritingSettings } from '../store/writingSettings';
 import { getFirstRunComplete, setFirstRunComplete } from '../store/firstRun';
 import { getResumeTarget } from '../store/resume';
 import { apiLogin, apiRegister, type AuthUser } from '../store/api';
+import { useDeskLexicon } from '../store/deskLexicon';
 import { useDeskFrameViewport } from './DeskFrame';
 
 // HB1 S1/S5 — the Threshold. Route '/' for every boot, authed or not:
@@ -30,10 +31,13 @@ type Stage = 'doors' | 'signin' | 'account';
 
 export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; onAuthed: (user: AuthUser) => void }) {
   const navigate = useNavigate();
+  const { t } = useDeskLexicon();
   const [stage, setStage] = useState<Stage>('doors');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // ITEM 224 — sign-up by invite code, until launch.
+  const [inviteCode, setInviteCode] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -97,7 +101,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   const handleCreate = async () => {
     if (busy) return;
     setError(''); setBusy(true);
-    const res = await apiRegister(email.trim(), password, name.trim());
+    const res = await apiRegister(email.trim(), password, name.trim(), inviteCode.trim());
     setBusy(false);
     if (res.ok && res.user) onAuthed(res.user);
     else setError(res.error || 'Could not create your account');
@@ -153,6 +157,8 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
             <input className="wz-field" type="text" placeholder="what should we call you?" autoComplete="given-name" value={name} onChange={e => setName(e.target.value)} />
             <input className="wz-field" type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
             <input className="wz-field" type="password" placeholder="choose a password" autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} />
+            {/* ITEM 224 — sign-up by invite code, until launch. */}
+            <input className="wz-field" type="text" placeholder={t('authInviteCodePlaceholder')} autoComplete="off" value={inviteCode} onChange={e => setInviteCode(e.target.value)} />
           </div>
           {error && <div className="wz-error">{error}</div>}
           <button type="button" className="wz-btn" disabled={busy} onClick={handleCreate}>{busy ? 'one moment…' : 'Create my account'}</button>

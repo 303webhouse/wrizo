@@ -133,6 +133,33 @@ function client(): Anthropic {
   return new Anthropic({ apiKey: env.tutorApiKey!, baseURL: env.tutorBaseUrl, maxRetries: 0 });
 }
 
+// ITEM 224 — a per-person daily budget, ON TOP OF rateLimit's existing
+// per-IP window above. INTERIM: in memory, no schema, resets on restart —
+// named as such because it is a stopgap, not the lasting shape (a restart
+// gives every writer a fresh day for free; acceptable for a pre-launch
+// invite-gated tester population, not for the account-scale load this will
+// eventually see). Keyed by session userId (never by IP — that is the OTHER
+// limiter's job), and keyed again by a UTC date string, so a count simply
+// never finds its old entry once the day turns over — no timer, no cron.
+const dailyTutorUsage = new Map<string, { day: string; count: number }>();
+function todayKey(): string {
+  return new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD', UTC
+}
+// Returns true if the call may proceed, incrementing the count as a side
+// effect — checked-and-incremented together so two requests racing the same
+// millisecond cannot both read "one under budget" and both proceed.
+function consumeTutorBudget(userId: string): boolean {
+  const day = todayKey();
+  const entry = dailyTutorUsage.get(userId);
+  if (!entry || entry.day !== day) {
+    dailyTutorUsage.set(userId, { day, count: 1 });
+    return true;
+  }
+  if (entry.count >= env.tutorDailyBudget) return false;
+  entry.count += 1;
+  return true;
+}
+
 tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response) => {
   // Offline/unconfigured is a first-class, expected state (the brief's own
   // words) — respond plainly, never a 500, never a crash at boot.
@@ -143,6 +170,16 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
 
   if (!isValidBody(req.body)) {
     res.status(400).json({ error: 'Invalid conversation payload' });
+    return;
+  }
+
+  // ITEM 224 — the per-person daily budget. requireAuth (above, via
+  // tutorRouter.use) guarantees req.session.userId by the time any handler
+  // runs. Checked after validation (a malformed payload never consumes
+  // budget) but before the model is actually called (a request that WILL
+  // reach the model is exactly the cost this protects against).
+  if (!consumeTutorBudget(req.session.userId!)) {
+    res.status(429).json({ error: 'Daily Tutor limit reached — try again tomorrow.' });
     return;
   }
 

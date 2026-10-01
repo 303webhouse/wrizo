@@ -16,6 +16,30 @@ if (env.isProd) {
   app.set('trust proxy', 1);
 }
 
+// ITEM 224 — basic response headers, on every response. No CSP yet (its own
+// measured ticket) — these four are each a single, uncontroversial default
+// with no app behaviour to break:
+//   - nosniff: the browser never second-guesses a response's declared
+//     Content-Type (blocks a classic MIME-sniffing-to-script vector).
+//   - X-Frame-Options: DENY — this app is never meant to render inside
+//     another site's frame (no embed feature exists).
+//   - Referrer-Policy: only the origin crosses a navigation to another
+//     site; the full path (which can carry a page id) never leaks.
+//   - Strict-Transport-Security: tells a browser that has already reached
+//     this host over HTTPS to never try plain HTTP again. Set ONLY in
+//     production — Railway terminates TLS; local dev is plain HTTP, and a
+//     browser ignores HSTS on a non-HTTPS response anyway, so this is
+//     belt-and-suspenders, not load-bearing, in dev.
+app.use((_req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  if (env.isProd) {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  next();
+});
+
 // ITEM 203 - the limit is a NUMBER the error handler can hand back, and the client mirrors it (store/sync.ts).
 // 'bytes' parses '5mb' as 5 * 1024 * 1024 = 5,242,880 - the boundary measured on this very middleware.
 const BODY_LIMIT = '5mb';

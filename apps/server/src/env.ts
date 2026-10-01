@@ -56,4 +56,18 @@ export const env = {
   // 512 to 700 at TU2 S1 to give the new provider/model pairing a little
   // more headroom; still deliberately short.
   tutorMaxTokens: Number(process.env.TUTOR_MAX_TOKENS) || 700,
+  // ITEM 224 — sign-up by invite code, until launch. A comma-separated list
+  // of codes Nick sets in Railway (never committed — the var itself is the
+  // secret, same posture as every other env-only credential in this file).
+  // Deliberately NOT required(): an unset/empty var means NO codes are
+  // configured, and registration fails CLOSED (auth.ts answers 503), never
+  // silently open — the one way this gate could fail would be the wrong
+  // direction for a security control. Compared verbatim (trimmed, no case
+  // folding) — Nick's own typed format in Railway is respected exactly.
+  inviteCodes: (process.env.INVITE_CODES || '').split(',').map((c) => c.trim()).filter(Boolean),
+  // ITEM 224 — the Tutor's per-person daily budget, ON TOP of the existing
+  // per-IP rate limit (rateLimit.ts's own 10/min on the whole route). The
+  // in-memory counter itself lives in tutor.ts; this is only the threshold,
+  // configurable without a redeploy of the default.
+  tutorDailyBudget: Number(process.env.TUTOR_DAILY_BUDGET) || 50,
 };
