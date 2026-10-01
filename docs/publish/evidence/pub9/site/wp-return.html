@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8"><meta name="referrer" content="no-referrer"><title>Wrizo return page (probe)</title>
+<script>
+// PROPOSAL, demonstrated: read the credentials once, strip them from the address bar at once, never log them.
+(function () {
+  const all = new URLSearchParams(location.search + '&' + location.hash.replace(/^#[^?]*\??/, ''));
+  const got = { site_url: all.get('site_url'), user_login: all.get('user_login'), hasPassword: !!all.get('password'), success: all.get('success') };
+  window.__wp9Captured = { password: all.get('password') };      // kept in memory only (the real app would store it on the device)
+  window.__wp9Before = location.href.replace(/password=[^&#]*/, 'password=%E2%80%B9redacted%E2%80%BA');
+  history.replaceState(null, '', location.pathname);               // strip ?query and #fragment from the address bar
+  window.__wp9After = location.href;
+  window.__wp9Seen = got;
+})();
+</script>
+<p>Returned.</p>

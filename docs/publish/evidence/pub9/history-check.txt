@@ -1,0 +1,16 @@
+A7 · Does the password survive history.replaceState in the browser's History database?
+Run: node history-check.mjs (full Chromium, "new headless", persistent profile), 2026-09-30.
+The value used was a canary (HISTORYCANARY0000), not a real credential; shown below as ‹canary›.
+(The lighter headless shell keeps no History file at all, so it could not answer this; full Chromium could.)
+
+Output:
+  address bar after replaceState: https://wrizo.test:5443/wp-return.html
+  history file: true
+
+Rows in Default/History → urls (url, visit_count):
+  clean           https://wrizo.test:5443/probe.html 2
+  CANARY-PRESENT  https://wrizo.test:5443/wp-return.html?site_url=https%3A%2F%2Fwp.test%3A8443&user_login=probe-admin&password=‹canary› 1
+  clean           https://wrizo.test:5443/wp-return.html 1
+
+Reading: replaceState cleaned the address bar, but the arrival URL, password included, is still
+stored in the browser's history. Stripping is necessary but not sufficient; rotate on arrival (A3).
