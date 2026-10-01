@@ -23710,3 +23710,11 @@ TOOLS’ storage durability experiment (CDP tab-close survival, `item-storage-s2
 INK’s two accessibility live checks (`ebc3b6f`, `22e6eaf`) → INK’s server-hardening proofs if it asks.
 **As recorded above, escexit is STILL the live run blocking the pair — this desk reads that as the first
 item of this order, not yet finished, rather than a repeat of an already-closed turn.**
+
+## BATCH EIGHT PAIR — RE-LAUNCHED, BOX GENUINELY FREE — 2026-09-30 (chat 1)
+
+**RE-CHECKED after writing the last few entries: 0 harness processes, 0 `ws-runtime-verify` browsers —
+FIX’s escexit run finished in that interval.** **THE PAIR RE-LAUNCHED on `batch-eight` @ `9c8d5c3`, under
+the SAME grant** (`chat1-batch8-pair-9c8d5c3-20260930`, already on file; no rewrite needed). **Pre-flight
+this time: “0 harness browser(s), 0 owner(s)… nothing to reap.”** Running now; both legs to be reported
+when they finish.
