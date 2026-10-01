@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { boardName } from '../store/entryText';
+import { boardName, plainLines } from '../store/entryText';
 import {
   getJournalEntry, saveBoardBoxes, flushNow, getDrawer, getProject,
   patchJournalEntry, getBoardsConnecting, generateId, createLooseHomePage, pinPageToBoard,
@@ -170,8 +170,8 @@ function BoardInkBox({ box, pageWidthPx }: { box: Box; pageWidthPx: number }) {
 // words), never a truncation of what's actually STORED, only of what's
 // DISPLAYED on the card's own quiet face.
 function notecardExcerpt(text: string): { title: string; excerpt: string } {
-  const trimmed = text.trim();
-  const lines = trimmed.split('\n').filter(l => l.trim());
+  // item 210: a card's face is plain text - the same reader as every other derived title
+  const lines = plainLines(text);
   const title = lines[0] ? lines[0].slice(0, 100) : '';
   const excerpt = lines.slice(1, 4).join(' ').slice(0, 160);
   return { title, excerpt };
