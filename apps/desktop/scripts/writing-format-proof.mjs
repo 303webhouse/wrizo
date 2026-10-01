@@ -136,6 +136,23 @@ function run(mod) {
   check('EXCERPTS: the lines a card face and a survey read are plain, blank and markup-only lines skipped', plainLines('**Title**\n\n- first *point*\n****\n> a quote'), ['Title', 'first point', 'a quote']);
   check('EXCERPTS: the post-sprint echo line is plain text too', substantialLines('**short**\nthis is a **long enough** line to echo back to the writer', 24), ['this is a long enough line to echo back to the writer']);
 
+  // ---- THE INTERIM REVEAL RULE: a run's markers show only while the caret TOUCHES a marker ----
+  {
+    const T = 'Start **BOLD** end';                      // markers at [6,8] and [12,14]; the word is 8..12
+    const shown = (c) => /<span class="md-mark">\*\*<\/span>/.test(decorateMarkdownForCard(T, c));
+    const all = []; for (let c = 0; c <= T.length; c += 1) all.push(shown(c) ? c : null);
+    check('REVEAL: over every caret position, the bold markers show EXACTLY when the caret is inside or at an edge of a marker span - 6,7,8 and 12,13,14 - and nowhere inside the word (9,10,11)', all.filter(x => x !== null), [6, 7, 8, 12, 13, 14]);
+    check('REVEAL: no caret (a resting card, a selection, Free Write) shows nothing', shown(null), false);
+    const N = '**TESTING** THE *DATABASE* SYNC';             // Nick's screenshot
+    const vis = (c) => visible(decorateMarkdownForCard(N, c));
+    check('REVEAL: Nick\'s case - a caret in the middle of "TESTING" shows NO asterisks anywhere on the line', vis(5), 'TESTING THE DATABASE SYNC');
+    check('REVEAL: a caret at the END of "TESTING" (the edge a Backspace... or a Delete acts at) shows that word\'s markers and only that word\'s', vis(9), '**TESTING** THE DATABASE SYNC');
+    check('REVEAL: nested marks reveal per run - in `__*x*__` a caret at 2 touches BOTH opening markers; at 3 (after x) only the italic\'s', [visible(decorateMarkdownForCard('__*x*__', 2)), visible(decorateMarkdownForCard('__*x*__', 3))], ['__*x*__', '*x*']);
+    check('REVEAL: an empty pair `****` with the caret between shows itself (the writer sees what a press inserted)', visible(decorateMarkdownForCard('****', 2)), '****');
+    const B = ['a **b** c', '***bi*** x', '__*u*__', '~~s~~ and *i*', '2 * 3 * 4', '>| - **x**'];
+    check('REVEAL: every character is still emitted exactly once at EVERY caret position (the 1:1 count the caret restore depends on)', B.every(t => { for (let c = 0; c <= t.length; c += 1) { if (chars(decorateMarkdownForCard(t, c)).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&') !== t) return false; } return true; }), true);
+  }
+
   // ---- STRIP ----
   check('STRIP: "Copy My Words" removes stacked prefixes in ANY order (bullet inside an indent, quote inside a bullet)', stripMarkdownConventions('\t- one\n- > two\n>< **three**'), 'one\ntwo\nthree');
   // ---- BLOCK INDENT, FIRST-LINE LEVELS, THE LINE READER (step 3, Nick's Tab ruling) ----
@@ -216,6 +233,8 @@ if (process.argv.includes('--mutants')) {
     ['TITLES: firstLine no longer goes through the reader', 'entryText.ts', (s) => s.replace('return firstPlainLine(text) || \'Untitled\';', "return (text.split('\\n').map(l => l.trim()).find(Boolean)) || 'Untitled';")],
     ['TITLES: markup-only lines are not skipped', 'entryText.ts', (s) => s.replace("return text.split('\\n').map(l => stripLine(l.trimStart()).trim()).filter(Boolean);", "return text.split('\\n').map(l => stripLine(l.trimStart()).trim());")],
     ['TITLES: the board name keeps its own copy', 'entryText.ts', (s) => s.replace("const first = firstPlainLine(text ?? '');", "const first = (text ?? '').split('\\n').map(l => l.trim()).find(Boolean);")],
+    ['REVEAL: markers show anywhere inside the run (the old rule)', 'draftDecoration.ts', (s) => s.replace('const reveal = touches(r.open) || touches(r.close);', 'const reveal = caret !== null && caret >= r.open && caret <= end;')],
+    ['REVEAL: only the opening marker is watched', 'draftDecoration.ts', (s) => s.replace('const reveal = touches(r.open) || touches(r.close);', 'const reveal = touches(r.open);')],
     ['DECORATOR: marks are not nested (a run inside another is dropped)', 'draftDecoration.ts', (s) => s.replace(/kids\.push\(within\[i \+ 1\]\);\s*i\+\+;/, 'i++;')],
   ];
   for (const [name, file, fn] of M) {
