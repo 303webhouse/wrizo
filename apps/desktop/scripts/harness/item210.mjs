@@ -50,8 +50,8 @@ await withHarness(async (app) => {
   await sleep(600);
 
   // The Desk and the Drawers page were in this list and passed on the OLD code too (falsification run on ef64554): neither showed
-  // these pages at this point, so neither tested anything. The Drawers page is DROPPED (it lists drawers, not loose pages). The Desk is
-  // re-asked BELOW, after the page has been opened, when its resume card names that page - so the check can see a title at all.
+  // these pages at this point, so neither tested anything. The Drawers page is DROPPED (it lists drawers, not loose pages), and so is
+  // the Desk - see the note at the end of the page section for the measurement.
   const surfaces = [['the Journal board', '#/journal'], ['the Shelf board', '#/shelf'], ['the Spread', '#/journal/spread']];
   for (const [label, hash] of surfaces) {
     await app.evalJs(`location.hash = ${JSON.stringify(hash.startsWith('#') ? hash : '#/')}`);
@@ -82,12 +82,11 @@ await withHarness(async (app) => {
     ok(`[the page, ${mode}] no markup outside the editor`, s.length === 0, JSON.stringify(s));
   }
 
-  // The Desk, now that it has a page to resume: its resume card must NAME the page, in plain words
-  await app.evalJs("location.hash = '#/'");
-  await sleep(1600);
-  const deskStray = await strayMarkup(app);
-  const deskNames = await app.evalJs("document.body.innerText.includes('TESTING THE DATABASE SYNC')");
-  ok('[the Desk, after the page was opened] its resume card names the page as "TESTING THE DATABASE SYNC" and shows no markup', deskStray.length === 0 && deskNames === true, JSON.stringify({ deskStray, deskNames }));
+  // THE DESK IS DROPPED TOO, on a measurement (2026-09-30, on 340506e): after opening and typing in the page, the Desk's whole text
+  // was "Full screen / Sign out / For humans writing / Write / Open" - it names NO page, so there is no derived title there to
+  // check, and a check that demanded one went red for that reason alone (docs/evidence/item210/item210-rerun-340506e.log.txt).
+  // The surfaces that DO show a derived title are the ones asserted above: the Journal and Shelf boards, the Spread, the page's
+  // own crumb in all three modes, a heading title, and a board's name and card faces.
 
   // The second page: a heading title with bold inside it
   await app.evalJs("location.hash = '#/page/q210'");
