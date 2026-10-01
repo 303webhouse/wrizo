@@ -23867,3 +23867,38 @@ own intent.
 confirmed clean after. Grant cleared.**
 
 **STOPPED, per the rule — not retried blind.**
+
+## AFTER THE RESTART: 207b DROPPED FROM BATCH EIGHT, THE BRANCH REBUILT (b00de9d); ITEMS 228–229 — 2026-10-01 11:05 (chat 1)
+
+**NICK RESTARTED THE COMPUTER and left; Fable’s unattended instructions follow.** Boot confirmed
+(`LastBootUpTime` 10:49 local), 0 harness processes, no grant on file.
+
+**BACKUPS: ALREADY DONE AND RECORDED** (entry above: `wrizo-backup` deployed, `pg_dump 18.6`, upload
+succeeded). Nothing to redo.
+
+**207b DROPPED (Fable): its classifier flips between directions (the `item207b` FAIL, recorded above), and
+device fonts do not work on Nick’s phone anyway.** **`batch-eight` REBUILT FROM `9695504` with 207 phase 1
+(`item207-fonts` @ `5653417`) IN PLACE OF `item207b-device-fonts`, everything else as at `1b3c1c8`.**
+Roster, 10 steps: r3 @ `b4d0f63` · 207 @ `5653417` · 204 storage @ `13cd415` · 213 @ `c648c56` · 215 @ `3034f90` ·
+217 @ `cbd4dc6` · 163 @ `71ee427` · 138 @ `5318b12` · FIX parks `84448c1` + `e3dc7a6` · B-I-U interim @ `2e2a6b2`.
+**A CHANGE OF METHOD, STATED: the two park commits were CHERRY-PICKED, not merged** — the park branch
+was built off the old `batch-eight` and carries BOTH 207b’s and 195’s ancestry (checked: `6c09ea5` and
+`c59fc37` are both ancestors of `e3dc7a6`/`84448c1`), so merging it would have re-imported them (the leak
+that already happened once with 195). Both commits touch ONLY `scripts/harness` (cd1, cd2, cd4, fx3, fx4).
+**Verified clean of both: no `fontDetect`/`item207b`/`item195`/sliver-grip file in the diff against `9695504`,
+and 195’s CSS variables are absent from `index.css`.** Mechanical-union conflicts, same three as before
+(`types/index.ts` 207/204 blocks byte-for-byte; `persistence.ts` imports; `CascadePanels.tsx` import
+specifiers) — resolved by the same rule, nothing else edited. **`tsc` x2 and `build:web` exit 0.**
+Pushed `batch-eight` @ `b00de9d` (forced replacement).
+
+**REGISTERED:**
+- **ITEM 228 — 207b’s `classifyGeneric` (Verdana/Tahoma vs real serifs; it flipped between directions)** —
+  owner TOOLS, AFTER the trip. Device fonts (207b) stay out of Batch Eight.
+- **ITEM 229 — 195’s FOLLOW-UP: the design call of which law yields** (clearing the strip vs never overlapping
+  the paper) — owner TOOLS, after the trip. *(Fable asked for this when 195 was dropped; I had not
+  registered it — now done.)*
+Registry: next free **230**.
+
+**NEXT (Fable): the pair, CHUNKED, ≤20 files per chunk, same stamp throughout, 0 harness processes
+between chunks; default leg then parked. A real FAIL, or a launch crash that recurs after ONE swept re-run
+of that chunk, STOPS everything until Nick is back. Clean → deploy on Nick’s word (rollback `8223b29`).**
