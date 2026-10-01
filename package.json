@@ -14,5 +14,11 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "pnpm": {
+    "overrides": {
+      "qs": ">=6.16.0",
+      "body-parser": ">=2.3.0"
+    }
+  }
 }
