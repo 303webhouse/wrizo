@@ -1,0 +1,846 @@
+## AXE VIOLATIONS BY RULE
+
+### aria-required-children [critical] Certain ARIA roles must contain particular children | screens=14 nodes=34 | ['flux/desktop', 'flux/phone', 'plateau/desktop', 'plateau/phone']
+   screens: board, page-draft, page-freewrite, panel-drawers, panel-journal, panel-log, panel-page, panel-plan, panel-settings, panel-shelf, panel-themes, panel-trash, publish-dialog, tutor-open
+   - [plateau/desktop/page-freewrite] .desk-mode-strip :: <div class="desk-mode-strip desk-mode-strip--spread" role="tablist" aria-label="Writing mode"> :: Fix any of the following: /   Element has children which are not allowed: button
+   - [plateau/desktop/board] .board-mode-strip :: <div class="board-mode-strip" role="tablist" aria-label="Board mode" style="display: flex; align-items: center :: Fix any of the following: /   Element has children which are not allowed: button
+   - [plateau/phone/page-freewrite] .mode-tabs :: <div class="mode-tabs" role="tablist" aria-label="Writing mode"> :: Fix any of the following: /   Element has children which are not allowed: button[aria-disabled], button
+
+### color-contrast [serious] Elements must meet minimum color contrast ratio thresholds | screens=17 nodes=69 | ['flux/desktop', 'flux/phone', 'plateau/desktop', 'plateau/phone']
+   screens: board, drawers, journal, page-draft, page-freewrite, panel-drawers, panel-journal, panel-page, panel-plan, panel-settings, panel-shelf, panel-themes, panel-trash, publish-dialog, shelf, trash, tutor-open
+   - [plateau/desktop/page-freewrite] .crumb-item :: <span class="crumb-item">The Long Winter</span> :: Fix any of the following: /   Element has insufficient color contrast of 3.87 (foreground color: #80766a, background color: #1f1a16, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1
+   - [plateau/desktop/board] .crumb-here :: <button type="button" class="crumb-here crumb-rename-btn" title="Rename this board">Chapter beats</button> :: Fix any of the following: /   Element has insufficient color contrast of 2 (foreground color: #b5a998, background color: #efefef, font size: 10.0pt (13.3333px), font weight: normal). Expected contrast ratio of 4.5:1
+   - [plateau/desktop/board] .board-telos :: <div class="board-telos" data-board-telos="true">The plan serves the page.</div> :: Fix any of the following: /   Element has insufficient color contrast of 3.87 (foreground color: #80766a, background color: #1f1a16, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1
+   - [plateau/desktop/drawers] .desk-rail-catch > .desk-rail-label :: <span class="desk-rail-label">Catch</span> :: Fix any of the following: /   Element has insufficient color contrast of 4.49 (foreground color: #80766a, background color: #110600, font size: 6.8pt (9px), font weight: normal). Expected contrast ratio of 4.5:1
+   - [plateau/desktop/drawers] button[title="Journal"] > .desk-rail-label :: <span class="desk-rail-label">Journal</span> :: Fix any of the following: /   Element has insufficient color contrast of 4.49 (foreground color: #80766a, background color: #110600, font size: 6.8pt (9px), font weight: normal). Expected contrast ratio of 4.5:1
+   - [plateau/desktop/drawers] button[title="Shelf"] > .desk-rail-label :: <span class="desk-rail-label">Shelf</span> :: Fix any of the following: /   Element has insufficient color contrast of 4.49 (foreground color: #80766a, background color: #110600, font size: 6.8pt (9px), font weight: normal). Expected contrast ratio of 4.5:1
+   - [plateau/phone/page-freewrite] button[title="Drawers"] > .desk-rail-label :: <span class="desk-rail-label">Drawers</span> :: Fix any of the following: /   Element has insufficient color contrast of 4.49 (foreground color: #80766a, background color: #110600, font size: 6.8pt (9px), font weight: normal). Expected contrast ratio of 4.5:1
+   - [plateau/phone/page-freewrite] .mode-wordcount :: <div class="mode-wordcount mode-dissolve">33 words</div> :: Fix any of the following: /   Element has insufficient color contrast of 3.48 (foreground color: #8a7c68, background color: #f3ede1, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1
+
+### aria-hidden-focus [serious] ARIA hidden element must not be focusable or contain focusable elements | screens=15 nodes=56 | ['flux/desktop', 'plateau/desktop']
+   screens: board, journal, page-draft, page-freewrite, panel-drawers, panel-journal, panel-log, panel-page, panel-plan, panel-settings, panel-shelf, panel-themes, panel-trash, shelf, trash
+   - [plateau/desktop/page-freewrite] .wz-sliver-panel :: <div class="wz-sliver-panel chrome-fade desk-dissolve" aria-hidden="true" data-open="false" data-popout-hold=" :: Fix all of the following: /   Focusable content should be disabled or be removed from the DOM
+   - [plateau/desktop/page-freewrite] .wz-tutor-panel :: <div class="wz-tutor-panel" aria-hidden="true" data-open="false" data-docked="false"> :: Fix all of the following: /   Focusable content should be disabled or be removed from the DOM
+
+### scrollable-region-focusable [serious] Scrollable region must have keyboard access | screens=1 nodes=2 | ['flux/phone', 'plateau/phone']
+   screens: journal
+   - [plateau/phone/journal] .board-text :: <div class="board-text board-pin"><div class="board-pin-badge">Board pin</div><div class="board-pin-title">Mor :: Fix any of the following: /   Element should have focusable content /   Element should be focusable
+
+### region [moderate] All page content should be contained by landmarks | screens=21 nodes=252 | ['flux/desktop', 'flux/phone', 'plateau/desktop', 'plateau/phone']
+   screens: arrival-signed-in, arrival-signed-out, board, drawers, journal, page-draft, page-freewrite, panel-drawers, panel-journal, panel-log, panel-page, panel-plan, panel-settings, panel-shelf, panel-themes, panel-trash, publish-dialog, shelf, sign-in, trash, tutor-open
+   - [plateau/desktop/arrival-signed-out] .wz-logo :: <img class="wz-logo" src="/brand/wrizo-logo.png" alt="Wrizo"> :: Fix any of the following: /   Some page content is not contained by landmarks
+   - [plateau/desktop/arrival-signed-out] .wz-tagline :: <div class="wz-tagline">For humans writing</div> :: Fix any of the following: /   Some page content is not contained by landmarks
+   - [plateau/desktop/sign-in] .wz-bighead :: <div class="wz-bighead">Welcome back.</div> :: Fix any of the following: /   Some page content is not contained by landmarks
+   - [plateau/desktop/sign-in] .wz-fieldcol :: <div class="wz-fieldcol"><input class="wz-field" type="email" placeholder="you@example.com" autocomplete="emai :: Fix any of the following: /   Some page content is not contained by landmarks
+   - [plateau/desktop/sign-in] .wz-secondary:nth-child(4) :: <div class="wz-secondary"><span class="wz-link">New here? Create an account</span></div> :: Fix any of the following: /   Some page content is not contained by landmarks
+   - [plateau/desktop/sign-in] .wz-secondary:nth-child(5) :: <div class="wz-secondary"><span class="wz-link">← back</span></div> :: Fix any of the following: /   Some page content is not contained by landmarks
+   - [plateau/desktop/page-freewrite] .chrome-top :: <div class="chrome-fade chrome-top sprint-nav"> :: Fix any of the following: /   Some page content is not contained by landmarks
+   - [plateau/desktop/page-freewrite] .mode-progress :: <div class="mode-progress"><div class="mode-ptrack"><div class="mode-pfill started" style="width: 13.2%;"></di :: Fix any of the following: /   Some page content is not contained by landmarks
+
+### landmark-one-main [moderate] Document should have one main landmark | screens=17 nodes=46 | ['flux/desktop', 'flux/phone', 'plateau/desktop', 'plateau/phone']
+   screens: board, drawers, journal, page-draft, page-freewrite, panel-drawers, panel-journal, panel-log, panel-page, panel-plan, panel-settings, panel-shelf, panel-themes, panel-trash, publish-dialog, shelf, trash
+   - [plateau/desktop/page-freewrite] html :: <html lang="en" data-theme="plateau" data-voice="serif" data-page="light" data-fade="on"> :: Fix all of the following: /   Document does not have a main landmark
+
+### page-has-heading-one [moderate] Page should contain a level-one heading | screens=16 nodes=42 | ['flux/desktop', 'flux/phone', 'plateau/desktop', 'plateau/phone']
+   screens: board, journal, page-draft, page-freewrite, panel-drawers, panel-journal, panel-log, panel-page, panel-plan, panel-settings, panel-shelf, panel-themes, panel-trash, publish-dialog, shelf, trash
+   - [plateau/desktop/page-freewrite] html :: <html lang="en" data-theme="plateau" data-voice="serif" data-page="light" data-fade="on"> :: Fix all of the following: /   Page must have a level-one heading
+
+## COLOR-CONTRAST NODES (axe)
+   plateau desktop page-freewrite     .crumb-item                                      fg=#80766a bg=#1f1a16 ratio=3.87 need=4.5:1 size=9.8pt (13px) normal
+   plateau desktop board              .crumb-here                                      fg=#b5a998 bg=#efefef ratio=2 need=4.5:1 size=10.0pt (13.3333px) normal
+   plateau desktop board              .board-telos                                     fg=#80766a bg=#1f1a16 ratio=3.87 need=4.5:1 size=9.0pt (12px) normal
+   plateau desktop drawers            .desk-rail-catch > .desk-rail-label              fg=#80766a bg=#110600 ratio=4.49 need=4.5:1 size=6.8pt (9px) normal
+   plateau desktop drawers            button[title="Journal"] > .desk-rail-label       fg=#80766a bg=#110600 ratio=4.49 need=4.5:1 size=6.8pt (9px) normal
+   plateau desktop drawers            button[title="Shelf"] > .desk-rail-label         fg=#80766a bg=#110600 ratio=4.49 need=4.5:1 size=6.8pt (9px) normal
+   plateau phone   page-freewrite     .desk-rail-catch > .desk-rail-label              fg=#80766a bg=#110600 ratio=4.49 need=4.5:1 size=6.8pt (9px) normal
+   plateau phone   page-freewrite     button[title="Journal"] > .desk-rail-label       fg=#80766a bg=#110600 ratio=4.49 need=4.5:1 size=6.8pt (9px) normal
+   plateau phone   page-freewrite     button[title="Shelf"] > .desk-rail-label         fg=#80766a bg=#110600 ratio=4.49 need=4.5:1 size=6.8pt (9px) normal
+   plateau phone   page-freewrite     button[title="Drawers"] > .desk-rail-label       fg=#80766a bg=#110600 ratio=4.49 need=4.5:1 size=6.8pt (9px) normal
+   plateau phone   page-freewrite     .mode-wordcount                                  fg=#8a7c68 bg=#f3ede1 ratio=3.48 need=4.5:1 size=9.8pt (13px) normal
+   plateau phone   board              .crumb-item                                      fg=#80766a bg=#1f1a16 ratio=3.87 need=4.5:1 size=9.8pt (13px) normal
+   plateau phone   journal            .board-pin-badge                                 fg=#96a05a bg=#fbf6ea ratio=2.6 need=4.5:1 size=6.8pt (9px) normal
+   plateau phone   journal            .board-pin-excerpt                               fg=#b5a998 bg=#fbf6ea ratio=2.14 need=4.5:1 size=9.0pt (12px) normal
+   plateau phone   drawers            .dz-move                                         fg=#635a51 bg=#1f1a16 ratio=2.55 need=4.5:1 size=8.3pt (11px) normal
+   flux    desktop board              .crumb-here                                      fg=#8fb4ac bg=#efefef ratio=1.96 need=4.5:1 size=10.0pt (13.3333px) normal
+   flux    phone   page-freewrite     .mode-wordcount                                  fg=#0b7c9e bg=#edf6f3 ratio=4.34 need=4.5:1 size=9.8pt (13px) normal
+   flux    phone   journal            .board-pin-badge                                 fg=#96a05a bg=#fbf6ea ratio=2.6 need=4.5:1 size=6.8pt (9px) normal
+   flux    phone   journal            .board-pin-excerpt                               fg=#8fb4ac bg=#fbf6ea ratio=2.09 need=4.5:1 size=9.0pt (12px) normal
+   flux    phone   drawers            .dz-move                                         fg=#567069 bg=#1f1a16 ratio=3.21 need=4.5:1 size=8.3pt (11px) normal
+
+## RAIL + MODE TABS (w x h)
+
+  plateau/desktop/page-freewrite
+    Free Write     desk-mode-tab.active                 95.9 x 33     44:UNDER  24:ok
+    Draft          desk-mode-tab                        64.8 x 33     44:UNDER  24:ok
+    Revise         desk-mode-tab                        67.6 x 33     44:UNDER  24:ok
+    Workshop       desk-mode-tab.deferred               93.3 x 33     44:UNDER  24:ok
+    Publish        desk-mode-tab                        74.4 x 33     44:UNDER  24:ok
+    Plan →         btn-quiet.page-plan-door             38.9 x 31     44:UNDER  24:ok
+    Pages          sprint-toggle-btn.active               60 x 25     44:UNDER  24:ok
+    Page           wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Plan           wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Drawers        wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Journal        wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Shelf          wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Settings       wz-strip-item                          82 x 46.1   44:ok  24:ok
+    Themes         wz-strip-item                          82 x 46.1   44:ok  24:ok
+    Trash          wz-strip-item                          82 x 46.1   44:ok  24:ok
+
+  plateau/desktop/board
+    Open           board-mode-tab.active                66.2 x 27     44:UNDER  24:ok
+    Storyboard     board-mode-tab                      121.4 x 27     44:UNDER  24:ok
+    Outline        board-mode-tab                       88.3 x 27     44:UNDER  24:ok
+    Page →         board-door                           75.2 x 25     44:UNDER  24:ok
+    Page           wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Plan           wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Drawers        wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Journal        wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Shelf          wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Settings       wz-strip-item                          82 x 46.1   44:ok  24:ok
+    Themes         wz-strip-item                          82 x 46.1   44:ok  24:ok
+    Trash          wz-strip-item                          82 x 46.1   44:ok  24:ok
+
+  plateau/phone/page-freewrite
+    Catch a though desk-rail-item.desk-rail-catch         78 x 48     44:ok  24:ok
+    Journal        desk-rail-item                         78 x 48     44:ok  24:ok
+    Shelf          desk-rail-item                         78 x 48     44:ok  24:ok
+    Drawers        desk-rail-item                         78 x 48     44:ok  24:ok
+    Library — comi desk-rail-item.deferred                78 x 48     44:ok  24:ok
+    Pages          sprint-toggle-btn.active               60 x 25     44:UNDER  24:ok
+    Plan →         btn-quiet.page-plan-door             38.9 x 31     44:UNDER  24:ok
+
+  plateau/phone/board
+    Catch a though desk-rail-item.desk-rail-catch         78 x 48     44:ok  24:ok
+    Journal        desk-rail-item                         78 x 48     44:ok  24:ok
+    Shelf          desk-rail-item                         78 x 48     44:ok  24:ok
+    Drawers        desk-rail-item                         78 x 48     44:ok  24:ok
+    Library — comi desk-rail-item.deferred                78 x 48     44:ok  24:ok
+    Open           board-mode-tab.active                66.2 x 27     44:UNDER  24:ok
+    Storyboard     board-mode-tab                      121.4 x 27     44:UNDER  24:ok
+    Outline        board-mode-tab                       88.3 x 27     44:UNDER  24:ok
+    Page →         board-door                           59.2 x 40     44:UNDER  24:ok
+
+  flux/desktop/page-freewrite
+    Free Write     desk-mode-tab.active                 82.9 x 34     44:UNDER  24:ok
+    Draft          desk-mode-tab                        56.8 x 34     44:UNDER  24:ok
+    Revise         desk-mode-tab                        60.6 x 34     44:UNDER  24:ok
+    Workshop       desk-mode-tab.deferred               81.3 x 34     44:UNDER  24:ok
+    Publish        desk-mode-tab                        68.4 x 34     44:UNDER  24:ok
+    Plan →         btn-quiet.page-plan-door             35.6 x 32     44:UNDER  24:ok
+    Docs           sprint-toggle-btn.active               49 x 26     44:UNDER  24:ok
+    Page           wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Plan           wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Drawers        wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Log            wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Shelf          wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Settings       wz-strip-item                          82 x 46.1   44:ok  24:ok
+    Themes         wz-strip-item                          82 x 46.1   44:ok  24:ok
+    Trash          wz-strip-item                          82 x 46.1   44:ok  24:ok
+
+  flux/desktop/board
+    Open           board-mode-tab.active                64.2 x 29     44:UNDER  24:ok
+    Storyboard     board-mode-tab                      118.4 x 29     44:UNDER  24:ok
+    Outline        board-mode-tab                       85.3 x 29     44:UNDER  24:ok
+    Page →         board-door                           74.3 x 27     44:UNDER  24:ok
+    Page           wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Plan           wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Drawers        wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Log            wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Shelf          wz-strip-item                          82 x 57.5   44:ok  24:ok
+    Settings       wz-strip-item                          82 x 46.1   44:ok  24:ok
+    Themes         wz-strip-item                          82 x 46.1   44:ok  24:ok
+    Trash          wz-strip-item                          82 x 46.1   44:ok  24:ok
+
+  flux/phone/page-freewrite
+    Catch a though desk-rail-item.desk-rail-catch         78 x 49     44:ok  24:ok
+    Log            desk-rail-item                         78 x 49     44:ok  24:ok
+    Cache          desk-rail-item                         78 x 49     44:ok  24:ok
+    Racks          desk-rail-item                         78 x 49     44:ok  24:ok
+    Library — comi desk-rail-item.deferred                78 x 49     44:ok  24:ok
+    Docs           sprint-toggle-btn.active               49 x 26     44:UNDER  24:ok
+    Plan →         btn-quiet.page-plan-door             35.6 x 32     44:UNDER  24:ok
+
+  flux/phone/board
+    Catch a though desk-rail-item.desk-rail-catch         78 x 49     44:ok  24:ok
+    Log            desk-rail-item                         78 x 49     44:ok  24:ok
+    Cache          desk-rail-item                         78 x 49     44:ok  24:ok
+    Racks          desk-rail-item                         78 x 49     44:ok  24:ok
+    Library — comi desk-rail-item.deferred                78 x 49     44:ok  24:ok
+    Open           board-mode-tab.active                64.2 x 29     44:UNDER  24:ok
+    Storyboard     board-mode-tab                      118.4 x 29     44:UNDER  24:ok
+    Outline        board-mode-tab                       85.3 x 29     44:UNDER  24:ok
+    Page →         board-door                           56.2 x 44     44:ok  24:ok
+
+## ALL TARGETS UNDER 24 (by name/class; spacing exception applied)
+   desktop Enter full screen                                                   ['58.7x14'] spacingOK=[True] screens=5 themes=['flux', 'plateau']
+   desktop Open                       wz-link.wz-arrival-open                  ['31x19', '37x18'] spacingOK=[True] screens=2 themes=['flux', 'plateau']
+   desktop Sign out                                                            ['44x14'] spacingOK=[True] screens=2 themes=['flux', 'plateau']
+   desktop Open hand tools            wz-sliver-grip                           ['16x34'] spacingOK=[False, True] screens=17 themes=['flux', 'plateau']
+   desktop Open the Tutor             wz-tutor-grip                            ['16x34'] spacingOK=[True] screens=16 themes=['flux', 'plateau']
+   desktop Show controls              chrome-handle                            ['10x10'] spacingOK=[True] screens=13 themes=['flux', 'plateau']
+   desktop Close                      wz-cascade-dock-btn                      ['14x18', '15x17'] spacingOK=[False, True] screens=9 themes=['flux', 'plateau']
+   desktop Date                       wz-page-setup-chip                       ['42x23'] spacingOK=[True] screens=1 themes=['plateau']
+   desktop Drawer                     wz-page-setup-chip                       ['55x23'] spacingOK=[True] screens=1 themes=['plateau']
+   desktop A–Z                        wz-page-setup-chip                       ['38x23'] spacingOK=[True] screens=1 themes=['plateau']
+   desktop Chapter 1                  wz-pageface-title.wz-pageface-title-reac ['271x19', '271x21'] spacingOK=[True] screens=1 themes=['flux', 'plateau']
+   desktop ☆ Star                     wz-pageface-star                         ['38.7x15', '38x16'] spacingOK=[True] screens=1 themes=['flux', 'plateau']
+   desktop Add a tag                  wz-pageface-tag-input                    ['88x22', '88x23'] spacingOK=[True] screens=1 themes=['flux', 'plateau']
+   desktop Add                        wz-pageface-tag-add                      ['21.4x14'] spacingOK=[True] screens=1 themes=['flux', 'plateau']
+   desktop Normal                     wz-page-setup-chip                       ['54x23'] spacingOK=[True] screens=1 themes=['plateau']
+   desktop Narrow                     wz-page-setup-chip                       ['56x23'] spacingOK=[True] screens=1 themes=['plateau']
+   desktop Wide                       wz-page-setup-chip                       ['44x23'] spacingOK=[True] screens=1 themes=['plateau']
+   desktop 1.6                        wz-page-setup-range                      ['145.9x16', '149.9x16'] spacingOK=[True] screens=1 themes=['flux', 'plateau']
+   desktop Off                        wz-page-setup-chip                       ['35x23'] spacingOK=[True] screens=1 themes=['plateau']
+   desktop More                       wz-cascade-thumb-menu-btn.wz-cascade-boa ['25x19', '25x20'] spacingOK=[True] screens=1 themes=['flux', 'plateau']
+   desktop Recent▸                    wz-fold-header.wz-fold-header--journal   ['271x20', '271x21'] spacingOK=[True] screens=2 themes=['flux', 'plateau']
+   desktop Morning pages              wz-cascade-list-title                    ['255x15', '255x16'] spacingOK=[True] screens=2 themes=['flux', 'plateau']
+   desktop Close the Tutor            wz-tutor-grip                            ['16x34'] spacingOK=[True] screens=1 themes=['flux', 'plateau']
+   desktop Close, keep dock           wz-tutor-dock-btn                        ['82x18', '90x17'] spacingOK=[True] screens=1 themes=['flux', 'plateau']
+   desktop Rename this board          crumb-here.crumb-rename-btn              ['28.4x19', '36.6x19', '39.6x19'] spacingOK=[True] screens=4 themes=['flux', 'plateau']
+   phone   Enter full screen                                                   ['58.7x14'] spacingOK=[True] screens=11 themes=['flux', 'plateau']
+   phone   Open                       wz-link.wz-arrival-open                  ['31x19', '37x18'] spacingOK=[True] screens=2 themes=['flux', 'plateau']
+   phone   Sign out                                                            ['44x14'] spacingOK=[True] screens=9 themes=['flux', 'plateau']
+   phone   Show controls              chrome-handle                            ['10x10'] spacingOK=[True] screens=3 themes=['flux', 'plateau']
+   phone   Ink #1a0f06                mode-swatch.active                       ['22x22'] spacingOK=[True] screens=3 themes=['flux', 'plateau']
+   phone   Ink #b8231f                mode-swatch                              ['22x22'] spacingOK=[True] screens=3 themes=['flux', 'plateau']
+   phone   Ink #1f4fb8                mode-swatch                              ['22x22'] spacingOK=[True] screens=3 themes=['flux', 'plateau']
+
+## TARGET COUNTS (visible interactive, per screen)
+   plateau desktop arrival-signed-out   total=  3 under44=  2 under24=  2 fail24=  0
+   plateau desktop sign-in              total=  4 under44=  1 under24=  1 fail24=  0
+   plateau desktop arrival-signed-in    total=  4 under44=  3 under24=  3 fail24=  0
+   plateau desktop page-freewrite       total= 20 under44= 11 under24=  3 fail24=  0
+   plateau desktop page-draft           total= 20 under44= 11 under24=  3 fail24=  0
+   plateau desktop publish-dialog       total= 27 under44= 18 under24=  3 fail24=  0
+   plateau desktop panel-page           total= 42 under44= 33 under24= 18 fail24=  2
+   plateau desktop panel-plan           total= 25 under44= 16 under24=  5 fail24=  2
+   plateau desktop panel-drawers        total= 23 under44= 14 under24=  4 fail24=  2
+   plateau desktop panel-journal        total= 26 under44= 17 under24=  6 fail24=  2
+   plateau desktop panel-shelf          total= 22 under44= 13 under24=  4 fail24=  2
+   plateau desktop panel-settings       total= 23 under44= 14 under24=  5 fail24=  2
+   plateau desktop panel-themes         total= 23 under44= 14 under24=  4 fail24=  2
+   plateau desktop panel-trash          total= 22 under44= 13 under24=  4 fail24=  2
+   plateau desktop tutor-open           total= 27 under44= 18 under24=  4 fail24=  0
+   plateau desktop board                total= 21 under44=  9 under24=  3 fail24=  0
+   plateau desktop journal              total= 13 under44=  5 under24=  3 fail24=  0
+   plateau desktop shelf                total= 13 under44=  5 under24=  3 fail24=  0
+   plateau desktop drawers              total= 13 under44=  7 under24=  2 fail24=  0
+   plateau desktop trash                total= 13 under44=  5 under24=  3 fail24=  0
+   plateau phone   arrival-signed-out   total=  3 under44=  2 under24=  2 fail24=  0
+   plateau phone   sign-in              total=  4 under44=  1 under24=  1 fail24=  0
+   plateau phone   arrival-signed-in    total=  4 under44=  3 under24=  3 fail24=  0
+   plateau phone   page-freewrite       total= 23 under44= 17 under24=  6 fail24=  0
+   plateau phone   page-draft           total= 23 under44= 17 under24=  6 fail24=  0
+   plateau phone   publish-dialog       total= 23 under44= 17 under24=  6 fail24=  0
+   plateau phone   board                total= 16 under44=  7 under24=  2 fail24=  0
+   plateau phone   journal              total=  9 under44=  3 under24=  2 fail24=  0
+   plateau phone   shelf                total=  9 under44=  3 under24=  2 fail24=  0
+   plateau phone   drawers              total= 14 under44=  8 under24=  2 fail24=  0
+   plateau phone   trash                total=  9 under44=  3 under24=  2 fail24=  0
+   flux    desktop arrival-signed-out   total=  3 under44=  2 under24=  2 fail24=  0
+   flux    desktop sign-in              total=  4 under44=  1 under24=  1 fail24=  0
+   flux    desktop arrival-signed-in    total=  4 under44=  3 under24=  3 fail24=  0
+   flux    desktop page-freewrite       total= 20 under44= 11 under24=  3 fail24=  0
+   flux    desktop page-draft           total= 20 under44= 11 under24=  3 fail24=  0
+   flux    desktop publish-dialog       total= 27 under44= 18 under24=  3 fail24=  0
+   flux    desktop panel-page           total= 42 under44= 33 under24=  9 fail24=  0
+   flux    desktop panel-plan           total= 25 under44= 16 under24=  5 fail24=  0
+   flux    desktop panel-drawers        total= 23 under44= 14 under24=  4 fail24=  0
+   flux    desktop panel-log            total= 26 under44= 17 under24=  6 fail24=  0
+   flux    desktop panel-shelf          total= 22 under44= 13 under24=  4 fail24=  0
+   flux    desktop panel-settings       total= 23 under44= 14 under24=  5 fail24=  0
+   flux    desktop panel-themes         total= 23 under44= 14 under24=  4 fail24=  0
+   flux    desktop panel-trash          total= 22 under44= 13 under24=  4 fail24=  0
+   flux    desktop tutor-open           total= 27 under44= 18 under24=  4 fail24=  0
+   flux    desktop board                total= 21 under44=  9 under24=  3 fail24=  0
+   flux    desktop journal              total= 13 under44=  5 under24=  3 fail24=  0
+   flux    desktop shelf                total= 13 under44=  5 under24=  3 fail24=  0
+   flux    desktop drawers              total= 13 under44=  7 under24=  2 fail24=  0
+   flux    desktop trash                total= 13 under44=  5 under24=  3 fail24=  0
+   flux    phone   arrival-signed-out   total=  3 under44=  2 under24=  2 fail24=  0
+   flux    phone   sign-in              total=  4 under44=  1 under24=  1 fail24=  0
+   flux    phone   arrival-signed-in    total=  4 under44=  3 under24=  3 fail24=  0
+   flux    phone   page-freewrite       total= 23 under44= 17 under24=  6 fail24=  0
+   flux    phone   page-draft           total= 23 under44= 17 under24=  6 fail24=  0
+   flux    phone   publish-dialog       total= 23 under44= 17 under24=  6 fail24=  0
+   flux    phone   board                total= 16 under44=  6 under24=  2 fail24=  0
+   flux    phone   journal              total=  9 under44=  3 under24=  2 fail24=  0
+   flux    phone   shelf                total=  9 under44=  3 under24=  2 fail24=  0
+   flux    phone   drawers              total= 14 under44=  8 under24=  2 fail24=  0
+   flux    phone   trash                total=  9 under44=  3 under24=  2 fail24=  0
+
+## KEYBOARD WALKS
+
+  plateau/desktop/arrival-signed-out: stops=4 invisible=2 no-indicator=0 trapped=False cycled=True
+      0 button            Enter full screen                                                 58.7x14 INVISIBLE(op=1,inView=True,hit=False)
+      1 button            Write                        wz-btn.wz-primary.wz-arrival-write   116.1x51.4 
+      2 button            Open                         wz-link.wz-arrival-open              37x18 
+      4 button            Enter full screen                                                 58.7x14 INVISIBLE(op=1,inView=True,hit=False)
+
+  plateau/desktop/sign-in: stops=5 invisible=1 no-indicator=0 trapped=False cycled=True
+      0 input             you@example.com              wz-field                             360x48.2 
+      1 input             password                     wz-field                             360x48.2 
+      2 button            Sign in                      wz-btn                               104.4x46.6 
+      4 button            Enter full screen                                                 58.7x14 INVISIBLE(op=1,inView=True,hit=False)
+      5 input             you@example.com              wz-field                             360x48.2 
+
+  plateau/desktop/page-freewrite: stops=32 invisible=11 no-indicator=1 trapped=True cycled=False
+      0 button            Desk menu                    gh-corner-glyph                      30x30 
+      1 button   tab      Free Write                   desk-mode-tab.active                 95.9x33 
+      2 button   radio    Text                         wz-ink-switch-side                   53.3x21 
+      3 button   tab      Draft                        desk-mode-tab                        64.8x33 
+      4 button   tab      Revise                       desk-mode-tab                        67.6x33 
+      5 button   tab      Workshop                     desk-mode-tab.deferred               93.3x33 
+      6 button   tab      Publish                      desk-mode-tab                        74.4x33 
+      7 button            Plan →                       btn-quiet.page-plan-door             38.9x31 
+      8 button   tab      Pages                        sprint-toggle-btn.active             60x25 
+      9 button            Page                         wz-strip-item                        82x57.5 
+     10 button            Plan                         wz-strip-item                        82x57.5 
+     11 button            Drawers                      wz-strip-item                        82x57.5 
+     12 button            Journal                      wz-strip-item                        82x57.5 
+     13 button            Shelf                        wz-strip-item                        82x57.5 
+     14 button            Settings                     wz-strip-item                        82x46.1 
+     15 button            Themes                       wz-strip-item                        82x46.1 
+     16 button            Trash                        wz-strip-item                        82x46.1 
+     17 button            Open hand tools              wz-sliver-grip                       16x34 
+     18 button            Forward lock                 wz-sliver-toggle.wz-sliver-forwardlo 155x34 INVISIBLE(op=0,inView=True,hit=True)
+     19 button            Enter full screen                                                 58.7x14 INVISIBLE(op=0,inView=True,hit=True)
+     20 button            Goal: 24 lines               wz-sliver-goal-edit                  74x14 INVISIBLE(op=0,inView=True,hit=True)
+     21 button            Typewriter                   wz-sliver-instruments-btn            26x26 INVISIBLE(op=0,inView=True,hit=True)
+     22 button            Progress                     wz-sliver-instruments-btn            26x26 INVISIBLE(op=0,inView=True,hit=True)
+     23 button            Open the Tutor               wz-tutor-grip                        16x34 
+     24 button            Close, keep dock             wz-tutor-dock-btn                    90x17 INVISIBLE(op=0,inView=True,hit=True)
+     25 button            Writing Prompt               wz-tutor-fw-preset                   110.2x28 INVISIBLE(op=0,inView=True,hit=True)
+     26 button            Unblock                      wz-tutor-fw-preset                   68.1x28 INVISIBLE(op=0,inView=True,hit=True)
+     27 button            Free Writing Tips            wz-tutor-fw-preset                   122.1x28 INVISIBLE(op=0,inView=True,hit=True)
+     28 input             Ask a question…              wz-tutor-convo-input                 276x37 INVISIBLE(op=0,inView=True,hit=True)
+     29 input             Note a fact to remember…     wz-tutor-bible-input                 281x33 INVISIBLE(op=0,inView=True,hit=True)
+     30 button            Show controls                chrome-handle                        10x10 
+     31 div      textbox  Page writing surface         forward-only-editor                  522x173.3 NO-INDICATOR
+     TRAP: after Escape+Tab -> {'tag': 'div', 'role': 'textbox', 'name': 'Page writing surface', 'cls': 'forward-only-editor'}
+
+  plateau/desktop/page-draft: stops=47 invisible=27 no-indicator=1 trapped=True cycled=False
+      1 button            Desk menu                    gh-corner-glyph                      30x30 
+      2 button   tab      Free Write                   desk-mode-tab                        95.9x33 
+      3 button   tab      Draft                        desk-mode-tab.active                 64.8x33 
+      4 button   tab      Revise                       desk-mode-tab                        67.6x33 
+      5 button   tab      Workshop                     desk-mode-tab.deferred               93.3x33 
+      6 button   tab      Publish                      desk-mode-tab                        74.4x33 
+      7 button            Plan →                       btn-quiet.page-plan-door             38.9x31 
+      8 button   tab      Pages                        sprint-toggle-btn.active             60x25 
+      9 button            Page                         wz-strip-item                        82x57.5 
+     10 button            Plan                         wz-strip-item                        82x57.5 
+     11 button            Drawers                      wz-strip-item                        82x57.5 
+     12 button            Journal                      wz-strip-item                        82x57.5 
+     13 button            Shelf                        wz-strip-item                        82x57.5 
+     14 button            Settings                     wz-strip-item                        82x46.1 
+     15 button            Themes                       wz-strip-item                        82x46.1 
+     16 button            Trash                        wz-strip-item                        82x46.1 
+     17 button            Open hand tools              wz-sliver-grip                       16x34 
+     18 button            Bold                         mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     19 button            Italic                       mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     20 button            Underline                    mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     21 button            Strikethrough                mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     22 button            Heading                      mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     23 button            Bulleted list                mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     24 button            Block quote                  mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     25 button            Outdent                      mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     26 button            Indent                       mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     27 button            Line spacing                 mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     28 button            Align left                   mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     29 button            Align centre                 mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     30 button            Align right                  mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     31 button   radio    Normal                       wz-page-setup-chip                   54x23 INVISIBLE(op=0,inView=True,hit=True)
+     32 button   radio    Screenplay                   wz-page-setup-chip                   74x23 INVISIBLE(op=0,inView=True,hit=True)
+     33 button   radio    Research                     wz-page-setup-chip                   64x23 INVISIBLE(op=0,inView=True,hit=True)
+     34 button            Convert to Screenplay…       wz-cascade-action                    155x48 INVISIBLE(op=0,inView=True,hit=True)
+     35 button            Enter full screen                                                 58.7x14 INVISIBLE(op=0,inView=True,hit=True)
+     36 button            Goal: 24 lines               wz-sliver-goal-edit                  74x14 INVISIBLE(op=0,inView=True,hit=True)
+     37 button            Typewriter                   wz-sliver-instruments-btn            26x26 INVISIBLE(op=0,inView=True,hit=True)
+     38 button            Progress                     wz-sliver-instruments-btn            26x26 INVISIBLE(op=0,inView=True,hit=True)
+     39 button            Open the Tutor               wz-tutor-grip                        16x34 
+     40 button            Close, keep dock             wz-tutor-dock-btn                    90x17 INVISIBLE(op=0,inView=True,hit=True)
+     41 button            Where does this drag?        wz-tutor-draft-ask                   342x32.2 INVISIBLE(op=0,inView=True,hit=True)
+     42 button            What's load-bearing here — a wz-tutor-draft-ask                   342x32.2 INVISIBLE(op=0,inView=True,hit=True)
+     43 button            Where does the thread slip?  wz-tutor-draft-ask                   342x32.2 INVISIBLE(op=0,inView=True,hit=True)
+     44 input             Ask a question…              wz-tutor-convo-input                 276x37 INVISIBLE(op=0,inView=True,hit=True)
+     45 input             Note a fact to remember…     wz-tutor-bible-input                 281x33 INVISIBLE(op=0,inView=True,hit=True)
+     46 button            Show controls                chrome-handle                        10x10 
+     47 div      textbox  Page writing surface         forward-only-editor                  522x173.3 NO-INDICATOR
+     TRAP: after Escape+Tab -> {'tag': 'div', 'role': 'textbox', 'name': 'Page writing surface', 'cls': 'forward-only-editor'}
+
+  plateau/desktop/publish-dialog: stops=20 invisible=20 no-indicator=0 trapped=False cycled=False
+      0 button            Plan →                       btn-quiet.page-plan-door             38.9x31 INVISIBLE(op=1,inView=True,hit=False)
+      1 button   tab      Pages                        sprint-toggle-btn.active             60x25 INVISIBLE(op=1,inView=True,hit=False)
+      2 button            Page                         wz-strip-item                        82x57.5 INVISIBLE(op=1,inView=True,hit=False)
+      3 button            Plan                         wz-strip-item                        82x57.5 INVISIBLE(op=1,inView=True,hit=False)
+      4 button            Drawers                      wz-strip-item                        82x57.5 INVISIBLE(op=1,inView=True,hit=False)
+      5 button            Journal                      wz-strip-item                        82x57.5 INVISIBLE(op=1,inView=True,hit=False)
+      6 button            Shelf                        wz-strip-item                        82x57.5 INVISIBLE(op=1,inView=True,hit=False)
+      7 button            Settings                     wz-strip-item                        82x46.1 INVISIBLE(op=1,inView=True,hit=False)
+      8 button            Themes                       wz-strip-item                        82x46.1 INVISIBLE(op=1,inView=True,hit=False)
+      9 button            Trash                        wz-strip-item                        82x46.1 INVISIBLE(op=1,inView=True,hit=False)
+     10 button            Open hand tools              wz-sliver-grip                       16x34 INVISIBLE(op=1,inView=True,hit=False)
+     11 button            Bold                         mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=False)
+     12 button            Italic                       mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=False)
+     13 button            Underline                    mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=False)
+     14 button            Strikethrough                mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=False)
+     15 button            Heading                      mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=False)
+     16 button            Bulleted list                mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=False)
+     17 button            Block quote                  mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=False)
+     18 button            Outdent                      mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=False)
+     19 button            Indent                       mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=False)
+
+  plateau/desktop/tutor-open: stops=2 invisible=2 no-indicator=1 trapped=True cycled=False
+      0 button            Show controls                chrome-handle                        10x10 INVISIBLE(op=0.67,inView=True,hit=False)
+      1 div      textbox  Page writing surface         forward-only-editor                  522x173.3 INVISIBLE(op=1,inView=True,hit=False) NO-INDICATOR
+     TRAP: after Escape+Tab -> {'tag': 'div', 'role': 'textbox', 'name': 'Page writing surface', 'cls': 'forward-only-editor'}
+
+  plateau/desktop/board: stops=34 invisible=12 no-indicator=0 trapped=False cycled=True
+      0 button            Rename this board            crumb-here.crumb-rename-btn          92.9x19 
+      1 button   tab      Open                         board-mode-tab.active                66.2x27 
+      2 button   tab      Storyboard                   board-mode-tab                       121.4x27 
+      3 button   tab      Outline                      board-mode-tab                       88.3x27 
+      4 button            Page →                       board-door                           75.2x25 
+      5 button            Pair with a page…            btn-quiet.board-pair                 126x31 
+      6 button            Page                         wz-strip-item                        82x57.5 
+      7 button            Plan                         wz-strip-item                        82x57.5 
+      8 button            Drawers                      wz-strip-item                        82x57.5 
+      9 button            Journal                      wz-strip-item                        82x57.5 
+     10 button            Shelf                        wz-strip-item                        82x57.5 
+     11 button            Settings                     wz-strip-item                        82x46.1 
+     12 button            Themes                       wz-strip-item                        82x46.1 
+     13 button            Trash                        wz-strip-item                        82x46.1 
+     14 button            Open hand tools              wz-sliver-grip                       16x34 
+     15 button            Add card                     wz-sliver-item.wz-sliver-item-btn    24x56 INVISIBLE(op=0,inView=True,hit=True)
+     16 button            New page card                wz-sliver-item.wz-sliver-item-btn    24x73 INVISIBLE(op=0,inView=True,hit=True)
+     17 button            Existing page…               wz-sliver-item.wz-sliver-item-btn    24x56 INVISIBLE(op=0,inView=True,hit=True)
+     18 button            From a deck…                 wz-sliver-item.wz-sliver-item-btn    24x73 INVISIBLE(op=0,inView=True,hit=True)
+     19 button            Show connections             wz-sliver-toggle.wz-sliver-board-foo 22x48 INVISIBLE(op=0,inView=True,hit=True)
+     20 button            Enter full screen                                                 58.7x14 INVISIBLE(op=0,inView=True,hit=False)
+     21 button            Goal: 24 lines               wz-sliver-goal-edit                  28x42 INVISIBLE(op=0,inView=True,hit=True)
+     22 button            Typewriter                   wz-sliver-instruments-btn            18x26 INVISIBLE(op=0,inView=True,hit=True)
+     23 button            Progress                     wz-sliver-instruments-btn            22x26 INVISIBLE(op=0,inView=True,hit=True)
+     24 button            Open the Tutor               wz-tutor-grip                        16x34 
+     25 button            Close, keep dock             wz-tutor-dock-btn                    90x17 INVISIBLE(op=0,inView=True,hit=True)
+     26 input             Ask a question…              wz-tutor-convo-input                 365x37 INVISIBLE(op=0,inView=True,hit=False)
+     27 input             Note a fact to remember…     wz-tutor-bible-input                 370x33 INVISIBLE(op=0,inView=True,hit=False)
+     28 button            New Card                     wz-beginning                         111.5x75 
+     29 button            New Page Card                wz-beginning                         159.5x75 
+     30 button            Load a Deck                  wz-beginning                         130.1x75 
+     31 button            Connect a Page               wz-beginning                         162.7x75 
+     33 button            Desk menu                    gh-corner-glyph                      30x30 
+     34 button            Rename this board            crumb-here.crumb-rename-btn          92.9x19 
+
+  plateau/phone/arrival-signed-out: stops=4 invisible=2 no-indicator=0 trapped=False cycled=True
+      0 button            Enter full screen                                                 58.7x14 INVISIBLE(op=1,inView=True,hit=False)
+      1 button            Write                        wz-btn.wz-primary.wz-arrival-write   116.1x51.4 
+      2 button            Open                         wz-link.wz-arrival-open              37x18 
+      4 button            Enter full screen                                                 58.7x14 INVISIBLE(op=1,inView=True,hit=False)
+
+  plateau/phone/sign-in: stops=5 invisible=1 no-indicator=0 trapped=False cycled=True
+      0 input             you@example.com              wz-field                             335.4x48.2 
+      1 input             password                     wz-field                             335.4x48.2 
+      2 button            Sign in                      wz-btn                               104.4x46.6 
+      4 button            Enter full screen                                                 58.7x14 INVISIBLE(op=1,inView=True,hit=False)
+      5 input             you@example.com              wz-field                             335.4x48.2 
+
+  plateau/phone/page-freewrite: stops=22 invisible=0 no-indicator=2 trapped=True cycled=False
+      0 button            Catch a thought (N)          desk-rail-item.desk-rail-catch       78x48 
+      1 button            Journal                      desk-rail-item                       78x48 
+      2 button            Shelf                        desk-rail-item                       78x48 
+      3 button            Drawers                      desk-rail-item                       78x48 
+      4 button            Library — coming soon        desk-rail-item.deferred              78x48 
+      5 button            Enter full screen                                                 58.7x14 
+      6 button            Sign out                                                          44x14 
+      7 button   tab      Free writegenerate           mode-tab.active                      89x37.6 
+      8 button   tab      Draftmark                    mode-tab                             60x37.6 
+      9 button   tab      Revisedress                  mode-tab                             67x37.6 
+     10 button   tab      Formatconvention             mode-tab.deferred                    89x37.6 
+     11 button            Workshopcoming soon          mode-tab.mode-tab--action.deferred   97x37.6 
+     12 button            Publishexport                mode-tab.mode-tab--action            72x37.6 
+     13 button   tab      Pages                        sprint-toggle-btn.active             60x25 
+     14 button            Copy the clean page text     btn-quiet.page-copy                  115x31 
+     15 button            Plan →                       btn-quiet.page-plan-door             38.9x31 
+     16 button            Show controls                chrome-handle                        10x10 
+     17 button            Writing settings             mode-iconbtn.mode-gear               34x34 
+     18 button            Ink #1a0f06                  mode-swatch.active                   22x22 NO-INDICATOR
+     19 button            Ink #b8231f                  mode-swatch                          22x22 
+     20 button            Ink #1f4fb8                  mode-swatch                          22x22 
+     21 div      textbox  Page writing surface         forward-only-editor                  288.6x202.2 NO-INDICATOR
+     TRAP: after Escape+Tab -> {'tag': 'div', 'role': 'textbox', 'name': 'Page writing surface', 'cls': 'forward-only-editor'}
+
+  plateau/phone/publish-dialog: stops=19 invisible=1 no-indicator=0 trapped=False cycled=False
+      0 button            Typewriter scroll on         typewriter-toggle.on                 26x26 INVISIBLE(op=1,inView=True,hit=False)
+      2 button            Catch a thought (N)          desk-rail-item.desk-rail-catch       78x48 
+      3 button            Journal                      desk-rail-item                       78x48 
+      4 button            Shelf                        desk-rail-item                       78x48 
+      5 button            Drawers                      desk-rail-item                       78x48 
+      6 button            Library — coming soon        desk-rail-item.deferred              78x48 
+      7 button            Enter full screen                                                 58.7x14 
+      8 button            Sign out                                                          44x14 
+      9 button   tab      Free writegenerate           mode-tab.active                      89x37.6 
+     10 button   tab      Draftmark                    mode-tab                             60x37.6 
+     11 button   tab      Revisedress                  mode-tab                             67x37.6 
+     12 button   tab      Formatconvention             mode-tab.deferred                    89x37.6 
+     13 button            Workshopcoming soon          mode-tab.mode-tab--action.deferred   97x37.6 
+     14 button            Publishexport                mode-tab.mode-tab--action            72x37.6 
+     15 button   tab      Pages                        sprint-toggle-btn.active             60x25 
+     16 button            Copy the clean page text     btn-quiet.page-copy                  115x31 
+     17 button            Plan →                       btn-quiet.page-plan-door             38.9x31 
+     18 button            Show controls                chrome-handle                        10x10 
+     19 button            Writing settings             mode-iconbtn.mode-gear               34x34 
+
+  flux/desktop/arrival-signed-out: stops=4 invisible=2 no-indicator=0 trapped=False cycled=True
+      0 button            Enter full screen                                                 58.7x14 INVISIBLE(op=1,inView=True,hit=False)
+      1 button            Write                        wz-btn.wz-primary.wz-arrival-write   112.1x53.4 
+      2 button            Open                         wz-link.wz-arrival-open              31x19 
+      4 button            Enter full screen                                                 58.7x14 INVISIBLE(op=1,inView=True,hit=False)
+
+  flux/desktop/sign-in: stops=5 invisible=1 no-indicator=0 trapped=False cycled=True
+      0 input             you@example.com              wz-field                             360x50.2 
+      1 input             password                     wz-field                             360x50.2 
+      2 button            Sign in                      wz-btn                               100.4x47.6 
+      4 button            Enter full screen                                                 58.7x14 INVISIBLE(op=1,inView=True,hit=False)
+      5 input             you@example.com              wz-field                             360x50.2 
+
+  flux/desktop/page-freewrite: stops=32 invisible=11 no-indicator=1 trapped=True cycled=False
+      0 button            Desk menu                    gh-corner-glyph                      30x30 
+      1 button   tab      Free Write                   desk-mode-tab.active                 82.9x34 
+      2 button   radio    Text                         wz-ink-switch-side                   50.3x22 
+      3 button   tab      Draft                        desk-mode-tab                        56.8x34 
+      4 button   tab      Revise                       desk-mode-tab                        60.6x34 
+      5 button   tab      Workshop                     desk-mode-tab.deferred               81.3x34 
+      6 button   tab      Publish                      desk-mode-tab                        68.4x34 
+      7 button            Plan →                       btn-quiet.page-plan-door             35.6x32 
+      8 button   tab      Docs                         sprint-toggle-btn.active             49x26 
+      9 button            Page                         wz-strip-item                        82x57.5 
+     10 button            Plan                         wz-strip-item                        82x57.5 
+     11 button            Drawers                      wz-strip-item                        82x57.5 
+     12 button            Log                          wz-strip-item                        82x57.5 
+     13 button            Shelf                        wz-strip-item                        82x57.5 
+     14 button            Settings                     wz-strip-item                        82x46.1 
+     15 button            Themes                       wz-strip-item                        82x46.1 
+     16 button            Trash                        wz-strip-item                        82x46.1 
+     17 button            Open hand tools              wz-sliver-grip                       16x34 
+     18 button            Forward lock                 wz-sliver-toggle.wz-sliver-forwardlo 155x34 INVISIBLE(op=0,inView=True,hit=True)
+     19 button            Enter full screen                                                 58.7x14 INVISIBLE(op=0,inView=True,hit=True)
+     20 button            Goal: 24 lines               wz-sliver-goal-edit                  64x15 INVISIBLE(op=0,inView=True,hit=True)
+     21 button            Typewriter                   wz-sliver-instruments-btn            26x26 INVISIBLE(op=0,inView=True,hit=True)
+     22 button            Progress                     wz-sliver-instruments-btn            26x26 INVISIBLE(op=0,inView=True,hit=True)
+     23 button            Open the Tutor               wz-tutor-grip                        16x34 
+     24 button            Close, keep dock             wz-tutor-dock-btn                    82x18 INVISIBLE(op=0,inView=True,hit=True)
+     25 button            Writing Prompt               wz-tutor-fw-preset                   100.2x29 INVISIBLE(op=0,inView=True,hit=True)
+     26 button            Unblock                      wz-tutor-fw-preset                   62.1x29 INVISIBLE(op=0,inView=True,hit=True)
+     27 button            Free Writing Tips            wz-tutor-fw-preset                   109.1x29 INVISIBLE(op=0,inView=True,hit=True)
+     28 input             Ask a question…              wz-tutor-convo-input                 339x38 INVISIBLE(op=0,inView=True,hit=True)
+     29 input             Note a fact to remember…     wz-tutor-bible-input                 345x34 INVISIBLE(op=0,inView=True,hit=True)
+     30 button            Show controls                chrome-handle                        10x10 
+     31 div      textbox  Page writing surface         forward-only-editor                  402x202.2 NO-INDICATOR
+     TRAP: after Escape+Tab -> {'tag': 'div', 'role': 'textbox', 'name': 'Page writing surface', 'cls': 'forward-only-editor'}
+
+  flux/desktop/page-draft: stops=47 invisible=27 no-indicator=1 trapped=True cycled=False
+      1 button            Desk menu                    gh-corner-glyph                      30x30 
+      2 button   tab      Free Write                   desk-mode-tab                        82.9x34 
+      3 button   tab      Draft                        desk-mode-tab.active                 56.8x34 
+      4 button   tab      Revise                       desk-mode-tab                        60.6x34 
+      5 button   tab      Workshop                     desk-mode-tab.deferred               81.3x34 
+      6 button   tab      Publish                      desk-mode-tab                        68.4x34 
+      7 button            Plan →                       btn-quiet.page-plan-door             35.6x32 
+      8 button   tab      Docs                         sprint-toggle-btn.active             49x26 
+      9 button            Page                         wz-strip-item                        82x57.5 
+     10 button            Plan                         wz-strip-item                        82x57.5 
+     11 button            Drawers                      wz-strip-item                        82x57.5 
+     12 button            Log                          wz-strip-item                        82x57.5 
+     13 button            Shelf                        wz-strip-item                        82x57.5 
+     14 button            Settings                     wz-strip-item                        82x46.1 
+     15 button            Themes                       wz-strip-item                        82x46.1 
+     16 button            Trash                        wz-strip-item                        82x46.1 
+     17 button            Open hand tools              wz-sliver-grip                       16x34 
+     18 button            Bold                         mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     19 button            Italic                       mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     20 button            Underline                    mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     21 button            Strikethrough                mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     22 button            Heading                      mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     23 button            Bulleted list                mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     24 button            Block quote                  mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     25 button            Outdent                      mode-tbtn                            32x28 INVISIBLE(op=0,inView=True,hit=True)
+     26 button            Indent                       mode-tbtn                            32x28 INVISIBLE(op=0,inView=True,hit=True)
+     27 button            Line spacing                 mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     28 button            Align left                   mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     29 button            Align centre                 mode-tbtn                            32x28 INVISIBLE(op=0,inView=True,hit=True)
+     30 button            Align right                  mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=True)
+     31 button   radio    Normal                       wz-page-setup-chip                   51x24 INVISIBLE(op=0,inView=True,hit=True)
+     32 button   radio    Screenplay                   wz-page-setup-chip                   67x24 INVISIBLE(op=0,inView=True,hit=True)
+     33 button   radio    Research                     wz-page-setup-chip                   59x24 INVISIBLE(op=0,inView=True,hit=True)
+     34 button            Convert to Screenplay…       wz-cascade-action                    155x34 INVISIBLE(op=0,inView=True,hit=True)
+     35 button            Enter full screen                                                 58.7x14 INVISIBLE(op=0,inView=True,hit=True)
+     36 button            Goal: 24 lines               wz-sliver-goal-edit                  64x15 INVISIBLE(op=0,inView=True,hit=True)
+     37 button            Typewriter                   wz-sliver-instruments-btn            26x26 INVISIBLE(op=0,inView=True,hit=True)
+     38 button            Progress                     wz-sliver-instruments-btn            26x26 INVISIBLE(op=0,inView=True,hit=True)
+     39 button            Open the Tutor               wz-tutor-grip                        16x34 
+     40 button            Close, keep dock             wz-tutor-dock-btn                    82x18 INVISIBLE(op=0,inView=True,hit=True)
+     41 button            Where does this drag?        wz-tutor-draft-ask                   402x32.2 INVISIBLE(op=0,inView=True,hit=True)
+     42 button            What's load-bearing here — a wz-tutor-draft-ask                   402x32.2 INVISIBLE(op=0,inView=True,hit=True)
+     43 button            Where does the thread slip?  wz-tutor-draft-ask                   402x32.2 INVISIBLE(op=0,inView=True,hit=True)
+     44 input             Ask a question…              wz-tutor-convo-input                 339x38 INVISIBLE(op=0,inView=True,hit=True)
+     45 input             Note a fact to remember…     wz-tutor-bible-input                 345x34 INVISIBLE(op=0,inView=True,hit=True)
+     46 button            Show controls                chrome-handle                        10x10 
+     47 div      textbox  Page writing surface         forward-only-editor                  402x202.2 NO-INDICATOR
+     TRAP: after Escape+Tab -> {'tag': 'div', 'role': 'textbox', 'name': 'Page writing surface', 'cls': 'forward-only-editor'}
+
+  flux/desktop/publish-dialog: stops=20 invisible=20 no-indicator=0 trapped=False cycled=False
+      0 button            Plan →                       btn-quiet.page-plan-door             35.6x32 INVISIBLE(op=1,inView=True,hit=False)
+      1 button   tab      Docs                         sprint-toggle-btn.active             49x26 INVISIBLE(op=1,inView=True,hit=False)
+      2 button            Page                         wz-strip-item                        82x57.5 INVISIBLE(op=1,inView=True,hit=False)
+      3 button            Plan                         wz-strip-item                        82x57.5 INVISIBLE(op=1,inView=True,hit=False)
+      4 button            Drawers                      wz-strip-item                        82x57.5 INVISIBLE(op=1,inView=True,hit=False)
+      5 button            Log                          wz-strip-item                        82x57.5 INVISIBLE(op=1,inView=True,hit=False)
+      6 button            Shelf                        wz-strip-item                        82x57.5 INVISIBLE(op=1,inView=True,hit=False)
+      7 button            Settings                     wz-strip-item                        82x46.1 INVISIBLE(op=1,inView=True,hit=False)
+      8 button            Themes                       wz-strip-item                        82x46.1 INVISIBLE(op=1,inView=True,hit=False)
+      9 button            Trash                        wz-strip-item                        82x46.1 INVISIBLE(op=1,inView=True,hit=False)
+     10 button            Open hand tools              wz-sliver-grip                       16x34 INVISIBLE(op=1,inView=True,hit=False)
+     11 button            Bold                         mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=False)
+     12 button            Italic                       mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=False)
+     13 button            Underline                    mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=False)
+     14 button            Strikethrough                mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=False)
+     15 button            Heading                      mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=False)
+     16 button            Bulleted list                mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=False)
+     17 button            Block quote                  mode-tbtn                            30x28 INVISIBLE(op=0,inView=True,hit=False)
+     18 button            Outdent                      mode-tbtn                            32x28 INVISIBLE(op=0,inView=True,hit=False)
+     19 button            Indent                       mode-tbtn                            32x28 INVISIBLE(op=0,inView=True,hit=False)
+
+  flux/desktop/tutor-open: stops=2 invisible=2 no-indicator=1 trapped=True cycled=False
+      0 button            Show controls                chrome-handle                        10x10 INVISIBLE(op=0.67,inView=True,hit=False)
+      1 div      textbox  Page writing surface         forward-only-editor                  402x202.2 INVISIBLE(op=1,inView=True,hit=False) NO-INDICATOR
+     TRAP: after Escape+Tab -> {'tag': 'div', 'role': 'textbox', 'name': 'Page writing surface', 'cls': 'forward-only-editor'}
+
+  flux/desktop/board: stops=34 invisible=12 no-indicator=0 trapped=False cycled=True
+      0 button            Rename this board            crumb-here.crumb-rename-btn          92.9x19 
+      1 button   tab      Open                         board-mode-tab.active                64.2x29 
+      2 button   tab      Storyboard                   board-mode-tab                       118.4x29 
+      3 button   tab      Outline                      board-mode-tab                       85.3x29 
+      4 button            Page →                       board-door                           74.3x27 
+      5 button            Pair with a page…            btn-quiet.board-pair                 120x32 
+      6 button            Page                         wz-strip-item                        82x57.5 
+      7 button            Plan                         wz-strip-item                        82x57.5 
+      8 button            Drawers                      wz-strip-item                        82x57.5 
+      9 button            Log                          wz-strip-item                        82x57.5 
+     10 button            Shelf                        wz-strip-item                        82x57.5 
+     11 button            Settings                     wz-strip-item                        82x46.1 
+     12 button            Themes                       wz-strip-item                        82x46.1 
+     13 button            Trash                        wz-strip-item                        82x46.1 
+     14 button            Open hand tools              wz-sliver-grip                       16x34 
+     15 button            Add card                     wz-sliver-item.wz-sliver-item-btn    24x58 INVISIBLE(op=0,inView=True,hit=True)
+     16 button            New page card                wz-sliver-item.wz-sliver-item-btn    24x76 INVISIBLE(op=0,inView=True,hit=True)
+     17 button            Existing page…               wz-sliver-item.wz-sliver-item-btn    24x58 INVISIBLE(op=0,inView=True,hit=True)
+     18 button            From a deck…                 wz-sliver-item.wz-sliver-item-btn    24x76 INVISIBLE(op=0,inView=True,hit=True)
+     19 button            Show connections             wz-sliver-toggle.wz-sliver-board-foo 22x50 INVISIBLE(op=0,inView=True,hit=True)
+     20 button            Enter full screen                                                 58.7x14 INVISIBLE(op=0,inView=True,hit=False)
+     21 button            Goal: 24 lines               wz-sliver-goal-edit                  23x45 INVISIBLE(op=0,inView=True,hit=True)
+     22 button            Typewriter                   wz-sliver-instruments-btn            18x26 INVISIBLE(op=0,inView=True,hit=True)
+     23 button            Progress                     wz-sliver-instruments-btn            22x26 INVISIBLE(op=0,inView=True,hit=True)
+     24 button            Open the Tutor               wz-tutor-grip                        16x34 
+     25 button            Close, keep dock             wz-tutor-dock-btn                    82x18 INVISIBLE(op=0,inView=True,hit=True)
+     26 input             Ask a question…              wz-tutor-convo-input                 368x38 INVISIBLE(op=0,inView=True,hit=False)
+     27 input             Note a fact to remember…     wz-tutor-bible-input                 374x34 INVISIBLE(op=0,inView=True,hit=False)
+     28 button            New Card                     wz-beginning                         109.5x77 
+     29 button            New Page Card                wz-beginning                         160.5x77 
+     30 button            Load a Deck                  wz-beginning                         133.1x77 
+     31 button            Connect a Page               wz-beginning                         166.7x77 
+     33 button            Desk menu                    gh-corner-glyph                      30x30 
+     34 button            Rename this board            crumb-here.crumb-rename-btn          92.9x19 
+
+  flux/phone/arrival-signed-out: stops=4 invisible=2 no-indicator=0 trapped=False cycled=True
+      0 button            Enter full screen                                                 58.7x14 INVISIBLE(op=1,inView=True,hit=False)
+      1 button            Write                        wz-btn.wz-primary.wz-arrival-write   112.1x53.4 
+      2 button            Open                         wz-link.wz-arrival-open              31x19 
+      4 button            Enter full screen                                                 58.7x14 INVISIBLE(op=1,inView=True,hit=False)
+
+  flux/phone/sign-in: stops=5 invisible=1 no-indicator=0 trapped=False cycled=True
+      0 input             you@example.com              wz-field                             335.4x50.2 
+      1 input             password                     wz-field                             335.4x50.2 
+      2 button            Sign in                      wz-btn                               100.4x47.6 
+      4 button            Enter full screen                                                 58.7x14 INVISIBLE(op=1,inView=True,hit=False)
+      5 input             you@example.com              wz-field                             335.4x50.2 
+
+  flux/phone/page-freewrite: stops=22 invisible=0 no-indicator=2 trapped=True cycled=False
+      0 button            Catch a thought (N)          desk-rail-item.desk-rail-catch       78x49 
+      1 button            Log                          desk-rail-item                       78x49 
+      2 button            Cache                        desk-rail-item                       78x49 
+      3 button            Racks                        desk-rail-item                       78x49 
+      4 button            Library — coming soon        desk-rail-item.deferred              78x49 
+      5 button            Enter full screen                                                 58.7x14 
+      6 button            Sign out                                                          44x14 
+      7 button   tab      Overclockgenerate            mode-tab.active                      90x38.6 
+      8 button   tab      Draftmark                    mode-tab                             63x38.6 
+      9 button   tab      Revisedress                  mode-tab                             69x38.6 
+     10 button   tab      Formatconvention             mode-tab.deferred                    79x38.6 
+     11 button            Workshopcoming soon          mode-tab.mode-tab--action.deferred   91x38.6 
+     12 button            Connectexport                mode-tab.mode-tab--action            84x38.6 
+     13 button   tab      Docs                         sprint-toggle-btn.active             49x26 
+     14 button            Copy the clean doc text      btn-quiet.page-copy                  98x32 
+     15 button            Plan →                       btn-quiet.page-plan-door             35.6x32 
+     16 button            Show controls                chrome-handle                        10x10 
+     17 button            Writing settings             mode-iconbtn.mode-gear               34x34 
+     18 button            Ink #1a0f06                  mode-swatch.active                   22x22 NO-INDICATOR
+     19 button            Ink #b8231f                  mode-swatch                          22x22 
+     20 button            Ink #1f4fb8                  mode-swatch                          22x22 
+     21 div      textbox  Page writing surface         forward-only-editor                  288.6x202.2 NO-INDICATOR
+     TRAP: after Escape+Tab -> {'tag': 'div', 'role': 'textbox', 'name': 'Page writing surface', 'cls': 'forward-only-editor'}
+
+  flux/phone/publish-dialog: stops=19 invisible=1 no-indicator=0 trapped=False cycled=False
+      0 button            Typewriter scroll on         typewriter-toggle.on                 26x26 INVISIBLE(op=1,inView=True,hit=False)
+      2 button            Catch a thought (N)          desk-rail-item.desk-rail-catch       78x49 
+      3 button            Log                          desk-rail-item                       78x49 
+      4 button            Cache                        desk-rail-item                       78x49 
+      5 button            Racks                        desk-rail-item                       78x49 
+      6 button            Library — coming soon        desk-rail-item.deferred              78x49 
+      7 button            Enter full screen                                                 58.7x14 
+      8 button            Sign out                                                          44x14 
+      9 button   tab      Overclockgenerate            mode-tab.active                      90x38.6 
+     10 button   tab      Draftmark                    mode-tab                             63x38.6 
+     11 button   tab      Revisedress                  mode-tab                             69x38.6 
+     12 button   tab      Formatconvention             mode-tab.deferred                    79x38.6 
+     13 button            Workshopcoming soon          mode-tab.mode-tab--action.deferred   91x38.6 
+     14 button            Connectexport                mode-tab.mode-tab--action            84x38.6 
+     15 button   tab      Docs                         sprint-toggle-btn.active             49x26 
+     16 button            Copy the clean doc text      btn-quiet.page-copy                  98x32 
+     17 button            Plan →                       btn-quiet.page-plan-door             35.6x32 
+     18 button            Show controls                chrome-handle                        10x10 
+     19 button            Writing settings             mode-iconbtn.mode-gear               34x34 
+
+## FOCUSABLE BUT NOT VISIBLE (per screen, first 12)
+  plateau/desktop/arrival-signed-out: 1  Enter full screen( op=1 inView=True hit=False)
+  plateau/desktop/sign-in: 1  Enter full screen( op=1 inView=True hit=False)
+  plateau/desktop/arrival-signed-in: 2  Enter full screen( op=1 inView=True hit=False); Sign out( op=1 inView=True hit=False)
+  plateau/desktop/page-freewrite: 11  Forward lock(wz-sliver-toggle.wz-sl op=0 inView=True hit=True); Enter full screen( op=0 inView=True hit=True); Goal: 24 lines(wz-sliver-goal-edit op=0 inView=True hit=True); Typewriter(wz-sliver-instruments- op=0 inView=True hit=True); Progress(wz-sliver-instruments- op=0 inView=True hit=True); Close, keep dock(wz-tutor-dock-btn op=0 inView=True hit=True); Writing Prompt(wz-tutor-fw-preset op=0 inView=True hit=True); Unblock(wz-tutor-fw-preset op=0 inView=True hit=True); Free Writing Tips(wz-tutor-fw-preset op=0 inView=True hit=True); Ask a question…(wz-tutor-convo-input op=0 inView=True hit=True); Note a fact to rem(wz-tutor-bible-input op=0 inView=True hit=True)
+  plateau/desktop/page-draft: 27  Bold(mode-tbtn op=0 inView=True hit=True); Italic(mode-tbtn op=0 inView=True hit=True); Underline(mode-tbtn op=0 inView=True hit=True); Strikethrough(mode-tbtn op=0 inView=True hit=True); Heading(mode-tbtn op=0 inView=True hit=True); Bulleted list(mode-tbtn op=0 inView=True hit=True); Block quote(mode-tbtn op=0 inView=True hit=True); Outdent(mode-tbtn op=0 inView=True hit=True); Indent(mode-tbtn op=0 inView=True hit=True); Line spacing(mode-tbtn op=0 inView=True hit=True); Align left(mode-tbtn op=0 inView=True hit=True); Align centre(mode-tbtn op=0 inView=True hit=True)
+  plateau/desktop/publish-dialog: 40  Desk menu(gh-corner-glyph op=1 inView=True hit=False); Free Write(desk-mode-tab op=1 inView=True hit=False); Draft(desk-mode-tab.active op=1 inView=True hit=False); Revise(desk-mode-tab op=1 inView=True hit=False); Workshop(desk-mode-tab.deferred op=1 inView=True hit=False); Publish(desk-mode-tab op=1 inView=True hit=False); Plan →(btn-quiet.page-plan-do op=1 inView=True hit=False); Pages(sprint-toggle-btn.acti op=1 inView=True hit=False); Page(wz-strip-item op=1 inView=True hit=False); Plan(wz-strip-item op=1 inView=True hit=False); Drawers(wz-strip-item op=1 inView=True hit=False); Journal(wz-strip-item op=1 inView=True hit=False)
+  plateau/desktop/panel-page: 34  Set as my default (wz-cascade-action op=1 inView=False hit=False); on( op=1 inView=False hit=False); on( op=1 inView=False hit=False); on( op=1 inView=False hit=False); File to a new draw(wz-places-newdrawer-bt op=1 inView=False hit=False); on( op=1 inView=False hit=False); Open hand tools(wz-sliver-grip op=1 inView=True hit=False); Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False); Heading(mode-tbtn op=0 inView=True hit=False)
+  plateau/desktop/panel-plan: 28  Open hand tools(wz-sliver-grip op=1 inView=True hit=False); Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False); Heading(mode-tbtn op=0 inView=True hit=False); Bulleted list(mode-tbtn op=0 inView=True hit=False); Block quote(mode-tbtn op=0 inView=True hit=False); Outdent(mode-tbtn op=0 inView=True hit=False); Indent(mode-tbtn op=0 inView=True hit=False); Line spacing(mode-tbtn op=0 inView=True hit=False); Align left(mode-tbtn op=0 inView=True hit=False)
+  plateau/desktop/panel-drawers: 28  Open hand tools(wz-sliver-grip op=1 inView=True hit=False); Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False); Heading(mode-tbtn op=0 inView=True hit=False); Bulleted list(mode-tbtn op=0 inView=True hit=False); Block quote(mode-tbtn op=0 inView=True hit=False); Outdent(mode-tbtn op=0 inView=True hit=False); Indent(mode-tbtn op=0 inView=True hit=False); Line spacing(mode-tbtn op=0 inView=True hit=False); Align left(mode-tbtn op=0 inView=True hit=False)
+  plateau/desktop/panel-journal: 28  Open hand tools(wz-sliver-grip op=1 inView=True hit=False); Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False); Heading(mode-tbtn op=0 inView=True hit=False); Bulleted list(mode-tbtn op=0 inView=True hit=False); Block quote(mode-tbtn op=0 inView=True hit=False); Outdent(mode-tbtn op=0 inView=True hit=False); Indent(mode-tbtn op=0 inView=True hit=False); Line spacing(mode-tbtn op=0 inView=True hit=False); Align left(mode-tbtn op=0 inView=True hit=False)
+  plateau/desktop/panel-shelf: 28  Open hand tools(wz-sliver-grip op=1 inView=True hit=False); Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False); Heading(mode-tbtn op=0 inView=True hit=False); Bulleted list(mode-tbtn op=0 inView=True hit=False); Block quote(mode-tbtn op=0 inView=True hit=False); Outdent(mode-tbtn op=0 inView=True hit=False); Indent(mode-tbtn op=0 inView=True hit=False); Line spacing(mode-tbtn op=0 inView=True hit=False); Align left(mode-tbtn op=0 inView=True hit=False)
+  plateau/desktop/panel-settings: 28  Open hand tools(wz-sliver-grip op=1 inView=True hit=False); Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False); Heading(mode-tbtn op=0 inView=True hit=False); Bulleted list(mode-tbtn op=0 inView=True hit=False); Block quote(mode-tbtn op=0 inView=True hit=False); Outdent(mode-tbtn op=0 inView=True hit=False); Indent(mode-tbtn op=0 inView=True hit=False); Line spacing(mode-tbtn op=0 inView=True hit=False); Align left(mode-tbtn op=0 inView=True hit=False)
+  plateau/desktop/panel-themes: 28  Open hand tools(wz-sliver-grip op=1 inView=True hit=False); Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False); Heading(mode-tbtn op=0 inView=True hit=False); Bulleted list(mode-tbtn op=0 inView=True hit=False); Block quote(mode-tbtn op=0 inView=True hit=False); Outdent(mode-tbtn op=0 inView=True hit=False); Indent(mode-tbtn op=0 inView=True hit=False); Line spacing(mode-tbtn op=0 inView=True hit=False); Align left(mode-tbtn op=0 inView=True hit=False)
+  plateau/desktop/panel-trash: 28  Open hand tools(wz-sliver-grip op=1 inView=True hit=False); Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False); Heading(mode-tbtn op=0 inView=True hit=False); Bulleted list(mode-tbtn op=0 inView=True hit=False); Block quote(mode-tbtn op=0 inView=True hit=False); Outdent(mode-tbtn op=0 inView=True hit=False); Indent(mode-tbtn op=0 inView=True hit=False); Line spacing(mode-tbtn op=0 inView=True hit=False); Align left(mode-tbtn op=0 inView=True hit=False)
+  plateau/desktop/tutor-open: 37  Free Write(desk-mode-tab op=1 inView=True hit=False); Draft(desk-mode-tab.active op=1 inView=True hit=False); Revise(desk-mode-tab op=1 inView=True hit=False); Workshop(desk-mode-tab.deferred op=1 inView=True hit=False); Publish(desk-mode-tab op=1 inView=True hit=False); Plan →(btn-quiet.page-plan-do op=1 inView=True hit=False); Pages(sprint-toggle-btn.acti op=1 inView=True hit=False); Open hand tools(wz-sliver-grip op=1 inView=True hit=False); Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False)
+  plateau/desktop/board: 12  Add card(wz-sliver-item.wz-sliv op=0 inView=True hit=False); New page card(wz-sliver-item.wz-sliv op=0 inView=True hit=False); Existing page…(wz-sliver-item.wz-sliv op=0 inView=True hit=False); From a deck…(wz-sliver-item.wz-sliv op=0 inView=True hit=False); Show connections(wz-sliver-toggle.wz-sl op=0 inView=True hit=False); Enter full screen( op=0 inView=True hit=False); Goal: 24 lines(wz-sliver-goal-edit op=0 inView=True hit=False); Typewriter(wz-sliver-instruments- op=0 inView=True hit=True); Progress(wz-sliver-instruments- op=0 inView=True hit=False); Close, keep dock(wz-tutor-dock-btn op=0 inView=True hit=True); Ask a question…(wz-tutor-convo-input op=0 inView=True hit=False); Note a fact to rem(wz-tutor-bible-input op=0 inView=True hit=False)
+  plateau/desktop/journal: 7  Show connections(wz-sliver-toggle.wz-sl op=0 inView=True hit=False); Enter full screen( op=0 inView=True hit=False); Goal: 24 lines(wz-sliver-goal-edit op=0 inView=True hit=False); Typewriter(wz-sliver-instruments- op=0 inView=True hit=True); Progress(wz-sliver-instruments- op=0 inView=True hit=False); Close, keep dock(wz-tutor-dock-btn op=0 inView=True hit=True); Ask a question…(wz-tutor-convo-input op=0 inView=True hit=False)
+  plateau/desktop/shelf: 7  Show connections(wz-sliver-toggle.wz-sl op=0 inView=True hit=False); Enter full screen( op=0 inView=True hit=False); Goal: 24 lines(wz-sliver-goal-edit op=0 inView=True hit=False); Typewriter(wz-sliver-instruments- op=0 inView=True hit=True); Progress(wz-sliver-instruments- op=0 inView=True hit=False); Close, keep dock(wz-tutor-dock-btn op=0 inView=True hit=True); Ask a question…(wz-tutor-convo-input op=0 inView=True hit=False)
+  plateau/desktop/drawers: 1  move to…(dz-move op=0 inView=True hit=True)
+  plateau/desktop/trash: 7  Show connections(wz-sliver-toggle.wz-sl op=0 inView=True hit=False); Enter full screen( op=0 inView=True hit=False); Goal: 24 lines(wz-sliver-goal-edit op=0 inView=True hit=False); Typewriter(wz-sliver-instruments- op=0 inView=True hit=True); Progress(wz-sliver-instruments- op=0 inView=True hit=False); Close, keep dock(wz-tutor-dock-btn op=0 inView=True hit=True); Ask a question…(wz-tutor-convo-input op=0 inView=True hit=False)
+  plateau/phone/arrival-signed-out: 1  Enter full screen( op=1 inView=True hit=False)
+  plateau/phone/sign-in: 1  Enter full screen( op=1 inView=True hit=False)
+  plateau/phone/arrival-signed-in: 2  Enter full screen( op=1 inView=True hit=False); Sign out( op=1 inView=True hit=False)
+  plateau/phone/page-freewrite: 1  Typewriter scroll (typewriter-toggle.on op=1 inView=True hit=False)
+  plateau/phone/page-draft: 1  Typewriter scroll (typewriter-toggle.on op=1 inView=True hit=False)
+  plateau/phone/publish-dialog: 1  Typewriter scroll (typewriter-toggle.on op=1 inView=True hit=False)
+  flux/desktop/arrival-signed-out: 1  Enter full screen( op=1 inView=True hit=False)
+  flux/desktop/sign-in: 1  Enter full screen( op=1 inView=True hit=False)
+  flux/desktop/arrival-signed-in: 2  Enter full screen( op=1 inView=True hit=False); Sign out( op=1 inView=True hit=False)
+  flux/desktop/page-freewrite: 11  Forward lock(wz-sliver-toggle.wz-sl op=0 inView=True hit=True); Enter full screen( op=0 inView=True hit=True); Goal: 24 lines(wz-sliver-goal-edit op=0 inView=True hit=True); Typewriter(wz-sliver-instruments- op=0 inView=True hit=True); Progress(wz-sliver-instruments- op=0 inView=True hit=True); Close, keep dock(wz-tutor-dock-btn op=0 inView=True hit=True); Writing Prompt(wz-tutor-fw-preset op=0 inView=True hit=True); Unblock(wz-tutor-fw-preset op=0 inView=True hit=True); Free Writing Tips(wz-tutor-fw-preset op=0 inView=True hit=True); Ask a question…(wz-tutor-convo-input op=0 inView=True hit=True); Note a fact to rem(wz-tutor-bible-input op=0 inView=True hit=True)
+  flux/desktop/page-draft: 27  Bold(mode-tbtn op=0 inView=True hit=True); Italic(mode-tbtn op=0 inView=True hit=True); Underline(mode-tbtn op=0 inView=True hit=True); Strikethrough(mode-tbtn op=0 inView=True hit=True); Heading(mode-tbtn op=0 inView=True hit=True); Bulleted list(mode-tbtn op=0 inView=True hit=True); Block quote(mode-tbtn op=0 inView=True hit=True); Outdent(mode-tbtn op=0 inView=True hit=True); Indent(mode-tbtn op=0 inView=True hit=True); Line spacing(mode-tbtn op=0 inView=True hit=True); Align left(mode-tbtn op=0 inView=True hit=True); Align centre(mode-tbtn op=0 inView=True hit=True)
+  flux/desktop/publish-dialog: 40  Desk menu(gh-corner-glyph op=1 inView=True hit=False); Free Write(desk-mode-tab op=1 inView=True hit=False); Draft(desk-mode-tab.active op=1 inView=True hit=False); Revise(desk-mode-tab op=1 inView=True hit=False); Workshop(desk-mode-tab.deferred op=1 inView=True hit=False); Publish(desk-mode-tab op=1 inView=True hit=False); Plan →(btn-quiet.page-plan-do op=1 inView=True hit=False); Docs(sprint-toggle-btn.acti op=1 inView=True hit=False); Page(wz-strip-item op=1 inView=True hit=False); Plan(wz-strip-item op=1 inView=True hit=False); Drawers(wz-strip-item op=1 inView=True hit=False); Log(wz-strip-item op=1 inView=True hit=False)
+  flux/desktop/panel-page: 33  Set as my default (wz-cascade-action op=1 inView=False hit=False); on( op=1 inView=False hit=False); on( op=1 inView=False hit=False); on( op=1 inView=False hit=False); File to a new draw(wz-places-newdrawer-bt op=1 inView=False hit=False); on( op=1 inView=False hit=False); Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False); Heading(mode-tbtn op=0 inView=True hit=False); Bulleted list(mode-tbtn op=0 inView=True hit=False)
+  flux/desktop/panel-plan: 27  Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False); Heading(mode-tbtn op=0 inView=True hit=False); Bulleted list(mode-tbtn op=0 inView=True hit=False); Block quote(mode-tbtn op=0 inView=True hit=False); Outdent(mode-tbtn op=0 inView=True hit=False); Indent(mode-tbtn op=0 inView=True hit=True); Line spacing(mode-tbtn op=0 inView=True hit=False); Align left(mode-tbtn op=0 inView=True hit=False); Align centre(mode-tbtn op=0 inView=True hit=False)
+  flux/desktop/panel-drawers: 27  Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False); Heading(mode-tbtn op=0 inView=True hit=False); Bulleted list(mode-tbtn op=0 inView=True hit=False); Block quote(mode-tbtn op=0 inView=True hit=False); Outdent(mode-tbtn op=0 inView=True hit=False); Indent(mode-tbtn op=0 inView=True hit=True); Line spacing(mode-tbtn op=0 inView=True hit=False); Align left(mode-tbtn op=0 inView=True hit=False); Align centre(mode-tbtn op=0 inView=True hit=False)
+  flux/desktop/panel-log: 27  Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False); Heading(mode-tbtn op=0 inView=True hit=False); Bulleted list(mode-tbtn op=0 inView=True hit=False); Block quote(mode-tbtn op=0 inView=True hit=False); Outdent(mode-tbtn op=0 inView=True hit=False); Indent(mode-tbtn op=0 inView=True hit=True); Line spacing(mode-tbtn op=0 inView=True hit=False); Align left(mode-tbtn op=0 inView=True hit=False); Align centre(mode-tbtn op=0 inView=True hit=False)
+  flux/desktop/panel-shelf: 27  Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False); Heading(mode-tbtn op=0 inView=True hit=False); Bulleted list(mode-tbtn op=0 inView=True hit=False); Block quote(mode-tbtn op=0 inView=True hit=False); Outdent(mode-tbtn op=0 inView=True hit=False); Indent(mode-tbtn op=0 inView=True hit=True); Line spacing(mode-tbtn op=0 inView=True hit=False); Align left(mode-tbtn op=0 inView=True hit=False); Align centre(mode-tbtn op=0 inView=True hit=False)
+  flux/desktop/panel-settings: 27  Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False); Heading(mode-tbtn op=0 inView=True hit=False); Bulleted list(mode-tbtn op=0 inView=True hit=False); Block quote(mode-tbtn op=0 inView=True hit=False); Outdent(mode-tbtn op=0 inView=True hit=False); Indent(mode-tbtn op=0 inView=True hit=True); Line spacing(mode-tbtn op=0 inView=True hit=False); Align left(mode-tbtn op=0 inView=True hit=False); Align centre(mode-tbtn op=0 inView=True hit=False)
+  flux/desktop/panel-themes: 27  Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False); Heading(mode-tbtn op=0 inView=True hit=False); Bulleted list(mode-tbtn op=0 inView=True hit=False); Block quote(mode-tbtn op=0 inView=True hit=False); Outdent(mode-tbtn op=0 inView=True hit=False); Indent(mode-tbtn op=0 inView=True hit=True); Line spacing(mode-tbtn op=0 inView=True hit=False); Align left(mode-tbtn op=0 inView=True hit=False); Align centre(mode-tbtn op=0 inView=True hit=False)
+  flux/desktop/panel-trash: 27  Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False); Heading(mode-tbtn op=0 inView=True hit=False); Bulleted list(mode-tbtn op=0 inView=True hit=False); Block quote(mode-tbtn op=0 inView=True hit=False); Outdent(mode-tbtn op=0 inView=True hit=False); Indent(mode-tbtn op=0 inView=True hit=True); Line spacing(mode-tbtn op=0 inView=True hit=False); Align left(mode-tbtn op=0 inView=True hit=False); Align centre(mode-tbtn op=0 inView=True hit=False)
+  flux/desktop/tutor-open: 37  Free Write(desk-mode-tab op=1 inView=True hit=False); Draft(desk-mode-tab.active op=1 inView=True hit=False); Revise(desk-mode-tab op=1 inView=True hit=False); Workshop(desk-mode-tab.deferred op=1 inView=True hit=False); Publish(desk-mode-tab op=1 inView=True hit=False); Plan →(btn-quiet.page-plan-do op=1 inView=True hit=False); Docs(sprint-toggle-btn.acti op=1 inView=True hit=False); Open hand tools(wz-sliver-grip op=1 inView=True hit=False); Bold(mode-tbtn op=0 inView=True hit=False); Italic(mode-tbtn op=0 inView=True hit=False); Underline(mode-tbtn op=0 inView=True hit=False); Strikethrough(mode-tbtn op=0 inView=True hit=False)
+  flux/desktop/board: 12  Add card(wz-sliver-item.wz-sliv op=0 inView=True hit=False); New page card(wz-sliver-item.wz-sliv op=0 inView=True hit=False); Existing page…(wz-sliver-item.wz-sliv op=0 inView=True hit=False); From a deck…(wz-sliver-item.wz-sliv op=0 inView=True hit=False); Show connections(wz-sliver-toggle.wz-sl op=0 inView=True hit=False); Enter full screen( op=0 inView=True hit=False); Goal: 24 lines(wz-sliver-goal-edit op=0 inView=True hit=False); Typewriter(wz-sliver-instruments- op=0 inView=True hit=True); Progress(wz-sliver-instruments- op=0 inView=True hit=False); Close, keep dock(wz-tutor-dock-btn op=0 inView=True hit=True); Ask a question…(wz-tutor-convo-input op=0 inView=True hit=False); Note a fact to rem(wz-tutor-bible-input op=0 inView=True hit=False)
+  flux/desktop/journal: 7  Show connections(wz-sliver-toggle.wz-sl op=0 inView=True hit=False); Enter full screen( op=0 inView=True hit=False); Goal: 24 lines(wz-sliver-goal-edit op=0 inView=True hit=False); Typewriter(wz-sliver-instruments- op=0 inView=True hit=True); Progress(wz-sliver-instruments- op=0 inView=True hit=False); Close, keep dock(wz-tutor-dock-btn op=0 inView=True hit=True); Ask a question…(wz-tutor-convo-input op=0 inView=True hit=False)
+  flux/desktop/shelf: 7  Show connections(wz-sliver-toggle.wz-sl op=0 inView=True hit=False); Enter full screen( op=0 inView=True hit=False); Goal: 24 lines(wz-sliver-goal-edit op=0 inView=True hit=False); Typewriter(wz-sliver-instruments- op=0 inView=True hit=True); Progress(wz-sliver-instruments- op=0 inView=True hit=False); Close, keep dock(wz-tutor-dock-btn op=0 inView=True hit=True); Ask a question…(wz-tutor-convo-input op=0 inView=True hit=False)
+  flux/desktop/drawers: 1  move to…(dz-move op=0 inView=True hit=True)
+  flux/desktop/trash: 7  Show connections(wz-sliver-toggle.wz-sl op=0 inView=True hit=False); Enter full screen( op=0 inView=True hit=False); Goal: 24 lines(wz-sliver-goal-edit op=0 inView=True hit=False); Typewriter(wz-sliver-instruments- op=0 inView=True hit=True); Progress(wz-sliver-instruments- op=0 inView=True hit=False); Close, keep dock(wz-tutor-dock-btn op=0 inView=True hit=True); Ask a question…(wz-tutor-convo-input op=0 inView=True hit=False)
+  flux/phone/arrival-signed-out: 1  Enter full screen( op=1 inView=True hit=False)
+  flux/phone/sign-in: 1  Enter full screen( op=1 inView=True hit=False)
+  flux/phone/arrival-signed-in: 2  Enter full screen( op=1 inView=True hit=False); Sign out( op=1 inView=True hit=False)
+  flux/phone/page-freewrite: 1  Typewriter scroll (typewriter-toggle.on op=1 inView=True hit=False)
+  flux/phone/page-draft: 1  Typewriter scroll (typewriter-toggle.on op=1 inView=True hit=False)
+  flux/phone/publish-dialog: 1  Typewriter scroll (typewriter-toggle.on op=1 inView=True hit=False)
+
+## DOORS (keyboard open / Esc)
+  {"theme": "plateau", "vp": "desktop", "door": "Publish dialog", "opened": true, "focusOnOpen": {"tag": "button", "role": "tab", "name": "Publish", "cls": "desk-mode-tab", "inDialog": false, "inPanel": false, "inRail": false, "inTutor": false}, "leftDialogOnTab": 6, "closedByEsc": false, "focusAfterEsc": {"tag": "button", "role": null, "name": "Journal", "cls": "wz-strip-item", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "stillOpenAfterBackdropClick": false}
+  {"theme": "plateau", "vp": "desktop", "door": "Rail: Page", "opened": true, "focusOnOpen": {"tag": "button", "role": null, "name": "Page", "cls": "wz-strip-item.active", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escFromRailButton": false, "tabGoesTo": {"tag": "button", "role": null, "name": "Plan", "cls": "wz-strip-item", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escAfterOneTab": false, "escFromPage": true}
+  {"theme": "plateau", "vp": "desktop", "door": "Rail: Plan", "opened": true, "focusOnOpen": {"tag": "button", "role": null, "name": "Plan", "cls": "wz-strip-item.active", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escFromRailButton": false, "tabGoesTo": {"tag": "button", "role": null, "name": "Drawers", "cls": "wz-strip-item", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escAfterOneTab": false, "escFromPage": true}
+  {"theme": "plateau", "vp": "desktop", "door": "Rail: Drawers", "opened": true, "focusOnOpen": {"tag": "button", "role": null, "name": "Drawers", "cls": "wz-strip-item.active", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escFromRailButton": false, "tabGoesTo": {"tag": "button", "role": null, "name": "Journal", "cls": "wz-strip-item", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escAfterOneTab": false, "escFromPage": true}
+  {"theme": "plateau", "vp": "desktop", "door": "Rail: Journal", "opened": true, "focusOnOpen": {"tag": "button", "role": null, "name": "Journal", "cls": "wz-strip-item.active", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escFromRailButton": false, "tabGoesTo": {"tag": "button", "role": null, "name": "Shelf", "cls": "wz-strip-item", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escAfterOneTab": false, "escFromPage": true}
+  {"theme": "plateau", "vp": "desktop", "door": "Rail: Shelf", "opened": true, "focusOnOpen": {"tag": "button", "role": null, "name": "Shelf", "cls": "wz-strip-item.active", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escFromRailButton": false, "tabGoesTo": {"tag": "button", "role": null, "name": "Settings", "cls": "wz-strip-item", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escAfterOneTab": false, "escFromPage": true}
+  {"theme": "plateau", "vp": "desktop", "door": "Rail: Settings", "opened": true, "focusOnOpen": {"tag": "button", "role": null, "name": "Settings", "cls": "wz-strip-item.active", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escFromRailButton": false, "tabGoesTo": {"tag": "button", "role": null, "name": "Themes", "cls": "wz-strip-item", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escAfterOneTab": false, "escFromPage": true}
+  {"theme": "plateau", "vp": "desktop", "door": "Rail: Themes", "opened": true, "focusOnOpen": {"tag": "button", "role": null, "name": "Themes", "cls": "wz-strip-item.active", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escFromRailButton": false, "tabGoesTo": {"tag": "button", "role": null, "name": "Trash", "cls": "wz-strip-item", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escAfterOneTab": false, "escFromPage": true}
+  {"theme": "plateau", "vp": "desktop", "door": "Rail: Trash", "opened": true, "focusOnOpen": {"tag": "button", "role": null, "name": "Trash", "cls": "wz-strip-item.active", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escFromRailButton": false, "tabGoesTo": {"tag": "button", "role": null, "name": "Close", "cls": "wz-cascade-dock-btn", "inDialog": false, "inPanel": true, "inRail": false, "inTutor": false}, "escAfterOneTab": false, "escFromPage": true}
+  {"theme": "plateau", "vp": "desktop", "door": "Tutor", "gripFocusable": true, "opened": true, "focusOnOpen": {"tag": "body", "role": null, "name": "\u22efThe Long Winter/Chapter 1Free WriteDraf", "cls": "", "inDialog": false, "inPanel": false, "inRail": false, "inTutor": false}, "disclosure": {"focusMovedIn": true, "tabGoesTo": {"tag": "button", "role": null, "name": "Show controls", "cls": "chrome-handle", "inDialog": false, "inPanel": false, "inRail": false, "inTutor": false}}, "escWhereFocusWas": true, "focusAfter": {"tag": "body", "role": null, "name": "\u22efThe Long Winter/Chapter 1Free WriteDraf", "cls": "", "inDialog": false, "inPanel": false, "inRail": false, "inTutor": false}}
+  {"theme": "plateau", "vp": "phone", "door": "Publish dialog", "opened": false, "focusOnOpen": {"tag": "body", "role": null, "name": "\uff0bCatch\u2767Journal\u25a4Shelf\u25a5Drawers\u25a3LibraryFull", "cls": "", "inDialog": false, "inPanel": false, "inRail": false, "inTutor": false}, "leftDialogOnTab": 6, "closedByEsc": true, "focusAfterEsc": {"tag": "button", "role": null, "name": "Publishexport", "cls": "mode-tab.mode-tab--action", "inDialog": false, "inPanel": false, "inRail": false, "inTutor": false}, "stillOpenAfterBackdropClick": false}
+  {"theme": "plateau", "vp": "phone", "door": "Tutor", "noGrip": true}
+  {"theme": "flux", "vp": "desktop", "door": "Publish dialog", "opened": true, "focusOnOpen": {"tag": "button", "role": "tab", "name": "Publish", "cls": "desk-mode-tab", "inDialog": false, "inPanel": false, "inRail": false, "inTutor": false}, "leftDialogOnTab": 6, "closedByEsc": false, "focusAfterEsc": {"tag": "button", "role": null, "name": "Log", "cls": "wz-strip-item", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "stillOpenAfterBackdropClick": false}
+  {"theme": "flux", "vp": "desktop", "door": "Rail: Page", "opened": true, "focusOnOpen": {"tag": "button", "role": null, "name": "Page", "cls": "wz-strip-item.active", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escFromRailButton": false, "tabGoesTo": {"tag": "button", "role": null, "name": "Plan", "cls": "wz-strip-item", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escAfterOneTab": false, "escFromPage": true}
+  {"theme": "flux", "vp": "desktop", "door": "Rail: Plan", "opened": true, "focusOnOpen": {"tag": "button", "role": null, "name": "Plan", "cls": "wz-strip-item.active", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escFromRailButton": false, "tabGoesTo": {"tag": "button", "role": null, "name": "Drawers", "cls": "wz-strip-item", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escAfterOneTab": false, "escFromPage": true}
+  {"theme": "flux", "vp": "desktop", "door": "Rail: Drawers", "opened": true, "focusOnOpen": {"tag": "button", "role": null, "name": "Drawers", "cls": "wz-strip-item.active", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escFromRailButton": false, "tabGoesTo": {"tag": "button", "role": null, "name": "Log", "cls": "wz-strip-item", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escAfterOneTab": false, "escFromPage": true}
+  {"theme": "flux", "vp": "desktop", "door": "Rail: Log", "opened": true, "focusOnOpen": {"tag": "button", "role": null, "name": "Log", "cls": "wz-strip-item.active", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escFromRailButton": false, "tabGoesTo": {"tag": "button", "role": null, "name": "Shelf", "cls": "wz-strip-item", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escAfterOneTab": false, "escFromPage": true}
+  {"theme": "flux", "vp": "desktop", "door": "Rail: Shelf", "opened": true, "focusOnOpen": {"tag": "button", "role": null, "name": "Shelf", "cls": "wz-strip-item.active", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escFromRailButton": false, "tabGoesTo": {"tag": "button", "role": null, "name": "Settings", "cls": "wz-strip-item", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escAfterOneTab": false, "escFromPage": true}
+  {"theme": "flux", "vp": "desktop", "door": "Rail: Settings", "opened": true, "focusOnOpen": {"tag": "button", "role": null, "name": "Settings", "cls": "wz-strip-item.active", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escFromRailButton": false, "tabGoesTo": {"tag": "button", "role": null, "name": "Themes", "cls": "wz-strip-item", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escAfterOneTab": false, "escFromPage": true}
+  {"theme": "flux", "vp": "desktop", "door": "Rail: Themes", "opened": true, "focusOnOpen": {"tag": "button", "role": null, "name": "Themes", "cls": "wz-strip-item.active", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escFromRailButton": false, "tabGoesTo": {"tag": "button", "role": null, "name": "Trash", "cls": "wz-strip-item", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escAfterOneTab": false, "escFromPage": true}
+  {"theme": "flux", "vp": "desktop", "door": "Rail: Trash", "opened": true, "focusOnOpen": {"tag": "button", "role": null, "name": "Trash", "cls": "wz-strip-item.active", "inDialog": false, "inPanel": false, "inRail": true, "inTutor": false}, "escFromRailButton": false, "tabGoesTo": {"tag": "button", "role": null, "name": "Close", "cls": "wz-cascade-dock-btn", "inDialog": false, "inPanel": true, "inRail": false, "inTutor": false}, "escAfterOneTab": false, "escFromPage": true}
+  {"theme": "flux", "vp": "desktop", "door": "Tutor", "gripFocusable": true, "opened": true, "focusOnOpen": {"tag": "body", "role": null, "name": "\u22efThe Long Winter/Chapter 1Free WriteDraf", "cls": "", "inDialog": false, "inPanel": false, "inRail": false, "inTutor": false}, "disclosure": {"focusMovedIn": true, "tabGoesTo": {"tag": "button", "role": null, "name": "Show controls", "cls": "chrome-handle", "inDialog": false, "inPanel": false, "inRail": false, "inTutor": false}}, "escWhereFocusWas": true, "focusAfter": {"tag": "body", "role": null, "name": "\u22efThe Long Winter/Chapter 1Free WriteDraf", "cls": "", "inDialog": false, "inPanel": false, "inRail": false, "inTutor": false}}
+  {"theme": "flux", "vp": "phone", "door": "Publish dialog", "opened": false, "focusOnOpen": {"tag": "body", "role": null, "name": "\uff0bCatch\u2767Log\u25a4Cache\u25a5Racks\u25a3LibraryFull scree", "cls": "", "inDialog": false, "inPanel": false, "inRail": false, "inTutor": false}, "leftDialogOnTab": 6, "closedByEsc": true, "focusAfterEsc": {"tag": "button", "role": null, "name": "Connectexport", "cls": "mode-tab.mode-tab--action", "inDialog": false, "inPanel": false, "inRail": false, "inTutor": false}, "stillOpenAfterBackdropClick": false}
+  {"theme": "flux", "vp": "phone", "door": "Tutor", "noGrip": true}
+
+## CONTRAST SAMPLES
+   plateau desktop arrival tagline                    fg=rgb(240, 231, 216)     bg=rgb(17,6,0)        ratio=13.76 size=28.48 op=0.92 PASS(>= 3)  (arrival-signed-out)
+   plateau desktop arrival Open                       fg=rgb(140, 128, 112)     bg=rgb(17,6,0)        ratio= 5.18 size= 15.2 op=1 PASS(>= 4.5)  (arrival-signed-out)
+   plateau desktop sign-in link                       fg=rgb(140, 128, 112)     bg=rgb(17,6,0)        ratio= 5.18 size= 15.2 op=1 PASS(>= 4.5)  (sign-in)
+   plateau desktop field placeholder                  fg=rgb(240, 231, 216)     bg=rgb(21,10,4)       ratio= 15.9 size=   16 op=1 PASS(>= 4.5)  (sign-in)
+   plateau desktop field placeholder (::placeholder)  fg=rgb(70, 59, 44)        bg=rgb(21,10,4)       ratio= 1.78 size=   16 op=1 FAIL(>= 4.5)  (sign-in)
+   plateau desktop mode tab (inactive)                fg=rgb(181, 169, 152)     bg=rgb(31,26,22)      ratio= 7.47 size= 10.4 op=1 PASS(>= 4.5)  (page-freewrite)
+   plateau desktop mode tab (active)                  fg=rgb(237, 230, 218)     bg=rgb(31,26,22)      ratio=13.91 size= 10.4 op=1 PASS(>= 4.5)  (page-freewrite)
+   plateau desktop mode tab (Workshop, deferred)      fg=rgb(128, 118, 106)     bg=rgb(31,26,22)      ratio= 3.87 size= 10.4 op=1 FAIL(>= 4.5)  (page-freewrite)
+   plateau desktop Plan door                          fg=rgb(150, 160, 90)      bg=rgb(31,26,22)      ratio= 6.14 size= 10.4 op=1 PASS(>= 4.5)  (page-freewrite)
+   plateau desktop breadcrumb (binder)                fg=rgb(128, 118, 106)     bg=rgb(31,26,22)      ratio= 3.87 size=   13 op=1 FAIL(>= 4.5)  (page-freewrite)
+   plateau desktop rail label (places)                fg=rgb(237, 230, 218)     bg=rgb(31,26,22)      ratio=13.91 size= 10.8 op=1 PASS(>= 4.5)  (page-freewrite)
+   plateau desktop rail label (foot group)            fg=rgb(237, 230, 218)     bg=rgb(31,26,22)      ratio=13.91 size=7.236 op=1 PASS(>= 4.5)  (page-freewrite)
+   plateau desktop page prose                         fg=rgb(26, 15, 6)         bg=rgb(243,237,225)   ratio=16.16 size=   17 op=1 PASS(>= 4.5)  (page-freewrite)
+   plateau desktop Tutor input placeholder            fg=rgb(237, 230, 218)     bg=rgb(42,36,30)      ratio=    1 size=   14 op=0 FAIL(>= 4.5)  (page-freewrite)
+   plateau desktop Tutor input placeholder (::placeho fg=rgb(117, 117, 117)     bg=rgb(42,36,30)      ratio=    1 size=   14 op=0 FAIL(>= 4.5)  (page-freewrite)
+   plateau phone   arrival tagline                    fg=rgb(240, 231, 216)     bg=rgb(17,6,0)        ratio=13.76 size= 19.2 op=0.92 PASS(>= 4.5)  (arrival-signed-out)
+   plateau phone   arrival Open                       fg=rgb(140, 128, 112)     bg=rgb(17,6,0)        ratio= 5.18 size= 15.2 op=1 PASS(>= 4.5)  (arrival-signed-out)
+   plateau phone   sign-in link                       fg=rgb(140, 128, 112)     bg=rgb(17,6,0)        ratio= 5.18 size= 15.2 op=1 PASS(>= 4.5)  (sign-in)
+   plateau phone   field placeholder                  fg=rgb(240, 231, 216)     bg=rgb(21,10,4)       ratio= 15.9 size=   16 op=1 PASS(>= 4.5)  (sign-in)
+   plateau phone   field placeholder (::placeholder)  fg=rgb(70, 59, 44)        bg=rgb(21,10,4)       ratio= 1.78 size=   16 op=1 FAIL(>= 4.5)  (sign-in)
+   plateau phone   Plan door                          fg=rgb(150, 160, 90)      bg=rgb(31,26,22)      ratio= 6.14 size= 10.4 op=1 PASS(>= 4.5)  (page-freewrite)
+   plateau phone   breadcrumb (binder)                fg=rgb(128, 118, 106)     bg=rgb(31,26,22)      ratio= 3.87 size=   13 op=1 FAIL(>= 4.5)  (page-freewrite)
+   plateau phone   page prose                         fg=rgb(26, 15, 6)         bg=rgb(243,237,225)   ratio=16.16 size=   17 op=1 PASS(>= 4.5)  (page-freewrite)
+   plateau phone   old desk rail label                fg=rgb(128, 118, 106)     bg=rgb(17,6,0)        ratio= 4.49 size=    9 op=1 FAIL(>= 4.5)  (page-freewrite)
+   flux    desktop arrival tagline                    fg=rgb(240, 231, 216)     bg=rgb(17,6,0)        ratio=13.76 size=28.48 op=0.92 PASS(>= 3)  (arrival-signed-out)
+   flux    desktop arrival Open                       fg=rgb(140, 128, 112)     bg=rgb(17,6,0)        ratio= 5.18 size= 15.2 op=1 PASS(>= 4.5)  (arrival-signed-out)
+   flux    desktop sign-in link                       fg=rgb(140, 128, 112)     bg=rgb(17,6,0)        ratio= 5.18 size= 15.2 op=1 PASS(>= 4.5)  (sign-in)
+   flux    desktop field placeholder                  fg=rgb(240, 231, 216)     bg=rgb(21,10,4)       ratio= 15.9 size=   16 op=1 PASS(>= 4.5)  (sign-in)
+   flux    desktop field placeholder (::placeholder)  fg=rgb(70, 59, 44)        bg=rgb(21,10,4)       ratio= 1.78 size=   16 op=1 FAIL(>= 4.5)  (sign-in)
+   flux    desktop mode tab (inactive)                fg=rgb(143, 180, 172)     bg=rgb(31,26,22)      ratio= 7.63 size= 10.4 op=1 PASS(>= 4.5)  (page-freewrite)
+   flux    desktop mode tab (active)                  fg=rgb(227, 241, 236)     bg=rgb(31,26,22)      ratio=14.83 size= 10.4 op=1 PASS(>= 4.5)  (page-freewrite)
+   flux    desktop mode tab (Workshop, deferred)      fg=rgb(110, 149, 141)     bg=rgb(31,26,22)      ratio= 5.21 size= 10.4 op=1 PASS(>= 4.5)  (page-freewrite)
+   flux    desktop Plan door                          fg=rgb(150, 160, 90)      bg=rgb(31,26,22)      ratio= 6.14 size= 10.4 op=1 PASS(>= 4.5)  (page-freewrite)
+   flux    desktop breadcrumb (binder)                fg=rgb(110, 149, 141)     bg=rgb(31,26,22)      ratio= 5.21 size=   13 op=1 PASS(>= 4.5)  (page-freewrite)
+   flux    desktop rail label (places)                fg=rgb(227, 241, 236)     bg=rgb(9,30,36)       ratio= 14.8 size= 10.8 op=1 PASS(>= 4.5) [bg image/gradient] (page-freewrite)
+   flux    desktop rail label (foot group)            fg=rgb(227, 241, 236)     bg=rgb(9,30,36)       ratio= 14.8 size=7.236 op=1 PASS(>= 4.5) [bg image/gradient] (page-freewrite)
+   flux    desktop page prose                         fg=rgb(26, 15, 6)         bg=rgb(237,246,243)   ratio=17.11 size=   17 op=1 PASS(>= 4.5)  (page-freewrite)
+   flux    desktop Tutor input placeholder            fg=rgb(227, 241, 236)     bg=rgb(42,36,30)      ratio=    1 size=   14 op=0 FAIL(>= 4.5)  (page-freewrite)
+   flux    desktop Tutor input placeholder (::placeho fg=rgb(117, 117, 117)     bg=rgb(42,36,30)      ratio=    1 size=   14 op=0 FAIL(>= 4.5)  (page-freewrite)
+   flux    phone   arrival tagline                    fg=rgb(240, 231, 216)     bg=rgb(17,6,0)        ratio=13.76 size= 19.2 op=0.92 PASS(>= 4.5)  (arrival-signed-out)
+   flux    phone   arrival Open                       fg=rgb(140, 128, 112)     bg=rgb(17,6,0)        ratio= 5.18 size= 15.2 op=1 PASS(>= 4.5)  (arrival-signed-out)
+   flux    phone   sign-in link                       fg=rgb(140, 128, 112)     bg=rgb(17,6,0)        ratio= 5.18 size= 15.2 op=1 PASS(>= 4.5)  (sign-in)
+   flux    phone   field placeholder                  fg=rgb(240, 231, 216)     bg=rgb(21,10,4)       ratio= 15.9 size=   16 op=1 PASS(>= 4.5)  (sign-in)
+   flux    phone   field placeholder (::placeholder)  fg=rgb(70, 59, 44)        bg=rgb(21,10,4)       ratio= 1.78 size=   16 op=1 FAIL(>= 4.5)  (sign-in)
+   flux    phone   Plan door                          fg=rgb(150, 160, 90)      bg=rgb(31,26,22)      ratio= 6.14 size= 10.4 op=1 PASS(>= 4.5)  (page-freewrite)
+   flux    phone   breadcrumb (binder)                fg=rgb(110, 149, 141)     bg=rgb(31,26,22)      ratio= 5.21 size=   13 op=1 PASS(>= 4.5)  (page-freewrite)
+   flux    phone   page prose                         fg=rgb(26, 15, 6)         bg=rgb(237,246,243)   ratio=17.11 size=   17 op=1 PASS(>= 4.5)  (page-freewrite)
+   flux    phone   old desk rail label                fg=rgb(110, 149, 141)     bg=rgb(7,15,17)       ratio= 5.86 size=    9 op=1 PASS(>= 4.5) [bg image/gradient] (page-freewrite)
+
+## TOKENS
+   plateau: {"--text-hi": "#EDE6DA", "--text-mid": "#B5A998", "--text-low": "#80766A", "--accent-rest": "#96a05a", "--brass": "#ff9800", "--desk-ground": "#1F1A16", "--chrome-surface": "#1F1A16", "--ink-900": "#1F1A16", "--ink-800": "#2A241E", "--paper": "#F3EDE1", "--paper-dim": "#E9E1D2"}
+   flux: {"--text-hi": "#E3F1EC", "--text-mid": "#8FB4AC", "--text-low": "#6E958D", "--accent-rest": "#96a05a", "--brass": "#ff9800", "--desk-ground": "rgba(9, 30, 36, .9)", "--chrome-surface": "rgba(9, 30, 36, .9)", "--ink-900": "#1F1A16", "--ink-800": "#2A241E", "--paper": "#EDF6F3", "--paper-dim": "#E3EFEC"}

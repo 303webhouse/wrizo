@@ -1,0 +1,194 @@
+{
+ "plateau-phone": {
+  "publishButton": 1,
+  "focusBefore": {
+   "name": "Publishexport",
+   "cls": "mode-tab mode-tab--action",
+   "tag": "BUTTON",
+   "tabIndex": 0,
+   "inDialog": false,
+   "inTutor": false
+  },
+  "opened": true,
+  "focusOnOpen": {
+   "name": "Publishexport",
+   "cls": "mode-tab mode-tab--action",
+   "tag": "BUTTON",
+   "tabIndex": 0,
+   "inDialog": false,
+   "inTutor": false
+  },
+  "tabs": [
+   {
+    "name": "Copy the clean page text",
+    "cls": "btn-quiet page-copy",
+    "tag": "BUTTON",
+    "tabIndex": 0,
+    "inDialog": false,
+    "inTutor": false
+   },
+   {
+    "name": "Plan →",
+    "cls": "btn-quiet page-plan-door",
+    "tag": "BUTTON",
+    "tabIndex": 0,
+    "inDialog": false,
+    "inTutor": false
+   },
+   {
+    "name": "Show controls",
+    "cls": "chrome-handle",
+    "tag": "BUTTON",
+    "tabIndex": 0,
+    "inDialog": false,
+    "inTutor": false
+   },
+   {
+    "name": "Writing settings",
+    "cls": "mode-iconbtn mode-gear",
+    "tag": "BUTTON",
+    "tabIndex": 0,
+    "inDialog": false,
+    "inTutor": false
+   },
+   {
+    "name": "Bold",
+    "cls": "mode-tbtn",
+    "tag": "BUTTON",
+    "tabIndex": 0,
+    "inDialog": false,
+    "inTutor": false
+   }
+  ],
+  "closedByEsc": false,
+  "tutorOpener": []
+ },
+ "plateau-desktop-tutor": {
+  "firstFocus": {
+   "name": "Got it",
+   "cls": "wz-tutor-disclosure-ack",
+   "tag": "BUTTON",
+   "tabIndex": 0,
+   "inDialog": true,
+   "inTutor": true
+  },
+  "disclosureRole": {
+   "role": "dialog",
+   "modal": "true",
+   "label": "Before you ask"
+  },
+  "afterAck": "body",
+  "openAfterAck": true,
+  "inInput": {
+   "name": "INPUT",
+   "cls": "wz-tutor-convo-input",
+   "tag": "INPUT",
+   "tabIndex": 0,
+   "inDialog": false,
+   "inTutor": true
+  },
+  "escFromInsideCloses": false,
+  "tutorLive": [],
+  "inputLabel": {
+   "aria": null,
+   "labelled": false,
+   "placeholder": "Ask a question…"
+  }
+ },
+ "flux-phone": {
+  "publishButton": 1,
+  "focusBefore": {
+   "name": "Connectexport",
+   "cls": "mode-tab mode-tab--action",
+   "tag": "BUTTON",
+   "tabIndex": 0,
+   "inDialog": false,
+   "inTutor": false
+  },
+  "opened": true,
+  "focusOnOpen": {
+   "name": "Connectexport",
+   "cls": "mode-tab mode-tab--action",
+   "tag": "BUTTON",
+   "tabIndex": 0,
+   "inDialog": false,
+   "inTutor": false
+  },
+  "tabs": [
+   {
+    "name": "Copy the clean doc text",
+    "cls": "btn-quiet page-copy",
+    "tag": "BUTTON",
+    "tabIndex": 0,
+    "inDialog": false,
+    "inTutor": false
+   },
+   {
+    "name": "Plan →",
+    "cls": "btn-quiet page-plan-door",
+    "tag": "BUTTON",
+    "tabIndex": 0,
+    "inDialog": false,
+    "inTutor": false
+   },
+   {
+    "name": "Show controls",
+    "cls": "chrome-handle",
+    "tag": "BUTTON",
+    "tabIndex": 0,
+    "inDialog": false,
+    "inTutor": false
+   },
+   {
+    "name": "Writing settings",
+    "cls": "mode-iconbtn mode-gear",
+    "tag": "BUTTON",
+    "tabIndex": 0,
+    "inDialog": false,
+    "inTutor": false
+   },
+   {
+    "name": "Bold",
+    "cls": "mode-tbtn",
+    "tag": "BUTTON",
+    "tabIndex": 0,
+    "inDialog": false,
+    "inTutor": false
+   }
+  ],
+  "closedByEsc": false,
+  "tutorOpener": []
+ },
+ "flux-desktop-tutor": {
+  "firstFocus": {
+   "name": "Got it",
+   "cls": "wz-tutor-disclosure-ack",
+   "tag": "BUTTON",
+   "tabIndex": 0,
+   "inDialog": true,
+   "inTutor": true
+  },
+  "disclosureRole": {
+   "role": "dialog",
+   "modal": "true",
+   "label": "Before you ask"
+  },
+  "afterAck": "body",
+  "openAfterAck": true,
+  "inInput": {
+   "name": "INPUT",
+   "cls": "wz-tutor-convo-input",
+   "tag": "INPUT",
+   "tabIndex": 0,
+   "inDialog": false,
+   "inTutor": true
+  },
+  "escFromInsideCloses": false,
+  "tutorLive": [],
+  "inputLabel": {
+   "aria": null,
+   "labelled": false,
+   "placeholder": "Ask a question…"
+  }
+ }
+}

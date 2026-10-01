@@ -1,0 +1,45 @@
+- button "Desk menu": ⋯
+- text: The Long Winter / Chapter 1
+- tablist "Writing mode":
+  - tab "Free Write"
+  - tab "Draft" [selected]
+  - tab "Revise"
+  - tab "Workshop" [disabled]
+  - tab "Publish"
+  - button "Plan"
+- tablist "Binder view":
+  - tab "Pages" [selected]
+- complementary "Strip":
+  - button "Page"
+  - button "Plan"
+  - separator
+  - button "Drawers"
+  - separator
+  - button "Journal"
+  - button "Shelf"
+  - separator
+  - button "Settings"
+  - button "Themes"
+  - separator
+  - button "Trash"
+- text: 33 words words
+- button "Open hand tools"
+- button "Close the Tutor" [expanded]
+- text: The Tutor
+- button "Close, keep dock"
+- text: Talk it through Nothing said yet.
+- group "Draft asks":
+  - button "Where does this drag?"
+  - button "What's load-bearing here — and what could go?"
+  - button "Where does the thread slip?"
+  - button "Look at just this stretch — what's it doing?" [disabled]
+- textbox "Ask a question…"
+- button "Send" [disabled]
+- text: Consistency No repeated or near-duplicate names found yet. Structure In The Long Winter Also connected to Chapter beats. Fragments Recency and shared tags only — nothing else. Nothing recent or shared-tagged to resurface yet. The book's Bible Facts you save travel with the book — the Tutor keeps them in mind. Nothing saved yet.
+- textbox "Note a fact to remember…"
+- button "Add" [disabled]
+- dialog "Before you ask":
+  - text: "Before you ask Nothing leaves your desk unasked: an ask sends your words, this page's recent changes, and your Bible; a counsel that reads more names it on the button and sends only that, only then. When you ask the Tutor, your question — and any new writing on this page since the Tutor last read it, and any facts you've saved in this book's Bible — travels to the language model provider configured for this app. Nothing is ever sent unless you ask. Your pages remain yours."
+  - button "Got it"
+- button "Show controls"
+- textbox "Page writing surface"
