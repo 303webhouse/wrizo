@@ -23657,3 +23657,35 @@ now, but no box-free line has arrived).**
 
 **RULED (Fable): TOOLS’ 213 step 2 is a SYNCHRONOUS write-ahead journal** (details in TOOLS’ own block — not
 carried in this relay; recorded as a heading for now, not a design).
+
+## GRANT: FIX, ESCEXIT RE-RUN ON item-esc-exit @ 8245b3f (TIP MOVED FOR FABLE’S THREE CHANGES) — 2026-09-30 (chat 1)
+
+**FIX’S BOX-FREE LINE, VERIFIED:** `340506e`’s run done, 0 browsers, both logs committed under
+`docs/evidence/`. **ONE MORE SHORT GRANT REQUESTED: the tip moved to `8245b3f`** (“Esc exit: screen-reader
+hint (lexicon), the screenplay surface gets the same exit, the 60 ms recount named and measured…” — Fable’s
+three changes) — **FIX had not run under the old grant’s SHA.** **Verified: 0 browsers, 0 harness
+processes; `8245b3f` is the origin tip.**
+
+**GRANT REWRITTEN: lane FIX — escexit on `item-esc-exit` @ `8245b3f`, a single file.** **This precedes
+Batch Eight’s pair grant** — on THIS run’s box-free line, this desk grants the Batch Eight pair and sends
+Fable its SHA, per his order.
+
+## BATCH EIGHT PAIR — REFUSED SAFELY, A LIVE escexit RUN STILL ON THE BOX; WAITING FOR FIX’S REAL BOX-FREE LINE — 2026-09-30 (chat 1)
+
+**GRANTED THE PAIR** (lane CHAT1, `chat1-batch8-pair-9c8d5c3-20260930`) **and launched it on `batch-eight`
+@ `9c8d5c3`, per Fable’s word that FIX’s box-free line was in — BOTH LEGS REFUSED SAFELY, exit 2 each:**
+the runner’s own pre-flight found **11 live `msedge` browsers owned by a LIVE node process, pid `40588`,
+running `scripts/harness/escexit.mjs`** — FIX’s own run, still actually on the box. **Nothing was clobbered;
+the guard did exactly its job.**
+
+**WHAT THIS MEANS: my own pre-grant check (0 harness processes, moments before I wrote the CHAT1 grant and
+launched) raced FIX’s run starting — the same class of race this desk hit once before.** **Checked again,
+now: STILL 1 harness node process and 16 `msedge` browsers on the box** — FIX’s escexit run (presumably on
+`8245b3f`, or a later tip) is genuinely still running. **The grant file names CHAT1, but overwriting it did not
+stop FIX’s already-running processes** — the file is only read at a run’s own pre-flight, so FIX’s run
+continues unaffected; no harm done either way.
+
+**NOT RE-ATTEMPTING THE PAIR YET.** This desk waits for FIX’s own, GENUINE box-free line (0 processes
+measured at that moment) before granting and launching again. *(Fable’s “box-free line is in” may have been
+about an EARLIER escexit run that finished — the one this process is not; said plainly rather than guessed
+at.)*
