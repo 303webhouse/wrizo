@@ -23616,3 +23616,44 @@ with the earlier entry; restated here per this relay.)
 `item-esc-exit`** (“Merge branch ‘item-writing-r3’ into `item-esc-exit`”) — **item 220’s own branch**.
 
 **GRANT REWRITTEN: lane FIX — the escexit + item210 re-run on `item-esc-exit` @ `340506e`.**
+
+## NICK’S WORDS ON THE PUBLIC REPO AND LOGIN OPTIONS; THE SECURITY STANDING RULE; ITEMS 224–226; 163 RESOLVED ON BATCH EIGHT (ALL NINE MERGED, tsc + build:web CLEAN) — 2026-09-30 (chat 1)
+
+**NICK’S WORDS, verbatim as relayed (the “---” his):**
+
+> “1. It's meant to be public. When we make it private, we can't build from all of our
+> environments. This has been something I've tried addressing twice before --- it has to
+> stay public for now. 2. Yes, but I would like two new login options: a guest login for
+> beta testers, and a mock user account filled with every kind of writing project we're
+> attempting to make the app usable full including the journal, various writing projects, a
+> screenplay, and connected boards for each project (we can build this later if it would be
+> better to wait until all the major features/architecture updates are in)”
+
+**STANDING RULE (Fable, by his word): the repo stays public — he has tried making it private twice before
+and it broke building from every environment. NO SECURITY WEAKNESS enters the repo or the ledger until it is
+fixed. The review travels Nick → Fable only.**
+
+**REGISTERED, from his second answer:**
+- **ITEM 224 — sign-up by invite code until launch, plus a per-person Tutor budget.** Owner INK, NOW, under
+  “server hardening.”
+- **ITEM 225 — a guest login for beta testers, by invite link.** PLAN DESK designs.
+- **ITEM 226 — the sample account** (journal, several writing projects, a screenplay, connected boards per
+  project) — **AFTER the major features/architecture land**, per his own “we can build this later”; its
+  content can later seed guests.
+Registry: next free **227**.
+
+**163, RESOLVED (Fable’s word: the same mechanical class as append-append — an IMPORT-SPECIFIER UNION,
+both sides’ imported names kept, nothing renamed, no other line touched):** `CascadePanels.tsx` now reads
+`import { boardDrawerLine } from '../store/pageHome'; import { firstLine, plainLines } from
+'../store/entryText';` — **verified by diff: exactly those two lines changed, nothing else in the file.**
+
+**BATCH EIGHT: ALL NINE MERGED. `tsc` x2 and `build:web` both exit 0 again on the full tree.** `batch-eight`
+pushed @ `9c8d5c3`. **NOT YET GRANTED FOR A PAIR** — per Fable’s order, that waits for FIX’s box-free line
+(FIX’s `item-esc-exit` short use is granted and the grant file still names FIX; 0 harness processes right
+now, but no box-free line has arrived).**
+
+**ACCEPTED FOR BATCH NINE (Fable): INK’s `a11y-signin` @ `3b0bf91` (item 221) and `a11y-tutor-live-region` @
+`40939b4` (item 222).** Not merged now — Batch Nine, not Eight.
+
+**RULED (Fable): TOOLS’ 213 step 2 is a SYNCHRONOUS write-ahead journal** (details in TOOLS’ own block — not
+carried in this relay; recorded as a heading for now, not a design).
