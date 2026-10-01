@@ -137,13 +137,22 @@ function hydrateDirty(): Record<CollectionName, Set<string>> {
 // the same synchronous moment as the collection it describes: the two can
 // never disagree about a record that reached disk. `markClean()` and the
 // journal backfill call it directly, since neither touches a collection.
+// STORAGE-FULL STEP 1 (Fable's byte review, item 1) — this write is a save too, and it can fail on its own: a
+// collection's own write can succeed while THIS one — the record of which rows are still unpushed — does not. That
+// stamps a just-saved, still-unsynced record as indistinguishable from a clean one: nothing pushes it, nothing
+// notices, the exact silent class this step exists to end. Reported under its OWN name (never one of COLLECTIONS'
+// names) so a reader can tell "the record itself didn't save" from "the record saved, but sync doesn't know it
+// needs to" — both are real, and they are different repairs.
+const DIRTY_JOURNAL_REPORT_NAME = 'dirtyJournal';
 function persistDirty(): void {
   try {
     const out: Record<string, string[]> = {};
     for (const name of COLLECTIONS) out[name] = [...dirty[name]];
     localStorage.setItem(DIRTY_KEY, JSON.stringify(out));
+    reportFlushOk(DIRTY_JOURNAL_REPORT_NAME);
   } catch {
     // Storage full/unavailable — never throw into a write path.
+    reportFlushFailed(DIRTY_JOURNAL_REPORT_NAME);
   }
 }
 
@@ -179,6 +188,18 @@ export function markClean(ids: string[]): void {
     dirty.drawers.delete(id);
   }
   persistDirty();
+  // STORAGE-FULL STEP 1 — a successful push is the one thing that can move the sync notice from "changes not yet in
+  // the account" to "safe in the account" while storage stays failed; nothing previously told a reactive listener
+  // that dirty state had changed here (only a collection write or a subscribe-worthy read did). This was the one
+  // real gap: every other mutator already calls notify() (see upsert()); this is the one that did not.
+  notify();
+}
+
+// STORAGE-FULL STEP 1 — true while ANY collection still has a record the account does not have yet. Cheap: reads
+// each dirty Set's own size, no cloning (unlike getDirtyRecords(), built for pushing the records themselves, not
+// for answering "is there anything to push").
+export function hasDirtyRecords(): boolean {
+  return COLLECTIONS.some((name) => dirty[name].size > 0);
 }
 
 // Item 89 — test/inspection seam (this file's own established pattern; see
@@ -252,15 +273,51 @@ const flushTimers: Record<CollectionName, ReturnType<typeof setTimeout> | null> 
   drawers: null,
 };
 
+// STORAGE-FULL STEP 1 — each collection's own last-known SERIALIZED LENGTH (characters, not bytes yet — doubled below
+// for a UTF-16 estimate), updated the moment `flush()` re-stringifies it. Summing these is the app's whole footprint
+// without re-reading anything from disk a second time; seeded from the RAW on-disk string at boot so a session with
+// no edits at all still reports an accurate figure the first time `maybeReportStorageUsage()` runs.
+const lastFlushedChars: Partial<Record<CollectionName, number>> = {};
+for (const name of COLLECTIONS) {
+  try { lastFlushedChars[name] = localStorage.getItem(KEYS[name])?.length ?? 0; } catch { lastFlushedChars[name] = 0; }
+}
+let lastUsageCheckAt = 0;
+const USAGE_CHECK_MIN_INTERVAL_MS = 4000; // a fill this app can warn "before" never needs sub-second resolution
+function maybeReportStorageUsage(): void {
+  const now = Date.now();
+  if (now - lastUsageCheckAt < USAGE_CHECK_MIN_INTERVAL_MS) return;
+  lastUsageCheckAt = now;
+  let totalChars = 0;
+  for (const name of COLLECTIONS) totalChars += lastFlushedChars[name] ?? 0;
+  try { totalChars += localStorage.getItem(DIRTY_KEY)?.length ?? 0; } catch { /* ignore */ }
+  reportStorageUsage(totalChars * 2); // UTF-16: 2 bytes/char, the same estimate every localStorage-quota discussion uses
+}
+// One check at boot (unthrottled — lastUsageCheckAt starts at 0), so a writer who opens a near-full device and only
+// READS this session still gets the warning, not only one who happens to type first.
+maybeReportStorageUsage();
+
 function flush(name: CollectionName): void {
+  const json = JSON.stringify(cache[name]);
   try {
-    localStorage.setItem(KEYS[name], JSON.stringify(cache[name]));
+    localStorage.setItem(KEYS[name], json);
+    // STORAGE-FULL STEP 1 — the OTHER half of the catch below: a write that succeeds after a device WAS failing
+    // (the writer freed space, or the browser recovered) clears that collection's failed flag. See storageHealth.ts.
+    reportFlushOk(name);
   } catch {
-    // Storage full/unavailable — never throw into a write path.
+    // Storage full/unavailable — never throw into a write path. NO LONGER SILENT past this function, though:
+    // reportFlushFailed tells the writer (via the sync notice) and, on the edge into failure, asks sync.ts to push
+    // the in-memory copy at once — the cache above still holds the edit; only THIS DEVICE'S OWN COPY of it could not
+    // be written. See storageHealth.ts's own header for the reasoning and the three things this now does.
+    reportFlushFailed(name);
   }
   // The id journal rides with the data (item 89): whenever a record reaches
   // disk, the fact that it is unpushed reaches disk in the same tick.
   persistDirty();
+  // STORAGE-FULL STEP 1 — throttled so continuous typing (this fires up to ~3x/sec) never turns a usage check into
+  // its own cost. `json.length` is what THIS collection just attempted to write; combined with the other
+  // collections' own last-known sizes below it is the whole app's footprint, without re-reading anything from disk.
+  lastFlushedChars[name] = json.length;
+  maybeReportStorageUsage();
 }
 
 function scheduleFlush(name: CollectionName): void {
