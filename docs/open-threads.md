@@ -23689,3 +23689,24 @@ continues unaffected; no harm done either way.
 measured at that moment) before granting and launching again. *(Fable’s “box-free line is in” may have been
 about an EARLIER escexit run that finished — the one this process is not; said plainly rather than guessed
 at.)*
+
+## SECURITY REVIEW (GENERIC PER THE PUBLIC-REPO RULE); TOOLS’ 213 STEP 2 DETAIL; plan-guest-login MERGED; ITEM 227 (ACCOUNT DELETION + DATA EXPORT) REGISTERED — 2026-09-30 (chat 1)
+
+**RECORDED, generic by the public-repo rule (Fable): “server security review received; hardening in
+progress (INK).”** No weakness named, per the standing rule above.
+
+**TOOLS’ 213 STEP 2, FOR THE LEDGER (Fable): a SYNCHRONOUS write-ahead journal keeps `flushNow()`’s
+contract; IndexedDB holds one row per record; migration is verified by read-back, with the old keys
+cleared after.** **OWED: the durability experiment and Fable’s byte review at offer.**
+
+**MERGED (docs only): `plan-guest-login` @ `368423a`** — design and schema needs for item 225 (one file,
++211). **ITS SCHEMA QUESTION (four additive `users` columns) IS WITH NICK, NO DEFAULT.**
+
+**ITEM 227 — ACCOUNT DELETION AND DATA EXPORT — REGISTERED, before any public launch.** No owner yet.
+Registry: next free **228**.
+
+**BOX, THE STATED ORDER AFTER THE PAIR (Fable):** FIX’s escexit short use (`item-esc-exit` @ `8245b3f`) →
+TOOLS’ storage durability experiment (CDP tab-close survival, `item-storage-s2-indexeddb` @ `f0ca6e0`) →
+INK’s two accessibility live checks (`ebc3b6f`, `22e6eaf`) → INK’s server-hardening proofs if it asks.
+**As recorded above, escexit is STILL the live run blocking the pair — this desk reads that as the first
+item of this order, not yet finished, rather than a repeat of an already-closed turn.**
