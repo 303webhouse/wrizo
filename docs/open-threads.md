@@ -23924,3 +23924,27 @@ only (Nine-lite not authorized at that point).
   reached this desk when a clean Nine-lite pair finishes, it is HELD, not shipped** — it contains login
   throttling and sync changes, the two places an unreviewed mistake costs most. Nick can override by saying
   so; the record shows he was told.
+
+## BATCH EIGHT — THE CHUNKED PAIR IS CLEAN, BOTH LEGS, 106/106 — 2026-10-01 (chat 1)
+
+**BATCH EIGHT = `batch-eight` @ `b00de9d`** (207 phase 1 in place of 207b; ten roster steps as in the entry
+above). **RAN CHUNKED, ≤20 files per chunk (Fable’s ruling), 106 files per leg, six chunks per leg (5×20 + 6),
+ONE rebuild (default c00), `--no-rebuild` after; EVERY chunk stamped `tree=b00de9d
+bundle=index-Cmxn0ohp.js/612282b`; 0 harness processes verified before every chunk.** Grant
+`chat1-batch8-chunked20-b00de9d-20261001`.
+
+**DEFAULT LEG: 106/106.** c00, c01, c03, c05 clean first time. **c02: launch crash at file 16**
+(`exit=3221225794` ×5, the box-exhaustion signature, no real FAIL) → orphans swept by PID (owner dead,
+0 harness processes) → **ONE re-run: CLEAN 20/20.** **c04: launch crash at file 11 → same sweep → ONE
+re-run: CLEAN 20/20.**
+**PARKED LEG: 106/106.** c01–c05 clean first time. **c00: launch crash → swept → one re-run: CLEAN 20/20.**
+**A chunk’s FIRST attempt and its re-run are both on disk** (`b8d-*-c02.out` vs `-c02r.out`, etc.). **No real
+FAIL anywhere; no chunk needed a second re-run.** The union of the chunks is the leg — this pair ran
+CHUNKED, and with three single swept re-runs, because of the box exhaustion recorded above (it recurred
+after the restart, so the restart did not remove it).
+
+**GATES FOR THE DEPLOY:** clean pair ✓ · **Fable’s instruction (post-restart relay): “Clean → deploy per
+Nick’s word; record the deploy id; rollback target 8223b29”** · **Nick’s word, quoted: *“Regardless of when
+everything is done, ship it even if it’s after 11 am MT”*** · schema: `users.proofing`, one additive
+nullable column, under Nick’s earlier “1. Yes” (recorded). **I did not receive a separate Fable “PASS” line
+for the assembled diff after the 207b swap; I am acting on his instruction above — stated, not assumed.**
