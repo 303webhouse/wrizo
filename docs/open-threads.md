@@ -23832,3 +23832,38 @@ sweep clears the corpses but not whatever OS-level handle/desktop-heap state cau
 **Fable’s two instructions conflict: “the box gets a clean reboot first” (first relay) vs “No reboot — the
 lanes are working on this machine” (second relay).** This desk cannot resolve that itself — reporting both
 readings and the reproducibility evidence, and awaiting a ruling before the next attempt.
+
+## CHUNKED PAIR — DEFAULT LEG DONE (ONE REAL FAIL), PARKED LEG STOPPED: SESSION-WIDE EXHAUSTION CONFIRMED — 2026-10-01 (chat 1)
+
+**CHUNKING RULED BY FABLE: 5 chunks of ≤25 files, `--only`, one rebuild (chunk 00 of the default leg
+only), `--no-rebuild` for every chunk after. Grant: `chat1-batch8-chunked-1b3c1c8-20261001`.**
+
+**DEFAULT LEG, chunked, ALL 5 CHUNKS SAME STAMP (`tree=1b3c1c8 bundle=index-Bps2KMS9.js/616462b`), 0
+harness processes verified between every chunk:**
+- chunk 00 (files 1–25): CLEAN 25/25
+- chunk 01 (26–50): CLEAN 25/25
+- **chunk 02 (51–75): NOT CLEAN, 24/25 — ONE REAL FAIL, no crash, same stamp: `item207b.mjs`**
+  — “CLASSIFY: every INSTALLED known family is classed correctly… confirmed fixed here, not re-
+  guessed” FAILS: `[“Verdana”,”serif”,”expected”,”sans-serif”],[“Tahoma”,”serif”,”expected”,”sans-serif”]`.
+  **TOOLS’ successor `e2a5a78` (“fix classifyGeneric’s OTHER direction”) appears to have REGRESSED the
+  ORIGINAL fix** — Verdana and Tahoma are back to reading as serif, the exact box-turn defect this
+  check exists to catch. **Owner: TOOLS. Genuinely a product defect, not environmental** — verified by
+  identical stamp and a clean box before and after.
+- chunk 03 (76–100): CLEAN 25/25
+- chunk 04 (101–108): CLEAN 8/8
+**Default leg total: 107/108 real PASS, 1 real FAIL (`item207b`), ZERO crashes across all 108 launches
+when run in chunks of 25.**
+
+**PARKED LEG, chunk 00 (files 1–25), FRESH `run-suite` process, STILL CRASHED — at launch 24 of 25
+(`fx15`, `fx16`), `exit=3221225794` both.** **THIS IS THE SIGNAL FABLE’S RULE 4 NAMED: a fresh process,
+right after the chunked default leg’s 108 launches with no reboot, could not complete even one 25-file
+chunk.** The resource is NOT purely per-process (chunking’s working theory) — it is carrying over
+across process boundaries; “a chunk that fails” (not necessarily “within its first few launches”
+literally, but a fresh process failing at all after the prior leg) reads as session-wide per the rule’s
+own intent.
+
+**VERIFIED-DEAD-OWNER SWEEP, logged: 8 `ws-runtime-verify` browsers, owner node process already exited
+(0 harness processes anywhere). Swept by exact PID** (one killed, seven already self-exited). **Box
+confirmed clean after. Grant cleared.**
+
+**STOPPED, per the rule — not retried blind.**
