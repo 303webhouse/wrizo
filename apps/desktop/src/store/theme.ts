@@ -7,10 +7,10 @@ import { useEffect, useState } from 'react';
 // render (components read CSS custom properties, never `theme` itself).
 //
 // TH2 — 'flux' joins the union, exactly the literal-add TH1's comment
-// anticipated; later Volant/Nomad/Machina follow the same pattern.
-export type ThemeId = 'plateau' | 'flux';
+// anticipated. Machina arms the same way: one literal, one CSS pack.
+export type ThemeId = 'plateau' | 'machina' | 'flux';
 
-const REGISTERED: readonly ThemeId[] = ['plateau', 'flux'];
+const REGISTERED: readonly ThemeId[] = ['plateau', 'machina', 'flux'];
 const KEY = 'wrizo-theme';
 const DEFAULT: ThemeId = 'plateau';
 

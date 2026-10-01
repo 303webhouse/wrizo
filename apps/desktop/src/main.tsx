@@ -17,6 +17,17 @@ import '@fontsource/rajdhani/600.css';
 import '@fontsource/rajdhani/700.css';
 import '@fontsource/chakra-petch/400.css';
 import '@fontsource/chakra-petch/500.css';
+// Machina — IBM Plex (mono readout, sans chrome, serif prose) and
+// Atkinson Hyperlegible (the sans prose voice). Local files, no CDN.
+import '@fontsource/ibm-plex-mono/500.css';
+import '@fontsource/ibm-plex-sans/400.css';
+import '@fontsource/ibm-plex-sans/500.css';
+import '@fontsource/ibm-plex-sans/600.css';
+import '@fontsource/ibm-plex-serif/400.css';
+import '@fontsource/ibm-plex-serif/500.css';
+import '@fontsource/ibm-plex-serif/400-italic.css';
+import '@fontsource/atkinson-hyperlegible/400.css';
+import '@fontsource/atkinson-hyperlegible/700.css';
 import { App } from './App';
 import './index.css';
 import { initTheme } from './store/theme';

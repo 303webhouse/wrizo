@@ -1204,6 +1204,8 @@ const CANONICAL: Record<DeskTermId, string> = {
 // term) — kept in step here so the two seams never visibly disagree under
 // the same theme, even though they're independent maps.
 const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> = {
+  // Machina foundations §9 — identity. The live Plateau strings stand.
+  machina: {},
   flux: {
     corkboardJournalTab: 'Log',
     // AB3 — the Places face's Journal pull, kept in step with the corkboard

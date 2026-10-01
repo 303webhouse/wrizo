@@ -448,6 +448,189 @@
   --ink-on-paper-low: #0B7C9E;    /* canon's "meta" slot, light */
 }
 
+/* ============================================================================
+   Machina — the instrument (docs/theme-foundations/machina/machina-foundations.md).
+   Additive under [data-theme='machina']. CAST is data-cast=cool|neutral
+   (cool is the default). Page pref flips paper only. Orange stays --brass.
+   Layout tracks are untouched: this pack re-points tokens, it does not
+   rebuild the desk grid.
+   ============================================================================ */
+:root[data-theme='machina'] {
+  --ink-950: #0A0B0E;
+  --ink-900: #12141A;
+  --ink-800: #1A1D26;
+  --chrome-surface: #12141A;
+  --rail-surface: #0E1015;
+  --desk-ground: #0A0B0E;
+  --ink-border: #252933;
+  --ink-border-strong: #343A46;
+  --line-active: #7FA0BC;
+  --signal-live: #9DA5B4;
+  --accent-rest: var(--line-active);
+  --text-hi: #E6E9F1;
+  --text-mid: #878E9C;
+  --text-low: #6C7482;
+  --lamp-glow: #0A0B0E;
+  --paper-glow: none;
+  --rhizome-ink: #6C7482;
+  --font-chromeLabel: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-contentLabel: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-proseSerif: 'IBM Plex Serif', Georgia, serif;
+  --font-proseSans: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  /* Readouts are mono. Buttons and rail labels are the sans, not the mono. */
+  --font-ui: var(--font-contentLabel);
+  --font-display: var(--font-contentLabel);
+  --font-mono: var(--font-chromeLabel);
+}
+:root[data-theme='machina'][data-cast='neutral'] {
+  --ink-950: #0A0A0A;
+  --ink-900: #121212;
+  --ink-800: #1C1C1C;
+  --chrome-surface: #121212;
+  --rail-surface: #0E0E0E;
+  --desk-ground: #0A0A0A;
+  --ink-border: #242424;
+  --ink-border-strong: #333333;
+  --line-active: #FF9800;
+  --signal-live: #A3A3A3;
+  --accent-rest: var(--line-active);
+  --text-hi: #E9E9E9;
+  --text-mid: #8A8A8A;
+  --text-low: #6F6F6F;
+  --lamp-glow: #0A0A0A;
+  --rhizome-ink: #6F6F6F;
+}
+:root[data-theme='machina'][data-page='dark'] {
+  --paper: #16181F;
+  --paper-dim: #12141A;
+  --paper-border: #2F3541;
+  --ink-on-paper: #E6E9F1;
+  --ink-on-paper-low: #878E9C;
+  --accent-door: #7FA0BC;
+  --card-stock: #1C1F28;
+  --card-hairline: #2F3541;
+}
+:root[data-theme='machina'][data-page='light'] {
+  --paper: #F8F9FC;
+  --paper-dim: #EEF0F4;
+  --paper-border: #D3D8E1;
+  --ink-on-paper: #13161C;
+  --ink-on-paper-low: #6C7482;
+  --accent-door: #3E5870;
+  --card-stock: #FFFFFF;
+  --card-hairline: #D3D8E1;
+}
+:root[data-theme='machina'][data-cast='neutral'][data-page='dark'] {
+  --paper: #161616;
+  --paper-dim: #121212;
+  --paper-border: #2E2E2E;
+  --ink-on-paper: #E9E9E9;
+  --ink-on-paper-low: #8A8A8A;
+  --accent-door: #A3A3A3;
+  --card-stock: #1E1E1E;
+  --card-hairline: #2E2E2E;
+}
+:root[data-theme='machina'][data-cast='neutral'][data-page='light'] {
+  --paper: #FAFAFA;
+  --paper-dim: #F0F0F0;
+  --paper-border: #D6D6D6;
+  --ink-on-paper: #141414;
+  --ink-on-paper-low: #6F6F6F;
+  --accent-door: #4A4A4A;
+  --card-stock: #FFFFFF;
+  --card-hairline: #D6D6D6;
+}
+html[data-theme='machina'] { background-color: #0A0B0E; }
+html[data-theme='machina'][data-cast='neutral'] { background-color: #0A0A0A; }
+
+/* Prose is 11pt. The wrap carries an inline 17px that the editor inherits;
+   this rule sits on the editor node itself, so it wins over inheritance
+   without touching the component. Titles follow the serif/sans pair. */
+[data-theme='machina'] .forward-only-editor {
+  font-size: 11pt;
+  line-height: 1.75;
+}
+[data-theme='machina'][data-voice='sans'] .forward-only-editor { line-height: 1.8; }
+[data-theme='machina'] .mode-page-title { font-size: 17pt; }
+[data-theme='machina'][data-voice='sans'] .mode-page-title { font-size: 15pt; }
+
+/* Hairline law: the active rail edge and the mode underline are 1px,
+   in steel (cool) or orange (neutral). */
+[data-theme='machina'] .desk-rail-item { border-left-width: 1px; }
+[data-theme='machina'] .desk-rail-item.active {
+  color: var(--text-hi);
+  border-left-color: var(--line-active);
+}
+[data-theme='machina'] .desk-mode-tab.active {
+  color: var(--text-hi);
+  border-bottom-color: var(--line-active);
+}
+[data-theme='machina'] .mode-page.focused { box-shadow: 0 0 0 1px var(--line-active); }
+
+/* Selection is gray until CAST is neutral, when it becomes the spark. */
+[data-theme='machina'] ::selection { background: rgba(190, 190, 190, .28); }
+[data-theme='machina'][data-page='light'] ::selection { background: rgba(0, 0, 0, .13); }
+[data-theme='machina'][data-cast='neutral'] ::selection { background: rgba(255, 152, 0, .22); }
+[data-theme='machina'][data-cast='neutral'][data-page='light'] ::selection { background: rgba(255, 152, 0, .28); }
+
+/* The return glyph is gray in cool and orange in neutral. */
+[data-theme='machina'] .desk-rail-wayback .desk-rail-glyph { color: var(--text-mid); }
+[data-theme='machina'][data-cast='neutral'] .desk-rail-wayback .desk-rail-glyph { color: var(--brass); }
+
+/* Progress: grayscale fill, orange notch in both casts, orange rest
+   after a completion. The metric label gives the orange back. */
+[data-theme='machina'] .mode-pfill { background: var(--signal-live); }
+[data-theme='machina'] .mode-pfill::after {
+  background: var(--brass);
+  box-shadow: 0 0 4px 1px rgba(255, 152, 0, .45);
+  border-radius: 0;
+  width: 2px;
+  height: 8px;
+}
+[data-theme='machina'] .mode-pfill.started::after { animation: machina-notch-pulse 1.8s ease-in-out infinite; }
+@keyframes machina-notch-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+[data-theme='machina'] .mode-pfill.celebrate { background: var(--brass); transition: background-color .35s ease; }
+[data-theme='machina'] .mode-pfill.celebrate::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(230, 233, 241, .85) 50%, var(--brass) 68%, transparent 100%);
+  background-size: 36% 100%;
+  background-repeat: no-repeat;
+  animation: machina-sweep .55s ease-out;
+  pointer-events: none;
+}
+@keyframes machina-sweep {
+  0% { background-position: -40% 0; opacity: 1; }
+  100% { background-position: 140% 0; opacity: 0; }
+}
+[data-theme='machina'] .mode-pfill.celebrate::after { animation: none; opacity: 1; background: var(--brass); }
+[data-theme='machina'] .mode-pmetric,
+[data-theme='machina'] .mode-pagenum { color: var(--text-low); }
+.mode-pfill-tick {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 9px;
+  height: 1px;
+  background: var(--brass);
+  opacity: 0;
+  transform: rotate(var(--spark-angle)) translateX(0);
+  animation: machina-tick .6s ease-out both;
+}
+@keyframes machina-tick {
+  0% { opacity: 1; transform: rotate(var(--spark-angle)) translateX(0); }
+  100% { opacity: 0; transform: rotate(var(--spark-angle)) translateX(16px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='machina'] .mode-pfill.started::after { animation: none; opacity: 1; }
+  [data-theme='machina'] .mode-pfill.celebrate::before { animation: none; display: none; }
+  .mode-pfill-tick { animation: none; opacity: 0; }
+}
+
 /* Slice 4 — the effects compositor scaffold (canon §6, ThemeEffectsLayer.tsx).
    One layer, absolutely positioned behind everything painted, pointer-events
    none, transform/opacity only — zero layout participation (W1's fixed-track
@@ -4244,6 +4427,9 @@ a:focus-visible,
    lawful --accent-rest-not-brass pattern every other where-you-are marker
    in this app uses. */
 .wz-cascade-action.active{ color:var(--text-hi); border-color:var(--accent-rest); }
+.wz-cascade-theme-cast{ display:flex; flex-direction:column; gap:6px; margin-top:4px; }
+.wz-cascade-cast-label{ font-family:var(--font-mono); font-size:10px; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--text-low); }
 /* FX6 S2a — the New Page door: unmissable at the head of the cascade's Page
    section. Olive (--accent-rest) at rest, not brass — "nothing orange at
    rest" (the olive/orange lane law) still holds; this reads unmissable via

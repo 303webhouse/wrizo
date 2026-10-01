@@ -695,11 +695,14 @@ export function ThemePanel() {
   // (engagement-facts the app already shows, never a solicited/gated
   // target — the M1 anti-gamification frame). Two entries make the order
   // moot today, but the law belongs at the site that will enforce it.
-  const themeOpts: [string, string][] = [['plateau', 'Plateau'], ['flux', 'Flux']];
+  const themeOpts: [string, string][] = [['plateau', 'Plateau'], ['machina', 'Machina'], ['flux', 'Flux']];
   return (
     <div className="mode-settings mode-theme-settings" role="menu">
       <h4>theme</h4>
       <Seg label="Theme" value={theme} opts={themeOpts} onPick={v => setTheme(v as ThemeId)} />
+      {theme === 'machina' && (
+        <Seg label="Cast" value={prefs.cast} opts={[['cool', 'Cool'], ['neutral', 'Neutral']]} onPick={v => setThemePrefs({ cast: v as 'cool' | 'neutral' })} />
+      )}
       <Seg label="Voice" value={prefs.voice} opts={[['serif', 'Serif'], ['sans', 'Sans']]} onPick={v => setThemePrefs({ voice: v as 'serif' | 'sans' })} />
       <Seg label="Page" value={prefs.page} opts={[['light', 'Light'], ['dark', 'Dark']]} onPick={v => setThemePrefs({ page: v as 'dark' | 'light' })} />
       <Seg label="Fade" value={prefs.fade} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setThemePrefs({ fade: v as 'on' | 'off' })} />

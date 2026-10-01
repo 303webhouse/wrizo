@@ -53,6 +53,9 @@ const CANONICAL: Record<TermId, TermForms> = {
 // module's own construction); 'script' is intentionally absent (unchanged,
 // "already dual-natured" per the canon).
 const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForms>>>>> = {
+  // Machina foundations §9 — the identity map, registered explicitly.
+  // No noun changes. Current Plateau strings are the display.
+  machina: {},
   flux: {
     page: { one: 'Doc', many: 'Docs' },
     shelf: { one: 'Cache', many: 'Caches' },
