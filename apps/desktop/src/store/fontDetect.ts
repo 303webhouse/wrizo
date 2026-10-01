@@ -38,17 +38,20 @@ export function isFontAvailable(name: string): boolean {
 // Verdana and Tahoma as serif against the live probe's twelve known Windows families (10/12 correct, 2 wrong). A
 // single sample row near the very top edge of the glyph is exactly where anti-aliasing is noisiest — both fonts are
 // humanist sans faces with no real serif, but a stray half-pixel of AA at the cap start was apparently enough to
-// cross the old 1.35 ratio. Fixed browserless (no canvas in this environment to re-render with); the live 12-family
-// fixture now lives IN `scripts/harness/item207b.mjs` itself (no longer only the S0 probe) so Batch Eight's real box
-// run is the check that confirms this rather than a second unverified guess.
+// cross the old 1.35 ratio.
 //
-// THE NEW SIGNAL: sample the stem's ink width at SEVEN heights spread across the whole glyph (10%..90%, never the
-// top/bottom few percent where AA and hinting are noisiest) and compare the WIDEST sample to the NARROWEST. A serif
-// letterform's defining shape is flared ends around a narrower stem — max/min is large. A sans letterform's stem
-// stays close to one width top to bottom — max/min stays near 1. Seven samples median away a single noisy row far
-// better than one top-vs-one-mid pair ever could.
-const SERIF_SAMPLE_FRACTIONS = [0.10, 0.25, 0.40, 0.50, 0.60, 0.75, 0.90];
-
+// BATCH EIGHT'S PAIR, THE CONFIRMING RUN, FOUND THE FIRST FIX WRONG IN THE OTHER DIRECTION: the 10%..90% sampling
+// band deliberately dodged the top/bottom few percent to avoid that AA noise — but a capital I's serif feet are
+// THEMSELVES only the first/last several percent of the glyph's height, so the fix skipped past the very flare it
+// was supposed to detect. Times New Roman, Georgia, Cambria and Palatino Linotype all read as sans-serif (1/22
+// failed, deploy8b-parked's `item207b.mjs` run on `batch-eight` @ 9c8d5c3). Noise and signal share the same narrow
+// band at the glyph's edge; the fix needs both, not a choice between them.
+//
+// THE SIGNAL NOW: AVERAGE several rows across each window instead of sampling a single one. A foot window (the
+// first/last ~12% of the glyph, where a real serif's flare lives) and a stem window (the center ~16%, where every
+// letterform — serif or sans — is at its narrowest and most stable) are each averaged over every ink-bearing row
+// inside them. Averaging a dozen rows dilutes one stray AA pixel the way a single top row never could, while still
+// measuring INSIDE the foot rather than past it — so a real flare (even a short one) still shows up in the mean.
 function stemWidthSpread(stack: string): { min: number; max: number } | null {
   const c = ctx(); if (!c || !canvas) return null;
   canvas.width = 240; canvas.height = 240;
@@ -61,9 +64,18 @@ function stemWidthSpread(stack: string): { min: number; max: number } | null {
   for (let y = 0; y < 240; y += 1) { if (rowInk(y) > 0) { if (first < 0) first = y; last = y; } }
   if (first < 0 || last - first < 20) return null;
   const h = last - first;
-  const widths = SERIF_SAMPLE_FRACTIONS.map((f) => rowInk(first + Math.round(h * f))).filter((w) => w > 0);
-  if (widths.length === 0) return null;
-  return { min: Math.min(...widths), max: Math.max(...widths) };
+  const avgInBand = (fromF: number, toF: number) => {
+    const fromY = first + Math.round(h * fromF);
+    const toY = first + Math.round(h * toF);
+    const vals: number[] = [];
+    for (let y = fromY; y <= toY; y += 1) { const w = rowInk(y); if (w > 0) vals.push(w); }
+    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+  };
+  const topFoot = avgInBand(0, 0.12);
+  const bottomFoot = avgInBand(0.88, 1);
+  const stem = avgInBand(0.42, 0.58);
+  if (stem <= 0) return null;
+  return { min: stem, max: Math.max(topFoot, bottomFoot) };
 }
 
 /** The class of an INSTALLED family, measured. Monospace: 'i' and 'W' advance alike. Serif: a capital I's stem varies
