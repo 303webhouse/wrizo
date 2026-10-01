@@ -4,10 +4,10 @@ import { serializeScriptDoc } from './scriptText';
 import { createEmptyScriptDoc } from './scriptDoc';
 import { deskTerm, type DeskTermId } from './deskLexicon';
 import { getUserPageDefaults } from './pageDefaults';
-import { reportFlushFailed, reportFlushOk, reportStorageUsage } from './storageHealth';
+import { reportFlushFailed, reportFlushOk, reportStorageUsage, reportStorageUsageFraction } from './storageHealth';
 import { indexedDbAvailable, idbGetAll, idbCommit, idbClear } from './idbStore';
 import { journalPut, journalDelete, journalClearId, journalPeek, journalReadAll, journalClearAll } from './writeAheadJournal';
-import { migrateLegacyStorageOnce } from './storageMigration';
+import { migrateLegacyStorageOnce, clearMigrationState } from './storageMigration';
 import { getCurrentUser } from './currentUser';
 
 // ---------------------------------------------------------------------------
@@ -56,14 +56,26 @@ function hydrate<T>(key: string): T[] {
   }
 }
 
-const cache: Cache = {
-  projects: hydrate<Project>(KEYS.projects),
-  storyPlans: hydrate<StoryPlan>(KEYS.storyPlans),
-  sessions: hydrate<SessionLog>(KEYS.sessions),
-  drafts: hydrate<Draft>(KEYS.drafts),
-  journalEntries: hydrate<JournalEntry>(KEYS.journalEntries),
-  drawers: hydrate<Drawer>(KEYS.drawers),
-};
+// STORAGE-FULL STEP 2 — the device store moves to IndexedDB (Fable's ruling, 2026-09-30); "the in-memory cache
+// stays the synchronous read path, so no reader changes" is the whole promise, and it holds exactly as far as this
+// object goes: every one of this file's ~130 getters still reads `cache` with a plain `.filter()`/`.find()`, never
+// an `await`. What changes is WHEN it is first populated. A device with no IndexedDB (feature-detected, never
+// assumed) keeps the OLD synchronous path below, unchanged in every byte. A device WITH IndexedDB starts `cache`
+// at the SAME empty-array shape a brand-new device already produces today (no new shape, only a new TIMING), and
+// `initStorageAsync()` (below) fills it in once IndexedDB's own read resolves — gated by `storageReady`, which
+// App.tsx's existing boot screen already has a natural place to await alongside its own `apiMe()` call.
+const useIndexedDb = indexedDbAvailable();
+
+const cache: Cache = useIndexedDb
+  ? { projects: [], storyPlans: [], sessions: [], drafts: [], journalEntries: [], drawers: [] }
+  : {
+      projects: hydrate<Project>(KEYS.projects),
+      storyPlans: hydrate<StoryPlan>(KEYS.storyPlans),
+      sessions: hydrate<SessionLog>(KEYS.sessions),
+      drafts: hydrate<Draft>(KEYS.drafts),
+      journalEntries: hydrate<JournalEntry>(KEYS.journalEntries),
+      drawers: hydrate<Drawer>(KEYS.drawers),
+    };
 
 // Records returned to callers are cloned so the cache is never mutated by
 // reference, and so each read yields a fresh object (screens that re-fetch
@@ -157,6 +169,28 @@ function persistDirty(): void {
 }
 
 const dirty: Record<CollectionName, Set<string>> = hydrateDirty();
+
+// STORAGE-FULL STEP 2 — ids not yet confirmed committed to the DEVICE store (IndexedDB), separate from `dirty`
+// above (which tracks "not yet pushed to the SERVER" — a different question with a different lifetime: a record
+// can be confirmed on-device and still be server-dirty, or vice versa for a moment mid-sync). `pendingDeletes`
+// exists because this app has exactly one hard delete (`clearDraft()`) — a removed id needs its own IndexedDB row
+// actually deleted, not merely "no longer written."
+const pendingLocal: Record<CollectionName, Set<string>> = emptyDirty();
+const pendingDeletes: Record<CollectionName, Set<string>> = emptyDirty();
+
+// STORAGE-FULL STEP 2 — THE RACE GUARD'S DISCRIMINATOR. MEASURED, not assumed: an early version of this compared
+// each record's own `updatedAt` (a millisecond-resolution ISO timestamp, stamped by upsert()) to tell "is this
+// commit's completion still about the LATEST edit" apart from "a newer edit already superseded it." Two edits to
+// the SAME id landing inside the same millisecond — entirely realistic under fast programmatic writes, and this
+// harness's own falsification runs hit it directly — collide, so the stale completion's check reads as a match and
+// wrongly clears the newer edit's journal entry. A single globally-incrementing integer, stamped the moment flush()
+// queues a commit (never reused, never time-based), cannot collide this way. One shared counter and one map PER
+// COLLECTION is enough: whichever flush() call most recently queued an id's commit holds the only seq that counts
+// as current; a completion whose own seq no longer matches is, by definition, stale.
+let flushSeqCounter = 0;
+const lastQueuedSeq: Record<CollectionName, Map<string, number>> = {
+  projects: new Map(), storyPlans: new Map(), sessions: new Map(), drafts: new Map(), journalEntries: new Map(), drawers: new Map(),
+};
 
 export interface DirtyRecords {
   projects: Project[];
@@ -293,10 +327,30 @@ function maybeReportStorageUsage(): void {
   reportStorageUsage(totalChars * 2); // UTF-16: 2 bytes/char, the same estimate every localStorage-quota discussion uses
 }
 // One check at boot (unthrottled — lastUsageCheckAt starts at 0), so a writer who opens a near-full device and only
-// READS this session still gets the warning, not only one who happens to type first.
-maybeReportStorageUsage();
+// READS this session still gets the warning, not only one who happens to type first — LEGACY PATH ONLY; the
+// IndexedDB path's own usage check (below) is driven by real quota numbers, not this assumed floor.
+if (!useIndexedDb) maybeReportStorageUsage();
 
-function flush(name: CollectionName): void {
+// STORAGE-FULL STEP 2 — the real quota, once IndexedDB makes one available (Fable's ruling, item 4's own thread:
+// "Step 2 replaces it with navigator.storage.estimate()"). Same throttle as the legacy check; a browser that does
+// not expose the API (older Safari, some sandboxed contexts) simply never reports near-full for this path — it is
+// informational, not the failure channel, so silence here is honest, not a regression.
+let lastIdbUsageCheckAt = 0;
+function maybeReportIdbUsage(): void {
+  const nav = typeof navigator === 'undefined' ? null : navigator;
+  const estimate = nav && 'storage' in nav ? (nav.storage as StorageManager | undefined)?.estimate?.bind(nav.storage) : undefined;
+  if (!estimate) return;
+  const now = Date.now();
+  if (now - lastIdbUsageCheckAt < USAGE_CHECK_MIN_INTERVAL_MS) return;
+  lastIdbUsageCheckAt = now;
+  estimate().then((r) => {
+    if (typeof r.usage === 'number' && typeof r.quota === 'number' && r.quota > 0) reportStorageUsageFraction(r.usage / r.quota);
+  }).catch(() => { /* unavailable right now; the next scheduled flush tries again */ });
+}
+
+/** The LEGACY whole-blob write (byte-identical to step 1): one localStorage.setItem of the entire collection array.
+ *  Used only when this device has no IndexedDB at all. */
+function flushLegacy(name: CollectionName): void {
   const json = JSON.stringify(cache[name]);
   try {
     localStorage.setItem(KEYS[name], json);
@@ -320,6 +374,53 @@ function flush(name: CollectionName): void {
   maybeReportStorageUsage();
 }
 
+// STORAGE-FULL STEP 2 — THE PER-RECORD PATH (Fable's ruling, items 1 and 3). `flushNow()` keeps its synchronous
+// contract (the 35 production call sites, durableSeam, durable()) because THIS function writes the write-ahead
+// journal SYNCHRONOUSLY — ordinary localStorage.setItem, small (only the records changed since the last confirmed
+// commit) — before it ever starts the async IndexedDB transaction. By the time `flush()` returns, the edit is
+// durable in the journal even though it may still be in flight to IndexedDB.
+function flush(name: CollectionName): void {
+  if (!useIndexedDb) { flushLegacy(name); return; }
+  const putIds = [...pendingLocal[name]];
+  const delIds = [...pendingDeletes[name]];
+  if (putIds.length === 0 && delIds.length === 0) { persistDirty(); return; }
+
+  const byId = new Map((cache[name] as Array<{ id: string }>).map((r) => [r.id, r]));
+  const puts = putIds.map((id) => byId.get(id)).filter((r): r is { id: string } => !!r);
+  // Stamp a fresh, globally-unique sequence number for every id THIS flush() call is about to queue, and record it
+  // as the id's own CURRENT seq — so a later flush() for the same id (queued behind this one, still in flight)
+  // immediately overwrites it, and this call's own completion can tell "am I still the latest" apart from "a newer
+  // edit already superseded me" with no possibility of a tie (see this field's own header comment for why a
+  // timestamp could not be trusted for this).
+  const myPutSeq = new Map(puts.map((r) => { const seq = ++flushSeqCounter; lastQueuedSeq[name].set(r.id, seq); return [r.id, seq]; }));
+  const myDeleteSeq = new Map(delIds.map((id) => { const seq = ++flushSeqCounter; lastQueuedSeq[name].set(id, seq); return [id, seq]; }));
+
+  for (const r of puts) journalPut(name, r);
+  for (const id of delIds) journalDelete(name, id);
+
+  void idbCommit(COLLECTIONS, name, puts, delIds).then(() => {
+    reportFlushOk(name);
+    for (const r of puts) {
+      if (lastQueuedSeq[name].get(r.id) !== myPutSeq.get(r.id)) continue; // a newer edit already superseded this one
+      pendingLocal[name].delete(r.id);
+      journalClearId(name, r.id);
+    }
+    for (const id of delIds) {
+      if (lastQueuedSeq[name].get(id) !== myDeleteSeq.get(id)) continue;
+      pendingDeletes[name].delete(id);
+      journalClearId(name, id);
+    }
+  }).catch(() => {
+    // Storage full/unavailable (or a transient IndexedDB error) — the journal already holds every one of these
+    // records, written synchronously above, so nothing is lost; the next scheduled flush of this collection
+    // (any further edit, or the periodic retry a future item may add) tries the same ids again.
+    reportFlushFailed(name);
+  });
+
+  persistDirty();
+  maybeReportIdbUsage();
+}
+
 function scheduleFlush(name: CollectionName): void {
   if (flushTimers[name] !== null) return;
   flushTimers[name] = setTimeout(() => {
@@ -341,6 +442,59 @@ export function flushNow(): void {
     flush(name);
   });
 }
+
+// STORAGE-FULL STEP 2 — BOOT, ON THE DEVICE-STORE PATH. Resolved once `cache` genuinely holds whatever this device
+// has (migrated legacy data if this is the first IndexedDB boot, IndexedDB's own rows otherwise, with the
+// write-ahead journal's own entries overlaid on top as the newest truth for any id it still held). App.tsx's
+// existing boot screen is the natural place to await this alongside its own `apiMe()` call — "Write works
+// local-first" (F2) is unaffected either way: a BRAND-NEW device's cache is empty before AND after this resolves,
+// so the only writer who ever waits on it meaningfully is one re-opening a device that already has pages, and an
+// IndexedDB read is fast enough that this is expected to resolve well before any network round trip does.
+let storageReadyResolve: () => void = () => {};
+export const storageReady: Promise<void> = new Promise<void>((resolve) => { storageReadyResolve = resolve; });
+
+async function initStorageAsync(): Promise<void> {
+  try {
+    await migrateLegacyStorageOnce({ storeNames: COLLECTIONS, legacyKeys: KEYS, signedIn: getCurrentUser() !== null });
+  } catch {
+    // A migration failure must never crash boot — IndexedDB stays authoritative for whatever it already has
+    // (possibly nothing, on a first-ever run), and the legacy localStorage copy is left in place to retry next boot.
+  }
+  for (const name of COLLECTIONS) {
+    try {
+      const rows = await idbGetAll<unknown>(COLLECTIONS, name);
+      (cache[name] as unknown[]).length = 0;
+      (cache[name] as unknown[]).push(...rows);
+    } catch {
+      // Leave this collection's cache empty rather than crash boot; its own next successful flush repopulates IndexedDB.
+    }
+  }
+  // Boot replay — the write-ahead journal is the newest known truth for any id it still holds (a commit that may
+  // never have landed). Applied as a real edit/delete through the SAME tracking this file already uses, so it
+  // rides the normal flush cycle afterward rather than needing a parallel "replay" write path of its own.
+  const journal = journalReadAll();
+  for (const [collection, bucket] of Object.entries(journal)) {
+    if (!(collection in KEYS)) continue; // a name this build does not know — never guessed at, only skipped
+    const name = collection as CollectionName;
+    const arr = cache[name] as Array<{ id: string }>;
+    for (const [id, entry] of Object.entries(bucket)) {
+      const index = arr.findIndex((r) => r.id === id);
+      if ('deleted' in entry && entry.deleted) {
+        if (index >= 0) arr.splice(index, 1);
+        pendingDeletes[name].add(id);
+      } else if ('record' in entry) {
+        if (index >= 0) arr[index] = entry.record as never; else arr.push(entry.record as never);
+        pendingLocal[name].add(id);
+      }
+      scheduleFlush(name);
+    }
+  }
+  journalClearAll();
+  notify();
+  storageReadyResolve();
+}
+
+if (useIndexedDb) void initStorageAsync(); else storageReadyResolve();
 
 // ITEM 85-C / OBS-1 — EVERY MUTATING TEST SEAM FLUSHES, AND THIS IS THE ONE
 // PLACE THAT MAKES IT TRUE.
@@ -377,6 +531,10 @@ function upsert<T extends { id: string; updatedAt: string }>(
     collection.push(record);
   }
   dirty[name].add(record.id);
+  // STORAGE-FULL STEP 2 — this id is a fresh upsert, so any PRIOR pending delete for it is moot (an id cannot be
+  // both "write this" and "delete this" in the same flush cycle; the later act always wins).
+  pendingLocal[name].add(record.id);
+  pendingDeletes[name].delete(record.id);
   scheduleFlush(name);
   notify();
 }
@@ -754,6 +912,11 @@ export function clearDraft(id: string): void {
   if (index < 0) return;
   cache.drafts.splice(index, 1);
   dirty.drafts.delete(id);
+  // STORAGE-FULL STEP 2 — the app's one hard delete. A pending UPSERT for this id is moot now (there is nothing
+  // left to write); the delete must reach the device store as an actual removal, not merely "stop writing it" —
+  // otherwise a crash between this call and IndexedDB confirming it would resurrect the draft at the next boot.
+  pendingLocal.drafts.delete(id);
+  pendingDeletes.drafts.add(id);
   scheduleFlush('drafts');
   notify();
 }
@@ -2997,10 +3160,17 @@ export function applyRemoteRecords(remote: RemoteRecords): void {
 
 // Wipe all local data (cache + dirty + localStorage). Used on logout so the
 // next account starts from a clean slate and never sees another user's cache.
-export function resetLocalData(): void {
+// STORAGE-FULL STEP 2 — ASYNC now (the one call site, App.tsx's handleLogout, is already an async function, so
+// `await`ing this is a trivial, local, contained change — never one of the 35 synchronous call sites step 2's own
+// S0 named, which are all about a WRITE surviving a close, not about a deliberate, user-initiated logout clearing
+// everything on purpose). Clears IndexedDB too — a logout that left the device store behind would boot the NEXT
+// account on this device holding the previous one's rows.
+export async function resetLocalData(): Promise<void> {
   (Object.keys(KEYS) as CollectionName[]).forEach(name => {
     (cache[name] as unknown[]).length = 0;
     dirty[name].clear();
+    pendingLocal[name].clear();
+    pendingDeletes[name].clear();
     if (flushTimers[name] !== null) {
       clearTimeout(flushTimers[name]!);
       flushTimers[name] = null;
@@ -3017,6 +3187,11 @@ export function resetLocalData(): void {
     localStorage.removeItem(DIRTY_KEY);
   } catch {
     // ignore
+  }
+  journalClearAll();
+  clearMigrationState();
+  if (useIndexedDb) {
+    for (const name of COLLECTIONS) { try { await idbClear(COLLECTIONS, name); } catch { /* best-effort; an empty cache already governs reads */ } }
   }
   notify();
 }

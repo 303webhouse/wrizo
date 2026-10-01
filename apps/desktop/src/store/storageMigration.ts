@@ -27,7 +27,9 @@ export function getMigrationState(): MigrationState {
 function setMigrationState(state: MigrationState): void {
   try { localStorage.setItem(FLAG_KEY, state); } catch { /* best-effort; this boot's own result still holds in memory */ }
 }
-export function resetMigrationStateForTests(): void {
+/** Clears the migration flag — a real production need (logout: the next account's first boot must re-evaluate
+ *  migration from scratch, never inherit a prior account's "done"), and incidentally what a test wants too. */
+export function clearMigrationState(): void {
   try { localStorage.removeItem(FLAG_KEY); } catch { /* ignore */ }
 }
 

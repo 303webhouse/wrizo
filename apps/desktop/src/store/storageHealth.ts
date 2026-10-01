@@ -116,7 +116,15 @@ function setNearFull(next: boolean): void {
  *                                session that boots already above the line, already warned, and never having dropped
  *                                back below REARM_FRACTION in between, stays quiet — the writer was told once. */
 export function reportStorageUsage(totalBytes: number): void {
-  const fraction = totalBytes / STORAGE_ASSUMED_QUOTA_BYTES;
+  reportStorageUsageFraction(totalBytes / STORAGE_ASSUMED_QUOTA_BYTES);
+}
+
+// STORAGE-FULL STEP 2 — the PRECISE form, once a real quota exists to measure against (IndexedDB's
+// `navigator.storage.estimate()`), replacing the assumed-floor fraction above the way Fable's own ruling named:
+// "Step 2 replaces it with navigator.storage.estimate()." Same state machine, same three regions, same "once
+// ever" rule — only the fraction's SOURCE changes. `reportStorageUsage` (the assumed-floor form) stays for a
+// device with no IndexedDB (the legacy path, untouched) and for this module's own browserless proof.
+export function reportStorageUsageFraction(fraction: number): void {
   if (fraction < REARM_FRACTION) {
     if (getWarnedEver()) setWarnedEver(false);
     setNearFull(false);

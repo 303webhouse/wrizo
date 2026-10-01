@@ -18,7 +18,7 @@ import { VoiceWallWhisper } from './components/VoiceWallWhisper';
 import { ThemeEffectsLayer } from './components/ThemeEffectsLayer';
 import { FluxBlockCaret } from './components/FluxBlockCaret';
 import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
-import { subscribe, resetLocalData, getOrCreateSystemBoard } from './store/persistence';
+import { subscribe, resetLocalData, getOrCreateSystemBoard, storageReady } from './store/persistence';
 import { apiMe, apiLogout, type AuthUser } from './store/api';
 import { setCurrentUser } from './store/currentUser';
 import { installBeforeUnloadGuard } from './store/beforeUnloadGuard';
@@ -211,7 +211,13 @@ export function App() {
 
   useEffect(() => {
     let active = true;
-    apiMe().then((user) => {
+    // STORAGE-FULL STEP 2 — `storageReady` joins the EXISTING boot wait rather than adding a new one: a local
+    // IndexedDB read is expected to resolve well before the network round trip apiMe() makes, so in the common
+    // case this adds no perceived latency; Promise.all means neither call waits SERIALLY on the other. "Write
+    // works local-first" (F2) is unaffected — a brand-new device's cache is empty before and after storageReady
+    // resolves either way; only a RETURNING writer's existing pages are what this gate protects from a flash of
+    // "no pages yet" while IndexedDB is still loading them.
+    Promise.all([apiMe(), storageReady]).then(([user]) => {
       if (!active) return;
       if (user) {
         setCurrentUser(user);
@@ -238,7 +244,7 @@ export function App() {
     await apiLogout();
     stopSync();
     clearLastSyncAt();
-    resetLocalData();
+    await resetLocalData();
     setCurrentUser(null);
     setAuthState('anon');
   };
