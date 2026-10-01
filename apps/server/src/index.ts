@@ -16,6 +16,62 @@ if (env.isProd) {
   app.set('trust proxy', 1);
 }
 
+// CSP, REPORT-ONLY — a measured ticket, per the standing ruling
+// ("No CSP yet; it gets its own measured ticket").
+// `Content-Security-Policy-Report-Only` only logs a violation to the
+// browser's own console; it enforces nothing and cannot break anything
+// running today. No report-uri/report-to
+// is set — there is no collection endpoint built yet, so this is read by
+// hand (devtools) for now; that is its own later step, once this policy has
+// been watched for a while.
+//
+// EVERY DIRECTIVE BELOW WAS MEASURED AGAINST THE REAL BUILD, not assumed:
+//   - `pnpm run build:web`'s own dist-web/index.html carries NO inline
+//     <script> or <style> tag — only an external, content-hashed
+//     `<script type="module" src="./assets/…">` and a `<link
+//     rel="stylesheet">`. A grep of the whole client source found no
+//     eval/new Function and no external fetch/image/font URL anywhere —
+//     every font is vendored (@fontsource, 5 families) and every request
+//     this app makes is same-origin (/auth, /api).
+//   - `style-src` still needs 'unsafe-inline': React renders `style={{…}}`
+//     as a literal inline `style="…"` attribute on the element itself —
+//     a different thing from a <style> tag or an injected stylesheet, and
+//     this app uses it throughout. Hashes/nonces aren't practical against
+//     every dynamically-computed value; this is the pragmatic, measured
+//     choice, not an oversight.
+//   - `img-src` needs `data:` — the BUILT CSS (not assumed, grepped from
+//     dist-web/assets/*.css) carries one `data:image/svg+xml` background
+//     (a noise-texture filter).
+//   - `font-src` ALSO needs `data:` — Vite inlines a font small enough to
+//     fall under its own asset-inline threshold (Chakra Petch's two
+//     smallest weights, as `data:font/woff2;base64,…`) rather than
+//     emitting it as a separate file the way every other font here ships.
+//     Found only by reading the real built CSS, not assumed from the
+//     source — every OTHER font in this app is a plain same-origin file.
+//   - No `<form>` element exists anywhere in the client (every send is a
+//     fetch from a click handler) — `form-action 'self'` is set anyway,
+//     defensively, in case one is added later without this policy being
+//     revisited.
+//   - `frame-ancestors 'none'` is the modern, more reliable form of the
+//     X-Frame-Options header this route already wants (a later commit's
+//     own concern); the two are not in tension and may both be present.
+app.use((_req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('Content-Security-Policy-Report-Only', [
+    "default-src 'self'",
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data:",
+    "font-src 'self' data:",
+    "connect-src 'self'",
+    "manifest-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+  ].join('; '));
+  next();
+});
+
 // ITEM 203 - the limit is a NUMBER the error handler can hand back, and the client mirrors it (store/sync.ts).
 // 'bytes' parses '5mb' as 5 * 1024 * 1024 = 5,242,880 - the boundary measured on this very middleware.
 const BODY_LIMIT = '5mb';
