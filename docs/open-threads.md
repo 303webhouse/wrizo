@@ -23607,3 +23607,12 @@ Registry: next free **224**.
 
 **211: GO (Fable) — FIX builds it on a branch off r3, behind a switch; NOT in Batch Eight.** (Consistent
 with the earlier entry; restated here per this relay.)
+
+## GRANT: FIX, item 220 escexit + item210 RE-RUN ON item-esc-exit @ 340506e — 2026-09-30 (chat 1)
+
+**FIX’S REQUEST, VERIFIED BEFORE GRANTING:** the standing grant (`fix-item210-211-probe-ef64554-
+20260930`) was unused — its run finished and nothing since has touched the box (**0
+`ws-runtime-verify` browsers, 0 `run-suite`/harness processes**). **`340506e` is the origin tip of
+`item-esc-exit`** (“Merge branch ‘item-writing-r3’ into `item-esc-exit`”) — **item 220’s own branch**.
+
+**GRANT REWRITTEN: lane FIX — the escexit + item210 re-run on `item-esc-exit` @ `340506e`.**
