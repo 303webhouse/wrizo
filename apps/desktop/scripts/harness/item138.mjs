@@ -178,10 +178,30 @@ await withHarness(async (app) => {
     { id: 'i138-nested', text: 'Item 138 Nested Board', origin: 'loose', projectId: null, pageType: 'board', boxes: [] },
   ]);
 
-  const pinnedPage = await app.evalJs("!!window.wrizoPinPageToBoard('i138-page', 'i138-wall')");
-  const pinnedBoard = await app.evalJs("!!window.wrizoPinPageToBoard('i138-nested', 'i138-wall')");
+  // ⛔ `display: true` — AND ITS ABSENCE IS WHAT BROKE THIS FILE ON ITS FIRST PAIR.
+  // `pinPageToBoard` splits two acts on this one option (PW1 S3 / item 125): without
+  // it the pin is a MEMBERSHIP written `onCanvas: false`, and BoardEditor's own
+  // filter — `!(b.kind === 'page-pin' && b.onCanvas === false)` — never renders it.
+  // So the box was in the store (C0 read its kind and geometry straight out of
+  // `wrizoBoard()`) while NOTHING existed in the DOM to drag, and both handle probes
+  // reported the card "absent".
+  //
+  // The tell was inside this very file: C3's grandfathered card is seeded INLINE in
+  // the entry's own `boxes` array, carries no `onCanvas` key, and rendered perfectly
+  // — so the renderer was fine and the SEAM CALL was wrong. Membership is not
+  // placement; a writer still has to put the card on the wall. That is the product
+  // behaviour PW1 built, and this fixture had quietly assumed the opposite.
+  const pinnedPage = await app.evalJs("!!window.wrizoPinPageToBoard('i138-page', 'i138-wall', { display: true })");
+  const pinnedBoard = await app.evalJs("!!window.wrizoPinPageToBoard('i138-nested', 'i138-wall', { display: true })");
   ok('FIXTURE: both memberships were made through the product\'s own seam (a page and a nested board on one wall)',
     pinnedPage === true && pinnedBoard === true, JSON.stringify({ pinnedPage, pinnedBoard }));
+  // AND THAT THEY ARE ON THE WALL, asserted at the fixture instead of discovered
+  // four checks later as two "absent" drivers. A membership that never became a card
+  // is the one way this fixture can be wrong while every seam call returns true, so
+  // it is named here, where the cause is.
+  const placed = await app.evalJs("(JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'i138-wall')?.boxes || []).filter(b => b.kind === 'page-pin' && b.onCanvas !== false).length");
+  ok('FIXTURE: and BOTH pins are PLACED on the canvas (onCanvas !== false) — membership alone renders nothing, which is exactly how this file failed its first pair',
+    placed === 2, String(placed));
   await app.evalJs('window.wrizoFlushNow()');
   await openBoard(app, 'i138-wall', 'the 138 wall, framed');
 
