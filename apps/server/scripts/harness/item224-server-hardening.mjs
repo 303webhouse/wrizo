@@ -575,38 +575,96 @@ async function callRoute(router, routePath, method, body, session) {
 }
 
 // =============================================================================
-// (3c) A PER-ACCOUNT FAILED-LOGIN THROTTLE (interim), locking out even a
-// CORRECT password once tripped — proving it counts prior FAILURES, not
-// just continuing to reject.
+// (3c) ROUND 3 (URGENT) — A PER-ACCOUNT FAILED-LOGIN THROTTLE, never an
+// indefinite lock: after 8 failures, SLOWS to at most one attempt per
+// minute (never fully stops); the count clears after 15 QUIET minutes (no
+// attempt of any kind, not a fixed timer). Proves both of Fable's own named
+// claims — an attacker's failures slow the attempts, and the owner gets
+// back in once the window passes — plus the real shipped constants.
 // =============================================================================
 {
+  const realAuthSrc4 = fs.readFileSync(path.join(SRC, 'auth.ts'), 'utf8');
+
+  // STATIC — the real, shipped timings (never guessed): 8 failures, a
+  // 60-second throttle interval, a 15-minute quiet clear.
+  ok('(3c) STATIC: the real file\'s threshold is 8 failures',
+    realAuthSrc4.includes('const FAILED_LOGIN_THRESHOLD = 8;'), '');
+  ok('(3c) STATIC: the real file\'s throttle interval is 60 * 1000 (one attempt per minute)',
+    realAuthSrc4.includes('const THROTTLE_INTERVAL_MS = 60 * 1000;'), '');
+  ok('(3c) STATIC: the real file\'s quiet-clear window is 15 * 60 * 1000 (15 minutes)',
+    realAuthSrc4.includes('const QUIET_CLEAR_MS = 15 * 60 * 1000;'), '');
+
+  // DYNAMIC — the SAME logic, with the two time constants swapped to a
+  // handful of milliseconds (an in-memory source copy; the real file on
+  // disk is never touched) so this proof runs in well under a second
+  // instead of needing to wait out a genuine 60s/15min in a test. Nothing
+  // about the THRESHOLD or the decision logic itself changes.
+  const fastAnchor = 'const THROTTLE_INTERVAL_MS = 60 * 1000;       // once throttled: at most one attempt per minute\r\nconst QUIET_CLEAR_MS = 15 * 60 * 1000;        // 15 minutes with NO attempt clears the count';
+  if (!realAuthSrc4.includes(fastAnchor)) throw new Error('(3c) fast-constants anchor not found — update this harness');
+  const THROTTLE_MS = 80, QUIET_MS = 260;
+  const fastSrc = realAuthSrc4.replace(fastAnchor, `const THROTTLE_INTERVAL_MS = ${THROTTLE_MS};\r\nconst QUIET_CLEAR_MS = ${QUIET_MS};`);
+
   resetEnv('X', 50);
-  const router = loadAuth();
-  await fakeDb.seedUser('locked@example.com', 'the-real-password1');
+  const router = loadAuth({ authSourceOverride: fastSrc });
+  await fakeDb.seedUser('throttled@example.com', 'the-real-password1');
+
+  // The first 8 failures establish the count — none is throttled yet
+  // (entry.count < 8 on each of these checks), each reaches the real
+  // compare and genuinely fails (401), never 429.
+  const firstEight = [];
   for (let i = 0; i < 8; i++) {
-    await callRoute(router, '/login', 'post', { email: 'locked@example.com', password: 'wrong' });
+    firstEight.push((await callRoute(router, '/login', 'post', { email: 'throttled@example.com', password: 'wrong' })).status);
   }
-  const lockedOut = await callRoute(router, '/login', 'post', { email: 'locked@example.com', password: 'the-real-password1' });
-  ok('(3c) after 8 failures, the 9th attempt is LOCKED OUT (429) even with the CORRECT password — the throttle counts prior failures, not whether this particular attempt would have succeeded',
-    lockedOut.status === 429, JSON.stringify(lockedOut));
+  ok('(3c) the first 8 failures are never throttled — each is a genuine 401, not 429 (the door is "AFTER 8", not before or at 8)',
+    firstEight.every((s) => s === 401), JSON.stringify(firstEight));
+
+  // CLAIM 1 — AN ATTACKER'S FAILURES SLOW THE ATTEMPTS. The 9th attempt,
+  // immediately after, is throttled (429) — even with the WRONG password,
+  // it never reaches the compare. A second immediate attempt is ALSO
+  // throttled — still slowed, not a one-time speed bump.
+  const ninth = await callRoute(router, '/login', 'post', { email: 'throttled@example.com', password: 'still-wrong' });
+  const tenthImmediate = await callRoute(router, '/login', 'post', { email: 'throttled@example.com', password: 'still-wrong' });
+  ok('(3c) CLAIM 1 — after 8 failures, the 9th and a following immediate attempt are both THROTTLED (429), slowing the attacker',
+    ninth.status === 429 && tenthImmediate.status === 429, JSON.stringify({ ninth: ninth.status, tenthImmediate: tenthImmediate.status }));
+
+  // NEVER FULLY STOPPED — once a throttle interval has genuinely passed,
+  // the very next attempt is let through on its own merits (here, still
+  // the wrong password, so it fails normally — 401, not 429 — proving
+  // "slows" rather than "blocks").
+  await new Promise((r) => setTimeout(r, THROTTLE_MS + 40));
+  const afterInterval = await callRoute(router, '/login', 'post', { email: 'throttled@example.com', password: 'wrong-again' });
+  ok('(3c) once the throttle interval has genuinely passed, the NEXT attempt is let through (401 for a wrong password, never blocked outright) — this is a slowdown, not a stop',
+    afterInterval.status === 401, JSON.stringify(afterInterval));
+  const rethrottled = await callRoute(router, '/login', 'post', { email: 'throttled@example.com', password: 'wrong-once-more' });
+  ok('(3c) the throttle immediately re-engages after that one allowed attempt — the NEXT one, right after, is throttled again',
+    rethrottled.status === 429, JSON.stringify(rethrottled));
+
+  // CLAIM 2 — THE OWNER GETS BACK IN ONCE THE WINDOW PASSES. Real silence
+  // (no attempt of ANY kind) for the full quiet-clear window, THEN the
+  // correct password, on the very first try, with no throttle at all.
+  await new Promise((r) => setTimeout(r, QUIET_MS + 60));
+  const ownerBack = await callRoute(router, '/login', 'post', { email: 'throttled@example.com', password: 'the-real-password1' });
+  ok('(3c) CLAIM 2 — after a genuinely QUIET window (no attempts at all), the account\'s own owner signs in on the first try — never an indefinite lock',
+    ownerBack.status === 200, JSON.stringify(ownerBack));
 
   await fakeDb.seedUser('never-failed@example.com', 'another-real-password1');
   const otherAccount = await callRoute(router, '/login', 'post', { email: 'never-failed@example.com', password: 'another-real-password1' });
-  ok('(3c) a DIFFERENT account, with no prior failures, signs in normally — the throttle is per-account, not a global lockout',
+  ok('(3c) a DIFFERENT account, with no prior failures, was never throttled at any point above — per-account, not a global lockout',
     otherAccount.status === 200, JSON.stringify(otherAccount));
 
-  const realAuthSrc4 = fs.readFileSync(path.join(SRC, 'auth.ts'), 'utf8');
-  const lockAnchor = '  if (isLoginLocked(email)) {\r\n    res.status(429).json({ error: \'Too many attempts. Try again later.\' });\r\n    return;\r\n  }\r\n\r\n';
-  if (!realAuthSrc4.includes(lockAnchor)) throw new Error('(3c) mutation anchor not found — update this harness');
+  // MUTATION KILLED — remove the throttle check entirely; the exact same
+  // 9-failures-then-immediate-retry shape must stop showing ANY 429.
+  const checkAnchor = '  if (isLoginThrottled(email)) {\r\n    res.status(429).json({ error: \'Too many attempts. Try again in a moment.\' });\r\n    return;\r\n  }\r\n\r\n';
+  if (!realAuthSrc4.includes(checkAnchor)) throw new Error('(3c) check anchor not found — update this harness');
   resetEnv('X', 50);
-  const mutRouter3 = loadAuth({ authSourceOverride: realAuthSrc4.replace(lockAnchor, '') });
-  await fakeDb.seedUser('mutant-locked@example.com', 'the-real-password1');
-  for (let i = 0; i < 8; i++) {
-    await callRoute(mutRouter3, '/login', 'post', { email: 'mutant-locked@example.com', password: 'wrong' });
+  const mutRouter3 = loadAuth({ authSourceOverride: realAuthSrc4.replace(checkAnchor, '') });
+  await fakeDb.seedUser('mutant-throttle@example.com', 'the-real-password1');
+  for (let i = 0; i < 9; i++) {
+    await callRoute(mutRouter3, '/login', 'post', { email: 'mutant-throttle@example.com', password: 'wrong' });
   }
-  const mutLockedOut = await callRoute(mutRouter3, '/login', 'post', { email: 'mutant-locked@example.com', password: 'the-real-password1' });
-  ok('(3c) MUTATION KILLED: with the lockout check removed, the 9th attempt (correct password) now SUCCEEDS (200) — confirms the real check is what blocks it',
-    mutLockedOut.status === 200, JSON.stringify(mutLockedOut));
+  const mutNinth = await callRoute(mutRouter3, '/login', 'post', { email: 'mutant-throttle@example.com', password: 'wrong' });
+  ok('(3c) MUTATION KILLED: with the throttle check removed, the SAME shape (9+ failures, back-to-back) never produces a 429 — confirms the real check is what throttles it',
+    mutNinth.status === 401, JSON.stringify(mutNinth));
 }
 
 // =============================================================================

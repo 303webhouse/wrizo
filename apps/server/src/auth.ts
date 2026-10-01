@@ -21,36 +21,58 @@ const MIN_PASSWORD_LENGTH = 8;
 // (BCRYPT_COST). Computed once at module load, not per request.
 const DUMMY_PASSWORD_HASH = bcrypt.hashSync('item224-round2-timing-parity-only', BCRYPT_COST);
 
-// ITEM 224, ROUND 2 — a per-ACCOUNT failed-login throttle, independent of
-// the per-IP limiter below: that one is defeated by spreading attempts
-// against ONE account across many IPs. INTERIM (in memory, no schema,
-// resets on restart) — named as such, not the lasting shape. Keyed by the
-// email actually attempted (whether or not it belongs to a real account —
-// the lockout reply is identical either way, so this adds no new way to
-// learn an email exists), pruned of every expired entry on each check so
-// an attacker flooding many distinct emails cannot grow this past the
-// window's own worth of recent activity.
-const FAILED_LOGIN_MAX = 8;
-const FAILED_LOGIN_WINDOW_MS = 15 * 60 * 1000;
-const failedLogins = new Map<string, { count: number; windowStart: number }>();
+// ITEM 224, ROUND 3 (URGENT, Fable 2026-10-01) — a per-ACCOUNT failed-login
+// THROTTLE, independent of the per-IP limiter below: that one is defeated
+// by spreading attempts against ONE account across many IPs. INTERIM (in
+// memory, no schema, resets on restart) — named as such, not the lasting
+// shape. Keyed by the email actually attempted (whether or not it belongs
+// to a real account — the throttled reply is identical either way, so this
+// adds no new way to learn an email exists).
+//
+// REVISED FROM ROUND 2's hard lockout, same day: NEVER AN INDEFINITE LOCK.
+// After 8 failures, an attempt SLOWS to at most one per minute — it never
+// stops outright, so the account's own owner, typing the right password,
+// gets back in on their very next attempt once a minute has passed, not
+// after waiting out a fixed window. The count itself clears after 15
+// QUIET minutes — no attempt of ANY kind, throttled or not, for that long
+// — not a fixed timer from the 8th failure: an attacker who keeps trying
+// (even once a minute) keeps the window alive exactly because they are
+// still not quiet.
+const FAILED_LOGIN_THRESHOLD = 8;
+const THROTTLE_INTERVAL_MS = 60 * 1000;       // once throttled: at most one attempt per minute
+const QUIET_CLEAR_MS = 15 * 60 * 1000;        // 15 minutes with NO attempt clears the count
+const failedLogins = new Map<string, { count: number; lastAttemptAt: number }>();
 function pruneFailedLogins(now: number): void {
   for (const [k, v] of failedLogins) {
-    if (now - v.windowStart >= FAILED_LOGIN_WINDOW_MS) failedLogins.delete(k);
+    if (now - v.lastAttemptAt >= QUIET_CLEAR_MS) failedLogins.delete(k);
   }
 }
-function isLoginLocked(email: string): boolean {
+// Checked BEFORE the real password check. true = refuse THIS attempt
+// without touching the database or bcrypt; false = let it through (either
+// under the threshold, or a full throttle interval has passed since the
+// last attempt — exactly one attempt gets in per interval, never zero).
+function isLoginThrottled(email: string): boolean {
   const now = Date.now();
   pruneFailedLogins(now);
   const entry = failedLogins.get(email);
-  return !!entry && entry.count >= FAILED_LOGIN_MAX;
+  if (!entry || entry.count < FAILED_LOGIN_THRESHOLD) return false;
+  if (now - entry.lastAttemptAt < THROTTLE_INTERVAL_MS) {
+    // Being refused is itself an attempt for "quiet" purposes — it must
+    // NOT let the 15-minute clock expire out from under an attacker who is
+    // still actively (if slowly) trying.
+    entry.lastAttemptAt = now;
+    return true;
+  }
+  return false;
 }
 function recordFailedLogin(email: string): void {
   const now = Date.now();
   const entry = failedLogins.get(email);
-  if (!entry || now - entry.windowStart >= FAILED_LOGIN_WINDOW_MS) {
-    failedLogins.set(email, { count: 1, windowStart: now });
+  if (!entry || now - entry.lastAttemptAt >= QUIET_CLEAR_MS) {
+    failedLogins.set(email, { count: 1, lastAttemptAt: now });
   } else {
     entry.count += 1;
+    entry.lastAttemptAt = now;
   }
 }
 function clearFailedLogins(email: string): void {
@@ -153,10 +175,12 @@ authRouter.post('/login', asyncHandler(async (req: Request, res: Response) => {
   const email = String(req.body?.email || '').trim().toLowerCase();
   const password = String(req.body?.password || '');
 
-  // ITEM 224, ROUND 2 — checked before the query/compare, so a locked
-  // account's attempts cost the server nothing further.
-  if (isLoginLocked(email)) {
-    res.status(429).json({ error: 'Too many attempts. Try again later.' });
+  // ITEM 224, ROUND 3 — checked before the query/compare, so a throttled
+  // attempt costs the server nothing further. Never a flat refusal: once a
+  // full THROTTLE_INTERVAL_MS has passed, the very next attempt is let
+  // through on its own merits.
+  if (isLoginThrottled(email)) {
+    res.status(429).json({ error: 'Too many attempts. Try again in a moment.' });
     return;
   }
 
