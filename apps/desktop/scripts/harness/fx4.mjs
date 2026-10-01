@@ -442,8 +442,14 @@ await withHarness(async (app) => {
   // The claim this file makes about the dock is unchanged; only its precondition is.
   { const g = await app.evalJs("(() => { const el = document.querySelector('.board-popup-dock-grip'); if (!el || document.querySelector('.board-popup-dock')) return null; const r = el.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()"); if (g) { await app.mouseDown(g.x, g.y); await app.mouseUp(g.x, g.y); await sleep(300); } }
   const dockToolCount = await app.evalJs("document.querySelectorAll('.board-popup-dock .mode-tbtn').length");
-  ok('S5 [R13.v+R1 successor]: the opened cards DOCK carries exactly B/I/U - three styling tools, moved off the strip and grown by Underline',
-    dockToolCount === 3, String(dockToolCount));
+  // ITEM 207 STEP 4 (2026-09-24) — SUPERSEDED, the count grew again. The Type control's
+  // 'small' form joined the dock (BoardEditor.tsx) with a face button (class wz-type-face,
+  // not counted) and a size '−'/'+' pair (class mode-tbtn, same as B/I/U) — two more tools,
+  // found stale by Batch Eight's pair (fx4 S5, batch-eight @ 9c8d5c3). Original name kept
+  // verbatim, parked below; live successor immediately after.
+  // ok('S5 [R13.v+R1 successor]: the opened cards DOCK carries exactly B/I/U - three styling tools, moved off the strip and grown by Underline', dockToolCount === 3, String(dockToolCount));
+  ok('S5 [ITEM 207 step 4 successor]: the opened card\'s DOCK carries B/I/U plus the Type control\'s size steps - five styling tools',
+    dockToolCount === 5, String(dockToolCount));
 
   await app.evalJs(`(() => {
     const ed = document.querySelector('.board-popup-editor');
@@ -782,6 +788,19 @@ if (process.env.HARNESS_PARKED === '1') {
       scriptStartParked.fraction >= 0 && scriptStartParked.fraction <= 0.02
         && proseStartParked.fraction >= 0.20 && proseStartParked.fraction <= 0.32,
       JSON.stringify({ scriptStartParked, proseStartParked }));
+
+    // ITEM 207 STEP 4 — the card dock's tool count, re-derived (see the live S5 section
+    // above for the full explanation: the Type control's small-form size steps carry
+    // class mode-tbtn too, same as the live successor already tests).
+    await freshBoard(app, 'fx4-s5-dock-count-parked', [
+      { id: 'fx4-s5p-dock', kind: 'text', x: 0.1, y: 0.1, w: 0.25, h: 0.1, z: 1, text: 'Dock me' },
+    ], LAPTOP_W, 900);
+    await app.evalJs('(() => { const el = document.querySelector(\'[data-box-id="fx4-s5p-dock"]\'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()');
+    await app.waitFor("!!document.querySelector('.board-popup')", { label: 'S5 dock-count popup open (parked)' });
+    { const g = await app.evalJs("(() => { const el = document.querySelector('.board-popup-dock-grip'); const r = el.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()"); await app.mouseDown(g.x, g.y); await app.mouseUp(g.x, g.y); await sleep(300); }
+    const dockToolCountParked = await app.evalJs("document.querySelectorAll('.board-popup-dock .mode-tbtn').length");
+    pok('PARKED (was "S5 [R13.v+R1 successor]: the opened cards DOCK carries exactly B/I/U - three styling tools, moved off the strip and grown by Underline") — ITEM 207 step 4: the Type control\'s small form (a face button plus a size −/+ pair) joined the dock; the two size-step buttons also carry class mode-tbtn, so the count is five, not three; live successor in this file\'s own live S5 section',
+      dockToolCountParked === 5, String(dockToolCountParked));
 
     return parkedChecks;
   });
