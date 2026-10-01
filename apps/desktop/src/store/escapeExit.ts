@@ -11,6 +11,9 @@
 // If something closed, that Esc was the popup's. If nothing was open, or nothing closed (a popup with no Esc of its own), focus
 // leaves - the trap is never re-made by a popup that ignores the key.
 
+/** The id of the screen-reader-only hint both writing surfaces describe themselves by ("Press Escape to leave the page"). */
+export const ESC_HINT_ID = 'wz-esc-hint';
+
 const OPEN_SELECTOR = [
   '[role="dialog"]', '[role="menu"]', '.wz-cascade-panel', '.wz-tutor-panel[data-open="true"]', '.wz-beginnings',
 ].join(', ');
@@ -31,7 +34,9 @@ export function currentModeTab(doc: Document = document): HTMLElement | null {
   return doc.querySelector<HTMLElement>('.desk-mode-tab.active, .mode-tab.active, [role="tab"][aria-selected="true"]');
 }
 
-/** The time a popup's own Esc listener has to close it (React flushes a native-event update well inside this). */
+/** AN ASSUMPTION, NAMED: a popup's own Esc listener closes it within this window. It is a timer, not two animation frames, on
+ *  purpose - a backgrounded or throttled tab may never run a frame, and an exit that waits on one would be a trap again. The
+ *  harness (escexit.mjs) MEASURES how long each popup really takes to go and fails if it is not inside this window. */
 export const POPUP_SETTLE_MS = 60;
 
 /** Call from the editor's keydown. Returns true when it took the key. */

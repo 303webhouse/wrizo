@@ -61,6 +61,7 @@ interface Props {
   autoFocus?: boolean;
   placeholder?: string;
   ariaLabel?: string;
+  ariaDescribedBy?: string;   // the id of a hint the host renders (A1: "Press Escape to leave the page")
   penColor?: string;           // Journal pen ink (sets text + caret colour); from the pen bar
   // AB2 S2 — the forward lock, exposed in Free Write's tool rail
   // (store/forwardLock.ts). Only meaningful in journal mode (the free-edit
@@ -96,7 +97,7 @@ interface Props {
 }
 
 export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function ForwardOnlyEditor(
-  { initialText, onChange, mode = 'journal', onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, penColor, forwardLock = true, style, insertMarkerRef, onFormatKey },
+  { initialText, onChange, mode = 'journal', onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, ariaDescribedBy, penColor, forwardLock = true, style, insertMarkerRef, onFormatKey },
   ref,
 ) {
   // ITEM 112-A — the branch this flag selects is FREE-EDIT vs FORWARD-ONLY, and
@@ -674,6 +675,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         role="textbox"
         aria-multiline="true"
         aria-label={ariaLabel ?? 'Writing surface'}
+        aria-describedby={ariaDescribedBy}
         spellCheck={false}
         onFocus={onFocus}
         onBlur={onBlur}

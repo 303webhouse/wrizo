@@ -43,7 +43,7 @@ import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import { applyFormat, marksAt, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
 import { createTabChord, type TabAct } from '../store/tabChord';
-import { escapeFromEditor } from '../store/escapeExit';
+import { escapeFromEditor, ESC_HINT_ID } from '../store/escapeExit';
 import { BLOCK_TOKEN } from '../store/markRuns';
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
 import { getRegisteredUndoStack } from '../store/textUndo';
@@ -786,6 +786,8 @@ function PageEditorView({ id }: { id: string }) {
       className="wz-ink-sheet"
       style={{ position: 'relative', width: '100%', minHeight: '100%' }}
     >
+      {/* A1: said to a screen reader, never drawn (1px, clipped) - so it cannot move or resize the page. */}
+      <span id={ESC_HINT_ID} className="wz-sr-only">{dt('pageEscHint')}</span>
       <ForwardOnlyEditor
         key={`${id}-${mode}`}
         ref={editorRef}
@@ -800,6 +802,7 @@ function PageEditorView({ id }: { id: string }) {
         onBlur={() => { setFocused(false); flush(); }}
         placeholder=""
         ariaLabel="Page writing surface"
+        ariaDescribedBy={ESC_HINT_ID}
         penColor={penColor}
         forwardLock={mode === 'journal' ? forwardLock : true}
         style={{

@@ -13,6 +13,7 @@ import { shouldPromoteToScene, applyAutoContd } from '../store/scriptSmartText';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { copyText } from '../store/clipboard';
 import { useDeskLexicon } from '../store/deskLexicon';
+import { escapeFromEditor, ESC_HINT_ID } from '../store/escapeExit';
 import { useActionToast } from './ActionToast';
 import { exportPageFiles, exportBinderDocument, exportEverythingDocument } from '../store/pageExport';
 import { triggerDownload } from '../store/download';
@@ -365,6 +366,7 @@ function ActiveScriptElement({
       role="textbox"
       aria-multiline="true"
       aria-label={`Script ${el.t} — active`}
+      aria-describedby={ESC_HINT_ID}
       onInput={() => onInput(nodeRef.current?.textContent ?? '')}
       onKeyDown={onKeyDown}
       onKeyUp={noteCaret}
@@ -744,6 +746,9 @@ export function ScriptEditor({ id }: { id: string }) {
       if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); acceptAutocomplete(); return; }
       if (e.key === 'Escape') { e.preventDefault(); setAcDismissed(acSig); return; }
     }
+    // A1 (accessibility audit): this surface takes Tab too (it cycles the element type), so it gets the page's exit - Esc moves
+    // focus to the current mode tab, after the autocomplete above or any other open popup has closed first (store/escapeExit.ts).
+    if (escapeFromEditor(e.nativeEvent, e.currentTarget)) return;
 
     const node = activeElRef.current;
     // The live DOM is ground truth for "what's actually typed right now" —
@@ -1050,6 +1055,7 @@ export function ScriptEditor({ id }: { id: string }) {
               if (p.continuedFrom) return null;
               return (
                 <Fragment key={`${el.id}:${seedNonce}:wrap`}>
+                  <span id={ESC_HINT_ID} className="wz-sr-only">{dt('pageEscHint')}</span>
                   <ActiveScriptElement
                     key={`${el.id}:${seedNonce}`}
                     el={el}
