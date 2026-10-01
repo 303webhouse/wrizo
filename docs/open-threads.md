@@ -23796,3 +23796,39 @@ withheld.
 
 **BACKUPS ARE LIVE: `BACKUP_CRON_SCHEDULE=0 9 * * *`, `RUN_ON_STARTUP=true` already ran once (this
 deploy), nightly from here.**
+
+## BATCH EIGHT REBUILT (195 DROPPED) — cd1/cd2/cd4/fx3 PASS; THE ENVIRONMENTAL CRASH IS REPRODUCIBLE, NOT NOISE; A VERIFIED-DEAD-OWNER SWEEP LOGGED — 2026-10-01 (chat 1)
+
+**`batch-eight` REBUILT FROM `9695504`, 195 DROPPED CLEANLY** (its CSS hunk reverted, `item195.mjs` and its
+offer doc removed — they had leaked back in via `batch8-parks-fix`’s ancestry, since FIX branched that off
+the OLD `batch-eight` @ `9c8d5c3`, which still had 195). **Full roster, 10 merges:** r3 @ `b4d0f63` · 207+207b
+@ `e2a5a78` · 204 storage @ `13cd415` · 213 step1 @ `c648c56` · 215 successor @ `3034f90` · 217 @ `cbd4dc6` ·
+163 first-run fix @ `71ee427` · 138 first-run fix @ `5318b12` · FIX’s parks + fx4 S5 @ `e3dc7a6` · FIX’s B-I-U
+interim @ `2e2a6b2` (now IN Batch Eight, per this relay). **Two mechanical-union conflicts, same resolution
+as before** (`types/index.ts`: 207/204 blocks; `persistence.ts`: two imports) — verified again, nothing
+edited beyond the union. **`CascadePanels.tsx`’s import union redone against 163’s NEWER SHA, same two
+lines.** **Harness-only merges verified to touch only `scripts/harness`** (e3dc7a6, 5318b12, 71ee427).
+**`tsc` x2 and `build:web` both exit 0.** Pushed `batch-eight` @ `1b3c1c8` (force, replacing the dropped-195
+history).
+
+**THE PAIR, RE-RUN: cd1 PASSES (25/25), fx3 PASSES (28/28)** — FIX’s and TOOLS’ parks hold on the rebuilt
+tree. **THE DEFAULT LEG CRASHED AGAIN, AT THE EXACT SAME FILE AS BOTH PRIOR CLEAN ATTEMPTS: `fx5.mjs`,
+file 31 of 108** — then every file after it, `exit=3221225794` (`STATUS_ACCESS_VIOLATION`), 0s each,
+through file 108. **THIS IS NOW REPRODUCIBLE, NOT NOISE: three separate default-leg runs this session,
+the crash has started at file 31 every time it was not caused by this desk’s own checkout-mid-run error.**
+This confirms Fable’s hypothesis (0xC0000142-class desktop-resource exhaustion) rather than refuting it.
+
+**THE PARKED LEG COULD NOT EVEN START: it refused, citing 10 `ws-runtime-verify` browsers owned by node pid
+`42844` (the just-crashed default leg), too young (32–35s) for the 300s dead-owner floor to trust.**
+**VERIFIED BEFORE ACTING: 0 `run-suite`/harness node processes exist anywhere — pid `42844` is confirmed
+dead, not merely unresponsive.** **A VERIFIED-DEAD-OWNER SWEEP, authorized and logged here (the standing
+precedent): killed the 10 listed browser PIDs by exact PID, never by name.** 9 of 10 had already self-
+exited; one (`58116`) was killed. **Box confirmed clean after: 0 `ws-runtime-verify` browsers.** Grant
+cleared.
+
+**HANDED UP, NOT RETRIED BLINDLY: a bare retry will almost certainly crash at the same file again** — the
+resource exhaustion accumulates WITHIN one `run-suite` process across ~30 sequential browser launches; a
+sweep clears the corpses but not whatever OS-level handle/desktop-heap state causes the 31st launch to fail.
+**Fable’s two instructions conflict: “the box gets a clean reboot first” (first relay) vs “No reboot — the
+lanes are working on this machine” (second relay).** This desk cannot resolve that itself — reporting both
+readings and the reproducibility evidence, and awaiting a ruling before the next attempt.
