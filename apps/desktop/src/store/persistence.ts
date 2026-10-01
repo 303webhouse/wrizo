@@ -4,6 +4,11 @@ import { serializeScriptDoc } from './scriptText';
 import { createEmptyScriptDoc } from './scriptDoc';
 import { deskTerm, type DeskTermId } from './deskLexicon';
 import { getUserPageDefaults } from './pageDefaults';
+import { reportFlushFailed, reportFlushOk, reportStorageUsage } from './storageHealth';
+import { indexedDbAvailable, idbGetAll, idbCommit, idbClear } from './idbStore';
+import { journalPut, journalDelete, journalClearId, journalPeek, journalReadAll, journalClearAll } from './writeAheadJournal';
+import { migrateLegacyStorageOnce } from './storageMigration';
+import { getCurrentUser } from './currentUser';
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
