@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
+import { TypeControl, type TypeControlProps } from './TypeControl';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
 import { useWritingGoal, setWritingGoal, DEFAULT_GOAL_LINES } from '../store/writingGoal';
@@ -63,14 +64,23 @@ export const SLIVER_SHORTCUT_LABEL = 'Ctrl/Cmd+/';
 
 export const CAPTURE_ITEMS = ['Spark deck', 'Fragments', 'Send → Drawer'] as const;
 
+// ITEM 207 - the Type control's props as a sliver member. OPTIONAL on every arm that can carry it, and the absence is the
+// whole of "absent, never greyed": a host that passes none renders nothing (a screenplay page passes none - its face is
+// the format's). `form` is the arm's own call: Free Write is the smallest form (no number); Draft and Revise are the full.
+export type SliverType = TypeControlProps;
+
 export type SliverContent =
   | { kind: 'empty' }
+  // ITEM 207 - Revise's drawer has been an empty drawer since 112-A ("112-C fills it with 83's Type section"); this arm is
+  // that tenant and nothing else. It replaces `{ kind: 'empty' }` for Revise so the drawer can carry the Type control.
+  | { kind: 'revise'; type?: SliverType }
   | {
       kind: 'freewrite';
       forwardLock?: {
         on: boolean;
         onToggle: (next: boolean) => void;
       };
+      type?: SliverType;
       // ITEM 121 I4 — THE INK OPTIONS. Present ONLY when the page is in INK:
       // PageEditor passes this member in INK and omits it in TEXT, so in TEXT
       // the zone is ABSENT FROM THE DOM ENTIRELY — not hidden, not greyed. The
@@ -120,6 +130,7 @@ export type SliverContent =
       // walkthrough opened item 114 out of the DRAFT structure redesign; if he
       // wants the row on screenplay too, it is four props and a default, and
       // the offer says so.
+      type?: SliverType;
       pageKind?: PageKindSetting;
       onPickKind?: (next: PageKindSetting) => void;
       styleGuide?: StyleGuide;
@@ -519,6 +530,13 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           The menus wave's tests that asserted Free Write's B·I·U get the park
           treatment: original assertions kept verbatim with a successor
           pointer, never rewritten in place. */}
+
+      {/* ITEM 207 - THE TYPE CONTROL, one component in three mountings (Free Write: small; Draft and Revise: full). It leads
+          the drawer's tenants and carries no heading of its own - his minimal-interface law. Absent, never greyed, wherever
+          the host passes no `type` (a screenplay page). */}
+      {(content.kind === 'freewrite' || content.kind === 'draft' || content.kind === 'revise') && content.type && (
+        <div className="wz-sliver-section wz-sliver-type"><TypeControl {...content.type} /></div>
+      )}
 
       {content.kind === 'freewrite' && content.forwardLock && (
         <div className="wz-sliver-section">
