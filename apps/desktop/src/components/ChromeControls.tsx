@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { subscribeSyncStatus, subscribeTooLarge, type SyncStatus, type TooLargeRecord } from '../store/sync';
+import { subscribeSyncStatus, subscribeTooLarge, subscribeRejected, type SyncStatus, type TooLargeRecord, type RejectedRecord } from '../store/sync';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { syncNoticeText } from '../store/syncNotice';
 
@@ -29,11 +29,16 @@ export function SyncIndicator() {
   // page that cannot travel. Offline still wins while the network is down - it is the broader truth.
   const [tooLarge, setTooLarge] = useState<readonly TooLargeRecord[]>([]);
   useEffect(() => subscribeTooLarge(setTooLarge), []);
+  // ITEM 224(a) — a record the server itself refused to store speaks too,
+  // on the SAME "network is fine, one named thing is stuck" register as
+  // too-large, a different cause.
+  const [rejected, setRejected] = useState<readonly RejectedRecord[]>([]);
+  useEffect(() => subscribeRejected(setRejected), []);
   const { t } = useDeskLexicon();
   const style = { fontSize: '0.75rem', color: 'var(--color-text-muted)' } as const;
-  const text = syncNoticeText(status, tooLarge, t);
+  const text = syncNoticeText(status, tooLarge, rejected, t);
   if (text === null) return null;
-  return <span style={style} data-sync-too-large={status === 'offline' ? undefined : tooLarge.length}>{text}</span>;
+  return <span style={style} data-sync-too-large={status === 'offline' ? undefined : tooLarge.length} data-sync-rejected={status === 'offline' ? undefined : rejected.length}>{text}</span>;
 }
 
 // Full-screen toggle (Fullscreen API). Works on desktop + Android and goes
