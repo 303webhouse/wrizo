@@ -4,8 +4,10 @@ import { resolve } from 'path';
 // Load apps/server/.env by explicit path so it works no matter the cwd
 // (Railway runs `node apps/server/dist/index.js` from the repo root). On
 // Railway there is no .env file and real env vars are injected — this is a
-// harmless no-op there.
-dotenv.config({ path: resolve(__dirname, '..', '.env') });
+// harmless no-op there. `quiet: true` — ITEM 224, ROUND 2 — dotenv's own
+// startup banner (and, on Railway's no-op path, its "could not find .env"
+// notice) is not a line this server's own logs should carry on every boot.
+dotenv.config({ path: resolve(__dirname, '..', '.env'), quiet: true });
 
 function required(name: string): string {
   const value = process.env[name];
@@ -70,4 +72,12 @@ export const env = {
   // in-memory counter itself lives in tutor.ts; this is only the threshold,
   // configurable without a redeploy of the default.
   tutorDailyBudget: Number(process.env.TUTOR_DAILY_BUDGET) || 50,
+  // ITEM 224, ROUND 2 — a cap across every account combined, on top of the
+  // per-person one above (tutor.ts's own consumeGlobalTutorBudget).
+  tutorGlobalDailyBudget: Number(process.env.TUTOR_GLOBAL_DAILY_BUDGET) || 500,
+  // ITEM 224, ROUND 2 — the kill switch. Answers the Tutor route with the
+  // SAME "not configured" shape as an unset API key (never a new error
+  // shape) — an operator can pull this lever from Railway's own env panel,
+  // no redeploy, no code change.
+  tutorDisabled: process.env.TUTOR_DISABLED === '1',
 };

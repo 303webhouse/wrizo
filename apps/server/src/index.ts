@@ -6,10 +6,15 @@ import { sessionMiddleware } from './session';
 import { authRouter, requireAuth } from './auth';
 import { syncRouter } from './sync';
 import { tutorRouter } from './tutor';
+import { logError } from './logSafe';
 
 const distWeb = resolve(__dirname, '../../desktop/dist-web');
 
 const app = express();
+// ITEM 224, ROUND 2 — don't name the framework. A single, free header that
+// tells nothing useful to a writer and one more thing an attacker doesn't
+// have to guess.
+app.disable('x-powered-by');
 
 // Trust Railway's proxy so secure cookies and req.ip work behind it.
 if (env.isProd) {
@@ -36,6 +41,29 @@ app.use((_req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   if (env.isProd) {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  next();
+});
+
+// ITEM 224, ROUND 2 — reject a state-changing request whose Origin isn't
+// this app's own. The session cookie is already `sameSite: 'lax'`
+// (session.ts), which blocks a cookie from riding a cross-site POST at
+// all in a modern browser — this is a second, explicit line, for an older
+// browser or any other path that first line doesn't cover. GET/HEAD/OPTIONS
+// are exempt (nothing state-changing ever rides one in this app). An
+// ABSENT Origin header fails OPEN — some legitimate same-origin requests
+// and most non-browser clients never send one, and this app sets no CORS
+// headers anywhere, so a cross-origin browser request already cannot read
+// the response either way; a MISMATCHED Origin, which a forged cross-site
+// request WILL carry, fails closed.
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') { next(); return; }
+  const origin = req.headers.origin;
+  if (!origin) { next(); return; }
+  const expected = `${req.protocol}://${req.get('host')}`;
+  if (origin !== expected) {
+    res.status(403).json({ error: 'Forbidden' });
+    return;
   }
   next();
 });
@@ -119,8 +147,7 @@ app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
     res.status(status).json({ error: 'bad request' });
     return;
   }
-  // eslint-disable-next-line no-console
-  console.error('[server error]', err);
+  logError('server', err);
   res.status(500).json({ error: 'Internal server error' });
 });
 
@@ -132,7 +159,6 @@ runMigrations()
     });
   })
   .catch((err) => {
-    // eslint-disable-next-line no-console
-    console.error('Failed to start server', err);
+    logError('server-boot', err);
     process.exit(1);
   });

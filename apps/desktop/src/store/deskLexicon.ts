@@ -556,7 +556,10 @@ export type DeskTermId =
   // ITEM 224 — sign-up by invite code, until launch. Arrival.tsx's own
   // fields are placeholder-only (no labels) today; this one matches that
   // existing shape exactly rather than introducing a labelled field alone.
-  | 'authInviteCodePlaceholder';
+  | 'authInviteCodePlaceholder'
+  // ITEM 224, ROUND 2 — shown instead of the whole form when no codes are
+  // configured, so the gate reads as a quiet fact, never a submit-and-fail.
+  | 'authSignupByInvitation';
 
 const CANONICAL: Record<DeskTermId, string> = {
   // BM1 — the Board's Own Modes.
@@ -1204,6 +1207,7 @@ const CANONICAL: Record<DeskTermId, string> = {
 
   // ITEM 224 — the invite-code field.
   authInviteCodePlaceholder: 'invite code',
+  authSignupByInvitation: 'By invitation, for now.',
 };
 
 // Flux registers its own capture-module name (the app's other live theme

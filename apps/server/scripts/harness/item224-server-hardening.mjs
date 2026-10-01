@@ -99,9 +99,11 @@ function writeExt(rel, jsText) {
   fs.writeFileSync(dest, jsText);
   return dest;
 }
-function resetEnv(inviteCodesCsv, dailyBudget) {
+function resetEnv(inviteCodesCsv, dailyBudget, { globalDailyBudget = 10000, disabled = false } = {}) {
   process.env.INVITE_CODES = inviteCodesCsv;
   process.env.TUTOR_DAILY_BUDGET = String(dailyBudget);
+  process.env.TUTOR_GLOBAL_DAILY_BUDGET = String(globalDailyBudget);
+  process.env.TUTOR_DISABLED = disabled ? '1' : '0';
   process.env.SESSION_SECRET = 'harness-secret';
   process.env.DATABASE_URL = 'postgres://unused/unused';
   process.env.TUTOR_API_KEY = 'harness-key-not-real';
@@ -129,12 +131,22 @@ function loadAuth({ authSourceOverride } = {}) {
   const { authRouter } = require(authDest);
   return authRouter;
 }
-function loadTutor({ tutorSourceOverride } = {}) {
+function loadTutor({ tutorSourceOverride, realRateLimit = false } = {}) {
   clearCache();
   writeExt('env.ts', stripTypes(fs.readFileSync(path.join(SRC, 'env.ts'), 'utf8')));
   writeExt('asyncHandler.ts', stripTypes(fs.readFileSync(path.join(SRC, 'asyncHandler.ts'), 'utf8')));
+  writeExt('logSafe.ts', stripTypes(fs.readFileSync(path.join(SRC, 'logSafe.ts'), 'utf8')));
   fs.writeFileSync(path.join(tmp, 'auth.js'), 'exports.requireAuth = (req, res, next) => next();\r\n');
-  fs.writeFileSync(path.join(tmp, 'rateLimit.js'), 'exports.rateLimit = () => (req, res, next) => next();\r\n');
+  // ITEM 224, ROUND 2 — `realRateLimit` loads the ACTUAL rateLimit.ts (its
+  // own keying/pruning is proved against tutor.ts's real `tutorRouter.use`
+  // line further down, not only in isolation); the default keeps the
+  // original pass-through stub for every check that isn't about rate
+  // limiting at all.
+  if (realRateLimit) {
+    writeExt('rateLimit.ts', stripTypes(fs.readFileSync(path.join(SRC, 'rateLimit.ts'), 'utf8')));
+  } else {
+    fs.writeFileSync(path.join(tmp, 'rateLimit.js'), 'exports.rateLimit = () => (req, res, next) => next();\r\n');
+  }
   const tutorSrc = tutorSourceOverride ?? fs.readFileSync(path.join(SRC, 'tutor.ts'), 'utf8');
   const dest = writeExt('tutor.ts', stripTypes(tutorSrc));
   const { tutorRouter } = require(dest);
@@ -358,6 +370,350 @@ async function callRoute(router, routePath, method, body, session) {
   const mutDev = recordHeaders(makeHeaderMiddleware(mutatedBody, false));
   ok('(e) MUTATION KILLED: with the nosniff line removed, the header is genuinely absent — confirms the check reads the real header, not a hardcoded pass',
     mutDev.headers['X-Content-Type-Options'] === undefined, JSON.stringify(mutDev.headers));
+}
+
+// =============================================================================
+// ROUND 2
+// =============================================================================
+
+// =============================================================================
+// (1) "BY INVITATION" — GET /auth/signup-status, public, no auth.
+// =============================================================================
+{
+  resetEnv('', 50);
+  const closed = await callRoute(loadAuth(), '/signup-status', 'get', undefined);
+  ok('(1) no codes configured -> { open: false }',
+    closed.status === 200 && closed.body?.open === false, JSON.stringify(closed.body));
+
+  resetEnv('X', 50);
+  const open = await callRoute(loadAuth(), '/signup-status', 'get', undefined);
+  ok('(1) codes configured -> { open: true }',
+    open.status === 200 && open.body?.open === true, JSON.stringify(open.body));
+
+  const realAuthSrc1 = fs.readFileSync(path.join(SRC, 'auth.ts'), 'utf8');
+  const statusAnchor = "authRouter.get('/signup-status', (_req: Request, res: Response) => {\r\n  res.json({ open: env.inviteCodes.length > 0 });\r\n});";
+  if (!realAuthSrc1.includes(statusAnchor)) throw new Error('(1) mutation anchor not found — update this harness');
+  resetEnv('', 50);
+  const mutatedStatusRouter = loadAuth({ authSourceOverride: realAuthSrc1.replace(statusAnchor, "authRouter.get('/signup-status', (_req: Request, res: Response) => {\r\n  res.json({ open: true });\r\n});") });
+  const mutClosed = await callRoute(mutatedStatusRouter, '/signup-status', 'get', undefined);
+  ok('(1) MUTATION KILLED: with the status route hardcoded to true, the no-codes case now reads open:true — confirms the real route reads env.inviteCodes',
+    mutClosed.body?.open === true, JSON.stringify(mutClosed.body));
+}
+
+// =============================================================================
+// (2a) THE TUTOR'S PER-MINUTE LIMIT, KEYED BY ACCOUNT. rateLimit.ts's own
+// mechanism, proved in isolation first (its default IP-keying is untouched,
+// a custom keyFn genuinely separates two accounts sharing one IP), then
+// confirmed as what tutor.ts's own wiring line actually passes.
+// =============================================================================
+{
+  function callLimiter(limiter, req) {
+    return new Promise((resolve) => {
+      const res = { statusCode: 200 };
+      res.status = (c) => { res.statusCode = c; return res; };
+      res.json = (b) => resolve({ status: res.statusCode, body: b, next: false });
+      limiter(req, res, () => resolve({ status: 200, body: undefined, next: true }));
+    });
+  }
+  clearCache();
+  const { rateLimit: realRateLimit } = require(writeExt('rateLimit.ts', stripTypes(fs.readFileSync(path.join(SRC, 'rateLimit.ts'), 'utf8'))));
+
+  const ipLimiter = realRateLimit(2, 60_000);
+  const reqIpA = { ip: '1.1.1.1' };
+  await callLimiter(ipLimiter, reqIpA); await callLimiter(ipLimiter, reqIpA);
+  const ipThird = await callLimiter(ipLimiter, reqIpA);
+  const ipOther = await callLimiter(ipLimiter, { ip: '2.2.2.2' });
+  ok('(2a) default (no keyFn) behaviour is UNCHANGED: a 3rd request from the same IP within the window is blocked, a different IP is not',
+    !ipThird.next && ipThird.status === 429 && ipOther.next, JSON.stringify({ ipThird, ipOther }));
+
+  const acctLimiter = realRateLimit(2, 60_000, (req) => req.session.userId);
+  const sameIp = '9.9.9.9';
+  const reqAcct1 = { ip: sameIp, session: { userId: 'account-1' } };
+  const reqAcct2 = { ip: sameIp, session: { userId: 'account-2' } }; // SAME ip, a DIFFERENT account
+  await callLimiter(acctLimiter, reqAcct1); await callLimiter(acctLimiter, reqAcct1);
+  const acct1Third = await callLimiter(acctLimiter, reqAcct1);
+  const acct2First = await callLimiter(acctLimiter, reqAcct2);
+  ok('(2a) ACCOUNT-KEYED: two different accounts sharing the SAME ip each get their OWN window — account-1 is exhausted, account-2 is not',
+    !acct1Third.next && acct2First.next, JSON.stringify({ acct1Third, acct2First }));
+
+  // FALSIFIED: a mutated rateLimit.ts that ignores the passed keyFn and
+  // always keys by ip — account-2 (same ip) should now ALSO be blocked.
+  const realRateLimitSrc = fs.readFileSync(path.join(SRC, 'rateLimit.ts'), 'utf8');
+  const keyFnAnchor = 'const getKey = keyFn ?? ((req: Request) => req.ip || req.socket.remoteAddress || \'unknown\');';
+  if (!realRateLimitSrc.includes(keyFnAnchor)) throw new Error('(2a) mutation anchor not found — update this harness');
+  const mutatedKeyFnSrc = realRateLimitSrc.replace(keyFnAnchor, 'const getKey = (req: Request) => req.ip || req.socket.remoteAddress || \'unknown\';');
+  clearCache();
+  const { rateLimit: mutRateLimit } = require(writeExt('rateLimit.ts', stripTypes(mutatedKeyFnSrc)));
+  const mutAcctLimiter = mutRateLimit(2, 60_000, (req) => req.session.userId);
+  await callLimiter(mutAcctLimiter, reqAcct1); await callLimiter(mutAcctLimiter, reqAcct1);
+  const mutAcct2First = await callLimiter(mutAcctLimiter, reqAcct2);
+  ok('(2a) MUTATION KILLED: with the keyFn ignored (always keys by ip), account-2 now shares account-1\'s exhausted window on the same ip — confirms the real keyFn is what separates them',
+    !mutAcct2First.next, JSON.stringify(mutAcct2First));
+
+  ok('(2a) STRUCTURAL: tutor.ts\'s own wiring line actually passes an account keyFn (req.session.userId), not left at the IP default',
+    fs.readFileSync(path.join(SRC, 'tutor.ts'), 'utf8').includes("tutorRouter.use(rateLimit(10, 60_000, (req) => req.session.userId!));"), '');
+
+  ok('(2a) STRUCTURAL (memory): the pruning sweep (deleting every OTHER expired key, not just the one being checked) is present in the shipped file — not observable black-box, since a Map\'s get/set cost does not depend on its size at this scale',
+    /for \(const \[k, v\] of hits\) \{\s*\r?\n\s*if \(now - v\.windowStart >= windowMs\) hits\.delete\(k\);\s*\r?\n\s*\}/.test(realRateLimitSrc), '');
+}
+
+// =============================================================================
+// (2b) A GLOBAL DAILY CAP, across every account combined.
+// =============================================================================
+{
+  resetEnv('X', 50, { globalDailyBudget: 2 });
+  const router = loadTutor();
+  const msg = (n) => Array.from({ length: n }, (_, i) => ({ role: i % 2 === 0 ? 'writer' : 'tutor', text: `m${i}` }));
+  const g1 = await callRoute(router, '/tutor/chat', 'post', { messages: msg(1) }, { userId: 'global-user-1' });
+  const g2 = await callRoute(router, '/tutor/chat', 'post', { messages: msg(1) }, { userId: 'global-user-2' });
+  const g3 = await callRoute(router, '/tutor/chat', 'post', { messages: msg(1) }, { userId: 'global-user-3' });
+  ok('(2b) the first TWO sends, from DIFFERENT accounts, clear the global gate',
+    g1.status !== 429 && g2.status !== 429, JSON.stringify({ g1: g1.status, g2: g2.status }));
+  ok('(2b) a THIRD distinct account — nowhere near their OWN 50/day budget — is refused by the GLOBAL cap, with its own distinct message',
+    g3.status === 429 && /overall limit/.test(g3.body?.error ?? ''), JSON.stringify(g3));
+
+  const realTutorSrc1 = fs.readFileSync(path.join(SRC, 'tutor.ts'), 'utf8');
+  const globalAnchor = "  if (!consumeGlobalTutorBudget()) {\r\n    res.status(429).json({ error: 'The Tutor has reached today\\'s overall limit — try again tomorrow.' });\r\n    return;\r\n  }\r\n";
+  if (!realTutorSrc1.includes(globalAnchor)) throw new Error('(2b) mutation anchor not found — update this harness');
+  resetEnv('X', 50, { globalDailyBudget: 2 });
+  const mutGlobalRouter = loadTutor({ tutorSourceOverride: realTutorSrc1.replace(globalAnchor, '') });
+  await callRoute(mutGlobalRouter, '/tutor/chat', 'post', { messages: msg(1) }, { userId: 'mutant-global-1' });
+  await callRoute(mutGlobalRouter, '/tutor/chat', 'post', { messages: msg(1) }, { userId: 'mutant-global-2' });
+  const mutG3 = await callRoute(mutGlobalRouter, '/tutor/chat', 'post', { messages: msg(1) }, { userId: 'mutant-global-3' });
+  ok('(2b) MUTATION KILLED: with the global check removed, a third distinct account is no longer refused — confirms the real check is what refuses it',
+    mutG3.status !== 429, JSON.stringify(mutG3));
+}
+
+// =============================================================================
+// (2c) THE KILL SWITCH — TUTOR_DISABLED=1 answers with the EXISTING
+// "not configured" shape.
+// =============================================================================
+{
+  resetEnv('X', 50, { disabled: true });
+  const router = loadTutor();
+  const r = await callRoute(router, '/tutor/chat', 'post', { messages: [{ role: 'writer', text: 'hi' }] }, { userId: 'kill-switch-user' });
+  ok('(2c) TUTOR_DISABLED=1 answers { configured: false } — the SAME shape an unset API key already produces, no new error shape for the client to learn',
+    r.status === 200 && r.body?.configured === false, JSON.stringify(r.body));
+
+  const realTutorSrc2 = fs.readFileSync(path.join(SRC, 'tutor.ts'), 'utf8');
+  const killAnchor = "  if (env.tutorDisabled) {\r\n    res.json({ configured: false });\r\n    return;\r\n  }\r\n";
+  if (!realTutorSrc2.includes(killAnchor)) throw new Error('(2c) mutation anchor not found — update this harness');
+  resetEnv('X', 50, { disabled: true });
+  const mutKillRouter = loadTutor({ tutorSourceOverride: realTutorSrc2.replace(killAnchor, '') });
+  const mutKill = await callRoute(mutKillRouter, '/tutor/chat', 'post', { messages: [{ role: 'writer', text: 'hi' }] }, { userId: 'mutant-kill-user' });
+  ok('(2c) MUTATION KILLED: with the kill switch removed, TUTOR_DISABLED=1 no longer short-circuits — the request proceeds past it (a different response than the plain not-configured shape)',
+    !(mutKill.status === 200 && mutKill.body?.configured === false && Object.keys(mutKill.body).length === 1), JSON.stringify(mutKill.body));
+}
+
+// =============================================================================
+// (3a) ALWAYS ONE BCRYPT COMPARE — a known email and an unknown one run the
+// exact same number of compares (1), closing the timing tell a skipped
+// compare created. Proved by COUNTING calls (deterministic), never by
+// measuring elapsed time (which would be flaky).
+// =============================================================================
+{
+  resetEnv('X', 50);
+  const router = loadAuth();
+  await fakeDb.seedUser('known-timing@example.com', 'correct-password1');
+
+  let compareCalls = 0;
+  const realCompare = bcrypt.compare.bind(bcrypt);
+  bcrypt.compare = async (...args) => { compareCalls++; return realCompare(...args); };
+  let knownCalls, unknownCalls;
+  try {
+    compareCalls = 0;
+    await callRoute(router, '/login', 'post', { email: 'known-timing@example.com', password: 'WRONG' });
+    knownCalls = compareCalls;
+    compareCalls = 0;
+    await callRoute(router, '/login', 'post', { email: 'nobody-knows-this-one@example.com', password: 'whatever1' });
+    unknownCalls = compareCalls;
+  } finally {
+    bcrypt.compare = realCompare;
+  }
+  ok('(3a) a login for a KNOWN email runs exactly one bcrypt.compare', knownCalls === 1, String(knownCalls));
+  ok('(3a) a login for an UNKNOWN email ALSO runs exactly one bcrypt.compare, against the fixed dummy hash — previously this was skipped entirely (0 calls), the exact timing tell this closes',
+    unknownCalls === 1, String(unknownCalls));
+
+  const realAuthSrc2 = fs.readFileSync(path.join(SRC, 'auth.ts'), 'utf8');
+  const alwaysCompareAnchor = '  const ok = await bcrypt.compare(password, user ? user.pass_hash : DUMMY_PASSWORD_HASH);\r\n';
+  if (!realAuthSrc2.includes(alwaysCompareAnchor)) throw new Error('(3a) mutation anchor not found — update this harness');
+  resetEnv('X', 50);
+  const mutRouter = loadAuth({ authSourceOverride: realAuthSrc2.replace(alwaysCompareAnchor, '  const ok = user ? await bcrypt.compare(password, user.pass_hash) : false;\r\n') });
+  let mutCalls = 0;
+  const realCompare2 = bcrypt.compare.bind(bcrypt);
+  bcrypt.compare = async (...args) => { mutCalls++; return realCompare2(...args); };
+  try {
+    await callRoute(mutRouter, '/login', 'post', { email: 'still-nobody@example.com', password: 'x' });
+  } finally {
+    bcrypt.compare = realCompare2;
+  }
+  ok('(3a) MUTATION KILLED: with the short-circuit restored, an unknown email calls bcrypt.compare ZERO times — confirms the real "always compare" line is what closes the gap',
+    mutCalls === 0, String(mutCalls));
+}
+
+// =============================================================================
+// (3b) A NEUTRAL REPLY when an email is already registered.
+// =============================================================================
+{
+  resetEnv('X', 50);
+  const router = loadAuth();
+  const first = await callRoute(router, '/register', 'post', { email: 'dupe@example.com', password: 'longenough1', name: null, code: 'X' });
+  const second = await callRoute(router, '/register', 'post', { email: 'dupe@example.com', password: 'anotherlongone1', name: null, code: 'X' });
+  ok('(3b) the duplicate attempt is refused with a NEUTRAL message — it does not say "already exists," and shares the same 400 status family as every other register refusal',
+    first.status === 201 && second.status === 400 && !/already exists/i.test(second.body?.error ?? ''),
+    JSON.stringify({ first: first.status, second: second.status, body: second.body }));
+
+  const realAuthSrc3 = fs.readFileSync(path.join(SRC, 'auth.ts'), 'utf8');
+  const neutralAnchor = "      res.status(400).json({ error: 'Could not create an account with that information.' });\r\n";
+  if (!realAuthSrc3.includes(neutralAnchor)) throw new Error('(3b) mutation anchor not found — update this harness');
+  resetEnv('X', 50);
+  const mutRouter2 = loadAuth({ authSourceOverride: realAuthSrc3.replace(neutralAnchor, "      res.status(409).json({ error: 'An account with that email already exists' });\r\n") });
+  await callRoute(mutRouter2, '/register', 'post', { email: 'dupe2@example.com', password: 'longenough1', name: null, code: 'X' });
+  const mutSecond = await callRoute(mutRouter2, '/register', 'post', { email: 'dupe2@example.com', password: 'anotherlongone1', name: null, code: 'X' });
+  ok('(3b) MUTATION KILLED: with the old wording restored, a duplicate email is confirmed again (409, "already exists") — proves the neutral reply is what suppresses it',
+    mutSecond.status === 409 && /already exists/i.test(mutSecond.body?.error ?? ''), JSON.stringify(mutSecond));
+}
+
+// =============================================================================
+// (3c) A PER-ACCOUNT FAILED-LOGIN THROTTLE (interim), locking out even a
+// CORRECT password once tripped — proving it counts prior FAILURES, not
+// just continuing to reject.
+// =============================================================================
+{
+  resetEnv('X', 50);
+  const router = loadAuth();
+  await fakeDb.seedUser('locked@example.com', 'the-real-password1');
+  for (let i = 0; i < 8; i++) {
+    await callRoute(router, '/login', 'post', { email: 'locked@example.com', password: 'wrong' });
+  }
+  const lockedOut = await callRoute(router, '/login', 'post', { email: 'locked@example.com', password: 'the-real-password1' });
+  ok('(3c) after 8 failures, the 9th attempt is LOCKED OUT (429) even with the CORRECT password — the throttle counts prior failures, not whether this particular attempt would have succeeded',
+    lockedOut.status === 429, JSON.stringify(lockedOut));
+
+  await fakeDb.seedUser('never-failed@example.com', 'another-real-password1');
+  const otherAccount = await callRoute(router, '/login', 'post', { email: 'never-failed@example.com', password: 'another-real-password1' });
+  ok('(3c) a DIFFERENT account, with no prior failures, signs in normally — the throttle is per-account, not a global lockout',
+    otherAccount.status === 200, JSON.stringify(otherAccount));
+
+  const realAuthSrc4 = fs.readFileSync(path.join(SRC, 'auth.ts'), 'utf8');
+  const lockAnchor = '  if (isLoginLocked(email)) {\r\n    res.status(429).json({ error: \'Too many attempts. Try again later.\' });\r\n    return;\r\n  }\r\n\r\n';
+  if (!realAuthSrc4.includes(lockAnchor)) throw new Error('(3c) mutation anchor not found — update this harness');
+  resetEnv('X', 50);
+  const mutRouter3 = loadAuth({ authSourceOverride: realAuthSrc4.replace(lockAnchor, '') });
+  await fakeDb.seedUser('mutant-locked@example.com', 'the-real-password1');
+  for (let i = 0; i < 8; i++) {
+    await callRoute(mutRouter3, '/login', 'post', { email: 'mutant-locked@example.com', password: 'wrong' });
+  }
+  const mutLockedOut = await callRoute(mutRouter3, '/login', 'post', { email: 'mutant-locked@example.com', password: 'the-real-password1' });
+  ok('(3c) MUTATION KILLED: with the lockout check removed, the 9th attempt (correct password) now SUCCEEDS (200) — confirms the real check is what blocks it',
+    mutLockedOut.status === 200, JSON.stringify(mutLockedOut));
+}
+
+// =============================================================================
+// (4a) REJECT a state-changing request whose Origin isn't the app's own.
+// Extracted verbatim from index.ts (the full app cannot boot here — see
+// section (e)'s own header for why).
+// =============================================================================
+{
+  const indexSrc2 = fs.readFileSync(path.join(SRC, 'index.ts'), 'utf8');
+  const originMatch = indexSrc2.match(/app\.use\(\(req: Request, res: Response, next: NextFunction\) => \{\r?\n\s*if \(req\.method === 'GET'[\s\S]*?\r?\n\}\);/);
+  if (!originMatch) throw new Error('(4a) could not find the origin-check middleware in index.ts — update this harness');
+  function makeOriginMiddleware(body) {
+    const src = `function mw(req, res, next) {\n${body}\n}\nmodule.exports = { mw };\n`;
+    const dest = path.join(tmp, `origin-${Math.random().toString(36).slice(2)}.js`);
+    fs.writeFileSync(dest, stripTypes(src));
+    delete require.cache[dest];
+    return require(dest).mw;
+  }
+  function runOrigin(mw, req) {
+    return new Promise((resolve) => {
+      const res = { statusCode: 200 };
+      res.status = (c) => { res.statusCode = c; return res; };
+      res.json = (b) => resolve({ status: res.statusCode, body: b, next: false });
+      mw(req, res, () => resolve({ status: 200, body: undefined, next: true }));
+    });
+  }
+  // The function body references req.protocol/req.get('host') directly —
+  // fine as-is, this is just an object shape, not a TS type.
+  const body = originMatch[0].replace(/^app\.use\(\(req: Request, res: Response, next: NextFunction\) => \{\r?\n/, '').replace(/\r?\n\}\);$/, '');
+  const originMw = makeOriginMiddleware(body);
+
+  const okOrigin = await runOrigin(originMw, { method: 'POST', headers: { origin: 'https://app.example.com' }, protocol: 'https', get: () => 'app.example.com' });
+  ok('(4a) a POST whose Origin matches this app\'s own host clears the check',
+    okOrigin.next === true, JSON.stringify(okOrigin));
+
+  const forged = await runOrigin(originMw, { method: 'POST', headers: { origin: 'https://evil.example' }, protocol: 'https', get: () => 'app.example.com' });
+  ok('(4a) a POST whose Origin does NOT match is REFUSED (403) — the shape a forged cross-site request actually carries',
+    forged.status === 403 && forged.next === false, JSON.stringify(forged));
+
+  const noOrigin = await runOrigin(originMw, { method: 'POST', headers: {}, protocol: 'https', get: () => 'app.example.com' });
+  ok('(4a) a POST with NO Origin header fails OPEN — some legitimate clients never send one, and this app sets no CORS header for a cross-origin browser request to read anyway',
+    noOrigin.next === true, JSON.stringify(noOrigin));
+
+  const getExempt = await runOrigin(originMw, { method: 'GET', headers: { origin: 'https://evil.example' }, protocol: 'https', get: () => 'app.example.com' });
+  ok('(4a) GET is exempt regardless of Origin — nothing state-changing ever rides one in this app',
+    getExempt.next === true, JSON.stringify(getExempt));
+
+  const mutatedOriginBody = body.replace(/if \(origin !== expected\) \{[\s\S]*?\n  \}\r?\n/, '');
+  if (mutatedOriginBody === body) throw new Error('(4a) origin mutation did not change the body — anchor moved; update this harness');
+  const mutOriginMw = makeOriginMiddleware(mutatedOriginBody);
+  const mutForged = await runOrigin(mutOriginMw, { method: 'POST', headers: { origin: 'https://evil.example' }, protocol: 'https', get: () => 'app.example.com' });
+  ok('(4a) MUTATION KILLED: with the mismatch check removed, the SAME forged Origin now clears — confirms the real check is what refuses it',
+    mutForged.next === true, JSON.stringify(mutForged));
+}
+
+// =============================================================================
+// (4b) app.disable('x-powered-by') — STRUCTURAL ONLY. Booting the real app to
+// observe the header at runtime needs a live Postgres (migrations run at
+// module scope before app.listen) — not available in this environment, the
+// same constraint section (e) already documents. The call itself is a single
+// line with no conditional logic to falsify independently of "is it there."
+// =============================================================================
+{
+  const indexSrc3 = fs.readFileSync(path.join(SRC, 'index.ts'), 'utf8');
+  const disableIdx = indexSrc3.indexOf("app.disable('x-powered-by');");
+  const appCreateIdx = indexSrc3.indexOf('const app = express();');
+  const firstRouteIdx = indexSrc3.indexOf("app.use('/auth'");
+  ok('(4b) app.disable(\'x-powered-by\') is present, AFTER the app is created and BEFORE the first route is registered',
+    disableIdx > appCreateIdx && disableIdx >= 0 && disableIdx < firstRouteIdx, JSON.stringify({ appCreateIdx, disableIdx, firstRouteIdx }));
+}
+
+// =============================================================================
+// (5) LOGS — codes and record ids, never raw error objects or user values;
+// dotenv quiet. Structural: the actual log LINES that print are a hygiene
+// property with no distinct runtime behaviour this harness's stub req/res
+// would observe differently (every code path here already resolves before
+// any of these catch blocks could fire in the fake-db-driven tests above).
+// =============================================================================
+{
+  const sources = {
+    tutor: fs.readFileSync(path.join(SRC, 'tutor.ts'), 'utf8'),
+    index: fs.readFileSync(path.join(SRC, 'index.ts'), 'utf8'),
+    sync: fs.readFileSync(path.join(SRC, 'sync.ts'), 'utf8'),
+  };
+  const rawErrorLog = /console\.(error|log|warn)\([^)]*,\s*err\)/;
+  for (const [name, src] of Object.entries(sources)) {
+    ok(`(5) ${name}.ts has no remaining console.*(…, err) call printing a raw error object`,
+      !rawErrorLog.test(src), '');
+  }
+  const logErrorCount = (sources.tutor.match(/logError\(/g) || []).length
+    + (sources.index.match(/logError\(/g) || []).length
+    + (sources.sync.match(/logError\(/g) || []).length;
+  ok('(5) logError(...) is used at every one of the 9 sites this round touched (1 tutor.ts + 2 index.ts + 6 sync.ts)',
+    logErrorCount === 9, String(logErrorCount));
+  ok('(5) dotenv is configured quiet (env.ts)',
+    /dotenv\.config\(\{[^}]*quiet:\s*true/.test(fs.readFileSync(path.join(SRC, 'env.ts'), 'utf8')), '');
+}
+
+// =============================================================================
+// (6) docs/deploy.md — the sign-up gate line now names INVITE_CODES.
+// =============================================================================
+{
+  const deploySrc = fs.readFileSync(path.join(SERVER, '..', '..', 'docs', 'deploy.md'), 'utf8');
+  const bareOld = (deploySrc.match(/\bINVITE_CODE\b/g) || []).length;
+  const renamed = (deploySrc.match(/\bINVITE_CODES\b/g) || []).length;
+  ok('(6) docs/deploy.md names INVITE_CODES (3 sites) and the old singular INVITE_CODE no longer appears anywhere',
+    bareOld === 0 && renamed === 3, JSON.stringify({ bareOld, renamed }));
 }
 
 fs.rmSync(tmp, { recursive: true, force: true });

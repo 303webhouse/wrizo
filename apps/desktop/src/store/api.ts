@@ -48,6 +48,23 @@ export interface AuthResult {
   error?: string;
 }
 
+// ITEM 224, ROUND 2 — public, no auth. `true` means codes are configured
+// (the form should show); `false` — including on a network failure — reads
+// as "closed," the quiet "by invitation" copy. The whole point of this
+// check is to replace an ERROR with a calm message; defaulting to "show the
+// form" on an unconfirmed status would just defer that same error to the
+// moment the writer presses Create instead of avoiding it.
+export async function apiSignupStatus(): Promise<boolean> {
+  try {
+    const res = await fetch('/auth/signup-status');
+    if (!res.ok) return false;
+    const data = (await res.json()) as { open?: boolean };
+    return data.open === true;
+  } catch {
+    return false;
+  }
+}
+
 export async function apiLogin(email: string, password: string): Promise<AuthResult> {
   const res = await postJson('/auth/login', { email, password });
   if (res.ok) return { ok: true, user: (await res.json()) as AuthUser };
