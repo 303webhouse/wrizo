@@ -23718,3 +23718,26 @@ FIX’s escexit run finished in that interval.** **THE PAIR RE-LAUNCHED on `batc
 the SAME grant** (`chat1-batch8-pair-9c8d5c3-20260930`, already on file; no rewrite needed). **Pre-flight
 this time: “0 harness browser(s), 0 owner(s)… nothing to reap.”** Running now; both legs to be reported
 when they finish.
+
+## BATCH EIGHT’S PAIR RESULT IS VOID — THIS DESK CHECKED OUT main OVER THE RUNNING SUITE; A MISTAKE, MARKED — 2026-10-01 (chat 1)
+
+**THE PAIR DID NOT PRODUCE A MEASUREMENT OF `batch-eight`. IT MEASURED A TREE THIS DESK ITSELF BROKE MID-RUN.**
+After launching it on `batch-eight` in the background, **this desk ran `git checkout main` in the SAME
+working directory while the suite was still reading files from disk** — to write a ledger entry, not
+realizing the background process shares the one checkout. **That is the exact law this desk has recorded
+before and broke here: “Build in a worktree, not the primary checkout” / “the box stays quiet during a
+stamping pair.”**
+
+**WHAT IT PRODUCED, and why none of it is evidence:** the default leg ran 108 files and finished (exit 1,
+“NOT CLEAN”), but **`item-storage-full.mjs` (and presumably others past the checkout) failed with
+`Cannot find module` — because the file was LITERALLY REMOVED FROM DISK under the running process when
+this desk switched to `main`**, which does not carry that harness file. **Confirmed just now: the file
+exists on `batch-eight`, absent on `main`.** The later wave of `exit=3221225794` (Windows
+`STATUS_ACCESS_VIOLATION`) crashes and the run-suite’s own “killed — background time limit” report are
+consistent with the same cause: Node/Chromium reading a tree that moved under them. **The real-looking
+FAILs (`cd1`, `cd2`, `cd4`, `fx3`, `fx4`, `fx7`, `item112a`, `item83f`, `item84`) are NOT trusted either —
+they ran on an already-disturbed checkout and are not re-reported as findings.**
+
+**CLEARED: the grant** (the run is fully dead — 0 harness processes, 0 `ws-runtime-verify` browsers,
+verified). **`batch-eight` itself is untouched** (a checkout does not alter a branch’s commits); **the pair
+needs a genuine re-run, with this desk doing NOTHING ELSE to the shared tree while it runs.**
