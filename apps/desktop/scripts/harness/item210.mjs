@@ -49,7 +49,10 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after reload' });
   await sleep(600);
 
-  const surfaces = [['the Desk', '/'], ['the Journal board', '#/journal'], ['the Shelf board', '#/shelf'], ['the Spread', '#/journal/spread'], ['the Drawers page', '#/drawers']];
+  // The Desk and the Drawers page were in this list and passed on the OLD code too (falsification run on ef64554): neither showed
+  // these pages at this point, so neither tested anything. The Drawers page is DROPPED (it lists drawers, not loose pages). The Desk is
+  // re-asked BELOW, after the page has been opened, when its resume card names that page - so the check can see a title at all.
+  const surfaces = [['the Journal board', '#/journal'], ['the Shelf board', '#/shelf'], ['the Spread', '#/journal/spread']];
   for (const [label, hash] of surfaces) {
     await app.evalJs(`location.hash = ${JSON.stringify(hash.startsWith('#') ? hash : '#/')}`);
     await sleep(1400);
@@ -78,6 +81,13 @@ await withHarness(async (app) => {
     const s = await strayMarkup(app);
     ok(`[the page, ${mode}] no markup outside the editor`, s.length === 0, JSON.stringify(s));
   }
+
+  // The Desk, now that it has a page to resume: its resume card must NAME the page, in plain words
+  await app.evalJs("location.hash = '#/'");
+  await sleep(1600);
+  const deskStray = await strayMarkup(app);
+  const deskNames = await app.evalJs("document.body.innerText.includes('TESTING THE DATABASE SYNC')");
+  ok('[the Desk, after the page was opened] its resume card names the page as "TESTING THE DATABASE SYNC" and shows no markup', deskStray.length === 0 && deskNames === true, JSON.stringify({ deskStray, deskNames }));
 
   // The second page: a heading title with bold inside it
   await app.evalJs("location.hash = '#/page/q210'");
