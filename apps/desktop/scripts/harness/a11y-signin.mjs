@@ -1,12 +1,12 @@
 // A11Y A2 + A7 (cloud-a11y-audit @ 9c15c86) — sign-in's two unreachable links
-// and the field-hint contrast. Browserless: no box turn needed for a source-
-// level proof; a real CDP keyboard-walk re-run (the audit's own method)
-// would be the stronger confirmation once a turn is granted — not run here.
+// and the field-hint contrast.
 //
 // A2 (Blocker, WCAG 2.1.1 Keyboard): "New here? Create an account" and both
 // "← back" links were `<span onClick>` — never a Tab stop. Now real
-// `<button type="button">`s; this file proves no span survives and all
-// three converted.
+// `<button type="button">`s; the source-level checks below prove no span
+// survives and all three converted; the LIVE section further down drives a
+// real keyboard walk (Fable's own follow-up ask, 2026-09-30) proving both
+// are genuinely reachable by Tab, not merely shaped like a button.
 //
 // A7 (Serious): the sign-in field hints ("you@example.com", "password")
 // measured 1.78:1 (#463b2c on #150a04). Fixed with a DEDICATED --wz-hint
@@ -15,10 +15,16 @@
 // REAL hex values out of the shipped CSS and computes the real WCAG ratio,
 // never a copy of the number.
 //
-// Run: node scripts/harness/a11y-signin.mjs   (from apps/desktop).
+// Run: node scripts/harness/a11y-signin.mjs   (from apps/desktop, dist-web
+// built, WITH an announced box turn — the LIVE section needs the browser
+// pool; WS_BOX_TURN is read by withHarness itself, the same as every other
+// browser harness in this repo).
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { withHarness } from '../runtime-verify.mjs';
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.resolve(here, '..', '..');
@@ -93,6 +99,69 @@ if (hint && ground && lift) {
 }
 ok('A7: --wz-hint is a NEW, separate token — --wz-whisper\'s own definition is untouched, so this fix cannot have silently changed any of its other (decorative, non-text) uses across the file',
   /--wz-whisper:#463b2c;/.test(cssSrc), '');
+
+// =============================================================================
+// LIVE — a real keyboard walk, the audit's own method (Fable's follow-up ask).
+// Adopted fixtures: freshArrival's shape is hb1.mjs's own (WS_ANON=1 drives
+// Arrival's anon path, the same precedent) — not re-derived. app.key('Tab')
+// dispatches a REAL, trusted CDP key event (the house's own "keyboard claims
+// verified with trusted key events where the harness supports it" standard),
+// not a page-side synthetic dispatch, so this exercises Chromium's own
+// default Tab-focus-traversal — the same mechanism a real keyboard does.
+// =============================================================================
+const freshArrival = async (app) => {
+  process.env.WS_ANON = '1'; // read live per-request by runtime-verify.mjs; no session exists yet, so Open reaches sign-in
+  await app.goto('/');
+  await app.evalJs('localStorage.clear()');
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Arrival before fixture' });
+  await app.emulateDpr(1, 1280, 900);
+  await sleep(200); // hb1.mjs's own deflake — a first-paint timing sensitivity on Arrival's first mount, not specific to one door
+};
+
+const activeElementDescriptor = (app) => app.evalJs(`(() => {
+  const el = document.activeElement;
+  if (!el || el === document.body) return null;
+  return { tag: el.tagName, className: el.className || '', text: (el.textContent || '').trim() };
+})()`);
+
+// Tab forward up to `maxSteps` times from whatever currently has focus,
+// recording the full walk — the audit's own method ("the keyboard reached
+// only these, then cycled"), not a single targeted probe.
+const tabWalk = async (app, maxSteps = 12) => {
+  const seen = [];
+  for (let i = 0; i < maxSteps; i++) {
+    await app.key('Tab');
+    await sleep(60);
+    const d = await activeElementDescriptor(app);
+    if (!d) continue;
+    seen.push(d);
+  }
+  return seen;
+};
+
+await withHarness(async (app) => {
+  await freshArrival(app);
+  await app.click('Open'); // authState !== 'authed' under WS_ANON=1 -> Arrival's own handleOpen sets stage 'signin'
+  await app.waitFor("!!document.querySelector('.wz-field')", { label: 'sign-in stage reached' });
+
+  const signinWalk = await tabWalk(app, 10);
+  const createAccountStop = signinWalk.find((d) => d.text.includes('Create an account'));
+  ok('LIVE A2: a real Tab walk from the sign-in screen REACHES "New here? Create an account" — a genuine CDP-dispatched keyboard event, Chromium\'s own default focus traversal, not a page-side simulation',
+    !!createAccountStop && createAccountStop.tag === 'BUTTON', JSON.stringify({ walk: signinWalk.map((d) => `${d.tag}:${d.text.slice(0, 30)}`), found: createAccountStop }));
+  const backStop = signinWalk.find((d) => d.text === '← back');
+  ok('LIVE A2: the SAME walk also reaches sign-in\'s own "← back" — both links the audit named, in one real walk, not two cherry-picked probes',
+    !!backStop && backStop.tag === 'BUTTON', JSON.stringify({ found: backStop }));
+
+  // The account screen's own "← back" (Arrival.tsx:164) — a separate screen,
+  // a separate walk, exactly as the audit measured it as its own finding.
+  await app.click('New here? Create an account');
+  await app.waitFor("!!document.querySelector('.wz-field')", { label: 'account stage reached' });
+  const accountWalk = await tabWalk(app, 10);
+  const accountBackStop = accountWalk.find((d) => d.text === '← back');
+  ok('LIVE A2: the account screen\'s own "← back" (the audit\'s third named link) is ALSO reachable by a real Tab walk',
+    !!accountBackStop && accountBackStop.tag === 'BUTTON', JSON.stringify({ found: accountBackStop }));
+});
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
