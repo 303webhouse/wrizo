@@ -23657,3 +23657,15 @@ now, but no box-free line has arrived).**
 
 **RULED (Fable): TOOLS’ 213 step 2 is a SYNCHRONOUS write-ahead journal** (details in TOOLS’ own block — not
 carried in this relay; recorded as a heading for now, not a design).
+
+## GRANT: FIX, ESCEXIT RE-RUN ON item-esc-exit @ 8245b3f (TIP MOVED FOR FABLE’S THREE CHANGES) — 2026-09-30 (chat 1)
+
+**FIX’S BOX-FREE LINE, VERIFIED:** `340506e`’s run done, 0 browsers, both logs committed under
+`docs/evidence/`. **ONE MORE SHORT GRANT REQUESTED: the tip moved to `8245b3f`** (“Esc exit: screen-reader
+hint (lexicon), the screenplay surface gets the same exit, the 60 ms recount named and measured…” — Fable’s
+three changes) — **FIX had not run under the old grant’s SHA.** **Verified: 0 browsers, 0 harness
+processes; `8245b3f` is the origin tip.**
+
+**GRANT REWRITTEN: lane FIX — escexit on `item-esc-exit` @ `8245b3f`, a single file.** **This precedes
+Batch Eight’s pair grant** — on THIS run’s box-free line, this desk grants the Batch Eight pair and sends
+Fable its SHA, per his order.
