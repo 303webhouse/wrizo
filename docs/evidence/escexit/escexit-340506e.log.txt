@@ -1,0 +1,24 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PASS  S1 [Free Write] (setup) focus is in the writing surface
+PASS  S1 [Free Write] Esc moves focus OUT of the editor to the CURRENT mode tab ("Free Write")  [{"inEditor":false,"modeKey":"freewrite","active":true,"tag":"BUTTON","text":"Free Write"}]
+PASS  S2 [Free Write] ...and the keyboard is free from there: Tab moves to another control, not back into the editor  [{"inEditor":false,"modeKey":null,"active":false,"tag":"BUTTON","text":"Text"}]
+PASS  S5 [Free Write] Esc did not edit the page
+PASS  S1 [Draft] (setup) focus is in the writing surface
+PASS  S1 [Draft] Esc moves focus OUT of the editor to the CURRENT mode tab ("Draft")  [{"inEditor":false,"modeKey":"draft","active":true,"tag":"BUTTON","text":"Draft"}]
+PASS  S2 [Draft] ...and the keyboard is free from there: Tab moves to another control, not back into the editor  [{"inEditor":false,"modeKey":"revise","active":false,"tag":"BUTTON","text":"Revise"}]
+PASS  S5 [Draft] Esc did not edit the page
+PASS  S1 [Revise] (setup) focus is in the writing surface
+PASS  S1 [Revise] Esc moves focus OUT of the editor to the CURRENT mode tab ("Revise")  [{"inEditor":false,"modeKey":"revise","active":true,"tag":"BUTTON","text":"Revise"}]
+PASS  S2 [Revise] ...and the keyboard is free from there: Tab moves to another control, not back into the editor  [{"inEditor":false,"modeKey":"workshop","active":false,"tag":"BUTTON","text":"Workshop"}]
+PASS  S5 [Revise] Esc did not edit the page
+PASS  S3 (setup) a rail item is reachable by a real pointer  [{"x":42,"y":272,"name":"Drawers"}]
+PASS  S3 (setup) the rail panel is open
+PASS  S3 (setup) the panel is still open with focus back in the editor
+PASS  S3 the first Esc CLOSES THE PANEL and focus stays where it was (in the editor)  [{"open":false,"p1":{"inEditor":true,"modeKey":null,"active":false,"tag":"DIV","text":"A written line of prose."}}]
+PASS  S3 the second Esc leaves the editor for the current mode tab  [{"inEditor":false,"modeKey":"draft","active":true,"tag":"BUTTON","text":"Draft"}]
+PASS  S4 (setup) an empty page shows its beginnings row
+PASS  S4 the first Esc dismisses the beginnings row and focus stays in the editor  [{"inEditor":true,"modeKey":null,"active":false,"tag":"DIV","text":""}]
+PASS  S4 the second Esc leaves for the current mode tab  [{"inEditor":false,"modeKey":"freewrite","active":true,"tag":"BUTTON","text":"Free Write"}]
+
+ESCEXIT VERIFY: PASS (20 checks)
