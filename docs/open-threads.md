@@ -23554,3 +23554,56 @@ Fable’s rule that a product conflict never gets resolved by this desk.** `batc
 three-way-merged commit (`894090a`), tree clean, nothing further attempted. **Remaining to merge once this
 is resolved: 204 storage @ `13cd415`, 213 @ `c648c56`, 215 @ `d63853f`, 217 @ `cbd4dc6`, 163 @ `c9e07c2`, 138
 @ `66baf6b`.**
+
+## BATCH EIGHT: 8 OF 9 MERGED (163 HANDED UP); THE MECHANICAL UNIONS SHOWN; CI DOCS MERGED; SECURITY POLICY; FOUR ACCESSIBILITY ITEMS REGISTERED — 2026-09-30 (chat 1)
+
+**THE CONFLICT, RESOLVED AS A MECHANICAL UNION (Fable’s rule): `item204-engine` @ `13cd415`** merged into
+`batch-eight`. **`apps/desktop/src/types/index.ts`:** 207’s `StoredFace` block and 204’s `ProofingRecord`
+block each kept BYTE-FOR-BYTE — verified programmatically (each extracted from its own side’s full file and
+confirmed present, unmodified, in the merged result) — one blank line between them, nothing else touched.
+**Commit `62381f4`.**
+
+**A SECOND, SAME-CLASS CONFLICT FOUND MERGING `item-storage-full` @ `c648c56` (213 step 1): `persistence.ts`,
+lines 7–11** — two independent import statements (`clearProofingLocal` from `./proofing`;
+`reportFlushFailed`/`reportFlushOk`/`reportStorageUsage` from `./storageHealth`), same point. **Both kept,
+nothing edited. Commit `25c1fb2`.**
+
+**215 (`tutor20-live-defect` @ `d63853f`) and 217 (`revise-spelling` @ `cbd4dc6`) merged clean, no conflict.**
+
+**163 (`item163-location-in` @ `c9e07c2`): NOT a pure append-append — ABORTED, HANDED UP, not resolved.**
+`CascadePanels.tsx`: HEAD already imports `{ firstLine, plainLines }` from `../store/entryText` (210’s own
+addition, already in `batch-eight` via r3); 163 imports `{ firstLine }` from the SAME module plus a new
+`{ boardDrawerLine }` from `../store/pageHome`. **Reconciling these means EDITING an import-specifier list,
+not concatenating two self-contained blocks — and duplicating both import lines verbatim would fail `tsc`
+(duplicate `firstLine` binding). This is not the case the mechanical-union rule covers. HANDED TO ITS OWNER
+(163’s lane) AND TO WHOEVER ADDED `plainLines` (item 210, on r3) to reconcile the import list.** `138
+(`item138-pin-tall` @ `66baf6b`) merged clean behind it, no conflict** (commit `d2c0a64`).
+
+**`tsc` x2 EXIT 0 and `build:web` EXIT 0 on the assembled tree** (8 of 9 items). **One build fix needed and
+done: `pnpm install`** — 207’s six new `@fontsource*` packages were in `package.json` but not yet in
+`node_modules`; after install, `build:web` succeeded (615.90 kB main chunk, a pre-existing size warning, not
+a defect of this merge).
+
+**`batch-eight` PUSHED @ `d2c0a64`. NOT GRANTED FOR A PAIR — 163 is still outside it; Fable’s order named
+all nine, and this desk is not dropping one without his word.**
+
+**MERGED ON `main` (docs only): `cloud-pub9-probe` @ `a9016f5`** (the WordPress/Substack probe, 16 files,
++1179) **and `cloud-a11y-audit` @ `9c15c86`** (the accessibility audit, report + evidence, no code, 22
+files, +2303).
+
+**SECURITY POLICY, RECORDED (Fable): THE REPO IS PUBLIC** (Cloud measured `private: false`). **Until Nick
+makes it private, the ledger names NO security weakness** — record only “server security review received;
+fixes registered privately.” **`cloud-security-review` stays OFF origin until the repo is private** —
+checked: no such branch exists on origin now.
+
+**FOUR ACCESSIBILITY ITEMS REGISTERED, from the audit (Fable):**
+- **ITEM 220 — Esc leaves the writing surface (a keyboard trap).** Owner FIX, small, AHEAD OF 211.
+- **ITEM 221 — sign-in: “Create an account” and “back” keyboard-reachable; hint contrast.** Owner INK.
+- **ITEM 222 — the Tutor’s replies announced to screen readers.** Owner INK.
+- **ITEM 223 — board cards keyboard-operable.** Owner PW, AFTER Experiment 1.
+**NOT a new item — FOLDED INTO 216 (Cursor-pass follow-ups, owner TOOLS):** hidden panels not focusable;
+panels take focus and close on Esc; mode tabs and two sub-24px controls get larger hit areas.
+Registry: next free **224**.
+
+**211: GO (Fable) — FIX builds it on a branch off r3, behind a switch; NOT in Batch Eight.** (Consistent
+with the earlier entry; restated here per this relay.)
