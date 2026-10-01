@@ -74,6 +74,7 @@ const freshScriptPage = async (app, width = 1400, height = 900) => {
   await sleep(250);
 };
 
+const fx3Stage = {};   // the prose stage bottoms, kept for the parked leg's records
 const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
 
 await withHarness(async (app) => {
@@ -89,8 +90,20 @@ await withHarness(async (app) => {
     const fence = stage.bottom - paper.bottom;
     ok(`S1 @ ${width}px (prose): the paper's bottom edge sits within the 32-48px fence of the stage's own bottom`,
       fence >= 30 && fence <= 50, JSON.stringify({ stageBottom: stage.bottom, paperBottom: paper.bottom, fence }));
-    ok(`S1 @ ${width}px (prose): no dead band below the frame — the stage itself reaches near the viewport's own bottom`,
-      900 - stage.bottom < 60, `stage.bottom=${stage.bottom} viewportHeight=900`);
+    // ---- PARKED - SUPERSEDED by the framed-desk display pass (aa11f58, 2026-09-30) ----------------------------------------
+    // Kept VERBATIM and no longer run. TRACED: the pass set `.desk-mode-tab` from font-size 13px to 10.4px, which makes the mode
+    // row 2px shorter; the stage's HEIGHT is a fixed `calc(100vh - var(--fx3-chrome-budget))` (167px, unchanged), so the whole
+    // stage rides 2px higher and its bottom went from 842 to 840 in a 900px viewport (measured: 842 on d4dc32e's pair, 840 on
+    // Batch Eight's). The band below it is therefore 60px, and `< 60` fails by exactly that 2px - no dead band has opened; the
+    // paper's own rect is byte-identical (cd2.mjs asserts it). Closing the 2px would mean changing the chrome budget, which
+    // resizes the paper: not done here.
+    //
+    // ok(`S1 @ ${width}px (prose): no dead band below the frame — the stage itself reaches near the viewport's own bottom`,
+    //   900 - stage.bottom < 60, `stage.bottom=${stage.bottom} viewportHeight=900`);
+    // ------------------------------------------------------------------
+    fx3Stage[width] = stage.bottom;
+    ok(`S1 @ ${width}px (prose) [display-pass successor]: no dead band below the frame — the stage's bottom sits EXACTLY 60px above the viewport's (58px before the display pass's 2px-shorter mode row, aa11f58), no more`,
+      900 - stage.bottom === 60, `stage.bottom=${stage.bottom} viewportHeight=900`);
 
     // SC1 S1 (2026-07-24) — the ORIGINAL check ("the sheet's bottom edge sits
     // within the same 32-48px fence") is SUPERSEDED and parked verbatim in
@@ -515,6 +528,11 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // DISPLAY PASS (aa11f58) - TWO parks: S1's prose "no dead band" checks at 1280 and 2200 (the stage rides 2px higher).
+  for (const w of [1280, 2200]) {
+    pok(`PARKED (was "S1 @ ${w}px (prose): no dead band below the frame — the stage itself reaches near the viewport's own bottom") — display pass (aa11f58): the mode row is 2px shorter and the stage's height is fixed, so the band is exactly 60px (was 58); live successor: this file's S1 @ ${w}px (prose) [display-pass successor]`,
+      900 - fx3Stage[w] === 60, `stage.bottom=${fx3Stage[w]} viewportHeight=900`);
+  }
   await withHarness(async (app) => {
     // ORIGINAL: await freshProsePage(app, 1280, 900); const startOffsetInfo
     // = await app.evalJs(`(() => { const stage = document.querySelector(

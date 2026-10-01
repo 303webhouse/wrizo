@@ -26,6 +26,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+const paperY = {};   // the CD3 canon (b) paper tops, kept for the parked leg (display pass, aa11f58)
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -876,6 +877,9 @@ await withHarness(async (app) => {
     },
   };
   const CHROME_SHRINK_PX = 10; // .desk-mode-strip's own dropped border+padding box (index.css, 099a035)
+  // FRAMED-DESK DISPLAY PASS (aa11f58, 2026-09-30; Nick: "Looks good. Let's ship these changes."): `.desk-mode-tab` went from
+  // font-size 13px to 10.4px (padding unchanged), which makes the mode row 2px shorter, so the paper rides 2px higher again.
+  const DISPLAY_PASS_PX = 2;
   for (const width of [1100, 2200]) {
     await freshProsePage(app, width, 900);
     const paperNow = await app.evalJs(`(() => {
@@ -897,9 +901,20 @@ await withHarness(async (app) => {
     ok(`CD3 canon (b) @ ${width}px: the text measure is byte-identical to main @ 8884d49 — .forward-only-editor's own computed width (line length) and .mode-pagecol's own computed width (column width)`,
       paperNow.editorWidth === baseline.editorWidth && paperNow.pagecolWidth === baseline.pagecolWidth,
       JSON.stringify({ paperNow, baseline }));
-    ok(`CD3 canon (b) @ ${width}px: the paper's Y position moves by EXACTLY the disclosed ${CHROME_SHRINK_PX}px (the mode-strip box's own dropped border+padding) — not a silent additional drift`,
-      baseline.pagecol.top - paperNow.pagecol.top === CHROME_SHRINK_PX,
-      JSON.stringify({ baselineTop: baseline.pagecol.top, nowTop: paperNow.pagecol.top, delta: baseline.pagecol.top - paperNow.pagecol.top }));
+    // ---- PARKED - SUPERSEDED by the framed-desk display pass (aa11f58, 2026-09-30) ----------------------------------------
+    // Kept VERBATIM and no longer run. The disclosed 10px is still there; the display pass adds a second, separately disclosed
+    // 2px (the smaller mode tabs), so the paper now sits 12px above the 8884d49 baseline. The check's POINT - the Y move is
+    // exactly the disclosed amount, never a silent drift - is what the successor still asserts, with both amounts named. The two
+    // checks above it (the paper's left/width/right/height and the text measure, byte-identical) are untouched and still pass.
+    //
+    // ok(`CD3 canon (b) @ ${width}px: the paper's Y position moves by EXACTLY the disclosed ${CHROME_SHRINK_PX}px (the mode-strip box's own dropped border+padding) — not a silent additional drift`,
+    //   baseline.pagecol.top - paperNow.pagecol.top === CHROME_SHRINK_PX,
+    //   JSON.stringify({ baselineTop: baseline.pagecol.top, nowTop: paperNow.pagecol.top, delta: baseline.pagecol.top - paperNow.pagecol.top }));
+    // ------------------------------------------------------------------
+    paperY[width] = { baselineTop: baseline.pagecol.top, nowTop: paperNow.pagecol.top, delta: baseline.pagecol.top - paperNow.pagecol.top };
+    ok(`CD3 canon (b) @ ${width}px [display-pass successor]: the paper's Y position moves by EXACTLY the two disclosed amounts - ${CHROME_SHRINK_PX}px (the mode-strip box's dropped border+padding) + ${DISPLAY_PASS_PX}px (the display pass's smaller mode tabs, aa11f58) = ${CHROME_SHRINK_PX + DISPLAY_PASS_PX}px — not a silent additional drift`,
+      baseline.pagecol.top - paperNow.pagecol.top === CHROME_SHRINK_PX + DISPLAY_PASS_PX,
+      JSON.stringify(paperY[width]));
   }
 
   return checks;
@@ -927,6 +942,12 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // DISPLAY PASS (aa11f58) - TWO parks: the CD3 canon (b) Y-position checks at 1100 and 2200, superseded when the smaller mode tabs
+  // moved the paper a further 2px. Records byte-frozen; probes re-verify the new truth (12px) from the default section's own reads.
+  for (const w of [1100, 2200]) {
+    pok(`PARKED (was "CD3 canon (b) @ ${w}px: the paper's Y position moves by EXACTLY the disclosed 10px (the mode-strip box's own dropped border+padding) — not a silent additional drift") — display pass (aa11f58): 10px + a disclosed 2px (smaller mode tabs) = 12px; live successor: this file's CD3 canon (b) @ ${w}px [display-pass successor]`,
+      !!paperY[w] && paperY[w].delta === 12, JSON.stringify(paperY[w]));
+  }
   await withHarness(async (app) => {
 
   // ==========================================================================
