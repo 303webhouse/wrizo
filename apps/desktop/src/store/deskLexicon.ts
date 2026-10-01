@@ -552,7 +552,7 @@ export type DeskTermId =
   // board-side explicit pairing entry. "The plan serves the page." travels
   // verbatim from the brief (Nick did not edit the proposed string).
   | 'boardModeOpen' | 'boardModeStoryboard' | 'boardModeOutline'
-  | 'boardPageDoor' | 'pagePlanDoor' | 'boardTelos'
+  | 'boardPageDoor' | 'pagePlanDoor' | 'pageEscHint' | 'boardTelos'
   | 'boardLaneDefault' | 'boardStoryboardEmpty' | 'boardOutlineEmpty'
   | 'boardPairWithPage'
   | 'boardRenameLabel'
@@ -572,6 +572,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   boardModeOutline: 'Outline',
   boardPageDoor: 'Page',
   pagePlanDoor: 'Plan',
+  // A1 (accessibility audit): Tab indents on the page, so the way out is said aloud. Screen-reader-only; never drawn.
+  pageEscHint: 'Press Escape to leave the page',
   boardTelos: 'The plan serves the page.',
   boardLaneDefault: 'Cards',
   boardStoryboardEmpty: 'No cards yet. Add cards in Open, then arrange them into order here.',
