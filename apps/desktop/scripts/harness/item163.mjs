@@ -142,12 +142,31 @@ await withHarness(async (app) => {
     { id: 'i163-loose-board', text: 'Item 163 Loose Board', projectId: null, pageType: 'board', boxes: [] },
   ]);
 
+  // ⛔ `display: true` ON THE TWO WALL PINS — AND ITS ABSENCE IS WHY C3 READ `[]`.
+  // `pinPageToBoard` splits two acts on this option (PW1 S3 / item 125): without it
+  // the pin is a MEMBERSHIP written `onCanvas: false`, and BoardEditor's filter —
+  // `!(b.kind === 'page-pin' && b.onCanvas === false)` — renders no card at all. So
+  // every seam call returned true, the boxes were in the store, and
+  // `.board-boardcard` was empty. C3 then took C4 and C4b down with it, which is why
+  // one wrong argument cost three checks.
+  //
+  // ⚠ THE FIRST PIN IS DELIBERATELY LEFT WITHOUT IT. `i163-page` is pinned to
+  // `i163-board` only so the BOARD appears as a connected ROW in the page's Plan
+  // panel (C1) — that is a membership question, and it is the half that was already
+  // passing. Adding `display` there would place a card nobody reads and would make
+  // the fixture say something it does not mean. Membership and placement are two
+  // different facts; this file now needs one of each and asks for exactly that.
   const pinnedPage = await app.evalJs("!!window.wrizoPinPageToBoard('i163-page', 'i163-board')");
-  const nested = await app.evalJs("!!window.wrizoPinPageToBoard('i163-board', 'i163-wall')");
-  const nestedLoose = await app.evalJs("!!window.wrizoPinPageToBoard('i163-loose-board', 'i163-wall')");
+  const nested = await app.evalJs("!!window.wrizoPinPageToBoard('i163-board', 'i163-wall', { display: true })");
+  const nestedLoose = await app.evalJs("!!window.wrizoPinPageToBoard('i163-loose-board', 'i163-wall', { display: true })");
   ok('FIXTURE: the page\'s membership and both nested boards were made through the seam',
     pinnedPage === true && nested === true && nestedLoose === true,
     JSON.stringify({ pinnedPage, nested, nestedLoose }));
+  // AND THE TWO WALL PINS ARE PLACED, asserted where the cause is rather than three
+  // checks downstream. The page pin is excluded on purpose: it is a membership.
+  const placed = await app.evalJs("(JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'i163-wall')?.boxes || []).filter(b => b.kind === 'page-pin' && b.onCanvas !== false).length");
+  ok('FIXTURE: both nested boards are PLACED on the wall (onCanvas !== false) — a membership renders no card, which is exactly how C3 came back empty',
+    placed === 2, String(placed));
   await app.evalJs('window.wrizoFlushNow()');
 
   // THE EXPECTED STRINGS, READ FROM THE LEXICON — never typed into this file.
