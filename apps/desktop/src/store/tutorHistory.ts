@@ -52,7 +52,22 @@ export function capTutorHistory<T extends { role: TutorRole; text: string }>(
   max: number = TUTOR_MAX_MESSAGES,
 ): T[] {
   if (max <= 0) return [];
-  let capped = full.length <= max ? full.slice() : full.slice(full.length - max);
+  // BATCH EIGHT FIX (2026-10-01) — the leading-tutor drop is a truncation
+  // repair; it must never run on a thread this function never cut. A
+  // thread UNDER the cap can legitimately open on a tutor turn — item 84's
+  // own deck phase commits the drawn spur as a tutor-role message
+  // immediately before the writer's reply to it, on purpose, so the
+  // transcript (and the wire) read "the spur, then the answer to it."
+  // The ORIGINAL amendment ran the drop unconditionally, so a two-message
+  // spur+reply thread — nowhere near 20 messages, never sliced — had its
+  // own spur stripped from the wire: the model answered a prompt it could
+  // no longer see. Caught live in Batch Eight's own parked leg (item84.mjs
+  // S5, "the wire carries the spur as an ordinary turn of the
+  // conversation"). Only a window this function ITSELF cut can have opened
+  // on a slicing artifact; an untouched thread's own first message is the
+  // writer's story to tell, never this function's to edit.
+  if (full.length <= max) return full.slice();
+  let capped = full.slice(full.length - max);
   while (capped.length > 0 && capped[0].role === 'tutor') capped = capped.slice(1);
   return capped;
 }

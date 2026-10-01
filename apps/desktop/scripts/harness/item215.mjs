@@ -98,6 +98,41 @@ ok('A-idempotent: capping an already-short thread (n=5) returns it completely un
   capTutorHistory(mk(5)).length === 5, '');
 ok('A-storage-untouched: capTutorHistory takes and returns plain data — nothing in this module calls into persistence.ts, so the STORED thread it is handed can only be what Tutor.tsx already read, never mutated by this call',
   !fs.readFileSync(path.join(DESKTOP_SRC, 'store/tutorHistory.ts'), 'utf8').includes('persistence'), '');
+
+// ---- THE BATCH EIGHT REGRESSION — item 84's own deck-phase spur ----------
+// A thread that legitimately OPENS on a tutor turn (the drawn spur, item
+// 84's own deck phase) and is nowhere near the cap must be returned
+// completely untouched — the leading-tutor drop is a truncation repair,
+// never a rule about what a short thread's own first message may be.
+// Caught live in Batch Eight's parked leg (item84.mjs S5): the original
+// amendment ran the drop unconditionally and stripped the spur from a
+// 2-message thread, so the wire carried only the writer's reply — "the
+// model is answering a prompt it can actually see" (item 84's own law)
+// stopped being true.
+const spurThenReply = [
+  { id: 'spur', role: 'tutor', text: 'The last hour before a departure.' },
+  { id: 'reply', role: 'writer', text: 'Taking that one.' },
+];
+const spurCapped = capTutorHistory(spurThenReply);
+ok('A-spur: a SHORT thread (well under the cap) that opens on a tutor turn is returned COMPLETELY UNCHANGED — the spur survives, both in count and in content',
+  spurCapped.length === 2 && spurCapped[0].id === 'spur' && spurCapped[0].role === 'tutor' && spurCapped[1].id === 'reply',
+  JSON.stringify(spurCapped));
+// The exact shape item84.mjs's own S5 check drives: the WIRE body's texts,
+// built the same way Tutor.tsx builds it (map to {role,text}) — must
+// include the spur's own words, not just the writer's.
+const wireTexts = spurCapped.map((m) => m.text);
+ok('A-spur WIRE: the assembled wire carries the spur\'s own text — item84.mjs\'s exact failing assertion, re-proven fixed',
+  wireTexts.includes('The last hour before a departure.') && wireTexts.includes('Taking that one.'),
+  JSON.stringify(wireTexts));
+// The TRUNCATED case must still drop a leading tutor artifact — this fix
+// narrows WHEN the drop runs, it does not remove the drop itself (item
+// 215's own amendment, still load-bearing for a genuinely cut window).
+const longSpurFirst = mkAlt(21); // 21 messages, alternating, ends on 'writer' — a real cut
+const longCapped = capTutorHistory(longSpurFirst);
+ok('A-spur CONTRAST: a thread that IS actually cut (over the cap) still opens on a writer turn — the truncation-repair half of item 215\'s amendment is untouched by this fix',
+  longCapped[0]?.role === 'writer' && longCapped.length < longSpurFirst.length,
+  JSON.stringify({ firstRole: longCapped[0]?.role, cappedLen: longCapped.length, fullLen: longSpurFirst.length }));
+
 fs.rmSync(dtTmp, { recursive: true, force: true });
 
 // ---- PART B — the SAME capped shapes, against the REAL server route --------
