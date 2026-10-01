@@ -23531,3 +23531,26 @@ pair immediately and send Fable the assembly SHA: he reads the assembled diff WH
 **CHECKED, NOT YET ACTED ON: FIX’s short use is STILL RUNNING** (1 `run-suite`/harness process, 16
 `ws-runtime-verify` browsers, grant unchanged — `fix-item210-211-probe-ef64554-20260930`). **Assembly
 waits for FIX’s box-free line.**
+
+## BATCH EIGHT ASSEMBLY, PAUSED: A CONFLICT BETWEEN 207 AND 204’S STORAGE HALF, HANDED TO ITS OWNERS — 2026-09-30 (chat 1)
+
+**FIX’S BOX-FREE LINE, VERIFIED: 0 `ws-runtime-verify` browsers, 0 `run-suite`/harness processes.** **The
+runs are on disk under `docs/evidence/`, pushed as `item-writing-r3` @ `b4d0f63`** — verified DOCS-ONLY on
+top of `ef64554` (4 files, +69, all under `docs/`). **Batch Eight’s roster takes `b4d0f63` in place of
+`ef64554` for r3.**
+
+**ASSEMBLY STARTED on a new branch `batch-eight`, from `main` @ `9695504`.** **THREE MERGED CLEAN, in order:**
+`item-writing-r3` @ `b4d0f63` → `item207-fonts`+`item207b-device-fonts` @ `6c09ea5` → `item195-sliver-grip`
+@ `c59fc37`.
+
+**THE FOURTH, `item204-engine` @ `13cd415` (204’s storage half), CONFLICTS — ABORTED, NOT RESOLVED, per
+the standing rule.** **File: `apps/desktop/src/types/index.ts`.** Both 207 and 204’s storage half append a
+new, SELF-CONTAINED block (207: `FaceGeneric`/`FaceSource`/`StoredFace`; 204: `ProofingDialect`/
+`ProofingWord`/`ProofingRecord`) at the SAME insertion point, right after `STYLE_GUIDE_DEFAULT`. **Read by
+eye, the two additions do not touch or depend on each other** — this reads as an ADJACENCY conflict (git
+cannot choose an order), not a logic collision — **but that reading is not this desk’s to act on. HANDED UP:
+the conflict goes to FIX (207, owns the file’s tip as merged) and PW (204’s storage half) to resolve, per
+Fable’s rule that a product conflict never gets resolved by this desk.** `batch-eight` is left at the
+three-way-merged commit (`894090a`), tree clean, nothing further attempted. **Remaining to merge once this
+is resolved: 204 storage @ `13cd415`, 213 @ `c648c56`, 215 @ `d63853f`, 217 @ `cbd4dc6`, 163 @ `c9e07c2`, 138
+@ `66baf6b`.**
