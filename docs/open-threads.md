@@ -23902,3 +23902,25 @@ Registry: next free **230**.
 **NEXT (Fable): the pair, CHUNKED, ≤20 files per chunk, same stamp throughout, 0 harness processes
 between chunks; default leg then parked. A real FAIL, or a launch crash that recurs after ONE swept re-run
 of that chunk, STOPS everything until Nick is back. Clean → deploy on Nick’s word (rollback `8223b29`).**
+
+## NICK’S WORD ON BATCH NINE (conditional on Batch Eight clean) — 2026-10-01 (chat 1)
+
+**NICK, verbatim, in this session as he left:** *“If Batch 8 comes back clean, then ship Batch 9”* — asked
+whether everything queued would ship without further commands from him, and told it would be Batch Eight
+only (Nine-lite not authorized at that point).
+
+**WHAT THIS DESK WILL DO, and its limits (stated here so the record is not read as more than it is):**
+- **Condition:** Batch Eight’s chunked pair must be CLEAN on both legs (same stamp; any real FAIL or a
+  launch crash recurring after one swept re-run STOPS everything). Not met yet — the pair is mid-run
+  (default c00–c02 clean, c03+ running).
+- **Batch Nine-lite roster, from Fable’s plan:** `item-esc-exit` @ `9f295fc` (escexit) · `a11y-signin` @ `ebc3b6f`
+  · `a11y-tutor-live-region` @ `22e6eaf` · `server-hardening` @ `b9d3db2` · `sync-integrity` @ `6da0964`.
+  **EXCLUDED: dep-bumps, csp-report-only, storage step 2, Node 22.** (FIX’s B-I-U interim `2e2a6b2` already
+  rides Batch Eight.) **Checked: none of the five touches `migrate.ts` — no schema.** Assembled from `main`
+  AFTER Batch Eight is live, then its OWN chunked pair.
+- **THE LIMIT: Nick’s word covers the “ship” gate, NOT Fable’s byte review.** Fable’s plan has him reading
+  Nine-lite’s auth and sync hunks while its pair runs; his PASS arrives only through a relay, and nobody is
+  at the keyboard to paste one. **Standing law: product code waits for Fable’s review. If his PASS has not
+  reached this desk when a clean Nine-lite pair finishes, it is HELD, not shipped** — it contains login
+  throttling and sync changes, the two places an unreviewed mistake costs most. Nick can override by saying
+  so; the record shows he was told.
