@@ -4,6 +4,8 @@ import { serializeScriptDoc } from './scriptText';
 import { createEmptyScriptDoc } from './scriptDoc';
 import { deskTerm, type DeskTermId } from './deskLexicon';
 import { getUserPageDefaults } from './pageDefaults';
+import { clearProofingLocal } from './proofing';
+import { reportFlushFailed, reportFlushOk, reportStorageUsage } from './storageHealth';
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -132,13 +134,22 @@ function hydrateDirty(): Record<CollectionName, Set<string>> {
 // the same synchronous moment as the collection it describes: the two can
 // never disagree about a record that reached disk. `markClean()` and the
 // journal backfill call it directly, since neither touches a collection.
+// STORAGE-FULL STEP 1 (Fable's byte review, item 1) — this write is a save too, and it can fail on its own: a
+// collection's own write can succeed while THIS one — the record of which rows are still unpushed — does not. That
+// stamps a just-saved, still-unsynced record as indistinguishable from a clean one: nothing pushes it, nothing
+// notices, the exact silent class this step exists to end. Reported under its OWN name (never one of COLLECTIONS'
+// names) so a reader can tell "the record itself didn't save" from "the record saved, but sync doesn't know it
+// needs to" — both are real, and they are different repairs.
+const DIRTY_JOURNAL_REPORT_NAME = 'dirtyJournal';
 function persistDirty(): void {
   try {
     const out: Record<string, string[]> = {};
     for (const name of COLLECTIONS) out[name] = [...dirty[name]];
     localStorage.setItem(DIRTY_KEY, JSON.stringify(out));
+    reportFlushOk(DIRTY_JOURNAL_REPORT_NAME);
   } catch {
     // Storage full/unavailable — never throw into a write path.
+    reportFlushFailed(DIRTY_JOURNAL_REPORT_NAME);
   }
 }
 
@@ -174,6 +185,18 @@ export function markClean(ids: string[]): void {
     dirty.drawers.delete(id);
   }
   persistDirty();
+  // STORAGE-FULL STEP 1 — a successful push is the one thing that can move the sync notice from "changes not yet in
+  // the account" to "safe in the account" while storage stays failed; nothing previously told a reactive listener
+  // that dirty state had changed here (only a collection write or a subscribe-worthy read did). This was the one
+  // real gap: every other mutator already calls notify() (see upsert()); this is the one that did not.
+  notify();
+}
+
+// STORAGE-FULL STEP 1 — true while ANY collection still has a record the account does not have yet. Cheap: reads
+// each dirty Set's own size, no cloning (unlike getDirtyRecords(), built for pushing the records themselves, not
+// for answering "is there anything to push").
+export function hasDirtyRecords(): boolean {
+  return COLLECTIONS.some((name) => dirty[name].size > 0);
 }
 
 // Item 89 — test/inspection seam (this file's own established pattern; see
@@ -247,15 +270,51 @@ const flushTimers: Record<CollectionName, ReturnType<typeof setTimeout> | null> 
   drawers: null,
 };
 
+// STORAGE-FULL STEP 1 — each collection's own last-known SERIALIZED LENGTH (characters, not bytes yet — doubled below
+// for a UTF-16 estimate), updated the moment `flush()` re-stringifies it. Summing these is the app's whole footprint
+// without re-reading anything from disk a second time; seeded from the RAW on-disk string at boot so a session with
+// no edits at all still reports an accurate figure the first time `maybeReportStorageUsage()` runs.
+const lastFlushedChars: Partial<Record<CollectionName, number>> = {};
+for (const name of COLLECTIONS) {
+  try { lastFlushedChars[name] = localStorage.getItem(KEYS[name])?.length ?? 0; } catch { lastFlushedChars[name] = 0; }
+}
+let lastUsageCheckAt = 0;
+const USAGE_CHECK_MIN_INTERVAL_MS = 4000; // a fill this app can warn "before" never needs sub-second resolution
+function maybeReportStorageUsage(): void {
+  const now = Date.now();
+  if (now - lastUsageCheckAt < USAGE_CHECK_MIN_INTERVAL_MS) return;
+  lastUsageCheckAt = now;
+  let totalChars = 0;
+  for (const name of COLLECTIONS) totalChars += lastFlushedChars[name] ?? 0;
+  try { totalChars += localStorage.getItem(DIRTY_KEY)?.length ?? 0; } catch { /* ignore */ }
+  reportStorageUsage(totalChars * 2); // UTF-16: 2 bytes/char, the same estimate every localStorage-quota discussion uses
+}
+// One check at boot (unthrottled — lastUsageCheckAt starts at 0), so a writer who opens a near-full device and only
+// READS this session still gets the warning, not only one who happens to type first.
+maybeReportStorageUsage();
+
 function flush(name: CollectionName): void {
+  const json = JSON.stringify(cache[name]);
   try {
-    localStorage.setItem(KEYS[name], JSON.stringify(cache[name]));
+    localStorage.setItem(KEYS[name], json);
+    // STORAGE-FULL STEP 1 — the OTHER half of the catch below: a write that succeeds after a device WAS failing
+    // (the writer freed space, or the browser recovered) clears that collection's failed flag. See storageHealth.ts.
+    reportFlushOk(name);
   } catch {
-    // Storage full/unavailable — never throw into a write path.
+    // Storage full/unavailable — never throw into a write path. NO LONGER SILENT past this function, though:
+    // reportFlushFailed tells the writer (via the sync notice) and, on the edge into failure, asks sync.ts to push
+    // the in-memory copy at once — the cache above still holds the edit; only THIS DEVICE'S OWN COPY of it could not
+    // be written. See storageHealth.ts's own header for the reasoning and the three things this now does.
+    reportFlushFailed(name);
   }
   // The id journal rides with the data (item 89): whenever a record reaches
   // disk, the fact that it is unpushed reaches disk in the same tick.
   persistDirty();
+  // STORAGE-FULL STEP 1 — throttled so continuous typing (this fires up to ~3x/sec) never turns a usage check into
+  // its own cost. `json.length` is what THIS collection just attempted to write; combined with the other
+  // collections' own last-known sizes below it is the whole app's footprint, without re-reading anything from disk.
+  lastFlushedChars[name] = json.length;
+  maybeReportStorageUsage();
 }
 
 function scheduleFlush(name: CollectionName): void {
@@ -1265,8 +1324,23 @@ export function wouldNestCycle(sourceId: string, targetBoardId: string): boolean
 // the exact same `Box[]`/`saveBoardBoxes` recipe as every other card (zero
 // schema — see the `Box` interface's own AB4 S2/S3 comments in types/index.ts
 // for the full reasoning on why this stays inside the existing column).
-const BOARD_PIN_W = 0.28;
-const BOARD_PIN_H = 0.12;
+// ITEM 138 — PAGE-PINS ARE TALL. Nick's thumbnail law reaches the canvas:
+// "horizontal rectangles for Boards, vertical rectangles for Pages."
+//
+// THE NUMBERS ARE DERIVED, NOT PICKED. The ratified rail thumbnails are 22×30
+// for a page (aspect h/w = 1.36) and 34×20 for a board (0.59) — index.css's own
+// PW2 S2 amendment. This page silhouette is 0.16 × 0.22, aspect 1.375: the rail's
+// page ratio, at very nearly the footprint the old wide default had
+// (0.28 × 0.12 = 0.0336 of the canvas; 0.16 × 0.22 = 0.0352), so a card changes
+// SHAPE without suddenly claiming more wall.
+//
+// ⚠ BOTH w AND h ARE FRACTIONS OF THE CANVAS **WIDTH** — BoardEditor renders
+// `width: box.w * pageWidthPx, height: box.h * pageWidthPx`, the same scalar
+// twice. So the aspect is simply `h / w`, and "taller than wide" means `h > w`
+// with no viewport arithmetic. Stated because reading `h` as a fraction of
+// HEIGHT would make every number here mean something else.
+const BOARD_PIN_W = 0.16;
+const BOARD_PIN_H = 0.22;
 // PW2 S2 AMENDMENT (Nick) — A BOARD IS WIDER THAN TALL WHEREVER IT APPEARS.
 // The rail draws a board's thumbnail as a horizontal rectangle and a page's as
 // a vertical one; a nested board's card on the CANVAS obeys the same law, so
@@ -1276,6 +1350,45 @@ const BOARD_PIN_H = 0.12;
 // glance, not on measurement.
 const BOARD_CARD_W = 0.32;
 const BOARD_CARD_H = 0.10;
+
+// ITEM 138 — THE SILHOUETTE, AND ITS TYPE RIDER.
+//
+// The two shapes are a KEYED RECORD rather than four loose constants, and that is
+// the rider the ledger asked for: a caller cannot reach for the wrong pair,
+// because it has to NAME which kind it is placing. The old form
+// (`nesting ? BOARD_CARD_W : BOARD_PIN_W`) spelled the choice twice per site and
+// would have spelled it a third time at the resize lock below.
+//
+// ⛔ AND IT KEYS ON THE **ENTRY** KIND, NEVER THE BOX KIND — 138's ratified
+// exclusion clause. A nested board's card is the SAME `page-pin` box as a page's,
+// so a builder keying on `box.kind` would flip EVERY board card to tall and undo
+// Nick's own wide-board ruling. The signature takes an entry (or null) precisely
+// so a box cannot be passed to it by mistake.
+export interface PinSilhouette { w: number; h: number }
+const PIN_SILHOUETTE: { page: PinSilhouette; board: PinSilhouette } = {
+  page: { w: BOARD_PIN_W, h: BOARD_PIN_H },    // vertical — a page
+  board: { w: BOARD_CARD_W, h: BOARD_CARD_H }, // horizontal — a board
+};
+
+/** The birth shape for a card pinning `entry`. Keyed on the ENTRY's kind. */
+export function pinSilhouetteFor(entry: Pick<JournalEntry, 'pageType'> | null | undefined): PinSilhouette {
+  return entry?.pageType === 'board' ? PIN_SILHOUETTE.board : PIN_SILHOUETTE.page;
+}
+
+/**
+ * The aspect (h / w) a pinning card is LOCKED to once the writer resizes it —
+ * item 138's constrain-forward lock.
+ *
+ * CONSTRAIN FORWARD, NEVER SNAP. This is not applied on load, on a move, or on
+ * any arrival of a limit: an existing card keeps its stored geometry until the
+ * writer RESIZES it (Nick's ruling — "resized only" counts as touched; a move
+ * alone is not a touch). At that moment the shape the writer is already changing
+ * takes the lock. Nothing the writer laid out is ever rewritten underneath them.
+ */
+export function pinAspectFor(entry: Pick<JournalEntry, 'pageType'> | null | undefined): number {
+  const s = pinSilhouetteFor(entry);
+  return s.h / s.w;
+}
 
 // PW1 S3 (item 125) — `display` splits the two acts that share this function.
 //
@@ -1372,9 +1485,13 @@ export function pinPageToBoard(entryId: string, boardEntryId: string, opts?: { d
   // A nested board's card takes the board silhouette; a page's keeps the page
   // one. Existing arranged boards are untouched — every box stores its own
   // w/h, so this changes the DEFAULT a new card is born at and nothing else.
-  const nesting = source.pageType === 'board';
+  // ITEM 138 — the silhouette comes from the ENTRY, through the one reader.
+  // The old `nesting` boolean is gone with the pair of per-axis ternaries it fed;
+  // the comment above still describes the behaviour, which has not changed —
+  // a nested board's card takes the board silhouette, a page's takes the page one.
+  const silhouette = pinSilhouetteFor(source);
   const pin: Box = { id: generateId(), kind: 'page-pin', x: 0.05, y: startY,
-    w: nesting ? BOARD_CARD_W : BOARD_PIN_W, h: nesting ? BOARD_CARD_H : BOARD_PIN_H,
+    w: silhouette.w, h: silhouette.h,
     z: startZ, entryId, onCanvas: opts?.display === true };
   saveJournalEntry({ ...board, boxes: [...existing, pin] });
   return getJournalEntry(boardEntryId);
@@ -1491,6 +1608,9 @@ export function copyCardToBoard(sourceBoardId: string, boxId: string, targetBoar
   //   w, h              — the card's authored SIZE, part of how it reads
   //                       (shape teaches the kind), so a copy is recognisably
   //                       the same card.
+  //   fontFace/fontSize — ITEM 207: the card's own typeface and point size are
+  //                       how it READS, exactly as w/h are; a copy that came
+  //                       back in the everyday font would not be the same card.
   //   copiedFromBoardId — the new lineage, this act's own record.
   // Deliberately NOT carried:
   //   x, y, z           — a position on ANOTHER board's canvas. The target
@@ -1512,6 +1632,8 @@ export function copyCardToBoard(sourceBoardId: string, boxId: string, targetBoar
     w: box.w, h: box.h,
     ...(box.text !== undefined ? { text: box.text } : {}),
     ...(box.strokes !== undefined ? { strokes: box.strokes } : {}),
+    ...(box.fontFace !== undefined ? { fontFace: box.fontFace } : {}),
+    ...(box.fontSize !== undefined ? { fontSize: box.fontSize } : {}),
     copiedFromBoardId: sourceBoardId,
   };
   saveJournalEntry({ ...target, boxes: [...existing, copy] });
@@ -2956,5 +3078,16 @@ export function resetLocalData(): void {
   } catch {
     // ignore
   }
+
+  // ITEM 204 PART 2 — the writer's PROOFING mirror goes out with everything else
+  // (Fable's ruling: "a signed-out device keeps nothing of the writer's; it goes
+  // out the same way every other writer record does"). It lives in its own store,
+  // so it is cleared through that store's own function rather than by spelling its
+  // storage key a second time here.
+  //
+  // ⚠ THE COST, NAMED: words added on this device and never pushed go out with
+  // it. That is the ruled trade — the alternative was one account's dictionary
+  // outliving its session on a shared device, which is worse.
+  clearProofingLocal();
   notify();
 }

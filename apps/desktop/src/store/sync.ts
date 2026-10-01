@@ -1,6 +1,7 @@
 import { getDirtyRecords, markClean, applyRemoteRecords, markAllJournalEntriesDirty, type DirtyRecords } from './persistence';
 import { apiSync, SyncHttpError, type SyncResponse } from './api';
 import { boardName } from './entryText';
+import { subscribeStorageFailureEvent } from './storageHealth';
 
 // Background sync engine (W2). Never blocks, debounces, or delays a local
 // write; never surfaces a blocking error. Pushes dirty records and pulls
@@ -326,3 +327,13 @@ export function stopSync(): void {
 export function clearLastSyncAt(): void {
   localStorage.removeItem(LAST_SYNC_KEY);
 }
+
+// STORAGE-FULL STEP 1 — "when online, push at once so the edits reach the account" (Fable, 2026-09-30). The moment
+// ANY collection starts failing to write locally, push right away rather than wait for the 20s tick: the cache still
+// holds the edit that could not be written to disk, so a reload or crash before the next periodic sync would lose it
+// twice over instead of once. `syncOnce()`'s own `inFlight` guard makes this call a no-op if a push is already under
+// way, and if the device is actually offline `syncOnce()` fails exactly as it always has (`setStatus('offline')` +
+// backoff) — this adds no new failure mode, only an earlier attempt. Module-level (not gated on `startSync()`/
+// `running`) to match `App.tsx`'s own direct call to `syncOnce()` for its best-effort final push — calling it before
+// a session exists just meets an unauthenticated request that fails quietly, the same as any sync tick would.
+subscribeStorageFailureEvent(() => { void syncOnce(); });

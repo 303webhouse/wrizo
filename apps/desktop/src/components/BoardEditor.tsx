@@ -1,14 +1,13 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { boardName } from '../store/entryText';
+import { boardName, plainLines } from '../store/entryText';
 import {
   getJournalEntry, saveBoardBoxes, flushNow, getDrawer, getProject,
   patchJournalEntry, getBoardsConnecting, generateId, createLooseHomePage, pinPageToBoard,
   getSystemKind, reconcileSystemBoard, restoreEntry, getJournalEntryIncludingDeleted, subscribe,
   getPairedPageId, pairBoardWithPage,
   setPinDisplayed,
-  boardNestChain,
-} from '../store/persistence';
+  boardNestChain, pinAspectFor } from '../store/persistence';
 import { SURVEY_DRAG_TYPE } from './CascadeSurvey';
 import { useBoardMode } from '../store/boardMode';
 import { StoryboardProjection, OutlineProjection } from './BoardProjection';
@@ -27,7 +26,7 @@ import { useWayBack } from './useWayBack';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useLexicon } from '../store/themeLexicon';
 import { useDeskLexicon, deskTerm } from '../store/deskLexicon';
-import { describePageHome } from '../store/pageHome';
+import { describePageHome, boardDrawerLine } from '../store/pageHome';
 import { routeForEntry } from '../store/routeForEntry';
 import { useCascade } from './Cascade';
 import { PortToBoardSheet } from './PortToBoardSheet';
@@ -43,7 +42,10 @@ import { DECKS } from '../decks/library';
 import { materializeDeck } from '../decks/engine';
 import type { DeckDefinition, DeckAnswers } from '../decks/types';
 import { armStartHere, getStartHereCardId, noteDealtCardEdited } from '../store/deckHint';
-import type { JournalEntry, Box, Project } from '../types';
+import type { JournalEntry, Box, Project, StoredFace } from '../types';
+import { TypeControl } from './TypeControl';
+import { cardTypeStyle, ensureFaceLoaded } from '../store/fontRoster';
+import { SIZE_DEFAULT } from '../store/fontSize';
 
 // J4 — the Board: a canvas of positioned boxes (I2/I3 realized). Boxes only
 // ever arrive via a port (J4 Slice 2) or, AB4 S2/S5, a pin (a membership
@@ -73,6 +75,13 @@ const MIN_TEXT_W = 0.15;
 const MIN_INK_W = 0.08;
 // AB4 S4 — a page-pin card resizes freeform on both axes (no aspect lock —
 // it's not a drawing; no text-reflow — it's not live prose).
+// ⚠ SUPERSEDED IN PART BY ITEM 138 (2026-09-24) — kept as written, marked here
+// rather than rewritten, because the sentence was true when it was written and a
+// reader tracing the freeform decision should find it. WHAT CHANGED: a page-pin
+// DOES now take an aspect lock, on RESIZE only, and the aspect comes from the
+// PINNED ENTRY's kind (page → vertical, board → horizontal) rather than from the
+// card. The no-text-reflow half stands unchanged. See the `page-pin` branch in
+// the resizing handler below, and `pinAspectFor` in store/persistence.ts.
 // FX4 S4 — text now resizes freeform on both axes too (height was
 // reflow-only before this ticket): MIN_TEXT_H is the same "about one
 // line" floor persistence.ts's own BOARD_LINE_H already uses for a fresh
@@ -170,8 +179,8 @@ function BoardInkBox({ box, pageWidthPx }: { box: Box; pageWidthPx: number }) {
 // words), never a truncation of what's actually STORED, only of what's
 // DISPLAYED on the card's own quiet face.
 function notecardExcerpt(text: string): { title: string; excerpt: string } {
-  const trimmed = text.trim();
-  const lines = trimmed.split('\n').filter(l => l.trim());
+  // item 210: a card's face is plain text - the same reader as every other derived title
+  const lines = plainLines(text);
   const title = lines[0] ? lines[0].slice(0, 100) : '';
   const excerpt = lines.slice(1, 4).join(' ').slice(0, 160);
   return { title, excerpt };
@@ -193,10 +202,10 @@ function notecardExcerpt(text: string): { title: string; excerpt: string } {
 // PW2 S2 — a board-card's second line names the DRAWER it lives in, the same
 // fact the Plan panel's board rows carry, so one board reads the same on both
 // of its faces. A board with no drawer says so rather than borrowing a name.
-function boardDrawerLine(entry: JournalEntry): string {
-  if (!entry.projectId) return deskTerm('cascadePlanNoDrawer');
-  return getProject(entry.projectId)?.title || 'Untitled';
-}
+// ITEM 163 — the local copy is GONE, not corrected in place. It returned the
+// drawer name bare; the ruled form is "in <drawer>", and the same fact was spelled
+// twice more in CascadePanels. All three now call the one reader in
+// store/pageHome.ts, so the next change lands once.
 
 function BoardPinBox({ box }: { box: Box }) {
   const { t: lex } = useLexicon();
@@ -269,12 +278,15 @@ function BoardPinBox({ box }: { box: Box }) {
 // completely untouched — their own organic grow-as-you-type is FX4 S4's
 // intended, correct behavior, not a defect.
 function BoardTextBox({
-  boxId, initialText, measureRef, sourceEntryId,
+  boxId, initialText, measureRef, sourceEntryId, typeStyle,
 }: {
   boxId: string;
   initialText: string;
   measureRef: (id: string, el: HTMLDivElement | null) => void;
   sourceEntryId?: string;
+  // ITEM 207 - the card's own face/size (store/fontRoster.ts cardTypeStyle); undefined on a card that never chose, so its
+  // element carries no style attribute at all.
+  typeStyle?: React.CSSProperties;
 }) {
   const { t } = useDeskLexicon();
   if (sourceEntryId) {
@@ -321,6 +333,7 @@ function BoardTextBox({
     <div
       ref={el => measureRef(boxId, el)}
       className="board-text"
+      style={typeStyle}
       dangerouslySetInnerHTML={{ __html: decorateMarkdownForCard(initialText, null) }}
     />
   );
@@ -342,11 +355,15 @@ function BoardTextBox({
 // Voice Wall stands: foreign paste/drop is blocked + whispered; an allowed
 // own-ink paste proceeds natively (Draft's own law, unchanged here).
 function BoardCardPopup({
-  initialText, onCommit, onClose,
+  initialText, onCommit, onClose, fontFace, fontSize, onType,
 }: {
   initialText: string;
   onCommit: (text: string) => void;
   onClose: () => void;
+  // ITEM 207 - the card's own face/size and the one funnel that writes them (BoardEditor.commitType).
+  fontFace?: StoredFace;
+  fontSize?: number;
+  onType: (patch: { fontFace?: StoredFace; fontSize?: number }) => void;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const elRef = useRef<HTMLDivElement | null>(null);
@@ -685,6 +702,8 @@ function BoardCardPopup({
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingBold')} onClick={() => applyBoardFormat('bold')}><b>B</b></button>
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingItalic')} onClick={() => applyBoardFormat('italic')}><i>I</i></button>
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingUnderline')} onClick={() => applyBoardFormat('underline')}><u>U</u></button>
+          {/* ITEM 207 - the card's face and size: the smallest form (a face button and -/+, no number, no heading). */}
+          <TypeControl form="small" face={fontFace} size={fontSize ?? SIZE_DEFAULT} onPickFace={face => onType({ fontFace: face })} onSize={size => onType({ fontSize: size })} />
         </div>
         )}
         <div className="board-popup-strip">
@@ -698,6 +717,7 @@ function BoardCardPopup({
           role="textbox"
           aria-multiline="true"
           aria-label={`${lex('board')} text box`}
+          style={cardTypeStyle(fontFace, fontSize)}
         />
         <div className="board-popup-foot">
           {/* CD4.1 — "Done" retired: the card-edit popup's close control is a door
@@ -861,6 +881,9 @@ export function BoardEditor({ id }: { id: string }) {
   const [existingPageOpen, setExistingPageOpen] = useState(false);
 
   const boxesRef = useRef(boxes);
+  // ITEM 207 - a card that wears a non-eager face fetches it when the board opens (or when a card arrives wearing one).
+  const cardFaceNames = boxes.map(b => b.fontFace?.name ?? '').filter(Boolean).sort().join('|');
+  useEffect(() => { cardFaceNames.split('|').forEach(n => { if (n) void ensureFaceLoaded(n); }); }, [cardFaceNames]);
   boxesRef.current = boxes;
   const selectedIdRef = useRef(selectedId);
   selectedIdRef.current = selectedId;
@@ -1178,6 +1201,12 @@ export function BoardEditor({ id }: { id: string }) {
     setStartHereCardId(getStartHereCardId(id));
   };
 
+  // ITEM 207 - a card's own face and size: the same functional setBoxes every card edit uses, touching this Box only.
+  const commitType = (boxId: string, patch: { fontFace?: StoredFace; fontSize?: number }) => {
+    if (patch.fontFace) void ensureFaceLoaded(patch.fontFace.name);
+    setBoxes(prev => prev.map(b => (b.id === boxId ? { ...b, ...patch } : b)));
+  };
+
   const snapshot = (type: NonNullable<LastAction>['type']) => {
     lastActionRef.current = { type, before: boxesRef.current };
     setCanUndo(true);
@@ -1419,7 +1448,7 @@ export function BoardEditor({ id }: { id: string }) {
     let movingIds: string[] = [];
     let startBoxes: Box[] = [];
     let resizingId: string | null = null;
-    let resizeStart: { w: number; h: number; aspect: number; kind: Box['kind'] } | null = null;
+    let resizeStart: { w: number; h: number; aspect: number; kind: Box['kind']; pinAspect: number | null } | null = null;
 
     const clearTimer = () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } };
 
@@ -1481,7 +1510,20 @@ export function BoardEditor({ id }: { id: string }) {
       phase = 'resizing';
       resizingId = boxId;
       startBoxes = boxesRef.current;
-      resizeStart = { w: box.w, h: box.h, aspect: box.h / box.w, kind: box.kind };
+      // ITEM 138 — the LOCK's aspect, resolved from the PINNED ENTRY, never from
+      // the box. A nested board's card is the same `page-pin` box as a page's, so
+      // keying on `box.kind` here would flip every board card to tall and undo
+      // Nick's wide-board ruling (138's ratified exclusion clause).
+      // `getJournalEntryIncludingDeleted` because a Trash card is still a card
+      // whose shape must stay lawful while it is on the wall.
+      const pinnedEntry = box.kind === 'page-pin' && box.entryId
+        ? getJournalEntryIncludingDeleted(box.entryId)
+        : null;
+      resizeStart = {
+        w: box.w, h: box.h, aspect: box.h / box.w, kind: box.kind,
+        // null for every non-pin box, so the branch below cannot reach them.
+        pinAspect: box.kind === 'page-pin' ? pinAspectFor(pinnedEntry) : null,
+      };
       // FX7 S7 — see activeResizeIdRef's own header comment (above, near
       // measureEls): the auto-grow reflow-floor effect stands down for
       // THIS box id until the drag ends (finish(), below).
@@ -1728,6 +1770,26 @@ export function BoardEditor({ id }: { id: string }) {
         setBoxes(startBoxes.map(b => {
           if (b.id !== resizingId) return b;
           if (b.kind === 'ink') return { ...b, w: newW, h: newW * resizeStart!.aspect };
+          // ITEM 138 — A PAGE-PIN TAKES ITS KIND'S ASPECT THE MOMENT IT IS
+          // RESIZED. This supersedes AB4 S4's freeform-both-axes for this box
+          // kind (that comment is marked at its own site).
+          //
+          // CONSTRAIN FORWARD, NEVER SNAP — and this line is where the whole
+          // distinction lives. The lock is applied ONLY here, inside a resize the
+          // writer is performing: not on load, not on a move, not when a limit
+          // arrives. An existing wide card opens exactly as it was left and keeps
+          // its stored geometry indefinitely; it takes the shape at the moment the
+          // writer themselves changes that shape. "Resized only" counts as
+          // touched (Nick's ruling) — a move alone is not a touch, which is why
+          // this is in the resizing branch and nowhere near the moving one.
+          //
+          // The aspect is the KIND's canonical one, not the card's own captured
+          // aspect (which is what `ink` preserves above): the point is to bring a
+          // hand-widened page card back to the page silhouette, not to preserve
+          // whatever it currently is.
+          if (b.kind === 'page-pin' && resizeStart!.pinAspect != null) {
+            return { ...b, w: newW, h: Math.max(MIN_PIN_H, newW * resizeStart!.pinAspect) };
+          }
           // FX4 S4 — text now resizes freeform on BOTH axes too (height was
           // reflow-only before this ticket): dragging taller sets an
           // explicit `h` the reflow-as-minimum effect above will only ever
@@ -2281,6 +2343,7 @@ export function BoardEditor({ id }: { id: string }) {
                   initialText={box.text ?? ''}
                   measureRef={measureRef}
                   sourceEntryId={box.sourceEntryId}
+                  typeStyle={cardTypeStyle(box.fontFace, box.fontSize)}
                 />
               )}
               {/* FX5 S5 — the olive pin: the connection grab, on every card,
@@ -2377,6 +2440,9 @@ export function BoardEditor({ id }: { id: string }) {
         <BoardCardPopup
           initialText={popupBox.text ?? ''}
           onCommit={text => commitText(popupBox.id, text)}
+          fontFace={popupBox.fontFace}
+          fontSize={popupBox.fontSize}
+          onType={patch => commitType(popupBox.id, patch)}
           onClose={() => setPopupBoxId(null)}
         />
       )}

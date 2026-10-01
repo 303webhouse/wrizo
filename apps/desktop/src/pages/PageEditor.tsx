@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsConnecting, inJournalView, getOrCreatePlanBoard } from '../store/persistence';
 import { setPageDress } from '../store/pageDress';
+import { pageTypeStyle, ensureFaceLoaded } from '../store/fontRoster';
+import { SIZE_DEFAULT } from '../store/fontSize';
 import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
 import { firstLine } from '../store/entryText';
@@ -36,12 +38,14 @@ import { GoalGlow } from '../components/GoalGlow';
 import { DeskInstrument } from '../components/DeskInstrument';
 import { useCascade } from '../components/Cascade';
 import type { PageFaceSubject } from '../components/PageFace';
-import type { JournalEntry, PageKindSetting, PageSettings, StyleGuide } from '../types';
+import type { JournalEntry, PageKindSetting, PageSettings, StoredFace, StyleGuide } from '../types';
 import { PAGE_KIND_DEFAULT, PAGE_SETTINGS_FALLBACK, STYLE_GUIDE_DEFAULT } from '../types';
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import { applyFormat, marksAt, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
+import { createTabChord, type TabAct } from '../store/tabChord';
+import { BLOCK_TOKEN } from '../store/markRuns';
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
 import { getRegisteredUndoStack } from '../store/textUndo';
 import { proseTextToScriptDoc, isProseEmpty } from '../store/structureConvert';
@@ -116,6 +120,12 @@ function PageEditorView({ id }: { id: string }) {
     setPageDress(entry?.pageSettings ?? null);
     return () => setPageDress(null);
   }, [entry?.id, entry?.pageSettings]);
+  // ITEM 207 — the page's own face and size. Both are ABSENT on a page that never chose, and then `typeStyle` is
+  // empty and the editor's style below is the one it always had (byte-identical). A face other than the eager three
+  // is fetched when a page that uses it OPENS (here) or when the writer chooses it (the Type control).
+  const pageFace = entry?.pageSettings?.face;
+  const typeStyle = pageTypeStyle(pageFace, entry?.pageSettings?.size);
+  useEffect(() => { void ensureFaceLoaded(pageFace?.name); }, [pageFace?.name]);
   // M1 — null on any plan-less project (Journal pages never reach this
   // surface at all); ModeStage silently degrades Progress:Project to Words
   // when this is null, per the canon's no-greyed-states rule.
@@ -515,31 +525,50 @@ function PageEditorView({ id }: { id: string }) {
   // That is the standard trade every text editor makes — and the card popup
   // already traps Tab deliberately — but it is a real cost, not a free win,
   // and Escape is what leaves the surface.
+  //
+  // STEP 3 (Nick, 2026-09-25) - TAB IS NOW A STATE MACHINE (store/tabChord.ts, proved without a browser): every Tab tap is one more
+  // first-line level ("keep indenting the text further"), Shift+Tab one level back, and Tab HELD + 1 is one WHOLE-PARAGRAPH (block)
+  // level per press of the 1 (Shift+Tab held + 1 one back). A tap is applied on release; a quick Tab-then-1 (a numbered list) types
+  // its 1. Draft and Revise act everywhere; Free Write acts on a BLANK line only and never outdents (a deletion), and there a 1 is
+  // always just typed unless the chord may act.
   useEffect(() => {
     const el = editorRef.current;
     if (!el) return;
-    const onTab = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab' || e.ctrlKey || e.metaKey || e.altKey) return;
-      if (mode === 'drafting' || mode === 'revise') {
-        e.preventDefault();
-        applyFormatAt(e.shiftKey ? 'outdent' : 'indent');
-        return;
-      }
-      if (mode !== 'journal') return;          // not a writing surface of ours
-      // Free Write: never let the browser move focus, whatever we do next.
-      e.preventDefault();
-      if (e.shiftKey) return;                  // an outdent is a deletion; forward-only forbids it
+    const blankHere = (): boolean => {
       const caret = getCaretOffset(el);
-      if (caret == null) return;
-      const text = textRef.current;
-      const lineStart = text.lastIndexOf('\n', Math.max(0, caret - 1)) + 1;
-      const lineEnd = text.indexOf('\n', caret);
-      const line = text.slice(lineStart, lineEnd === -1 ? text.length : lineEnd);
-      if (line.trim().length > 0) return;      // words already here: the tab would land behind the caret
-      insertMarkerRef.current?.('\t');
+      if (caret == null) return false;
+      const t = textRef.current;
+      const lineStart = t.lastIndexOf('\n', Math.max(0, caret - 1)) + 1;
+      const lineEnd = t.indexOf('\n', caret);
+      return t.slice(lineStart, lineEnd === -1 ? t.length : lineEnd).trim().length === 0;   // words already here: the tab would land behind the caret
     };
-    el.addEventListener('keydown', onTab);
-    return () => el.removeEventListener('keydown', onTab);
+    const chord = createTabChord((shift) => mode !== 'journal' || (!shift && blankHere()));
+    const perform = (act: TabAct) => {
+      if (mode === 'drafting' || mode === 'revise') { applyFormatAt(act); return; }
+      if (mode !== 'journal') return;
+      if (act === 'outdent' || act === 'block-outdent') return;   // an outdent is a deletion; forward-only forbids it
+      if (!blankHere()) return;
+      insertMarkerRef.current?.(act === 'block-indent' ? BLOCK_TOKEN : '\t');
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      const step = chord.keydown(e);
+      if (step.preventDefault) e.preventDefault();
+      step.acts.forEach(perform);
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      const step = chord.keyup(e);
+      if (step.preventDefault) e.preventDefault();
+      step.acts.forEach(perform);
+    };
+    const onBlur = () => chord.reset();
+    el.addEventListener('keydown', onKeyDown);
+    el.addEventListener('blur', onBlur);
+    window.addEventListener('keyup', onKeyUp, true);
+    return () => {
+      el.removeEventListener('keydown', onKeyDown);
+      el.removeEventListener('blur', onBlur);
+      window.removeEventListener('keyup', onKeyUp, true);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, !!realEntry]);
 
@@ -779,7 +808,7 @@ function PageEditorView({ id }: { id: string }) {
         forwardLock={mode === 'journal' ? forwardLock : true}
         style={{
           width: '100%', minHeight: '100%', color: 'var(--ink-on-paper)',
-          fontFamily: 'var(--font-prose)',
+          fontFamily: typeStyle.fontFamily ?? 'var(--font-prose)',
           // FX3 S2 — scales with --paper-scale (index.css) so the editor's
           // own rendered type grows in lockstep with the paper (Law 1: the
           // measure, not the pixel width, is the constant). Reaches the
@@ -788,7 +817,7 @@ function PageEditorView({ id }: { id: string }) {
           // `.forward-only-editor-wrap`, not the `.forward-only-editor`
           // node itself — font-size is an inherited property, so this
           // still works).
-          fontSize: 'calc(17px * var(--paper-scale))', lineHeight: 1.7,
+          fontSize: typeStyle.fontSize ?? 'calc(17px * var(--paper-scale))', lineHeight: 1.7,
         }}
       />
       {/* HB1 S3 — the gate's instruction is the threshold's one sanctioned
@@ -982,12 +1011,24 @@ function PageEditorView({ id }: { id: string }) {
     saveJournalEntry({ ...entry, pageSettings: { ...base, ...next }, updatedAt: new Date().toISOString() });
   };
 
+  // ITEM 207 - the Type control's props, one funnel into the page's own page_settings (the same patch every page-level
+  // choice uses). `size` reads through the default 11 and is written as the number of points; a face is written whole.
+  const typeMember = (form: 'small' | 'full') => ({
+    form,
+    face: pageFace,
+    size: entry.pageSettings?.size ?? SIZE_DEFAULT,
+    onPickFace: (face: StoredFace) => patchPageSettings({ face }),
+    onSize: (size: number) => patchPageSettings({ size }),
+  });
+
   const sliverContent: SliverContent = !framed
     ? { kind: 'empty' }
     : mode === 'journal'
       ? {
           kind: 'freewrite',
           forwardLock: { on: forwardLock, onToggle: setForwardLock },
+          // ITEM 207 - the smallest form (a face button and -/+, no number). Absent in INK: a pen page has no typeface.
+          type: instrument === 'ink' ? undefined : typeMember('small'),
           // ITEM 121 I4 — THE INK OPTIONS, PASSED ONLY IN INK. This `undefined`
           // in TEXT is the whole of "absent, never greyed": the Sliver renders
           // the zone only when the member is present, so in TEXT there is
@@ -1013,6 +1054,7 @@ function PageEditorView({ id }: { id: string }) {
             kind: 'draft',
             structure: 'prose',
             onSwitchStructure,
+            type: typeMember('full'),
             format: {
               onFormat: applyRailFormat,
               boldOn: draftMarks.bold, italicOn: draftMarks.italic,
@@ -1052,7 +1094,8 @@ function PageEditorView({ id }: { id: string }) {
         // sliver's OWN standing furniture — the goal block, the instruments row —
         // which belong to the drawer on every surface and are not Revise tenants.
         // Empty of TENANTS is what was ruled; empty of everything was not.
-        : { kind: 'empty' };
+        // ITEM 207 - 112-A's empty Revise drawer takes its one tenant: the Type control, full form.
+        : { kind: 'revise', type: typeMember('full') };
 
   const structureConfirmDialog = structureConfirm && (
     <div className="sprint-modal-backdrop structure-confirm-modal" onClick={() => setStructureConfirm(false)}>

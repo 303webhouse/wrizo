@@ -1,6 +1,38 @@
 import type { JournalEntry, Project } from '../types';
-import { inJournalView } from './persistence';
+import { inJournalView, getProject } from './persistence';
 import { deskTerm } from './deskLexicon';
+
+// ITEM 163 — THE LOCATION LINE SAYS "IN", AND IT SAYS IT IN ONE PLACE.
+//
+// Nick read "BOARD #2 / TEST BOARD" as a subtitle, because a bare name is a
+// subtitle: nothing in it says TEST BOARD is the DRAWER the board lives in.
+// Ruled: **the second line takes the CAPTION FORM, "in TEST BOARD."**
+// WIDENED to the canvas board-card, *"same swap, same lexicon term."*
+//
+// ⛔ AND IT IS ONE READER, WHICH IS 131(a)'s SHAPE — *fix the class.* Before
+// this, the same fact was spelled THREE times in two files: `drawerNameFor`
+// (the Plan panel's board ROW, bare), `drawerCaptionFor` (the zone's CAPTION,
+// already "in <drawer>") and `boardDrawerLine` (the canvas BOARD-CARD, bare).
+// Two of the three were already wrong and the third was already right, which is
+// exactly what three copies of one rule produce. Fixing them in place would have
+// left three copies to drift again, so they are now three callers of this.
+//
+// It is the same lesson PW1's own errata earned with `getBoardsConnecting`: one
+// NAMED READER, never the same rule re-expressed at each call site.
+//
+// ⚠ THE SCOPE IS DRAWER-NAMING LINES ONLY (ratified). The other two forms this
+// second line can take are NOT touched and must not be:
+//   · `cascadePlanRelationOwn` — the page's OWN plan board. A relation, not a
+//     location; prefixing it with "in" would make it a lie.
+//   · `cascadePlanNoDrawer` ("Not in a drawer") — it says there is NO drawer, so
+//     "in Not in a drawer" would be nonsense. A board with no drawer says so
+//     rather than borrowing a name.
+// A harness must assert those two BY NAME, or it could pass on their ABSENCE
+// while claiming the swap was scoped.
+export function boardDrawerLine(board: JournalEntry): string {
+  const name = board.projectId ? (getProject(board.projectId)?.title || 'Untitled') : null;
+  return name ? `${deskTerm('cascadePlanCaptionIn')} ${name}` : deskTerm('cascadePlanNoDrawer');
+}
 
 // AB3 S2/S5 — "Where it lives," told truthfully. Shared by the Page face on
 // both JournalEntry.tsx and PageEditor.tsx so the two hosts can't drift.

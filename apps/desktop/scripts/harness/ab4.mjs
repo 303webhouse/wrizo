@@ -272,6 +272,9 @@ await withHarness(async (app) => {
   // ==========================================================================
   // S4 — resize persists across reload (a page-pin card: freeform on both
   // axes, the new capability this ticket adds to the existing mechanism).
+  // ⚠ "freeform on both axes" is SUPERSEDED IN PART by item 138 — kept as
+  // written because it was true when written; see the mark at the assertion
+  // below, and item138.mjs for the aspect law that replaced it.
   // ==========================================================================
   await freshProsePage(app, LAPTOP_W, 900);
   await sleep(400);
@@ -300,8 +303,30 @@ await withHarness(async (app) => {
     await app.evalJs('__pointerSeq(\'[data-box-id="ab4-resize-pin"] .board-handle\', 90, 60, {steps:3})');
     await sleep(150);
     const afterDrag = (await app.evalJs('window.wrizoBoard()')).find((b) => b.id === 'ab4-resize-pin');
-    ok('S4: dragging the corner resizes a page-pin card freeform on BOTH axes (no aspect lock, unlike ink)',
-      afterDrag.w > before.w && afterDrag.h > before.h, JSON.stringify({ before, afterDrag }));
+    // ---- SUPERSEDED IN PLACE BY ITEM 138 (2026-09-24) — LIVE SUCCESSOR BELOW ----
+    // Quoted VERBATIM and no longer asserted:
+    //
+    //   ok('S4: dragging the corner resizes a page-pin card freeform on BOTH axes (no aspect lock, unlike ink)',
+    //     afterDrag.w > before.w && afterDrag.h > before.h, JSON.stringify({ before, afterDrag }));
+    //
+    // WHAT CHANGED: item 138 gives a page-pin an aspect lock ON RESIZE — the
+    // height is now derived from the new width, at the aspect of the PINNED
+    // ENTRY's kind (page → vertical, board → horizontal). The "freeform on both
+    // axes" half is false for this box kind; the resize itself, and the fact that
+    // both axes change, are unaffected, which is what the successor asserts.
+    //
+    // ⚠ AND IT DID NOT GO RED, WHICH IS THE PART WORTH RECORDING. The condition
+    // `afterDrag.h > before.h` is satisfied just as well by the lock as by
+    // freeform — under the lock the height becomes w × 1.375, larger either way.
+    // So a check whose NAME asserted the ABSENCE of an aspect lock sailed through
+    // the arrival of one: green about something else. A name and a condition that
+    // can disagree this quietly is the failure mode, not the ticket.
+    //
+    // LIVE SUCCESSOR for the surviving half: below. For the aspect law itself —
+    // and for the discriminating drag that ab4's condition could never be (dy = 0,
+    // and the height moves anyway) — see item138.mjs, C4.
+    ok('S4: dragging the corner resizes a page-pin card on BOTH axes (the no-aspect-lock half is superseded by item 138 — the height now follows the pinned entry\'s kind; see item138.mjs C1/C2/C4)',
+      afterDrag.w > before.w && afterDrag.h !== before.h, JSON.stringify({ before, afterDrag }));
 
     await sleep(2200); // clear the autosave debounce
     await app.reload();

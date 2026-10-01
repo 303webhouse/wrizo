@@ -47,6 +47,7 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
 let tabFence = null;   // the E3 Tab fence's observation, kept for its parked record below
+const e3 = {};         // the four line-scope E3 observations, kept for their parked records below
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -363,21 +364,41 @@ await withHarness(async (app) => {
 
   await clickFormat(app, 'Indent');
   const e3AfterOne = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
-  ok('E3: one press indents the WHOLE PARAGRAPH, not the caret line — both lines take the tab, which is the discriminator against the superseded line-scoped control',
-    e3AfterOne === '\tAlpha one\n\tAlpha two', JSON.stringify(e3AfterOne));
+  // ---- PARKED - SUPERSEDED by Nick's ruling of 2026-09-25 ("Enter makes no paragraph gap, so a line is a paragraph") ----------------
+  // Kept VERBATIM and no longer run. This E3 block asserted that Indent takes a whole run of consecutive inked lines. Nick's ruling
+  // makes the caret's own LINE the unit (with a selection, each selected line): Tab on one of three lines indented all three, which
+  // is what he reported. The four E3 checks below are parked one by one, each beside its successor on the same fixture.
+  //
+  // ok('E3: one press indents the WHOLE PARAGRAPH, not the caret line — both lines take the tab, which is the discriminator against the superseded line-scoped control',
+  //   e3AfterOne === '\tAlpha one\n\tAlpha two', JSON.stringify(e3AfterOne));
+  // ------------------------------------------------------------------
+  e3.one = e3AfterOne;
+  ok('E3 [line-scope successor]: one press indents the CARET\'S LINE only - the line above it is untouched',
+    e3AfterOne === 'Alpha one\n\tAlpha two', JSON.stringify(e3AfterOne));
 
   await clickFormat(app, 'Indent');
   const e3AfterTwo = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
-  ok('E3: pressing again INCREASES the level — the second discriminator, since the superseded toggle would have removed the tab it just added',
-    e3AfterTwo === '\t\tAlpha one\n\t\tAlpha two', JSON.stringify(e3AfterTwo));
+  // ---- PARKED - SUPERSEDED (same ruling; see above) ----
+  // ok('E3: pressing again INCREASES the level — the second discriminator, since the superseded toggle would have removed the tab it just added',
+  //   e3AfterTwo === '\t\tAlpha one\n\t\tAlpha two', JSON.stringify(e3AfterTwo));
+  // ------------------------------------------------------------------
+  e3.two = e3AfterTwo;
+  ok('E3 [line-scope successor]: pressing again INCREASES the level on that line (the discriminator against a toggle survives; only the scope changed)',
+    e3AfterTwo === 'Alpha one\n\t\tAlpha two', JSON.stringify(e3AfterTwo));
 
   const marker = await app.evalJs(`(() => {
     const ed = document.querySelector('.forward-only-editor');
     const marks = [...ed.querySelectorAll('.md-mark')].map(m => m.textContent);
     return { marks, textLength: ed.textContent.length };
   })()`);
-  ok('E3: the level renders as indent with the MARKER LOW-INK — the leading tabs are wrapped in the same .md-mark register every other convention wears, and the character count stays 1:1 so the caret offset still restores',
-    marker.marks.length === 2 && marker.marks.every(m => m === '\t\t') && marker.textLength === e3AfterTwo.length,
+  // ---- PARKED - SUPERSEDED (same ruling; see above) ----
+  // ok('E3: the level renders as indent with the MARKER LOW-INK — the leading tabs are wrapped in the same .md-mark register every other convention wears, and the character count stays 1:1 so the caret offset still restores',
+  //   marker.marks.length === 2 && marker.marks.every(m => m === '\t\t') && marker.textLength === e3AfterTwo.length,
+  //   JSON.stringify(marker));
+  // ------------------------------------------------------------------
+  e3.marker = marker;
+  ok('E3 [line-scope successor]: the level renders as indent with the MARKER LOW-INK - ONE .md-mark span (the indented line\'s own two tabs), the count still 1:1',
+    marker.marks.length === 1 && marker.marks[0] === '\t\t' && marker.textLength === e3AfterTwo.length,
     JSON.stringify(marker));
 
   // A blank line is a paragraph SEPARATOR, never structure: a second paragraph
@@ -387,8 +408,13 @@ await withHarness(async (app) => {
   await sleep(250);
   await clickFormat(app, 'Indent');
   const twoParas = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
-  ok('E3: a caret in the SECOND paragraph indents only that paragraph, and the blank separator between them takes no tab — a tab on a separator is invisible litter, never structure',
-    twoParas === '\t\tAlpha one\n\t\tAlpha two\n\n\tBeta one', JSON.stringify(twoParas));
+  // ---- PARKED - SUPERSEDED (same ruling; see above) ----
+  // ok('E3: a caret in the SECOND paragraph indents only that paragraph, and the blank separator between them takes no tab — a tab on a separator is invisible litter, never structure',
+  //   twoParas === '\t\tAlpha one\n\t\tAlpha two\n\n\tBeta one', JSON.stringify(twoParas));
+  // ------------------------------------------------------------------
+  e3.two_paras = twoParas;
+  ok('E3 [line-scope successor]: a caret on the Beta line indents that line only - the Alpha lines keep the levels they had and the blank separator takes no tab',
+    twoParas === 'Alpha one\n\t\tAlpha two\n\n\tBeta one', JSON.stringify(twoParas));
 
   // ITEM 102'S TAB IS NOT BUILT HERE — the brief's own fence, asserted rather
   // than promised. Nothing in this wave touches a key handler.
@@ -685,6 +711,14 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   // ONE PARK (item 158): the E3 Tab fence, superseded when Tab was built. Otherwise this file is NEW and supersedes nothing of its own.
+  // FOUR MORE PARKS (Nick's line-scope ruling of 2026-09-25): the four E3 paragraph-scope checks, each superseded by its "[line-scope successor]".
+  const lineParks = [
+    ['one press indents the WHOLE PARAGRAPH, not the caret line', e3.one === 'Alpha one\n\tAlpha two'],
+    ['pressing again INCREASES the level', e3.two === 'Alpha one\n\t\tAlpha two'],
+    ['the level renders as indent with the MARKER LOW-INK (two .md-mark spans in the paragraph reading)', !!e3.marker && e3.marker.marks.length === 1 && e3.marker.marks[0] === '\t\t'],
+    ['a caret in the SECOND paragraph indents only that paragraph, blank separator untouched', e3.two_paras === 'Alpha one\n\t\tAlpha two\n\n\tBeta one'],
+  ];
+  for (const [what, pass] of lineParks) parkedChecks.push({ name: `PARKED (was "E3: ${what}") - Nick's ruling 2026-09-25, a line is a paragraph: the SAME fixture now indents the caret line only (default-leg successor "E3 [line-scope successor]")`, pass, detail: JSON.stringify(e3) });
   parkedChecks.push({ name: 'PARKED (was "E3 (fence): pressing TAB changes nothing - Tab-as-indent is item 102 and was NOT built here; the arrow is the only door this wave opens") - item 158 built Tab-as-indent: the SAME keystroke on the SAME fixture now indents the caret paragraph by one level (its default-leg successor is the check named "E3 (fence) [158 successor]")', pass: !!tabFence && tabFence.afterTab === tabFence.beforeTab.replace('\n\tBeta one', '\n\t\tBeta one'), detail: JSON.stringify(tabFence) });
   // The assertions this WAVE superseded live where they were written and are
   // parked there, in their own files, beside their successors:
@@ -697,7 +731,7 @@ if (process.env.HARNESS_PARKED === '1') {
   // this file falsified nothing, and it is auditable against the wave's own
   // offer record, which names every park by file and count.
   // eslint-disable-next-line no-console
-  console.log('\nITEM83F PARKED: 1 check (the E3 Tab-fence park of item 158, above) — HARNESS_PARKED=1 armed; the rest of this file parks nothing of its own. The wave\'s six parks live in fx3.mjs (five) and ab2.mjs (one), each beside its successor.');
+  console.log('\nITEM83F PARKED: 5 checks (the E3 Tab-fence park of item 158 and the four E3 line-scope parks, above) — HARNESS_PARKED=1 armed; the rest of this file parks nothing of its own. The wave\'s six parks live in fx3.mjs (five) and ab2.mjs (one), each beside its successor.');
 }
 
 const allChecks = checks.concat(parkedChecks);

@@ -100,6 +100,10 @@ const freshProject = async (app, kind, width = LAPTOP_W) => {
 
 const barButtons = async (app) =>
   app.evalJs("[...document.querySelectorAll('.sprint-actions button')].map(b => b.textContent.trim())");
+// FRAMED-DESK DISPLAY PASS (aa11f58, 2026-09-30) - the PLAN → door's NEW address: the mode strip's own row (framed surfaces only).
+const stripDoor = async (app) =>
+  app.evalJs("(() => { const d = document.querySelector('.desk-mode-strip [data-page-plan-door]'); return d ? d.textContent.trim() : null; })()");
+const dispPass = {};   // the display-pass observations, kept for the parked leg's records
 
 await withHarness(async (app) => {
   // ======================================================================
@@ -186,8 +190,18 @@ await withHarness(async (app) => {
   // persisted page at the new viewport).
   const prosePageId = await freshProject(app, 'book', LAPTOP_W);
   const proseLaptop = await barButtons(app);
-  ok('S2 @1280px: the prose project bar holds ONLY ["Pages","Plan →"] (the elder Plan flight tab retired)',
-    JSON.stringify(proseLaptop) === JSON.stringify(['Pages', 'Plan →']), JSON.stringify(proseLaptop));
+  // ---- PARKED - SUPERSEDED by the framed-desk display pass (aa11f58, 2026-09-30; Nick: "Looks good. Let's ship these changes.") ----
+  // Kept VERBATIM and no longer run. The pass moved the PLAN → door out of the right corner and into the mode strip's own row,
+  // so the framed prose bar holds ['Pages'] alone. CD4's own claim - the elder bare "Plan" flight tab is retired and the arrow door
+  // is the only Plan word - is untouched; only the door's address changed, and the successor asserts both.
+  //
+  // ok('S2 @1280px: the prose project bar holds ONLY ["Pages","Plan →"] (the elder Plan flight tab retired)',
+  //   JSON.stringify(proseLaptop) === JSON.stringify(['Pages', 'Plan →']), JSON.stringify(proseLaptop));
+  // ------------------------------------------------------------------
+  const doorLaptop = await stripDoor(app);
+  dispPass['1280'] = { bar: proseLaptop, door: doorLaptop };
+  ok('S2 @1280px [display-pass successor]: the prose project bar holds ONLY ["Pages"], and the "Plan →" door stands in the mode strip\'s row (the elder Plan flight tab still retired: no bare "Plan")',
+    JSON.stringify(proseLaptop) === JSON.stringify(['Pages']) && doorLaptop === 'Plan →', JSON.stringify(dispPass['1280']));
 
   // The .sprint-toggle now holds exactly one button, and nothing in the bar
   // navigates to the legacy /project/:id/board (structural retirement).
@@ -208,19 +222,42 @@ await withHarness(async (app) => {
   // (framed moved it out of top chrome in AB1/AB2). Either way the elder "Plan"
   // flight tab is gone and "Plan →" is present — that is the retirement CD4
   // proves, at every width.
-  for (const [w, tag, expected] of [
-    [FLOOR_W, 'floor 1100', ['Pages', 'Plan →']],
-    [WIDE_W, 'wide 2200', ['Pages', 'Plan →']],
-    [LEGACY_W, 'legacy 1000', ['Pages', 'Copy page text', 'Plan →']],
+  // ---- PARKED - SUPERSEDED by the framed-desk display pass (aa11f58), for the two FRAMED widths --------------------------------
+  // Kept VERBATIM and no longer run (the loop below is its successor). At 1100 and 2200 the door moved into the mode strip; the
+  // LEGACY bar (<1100, no framed strip) is unchanged and its row is carried over as it was.
+  //
+  // for (const [w, tag, expected] of [
+  //   [FLOOR_W, 'floor 1100', ['Pages', 'Plan →']],
+  //   [WIDE_W, 'wide 2200', ['Pages', 'Plan →']],
+  //   [LEGACY_W, 'legacy 1000', ['Pages', 'Copy page text', 'Plan →']],
+  // ]) {
+  //   await app.emulateDpr(1, w, 900);
+  //   await app.reload();
+  //   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'prose page @' + tag });
+  //   await sleep(200);
+  //   const bar = await barButtons(app);
+  //   const noBarePlan = !bar.includes('Plan');
+  //   ok(`S2 @${tag}px: the prose bar is ${JSON.stringify(expected)} — elder "Plan" flight tab retired (no bare "Plan"), "Plan →" present (framed + legacy consistent)`,
+  //     JSON.stringify(bar) === JSON.stringify(expected) && noBarePlan && bar.includes('Plan →'), JSON.stringify(bar));
+  // }
+  // ------------------------------------------------------------------
+  for (const [w, tag, expected, framed] of [
+    [FLOOR_W, 'floor 1100', ['Pages'], true],
+    [WIDE_W, 'wide 2200', ['Pages'], true],
+    [LEGACY_W, 'legacy 1000', ['Pages', 'Copy page text', 'Plan →'], false],
   ]) {
     await app.emulateDpr(1, w, 900);
     await app.reload();
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'prose page @' + tag });
     await sleep(200);
     const bar = await barButtons(app);
+    const door = await stripDoor(app);
     const noBarePlan = !bar.includes('Plan');
-    ok(`S2 @${tag}px: the prose bar is ${JSON.stringify(expected)} — elder "Plan" flight tab retired (no bare "Plan"), "Plan →" present (framed + legacy consistent)`,
-      JSON.stringify(bar) === JSON.stringify(expected) && noBarePlan && bar.includes('Plan →'), JSON.stringify(bar));
+    dispPass[tag] = { bar, door };
+    // the arrow door is present exactly once: in the strip when framed, in the bar on the legacy surface
+    const doorOk = framed ? (door === 'Plan →' && !bar.includes('Plan →')) : bar.includes('Plan →');
+    ok(`S2 @${tag}px [display-pass successor]: the prose bar is ${JSON.stringify(expected)} — elder "Plan" flight tab retired (no bare "Plan"), and "Plan →" present ${framed ? 'in the mode strip\'s row' : 'in the bar (legacy: unchanged)'}`,
+      JSON.stringify(bar) === JSON.stringify(expected) && noBarePlan && doorOk, JSON.stringify(dispPass[tag]));
   }
   void prosePageId;
 
@@ -331,12 +368,21 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "S1 (trusted pointer): on an UNPAIRED loose board the PAGE → door travels the FX10 named return (leaves the board)") — ITEM 91: the door now opens an unborn page carrying that board as its pin target, so the address CONTAINS the board id and the writer no longer leaves the board at all; live successor: this file\'s own live S1 section',
       /\/page\/new/.test(unpairedNow) && unpairedNow.includes('pin=cd4-unpaired'), unpairedNow);
   });
+  // FRAMED-DESK DISPLAY PASS (aa11f58, 2026-09-30) - THREE parks: the framed S2 bar checks, superseded when the PLAN → door moved into
+  // the mode strip's row. Records byte-frozen; probes re-verify the NEW truth from the default section's own observations.
+  const framedNow = (o) => !!o && JSON.stringify(o.bar) === JSON.stringify(['Pages']) && o.door === 'Plan →';
+  pok('PARKED (was "S2 @1280px: the prose project bar holds ONLY [\\"Pages\\",\\"Plan →\\"] (the elder Plan flight tab retired)") — display pass (aa11f58): the bar holds ["Pages"]; the door stands in the mode strip\'s row; live successor: this file\'s S2 @1280px [display-pass successor]',
+    framedNow(dispPass['1280']), JSON.stringify(dispPass['1280']));
+  pok('PARKED (was "S2 @floor 1100px: the prose bar is [\\"Pages\\",\\"Plan →\\"] — elder \\"Plan\\" flight tab retired (no bare \\"Plan\\"), \\"Plan →\\" present (framed + legacy consistent)") — display pass (aa11f58): same move; live successor: this file\'s S2 @floor 1100px [display-pass successor]',
+    framedNow(dispPass['floor 1100']), JSON.stringify(dispPass['floor 1100']));
+  pok('PARKED (was "S2 @wide 2200px: the prose bar is [\\"Pages\\",\\"Plan →\\"] — elder \\"Plan\\" flight tab retired (no bare \\"Plan\\"), \\"Plan →\\" present (framed + legacy consistent)") — display pass (aa11f58): same move; live successor: this file\'s S2 @wide 2200px [display-pass successor]',
+    framedNow(dispPass['wide 2200']), JSON.stringify(dispPass['wide 2200']));
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nCD4 PARKED: PASS (${parkedChecks.length} checks) — the two exit records parked, originals quoted, successors named.`
+    ? `\nCD4 PARKED: PASS (${parkedChecks.length} checks) — the two exit records and the three display-pass bar records parked, originals quoted, successors named.`
     : `\nCD4 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
