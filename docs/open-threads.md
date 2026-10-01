@@ -23770,3 +23770,29 @@ dashboard (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_ENDPOINT), then tell
 
 **MEANWHILE: Batch Eight’s pair is running on batch-eight @ 9c8d5c3**, re-launched clean after the void
 result above; this desk is not touching that checkout while it runs.
+
+## PRODUCTION BACKUPS — DEPLOYED AND VERIFIED: pg_dump 18.6, UPLOAD SUCCEEDED — 2026-10-01 (chat 1)
+
+**NICK: “done” — his three R2 values are on `wrizo-backup`.** **DEPLOYED, target proved first:**
+`cd` into `C:/Users/nickh/wrizo-backup-deploy` (the clone, outside `writer-studio`) — that directory had
+NO Railway link of its own and defaulted to `fabulous-essence` (the unrelated project, the item-98 hazard
+exactly as warned). **Explicitly linked** `railway link -p 431093f2-7565-459f-bd24-a8da259b97ac -e
+production -s wrizo-backup`, **confirmed by `railway status`: `writer-studio` / `production` /
+`wrizo-backup`**, tree clean. **Deployed** `railway up --service wrizo-backup --ci` (service named
+explicitly, as ordered) — “Deploy complete”, image installs `postgresql18-client`.
+
+**LOGS, read and reported (lines with nothing secret only):**
+> pg_dump (PostgreSQL) 18.6
+> Backup filesize: 664 kB
+> Uploading backup to S3...
+> Backup uploaded to S3...
+> DB backup complete...
+> Backup cron scheduled...
+**18.6 matches production’s Postgres 18. Upload succeeded.** **ONE LINE WITHHELD, on purpose: the log
+also printed “Using custom endpoint: https://…r2.cloudflarestorage.com” — the R2 ENDPOINT, one of
+Nick’s three values. Not quoted here, not relayed to Fable, consistent with “never handle the R2 keys or
+the endpoint.”** The connection it names succeeded (the upload above is the proof); the string itself is
+withheld.
+
+**BACKUPS ARE LIVE: `BACKUP_CRON_SCHEDULE=0 9 * * *`, `RUN_ON_STARTUP=true` already ran once (this
+deploy), nightly from here.**
