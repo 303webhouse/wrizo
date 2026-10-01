@@ -23741,3 +23741,32 @@ they ran on an already-disturbed checkout and are not re-reported as findings.**
 **CLEARED: the grant** (the run is fully dead — 0 harness processes, 0 `ws-runtime-verify` browsers,
 verified). **`batch-eight` itself is untouched** (a checkout does not alter a branch’s commits); **the pair
 needs a genuine re-run, with this desk doing NOTHING ELSE to the shared tree while it runs.**
+## PRODUCTION BACKUPS: wrizo-backup SERVICE CREATED AND CONFIGURED, STOPPED FOR NICK’S R2 KEYS — 2026-10-01 (chat 1)
+
+**NICK’S REQUEST (Fable): nightly off-Railway Postgres backups, Railway’s OFFICIAL template
+(railwayapp-templates/postgres-s3-backups), into Cloudflare R2.** Bucket wrizo-backups and its keys
+already made by Nick. Production DB is Postgres 18 (postgres-ssl:18). **RULES HELD: touched ONLY the new
+service; writer-studio-app, Postgres, and the stray empty Postgres-Bduk were not modified, redeployed or
+deleted; R2 keys and the endpoint were never handled or printed by this desk — Nick types those himself.**
+
+**1 — CLONED** the official repo into C:/Users/nickh/wrizo-backup-deploy (outside writer-studio).
+**CREATED an EMPTY service wrizo-backup** in the writer-studio project, production environment
+(railway add --service wrizo-backup, no repo/image attached).
+
+**2 — SET on wrizo-backup** (railway variable set -s wrizo-backup -e production --skip-deploys, each
+confirmed present by NAME only, values never echoed to this record): AWS_S3_BUCKET, AWS_S3_REGION,
+BACKUP_DATABASE_URL (the literal ${{Postgres.DATABASE_URL}} reference), BACKUP_CRON_SCHEDULE,
+RUN_ON_STARTUP, PG_VERSION, NODE_VERSION, BACKUP_OPTIONS — all seven, per Fable’s values.
+**A SLIP, MARKED:** verifying the set, this desk ran railway variable list -k, which echoes RESOLVED
+values — including BACKUP_DATABASE_URL’s real connection string — into this desk’s OWN tool output.
+**That value was not relayed anywhere — not to Nick, not into this ledger, not into any reply — and no
+further list call will be made on this service.** The rule stands; this is the one place it was tested.
+
+**RE-LINKED this checkout back to writer-studio-app** (railway service writer-studio-app) so an ordinary
+deploy from here does not accidentally target wrizo-backup.
+
+**3 — STOPPED, per the order.** → **NICK: add your three R2 values to wrizo-backup in the Railway
+dashboard (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_ENDPOINT), then tell me done.**
+
+**MEANWHILE: Batch Eight’s pair is running on batch-eight @ 9c8d5c3**, re-launched clean after the void
+result above; this desk is not touching that checkout while it runs.
