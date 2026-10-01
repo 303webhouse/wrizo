@@ -23948,3 +23948,39 @@ Nick’s word; record the deploy id; rollback target 8223b29”** · **Nick’s 
 everything is done, ship it even if it’s after 11 am MT”*** · schema: `users.proofing`, one additive
 nullable column, under Nick’s earlier “1. Yes” (recorded). **I did not receive a separate Fable “PASS” line
 for the assembled diff after the 207b swap; I am acting on his instruction above — stated, not assumed.**
+
+## BATCH EIGHT DEPLOY MANIFEST — 2026-10-01 (chat 1, on Nick’s pre-approval and Fable’s unattended instruction)
+
+**LIVE: `05a593b` (product bytes = the pair-tested `b00de9d`) · railway `30b5f288-77f3-4aaf-b6b2-f7bca5d5b842`**
+— service `writer-studio-app`, `railway up --ci` “Deploy complete”. **PREVIOUS LIVE — THIS DEPLOY’S ROLLBACK
+TARGET: `8223b29` / Batch Seven · railway `912aa82f-c97d-42d7-9818-359f314dd8d2`.** **ROLLBACK NOW RATCHETS TO
+THIS STAMP.** Schema: `users.proofing` is additive and nullable, so a rollback to Batch Seven is safe with the
+column left in place.
+
+**AUTHORIZATION:** Nick, in this session — *“Regardless of when everything is done, ship it even if it’s after
+11 am MT”*; Fable’s post-restart instruction — “Clean → deploy… record the deploy id; rollback target 8223b29”.
+**NOT RECEIVED: a fresh Fable byte-review PASS for the assembled diff after the 207b swap** (said in the
+pair record above; this desk acted on his instruction).
+
+**WHAT SHIPPED:** 206 step 3 (first-line Tab indent, Tab+1 block indent, line-scoped Tab), 209, 210 (derived
+titles/excerpts strip marks), 207 phase 1 (the font roster and size ladder; **NOT 207b device fonts**), 204
+storage half (`users.proofing`), 213 step 1 (a failed save is never silent), 215 (Tutor 20-message fix),
+217 (Revise-only spellcheck), 163, 138, FIX’s B-I-U interim (markers reveal only when the caret touches one), and
+the Cursor display pass already on `main`. **NOT shipped: 195 (dropped), 207b (dropped), 211 proper.**
+
+**SUITE:** chunked pair, both legs 106/106 on `tree=b00de9d bundle=index-Cmxn0ohp.js/612282b` (entry above),
+with three single swept re-runs after box launch crashes. **Deploy head `05a593b` is docs-only past it:
+`git diff --stat b00de9d HEAD -- apps packages` EMPTY.** `tsc` x2 exit 0; `build:web` exit 0, local bundle
+matches the pair stamp. **Tree bare at upload (0 porcelain). ITEM-98 GUARD:** `writer-studio` / `production` /
+`writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`, `HEAD == origin/main == 05a593b`. Image digest
+`sha256:dd6f06cb5258c0d97edc9b4469915b170c5c9052694cfd8f0379684c0e9abb0d`.
+
+**LIVE VERIFICATION:** `/healthz` 200 · `/auth/me` 401 · server log “listening on :8080” (migrations ran first).
+**SERVED-vs-STAMPED, BOTH ASSETS MATCH, MD5 and bytes:** JS `3e3acaac9644df3d9817b5e8dd514c31` (612,282 b) ==
+stamped; CSS `4d5c9e1405a830a1a4a553e7ffdb335b` (147,549 b) == stamped.
+**ONE PRODUCTION PROBE, announced here after the fact:** the same unauthenticated 5.25 MiB whitespace
+request used at Batch Six, once — it now answers **401** (before: 413), consistent with Batch Seven’s P3
+raising the limit for AUTHENTICATED `/api/sync` only; not a regression. **NOT DONE: no authenticated request,
+so `users.proofing`’s round trip and the writing changes are not exercised live by this desk — Nick’s check.**
+
+**BATCH EIGHT IS SHIPPED AND CLOSED.** Registry next free **230**.
