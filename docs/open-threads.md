@@ -23984,3 +23984,23 @@ raising the limit for AUTHENTICATED `/api/sync` only; not a regression. **NOT DO
 so `users.proofing`’s round trip and the writing changes are not exercised live by this desk — Nick’s check.**
 
 **BATCH EIGHT IS SHIPPED AND CLOSED.** Registry next free **230**.
+
+## BATCH NINE-LITE — HELD AT ASSEMBLY ON A NON-MECHANICAL CONFLICT (escexit vs 217) — 2026-10-01 (chat 1)
+
+**Nick’s word (recorded above): ship Batch Nine if Batch Eight is clean — Batch Eight is clean and live.**
+**Assembly started from `main` @ `6d9ece3` (Batch Eight included).** All five roster tips verified on origin
+(`item-esc-exit` `9f295fc`, `a11y-signin` `ebc3b6f`, `a11y-tutor-live-region` `22e6eaf`, `server-hardening`
+`b9d3db2`, `sync-integrity` `6da0964`); **none contains 207b’s or 195’s ancestry; none touches `migrate.ts`.**
+
+**THE FIRST MERGE, `item-esc-exit` @ `9f295fc`, CONFLICTS in `ForwardOnlyEditor.tsx` and it is NOT a pure
+append-append:** both sides edited the SAME `spellCheck` attribute on the same element. **Batch Eight’s 217
+made it `spellCheck={mode === ‘revise’}` (Nick’s Revise-only ruling); `escexit` still has the old
+`spellCheck={false}` and adds `aria-describedby={ariaDescribedBy}`.** Keeping both blocks would DUPLICATE a
+JSX attribute (a `tsc` error); the right resolution is to keep `aria-describedby` and 217’s `spellCheck`, but
+that is an edit to a line both owners touched — **not mine to make under the standing rule.** *(Reading:
+the 217 side must win the `spellCheck` value or Nick’s ruling regresses; FIX should confirm.)*
+
+**ABORTED; nothing was merged or run. `batch-nine` was deleted; `main` is untouched @ `6d9ece3`+docs. HELD,
+not shipped: owner is FIX — rebase `escexit` onto `main` (it will inherit 217), re-offer, and Batch Nine-lite
+assembles again.** The other four branches were not tried (a later conflict could also arise); no Fable PASS
+for Nine-lite has reached this desk either, so it would have been held on that gate regardless.
