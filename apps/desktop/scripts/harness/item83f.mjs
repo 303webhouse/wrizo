@@ -297,22 +297,13 @@ await withHarness(async (app) => {
     };
   })()`);
 
-  ok('E2: the instruments row is TYPEWRITER · PROGRESS — Full Screen has left the cell it used to occupy',
-    JSON.stringify(footShape.rowLabels) === JSON.stringify(['Typewriter', 'Progress'])
-      && footShape.fullScreenInRow === false,
+  ok('E2: the instruments row is the Settings button — Full Screen is not in this drawer',
+    JSON.stringify(footShape.rowLabels) === JSON.stringify(['Settings'])
+      && footShape.fullScreenInRow === false && footShape.fullScreenTotal === 0,
     JSON.stringify(footShape));
 
-  ok('E2: Full Screen sits on the progress bar line itself, and there is EXACTLY ONE of it in the panel — a move, never a second instance left behind',
-    footShape.fullScreenInGoalLine === true && footShape.fullScreenTotal === 1,
-    JSON.stringify(footShape));
-
-  ok('E2: the bar genuinely yielded the room — the hairline is strictly narrower than the goal block it used to span, which is the difference between sharing a line and merely sitting near one',
-    footShape.barWidth !== null && footShape.goalInnerWidth !== null
-      && footShape.barWidth > 0 && footShape.barWidth < footShape.goalInnerWidth - 1,
-    JSON.stringify(footShape));
-
-  ok('E2: the alignment is LAYOUT — a flex row with align-items:center, not a nudged margin (the fence the brief sets; the probe measures the resulting centres at both widths)',
-    footShape.lineDisplay === 'flex' && footShape.lineAlign === 'center',
+  ok('E2: the progress hairline remains, and Full Screen does not share a line with it',
+    footShape.barWidth !== null && footShape.barWidth > 0 && footShape.fullScreenInGoalLine === false,
     JSON.stringify(footShape));
 
   // The Structure half, in DOM-order form. Recorded as a GUARD, not as work:
@@ -326,11 +317,11 @@ await withHarness(async (app) => {
     const panelKids = [...document.querySelector('.wz-sliver-panel').children].map(el => el.className);
     return {
       headings: sections.map(s => (s.querySelector('.wz-sliver-h') || {}).textContent),
-      structureIsLast: sections.length > 0 && sections[sections.length - 1].classList.contains('wz-sliver-structure-zone'),
+      structureIsLast: sections.length > 0 && sections[sections.length - 1].classList.contains('wz-sliver-templates'),
       panelKids,
     };
   })()`);
-  ok('E2 (GUARD, already true at the branch point): Structure is the LAST zone of the tab body, with the goal foot and the instruments row following it — so it is the last thing before the foot',
+  ok('E2 (GUARD): Templates is the LAST zone of the tab body, with the goal foot and the instruments row following it',
     zoneOrder.structureIsLast === true
       && zoneOrder.panelKids.length === 3
       && zoneOrder.panelKids[0].includes('wz-sliver-body')

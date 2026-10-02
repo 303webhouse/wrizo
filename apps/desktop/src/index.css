@@ -5267,6 +5267,7 @@ a:focus-visible,
    PAGE SETUP: square corners, 1px --line, olive focus. */
 .wz-tw-number{ display:flex; align-items:center; gap:8px; margin:6px 0 2px; }
 .wz-tw-number > span{ flex:1 1 auto; font-size:11px; color:var(--text-mid); }
+.wz-tw-number > .wz-tw-unit{ flex:0 0 auto; }
 .wz-tw-number input{ width:64px; background:var(--ink-950);
   border:1px solid var(--ink-border); color:var(--text-hi);
   font-family:var(--font-ui); font-size:12px; padding:3px 6px; border-radius:0; }

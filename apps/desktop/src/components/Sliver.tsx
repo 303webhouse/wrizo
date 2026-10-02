@@ -16,7 +16,6 @@ import { countLineEquivalents } from '../store/lineEquivalents';
 // repositioning their popover to sit inline in the sliver's own scrolling
 // panel instead of ModeStage's absolute stage-corner placement.
 import { Seg } from './ModeStage';
-import { FullscreenToggle } from './ChromeControls';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import type { FormatAction, StructureKind } from '../store/draftFormat';
 import type { PageKindSetting, StyleGuide } from '../types';
@@ -796,12 +795,10 @@ function SliverToggle({ label, on, onToggle, className }: { label: string; on: b
 // CD1 S6 — the goal block, the sliver's foot. Timer (opt-in, the existing
 // persisted `settings.timer` — a quiet numeral, `--text-mid`, mirroring the
 // pre-existing session clock's own styling); the progress hairline (2px,
-// present only when a target exists); one inline goal edit (a number input,
-// Enter commits, an explicit Clear disables every instrument — the brief's
-// own "clearing it disables every instrument" law). No numbers are
-// announced beyond the writer's OWN edit affordance reading back the
-// target itself — the hairline never labels itself with a fraction/percent,
-// and nothing here fires an event or shows a toast on arrival.
+// present only when a target exists and instruments are on). The goal
+// NUMBER is edited under Progress Tracking, not here. No numbers are
+// announced on the hairline — it never labels itself with a fraction or
+// percent, and nothing here fires an event or shows a toast on arrival.
 //
 // Review fix (post-CD1) — `firstWriteAt` (Sliver's own state, lifted so it
 // survives this component's re-renders) anchors the clock to the first
@@ -811,15 +808,10 @@ function SliverToggle({ label, on, onToggle, className }: { label: string; on: b
 // first keystroke — same as that pattern always has — it just doesn't
 // start ADVANCING until they do).
 function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { target: number | null; lines: number; fraction: number; timerOn: boolean; firstWriteAt: number | null }) {
-  const { t } = useDeskLexicon();
-  // FX3 S5 — the instruments panel's own on/off (SliverInstrumentRow,
-  // below), an ADDITIONAL gate on the hairline alongside the existing
-  // target-null check — see GoalGlow.tsx's matching comment for the same
-  // "additive, not a replacement" reasoning (clearing the target already
-  // hides this; this just lets a writer hide it without losing the number).
+  // The goal NUMBER is set under Progress Tracking. This foot only shows the
+  // hairline and, when the timer is on, the clock. Full screen is not here:
+  // the app already offers it outside this drawer.
   const settings = useWritingSettings();
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(() => String(target ?? DEFAULT_GOAL_LINES));
   const [elapsedMs, setElapsedMs] = useState(0);
 
   useEffect(() => {
@@ -829,13 +821,6 @@ function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { ta
     return () => clearInterval(i);
   }, [timerOn, firstWriteAt]);
 
-  const commit = () => {
-    const n = Number(draft);
-    setWritingGoal(Number.isFinite(n) && n > 0 ? Math.round(n) : null);
-    setEditing(false);
-  };
-  const clear = () => { setWritingGoal(null); setEditing(false); };
-
   const s = Math.floor(elapsedMs / 1000);
   const clock = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
@@ -843,52 +828,10 @@ function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { ta
     <div className="wz-sliver-goal" data-target={target ?? ''} data-lines={lines}>
       {timerOn && <div className="wz-sliver-goal-timer">{clock}</div>}
 
-      {/* item 83 errata E2 — THE PROGRESS BAR'S OWN LINE, which Full Screen
-          now shares. Aligned BY LAYOUT (one flex row, `align-items:center`),
-          never by a nudged margin: the hairline is 2px and the toggle is a
-          text button, so any hand-tuned offset would be a number that drifts
-          the moment either changes. The hairline flexes and Full Screen does
-          not, so the bar gives up exactly the width the toggle needs.
-          The row stands whether or not the hairline is in it — a writer who
-          clears the goal loses the bar (its own pre-existing law), and Full
-          Screen must not go with it. */}
-      <div className="wz-sliver-goal-line">
-        {target != null && settings.instrumentsOn && (
-          <div className="wz-sliver-goal-hairline" aria-hidden="true">
-            <div className="wz-sliver-goal-hairline-fill" style={{ width: `${(fraction * 100).toFixed(1)}%` }} />
-          </div>
-        )}
-        {/* `data-foot-fullscreen` is a behaviour-free contract marker in this
-            file's own `data-menus-*`/`data-*` idiom, so scripts/menus-probe.mjs
-            can name the toggle's own box. FullscreenToggle itself is NOT
-            touched: it is shared with App.tsx's corner cluster and the
-            Cascade's Settings category (ChromeControls.tsx), so its class-less,
-            inline-styled shape stays exactly as it is everywhere. */}
-        <span className="wz-sliver-goal-fullscreen" data-foot-fullscreen=""><FullscreenToggle /></span>
-      </div>
-
-      {editing ? (
-        <div className="wz-sliver-goal-edit-row">
-          <input
-            className="wz-sliver-goal-edit-input"
-            type="number"
-            min={1}
-            value={draft}
-            onChange={e => setDraft(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } if (e.key === 'Escape') { e.preventDefault(); setEditing(false); } }}
-            autoFocus
-          />
-          <button type="button" className="wz-sliver-goal-edit-commit" onClick={commit}>{t('goalSet')}</button>
-          <button type="button" className="wz-sliver-goal-edit-clear" onClick={clear}>{t('goalClear')}</button>
+      {target != null && settings.instrumentsOn && (
+        <div className="wz-sliver-goal-hairline" aria-hidden="true">
+          <div className="wz-sliver-goal-hairline-fill" style={{ width: `${(fraction * 100).toFixed(1)}%` }} />
         </div>
-      ) : (
-        <button
-          type="button"
-          className="wz-sliver-goal-edit"
-          onClick={() => { setDraft(String(target ?? DEFAULT_GOAL_LINES)); setEditing(true); }}
-        >
-          {target != null ? `${t('goalLabel')}: ${target} ${t('goalUnitLines')}` : t('goalEdit')}
-        </button>
       )}
     </div>
   );
@@ -963,8 +906,8 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
   const settings = useWritingSettings();
 
   // The foot is one three-dot menu. Typewriter, progress, and the remaining
-  // preferences open together, under those three headings. Full screen stays
-  // on the progress line.
+  // preferences open together, under those three headings. Full screen is
+  // not in this drawer — the app chrome already offers it.
   //
   // Nick's ruling: "I don't want a separate 'Instruments' toggle/menu. All of
   // the options in it should be set in one of the other settings options. Here
@@ -1121,9 +1064,12 @@ function ProgressFields({ target, hasMilestones }: { target: number | null; hasM
         opts={[['lines', 'Lines'], ['words', 'Words'], ['time', 'Time']]}
         onPick={v => setGoalUnit(v as GoalUnit)} />
       <label className="wz-tw-number">
-        <span>{t('footTarget')}</span>
-        <input type="number" min={1} value={draft}
-          onChange={e => setDraft(e.target.value)} onBlur={commit} />
+        <span>{t('goalLabel')}</span>
+        <input type="number" min={1} value={draft} aria-label={t('goalLabel')}
+          onChange={e => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } }} />
+        <span className="wz-tw-unit">{unit === 'words' ? 'words' : unit === 'time' ? 'min' : t('goalUnitLines')}</span>
       </label>
       <Seg label="Progress" value={settings.progress} opts={progressOpts} onPick={v => setWritingSettings({ progress: v as ProgressMetric })} />
       {settings.progress === 'words' && (
