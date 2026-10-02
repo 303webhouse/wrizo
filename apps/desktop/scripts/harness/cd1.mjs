@@ -179,7 +179,7 @@ await withHarness(async (app) => {
   ok('S2: the sliver grip is present on a framed prose page', await app.evalJs("!!document.querySelector('.wz-sliver-grip')"));
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft').click()");
   await sleep(150);
-  const draftSpotCheck = await app.evalJs("!!document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Bold\"]')");
+  const draftSpotCheck = await app.evalJs("!!document.querySelector('.wz-sliver-format .mode-tbtn[title^=\"Bold\"]')");
   ok('S2: opening the sliver in Draft carries the format tools (Bold present) — moved whole from ToolRail',
     draftSpotCheck, String(draftSpotCheck));
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useDeskLexicon } from '../store/deskLexicon';
+import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { TypeControl, type TypeControlProps } from './TypeControl';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
@@ -528,6 +528,47 @@ function BulletMark({ kind }: { kind: 'disc' | 'circle' | 'square' }) {
   );
 }
 
+const BULLET_STYLES: readonly { action: FormatAction; kind: 'disc' | 'circle' | 'square'; term: DeskTermId }[] = [
+  { action: 'bullet', kind: 'disc', term: 'draftBullet' },
+  { action: 'bullet-circle', kind: 'circle', term: 'draftBulletCircle' },
+  { action: 'bullet-square', kind: 'square', term: 'draftBulletSquare' },
+];
+
+function BulletControl({ onFormat, t }: { onFormat: (action: FormatAction) => void; t: (term: DeskTermId) => string }) {
+  const [open, setOpen] = useState(false);
+  const [style, setStyle] = useState(BULLET_STYLES[0]);
+  return (
+    <div className="wz-bullet-control">
+      <button type="button" className="mode-tbtn" data-format-glyph={style.action} title={t(style.term)} aria-label={t(style.term)} onClick={() => onFormat(style.action)}>
+        <BulletMark kind={style.kind} />
+      </button>
+      <button type="button" className="mode-tbtn wz-bullet-toggle" aria-expanded={open} aria-label={t('draftBulletStyles')} title={t('draftBulletStyles')} onClick={() => setOpen(v => !v)}>
+        <span aria-hidden="true">▾</span>
+      </button>
+      {open && (
+        <div className="wz-bullet-menu" role="menu">
+          {BULLET_STYLES.map(s => (
+            <button key={s.action} type="button" role="menuitem" className="mode-tbtn" data-format-glyph={s.action} title={t(s.term)} aria-label={t(s.term)} onClick={() => { setStyle(s); setOpen(false); onFormat(s.action); }}>
+              <BulletMark kind={s.kind} />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TemplateIcon({ kind }: { kind: 'outline' | 'bibliography' | 'title' }) {
+  const svg = { width: 16, height: 16, viewBox: '0 0 16 16', 'aria-hidden': true as const, fill: 'none', stroke: 'currentColor', strokeWidth: 1.3, strokeLinecap: 'round' as const, className: 'wz-format-mark' };
+  if (kind === 'outline') {
+    return <svg {...svg}><path d="M3 3h10M5 7h8M7 11h6M3 15h8" /></svg>;
+  }
+  if (kind === 'bibliography') {
+    return <svg {...svg}><path d="M3 2.5v11M4.2 2.5h8.3v11H4.2zM6.2 5.5h4.5M6.2 8h4.5M6.2 10.5h3" /></svg>;
+  }
+  return <svg {...svg}><path d="M3.5 2.5h9v11h-9zM6 6.2h4" /></svg>;
+}
+
 function SliverToolsBody({ content }: { content: SliverContent }) {
   const { t } = useDeskLexicon();
 
@@ -610,7 +651,7 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
               and collapse whatever text was selected (moved verbatim). */}
           {/* ITEM 83 M5 (R1) — STYLING's B·I·U leads Draft too, so the two
               prose modes read as one hand with different reach. */}
-          <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
+          <div className="wz-sliver-format wz-sliver-format--letters" onMouseDown={e => e.preventDefault()}>
             <button type="button" className="mode-tbtn" data-on={content.format.boldOn ? 'true' : 'false'} aria-pressed={!!content.format.boldOn} title={t('stylingBold')} onClick={() => content.format!.onFormat('bold')}><b>B</b></button>
             <button type="button" className="mode-tbtn" data-on={content.format.italicOn ? 'true' : 'false'} aria-pressed={!!content.format.italicOn} title={t('stylingItalic')} onClick={() => content.format!.onFormat('italic')}><i>I</i></button>
             <button type="button" className="mode-tbtn" data-on={content.format.underlineOn ? 'true' : 'false'} aria-pressed={!!content.format.underlineOn} title={t('stylingUnderline')} onClick={() => content.format!.onFormat('underline')}><u>U</u></button>
@@ -629,9 +670,7 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
               (store/draftFormat.ts documents the tokens and why they are not
               metadata). */}
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
-            <button type="button" className="mode-tbtn" data-format-glyph="bullet" title={t('draftBullet')} aria-label={t('draftBullet')} onClick={() => content.format!.onFormat('bullet')}><BulletMark kind="disc" /></button>
-            <button type="button" className="mode-tbtn" data-format-glyph="bullet-circle" title={t('draftBulletCircle')} aria-label={t('draftBulletCircle')} onClick={() => content.format!.onFormat('bullet-circle')}><BulletMark kind="circle" /></button>
-            <button type="button" className="mode-tbtn" data-format-glyph="bullet-square" title={t('draftBulletSquare')} aria-label={t('draftBulletSquare')} onClick={() => content.format!.onFormat('bullet-square')}><BulletMark kind="square" /></button>
+            <BulletControl onFormat={content.format!.onFormat} t={t} />
             <button type="button" className="mode-tbtn" title={t('draftQuote')} onClick={() => content.format!.onFormat('quote')}>&ldquo;</button>
             {/* ITEM 83 ERRATA E3, THE OUTDENT PARTNER (Nick's ruling) — the exact
                 decrement of Indent beside it, floored at zero, levels counted in
@@ -674,113 +713,13 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           name made a live assertion false without any ruling having changed.
           Caught by the suite. The picker's name stays retired. */}
       {content.kind === 'draft' && (
-        <div className="wz-sliver-section wz-sliver-structure-zone">
-          <div className="wz-sliver-h">{t('railStructure')}</div>
-
-          {/* ITEM 114 (item 83 errata E4) — THE PAGE'S DECLARED KIND.
-              PLACEHOLDERS, by Nick's own word: they render and they persist per
-              page, and nothing downstream is wired — the Revise linkage and
-              footnotes are deferred by his word, not by omission. Nothing is
-              greyed, because what isn't built doesn't render (G3).
-
-              ► THE SCREENPLAY NAME COLLISION — HALF-ANSWERED HERE, NOT
-              RESOLVED. A kind chip reading "Screenplay" now stands in the same
-              zone as `Convert to Screenplay…`, which is a consequential one-way
-              act behind a confirm dialog. The collision is REPORTED TO NICK
-              with a recommendation and is his to settle; what this markup does
-              is make the two unmistakable in the meantime, and it does it three
-              ways at once rather than by renaming either control:
-                · SEPARATE SUB-LABELS that name the difference in words — "This
-                  page is" over the chips, "Change the page itself" over the
-                  act. That is the distinction, said out loud.
-                · A DIFFERENT CONTROL SHAPE. The kinds are a radiogroup of small
-                  chips wearing the olive at-rest selection law; the act is the
-                  full-width bordered `.wz-cascade-action` it has always been,
-                  still ending in the ellipsis that promises a dialog.
-                · A RULE BETWEEN THEM, so the eye reads two zones and not one
-                  list.
-              Neither control is renamed and neither is merged. Merging would
-              make a reversible setting inherit a destructive act's confirm, or
-              an act inherit a setting's silence.
-
-              And a note the M5 comment below earns: the chips ARE, visually,
-              the Prose | Screenplay tablist that R13.iv withdrew from this very
-              zone for "promising free switching". The difference is that free
-              switching is now the TRUTH — a kind chip really is a reversible
-              per-page setting that touches not one character of the writer's
-              text. The tablist's sin was dressing a conversion as a switch;
-              these chips are a switch dressed as a switch. */}
-          {content.pageKind && content.onPickKind && (<>
-          <div className="wz-sliver-sub" id="wz-structure-kind-label">{t('structureKindLabel')}</div>
-          <div className="wz-page-setup-seg" role="radiogroup" aria-labelledby="wz-structure-kind-label">
-            {PAGE_KINDS.map(k => (
-              <button
-                key={k}
-                type="button"
-                role="radio"
-                className="wz-page-setup-chip"
-                data-page-kind={k}
-                aria-checked={content.pageKind === k}
-                onClick={() => content.onPickKind!(k)}
-              >
-                {t(KIND_LABEL[k])}
-              </button>
-            ))}
+        <div className="wz-sliver-section wz-sliver-templates">
+          <div className="wz-sliver-h">{t('railTemplates')}</div>
+          <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
+            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('templateOutline')} aria-label={t('templateOutline')}><TemplateIcon kind="outline" /></button>
+            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('templateBibliography')} aria-label={t('templateBibliography')}><TemplateIcon kind="bibliography" /></button>
+            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('templateTitlePage')} aria-label={t('templateTitlePage')}><TemplateIcon kind="title" /></button>
           </div>
-
-          {/* G4's IN-PLACE DISCLOSURE: the style guides appear only when
-              Research is the kind, beneath it, at the same depth — never a
-              second level, and never four greyed buttons waiting for a reason.
-              MLA is preselected on the first reveal by reading through
-              STYLE_GUIDE_DEFAULT, which is a READ default: nothing is written
-              to the page until the writer picks, so revealing this row does not
-              dirty a page by itself. */}
-          {content.pageKind === 'research' && (
-            <>
-              <div className="wz-sliver-sub" id="wz-structure-guide-label">{t('structureStyleGuideLabel')}</div>
-              <div className="wz-page-setup-seg wz-page-setup-seg--wrap" role="radiogroup" aria-labelledby="wz-structure-guide-label">
-                {STYLE_GUIDES.map(g => (
-                  <button
-                    key={g}
-                    type="button"
-                    role="radio"
-                    className="wz-page-setup-chip"
-                    data-style-guide={g}
-                    aria-checked={content.styleGuide === g}
-                    onClick={() => content.onPickStyleGuide!(g)}
-                  >
-                    {t(STYLE_GUIDE_LABEL[g])}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-          </>)}
-
-          <div className="wz-sliver-rule" aria-hidden="true" />
-          <div className="wz-sliver-sub">{t('structureActLabel')}</div>
-          {/* ITEM 83 M5 (DR3's default, per the brief's §0) — the Prose |
-              Screenplay TABLIST retires from the panel. A tablist's dress
-              promises free switching; conversion is a consequential one-way
-              act behind its own confirm dialog. Its HOME was always right (an
-              instrument acting on the work — G1 puts it in the hand); only its
-              clothes were mode clothes on a non-mode. One verb row now, with
-              its destination named in the control itself — never a bare
-              "Convert", which is the bench's named enemy. The surface itself
-              says where you are: the courier measure announces screenplay
-              louder than any tab could.
-              ITEM 83 ERRATA E4 — UNCHANGED, deliberately. The name stays
-              (destination-named verbs are the bench law that put it there), the
-              ellipsis stays, the confirm stays. Only its neighbourhood grew a
-              label saying what it is. */}
-          <button
-            type="button"
-            className="wz-cascade-action"
-            aria-haspopup="dialog"
-            onClick={() => content.onSwitchStructure(content.structure === 'prose' ? 'screenplay' : 'prose')}
-          >
-            {content.structure === 'prose' ? t('draftConvertToScreenplay') : t('draftConvertToProse')}
-          </button>
         </div>
       )}
 

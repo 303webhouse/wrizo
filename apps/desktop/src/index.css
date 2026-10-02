@@ -3625,7 +3625,15 @@ a:focus-visible,
 .wz-sliver-item-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-sliver-format{ display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
 .wz-sliver-format .mode-tbtn{ display:inline-flex; align-items:center; justify-content:center; }
+.wz-sliver-format--letters{ flex-wrap:nowrap; }
+.wz-sliver-format--letters .mode-tbtn{ flex:1 1 0; min-width:0; padding:0 2px; }
 .wz-format-mark{ display:block; }
+.wz-bullet-control{ position:relative; display:inline-flex; align-items:center; }
+.wz-bullet-toggle{ width:16px; min-width:16px; padding:0; font-size:9px; }
+.wz-bullet-menu{ position:absolute; top:100%; left:0; z-index:40; display:flex; flex-direction:column; gap:2px;
+  padding:4px; background:var(--ink-900); border:1px solid var(--ink-border); }
+.wz-template-btn{ color:var(--text-low); opacity:.45; cursor:default; }
+.wz-template-btn:hover{ color:var(--text-low); background:none; border-color:transparent; }
 /* ITEM 207 - THE TYPE CONTROL (TypeControl.tsx). As minimal as a strip menu gets: a face button, a `-` `+` pair, and in
    the full form a number between them. No heading, no caption. The listbox drops in FLOW inside the drawer (never a
    second floating panel), each row set in its own face, the current one olive (where you are - the sliver's rest law). */
@@ -4636,7 +4644,7 @@ a:focus-visible,
 .md-bullet{ padding-left:1.4em; text-indent:-1.4em; }
 .md-bullet::before{ content:'\2022'; display:inline-block; width:1.4em; text-indent:0; }
 .md-bullet-circle::before{ content:'\25E6'; }
-.md-bullet-square::before{ content:''; height:1em; background:linear-gradient(currentColor, currentColor) center / 0.45em 0.45em no-repeat; }
+.md-bullet-square::before{ content:''; height:1em; vertical-align:middle; background:linear-gradient(currentColor, currentColor) center / 0.42em 0.42em no-repeat; }
 .md-bullet.md-revealed::before{ content:none; background:none; }
 
 /* AB2 S2 DoD — the typewriter's hold-band on the SCRIPT surface, container-

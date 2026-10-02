@@ -203,7 +203,7 @@ await withHarness(async (app) => {
   })()`);
   await openSliver(app);
   await sleep(150);
-  await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Bold\"]').click()");
+  await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title^=\"Bold\"]').click()");
   await sleep(150);
   const bolded = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
   ok('S1 (a) precondition: Bold wraps the selection in ** conventions',
