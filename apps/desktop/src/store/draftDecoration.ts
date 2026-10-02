@@ -123,7 +123,8 @@ function decorateInlineForCard(text: string, caret: number | null): string {
 // display/visibility - see decorateInlineForCard's header) and revealed while the caret is within or beside it, so the
 // writer can still reach and delete it. Prefixes may stack (`> - `, `>< ` over a heading) and may follow leading tabs.
 const LINE_CLASS: Record<string, string> = {
-  'align-center': 'md-align-center', 'align-right': 'md-align-right', block: 'md-block', quote: 'md-quote', bullet: 'md-bullet',
+  'align-center': 'md-align-center', 'align-right': 'md-align-right', block: 'md-block', quote: 'md-quote',
+  bullet: 'md-bullet', 'bullet-circle': 'md-bullet md-bullet-circle', 'bullet-square': 'md-bullet md-bullet-square',
 };
 
 function decorateLineForCard(rawLine: string, caret: number | null): string {
@@ -145,7 +146,11 @@ function decorateLineForCard(rawLine: string, caret: number | null): string {
       heading = { text: t.text };
     } else {
       flushTabs();
-      const reveal = caret !== null && caret >= t.start && caret <= t.end;
+      // A bullet's stored token (`- `, `-+ `, `-= `) is not something to edit by
+      // hand. Showing it when the caret touches the mark puts `-=` on the page.
+      // The glyph stays. Pressing the same style again removes the list.
+      const isBullet = t.kind === 'bullet' || t.kind === 'bullet-circle' || t.kind === 'bullet-square';
+      const reveal = !isBullet && caret !== null && caret >= t.start && caret <= t.end;
       const markCls = reveal ? 'md-mark' : 'md-mark md-mark-hidden';
       open += head + `<span class="md-line ${LINE_CLASS[t.kind]}${reveal ? ' md-revealed' : ''}"><span class="${markCls}">${escHtml(t.text)}</span>`;
       head = '';

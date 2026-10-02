@@ -515,6 +515,19 @@ function FormatMark({ kind }: { kind: 'outdent' | 'indent' | 'left' | 'center' |
   );
 }
 
+/** A list, not a lone dot. The mark at the left of the lines is the style. */
+function BulletMark({ kind }: { kind: 'disc' | 'circle' | 'square' }) {
+  const ys = [3, 8, 13];
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" className="wz-format-mark">
+      {ys.map((y) => kind === 'square'
+        ? <rect key={y} x="1.2" y={y - 1.15} width="2.3" height="2.3" fill="currentColor" />
+        : <circle key={y} cx="2.35" cy={y} r="1.15" fill={kind === 'disc' ? 'currentColor' : 'none'} stroke={kind === 'circle' ? 'currentColor' : 'none'} strokeWidth="1.3" />)}
+      <path d="M6 3h8M6 8h8M6 13h6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function SliverToolsBody({ content }: { content: SliverContent }) {
   const { t } = useDeskLexicon();
 
@@ -616,7 +629,9 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
               (store/draftFormat.ts documents the tokens and why they are not
               metadata). */}
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
-            <button type="button" className="mode-tbtn" title={t('draftBullet')} onClick={() => content.format!.onFormat('bullet')}>•</button>
+            <button type="button" className="mode-tbtn" data-format-glyph="bullet" title={t('draftBullet')} aria-label={t('draftBullet')} onClick={() => content.format!.onFormat('bullet')}><BulletMark kind="disc" /></button>
+            <button type="button" className="mode-tbtn" data-format-glyph="bullet-circle" title={t('draftBulletCircle')} aria-label={t('draftBulletCircle')} onClick={() => content.format!.onFormat('bullet-circle')}><BulletMark kind="circle" /></button>
+            <button type="button" className="mode-tbtn" data-format-glyph="bullet-square" title={t('draftBulletSquare')} aria-label={t('draftBulletSquare')} onClick={() => content.format!.onFormat('bullet-square')}><BulletMark kind="square" /></button>
             <button type="button" className="mode-tbtn" title={t('draftQuote')} onClick={() => content.format!.onFormat('quote')}>&ldquo;</button>
             {/* ITEM 83 ERRATA E3, THE OUTDENT PARTNER (Nick's ruling) — the exact
                 decrement of Indent beside it, floored at zero, levels counted in

@@ -4635,7 +4635,9 @@ a:focus-visible,
    stays a real (collapsed) character; while the caret is at it (`.md-revealed`) the literal hyphen shows instead of the glyph. */
 .md-bullet{ padding-left:1.4em; text-indent:-1.4em; }
 .md-bullet::before{ content:'\2022'; display:inline-block; width:1.4em; text-indent:0; }
-.md-bullet.md-revealed::before{ content:none; }
+.md-bullet-circle::before{ content:'\25E6'; }
+.md-bullet-square::before{ content:''; height:1em; background:linear-gradient(currentColor, currentColor) center / 0.45em 0.45em no-repeat; }
+.md-bullet.md-revealed::before{ content:none; background:none; }
 
 /* AB2 S2 DoD — the typewriter's hold-band on the SCRIPT surface, container-
    mode (the sheet lives inside the bounded .desk-frame-scroll-cap — finding

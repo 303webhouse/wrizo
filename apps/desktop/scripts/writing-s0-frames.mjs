@@ -29,7 +29,7 @@ const MODES = ['Free Write', 'Draft', 'Revise'];
 // [frame id, button title]  (titles are the lexicon's own words)
 const TOOLS = [
   ['bold', 'Bold'], ['italic', 'Italic'], ['underline', 'Underline'], ['strike', 'Strikethrough'],
-  ['heading', 'Heading'], ['bullet', 'Bulleted list'], ['quote', 'Block quote'],
+  ['heading', 'Heading'], ['bullet', 'Round bullet'], ['quote', 'Block quote'],
   ['outdent', 'Outdent'], ['indent', 'Indent'],
   ['align-left', 'Align left'], ['align-center', 'Align centre'], ['align-right', 'Align right'],
 ];

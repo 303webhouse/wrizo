@@ -99,6 +99,9 @@ function run(mod) {
   check('LINES: Left clears alignment on every selected line', press('>< a\n>> b', 0, 9, 'align-left').text, 'a\nb');
   check('LINES: Bullet on a centred line stacks outside the alignment (the last applied is outermost), and toggling it off finds it again', press('>< title', 3, 3, 'bullet', 'bullet').trail, ['- >< title', '>< title']);
   check('LINES: Bullet on an indented line goes AFTER the tabs (so Outdent still finds them)', press('\tnote', 2, 2, 'bullet').text, '\t- note');
+  check('BULLET: hollow replaces the round mark instead of stacking, and a second press clears it', [press('Milk', 1, 1, 'bullet', 'bullet-circle').text, press('Milk', 1, 1, 'bullet-circle', 'bullet-circle').text], ['-+ Milk', 'Milk']);
+  check('BULLET: square replaces hollow', press('-+ Milk', 4, 4, 'bullet-square').text, '-= Milk');
+  check('BULLET: round replaces square', press('-= Milk', 4, 4, 'bullet').text, '- Milk');
   check('LINES: blank lines in a selection are left blank', press('a\n\nb', 0, 4, 'bullet').text, '- a\n\n- b');
   check('LINES: a single caret still acts on its own line only (unchanged)', press(THREE, 8, 8, 'bullet').text, 'alpha\n- beta\ngamma');
 
@@ -128,7 +131,7 @@ function run(mod) {
   // ---- ITEM 210: TITLES AND EXCERPTS ARE PLAIN TEXT (Nick: the title bar read "**TESTING** THE *DATABASE* SYNC") ----
   const { firstLine, plainLines, boardName, substantialLines } = mod;
   check('TITLES: Nick\'s own title - `**TESTING** THE *DATABASE* SYNC` - derives as plain words', firstLine('**TESTING** THE *DATABASE* SYNC'), 'TESTING THE DATABASE SYNC');
-  check('TITLES: every kind of markup goes - heading mark, block token, bullet, quote, centring, tabs, strike, underline, nested', ['# Big Title', '>| >| Indented', '- a bullet', '> quoted', '>< centred', '\t\ttabbed', '~~struck~~ text', '__under__ *and* ***both***'].map(firstLine), ['Big Title', 'Indented', 'a bullet', 'quoted', 'centred', 'tabbed', 'struck text', 'under and both']);
+  check('TITLES: every kind of markup goes - heading mark, block token, bullet, quote, centring, tabs, strike, underline, nested', ['# Big Title', '>| >| Indented', '- a bullet', '-+ a hollow', '-= a square', '> quoted', '>< centred', '\t\ttabbed', '~~struck~~ text', '__under__ *and* ***both***'].map(firstLine), ['Big Title', 'Indented', 'a bullet', 'a hollow', 'a square', 'quoted', 'centred', 'tabbed', 'struck text', 'under and both']);
   check('TITLES: a line that is only markup has nothing to read, so the NEXT line is the title (like a blank one)', [firstLine('****\n>| \nReal words'), firstLine('**  **\n\nSecond')], ['Real words', '**  **']);
   check('TITLES: and a page that is only markup is "Untitled" - never a stray asterisk', [firstLine('****'), firstLine('>| '), firstLine('   \n\n')], ['Untitled', 'Untitled', 'Untitled']);
   check('TITLES: what the page shows as text stays text - "2 * 3 * 4" and a lone underscore name are NOT mangled', [firstLine('2 * 3 * 4'), firstLine('the file_name'), firstLine('an __unclosed run')], ['2 * 3 * 4', 'the file_name', 'an __unclosed run']);
@@ -149,6 +152,12 @@ function run(mod) {
     check('REVEAL: a caret at the END of "TESTING", where a click off the word lands, still shows no asterisks', vis(9), 'TESTING THE DATABASE SYNC');
     check('REVEAL: nested marks stay hidden - `__*x*__` shows the word at the caret that used to reveal both marks, and at the caret just after it', [visible(decorateMarkdownForCard('__*x*__', 2)), visible(decorateMarkdownForCard('__*x*__', 3))], ['x', 'x']);
     check('REVEAL: an empty pair `****` stays hidden, including with the caret between the marks', visible(decorateMarkdownForCard('****', 2)), '');
+    check('BULLET: the token stays hidden even when the caret touches it', ['- Milk', '-+ Milk', '-= Milk'].every((t) => visible(decorateMarkdownForCard(t, t.indexOf('M'))) === 'Milk'), true);
+    check('BULLET: hollow and square marks stay hidden and wear their own glyph class', ['-+ Milk', '-= Milk'].every((t, i) => {
+      const html = decorateMarkdownForCard(t, null);
+      const cls = i === 0 ? 'md-bullet-circle' : 'md-bullet-square';
+      return html.includes(cls) && visible(html) === 'Milk' && chars(html) === t;
+    }), true);
     check('HEADING: `# Chapter` and `## Chapter` hide the hash at every caret and keep the heading size', ['# Chapter', '## Chapter'].every((t) => {
       const word = t.replace(/^#{1,2} /, '');
       const cls = t.startsWith('## ') ? 'md-h2' : 'md-h1';
@@ -183,6 +192,7 @@ function run(mod) {
   check('BLOCK: the caret keeps the character it was on', (() => { const r = press('One', 2, 2, 'block-indent'); return r.text.slice(r.start - 1, r.start); })(), 'n');
   const lead = (l) => readLead(l).tokens.map(t => `${t.kind}@${t.start}-${t.end}`);
   check('LEAD: tabs, the block token, a bullet and a heading are read in order, with positions', lead('\t>| - # x'), ['tab@0-1', 'block@1-4', 'bullet@4-6', 'heading@6-8']);
+  check('LEAD: hollow and square bullets are their own tokens, not the round hyphen', [lead('-+ one'), lead('-= two'), lead('- three')], [['bullet-circle@0-3'], ['bullet-square@0-3'], ['bullet@0-2']]);
   check('LEAD: ordinary prose never parses as a block token - `>|x`, a mid-line `>| `, a lone `>|`, `|> `', ['>|x y', 'a >| b', '>|', '|> x', '>||', ' >| x'].map(l => lead(l)), [[], [], [], [], [], []]);
   check('STRIP: Copy My Words removes structure in any order, block tokens included', stripMarkdownConventions('>| >| \tone\n- > two\n>< **three**\n# ~~four~~'), 'one\ntwo\nthree\nfour');
   check('STRIP: "2 * 3 * 4" exports as it shows (the regex copy would have paired the stars); a real run is stripped', stripMarkdownConventions('2 * 3 * 4 and *real* and __u__'), '2 * 3 * 4 and real and u');

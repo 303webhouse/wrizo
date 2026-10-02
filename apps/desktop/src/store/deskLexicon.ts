@@ -269,7 +269,7 @@ export type DeskTermId =
   | 'twWritingLine' | 'twLineTop' | 'twLineCenter' | 'twLineBottom'
   | 'twPageScroll' | 'footProgress' | 'footFullScreen' | 'footTypewriter' | 'footTarget'
   // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
-  | 'draftHeading' | 'draftBullet' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
+  | 'draftHeading' | 'draftBullet' | 'draftBulletCircle' | 'draftBulletSquare' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
   | 'draftConvertToScreenplay' | 'draftConvertToProse'
   // ITEM 207 — the Type control's accessible names. NO visible captions: his law is a strip menu with the fewest marks,
@@ -903,7 +903,9 @@ const CANONICAL: Record<DeskTermId, string> = {
   // ITEM 83 M5 (R4) — Draft's roster. Destination-named verbs (DR3's bench
   // law): never a bare 'Convert'.
   draftHeading: 'Heading',
-  draftBullet: 'Bulleted list',
+  draftBullet: 'Round bullet',
+  draftBulletCircle: 'Hollow bullet',
+  draftBulletSquare: 'Square bullet',
   draftQuote: 'Block quote',
   draftIndent: 'Indent',
   draftOutdent: 'Outdent',

@@ -444,9 +444,9 @@ await withHarness(async (app) => {
   await focusEditor(app);
   await app.typeKeys('Gamma');
   await sleep(250);
-  await clickFormat(app, 'Bulleted list');
+  await clickFormat(app, 'Round bullet');
   const bulletOn = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
-  await clickFormat(app, 'Bulleted list');
+  await clickFormat(app, 'Round bullet');
   const bulletOff = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
   ok('E3 (control): the OTHER line directives are untouched — Bulleted list still toggles on and back off, so E3 rewired one action and not the shared helper beneath them all',
     bulletOn === '- Gamma' && bulletOff === 'Gamma', JSON.stringify({ bulletOn, bulletOff }));
