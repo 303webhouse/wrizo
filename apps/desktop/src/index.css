@@ -3520,11 +3520,10 @@ a:focus-visible,
    separator just underneath the Writing Modes tabs"); dropped here. */
 .desk-mode-strip{ display:flex; align-items:center; gap:1.6px; background:none;
   border:none; padding:0; }
-/* The page bar spreads Free Write through Plan across the space after the
-   address, so the gap between every one of them is the same. */
-.desk-frame-host .sprint-nav:has(.desk-mode-strip--spread){ justify-content:flex-start; }
-.desk-frame-host .sprint-nav:has(.desk-mode-strip--spread) .sprint-crumb{ margin-right:16px; }
-.desk-mode-strip--spread{ flex:1; justify-content:space-between; min-width:0; gap:0; }
+/* The writing-mode tabs, Plan included, stay one tight cluster. The framed
+   nav already parks that cluster on the right: the address keeps
+   margin-right:auto, and .desk-frame-host .sprint-nav is flex-end.
+   Do not grow the strip or space the tabs across the bar. */
 .desk-mode-tab{ background:none; border:1px solid transparent; color:var(--text-mid);
   font-family:var(--font-ui); font-size:10.4px; padding:9px 12.8px; cursor:pointer; transition:.15s;
   text-transform:uppercase; letter-spacing:.08em; }
@@ -5074,7 +5073,7 @@ a:focus-visible,
 /* The page's Plan door matches the writing-mode tabs: capitals, same size.
    The word and the arrow stay olive (--accent-rest), including on hover. */
 .sprint-nav .page-plan-door{
-  font-family:var(--font-ui); font-size:10.4px; padding:9px 0;
+  font-family:var(--font-ui); font-size:10.4px; padding:9px 12.8px;
   text-transform:uppercase; letter-spacing:.08em;
   color:var(--accent-rest); text-decoration:none;
 }
