@@ -156,8 +156,11 @@ function decorateLineForCard(rawLine: string, caret: number | null): string {
   const at = caret === null ? null : caret - lead.length;
   const rest = rawLine.slice(lead.length);
   const inline = decorateInlineForCard(rest, at);
+  // The hash is a mark, same as an asterisk: it stays in the text and it
+  // does not show. The heading's size is the `.md-h1` / `.md-h2` wrapper.
+  // Pressing Heading again cycles the level, which is how the mark comes off.
   const body = heading
-    ? `<span class="${heading.text === '## ' ? 'md-h2' : 'md-h1'}"><span class="md-mark">${escHtml(heading.text)}</span>${inline}</span>`
+    ? `<span class="${heading.text === '## ' ? 'md-h2' : 'md-h1'}"><span class="md-mark md-mark-hidden">${escHtml(heading.text)}</span>${inline}</span>`
     : inline;
   return open + head + body + close;
 }

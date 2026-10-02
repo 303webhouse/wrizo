@@ -149,6 +149,18 @@ function run(mod) {
     check('REVEAL: a caret at the END of "TESTING", where a click off the word lands, still shows no asterisks', vis(9), 'TESTING THE DATABASE SYNC');
     check('REVEAL: nested marks stay hidden - `__*x*__` shows the word at the caret that used to reveal both marks, and at the caret just after it', [visible(decorateMarkdownForCard('__*x*__', 2)), visible(decorateMarkdownForCard('__*x*__', 3))], ['x', 'x']);
     check('REVEAL: an empty pair `****` stays hidden, including with the caret between the marks', visible(decorateMarkdownForCard('****', 2)), '');
+    check('HEADING: `# Chapter` and `## Chapter` hide the hash at every caret and keep the heading size', ['# Chapter', '## Chapter'].every((t) => {
+      const word = t.replace(/^#{1,2} /, '');
+      const cls = t.startsWith('## ') ? 'md-h2' : 'md-h1';
+      for (let c = 0; c <= t.length; c += 1) {
+        const html = decorateMarkdownForCard(t, c);
+        if (/<span class="md-mark">#/.test(html)) return false;
+        if (!html.includes(cls)) return false;
+        if (visible(html) !== word) return false;
+        if (chars(html) !== t) return false;
+      }
+      return true;
+    }), true);
     const B = ['a **b** c', '***bi*** x', '__*u*__', '~~s~~ and *i*', '2 * 3 * 4', '>| - **x**'];
     check('REVEAL: every character is still emitted exactly once at EVERY caret position (the 1:1 count the caret restore depends on)', B.every(t => { for (let c = 0; c <= t.length; c += 1) { if (chars(decorateMarkdownForCard(t, c)).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&') !== t) return false; } return true; }), true);
   }
@@ -235,6 +247,7 @@ if (process.argv.includes('--mutants')) {
     ['TITLES: the board name keeps its own copy', 'entryText.ts', (s) => s.replace("const first = firstPlainLine(text ?? '');", "const first = (text ?? '').split('\\n').map(l => l.trim()).find(Boolean);")],
     ['REVEAL: markers show anywhere inside the run (the old rule)', 'draftDecoration.ts', (s) => s.replace('const markCls = \'md-mark md-mark-hidden\';', 'const markCls = (caret !== null && caret >= r.open && caret <= r.close + r.mark.length) ? \'md-mark\' : \'md-mark md-mark-hidden\';')],
     ['REVEAL: markers show when the caret touches a marker (the interim rule)', 'draftDecoration.ts', (s) => s.replace('const markCls = \'md-mark md-mark-hidden\';', 'const markCls = (caret !== null && ((caret >= r.open && caret <= r.open + r.mark.length) || (caret >= r.close && caret <= r.close + r.mark.length))) ? \'md-mark\' : \'md-mark md-mark-hidden\';')],
+    ['HEADING: the hash stays on the page', 'draftDecoration.ts', (s) => s.replace('<span class="md-mark md-mark-hidden">${escHtml(heading.text)}</span>', '<span class="md-mark">${escHtml(heading.text)}</span>')],
     ['DECORATOR: marks are not nested (a run inside another is dropped)', 'draftDecoration.ts', (s) => s.replace(/kids\.push\(within\[i \+ 1\]\);\s*i\+\+;/, 'i++;')],
   ];
   for (const [name, file, fn] of M) {
