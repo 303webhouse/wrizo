@@ -3798,8 +3798,6 @@ a:focus-visible,
    already swept under FX1 S6. Scoped the same way as the position override
    above, for the same reason. */
 .wz-sliver-instruments .mode-seg button.on{ background:var(--accent-rest); color:var(--on-brass); }
-.wz-sliver-instruments .mode-settings h4{ color:var(--accent-rest); }
-
 /* TU1 S2 — the Tutor (components/Tutor.tsx). The sliver's own class family,
    mirrored (`.wz-sliver-*` -> `.wz-tutor-*`), split across the TWO anchors
    above (`.wz-tutor-zone` is the shared marker class both anchor roots
