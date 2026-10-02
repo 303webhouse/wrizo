@@ -714,9 +714,9 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
         <div className="wz-sliver-section wz-sliver-templates">
           <div className="wz-sliver-h">{t('railTemplates')}</div>
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
-            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('templateOutline')} aria-label={t('templateOutline')}><TemplateIcon kind="outline" /></button>
-            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('templateBibliography')} aria-label={t('templateBibliography')}><TemplateIcon kind="bibliography" /></button>
-            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('templateTitlePage')} aria-label={t('templateTitlePage')}><TemplateIcon kind="title" /></button>
+            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateOutline')}><TemplateIcon kind="outline" /></button>
+            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateBibliography')}><TemplateIcon kind="bibliography" /></button>
+            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateTitlePage')}><TemplateIcon kind="title" /></button>
           </div>
         </div>
       )}
