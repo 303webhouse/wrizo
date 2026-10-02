@@ -3561,8 +3561,21 @@ a:focus-visible,
 .wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--accent-rest); border-color:var(--accent-rest); }
 .wz-sliver-grip-glyph{ font-size:13px; line-height:1; }
 .wz-sliver-panel{ position:absolute; top:0; right:16px; width:calc(100% - 16px); height:100%;
-  overflow-y:auto; background:var(--desk-ground); border:1px solid var(--ink-border); border-right:none;
-  opacity:0; pointer-events:none; transform:translateX(6px); transition:opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s) ease; }
+  overflow-y:auto; overflow-x:hidden; background:var(--desk-ground); border:1px solid var(--ink-border); border-right:none;
+  opacity:0; pointer-events:none; transform:translateX(6px); transition:opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s) ease;
+  /* The bar sits on the drawer's left edge. `direction: rtl` is the only
+     way a native scrollbar changes sides; the children below stay left to
+     right. It is overlay-thin and only paints when the content is taller
+     than the drawer — settings open, or a short screen. No reserved gutter. */
+  direction: rtl;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--text-low) 28%, transparent) transparent;
+}
+.wz-sliver-panel > *{ direction: ltr; }
+.wz-sliver-panel::-webkit-scrollbar{ width: 4px; }
+.wz-sliver-panel::-webkit-scrollbar-track{ background: transparent; }
+.wz-sliver-panel::-webkit-scrollbar-thumb{ background: color-mix(in srgb, var(--text-low) 28%, transparent); }
+.wz-sliver-panel::-webkit-scrollbar-thumb:hover{ background: color-mix(in srgb, var(--text-low) 55%, transparent); }
 .wz-sliver-panel[data-open='true']{ opacity:1; pointer-events:auto; transform:translateX(0); }
 /* item 83 errata E1 (2026-09-03) — THE POP-OUT HOLD. Nick's ruling: a foot
    pop-out fades after FIFTEEN WORDS WRITTEN or A PERIOD ENTERED, never on a
