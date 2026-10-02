@@ -4,9 +4,7 @@ import { TypeControl, type TypeControlProps } from './TypeControl';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
-import { useWritingGoal, setWritingGoal, DEFAULT_GOAL_LINES } from '../store/writingGoal';
-import { useGoalUnit, setGoalUnit, type GoalUnit } from '../store/writingGoalUnit';
-import { countLineEquivalents } from '../store/lineEquivalents';
+import { useWritingGoal, setWritingGoal, goalCount, goalFraction, DEFAULT_GOAL_LINES, type WritingGoal, type GoalUnit } from '../store/writingGoal';
 // FX3 S5 — the writing-settings gear leaves the paper entirely and moves to
 // the sliver's own foot (below); rather than duplicate SettingsPanel/
 // ThemePanel/Seg/GearIcon's JSX here, they're exported from ModeStage.tsx
@@ -265,8 +263,8 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
     }
   }, [goalText, firstWriteAt]);
 
-  const lines = countLineEquivalents(goalText);
-  const fraction = target != null && target > 0 ? Math.max(0, Math.min(1, lines / target)) : 0;
+  const done = target != null ? goalCount(goalText, target) : 0;
+  const fraction = goalFraction(goalText, target);
 
   // item 83 errata E1 — the foot's own gate reports up to the panel that
   // carries the fade classes. `setPopoutHold` is a useState setter, so it is
@@ -310,7 +308,7 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
           on this surface behaves byte-identically to before. */}
       <div className="wz-sliver-panel chrome-fade desk-dissolve" aria-hidden={!open} data-open={open ? 'true' : 'false'} data-popout-hold={popoutHold ? 'true' : 'false'}>
         <SliverToolsBody content={content} />
-        <SliverGoalFoot target={target} lines={lines} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />
+        <SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />
         {/* FX3 S5 — the foot's new instruments row, beneath the goal block.
             Nested inside THIS panel (which already carries chrome-fade
             desk-dissolve) so its own open gear/instruments popovers dissolve
@@ -807,7 +805,7 @@ function SliverToggle({ label, on, onToggle, className }: { label: string; on: b
 // exactly (the numeral still shows, reading 0:00, before the writer's
 // first keystroke — same as that pattern always has — it just doesn't
 // start ADVANCING until they do).
-function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { target: number | null; lines: number; fraction: number; timerOn: boolean; firstWriteAt: number | null }) {
+function SliverGoalFoot({ target, done, fraction, timerOn, firstWriteAt }: { target: WritingGoal | null; done: number; fraction: number; timerOn: boolean; firstWriteAt: number | null }) {
   // The goal NUMBER is set under Progress Tracking. This foot only shows the
   // hairline and, when the timer is on, the clock. Full screen is not here:
   // the app already offers it outside this drawer.
@@ -825,7 +823,7 @@ function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { ta
   const clock = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
   return (
-    <div className="wz-sliver-goal" data-target={target ?? ''} data-lines={lines}>
+    <div className="wz-sliver-goal" data-target={target?.n ?? ''} data-unit={target?.unit ?? ''} data-done={done}>
       {timerOn && <div className="wz-sliver-goal-timer">{clock}</div>}
 
       {target != null && settings.instrumentsOn && (
@@ -848,8 +846,8 @@ function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { ta
 // them" — the safest reading, given the foot row's three icons are already
 // spoken for and nothing in S5 names a fourth place for Theme, is to move
 // the gear WHOLE); (3) a new instruments icon (a minimal, working-value
-// panel — store/writingGoalUnit.ts's own header comment has the "committee
-// pass refines this" caveat in full). All three buttons are `--text-mid`/
+// panel; the goal's unit now lives with its number in store/writingGoal.ts).
+// All three buttons are `--text-mid`/
 // olive at rest (`.wz-sliver-instruments-btn`, index.css) — brass appears
 // only on hover, matching the sliver's own pre-existing law elsewhere.
 // item 83 errata E1 (2026-09-03) — POP-OUTS FADE ON WRITTEN WORDS, NEVER ON A
@@ -901,7 +899,7 @@ function countPeriods(text: string): number {
   return n;
 }
 
-function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, goalText, onPopoutHold }: { hasMilestones?: boolean; target: number | null; typewriterAvailable?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
+function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, goalText, onPopoutHold }: { hasMilestones?: boolean; target: WritingGoal | null; typewriterAvailable?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
 
@@ -1043,14 +1041,20 @@ function TypewriterFields() {
 // ITEM 83 M4 (R5) — PROGRESS absorbs the gear's Progress/Timer rows AND the
 // whole Instruments panel (Show · Unit · Target · Style). One surface onto the
 // one goal, where there were two.
-function ProgressFields({ target, hasMilestones }: { target: number | null; hasMilestones?: boolean }) {
+// The unit is part of the goal: choosing one re-sets the goal in it. Time stays a stand-in until real writing
+// minutes are recorded (the sliver's clock is an opt-in timer, not a measure of writing).
+function ProgressFields({ target, hasMilestones }: { target: WritingGoal | null; hasMilestones?: boolean }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
-  const unit = useGoalUnit();
-  const [draft, setDraft] = useState(() => String(target ?? DEFAULT_GOAL_LINES));
-  const commit = () => {
+  const [unit, setUnit] = useState<GoalUnit>(() => target?.unit ?? 'lines');
+  const [draft, setDraft] = useState(() => String(target?.n ?? DEFAULT_GOAL_LINES));
+  const commit = (u: GoalUnit = unit) => {
     const n = Number(draft);
-    setWritingGoal(Number.isFinite(n) && n > 0 ? Math.round(n) : null);
+    setWritingGoal(Number.isFinite(n) && n > 0 ? { n: Math.round(n), unit: u } : null);
+  };
+  const pickUnit = (u: GoalUnit) => {
+    setUnit(u);
+    if (target != null) commit(u);
   };
   const progressOpts: [string, string][] = [['words', 'Words'], ['time', 'Time'], ['off', 'Off']];
   if (hasMilestones) progressOpts.splice(2, 0, ['project', 'Drawer']);
@@ -1062,14 +1066,15 @@ function ProgressFields({ target, hasMilestones }: { target: number | null; hasM
         onPick={v => setWritingSettings({ instrumentsOn: v === 'on' })} />
       <Seg label={t('sliverInstrumentsUnit')} value={unit}
         opts={[['lines', 'Lines'], ['words', 'Words'], ['time', 'Time']]}
-        onPick={v => setGoalUnit(v as GoalUnit)} />
+        soon={['time']} soonTitle={t('comingSoon')}
+        onPick={v => pickUnit(v as GoalUnit)} />
       <label className="wz-tw-number">
         <span>{t('goalLabel')}</span>
         <input type="number" min={1} value={draft} aria-label={t('goalLabel')}
           onChange={e => setDraft(e.target.value)}
-          onBlur={commit}
+          onBlur={() => commit()}
           onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } }} />
-        <span className="wz-tw-unit">{unit === 'words' ? 'words' : unit === 'time' ? 'min' : t('goalUnitLines')}</span>
+        <span className="wz-tw-unit">{unit === 'words' ? t('goalUnitWords') : t('goalUnitLines')}</span>
       </label>
       <Seg label="Progress" value={settings.progress} opts={progressOpts} onPick={v => setWritingSettings({ progress: v as ProgressMetric })} />
       {settings.progress === 'words' && (

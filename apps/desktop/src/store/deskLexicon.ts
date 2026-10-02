@@ -271,6 +271,7 @@ export type DeskTermId =
   // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
   | 'draftHeading' | 'draftBullet' | 'draftBulletCircle' | 'draftBulletSquare' | 'draftBulletStyles' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
   | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage'
+  | 'comingSoon' | 'railTypeface' | 'goalUnitWords'
   | 'footSettings' | 'footMenuTypewriter' | 'footMenuProgress' | 'footMenuPreferences'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
   | 'draftConvertToScreenplay' | 'draftConvertToProse'
@@ -913,6 +914,9 @@ const CANONICAL: Record<DeskTermId, string> = {
   templateOutline: 'Outline',
   templateBibliography: 'Bibliography',
   templateTitlePage: 'Title page',
+  comingSoon: 'Coming soon',
+  railTypeface: 'Typeface',
+  goalUnitWords: 'words',
   footSettings: 'Settings',
   footMenuTypewriter: 'Typewriter Mode',
   footMenuProgress: 'Progress Tracking',

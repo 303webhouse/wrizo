@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useWritingGoal } from '../store/writingGoal';
+import { useWritingGoal, goalFraction } from '../store/writingGoal';
 import { useWritingSettings } from '../store/writingSettings';
-import { countLineEquivalents } from '../store/lineEquivalents';
 
 // CD1 S6 — the goal's glow: a warm radial behind the paper, mapping to
 // progress fraction (0..1, line-equivalents / the writer-level target).
@@ -50,10 +49,9 @@ export function GoalGlow({ text }: { text: string }) {
   // picked up correctly the first time it actually renders.
   useEffect(() => { setCap(readGlowCap(ref.current)); }, [target]);
 
-  if (target == null || target <= 0 || !settings.instrumentsOn) return null;
+  if (target == null || target.n <= 0 || !settings.instrumentsOn) return null;
 
-  const lines = countLineEquivalents(text);
-  const fraction = Math.max(0, Math.min(1, lines / target));
+  const fraction = goalFraction(text, target);
   // FX4 S2 — Nick's "I can't perceive it" turned out to be TWO separate
   // things, diagnosed in order per FX2's own law (defect before tuning):
   // (1) a real rendering defect — this component's own anchor sat behind

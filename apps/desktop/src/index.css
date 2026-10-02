@@ -2536,6 +2536,7 @@ a:focus-visible,
   font-size:10px; padding:3px 7px; cursor:pointer; font-family:var(--font-ui); }
 .mode-seg button:first-child{ border-left:0; }
 .mode-seg button.on{ background:var(--brass); color:var(--on-brass); }
+.mode-seg button.mode-seg-soon{ color:var(--text-low); opacity:.45; cursor:default; }
 .mode-settings-hint{ margin-top:9px; font-size:9.5px; color:var(--text-low); line-height:1.5; }
 
 /* Narrow screens (tablet portrait / phone): hide the rails — the page is the
@@ -3797,6 +3798,7 @@ a:focus-visible,
    already swept under FX1 S6. Scoped the same way as the position override
    above, for the same reason. */
 .wz-sliver-instruments .mode-seg button.on{ background:var(--accent-rest); color:var(--on-brass); }
+.wz-sliver-instruments .mode-settings h4{ color:var(--accent-rest); }
 
 /* TU1 S2 — the Tutor (components/Tutor.tsx). The sliver's own class family,
    mirrored (`.wz-sliver-*` -> `.wz-tutor-*`), split across the TWO anchors
