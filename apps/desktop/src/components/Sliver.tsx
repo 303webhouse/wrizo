@@ -615,10 +615,11 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           pointer, never rewritten in place. */}
 
       {/* ITEM 207 - THE TYPE CONTROL, one component in three mountings (Free Write: small; Draft and Revise: full). It leads
-          the drawer's tenants and carries no heading of its own - his minimal-interface law. Absent, never greyed, wherever
-          the host passes no `type` (a screenplay page). */}
+          the drawer's tenants. The control itself stays caption-free (his minimal-interface law); the section above it is
+          headed "Typeface" like every other drawer zone. Absent, never greyed, wherever the host passes no `type` (a
+          screenplay page). */}
       {(content.kind === 'freewrite' || content.kind === 'draft' || content.kind === 'revise') && content.type && (
-        <div className="wz-sliver-section wz-sliver-type"><TypeControl {...content.type} /></div>
+        <div className="wz-sliver-section wz-sliver-type"><div className="wz-sliver-h">{t('railTypeface')}</div><TypeControl {...content.type} /></div>
       )}
 
       {content.kind === 'freewrite' && content.forwardLock && (
