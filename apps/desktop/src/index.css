@@ -3624,6 +3624,8 @@ a:focus-visible,
   border:1px solid var(--ink-border); font-family:var(--font-ui); cursor:pointer; transition:.15s; }
 .wz-sliver-item-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-sliver-format{ display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
+.wz-sliver-format .mode-tbtn{ display:inline-flex; align-items:center; justify-content:center; }
+.wz-format-mark{ display:block; }
 /* ITEM 207 - THE TYPE CONTROL (TypeControl.tsx). As minimal as a strip menu gets: a face button, a `-` `+` pair, and in
    the full form a number between them. No heading, no caption. The listbox drops in FLOW inside the drawer (never a
    second floating panel), each row set in its own face, the current one olive (where you are - the sliver's rest law). */

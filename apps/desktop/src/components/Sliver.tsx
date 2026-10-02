@@ -484,6 +484,37 @@ function SliverInkZone({ opts }: { opts: NonNullable<Extract<SliverContent, { ki
   );
 }
 
+/** Line icons for the Draft strip. Alignment is a stack of lines. Indent is
+ *  those lines with an arrow, so it does not read as Back or as a tab key. */
+function FormatMark({ kind }: { kind: 'outdent' | 'indent' | 'left' | 'center' | 'right' }) {
+  const svg = {
+    width: 16, height: 16, viewBox: '0 0 16 16', 'aria-hidden': true as const,
+    fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const,
+    className: 'wz-format-mark',
+  };
+  if (kind === 'left' || kind === 'center' || kind === 'right') {
+    const lengths = [12, 8, 11, 6];
+    const ys = [2.5, 6, 9.5, 13];
+    const span = 12;
+    const origin = 2;
+    return (
+      <svg {...svg}>
+        {lengths.map((len, i) => {
+          const x = kind === 'left' ? origin : kind === 'right' ? origin + span - len : origin + (span - len) / 2;
+          return <path key={ys[i]} d={`M${x} ${ys[i]}h${len}`} />;
+        })}
+      </svg>
+    );
+  }
+  const arrow = kind === 'indent' ? 'M1.5 3.2H9.2M7.2 1.3 9.8 3.2 7.2 5.1' : 'M14.5 3.2H6.8M8.8 1.3 6.2 3.2 8.8 5.1';
+  return (
+    <svg {...svg}>
+      <path d={arrow} />
+      <path d="M4 8h10M4 11h10M4 14h7" />
+    </svg>
+  );
+}
+
 function SliverToolsBody({ content }: { content: SliverContent }) {
   const { t } = useDeskLexicon();
 
@@ -595,19 +626,17 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
                 a pair — the same order the legacy bar has always used
                 (ModeStage.tsx's Outdent/Indent), and the same direction this
                 drawer's own alignment row already reads.
-                GLYPH: the left arrow, mirroring Indent's own right arrow. NOT
-                the legacy bar's ⇤ — that glyph is already spoken for in this
-                very drawer by Align left, and a control that wears another
-                control's mark in the same panel is a defect however correct its
-                behaviour. */}
-            <button type="button" className="mode-tbtn" title={t('draftOutdent')} onClick={() => content.format!.onFormat('outdent')}>&larr;</button>
-            <button type="button" className="mode-tbtn" title={t('draftIndent')} onClick={() => content.format!.onFormat('indent')}>&rarr;</button>
+                GLYPH: a paragraph of lines with an arrow. Align left is a
+                stack of lines, not this arrow, so the two controls cannot
+                wear one mark. */}
+            <button type="button" className="mode-tbtn" data-format-glyph="outdent" title={t('draftOutdent')} aria-label={t('draftOutdent')} onClick={() => content.format!.onFormat('outdent')}><FormatMark kind="outdent" /></button>
+            <button type="button" className="mode-tbtn" data-format-glyph="indent" title={t('draftIndent')} aria-label={t('draftIndent')} onClick={() => content.format!.onFormat('indent')}><FormatMark kind="indent" /></button>
             <button type="button" className="mode-tbtn" title={t('draftSpacing')} onClick={() => content.format!.onFormat('spacing')}>&para;</button>
           </div>
           <div className="wz-sliver-format" role="group" aria-label={t('draftAlignment')} onMouseDown={e => e.preventDefault()}>
-            <button type="button" className="mode-tbtn" title={t('draftAlignLeft')} onClick={() => content.format!.onFormat('align-left')}>&#8676;</button>
-            <button type="button" className="mode-tbtn" title={t('draftAlignCenter')} onClick={() => content.format!.onFormat('align-center')}>&#8596;</button>
-            <button type="button" className="mode-tbtn" title={t('draftAlignRight')} onClick={() => content.format!.onFormat('align-right')}>&#8677;</button>
+            <button type="button" className="mode-tbtn" data-format-glyph="align-left" title={t('draftAlignLeft')} aria-label={t('draftAlignLeft')} onClick={() => content.format!.onFormat('align-left')}><FormatMark kind="left" /></button>
+            <button type="button" className="mode-tbtn" data-format-glyph="align-center" title={t('draftAlignCenter')} aria-label={t('draftAlignCenter')} onClick={() => content.format!.onFormat('align-center')}><FormatMark kind="center" /></button>
+            <button type="button" className="mode-tbtn" data-format-glyph="align-right" title={t('draftAlignRight')} aria-label={t('draftAlignRight')} onClick={() => content.format!.onFormat('align-right')}><FormatMark kind="right" /></button>
           </div>
         </div>
       )}
