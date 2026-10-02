@@ -259,7 +259,7 @@ await withHarness(async (app) => {
     //
     // await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Writing settings\"]').click()");
     // ----------------------------------------------------------------------
-    await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Progress\"]').click()");
+    await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Settings\"]').click()");
     await sleep(250);
     const clicked = await app.evalJs(`(() => {
       const row = [...document.querySelectorAll('.mode-settings .mode-crow')].find(r => r.textContent.includes('Progress style'));

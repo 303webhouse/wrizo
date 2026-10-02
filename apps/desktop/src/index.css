@@ -3774,6 +3774,7 @@ a:focus-visible,
    is untouched. */
 .wz-sliver-instruments .mode-settings{ position:static; top:auto; right:auto; width:auto; margin-top:10px; box-shadow:none; }
 .wz-sliver-instruments-panel{ margin-top:10px; }
+.wz-foot-settings-block + .wz-foot-settings-block{ margin-top:14px; padding-top:10px; border-top:1px solid var(--ink-border); }
 /* A Seg's selected option (`.mode-seg button.on`, ModeStage's own base rule)
    fills brass — correct at the stage's OWN gear (a corner popover, not
    itself part of the sliver's established visual law), but a resting

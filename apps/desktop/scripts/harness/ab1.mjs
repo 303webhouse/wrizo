@@ -452,7 +452,7 @@ if (process.env.HARNESS_PARKED === '1') {
     // both said.
     const flourishesNow = await app.evalJs(`({
       typewriterToggle: !!document.querySelector('.desk-frame .typewriter-toggle'),
-      typewriterInstrument: !!document.querySelector('.desk-frame .wz-sliver-instruments-row [aria-label="Typewriter"]'),
+      typewriterInstrument: !!document.querySelector('.desk-frame .wz-sliver-instruments-row [aria-label="Settings"]'),
       progressBar: !!document.querySelector('.desk-frame .mode-incentive-row'),
       milestones: !!document.querySelector('.desk-frame .mode-milestone'),
       ambientGlow: !!document.querySelector('.desk-frame .mode-glow'),

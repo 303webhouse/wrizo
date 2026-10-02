@@ -271,6 +271,7 @@ export type DeskTermId =
   // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
   | 'draftHeading' | 'draftBullet' | 'draftBulletCircle' | 'draftBulletSquare' | 'draftBulletStyles' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
   | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage'
+  | 'footSettings' | 'footMenuTypewriter' | 'footMenuProgress' | 'footMenuPreferences'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
   | 'draftConvertToScreenplay' | 'draftConvertToProse'
   // ITEM 207 — the Type control's accessible names. NO visible captions: his law is a strip menu with the fewest marks,
@@ -912,6 +913,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   templateOutline: 'Outline',
   templateBibliography: 'Bibliography',
   templateTitlePage: 'Title page',
+  footSettings: 'Settings',
+  footMenuTypewriter: 'Typewriter Mode',
+  footMenuProgress: 'Progress Tracking',
+  footMenuPreferences: 'Preferences',
   draftQuote: 'Block quote',
   draftIndent: 'Indent',
   draftOutdent: 'Outdent',

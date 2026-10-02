@@ -3,6 +3,7 @@ import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { TypeControl, type TypeControlProps } from './TypeControl';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
+import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
 import { useWritingGoal, setWritingGoal, DEFAULT_GOAL_LINES } from '../store/writingGoal';
 import { useGoalUnit, setGoalUnit, type GoalUnit } from '../store/writingGoalUnit';
 import { countLineEquivalents } from '../store/lineEquivalents';
@@ -14,7 +15,7 @@ import { countLineEquivalents } from '../store/lineEquivalents';
 // scoped CSS override (index.css's `.wz-sliver-instruments .mode-settings`)
 // repositioning their popover to sit inline in the sliver's own scrolling
 // panel instead of ModeStage's absolute stage-corner placement.
-import { SettingsPanel, Seg, GearIcon } from './ModeStage';
+import { Seg } from './ModeStage';
 import { FullscreenToggle } from './ChromeControls';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import type { FormatAction, StructureKind } from '../store/draftFormat';
@@ -960,11 +961,10 @@ function countPeriods(text: string): number {
 function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, goalText, onPopoutHold }: { hasMilestones?: boolean; target: number | null; typewriterAvailable?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
-  const [gearOpen, setGearOpen] = useState(false);
-  const [instrumentsOpen, setInstrumentsOpen] = useState(false);
 
-  // ITEM 83 M4 (R5/R12) — THE FOOT IS THREE INSTRUMENTS: Typewriter ·
-  // Progress · Full Screen, on every page-writing surface.
+  // The foot is one three-dot menu. Typewriter, progress, and the remaining
+  // preferences open together, under those three headings. Full screen stays
+  // on the progress line.
   //
   // Nick's ruling: "I don't want a separate 'Instruments' toggle/menu. All of
   // the options in it should be set in one of the other settings options. Here
@@ -981,8 +981,7 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
   //    surface onto the same goal becomes one surface.
   // One instrument may be open at a time: these are pop-outs from a foot in a
   // narrow drawer, and two open at once would scroll rather than disclose.
-  const [open, setOpen] = useState<null | 'typewriter' | 'progress'>(null);
-  const pick = (which: 'typewriter' | 'progress') => setOpen(o => (o === which ? null : which));
+  const [open, setOpen] = useState(false);
 
   // item 83 errata E1 — the composed-text gate. `held` is true from the moment a
   // tray opens until the writer has committed POPOUT_FADE_WORDS words, or
@@ -998,7 +997,7 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
   // any path added later), the same "announce from an effect so no silent path
   // is writable" discipline this file's own two-drawer announcement keeps.
   useEffect(() => {
-    if (open === null) { openMark.current = null; setHeld(false); return; }
+    if (!open) { openMark.current = null; setHeld(false); return; }
     openMark.current = { words: wordCount(goalText), periods: countPeriods(goalText) };
     setHeld(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1020,41 +1019,31 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
   return (
     <div className="wz-sliver-instruments">
       <div className="wz-sliver-instruments-row">
-        {typewriterAvailable && (
-          <button type="button" className="wz-sliver-instruments-btn"
-            aria-label={t('footTypewriter')} title={t('footTypewriter')}
-            aria-expanded={open === 'typewriter'} data-on={settings.typewriter ? 'true' : 'false'}
-            onClick={() => pick('typewriter')}>
-            <TypewriterGlyph />
-          </button>
-        )}
         <button type="button" className="wz-sliver-instruments-btn"
-          aria-label={t('footProgress')} title={t('footProgress')}
-          aria-expanded={open === 'progress'}
-          onClick={() => pick('progress')}>
-          <GearIcon />
+          aria-label={t('footSettings')} title={t('footSettings')}
+          aria-expanded={open}
+          onClick={() => setOpen(o => !o)}>
+          <MoreGlyph />
         </button>
-        {/* item 83 errata E2 (2026-09-03) — FULL SCREEN LEAVES THIS CELL.
-            Nick's walkthrough ruling: "Full screen ALIGNS WITH THE PROGRESS
-            BAR." It now sits on the hairline's own line, in SliverGoalFoot
-            below — a MOVE, not a copy, and not a second instance: R5's
-            reasoning that FullscreenToggle owns the OS-fullscreen request and
-            its own label is untouched, it is simply reached from one line
-            higher. The instruments row is TYPEWRITER · PROGRESS now; the foot
-            still carries all three instruments, on two lines instead of one.
-            The check that used to count three buttons in THIS row is parked
-            verbatim in fx3.mjs and ab2.mjs beside its successor. */}
       </div>
-      {/* item 83 errata E1 — the trays carry their own behaviour-free contract
-          marker (`data-menus-popout`, this file's own `data-menus-*` idiom —
-          nothing styles it), so the acceptance instrument can name a pop-out
-          without binding to a `wz-` class or to `.mode-settings`, which the tray
-          shares with ModeStage's own unrelated corner popover. Marked ON the
-          trays rather than on a wrapper: a wrapper would be a new DOM node in a
-          measured foot, and this wave measures that foot. */}
-      {open === 'typewriter' && <TypewriterMenu />}
-      {open === 'progress' && (
-        <ProgressMenu target={target} hasMilestones={hasMilestones} typewriterAvailable={typewriterAvailable} />
+      {open && (
+        <div className="mode-settings wz-sliver-instruments-panel" role="menu" data-menus-popout="settings">
+          {typewriterAvailable && (
+            <section className="wz-foot-settings-block">
+              <h4>{t('footMenuTypewriter')}</h4>
+              <TypewriterFields />
+            </section>
+          )}
+          <section className="wz-foot-settings-block">
+            <h4>{t('footMenuProgress')}</h4>
+            <ProgressFields target={target} hasMilestones={hasMilestones} />
+          </section>
+          <section className="wz-foot-settings-block">
+            <h4>{t('footMenuPreferences')}</h4>
+            <Seg label="Recede depth" value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
+            <div className="mode-settings-hint">Type to dissolve the chrome. Stop, and after a pause it returns slowly. Reach an edge or press Esc to summon it back.</div>
+          </section>
+        </div>
       )}
     </div>
   );
@@ -1064,16 +1053,13 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
 // beyond the panel (G4's ceiling, met by the ruling's own shape — "the
 // Typewriter icon opens"). Each behaviour carries its toggle AND its
 // adjustments, disclosed IN PLACE beneath it, so the depth never grows.
-function TypewriterMenu() {
+function TypewriterFields() {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const forwardLock = useForwardLock();
 
   return (
-    <div className="mode-settings wz-sliver-instruments-panel" role="menu" data-menus-popout="typewriter">
-      <h4>{t('twMenuHeading')}</h4>
-
-      {/* The typewriter itself — the instrument this menu belongs to. */}
+    <>
       <Seg label={t('footTypewriter')} value={settings.typewriter ? 'on' : 'off'}
         opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
         onPick={v => setTypewriterExplicit(v === 'on')} />
@@ -1107,28 +1093,27 @@ function TypewriterMenu() {
       <Seg label={t('twPageScroll')} value={settings.pageScroll ? 'on' : 'off'}
         opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
         onPick={v => setWritingSettings({ pageScroll: v === 'on' })} />
-    </div>
+    </>
   );
 }
 
 // ITEM 83 M4 (R5) — PROGRESS absorbs the gear's Progress/Timer rows AND the
 // whole Instruments panel (Show · Unit · Target · Style). One surface onto the
 // one goal, where there were two.
-function ProgressMenu({ target, hasMilestones, typewriterAvailable }:
-  { target: number | null; hasMilestones?: boolean; typewriterAvailable?: boolean }) {
+function ProgressFields({ target, hasMilestones }: { target: number | null; hasMilestones?: boolean }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const unit = useGoalUnit();
   const [draft, setDraft] = useState(() => String(target ?? DEFAULT_GOAL_LINES));
-
   const commit = () => {
     const n = Number(draft);
     setWritingGoal(Number.isFinite(n) && n > 0 ? Math.round(n) : null);
   };
+  const progressOpts: [string, string][] = [['words', 'Words'], ['time', 'Time'], ['off', 'Off']];
+  if (hasMilestones) progressOpts.splice(2, 0, ['project', 'Drawer']);
 
   return (
-    <div className="mode-settings wz-sliver-instruments-panel" role="menu" data-menus-popout="progress">
-      <h4>{t('footProgress')}</h4>
+    <>
       <Seg label={t('sliverInstrumentsShow')} value={settings.instrumentsOn ? 'on' : 'off'}
         opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
         onPick={v => setWritingSettings({ instrumentsOn: v === 'on' })} />
@@ -1140,28 +1125,26 @@ function ProgressMenu({ target, hasMilestones, typewriterAvailable }:
         <input type="number" min={1} value={draft}
           onChange={e => setDraft(e.target.value)} onBlur={commit} />
       </label>
-      {/* The gear's own Progress/Timer/Style rows, re-homed verbatim. The
-          SettingsPanel component still owns their behaviour — this is a
-          re-parenting, not a reimplementation, so nothing about how they
-          persist changes. Theme is deliberately NOT rendered: it left the
-          foot for the rail's theme category (R5). */}
-      <SettingsPanel
-        settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter, progressStyle: settings.progressStyle }}
-        hasMilestones={hasMilestones}
-        framed
-        typewriterAvailable={typewriterAvailable}
-      />
-    </div>
+      <Seg label="Progress" value={settings.progress} opts={progressOpts} onPick={v => setWritingSettings({ progress: v as ProgressMetric })} />
+      {settings.progress === 'words' && (
+        <Seg label={t('progressStyleLabel')} value={settings.progressStyle}
+          opts={[['bar', t('progressStyleBar')], ['rhizome', t('progressStyleRhizome')]]}
+          onPick={v => setWritingSettings({ progressStyle: v as ProgressStyle })} />
+      )}
+      <Seg label="Timer" value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
+    </>
   );
 }
 
 // A quiet stroke typewriter glyph, matching this file's own icon style
 // (viewBox 0 0 24 24, stroke=currentColor) — the foot's instruments are
 // glyphs, not words, at this width.
-function TypewriterGlyph() {
+function MoreGlyph() {
   return (
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true">
-      <path d="M6 4h12v5H6z" /><path d="M4 9h16v7H4z" /><path d="M8 16h8v4H8z" />
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+      <circle cx="5" cy="12" r="1.6" />
+      <circle cx="12" cy="12" r="1.6" />
+      <circle cx="19" cy="12" r="1.6" />
     </svg>
   );
 }
