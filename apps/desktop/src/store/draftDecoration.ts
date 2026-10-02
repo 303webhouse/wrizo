@@ -62,9 +62,10 @@ const LEADING_TABS = /^(\t+)([\s\S]*)$/;
 // on where the caret currently is.
 function decorateInlineForCard(text: string, caret: number | null): string {
   // STEP 3: the runs come from store/markRuns.ts - the SAME reader the formatter toggles from - so the page can nest marks
-  // (`__*x*__` paints underline AND italic, both collapsed) and cannot disagree with the formatter about what is a run. A run's
-  // markers reveal while the caret touches one of THAT run's markers (the interim rule, below), and every character of the
-  // text is still emitted exactly once, so the 1:1 count the caret restore depends on holds.
+  // (`__*x*__` paints underline AND italic, both collapsed) and cannot disagree with the formatter about what is a run.
+  // ITEM 211: the marks themselves never reveal. Every character is still emitted exactly once, so the 1:1 count the caret
+  // restore depends on holds. `caret` stays in the signature so a caret move and a format press call the same painter.
+  void caret;
   const runs = readMarks(text);
   const cls: Record<MarkKind, string> = { bold: 'md-bold', italic: 'md-italic', underline: 'md-underline', strike: 'md-strike' };
   const emit = (lo: number, hi: number, within: MarkRun[]): string => {
@@ -80,14 +81,12 @@ function decorateInlineForCard(text: string, caret: number | null): string {
         kids.push(within[i + 1]);
         i++;
       }
-      // THE INTERIM (Nick, 2026-09-25: "the asterisks on the page return with right-clicking or other kinds of clicking around"):
-      // a run's markers reveal only when the caret TOUCHES A MARKER - inside, or at either edge of, the opening or the closing
-      // marker's own span - and no longer anywhere inside the run. A click or right-click in the middle of a styled word shows
-      // nothing; a caret at the word's edge still shows what Backspace or Delete would remove. DISPLAY ONLY: typing, deleting,
-      // undo and storage are untouched, and item 211 (markers never show) replaces this after it is built.
-      const touches = (at: number) => caret !== null && caret >= at && caret <= at + ml;
-      const reveal = touches(r.open) || touches(r.close);
-      const markCls = reveal ? 'md-mark' : 'md-mark md-mark-hidden';
+      // ITEM 211 — Nick's "A" (2026-09-25), built on his word. Markers never
+      // show. The interim rule un-hid a run's marks while the caret touched
+      // them, so bolding or italicizing a word and clicking off its edge left
+      // the asterisks on the page. The style still paints. The marks stay in
+      // the text, so storage, undo, and innerText are unchanged.
+      const markCls = 'md-mark md-mark-hidden';
       out += escHtml(text.slice(cur, r.open));
       out += `<span class="${cls[r.kind]}"><span class="${markCls}">${escHtml(r.mark)}</span>${emit(r.open + ml, r.close, kids)}<span class="${markCls}">${escHtml(r.mark)}</span></span>`;
       cur = end;
