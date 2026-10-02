@@ -42,7 +42,7 @@ export interface ModeStripProps {
   // live mode — Draft and Revise do not mount it (absent, never greyed).
   instrument?: Instrument;
   onInstrument?: (next: Instrument) => void;
-  // Sits in the same row as the mode tabs so the row can space them evenly.
+  // Renders at the end of the same tight cluster (the page's Plan door).
   end?: ReactNode;
 }
 
@@ -71,7 +71,7 @@ export function ModeStrip({ mode, onSwitch, onPublish, freeWriteEnabled = true, 
   const inkMenu = mode === 'journal' && instrument != null && onInstrument != null;
 
   return (
-    <div className={`desk-mode-strip${end ? ' desk-mode-strip--spread' : ''}`} role="tablist" aria-label="Writing mode">
+    <div className="desk-mode-strip" role="tablist" aria-label="Writing mode">
       {items.map(it => {
         const tab = (
           <button
