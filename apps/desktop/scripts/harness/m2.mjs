@@ -533,6 +533,11 @@ await withHarness(async (app) => {
     //
     // await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Writing settings\"]').click()");
     // ----------------------------------------------------------------------
+    // ---- PARKED - SUPERSEDED by PR #7 (19d2c02: the foot's Typewriter and Progress icons nest in one three-dot "Settings" menu), 2026-10-02 ----
+    // Kept VERBATIM and no longer run. The Progress icon is gone; Progress Tracking is a section of the Settings menu, reached through its new door.
+    //
+    // await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Progress\"]').click()");
+    // ----------------------------------------------------------------------
     await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Settings\"]').click()");
     await sleep(200);
     const seenUnderWords = await app.evalJs("[...document.querySelectorAll('.mode-settings .mode-crow')].some(row => row.textContent.includes('Progress style'))");

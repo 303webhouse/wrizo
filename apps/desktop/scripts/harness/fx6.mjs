@@ -203,6 +203,11 @@ await withHarness(async (app) => {
   })()`);
   await openSliver(app);
   await sleep(150);
+  // ---- PARKED - SUPERSEDED by PR #7 (3951329: the format buttons' titles carry their shortcut, "Bold (Ctrl+B)"), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The exact-title selector no longer finds Bold; the successor matches the title's leading word.
+  //
+  // await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Bold\"]').click()");
+  // ----------------------------------------------------------------------
   await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title^=\"Bold\"]').click()");
   await sleep(150);
   const bolded = await app.evalJs("document.querySelector('.forward-only-editor').innerText");

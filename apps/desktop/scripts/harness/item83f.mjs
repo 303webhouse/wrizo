@@ -297,6 +297,28 @@ await withHarness(async (app) => {
     };
   })()`);
 
+  // ---- PARKED - SUPERSEDED by PR #7 (19d2c02: the foot is one three-dot Settings menu, and Full Screen leaves the drawer), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The row is no longer TYPEWRITER · PROGRESS, and Full Screen is no longer on the
+  // progress line (the app chrome already offers it), so the bar has no neighbour to yield to. Successors beneath.
+  //
+  // ok('E2: the instruments row is TYPEWRITER · PROGRESS — Full Screen has left the cell it used to occupy',
+  //   JSON.stringify(footShape.rowLabels) === JSON.stringify(['Typewriter', 'Progress'])
+  //     && footShape.fullScreenInRow === false,
+  //   JSON.stringify(footShape));
+  //
+  // ok('E2: Full Screen sits on the progress bar line itself, and there is EXACTLY ONE of it in the panel — a move, never a second instance left behind',
+  //   footShape.fullScreenInGoalLine === true && footShape.fullScreenTotal === 1,
+  //   JSON.stringify(footShape));
+  //
+  // ok('E2: the bar genuinely yielded the room — the hairline is strictly narrower than the goal block it used to span, which is the difference between sharing a line and merely sitting near one',
+  //   footShape.barWidth !== null && footShape.goalInnerWidth !== null
+  //     && footShape.barWidth > 0 && footShape.barWidth < footShape.goalInnerWidth - 1,
+  //   JSON.stringify(footShape));
+  //
+  // ok('E2: the alignment is LAYOUT — a flex row with align-items:center, not a nudged margin (the fence the brief sets; the probe measures the resulting centres at both widths)',
+  //   footShape.lineDisplay === 'flex' && footShape.lineAlign === 'center',
+  //   JSON.stringify(footShape));
+  // ----------------------------------------------------------------------
   ok('E2: the instruments row is the Settings button — Full Screen is not in this drawer',
     JSON.stringify(footShape.rowLabels) === JSON.stringify(['Settings'])
       && footShape.fullScreenInRow === false && footShape.fullScreenTotal === 0,
@@ -310,6 +332,29 @@ await withHarness(async (app) => {
   // it was already true at the branch point (S0 (c)). It can still fail, which
   // is why it is here — E4 grows this zone, and a later hand could append a
   // section beneath it.
+  // ---- PARKED - SUPERSEDED by PR #7 (3951329: the Structure zone leaves Draft's drawer; the Templates stand-ins take its place), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The guard's claim (the last zone sits directly before the foot) is unchanged;
+  // the zone that holds that place is Templates now.
+  //
+  // await toDraft(app);
+  // const zoneOrder = await app.evalJs(`(() => {
+  //   const body = document.querySelector('.wz-sliver-body');
+  //   const sections = [...body.querySelectorAll(':scope > .wz-sliver-section')];
+  //   const panelKids = [...document.querySelector('.wz-sliver-panel').children].map(el => el.className);
+  //   return {
+  //     headings: sections.map(s => (s.querySelector('.wz-sliver-h') || {}).textContent),
+  //     structureIsLast: sections.length > 0 && sections[sections.length - 1].classList.contains('wz-sliver-structure-zone'),
+  //     panelKids,
+  //   };
+  // })()`);
+  // ok('E2 (GUARD, already true at the branch point): Structure is the LAST zone of the tab body, with the goal foot and the instruments row following it — so it is the last thing before the foot',
+  //   zoneOrder.structureIsLast === true
+  //     && zoneOrder.panelKids.length === 3
+  //     && zoneOrder.panelKids[0].includes('wz-sliver-body')
+  //     && zoneOrder.panelKids[1].includes('wz-sliver-goal')
+  //     && zoneOrder.panelKids[2].includes('wz-sliver-instruments'),
+  //   JSON.stringify(zoneOrder));
+  // ----------------------------------------------------------------------
   await toDraft(app);
   const zoneOrder = await app.evalJs(`(() => {
     const body = document.querySelector('.wz-sliver-body');
@@ -435,6 +480,13 @@ await withHarness(async (app) => {
   await focusEditor(app);
   await app.typeKeys('Gamma');
   await sleep(250);
+  // ---- PARKED - SUPERSEDED by PR #7 (19a4676: lists gain three bullet styles; the first is titled "Round bullet"), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The control once titled 'Bulleted list' is the round bullet now; the check is unchanged.
+  //
+  // await clickFormat(app, 'Bulleted list');
+  // const bulletOn = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
+  // await clickFormat(app, 'Bulleted list');
+  // ----------------------------------------------------------------------
   await clickFormat(app, 'Round bullet');
   const bulletOn = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
   await clickFormat(app, 'Round bullet');

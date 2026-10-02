@@ -131,6 +131,11 @@ function run(mod) {
   // ---- ITEM 210: TITLES AND EXCERPTS ARE PLAIN TEXT (Nick: the title bar read "**TESTING** THE *DATABASE* SYNC") ----
   const { firstLine, plainLines, boardName, substantialLines } = mod;
   check('TITLES: Nick\'s own title - `**TESTING** THE *DATABASE* SYNC` - derives as plain words', firstLine('**TESTING** THE *DATABASE* SYNC'), 'TESTING THE DATABASE SYNC');
+  // ---- PARKED - SUPERSEDED by PR #7 (19a4676: lists gain hollow `-+ ` and square `-= ` bullets), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The row grows the two new bullet tokens; every original case is still in it.
+  //
+  // check('TITLES: every kind of markup goes - heading mark, block token, bullet, quote, centring, tabs, strike, underline, nested', ['# Big Title', '>| >| Indented', '- a bullet', '> quoted', '>< centred', '\t\ttabbed', '~~struck~~ text', '__under__ *and* ***both***'].map(firstLine), ['Big Title', 'Indented', 'a bullet', 'quoted', 'centred', 'tabbed', 'struck text', 'under and both']);
+  // ----------------------------------------------------------------------
   check('TITLES: every kind of markup goes - heading mark, block token, bullet, quote, centring, tabs, strike, underline, nested', ['# Big Title', '>| >| Indented', '- a bullet', '-+ a hollow', '-= a square', '> quoted', '>< centred', '\t\ttabbed', '~~struck~~ text', '__under__ *and* ***both***'].map(firstLine), ['Big Title', 'Indented', 'a bullet', 'a hollow', 'a square', 'quoted', 'centred', 'tabbed', 'struck text', 'under and both']);
   check('TITLES: a line that is only markup has nothing to read, so the NEXT line is the title (like a blank one)', [firstLine('****\n>| \nReal words'), firstLine('**  **\n\nSecond')], ['Real words', '**  **']);
   check('TITLES: and a page that is only markup is "Untitled" - never a stray asterisk', [firstLine('****'), firstLine('>| '), firstLine('   \n\n')], ['Untitled', 'Untitled', 'Untitled']);
@@ -139,18 +144,44 @@ function run(mod) {
   check('EXCERPTS: the lines a card face and a survey read are plain, blank and markup-only lines skipped', plainLines('**Title**\n\n- first *point*\n****\n> a quote'), ['Title', 'first point', 'a quote']);
   check('EXCERPTS: the post-sprint echo line is plain text too', substantialLines('**short**\nthis is a **long enough** line to echo back to the writer', 24), ['this is a long enough line to echo back to the writer']);
 
+  // ---- PARKED - SUPERSEDED by item 211 / PR #7 (e79390c: hidden marks never show, at an edge or mid-word), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The section's heading named the interim rule.
+  //
+  // // ---- THE INTERIM REVEAL RULE: a run's markers show only while the caret TOUCHES a marker ----
+  // ----------------------------------------------------------------------
   // ---- ITEM 211: MARKERS NEVER SHOW (Nick's "A", 2026-09-25) ----
   {
     const T = 'Start **BOLD** end';                      // markers at [6,8] and [12,14]; the word is 8..12
     const shown = (c) => /<span class="md-mark">\*\*<\/span>/.test(decorateMarkdownForCard(T, c));
+    // ---- PARKED - SUPERSEDED by item 211 / PR #7 (e79390c: hidden marks never show, at an edge or mid-word), 2026-10-02 ----
+    // Kept VERBATIM and no longer run. The interim rule showed the marks at 6,7,8 and 12,13,14; now they show at no caret position.
+    //
+    // const all = []; for (let c = 0; c <= T.length; c += 1) all.push(shown(c) ? c : null);
+    // check('REVEAL: over every caret position, the bold markers show EXACTLY when the caret is inside or at an edge of a marker span - 6,7,8 and 12,13,14 - and nowhere inside the word (9,10,11)', all.filter(x => x !== null), [6, 7, 8, 12, 13, 14]);
+    // ----------------------------------------------------------------------
     const all = []; for (let c = 0; c <= T.length; c += 1) all.push(shown(c));
     check('REVEAL: over every caret position, including the marker edges, the bold marks stay hidden', all.every(x => x === false), true);
     check('REVEAL: no caret (a resting card, a selection, Free Write) shows nothing', shown(null), false);
     const N = '**TESTING** THE *DATABASE* SYNC';             // Nick's screenshot
     const vis = (c) => visible(decorateMarkdownForCard(N, c));
     check('REVEAL: Nick\'s case - a caret in the middle of "TESTING" shows NO asterisks anywhere on the line', vis(5), 'TESTING THE DATABASE SYNC');
+    // ---- PARKED - SUPERSEDED by item 211 / PR #7 (e79390c: hidden marks never show, at an edge or mid-word), 2026-10-02 ----
+    // Kept VERBATIM and no longer run. At the word's end the interim rule showed that word's marks; now nothing shows.
+    //
+    // check('REVEAL: a caret at the END of "TESTING" (the edge a Backspace... or a Delete acts at) shows that word\'s markers and only that word\'s', vis(9), '**TESTING** THE DATABASE SYNC');
+    // ----------------------------------------------------------------------
     check('REVEAL: a caret at the END of "TESTING", where a click off the word lands, still shows no asterisks', vis(9), 'TESTING THE DATABASE SYNC');
+    // ---- PARKED - SUPERSEDED by item 211 / PR #7 (e79390c: hidden marks never show, at an edge or mid-word), 2026-10-02 ----
+    // Kept VERBATIM and no longer run. Nested runs no longer reveal at all; the word reads plain at both carets.
+    //
+    // check('REVEAL: nested marks reveal per run - in `__*x*__` a caret at 2 touches BOTH opening markers; at 3 (after x) only the italic\'s', [visible(decorateMarkdownForCard('__*x*__', 2)), visible(decorateMarkdownForCard('__*x*__', 3))], ['__*x*__', '*x*']);
+    // ----------------------------------------------------------------------
     check('REVEAL: nested marks stay hidden - `__*x*__` shows the word at the caret that used to reveal both marks, and at the caret just after it', [visible(decorateMarkdownForCard('__*x*__', 2)), visible(decorateMarkdownForCard('__*x*__', 3))], ['x', 'x']);
+    // ---- PARKED - SUPERSEDED by item 211 / PR #7 (e79390c: hidden marks never show, at an edge or mid-word), 2026-10-02 ----
+    // Kept VERBATIM and no longer run. An empty pair no longer shows itself; Backspace and Delete now remove it whole (item211.mjs ONE).
+    //
+    // check('REVEAL: an empty pair `****` with the caret between shows itself (the writer sees what a press inserted)', visible(decorateMarkdownForCard('****', 2)), '****');
+    // ----------------------------------------------------------------------
     check('REVEAL: an empty pair `****` stays hidden, including with the caret between the marks', visible(decorateMarkdownForCard('****', 2)), '');
     check('BULLET: the token stays hidden even when the caret touches it', ['- Milk', '-+ Milk', '-= Milk'].every((t) => visible(decorateMarkdownForCard(t, t.indexOf('M'))) === 'Milk'), true);
     check('BULLET: hollow and square marks stay hidden and wear their own glyph class', ['-+ Milk', '-= Milk'].every((t, i) => {
@@ -255,6 +286,12 @@ if (process.argv.includes('--mutants')) {
     ['TITLES: firstLine no longer goes through the reader', 'entryText.ts', (s) => s.replace('return firstPlainLine(text) || \'Untitled\';', "return (text.split('\\n').map(l => l.trim()).find(Boolean)) || 'Untitled';")],
     ['TITLES: markup-only lines are not skipped', 'entryText.ts', (s) => s.replace("return text.split('\\n').map(l => stripLine(l.trimStart()).trim()).filter(Boolean);", "return text.split('\\n').map(l => stripLine(l.trimStart()).trim());")],
     ['TITLES: the board name keeps its own copy', 'entryText.ts', (s) => s.replace("const first = firstPlainLine(text ?? '');", "const first = (text ?? '').split('\\n').map(l => l.trim()).find(Boolean);")],
+    // ---- PARKED - SUPERSEDED by item 211 / PR #7 (e79390c: hidden marks never show, at an edge or mid-word), 2026-10-02 ----
+    // Kept VERBATIM and no longer run. The `const reveal = touches(...)` line these mutated is gone; the successors re-introduce each superseded rule (the old rule, the interim rule) and must go RED.
+    //
+    // ['REVEAL: markers show anywhere inside the run (the old rule)', 'draftDecoration.ts', (s) => s.replace('const reveal = touches(r.open) || touches(r.close);', 'const reveal = caret !== null && caret >= r.open && caret <= end;')],
+    // ['REVEAL: only the opening marker is watched', 'draftDecoration.ts', (s) => s.replace('const reveal = touches(r.open) || touches(r.close);', 'const reveal = touches(r.open);')],
+    // ----------------------------------------------------------------------
     ['REVEAL: markers show anywhere inside the run (the old rule)', 'draftDecoration.ts', (s) => s.replace('const markCls = \'md-mark md-mark-hidden\';', 'const markCls = (caret !== null && caret >= r.open && caret <= r.close + r.mark.length) ? \'md-mark\' : \'md-mark md-mark-hidden\';')],
     ['REVEAL: markers show when the caret touches a marker (the interim rule)', 'draftDecoration.ts', (s) => s.replace('const markCls = \'md-mark md-mark-hidden\';', 'const markCls = (caret !== null && ((caret >= r.open && caret <= r.open + r.mark.length) || (caret >= r.close && caret <= r.close + r.mark.length))) ? \'md-mark\' : \'md-mark md-mark-hidden\';')],
     ['HEADING: the hash stays on the page', 'draftDecoration.ts', (s) => s.replace('<span class="md-mark md-mark-hidden">${escHtml(heading.text)}</span>', '<span class="md-mark">${escHtml(heading.text)}</span>')],
