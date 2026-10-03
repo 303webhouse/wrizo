@@ -171,8 +171,69 @@ await withHarness(async (app) => {
     ok('PLUS: an IME composition at the end of the bold word stays native and lands inside the pair', (await settled(app, id)) === 'Start **BOLDab** end', JSON.stringify(await stored(app, id)));
   }
   await editCase('PLUS: Enter inside a bold word closes and reopens the pair, so neither line shows a mark', T, async () => { await put(app, 10); await app.key('Enter'); }, 'Start **BO**\n**LD** end');
+
+  // ---- TWEAKS (Fable's C) ----
+  {
+    const GOAL = 'wrizo-writing-goal-lines';
+    const text = '# Title\none **two** three\n- four';   // five words written; "#", "**" and "- " are not words
+    const id = await open(text);
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(250);
+    const foot = () => app.evalJs("(() => { const g = document.querySelector('.wz-sliver-goal'); return g ? { target: g.dataset.target, unit: g.dataset.unit, done: Number(g.dataset.done) } : null; })()");
+    const before = await foot();
+    ok('C1: a goal never set reads as the shipped default, 24 lines', before && before.target === '24' && before.unit === 'lines' && (await app.evalJs(`localStorage.getItem('${GOAL}')`)) === null, JSON.stringify(before));
+    await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Settings\"]').click()"); await sleep(200);
+    const unitRow = await app.evalJs(`(() => {
+      const row = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')].find(r => r.firstElementChild && r.firstElementChild.textContent === 'Unit');
+      return row ? [...row.querySelectorAll('button')].map(b => ({ t: b.textContent, on: b.classList.contains('on'), disabled: b.getAttribute('aria-disabled'), title: b.title, opacity: getComputedStyle(b).opacity })) : null; })()`);
+    const time = unitRow && unitRow.find((b) => b.t === 'Time');
+    ok('C1: Unit offers Lines and Words; Time is a dimmed stand-in (aria-disabled, "Coming soon")',
+      !!unitRow && unitRow.map((b) => b.t).join(',') === 'Lines,Words,Time' && !!time && time.disabled === 'true' && time.title === 'Coming soon' && Number(time.opacity) < 1 && unitRow[0].on, JSON.stringify(unitRow));
+    const pick = (label) => app.evalJs(`(() => { const row = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')].find(r => r.firstElementChild && r.firstElementChild.textContent === 'Unit'); [...row.querySelectorAll('button')].find(b => b.textContent === ${JSON.stringify(label)}).click(); })()`);
+    await pick('Time'); await sleep(200);
+    ok('C1: pressing Time does nothing - the goal and its unit are unchanged', JSON.stringify(await foot()) === JSON.stringify(before) && (await app.evalJs(`localStorage.getItem('${GOAL}')`)) === null);
+    await pick('Words'); await sleep(200);
+    const words = await foot();
+    const storedGoal = await app.evalJs(`localStorage.getItem('${GOAL}')`);
+    ok('C1: choosing Words stores the unit WITH the number', storedGoal === JSON.stringify({ n: 24, unit: 'words' }), String(storedGoal));
+    ok('C1: Words counts real words written - five here; the heading hash, the bold marks and the bullet token are not words', words && words.unit === 'words' && words.done === 5, JSON.stringify(words));
+    const label = await app.evalJs("document.querySelector('.wz-sliver-instruments-panel .wz-tw-unit')?.textContent");
+    ok('C1: the label beside the number says words', label === 'words', String(label));
+    const fill = await app.evalJs("(() => { const f = document.querySelector('.wz-sliver-goal-hairline-fill'); return f ? f.style.width : null; })()");
+    ok('C1: the hairline fills by words: 5 of 24', fill === `${((5 / 24) * 100).toFixed(1)}%`, String(fill));
+    await put(app, (await stored(app, id)).length); await app.typeKeys(' five six'); await sleep(300);
+    ok('C1: typing two more words moves the words count to seven', (await foot()).done === 7, JSON.stringify(await foot()));
+
+    // An existing goal keeps its old meaning: a bare number in storage is lines.
+    await app.goto('/');
+    await app.evalJs(`localStorage.setItem('${GOAL}', '2')`);
+    await app.reload();
+    await app.evalJs(`location.hash = '#/page/${id}'`);
+    await app.waitFor(`!!document.querySelector('${ED}')`, { label: 'page after legacy goal' });
+    await sleep(400);
+    const legacy = await foot();
+    ok('C1: a goal stored before units existed (a bare "2") still reads as 2 LINES', legacy && legacy.target === '2' && legacy.unit === 'lines', JSON.stringify(legacy));
+
+    await app.click('Draft'); await sleep(300);
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(250);
+    const tpl = await app.evalJs(`[...document.querySelectorAll('.wz-sliver-templates .wz-template-btn')].map(b => ({ name: b.getAttribute('aria-label'), title: b.title, disabled: b.getAttribute('aria-disabled'), opacity: getComputedStyle(b).opacity }))`);
+    ok('C2: Outline, Bibliography and Title page are dimmed stand-ins - aria-disabled, tooltip "Coming soon"',
+      tpl.map((b) => b.name).join(',') === 'Outline,Bibliography,Title page' && tpl.every((b) => b.disabled === 'true' && b.title === 'Coming soon' && Number(b.opacity) < 1), JSON.stringify(tpl));
+    const textBefore = await stored(app, id);
+    await app.evalJs("document.querySelectorAll('.wz-sliver-templates .wz-template-btn').forEach(b => b.click())"); await sleep(300);
+    ok('C2: pressing them does nothing to the page', (await stored(app, id)) === textBefore && (await app.evalJs(`!!document.querySelector('${ED}')`)));
+    const typeHead = await app.evalJs("(() => { const s = document.querySelector('.wz-sliver-type'); const h = s && s.firstElementChild; return h ? { cls: h.className, text: h.textContent, next: h.nextElementSibling && h.nextElementSibling.className } : null; })()");
+    ok('C3: a "Typeface" heading sits directly above the font controls', typeHead && typeHead.cls === 'wz-sliver-h' && typeHead.text === 'Typeface' && /wz-type/.test(typeHead.next || ''), JSON.stringify(typeHead));
+    await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Settings\"]').click()"); await sleep(200);
+    const heads = await app.evalJs(`(() => {
+      const panel = document.querySelector('.wz-sliver-instruments-panel');
+      const probe = document.createElement('span'); probe.style.color = 'var(--accent-rest)'; panel.appendChild(probe);
+      const brass = document.createElement('span'); brass.style.color = 'var(--brass-press)'; panel.appendChild(brass);
+      const out = { olive: getComputedStyle(probe).color, brass: getComputedStyle(brass).color, h4: [...panel.querySelectorAll('h4')].map(h => getComputedStyle(h).color) };
+      probe.remove(); brass.remove(); return out; })()`);
+    ok('C4: every Settings heading is the theme\'s olive (--accent-rest), not brass', heads.h4.length === 3 && heads.h4.every((c) => c === heads.olive) && heads.olive !== heads.brass, JSON.stringify(heads));
+  }
 });
 
 const failed = checks.filter((c) => !c.pass);
-console.log(`\nITEM 211: ${checks.length - failed.length}/${checks.length} checks passed`);
+console.log(`\nITEM211 VERIFY: ${failed.length ? `FAIL — ${failed.length}/${checks.length} failed` : `PASS (${checks.length} checks)`}`);
 if (failed.length) process.exitCode = 1;
