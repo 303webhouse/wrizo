@@ -306,7 +306,12 @@ await withHarness(async (app) => {
   //
   // await app.evalJs("document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')?.click()");
   // ------------------------------------------------------------------
-  await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'').startsWith('Typewriter')); if (b) b.click(); })()");
+  // ---- PARKED - SUPERSEDED by PR #7 (19d2c02: the foot's Typewriter icon nests in one three-dot "Settings" menu), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The Typewriter switch is now the first row of the Settings menu; the successor opens that menu, and the next line presses the same switch.
+  //
+  // await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'').startsWith('Typewriter')); if (b) b.click(); })()");
+  // ----------------------------------------------------------------------
+  await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'') === 'Settings'); if (b) b.click(); })()");
   await sleep(200);
   await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
   await sleep(150);
@@ -368,7 +373,12 @@ await withHarness(async (app) => {
   //
   // await app.evalJs("document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')?.click()");
   // ------------------------------------------------------------------
-  await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'').startsWith('Typewriter')); if (b) b.click(); })()");
+  // ---- PARKED - SUPERSEDED by PR #7 (19d2c02: the foot's Typewriter icon nests in one three-dot "Settings" menu), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The Typewriter switch is now the first row of the Settings menu; the successor opens that menu, and the next line presses the same switch.
+  //
+  // await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'').startsWith('Typewriter')); if (b) b.click(); })()");
+  // ----------------------------------------------------------------------
+  await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'') === 'Settings'); if (b) b.click(); })()");
   await sleep(200);
   await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
   await sleep(150);

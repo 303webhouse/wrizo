@@ -616,8 +616,15 @@ await withHarness(async (app) => {
     buttons: [...document.querySelectorAll('.wz-sliver-format .mode-tbtn')].map(b => b.title),
     switchPresent: !!document.querySelector('${SWITCH}'),
   }))()`);
-  ok('S10: DRAFT IS UNTOUCHED — its FORMAT zone still carries Bold/Italic/Underline (R4 survives R15, which rules on ONE surface). This is the check that would have caught "remove STYLING" being read as "remove it everywhere"',
-    draftDrawer.format > 0 && draftDrawer.buttons.includes('Bold') && draftDrawer.buttons.includes('Italic') && draftDrawer.buttons.includes('Underline'),
+  // ---- PARKED - SUPERSEDED by PR #7 (3951329: the format buttons are titled "Bold (Ctrl+B)", "Italic (Ctrl+I)", "Underline (Ctrl+U)"), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. Only the titles changed; the three buttons are still there.
+  //
+  // ok('S10: DRAFT IS UNTOUCHED — its FORMAT zone still carries Bold/Italic/Underline (R4 survives R15, which rules on ONE surface). This is the check that would have caught "remove STYLING" being read as "remove it everywhere"',
+  //   draftDrawer.format > 0 && draftDrawer.buttons.includes('Bold') && draftDrawer.buttons.includes('Italic') && draftDrawer.buttons.includes('Underline'),
+  //   JSON.stringify(draftDrawer));
+  // ----------------------------------------------------------------------
+  ok('S10 [PR #7 successor]: DRAFT IS UNTOUCHED — its FORMAT zone still carries Bold/Italic/Underline, now titled with their shortcuts (R4 survives R15, which rules on ONE surface)',
+    draftDrawer.format > 0 && ['Bold (Ctrl+B)', 'Italic (Ctrl+I)', 'Underline (Ctrl+U)'].every(t => draftDrawer.buttons.includes(t)),
     JSON.stringify(draftDrawer));
   ok('S10: and the TEXT|INK switch does NOT mount on Draft — Draft is not a sketch pad, and an instrument switch offering an instrument the surface does not have would be exactly the locked door R15\'s own grammar forbids',
     draftDrawer.switchPresent === false, JSON.stringify({ switchPresent: draftDrawer.switchPresent }));

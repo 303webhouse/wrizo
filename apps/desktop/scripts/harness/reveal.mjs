@@ -301,8 +301,14 @@ await withHarness(async (app) => {
   for (let i = 0; i < 10; i += 1) await app.key('ArrowLeft', { shift: true });
   await sleep(400);
   const pageSel = await selectionNow(app);
-  ok('S3 (page): a live NON-COLLAPSED selection survives being extended BACKWARDS across a reveal boundary — ten trusted Shift+ArrowLeft presses from the end drag the range START into the bold run, where the decoration genuinely differs from the one last written, and the ten characters are still selected because revealAtCaret declines outright while a selection is open',
-    pageSel.none === false && pageSel.collapsed === false && pageSel.length === 10, JSON.stringify(pageSel));
+  // ---- PARKED - SUPERSEDED by item 211 (52ad017: Shift+Arrow moves by visible characters), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. Ten presses used to select ten raw characters; they now select ten visible ones, which spans the hidden markers.
+  //
+  // ok('S3 (page): a live NON-COLLAPSED selection survives being extended BACKWARDS across a reveal boundary — ten trusted Shift+ArrowLeft presses from the end drag the range START into the bold run, where the decoration genuinely differs from the one last written, and the ten characters are still selected because revealAtCaret declines outright while a selection is open',
+  //   pageSel.none === false && pageSel.collapsed === false && pageSel.length === 10, JSON.stringify(pageSel));
+  // ----------------------------------------------------------------------
+  ok('S3 ITEM 211: a live NON-COLLAPSED selection survives being extended BACKWARDS across the bold run - ten trusted Shift+ArrowLeft presses move by ten VISIBLE characters ("t BOLD end"), so the range also takes in the four hidden markers whole',
+    pageSel.none === false && pageSel.collapsed === false && pageSel.text === 't **BOLD** end', JSON.stringify(pageSel));
 
   // ==========================================================================
   // S4 — THE CARD SURFACE. What FX5 S6 built must still work, on the new

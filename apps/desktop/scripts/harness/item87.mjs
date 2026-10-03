@@ -116,9 +116,17 @@ await withHarness(async (app) => {
   await sleep(300);
   const draftMode = await activeModeTab(app);
   const structureInDraft = await structureVisible(app);
-  ok('S2 (b) — and Draft still HAS them (the presets were hidden, not deleted)',
-    draftMode === 'Draft' && structureInDraft === true,
-    `activeMode=${String(draftMode)} structureSectionPresent=${structureInDraft}`);
+  // ---- PARKED - SUPERSEDED by PR #7 (3951329: the Structure zone is replaced by Templates), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The presets are gone from every mode, not hidden in Free Write only.
+  //
+  // ok('S2 (b) — and Draft still HAS them (the presets were hidden, not deleted)',
+  //   draftMode === 'Draft' && structureInDraft === true,
+  //   `activeMode=${String(draftMode)} structureSectionPresent=${structureInDraft}`);
+  // ----------------------------------------------------------------------
+  const draftTemplates = await app.evalJs("document.querySelectorAll('.wz-sliver-templates .wz-template-btn').length");
+  ok('S2 (b) [PR #7 successor]: Draft has no Structure presets either - the zone left the drawer; its place holds the three Template stand-ins, so the drawer itself is present',
+    draftMode === 'Draft' && structureInDraft === false && draftTemplates === 3,
+    `activeMode=${String(draftMode)} structureSectionPresent=${structureInDraft} templates=${draftTemplates}`);
 
   // ==========================================================================
   // S3 — CLAUSE 3: a FRESH Draft page opens with the typewriter OFF, and a page

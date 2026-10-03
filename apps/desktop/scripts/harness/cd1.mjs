@@ -222,8 +222,16 @@ await withHarness(async (app) => {
   // ok('S2/S7: opening the sliver on script carries the structure picker (script\'s own hand tool)', scriptStructureCheck, String(scriptStructureCheck));
   // ------------------------------------------------------------------
   const scriptStructureRow = await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].some(b => /^Convert to/.test(b.textContent))");
-  ok('S2/S7 [DR3 successor]: opening the sliver on script still carries its structure control - now the confirm-gated Convert row, not the retired tablist',
-    scriptStructureRow, String(scriptStructureRow));
+  // ---- PARKED - SUPERSEDED by PR #7 (3951329: "Convert to Screenplay is no longer in the drawer"; the Structure zone
+  // leaves the sliver on both surfaces), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The script sliver no longer carries a structure control at all. Successor beneath
+  // asserts the absence, so a Convert row cannot return to the drawer unannounced.
+  //
+  // ok('S2/S7 [DR3 successor]: opening the sliver on script still carries its structure control - now the confirm-gated Convert row, not the retired tablist',
+  //   scriptStructureRow, String(scriptStructureRow));
+  // ----------------------------------------------------------------------
+  ok('S2/S7 [PR #7 successor]: the script sliver carries no Convert row - Structure left the drawer',
+    scriptStructureRow === false, String(scriptStructureRow));
 
   // ==========================================================================
   // S7 — ScriptEditor gains the drawer too (Page + Places), mirroring prose.
@@ -360,9 +368,26 @@ await withHarness(async (app) => {
   // the reload above remounted it closed by default.
   await openSliver(app);
   await sleep(200);
-  await app.evalJs("document.querySelector('.wz-sliver-goal-edit')?.click()");
+  // ---- PARKED - SUPERSEDED by PR #7 (7503250: the goal number is set under Settings > Progress Tracking; the foot's
+  // inline goal editor and its Clear button are gone), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The claim is unchanged: clearing the goal disables every instrument. Successor
+  // beneath clears it at its new home - an emptied Goal field, committed with Enter.
+  //
+  // await app.evalJs("document.querySelector('.wz-sliver-goal-edit')?.click()");
+  // await sleep(100);
+  // await app.evalJs("document.querySelector('.wz-sliver-goal-edit-clear')?.click()");
+  // await sleep(200);
+  // ----------------------------------------------------------------------
+  await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Settings\"]')?.click()");
+  await sleep(150);
+  await app.evalJs(`(() => {
+    const input = document.querySelector('.wz-sliver-instruments-panel input[type="number"]');
+    if (!input) return;
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  })()`);
   await sleep(100);
-  await app.evalJs("document.querySelector('.wz-sliver-goal-edit-clear')?.click()");
+  await app.evalJs("document.querySelector('.wz-sliver-instruments-panel input[type=\"number\"]')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))");
   await sleep(200);
   const clearedState = await app.evalJs(`({
     hairlineGone: !document.querySelector('.wz-sliver-goal-hairline'),

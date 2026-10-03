@@ -7,6 +7,7 @@
 //   N2  a real RIGHT-click there shows none either
 //   N3  clicking around (the other styled word, plain text, the page's blank area) shows none
 //   N4  a caret at a styled word's EDGE still shows that word's markers (what Backspace/Delete would remove), and only that word's
+//       (PARKED 2026-10-02: item 211 shows no markers at the edge either; see N4 below)
 //   N5  Revise behaves the same; Free Write never shows a marker
 //   N6  display only: typing in the middle of the styled word lands in the stored text exactly, markers intact
 // Run: node scripts/harness/revealmark.mjs   (from apps/desktop, dist-web built, box turn granted)
@@ -90,7 +91,12 @@ await withHarness(async (app) => {
     await click(app, testing);
     await app.key('Home'); await sleep(350);
     const e0 = await state(app);
-    ok(`N4 [${mode}] a caret at the styled word's leading EDGE shows that word's own markers (what Delete would remove) and ONLY that word's - the italic word stays clean`, e0.off === 0 && JSON.stringify(e0.shown) === JSON.stringify(['**', '**']), JSON.stringify(e0));
+    // ---- PARKED - SUPERSEDED by item 211 (e79390c: marks never show), 2026-10-02 ----
+    // Kept VERBATIM and no longer run. The interim rule showed a run's markers at its edge; item 211 replaces that rule, as this file's header foretold.
+    //
+    // ok(`N4 [${mode}] a caret at the styled word's leading EDGE shows that word's own markers (what Delete would remove) and ONLY that word's - the italic word stays clean`, e0.off === 0 && JSON.stringify(e0.shown) === JSON.stringify(['**', '**']), JSON.stringify(e0));
+    // ----------------------------------------------------------------------
+    ok(`N4 ITEM 211 [${mode}] a caret at the styled word's leading EDGE (line start) shows no markers either - marks never show`, e0.off === 0 && e0.shown.length === 0, JSON.stringify(e0));
     const pt2 = await midOf(app, 'THE');
     if (pt2) await click(app, pt2);
     const e1 = await state(app);
