@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { useDeskLexicon } from '../store/deskLexicon';
+import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { TypeControl, type TypeControlProps } from './TypeControl';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
-import { useWritingGoal, setWritingGoal, DEFAULT_GOAL_LINES } from '../store/writingGoal';
-import { useGoalUnit, setGoalUnit, type GoalUnit } from '../store/writingGoalUnit';
-import { countLineEquivalents } from '../store/lineEquivalents';
+import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
+import { useWritingGoal, setWritingGoal, goalCount, goalFraction, DEFAULT_GOAL_LINES, type WritingGoal, type GoalUnit } from '../store/writingGoal';
 // FX3 S5 — the writing-settings gear leaves the paper entirely and moves to
 // the sliver's own foot (below); rather than duplicate SettingsPanel/
 // ThemePanel/Seg/GearIcon's JSX here, they're exported from ModeStage.tsx
@@ -14,8 +13,7 @@ import { countLineEquivalents } from '../store/lineEquivalents';
 // scoped CSS override (index.css's `.wz-sliver-instruments .mode-settings`)
 // repositioning their popover to sit inline in the sliver's own scrolling
 // panel instead of ModeStage's absolute stage-corner placement.
-import { SettingsPanel, Seg, GearIcon } from './ModeStage';
-import { FullscreenToggle } from './ChromeControls';
+import { Seg } from './ModeStage';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import type { FormatAction, StructureKind } from '../store/draftFormat';
 import type { PageKindSetting, StyleGuide } from '../types';
@@ -265,8 +263,8 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
     }
   }, [goalText, firstWriteAt]);
 
-  const lines = countLineEquivalents(goalText);
-  const fraction = target != null && target > 0 ? Math.max(0, Math.min(1, lines / target)) : 0;
+  const done = target != null ? goalCount(goalText, target) : 0;
+  const fraction = goalFraction(goalText, target);
 
   // item 83 errata E1 — the foot's own gate reports up to the panel that
   // carries the fade classes. `setPopoutHold` is a useState setter, so it is
@@ -310,7 +308,7 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
           on this surface behaves byte-identically to before. */}
       <div className="wz-sliver-panel chrome-fade desk-dissolve" aria-hidden={!open} data-open={open ? 'true' : 'false'} data-popout-hold={popoutHold ? 'true' : 'false'}>
         <SliverToolsBody content={content} />
-        <SliverGoalFoot target={target} lines={lines} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />
+        <SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />
         {/* FX3 S5 — the foot's new instruments row, beneath the goal block.
             Nested inside THIS panel (which already carries chrome-fade
             desk-dissolve) so its own open gear/instruments popovers dissolve
@@ -484,6 +482,91 @@ function SliverInkZone({ opts }: { opts: NonNullable<Extract<SliverContent, { ki
   );
 }
 
+/** Line icons for the Draft strip. Alignment is a stack of lines. Indent is
+ *  those lines with an arrow, so it does not read as Back or as a tab key. */
+function FormatMark({ kind }: { kind: 'outdent' | 'indent' | 'left' | 'center' | 'right' }) {
+  const svg = {
+    width: 16, height: 16, viewBox: '0 0 16 16', 'aria-hidden': true as const,
+    fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const,
+    className: 'wz-format-mark',
+  };
+  if (kind === 'left' || kind === 'center' || kind === 'right') {
+    const lengths = [12, 8, 11, 6];
+    const ys = [2.5, 6, 9.5, 13];
+    const span = 12;
+    const origin = 2;
+    return (
+      <svg {...svg}>
+        {lengths.map((len, i) => {
+          const x = kind === 'left' ? origin : kind === 'right' ? origin + span - len : origin + (span - len) / 2;
+          return <path key={ys[i]} d={`M${x} ${ys[i]}h${len}`} />;
+        })}
+      </svg>
+    );
+  }
+  const arrow = kind === 'indent' ? 'M1.5 3.2H9.2M7.2 1.3 9.8 3.2 7.2 5.1' : 'M14.5 3.2H6.8M8.8 1.3 6.2 3.2 8.8 5.1';
+  return (
+    <svg {...svg}>
+      <path d={arrow} />
+      <path d="M4 8h10M4 11h10M4 14h7" />
+    </svg>
+  );
+}
+
+/** A list, not a lone dot. The mark at the left of the lines is the style. */
+function BulletMark({ kind }: { kind: 'disc' | 'circle' | 'square' }) {
+  const ys = [3, 8, 13];
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" className="wz-format-mark">
+      {ys.map((y) => kind === 'square'
+        ? <rect key={y} x="1.2" y={y - 1.15} width="2.3" height="2.3" fill="currentColor" />
+        : <circle key={y} cx="2.35" cy={y} r="1.15" fill={kind === 'disc' ? 'currentColor' : 'none'} stroke={kind === 'circle' ? 'currentColor' : 'none'} strokeWidth="1.3" />)}
+      <path d="M6 3h8M6 8h8M6 13h6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+const BULLET_STYLES: readonly { action: FormatAction; kind: 'disc' | 'circle' | 'square'; term: DeskTermId }[] = [
+  { action: 'bullet', kind: 'disc', term: 'draftBullet' },
+  { action: 'bullet-circle', kind: 'circle', term: 'draftBulletCircle' },
+  { action: 'bullet-square', kind: 'square', term: 'draftBulletSquare' },
+];
+
+function BulletControl({ onFormat, t }: { onFormat: (action: FormatAction) => void; t: (term: DeskTermId) => string }) {
+  const [open, setOpen] = useState(false);
+  const [style, setStyle] = useState(BULLET_STYLES[0]);
+  return (
+    <div className="wz-bullet-control">
+      <button type="button" className="mode-tbtn" data-format-glyph={style.action} title={t(style.term)} aria-label={t(style.term)} onClick={() => onFormat(style.action)}>
+        <BulletMark kind={style.kind} />
+      </button>
+      <button type="button" className="mode-tbtn wz-bullet-toggle" aria-expanded={open} aria-label={t('draftBulletStyles')} title={t('draftBulletStyles')} onClick={() => setOpen(v => !v)}>
+        <span aria-hidden="true">▾</span>
+      </button>
+      {open && (
+        <div className="wz-bullet-menu" role="menu">
+          {BULLET_STYLES.map(s => (
+            <button key={s.action} type="button" role="menuitem" className="mode-tbtn" data-format-glyph={s.action} title={t(s.term)} aria-label={t(s.term)} onClick={() => { setStyle(s); setOpen(false); onFormat(s.action); }}>
+              <BulletMark kind={s.kind} />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TemplateIcon({ kind }: { kind: 'outline' | 'bibliography' | 'title' }) {
+  const svg = { width: 16, height: 16, viewBox: '0 0 16 16', 'aria-hidden': true as const, fill: 'none', stroke: 'currentColor', strokeWidth: 1.3, strokeLinecap: 'round' as const, className: 'wz-format-mark' };
+  if (kind === 'outline') {
+    return <svg {...svg}><path d="M3 3h10M5 7h8M7 11h6M3 15h8" /></svg>;
+  }
+  if (kind === 'bibliography') {
+    return <svg {...svg}><path d="M3 2.5v11M4.2 2.5h8.3v11H4.2zM6.2 5.5h4.5M6.2 8h4.5M6.2 10.5h3" /></svg>;
+  }
+  return <svg {...svg}><path d="M3.5 2.5h9v11h-9zM6 6.2h4" /></svg>;
+}
+
 function SliverToolsBody({ content }: { content: SliverContent }) {
   const { t } = useDeskLexicon();
 
@@ -532,10 +615,11 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           pointer, never rewritten in place. */}
 
       {/* ITEM 207 - THE TYPE CONTROL, one component in three mountings (Free Write: small; Draft and Revise: full). It leads
-          the drawer's tenants and carries no heading of its own - his minimal-interface law. Absent, never greyed, wherever
-          the host passes no `type` (a screenplay page). */}
+          the drawer's tenants. The control itself stays caption-free (his minimal-interface law); the section above it is
+          headed "Typeface" like every other drawer zone. Absent, never greyed, wherever the host passes no `type` (a
+          screenplay page). */}
       {(content.kind === 'freewrite' || content.kind === 'draft' || content.kind === 'revise') && content.type && (
-        <div className="wz-sliver-section wz-sliver-type"><TypeControl {...content.type} /></div>
+        <div className="wz-sliver-section wz-sliver-type"><div className="wz-sliver-h">{t('railTypeface')}</div><TypeControl {...content.type} /></div>
       )}
 
       {content.kind === 'freewrite' && content.forwardLock && (
@@ -566,7 +650,7 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
               and collapse whatever text was selected (moved verbatim). */}
           {/* ITEM 83 M5 (R1) — STYLING's B·I·U leads Draft too, so the two
               prose modes read as one hand with different reach. */}
-          <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
+          <div className="wz-sliver-format wz-sliver-format--letters" onMouseDown={e => e.preventDefault()}>
             <button type="button" className="mode-tbtn" data-on={content.format.boldOn ? 'true' : 'false'} aria-pressed={!!content.format.boldOn} title={t('stylingBold')} onClick={() => content.format!.onFormat('bold')}><b>B</b></button>
             <button type="button" className="mode-tbtn" data-on={content.format.italicOn ? 'true' : 'false'} aria-pressed={!!content.format.italicOn} title={t('stylingItalic')} onClick={() => content.format!.onFormat('italic')}><i>I</i></button>
             <button type="button" className="mode-tbtn" data-on={content.format.underlineOn ? 'true' : 'false'} aria-pressed={!!content.format.underlineOn} title={t('stylingUnderline')} onClick={() => content.format!.onFormat('underline')}><u>U</u></button>
@@ -585,7 +669,7 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
               (store/draftFormat.ts documents the tokens and why they are not
               metadata). */}
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
-            <button type="button" className="mode-tbtn" title={t('draftBullet')} onClick={() => content.format!.onFormat('bullet')}>•</button>
+            <BulletControl onFormat={content.format!.onFormat} t={t} />
             <button type="button" className="mode-tbtn" title={t('draftQuote')} onClick={() => content.format!.onFormat('quote')}>&ldquo;</button>
             {/* ITEM 83 ERRATA E3, THE OUTDENT PARTNER (Nick's ruling) — the exact
                 decrement of Indent beside it, floored at zero, levels counted in
@@ -595,19 +679,17 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
                 a pair — the same order the legacy bar has always used
                 (ModeStage.tsx's Outdent/Indent), and the same direction this
                 drawer's own alignment row already reads.
-                GLYPH: the left arrow, mirroring Indent's own right arrow. NOT
-                the legacy bar's ⇤ — that glyph is already spoken for in this
-                very drawer by Align left, and a control that wears another
-                control's mark in the same panel is a defect however correct its
-                behaviour. */}
-            <button type="button" className="mode-tbtn" title={t('draftOutdent')} onClick={() => content.format!.onFormat('outdent')}>&larr;</button>
-            <button type="button" className="mode-tbtn" title={t('draftIndent')} onClick={() => content.format!.onFormat('indent')}>&rarr;</button>
+                GLYPH: a paragraph of lines with an arrow. Align left is a
+                stack of lines, not this arrow, so the two controls cannot
+                wear one mark. */}
+            <button type="button" className="mode-tbtn" data-format-glyph="outdent" title={t('draftOutdent')} aria-label={t('draftOutdent')} onClick={() => content.format!.onFormat('outdent')}><FormatMark kind="outdent" /></button>
+            <button type="button" className="mode-tbtn" data-format-glyph="indent" title={t('draftIndent')} aria-label={t('draftIndent')} onClick={() => content.format!.onFormat('indent')}><FormatMark kind="indent" /></button>
             <button type="button" className="mode-tbtn" title={t('draftSpacing')} onClick={() => content.format!.onFormat('spacing')}>&para;</button>
           </div>
           <div className="wz-sliver-format" role="group" aria-label={t('draftAlignment')} onMouseDown={e => e.preventDefault()}>
-            <button type="button" className="mode-tbtn" title={t('draftAlignLeft')} onClick={() => content.format!.onFormat('align-left')}>&#8676;</button>
-            <button type="button" className="mode-tbtn" title={t('draftAlignCenter')} onClick={() => content.format!.onFormat('align-center')}>&#8596;</button>
-            <button type="button" className="mode-tbtn" title={t('draftAlignRight')} onClick={() => content.format!.onFormat('align-right')}>&#8677;</button>
+            <button type="button" className="mode-tbtn" data-format-glyph="align-left" title={t('draftAlignLeft')} aria-label={t('draftAlignLeft')} onClick={() => content.format!.onFormat('align-left')}><FormatMark kind="left" /></button>
+            <button type="button" className="mode-tbtn" data-format-glyph="align-center" title={t('draftAlignCenter')} aria-label={t('draftAlignCenter')} onClick={() => content.format!.onFormat('align-center')}><FormatMark kind="center" /></button>
+            <button type="button" className="mode-tbtn" data-format-glyph="align-right" title={t('draftAlignRight')} aria-label={t('draftAlignRight')} onClick={() => content.format!.onFormat('align-right')}><FormatMark kind="right" /></button>
           </div>
         </div>
       )}
@@ -630,45 +712,25 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           name made a live assertion false without any ruling having changed.
           Caught by the suite. The picker's name stays retired. */}
       {content.kind === 'draft' && (
-        <div className="wz-sliver-section wz-sliver-structure-zone">
-          <div className="wz-sliver-h">{t('railStructure')}</div>
+        <div className="wz-sliver-section wz-sliver-templates">
+          <div className="wz-sliver-h">{t('railTemplates')}</div>
+          <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
+            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateOutline')}><TemplateIcon kind="outline" /></button>
+            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateBibliography')}><TemplateIcon kind="bibliography" /></button>
+            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateTitlePage')}><TemplateIcon kind="title" /></button>
+          </div>
+        </div>
+      )}
 
-          {/* ITEM 114 (item 83 errata E4) — THE PAGE'S DECLARED KIND.
-              PLACEHOLDERS, by Nick's own word: they render and they persist per
-              page, and nothing downstream is wired — the Revise linkage and
-              footnotes are deferred by his word, not by omission. Nothing is
-              greyed, because what isn't built doesn't render (G3).
-
-              ► THE SCREENPLAY NAME COLLISION — HALF-ANSWERED HERE, NOT
-              RESOLVED. A kind chip reading "Screenplay" now stands in the same
-              zone as `Convert to Screenplay…`, which is a consequential one-way
-              act behind a confirm dialog. The collision is REPORTED TO NICK
-              with a recommendation and is his to settle; what this markup does
-              is make the two unmistakable in the meantime, and it does it three
-              ways at once rather than by renaming either control:
-                · SEPARATE SUB-LABELS that name the difference in words — "This
-                  page is" over the chips, "Change the page itself" over the
-                  act. That is the distinction, said out loud.
-                · A DIFFERENT CONTROL SHAPE. The kinds are a radiogroup of small
-                  chips wearing the olive at-rest selection law; the act is the
-                  full-width bordered `.wz-cascade-action` it has always been,
-                  still ending in the ellipsis that promises a dialog.
-                · A RULE BETWEEN THEM, so the eye reads two zones and not one
-                  list.
-              Neither control is renamed and neither is merged. Merging would
-              make a reversible setting inherit a destructive act's confirm, or
-              an act inherit a setting's silence.
-
-              And a note the M5 comment below earns: the chips ARE, visually,
-              the Prose | Screenplay tablist that R13.iv withdrew from this very
-              zone for "promising free switching". The difference is that free
-              switching is now the TRUTH — a kind chip really is a reversible
-              per-page setting that touches not one character of the writer's
-              text. The tablist's sin was dressing a conversion as a switch;
-              these chips are a switch dressed as a switch. */}
-          {content.pageKind && content.onPickKind && (<>
-          <div className="wz-sliver-sub" id="wz-structure-kind-label">{t('structureKindLabel')}</div>
-          <div className="wz-page-setup-seg" role="radiogroup" aria-labelledby="wz-structure-kind-label">
+      {/* ITEM 114's page kind and style guide, the only door to them. A kind is
+          a reversible per-page setting that touches none of the writer's text;
+          converting the page itself is not offered here. The style guides
+          disclose beneath Research only, and MLA reads as the default without
+          writing anything until the writer picks. */}
+      {content.kind === 'draft' && content.pageKind && content.onPickKind && (
+        <div className="wz-sliver-section wz-sliver-page-kind">
+          <div className="wz-sliver-h" id="wz-page-kind-label">{t('railPageKind')}</div>
+          <div className="wz-page-setup-seg" role="radiogroup" aria-labelledby="wz-page-kind-label">
             {PAGE_KINDS.map(k => (
               <button
                 key={k}
@@ -683,18 +745,10 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
               </button>
             ))}
           </div>
-
-          {/* G4's IN-PLACE DISCLOSURE: the style guides appear only when
-              Research is the kind, beneath it, at the same depth — never a
-              second level, and never four greyed buttons waiting for a reason.
-              MLA is preselected on the first reveal by reading through
-              STYLE_GUIDE_DEFAULT, which is a READ default: nothing is written
-              to the page until the writer picks, so revealing this row does not
-              dirty a page by itself. */}
-          {content.pageKind === 'research' && (
+          {content.pageKind === 'research' && content.onPickStyleGuide && (
             <>
-              <div className="wz-sliver-sub" id="wz-structure-guide-label">{t('structureStyleGuideLabel')}</div>
-              <div className="wz-page-setup-seg wz-page-setup-seg--wrap" role="radiogroup" aria-labelledby="wz-structure-guide-label">
+              <div className="wz-sliver-sub" id="wz-page-guide-label">{t('structureStyleGuideLabel')}</div>
+              <div className="wz-page-setup-seg wz-page-setup-seg--wrap" role="radiogroup" aria-labelledby="wz-page-guide-label">
                 {STYLE_GUIDES.map(g => (
                   <button
                     key={g}
@@ -711,32 +765,6 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
               </div>
             </>
           )}
-          </>)}
-
-          <div className="wz-sliver-rule" aria-hidden="true" />
-          <div className="wz-sliver-sub">{t('structureActLabel')}</div>
-          {/* ITEM 83 M5 (DR3's default, per the brief's §0) — the Prose |
-              Screenplay TABLIST retires from the panel. A tablist's dress
-              promises free switching; conversion is a consequential one-way
-              act behind its own confirm dialog. Its HOME was always right (an
-              instrument acting on the work — G1 puts it in the hand); only its
-              clothes were mode clothes on a non-mode. One verb row now, with
-              its destination named in the control itself — never a bare
-              "Convert", which is the bench's named enemy. The surface itself
-              says where you are: the courier measure announces screenplay
-              louder than any tab could.
-              ITEM 83 ERRATA E4 — UNCHANGED, deliberately. The name stays
-              (destination-named verbs are the bench law that put it there), the
-              ellipsis stays, the confirm stays. Only its neighbourhood grew a
-              label saying what it is. */}
-          <button
-            type="button"
-            className="wz-cascade-action"
-            aria-haspopup="dialog"
-            onClick={() => content.onSwitchStructure(content.structure === 'prose' ? 'screenplay' : 'prose')}
-          >
-            {content.structure === 'prose' ? t('draftConvertToScreenplay') : t('draftConvertToProse')}
-          </button>
         </div>
       )}
 
@@ -812,12 +840,10 @@ function SliverToggle({ label, on, onToggle, className }: { label: string; on: b
 // CD1 S6 — the goal block, the sliver's foot. Timer (opt-in, the existing
 // persisted `settings.timer` — a quiet numeral, `--text-mid`, mirroring the
 // pre-existing session clock's own styling); the progress hairline (2px,
-// present only when a target exists); one inline goal edit (a number input,
-// Enter commits, an explicit Clear disables every instrument — the brief's
-// own "clearing it disables every instrument" law). No numbers are
-// announced beyond the writer's OWN edit affordance reading back the
-// target itself — the hairline never labels itself with a fraction/percent,
-// and nothing here fires an event or shows a toast on arrival.
+// present only when a target exists and instruments are on). The goal
+// NUMBER is edited under Progress Tracking, not here. No numbers are
+// announced on the hairline — it never labels itself with a fraction or
+// percent, and nothing here fires an event or shows a toast on arrival.
 //
 // Review fix (post-CD1) — `firstWriteAt` (Sliver's own state, lifted so it
 // survives this component's re-renders) anchors the clock to the first
@@ -826,16 +852,11 @@ function SliverToggle({ label, on, onToggle, className }: { label: string; on: b
 // exactly (the numeral still shows, reading 0:00, before the writer's
 // first keystroke — same as that pattern always has — it just doesn't
 // start ADVANCING until they do).
-function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { target: number | null; lines: number; fraction: number; timerOn: boolean; firstWriteAt: number | null }) {
-  const { t } = useDeskLexicon();
-  // FX3 S5 — the instruments panel's own on/off (SliverInstrumentRow,
-  // below), an ADDITIONAL gate on the hairline alongside the existing
-  // target-null check — see GoalGlow.tsx's matching comment for the same
-  // "additive, not a replacement" reasoning (clearing the target already
-  // hides this; this just lets a writer hide it without losing the number).
+function SliverGoalFoot({ target, done, fraction, timerOn, firstWriteAt }: { target: WritingGoal | null; done: number; fraction: number; timerOn: boolean; firstWriteAt: number | null }) {
+  // The goal NUMBER is set under Progress Tracking. This foot only shows the
+  // hairline and, when the timer is on, the clock. Full screen is not here:
+  // the app already offers it outside this drawer.
   const settings = useWritingSettings();
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(() => String(target ?? DEFAULT_GOAL_LINES));
   const [elapsedMs, setElapsedMs] = useState(0);
 
   useEffect(() => {
@@ -845,66 +866,17 @@ function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { ta
     return () => clearInterval(i);
   }, [timerOn, firstWriteAt]);
 
-  const commit = () => {
-    const n = Number(draft);
-    setWritingGoal(Number.isFinite(n) && n > 0 ? Math.round(n) : null);
-    setEditing(false);
-  };
-  const clear = () => { setWritingGoal(null); setEditing(false); };
-
   const s = Math.floor(elapsedMs / 1000);
   const clock = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
   return (
-    <div className="wz-sliver-goal" data-target={target ?? ''} data-lines={lines}>
+    <div className="wz-sliver-goal" data-target={target?.n ?? ''} data-unit={target?.unit ?? ''} data-done={done}>
       {timerOn && <div className="wz-sliver-goal-timer">{clock}</div>}
 
-      {/* item 83 errata E2 — THE PROGRESS BAR'S OWN LINE, which Full Screen
-          now shares. Aligned BY LAYOUT (one flex row, `align-items:center`),
-          never by a nudged margin: the hairline is 2px and the toggle is a
-          text button, so any hand-tuned offset would be a number that drifts
-          the moment either changes. The hairline flexes and Full Screen does
-          not, so the bar gives up exactly the width the toggle needs.
-          The row stands whether or not the hairline is in it — a writer who
-          clears the goal loses the bar (its own pre-existing law), and Full
-          Screen must not go with it. */}
-      <div className="wz-sliver-goal-line">
-        {target != null && settings.instrumentsOn && (
-          <div className="wz-sliver-goal-hairline" aria-hidden="true">
-            <div className="wz-sliver-goal-hairline-fill" style={{ width: `${(fraction * 100).toFixed(1)}%` }} />
-          </div>
-        )}
-        {/* `data-foot-fullscreen` is a behaviour-free contract marker in this
-            file's own `data-menus-*`/`data-*` idiom, so scripts/menus-probe.mjs
-            can name the toggle's own box. FullscreenToggle itself is NOT
-            touched: it is shared with App.tsx's corner cluster and the
-            Cascade's Settings category (ChromeControls.tsx), so its class-less,
-            inline-styled shape stays exactly as it is everywhere. */}
-        <span className="wz-sliver-goal-fullscreen" data-foot-fullscreen=""><FullscreenToggle /></span>
-      </div>
-
-      {editing ? (
-        <div className="wz-sliver-goal-edit-row">
-          <input
-            className="wz-sliver-goal-edit-input"
-            type="number"
-            min={1}
-            value={draft}
-            onChange={e => setDraft(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } if (e.key === 'Escape') { e.preventDefault(); setEditing(false); } }}
-            autoFocus
-          />
-          <button type="button" className="wz-sliver-goal-edit-commit" onClick={commit}>{t('goalSet')}</button>
-          <button type="button" className="wz-sliver-goal-edit-clear" onClick={clear}>{t('goalClear')}</button>
+      {target != null && settings.instrumentsOn && (
+        <div className="wz-sliver-goal-hairline" aria-hidden="true">
+          <div className="wz-sliver-goal-hairline-fill" style={{ width: `${(fraction * 100).toFixed(1)}%` }} />
         </div>
-      ) : (
-        <button
-          type="button"
-          className="wz-sliver-goal-edit"
-          onClick={() => { setDraft(String(target ?? DEFAULT_GOAL_LINES)); setEditing(true); }}
-        >
-          {target != null ? `${t('goalLabel')}: ${target} ${t('goalUnitLines')}` : t('goalEdit')}
-        </button>
       )}
     </div>
   );
@@ -921,8 +893,8 @@ function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { ta
 // them" — the safest reading, given the foot row's three icons are already
 // spoken for and nothing in S5 names a fourth place for Theme, is to move
 // the gear WHOLE); (3) a new instruments icon (a minimal, working-value
-// panel — store/writingGoalUnit.ts's own header comment has the "committee
-// pass refines this" caveat in full). All three buttons are `--text-mid`/
+// panel; the goal's unit now lives with its number in store/writingGoal.ts).
+// All three buttons are `--text-mid`/
 // olive at rest (`.wz-sliver-instruments-btn`, index.css) — brass appears
 // only on hover, matching the sliver's own pre-existing law elsewhere.
 // item 83 errata E1 (2026-09-03) — POP-OUTS FADE ON WRITTEN WORDS, NEVER ON A
@@ -974,14 +946,13 @@ function countPeriods(text: string): number {
   return n;
 }
 
-function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, goalText, onPopoutHold }: { hasMilestones?: boolean; target: number | null; typewriterAvailable?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
+function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, goalText, onPopoutHold }: { hasMilestones?: boolean; target: WritingGoal | null; typewriterAvailable?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
-  const [gearOpen, setGearOpen] = useState(false);
-  const [instrumentsOpen, setInstrumentsOpen] = useState(false);
 
-  // ITEM 83 M4 (R5/R12) — THE FOOT IS THREE INSTRUMENTS: Typewriter ·
-  // Progress · Full Screen, on every page-writing surface.
+  // The foot is one three-dot menu. Typewriter, progress, and the remaining
+  // preferences open together, under those three headings. Full screen is
+  // not in this drawer — the app chrome already offers it.
   //
   // Nick's ruling: "I don't want a separate 'Instruments' toggle/menu. All of
   // the options in it should be set in one of the other settings options. Here
@@ -998,8 +969,7 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
   //    surface onto the same goal becomes one surface.
   // One instrument may be open at a time: these are pop-outs from a foot in a
   // narrow drawer, and two open at once would scroll rather than disclose.
-  const [open, setOpen] = useState<null | 'typewriter' | 'progress'>(null);
-  const pick = (which: 'typewriter' | 'progress') => setOpen(o => (o === which ? null : which));
+  const [open, setOpen] = useState(false);
 
   // item 83 errata E1 — the composed-text gate. `held` is true from the moment a
   // tray opens until the writer has committed POPOUT_FADE_WORDS words, or
@@ -1015,7 +985,7 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
   // any path added later), the same "announce from an effect so no silent path
   // is writable" discipline this file's own two-drawer announcement keeps.
   useEffect(() => {
-    if (open === null) { openMark.current = null; setHeld(false); return; }
+    if (!open) { openMark.current = null; setHeld(false); return; }
     openMark.current = { words: wordCount(goalText), periods: countPeriods(goalText) };
     setHeld(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1037,41 +1007,31 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
   return (
     <div className="wz-sliver-instruments">
       <div className="wz-sliver-instruments-row">
-        {typewriterAvailable && (
-          <button type="button" className="wz-sliver-instruments-btn"
-            aria-label={t('footTypewriter')} title={t('footTypewriter')}
-            aria-expanded={open === 'typewriter'} data-on={settings.typewriter ? 'true' : 'false'}
-            onClick={() => pick('typewriter')}>
-            <TypewriterGlyph />
-          </button>
-        )}
         <button type="button" className="wz-sliver-instruments-btn"
-          aria-label={t('footProgress')} title={t('footProgress')}
-          aria-expanded={open === 'progress'}
-          onClick={() => pick('progress')}>
-          <GearIcon />
+          aria-label={t('footSettings')} title={t('footSettings')}
+          aria-expanded={open}
+          onClick={() => setOpen(o => !o)}>
+          <MoreGlyph />
         </button>
-        {/* item 83 errata E2 (2026-09-03) — FULL SCREEN LEAVES THIS CELL.
-            Nick's walkthrough ruling: "Full screen ALIGNS WITH THE PROGRESS
-            BAR." It now sits on the hairline's own line, in SliverGoalFoot
-            below — a MOVE, not a copy, and not a second instance: R5's
-            reasoning that FullscreenToggle owns the OS-fullscreen request and
-            its own label is untouched, it is simply reached from one line
-            higher. The instruments row is TYPEWRITER · PROGRESS now; the foot
-            still carries all three instruments, on two lines instead of one.
-            The check that used to count three buttons in THIS row is parked
-            verbatim in fx3.mjs and ab2.mjs beside its successor. */}
       </div>
-      {/* item 83 errata E1 — the trays carry their own behaviour-free contract
-          marker (`data-menus-popout`, this file's own `data-menus-*` idiom —
-          nothing styles it), so the acceptance instrument can name a pop-out
-          without binding to a `wz-` class or to `.mode-settings`, which the tray
-          shares with ModeStage's own unrelated corner popover. Marked ON the
-          trays rather than on a wrapper: a wrapper would be a new DOM node in a
-          measured foot, and this wave measures that foot. */}
-      {open === 'typewriter' && <TypewriterMenu />}
-      {open === 'progress' && (
-        <ProgressMenu target={target} hasMilestones={hasMilestones} typewriterAvailable={typewriterAvailable} />
+      {open && (
+        <div className="mode-settings wz-sliver-instruments-panel" role="menu" data-menus-popout="settings">
+          {typewriterAvailable && (
+            <section className="wz-foot-settings-block">
+              <h4>{t('footMenuTypewriter')}</h4>
+              <TypewriterFields />
+            </section>
+          )}
+          <section className="wz-foot-settings-block">
+            <h4>{t('footMenuProgress')}</h4>
+            <ProgressFields target={target} hasMilestones={hasMilestones} />
+          </section>
+          <section className="wz-foot-settings-block">
+            <h4>{t('footMenuPreferences')}</h4>
+            <Seg label="Recede depth" value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
+            <div className="mode-settings-hint">Type to dissolve the chrome. Stop, and after a pause it returns slowly. Reach an edge or press Esc to summon it back.</div>
+          </section>
+        </div>
       )}
     </div>
   );
@@ -1081,16 +1041,13 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
 // beyond the panel (G4's ceiling, met by the ruling's own shape — "the
 // Typewriter icon opens"). Each behaviour carries its toggle AND its
 // adjustments, disclosed IN PLACE beneath it, so the depth never grows.
-function TypewriterMenu() {
+function TypewriterFields() {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const forwardLock = useForwardLock();
 
   return (
-    <div className="mode-settings wz-sliver-instruments-panel" role="menu" data-menus-popout="typewriter">
-      <h4>{t('twMenuHeading')}</h4>
-
-      {/* The typewriter itself — the instrument this menu belongs to. */}
+    <>
       <Seg label={t('footTypewriter')} value={settings.typewriter ? 'on' : 'off'}
         opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
         onPick={v => setTypewriterExplicit(v === 'on')} />
@@ -1124,61 +1081,68 @@ function TypewriterMenu() {
       <Seg label={t('twPageScroll')} value={settings.pageScroll ? 'on' : 'off'}
         opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
         onPick={v => setWritingSettings({ pageScroll: v === 'on' })} />
-    </div>
+    </>
   );
 }
 
 // ITEM 83 M4 (R5) — PROGRESS absorbs the gear's Progress/Timer rows AND the
 // whole Instruments panel (Show · Unit · Target · Style). One surface onto the
 // one goal, where there were two.
-function ProgressMenu({ target, hasMilestones, typewriterAvailable }:
-  { target: number | null; hasMilestones?: boolean; typewriterAvailable?: boolean }) {
+// The unit is part of the goal: choosing one re-sets the goal in it. Time stays a stand-in until real writing
+// minutes are recorded (the sliver's clock is an opt-in timer, not a measure of writing).
+function ProgressFields({ target, hasMilestones }: { target: WritingGoal | null; hasMilestones?: boolean }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
-  const unit = useGoalUnit();
-  const [draft, setDraft] = useState(() => String(target ?? DEFAULT_GOAL_LINES));
-
-  const commit = () => {
+  const [unit, setUnit] = useState<GoalUnit>(() => target?.unit ?? 'lines');
+  const [draft, setDraft] = useState(() => String(target?.n ?? DEFAULT_GOAL_LINES));
+  const commit = (u: GoalUnit = unit) => {
     const n = Number(draft);
-    setWritingGoal(Number.isFinite(n) && n > 0 ? Math.round(n) : null);
+    setWritingGoal(Number.isFinite(n) && n > 0 ? { n: Math.round(n), unit: u } : null);
   };
+  const pickUnit = (u: GoalUnit) => {
+    setUnit(u);
+    if (target != null) commit(u);
+  };
+  const progressOpts: [string, string][] = [['words', 'Words'], ['time', 'Time'], ['off', 'Off']];
+  if (hasMilestones) progressOpts.splice(2, 0, ['project', 'Drawer']);
 
   return (
-    <div className="mode-settings wz-sliver-instruments-panel" role="menu" data-menus-popout="progress">
-      <h4>{t('footProgress')}</h4>
+    <>
       <Seg label={t('sliverInstrumentsShow')} value={settings.instrumentsOn ? 'on' : 'off'}
         opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
         onPick={v => setWritingSettings({ instrumentsOn: v === 'on' })} />
       <Seg label={t('sliverInstrumentsUnit')} value={unit}
         opts={[['lines', 'Lines'], ['words', 'Words'], ['time', 'Time']]}
-        onPick={v => setGoalUnit(v as GoalUnit)} />
+        soon={['time']} soonTitle={t('comingSoon')}
+        onPick={v => pickUnit(v as GoalUnit)} />
       <label className="wz-tw-number">
-        <span>{t('footTarget')}</span>
-        <input type="number" min={1} value={draft}
-          onChange={e => setDraft(e.target.value)} onBlur={commit} />
+        <span>{t('goalLabel')}</span>
+        <input type="number" min={1} value={draft} aria-label={t('goalLabel')}
+          onChange={e => setDraft(e.target.value)}
+          onBlur={() => commit()}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } }} />
+        <span className="wz-tw-unit">{unit === 'words' ? t('goalUnitWords') : t('goalUnitLines')}</span>
       </label>
-      {/* The gear's own Progress/Timer/Style rows, re-homed verbatim. The
-          SettingsPanel component still owns their behaviour — this is a
-          re-parenting, not a reimplementation, so nothing about how they
-          persist changes. Theme is deliberately NOT rendered: it left the
-          foot for the rail's theme category (R5). */}
-      <SettingsPanel
-        settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter, progressStyle: settings.progressStyle }}
-        hasMilestones={hasMilestones}
-        framed
-        typewriterAvailable={typewriterAvailable}
-      />
-    </div>
+      <Seg label="Progress" value={settings.progress} opts={progressOpts} onPick={v => setWritingSettings({ progress: v as ProgressMetric })} />
+      {settings.progress === 'words' && (
+        <Seg label={t('progressStyleLabel')} value={settings.progressStyle}
+          opts={[['bar', t('progressStyleBar')], ['rhizome', t('progressStyleRhizome')]]}
+          onPick={v => setWritingSettings({ progressStyle: v as ProgressStyle })} />
+      )}
+      <Seg label="Timer" value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
+    </>
   );
 }
 
 // A quiet stroke typewriter glyph, matching this file's own icon style
 // (viewBox 0 0 24 24, stroke=currentColor) — the foot's instruments are
 // glyphs, not words, at this width.
-function TypewriterGlyph() {
+function MoreGlyph() {
   return (
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true">
-      <path d="M6 4h12v5H6z" /><path d="M4 9h16v7H4z" /><path d="M8 16h8v4H8z" />
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+      <circle cx="5" cy="12" r="1.6" />
+      <circle cx="12" cy="12" r="1.6" />
+      <circle cx="19" cy="12" r="1.6" />
     </svg>
   );
 }

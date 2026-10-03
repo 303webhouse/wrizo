@@ -459,7 +459,12 @@ await withHarness(async (app) => {
     sel.removeAllRanges();
     sel.addRange(range);
   })()`);
-  await app.evalJs("[...document.querySelectorAll('.board-popup-tool')].find(b => b.title === 'Bold').click()");
+  // ---- PARKED - SUPERSEDED by PR #7 (3951329: Bold's title names its shortcut, "Bold (Ctrl+B)" - the card popup shares the lexicon term), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The exact-title match no longer finds Bold; the successor matches the title's leading word.
+  //
+  // await app.evalJs("[...document.querySelectorAll('.board-popup-tool')].find(b => b.title === 'Bold').click()");
+  // ----------------------------------------------------------------------
+  await app.evalJs("[...document.querySelectorAll('.board-popup-tool')].find(b => b.title.startsWith('Bold')).click()");
   await sleep(150);
   const afterBold = await app.evalJs(`(() => ({
     hasMdMark: !!document.querySelector('.board-popup-editor .md-mark'),

@@ -154,8 +154,15 @@ ok('LABEL: the control reads the resolved --font-prose, not the voice attribute 
   /getPropertyValue\('--font-prose'\)/.test(src('components/TypeControl.tsx')) && !/data-voice/.test(noComments(src('components/TypeControl.tsx'))), '');
 const sliverSrc = src('components/Sliver.tsx');
 const mount = sliverSrc.match(/content\.type && \(\s*<div className="wz-sliver-section wz-sliver-type">[\s\S]*?<\/div>\s*\)\}/);
-ok('MOUNT: the sliver mounts the control on the Free Write, Draft and Revise arms only, in one section with no heading',
-  !!mount && /content\.kind === 'freewrite' \|\| content\.kind === 'draft' \|\| content\.kind === 'revise'/.test(sliverSrc) && !/wz-sliver-h/.test(mount[0]), mount ? 'found' : 'mount block not found');
+// ---- PARKED - SUPERSEDED by PR #7 (Fable's spec C3: a "Typeface" heading above the font controls), 2026-10-02 ----
+// Kept VERBATIM and no longer run. The section now carries the drawer's own zone heading; the CONTROL stays caption-free
+// (MINIMAL above still asserts that), so only the section-has-no-heading half of this check changed.
+//
+// ok('MOUNT: the sliver mounts the control on the Free Write, Draft and Revise arms only, in one section with no heading',
+//   !!mount && /content\.kind === 'freewrite' \|\| content\.kind === 'draft' \|\| content\.kind === 'revise'/.test(sliverSrc) && !/wz-sliver-h/.test(mount[0]), mount ? 'found' : 'mount block not found');
+// ------------------------------------------------------------------
+ok('MOUNT [C3 successor]: the sliver mounts the control on the Free Write, Draft and Revise arms only, in one section headed "Typeface" (the lexicon\'s railTypeface) with the control directly beneath',
+  !!mount && /content\.kind === 'freewrite' \|\| content\.kind === 'draft' \|\| content\.kind === 'revise'/.test(sliverSrc) && /^[^]*?<div className="wz-sliver-h">\{t\('railTypeface'\)\}<\/div><TypeControl \{\.\.\.content\.type\} \/>/.test(mount[0]) && (mount[0].match(/wz-sliver-h/g) || []).length === 1, mount ? 'found' : 'mount block not found');
 const pe = src('pages/PageEditor.tsx');
 ok('FORMS: Free Write passes the SMALL form (and none in INK), Draft and Revise pass the FULL form',
   /type: instrument === 'ink' \? undefined : typeMember\('small'\)/.test(pe) && /kind: 'draft',[\s\S]{0,200}type: typeMember\('full'\)/.test(pe) && /kind: 'revise', type: typeMember\('full'\)/.test(pe), '');

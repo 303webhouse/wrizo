@@ -203,7 +203,12 @@ await withHarness(async (app) => {
   })()`);
   await openSliver(app);
   await sleep(150);
-  await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Bold\"]').click()");
+  // ---- PARKED - SUPERSEDED by PR #7 (3951329: the format buttons' titles carry their shortcut, "Bold (Ctrl+B)"), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The exact-title selector no longer finds Bold; the successor matches the title's leading word.
+  //
+  // await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Bold\"]').click()");
+  // ----------------------------------------------------------------------
+  await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title^=\"Bold\"]').click()");
   await sleep(150);
   const bolded = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
   ok('S1 (a) precondition: Bold wraps the selection in ** conventions',
@@ -332,7 +337,12 @@ await withHarness(async (app) => {
   // dock tool opens it first, with a REAL press on the grip (the standing law).
   // The claim this file makes about the dock is unchanged; only its precondition is.
   { const g = await app.evalJs("(() => { const el = document.querySelector('.board-popup-dock-grip'); if (!el || document.querySelector('.board-popup-dock')) return null; const r = el.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()"); if (g) { await app.mouseDown(g.x, g.y); await app.mouseUp(g.x, g.y); await sleep(300); } }
-  await app.evalJs("document.querySelector('.board-popup-dock .mode-tbtn[title=\"Bold\"]').click()");
+  // ---- PARKED - SUPERSEDED by PR #7 (3951329: Bold's title names its shortcut, "Bold (Ctrl+B)" - the card popup shares the lexicon term), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The exact-title match no longer finds Bold; the successor matches the title's leading word.
+  //
+  // await app.evalJs("document.querySelector('.board-popup-dock .mode-tbtn[title=\"Bold\"]').click()");
+  // ----------------------------------------------------------------------
+  await app.evalJs("document.querySelector('.board-popup-dock .mode-tbtn[title^=\"Bold\"]').click()");
   await sleep(150);
   const popupBolded = await app.evalJs("document.querySelector('.board-popup-editor').innerText");
   await app.keyCombo('z');

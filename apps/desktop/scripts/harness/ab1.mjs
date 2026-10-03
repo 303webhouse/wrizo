@@ -445,19 +445,37 @@ if (process.env.HARNESS_PARKED === '1') {
     //     flourishesNow.typewriterToggle === true && !flourishesNow.progressBar && !flourishesNow.milestones && !flourishesNow.ambientGlow,
     //     JSON.stringify(flourishesNow));
     // ---------------------------------------------------------------------
-    // GENERATION 3 (item 83 M4/R5) — the SAME claim the original made and
-    // the same one AB2 re-made: what mounts inside the frame. The typewriter
-    // is still inside it, at its new address; the other three flourishes are
-    // untouched by this wave and stay absent, exactly as generations 1 and 2
-    // both said.
+    // ---- PARKED - SUPERSEDED by PR #7 (19d2c02: the foot's Typewriter and Progress icons nest in one three-dot "Settings" menu), 2026-10-02 ----
+    // GENERATION 3, quoted VERBATIM and no longer asserted. The typewriter no longer has an icon of its own in the foot row;
+    // its door is the Settings menu, whose first section is Typewriter Mode. Generation 4 stands below it.
+    //
+    // // GENERATION 3 (item 83 M4/R5) — the SAME claim the original made and
+    // // the same one AB2 re-made: what mounts inside the frame. The typewriter
+    // // is still inside it, at its new address; the other three flourishes are
+    // // untouched by this wave and stay absent, exactly as generations 1 and 2
+    // // both said.
+    // const flourishesNow = await app.evalJs(`({
+    //   typewriterToggle: !!document.querySelector('.desk-frame .typewriter-toggle'),
+    //   typewriterInstrument: !!document.querySelector('.desk-frame .wz-sliver-instruments-row [aria-label="Typewriter"]'),
+    //   progressBar: !!document.querySelector('.desk-frame .mode-incentive-row'),
+    //   milestones: !!document.querySelector('.desk-frame .mode-milestone'),
+    //   ambientGlow: !!document.querySelector('.desk-frame .mode-glow'),
+    // })`);
+    // pok('PARKED, generation 3 (was AB2 S2 re-assertion "the typewriter now DOES mount inside the frame", pinned to the rail class .typewriter-toggle) — item 83 M4/R5: the rail home is retired and the affordance mounts in the sliver foot TYPEWRITER instrument instead; still inside the frame, still the only flourish there',
+    //   flourishesNow.typewriterInstrument === true && flourishesNow.typewriterToggle === false
+    //     && !flourishesNow.progressBar && !flourishesNow.milestones && !flourishesNow.ambientGlow,
+    //   JSON.stringify(flourishesNow));
+    // ---------------------------------------------------------------------
+    // GENERATION 4 (PR #7) — the same claim at the typewriter's new door: the foot's one Settings menu. The other three
+    // flourishes stay absent, exactly as generations 1 to 3 said.
     const flourishesNow = await app.evalJs(`({
       typewriterToggle: !!document.querySelector('.desk-frame .typewriter-toggle'),
-      typewriterInstrument: !!document.querySelector('.desk-frame .wz-sliver-instruments-row [aria-label="Typewriter"]'),
+      typewriterInstrument: !!document.querySelector('.desk-frame .wz-sliver-instruments-row [aria-label="Settings"]'),
       progressBar: !!document.querySelector('.desk-frame .mode-incentive-row'),
       milestones: !!document.querySelector('.desk-frame .mode-milestone'),
       ambientGlow: !!document.querySelector('.desk-frame .mode-glow'),
     })`);
-    pok('PARKED, generation 3 (was AB2 S2 re-assertion "the typewriter now DOES mount inside the frame", pinned to the rail class .typewriter-toggle) — item 83 M4/R5: the rail home is retired and the affordance mounts in the sliver foot TYPEWRITER instrument instead; still inside the frame, still the only flourish there',
+    pok('PARKED, generation 4 (was AB2 S2 re-assertion "the typewriter now DOES mount inside the frame", pinned to the rail class .typewriter-toggle) — item 83 M4/R5: the rail home is retired and the affordance mounts in the sliver foot TYPEWRITER instrument instead, now behind the foot\'s one Settings menu (PR #7); still inside the frame, still the only flourish there',
       flourishesNow.typewriterInstrument === true && flourishesNow.typewriterToggle === false
         && !flourishesNow.progressBar && !flourishesNow.milestones && !flourishesNow.ambientGlow,
       JSON.stringify(flourishesNow));

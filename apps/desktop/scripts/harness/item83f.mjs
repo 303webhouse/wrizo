@@ -97,18 +97,38 @@ const freshScriptPage = async (app, width = 1400, height = 900) => {
 // (~1100ms on this box), so this waits on the RENDERED result, not a sleep.
 const toDraft = async (app) => {
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft')?.click()");
-  await app.waitFor("!!document.querySelector('.wz-sliver-structure-zone')", { label: 'Draft sliver Structure zone' });
+  // ---- PARKED - SUPERSEDED by PR #7 (3951329: the Structure zone leaves Draft's drawer; Templates takes its place), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. Draft's drawer is recognised by its last zone, which is Templates now.
+  //
+  // await app.waitFor("!!document.querySelector('.wz-sliver-structure-zone')", { label: 'Draft sliver Structure zone' });
+  // ----------------------------------------------------------------------
+  await app.waitFor("!!document.querySelector('.wz-sliver-templates')", { label: 'Draft sliver Templates zone' });
   await sleep(250);
 };
 
 // Open a foot pop-out BY NAME, never by ordinal — fx3.mjs's own parked driver
 // is the standing warning about counting to a control in a foot whose roster a
 // ruling can change (and this wave changes it again).
-const openPopout = async (app, label) => {
+// ---- PARKED - SUPERSEDED by PR #7 (19d2c02: the foot's Typewriter and Progress pop-outs nest in one three-dot "Settings" menu), 2026-10-02 ----
+// Kept VERBATIM and no longer run. There is one foot pop-out now, so every call opens it; the callers keep their labels
+// (which tray they meant) so the E1 checks read as written. The E1 claims are about A pop-out's fade, not which one.
+//
+// const openPopout = async (app, label) => {
+//   await app.evalJs(`(() => {
+//     const row = document.querySelector('.wz-sliver-instruments-row');
+//     if (!row) return false;
+//     const b = [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label') || '').startsWith(${JSON.stringify(label)}));
+//     if (b) b.click();
+//     return !!b;
+//   })()`);
+//   await sleep(220);
+// };
+// ----------------------------------------------------------------------
+const openPopout = async (app, _label) => {
   await app.evalJs(`(() => {
     const row = document.querySelector('.wz-sliver-instruments-row');
     if (!row) return false;
-    const b = [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label') || '').startsWith(${JSON.stringify(label)}));
+    const b = [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label') || '') === 'Settings');
     if (b) b.click();
     return !!b;
   })()`);
@@ -297,28 +317,64 @@ await withHarness(async (app) => {
     };
   })()`);
 
-  ok('E2: the instruments row is TYPEWRITER · PROGRESS — Full Screen has left the cell it used to occupy',
-    JSON.stringify(footShape.rowLabels) === JSON.stringify(['Typewriter', 'Progress'])
-      && footShape.fullScreenInRow === false,
+  // ---- PARKED - SUPERSEDED by PR #7 (19d2c02: the foot is one three-dot Settings menu, and Full Screen leaves the drawer), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The row is no longer TYPEWRITER · PROGRESS, and Full Screen is no longer on the
+  // progress line (the app chrome already offers it), so the bar has no neighbour to yield to. Successors beneath.
+  //
+  // ok('E2: the instruments row is TYPEWRITER · PROGRESS — Full Screen has left the cell it used to occupy',
+  //   JSON.stringify(footShape.rowLabels) === JSON.stringify(['Typewriter', 'Progress'])
+  //     && footShape.fullScreenInRow === false,
+  //   JSON.stringify(footShape));
+  //
+  // ok('E2: Full Screen sits on the progress bar line itself, and there is EXACTLY ONE of it in the panel — a move, never a second instance left behind',
+  //   footShape.fullScreenInGoalLine === true && footShape.fullScreenTotal === 1,
+  //   JSON.stringify(footShape));
+  //
+  // ok('E2: the bar genuinely yielded the room — the hairline is strictly narrower than the goal block it used to span, which is the difference between sharing a line and merely sitting near one',
+  //   footShape.barWidth !== null && footShape.goalInnerWidth !== null
+  //     && footShape.barWidth > 0 && footShape.barWidth < footShape.goalInnerWidth - 1,
+  //   JSON.stringify(footShape));
+  //
+  // ok('E2: the alignment is LAYOUT — a flex row with align-items:center, not a nudged margin (the fence the brief sets; the probe measures the resulting centres at both widths)',
+  //   footShape.lineDisplay === 'flex' && footShape.lineAlign === 'center',
+  //   JSON.stringify(footShape));
+  // ----------------------------------------------------------------------
+  ok('E2: the instruments row is the Settings button — Full Screen is not in this drawer',
+    JSON.stringify(footShape.rowLabels) === JSON.stringify(['Settings'])
+      && footShape.fullScreenInRow === false && footShape.fullScreenTotal === 0,
     JSON.stringify(footShape));
 
-  ok('E2: Full Screen sits on the progress bar line itself, and there is EXACTLY ONE of it in the panel — a move, never a second instance left behind',
-    footShape.fullScreenInGoalLine === true && footShape.fullScreenTotal === 1,
-    JSON.stringify(footShape));
-
-  ok('E2: the bar genuinely yielded the room — the hairline is strictly narrower than the goal block it used to span, which is the difference between sharing a line and merely sitting near one',
-    footShape.barWidth !== null && footShape.goalInnerWidth !== null
-      && footShape.barWidth > 0 && footShape.barWidth < footShape.goalInnerWidth - 1,
-    JSON.stringify(footShape));
-
-  ok('E2: the alignment is LAYOUT — a flex row with align-items:center, not a nudged margin (the fence the brief sets; the probe measures the resulting centres at both widths)',
-    footShape.lineDisplay === 'flex' && footShape.lineAlign === 'center',
+  ok('E2: the progress hairline remains, and Full Screen does not share a line with it',
+    footShape.barWidth !== null && footShape.barWidth > 0 && footShape.fullScreenInGoalLine === false,
     JSON.stringify(footShape));
 
   // The Structure half, in DOM-order form. Recorded as a GUARD, not as work:
   // it was already true at the branch point (S0 (c)). It can still fail, which
   // is why it is here — E4 grows this zone, and a later hand could append a
   // section beneath it.
+  // ---- PARKED - SUPERSEDED by PR #7 (3951329: the Structure zone leaves Draft's drawer; the Templates stand-ins take its place), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The guard's claim (the last zone sits directly before the foot) is unchanged;
+  // the zone that holds that place is Page kind now, directly after Templates (Fable's PR #7 review, 2026-10-03).
+  //
+  // await toDraft(app);
+  // const zoneOrder = await app.evalJs(`(() => {
+  //   const body = document.querySelector('.wz-sliver-body');
+  //   const sections = [...body.querySelectorAll(':scope > .wz-sliver-section')];
+  //   const panelKids = [...document.querySelector('.wz-sliver-panel').children].map(el => el.className);
+  //   return {
+  //     headings: sections.map(s => (s.querySelector('.wz-sliver-h') || {}).textContent),
+  //     structureIsLast: sections.length > 0 && sections[sections.length - 1].classList.contains('wz-sliver-structure-zone'),
+  //     panelKids,
+  //   };
+  // })()`);
+  // ok('E2 (GUARD, already true at the branch point): Structure is the LAST zone of the tab body, with the goal foot and the instruments row following it — so it is the last thing before the foot',
+  //   zoneOrder.structureIsLast === true
+  //     && zoneOrder.panelKids.length === 3
+  //     && zoneOrder.panelKids[0].includes('wz-sliver-body')
+  //     && zoneOrder.panelKids[1].includes('wz-sliver-goal')
+  //     && zoneOrder.panelKids[2].includes('wz-sliver-instruments'),
+  //   JSON.stringify(zoneOrder));
+  // ----------------------------------------------------------------------
   await toDraft(app);
   const zoneOrder = await app.evalJs(`(() => {
     const body = document.querySelector('.wz-sliver-body');
@@ -326,12 +382,13 @@ await withHarness(async (app) => {
     const panelKids = [...document.querySelector('.wz-sliver-panel').children].map(el => el.className);
     return {
       headings: sections.map(s => (s.querySelector('.wz-sliver-h') || {}).textContent),
-      structureIsLast: sections.length > 0 && sections[sections.length - 1].classList.contains('wz-sliver-structure-zone'),
+      pageKindIsLast: sections.length > 1 && sections[sections.length - 1].classList.contains('wz-sliver-page-kind')
+        && sections[sections.length - 2].classList.contains('wz-sliver-templates'),
       panelKids,
     };
   })()`);
-  ok('E2 (GUARD, already true at the branch point): Structure is the LAST zone of the tab body, with the goal foot and the instruments row following it — so it is the last thing before the foot',
-    zoneOrder.structureIsLast === true
+  ok('E2 (GUARD): Page kind is the LAST zone of the tab body, directly after Templates, with the goal foot and the instruments row following it',
+    zoneOrder.pageKindIsLast === true
       && zoneOrder.panelKids.length === 3
       && zoneOrder.panelKids[0].includes('wz-sliver-body')
       && zoneOrder.panelKids[1].includes('wz-sliver-goal')
@@ -444,83 +501,328 @@ await withHarness(async (app) => {
   await focusEditor(app);
   await app.typeKeys('Gamma');
   await sleep(250);
-  await clickFormat(app, 'Bulleted list');
+  // ---- PARKED - SUPERSEDED by PR #7 (19a4676: lists gain three bullet styles; the first is titled "Round bullet"), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The control once titled 'Bulleted list' is the round bullet now; the check is unchanged.
+  //
+  // await clickFormat(app, 'Bulleted list');
+  // const bulletOn = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
+  // await clickFormat(app, 'Bulleted list');
+  // ----------------------------------------------------------------------
+  await clickFormat(app, 'Round bullet');
   const bulletOn = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
-  await clickFormat(app, 'Bulleted list');
+  await clickFormat(app, 'Round bullet');
   const bulletOff = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
   ok('E3 (control): the OTHER line directives are untouched — Bulleted list still toggles on and back off, so E3 rewired one action and not the shared helper beneath them all',
     bulletOn === '- Gamma' && bulletOff === 'Gamma', JSON.stringify({ bulletOn, bulletOff }));
-  // ==========================================================================
-  // E4 — ITEM 114'S PLACEHOLDERS. They render, they persist per page, and
-  // nothing downstream is wired.
+  // ---- PARKED - SUPERSEDED by PR #7 (3951329: "Structure in the drawer is replaced by gray Template icons"), 2026-10-02 ----
+  // Kept VERBATIM and no longer run: ALL of E4 - item 114's kind chips and style guides (render, persist per page,
+  // no default leak, the Screenplay-name seam, the prose-only scope). They lived in the Structure zone, which PR #7
+  // removed whole. Fable's review (2026-10-03) restores the chips and style guides as one "Page kind" row below the
+  // Templates, without the Convert row; the successor beneath re-makes these claims on that row.
   //
-  // A placeholder can still get four things wrong, and those are the checks:
-  // that the style guides are DISCLOSED by Research rather than greyed; that a
-  // page which never chose stays byte-identical on disk (zero schema means
-  // nothing if the reader writes a default at birth); that the selection is on
-  // the PAGE and not in component state; and that a page's KIND cannot leak
-  // into the writer's per-user defaults — the one real defect the shared
-  // PageSettings shape invites (S0 (e)).
-  // ==========================================================================
+  // // ==========================================================================
+  // // E4 — ITEM 114'S PLACEHOLDERS. They render, they persist per page, and
+  // // nothing downstream is wired.
+  // //
+  // // A placeholder can still get four things wrong, and those are the checks:
+  // // that the style guides are DISCLOSED by Research rather than greyed; that a
+  // // page which never chose stays byte-identical on disk (zero schema means
+  // // nothing if the reader writes a default at birth); that the selection is on
+  // // the PAGE and not in component state; and that a page's KIND cannot leak
+  // // into the writer's per-user defaults — the one real defect the shared
+  // // PageSettings shape invites (S0 (e)).
+  // // ==========================================================================
+  // await freshProsePage(app, 1400, 900);
+  // await toDraft(app);
+  //
+  // const roster = await app.evalJs(`(() => {
+  //   const zone = document.querySelector('.wz-sliver-structure-zone');
+  //   const kinds = [...zone.querySelectorAll('[data-page-kind]')];
+  //   return {
+  //     labels: kinds.map(b => b.textContent),
+  //     checked: kinds.filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.pageKind),
+  //     anyDisabled: kinds.some(b => b.disabled || b.getAttribute('aria-disabled') === 'true'),
+  //     guidesPresent: zone.querySelectorAll('[data-style-guide]').length,
+  //     kindGroupRole: zone.querySelector('[role="radiogroup"]')?.getAttribute('role'),
+  //   };
+  // })()`);
+  // ok('E4: Structure carries the three kind buttons in the ruled order, with NORMAL preselected and none of them greyed',
+  //   JSON.stringify(roster.labels) === JSON.stringify(['Normal', 'Screenplay', 'Research'])
+  //     && JSON.stringify(roster.checked) === JSON.stringify(['normal'])
+  //     && roster.anyDisabled === false && roster.kindGroupRole === 'radiogroup',
+  //   JSON.stringify(roster));
+  //
+  // ok('E4: the style guides are ABSENT before Research is chosen — not greyed, not hidden: what is not built for this page does not render (G3)',
+  //   roster.guidesPresent === 0, JSON.stringify(roster));
+  //
+  // // G4's in-place disclosure.
+  // await app.evalJs("document.querySelector('[data-page-kind=\"research\"]').click()");
+  // await sleep(350);
+  // const revealed = await app.evalJs(`(() => {
+  //   const zone = document.querySelector('.wz-sliver-structure-zone');
+  //   const guides = [...zone.querySelectorAll('[data-style-guide]')];
+  //   return {
+  //     labels: guides.map(b => b.textContent),
+  //     checked: guides.filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.styleGuide),
+  //     anyDisabled: guides.some(b => b.disabled || b.getAttribute('aria-disabled') === 'true'),
+  //     depth: guides.length ? guides[0].closest('.wz-sliver-structure-zone') === zone : false,
+  //   };
+  // })()`);
+  // ok('E4: choosing RESEARCH reveals the four style guides IN PLACE, at the same depth, with MLA preselected and nothing greyed',
+  //   JSON.stringify(revealed.labels) === JSON.stringify(['MLA', 'APA', 'Chicago', 'AP'])
+  //     && JSON.stringify(revealed.checked) === JSON.stringify(['mla'])
+  //     && revealed.anyDisabled === false && revealed.depth === true,
+  //   JSON.stringify(revealed));
+  //
+  // // MLA is a READ default, not a written one: revealing the row must not dirty
+  // // the page with a choice the writer never made.
+  // await sleep(700);   // persistence.scheduleFlush is 300ms; this is well past it
+  // const storedAfterKind = await app.evalJs(`(() => {
+  //   const id = (location.hash.match(/#\\/page\\/([^?/]+)/) || [])[1];
+  //   const rows = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+  //   const e = rows.find(r => r.id === id) || null;
+  //   return { id, pageSettings: e ? (e.pageSettings ?? null) : 'ENTRY NOT FOUND' };
+  // })()`);
+  // ok('E4: picking Research writes kind:"research" to the page own page_settings and writes NO styleGuide — MLA is preselected by reading through the default, so a reveal never records a choice the writer did not make',
+  //   storedAfterKind.pageSettings && storedAfterKind.pageSettings.kind === 'research'
+  //     && storedAfterKind.pageSettings.styleGuide === undefined,
+  //   JSON.stringify(storedAfterKind));
+  //
+  // // ...and it is on the PAGE, not in a component. A reload is the only honest
+  // // proof of that.
+  // await app.evalJs("document.querySelector('[data-style-guide=\"chicago\"]').click()");
+  // await sleep(700);
+  // await app.reload();
+  // await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'page after reload' });
+  // await sleep(400);
+  // await openSliver(app);
+  // await sleep(250);
+  // await toDraft(app);
+  // const afterReload = await app.evalJs(`(() => {
+  //   const zone = document.querySelector('.wz-sliver-structure-zone');
+  //   return {
+  //     kind: [...zone.querySelectorAll('[data-page-kind]')].filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.pageKind),
+  //     guide: [...zone.querySelectorAll('[data-style-guide]')].filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.styleGuide),
+  //   };
+  // })()`);
+  // ok('E4: the selection survives a RELOAD — Research and Chicago come back checked, so it lives on the page and not in component state',
+  //   JSON.stringify(afterReload.kind) === JSON.stringify(['research'])
+  //     && JSON.stringify(afterReload.guide) === JSON.stringify(['chicago']),
+  //   JSON.stringify(afterReload));
+  //
+  // // ==========================================================================
+  // // E4 — THE DEFAULTS LEAK. The discriminating check of this section: without
+  // // pageDefaults.dressOnly, pressing "Set as my default page settings" on a
+  // // RESEARCH page makes every page born afterwards Research, silently. Nothing
+  // // in the UI would announce it.
+  // // ==========================================================================
+  // await app.evalJs(`(() => {
+  //   // VW1 — one handle for one control. This selected by LABEL TEXT, which
+  //   // is lexicon-fragile: rename the term and the find() silently returns
+  //   // undefined and the guard below swallows it. data-category is the handle.
+  //   const b = document.querySelector('.wz-strip-item[data-category=page]');
+  //   if (!b) throw new Error('item83f: no Page tab to press');
+  //   b.click();
+  // })()`);
+  // await sleep(500);
+  // const savedDefaults = await app.evalJs(`(() => {
+  //   const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => x.textContent.trim() === 'Set as my default page settings');
+  //   if (!b) return { pressed: false };
+  //   b.click();
+  //   return { pressed: true };
+  // })()`);
+  // await sleep(500);
+  // const storedDefaults = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-page-defaults') || 'null')");
+  // ok('E4: "Set as my default page settings" was reachable and was pressed on a RESEARCH page (the fixture the leak needs)',
+  //   savedDefaults.pressed === true, JSON.stringify(savedDefaults));
+  // ok('E4: the writer per-user defaults carry the DRESS and NOT the kind — a page kind is a fact about that page, and facts do not travel by default',
+  //   storedDefaults !== null && storedDefaults.kind === undefined && storedDefaults.styleGuide === undefined
+  //     && storedDefaults.margins !== undefined,
+  //   JSON.stringify(storedDefaults));
+  //
+  // // The leak at its DESTINATION. Read this one with the note below, because a
+  // // run of it turned up something that is not this ticket's:
+  // //
+  // // ► OBSERVED, SURFACED, NOT FIXED — R6's BIRTH-FROM-DEFAULTS DOES NOT REACH
+  // //   THE UNBORN ROUTE. A page born through "New Page" comes back with NO
+  // //   page_settings at all (measured: storedPageSettings null on a genuinely
+  // //   born row, with the writer's defaults saved and non-empty). The stamp
+  // //   `pageSettings: getUserPageDefaults() ?? undefined` lives in
+  // //   persistence.createJournalPage, and this door navigates to an UNBORN href
+  // //   instead (CascadePanels' newPage -> unbornHref, FX14 S1's "every New Page
+  // //   opens in THE Page"); PB1's own `unbornEntry`/`birth` never carry the
+  // //   field. So item 83 M2's own ruling — "page settings reset to defaults when
+  // //   the user creates a new page" — is bypassed on what is now the ordinary
+  // //   way a page is made. That is a pre-existing interaction between M2 and
+  // //   PB1, entirely outside this brief, and it is reported in the offer rather
+  // //   than repaired here.
+  // //
+  // //   WHAT IT COSTS THIS CHECK, said plainly: the destination has two locks on
+  // //   it now, and only one of them is E4's. The DISCRIMINATING check for the
+  // //   strip is the one above, at the door — remove `dressOnly` and the stored
+  // //   defaults carry `kind:"research"` and that check goes red. This one
+  // //   CORROBORATES; it does not, on this route, discriminate. It is kept
+  // //   because the day R6 is repaired is exactly the day it starts to.
+  // // The id BEFORE the door is taken. Without it this check cannot tell a newly
+  // // born page from the Research page it was standing on — and it could not, on
+  // // its first run: the selector read 'New page' where the lexicon says 'New
+  // // Page', so nothing was clicked and the check reported the open page's own
+  // // kind as though a birth had inherited it. Caught because the assertion was
+  // // wrong, not because anything in the product was; the guard below is what
+  // // stops that class of false red (and its far worse twin, a false green).
+  // const idBeforeBirth = await app.evalJs("(location.hash.split('/page/')[1] || '').split(/[?/]/)[0]");
+  // await app.evalJs(`(() => {
+  //   const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => x.textContent.trim() === 'New Page');
+  //   if (b) b.click();
+  // })()`);
+  // await sleep(900);
+  // await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'newly born page' });
+  // await sleep(400);
+  // // A word, so the page is genuinely BORN. Without it the route sits at
+  // // `#/page/new` (PB1's unborn page — no row exists yet), and `storedKind`
+  // // would read null for a reason that has nothing to do with the strip under
+  // // test: an over-claim the first run of this check actually made, and this
+  // // line is what retires it. The in-memory entry it births carries whatever
+  // // `getUserPageDefaults()` stamped at creation, which IS the channel the leak
+  // // would travel down.
+  // await focusEditor(app);
+  // await app.typeKeys('birth ');
+  // await sleep(900);
+  // await openSliver(app);
+  // await sleep(250);
+  // await toDraft(app);
+  // const bornPage = await app.evalJs(`(() => {
+  //   const id = (location.hash.match(/#\\/page\\/([^?/]+)/) || [])[1];
+  //   const rows = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+  //   const e = rows.find(r => r.id === id) || null;
+  //   const zone = document.querySelector('.wz-sliver-structure-zone');
+  //   return {
+  //     id,
+  //     rowExists: !!e,
+  //     storedPageSettings: e ? (e.pageSettings ?? null) : null,
+  //     storedKind: e && e.pageSettings ? (e.pageSettings.kind ?? null) : null,
+  //     checked: [...zone.querySelectorAll('[data-page-kind]')].filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.pageKind),
+  //     guidesPresent: zone.querySelectorAll('[data-style-guide]').length,
+  //   };
+  // })()`);
+  // ok('E4 (corroborating, see the note above): a page BORN AFTER those defaults were saved is Normal, carries no kind key, and shows no style guides. Guarded twice so it cannot pass by standing still — the id must differ from the page it was launched from, and the row must actually EXIST (a word was written, so PB1 has borne it). It corroborates rather than discriminates on THIS route, because birth-from-defaults does not currently reach it at all',
+  //   bornPage.id !== idBeforeBirth && bornPage.id !== 'new' && bornPage.rowExists === true
+  //     && bornPage.storedKind === null
+  //     && JSON.stringify(bornPage.checked) === JSON.stringify(['normal'])
+  //     && bornPage.guidesPresent === 0,
+  //   JSON.stringify({ ...bornPage, idBeforeBirth }));
+  //
+  // // ==========================================================================
+  // // E4 — THE SEAM, asserted rather than described. The Screenplay name
+  // // collision is REPORTED to Nick and is his to settle; what is measured here
+  // // is only that the two controls cannot be mistaken for one another in the
+  // // meantime, and that neither was renamed or merged to get there.
+  // // ==========================================================================
+  // const seam = await app.evalJs(`(() => {
+  //   const zone = document.querySelector('.wz-sliver-structure-zone');
+  //   const chip = zone.querySelector('[data-page-kind="screenplay"]');
+  //   const act = zone.querySelector('.wz-cascade-action');
+  //   const subs = [...zone.querySelectorAll('.wz-sliver-sub')].map(s => s.textContent);
+  //   return {
+  //     chipText: chip ? chip.textContent : null,
+  //     chipRole: chip ? chip.getAttribute('role') : null,
+  //     actText: act ? act.textContent : null,
+  //     actPopup: act ? act.getAttribute('aria-haspopup') : null,
+  //     actRole: act ? act.getAttribute('role') : null,
+  //     // The FIRST and LAST sub-labels are the seam's own pair and are asserted
+  //     // by position, not by a fixed list: 'Style guide' sits between them only
+  //     // while Research is chosen, and pinning the whole list would make this
+  //     // check pass or fail on a state it does not care about.
+  //     subs,
+  //     ruleBetween: !!zone.querySelector('.wz-sliver-rule'),
+  //     sameClass: !!(chip && act) && chip.className === act.className,
+  //   };
+  // })()`);
+  // ok('E4 (seam): BOTH Screenplays stand, and NEITHER was renamed or merged — the kind chip still reads "Screenplay" and the act still reads "Convert to Screenplay…" with its dialog promise intact',
+  //   seam.chipText === 'Screenplay' && seam.actText === 'Convert to Screenplay…'
+  //     && seam.actPopup === 'dialog',
+  //   JSON.stringify(seam));
+  // ok('E4 (seam): they are told apart three ways at once — separate sub-labels naming the difference in words, different control shapes (a radio chip vs a full-width action), and a rule between them',
+  //   seam.subs[0] === 'This page is' && seam.subs[seam.subs.length - 1] === 'Change the page itself'
+  //     && seam.chipRole === 'radio' && seam.actRole === null
+  //     && seam.sameClass === false && seam.ruleBetween === true,
+  //   JSON.stringify(seam));
+  //
+  // // ==========================================================================
+  // // E4 — THE SCOPE DECISION, measured so it cannot be a silent narrowing. The
+  // // chips are PROSE DRAFT's; the framed screenplay surface passes none of the
+  // // four props, so they are genuinely absent from its DOM rather than greyed.
+  // // A script page has already declared what it is, and a kind row there would
+  // // let a writer mark a screenplay "Normal" and then persist that. Disclosed in
+  // // the offer; four props and a default if Nick wants it widened.
+  // // ==========================================================================
+  // await freshScriptPage(app, 1400, 900);
+  // await openSliver(app);
+  // await sleep(300);
+  // const onScript = await app.evalJs(`(() => {
+  //   const zone = document.querySelector('.wz-sliver-structure-zone');
+  //   return {
+  //     structureZonePresent: !!zone,
+  //     kindChips: document.querySelectorAll('[data-page-kind]').length,
+  //     guides: document.querySelectorAll('[data-style-guide]').length,
+  //     actText: zone ? (zone.querySelector('.wz-cascade-action') || {}).textContent : null,
+  //   };
+  // })()`);
+  // ok('E4 (scope, disclosed): the framed SCREENPLAY surface keeps its Structure zone and its conversion row, and carries NO kind chips — absent from the DOM, never greyed',
+  //   onScript.structureZonePresent === true && onScript.kindChips === 0 && onScript.guides === 0
+  //     && typeof onScript.actText === 'string' && onScript.actText.length > 0,
+  //   JSON.stringify(onScript));
+  // ----------------------------------------------------------------------
   await freshProsePage(app, 1400, 900);
   await toDraft(app);
-
-  const roster = await app.evalJs(`(() => {
-    const zone = document.querySelector('.wz-sliver-structure-zone');
-    const kinds = [...zone.querySelectorAll('[data-page-kind]')];
+  const e4Prose = await app.evalJs(`({
+    structureZone: !!document.querySelector('.wz-sliver-structure-zone'),
+    kindChips: document.querySelectorAll('[data-page-kind]').length,
+    guides: document.querySelectorAll('[data-style-guide]').length,
+    templates: document.querySelectorAll('.wz-sliver-templates .wz-template-btn').length,
+  })`);
+  // E4 [Fable's review successor] — item 114's chips return in one compact "Page kind" row below the Templates. Convert stays out.
+  const pk = () => app.evalJs(`(() => {
+    const row = document.querySelector('.wz-sliver-page-kind');
+    if (!row) return null;
+    const kinds = [...row.querySelectorAll('[data-page-kind]')];
+    const guides = [...row.querySelectorAll('[data-style-guide]')];
     return {
+      heading: (row.querySelector('.wz-sliver-h') || {}).textContent || null,
+      afterTemplates: !!row.previousElementSibling && row.previousElementSibling.classList.contains('wz-sliver-templates'),
       labels: kinds.map(b => b.textContent),
       checked: kinds.filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.pageKind),
-      anyDisabled: kinds.some(b => b.disabled || b.getAttribute('aria-disabled') === 'true'),
-      guidesPresent: zone.querySelectorAll('[data-style-guide]').length,
-      kindGroupRole: zone.querySelector('[role="radiogroup"]')?.getAttribute('role'),
+      anyDisabled: kinds.concat(guides).some(b => b.disabled || b.getAttribute('aria-disabled') === 'true'),
+      group: (row.querySelector('[role="radiogroup"]') || {}).getAttribute ? row.querySelector('[role="radiogroup"]').getAttribute('aria-labelledby') : null,
+      guideLabels: guides.map(b => b.textContent),
+      guideChecked: guides.filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.styleGuide),
+      convertRows: [...document.querySelectorAll('.wz-sliver .wz-cascade-action')].filter(b => /^Convert to/.test(b.textContent || '')).length,
     };
   })()`);
-  ok('E4: Structure carries the three kind buttons in the ruled order, with NORMAL preselected and none of them greyed',
-    JSON.stringify(roster.labels) === JSON.stringify(['Normal', 'Screenplay', 'Research'])
-      && JSON.stringify(roster.checked) === JSON.stringify(['normal'])
-      && roster.anyDisabled === false && roster.kindGroupRole === 'radiogroup',
-    JSON.stringify(roster));
-
-  ok('E4: the style guides are ABSENT before Research is chosen — not greyed, not hidden: what is not built for this page does not render (G3)',
-    roster.guidesPresent === 0, JSON.stringify(roster));
-
-  // G4's in-place disclosure.
-  await app.evalJs("document.querySelector('[data-page-kind=\"research\"]').click()");
-  await sleep(350);
-  const revealed = await app.evalJs(`(() => {
-    const zone = document.querySelector('.wz-sliver-structure-zone');
-    const guides = [...zone.querySelectorAll('[data-style-guide]')];
-    return {
-      labels: guides.map(b => b.textContent),
-      checked: guides.filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.styleGuide),
-      anyDisabled: guides.some(b => b.disabled || b.getAttribute('aria-disabled') === 'true'),
-      depth: guides.length ? guides[0].closest('.wz-sliver-structure-zone') === zone : false,
-    };
-  })()`);
-  ok('E4: choosing RESEARCH reveals the four style guides IN PLACE, at the same depth, with MLA preselected and nothing greyed',
-    JSON.stringify(revealed.labels) === JSON.stringify(['MLA', 'APA', 'Chicago', 'AP'])
-      && JSON.stringify(revealed.checked) === JSON.stringify(['mla'])
-      && revealed.anyDisabled === false && revealed.depth === true,
-    JSON.stringify(revealed));
-
-  // MLA is a READ default, not a written one: revealing the row must not dirty
-  // the page with a choice the writer never made.
-  await sleep(700);   // persistence.scheduleFlush is 300ms; this is well past it
-  const storedAfterKind = await app.evalJs(`(() => {
+  const pageRect = () => app.evalJs("(() => { const r = document.querySelector('.forward-only-editor').getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round).join(','); })()");
+  const pk0 = await pk();
+  ok('E4 [Fable\'s review successor]: prose Draft carries a "Page kind" row directly below the Templates - Normal, Screenplay, Research in that order, Normal preselected, none greyed, one labelled radiogroup - and still no Structure zone',
+    !!pk0 && pk0.heading === 'Page kind' && pk0.afterTemplates && JSON.stringify(pk0.labels) === JSON.stringify(['Normal', 'Screenplay', 'Research'])
+      && JSON.stringify(pk0.checked) === JSON.stringify(['normal']) && pk0.anyDisabled === false && pk0.group === 'wz-page-kind-label'
+      && e4Prose.structureZone === false && e4Prose.templates === 3, JSON.stringify({ pk0, e4Prose }));
+  ok('E4 [Fable\'s review successor]: the style guides are absent before Research, and the drawer offers no Convert row',
+    !!pk0 && pk0.guideLabels.length === 0 && pk0.convertRows === 0, JSON.stringify(pk0));
+  const rectBefore = await pageRect();
+  await app.evalJs("document.querySelector('.wz-sliver-page-kind [data-page-kind=\"research\"]').click()");
+  await sleep(700);
+  const pk1 = await pk();
+  const rectAfter = await pageRect();
+  ok('E4 [Fable\'s review successor]: choosing Research discloses MLA, APA, Chicago, AP in the same row, MLA preselected - and the page\'s rect does not move',
+    !!pk1 && JSON.stringify(pk1.checked) === JSON.stringify(['research']) && JSON.stringify(pk1.guideLabels) === JSON.stringify(['MLA', 'APA', 'Chicago', 'AP'])
+      && JSON.stringify(pk1.guideChecked) === JSON.stringify(['mla']) && rectBefore === rectAfter, JSON.stringify({ pk1, rectBefore, rectAfter }));
+  const storedKind = await app.evalJs(`(() => {
     const id = (location.hash.match(/#\\/page\\/([^?/]+)/) || [])[1];
-    const rows = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    const e = rows.find(r => r.id === id) || null;
+    const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find(r => r.id === id) || null;
     return { id, pageSettings: e ? (e.pageSettings ?? null) : 'ENTRY NOT FOUND' };
   })()`);
-  ok('E4: picking Research writes kind:"research" to the page own page_settings and writes NO styleGuide — MLA is preselected by reading through the default, so a reveal never records a choice the writer did not make',
-    storedAfterKind.pageSettings && storedAfterKind.pageSettings.kind === 'research'
-      && storedAfterKind.pageSettings.styleGuide === undefined,
-    JSON.stringify(storedAfterKind));
-
-  // ...and it is on the PAGE, not in a component. A reload is the only honest
-  // proof of that.
-  await app.evalJs("document.querySelector('[data-style-guide=\"chicago\"]').click()");
+  ok('E4 [Fable\'s review successor]: picking Research writes kind:"research" to the page and NO styleGuide - MLA is a read default',
+    !!storedKind.pageSettings && storedKind.pageSettings.kind === 'research' && storedKind.pageSettings.styleGuide === undefined, JSON.stringify(storedKind));
+  await app.evalJs("document.querySelector('.wz-sliver-page-kind [data-style-guide=\"chicago\"]').click()");
   await sleep(700);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'page after reload' });
@@ -528,180 +830,27 @@ await withHarness(async (app) => {
   await openSliver(app);
   await sleep(250);
   await toDraft(app);
-  const afterReload = await app.evalJs(`(() => {
-    const zone = document.querySelector('.wz-sliver-structure-zone');
-    return {
-      kind: [...zone.querySelectorAll('[data-page-kind]')].filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.pageKind),
-      guide: [...zone.querySelectorAll('[data-style-guide]')].filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.styleGuide),
-    };
-  })()`);
-  ok('E4: the selection survives a RELOAD — Research and Chicago come back checked, so it lives on the page and not in component state',
-    JSON.stringify(afterReload.kind) === JSON.stringify(['research'])
-      && JSON.stringify(afterReload.guide) === JSON.stringify(['chicago']),
-    JSON.stringify(afterReload));
-
-  // ==========================================================================
-  // E4 — THE DEFAULTS LEAK. The discriminating check of this section: without
-  // pageDefaults.dressOnly, pressing "Set as my default page settings" on a
-  // RESEARCH page makes every page born afterwards Research, silently. Nothing
-  // in the UI would announce it.
-  // ==========================================================================
-  await app.evalJs(`(() => {
-    // VW1 — one handle for one control. This selected by LABEL TEXT, which
-    // is lexicon-fragile: rename the term and the find() silently returns
-    // undefined and the guard below swallows it. data-category is the handle.
-    const b = document.querySelector('.wz-strip-item[data-category=page]');
-    if (!b) throw new Error('item83f: no Page tab to press');
-    b.click();
-  })()`);
+  const pk2 = await pk();
+  ok('E4 [Fable\'s review successor]: the choice survives a reload - Research and Chicago come back checked, so it lives on the page',
+    !!pk2 && JSON.stringify(pk2.checked) === JSON.stringify(['research']) && JSON.stringify(pk2.guideChecked) === JSON.stringify(['chicago']), JSON.stringify(pk2));
+  await app.evalJs("(() => { const b = document.querySelector('.wz-strip-item[data-category=page]'); if (b) b.click(); })()");
   await sleep(500);
-  const savedDefaults = await app.evalJs(`(() => {
-    const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => x.textContent.trim() === 'Set as my default page settings');
-    if (!b) return { pressed: false };
-    b.click();
-    return { pressed: true };
-  })()`);
+  const pressedDefaults = await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => x.textContent.trim() === 'Set as my default page settings'); if (!b) return false; b.click(); return true; })()");
   await sleep(500);
   const storedDefaults = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-page-defaults') || 'null')");
-  ok('E4: "Set as my default page settings" was reachable and was pressed on a RESEARCH page (the fixture the leak needs)',
-    savedDefaults.pressed === true, JSON.stringify(savedDefaults));
-  ok('E4: the writer per-user defaults carry the DRESS and NOT the kind — a page kind is a fact about that page, and facts do not travel by default',
-    storedDefaults !== null && storedDefaults.kind === undefined && storedDefaults.styleGuide === undefined
-      && storedDefaults.margins !== undefined,
-    JSON.stringify(storedDefaults));
-
-  // The leak at its DESTINATION. Read this one with the note below, because a
-  // run of it turned up something that is not this ticket's:
-  //
-  // ► OBSERVED, SURFACED, NOT FIXED — R6's BIRTH-FROM-DEFAULTS DOES NOT REACH
-  //   THE UNBORN ROUTE. A page born through "New Page" comes back with NO
-  //   page_settings at all (measured: storedPageSettings null on a genuinely
-  //   born row, with the writer's defaults saved and non-empty). The stamp
-  //   `pageSettings: getUserPageDefaults() ?? undefined` lives in
-  //   persistence.createJournalPage, and this door navigates to an UNBORN href
-  //   instead (CascadePanels' newPage -> unbornHref, FX14 S1's "every New Page
-  //   opens in THE Page"); PB1's own `unbornEntry`/`birth` never carry the
-  //   field. So item 83 M2's own ruling — "page settings reset to defaults when
-  //   the user creates a new page" — is bypassed on what is now the ordinary
-  //   way a page is made. That is a pre-existing interaction between M2 and
-  //   PB1, entirely outside this brief, and it is reported in the offer rather
-  //   than repaired here.
-  //
-  //   WHAT IT COSTS THIS CHECK, said plainly: the destination has two locks on
-  //   it now, and only one of them is E4's. The DISCRIMINATING check for the
-  //   strip is the one above, at the door — remove `dressOnly` and the stored
-  //   defaults carry `kind:"research"` and that check goes red. This one
-  //   CORROBORATES; it does not, on this route, discriminate. It is kept
-  //   because the day R6 is repaired is exactly the day it starts to.
-  // The id BEFORE the door is taken. Without it this check cannot tell a newly
-  // born page from the Research page it was standing on — and it could not, on
-  // its first run: the selector read 'New page' where the lexicon says 'New
-  // Page', so nothing was clicked and the check reported the open page's own
-  // kind as though a birth had inherited it. Caught because the assertion was
-  // wrong, not because anything in the product was; the guard below is what
-  // stops that class of false red (and its far worse twin, a false green).
-  const idBeforeBirth = await app.evalJs("(location.hash.split('/page/')[1] || '').split(/[?/]/)[0]");
-  await app.evalJs(`(() => {
-    const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => x.textContent.trim() === 'New Page');
-    if (b) b.click();
-  })()`);
-  await sleep(900);
-  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'newly born page' });
-  await sleep(400);
-  // A word, so the page is genuinely BORN. Without it the route sits at
-  // `#/page/new` (PB1's unborn page — no row exists yet), and `storedKind`
-  // would read null for a reason that has nothing to do with the strip under
-  // test: an over-claim the first run of this check actually made, and this
-  // line is what retires it. The in-memory entry it births carries whatever
-  // `getUserPageDefaults()` stamped at creation, which IS the channel the leak
-  // would travel down.
-  await focusEditor(app);
-  await app.typeKeys('birth ');
-  await sleep(900);
-  await openSliver(app);
-  await sleep(250);
-  await toDraft(app);
-  const bornPage = await app.evalJs(`(() => {
-    const id = (location.hash.match(/#\\/page\\/([^?/]+)/) || [])[1];
-    const rows = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    const e = rows.find(r => r.id === id) || null;
-    const zone = document.querySelector('.wz-sliver-structure-zone');
-    return {
-      id,
-      rowExists: !!e,
-      storedPageSettings: e ? (e.pageSettings ?? null) : null,
-      storedKind: e && e.pageSettings ? (e.pageSettings.kind ?? null) : null,
-      checked: [...zone.querySelectorAll('[data-page-kind]')].filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.pageKind),
-      guidesPresent: zone.querySelectorAll('[data-style-guide]').length,
-    };
-  })()`);
-  ok('E4 (corroborating, see the note above): a page BORN AFTER those defaults were saved is Normal, carries no kind key, and shows no style guides. Guarded twice so it cannot pass by standing still — the id must differ from the page it was launched from, and the row must actually EXIST (a word was written, so PB1 has borne it). It corroborates rather than discriminates on THIS route, because birth-from-defaults does not currently reach it at all',
-    bornPage.id !== idBeforeBirth && bornPage.id !== 'new' && bornPage.rowExists === true
-      && bornPage.storedKind === null
-      && JSON.stringify(bornPage.checked) === JSON.stringify(['normal'])
-      && bornPage.guidesPresent === 0,
-    JSON.stringify({ ...bornPage, idBeforeBirth }));
-
-  // ==========================================================================
-  // E4 — THE SEAM, asserted rather than described. The Screenplay name
-  // collision is REPORTED to Nick and is his to settle; what is measured here
-  // is only that the two controls cannot be mistaken for one another in the
-  // meantime, and that neither was renamed or merged to get there.
-  // ==========================================================================
-  const seam = await app.evalJs(`(() => {
-    const zone = document.querySelector('.wz-sliver-structure-zone');
-    const chip = zone.querySelector('[data-page-kind="screenplay"]');
-    const act = zone.querySelector('.wz-cascade-action');
-    const subs = [...zone.querySelectorAll('.wz-sliver-sub')].map(s => s.textContent);
-    return {
-      chipText: chip ? chip.textContent : null,
-      chipRole: chip ? chip.getAttribute('role') : null,
-      actText: act ? act.textContent : null,
-      actPopup: act ? act.getAttribute('aria-haspopup') : null,
-      actRole: act ? act.getAttribute('role') : null,
-      // The FIRST and LAST sub-labels are the seam's own pair and are asserted
-      // by position, not by a fixed list: 'Style guide' sits between them only
-      // while Research is chosen, and pinning the whole list would make this
-      // check pass or fail on a state it does not care about.
-      subs,
-      ruleBetween: !!zone.querySelector('.wz-sliver-rule'),
-      sameClass: !!(chip && act) && chip.className === act.className,
-    };
-  })()`);
-  ok('E4 (seam): BOTH Screenplays stand, and NEITHER was renamed or merged — the kind chip still reads "Screenplay" and the act still reads "Convert to Screenplay…" with its dialog promise intact',
-    seam.chipText === 'Screenplay' && seam.actText === 'Convert to Screenplay…'
-      && seam.actPopup === 'dialog',
-    JSON.stringify(seam));
-  ok('E4 (seam): they are told apart three ways at once — separate sub-labels naming the difference in words, different control shapes (a radio chip vs a full-width action), and a rule between them',
-    seam.subs[0] === 'This page is' && seam.subs[seam.subs.length - 1] === 'Change the page itself'
-      && seam.chipRole === 'radio' && seam.actRole === null
-      && seam.sameClass === false && seam.ruleBetween === true,
-    JSON.stringify(seam));
-
-  // ==========================================================================
-  // E4 — THE SCOPE DECISION, measured so it cannot be a silent narrowing. The
-  // chips are PROSE DRAFT's; the framed screenplay surface passes none of the
-  // four props, so they are genuinely absent from its DOM rather than greyed.
-  // A script page has already declared what it is, and a kind row there would
-  // let a writer mark a screenplay "Normal" and then persist that. Disclosed in
-  // the offer; four props and a default if Nick wants it widened.
-  // ==========================================================================
+  ok('E4 [Fable\'s review successor]: "Set as my default page settings" on that Research page saves the dress and NOT the kind or style guide',
+    pressedDefaults === true && storedDefaults !== null && storedDefaults.kind === undefined && storedDefaults.styleGuide === undefined && storedDefaults.margins !== undefined,
+    JSON.stringify({ pressedDefaults, storedDefaults }));
   await freshScriptPage(app, 1400, 900);
   await openSliver(app);
   await sleep(300);
-  const onScript = await app.evalJs(`(() => {
-    const zone = document.querySelector('.wz-sliver-structure-zone');
-    return {
-      structureZonePresent: !!zone,
-      kindChips: document.querySelectorAll('[data-page-kind]').length,
-      guides: document.querySelectorAll('[data-style-guide]').length,
-      actText: zone ? (zone.querySelector('.wz-cascade-action') || {}).textContent : null,
-    };
-  })()`);
-  ok('E4 (scope, disclosed): the framed SCREENPLAY surface keeps its Structure zone and its conversion row, and carries NO kind chips — absent from the DOM, never greyed',
-    onScript.structureZonePresent === true && onScript.kindChips === 0 && onScript.guides === 0
-      && typeof onScript.actText === 'string' && onScript.actText.length > 0,
-    JSON.stringify(onScript));
+  const e4Script = await app.evalJs(`({
+    structureZone: !!document.querySelector('.wz-sliver-structure-zone'),
+    kindChips: document.querySelectorAll('[data-page-kind]').length,
+    convertRows: [...document.querySelectorAll('.wz-sliver .wz-cascade-action')].filter(b => /^Convert to/.test(b.textContent || '')).length,
+  })`);
+  ok('E4 [PR #7 successor]: the screenplay drawer carries no Structure zone, no Convert row and no kind chips',
+    e4Script.structureZone === false && e4Script.kindChips === 0 && e4Script.convertRows === 0, JSON.stringify(e4Script));
   return checks;
 }, { label: 'item83f' });
 
@@ -720,6 +869,8 @@ if (process.env.HARNESS_PARKED === '1') {
   ];
   for (const [what, pass] of lineParks) parkedChecks.push({ name: `PARKED (was "E3: ${what}") - Nick's ruling 2026-09-25, a line is a paragraph: the SAME fixture now indents the caret line only (default-leg successor "E3 [line-scope successor]")`, pass, detail: JSON.stringify(e3) });
   parkedChecks.push({ name: 'PARKED (was "E3 (fence): pressing TAB changes nothing - Tab-as-indent is item 102 and was NOT built here; the arrow is the only door this wave opens") - item 158 built Tab-as-indent: the SAME keystroke on the SAME fixture now indents the caret paragraph by one level (its default-leg successor is the check named "E3 (fence) [158 successor]")', pass: !!tabFence && tabFence.afterTab === tabFence.beforeTab.replace('\n\tBeta one', '\n\t\tBeta one'), detail: JSON.stringify(tabFence) });
+  // PR #7 (2026-10-02) parks more of this file, each in place beside its successor and marked "SUPERSEDED by PR #7":
+  // the toDraft wait, the openPopout driver, the E2 foot checks and zone guard, the E3 bullet title, and all of E4.
   // The assertions this WAVE superseded live where they were written and are
   // parked there, in their own files, beside their successors:
   //   · fx3.mjs — FIVE: S5's two keystroke-dissolve checks (E1 reverses the

@@ -759,14 +759,16 @@ export function GearIcon() {
   );
 }
 
-export function Seg({ label, value, opts, onPick }: { label: string; value: string; opts: [string, string][]; onPick: (v: string) => void }) {
+// `soon` lists options shown as stand-ins for unbuilt capability: dimmed, inert, titled `soonTitle`.
+export function Seg({ label, value, opts, onPick, soon, soonTitle }: { label: string; value: string; opts: [string, string][]; onPick: (v: string) => void; soon?: string[]; soonTitle?: string }) {
   return (
     <div className="mode-crow">
       <span>{label}</span>
       <div className="mode-seg">
-        {opts.map(([v, txt]) => (
-          <button key={v} type="button" className={value === v ? 'on' : ''} onClick={() => onPick(v)}>{txt}</button>
-        ))}
+        {opts.map(([v, txt]) => soon?.includes(v)
+          ? <button key={v} type="button" className="mode-seg-soon" aria-disabled="true" title={soonTitle}>{txt}</button>
+          : <button key={v} type="button" className={value === v ? 'on' : ''} onClick={() => onPick(v)}>{txt}</button>
+        )}
       </div>
     </div>
   );
