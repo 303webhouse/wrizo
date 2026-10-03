@@ -2536,6 +2536,7 @@ a:focus-visible,
   font-size:10px; padding:3px 7px; cursor:pointer; font-family:var(--font-ui); }
 .mode-seg button:first-child{ border-left:0; }
 .mode-seg button.on{ background:var(--brass); color:var(--on-brass); }
+.mode-seg button.mode-seg-soon{ color:var(--text-low); opacity:.45; cursor:default; }
 .mode-settings-hint{ margin-top:9px; font-size:9.5px; color:var(--text-low); line-height:1.5; }
 
 /* Narrow screens (tablet portrait / phone): hide the rails — the page is the
@@ -2654,7 +2655,10 @@ a:focus-visible,
    (measured ~200px of clearance there, the tightest case — see fx5.mjs's
    own S10 section for the live rect proof at all three reference
    widths). */
-.desk-frame-host{ max-width:none; margin:0; padding:2.5rem var(--frame-host-pad-x) 3rem var(--frame-host-pad-x); background:var(--desk-ground); overflow:hidden; }
+/* `clip`, not `hidden`: a hidden box is still a scroll container, so a focus or
+   scrollIntoView on a tall drawer's lower controls scrolled the host and moved
+   the paper. A clipped box cannot be scrolled at all. */
+.desk-frame-host{ max-width:none; margin:0; padding:2.5rem var(--frame-host-pad-x) 3rem var(--frame-host-pad-x); background:var(--desk-ground); overflow:clip; }
 /* FX4 S1 — Journal's own host reverts the clip (see JournalEntry.tsx's own
    comment on `.desk-frame-host--journal` for the full defect writeup): this
    is the ONE DeskFrame surface whose content is meant to grow past the
@@ -3561,8 +3565,21 @@ a:focus-visible,
 .wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--accent-rest); border-color:var(--accent-rest); }
 .wz-sliver-grip-glyph{ font-size:13px; line-height:1; }
 .wz-sliver-panel{ position:absolute; top:0; right:16px; width:calc(100% - 16px); height:100%;
-  overflow-y:auto; background:var(--desk-ground); border:1px solid var(--ink-border); border-right:none;
-  opacity:0; pointer-events:none; transform:translateX(6px); transition:opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s) ease; }
+  overflow-y:auto; overflow-x:hidden; background:var(--desk-ground); border:1px solid var(--ink-border); border-right:none;
+  opacity:0; pointer-events:none; transform:translateX(6px); transition:opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s) ease;
+  /* The bar sits on the drawer's left edge. `direction: rtl` is the only
+     way a native scrollbar changes sides; the children below stay left to
+     right. It is overlay-thin and only paints when the content is taller
+     than the drawer — settings open, or a short screen. No reserved gutter. */
+  direction: rtl;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--text-low) 28%, transparent) transparent;
+}
+.wz-sliver-panel > *{ direction: ltr; }
+.wz-sliver-panel::-webkit-scrollbar{ width: 4px; }
+.wz-sliver-panel::-webkit-scrollbar-track{ background: transparent; }
+.wz-sliver-panel::-webkit-scrollbar-thumb{ background: color-mix(in srgb, var(--text-low) 28%, transparent); }
+.wz-sliver-panel::-webkit-scrollbar-thumb:hover{ background: color-mix(in srgb, var(--text-low) 55%, transparent); }
 .wz-sliver-panel[data-open='true']{ opacity:1; pointer-events:auto; transform:translateX(0); }
 /* item 83 errata E1 (2026-09-03) — THE POP-OUT HOLD. Nick's ruling: a foot
    pop-out fades after FIFTEEN WORDS WRITTEN or A PERIOD ENTERED, never on a
@@ -3624,6 +3641,16 @@ a:focus-visible,
   border:1px solid var(--ink-border); font-family:var(--font-ui); cursor:pointer; transition:.15s; }
 .wz-sliver-item-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-sliver-format{ display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
+.wz-sliver-format .mode-tbtn{ display:inline-flex; align-items:center; justify-content:center; }
+.wz-sliver-format--letters{ flex-wrap:nowrap; }
+.wz-sliver-format--letters .mode-tbtn{ flex:1 1 0; min-width:0; padding:0 2px; }
+.wz-format-mark{ display:block; }
+.wz-bullet-control{ position:relative; display:inline-flex; align-items:center; }
+.wz-bullet-toggle{ width:16px; min-width:16px; padding:0; font-size:9px; }
+.wz-bullet-menu{ position:absolute; top:100%; left:0; z-index:40; display:flex; flex-direction:column; gap:2px;
+  padding:4px; background:var(--ink-900); border:1px solid var(--ink-border); }
+.wz-template-btn{ color:var(--text-low); opacity:.45; cursor:default; }
+.wz-template-btn:hover{ color:var(--text-low); background:none; border-color:transparent; }
 /* ITEM 207 - THE TYPE CONTROL (TypeControl.tsx). As minimal as a strip menu gets: a face button, a `-` `+` pair, and in
    the full form a number between them. No heading, no caption. The listbox drops in FLOW inside the drawer (never a
    second floating panel), each row set in its own face, the current one olive (where you are - the sliver's rest law). */
@@ -3764,6 +3791,7 @@ a:focus-visible,
    is untouched. */
 .wz-sliver-instruments .mode-settings{ position:static; top:auto; right:auto; width:auto; margin-top:10px; box-shadow:none; }
 .wz-sliver-instruments-panel{ margin-top:10px; }
+.wz-foot-settings-block + .wz-foot-settings-block{ margin-top:14px; padding-top:10px; border-top:1px solid var(--ink-border); }
 /* A Seg's selected option (`.mode-seg button.on`, ModeStage's own base rule)
    fills brass — correct at the stage's OWN gear (a corner popover, not
    itself part of the sliver's established visual law), but a resting
@@ -3773,7 +3801,7 @@ a:focus-visible,
    already swept under FX1 S6. Scoped the same way as the position override
    above, for the same reason. */
 .wz-sliver-instruments .mode-seg button.on{ background:var(--accent-rest); color:var(--on-brass); }
-
+.wz-sliver-instruments .mode-settings h4{ color:var(--accent-rest); }
 /* TU1 S2 — the Tutor (components/Tutor.tsx). The sliver's own class family,
    mirrored (`.wz-sliver-*` -> `.wz-tutor-*`), split across the TWO anchors
    above (`.wz-tutor-zone` is the shared marker class both anchor roots
@@ -4633,7 +4661,9 @@ a:focus-visible,
    stays a real (collapsed) character; while the caret is at it (`.md-revealed`) the literal hyphen shows instead of the glyph. */
 .md-bullet{ padding-left:1.4em; text-indent:-1.4em; }
 .md-bullet::before{ content:'\2022'; display:inline-block; width:1.4em; text-indent:0; }
-.md-bullet.md-revealed::before{ content:none; }
+.md-bullet-circle::before{ content:'\25E6'; }
+.md-bullet-square::before{ content:''; height:1em; vertical-align:middle; background:linear-gradient(currentColor, currentColor) center / 0.42em 0.42em no-repeat; }
+.md-bullet.md-revealed::before{ content:none; background:none; }
 
 /* AB2 S2 DoD — the typewriter's hold-band on the SCRIPT surface, container-
    mode (the sheet lives inside the bounded .desk-frame-scroll-cap — finding
@@ -5241,6 +5271,7 @@ a:focus-visible,
    PAGE SETUP: square corners, 1px --line, olive focus. */
 .wz-tw-number{ display:flex; align-items:center; gap:8px; margin:6px 0 2px; }
 .wz-tw-number > span{ flex:1 1 auto; font-size:11px; color:var(--text-mid); }
+.wz-tw-number > .wz-tw-unit{ flex:0 0 auto; }
 .wz-tw-number input{ width:64px; background:var(--ink-950);
   border:1px solid var(--ink-border); color:var(--text-hi);
   font-family:var(--font-ui); font-size:12px; padding:3px 6px; border-radius:0; }

@@ -76,12 +76,23 @@ await withHarness(async (app) => {
     if (mode === 'Free Write') ok('[Free Write] still forward-only: the runs are the same `.fo-run` spans (rendering changed, the mechanic did not)', m.hasFoRun);
 
     if (mode === 'Draft') {
-      // reveal: a real click into the bullet line un-collapses its prefix, and the glyph gives way to the literal hyphen
+      // ---- PARKED - SUPERSEDED by PR #7 (19a4676: the bullet token no longer reveals), 2026-10-02 ----
+      // Kept VERBATIM and no longer run. A click at the mark used to show the hyphen so it could be deleted by hand.
+      // Hollow and square store `-+ ` and `-= `, and showing those puts punctuation on the page. The glyph stays; the same
+      // style button removes the list, and Backspace after the token removes it whole (item211.mjs TOKENS).
+      //
+      // // reveal: a real click into the bullet line un-collapses its prefix, and the glyph gives way to the literal hyphen
+      // const pt = await app.evalJs(`(() => { const b = document.querySelector('${ED} .md-bullet'); if (!b) return null; const r = b.getBoundingClientRect(); return { x: Math.round(r.left + 2), y: Math.round(r.top + r.height / 2) }; })()`);
+      // if (pt) await realClick(app, pt);
+      // const rv = await app.evalJs(`(() => { const b = document.querySelector('${ED} .md-bullet'); return b ? { revealed: b.classList.contains('md-revealed'), glyph: getComputedStyle(b, '::before').content, mark: b.querySelector('.md-mark').className } : null; })()`);
+      // ok('[Draft] a real click at the START of a bullet line (where its prefix is) reveals its "- " (the writer can reach and delete it), and the glyph steps aside', !!rv && rv.revealed && rv.glyph === 'none' && !/hidden/.test(rv.mark), JSON.stringify(rv));
+      // ok('[Draft] the reveal did not touch the stored text', (await stored(app)) === FIX);
+      // ----------------------------------------------------------------------
       const pt = await app.evalJs(`(() => { const b = document.querySelector('${ED} .md-bullet'); if (!b) return null; const r = b.getBoundingClientRect(); return { x: Math.round(r.left + 2), y: Math.round(r.top + r.height / 2) }; })()`);
       if (pt) await realClick(app, pt);
       const rv = await app.evalJs(`(() => { const b = document.querySelector('${ED} .md-bullet'); return b ? { revealed: b.classList.contains('md-revealed'), glyph: getComputedStyle(b, '::before').content, mark: b.querySelector('.md-mark').className } : null; })()`);
-      ok('[Draft] a real click at the START of a bullet line (where its prefix is) reveals its "- " (the writer can reach and delete it), and the glyph steps aside', !!rv && rv.revealed && rv.glyph === 'none' && !/hidden/.test(rv.mark), JSON.stringify(rv));
-      ok('[Draft] the reveal did not touch the stored text', (await stored(app)) === FIX);
+      ok('[Draft] a real click at the START of a bullet line keeps the glyph and keeps the stored mark hidden', !!rv && !rv.revealed && rv.glyph !== 'none' && /hidden/.test(rv.mark), JSON.stringify(rv));
+      ok('[Draft] the click did not touch the stored text', (await stored(app)) === FIX);
     }
   }
 

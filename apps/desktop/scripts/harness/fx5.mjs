@@ -812,7 +812,12 @@ await withHarness(async (app) => {
   // dock tool opens it first, with a REAL press on the grip (the standing law).
   // The claim this file makes about the dock is unchanged; only its precondition is.
   { const g = await app.evalJs("(() => { const el = document.querySelector('.board-popup-dock-grip'); if (!el || document.querySelector('.board-popup-dock')) return null; const r = el.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()"); if (g) { await app.mouseDown(g.x, g.y); await app.mouseUp(g.x, g.y); await sleep(300); } }
-  await app.evalJs("[...document.querySelectorAll('.board-popup-tool')].find(b => b.title === 'Bold').click()");
+  // ---- PARKED - SUPERSEDED by PR #7 (3951329: Bold's title names its shortcut, "Bold (Ctrl+B)" - the card popup shares the lexicon term), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The exact-title match no longer finds Bold; the successor matches the title's leading word.
+  //
+  // await app.evalJs("[...document.querySelectorAll('.board-popup-tool')].find(b => b.title === 'Bold').click()");
+  // ----------------------------------------------------------------------
+  await app.evalJs("[...document.querySelectorAll('.board-popup-tool')].find(b => b.title.startsWith('Bold')).click()");
   await sleep(200);
   // Bold's own toolbar action lands the caret INSIDE the newly-wrapped run
   // by design (so a writer sees what they just did) — move it AWAY (Home,
@@ -878,9 +883,15 @@ await withHarness(async (app) => {
     const marks = [...document.querySelectorAll('.forward-only-editor .md-mark')];
     return { count: marks.length, anyHiddenClass: marks.some(m => m.classList.contains('md-mark-hidden')), opacity: marks[0] ? getComputedStyle(marks[0]).opacity : null };
   })()`);
-  ok('S6: Draft mode\'s own dimmed-syntax register is genuinely UNTOUCHED — its .md-mark spans NEVER carry the card-only .md-mark-hidden class, still just dimmed (opacity ~0.38), asterisks stay visible there (this is a card-surface-only change)',
-    draftMarkState.count > 0 && !draftMarkState.anyHiddenClass && Math.abs(parseFloat(draftMarkState.opacity) - 0.38) < 0.05,
-    JSON.stringify(draftMarkState));
+  // ---- PARKED - SUPERSEDED by PR #7 (e79390c: marks never show, item 211), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. Draft no longer dims its syntax; it hides it like the card.
+  //
+  // ok('S6: Draft mode\'s own dimmed-syntax register is genuinely UNTOUCHED — its .md-mark spans NEVER carry the card-only .md-mark-hidden class, still just dimmed (opacity ~0.38), asterisks stay visible there (this is a card-surface-only change)',
+  //   draftMarkState.count > 0 && !draftMarkState.anyHiddenClass && Math.abs(parseFloat(draftMarkState.opacity) - 0.38) < 0.05,
+  //   JSON.stringify(draftMarkState));
+  // ----------------------------------------------------------------------
+  ok('S6 [PR #7 successor]: Draft mode hides its marks too - its .md-mark spans carry .md-mark-hidden (item 211 applies to every writing surface)',
+    draftMarkState.count > 0 && draftMarkState.anyHiddenClass, JSON.stringify(draftMarkState));
 
   // ==========================================================================
   // S7 — the em dash (Word convention): "--word " -> "—word ". Scoped to

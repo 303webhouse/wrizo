@@ -131,6 +131,8 @@ const walkLine = async (app, sel) => {
   return steps;
 };
 const lawHolds = (steps) => steps.length > 0 && steps.every((x) => x.off !== null && x.revealed === touchesMarker(x.off));
+// ITEM 211 — markers never show, at the edge of a mark or in the middle of the word.
+const neverShown = (steps) => steps.length > 0 && steps.every((x) => x.off !== null && x.revealed === false);
 const sawBoth = (steps) => steps.some((x) => touchesMarker(x.off)) && steps.some((x) => x.off >= 9 && x.off <= 11);
 // off -> on -> off, in that order, somewhere along the walk (the reveal follows the caret both ways; it does not latch)
 const turnsOnAndOff = (steps) => { const k = steps.map((x) => (x.revealed ? '1' : '0')).join(''); return /0+1+0+/.test(k); };
@@ -176,8 +178,15 @@ await withHarness(async (app) => {
     pageAfterClick.allHidden === true && pageCaret !== null && !touchesMarker(pageCaret), JSON.stringify({ ...pageAfterClick, caret: pageCaret }));
   const pageWalk = await walkLine(app, '.forward-only-editor');
   parked.pageWalk = pageWalk;
-  ok('S1 [interim successor] THE RULE, at every caret stop along the line (trusted ArrowRight from Home): the markers show EXACTLY when the caret touches a marker span (6-8, 12-14) and at no stop inside the word - so the listener still re-runs the register on a caret move with no edit',
-    lawHolds(pageWalk) && sawBoth(pageWalk), JSON.stringify(pageWalk.map((x) => `${x.off}${x.revealed ? '+' : '-'}`).join(' ')));
+  // ---- PARKED - SUPERSEDED by item 211, 2026-10-02 --------------------------------------------------------------------------
+  // Kept VERBATIM and no longer run. The interim rule showed the marks while the caret touched a marker span. Nick's "A"
+  // retires that: the marks never show. Successor: the walk below, which must stay hidden at every stop, edges included.
+  //
+  // ok('S1 [interim successor] THE RULE, at every caret stop along the line (trusted ArrowRight from Home): the markers show EXACTLY when the caret touches a marker span (6-8, 12-14) and at no stop inside the word - so the listener still re-runs the register on a caret move with no edit',
+  //   lawHolds(pageWalk) && sawBoth(pageWalk), JSON.stringify(pageWalk.map((x) => `${x.off}${x.revealed ? '+' : '-'}`).join(' ')));
+  // ------------------------------------------------------------------
+  ok('S1 ITEM 211: at every caret stop along the line, including the marker edges, every mark stays hidden',
+    neverShown(pageWalk) && pageWalk.some((x) => x.off >= 6 && x.off <= 14), JSON.stringify(pageWalk.map((x) => `${x.off}${x.revealed ? '+' : '-'}`).join(' ')));
   if (boldPt) await realClick(app, boldPt);   // back to where the original flow left the caret
   ok('S1: and the caret stays where the writer put it — the redecorate restores the clicked offset rather than collapsing to the end of the page',
     pageCaret !== null && pageCaret >= BOLD_LO && pageCaret <= BOLD_HI,
@@ -203,8 +212,14 @@ await withHarness(async (app) => {
   //   JSON.stringify({ revealedFirst: pageAfterClick.anyRevealed, hiddenAfter: pageAfterAway.allHidden }));
   // ------------------------------------------------------------------
   parked.pageAway = pageAfterAway;
-  ok('S1 [interim successor]: the reveal follows the caret BOTH ways and does not latch - along the walk it is seen OFF, then ON at a marker, then OFF again; and a click out into plain prose leaves everything collapsed. Unable to pass on a build with no listener: the ON has to be observed.',
-    turnsOnAndOff(pageWalk) && pageAfterAway.allHidden === true, JSON.stringify({ walk: pageWalk.map((x) => (x.revealed ? '1' : '0')).join(''), hiddenAfter: pageAfterAway.allHidden }));
+  // ---- PARKED - SUPERSEDED by item 211, 2026-10-02 --------------------------------------------------------------------------
+  // Kept VERBATIM and no longer run. The interim check required the marks to turn ON at a marker edge. That ON is the asterisk the writer reported.
+  //
+  // ok('S1 [interim successor]: the reveal follows the caret BOTH ways and does not latch - along the walk it is seen OFF, then ON at a marker, then OFF again; and a click out into plain prose leaves everything collapsed. Unable to pass on a build with no listener: the ON has to be observed.',
+  //   turnsOnAndOff(pageWalk) && pageAfterAway.allHidden === true, JSON.stringify({ walk: pageWalk.map((x) => (x.revealed ? '1' : '0')).join(''), hiddenAfter: pageAfterAway.allHidden }));
+  // ------------------------------------------------------------------
+  ok('S1 ITEM 211: the walk never turns a mark on, and a click out into plain prose leaves every mark hidden',
+    neverShown(pageWalk) && pageAfterAway.allHidden === true, JSON.stringify({ walk: pageWalk.map((x) => (x.revealed ? '1' : '0')).join(''), hiddenAfter: pageAfterAway.allHidden }));
 
   // ==========================================================================
   // S2 — TERMINATION, MEASURED. Redecorating restores the caret; restoring the
@@ -240,8 +255,14 @@ await withHarness(async (app) => {
   const mutations = await app.evalJs("(() => { window.__revObs.disconnect(); return window.__revMut; })()");
   const atEdge = await revealState(app, '.forward-only-editor');
   parked.mutations = mutations;
-  ok('S2 TERMINATION [interim successor]: one reveal-changing KEY PRESS (ArrowRight onto a marker\'s edge) produces a BOUNDED burst of DOM mutations and then stops - the "unchanged decoration is not rewritten" guard still closes the selectionchange -> redecorate -> setCaret -> selectionchange cycle',
-    beforeEdge === 5 && atEdge.anyRevealed === true && typeof mutations === 'number' && mutations > 0 && mutations < 40, JSON.stringify({ beforeEdge, revealed: atEdge.anyRevealed, mutations }));
+  // ---- PARKED - SUPERSEDED by item 211, 2026-10-02 --------------------------------------------------------------------------
+  // Kept VERBATIM and no longer run. The interim check required the edge press to REVEAL (mutations > 0). A press that changes nothing must not loop.
+  //
+  // ok('S2 TERMINATION [interim successor]: one reveal-changing KEY PRESS (ArrowRight onto a marker\'s edge) produces a BOUNDED burst of DOM mutations and then stops - the "unchanged decoration is not rewritten" guard still closes the selectionchange -> redecorate -> setCaret -> selectionchange cycle',
+  //   beforeEdge === 5 && atEdge.anyRevealed === true && typeof mutations === 'number' && mutations > 0 && mutations < 40, JSON.stringify({ beforeEdge, revealed: atEdge.anyRevealed, mutations }));
+  // ------------------------------------------------------------------
+  ok('S2 ITEM 211: ArrowRight onto a marker edge does not reveal it, and the selectionchange listener does not loop',
+    beforeEdge === 5 && atEdge.allHidden === true && typeof mutations === 'number' && mutations < 40, JSON.stringify({ beforeEdge, hidden: atEdge.allHidden, mutations }));
 
   // ==========================================================================
   // S3 — THE SELECTION GUARD. A redecorate restores a COLLAPSED caret, so
@@ -280,8 +301,14 @@ await withHarness(async (app) => {
   for (let i = 0; i < 10; i += 1) await app.key('ArrowLeft', { shift: true });
   await sleep(400);
   const pageSel = await selectionNow(app);
-  ok('S3 (page): a live NON-COLLAPSED selection survives being extended BACKWARDS across a reveal boundary — ten trusted Shift+ArrowLeft presses from the end drag the range START into the bold run, where the decoration genuinely differs from the one last written, and the ten characters are still selected because revealAtCaret declines outright while a selection is open',
-    pageSel.none === false && pageSel.collapsed === false && pageSel.length === 10, JSON.stringify(pageSel));
+  // ---- PARKED - SUPERSEDED by item 211 (52ad017: Shift+Arrow moves by visible characters), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. Ten presses used to select ten raw characters; they now select ten visible ones, which spans the hidden markers.
+  //
+  // ok('S3 (page): a live NON-COLLAPSED selection survives being extended BACKWARDS across a reveal boundary — ten trusted Shift+ArrowLeft presses from the end drag the range START into the bold run, where the decoration genuinely differs from the one last written, and the ten characters are still selected because revealAtCaret declines outright while a selection is open',
+  //   pageSel.none === false && pageSel.collapsed === false && pageSel.length === 10, JSON.stringify(pageSel));
+  // ----------------------------------------------------------------------
+  ok('S3 ITEM 211: a live NON-COLLAPSED selection survives being extended BACKWARDS across the bold run - ten trusted Shift+ArrowLeft presses move by ten VISIBLE characters ("t BOLD end"), so the range also takes in the four hidden markers whole',
+    pageSel.none === false && pageSel.collapsed === false && pageSel.text === 't **BOLD** end', JSON.stringify(pageSel));
 
   // ==========================================================================
   // S4 — THE CARD SURFACE. What FX5 S6 built must still work, on the new
@@ -382,12 +409,20 @@ for (const c of checks) {
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
-  pok('PARKED (was "S1 THE TICKET: a REAL click into the bold run reveals its own markers on the page") - interim rule: a mid-word click reveals nothing, and the markers show exactly at the marker spans along the walk',
-    !!parked.pageClick && parked.pageClick.allHidden === true && !!parked.pageWalk && lawHolds(parked.pageWalk) && sawBoth(parked.pageWalk), JSON.stringify(parked.pageClick));
-  pok('PARKED (was "S1: clicking back out into plain prose RE-COLLAPSES the markers ... asserted together with the reveal that preceded it") - interim rule: the ON is observed on the walk (off, on, off), and the click out leaves all collapsed',
-    !!parked.pageWalk && turnsOnAndOff(parked.pageWalk) && !!parked.pageAway && parked.pageAway.allHidden === true, JSON.stringify(parked.pageAway));
-  pok('PARKED (was "S2 TERMINATION: one reveal-changing click produces a BOUNDED burst of DOM mutations") - interim rule: the reveal-changing gesture is a key press onto a marker edge; still bounded',
-    typeof parked.mutations === 'number' && parked.mutations > 0 && parked.mutations < 40, JSON.stringify({ mutations: parked.mutations }));
+  // ---- PARKED - SUPERSEDED by item 211 (PR #7: hidden marks never show), 2026-10-02 ----
+  // The three page records below keep their quoted original and their interim note byte-for-byte, and chain the item 211 note
+  // after it (a chain, never a rewrite — audit-parked-records.mjs). Each interim CONDITION (lawHolds/sawBoth/turnsOnAndOff,
+  // mutations > 0) required a mark to show, and follows reality now: neverShown, bounded. The fourth, the card's, is unchanged:
+  // the card popup keeps the interim rule until it has the page's editing rules (Fable's PR #7 review, 2026-10-03).
+  //   !!parked.pageClick && parked.pageClick.allHidden === true && !!parked.pageWalk && lawHolds(parked.pageWalk) && sawBoth(parked.pageWalk), JSON.stringify(parked.pageClick));
+  pok('PARKED (was "S1 THE TICKET: a REAL click into the bold run reveals its own markers on the page") - interim rule: a mid-word click reveals nothing, and the markers show exactly at the marker spans along the walk; then item 211 (2026-10-02): the walk never reveals either',
+    !!parked.pageClick && parked.pageClick.allHidden === true && !!parked.pageWalk && neverShown(parked.pageWalk), JSON.stringify(parked.pageClick));
+  //   !!parked.pageWalk && turnsOnAndOff(parked.pageWalk) && !!parked.pageAway && parked.pageAway.allHidden === true, JSON.stringify(parked.pageAway));
+  pok('PARKED (was "S1: clicking back out into plain prose RE-COLLAPSES the markers ... asserted together with the reveal that preceded it") - interim rule: the ON is observed on the walk (off, on, off), and the click out leaves all collapsed; then item 211 (2026-10-02): the walk stays off, and the click out leaves all collapsed',
+    !!parked.pageWalk && neverShown(parked.pageWalk) && !!parked.pageAway && parked.pageAway.allHidden === true, JSON.stringify(parked.pageAway));
+  //   typeof parked.mutations === 'number' && parked.mutations > 0 && parked.mutations < 40, JSON.stringify({ mutations: parked.mutations }));
+  pok('PARKED (was "S2 TERMINATION: one reveal-changing click produces a BOUNDED burst of DOM mutations") - interim rule: the reveal-changing gesture is a key press onto a marker edge; still bounded; then item 211 (2026-10-02): the edge press reveals nothing and does not loop',
+    typeof parked.mutations === 'number' && parked.mutations < 40, JSON.stringify({ mutations: parked.mutations }));
   pok('PARKED (was "S4: a REAL click into the card\'s bold run reveals its markers") - interim rule: nothing on a mid-word click, and the same rule along the card\'s walk',
     !!parked.cardClick && parked.cardClick.allHidden === true && !!parked.cardWalk && lawHolds(parked.cardWalk) && sawBoth(parked.cardWalk), JSON.stringify(parked.cardClick));
   for (const c of parkedChecks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);

@@ -19,7 +19,7 @@ import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { getSelectionOffsets, getCaretOffset, setCaretOffset, setSelectionOffsets } from '../store/caretOffset';
 import { applyFormat, formatShortcutAction, type FormatAction } from '../store/draftFormat';
-import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
+import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, revealAtCaret, type CardDecorateOptions } from '../store/draftDecoration';
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, type EditKind, type TextUndoStack } from '../store/textUndo';
 import { useWayBack } from './useWayBack';
@@ -67,6 +67,8 @@ import { SIZE_DEFAULT } from '../store/fontSize';
 // card, Connect toggle) — BoardEditor declares `pageKind="board"` instead
 // of the standing `pageKind="prose"` placeholder a prior ticket flagged.
 
+// The popup keeps the interim reveal-at-marker rule until it has the page's editing rules (see draftDecoration.ts).
+const CARD_DECORATE: CardDecorateOptions = { revealAtMarker: true };
 const AUTOSAVE_MS = 2000;
 const LONG_PRESS_MS = 350;         // mirrors the S25-verified Spread gesture
 const MOUSE_DRAG_THRESHOLD = 6;
@@ -398,7 +400,7 @@ function BoardCardPopup({
   useEffect(() => {
     const el = elRef.current;
     if (!el) return;
-    decorateEditorFor(el, initialText, initialText.length, setCaretOffset, text => decorateMarkdownForCard(text, initialText.length));
+    decorateEditorFor(el, initialText, initialText.length, setCaretOffset, text => decorateMarkdownForCard(text, initialText.length, CARD_DECORATE));
     el.focus();
 
     // I0 pen discipline (park-sweep audit finding — the retired inline
@@ -439,7 +441,7 @@ function BoardCardPopup({
     // very next onInput call it precedes.
     let pendingKind: EditKind = 'atomic';
     const redecorate = (plain: string, caret: number | null) =>
-      decorateEditorFor(el, plain, caret, setCaretOffset, text => decorateMarkdownForCard(text, caret));
+      decorateEditorFor(el, plain, caret, setCaretOffset, text => decorateMarkdownForCard(text, caret, CARD_DECORATE));
     const commit = (plain: string) => { textRef.current = plain; onCommit(plain); };
 
     const onInput = () => {
@@ -579,7 +581,7 @@ function BoardCardPopup({
     // non-collapsed selection, so selecting text on a card works.
     const onSelectionReveal = () => {
       if (composing || applyingEmDash) return;
-      revealAtCaret(el, getCaretOffset, setCaretOffset);
+      revealAtCaret(el, getCaretOffset, setCaretOffset, CARD_DECORATE);
     };
     el.addEventListener('input', onInput);
     el.addEventListener('keydown', onKeyDown);
@@ -650,7 +652,7 @@ function BoardCardPopup({
     textRef.current = result.text;
     onCommit(result.text);
     const collapsed = result.end <= result.start;
-    decorateEditorFor(el, result.text, result.start, setCaretOffset, text => decorateMarkdownForCard(text, collapsed ? result.start : null));
+    decorateEditorFor(el, result.text, result.start, setCaretOffset, text => decorateMarkdownForCard(text, collapsed ? result.start : null, CARD_DECORATE));
     if (!collapsed) setSelectionOffsets(el, result.start, result.end);
   };
 

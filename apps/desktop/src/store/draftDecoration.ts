@@ -60,11 +60,16 @@ const LEADING_TABS = /^(\t+)([\s\S]*)$/;
 // — font-size:0, never display/visibility — see index.css), so `innerText`
 // always reports it faithfully; only the VISUAL presentation toggles based
 // on where the caret currently is.
-function decorateInlineForCard(text: string, caret: number | null): string {
+// The board card popup has none of the page's item 211 editing rules (caret snap, whole-pair and whole-token deletion), so a
+// hidden mark there can be half-deleted by a Backspace it cannot see. Until those rules are ported, the popup alone passes
+// `revealAtMarker` and keeps the interim rule: a mark shows while the caret touches it. The page passes nothing and never shows.
+export interface CardDecorateOptions { revealAtMarker?: boolean }
+
+function decorateInlineForCard(text: string, caret: number | null, revealAtMarker = false): string {
   // STEP 3: the runs come from store/markRuns.ts - the SAME reader the formatter toggles from - so the page can nest marks
-  // (`__*x*__` paints underline AND italic, both collapsed) and cannot disagree with the formatter about what is a run. A run's
-  // markers reveal while the caret touches one of THAT run's markers (the interim rule, below), and every character of the
-  // text is still emitted exactly once, so the 1:1 count the caret restore depends on holds.
+  // (`__*x*__` paints underline AND italic, both collapsed) and cannot disagree with the formatter about what is a run.
+  // ITEM 211: on the page the marks never reveal. Every character is still emitted exactly once, so the 1:1 count the caret
+  // restore depends on holds.
   const runs = readMarks(text);
   const cls: Record<MarkKind, string> = { bold: 'md-bold', italic: 'md-italic', underline: 'md-underline', strike: 'md-strike' };
   const emit = (lo: number, hi: number, within: MarkRun[]): string => {
@@ -80,13 +85,15 @@ function decorateInlineForCard(text: string, caret: number | null): string {
         kids.push(within[i + 1]);
         i++;
       }
-      // THE INTERIM (Nick, 2026-09-25: "the asterisks on the page return with right-clicking or other kinds of clicking around"):
-      // a run's markers reveal only when the caret TOUCHES A MARKER - inside, or at either edge of, the opening or the closing
-      // marker's own span - and no longer anywhere inside the run. A click or right-click in the middle of a styled word shows
-      // nothing; a caret at the word's edge still shows what Backspace or Delete would remove. DISPLAY ONLY: typing, deleting,
-      // undo and storage are untouched, and item 211 (markers never show) replaces this after it is built.
+      // ITEM 211 — Nick's "A" (2026-09-25), built on his word. Markers never
+      // show. The interim rule un-hid a run's marks while the caret touched
+      // them, so bolding or italicizing a word and clicking off its edge left
+      // the asterisks on the page. The style still paints. The marks stay in
+      // the text, so storage, undo, and innerText are unchanged.
+      // The card popup's interim rule: a run's markers reveal only while the caret touches one of THAT run's markers - inside,
+      // or at either edge of, the opening or closing marker's own span - never merely inside the run.
       const touches = (at: number) => caret !== null && caret >= at && caret <= at + ml;
-      const reveal = touches(r.open) || touches(r.close);
+      const reveal = revealAtMarker && (touches(r.open) || touches(r.close));
       const markCls = reveal ? 'md-mark' : 'md-mark md-mark-hidden';
       out += escHtml(text.slice(cur, r.open));
       out += `<span class="${cls[r.kind]}"><span class="${markCls}">${escHtml(r.mark)}</span>${emit(r.open + ml, r.close, kids)}<span class="${markCls}">${escHtml(r.mark)}</span></span>`;
@@ -124,17 +131,18 @@ function decorateInlineForCard(text: string, caret: number | null): string {
 // display/visibility - see decorateInlineForCard's header) and revealed while the caret is within or beside it, so the
 // writer can still reach and delete it. Prefixes may stack (`> - `, `>< ` over a heading) and may follow leading tabs.
 const LINE_CLASS: Record<string, string> = {
-  'align-center': 'md-align-center', 'align-right': 'md-align-right', block: 'md-block', quote: 'md-quote', bullet: 'md-bullet',
+  'align-center': 'md-align-center', 'align-right': 'md-align-right', block: 'md-block', quote: 'md-quote',
+  bullet: 'md-bullet', 'bullet-circle': 'md-bullet md-bullet-circle', 'bullet-square': 'md-bullet md-bullet-square',
 };
 
-function decorateLineForCard(rawLine: string, caret: number | null): string {
+function decorateLineForCard(rawLine: string, caret: number | null, revealAtMarker = false): string {
   // STEP 3: the line's structure comes from the ONE reader (store/markRuns.ts readLead), with positions - so the caret-adjacent
   // reveal is a comparison against a token's own span, and this file no longer owns a copy of the token list.
   const lead = readLead(rawLine);
   let open = '';
   let close = '';
   let head = '';                     // what is emitted so far INSIDE the innermost open wrapper
-  let heading: { text: string } | null = null;
+  let heading: { text: string; start: number; end: number } | null = null;
   let tabRun = '';                   // consecutive tabs are ONE mark span, as they always were (item83f's E3 counts spans)
   const flushTabs = () => { if (tabRun) { head += `<span class="md-mark">${escHtml(tabRun)}</span>`; tabRun = ''; } };
   for (const t of lead.tokens) {
@@ -143,10 +151,14 @@ function decorateLineForCard(rawLine: string, caret: number | null): string {
       tabRun += t.text;
     } else if (t.kind === 'heading') {
       flushTabs();
-      heading = { text: t.text };
+      heading = { text: t.text, start: t.start, end: t.end };
     } else {
       flushTabs();
-      const reveal = caret !== null && caret >= t.start && caret <= t.end;
+      // A bullet's stored token (`- `, `-+ `, `-= `) is not something to edit by
+      // hand. Showing it when the caret touches the mark puts `-=` on the page.
+      // The glyph stays. Pressing the same style again removes the list.
+      const isBullet = t.kind === 'bullet' || t.kind === 'bullet-circle' || t.kind === 'bullet-square';
+      const reveal = (revealAtMarker || !isBullet) && caret !== null && caret >= t.start && caret <= t.end;
       const markCls = reveal ? 'md-mark' : 'md-mark md-mark-hidden';
       open += head + `<span class="md-line ${LINE_CLASS[t.kind]}${reveal ? ' md-revealed' : ''}"><span class="${markCls}">${escHtml(t.text)}</span>`;
       head = '';
@@ -156,14 +168,18 @@ function decorateLineForCard(rawLine: string, caret: number | null): string {
   flushTabs();
   const at = caret === null ? null : caret - lead.length;
   const rest = rawLine.slice(lead.length);
-  const inline = decorateInlineForCard(rest, at);
+  const inline = decorateInlineForCard(rest, at, revealAtMarker);
+  // The hash is a mark, same as an asterisk: it stays in the text and it
+  // does not show. The heading's size is the `.md-h1` / `.md-h2` wrapper.
+  // Pressing Heading again cycles the level, which is how the mark comes off.
+  const headCls = revealAtMarker && heading && caret !== null && caret >= heading.start && caret <= heading.end ? 'md-mark' : 'md-mark md-mark-hidden';
   const body = heading
-    ? `<span class="${heading.text === '## ' ? 'md-h2' : 'md-h1'}"><span class="md-mark">${escHtml(heading.text)}</span>${inline}</span>`
+    ? `<span class="${heading.text === '## ' ? 'md-h2' : 'md-h1'}"><span class="${headCls}">${escHtml(heading.text)}</span>${inline}</span>`
     : inline;
   return open + head + body + close;
 }
 
-export function decorateMarkdownForCard(text: string, caret: number | null): string {
+export function decorateMarkdownForCard(text: string, caret: number | null, opts: CardDecorateOptions = {}): string {
   let consumed = 0;
   return text
     .split('\n')
@@ -187,7 +203,7 @@ export function decorateMarkdownForCard(text: string, caret: number | null): str
       // silently un-indent the paragraph — trading a missing marker for a
       // deleted layout. So it wears the plain `.md-mark` register, always
       // visible, exactly as it did before.
-      return decorateLineForCard(rawLine, effLine);
+      return decorateLineForCard(rawLine, effLine, !!opts.revealAtMarker);
     })
     .join('\n');
 }
@@ -353,14 +369,16 @@ export function revealAtCaret(
   el: HTMLElement,
   getCaret: (el: HTMLElement) => number | null,
   setCaret: (el: HTMLElement, target: number) => void,
+  opts: CardDecorateOptions = {},
 ): boolean {
   const sel = window.getSelection();
   if (!sel || sel.rangeCount === 0 || !sel.isCollapsed) return false;
   if (!sel.anchorNode || !el.contains(sel.anchorNode)) return false;
   const { plain, caret } = readEditorPlainText(el.innerText, getCaret(el));
   if (caret === null) return false;
-  const next = editorHtmlFor(plain, (t) => decorateMarkdownForCard(t, caret));
+  const decorate = (t: string) => decorateMarkdownForCard(t, caret, opts);
+  const next = editorHtmlFor(plain, decorate);
   if (next === lastDecorated.get(el)) return false;
-  decorateEditorFor(el, plain, caret, setCaret);
+  decorateEditorFor(el, plain, caret, setCaret, decorate);
   return true;
 }

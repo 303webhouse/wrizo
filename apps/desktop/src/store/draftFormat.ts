@@ -13,7 +13,7 @@ import { readLead, runsOfMark, stripLine, BLOCK_TOKEN } from './markRuns';
 // names itself" — the founder just named it). Underline joins from R1.
 export type FormatAction =
   | 'bold' | 'italic' | 'underline' | 'strike' | 'heading' | 'spacing'
-  | 'bullet' | 'quote' | 'indent' | 'outdent' | 'block-indent' | 'block-outdent'
+  | 'bullet' | 'bullet-circle' | 'bullet-square' | 'quote' | 'indent' | 'outdent' | 'block-indent' | 'block-outdent'
   | 'align-left' | 'align-center' | 'align-right';
 export type StructureKind = 'prose' | 'screenplay';
 
@@ -294,6 +294,8 @@ function insertSpacing(text: string, start: number, end: number): FormatResult {
 // these; nothing else changes if he does.
 export const LINE_DIRECTIVE = {
   bullet: '- ',
+  'bullet-circle': '-+ ',
+  'bullet-square': '-= ',
   quote: '> ',
   indent: '\t',
   'align-center': '>< ',
@@ -527,6 +529,8 @@ function blockShift(text: string, selStart: number, selEnd: number, dir: 1 | -1)
 }
 
 const ALIGN_PREFIXES = [LINE_DIRECTIVE['align-center'], LINE_DIRECTIVE['align-right']] as const;
+// One list, one mark. A second style replaces the first instead of stacking beside it.
+const BULLET_PREFIXES = [LINE_DIRECTIVE.bullet, LINE_DIRECTIVE['bullet-circle'], LINE_DIRECTIVE['bullet-square']] as const;
 
 // ITEM 122 — WHAT THE CARET IS INSIDE. Draft's rail had NO active state at all
 // before this: its format prop was `{ onFormat }` and nothing else, so there was
@@ -578,7 +582,9 @@ export function applyFormat(text: string, selStart: number, selEnd: number, acti
   if (action === 'underline') return toggleInline(text, start, end, FORMAT_MARK.underline);
   if (action === 'strike') return toggleInline(text, start, end, FORMAT_MARK.strike);
   if (action === 'heading') return cycleHeading(text, start);
-  if (action === 'bullet') return toggleLines(text, start, end, LINE_DIRECTIVE.bullet);
+  if (action === 'bullet') return toggleLines(text, start, end, LINE_DIRECTIVE.bullet, BULLET_PREFIXES);
+  if (action === 'bullet-circle') return toggleLines(text, start, end, LINE_DIRECTIVE['bullet-circle'], BULLET_PREFIXES);
+  if (action === 'bullet-square') return toggleLines(text, start, end, LINE_DIRECTIVE['bullet-square'], BULLET_PREFIXES);
   if (action === 'quote') return toggleLines(text, start, end, LINE_DIRECTIVE.quote);
   // ITEM 83 ERRATA E3 — paragraph-scoped and repeatable now, no longer a
   // single-line toggle. See indentParagraphs above for the whole reasoning,

@@ -106,7 +106,7 @@ export function runsOfMark(line: string, mark: string): Array<{ open: number; cl
 // (`>< ` centre, `>> ` right, `>| ` BLOCK indent - one per level, `> ` quote, `- ` bullet) in any order, and last of all a heading
 // mark (`# `, `## `), after which the rest of the line is text. This used to be spelled four times (the formatter's two copies,
 // the decorator's, and Copy My Words' regex chain); it is read here, with POSITIONS, and every consumer takes it from here.
-export type LeadKind = 'tab' | 'align-center' | 'align-right' | 'block' | 'quote' | 'bullet' | 'heading';
+export type LeadKind = 'tab' | 'align-center' | 'align-right' | 'block' | 'quote' | 'bullet' | 'bullet-circle' | 'bullet-square' | 'heading';
 export interface LeadToken { kind: LeadKind; text: string; start: number; end: number }
 
 /** The block-indent token. `>| ` at the start of a line is the whole-paragraph indent: one token per level, the paragraph's lines all
@@ -119,6 +119,9 @@ const DIRECTIVES: ReadonlyArray<{ kind: LeadKind; text: string }> = [
   { kind: 'align-right', text: '>> ' },
   { kind: 'block', text: BLOCK_TOKEN },
   { kind: 'quote', text: '> ' },
+  // Longer than `- ` and listed first, so a hollow or square mark is not read as the round hyphen.
+  { kind: 'bullet-circle', text: '-+ ' },
+  { kind: 'bullet-square', text: '-= ' },
   { kind: 'bullet', text: '- ' },
 ];
 
