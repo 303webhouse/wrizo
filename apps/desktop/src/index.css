@@ -2655,7 +2655,10 @@ a:focus-visible,
    (measured ~200px of clearance there, the tightest case — see fx5.mjs's
    own S10 section for the live rect proof at all three reference
    widths). */
-.desk-frame-host{ max-width:none; margin:0; padding:2.5rem var(--frame-host-pad-x) 3rem var(--frame-host-pad-x); background:var(--desk-ground); overflow:hidden; }
+/* `clip`, not `hidden`: a hidden box is still a scroll container, so a focus or
+   scrollIntoView on a tall drawer's lower controls scrolled the host and moved
+   the paper. A clipped box cannot be scrolled at all. */
+.desk-frame-host{ max-width:none; margin:0; padding:2.5rem var(--frame-host-pad-x) 3rem var(--frame-host-pad-x); background:var(--desk-ground); overflow:clip; }
 /* FX4 S1 — Journal's own host reverts the clip (see JournalEntry.tsx's own
    comment on `.desk-frame-host--journal` for the full defect writeup): this
    is the ONE DeskFrame surface whose content is meant to grow past the
