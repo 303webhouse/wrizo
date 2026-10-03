@@ -354,7 +354,7 @@ await withHarness(async (app) => {
   // section beneath it.
   // ---- PARKED - SUPERSEDED by PR #7 (3951329: the Structure zone leaves Draft's drawer; the Templates stand-ins take its place), 2026-10-02 ----
   // Kept VERBATIM and no longer run. The guard's claim (the last zone sits directly before the foot) is unchanged;
-  // the zone that holds that place is Templates now.
+  // the zone that holds that place is Page kind now, directly after Templates (Fable's PR #7 review, 2026-10-03).
   //
   // await toDraft(app);
   // const zoneOrder = await app.evalJs(`(() => {
@@ -382,12 +382,13 @@ await withHarness(async (app) => {
     const panelKids = [...document.querySelector('.wz-sliver-panel').children].map(el => el.className);
     return {
       headings: sections.map(s => (s.querySelector('.wz-sliver-h') || {}).textContent),
-      structureIsLast: sections.length > 0 && sections[sections.length - 1].classList.contains('wz-sliver-templates'),
+      pageKindIsLast: sections.length > 1 && sections[sections.length - 1].classList.contains('wz-sliver-page-kind')
+        && sections[sections.length - 2].classList.contains('wz-sliver-templates'),
       panelKids,
     };
   })()`);
-  ok('E2 (GUARD): Templates is the LAST zone of the tab body, with the goal foot and the instruments row following it',
-    zoneOrder.structureIsLast === true
+  ok('E2 (GUARD): Page kind is the LAST zone of the tab body, directly after Templates, with the goal foot and the instruments row following it',
+    zoneOrder.pageKindIsLast === true
       && zoneOrder.panelKids.length === 3
       && zoneOrder.panelKids[0].includes('wz-sliver-body')
       && zoneOrder.panelKids[1].includes('wz-sliver-goal')
@@ -516,8 +517,8 @@ await withHarness(async (app) => {
   // ---- PARKED - SUPERSEDED by PR #7 (3951329: "Structure in the drawer is replaced by gray Template icons"), 2026-10-02 ----
   // Kept VERBATIM and no longer run: ALL of E4 - item 114's kind chips and style guides (render, persist per page,
   // no default leak, the Screenplay-name seam, the prose-only scope). They lived in the Structure zone, which PR #7
-  // removed whole. The page-kind data path (pageSettings.kind / styleGuide) is untouched; nothing renders it now.
-  // Reported to Fable with PR #7. Successor beneath asserts the absence.
+  // removed whole. Fable's review (2026-10-03) restores the chips and style guides as one "Page kind" row below the
+  // Templates, without the Convert row; the successor beneath re-makes these claims on that row.
   //
   // // ==========================================================================
   // // E4 — ITEM 114'S PLACEHOLDERS. They render, they persist per page, and
@@ -772,8 +773,6 @@ await withHarness(async (app) => {
   //     && typeof onScript.actText === 'string' && onScript.actText.length > 0,
   //   JSON.stringify(onScript));
   // ----------------------------------------------------------------------
-  // E4 [PR #7 successor] — the kind chips and style guides are gone with the zone that held them. Asserted as ABSENCE on
-  // both surfaces, so they cannot return to the drawer unannounced.
   await freshProsePage(app, 1400, 900);
   await toDraft(app);
   const e4Prose = await app.evalJs(`({
@@ -782,8 +781,66 @@ await withHarness(async (app) => {
     guides: document.querySelectorAll('[data-style-guide]').length,
     templates: document.querySelectorAll('.wz-sliver-templates .wz-template-btn').length,
   })`);
-  ok('E4 [PR #7 successor]: prose Draft carries no Structure zone, no kind chips and no style guides; the Templates stand-ins hold the zone\'s place',
-    e4Prose.structureZone === false && e4Prose.kindChips === 0 && e4Prose.guides === 0 && e4Prose.templates === 3, JSON.stringify(e4Prose));
+  // E4 [Fable's review successor] — item 114's chips return in one compact "Page kind" row below the Templates. Convert stays out.
+  const pk = () => app.evalJs(`(() => {
+    const row = document.querySelector('.wz-sliver-page-kind');
+    if (!row) return null;
+    const kinds = [...row.querySelectorAll('[data-page-kind]')];
+    const guides = [...row.querySelectorAll('[data-style-guide]')];
+    return {
+      heading: (row.querySelector('.wz-sliver-h') || {}).textContent || null,
+      afterTemplates: !!row.previousElementSibling && row.previousElementSibling.classList.contains('wz-sliver-templates'),
+      labels: kinds.map(b => b.textContent),
+      checked: kinds.filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.pageKind),
+      anyDisabled: kinds.concat(guides).some(b => b.disabled || b.getAttribute('aria-disabled') === 'true'),
+      group: (row.querySelector('[role="radiogroup"]') || {}).getAttribute ? row.querySelector('[role="radiogroup"]').getAttribute('aria-labelledby') : null,
+      guideLabels: guides.map(b => b.textContent),
+      guideChecked: guides.filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.styleGuide),
+      convertRows: [...document.querySelectorAll('.wz-sliver .wz-cascade-action')].filter(b => /^Convert to/.test(b.textContent || '')).length,
+    };
+  })()`);
+  const pageRect = () => app.evalJs("(() => { const r = document.querySelector('.forward-only-editor').getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round).join(','); })()");
+  const pk0 = await pk();
+  ok('E4 [Fable\'s review successor]: prose Draft carries a "Page kind" row directly below the Templates - Normal, Screenplay, Research in that order, Normal preselected, none greyed, one labelled radiogroup - and still no Structure zone',
+    !!pk0 && pk0.heading === 'Page kind' && pk0.afterTemplates && JSON.stringify(pk0.labels) === JSON.stringify(['Normal', 'Screenplay', 'Research'])
+      && JSON.stringify(pk0.checked) === JSON.stringify(['normal']) && pk0.anyDisabled === false && pk0.group === 'wz-page-kind-label'
+      && e4Prose.structureZone === false && e4Prose.templates === 3, JSON.stringify({ pk0, e4Prose }));
+  ok('E4 [Fable\'s review successor]: the style guides are absent before Research, and the drawer offers no Convert row',
+    !!pk0 && pk0.guideLabels.length === 0 && pk0.convertRows === 0, JSON.stringify(pk0));
+  const rectBefore = await pageRect();
+  await app.evalJs("document.querySelector('.wz-sliver-page-kind [data-page-kind=\"research\"]').click()");
+  await sleep(700);
+  const pk1 = await pk();
+  const rectAfter = await pageRect();
+  ok('E4 [Fable\'s review successor]: choosing Research discloses MLA, APA, Chicago, AP in the same row, MLA preselected - and the page\'s rect does not move',
+    !!pk1 && JSON.stringify(pk1.checked) === JSON.stringify(['research']) && JSON.stringify(pk1.guideLabels) === JSON.stringify(['MLA', 'APA', 'Chicago', 'AP'])
+      && JSON.stringify(pk1.guideChecked) === JSON.stringify(['mla']) && rectBefore === rectAfter, JSON.stringify({ pk1, rectBefore, rectAfter }));
+  const storedKind = await app.evalJs(`(() => {
+    const id = (location.hash.match(/#\\/page\\/([^?/]+)/) || [])[1];
+    const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find(r => r.id === id) || null;
+    return { id, pageSettings: e ? (e.pageSettings ?? null) : 'ENTRY NOT FOUND' };
+  })()`);
+  ok('E4 [Fable\'s review successor]: picking Research writes kind:"research" to the page and NO styleGuide - MLA is a read default',
+    !!storedKind.pageSettings && storedKind.pageSettings.kind === 'research' && storedKind.pageSettings.styleGuide === undefined, JSON.stringify(storedKind));
+  await app.evalJs("document.querySelector('.wz-sliver-page-kind [data-style-guide=\"chicago\"]').click()");
+  await sleep(700);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'page after reload' });
+  await sleep(400);
+  await openSliver(app);
+  await sleep(250);
+  await toDraft(app);
+  const pk2 = await pk();
+  ok('E4 [Fable\'s review successor]: the choice survives a reload - Research and Chicago come back checked, so it lives on the page',
+    !!pk2 && JSON.stringify(pk2.checked) === JSON.stringify(['research']) && JSON.stringify(pk2.guideChecked) === JSON.stringify(['chicago']), JSON.stringify(pk2));
+  await app.evalJs("(() => { const b = document.querySelector('.wz-strip-item[data-category=page]'); if (b) b.click(); })()");
+  await sleep(500);
+  const pressedDefaults = await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => x.textContent.trim() === 'Set as my default page settings'); if (!b) return false; b.click(); return true; })()");
+  await sleep(500);
+  const storedDefaults = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-page-defaults') || 'null')");
+  ok('E4 [Fable\'s review successor]: "Set as my default page settings" on that Research page saves the dress and NOT the kind or style guide',
+    pressedDefaults === true && storedDefaults !== null && storedDefaults.kind === undefined && storedDefaults.styleGuide === undefined && storedDefaults.margins !== undefined,
+    JSON.stringify({ pressedDefaults, storedDefaults }));
   await freshScriptPage(app, 1400, 900);
   await openSliver(app);
   await sleep(300);

@@ -14,7 +14,7 @@
 //   PLUS     copy still carries the marks (unchanged), an IME composition stays native, Enter inside a bold word splits it cleanly,
 //            and a space typed at the end of a bold word followed by a letter keeps the phrase bold
 //   TWEAKS   Fable's C1-C4: the goal's unit, the Template stand-ins, the Typeface heading, the olive Settings headings
-//   REVIEW   Fable's review: R1 the card popup keeps the interim reveal-at-marker rule
+//   REVIEW   Fable's review: R1 the card popup keeps the interim reveal-at-marker rule; R2 the Page kind row
 import { withHarness } from '../runtime-verify.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -272,6 +272,26 @@ await withHarness(async (app) => {
       [6, 8, 12, 14].every((o) => JSON.stringify(shownAt[o]) === JSON.stringify(['**', '**'])), JSON.stringify(shownAt));
   }
 
+  // R2: item 114's page kind and style guide return as one compact "Page kind" row below the Templates. Convert stays out.
+  {
+    const id = await open(T);
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(250);
+    const row = await app.evalJs(`(() => {
+      const r = document.querySelector('.wz-sliver-page-kind'); if (!r) return null;
+      return { heading: r.querySelector('.wz-sliver-h').textContent, afterTemplates: !!r.previousElementSibling && r.previousElementSibling.classList.contains('wz-sliver-templates'),
+        kinds: [...r.querySelectorAll('[data-page-kind]')].map(b => b.textContent + (b.getAttribute('aria-checked') === 'true' ? '*' : '')),
+        convert: [...document.querySelectorAll('.wz-sliver .wz-cascade-action')].filter(b => /^Convert to/.test(b.textContent || '')).length }; })()`);
+    ok('R2: Draft\'s drawer has a "Page kind" row directly below the Templates - Normal (chosen), Screenplay, Research - and no Convert row',
+      !!row && row.heading === 'Page kind' && row.afterTemplates && row.kinds.join(',') === 'Normal*,Screenplay,Research' && row.convert === 0, JSON.stringify(row));
+    const rect = () => app.evalJs(`(() => { const r = document.querySelector('${ED}').getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round).join(','); })()`);
+    const r0 = await rect();
+    await app.evalJs("document.querySelector('.wz-sliver-page-kind [data-page-kind=\"research\"]').click()"); await sleep(500);
+    const guides = await app.evalJs("[...document.querySelectorAll('.wz-sliver-page-kind [data-style-guide]')].map(b => b.textContent + (b.getAttribute('aria-checked') === 'true' ? '*' : ''))");
+    const r1 = await rect();
+    const settings = await app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(x => x.id === ${JSON.stringify(id)})||{}).pageSettings ?? null`);
+    ok('R2: choosing Research shows the style guides in the same row (MLA preselected), stores the kind on the page, leaves the text alone, and the page does not move',
+      guides.join(',') === 'MLA*,APA,Chicago,AP' && !!settings && settings.kind === 'research' && (await stored(app, id)) === T && r0 === r1, JSON.stringify({ guides, settings, r0, r1 }));
+  }
 });
 
 const failed = checks.filter((c) => !c.pass);

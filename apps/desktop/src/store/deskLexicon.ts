@@ -271,7 +271,7 @@ export type DeskTermId =
   // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
   | 'draftHeading' | 'draftBullet' | 'draftBulletCircle' | 'draftBulletSquare' | 'draftBulletStyles' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
   | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage'
-  | 'comingSoon' | 'railTypeface' | 'goalUnitWords'
+  | 'comingSoon' | 'railTypeface' | 'goalUnitWords' | 'railPageKind'
   | 'footSettings' | 'footMenuTypewriter' | 'footMenuProgress' | 'footMenuPreferences'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
   | 'draftConvertToScreenplay' | 'draftConvertToProse'
@@ -911,6 +911,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   draftBulletSquare: 'Square bullet',
   draftBulletStyles: 'Bullet styles',
   railTemplates: 'Templates',
+  railPageKind: 'Page kind',
   templateOutline: 'Outline',
   templateBibliography: 'Bibliography',
   templateTitlePage: 'Title page',

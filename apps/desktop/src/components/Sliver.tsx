@@ -722,6 +722,52 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
         </div>
       )}
 
+      {/* ITEM 114's page kind and style guide, the only door to them. A kind is
+          a reversible per-page setting that touches none of the writer's text;
+          converting the page itself is not offered here. The style guides
+          disclose beneath Research only, and MLA reads as the default without
+          writing anything until the writer picks. */}
+      {content.kind === 'draft' && content.pageKind && content.onPickKind && (
+        <div className="wz-sliver-section wz-sliver-page-kind">
+          <div className="wz-sliver-h" id="wz-page-kind-label">{t('railPageKind')}</div>
+          <div className="wz-page-setup-seg" role="radiogroup" aria-labelledby="wz-page-kind-label">
+            {PAGE_KINDS.map(k => (
+              <button
+                key={k}
+                type="button"
+                role="radio"
+                className="wz-page-setup-chip"
+                data-page-kind={k}
+                aria-checked={content.pageKind === k}
+                onClick={() => content.onPickKind!(k)}
+              >
+                {t(KIND_LABEL[k])}
+              </button>
+            ))}
+          </div>
+          {content.pageKind === 'research' && content.onPickStyleGuide && (
+            <>
+              <div className="wz-sliver-sub" id="wz-page-guide-label">{t('structureStyleGuideLabel')}</div>
+              <div className="wz-page-setup-seg wz-page-setup-seg--wrap" role="radiogroup" aria-labelledby="wz-page-guide-label">
+                {STYLE_GUIDES.map(g => (
+                  <button
+                    key={g}
+                    type="button"
+                    role="radio"
+                    className="wz-page-setup-chip"
+                    data-style-guide={g}
+                    aria-checked={content.styleGuide === g}
+                    onClick={() => content.onPickStyleGuide!(g)}
+                  >
+                    {t(STYLE_GUIDE_LABEL[g])}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
       {content.kind === 'freewrite' && (
         <div className="wz-sliver-section">
           <div className="wz-sliver-h">{t('corkboardJournalTab')}</div>
