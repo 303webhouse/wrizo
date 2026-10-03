@@ -13,6 +13,8 @@
 //   UNDO     one Ctrl+Z restores every case above
 //   PLUS     copy still carries the marks (unchanged), an IME composition stays native, Enter inside a bold word splits it cleanly,
 //            and a space typed at the end of a bold word followed by a letter keeps the phrase bold
+//   TWEAKS   Fable's C1-C4: the goal's unit, the Template stand-ins, the Typeface heading, the olive Settings headings
+//   REVIEW   Fable's review: R1 the card popup keeps the interim reveal-at-marker rule
 import { withHarness } from '../runtime-verify.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -232,6 +234,44 @@ await withHarness(async (app) => {
       probe.remove(); brass.remove(); return out; })()`);
     ok('C4: every Settings heading is the theme\'s olive (--accent-rest), not brass', heads.h4.length === 3 && heads.h4.every((c) => c === heads.olive) && heads.olive !== heads.brass, JSON.stringify(heads));
   }
+
+  // ---- FABLE'S REVIEW (2026-10-03) ----
+  // R1: the board card popup has none of the page's editing rules yet, so it keeps the interim rule: a run's marks show
+  // while the caret touches one of its markers, never mid-word. The page keeps never-show (WALK, above).
+  {
+    await app.emulateDpr(1, 1400, 900);
+    await app.goto('/');
+    await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1')");
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk (board)' });
+    await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'i211-board', text: 'board', createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page', pageType: 'board', projectId: null, boxes: [{ id: 'rc', kind: 'text', x: 0.06, y: 0.06, w: 0.6, h: 0.18, z: 1, text: T }] })})`);
+    await sleep(400);
+    await app.reload();
+    await app.evalJs("location.hash = '#/page/i211-board'");
+    await app.waitFor("!!document.querySelector('[data-box-id=\"rc\"]')", { label: 'board card' });
+    await sleep(500);
+    await app.evalJs(`(() => { const el = document.querySelector('[data-box-id="rc"]'); const r = el.getBoundingClientRect();
+      el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()`);
+    await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: 'card popup' });
+    await sleep(400);
+    const CE = '.board-popup-editor';
+    const cardAt = async (off) => {
+      await app.evalJs(`(() => {
+        const ed = document.querySelector('${CE}'); ed.focus();
+        const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n, seen = 0, node = null, o = 0;
+        while ((n = w.nextNode())) { if (seen + n.data.length >= ${off}) { node = n; o = ${off} - seen; break; } seen += n.data.length; }
+        const r = document.createRange(); r.setStart(node, o); r.collapse(true); const s = getSelection(); s.removeAllRanges(); s.addRange(r); })()`);
+      await sleep(250);
+      return app.evalJs(`[...document.querySelectorAll('${CE} .md-mark')].filter(m => !m.classList.contains('md-mark-hidden')).map(m => m.textContent)`);
+    };
+    const shownAt = {};
+    for (const off of [3, 6, 8, 10, 12, 14, 16]) shownAt[off] = await cardAt(off);
+    ok('R1: on the card popup a mid-word caret (10) and a caret away from the word (3, 16) show no marks',
+      [3, 10, 16].every((o) => shownAt[o].length === 0), JSON.stringify(shownAt));
+    ok('R1: on the card popup a caret touching a marker (6, 8, 12, 14) shows that run\'s two marks, so Backspace and Delete act on something visible',
+      [6, 8, 12, 14].every((o) => JSON.stringify(shownAt[o]) === JSON.stringify(['**', '**'])), JSON.stringify(shownAt));
+  }
+
 });
 
 const failed = checks.filter((c) => !c.pass);

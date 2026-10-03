@@ -866,14 +866,8 @@ await withHarness(async (app) => {
     const marks = [...document.querySelectorAll('.board-popup-editor .md-mark')];
     return { anyRevealed: marks.some(m => !m.classList.contains('md-mark-hidden')) };
   })()`);
-  // ---- PARKED - SUPERSEDED by PR #7 (e79390c: marks never show, item 211), 2026-10-02 ----
-  // Kept VERBATIM and no longer run. The reveal-at-caret escape hatch is gone by design; the caret rule (52ad017) replaces it.
-  //
-  // ok('S6: reveal-adjacent-to-caret — once the caret sits inside/beside the bold run, its OWN markers become visible again (a real, working escape hatch to see/edit the raw syntax, per the brief\'s own named fallback)',
-  //   revealState.anyRevealed === true, JSON.stringify(revealState));
-  // ----------------------------------------------------------------------
-  ok('S6 [PR #7 successor]: with the caret inside the bold run, its markers STAY hidden - marks never show at any caret position (item 211)',
-    revealState.anyRevealed === false, JSON.stringify(revealState));
+  ok('S6: reveal-adjacent-to-caret — once the caret sits inside/beside the bold run, its OWN markers become visible again (a real, working escape hatch to see/edit the raw syntax, per the brief\'s own named fallback)',
+    revealState.anyRevealed === true, JSON.stringify(revealState));
 
   // Draft mode's own dimmed-syntax register is untouched: .md-mark there
   // is NEVER given the -hidden class, still just opacity-dimmed.
