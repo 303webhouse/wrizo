@@ -24094,3 +24094,23 @@ Fable: every server catch logs AND names its rejected id; `syncNotice` precedenc
 `ef75954` + FIX’s K10 fix (successor SHA required). Chunked pair, then deploy on Nick’s word. **`csp-enforce` (`86d9910`)
 is NOT in it.** Then TOOLS’ storage step 2 durability experiment (now `b9be6b0`, superseding the earlier `f0ca6e0`).
 **Waiting on:** FIX’s ab2/fx3 successor SHA.
+
+## `main-parks-211` @ `0d89deb` — THE SUCCESSOR PARKS ARE HARNESS-ONLY, DEFAULT CLEAN, PARKED LEG STILL RED (2 files, 1 check each) — 2026-10-05 (chat 1)
+
+**Verified:** `git diff` of `apps/*/src` + `packages` between `5c79ef3` and the merged tree is **empty** (only
+`ab2.mjs`, `fx3.mjs` and the earlier K10 script changed). Merged locally (NOT pushed), `ab2` + `fx3` run on both legs,
+same bundle as the pair (`index-B5mC_rwd.js/627507b`, tree `b409414`).
+
+**DEFAULT LEG: CLEAN** — `ab2` 25/25, `fx3` 28/28. **PARKED LEG: NOT CLEAN** — each file fails ONE of its new
+successor assertions, against the live app, not a launch crash:
+- `ab2` — the foot successor: `{iconCount:1, menuLabel:“Settings”, menuTitle:“Settings”, headings:null,
+  fullScreenInFoot:false, fullScreenInCorner:false}` for script AND prose.
+- `fx3` — the same foot successor (`scriptFootPR7` / `proseFootPR7`): identical readings.
+*(The roster successor, generation 6, PASSED. The probe finds a single control labelled “Settings” with no headings
+and no Full Screen in the corner; the successor expected the one-three-dot-menu shape. The branch says “not run” —
+its probe needs the menu opened, or its selectors differ from the live markup; that is FIX’s to read.)*
+
+**NOT DEPLOYED — Fable’s gate (“if clean, deploy”) is not met, so Nick’s go-live word is not spent.** Local merge
+discarded (`main` reset to `db6028f`, nothing pushed). **Back to FIX:** the foot successor in `ab2` + `fx3` for the live
+foot markup; re-offer, and this desk reruns `ab2` + `fx3` on both legs and deploys if clean. Grant cleared; 0 harness
+processes.
