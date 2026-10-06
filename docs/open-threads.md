@@ -24232,3 +24232,46 @@ past the reviewed SHAs: `guest-login` tip is `de1f170`, “review cleanups”, o
 is `590ca07`, “a dead link says it is expired at once”, one past `c43dd55`. The byte review covers the SHAs named; Fable
 confirms the delta before the batch is assembled.)* **Box queue after the pair:** TOOLS storage experiment → PW
 Experiment 1 → FIX clickhead → INK guest walk + `csp-enforce-walk`.
+
+## BATCH NINE’S REDS ROUTED AND THREE OF FOUR FIXES IN; FIX’S BOX USE AND THE TYPING-LATENCY FINDING — 2026-10-06 (chat 1)
+
+**ROUTING (Fable, relay):** `sc1`/`sc2` → FIX; `item-storage-full` → TOOLS; `a11y-signin` → INK. **Fable confirmed the
+`sc` cause: `ScriptEditor.tsx:1058` rendered the Esc-hint span as the sheet’s first child, so
+`.script-sheet > *:first-child` (`index.css:1862`) zeroed the span instead of the first scene.** Guest deltas
+covered: `guest-login` @ `de1f170` and `guest-client` @ `590ca07` are byte-reviewed and CLEARED; the guest batch is
+`guest-login` first, then `guest-client`.
+
+**THE FIXES, as they arrive:** (1) INK — `fix-signin-live-double` @ `754b0c5`: the test double answered the USER object
+on `/auth/signup-status`, so the client read sign-up as closed and the account form never rendered; the fix is in
+`runtime-verify.mjs` (+7) plus a browserless `fix-signin-live-double.mjs` (5 checks); `apps/*/src` diff empty. **This
+desk verified the scope on origin; Fable byte-reviewed and CLEARED it.** (2) TOOLS — `fix-storage-full-notice-signature`
+@ `7d72b2c`: `item-storage-full.mjs` only, four call sites to the 8-argument form (`[]` in the `rejected` slot), 56/56
+browserless; `src` diff empty; **verified here and CLEARED by Fable.** (3) FIX — the `sc1`/`sc2` fix on
+`item-esc-exit-main` @ `6862ab8` (ScriptEditor +5/−1, PageEditor +5/−2; the hint span renders once, outside every
+`.script-sheet`, and after the editor in `PageEditor`); FIX’s browserless checks pass, **nothing run in a browser,
+and NOT yet cleared by Fable.** **BATCH NINE REBUILD = `694cbbc` + `754b0c5` + `7d72b2c` + the `sc` fix, then one full pair
+(112 files per leg with `fix-signin-live-double.mjs`); this desk waits for Fable’s clear on `6862ab8`.**
+
+**THE DUPLICATE `.wz-sr-only` (FIX’s lean, handed up, not acted on):** only Batch Nine’s assembly has both copies (A8’s
+three-line rule from `40939b4` and escexit’s, which adds `clip-path`). FIX leans: this desk deletes A8’s copy at
+assembly (same class, mine has the extra); the alternative is the A8 branch dropping its own, which only works if A8 never
+ships without Esc. **Deleting a rule is an edit to a file both owners touched — not a mechanical union — so this desk
+does not do it without Fable’s word.** It is harmless today (the later rule wins).
+
+**FIX’S BOX USE (granted, then cleared by this desk on FIX’s report; 0 browsers, 0 runners at clearing):** on
+`item211-card-port` @ `adbc0ce` — passed `clickhead` 20/20, `item211b` 11/11, `writing-r1/r2/r3` 25/13/33, `item210` 9; **red
+in three files, each harness-only and fixed:** `item211` (both legs: Cursor’s WALK check expected a click past a bold word
+to land inside the pair at 12; Nick’s click rule lands it after the marks at 14 — parked with a successor, on
+`item-click-headings` @ `0215e1e`), `reveal` (both legs: ten Shift+ArrowLeft presses now select ten visible characters =
+14 raw including hidden stars; parked with a successor), `fx5` (a parked-record variable declared below the
+top-level await that assigns it — died in its temporal dead zone; the declaration moved up). **Re-run on
+`item211-card-port` @ `ec562d4`: default leg `item211` 78, `reveal` 19, `fx5` 62, `item211b` 12 pass; parked leg all four
+pass (`item211` parks 2, `reveal` 7, `fx5` 3).** Evidence logs on `b399485` (docs only, now the branch tip). **These are
+FIX’s own runs; they are not this desk’s pair and are not a Batch Nine matter.**
+
+**THE TYPING-LATENCY FINDING (FIX’s measurement, Draft, caret mid-page; keystroke median / p95, caret-move median / p95):**
+500 words 8/11 ms, 10/18 ms · 5,000 words 65/69 ms, 19/27 ms · 20,000 words 327/416 ms, 37/49 ms · 50,000 words 964/1,341 ms,
+68/94 ms. **FIX’s reading: typing is laggy at 5k words and unusable at 20k; caret moves stay cheap; the cost is per
+keystroke and roughly linear in page length, and time-to-paint matches it.** Suspects, NOT yet measured: the whole-page
+`innerText` reads and the full-page redecorate on every key. **FIX asks for a ruling on profiling before touching
+anything — handed to Fable; the one finding that matters for real chapters.**
