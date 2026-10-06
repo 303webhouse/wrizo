@@ -1,5 +1,6 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
+import { createHash, randomUUID } from 'crypto';
 import { pool } from './db';
 import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
@@ -97,10 +98,42 @@ interface UserRow {
   name: string | null;
 }
 
-// Guard for /api/* routes: 401 unless a session user exists.
-export function requireAuth(req: Request, res: Response, next: NextFunction): void {
+// GUEST LOGIN (item 225) — a guest's clock. 30 days from creation or from the
+// last authenticated sync (sync.ts stamps it, at most hourly); after that the
+// guest may still CLAIM for GUEST_GRACE_MS and nothing else.
+export const GUEST_GRACE_MS = 14 * 24 * 60 * 60 * 1000;
+
+// A guest link's token is stored only as its SHA-256 hex — the raw token is
+// shown once (the minting script) and never written anywhere else.
+export function hashGuestToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
+}
+
+// Guard for /api/* routes: 401 unless a session user exists. A GUEST session
+// also has its account row checked here — lazily, on the request that needs it,
+// with no timer — so an expired guest is refused on its very next call.
+export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   if (!req.session.userId) {
     res.status(401).json({ error: 'Not authenticated' });
+    return;
+  }
+  if (!req.session.guest) {
+    next();
+    return;
+  }
+  const { rows } = await pool.query<{ is_guest: boolean; guest_expires_at: Date | null }>(
+    `select is_guest, guest_expires_at from users where id = $1`,
+    [req.session.userId],
+  );
+  const row = rows[0];
+  if (!row || !row.is_guest) {
+    // Claimed (or removed) since this session was opened: an ordinary session now.
+    req.session.guest = false;
+    next();
+    return;
+  }
+  if (!row.guest_expires_at || Date.now() > row.guest_expires_at.getTime()) {
+    res.status(401).json({ error: 'This guest account has expired.', reason: 'guest_expired' });
     return;
   }
   next();
@@ -201,6 +234,96 @@ authRouter.post('/login', asyncHandler(async (req: Request, res: Response) => {
   await regenerateSession(req);
   req.session.userId = user.id;
   res.json({ id: user.id, email: user.email, name: user.name });
+}));
+
+// GUEST LOGIN (item 225) — one link, one account. The link's token maps to a
+// users row the minting script created; opening the link again reopens THAT
+// account's session (a tester who loses their browser keeps their work), it
+// never mints a second one. Sits under this router's per-IP auth limiter.
+authRouter.post('/guest', asyncHandler(async (req: Request, res: Response) => {
+  const token = String(req.body?.token || '');
+  if (!token) {
+    res.status(403).json({ error: 'This guest link is not valid.' });
+    return;
+  }
+  const { rows } = await pool.query<{ id: string; email: string; name: string | null; is_guest: boolean; guest_expires_at: Date | null }>(
+    `select u.id, u.email, u.name, u.is_guest, u.guest_expires_at
+       from guest_links g join users u on u.id = g.user_id
+      where g.token_hash = $1`,
+    [hashGuestToken(token)],
+  );
+  const row = rows[0];
+  if (!row || !row.is_guest) {
+    res.status(403).json({ error: 'This guest link is not valid.' });
+    return;
+  }
+  await regenerateSession(req);
+  req.session.userId = row.id;
+  req.session.guest = true;
+  res.json({ id: row.id, email: row.email, name: row.name, guest: true, expiresAt: row.guest_expires_at });
+}));
+
+// GUEST LOGIN (item 225) — a guest keeps everything by becoming a full account
+// in place: the SAME users row gets a real email and password, so no work moves.
+// Allowed any time before expiry, and for GUEST_GRACE_MS after it. Rules match
+// /register exactly (presence, MIN_PASSWORD_LENGTH); the session is regenerated.
+authRouter.post('/claim', asyncHandler(async (req: Request, res: Response) => {
+  if (!req.session.userId || !req.session.guest) {
+    res.status(401).json({ error: 'Not a guest session' });
+    return;
+  }
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  const password = String(req.body?.password || '');
+  const name = String(req.body?.name || '').trim().slice(0, 80) || null;
+  if (!email || !password) {
+    res.status(400).json({ error: 'Email and password are required' });
+    return;
+  }
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` });
+    return;
+  }
+  const { rows: current } = await pool.query<{ is_guest: boolean; guest_expires_at: Date | null }>(
+    `select is_guest, guest_expires_at from users where id = $1`,
+    [req.session.userId],
+  );
+  const row = current[0];
+  if (!row || !row.is_guest) {
+    req.session.guest = false;
+    res.status(401).json({ error: 'Not a guest session' });
+    return;
+  }
+  if (!row.guest_expires_at || Date.now() > row.guest_expires_at.getTime() + GUEST_GRACE_MS) {
+    res.status(401).json({ error: 'This guest account has expired.', reason: 'guest_expired' });
+    return;
+  }
+  const passHash = await bcrypt.hash(password, BCRYPT_COST);
+  try {
+    const { rows } = await pool.query<UserRow>(
+      `update users
+          set email = $2, pass_hash = $3, name = coalesce($4, name),
+              is_guest = false, guest_expires_at = null
+        where id = $1 and is_guest
+        returning id, email, pass_hash, name`,
+      [req.session.userId, email, passHash, name],
+    );
+    const user = rows[0];
+    if (!user) {
+      res.status(401).json({ error: 'Not a guest session' });
+      return;
+    }
+    await regenerateSession(req);
+    req.session.userId = user.id;
+    req.session.guest = false;
+    res.json({ id: user.id, email: user.email, name: user.name });
+  } catch (err: any) {
+    if (err?.code === '23505') {
+      // Same neutral refusal /register gives — a claim must not confirm an email is taken.
+      res.status(400).json({ error: 'Could not create an account with that information.' });
+      return;
+    }
+    throw err;
+  }
 }));
 
 authRouter.post('/logout', (req: Request, res: Response) => {

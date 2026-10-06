@@ -159,6 +159,8 @@ loadServer('asyncHandler.ts');
 // logSafe (server-hardening, merged in) — tutor.ts imports logError from it.
 loadServer('logSafe.ts');
 fs.writeFileSync(path.join(svTmp, 'auth.js'), 'exports.requireAuth = (req, res, next) => next();\r\n');
+// db (guest login, item 225) — tutor.ts imports pool; a non-guest request never queries it.
+fs.writeFileSync(path.join(svTmp, 'db.js'), 'exports.pool = { query: async () => ({ rows: [] }) };');
 fs.writeFileSync(path.join(svTmp, 'rateLimit.js'), 'exports.rateLimit = () => (req, res, next) => next();\r\n');
 const { tutorRouter } = svRequire(loadServer('tutor.ts'));
 

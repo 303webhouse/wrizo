@@ -69,10 +69,13 @@ function load(rel) {
 }
 load('env.ts');
 load('asyncHandler.ts');
+load('logSafe.ts'); // logSafe (server-hardening) — tutor.ts imports logError from it
 // requireAuth / rateLimit are middleware tutorRouter installs with `.use()`;
 // stubbed as harmless pass-throughs — see the file header for why.
 fs.writeFileSync(path.join(tmp, 'auth.js'), 'exports.requireAuth = (req, res, next) => next();\r\n');
 fs.writeFileSync(path.join(tmp, 'rateLimit.js'), 'exports.rateLimit = () => (req, res, next) => next();\r\n');
+// db (guest login, item 225) — tutor.ts imports pool; a non-guest request never queries it.
+fs.writeFileSync(path.join(tmp, 'db.js'), 'exports.pool = { query: async () => ({ rows: [] }) };');
 const tutorDest = load('tutor.ts');
 
 const { tutorRouter } = require(tutorDest);
