@@ -275,6 +275,51 @@ async function runRequireAuth(db, session) {
   db.guestLinks.set(hashGuestToken('claimed-token'), 'g-gone');
   const gone = await callRoute(router, '/guest', 'post', { token: 'claimed-token' }, makeSession());
   ok('(B7) a link whose account has already been claimed no longer opens anything (403)', gone.status === 403, JSON.stringify(gone.body));
+
+  // (B8, Fable's cleanup c) past the claim grace, a dead link says "expired" at once,
+  // and no session is opened.
+  const dbDead = makeFakeDb();
+  seedGuest(dbDead, { id: 'g-dead', expiresInMs: -(GUEST_GRACE_MS / DAY + 2) * DAY });
+  dbDead.guestLinks.set(hashGuestToken('dead-token'), 'g-dead');
+  const routerDead = loadAuth(dbDead).authRouter;
+  const deadSession = makeSession();
+  const dead = await callRoute(routerDead, '/guest', 'post', { token: 'dead-token' }, deadSession);
+  ok('(B8) a link past the claim grace is refused with reason guest_expired, at once',
+    dead.status === 401 && dead.body?.reason === 'guest_expired', JSON.stringify(dead.body));
+  ok('(B9) and no session is opened for it (no userId, no guest flag)',
+    deadSession.userId === undefined && deadSession.guest === undefined, JSON.stringify({ u: deadSession.userId, g: deadSession.guest }));
+
+  // (B10) inside the grace the session opens (claim-only, enforced by requireAuth).
+  const dbGrace = makeFakeDb();
+  seedGuest(dbGrace, { id: 'g-grace', expiresInMs: -3 * DAY });
+  dbGrace.guestLinks.set(hashGuestToken('grace-token'), 'g-grace');
+  const routerGrace = loadAuth(dbGrace).authRouter;
+  const graceOpen = await callRoute(routerGrace, '/guest', 'post', { token: 'grace-token' }, makeSession());
+  ok('(B10) inside the claim grace the link still opens the session (so the claim can be made)',
+    graceOpen.status === 200 && graceOpen.session.guest === true, JSON.stringify(graceOpen.body));
+}
+
+// =============================================================================
+// PART F — hygiene and the limiter (Fable's cleanups a and b, and the mint's
+// randomness and output, confirmed from source).
+// =============================================================================
+{
+  const authSrc = sqlSrc('auth.ts');
+  ok('(F1) auth.ts no longer imports randomUUID (it was unused)', !/randomUUID/.test(authSrc), '');
+  const limiterIdx = authSrc.indexOf('authRouter.use(rateLimit(20, 60_000));');
+  const guestRouteIdx = authSrc.indexOf("authRouter.post('/guest'");
+  const claimRouteIdx = authSrc.indexOf("authRouter.post('/claim'");
+  const loginRouteIdx = authSrc.indexOf("authRouter.post('/login'");
+  ok('(F2) /auth/guest, /auth/claim and /auth/login all sit AFTER the same per-IP limiter, so they share its budget',
+    limiterIdx > 0 && limiterIdx < guestRouteIdx && limiterIdx < claimRouteIdx && limiterIdx < loginRouteIdx, JSON.stringify({ limiterIdx, guestRouteIdx }));
+  const mintSrc = fs.readFileSync(path.join(SERVER, 'scripts', 'mint-guest-link.mjs'), 'utf8');
+  ok('(F3) the mint script makes the token from 32 cryptographically random bytes (256 bits, above the 128-bit floor)',
+    /crypto\.randomBytes\(32\)\.toString\('base64url'\)/.test(mintSrc), '');
+  const logLines = mintSrc.split('\n').filter((l) => /console\.(log|error|warn|info)\(/.test(l));
+  const tokenLines = logLines.filter((l) => /\btoken\b/.test(l));
+  ok('(F4) the token is printed on exactly ONE line, the link path, and never into an error message',
+    tokenLines.length === 1 && /\/#\/guest\?t=\$\{token\}/.test(tokenLines[0]) && !logLines.some((l) => /console\.error/.test(l) && /token/.test(l)),
+    JSON.stringify(tokenLines));
 }
 
 // =============================================================================
