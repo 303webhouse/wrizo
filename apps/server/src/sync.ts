@@ -415,8 +415,29 @@ syncRouter.put('/proofing', asyncHandler(async (req: Request, res: Response) => 
   res.json({ proofing: next });
 }));
 
+// GUEST LOGIN (item 225) — "activity" is any authenticated sync (Nick's ruling).
+// Stamped at most once an hour, and it slides a guest's expiry to now + 30 days.
+// The `guest_expires_at > now()` guard means an expired guest in its claim grace
+// can never extend its own clock. A failed stamp is logged and never fails the sync.
+async function stampActivity(userId: string): Promise<void> {
+  try {
+    await pool.query(
+      `update users
+          set last_active_at = now(),
+              guest_expires_at = case when is_guest then now() + interval '30 days' else guest_expires_at end
+        where id = $1
+          and (last_active_at is null or last_active_at < now() - interval '1 hour')
+          and (not is_guest or guest_expires_at > now())`,
+      [userId],
+    );
+  } catch (err) {
+    logError('sync', err, { kind: 'activity' });
+  }
+}
+
 syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {
   const userId = req.session.userId as string;
+  await stampActivity(userId);
   const lastSyncAt: string | null = req.body?.lastSyncAt ?? null;
   const push = req.body?.push ?? {};
   // ITEM 203 (P2) - a CHUNKED push sends several requests; only the last needs the pull. `pull: false` is a

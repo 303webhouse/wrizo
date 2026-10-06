@@ -212,4 +212,14 @@ export async function runMigrations(): Promise<void> {
     await pool.query(`alter table ${t} add column if not exists synced_at timestamptz not null default now()`);
     await pool.query(`create index if not exists ${t}_user_synced on ${t} (user_id, synced_at)`);
   }
+
+  // GUEST LOGIN (item 225) — the four account columns Nick approved. Additive
+  // and safe on existing rows: the two booleans/integers carry defaults that
+  // change nothing for an account that already exists; the two timestamps are
+  // null for every non-guest account. guest_links is NOT here — its migration
+  // waits for Nick's word (migrations/pending/002_guest_links.sql).
+  await pool.query(`alter table users add column if not exists is_guest boolean not null default false`);
+  await pool.query(`alter table users add column if not exists guest_expires_at timestamptz`);
+  await pool.query(`alter table users add column if not exists last_active_at timestamptz`);
+  await pool.query(`alter table users add column if not exists tutor_turns_used integer not null default 0`);
 }

@@ -6,6 +6,10 @@ import { env } from './env';
 declare module 'express-session' {
   interface SessionData {
     userId?: string;
+    // GUEST LOGIN (item 225) — set only on a session opened by a guest link or
+    // cleared by a claim. requireAuth reads the account row only when this is set,
+    // so an ordinary account's requests add no query.
+    guest?: boolean;
   }
 }
 

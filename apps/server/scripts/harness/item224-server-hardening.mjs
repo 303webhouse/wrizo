@@ -757,8 +757,20 @@ async function callRoute(router, routePath, method, body, session) {
   const logErrorCount = (sources.tutor.match(/logError\(/g) || []).length
     + (sources.index.match(/logError\(/g) || []).length
     + (sources.sync.match(/logError\(/g) || []).length;
-  ok('(5) logError(...) is used at every one of the 9 sites this round touched (1 tutor.ts + 2 index.ts + 6 sync.ts)',
+  // SUPERSEDED (item 225, guest login) — by (5b) below. Parked, not deleted: this
+  // census was true for item 224's round. Item 225 adds one logError to tutor.ts
+  // (the guest turn count) and one to sync.ts (the activity stamp), so "9" is no
+  // longer the count. Kept verbatim; the `if (false)` keeps it out of the verdict.
+  if (false) ok('(5) logError(...) is used at every one of the 9 sites this round touched (1 tutor.ts + 2 index.ts + 6 sync.ts)',
     logErrorCount === 9, String(logErrorCount));
+  const logErrorPerFile = {
+    tutor: (sources.tutor.match(/logError\(/g) || []).length,
+    index: (sources.index.match(/logError\(/g) || []).length,
+    sync: (sources.sync.match(/logError\(/g) || []).length,
+  };
+  ok('(5b) logError(...) is used at 11 sites: item 224\'s nine plus item 225\'s two (2 tutor.ts + 2 index.ts + 7 sync.ts)',
+    logErrorCount === 11 && logErrorPerFile.tutor === 2 && logErrorPerFile.index === 2 && logErrorPerFile.sync === 7,
+    JSON.stringify(logErrorPerFile));
   ok('(5) dotenv is configured quiet (env.ts)',
     /dotenv\.config\(\{[^}]*quiet:\s*true/.test(fs.readFileSync(path.join(SRC, 'env.ts'), 'utf8')), '');
 }

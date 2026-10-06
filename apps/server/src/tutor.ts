@@ -5,6 +5,11 @@ import { requireAuth } from './auth';
 import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
 import { logError } from './logSafe';
+import { pool } from './db';
+
+// GUEST LOGIN (item 225) — a number, not a shape: 75 Tutor turns for the life of
+// a guest account (the approved default; a dial, not a measurement).
+const GUEST_TUTOR_TURN_CAP = 75;
 
 // TU1 S5 — the Tutor's ONE new route: a writer-initiated proxy to a
 // language model, key server-side only (env.tutorApiKey — never sent to,
@@ -211,6 +216,20 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
   // runs. Checked after validation (a malformed payload never consumes
   // budget) but before the model is actually called (a request that WILL
   // reach the model is exactly the cost this protects against).
+  // GUEST LOGIN (item 225) — a guest's LIFETIME Tutor cap, checked before the
+  // per-person daily budget so a refused guest does not also spend today's.
+  // Guests remain under the daily budget below like every account. The count
+  // only moves after a successful reply (see the res.json below).
+  if (req.session.guest) {
+    const { rows } = await pool.query<{ used: number }>(
+      `select tutor_turns_used as used from users where id = $1 and is_guest`,
+      [req.session.userId],
+    );
+    if (rows[0] && rows[0].used >= GUEST_TUTOR_TURN_CAP) {
+      res.status(403).json({ error: 'This guest account\'s Tutor turns are used up. Create a free account to keep using it.' });
+      return;
+    }
+  }
   if (!consumeTutorBudget(req.session.userId!)) {
     res.status(429).json({ error: 'Daily Tutor limit reached — try again tomorrow.' });
     return;
@@ -302,6 +321,15 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     // fire. `env.tutorModel` is already server-side config (S1) — echoing
     // it back on the response is not a new secret (it names a model id,
     // never the API key) and costs nothing extra to compute.
+    if (req.session.guest) {
+      // GUEST LOGIN (item 225) — one turn counted after the model answered. A
+      // failed count must never swallow a reply the model already produced.
+      try {
+        await pool.query(`update users set tutor_turns_used = tutor_turns_used + 1 where id = $1 and is_guest`, [req.session.userId]);
+      } catch (err) {
+        logError('tutor', err, { kind: 'guest_turn_count' });
+      }
+    }
     res.json({
       configured: true,
       reply: text,
