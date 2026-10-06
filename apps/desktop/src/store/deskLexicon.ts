@@ -563,7 +563,14 @@ export type DeskTermId =
   // 2026-07-25) — one word each, "Sprout" superseding "Start from a Spark".
   | 'beginNewCard' | 'beginNewPageCard' | 'beginLoadDeck' | 'beginConnectPage'
   | 'beginNewLane'
-  | 'beginScreenplay' | 'beginSprout' | 'beginPlan';
+  | 'beginScreenplay' | 'beginSprout' | 'beginPlan'
+  // ITEM 224 — sign-up by invite code, until launch. Arrival.tsx's own
+  // fields are placeholder-only (no labels) today; this one matches that
+  // existing shape exactly rather than introducing a labelled field alone.
+  | 'authInviteCodePlaceholder'
+  // ITEM 224, ROUND 2 — shown instead of the whole form when no codes are
+  // configured, so the gate reads as a quiet fact, never a submit-and-fail.
+  | 'authSignupByInvitation';
 
 const CANONICAL: Record<DeskTermId, string> = {
   // BM1 — the Board's Own Modes.
@@ -1238,6 +1245,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   publishDownloadConfirm: 'Downloading — check your downloads.',
   publishDownloadFailed: 'That download couldn’t be made — nothing was lost, try again.',
   publishComingSoon: 'Publishing options — tailored to this work’s type, destination, and format — are coming soon.',
+
+  // ITEM 224 — the invite-code field.
+  authInviteCodePlaceholder: 'invite code',
+  authSignupByInvitation: 'By invitation, for now.',
 };
 
 // Flux registers its own capture-module name (the app's other live theme

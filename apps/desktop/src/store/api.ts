@@ -48,14 +48,37 @@ export interface AuthResult {
   error?: string;
 }
 
+// ITEM 224, ROUND 2 — public, no auth. `true` means codes are configured
+// (the form should show); `false` — including on a network failure — reads
+// as "closed," the quiet "by invitation" copy. The whole point of this
+// check is to replace an ERROR with a calm message; defaulting to "show the
+// form" on an unconfirmed status would just defer that same error to the
+// moment the writer presses Create instead of avoiding it.
+export async function apiSignupStatus(): Promise<boolean> {
+  try {
+    const res = await fetch('/auth/signup-status');
+    if (!res.ok) return false;
+    const data = (await res.json()) as { open?: boolean };
+    return data.open === true;
+  } catch {
+    return false;
+  }
+}
+
 export async function apiLogin(email: string, password: string): Promise<AuthResult> {
   const res = await postJson('/auth/login', { email, password });
   if (res.ok) return { ok: true, user: (await res.json()) as AuthUser };
   return { ok: false, error: await errorMessage(res, 'Could not sign in') };
 }
 
-export async function apiRegister(email: string, password: string, name: string): Promise<AuthResult> {
-  const res = await postJson('/auth/register', { email, password, name });
+// ITEM 224 — `code` is the invite code; the server is the sole judge of it
+// (wrong/missing code surfaces as the server's own error string, same as
+// every other register failure here). Defaults to '' so HomeFlow.tsx's own
+// parked call site (superseded by Arrival.tsx, unreachable from any UI —
+// see that file's own header) needs no edit; an empty code fails the
+// server's own check exactly like any other wrong code.
+export async function apiRegister(email: string, password: string, name: string, code = ''): Promise<AuthResult> {
+  const res = await postJson('/auth/register', { email, password, name, code });
   if (res.ok) return { ok: true, user: (await res.json()) as AuthUser };
   return { ok: false, error: await errorMessage(res, 'Could not create account') };
 }

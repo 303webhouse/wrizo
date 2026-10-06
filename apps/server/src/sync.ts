@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from 'express';
 import { pool } from './db';
 import { requireAuth } from './auth';
 import { asyncHandler } from './asyncHandler';
+import { logError } from './logSafe';
 
 // Record-level last-write-wins sync. All queries are scoped to the session
 // user_id; a pushed record only overwrites a stored row when its updated_at is
@@ -150,7 +151,7 @@ async function upsertProjects(userId: string, records: any[]): Promise<void> {
          p.lastActivePageId ?? null, p.deletedAt ?? null, p.createdAt, p.updatedAt, JSON.stringify(p.tutor ?? null)],
       );
     } catch (err) {
-      console.error('[sync] project upsert failed', p.id, err);
+      logError('sync', err, { kind: 'project', id: p.id });
     }
   }
 }
@@ -175,7 +176,7 @@ async function upsertStoryPlans(userId: string, records: any[]): Promise<void> {
          JSON.stringify(s.beatNotes ?? []), s.deletedAt ?? null, s.createdAt, s.updatedAt],
       );
     } catch (err) {
-      console.error('[sync] story_plan upsert failed', s.id, err);
+      logError('sync', err, { kind: 'story_plan', id: s.id });
     }
   }
 }
@@ -202,7 +203,7 @@ async function upsertSessions(userId: string, records: any[]): Promise<void> {
          s.endedAt ?? null, s.words ?? 0, s.durationSec ?? 0, s.surface ?? null, s.deskOpenedAt ?? null, s.updatedAt],
       );
     } catch (err) {
-      console.error('[sync] session upsert failed', s.id, err);
+      logError('sync', err, { kind: 'session', id: s.id });
     }
   }
 }
@@ -222,7 +223,7 @@ async function upsertDrafts(userId: string, records: any[]): Promise<void> {
         [d.id, userId, d.text ?? '', d.updatedAt],
       );
     } catch (err) {
-      console.error('[sync] draft upsert failed', d.id, err);
+      logError('sync', err, { kind: 'draft', id: d.id });
     }
   }
 }
@@ -244,7 +245,7 @@ async function upsertDrawers(userId: string, records: any[]): Promise<void> {
         [d.id, userId, d.name ?? '', d.order ?? 0, d.deletedAt ?? null, d.createdAt, d.updatedAt],
       );
     } catch (err) {
-      console.error('[sync] drawer upsert failed', d.id, err);
+      logError('sync', err, { kind: 'drawer', id: d.id });
     }
   }
 }
@@ -279,7 +280,7 @@ async function upsertJournalEntries(userId: string, records: any[]): Promise<voi
          e.deletedAt ?? null, e.createdAt, e.updatedAt, e.planBoardId ?? null, JSON.stringify(e.pageSettings ?? null)],
       );
     } catch (err) {
-      console.error('[sync] journal_entry upsert failed', e.id, err);
+      logError('sync', err, { kind: 'journal_entry', id: e.id });
     }
   }
 }

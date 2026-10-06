@@ -4,6 +4,7 @@ import { env } from './env';
 import { requireAuth } from './auth';
 import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
+import { logError } from './logSafe';
 
 // TU1 S5 — the Tutor's ONE new route: a writer-initiated proxy to a
 // language model, key server-side only (env.tutorApiKey — never sent to,
@@ -37,9 +38,14 @@ import { asyncHandler } from './asyncHandler';
 
 export const tutorRouter = Router();
 tutorRouter.use(requireAuth);
-// 10 requests / minute / IP — a real model call costs real money; tighter
-// than authRouter's own 20/min (rateLimit.ts's existing precedent).
-tutorRouter.use(rateLimit(10, 60_000));
+// ITEM 224, ROUND 2 — keyed by ACCOUNT, not address. requireAuth (above)
+// guarantees req.session.userId by the time this runs, so every caller IS
+// an account — an IP key was the wrong unit once that's true (one writer
+// behind many IPs, or many writers behind one NAT'd IP, each defeat an
+// IP key in opposite directions). 10 requests/minute/account — a real
+// model call costs real money; tighter than authRouter's own 20/min/IP
+// (rateLimit.ts's existing precedent).
+tutorRouter.use(rateLimit(10, 60_000, (req) => req.session.userId!));
 
 const SYSTEM_PROMPT = `
 You are the Tutor, a quiet writing mentor inside Wrizo. Your one job is to help a writer think about their own writing — you never write it for them.
@@ -133,7 +139,61 @@ function client(): Anthropic {
   return new Anthropic({ apiKey: env.tutorApiKey!, baseURL: env.tutorBaseUrl, maxRetries: 0 });
 }
 
+// ITEM 224 — a per-person daily budget, ON TOP OF rateLimit's existing
+// per-IP window above. INTERIM: in memory, no schema, resets on restart —
+// named as such because it is a stopgap, not the lasting shape (a restart
+// gives every writer a fresh day for free; acceptable for a pre-launch
+// invite-gated tester population, not for the account-scale load this will
+// eventually see). Keyed by session userId (never by IP — that is the OTHER
+// limiter's job), and keyed again by a UTC date string, so a count simply
+// never finds its old entry once the day turns over — no timer, no cron.
+const dailyTutorUsage = new Map<string, { day: string; count: number }>();
+function todayKey(): string {
+  return new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD', UTC
+}
+// Returns true if the call may proceed, incrementing the count as a side
+// effect — checked-and-incremented together so two requests racing the same
+// millisecond cannot both read "one under budget" and both proceed.
+function consumeTutorBudget(userId: string): boolean {
+  const day = todayKey();
+  const entry = dailyTutorUsage.get(userId);
+  if (!entry || entry.day !== day) {
+    dailyTutorUsage.set(userId, { day, count: 1 });
+    return true;
+  }
+  if (entry.count >= env.tutorDailyBudget) return false;
+  entry.count += 1;
+  return true;
+}
+
+// ITEM 224, ROUND 2 — a GLOBAL cap, across every account combined, on top of
+// the per-person one above. The per-person budget bounds one account's own
+// cost; nothing before this bounded the SUM across every account on a given
+// day. Same interim shape and the same reason: in memory, no schema, resets
+// on restart. One shared key ('*') rather than a second map — there is only
+// ever one "whole app, today" count.
+const dailyTutorGlobalUsage = { day: '', count: 0 };
+function consumeGlobalTutorBudget(): boolean {
+  const day = todayKey();
+  if (dailyTutorGlobalUsage.day !== day) {
+    dailyTutorGlobalUsage.day = day;
+    dailyTutorGlobalUsage.count = 1;
+    return true;
+  }
+  if (dailyTutorGlobalUsage.count >= env.tutorGlobalDailyBudget) return false;
+  dailyTutorGlobalUsage.count += 1;
+  return true;
+}
+
 tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response) => {
+  // ITEM 224, ROUND 2 — the kill switch. Answers with the EXISTING
+  // "not configured" shape (never a new error shape the client would have
+  // to learn) — a writer sees the same quiet state as an unset API key, and
+  // an operator can pull this lever without redeploying a code change.
+  if (env.tutorDisabled) {
+    res.json({ configured: false });
+    return;
+  }
   // Offline/unconfigured is a first-class, expected state (the brief's own
   // words) — respond plainly, never a 500, never a crash at boot.
   if (!env.tutorApiKey) {
@@ -143,6 +203,23 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
 
   if (!isValidBody(req.body)) {
     res.status(400).json({ error: 'Invalid conversation payload' });
+    return;
+  }
+
+  // ITEM 224 — the per-person daily budget. requireAuth (above, via
+  // tutorRouter.use) guarantees req.session.userId by the time any handler
+  // runs. Checked after validation (a malformed payload never consumes
+  // budget) but before the model is actually called (a request that WILL
+  // reach the model is exactly the cost this protects against).
+  if (!consumeTutorBudget(req.session.userId!)) {
+    res.status(429).json({ error: 'Daily Tutor limit reached — try again tomorrow.' });
+    return;
+  }
+  // ITEM 224, ROUND 2 — the global cap, checked second (a person's own
+  // budget is the more specific, more useful message when BOTH would have
+  // refused the same request).
+  if (!consumeGlobalTutorBudget()) {
+    res.status(429).json({ error: 'The Tutor has reached today\'s overall limit — try again tomorrow.' });
     return;
   }
 
@@ -232,8 +309,7 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
       model: env.tutorModel,
     });
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('[tutor] chat request failed', err);
+    logError('tutor', err);
     res.status(502).json({ configured: true, error: 'The Tutor could not be reached right now.' });
   }
 }));

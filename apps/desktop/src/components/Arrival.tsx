@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { unbornHref } from '../store/unbornPage';
 import { setForwardLock } from '../store/forwardLock';
 import { setWritingSettings } from '../store/writingSettings';
 import { getFirstRunComplete, setFirstRunComplete } from '../store/firstRun';
 import { getResumeTarget } from '../store/resume';
-import { apiLogin, apiRegister, type AuthUser } from '../store/api';
+import { apiLogin, apiRegister, apiSignupStatus, type AuthUser } from '../store/api';
+import { useDeskLexicon } from '../store/deskLexicon';
 import { useDeskFrameViewport } from './DeskFrame';
 
 // HB1 S1/S5 — the Threshold. Route '/' for every boot, authed or not:
@@ -30,10 +31,22 @@ type Stage = 'doors' | 'signin' | 'account';
 
 export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; onAuthed: (user: AuthUser) => void }) {
   const navigate = useNavigate();
+  const { t } = useDeskLexicon();
   const [stage, setStage] = useState<Stage>('doors');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // ITEM 224 — sign-up by invite code, until launch.
+  const [inviteCode, setInviteCode] = useState('');
+  // ITEM 224, ROUND 2 — null while unchecked (renders nothing extra, not an
+  // error); checked once per arrival at the account stage, never polled.
+  const [signupOpen, setSignupOpen] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (stage !== 'account') return;
+    let cancelled = false;
+    apiSignupStatus().then((open) => { if (!cancelled) setSignupOpen(open); });
+    return () => { cancelled = true; };
+  }, [stage]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -97,7 +110,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   const handleCreate = async () => {
     if (busy) return;
     setError(''); setBusy(true);
-    const res = await apiRegister(email.trim(), password, name.trim());
+    const res = await apiRegister(email.trim(), password, name.trim(), inviteCode.trim());
     setBusy(false);
     if (res.ok && res.user) onAuthed(res.user);
     else setError(res.error || 'Could not create your account');
@@ -148,14 +161,26 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
       {stage === 'account' && (
         <section className="wz-screen show" style={{ zIndex: 8 }}>
           <div className="wz-bighead">Save your writing to an account.</div>
-          <div className="wz-sub">Add an email and your writing follows you to any device — anything you've already written here comes with it.</div>
-          <div className="wz-fieldcol">
-            <input className="wz-field" type="text" placeholder="what should we call you?" autoComplete="given-name" value={name} onChange={e => setName(e.target.value)} />
-            <input className="wz-field" type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
-            <input className="wz-field" type="password" placeholder="choose a password" autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} />
-          </div>
-          {error && <div className="wz-error">{error}</div>}
-          <button type="button" className="wz-btn" disabled={busy} onClick={handleCreate}>{busy ? 'one moment…' : 'Create my account'}</button>
+          {/* ITEM 224, ROUND 2 — closed reads as a quiet fact, never a form
+              the writer fills in only to be told no at the end. `null`
+              (status not back yet) renders neither the form nor the
+              message — a blink of nothing, never an error either. */}
+          {signupOpen === false ? (
+            <div className="wz-sub">{t('authSignupByInvitation')}</div>
+          ) : signupOpen === true ? (
+            <>
+              <div className="wz-sub">Add an email and your writing follows you to any device — anything you've already written here comes with it.</div>
+              <div className="wz-fieldcol">
+                <input className="wz-field" type="text" placeholder="what should we call you?" autoComplete="given-name" value={name} onChange={e => setName(e.target.value)} />
+                <input className="wz-field" type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
+                <input className="wz-field" type="password" placeholder="choose a password" autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} />
+                {/* ITEM 224 — sign-up by invite code, until launch. */}
+                <input className="wz-field" type="text" placeholder={t('authInviteCodePlaceholder')} autoComplete="off" value={inviteCode} onChange={e => setInviteCode(e.target.value)} />
+              </div>
+              {error && <div className="wz-error">{error}</div>}
+              <button type="button" className="wz-btn" disabled={busy} onClick={handleCreate}>{busy ? 'one moment…' : 'Create my account'}</button>
+            </>
+          ) : null}
           <div className="wz-secondary">
             <span className="wz-link" onClick={() => { setError(''); setStage('signin'); }}>← back</span>
           </div>
