@@ -247,6 +247,9 @@ export type DeskTermId =
   // all), plus the one-time near-full heads-up.
   | 'syncStorageFullPending' | 'syncStorageFullSynced' | 'syncStorageFullAnon'
   | 'syncStorageNearFull' | 'syncStorageNearFullAnon'
+  // ITEM 224(a), SYNC INTEGRITY — a record the server itself refused to
+  // store (not a size problem); kept dirty, retried, and named here.
+  | 'syncRejectedOne' | 'syncRejectedMany'
   | 'cascadePageNewPage' | 'cascadePlanJustAPage' | 'boardNewPageCard' | 'boardCanvasEmpty'
   // ITEM 83 M3 (R6) — the Page drawer's PAGE SETUP zone: the sheet's own
   // dimension (margins, leading, numbers, headers, footers), as opposed to
@@ -856,6 +859,12 @@ const CANONICAL: Record<DeskTermId, string> = {
   // Fable, 2026-09-30: "near-full reads the same way for a signed-out writer (nothing reaches an account there)" \u2014
   // this desk's own wording, parallel to syncStorageFullAnon's cleared sentence; offered, not pre-cleared.
   syncStorageNearFullAnon: 'This device is running low on storage, and nothing else holds a copy of this writing \u2014 download a copy now from Publish',
+  // ITEM 224(a) \u2014 a different cause from too-large: the record traveled
+  // fine and the server itself could not store it. Still safe here, still
+  // retried; the words say so rather than naming a size limit that isn't
+  // the reason.
+  syncRejectedOne: '\u201c{title}\u201d could not be saved to your account \u2014 it is safe on this device and will keep trying',
+  syncRejectedMany: '{n} items could not be saved to your account \u2014 they are safe on this device and will keep trying',
   // ITEM 83 M3 (R6). Sentence case on rows, engraved-uppercase on the heading
   // (§1.4) — the heading's dress is CSS, so the term itself stays readable.
   pageSetupHeading: 'Page setup',

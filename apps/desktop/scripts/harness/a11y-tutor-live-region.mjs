@@ -19,6 +19,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
 
+// The path constants were never defined in this file (the static checks read
+// SRC before any browser section ran) — same two lines the sign-in harness uses.
+const here = path.dirname(fileURLToPath(import.meta.url));
+const DESKTOP = path.resolve(here, '..', '..');
+const SRC = path.join(DESKTOP, 'src');
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const checks = [];

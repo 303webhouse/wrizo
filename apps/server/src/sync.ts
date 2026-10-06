@@ -122,9 +122,10 @@ function rowToJournalEntry(r: any) {
 
 // --- upserts (last-write-wins on updated_at, scoped to user) --------------
 
-async function upsertProjects(userId: string, records: any[]): Promise<void> {
+async function upsertProjects(userId: string, records: any[]): Promise<string[]> {
+  const rejected: string[] = [];
   for (const p of records) {
-    if (!p?.id || !p?.updatedAt || !p?.createdAt) continue;
+    if (!p?.id || !p?.updatedAt || !p?.createdAt) { if (p?.id) rejected.push(p.id); continue; }
     try {
       await pool.query(
         `insert into projects
@@ -152,13 +153,16 @@ async function upsertProjects(userId: string, records: any[]): Promise<void> {
       );
     } catch (err) {
       logError('sync', err, { kind: 'project', id: p.id });
+      rejected.push(p.id);
     }
   }
+  return rejected;
 }
 
-async function upsertStoryPlans(userId: string, records: any[]): Promise<void> {
+async function upsertStoryPlans(userId: string, records: any[]): Promise<string[]> {
+  const rejected: string[] = [];
   for (const s of records) {
-    if (!s?.id || !s?.updatedAt || !s?.createdAt) continue;
+    if (!s?.id || !s?.updatedAt || !s?.createdAt) { if (s?.id) rejected.push(s.id); continue; }
     try {
       await pool.query(
         `insert into story_plans
@@ -177,13 +181,16 @@ async function upsertStoryPlans(userId: string, records: any[]): Promise<void> {
       );
     } catch (err) {
       logError('sync', err, { kind: 'story_plan', id: s.id });
+      rejected.push(s.id);
     }
   }
+  return rejected;
 }
 
-async function upsertSessions(userId: string, records: any[]): Promise<void> {
+async function upsertSessions(userId: string, records: any[]): Promise<string[]> {
+  const rejected: string[] = [];
   for (const s of records) {
-    if (!s?.id || !s?.updatedAt) continue;
+    if (!s?.id || !s?.updatedAt) { if (s?.id) rejected.push(s.id); continue; }
     try {
       await pool.query(
         `insert into sessions_log
@@ -204,13 +211,16 @@ async function upsertSessions(userId: string, records: any[]): Promise<void> {
       );
     } catch (err) {
       logError('sync', err, { kind: 'session', id: s.id });
+      rejected.push(s.id);
     }
   }
+  return rejected;
 }
 
-async function upsertDrafts(userId: string, records: any[]): Promise<void> {
+async function upsertDrafts(userId: string, records: any[]): Promise<string[]> {
+  const rejected: string[] = [];
   for (const d of records) {
-    if (!d?.id || !d?.updatedAt) continue;
+    if (!d?.id || !d?.updatedAt) { if (d?.id) rejected.push(d.id); continue; }
     try {
       await pool.query(
         `insert into drafts (id, user_id, text, updated_at)
@@ -224,13 +234,16 @@ async function upsertDrafts(userId: string, records: any[]): Promise<void> {
       );
     } catch (err) {
       logError('sync', err, { kind: 'draft', id: d.id });
+      rejected.push(d.id);
     }
   }
+  return rejected;
 }
 
-async function upsertDrawers(userId: string, records: any[]): Promise<void> {
+async function upsertDrawers(userId: string, records: any[]): Promise<string[]> {
+  const rejected: string[] = [];
   for (const d of records) {
-    if (!d?.id || !d?.updatedAt || !d?.createdAt) continue;
+    if (!d?.id || !d?.updatedAt || !d?.createdAt) { if (d?.id) rejected.push(d.id); continue; }
     try {
       await pool.query(
         `insert into drawers
@@ -246,13 +259,16 @@ async function upsertDrawers(userId: string, records: any[]): Promise<void> {
       );
     } catch (err) {
       logError('sync', err, { kind: 'drawer', id: d.id });
+      rejected.push(d.id);
     }
   }
+  return rejected;
 }
 
-async function upsertJournalEntries(userId: string, records: any[]): Promise<void> {
+async function upsertJournalEntries(userId: string, records: any[]): Promise<string[]> {
+  const rejected: string[] = [];
   for (const e of records) {
-    if (!e?.id || !e?.updatedAt || !e?.createdAt) continue;
+    if (!e?.id || !e?.updatedAt || !e?.createdAt) { if (e?.id) rejected.push(e.id); continue; }
     try {
       await pool.query(
         `insert into journal_entries
@@ -281,8 +297,10 @@ async function upsertJournalEntries(userId: string, records: any[]): Promise<voi
       );
     } catch (err) {
       logError('sync', err, { kind: 'journal_entry', id: e.id });
+      rejected.push(e.id);
     }
   }
+  return rejected;
 }
 
 // --- pulls (everything updated since lastSyncAt) --------------------------
@@ -406,17 +424,31 @@ syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {
   // one-request sync) it is exactly what it always was.
   const wantPull = req.body?.pull !== false;
 
-  await upsertProjects(userId, Array.isArray(push.projects) ? push.projects : []);
-  await upsertStoryPlans(userId, Array.isArray(push.storyPlans) ? push.storyPlans : []);
-  await upsertSessions(userId, Array.isArray(push.sessions) ? push.sessions : []);
-  await upsertDrafts(userId, Array.isArray(push.drafts) ? push.drafts : []);
-  await upsertDrawers(userId, Array.isArray(push.drawers) ? push.drawers : []);
-  await upsertJournalEntries(userId, Array.isArray(push.journalEntries) ? push.journalEntries : []);
+  // ITEM 224(a), SYNC INTEGRITY — each upsert now returns the ids it could
+  // NOT store (malformed, or the insert itself threw) instead of swallowing
+  // the failure silently. Previously a rejected record's own edit was lost
+  // for good: the client, seeing a 200, marked the whole pushed batch clean
+  // and never sent that record again. Named per collection, never a single
+  // blended count, so the client can mark exactly those ids — and only
+  // those — still dirty.
+  const rejected: Partial<Record<string, string[]>> = {};
+  const addRejected = (coll: string, ids: string[]) => { if (ids.length) rejected[coll] = ids; };
+  addRejected('projects', await upsertProjects(userId, Array.isArray(push.projects) ? push.projects : []));
+  addRejected('storyPlans', await upsertStoryPlans(userId, Array.isArray(push.storyPlans) ? push.storyPlans : []));
+  addRejected('sessions', await upsertSessions(userId, Array.isArray(push.sessions) ? push.sessions : []));
+  addRejected('drafts', await upsertDrafts(userId, Array.isArray(push.drafts) ? push.drafts : []));
+  addRejected('drawers', await upsertDrawers(userId, Array.isArray(push.drawers) ? push.drawers : []));
+  addRejected('journalEntries', await upsertJournalEntries(userId, Array.isArray(push.journalEntries) ? push.journalEntries : []));
 
   // ITEM 198 - the cursor is POSTGRES's clock, taken after the pushes and before the pulls (see dbNow).
   const serverTime = await dbNow();
   res.json({
     serverTime,
+    // Absent when nothing was rejected (the ordinary case) — the same
+    // "absence is the healthy state" shape this route already uses for
+    // every optional field; a client that predates this ticket simply
+    // never sees the key.
+    ...(Object.keys(rejected).length > 0 ? { rejected } : {}),
     pull: wantPull ? {
       projects: (await pull('projects', userId, lastSyncAt)).map(rowToProject),
       storyPlans: (await pull('story_plans', userId, lastSyncAt)).map(rowToStoryPlan),

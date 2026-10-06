@@ -12,6 +12,11 @@ export interface AuthUser {
 
 export interface SyncResponse {
   serverTime: string;
+  // ITEM 224(a), SYNC INTEGRITY — absent when nothing was rejected (the
+  // ordinary case). Per-collection, each a list of ids the server could NOT
+  // store this push (malformed, or the insert itself failed) — never a
+  // single blended count, so the client can keep EXACTLY those ids dirty.
+  rejected?: Partial<Record<keyof DirtyRecords, string[]>>;
   pull: RemoteRecords;
 }
 
