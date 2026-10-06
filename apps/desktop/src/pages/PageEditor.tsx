@@ -8,6 +8,10 @@ import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
+import { WritingMenu, writingMenuHasItems, type WritingMenuState } from '../components/WritingMenu';
+import { LinkedMarks } from '../components/LinkedMarks';
+import { useExperiments } from '../store/experiments';
+import { domSelectionToVisible, linkIdsCovering, anchorSelection, anchorSpot, addLink, unlink, rawRangeToDomRange } from '../store/anchors';
 import { useSurfaceSelection } from '../components/useSurfaceSelection';
 import { ModeSwitcher } from '../components/ModeSwitcher';
 import { ModeStage, PEN_INKS } from '../components/ModeStage';
@@ -44,7 +48,7 @@ import { PAGE_KIND_DEFAULT, PAGE_SETTINGS_FALLBACK, STYLE_GUIDE_DEFAULT } from '
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
-import { applyFormat, marksAt, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
+import { applyFormat, marksAt, stripMarkdownConventions, type FormatAction, visibleText, toRawRange } from '../store/draftFormat';
 import { createTabChord, type TabAct } from '../store/tabChord';
 import { escapeFromEditor, ESC_HINT_ID } from '../store/escapeExit';
 import { BLOCK_TOKEN } from '../store/markRuns';
@@ -316,6 +320,184 @@ function PageEditorView({ id }: { id: string }) {
   const insertMarkerRef = useRef<((text: string) => void) | null>(null);
   const surfaceRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
+
+  // EXPERIMENT 1 §3 — the right-click menu's connect acts.
+  //
+  // WIRED FROM HERE, NOT FROM ForwardOnlyEditor, deliberately. That component is
+  // rendered by three other hosts (Board, Script, this page); adding a listener
+  // or a prop to it would put this experiment's surface area inside all of them.
+  // `editorRef` is already this surface's handle on the editor node, so the
+  // listener is attached here and the blast radius stays on this page.
+  //
+  // ⚠ §0's CLAIM HAS MOVED, BY RULING (item 186, from Nick's "Is B-I-U included
+  // in the right-click menu? If not, it should be."). It is no longer "with the
+  // switch OFF, the app IS v1": **OFF is v1 PLUS THE BASE MENU.** Wrizo's own
+  // menu now opens on the writing surface whatever the switch says, carrying
+  // B/I/U wherever styling is allowed; the connect acts are what the switch
+  // adds. So this effect NO LONGER RETURNS EARLY when the flag is off — that
+  // would take the base menu away with it. The harness asserts the new claim in
+  // both directions: OFF shows B/I/U and no connect acts.
+  const experiments = useExperiments();
+  const connectOn = experiments.connectFromThePage;
+  // Styling is allowed on Draft today (whether Revise joins is with Nick).
+  // ABSENT, not inert, anywhere else: item 121 I6 retired styling from Free
+  // Write on Nick's analog law, BY ABSENCE, and `applyRailFormat`'s own internal
+  // `mode !== 'drafting'` guard would only make the buttons do nothing — which is
+  // exactly G3's locked door wearing paint.
+  const canStyle = mode === 'drafting';
+  const [connectMenu, setConnectMenu] = useState<WritingMenuState | null>(null);
+  useEffect(() => {
+    const el = editorRef.current;
+    if (!el) return;
+    const onContextMenu = (e: MouseEvent) => {
+      // ⛔ SHIFT + RIGHT-CLICK FALLS THROUGH TO THE NATIVE MENU (Fable's ruling).
+      // A menu that preventDefaults every right-click takes the browser's own
+      // menu away for as long as the experiment is on — cut/copy/paste, look-up,
+      // and (where a surface has spellcheck) its spelling suggestions. Shift is
+      // the conventional escape hatch, and it costs one line. Bringing the
+      // browser's suggestions INTO this menu is a later item, not this slice.
+      //
+      // ⚠ ONE CORRECTION TO THE PREMISE, because it is checkable and it matters:
+      // on THIS surface there are no spelling suggestions to lose.
+      // ForwardOnlyEditor hardcodes `spellCheck={false}` (line 652) and nothing
+      // overrides it, on this host or any other. So the fallthrough is right for
+      // the REST of the native menu, and the spellcheck question is a separate,
+      // larger one that is NOT this slice's to answer — handed up rather than
+      // quietly assumed settled.
+      if (e.shiftKey) { setConnectMenu(null); return; }
+      // ⛔ A MENU WITH NOTHING IN IT MUST NOT OPEN, AND MUST NOT SUPPRESS THE
+      // NATIVE ONE TO SHOW NOTHING. That is a real case today, not a hypothetical:
+      // Free Write with the switch off allows no styling and offers no connect
+      // acts. Checked BEFORE preventDefault, so the writer keeps the browser's
+      // own menu wherever Wrizo has nothing to say.
+      const selNow = readSelection();
+      if (!writingMenuHasItems({ canStyle, connectOn, hasWords: !!selNow && selNow.to > selNow.from })) return;
+      // The writer's own selection decides which acts exist, so it is read
+      // BEFORE the default menu is suppressed — and if it cannot be read
+      // honestly, the menu does not open at all rather than opening over an
+      // unknown range (domSelectionToVisible refuses instead of guessing).
+      const latest = getJournalEntry(id);
+      if (!latest) return;
+      const sel = domSelectionToVisible(el, latest.text ?? '');
+      if (!sel) return;
+      e.preventDefault();
+      setConnectMenu({
+        x: e.clientX,
+        y: e.clientY,
+        from: sel.from,
+        to: sel.to,
+        // "Unlink" is offered only when something is actually covered — and only
+        // read at all when the switch is on, so an off switch costs nothing.
+        coveringLinkIds: connectOn
+          ? linkIdsCovering(latest.text ?? '', latest.pageLinks, sel.from)
+          : [],
+      });
+    };
+    el.addEventListener('contextmenu', onContextMenu);
+    return () => { el.removeEventListener('contextmenu', onContextMenu); };
+  }, [connectOn, canStyle, id]);
+
+  // EXPERIMENT 1 §4 — the strip's connect zone needs to know whether the writer
+  // has WORDS selected, because the two acts that need them are ABSENT without
+  // them (never greyed). Tracked from `selectionchange`, and only while the
+  // switch is on — off, no listener is registered at all.
+  const [connectHasSelection, setConnectHasSelection] = useState(false);
+  useEffect(() => {
+    if (!connectOn) { setConnectHasSelection(false); return; }
+    const read = () => {
+      const el = editorRef.current;
+      const latest = el ? getJournalEntry(id) : null;
+      if (!el || !latest) { setConnectHasSelection(false); return; }
+      const sel = domSelectionToVisible(el, latest.text ?? '');
+      setConnectHasSelection(!!sel && sel.to > sel.from);
+    };
+    read();
+    document.addEventListener('selectionchange', read);
+    return () => { document.removeEventListener('selectionchange', read); };
+  }, [connectOn, id]);
+
+  // ⚠ THESE TAKE THEIR OFFSETS, AND THAT IS A CORRECTION TO WHAT I SHIPPED.
+  //
+  // They used to re-read the DOM selection at click time for BOTH doors, on the
+  // reasoning that "the read decides what happens". That is right for the STRIP —
+  // whose row carries `onMouseDown preventDefault`, so the selection is still
+  // alive when the click lands — and WRONG for the MENU. A menu item is a
+  // non-editable element outside the contenteditable: pressing it collapses the
+  // selection in Chromium (the very reason the format row needs that guard), and
+  // the menu additionally moves focus to its first item on open. So a re-read at
+  // click time would have found a COLLAPSED selection and turned every menu
+  // "Link to…" into a spot-note — silently, and exactly the failure I had just
+  // named for the strip.
+  //
+  // The authoritative selection for the menu is the one that existed WHEN THE
+  // WRITER RIGHT-CLICKED: that is what they were pointing at. So it is captured
+  // at open and passed in. Still one function per act, two doors — the offsets
+  // are a parameter, not a second implementation.
+  const readSelection = (): { from: number; to: number } | null => {
+    const el = editorRef.current;
+    const latest = el ? getJournalEntry(id) : null;
+    if (!el || !latest) return null;
+    return domSelectionToVisible(el, latest.text ?? '');
+  };
+  const connectActs = {
+    onLink: (from: number, to: number) => {
+      if (to <= from) return;
+      anchorSelection(id, from, to);
+    },
+    onNote: (from: number, to: number) => {
+      const a = to > from ? anchorSelection(id, from, to)[0] : anchorSpot(id, from);
+      if (a) addLink(id, a.id, { kind: 'note', body: '' });
+    },
+    onMakeCard: (from: number, to: number) => {
+      if (to <= from) return;
+      anchorSelection(id, from, to);
+    },
+    hasSelection: connectHasSelection,
+  };
+
+  // THE STRIP's OWN WRAPPERS. The strip has no capture point — the writer never
+  // told it where to act — so it READS the live selection, which its
+  // `onMouseDown preventDefault` keeps alive across the press. Same three
+  // functions underneath; only where the offsets come from differs, and each
+  // door takes them from the only place that is authoritative for it.
+  const stripConnect = {
+    onLink: () => { const s2 = readSelection(); if (s2) connectActs.onLink(s2.from, s2.to); },
+    onNote: () => { const s2 = readSelection(); if (s2) connectActs.onNote(s2.from, s2.to); },
+    onMakeCard: () => { const s2 = readSelection(); if (s2) connectActs.onMakeCard(s2.from, s2.to); },
+    hasSelection: connectHasSelection,
+  };
+
+  // ITEM 186 — CUT AND COPY, per PLAN DESK's brief. They exist because replacing
+  // the native menu would otherwise TAKE THEM AWAY ON THE WEB. No Paste: the
+  // paste rail owns that door (the foreign-voice import wall).
+  //
+  // ⛔ IT REBUILDS THE SELECTION RATHER THAN HOPING ONE SURVIVED. By the time a
+  // menu item is pressed, focus has moved to the menu and the DOM selection may be
+  // gone — so the captured visible offsets are turned back into a real DOM Range
+  // (through the same `toRawRange` → `rawRangeToDomRange` seams the mark uses), the
+  // editor is re-focused, the range is re-applied, and only then does the clipboard
+  // act run. Nothing here depends on a selection having outlived the click.
+  const runClipboard = (kind: 'cut' | 'copy', from: number, to: number) => {
+    const el = editorRef.current;
+    const latest = el ? getJournalEntry(id) : null;
+    if (!el || !latest || to <= from) return;
+    const v = visibleText(latest.text ?? '');
+    const [rawStart, rawEnd] = toRawRange(v, from, to);
+    const range = rawRangeToDomRange(el, rawStart, rawEnd);
+    if (!range) return;
+    el.focus();
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+    try {
+      // `execCommand` is deprecated but is the one path that cuts FROM a
+      // contenteditable and fires the input events ForwardOnlyEditor already
+      // listens to. `navigator.clipboard` would copy the text and leave the cut's
+      // deletion for us to perform by hand — a second edit path into the
+      // manuscript, which is worse than a deprecated call.
+      document.execCommand(kind);
+    } catch { /* a clipboard refusal must never break the writing surface */ }
+  };
 
   // Warm start (F2) — captured once at mount (the hook strips the one-shot state).
   const location = useLocation();
@@ -842,6 +1024,50 @@ function PageEditorView({ id }: { id: string }) {
           fontSize: typeStyle.fontSize ?? 'calc(17px * var(--paper-scale))', lineHeight: 1.7,
         }}
       />
+      {/* EXPERIMENT 1 §6 — THE MARK. Rendered inside the editor's own relative
+          wrapper so its gutter ticks displace nothing; the tint itself occupies
+          no space at all (a paint, not an element). It re-registers its ranges
+          after EVERY render, because a range detaches when the editor rebuilds
+          its text nodes — measured on the box, not assumed. */}
+      {connectOn && (
+        <LinkedMarks
+          editorRef={editorRef}
+          text={entry.text ?? ''}
+          pageLinks={entry.pageLinks}
+          active={connectOn}
+        />
+      )}
+      {/* ITEM 186 — WRIZO'S OWN MENU ON THE WRITING SURFACE. Rendered whatever
+          the switch says, because the base menu is the app's and not this
+          experiment's. `position: fixed`, so it overlays and displaces nothing:
+          the editor's rect cannot change because this renders, and the editor
+          never unmounts (PAGE IS PRIMARY; item 166 exception (a) sanctions a
+          pointer-positioned popup over the page). */}
+      <WritingMenu
+        state={connectMenu}
+        onClose={() => setConnectMenu(null)}
+        // ONE FORMATTER, TWO DOORS. The menu's B/I/U call the SAME
+        // `applyRailFormat` the strip calls, so FIX's 206 fixes (toggles,
+        // cross-paragraph, Ctrl+B/I/U) arrive at both doors rather than needing
+        // to be applied twice and compared. Undefined where styling is not
+        // allowed, which is what makes the items ABSENT there rather than inert.
+        onFormat={canStyle ? applyRailFormat : undefined}
+        // ITEM 186 — Cut and Copy, present wherever the menu has words to act on.
+        onClipboard={runClipboard}
+        // THE SAME THREE FUNCTIONS THE STRIP CALLS, for the same reason: two
+        // doors to one act must not become two behaviours, and sharing the
+        // function is the only version of that guarantee that survives an edit.
+        // (They re-read the selection at click time, so the menu hands no
+        // offsets back in.) Present only when the switch is on.
+        connect={connectOn ? {
+          onLink: connectActs.onLink,
+          onNote: connectActs.onNote,
+          onMakeCard: connectActs.onMakeCard,
+          // Nick's word: remove UNLINKS and never deletes. The anchor survives
+          // if other links use it, and the target is untouched.
+          onUnlink: (linkIds: string[]) => { for (const linkId of linkIds) unlink(id, linkId); },
+        } : undefined}
+      />
       {/* HB1 S3 — the gate's instruction is the threshold's one sanctioned
           utterance; the first-line invite (F6) would speak a second one on
           this exact (empty) page. gateActive is only ever true when framed
@@ -1073,6 +1299,12 @@ function PageEditorView({ id }: { id: string }) {
           // typewriter's text was the same class of thing as bolding it.
           // `applyFreeWriteFormat` and `freeWriteMarks` go with them.
           captureItems: journalFurniture ? CAPTURE_ITEMS : [],
+          // EXPERIMENT 1 §4 — undefined when the switch is off, which is what
+          // makes the zone absent from the DOM rather than hidden. Free Write
+          // already carries NO styling (item 121 I6 retired it on Nick's analog
+          // law), so "connects and notes, never styles" is the shipped state
+          // here plus these three acts — not a removal this slice has to make.
+          connect: connectOn ? stripConnect : undefined,
         }
       : mode === 'drafting'
         ? {
@@ -1093,6 +1325,9 @@ function PageEditorView({ id }: { id: string }) {
             styleGuide: entry.pageSettings?.styleGuide ?? STYLE_GUIDE_DEFAULT,
             onPickStyleGuide: styleGuide => patchPageSettings({ styleGuide }),
             templates: pageTemplates,
+            // EXPERIMENT 1 §4 — same gate, same absence. Draft keeps its
+            // styling roster; the connect zone is additive beside it.
+            connect: connectOn ? stripConnect : undefined,
           }
         // ITEM 112-A — REVISE'S DESK DRAWER OPENS, AND IT OPENS ONTO NOTHING.
         //
