@@ -563,7 +563,9 @@ export type DeskTermId =
   // 2026-07-25) — one word each, "Sprout" superseding "Start from a Spark".
   | 'beginNewCard' | 'beginNewPageCard' | 'beginLoadDeck' | 'beginConnectPage'
   | 'beginNewLane'
-  | 'beginScreenplay' | 'beginSprout' | 'beginPlan';
+  | 'beginScreenplay' | 'beginSprout' | 'beginPlan'
+  // EXPERIMENT 1 ("connect from the page") — the connect vocabulary.
+  | 'cascadeSettingsExpConnectFromPage' | 'connectAnchorAmbiguous' | 'connectAnchorLost' | 'connectExportNote' | 'connectMenuLink' | 'connectMenuMakeCard' | 'connectMenuNoteThis' | 'connectMenuUnlink' | 'connectRailSelectedEmpty' | 'connectRailUnlink' | 'menuCopy' | 'menuCut' | 'menuWritingLabel' | 'railConnect' | 'tutorTabLinked' | 'tutorTabTutor' | 'zoneLinked' | 'zoneLinkedNoTags' | 'zoneLinkedSort' | 'zoneLinkedSortKind' | 'zoneLinkedSortRecency' | 'zoneLinkedSortTag' | 'zoneLinkedWaiting';
 
 const CANONICAL: Record<DeskTermId, string> = {
   // BM1 — the Board's Own Modes.
@@ -1238,6 +1240,29 @@ const CANONICAL: Record<DeskTermId, string> = {
   publishDownloadConfirm: 'Downloading — check your downloads.',
   publishDownloadFailed: 'That download couldn’t be made — nothing was lost, try again.',
   publishComingSoon: 'Publishing options — tailored to this work’s type, destination, and format — are coming soon.',
+  cascadeSettingsExpConnectFromPage: 'Experiments: Connect from the page',
+  tutorTabTutor: 'Tutor',
+  tutorTabLinked: 'Linked',
+  zoneLinked: 'Linked to this page',
+  zoneLinkedWaiting: 'Nothing linked yet.',
+  zoneLinkedSort: 'Sort',
+  zoneLinkedSortRecency: 'Recent',
+  zoneLinkedSortKind: 'Kind',
+  zoneLinkedSortTag: 'Tag',
+  zoneLinkedNoTags: 'Nothing tagged yet.',
+  railConnect: 'Link',
+  menuWritingLabel: 'Writing actions',
+  menuCut: 'Cut',
+  menuCopy: 'Copy',
+  connectMenuLink: 'Link to…',
+  connectMenuNoteThis: 'Note This',
+  connectMenuMakeCard: 'Make a card',
+  connectMenuUnlink: 'Unlink',
+  connectRailSelectedEmpty: 'Nothing is linked to these words.',
+  connectRailUnlink: 'Unlink',
+  connectExportNote: 'Linked material isn’t included.',
+  connectAnchorAmbiguous: 'These words appear more than once now — point me at the right one.',
+  connectAnchorLost: 'The words this was attached to are gone. It is kept, and still opens.',
 };
 
 // Flux registers its own capture-module name (the app's other live theme
@@ -1262,6 +1287,18 @@ function resolveTheme(theme: ThemeId | undefined): ThemeId {
 export function deskTerm(term: DeskTermId, theme?: ThemeId): string {
   const resolved = resolveTheme(theme);
   return OVERRIDES[resolved]?.[term] ?? CANONICAL[term];
+}
+
+/**
+ * Every canonical term id. Exported so a guard can enumerate the WHOLE
+ * vocabulary instead of a roster someone hand-listed — a default-deny check
+ * needs the real population or it silently covers a subset. (The window seam
+ * below already exposed this to harnesses; browserless checks need it too.)
+ */
+export const CANONICAL_IDS: DeskTermId[] = Object.keys(CANONICAL) as DeskTermId[];
+
+export function canonicalDeskTerm(term: DeskTermId): string {
+  return CANONICAL[term];
 }
 
 export function useDeskLexicon(): { t: (term: DeskTermId) => string } {
