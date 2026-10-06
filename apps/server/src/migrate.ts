@@ -216,10 +216,20 @@ export async function runMigrations(): Promise<void> {
   // GUEST LOGIN (item 225) — the four account columns Nick approved. Additive
   // and safe on existing rows: the two booleans/integers carry defaults that
   // change nothing for an account that already exists; the two timestamps are
-  // null for every non-guest account. guest_links is NOT here — its migration
-  // waits for Nick's word (migrations/pending/002_guest_links.sql).
+  // null for every non-guest account. guest_links is created just below.
   await pool.query(`alter table users add column if not exists is_guest boolean not null default false`);
   await pool.query(`alter table users add column if not exists guest_expires_at timestamptz`);
   await pool.query(`alter table users add column if not exists last_active_at timestamptz`);
   await pool.query(`alter table users add column if not exists tutor_turns_used integer not null default 0`);
+
+  // GUEST LOGIN (item 225) — which invite link belongs to which guest. Landed on
+  // Nick's word ("Yes"). The token itself is never stored: only its SHA-256 hex.
+  // Deleting a guest's account removes its links with it.
+  await pool.query(`
+    create table if not exists guest_links (
+      token_hash text primary key,
+      user_id uuid not null references users(id) on delete cascade,
+      created_at timestamptz not null default now()
+    )`);
+  await pool.query(`create index if not exists guest_links_user on guest_links (user_id)`);
 }

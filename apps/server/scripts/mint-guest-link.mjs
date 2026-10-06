@@ -1,6 +1,6 @@
 // GUEST LOGIN (item 225) — mints one guest account and its invite link.
 //
-// Usage (from apps/server, after migrations/pending/002_guest_links.sql has landed):
+// Usage (from apps/server; guest_links is created by migrate.ts on boot):
 //   DATABASE_URL=postgres://... node scripts/mint-guest-link.mjs [--name "Tester"]
 //
 // Creates ONE users row (is_guest, a placeholder email on the reserved .invalid
