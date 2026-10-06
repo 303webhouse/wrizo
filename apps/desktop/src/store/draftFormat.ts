@@ -1,4 +1,4 @@
-import { readLead, runsOfMark, stripLine, BLOCK_TOKEN } from './markRuns';
+import { readLead, readMarks, runsOfMark, stripLine, BLOCK_TOKEN } from './markRuns';
 
 // AB2 S3 — Draft's tools, operating as markdown conventions directly on
 // `entry.text` (S0's ruling: no separate rich-text state). Pure string
@@ -611,4 +611,219 @@ export function stripMarkdownConventions(text: string): string {
   // markers the page actually paints - so "2 * 3 * 4" exports as it shows, `~~strike~~` is stripped like the rest (the old
   // regex copy never stripped it), and a `>| ` block token goes with the other structure.
   return text.split('\n').map(stripLine).join('\n');
+}
+
+export interface ParagraphRange {
+
+  /** Ordinal among the text's paragraphs — this is `Anchor.paraIndex`. */
+
+  index: number;
+
+  /** Inclusive line indices. */
+
+  startLine: number;
+
+  endLine: number;
+
+  /** Character offsets into the text passed in; `end` is exclusive. */
+
+  start: number;
+
+  end: number;
+
+}
+
+
+
+export function paragraphRanges(text: string): ParagraphRange[] {
+
+  const lines = text.split('\n');
+
+  const startsAt: number[] = [];
+
+  let off = 0;
+
+  for (const l of lines) { startsAt.push(off); off += l.length + 1; }
+
+  const out: ParagraphRange[] = [];
+
+  let i = 0;
+
+  while (i < lines.length) {
+
+    if (lines[i].trim().length === 0) { i++; continue; }
+
+    const startLine = i;
+
+    while (i + 1 < lines.length && lines[i + 1].trim().length > 0) i++;
+
+    const endLine = i;
+
+    out.push({
+
+      index: out.length,
+
+      startLine,
+
+      endLine,
+
+      start: startsAt[startLine],
+
+      end: startsAt[endLine] + lines[endLine].length,
+
+    });
+
+    i++;
+
+  }
+
+  return out;
+
+}
+
+
+
+export interface VisibleText {
+  /** The text with markers removed — what the writer sees. */
+  text: string;
+  /**
+   * `map[i]` is the RAW offset of visible character `i`. Length is
+   * `text.length + 1`; the final entry is `raw.length`, so an end offset
+   * always maps. Strictly increasing.
+   *
+   * To paint a visible span `[start, end)` use `toRawRange` — NOT `map[end]`
+   * directly, which is the raw offset of the character AT `end` and skips any
+   * markers sitting between the span's last character and the next one.
+   */
+  map: number[];
+}
+
+// ---------------------------------------------------------------------------
+// EXPERIMENT 1 (b) — THE POSITION-PRESERVING STRIPPER, REBUILT ON THE ONE READER
+// ---------------------------------------------------------------------------
+//
+// ⛔ THIS IMPORTS THE READER. IT DOES NOT REPLAY IT. That distinction is the whole
+// history of this function and the reason it was rewritten.
+//
+// The first version carried its own copy of the rules: a chain of `^`-anchored line
+// regexes for the lead, and a second pass for `**`/`*`/`__`/`~~`. It was proven
+// byte-identical to the stripper of the day over a fixed corpus — and then FIX's
+// writing-surface S0 landed `store/markRuns.ts`, moved the real rules there, and my
+// copy was instantly a SECOND READER of the same fact. The (b) proof went red, and
+// nothing in my tree was wrong: the QUESTION was. A proof that a replay matches
+// today's rules says nothing about tomorrow's.
+//
+// So the lead comes from `readLead` and the markers from `readMarks` — the same two
+// functions the decorator paints from and `hiddenMarks.ts` computes the caret from.
+// A line's visible text is `removeMarkers(rest, readMarks(rest))` by construction,
+// which is exactly `stripLine`, which is exactly what `stripMarkdownConventions`
+// above now maps over every line. The proof asserts that equality over a corpus
+// rather than trusting this paragraph.
+//
+// ⚠ WHICH "VISIBLE", AND WHY IT IS THE READING SENSE AND NOT THE PAGE'S.
+// Since item 211 the page hides things too, and the two senses are NOT the same:
+//   · `hiddenMarks.ts` hides every accepted marker AND the bullet / heading lead
+//     tokens, but leaves tabs and the `>< ` `>> ` `>| ` `> ` directives VISIBLE,
+//     because the caret must be able to touch them.
+//   · `stripLine` — this function — drops the WHOLE lead and every accepted marker.
+// This map is the READING sense, deliberately: an anchor names a stretch of the
+// writer's prose, and "the third sentence" must mean the same stretch whether or not
+// the paragraph happens to be centred, quoted or bulleted — and must survive the
+// writer toggling any of that. The export's own text is this sense too.
+//
+// ⛔ THE CONSEQUENCE, AND IT IS A TRAP THIS FILE MUST NOT SET FOR ITS CALLERS: a DOM
+// offset is NOT a visible offset. The DOM still contains every marker character
+// (the decorator WRAPS them in collapsed `.md-mark-hidden` spans — it does not
+// delete them), so `editor.textContent` is the RAW text, and
+// `hiddenMarksDom.selectionEnds()` returns RAW offsets. Callers must take raw
+// offsets from there and convert with `toVisibleOffset`, never count DOM characters
+// themselves. `store/anchors.ts` is the one place that does this, and it says so.
+
+/**
+ * `raw` with every structure token and every accepted emphasis marker removed, plus
+ * a map back to the original offsets.
+ *
+ * The text is identical to `stripMarkdownConventions(raw)` — same reader, line by
+ * line — and the only reason this function exists beside it is the map.
+ */
+export function visibleText(raw: string): VisibleText {
+  const map: number[] = [];
+  let text = '';
+  let lineStart = 0;
+
+  for (;;) {
+    const nl = raw.indexOf('\n', lineStart);
+    const lineEnd = nl === -1 ? raw.length : nl;
+    const line = raw.slice(lineStart, lineEnd);
+
+    // THE LEAD, from the one reader. `readLead` returns the length of the whole
+    // front run (tabs and directives in any order, a heading mark last), so the
+    // dropped prefix is `[lineStart, lineStart + lead.length)`.
+    const lead = readLead(line);
+    const rest = line.slice(lead.length);
+
+    // THE MARKERS, from the one reader — and their positions are relative to
+    // `rest`, NOT to the line and NOT to `raw`. That offset by `lead.length` (and
+    // then by `lineStart`) is the arithmetic a second reader would get wrong, and
+    // it is why only accepted runs are cut: "2 * 3 * 4" keeps its stars, because
+    // `readMarks` does not pair them.
+    const runs = readMarks(rest);
+    const cut = new Set<number>();
+    for (const r of runs) {
+      for (let k = 0; k < r.mark.length; k++) { cut.add(r.open + k); cut.add(r.close + k); }
+    }
+
+    for (let i = 0; i < rest.length; i++) {
+      if (cut.has(i)) continue;
+      map.push(lineStart + lead.length + i);
+      text += rest[i];
+    }
+
+    if (nl === -1) break;
+    // The newline survives, and it is a visible character with a raw offset of its
+    // own — paragraph enumeration downstream counts on it.
+    map.push(nl);
+    text += '\n';
+    lineStart = nl + 1;
+  }
+
+  // The sentinel: `map.length === text.length + 1`, so an END offset always maps.
+  map.push(raw.length);
+  return { text, map };
+}
+
+export function toRawRange(v: VisibleText, start: number, end: number): [number, number] {
+  if (end <= start) {
+    const at = v.map[Math.max(0, Math.min(start, v.map.length - 1))];
+    return [at, at];
+  }
+  return [v.map[start], v.map[end - 1] + 1];
+}
+
+/**
+ * The inverse of `map`: a RAW offset in, a VISIBLE offset out.
+ *
+ * WHY IT IS NEEDED. The editor's DOM holds the RAW text — the writer's
+ * conventions are characters in the manuscript, not decorations added at render
+ * time — so a DOM selection yields RAW offsets. Anchors live in VISIBLE
+ * coordinates (the ruling: match on the words as the writer sees them, markers
+ * stripped). Something has to cross that boundary, and doing it by hand at each
+ * call site is how the two spaces get mixed.
+ *
+ * A raw offset that lands ON a marker character has no visible character of its
+ * own; it resolves to the next visible position, which is what a selection
+ * boundary should do — selecting from inside `**` starts at the word.
+ */
+
+export function toVisibleOffset(v: VisibleText, rawOffset: number): number {
+  // `map` is strictly increasing, so this is a binary search for the first
+  // visible index whose raw position is >= rawOffset.
+  let lo = 0;
+  let hi = v.text.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (v.map[mid] < rawOffset) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
 }
