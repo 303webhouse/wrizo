@@ -3867,14 +3867,6 @@ a:focus-visible,
    transition, whether open or closed — a closed panel is invisible
    (opacity:0) and inert (pointer-events:none) regardless of its own
    footprint, exactly like the sliver's already does today. */
-/* a11y audit A8 — the house's screen-reader-only utility (the standard clip
-   pattern: present to assistive tech, removed from the visual layout and
-   from normal Tab order). Used by the Tutor's reply announcement below;
-   general enough to reuse anywhere a visually-silent announcement is
-   needed later. */
-.wz-sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px;
-  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-
 .wz-tutor-panel{
   flex:0 0 auto; height:100%; overflow-y:auto; overflow-x:hidden;
   /* FX18 S2 (SV24/SV26) — Fable's ruling (2026-07-29): FX18 SUPERSEDES FX10 S1's fixed-vw
