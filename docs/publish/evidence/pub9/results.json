@@ -1,0 +1,294 @@
+{
+  "wordpress": "7.1.2",
+  "chromium": "playwright chromium-1194",
+  "results": [
+    {
+      "id": "C1",
+      "what": "GET /wp-json/ discovery from another site (no auth)",
+      "status": 200,
+      "authentication": {
+        "application-passwords": {
+          "endpoints": {
+            "authorization": "https://wp.test:8443/wp-admin/authorize-application.php"
+          }
+        }
+      },
+      "name": "Probe",
+      "exposedHeaders": {
+        "content-type": "application/json; charset=UTF-8",
+        "link": "<https://wp.test:8443/wp-json/>; rel=\"https://api.w.org/\""
+      }
+    },
+    {
+      "id": "C2",
+      "what": "POST draft, Administrator app password",
+      "status": 201,
+      "body": {
+        "id": 5,
+        "status": "draft",
+        "link": "https://wp.test:8443/?p=5",
+        "type": "post",
+        "title": "Ch. 7 — The crypt (probe)"
+      },
+      "exposedHeaders": {
+        "cache-control": "no-cache, must-revalidate, max-age=0, no-store, private",
+        "content-type": "application/json; charset=UTF-8",
+        "expires": "Wed, 11 Jan 1984 05:00:00 GMT",
+        "link": "<https://wp.test:8443/wp-json/>; rel=\"https://api.w.org/\""
+      }
+    },
+    {
+      "id": "C2b",
+      "what": "Read it back (context=edit): still a draft? words identical?",
+      "status": 200,
+      "postStatus": "draft",
+      "rawContentIdentical": true,
+      "rawTitleIdentical": true,
+      "link": "https://wp.test:8443/?p=5"
+    },
+    {
+      "id": "C3",
+      "what": "POST draft, Contributor app password",
+      "status": 201,
+      "body": {
+        "id": 6,
+        "status": "draft",
+        "link": "https://wp.test:8443/?p=6",
+        "type": "post",
+        "title": "Ch. 7 — The crypt (probe)"
+      }
+    },
+    {
+      "id": "C3b",
+      "what": "Contributor read-back: words identical after WordPress filtering?",
+      "status": 200,
+      "postStatus": "draft",
+      "rawContentIdentical": false,
+      "rawContent": "<!-- wp:heading --><h2 class=\"wp-block-heading\">The crypt</h2><!-- /wp:heading -->\n\n<!-- wp:paragraph --><p>She lit the <em>last</em> candle &amp; waited — “listen.”</p><!-- /wp:paragraph -->\n\n<!-- wp:separator --><hr class=\"wp-block-separator has-alpha-channel-opacity\" /><!-- /wp:separator -->\n\n<!-- wp:quote --><blockquote class=\"wp-block-quote\"><!-- wp:paragraph --><p>Every word, in order.</p><!-- /wp:paragraph --></blockquote><!-- /wp:quote -->"
+    },
+    {
+      "id": "C4",
+      "what": "POST status:'publish', Contributor",
+      "status": 403,
+      "body": {
+        "code": "rest_cannot_publish",
+        "message": "Sorry, you are not allowed to publish posts in this post type.",
+        "data": {
+          "status": 403
+        }
+      }
+    },
+    {
+      "id": "C5",
+      "what": "POST status:'publish', Administrator",
+      "status": 201,
+      "body": {
+        "id": 7,
+        "status": "publish",
+        "link": "https://wp.test:8443/publish-attempt-probe/",
+        "type": "post",
+        "title": "Publish attempt (probe)"
+      }
+    },
+    {
+      "id": "C6",
+      "what": "POST with a wrong application password",
+      "status": 401,
+      "body": {
+        "code": "rest_cannot_create",
+        "message": "Sorry, you are not allowed to create posts as this user.",
+        "data": {
+          "status": 401
+        }
+      }
+    },
+    {
+      "id": "C7",
+      "what": "POST with no Authorization header",
+      "status": 401,
+      "body": {
+        "code": "rest_cannot_create",
+        "message": "Sorry, you are not allowed to create posts as this user.",
+        "data": {
+          "status": 401
+        }
+      }
+    },
+    {
+      "id": "C8",
+      "what": "POST through a host that strips Authorization",
+      "status": 401,
+      "body": {
+        "code": "rest_cannot_create",
+        "message": "Sorry, you are not allowed to create posts as this user.",
+        "data": {
+          "status": 401
+        }
+      }
+    },
+    {
+      "id": "C8b",
+      "what": "Same, via ?rest_route= (no pretty permalinks)",
+      "status": 401,
+      "body": {
+        "code": "rest_cannot_create",
+        "message": "Sorry, you are not allowed to create posts as this user.",
+        "data": {
+          "status": 401
+        }
+      }
+    },
+    {
+      "id": "C8c",
+      "what": "Same, with ?_envelope=1",
+      "status": 200,
+      "envelopeStatus": 401,
+      "body": {
+        "code": "rest_cannot_create",
+        "message": "Sorry, you are not allowed to create posts as this user.",
+        "data": {
+          "status": 401
+        }
+      }
+    },
+    {
+      "id": "C8d",
+      "what": "GET /users/me through the stripping host (a cheap pre-flight check Wrizo can run)",
+      "status": 401,
+      "body": {
+        "code": "rest_not_logged_in",
+        "message": "You are not currently logged in.",
+        "data": {
+          "status": 401
+        }
+      }
+    },
+    {
+      "id": "C9",
+      "what": "POST from the HTTPS app to an http:// WordPress",
+      "status": 0,
+      "error": "TypeError: Failed to fetch"
+    },
+    {
+      "id": "C10",
+      "what": "Plain-HTTP WordPress, environment=production: valid app password",
+      "status": 401,
+      "body": {
+        "code": "rest_cannot_create",
+        "message": "Sorry, you are not allowed to create posts as this user.",
+        "data": {
+          "status": 401
+        }
+      },
+      "discoveryAuthentication": []
+    },
+    {
+      "id": "A0",
+      "what": "Open the Authorize Application URL while signed out",
+      "result": "redirected to login",
+      "landedOn": "/wp-login.php",
+      "keepsRedirectTo": true
+    },
+    {
+      "id": "A1",
+      "what": "What the writer sees (signed in as an Administrator)",
+      "result": "approval screen",
+      "heading": "Authorize Application",
+      "text": "An application would like to connect to your account. Would you like to give the application identifying itself as Wrizo access to your account? You should only do this if you trust the application in question. New Application Password Name You will be sent to https://wrizo.test:5443/wp-return.html?site_url=https://wp.test:8443&user_login=probe-admin&password=‹redacted›",
+      "appNameField": "Wrizo",
+      "buttons": [
+        "Yes, I approve of this connection",
+        "No, I do not approve of this connection"
+      ]
+    },
+    {
+      "id": "A2",
+      "what": "Approve: the redirect back to Wrizo",
+      "result": "redirected",
+      "addressBarOnArrival": "https://wrizo.test:5443/wp-return.html?site_url=https%3A%2F%2Fwp.test%3A8443&user_login=probe-admin&password=‹redacted›",
+      "addressBarAfterReplaceState": "https://wrizo.test:5443/wp-return.html",
+      "passwordReachedWrizoServerInQuery": true,
+      "wrizoServerSawThisRequestLine": "/wp-return.html?site_url=https%3A%2F%2Fwp.test%3A8443&user_login=probe-admin&password=‹redacted›",
+      "paramsReceived": {
+        "site_url": "https://wp.test:8443",
+        "user_login": "probe-admin",
+        "hasPassword": true,
+        "success": null
+      },
+      "passwordShape": {
+        "length": 29,
+        "groupsOfFour": true
+      }
+    },
+    {
+      "id": "A3a",
+      "what": "Introspect: which app password is this?",
+      "status": 200,
+      "name": "Wrizo",
+      "app_id": "6f1c2a7e-0b8d-4c55-9a51-3f2d7e9b1c40"
+    },
+    {
+      "id": "A3b",
+      "what": "Using it, create a fresh app password (rotate on arrival)",
+      "status": 201,
+      "gotNewPassword": true,
+      "body": {
+        "name": "Wrizo",
+        "app_id": "6f1c2a7e-0b8d-4c55-9a51-3f2d7e9b1c40"
+      }
+    },
+    {
+      "id": "A3c",
+      "what": "With the fresh one, revoke the one that travelled in the URL",
+      "status": 200,
+      "deleted": true
+    },
+    {
+      "id": "A3d",
+      "what": "The travelled password afterwards",
+      "status": 401,
+      "body": {
+        "code": "rest_not_logged_in",
+        "message": "You are not currently logged in.",
+        "data": {
+          "status": 401
+        }
+      }
+    },
+    {
+      "id": "A4",
+      "what": "success_url ending in #fragment (JavaScript approval path)",
+      "result": "redirected",
+      "addressBarOnArrival": "https://wrizo.test:5443/wp-return.html#connect?site_url=https%3A%2F%2Fwp.test%3A8443&user_login=probe-admin&password=‹redacted›",
+      "wrizoServerSawThisRequestLine": "/wp-return.html",
+      "paramsReceived": {
+        "site_url": "https://wp.test:8443",
+        "user_login": "probe-admin",
+        "hasPassword": true,
+        "success": null
+      }
+    },
+    {
+      "id": "A5",
+      "what": "success_url on plain http (production site)",
+      "result": "refused",
+      "message": "The Authorize Application request is not allowed. The URL must be served over a secure connection. The URL must be served over a secure connection."
+    },
+    {
+      "id": "A6",
+      "what": "Reject",
+      "result": "redirected",
+      "addressBarOnArrival": "https://wrizo.test:5443/wp-return.html?success=false"
+    }
+  ],
+  "console": [
+    "[error] Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "[error] Mixed Content: The page at 'https://wrizo.test:5443/probe.html' was loaded over HTTPS, but requested an insecure resource 'http://wp.test:8080/wp-json/wp/v2/posts'. This request has been blocked; the content must be served over HTTPS.",
+    "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+  ]
+}

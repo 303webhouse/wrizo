@@ -1,0 +1,62 @@
+Substack new-post editor URL: checks run 2026-09-30, signed out, no account, nothing posted.
+
+1 · Signed-out requests (curl, response headers only; long "error=" text trimmed with …)
+
+  https://on.substack.com/publish/post?type=newsletter
+      HTTP/2 302  location: /account/login?redirect=%2Fpublish%2Fpost%3Ftype%3Dnewsletter&error=…
+  https://on.substack.com/publish/post
+      HTTP/2 302  location: /account/login?redirect=%2Fpublish%2Fpost&error=…
+  https://on.substack.com/publish
+      HTTP/2 302  location: /account/login?redirect=%2Fpublish&error=…
+  https://on.substack.com/publish/home
+      HTTP/2 302  location: /account/login?redirect=%2Fpublish%2Fhome&error=…
+  https://on.substack.com/publish/posts
+      HTTP/2 302  location: /account/login?redirect=%2Fpublish%2Fposts&error=…
+  https://substack.com/publish/post
+      HTTP/2 404
+  https://substack.com/home
+      HTTP/2 302  location: /
+
+  CONTROL: a made-up path under /publish/
+  https://on.substack.com/publish/zzz-not-a-real-page-9431
+      HTTP/2 302  location: /account/login?redirect=%2Fpublish%2Fzzz-not-a-real-page-9431&error=…
+  CONTROL: a made-up path outside /publish/
+  https://on.substack.com/zzz-not-a-real-page-9431
+      HTTP/2 404
+
+  Following the login redirect lands on:
+  https://substack.com/sign-in?redirect=%2Fpublish%2Fpost&for_pub=on&error=…&change_user=false  (200)
+
+  Reading: every path under /publish/ is sent to sign-in, real or not. So a signed-out check cannot
+  tell whether /publish/post is a working editor URL. It proves only that /publish/* is the
+  signed-in publisher area.
+
+2 · Substack's help centre, every article, searched for editor URLs
+
+  Source: https://support.substack.com/api/v2/help_center/en-us/articles.json (the help centre's
+  public article feed; the article web pages themselves answer 403 to automated fetches).
+  Articles fetched: 387 (updated up to 2026-09-30).
+  Articles containing "/publish/post" (singular, the editor): 0.
+  Every /publish path the help centre documents:
+    /publish/document_exports  /publish/groups  /publish/home  /publish/moderation  /publish/offers
+    /publish/posts  /publish/recommendations  /publish/settings  /publish/settings/homepage_links
+    /publish/settings/podcast/edit  /publish/settings/recommendations  /publish/sponsorships
+    /publish/stats/earnings  /publish/stats/surveys  /publish/subscriber-perks  /publish/subscribers
+    /publish/tax  /publish/website-editor/home
+
+  The documented way to start a post:
+    360037831771 "How do I publish a new post on Substack?" (updated 2026-09-29):
+      "1. Go to your publication's Dashboard, click on "Create" and select "Article"."
+    29152946791188 "How can I publish on Substack?" (updated 2026-09-30):
+      "head to your [http://your.substack.com/publish/home] publisher dashboard and select
+       "Create" from either the Home or Posts tabs."
+    15754587436820 "Guide to your Substack Home" (updated 2026-09-23):
+      "Drafts can be accessed on both the [https://your.substack.com/publish/home] Home and
+       [https://your.substack.com/publish/posts] Posts tab."
+
+3 · Substack's official Developer API
+
+  https://substack.com/api-tos, "Substack Developer API Terms of Use", "Last updated: January 8, 2026".
+  The data it grants ("Authorized Data") is public creator profile information: "Name, LinkedIn
+  URL, Social identity URLs, Total subscriber count, Bestseller status, Leaderboard recognitions,
+  Profile summary, Profile URL, Publication URL". Nothing about creating or publishing posts.

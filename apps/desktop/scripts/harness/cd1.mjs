@@ -135,6 +135,7 @@ await withHarness(async (app) => {
     stripInHeader: !!document.querySelector('.chrome-top .desk-mode-strip'),
     noCrumb: !document.querySelector('.sprint-crumb'),
     actionButtons: [...document.querySelectorAll('.sprint-actions button')].map(b => b.textContent.trim()),
+    planDoor: (() => { const d = document.querySelector('.desk-mode-strip [data-page-plan-door]'); return d ? d.textContent.trim() : null; })(),
     catchAnywhere: !!document.querySelector('.desk-rail-catch, .wz-catch') || document.body.innerText.includes('Catch a thought'),
   })`);
   ok('S1: the top line reads the exact ratified strings, left-set inside the header row',
@@ -162,8 +163,13 @@ await withHarness(async (app) => {
   // elder "Plan" flight tab (→ the legacy StructureBoard, /project/:id/board),
   // so the arrow-dressed PLAN → door is now the bar's ONLY Plan word — the right
   // corner holds ['Pages', 'Plan →']. Done still scrapped; still no Catch framed.
-  ok('CD4 S2 successor: the right corner holds Pages + the PLAN → door ONLY on a project-origin page (the elder Plan flight tab retired) — Done still scrapped, no Catch anywhere on this framed surface',
-    JSON.stringify(topLine.actionButtons) === JSON.stringify(['Pages', 'Plan →']) && !topLine.catchAnywhere,
+  // FRAMED-DESK DISPLAY PASS (aa11f58, 2026-09-30; Nick: "Looks good. Let's ship these changes.") — successor of the CD4 S2
+  // check (moved VERBATIM into the PARKED section below, A4 + the immutability law): the pass moved the PLAN → door OUT of the
+  // right corner and INTO the mode strip's own row ("the mode row is ... evenly spaced through Plan"), so the right corner now
+  // holds ['Pages'] alone and the door is the strip's last item. Nothing was removed: the same door, the same handler, a new
+  // address. Done still scrapped; still no Catch framed. (Batch Eight's first pair went red on exactly this.)
+  ok('Display-pass successor (aa11f58): the right corner holds Pages ONLY on a project-origin page, and the PLAN → door stands in the MODE STRIP\'s own row — Done still scrapped, no Catch anywhere on this framed surface',
+    JSON.stringify(topLine.actionButtons) === JSON.stringify(['Pages']) && topLine.planDoor === 'Plan →' && !topLine.catchAnywhere,
     JSON.stringify(topLine));
 
   // ==========================================================================
@@ -173,7 +179,12 @@ await withHarness(async (app) => {
   ok('S2: the sliver grip is present on a framed prose page', await app.evalJs("!!document.querySelector('.wz-sliver-grip')"));
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft').click()");
   await sleep(150);
-  const draftSpotCheck = await app.evalJs("!!document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Bold\"]')");
+  // ---- PARKED - SUPERSEDED by PR #7 (3951329: the format buttons' titles carry their shortcut, "Bold (Ctrl+B)"), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The exact-title selector no longer finds Bold; the successor matches the title's leading word.
+  //
+  // const draftSpotCheck = await app.evalJs("!!document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Bold\"]')");
+  // ----------------------------------------------------------------------
+  const draftSpotCheck = await app.evalJs("!!document.querySelector('.wz-sliver-format .mode-tbtn[title^=\"Bold\"]')");
   ok('S2: opening the sliver in Draft carries the format tools (Bold present) — moved whole from ToolRail',
     draftSpotCheck, String(draftSpotCheck));
 
@@ -211,8 +222,16 @@ await withHarness(async (app) => {
   // ok('S2/S7: opening the sliver on script carries the structure picker (script\'s own hand tool)', scriptStructureCheck, String(scriptStructureCheck));
   // ------------------------------------------------------------------
   const scriptStructureRow = await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].some(b => /^Convert to/.test(b.textContent))");
-  ok('S2/S7 [DR3 successor]: opening the sliver on script still carries its structure control - now the confirm-gated Convert row, not the retired tablist',
-    scriptStructureRow, String(scriptStructureRow));
+  // ---- PARKED - SUPERSEDED by PR #7 (3951329: "Convert to Screenplay is no longer in the drawer"; the Structure zone
+  // leaves the sliver on both surfaces), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The script sliver no longer carries a structure control at all. Successor beneath
+  // asserts the absence, so a Convert row cannot return to the drawer unannounced.
+  //
+  // ok('S2/S7 [DR3 successor]: opening the sliver on script still carries its structure control - now the confirm-gated Convert row, not the retired tablist',
+  //   scriptStructureRow, String(scriptStructureRow));
+  // ----------------------------------------------------------------------
+  ok('S2/S7 [PR #7 successor]: the script sliver carries no Convert row - Structure left the drawer',
+    scriptStructureRow === false, String(scriptStructureRow));
 
   // ==========================================================================
   // S7 — ScriptEditor gains the drawer too (Page + Places), mirroring prose.
@@ -349,9 +368,26 @@ await withHarness(async (app) => {
   // the reload above remounted it closed by default.
   await openSliver(app);
   await sleep(200);
-  await app.evalJs("document.querySelector('.wz-sliver-goal-edit')?.click()");
+  // ---- PARKED - SUPERSEDED by PR #7 (7503250: the goal number is set under Settings > Progress Tracking; the foot's
+  // inline goal editor and its Clear button are gone), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The claim is unchanged: clearing the goal disables every instrument. Successor
+  // beneath clears it at its new home - an emptied Goal field, committed with Enter.
+  //
+  // await app.evalJs("document.querySelector('.wz-sliver-goal-edit')?.click()");
+  // await sleep(100);
+  // await app.evalJs("document.querySelector('.wz-sliver-goal-edit-clear')?.click()");
+  // await sleep(200);
+  // ----------------------------------------------------------------------
+  await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Settings\"]')?.click()");
+  await sleep(150);
+  await app.evalJs(`(() => {
+    const input = document.querySelector('.wz-sliver-instruments-panel input[type="number"]');
+    if (!input) return;
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  })()`);
   await sleep(100);
-  await app.evalJs("document.querySelector('.wz-sliver-goal-edit-clear')?.click()");
+  await app.evalJs("document.querySelector('.wz-sliver-instruments-panel input[type=\"number\"]')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))");
   await sleep(200);
   const clearedState = await app.evalJs(`({
     hairlineGone: !document.querySelector('.wz-sliver-goal-hairline'),
@@ -551,8 +587,14 @@ if (process.env.HARNESS_PARKED === '1') {
     await freshProsePage(app);
     const topLineParked = await app.evalJs(`({
       actionButtons: [...document.querySelectorAll('.sprint-actions button')].map(b => b.textContent.trim()),
+      planDoor: (() => { const d = document.querySelector('.desk-mode-strip [data-page-plan-door]'); return d ? d.textContent.trim() : null; })(),
       catchAnywhere: !!document.querySelector('.desk-rail-catch, .wz-catch') || document.body.innerText.includes('Catch a thought'),
     })`);
+    // FRAMED-DESK DISPLAY PASS (aa11f58, 2026-09-30) — the SAME probe-follows-reality discipline as the two notes below: the
+    // PLAN → door moved from the right corner into the mode strip's row, so all the parked probes here re-verify against the new
+    // truth (corner ['Pages'], door in the strip) while their RECORD names stay byte-identical. The gen-4 CD4 S2 successor text a
+    // probe used to match (['Pages','Plan →']) is parked verbatim in its OWN fresh entry below the three.
+    const cornerNow = (t) => JSON.stringify(t.actionButtons) === JSON.stringify(['Pages']) && t.planDoor === 'Plan →';
     // BM1 S3 (2026-07-22) — this parked entry's recorded-original NAME is kept
     // BYTE-IDENTICAL (immutability law). Only its LIVE re-verification of
     // CURRENT reality follows the new truth — exactly the pattern CD3 itself
@@ -568,7 +610,7 @@ if (process.env.HARNESS_PARKED === '1') {
     // (['Pages','Plan','Plan →']) is parked verbatim in its OWN fresh entry
     // immediately below the two (a new park cycle, never an edit-in-place).
     pok('PARKED (was "S1/cd1.1: the right corner holds Done plus the Pages/Plan flight doorway on a project-origin page — no Catch anywhere on this framed surface") — CD3: Done scrapped (Nick\'s ruling — Publish/rail/free navigation cover every exit); the right corner holds ONLY the Pages/Plan flight doorway now — live successor: this file\'s own live S1 section',
-      JSON.stringify(topLineParked.actionButtons) === JSON.stringify(['Pages', 'Plan →']) && !topLineParked.catchAnywhere,
+      cornerNow(topLineParked) && !topLineParked.catchAnywhere,
       JSON.stringify(topLineParked));
     // BM1 S3 — a NEW park cycle for the now-obsolete CD3 successor (quoted
     // VERBATIM; the prior generation's text is never edited in place): the
@@ -576,7 +618,7 @@ if (process.env.HARNESS_PARKED === '1') {
     // "ONLY the Pages/Plan flight doorway" no longer holds. Live successor:
     // this file's own live BM1 S3 successor in the S1 section.
     pok('PARKED (was "CD3 successor ...: the right corner holds ONLY the Pages/Plan flight doorway — Done scrapped (pages autosave; Publish/rail/free navigation cover every exit), no Catch anywhere on this framed surface") — BM1 S3: the PLAN → door joins the bar; the right corner now holds the Pages/Plan flight doorway PLUS PLAN → — live successor: this file\'s own live BM1 S3 successor (S1 section)',
-      JSON.stringify(topLineParked.actionButtons) === JSON.stringify(['Pages', 'Plan →']) && !topLineParked.catchAnywhere,
+      cornerNow(topLineParked) && !topLineParked.catchAnywhere,
       JSON.stringify(topLineParked));
     // CD4 S2 — a NEW park cycle for the now-obsolete BM1 S3 successor (quoted
     // VERBATIM; the prior generation's text is never edited in place): the elder
@@ -584,7 +626,14 @@ if (process.env.HARNESS_PARKED === '1') {
     // no longer holds — the bar now carries ['Pages','Plan →']. Live successor:
     // this file's own live CD4 S2 successor in the S1 section.
     pok('PARKED (was "BM1 S3 successor: the right corner holds the Pages/Plan flight doorway PLUS the PLAN → door on a project-origin page — Done still scrapped, no Catch anywhere on this framed surface") — CD4 S2: the elder Plan flight tab retires; the right corner now holds Pages + the PLAN → door ONLY ([\'Pages\',\'Plan →\']) — live successor: this file\'s own live CD4 S2 successor (S1 section)',
-      JSON.stringify(topLineParked.actionButtons) === JSON.stringify(['Pages', 'Plan →']) && !topLineParked.catchAnywhere,
+      cornerNow(topLineParked) && !topLineParked.catchAnywhere,
+      JSON.stringify(topLineParked));
+    // DISPLAY PASS (aa11f58) — a NEW park cycle for the now-obsolete CD4 S2 successor (quoted VERBATIM; the prior generation's
+    // text is never edited in place): the PLAN → door moved into the mode strip's row, so "the right corner holds Pages + the
+    // PLAN → door ONLY" no longer holds — the corner carries ['Pages'] and the door stands in the strip. Live successor: this
+    // file's own live display-pass successor in the S1 section.
+    pok('PARKED (was "CD4 S2 successor: the right corner holds Pages + the PLAN → door ONLY on a project-origin page (the elder Plan flight tab retired) — Done still scrapped, no Catch anywhere on this framed surface") — display pass (aa11f58): the PLAN → door moved into the mode strip\'s row; the right corner now holds Pages alone ([\'Pages\']) and the door is the strip\'s last item — live successor: this file\'s own live display-pass successor (S1 section)',
+      cornerNow(topLineParked) && !topLineParked.catchAnywhere,
       JSON.stringify(topLineParked));
 
     // ORIGINAL (this file's own live S7 section, generation 2, B1-era):

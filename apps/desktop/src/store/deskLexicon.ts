@@ -269,9 +269,15 @@ export type DeskTermId =
   | 'twWritingLine' | 'twLineTop' | 'twLineCenter' | 'twLineBottom'
   | 'twPageScroll' | 'footProgress' | 'footFullScreen' | 'footTypewriter' | 'footTarget'
   // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
-  | 'draftHeading' | 'draftBullet' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
+  | 'draftHeading' | 'draftBullet' | 'draftBulletCircle' | 'draftBulletSquare' | 'draftBulletStyles' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
+  | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage'
+  | 'comingSoon' | 'railTypeface' | 'goalUnitWords' | 'railPageKind'
+  | 'footSettings' | 'footMenuTypewriter' | 'footMenuProgress' | 'footMenuPreferences'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
   | 'draftConvertToScreenplay' | 'draftConvertToProse'
+  // ITEM 207 — the Type control's accessible names. NO visible captions: his law is a strip menu with the fewest marks,
+  // so each control's name lives in its aria-label, never as helper text.
+  | 'typeGroup' | 'typeFace' | 'typeSmaller' | 'typeLarger' | 'typeSize'
   // ITEM 114 (item 83 errata E4) — the page's declared KIND and, under
   // Research, its style guide. Two sub-labels join them, and they are the
   // load-bearing half of the answer to the Screenplay name collision: one zone
@@ -872,9 +878,9 @@ const CANONICAL: Record<DeskTermId, string> = {
   stylingHeading: 'Styling',
   stylingOpen: 'Open Styling',
   stylingClose: 'Close Styling',
-  stylingBold: 'Bold',
-  stylingItalic: 'Italic',
-  stylingUnderline: 'Underline',
+  stylingBold: 'Bold (Ctrl+B)',
+  stylingItalic: 'Italic (Ctrl+I)',
+  stylingUnderline: 'Underline (Ctrl+U)',
   stylingStrike: 'Strikethrough',
   // ITEM 83 M4 (R3) — the Typewriter menu. Names are Nick's latest (F1's
   // default): "Forward Lock" and "Line Fade" govern; Chamber 1's "Forward
@@ -900,11 +906,31 @@ const CANONICAL: Record<DeskTermId, string> = {
   // ITEM 83 M5 (R4) — Draft's roster. Destination-named verbs (DR3's bench
   // law): never a bare 'Convert'.
   draftHeading: 'Heading',
-  draftBullet: 'Bulleted list',
+  draftBullet: 'Round bullet',
+  draftBulletCircle: 'Hollow bullet',
+  draftBulletSquare: 'Square bullet',
+  draftBulletStyles: 'Bullet styles',
+  railTemplates: 'Templates',
+  railPageKind: 'Page kind',
+  templateOutline: 'Outline',
+  templateBibliography: 'Bibliography',
+  templateTitlePage: 'Title page',
+  comingSoon: 'Coming soon',
+  railTypeface: 'Typeface',
+  goalUnitWords: 'words',
+  footSettings: 'Settings',
+  footMenuTypewriter: 'Typewriter Mode',
+  footMenuProgress: 'Progress Tracking',
+  footMenuPreferences: 'Preferences',
   draftQuote: 'Block quote',
   draftIndent: 'Indent',
   draftOutdent: 'Outdent',
   draftSpacing: 'Line spacing',
+  typeGroup: 'Type',
+  typeFace: 'Typeface',
+  typeSmaller: 'Smaller',
+  typeLarger: 'Larger',
+  typeSize: 'Size in points',
   draftAlignment: 'Alignment',
   draftAlignLeft: 'Align left',
   draftAlignCenter: 'Align centre',

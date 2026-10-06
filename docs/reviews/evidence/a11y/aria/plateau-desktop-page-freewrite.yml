@@ -1,0 +1,29 @@
+- button "Desk menu": ⋯
+- text: The Long Winter / Chapter 1
+- tablist "Writing mode":
+  - tab "Free Write" [selected]
+  - tab "Draft"
+  - tab "Revise"
+  - tab "Workshop" [disabled]
+  - tab "Publish"
+  - button "Plan"
+- tablist "Binder view":
+  - tab "Pages" [selected]
+- complementary "Strip":
+  - button "Page"
+  - button "Plan"
+  - separator
+  - button "Drawers"
+  - separator
+  - button "Journal"
+  - button "Shelf"
+  - separator
+  - button "Settings"
+  - button "Themes"
+  - separator
+  - button "Trash"
+- text: 33 words words
+- button "Open hand tools"
+- button "Open the Tutor"
+- button "Show controls"
+- textbox "Page writing surface"

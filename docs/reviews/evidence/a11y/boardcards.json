@@ -1,0 +1,144 @@
+{
+ "popupButtons": [
+  "Open Styling",
+  "Close"
+ ],
+ "plateau": {
+  "axe": [
+   {
+    "id": "aria-hidden-focus",
+    "impact": "serious",
+    "n": 2,
+    "t": [
+     ".wz-sliver-panel ::   Focusable content should be disabled or be removed from the DOM",
+     ".wz-tutor-panel ::   Focusable content should be disabled or be removed from the DOM"
+    ]
+   },
+   {
+    "id": "aria-required-children",
+    "impact": "critical",
+    "n": 1,
+    "t": [
+     ".board-mode-strip ::   Element has children which are not allowed: button"
+    ]
+   },
+   {
+    "id": "color-contrast",
+    "impact": "serious",
+    "n": 3,
+    "t": [
+     ".crumb-item ::   Element has insufficient color contrast of 3.87 (foreground color: #80766a, background color: #1f1a16, font size: 9.8pt (13px), font weight: normal). Expected",
+     ".crumb-here ::   Element has insufficient color contrast of 2 (foreground color: #b5a998, background color: #efefef, font size: 10.0pt (13.3333px), font weight: normal). Expec",
+     ".board-telos ::   Element has insufficient color contrast of 3.87 (foreground color: #80766a, background color: #1f1a16, font size: 9.0pt (12px), font weight: normal). Expected"
+    ]
+   },
+   {
+    "id": "landmark-one-main",
+    "impact": "moderate",
+    "n": 1,
+    "t": [
+     "html ::   Document does not have a main landmark"
+    ]
+   },
+   {
+    "id": "page-has-heading-one",
+    "impact": "moderate",
+    "n": 1,
+    "t": [
+     "html ::   Page must have a level-one heading"
+    ]
+   },
+   {
+    "id": "region",
+    "impact": "moderate",
+    "n": 4,
+    "t": [
+     ".sprint-crumb ::   Some page content is not contained by landmarks",
+     ".board-mode-strip ::   Some page content is not contained by landmarks",
+     ".board-telos ::   Some page content is not contained by landmarks"
+    ]
+   }
+  ],
+  "cards": [
+   {
+    "cls": "board-box",
+    "role": null,
+    "tabIndex": -1,
+    "name": "The snow comes early",
+    "w": 435,
+    "h": 87,
+    "focusables": []
+   }
+  ],
+  "cardStopsReachedByTab": [],
+  "cardCount": 1
+ },
+ "flux": {
+  "axe": [
+   {
+    "id": "aria-hidden-focus",
+    "impact": "serious",
+    "n": 2,
+    "t": [
+     ".wz-sliver-panel ::   Focusable content should be disabled or be removed from the DOM",
+     ".wz-tutor-panel ::   Focusable content should be disabled or be removed from the DOM"
+    ]
+   },
+   {
+    "id": "aria-required-children",
+    "impact": "critical",
+    "n": 1,
+    "t": [
+     ".board-mode-strip ::   Element has children which are not allowed: button"
+    ]
+   },
+   {
+    "id": "color-contrast",
+    "impact": "serious",
+    "n": 1,
+    "t": [
+     ".crumb-here ::   Element has insufficient color contrast of 1.96 (foreground color: #8fb4ac, background color: #efefef, font size: 10.0pt (13.3333px), font weight: normal). Ex"
+    ]
+   },
+   {
+    "id": "landmark-one-main",
+    "impact": "moderate",
+    "n": 1,
+    "t": [
+     "html ::   Document does not have a main landmark"
+    ]
+   },
+   {
+    "id": "page-has-heading-one",
+    "impact": "moderate",
+    "n": 1,
+    "t": [
+     "html ::   Page must have a level-one heading"
+    ]
+   },
+   {
+    "id": "region",
+    "impact": "moderate",
+    "n": 4,
+    "t": [
+     ".sprint-crumb ::   Some page content is not contained by landmarks",
+     ".board-mode-strip ::   Some page content is not contained by landmarks",
+     ".board-telos ::   Some page content is not contained by landmarks"
+    ]
+   }
+  ],
+  "cards": [
+   {
+    "cls": "board-box",
+    "role": null,
+    "tabIndex": -1,
+    "name": "The snow comes early",
+    "w": 435,
+    "h": 87,
+    "focusables": []
+   }
+  ],
+  "cardStopsReachedByTab": [],
+  "cardCount": 1
+ }
+}

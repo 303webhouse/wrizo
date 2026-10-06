@@ -588,9 +588,25 @@ await withHarness(async (app) => {
   // optionOnScript.toggle === false && optionOnScript.iconCount === 2 && optionOnScript.aria === false,
   // JSON.stringify(optionOnScript));
   // ------------------------------------------------------------------
-  ok('S3 [R12 successor]: the typewriter option IS present on a screenplay page - R12 reverses S3s withdrawal; the foot is universal on page-writing surfaces',
-    optionOnScript.toggle === true || optionOnScript.aria === true,
-    JSON.stringify(optionOnScript));
+  // ---- PARKED - SUPERSEDED by PR #7 (19d2c02: the foot is one three-dot Settings menu; the Typewriter icon became its "Typewriter Mode" section), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. Generation 2 of this check; generation 1 is parked above.
+  //
+  // ok('S3 [R12 successor]: the typewriter option IS present on a screenplay page - R12 reverses S3s withdrawal; the foot is universal on page-writing surfaces',
+  //   optionOnScript.toggle === true || optionOnScript.aria === true,
+  //   JSON.stringify(optionOnScript));
+  // ----------------------------------------------------------------------
+  await app.evalJs(`document.querySelector('.wz-sliver-instruments-row [aria-label="Settings"]')?.click()`);
+  await sleep(250);
+  const scriptSettings = await app.evalJs(`(() => {
+    const panel = document.querySelector('.wz-sliver-instruments .mode-settings');
+    if (!panel) return { panelOpen: false };
+    return { panelOpen: true, heads: [...panel.querySelectorAll('h4')].map(h => (h.textContent || '').trim()), hasTypewriterRow: (panel.textContent || '').includes('Typewriter') };
+  })()`);
+  await app.evalJs(`document.querySelector('.wz-sliver-instruments-row [aria-label="Settings"]')?.click()`);
+  await sleep(150);
+  ok('S3 [PR #7 successor]: the typewriter option IS present on a screenplay page - R12 stands; it is the "Typewriter Mode" section of the foot\'s one Settings menu',
+    scriptSettings.panelOpen === true && scriptSettings.heads.includes('Typewriter Mode'),
+    JSON.stringify(scriptSettings));
   // ---- PARKED — SUPERSEDED by item 83 M8 (R12), 2026-08-25 ----------
   // Kept VERBATIM and no longer run. SC1 S3 recorded the typewriter as
   // WITHDRAWN from screenplay, explicitly 'pending Nick's own revision of
@@ -603,9 +619,16 @@ await withHarness(async (app) => {
   // gearOnScript.panelOpen === true && gearOnScript.hasTypewriterRow === false,
   // JSON.stringify(gearOnScript));
   // ------------------------------------------------------------------
-  ok('S3 [R12 successor]: the screenplay foot carries its Typewriter instrument, and the menu it opens is the R3 cluster - no live switch that does nothing, because the switch now governs',
-    gearOnScript.panelOpen === true,
-    JSON.stringify(gearOnScript));
+  // ---- PARKED - SUPERSEDED by PR #7 (19d2c02: the foot is one three-dot Settings menu; the Typewriter icon became its "Typewriter Mode" section), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. Generation 2 of this check; generation 1 is parked above.
+  //
+  // ok('S3 [R12 successor]: the screenplay foot carries its Typewriter instrument, and the menu it opens is the R3 cluster - no live switch that does nothing, because the switch now governs',
+  //   gearOnScript.panelOpen === true,
+  //   JSON.stringify(gearOnScript));
+  // ----------------------------------------------------------------------
+  ok('S3 [PR #7 successor]: the screenplay Settings menu carries the Typewriter switch itself - no live switch that does nothing, because the switch now governs',
+    scriptSettings.panelOpen === true && scriptSettings.hasTypewriterRow === true,
+    JSON.stringify(scriptSettings));
 
   // ...and the withdrawal is SCRIPT-ONLY. This is the guard that the
   // amendment did not leak: prose still runs the engine and still offers the
@@ -644,9 +667,25 @@ await withHarness(async (app) => {
   // && proseUntouched.toggle === true && proseUntouched.iconCount === 3,
   // JSON.stringify(proseUntouched));
   // ------------------------------------------------------------------
-  ok('S3 [R12 successor]: PROSE is untouched - it still runs the typewriter, still carries the FX4 quarter-down start offset, and still offers the option in its own sliver',
-    proseUntouched.dataTypewriter === 'true' && proseUntouched.startOffsetPx > 100 && proseUntouched.toggle === true,
-    JSON.stringify(proseUntouched));
+  // ---- PARKED - SUPERSEDED by PR #7 (19d2c02: the foot is one three-dot Settings menu; the Typewriter icon became its "Typewriter Mode" section), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. Generation 2 of this check; generation 1 is parked above.
+  //
+  // ok('S3 [R12 successor]: PROSE is untouched - it still runs the typewriter, still carries the FX4 quarter-down start offset, and still offers the option in its own sliver',
+  //   proseUntouched.dataTypewriter === 'true' && proseUntouched.startOffsetPx > 100 && proseUntouched.toggle === true,
+  //   JSON.stringify(proseUntouched));
+  // ----------------------------------------------------------------------
+  await app.evalJs(`document.querySelector('.wz-sliver-instruments-row [aria-label="Settings"]')?.click()`);
+  await sleep(250);
+  const proseSettings = await app.evalJs(`(() => {
+    const panel = document.querySelector('.wz-sliver-instruments .mode-settings');
+    if (!panel) return { panelOpen: false };
+    return { panelOpen: true, heads: [...panel.querySelectorAll('h4')].map(h => (h.textContent || '').trim()), hasTypewriterRow: (panel.textContent || '').includes('Typewriter') };
+  })()`);
+  await app.evalJs(`document.querySelector('.wz-sliver-instruments-row [aria-label="Settings"]')?.click()`);
+  await sleep(150);
+  ok('S3 [PR #7 successor]: PROSE is untouched - it still runs the typewriter, still carries the FX4 quarter-down start offset, and still offers "Typewriter Mode" in its own Settings menu',
+    proseUntouched.dataTypewriter === 'true' && proseUntouched.startOffsetPx > 100 && proseSettings.panelOpen === true && proseSettings.heads.includes('Typewriter Mode'),
+    JSON.stringify({ ...proseUntouched, proseSettings }));
 
   // ======================================================================
   // S4 — the seated room (SC-V1: "the page is in a weird spot, the side

@@ -1,0 +1,29 @@
+- button "Desk menu": ⋯
+- text: The Long Winter /
+- button "Chapter beats"
+- tablist "Board mode":
+  - tab "Open" [selected]
+  - tab "Storyboard"
+  - tab "Outline"
+  - button "Page"
+- button "Pair with a page…"
+- text: The plan serves the page.
+- complementary "Strip":
+  - button "Page"
+  - button "Plan"
+  - separator
+  - button "Drawers"
+  - separator
+  - button "Journal"
+  - button "Shelf"
+  - separator
+  - button "Settings"
+  - button "Themes"
+  - separator
+  - button "Trash"
+- button "Open hand tools"
+- button "Open the Tutor"
+- button "New Card"
+- button "New Page Card"
+- button "Load a Deck"
+- button "Connect a Page"

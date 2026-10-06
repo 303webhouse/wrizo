@@ -74,6 +74,7 @@ const freshScriptPage = async (app, width = 1400, height = 900) => {
   await sleep(250);
 };
 
+const fx3Stage = {};   // the prose stage bottoms, kept for the parked leg's records
 const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
 
 await withHarness(async (app) => {
@@ -89,8 +90,20 @@ await withHarness(async (app) => {
     const fence = stage.bottom - paper.bottom;
     ok(`S1 @ ${width}px (prose): the paper's bottom edge sits within the 32-48px fence of the stage's own bottom`,
       fence >= 30 && fence <= 50, JSON.stringify({ stageBottom: stage.bottom, paperBottom: paper.bottom, fence }));
-    ok(`S1 @ ${width}px (prose): no dead band below the frame — the stage itself reaches near the viewport's own bottom`,
-      900 - stage.bottom < 60, `stage.bottom=${stage.bottom} viewportHeight=900`);
+    // ---- PARKED - SUPERSEDED by the framed-desk display pass (aa11f58, 2026-09-30) ----------------------------------------
+    // Kept VERBATIM and no longer run. TRACED: the pass set `.desk-mode-tab` from font-size 13px to 10.4px, which makes the mode
+    // row 2px shorter; the stage's HEIGHT is a fixed `calc(100vh - var(--fx3-chrome-budget))` (167px, unchanged), so the whole
+    // stage rides 2px higher and its bottom went from 842 to 840 in a 900px viewport (measured: 842 on d4dc32e's pair, 840 on
+    // Batch Eight's). The band below it is therefore 60px, and `< 60` fails by exactly that 2px - no dead band has opened; the
+    // paper's own rect is byte-identical (cd2.mjs asserts it). Closing the 2px would mean changing the chrome budget, which
+    // resizes the paper: not done here.
+    //
+    // ok(`S1 @ ${width}px (prose): no dead band below the frame — the stage itself reaches near the viewport's own bottom`,
+    //   900 - stage.bottom < 60, `stage.bottom=${stage.bottom} viewportHeight=900`);
+    // ------------------------------------------------------------------
+    fx3Stage[width] = stage.bottom;
+    ok(`S1 @ ${width}px (prose) [display-pass successor]: no dead band below the frame — the stage's bottom sits EXACTLY 60px above the viewport's (58px before the display pass's 2px-shorter mode row, aa11f58), no more`,
+      900 - stage.bottom === 60, `stage.bottom=${stage.bottom} viewportHeight=900`);
 
     // SC1 S1 (2026-07-24) — the ORIGINAL check ("the sheet's bottom edge sits
     // within the same 32-48px fence") is SUPERSEDED and parked verbatim in
@@ -231,7 +244,12 @@ await withHarness(async (app) => {
   const pageRectBeforeGear = await app.evalJs(rectOf('.mode-pagecol'));
   await app.evalJs(`(() => {
     const row = document.querySelector('.wz-sliver-instruments-row');
-    [...row.querySelectorAll('button')][1].click(); // typewriter, GEAR, instruments
+    // ---- PARKED - SUPERSEDED by PR #7 (19d2c02: the foot is one three-dot "Settings" menu; there is no second button to count to), 2026-10-02 ----
+    // Kept VERBATIM and no longer run. The gear's panel is the Settings menu now; the successor opens it by name.
+    //
+    // [...row.querySelectorAll('button')][1].click(); // typewriter, GEAR, instruments
+    // ----------------------------------------------------------------------
+    [...row.querySelectorAll('button')].find(b => b.getAttribute('aria-label') === 'Settings').click(); // the one Settings menu
   })()`);
   await sleep(150);
   const gearPanelOpen = await app.evalJs("!!document.querySelector('.wz-sliver-instruments .mode-settings')");
@@ -303,8 +321,14 @@ await withHarness(async (app) => {
   // ok('SC1 S3 [R12 successor]: the script slivers foot row carries THREE instruments again - R12 returns the typewriter to screenplay',
   // footRow.iconCount === 3, JSON.stringify(footRow));
   // ------------------------------------------------------------------
-  ok('SC1 S3 [E2 successor]: the script sliver still carries all THREE instruments - TYPEWRITER and PROGRESS in the row, FULL SCREEN relocated to the progress bar line; R12 returning the typewriter to screenplay is untouched by the move',
-    footRow.iconCount === 2 && footRow.fullScreenInFoot === true, JSON.stringify(footRow));
+  // ---- PARKED - SUPERSEDED by PR #7 (19d2c02: the foot is ONE three-dot "Settings" menu holding Typewriter Mode, Progress Tracking and Preferences; Full Screen leaves the drawer), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The row holds one button now, and Full Screen stays on the desk corner menu.
+  //
+  // ok('SC1 S3 [E2 successor]: the script sliver still carries all THREE instruments - TYPEWRITER and PROGRESS in the row, FULL SCREEN relocated to the progress bar line; R12 returning the typewriter to screenplay is untouched by the move',
+  //   footRow.iconCount === 2 && footRow.fullScreenInFoot === true, JSON.stringify(footRow));
+  // ----------------------------------------------------------------------
+  ok('SC1 S3 [PR #7 successor]: the script sliver foot is ONE Settings button, and Full Screen is not in the drawer',
+    footRow.iconCount === 1 && footRow.fullScreenInFoot === false, JSON.stringify(footRow));
   ok('S5 (script): no literal "Typewriter" TEXT NODE anywhere in the sliver panel',
     !footRow.hasTypewriterTextNode, JSON.stringify(footRow));
   // ---- PARKED - SUPERSEDED by item 83 M8 (R12), 2026-08-25 ----------
@@ -315,8 +339,21 @@ await withHarness(async (app) => {
   // ok('SC1 S3 (was "S5 (script): the typewriter toggle\'s aria-label still carries the word, for assistive tech"): there is no typewriter aria-label on a script page because there is no toggle — the affordance is absent to assistive tech exactly as it is to the eye, never merely hidden from one of them',
   // !footRow.typewriterAriaLabelPresent, JSON.stringify(footRow));
   // ------------------------------------------------------------------
-  ok('SC1 S3 [R12 successor]: the typewriter aria-label IS present on a script page - the affordance returns to both the eye and assistive tech together',
-    footRow.typewriterAriaLabelPresent === true, JSON.stringify(footRow));
+  // ---- PARKED - SUPERSEDED by PR #7 (19d2c02: the foot is ONE three-dot "Settings" menu holding Typewriter Mode, Progress Tracking and Preferences; Full Screen leaves the drawer), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The typewriter has no foot icon of its own to carry an aria-label; it is the Settings menu's first section. R12's claim (the option is offered on screenplay) is re-made there.
+  //
+  // ok('SC1 S3 [R12 successor]: the typewriter aria-label IS present on a script page - the affordance returns to both the eye and assistive tech together',
+  //   footRow.typewriterAriaLabelPresent === true, JSON.stringify(footRow));
+  // ----------------------------------------------------------------------
+  await app.evalJs("document.querySelector('.wz-sliver-instruments-row [aria-label=\"Settings\"]')?.click()");
+  await sleep(200);
+  const scriptMenu = await app.evalJs(`(() => {
+    const panel = document.querySelector('.wz-sliver-instruments-panel');
+    return panel ? { headings: [...panel.querySelectorAll('h4')].map(h => h.textContent), typewriterRow: [...panel.querySelectorAll('.mode-crow')].some(r => (r.firstElementChild || {}).textContent === 'Typewriter') } : { headings: [] }; })()`);
+  await app.evalJs("document.querySelector('.wz-sliver-instruments-row [aria-label=\"Settings\"]')?.click()");
+  await sleep(200);
+  ok('SC1 S3 [PR #7 successor]: on a script page the typewriter is still offered - the Settings menu opens on Typewriter Mode, with its Typewriter switch',
+    !!scriptMenu && scriptMenu.headings[0] === 'Typewriter Mode' && scriptMenu.typewriterRow === true, JSON.stringify(scriptMenu));
 
   // Repeat the same three assertions on prose (the brief names both
   // surfaces; S7's mirroring convention applies to S5 too).
@@ -341,15 +378,34 @@ await withHarness(async (app) => {
   // ok('S5 (prose): the sliver foot row is present with exactly THREE icons',
   // footRowProse.iconCount === 3, JSON.stringify(footRowProse));
   // ------------------------------------------------------------------
-  ok('S5 (prose) [E2 successor]: the prose sliver still carries all THREE instruments - TYPEWRITER and PROGRESS in the row, FULL SCREEN on the progress bar line',
-    footRowProse.iconCount === 2 && footRowProse.fullScreenInFoot === true, JSON.stringify(footRowProse));
+  // ---- PARKED - SUPERSEDED by PR #7 (19d2c02: the foot is ONE three-dot "Settings" menu holding Typewriter Mode, Progress Tracking and Preferences; Full Screen leaves the drawer), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The prose twin of the script park above.
+  //
+  // ok('S5 (prose) [E2 successor]: the prose sliver still carries all THREE instruments - TYPEWRITER and PROGRESS in the row, FULL SCREEN on the progress bar line',
+  //   footRowProse.iconCount === 2 && footRowProse.fullScreenInFoot === true, JSON.stringify(footRowProse));
+  // ----------------------------------------------------------------------
+  ok('S5 (prose) [PR #7 successor]: the prose sliver foot is ONE Settings button, and Full Screen is not in the drawer',
+    footRowProse.iconCount === 1 && footRowProse.fullScreenInFoot === false, JSON.stringify(footRowProse));
   ok('S5 (prose): no literal "Typewriter" TEXT NODE anywhere in the sliver panel',
     !footRowProse.hasTypewriterTextNode, JSON.stringify(footRowProse));
   // SC1 S3 — FX3 S5's aria-label claim survives whole; it just lives on the
   // surface that still HAS the toggle. Asserting it here is what keeps the
   // withdrawal script-only rather than an app-wide accessibility regression.
-  ok('S5 (prose): the typewriter toggle\'s aria-label still carries the word, for assistive tech (unchanged by SC1 — prose keeps the option)',
-    footRowProse.typewriterAriaLabelPresent, JSON.stringify(footRowProse));
+  // ---- PARKED - SUPERSEDED by PR #7 (19d2c02: the foot is ONE three-dot "Settings" menu holding Typewriter Mode, Progress Tracking and Preferences; Full Screen leaves the drawer), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The prose twin of the script aria-label park above.
+  //
+  // ok('S5 (prose): the typewriter toggle\'s aria-label still carries the word, for assistive tech (unchanged by SC1 — prose keeps the option)',
+  //   footRowProse.typewriterAriaLabelPresent, JSON.stringify(footRowProse));
+  // ----------------------------------------------------------------------
+  await app.evalJs("document.querySelector('.wz-sliver-instruments-row [aria-label=\"Settings\"]')?.click()");
+  await sleep(200);
+  const proseMenu = await app.evalJs(`(() => {
+    const panel = document.querySelector('.wz-sliver-instruments-panel');
+    return panel ? { headings: [...panel.querySelectorAll('h4')].map(h => h.textContent), typewriterRow: [...panel.querySelectorAll('.mode-crow')].some(r => (r.firstElementChild || {}).textContent === 'Typewriter') } : { headings: [] }; })()`);
+  await app.evalJs("document.querySelector('.wz-sliver-instruments-row [aria-label=\"Settings\"]')?.click()");
+  await sleep(200);
+  ok('S5 (prose) [PR #7 successor]: prose still offers the typewriter - the Settings menu opens on Typewriter Mode, with its Typewriter switch',
+    !!proseMenu && proseMenu.headings[0] === 'Typewriter Mode' && proseMenu.typewriterRow === true, JSON.stringify(proseMenu));
 
   // -- The instruments panel: opens, carries the three controls (on/off,
   // unit preference, target value), and closes on a keystroke through the
@@ -371,7 +427,12 @@ await withHarness(async (app) => {
   const opened = await app.evalJs(`(() => {
     const row = document.querySelector('.wz-sliver-instruments-row');
     const btns = [...row.querySelectorAll('button')];
-    const b = btns.find(x => (x.getAttribute('aria-label')||'') === 'Progress');
+  // ---- PARKED - SUPERSEDED by PR #7 (19d2c02: the foot is ONE three-dot "Settings" menu holding Typewriter Mode, Progress Tracking and Preferences; Full Screen leaves the drawer), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. Progress Tracking is a section of the Settings menu; the successor opens that menu by name.
+  //
+  //   const b = btns.find(x => (x.getAttribute('aria-label')||'') === 'Progress');
+  // ----------------------------------------------------------------------
+    const b = btns.find(x => (x.getAttribute('aria-label')||'') === 'Settings');
     if (b) b.click();
     return btns.length;
   })()`);
@@ -515,6 +576,11 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // DISPLAY PASS (aa11f58) - TWO parks: S1's prose "no dead band" checks at 1280 and 2200 (the stage rides 2px higher).
+  for (const w of [1280, 2200]) {
+    pok(`PARKED (was "S1 @ ${w}px (prose): no dead band below the frame — the stage itself reaches near the viewport's own bottom") — display pass (aa11f58): the mode row is 2px shorter and the stage's height is fixed, so the band is exactly 60px (was 58); live successor: this file's S1 @ ${w}px (prose) [display-pass successor]`,
+      900 - fx3Stage[w] === 60, `stage.bottom=${fx3Stage[w]} viewportHeight=900`);
+  }
   await withHarness(async (app) => {
     // ORIGINAL: await freshProsePage(app, 1280, 900); const startOffsetInfo
     // = await app.evalJs(`(() => { const stage = document.querySelector(

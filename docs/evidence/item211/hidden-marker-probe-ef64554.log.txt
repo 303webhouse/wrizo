@@ -1,0 +1,22 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+P1a  ArrowRight from just BEFORE a hidden `**`: how far does one press move the caret (raw offsets)?
+      -> {"start":{"off":3,"around":"aa |**b"},"afterOne":{"off":4,"around":"a *|*bo"},"afterTwo":{"off":5,"around":" **|bol"}}
+P1b  ArrowLeft from the first letter of the styled word: does it stop ON the invisible marker characters (an invisible stop) before leaving them?
+      -> {"from":5,"afterOne":{"off":4,"around":"a *|*bo"},"afterTwo":{"off":3,"around":"aa |**b"}}
+P2  typing at the end of a styled word: the two raw positions that LOOK the same store differently - so the editor needs its own rule for which one a caret is
+      -> {"insideBeforeClosing":"aa **boldX** zz","outsideAfterClosing":"aa **bold**Y zz"}
+P3  Backspace with the caret at the start of the styled word (right after the hidden opening `**`)
+      -> {"stored":"aa *bold** zz"}
+P4  Delete with the caret at the end of the styled word (right before the hidden closing `**`)
+      -> {"stored":"aa **bold* zz"}
+P3b  Backspace on the ONLY letter of a one-letter styled word: does the emptied pair go with it?
+      -> {"stored":"aa **** zz"}
+P5  copy of the visibly-selected words "bold" with its neighbours: what does Selection.toString / a copy event carry (are the hidden markers in it)?
+      -> {"selectionToString":" **bold** ","copyEventSaw":" **bold** "}
+P6  cut the letters "bold" (inside the pair) then paste at the start: stored text after the cut, and after the paste
+      -> {"afterCut":"aa **** zz","afterPaste":"boldaa **** zz"}
+P7  an IME composition typed at the end of the styled word (before the hidden closing `**`)
+      -> {"stored":"aa **boldab** zz","caret":{"off":11,"around":"dab|** "}}
+
+9 rows

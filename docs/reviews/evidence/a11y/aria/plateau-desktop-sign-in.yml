@@ -1,0 +1,7 @@
+- button "Enter full screen": Full screen
+- img "Wrizo"
+- text: For humans writing Welcome back.
+- textbox "you@example.com"
+- textbox "password"
+- button "Sign in"
+- text: New here? Create an account ← back

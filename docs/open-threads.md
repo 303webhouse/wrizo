@@ -23554,3 +23554,453 @@ Fable’s rule that a product conflict never gets resolved by this desk.** `batc
 three-way-merged commit (`894090a`), tree clean, nothing further attempted. **Remaining to merge once this
 is resolved: 204 storage @ `13cd415`, 213 @ `c648c56`, 215 @ `d63853f`, 217 @ `cbd4dc6`, 163 @ `c9e07c2`, 138
 @ `66baf6b`.**
+
+## BATCH EIGHT: 8 OF 9 MERGED (163 HANDED UP); THE MECHANICAL UNIONS SHOWN; CI DOCS MERGED; SECURITY POLICY; FOUR ACCESSIBILITY ITEMS REGISTERED — 2026-09-30 (chat 1)
+
+**THE CONFLICT, RESOLVED AS A MECHANICAL UNION (Fable’s rule): `item204-engine` @ `13cd415`** merged into
+`batch-eight`. **`apps/desktop/src/types/index.ts`:** 207’s `StoredFace` block and 204’s `ProofingRecord`
+block each kept BYTE-FOR-BYTE — verified programmatically (each extracted from its own side’s full file and
+confirmed present, unmodified, in the merged result) — one blank line between them, nothing else touched.
+**Commit `62381f4`.**
+
+**A SECOND, SAME-CLASS CONFLICT FOUND MERGING `item-storage-full` @ `c648c56` (213 step 1): `persistence.ts`,
+lines 7–11** — two independent import statements (`clearProofingLocal` from `./proofing`;
+`reportFlushFailed`/`reportFlushOk`/`reportStorageUsage` from `./storageHealth`), same point. **Both kept,
+nothing edited. Commit `25c1fb2`.**
+
+**215 (`tutor20-live-defect` @ `d63853f`) and 217 (`revise-spelling` @ `cbd4dc6`) merged clean, no conflict.**
+
+**163 (`item163-location-in` @ `c9e07c2`): NOT a pure append-append — ABORTED, HANDED UP, not resolved.**
+`CascadePanels.tsx`: HEAD already imports `{ firstLine, plainLines }` from `../store/entryText` (210’s own
+addition, already in `batch-eight` via r3); 163 imports `{ firstLine }` from the SAME module plus a new
+`{ boardDrawerLine }` from `../store/pageHome`. **Reconciling these means EDITING an import-specifier list,
+not concatenating two self-contained blocks — and duplicating both import lines verbatim would fail `tsc`
+(duplicate `firstLine` binding). This is not the case the mechanical-union rule covers. HANDED TO ITS OWNER
+(163’s lane) AND TO WHOEVER ADDED `plainLines` (item 210, on r3) to reconcile the import list.** `138
+(`item138-pin-tall` @ `66baf6b`) merged clean behind it, no conflict** (commit `d2c0a64`).
+
+**`tsc` x2 EXIT 0 and `build:web` EXIT 0 on the assembled tree** (8 of 9 items). **One build fix needed and
+done: `pnpm install`** — 207’s six new `@fontsource*` packages were in `package.json` but not yet in
+`node_modules`; after install, `build:web` succeeded (615.90 kB main chunk, a pre-existing size warning, not
+a defect of this merge).
+
+**`batch-eight` PUSHED @ `d2c0a64`. NOT GRANTED FOR A PAIR — 163 is still outside it; Fable’s order named
+all nine, and this desk is not dropping one without his word.**
+
+**MERGED ON `main` (docs only): `cloud-pub9-probe` @ `a9016f5`** (the WordPress/Substack probe, 16 files,
++1179) **and `cloud-a11y-audit` @ `9c15c86`** (the accessibility audit, report + evidence, no code, 22
+files, +2303).
+
+**SECURITY POLICY, RECORDED (Fable): THE REPO IS PUBLIC** (Cloud measured `private: false`). **Until Nick
+makes it private, the ledger names NO security weakness** — record only “server security review received;
+fixes registered privately.” **`cloud-security-review` stays OFF origin until the repo is private** —
+checked: no such branch exists on origin now.
+
+**FOUR ACCESSIBILITY ITEMS REGISTERED, from the audit (Fable):**
+- **ITEM 220 — Esc leaves the writing surface (a keyboard trap).** Owner FIX, small, AHEAD OF 211.
+- **ITEM 221 — sign-in: “Create an account” and “back” keyboard-reachable; hint contrast.** Owner INK.
+- **ITEM 222 — the Tutor’s replies announced to screen readers.** Owner INK.
+- **ITEM 223 — board cards keyboard-operable.** Owner PW, AFTER Experiment 1.
+**NOT a new item — FOLDED INTO 216 (Cursor-pass follow-ups, owner TOOLS):** hidden panels not focusable;
+panels take focus and close on Esc; mode tabs and two sub-24px controls get larger hit areas.
+Registry: next free **224**.
+
+**211: GO (Fable) — FIX builds it on a branch off r3, behind a switch; NOT in Batch Eight.** (Consistent
+with the earlier entry; restated here per this relay.)
+
+## GRANT: FIX, item 220 escexit + item210 RE-RUN ON item-esc-exit @ 340506e — 2026-09-30 (chat 1)
+
+**FIX’S REQUEST, VERIFIED BEFORE GRANTING:** the standing grant (`fix-item210-211-probe-ef64554-
+20260930`) was unused — its run finished and nothing since has touched the box (**0
+`ws-runtime-verify` browsers, 0 `run-suite`/harness processes**). **`340506e` is the origin tip of
+`item-esc-exit`** (“Merge branch ‘item-writing-r3’ into `item-esc-exit`”) — **item 220’s own branch**.
+
+**GRANT REWRITTEN: lane FIX — the escexit + item210 re-run on `item-esc-exit` @ `340506e`.**
+
+## NICK’S WORDS ON THE PUBLIC REPO AND LOGIN OPTIONS; THE SECURITY STANDING RULE; ITEMS 224–226; 163 RESOLVED ON BATCH EIGHT (ALL NINE MERGED, tsc + build:web CLEAN) — 2026-09-30 (chat 1)
+
+**NICK’S WORDS, verbatim as relayed (the “---” his):**
+
+> “1. It's meant to be public. When we make it private, we can't build from all of our
+> environments. This has been something I've tried addressing twice before --- it has to
+> stay public for now. 2. Yes, but I would like two new login options: a guest login for
+> beta testers, and a mock user account filled with every kind of writing project we're
+> attempting to make the app usable full including the journal, various writing projects, a
+> screenplay, and connected boards for each project (we can build this later if it would be
+> better to wait until all the major features/architecture updates are in)”
+
+**STANDING RULE (Fable, by his word): the repo stays public — he has tried making it private twice before
+and it broke building from every environment. NO SECURITY WEAKNESS enters the repo or the ledger until it is
+fixed. The review travels Nick → Fable only.**
+
+**REGISTERED, from his second answer:**
+- **ITEM 224 — sign-up by invite code until launch, plus a per-person Tutor budget.** Owner INK, NOW, under
+  “server hardening.”
+- **ITEM 225 — a guest login for beta testers, by invite link.** PLAN DESK designs.
+- **ITEM 226 — the sample account** (journal, several writing projects, a screenplay, connected boards per
+  project) — **AFTER the major features/architecture land**, per his own “we can build this later”; its
+  content can later seed guests.
+Registry: next free **227**.
+
+**163, RESOLVED (Fable’s word: the same mechanical class as append-append — an IMPORT-SPECIFIER UNION,
+both sides’ imported names kept, nothing renamed, no other line touched):** `CascadePanels.tsx` now reads
+`import { boardDrawerLine } from '../store/pageHome'; import { firstLine, plainLines } from
+'../store/entryText';` — **verified by diff: exactly those two lines changed, nothing else in the file.**
+
+**BATCH EIGHT: ALL NINE MERGED. `tsc` x2 and `build:web` both exit 0 again on the full tree.** `batch-eight`
+pushed @ `9c8d5c3`. **NOT YET GRANTED FOR A PAIR** — per Fable’s order, that waits for FIX’s box-free line
+(FIX’s `item-esc-exit` short use is granted and the grant file still names FIX; 0 harness processes right
+now, but no box-free line has arrived).**
+
+**ACCEPTED FOR BATCH NINE (Fable): INK’s `a11y-signin` @ `3b0bf91` (item 221) and `a11y-tutor-live-region` @
+`40939b4` (item 222).** Not merged now — Batch Nine, not Eight.
+
+**RULED (Fable): TOOLS’ 213 step 2 is a SYNCHRONOUS write-ahead journal** (details in TOOLS’ own block — not
+carried in this relay; recorded as a heading for now, not a design).
+
+## GRANT: FIX, ESCEXIT RE-RUN ON item-esc-exit @ 8245b3f (TIP MOVED FOR FABLE’S THREE CHANGES) — 2026-09-30 (chat 1)
+
+**FIX’S BOX-FREE LINE, VERIFIED:** `340506e`’s run done, 0 browsers, both logs committed under
+`docs/evidence/`. **ONE MORE SHORT GRANT REQUESTED: the tip moved to `8245b3f`** (“Esc exit: screen-reader
+hint (lexicon), the screenplay surface gets the same exit, the 60 ms recount named and measured…” — Fable’s
+three changes) — **FIX had not run under the old grant’s SHA.** **Verified: 0 browsers, 0 harness
+processes; `8245b3f` is the origin tip.**
+
+**GRANT REWRITTEN: lane FIX — escexit on `item-esc-exit` @ `8245b3f`, a single file.** **This precedes
+Batch Eight’s pair grant** — on THIS run’s box-free line, this desk grants the Batch Eight pair and sends
+Fable its SHA, per his order.
+
+## BATCH EIGHT PAIR — REFUSED SAFELY, A LIVE escexit RUN STILL ON THE BOX; WAITING FOR FIX’S REAL BOX-FREE LINE — 2026-09-30 (chat 1)
+
+**GRANTED THE PAIR** (lane CHAT1, `chat1-batch8-pair-9c8d5c3-20260930`) **and launched it on `batch-eight`
+@ `9c8d5c3`, per Fable’s word that FIX’s box-free line was in — BOTH LEGS REFUSED SAFELY, exit 2 each:**
+the runner’s own pre-flight found **11 live `msedge` browsers owned by a LIVE node process, pid `40588`,
+running `scripts/harness/escexit.mjs`** — FIX’s own run, still actually on the box. **Nothing was clobbered;
+the guard did exactly its job.**
+
+**WHAT THIS MEANS: my own pre-grant check (0 harness processes, moments before I wrote the CHAT1 grant and
+launched) raced FIX’s run starting — the same class of race this desk hit once before.** **Checked again,
+now: STILL 1 harness node process and 16 `msedge` browsers on the box** — FIX’s escexit run (presumably on
+`8245b3f`, or a later tip) is genuinely still running. **The grant file names CHAT1, but overwriting it did not
+stop FIX’s already-running processes** — the file is only read at a run’s own pre-flight, so FIX’s run
+continues unaffected; no harm done either way.
+
+**NOT RE-ATTEMPTING THE PAIR YET.** This desk waits for FIX’s own, GENUINE box-free line (0 processes
+measured at that moment) before granting and launching again. *(Fable’s “box-free line is in” may have been
+about an EARLIER escexit run that finished — the one this process is not; said plainly rather than guessed
+at.)*
+
+## SECURITY REVIEW (GENERIC PER THE PUBLIC-REPO RULE); TOOLS’ 213 STEP 2 DETAIL; plan-guest-login MERGED; ITEM 227 (ACCOUNT DELETION + DATA EXPORT) REGISTERED — 2026-09-30 (chat 1)
+
+**RECORDED, generic by the public-repo rule (Fable): “server security review received; hardening in
+progress (INK).”** No weakness named, per the standing rule above.
+
+**TOOLS’ 213 STEP 2, FOR THE LEDGER (Fable): a SYNCHRONOUS write-ahead journal keeps `flushNow()`’s
+contract; IndexedDB holds one row per record; migration is verified by read-back, with the old keys
+cleared after.** **OWED: the durability experiment and Fable’s byte review at offer.**
+
+**MERGED (docs only): `plan-guest-login` @ `368423a`** — design and schema needs for item 225 (one file,
++211). **ITS SCHEMA QUESTION (four additive `users` columns) IS WITH NICK, NO DEFAULT.**
+
+**ITEM 227 — ACCOUNT DELETION AND DATA EXPORT — REGISTERED, before any public launch.** No owner yet.
+Registry: next free **228**.
+
+**BOX, THE STATED ORDER AFTER THE PAIR (Fable):** FIX’s escexit short use (`item-esc-exit` @ `8245b3f`) →
+TOOLS’ storage durability experiment (CDP tab-close survival, `item-storage-s2-indexeddb` @ `f0ca6e0`) →
+INK’s two accessibility live checks (`ebc3b6f`, `22e6eaf`) → INK’s server-hardening proofs if it asks.
+**As recorded above, escexit is STILL the live run blocking the pair — this desk reads that as the first
+item of this order, not yet finished, rather than a repeat of an already-closed turn.**
+
+## BATCH EIGHT PAIR — RE-LAUNCHED, BOX GENUINELY FREE — 2026-09-30 (chat 1)
+
+**RE-CHECKED after writing the last few entries: 0 harness processes, 0 `ws-runtime-verify` browsers —
+FIX’s escexit run finished in that interval.** **THE PAIR RE-LAUNCHED on `batch-eight` @ `9c8d5c3`, under
+the SAME grant** (`chat1-batch8-pair-9c8d5c3-20260930`, already on file; no rewrite needed). **Pre-flight
+this time: “0 harness browser(s), 0 owner(s)… nothing to reap.”** Running now; both legs to be reported
+when they finish.
+
+## BATCH EIGHT’S PAIR RESULT IS VOID — THIS DESK CHECKED OUT main OVER THE RUNNING SUITE; A MISTAKE, MARKED — 2026-10-01 (chat 1)
+
+**THE PAIR DID NOT PRODUCE A MEASUREMENT OF `batch-eight`. IT MEASURED A TREE THIS DESK ITSELF BROKE MID-RUN.**
+After launching it on `batch-eight` in the background, **this desk ran `git checkout main` in the SAME
+working directory while the suite was still reading files from disk** — to write a ledger entry, not
+realizing the background process shares the one checkout. **That is the exact law this desk has recorded
+before and broke here: “Build in a worktree, not the primary checkout” / “the box stays quiet during a
+stamping pair.”**
+
+**WHAT IT PRODUCED, and why none of it is evidence:** the default leg ran 108 files and finished (exit 1,
+“NOT CLEAN”), but **`item-storage-full.mjs` (and presumably others past the checkout) failed with
+`Cannot find module` — because the file was LITERALLY REMOVED FROM DISK under the running process when
+this desk switched to `main`**, which does not carry that harness file. **Confirmed just now: the file
+exists on `batch-eight`, absent on `main`.** The later wave of `exit=3221225794` (Windows
+`STATUS_ACCESS_VIOLATION`) crashes and the run-suite’s own “killed — background time limit” report are
+consistent with the same cause: Node/Chromium reading a tree that moved under them. **The real-looking
+FAILs (`cd1`, `cd2`, `cd4`, `fx3`, `fx4`, `fx7`, `item112a`, `item83f`, `item84`) are NOT trusted either —
+they ran on an already-disturbed checkout and are not re-reported as findings.**
+
+**CLEARED: the grant** (the run is fully dead — 0 harness processes, 0 `ws-runtime-verify` browsers,
+verified). **`batch-eight` itself is untouched** (a checkout does not alter a branch’s commits); **the pair
+needs a genuine re-run, with this desk doing NOTHING ELSE to the shared tree while it runs.**
+## PRODUCTION BACKUPS: wrizo-backup SERVICE CREATED AND CONFIGURED, STOPPED FOR NICK’S R2 KEYS — 2026-10-01 (chat 1)
+
+**NICK’S REQUEST (Fable): nightly off-Railway Postgres backups, Railway’s OFFICIAL template
+(railwayapp-templates/postgres-s3-backups), into Cloudflare R2.** Bucket wrizo-backups and its keys
+already made by Nick. Production DB is Postgres 18 (postgres-ssl:18). **RULES HELD: touched ONLY the new
+service; writer-studio-app, Postgres, and the stray empty Postgres-Bduk were not modified, redeployed or
+deleted; R2 keys and the endpoint were never handled or printed by this desk — Nick types those himself.**
+
+**1 — CLONED** the official repo into C:/Users/nickh/wrizo-backup-deploy (outside writer-studio).
+**CREATED an EMPTY service wrizo-backup** in the writer-studio project, production environment
+(railway add --service wrizo-backup, no repo/image attached).
+
+**2 — SET on wrizo-backup** (railway variable set -s wrizo-backup -e production --skip-deploys, each
+confirmed present by NAME only, values never echoed to this record): AWS_S3_BUCKET, AWS_S3_REGION,
+BACKUP_DATABASE_URL (the literal ${{Postgres.DATABASE_URL}} reference), BACKUP_CRON_SCHEDULE,
+RUN_ON_STARTUP, PG_VERSION, NODE_VERSION, BACKUP_OPTIONS — all seven, per Fable’s values.
+**A SLIP, MARKED:** verifying the set, this desk ran railway variable list -k, which echoes RESOLVED
+values — including BACKUP_DATABASE_URL’s real connection string — into this desk’s OWN tool output.
+**That value was not relayed anywhere — not to Nick, not into this ledger, not into any reply — and no
+further list call will be made on this service.** The rule stands; this is the one place it was tested.
+
+**RE-LINKED this checkout back to writer-studio-app** (railway service writer-studio-app) so an ordinary
+deploy from here does not accidentally target wrizo-backup.
+
+**3 — STOPPED, per the order.** → **NICK: add your three R2 values to wrizo-backup in the Railway
+dashboard (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_ENDPOINT), then tell me done.**
+
+**MEANWHILE: Batch Eight’s pair is running on batch-eight @ 9c8d5c3**, re-launched clean after the void
+result above; this desk is not touching that checkout while it runs.
+
+## PRODUCTION BACKUPS — DEPLOYED AND VERIFIED: pg_dump 18.6, UPLOAD SUCCEEDED — 2026-10-01 (chat 1)
+
+**NICK: “done” — his three R2 values are on `wrizo-backup`.** **DEPLOYED, target proved first:**
+`cd` into `C:/Users/nickh/wrizo-backup-deploy` (the clone, outside `writer-studio`) — that directory had
+NO Railway link of its own and defaulted to `fabulous-essence` (the unrelated project, the item-98 hazard
+exactly as warned). **Explicitly linked** `railway link -p 431093f2-7565-459f-bd24-a8da259b97ac -e
+production -s wrizo-backup`, **confirmed by `railway status`: `writer-studio` / `production` /
+`wrizo-backup`**, tree clean. **Deployed** `railway up --service wrizo-backup --ci` (service named
+explicitly, as ordered) — “Deploy complete”, image installs `postgresql18-client`.
+
+**LOGS, read and reported (lines with nothing secret only):**
+> pg_dump (PostgreSQL) 18.6
+> Backup filesize: 664 kB
+> Uploading backup to S3...
+> Backup uploaded to S3...
+> DB backup complete...
+> Backup cron scheduled...
+**18.6 matches production’s Postgres 18. Upload succeeded.** **ONE LINE WITHHELD, on purpose: the log
+also printed “Using custom endpoint: https://…r2.cloudflarestorage.com” — the R2 ENDPOINT, one of
+Nick’s three values. Not quoted here, not relayed to Fable, consistent with “never handle the R2 keys or
+the endpoint.”** The connection it names succeeded (the upload above is the proof); the string itself is
+withheld.
+
+**BACKUPS ARE LIVE: `BACKUP_CRON_SCHEDULE=0 9 * * *`, `RUN_ON_STARTUP=true` already ran once (this
+deploy), nightly from here.**
+
+## BATCH EIGHT REBUILT (195 DROPPED) — cd1/cd2/cd4/fx3 PASS; THE ENVIRONMENTAL CRASH IS REPRODUCIBLE, NOT NOISE; A VERIFIED-DEAD-OWNER SWEEP LOGGED — 2026-10-01 (chat 1)
+
+**`batch-eight` REBUILT FROM `9695504`, 195 DROPPED CLEANLY** (its CSS hunk reverted, `item195.mjs` and its
+offer doc removed — they had leaked back in via `batch8-parks-fix`’s ancestry, since FIX branched that off
+the OLD `batch-eight` @ `9c8d5c3`, which still had 195). **Full roster, 10 merges:** r3 @ `b4d0f63` · 207+207b
+@ `e2a5a78` · 204 storage @ `13cd415` · 213 step1 @ `c648c56` · 215 successor @ `3034f90` · 217 @ `cbd4dc6` ·
+163 first-run fix @ `71ee427` · 138 first-run fix @ `5318b12` · FIX’s parks + fx4 S5 @ `e3dc7a6` · FIX’s B-I-U
+interim @ `2e2a6b2` (now IN Batch Eight, per this relay). **Two mechanical-union conflicts, same resolution
+as before** (`types/index.ts`: 207/204 blocks; `persistence.ts`: two imports) — verified again, nothing
+edited beyond the union. **`CascadePanels.tsx`’s import union redone against 163’s NEWER SHA, same two
+lines.** **Harness-only merges verified to touch only `scripts/harness`** (e3dc7a6, 5318b12, 71ee427).
+**`tsc` x2 and `build:web` both exit 0.** Pushed `batch-eight` @ `1b3c1c8` (force, replacing the dropped-195
+history).
+
+**THE PAIR, RE-RUN: cd1 PASSES (25/25), fx3 PASSES (28/28)** — FIX’s and TOOLS’ parks hold on the rebuilt
+tree. **THE DEFAULT LEG CRASHED AGAIN, AT THE EXACT SAME FILE AS BOTH PRIOR CLEAN ATTEMPTS: `fx5.mjs`,
+file 31 of 108** — then every file after it, `exit=3221225794` (`STATUS_ACCESS_VIOLATION`), 0s each,
+through file 108. **THIS IS NOW REPRODUCIBLE, NOT NOISE: three separate default-leg runs this session,
+the crash has started at file 31 every time it was not caused by this desk’s own checkout-mid-run error.**
+This confirms Fable’s hypothesis (0xC0000142-class desktop-resource exhaustion) rather than refuting it.
+
+**THE PARKED LEG COULD NOT EVEN START: it refused, citing 10 `ws-runtime-verify` browsers owned by node pid
+`42844` (the just-crashed default leg), too young (32–35s) for the 300s dead-owner floor to trust.**
+**VERIFIED BEFORE ACTING: 0 `run-suite`/harness node processes exist anywhere — pid `42844` is confirmed
+dead, not merely unresponsive.** **A VERIFIED-DEAD-OWNER SWEEP, authorized and logged here (the standing
+precedent): killed the 10 listed browser PIDs by exact PID, never by name.** 9 of 10 had already self-
+exited; one (`58116`) was killed. **Box confirmed clean after: 0 `ws-runtime-verify` browsers.** Grant
+cleared.
+
+**HANDED UP, NOT RETRIED BLINDLY: a bare retry will almost certainly crash at the same file again** — the
+resource exhaustion accumulates WITHIN one `run-suite` process across ~30 sequential browser launches; a
+sweep clears the corpses but not whatever OS-level handle/desktop-heap state causes the 31st launch to fail.
+**Fable’s two instructions conflict: “the box gets a clean reboot first” (first relay) vs “No reboot — the
+lanes are working on this machine” (second relay).** This desk cannot resolve that itself — reporting both
+readings and the reproducibility evidence, and awaiting a ruling before the next attempt.
+
+## CHUNKED PAIR — DEFAULT LEG DONE (ONE REAL FAIL), PARKED LEG STOPPED: SESSION-WIDE EXHAUSTION CONFIRMED — 2026-10-01 (chat 1)
+
+**CHUNKING RULED BY FABLE: 5 chunks of ≤25 files, `--only`, one rebuild (chunk 00 of the default leg
+only), `--no-rebuild` for every chunk after. Grant: `chat1-batch8-chunked-1b3c1c8-20261001`.**
+
+**DEFAULT LEG, chunked, ALL 5 CHUNKS SAME STAMP (`tree=1b3c1c8 bundle=index-Bps2KMS9.js/616462b`), 0
+harness processes verified between every chunk:**
+- chunk 00 (files 1–25): CLEAN 25/25
+- chunk 01 (26–50): CLEAN 25/25
+- **chunk 02 (51–75): NOT CLEAN, 24/25 — ONE REAL FAIL, no crash, same stamp: `item207b.mjs`**
+  — “CLASSIFY: every INSTALLED known family is classed correctly… confirmed fixed here, not re-
+  guessed” FAILS: `[“Verdana”,”serif”,”expected”,”sans-serif”],[“Tahoma”,”serif”,”expected”,”sans-serif”]`.
+  **TOOLS’ successor `e2a5a78` (“fix classifyGeneric’s OTHER direction”) appears to have REGRESSED the
+  ORIGINAL fix** — Verdana and Tahoma are back to reading as serif, the exact box-turn defect this
+  check exists to catch. **Owner: TOOLS. Genuinely a product defect, not environmental** — verified by
+  identical stamp and a clean box before and after.
+- chunk 03 (76–100): CLEAN 25/25
+- chunk 04 (101–108): CLEAN 8/8
+**Default leg total: 107/108 real PASS, 1 real FAIL (`item207b`), ZERO crashes across all 108 launches
+when run in chunks of 25.**
+
+**PARKED LEG, chunk 00 (files 1–25), FRESH `run-suite` process, STILL CRASHED — at launch 24 of 25
+(`fx15`, `fx16`), `exit=3221225794` both.** **THIS IS THE SIGNAL FABLE’S RULE 4 NAMED: a fresh process,
+right after the chunked default leg’s 108 launches with no reboot, could not complete even one 25-file
+chunk.** The resource is NOT purely per-process (chunking’s working theory) — it is carrying over
+across process boundaries; “a chunk that fails” (not necessarily “within its first few launches”
+literally, but a fresh process failing at all after the prior leg) reads as session-wide per the rule’s
+own intent.
+
+**VERIFIED-DEAD-OWNER SWEEP, logged: 8 `ws-runtime-verify` browsers, owner node process already exited
+(0 harness processes anywhere). Swept by exact PID** (one killed, seven already self-exited). **Box
+confirmed clean after. Grant cleared.**
+
+**STOPPED, per the rule — not retried blind.**
+
+## AFTER THE RESTART: 207b DROPPED FROM BATCH EIGHT, THE BRANCH REBUILT (b00de9d); ITEMS 228–229 — 2026-10-01 11:05 (chat 1)
+
+**NICK RESTARTED THE COMPUTER and left; Fable’s unattended instructions follow.** Boot confirmed
+(`LastBootUpTime` 10:49 local), 0 harness processes, no grant on file.
+
+**BACKUPS: ALREADY DONE AND RECORDED** (entry above: `wrizo-backup` deployed, `pg_dump 18.6`, upload
+succeeded). Nothing to redo.
+
+**207b DROPPED (Fable): its classifier flips between directions (the `item207b` FAIL, recorded above), and
+device fonts do not work on Nick’s phone anyway.** **`batch-eight` REBUILT FROM `9695504` with 207 phase 1
+(`item207-fonts` @ `5653417`) IN PLACE OF `item207b-device-fonts`, everything else as at `1b3c1c8`.**
+Roster, 10 steps: r3 @ `b4d0f63` · 207 @ `5653417` · 204 storage @ `13cd415` · 213 @ `c648c56` · 215 @ `3034f90` ·
+217 @ `cbd4dc6` · 163 @ `71ee427` · 138 @ `5318b12` · FIX parks `84448c1` + `e3dc7a6` · B-I-U interim @ `2e2a6b2`.
+**A CHANGE OF METHOD, STATED: the two park commits were CHERRY-PICKED, not merged** — the park branch
+was built off the old `batch-eight` and carries BOTH 207b’s and 195’s ancestry (checked: `6c09ea5` and
+`c59fc37` are both ancestors of `e3dc7a6`/`84448c1`), so merging it would have re-imported them (the leak
+that already happened once with 195). Both commits touch ONLY `scripts/harness` (cd1, cd2, cd4, fx3, fx4).
+**Verified clean of both: no `fontDetect`/`item207b`/`item195`/sliver-grip file in the diff against `9695504`,
+and 195’s CSS variables are absent from `index.css`.** Mechanical-union conflicts, same three as before
+(`types/index.ts` 207/204 blocks byte-for-byte; `persistence.ts` imports; `CascadePanels.tsx` import
+specifiers) — resolved by the same rule, nothing else edited. **`tsc` x2 and `build:web` exit 0.**
+Pushed `batch-eight` @ `b00de9d` (forced replacement).
+
+**REGISTERED:**
+- **ITEM 228 — 207b’s `classifyGeneric` (Verdana/Tahoma vs real serifs; it flipped between directions)** —
+  owner TOOLS, AFTER the trip. Device fonts (207b) stay out of Batch Eight.
+- **ITEM 229 — 195’s FOLLOW-UP: the design call of which law yields** (clearing the strip vs never overlapping
+  the paper) — owner TOOLS, after the trip. *(Fable asked for this when 195 was dropped; I had not
+  registered it — now done.)*
+Registry: next free **230**.
+
+**NEXT (Fable): the pair, CHUNKED, ≤20 files per chunk, same stamp throughout, 0 harness processes
+between chunks; default leg then parked. A real FAIL, or a launch crash that recurs after ONE swept re-run
+of that chunk, STOPS everything until Nick is back. Clean → deploy on Nick’s word (rollback `8223b29`).**
+
+## NICK’S WORD ON BATCH NINE (conditional on Batch Eight clean) — 2026-10-01 (chat 1)
+
+**NICK, verbatim, in this session as he left:** *“If Batch 8 comes back clean, then ship Batch 9”* — asked
+whether everything queued would ship without further commands from him, and told it would be Batch Eight
+only (Nine-lite not authorized at that point).
+
+**WHAT THIS DESK WILL DO, and its limits (stated here so the record is not read as more than it is):**
+- **Condition:** Batch Eight’s chunked pair must be CLEAN on both legs (same stamp; any real FAIL or a
+  launch crash recurring after one swept re-run STOPS everything). Not met yet — the pair is mid-run
+  (default c00–c02 clean, c03+ running).
+- **Batch Nine-lite roster, from Fable’s plan:** `item-esc-exit` @ `9f295fc` (escexit) · `a11y-signin` @ `ebc3b6f`
+  · `a11y-tutor-live-region` @ `22e6eaf` · `server-hardening` @ `b9d3db2` · `sync-integrity` @ `6da0964`.
+  **EXCLUDED: dep-bumps, csp-report-only, storage step 2, Node 22.** (FIX’s B-I-U interim `2e2a6b2` already
+  rides Batch Eight.) **Checked: none of the five touches `migrate.ts` — no schema.** Assembled from `main`
+  AFTER Batch Eight is live, then its OWN chunked pair.
+- **THE LIMIT: Nick’s word covers the “ship” gate, NOT Fable’s byte review.** Fable’s plan has him reading
+  Nine-lite’s auth and sync hunks while its pair runs; his PASS arrives only through a relay, and nobody is
+  at the keyboard to paste one. **Standing law: product code waits for Fable’s review. If his PASS has not
+  reached this desk when a clean Nine-lite pair finishes, it is HELD, not shipped** — it contains login
+  throttling and sync changes, the two places an unreviewed mistake costs most. Nick can override by saying
+  so; the record shows he was told.
+
+## BATCH EIGHT — THE CHUNKED PAIR IS CLEAN, BOTH LEGS, 106/106 — 2026-10-01 (chat 1)
+
+**BATCH EIGHT = `batch-eight` @ `b00de9d`** (207 phase 1 in place of 207b; ten roster steps as in the entry
+above). **RAN CHUNKED, ≤20 files per chunk (Fable’s ruling), 106 files per leg, six chunks per leg (5×20 + 6),
+ONE rebuild (default c00), `--no-rebuild` after; EVERY chunk stamped `tree=b00de9d
+bundle=index-Cmxn0ohp.js/612282b`; 0 harness processes verified before every chunk.** Grant
+`chat1-batch8-chunked20-b00de9d-20261001`.
+
+**DEFAULT LEG: 106/106.** c00, c01, c03, c05 clean first time. **c02: launch crash at file 16**
+(`exit=3221225794` ×5, the box-exhaustion signature, no real FAIL) → orphans swept by PID (owner dead,
+0 harness processes) → **ONE re-run: CLEAN 20/20.** **c04: launch crash at file 11 → same sweep → ONE
+re-run: CLEAN 20/20.**
+**PARKED LEG: 106/106.** c01–c05 clean first time. **c00: launch crash → swept → one re-run: CLEAN 20/20.**
+**A chunk’s FIRST attempt and its re-run are both on disk** (`b8d-*-c02.out` vs `-c02r.out`, etc.). **No real
+FAIL anywhere; no chunk needed a second re-run.** The union of the chunks is the leg — this pair ran
+CHUNKED, and with three single swept re-runs, because of the box exhaustion recorded above (it recurred
+after the restart, so the restart did not remove it).
+
+**GATES FOR THE DEPLOY:** clean pair ✓ · **Fable’s instruction (post-restart relay): “Clean → deploy per
+Nick’s word; record the deploy id; rollback target 8223b29”** · **Nick’s word, quoted: *“Regardless of when
+everything is done, ship it even if it’s after 11 am MT”*** · schema: `users.proofing`, one additive
+nullable column, under Nick’s earlier “1. Yes” (recorded). **I did not receive a separate Fable “PASS” line
+for the assembled diff after the 207b swap; I am acting on his instruction above — stated, not assumed.**
+
+## BATCH EIGHT DEPLOY MANIFEST — 2026-10-01 (chat 1, on Nick’s pre-approval and Fable’s unattended instruction)
+
+**LIVE: `05a593b` (product bytes = the pair-tested `b00de9d`) · railway `30b5f288-77f3-4aaf-b6b2-f7bca5d5b842`**
+— service `writer-studio-app`, `railway up --ci` “Deploy complete”. **PREVIOUS LIVE — THIS DEPLOY’S ROLLBACK
+TARGET: `8223b29` / Batch Seven · railway `912aa82f-c97d-42d7-9818-359f314dd8d2`.** **ROLLBACK NOW RATCHETS TO
+THIS STAMP.** Schema: `users.proofing` is additive and nullable, so a rollback to Batch Seven is safe with the
+column left in place.
+
+**AUTHORIZATION:** Nick, in this session — *“Regardless of when everything is done, ship it even if it’s after
+11 am MT”*; Fable’s post-restart instruction — “Clean → deploy… record the deploy id; rollback target 8223b29”.
+**NOT RECEIVED: a fresh Fable byte-review PASS for the assembled diff after the 207b swap** (said in the
+pair record above; this desk acted on his instruction).
+
+**WHAT SHIPPED:** 206 step 3 (first-line Tab indent, Tab+1 block indent, line-scoped Tab), 209, 210 (derived
+titles/excerpts strip marks), 207 phase 1 (the font roster and size ladder; **NOT 207b device fonts**), 204
+storage half (`users.proofing`), 213 step 1 (a failed save is never silent), 215 (Tutor 20-message fix),
+217 (Revise-only spellcheck), 163, 138, FIX’s B-I-U interim (markers reveal only when the caret touches one), and
+the Cursor display pass already on `main`. **NOT shipped: 195 (dropped), 207b (dropped), 211 proper.**
+
+**SUITE:** chunked pair, both legs 106/106 on `tree=b00de9d bundle=index-Cmxn0ohp.js/612282b` (entry above),
+with three single swept re-runs after box launch crashes. **Deploy head `05a593b` is docs-only past it:
+`git diff --stat b00de9d HEAD -- apps packages` EMPTY.** `tsc` x2 exit 0; `build:web` exit 0, local bundle
+matches the pair stamp. **Tree bare at upload (0 porcelain). ITEM-98 GUARD:** `writer-studio` / `production` /
+`writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`, `HEAD == origin/main == 05a593b`. Image digest
+`sha256:dd6f06cb5258c0d97edc9b4469915b170c5c9052694cfd8f0379684c0e9abb0d`.
+
+**LIVE VERIFICATION:** `/healthz` 200 · `/auth/me` 401 · server log “listening on :8080” (migrations ran first).
+**SERVED-vs-STAMPED, BOTH ASSETS MATCH, MD5 and bytes:** JS `3e3acaac9644df3d9817b5e8dd514c31` (612,282 b) ==
+stamped; CSS `4d5c9e1405a830a1a4a553e7ffdb335b` (147,549 b) == stamped.
+**ONE PRODUCTION PROBE, announced here after the fact:** the same unauthenticated 5.25 MiB whitespace
+request used at Batch Six, once — it now answers **401** (before: 413), consistent with Batch Seven’s P3
+raising the limit for AUTHENTICATED `/api/sync` only; not a regression. **NOT DONE: no authenticated request,
+so `users.proofing`’s round trip and the writing changes are not exercised live by this desk — Nick’s check.**
+
+**BATCH EIGHT IS SHIPPED AND CLOSED.** Registry next free **230**.
+
+## BATCH NINE-LITE — HELD AT ASSEMBLY ON A NON-MECHANICAL CONFLICT (escexit vs 217) — 2026-10-01 (chat 1)
+
+**Nick’s word (recorded above): ship Batch Nine if Batch Eight is clean — Batch Eight is clean and live.**
+**Assembly started from `main` @ `6d9ece3` (Batch Eight included).** All five roster tips verified on origin
+(`item-esc-exit` `9f295fc`, `a11y-signin` `ebc3b6f`, `a11y-tutor-live-region` `22e6eaf`, `server-hardening`
+`b9d3db2`, `sync-integrity` `6da0964`); **none contains 207b’s or 195’s ancestry; none touches `migrate.ts`.**
+
+**THE FIRST MERGE, `item-esc-exit` @ `9f295fc`, CONFLICTS in `ForwardOnlyEditor.tsx` and it is NOT a pure
+append-append:** both sides edited the SAME `spellCheck` attribute on the same element. **Batch Eight’s 217
+made it `spellCheck={mode === ‘revise’}` (Nick’s Revise-only ruling); `escexit` still has the old
+`spellCheck={false}` and adds `aria-describedby={ariaDescribedBy}`.** Keeping both blocks would DUPLICATE a
+JSX attribute (a `tsc` error); the right resolution is to keep `aria-describedby` and 217’s `spellCheck`, but
+that is an edit to a line both owners touched — **not mine to make under the standing rule.** *(Reading:
+the 217 side must win the `spellCheck` value or Nick’s ruling regresses; FIX should confirm.)*
+
+**ABORTED; nothing was merged or run. `batch-nine` was deleted; `main` is untouched @ `6d9ece3`+docs. HELD,
+not shipped: owner is FIX — rebase `escexit` onto `main` (it will inherit 217), re-offer, and Batch Nine-lite
+assembles again.** The other four branches were not tried (a later conflict could also arise); no Fable PASS
+for Nine-lite has reached this desk either, so it would have been held on that gate regardless.

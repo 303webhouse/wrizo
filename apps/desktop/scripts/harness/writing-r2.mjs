@@ -71,7 +71,12 @@ await withHarness(async (app) => {
   await openPage(app, 'Draft');
   await focusAndSelectAll(app);
   const grip = await centre(app, '.wz-sliver-grip'); if (grip) await realClick(app, grip);
-  const bold = await app.evalJs(`(() => { const b = [...document.querySelectorAll('.wz-sliver [title]')].find(x => x.getAttribute('title') === 'Bold'); if (!b) return null; const r = b.getBoundingClientRect(); return r.width ? { x: Math.round(r.left + r.width/2), y: Math.round(r.top + r.height/2) } : null; })()`);
+  // ---- PARKED - SUPERSEDED by PR #7 (3951329: the Bold button is titled "Bold (Ctrl+B)"), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. Driver only; the assertion below is unchanged.
+  //
+  // const bold = await app.evalJs(`(() => { const b = [...document.querySelectorAll('.wz-sliver [title]')].find(x => x.getAttribute('title') === 'Bold'); if (!b) return null; const r = b.getBoundingClientRect(); return r.width ? { x: Math.round(r.left + r.width/2), y: Math.round(r.top + r.height/2) } : null; })()`);
+  // ----------------------------------------------------------------------
+  const bold = await app.evalJs(`(() => { const b = [...document.querySelectorAll('.wz-sliver [title]')].find(x => (x.getAttribute('title') || '').startsWith('Bold')); if (!b) return null; const r = b.getBoundingClientRect(); return r.width ? { x: Math.round(r.left + r.width/2), y: Math.round(r.top + r.height/2) } : null; })()`);
   ok('[Draft] the toolbar Bold button is reachable by a real pointer', !!bold, JSON.stringify(bold));
   if (bold) {
     await realClick(app, bold);

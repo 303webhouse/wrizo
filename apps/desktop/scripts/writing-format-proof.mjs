@@ -17,23 +17,28 @@ import { createRequire } from 'node:module';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SRC = join(here, '..', 'src');
-const FILE = join(SRC, 'store', 'draftFormat.ts');
+const FILES = ['draftFormat.ts', 'markRuns.ts', 'draftDecoration.ts', 'tabChord.ts', 'entryText.ts'];
 const requireDesktop = createRequire(join(here, '..', 'package.json'));
 const esbuild = createRequire(requireDesktop.resolve('vite'))('esbuild');
 const tmp = join(tmpdir(), 'wrizo-format-proof');
 mkdirSync(tmp, { recursive: true });
 
-async function load(tag, transform) {
-  let source = readFileSync(FILE, 'utf8');
-  if (transform) {
-    const t = transform(source);
-    if (t === source) throw new Error(`mutation ${tag} did not land`);
-    source = t;
-  }
+// A mutant is [name, file, transform]; the file it edits is copied (mutated) into a scratch dir beside unmutated copies of the
+// others, so the bundle is the real modules with exactly one edit.
+async function load(tag, mutant) {
   const dir = join(tmp, tag); mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, 'draftFormat.ts'), source);
+  for (const f of FILES) {
+    let source = readFileSync(join(SRC, 'store', f), 'utf8');
+    if (mutant && mutant.file === f) {
+      const t = mutant.fn(source);
+      if (t === source) throw new Error(`mutation ${tag} did not land`);
+      source = t;
+    }
+    writeFileSync(join(dir, f), source);
+  }
+  writeFileSync(join(dir, 'entry.ts'), "export * from './draftFormat'; export { readMarks } from './markRuns'; export { decorateMarkdownForCard } from './draftDecoration'; export { readLead, stripLine } from './markRuns'; export { createTabChord, CHORD_HOLD_MS } from './tabChord'; export { firstLine, firstPlainLine, plainLines, boardName, substantialLines } from './entryText';");
   const outfile = join(dir, 'out.mjs');
-  await esbuild.build({ entryPoints: [join(dir, 'draftFormat.ts')], bundle: true, platform: 'node', format: 'esm', outfile, logLevel: 'silent' });
+  await esbuild.build({ entryPoints: [join(dir, 'entry.ts')], bundle: true, platform: 'node', format: 'esm', outfile, logLevel: 'silent' });
   return import(pathToFileURL(outfile).href + `?t=${Date.now()}`);
 }
 
@@ -94,11 +99,172 @@ function run(mod) {
   check('LINES: Left clears alignment on every selected line', press('>< a\n>> b', 0, 9, 'align-left').text, 'a\nb');
   check('LINES: Bullet on a centred line stacks outside the alignment (the last applied is outermost), and toggling it off finds it again', press('>< title', 3, 3, 'bullet', 'bullet').trail, ['- >< title', '>< title']);
   check('LINES: Bullet on an indented line goes AFTER the tabs (so Outdent still finds them)', press('\tnote', 2, 2, 'bullet').text, '\t- note');
+  check('BULLET: hollow replaces the round mark instead of stacking, and a second press clears it', [press('Milk', 1, 1, 'bullet', 'bullet-circle').text, press('Milk', 1, 1, 'bullet-circle', 'bullet-circle').text], ['-+ Milk', 'Milk']);
+  check('BULLET: square replaces hollow', press('-+ Milk', 4, 4, 'bullet-square').text, '-= Milk');
+  check('BULLET: round replaces square', press('-= Milk', 4, 4, 'bullet').text, '- Milk');
   check('LINES: blank lines in a selection are left blank', press('a\n\nb', 0, 4, 'bullet').text, '- a\n\n- b');
   check('LINES: a single caret still acts on its own line only (unchanged)', press(THREE, 8, 8, 'bullet').text, 'alpha\n- beta\ngamma');
 
+  // ---- READER (step 3): the ONE reader the formatter and the decorator both use ----
+  const { readMarks, decorateMarkdownForCard } = mod;
+  const kinds = (line) => readMarks(line).map(r => `${r.kind}@${r.open}-${r.close}`);
+  check('READER: stars with a space inside are TEXT - "2 * 3 * 4" has no run', kinds('2 * 3 * 4'), []);
+  check('READER: a plain italic pair and a bold pair are runs, side by side', kinds('*a* **b**'), ['italic@0-2', 'bold@4-7']);
+  check('READER: `***x***` is BOTH - bold outside, italic inside', kinds('***x***'), ['bold@0-5', 'italic@2-4']);
+  check('READER: marks NEST - `__*x*__` is an underline holding an italic', kinds('__*x*__'), ['underline@0-5', 'italic@2-4']);
+  check('READER: two runs that would CROSS cannot both stand - the later-opening one stays literal', kinds('**a *b** c*'), ['bold@0-6']);
+  check('READER: an empty pair is a run (what Bold inserts at a bare caret)', kinds('****'), ['bold@0-2']);
+  check('READER: single underscores and a lone `__` are text', [kinds('the file_name and snake_case'), kinds('an __unclosed run')], [[], []]);
+  const visible = (html) => html.replace(/<span class="md-mark md-mark-hidden">[\s\S]*?<\/span>/g, '').replace(/<[^>]+>/g, '');
+  const chars = (html) => html.replace(/<[^>]+>/g, '');
+  const D = (t) => decorateMarkdownForCard(t, null);
+  check('DECORATOR: "2 * 3 * 4" shows its stars (no italic, nothing collapsed)', [visible(D('2 * 3 * 4')), D('2 * 3 * 4').includes('md-italic')], ['2 * 3 * 4', false]);
+  check('DECORATOR: `__*x*__` paints underline AND italic and collapses all four markers', [visible(D('__*x*__')), D('__*x*__').includes('md-underline'), D('__*x*__').includes('md-italic')], ['x', true, true]);
+  check('DECORATOR: `***x***` paints bold AND italic', [D('***x***').includes('md-bold'), D('***x***').includes('md-italic'), visible(D('***x***'))], [true, true, 'x']);
+  const BATTERY = ['plain', '**b**', '*i*', '__u__', '~~s~~', '***bi***', '__*ui*__', '**__bu__**', '~~**bs**~~', '2 * 3 * 4', 'a**b**c', '**a *b** c*', '****', '__ __', '*a* and *b* and **c**', 'snake_case __x__ y_z', '**a** **b** **c**'];
+  check('DECORATOR: every character is emitted exactly once - the stored text is the rendered text, markers included, over a battery of shapes', BATTERY.map(t => chars(D(t)).replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&') === t), BATTERY.map(() => true));
+  check('FORMAT: Italic on the 3 of "2 * 3 * 4" wraps ONLY the 3 - the literal stars are not paired with it - and a second press restores it', press('2 * 3 * 4', 4, 5, 'italic').trail.concat(press('2 * 3 * 4', 4, 5, 'italic', 'italic').text), ['2 * *3* * 4', '2 * 3 * 4']);
+  check('FORMAT: a collapsed caret inside an empty bold pair `**|**` + Italic inserts its OWN pair inside (was: stripped one star from each side)', press('****', 2, 2, 'italic').text, '******');
+  check('FORMAT: ...and Bold on that same caret removes the empty pair', press('****', 2, 2, 'bold').text, '');
+  check('FORMAT: ...and Italic again on `***|***` removes only the italic pair', press('****', 2, 2, 'italic', 'italic').text, '****');
+
+  // ---- ITEM 210: TITLES AND EXCERPTS ARE PLAIN TEXT (Nick: the title bar read "**TESTING** THE *DATABASE* SYNC") ----
+  const { firstLine, plainLines, boardName, substantialLines } = mod;
+  check('TITLES: Nick\'s own title - `**TESTING** THE *DATABASE* SYNC` - derives as plain words', firstLine('**TESTING** THE *DATABASE* SYNC'), 'TESTING THE DATABASE SYNC');
+  // ---- PARKED - SUPERSEDED by PR #7 (19a4676: lists gain hollow `-+ ` and square `-= ` bullets), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The row grows the two new bullet tokens; every original case is still in it.
+  //
+  // check('TITLES: every kind of markup goes - heading mark, block token, bullet, quote, centring, tabs, strike, underline, nested', ['# Big Title', '>| >| Indented', '- a bullet', '> quoted', '>< centred', '\t\ttabbed', '~~struck~~ text', '__under__ *and* ***both***'].map(firstLine), ['Big Title', 'Indented', 'a bullet', 'quoted', 'centred', 'tabbed', 'struck text', 'under and both']);
+  // ----------------------------------------------------------------------
+  check('TITLES: every kind of markup goes - heading mark, block token, bullet, quote, centring, tabs, strike, underline, nested', ['# Big Title', '>| >| Indented', '- a bullet', '-+ a hollow', '-= a square', '> quoted', '>< centred', '\t\ttabbed', '~~struck~~ text', '__under__ *and* ***both***'].map(firstLine), ['Big Title', 'Indented', 'a bullet', 'a hollow', 'a square', 'quoted', 'centred', 'tabbed', 'struck text', 'under and both']);
+  check('TITLES: a line that is only markup has nothing to read, so the NEXT line is the title (like a blank one)', [firstLine('****\n>| \nReal words'), firstLine('**  **\n\nSecond')], ['Real words', '**  **']);
+  check('TITLES: and a page that is only markup is "Untitled" - never a stray asterisk', [firstLine('****'), firstLine('>| '), firstLine('   \n\n')], ['Untitled', 'Untitled', 'Untitled']);
+  check('TITLES: what the page shows as text stays text - "2 * 3 * 4" and a lone underscore name are NOT mangled', [firstLine('2 * 3 * 4'), firstLine('the file_name'), firstLine('an __unclosed run')], ['2 * 3 * 4', 'the file_name', 'an __unclosed run']);
+  check('TITLES: a board\'s name is the same derivation', [boardName('**Plot** board\nbody', 'Untitled'), boardName('****', 'Untitled'), boardName(undefined, 'A sketch')], ['Plot board', 'Untitled', 'A sketch']);
+  check('EXCERPTS: the lines a card face and a survey read are plain, blank and markup-only lines skipped', plainLines('**Title**\n\n- first *point*\n****\n> a quote'), ['Title', 'first point', 'a quote']);
+  check('EXCERPTS: the post-sprint echo line is plain text too', substantialLines('**short**\nthis is a **long enough** line to echo back to the writer', 24), ['this is a long enough line to echo back to the writer']);
+
+  // ---- PARKED - SUPERSEDED by item 211 / PR #7 (e79390c: hidden marks never show, at an edge or mid-word), 2026-10-02 ----
+  // Kept VERBATIM and no longer run. The section's heading named the interim rule.
+  //
+  // // ---- THE INTERIM REVEAL RULE: a run's markers show only while the caret TOUCHES a marker ----
+  // ----------------------------------------------------------------------
+  // ---- ITEM 211: MARKERS NEVER SHOW (Nick's "A", 2026-09-25) ----
+  {
+    const T = 'Start **BOLD** end';                      // markers at [6,8] and [12,14]; the word is 8..12
+    const shown = (c) => /<span class="md-mark">\*\*<\/span>/.test(decorateMarkdownForCard(T, c));
+    // ---- PARKED - SUPERSEDED by item 211 / PR #7 (e79390c: hidden marks never show, at an edge or mid-word), 2026-10-02 ----
+    // Kept VERBATIM and no longer run. The interim rule showed the marks at 6,7,8 and 12,13,14; now they show at no caret position.
+    //
+    // const all = []; for (let c = 0; c <= T.length; c += 1) all.push(shown(c) ? c : null);
+    // check('REVEAL: over every caret position, the bold markers show EXACTLY when the caret is inside or at an edge of a marker span - 6,7,8 and 12,13,14 - and nowhere inside the word (9,10,11)', all.filter(x => x !== null), [6, 7, 8, 12, 13, 14]);
+    // ----------------------------------------------------------------------
+    const all = []; for (let c = 0; c <= T.length; c += 1) all.push(shown(c));
+    check('REVEAL: over every caret position, including the marker edges, the bold marks stay hidden', all.every(x => x === false), true);
+    check('REVEAL: no caret (a resting card, a selection, Free Write) shows nothing', shown(null), false);
+    const N = '**TESTING** THE *DATABASE* SYNC';             // Nick's screenshot
+    const vis = (c) => visible(decorateMarkdownForCard(N, c));
+    check('REVEAL: Nick\'s case - a caret in the middle of "TESTING" shows NO asterisks anywhere on the line', vis(5), 'TESTING THE DATABASE SYNC');
+    // ---- PARKED - SUPERSEDED by item 211 / PR #7 (e79390c: hidden marks never show, at an edge or mid-word), 2026-10-02 ----
+    // Kept VERBATIM and no longer run. At the word's end the interim rule showed that word's marks; now nothing shows.
+    //
+    // check('REVEAL: a caret at the END of "TESTING" (the edge a Backspace... or a Delete acts at) shows that word\'s markers and only that word\'s', vis(9), '**TESTING** THE DATABASE SYNC');
+    // ----------------------------------------------------------------------
+    check('REVEAL: a caret at the END of "TESTING", where a click off the word lands, still shows no asterisks', vis(9), 'TESTING THE DATABASE SYNC');
+    // ---- PARKED - SUPERSEDED by item 211 / PR #7 (e79390c: hidden marks never show, at an edge or mid-word), 2026-10-02 ----
+    // Kept VERBATIM and no longer run. Nested runs no longer reveal at all; the word reads plain at both carets.
+    //
+    // check('REVEAL: nested marks reveal per run - in `__*x*__` a caret at 2 touches BOTH opening markers; at 3 (after x) only the italic\'s', [visible(decorateMarkdownForCard('__*x*__', 2)), visible(decorateMarkdownForCard('__*x*__', 3))], ['__*x*__', '*x*']);
+    // ----------------------------------------------------------------------
+    check('REVEAL: nested marks stay hidden - `__*x*__` shows the word at the caret that used to reveal both marks, and at the caret just after it', [visible(decorateMarkdownForCard('__*x*__', 2)), visible(decorateMarkdownForCard('__*x*__', 3))], ['x', 'x']);
+    // ---- PARKED - SUPERSEDED by item 211 / PR #7 (e79390c: hidden marks never show, at an edge or mid-word), 2026-10-02 ----
+    // Kept VERBATIM and no longer run. An empty pair no longer shows itself; Backspace and Delete now remove it whole (item211.mjs ONE).
+    //
+    // check('REVEAL: an empty pair `****` with the caret between shows itself (the writer sees what a press inserted)', visible(decorateMarkdownForCard('****', 2)), '****');
+    // ----------------------------------------------------------------------
+    check('REVEAL: an empty pair `****` stays hidden, including with the caret between the marks', visible(decorateMarkdownForCard('****', 2)), '');
+    check('BULLET: the token stays hidden even when the caret touches it', ['- Milk', '-+ Milk', '-= Milk'].every((t) => visible(decorateMarkdownForCard(t, t.indexOf('M'))) === 'Milk'), true);
+    check('BULLET: hollow and square marks stay hidden and wear their own glyph class', ['-+ Milk', '-= Milk'].every((t, i) => {
+      const html = decorateMarkdownForCard(t, null);
+      const cls = i === 0 ? 'md-bullet-circle' : 'md-bullet-square';
+      return html.includes(cls) && visible(html) === 'Milk' && chars(html) === t;
+    }), true);
+    check('HEADING: `# Chapter` and `## Chapter` hide the hash at every caret and keep the heading size', ['# Chapter', '## Chapter'].every((t) => {
+      const word = t.replace(/^#{1,2} /, '');
+      const cls = t.startsWith('## ') ? 'md-h2' : 'md-h1';
+      for (let c = 0; c <= t.length; c += 1) {
+        const html = decorateMarkdownForCard(t, c);
+        if (/<span class="md-mark">#/.test(html)) return false;
+        if (!html.includes(cls)) return false;
+        if (visible(html) !== word) return false;
+        if (chars(html) !== t) return false;
+      }
+      return true;
+    }), true);
+    const B = ['a **b** c', '***bi*** x', '__*u*__', '~~s~~ and *i*', '2 * 3 * 4', '>| - **x**'];
+    check('REVEAL: every character is still emitted exactly once at EVERY caret position (the 1:1 count the caret restore depends on)', B.every(t => { for (let c = 0; c <= t.length; c += 1) { if (chars(decorateMarkdownForCard(t, c)).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&') !== t) return false; } return true; }), true);
+
+    // ---- THE CARD POPUP keeps the interim rule (Fable's PR #7 review, 2026-10-03) until it has the page's editing rules ----
+    const CARD = { revealAtMarker: true };
+    const cardShown = (c) => /<span class="md-mark">\*\*<\/span>/.test(decorateMarkdownForCard(T, c, CARD));
+    const cardAll = []; for (let c = 0; c <= T.length; c += 1) if (cardShown(c)) cardAll.push(c);
+    check('CARD: with revealAtMarker the bold marks show EXACTLY while the caret touches a marker - 6,7,8 and 12,13,14 - and nowhere inside the word', cardAll, [6, 7, 8, 12, 13, 14]);
+    check('CARD: Nick\'s case on the card - mid-word shows nothing, the word\'s end shows that word\'s marks only', [visible(decorateMarkdownForCard(N, 5, CARD)), visible(decorateMarkdownForCard(N, 9, CARD))], ['TESTING THE DATABASE SYNC', '**TESTING** THE DATABASE SYNC']);
+    check('CARD: a bullet token and a heading hash show while the caret touches them, and hide away from them', [visible(decorateMarkdownForCard('-= Milk', 3, CARD)), visible(decorateMarkdownForCard('-= Milk', 5, CARD)), visible(decorateMarkdownForCard('## Chapter', 3, CARD)), visible(decorateMarkdownForCard('## Chapter', 6, CARD))], ['-= Milk', 'Milk', '## Chapter', 'Chapter']);
+    check('CARD: the 1:1 character count holds at every caret position with revealAtMarker too', B.concat(['# Head **x**', '-+ list *i*']).every(t => { for (let c = 0; c <= t.length; c += 1) { if (chars(decorateMarkdownForCard(t, c, CARD)).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&') !== t) return false; } return true; }), true);
+    check('CARD: without the option (the page) nothing changed - the same carets show no marks', [cardShown(7) && !shown(7), visible(decorateMarkdownForCard('-= Milk', 3)), visible(decorateMarkdownForCard('## Chapter', 3))], [true, 'Milk', 'Chapter']);
+  }
+
   // ---- STRIP ----
   check('STRIP: "Copy My Words" removes stacked prefixes in ANY order (bullet inside an indent, quote inside a bullet)', stripMarkdownConventions('\t- one\n- > two\n>< **three**'), 'one\ntwo\nthree');
+  // ---- BLOCK INDENT, FIRST-LINE LEVELS, THE LINE READER (step 3, Nick's Tab ruling) ----
+  const { readLead, stripLine, createTabChord, CHORD_HOLD_MS } = mod;
+  check('TABS: three Tab presses are three first-line levels, in the stored text', press('One', 1, 1, 'indent', 'indent', 'indent').text, '\t\t\tOne');
+  check('TABS: Shift+Tab (outdent) takes one level back, floored at zero', [press('\t\tOne', 3, 3, 'outdent').text, press('One', 1, 1, 'outdent').text], ['\tOne', 'One']);
+  check('BLOCK: one press puts one `>| ` on the CARET\'S LINE only - a line is a paragraph, so its neighbours are untouched (Nick 2026-09-25)', press('One\nTwo', 1, 1, 'block-indent').text, '>| One\nTwo');
+  const P3 = 'first\nsecond\nthird';
+  check('SCOPE: Tab (indent) on the middle of three single-newline paragraphs indents THAT LINE ONLY - it used to indent all three', [press(P3, 8, 8, 'indent').text, press(P3, 8, 8, 'indent', 'indent').text], ['first\n\tsecond\nthird', 'first\n\t\tsecond\nthird']);
+  check('SCOPE: Shift+Tab (outdent) and the block levels have the same scope', [press('\ta\n\tb\n\tc', 4, 4, 'outdent').text, press(P3, 8, 8, 'block-indent', 'block-indent').text, press('>| a\n>| b\n>| c', 6, 6, 'block-outdent').text], ['\ta\nb\n\tc', 'first\n>| >| second\nthird', '>| a\nb\n>| c']);
+  check('SCOPE: with a selection, one level per SELECTED line - and no line outside it', [press(P3, 6, 14, 'indent').text, press(P3, 6, 14, 'block-indent').text], ['first\n\tsecond\n\tthird', 'first\n>| second\n>| third']);
+  check('BLOCK: a second press is a second level; an outdent removes ONE', [press('One', 1, 1, 'block-indent', 'block-indent').text, press('One', 1, 1, 'block-indent', 'block-indent', 'block-outdent').text], ['>| >| One', '>| One']);
+  check('BLOCK: outdent is floored at zero and leaves an un-blocked paragraph alone', press('One', 1, 1, 'block-outdent').text, 'One');
+  check('BLOCK: only the caret\'s paragraph changes (the blank line ends it)', press('A\n\nB', 0, 0, 'block-indent').text, '>| A\n\nB');
+  check('BLOCK: a first-line tab goes INSIDE the block (after its tokens), and Outdent still finds it there', [press('>| One', 4, 4, 'indent').text, press('>| One', 4, 4, 'indent', 'outdent').text], ['>| \tOne', '>| One']);
+  check('BLOCK: the caret keeps the character it was on', (() => { const r = press('One', 2, 2, 'block-indent'); return r.text.slice(r.start - 1, r.start); })(), 'n');
+  const lead = (l) => readLead(l).tokens.map(t => `${t.kind}@${t.start}-${t.end}`);
+  check('LEAD: tabs, the block token, a bullet and a heading are read in order, with positions', lead('\t>| - # x'), ['tab@0-1', 'block@1-4', 'bullet@4-6', 'heading@6-8']);
+  check('LEAD: hollow and square bullets are their own tokens, not the round hyphen', [lead('-+ one'), lead('-= two'), lead('- three')], [['bullet-circle@0-3'], ['bullet-square@0-3'], ['bullet@0-2']]);
+  check('LEAD: ordinary prose never parses as a block token - `>|x`, a mid-line `>| `, a lone `>|`, `|> `', ['>|x y', 'a >| b', '>|', '|> x', '>||', ' >| x'].map(l => lead(l)), [[], [], [], [], [], []]);
+  check('STRIP: Copy My Words removes structure in any order, block tokens included', stripMarkdownConventions('>| >| \tone\n- > two\n>< **three**\n# ~~four~~'), 'one\ntwo\nthree\nfour');
+  check('STRIP: "2 * 3 * 4" exports as it shows (the regex copy would have paired the stars); a real run is stripped', stripMarkdownConventions('2 * 3 * 4 and *real* and __u__'), '2 * 3 * 4 and real and u');
+  check('STRIP: heading text is text - only the mark goes', stripMarkdownConventions('## A - not a bullet'), 'A - not a bullet');
+  check('DECORATOR: `>| ` paints a block level with its marker collapsed, and two levels are two wrappers', [D('>| x').includes('md-block'), (D('>| >| x').match(/md-block/g) || []).length, visible(D('>| >| x'))], [true, 2, 'x']);
+  check('DECORATOR: block, tab and marks together still emit every character once', chars(D('>| >| \tx **y**')).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&') === '>| >| \tx **y**', true);
+
+  // ---- THE TAB KEY, as a state machine ----
+  const K = (o) => ({ code: o.key === '1' ? 'Digit1' : `Key${(o.key || '').toUpperCase()}`, repeat: false, shiftKey: false, ctrlKey: false, metaKey: false, altKey: false, isComposing: false, ...o });
+  const tab = (t, o = {}) => K({ key: 'Tab', code: 'Tab', timeStamp: t, ...o });
+  const one = (t, o = {}) => K({ key: '1', code: 'Digit1', timeStamp: t, ...o });
+  const flat = (steps) => steps.map(x => x.acts.join('+') || '-').join(' ');
+  const play = (chord, evs) => evs.map(([kind, e]) => (kind === 'd' ? chord.keydown(e) : chord.keyup(e)));
+  {
+    const c = createTabChord();
+    const st = play(c, [['d', tab(0)], ['u', { key: 'Tab' }], ['d', tab(500)], ['u', { key: 'Tab' }], ['d', tab(900)], ['u', { key: 'Tab' }]]);
+    check('TABKEY: three taps are three `indent` acts - each applied on RELEASE, Tab itself never moves focus', [flat(st), st.every(x => x.preventDefault)], ['- indent - indent - indent', true]);
+  }
+  check('TABKEY: Shift+Tab is one `outdent` on release', flat(play(createTabChord(), [['d', tab(0, { shiftKey: true })], ['u', { key: 'Tab' }]])), '- outdent');
+  check('TABKEY: a HELD Tab auto-repeating is ONE press, one level (repeats are swallowed)', flat(play(createTabChord(), [['d', tab(0)], ['d', tab(500, { repeat: true })], ['d', tab(530, { repeat: true })], ['d', tab(560, { repeat: true })], ['u', { key: 'Tab' }]])), '- - - - indent');
+  check(`TABKEY: Tab held past ${CHORD_HOLD_MS} ms then 1 is a BLOCK indent, consumes the 1, and the release adds no Tab level`, (() => { const st = play(createTabChord(), [['d', tab(0)], ['d', one(400)], ['u', { key: 'Tab' }]]); return [flat(st), st[1].preventDefault]; })(), ['- block-indent -', true]);
+  check('TABKEY: one level per press of the 1 while Tab stays held; the 1 auto-repeating adds none', flat(play(createTabChord(), [['d', tab(0)], ['d', one(400)], ['d', one(700)], ['d', one(730, { repeat: true })], ['u', { key: 'Tab' }]])), '- block-indent block-indent - -');
+  check('TABKEY: auto-repeat does not restart the hold clock - a Tab held from 0, repeating at 190, then a 1 at 250 is a CHORD (250 ms held), not a rollover', flat(play(createTabChord(), [['d', tab(0)], ['d', tab(190, { repeat: true })], ['d', one(250)]])), '- - block-indent');
+  check('TABKEY: Shift+Tab held + 1 is one block OUTDENT', flat(play(createTabChord(), [['d', tab(0, { shiftKey: true })], ['d', one(400, { shiftKey: true })], ['u', { key: 'Tab' }]])), '- block-outdent -');
+  check('TABKEY: a fast rollover (Tab then 1 inside the window) applies the Tab FIRST and leaves the 1 to be TYPED', (() => { const st = play(createTabChord(), [['d', tab(0)], ['d', one(60)], ['u', { key: 'Tab' }]]); return [flat(st), st[1].preventDefault]; })(), ['- indent -', false]);
+  check(`TABKEY: the threshold is exact - ${CHORD_HOLD_MS - 1} ms is rollover, ${CHORD_HOLD_MS} ms is a chord`, [flat(play(createTabChord(), [['d', tab(0)], ['d', one(CHORD_HOLD_MS - 1)]])), flat(play(createTabChord(), [['d', tab(0)], ['d', one(CHORD_HOLD_MS)]]))], ['- indent', '- block-indent']);
+  check('TABKEY: any other key after a Tab proves it was a tap - the Tab lands first, the key types', (() => { const st = play(createTabChord(), [['d', tab(0)], ['d', K({ key: 'a', timeStamp: 50 })]]); return [flat(st), st[1].preventDefault]; })(), ['- indent', false]);
+  check('TABKEY: where the chord may not act (Free Write on a written line) the held-Tab 1 is just TYPED, after the pending Tab', (() => { const st = play(createTabChord(() => false), [['d', tab(0)], ['d', one(400)], ['u', { key: 'Tab' }]]); return [flat(st), st[1].preventDefault]; })(), ['- indent -', false]);
+  check('TABKEY: Ctrl/Meta/Alt+Tab and an IME composition are left entirely alone', [play(createTabChord(), [['d', tab(0, { ctrlKey: true })]])[0], play(createTabChord(), [['d', tab(0, { isComposing: true })]])[0]], [{ preventDefault: false, acts: [] }, { preventDefault: false, acts: [] }]);
+  check('TABKEY: a modifier pressed while Tab is held does not count as "another key"', flat(play(createTabChord(), [['d', tab(0)], ['d', K({ key: 'Shift', code: 'ShiftLeft', timeStamp: 30 })], ['u', { key: 'Tab' }]])), '- - indent');
+
   return results;
 }
 
@@ -110,18 +276,41 @@ let ok = bad.length === 0;
 
 if (process.argv.includes('--mutants')) {
   const M = [
-    ['no toggle: wrap always', (s) => s.replace("if (action === 'bold') return toggleInline(", "if (action === 'bold') return wrapSelection(").replace("if (action === 'italic') return toggleInline(", "if (action === 'italic') return wrapSelection(")],
-    ['selection is one pair across lines', (s) => s.replace("const segs = selectedSegments(text, start, end);", "const segs = [{ a: start, b: end, ls: text.lastIndexOf('\\n', Math.max(0, start - 1)) + 1 }];")],
-    ['prefixes not skipped', (s) => s.replace("let a = Math.max(start, ls, ls + leadLength(text.slice(ls, le)));", "let a = Math.max(start, ls);")],
-    ['star runs read as plain pairs (bold-italic unreadable)', (s) => s.replace("if (mark !== '*' && mark !== '**') {", "if (true) {")],
-    ['mixed selection removes instead of applying', (s) => s.replace("const removing = plans.every(pl => pl.marked);", "const removing = plans.some(pl => pl.marked);")],
-    ['a part of a run is not split', (s) => s.replace("const inner = runs.find(r => r.open + ml <= A && B <= r.close) ?? null;", "const inner = runs.find(r => r.open + ml === A && B === r.close) ?? null;")],
-    ['a new mark may cut across another mark\'s run', (s) => s.replace('if (overlaps && !inside && !covers) {', 'if (false) {')],
-    ['line tools act on the caret line only', (s) => s.replace('if (le >= end || le >= text.length) break;', 'break;')],
+    ['no toggle: wrap always', 'draftFormat.ts', (s) => s.replace("if (action === 'bold') return toggleInline(", "if (action === 'bold') return wrapSelection(").replace("if (action === 'italic') return toggleInline(", "if (action === 'italic') return wrapSelection(")],
+    ['selection is one pair across lines', 'draftFormat.ts', (s) => s.replace("const segs = selectedSegments(text, start, end);", "const segs = [{ a: start, b: end, ls: text.lastIndexOf('\\n', Math.max(0, start - 1)) + 1 }];")],
+    ['prefixes not skipped', 'draftFormat.ts', (s) => s.replace("let a = Math.max(start, ls, ls + leadLength(text.slice(ls, le)));", "let a = Math.max(start, ls);")],
+    ['mixed selection removes instead of applying', 'draftFormat.ts', (s) => s.replace("const removing = plans.every(pl => pl.marked);", "const removing = plans.some(pl => pl.marked);")],
+    ['a part of a run is not split', 'draftFormat.ts', (s) => s.replace("const inner = runs.find(r => r.open + ml <= A && B <= r.close) ?? null;", "const inner = runs.find(r => r.open + ml === A && B === r.close) ?? null;")],
+    ['a new mark may cut across another mark\'s run', 'draftFormat.ts', (s) => s.replace('if (overlaps && !inside && !covers) {', 'if (false) {')],
+    ['line tools act on the caret line only', 'draftFormat.ts', (s) => s.replace('if (le >= end || le >= text.length) break;', 'break;')],
+    ['READER: no flanking rule (a star followed by a space opens)', 'markRuns.ts', (s) => s.replace('canOpen: !isSpace(line[pos + len])', 'canOpen: true').replace('canClose: pos > 0 && !isSpace(line[pos - 1])', 'canClose: pos > 0')],
+    ['READER: a three-star run is not both bold and italic', 'markRuns.ts', (s) => s.replace("if (n >= 1 && n <= 3) push(ch, i, n);", "if (n >= 1 && n <= 2) push(ch, i, n);")],
+    ['READER: crossing runs are all kept', 'markRuns.ts', (s) => s.replace('if (!crosses) accepted.push(r);', 'accepted.push(r);')],
+    ['READER: an empty pair (four stars) is text', 'markRuns.ts', (s) => s.replace('else if (n === 4) { push(ch, i, 2); push(ch, i + 2, 2); }', '')],
+    ['TABKEY: the hold threshold is not enforced (any 1 while Tab is down chords)', 'tabChord.ts', (s) => s.replace('e.timeStamp - at >= CHORD_HOLD_MS', 'true')],
+    ['TABKEY: auto-repeat is not swallowed', 'tabChord.ts', (s) => s.replace('if (down) return { preventDefault: true, acts: [] };', '')],
+    ['TABKEY: a rollover 1 does not apply the Tab first', 'tabChord.ts', (s) => s.replace("if (pending) { pending = false; return { preventDefault: false, acts: [tabAct()] }; }", '')],
+    ['LEAD: the block token is not read', 'markRuns.ts', (s) => s.replace("  { kind: 'block', text: BLOCK_TOKEN },\n", '').replace("  { kind: 'block', text: BLOCK_TOKEN },\r\n", '')],
+    ['STRIP: Copy My Words does not go through the shared reader', 'draftFormat.ts', (s) => s.replace("return text.split('\\n').map(stripLine).join('\\n');", "return text.split('\\n').map(l => l.replace(/\\*([^*]+)\\*/g, '$1')).join('\\n');")],
+    ['BLOCK: outdent removes every level', 'draftFormat.ts', (s) => s.replace('return at === -1 ? tokens : [...tokens.slice(0, at), ...tokens.slice(at + 1)];', 'return tokens.filter(t => t !== BLOCK_TOKEN);')],
+    ['TITLES: firstLine no longer goes through the reader', 'entryText.ts', (s) => s.replace('return firstPlainLine(text) || \'Untitled\';', "return (text.split('\\n').map(l => l.trim()).find(Boolean)) || 'Untitled';")],
+    ['TITLES: markup-only lines are not skipped', 'entryText.ts', (s) => s.replace("return text.split('\\n').map(l => stripLine(l.trimStart()).trim()).filter(Boolean);", "return text.split('\\n').map(l => stripLine(l.trimStart()).trim());")],
+    ['TITLES: the board name keeps its own copy', 'entryText.ts', (s) => s.replace("const first = firstPlainLine(text ?? '');", "const first = (text ?? '').split('\\n').map(l => l.trim()).find(Boolean);")],
+    // ---- PARKED - SUPERSEDED by item 211 / PR #7 (e79390c: hidden marks never show, at an edge or mid-word), 2026-10-02 ----
+    // Kept VERBATIM and no longer run. The `const reveal = touches(...)` line these mutated is gone; the successors re-introduce each superseded rule (the old rule, the interim rule) and must go RED.
+    //
+    // ['REVEAL: markers show anywhere inside the run (the old rule)', 'draftDecoration.ts', (s) => s.replace('const reveal = touches(r.open) || touches(r.close);', 'const reveal = caret !== null && caret >= r.open && caret <= end;')],
+    // ['REVEAL: only the opening marker is watched', 'draftDecoration.ts', (s) => s.replace('const reveal = touches(r.open) || touches(r.close);', 'const reveal = touches(r.open);')],
+    // ----------------------------------------------------------------------
+    ['REVEAL: markers show anywhere inside the run (the old rule)', 'draftDecoration.ts', (s) => s.replace('const reveal = revealAtMarker && (touches(r.open) || touches(r.close));', 'const reveal = caret !== null && caret >= r.open && caret <= end;')],
+    ['REVEAL: the card\'s interim rule leaks onto the page', 'draftDecoration.ts', (s) => s.replace('const reveal = revealAtMarker && (touches(r.open) || touches(r.close));', 'const reveal = touches(r.open) || touches(r.close);')],
+    ['HEADING: the hash stays on the page', 'draftDecoration.ts', (s) => s.replace('const headCls = revealAtMarker && heading', 'const headCls = true || heading')],
+    ['CARD: the popup loses the interim rule (marks never show there either)', 'draftDecoration.ts', (s) => s.replace('const reveal = revealAtMarker && (touches(r.open) || touches(r.close));', 'const reveal = false;')],
+    ['DECORATOR: marks are not nested (a run inside another is dropped)', 'draftDecoration.ts', (s) => s.replace(/kids\.push\(within\[i \+ 1\]\);\s*i\+\+;/, 'i++;')],
   ];
-  for (const [name, fn] of M) {
+  for (const [name, file, fn] of M) {
     let landed = true; let res;
-    try { res = run(await load(`m-${name.replace(/\W+/g, '-')}`, fn)); } catch (e) { landed = !/did not land/.test(String(e)); res = null; if (landed) console.log(`MUTANT ${name}: build error ${e.message}`); }
+    try { res = run(await load(`m-${name.replace(/\W+/g, '-')}`, { file, fn })); } catch (e) { landed = !/did not land/.test(String(e)); res = null; if (landed) console.log(`MUTANT ${name}: build error ${e.message}`); }
     if (!landed) { console.log(`MUTANT ${name}: DID NOT LAND (instrument bug)`); ok = false; continue; }
     const red = res ? res.filter(r => !r.pass).length : -1;
     console.log(`MUTANT ${red > 0 ? 'KILLED' : 'SURVIVED'}  ${name}  (${red} red)`);
