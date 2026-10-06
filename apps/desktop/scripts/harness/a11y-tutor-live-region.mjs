@@ -63,10 +63,19 @@ ok('A8: the live region is the FIRST thing inside .wz-tutor-panel (aria-hidden={
 // ---- CSS: sr-only is the clip pattern (AT-visible, visually hidden) — ----
 // NOT display:none or visibility:hidden, either of which would ALSO hide it
 // from assistive tech and defeat the whole point.
-const srOnlyRule = cssSrc.match(/\.wz-sr-only\{[^}]*\}/);
-ok('A8 CSS: .wz-sr-only exists, uses the standard clip-rect(0,0,0,0) pattern, and does NOT use display:none or visibility:hidden (either would hide it from screen readers too)',
-  !!srOnlyRule && /clip:\s*rect\(0,0,0,0\)/.test(srOnlyRule[0]) && !/display:\s*none/.test(srOnlyRule[0]) && !/visibility:\s*hidden/.test(srOnlyRule[0]),
+const srOnlyRule = cssSrc.match(/\.wz-sr-only\s*\{[^}]*\}/);
+// The clip rect may be written with commas or spaces, and any whitespace: rect(0,0,0,0) and rect(0 0 0 0) are the same rule.
+const CLIP_ZERO = /clip:\s*rect\(\s*0(?:[\s,]+0){3}\s*\)/;
+ok('A8 CSS: .wz-sr-only exists, uses the standard zero clip-rect pattern (commas or spaces), and does NOT use display:none or visibility:hidden (either would hide it from screen readers too)',
+  !!srOnlyRule && CLIP_ZERO.test(srOnlyRule[0]) && !/display:\s*none/.test(srOnlyRule[0]) && !/visibility:\s*hidden/.test(srOnlyRule[0]),
   srOnlyRule ? srOnlyRule[0] : 'rule not found');
+ok('A8 CSS: the visually-hidden box keeps position:absolute, a 1px width and height, and overflow:hidden',
+  !!srOnlyRule && /position:\s*absolute/.test(srOnlyRule[0]) && /width:\s*1px/.test(srOnlyRule[0]) && /height:\s*1px/.test(srOnlyRule[0]) && /overflow:\s*hidden/.test(srOnlyRule[0]),
+  srOnlyRule ? srOnlyRule[0] : 'rule not found');
+// The dedupe ruling (Fable, Batch Nine assembly): exactly ONE .wz-sr-only rule in index.css.
+const srOnlyRuleCount = (cssSrc.match(/\.wz-sr-only\s*\{/g) || []).length;
+ok('A8 CSS: index.css has exactly ONE .wz-sr-only rule (the dedupe ruling: A8\'s duplicate is gone, escexit\'s stands)',
+  srOnlyRuleCount === 1, String(srOnlyRuleCount));
 
 // =============================================================================
 // LIVE — one announcement per reply, in a real browser (Fable's follow-up
