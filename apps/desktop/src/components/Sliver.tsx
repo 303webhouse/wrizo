@@ -107,6 +107,8 @@ export type SliverContent =
       format?: {
         onFormat: (action: FormatAction) => void;
         boldOn?: boolean; italicOn?: boolean; underlineOn?: boolean; strikeOn?: boolean;
+        // HEADINGS (Nick, 2026-10-06) - the caret line's heading level (1-6), or null: H lights on a heading line.
+        headingLevel?: number | null;
       };
       // ITEM 114 (item 83 errata E4) — the page's DECLARED kind and, under
       // Research, its style guide. Note the two neighbouring words this union
@@ -660,7 +662,13 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
                 has learned. The glyph wears its own mark (<s>) exactly as B/I/U
                 wear theirs — the control demonstrates itself. */}
             <button type="button" className="mode-tbtn" data-on={content.format.strikeOn ? 'true' : 'false'} aria-pressed={!!content.format.strikeOn} title={t('stylingStrike')} onClick={() => content.format!.onFormat('strike')}><s>S</s></button>
-            <button type="button" className="mode-tbtn" title={t('draftHeading')} onClick={() => content.format!.onFormat('heading')}>H</button>
+            {/* HEADINGS (Nick, 2026-10-06): H lights on a heading line and toggles it (adds Heading 2, or removes any level); + and -
+                step between the six levels, toward h1 and toward h6. They act only on a heading line, so they show only on one. */}
+            <button type="button" className="mode-tbtn" data-on={content.format.headingLevel ? 'true' : 'false'} aria-pressed={!!content.format.headingLevel} title={t('draftHeading')} onClick={() => content.format!.onFormat('heading')}>H</button>
+            {content.format.headingLevel ? (<>
+              <button type="button" className="mode-tbtn" title={t('draftHeadingUp')} aria-label={t('draftHeadingUp')} onClick={() => content.format!.onFormat('heading-up')}>+</button>
+              <button type="button" className="mode-tbtn" title={t('draftHeadingDown')} aria-label={t('draftHeadingDown')} onClick={() => content.format!.onFormat('heading-down')}>&minus;</button>
+            </>) : null}
           </div>
           {/* ITEM 83 M5 (R4) — the roster Nick named: bulleted lists,
               indentation/block quote, alignment, line spacing. Lists and

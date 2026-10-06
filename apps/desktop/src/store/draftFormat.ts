@@ -1,4 +1,4 @@
-import { readLead, runsOfMark, stripLine, BLOCK_TOKEN } from './markRuns';
+import { readLead, readMarks, runsOfMark, stripLine, BLOCK_TOKEN } from './markRuns';
 
 // AB2 S3 — Draft's tools, operating as markdown conventions directly on
 // `entry.text` (S0's ruling: no separate rich-text state). Pure string
@@ -12,7 +12,7 @@ import { readLead, runsOfMark, stripLine, BLOCK_TOKEN } from './markRuns';
 // supersedes Chamber 1's deferral of alignment/indentation ("until a real need
 // names itself" — the founder just named it). Underline joins from R1.
 export type FormatAction =
-  | 'bold' | 'italic' | 'underline' | 'strike' | 'heading' | 'spacing'
+  | 'bold' | 'italic' | 'underline' | 'strike' | 'heading' | 'heading-up' | 'heading-down' | 'spacing'
   | 'bullet' | 'bullet-circle' | 'bullet-square' | 'quote' | 'indent' | 'outdent' | 'block-indent' | 'block-outdent'
   | 'align-left' | 'align-center' | 'align-right';
 export type StructureKind = 'prose' | 'screenplay';
@@ -252,20 +252,30 @@ function toggleInline(text: string, start: number, end: number, mark: string): F
   return { text: out, start: firstStart, end: lastEnd };
 }
 
-// Heading cycles the caret's LINE (S0 rider 1's frozen set is `#`/`##`):
-// none -> `# ` -> `## ` -> none. One rail control, both frozen levels.
-function cycleHeading(text: string, at: number): FormatResult {
+// HEADINGS (Nick, 2026-10-06). H is a TOGGLE: on a line with no heading it adds `## ` (Heading 2 - the web editors' default for a
+// new heading, since a post's title is its h1); on a heading line it removes whatever level is there ("all heading modifications
+// should be undone"). + steps toward h1 and - toward h6, clamped at both ends, and do nothing on a line that is not a heading.
+// The heading token is read where the ONE lead reader puts it (after tabs and line directives), never assumed at column 0.
+function headingAt(text: string, at: number): { ls: number; le: number; tok: { start: number; end: number; level: number } | null } {
   const { start: ls, end: le } = lineBounds(text, at);
-  const line = text.slice(ls, le);
-  let nextLine: string;
-  if (line.startsWith('## ')) nextLine = line.slice(3);
-  else if (line.startsWith('# ')) nextLine = `#${line}`;
-  else nextLine = `# ${line}`;
-  const next = text.slice(0, ls) + nextLine + text.slice(le);
-  const delta = nextLine.length - line.length;
-  const caret = Math.max(ls, at + delta);
+  const t = readLead(text.slice(ls, le)).tokens.find(x => x.kind === 'heading');
+  return { ls, le, tok: t ? { start: ls + t.start, end: ls + t.end, level: t.text.length - 1 } : null };
+}
+function setHeading(text: string, at: number, level: number | null): FormatResult {
+  const { ls, le, tok } = headingAt(text, at);
+  const ins = level === null ? '' : '#'.repeat(level) + ' ';
+  const s = tok ? tok.start : ls + readLead(text.slice(ls, le), { headings: false }).length;
+  const e = tok ? tok.end : s;
+  const next = text.slice(0, s) + ins + text.slice(e);
+  const delta = ins.length - (e - s);
+  const caret = at >= e ? at + delta : at >= s ? s + ins.length : at;
   return { text: next, start: caret, end: caret };
 }
+/** The heading level (1-6) of the caret's line, or null. What lights the H button. */
+export function headingLevelAt(text: string, at: number): number | null {
+  return headingAt(text, at).tok?.level ?? null;
+}
+
 
 // Spacing inserts a paragraph break (a blank line) at the caret — the
 // frozen convention's third and last mark (S0 rider 1).
@@ -548,30 +558,24 @@ const BULLET_PREFIXES = [LINE_DIRECTIVE.bullet, LINE_DIRECTIVE['bullet-circle'],
 // the moment the writer can see the syntax they are inside. Two rules that
 // disagreed about "inside" would be worse than either alone.
 export function marksAt(text: string, caret: number): { bold: boolean; italic: boolean; underline: boolean; strike: boolean } {
-  const within = (mark: string): boolean => {
-    let i = 0;
-    while (i < text.length) {
-      const open = text.indexOf(mark, i);
-      if (open === -1) return false;
-      const close = text.indexOf(mark, open + mark.length);
-      if (close === -1) return false; // unpaired: not a run, so nothing is inside it
-      if (caret >= open && caret <= close + mark.length) return true;
-      i = close + mark.length;
-    }
-    return false;
-  };
-  // Bold before italic, for the reason the renderer scans that way: `**` would
-  // otherwise be read as two italic marks and every bold run would report as
-  // italic. The flags are independent, so this ordering is about correctness of
-  // the italic answer, not about precedence between them.
-  const bold = within(FORMAT_MARK.bold);
-  const italicRaw = within(FORMAT_MARK.italic);
-  return {
-    bold,
-    italic: italicRaw && !bold,
-    underline: within(FORMAT_MARK.underline),
-    strike: within(FORMAT_MARK.strike),
-  };
+  // ONE READER (Nick's live bug, 2026-10-06: "I can't click on the line next to 'BOLD'... It seems to just activate the strip menu").
+  // This used to pair markers by `indexOf` across the WHOLE text - a fifth copy of the mark reader, which counted a caret just past a
+  // run's closing marks as inside it. It now asks store/markRuns.ts for the caret's own line, and a mark is active exactly when the
+  // character to the caret's LEFT carries it - the same left-character rule typing follows - so a caret placed after a styled word's
+  // closing marks (a click past the line's end) lights nothing. An EMPTY pair a press just made counts, since typing takes it.
+  const ls = text.lastIndexOf('\n', Math.max(0, caret - 1)) + 1;
+  let le = text.indexOf('\n', ls);
+  if (le === -1) le = text.length;
+  const line = text.slice(ls, le);
+  const lead = readLead(line).length;
+  const at = caret - ls - lead;
+  const out = { bold: false, italic: false, underline: false, strike: false };
+  for (const r of readMarks(line.slice(lead))) {
+    const ml = r.mark.length;
+    const empty = r.close === r.open + ml;
+    if ((empty && at === r.close) || (at > r.open + ml && at <= r.close)) out[r.kind] = true;
+  }
+  return out;
 }
 
 export function applyFormat(text: string, selStart: number, selEnd: number, action: FormatAction): FormatResult {
@@ -581,7 +585,13 @@ export function applyFormat(text: string, selStart: number, selEnd: number, acti
   if (action === 'italic') return toggleInline(text, start, end, FORMAT_MARK.italic);
   if (action === 'underline') return toggleInline(text, start, end, FORMAT_MARK.underline);
   if (action === 'strike') return toggleInline(text, start, end, FORMAT_MARK.strike);
-  if (action === 'heading') return cycleHeading(text, start);
+  // The old cycle (none -> # -> ## -> none) is retired by Nick's ruling of 2026-10-06 and deleted, not kept: H is a toggle now.
+  if (action === 'heading') { const cur = headingLevelAt(text, start); return setHeading(text, start, cur === null ? 2 : null); }
+  if (action === 'heading-up' || action === 'heading-down') {
+    const cur = headingLevelAt(text, start);
+    if (cur === null) return { text, start, end };
+    return setHeading(text, start, Math.max(1, Math.min(6, cur + (action === 'heading-up' ? -1 : 1))));
+  }
   if (action === 'bullet') return toggleLines(text, start, end, LINE_DIRECTIVE.bullet, BULLET_PREFIXES);
   if (action === 'bullet-circle') return toggleLines(text, start, end, LINE_DIRECTIVE['bullet-circle'], BULLET_PREFIXES);
   if (action === 'bullet-square') return toggleLines(text, start, end, LINE_DIRECTIVE['bullet-square'], BULLET_PREFIXES);

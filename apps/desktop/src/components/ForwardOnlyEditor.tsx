@@ -8,7 +8,7 @@ import { getCaretOffset as getPlainOffset, setCaretOffset as setPlainOffset } fr
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, registerUndoStack, unregisterUndoStack, type EditKind } from '../store/textUndo';
 import { getSelectionOffsets } from '../store/caretOffset';
-import { backspaceAt, closersAt, deleteAt, enterAt, nativeRange, reabsorb, replaceRange, snapCaret, stepLeft, stepRight, type EditResult } from '../store/hiddenMarks';
+import { backspaceAt, closersAt, deleteAt, enterAt, nativeRange, reabsorb, replaceRange, snapCaret, snapCaretAfterClick, stepLeft, stepRight, type EditResult } from '../store/hiddenMarks';
 import { extendSelection, placeCaret, selectionEnds } from '../store/hiddenMarksDom';
 
 // CW2 — the reusable forward-only writing surface. Keyboard-only input on the
@@ -531,11 +531,16 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // the same two conditions onInput checks before it trusts the DOM.
       // ITEM 211 rule 1 — the same signal snaps a collapsed caret off the hidden marks: after a click (once the button is up, so
       // a drag-select is never disturbed), a native word jump, Home/End, or anything else that moved it.
-      const snapCaretHere = () => {
+      // A caret a CLICK placed is honoured until the caret moves elsewhere: the selectionchange that follows must not re-snap it
+      // with the keyboard rule and pull it back inside the run the writer clicked past.
+      let clickPlaced = -1;
+      const snapCaretHere = (fromClick = false) => {
         if (pointerDown) return;
         const ends = selectionEnds(el);
         if (!ends || !ends.collapsed) return;
-        const at = snapCaret(plainNow(), ends.focus);
+        const text = plainNow();
+        const at = fromClick ? snapCaretAfterClick(text, ends.focus) : ends.focus === clickPlaced ? clickPlaced : snapCaret(text, ends.focus);
+        clickPlaced = fromClick ? at : at === clickPlaced ? clickPlaced : -1;
         if (exit && at !== exit.wsEnd) exit = null;
         // one placement per offset: if the browser canonicalises the point we chose, the next selectionchange must not retry it
         if (at === ends.focus && at === lastSnap) return;
@@ -551,7 +556,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       const onPointerUpDraft = () => {
         if (!pointerDown) return;
         pointerDown = false;
-        if (!composingDraft && !applyingEmDash) snapCaretHere();
+        if (!composingDraft && !applyingEmDash) snapCaretHere(true);
       };
       el.addEventListener('pointerdown', onPointerDownDraft);
       window.addEventListener('pointerup', onPointerUpDraft);

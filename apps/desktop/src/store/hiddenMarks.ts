@@ -77,6 +77,28 @@ export function snapCaret(text: string, p: number): number {
   return q;
 }
 
+/** NICK'S LIVE BUG (2026-10-06): a click in the space right of a line that ENDS in a styled word landed just after that word's hidden
+ *  closing marks, and `snapCaret` (the keyboard rule: sit after the nearest VISIBLE character) pulled it back inside the run - so the
+ *  strip lit B and the next letter typed bold, though the writer had clicked past the word. A CLICK keeps the side of the closing
+ *  marks it landed on: inside or just after a group of closing marks, the caret goes to the group's END. Every other position takes
+ *  `snapCaret` as before; the keyboard is unchanged. (An empty pair's interior is not a closing group: a press made it to be typed into.) */
+export function snapCaretAfterClick(text: string, p: number): number {
+  p = Math.max(0, Math.min(text.length, p));
+  const li = lineAt(text, p);
+  let end = -1;
+  for (let moved = true; moved;) {
+    moved = false;
+    const from = end === -1 ? p : end;
+    for (const r of li.runs) {
+      const ml = r.mark.length;
+      if (r.close === r.open + ml) continue;
+      if (from >= r.close && from <= r.close + ml && r.close + ml > end) { end = r.close + ml; moved = true; }
+    }
+    if (end === from) moved = false;
+  }
+  return end === -1 ? snapCaret(text, p) : end;
+}
+
 /** Rule 2, rightward: past any hidden marks, over one visible character (a newline counts), then snapped. */
 export function stepRight(text: string, p: number): number {
   let q = Math.max(0, Math.min(text.length, p));

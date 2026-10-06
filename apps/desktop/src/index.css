@@ -4640,8 +4640,19 @@ a:focus-visible,
 ::selection{ background:var(--brass); color:var(--on-brass); }
 ::-moz-selection{ background:var(--brass); color:var(--on-brass); }
 
-.md-h1{ font-size:1.3em; font-weight:600; }
-.md-h2{ font-size:1.14em; font-weight:600; }
+/* HEADINGS, six levels (Nick, 2026-10-06), one-to-one with HTML h1-h6: each a distinct size, h1 largest and h6 just above body.
+   text-transform is set to none on purpose - a heading is never forced into capitals (Nick: "headings should not default to ALL CAPS"). */
+.md-h1{ font-size:1.6em; font-weight:600; }
+.md-h2{ font-size:1.4em; font-weight:600; }
+.md-h3{ font-size:1.25em; font-weight:600; }
+.md-h4{ font-size:1.15em; font-weight:600; }
+.md-h5{ font-size:1.08em; font-weight:600; }
+.md-h6{ font-size:1.03em; font-weight:600; }
+.md-h1, .md-h2, .md-h3, .md-h4, .md-h5, .md-h6{ text-transform:none; }
+/* The floating +/- beside a selected heading: an overlay (position:fixed), so it moves nothing; placed by PageEditor where it covers no word. */
+.wz-heading-pop{ position:fixed; z-index:30; display:flex; gap:2px; padding:2px; background:var(--ink-900); border:1px solid var(--ink-border); border-radius:var(--radius-sm); }
+.wz-heading-pop-btn{ width:24px; height:20px; padding:0; font:600 13px/1 var(--font-ui); color:var(--text-mid); background:none; border:0; border-radius:var(--radius-sm); cursor:pointer; }
+.wz-heading-pop-btn:hover{ background:var(--ink-border); }
 
 /* WRITING-SURFACE S0 STEP 1 - the line directives (draftDecoration.ts decorateLineForCard). `.md-line` is an INLINE-BLOCK on
    purpose: the '\n' between lines is a real text character, and a display:block wrapper would make it draw a blank line. Width

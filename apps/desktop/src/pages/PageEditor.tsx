@@ -19,7 +19,7 @@ import { useFirstLineInvite } from '../components/useFirstLineInvite';
 import { UnbornProvider, useUnborn } from '../components/UnbornSurface';
 import { BeginningsRow, type BeginningDoor } from '../components/BeginningsRow';
 import { useWayBack } from '../components/useWayBack';
-import { setCaretOffset, setSelectionOffsets, getCaretOffset, getSelectionOffsets } from '../store/caretOffset';
+import { setCaretOffset, setSelectionOffsets, getCaretOffset, getSelectionOffsets, rangeFromPlainOffsets } from '../store/caretOffset';
 import type { Stroke } from '../types';
 import { projectMilestones } from '../store/milestones';
 import { copyText } from '../store/clipboard';
@@ -43,7 +43,7 @@ import { PAGE_KIND_DEFAULT, PAGE_SETTINGS_FALLBACK, STYLE_GUIDE_DEFAULT } from '
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
-import { applyFormat, marksAt, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
+import { applyFormat, marksAt, headingLevelAt, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
 import { createTabChord, type TabAct } from '../store/tabChord';
 import { BLOCK_TOKEN } from '../store/markRuns';
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
@@ -295,6 +295,9 @@ function PageEditorView({ id }: { id: string }) {
   // `getCaretOffset` is the shared reader every other caret path uses, so this
   // adds no plumbing and cannot disagree with the caret the formatter acts on.
   const [draftMarks, setDraftMarks] = useState({ bold: false, italic: false, underline: false, strike: false });
+  // HEADINGS (Nick, 2026-10-06): the caret line's heading level, and where the small floating +/- sits while a heading is selected.
+  const [headingLevel, setHeadingLevel] = useState<number | null>(null);
+  const [headingPop, setHeadingPop] = useState<{ x: number; y: number } | null>(null);
   // ITEM 121 I6 — FX7 S2's rail-driven marker-insertion escape hatch is gone
   // with the STYLING zone that was its only caller. ForwardOnlyEditor's
   // `insertMarkerRef` PROP is deliberately left standing: it is that shared
@@ -343,13 +346,36 @@ function PageEditorView({ id }: { id: string }) {
       const el = editorRef.current;
       if (!el) return;
       const offset = getCaretOffset(el);
+      const plain = readEditorPlainText(el.innerText, null).plain;
       setDraftMarks(offset == null
         ? { bold: false, italic: false, underline: false, strike: false }
-        : marksAt(readEditorPlainText(el.innerText, null).plain, offset));
+        : marksAt(plain, offset));
+      const level = offset == null ? null : headingLevelAt(plain, offset);
+      setHeadingLevel(level);
+      // THE FLOATING +/- (Nick: "a '+/-' option ... that hovers over the heading text on the page when it is highlighted"). Shown only
+      // while a SELECTION sits on a heading line. It is placed where it can never cover a word: just past the end of the heading's own
+      // last line of text; if that would run off the column, in the column's left margin beside the heading. Fixed-position overlay,
+      // so the page never moves.
+      const sel = window.getSelection();
+      const o = level !== null && sel && !sel.isCollapsed ? getSelectionOffsets(el) : null;
+      if (!o) { setHeadingPop(null); return; }
+      const ls = plain.lastIndexOf('\n', Math.max(0, o.start - 1)) + 1;
+      let le = plain.indexOf('\n', o.start);
+      if (le === -1) le = plain.length;
+      const lineRange = rangeFromPlainOffsets(el, ls, le);
+      const rects = lineRange ? [...lineRange.getClientRects()].filter(r => r.width > 0) : [];
+      if (rects.length === 0) { setHeadingPop(null); return; }
+      const last = rects[rects.length - 1];
+      const col = el.getBoundingClientRect();
+      const POP_W = 56;
+      setHeadingPop(last.right + 8 + POP_W <= col.right
+        ? { x: Math.round(last.right + 8), y: Math.round(last.top + (last.height - 24) / 2) }
+        : { x: Math.round(col.left - POP_W - 8), y: Math.round(rects[0].top + (rects[0].height - 24) / 2) });
     };
     document.addEventListener('selectionchange', recompute);
+    window.addEventListener('scroll', recompute, true);
     recompute();
-    return () => document.removeEventListener('selectionchange', recompute);
+    return () => { document.removeEventListener('selectionchange', recompute); window.removeEventListener('scroll', recompute, true); };
   }, [mode, text]);
 
   const gateActive = framed && firstRunGateRequested.current && !gateUnlocked;
@@ -1059,6 +1085,7 @@ function PageEditorView({ id }: { id: string }) {
               onFormat: applyRailFormat,
               boldOn: draftMarks.bold, italicOn: draftMarks.italic,
               underlineOn: draftMarks.underline, strikeOn: draftMarks.strike,
+              headingLevel,
             },
             // ITEM 114 (item 83 errata E4) — READ THROUGH THE DEFAULT, never
             // written at birth. A page that has never chosen carries no `kind`
@@ -1160,6 +1187,14 @@ function PageEditorView({ id }: { id: string }) {
     publishToast.show(ok ? dt('publishDownloadConfirm') : dt('publishDownloadFailed'));
   };
 
+  // HEADINGS - the floating +/- beside a SELECTED heading (see the selectionchange effect for where it sits and why). Draft only, the
+  // one mode with styling tools; mousedown is prevented so the selection the writer made survives the press.
+  const headingPopEl = mode === 'drafting' && headingPop && headingLevel !== null ? (
+    <div className="wz-heading-pop" role="group" aria-label={dt('draftHeading')} style={{ left: headingPop.x, top: headingPop.y }} onMouseDown={e => e.preventDefault()}>
+      <button type="button" className="wz-heading-pop-btn" title={dt('draftHeadingDown')} aria-label={dt('draftHeadingDown')} onClick={() => applyRailFormat('heading-down')}>&minus;</button>
+      <button type="button" className="wz-heading-pop-btn" title={dt('draftHeadingUp')} aria-label={dt('draftHeadingUp')} onClick={() => applyRailFormat('heading-up')}>+</button>
+    </div>
+  ) : null;
   const publishDialog = showPublish && (
     <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>
       <div className="sprint-modal card" role="dialog" aria-label={lex('publish')} onClick={e => e.stopPropagation()}>
@@ -1377,6 +1412,7 @@ function PageEditorView({ id }: { id: string }) {
         {gateReached && <UnlockCeremony onChoose={handleChooseTheme} />}
 
         {publishDialog}
+        {headingPopEl}
         {structureConfirmDialog}
         {pageFaceSheets}
       </div>
@@ -1441,6 +1477,7 @@ function PageEditorView({ id }: { id: string }) {
       </ModeStage>
 
       {publishDialog}
+      {headingPopEl}
     </div>
   );
 }

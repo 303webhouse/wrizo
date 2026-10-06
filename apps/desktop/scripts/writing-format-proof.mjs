@@ -17,7 +17,7 @@ import { createRequire } from 'node:module';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SRC = join(here, '..', 'src');
-const FILES = ['draftFormat.ts', 'markRuns.ts', 'draftDecoration.ts', 'tabChord.ts', 'entryText.ts'];
+const FILES = ['draftFormat.ts', 'markRuns.ts', 'draftDecoration.ts', 'tabChord.ts', 'entryText.ts', 'hiddenMarks.ts'];
 const requireDesktop = createRequire(join(here, '..', 'package.json'));
 const esbuild = createRequire(requireDesktop.resolve('vite'))('esbuild');
 const tmp = join(tmpdir(), 'wrizo-format-proof');
@@ -36,7 +36,7 @@ async function load(tag, mutant) {
     }
     writeFileSync(join(dir, f), source);
   }
-  writeFileSync(join(dir, 'entry.ts'), "export * from './draftFormat'; export { readMarks } from './markRuns'; export { decorateMarkdownForCard } from './draftDecoration'; export { readLead, stripLine } from './markRuns'; export { createTabChord, CHORD_HOLD_MS } from './tabChord'; export { firstLine, firstPlainLine, plainLines, boardName, substantialLines } from './entryText';");
+  writeFileSync(join(dir, 'entry.ts'), "export * from './draftFormat'; export { readMarks } from './markRuns'; export { decorateMarkdownForCard } from './draftDecoration'; export { readLead, stripLine } from './markRuns'; export { createTabChord, CHORD_HOLD_MS } from './tabChord'; export { firstLine, firstPlainLine, plainLines, boardName, substantialLines } from './entryText'; export { snapCaret, snapCaretAfterClick } from './hiddenMarks';");
   const outfile = join(dir, 'out.mjs');
   await esbuild.build({ entryPoints: [join(dir, 'entry.ts')], bundle: true, platform: 'node', format: 'esm', outfile, logLevel: 'silent' });
   return import(pathToFileURL(outfile).href + `?t=${Date.now()}`);
@@ -265,6 +265,43 @@ function run(mod) {
   check('TABKEY: Ctrl/Meta/Alt+Tab and an IME composition are left entirely alone', [play(createTabChord(), [['d', tab(0, { ctrlKey: true })]])[0], play(createTabChord(), [['d', tab(0, { isComposing: true })]])[0]], [{ preventDefault: false, acts: [] }, { preventDefault: false, acts: [] }]);
   check('TABKEY: a modifier pressed while Tab is held does not count as "another key"', flat(play(createTabChord(), [['d', tab(0)], ['d', K({ key: 'Shift', code: 'ShiftLeft', timeStamp: 30 })], ['u', { key: 'Tab' }]])), '- - indent');
 
+
+  // ---- NICK'S LIVE BUG (2026-10-06): a click past a styled word must not land inside it, and nothing lights unless it should ----
+  {
+    const { marksAt, snapCaret, snapCaretAfterClick } = mod;
+    const L1 = '**BOLD** *TEST* ~~FINAL~~ (hopefully)';          // his line
+    const L2 = 'plain words then **BOLD**';                       // a line that ENDS in a styled word
+    const none = { bold: false, italic: false, underline: false, strike: false };
+    check('CLICK: a click past the end of a line that ends in a bold word lands AFTER its closing marks (the line\'s end), not inside the word', snapCaretAfterClick(L2, L2.length), L2.length);
+    check('CLICK: ...and the strip lights NOTHING there', marksAt(L2, L2.length), none);
+    check('CLICK: a click just after "BOLD" mid-line (raw 8, after the hidden `**`) stays after the marks - the strip lights nothing', [snapCaretAfterClick(L1, 8), marksAt(L1, snapCaretAfterClick(L1, 8))], [8, none]);
+    check('CLICK: a click that lands BETWEEN the two hidden closing stars goes to the group\'s end, never splitting it', snapCaretAfterClick(L1, 7), 8);
+    check('CLICK: nested closers are one group - in `__*x*__ y` a click at 4, 5 or 6 (after x: inside or between the closers) lands at 7, after both', [4, 5, 6].map((p) => snapCaretAfterClick('__*x*__ y', p)), [7, 7, 7]);
+    check('CLICK: an empty pair a press made keeps its interior stop (typing goes into it)', snapCaretAfterClick('a**** b', 3), 3);
+    check('KEYBOARD unchanged: the arrow/typing snap still pulls a caret after the hidden closers back to the last visible letter (the left-character rule)', snapCaret(L2, L2.length), L2.length - 2);
+    check('MARKS: a mark lights exactly when the character to the caret\'s LEFT carries it - inside BOLD and after its last letter, not before its first', [marksAt(L1, 4).bold, marksAt(L1, 6).bold, marksAt(L1, 2).bold, marksAt(L1, 0).bold], [true, true, false, false]);
+    check('MARKS: italic and strike the same; a caret in plain text lights nothing', [marksAt(L1, 12).italic, marksAt(L1, 20).strike, marksAt(L1, 30)], [true, true, none]);
+    check('MARKS: one reader, per line - a lone `*` or `**` on ANOTHER line can no longer pair with this one (the old indexOf reader paired across lines)', marksAt('end of line\n** stray', 5), none);
+    check('MARKS: an empty pair a press just made lights its mark (the next letter is bold)', marksAt('a**** b', 3).bold, true);
+  }
+
+  // ---- HEADINGS: six levels, H toggles (adds Heading 2, removes any level), + toward h1 and - toward h6, clamped ----
+  {
+    const { headingLevelAt } = mod;
+    const lead = (l) => readLead(l).tokens.map((t) => `${t.kind}@${t.start}-${t.end}`);
+    check('HEADINGS: the one lead reader reads # through ###### plus a space; seven hashes, or none after the space, are text', ['# a', '## a', '### a', '#### a', '##### a', '###### a', '####### a', '#a'].map((l) => lead(l)), [['heading@0-2'], ['heading@0-3'], ['heading@0-4'], ['heading@0-5'], ['heading@0-6'], ['heading@0-7'], [], []]);
+    check('HEADINGS: H on a plain line adds Heading 2 (`## `) - the web editors\' default for a new heading', press('Chapter', 3, 3, 'heading').text, '## Chapter');
+    check('HEADINGS: H on ANY heading line removes the heading, whatever its level ("all heading modifications should be undone")', ['# A', '## A', '#### A', '###### A'].map((t) => press(t, t.length, t.length, 'heading').text), ['A', 'A', 'A', 'A']);
+    check('HEADINGS: + steps toward h1 and - toward h6, one level a press', [press('### A', 5, 5, 'heading-up').text, press('### A', 5, 5, 'heading-down').text], ['## A', '#### A']);
+    check('HEADINGS: + is clamped at h1 and - at h6 (no seventh hash, no zero-hash heading)', [press('# A', 3, 3, 'heading-up').text, press('###### A', 8, 8, 'heading-down').text], ['# A', '###### A']);
+    check('HEADINGS: + and - do nothing on a line that is not a heading', [press('Plain', 2, 2, 'heading-up').text, press('Plain', 2, 2, 'heading-down').text], ['Plain', 'Plain']);
+    check('HEADINGS: the token is read where the reader puts it - after a centring token - and H toggles it there', [press('>< Title', 4, 4, 'heading').text, press('>< ## Title', 7, 7, 'heading').text], ['>< ## Title', '>< Title']);
+    check('HEADINGS: the caret keeps the character it was on through H, + and -', (() => { const r = press('## Chapter', 6, 6, 'heading-up'); return r.text.slice(r.start, r.start + 3); })(), 'pte');
+    check('HEADINGS: H lights on a heading line, with its level, and not elsewhere', [headingLevelAt('## A\nplain', 2), headingLevelAt('## A\nplain', 8), headingLevelAt('###### six', 9)], [2, null, 6]);
+    check('HEADINGS: the page paints a distinct class per level, hash hidden', [1, 2, 3, 4, 5, 6].map((n) => { const h = decorateMarkdownForCard('#'.repeat(n) + ' x', null); return h.includes(`md-h${n}`) && visible(h) === 'x'; }), [true, true, true, true, true, true]);
+    check('HEADINGS: titles and Copy My Words strip every level', [firstLine('### Third level'), firstLine('###### Six'), stripMarkdownConventions('#### Four\n###### Six')], ['Third level', 'Six', 'Four\nSix']);
+  }
+
   return results;
 }
 
@@ -276,6 +313,11 @@ let ok = bad.length === 0;
 
 if (process.argv.includes('--mutants')) {
   const M = [
+    ['CLICK: a click is snapped by the keyboard rule (back inside the run)', 'hiddenMarks.ts', (s) => s.replace("return end === -1 ? snapCaret(text, p) : end;", "return snapCaret(text, p);")],
+    ['MARKS: a caret after a run\'s closing marks counts as inside it (the old reader)', 'draftFormat.ts', (s) => s.replace("(at > r.open + ml && at <= r.close)", "(at > r.open + ml && at <= r.close + ml)")],
+    ['HEADINGS: only one or two hashes are read', 'markRuns.ts', (s) => s.replace("/^(#{1,6}) /", "/^(#{1,2}) /")],
+    ['HEADINGS: H adds Heading 1', 'draftFormat.ts', (s) => s.replace("cur === null ? 2 : null", "cur === null ? 1 : null")],
+    ['HEADINGS: + and - are not clamped', 'draftFormat.ts', (s) => s.replace("Math.max(1, Math.min(6, cur + (action === 'heading-up' ? -1 : 1)))", "cur + (action === 'heading-up' ? -1 : 1)")],
     ['no toggle: wrap always', 'draftFormat.ts', (s) => s.replace("if (action === 'bold') return toggleInline(", "if (action === 'bold') return wrapSelection(").replace("if (action === 'italic') return toggleInline(", "if (action === 'italic') return wrapSelection(")],
     ['selection is one pair across lines', 'draftFormat.ts', (s) => s.replace("const segs = selectedSegments(text, start, end);", "const segs = [{ a: start, b: end, ls: text.lastIndexOf('\\n', Math.max(0, start - 1)) + 1 }];")],
     ['prefixes not skipped', 'draftFormat.ts', (s) => s.replace("let a = Math.max(start, ls, ls + leadLength(text.slice(ls, le)));", "let a = Math.max(start, ls);")],

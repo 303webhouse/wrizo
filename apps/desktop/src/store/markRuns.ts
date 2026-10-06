@@ -134,7 +134,10 @@ export function readLead(line: string, opts: { headings?: boolean } = {}): { tok
     const d = DIRECTIVES.find(x => line.startsWith(x.text, i));
     if (d) { tokens.push({ kind: d.kind, text: d.text, start: i, end: i + d.text.length }); i += d.text.length; continue; }
     if (headings) {
-      const h = line.startsWith('## ', i) ? '## ' : line.startsWith('# ', i) ? '# ' : null;
+      // HEADINGS, six levels (Nick, 2026-10-06: "whatever the standard is for WordPress or other web-based apps"): `#` to `######` and
+      // a space, one-to-one with HTML h1-h6. Seven or more hashes are text, as in Markdown.
+      const hm = /^(#{1,6}) /.exec(line.slice(i));
+      const h = hm ? hm[0] : null;
       if (h) { tokens.push({ kind: 'heading', text: h, start: i, end: i + h.length }); i += h.length; }
     }
     break;

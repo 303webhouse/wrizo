@@ -174,7 +174,7 @@ function decorateLineForCard(rawLine: string, caret: number | null, revealAtMark
   // Pressing Heading again cycles the level, which is how the mark comes off.
   const headCls = revealAtMarker && heading && caret !== null && caret >= heading.start && caret <= heading.end ? 'md-mark' : 'md-mark md-mark-hidden';
   const body = heading
-    ? `<span class="${heading.text === '## ' ? 'md-h2' : 'md-h1'}"><span class="${headCls}">${escHtml(heading.text)}</span>${inline}</span>`
+    ? `<span class="md-h${heading.text.length - 1}"><span class="${headCls}">${escHtml(heading.text)}</span>${inline}</span>`
     : inline;
   return open + head + body + close;
 }
