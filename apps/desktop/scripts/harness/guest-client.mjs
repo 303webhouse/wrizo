@@ -122,6 +122,9 @@ try {
 
   nextResponse = { status: 403, body: { error: 'This guest link is not valid.' } };
   const bad = await api.apiGuest('nope');
+  nextResponse = { status: 401, body: { error: 'This guest account has expired.', reason: 'guest_expired' } };
+  const dead = await api.apiGuest('dead-link');
+  ok('(C4b) a dead link returns the guest_expired reason alongside the server sentence', dead.ok === false && dead.reason === 'guest_expired', JSON.stringify(dead));
   ok('(C5) a refused link returns the server\'s own sentence, nothing invented', bad.ok === false && bad.error === 'This guest link is not valid.', JSON.stringify(bad));
 
   nextResponse = { status: 200, body: { id: 'g1', email: 'writer@example.com', name: 'Ada' } };

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiGuest, type AuthUser } from '../store/api';
-import { readGuestTokenFromHash, guestAddressWithoutToken } from '../store/guestState';
+import { readGuestTokenFromHash, guestAddressWithoutToken, GUEST_EXPIRED_LINE } from '../store/guestState';
 
 // GUEST LOGIN (item 225) — `#/guest?t=<token>`, the beta tester's invite link.
 // The token is read and taken out of the address bar BEFORE anything awaits, so
@@ -29,7 +29,8 @@ export function GuestArrival({ onAuthed }: { onAuthed: (user: AuthUser) => void 
         navigate('/', { replace: true });
         return;
       }
-      setMessage(r.error || 'This guest link is not valid.');
+      // A link past its grace says the expired line at once — the same words the claim sheet uses.
+      setMessage(r.reason === 'guest_expired' ? GUEST_EXPIRED_LINE : (r.error || 'This guest link is not valid.'));
     });
     // Runs once per mount by design; the ref above is the guard.
     // eslint-disable-next-line react-hooks/exhaustive-deps
