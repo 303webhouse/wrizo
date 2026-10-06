@@ -19,6 +19,7 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
+let clickPast = null;   // the WALK click reading, kept for its parked record
 const checks = [];
 const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass, detail }); console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? `  [${detail}]` : ''}`); };
 
@@ -117,7 +118,15 @@ await withHarness(async (app) => {
     const pt = await app.evalJs(`(() => { const b = document.querySelector('${ED} .md-bold'); const r = b.getBoundingClientRect(); return { x: Math.round(r.right + 1), y: Math.round(r.top + r.height / 2) }; })()`);
     await app.mouseDown(pt.x, pt.y); await app.mouseUp(pt.x, pt.y); await sleep(250);
     const clicked = await caret(app);
-    ok('WALK: a real click just past the bold word lands after its last visible letter (12), inside the pair', clicked === 12, String(clicked));
+    // ---- PARKED - SUPERSEDED by Nick's live bug (2026-10-06: "I can't click on the line next to 'BOLD' ... It seems to just activate
+    // the strip menu") - FIX's click rule, store/hiddenMarks.ts snapCaretAfterClick. Kept VERBATIM and no longer run. A CLICK now keeps
+    // the side of a run's closing marks it landed on, so a click just past the bold word lands AFTER the marks (14), outside the pair,
+    // and the strip lights nothing; the keyboard keeps the left-character rule (the check above, 14 -> 12 by snap, is unchanged).
+    //
+    // ok('WALK: a real click just past the bold word lands after its last visible letter (12), inside the pair', clicked === 12, String(clicked));
+    // ------------------------------------------------------------------
+    clickPast = clicked;
+    ok('WALK [click-rule successor]: a real click just past the bold word lands AFTER its closing marks (14), outside the pair - where the writer clicked', clicked === 14, String(clicked));
   }
 
   // ---- EDGES ----
@@ -294,6 +303,12 @@ await withHarness(async (app) => {
   }
 });
 
+// === PARKED - gated behind HARNESS_PARKED=1. One park: WALK's click-past check, superseded by the click rule (2026-10-06). ===
+if (process.env.HARNESS_PARKED === '1') {
+  checks.push({ name: 'PARKED (was "WALK: a real click just past the bold word lands after its last visible letter (12), inside the pair") - the click rule (Nick, 2026-10-06): a click keeps the side of the closing marks it landed on, so it lands at 14, outside',
+    pass: clickPast === 14, detail: String(clickPast) });
+  console.log('\nITEM211 PARKED: 1 check (the WALK click park)');
+}
 const failed = checks.filter((c) => !c.pass);
 console.log(`\nITEM211 VERIFY: ${failed.length ? `FAIL — ${failed.length}/${checks.length} failed` : `PASS (${checks.length} checks)`}`);
 if (failed.length) process.exitCode = 1;
