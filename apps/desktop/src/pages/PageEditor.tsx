@@ -348,9 +348,11 @@ function PageEditorView({ id }: { id: string }) {
       if (!el) return;
       const offset = getCaretOffset(el);
       const plain = readEditorPlainText(el.innerText, null).plain;
-      setDraftMarks(offset == null
-        ? { bold: false, italic: false, underline: false, strike: false }
-        : marksAt(plain, offset));
+      const lit = offset == null ? { bold: false, italic: false, underline: false, strike: false } : marksAt(plain, offset);
+      // A held italic (an empty italic is not stored - store/draftFormat.ts) lights I while the caret is where it will be typed.
+      const held = hiddenMarkEditingFor(el)?.pendingMark();
+      if (held && held.mark === '*' && offset === held.at) lit.italic = true;
+      setDraftMarks(lit);
       const level = offset == null ? null : headingLevelAt(plain, offset);
       setHeadingLevel(level);
       // THE FLOATING +/- (Nick: "a '+/-' option ... that hovers over the heading text on the page when it is highlighted"). Shown only
@@ -925,7 +927,12 @@ function PageEditorView({ id }: { id: string }) {
     const sel = getSelectionOffsets(el) ?? { start: textRef.current.length, end: textRef.current.length };
     const result = applyFormat(textRef.current, sel.start, sel.end, action);
     // A pending mark (an empty italic cannot be stored as `**`): nothing is written; the editor wraps the next text typed here.
-    if (result.pending) { hiddenMarkEditingFor(el)?.setPending(result.pending, result.start); return; }
+    if (result.pending) {
+      hiddenMarkEditingFor(el)?.setPending(result.pending, result.start);
+      // light the button now: the press moved no caret, so no selectionchange will recompute it
+      if (result.pending === '*') setDraftMarks(m => ({ ...m, italic: true }));
+      return;
+    }
     // FX6 S1 — a rail Bold/Italic/Heading/Spacing click is a genuine edit
     // that bypasses the contenteditable's own input events entirely (a
     // direct programmatic decorate, same as this function always did) — so

@@ -44,6 +44,8 @@ export interface HiddenMarkEditing {
   reset(): void;
   /** Hold `mark` for the next text typed at `at` (a format press whose empty pair cannot be stored - an empty italic). */
   setPending(mark: string, at: number): void;
+  /** The mark held for the next text typed, and where - so the strip can light its button while it is held. */
+  pendingMark(): { mark: string; at: number } | null;
   detach(): void;
 }
 
@@ -216,6 +218,7 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
     selectionChange,
     reset: () => { beforeEdit = null; exit = null; pending = null; },
     setPending: (mark: string, at: number) => { pending = { mark, at }; },
+    pendingMark: () => pending,
     detach: () => {
       controllers.delete(el);
       el.removeEventListener('pointerdown', onPointerDown);

@@ -94,6 +94,11 @@ await withHarness(async (app) => {
   await app.keyCombo('i'); await sleep(300);
   const i0 = await settledBy(() => pageText(app, 'i1'));
   ok('ITALIC: Ctrl+I at a bare caret writes NOTHING (no `**` on the page or in the text)', i0 === 'Plain words' && (await shown(app, ED)).length === 0 && !(await app.evalJs(`document.querySelector('${ED}').textContent.includes('**')`)), JSON.stringify(i0));
+  // the strip shows the held italic: I is lit while the caret is where it will be typed (open the rail with a real press on its grip)
+  const grip = await app.evalJs("(() => { const s = document.querySelector('.wz-sliver'); if (!s || s.dataset.open === 'true') return null; const g = document.querySelector('.wz-sliver-grip'); const r = g.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+  if (grip) { await app.mouseDown(grip.x, grip.y); await app.mouseUp(grip.x, grip.y); await sleep(400); await caretAt(app, ED, 5); await sleep(300); }
+  const iLit = await app.evalJs("[...document.querySelectorAll('.wz-sliver .mode-tbtn')].find(b => /^Italic/.test(b.getAttribute('title') || ''))?.getAttribute('aria-pressed')");
+  ok('ITALIC: while it is held, the strip LIGHTS the I button (a writer sees Italic is on)', iLit === 'true', JSON.stringify(iLit));
   await app.typeKeys('xy');
   const i1 = await settledBy(() => pageText(app, 'i1'));
   ok('ITALIC: ...and the letters typed next ARE italic, stored as one italic run', i1 === 'Plain*xy* words' && (await app.evalJs(`document.querySelector('${ED} .md-italic')?.textContent.replace(/\\*/g, '')`)) === 'xy', JSON.stringify(i1));
