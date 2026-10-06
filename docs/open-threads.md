@@ -24316,3 +24316,48 @@ INK’s commit. **NO third full pair.** The gate: (1) **the built bundle must be
 instrument-only); (2) run `a11y-tutor-live-region.mjs` on both legs; (3) the browserless gates. If green: merge to `main` and
 deploy on Nick’s standing word; then the box goes to FIX’s latency profile (`latency-profile` @ `fb0597a`).
 **Waiting on INK’s SHA** (none on origin yet). Box idle, grant cleared.
+
+## BATCH NINE DEPLOY MANIFEST — LIVE, SERVED==STAMPED; SIGN-UP IS NOW CLOSED UNTIL NICK SETS INVITE_CODES — 2026-10-06 (chat 1)
+
+**FABLE’S GO (relay):** `78bb7bc` CLEARED (instrument-only: a zero-clip regex in either form, the box properties pinned,
+exactly one `.wz-sr-only` rule). **THIS DESK RAN `a11y-tutor-live-region.mjs` ON BOTH LEGS on `batch-nine-r3` @ `78bb7bc`:
+DEFAULT PASS (13 checks), PARKED “PASS (0 checks)” with the same VERIFY green; stamp `tree=78bb7bc
+bundle=index-Bg769niO.js/630378b` — the SAME bundle as r2’s, so the delta is instrument-only.** Grant cleared.
+
+**LIVE: `e66c288` (product bytes = `batch-nine-r3` @ `78bb7bc`; `git diff batch-nine-r3 HEAD -- apps packages` EMPTY) ·
+railway `1c34ccfa-4253-407c-ab81-6f2f076d59bf`** — service `writer-studio-app`, `railway up --ci` “Deploy complete”.
+**PREVIOUS LIVE: PR #7 · `f86db2e7-aef3-49ea-98b9-0580a5b2c31f` — its status is now REMOVED (Railway retires the prior
+deployment), so a rollback is NOT a button: it is `railway up` from a clean checkout of `b5d0b12`** (PR #7’s product bytes),
+exactly as Batch Eight’s was rebuilt. **ROLLBACK NOW RATCHETS TO `b5d0b12`.** **No schema change** (`git diff` names no
+migrate/schema/sql file).
+
+**WHAT SHIPPED:** item 224 (server hardening rounds 1–3: sign-up by invite code, login throttle that never locks
+indefinitely, Tutor per-person and global daily budgets and a kill switch, safe logging, rate-limit tightening), sync
+integrity (per-record rejections named and kept dirty), a11y sign-in (the two unreachable links, the hint contrast), the
+Tutor’s one-announcement-per-reply live region, the Esc exit (including the screenplay surface), plus the K10 /
+`item-storage-full` / test-double instrument fixes. **NOT shipped: `csp-enforce`, `item211-card-port`, `guest-login`,
+`guest-client`, the storage step 2 experiment.**
+
+**CHECKS BEFORE UPLOAD:** `tsc` x2 exit 0; `build:web` exit 0, local `index-Bg769niO.js` (630,378 b) == the pair stamp;
+tree bare (0 porcelain); **ITEM-98 GUARD:** `writer-studio` / `production` / `writer-studio-app`, toplevel
+`C:/Users/nickh/writer-studio`, `HEAD == origin/main == e66c288`. Pair: r2 111/112 on each leg, the one red cleared by
+`78bb7bc` (above) — **no third full pair, by Fable’s ruling.**
+**LIVE VERIFICATION:** `/healthz` 200 · `/auth/me` 401 · server log “listening on :8080”. **SERVED-vs-STAMPED, BOTH ASSETS
+MATCH, MD5 and bytes:** JS `40034305bf5335e2333760136a3686c1` (630,378 b); CSS `be98f2cf501b520dbdc7bcf0a00ff4f0`
+(149,232 b).
+
+**► A LIVE CONSEQUENCE NICK MUST KNOW, BY DESIGN AND FAIL-CLOSED:** `/auth/signup-status` now answers `{“open”:false}`.
+Presence-only check of Railway (no values printed): `INVITE_CODES` is **ABSENT**; `TUTOR_DISABLED`, `TUTOR_DAILY_BUDGET`,
+`TUTOR_GLOBAL_DAILY_BUDGET` ABSENT; `SESSION_SECRET` and `DATABASE_URL` SET. Per item 224’s own design (unset var =
+no codes configured = registration fails CLOSED with a 503, never open), **NO NEW ACCOUNT CAN BE CREATED until Nick sets
+`INVITE_CODES` in Railway.** Existing accounts and anonymous writing are unaffected. The Tutor now also enforces its
+defaults (50 per person per day, 500 across all accounts). **This desk set no variable and invented no code.**
+
+**NOT DONE — THE LIVE SMOKE TEST FABLE ASKED FOR (sign in, type a line, refresh, see it saved):** this desk has no account
+credentials, and sign-up is closed. An anonymous variant (open the site, write, hard refresh, read local storage back)
+was attempted with a throw-away headless browser at the production URL and **the harness’s command was DENIED by the
+auto-mode classifier — it did not run, and this desk did not route around it.** Nothing was sent to production by the
+attempt; grant file absent, 0 harness processes. **For Nick or Fable: a sign-in smoke needs a real account, and the
+anonymous browser walk needs an explicit go.**
+
+**BATCH NINE IS SHIPPED.** Next per Fable: the box goes to FIX’s latency profile (`latency-profile` @ `fb0597a`).
