@@ -193,6 +193,29 @@ try {
     mD1 === false, JSON.stringify({ mCatchStart, mOffline }));
 }
 
+// =============================================================================
+// PART E — the sheet's focus handling, in source. The behaviour itself (focus
+// really moves, Tab really wraps, Esc really closes) is walked in a real browser
+// by guest-client-walk.mjs; these checks pin the wiring so it cannot silently go.
+// =============================================================================
+{
+  const sheetSrc = sheet;
+  ok('(E1) focus moves into the sheet when it opens (the email field is focused on open)',
+    /emailRef\.current\?\.focus\(\)/.test(sheetSrc), '');
+  ok('(E2) the trap is a CAPTURE-phase document listener, so the editor underneath never sees Tab/Esc',
+    /document\.addEventListener\('keydown', onKey, true\)/.test(sheetSrc)
+      && /document\.removeEventListener\('keydown', onKey, true\)/.test(sheetSrc), '');
+  ok('(E3) Tab wraps inside the panel in both directions, and pulls focus back in when it has escaped',
+    /e\.shiftKey && \(!inside \|\| active === first\)/.test(sheetSrc) && /!e\.shiftKey && \(!inside \|\| active === last\)/.test(sheetSrc), '');
+  ok('(E4) Esc is "Not now": it dismisses and stops propagation',
+    /e\.key === 'Escape'/.test(sheetSrc) && /setDismissed\(true\)/.test(sheetSrc) && /e\.stopPropagation\(\)/.test(sheetSrc), '');
+  ok('(E5) closing returns focus to the element that had it before the sheet opened',
+    /returnTo\.current = document\.activeElement/.test(sheetSrc) && /back\.focus\(\)/.test(sheetSrc)
+      && /document\.contains\(back\)/.test(sheetSrc), '');
+  ok('(E6) every hook runs before the early return (no conditional hook order)',
+    sheetSrc.indexOf('useEffect(() => {\n    if (!visible) return;') < sheetSrc.indexOf('if (!visible) return null;'), '');
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 
 // eslint-disable-next-line no-console
