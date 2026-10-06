@@ -111,6 +111,41 @@ const setSwitch = async (app, want) => {
   return now === true;
 };
 
+/**
+ * The writing MODE, pressed on the mode strip by its named key.
+ *
+ * ⛔ WHY THIS EXISTS, AND WHY THE FIRST DRAFT OF THIS FILE WAS WRONG WITHOUT IT.
+ * `canStyle = mode === 'drafting'` (PageEditor.tsx), so `onFormat` reaches the menu
+ * ONLY in Draft — B/I/U do not exist in Free Write at all. And a new page does not open
+ * in Draft: the initial mode resolves to 'journal' for a manuscript or a loose page. So
+ * a check that opened a fresh page and expected item 186's five base items would have
+ * failed on the product being RIGHT. Read off the source before the first run rather
+ * than discovered by it.
+ */
+const MODE_KEY = { freewrite: 'freewrite', draft: 'draft', revise: 'revise' };
+
+const modeOf = (app) => app.evalJs(
+  "(() => { const b = document.querySelector('.desk-mode-strip [aria-selected=\"true\"], .desk-mode-strip [data-active=\"true\"]'); return b ? (b.getAttribute('data-mode-key') || null) : null; })()");
+
+const setMode = async (app, key) => {
+  const sel = `.desk-mode-strip [data-mode-key="${MODE_KEY[key]}"]`;
+  if (!(await must(app, sel, `the mode strip's ${key} tab`))) return false;
+  if (!(await pressEl(app, `document.querySelector('${sel}')`, `the ${key} mode tab`))) return false;
+  // ⚠ THE MODE SWITCH RE-PERSISTS LATE (~1.1s, standing note), so this waits on
+  // observable state — the editor still mounted AND the text still stored — never on
+  // elapsed time. A fixture that read the store straight after a switch would read a
+  // stale empty page and report it as data loss.
+  const settled = await settle(app, `(() => {
+    const el = document.querySelector('${EDITOR}');
+    if (!el) return false;
+    const a = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]');
+    const id = location.hash.split('/page/')[1];
+    const e = a.find(x => x.id === id);
+    return !!(e && (e.text || '').length > 0);
+  })()`, 8000);
+  return settled === true;
+};
+
 const openSettings = async (app) => {
   const there = await app.evalJs("!!document.querySelector('.wz-strip-item[data-category=settings]')");
   if (!there) { ok('DRIVER: the cascade strip carries a Settings category', false, 'absent'); return false; }
@@ -217,19 +252,60 @@ await withHarness(async (app) => {
     ok('T0: the switch is OFF by default — Nick\'s own word, and the premise of every "off" check below',
       offFlag === false, String(offFlag));
 
+    // =====================================================================
+    // T1 — FREE WRITE, SWITCH OFF. The mode a new page actually opens in.
+    // =====================================================================
+    const startMode = await modeOf(app);
+    ok('T1-pre: a new book page opens in FREE WRITE, not Draft — stated because every expectation below depends on it, and the first draft of this file got it wrong',
+      startMode === 'freewrite' || startMode === null, JSON.stringify(startMode));
+
     if ((await selectWords(app, 'quiet street')) === 'ok' && (await openMenu(app))) {
       const items = await menuItems(app);
-      ok('T1 (door 1, OFF): the right-click menu mounts and carries the BASE items — B/I/U and Cut/Copy (item 186)',
-        Array.isArray(items) && items.length >= 5, JSON.stringify(items));
-      // ⛔ ABSENT, NEVER GREYED (G3). The gate is the item not being in the DOM.
-      const hasConnect = (items || []).some((t) => /Link to|Note this|Make a card|Unlink/i.test(t));
-      ok('T1b ⛔ and NO connect act is present — absent from the DOM, not greyed (G3), which is what makes "the app is v1 with the switch off" true rather than nearly true',
-        hasConnect === false, JSON.stringify(items));
+      // In Free Write `canStyle` is FALSE, so there is no B/I/U: Cut and Copy are the
+      // whole menu. Asserted EXACTLY, not as "at least N" — a count with slack cannot
+      // tell a missing item from a spare one.
+      ok("T1 (door 1, OFF, Free Write): the menu carries Cut and Copy and NOTHING else — no B/I/U, because styling is Draft's",
+        Array.isArray(items) && items.length === 2 && items.every(t => /Cut|Copy/i.test(t)), JSON.stringify(items));
+      ok('T1b \u26d4 and NO connect act is present — absent from the DOM, not greyed (G3), which is what makes "v1 with the switch off" true rather than nearly true',
+        !(items || []).some(t => /Link to|Note this|Make a card|Unlink/i.test(t)), JSON.stringify(items));
       await app.evalJs("document.body.click()");
       await sleep(150);
     }
-    ok('T2 (door 2, OFF): the strip\'s connect zone is ABSENT from the DOM',
+
+    // =====================================================================
+    // T1c — A BARE CARET WITH THE SWITCH OFF MUST NOT OPEN A MENU AT ALL.
+    // =====================================================================
+    // `writingMenuHasItems` is false for canStyle=false, connectOn=false, hasWords=false,
+    // and the handler checks it BEFORE preventDefault — so the writer keeps the browser's
+    // own menu wherever Wrizo has nothing to say. A menu that opened empty, or that
+    // suppressed the native one to show nothing, is the defect.
+    await app.evalJs("(() => { const el = document.querySelector('.forward-only-editor'); el.focus(); const s = window.getSelection(); const r = document.createRange(); r.selectNodeContents(el); r.collapse(true); s.removeAllRanges(); s.addRange(r); return true; })()");
+    await sleep(120);
+    await openMenu(app);
+    ok('T1c \u26d4 a BARE CARET in Free Write with the switch off opens NO menu — nothing to show, so the native menu is left alone',
+      (await app.evalJs("!!document.querySelector('.wz-writing-menu')")) === false);
+
+    ok("T2 (door 2, OFF): the strip's connect zone is ABSENT from the DOM",
       (await app.evalJs("!!document.querySelector('.wz-sliver-connect')")) === false);
+
+    // =====================================================================
+    // T2b — DRAFT, SWITCH STILL OFF: item 186's base menu in full.
+    // =====================================================================
+    const toDraft = await setMode(app, 'draft');
+    ok('T2b-pre: switched to Draft through the mode strip, by its named key and never an index', toDraft === true, String(toDraft));
+    if (toDraft && (await selectWords(app, 'quiet street')) === 'ok' && (await openMenu(app))) {
+      const items = await menuItems(app);
+      const has = (re) => (items || []).some(t => re.test(t));
+      ok('T2b (item 186): in DRAFT the base menu is B/I/U + Cut/Copy — five items, with the switch still OFF',
+        has(/Bold/i) && has(/Italic/i) && has(/Underline/i) && has(/Cut/i) && has(/Copy/i) && items.length === 5,
+        JSON.stringify(items));
+      ok('T2c: and still no connect act, so the base menu is not the experiment',
+        !has(/Link to|Note this|Make a card/i), JSON.stringify(items));
+      ok("T2d: NO Paste — ruled out of this menu by item 186's brief",
+        !has(/Paste/i), JSON.stringify(items));
+      await app.evalJs("document.body.click()");
+      await sleep(150);
+    }
   }
 
   // =========================================================================
@@ -279,6 +355,39 @@ await withHarness(async (app) => {
           ok('T5c: the manuscript is BYTE-UNCHANGED by the act — no glyph, no sentinel (§6b)',
             !!before && !!after && before.text === after.text,
             JSON.stringify({ before: before?.text?.length, after: after?.text?.length }));
+        }
+
+        // =================================================================
+        // T5d ⛔ "NOTE THIS" IS WHERE THE ACT CAN SILENTLY CHANGE, and it is a
+        // DIFFERENT failure from T5's. Read off the acts: `onLink` returns early
+        // when `to <= from`, so a collapsed selection makes Link do NOTHING —
+        // loud, and T5 catches it. `onNote` instead FALLS BACK to `anchorSpot`
+        // for a bare caret (EXP1-Q6's caret note), so the same collapse turns a
+        // span note into a SPOT note — the same words, a different object, and
+        // nothing anywhere says so. That is the one this file must pin.
+        // =================================================================
+        if ((await selectWords(app, 'nothing moved')) === 'ok' && (await openMenu(app))) {
+          const items3 = await menuItems(app);
+          const noteLabel = (items3 || []).find((t) => /Note this/i.test(t));
+          const beforeN = await storedPage(app);
+          const countBefore = (beforeN?.pageLinks?.anchors ?? []).length;
+          if (noteLabel && await pressMenuItem(app, noteLabel)) {
+            await settle(app, `(() => { const a = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]');
+              const id = location.hash.split('/page/')[1]; const e = a.find(x => x.id === id);
+              return ((e && e.pageLinks && e.pageLinks.anchors) || []).length > ${countBefore}; })()`, 8000);
+            const afterN = await storedPage(app);
+            const anchorsN = afterN?.pageLinks?.anchors ?? [];
+            const fresh = anchorsN[anchorsN.length - 1];
+            ok('T5d-pre: "Note this" on a SELECTION wrote a new anchor',
+              anchorsN.length > countBefore && !!fresh, JSON.stringify({ before: countBefore, after: anchorsN.length }));
+            ok('T5d ⛔ and it is a SPAN over the selected words, NOT the spot-note anchorSpot would have made from a collapsed caret — the silent act-swap a menu press causes, pinned',
+              !!fresh && fresh.to > fresh.from, JSON.stringify(fresh));
+            ok('T5e: and the span is the 13 characters chosen, so it is this selection and not a stale one',
+              !!fresh && (fresh.to - fresh.from) === 'nothing moved'.length,
+              JSON.stringify({ from: fresh?.from, to: fresh?.to, len: fresh ? fresh.to - fresh.from : null }));
+          }
+          await app.evalJs("document.body.click()");
+          await sleep(150);
         }
       }
 
@@ -381,6 +490,11 @@ await withHarness(async (app) => {
       // §1b: an anchor whose words are gone must resolve to nothing — not to a guess,
       // and not to a crash. Deleting the anchored words is the way a writer causes it.
       {
+        // The painted count BEFORE the deletion, so T8 can measure the DROP rather than
+        // assert an absolute that the second anchor makes false.
+        const rangesBefore = await app.evalJs("(() => { try { const h = CSS.highlights.get('wz-linked'); return h ? h.size : 0; } catch { return -1; } })()");
+        ok('T8-pre0: more than one anchor is painted before the deletion, so the drop below is measured against a live neighbour',
+          typeof rangesBefore === 'number' && rangesBefore >= 1, JSON.stringify({ rangesBefore }));
         const removed = await app.evalJs(`(() => {
           const el = document.querySelector('${EDITOR}');
           const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
@@ -408,8 +522,15 @@ await withHarness(async (app) => {
           ok('T8-pre: the anchor is still STORED after its words were deleted — a lost anchor is kept, not silently dropped (the writer may undo)',
             (stored?.pageLinks?.anchors ?? []).length > 0, JSON.stringify(stored?.pageLinks?.anchors));
           const ranges = await app.evalJs("(() => { try { const h = CSS.highlights.get('wz-linked'); return h ? h.size : 0; } catch { return -1; } })()");
-          ok('T8 ⛔ and it PAINTS NOTHING — the highlight holds no range for a lost anchor, rather than guessing at a position or throwing',
-            ranges === 0, JSON.stringify({ rangesInHighlight: ranges }));
+          // ⚠ NOT "ZERO RANGES", AND THE DIFFERENCE IS THE WHOLE CHECK. By now the page
+          // carries TWO anchors — T5's Link on "quiet street" and T5d's note on
+          // "nothing moved" — and only the FIRST one's words were deleted. A zero
+          // assertion would fail on the product behaving correctly, because the
+          // surviving anchor must still paint. What a lost anchor owes is to contribute
+          // NOTHING while its neighbour is untouched, so the measurement is the DROP.
+          ok('T8 ⛔ the LOST anchor paints nothing while its surviving neighbour still does — the highlight lost exactly one range, rather than guessing at a position, painting the wrong words, or throwing',
+            typeof ranges === 'number' && ranges === rangesBefore - 1,
+            JSON.stringify({ rangesBefore, rangesAfter: ranges }));
           const alive = await app.evalJs(`!!document.querySelector('${EDITOR}')`);
           ok('T8b: and the editor is still mounted and the page intact — a lost anchor is not an error condition (PAGE IS PRIMARY)',
             alive === true);
