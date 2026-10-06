@@ -1,0 +1,48 @@
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { apiGuest, type AuthUser } from '../store/api';
+import { readGuestTokenFromHash, guestAddressWithoutToken } from '../store/guestState';
+
+// GUEST LOGIN (item 225) — `#/guest?t=<token>`, the beta tester's invite link.
+// The token is read and taken out of the address bar BEFORE anything awaits, so
+// it never sits in the address bar for a network round trip, and it is never
+// logged. On success the writer lands on the Arrival door, now signed in as a
+// guest; on refusal they see the server's own sentence, nothing more.
+export function GuestArrival({ onAuthed }: { onAuthed: (user: AuthUser) => void }) {
+  const navigate = useNavigate();
+  const [message, setMessage] = useState('Opening your guest account…');
+  const started = useRef(false);
+
+  useEffect(() => {
+    // StrictMode runs effects twice; the link is one-use-per-open, so only the first run acts.
+    if (started.current) return;
+    started.current = true;
+    const token = readGuestTokenFromHash(window.location.hash);
+    window.history.replaceState(window.history.state, '', guestAddressWithoutToken(window.location.href));
+    if (!token) {
+      setMessage('This guest link is not valid.');
+      return;
+    }
+    void apiGuest(token).then((r) => {
+      if (r.ok && r.user) {
+        onAuthed(r.user);
+        navigate('/', { replace: true });
+        return;
+      }
+      setMessage(r.error || 'This guest link is not valid.');
+    });
+    // Runs once per mount by design; the ref above is the guard.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div className="wz-home wz-arrival">
+      <div className="wz-ambient" aria-hidden="true" />
+      <section className="wz-hero">
+        <img className="wz-logo" src="/brand/wrizo-logo.png" alt="Wrizo" />
+        <div className="wz-tagline">For humans writing</div>
+        <div className="wz-sub" role="status">{message}</div>
+      </section>
+    </div>
+  );
+}

@@ -5419,3 +5419,10 @@ a:focus-visible,
   --wz-whisper:#463b2c; --wz-orange:#ff9800; --wz-orange-line:rgba(255,152,0,.5);
   --wz-hint:#817a70; --wz-ui:var(--font-ui); --wz-text:var(--font-prose);
 }
+/* GUEST LOGIN (item 225) — the claim overlay. Fixed over the page: the page
+   stays mounted and keeps its place behind it (page primacy: an overlay, not a route). */
+.wz-guest-sheet { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
+  padding: 16px; background: rgba(17,6,0,.72); }
+.wz-guest-sheet-panel { width: min(420px, 100%); background: var(--wz-lift); color: var(--wz-ink); border-radius: 10px;
+  padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.45); }
+.wz-guest-sheet-line { margin: 0; font-family: var(--wz-ui); font-size: 1.05rem; line-height: 1.4; }
