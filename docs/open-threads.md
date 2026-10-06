@@ -24162,3 +24162,73 @@ for Nick’s own eyes.
 **PR #7 IS SHIPPED AND CLOSED.** NEXT per Fable: Batch Nine — `batch-nine-integ` @ `cb8ed98` + `item-esc-exit-main` @
 `ef75954` + FIX’s K10 successor. **Waiting on:** FIX’s `fix-k10-batch-nine` (parked mid-way, not pushed: one mutant
 still to re-anchor after 224(a)). Not started by this desk until that SHA is on origin.
+
+## NICK’S WORDS: THE GUEST_LINKS SCHEMA YES; HIS LIVE REPORT ON PR #7; HEADING LEVELS — 2026-10-06 (chat 1, on Fable’s relays)
+
+**1 · SCHEMA WORD, guest login (Fable’s relay).** The question as put: “May guest login add a small list that remembers
+which invite link belongs to which guest? Without it, a beta tester who switches phones or clears their browser
+can’t get back into their guest account.” **His answer, verbatim: “1. Yes”.** It covers the `guest_links` table
+(hashed token → guest user, `ON DELETE CASCADE`). INK lands it from `migrations/pending` into `migrate.ts` on
+`guest-login`. *(A schema change: this desk will not deploy one without the migration being reviewed in the pair.)*
+
+**2 · NICK’S REPORT, live on PR #7 (a Draft screenshot), verbatim:** “B-I-U-S all seems to be fixed now!” — and,
+in his page’s own words: “I can’t click on the line next to ‘BOLD’ to move my cursor there for some reason. It
+seems to just activate the strip menu, which it shouldn’t do unless I highlight text that has been modified with
+B-I-U, etc.” And on headings: “the heading icon is not highlighted. If I click the ‘H’ icon anyway, it make the
+heading text smaller in steps. Better would be a ‘+/-’ option when a heading is created that hovers over the heading
+text on the page when it is highlighted. The ‘+’ and ‘-’ options should also be easily clickable from the tool
+menu, but if a user hits the ‘H’ icon, all heading modifications should be undone. Also, headings should not
+default to ALL CAPS.” **Recorded as rulings; owner FIX, ahead of 211’s card port.**
+
+**3 · NICK’S WORDS ON HEADING LEVELS, verbatim:** “Let’s go with whatever the standard is for WordPress or other
+web-based apps that the text might get exported to (headings are really for web-formatting purposes since a user can
+just create headings however they choose to style them if the piece is going to print or PDF)”. **RULED (Fable, from
+his words): six heading levels (`#` to `######`, mapping 1:1 to h1–h6); H adds Heading 2 (the WordPress block
+editor’s default) and removes any level; + and − step between h1 and h6. It supersedes the three-level default**
+(“three heading sizes, H starts at the middle one”, vetoable) that the earlier relay had proposed. Owner FIX.
+
+**BOX ORDER after Batch Nine ships (Fable):** TOOLS’ storage experiment → PW’s Experiment 1 run → FIX’s short use
+for the two bugs → INK’s guest walk (once the table lands) and `csp-enforce-walk`.
+
+## BATCH NINE — THE CHUNKED PAIR IS RED ON BOTH LEGS: FOUR FILES, SAME FOUR ON EACH — 2026-10-06 (chat 1)
+
+**`batch-nine` @ `694cbbc`** (pushed to origin as a branch; **NOT merged to `main`, NOT deployed**) = `main` @ `3e5e209` +
+`fix-k10-batch-nine` @ `0360b30` (carries `batch-nine-integ` @ `cb8ed98`) + `item-esc-exit-main` @ `ef75954`. One conflict, in
+`sync-chunked-push-proof.mjs`: `b5b2e24`’s blob == `6ff11df`’s blob (byte-identical, `d7b4120b`), so taking `0360b30`’s
+version is exactly main + FIX’s one extra commit. Browserless before the pair: `tsc` x2 exit 0, seed-guard 36/36, K10
+baseline 32/32 with all 19 mutants red. **Stamp `tree=694cbbc bundle=index-Di3chbyP.js/630375b`; 111 files per leg, six
+chunks of ≤20, one stamp throughout, 0 harness processes between chunks, no launch crashes.**
+
+**RED, BY CHUNK AND LEG (the SAME FOUR files on each leg — none flaked; the reds are not launch crashes):**
+- **default c00** / **parked c00** — `a11y-signin.mjs` NOVERDICT exit=1: `waitFor timed out: account stage reached`, the
+  page showing “For humans writing / Save your writing to an account” with buttons `[“Full screen”, “← back”]`
+  only. Its commit says “add a real keyboard-walk LIVE section (not yet run)” — **this is its first browser run.**
+  Owner: INK.
+- **default c02** / **parked c02** — `item-storage-full.mjs` NOVERDICT exit=1 (0 s): `TypeError: t is not a function` in
+  its own `notice()` helper — it calls `syncNoticeText` with the old argument list, and 224(a) added `rejected` as the
+  3rd argument (the same drift K10 had). It passed on `main`. A STALE INSTRUMENT, not a product fault. Owner: TOOLS.
+- **default c04** — `sc1.mjs` FAIL 2/71 (S3 SC-V4 “a fresh script page begins at the TOP margin of page one”:
+  `gapBelowTopMargin:33`; the first keystroke likewise) and `sc2.mjs` FAIL 12/72 (S1 rhythm: scene `marginTopLines`
+  `rendered:2, expected:0`; S2b P2/P3/P4/P10/P13 and the five “first line at the same offset” cross-checks: first page
+  `firstMarginTop` 32, `firstOffset` 129 vs 97 on pages 2–5, `used:[55,…]` vs a 54-line body). **PARKED c04** — the
+  same two files red (their parked successors). **Both PASSED on `main`.**
+
+**READING, for the owners (Fable routes):** `sc1`/`sc2` are a PRODUCT difference, not an instrument one — the diff vs
+`main` puts `<span id={ESC_HINT_ID} className=“wz-sr-only”>` inside `ScriptEditor.tsx`’s `Fragment` BEFORE the active
+element (`+<span …>{dt(‘pageEscHint’)}</span>`); a new first child on the script page is the likely reason the first
+scene stops counting as the first element (first page: margin 32, offset 129 vs 97). That is the screenplay surface’s
+half of the Esc exit (`escexit`). Owner: FIX. **ALSO NOTED:** `index.css` now carries TWO `.wz-sr-only` rules (a11y A8’s
+near the Tutor panel and escexit’s later one with `clip-path`) — a duplicate utility from two branches; harmless today
+(the later wins) but a trap for whoever edits one.
+
+**NOT SHIPPED — the pair is red, nothing deployed, `main` untouched @ `3e5e209`+records.** Batch Nine holds until the
+four are fixed and a re-run is clean. Grant cleared; 0 harness processes.
+
+**FABLE’S ORDERS (relay, recorded):** let the pair finish, report every red file by chunk and leg (above); grant FIX a
+short box use for `clickhead.mjs` + its regressions on `item-click-headings` @ `233c3b2`. **`guest-login` @ `7d18353`
+server half: CLEARED by Fable’s byte review; ships as its own batch AFTER Batch Nine, once INK’s `guest-client-walk` runs
+clean; merge order `guest-login` first, then `guest-client` (`c43dd55`).** *(This desk notes both branches have moved
+past the reviewed SHAs: `guest-login` tip is `de1f170`, “review cleanups”, one commit past `7d18353`; `guest-client` tip
+is `590ca07`, “a dead link says it is expired at once”, one past `c43dd55`. The byte review covers the SHAs named; Fable
+confirms the delta before the batch is assembled.)* **Box queue after the pair:** TOOLS storage experiment → PW
+Experiment 1 → FIX clickhead → INK guest walk + `csp-enforce-walk`.
