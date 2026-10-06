@@ -23,6 +23,9 @@
 //      today's single block - the floor for any per-line patch that keeps today's DOM; (C) the same change with each line its own
 //      BLOCK row (line + its newline inside a display:block element - textContent byte-identical to today); (D) C's middle row
 //      rewritten whole via innerHTML, which is what a per-line redecorate would do. 15 trials each, median.
+//      And (A') - Fable's variant: today's whole-page path with no structural change, the ~5 innerText reads collapsed to 1 and
+//      the two decorations to 1. Its DOM half is timed on a clone; its JS half is this run's CPU shares scaled to what A' keeps,
+//      reported as `aPrime_estimate` - a COMPOSED ESTIMATE, never a measured keystroke. If it reaches the target it ships first.
 // The bundle must be UNMINIFIED for (3) to name functions:
 //   pnpm exec vite build --outDir dist-web --emptyOutDir --minify false
 // and rebuilt normally afterwards (pnpm build:web). The script refuses a minified bundle rather than print anonymous buckets.
@@ -142,6 +145,17 @@ function layoutShape() {
   { const c = make(html); const set = [], lay = [];
     for (let i = 0; i < T; i += 1) { const a = performance.now(); c.innerHTML = html; const b = performance.now(); void c.offsetHeight; set.push(b - a); lay.push(performance.now() - b); }
     res.A_wholeReplace = { parse: med(set), layout: med(lay) }; c.remove(); }
+  // A' (Fable, 2026-10-06) - today's whole-page path, no structural change, with the reads collapsed to ONE: a character lands,
+  // one innerText read (the layout it forces, then the serialisation), the whole page rewritten, the frame's layout. The string
+  // build, React and the caret walks are not DOM work and are added from this run's CPU profile, in node (aPrime_estimate).
+  { const c = make(html); const l1 = [], ser = [], set = [], l2 = [], tot = [];
+    for (let i = 0; i < T; i += 1) {
+      const t = midText(c); t.data = t.data + 'a';
+      const a = performance.now(); void c.offsetHeight; const b = performance.now(); void c.innerText; const d = performance.now();
+      c.innerHTML = html; const e = performance.now(); void c.offsetHeight; const f = performance.now();
+      l1.push(b - a); ser.push(d - b); set.push(e - d); l2.push(f - e); tot.push(f - a);
+    }
+    res.Aprime_domPath = { layoutBeforeRead: med(l1), serialise: med(ser), parse: med(set), layoutAfter: med(l2), total: med(tot) }; c.remove(); }
   // B - today's single block, one character changed mid-page
   { const c = make(html); const t = midText(c); const lay = [];
     for (let i = 0; i < T; i += 1) { t.data = t.data + 'a'; const b = performance.now(); void c.offsetHeight; lay.push(performance.now() - b); }
@@ -272,6 +286,26 @@ await withHarness(async (app) => {
       cpu_meanPerKey: cpuPerKey,
       layoutShape: shape,
     };
+    // A' as a COMPOSED ESTIMATE, labelled so: the measured DOM path above, plus this run's own CPU shares scaled to what A' keeps -
+    // ONE decoration (today: one on input + one compare-build per selectionchange), ONE readEditorPlainText and ONE caret-offset
+    // read (today: one per innerText / Range read), and everything else kept whole: React, the caret walks, the 211 rules, undo,
+    // GC and other app JS. Keeping the walks whole (some are selectionchange's) makes it an upper bound on those parts.
+    {
+      const c = (k) => cpu[k] ? cpu[k] / n : 0;
+      const builds = 1 + (med((r) => r.selN) || 0);
+      const reads = med((r) => r.itN) || 1;
+      const rangeReads = med((r) => r.rtN) || 1;
+      const parts = {
+        domPath: shape.Aprime_domPath.total,
+        decorateOnce: c('redecorate: string build') / builds,
+        readPlainOnce: c('readEditorPlainText (string)') / reads,
+        caretOffsetOnce: (med((r) => r.rtMs) || 0) / rangeReads,
+        react: c('React: reconcile + commit') + c('React: component render'),
+        kept: c('caret walks') + c('211 rules') + c('undo + em dash') + c('GC') + c('other app JS') + c('strip: marksAt/headingLevelAt'),
+      };
+      row.aPrime_estimate = { decorationsToday: builds, innerTextReadsToday: reads,
+        ...Object.fromEntries(Object.entries(parts).map(([k, v]) => [k, r1(v)])), total: r1(Object.values(parts).reduce((a, b) => a + b, 0)) };
+    }
     out.sizes.push(row);
     console.log(JSON.stringify(row, null, 2));
   }
