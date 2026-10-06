@@ -1,6 +1,6 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
-import { createHash, randomUUID } from 'crypto';
+import { createHash } from 'crypto';
 import { pool } from './db';
 import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
@@ -255,6 +255,13 @@ authRouter.post('/guest', asyncHandler(async (req: Request, res: Response) => {
   const row = rows[0];
   if (!row || !row.is_guest) {
     res.status(403).json({ error: 'This guest link is not valid.' });
+    return;
+  }
+  // Past the claim grace, a dead link says so straight away — no session is opened,
+  // so there is nothing for the client to be told about later. Inside the grace the
+  // session opens (claim-only, see requireAuth).
+  if (!row.guest_expires_at || Date.now() > row.guest_expires_at.getTime() + GUEST_GRACE_MS) {
+    res.status(401).json({ error: 'This guest account has expired.', reason: 'guest_expired' });
     return;
   }
   await regenerateSession(req);
