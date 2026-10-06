@@ -779,6 +779,31 @@ if (process.env.HARNESS_PARKED === '1') {
       return { iconCount: row ? row.querySelectorAll('button').length : -1, aria: !!panel.querySelector('[aria-label*="Typewriter"]'),
                fullScreenInFoot: !!document.querySelector('.wz-sliver-goal [data-foot-fullscreen] button') };
     })()`);
+    const scriptFootPR7 = await app.evalJs(`(async () => {
+  // React renders a click's state change after this script's own task, so every click here is followed by a wait before reading.
+  const tick = () => new Promise(r => setTimeout(r, 200));
+  const row = document.querySelector('.wz-sliver-instruments-row');
+  const btns = row ? [...row.querySelectorAll('button')] : [];
+  const menuBtn = btns[0] || null;
+  let headings = null;
+  if (menuBtn) {
+    const wasOpen = !!document.querySelector('.wz-sliver-instruments-panel');
+    if (!wasOpen) { menuBtn.click(); await tick(); }
+    const panel = document.querySelector('.wz-sliver-instruments-panel');
+    headings = panel ? [...panel.querySelectorAll('h4')].map(h => h.textContent.trim()) : null;
+    if (!wasOpen) { menuBtn.click(); await tick(); }
+  }
+  const corner = document.querySelector('[aria-label="Desk menu"]');
+  let fullScreenInCorner = false;
+  if (corner) {
+    const wasOpen = !!document.querySelector('.gh-corner-menu');
+    if (!wasOpen) { corner.click(); await tick(); }
+    fullScreenInCorner = !!document.querySelector('.gh-corner-menu [aria-label="Enter full screen"], .gh-corner-menu [aria-label="Exit full screen"]');
+    if (!wasOpen) { corner.click(); await tick(); }
+  }
+  return { iconCount: btns.length, menuLabel: menuBtn ? menuBtn.getAttribute('aria-label') : null, menuTitle: menuBtn ? menuBtn.getAttribute('title') : null,
+           headings, fullScreenInFoot: !!document.querySelector('.wz-sliver-panel [data-foot-fullscreen], .wz-sliver-panel [aria-label*="full screen" i]'), fullScreenInCorner };
+})()`);   // PR #7's foot, read for generation 5 below
     await freshProsePage(app, 1400, 900);
     await openSliver(app);
     await sleep(250);
@@ -829,10 +854,46 @@ if (process.env.HARNESS_PARKED === '1') {
     // story, on both surfaces. They still are, and the foot still carries the
     // identical three instruments on each — two in the row, and Full Screen on
     // the progress bar's own line.
-    pok('PARKED, generation 4 (was the generation-3 three-icons-per-row count) — item 83 errata E2: Full Screen leaves the instruments row for the progress bar line, so each surface row holds TWO and its foot still holds THREE; the aria-label symmetry R12 restored is untouched',
-      scriptFootParked.iconCount === 2 && scriptFootParked.aria === true && scriptFootParked.fullScreenInFoot === true
-        && proseFootParked.iconCount === 2 && proseFootParked.aria === true && proseFootParked.fullScreenInFoot === true,
-      JSON.stringify({ scriptFootParked, proseFootParked }));
+    // ---- PARKED - SUPERSEDED by PR #7 (item 211, 4d3c84e, 2026-10-05) - GENERATION 4, quoted VERBATIM and no longer asserted ----
+    // Nothing about the SYMMETRY claim is superseded - both surfaces carry the identical foot, and the eye and assistive tech are told
+    // the same story. PR #7 changed the foot itself: ONE three-dot menu (named "Settings" to the eye's tooltip and the screen reader
+    // alike) holding Typewriter Mode, Progress and Preferences, with Full Screen moved to the desk corner menu. Generation 5 asks the
+    // same symmetry question of that foot.
+    //
+    // pok('PARKED, generation 4 (was the generation-3 three-icons-per-row count) — item 83 errata E2: Full Screen leaves the instruments row for the progress bar line, so each surface row holds TWO and its foot still holds THREE; the aria-label symmetry R12 restored is untouched',
+    //   scriptFootParked.iconCount === 2 && scriptFootParked.aria === true && scriptFootParked.fullScreenInFoot === true
+    //     && proseFootParked.iconCount === 2 && proseFootParked.aria === true && proseFootParked.fullScreenInFoot === true,
+    //   JSON.stringify({ scriptFootParked, proseFootParked }));
+    // ---------------------------------------------------------------------
+    const proseFootPR7 = await app.evalJs(`(async () => {
+  // React renders a click's state change after this script's own task, so every click here is followed by a wait before reading.
+  const tick = () => new Promise(r => setTimeout(r, 200));
+  const row = document.querySelector('.wz-sliver-instruments-row');
+  const btns = row ? [...row.querySelectorAll('button')] : [];
+  const menuBtn = btns[0] || null;
+  let headings = null;
+  if (menuBtn) {
+    const wasOpen = !!document.querySelector('.wz-sliver-instruments-panel');
+    if (!wasOpen) { menuBtn.click(); await tick(); }
+    const panel = document.querySelector('.wz-sliver-instruments-panel');
+    headings = panel ? [...panel.querySelectorAll('h4')].map(h => h.textContent.trim()) : null;
+    if (!wasOpen) { menuBtn.click(); await tick(); }
+  }
+  const corner = document.querySelector('[aria-label="Desk menu"]');
+  let fullScreenInCorner = false;
+  if (corner) {
+    const wasOpen = !!document.querySelector('.gh-corner-menu');
+    if (!wasOpen) { corner.click(); await tick(); }
+    fullScreenInCorner = !!document.querySelector('.gh-corner-menu [aria-label="Enter full screen"], .gh-corner-menu [aria-label="Exit full screen"]');
+    if (!wasOpen) { corner.click(); await tick(); }
+  }
+  return { iconCount: btns.length, menuLabel: menuBtn ? menuBtn.getAttribute('aria-label') : null, menuTitle: menuBtn ? menuBtn.getAttribute('title') : null,
+           headings, fullScreenInFoot: !!document.querySelector('.wz-sliver-panel [data-foot-fullscreen], .wz-sliver-panel [aria-label*="full screen" i]'), fullScreenInCorner };
+})()`);
+    const footOkPR7 = (f) => !!f && f.iconCount === 1 && !!f.menuLabel && f.menuLabel === f.menuTitle && Array.isArray(f.headings) && f.headings.includes('Typewriter Mode') && f.headings.includes('Progress Tracking') && f.fullScreenInFoot === false && f.fullScreenInCorner === true;
+    pok('PARKED, generation 5 (was the generation-4 two-in-the-row count with Full Screen on the progress line) — PR #7 (4d3c84e): each surface\'s foot is ONE three-dot menu whose aria-label and title agree, disclosing Typewriter Mode and Progress, and Full Screen lives in the desk corner menu; script and prose identical',
+      footOkPR7(scriptFootPR7) && footOkPR7(proseFootPR7) && scriptFootPR7.menuLabel === proseFootPR7.menuLabel,
+      JSON.stringify({ scriptFootPR7, proseFootPR7 }));
 
     return parkedChecks;
   });
