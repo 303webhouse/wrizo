@@ -24004,3 +24004,29 @@ the 217 side must win the `spellCheck` value or Nick’s ruling regresses; FIX s
 not shipped: owner is FIX — rebase `escexit` onto `main` (it will inherit 217), re-offer, and Batch Nine-lite
 assembles again.** The other four branches were not tried (a later conflict could also arise); no Fable PASS
 for Nine-lite has reached this desk either, so it would have been held on that gate regardless.
+
+## THE TRIP, RECORDED; NICK’S WORD ON ITEM 195 — 2026-10-05 (chat 1, on Fable’s relays)
+
+**THE TRIP (Fable’s relay, recorded as relayed).** Cursor’s PR #7 was merged by Nick to `main` as `4d3c84e`
+(hidden marks with editing rules, strip/drawer/settings tweaks, 56 parks); Fable reviewed it as FIX and cleared it.
+**Nick’s word, verbatim: “I am very happy with these revisions and one to ship them now”.** Cursor’s `d8fee5b` /
+`b6f6c80` (mode tabs clustered right) landed on `main` **unreviewed** (both verified ancestors of `main` this
+session). **No deploy happened from the trip:** production is still Batch Eight (Nick’s Railway attempts left Root
+Directory restored empty; Batch Eight rebuilt and Active — per the relay, not re-observed by this desk yet).
+
+**NICK’S WORD ON ITEM 195 (Fable’s relay).** The question as put: “On narrow board screens the grip has to give way
+somewhere. Should it (A) overlap the page edge slightly, or (B) overlap the strip slightly? Default: B. The page
+stays untouched, by your ‘the page is primary’ rule.” **His answer, verbatim: “Item 195: Yes, B”.**
+
+**RULING: when both cannot hold, the sliver grip never overlaps the paper; it may overlap the strip. The
+page-primacy law wins over strip clearance.** 195 rides a later batch, after TOOLS rebuilds it.
+
+**ORDERS, in sequence (Fable):** (1) a chunked pair (≤20 files per chunk, both legs) on `main` @ `4d3c84e` — Cursor’s
+VM failed `cd2`, `m1`, `s1`, `th1`, `th2`, `w1`, `w2` and the K10 CI script, so any reds are read per file for the
+owners; clean → deploy on Nick’s word above, rollback = the current Batch Eight deploy. (2) Batch Nine re-planned onto
+`main` AFTER that ships: `escexit` (FIX resolves its `spellCheck` conflict with 217) + INK’s single integrated branch
+(`server-hardening` `b9d3db2`, `sync-integrity`, `a11y-signin`, `a11y-tutor-live-region`), then its pair; **Fable byte-reviews
+the auth and sync hunks at assembly.** (3) TOOLS’ storage step 2 durability experiment (`f0ca6e0`) as a short use.
+(4) WITH NICK, ~20 minutes: one restore drill (fresh `restore-drill` service from the latest R2 backup, row counts
+compared, then deleted); delete Postgres-Bduk; confirm writer-studio-app’s `DATABASE_URL` references the private Postgres
+variable (NAME only), then remove Postgres’s public TCP proxy.
