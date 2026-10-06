@@ -24114,3 +24114,19 @@ its probe needs the menu opened, or its selectors differ from the live markup; t
 discarded (`main` reset to `db6028f`, nothing pushed). **Back to FIX:** the foot successor in `ab2` + `fx3` for the live
 foot markup; re-offer, and this desk reruns `ab2` + `fx3` on both legs and deploys if clean. Grant cleared; 0 harness
 processes.
+
+## FABLE’S OVERNIGHT ORDERS — THE BOX ORDER AFTER THE PR #7 SHIP; A SCHEMA WORD FOR NICK — 2026-10-05 (chat 1)
+
+**Confirmed (Fable, relay):** the hold and this desk’s reading of Nick’s word (“And I’m going to bed, but I approve of the
+new version going live”) are right — PR #7’s revisions only, gate first. **When FIX re-offers the foot successor:
+harness-only check, `ab2` + `fx3` on both legs, clean → deploy, without re-asking Nick.** *(As of this entry no
+re-offer has reached origin: `main-parks-211` is still `0d89deb`.)*
+
+**BOX ORDER AFTER THAT SHIP:** (1) Batch Nine’s pair — `cb8ed98` + `ef75954` + FIX’s K10 successor — deploy on a
+clean pair (Nick’s standing word, as relayed: “Ship whenever everything is ready”, covers reviewed work; Fable has
+cleared these); `escexit.mjs` and the a11y LIVE sections ride that pair as harness files. (2) TOOLS’ storage
+durability experiment (`b9be6b0`, short). (3) PW’s Experiment 1 run (`exp1-visibletext` @ `8d26877`: `exp1.mjs`,
+`exp1-text.mjs`, `exp1-paint.mjs`). (4) INK’s `csp-enforce-walk` (`d1291bb`, short).
+
+**FOR NICK (a schema word, no default — stops here until he answers):** guest login needs a small `guest_links`
+table (hashed token → guest user) so a guest can re-enter on the same link. **Not built, not run, not defaulted.**
