@@ -390,11 +390,25 @@ async function runRequireAuth(db, session) {
   ];
   ok('(E5) the four approved users columns are added inline in migrate.ts, exactly as approved',
     cols.every((c) => migSrc.includes(c)), JSON.stringify(cols.filter((c) => !migSrc.includes(c))));
-  ok('(E6) migrate.ts does NOT create guest_links — its DDL waits for Nick\'s word',
+  // SUPERSEDED (item 225, Nick's "Yes" on guest_links) — by (E6b) below. Parked, not
+  // deleted: this was true while the table waited for his word. `if (false)` keeps it
+  // out of the verdict; the text is kept verbatim.
+  if (false) ok('(E6) migrate.ts does NOT create guest_links — its DDL waits for Nick\'s word',
     !/create table[^;]*guest_links/i.test(migSrc), '');
+  // SUPERSEDED — by (E7b) below. Parked for the same reason as E6.
   const pendingPath = path.join(SERVER, 'migrations', 'pending', '002_guest_links.sql');
-  ok('(E7) the guest_links DDL exists, parked under migrations/pending (not read by the boot path)',
+  if (false) ok('(E7) the guest_links DDL exists, parked under migrations/pending (not read by the boot path)',
     fs.existsSync(pendingPath) && /create table guest_links/.test(fs.readFileSync(pendingPath, 'utf8')), '');
+
+  // (E6b) Landed inline: migrate.ts creates the table idempotently, the token is
+  // stored only as a hash, and an account's deletion removes its links.
+  ok('(E6b) migrate.ts creates guest_links inline, idempotently (create table if not exists)',
+    /create table if not exists guest_links \(/.test(migSrc), '');
+  ok('(E6c) the table keys on the token\'s HASH, and cascades from users on delete',
+    /token_hash text primary key/.test(migSrc) && /user_id uuid not null references users\(id\) on delete cascade/.test(migSrc), '');
+  // (E7b) The pending folder is gone, and nothing reads it.
+  ok('(E7b) the pending DDL has been removed (the table now lives in migrate.ts only)',
+    !fs.existsSync(pendingPath) && !/migrations\/pending/.test(migSrc), '');
 }
 
 fs.rmSync(tmp, { recursive: true, force: true });
