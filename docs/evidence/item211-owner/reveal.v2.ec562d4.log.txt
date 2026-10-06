@@ -1,0 +1,23 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PASS  S1 (setup): the page is seeded through the seam and its row has landed
+PASS  S1 (precondition): Draft decorates the page — the bold run renders and BOTH its markers are collapsed while the caret is elsewhere  [{"missing":false,"marks":2,"anyRevealed":false,"allHidden":true,"text":"Start **BOLD** end"}]
+PASS  S1 (setup): the bold run has a real on-screen box to click  [{"x":489,"y":335}]
+PASS  S1 [interim successor]: a REAL click in the MIDDLE of the bold word reveals NOTHING - every marker stays collapsed (Nick's report, the screenshot case)  [{"missing":false,"marks":2,"anyRevealed":false,"allHidden":true,"text":"Start **BOLD** end","caret":10}]
+PASS  S1 ITEM 211: at every caret stop along the line, including the marker edges, every mark stays hidden  ["0- 1- 2- 3- 4- 5- 6- 9- 10- 11- 12- 15- 16- 17- 18-"]
+PASS  S1: and the caret stays where the writer put it — the redecorate restores the clicked offset rather than collapsing to the end of the page  [{"caret":10,"expectedBetween":[6,14]}]
+PASS  S1 ITEM 211: the walk never turns a mark on, and a click out into plain prose leaves every mark hidden  [{"walk":"000000000000000","hiddenAfter":true}]
+PASS  S2 ITEM 211: ArrowRight onto a marker edge does not reveal it, and the selectionchange listener does not loop  [{"beforeEdge":5,"hidden":true,"mutations":0}]
+PASS  S3 ITEM 211: a live NON-COLLAPSED selection survives being extended BACKWARDS across the bold run - ten trusted Shift+ArrowLeft presses move by ten VISIBLE characters ("t BOLD end"), so the range also takes in the four hidden markers whole  [{"none":false,"collapsed":false,"length":14,"text":"t **BOLD** end"}]
+PASS  S4 (setup): the board and its card are seeded and landed
+PASS  S4 (setup): the card is on the board
+PASS  S4 (precondition): the card popup decorates and its markers start collapsed  [{"missing":false,"marks":2,"anyRevealed":false,"allHidden":true,"text":"Start **BOLD** end"}]
+PASS  S4 (setup): the card's bold run has a real on-screen box to click  [{"x":512,"y":378}]
+PASS  S4 [interim successor]: a REAL click in the middle of the card's bold word reveals NOTHING  [{"missing":false,"marks":2,"anyRevealed":false,"allHidden":true,"text":"Start **BOLD** end"}]
+PASS  S4 [card-port successor] at EVERY caret stop along the card's line no mark shows - the card and the page share one register, and now one set of editing rules  ["0- 1- 2- 3- 4- 5- 6- 9- 10- 11- 12- 15- 16- 17- 18-"]
+PASS  S4 [card-port successor]: with the caret at the bold word's leading edge the markers stay HIDDEN  [{"missing":false,"marks":2,"anyRevealed":false,"allHidden":true,"text":"Start **BOLD** end"}]
+PASS  S4: a trusted Home press re-collapses them — every path the retired NAV_KEYS list enumerated is still covered, because selectionchange fires for all of them  [{"missing":false,"marks":2,"anyRevealed":false,"allHidden":true,"text":"Start **BOLD** end"}]
+PASS  S4 THE DEFECT THE SWAP FIXES [card-port successor]: a selection extended by ten Shift+ArrowLeft presses across the bold run SURVIVES, and covers ten VISIBLE characters ("t BOLD end"; 14 raw, with the hidden stars)  [{"none":false,"collapsed":false,"length":14,"text":"t **BOLD** end"}]
+PASS  S5: the card's stored text is byte-identical after every reveal, re-collapse and selection above — the decoration is a DISPLAY pass and the markers never leave the store  [{"stored":"Start **BOLD** end","expected":"Start **BOLD** end"}]
+
+REVEAL VERIFY: PASS (19 checks)
