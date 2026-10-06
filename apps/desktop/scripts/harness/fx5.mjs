@@ -51,6 +51,9 @@ import { withHarness } from '../runtime-verify.mjs';
 import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
+// Declared up here, above the harness run that ASSIGNS it: a `let` declared below a top-level await is in its temporal dead zone
+// while that await runs (the first run of the card port died on exactly this: 'Cannot access fx5CardReveal before initialization').
+let fx5CardReveal = null;   // the S6 card reading, kept for its parked record
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -1181,7 +1184,6 @@ console.log(JSON.stringify(checks, null, 2));
 //   reached for and couldn't find. Live successor: fx6.mjs's own S2
 //   section proves New page card's own presence + function; the check
 //   below proves the OLD count ("exactly two") is now three.
-let fx5CardReveal = null;   // the S6 card reading, kept for its parked record
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });

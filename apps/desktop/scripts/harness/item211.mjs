@@ -20,6 +20,7 @@ import { withHarness } from '../runtime-verify.mjs';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
 let r1CardShown = null;   // R1's card readings, kept for its parked record
+let clickPast = null;   // the WALK click reading, kept for its parked record
 const checks = [];
 const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass, detail }); console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? `  [${detail}]` : ''}`); };
 
@@ -118,7 +119,15 @@ await withHarness(async (app) => {
     const pt = await app.evalJs(`(() => { const b = document.querySelector('${ED} .md-bold'); const r = b.getBoundingClientRect(); return { x: Math.round(r.right + 1), y: Math.round(r.top + r.height / 2) }; })()`);
     await app.mouseDown(pt.x, pt.y); await app.mouseUp(pt.x, pt.y); await sleep(250);
     const clicked = await caret(app);
-    ok('WALK: a real click just past the bold word lands after its last visible letter (12), inside the pair', clicked === 12, String(clicked));
+    // ---- PARKED - SUPERSEDED by Nick's live bug (2026-10-06: "I can't click on the line next to 'BOLD' ... It seems to just activate
+    // the strip menu") - FIX's click rule, store/hiddenMarks.ts snapCaretAfterClick. Kept VERBATIM and no longer run. A CLICK now keeps
+    // the side of a run's closing marks it landed on, so a click just past the bold word lands AFTER the marks (14), outside the pair,
+    // and the strip lights nothing; the keyboard keeps the left-character rule (the check above, 14 -> 12 by snap, is unchanged).
+    //
+    // ok('WALK: a real click just past the bold word lands after its last visible letter (12), inside the pair', clicked === 12, String(clicked));
+    // ------------------------------------------------------------------
+    clickPast = clicked;
+    ok('WALK [click-rule successor]: a real click just past the bold word lands AFTER its closing marks (14), outside the pair - where the writer clicked', clicked === 14, String(clicked));
   }
 
   // ---- EDGES ----
@@ -303,11 +312,14 @@ await withHarness(async (app) => {
   }
 });
 
-// === PARKED - gated behind HARNESS_PARKED=1. One park: R1's card-reveal check, superseded by the 211 card port (2026-10-06). ===
+// === PARKED - gated behind HARNESS_PARKED=1. TWO parks: R1's card-reveal check (the 211 card port) and WALK's click-past check (the
+// click rule), both 2026-10-06. The count is the check: 2.
 if (process.env.HARNESS_PARKED === '1') {
   checks.push({ name: 'PARKED (was "R1: on the card popup a caret touching a marker (6, 8, 12, 14) shows that run\'s two marks, so Backspace and Delete act on something visible") - 211 card port (2026-10-06): the popup now runs the page\'s editing rules, so it shows no mark at any caret, as the page',
     pass: !!r1CardShown && [6, 8, 12, 14].every((o) => r1CardShown[o].length === 0), detail: JSON.stringify(r1CardShown) });
-  console.log('\nITEM211 PARKED: 1 check (R1 card reveal, the 211 card port)');
+  checks.push({ name: 'PARKED (was "WALK: a real click just past the bold word lands after its last visible letter (12), inside the pair") - the click rule (Nick, 2026-10-06): a click keeps the side of the closing marks it landed on, so it lands at 14, outside',
+    pass: clickPast === 14, detail: String(clickPast) });
+  console.log('\nITEM211 PARKED: 2 checks (R1 card reveal; the WALK click park)');
 }
 const failed = checks.filter((c) => !c.pass);
 console.log(`\nITEM211 VERIFY: ${failed.length ? `FAIL — ${failed.length}/${checks.length} failed` : `PASS (${checks.length} checks)`}`);

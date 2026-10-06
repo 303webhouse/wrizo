@@ -1,0 +1,24 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PASS  CLICK: a real click past the end of a line that ENDS in a bold word puts the caret at the line's END (after the hidden closing marks), not inside the word  [{"off":63,"lit":[],"lineEnd":63}]
+PASS  CLICK: ...and the strip lights NOTHING (no "B" active)  [[]]
+PASS  CLICK: a letter typed there lands AFTER the bold word, plain - where the writer clicked  ["plain words then **BOLD**x"]
+PASS  CLICK (his line): a click past the end of "**BOLD** *TEST* ~~FINAL~~ (hopefully)" lands at the line's end and lights nothing  [{"off":37,"lit":[],"lineEnd":37}]
+PASS  CLICK (his line): a click just to the RIGHT of "BOLD" lights nothing, and the caret sits after the hidden marks (offset 8 or 9)  [{"off":9,"lit":[]}]
+PASS  CLICK (control): a click INSIDE "BOLD" does light B - the strip still tells the truth about the writer's place  [{"off":4,"lit":["Bold (Ctrl+B)"]}]
+PASS  H (setup): the Heading button is on the rail, and NOT lit on a plain line  [{"x":348,"y":260,"on":"false"}]
+PASS  H: + and - are not offered on a plain line
+PASS  H: one press makes the caret's line a Heading 2 (`## `), the web editors' default  ["## A title line\nBody text under it."]
+PASS  H: the Heading button is LIT on a heading line  [{"x":308,"y":260,"on":"true"}]
+PASS  +/-: on a heading line the strip offers + (Larger) and - (Smaller) beside H  [{"up":{"x":330,"y":260,"on":null},"down":{"x":353,"y":260,"on":null}}]
+PASS  +: two presses step toward h1 and stop there - `## ` -> `# ` -> `# ` (clamped)  ["# A title line\nBody text under it."]
+PASS  -: presses step toward h6 and stop there - six hashes, never seven  ["###### A title line\nBody text under it."]
+PASS  LOOK: an h6 renders just above body size, and no heading is forced into capitals (text-transform: none)  [{"h6":17.51,"body":17,"transform":"none"}]
+PASS  H on a heading UNDOES it whole - all six levels removed in one press ("all heading modifications should be undone")  ["A title line\nBody text under it."]
+PASS  POP: selecting part of a heading shows a small floating -/+ beside it  [{"x":624,"y":329,"w":56,"coversText":false,"buttons":["Smaller heading","Larger heading"]}]
+PASS  POP: it covers no word on the page  [{"x":624,"y":329,"w":56,"coversText":false,"buttons":["Smaller heading","Larger heading"]}]
+PASS  POP: its + steps the heading toward h1 (`## ` -> `# `), through the same formatter as the strip  ["# A heading to select"]
+PASS  POP: the page did not move (PAGE IS PRIMARY: the pop is an overlay)  [{"pageBefore":"392,107,615,693","pageAfter":"392,107,615,693"}]
+PASS  POP: a collapsed caret (nothing selected) shows no pop
+
+CLICKHEAD VERIFY: PASS (20 checks)
