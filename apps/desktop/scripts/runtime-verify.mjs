@@ -137,6 +137,13 @@ function startServer(dist) {
     const p = decodeURIComponent(req.url.split('?')[0].split('#')[0]);
     // Auth/sync double: let the real renderer past the W2 login gate. Empty
     // sync pull = no-op, so it never touches records the app writes locally.
+    // The real server answers { open } here (item 224, round 2: sign-up is by invite code). Before
+    // this route existed the catch-all below answered the USER object, which the client reads as
+    // `open !== true` — sign-up "closed", so the account form never rendered and any LIVE walk that
+    // reaches "Create an account" timed out waiting for its fields. The double must answer the contract.
+    if (p === '/auth/signup-status') {
+      return sendJson(res, { open: true });
+    }
     if (p === '/auth/me' || p.startsWith('/auth/')) {
       // WS_ANON=1 → /auth/me is unauthorized (HB1 — drives Arrival's anon
       // path: Write still works local-first, Open reaches the sign-in
