@@ -24275,3 +24275,33 @@ FIX’s own runs; they are not this desk’s pair and are not a Batch Nine matte
 keystroke and roughly linear in page length, and time-to-paint matches it.** Suspects, NOT yet measured: the whole-page
 `innerText` reads and the full-page redecorate on every key. **FIX asks for a ruling on profiling before touching
 anything — handed to Fable; the one finding that matters for real chapters.**
+
+## BATCH NINE RE-PAIR — 111/112 ON EACH LEG; ONE RED, ONE INSTRUMENT ASSERTION THAT THE RULED DELETION FALSIFIED — 2026-10-06 (chat 1)
+
+**FABLE’S RULING (relay), recorded as his:** `item-esc-exit-main` @ `6862ab8` CLEARED (the hint span is outside every
+`.script-sheet`, absolutely positioned, takes no flex gap; on the page it renders after the editor; the CSS rule is
+unchanged). **DUPLICATE `.wz-sr-only`: DELETE A8’s three-line copy (`index.css` ~3875) at assembly and KEEP escexit’s (with
+`clip-path`).** Rebuild = `694cbbc` + `754b0c5` + `7d72b2c` + `6862ab8`, one full pair. `item211-card-port` (`ec562d4`) stays
+out of Batch Nine until his byte review. **Box order after the pair:** FIX latency profile → TOOLS storage experiment →
+PW Exp 1 → INK guest walk + `csp-enforce-walk`.
+
+**BUILT: `batch-nine-r2` @ `9008b88`** (pushed as a branch; NOT merged to `main`, NOT deployed): the three merges, then
+one commit deleting A8’s 8 lines (comment + rule + blank) from `index.css` — nothing else; one `.wz-sr-only{` rule
+remains. Browserless first: `tsc` x2 exit 0, seed-guard 36/36, `fix-signin-live-double` 5/5. **Stamp
+`tree=9008b88 bundle=index-Bg769niO.js/630378b`; 112 files per leg, six chunks of ≤20, one stamp, no launch crashes.**
+
+**RESULT: DEFAULT 111/112, PARKED 111/112. THE FOUR FIXES HELD — `a11y-signin` PASS 15, `item-storage-full` and `sc1`/`sc2`
+all clean on both legs, `fix-signin-live-double` clean.** **ONE RED, c00 on both legs: `a11y-tutor-live-region.mjs` VERIFY FAIL 1/11**
+— `A8 CSS: .wz-sr-only exists, uses the standard clip-rect(0,0,0,0) pattern, and does NOT use display:none or
+visibility:hidden`. The surviving (escexit) rule reads `clip:rect(0 0 0 0); clip-path:inset(50%)` — the standard clip
+pattern in the space-separated form — and the check’s regex (`harness/a11y-tutor-live-region.mjs:68`,
+`/clip:s*rect(0,0,0,0)/`) demands the COMMA form that only the DELETED A8 copy had. **So the red is the ruled
+deletion falsifying an over-exact instrument assertion; the product rule is a valid sr-only pattern.** (Parked leg: `PARKED
+PASS (0 checks)` — the file parks nothing — and the same VERIFY 1/11 failure.)
+
+**HANDED UP, with a lean:** the instrument’s regex should accept both forms (`rect(0[ ,]+0[ ,]+0[ ,]+0)`) — a harness-only
+edit in INK’s file, one line. **This desk does not make it** (not a mechanical union; INK’s file). Alternatives: keep A8’s
+comma form in the surviving rule (contradicts the ruling’s “keep escexit’s”). On INK’s SHA + Fable’s clear: rebuild
+`batch-nine-r3` = `9008b88` + that one commit, and run **the one file on both legs plus the browserless gates** — the
+other 111 are byte-identical in product and instrument, so a full third pair is a Fable call, not this desk’s. **Not shipped;
+grant cleared; 0 harness processes; `main` untouched.**
