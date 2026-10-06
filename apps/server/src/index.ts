@@ -16,14 +16,11 @@ if (env.isProd) {
   app.set('trust proxy', 1);
 }
 
-// CSP, REPORT-ONLY — a measured ticket, per the standing ruling
-// ("No CSP yet; it gets its own measured ticket").
-// `Content-Security-Policy-Report-Only` only logs a violation to the
-// browser's own console; it enforces nothing and cannot break anything
-// running today. No report-uri/report-to
-// is set — there is no collection endpoint built yet, so this is read by
-// hand (devtools) for now; that is its own later step, once this policy has
-// been watched for a while.
+// CSP, ENFORCED — the policy measured in report-only (csp-report-only), now
+// the enforcing header. A violation is blocked, not just logged, so every
+// directive below was checked against the real build first (see
+// scripts/harness/csp-enforce.mjs Part B). No report-uri/report-to is set —
+// there is no collection endpoint built yet, so a violation shows in devtools.
 //
 // EVERY DIRECTIVE BELOW WAS MEASURED AGAINST THE REAL BUILD, not assumed:
 //   - `pnpm run build:web`'s own dist-web/index.html carries NO inline
@@ -56,7 +53,7 @@ if (env.isProd) {
 //     X-Frame-Options header this route already wants (a later commit's
 //     own concern); the two are not in tension and may both be present.
 app.use((_req: Request, res: Response, next: NextFunction) => {
-  res.setHeader('Content-Security-Policy-Report-Only', [
+  res.setHeader('Content-Security-Policy', [
     "default-src 'self'",
     "script-src 'self'",
     "style-src 'self' 'unsafe-inline'",
