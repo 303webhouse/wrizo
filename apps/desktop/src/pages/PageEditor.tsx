@@ -44,6 +44,7 @@ import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import { applyFormat, marksAt, headingLevelAt, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
+import { hiddenMarkEditingFor } from '../store/hiddenMarksEditing';
 import { createTabChord, type TabAct } from '../store/tabChord';
 import { BLOCK_TOKEN } from '../store/markRuns';
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
@@ -923,6 +924,8 @@ function PageEditorView({ id }: { id: string }) {
     el.focus();
     const sel = getSelectionOffsets(el) ?? { start: textRef.current.length, end: textRef.current.length };
     const result = applyFormat(textRef.current, sel.start, sel.end, action);
+    // A pending mark (an empty italic cannot be stored as `**`): nothing is written; the editor wraps the next text typed here.
+    if (result.pending) { hiddenMarkEditingFor(el)?.setPending(result.pending, result.start); return; }
     // FX6 S1 — a rail Bold/Italic/Heading/Spacing click is a genuine edit
     // that bypasses the contenteditable's own input events entirely (a
     // direct programmatic decorate, same as this function always did) — so

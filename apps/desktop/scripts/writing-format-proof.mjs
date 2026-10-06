@@ -36,7 +36,7 @@ async function load(tag, mutant) {
     }
     writeFileSync(join(dir, f), source);
   }
-  writeFileSync(join(dir, 'entry.ts'), "export * from './draftFormat'; export { readMarks } from './markRuns'; export { decorateMarkdownForCard } from './draftDecoration'; export { readLead, stripLine } from './markRuns'; export { createTabChord, CHORD_HOLD_MS } from './tabChord'; export { firstLine, firstPlainLine, plainLines, boardName, substantialLines } from './entryText'; export { snapCaret, snapCaretAfterClick } from './hiddenMarks';");
+  writeFileSync(join(dir, 'entry.ts'), "export * from './draftFormat'; export { readMarks } from './markRuns'; export { decorateMarkdownForCard } from './draftDecoration'; export { readLead, stripLine } from './markRuns'; export { createTabChord, CHORD_HOLD_MS } from './tabChord'; export { firstLine, firstPlainLine, plainLines, boardName, substantialLines } from './entryText'; export { snapCaret, snapCaretAfterClick, wordBackspaceAt, wordDeleteAt } from './hiddenMarks';");
   const outfile = join(dir, 'out.mjs');
   await esbuild.build({ entryPoints: [join(dir, 'entry.ts')], bundle: true, platform: 'node', format: 'esm', outfile, logLevel: 'silent' });
   return import(pathToFileURL(outfile).href + `?t=${Date.now()}`);
@@ -310,6 +310,29 @@ function run(mod) {
     check('HEADINGS: titles and Copy My Words strip every level', [firstLine('### Third level'), firstLine('###### Six'), stripMarkdownConventions('#### Four\n###### Six')], ['Third level', 'Six', 'Four\nSix']);
   }
 
+
+  // ---- THE STRAY `**` (owner's queue): an empty italic cannot be stored, so it is held for the next text typed ----
+  {
+    const r = applyFormat('Plain words', 3, 3, 'italic');
+    check('EMPTY ITALIC: Italic at a bare caret writes NOTHING (an empty italic `**` reads as a lone bold marker and stayed on the page) and holds the mark pending', [r.text, r.start, r.pending], ['Plain words', 3, '*']);
+    check('EMPTY ITALIC: the other empty pairs are readable runs and are stored as before - `****`, `____`, `~~~~`', ['bold', 'underline', 'strike'].map((a) => { const x = applyFormat('ab', 1, 1, a); return [x.text, x.pending ?? null]; }), [['a****b', null], ['a____b', null], ['a~~~~b', null]]);
+    check('EMPTY ITALIC: inside an empty bold pair it IS readable (`***|***`) and is stored', [applyFormat('a****b', 3, 3, 'italic').text, applyFormat('a****b', 3, 3, 'italic').pending ?? null], ['a******b', null]);
+  }
+
+  // ---- CTRL+BACKSPACE / CTRL+DELETE over the visible text ----
+  {
+    const { wordBackspaceAt, wordDeleteAt } = mod;
+    const B = (t, p) => { const r = wordBackspaceAt(t, p); return r ? [r.text, r.caret] : null; };
+    const D = (t, p) => { const r = wordDeleteAt(t, p); return r ? [r.text, r.caret] : null; };
+    check('WORD BACKSPACE: a whole bold word goes with its marks (no lone `**` left), from the caret after its last letter', B('one **bold** two', 10), ['one  two', 4]);
+    check('WORD BACKSPACE: spaces before the caret go with the word before them', B('one two   ', 10), ['one ', 4]);
+    check('WORD BACKSPACE: half of a bold word - the marks of the part that stays survive, nothing empty is left', B('one **boldly** x', 11), ['one **y** x', 4]);
+    check('WORD BACKSPACE: in the middle of a styled word only its first part goes, and the pair still wraps the rest', B('**abcdef**', 5), ['**def**', 0]);
+    check('WORD BACKSPACE: at a line\'s start it is a plain Backspace (the lines join)', B('one\ntwo', 4), ['onetwo', 3]);
+    check('WORD DELETE: the word after the caret and its following spaces go; a styled word takes its marks', [D('one **bold** two', 4), D('one two', 3)], [['one two', 4], ['onetwo', 3]]);
+    check('WORD DELETE: at a line\'s end it is a plain Delete (the lines join)', D('one\ntwo', 3), ['onetwo', 3]);
+  }
+
   return results;
 }
 
@@ -321,6 +344,8 @@ let ok = bad.length === 0;
 
 if (process.argv.includes('--mutants')) {
   const M = [
+    ['EMPTY ITALIC: Italic at a bare caret writes its ambiguous empty pair again', 'draftFormat.ts', (s) => s.replace("return empty ? w : { text, start, end, pending: mark };", "return w;")],
+    ['WORD BACKSPACE: the range is cut raw, not through replaceRange (an emptied pair is left on the page)', 'hiddenMarks.ts', (s) => s.replace(/(while \(i >= li\.leadEnd && !\/\\s\/\.test\(text\[i\]\)\) \{ q = i; i = prevVisible\(q\); \}\s*)return replaceRange\(text, q, p, ''\);/, "$1return { text: text.slice(0, q) + text.slice(p), caret: q, structural: true };")],
     ['CLICK: a click is snapped by the keyboard rule (back inside the run)', 'hiddenMarks.ts', (s) => s.replace("return end === -1 ? snapCaret(text, p) : end;", "return snapCaret(text, p);")],
     ['MARKS: a caret after a run\'s closing marks counts as inside it (the old reader)', 'draftFormat.ts', (s) => s.replace("(at > r.open + ml && at <= r.close)", "(at > r.open + ml && at <= r.close + ml)")],
     ['HEADINGS: only one or two hashes are read', 'markRuns.ts', (s) => s.replace("/^(#{1,6}) /", "/^(#{1,2}) /")],

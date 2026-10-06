@@ -52,6 +52,9 @@ export interface FormatResult {
   text: string;
   start: number; // caret/selection to restore after the DOM is re-decorated
   end: number;
+  /** A mark to wrap around the NEXT text typed at `start`, when an empty pair of it cannot be stored (see toggleInline). The text is
+   *  unchanged; the editor holds the mark until the writer types there, or moves away. */
+  pending?: string;
 }
 
 function lineBounds(text: string, at: number): { start: number; end: number } {
@@ -142,7 +145,18 @@ function toggleInline(text: string, start: number, end: number, mark: string): F
     if (le === -1) le = text.length;
     const at = start - ls;
     const run = runsOf(text.slice(ls, le), mark).find(r => at >= r.open && at <= r.close + ml);
-    if (!run) return wrapSelection(text, start, end, mark);
+    if (!run) {
+      // THE STRAY `**` (item 211, owner's queue): an empty ITALIC pair is two stars, which the one reader cannot tell from a lone bold
+      // marker - so it was never a run, never hidden, and stayed on the page as literal `**` if the writer moved away without typing.
+      // An empty pair is stored only when the reader reads it back as an empty run of this mark (`****` for bold, `***|***` inside an
+      // empty bold, `____`, `~~~~`); otherwise nothing is written and the mark is held PENDING for the next text typed here.
+      const w = wrapSelection(text, start, end, mark);
+      const wls = w.text.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
+      let wle = w.text.indexOf('\n', start);
+      if (wle === -1) wle = w.text.length;
+      const empty = runsOf(w.text.slice(wls, wle), mark).some(r => r.open === start - wls && r.close === r.open + ml);
+      return empty ? w : { text, start, end, pending: mark };
+    }
     const o = ls + run.open;
     const c = ls + run.close;
     const next = text.slice(0, o) + text.slice(o + ml, c) + text.slice(c + ml);

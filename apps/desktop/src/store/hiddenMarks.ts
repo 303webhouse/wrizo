@@ -309,6 +309,39 @@ export function deleteAt(text: string, p0: number): EditResult | null {
   return { ...r, caret: snapCaret(r.text, p <= r.text.length ? p : r.text.length) };
 }
 
+/** CTRL+BACKSPACE (item 211, owner's queue). The browser's own word deletion treats a hidden `**` as punctuation - a word boundary -
+ *  so a native word delete could stop at an invisible boundary or take part of a pair. Here a word is a run of non-space characters
+ *  on the line, walked back over the spaces before the caret and then the word (hidden marks are stepped over; given the reader's
+ *  flanking rule, a mark never touches a space on its inner side, so this matches what the writer sees), and never past the line's
+ *  hidden lead. What makes it safe is the REMOVAL: through replaceRange, which keeps a mark whose partner survives and removes a pair
+ *  left empty. With nothing visible before the caret on its line, it is a plain Backspace (joining lines, or removing the token). */
+export function wordBackspaceAt(text: string, p0: number): EditResult | null {
+  const p = snapCaret(text, p0);
+  const li = lineAt(text, p);
+  const prevVisible = (x: number) => { let i = x - 1; while (i >= li.leadEnd && hid(li, i) !== 0) i--; return i; };
+  let i = prevVisible(p);
+  if (i < li.leadEnd) return backspaceAt(text, p);
+  let q = p;
+  while (i >= li.leadEnd && /\s/.test(text[i])) { q = i; i = prevVisible(q); }
+  while (i >= li.leadEnd && !/\s/.test(text[i])) { q = i; i = prevVisible(q); }
+  return replaceRange(text, q, p, '');
+}
+
+/** CTRL+DELETE: forward to the start of the next word - over the rest of this word and the spaces after it, or over the spaces alone
+ *  when the caret sits in front of them - skipping hidden marks. With nothing visible after the caret on its line, a plain Delete. */
+export function wordDeleteAt(text: string, p0: number): EditResult | null {
+  const p = snapCaret(text, p0);
+  const li = lineAt(text, p);
+  const nextVisible = (x: number) => { let i = x; while (i < li.end && hid(li, i) !== 0) i++; return i; };
+  let i = nextVisible(p);
+  if (i >= li.end) return deleteAt(text, p);
+  let e = p;
+  if (!/\s/.test(text[i])) while (i < li.end && !/\s/.test(text[i])) { e = i + 1; i = nextVisible(e); }
+  while (i < li.end && /\s/.test(text[i])) { e = i + 1; i = nextVisible(e); }
+  const r = replaceRange(text, p, e, '');
+  return { ...r, caret: snapCaret(r.text, Math.min(p, r.text.length)) };
+}
+
 /** The closing marks that begin exactly at `p`, innermost first, of runs that have content - what a space typed at `p` would sit
  *  in front of. */
 export function closersAt(text: string, p: number): string {

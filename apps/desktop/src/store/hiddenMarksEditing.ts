@@ -12,7 +12,7 @@
 //   - the arrows move by visible characters; Backspace and Delete never take a lone hidden mark.
 //   - a caret is snapped off hidden marks after every move; a CLICK keeps the side of a run's closing marks it landed on.
 // Copy and paste, and IME composition, stay native - never rebuilt.
-import { backspaceAt, closersAt, deleteAt, enterAt, nativeRange, reabsorb, replaceRange, snapCaret, snapCaretAfterClick, stepLeft, stepRight, type EditResult } from './hiddenMarks';
+import { backspaceAt, closersAt, deleteAt, enterAt, nativeRange, reabsorb, replaceRange, snapCaret, snapCaretAfterClick, stepLeft, stepRight, wordBackspaceAt, wordDeleteAt, type EditResult } from './hiddenMarks';
 import { extendSelection, placeCaret, selectionEnds } from './hiddenMarksDom';
 import { getSelectionOffsets } from './caretOffset';
 import type { EditKind } from './textUndo';
@@ -42,8 +42,15 @@ export interface HiddenMarkEditing {
   selectionChange(): void;
   /** Forget a pending edit (composition start, undo/redo, a programmatic rewrite). */
   reset(): void;
+  /** Hold `mark` for the next text typed at `at` (a format press whose empty pair cannot be stored - an empty italic). */
+  setPending(mark: string, at: number): void;
   detach(): void;
 }
+
+// The controller of each live editor, so a format press made OUTSIDE the editor's own closure (PageEditor's rail, the card's dock) can
+// hand it a pending mark. A WeakMap, so a dismounted editor is not held alive.
+const controllers = new WeakMap<HTMLElement, HiddenMarkEditing>();
+export function hiddenMarkEditingFor(el: HTMLElement): HiddenMarkEditing | undefined { return controllers.get(el); }
 
 export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing {
   const { el } = host;
@@ -54,6 +61,9 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
   // A caret a CLICK placed is honoured until the caret moves elsewhere: the selectionchange that follows must not re-snap it with the
   // keyboard rule and pull it back inside the run the writer clicked past (Nick's live bug, 2026-10-06).
   let clickPlaced = -1;
+  // A mark a format press could not store as an empty pair (an empty italic is `**`, which reads as a lone bold marker): wrapped around
+  // the next text typed at `at`, then forgotten. Moving the caret away forgets it too, so nothing is ever left on the page.
+  let pending: { mark: string; at: number } | null = null;
 
   const commit = (r: EditResult | { text: string; caret: number }, kind: EditKind) => { exit = null; host.commit(r, kind); };
 
@@ -61,6 +71,18 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
     const before = beforeEdit;
     beforeEdit = null;
     if (!before) return null;
+    const held = pending;
+    pending = null;
+    if (held && before.start === before.end && before.start === held.at && after.length > before.text.length) {
+      const n = after.length - before.text.length;
+      const ins = after.slice(held.at, held.at + n);
+      // a space typed first cannot open a mark (the flanking rule), so the mark waits for the first non-space character
+      if (/^[^\S\n]+$/.test(ins) && after.slice(0, held.at) + after.slice(held.at + n) === before.text) { pending = { mark: held.mark, at: held.at + n }; return null; }
+      if (after.slice(0, held.at) + after.slice(held.at + n) === before.text && !ins.includes('\n')) {
+        const text = before.text.slice(0, held.at) + held.mark + ins + held.mark + before.text.slice(held.at);
+        return { text, caret: held.at + held.mark.length + n };
+      }
+    }
     const T = before.text;
     let P = 0;
     const maxP = Math.min(T.length, after.length, before.start);
@@ -117,6 +139,19 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
     if (e.isComposing || host.busy()) return false;
     const k = e.key;
     if (k !== 'ArrowLeft' && k !== 'ArrowRight' && k !== 'Backspace' && k !== 'Delete') return false;
+    // Word deletion (Ctrl+Backspace / Ctrl+Delete, and Alt on a Mac) is computed over the visible text (hiddenMarks.ts wordBackspaceAt).
+    // Cmd+Backspace (delete to the line's start) and word-jump arrows stay native: the caret snap and the input rebuild cover them.
+    const wordKey = (k === 'Backspace' || k === 'Delete') && !e.metaKey && !e.shiftKey && (e.ctrlKey !== e.altKey);
+    if (wordKey) {
+      const ends = selectionEnds(el);
+      if (!ends || !ends.collapsed) return false;
+      e.preventDefault();
+      const text = host.plainNow();
+      const r = k === 'Backspace' ? wordBackspaceAt(text, ends.focus) : wordDeleteAt(text, ends.focus);
+      if (!r) return true;
+      commit(r, 'atomic');
+      return true;
+    }
     if (e.ctrlKey || e.metaKey || e.altKey) return false;
     if (k === 'Delete' && e.shiftKey) return false;
     const ends = selectionEnds(el);
@@ -157,7 +192,11 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
     placeCaret(el, at);
   };
 
-  const selectionChange = () => { if (!host.busy()) snapCaretHere(); };
+  const selectionChange = () => {
+    if (host.busy()) return;
+    snapCaretHere();
+    if (pending) { const ends = selectionEnds(el); if (!ends || !ends.collapsed || ends.focus !== pending.at) pending = null; }
+  };
   const onPointerDown = () => { pointerDown = true; };
   const onPointerUp = () => {
     if (!pointerDown) return;
@@ -168,18 +207,22 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
   window.addEventListener('pointerup', onPointerUp);
   window.addEventListener('pointercancel', onPointerUp);
 
-  return {
+  const api: HiddenMarkEditing = {
     beforeInput,
     pendingWasRange: () => !!beforeEdit && beforeEdit.end > beforeEdit.start,
     repairInput,
     enter,
     markKey,
     selectionChange,
-    reset: () => { beforeEdit = null; exit = null; },
+    reset: () => { beforeEdit = null; exit = null; pending = null; },
+    setPending: (mark: string, at: number) => { pending = { mark, at }; },
     detach: () => {
+      controllers.delete(el);
       el.removeEventListener('pointerdown', onPointerDown);
       window.removeEventListener('pointerup', onPointerUp);
       window.removeEventListener('pointercancel', onPointerUp);
     },
   };
+  controllers.set(el, api);
+  return api;
 }

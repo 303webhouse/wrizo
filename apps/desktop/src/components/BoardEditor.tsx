@@ -20,7 +20,7 @@ import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/vo
 import { getSelectionOffsets, getCaretOffset, setCaretOffset, setSelectionOffsets } from '../store/caretOffset';
 import { applyFormat, formatShortcutAction, type FormatAction } from '../store/draftFormat';
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
-import { attachHiddenMarkEditing } from '../store/hiddenMarksEditing';
+import { attachHiddenMarkEditing, hiddenMarkEditingFor } from '../store/hiddenMarksEditing';
 import { placeCaret } from '../store/hiddenMarksDom';
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, type EditKind, type TextUndoStack } from '../store/textUndo';
@@ -658,6 +658,8 @@ function BoardCardPopup({
     el.focus();
     const sel = getSelectionOffsets(el) ?? { start: textRef.current.length, end: textRef.current.length };
     const result = applyFormat(textRef.current, sel.start, sel.end, action);
+    // A pending mark (an empty italic cannot be stored as `**`): nothing is written; the editor wraps the next text typed here.
+    if (result.pending) { hiddenMarkEditingFor(el)?.setPending(result.pending, result.start); return; }
     // FX6 S1 — a Bold/Italic toolbar click is a genuine edit that bypasses
     // the contenteditable's own input events entirely — record its own
     // atomic step (see ForwardOnlyEditor.tsx's applyRailFormat/PageEditor.
