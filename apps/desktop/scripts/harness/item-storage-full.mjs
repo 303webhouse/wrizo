@@ -193,7 +193,7 @@ function installFakeEnv() {
     syncStorageFullPending: 'PENDING TEXT', syncStorageFullSynced: 'SYNCED TEXT', syncStorageFullAnon: 'ANON TEXT',
     syncStorageNearFull: 'NEAR FULL TEXT', syncStorageNearFullAnon: 'NEAR FULL ANON TEXT',
   }[k]);
-  const notice = (status, tooLarge, failed, near, dirty, signedIn) => N.syncNoticeText(status, tooLarge, failed, near, dirty, signedIn, t);
+  const notice = (status, tooLarge, failed, near, dirty, signedIn) => N.syncNoticeText(status, tooLarge, [], failed, near, dirty, signedIn, t);
   ok('WORDS (a): failed, signed in, changes NOT yet in the account — the pending text', notice('synced', [], true, false, true, true) === 'PENDING TEXT', notice('synced', [], true, false, true, true));
   ok('WORDS (a): the SAME text while offline (offline is one CAUSE of "not yet in the account", not a separate state)', notice('offline', [], true, false, true, true) === 'PENDING TEXT', '');
   ok('WORDS (b): failed, signed in, EVERYTHING already pushed — the synced text, not the pending one', notice('synced', [], true, false, false, true) === 'SYNCED TEXT', '');
@@ -210,7 +210,7 @@ function installFakeEnv() {
   if (src.includes('if (storageFailed) {')) {
     installFakeEnv();
     const W = await load(['syncNotice'], { 'store/syncNotice.ts': swap('if (storageFailed) {\n    if (!signedIn) return t(\'syncStorageFullAnon\');            // (c) — nothing else could ever hold a copy\n    return hasUnpushedDirty ? t(\'syncStorageFullPending\')       // (a) — the account does not have this yet\n      : t(\'syncStorageFullSynced\');                             // (b) — the account already does\n  }', '') });
-    ok('FALSIFICATION M3 storage-failed priority removed — must go RED (offline would win instead)', W.syncNoticeText('offline', [], true, false, true, true, t) !== 'PENDING TEXT', '');
+    ok('FALSIFICATION M3 storage-failed priority removed — must go RED (offline would win instead)', W.syncNoticeText('offline', [], [], true, false, true, true, t) !== 'PENDING TEXT', '');
   } else ok('FALSIFICATION M3: the mutation LANDED', false, 'anchor text not found');
 
   // M6 — the anon check must come BEFORE the dirty check, or a signed-out writer would see "safe in your account"
@@ -221,7 +221,7 @@ function installFakeEnv() {
       "if (!signedIn) return t('syncStorageFullAnon');            // (c) — nothing else could ever hold a copy\n    return hasUnpushedDirty ? t('syncStorageFullPending')       // (a) — the account does not have this yet\n      : t('syncStorageFullSynced');                             // (b) — the account already does",
       "if (hasUnpushedDirty) return t('syncStorageFullPending');\n    if (!signedIn) return t('syncStorageFullAnon');\n    return t('syncStorageFullSynced');"
     ) });
-    ok('FALSIFICATION M6 the anon check demoted below the dirty check — must go RED (a signed-out writer with nothing dirty would see "synced" instead of "anon")', W2.syncNoticeText('synced', [], true, false, false, false, t) !== 'SYNCED TEXT', '');
+    ok('FALSIFICATION M6 the anon check demoted below the dirty check — must go RED (a signed-out writer with nothing dirty would see "synced" instead of "anon")', W2.syncNoticeText('synced', [], [], true, false, false, false, t) !== 'SYNCED TEXT', '');
   } else ok('FALSIFICATION M6: the mutation LANDED', false, 'anchor text not found');
 
   // M11 — Fable, 2026-09-30: near-full must read the anon text for a signed-out writer. Removing the split must go red.
@@ -231,7 +231,7 @@ function installFakeEnv() {
       "if (storageNearFull) return signedIn ? t('syncStorageNearFull') : t('syncStorageNearFullAnon');",
       "if (storageNearFull) return t('syncStorageNearFull');"
     ) });
-    ok('FALSIFICATION M11 the near-full anon split removed — must go RED (a signed-out writer would be told to "stay online" for an account that does not exist)', W3.syncNoticeText('synced', [], false, true, false, false, t) !== 'NEAR FULL ANON TEXT', '');
+    ok('FALSIFICATION M11 the near-full anon split removed — must go RED (a signed-out writer would be told to "stay online" for an account that does not exist)', W3.syncNoticeText('synced', [], [], false, true, false, false, t) !== 'NEAR FULL ANON TEXT', '');
   } else ok('FALSIFICATION M11: the mutation LANDED', false, 'anchor text not found');
 }
 
