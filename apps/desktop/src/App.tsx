@@ -27,6 +27,8 @@ import { useDeskFrameMounted } from './store/deskFrameActive';
 import { useFirstRunGateActive } from './store/firstRunGateActive';
 import { onLogoutRequested } from './store/logoutRequest';
 import { SyncIndicator, FullscreenToggle } from './components/ChromeControls';
+import { GuestArrival } from './components/GuestArrival';
+import { GuestClaimSheet } from './components/GuestClaimSheet';
 
 // B1 S5 — the old Journal module surface (pages/Journal.tsx, the list/home
 // experience) RETIRES here, the same day its replacement ships
@@ -268,9 +270,13 @@ export function App() {
         <VoiceWallWhisper />
         <ThemeEffectsLayer />
         <FluxBlockCaret />
+        {/* GUEST LOGIN (item 225) — an overlay beside the routes, never inside one: it cannot unmount the page. */}
+        <GuestClaimSheet />
         <AppMain>
         <Routes>
         <Route path="/" element={<Arrival authState={authState} onAuthed={handleAuthed} />} />
+        {/* GUEST LOGIN (item 225) — the invite link's arrival; the token is taken from the address bar there. */}
+        <Route path="/guest" element={<GuestArrival onAuthed={handleAuthed} />} />
         <Route path="/drawers" element={<DrawersPage />} />
         <Route path="/shelf" element={<ShelfBoardGate />} />
         <Route path="/project/new" element={<CreateProject />} />

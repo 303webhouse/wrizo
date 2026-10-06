@@ -1,5 +1,6 @@
 import { getDirtyRecords, markClean, applyRemoteRecords, markAllJournalEntriesDirty, type DirtyRecords } from './persistence';
 import { apiSync, SyncHttpError, type SyncResponse } from './api';
+import { markGuestExpired } from './guestState';
 import { boardName } from './entryText';
 import { subscribeStorageFailureEvent } from './storageHealth';
 
@@ -327,7 +328,15 @@ export async function syncOnce(fullPull = false): Promise<void> {
       backoffTimer = null;
     }
     setStatus('synced');
-  } catch {
+  } catch (e) {
+    // GUEST LOGIN (item 225) — an expired guest is not offline. Stop asking the
+    // server (it will only refuse again), keep the device's full copy untouched,
+    // and let the claim sheet say so in one plain line.
+    if (e instanceof SyncHttpError && e.reason === 'guest_expired') {
+      stopSync();
+      markGuestExpired();
+      return;
+    }
     setStatus('offline');
     scheduleBackoff();
   } finally {
