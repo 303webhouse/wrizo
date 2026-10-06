@@ -45,6 +45,7 @@ import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import { applyFormat, marksAt, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
 import { createTabChord, type TabAct } from '../store/tabChord';
+import { escapeFromEditor, ESC_HINT_ID } from '../store/escapeExit';
 import { BLOCK_TOKEN } from '../store/markRuns';
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
 import { getRegisteredUndoStack } from '../store/textUndo';
@@ -524,7 +525,7 @@ function PageEditorView({ id }: { id: string }) {
   // keyboard-only writer can no longer Tab OUT of the editor to the chrome.
   // That is the standard trade every text editor makes — and the card popup
   // already traps Tab deliberately — but it is a real cost, not a free win,
-  // and Escape is what leaves the surface.
+  // and Escape is what leaves the surface (built by the accessibility audit's A1 fix: store/escapeExit.ts).
   //
   // STEP 3 (Nick, 2026-09-25) - TAB IS NOW A STATE MACHINE (store/tabChord.ts, proved without a browser): every Tab tap is one more
   // first-line level ("keep indenting the text further"), Shift+Tab one level back, and Tab HELD + 1 is one WHOLE-PARAGRAPH (block)
@@ -551,6 +552,9 @@ function PageEditorView({ id }: { id: string }) {
       insertMarkerRef.current?.(act === 'block-indent' ? BLOCK_TOKEN : '\t');
     };
     const onKeyDown = (e: KeyboardEvent) => {
+      // A1 (accessibility audit): Tab indents here, so Esc is the way OUT - to the current mode tab, after any open popup has
+      // closed on its own Esc (store/escapeExit.ts). Every mode, the same key.
+      if (escapeFromEditor(e, el)) return;
       const step = chord.keydown(e);
       if (step.preventDefault) e.preventDefault();
       step.acts.forEach(perform);
@@ -804,6 +808,7 @@ function PageEditorView({ id }: { id: string }) {
         onBlur={() => { setFocused(false); flush(); }}
         placeholder=""
         ariaLabel="Page writing surface"
+        ariaDescribedBy={ESC_HINT_ID}
         penColor={penColor}
         forwardLock={mode === 'journal' ? forwardLock : true}
         style={{
@@ -824,6 +829,9 @@ function PageEditorView({ id }: { id: string }) {
           utterance; the first-line invite (F6) would speak a second one on
           this exact (empty) page. gateActive is only ever true when framed
           (F4), so this never touches the legacy branch's behavior. */}
+      {/* A1: said to a screen reader, never drawn (1px, clipped) - so it cannot move or resize the page. AFTER the editor, never
+          the sheet's first child, so no first-child rule can ever take it for the page. */}
+      <span id={ESC_HINT_ID} className="wz-sr-only">{dt('pageEscHint')}</span>
       {gateActive ? null : invite.node}
       {/* BG1 S2 — the beginnings row, a sibling ABOVE/OUTSIDE the editable DOM
           (the same warm-start/F6 placement, for the same reason: never

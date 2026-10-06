@@ -41,7 +41,7 @@ Migrations run automatically on boot when the `users` table is absent
 |---|---|
 | `DATABASE_URL` | Reference the Postgres service's internal URL: `${{Postgres.DATABASE_URL}}`. Not a typed-in secret. |
 | `SESSION_SECRET` | 32+ random bytes. Generate, e.g. `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. **Owner-set secret.** |
-| `INVITE_CODE` | The registration gate handed to testers. **Owner-set secret.** |
+| `INVITE_CODES` | The registration gate handed to testers — a comma-separated list. **Owner-set secret.** |
 | `NODE_ENV` | `production` (enables secure cookies + `trust proxy` + Postgres TLS). |
 
 `PORT` is provided automatically by Railway; the server reads `process.env.PORT`.
@@ -52,7 +52,7 @@ Migrations run automatically on boot when the `users` table is absent
    then `railway add -d postgres`.
 2. **Create the app service** (done): `railway add --service writer-studio-app`.
 3. **Set non-secret env** (done): `NODE_ENV=production`, `DATABASE_URL=${{Postgres.DATABASE_URL}}`.
-4. **Set secret env** (owner): `SESSION_SECRET`, `INVITE_CODE` — via the Railway
+4. **Set secret env** (owner): `SESSION_SECRET`, `INVITE_CODES` — via the Railway
    dashboard or `railway variables --service writer-studio-app --set NAME=VALUE`.
 5. **Deploy:** `railway up --service writer-studio-app` (uploads the repo;
    `node_modules`, `dist`, `dist-web`, and `.env` are gitignored and not uploaded —
@@ -64,7 +64,7 @@ Migrations run automatically on boot when the `users` table is absent
 ## Local dev against this database
 
 `apps/server/.env` (untracked) holds `DATABASE_URL` (the Postgres **public** proxy
-URL, `DATABASE_PUBLIC_URL`), a local `SESSION_SECRET`, a local `INVITE_CODE`,
+URL, `DATABASE_PUBLIC_URL`), a local `SESSION_SECRET`, a local `INVITE_CODES`,
 `PORT=3000`, and `NODE_ENV=development`. Run `pnpm --filter @writer-studio/server build`
 then `node apps/server/dist/index.js`.
 

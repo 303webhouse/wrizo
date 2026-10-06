@@ -296,6 +296,19 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   const [composerText, setComposerText] = useState('');
   const [sending, setSending] = useState(false);
   const [status, setStatus] = useState<'idle' | 'offline' | 'error' | 'unborn'>('idle');
+  // A11Y AUDIT A8 — a DEDICATED polite live region for the Tutor's replies
+  // only. Set EXACTLY ONCE per genuine reply (the result.reply success
+  // branch below), never on the writer's own message, never on mount, never
+  // on the draw/offline/error branches — so a screen reader announces each
+  // new answer once and nothing else. Deliberately NOT `aria-live` on the
+  // conversation log itself (`.wz-tutor-convo-log`, rendered below): that
+  // div also gains the writer's OWN message on every send, which a live
+  // region on the whole list would announce too — exactly what "nothing
+  // else" rules out. Rendered inside `.wz-tutor-panel`, which carries
+  // `aria-hidden` while closed — an aria-hidden ancestor already keeps a
+  // live region inside it silent, so nothing new is needed to stay quiet
+  // while the Tutor is closed.
+  const [replyAnnouncement, setReplyAnnouncement] = useState('');
   // TU2 S2 — set per-send, alongside `status`; true only when THIS send's
   // delta had to be tail-capped. Not sticky across turns for the same
   // reason `status` isn't: it describes what just happened, not a
@@ -824,6 +837,12 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     if (!result.configured) { setStatus('offline'); return; }
     if (result.reply) {
       appendTutorMessage(entry.id, { id: generateId(), role: 'tutor', text: result.reply, at: new Date().toISOString() });
+      // A11Y AUDIT A8 — the one and only place this fires: a genuine new
+      // reply, received. A repeated identical reply (an edge case, not a
+      // real one today) would not re-announce from React state alone
+      // (same string, no change) — acceptable, since "the same answer
+      // again" announced twice is not what "each new reply" asks for either.
+      setReplyAnnouncement(result.reply);
       // Cursor advances to the page's current length ONLY here — a
       // successful reply received — never on the offline/error branches
       // above, and never pre-emptively before the call. `pageText` is
@@ -876,6 +895,11 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
 
       <div className={`desk-frame-tutor-panel-anchor desk-frame-tutor-panel-anchor--${pageKind} wz-tutor-zone`}>
         <div className="wz-tutor-panel" aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px` } : undefined}>
+          {/* A11Y AUDIT A8 — the reply announcement, visually hidden. Lives at
+              the panel's own top level (not inside the `{open && …}` content
+              body below), so closing/reopening the Tutor never remounts it and
+              never re-announces the last reply as if it were new. */}
+          <div className="wz-sr-only" role="status" aria-live="polite">{replyAnnouncement}</div>
           {/* E3 — THE COUNSEL FADES OUT, BECAUSE THERE IS NOW SOMETHING TO FADE.
               `{open && …}` used to wrap this body, so on close the CONTENT
               unmounted synchronously while the panel's own opacity transition

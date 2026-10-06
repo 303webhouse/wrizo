@@ -104,6 +104,38 @@ function setTooLarge(next: TooLargeRecord[]): void {
   tooLargeListeners.forEach(l => l(tooLarge));
 }
 
+// ITEM 224(a), SYNC INTEGRITY — like item 203's quarantine (TooLargeRecord,
+// above), but a DIFFERENT population and a different reason: these records
+// were SENT and the server itself refused to store them (malformed, or the
+// insert threw) — not withheld for their size. Unlike a true quarantine,
+// a rejected record is NOT excluded from future sends: its cause may be
+// transient (a DB hiccup) or may clear if the writer edits it again, so it
+// stays dirty and keeps trying on the ordinary cadence. This list is only
+// the WRITER'S OWN NOTICE that something is stuck, named — it never
+// prevents a retry the way `isTooLarge` does.
+export interface RejectedRecord { id: string; title: string }
+let rejectedRecords: readonly RejectedRecord[] = [];
+const rejectedListeners = new Set<(list: readonly RejectedRecord[]) => void>();
+/** Records the server refused this push: still dirty, still safe on this device, retried on the ordinary cadence. */
+export function getRejectedRecords(): readonly RejectedRecord[] { return rejectedRecords; }
+export function subscribeRejected(listener: (list: readonly RejectedRecord[]) => void): () => void {
+  rejectedListeners.add(listener);
+  listener(rejectedRecords);
+  return () => { rejectedListeners.delete(listener); };
+}
+function setRejected(next: RejectedRecord[]): void {
+  const same = next.length === rejectedRecords.length && next.every((r, i) => r.id === rejectedRecords[i].id);
+  if (same) return;
+  rejectedRecords = next;
+  rejectedListeners.forEach(l => l(rejectedRecords));
+}
+function rejectedIdSet(rejected: SyncResponse['rejected']): Set<string> {
+  if (!rejected) return new Set();
+  const ids = new Set<string>();
+  for (const list of Object.values(rejected)) for (const id of list ?? []) ids.add(id);
+  return ids;
+}
+
 function titleFor(item: PushItem): string {
   const r = item.rec as unknown as Record<string, unknown>;
   if (item.coll === 'journalEntries') {
@@ -147,11 +179,19 @@ function pack(items: PushItem[]): PushItem[][] {
   return chunks;
 }
 
-// Clean only the records that were not re-edited while the request was in flight.
-function cleanBatch(batch: PushItem[]): void {
+// Clean only the records that were not re-edited while the request was in
+// flight AND that the server actually stored. ITEM 224(a) — `rejectedIds`
+// is new: a record the server refused is excluded here even though the
+// request itself succeeded (200), so it stays dirty and is sent again next
+// cycle instead of being marked clean and silently lost.
+function cleanBatch(batch: PushItem[], rejectedIds: ReadonlySet<string> = EMPTY_SET): void {
   const still = stampMap(getDirtyRecords());
-  markClean(batch.filter(i => { const cur = still.get(i.rec.id); return cur === undefined || cur === i.rec.updatedAt; }).map(i => i.rec.id));
+  markClean(batch.filter(i => {
+    if (rejectedIds.has(i.rec.id)) return false;
+    const cur = still.get(i.rec.id); return cur === undefined || cur === i.rec.updatedAt;
+  }).map(i => i.rec.id));
 }
+const EMPTY_SET: ReadonlySet<string> = new Set();
 
 // One-time journal backfill (journal-resync patch). The new server's /sync pull
 // always carries a `journalEntries` key; the old server never did — so that key's
@@ -219,6 +259,16 @@ export async function syncOnce(fullPull = false): Promise<void> {
     // Named before any network: the writer is told even if this sync then fails for another reason.
     setTooLarge(big.map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));
     const quarantined: PushItem[] = [];
+    // ITEM 224(a) — looked up by id as each response names its own rejected
+    // ids, so the notice can carry each one's own title (the server only
+    // ever names an id; it has no reason to know a record's display title).
+    const itemById = new Map(items.map(i => [i.rec.id, i] as const));
+    const rejectedThisSync: PushItem[] = [];
+    const noteRejections = (rejected: SyncResponse['rejected']): Set<string> => {
+      const ids = rejectedIdSet(rejected);
+      for (const id of ids) { const item = itemById.get(id); if (item) rejectedThisSync.push(item); }
+      return ids;
+    };
 
     // A lone record the server refused: remember the limit it revealed, and list it instead of re-sending it.
     const quarantine = (item: PushItem): void => {
@@ -236,8 +286,8 @@ export async function syncOnce(fullPull = false): Promise<void> {
       // The limit may have been learned since this batch was planned.
       if (batch.length === 1 && isTooLarge(batch[0])) { quarantined.push(batch[0]); return; }
       try {
-        await apiSync({ lastSyncAt: null, push: payloadOf(batch), pull: false });
-        cleanBatch(batch);
+        const r = await apiSync({ lastSyncAt: null, push: payloadOf(batch), pull: false });
+        cleanBatch(batch, noteRejections(r.rejected));
       } catch (e) {
         if (e instanceof SyncHttpError && e.status === 413) { await onRefused(batch); return; }
         throw e;
@@ -252,7 +302,7 @@ export async function syncOnce(fullPull = false): Promise<void> {
         resp = await apiSync({ lastSyncAt: cursor, push: payloadOf(chunks[0]) });
         applyRemoteRecords(resp.pull);
         maybeBackfillJournal(resp.pull);
-        cleanBatch(chunks[0]);
+        cleanBatch(chunks[0], noteRejections(resp.rejected));
       } catch (e) {
         if (!(e instanceof SyncHttpError && e.status === 413)) throw e;
         resp = null;
@@ -270,6 +320,7 @@ export async function syncOnce(fullPull = false): Promise<void> {
 
     setLastSyncAt(resp.serverTime);
     setTooLarge([...big, ...quarantined].map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));
+    setRejected(rejectedThisSync.map(i => ({ id: i.rec.id, title: titleFor(i) })));
     backoffStep = 0;
     if (backoffTimer) {
       clearTimeout(backoffTimer);
@@ -321,6 +372,7 @@ export function stopSync(): void {
   // ITEM 203 - what was learned about one account's records, and the names of its too-large pages, must not outlive it.
   learnedLimitBytes = Number.POSITIVE_INFINITY;
   setTooLarge([]);
+  setRejected([]);
   setStatus('pending');
 }
 
