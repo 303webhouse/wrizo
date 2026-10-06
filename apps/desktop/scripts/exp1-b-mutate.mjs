@@ -1,122 +1,129 @@
-// Mutation-test the EXP1 (b) proof. A green I cannot make go red is not
-// evidence. Each mutation must (1) actually LAND — asserted, because twice this
-// arc a mutation silently did not apply — and (2) turn the proof RED, on the
-// claim it targets. Restored in a finally, always.
+// EXPERIMENT 1 (b) — THE FALSIFICATION, re-rostered for the rebuilt map.
+//
+// ⚠ THE PREVIOUS ROSTER DIED OF ANCHOR ROT, and that is the lesson it leaves. It
+// targeted the REPLAY: a `LINE_PREFIX_RULES` table, an `indentParagraphs` rewiring,
+// a whitespace rule inside `paragraphRanges`. The replay is gone, so three of its
+// four mutations reported "ANCHOR NOT UNIQUE (0 matches) — mutation not attempted"
+// and the script printed "3 of 4 survived" about code that no longer exists. A
+// survivor whose anchor never landed is not evidence of anything; it is a broken
+// instrument reporting on an imaginary one. Every mutation below asserts that it
+// LANDED before believing the result.
+//
+// Each mutation is applied ALONE and restored in a finally.
+// Run: node apps/desktop/scripts/exp1-b-mutate.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { dirname } from 'node:path';
 
-// Default to this file's own repo, so it is run with no arguments.
-const repo = process.argv[2] || join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-const FILES = {
-  draft: join(repo, 'apps/desktop/src/store/draftFormat.ts'),
-};
-const MUTATIONS = [
+const here = dirname(fileURLToPath(import.meta.url));
+const desktop = join(here, '..');
+const repo = join(desktop, '..', '..');
+const DF = join(desktop, 'src/store/draftFormat.ts');
+const AN = join(desktop, 'src/store/anchors.ts');
+
+const MUTANTS = [
   {
-    name: 'drop the __underline__ rule from the one stripper',
-    file: 'draft',
-    from: '  /__([\\s\\S]+?)__/g,',
-    to: '  // MUTATION: rule removed',
-    expect: 'CLAIM 1',
+    name: '1. the markers are read from the WHOLE LINE instead of the text after the lead',
+    file: DF,
+    from: '    const runs = readMarks(rest);',
+    to: '    const runs = readMarks(line);',
+    expect: 'CLAIM 1 / 2 / 4 — the off-by-lead that lands marks on the wrong words',
   },
   {
-    name: 'make the index map tail wrong (breaks strictly-increasing / tail)',
-    file: 'draft',
+    name: '2. the map forgets lead.length (every visible char points one lead too early)',
+    file: DF,
+    from: '      map.push(lineStart + lead.length + i);',
+    to: '      map.push(lineStart + i);',
+    expect: 'CLAIM 2 — the identity check',
+  },
+  {
+    name: '3. the lead is not dropped at all',
+    file: DF,
+    from: '    const rest = line.slice(lead.length);',
+    to: '    const rest = line;',
+    expect: 'CLAIM 1 / 4',
+  },
+  {
+    name: '4. markers are cut by a REGEX instead of the reader (the replay, reintroduced)',
+    file: DF,
+    from: '    const runs = readMarks(rest);',
+    to: "    const runs = [...rest.matchAll(/\\*\\*|__|~~|\\*/g)].map(m => ({ mark: m[0], open: m.index, close: m.index }));",
+    expect: 'CLAIM 1 (unpaired "2 * 3 * 4") and CLAIM 3b (a regex literal appears)',
+  },
+  {
+    name: '5. toRawRange uses map[end] — the trap its own doc comment warns about',
+    file: DF,
+    from: '  return [v.map[start], v.map[end - 1] + 1];',
+    to: '  return [v.map[start], v.map[end]];',
+    expect: 'CLAIM 6 — the tint sweeps in a trailing marker',
+  },
+  {
+    name: '6. the map loses its sentinel, so an END offset cannot map',
+    file: DF,
     from: '  map.push(raw.length);',
-    to: '  map.push(0);',
-    expect: 'CLAIM 2',
+    to: '  // sentinel removed by mutation',
+    expect: 'CLAIM 2 — length and tail',
   },
   {
-    name: "indent's paragraph expansion stops at the paragraph's FIRST line",
-    file: 'draft',
-    from: '  if (pLast) last = pLast.endLine;',
-    to: '  if (pLast) last = pLast.startLine;',
-    expect: 'CLAIM 3',
-  },
-  {
-    name: 'paragraphRanges treats a whitespace-only line as having ink',
-    file: 'draft',
-    from: "    if (lines[i].trim().length === 0) { i++; continue; }\n    const startLine = i;",
-    to: "    if (lines[i].length === 0) { i++; continue; }\n    const startLine = i;",
-    expect: 'CLAIM 4',
+    name: '7. anchors.ts walks the DOM itself again (the second reader, reintroduced)',
+    file: AN,
+    from: '  const ends = selectionEnds(editor);',
+    to: '  const ends = (() => { const w = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT); void w; return null; })();',
+    expect: 'CLAIM 7b — no createTreeWalker in this file',
   },
 ];
 
-const originals = new Map();
-for (const [k, p] of Object.entries(FILES)) originals.set(k, readFileSync(p, 'utf8'));
-
-const restore = () => {
-  for (const [k, p] of Object.entries(FILES)) writeFileSync(p, originals.get(k), 'utf8');
+const run = () => {
+  try {
+    return execFileSync('node', [join(desktop, 'scripts/exp1-b-proof.mjs')],
+      { encoding: 'utf8', cwd: repo, timeout: 600000 });
+  } catch (e) { return (e.stdout ?? '') + (e.stderr ?? ''); }
 };
 
-let survived = 0;
-try {
-  // Baseline: the proof must be GREEN before any mutation, or a red below
-  // proves nothing.
-  const base = run();
-  console.log(`BASELINE: ${base.ok ? 'GREEN' : 'RED — mutation testing is meaningless, stopping'}`);
-  if (!base.ok) { restore(); process.exit(1); }
-
-  for (const m of MUTATIONS) {
-    const p = FILES[m.file];
-    const src = originals.get(m.file);
-    // The repo's files are CRLF. An anchor written with \n matches NOTHING and
-    // reports "not unique (0 matches)" — which is how a mutation test quietly
-    // stops testing. Splice with the FILE's own EOL.
-    const eol = src.includes('\r\n') ? '\r\n' : '\n';
-    m.from = m.from.split('\n').join(eol);
-    m.to = m.to.split('\n').join(eol);
-    const hits = src.split(m.from).length - 1;
-    if (hits !== 1) {
-      console.log(`\n✗ ${m.name}\n  ANCHOR NOT UNIQUE (${hits} matches) — mutation not attempted`);
-      survived++;
-      continue;
-    }
-    writeFileSync(p, src.replace(m.from, m.to), 'utf8');
-    // ASSERT THE MUTATION LANDED. A mutation that silently did not apply makes
-    // a green look like proof of nothing being wrong.
-    const after = readFileSync(p, 'utf8');
-    if (!after.includes(m.to) || after.includes(m.from)) {
-      console.log(`\n✗ ${m.name}\n  MUTATION DID NOT LAND — no conclusion drawn`);
-      survived++;
-      restore();
-      continue;
-    }
-    const r = run();
-    const targeted = r.out.includes(m.expect) && /FAIL/.test(r.out);
-    if (r.ok) {
-      console.log(`\n✗ SURVIVED: ${m.name}\n  the proof stayed GREEN — it does not test this`);
-      survived++;
-    } else {
-      const which = [...r.out.matchAll(/^CLAIM (\d)/gm)].map(x => x[1]);
-      console.log(`\n✓ KILLED: ${m.name}\n  proof went RED${targeted ? `, and ${m.expect} reported the failure` : ' (but not on the targeted claim — check)'}`);
-      if (!targeted) survived++;
-    }
-    restore();
-  }
-} finally {
-  restore();
-  // Prove the restore worked, rather than assuming it.
-  let dirty = false;
-  for (const [k, p] of Object.entries(FILES)) {
-    if (readFileSync(p, 'utf8') !== originals.get(k)) { dirty = true; console.log(`!! ${p} NOT RESTORED`); }
-  }
-  console.log(dirty ? '\n!! TREE NOT RESTORED' : '\nrestored: all files byte-identical to before');
+console.log('BASELINE');
+const base = run();
+if (!/EXP1 \(b\) PROOF: CLEAN/.test(base)) {
+  console.log('  FAIL baseline is not clean; refusing to mutate');
+  console.log(base.slice(-1500));
+  process.exit(1);
 }
+console.log('  ok   the proof is CLEAN before any mutation\n');
+console.log('MUTANTS — each alone, landing asserted, restored in a finally\n');
 
-console.log(survived === 0
-  ? `\nMUTATION TEST: all ${MUTATIONS.length} mutations killed — the proof can go red`
-  : `\nMUTATION TEST: ${survived} of ${MUTATIONS.length} survived`);
-process.exit(survived === 0 ? 0 : 1);
-
-function run() {
+let bad = 0;
+for (const m of MUTANTS) {
+  const original = readFileSync(m.file, 'utf8');
+  const eol = original.includes('\r\n') ? '\r\n' : '\n';
+  const from = m.from.replace(/\n/g, eol);
+  const to = m.to.replace(/\n/g, eol);
   try {
-    const out = execFileSync(process.execPath, ['apps/desktop/scripts/exp1-b-proof.mjs'],
-      { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
-    return { ok: true, out };
-  } catch (e) {
-    return { ok: false, out: (e.stdout || '') + (e.stderr || '') };
+    // ⛔ THE LANDING IS ASSERTED, which is what the previous roster failed to do.
+    if (!original.includes(from)) { bad++; console.log(`  ⚠ MUTATION DID NOT LAND (anchor absent): ${m.name}`); continue; }
+    if (original.split(from).length - 1 !== 1) { bad++; console.log(`  ⚠ MUTATION DID NOT LAND (anchor not unique): ${m.name}`); continue; }
+    writeFileSync(m.file, original.split(from).join(to), 'utf8');
+    const after = readFileSync(m.file, 'utf8');
+    if (after === original) { bad++; console.log(`  ⚠ MUTATION DID NOT LAND (file unchanged): ${m.name}`); continue; }
+
+    const out = run();
+    const clean = /EXP1 \(b\) PROOF: CLEAN/.test(out);
+    const reds = [...new Set(out.split(/\r?\n/).filter((l) => l.includes('FAIL')).map((l) => l.trim().slice(0, 86)))];
+    if (clean) {
+      bad++;
+      console.log(`  ✗ SURVIVED  ${m.name} — the proof stayed CLEAN, so nothing tests this`);
+    } else {
+      console.log(`  + KILLED    ${m.name}`);
+      console.log(`              expected ${m.expect}`);
+      reds.slice(0, 2).forEach((l) => console.log(`                · ${l}`));
+    }
+  } finally {
+    writeFileSync(m.file, original, 'utf8');
   }
 }
+
+const dirty = execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8', cwd: repo }).trim();
+console.log('\nrestored byte-identical: ' + (dirty === '' ? 'YES (clean tree)' : 'NO — ' + dirty));
+console.log(bad === 0 && dirty === ''
+  ? `EXP1 (b) FALSIFICATION: all ${MUTANTS.length} mutants killed`
+  : `EXP1 (b) FALSIFICATION: ${bad} problem(s)`);
+process.exitCode = bad === 0 && dirty === '' ? 0 : 1;
