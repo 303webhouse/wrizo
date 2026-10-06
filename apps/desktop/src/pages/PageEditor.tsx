@@ -794,8 +794,6 @@ function PageEditorView({ id }: { id: string }) {
       className="wz-ink-sheet"
       style={{ position: 'relative', width: '100%', minHeight: '100%' }}
     >
-      {/* A1: said to a screen reader, never drawn (1px, clipped) - so it cannot move or resize the page. */}
-      <span id={ESC_HINT_ID} className="wz-sr-only">{dt('pageEscHint')}</span>
       <ForwardOnlyEditor
         key={`${id}-${mode}`}
         ref={editorRef}
@@ -831,6 +829,9 @@ function PageEditorView({ id }: { id: string }) {
           utterance; the first-line invite (F6) would speak a second one on
           this exact (empty) page. gateActive is only ever true when framed
           (F4), so this never touches the legacy branch's behavior. */}
+      {/* A1: said to a screen reader, never drawn (1px, clipped) - so it cannot move or resize the page. AFTER the editor, never
+          the sheet's first child, so no first-child rule can ever take it for the page. */}
+      <span id={ESC_HINT_ID} className="wz-sr-only">{dt('pageEscHint')}</span>
       {gateActive ? null : invite.node}
       {/* BG1 S2 — the beginnings row, a sibling ABOVE/OUTSIDE the editable DOM
           (the same warm-start/F6 placement, for the same reason: never
