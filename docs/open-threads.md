@@ -24060,3 +24060,37 @@ passed on both legs here; the VM failures look environmental.
 itself clear a red suite; production stays Batch Eight. **Handed to the PR #7 owner:** re-park or fix `ab2` (roster
 count, foot icons) and `fx3` (foot icons), re-offer; this desk then reruns those two files plus a full pair on the
 successor and deploys on Nick’s standing word. Box grant cleared; 0 harness processes.
+
+## FABLE’S RULING ON THE THREE PARKED REDS; NICK’S WORD TO GO LIVE; FIX’S TWO BRANCHES; BATCH NINE’S ROSTER — 2026-10-05 (chat 1)
+
+**FABLE RULED (relay): the three `ab2`/`fx3` reds are STALE PARKS of an INTENDED change.** PR #7 (Nick’s approved
+revisions) moved Full Screen to the desk corner menu, folded the foot into one three-dot menu, and added the Bullet
+styles control. **FIX (owner of PR #7’s code now) writes the successors.** Then this desk: verify FIX’s commit touches
+only `scripts/harness` (`git diff` of `apps/*/src` against `5c79ef3` empty), run `ab2` + `fx3` on BOTH legs, and if clean
+deploy `main`; **the default leg’s 107/107 stands (product bytes identical), no full re-pair.** Rollback = the current
+Batch Eight deploy.
+
+**NICK’S WORD, verbatim (arrived this session, after Fable’s relay): “And I’m going to bed, but I approve of the new version going live”.**
+*(This desk reads “the new version” as the PR #7 revisions — the build his earlier word, “I am very happy with these
+revisions and one to ship them now”, already named — and applies it only AFTER Fable’s gate above is met. If FIX’s
+successors change any product byte, the word does not cover that and the deploy stops.)*
+
+**FIX’S RELAY (recorded; nothing run in a browser by FIX):** (1) `item-esc-exit-main` @ `ef75954`, a NEW branch off
+`4d3c84e` cherry-picking the four Esc commits (the old `item-esc-exit` not force-pushed); the `spellCheck` conflict
+resolved by keeping 217’s `spellCheck={mode === ‘revise’}` and adding `aria-describedby={ariaDescribedBy}` beside it;
+`escexit.mjs` must be re-run on that SHA because 211 now owns arrows/Backspace/Delete in the same editor.
+(2) `fix-k10-notice-signature` @ `6ff11df`, off `main`, instrument only (item 213 moved `t` from 3rd to 7th argument of
+`syncNoticeText`); baseline 32/32, every mutant red. (3) 211 now owned by FIX (`item211-owner`, off `main`); card
+popup port, the stray `**` from an empty Italic, Ctrl+Backspace, then a typing-latency measurement that needs a box
+turn. (4) FIX’s paused 211 branch superseded; `item-reveal-at-marker` already in `main`.
+
+**THIS DESK VERIFIED `6ff11df`:** one file changed (`scripts/sync-chunked-push-proof.mjs`, +12/−5), browserless;
+merged to `main` and run with `--mutants` on the merged tree — **baseline green, every mutant red, exit 0.** No product
+byte changed. **Per Fable, Batch Nine’s `cb8ed98` widens `syncNoticeText` to eight arguments, so `6ff11df` will need a
+successor update then** — it is on `main` now only so the K10 CI script is green today.
+
+**BATCH NINE, RE-PLANNED (Fable, after the PR #7 deploy):** `batch-nine-integ` @ `cb8ed98` (**byte review CLEARED** by
+Fable: every server catch logs AND names its rejected id; `syncNotice` precedence as ruled) + `item-esc-exit-main` @
+`ef75954` + FIX’s K10 fix (successor SHA required). Chunked pair, then deploy on Nick’s word. **`csp-enforce` (`86d9910`)
+is NOT in it.** Then TOOLS’ storage step 2 durability experiment (now `b9be6b0`, superseding the earlier `f0ca6e0`).
+**Waiting on:** FIX’s ab2/fx3 successor SHA.
