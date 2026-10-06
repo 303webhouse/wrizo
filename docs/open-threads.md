@@ -24305,3 +24305,14 @@ comma form in the surviving rule (contradicts the ruling’s “keep escexit’s
 `batch-nine-r3` = `9008b88` + that one commit, and run **the one file on both legs plus the browserless gates** — the
 other 111 are byte-identical in product and instrument, so a full third pair is a Fable call, not this desk’s. **Not shipped;
 grant cleared; 0 harness processes; `main` untouched.**
+
+## FABLE’S RULING ON THE LAST BATCH NINE RED: OPTION 1, AND HE OWNS THE CAUSE — 2026-10-06 (chat 1)
+
+**Option 1 (Fable, relay): INK widens the regex and adds a one-rule check. “My ruling caused this red” — recorded as his
+ruling’s consequence: the deletion of A8’s `.wz-sr-only` copy falsified `a11y-tutor-live-region.mjs`’s over-exact comma-form
+assertion; the surviving rule is a valid sr-only pattern.** After INK’s SHA and Fable’s clear: `batch-nine-r3` = `9008b88` +
+INK’s commit. **NO third full pair.** The gate: (1) **the built bundle must be byte-identical to r2’s
+(`index-Bg769niO.js`, 630,378 b)** — if the bundle differs AT ALL, STOP and tell Fable (the delta would not be
+instrument-only); (2) run `a11y-tutor-live-region.mjs` on both legs; (3) the browserless gates. If green: merge to `main` and
+deploy on Nick’s standing word; then the box goes to FIX’s latency profile (`latency-profile` @ `fb0597a`).
+**Waiting on INK’s SHA** (none on origin yet). Box idle, grant cleared.
