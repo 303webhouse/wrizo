@@ -24130,3 +24130,35 @@ durability experiment (`b9be6b0`, short). (3) PW’s Experiment 1 run (`exp1-vis
 
 **FOR NICK (a schema word, no default — stops here until he answers):** guest login needs a small `guest_links`
 table (hashed token → guest user) so a guest can re-enter on the same link. **Not built, not run, not defaulted.**
+
+## PR #7 DEPLOY MANIFEST — THE FOOT SUCCESSOR CLEARED, DEPLOYED ON NICK’S WORD — 2026-10-05 (chat 1)
+
+**FIX’s successor `main-parks-211` @ `6181660`** (the probe waits 200 ms after each click so React has rendered the
+opened menu before it reads — the earlier `headings:null` / `fullScreenInCorner:false` was the read arriving too
+early). **Verified harness-only:** `git diff` of `apps/*/src` + `packages` vs `5c79ef3` EMPTY; the branch changes
+`ab2.mjs` and `fx3.mjs` only. Merged to `main` as `b5d0b12`, pushed. **This desk ran the files itself (no grant to
+FIX): `ab2` + `fx3`, DEFAULT leg CLEAN (25/25, 28/28), PARKED leg CLEAN (`AB2 PARKED` 12, `FX3 PARKED` 8; VERIFY 37 and 36),
+one stamp `tree=b5d0b12 bundle=index-B5mC_rwd.js/627507b` — the SAME bundle as the 107/107 default leg, so the
+product bytes are the tested ones.** Grant cleared; 0 harness processes.
+
+**LIVE: `b5d0b12` (product bytes = `4d3c84e`) · railway `f86db2e7-aef3-49ea-98b9-0580a5b2c31f`** — service
+`writer-studio-app`, `railway up --ci` “Deploy complete”, image digest
+`sha256:01bb0bcd6f01bdc50fd658e4713b9ca12072163f78b85312b56d7894c7fd6404`. **PREVIOUS LIVE — THIS DEPLOY’S ROLLBACK
+TARGET: Batch Eight · railway `de74b0b3-5702-4f7f-8fed-f7f864bb4ffb`** (the rebuild after Nick’s Railway attempts;
+the original `30b5f288` is REMOVED). **ROLLBACK NOW RATCHETS TO THIS STAMP.** No schema change in PR #7.
+
+**AUTHORIZATION:** Nick — “I am very happy with these revisions and one to ship them now”, and “And I’m going to bed,
+but I approve of the new version going live”; Fable — “clean → deploy, without re-asking Nick”. **Gates met:**
+FIX’s commit harness-only; `ab2` + `fx3` clean on both legs; default 107/107 stands.
+
+**CHECKS BEFORE UPLOAD:** `tsc` x2 exit 0; `build:web` exit 0, local bundle `index-B5mC_rwd.js` 627,507 b == pair
+stamp; tree bare (0 porcelain); **ITEM-98 GUARD:** `writer-studio` / `production` / `writer-studio-app`, toplevel
+`C:/Users/nickh/writer-studio`, `HEAD == origin/main == b5d0b12`.
+**LIVE VERIFICATION:** `/healthz` 200 · `/auth/me` 401 · server log “listening on :8080”. **SERVED-vs-STAMPED, BOTH ASSETS
+MATCH, MD5 and bytes:** JS `5c104be21e955a27e93d5b192fedc073` (627,507 b); CSS `54778422578337ea8ec3275a18a184e6`
+(149,013 b). **No production probe sent; no authenticated request** — the hidden-marks / strip / settings changes are
+for Nick’s own eyes.
+
+**PR #7 IS SHIPPED AND CLOSED.** NEXT per Fable: Batch Nine — `batch-nine-integ` @ `cb8ed98` + `item-esc-exit-main` @
+`ef75954` + FIX’s K10 successor. **Waiting on:** FIX’s `fix-k10-batch-nine` (parked mid-way, not pushed: one mutant
+still to re-anchor after 224(a)). Not started by this desk until that SHA is on origin.
