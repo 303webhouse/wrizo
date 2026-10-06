@@ -16,6 +16,13 @@
 //      range in the bundle - react-dom ships pre-minified, so it is found by its licence header, not by names), other app JS, GC,
 //      and (program) - native work outside any JS frame, which is where the frame's own style/layout/paint lands.
 //   4. A CONTROL: the first keys run with NO wrappers and NO profiler, so the instruments' own cost is visible beside the result.
+//   5. THE LAYOUT SHAPE, decided by measurement rather than assumed. Today every plain line is bare text joined by a newline inside ONE
+//      pre-wrap block, so the whole page is a single inline formatting context; a per-line DOM patch may still cost a whole-page
+//      layout. Clones of the live editor (same classes, same inline style, the app's own decorated HTML, not editable), measured
+//      for forced layout after: (A) today's whole-page innerHTML write; (B) a one-character change to a text node mid-page, in
+//      today's single block - the floor for any per-line patch that keeps today's DOM; (C) the same change with each line its own
+//      BLOCK row (line + its newline inside a display:block element - textContent byte-identical to today); (D) C's middle row
+//      rewritten whole via innerHTML, which is what a per-line redecorate would do. 15 trials each, median.
 // The bundle must be UNMINIFIED for (3) to name functions:
 //   pnpm exec vite build --outDir dist-web --emptyOutDir --minify false
 // and rebuilt normally afterwards (pnpm build:web). The script refuses a minified bundle rather than print anonymous buckets.
@@ -109,6 +116,48 @@ function pageInstruments() {
     const __wzRangeText = function () { const a = now(); const v = rt.call(this); W.calls.push([a, 'rt', now() - a, 0]); return v; };
     Range.prototype.toString = __wzRangeText;
   };
+}
+
+// Installed in the page after the profile. Returns medians in ms.
+function layoutShape() {
+  const el = document.querySelector('.forward-only-editor');
+  const html = el.innerHTML;
+  const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return Math.round(s[Math.floor(s.length / 2)] * 10) / 10; };
+  const T = 15;
+  const make = (inner) => {
+    const c = el.cloneNode(false);
+    c.removeAttribute('contenteditable'); c.removeAttribute('id'); c.removeAttribute('aria-describedby');
+    c.innerHTML = inner;
+    el.parentElement.insertBefore(c, el.nextSibling);
+    void c.offsetHeight;
+    return c;
+  };
+  const midText = (root) => {
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); const all = []; let n;
+    while ((n = w.nextNode())) if (n.data.length > 8 && !(n.parentElement && n.parentElement.closest('.md-mark-hidden'))) all.push(n);
+    return all[Math.floor(all.length / 2)];
+  };
+  const res = {};
+  // A - today: the whole page rewritten, then laid out
+  { const c = make(html); const set = [], lay = [];
+    for (let i = 0; i < T; i += 1) { const a = performance.now(); c.innerHTML = html; const b = performance.now(); void c.offsetHeight; set.push(b - a); lay.push(performance.now() - b); }
+    res.A_wholeReplace = { parse: med(set), layout: med(lay) }; c.remove(); }
+  // B - today's single block, one character changed mid-page
+  { const c = make(html); const t = midText(c); const lay = [];
+    for (let i = 0; i < T; i += 1) { t.data = t.data + 'a'; const b = performance.now(); void c.offsetHeight; lay.push(performance.now() - b); }
+    res.B_singleBlock_oneChar = { layout: med(lay) }; c.remove(); }
+  // C / D - block rows
+  const lines = html.split('\n');
+  const rows = lines.map((l, i) => `<div class="wz-probe-row" style="display:block">${l}${i < lines.length - 1 ? '\n' : ''}</div>`).join('');
+  { const c = make(rows); const same = c.textContent === el.textContent; const t = midText(c); const lay = [];
+    for (let i = 0; i < T; i += 1) { t.data = t.data + 'a'; const b = performance.now(); void c.offsetHeight; lay.push(performance.now() - b); }
+    res.C_blockRows_oneChar = { layout: med(lay), textContentIdentical: same, rows: c.children.length,
+      heightVsToday: Math.round(c.offsetHeight) + ' vs ' + Math.round(el.offsetHeight) };
+    const row = c.children[Math.floor(c.children.length / 2)]; const rowHtml = row.innerHTML; const set = [], lay2 = [];
+    for (let i = 0; i < T; i += 1) { const a = performance.now(); row.innerHTML = rowHtml; const b = performance.now(); void c.offsetHeight; set.push(b - a); lay2.push(performance.now() - b); }
+    res.D_blockRows_rowRewrite = { parse: med(set), layout: med(lay2) };
+    c.remove(); }
+  return res;
 }
 
 await withHarness(async (app) => {
@@ -210,6 +259,7 @@ await withHarness(async (app) => {
       total_p95: pct(rs.map((r) => Math.max(r.painted, r.selEnd ?? 0) - r.t0), 0.95),
     });
     const med = (f) => pct(recs.map(f), 0.5);
+    const shape = await app.evalJs(`(${layoutShape.toString()})()`);
     const row = {
       words, chars, wrappedCallsOutsideKeyWindows: outside, typedOk: typed === chars + CONTROL_KEYS + KEYS + WARM, keys: n,
       control_uninstrumented: phase(control),
@@ -220,6 +270,7 @@ await withHarness(async (app) => {
         innerHTML_writes: med((r) => r.ihN), innerHTML_parse: med((r) => r.ihMs),
       },
       cpu_meanPerKey: cpuPerKey,
+      layoutShape: shape,
     };
     out.sizes.push(row);
     console.log(JSON.stringify(row, null, 2));
