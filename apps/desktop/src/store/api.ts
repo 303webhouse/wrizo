@@ -125,10 +125,13 @@ export async function apiSync(payload: {
 
 // GUEST LOGIN (item 225) — the invite link's one call. The token travels in the
 // body only; it is never logged here, and a refusal's text is the server's own.
-export async function apiGuest(token: string): Promise<AuthResult> {
+export async function apiGuest(token: string): Promise<AuthResult & { reason?: string }> {
   const res = await postJson('/auth/guest', { token });
   if (res.ok) return { ok: true, user: (await res.json()) as AuthUser };
-  return { ok: false, error: await errorMessage(res, 'This guest link is not valid.') };
+  // The server's own machine word (guest_expired) travels with its sentence, so a dead link can say so at once.
+  let data: { error?: string; reason?: string } = {};
+  try { data = await res.json(); } catch { data = {}; }
+  return { ok: false, error: data.error || 'This guest link is not valid.', reason: data.reason };
 }
 
 // GUEST LOGIN (item 225) — a guest keeps everything by becoming an account in
