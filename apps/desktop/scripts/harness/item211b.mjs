@@ -103,7 +103,7 @@ await withHarness(async (app) => {
   await caretAt(app, ED, 9); await sleep(300);
   await app.typeKeys('q');
   const i2 = await settledBy(() => pageText(app, 'i2'));
-  ok('ITALIC: moving away before typing forgets the italic - the next letter elsewhere is plain and nothing was left behind', i2 === 'Plain wordqs', JSON.stringify(i2));
+  ok('ITALIC: moving away before typing forgets the italic - the next letter elsewhere is plain and nothing was left behind', i2 === 'Plain worqds', JSON.stringify(i2));
 
   // ======================== WORD DELETE ========================
   await openDraft(app, 'w1', 'one **bold** two');
