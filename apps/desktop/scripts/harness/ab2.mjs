@@ -1023,10 +1023,23 @@ if (process.env.HARNESS_PARKED === '1') {
     // have made: what the Draft rail carries, and ONLY that. The roster is
     // pinned in its ruled order so a silent addition or reordering fails
     // here, and the picker's absence is asserted rather than merely unread.
-    pok('PARKED, generation 5 (was \"PARKED, generation 4 (was \"PARKED, generation 3 (was CD1 S2/S7 re-assertion of the four-button roster Bold/Italic/Heading/Spacing + the Structure picker) — item 83 M5/R4+F3: the roster is the ruled ELEVEN and the Structure picker is withdrawn; same ONLY-those claim, current membership\") — NICK\'S OUTDENT RULING (2026-09-05) supersedes the COUNT, by design: the Draft roster is the ruled TWELVE now, because item 83 errata E3\'s held seam closed and Indent gained the partner it had been shipping without. The ELEVEN was never wrong; it was complete for its moment. What this check has always ACTUALLY claimed — that the rail carries exactly its ruled roster, in its ruled order, with no silent addition and no Structure picker — is UNCHANGED, and is re-made below at the current membership with Outdent seated immediately before Indent. Successor: outdent.mjs\'s own S1 checks (the control exists, sits before Indent, and does not wear Align left\'s glyph).\") — ITEM 122 (Nick\'s ruling, 2026-09-06) supersedes the COUNT again, by design: STRIKETHROUGH joins Draft\'s styling row, so the ruled roster is THIRTEEN. Seated AFTER Underline so the row reads B I U S — the three the writer already knows, then the new one, rather than the new one displacing a position their hand has learned. As at generation 4, the COUNT is the only thing superseded: what this check actually claims — that the rail carries exactly its ruled roster, in its ruled order, with no silent addition and no Structure picker — is UNCHANGED and re-made below at the current membership. Successor: strike.mjs\'s own roster and round-trip checks. Then PR #7 (19a4676, 2026-10-02) supersedes the COUNT once more: one list control becomes three bullet styles (Round, Hollow, Square), so the ruled roster is FIFTEEN; the claim is unchanged and re-made at the current membership.',
+    // ---- PARKED - SUPERSEDED by PR #7 (item 211, 4d3c84e, 2026-10-05) - GENERATION 5, quoted VERBATIM and no longer asserted ----
+    // The claim every generation has made is unchanged: the Draft rail carries exactly its ruled roster, in its ruled order, with no
+    // silent addition and no Structure picker. PR #7 changed the MEMBERSHIP again: the three bullet buttons fold back into one Round
+    // bullet plus a "Bullet styles" menu, B/I/U name their shortcuts in their titles, and three "Coming soon" placeholders join the
+    // row. Generation 6 below re-makes the claim at that membership, pinned in order.
+    //
+    // pok('PARKED, generation 5 (was \"PARKED, generation 4 (was \"PARKED, generation 3 (was CD1 S2/S7 re-assertion of the four-button roster Bold/Italic/Heading/Spacing + the Structure picker) — item 83 M5/R4+F3: the roster is the ruled ELEVEN and the Structure picker is withdrawn; same ONLY-those claim, current membership\") — NICK\'S OUTDENT RULING (2026-09-05) supersedes the COUNT, by design: the Draft roster is the ruled TWELVE now, because item 83 errata E3\'s held seam closed and Indent gained the partner it had been shipping without. The ELEVEN was never wrong; it was complete for its moment. What this check has always ACTUALLY claimed — that the rail carries exactly its ruled roster, in its ruled order, with no silent addition and no Structure picker — is UNCHANGED, and is re-made below at the current membership with Outdent seated immediately before Indent. Successor: outdent.mjs\'s own S1 checks (the control exists, sits before Indent, and does not wear Align left\'s glyph).\") — ITEM 122 (Nick\'s ruling, 2026-09-06) supersedes the COUNT again, by design: STRIKETHROUGH joins Draft\'s styling row, so the ruled roster is THIRTEEN. Seated AFTER Underline so the row reads B I U S — the three the writer already knows, then the new one, rather than the new one displacing a position their hand has learned. As at generation 4, the COUNT is the only thing superseded: what this check actually claims — that the rail carries exactly its ruled roster, in its ruled order, with no silent addition and no Structure picker — is UNCHANGED and re-made below at the current membership. Successor: strike.mjs\'s own roster and round-trip checks. Then PR #7 (19a4676, 2026-10-02) supersedes the COUNT once more: one list control becomes three bullet styles (Round, Hollow, Square), so the ruled roster is FIFTEEN; the claim is unchanged and re-made at the current membership.',
+    //   !draftRailClassRenameCheck.ink && draftRailClassRenameCheck.captureItems === 0
+    //     && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure === false
+    //     && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold', 'Italic', 'Underline', 'Strikethrough', 'Heading', 'Round bullet', 'Hollow bullet', 'Square bullet', 'Block quote', 'Outdent', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right'])
+    //     && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
+    //   JSON.stringify(draftRailClassRenameCheck));
+    // ---------------------------------------------------------------------
+    pok('PARKED, generation 6 (was generation 5, the FIFTEEN-button roster with Round/Hollow/Square bullets) — PR #7 (4d3c84e) changes the MEMBERSHIP: one Round bullet plus a Bullet styles menu, B/I/U titled with their shortcuts, and three Coming soon placeholders, SEVENTEEN in all; the claim is unchanged and re-made at the current membership, in order',
       !draftRailClassRenameCheck.ink && draftRailClassRenameCheck.captureItems === 0
         && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure === false
-        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold', 'Italic', 'Underline', 'Strikethrough', 'Heading', 'Round bullet', 'Hollow bullet', 'Square bullet', 'Block quote', 'Outdent', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right'])
+        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold (Ctrl+B)', 'Italic (Ctrl+I)', 'Underline (Ctrl+U)', 'Strikethrough', 'Heading', 'Round bullet', 'Bullet styles', 'Block quote', 'Outdent', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right', 'Coming soon', 'Coming soon', 'Coming soon'])
         && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
       JSON.stringify(draftRailClassRenameCheck));
 
@@ -1100,6 +1113,29 @@ if (process.env.HARNESS_PARKED === '1') {
                fullScreenInFoot: !!document.querySelector('.wz-sliver-goal [data-foot-fullscreen] button') };
     })()`);
     await sleep(200);
+    const footScriptPR7 = await app.evalJs(`(() => {
+  const row = document.querySelector('.wz-sliver-instruments-row');
+  const btns = row ? [...row.querySelectorAll('button')] : [];
+  const menuBtn = btns[0] || null;
+  let headings = null;
+  if (menuBtn) {
+    const wasOpen = !!document.querySelector('.wz-sliver-instruments-panel');
+    if (!wasOpen) menuBtn.click();
+    const panel = document.querySelector('.wz-sliver-instruments-panel');
+    headings = panel ? [...panel.querySelectorAll('h4')].map(h => h.textContent.trim()) : null;
+    if (!wasOpen) menuBtn.click();
+  }
+  const corner = document.querySelector('[aria-label="Desk menu"]');
+  let fullScreenInCorner = false;
+  if (corner) {
+    const wasOpen = !!document.querySelector('.gh-corner-menu');
+    if (!wasOpen) corner.click();
+    fullScreenInCorner = !!document.querySelector('.gh-corner-menu [aria-label="Enter full screen"], .gh-corner-menu [aria-label="Exit full screen"]');
+    if (!wasOpen) corner.click();
+  }
+  return { iconCount: btns.length, menuLabel: menuBtn ? menuBtn.getAttribute('aria-label') : null, menuTitle: menuBtn ? menuBtn.getAttribute('title') : null,
+           headings, fullScreenInFoot: !!document.querySelector('.wz-sliver-panel [data-foot-fullscreen], .wz-sliver-panel [aria-label*="full screen" i]'), fullScreenInCorner };
+})()`);   // PR #7's foot, read for generation 5 below
     const gearRowGone = await app.evalJs(`(() => {
       const panel = document.querySelector('.wz-sliver-instruments .mode-settings');
       if (!panel) return null;
@@ -1156,10 +1192,44 @@ if (process.env.HARNESS_PARKED === '1') {
     // down on the progress bar.
     const fullScreenInFootScript = typewriterGoneOnScript.fullScreenInFoot;
     const fullScreenInFootProse = await app.evalJs("!!document.querySelector('.wz-sliver-goal [data-foot-fullscreen] button')");
-    pok('PARKED, generation 4 (was the generation-3 three-icons-per-row count) - item 83 errata E2: Full Screen leaves the instruments row for the progress bar line, so each row holds TWO while the foot still holds THREE; the typewriter is present on screenplay AND prose exactly as R12 restored it',
-      typewriterGoneOnScript.iconCount === 2 && fullScreenInFootScript === true
-        && typewriterInstrumentOnProse === true && fullScreenInFootProse === true,
-      JSON.stringify({ typewriterGoneOnScript, typewriterInstrumentOnProse, fullScreenInFootScript, fullScreenInFootProse }));
+    // ---- PARKED - SUPERSEDED by PR #7 (item 211, 4d3c84e, 2026-10-05) - GENERATION 4, quoted VERBATIM and no longer asserted ----
+    // The question is untouched - where does the typewriter live, and is it on both surfaces or one - and the answer is still "both".
+    // PR #7 folds the foot into ONE three-dot menu whose sections are Typewriter Mode, Progress and Preferences, and moves Full Screen
+    // out of the drawer to the desk corner menu ("the app chrome already offers it"). Generation 5 asks the same question of the menu:
+    // one button in the row, the typewriter inside it on BOTH surfaces, and Full Screen reachable from the desk corner, not the foot.
+    //
+    // pok('PARKED, generation 4 (was the generation-3 three-icons-per-row count) - item 83 errata E2: Full Screen leaves the instruments row for the progress bar line, so each row holds TWO while the foot still holds THREE; the typewriter is present on screenplay AND prose exactly as R12 restored it',
+    //   typewriterGoneOnScript.iconCount === 2 && fullScreenInFootScript === true
+    //     && typewriterInstrumentOnProse === true && fullScreenInFootProse === true,
+    //   JSON.stringify({ typewriterGoneOnScript, typewriterInstrumentOnProse, fullScreenInFootScript, fullScreenInFootProse }));
+    // ---------------------------------------------------------------------
+    const footProsePR7 = await app.evalJs(`(() => {
+  const row = document.querySelector('.wz-sliver-instruments-row');
+  const btns = row ? [...row.querySelectorAll('button')] : [];
+  const menuBtn = btns[0] || null;
+  let headings = null;
+  if (menuBtn) {
+    const wasOpen = !!document.querySelector('.wz-sliver-instruments-panel');
+    if (!wasOpen) menuBtn.click();
+    const panel = document.querySelector('.wz-sliver-instruments-panel');
+    headings = panel ? [...panel.querySelectorAll('h4')].map(h => h.textContent.trim()) : null;
+    if (!wasOpen) menuBtn.click();
+  }
+  const corner = document.querySelector('[aria-label="Desk menu"]');
+  let fullScreenInCorner = false;
+  if (corner) {
+    const wasOpen = !!document.querySelector('.gh-corner-menu');
+    if (!wasOpen) corner.click();
+    fullScreenInCorner = !!document.querySelector('.gh-corner-menu [aria-label="Enter full screen"], .gh-corner-menu [aria-label="Exit full screen"]');
+    if (!wasOpen) corner.click();
+  }
+  return { iconCount: btns.length, menuLabel: menuBtn ? menuBtn.getAttribute('aria-label') : null, menuTitle: menuBtn ? menuBtn.getAttribute('title') : null,
+           headings, fullScreenInFoot: !!document.querySelector('.wz-sliver-panel [data-foot-fullscreen], .wz-sliver-panel [aria-label*="full screen" i]'), fullScreenInCorner };
+})()`);
+    const footOkPR7 = (f) => !!f && f.iconCount === 1 && !!f.menuLabel && f.menuLabel === f.menuTitle && Array.isArray(f.headings) && f.headings.includes('Typewriter Mode') && f.headings.includes('Progress Tracking') && f.fullScreenInFoot === false && f.fullScreenInCorner === true;
+    pok('PARKED, generation 5 (was the generation-4 two-in-the-row count with Full Screen on the progress line) - PR #7 (4d3c84e): the foot is ONE three-dot menu holding Typewriter Mode and Progress on BOTH surfaces, and Full Screen lives in the desk corner menu, not the drawer',
+      footOkPR7(footScriptPR7) && footOkPR7(footProsePR7),
+      JSON.stringify({ footScriptPR7, footProsePR7 }));
 
     // Re-seed the parked SCRIPT fixture. The prose half of the probe above is
     // the whole point — it proves the withdrawal is script-only — but
