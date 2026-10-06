@@ -150,10 +150,13 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
           {error && <div className="wz-error">{error}</div>}
           <button type="button" className="wz-btn" disabled={busy} onClick={handleSignin}>{busy ? 'one moment…' : 'Sign in'}</button>
           <div className="wz-secondary">
-            <span className="wz-link" onClick={() => { setError(''); setStage('account'); }}>New here? Create an account</span>
+            {/* a11y audit A2 (Blocker, WCAG 2.1.1 Keyboard) — was a <span onClick>,
+                unreachable by keyboard. A real <button>; index.css resets its
+                chrome so nothing looks different. */}
+            <button type="button" className="wz-link" onClick={() => { setError(''); setStage('account'); }}>New here? Create an account</button>
           </div>
           <div className="wz-secondary">
-            <span className="wz-link" onClick={() => { setError(''); setStage('doors'); }}>← back</span>
+            <button type="button" className="wz-link" onClick={() => { setError(''); setStage('doors'); }}>← back</button>
           </div>
         </section>
       )}
@@ -182,7 +185,8 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
             </>
           ) : null}
           <div className="wz-secondary">
-            <span className="wz-link" onClick={() => { setError(''); setStage('signin'); }}>← back</span>
+            {/* a11y audit A2 — same fix as sign-in's own "← back" above. */}
+            <button type="button" className="wz-link" onClick={() => { setError(''); setStage('signin'); }}>← back</button>
           </div>
         </section>
       )}

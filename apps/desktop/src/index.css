@@ -1232,6 +1232,14 @@ a:focus-visible,
 .wz-home {
   --wz-ground:#110600; --wz-lift:#150a04; --wz-ink:#f0e7d8; --wz-ink-dim:#8c8070;
   --wz-whisper:#463b2c; --wz-orange:#ff9800; --wz-orange-line:rgba(255,152,0,.5);
+  /* a11y audit A7 — a DEDICATED hint colour, not a --wz-whisper raise: that
+     token also sets decorative borders/dots/kbd chrome across this palette,
+     none of which need text contrast, and raising it would be a much wider
+     change than this one failing text use needs. 4.60:1 on --wz-lift
+     (#150a04, the field's own background) and 4.72:1 on --wz-ground
+     (#110600) — both clear 4.5:1; measured independently, matching the
+     audit's own number for the identical colour. */
+  --wz-hint:#817a70;
   --wz-ui:var(--font-ui); --wz-text:var(--font-prose);
   position:fixed; inset:0; z-index:100; overflow:hidden;
   background:var(--wz-ground); color:var(--wz-ink); font-family:var(--wz-text);
@@ -1927,10 +1935,16 @@ a:focus-visible,
 .wz-field{ font-family:var(--wz-ui); width:min(360px,86vw); background:var(--wz-lift); border:1px solid var(--wz-whisper); border-radius:0;
   padding:.85rem 1.1rem; color:var(--wz-ink); font-size:1rem; outline:none; text-align:center; transition:border-color .3s; }
 .wz-field:focus{ border-color:var(--wz-orange-line); }
-.wz-field::placeholder{ color:var(--wz-whisper); }
+.wz-field::placeholder{ color:var(--wz-hint); }
 
 .wz-secondary{ display:flex; align-items:center; gap:.7rem; margin-top:.4rem; }
-.wz-link{ font-family:var(--wz-ui); color:var(--wz-ink-dim); font-size:.95rem; cursor:pointer; transition:color .25s; }
+/* a11y audit A2 — these are now real <button>s (Arrival.tsx), so the browser's
+   own button chrome (background, border, default padding/font) is reset here;
+   everything else — colour, size, hover, cursor — is unchanged from the <span>
+   this replaces. Keyboard focus is the global button:focus-visible brass ring
+   (below in this file) — no new focus style needed. */
+.wz-link{ font-family:var(--wz-ui); color:var(--wz-ink-dim); font-size:.95rem; cursor:pointer; transition:color .25s;
+  background:none; border:none; padding:0; margin:0; }
 .wz-link:hover{ color:var(--wz-ink); }
 /* F3 — Catch: the zero-decision capture. A bordered quiet button (tan, NEVER
    orange — the orange budget stays on the return card's primary) + a kbd hint. */
