@@ -1113,25 +1113,27 @@ if (process.env.HARNESS_PARKED === '1') {
                fullScreenInFoot: !!document.querySelector('.wz-sliver-goal [data-foot-fullscreen] button') };
     })()`);
     await sleep(200);
-    const footScriptPR7 = await app.evalJs(`(() => {
+    const footScriptPR7 = await app.evalJs(`(async () => {
+  // React renders a click's state change after this script's own task, so every click here is followed by a wait before reading.
+  const tick = () => new Promise(r => setTimeout(r, 200));
   const row = document.querySelector('.wz-sliver-instruments-row');
   const btns = row ? [...row.querySelectorAll('button')] : [];
   const menuBtn = btns[0] || null;
   let headings = null;
   if (menuBtn) {
     const wasOpen = !!document.querySelector('.wz-sliver-instruments-panel');
-    if (!wasOpen) menuBtn.click();
+    if (!wasOpen) { menuBtn.click(); await tick(); }
     const panel = document.querySelector('.wz-sliver-instruments-panel');
     headings = panel ? [...panel.querySelectorAll('h4')].map(h => h.textContent.trim()) : null;
-    if (!wasOpen) menuBtn.click();
+    if (!wasOpen) { menuBtn.click(); await tick(); }
   }
   const corner = document.querySelector('[aria-label="Desk menu"]');
   let fullScreenInCorner = false;
   if (corner) {
     const wasOpen = !!document.querySelector('.gh-corner-menu');
-    if (!wasOpen) corner.click();
+    if (!wasOpen) { corner.click(); await tick(); }
     fullScreenInCorner = !!document.querySelector('.gh-corner-menu [aria-label="Enter full screen"], .gh-corner-menu [aria-label="Exit full screen"]');
-    if (!wasOpen) corner.click();
+    if (!wasOpen) { corner.click(); await tick(); }
   }
   return { iconCount: btns.length, menuLabel: menuBtn ? menuBtn.getAttribute('aria-label') : null, menuTitle: menuBtn ? menuBtn.getAttribute('title') : null,
            headings, fullScreenInFoot: !!document.querySelector('.wz-sliver-panel [data-foot-fullscreen], .wz-sliver-panel [aria-label*="full screen" i]'), fullScreenInCorner };
@@ -1203,25 +1205,27 @@ if (process.env.HARNESS_PARKED === '1') {
     //     && typewriterInstrumentOnProse === true && fullScreenInFootProse === true,
     //   JSON.stringify({ typewriterGoneOnScript, typewriterInstrumentOnProse, fullScreenInFootScript, fullScreenInFootProse }));
     // ---------------------------------------------------------------------
-    const footProsePR7 = await app.evalJs(`(() => {
+    const footProsePR7 = await app.evalJs(`(async () => {
+  // React renders a click's state change after this script's own task, so every click here is followed by a wait before reading.
+  const tick = () => new Promise(r => setTimeout(r, 200));
   const row = document.querySelector('.wz-sliver-instruments-row');
   const btns = row ? [...row.querySelectorAll('button')] : [];
   const menuBtn = btns[0] || null;
   let headings = null;
   if (menuBtn) {
     const wasOpen = !!document.querySelector('.wz-sliver-instruments-panel');
-    if (!wasOpen) menuBtn.click();
+    if (!wasOpen) { menuBtn.click(); await tick(); }
     const panel = document.querySelector('.wz-sliver-instruments-panel');
     headings = panel ? [...panel.querySelectorAll('h4')].map(h => h.textContent.trim()) : null;
-    if (!wasOpen) menuBtn.click();
+    if (!wasOpen) { menuBtn.click(); await tick(); }
   }
   const corner = document.querySelector('[aria-label="Desk menu"]');
   let fullScreenInCorner = false;
   if (corner) {
     const wasOpen = !!document.querySelector('.gh-corner-menu');
-    if (!wasOpen) corner.click();
+    if (!wasOpen) { corner.click(); await tick(); }
     fullScreenInCorner = !!document.querySelector('.gh-corner-menu [aria-label="Enter full screen"], .gh-corner-menu [aria-label="Exit full screen"]');
-    if (!wasOpen) corner.click();
+    if (!wasOpen) { corner.click(); await tick(); }
   }
   return { iconCount: btns.length, menuLabel: menuBtn ? menuBtn.getAttribute('aria-label') : null, menuTitle: menuBtn ? menuBtn.getAttribute('title') : null,
            headings, fullScreenInFoot: !!document.querySelector('.wz-sliver-panel [data-foot-fullscreen], .wz-sliver-panel [aria-label*="full screen" i]'), fullScreenInCorner };
