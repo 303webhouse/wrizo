@@ -204,15 +204,23 @@ function run(mod) {
     const B = ['a **b** c', '***bi*** x', '__*u*__', '~~s~~ and *i*', '2 * 3 * 4', '>| - **x**'];
     check('REVEAL: every character is still emitted exactly once at EVERY caret position (the 1:1 count the caret restore depends on)', B.every(t => { for (let c = 0; c <= t.length; c += 1) { if (chars(decorateMarkdownForCard(t, c)).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&') !== t) return false; } return true; }), true);
 
-    // ---- THE CARD POPUP keeps the interim rule (Fable's PR #7 review, 2026-10-03) until it has the page's editing rules ----
-    const CARD = { revealAtMarker: true };
-    const cardShown = (c) => /<span class="md-mark">\*\*<\/span>/.test(decorateMarkdownForCard(T, c, CARD));
-    const cardAll = []; for (let c = 0; c <= T.length; c += 1) if (cardShown(c)) cardAll.push(c);
-    check('CARD: with revealAtMarker the bold marks show EXACTLY while the caret touches a marker - 6,7,8 and 12,13,14 - and nowhere inside the word', cardAll, [6, 7, 8, 12, 13, 14]);
-    check('CARD: Nick\'s case on the card - mid-word shows nothing, the word\'s end shows that word\'s marks only', [visible(decorateMarkdownForCard(N, 5, CARD)), visible(decorateMarkdownForCard(N, 9, CARD))], ['TESTING THE DATABASE SYNC', '**TESTING** THE DATABASE SYNC']);
-    check('CARD: a bullet token and a heading hash show while the caret touches them, and hide away from them', [visible(decorateMarkdownForCard('-= Milk', 3, CARD)), visible(decorateMarkdownForCard('-= Milk', 5, CARD)), visible(decorateMarkdownForCard('## Chapter', 3, CARD)), visible(decorateMarkdownForCard('## Chapter', 6, CARD))], ['-= Milk', 'Milk', '## Chapter', 'Chapter']);
-    check('CARD: the 1:1 character count holds at every caret position with revealAtMarker too', B.concat(['# Head **x**', '-+ list *i*']).every(t => { for (let c = 0; c <= t.length; c += 1) { if (chars(decorateMarkdownForCard(t, c, CARD)).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&') !== t) return false; } return true; }), true);
-    check('CARD: without the option (the page) nothing changed - the same carets show no marks', [cardShown(7) && !shown(7), visible(decorateMarkdownForCard('-= Milk', 3)), visible(decorateMarkdownForCard('## Chapter', 3))], [true, 'Milk', 'Chapter']);
+    // ---- PARKED - SUPERSEDED by the 211 card port (2026-10-06): the popup now runs the page's editing rules -----------------
+    // (store/hiddenMarksEditing.ts), so the interim `revealAtMarker` option it alone passed is RETIRED - the option, the code path and
+    // its five checks. Quoted VERBATIM and no longer run. Successor: the card is decorated exactly as the page is - no mark shows at
+    // any caret - which the REVEAL checks above already assert for the one painter both surfaces now share; the line below makes the
+    // claim for the card's own shapes (a bullet token, a heading hash, Nick's line).
+    //
+    // // ---- THE CARD POPUP keeps the interim rule (Fable's PR #7 review, 2026-10-03) until it has the page's editing rules ----
+    // const CARD = { revealAtMarker: true };
+    // const cardShown = (c) => /<span class="md-mark">\*\*<\/span>/.test(decorateMarkdownForCard(T, c, CARD));
+    // const cardAll = []; for (let c = 0; c <= T.length; c += 1) if (cardShown(c)) cardAll.push(c);
+    // check('CARD: with revealAtMarker the bold marks show EXACTLY while the caret touches a marker - 6,7,8 and 12,13,14 - and nowhere inside the word', cardAll, [6, 7, 8, 12, 13, 14]);
+    // check('CARD: Nick\'s case on the card - mid-word shows nothing, the word\'s end shows that word\'s marks only', [visible(decorateMarkdownForCard(N, 5, CARD)), visible(decorateMarkdownForCard(N, 9, CARD))], ['TESTING THE DATABASE SYNC', '**TESTING** THE DATABASE SYNC']);
+    // check('CARD: a bullet token and a heading hash show while the caret touches them, and hide away from them', [visible(decorateMarkdownForCard('-= Milk', 3, CARD)), visible(decorateMarkdownForCard('-= Milk', 5, CARD)), visible(decorateMarkdownForCard('## Chapter', 3, CARD)), visible(decorateMarkdownForCard('## Chapter', 6, CARD))], ['-= Milk', 'Milk', '## Chapter', 'Chapter']);
+    // check('CARD: the 1:1 character count holds at every caret position with revealAtMarker too', B.concat(['# Head **x**', '-+ list *i*']).every(t => { for (let c = 0; c <= t.length; c += 1) { if (chars(decorateMarkdownForCard(t, c, CARD)).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&') !== t) return false; } return true; }), true);
+    // check('CARD: without the option (the page) nothing changed - the same carets show no marks', [cardShown(7) && !shown(7), visible(decorateMarkdownForCard('-= Milk', 3)), visible(decorateMarkdownForCard('## Chapter', 3))], [true, 'Milk', 'Chapter']);
+    // ---------------------------------------------------------------------
+    check('CARD [port successor]: the card is painted as the page is - no mark, bullet token or heading hash shows at ANY caret', ['-= Milk', '## Chapter', N, 'Start **BOLD** end'].every((t) => { for (let c = 0; c <= t.length; c += 1) { if (/<span class="md-mark">(?!\t)/.test(decorateMarkdownForCard(t, c))) return false; } return true; }), true);
   }
 
   // ---- STRIP ----
@@ -344,10 +352,11 @@ if (process.argv.includes('--mutants')) {
     // ['REVEAL: markers show anywhere inside the run (the old rule)', 'draftDecoration.ts', (s) => s.replace('const reveal = touches(r.open) || touches(r.close);', 'const reveal = caret !== null && caret >= r.open && caret <= end;')],
     // ['REVEAL: only the opening marker is watched', 'draftDecoration.ts', (s) => s.replace('const reveal = touches(r.open) || touches(r.close);', 'const reveal = touches(r.open);')],
     // ----------------------------------------------------------------------
-    ['REVEAL: markers show anywhere inside the run (the old rule)', 'draftDecoration.ts', (s) => s.replace('const reveal = revealAtMarker && (touches(r.open) || touches(r.close));', 'const reveal = caret !== null && caret >= r.open && caret <= end;')],
-    ['REVEAL: the card\'s interim rule leaks onto the page', 'draftDecoration.ts', (s) => s.replace('const reveal = revealAtMarker && (touches(r.open) || touches(r.close));', 'const reveal = touches(r.open) || touches(r.close);')],
-    ['HEADING: the hash stays on the page', 'draftDecoration.ts', (s) => s.replace('const headCls = revealAtMarker && heading', 'const headCls = true || heading')],
-    ['CARD: the popup loses the interim rule (marks never show there either)', 'draftDecoration.ts', (s) => s.replace('const reveal = revealAtMarker && (touches(r.open) || touches(r.close));', 'const reveal = false;')],
+    // Re-anchored by the 211 card port: the reveal option is gone, so the old rule is mutated in where the painter now hard-codes hidden.
+    ['REVEAL: markers show anywhere inside the run (the old rule)', 'draftDecoration.ts', (s) => s.replace("const markCls = 'md-mark md-mark-hidden';", "const markCls = caret !== null && caret >= r.open && caret <= end ? 'md-mark' : 'md-mark md-mark-hidden';")],
+    ['HEADING: the hash stays on the page', 'draftDecoration.ts', (s) => s.replace("const headCls = 'md-mark md-mark-hidden';", "const headCls = 'md-mark';")],
+    // RETIRED with the option they mutated (the 211 card port): 'the card's interim rule leaks onto the page' and 'the popup loses the
+    // interim rule' - there is no interim rule left to leak or to lose.
     ['DECORATOR: marks are not nested (a run inside another is dropped)', 'draftDecoration.ts', (s) => s.replace(/kids\.push\(within\[i \+ 1\]\);\s*i\+\+;/, 'i++;')],
   ];
   for (const [name, file, fn] of M) {

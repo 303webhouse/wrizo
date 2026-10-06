@@ -7,9 +7,8 @@ import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, reveal
 import { getCaretOffset as getPlainOffset, setCaretOffset as setPlainOffset } from '../store/caretOffset';
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, registerUndoStack, unregisterUndoStack, type EditKind } from '../store/textUndo';
-import { getSelectionOffsets } from '../store/caretOffset';
-import { backspaceAt, closersAt, deleteAt, enterAt, nativeRange, reabsorb, replaceRange, snapCaret, snapCaretAfterClick, stepLeft, stepRight, type EditResult } from '../store/hiddenMarks';
-import { extendSelection, placeCaret, selectionEnds } from '../store/hiddenMarksDom';
+import { placeCaret } from '../store/hiddenMarksDom';
+import { attachHiddenMarkEditing } from '../store/hiddenMarksEditing';
 
 // CW2 — the reusable forward-only writing surface. Keyboard-only input on the
 // DM1 Run model: typing appends, backspace walks a short runway and then locks;
@@ -267,58 +266,31 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         decorateEditorFor(el, plain, caret, setPlainOffset);
         if (caret !== null) placeCaret(el, caret);
       };
-      // ITEM 211 — the hidden marks' editing rules (store/hiddenMarks.ts). `beforeEdit` is the text and selection a native edit
-      // starts from, captured at beforeinput; onInput rebuilds the edit from it so no lone mark survives (rule 4). `exit` is a
-      // space just typed out past a styled word's closing marks, which the next letter takes back in (rule 1).
-      let beforeEdit: { text: string; start: number; end: number } | null = null;
-      let exit: { closeAt: number; closers: string; wsEnd: number } | null = null;
-      let pointerDown = false;
-      let lastSnap = -1;
+      // ITEM 211 — the hidden marks' editing rules: ONE controller (store/hiddenMarksEditing.ts), shared with the board card popup,
+      // driving the pure rules in store/hiddenMarks.ts. PR #7 built it inline here; it moved, unchanged in behaviour, so the card could
+      // have the same rules instead of a second copy.
       const plainNow = () => readEditorPlainText(el.innerText, null).plain;
-      const commitEdit = (r: EditResult, kind: EditKind) => {
-        exit = null;
-        undoStack.record({ text: r.text, caret: r.caret }, kind);
-        onChangeRef.current(r.text);
-        onForwardRef.current?.();
-        redecorate(r.text, r.caret);
-      };
-      const repairNative = (before: { text: string; start: number; end: number }, after: string): { text: string; caret: number } | null => {
-        const T = before.text;
-        let P = 0;
-        const maxP = Math.min(T.length, after.length, before.start);
-        while (P < maxP && T[P] === after[P]) P++;
-        let S = 0;
-        const maxS = Math.min(T.length - Math.max(P, before.end), after.length - P);
-        while (S < maxS && T[T.length - 1 - S] === after[after.length - 1 - S]) S++;
-        const ins = after.slice(P, after.length - S);
-        const span = nativeRange(T, P, T.length - S);
-        if (span.s === span.e && ins === '') return null;
-        if (exit && before.start === before.end && P === exit.wsEnd && span.s === P && span.e === P) {
-          if (ins.length === 1 && !/\s/.test(ins)) {
-            const back = reabsorb(after, exit.closeAt, exit.closers, exit.wsEnd);
-            exit = null;
-            if (back) return back;
-          } else if (/^[^\S\n]$/.test(ins)) {
-            exit = { ...exit, wsEnd: exit.wsEnd + 1 };
-            return null;
-          } else exit = null;
-        } else exit = null;
-        const closers = before.start === before.end && /^[^\S\n]$/.test(ins) ? closersAt(T, P) : '';
-        const r = replaceRange(T, span.s, span.e, ins);
-        if (closers && r.text.slice(P, P + closers.length + 1) === closers + ins) exit = { closeAt: P, closers, wsEnd: P + closers.length + 1 };
-        return r.text === after ? null : r;
-      };
+      const marks = attachHiddenMarkEditing({
+        el,
+        plainNow,
+        busy: () => composingDraft || applyingEmDash,
+        commit: (r, kind) => {
+          undoStack.record({ text: r.text, caret: r.caret }, kind);
+          onChangeRef.current(r.text);
+          onForwardRef.current?.();
+          redecorate(r.text, r.caret);
+        },
+      });
       const onInput = () => {
         if (applyingEmDash) return; // the substitution's own synthetic input event — already handled below
         let kind = pendingKind;
         let { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
-        const before = beforeEdit;
-        beforeEdit = null;
         let repaired = false;
-        if (before && !composingDraft) {
-          const r = repairNative(before, plain);
+        if (!composingDraft) {
+          const wasRange = marks.pendingWasRange();
+          const r = marks.repairInput(plain);
           if (r) { plain = r.text; caret = r.caret; repaired = true; }
-          if (before.end > before.start) kind = 'atomic';
+          if (wasRange) kind = 'atomic';
         }
         if (repaired) redecorate(plain, caret);
         onChangeRef.current(plain);
@@ -390,7 +362,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         e.preventDefault();
         const snap = wantsUndo ? undoStack.undo() : undoStack.redo();
         if (!snap) return;
-        exit = null;
+        marks.reset();
         onChangeRef.current(snap.text);
         redecorate(snap.text, snap.caret);
       };
@@ -418,14 +390,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         // BoardEditor.tsx's BoardCardPopup so the two surfaces can't drift).
         pendingKind = classifyEditKind(it, e.data ?? null);
         // ITEM 211 — copy and paste stay exactly as they were (rule 5), and IME composition stays native: neither is rebuilt.
-        beforeEdit = null;
-        if (!composingDraft && !e.isComposing && it !== 'insertCompositionText' && it !== 'insertFromPaste' && it !== 'insertFromDrop') {
-          const o = getSelectionOffsets(el);
-          if (o) {
-            const text = plainNow();
-            beforeEdit = { text, start: Math.min(o.start, text.length), end: Math.min(o.end, text.length) };
-          }
-        }
+        marks.beforeInput(e);
         if (it === 'insertFromPaste' || it === 'insertFromDrop') {
           if (shadowAllows(extractIncomingText(e))) return;
           e.preventDefault(); notePasteBlocked();
@@ -452,60 +417,14 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // preventDefault (not beforeinput) mirrors ScriptEditor.tsx's own
       // proven Enter-handling pattern elsewhere in this codebase.
       const onKeyDownDraft = (e: KeyboardEvent) => {
-        if (e.key !== 'Enter' || e.isComposing) return;
-        e.preventDefault();
-        const sel = window.getSelection();
-        if (!sel || sel.rangeCount === 0) return;
-        const range = sel.getRangeAt(0);
-        if (!el.contains(range.startContainer)) return;
-        // ITEM 211 — a raw newline inside a styled run would leave each line one unpaired, visible mark, so the text is
-        // computed (store/hiddenMarks.ts enterAt): the run closes before the newline and opens again after it.
-        const o = getSelectionOffsets(el);
-        if (!o) return;
-        const text = plainNow();
-        const r = enterAt(text, Math.min(o.start, text.length), Math.min(o.end, text.length));
-        const plain = r.text;
-        const caret = r.caret;
-        exit = null;
-        // FX6 S1 — Enter completes a line the same way a typed space
-        // completes a word: a 'boundary' step, closing whatever was open.
-        undoStack.record({ text: plain, caret }, 'boundary');
-        onChangeRef.current(plain);
-        onForwardRef.current?.();
-        redecorate(plain, caret);
+        // ITEM 211 — a raw newline inside a styled run would leave each line one unpaired, visible mark, so the text is computed
+        // (store/hiddenMarks.ts enterAt): the run closes before the newline and opens again after it. Recorded as a 'boundary' step
+        // (FX6 S1: Enter completes a line the way a typed space completes a word).
+        marks.enter(e);
       };
       // ITEM 211 rules 2 and 3 — the arrows move by visible characters, and Backspace and Delete never take a lone hidden mark.
-      // Modified arrows (word jumps) and modified deletes stay native: the caret snap and onInput's rebuild cover them.
-      // Shift+Delete is the platform's cut on Windows, so it is left alone too.
-      const onMarkKeyDraft = (e: KeyboardEvent) => {
-        if (e.isComposing || composingDraft) return;
-        const k = e.key;
-        if (k !== 'ArrowLeft' && k !== 'ArrowRight' && k !== 'Backspace' && k !== 'Delete') return;
-        if (e.ctrlKey || e.metaKey || e.altKey) return;
-        if (k === 'Delete' && e.shiftKey) return;
-        const ends = selectionEnds(el);
-        if (!ends) return;
-        const text = plainNow();
-        if (k === 'ArrowLeft' || k === 'ArrowRight') {
-          e.preventDefault();
-          exit = null;
-          const step = k === 'ArrowLeft' ? stepLeft : stepRight;
-          if (e.shiftKey) { extendSelection(el, step(text, ends.focus)); return; }
-          if (!ends.collapsed) {
-            const edge = k === 'ArrowLeft' ? Math.min(ends.anchor, ends.focus) : Math.max(ends.anchor, ends.focus);
-            placeCaret(el, snapCaret(text, edge));
-            return;
-          }
-          placeCaret(el, step(text, ends.focus));
-          return;
-        }
-        if (!ends.collapsed) return;
-        e.preventDefault();
-        const r = k === 'Backspace' ? backspaceAt(text, ends.focus) : deleteAt(text, ends.focus);
-        if (!r) return;
-        commitEdit(r, r.structural ? 'atomic' : 'delete');
-      };
-      const onCompStartDraft = () => { composingDraft = true; beforeEdit = null; exit = null; };
+      const onMarkKeyDraft = (e: KeyboardEvent) => { marks.markKey(e); };
+      const onCompStartDraft = () => { composingDraft = true; marks.reset(); };
       const onCompEndDraft = () => {
         composingDraft = false;
         const { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
@@ -529,38 +448,13 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // what belongs HERE is only what this closure knows — that composing
       // text and an in-flight em-dash substitution are not the writer's yet,
       // the same two conditions onInput checks before it trusts the DOM.
-      // ITEM 211 rule 1 — the same signal snaps a collapsed caret off the hidden marks: after a click (once the button is up, so
-      // a drag-select is never disturbed), a native word jump, Home/End, or anything else that moved it.
-      // A caret a CLICK placed is honoured until the caret moves elsewhere: the selectionchange that follows must not re-snap it
-      // with the keyboard rule and pull it back inside the run the writer clicked past.
-      let clickPlaced = -1;
-      const snapCaretHere = (fromClick = false) => {
-        if (pointerDown) return;
-        const ends = selectionEnds(el);
-        if (!ends || !ends.collapsed) return;
-        const text = plainNow();
-        const at = fromClick ? snapCaretAfterClick(text, ends.focus) : ends.focus === clickPlaced ? clickPlaced : snapCaret(text, ends.focus);
-        clickPlaced = fromClick ? at : at === clickPlaced ? clickPlaced : -1;
-        if (exit && at !== exit.wsEnd) exit = null;
-        // one placement per offset: if the browser canonicalises the point we chose, the next selectionchange must not retry it
-        if (at === ends.focus && at === lastSnap) return;
-        lastSnap = at;
-        placeCaret(el, at);
-      };
+      // ITEM 211 rule 1 — the same signal snaps a collapsed caret off the hidden marks (and a click keeps the side of a run's closing
+      // marks it landed on): the controller owns it, and its own pointer listeners.
       const onSelectionReveal = () => {
         if (composingDraft || applyingEmDash) return;
-        snapCaretHere();
+        marks.selectionChange();
         revealAtCaret(el, getPlainOffset, setPlainOffset);
       };
-      const onPointerDownDraft = () => { pointerDown = true; };
-      const onPointerUpDraft = () => {
-        if (!pointerDown) return;
-        pointerDown = false;
-        if (!composingDraft && !applyingEmDash) snapCaretHere(true);
-      };
-      el.addEventListener('pointerdown', onPointerDownDraft);
-      window.addEventListener('pointerup', onPointerUpDraft);
-      window.addEventListener('pointercancel', onPointerUpDraft);
       document.addEventListener('selectionchange', onSelectionReveal);
       el.addEventListener('input', onInput);
       el.addEventListener('beforeinput', onBeforeInputDraft as EventListener);
@@ -574,9 +468,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       el.addEventListener('drop', blockPaste);
       return () => {
         document.removeEventListener('selectionchange', onSelectionReveal);
-        el.removeEventListener('pointerdown', onPointerDownDraft);
-        window.removeEventListener('pointerup', onPointerUpDraft);
-        window.removeEventListener('pointercancel', onPointerUpDraft);
+        marks.detach();
         el.removeEventListener('input', onInput);
         el.removeEventListener('beforeinput', onBeforeInputDraft as EventListener);
         el.removeEventListener('keydown', onKeyDownDraft);

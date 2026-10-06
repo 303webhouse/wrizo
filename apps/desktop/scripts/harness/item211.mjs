@@ -19,6 +19,7 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
+let r1CardShown = null;   // R1's card readings, kept for its parked record
 const checks = [];
 const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass, detail }); console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? `  [${detail}]` : ''}`); };
 
@@ -268,8 +269,16 @@ await withHarness(async (app) => {
     for (const off of [3, 6, 8, 10, 12, 14, 16]) shownAt[off] = await cardAt(off);
     ok('R1: on the card popup a mid-word caret (10) and a caret away from the word (3, 16) show no marks',
       [3, 10, 16].every((o) => shownAt[o].length === 0), JSON.stringify(shownAt));
-    ok('R1: on the card popup a caret touching a marker (6, 8, 12, 14) shows that run\'s two marks, so Backspace and Delete act on something visible',
-      [6, 8, 12, 14].every((o) => JSON.stringify(shownAt[o]) === JSON.stringify(['**', '**'])), JSON.stringify(shownAt));
+    // ---- PARKED - SUPERSEDED by the 211 card port (2026-10-06): the popup now runs the page's editing rules, so it shows no mark at any caret, as the page ----
+    // Kept VERBATIM and no longer run. The card kept the interim rule because Backspace and Delete there could half-delete a mark it
+    // could not see; it now runs the page's rules (store/hiddenMarksEditing.ts), so neither can, and nothing needs to show.
+    //
+    // ok('R1: on the card popup a caret touching a marker (6, 8, 12, 14) shows that run\'s two marks, so Backspace and Delete act on something visible',
+    //   [6, 8, 12, 14].every((o) => JSON.stringify(shownAt[o]) === JSON.stringify(['**', '**'])), JSON.stringify(shownAt));
+    // ------------------------------------------------------------------
+    r1CardShown = shownAt;
+    ok('R1 [card-port successor]: on the card popup a caret touching a marker (6, 8, 12, 14) shows NO marks either - the card runs the page\'s editing rules now',
+      [6, 8, 12, 14].every((o) => shownAt[o].length === 0), JSON.stringify(shownAt));
   }
 
   // R2: item 114's page kind and style guide return as one compact "Page kind" row below the Templates. Convert stays out.
@@ -294,6 +303,12 @@ await withHarness(async (app) => {
   }
 });
 
+// === PARKED - gated behind HARNESS_PARKED=1. One park: R1's card-reveal check, superseded by the 211 card port (2026-10-06). ===
+if (process.env.HARNESS_PARKED === '1') {
+  checks.push({ name: 'PARKED (was "R1: on the card popup a caret touching a marker (6, 8, 12, 14) shows that run\'s two marks, so Backspace and Delete act on something visible") - 211 card port (2026-10-06): the popup now runs the page\'s editing rules, so it shows no mark at any caret, as the page',
+    pass: !!r1CardShown && [6, 8, 12, 14].every((o) => r1CardShown[o].length === 0), detail: JSON.stringify(r1CardShown) });
+  console.log('\nITEM211 PARKED: 1 check (R1 card reveal, the 211 card port)');
+}
 const failed = checks.filter((c) => !c.pass);
 console.log(`\nITEM211 VERIFY: ${failed.length ? `FAIL — ${failed.length}/${checks.length} failed` : `PASS (${checks.length} checks)`}`);
 if (failed.length) process.exitCode = 1;

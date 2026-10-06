@@ -19,7 +19,9 @@ import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { getSelectionOffsets, getCaretOffset, setCaretOffset, setSelectionOffsets } from '../store/caretOffset';
 import { applyFormat, formatShortcutAction, type FormatAction } from '../store/draftFormat';
-import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, revealAtCaret, type CardDecorateOptions } from '../store/draftDecoration';
+import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
+import { attachHiddenMarkEditing } from '../store/hiddenMarksEditing';
+import { placeCaret } from '../store/hiddenMarksDom';
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, type EditKind, type TextUndoStack } from '../store/textUndo';
 import { useWayBack } from './useWayBack';
@@ -67,8 +69,6 @@ import { SIZE_DEFAULT } from '../store/fontSize';
 // card, Connect toggle) — BoardEditor declares `pageKind="board"` instead
 // of the standing `pageKind="prose"` placeholder a prior ticket flagged.
 
-// The popup keeps the interim reveal-at-marker rule until it has the page's editing rules (see draftDecoration.ts).
-const CARD_DECORATE: CardDecorateOptions = { revealAtMarker: true };
 const AUTOSAVE_MS = 2000;
 const LONG_PRESS_MS = 350;         // mirrors the S25-verified Spread gesture
 const MOUSE_DRAG_THRESHOLD = 6;
@@ -400,7 +400,7 @@ function BoardCardPopup({
   useEffect(() => {
     const el = elRef.current;
     if (!el) return;
-    decorateEditorFor(el, initialText, initialText.length, setCaretOffset, text => decorateMarkdownForCard(text, initialText.length, CARD_DECORATE));
+    decorateEditorFor(el, initialText, initialText.length, setCaretOffset, text => decorateMarkdownForCard(text, initialText.length));
     el.focus();
 
     // I0 pen discipline (park-sweep audit finding — the retired inline
@@ -440,14 +440,37 @@ function BoardCardPopup({
     // discipline `justTypedSpace` above already uses), consumed by the
     // very next onInput call it precedes.
     let pendingKind: EditKind = 'atomic';
-    const redecorate = (plain: string, caret: number | null) =>
-      decorateEditorFor(el, plain, caret, setCaretOffset, text => decorateMarkdownForCard(text, caret, CARD_DECORATE));
+    const redecorate = (plain: string, caret: number | null) => {
+      decorateEditorFor(el, plain, caret, setCaretOffset, text => decorateMarkdownForCard(text, caret));
+      // ITEM 211 - the caret lands on the visible side of a hidden mark (store/hiddenMarksDom.ts), as on the page
+      if (caret !== null) placeCaret(el, caret);
+    };
     const commit = (plain: string) => { textRef.current = plain; onCommit(plain); };
+    // ITEM 211, THE CARD PORT - the page's editing rules for marks that never show, from the ONE controller the page uses
+    // (store/hiddenMarksEditing.ts): edits rebuilt so no lone mark survives, Enter computed, arrows over visible characters,
+    // Backspace and Delete that never take a lone hidden mark, and the caret snap (a click keeps the side of a run's closing marks).
+    const plainNow = () => readEditorPlainText(el.innerText, null).plain;
+    const marks = attachHiddenMarkEditing({
+      el,
+      plainNow,
+      busy: () => composing || applyingEmDash,
+      commit: (r, kind) => {
+        undoStack.record({ text: r.text, caret: r.caret }, kind);
+        commit(r.text);
+        redecorate(r.text, r.caret);
+      },
+    });
 
     const onInput = () => {
       if (applyingEmDash) return;
-      const kind = pendingKind;
-      const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
+      let kind = pendingKind;
+      let { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
+      if (!composing) {
+        const wasRange = marks.pendingWasRange();
+        const r = marks.repairInput(plain);
+        if (r) { plain = r.text; caret = r.caret; redecorate(plain, caret); }
+        if (wasRange) kind = 'atomic';
+      }
       commit(plain);
       if (composing) return; // FX6 S1 — composed text records as ONE atomic step, at compositionend below
       const trigger = justTypedSpace ? findEmDashTrigger(plain, caret) : null;
@@ -499,6 +522,7 @@ function BoardCardPopup({
       e.preventDefault();
       const snap = wantsUndo ? undoStack.undo() : undoStack.redo();
       if (!snap) return;
+      marks.reset();
       commit(snap.text);
       redecorate(snap.text, snap.caret);
     };
@@ -509,27 +533,12 @@ function BoardCardPopup({
     // tsx's own onKeyDownDraft), adapted to this popup's own commit/
     // redecorate closures.
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Enter' || e.isComposing) return;
-      e.preventDefault();
-      const sel = window.getSelection();
-      if (!sel || sel.rangeCount === 0) return;
-      const range = sel.getRangeAt(0);
-      if (!el.contains(range.startContainer)) return;
-      range.deleteContents();
-      const textNode = document.createTextNode('\n');
-      range.insertNode(textNode);
-      range.setStart(textNode, 1);
-      range.collapse(true);
-      sel.removeAllRanges();
-      sel.addRange(range);
-      const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
-      // FX6 S1 — Enter completes a line the same way a typed space
-      // completes a word: a 'boundary' step, closing whatever was open.
-      undoStack.record({ text: plain, caret }, 'boundary');
-      commit(plain);
-      redecorate(plain, caret);
+      // ITEM 211 - Enter is computed (store/hiddenMarks.ts enterAt): a run the caret is inside closes before the newline and opens
+      // again after it, so neither line is left with one unpaired, visible mark. Recorded as a 'boundary' step (FX6 S1).
+      marks.enter(e);
     };
-    const onCompStart = () => { composing = true; };
+    const onMarkKey = (e: KeyboardEvent) => { marks.markKey(e); };
+    const onCompStart = () => { composing = true; marks.reset(); };
     const onCompEnd = () => {
       composing = false;
       const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
@@ -550,6 +559,7 @@ function BoardCardPopup({
       // textUndo.ts's own classifyEditKind — shared with ForwardOnlyEditor.
       // tsx so the two surfaces can't drift).
       pendingKind = classifyEditKind(it, e.data ?? null);
+      marks.beforeInput(e);
       if (it === 'insertFromPaste' || it === 'insertFromDrop') {
         if (shadowAllows(extractIncomingText(e))) return; // own ink: native paste proceeds
         e.preventDefault();
@@ -581,10 +591,12 @@ function BoardCardPopup({
     // non-collapsed selection, so selecting text on a card works.
     const onSelectionReveal = () => {
       if (composing || applyingEmDash) return;
-      revealAtCaret(el, getCaretOffset, setCaretOffset, CARD_DECORATE);
+      marks.selectionChange();
+      revealAtCaret(el, getCaretOffset, setCaretOffset);
     };
     el.addEventListener('input', onInput);
     el.addEventListener('keydown', onKeyDown);
+    el.addEventListener('keydown', onMarkKey);
     el.addEventListener('keydown', onUndoRedoKey);
     el.addEventListener('keydown', onFormatKey);
     document.addEventListener('selectionchange', onSelectionReveal);
@@ -599,7 +611,9 @@ function BoardCardPopup({
       el.removeEventListener('pointerup', neutralizePen, penOpts);
       el.removeEventListener('input', onInput);
       el.removeEventListener('keydown', onKeyDown);
+      el.removeEventListener('keydown', onMarkKey);
       el.removeEventListener('keydown', onUndoRedoKey);
+      marks.detach();
       el.removeEventListener('keydown', onFormatKey);
       document.removeEventListener('selectionchange', onSelectionReveal);
       el.removeEventListener('compositionstart', onCompStart);
@@ -652,7 +666,7 @@ function BoardCardPopup({
     textRef.current = result.text;
     onCommit(result.text);
     const collapsed = result.end <= result.start;
-    decorateEditorFor(el, result.text, result.start, setCaretOffset, text => decorateMarkdownForCard(text, collapsed ? result.start : null, CARD_DECORATE));
+    decorateEditorFor(el, result.text, result.start, setCaretOffset, text => decorateMarkdownForCard(text, collapsed ? result.start : null));
     if (!collapsed) setSelectionOffsets(el, result.start, result.end);
   };
 

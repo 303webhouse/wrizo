@@ -866,8 +866,16 @@ await withHarness(async (app) => {
     const marks = [...document.querySelectorAll('.board-popup-editor .md-mark')];
     return { anyRevealed: marks.some(m => !m.classList.contains('md-mark-hidden')) };
   })()`);
-  ok('S6: reveal-adjacent-to-caret — once the caret sits inside/beside the bold run, its OWN markers become visible again (a real, working escape hatch to see/edit the raw syntax, per the brief\'s own named fallback)',
-    revealState.anyRevealed === true, JSON.stringify(revealState));
+  // ---- PARKED - SUPERSEDED by the 211 card port (2026-10-06): the popup now runs the page's editing rules, so it shows no mark at any caret, as the page ----
+  // Kept VERBATIM and no longer run. Item 211 (Nick's "A", 2026-09-25) retired reveal-at-caret; the card kept an interim form of it
+  // until it had the page's editing rules, and now it has them. Successor below; the parked record is in this file's PARKED section.
+  //
+  // ok('S6: reveal-adjacent-to-caret — once the caret sits inside/beside the bold run, its OWN markers become visible again (a real, working escape hatch to see/edit the raw syntax, per the brief\'s own named fallback)',
+  //   revealState.anyRevealed === true, JSON.stringify(revealState));
+  // ------------------------------------------------------------------
+  fx5CardReveal = revealState;
+  ok('S6 [card-port successor]: with the caret inside the bold run\'s own markers the card shows NO marker - the escape hatch is the B button and Backspace/Delete, which never leave a lone mark',
+    revealState.anyRevealed === false, JSON.stringify(revealState));
 
   // Draft mode's own dimmed-syntax register is untouched: .md-mark there
   // is NEVER given the -hidden class, still just opacity-dimmed.
@@ -1173,9 +1181,13 @@ console.log(JSON.stringify(checks, null, 2));
 //   reached for and couldn't find. Live successor: fx6.mjs's own S2
 //   section proves New page card's own presence + function; the check
 //   below proves the OLD count ("exactly two") is now three.
+let fx5CardReveal = null;   // the S6 card reading, kept for its parked record
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // The 211 card port (2026-10-06) - one park: S6's reveal-adjacent check; the record follows reality (nothing shows).
+  pok('PARKED (was "S6: reveal-adjacent-to-caret — once the caret sits inside/beside the bold run, its OWN markers become visible again") - 211 card port (2026-10-06): the popup now runs the page\'s editing rules, so it shows no mark at any caret, as the page',
+    !!fx5CardReveal && fx5CardReveal.anyRevealed === false, JSON.stringify(fx5CardReveal));
   await withHarness(async (app) => {
     const ctrlZParked = (sel) => app.evalJs(`document.querySelector('${sel}').dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true, cancelable: true }))`);
     await freshProsePage(app, LAPTOP_W, 900);
