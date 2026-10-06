@@ -772,7 +772,12 @@ const CANONICAL: Record<DeskTermId, string> = {
   // ITEM 190 §5 — matches Fable's own drawing verbatim
   // (aria-label="This page's connections"), the name already established
   // there for exactly this region, kept rather than re-coined.
-  zoneLinked: "This page's connections",
+  // ⛔ NICK'S RULING, and the reason this is not item190's own string. "connections"
+  // is ALREADY the board's word (this file's own board-thread terms), and one word may
+  // not mean two things; his answer was NO NOUN ON SCREEN AT ALL — "Link to…",
+  // "Unlink", and "Linked" with its count. item190 was written before that ruling
+  // landed; exp1-lexicon-guard.mjs is what enforces it, and it reddened here.
+  zoneLinked: 'Linked to this page',
   zoneLinkedWaiting: 'Nothing linked yet.',
   zoneLinkedSort: 'Sort',
   zoneLinkedSortRecency: 'Recent',
