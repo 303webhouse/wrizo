@@ -24030,3 +24030,33 @@ the auth and sync hunks at assembly.** (3) TOOLS’ storage step 2 durability ex
 (4) WITH NICK, ~20 minutes: one restore drill (fresh `restore-drill` service from the latest R2 backup, row counts
 compared, then deleted); delete Postgres-Bduk; confirm writer-studio-app’s `DATABASE_URL` references the private Postgres
 variable (NAME only), then remove Postgres’s public TCP proxy.
+
+## MAIN @ 4d3c84e — THE CHUNKED PAIR: DEFAULT LEG CLEAN 107/107, PARKED LEG RED 105/107 (THREE PARKED CHECKS IN TWO FILES) — 2026-10-05 (chat 1)
+
+**Stamp `tree=5c79ef3 bundle=index-B5mC_rwd.js/627507b`** (`4d3c84e` plus this desk’s docs-only records commit),
+six chunks per leg of ≤20 files, one stamp throughout, 0 harness processes between chunks, grant written and
+cleared. **No launch crashes this time — no swept re-run was needed.** 107 files per leg (`item211` is new since
+Batch Eight’s 106).
+
+**DEFAULT LEG: CLEAN, 107/107.** **PARKED LEG: NOT CLEAN, 105/107 — two files, three parked assertions, all real
+(not launch crashes):**
+- `ab2.mjs` — (1) the “generation 5” Draft-roster park (the one that says PR #7 `19a4676` made the roster FIFTEEN)
+  reads 17 format buttons: Bold, Italic, Underline, Strikethrough, Heading, Round bullet, **Bullet styles**, Block
+  quote, Outdent, Indent, Line spacing, Align left/centre/right, and three “Coming soon”; (2) the “generation 4”
+  foot-icons park — `typewriterGoneOnScript.toggle=false, iconCount=1, fullScreenInFoot=false`,
+  `typewriterInstrumentOnProse=false`, `fullScreenInFootScript=false`, `fullScreenInFootProse=false`.
+- `fx3.mjs` — the same “generation 4” foot-icons park: script and prose foot both read `iconCount=1, aria=false,
+  fullScreenInFoot=false`.
+
+**READING (the owners decide):** the same `generation 4` foot assertion goes red in two files, which says the foot /
+instruments row changed shape in PR #7 or Cursor’s unreviewed strip/drawer/settings commits — Full Screen and the
+typewriter are no longer where the parked checks look — and **the roster park counts a roster that has since grown**
+(the park text names fifteen; the live rail shows the extra “Bullet styles” control). Whether those are *intended*
+moves with a missed park, or a regression, is for the PR #7 owner and Fable — **this desk does not decide it.**
+**Cursor’s VM reds (`cd2`, `m1`, `s1`, `th1`, `th2`, `w1`, `w2`, K10) did NOT reproduce on the box** — all seven files
+passed on both legs here; the VM failures look environmental.
+
+**NOT DEPLOYED.** The pair is not clean and the known-flake list is empty, so Nick’s “ship them now” does not by
+itself clear a red suite; production stays Batch Eight. **Handed to the PR #7 owner:** re-park or fix `ab2` (roster
+count, foot icons) and `fx3` (foot icons), re-offer; this desk then reruns those two files plus a full pair on the
+successor and deploys on Nick’s standing word. Box grant cleared; 0 harness processes.
