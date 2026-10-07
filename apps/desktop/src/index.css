@@ -1932,6 +1932,9 @@ a:focus-visible,
 .wz-error{ font-family:var(--wz-ui); color:var(--clay); font-size:.9rem; }
 
 .wz-fieldcol{ display:flex; flex-direction:column; align-items:center; gap:.5rem; margin-top:.4rem; }
+/* A real <form> around the fields and the submit button: same column and gap as the .wz-screen it sits in,
+   so wrapping changes nothing about the layout. */
+.wz-form{ display:flex; flex-direction:column; align-items:center; gap:1.5rem; margin:0; }
 .wz-field{ font-family:var(--wz-ui); width:min(360px,86vw); background:var(--wz-lift); border:1px solid var(--wz-whisper); border-radius:0;
   padding:.85rem 1.1rem; color:var(--wz-ink); font-size:1rem; outline:none; text-align:center; transition:border-color .3s; }
 .wz-field:focus{ border-color:var(--wz-orange-line); }

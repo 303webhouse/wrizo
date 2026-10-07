@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { unbornHref } from '../store/unbornPage';
 import { setForwardLock } from '../store/forwardLock';
@@ -51,6 +51,9 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   }, [stage]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  // A ref as well as the state: two Enter presses in one tick both read busy=false before a re-render, and
+  // would submit twice. The ref flips synchronously.
+  const submitting = useRef(false);
 
   const ready = authState !== 'loading';
   // SIGNED OUT HERE — read every render: logout sets authState to 'anon' and re-renders this screen, which picks the flag up.
@@ -112,18 +115,22 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   };
 
   const handleSignin = async () => {
-    if (busy) return;
+    if (busy || submitting.current) return;
+    submitting.current = true;
     setError(''); setBusy(true);
     const res = await apiLogin(email.trim(), password);
+    submitting.current = false;
     setBusy(false);
     if (res.ok && res.user) { onAuthed(res.user); openAsAuthed(); }
     else setError(res.error || 'Could not sign in');
   };
 
   const handleCreate = async () => {
-    if (busy) return;
+    if (busy || submitting.current) return;
+    submitting.current = true;
     setError(''); setBusy(true);
     const res = await apiRegister(email.trim(), password, name.trim(), inviteCode.trim());
+    submitting.current = false;
     setBusy(false);
     if (res.ok && res.user) { onAuthed(res.user); openAsAuthed(); }
     else setError(res.error || 'Could not create your account');
@@ -161,12 +168,15 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
       {stage === 'signin' && (
         <section className="wz-screen show" style={{ zIndex: 8 }}>
           <div className="wz-bighead">Welcome back.</div>
-          <div className="wz-fieldcol">
-            <input className="wz-field" type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
-            <input className="wz-field" type="password" placeholder="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} />
-          </div>
-          {error && <div className="wz-error">{error}</div>}
-          <button type="button" className="wz-btn" disabled={busy} onClick={handleSignin}>{busy ? 'one moment…' : 'Sign in'}</button>
+          {/* A real <form>: Enter submits, and a password manager recognises it. */}
+          <form className="wz-form" onSubmit={(e) => { e.preventDefault(); void handleSignin(); }}>
+            <div className="wz-fieldcol">
+              <input className="wz-field" type="email" name="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
+              <input className="wz-field" type="password" name="password" placeholder="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} />
+            </div>
+            {error && <div className="wz-error">{error}</div>}
+            <button type="submit" className="wz-btn" disabled={busy}>{busy ? 'one moment…' : 'Sign in'}</button>
+          </form>
           <div className="wz-secondary">
             {/* a11y audit A2 (Blocker, WCAG 2.1.1 Keyboard) — was a <span onClick>,
                 unreachable by keyboard. A real <button>; index.css resets its
@@ -193,15 +203,17 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
           ) : signupOpen === true ? (
             <>
               <div className="wz-sub">Add an email and your writing follows you to any device — anything you've already written here comes with it.</div>
+              <form className="wz-form" onSubmit={(e) => { e.preventDefault(); void handleCreate(); }}>
               <div className="wz-fieldcol">
                 <input className="wz-field" type="text" placeholder="what should we call you?" autoComplete="given-name" value={name} onChange={e => setName(e.target.value)} />
-                <input className="wz-field" type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
-                <input className="wz-field" type="password" placeholder="choose a password" autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} />
+                <input className="wz-field" type="email" name="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
+                <input className="wz-field" type="password" name="new-password" placeholder="choose a password" autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} />
                 {/* ITEM 224 — sign-up by invite code, until launch. */}
                 <input className="wz-field" type="text" placeholder={t('authInviteCodePlaceholder')} autoComplete="off" value={inviteCode} onChange={e => setInviteCode(e.target.value)} />
               </div>
               {error && <div className="wz-error">{error}</div>}
-              <button type="button" className="wz-btn" disabled={busy} onClick={handleCreate}>{busy ? 'one moment…' : 'Create my account'}</button>
+              <button type="submit" className="wz-btn" disabled={busy}>{busy ? 'one moment…' : 'Create my account'}</button>
+              </form>
             </>
           ) : null}
           {!locked && (

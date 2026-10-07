@@ -214,6 +214,35 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
 }
 
 // =============================================================================
+// PART G — Enter submits: real <form>s, one submit at a time, autocomplete kept.
+// =============================================================================
+{
+  const arr = read('components/Arrival.tsx');
+  const signinForm = arr.slice(arr.indexOf('<form className="wz-form" onSubmit={(e) => { e.preventDefault(); void handleSignin(); }}>'));
+  ok('(G1) sign-in is a <form> whose onSubmit prevents the default and runs handleSignin',
+    /<form className="wz-form" onSubmit=\{\(e\) => \{ e\.preventDefault\(\); void handleSignin\(\); \}\}>/.test(arr), '');
+  ok('(G2) the sign-in button is type="submit" (not a click handler), inside that form',
+    /<button type="submit" className="wz-btn" disabled=\{busy\}>\{busy \? 'one moment…' : 'Sign in'\}<\/button>\s*<\/form>/.test(arr), '');
+  ok('(G3) the account screen is a <form> too, with a submit button that runs handleCreate',
+    /onSubmit=\{\(e\) => \{ e\.preventDefault\(\); void handleCreate\(\); \}\}/.test(arr)
+      && /<button type="submit" className="wz-btn" disabled=\{busy\}>\{busy \? 'one moment…' : 'Create my account'\}<\/button>\s*<\/form>/.test(arr), '');
+  ok('(G4) neither screen still wires its button to a click handler for submitting',
+    !/onClick=\{handleSignin\}/.test(arr) && !/onClick=\{handleCreate\}/.test(arr), '');
+  ok('(G5) autocomplete is kept: email, current-password on sign-in, new-password on the account form',
+    (arr.match(/autoComplete="email"/g) || []).length >= 2 && /autoComplete="current-password"/.test(arr) && /autoComplete="new-password"/.test(arr), '');
+  ok('(G6) both submit paths are guarded by a synchronous ref as well as the busy state (two Enters in one tick cannot both run)',
+    /if \(busy \|\| submitting\.current\) return;\s*submitting\.current = true;/.test(arr.slice(arr.indexOf('const handleSignin'), arr.indexOf('const handleCreate')))
+      && /if \(busy \|\| submitting\.current\) return;\s*submitting\.current = true;/.test(arr.slice(arr.indexOf('const handleCreate'))), '');
+  ok('(G7) the ref is released after the call returns, so a failed sign-in can be retried',
+    (arr.match(/submitting\.current = false;/g) || []).length === 2, String((arr.match(/submitting\.current = false;/g) || []).length));
+  const css = read('index.css');
+  ok('(G8) the form keeps the screen\'s own column and gap, so wrapping does not move anything',
+    /\.wz-form\{ display:flex; flex-direction:column; align-items:center; gap:1\.5rem; margin:0; \}/.test(css), '');
+  ok('(G9) the "← back" and "Create an account" links stay type="button" (Enter in a field must not trigger them)',
+    !/type="submit"[^>]*>\s*(New here|← back)/.test(arr), '');
+}
+
+// =============================================================================
 // MUTATION — remove the /guest exemption. B6 must go red.
 // =============================================================================
 {
@@ -223,6 +252,15 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
   const guardDef = mutated.slice(mutated.indexOf('function SignedOutRouteGuard'), mutated.indexOf('function BrandMark'));
   ok('(M1) MUTATION KILLED: without the /guest exemption, B6 cannot pass',
     !/pathname === '\/guest'/.test(guardDef), '');
+}
+
+// MUTATION — drop the synchronous ref guard. G6 must go red on the mutant.
+{
+  const arr = read('components/Arrival.tsx');
+  const mutated = arr.replace('if (busy || submitting.current) return;', 'if (busy) return;');
+  if (mutated === arr) throw new Error('ref-guard mutation anchor not found');
+  ok('(M3) MUTATION KILLED: without the ref guard, G6\'s predicate goes red',
+    !/if \(busy \|\| submitting\.current\) return;\s*submitting\.current = true;/.test(mutated.slice(mutated.indexOf('const handleSignin'), mutated.indexOf('const handleCreate'))), '');
 }
 
 // MUTATION — remove the dirty check from handleLogout. F3's predicate must go red on the mutant.

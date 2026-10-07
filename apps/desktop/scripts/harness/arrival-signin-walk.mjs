@@ -71,8 +71,17 @@ await withHarness(async (app) => {
   await app.typeKeys('tester@example.com');
   await app.key('Tab');
   await app.typeKeys('a-long-enough-password');
-  await app.click('Sign in');
+  // Count the sign-in requests, then press Enter ONCE in the password field: it must submit, and submit once.
+  await app.evalJs(`
+    window.__loginCalls = 0;
+    const f0 = window.fetch.bind(window);
+    window.fetch = (u, o) => { if (String(u).includes('/auth/login')) window.__loginCalls += 1; return f0(u, o); };
+    true;
+  `);
+  await app.key('Enter');
   await app.waitFor(`location.hash !== '#/' && location.hash !== ''`, { label: 'left the sign-in screen' });
+  const loginCalls = await app.evalJs('window.__loginCalls');
+  ok('(W8a) Enter in the password field signs in, with exactly one request', loginCalls === 1, String(loginCalls));
   const afterHash = await app.evalJs('location.hash');
   ok('(W8) a successful sign-in leaves the sign-in screen (it goes to a page or project)',
     /^#\/(page|project)\//.test(afterHash), afterHash);
