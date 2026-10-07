@@ -24621,3 +24621,21 @@ re-written for `cc8aa6a`; this desk clears it when INK reports.
 server harnesses `item224-server-hardening` (64/64), `set-password-db` (12/12), `smoke-account-db` (31/31) and, per Fable,
 **`sync-generation` (19/19), `sync-chunked-push-proof` and `item224a`** — the last three are INK’s late-write-guard proofs;
 after the deploy, `smoke-login.mjs`.
+
+## THE SIGN-IN BATCH IS ON HOLD FOR INK’S THREE FIXES; THREE RECORDS FROM FABLE’S REVIEW; THE BOX MOVES TO FIX — 2026-10-07 (chat 1)
+
+**HOLD (Fable, relay): the sign-in batch’s byte review is done; HOLD for INK’s three fixes — the network-error stuck form, the
+locked account-screen dead end, and line endings.** Then ONE more box turn on INK’s new hash: walk + capture, with the
+screenshots committed to `docs/evidence/arrival-signin/` (the folder does not exist yet). *(This desk saw the branch tip
+move to `27d8b35` after `cc8aa6a`; it waits for INK to announce the final hash and does not infer it.)*
+
+**RECORDED, as asked:**
+(a) **New item `logout-flush` (INK): it MUST ship before guest links go live.**
+(b) **`guest-client` MERGE CONDITION: the stale-generation check precedes the `guest_expired` branch** (the order is part of
+what makes the late-write guard hold; checked at the merge, not assumed).
+(c) **RULE: `pageDefaults` / `proofing` sync take the generation guard when they are wired** (they are not wired today).
+
+**BOX:** FIX’s latency profile and TOOLS’ splash frames may take the box while INK fixes. INK’s grant (for `cc8aa6a`) was
+REPLACED by one for FIX’s profile (`latency-profile` @ `fb0597a`: “variant A′ — today’s whole-page path with one `innerText`
+read and one d…”); box idle (0 harness processes, 0 browsers) when written. TOOLS’ splash follows FIX, one lane at a
+time — the grant file holds one.
