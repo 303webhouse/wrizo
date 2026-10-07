@@ -24602,3 +24602,22 @@ after the deploy. *The three server harnesses are not in the desktop suite and n
 
 **INK:** final hash `52f6733` on `arrival-signin-screen` (a sign-out cap of 5 s that finishes the sign-out here if the server
 hangs). The walk + capture grant was re-written for it; this desk clears the grant when INK reports.
+
+## ACL FIX MERGED; INK’S FINAL HASH `cc8aa6a`; THE PAIR LIST GROWS; A CORRECTION ON NICK’S PASSWORD — 2026-10-07 (chat 1)
+
+**`smoke-acl-fix` @ `bc171b9` CLEARED by Fable and merged to `main` as `e21741e`** (two script files, +20/−1; `git diff` of
+`apps/desktop`, `apps/server/src`, `packages` EMPTY). The smoke baseline 6/6 is recorded by Fable.
+
+**CORRECTION (append-only; the entry two above stands as written): Nick’s `set-password` run is DONE — on Oct 6 he
+confirmed he could sign in and that his writing saved. It is NOT owed.** The line “Nick’s own `set-password` run is the
+remaining step for HIS account” in the smoke-baseline entry was this desk’s mistake: that run had already happened.
+
+**BOX (Fable): INK’s final hash is `cc8aa6a`** (`arrival-signin-screen`; “a sign-out retires any sync still waiting on the
+network”, a `sync.ts` late-write guard). Walk + capture run on `cc8aa6a`; if a walk already finished on `52f6733`, rerun the
+WALK only — the screenshots stand, since `sync.ts` draws nothing. Box idle (0 harness processes) when the grant was
+re-written for `cc8aa6a`; this desk clears it when INK reports.
+
+**PAIR LIST for the sign-in batch, now:** the desktop suite plus `arrival-signin`, `ab1`, `item210`, `a11y-signin`, `escexit`; the
+server harnesses `item224-server-hardening` (64/64), `set-password-db` (12/12), `smoke-account-db` (31/31) and, per Fable,
+**`sync-generation` (19/19), `sync-chunked-push-proof` and `item224a`** — the last three are INK’s late-write-guard proofs;
+after the deploy, `smoke-login.mjs`.
