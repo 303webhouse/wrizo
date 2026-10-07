@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { apiGuest, type AuthUser } from '../store/api';
 import { readGuestTokenFromHash, guestAddressWithoutToken, GUEST_EXPIRED_LINE } from '../store/guestState';
 import { clearSignedOutHere } from '../store/signedOutHere';
+import { createAttemptGate } from '../store/attemptGate';
+import { NETWORK_ERROR_LINE } from '../store/authSubmit';
 
 // GUEST LOGIN (item 225) — `#/guest?t=<token>`, the beta tester's invite link.
 // The token is read and taken out of the address bar BEFORE anything awaits, so
@@ -18,10 +20,21 @@ export function GuestArrival({ onAuthed }: { onAuthed: (user: AuthUser) => void 
   // double-run of an effect sees the same key and skips. replaceState (the token strip below) does not change the key.
   const { key } = useLocation();
   const handledKey = useRef<string | null>(null);
+  // Only the NEWEST attempt may act on its result (link A, then B quickly: A's answer arriving last must not win), and
+  // nothing acts once the component is gone. `mounted` is re-armed by StrictMode's remount, so it is a flag, not a cancel.
+  const gate = useRef(createAttemptGate()).current;
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   useEffect(() => {
     if (handledKey.current === key) return;
     handledKey.current = key;
+    // Begin BEFORE anything can return early: a newer link with no token still retires an older one in flight.
+    const attempt = gate.begin();
+    const live = () => mounted.current && gate.isCurrent(attempt);
     setMessage('Opening your guest account…');
     const token = readGuestTokenFromHash(window.location.hash);
     window.history.replaceState(window.history.state, '', guestAddressWithoutToken(window.location.href));
@@ -29,7 +42,9 @@ export function GuestArrival({ onAuthed }: { onAuthed: (user: AuthUser) => void 
       setMessage('This guest link is not valid.');
       return;
     }
-    void apiGuest(token).then((r) => {
+    // A request that never arrives (offline) must end in a plain line, not a message that never changes.
+    void apiGuest(token).catch(() => ({ ok: false as const, error: NETWORK_ERROR_LINE, reason: undefined, user: undefined })).then((r) => {
+      if (!live()) return; // a stale answer (an older link's) or one for a component that is gone: it acts on nothing
       if (r.ok && r.user) {
         // A guest entering on a device that signed out must lift the signed-out flag, exactly as a sign-in does: while
         // it is set, the write-belt drops every record write, and the guest would lose everything silently. Cleared
