@@ -24482,3 +24482,58 @@ chat or doc.** `scripts/smoke-login.mjs` prints status codes only.
 against the live database this desk sends Fable its plan (which script, which command, how the password reaches the
 server without being displayed) and WAITS for his OK.** *(Nothing has been run against the live database for this.
 Plan sent in the same turn as this entry.)*
+
+## THE SMOKE-ACCOUNT TOOLS, BUILT FOR FABLE’S REVIEW (BRANCH `smoke-account-tools` @ `2b0aca7`) — 2026-10-06 (chat 1)
+
+**FABLE APPROVED THE PLAN WITH FOUR CHANGES (relay):** (1) email = `smoke-<8 random hex>@wrizo.invalid`, generated in-process
+and stored ONLY in the secret file (never in the repo — public — and the login slow-down could be griefed against a known
+address); first confirm the server’s email check accepts `.invalid`; (2) hash with the SAME function `auth.ts` uses, not a
+re-implementation of cost 12; (3) `smoke-login.mjs`: one attempt, no retries; (4) pull-only: the sync probe stays `push:{}`,
+no walk ever writes as this account. **Also: this adds a 2nd tool on the Postgres public proxy — added to the after-trip
+task’s “needs a new route” list below.**
+
+**BUILT, pushed as a branch only (NOT on `main`, nothing run against the live database):** `smoke-account-tools` @ `2b0aca7`.
+(1) **`.invalid` is accepted — read from source:** `auth.ts` `/register` and `/login` only trim, lowercase and check non-empty;
+there is no email-format validation anywhere on the server. (2) **The shared hash needed ONE small product-source change,
+flagged for review:** `auth.ts` had `BCRYPT_COST` and `MIN_PASSWORD_LENGTH` as private constants and an inline
+`bcrypt.hash(…, BCRYPT_COST)`; they now live in a new `apps/server/src/passwordHash.ts` (`BCRYPT_COST`,
+`MIN_PASSWORD_LENGTH`, `hashPassword`), `auth.ts` imports them (two constant lines removed, the sign-up hash call now
+`hashPassword(password)`; `DUMMY_PASSWORD_HASH` still uses the same cost), and `create-smoke-account.mjs` imports the BUILT
+`dist/passwordHash.js` (it refuses with “Build the server first” if absent). `tsc` x1 exit 0; **the existing
+`item224-server-hardening.mjs` compiles `auth.ts` alone, so it needed `passwordHash.ts` written beside it — one added line in
+its loader; it is 64/64 again (it was 64/64 on `main`).** `set-password-db.mjs`’s “constants mirror” check now reads
+`passwordHash.ts`. *This is a server-code change; it ships with the next deploy, under the new ship gate.*
+
+**THE TOOLS:** `apps/server/scripts/create-smoke-account.mjs` — the secret file `~/.wrizo/smoke-account.json` is created EMPTY
+(`wx`, never clobbers), stripped of inherited ACLs (`icacls /inheritance:r /grant:r <user>:(R,W,D)`), THEN written; the
+password is 24 characters of `crypto.randomBytes`; only a bcrypt hash goes to the server as a TLS query parameter; prints
+one word (`created` / `exists` / `rotated`) and the path, never the email/password/hash/URL; a failed insert deletes the
+file (no orphan credentials); `--rotate` writes the new secret to a locked `.new` first, changes the database in ONE transaction
+(it reuses `set-password.mjs`’s `applyPasswordChange`, so that account’s sessions end), and only then swaps the file.
+`apps/server/scripts/smoke-login.mjs` — login (with the site’s Origin) → `/auth/me` → `POST /api/sync {lastSyncAt:null,
+push:{}}` → logout → `/auth/me` must be 401; ONE login attempt; prints status codes and PASS/FAIL only.
+
+**PROOF (browserless; a REAL throwaway Postgres via `embedded-postgres`, no dependency added to this repo; the create script
+run as a CHILD PROCESS the way the owner runs it): `harness/smoke-account-db.mjs` 22/22** — `smoke-<hex>@wrizo.invalid`
+email and a 24-character password; the stored hash verifies and is cost 12, equal to `dist/passwordHash.js`’s; **nothing
+printed contains the email, password, hash or database URL; on this Windows box the file carries exactly ONE access entry
+(the current user’s)**; a second run changes nothing; a failed connection leaves no credentials file; `--rotate` swaps the
+password, ends only that account’s sessions and leaves no `.new`; a rotate for a missing account leaves the old file
+intact; `smoke-login` makes exactly one login attempt even when it fails, sends the Origin on every POST, a pull-only body,
+carries the cookie, FAILS if logout does not end the session, and prints no secret. **MUTATION SWEEP, 6/6 RED:** no
+`lockDown`, the password printed, a login retry, the email printed by create, a failed insert leaving the file behind,
+and the sync probe pushing — *the sync mutant first “survived” because its anchor matched the header COMMENT, not the
+code; it was re-anchored to the code line and went red.* **A REAL DEFECT THE PROOF FOUND AND FIXED:** `smoke-login`’s
+`process.exit()` crashed Node on this Windows box after a live fetch (exit status 3221226505), turning a PASS into a
+garbage exit code; it now sets `process.exitCode` and drains.
+
+**NOT PROVEN BY THIS DESK:** the live path (a real `railway run` against production — waits for Fable’s OK); the smoke
+account’s sign-in against the live server.
+
+**THE AFTER-TRIP TASK’S “NEEDS A NEW ROUTE BEFORE THE PROXY IS REMOVED” LIST (Fable), now TWO tools:** (1)
+`set-password.mjs`, (2) `create-smoke-account.mjs` (+ its `--rotate`). Removing Postgres’s public TCP proxy stays BLOCKED on
+choosing their replacement path.
+
+**WAITING ON:** Fable’s review of `smoke-account-tools` @ `2b0aca7`. Then this desk merges to `main`, builds the server
+(`dist/passwordHash.js`), and runs `create-smoke-account.mjs` ONCE via `railway run --service Postgres`; the deploy of the
+`auth.ts` refactor waits for the next batch and the ship gate.
