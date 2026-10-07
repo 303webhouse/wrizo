@@ -318,12 +318,12 @@
    ============================================================================ */
 *{
   scrollbar-width: thin;
-  scrollbar-color: var(--ink-border-strong) transparent;
+  scrollbar-color: color-mix(in srgb, var(--text-low) 28%, transparent) transparent;
 }
-::-webkit-scrollbar{ width:8px; height:8px; }
+::-webkit-scrollbar{ width:4px; height:4px; }
 ::-webkit-scrollbar-track{ background:transparent; }
-::-webkit-scrollbar-thumb{ background:var(--ink-border-strong); border-radius:0; }
-::-webkit-scrollbar-thumb:hover{ background:var(--text-low); }
+::-webkit-scrollbar-thumb{ background:color-mix(in srgb, var(--text-low) 28%, transparent); border-radius:0; }
+::-webkit-scrollbar-thumb:hover{ background:color-mix(in srgb, var(--text-low) 55%, transparent); }
 ::-webkit-scrollbar-corner{ background:transparent; }
 /* FX7 S4 — the systemic default's dark-chrome tokens read poorly against
    the LIGHT paper (a scrollbar tuned for `--ink-950`-family surfaces,
@@ -3236,6 +3236,12 @@ a:focus-visible,
   --tutor-anchor-w: min(200px, calc(var(--tutor-margin) + var(--tutor-overflow)));
   width: var(--tutor-anchor-w);
   right: calc(50% - var(--tutor-paper-half) + var(--tutor-overflow) - var(--tutor-anchor-w));
+  transition: right var(--fade-dur,.2s) ease, width var(--fade-dur,.2s) ease;
+}
+/* Open: the grip-anchor collapses to the handle and pins to the stage's
+   right edge — the drawer's OUTER edge — so the tab travels with the panel. */
+.desk-frame-tutor-anchor:has(.wz-tutor-grip[data-open='true']){
+  right:0; width:16px;
 }
 /* TU2 S4 — the grip-flush audit, worked algebraically (not approximated):
    this anchor's own physical LEFT edge (the edge nearest the paper — where
@@ -3569,16 +3575,21 @@ a:focus-visible,
    .wz-sliver-*), now inside an absolutely positioned overlay (see
    .desk-frame-sliver-anchor below) instead of a grid track. */
 .wz-sliver{ position:relative; width:100%; height:100%; }
-.wz-sliver-grip{ position:absolute; top:16px; right:0; width:16px; height:34px;
+/* Handle rides the drawer's OUTER edge: closed at the paper (right: the
+   anchor's paper-flush edge); open, it travels with the far (left) edge.
+   Same --fade-dur as the panel. The arrow flip is Sliver.tsx's own. */
+.wz-sliver-grip{ position:absolute; top:16px; left:calc(100% - 16px); width:16px; height:34px;
   display:flex; align-items:center; justify-content:center; z-index:2;
   background:var(--desk-ground); border:1px solid var(--ink-border); border-right:none;
-  color:var(--text-mid); cursor:pointer; transition:.15s; }
+  color:var(--text-mid); cursor:pointer;
+  transition:left var(--fade-dur,.2s) ease, color .15s, border-color .15s; }
 .wz-sliver-grip:hover{ color:var(--text-hi); }
 /* Plateau foundations — olive marks where you are; the grip wears
    --accent-rest only while OPEN (a where-you-are-now state), never brass. */
-.wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--accent-rest); border-color:var(--accent-rest); }
+.wz-sliver[data-open='true'] .wz-sliver-grip{ left:0; border-right:1px solid var(--ink-border); border-left:none;
+  color:var(--accent-rest); border-color:var(--accent-rest); }
 .wz-sliver-grip-glyph{ font-size:13px; line-height:1; }
-.wz-sliver-panel{ position:absolute; top:0; right:16px; width:calc(100% - 16px); height:100%;
+.wz-sliver-panel{ position:absolute; top:0; right:0; width:100%; height:100%;
   overflow-y:auto; overflow-x:hidden; background:var(--desk-ground); border:1px solid var(--ink-border); border-right:none;
   opacity:0; pointer-events:none; transform:translateX(6px); transition:opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s) ease;
   /* The bar sits on the drawer's left edge. `direction: rtl` is the only
@@ -3617,8 +3628,8 @@ a:focus-visible,
 .desk-frame[data-writing='true'] .wz-sliver-panel[data-open='true'][data-popout-hold='true'],
 [data-chrome-receded='true'] .wz-sliver-panel[data-open='true'][data-popout-hold='true']{
   opacity:1; pointer-events:auto; transform:translateX(0); }
-@media (prefers-reduced-motion:reduce){ .wz-sliver-panel{ transition:none; } }
-.wz-sliver-body{ display:flex; flex-direction:column; gap:20px; padding:16px 14px; }
+@media (prefers-reduced-motion:reduce){ .wz-sliver-panel, .wz-sliver-grip{ transition:none; } }
+.wz-sliver-body{ display:flex; flex-direction:column; gap:20px; padding:16px 14px 16px 20px; }
 .wz-sliver-section{ display:flex; flex-direction:column; gap:8px; }
 /* ITEM 114 (item 83 errata E4) — the Structure zone's SUB-LABELS and the rule
    between its two halves. This is the visual half of the answer to the
@@ -3828,7 +3839,8 @@ a:focus-visible,
   display:flex; align-items:center; justify-content:center; z-index:2;
   pointer-events:auto; /* FX18 S2 (SV24): re-armed atop the lifted, click-transparent anchor above — the grip stays clickable while the open panel underneath keeps its own clicks */
   background:var(--desk-ground); border:1px solid var(--ink-border); border-left:none;
-  color:var(--text-mid); cursor:pointer; transition:.15s; }
+  color:var(--text-mid); cursor:pointer;
+  transition:left var(--fade-dur,.2s) ease, color .15s, border-color .15s; }
 .wz-tutor-grip:hover{ color:var(--text-hi); }
 /* Plateau foundations — olive marks where you are; the grip wears
    --accent-rest only while OPEN or DOCKED (a where-you-are-now state),
@@ -3836,6 +3848,7 @@ a:focus-visible,
    open/active state"). */
 .wz-tutor-grip[data-open='true'],
 .wz-tutor-grip[data-docked='true']{ color:var(--accent-rest); border-color:var(--accent-rest); }
+.wz-tutor-grip[data-open='true']{ border-left:1px solid var(--ink-border); border-right:none; }
 .wz-tutor-grip-glyph{ font-size:13px; line-height:1; }
 /* The panel: a flex child of `.desk-frame-tutor-panel-anchor` (packed
    flush against THAT anchor's own right edge, which is the stage's right
@@ -3916,8 +3929,10 @@ a:focus-visible,
 .wz-tutor-panel[data-open='true'][data-docked='true']{
   width:clamp(120px, var(--tutor-panel-margin), var(--tutor-panel-open-w));
   max-width:clamp(120px, var(--tutor-panel-margin), var(--tutor-panel-open-w)); }
-@media (prefers-reduced-motion:reduce){ .wz-tutor-panel{ transition:none; } }
-.wz-tutor-body{ display:flex; flex-direction:column; gap:16px; padding:16px 14px; }
+@media (prefers-reduced-motion:reduce){
+  .wz-tutor-panel, .wz-tutor-grip, .desk-frame-tutor-anchor{ transition:none; }
+}
+.wz-tutor-body{ display:flex; flex-direction:column; gap:16px; padding:16px 20px 16px 14px; }
 .wz-tutor-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .wz-tutor-head-title{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
 /* The dock's own quiet close/reopen affordance — text-scale, never brass
