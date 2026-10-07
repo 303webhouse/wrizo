@@ -221,6 +221,25 @@ function makeEditor(m, id) {
 }
 
 // =============================================================================
+// PART E — the sheet's palette. The shared form classes read --wz-* tokens defined only under .wz-home; the sheet is outside it.
+// =============================================================================
+{
+  const css = read('index.css').replace(/\r\n?/g, '\n');
+  const tokensOf = (block) => Object.fromEntries([...block.matchAll(/(--wz-[a-z-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]));
+  const blockAfter = (selectorStart) => { const i = css.indexOf(selectorStart); return i < 0 ? '' : css.slice(i, css.indexOf('}', i)); };
+  const home = tokensOf(blockAfter('.wz-home {'));
+  const sheet = tokensOf(blockAfter('.wz-logout-sheet {\n  --wz-ground'));
+  const names = ['--wz-ground', '--wz-lift', '--wz-ink', '--wz-ink-dim', '--wz-whisper', '--wz-orange', '--wz-orange-line', '--wz-hint', '--wz-ui', '--wz-text'];
+  ok('(E1) the logout sheet defines every home palette token the shared form classes read',
+    names.every((n) => n in sheet), JSON.stringify(names.filter((n) => !(n in sheet))));
+  ok('(E2) and each has EXACTLY the value .wz-home gives it (they cannot drift apart)',
+    names.every((n) => home[n] !== undefined && home[n] === sheet[n]), JSON.stringify(names.filter((n) => home[n] !== sheet[n]).map((n) => [n, home[n], sheet[n]])));
+  // MUTATION: change one value; E2's predicate must go red.
+  const mutated = tokensOf(blockAfter('.wz-logout-sheet {\n  --wz-ground').replace('--wz-orange:#ff9800', '--wz-orange:#ff0000'));
+  ok('(E3) MUTATION KILLED: with one token changed, E2\'s predicate goes red', !names.every((n) => home[n] === mutated[n]), '');
+}
+
+// =============================================================================
 // MUTATIONS — each protection removed in turn; the proof must notice.
 // =============================================================================
 {
