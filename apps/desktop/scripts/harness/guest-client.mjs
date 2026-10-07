@@ -308,6 +308,40 @@ try {
     cap.indexOf('const state = await settle(app, screen);') > 0 && cap.indexOf('capture refused:') > cap.indexOf('const state = await settle(app, screen);'), '');
 }
 
+// =============================================================================
+// PART J — two defects the first live run found, pinned in source. The behaviour itself is proved by the live walk
+// (its first two steps ARE the failing scenario) and by the capture (its settle waits for focus inside the sheet).
+// =============================================================================
+{
+  const norm = (t) => t.replace(/\r\n?/g, '\n');
+  const arrivalSrc = norm(arrival);
+  const sheetSrc = norm(sheet);
+
+  const keyed = (src) => /const \{ key \} = useLocation\(\);/.test(src)
+    && /if \(handledKey\.current === key\) return;\s*handledKey\.current = key;/.test(src)
+    && /\}, \[key\]\);/.test(src);
+  ok('(J1) THE SECOND LINK: GuestArrival handles each new router location, keyed on location.key — not once per mount',
+    keyed(arrivalSrc) && !/const started = useRef/.test(arrivalSrc) && !/\}, \[\]\);/.test(arrivalSrc.slice(arrivalSrc.indexOf('useEffect('), arrivalSrc.indexOf('return (', arrivalSrc.indexOf('useEffect(')))), '');
+  ok('(J2) each new attempt resets the message first, so a stale "not valid" does not outlive a good link',
+    /handledKey\.current = key;\s*setMessage\('Opening your guest account…'\);/.test(arrivalSrc), '');
+  ok('(J3) the token is still stripped from the address bar before any network call, per attempt',
+    arrivalSrc.indexOf('window.history.replaceState') > 0 && arrivalSrc.indexOf('window.history.replaceState') < arrivalSrc.indexOf('apiGuest(token)'), '');
+
+  const focusGuard = (src) => /const onFocusIn = \(e: FocusEvent\) => \{[\s\S]*?!panel\.contains\(e\.target\)\) emailRef\.current\?\.focus\(\);/.test(src)
+    && /document\.addEventListener\('focusin', onFocusIn, true\);/.test(src);
+  ok('(J4) THE STOLEN FOCUS: while the sheet is open, focus that lands outside the panel is brought back to its first field (capture phase)',
+    focusGuard(sheetSrc), '');
+  const cleanup = sheetSrc.slice(sheetSrc.indexOf("document.removeEventListener('keydown', onKey, true);"));
+  ok('(J5) the focus guard is removed in the cleanup BEFORE focus is returned to where it was (or it would fight the restore)',
+    cleanup.indexOf("removeEventListener('focusin', onFocusIn, true)") > 0 && cleanup.indexOf("removeEventListener('focusin', onFocusIn, true)") < cleanup.indexOf('back.focus()'), '');
+
+  // MUTATIONS — each protection removed; its predicate must go red.
+  const m1 = arrivalSrc.replace('}, [key]);', '}, []);');
+  ok('(J6) MUTATION KILLED: with the effect back to once-per-mount ([] deps), J1\'s predicate goes red', m1 !== arrivalSrc && !keyed(m1), '');
+  const m2 = sheetSrc.replace("    document.addEventListener('focusin', onFocusIn, true);\n", '');
+  ok('(J7) MUTATION KILLED: with the focusin listener not attached, J4\'s predicate goes red', m2 !== sheetSrc && !focusGuard(m2), '');
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 
 // eslint-disable-next-line no-console

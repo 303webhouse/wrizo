@@ -65,8 +65,17 @@ export function GuestClaimSheet() {
       }
     };
     document.addEventListener('keydown', onKey, true);
+    // The page behind autofocuses its editor on mount, and the sheet can open while that is still landing (an expired guest's
+    // first sync answers within moments of boot). If focus ends up outside the panel, keystrokes would go into the editor under
+    // the dim overlay. While the sheet is open, focus that lands outside it is brought back to its first field.
+    const onFocusIn = (e: FocusEvent) => {
+      const panel = panelRef.current;
+      if (panel && e.target instanceof Node && !panel.contains(e.target)) emailRef.current?.focus();
+    };
+    document.addEventListener('focusin', onFocusIn, true);
     return () => {
       document.removeEventListener('keydown', onKey, true);
+      document.removeEventListener('focusin', onFocusIn, true);
       const back = returnTo.current;
       returnTo.current = null;
       if (back && document.contains(back)) back.focus();
