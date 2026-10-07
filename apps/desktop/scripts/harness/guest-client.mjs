@@ -288,6 +288,26 @@ try {
     mutatedArrival !== arrival && !/clearSignedOutHere\(\);/.test(mBranch), '');
 }
 
+// =============================================================================
+// PART I — the capture's guest screens (Batch 11), pinned in source. The capture itself needs a box turn.
+// =============================================================================
+{
+  const cap = fs.readFileSync(path.join(DESKTOP, 'scripts', 'harness', 'arrival-signin-capture.mjs'), 'utf8');
+  ok('(I1) the capture takes BOTH guest screens: the claim sheet over a page, and a dead link\'s arrival',
+    /save\(app, vp\.name, theme\.name, 'guest-claim'\)/.test(cap) && /save\(app, vp\.name, theme\.name, 'guest-expired'\)/.test(cap), '');
+  ok('(I2) the guest 401 is stubbed in the page for exactly the two calls that matter, with the server\'s own reason',
+    /s\.includes\('\/api\/sync'\) \|\| s\.includes\('\/auth\/guest'\)/.test(cap) && /reason: 'guest_expired'/.test(cap) && /status: 401/.test(cap), '');
+  ok('(I3) the guest phase boots AUTHED (a sync only runs then), provokes one sync, and puts WS_ANON back before the signed-out screens',
+    /process\.env\.WS_ANON = '0';/.test(cap) && /new Event\('online'\)/.test(cap)
+      && cap.indexOf("process.env.WS_ANON = '1';") > cap.indexOf("'guest-expired'") && cap.indexOf("process.env.WS_ANON = '1';") < cap.indexOf("'signedout'"), '');
+  ok('(I4) each guest reload re-applies the theme (a reload clears it), so the light shots are really light',
+    (cap.match(/await app\.evalJs\(theme\.setup\);/g) || []).length >= 3, String((cap.match(/await app\.evalJs\(theme\.setup\);/g) || []).length));
+  ok('(I5) each guest screen waits for its own settled state (the sheet line with focus inside it; the expired line on the arrival) before it is shot',
+    /screen === 'guest-claim'/.test(cap) && /screen === 'guest-expired'/.test(cap) && /focus inside the sheet/.test(cap), '');
+  ok('(I6) the guest screens go through the same email check as every other frame (empty inputs, no "@" in visible text)',
+    cap.indexOf('const state = await settle(app, screen);') > 0 && cap.indexOf('capture refused:') > cap.indexOf('const state = await settle(app, screen);'), '');
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 
 // eslint-disable-next-line no-console
