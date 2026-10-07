@@ -82,10 +82,34 @@ await withHarness(async (app) => {
   const flagBeforeConfirm = await app.evalJs(`localStorage.getItem('wz.signedOutHere')`);
   ok('(W6) the first click only asks: a confirm appears and nothing is signed out yet',
     confirmShown === true && flagBeforeConfirm === null, JSON.stringify({ confirmShown, flagBeforeConfirm }));
+  // THE SECOND CAP: the server's logout HANGS. The sign-out must still finish here within ~5 s.
+  await app.evalJs(`
+    window.__logoutCalls = 0;
+    window.__hangLogout = true;
+    const f2 = window.fetch.bind(window);
+    window.fetch = (u, o) => {
+      if (String(u).includes('/auth/logout')) { window.__logoutCalls += 1; if (window.__hangLogout) return new Promise(() => {}); }
+      return f2(u, o);
+    };
+    true;
+  `);
+  const t1 = Date.now();
   await app.click('Yes, sign out and lose');
-  await app.waitFor(`!!document.querySelector('.wz-arrival input.wz-field')`, { label: 'landed on sign-in' });
+  await app.waitFor(`!!document.querySelector('.wz-arrival input.wz-field')`, { timeout: 9000, label: 'landed on sign-in' });
+  const hungTook = Date.now() - t1;
   const flag = await app.evalJs(`localStorage.getItem('wz.signedOutHere')`);
-  ok('(W7) the confirm completes the sign-out: the flag is set and the sign-in screen is up', flag === '1', String(flag));
+  ok('(W7) the confirm completes the sign-out even though the server logout hung: the flag is set and the sign-in screen is up',
+    flag === '1', String(flag));
+  ok('(W7b) and it took ~5 s, not forever ("Signing out…" does not stay up)', hungTook >= 4500 && hungTook <= 8000, String(hungTook));
+
+  // The next load: the device is signed out, the double still has a session, so the boot cleanup retries the logout.
+  await app.evalJs('window.__hangLogout = false; true;');
+  const callsBefore = await app.evalJs('window.__logoutCalls');
+  await app.reload();
+  await app.waitFor(`!!document.querySelector('.wz-arrival input.wz-field')`, { timeout: 9000, label: 'sign-in after reload' });
+  ok('(W7c) after a reload the sign-in screen is shown (the signed-out device does not resume its session)',
+    (await app.evalJs(`localStorage.getItem('wz.signedOutHere')`)) === '1', '');
+  void callsBefore; // the reload replaces the page, so its own call counter restarts; the retry is proved browserless (I7-I10)
 
   // 4. A successful sign-in leaves the sign-in screen and clears the flag.
   await app.evalJs(`document.querySelector('.wz-arrival input[type="email"]').focus(); true;`);

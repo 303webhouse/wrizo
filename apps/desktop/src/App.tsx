@@ -26,7 +26,7 @@ import { startSync, stopSync, syncOnce, clearLastSyncAt, getRejectedRecords } fr
 import { useDeskFrameMounted } from './store/deskFrameActive';
 import { useFirstRunGateActive } from './store/firstRunGateActive';
 import { onLogoutRequested } from './store/logoutRequest';
-import { showLogoutBlock, clearLogoutBlock, attemptSignOut, getSigningOut, setSigningOut } from './store/logoutGuard';
+import { showLogoutBlock, clearLogoutBlock, attemptSignOut, getSigningOut, setSigningOut, endServerSession, bootDecision } from './store/logoutGuard';
 import { useSigningOut } from './store/useSigningOut';
 import { LogoutBlockedSheet } from './components/LogoutBlockedSheet';
 import { isSignedOutHere, markSignedOutHere, clearSignedOutHere } from './store/signedOutHere';
@@ -229,9 +229,11 @@ export function App() {
     let active = true;
     apiMe().then((user) => {
       if (!active) return;
-      if (user && isSignedOutHere()) {
-        // A session left on a device that signed out: end it, and show the sign-in screen.
-        void apiLogout().then(() => setAuthState('anon'));
+      if (bootDecision(!!user, isSignedOutHere()) === 'end-session') {
+        // A session left on a device that signed out (its server logout hung, or never ran): end it — capped, so a
+        // hung server cannot keep boot on "loading" — and show the sign-in screen. The flag stays until a sign-in,
+        // so every later load retries this if it still did not take.
+        void endServerSession(apiLogout).then(() => setAuthState('anon'));
         return;
       }
       if (user) {
@@ -280,7 +282,9 @@ export function App() {
         }
       }
       clearLogoutBlock();
-      await apiLogout();
+      // Capped (~5 s): a hung server logout must not leave "Signing out…" up. On a timeout the sign-out finishes on
+      // this device below, and the boot cleanup ends the server session on the next load.
+      await endServerSession(apiLogout);
       // Mark first: even if the local reset below fails, this device stays on the sign-in screen.
       markSignedOutHere();
       window.location.hash = '#/';

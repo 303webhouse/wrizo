@@ -74,7 +74,9 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
   const signinAt = app.indexOf('const handleAuthed');
   ok('(B3) a sign-in clears the flag', signinAt > 0 && /clearSignedOutHere\(\);/.test(app.slice(signinAt, signinAt + 200)), '');
   const bootAt = app.indexOf('if (user && isSignedOutHere())');
-  ok('(B4) on boot, a session left on a device that signed out is ended and the door is shown',
+  // SUPERSEDED (apiLogout cap) — by (B4b) below. Parked, not deleted: it pinned an uncapped apiLogout call.
+  // Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(B4) on boot, a session left on a device that signed out is ended and the door is shown',
     bootAt > 0 && /apiLogout\(\)\.then\(\(\) => setAuthState\('anon'\)\)/.test(app.slice(bootAt, bootAt + 200)), '');
   const guardDef = app.slice(app.indexOf('function SignedOutRouteGuard'), app.indexOf('function BrandMark'));
   ok('(B5) the guard lets the door itself through', /pathname === '\/'/.test(guardDef), '');
@@ -173,7 +175,9 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
   if (false) ok('(F6) the flag is set after the dirty check, so only a completed sign-out sets it', markAt > checkAt, '');
   // (F1b, F3b, F6b) The same three claims, against the new shape: the decision is attemptSignOut over the real count.
   const attemptAt = body.indexOf('attemptSignOut(');
-  ok('(F1b) the dirty decision comes BEFORE the logout call, the flag, the sync stop and the wipe',
+  // SUPERSEDED (apiLogout cap) — by (F1c) below. Parked, not deleted: it pinned an uncapped apiLogout call.
+  // Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(F1b) the dirty decision comes BEFORE the logout call, the flag, the sync stop and the wipe',
     attemptAt > 0 && attemptAt < apiAt && attemptAt < markAt && attemptAt < stopAt && attemptAt < resetAt, JSON.stringify({ attemptAt, apiAt, markAt, stopAt, resetAt }));
   ok('(F3b) the decision counts any dirty record (the real countDirtyRecords) and a blocked attempt is shown',
     /attemptSignOut\(\(\) => syncOnce\(\), countDirtyRecords\)/.test(body) && /attempt\.kind === 'blocked'/.test(body), '');
@@ -348,6 +352,109 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
   const casc = read('components/CascadePanels.tsx');
   ok('(H19) the Settings button reads "Signing out…" and is disabled while it runs',
     /disabled=\{signingOut\}/.test(casc) && /t\('logoutSigningOut'\)/.test(casc), '');
+}
+
+// (B4b, F1c) the successors of the two parked checks, self-contained.
+{
+  const app = read('App.tsx');
+  const bootAt = app.indexOf("bootDecision(!!user, isSignedOutHere()) === 'end-session'");
+  ok('(B4b) on boot, a session left on a device that signed out is ended (capped) and the door is shown',
+    bootAt > 0 && /void endServerSession\(apiLogout\)\.then\(\(\) => setAuthState\('anon'\)\)/.test(app.slice(bootAt, bootAt + 500)), '');
+  const hs = app.indexOf('const handleLogout');
+  const body = app.slice(hs, app.indexOf('  // CD2 S3', hs));
+  const attemptAt = body.indexOf('attemptSignOut(');
+  const endAt = body.indexOf('endServerSession(apiLogout)');
+  ok('(F1c) the dirty decision comes BEFORE the capped server logout, the flag, the sync stop and the wipe',
+    attemptAt > 0 && attemptAt < endAt && attemptAt < body.indexOf('markSignedOutHere()') && attemptAt < body.indexOf('stopSync()') && attemptAt < body.indexOf('resetLocalData()'), '');
+}
+
+// =============================================================================
+// PART I — THE SECOND CAP. endServerSession never hangs the sign-out; a timeout still finishes the
+// sign-out on this device; and the boot cleanup retries the server logout on the next load.
+// =============================================================================
+{
+  const gsrc = read('store/logoutGuard.ts');
+  const loadGuard = async (source, tag) => {
+    const dest = path.join(DESKTOP, '.arrival-signin-guard-' + tag + '.mjs');
+    fs.writeFileSync(dest, ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 } }).outputText);
+    const mod = await import('file://' + dest.replace(/\\/g, '/') + '?t=' + Date.now());
+    fs.rmSync(dest, { force: true });
+    return mod;
+  };
+  const g = await loadGuard(gsrc, 'i');
+  const never = () => new Promise(() => {});
+
+  ok('(I1) the server cap is 5000 ms ("~5 s")', g.LOGOUT_SERVER_CAP_MS === 5000, String(g.LOGOUT_SERVER_CAP_MS));
+  ok('(I2) a logout that answers reports done', (await g.endServerSession(() => Promise.resolve(), 50)) === 'done', '');
+  ok('(I3) a logout that rejects reports failed — and never throws', (await g.endServerSession(() => Promise.reject(new Error('x')), 50)) === 'failed', '');
+  ok('(I4) a logout that throws synchronously reports failed too', (await g.endServerSession(() => { throw new Error('x'); }, 50)) === 'failed', '');
+  ok('(I5) a logout that hangs reports timeout once the cap passes', (await g.endServerSession(never, 60)) === 'timeout', '');
+
+  const t0 = Date.now();
+  const real = await g.endServerSession(never);
+  const took = Date.now() - t0;
+  ok('(I6) THE REAL CAP: a hung server logout gives up within ~5 s (between 4.9 s and 6 s) — "Signing out…" cannot stay up indefinitely',
+    real === 'timeout' && took >= 4900 && took <= 6000, JSON.stringify({ real, took }));
+
+  // The whole story, with the REAL flag module and the REAL guard functions against a fake server:
+  // sign out while the server logout hangs -> the device is signed out anyway -> the next load ends the session.
+  const store = new Map();
+  globalThis.localStorage = {
+    getItem: (k) => (store.has(k) ? store.get(k) : null),
+    setItem: (k, v) => store.set(k, String(v)),
+    removeItem: (k) => store.delete(k),
+  };
+  const server = { sessionAlive: true, logoutCalls: 0 };
+  const hangingLogout = () => { server.logoutCalls += 1; return new Promise(() => {}); };
+  const workingLogout = () => { server.logoutCalls += 1; server.sessionAlive = false; return Promise.resolve(); };
+
+  // 1) the sign-out: the same order handleLogout runs — end the server session (capped), THEN set the flag.
+  const outcome1 = await g.endServerSession(hangingLogout, 60);
+  flag.markSignedOutHere();
+  ok('(I7) the server logout timed out, and the sign-out still FINISHED on this device (the flag is set)',
+    outcome1 === 'timeout' && flag.isSignedOutHere() === true, outcome1);
+  ok('(I8) the server session is still alive after that sign-out (the hang left it), which is exactly what the next load must clean up',
+    server.sessionAlive === true, '');
+
+  // 2) the next load: a live session on a device that signed out.
+  const decision = g.bootDecision(server.sessionAlive, flag.isSignedOutHere());
+  ok('(I9) the next load sees a live session on a signed-out device and decides to END it (not resume it)', decision === 'end-session', decision);
+  const outcome2 = await g.endServerSession(workingLogout, 60);
+  ok('(I10) the boot cleanup retries the server logout, and this time it takes: the session is gone',
+    outcome2 === 'done' && server.logoutCalls === 2 && server.sessionAlive === false, JSON.stringify({ outcome2, calls: server.logoutCalls }));
+  ok('(I11) and the flag is still set afterwards (only a sign-in clears it), so the device stays on the sign-in screen',
+    flag.isSignedOutHere() === true, '');
+  ok('(I12) a load with no session, or on a device that never signed out, is unchanged',
+    g.bootDecision(false, true) === 'anon' && g.bootDecision(false, false) === 'anon' && g.bootDecision(true, false) === 'authed', '');
+  delete globalThis.localStorage;
+
+  // MUTATION: remove the race from endServerSession. A hung logout must now HANG the sign-out.
+  const rs = gsrc.indexOf('export async function endServerSession');
+  const raceStart = gsrc.indexOf('const outcome = await Promise.race([', rs);
+  const raceEnd = gsrc.indexOf(']);', raceStart) + 3;
+  if (rs < 0 || raceStart < 0 || raceEnd < raceStart) throw new Error('endServerSession race mutation anchor not found');
+  const mutated = gsrc.slice(0, raceStart)
+    + "const outcome = await Promise.resolve().then(logout).then(() => 'done' as const, () => 'failed' as const);"
+    + gsrc.slice(raceEnd);
+  const mut = await loadGuard(mutated, 'imut');
+  const finished = await Promise.race([
+    mut.endServerSession(never, 60).then(() => 'finished'),
+    new Promise((r) => setTimeout(() => r('hung'), 500)),
+  ]);
+  ok('(I13) MUTATION KILLED: with the race removed, a hung server logout HANGS the sign-out (so the race is what ends "Signing out…")',
+    finished === 'hung', String(finished));
+
+  // App.tsx, in source: both paths use the capped call, in the right order.
+  const app = read('App.tsx');
+  const hs = app.indexOf('const handleLogout');
+  const hbody = app.slice(hs, app.indexOf('  // CD2 S3', hs));
+  const endAt = hbody.indexOf('await endServerSession(apiLogout)');
+  ok('(I14) handleLogout ends the server session through the CAPPED call, and no bare apiLogout await remains',
+    endAt > 0 && !/await apiLogout\(\)/.test(hbody), '');
+  ok('(I15) the flag, the sync stop and the wipe come AFTER that call, so a timeout falls through to finish the sign-out here',
+    endAt < hbody.indexOf('markSignedOutHere()') && endAt < hbody.indexOf('stopSync()') && endAt < hbody.indexOf('resetLocalData()'), '');
+  ok('(I16) the boot cleanup is capped too (a hung server cannot keep boot on "loading") and decides through bootDecision',
+    /bootDecision\(!!user, isSignedOutHere\(\)\) === 'end-session'/.test(app) && /void endServerSession\(apiLogout\)\.then\(\(\) => setAuthState\('anon'\)\)/.test(app), '');
 }
 
 // =============================================================================

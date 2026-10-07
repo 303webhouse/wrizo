@@ -57,6 +57,31 @@ export async function attemptSignOut(
   return count > 0 ? { kind: 'blocked', count, timedOut: outcome === 'timeout' } : { kind: 'clear' };
 }
 
+// THE SECOND CAP — ending the SERVER session is given this long. It never throws and never hangs the sign-out: on a
+// timeout the sign-out finishes on THIS device anyway (flag set, sign-in screen shown), and the next load, still
+// holding the flag and a live session, ends the server session then (see bootDecision).
+export const LOGOUT_SERVER_CAP_MS = 5000;
+
+export async function endServerSession(
+  logout: () => Promise<unknown>,
+  capMs: number = LOGOUT_SERVER_CAP_MS,
+): Promise<'done' | 'failed' | 'timeout'> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const outcome = await Promise.race([
+    Promise.resolve().then(logout).then(() => 'done' as const, () => 'failed' as const),
+    new Promise<'timeout'>((resolve) => { timer = setTimeout(() => resolve('timeout'), capMs); }),
+  ]);
+  if (timer !== undefined) clearTimeout(timer);
+  return outcome;
+}
+
+// What a load does once it knows whether a server session exists and whether this device signed out. A session that
+// outlived a sign-out (the server logout hung, or the tab closed mid-way) is ended on the next load, never resumed.
+export function bootDecision(hasSession: boolean, signedOutHere: boolean): 'end-session' | 'authed' | 'anon' {
+  if (!hasSession) return 'anon';
+  return signedOutHere ? 'end-session' : 'authed';
+}
+
 // "Signing out…" — true from the click until the sign-out ends one way or the other, so the button never does nothing
 // and a second click while one is under way is ignored.
 let signingOut = false;
