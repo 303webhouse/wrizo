@@ -205,15 +205,11 @@
      mechanical half — the theme ARC itself is parked, this ticket only
      cuts the seam). Orange/brass lane law holds: this is warm brown, never
      orange, at rest — the flash (below) is the only evental exception. */
-  /* M4 S2 (SV14) — the ground turns green. From M3's warm brown #7A6242 to a
-     deep, low-yellow green stepped DOWN in weight (Nick's "a bit too noticeable"
-     is partly VALUE, not hue): #4C5942 — G is the dominant channel by a clear
-     margin, so it reads as a living root, NOT the house olive (olive = "this is
-     a door", a touchable; the ground is not). ~2.3:1 against the #1F1A16 ground:
-     stepped down from the brown but held ABOVE the band (the earlier #3F4A37
-     computed ~1.85:1, below the presence Nick described). Bounded delta — Nick's
-     eye at the sitting confirms or nudges; the token seam is unchanged. */
-  --rhizome-ink: #4C5942;
+  /* 2026-10-07 — the roots are the house olive. Nick: olive green roots on
+     the page background, brass when the goal lands. --accent-rest is that
+     olive (no new literal). On the cream page the on-page layer steps down
+     to --accent-door so the same olive still reads behind the words. */
+  --rhizome-ink: var(--accent-rest);
 
   /* TH1 — the four font slots (canon §4), the theme-facing layer. Material
      names below (--font-display/--font-ui/--font-prose) are the
@@ -3426,9 +3422,21 @@ a:focus-visible,
    style choice") plus aria-hidden makes the whole layer structurally inert. */
 .wz-rhizome-field{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 .wz-rhizome-seg{
-  stroke:var(--rhizome-ink); stroke-width:1.4px; stroke-linecap:round; fill:none;
+  stroke:var(--rhizome-ink); stroke-width:1.8px; stroke-linecap:round; fill:none;
   animation:wz-rhizome-grow 180ms ease; /* "the house timing" (S2) — the same 180ms family already used throughout this file */
 }
+/* On the page the olive steps down to the door token so it reads on cream
+   and stays behind the words (z-index 0; text and ink sit above). */
+.wz-rhizome-onpage{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:hidden; }
+.wz-rhizome-onpage .wz-rhizome-seg{ stroke:var(--accent-door); stroke-width:1.6px; }
+.mode-page > .mode-page-title,
+.mode-page > .mode-scroll,
+.entry-full > .entry-edit{ position:relative; z-index:1; }
+.entry-full > .ink-canvas,
+.entry-full > .ink-eraser-ring,
+.entry-full > .ink-tool-toggle,
+.entry-full > .entry-typewriter-fade,
+.entry-full > .wz-warm{ z-index:2; }
 @keyframes wz-rhizome-grow{ 0%{ opacity:0; } 100%{ opacity:1; } }
 /* S4 — the milestone flash: every segment's own stroke eases to the ember
    token, holds, and returns — growth kept whole (nothing here removes or
@@ -3438,12 +3446,13 @@ a:focus-visible,
    is the brief's own named final authority for this exact timing. The
    ember COLOR itself is not provisional: --ember already exists (branding
    §4) and is reused verbatim, never a new literal. */
-.wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ animation:wz-rhizome-flash 1200ms ease; }
+.wz-rhizome-field[data-flash='true'] .wz-rhizome-seg,
+.wz-rhizome-onpage[data-flash='true'] .wz-rhizome-seg{ animation:wz-rhizome-flash 1200ms ease; }
 @keyframes wz-rhizome-flash{
   0%{ stroke:var(--rhizome-ink); }
-  8%{ stroke:var(--ember); }
-  33%{ stroke:var(--ember); }
-  100%{ stroke:var(--rhizome-ink); }
+  8%{ stroke:var(--brass); }
+  33%{ stroke:var(--brass); }
+  100%{ stroke:var(--brass); }
 }
 @media (prefers-reduced-motion:reduce){
   /* S2: new segments appear instantly, no transition. S4: "a single soft
@@ -3451,7 +3460,8 @@ a:focus-visible,
      multi-stop keyframe animation) on the one property that changes,
      driven by the SAME data-flash toggle the full-motion path uses. */
   .wz-rhizome-seg{ animation:none; opacity:1; transition:stroke 600ms ease; }
-  .wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ animation:none; stroke:var(--ember); }
+  .wz-rhizome-field[data-flash='true'] .wz-rhizome-seg,
+  .wz-rhizome-onpage[data-flash='true'] .wz-rhizome-seg{ animation:none; stroke:var(--brass); }
 }
 
 .desk-frame-meter{ min-height:44px; margin-top:14px; background:var(--desk-ground);

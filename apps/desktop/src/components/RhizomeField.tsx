@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useWritingSettings } from '../store/writingSettings';
-import { useGoalProgress, WORD_GOAL, CELEBRATE_MS } from './WritingIncentives';
+import { useWritingGoal, goalCount } from '../store/writingGoal';
 import {
-  mulberry32, hashSeed, createRhizomeState, seedOrigins, saturationTarget, growTo, burstSegments,
-  type RhizomeState, type RhizomeGeometry, type RhizomePoint, type RhizomeSegment,
+  mulberry32, hashSeed, createRhizomeState, seedOrigins, growTo, goalFillTarget,
+  FILL_SEGMENTS, FILL_SHOOTS, FILL_LEN_MIN, FILL_LEN_MAX,
+  type RhizomeState, type RhizomeGeometry, type RhizomePoint, type RhizomeSegment, type GrowToOptions,
 } from '../store/rhizomeEngine';
 
 // M2 — the Rhizome (docs/wrizo-alpha/m2-rhizome-brief.md, S2/S4). A single
@@ -39,18 +41,30 @@ import {
 // framed, so a writer who picks Rhizome on a wide screen sees it resume
 // the instant they're back on one.
 //
-// Self-contained like GoalGlow.tsx: reads its own settings slice, computes
-// its own `celebrating` flag by calling the SAME `useGoalProgress` hook the
-// bar itself calls (imported verbatim, not re-implemented) with the SAME
-// `unitCount` the host already computes for the bar — "the SAME unit event
-// the bar already consumes" as literally as two independent calls to one
-// pure hook can make it. No new subscription to the write/persistence bus:
-// `unitCount` is a plain number prop, recomputed by the host from state it
-// already holds for other reasons (item 18's own force-render ceiling).
+// Goal-fill (2026-10-07). Coverage is the current lap of the writer's own
+// goal (store/writingGoal.ts — words or lines, whatever they set), not a
+// fixed word count. Fraction 1 fills the ground; crossing the goal flashes
+// the network brass and then clears it for the next lap. A 100-word goal
+// and a 1000-word goal both arrive full at the same moment: the goal.
+// Roots paint in the stage margins and, portaled, on the page background
+// behind the words. pointer-events stay none. The page rect is not a
+// layout participant.
 const SESSION_START = Date.now(); // frozen once per app-load/session (S2: "session-scoped")
 
-const BURST_COUNT = 12;
-const BURST_STAGGER_MS = 600; // "staggered ~600ms across live shoots" (S4)
+// The reward holds the full network in brass, then the field is cleared.
+// Same 1200ms family the old ember flash used; the paint is --brass now.
+const FLASH_MS = 1200;
+
+const FILL_OPTS: GrowToOptions = {
+  shootCap: FILL_SHOOTS,
+  hardCap: FILL_SEGMENTS,
+  lenMin: FILL_LEN_MIN,
+  lenMax: FILL_LEN_MAX,
+};
+
+function fieldGeo(geo: RhizomeGeometry): RhizomeGeometry {
+  return { ...geo, avoidPaper: false };
+}
 
 function measure(svg: SVGSVGElement, paper: HTMLElement): { geo: RhizomeGeometry; origin: RhizomePoint } | null {
   const stageRect = svg.getBoundingClientRect();
@@ -101,77 +115,60 @@ function geoChanged(a: RhizomeGeometry, b: RhizomeGeometry): boolean {
   );
 }
 
-export function RhizomeField({ unitCount, seedKey, paperRef }: {
-  unitCount: number;
+function Segments({ segments, ox, oy }: { segments: RhizomeSegment[]; ox: number; oy: number }) {
+  return (
+    <>
+      {segments.map(seg => (
+        <line
+          key={seg.id}
+          className="wz-rhizome-seg"
+          x1={seg.x1 - ox} y1={seg.y1 - oy} x2={seg.x2 - ox} y2={seg.y2 - oy}
+        />
+      ))}
+    </>
+  );
+}
+
+export function RhizomeField({ text, seedKey, paperRef }: {
+  text: string;
   seedKey: string;
   paperRef: React.RefObject<HTMLElement | null>;
 }) {
+
   const settings = useWritingSettings();
-  const active = settings.progress === 'words' && settings.progressStyle === 'rhizome';
-  const { celebrating } = useGoalProgress(unitCount, WORD_GOAL);
+  const goal = useWritingGoal();
+  const active = settings.progress === 'words' && settings.progressStyle === 'rhizome' && goal != null && goal.n > 0;
+  const count = goal ? goalCount(text, goal) : 0;
+  const frac = goal && goal.n > 0 ? (count % goal.n) / goal.n : 0;
+  const goalKey = goal ? `${goal.n}:${goal.unit}` : 'none';
 
   const svgRef = useRef<SVGSVGElement>(null);
   const [state, setState] = useState<RhizomeState>(createRhizomeState);
-  const [burstOrder, setBurstOrder] = useState<Map<number, number>>(() => new Map());
   const [flash, setFlash] = useState(false);
+  const [paperBox, setPaperBox] = useState<RhizomeGeometry['paper'] | null>(null);
 
   const rngRef = useRef<(() => number) | null>(null);
-  const lastUnitRef = useRef<number | null>(null);
-  const prevCelebratingRef = useRef(false);
-  const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // M3 S2 — the 7 blue-noise origins, computed ONCE per entry (in the growth
-  // effect, from the seeded rng + the first successful measure) so the same
-  // page scatters the same way and the rng stream stays deterministic across
-  // every growTo call.
   const originsRef = useRef<RhizomePoint[] | null>(null);
-  // M3 — the geometry the current ground was BUILT against (null until first
-  // build), and the high-water word count it has been grown to. The high-water
-  // makes the forward-only law survive a geometry re-fit: a rebuild regrows to
-  // the largest count ever seen, so re-fitting to a moved paper never shrinks
-  // the ground (just as deleting words never does). `unitCountRef` mirrors the
-  // prop so the ResizeObserver's refit can read the live count without making
-  // its own effect re-subscribe on every keystroke.
   const builtGeoRef = useRef<RhizomeGeometry | null>(null);
-  const highWaterRef = useRef(0);
-  const unitCountRef = useRef(unitCount);
-  unitCountRef.current = unitCount;
+  const builtSaltRef = useRef<string | null>(null);
+  const saltRef = useRef(`${goalKey}:0`);
+  const prevCountRef = useRef<number | null>(null);
+  const seenGoalRef = useRef<string | null>(null);
+  const holdFlashRef = useRef(false);
+  const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fracRef = useRef(frac);
+  const countRef = useRef(count);
+  const goalKeyRef = useRef(goalKey);
+  fracRef.current = frac;
+  countRef.current = count;
+  goalKeyRef.current = goalKey;
 
-  // `stateRef` mirrors `state` synchronously (written by `updateState`
-  // below, never independently) so the growth effect and the burst effect
-  // — two SEPARATE effects that can both fire from the SAME commit (a
-  // single word crossing the goal on the very event that also roots the
-  // first-ever shoot) — always compose against each other's latest write,
-  // in declaration order, rather than each closing over a possibly-stale
-  // `state` from the last completed render. `updateState` calls `setState`
-  // with a plain VALUE, never a function, so React 18 StrictMode's own
-  // double-invoke-to-check-purity behavior (main.tsx wraps the app in
-  // `<React.StrictMode>`) can never run the PRNG-consuming computation
-  // twice — that would have silently burned extra `rng()` draws only in
-  // dev, a real (if dev-only) determinism hazard the plain-value form
-  // avoids by construction rather than by care.
   const stateRef = useRef<RhizomeState>(state);
   const updateState = useCallback((updater: (s: RhizomeState) => RhizomeState) => {
     const next = updater(stateRef.current);
     stateRef.current = next;
     setState(next);
   }, []);
-
-  // Re-seed whenever the entry changes (a fresh page => a fresh field —
-  // S2's own seed key is entry id + session start; SESSION_START itself is
-  // fixed for the whole app-load, so revisiting the SAME entry within the
-  // SAME session reproduces the identical PRNG stream from empty, which is
-  // exactly what the harness's determinism proof exercises).
-  useEffect(() => {
-    rngRef.current = mulberry32(hashSeed(`${seedKey}:${SESSION_START}`));
-    lastUnitRef.current = null;
-    originsRef.current = null; // M3 — a fresh entry re-scatters its own ground
-    builtGeoRef.current = null; // and re-fits from empty against its own paper
-    highWaterRef.current = 0;
-    const fresh = createRhizomeState();
-    stateRef.current = fresh;
-    setState(fresh);
-    setBurstOrder(new Map());
-  }, [seedKey]);
 
   const measureNow = useCallback(() => {
     const svg = svgRef.current;
@@ -180,55 +177,98 @@ export function RhizomeField({ unitCount, seedKey, paperRef }: {
     return measure(svg, paper);
   }, [paperRef]);
 
-  // M3 S2/S3 — the growth/re-fit loop. Coverage tracks TOTAL word count (not
-  // M2's session delta) through the saturation curve, so opening a page already
-  // written shows a ground alive to the essay's length (the DoD) rather than
-  // M2's empty-until-you-type. `syncField` is the single path that brings the
-  // ground into agreement with both the current word count AND the current
-  // measured geometry:
-  //   • same paper, more words -> grow FORWARD (M2's incremental, idempotent,
-  //     StrictMode-safe growTo — a no-op, never a shrink, when words drop);
-  //   • paper moved/resized     -> RE-FIT: reset the PRNG to this entry's seed
-  //     and regrow from empty against the new paper, so the rebuilt ground is
-  //     the deterministic image of this seed AT this geometry (same seed + same
-  //     geo => identical scatter), grown to the high-water target so a re-fit
-  //     never shrinks the ground.
-  // The 7 blue-noise origins (S2) are seeded from the rng + the measured geo at
-  // build time; a re-fit re-seeds them for the new geo. growTo is forward-only
-  // and idempotent per target, and a rebuild resets the rng from the seed first,
-  // so a React 18 StrictMode double-invoke adds no segments and burns no extra
-  // rng — the same dev-only determinism hazard updateState's plain-value form
-  // already guards, closed here by construction too.
+  const rebuild = useCallback((geo: RhizomeGeometry, target: number, salt: string) => {
+    const rng = mulberry32(hashSeed(`${seedKey}:${SESSION_START}:${salt}`));
+    rngRef.current = rng;
+    const origins = seedOrigins(rng, geo, undefined, true);
+    originsRef.current = origins;
+    builtGeoRef.current = geo;
+    builtSaltRef.current = salt;
+    saltRef.current = salt;
+    setPaperBox(geo.paper);
+    const next = growTo(createRhizomeState(), rng, fieldGeo(geo), origins, target, FILL_OPTS);
+    stateRef.current = next;
+    setState(next);
+  }, [seedKey]);
+
   const syncField = useCallback(() => {
-    if (!active || !rngRef.current) return;
+    if (!active || holdFlashRef.current) return;
     const m = measureNow();
     if (!m) return;
-    highWaterRef.current = Math.max(highWaterRef.current, unitCountRef.current);
-    const target = saturationTarget(highWaterRef.current);
-    if (!builtGeoRef.current || geoChanged(m.geo, builtGeoRef.current)) {
-      const rng = mulberry32(hashSeed(`${seedKey}:${SESSION_START}`));
-      rngRef.current = rng;
-      originsRef.current = seedOrigins(rng, m.geo);
-      builtGeoRef.current = m.geo;
-      const rebuilt = growTo(createRhizomeState(), rng, m.geo, originsRef.current, target);
-      stateRef.current = rebuilt;
-      setState(rebuilt);
-      setBurstOrder(new Map());
-    } else {
-      updateState(s => growTo(s, rngRef.current!, m.geo, originsRef.current!, target));
+    const target = goalFillTarget(fracRef.current);
+    const salt = saltRef.current;
+    if (!builtGeoRef.current || !originsRef.current || !rngRef.current || geoChanged(m.geo, builtGeoRef.current) || salt !== builtSaltRef.current) {
+      rebuild(m.geo, target, salt);
+      return;
     }
-    lastUnitRef.current = unitCountRef.current;
-  }, [active, seedKey, measureNow, updateState]);
+    setPaperBox(m.geo.paper);
+    updateState(s => growTo(s, rngRef.current!, fieldGeo(m.geo), originsRef.current!, target, FILL_OPTS));
+  }, [active, measureNow, rebuild, updateState]);
 
-  // Grow forward whenever the word count advances (and on first mount).
-  useEffect(() => { syncField(); }, [unitCount, syncField]);
+  const syncRef = useRef(syncField);
+  syncRef.current = syncField;
 
-  // Re-fit when the paper or stage geometry changes — the boot-time chrome
-  // recede (the paper settles up over ~500ms after first paint, S3's DoD path)
-  // and any later window resize. A ResizeObserver catches size changes; a
-  // single deferred re-sync catches a position-only settle tail (the paper can
-  // finish translating a frame or two after its size stabilizes). Both coalesce
-  // through one rAF so a burst of callbacks becomes a single measure+refit.
+  // A new page reseeds. The growth effect below (it lists seedKey) paints
+  // the new page's own lap; this reset makes that paint start from empty.
+  useEffect(() => {
+    rngRef.current = null;
+    originsRef.current = null;
+    builtGeoRef.current = null;
+    builtSaltRef.current = null;
+    prevCountRef.current = null;
+    seenGoalRef.current = null;
+    saltRef.current = `${goalKeyRef.current}:0`;
+    holdFlashRef.current = false;
+    if (flashTimerRef.current) { clearTimeout(flashTimerRef.current); flashTimerRef.current = null; }
+    const fresh = createRhizomeState();
+    stateRef.current = fresh;
+    setState(fresh);
+    setFlash(false);
+    setPaperBox(null);
+  }, [seedKey]);
+
+  useEffect(() => {
+    if (!active) return;
+    if (seenGoalRef.current !== goalKey) {
+      seenGoalRef.current = goalKey;
+      prevCountRef.current = count;
+      saltRef.current = `${goalKey}:0`;
+      builtGeoRef.current = null;
+      syncRef.current();
+      return;
+    }
+    const prev = prevCountRef.current;
+    prevCountRef.current = count;
+    const n = goal?.n ?? 0;
+    const crossed = prev != null && n > 0 && count > prev && Math.floor(count / n) > Math.floor(prev / n);
+    if (crossed) {
+      holdFlashRef.current = true;
+      const m = measureNow();
+      if (m && rngRef.current && originsRef.current && builtGeoRef.current) {
+        const full = growTo(stateRef.current, rngRef.current, fieldGeo(m.geo), originsRef.current, FILL_SEGMENTS, FILL_OPTS);
+        stateRef.current = full;
+        setState(full);
+        setPaperBox(m.geo.paper);
+      } else if (m) {
+        rebuild(m.geo, FILL_SEGMENTS, saltRef.current);
+      }
+      setFlash(true);
+      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+      flashTimerRef.current = setTimeout(() => {
+        setFlash(false);
+        holdFlashRef.current = false;
+        const g = goalKeyRef.current;
+        const goalN = Number(g.split(':')[0]);
+        const lap = goalN > 0 ? Math.floor(countRef.current / goalN) : 0;
+        saltRef.current = `${g}:${lap}`;
+        builtGeoRef.current = null;
+        syncRef.current();
+      }, FLASH_MS);
+      return;
+    }
+    syncRef.current();
+  }, [active, count, goalKey, goal, seedKey, measureNow, rebuild]);
+
   useEffect(() => {
     if (!active) return;
     const svg = svgRef.current;
@@ -237,72 +277,44 @@ export function RhizomeField({ unitCount, seedKey, paperRef }: {
     let raf = 0;
     const schedule = () => {
       if (raf) return;
-      raf = requestAnimationFrame(() => { raf = 0; syncField(); });
+      raf = requestAnimationFrame(() => { raf = 0; syncRef.current(); });
     };
     const ro = new ResizeObserver(schedule);
     ro.observe(svg);
     ro.observe(paper);
     const settleTail = setTimeout(schedule, 600);
     return () => { if (raf) cancelAnimationFrame(raf); clearTimeout(settleTail); ro.disconnect(); };
-  }, [active, paperRef, syncField]);
-
-  // S4 — the milestone burst + flash, on the SAME `celebrating` transition
-  // the bar itself already fires on (nothing new invented). Decoupled from
-  // `celebrating`'s own CELEBRATE_MS window on purpose: the flash's own
-  // total (hold + ease-back) runs a little past it, and "growth kept whole"
-  // must not depend on the bar's flag staying true the whole time.
-  useEffect(() => {
-    if (active && celebrating && !prevCelebratingRef.current) {
-      const m = measureNow();
-      if (m && rngRef.current) {
-        const { state: next, added } = burstSegments(stateRef.current, rngRef.current, m.geo, BURST_COUNT);
-        stateRef.current = next;
-        setState(next);
-        if (added.length > 0) {
-          setBurstOrder(prev => {
-            const map = new Map(prev);
-            added.forEach((seg, i) => map.set(seg.id, i));
-            return map;
-          });
-        }
-      }
-      setFlash(true);
-      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
-      // B4-provisional — 1200ms (400ms hold + 800ms ease-back, S4's own
-      // exact split) has no existing named celebration-grammar constant of
-      // its own to read from; CELEBRATE_MS (imported above, reused for
-      // `useGoalProgress` itself) anchors the SAME duration family per the
-      // canon's "same duration family" rule, but not this exact number —
-      // B4's ember-accent finish is the named final authority (brief S4).
-      flashTimerRef.current = setTimeout(() => setFlash(false), 1200);
-    }
-    prevCelebratingRef.current = celebrating;
-  }, [celebrating, active, measureNow]);
+  }, [active, paperRef, seedKey]);
 
   useEffect(() => () => { if (flashTimerRef.current) clearTimeout(flashTimerRef.current); }, []);
 
   if (!active) return null;
 
+  const pageEl = paperRef.current;
+  const onPage = pageEl && paperBox && state.segments.length > 0
+    ? createPortal(
+      <svg className="wz-rhizome-onpage" aria-hidden="true" focusable="false" data-flash={flash ? 'true' : 'false'} style={{ pointerEvents: 'none' }}>
+        <Segments segments={state.segments} ox={paperBox.left} oy={paperBox.top} />
+      </svg>,
+      pageEl,
+    )
+    : null;
+
   return (
-    <svg
-      ref={svgRef}
-      className="wz-rhizome-field"
-      aria-hidden="true"
-      focusable="false"
-      data-flash={flash ? 'true' : 'false'}
-      style={{ pointerEvents: 'none' }}
-    >
-      {state.segments.map((seg: RhizomeSegment) => {
-        const order = burstOrder.get(seg.id);
-        return (
-          <line
-            key={seg.id}
-            className="wz-rhizome-seg"
-            x1={seg.x1} y1={seg.y1} x2={seg.x2} y2={seg.y2}
-            style={order != null ? { animationDelay: `${(order * BURST_STAGGER_MS) / BURST_COUNT}ms` } : undefined}
-          />
-        );
-      })}
-    </svg>
+    <>
+      <svg
+        ref={svgRef}
+        className="wz-rhizome-field"
+        aria-hidden="true"
+        focusable="false"
+        data-flash={flash ? 'true' : 'false'}
+        data-segments={state.segments.length}
+        data-goal-frac={frac.toFixed(3)}
+        style={{ pointerEvents: 'none' }}
+      >
+        <Segments segments={state.segments} ox={0} oy={0} />
+      </svg>
+      {onPage}
+    </>
   );
 }

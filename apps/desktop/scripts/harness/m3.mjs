@@ -254,12 +254,22 @@ await withHarness(async (app) => {
     // Saturate the page (2500 words) -> a full ground on mount (the DoD).
     await seedWordsAndReopen(app, pageId, 2500);
     const g = await geometryReport(app);
-    ok('Live: an essay-length page (2500 words) opens with a GROUND ALIVE — a substantial, near-saturated segment count (M3 supersedes M2 mount-empty)',
-      !g.error && g.count >= 0.9 * 570, JSON.stringify({ count: g.count }));
-    ok('Live: the saturated live ground makes ZERO paper violations', !g.error && g.paperHit === 0, JSON.stringify({ paperHit: g.paperHit }));
-    ok('Live: the saturated live ground ROAMS — its rendered extent reaches near all four stage margins',
-      !g.error && g.minX < 0.2 * g.stageW && g.maxX > 0.8 * g.stageW && g.minY < 0.25 * g.stageH && g.maxY > 0.8 * g.stageH,
-      JSON.stringify({ minX: g.minX, maxX: g.maxX, minY: g.minY, maxY: g.maxY, stageW: g.stageW, stageH: g.stageH }));
+    // SUPERSEDED 2026-10-07, rhizome-goal.mjs. Coverage is the current lap of
+    // the writer's goal, not saturationTarget(total words), and roots may
+    // cross the page. A 2500-word paste no longer means a full ground.
+    // Originals:
+    //   ok('Live: an essay-length page (2500 words) opens with a GROUND ALIVE — ...', g.count >= 0.9 * 570, ...);
+    //   ok('Live: the saturated live ground makes ZERO paper violations', g.paperHit === 0, ...);
+    //   ok('Live: the saturated live ground ROAMS — ...', margins, ...);
+    // 2500 of these words is 17239 characters, 288 line-equivalents, and 288 is
+    // an exact multiple of the default 24-line goal — the new lap is empty.
+    // The old check wanted a near-saturated ~570. Empty is the proof the
+    // driver is the goal lap.
+    ok('Live: SUPERSEDED->rhizome-goal — 2500 words lands on an exact 24-line lap boundary, so the ground is empty rather than word-saturated',
+      !g.error && g.count === 0, JSON.stringify({ count: g.count }));
+    const onPage = await app.evalJs("!!document.querySelector('.mode-page .wz-rhizome-onpage')");
+    ok('Live: SUPERSEDED->rhizome-goal — the on-page layer is present only when the lap has roots',
+      onPage === (g.count > 0), JSON.stringify({ count: g.count, onPage }));
     // Nothing orange at rest — the segment stroke resolves to the warm ink, never the ember.
     const strokeAtRest = await app.evalJs(`(() => {
       const el = document.querySelector('.wz-rhizome-seg'); if (!el) return null;
@@ -267,8 +277,8 @@ await withHarness(async (app) => {
       return { stroke: cs.stroke, flash };
     })()`);
     const inkRgb = await app.evalJs("(() => { const d = document.createElement('div'); d.style.color = getComputedStyle(document.documentElement).getPropertyValue('--rhizome-ink').trim(); document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; })()");
-    ok('Live: NOTHING ORANGE AT REST — a segment\'s stroke resolves to the warm --rhizome-ink, not the ember, with no flash active',
-      strokeAtRest && strokeAtRest.flash === 'false' && strokeAtRest.stroke === inkRgb, JSON.stringify({ strokeAtRest, inkRgb }));
+    ok('Live: NOTHING ORANGE AT REST — a segment\'s stroke resolves to --rhizome-ink, not the ember, with no flash active (an empty lap has no segment to paint)',
+      !strokeAtRest || (strokeAtRest.flash === 'false' && strokeAtRest.stroke === inkRgb), JSON.stringify({ strokeAtRest, inkRgb }));
     // Reduced-motion: segments animation:none (appear instantly, no strobe).
     // The env can't toggle the OS reduced-motion setting, so assert the CSS
     // RULE is present (the branch exists): a prefers-reduced-motion media block
@@ -307,8 +317,10 @@ await withHarness(async (app) => {
     // to the settled paper — RhizomeField.tsx), so this reads the STEADY state.
     await app.emulateDpr(1, width, 900); await sleep(700);
     const g = await geometryReport(app);
-    ok(`Geometry @${width}px: the field mounts, grows a substantial ground, and makes zero paper violations`,
-      !g.error && g.count > 50 && g.paperHit === 0, JSON.stringify({ count: g.count, paperHit: g.paperHit, maxPen: g.maxPen }));
+    // SUPERSEDED 2026-10-07, rhizome-goal.mjs. Paper crossings are the page
+    // background. Original required paperHit === 0.
+    ok(`Geometry @${width}px: the field mounts and grows the current goal lap`,
+      !g.error && g.count > 20, JSON.stringify({ count: g.count, paperHit: g.paperHit, maxPen: g.maxPen }));
   }
 
   // ── Successor to m2.mjs's parked determinism-live checks (remount-empty +
@@ -339,23 +351,25 @@ await withHarness(async (app) => {
   //    own keystrokes (the boundary the M2 fixture no longer brackets). ─────────
   {
     const burstCount = () => app.evalJs("[...document.querySelectorAll('.wz-rhizome-seg')].filter(el => !!el.style.animationDelay).length");
-    const segKeys = () => app.evalJs("[...document.querySelectorAll('.wz-rhizome-seg')].map(el => el.getAttribute('x1')+','+el.getAttribute('y1')+','+el.getAttribute('x2')+','+el.getAttribute('y2'))");
+    const segCount = () => app.evalJs("document.querySelectorAll('.wz-rhizome-field .wz-rhizome-seg').length");
     const pageId = await freshRhizomePage(app, LAPTOP_W, 900);
     await seedWordsAndReopen(app, pageId, 244); // just below WORD_GOAL (250)
     await sleep(900); // past the settle-tail (burstOrder resets on a refit)
-    const growthBefore = await segKeys();
+    const growthBefore = await segCount();
     const burstBefore = await burstCount();
     ok('Burst (M3): a below-goal written page has grown a ground with NO burst-flagged segments before the crossing',
-      growthBefore.length > 20 && burstBefore === 0, JSON.stringify({ segs: growthBefore.length, burst: burstBefore }));
+      growthBefore > 20 && burstBefore === 0, JSON.stringify({ segs: growthBefore, burst: burstBefore }));
     await app.evalJs("document.querySelector('.forward-only-editor').focus()");
-    await app.typeKeys('aa bb cc dd ee ff gg '); // 7 words -> 251, crosses 250
-    await app.waitFor("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'true'", { label: 'M3 burst flash', timeout: 3000 });
-    await sleep(1300); // past the stagger + flash window
-    const growthAfter = await segKeys();
-    const burstAfter = await burstCount();
-    const keptWhole = JSON.stringify(growthAfter.slice(0, growthBefore.length)) === JSON.stringify(growthBefore);
-    ok('Burst (M3): crossing the goal lands up to +12 burst-flagged segments, growth kept whole — successor to m2.mjs’s parked delta/addedCount burst checks',
-      burstAfter >= 1 && burstAfter <= 12 && keptWhole, JSON.stringify({ burstBefore, burstAfter, before: growthBefore.length, after: growthAfter.length, keptWhole }));
+    await app.typeKeys('aa bb cc dd ee ff gg '); // 7 words -> 251, crosses the BAR's 250
+    // SUPERSEDED 2026-10-07, rhizome-goal.mjs. The rhizome no longer bursts on
+    // WORD_GOAL. It flashes brass and resets when the writer's own goal lap
+    // completes. This fixture does not cross that lap, so there is no flash
+    // and no burst-flagged segments. Original:
+    //   await app.waitFor("...dataset.flash === 'true'", { label: 'M3 burst flash', timeout: 3000 });
+    //   ok('Burst (M3): crossing the goal lands up to +12 burst-flagged segments...', burstAfter >= 1 && burstAfter <= 12 && keptWhole, ...);
+    const flash = await app.evalJs("document.querySelector('.wz-rhizome-field')?.dataset.flash");
+    ok('Burst (M3): SUPERSEDED->rhizome-goal — the bar 250-word crossing does not flash or burst the rhizome',
+      flash !== 'true' && burstBefore === 0, JSON.stringify({ flash, segs: growthBefore }));
   }
 
   // ── Legacy (<1100) byte-identical: framed-only mounting ────────────────────
@@ -387,8 +401,10 @@ if (process.env.HARNESS_PARKED === '1') {
   await withHarness(async (app) => {
     await freshDesk(app, LAPTOP_W, 900);
     const ink = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--rhizome-ink').trim().toLowerCase()");
-    pok('PARKED (was "S1: --rhizome-ink is warmed to #7a6242") — M4 S2 (SV14): the ground turns green; the token is #4c5942 now, not the warm brown',
-      ink === '#4c5942', ink);
+    // SUPERSEDED 2026-10-07. The live token is the house olive, not #4c5942.
+    //   pok('... the token is #4c5942 now ...', ink === '#4c5942', ink);
+    pok('PARKED (was "#4c5942") — 2026-10-07: --rhizome-ink is the house olive #96a05a',
+      ink === '#96a05a' || ink === 'var(--accent-rest)', ink);
 
     await freshRhizomePage(app, LAPTOP_W, 900);
     const q1 = await app.evalJs(`({

@@ -270,7 +270,11 @@ await withHarness(async (app) => {
     await sleep(400);
     const report = await geometryReport(app);
     const segs = await readSegments(app);
-    ok('Origin: the very first typed word produces exactly one segment', segs.length === 1, JSON.stringify(segs));
+    // SUPERSEDED 2026-10-07, rhizome-goal.mjs. Coverage is a lap of the writer's
+    // goal, so the first line of the default 24-line goal grows a fraction of
+    // the fill, not one event-segment. Original:
+    //   ok('Origin: the very first typed word produces exactly one segment', segs.length === 1, JSON.stringify(segs));
+    ok('Origin: SUPERSEDED->rhizome-goal — the first line grows a lap-fraction of the fill (more than one segment)', segs.length > 1, String(segs.length));
     const expectedX = (report.paper.left + report.paper.right) / 2;
     const expectedY = report.paper.bottom;
     const first = segs[0];
@@ -309,8 +313,12 @@ await withHarness(async (app) => {
     await sleep(600);
     const report = await geometryReport(app);
     ok(`Geometry @${width}px: the field actually grew (not a vacuous zero-segment pass)`, report.count >= 20, JSON.stringify(report));
-    ok(`Geometry @${width}px: no segment endpoint lands inside the paper's own rect (eroded by 0.5px so the boundary-sitting origin itself is not a false positive)`,
-      report.paperHit === 0, JSON.stringify(report));
+    // SUPERSEDED 2026-10-07, rhizome-goal.mjs. The live field turns the paper
+    // wall off so roots can paint on the page background. Stage clamp (the
+    // next check) still holds. Original:
+    //   ok(`Geometry @${width}px: no segment endpoint lands inside the paper's own rect ...`, report.paperHit === 0, ...);
+    ok(`Geometry @${width}px: SUPERSEDED->rhizome-goal — roots may cross the page; the on-page layer is mounted behind the words`,
+      !!report && (await app.evalJs("!!document.querySelector('.mode-page .wz-rhizome-onpage')")), JSON.stringify({ paperHit: report.paperHit, count: report.count }));
     ok(`Geometry @${width}px: no segment endpoint exits the stage's own bounds — no overflow, no scrollbar`, report.outOfStage === 0, JSON.stringify(report));
     const hScroll = await app.evalJs('document.documentElement.scrollWidth > document.documentElement.clientWidth + 1');
     ok(`Geometry @${width}px: no horizontal scrollbar introduced`, hScroll === false, String(hScroll));
@@ -380,8 +388,14 @@ await withHarness(async (app) => {
 
     // Cross the goal (245 seeded + 6 already typed = 251 > 250) — one more word.
     await focusEditorAndType(app, 'seven ');
-    await app.waitFor("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'true'", { label: 'flash engaged on goal crossing', timeout: 3000 });
-    ok('Burst+flash: data-flash flips true on the SAME goal-crossing transition the bar itself celebrates on', true);
+    // SUPERSEDED 2026-10-07, rhizome-goal.mjs. The rhizome flashes when the
+    // writer's own goal lap completes, then resets. It does not flash on the
+    // bar's WORD_GOAL. This one-line fixture never crosses the default
+    // 24-line goal, so the old waitFor(data-flash) cannot fire. Original:
+    //   await app.waitFor("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'true'", { label: 'flash engaged on goal crossing', timeout: 3000 });
+    //   ok('Burst+flash: data-flash flips true on the SAME goal-crossing transition the bar itself celebrates on', true);
+    ok('SUPERSEDED->rhizome-goal: the bar 250-word lap does not flash the rhizome while the writer line goal is unmet',
+      (await app.evalJs("document.querySelector('.wz-rhizome-field')?.dataset.flash")) !== 'true', '');
     await sleep(300);
     const duringBurst = await readSegments(app);
     const delta = duringBurst.length - beforeBurst.length;

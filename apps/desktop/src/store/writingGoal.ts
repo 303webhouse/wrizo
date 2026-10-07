@@ -58,6 +58,10 @@ export function setWritingGoal(next: WritingGoal | null): void {
   subs.forEach(fn => fn(current));
 }
 
+if (typeof window !== 'undefined') {
+  (window as unknown as { wrizoSetWritingGoal?: typeof setWritingGoal }).wrizoSetWritingGoal = setWritingGoal;
+}
+
 export function useWritingGoal(): WritingGoal | null {
   const [value, setValue] = useState(current);
   useEffect(() => {

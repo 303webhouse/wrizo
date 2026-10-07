@@ -69,6 +69,10 @@ export interface RhizomeGeometry {
   width: number; // the field's own clip box (the desk stage's measured size)
   height: number;
   paper: RhizomeRect; // avoided absolutely — see growOne's own comment
+  // Goal-fill only. The live field sets this false so roots may cross the
+  // page and paint on its background (behind the words). Omitted means the
+  // wall stays up — growOne/growTo callers and the M2/M3 proofs are unchanged.
+  avoidPaper?: boolean;
 }
 
 export interface RhizomePoint {
@@ -195,6 +199,9 @@ function pushAwayFromPaper(tip: RhizomePoint, len: number, r: RhizomeRect, geo: 
 // rect is inviolate, absolutely, not merely usually).
 function resolveSegment(tip: RhizomePoint, angleDeg: number, len: number, geo: RhizomeGeometry): { point: RhizomePoint; angle: number } | null {
   let { point, angle } = reflectOffStage(tip, angleDeg, len, geo);
+  // Stage clamp still holds. The paper wall is the default; the goal-fill
+  // field turns it off so a root can travel the page background.
+  if (geo.avoidPaper === false) return { point, angle };
   if (segmentTouchesRect(tip.x, tip.y, point.x, point.y, geo.paper)) {
     const pushed = pushAwayFromPaper(tip, len, geo.paper, geo);
     point = pushed.point;
@@ -305,6 +312,28 @@ export const ORIGIN_COUNT = 7;      // M3 S2 — bounded delta (Nick's eye at th
 export const ORIGIN_CANDIDATES = 10; // best-candidate samples per placed origin
 export const SAT_K = 834;           // M3 S3 — saturation constant: 95% of CAP at ~2500 words (2500/ln 20 ≈ 834.4). Bounded delta — the sitting's one knob.
 
+// Goal-fill (2026-10-07). The live field no longer grows by absolute word
+// count. A lap of the writer's own goal — 100 words or 1000, lines or words —
+// maps onto this many segments, so both goals fill the ground at the same
+// moment: when the lap completes. Longer strokes and more shoots than the
+// M2 event-path, so the lap actually covers the stage instead of clustering.
+export const FILL_SEGMENTS = 1600;
+export const FILL_SHOOTS = 72;
+export const FILL_LEN_MIN = 20;
+export const FILL_LEN_MAX = 52;
+
+export function goalFillTarget(fraction: number): number {
+  const f = Math.max(0, Math.min(1, fraction));
+  return Math.round(FILL_SEGMENTS * f);
+}
+
+export interface GrowToOptions {
+  shootCap?: number;
+  hardCap?: number;
+  lenMin?: number;
+  lenMax?: number;
+}
+
 // Euclidean distance from a point to an axis-aligned rect (0 if inside).
 function distToRect(x: number, y: number, r: RhizomeRect): number {
   const dx = Math.max(r.left - x, 0, x - r.right);
@@ -338,7 +367,7 @@ function outsidePaper(x: number, y: number, r: RhizomeRect, margin: number): Rhi
 // PRNG, so the same page scatters the same way. Candidates are rejected inside
 // the paper (an origin never sits in the writer's words); the growth wall
 // (segmentTouchesRect) is unchanged and re-proven at full scale by m3.mjs.
-export function seedOrigins(rng: () => number, geo: RhizomeGeometry, count: number = ORIGIN_COUNT): RhizomePoint[] {
+export function seedOrigins(rng: () => number, geo: RhizomeGeometry, count: number = ORIGIN_COUNT, allowOnPage = false): RhizomePoint[] {
   const origins: RhizomePoint[] = [{
     x: (geo.paper.left + geo.paper.right) / 2,
     y: geo.paper.bottom,
@@ -354,17 +383,23 @@ export function seedOrigins(rng: () => number, geo: RhizomeGeometry, count: numb
       // Prefer a candidate strictly outside the paper; a few retries suffice
       // (the page never fills the whole ground). An in-paper candidate scores
       // 0 anyway and loses, so this is belt-and-suspenders, not correctness.
-      for (let tries = 0; tries < 6 && inRect(x, y, geo.paper); tries++) {
-        x = loX + rng() * (hiX - loX);
-        y = loY + rng() * (hiY - loY);
+      // Goal-fill (allowOnPage) skips this: roots are meant to start on the
+      // page background too, behind the words.
+      if (!allowOnPage) {
+        for (let tries = 0; tries < 6 && inRect(x, y, geo.paper); tries++) {
+          x = loX + rng() * (hiX - loX);
+          y = loY + rng() * (hiY - loY);
+        }
       }
-      let score = distToRect(x, y, geo.paper);
+      let score = allowOnPage ? Infinity : distToRect(x, y, geo.paper);
       for (const o of origins) score = Math.min(score, Math.hypot(x - o.x, y - o.y));
       if (score > bestScore) { bestScore = score; best = { x, y }; }
     }
     // Guarantee the origin is outside the paper (the tight-ground case), then
-    // keep it inside the stage — a shoot never roots in the writer's words.
-    const nudged = outsidePaper(best.x, best.y, geo.paper, STAGE_PAD);
+    // keep it inside the stage — unless this ground is allowed to root on the
+    // page (goal-fill). A shoot never roots in the writer's words when the
+    // wall is up.
+    const nudged = allowOnPage ? best : outsidePaper(best.x, best.y, geo.paper, STAGE_PAD);
     origins.push(clampToStage(nudged, geo));
   }
   return origins;
@@ -398,9 +433,12 @@ export function originsAwake(target: number): number {
 // growth branches (~BRANCH_CHANCE) or extends a live shoot exactly as M2's
 // growOne does. Returns the SAME state reference on an honest skip (the
 // resolveSegment paper-corner case) so growTo can retry with fresh draws.
-function growSegment(state: RhizomeState, rng: () => number, geo: RhizomeGeometry, origins: RhizomePoint[], maxOrigins: number): RhizomeState {
+function growSegment(state: RhizomeState, rng: () => number, geo: RhizomeGeometry, origins: RhizomePoint[], maxOrigins: number, opts?: GrowToOptions): RhizomeState {
+  const shootCap = opts?.shootCap ?? CAP_SHOOTS;
+  const lenMin = opts?.lenMin ?? SEG_MIN;
+  const lenMax = opts?.lenMax ?? SEG_MAX;
   const rootingPhase = state.shoots.length < Math.min(origins.length, maxOrigins);
-  const branch = !rootingPhase && state.shoots.length < CAP_SHOOTS && rng() < BRANCH_CHANCE;
+  const branch = !rootingPhase && state.shoots.length < shootCap && rng() < BRANCH_CHANCE;
 
   let tip: RhizomePoint;
   let angle: number;
@@ -424,7 +462,7 @@ function growSegment(state: RhizomeState, rng: () => number, geo: RhizomeGeometr
     shootId = sh.id;
   }
 
-  const len = SEG_MIN + rng() * (SEG_MAX - SEG_MIN);
+  const len = lenMin + rng() * (lenMax - lenMin);
   const resolved = resolveSegment(tip, angle, len, geo);
   if (!resolved) return state; // honest skip
 
@@ -454,13 +492,14 @@ function growSegment(state: RhizomeState, rng: () => number, geo: RhizomeGeometr
 // target (words deleted) is a no-op, never a shrink — the M2 forward-only law.
 // Unit-agnostic by construction: one segment at a time to target, so typing
 // word-by-word and pasting an essay reach the byte-identical shape.
-export function growTo(state: RhizomeState, rng: () => number, geo: RhizomeGeometry, origins: RhizomePoint[], target: number): RhizomeState {
-  const cap = Math.min(Math.max(0, Math.round(target)), CAP_SEGMENTS);
+export function growTo(state: RhizomeState, rng: () => number, geo: RhizomeGeometry, origins: RhizomePoint[], target: number, opts?: GrowToOptions): RhizomeState {
+  const hard = opts?.hardCap ?? CAP_SEGMENTS;
+  const cap = Math.min(Math.max(0, Math.round(target)), hard);
   const awake = originsAwake(cap); // M4 S1 — only the origins the writing has earned
   let s = state;
   let skips = 0;
   while (s.segments.length < cap) {
-    const next = growSegment(s, rng, geo, origins, awake);
+    const next = growSegment(s, rng, geo, origins, awake, opts);
     if (next === s) { if (++skips > 200) break; continue; } // pinned — stop rather than spin
     skips = 0;
     s = next;
@@ -512,5 +551,6 @@ if (typeof window !== 'undefined') {
     // M3 — the roam + saturation, exposed so m3.mjs proves them against the
     // real algorithm (the same seam discipline as above).
     seedOrigins, saturationTarget, growTo, originsAwake, SAT_K, ORIGIN_COUNT,
+    goalFillTarget, FILL_SEGMENTS, FILL_SHOOTS,
   };
 }

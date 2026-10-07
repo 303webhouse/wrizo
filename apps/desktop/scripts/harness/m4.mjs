@@ -194,10 +194,14 @@ await withHarness(async (app) => {
   // SUCCESSOR to m3.mjs's parked "S1: --rhizome-ink is warmed to #7a6242".
   {
     const ink = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--rhizome-ink').trim().toLowerCase()");
-    ok('S2 (successor to m3.mjs\'s parked ink check): --rhizome-ink is the deep low-yellow green #4c5942 — the ground turns green', ink === '#4c5942', ink);
+    // SUPERSEDED 2026-10-07, rhizome-goal.mjs. Nick asked for olive roots.
+    // --rhizome-ink now points at the house olive --accent-rest. Original:
+    //   ok('S2 ... #4c5942', ink === '#4c5942', ink);
+    //   ok('S2: ... rgb(76, 89, 66) ... never as the house olive', rgb === 'rgb(76, 89, 66)', rgb);
+    ok('S2 (successor): --rhizome-ink is the house olive --accent-rest (#96a05a)', ink === '#96a05a' || ink === 'var(--accent-rest)', ink);
     const rgb = await app.evalJs("(() => { const d = document.createElement('div'); d.style.color = getComputedStyle(document.documentElement).getPropertyValue('--rhizome-ink').trim(); document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; })()");
-    ok('S2: the token resolves live to rgb(76, 89, 66) — G is the DOMINANT channel, so the ground reads as a root, never as the house olive ("olive means: this is a door")',
-      rgb === 'rgb(76, 89, 66)', rgb);
+    ok('S2: the olive resolves live to rgb(150, 160, 90) — --accent-rest, the house olive',
+      rgb === 'rgb(150, 160, 90)', rgb);
   }
 
   // ── S3 — the bar comes home (SV15), LIVE at three widths ─────────────────

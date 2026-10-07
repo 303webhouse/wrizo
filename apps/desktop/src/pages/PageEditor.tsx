@@ -1358,7 +1358,7 @@ function PageEditorView({ id }: { id: string }) {
           // rhizome OR the bar (two styles, one location, SV15) plus the
           // goal flare (SV16). The gate rule above is unchanged and now
           // covers both styles — the threshold stays pure either way.
-          rhizome={gateActive || unborn ? undefined : <DeskInstrument unitCount={wordCount(text)} seedKey={entry.id} paperRef={surfaceRef} />}
+          rhizome={gateActive || unborn ? undefined : <DeskInstrument unitCount={wordCount(text)} text={text} seedKey={entry.id} paperRef={surfaceRef} />}
           dissolved={receded}
         >
           <ModeStage
