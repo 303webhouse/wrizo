@@ -200,6 +200,7 @@
   .item-btn.danger:hover { color: var(--brick); }
   .tmpl { display: flex; flex-wrap: wrap; gap: 4px; }
   .tmpl .item-btn { width: auto; padding: 6px 10px; }
+  .item-btn.is-dead { opacity: .45; cursor: default; pointer-events: none; }
   .chip { border: 1px solid var(--ink-border); color: var(--text-mid); font-size: 11px; padding: 3px 7px; }
   .chip[data-on='true'] { color: var(--accent-rest); border-color: var(--accent-rest); }
   .tag-pop { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -349,9 +350,9 @@
                     <div class="sec">
                       <div class="h">Templates</div>
                       <div class="tmpl">
-                        <button class="item-btn" type="button">Quote</button>
-                        <button class="item-btn" type="button">Note</button>
-                        <button class="item-btn" type="button">Scene</button>
+                        <button class="item-btn is-dead" type="button" aria-disabled="true">Quote</button>
+                        <button class="item-btn is-dead" type="button" aria-disabled="true">Note</button>
+                        <button class="item-btn is-dead" type="button" aria-disabled="true">Scene</button>
                         <button class="item-btn" id="tmplInk" type="button">INK</button>
                       </div>
                     </div>
