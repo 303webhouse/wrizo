@@ -1,0 +1,24 @@
+doors-dark-desktop — hero opacity 1 — inputs empty (0), no "@" in visible text
+signin-dark-desktop — hero opacity 0, form opacity 1 — inputs empty (2), no "@" in visible text
+account-dark-desktop — hero opacity 0, form opacity 1 — inputs empty (4), no "@" in visible text
+guest-claim-dark-desktop — sheet open, its line shown, focus inside it — inputs empty (2), no "@" in visible text
+guest-expired-dark-desktop — expired line shown on the arrival — inputs empty (0), no "@" in visible text
+signedout-dark-desktop — hero opacity 0, form opacity 1 — inputs empty (2), no "@" in visible text
+doors-light-desktop — hero opacity 1 — inputs empty (0), no "@" in visible text
+signin-light-desktop — hero opacity 0, form opacity 1 — inputs empty (2), no "@" in visible text
+account-light-desktop — hero opacity 0, form opacity 1 — inputs empty (4), no "@" in visible text
+guest-claim-light-desktop — sheet open, its line shown, focus inside it — inputs empty (2), no "@" in visible text
+guest-expired-light-desktop — expired line shown on the arrival — inputs empty (0), no "@" in visible text
+signedout-light-desktop — hero opacity 0, form opacity 1 — inputs empty (2), no "@" in visible text
+doors-dark-phone — hero opacity 1 — inputs empty (0), no "@" in visible text
+signin-dark-phone — hero opacity 0, form opacity 1 — inputs empty (2), no "@" in visible text
+account-dark-phone — hero opacity 0, form opacity 1 — inputs empty (4), no "@" in visible text
+guest-claim-dark-phone — sheet open, its line shown, focus inside it — inputs empty (2), no "@" in visible text
+guest-expired-dark-phone — expired line shown on the arrival — inputs empty (0), no "@" in visible text
+signedout-dark-phone — hero opacity 0, form opacity 1 — inputs empty (2), no "@" in visible text
+doors-light-phone — hero opacity 1 — inputs empty (0), no "@" in visible text
+signin-light-phone — hero opacity 0, form opacity 1 — inputs empty (2), no "@" in visible text
+account-light-phone — hero opacity 0, form opacity 1 — inputs empty (4), no "@" in visible text
+guest-claim-light-phone — sheet open, its line shown, focus inside it — inputs empty (2), no "@" in visible text
+guest-expired-light-phone — expired line shown on the arrival — inputs empty (0), no "@" in visible text
+signedout-light-phone — hero opacity 0, form opacity 1 — inputs empty (2), no "@" in visible text
