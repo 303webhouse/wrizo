@@ -445,8 +445,8 @@ await withHarness(async (app) => {
       const cs = getComputedStyle(seg);
       return { animationName: cs.animationName, opacity: cs.opacity };
     })()`);
-    ok('Reduced-motion: a new segment has NO keyframe animation running (appears instantly) and is fully opaque',
-      anim && anim.animationName === 'none' && parseFloat(anim.opacity) === 1, JSON.stringify(anim));
+    ok('Reduced-motion: a new segment has NO keyframe animation running (appears instantly) and rests at the hairline opacity, not stuck at 0',
+      anim && anim.animationName === 'none' && Math.abs(parseFloat(anim.opacity) - 0.62) < 0.02, JSON.stringify(anim));
 
     const transitionCheck = await app.evalJs(`(() => {
       const seg = document.querySelector('.wz-rhizome-seg');
