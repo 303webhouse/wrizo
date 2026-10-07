@@ -1,19 +1,36 @@
-// GUEST LOGIN (item 225) — the client pass, in a REAL browser. Authored, NOT run:
-// it needs a box turn from chat 1, and two fixtures minted on the box before it runs.
+// GUEST LOGIN (item 225) — the client pass, in a REAL browser. Needs a box turn from chat 1.
 //
-// It needs a LIVE server (apps/server with Postgres, reached through `pnpm dev`'s
-// /auth and /api proxy), not runtime-verify's static test double — the guest
-// calls must hit the real /auth/guest, /api/sync and /auth/claim.
+// It needs a LIVE server, not runtime-verify's static test double: the guest calls must hit the real /auth/guest,
+// /api/sync and /auth/claim. The Express server serves the built app itself (apps/desktop/dist-web) on one origin,
+// so there is no `pnpm dev` and no Vite: build the web bundle, build and start the server against a LOCAL Postgres,
+// and aim the harness at it with WS_TARGET_URL (withHarness's own opt-in for an already-serving origin).
 //
-// Fixtures, minted on the box (after migrations/pending/002_guest_links.sql lands):
-//   GUEST_TOKEN          node apps/server/scripts/mint-guest-link.mjs   (a live guest, inside its 30 days)
-//   GUEST_EXPIRED_TOKEN  the same, then on the box DB:
+// A LOCAL database only, never a real one. The walk refuses a WS_TARGET_URL that is not 127.0.0.1 or localhost.
+//
+// The server creates its schema on boot (migrate.ts: the four users columns and guest_links), so there is no
+// migration file to apply. Fixtures, minted with the real mint script (apps/server/scripts/mint-guest-link.mjs):
+//   GUEST_TOKEN          a live guest, inside its 30 days
+//   GUEST_EXPIRED_TOKEN  a second guest, then on that database:
 //                        update users set guest_expires_at = now() - interval '2 days'
-//                        where id = (select user_id from guest_links where token_hash = <its hash>);
+//                        where id = (select user_id from guest_links where token_hash = <its sha256 hex>);
 //                        (inside the 14-day grace, so the claim is still allowed)
+// The expired fixture is CONSUMED by the claim step (the guest becomes a full account); mint a fresh pair to rerun.
 //
-// Run: GUEST_TOKEN=... GUEST_EXPIRED_TOKEN=... node scripts/harness/guest-client-walk.mjs   (from apps/desktop)
+// Run: WS_TARGET_URL=http://127.0.0.1:3107 GUEST_TOKEN=... GUEST_EXPIRED_TOKEN=... WS_BOX_TURN=<token> \
+//        node scripts/harness/guest-client-walk.mjs   (from apps/desktop)
 import { withHarness } from '../runtime-verify.mjs';
+
+// Refuse early, and plainly, rather than fail mysteriously against the static double or aim at something real.
+{
+  const target = process.env.WS_TARGET_URL || '';
+  let host = '';
+  try { host = new URL(target).hostname; } catch { /* handled below */ }
+  if (!target || (host !== '127.0.0.1' && host !== 'localhost')) {
+    // eslint-disable-next-line no-console
+    console.error('guest-client-walk needs WS_TARGET_URL set to a LOCAL server (http://127.0.0.1:<port>); got: ' + (target || '(unset)') + '. See this file\'s header.');
+    process.exit(2);
+  }
+}
 
 const VALID = process.env.GUEST_TOKEN;
 const EXPIRED = process.env.GUEST_EXPIRED_TOKEN;
@@ -87,7 +104,7 @@ await withHarness(async (app) => {
     stayed = stayed && (await app.evalJs(`!!document.activeElement && !!document.activeElement.closest('.wz-guest-sheet')`));
   }
   ok('(W7) six Tab presses never leave the sheet', stayed === true, '');
-  await app.key('Shift+Tab');
+  await app.key('Tab', { shift: true }); // the helper takes the key and a shift option, not a "Shift+Tab" name
   const backInside = await app.evalJs(`!!document.activeElement && !!document.activeElement.closest('.wz-guest-sheet')`);
   ok('(W8) Shift+Tab wraps inside the sheet too', backInside === true, '');
 
