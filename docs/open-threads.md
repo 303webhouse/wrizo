@@ -24565,3 +24565,40 @@ sync pushes) were not re-run on this version; the proof they bite is unchanged b
 
 **WAITING ON:** Fable’s OK on `61000bf`. Then: merge to `main`, build the server, create once, `smoke-login` against
 today’s live site as the baseline.
+
+## THE SMOKE ACCOUNT EXISTS; THE FIRST LIVE SIGNED-IN SMOKE PASSES 6/6; AN ACL GAP FOUND ON THE LIVE RUN — 2026-10-07 (chat 1)
+
+**FABLE CLEARED `smoke-account-tools` @ `61000bf`** (replay step, https-only guard, header note byte-reviewed) and asked for the
+six earlier mutants re-run on it. **9/9 RED:** the six earlier ones (no `lockDown`; the password printed; a login retry; the email
+printed by create; a failed insert leaving the file; the sync probe pushing — the last re-anchored to the code line) re-run
+on `61000bf`, plus the three added mutants (skip the replay; `assertSafeBase` allows anything; the replay sends the emptied
+jar). Merged to `main` as `0c31323`; server built (`dist/passwordHash.js`).
+
+**CREATED ONCE, via `railway run --service Postgres node apps/server/scripts/create-smoke-account.mjs`: output `created (<path>)`
+and nothing else** (the email, password and hash never printed; the file is 130 bytes at `~/.wrizo/smoke-account.json`).
+
+**► AN ACL GAP, FOUND BY THE LIVE RUN, NOT BY THE PROOF:** on the real file `icacls` showed THREE entries — `SYSTEM`
+(F), `Administrators` (F) and the user (R,W,D) — not one. In `~/.wrizo` the file keeps SYSTEM and Administrators as
+entries that `/inheritance:r` does not remove (the same call in a temp directory strips them, which is why the proof’s
+one-entry check passed). *Practical exposure was small — SYSTEM and Administrators can read anything on a single-user
+box — but it falsified “only this user”, so it is recorded as a miss.* **Mitigated on the live file now (one-off
+`icacls /remove:g` by SID, ACL only, content untouched): exactly ONE entry, the user’s; the file is still readable and
+valid.** **FIX, for Fable’s review, on a separate branch `smoke-acl-fix` @ `bc171b9`:** `lockDown` now also removes the SYSTEM
+and Administrators entries by well-known SID (locale-independent) and then COUNTS the entries, refusing (and, via
+`writeSecretFile`, deleting the file) unless exactly one remains; the proof gained a check that gives a file those
+EXPLICIT entries first (before=7 → after=1) — 31/31 — and the mutant that drops the SID removal is RED (killed by the
+`acl-not-locked` refusal the guard raises; the harness does not catch that throw, so it dies rather than printing a FAIL line).
+
+**FIRST LIVE SIGNED-IN SMOKE TEST, against today’s production (Batch Nine, `1c34ccfa`), run once, exit 0:**
+`POST /auth/login` 200 · `GET /auth/me` 200 · `POST /api/sync` (pull only) 200 · `POST /auth/logout` 204 · `GET /auth/me`
+(after logout, jar) 401 · `GET /auth/me` (pre-logout cookie replayed) 401 — **`SMOKE: PASS (6/6)`.** Sign-in and the
+session end work on production for a real, hashed-by-the-app account — so the incident’s cause is not the Origin check
+and not sign-in itself; Nick’s own `set-password` run is the remaining step for HIS account.
+
+**SHIP PAIR LIST for the sign-in batch (Fable):** `main` now carries `passwordHash.ts` (a server change; it ships with that
+batch, under the gate). The pair adds `item224-server-hardening.mjs` (64/64) and `set-password-db.mjs` (12/12) to the
+desktop files; this desk adds `smoke-account-db.mjs` (30/30 on `main`; 31/31 once `smoke-acl-fix` merges) and `smoke-login.mjs`
+after the deploy. *The three server harnesses are not in the desktop suite and need `EMBEDDED_PG_FROM`.*
+
+**INK:** final hash `52f6733` on `arrival-signin-screen` (a sign-out cap of 5 s that finishes the sign-out here if the server
+hangs). The walk + capture grant was re-written for it; this desk clears the grant when INK reports.
