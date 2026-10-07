@@ -120,6 +120,8 @@ function loadAuth({ authSourceOverride } = {}) {
   fakeDb = makeFakeDb();
   writeExt('env.ts', stripTypes(fs.readFileSync(path.join(SRC, 'env.ts'), 'utf8')));
   writeExt('asyncHandler.ts', stripTypes(fs.readFileSync(path.join(SRC, 'asyncHandler.ts'), 'utf8')));
+  // auth.ts now takes BCRYPT_COST / MIN_PASSWORD_LENGTH / hashPassword from passwordHash.ts (the owner-run scripts share it).
+  writeExt('passwordHash.ts', stripTypes(fs.readFileSync(path.join(SRC, 'passwordHash.ts'), 'utf8')));
   fs.writeFileSync(path.join(tmp, 'rateLimit.js'), 'exports.rateLimit = () => (req, res, next) => next();\r\n');
   const dbDest = path.join(tmp, 'db.js');
   fs.writeFileSync(dbDest, ''); // placeholder; real export installed via require.cache injection below
