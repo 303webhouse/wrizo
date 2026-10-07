@@ -29,18 +29,17 @@ const read = (rel) => fs.readFileSync(path.join(SRC, rel), 'utf8');
 
 // ---- a fresh module instance + fake browser per call -------------------------------------------------------
 let nonce = 0;
+let previous = null;
 const noCR = (t) => t.replace(/\r\n?/g, '\n');
 async function load(overrides = {}) {
   nonce += 1;
-  const map = new Map();
-  globalThis.window = { addEventListener() {}, removeEventListener() {} };
-  globalThis.localStorage = {
-    getItem: (k) => (map.has(k) ? map.get(k) : null),
-    setItem: (k, v) => { map.set(k, String(v)); },
-    removeItem: (k) => { map.delete(k); },
-    clear: () => map.clear(),
-  };
-  Object.defineProperty(globalThis, 'navigator', { value: { userAgent: 'Mozilla/5.0 Chrome/128' }, configurable: true, writable: true });
+  // ISOLATION. persistence.ts schedules a 300 ms debounced flush on every write and hydrates its cache from the global
+  // localStorage at import. Two things used to let one scenario leak into the next, depending on how long esbuild took:
+  // the fake storage was swapped in BEFORE the awaited build, so the previous instance's pending timer could write into
+  // the NEW storage and the next instance hydrated its leftovers (a phantom dirty record). So: (1) cancel the previous
+  // instance's timers while ITS storage is still the global one, and (2) install the fresh fake environment only after
+  // the build, immediately before the import, with no await between.
+  if (previous) { try { previous.resetLocalData(); } catch { /* best effort */ } previous = null; }
   const res = await build({
     // A real-code nonce: esbuild strips comments, so a comment-only difference would hand back the SAME bundle text.
     stdin: {
@@ -56,7 +55,17 @@ async function load(overrides = {}) {
       });
     } }],
   });
+  const map = new Map();
+  globalThis.window = { addEventListener() {}, removeEventListener() {} };
+  globalThis.localStorage = {
+    getItem: (k) => (map.has(k) ? map.get(k) : null),
+    setItem: (k, v) => { map.set(k, String(v)); },
+    removeItem: (k) => { map.delete(k); },
+    clear: () => map.clear(),
+  };
+  Object.defineProperty(globalThis, 'navigator', { value: { userAgent: 'Mozilla/5.0 Chrome/128' }, configurable: true, writable: true });
   const mod = await import('data:text/javascript;base64,' + Buffer.from(res.outputFiles[0].text).toString('base64'));
+  previous = mod;
   return { mod, map };
 }
 const swap = (from, to) => (t) => { if (!t.includes(from)) throw new Error('mutation anchor missing: ' + JSON.stringify(from.slice(0, 80))); return t.replace(from, () => to); };
