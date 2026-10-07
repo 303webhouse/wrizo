@@ -24691,3 +24691,20 @@ that changed are `arrival-signin-capture.mjs`, `guest-client-walk.mjs` and `gues
 LOCAL server at `127.0.0.1:3107` with INK’s own throwaway Postgres — never the production database). Box idle (0 harness
 processes, 0 tagged browsers) when written. **FIX re-requests when it is back; TOOLS’ splash follows.** Ship order unchanged:
 Batch 10 = sign-in + flush; Batch 11 = guest.
+
+## INK’S FIRST COMBINED RUN: RESULTS AND THE NEXT TWO TURNS; CURSOR’S LIVE-PAGE ITEM QUEUED — 2026-10-07 (chat 1)
+
+**RESULTS (Fable, relay) of INK’s run on `8f67381`: sign-in 15/15 and flush 9/9 PASS; the guest walk + capture caught TWO REAL
+GUEST BUGS — fixed in `a20f79e` (“Guest client: a second link in the same tab is handled; the claim sheet keeps focus”;
+3 files, +55/−7: `guest-client.mjs`, `GuestArrival.tsx`, `GuestClaimSheet.tsx`), reviewed by Fable — and Fable has asked for ONE MORE
+guard** (not on origin yet; `guest-client-r2`’s tip is `a20f79e`).
+
+**NEXT GRANT, in two turns (Fable):** (1) **Batch 10 @ `831cb88`** (`logout-flush`): `arrival-signin-walk` + `logout-flush-walk`
++ the 16-shot capture → evidence committed on `logout-flush`. (2) **Batch 11 @ INK’s new tip** (after the extra guard): all four
+legs → evidence on `guest-client-r2`. INK’s grant file (token `ink-guest-stack-20261007`, not SHA-bound) is still LIVE and the box
+is idle (0 harness processes), so turn (1) can start on it as it stands; this desk will not rewrite the file between turns
+(a rewrite mid-lane would refuse a run in progress) and clears it when INK reports the second turn.
+
+**QUEUED (Fable): Cursor’s small live-page item — thin scrollbars and drawer handles — branch only, in its OWN worktree.** It
+will need a box turn for screenshots later; **order: TOOLS’ splash, THEN Cursor’s item.** FIX re-requests (its `fb0597a`
+profile) when back. Ship order unchanged: Batch 10 = sign-in + flush; Batch 11 = guest.
