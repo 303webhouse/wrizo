@@ -14,12 +14,18 @@ import { NETWORK_ERROR_LINE } from '../store/authSubmit';
 export function GuestArrival({ onAuthed }: { onAuthed: (user: AuthUser) => void }) {
   const navigate = useNavigate();
   const [message, setMessage] = useState('Opening your guest account…');
-  // Keyed by the router's LOCATION, not by mount. Opening a second guest link in the same tab (a mistyped one, then the
-  // right one pasted over it) only changes the hash: the route stays mounted, so an effect that ran once per mount would
-  // never read the new token and the writer would sit on the first answer. Each new location is handled once; StrictMode's
-  // double-run of an effect sees the same key and skips. replaceState (the token strip below) does not change the key.
-  const { key } = useLocation();
-  const handledKey = useRef<string | null>(null);
+  // Handled per NAVIGATION, not per mount. Opening a second guest link in the same tab (a mistyped one, then the right
+  // one pasted over it) only changes the hash: the route stays mounted, so an effect that ran once per mount would never
+  // read the new token and the writer would sit on the first answer.
+  //
+  // The guard is the LOCATION OBJECT'S IDENTITY, not location.key. A key is assigned only to navigations the router makes
+  // itself; one it did not make (a pasted URL, location.hash = ...) carries no router state, so react-router falls back to
+  // the literal key "default" — the same key as the first load. Keyed on that, the second link is skipped as "already
+  // handled" (a first fix did exactly this, and a live run caught it). The router builds a NEW location object for every
+  // navigation, so identity tells them apart. StrictMode's double-run of an effect sees the same object and skips.
+  // replaceState (the token strip below) does not go through the router and does not change it.
+  const location = useLocation();
+  const handledLocation = useRef<unknown>(null);
   // Only the NEWEST attempt may act on its result (link A, then B quickly: A's answer arriving last must not win), and
   // nothing acts once the component is gone. `mounted` is re-armed by StrictMode's remount, so it is a flag, not a cancel.
   const gate = useRef(createAttemptGate()).current;
@@ -30,8 +36,8 @@ export function GuestArrival({ onAuthed }: { onAuthed: (user: AuthUser) => void 
   }, []);
 
   useEffect(() => {
-    if (handledKey.current === key) return;
-    handledKey.current = key;
+    if (handledLocation.current === location) return;
+    handledLocation.current = location;
     // Begin BEFORE anything can return early: a newer link with no token still retires an older one in flight.
     const attempt = gate.begin();
     const live = () => mounted.current && gate.isCurrent(attempt);
@@ -57,9 +63,9 @@ export function GuestArrival({ onAuthed }: { onAuthed: (user: AuthUser) => void 
       // A link past its grace says the expired line at once — the same words the claim sheet uses.
       setMessage(r.reason === 'guest_expired' ? GUEST_EXPIRED_LINE : (r.error || 'This guest link is not valid.'));
     });
-    // Runs once per location by design; handledKey is the guard.
+    // Runs once per location by design; handledLocation is the guard.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [location]);
 
   return (
     <div className="wz-home wz-arrival">
