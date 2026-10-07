@@ -42,7 +42,11 @@ if (!VALID || !EXPIRED) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
-const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+// Printed as each check runs, so a failure part-way through still shows everything that came before it.
+const ok = (name, pass, detail = '') => {
+  checks.push({ name, pass, detail });
+  console.log((pass ? 'PASS ' : 'FAIL ') + name + (pass ? '' : ' | ' + String(detail).slice(0, 200))); // eslint-disable-line no-console
+};
 const CLAIM_EMAIL = `walk-${Date.now()}@example.com`;
 
 await withHarness(async (app) => {
@@ -86,8 +90,12 @@ await withHarness(async (app) => {
   })()`);
   ok('(W4c) a guest\'s first write LANDS as a dirty record (it would be silently dropped if the flag were still set)', landed === true, String(landed));
 
-  // 3. Sign out, then arrive with the EXPIRED guest's link: the sync refuses, the sheet appears.
-  await app.evalJs(`fetch('/auth/logout', { method: 'POST', credentials: 'include' }).then(() => true)`);
+  // 3. Sign out THROUGH THE APP, then arrive with the EXPIRED guest's link: the sync refuses, the sheet appears.
+  // Not a raw /auth/logout: that would leave the app's sync loop running, and the next guest's startSync() would return at
+  // once (it is already running) until the next 20 s tick — the 401 would come too late for the wait. A real tester signs
+  // out with the button, which stops the loop (and the unsaved check syncs the page the walk just wrote first).
+  await app.click('Sign out');
+  await app.waitFor(`!!document.querySelector('.wz-arrival input.wz-field')`, { timeout: 15000, label: 'signed out, on the sign-in screen' });
   await app.evalJs(`location.hash = '#/guest?t=${EXPIRED}'; true;`);
   await app.waitFor(`!!document.querySelector('.wz-guest-sheet')`, { label: 'expired sheet shown' });
   const line = await app.evalJs(`document.querySelector('.wz-guest-sheet-line')?.textContent || ''`);
