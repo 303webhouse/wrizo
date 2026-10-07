@@ -70,10 +70,17 @@ async function save(app, vp, theme, screen) {
 }
 
 await withHarness(async (app) => {
+  // withHarness injects the in-page helpers (__click, __diag) ONCE, straight after connecting, and swallows a failure. If
+  // the page is still loading at that moment they are lost, and the first app.click throws "__click is not defined" (seen
+  // on the first box run of Batch 10; the same code passed on another tree, so it is a race, not the product). Wait for the
+  // document, then inject them again — and again after each goto, which is cheap and idempotent.
+  await app.waitFor(`document.readyState === 'complete'`, { label: 'document loaded' });
+  await app.injectHelpers();
   for (const vp of VIEWPORTS) {
     for (const theme of THEMES) {
       await app.emulateDpr(vp.dpr, vp.width, vp.height);
       await app.goto('/');
+      await app.injectHelpers();
       await app.evalJs(theme.setup);
       await sleep(600);
 
