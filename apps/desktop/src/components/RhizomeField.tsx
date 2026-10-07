@@ -55,6 +55,10 @@ const SESSION_START = Date.now(); // frozen once per app-load/session (S2: "sess
 // Same 1200ms family the old ember flash used; the paint is --brass now.
 const FLASH_MS = 1200;
 
+// Roots stop this far short of the sheet. The network lives in the ground
+// around the page; it does not run up to the edge or continue behind it.
+const PAGE_CLEAR = 28;
+
 const FILL_OPTS: GrowToOptions = {
   shootCap: FILL_SHOOTS,
   hardCap: FILL_SEGMENTS,
@@ -119,15 +123,21 @@ function measure(svg: SVGSVGElement, paper: HTMLElement): { geo: RhizomeGeometry
     right: paperRect.right - stageRect.left,
     bottom: paperRect.bottom - stageRect.top,
   };
+  const kept = {
+    left: sheet.left - PAGE_CLEAR,
+    top: sheet.top - PAGE_CLEAR,
+    right: sheet.right + PAGE_CLEAR,
+    bottom: sheet.bottom + PAGE_CLEAR,
+  };
   const obstacles = rectsInStage(STABLE_CHROME, stageRect);
   return {
     geo: {
       width: stageRect.width,
       height: stageRect.height,
-      paper: sheet,
+      paper: kept,
       obstacles,
     },
-    holes: [sheet, ...obstacles, ...rectsInStage(LIVE_CHROME, stageRect)],
+    holes: [kept, ...obstacles, ...rectsInStage(LIVE_CHROME, stageRect)],
     // S2's own origin: "the horizontal midpoint of the progress row's own
     // measured rect... first shoot rooted there." No incentive row exists
     // on the framed desk stage today (see this file's own header comment) —
