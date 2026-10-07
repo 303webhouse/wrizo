@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { apiGuest, type AuthUser } from '../store/api';
 import { readGuestTokenFromHash, guestAddressWithoutToken, GUEST_EXPIRED_LINE } from '../store/guestState';
 import { clearSignedOutHere } from '../store/signedOutHere';
@@ -12,12 +12,17 @@ import { clearSignedOutHere } from '../store/signedOutHere';
 export function GuestArrival({ onAuthed }: { onAuthed: (user: AuthUser) => void }) {
   const navigate = useNavigate();
   const [message, setMessage] = useState('Opening your guest account…');
-  const started = useRef(false);
+  // Keyed by the router's LOCATION, not by mount. Opening a second guest link in the same tab (a mistyped one, then the
+  // right one pasted over it) only changes the hash: the route stays mounted, so an effect that ran once per mount would
+  // never read the new token and the writer would sit on the first answer. Each new location is handled once; StrictMode's
+  // double-run of an effect sees the same key and skips. replaceState (the token strip below) does not change the key.
+  const { key } = useLocation();
+  const handledKey = useRef<string | null>(null);
 
   useEffect(() => {
-    // StrictMode runs effects twice; the link is one-use-per-open, so only the first run acts.
-    if (started.current) return;
-    started.current = true;
+    if (handledKey.current === key) return;
+    handledKey.current = key;
+    setMessage('Opening your guest account…');
     const token = readGuestTokenFromHash(window.location.hash);
     window.history.replaceState(window.history.state, '', guestAddressWithoutToken(window.location.href));
     if (!token) {
@@ -37,9 +42,9 @@ export function GuestArrival({ onAuthed }: { onAuthed: (user: AuthUser) => void 
       // A link past its grace says the expired line at once — the same words the claim sheet uses.
       setMessage(r.reason === 'guest_expired' ? GUEST_EXPIRED_LINE : (r.error || 'This guest link is not valid.'));
     });
-    // Runs once per mount by design; the ref above is the guard.
+    // Runs once per location by design; handledKey is the guard.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [key]);
 
   return (
     <div className="wz-home wz-arrival">
