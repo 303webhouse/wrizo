@@ -82,7 +82,9 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
   ok('(B5) the guard lets the door itself through', /pathname === '\/'/.test(guardDef), '');
   ok('(B6) the guard lets the guest link through, so its token in the hash is not redirected away',
     /pathname === '\/guest'/.test(guardDef), '');
-  ok('(B7) the guard waits for the boot check (authState must be anon), so a signed-in device is never bounced',
+  // SUPERSEDED (review fixes) — by (B7b) below. Parked, not deleted: the guard now redirects while loading too.
+  // Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(B7) the guard waits for the boot check (authState must be anon), so a signed-in device is never bounced',
     /authState !== 'anon'/.test(guardDef), '');
   const hashRouterAt = app.indexOf('<HashRouter>');
   const hashRouterEnd = app.indexOf('</HashRouter>');
@@ -104,7 +106,9 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
   ok('(C3) "Create an account" stays on the sign-in screen', /New here\? Create an account/.test(arr), '');
   ok('(C4) the first stage follows the flag: a signed-out device opens on sign-in',
     /useState<Stage>\(\(\) => \(isSignedOutHere\(\) \? 'signin' : 'doors'\)\)/.test(arr), '');
-  ok('(C5) while locked there is no way back to the doors (both back links are behind !locked)',
+  // SUPERSEDED (review fixes) — by (C5b and C5c) below. Parked, not deleted: the account screen's back is no longer hidden when locked.
+  // Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(C5) while locked there is no way back to the doors (both back links are behind !locked)',
     (arr.match(/\{!locked && \(/g) || []).length === 2, String((arr.match(/\{!locked && \(/g) || []).length));
   ok('(C6) a locked device is moved to sign-in if it lands on the doors stage',
     /if \(locked && stage === 'doors'\) setStage\('signin'\)/.test(arr), '');
@@ -455,6 +459,70 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
     endAt < hbody.indexOf('markSignedOutHere()') && endAt < hbody.indexOf('stopSync()') && endAt < hbody.indexOf('resetLocalData()'), '');
   ok('(I16) the boot cleanup is capped too (a hung server cannot keep boot on "loading") and decides through bootDecision',
     /bootDecision\(!!user, isSignedOutHere\(\)\) === 'end-session'/.test(app) && /void endServerSession\(apiLogout\)\.then\(\(\) => setAuthState\('anon'\)\)/.test(app), '');
+}
+
+// =============================================================================
+// PART J — a request that never arrives must not strand the form; the account screen is no dead end.
+// =============================================================================
+{
+  const helperSrc = read('store/authSubmit.ts');
+  const loadHelper = async (source, tag) => {
+    const dest = path.join(DESKTOP, '.arrival-signin-auth-' + tag + '.mjs');
+    fs.writeFileSync(dest, ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 } }).outputText);
+    const mod = await import('file://' + dest.replace(/\\/g, '/') + '?t=' + Date.now());
+    fs.rmSync(dest, { force: true });
+    return mod;
+  };
+  const h = await loadHelper(helperSrc, 'j');
+
+  ok('(J1) the network line is the approved wording', h.NETWORK_ERROR_LINE === "Couldn’t reach Wrizo. Check your connection and try again.", h.NETWORK_ERROR_LINE);
+  const thrown = await h.runAuthCall(() => Promise.reject(new TypeError('Failed to fetch')));
+  ok('(J2) a call that THROWS (fetch on a dead network) becomes a failed result carrying that line — it does not throw',
+    thrown.ok === false && thrown.error === h.NETWORK_ERROR_LINE, JSON.stringify(thrown));
+  const syncThrow = await h.runAuthCall(() => { throw new Error('threw before returning a promise'); });
+  ok('(J3) a call that throws synchronously is handled the same way', syncThrow.ok === false && syncThrow.error === h.NETWORK_ERROR_LINE, JSON.stringify(syncThrow));
+  const good = await h.runAuthCall(() => Promise.resolve({ ok: true, user: { id: 'u', email: 'e' } }));
+  const refused = await h.runAuthCall(() => Promise.resolve({ ok: false, error: 'Invalid email or password' }));
+  ok('(J4) a normal result passes through untouched — the server\'s own refusal text is not replaced',
+    good.ok === true && good.user.id === 'u' && refused.ok === false && refused.error === 'Invalid email or password', JSON.stringify({ good, refused }));
+
+  const arr = read('components/Arrival.tsx');
+  const signinFn = arr.slice(arr.indexOf('const handleSignin'), arr.indexOf('const handleCreate'));
+  const createFn = arr.slice(arr.indexOf('const handleCreate'), arr.indexOf('return (', arr.indexOf('const handleCreate')));
+  const FINALLY = /\} finally \{\s*submitting\.current = false;\s*setBusy\(false\);\s*\}/;
+  ok('(J5) sign-in gives the form back in a finally (the ref and the busy state), whatever happens inside', FINALLY.test(signinFn), '');
+  ok('(J6) so does account creation', FINALLY.test(createFn), '');
+  ok('(J7) both go through runAuthCall, not a bare await of apiLogin / apiRegister',
+    /await runAuthCall\(\(\) => apiLogin\(/.test(signinFn) && /await runAuthCall\(\(\) => apiRegister\(/.test(createFn)
+      && !/await apiLogin\(/.test(signinFn) && !/await apiRegister\(/.test(createFn), '');
+  ok('(J8) neither handler resets the ref or the busy state outside its finally (a throw cannot skip the reset)',
+    (signinFn.match(/submitting\.current = false;/g) || []).length === 1 && (createFn.match(/submitting\.current = false;/g) || []).length === 1, '');
+
+  // MUTATION 1: take the finally away from sign-in. J5 must go red on the mutant.
+  const mutatedSignin = signinFn.replace(FINALLY, '}');
+  ok('(J9) MUTATION KILLED: without the finally, J5\'s predicate goes red', mutatedSignin !== signinFn && !FINALLY.test(mutatedSignin), '');
+  // MUTATION 2: take the catch out of runAuthCall, so a rejected call throws. J2 must go red on the mutant.
+  const catchAt = helperSrc.indexOf('} catch {');
+  if (catchAt < 0) throw new Error('runAuthCall catch anchor not found');
+  const noCatch = helperSrc.slice(0, catchAt) + '} finally {' + helperSrc.slice(helperSrc.indexOf('\n', catchAt));
+  const mh = await loadHelper(noCatch.replace(/return \{ ok: false, error: NETWORK_ERROR_LINE \};/, ''), 'jmut');
+  let mutantThrew = false;
+  try { await mh.runAuthCall(() => Promise.reject(new TypeError('Failed to fetch'))); } catch { mutantThrew = true; }
+  ok('(J10) MUTATION KILLED: without the catch, a dead network THROWS out of runAuthCall (so the catch is what unsticks the form)', mutantThrew === true, '');
+}
+
+// (B7b, C5b) the successors of the two parked checks, self-contained.
+{
+  const app = read('App.tsx');
+  const guardDef = app.slice(app.indexOf('function SignedOutRouteGuard'), app.indexOf('function BrandMark'));
+  ok('(B7b) the guard redirects while loading as well as once anon (a flagged load can only end anon), and never bounces an authed device',
+    /if \(authState === 'authed' \|\| !isSignedOutHere\(\)\) return null;/.test(guardDef) && !/authState !== 'anon'/.test(guardDef), '');
+  const arr = read('components/Arrival.tsx');
+  ok('(C5b) while locked, sign-in\'s back (to the doors) is hidden — exactly ONE back link sits behind !locked',
+    (arr.match(/\{!locked && \(/g) || []).length === 1, String((arr.match(/\{!locked && \(/g) || []).length));
+  const acct = arr.slice(arr.indexOf("{stage === 'account' && ("));
+  ok('(C5c) the ACCOUNT screen\'s back is not hidden when locked, and it goes to sign-in (so "New here?" is never a dead end)',
+    !/!locked/.test(acct) && /setStage\('signin'\); \}\}>← back/.test(acct) && !/setStage\('doors'\)/.test(acct), '');
 }
 
 // =============================================================================

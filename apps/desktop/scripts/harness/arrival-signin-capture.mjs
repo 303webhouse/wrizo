@@ -15,10 +15,15 @@
 // Run: WS_ANON=1 WS_BOX_TURN=<token> node scripts/harness/arrival-signin-capture.mjs   (from apps/desktop)
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
 
-const OUT = 'C:\\Users\\nickh\\AppData\\Local\\Temp\\claude\\c--Users-nickh-writer-studio\\faebbc23-035c-489b-9830-52f558cef3b6\\scratchpad\\arrival-signin';
+// The PNGs are evidence and are committed: docs/evidence/arrival-signin/ in the repo. The manifest beside them is a
+// .log.txt (a *.log file is gitignored) recording, for every frame, the settled state and the email check.
+const here = path.dirname(fileURLToPath(import.meta.url));
+const OUT = path.resolve(here, '..', '..', '..', '..', 'docs', 'evidence', 'arrival-signin');
 fs.mkdirSync(OUT, { recursive: true });
+const manifest = [];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const VIEWPORTS = [
@@ -45,7 +50,19 @@ async function settle(app, screen) {
 }
 async function save(app, vp, theme, screen) {
   const state = await settle(app, screen);
-  console.log('  settled: ' + screen + '-' + theme + '-' + vp + ' — ' + state); // eslint-disable-line no-console
+  // No real email may show. These screens render nothing but placeholders: every input must be EMPTY, and the visible
+  // text (which excludes placeholder text) must contain no "@". A failure here stops the capture rather than commit it.
+  const probe = await app.evalJs(`JSON.stringify({
+    values: [...document.querySelectorAll('input')].map((i) => i.value),
+    atInText: /@/.test(document.body.innerText),
+  })`);
+  const { values, atInText } = JSON.parse(probe);
+  if (values.some((v) => v !== '') || atInText) {
+    throw new Error('capture refused: ' + screen + '-' + theme + '-' + vp + ' shows a value or an "@" in its visible text: ' + probe);
+  }
+  const line = screen + '-' + theme + '-' + vp + ' — ' + state + ' — inputs empty (' + values.length + '), no "@" in visible text';
+  console.log('  settled: ' + line); // eslint-disable-line no-console
+  manifest.push(line);
   const b64 = await app.screenshot();
   const file = path.join(OUT, `${screen}-${theme}-${vp}.png`);
   fs.writeFileSync(file, Buffer.from(b64, 'base64'));
@@ -91,5 +108,6 @@ await withHarness(async (app) => {
 });
 
 // eslint-disable-next-line no-console
+fs.writeFileSync(path.join(OUT, 'manifest.log.txt'), manifest.join('\n') + '\n');
 console.log(`ARRIVAL-SIGNIN CAPTURE: wrote ${shots.length} screenshots to ${OUT}`);
 for (const f of shots) console.log(f); // eslint-disable-line no-console

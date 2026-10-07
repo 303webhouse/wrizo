@@ -7,8 +7,10 @@ import { getFirstRunComplete, setFirstRunComplete } from '../store/firstRun';
 import { getResumeTarget } from '../store/resume';
 import { apiLogin, apiRegister, apiSignupStatus, type AuthUser } from '../store/api';
 import { useDeskLexicon } from '../store/deskLexicon';
-import { useDeskFrameViewport } from './DeskFrame';
+import { useDeskFrameViewport } from './DeskFrame';
+
 import { isSignedOutHere } from '../store/signedOutHere';
+import { runAuthCall } from '../store/authSubmit';
 
 // HB1 S1/S5 — the Threshold. Route '/' for every boot, authed or not:
 // the mark, a boot bar (real readiness — doors disable until authState
@@ -118,22 +120,29 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
     if (busy || submitting.current) return;
     submitting.current = true;
     setError(''); setBusy(true);
-    const res = await apiLogin(email.trim(), password);
-    submitting.current = false;
-    setBusy(false);
-    if (res.ok && res.user) { onAuthed(res.user); openAsAuthed(); }
-    else setError(res.error || 'Could not sign in');
+    // try/finally: whatever happens, the form is given back. A thrown request becomes the network line, not a stuck button.
+    try {
+      const res = await runAuthCall(() => apiLogin(email.trim(), password));
+      if (res.ok && res.user) { onAuthed(res.user); openAsAuthed(); }
+      else setError(res.error || 'Could not sign in');
+    } finally {
+      submitting.current = false;
+      setBusy(false);
+    }
   };
 
   const handleCreate = async () => {
     if (busy || submitting.current) return;
     submitting.current = true;
     setError(''); setBusy(true);
-    const res = await apiRegister(email.trim(), password, name.trim(), inviteCode.trim());
-    submitting.current = false;
-    setBusy(false);
-    if (res.ok && res.user) { onAuthed(res.user); openAsAuthed(); }
-    else setError(res.error || 'Could not create your account');
+    try {
+      const res = await runAuthCall(() => apiRegister(email.trim(), password, name.trim(), inviteCode.trim()));
+      if (res.ok && res.user) { onAuthed(res.user); openAsAuthed(); }
+      else setError(res.error || 'Could not create your account');
+    } finally {
+      submitting.current = false;
+      setBusy(false);
+    }
   };
 
   return (
@@ -216,12 +225,11 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
               </form>
             </>
           ) : null}
-          {!locked && (
-            <div className="wz-secondary">
-              {/* a11y audit A2 — same fix as sign-in's own "← back" above. */}
-              <button type="button" className="wz-link" onClick={() => { setError(''); setStage('signin'); }}>← back</button>
-            </div>
-          )}
+          {/* Kept when locked: this back goes to SIGN-IN, never to the doors, so "New here?" is never a dead end. */}
+          <div className="wz-secondary">
+            {/* a11y audit A2 — same fix as sign-in's own "← back" above. */}
+            <button type="button" className="wz-link" onClick={() => { setError(''); setStage('signin'); }}>← back</button>
+          </div>
         </section>
       )}
     </div>

@@ -203,7 +203,9 @@ function GlobalHeader({ onLogout, authed }: { onLogout: () => void; authed: bool
 // back to '/'. It waits for the boot check, so a signed-in device is never bounced.
 function SignedOutRouteGuard({ authState }: { authState: AuthState }) {
   const { pathname } = useLocation();
-  if (authState !== 'anon' || !isSignedOutHere()) return null;
+  // 'loading' counts: with the flag set a load can only end 'anon' (bootDecision ends any surviving session), so
+  // redirecting at once avoids a flash of the old route. A device that is authed is never bounced.
+  if (authState === 'authed' || !isSignedOutHere()) return null;
   if (pathname === '/' || pathname === '/guest') return null;
   return <Navigate to="/" replace />;
 }
