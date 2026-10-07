@@ -5427,3 +5427,11 @@ a:focus-visible,
   padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.45); }
 .wz-guest-form { display: flex; flex-direction: column; align-items: center; gap: 14px; margin: 0; }
 .wz-guest-sheet-line { margin: 0; font-family: var(--wz-ui); font-size: 1.05rem; line-height: 1.4; }
+/* Outside .wz-home, like the logout sheet: the shared form classes read home tokens that resolve to nothing here. The first
+   guest screenshots showed it: the fields had no border or fill and read as two lines of plain text. Same values as
+   .wz-home; guest-client.mjs compares them. */
+.wz-guest-sheet {
+  --wz-ground:#110600; --wz-lift:#150a04; --wz-ink:#f0e7d8; --wz-ink-dim:#8c8070;
+  --wz-whisper:#463b2c; --wz-orange:#ff9800; --wz-orange-line:rgba(255,152,0,.5);
+  --wz-hint:#817a70; --wz-ui:var(--font-ui); --wz-text:var(--font-prose);
+}
