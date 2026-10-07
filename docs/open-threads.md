@@ -24708,3 +24708,26 @@ is idle (0 harness processes), so turn (1) can start on it as it stands; this de
 **QUEUED (Fable): Cursor’s small live-page item — thin scrollbars and drawer handles — branch only, in its OWN worktree.** It
 will need a box turn for screenshots later; **order: TOOLS’ splash, THEN Cursor’s item.** FIX re-requests (its `fb0597a`
 profile) when back. Ship order unchanged: Batch 10 = sign-in + flush; Batch 11 = guest.
+
+## BATCH 10 + 11 CODE AND 40 SCREENSHOTS CLEARED, ONE FRAME GAP; ITEM 231; CURSOR’S ITEM; NICK APPROVED THE BOARD/CARD/PAGE DESIGN — 2026-10-07 (chat 1)
+
+**CLEARED (Fable, relay): Batch 10 + Batch 11 code and the 40 screenshots.** (This desk sees them on origin: `logout-flush` tip
+`21c0ad3` — “Evidence: Batch 10 box run (5cb82e4d) — 16 sign-in screenshots and the manifest”, 17 files under
+`docs/evidence/arrival-signin`; `guest-client-r2` tip `12601d2` — “Evidence: Batch 11 box run (bce0fad6) — 24 screenshots and
+the manifest”, 25 files.) **ONE GAP: Batch 10 needs the logout sheet + “Signing out…” frames — a short INK turn on
+`logout-flush`, granted NEXT, AHEAD OF TOOLS’ splash.** INK’s grant (token `ink-guest-stack-20261007`, not SHA-bound) is
+still live and the box idle (0 harness processes), so the turn can start on it as it stands.
+
+**THE PATH (Fable):** after those frames clear → Batch 10 pair (the list above) → deploy → `smoke-login` → Nick confirms. Batch 11
+follows the same path.
+
+**NEW FOLLOW-UP ITEM 231: the guest cookie race — two guest links opened within ~1 s.** (Registry next free: 232.)
+
+**CURSOR: `cursor/drawer-handles` @ `5ee362e` reviewed, fine, but INCOMPLETE — Cursor is extending it to EVERY scrollbar rule.** It
+will need a box turn for screenshots later; **target Batch 12.**
+
+**NICK APPROVED THE BOARD/CARD/PAGE DESIGN (Fable, record only).** Plan: `claude/board-card-page-build-plan.md` *(this desk
+could not find that path on `origin/main` or on `origin/claude/lucid-fermi-3s9hor`; recorded as given)*. **Phase 0 starts now:**
+PW — the `exp1-connect-text-r2` catch-up *(no such branch on origin yet; `exp1-connect-text` and `exp1-visibletext` exist)*;
+TOOLS — item 190’s rail half, AFTER the splash *(`item190-exp1-rail` is on origin)*; Cursor — the frozen reference.
+**Phase 1 (INK) starts AFTER Batch 11 ships.** No change to Batch 10/11 or the existing queue.
