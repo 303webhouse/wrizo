@@ -20,6 +20,8 @@ const ts = require('typescript');
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 
+// The guest client's store exists only once it is merged; the guest checks (S6) run when it does.
+const guestAvailable = fs.existsSync(path.join(SRC, 'store/guestState.ts'));
 const ROOT = path.join(DESKTOP, '.sync-generation-harness-scratch');
 fs.rmSync(ROOT, { recursive: true, force: true });
 fs.mkdirSync(ROOT, { recursive: true });
@@ -70,7 +72,9 @@ async function loadClient(tag, syncSourceOverride) {
   w('sync.mjs', syncOut);
   const url = (n) => 'file://' + path.join(dir, n).replace(/\\/g, '/');
   const stamp = '?t=' + Date.now() + Math.random();
+  const guest = fs.existsSync(guestPath) ? await import(url('guestState.mjs')) : null;
   return {
+    guest,
     sync: await import(url('sync.mjs') + stamp),
     persistence: await import(url('persistence.mjs')),
     api: await import(url('api.mjs')),
@@ -222,6 +226,56 @@ const syncSrc = fs.readFileSync(path.join(SRC, 'store/sync.ts'), 'utf8');
     '        resp = await apiSync({ lastSyncAt: cursor, push: payloadOf(chunks[0]) });\n'));
   ok('(M2) MUTATION KILLED: without the live() check after the main apiSync, the late pull DOES write records',
     m2.c.persistence.calls.applyRemote === 1, JSON.stringify(m2.c.persistence.calls));
+}
+
+// =============================================================================
+// S6 — THE ORDER OF THE CATCH. A guest's 401 (guest_expired) calls stopSync(), which bumps the generation. If a STALE
+// run (one from a session that already ended) reached that branch it would stop the NEW session's sync. The stale
+// check must come first, so a stale run exits before it can.
+// =============================================================================
+if (guestAvailable) {
+  const lateGuest401 = async (tag, source) => {
+    const c = await loadClient(tag, source);
+    const stalled = c.sync.syncOnce();                 // session A's sync, waiting
+    await flush();
+    c.sync.stopSync();                                 // A signs out
+    const sessionB = c.sync.syncOnce(true);            // the next writer's first sync
+    await flush();
+    c.api.pending[0].reject(new c.api.SyncHttpError(401, 'guest_expired'));   // A's LATE guest-expired answer
+    await stalled;
+    await flush();
+    const expiredAfterA = c.guest.isGuestExpired();
+    c.api.pending[1].resolve(response('2026-10-07T04:00:00.000Z'));           // then B's answer arrives
+    await sessionB;
+    await flush();
+    return { c, expiredAfterA, appliedB: c.persistence.calls.applyRemote };
+  };
+  const real = await lateGuest401('s6');
+  ok('(S6a) a STALE run\'s late guest_expired does not mark the new session expired', real.expiredAfterA === false, String(real.expiredAfterA));
+  ok('(S6b) and does not stop the new session\'s sync: its answer is still applied', real.appliedB === 1, String(real.appliedB));
+
+  // The control: a CURRENT run that gets guest_expired still does what the guest branch is for.
+  const cur = await loadClient('s6c');
+  const run = cur.sync.syncOnce();
+  await flush();
+  cur.api.pending[0].reject(new cur.api.SyncHttpError(401, 'guest_expired'));
+  await run;
+  await flush();
+  ok('(S6c) CONTROL: a CURRENT run getting guest_expired marks the guest expired (the branch still works)', cur.guest.isGuestExpired() === true, String(cur.guest.isGuestExpired()));
+
+  // MUTATION: put the guest branch BEFORE the stale check. S6a and S6b must go red.
+  const lf = syncSrc.replace(/\r\n/g, '\n');
+  const staleLine = "    if (e === STALE || gen !== generation) return;\n";
+  const guestStart = lf.indexOf("    if (e instanceof SyncHttpError && e.reason === 'guest_expired') {");
+  const guestEnd = lf.indexOf('    }\n', lf.indexOf('return;', guestStart)) + 6;
+  if (lf.split(staleLine).length !== 2 || guestStart < 0) throw new Error('S6 mutation anchors not found');
+  const guestBlock = lf.slice(guestStart, guestEnd);
+  const swapped = lf.replace(guestBlock, '').replace(staleLine, guestBlock + staleLine);
+  const mut = await lateGuest401('s6m', swapped);
+  ok('(S6d) MUTATION KILLED: with the guest branch ahead of the stale check, a stale guest 401 DOES mark the new session expired or stop its sync (so the order is what protects it)',
+    mut.expiredAfterA === true || mut.appliedB === 0, JSON.stringify({ expiredAfterA: mut.expiredAfterA, appliedB: mut.appliedB }));
+  const catchSrc = lf.slice(lf.indexOf('} catch (e) {', lf.indexOf('await apiSync(')), lf.indexOf('} finally {', lf.indexOf('await apiSync(')));
+  ok('(S6e) in the shipped source the stale check comes before the guest branch', catchSrc.indexOf('e === STALE') > 0 && catchSrc.indexOf('e === STALE') < catchSrc.indexOf("e.reason === 'guest_expired'"), '');
 }
 
 globalThis.setTimeout = realSetTimeout;
