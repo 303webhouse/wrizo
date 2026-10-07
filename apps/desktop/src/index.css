@@ -340,20 +340,27 @@
    content areas (used to hide their scrollbar entirely — see each rule's
    own updated comment); `.board-text` is a card's own overflowing body
    text (`--card-stock`, the SAME light-paper family, one shade lighter). */
-.mode-scroll, .desk-frame-scroll-cap, .board-text{
-  scrollbar-color: var(--ink-on-paper-low) transparent;
+.mode-scroll, .desk-frame-scroll-cap, .board-text, .board-canvas-wrap{
+  scrollbar-color: color-mix(in srgb, var(--ink-on-paper-low) 28%, transparent) transparent;
 }
+.mode-scroll::-webkit-scrollbar,
+.desk-frame-scroll-cap::-webkit-scrollbar,
+.board-text::-webkit-scrollbar,
+.board-canvas-wrap::-webkit-scrollbar{ width:4px; height:4px; }
 .mode-scroll::-webkit-scrollbar-thumb,
 .desk-frame-scroll-cap::-webkit-scrollbar-thumb,
-.board-text::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); }
+.board-text::-webkit-scrollbar-thumb,
+.board-canvas-wrap::-webkit-scrollbar-thumb{ background:color-mix(in srgb, var(--ink-on-paper-low) 28%, transparent); }
 /* Hover darkens toward the paper's own primary ink (--ink-on-paper), the
    mirror of the dark-chrome default's own rest-dark/hover-light relationship
    — a LIGHT surface needs MORE contrast (darker), not less, to read as
    "more visible" on hover; --paper-border would have gone the wrong way
-   (lighter, closer to the paper itself, i.e. LESS visible). */
+   (lighter, closer to the paper itself, i.e. LESS visible). Same 55% mix
+   the dark-chrome default uses, paper-toned. */
 .mode-scroll::-webkit-scrollbar-thumb:hover,
 .desk-frame-scroll-cap::-webkit-scrollbar-thumb:hover,
-.board-text::-webkit-scrollbar-thumb:hover{ background:var(--ink-on-paper); }
+.board-text::-webkit-scrollbar-thumb:hover,
+.board-canvas-wrap::-webkit-scrollbar-thumb:hover{ background:color-mix(in srgb, var(--ink-on-paper) 55%, transparent); }
 
 /* ============================================================================
    TH1 — the theme seam (docs/th1-theme-seam-brief.md, docs/flux-theme-canon.md).
@@ -3590,7 +3597,7 @@ a:focus-visible,
   scrollbar-color: color-mix(in srgb, var(--text-low) 28%, transparent) transparent;
 }
 .wz-sliver-panel > *{ direction: ltr; }
-.wz-sliver-panel::-webkit-scrollbar{ width: 4px; }
+.wz-sliver-panel::-webkit-scrollbar{ width:4px; height:4px; }
 .wz-sliver-panel::-webkit-scrollbar-track{ background: transparent; }
 .wz-sliver-panel::-webkit-scrollbar-thumb{ background: color-mix(in srgb, var(--text-low) 28%, transparent); }
 .wz-sliver-panel::-webkit-scrollbar-thumb:hover{ background: color-mix(in srgb, var(--text-low) 55%, transparent); }
