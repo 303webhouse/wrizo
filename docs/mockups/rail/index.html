@@ -3,13 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wrizo · Page mockup · round 4</title>
+<title>Wrizo · Page mockup · round 5</title>
 <!--
   docs/mockups/rail — page. Left strip + right pop-out.
-  TUTOR | CONNECTIONS (same dress as TEXT | INK). Handle on the drawer’s
-  OUTER edge: closed at the paper, open at the far edge, arrow flips.
-  Phone: paper stays fully on screen; drawers overlay as a sheet, one at a time.
-  INK: Tip · Size (− Fine/Regular/Broad +) · Ink · Eraser · Move.
+  Tabs stay at the paper edge; only the arrow flips. Panel slides from behind.
+  Icons + tooltips for Actions / Templates. Brass on every selected control.
+  CONNECTIONS tab sized to fit. Phone: overlay inward, paper fully on screen.
   Branch: cursor/rail-mockup.
 -->
 <style>
@@ -92,87 +91,98 @@
   body[data-tool='move'] canvas.ink { cursor: grab; }
   body[data-tool='eraser'] canvas.ink { cursor: cell; }
 
-  /* left drawer — grip on OUTER edge */
+  /* tabs stay at the paper edge; panel slides out from behind the tab */
   .sliver {
     position: absolute; top: 18px; bottom: 22px; left: 28px;
     width: var(--pop-w); z-index: 6; pointer-events: none;
   }
   .sliver .grip, .sliver .panel { pointer-events: auto; }
   .sliver .panel {
-    position: absolute; inset: 0;
+    position: absolute; top: 0; bottom: 0; left: 0; right: 16px;
     overflow-y: auto; overflow-x: hidden;
-    background: var(--desk-ground); border: 1px solid var(--ink-border);
+    background: var(--desk-ground); border: 1px solid var(--ink-border); border-right: none;
     opacity: 0; pointer-events: none; transform: translateX(6px);
     transition: opacity var(--fade-dur) ease, transform var(--fade-dur) ease;
   }
   .sliver[data-open='true'] .panel { opacity: 1; pointer-events: auto; transform: translateX(0); }
   .sliver .grip {
-    position: absolute; top: 16px; left: calc(100% - 16px); width: 16px; height: 34px; z-index: 2;
+    position: absolute; top: 16px; right: 0; left: auto; width: 16px; height: 34px; z-index: 3;
     display: flex; align-items: center; justify-content: center;
-    background: var(--desk-ground); border: 1px solid var(--ink-border);
+    background: var(--desk-ground); border: 1px solid var(--ink-border); border-right: none;
     color: var(--text-mid); font-size: 13px;
-    transition: left var(--fade-dur) ease, color var(--fade-dur) ease, border-color var(--fade-dur) ease;
+    transition: color var(--fade-dur) ease, border-color var(--fade-dur) ease;
   }
-  .sliver[data-open='true'] .grip { left: 0; color: var(--accent-rest); border-color: var(--accent-rest); }
+  .sliver[data-open='true'] .grip { color: var(--brass); border-color: var(--brass); }
 
-  /* right drawer — grip on OUTER edge */
   .popout {
     position: absolute; top: 18px; bottom: 22px; right: 16px;
     width: var(--pop-w); z-index: 6; pointer-events: none;
   }
   .popout .grip, .popout .panel { pointer-events: auto; }
   .popout .panel {
-    position: absolute; inset: 0;
+    position: absolute; top: 0; bottom: 0; left: 16px; right: 0;
     overflow-y: auto; overflow-x: hidden;
-    background: var(--desk-ground); border: 1px solid var(--ink-border);
+    background: var(--desk-ground); border: 1px solid var(--ink-border); border-left: none;
     opacity: 0; pointer-events: none; transform: translateX(-6px);
     transition: opacity var(--fade-dur) ease, transform var(--fade-dur) ease;
   }
   .popout[data-open='true'] .panel { opacity: 1; pointer-events: auto; transform: translateX(0); }
   .popout .grip {
-    position: absolute; top: 16px; left: 0; width: 16px; height: 34px; z-index: 2;
+    position: absolute; top: 16px; left: 0; width: 16px; height: 34px; z-index: 3;
     display: flex; align-items: center; justify-content: center;
-    background: var(--desk-ground); border: 1px solid var(--ink-border);
+    background: var(--desk-ground); border: 1px solid var(--ink-border); border-left: none;
     color: var(--text-mid); font-size: 13px;
-    transition: left var(--fade-dur) ease, color var(--fade-dur) ease, border-color var(--fade-dur) ease;
+    transition: color var(--fade-dur) ease, border-color var(--fade-dur) ease;
   }
-  .popout[data-open='true'] .grip { left: calc(100% - 16px); color: var(--accent-rest); border-color: var(--accent-rest); }
+  .popout[data-open='true'] .grip { left: 0; color: var(--brass); border-color: var(--brass); }
 
-  .body { display: flex; flex-direction: column; gap: 20px; padding: 16px 14px 16px 22px; }
-  .popout .body { padding: 16px 22px 16px 14px; }
+  .body { display: flex; flex-direction: column; gap: 20px; padding: 16px 14px; }
+  .popout .body { padding: 16px 14px; }
   #textTools, #inkTools, #paneConn, #paneTutor { display: flex; flex-direction: column; gap: 20px; }
-  .tmpl { display: flex; flex-wrap: wrap; gap: 4px; }
-  .tmpl .item-btn { width: auto; padding: 6px 10px; }
-  .item-btn.is-dead { opacity: .45; cursor: default; pointer-events: none; }
   .h { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-rest); }
   .sec { display: flex; flex-direction: column; gap: 8px; }
   .tabs { display: flex; gap: 4px; }
   .tab {
-    flex: 1; height: 26px; border: 1px solid var(--ink-border);
-    color: var(--text-mid); font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase;
+    flex: 1; min-width: 0; height: 26px; border: 1px solid var(--ink-border);
+    color: var(--text-mid); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+    background: none; padding: 0 4px;
   }
-  .tab[data-on='true'] { color: var(--accent-rest); border-color: var(--accent-rest); }
+  .tab[data-tab="connections"] { font-size: 7.5px; letter-spacing: .02em; padding: 0 2px; }
+  .tab[data-on='true'] {
+    color: var(--brass); border-color: var(--brass);
+    background: color-mix(in srgb, var(--brass) 16%, transparent);
+  }
   .mode-tbtn {
-    min-width: 28px; height: 28px; padding: 0 6px; border: 1px solid transparent;
-    color: var(--text-mid); font-size: 14px; display: inline-flex; align-items: center; justify-content: center;
+    min-width: 26px; height: 26px; padding: 0 4px; border: 1px solid transparent;
+    color: var(--text-mid); font-size: 13px; display: inline-flex; align-items: center; justify-content: center;
   }
   .mode-tbtn:hover { border-color: var(--ink-border); color: var(--text-hi); }
-  .mode-tbtn[data-on='true'] { border-color: var(--accent-rest); color: var(--accent-rest); }
+  .mode-tbtn[data-on='true'] {
+    border-color: var(--brass); color: var(--brass);
+    background: color-mix(in srgb, var(--brass) 16%, transparent);
+  }
+  .mode-tbtn.is-dead { opacity: .45; cursor: default; pointer-events: none; }
+  .mode-tbtn svg { display: block; }
   .row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
-  .type-row { display: grid; grid-template-columns: minmax(0, 1fr) 24px 2.4em 24px; gap: 3px; width: 100%; }
+  .type-row { display: grid; grid-template-columns: minmax(0, 1fr) 26px 3.2em 26px; gap: 3px; width: 100%; }
   .size-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) 24px; gap: 3px; width: 100%; }
   .wz-type-face, .size-val {
-    min-width: 0; text-align: center; padding: 4px 6px; color: var(--text-hi);
-    border: 1px solid var(--ink-border); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    min-width: 0; text-align: center; padding: 4px 8px; color: var(--brass);
+    border: 1px solid var(--brass); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    background: color-mix(in srgb, var(--brass) 12%, transparent);
   }
   .wz-type-face { text-align: left; }
+  .size-val { font-size: 11px; letter-spacing: .04em; padding: 4px 9px; }
   .wz-type-num {
-    width: 2.4em; text-align: center; padding: 3px 1px; color: var(--text-hi);
-    border: 1px solid var(--ink-border); font-size: 13px;
+    width: 3.2em; text-align: center; padding: 3px 2px; color: var(--brass);
+    border: 1px solid var(--brass); font-size: 13px;
+    background: color-mix(in srgb, var(--brass) 12%, transparent);
   }
   .wz-type-list { list-style: none; border: 1px solid var(--ink-border); }
-  .wz-type-row { padding: 4px 8px; font-size: 13px; color: var(--text-hi); cursor: pointer; }
-  .wz-type-row[data-current='true'] { color: var(--accent-rest); }
+  .wz-type-row { padding: 4px 8px; font-size: 14px; color: var(--text-hi); cursor: pointer; }
+  .wz-type-row[data-current='true'] {
+    color: var(--brass); background: color-mix(in srgb, var(--brass) 12%, transparent);
+  }
   .item-btn {
     display: block; width: 100%; text-align: left; border: 1px solid var(--ink-border);
     color: var(--text-mid); font-size: 13px; padding: 8px 10px;
@@ -180,7 +190,10 @@
   .item-btn:hover { color: var(--text-hi); }
   .item-btn.danger:hover { color: var(--brick); }
   .chip { border: 1px solid var(--ink-border); color: var(--text-mid); font-size: 11px; padding: 3px 7px; }
-  .chip[data-on='true'] { color: var(--accent-rest); border-color: var(--accent-rest); }
+  .chip[data-on='true'] {
+    color: var(--brass); border-color: var(--brass);
+    background: color-mix(in srgb, var(--brass) 12%, transparent);
+  }
   .tag-pop { display: flex; flex-wrap: wrap; gap: 4px; }
   .confirm .q { font-size: 12px; color: var(--text-hi); margin-bottom: 6px; }
   .confirm .go { border: 1px solid var(--brick); color: var(--brick); padding: 4px 8px; font-size: 12px; }
@@ -193,13 +206,19 @@
     width: 26px; height: 26px; border: 1px solid var(--ink-border);
     color: var(--text-mid); font-size: 16px; line-height: 1;
   }
-  .add[data-on='true'] { color: var(--accent-rest); border-color: var(--accent-rest); }
+  .add[data-on='true'] {
+    color: var(--brass); border-color: var(--brass);
+    background: color-mix(in srgb, var(--brass) 16%, transparent);
+  }
   .sort { display: flex; gap: 4px; border-bottom: 1px solid var(--ink-border); }
   .sort button {
     border-bottom: 2px solid transparent; color: var(--text-low);
     font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 6px 4px;
   }
-  .sort button[data-on='true'] { color: var(--text-hi); border-bottom-color: var(--accent-rest); }
+  .sort button[data-on='true'] {
+    color: var(--brass); border-bottom-color: var(--brass);
+    background: color-mix(in srgb, var(--brass) 12%, transparent);
+  }
   .math, .empty, .focus-bar { font-size: 11px; color: var(--text-low); line-height: 1.4; }
   .focus-bar button { color: var(--accent-rest); }
   .grp { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-mid); margin: 10px 0 4px; }
@@ -224,7 +243,7 @@
   .thumb .cap { font-size: 10px; margin-top: 4px; }
   .switch-board { width: 100%; border: 1px solid var(--ink-border); color: var(--text-mid); padding: 6px 8px; text-align: left; font-size: 13px; }
   .board-list button { display: block; width: 100%; text-align: left; padding: 6px 8px; color: var(--text-mid); font-size: 13px; }
-  .board-list button[data-current='true'] { color: var(--accent-rest); }
+  .board-list button[data-current='true'] { color: var(--brass); }
 
   .toast {
     position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 50;
@@ -246,22 +265,35 @@
     .sliver, .popout { top: 8px; bottom: 8px; width: 16px; }
     .sliver { left: 8px; }
     .popout { right: 8px; }
+    .sliver::before, .popout::before {
+      content: ''; position: absolute; top: 0; bottom: 0; width: 16px;
+      background: var(--desk-ground); z-index: 2; pointer-events: none;
+    }
+    .sliver::before { left: 0; border-right: 1px solid var(--ink-border); }
+    .popout::before { right: 0; border-left: 1px solid var(--ink-border); }
+    .sliver .grip { left: 0; right: auto; border-right: none; border-left: 1px solid var(--ink-border); }
+    .sliver .panel { left: 16px; right: 0; border-right: 1px solid var(--ink-border); border-left: none; transform: translateX(-6px); }
+    .sliver[data-open='true'] .panel { transform: translateX(0); }
+    .popout .grip { left: auto; right: 0; }
+    .popout .panel { left: 0; right: 16px; border-left: 1px solid var(--ink-border); border-right: none; transform: translateX(6px); }
+    .popout[data-open='true'] .panel { transform: translateX(0); }
     .sliver[data-open='true'], .popout[data-open='true'] {
       width: min(var(--pop-w), calc(100% - 24px)); z-index: 8;
     }
-    .tab { letter-spacing: .6px; font-size: 9px; }
+    .tab { letter-spacing: .4px; font-size: 9px; }
+    .tab[data-tab="connections"] { font-size: 7px; letter-spacing: .02em; }
   }
 </style>
 </head>
 <body data-hand="text" data-tool="pen">
 <header class="rig">
-  <b>PAGE · R4</b>
+  <b>PAGE · R5</b>
   <button class="rev" data-view="tools" type="button">Tools</button>
   <button class="rev" data-view="ink" type="button">Ink</button>
   <button class="rev" data-view="tutor" type="button">Tutor</button>
   <button class="rev" data-view="connections" type="button">Connections</button>
   <button class="rev" data-view="connect" type="button">Connect</button>
-  <span class="hint" id="revHint">Left strip · handle on the outer edge</span>
+  <span class="hint" id="revHint">Tabs stay · panel from behind · arrow flips</span>
   <span id="geom"></span>
 </header>
 
@@ -306,14 +338,25 @@
               </div>
               <div class="sec">
                 <div class="h">Actions</div>
-                <button class="item-btn" id="tagsBtn" type="button">Tags</button>
+                <div class="row">
+                  <button class="mode-tbtn" id="tagsBtn" type="button" title="Tags">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2.5 2.5h6.2L13.5 7.3 8.7 12.1 2.5 5.9z"/><circle cx="5.2" cy="5.2" r=".9" fill="currentColor" stroke="none"/></svg>
+                  </button>
+                  <button class="mode-tbtn" id="copyBtn" type="button" title="Copy">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="5.5" y="5.5" width="8" height="8"/><path d="M10.5 5.5V3.5H2.5v8h2"/></svg>
+                  </button>
+                  <button class="mode-tbtn" id="deleteBtn" type="button" title="Delete">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3.5 4.5h9M6 4.5V3h4v1.5M5.5 6.5v6M8 6.5v6M10.5 6.5v6M4.5 4.5l.7 9h5.6l.7-9"/></svg>
+                  </button>
+                  <button class="mode-tbtn" id="hfBtn" data-on="true" type="button" title="Header/Footer">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3.5" y="2.5" width="9" height="11"/><path d="M3.5 5h9M3.5 11h9"/></svg>
+                  </button>
+                </div>
                 <div class="tag-pop" id="tagPop" hidden>
                   <button class="chip" data-tag="kitchen" type="button">kitchen</button>
                   <button class="chip" data-tag="night" type="button">night</button>
                   <button class="chip" data-tag="voice" type="button">voice</button>
                 </div>
-                <button class="item-btn" id="copyBtn" type="button">Copy</button>
-                <button class="item-btn danger" id="deleteBtn" type="button">Delete</button>
                 <div class="confirm" id="deleteAsk" hidden>
                   <div class="q">Send this page to Trash?</div>
                   <button class="go" id="deleteGo" type="button">Trash</button>
@@ -322,11 +365,19 @@
               </div>
               <div class="sec">
                 <div class="h">Templates</div>
-                <div class="tmpl">
-                  <button class="item-btn is-dead" type="button" aria-disabled="true">Quote</button>
-                  <button class="item-btn is-dead" type="button" aria-disabled="true">Note</button>
-                  <button class="item-btn is-dead" type="button" aria-disabled="true">Scene</button>
-                  <button class="item-btn" id="tmplInk" type="button">INK</button>
+                <div class="row">
+                  <button class="mode-tbtn is-dead" type="button" title="Quote" aria-disabled="true">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><path d="M3.2 12.2C2.2 11 1.8 9.6 1.8 8.2c0-2.3 1.5-4.2 3.6-4.9l.6 1.4C4.6 5.2 3.7 6.3 3.7 7.6c.4-.3.9-.4 1.5-.4 1.2 0 2.2 1 2.2 2.3 0 1.3-1 2.4-2.3 2.4-.7 0-1.3-.3-1.9-.7zm6.8 0c-1-1.2-1.4-2.6-1.4-4 0-2.3 1.5-4.2 3.6-4.9l.6 1.4c-1.4.5-2.3 1.6-2.3 2.9.4-.3.9-.4 1.5-.4 1.2 0 2.2 1 2.2 2.3 0 1.3-1 2.4-2.3 2.4-.7 0-1.3-.3-1.9-.7z"/></svg>
+                  </button>
+                  <button class="mode-tbtn is-dead" type="button" title="Note" aria-disabled="true">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4 2.5h6.2L12.5 5v8.5H4z"/><path d="M10 2.5V5h2.5"/><path d="M6 8h4M6 10.5h3"/></svg>
+                  </button>
+                  <button class="mode-tbtn is-dead" type="button" title="Scene" aria-disabled="true">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2.5" y="4" width="11" height="8"/><path d="M2.5 6.5h11M5 4v8M11 4v8"/></svg>
+                  </button>
+                  <button class="mode-tbtn" id="tmplInk" type="button" title="INK">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M11.5 2.2 4.3 9.4 3 13l3.6-1.3 7.2-7.2z" stroke-linejoin="round"/><path d="M4.3 9.4 6.6 11.7"/></svg>
+                  </button>
                 </div>
               </div>
             </div>
@@ -389,8 +440,8 @@
         </div>
       </article>
 
-      <aside class="popout" id="popout" data-open="false">
-        <button class="grip" id="popGrip" type="button" aria-expanded="false">›</button>
+      <aside class="popout" id="popout" data-open="true">
+        <button class="grip" id="popGrip" type="button" aria-expanded="true">‹</button>
         <div class="panel">
           <div class="body">
             <div class="tabs" role="radiogroup">
@@ -467,7 +518,7 @@
   const INKS = { walnut: '#1A1206', iron: '#39414A', oxblood: '#6B1F1C', sea: '#17454E' };
   const $ = (id) => document.getElementById(id);
   const HINTS = {
-    tools: 'Left strip · handle on the outer edge',
+    tools: 'Tabs stay · panel from behind · arrow flips',
     ink: 'INK · Tip, Size, Ink, Eraser, Move',
     tutor: 'Tutor · a question box',
     connections: 'Connections · list, double-click opens, + picker',
@@ -635,6 +686,9 @@
   $('tmplInk').addEventListener('click', () => { setHand('ink'); toast('INK on this page'); });
   $('tagsBtn').addEventListener('click', () => { $('tagPop').hidden = !$('tagPop').hidden; });
   $('copyBtn').addEventListener('click', () => toast('Copied (fake)'));
+  $('hfBtn').addEventListener('click', () => {
+    $('hfBtn').dataset.on = $('hfBtn').dataset.on === 'true' ? 'false' : 'true';
+  });
   $('deleteBtn').addEventListener('click', () => { $('deleteAsk').hidden = false; });
   $('deleteNo').addEventListener('click', () => { $('deleteAsk').hidden = true; });
   $('deleteGo').addEventListener('click', () => { $('deleteAsk').hidden = true; toast('Page sent to Trash (fake)'); });
@@ -724,6 +778,7 @@
     });
   });
   document.querySelector('[data-view="tools"]').dataset.on = 'true';
+  if (phone()) setPop(false);
   render();
   function measure() { $('geom').textContent = window.innerWidth + ' × ' + window.innerHeight; }
   measure(); window.addEventListener('resize', measure);
