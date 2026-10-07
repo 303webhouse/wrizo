@@ -18,6 +18,7 @@ import { PAGE_SETTINGS_FALLBACK, type PageSettings } from '../types';
 import type { Box } from '../types';
 import { getCurrentUser } from '../store/currentUser';
 import { requestLogout } from '../store/logoutRequest';
+import { useSigningOut } from '../store/useSigningOut';
 import { useTheme, setTheme, type ThemeId } from '../store/theme';
 import { FullscreenToggle, SyncIndicator } from './ChromeControls';
 import { PageFace, type PageFaceSubject } from './PageFace';
@@ -1036,6 +1037,7 @@ function TrashPanel({ navigate }: { navigate: NavigateFunction }) {
 function CascadeSettingsPanel({ navigate }: { navigate: NavigateFunction }) {
   const { t } = useDeskLexicon();
   const authed = !!getCurrentUser();
+  const signingOut = useSigningOut();
   return (
     <div className="wz-cascade-panel-body">
       <div className="wz-cascade-row"><FullscreenToggle /></div>
@@ -1045,8 +1047,9 @@ function CascadeSettingsPanel({ navigate }: { navigate: NavigateFunction }) {
           type="button"
           className="wz-cascade-action"
           onClick={() => { requestLogout(); }}
+          disabled={signingOut}
         >
-          {t('cascadeSettingsSignOut')}
+          {signingOut ? t('logoutSigningOut') : t('cascadeSettingsSignOut')}
         </button>
       )}
     </div>

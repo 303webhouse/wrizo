@@ -31,6 +31,27 @@ await withHarness(async (app) => {
   const pageId = await app.evalJs('window.__pageId');
   ok('(W0) the walk has an unsaved record to protect (its page id is in the dirty set)', (await dirtyHas(pageId)) === true, String(pageId));
 
+  // 0b. THE TIME LIMIT: make the push STALL (never answer), press Sign out, and watch: the button says
+  //     "Signing out…" at once, and the sheet appears within ~8 s. No silent logout.
+  await app.evalJs(`
+    const f1 = window.fetch.bind(window);
+    window.__stall = true;
+    window.fetch = (u, o) => (window.__stall && String(u).includes('/api/sync') ? new Promise(() => {}) : f1(u, o));
+    true;
+  `);
+  const t0 = Date.now();
+  await app.click('Sign out');
+  await sleep(300);
+  const btnText = await app.evalJs(`[...document.querySelectorAll('button')].map((b) => b.textContent).filter((x) => /Sign/.test(x)).join('|')`);
+  ok('(W0b) the button says "Signing out…" at once (never does nothing)', /Signing out/.test(btnText), btnText);
+  await app.waitFor(`!!document.querySelector('.wz-logout-sheet')`, { timeout: 12000, label: 'sheet after a stalled push' });
+  const stalledTook = Date.now() - t0;
+  ok('(W0c) a stalled push ends at the sheet within ~8 s, with no silent logout',
+    stalledTook >= 7500 && stalledTook <= 10500 && (await app.evalJs(`fetch('/auth/me', { credentials: 'include' }).then((r) => r.ok)`)) === true, String(stalledTook));
+  await app.key('Escape');
+  await app.waitFor(`!document.querySelector('.wz-logout-sheet')`, { label: 'stalled sheet dismissed' });
+  await app.evalJs('window.__stall = false; true;');
+
   // 1. Sign out is refused, with the sheet.
   await app.click('Sign out');
   await app.waitFor(`!!document.querySelector('.wz-logout-sheet')`, { label: 'blocked sheet shown' });

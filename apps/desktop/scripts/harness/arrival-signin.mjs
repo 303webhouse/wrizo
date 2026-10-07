@@ -154,17 +154,30 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
   const markAt = body.indexOf('markSignedOutHere()');
   const resetAt = body.indexOf('resetLocalData()');
   const stopAt = body.indexOf('stopSync()');
-  ok('(F1) the dirty check comes BEFORE the logout call, the flag, the sync stop and the wipe',
+  // SUPERSEDED (logout time limit) — by (F1b) below. Parked, not deleted: this pinned handleLogout's inline
+  // shape, which moved into attemptSignOut. Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(F1) the dirty check comes BEFORE the logout call, the flag, the sync stop and the wipe',
     checkAt > 0 && checkAt < apiAt && checkAt < markAt && checkAt < stopAt && checkAt < resetAt, JSON.stringify({ checkAt, apiAt, markAt, stopAt, resetAt }));
   ok('(F2) a refused sign-out RETURNS: nothing after the check runs on that path',
     /showLogoutBlock\([\s\S]*?\);\s*return;/.test(body), '');
-  ok('(F3) the check counts any dirty record (rejected ones stay dirty, so they block; offline leaves them dirty, so it blocks)',
+  // SUPERSEDED (logout time limit) — by (F3b) below. Parked, not deleted: this pinned handleLogout's inline
+  // shape, which moved into attemptSignOut. Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(F3) the check counts any dirty record (rejected ones stay dirty, so they block; offline leaves them dirty, so it blocks)',
     /const unsaved = countDirtyRecords\(\);\s*if \(unsaved > 0\)/.test(body), '');
   ok('(F4) the refusal names the rejected records that are still unsaved',
     /getRejectedRecords\(\)\.filter\(\(r\) => dirtyIds\.has\(r\.id\)\)\.map\(\(r\) => r\.title\)/.test(body), '');
   ok('(F5) force must be exactly true — a click event passed in by accident cannot skip the safety',
     /if \(force !== true\) \{/.test(body) && /onLogout=\{\(\) => \{ void handleLogout\(\); \}\}/.test(app), '');
-  ok('(F6) the flag is set after the dirty check, so only a completed sign-out sets it', markAt > checkAt, '');
+  // SUPERSEDED (logout time limit) — by (F6b) below. Parked, not deleted: this pinned handleLogout's inline
+  // shape, which moved into attemptSignOut. Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(F6) the flag is set after the dirty check, so only a completed sign-out sets it', markAt > checkAt, '');
+  // (F1b, F3b, F6b) The same three claims, against the new shape: the decision is attemptSignOut over the real count.
+  const attemptAt = body.indexOf('attemptSignOut(');
+  ok('(F1b) the dirty decision comes BEFORE the logout call, the flag, the sync stop and the wipe',
+    attemptAt > 0 && attemptAt < apiAt && attemptAt < markAt && attemptAt < stopAt && attemptAt < resetAt, JSON.stringify({ attemptAt, apiAt, markAt, stopAt, resetAt }));
+  ok('(F3b) the decision counts any dirty record (the real countDirtyRecords) and a blocked attempt is shown',
+    /attemptSignOut\(\(\) => syncOnce\(\), countDirtyRecords\)/.test(body) && /attempt\.kind === 'blocked'/.test(body), '');
+  ok('(F6b) the flag is set after that decision, so only a completed sign-out sets it', attemptAt > 0 && markAt > attemptAt, '');
   ok('(F7) the blocked sheet is an overlay beside the routes, never inside <Routes>',
     app.indexOf('<LogoutBlockedSheet />') > 0 && !(app.indexOf('<LogoutBlockedSheet />') > app.indexOf('<Routes>') && app.indexOf('<LogoutBlockedSheet />') < app.indexOf('</Routes>')), '');
   const casc = read('components/CascadePanels.tsx');
@@ -243,6 +256,101 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
 }
 
 // =============================================================================
+// PART H — THE TIME LIMIT. The real attemptSignOut, driven: a stalled push ends at the
+// sheet within ~8 s with no silent logout; a clean push signs out; a failed push with
+// unsaved work is blocked; the signing-out state and the buttons.
+// =============================================================================
+{
+  const gsrc = read('store/logoutGuard.ts');
+  const loadGuard = async (source, tag) => {
+    const dest = path.join(DESKTOP, '.arrival-signin-guard-' + tag + '.mjs');
+    fs.writeFileSync(dest, ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 } }).outputText);
+    const mod = await import('file://' + dest.replace(/\\/g, '/') + '?t=' + Date.now());
+    fs.rmSync(dest, { force: true });
+    return mod;
+  };
+  const g = await loadGuard(gsrc, 'h');
+  const never = () => new Promise(() => {});
+
+  ok('(H1) the cap is 8000 ms ("~8 s")', g.LOGOUT_PUSH_CAP_MS === 8000, String(g.LOGOUT_PUSH_CAP_MS));
+
+  const clean = await g.attemptSignOut(() => Promise.resolve(), () => 0, 50);
+  ok('(H2) a push that finishes clean with nothing unsaved signs out (clear)', clean.kind === 'clear', JSON.stringify(clean));
+
+  const unsaved = await g.attemptSignOut(() => Promise.resolve(), () => 2, 50);
+  ok('(H3) a push that finishes but leaves records unsaved (offline-swallowed, or rejected) is BLOCKED, with the count',
+    unsaved.kind === 'blocked' && unsaved.count === 2 && unsaved.timedOut === false, JSON.stringify(unsaved));
+
+  const failed = await g.attemptSignOut(() => Promise.reject(new Error('network')), () => 3, 50);
+  ok('(H4) a push that FAILS with unsaved work is blocked (it never signs out silently)', failed.kind === 'blocked' && failed.count === 3, JSON.stringify(failed));
+
+  const threw = await g.attemptSignOut(() => { throw new Error('sync threw synchronously'); }, () => 1, 50);
+  ok('(H5) a push that throws synchronously is handled the same way, not an unhandled rejection', threw.kind === 'blocked', JSON.stringify(threw));
+
+  const stalledFast = await g.attemptSignOut(never, () => 4, 60);
+  ok('(H6) a stalled push ends at the sheet (blocked, timedOut) once the cap passes',
+    stalledFast.kind === 'blocked' && stalledFast.timedOut === true && stalledFast.count === 4, JSON.stringify(stalledFast));
+
+  const stalledClean = await g.attemptSignOut(never, () => 0, 60);
+  ok('(H7) a stalled push that leaves NOTHING unsaved has nothing to lose, and signs out', stalledClean.kind === 'clear', JSON.stringify(stalledClean));
+
+  // The real constant, in real time: a stalled push, no override. Ends at the sheet within ~8 s.
+  const t0 = Date.now();
+  const stalledReal = await g.attemptSignOut(never, () => 2);
+  const took = Date.now() - t0;
+  ok('(H8) THE REAL CAP: a stalled push ends at the sheet within ~8 s (between 7.9 s and 9 s), with no silent logout',
+    stalledReal.kind === 'blocked' && stalledReal.timedOut === true && took >= 7900 && took <= 9000, JSON.stringify({ took, stalledReal }));
+
+  // A push that wins the race must not leave the timer holding the process open.
+  const fastStart = Date.now();
+  await g.attemptSignOut(() => Promise.resolve(), () => 0);
+  ok('(H9) a push that finishes at once returns at once (the cap is not waited out)', Date.now() - fastStart < 500, String(Date.now() - fastStart));
+
+  // MUTATION: remove the race, so the push is simply awaited. A stalled push must now HANG (H6 would never finish).
+  const raceStart = gsrc.indexOf('const outcome = await Promise.race([');
+  const raceEnd = gsrc.indexOf(']);', raceStart) + 3;
+  if (raceStart < 0 || raceEnd < raceStart) throw new Error('race mutation anchor not found');
+  const mutated = gsrc.slice(0, raceStart)
+    + "const outcome = await Promise.resolve().then(push).then(() => 'done' as const, () => 'failed' as const);"
+    + gsrc.slice(raceEnd);
+  const mut = await loadGuard(mutated, 'mut');
+  const finished = await Promise.race([
+    mut.attemptSignOut(never, () => 4, 60).then(() => 'finished'),
+    new Promise((r) => setTimeout(() => r('hung'), 500)),
+  ]);
+  ok('(H10) MUTATION KILLED: with the race removed, a stalled push HANGS the sign-out (so the race is what ends it at the sheet)',
+    finished === 'hung', String(finished));
+
+  // The signing-out state.
+  let n = 0;
+  const off = g.subscribeSigningOut(() => { n += 1; });
+  ok('(H11) not signing out at first', g.getSigningOut() === false, '');
+  g.setSigningOut(true); g.setSigningOut(true);
+  ok('(H12) setting it twice notifies once', g.getSigningOut() === true && n === 1, String(n));
+  g.setSigningOut(false);
+  ok('(H13) clearing it notifies and returns the button', g.getSigningOut() === false && n === 2, String(n));
+  off();
+
+  // App.tsx: the state, the cap, and the buttons, in source.
+  const app = read('App.tsx');
+  const hs = app.indexOf('const handleLogout');
+  const hbody = app.slice(hs, app.indexOf('  // CD2 S3', hs));
+  const firstAwait = hbody.indexOf('await ');
+  ok('(H14) "Signing out…" is set BEFORE the first await — it shows at once, not after the push',
+    hbody.indexOf('setSigningOut(true)') > 0 && hbody.indexOf('setSigningOut(true)') < firstAwait, JSON.stringify({ at: hbody.indexOf('setSigningOut(true)'), firstAwait }));
+  ok('(H15) a second click while one is under way is ignored', /if \(getSigningOut\(\)\) return;/.test(hbody), '');
+  ok('(H16) the state is released in a finally, so a blocked sign-out (or a thrown error) gives the button back',
+    /\} finally \{\s*setSigningOut\(false\);\s*\}/.test(hbody), '');
+  ok('(H17) the push is capped through attemptSignOut with the real count, not a bare await of syncOnce',
+    /await attemptSignOut\(\(\) => syncOnce\(\), countDirtyRecords\)/.test(hbody) && !/await syncOnce\(\)/.test(hbody), '');
+  ok('(H18) the header buttons read "Signing out…" and are disabled while it runs (both layouts)',
+    (app.match(/disabled=\{signingOut\}/g) || []).length === 2 && (app.match(/Signing out\\u2026/g) || []).length === 2, '');
+  const casc = read('components/CascadePanels.tsx');
+  ok('(H19) the Settings button reads "Signing out…" and is disabled while it runs',
+    /disabled=\{signingOut\}/.test(casc) && /t\('logoutSigningOut'\)/.test(casc), '');
+}
+
+// =============================================================================
 // MUTATION — remove the /guest exemption. B6 must go red.
 // =============================================================================
 {
@@ -264,7 +372,8 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
 }
 
 // MUTATION — remove the dirty check from handleLogout. F3's predicate must go red on the mutant.
-{
+// SUPERSEDED (logout time limit) — by (M2b) below. Parked, not deleted: its anchor lived in the inline shape.
+if (false) {
   const app = read('App.tsx');
   const mutated = app.replace('if (unsaved > 0) {', 'if (false) {');
   if (mutated === app) throw new Error('logout mutation anchor not found');
@@ -272,6 +381,17 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
   const body = mutated.slice(start, mutated.indexOf('  // CD2 S3', start));
   ok('(M2) MUTATION KILLED: with the dirty check disabled, F3\'s predicate goes red',
     !/const unsaved = countDirtyRecords\(\);\s*if \(unsaved > 0\)/.test(body), '');
+}
+
+// MUTATION — (M2b) disable the blocked branch in handleLogout. F3b's predicate must go red on the mutant.
+{
+  const app = read('App.tsx');
+  const mutated = app.replace("if (attempt.kind === 'blocked') {", 'if (false) {');
+  if (mutated === app) throw new Error('logout (M2b) mutation anchor not found');
+  const start = mutated.indexOf('const handleLogout');
+  const body = mutated.slice(start, mutated.indexOf('  // CD2 S3', start));
+  ok('(M2b) MUTATION KILLED: with the blocked branch disabled, F3b\'s predicate goes red',
+    !/attempt\.kind === 'blocked'/.test(body), '');
 }
 
 fs.rmSync(tmp, { recursive: true, force: true });

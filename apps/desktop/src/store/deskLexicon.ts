@@ -252,7 +252,7 @@ export type DeskTermId =
   | 'syncRejectedOne' | 'syncRejectedMany'
   // LOGOUT SAFETY — a sign-out refused while records have not reached the account, and its second step.
   | 'logoutBlockedBody' | 'logoutBlockedRejected' | 'logoutStay' | 'logoutAnyway' | 'logoutAnywayConfirm' | 'logoutAnywayBack'
-  | 'logoutBlockedBodyOne' | 'logoutAnywayOne' | 'logoutAnywayConfirmOne'
+  | 'logoutBlockedBodyOne' | 'logoutAnywayOne' | 'logoutAnywayConfirmOne' | 'logoutSigningOut'
   | 'cascadePageNewPage' | 'cascadePlanJustAPage' | 'boardNewPageCard' | 'boardCanvasEmpty'
   // ITEM 83 M3 (R6) — the Page drawer's PAGE SETUP zone: the sheet's own
   // dimension (margins, leading, numbers, headers, footers), as opposed to
@@ -877,6 +877,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   logoutAnywayBack: 'Keep them',
   logoutBlockedBodyOne: '1 change hasn’t saved to your account yet. Stay signed in until it saves, or sign out anyway and lose it.',
   logoutAnywayOne: 'Sign out anyway (1 change will be lost)',
+  logoutSigningOut: 'Signing out\u2026',
   logoutAnywayConfirmOne: 'Yes, sign out and lose 1 change',
   syncRejectedMany: '{n} items could not be saved to your account \u2014 they are safe on this device and will keep trying',
   // ITEM 83 M3 (R6). Sentence case on rows, engraved-uppercase on the heading

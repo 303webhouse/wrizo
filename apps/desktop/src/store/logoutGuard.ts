@@ -31,6 +31,47 @@ export function rejectedLine(titles: readonly string[], t: (key: LogoutLexiconKe
   return t('logoutBlockedRejected').replace('{titles}', () => titles.map((x) => `\u201c${x}\u201d`).join(', '));
 }
 
+// THE TIME LIMIT — the final push is given this long, then the sign-out decides from what is actually unsaved.
+export const LOGOUT_PUSH_CAP_MS = 8000;
+
+export type SignOutAttempt =
+  | { kind: 'clear' }
+  | { kind: 'blocked'; count: number; timedOut: boolean };
+
+// One last push, capped. The push finishing, failing or stalling past the cap all lead to the same question — is
+// anything still unsaved? — answered from the dirty count, never from how the push ended. A stalled or failed push
+// leaves records unsaved, so it ends at the sheet; it never signs out silently past unsaved work. A push that
+// stalls but leaves nothing unsaved has nothing to lose, and signs out.
+export async function attemptSignOut(
+  push: () => Promise<unknown>,
+  countUnsaved: () => number,
+  capMs: number = LOGOUT_PUSH_CAP_MS,
+): Promise<SignOutAttempt> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const outcome = await Promise.race([
+    Promise.resolve().then(push).then(() => 'done' as const, () => 'failed' as const),
+    new Promise<'timeout'>((resolve) => { timer = setTimeout(() => resolve('timeout'), capMs); }),
+  ]);
+  if (timer !== undefined) clearTimeout(timer);
+  const count = countUnsaved();
+  return count > 0 ? { kind: 'blocked', count, timedOut: outcome === 'timeout' } : { kind: 'clear' };
+}
+
+// "Signing out…" — true from the click until the sign-out ends one way or the other, so the button never does nothing
+// and a second click while one is under way is ignored.
+let signingOut = false;
+const signingOutListeners = new Set<() => void>();
+export function getSigningOut(): boolean { return signingOut; }
+export function setSigningOut(v: boolean): void {
+  if (signingOut === v) return;
+  signingOut = v;
+  signingOutListeners.forEach((l) => l());
+}
+export function subscribeSigningOut(listener: () => void): () => void {
+  signingOutListeners.add(listener);
+  return () => { signingOutListeners.delete(listener); };
+}
+
 let blocked: LogoutBlock | null = null;
 const listeners = new Set<() => void>();
 

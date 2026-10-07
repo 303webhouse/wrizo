@@ -26,7 +26,8 @@ import { startSync, stopSync, syncOnce, clearLastSyncAt, getRejectedRecords } fr
 import { useDeskFrameMounted } from './store/deskFrameActive';
 import { useFirstRunGateActive } from './store/firstRunGateActive';
 import { onLogoutRequested } from './store/logoutRequest';
-import { showLogoutBlock, clearLogoutBlock } from './store/logoutGuard';
+import { showLogoutBlock, clearLogoutBlock, attemptSignOut, getSigningOut, setSigningOut } from './store/logoutGuard';
+import { useSigningOut } from './store/useSigningOut';
 import { LogoutBlockedSheet } from './components/LogoutBlockedSheet';
 import { isSignedOutHere, markSignedOutHere, clearSignedOutHere } from './store/signedOutHere';
 import { SyncIndicator, FullscreenToggle } from './components/ChromeControls';
@@ -124,6 +125,7 @@ type AuthState = 'loading' | 'anon' | 'authed';
 // ember handle and the forgiving intent/idle restore (shared writing-mode state)
 // bring it back together with the sprint chrome — one frame settling, not two.
 function GlobalHeader({ onLogout, authed }: { onLogout: () => void; authed: boolean }) {
+  const signingOut = useSigningOut();
   const { isWriting } = useWritingSession();
   // AB1 S4 — "top-bar orphans collapse to one corner glyph + gear." While a
   // DeskFrame is mounted (store/deskFrameActive.ts), these three previously
@@ -168,7 +170,7 @@ function GlobalHeader({ onLogout, authed }: { onLogout: () => void; authed: bool
             <div className="gh-corner-menu" role="menu">
               <FullscreenToggle />
               <SyncIndicator />
-              {authed && <button type="button" onClick={onLogout}>Sign out</button>}
+              {authed && <button type="button" onClick={onLogout} disabled={signingOut}>{signingOut ? 'Signing out\u2026' : 'Sign out'}</button>}
             </div>
           )}
         </div>
@@ -180,9 +182,10 @@ function GlobalHeader({ onLogout, authed }: { onLogout: () => void; authed: bool
             <button
               type="button"
               onClick={onLogout}
+              disabled={signingOut}
               style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
             >
-              Sign out
+              {signingOut ? 'Signing out\u2026' : 'Sign out'}
             </button>
           )}
         </>
@@ -257,30 +260,38 @@ export function App() {
   // the sync all stay, and the writer is told why. `force` is the second step, reached only through the sheet's
   // explicit confirm. The signed-out flag is set only on a completed sign-out.
   // `force` must be exactly true: a click event handed in by accident is truthy and would skip the safety.
+  // THE TIME LIMIT — "Signing out…" shows at once and a second click is ignored while one is under way. The final
+  // push is capped (LOGOUT_PUSH_CAP_MS, ~8 s): finished, failed or stalled, the decision is the unsaved count, so a
+  // stalled push ends at the sheet and never signs out silently past unsaved work.
   const handleLogout = async (force: boolean = false) => {
-    if (force !== true) {
-      await syncOnce().catch(() => {}); // best-effort final push
-      const unsaved = countDirtyRecords();
-      if (unsaved > 0) {
-        // Names the records the account refused, and only those that are still unsaved.
-        const dirtyIds = new Set(Object.values(getDirtyRecords()).flat().map((r) => (r as { id: string }).id));
-        showLogoutBlock({
-          count: unsaved,
-          rejectedTitles: getRejectedRecords().filter((r) => dirtyIds.has(r.id)).map((r) => r.title),
-        });
-        return;
+    if (getSigningOut()) return;
+    setSigningOut(true);
+    try {
+      if (force !== true) {
+        const attempt = await attemptSignOut(() => syncOnce(), countDirtyRecords);
+        if (attempt.kind === 'blocked') {
+          // Names the records the account refused, and only those that are still unsaved.
+          const dirtyIds = new Set(Object.values(getDirtyRecords()).flat().map((r) => (r as { id: string }).id));
+          showLogoutBlock({
+            count: attempt.count,
+            rejectedTitles: getRejectedRecords().filter((r) => dirtyIds.has(r.id)).map((r) => r.title),
+          });
+          return;
+        }
       }
+      clearLogoutBlock();
+      await apiLogout();
+      // Mark first: even if the local reset below fails, this device stays on the sign-in screen.
+      markSignedOutHere();
+      window.location.hash = '#/';
+      stopSync();
+      clearLastSyncAt();
+      resetLocalData();
+      setCurrentUser(null);
+      setAuthState('anon');
+    } finally {
+      setSigningOut(false);
     }
-    clearLogoutBlock();
-    await apiLogout();
-    // Mark first: even if the local reset below fails, this device stays on the sign-in screen.
-    markSignedOutHere();
-    window.location.hash = '#/';
-    stopSync();
-    clearLastSyncAt();
-    resetLocalData();
-    setCurrentUser(null);
-    setAuthState('anon');
   };
 
   // CD2 S3 — the Cascade's Settings category (deep inside a framed page host)
