@@ -328,7 +328,7 @@ export function App() {
         <DeskRail />
         <GlobalHeader onLogout={() => { void handleLogout(); }} authed={authState === 'authed'} />
         <BrandMark />
-        {/* Item 194 — the splash. Mounted at app root rather than on a route:
+        {/* Item 187 — the splash. Mounted at app root rather than on a route:
             it belongs to the app OPENING, not to '/' (and Fable's ruling is
             every open, not first-run-only). It renders once per app load, is
             pointer-events:none throughout, and blurs whatever is genuinely
