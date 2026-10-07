@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrizo · Rail mockup · Connect from the page</title>
+<!--
+  docs/mockups/rail — clickable right rail + card Connect menu.
+  Spec: docs/menus/b-exp1-connect-from-the-page.md §5–§6
+        + card-revisions 11 (Tutor in the right panel) and 12 (Connect menu).
+  Fake data. No build. No AI calls. Branch: cursor/rail-mockup.
+
+  LINK TINT: sea-wash — rgba(23, 69, 78, 0.14) on the words.
+  Not an underline (F2). Not orange (tags/selection). Not olive (where you are).
+  Hover deepens the same sea-wash to 0.22. Spot-notes: gutter tick, no glyph.
+
+  Phone: one panel at a time (page · linked · tutor · card · connect).
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+  :root {
+    --ink-950: #110600;
+    --ink-900: #1F1A16;
+    --ink-800: #2A241E;
+    --ink-border: #332C25;
+    --ink-border-strong: #453B31;
+    --text-hi: #EDE6DA;
+    --text-mid: #B5A998;
+    --text-low: #80766A;
+    --paper: #F3EDE1;
+    --paper-dim: #E9E1D2;
+    --paper-border: #d8c8b4;
+    --ink-on-paper: #2B2014;
+    --ink-on-paper-low: #8A7C68;
+    --card-stock: #FBF6EA;
+    --card-hairline: #D9CFB6;
+    --brass: #ff9800;
+    --accent-rest: #96a05a;
+    --accent-door: #4F5730;
+    --ink-sea: #17454E;
+    --brick: #B5543F;
+    --desk-ground: #1F1A16;
+    --rail-surface: #110600;
+    --font-ui: 'Figtree', system-ui, sans-serif;
+    --font-prose: 'Crimson Pro', Georgia, serif;
+    --sea-wash: rgba(23, 69, 78, 0.14);
+    --sea-wash-deep: rgba(23, 69, 78, 0.22);
+    --zone5-w: 280px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; }
+  html, body { height: 100%; }
+  body {
+    background: #000;
+    color: var(--text-hi);
+    font-family: var(--font-ui);
+    overflow: hidden;
+  }
+  button, input { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  [hidden] { display: none !important; }
+
+  .rig {
+    position: fixed; inset: 0 0 auto 0; z-index: 40;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 7px 12px;
+    background: #000; border-bottom: 1px solid #222;
+    font-size: 11px; color: #9a9a9a;
+  }
+  .rig b { color: #d8d8d8; font-weight: 600; letter-spacing: .06em; }
+  .rig .rev {
+    min-width: 22px; height: 22px; padding: 0 8px;
+    border: 1px solid #333; color: #c8c8c8; background: #141414;
+    font-size: 11px;
+  }
+  .rig .rev:hover { border-color: #555; color: #fff; }
+  .rig .rev[data-on='true'] { border-color: var(--accent-rest); color: var(--accent-rest); }
+  .rig .hint { margin-left: auto; color: #6e6e6e; }
+  #geom { font-variant-numeric: tabular-nums; color: #8f8f8f; }
+
+  .fit { position: absolute; inset: 42px 0 0 0; overflow: hidden; }
+  .stage {
+    width: min(1280px, 100%); height: 100%; margin: 0 auto;
+    background: var(--ink-950);
+    display: grid; grid-template-columns: 84px minmax(0, 1fr) var(--zone5-w);
+    box-shadow: 0 0 0 1px #000, 0 30px 80px rgba(0,0,0,.8);
+  }
+
+  .desk {
+    background: var(--rail-surface);
+    border-right: 1px solid var(--ink-border);
+    display: flex; flex-direction: column; align-items: center;
+    padding-top: 14px; gap: 2px;
+  }
+  .desk .cat {
+    width: 100%; text-align: center; padding: 9px 0 8px;
+    color: var(--text-low); font-size: 10px; letter-spacing: .08em;
+  }
+  .desk .cat .glyph { display: block; font-size: 15px; line-height: 1; margin-bottom: 3px; color: var(--text-mid); }
+  .desk .cat[data-on='true'] { color: var(--accent-rest); }
+  .desk .cat[data-on='true'] .glyph { color: var(--accent-rest); }
+
+  .page-col { position: relative; overflow: hidden; background: var(--ink-950); }
+  .sheet {
+    position: absolute; inset: 18px 22px 22px 18px;
+    background: var(--paper); color: var(--ink-on-paper);
+    box-shadow: 0 0 0 1px rgba(0,0,0,.35);
+    overflow: auto; padding: 28px 48px 40px 56px;
+  }
+  .sheet .kicker {
+    font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--ink-on-paper-low); margin-bottom: 18px;
+  }
+  .sheet p {
+    font-family: var(--font-prose); font-size: 18px; line-height: 1.7;
+    margin-bottom: 1.1em; position: relative;
+  }
+  .lnk {
+    background: var(--sea-wash);
+    cursor: pointer;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+  .lnk:hover, .lnk[data-on='true'] { background: var(--sea-wash-deep); }
+  .para { position: relative; }
+  .gutter {
+    position: absolute; left: -22px; top: .45em;
+    width: 8px; height: 8px;
+    border: 1.5px solid color-mix(in srgb, var(--ink-sea) 70%, transparent);
+    background: var(--sea-wash);
+    cursor: pointer;
+  }
+  .gutter[data-on='true'] { background: var(--sea-wash-deep); }
+
+  .zone5 {
+    background: var(--desk-ground);
+    border-left: 1px solid var(--ink-border);
+    display: flex; flex-direction: column; min-width: 0;
+  }
+  .zone5-h {
+    padding: 12px 14px 8px;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-mid);
+  }
+  .tabs {
+    display: flex; gap: 4px;
+    border-bottom: 1px solid var(--ink-border);
+    padding: 0 10px;
+  }
+  .tab {
+    border-bottom: 2px solid transparent;
+    color: var(--text-low);
+    font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+    padding: 6px 6px;
+  }
+  .tab:hover { color: var(--text-hi); }
+  .tab[data-on='true'] { color: var(--text-hi); border-bottom-color: var(--accent-rest); }
+  .zone5-body { flex: 1; overflow: auto; padding: 10px 12px 16px; }
+  .sort {
+    display: flex; gap: 4px;
+    border-bottom: 1px solid var(--ink-border);
+    margin-bottom: 10px;
+  }
+  .sort button {
+    border-bottom: 2px solid transparent;
+    color: var(--text-low); font-size: 11px; letter-spacing: 1px;
+    text-transform: uppercase; padding: 6px 4px;
+  }
+  .sort button:hover { color: var(--text-hi); }
+  .sort button[data-on='true'] { color: var(--text-hi); border-bottom-color: var(--accent-rest); }
+  .math { font-size: 11px; color: var(--text-low); margin: 0 0 8px; }
+  .focus-bar {
+    font-size: 12px; color: var(--text-mid); margin-bottom: 10px; line-height: 1.4;
+  }
+  .focus-bar button { color: var(--accent-rest); text-decoration: underline; text-underline-offset: 2px; }
+  .grp { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-mid); margin: 12px 0 6px; }
+  .row {
+    display: flex; align-items: center; gap: 4px;
+  }
+  .open {
+    flex: 1; min-width: 0; text-align: left;
+    display: flex; align-items: baseline; gap: 6px;
+    padding: 6px 4px; color: var(--text-mid); font-size: 13px;
+  }
+  .open:hover { color: var(--text-hi); background: var(--ink-800); }
+  .kind { flex: 0 0 auto; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-low); }
+  .lab { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .unlink { flex: 0 0 auto; color: var(--text-low); font-size: 11px; padding: 2px 6px; }
+  .unlink:hover { color: var(--text-hi); }
+  .empty { font-size: 12px; color: var(--text-low); line-height: 1.45; padding: 8px 4px; }
+
+  .tutor-body { display: flex; flex-direction: column; gap: 12px; }
+  .convo { display: flex; flex-direction: column; gap: 10px; }
+  .msg { font-size: 13px; line-height: 1.5; padding: 8px 10px; }
+  .msg.writer { background: var(--ink-800); color: var(--text-hi); align-self: flex-end; max-width: 92%; }
+  .msg.tutor { border: 1px solid var(--ink-border); color: var(--text-mid); max-width: 92%; }
+  .composer { display: flex; gap: 6px; }
+  .composer input {
+    flex: 1; background: var(--ink-800); border: 1px solid var(--ink-border);
+    color: var(--text-hi); font-size: 13px; padding: 8px 9px;
+  }
+  .composer button {
+    border: 1px solid var(--ink-border); color: var(--text-mid);
+    padding: 0 10px; font-size: 12px;
+  }
+  .composer button:hover { color: var(--text-hi); }
+
+  .overlay {
+    position: absolute; inset: 0; z-index: 8;
+    background: rgba(17, 6, 0, .45);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card {
+    position: relative;
+    width: min(420px, 86%);
+    min-height: 280px;
+    background: var(--card-stock); color: var(--ink-on-paper);
+    border: 1px solid var(--card-hairline);
+    border-top: 2px solid var(--accent-rest);
+    box-shadow: 0 14px 44px rgba(0,0,0,.5);
+    display: flex; flex-direction: column;
+  }
+  .card-kicker {
+    padding: 10px 18px 0;
+    font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--ink-on-paper-low);
+  }
+  .card-body {
+    flex: 1; padding: 10px 22px 24px;
+    font-family: var(--font-prose); font-size: 16px; line-height: 1.6;
+  }
+  .card-foot {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 14px 12px; border-top: 1px solid var(--card-hairline);
+    font-size: 11px; color: var(--ink-on-paper-low);
+  }
+  .connect-btn {
+    border: 1px solid var(--card-hairline);
+    color: var(--ink-on-paper-low);
+    padding: 4px 10px; font-size: 11px; letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .connect-btn:hover { color: var(--ink-on-paper); border-color: var(--accent-door); }
+  .connect-btn[data-on='true'] { color: var(--accent-door); border-color: var(--accent-door); }
+  .connect {
+    position: absolute; left: 0; right: 0; top: calc(100% + 8px);
+    background: var(--desk-ground); border: 1px solid var(--ink-border);
+    color: var(--text-hi); z-index: 9;
+  }
+  .connect-h {
+    padding: 10px 12px 6px;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent-rest);
+  }
+  .thumbs {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    padding: 4px 12px 12px;
+  }
+  .thumb { display: flex; flex-direction: column; gap: 4px; text-align: left; color: var(--text-mid); }
+  .thumb:hover { color: var(--text-hi); }
+  .thumb .pic {
+    height: 54px; border: 1px solid var(--ink-border);
+    background: var(--card-stock); color: var(--ink-on-paper);
+    font-family: var(--font-prose); font-size: 10px; line-height: 1.3;
+    padding: 6px 7px; overflow: hidden;
+  }
+  .thumb .pic.page { background: var(--paper); border-top: 2px solid var(--accent-rest); }
+  .thumb .pic.doc { background: var(--ink-800); color: var(--text-mid); font-family: var(--font-ui); }
+  .thumb .lab { font-size: 10px; }
+  .switch-board {
+    width: calc(100% - 24px); margin: 0 12px 12px;
+    border: 1px solid var(--ink-border); color: var(--text-mid);
+    padding: 6px 8px; text-align: left; font-size: 13px;
+  }
+  .board-list { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 2px; }
+  .board-list button { text-align: left; padding: 6px 8px; color: var(--text-mid); font-size: 13px; }
+  .board-list button:hover { background: var(--ink-800); color: var(--text-hi); }
+  .board-list button[data-current='true'] { color: var(--accent-rest); }
+
+  .page-pop {
+    position: absolute; inset: 24px 24px 24px 24px; z-index: 8;
+    background: var(--paper); color: var(--ink-on-paper);
+    border: 1px solid var(--card-hairline);
+    box-shadow: 0 14px 44px rgba(0,0,0,.5);
+    overflow: auto; padding: 28px 40px;
+  }
+  .page-pop h2 { font-family: var(--font-prose); font-size: 22px; margin-bottom: 12px; }
+  .page-pop p { font-family: var(--font-prose); font-size: 16px; line-height: 1.65; margin-bottom: 1em; }
+  .pop-close {
+    position: absolute; top: 10px; right: 12px;
+    color: var(--ink-on-paper-low); font-size: 12px; letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+    z-index: 50;
+    background: var(--ink-900); border: 1px solid var(--ink-border);
+    color: var(--text-hi); font-size: 13px; padding: 8px 14px;
+    opacity: 0; pointer-events: none; transition: opacity .2s ease;
+  }
+  .toast[data-on='true'] { opacity: 1; }
+
+  .phone-back { display: none; }
+
+  @media (max-width: 720px) {
+    .rig .hint { display: none; }
+    .stage { grid-template-columns: 1fr; width: 100%; }
+    .desk { display: none; }
+    .zone5 { display: none; border-left: none; }
+    body[data-panel='linked'] .page-col,
+    body[data-panel='tutor'] .page-col { display: none; }
+    body[data-panel='linked'] .zone5,
+    body[data-panel='tutor'] .zone5 { display: flex; }
+    body[data-panel='tutor'] .linked-pane { display: none; }
+    body[data-panel='linked'] .tutor-pane { display: none; }
+    .sheet { inset: 8px; padding: 20px 22px 28px 32px; }
+    .sheet p { overflow-wrap: anywhere; }
+    .overlay, .page-pop { inset: 8px; }
+    .card { width: 100%; }
+    .connect { position: static; margin-top: 8px; }
+    .thumbs { grid-template-columns: repeat(2, 1fr); }
+    .phone-back {
+      display: block; padding: 8px 12px;
+      font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--text-mid); border-bottom: 1px solid var(--ink-border);
+    }
+    body[data-panel='page'] .phone-back { display: none; }
+    body[data-panel='card'] .page-col { display: none; }
+    body[data-panel='connect'] .page-col { display: none; }
+  }
+</style>
+</head>
+<body data-panel="page" data-right="linked">
+
+<header class="rig" aria-label="Rail mockup states">
+  <b>RAIL · EXP1</b>
+  <button class="rev" data-view="rest" type="button">Resting</button>
+  <button class="rev" data-view="span" type="button">Span</button>
+  <button class="rev" data-view="tutor" type="button">Tutor</button>
+  <button class="rev" data-view="card" type="button">Card</button>
+  <button class="rev" data-view="connect" type="button">Connect</button>
+  <span class="hint" id="revHint">Resting · everything this page is connected to</span>
+  <span id="geom"></span>
+</header>
+
+<div class="fit">
+  <div class="stage" id="stage">
+    <nav class="desk" aria-label="Desk">
+      <button class="cat" type="button"><span class="glyph">⌂</span>Desk</button>
+      <button class="cat" data-on="true" type="button"><span class="glyph">✎</span>Pages</button>
+      <button class="cat" type="button"><span class="glyph">▦</span>Boards</button>
+      <button class="cat" type="button"><span class="glyph">⌘</span>Plan</button>
+    </nav>
+
+    <div class="page-col" id="pageCol">
+      <article class="sheet" id="sheet">
+        <div class="kicker">Page · Night Kitchen · Chapter 3</div>
+        <p>
+          The kettle clicks off and <span class="lnk" data-anchor="a1">she still doesn’t turn around</span>.
+        </p>
+        <p>
+          <span class="lnk" data-anchor="a2">Steam writes a short sentence</span> on the window, then forgets it.
+        </p>
+        <div class="para">
+          <button class="gutter" id="gutter" type="button" title="Spot note" aria-label="Spot note on this paragraph"></button>
+          <p>He could say her name. He doesn’t.</p>
+        </div>
+      </article>
+
+      <div class="overlay" id="cardOverlay" hidden>
+        <article class="card" id="openCard">
+          <button class="pop-close" id="cardClose" type="button">Close</button>
+          <div class="card-kicker" id="cardKicker">Card · Night Kitchen</div>
+          <div class="card-body" id="cardBody">The first line she won’t say</div>
+          <div class="card-foot">
+            <span>untagged</span>
+            <button class="connect-btn" id="connectBtn" type="button">Connect</button>
+          </div>
+          <div class="connect" id="connect" hidden>
+            <div class="connect-h">Cards on this board</div>
+            <div class="thumbs">
+              <button class="thumb" type="button"><span class="pic">The first line she won’t say</span><span class="lab">Card</span></button>
+              <button class="thumb" type="button"><span class="pic">Kitchen smell — onion, rain, metal</span><span class="lab">Card</span></button>
+              <button class="thumb" type="button"><span class="pic">What she won’t say</span><span class="lab">Card</span></button>
+            </div>
+            <div class="connect-h">Pages</div>
+            <div class="thumbs">
+              <button class="thumb" type="button"><span class="pic page">Chapter 3<br>Morning after the storm.</span><span class="lab">Page</span></button>
+              <button class="thumb" type="button"><span class="pic page">Free write · Oct 4</span><span class="lab">Page</span></button>
+            </div>
+            <div class="connect-h">Documents</div>
+            <div class="thumbs">
+              <button class="thumb" type="button"><span class="pic doc">Cast notes</span><span class="lab">Document</span></button>
+              <button class="thumb" type="button"><span class="pic doc">The house — outline</span><span class="lab">Document</span></button>
+            </div>
+            <button class="switch-board" id="switchBoard" type="button">Switch board…</button>
+            <div class="board-list" id="boardList" hidden>
+              <button type="button" data-current="true">Night Kitchen</button>
+              <button type="button">The Stairs</button>
+              <button type="button">Cast Bible</button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="page-pop" id="pagePop" hidden>
+        <button class="pop-close" id="pageClose" type="button">Close</button>
+        <h2 id="pagePopTitle">Chapter 3</h2>
+        <p>Morning after the storm. The porch is a wet page. She has already filled the kettle; he hears it from the stairs and stops.</p>
+        <p>Nothing in this popup is live. Double-click a page in the rail to open a full-size, scrollable page — §5.</p>
+      </div>
+    </div>
+
+    <aside class="zone5" id="zone5" aria-label="This page's connections">
+      <button class="phone-back" id="phoneBack" type="button">‹ Page</button>
+      <div class="zone5-h">This page</div>
+      <div class="tabs" role="tablist">
+        <button class="tab" data-right="linked" data-on="true" type="button">Linked</button>
+        <button class="tab" data-right="tutor" type="button">Tutor</button>
+      </div>
+      <div class="zone5-body">
+        <div class="linked-pane" id="linkedPane">
+          <div class="sort" role="tablist" aria-label="Sort">
+            <button data-sort="recency" data-on="true" type="button">Recency</button>
+            <button data-sort="kind" type="button">Kind</button>
+            <button data-sort="tag" type="button">Tag</button>
+          </div>
+          <div class="focus-bar" id="focusBar" hidden>
+            Only the source(s) linked to this span.
+            <button type="button" id="showAll">Show everything linked to this page</button>
+          </div>
+          <div id="list"></div>
+        </div>
+        <div class="tutor-pane" id="tutorPane" hidden>
+          <div class="tutor-body">
+            <div class="convo" id="convo">
+              <div class="msg tutor">This page is holding a silence. The linked span is doing the work the last line won’t.</div>
+            </div>
+            <form class="composer" id="tutorForm">
+              <input id="tutorIn" type="text" placeholder="Ask the page…" autocomplete="off">
+              <button type="submit">Send</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function () {
+  const HINTS = {
+    rest: 'Resting · everything this page is connected to',
+    span: 'Selected span · only its source(s); empty press returns',
+    tutor: 'Tutor shares the right panel (item 11)',
+    card: 'Double-click a card in the rail → card popup',
+    connect: 'Connect menu on the card (item 12)'
+  };
+
+  const LINKS = [
+    { id: 'l1', anchor: 'a1', kind: 'card', label: 'The first line she won’t say', tags: ['voice', 'kitchen'], recency: 5, body: 'The first line she won’t say\n\nHe waits in the doorway with the kettle still singing.' },
+    { id: 'l2', anchor: 'a2', kind: 'card', label: 'Kitchen smell — onion, rain, metal', tags: ['kitchen'], recency: 4, body: 'Kitchen smell — onion, rain, metal.' },
+    { id: 'l3', anchor: 'a1', kind: 'page', label: 'Chapter 3', tags: ['night'], recency: 3, body: 'Morning after the storm. The porch is a wet page.' },
+    { id: 'l4', anchor: null, kind: 'page', label: 'Free write · Oct 4', tags: ['voice'], recency: 2, body: 'A cold start. No kettle yet.' },
+    { id: 'l5', anchor: 'spot', kind: 'note', label: 'Don’t let him speak first', tags: [], recency: 6, body: 'Don’t let him speak first' },
+    { id: 'l6', anchor: null, kind: 'imported', label: 'Cast notes', tags: ['cast'], recency: 1, body: 'Imported · Cast notes' },
+    { id: 'l7', anchor: null, kind: 'imported', label: 'The house — outline', tags: ['night', 'cast'], recency: 0, body: 'Imported · The house — outline' }
+  ];
+
+  const KIND_ORDER = ['card', 'page', 'imported', 'note'];
+  const KIND_LABEL = { card: 'Card', page: 'Page', imported: 'Imported', note: 'Note' };
+
+  const $ = (id) => document.getElementById(id);
+  let sort = 'recency';
+  let focus = null; // anchor id or null
+  let gone = new Set();
+  let toastT = 0;
+  let replyI = 0;
+  const REPLIES = [
+    'Keep the kettle. Cut the explanation.',
+    'I won’t write it for you. Ask what the steam forgot.',
+    'The linked span is louder than he is.'
+  ];
+
+  function toast(msg) {
+    $('toast').textContent = msg;
+    $('toast').dataset.on = 'true';
+    clearTimeout(toastT);
+    toastT = setTimeout(() => { $('toast').dataset.on = 'false'; }, 2400);
+  }
+
+  function visible() {
+    return LINKS.filter((l) => !gone.has(l.id) && (!focus || l.anchor === focus));
+  }
+
+  function render() {
+    const items = visible();
+    const box = $('list');
+    box.innerHTML = '';
+    $('focusBar').hidden = !focus;
+    document.querySelectorAll('.lnk').forEach((el) => {
+      el.dataset.on = el.dataset.anchor === focus ? 'true' : 'false';
+    });
+    $('gutter').dataset.on = focus === 'spot' ? 'true' : 'false';
+
+    if (!items.length) {
+      box.innerHTML = '<div class="empty">No notes yet. Press Ctrl+Enter anywhere in the page, or right-click and choose Note this.</div>';
+      return;
+    }
+
+    if (sort === 'tag') {
+      const groups = new Map();
+      let appearances = 0;
+      items.forEach((item) => {
+        const tags = item.tags.length ? item.tags : ['No tag'];
+        tags.forEach((t) => {
+          if (!groups.has(t)) groups.set(t, []);
+          groups.get(t).push(item);
+          appearances += 1;
+        });
+      });
+      const keys = [...groups.keys()].sort((a, b) => {
+        if (a === 'No tag') return 1;
+        if (b === 'No tag') return -1;
+        return a.localeCompare(b);
+      });
+      const math = document.createElement('div');
+      math.className = 'math';
+      math.textContent = items.length + ' things · ' + appearances + ' appearances';
+      box.appendChild(math);
+      keys.forEach((k) => {
+        const h = document.createElement('div');
+        h.className = 'grp';
+        h.textContent = (k === 'No tag' ? 'No tag' : '#' + k) + ' · ' + groups.get(k).length;
+        box.appendChild(h);
+        groups.get(k).forEach((item) => box.appendChild(rowEl(item)));
+      });
+      return;
+    }
+
+    const ordered = items.slice().sort((a, b) => {
+      if (sort === 'kind') return KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind);
+      return b.recency - a.recency;
+    });
+    ordered.forEach((item) => box.appendChild(rowEl(item)));
+  }
+
+  function rowEl(item) {
+    const wrap = document.createElement('div');
+    wrap.className = 'row';
+    const open = document.createElement('button');
+    open.className = 'open';
+    open.type = 'button';
+    open.title = 'Double-click to open';
+    open.innerHTML = '<span class="kind">' + KIND_LABEL[item.kind] + '</span><span class="lab"></span>';
+    open.querySelector('.lab').textContent = item.label;
+    open.addEventListener('dblclick', () => openTarget(item));
+    const rm = document.createElement('button');
+    rm.className = 'unlink';
+    rm.type = 'button';
+    rm.setAttribute('aria-label', 'Unlink — ' + item.label);
+    rm.textContent = '×';
+    rm.addEventListener('click', () => {
+      gone.add(item.id);
+      toast('Unlinked. \'' + item.label + '\' still exists. Only the link is gone.');
+      render();
+    });
+    wrap.appendChild(open);
+    wrap.appendChild(rm);
+    return wrap;
+  }
+
+  function setPanel(name) {
+    document.body.dataset.panel = name;
+  }
+  function setRight(name) {
+    document.body.dataset.right = name;
+    document.querySelectorAll('.tab').forEach((t) => {
+      t.dataset.on = t.dataset.right === name ? 'true' : 'false';
+    });
+    $('linkedPane').hidden = name !== 'linked';
+    $('tutorPane').hidden = name !== 'tutor';
+    if (window.innerWidth <= 720) setPanel(name === 'tutor' ? 'tutor' : 'linked');
+  }
+  function setFocus(id) {
+    focus = id;
+    render();
+  }
+  function closePops() {
+    $('cardOverlay').hidden = true;
+    $('pagePop').hidden = true;
+    $('connect').hidden = true;
+    $('connectBtn').dataset.on = 'false';
+    $('boardList').hidden = true;
+  }
+  function openTarget(item) {
+    closePops();
+    if (item.kind === 'card') {
+      $('cardKicker').textContent = 'Card · Night Kitchen';
+      $('cardBody').textContent = item.body;
+      $('cardOverlay').hidden = false;
+      if (window.innerWidth <= 720) setPanel('card');
+    } else if (item.kind === 'page' || item.kind === 'imported') {
+      $('pagePopTitle').textContent = item.label;
+      $('pagePop').hidden = false;
+      if (window.innerWidth <= 720) setPanel('card');
+    } else {
+      toast('A note lives in the rail — nothing external to open.');
+    }
+  }
+
+  document.querySelectorAll('.lnk').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setRight('linked');
+      setFocus(el.dataset.anchor);
+      if (window.innerWidth <= 720) setPanel('linked');
+    });
+  });
+  $('gutter').addEventListener('click', (e) => {
+    e.stopPropagation();
+    setRight('linked');
+    setFocus('spot');
+    if (window.innerWidth <= 720) setPanel('linked');
+  });
+  $('sheet').addEventListener('click', (e) => {
+    if (e.target.closest('.lnk, .gutter')) return;
+    setFocus(null);
+  });
+  $('showAll').addEventListener('click', () => setFocus(null));
+
+  document.querySelectorAll('.tab').forEach((t) => {
+    t.addEventListener('click', () => setRight(t.dataset.right));
+  });
+  document.querySelectorAll('.sort button').forEach((b) => {
+    b.addEventListener('click', () => {
+      sort = b.dataset.sort;
+      document.querySelectorAll('.sort button').forEach((x) => {
+        x.dataset.on = x === b ? 'true' : 'false';
+      });
+      render();
+    });
+  });
+
+  $('connectBtn').addEventListener('click', () => {
+    const open = $('connect').hidden;
+    $('connect').hidden = !open;
+    $('connectBtn').dataset.on = open ? 'true' : 'false';
+    if (window.innerWidth <= 720 && open) setPanel('connect');
+  });
+  $('cardClose').addEventListener('click', () => {
+    closePops();
+    setPanel(window.innerWidth <= 720 ? 'linked' : 'page');
+  });
+  $('pageClose').addEventListener('click', () => {
+    closePops();
+    setPanel(window.innerWidth <= 720 ? 'linked' : 'page');
+  });
+  $('switchBoard').addEventListener('click', () => {
+    $('boardList').hidden = !$('boardList').hidden;
+  });
+  document.querySelectorAll('.thumb, .board-list button').forEach((b) => {
+    b.addEventListener('click', () => toast('Fake — nothing travels'));
+  });
+  $('phoneBack').addEventListener('click', () => {
+    closePops();
+    setPanel('page');
+    setFocus(null);
+  });
+
+  $('tutorForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const v = $('tutorIn').value.trim();
+    if (!v) return;
+    const w = document.createElement('div');
+    w.className = 'msg writer';
+    w.textContent = v;
+    $('convo').appendChild(w);
+    $('tutorIn').value = '';
+    const t = document.createElement('div');
+    t.className = 'msg tutor';
+    t.textContent = REPLIES[replyI++ % REPLIES.length];
+    $('convo').appendChild(t);
+  });
+
+  const views = document.querySelectorAll('[data-view]');
+  function markView(name) {
+    views.forEach((b) => { b.dataset.on = b.dataset.view === name ? 'true' : 'false'; });
+    $('revHint').textContent = HINTS[name];
+  }
+  views.forEach((b) => {
+    b.addEventListener('click', () => {
+      const name = b.dataset.view;
+      markView(name);
+      closePops();
+      if (name === 'rest') {
+        setRight('linked'); setFocus(null); setPanel('page');
+      } else if (name === 'span') {
+        setRight('linked'); setFocus('a1'); setPanel(window.innerWidth <= 720 ? 'linked' : 'page');
+      } else if (name === 'tutor') {
+        setRight('tutor'); setPanel(window.innerWidth <= 720 ? 'tutor' : 'page');
+      } else if (name === 'card') {
+        setRight('linked');
+        openTarget(LINKS[0]);
+      } else if (name === 'connect') {
+        setRight('linked');
+        openTarget(LINKS[0]);
+        $('connect').hidden = false;
+        $('connectBtn').dataset.on = 'true';
+        if (window.innerWidth <= 720) setPanel('connect');
+      }
+    });
+  });
+  markView('rest');
+  render();
+
+  function measure() {
+    $('geom').textContent = window.innerWidth + ' × ' + window.innerHeight;
+  }
+  measure();
+  window.addEventListener('resize', measure);
+})();
+</script>
+</body>
+</html>
