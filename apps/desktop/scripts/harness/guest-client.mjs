@@ -322,8 +322,20 @@ try {
     && /\}, \[key\]\);/.test(src);
   ok('(J1) THE SECOND LINK: GuestArrival handles each new router location, keyed on location.key — not once per mount',
     keyed(arrivalSrc) && !/const started = useRef/.test(arrivalSrc) && !/\}, \[\]\);/.test(arrivalSrc.slice(arrivalSrc.indexOf('useEffect('), arrivalSrc.indexOf('return (', arrivalSrc.indexOf('useEffect(')))), '');
-  ok('(J2) each new attempt resets the message first, so a stale "not valid" does not outlive a good link',
+  // SUPERSEDED (stale-response guard) — by (J2b) below. Parked, not deleted: it pinned handledKey.current = key directly
+  // followed by setMessage, and the attempt gate now sits between them. Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(J2) each new attempt resets the message first, so a stale "not valid" does not outlive a good link',
     /handledKey\.current = key;\s*setMessage\('Opening your guest account…'\);/.test(arrivalSrc), '');
+  {
+    // (J2b) the same intent against the new shape: within one effect run, the attempt begins, then the message resets,
+    // and both come before the token is read — so a stale "not valid" does not outlive a good link.
+    const eff = arrivalSrc.slice(arrivalSrc.indexOf('handledKey.current = key;'));
+    const beginAt = eff.indexOf('gate.begin()');
+    const resetAt = eff.indexOf("setMessage('Opening your guest account…')");
+    const readAt = eff.indexOf('readGuestTokenFromHash(');
+    ok('(J2b) each new attempt begins, then resets the message, before it reads the token',
+      beginAt > 0 && beginAt < resetAt && resetAt < readAt, JSON.stringify({ beginAt, resetAt, readAt }));
+  }
   ok('(J3) the token is still stripped from the address bar before any network call, per attempt',
     arrivalSrc.indexOf('window.history.replaceState') > 0 && arrivalSrc.indexOf('window.history.replaceState') < arrivalSrc.indexOf('apiGuest(token)'), '');
 
@@ -340,6 +352,72 @@ try {
   ok('(J6) MUTATION KILLED: with the effect back to once-per-mount ([] deps), J1\'s predicate goes red', m1 !== arrivalSrc && !keyed(m1), '');
   const m2 = sheetSrc.replace("    document.addEventListener('focusin', onFocusIn, true);\n", '');
   ok('(J7) MUTATION KILLED: with the focusin listener not attached, J4\'s predicate goes red', m2 !== sheetSrc && !focusGuard(m2), '');
+}
+
+// =============================================================================
+// PART K — two links in quick succession: only the newest may act. The REAL gate through a real race, both orders;
+// the component's wiring in source; and mutations on the component and on the gate itself.
+// =============================================================================
+{
+  const norm = (t) => t.replace(/\r\n?/g, '\n');
+  const gateSrcText = norm(fs.readFileSync(path.join(SRC, 'store/attemptGate.ts'), 'utf8'));
+  const gateMod = await loadEsm('store/attemptGate.ts');
+  const arrivalSrc = norm(arrival);
+  const later = (ms, v) => new Promise((r) => setTimeout(() => r(v), ms));
+
+  // The component's own pattern: begin an attempt, await the request, act only if still current.
+  const open = (gate, acts, label, ms, outcome) => {
+    const attempt = gate.begin();
+    const live = () => gate.isCurrent(attempt);
+    return later(ms, outcome).then((o) => { if (!live()) return; acts.push(label + ':' + o); });
+  };
+
+  const g1 = gateMod.createAttemptGate();
+  const a1 = g1.begin(); const b1 = g1.begin();
+  ok('(K1) only the most recently begun attempt is current', g1.isCurrent(a1) === false && g1.isCurrent(b1) === true, '');
+
+  // Link A is slow and ERRORS; link B is fast and SUCCEEDS. A's late refusal must not be laid over B's success.
+  const acts2 = []; const g2 = gateMod.createAttemptGate();
+  await Promise.all([open(g2, acts2, 'A', 80, 'error'), open(g2, acts2, 'B', 10, 'success')]);
+  ok('(K2) THE RACE, A slow and B fast: B acts, and A\'s late answer is ignored (A\'s error never lands over B\'s success)',
+    JSON.stringify(acts2) === '["B:success"]', JSON.stringify(acts2));
+
+  // Link A is fast and SUCCEEDS; link B is slow. A is already stale (B began after it): it must not sign in the wrong account.
+  const acts3 = []; const g3 = gateMod.createAttemptGate();
+  await Promise.all([open(g3, acts3, 'A', 10, 'success'), open(g3, acts3, 'B', 80, 'success')]);
+  ok('(K3) THE RACE REVERSED, A fast and B slow: A is stale and acts on nothing; only B (the newest) acts',
+    JSON.stringify(acts3) === '["B:success"]', JSON.stringify(acts3));
+
+  const acts4 = []; const g4 = gateMod.createAttemptGate();
+  await open(g4, acts4, 'A', 5, 'success');
+  await open(g4, acts4, 'B', 5, 'success');
+  ok('(K4) attempts one after another each act normally (the gate does not block a sequence)', JSON.stringify(acts4) === '["A:success","B:success"]', JSON.stringify(acts4));
+
+  const thenBody = arrivalSrc.slice(arrivalSrc.indexOf('.then((r) => {'), arrivalSrc.indexOf('// Runs once per location'));
+  const guardAt = thenBody.indexOf('if (!live()) return;');
+  ok('(K5) the component checks the gate FIRST in the result handler — before it signs in, navigates, or sets any message',
+    guardAt > 0 && guardAt < thenBody.indexOf('clearSignedOutHere()') && guardAt < thenBody.indexOf('onAuthed(r.user)') && guardAt < thenBody.indexOf('setMessage('), '');
+  ok('(K6) the attempt BEGINS before the no-token early return, so a newer link with no token still retires an older one in flight',
+    arrivalSrc.indexOf('gate.begin()') > 0 && arrivalSrc.indexOf('gate.begin()') < arrivalSrc.indexOf("setMessage('This guest link is not valid.')"), '');
+  ok('(K7) live() is "mounted AND newest": nothing acts once the component is gone, and the mounted flag is re-armed by a remount (StrictMode-safe)',
+    /const live = \(\) => mounted\.current && gate\.isCurrent\(attempt\);/.test(arrivalSrc)
+      && /mounted\.current = true;\s*return \(\) => \{ mounted\.current = false; \};/.test(arrivalSrc), '');
+  ok('(K8) a request that never arrives ends in the plain network line (not a message that never changes), and still goes through the gate',
+    /apiGuest\(token\)\.catch\(\(\) => \(\{ ok: false as const, error: NETWORK_ERROR_LINE/.test(arrivalSrc) && arrivalSrc.indexOf('.catch(') < arrivalSrc.indexOf('if (!live()) return;'), '');
+
+  // MUTATION 1: take the stale check out of the component. K5's predicate must go red.
+  const m1 = arrivalSrc.replace(/ *if \(!live\(\)\) return;[^\n]*\n/, '');
+  const m1Then = m1.slice(m1.indexOf('.then((r) => {'), m1.indexOf('// Runs once per location'));
+  ok('(K9) MUTATION KILLED: without the stale check in the component, K5\'s predicate goes red', m1 !== arrivalSrc && m1Then.indexOf('if (!live()) return;') < 0, '');
+  // MUTATION 2: break the gate itself (every attempt "current"). The race (K3) must now let the STALE answer act.
+  const mutatedGateText = gateSrcText.replace('return attempt === current;', 'return true;');
+  if (mutatedGateText === gateSrcText) throw new Error('gate mutation anchor not found');
+  const mgDest = path.join(tmp, 'store', 'attemptGate-mut.mjs');
+  fs.writeFileSync(mgDest, ts.transpileModule(mutatedGateText, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 } }).outputText);
+  const mutGate = (await import('file://' + mgDest.replace(/\\/g, '/') + '?t=' + Date.now())).createAttemptGate();
+  const actsM = [];
+  await Promise.all([open(mutGate, actsM, 'A', 10, 'success'), open(mutGate, actsM, 'B', 80, 'success')]);
+  ok('(K10) MUTATION KILLED: with the gate broken, the STALE answer acts (A signs in) — so the gate is what stops it', actsM.includes('A:success'), JSON.stringify(actsM));
 }
 
 fs.rmSync(tmp, { recursive: true, force: true });
