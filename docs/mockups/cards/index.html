@@ -8,6 +8,7 @@
   docs/mockups/cards — clickable opened-card mockup.
   Tokens and chrome copied from apps/desktop/src/index.css (read-only).
   Fake content. No build. No AI calls. Branch: cursor/card-mockup.
+  Phone: sheet BELOW the card (writing stays visible; tools never overlay).
 -->
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=Courier+Prime:ital,wght@0,400;1,400&display=swap');
@@ -55,7 +56,7 @@
     --fade-dur: .2s;
     --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
     --space-6: 24px; --space-8: 32px;
-    --strip-w: 168px;
+    --strip-w: 220px;
     --tutor-w: 220px;
   }
 
@@ -145,15 +146,29 @@
   .cluster {
     position: absolute; left: 50%; top: 42%;
     transform: translate(-50%, -50%);
-    display: flex; align-items: center; z-index: 4;
+    display: flex; align-items: flex-start; z-index: 4;
   }
 
-  /* tool strip — page sliver grammar, card scale */
+  /* tool strip — top flush with the card; close arrow on the strip's own left */
   .strip {
-    position: relative; display: flex; align-items: stretch;
-    flex: 0 0 0; width: 0;
+    position: relative; display: flex; align-items: flex-start;
+    flex: 0 0 16px; width: 16px;
   }
-  .strip[data-open='true'] { flex-basis: var(--strip-w); width: var(--strip-w); }
+  .strip[data-open='true'] {
+    flex-basis: calc(22px + var(--strip-w));
+    width: calc(22px + var(--strip-w));
+  }
+  .strip-close {
+    flex: 0 0 22px; width: 22px; height: 34px;
+    display: none; align-items: center; justify-content: center;
+    background: var(--desk-ground);
+    border: 1px solid var(--ink-border);
+    border-right: none;
+    color: var(--accent-rest);
+    font-size: 13px; line-height: 1;
+  }
+  .strip[data-open='true'] .strip-close { display: flex; }
+  .strip-close:hover { color: var(--text-hi); }
   .strip-panel {
     flex: 0 0 0; width: 0;
     background: var(--desk-ground);
@@ -184,7 +199,7 @@
   .row.letters { flex-wrap: nowrap; }
 
   .grip {
-    position: absolute; top: 50%; transform: translateY(-50%);
+    position: absolute; top: 0; transform: none;
     width: 16px; height: 34px; z-index: 3;
     display: flex; align-items: center; justify-content: center;
     background: var(--desk-ground);
@@ -193,11 +208,9 @@
     font-size: 13px; line-height: 1;
   }
   .strip .grip { right: -16px; border-right: none; }
+  .strip[data-open='true'] .grip { display: none; }
   .tutor .grip { left: -16px; border-left: none; }
   .grip:hover { color: var(--text-hi); }
-  .strip[data-open='true'] .grip {
-    color: var(--accent-rest); border-color: var(--accent-rest);
-  }
   .tutor[data-open='true'] .grip {
     color: var(--accent-rest); border-color: var(--accent-rest);
   }
@@ -233,7 +246,7 @@
 
   .wz-type-face {
     flex: 1 1 auto; min-width: 0; text-align: left;
-    padding: 4px 8px; background: none; color: var(--text-hi);
+    padding: 4px 6px; background: none; color: var(--text-hi);
     border: 1px solid var(--ink-border); cursor: pointer;
     font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
@@ -245,9 +258,17 @@
   .wz-type-row { padding: 4px 8px; font-size: 13px; cursor: pointer; color: var(--text-hi); }
   .wz-type-row:hover { background: var(--ink-800); }
   .wz-type-row[data-current='true'] { color: var(--accent-rest); }
-  .wz-type-size { display: flex; align-items: center; gap: 2px; width: 100%; }
+  .row.type-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 24px 2.6em 24px;
+    align-items: center;
+    gap: 3px;
+    width: 100%;
+  }
+  .row.type-row .wz-type-face { width: auto; max-width: none; min-width: 0; }
+  .row.type-row .mode-tbtn { min-width: 24px; width: 24px; padding: 0; }
   .wz-type-num {
-    width: 3.2em; text-align: center; padding: 3px 2px;
+    width: 2.6em; text-align: center; padding: 3px 1px;
     background: none; color: var(--text-hi);
     border: 1px solid var(--ink-border); font: inherit; font-size: 13px;
   }
@@ -336,7 +357,7 @@
     color: var(--ink-on-paper-low);
   }
   .editor {
-    flex: 1; min-height: 200px;
+    flex: 1; min-height: 200px; min-width: 0;
     padding: 10px 22px 48px;
     outline: none;
     font-family: var(--font-prose);
@@ -369,7 +390,19 @@
   .connect-btn[data-on='true'] { color: var(--accent-door); border-color: var(--accent-door); }
 
   /* —— tutor, mirrored strip —— */
-  .tutor { position: relative; display: flex; align-items: stretch; flex: 0 0 0; width: 0; }
+  .phone-dock { display: none; gap: 8px; padding: 8px 0 6px; }
+  .phone-dock button {
+    appearance: none !important; -webkit-appearance: none !important;
+    flex: 1; height: 32px;
+    background: var(--card-stock) !important;
+    border: 1px solid var(--card-hairline) !important;
+    color: var(--ink-on-paper-low) !important;
+    font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    box-shadow: none;
+  }
+  .phone-dock button[data-on='true'] { color: var(--accent-door); border-color: var(--accent-door); }
+
+  .tutor { position: relative; display: flex; align-items: flex-start; flex: 0 0 0; width: 0; }
   .tutor[data-open='true'] { flex-basis: var(--tutor-w); width: var(--tutor-w); }
   .tutor-panel {
     flex: 0 0 0; width: 0;
@@ -411,19 +444,14 @@
 
   /* —— connect drop —— */
   .connect {
+    display: none;
     position: absolute; left: 0; right: 0; top: calc(100% + 8px);
     width: 100%;
     z-index: 6;
     background: var(--desk-ground);
     border: 1px solid var(--ink-border);
-    opacity: 0; pointer-events: none;
-    transform: translateY(-6px);
-    transition: opacity var(--fade-dur) ease, transform var(--fade-dur) ease;
   }
-  .connect[data-open='true'] {
-    opacity: 1; pointer-events: auto;
-    transform: translateY(0);
-  }
+  .connect[data-open='true'] { display: block; }
   .connect-h {
     padding: 10px 12px 6px;
     font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
@@ -490,29 +518,47 @@
     .strip-panel, .tutor-panel, .connect, .toast, .text-tools, .ink-tools { transition: none; }
   }
 
-  /* phone */
+  /* phone — sheet BELOW the card, never over the writing */
   @media (max-width: 720px) {
     .rig .hint { display: none; }
-    .stage { grid-template-columns: 1fr; width: 100%; }
+    .stage { grid-template-columns: 1fr; width: 100%; max-width: 100vw; min-width: 0; overflow: hidden; }
     .rail { display: none; }
-    .board { inset: 8px; }
+    .board { inset: 8px; min-width: 0; overflow: hidden; }
     .ghost { display: none; }
     .cluster {
-      display: block;
-      left: 8px; right: 8px; top: 48%;
-      transform: translateY(-50%);
-      width: auto;
+      display: flex; flex-direction: column; align-items: stretch;
+      left: 8px; top: 8px; bottom: 8px; right: auto;
+      transform: none;
+      width: calc(100vw - 32px); max-width: calc(100vw - 32px);
+      overflow-x: hidden; overflow-y: auto; min-width: 0;
     }
-    .card { width: 100%; min-height: 260px; }
-    .strip { position: absolute; left: 0; top: 10px; z-index: 7; }
-    .tutor { position: absolute; right: 0; top: 10px; z-index: 7; }
-    .strip[data-open='true'] { width: min(156px, 52vw); flex-basis: min(156px, 52vw); }
-    .tutor[data-open='true'] { width: min(180px, 56vw); flex-basis: min(180px, 56vw); }
-    .strip-panel { width: min(156px, 52vw); }
-    .tutor-panel { width: min(180px, 56vw); }
+    .strip-body { overflow-x: hidden; }
+    .editor { overflow-wrap: anywhere; }
+    .row.type-row { grid-template-columns: minmax(0, 1fr) 22px 2.2em 22px; }
+    .card, .strip, .strip-panel, .strip-body, .tutor, .tutor-panel {
+      min-width: 0; max-width: 100%;
+    }
+    .card { width: 100%; max-width: 100%; min-height: 220px; order: 1; overflow: hidden; }
+    .card-foot { gap: 8px; }
+    .connect-btn { flex: 0 0 auto; }
+    .phone-dock { order: 2; display: flex !important; }
+    .strip { position: static; order: 3; width: 100%; flex: 0 0 auto; }
+    .tutor { position: static; order: 4; width: 100%; flex: 0 0 auto; }
+    .strip[data-open='true'],
+    .tutor[data-open='true'] { width: 100% !important; flex-basis: auto !important; }
+    .strip[data-open='false'] { display: none; }
+    .tutor[data-open='false'] { display: none; }
+    .strip-close { display: none !important; }
+    .strip .grip, .tutor .grip { display: none !important; }
+    .strip[data-open='true'] .strip-panel,
+    .tutor[data-open='true'] .tutor-panel,
+    .strip-panel, .tutor-panel {
+      width: 100% !important; flex-basis: auto !important;
+      border: 1px solid var(--ink-border);
+    }
     .thumbs { grid-template-columns: repeat(2, 1fr); }
     .editor { font-size: 15px; padding: 8px 14px 40px; }
-    .strip-body, .tutor-body { max-height: 70vh; }
+    .strip-body, .tutor-body { max-height: 42vh; }
   }
 </style>
 </head>
@@ -522,14 +568,14 @@
   <b>CARD · 12</b>
   <button class="rev" data-rev="1" type="button" title="Tool strip on the left edge">1</button>
   <button class="rev" data-rev="2" type="button" title="B · I · U in a row">2</button>
-  <button class="rev" data-rev="3" type="button" title="Close arrow on the left of B·I·U">3</button>
-  <button class="rev" data-rev="4" type="button" title="Font name">4</button>
-  <button class="rev" data-rev="5" type="button" title="− [size] +">5</button>
+  <button class="rev" data-rev="3" type="button" title="Close arrow at the strip’s own left">3</button>
+  <button class="rev" data-rev="4" type="button" title="Font name beside − size +">4</button>
+  <button class="rev" data-rev="5" type="button" title="− size + beside the font name">5</button>
   <button class="rev" data-rev="6" type="button" title="Bullets">6</button>
   <button class="rev" data-rev="7" type="button" title="Tags">7</button>
   <button class="rev" data-rev="8" type="button" title="Copy to another board">8</button>
   <button class="rev" data-rev="9" type="button" title="Delete">9</button>
-  <button class="rev" data-rev="10" type="button" title="Toggle to ink + Card Template (INK works)">10</button>
+  <button class="rev" data-rev="10" type="button" title="TEXT/INK tabs · INK template starts a new ink card">10</button>
   <button class="rev" data-rev="11" type="button" title="Tutor pop-out">11</button>
   <button class="rev" data-rev="12" type="button" title="Connect menu">12</button>
   <span class="hint" id="revHint">1 · strip left, matching the page</span>
@@ -563,6 +609,7 @@
 
         <div class="cluster" id="cluster">
           <aside class="strip" id="strip" data-open="true" data-hand="text">
+            <button class="strip-close" id="closeInRow" type="button" title="Close strip" aria-label="Close strip">‹</button>
             <div class="strip-panel" id="stripPanel">
               <div class="strip-body">
                 <div class="tabs" role="tablist" aria-label="Card hand">
@@ -574,7 +621,6 @@
                   <div class="sec">
                     <div class="h">Format</div>
                     <div class="row letters" id="formatRow">
-                      <button class="mode-tbtn" id="closeInRow" type="button" title="Close strip" aria-label="Close strip">›</button>
                       <button class="mode-tbtn" data-fmt="bold" type="button" title="Bold"><b>B</b></button>
                       <button class="mode-tbtn" data-fmt="italic" type="button" title="Italic"><i>I</i></button>
                       <button class="mode-tbtn" data-fmt="underline" type="button" title="Underline"><u>U</u></button>
@@ -583,18 +629,18 @@
 
                   <div class="sec">
                     <div class="h">Type</div>
-                    <button class="wz-type-face" id="faceBtn" type="button" style="font-family: 'Crimson Pro', Georgia, serif;">Crimson Pro</button>
+                    <div class="row type-row">
+                      <button class="wz-type-face" id="faceBtn" type="button" style="font-family: 'Crimson Pro', Georgia, serif;">Crimson Pro</button>
+                      <button class="mode-tbtn" id="sizeDown" type="button" aria-label="Smaller">−</button>
+                      <input class="wz-type-num" id="sizeNum" value="16" inputmode="numeric" aria-label="Size">
+                      <button class="mode-tbtn" id="sizeUp" type="button" aria-label="Larger">+</button>
+                    </div>
                     <ul class="wz-type-list" id="faceList" hidden>
                       <li class="wz-type-row" data-face="Crimson Pro" data-stack="'Crimson Pro', Georgia, serif" data-current="true" style="font-family:'Crimson Pro',Georgia,serif;">Crimson Pro</li>
                       <li class="wz-type-row" data-face="Atkinson" data-stack="Figtree, system-ui, sans-serif" style="font-family:Figtree,system-ui,sans-serif;">Atkinson</li>
                       <li class="wz-type-row" data-face="Times New Roman" data-stack="'Times New Roman', Times, serif" style="font-family:'Times New Roman',Times,serif;">Times New Roman</li>
                       <li class="wz-type-row" data-face="Arial" data-stack="Arial, Helvetica, sans-serif" style="font-family:Arial,Helvetica,sans-serif;">Arial</li>
                     </ul>
-                    <div class="wz-type-size">
-                      <button class="mode-tbtn" id="sizeDown" type="button" aria-label="Smaller">−</button>
-                      <input class="wz-type-num" id="sizeNum" value="16" inputmode="numeric" aria-label="Size">
-                      <button class="mode-tbtn" id="sizeUp" type="button" aria-label="Larger">+</button>
-                    </div>
                   </div>
 
                   <div class="sec">
@@ -627,10 +673,6 @@
                         <button class="no" id="deleteNo" type="button">Cancel</button>
                       </div>
                     </div>
-                    <button class="toggle" id="inkToggle" type="button" data-on="false">
-                      <span>Toggle to ink</span>
-                      <span class="switch" aria-hidden="true"></span>
-                    </button>
                   </div>
 
                   <div class="sec">
@@ -680,7 +722,7 @@
                 </div>
               </div>
             </div>
-            <button class="grip" id="stripGrip" type="button" aria-expanded="true" title="Tools">›</button>
+            <button class="grip" id="stripGrip" type="button" aria-expanded="true" title="Tools">‹</button>
           </aside>
 
           <article class="card" id="card">
@@ -742,6 +784,20 @@ He could say her name. He doesn’t.</div>
         </div>
           </article>
 
+          <article class="card" id="inkCard" hidden>
+            <div class="card-kicker">Card · INK</div>
+            <div class="editor" id="inkEditor" contenteditable="false" spellcheck="false"></div>
+            <canvas class="ink" id="inkNew"></canvas>
+            <div class="card-foot">
+              <span>new · starts in ink</span>
+            </div>
+          </article>
+
+          <div class="phone-dock" id="phoneDock">
+            <button type="button" id="phoneTools" data-on="true">Tools</button>
+            <button type="button" id="phoneTutor">Tutor</button>
+          </div>
+
           <aside class="tutor" id="tutor" data-open="false">
             <button class="grip" id="tutorGrip" type="button" aria-expanded="false" title="Tutor">‹</button>
             <div class="tutor-panel">
@@ -770,14 +826,14 @@ He could say her name. He doesn’t.</div>
   const HINTS = {
     1: '1 · strip on the card’s left edge, matching the page',
     2: '2 · B · I · U in a row',
-    3: '3 · close arrow on the left of B·I·U',
-    4: '4 · font name',
-    5: '5 · − [size] +',
+    3: '3 · close arrow at the strip’s own left',
+    4: '4 · font name, beside − size +',
+    5: '5 · − [size] + beside the font name',
     6: '6 · bullets',
     7: '7 · tags',
     8: '8 · copy to another board',
     9: '9 · delete',
-    10: '10 · toggle to ink · templates (only INK works)',
+    10: '10 · TEXT/INK tabs are the switch · INK template = a new card in ink',
     11: '11 · Tutor pop-out, strip grammar, placeholder replies',
     12: '12 · Connect drops below — cards, pages, documents, switch board'
   };
@@ -818,12 +874,13 @@ He could say her name. He doesn’t.</div>
   function setStrip(open) {
     strip.dataset.open = open ? 'true' : 'false';
     $('stripGrip').setAttribute('aria-expanded', open ? 'true' : 'false');
-    $('stripGrip').textContent = open ? '›' : '‹';
+    $('phoneTools').dataset.on = open ? 'true' : 'false';
   }
   function setTutor(open) {
     tutor.dataset.open = open ? 'true' : 'false';
     $('tutorGrip').setAttribute('aria-expanded', open ? 'true' : 'false');
     $('tutorGrip').textContent = open ? '‹' : '›';
+    $('phoneTutor').dataset.on = open ? 'true' : 'false';
   }
   function setConnect(open) {
     connect.dataset.open = open ? 'true' : 'false';
@@ -836,22 +893,44 @@ He could say her name. He doesn’t.</div>
     document.querySelectorAll('.tab').forEach((t) => {
       t.dataset.on = t.dataset.hand === next ? 'true' : 'false';
     });
-    $('inkToggle').dataset.on = next === 'ink' ? 'true' : 'false';
     editor.setAttribute('contenteditable', next === 'text' ? 'true' : 'false');
+  }
+
+  function showInkCard(on) {
+    $('card').hidden = !!on;
+    $('inkCard').hidden = !on;
+    if (on) {
+      setHand('ink');
+      requestAnimationFrame(sizeCanvas);
+    } else {
+      setHand('text');
+    }
   }
 
   $('stripGrip').addEventListener('click', () => setStrip(strip.dataset.open !== 'true'));
   $('closeInRow').addEventListener('click', () => setStrip(false));
+  $('phoneTools').addEventListener('click', () => {
+    const next = strip.dataset.open !== 'true';
+    setStrip(next);
+    if (next) setTutor(false);
+  });
+  $('phoneTutor').addEventListener('click', () => {
+    const next = tutor.dataset.open !== 'true';
+    setTutor(next);
+    if (next) setStrip(false);
+  });
   $('tutorGrip').addEventListener('click', () => setTutor(tutor.dataset.open !== 'true'));
   $('connectBtn').addEventListener('click', () => setConnect(connect.dataset.open !== 'true'));
 
   document.querySelectorAll('.tab').forEach((t) => {
-    t.addEventListener('click', () => setHand(t.dataset.hand));
+    t.addEventListener('click', () => {
+      showInkCard(false);
+      setHand(t.dataset.hand);
+    });
   });
-  $('inkToggle').addEventListener('click', () => setHand(hand === 'ink' ? 'text' : 'ink'));
   $('tmplInk').addEventListener('click', () => {
-    setHand('ink');
-    toast('INK template — draw over the text');
+    showInkCard(true);
+    toast('New INK card — starts in ink');
   });
 
   document.querySelectorAll('[data-fmt]').forEach((b) => {
@@ -946,24 +1025,33 @@ He could say her name. He doesn’t.</div>
     $('eraser').setAttribute('aria-pressed', ink.erase ? 'true' : 'false');
   });
 
-  const canvas = $('ink');
-  const ctx = canvas.getContext('2d');
-  function sizeCanvas() {
-    const r = $('card').getBoundingClientRect();
+  function activeCanvas() {
+    return $('inkCard').hidden ? $('ink') : $('inkNew');
+  }
+  function sizeOne(cv, host) {
+    if (!cv || host.hidden) return;
+    const r = host.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.round(r.width * dpr);
-    canvas.height = Math.round(r.height * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cv.width = Math.round(r.width * dpr);
+    cv.height = Math.round(r.height * dpr);
+    const c = cv.getContext('2d');
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function sizeCanvas() {
+    sizeOne($('ink'), $('card'));
+    sizeOne($('inkNew'), $('inkCard'));
   }
   sizeCanvas();
   window.addEventListener('resize', sizeCanvas);
 
   function pt(e) {
+    const canvas = activeCanvas();
     const r = canvas.getBoundingClientRect();
     const p = e.touches ? e.touches[0] : e;
     return { x: p.clientX - r.left, y: p.clientY - r.top };
   }
   function stroke(from, to) {
+    const ctx = activeCanvas().getContext('2d');
     ctx.globalCompositeOperation = ink.erase ? 'destination-out' : 'source-over';
     ctx.strokeStyle = INKS[ink.color];
     ctx.lineWidth = NIB[ink.nib] * (ink.tip === 'marker' ? 1.8 : ink.tip === 'pencil' ? 0.75 : 1);
@@ -988,8 +1076,11 @@ He could say her name. He doesn’t.</div>
     e.preventDefault();
   }
   function up() { drawing = false; last = null; }
-  canvas.addEventListener('pointerdown', down);
-  canvas.addEventListener('pointermove', move);
+  ['ink', 'inkNew'].forEach((id) => {
+    const canvas = $(id);
+    canvas.addEventListener('pointerdown', down);
+    canvas.addEventListener('pointermove', move);
+  });
   window.addEventListener('pointerup', up);
 
   $('tutorForm').addEventListener('submit', (e) => {
@@ -1029,8 +1120,8 @@ He could say her name. He doesn’t.</div>
       setTutor(n === 11);
       setStrip(n !== 3);
       if (n === 3) setStrip(true);
-      if (n === 10) setHand('ink');
-      else if (n !== 11 && n !== 12) setHand('text');
+      showInkCard(n === 10);
+      if (n !== 10 && n !== 11 && n !== 12) setHand('text');
       if (n === 4) { setStrip(true); $('faceList').hidden = false; }
       else $('faceList').hidden = true;
       if (n === 6) { setStrip(true); $('bulletMenu').hidden = false; }
