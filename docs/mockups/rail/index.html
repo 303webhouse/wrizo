@@ -143,6 +143,7 @@
   #textTools, #inkTools, #paneConn, #paneTutor { display: flex; flex-direction: column; gap: 20px; }
   .tmpl { display: flex; flex-wrap: wrap; gap: 4px; }
   .tmpl .item-btn { width: auto; padding: 6px 10px; }
+  .item-btn.is-dead { opacity: .45; cursor: default; pointer-events: none; }
   .h { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-rest); }
   .sec { display: flex; flex-direction: column; gap: 8px; }
   .tabs { display: flex; gap: 4px; }
@@ -322,9 +323,9 @@
               <div class="sec">
                 <div class="h">Templates</div>
                 <div class="tmpl">
-                  <button class="item-btn" type="button">Quote</button>
-                  <button class="item-btn" type="button">Note</button>
-                  <button class="item-btn" type="button">Scene</button>
+                  <button class="item-btn is-dead" type="button" aria-disabled="true">Quote</button>
+                  <button class="item-btn is-dead" type="button" aria-disabled="true">Note</button>
+                  <button class="item-btn is-dead" type="button" aria-disabled="true">Scene</button>
                   <button class="item-btn" id="tmplInk" type="button">INK</button>
                 </div>
               </div>
