@@ -320,7 +320,11 @@ try {
   const keyed = (src) => /const \{ key \} = useLocation\(\);/.test(src)
     && /if \(handledKey\.current === key\) return;\s*handledKey\.current = key;/.test(src)
     && /\}, \[key\]\);/.test(src);
-  ok('(J1) THE SECOND LINK: GuestArrival handles each new router location, keyed on location.key — not once per mount',
+  // SUPERSEDED (live run, 8e49b33a) — by (J1b) below. Parked, not deleted. This pinned a guard keyed on location.key, and
+  // the live guest walk proved that design wrong: a navigation the router did not make has no router state, so its key is
+  // the literal "default", the same as the first load, and the second link was skipped. Kept verbatim; `if (false)` keeps it
+  // out of the verdict.
+  if (false) ok('(J1) THE SECOND LINK: GuestArrival handles each new router location, keyed on location.key — not once per mount',
     keyed(arrivalSrc) && !/const started = useRef/.test(arrivalSrc) && !/\}, \[\]\);/.test(arrivalSrc.slice(arrivalSrc.indexOf('useEffect('), arrivalSrc.indexOf('return (', arrivalSrc.indexOf('useEffect(')))), '');
   // SUPERSEDED (stale-response guard) — by (J2b) below. Parked, not deleted: it pinned handledKey.current = key directly
   // followed by setMessage, and the attempt gate now sits between them. Kept verbatim; `if (false)` keeps it out of the verdict.
@@ -333,7 +337,8 @@ try {
     const beginAt = eff.indexOf('gate.begin()');
     const resetAt = eff.indexOf("setMessage('Opening your guest account…')");
     const readAt = eff.indexOf('readGuestTokenFromHash(');
-    ok('(J2b) each new attempt begins, then resets the message, before it reads the token',
+    // SUPERSEDED (live run, 8e49b33a) — by (J2c) below: it anchored on handledKey.current = key, which no longer exists.
+    if (false) ok('(J2b) each new attempt begins, then resets the message, before it reads the token',
       beginAt > 0 && beginAt < resetAt && resetAt < readAt, JSON.stringify({ beginAt, resetAt, readAt }));
   }
   ok('(J3) the token is still stripped from the address bar before any network call, per attempt',
@@ -349,9 +354,61 @@ try {
 
   // MUTATIONS — each protection removed; its predicate must go red.
   const m1 = arrivalSrc.replace('}, [key]);', '}, []);');
-  ok('(J6) MUTATION KILLED: with the effect back to once-per-mount ([] deps), J1\'s predicate goes red', m1 !== arrivalSrc && !keyed(m1), '');
+  // SUPERSEDED (live run, 8e49b33a) — by (J6b) below. Parked, not deleted. This pinned a guard keyed on location.key, and
+  // the live guest walk proved that design wrong: a navigation the router did not make has no router state, so its key is
+  // the literal "default", the same as the first load, and the second link was skipped. Kept verbatim; `if (false)` keeps it
+  // out of the verdict.
+  if (false) ok('(J6) MUTATION KILLED: with the effect back to once-per-mount ([] deps), J1\'s predicate goes red', m1 !== arrivalSrc && !keyed(m1), '');
   const m2 = sheetSrc.replace("    document.addEventListener('focusin', onFocusIn, true);\n", '');
   ok('(J7) MUTATION KILLED: with the focusin listener not attached, J4\'s predicate goes red', m2 !== sheetSrc && !focusGuard(m2), '');
+}
+
+{
+  {
+    // ---- the successors of the three parked key-based checks (J1, J2b, J6), and the premise that falsified them ----
+    const arrivalSrc = arrival.replace(/\r\n?/g, '\n');
+    const located = (src) => /const location = useLocation\(\);/.test(src)
+      && /if \(handledLocation\.current === location\) return;\s*handledLocation\.current = location;/.test(src)
+      && /\}, \[location\]\);/.test(src);
+    ok('(J1b) THE SECOND LINK: handled per NAVIGATION, guarded on the location OBJECT\'s identity — not location.key, not once per mount',
+      located(arrivalSrc) && !/\{ key \} = useLocation/.test(arrivalSrc) && !/const started = useRef/.test(arrivalSrc), '');
+    const eff = arrivalSrc.slice(arrivalSrc.indexOf('handledLocation.current = location;'));
+    const beginAt = eff.indexOf('gate.begin()');
+    const resetAt = eff.indexOf("setMessage('Opening your guest account…')");
+    const readAt = eff.indexOf('readGuestTokenFromHash(');
+    ok('(J2c) each new attempt begins, then resets the message, before it reads the token',
+      beginAt > 0 && beginAt < resetAt && resetAt < readAt, JSON.stringify({ beginAt, resetAt, readAt }));
+    const mLoc = arrivalSrc.replace('}, [location]);', '}, []);');
+    ok('(J6b) MUTATION KILLED: with the effect back to once-per-mount ([] deps), J1b\'s predicate goes red', mLoc !== arrivalSrc && !located(mLoc), '');
+
+    // THE PREMISE, against react-router's OWN history. Two navigations the router did not make — exactly a second guest link
+    // pasted or assigned in the same tab — get the SAME key ("default"), but a different location OBJECT each time.
+    const rrdPath = require.resolve('react-router-dom');
+    const rr = createRequire(rrdPath)('react-router');
+    const popListeners = [];
+    const fakeWin = {
+      location: { hash: '#/', pathname: '/', search: '', href: 'http://127.0.0.1/#/' },
+      history: { state: null, length: 1, pushState() {}, replaceState() {}, go() {} },
+      document: { querySelector: () => null },
+      addEventListener: (t, f) => { if (t === 'popstate') popListeners.push(f); },
+      removeEventListener() {},
+    };
+    // The very function HashRouter builds its location from (exported under the UNSAFE_ prefix in this version).
+    const hist = rr.UNSAFE_createHashHistory({ window: fakeWin });
+    const seen = [];
+    hist.listen(({ location: l }) => seen.push(l));
+    const externalNav = (hash) => { fakeWin.location.hash = hash; popListeners.forEach((f) => f()); };
+    externalNav('#/guest?t=LINK-A');
+    externalNav('#/guest?t=LINK-B');
+    ok('(J8) THE PREMISE: two externally driven navigations (a second guest link) get the SAME key — so a key-based guard skips the second',
+      seen.length === 2 && seen[0].key === seen[1].key && seen[0].key === 'default', JSON.stringify(seen.map((l) => ({ key: l.key, search: l.search }))));
+    ok('(J9) but each is a different location OBJECT, with its own search — so object identity tells them apart',
+      seen.length === 2 && seen[0] !== seen[1] && seen[0].search === '?t=LINK-A' && seen[1].search === '?t=LINK-B', '');
+    // And the guard's own logic, run over those real locations: identity handles both, a key would handle only the first.
+    const handledBy = (idOf) => { let last = null; const handled = []; for (const l of seen) { if (idOf(l) === last) continue; last = idOf(l); handled.push(l.search); } return handled; };
+    ok('(J10) run over the real locations: guarding on identity handles BOTH links; guarding on the key handles only the FIRST (the defect)',
+      JSON.stringify(handledBy((l) => l)) === '["?t=LINK-A","?t=LINK-B"]' && JSON.stringify(handledBy((l) => l.key)) === '["?t=LINK-A"]', '');
+  }
 }
 
 // =============================================================================
