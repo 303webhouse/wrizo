@@ -24639,3 +24639,22 @@ what makes the late-write guard hold; checked at the merge, not assumed).
 REPLACED by one for FIX’s profile (`latency-profile` @ `fb0597a`: “variant A′ — today’s whole-page path with one `innerText`
 read and one d…”); box idle (0 harness processes, 0 browsers) when written. TOOLS’ splash follows FIX, one lane at a
 time — the grant file holds one.
+
+## THE SIGN-IN BATCH’S FINAL HASHES; THE BOX ORDER; A NEW GUEST-CLIENT MERGE CONDITION — 2026-10-07 (chat 1)
+
+**INK’S FINAL HASHES (Fable, relay; both verified on origin by this desk):** sign-in `d2b16ab` (`arrival-signin-screen`; “Sign-in
+review fixes: a dead network no longer strands the form; the account back stays; LF…”) — byte-reviewed, CLEARED; logout-flush
+`e88834f` (`logout-flush`; “flush, then decide, then wipe; and a belt for whatever still runs after”), STACKED on it —
+byte-reviewed, CLEARED. **THEY SHIP TOGETHER, as one batch.**
+
+**BOX ORDER after FIX’s profile (grant currently FIX’s, for `fb0597a`; no report yet):** (1) INK walk + capture on `d2b16ab`,
+screenshots committed to `docs/evidence/arrival-signin/`; (2) `logout-flush-walk` on `e88834f`; (3) TOOLS’ splash.
+
+**PAIR LIST, additions:** `logout-flush` (27/27) and `seed-guard`. (Now: the desktop suite plus `arrival-signin`, `ab1`, `item210`,
+`a11y-signin`, `escexit`; the server harnesses `item224-server-hardening`, `set-password-db`, `smoke-account-db`,
+`sync-generation`, `sync-chunked-push-proof`, `item224a`; `logout-flush`, `seed-guard`; after the deploy `smoke-login.mjs`.)
+
+**NEW `guest-client` MERGE CONDITION (Fable): entering a guest session clears `wz.signedOutHere` — otherwise the new
+write-belt silently drops a guest’s writing.** Plus a check that proves it. Checked at the merge, not assumed. *(That makes
+three conditions on `guest-client` now: the stale-generation check precedes the `guest_expired` branch; this one; and
+`logout-flush` ships first.)*
