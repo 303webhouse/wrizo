@@ -196,6 +196,17 @@ try {
     mD1 === false, JSON.stringify({ mCatchStart, mOffline }));
 }
 
+// PART G — the claim form: Enter submits, once.
+{
+  ok('(G1) the claim is a <form> whose onSubmit prevents the default and runs submit',
+    /<form className="wz-guest-form" onSubmit=\{\(e\) => \{ e\.preventDefault\(\); void submit\(\); \}\}>/.test(sheet), '');
+  ok('(G2) its button is type="submit", not a click handler',
+    /<button type="submit" className="wz-btn wz-primary" disabled=\{busy\}>/.test(sheet) && !/onClick=\{\(\) => void submit\(\)\}/.test(sheet), '');
+  ok('(G3) a synchronous ref guards the submit, released after the call, so two Enters in one tick cannot both run',
+    /if \(busy \|\| submitting\.current\) return;\s*submitting\.current = true;/.test(sheet) && /submitting\.current = false;/.test(sheet), '');
+  ok('(G4) autocomplete is kept (email, new-password)', /autoComplete="email"/.test(sheet) && /autoComplete="new-password"/.test(sheet), '');
+}
+
 // =============================================================================
 // PART E — the sheet's focus handling, in source. The behaviour itself (focus
 // really moves, Tab really wraps, Esc really closes) is walked in a real browser

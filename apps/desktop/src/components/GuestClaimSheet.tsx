@@ -30,6 +30,7 @@ export function GuestClaimSheet() {
   const panelRef = useRef<HTMLDivElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const returnTo = useRef<HTMLElement | null>(null);
+  const submitting = useRef(false);
   const visible = open && !dismissed;
 
   useEffect(() => subscribeGuestExpired(() => setOpen(isGuestExpired())), []);
@@ -75,10 +76,13 @@ export function GuestClaimSheet() {
   if (!visible) return null;
 
   const submit = async () => {
-    if (busy) return;
+    // The ref flips synchronously: two Enters in one tick both read busy=false before a re-render.
+    if (busy || submitting.current) return;
+    submitting.current = true;
     setError('');
     setBusy(true);
     const r = await apiClaim(email, password);
+    submitting.current = false;
     setBusy(false);
     if (!r.ok || !r.user) {
       setError(r.error || 'Could not create account');
@@ -93,14 +97,17 @@ export function GuestClaimSheet() {
     <div className="wz-guest-sheet" role="dialog" aria-modal="true" aria-labelledby="wz-guest-sheet-line">
       <div className="wz-guest-sheet-panel" ref={panelRef}>
         <p id="wz-guest-sheet-line" className="wz-guest-sheet-line">{GUEST_EXPIRED_LINE}</p>
-        <div className="wz-fieldcol">
-          <input ref={emailRef} className="wz-field" type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <input className="wz-field" type="password" placeholder="choose a password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        </div>
-        {error && <div className="wz-sub" role="alert">{error}</div>}
-        <button type="button" className="wz-btn wz-primary" disabled={busy} onClick={() => void submit()}>
-          Create my account
-        </button>
+        {/* A real <form>: Enter submits, and a password manager recognises it. */}
+        <form className="wz-guest-form" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
+          <div className="wz-fieldcol">
+            <input ref={emailRef} className="wz-field" type="email" name="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input className="wz-field" type="password" name="new-password" placeholder="choose a password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          </div>
+          {error && <div className="wz-sub" role="alert">{error}</div>}
+          <button type="submit" className="wz-btn wz-primary" disabled={busy}>
+            Create my account
+          </button>
+        </form>
         <button type="button" className="wz-link" onClick={() => setDismissed(true)}>Not now — keep writing here</button>
       </div>
     </div>

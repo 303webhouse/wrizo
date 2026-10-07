@@ -5425,4 +5425,5 @@ a:focus-visible,
   padding: 16px; background: rgba(17,6,0,.72); }
 .wz-guest-sheet-panel { width: min(420px, 100%); background: var(--wz-lift, #150a04); color: var(--wz-ink, #f0e7d8); border-radius: 10px;
   padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.45); }
+.wz-guest-form { display: flex; flex-direction: column; align-items: center; gap: 14px; margin: 0; }
 .wz-guest-sheet-line { margin: 0; font-family: var(--wz-ui); font-size: 1.05rem; line-height: 1.4; }
