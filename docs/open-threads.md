@@ -24469,3 +24469,16 @@ And a reminder for every lane: the primary checkout is this desk’s deploy stag
 **NICK’S STEPS, handed over with this entry (plain; the password is typed into his own terminal only and appears in no
 chat):** open VS Code on `C:/Users/nickh/writer-studio`, Terminal → New Terminal, confirm the folder and branch `main`, paste
 the one line, answer the three prompts (email; new password twice, hidden), and read the one-word result.
+
+## NICK’S TWO RULINGS: THE SMOKE-TEST ACCOUNT (APPROVED) AND SIGN-UPS (OPTION A, STAY CLOSED) — 2026-10-06 (chat 1, on Fable’s relay)
+
+**1 · SMOKE-TEST ACCOUNT: APPROVED (Nick, as relayed by Fable).** Create ONE dedicated account for live smoke tests. The
+password is generated locally into `~/.wrizo/smoke-account.json`; **never printed, never committed, never pasted into any
+chat or doc.** `scripts/smoke-login.mjs` prints status codes only.
+
+**2 · SIGN-UPS: OPTION A (Nick, as relayed): stay CLOSED until guest links ship. Do NOT set `INVITE_CODES`.**
+
+**FABLE’S CONDITION:** because sign-ups are closed the normal route cannot create the account, so **before anything runs
+against the live database this desk sends Fable its plan (which script, which command, how the password reaches the
+server without being displayed) and WAITS for his OK.** *(Nothing has been run against the live database for this.
+Plan sent in the same turn as this entry.)*
