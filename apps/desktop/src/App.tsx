@@ -18,14 +18,16 @@ import { VoiceWallWhisper } from './components/VoiceWallWhisper';
 import { ThemeEffectsLayer } from './components/ThemeEffectsLayer';
 import { FluxBlockCaret } from './components/FluxBlockCaret';
 import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
-import { subscribe, resetLocalData, getOrCreateSystemBoard } from './store/persistence';
+import { subscribe, resetLocalData, getOrCreateSystemBoard, countDirtyRecords, getDirtyRecords } from './store/persistence';
 import { apiMe, apiLogout, type AuthUser } from './store/api';
 import { setCurrentUser } from './store/currentUser';
 import { installBeforeUnloadGuard } from './store/beforeUnloadGuard';
-import { startSync, stopSync, syncOnce, clearLastSyncAt } from './store/sync';
+import { startSync, stopSync, syncOnce, clearLastSyncAt, getRejectedRecords } from './store/sync';
 import { useDeskFrameMounted } from './store/deskFrameActive';
 import { useFirstRunGateActive } from './store/firstRunGateActive';
 import { onLogoutRequested } from './store/logoutRequest';
+import { showLogoutBlock, clearLogoutBlock } from './store/logoutGuard';
+import { LogoutBlockedSheet } from './components/LogoutBlockedSheet';
 import { isSignedOutHere, markSignedOutHere, clearSignedOutHere } from './store/signedOutHere';
 import { SyncIndicator, FullscreenToggle } from './components/ChromeControls';
 
@@ -250,8 +252,26 @@ export function App() {
     void startSync();
   };
 
-  const handleLogout = async () => {
-    await syncOnce().catch(() => {}); // best-effort final push
+  // LOGOUT SAFETY — never wipe this device while the account is missing writing. One last push is tried; if ANY record
+  // is still dirty (offline, pending, or rejected by the server) the sign-out is REFUSED: the session, the data and
+  // the sync all stay, and the writer is told why. `force` is the second step, reached only through the sheet's
+  // explicit confirm. The signed-out flag is set only on a completed sign-out.
+  // `force` must be exactly true: a click event handed in by accident is truthy and would skip the safety.
+  const handleLogout = async (force: boolean = false) => {
+    if (force !== true) {
+      await syncOnce().catch(() => {}); // best-effort final push
+      const unsaved = countDirtyRecords();
+      if (unsaved > 0) {
+        // Names the records the account refused, and only those that are still unsaved.
+        const dirtyIds = new Set(Object.values(getDirtyRecords()).flat().map((r) => (r as { id: string }).id));
+        showLogoutBlock({
+          count: unsaved,
+          rejectedTitles: getRejectedRecords().filter((r) => dirtyIds.has(r.id)).map((r) => r.title),
+        });
+        return;
+      }
+    }
+    clearLogoutBlock();
     await apiLogout();
     // Mark first: even if the local reset below fails, this device stays on the sign-in screen.
     markSignedOutHere();
@@ -267,7 +287,7 @@ export function App() {
   // fires store/logoutRequest.ts's request instead of owning a second logout
   // sequence; this is the one subscriber, running the SAME handleLogout the
   // corner-cluster button already calls.
-  useEffect(() => onLogoutRequested(() => { void handleLogout(); }), []);
+  useEffect(() => onLogoutRequested((force) => { void handleLogout(force); }), []);
 
   // HB1 — the router now mounts regardless of auth state. Arrival (route
   // '/') is both the boot screen and the front door: Write works local-first
@@ -283,12 +303,14 @@ export function App() {
     <WritingSessionProvider>
       <HashRouter>
         <DeskRail />
-        <GlobalHeader onLogout={handleLogout} authed={authState === 'authed'} />
+        <GlobalHeader onLogout={() => { void handleLogout(); }} authed={authState === 'authed'} />
         <BrandMark />
         <VoiceWallWhisper />
         <ThemeEffectsLayer />
         <FluxBlockCaret />
         <SignedOutRouteGuard authState={authState} />
+        {/* LOGOUT SAFETY — an overlay beside the routes, never inside one: it cannot unmount the page. */}
+        <LogoutBlockedSheet />
         <AppMain>
         <Routes>
         <Route path="/" element={<Arrival authState={authState} onAuthed={handleAuthed} />} />

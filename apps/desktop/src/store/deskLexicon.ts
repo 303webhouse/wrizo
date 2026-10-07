@@ -250,6 +250,9 @@ export type DeskTermId =
   // ITEM 224(a), SYNC INTEGRITY — a record the server itself refused to
   // store (not a size problem); kept dirty, retried, and named here.
   | 'syncRejectedOne' | 'syncRejectedMany'
+  // LOGOUT SAFETY — a sign-out refused while records have not reached the account, and its second step.
+  | 'logoutBlockedBody' | 'logoutBlockedRejected' | 'logoutStay' | 'logoutAnyway' | 'logoutAnywayConfirm' | 'logoutAnywayBack'
+  | 'logoutBlockedBodyOne' | 'logoutAnywayOne' | 'logoutAnywayConfirmOne'
   | 'cascadePageNewPage' | 'cascadePlanJustAPage' | 'boardNewPageCard' | 'boardCanvasEmpty'
   // ITEM 83 M3 (R6) — the Page drawer's PAGE SETUP zone: the sheet's own
   // dimension (margins, leading, numbers, headers, footers), as opposed to
@@ -866,6 +869,15 @@ const CANONICAL: Record<DeskTermId, string> = {
   // retried; the words say so rather than naming a size limit that isn't
   // the reason.
   syncRejectedOne: '\u201c{title}\u201d could not be saved to your account \u2014 it is safe on this device and will keep trying',
+  logoutBlockedBody: '{n} changes haven’t saved to your account yet. Stay signed in until they save, or sign out anyway and lose them.',
+  logoutBlockedRejected: 'The account could not take: {titles}.',
+  logoutStay: 'Stay signed in',
+  logoutAnyway: 'Sign out anyway ({n} changes will be lost)',
+  logoutAnywayConfirm: 'Yes, sign out and lose {n} changes',
+  logoutAnywayBack: 'Keep them',
+  logoutBlockedBodyOne: '1 change hasn’t saved to your account yet. Stay signed in until it saves, or sign out anyway and lose it.',
+  logoutAnywayOne: 'Sign out anyway (1 change will be lost)',
+  logoutAnywayConfirmOne: 'Yes, sign out and lose 1 change',
   syncRejectedMany: '{n} items could not be saved to your account \u2014 they are safe on this device and will keep trying',
   // ITEM 83 M3 (R6). Sentence case on rows, engraved-uppercase on the heading
   // (§1.4) — the heading's dress is CSS, so the term itself stays readable.

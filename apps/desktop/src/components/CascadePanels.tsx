@@ -1044,7 +1044,7 @@ function CascadeSettingsPanel({ navigate }: { navigate: NavigateFunction }) {
         <button
           type="button"
           className="wz-cascade-action"
-          onClick={() => { requestLogout(); navigate('/'); }}
+          onClick={() => { requestLogout(); }}
         >
           {t('cascadeSettingsSignOut')}
         </button>

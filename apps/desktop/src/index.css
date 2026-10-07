@@ -5398,3 +5398,12 @@ a:focus-visible,
 .board-popup-dock-h{ font-size:9px; letter-spacing:2px; text-transform:uppercase;
   color:var(--accent-rest); text-align:center; padding-bottom:2px; }
 @media (prefers-reduced-motion:reduce){ .board-popup-dock{ transition:none; } }
+
+/* LOGOUT SAFETY — the refused-sign-out overlay. Fixed over the page: the page stays mounted behind it
+   (an overlay beside the routes, never a route). */
+.wz-logout-sheet { position: fixed; inset: 0; z-index: 70; display: flex; align-items: center; justify-content: center;
+  padding: 16px; background: rgba(17,6,0,.72); }
+.wz-logout-sheet-panel { width: min(440px, 100%); background: var(--wz-lift, #150a04); color: var(--wz-ink, #f0e7d8); border-radius: 10px;
+  padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.45); }
+.wz-logout-sheet-body { margin: 0; font-size: 1.02rem; line-height: 1.45; }
+.wz-logout-sheet-rejected { margin: 0; font-size: .9rem; opacity: .8; }

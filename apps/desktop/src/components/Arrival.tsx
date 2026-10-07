@@ -87,9 +87,10 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
     navigate(unbornHref({ origin: 'loose' }), firstRun ? { state: { firstRunGate: true } } : undefined);
   };
 
-  const handleOpen = () => {
-    if (!ready) return;
-    if (authState === 'authed') {
+  // Where an authed Open goes: the last Page or Board, else a fresh Free Write page. Shared by Open and by a
+  // successful sign-in or sign-up, so signing in LEAVES the sign-in screen instead of sitting on it.
+  const openAsAuthed = () => {
+    {
       const target = getResumeTarget();
       // HB2-lite S1 (SV11 — the landing rule): Open resumes the last Page or Board.
       // getResumeTarget already routes EVERY surface to /page/:id or /project/:id
@@ -100,8 +101,12 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
       // opens where the writing is, and never on a journal surface."
       if (target) { navigate(target.route, { state: { warmStart: true } }); }
       else { handleWrite(); }
-      return;
     }
+  };
+
+  const handleOpen = () => {
+    if (!ready) return;
+    if (authState === 'authed') { openAsAuthed(); return; }
     setError('');
     setStage('signin');
   };
@@ -111,7 +116,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
     setError(''); setBusy(true);
     const res = await apiLogin(email.trim(), password);
     setBusy(false);
-    if (res.ok && res.user) onAuthed(res.user);
+    if (res.ok && res.user) { onAuthed(res.user); openAsAuthed(); }
     else setError(res.error || 'Could not sign in');
   };
 
@@ -120,7 +125,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
     setError(''); setBusy(true);
     const res = await apiRegister(email.trim(), password, name.trim(), inviteCode.trim());
     setBusy(false);
-    if (res.ok && res.user) onAuthed(res.user);
+    if (res.ok && res.user) { onAuthed(res.user); openAsAuthed(); }
     else setError(res.error || 'Could not create your account');
   };
 

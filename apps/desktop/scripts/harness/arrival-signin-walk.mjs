@@ -1,0 +1,90 @@
+// SIGN-IN + LOGOUT SAFETY — the live walk. Authored, NOT run: it needs a box turn.
+// Runs on runtime-verify's test double WITHOUT WS_ANON (the app boots signed in).
+//
+// 1. Unsaved writing blocks a sign-out: sync is made to fail (so the page stays dirty),
+//    Sign out shows the sheet, the session and the page survive, nothing is wiped.
+// 2. Esc is "Stay signed in"; focus returns to where it was.
+// 3. "Sign out anyway" is two steps; the confirm completes it: the flag is set and the
+//    app lands on the sign-in screen.
+// 4. A successful sign-in LEAVES the sign-in screen (the resume target, or Write) and
+//    clears the flag.
+//
+// Run: WS_BOX_TURN=<token> node scripts/harness/arrival-signin-walk.mjs   (from apps/desktop)
+import { withHarness } from '../runtime-verify.mjs';
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const checks = [];
+const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+
+await withHarness(async (app) => {
+  await app.freshSprint();
+
+  // Make every sync fail, then write a page: it is dirty and cannot reach the account.
+  await app.evalJs(`
+    const realFetch = window.fetch.bind(window);
+    window.fetch = (u, o) => (String(u).includes('/api/sync') ? Promise.reject(new Error('offline (walk)')) : realFetch(u, o));
+    window.__pageId = window.wrizoCreateJournalPage({ text: 'unsaved words' }).id;
+    true;
+  `);
+  await app.evalJs(`window.wrizoFlushNow(); true;`);
+  const dirtyHas = (id) => app.evalJs(`Object.values(window.wrizoDirty.ids()).some((ids) => ids.includes(${JSON.stringify(id)}))`);
+  const pageId = await app.evalJs('window.__pageId');
+  ok('(W0) the walk has an unsaved record to protect (its page id is in the dirty set)', (await dirtyHas(pageId)) === true, String(pageId));
+
+  // 1. Sign out is refused, with the sheet.
+  await app.click('Sign out');
+  await app.waitFor(`!!document.querySelector('.wz-logout-sheet')`, { label: 'blocked sheet shown' });
+  const body = await app.evalJs(`document.querySelector('.wz-logout-sheet-body')?.textContent || ''`);
+  ok('(W1) the sheet says changes have not saved, in the approved words',
+    /haven.t saved to your account yet|hasn.t saved to your account yet/.test(body), body);
+  const me = await app.evalJs(`fetch('/auth/me', { credentials: 'include' }).then((r) => r.ok)`);
+  ok('(W2) the session is still signed in', me === true, '');
+  const flagAfterRefusal = await app.evalJs(`localStorage.getItem('wz.signedOutHere')`);
+  ok('(W3) nothing was wiped (the unsaved page is still dirty) and the signed-out flag is NOT set by a refused sign-out',
+    (await dirtyHas(pageId)) === true && flagAfterRefusal === null, JSON.stringify({ flagAfterRefusal }));
+
+  // Focus starts on "Stay signed in".
+  const focusOnStay = await app.evalJs(`document.activeElement?.textContent === 'Stay signed in'`);
+  ok('(W4) focus starts on "Stay signed in"', focusOnStay === true, '');
+
+  // 2. Esc stays; the page is still mounted.
+  await app.key('Escape');
+  await app.waitFor(`!document.querySelector('.wz-logout-sheet')`, { label: 'Esc closed the sheet' });
+  const stillIn = await app.evalJs(`fetch('/auth/me', { credentials: 'include' }).then((r) => r.ok)`);
+  ok('(W5) Esc means stay: the sheet closes and the writer is still signed in', stillIn === true, '');
+
+  // 3. Sign out anyway: two steps.
+  await app.click('Sign out');
+  await app.waitFor(`!!document.querySelector('.wz-logout-sheet')`, { label: 'sheet again' });
+  await app.click('Sign out anyway');
+  const confirmShown = await app.evalJs(`!!document.querySelector('.wz-logout-confirm')`);
+  const flagBeforeConfirm = await app.evalJs(`localStorage.getItem('wz.signedOutHere')`);
+  ok('(W6) the first click only asks: a confirm appears and nothing is signed out yet',
+    confirmShown === true && flagBeforeConfirm === null, JSON.stringify({ confirmShown, flagBeforeConfirm }));
+  await app.click('Yes, sign out and lose');
+  await app.waitFor(`!!document.querySelector('.wz-arrival input.wz-field')`, { label: 'landed on sign-in' });
+  const flag = await app.evalJs(`localStorage.getItem('wz.signedOutHere')`);
+  ok('(W7) the confirm completes the sign-out: the flag is set and the sign-in screen is up', flag === '1', String(flag));
+
+  // 4. A successful sign-in leaves the sign-in screen and clears the flag.
+  await app.evalJs(`document.querySelector('.wz-arrival input[type="email"]').focus(); true;`);
+  await app.typeKeys('tester@example.com');
+  await app.key('Tab');
+  await app.typeKeys('a-long-enough-password');
+  await app.click('Sign in');
+  await app.waitFor(`location.hash !== '#/' && location.hash !== ''`, { label: 'left the sign-in screen' });
+  const afterHash = await app.evalJs('location.hash');
+  ok('(W8) a successful sign-in leaves the sign-in screen (it goes to a page or project)',
+    /^#\/(page|project)\//.test(afterHash), afterHash);
+  const flagAfter = await app.evalJs(`localStorage.getItem('wz.signedOutHere')`);
+  ok('(W9) and the signed-out flag is cleared', flagAfter === null, String(flagAfter));
+});
+
+// eslint-disable-next-line no-console
+console.log(JSON.stringify(checks, null, 2));
+const pass = checks.every((c) => c.pass);
+// eslint-disable-next-line no-console
+console.log(pass
+  ? `\nARRIVAL-SIGNIN-WALK VERIFY: PASS (${checks.length} checks)`
+  : `\nARRIVAL-SIGNIN-WALK VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+process.exit(pass ? 0 : 1);

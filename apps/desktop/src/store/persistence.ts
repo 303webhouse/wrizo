@@ -199,6 +199,11 @@ export function hasDirtyRecords(): boolean {
   return COLLECTIONS.some((name) => dirty[name].size > 0);
 }
 
+// LOGOUT SAFETY — how many records the account does not have yet. Rejected records stay dirty, so they count here too.
+export function countDirtyRecords(): number {
+  return COLLECTIONS.reduce((n, name) => n + dirty[name].size, 0);
+}
+
 // Item 89 — test/inspection seam (this file's own established pattern; see
 // `window.wrizoCreateJournalPage` below). The registry is module-private and
 // the whole defect was that its survival across a reload could not be
