@@ -477,6 +477,28 @@ try {
   ok('(K10) MUTATION KILLED: with the gate broken, the STALE answer acts (A signs in) — so the gate is what stops it', actsM.includes('A:success'), JSON.stringify(actsM));
 }
 
+// =============================================================================
+// PART L — the guest sheet's palette (see logout-flush.mjs PART E for the logout sheet's). The first guest screenshots showed
+// the claim form's fields with no border or fill: the shared form classes read --wz-* tokens defined only under .wz-home.
+// =============================================================================
+{
+  const css = fs.readFileSync(path.join(SRC, 'index.css'), 'utf8').replace(/\r\n?/g, '\n');
+  const tokensOf = (block) => Object.fromEntries([...block.matchAll(/(--wz-[a-z-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]));
+  const blockAfter = (start) => { const i = css.indexOf(start); return i < 0 ? '' : css.slice(i, css.indexOf('}', i)); };
+  const home = tokensOf(blockAfter('.wz-home {'));
+  const GUEST = '.wz-guest-sheet {\n  --wz-ground';
+  const sheetTokens = tokensOf(blockAfter(GUEST));
+  const names = ['--wz-ground', '--wz-lift', '--wz-ink', '--wz-ink-dim', '--wz-whisper', '--wz-orange', '--wz-orange-line', '--wz-hint', '--wz-ui', '--wz-text'];
+  ok('(L1) the guest sheet defines every home palette token the shared form classes read',
+    names.every((n) => n in sheetTokens), JSON.stringify(names.filter((n) => !(n in sheetTokens))));
+  ok('(L2) and each has EXACTLY the value .wz-home gives it (they cannot drift apart)',
+    names.every((n) => home[n] !== undefined && home[n] === sheetTokens[n]), JSON.stringify(names.filter((n) => home[n] !== sheetTokens[n]).map((n) => [n, home[n], sheetTokens[n]])));
+  const mut = tokensOf(blockAfter(GUEST).replace('--wz-whisper:#463b2c', '--wz-whisper:#000000'));
+  ok('(L3) MUTATION KILLED: with one token changed, L2\'s predicate goes red', !names.every((n) => home[n] === mut[n]), '');
+  ok('(L4) the claim form\'s fields and button are the shared classes that read those tokens (so the tokens are what styles them)',
+    /className="wz-field"/.test(sheet) && /className="wz-btn wz-primary"/.test(sheet), '');
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 
 // eslint-disable-next-line no-console
