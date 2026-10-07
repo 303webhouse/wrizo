@@ -24443,3 +24443,29 @@ next free: **231**.
 **WAITING ON:** Fable’s review of `a1f4526`; then this desk merges it to `main` (it is a file in the repo, not shipped
 behaviour, but `railway up` would carry it, so it rides the next deploy under the ship gate) and gives Nick ONE line
 and plain steps. The smoke-account use of the same script waits on Nick’s yes.
+
+## SET-PASSWORD SCRIPT CLEARED AND MERGED; THE PROXY DEPENDENCY RECORDED; A BRANCH SLIP AND ITS UNDO — 2026-10-06 (chat 1)
+
+**FABLE CLEARED `set-password-script` @ `a1f4526`** (the transaction, the guest guard by column check, the hidden
+prompts, the code-only errors, the 12/12 proof). **Merged to `main` as `eb18837`** — scripts only; `git diff
+origin/main HEAD -- apps/desktop packages` EMPTY, so no bundle change and no deploy needed. Nick’s line is:
+`railway run --service Postgres node apps/server/scripts/set-password.mjs`. Smoke account: waiting on Nick’s yes.
+
+**DEPENDENCY, RECORDED ON THE AFTER-TRIP TASK (Fable):** this route depends on the Postgres service’s PUBLIC TCP proxy
+(`DATABASE_PUBLIC_URL`). **Before the after-trip task removes that proxy, a replacement path must be chosen** (candidates:
+a one-off job run inside the project’s private network; or `railway ssh` into a service with the script shipped). The task
+“confirm `writer-studio-app`’s `DATABASE_URL` references the private variable, then remove Postgres’s public TCP proxy” is
+**BLOCKED on that choice.** *(Also noted: `railway services` now lists `writer-studio-app`, `Postgres` and `wrizo-backup` —
+`Postgres-Bduk` no longer appears.)*
+
+**A SLIP, AND ITS UNDO (this desk’s):** the primary checkout was NOT on `main` when I went to merge — another lane had
+switched it to a new local branch `cursor/card-mockup` (created at `a8172a8`, 0 uncommitted changes, no origin
+counterpart). I had run `git pull` and `git merge` in one command without reading the branch first, so my merge (`15aeaad`)
+landed on THAT branch, not on `main`; nothing was pushed from it. **Undone:** checked out `main`, put
+`cursor/card-mockup` back to `a8172a8` (it held only my merge on top), then merged on `main` and pushed.
+**Standing practice from here: read `git branch --show-current` and stop before any merge, never in the same command.**
+And a reminder for every lane: the primary checkout is this desk’s deploy staging area — build in a worktree.
+
+**NICK’S STEPS, handed over with this entry (plain; the password is typed into his own terminal only and appears in no
+chat):** open VS Code on `C:/Users/nickh/writer-studio`, Terminal → New Terminal, confirm the folder and branch `main`, paste
+the one line, answer the three prompts (email; new password twice, hidden), and read the one-word result.
