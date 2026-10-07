@@ -7,7 +7,8 @@ import { getFirstRunComplete, setFirstRunComplete } from '../store/firstRun';
 import { getResumeTarget } from '../store/resume';
 import { apiLogin, apiRegister, apiSignupStatus, type AuthUser } from '../store/api';
 import { useDeskLexicon } from '../store/deskLexicon';
-import { useDeskFrameViewport } from './DeskFrame';
+import { useDeskFrameViewport } from './DeskFrame';
+import { isSignedOutHere } from '../store/signedOutHere';
 
 // HB1 S1/S5 — the Threshold. Route '/' for every boot, authed or not:
 // the mark, a boot bar (real readiness — doors disable until authState
@@ -32,7 +33,8 @@ type Stage = 'doors' | 'signin' | 'account';
 export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; onAuthed: (user: AuthUser) => void }) {
   const navigate = useNavigate();
   const { t } = useDeskLexicon();
-  const [stage, setStage] = useState<Stage>('doors');
+  // SIGNED OUT HERE — a device that signed out opens straight on the sign-in stage.
+  const [stage, setStage] = useState<Stage>(() => (isSignedOutHere() ? 'signin' : 'doors'));
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -51,6 +53,12 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   const [busy, setBusy] = useState(false);
 
   const ready = authState !== 'loading';
+  // SIGNED OUT HERE — read every render: logout sets authState to 'anon' and re-renders this screen, which picks the flag up.
+  // While locked there is no doors stage and no way back to it; sign-in and Create an account are the only doors.
+  const locked = authState === 'anon' && isSignedOutHere();
+  useEffect(() => { if (locked && stage === 'doors') setStage('signin'); }, [locked, stage]);
+  // Signed in: the door is back to Write / Open, whatever stage the sign-in left behind.
+  useEffect(() => { if (authState === 'authed') setStage('doors'); }, [authState]);
   const framed = useDeskFrameViewport();
 
   const handleWrite = () => {
@@ -121,7 +129,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
       <div className="wz-ambient" aria-hidden="true" />
       <img className="wz-mark show" src="/brand/wrizo-logo.png" alt="" aria-hidden="true" />
 
-      <section className="wz-hero">
+      <section className={stage === 'doors' ? 'wz-hero' : 'wz-hero gone'}>
         <img className="wz-logo" src="/brand/wrizo-logo.png" alt="Wrizo" />
         <div className="wz-tagline">For humans writing</div>
         <div className="wz-arrival-bootbar" data-ready={ready ? 'true' : 'false'} aria-hidden="true">
@@ -136,6 +144,11 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
             <button type="button" className="wz-link wz-arrival-open" disabled={!ready} onClick={handleOpen}>
               Open
             </button>
+            {authState === 'anon' && (
+              <button type="button" className="wz-link wz-arrival-signin" onClick={() => { setError(''); setStage('signin'); }}>
+                Sign in
+              </button>
+            )}
           </div>
         )}
       </section>
@@ -155,9 +168,11 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
                 chrome so nothing looks different. */}
             <button type="button" className="wz-link" onClick={() => { setError(''); setStage('account'); }}>New here? Create an account</button>
           </div>
-          <div className="wz-secondary">
-            <button type="button" className="wz-link" onClick={() => { setError(''); setStage('doors'); }}>← back</button>
-          </div>
+          {!locked && (
+            <div className="wz-secondary">
+              <button type="button" className="wz-link" onClick={() => { setError(''); setStage('doors'); }}>← back</button>
+            </div>
+          )}
         </section>
       )}
 
@@ -184,10 +199,12 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
               <button type="button" className="wz-btn" disabled={busy} onClick={handleCreate}>{busy ? 'one moment…' : 'Create my account'}</button>
             </>
           ) : null}
-          <div className="wz-secondary">
-            {/* a11y audit A2 — same fix as sign-in's own "← back" above. */}
-            <button type="button" className="wz-link" onClick={() => { setError(''); setStage('signin'); }}>← back</button>
-          </div>
+          {!locked && (
+            <div className="wz-secondary">
+              {/* a11y audit A2 — same fix as sign-in's own "← back" above. */}
+              <button type="button" className="wz-link" onClick={() => { setError(''); setStage('signin'); }}>← back</button>
+            </div>
+          )}
         </section>
       )}
     </div>

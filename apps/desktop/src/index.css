@@ -1986,6 +1986,13 @@ a:focus-visible,
 .wz-arrival-doors{ display:flex; flex-direction:column; align-items:center; gap:.6rem; margin-top:.8rem; }
 .wz-arrival-write:disabled, .wz-arrival-open:disabled{ opacity:.35; cursor:default; }
 .wz-arrival-open{ background:none; border:none; font-size:.95rem; }
+.wz-arrival-signin{ background:none; border:none; font-size:.95rem; }
+/* Browser autofill paints its own light field. Keep an autofilled field on the screen's own palette:
+   the text colour and the field's background, not the browser's. */
+.wz-field:-webkit-autofill, .wz-field:-webkit-autofill:hover, .wz-field:-webkit-autofill:focus{
+  -webkit-text-fill-color:var(--wz-ink); caret-color:var(--wz-ink);
+  -webkit-box-shadow:0 0 0 1000px var(--wz-lift) inset; box-shadow:0 0 0 1000px var(--wz-lift) inset;
+  transition:background-color 9999s ease-out 0s; }
 
 /* Desk (authed home) — v6 "launch" aesthetic. Reuses .wz-home tokens. A top-left
    letterhead (name in Crimson over "Writing Desk" in Figtree) + left-aligned

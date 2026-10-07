@@ -26,6 +26,7 @@ import { startSync, stopSync, syncOnce, clearLastSyncAt } from './store/sync';
 import { useDeskFrameMounted } from './store/deskFrameActive';
 import { useFirstRunGateActive } from './store/firstRunGateActive';
 import { onLogoutRequested } from './store/logoutRequest';
+import { isSignedOutHere, markSignedOutHere, clearSignedOutHere } from './store/signedOutHere';
 import { SyncIndicator, FullscreenToggle } from './components/ChromeControls';
 
 // B1 S5 — the old Journal module surface (pages/Journal.tsx, the list/home
@@ -192,6 +193,16 @@ function GlobalHeader({ onLogout, authed }: { onLogout: () => void; authed: bool
 // everywhere. HB1 — absent at '/' now: Arrival mounts its own mark (the
 // route's former "full on the home" variant retired with the Desk room it
 // belonged to, per the AB1-era comment this one replaces).
+// SIGNED OUT HERE (Nick, 2026-10-06) — a device that signed out goes to sign-in and stays there. Any route except
+// the door itself, and the guest link (its token rides in the hash, so it must not be redirected away), is sent
+// back to '/'. It waits for the boot check, so a signed-in device is never bounced.
+function SignedOutRouteGuard({ authState }: { authState: AuthState }) {
+  const { pathname } = useLocation();
+  if (authState !== 'anon' || !isSignedOutHere()) return null;
+  if (pathname === '/' || pathname === '/guest') return null;
+  return <Navigate to="/" replace />;
+}
+
 function BrandMark() {
   const { pathname } = useLocation();
   if (pathname === '/') return null;
@@ -213,6 +224,11 @@ export function App() {
     let active = true;
     apiMe().then((user) => {
       if (!active) return;
+      if (user && isSignedOutHere()) {
+        // A session left on a device that signed out: end it, and show the sign-in screen.
+        void apiLogout().then(() => setAuthState('anon'));
+        return;
+      }
       if (user) {
         setCurrentUser(user);
         setAuthState('authed');
@@ -228,6 +244,7 @@ export function App() {
   }, []);
 
   const handleAuthed = (user: AuthUser) => {
+    clearSignedOutHere();
     setCurrentUser(user);
     setAuthState('authed');
     void startSync();
@@ -236,6 +253,9 @@ export function App() {
   const handleLogout = async () => {
     await syncOnce().catch(() => {}); // best-effort final push
     await apiLogout();
+    // Mark first: even if the local reset below fails, this device stays on the sign-in screen.
+    markSignedOutHere();
+    window.location.hash = '#/';
     stopSync();
     clearLastSyncAt();
     resetLocalData();
@@ -268,6 +288,7 @@ export function App() {
         <VoiceWallWhisper />
         <ThemeEffectsLayer />
         <FluxBlockCaret />
+        <SignedOutRouteGuard authState={authState} />
         <AppMain>
         <Routes>
         <Route path="/" element={<Arrival authState={authState} onAuthed={handleAuthed} />} />
