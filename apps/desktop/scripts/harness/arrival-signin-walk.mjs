@@ -14,7 +14,11 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
-const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+// Printed as each check runs, so a failure part-way through still shows everything that came before it.
+const ok = (name, pass, detail = '') => {
+  checks.push({ name, pass, detail });
+  console.log((pass ? 'PASS ' : 'FAIL ') + name + (pass ? '' : ' | ' + String(detail).slice(0, 200))); // eslint-disable-line no-console
+};
 
 await withHarness(async (app) => {
   await app.freshSprint();
@@ -123,7 +127,9 @@ await withHarness(async (app) => {
     window.fetch = (u, o) => { if (String(u).includes('/auth/login')) window.__loginCalls += 1; return f0(u, o); };
     true;
   `);
-  await app.key('Enter');
+  // A real Enter: keyDown WITH text '\r', which is what makes the browser perform implicit form submission.
+  // app.key('Enter') sends only rawKeyDown/keyUp (no character), which does not submit a form.
+  await app.typeKeys('\n');
   await app.waitFor(`location.hash !== '#/' && location.hash !== ''`, { label: 'left the sign-in screen' });
   const loginCalls = await app.evalJs('window.__loginCalls');
   ok('(W8a) Enter in the password field signs in, with exactly one request', loginCalls === 1, String(loginCalls));

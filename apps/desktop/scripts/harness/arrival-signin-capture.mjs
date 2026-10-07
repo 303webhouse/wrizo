@@ -31,7 +31,21 @@ const THEMES = [
 ];
 
 const shots = [];
+// The hero fades out over .8 s and the form fades in over 1 s. A shot taken inside that window shows a ghost of the
+// logo behind the form — a mid-transition frame, not the settled screen. Wait for the SETTLED state, and record
+// the hero's computed opacity as evidence that it is gone.
+async function settle(app, screen) {
+  if (screen === 'doors') {
+    await app.waitFor(`getComputedStyle(document.querySelector('.wz-hero')).opacity === '1'`, { label: 'hero settled (doors)' });
+    return 'hero opacity 1';
+  }
+  await app.waitFor(`getComputedStyle(document.querySelector('.wz-hero')).opacity === '0'`, { timeout: 8000, label: 'hero hidden (' + screen + ')' });
+  await app.waitFor(`getComputedStyle(document.querySelector('.wz-screen')).opacity === '1'`, { timeout: 8000, label: 'form shown (' + screen + ')' });
+  return 'hero opacity 0, form opacity 1';
+}
 async function save(app, vp, theme, screen) {
+  const state = await settle(app, screen);
+  console.log('  settled: ' + screen + '-' + theme + '-' + vp + ' — ' + state); // eslint-disable-line no-console
   const b64 = await app.screenshot();
   const file = path.join(OUT, `${screen}-${theme}-${vp}.png`);
   fs.writeFileSync(file, Buffer.from(b64, 'base64'));
@@ -69,6 +83,9 @@ await withHarness(async (app) => {
       await sleep(400);
       await save(app, vp.name, theme.name, 'signedout');
       await app.evalJs(`localStorage.removeItem('wz.signedOutHere'); true;`);
+      // Arrival mounted on the sign-in stage because the flag was set; clearing the flag does not move it back.
+      // Reload so the next pass starts on the doors, as a fresh visit would.
+      await app.reload();
     }
   }
 });
