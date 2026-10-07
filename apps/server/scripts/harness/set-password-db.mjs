@@ -40,7 +40,7 @@ try {
   // pure helpers
   ok('normalizeEmail trims and lowercases', mod.normalizeEmail('  Nick@Example.COM ')==='nick@example.com');
   ok('a 7-char password is refused, an 8-char one is accepted', mod.passwordProblem('1234567')!==null && mod.passwordProblem('12345678')===null);
-  ok('the cost constants mirror auth.ts', mod.BCRYPT_COST===12 && mod.MIN_PASSWORD_LENGTH===8 && /BCRYPT_COST = 12;/.test(readFileSync(join(here, '..', '..', 'src', 'auth.ts'),'utf8')) && /MIN_PASSWORD_LENGTH = 8;/.test(readFileSync(join(here, '..', '..', 'src', 'auth.ts'),'utf8')));
+  ok('the cost constants mirror passwordHash.ts (the one place auth.ts takes them from)', mod.BCRYPT_COST===12 && mod.MIN_PASSWORD_LENGTH===8 && /BCRYPT_COST = 12;/.test(readFileSync(join(here, '..', '..', 'src', 'passwordHash.ts'),'utf8')) && /MIN_PASSWORD_LENGTH = 8;/.test(readFileSync(join(here, '..', '..', 'src', 'passwordHash.ts'),'utf8')));
   // 1. happy path
   const newHash = await bcrypt.hash('brand-new-pass', 4);
   let c = await pool.connect(); const r1 = await mod.applyPasswordChange(c,'nick@example.com',newHash); c.release();
