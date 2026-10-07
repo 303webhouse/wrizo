@@ -83,6 +83,18 @@ try {
   } else {
     ok('POSIX: the file is mode 600', (statSync(file).mode & 0o777) === 0o600);
   }
+  if (process.platform === 'win32') {
+    // FOUND LIVE: in ~/.wrizo the file kept EXPLICIT SYSTEM + Administrators entries that /inheritance:r does not touch (a temp
+    // dir had stripped them, which is why the check above passed). Reproduce it: give a file those explicit entries, then lock.
+    const { lockDown } = await import(pathToFileURL(CREATE).href);
+    const stubborn = join(work, 'stubborn-acl.json');
+    writeFileSync(stubborn, '');
+    execFileSync('icacls', [stubborn, '/grant', '*S-1-5-18:(F)', '*S-1-5-32-544:(F)'], { stdio: 'ignore' });
+    const aclCount = (f) => execFileSync('icacls', [f], { encoding: 'utf8' }).split(/\r?\n/).filter((l) => /:\(/.test(l)).length;
+    const pre = aclCount(stubborn);
+    lockDown(stubborn);
+    ok('lockDown leaves exactly ONE access entry even when SYSTEM and Administrators hold explicit entries', pre >= 3 && aclCount(stubborn) === 1, `before=${pre} after=${aclCount(stubborn)}`);
+  }
   const before = readFileSync(file, 'utf8');
   const r2 = run(CREATE, [], env);
   ok('a second run says "exists" and changes neither the file nor the table', r2.status === 0 && /^exists/.test(r2.stdout || '') && readFileSync(file, 'utf8') === before && (await pool.query(`select count(*)::int n from users`)).rows[0].n === 1);
