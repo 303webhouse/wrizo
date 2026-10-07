@@ -24658,3 +24658,23 @@ screenshots committed to `docs/evidence/arrival-signin/`; (2) `logout-flush-walk
 write-belt silently drops a guest’s writing.** Plus a check that proves it. Checked at the merge, not assumed. *(That makes
 three conditions on `guest-client` now: the stale-generation check precedes the `guest_expired` branch; this one; and
 `logout-flush` ships first.)*
+
+## LOGOUT-FLUSH HARNESS FIX CLEARED; `guest-client-r2` REVIEWED; ONE GRANT ON THE GUEST STACK; THE BATCH SPLIT — 2026-10-07 (chat 1)
+
+**CLEARED (Fable, byte review): INK’s `831cb88` (`logout-flush`; “logout-flush harness: isolate each scenario’s storage and
+timers”) — harness only.** **`guest-client-r2` @ `d0a4fa1` REVIEWED: all three merge conditions are met in code** (the stale-
+generation check precedes `guest_expired`; the guest start lifts the signed-out flag; it is stacked on `logout-flush`). The old
+`guest-client` is SUPERSEDED.
+
+**THIS DESK’S CHECK of the stack (read-only):** `d0a4fa1` contains `e88834f` and `d2b16ab`. It does not contain `831cb88` by
+hash, but the stack carries `e9d29f9` — the same message, a re-made copy — and `git diff 831cb88 d0a4fa1 --
+harness/logout-flush.mjs harness/logout-flush-walk.mjs` is EMPTY: the harness fix is in the stack byte for byte.
+
+**BOX (Fable): after FIX’s profile, ONE grant on `d0a4fa1`’s stack covers `arrival-signin-walk` + the 16-shot capture (`d2b16ab`’s
+screens), `logout-flush-walk`, and `guest-client-walk`.** The guest walk needs the `guest-login` server fixtures named in
+its header. Screenshots are committed to `docs/evidence/arrival-signin/`. TOOLS’ splash follows. *(FIX still holds the
+grant for `fb0597a`; no report yet.)*
+
+**SHIP ORDER, unchanged (Fable): BATCH 10 = sign-in (`d2b16ab`) + logout-flush (`e88834f`, `831cb88`). BATCH 11 =
+`guest-login` (server, `de1f170`) + `guest-client-r2` (`d0a4fa1`), with its own screenshots and its own ship gate.**
+The sign-in batch and the guest batch are NOT merged into one pair.
