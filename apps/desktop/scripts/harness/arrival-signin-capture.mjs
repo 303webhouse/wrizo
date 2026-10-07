@@ -2,6 +2,11 @@
 // turn. Run with WS_ANON=1 so the double answers "signed out" (the doors then show
 // Write / Open / Sign in).
 //
+// Batch 10's ship gate also needs the LOGOUT SHEET on screen, since that batch restyles it: logout-sheet (the first step,
+// "Stay signed in" with focus on it), logout-confirm (the second step, after "Sign out anyway") and signing-out (a page whose
+// header button reads "Signing out…"). They come from an AUTHED boot, with sync stubbed in the page: failing, so a page
+// stays unsaved and the sheet appears; then stalled, so the button sits on "Signing out…".
+//
 // Captures, for dark and light, at desktop and phone size:
 //   doors, signin, account, and signedout (after a sign-out: the flag set, the
 //   app reloaded, the writer lands on the sign-in screen).
@@ -35,11 +40,37 @@ const THEMES = [
   { name: 'light', setup: `document.documentElement.setAttribute('data-theme','flux'); document.documentElement.setAttribute('data-page','light'); true;` },
 ];
 
+// Sync, in the page: failing (so whatever is written stays unsaved), or — once __stall is set — never answering (so the
+// sign-out's push is still waiting and the button sits on "Signing out…"). Installed per page: a reload clears it.
+const LOGOUT_STUB = `(() => {
+  const real = window.fetch.bind(window);
+  window.fetch = (u, o) => {
+    if (String(u).includes('/api/sync')) {
+      return window.__stall ? new Promise(() => {}) : Promise.reject(new Error('offline (capture)'));
+    }
+    return real(u, o);
+  };
+  return true;
+})()`;
+
 const shots = [];
 // The hero fades out over .8 s and the form fades in over 1 s. A shot taken inside that window shows a ghost of the
 // logo behind the form — a mid-transition frame, not the settled screen. Wait for the SETTLED state, and record
 // the hero's computed opacity as evidence that it is gone.
 async function settle(app, screen) {
+  if (screen === 'logout-sheet') {
+    await app.waitFor(`/ha(ven|sn).t saved to your account yet/.test(document.querySelector('.wz-logout-sheet-body')?.textContent || '')`, { timeout: 8000, label: 'logout sheet with its sentence' });
+    await app.waitFor(`document.activeElement?.textContent === 'Stay signed in'`, { timeout: 8000, label: 'focus on "Stay signed in"' });
+    return 'sheet open (first step), focus on "Stay signed in"';
+  }
+  if (screen === 'logout-confirm') {
+    await app.waitFor(`!!document.querySelector('.wz-logout-confirm')`, { timeout: 8000, label: 'the confirm step' });
+    return 'sheet open (second step), the confirm shown';
+  }
+  if (screen === 'signing-out') {
+    await app.waitFor(`[...document.querySelectorAll('button')].some((b) => b.textContent === 'Signing out…' && b.disabled)`, { timeout: 8000, label: 'a button reading "Signing out…"' });
+    return 'a page, its sign-out button reading "Signing out…" and disabled';
+  }
   if (screen === 'doors') {
     await app.waitFor(`getComputedStyle(document.querySelector('.wz-hero')).opacity === '1'`, { label: 'hero settled (doors)' });
     return 'hero opacity 1';
@@ -99,6 +130,33 @@ await withHarness(async (app) => {
       await app.waitFor(`!!document.querySelector('.wz-arrival .wz-sub')`, { label: 'account' });
       await sleep(400);
       await save(app, vp.name, theme.name, 'account');
+
+      // The logout sheet and "Signing out…" — an AUTHED boot (there is a session to sign out of; the double reads WS_ANON per
+      // request, in this process), a page to sign out of, sync failing so one record stays unsaved.
+      process.env.WS_ANON = '0';
+      await app.reload();
+      await app.waitFor(`!!document.querySelector('.wz-arrival')`, { label: 'authed arrival (logout phase)' });
+      await app.evalJs(theme.setup); // a reload clears the theme attributes the capture sets
+      await app.evalJs(LOGOUT_STUB);
+      await app.goto('/sprint');
+      await app.waitFor(`!!document.querySelector('.forward-only-editor, textarea')`, { label: 'a page to sign out of' });
+      await app.evalJs(`window.wrizoCreateJournalPage({ text: 'words that have not reached the account' }); true;`);
+
+      await app.click('Sign out');
+      await app.waitFor(`!!document.querySelector('.wz-logout-sheet')`, { timeout: 12000, label: 'the logout sheet' });
+      await save(app, vp.name, theme.name, 'logout-sheet');
+
+      await app.click('Sign out anyway');
+      await save(app, vp.name, theme.name, 'logout-confirm');
+
+      // Esc is "Stay signed in". Then make the push stall, press Sign out again, and shoot while the button says so.
+      await app.key('Escape');
+      await app.waitFor(`!document.querySelector('.wz-logout-sheet')`, { label: 'the sheet dismissed' });
+      await app.evalJs(`window.__stall = true; true;`);
+      await app.click('Sign out');
+      await save(app, vp.name, theme.name, 'signing-out');
+      process.env.WS_ANON = '1';
+      await app.goto('/');
 
       // signedout — the flag a sign-out leaves behind; the app opens on sign-in
       await app.evalJs(`localStorage.setItem('wz.signedOutHere', '1'); true;`);

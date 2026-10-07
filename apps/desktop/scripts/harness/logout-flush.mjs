@@ -240,6 +240,28 @@ function makeEditor(m, id) {
 }
 
 // =============================================================================
+// PART F — the capture's logout frames (Batch 10's ship gate), pinned in source. The capture itself needs a box turn.
+// =============================================================================
+{
+  const cap = fs.readFileSync(path.join(DESKTOP, 'scripts', 'harness', 'arrival-signin-capture.mjs'), 'utf8').replace(/\r\n?/g, '\n');
+  ok('(F1) the capture takes all three: the sheet\'s first step, its confirm step, and a page with "Signing out…"',
+    /save\(app, vp\.name, theme\.name, 'logout-sheet'\)/.test(cap) && /save\(app, vp\.name, theme\.name, 'logout-confirm'\)/.test(cap) && /save\(app, vp\.name, theme\.name, 'signing-out'\)/.test(cap), '');
+  ok('(F2) sync is stubbed in the page, failing so a record stays unsaved, and stalling once __stall is set so the push is still waiting',
+    /String\(u\)\.includes\('\/api\/sync'\)/.test(cap) && /window\.__stall \? new Promise\(\(\) => \{\}\) : Promise\.reject/.test(cap), '');
+  ok('(F3) the phase boots AUTHED (a session to sign out of) and puts WS_ANON back before the signed-out frame',
+    /process\.env\.WS_ANON = '0';/.test(cap) && cap.indexOf("process.env.WS_ANON = '1';") > cap.indexOf("'signing-out'") && cap.indexOf("process.env.WS_ANON = '1';") < cap.indexOf("// signedout —"), '');
+  ok('(F4) each frame waits for its own settled state before it is shot: focus on "Stay signed in"; the confirm element; a disabled "Signing out…" button',
+    /screen === 'logout-sheet'/.test(cap) && /Stay signed in/.test(cap) && /screen === 'logout-confirm'/.test(cap) && /wz-logout-confirm/.test(cap)
+      && /screen === 'signing-out'/.test(cap) && /b\.textContent === 'Signing out…' && b\.disabled/.test(cap), '');
+  ok('(F5) the second step is reached by the real button ("Sign out anyway"), and the sheet is dismissed with Esc ("Stay signed in")',
+    /await app\.click\('Sign out anyway'\)/.test(cap) && /await app\.key\('Escape'\)/.test(cap), '');
+  ok('(F6) the theme is re-applied after the reload, so the light frames are really light',
+    (cap.match(/await app\.evalJs\(theme\.setup\);/g) || []).length >= 2, String((cap.match(/await app\.evalJs\(theme\.setup\);/g) || []).length));
+  ok('(F7) every frame, these included, goes through the same settle-then-email-check in save()',
+    cap.indexOf('const state = await settle(app, screen);') > 0 && cap.indexOf('capture refused:') > cap.indexOf('const state = await settle(app, screen);'), '');
+}
+
+// =============================================================================
 // MUTATIONS — each protection removed in turn; the proof must notice.
 // =============================================================================
 {
