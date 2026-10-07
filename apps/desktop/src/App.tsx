@@ -18,14 +18,19 @@ import { VoiceWallWhisper } from './components/VoiceWallWhisper';
 import { ThemeEffectsLayer } from './components/ThemeEffectsLayer';
 import { FluxBlockCaret } from './components/FluxBlockCaret';
 import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
-import { subscribe, resetLocalData, getOrCreateSystemBoard } from './store/persistence';
+import { subscribe, resetLocalData, getOrCreateSystemBoard, countDirtyRecords, getDirtyRecords } from './store/persistence';
 import { apiMe, apiLogout, type AuthUser } from './store/api';
 import { setCurrentUser } from './store/currentUser';
 import { installBeforeUnloadGuard } from './store/beforeUnloadGuard';
-import { startSync, stopSync, syncOnce, clearLastSyncAt } from './store/sync';
+import { startSync, stopSync, syncOnce, clearLastSyncAt, getRejectedRecords } from './store/sync';
 import { useDeskFrameMounted } from './store/deskFrameActive';
 import { useFirstRunGateActive } from './store/firstRunGateActive';
 import { onLogoutRequested } from './store/logoutRequest';
+import { showLogoutBlock, clearLogoutBlock, attemptSignOut, getSigningOut, setSigningOut, endServerSession, bootDecision } from './store/logoutGuard';
+import { useSigningOut } from './store/useSigningOut';
+import { flushAll } from './store/flushRegistry';
+import { LogoutBlockedSheet } from './components/LogoutBlockedSheet';
+import { isSignedOutHere, markSignedOutHere, clearSignedOutHere } from './store/signedOutHere';
 import { SyncIndicator, FullscreenToggle } from './components/ChromeControls';
 
 // B1 S5 — the old Journal module surface (pages/Journal.tsx, the list/home
@@ -121,6 +126,7 @@ type AuthState = 'loading' | 'anon' | 'authed';
 // ember handle and the forgiving intent/idle restore (shared writing-mode state)
 // bring it back together with the sprint chrome — one frame settling, not two.
 function GlobalHeader({ onLogout, authed }: { onLogout: () => void; authed: boolean }) {
+  const signingOut = useSigningOut();
   const { isWriting } = useWritingSession();
   // AB1 S4 — "top-bar orphans collapse to one corner glyph + gear." While a
   // DeskFrame is mounted (store/deskFrameActive.ts), these three previously
@@ -165,7 +171,7 @@ function GlobalHeader({ onLogout, authed }: { onLogout: () => void; authed: bool
             <div className="gh-corner-menu" role="menu">
               <FullscreenToggle />
               <SyncIndicator />
-              {authed && <button type="button" onClick={onLogout}>Sign out</button>}
+              {authed && <button type="button" onClick={onLogout} disabled={signingOut}>{signingOut ? 'Signing out\u2026' : 'Sign out'}</button>}
             </div>
           )}
         </div>
@@ -177,9 +183,10 @@ function GlobalHeader({ onLogout, authed }: { onLogout: () => void; authed: bool
             <button
               type="button"
               onClick={onLogout}
+              disabled={signingOut}
               style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
             >
-              Sign out
+              {signingOut ? 'Signing out\u2026' : 'Sign out'}
             </button>
           )}
         </>
@@ -192,6 +199,18 @@ function GlobalHeader({ onLogout, authed }: { onLogout: () => void; authed: bool
 // everywhere. HB1 — absent at '/' now: Arrival mounts its own mark (the
 // route's former "full on the home" variant retired with the Desk room it
 // belonged to, per the AB1-era comment this one replaces).
+// SIGNED OUT HERE (Nick, 2026-10-06) — a device that signed out goes to sign-in and stays there. Any route except
+// the door itself, and the guest link (its token rides in the hash, so it must not be redirected away), is sent
+// back to '/'. It waits for the boot check, so a signed-in device is never bounced.
+function SignedOutRouteGuard({ authState }: { authState: AuthState }) {
+  const { pathname } = useLocation();
+  // 'loading' counts: with the flag set a load can only end 'anon' (bootDecision ends any surviving session), so
+  // redirecting at once avoids a flash of the old route. A device that is authed is never bounced.
+  if (authState === 'authed' || !isSignedOutHere()) return null;
+  if (pathname === '/' || pathname === '/guest') return null;
+  return <Navigate to="/" replace />;
+}
+
 function BrandMark() {
   const { pathname } = useLocation();
   if (pathname === '/') return null;
@@ -213,6 +232,13 @@ export function App() {
     let active = true;
     apiMe().then((user) => {
       if (!active) return;
+      if (bootDecision(!!user, isSignedOutHere()) === 'end-session') {
+        // A session left on a device that signed out (its server logout hung, or never ran): end it — capped, so a
+        // hung server cannot keep boot on "loading" — and show the sign-in screen. The flag stays until a sign-in,
+        // so every later load retries this if it still did not take.
+        void endServerSession(apiLogout).then(() => setAuthState('anon'));
+        return;
+      }
       if (user) {
         setCurrentUser(user);
         setAuthState('authed');
@@ -228,26 +254,61 @@ export function App() {
   }, []);
 
   const handleAuthed = (user: AuthUser) => {
+    clearSignedOutHere();
     setCurrentUser(user);
     setAuthState('authed');
     void startSync();
   };
 
-  const handleLogout = async () => {
-    await syncOnce().catch(() => {}); // best-effort final push
-    await apiLogout();
-    stopSync();
-    clearLastSyncAt();
-    resetLocalData();
-    setCurrentUser(null);
-    setAuthState('anon');
+  // LOGOUT SAFETY — never wipe this device while the account is missing writing. One last push is tried; if ANY record
+  // is still dirty (offline, pending, or rejected by the server) the sign-out is REFUSED: the session, the data and
+  // the sync all stay, and the writer is told why. `force` is the second step, reached only through the sheet's
+  // explicit confirm. The signed-out flag is set only on a completed sign-out.
+  // `force` must be exactly true: a click event handed in by accident is truthy and would skip the safety.
+  // THE TIME LIMIT — "Signing out…" shows at once and a second click is ignored while one is under way. The final
+  // push is capped (LOGOUT_PUSH_CAP_MS, ~8 s): finished, failed or stalled, the decision is the unsaved count, so a
+  // stalled push ends at the sheet and never signs out silently past unsaved work.
+  const handleLogout = async (force: boolean = false) => {
+    if (getSigningOut()) return;
+    setSigningOut(true);
+    try {
+      // FLUSH, THEN DECIDE, THEN WIPE — on BOTH paths. Every editor's pending text moves into its record first, so the
+      // unsaved count below sees it, and the unmount that follows the wipe has nothing left to write back.
+      flushAll();
+      if (force !== true) {
+        const attempt = await attemptSignOut(() => syncOnce(), countDirtyRecords);
+        if (attempt.kind === 'blocked') {
+          // Names the records the account refused, and only those that are still unsaved.
+          const dirtyIds = new Set(Object.values(getDirtyRecords()).flat().map((r) => (r as { id: string }).id));
+          showLogoutBlock({
+            count: attempt.count,
+            rejectedTitles: getRejectedRecords().filter((r) => dirtyIds.has(r.id)).map((r) => r.title),
+          });
+          return;
+        }
+      }
+      clearLogoutBlock();
+      // Capped (~5 s): a hung server logout must not leave "Signing out…" up. On a timeout the sign-out finishes on
+      // this device below, and the boot cleanup ends the server session on the next load.
+      await endServerSession(apiLogout);
+      // Mark first: even if the local reset below fails, this device stays on the sign-in screen.
+      markSignedOutHere();
+      window.location.hash = '#/';
+      stopSync();
+      clearLastSyncAt();
+      resetLocalData();
+      setCurrentUser(null);
+      setAuthState('anon');
+    } finally {
+      setSigningOut(false);
+    }
   };
 
   // CD2 S3 — the Cascade's Settings category (deep inside a framed page host)
   // fires store/logoutRequest.ts's request instead of owning a second logout
   // sequence; this is the one subscriber, running the SAME handleLogout the
   // corner-cluster button already calls.
-  useEffect(() => onLogoutRequested(() => { void handleLogout(); }), []);
+  useEffect(() => onLogoutRequested((force) => { void handleLogout(force); }), []);
 
   // HB1 — the router now mounts regardless of auth state. Arrival (route
   // '/') is both the boot screen and the front door: Write works local-first
@@ -263,11 +324,14 @@ export function App() {
     <WritingSessionProvider>
       <HashRouter>
         <DeskRail />
-        <GlobalHeader onLogout={handleLogout} authed={authState === 'authed'} />
+        <GlobalHeader onLogout={() => { void handleLogout(); }} authed={authState === 'authed'} />
         <BrandMark />
         <VoiceWallWhisper />
         <ThemeEffectsLayer />
         <FluxBlockCaret />
+        <SignedOutRouteGuard authState={authState} />
+        {/* LOGOUT SAFETY — an overlay beside the routes, never inside one: it cannot unmount the page. */}
+        <LogoutBlockedSheet />
         <AppMain>
         <Routes>
         <Route path="/" element={<Arrival authState={authState} onAuthed={handleAuthed} />} />

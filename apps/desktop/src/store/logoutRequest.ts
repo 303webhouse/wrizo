@@ -11,13 +11,14 @@
 // drifting, the panel fires ONE request here; App.tsx is the sole listener
 // and runs its own EXISTING handleLogout unchanged. "Invent nothing" (S3's
 // own words for this category) — this reuses the one real implementation.
-const listeners = new Set<() => void>();
+// LOGOUT SAFETY — `force` is the second step: "sign out anyway", after the writer has confirmed losing what has not saved.
+const listeners = new Set<(force: boolean) => void>();
 
-export function requestLogout(): void {
-  listeners.forEach((l) => l());
+export function requestLogout(force = false): void {
+  listeners.forEach((l) => l(force));
 }
 
-export function onLogoutRequested(listener: () => void): () => void {
+export function onLogoutRequested(listener: (force: boolean) => void): () => void {
   listeners.add(listener);
   return () => { listeners.delete(listener); };
 }

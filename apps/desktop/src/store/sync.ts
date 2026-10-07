@@ -232,6 +232,12 @@ function maybeBackfillJournal(pull: unknown): void {
 
 let running = false;
 let inFlight = false;
+// SYNC GENERATION — bumped by stopSync() (every sign-out, and App's unmount). A sync that was already waiting on the
+// network when that happened (a stalled push the sign-out gave up on, say) must not, when its answer finally arrives,
+// write the PREVIOUS session's records, cursor or status into a device that has since been wiped, or into the next
+// writer's account. It captures the generation at entry and checks it after every await, before any write.
+let generation = 0;
+const STALE = Symbol('stale sync');
 let intervalId: ReturnType<typeof setInterval> | null = null;
 let backoffTimer: ReturnType<typeof setTimeout> | null = null;
 let backoffStep = 0;
@@ -248,6 +254,9 @@ function scheduleBackoff(): void {
 export async function syncOnce(fullPull = false): Promise<void> {
   if (inFlight) return;
   inFlight = true;
+  const gen = generation;
+  // Throws STALE if a sign-out happened while this run was waiting; the catch below turns that into a silent return.
+  const live = (): void => { if (gen !== generation) throw STALE; };
   setStatus('pending');
 
   const cursor = fullPull ? null : getLastSyncAt();
@@ -280,6 +289,7 @@ export async function syncOnce(fullPull = false): Promise<void> {
       if (batch.length === 1) { quarantine(batch[0]); return; }
       const mid = batch.length >> 1;
       await pushOnly(batch.slice(0, mid));
+      live();
       await pushOnly(batch.slice(mid));
     };
     const pushOnly = async (batch: PushItem[]): Promise<void> => {
@@ -287,9 +297,10 @@ export async function syncOnce(fullPull = false): Promise<void> {
       if (batch.length === 1 && isTooLarge(batch[0])) { quarantined.push(batch[0]); return; }
       try {
         const r = await apiSync({ lastSyncAt: null, push: payloadOf(batch), pull: false });
+        live();
         cleanBatch(batch, noteRejections(r.rejected));
       } catch (e) {
-        if (e instanceof SyncHttpError && e.status === 413) { await onRefused(batch); return; }
+        if (e instanceof SyncHttpError && e.status === 413) { live(); await onRefused(batch); return; }
         throw e;
       }
     };
@@ -300,24 +311,28 @@ export async function syncOnce(fullPull = false): Promise<void> {
       // The common case, and byte-for-byte the old shape: ONE request carries the push AND the pull.
       try {
         resp = await apiSync({ lastSyncAt: cursor, push: payloadOf(chunks[0]) });
+        live();
         applyRemoteRecords(resp.pull);
         maybeBackfillJournal(resp.pull);
         cleanBatch(chunks[0], noteRejections(resp.rejected));
       } catch (e) {
         if (!(e instanceof SyncHttpError && e.status === 413)) throw e;
+        live();
         resp = null;
         await onRefused(chunks[0]);
       }
     } else {
-      for (const chunk of chunks) await pushOnly(chunk);
+      for (const chunk of chunks) { await pushOnly(chunk); live(); }
     }
     if (!resp) {
       // Nothing to push, or the push went out as push-only chunks: one final request pulls.
       resp = await apiSync({ lastSyncAt: cursor, push: {} });
+      live();
       applyRemoteRecords(resp.pull);
       maybeBackfillJournal(resp.pull);
     }
 
+    live();
     setLastSyncAt(resp.serverTime);
     setTooLarge([...big, ...quarantined].map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));
     setRejected(rejectedThisSync.map(i => ({ id: i.rec.id, title: titleFor(i) })));
@@ -327,11 +342,14 @@ export async function syncOnce(fullPull = false): Promise<void> {
       backoffTimer = null;
     }
     setStatus('synced');
-  } catch {
+  } catch (e) {
+    // A stale run writes nothing and schedules nothing: the session it belonged to is over.
+    if (e === STALE || gen !== generation) return;
     setStatus('offline');
     scheduleBackoff();
   } finally {
-    inFlight = false;
+    // Only the CURRENT generation owns the flag. stopSync() already released it, and a newer run may hold it now.
+    if (gen === generation) inFlight = false;
   }
 }
 
@@ -358,6 +376,10 @@ export async function startSync(): Promise<void> {
 
 export function stopSync(): void {
   running = false;
+  // Retire any sync still waiting on the network, and release the flag it was holding so the next session's first
+  // sync is not skipped behind a request that may never answer.
+  generation += 1;
+  inFlight = false;
   if (intervalId) {
     clearInterval(intervalId);
     intervalId = null;

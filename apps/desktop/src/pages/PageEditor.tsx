@@ -59,6 +59,8 @@ import type { ThemeId } from '../store/theme';
 import { seedTypewriterDefault, DRAFT_TYPEWRITER_LINE_THRESHOLD } from '../store/writingSettings';
 import { countLineEquivalents } from '../store/lineEquivalents';
 
+import { registerFlush } from '../store/flushRegistry';
+
 // HB1 F1 — the gate's fixed instrument: 100 whitespace-delimited words.
 const FIRST_RUN_WORD_TARGET = 100;
 
@@ -487,7 +489,10 @@ function PageEditorView({ id }: { id: string }) {
   useEffect(() => {
     const onHide = () => { if (document.visibilityState === 'hidden') { flush(); flushNow(); } };
     document.addEventListener('visibilitychange', onHide);
+    // LOGOUT FLUSH — a sign-out flushes this page's pending text first, so it is counted as unsaved.
+    const unregisterFlush = registerFlush(flush);
     return () => {
+      unregisterFlush();
       document.removeEventListener('visibilitychange', onHide);
       flush();
       flushNow();
