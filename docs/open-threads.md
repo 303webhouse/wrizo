@@ -24361,3 +24361,45 @@ attempt; grant file absent, 0 harness processes. **For Nick or Fable: a sign-in 
 anonymous browser walk needs an explicit go.**
 
 **BATCH NINE IS SHIPPED.** Next per Fable: the box goes to FIX’s latency profile (`latency-profile` @ `fb0597a`).
+
+## SIGN-IN INCIDENT ON PRODUCTION (BATCH NINE): THE ORIGIN CHECK IS NOT THE CAUSE; NO ROLLBACK; THE NEW SHIP GATE — 2026-10-06 (chat 1, on Fable’s urgent relays)
+
+**THE REPORT (Fable, relay):** Nick reports sign-in on production fails after Batch Nine (`1c34ccfa`). **Nick: “Just get
+it fixed.” Rollback is pre-approved ONLY IF the probe shows the Origin check (403 `Forbidden` on a fake-account login);
+if it does not, do not roll back.** Splash (187) is approved by Nick; it ships after the incident closes and Fable’s
+screenshot gate clears.
+
+**NEW SHIP GATE, effective now (Fable):** no deploy is announced until (a) Fable has reviewed screenshots of every touched
+screen plus Arrival, sign-in and a page, and (b) a real signed-in smoke test has passed on production. Fable asked this
+desk to propose how a smoke-test account is held without its password in any chat.
+
+**PROBES (this desk, read-only, announced here: three unauthenticated requests, FAKE credentials, tiny bodies, one to
+`/auth/login` with `Origin: https://<production domain>`, one without Origin, one to `/api/sync` with no session):**
+`POST /auth/login` fake account + matching Origin → **401** `{“error”:“Invalid email or password”}`; the same with NO
+Origin → **401**; `POST /api/sync` no session + matching Origin → **401** `{“error”:“Not authenticated”}`.
+**THE ORIGIN CHECK (`index.ts`, the `req.protocol://host` comparison) IS FINE** — `trust proxy` is set in production, and no
+403 appeared. **THEREFORE NO ROLLBACK, per the relay’s own condition.**
+
+**RAILWAY LOGS for `1c34ccfa`: two lines only** (“Starting Container”, “Writer Studio server listening on :N”). The
+server logs no request lines and no login-failure codes, so there are **zero 403s to count and no codes to list — the
+logs cannot answer the question either way.**
+
+**WHAT THE PROBE DOES NOT COVER, for Fable to route (no code changed, nothing fixed forward):** a fake account never reaches
+the SUCCESS path, which Batch Nine changed — `await regenerateSession(req)` (session-fixation fix) before `req.session.userId
+= user.id` in `auth.ts`’s `/login` — so a real credential is the only probe of it. Also changed and reachable by a real
+user: the per-account throttle (8 failures per email, in memory, then one attempt a minute, cleared after 15 quiet
+minutes or a restart — a 429 “Too many attempts”), the per-IP limiter (20/min on `/auth`), and the client’s sign-up
+screen (`apiSignupStatus` is `false` now — `INVITE_CODES` is unset — so the CREATE-account stage shows “by invitation”;
+the SIGN-IN stage does not read it). **NEEDED to diagnose: what Nick sees on screen (the error text or a blank), and a
+real signed-in probe — which is the smoke-test account below.**
+
+**PROPOSAL, a smoke-test account without a password in any chat (for Fable and Nick):** (1) one dedicated account,
+`smoke+wrizo@…` (a mailbox Nick controls), created ONCE by Nick through the app while he sets `INVITE_CODES`, or by an
+`INSERT` he approves; (2) its password generated on Nick’s own machine and written ONLY to `~/.wrizo/smoke-account.json`,
+readable by his Windows user alone (`icacls`), never printed; (3) one committed script, `scripts/smoke-login.mjs`, reads that
+file, runs login → `/auth/me` → an authenticated `/api/sync` pull → logout over HTTPS and prints STATUS CODES ONLY; (4) it
+runs from this desk after every deploy and its pass line goes in the manifest; (5) Nick rotates the password by rewriting
+the file. A browser type-and-refresh walk needs the same account plus an explicit box grant and go.
+
+**STATE:** `main` @ `2018318`+records, production = Batch Nine `1c34ccfa`, no rollback, grant absent, 0 harness
+processes.
