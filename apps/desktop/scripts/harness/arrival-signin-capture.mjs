@@ -53,6 +53,19 @@ const LOGOUT_STUB = `(() => {
   return true;
 })()`;
 
+// A diagnostic, installed for the logout phase only: log every programmatic focus() with its caller's stack, so a frame whose
+// focus is NOT where the sheet put it can say who moved it. It calls the real focus() unchanged.
+const FOCUS_TRACE = `(() => {
+  window.__focusLog = [];
+  const real = HTMLElement.prototype.focus;
+  HTMLElement.prototype.focus = function (...a) {
+    window.__focusLog.push({ t: Math.round(performance.now()), el: this.tagName + '.' + String(this.className).slice(0, 40) + '|' + (this.textContent || '').slice(0, 20),
+      stack: (new Error().stack || '').split('\\n').slice(2, 7).map((s) => s.trim().slice(0, 130)) });
+    return real.apply(this, a);
+  };
+  return true;
+})()`;
+
 const shots = [];
 // The hero fades out over .8 s and the form fades in over 1 s. A shot taken inside that window shows a ghost of the
 // logo behind the form — a mid-transition frame, not the settled screen. Wait for the SETTLED state, and record
@@ -60,7 +73,14 @@ const shots = [];
 async function settle(app, screen) {
   if (screen === 'logout-sheet') {
     await app.waitFor(`/ha(ven|sn).t saved to your account yet/.test(document.querySelector('.wz-logout-sheet-body')?.textContent || '')`, { timeout: 8000, label: 'logout sheet with its sentence' });
-    await app.waitFor(`document.activeElement?.textContent === 'Stay signed in'`, { timeout: 8000, label: 'focus on "Stay signed in"' });
+    try {
+      await app.waitFor(`document.activeElement?.textContent === 'Stay signed in'`, { timeout: 8000, label: 'focus on "Stay signed in"' });
+    } catch (e) {
+      // Say what DOES hold focus: a stolen focus and a never-moved focus are different defects.
+      const who = await app.evalJs(`(() => { const a = document.activeElement; return JSON.stringify({ tag: a && a.tagName, cls: a && String(a.className).slice(0, 60), text: a && (a.textContent || '').slice(0, 40), insideSheet: !!(a && a.closest && a.closest('.wz-logout-sheet')), theme: document.documentElement.getAttribute('data-theme'), page: document.documentElement.getAttribute('data-page') }); })()`);
+      const trace = await app.evalJs(`JSON.stringify((window.__focusLog || []).slice(-8))`);
+      throw new Error('focus is NOT on "Stay signed in"; activeElement = ' + who + ' | FOCUS TRACE (last 8 focus() calls) = ' + trace + ' | ' + e.message.slice(0, 80));
+    }
     return 'sheet open (first step), focus on "Stay signed in"';
   }
   if (screen === 'logout-confirm') {
@@ -138,8 +158,16 @@ await withHarness(async (app) => {
       await app.waitFor(`!!document.querySelector('.wz-arrival')`, { label: 'authed arrival (logout phase)' });
       await app.evalJs(theme.setup); // a reload clears the theme attributes the capture sets
       await app.evalJs(LOGOUT_STUB);
+      await app.evalJs(FOCUS_TRACE);
       await app.goto('/sprint');
       await app.waitFor(`!!document.querySelector('.forward-only-editor, textarea')`, { label: 'a page to sign out of' });
+      // The page re-applies its caret (applyCaret, which focuses the editor) several times in the ~600 ms after it mounts. A
+      // sheet opened inside that window loses its focus to the editor — the focus trace caught exactly that (the sheet took
+      // focus at 426 ms, applyCaret took it back at 431 ms). A person never presses Sign out that fast, so wait for the
+      // restore to go quiet: no focus() call for 800 ms. (An overlay opened AUTOMATICALLY that soon after mount, like the
+      // guest claim sheet, does meet this; it has its own focus guard.)
+      await sleep(300);
+      await app.waitFor(`performance.now() - (window.__focusLog.length ? window.__focusLog[window.__focusLog.length - 1].t : 0) > 800`, { timeout: 8000, label: 'the page\'s caret restore to go quiet' });
       await app.evalJs(`window.wrizoCreateJournalPage({ text: 'words that have not reached the account' }); true;`);
 
       await app.click('Sign out');

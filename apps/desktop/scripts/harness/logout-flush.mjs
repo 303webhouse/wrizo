@@ -259,6 +259,13 @@ function makeEditor(m, id) {
     (cap.match(/await app\.evalJs\(theme\.setup\);/g) || []).length >= 2, String((cap.match(/await app\.evalJs\(theme\.setup\);/g) || []).length));
   ok('(F7) every frame, these included, goes through the same settle-then-email-check in save()',
     cap.indexOf('const state = await settle(app, screen);') > 0 && cap.indexOf('capture refused:') > cap.indexOf('const state = await settle(app, screen);'), '');
+  // The capture used to fail in about 3 of 7 runs: the page re-applies its caret (applyCaret, which focuses the editor)
+  // several times in the ~600 ms after it mounts, and a sheet opened inside that window loses its focus to the editor.
+  const quietAt = cap.indexOf("performance.now() - (window.__focusLog.length ? window.__focusLog[window.__focusLog.length - 1].t : 0) > 800");
+  ok('(F8) the capture waits for the page\'s caret restore to go quiet (no focus() call for 800 ms) BEFORE it writes the unsaved page and presses Sign out',
+    quietAt > 0 && quietAt < cap.indexOf('window.wrizoCreateJournalPage(') && quietAt < cap.indexOf("await app.click('Sign out')"), String(quietAt));
+  ok('(F9) the focus trace that found it is kept: installed before the page loads, and reported (with the last focus() calls and their stacks) when a frame\'s focus is not where the sheet put it',
+    /HTMLElement\.prototype\.focus = function/.test(cap) && cap.indexOf('await app.evalJs(FOCUS_TRACE)') < cap.indexOf("await app.goto('/sprint')") && /FOCUS TRACE \(last 8 focus\(\) calls\)/.test(cap), '');
 }
 
 // =============================================================================
