@@ -24403,3 +24403,43 @@ the file. A browser type-and-refresh walk needs the same account plus an explici
 
 **STATE:** `main` @ `2018318`+records, production = Batch Nine `1c34ccfa`, no rollback, grant absent, 0 harness
 processes.
+
+## THE SET-PASSWORD SCRIPT (BRANCH, FOR FABLE’S REVIEW) AND ITEM 230 — 2026-10-06 (chat 1, on Fable’s relay)
+
+**THE NEED (Fable, relay):** Nick does not know his password and there is no reset flow. **Asked:** an owner-run script
+`apps/server/scripts/set-password.mjs`, run by Nick himself via `railway run`; hidden prompts, password entered twice,
+`MIN_PASSWORD_LENGTH` (8), bcrypt at auth.ts’s cost; update `users` for that email (`and not is_guest`); print only
+“updated” or “no such account”; never echo the email, the password or `DATABASE_URL`; delete that user’s `session` rows;
+its own branch, Fable’s review first; then ONE paste-ready line for Nick; the same pattern for the smoke account if
+Nick says yes.
+
+**BUILT: branch `set-password-script` @ `a1f4526` (pushed as a branch; NOT on `main`, NOT deployed, no production
+database touched).** Two files: `apps/server/scripts/set-password.mjs` (145 lines) and a DB proof
+`apps/server/scripts/harness/set-password-db.mjs`. **Choices to review:** (1) the email is read visibly (so a typo is
+catchable) and never printed back; the password is hidden, asked twice, and refused under 8 characters; both are read from
+the keyboard only — never argv, never env, never a file or log; (2) `BCRYPT_COST = 12` and `MIN_PASSWORD_LENGTH = 8`
+mirror `auth.ts` (and the proof asserts they still do); (3) **`and not is_guest` is applied only if the column exists —
+`is_guest` is NOT in `main`’s schema (guest login has not shipped), so the literal query would have errored today**; (4) the
+password update and the session delete (`delete from session where sess->>’userId’ = $1`, connect-pg-simple’s table; skipped
+if the table is absent) are ONE transaction; (5) errors print a short code only, never a driver message (it can carry a
+host name); (6) **`railway run --service Postgres` is required** — `writer-studio-app`’s `DATABASE_URL` is a private
+`.railway.internal` host that a laptop cannot reach, while the Postgres service exposes `DATABASE_PUBLIC_URL` (presence and
+host KIND checked only, no value printed; `railway run --service Postgres` was confirmed to inject it). The script prefers
+`DATABASE_PUBLIC_URL`, falls back to `DATABASE_URL`. **That public proxy is the one the after-trip task removes — once it
+is removed this route needs a different path (a one-off job inside the project); say so before removing it.**
+
+**PROOF (browserless, a REAL throwaway Postgres via `embedded-postgres`, no dependency added to this repo): 12/12:** known
+email → “updated”; the new password verifies and the old does not; that user’s sessions are gone while another user’s and
+an anonymous one remain; the other account untouched; unknown email → “no such account” with nothing deleted; a guest is
+never changed once `is_guest` exists; a database with no `session` table still updates; a failing session delete rolls the
+password back (one transaction); the helpers and the mirrored constants. **NOT proven by this desk:** the interactive
+hidden-typing prompt (it needs a terminal; this desk has none), so Nick’s first run is its first terminal run — every
+failure path prints “Nothing was changed”; and if `railway run` does not hand the script a terminal it refuses with a clear
+message rather than reading a visible password. **No mutation test was run on the script.**
+
+**ITEM 230 (registered; backlog, LATER): “Forgot password?” by email** — needs an email service (none exists). Registry
+next free: **231**.
+
+**WAITING ON:** Fable’s review of `a1f4526`; then this desk merges it to `main` (it is a file in the repo, not shipped
+behaviour, but `railway up` would carry it, so it rides the next deploy under the ship gate) and gives Nick ONE line
+and plain steps. The smoke-account use of the same script waits on Nick’s yes.
