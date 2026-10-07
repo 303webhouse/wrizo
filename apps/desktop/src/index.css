@@ -5414,6 +5414,6 @@ a:focus-visible,
    stays mounted and keeps its place behind it (page primacy: an overlay, not a route). */
 .wz-guest-sheet { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
   padding: 16px; background: rgba(17,6,0,.72); }
-.wz-guest-sheet-panel { width: min(420px, 100%); background: var(--wz-lift); color: var(--wz-ink); border-radius: 10px;
+.wz-guest-sheet-panel { width: min(420px, 100%); background: var(--wz-lift, #150a04); color: var(--wz-ink, #f0e7d8); border-radius: 10px;
   padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.45); }
 .wz-guest-sheet-line { margin: 0; font-family: var(--wz-ui); font-size: 1.05rem; line-height: 1.4; }
