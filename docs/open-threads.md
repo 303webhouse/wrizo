@@ -24678,3 +24678,16 @@ grant for `fb0597a`; no report yet.)*
 **SHIP ORDER, unchanged (Fable): BATCH 10 = sign-in (`d2b16ab`) + logout-flush (`e88834f`, `831cb88`). BATCH 11 =
 `guest-login` (server, `de1f170`) + `guest-client-r2` (`d0a4fa1`), with its own screenshots and its own ship gate.**
 The sign-in batch and the guest batch are NOT merged into one pair.
+
+## FIX PREEMPTED; INK’S COMBINED RUN GRANTED ON `guest-client-r2` @ `8f67381` — 2026-10-07 (chat 1)
+
+**FABLE (relay): PREEMPT FIX.** FIX’s grant for `fb0597a` (the typing-latency profile; written 17:23Z, never used — 0 harness
+processes, no push in 80 minutes) was CLEARED, replaced by INK’s combined grant on `guest-client-r2` @ `8f67381`
+(“Guest walk: aim it at a live local server, refuse anything else, fix Shift+Tab”). **Verified by this desk: `8f67381`
+contains `d0a4fa1`; the diff of `apps/desktop/src`, `apps/server/src` and `packages` between them is EMPTY; the three files
+that changed are `arrival-signin-capture.mjs`, `guest-client-walk.mjs` and `guest-client.mjs` — harness only.**
+
+**THE RUN COVERS:** the capture (24 shots) + `arrival-signin-walk` + `logout-flush-walk` + `guest-client-walk` (the last against a
+LOCAL server at `127.0.0.1:3107` with INK’s own throwaway Postgres — never the production database). Box idle (0 harness
+processes, 0 tagged browsers) when written. **FIX re-requests when it is back; TOOLS’ splash follows.** Ship order unchanged:
+Batch 10 = sign-in + flush; Batch 11 = guest.
