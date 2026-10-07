@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { createPortal } from 'react-dom';
 import { useWritingSettings } from '../store/writingSettings';
 import { useWritingGoal, goalCount } from '../store/writingGoal';
 import {
   mulberry32, hashSeed, createRhizomeState, seedOrigins, growTo, goalFillTarget,
   FILL_SEGMENTS, FILL_SHOOTS, FILL_LEN_MIN, FILL_LEN_MAX,
-  type RhizomeState, type RhizomeGeometry, type RhizomePoint, type RhizomeSegment, type GrowToOptions,
+  type RhizomeState, type RhizomeGeometry, type RhizomePoint, type RhizomeRect, type RhizomeSegment, type GrowToOptions,
 } from '../store/rhizomeEngine';
 
 // M2 — the Rhizome (docs/wrizo-alpha/m2-rhizome-brief.md, S2/S4). A single
@@ -46,8 +45,9 @@ import {
 // fixed word count. Fraction 1 fills the ground; crossing the goal flashes
 // the network brass and then clears it for the next lap. A 100-word goal
 // and a 1000-word goal both arrive full at the same moment: the goal.
-// Roots paint in the stage margins and, portaled, on the page background
-// behind the words. pointer-events stay none. The page rect is not a
+// Roots stay in the desk ground around the sheet. They do not cross the
+// page, a card, a board, a popout, the left rail, or the header. The corner
+// logo is not a keep-out. pointer-events stay none. The page rect is not a
 // layout participant.
 const SESSION_START = Date.now(); // frozen once per app-load/session (S2: "session-scoped")
 
@@ -62,25 +62,72 @@ const FILL_OPTS: GrowToOptions = {
   lenMax: FILL_LEN_MAX,
 };
 
-function fieldGeo(geo: RhizomeGeometry): RhizomeGeometry {
-  return { ...geo, avoidPaper: false };
+// Stable chrome the roots route around. The corner logo (.brand-mark) is
+// absent on purpose. Live menus are painted out of the mask when they open;
+// they are not part of the growth geometry, so opening one does not re-seed.
+const STABLE_CHROME = ['.desk-rail', '.desk-frame-strip', '.sprint-nav', '.gh-corner-glyph'];
+const LIVE_CHROME = [
+  '.gh-corner-menu',
+  '.wz-cascade-panel',
+  '.wz-sliver-panel[data-open="true"]',
+  '.wz-sliver-grip',
+  '.mode-settings',
+  '.wz-ink-menu',
+  '.desk-frame-corkboard',
+];
+
+function isShown(el: Element): boolean {
+  let node: Element | null = el;
+  while (node && node !== document.documentElement) {
+    const cs = getComputedStyle(node);
+    if (cs.display === 'none' || cs.visibility === 'hidden') return false;
+    const op = Number.parseFloat(cs.opacity);
+    if (Number.isFinite(op) && op < 0.04) return false;
+    node = node.parentElement;
+  }
+  const r = el.getBoundingClientRect();
+  return r.width >= 8 && r.height >= 8;
 }
 
-function measure(svg: SVGSVGElement, paper: HTMLElement): { geo: RhizomeGeometry; origin: RhizomePoint } | null {
+function rectsInStage(selectors: string[], stage: DOMRect): RhizomeRect[] {
+  const out: RhizomeRect[] = [];
+  for (const sel of selectors) {
+    for (const el of document.querySelectorAll(sel)) {
+      if (el.closest('.brand-mark')) continue;
+      if (!isShown(el)) continue;
+      const r = el.getBoundingClientRect();
+      const rect = {
+        left: r.left - stage.left,
+        top: r.top - stage.top,
+        right: r.right - stage.left,
+        bottom: r.bottom - stage.top,
+      };
+      if (rect.right <= 1 || rect.bottom <= 1 || rect.left >= stage.width - 1 || rect.top >= stage.height - 1) continue;
+      out.push(rect);
+    }
+  }
+  return out;
+}
+
+function measure(svg: SVGSVGElement, paper: HTMLElement): { geo: RhizomeGeometry; origin: RhizomePoint; holes: RhizomeRect[] } | null {
   const stageRect = svg.getBoundingClientRect();
   const paperRect = paper.getBoundingClientRect();
   if (stageRect.width <= 0 || stageRect.height <= 0) return null;
+  const sheet = {
+    left: paperRect.left - stageRect.left,
+    top: paperRect.top - stageRect.top,
+    right: paperRect.right - stageRect.left,
+    bottom: paperRect.bottom - stageRect.top,
+  };
+  const obstacles = rectsInStage(STABLE_CHROME, stageRect);
   return {
     geo: {
       width: stageRect.width,
       height: stageRect.height,
-      paper: {
-        left: paperRect.left - stageRect.left,
-        top: paperRect.top - stageRect.top,
-        right: paperRect.right - stageRect.left,
-        bottom: paperRect.bottom - stageRect.top,
-      },
+      paper: sheet,
+      obstacles,
     },
+    holes: [sheet, ...obstacles, ...rectsInStage(LIVE_CHROME, stageRect)],
     // S2's own origin: "the horizontal midpoint of the progress row's own
     // measured rect... first shoot rooted there." No incentive row exists
     // on the framed desk stage today (see this file's own header comment) —
@@ -104,7 +151,16 @@ function measure(svg: SVGSVGElement, paper: HTMLElement): { geo: RhizomeGeometry
 // paper's top band (invisible — the field is z-beneath the paper — but a real
 // gap in "the roam avoids the paper"). 1px, not 0, so sub-pixel measurement
 // jitter can never thrash a rebuild.
+function rectMoved(a: RhizomeRect, b: RhizomeRect): boolean {
+  return Math.abs(a.left - b.left) > 1 || Math.abs(a.top - b.top) > 1
+    || Math.abs(a.right - b.right) > 1 || Math.abs(a.bottom - b.bottom) > 1;
+}
+
 function geoChanged(a: RhizomeGeometry, b: RhizomeGeometry): boolean {
+  const ao = a.obstacles ?? [];
+  const bo = b.obstacles ?? [];
+  if (ao.length !== bo.length) return true;
+  for (let i = 0; i < ao.length; i++) if (rectMoved(ao[i], bo[i])) return true;
   return (
     Math.abs(a.width - b.width) > 1 ||
     Math.abs(a.height - b.height) > 1 ||
@@ -122,6 +178,7 @@ function Segments({ segments, ox, oy }: { segments: RhizomeSegment[]; ox: number
         <line
           key={seg.id}
           className="wz-rhizome-seg"
+          data-thick={seg.thick ? 'true' : undefined}
           x1={seg.x1 - ox} y1={seg.y1 - oy} x2={seg.x2 - ox} y2={seg.y2 - oy}
         />
       ))}
@@ -145,7 +202,8 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const svgRef = useRef<SVGSVGElement>(null);
   const [state, setState] = useState<RhizomeState>(createRhizomeState);
   const [flash, setFlash] = useState(false);
-  const [paperBox, setPaperBox] = useState<RhizomeGeometry['paper'] | null>(null);
+  const [holes, setHoles] = useState<RhizomeRect[]>([]);
+  const [fieldSize, setFieldSize] = useState({ w: 0, h: 0 });
 
   const rngRef = useRef<(() => number) | null>(null);
   const originsRef = useRef<RhizomePoint[] | null>(null);
@@ -177,19 +235,27 @@ export function RhizomeField({ text, seedKey, paperRef }: {
     return measure(svg, paper);
   }, [paperRef]);
 
-  const rebuild = useCallback((geo: RhizomeGeometry, target: number, salt: string) => {
+  const paintMask = useCallback((next: RhizomeRect[], w: number, h: number) => {
+    setHoles(prev => {
+      if (prev.length === next.length && prev.every((r, i) => !rectMoved(r, next[i]))) return prev;
+      return next;
+    });
+    setFieldSize(prev => (Math.abs(prev.w - w) < 1 && Math.abs(prev.h - h) < 1 ? prev : { w, h }));
+  }, []);
+
+  const rebuild = useCallback((geo: RhizomeGeometry, target: number, salt: string, mask: RhizomeRect[]) => {
     const rng = mulberry32(hashSeed(`${seedKey}:${SESSION_START}:${salt}`));
     rngRef.current = rng;
-    const origins = seedOrigins(rng, geo, undefined, true);
+    const origins = seedOrigins(rng, geo);
     originsRef.current = origins;
     builtGeoRef.current = geo;
     builtSaltRef.current = salt;
     saltRef.current = salt;
-    setPaperBox(geo.paper);
-    const next = growTo(createRhizomeState(), rng, fieldGeo(geo), origins, target, FILL_OPTS);
+    paintMask(mask, geo.width, geo.height);
+    const next = growTo(createRhizomeState(), rng, geo, origins, target, FILL_OPTS);
     stateRef.current = next;
     setState(next);
-  }, [seedKey]);
+  }, [seedKey, paintMask]);
 
   const syncField = useCallback(() => {
     if (!active || holdFlashRef.current) return;
@@ -198,12 +264,12 @@ export function RhizomeField({ text, seedKey, paperRef }: {
     const target = goalFillTarget(fracRef.current);
     const salt = saltRef.current;
     if (!builtGeoRef.current || !originsRef.current || !rngRef.current || geoChanged(m.geo, builtGeoRef.current) || salt !== builtSaltRef.current) {
-      rebuild(m.geo, target, salt);
+      rebuild(m.geo, target, salt, m.holes);
       return;
     }
-    setPaperBox(m.geo.paper);
-    updateState(s => growTo(s, rngRef.current!, fieldGeo(m.geo), originsRef.current!, target, FILL_OPTS));
-  }, [active, measureNow, rebuild, updateState]);
+    paintMask(m.holes, m.geo.width, m.geo.height);
+    updateState(s => growTo(s, rngRef.current!, m.geo, originsRef.current!, target, FILL_OPTS));
+  }, [active, measureNow, rebuild, updateState, paintMask]);
 
   const syncRef = useRef(syncField);
   syncRef.current = syncField;
@@ -224,7 +290,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
     stateRef.current = fresh;
     setState(fresh);
     setFlash(false);
-    setPaperBox(null);
+    setHoles([]);
   }, [seedKey]);
 
   useEffect(() => {
@@ -245,12 +311,12 @@ export function RhizomeField({ text, seedKey, paperRef }: {
       holdFlashRef.current = true;
       const m = measureNow();
       if (m && rngRef.current && originsRef.current && builtGeoRef.current) {
-        const full = growTo(stateRef.current, rngRef.current, fieldGeo(m.geo), originsRef.current, FILL_SEGMENTS, FILL_OPTS);
+        const full = growTo(stateRef.current, rngRef.current, m.geo, originsRef.current, FILL_SEGMENTS, FILL_OPTS);
         stateRef.current = full;
         setState(full);
-        setPaperBox(m.geo.paper);
+        paintMask(m.holes, m.geo.width, m.geo.height);
       } else if (m) {
-        rebuild(m.geo, FILL_SEGMENTS, saltRef.current);
+        rebuild(m.geo, FILL_SEGMENTS, saltRef.current, m.holes);
       }
       setFlash(true);
       if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
@@ -267,7 +333,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
       return;
     }
     syncRef.current();
-  }, [active, count, goalKey, goal, seedKey, measureNow, rebuild]);
+  }, [active, count, goalKey, goal, seedKey, measureNow, rebuild, paintMask]);
 
   useEffect(() => {
     if (!active) return;
@@ -282,39 +348,42 @@ export function RhizomeField({ text, seedKey, paperRef }: {
     const ro = new ResizeObserver(schedule);
     ro.observe(svg);
     ro.observe(paper);
+    const mo = new MutationObserver(schedule);
+    mo.observe(document.documentElement, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'style', 'data-open', 'hidden', 'aria-expanded', 'data-writing'],
+    });
     const settleTail = setTimeout(schedule, 600);
-    return () => { if (raf) cancelAnimationFrame(raf); clearTimeout(settleTail); ro.disconnect(); };
+    return () => { if (raf) cancelAnimationFrame(raf); clearTimeout(settleTail); ro.disconnect(); mo.disconnect(); };
   }, [active, paperRef, seedKey]);
 
   useEffect(() => () => { if (flashTimerRef.current) clearTimeout(flashTimerRef.current); }, []);
 
   if (!active) return null;
 
-  const pageEl = paperRef.current;
-  const onPage = pageEl && paperBox && state.segments.length > 0
-    ? createPortal(
-      <svg className="wz-rhizome-onpage" aria-hidden="true" focusable="false" data-flash={flash ? 'true' : 'false'} style={{ pointerEvents: 'none' }}>
-        <Segments segments={state.segments} ox={paperBox.left} oy={paperBox.top} />
-      </svg>,
-      pageEl,
-    )
-    : null;
-
   return (
-    <>
-      <svg
-        ref={svgRef}
-        className="wz-rhizome-field"
-        aria-hidden="true"
-        focusable="false"
-        data-flash={flash ? 'true' : 'false'}
-        data-segments={state.segments.length}
-        data-goal-frac={frac.toFixed(3)}
-        style={{ pointerEvents: 'none' }}
-      >
+    <svg
+      ref={svgRef}
+      className="wz-rhizome-field"
+      aria-hidden="true"
+      focusable="false"
+      data-flash={flash ? 'true' : 'false'}
+      data-segments={state.segments.length}
+      data-goal-frac={frac.toFixed(3)}
+      style={{ pointerEvents: 'none' }}
+    >
+      {fieldSize.w > 0 && (
+        <mask id="wz-rhizome-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width={fieldSize.w} height={fieldSize.h}>
+          <rect x="0" y="0" width={fieldSize.w} height={fieldSize.h} fill="#fff" />
+          {holes.map((r, i) => (
+            <rect key={i} x={r.left} y={r.top} width={Math.max(0, r.right - r.left)} height={Math.max(0, r.bottom - r.top)} fill="#000" />
+          ))}
+        </mask>
+      )}
+      <g mask={fieldSize.w > 0 ? 'url(#wz-rhizome-mask)' : undefined}>
         <Segments segments={state.segments} ox={0} oy={0} />
-      </svg>
-      {onPage}
-    </>
+      </g>
+    </svg>
   );
 }

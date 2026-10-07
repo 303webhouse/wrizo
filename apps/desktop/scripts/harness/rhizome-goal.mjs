@@ -54,7 +54,23 @@ const field = (app) => app.evalJs(`(() => {
   const ed = document.querySelector('.forward-only-editor');
   const onPage = document.querySelector('.mode-page .wz-rhizome-onpage');
   const pr = page ? page.getBoundingClientRect() : null;
-  const seg = svg && svg.querySelector('.wz-rhizome-seg');
+  const sr = svg ? svg.getBoundingClientRect() : null;
+  const seg = svg && svg.querySelector('.wz-rhizome-seg:not([data-thick="true"])');
+  const thick = svg && svg.querySelector('.wz-rhizome-seg[data-thick="true"]');
+  const sheet = pr && sr ? {
+    left: pr.left - sr.left, top: pr.top - sr.top, right: pr.right - sr.left, bottom: pr.bottom - sr.top,
+  } : null;
+  let paperHit = 0;
+  if (svg && sheet) {
+    for (const el of svg.querySelectorAll('.wz-rhizome-seg')) {
+      const pts = [[+el.getAttribute('x1'), +el.getAttribute('y1')], [+el.getAttribute('x2'), +el.getAttribute('y2')]];
+      for (const [x, y] of pts) {
+        if (x > sheet.left + 0.5 && x < sheet.right - 0.5 && y > sheet.top + 0.5 && y < sheet.bottom - 0.5) paperHit++;
+      }
+    }
+  }
+  const thinW = seg ? Number.parseFloat(getComputedStyle(seg).strokeWidth) : null;
+  const thickW = thick ? Number.parseFloat(getComputedStyle(thick).strokeWidth) : null;
   return {
     mounted: !!svg,
     editor: !!ed,
@@ -62,7 +78,8 @@ const field = (app) => app.evalJs(`(() => {
     frac: svg ? svg.dataset.goalFrac : null,
     flash: svg ? svg.dataset.flash : null,
     onPage: !!onPage,
-    onPageSegs: onPage ? onPage.querySelectorAll('.wz-rhizome-seg').length : 0,
+    paperHit,
+    thinW, thickW,
     pointer: svg ? getComputedStyle(svg).pointerEvents : null,
     stroke: seg ? getComputedStyle(seg).stroke : null,
     rect: pr ? { t: Math.round(pr.top), l: Math.round(pr.left), w: Math.round(pr.width), h: Math.round(pr.height) } : null,
@@ -82,7 +99,7 @@ await withHarness(async (app) => {
     return { full, half, tenth, zero, cap: E.FILL_SEGMENTS, halfOf: full / 2, tenthOf: full / 10 };
   })()`);
   ok('Engine: goalFillTarget is on the seam', !pure.missing, JSON.stringify(pure));
-  ok('Engine: fraction 0 grows nothing and fraction 1 is the fill cap', pure.zero === 0 && pure.full === pure.cap && pure.cap >= 1000, JSON.stringify(pure));
+  ok('Engine: fraction 0 grows nothing and fraction 1 is the fill cap', pure.zero === 0 && pure.full === pure.cap && pure.cap === 800, JSON.stringify(pure));
   ok('Engine: a 100-word goal at 100 words is a full ground, and the same 100 words of a 1000-word goal is a tenth',
     pure.half === pure.full / 2 && pure.tenth === pure.full / 10, JSON.stringify(pure));
 
@@ -105,8 +122,10 @@ await withHarness(async (app) => {
   const fast = await field(app);
   ok('Live: the same 99 words fill the ground when the goal is 100 (much denser than the 1000-word goal)',
     fast.segments > slow.segments * 4 && fast.segments >= pure.full * 0.9, JSON.stringify({ slow: slow.segments, fast: fast.segments, full: pure.full }));
-  ok('Live: roots paint on the page background, behind the still-mounted editor',
-    fast.onPage && fast.onPageSegs > 100 && fast.editor && fast.pointer === 'none', JSON.stringify(fast));
+  ok('Live: roots stay off the page — no on-page layer, no endpoint inside the sheet, editor still mounted',
+    !fast.onPage && fast.paperHit === 0 && fast.editor && fast.pointer === 'none', JSON.stringify(fast));
+  ok('Live: most roots are a thin hairline and a few are thicker',
+    fast.thinW != null && fast.thinW < 1.2 && fast.thickW != null && fast.thickW > 1.8, JSON.stringify(fast));
   ok('Live: at rest the stroke is olive, not brass',
     fast.flash === 'false' && fast.stroke && fast.stroke !== 'rgb(255, 152, 0)', JSON.stringify({ stroke: fast.stroke, flash: fast.flash }));
 

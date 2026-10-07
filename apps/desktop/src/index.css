@@ -3422,22 +3422,14 @@ a:focus-visible,
    style choice") plus aria-hidden makes the whole layer structurally inert. */
 .wz-rhizome-field{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 .wz-rhizome-seg{
-  stroke:var(--rhizome-ink); stroke-width:1.8px; stroke-linecap:round; fill:none;
+  stroke:var(--rhizome-ink); stroke-width:0.85px; stroke-linecap:round; fill:none; opacity:.62;
   animation:wz-rhizome-grow 180ms ease; /* "the house timing" (S2) — the same 180ms family already used throughout this file */
 }
-/* On the page the olive steps down to the door token so it reads on cream
-   and stays behind the words (z-index 0; text and ink sit above). */
-.wz-rhizome-onpage{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:hidden; }
-.wz-rhizome-onpage .wz-rhizome-seg{ stroke:var(--accent-door); stroke-width:1.6px; }
-.mode-page > .mode-page-title,
-.mode-page > .mode-scroll,
-.entry-full > .entry-edit{ position:relative; z-index:1; }
-.entry-full > .ink-canvas,
-.entry-full > .ink-eraser-ring,
-.entry-full > .ink-tool-toggle,
-.entry-full > .entry-typewriter-fade,
-.entry-full > .wz-warm{ z-index:2; }
-@keyframes wz-rhizome-grow{ 0%{ opacity:0; } 100%{ opacity:1; } }
+/* A few shoots are heavier. The rest stay a quiet hairline in the ground. */
+.wz-rhizome-seg[data-thick='true']{ stroke-width:2.15px; opacity:.9; }
+@keyframes wz-rhizome-grow{ 0%{ opacity:0; } 100%{ opacity:.62; } }
+@keyframes wz-rhizome-grow-thick{ 0%{ opacity:0; } 100%{ opacity:.9; } }
+.wz-rhizome-seg[data-thick='true']{ animation-name:wz-rhizome-grow-thick; }
 /* S4 — the milestone flash: every segment's own stroke eases to the ember
    token, holds, and returns — growth kept whole (nothing here removes or
    re-shuffles a segment, only its paint). B4-provisional: the 400ms-hold/
@@ -3446,8 +3438,7 @@ a:focus-visible,
    is the brief's own named final authority for this exact timing. The
    ember COLOR itself is not provisional: --ember already exists (branding
    §4) and is reused verbatim, never a new literal. */
-.wz-rhizome-field[data-flash='true'] .wz-rhizome-seg,
-.wz-rhizome-onpage[data-flash='true'] .wz-rhizome-seg{ animation:wz-rhizome-flash 1200ms ease; }
+.wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ animation:wz-rhizome-flash 1200ms ease; }
 @keyframes wz-rhizome-flash{
   0%{ stroke:var(--rhizome-ink); }
   8%{ stroke:var(--brass); }
@@ -3459,9 +3450,9 @@ a:focus-visible,
      cross-fade to ember and back, no strobe" — a plain `transition` (not a
      multi-stop keyframe animation) on the one property that changes,
      driven by the SAME data-flash toggle the full-motion path uses. */
-  .wz-rhizome-seg{ animation:none; opacity:1; transition:stroke 600ms ease; }
-  .wz-rhizome-field[data-flash='true'] .wz-rhizome-seg,
-  .wz-rhizome-onpage[data-flash='true'] .wz-rhizome-seg{ animation:none; stroke:var(--brass); }
+  .wz-rhizome-seg{ animation:none; opacity:.62; transition:stroke 600ms ease; }
+  .wz-rhizome-seg[data-thick='true']{ opacity:.9; }
+  .wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ animation:none; stroke:var(--brass); }
 }
 
 .desk-frame-meter{ min-height:44px; margin-top:14px; background:var(--desk-ground);

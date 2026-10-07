@@ -313,12 +313,7 @@ await withHarness(async (app) => {
     await sleep(600);
     const report = await geometryReport(app);
     ok(`Geometry @${width}px: the field actually grew (not a vacuous zero-segment pass)`, report.count >= 20, JSON.stringify(report));
-    // SUPERSEDED 2026-10-07, rhizome-goal.mjs. The live field turns the paper
-    // wall off so roots can paint on the page background. Stage clamp (the
-    // next check) still holds. Original:
-    //   ok(`Geometry @${width}px: no segment endpoint lands inside the paper's own rect ...`, report.paperHit === 0, ...);
-    ok(`Geometry @${width}px: SUPERSEDED->rhizome-goal — roots may cross the page; the on-page layer is mounted behind the words`,
-      !!report && (await app.evalJs("!!document.querySelector('.mode-page .wz-rhizome-onpage')")), JSON.stringify({ paperHit: report.paperHit, count: report.count }));
+    ok(`Geometry @${width}px: no segment endpoint lands inside the paper's own rect`, report.paperHit === 0, JSON.stringify(report));
     ok(`Geometry @${width}px: no segment endpoint exits the stage's own bounds — no overflow, no scrollbar`, report.outOfStage === 0, JSON.stringify(report));
     const hScroll = await app.evalJs('document.documentElement.scrollWidth > document.documentElement.clientWidth + 1');
     ok(`Geometry @${width}px: no horizontal scrollbar introduced`, hScroll === false, String(hScroll));

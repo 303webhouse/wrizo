@@ -267,9 +267,9 @@ await withHarness(async (app) => {
     // driver is the goal lap.
     ok('Live: SUPERSEDED->rhizome-goal — 2500 words lands on an exact 24-line lap boundary, so the ground is empty rather than word-saturated',
       !g.error && g.count === 0, JSON.stringify({ count: g.count }));
-    const onPage = await app.evalJs("!!document.querySelector('.mode-page .wz-rhizome-onpage')");
-    ok('Live: SUPERSEDED->rhizome-goal — the on-page layer is present only when the lap has roots',
-      onPage === (g.count > 0), JSON.stringify({ count: g.count, onPage }));
+    const onPage = await app.evalJs("!!document.querySelector('.wz-rhizome-onpage')");
+    ok('Live: SUPERSEDED->rhizome-goal — roots do not portal onto the page',
+      onPage === false, JSON.stringify({ count: g.count, onPage }));
     // Nothing orange at rest — the segment stroke resolves to the warm ink, never the ember.
     const strokeAtRest = await app.evalJs(`(() => {
       const el = document.querySelector('.wz-rhizome-seg'); if (!el) return null;

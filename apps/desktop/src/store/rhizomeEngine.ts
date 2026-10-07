@@ -49,6 +49,9 @@ export interface RhizomeSegment {
   // only to stagger-mount it; the engine itself treats it identically to any
   // other segment (forward-only, never removed, still counts toward the cap).
   burst?: boolean;
+  // A few shoots are heavier. Derived from the shoot id (no PRNG draw) so
+  // the geometry of every other segment stays exactly where it was.
+  thick?: boolean;
 }
 
 interface ShootTip {
@@ -69,10 +72,15 @@ export interface RhizomeGeometry {
   width: number; // the field's own clip box (the desk stage's measured size)
   height: number;
   paper: RhizomeRect; // avoided absolutely — see growOne's own comment
-  // Goal-fill only. The live field sets this false so roots may cross the
-  // page and paint on its background (behind the words). Omitted means the
-  // wall stays up — growOne/growTo callers and the M2/M3 proofs are unchanged.
+  // Goal-fill only. The live field leaves this unset so the paper wall stays
+  // up: roots live in the ground around the sheet, never on it. A caller that
+  // sets false (none do, today) may cross the paper. Omitted means the wall
+  // stays up — growOne/growTo callers and the M2/M3 proofs are unchanged.
   avoidPaper?: boolean;
+  // Extra keep-outs in the same coordinate space as `paper`: the rail, the
+  // header, an open menu. The logo is never one of these. Omitted is the
+  // paper-only wall the M2/M3 proofs grow against.
+  obstacles?: RhizomeRect[];
 }
 
 export interface RhizomePoint {
@@ -197,24 +205,42 @@ function pushAwayFromPaper(tip: RhizomePoint, len: number, r: RhizomeRect, geo: 
 // push can find a legal point (kept as an explicit, honest "skip this
 // event's growth" rather than ever emitting an invalid segment — the paper's
 // rect is inviolate, absolutely, not merely usually).
+// About one shoot in nine reads as a heavier root. The id is the only input,
+// so marking a shoot never consumes the PRNG and never moves a coordinate.
+export function shootIsThick(shootId: number): boolean {
+  return ((shootId * 5 + 2) % 9) === 0;
+}
+
+function hitsWall(x1: number, y1: number, x2: number, y2: number, geo: RhizomeGeometry): RhizomeRect | null {
+  if (geo.avoidPaper !== false && segmentTouchesRect(x1, y1, x2, y2, geo.paper)) return geo.paper;
+  const extras = geo.obstacles;
+  if (extras) {
+    for (const r of extras) {
+      if (segmentTouchesRect(x1, y1, x2, y2, r)) return r;
+    }
+  }
+  return null;
+}
+
 function resolveSegment(tip: RhizomePoint, angleDeg: number, len: number, geo: RhizomeGeometry): { point: RhizomePoint; angle: number } | null {
   let { point, angle } = reflectOffStage(tip, angleDeg, len, geo);
-  // Stage clamp still holds. The paper wall is the default; the goal-fill
-  // field turns it off so a root can travel the page background.
-  if (geo.avoidPaper === false) return { point, angle };
-  if (segmentTouchesRect(tip.x, tip.y, point.x, point.y, geo.paper)) {
-    const pushed = pushAwayFromPaper(tip, len, geo.paper, geo);
+  // Stage clamp still holds. No paper wall and no extra keep-out: the point
+  // stands. The live field always keeps the paper wall up.
+  if (geo.avoidPaper === false && !(geo.obstacles && geo.obstacles.length)) return { point, angle };
+  const hit = hitsWall(tip.x, tip.y, point.x, point.y, geo);
+  if (hit) {
+    const pushed = pushAwayFromPaper(tip, len, hit, geo);
     point = pushed.point;
     angle = pushed.angle;
-    // One more stage clamp/reflect pass — pushing away from the paper can, at
+    // One more stage clamp/reflect pass — pushing away from a wall can, at
     // the extreme, aim back toward a stage edge.
     const reflected = reflectOffStage(tip, angle, len, geo);
-    if (!segmentTouchesRect(tip.x, tip.y, reflected.point.x, reflected.point.y, geo.paper)) {
+    if (!hitsWall(tip.x, tip.y, reflected.point.x, reflected.point.y, geo)) {
       point = reflected.point;
       angle = reflected.angle;
-    } else if (segmentTouchesRect(tip.x, tip.y, point.x, point.y, geo.paper)) {
-      // Both attempts still land in the paper's rect (tip pinned in a
-      // corner) — honest skip, no invalid segment ever emitted.
+    } else if (hitsWall(tip.x, tip.y, point.x, point.y, geo)) {
+      // Both attempts still land in a keep-out (tip pinned in a corner) —
+      // honest skip, no invalid segment ever emitted.
       return null;
     }
   }
@@ -271,6 +297,7 @@ export function growOne(state: RhizomeState, rng: () => number, geo: RhizomeGeom
     id: state.nextSegmentId,
     shootId,
     x1: tip.x, y1: tip.y, x2: resolved.point.x, y2: resolved.point.y,
+    ...(shootIsThick(shootId) ? { thick: true } : {}),
   };
   if (isFirstEver || branch) {
     newShoot = { id: shootId, x: resolved.point.x, y: resolved.point.y, angle: resolved.angle };
@@ -315,9 +342,11 @@ export const SAT_K = 834;           // M3 S3 — saturation constant: 95% of CAP
 // Goal-fill (2026-10-07). The live field no longer grows by absolute word
 // count. A lap of the writer's own goal — 100 words or 1000, lines or words —
 // maps onto this many segments, so both goals fill the ground at the same
-// moment: when the lap completes. Longer strokes and more shoots than the
-// M2 event-path, so the lap actually covers the stage instead of clustering.
-export const FILL_SEGMENTS = 1600;
+// moment: when the lap completes. The cap is the density that used to read
+// as about half a lap — a full goal fills the margins, it does not carpet
+// them. Longer strokes and more shoots than the M2 event-path, so the lap
+// still covers the ground around the sheet.
+export const FILL_SEGMENTS = 800;
 export const FILL_SHOOTS = 72;
 export const FILL_LEN_MIN = 20;
 export const FILL_LEN_MAX = 52;
@@ -386,7 +415,9 @@ export function seedOrigins(rng: () => number, geo: RhizomeGeometry, count: numb
       // Goal-fill (allowOnPage) skips this: roots are meant to start on the
       // page background too, behind the words.
       if (!allowOnPage) {
-        for (let tries = 0; tries < 6 && inRect(x, y, geo.paper); tries++) {
+        const blocked = (px: number, py: number) => inRect(px, py, geo.paper)
+          || (geo.obstacles != null && geo.obstacles.some(r => inRect(px, py, r)));
+        for (let tries = 0; tries < 6 && blocked(x, y); tries++) {
           x = loX + rng() * (hiX - loX);
           y = loY + rng() * (hiY - loY);
         }
@@ -399,7 +430,14 @@ export function seedOrigins(rng: () => number, geo: RhizomeGeometry, count: numb
     // keep it inside the stage — unless this ground is allowed to root on the
     // page (goal-fill). A shoot never roots in the writer's words when the
     // wall is up.
-    const nudged = allowOnPage ? best : outsidePaper(best.x, best.y, geo.paper, STAGE_PAD);
+    let nudged = allowOnPage ? best : outsidePaper(best.x, best.y, geo.paper, STAGE_PAD);
+    if (!allowOnPage && geo.obstacles) {
+      for (let n = 0; n < geo.obstacles.length + 1; n++) {
+        const hit = geo.obstacles.find(r => inRect(nudged.x, nudged.y, r));
+        if (!hit) break;
+        nudged = outsidePaper(nudged.x, nudged.y, hit, STAGE_PAD);
+      }
+    }
     origins.push(clampToStage(nudged, geo));
   }
   return origins;
@@ -469,6 +507,7 @@ function growSegment(state: RhizomeState, rng: () => number, geo: RhizomeGeometr
   const segment: RhizomeSegment = {
     id: state.nextSegmentId, shootId,
     x1: tip.x, y1: tip.y, x2: resolved.point.x, y2: resolved.point.y,
+    ...(shootIsThick(shootId) ? { thick: true } : {}),
   };
   if (rootingPhase || branch) {
     newShoot = { id: shootId, x: resolved.point.x, y: resolved.point.y, angle: resolved.angle };
@@ -528,6 +567,7 @@ export function burstSegments(state: RhizomeState, rng: () => number, geo: Rhizo
     const segment: RhizomeSegment = {
       id: s.nextSegmentId, shootId: tip.id,
       x1: tip.x, y1: tip.y, x2: resolved.point.x, y2: resolved.point.y, burst: true,
+      ...(shootIsThick(tip.id) ? { thick: true } : {}),
     };
     added.push(segment);
     s = {
