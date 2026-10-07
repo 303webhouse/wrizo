@@ -46,11 +46,18 @@ export function makeCredentials() {
   };
 }
 
-// Only this user may touch the file. On Windows: drop inherited ACLs and grant the current user alone. Elsewhere 0600 does it.
+// Only this user may touch the file. On Windows: drop inherited ACLs, grant the current user alone, REMOVE the SYSTEM and
+// Administrators entries by well-known SID (locale-independent), then COUNT the access entries and refuse unless exactly one
+// is left. (Found on the first live run: in ~/.wrizo the file kept explicit SYSTEM and Administrators entries that
+// `/inheritance:r` does not touch, though the same call in a temp dir stripped them. The count is the guard, whatever the
+// directory does.) Elsewhere mode 0600 does it.
 export function lockDown(file) {
   if (process.platform !== 'win32') return;
   const who = `${process.env.USERDOMAIN ? process.env.USERDOMAIN + '\\' : ''}${userInfo().username}`;
   execFileSync('icacls', [file, '/inheritance:r', '/grant:r', `${who}:(R,W,D)`], { stdio: 'ignore' });
+  execFileSync('icacls', [file, '/remove:g', '*S-1-5-18', '*S-1-5-32-544'], { stdio: 'ignore' });
+  const left = execFileSync('icacls', [file], { encoding: 'utf8' }).split(/\r?\n/).filter((l) => /:\(/.test(l)).length;
+  if (left !== 1) throw new Error('acl-not-locked');
 }
 
 // Create the file EMPTY ('wx': refuses to clobber), lock it, then write the secret into it.
