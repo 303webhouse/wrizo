@@ -50,12 +50,13 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; }
-  html, body { height: 100%; }
+  html, body { height: 100%; overflow-x: hidden; }
   body {
     background: #000;
     color: var(--text-hi);
     font-family: var(--font-ui);
     overflow: hidden;
+    max-width: 100%;
   }
   button, input { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
   [hidden] { display: none !important; }
@@ -66,6 +67,7 @@
     padding: 7px 12px;
     background: #000; border-bottom: 1px solid #222;
     font-size: 11px; color: #9a9a9a;
+    max-width: 100%; overflow-x: hidden;
   }
   .rig b { color: #d8d8d8; font-weight: 600; letter-spacing: .06em; }
   .rig .rev {
@@ -305,7 +307,10 @@
 
   @media (max-width: 720px) {
     .rig .hint { display: none; }
-    .stage { grid-template-columns: 1fr; width: 100%; }
+    .fit, .stage, .page-col, .sheet, .zone5, .card, .connect {
+      min-width: 0; max-width: 100%;
+    }
+    .stage { grid-template-columns: minmax(0, 1fr); width: 100%; overflow: hidden; }
     .desk { display: none; }
     .zone5 { display: none; border-left: none; }
     body[data-panel='linked'] .page-col,
@@ -314,12 +319,13 @@
     body[data-panel='tutor'] .zone5 { display: flex; }
     body[data-panel='tutor'] .linked-pane { display: none; }
     body[data-panel='linked'] .tutor-pane { display: none; }
-    .sheet { inset: 8px; padding: 20px 22px 28px 32px; }
-    .sheet p { overflow-wrap: anywhere; }
-    .overlay, .page-pop { inset: 8px; }
-    .card { width: 100%; }
-    .connect { position: static; margin-top: 8px; }
-    .thumbs { grid-template-columns: repeat(2, 1fr); }
+    .sheet { inset: 8px; padding: 16px 14px 24px 28px; overflow-x: hidden; }
+    .sheet p { overflow-wrap: anywhere; word-break: break-word; font-size: 16px; }
+    .overlay, .page-pop { inset: 8px; max-width: 100%; overflow-x: hidden; }
+    .card { width: 100%; max-width: 100%; overflow-x: hidden; }
+    .card-foot { gap: 8px; min-width: 0; }
+    .connect { position: static; margin-top: 8px; max-width: 100%; }
+    .thumbs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .phone-back {
       display: block; padding: 8px 12px;
       font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
