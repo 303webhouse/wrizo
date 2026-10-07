@@ -24537,3 +24537,31 @@ choosing their replacement path.
 **WAITING ON:** Fable’s review of `smoke-account-tools` @ `2b0aca7`. Then this desk merges to `main`, builds the server
 (`dist/passwordHash.js`), and runs `create-smoke-account.mjs` ONCE via `railway run --service Postgres`; the deploy of the
 `auth.ts` refactor waits for the next batch and the ship gate.
+
+## SMOKE-ACCOUNT TOOLS: FABLE’S REVIEW CHANGES BUILT (`smoke-account-tools` @ `61000bf`) — 2026-10-07 (chat 1)
+
+**FABLE’S BYTE REVIEW of `2b0aca7` (relay): good work, two changes, then cleared.** (1) REQUIRED: the last step proved nothing
+server-side — logout’s `Set-Cookie` clears `connect.sid`, so the jar’s `/auth/me` is 401 even if the session survived. Save
+the pre-logout cookie and replay it to `GET /auth/me`, expecting 401; keep the current step; add a mutation where logout skips
+`session.destroy`, which must go red. (2) Refuse `--base` unless `https://` (loopback http allowed for the proof). Noted, no
+change: a hard kill between the file write and the insert leaves a file that a rerun reports as “exists” — delete the
+file and rerun; one line in the script’s header.
+
+**BUILT:** (1) `smoke-login.mjs` walk is now SIX steps: login, `/auth/me`, pull-only sync, logout, `/auth/me` with the emptied
+jar (kept), and `/auth/me` with the saved PRE-LOGOUT cookie replayed (the replay leaves the jar alone). (2) `assertSafeBase`
+— https only; plain http only for the EXACT hostnames `127.0.0.1`, `localhost`, `[::1]` (so `http://127.0.0.1.evil.example`
+and `http://localhost.evil.example` are refused); it runs in `main()` before the credentials file is read and again at the
+top of `walk()`, so a refused base reads and sends nothing. (3) the header line in `create-smoke-account.mjs`.
+
+**PROOF (browserless, real throwaway Postgres): `harness/smoke-account-db.mjs` 30/30.** The fake server now models the
+real session: login creates one, `/auth/me` is 200 only for a live session id, logout clears the cookie on the client
+AND destroys the session — and mode `nodestroy` keeps the clearing but SKIPS the destroy. **That server’s walk FAILS — and
+only at the replayed-cookie step (the jar step passes, which is exactly why the replay is needed).** The refusals are
+proved for `http://example.com`, `http://127.0.0.1.evil.example`, `http://localhost.evil.example`, `ftp://127.0.0.1` and
+a non-URL (exit 2, nothing printed); loopback http still passes. **MUTATIONS (run on this version): M7 skip the replay step →
+RED (5); M8 `assertSafeBase` allows anything → RED (5); M9 the replay sends the emptied jar instead of the saved cookie →
+RED (2).** The six mutants run on `2b0aca7` (no `lockDown`, password printed, login retry, email printed, orphan file,
+sync pushes) were not re-run on this version; the proof they bite is unchanged but this desk claims only what it re-ran.
+
+**WAITING ON:** Fable’s OK on `61000bf`. Then: merge to `main`, build the server, create once, `smoke-login` against
+today’s live site as the baseline.
