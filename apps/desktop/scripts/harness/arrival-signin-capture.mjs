@@ -7,6 +7,11 @@
 // header button reads "Signing out…"). They come from an AUTHED boot, with sync stubbed in the page: failing, so a page
 // stays unsaved and the sheet appears; then stalled, so the button sits on "Signing out…".
 //
+// Batch 11 adds the two GUEST screens: guest-claim (the claim sheet open over a page, after a guest's time has run out) and
+// guest-expired (a dead guest link's arrival). The test double has no guest routes, so the PAGE's own fetch is answered with the
+// server's real guest_expired 401 for /api/sync and /auth/guest. The claim sheet only appears from a sync, and a sync only runs on
+// an authed boot, so each phase flips process.env.WS_ANON off (the double reads it per request, in this process) and back on.
+//
 // Captures, for dark and light, at desktop and phone size:
 //   doors, signin, account, and signedout (after a sign-out: the flag set, the
 //   app reloaded, the writer lands on the sign-in screen).
@@ -66,11 +71,34 @@ const FOCUS_TRACE = `(() => {
   return true;
 })()`;
 
+// What the real server answers an expired guest, for the two calls that matter. Installed per page: a reload clears it.
+const GUEST_STUB = `(() => {
+  const real = window.fetch.bind(window);
+  window.fetch = (u, o) => {
+    const s = String(u);
+    if (s.includes('/api/sync') || s.includes('/auth/guest')) {
+      return Promise.resolve(new Response(JSON.stringify({ error: 'This guest account has expired.', reason: 'guest_expired' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }));
+    }
+    return real(u, o);
+  };
+  return true;
+})()`;
+
 const shots = [];
 // The hero fades out over .8 s and the form fades in over 1 s. A shot taken inside that window shows a ghost of the
 // logo behind the form — a mid-transition frame, not the settled screen. Wait for the SETTLED state, and record
 // the hero's computed opacity as evidence that it is gone.
 async function settle(app, screen) {
+  if (screen === 'guest-claim') {
+    await app.waitFor(`document.querySelector('.wz-guest-sheet-line')?.textContent === 'Your guest time is over — create an account to keep your work here'`, { timeout: 8000, label: 'claim sheet with its line' });
+    await app.waitFor(`document.activeElement?.closest?.('.wz-guest-sheet') !== null`, { timeout: 8000, label: 'focus inside the sheet' });
+    return 'sheet open, its line shown, focus inside it';
+  }
+  if (screen === 'guest-expired') {
+    await app.waitFor(`document.querySelector('[role="status"]')?.textContent === 'Your guest time is over — create an account to keep your work here'`, { timeout: 8000, label: 'expired line on the arrival' });
+    return 'expired line shown on the arrival';
+  }
   if (screen === 'logout-sheet') {
     await app.waitFor(`/ha(ven|sn).t saved to your account yet/.test(document.querySelector('.wz-logout-sheet-body')?.textContent || '')`, { timeout: 8000, label: 'logout sheet with its sentence' });
     try {
@@ -150,6 +178,27 @@ await withHarness(async (app) => {
       await app.waitFor(`!!document.querySelector('.wz-arrival .wz-sub')`, { label: 'account' });
       await sleep(400);
       await save(app, vp.name, theme.name, 'account');
+
+      // guest-claim — the sheet over a page. An AUTHED boot (so sync runs), the guest 401 stubbed, one sync provoked.
+      process.env.WS_ANON = '0';
+      await app.reload();
+      await app.waitFor(`!!document.querySelector('.wz-arrival')`, { label: 'authed arrival (guest phase)' });
+      await app.evalJs(GUEST_STUB);
+      await app.evalJs(theme.setup); // a reload clears the theme attributes the capture sets
+      await app.goto('/sprint');
+      await app.waitFor(`!!document.querySelector('.forward-only-editor, textarea')`, { label: 'a page behind the sheet' });
+      await app.evalJs(`window.dispatchEvent(new Event('online')); true;`); // startSync listens for this: one sync, answered 401 guest_expired
+      await app.waitFor(`!!document.querySelector('.wz-guest-sheet')`, { timeout: 8000, label: 'claim sheet' });
+      await save(app, vp.name, theme.name, 'guest-claim');
+
+      // guest-expired — a dead link's arrival. A fresh page (a reload clears the module state and the stub).
+      await app.reload();
+      await app.evalJs(GUEST_STUB);
+      await app.evalJs(theme.setup);
+      await app.goto('/guest?t=capture-demo-token');
+      await save(app, vp.name, theme.name, 'guest-expired');
+      process.env.WS_ANON = '1';
+      await app.goto('/');
 
       // The logout sheet and "Signing out…" — an AUTHED boot (there is a session to sign out of; the double reads WS_ANON per
       // request, in this process), a page to sign out of, sync failing so one record stays unsaved.
