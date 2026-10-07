@@ -1,16 +1,28 @@
 doors-dark-desktop — hero opacity 1 — inputs empty (0), no "@" in visible text
 signin-dark-desktop — hero opacity 0, form opacity 1 — inputs empty (2), no "@" in visible text
 account-dark-desktop — hero opacity 0, form opacity 1 — inputs empty (4), no "@" in visible text
+logout-sheet-dark-desktop — sheet open (first step), focus on "Stay signed in" — inputs empty (0), no "@" in visible text
+logout-confirm-dark-desktop — sheet open (second step), the confirm shown — inputs empty (0), no "@" in visible text
+signing-out-dark-desktop — a page, its sign-out button reading "Signing out…" and disabled — inputs empty (0), no "@" in visible text
 signedout-dark-desktop — hero opacity 0, form opacity 1 — inputs empty (2), no "@" in visible text
 doors-light-desktop — hero opacity 1 — inputs empty (0), no "@" in visible text
 signin-light-desktop — hero opacity 0, form opacity 1 — inputs empty (2), no "@" in visible text
 account-light-desktop — hero opacity 0, form opacity 1 — inputs empty (4), no "@" in visible text
+logout-sheet-light-desktop — sheet open (first step), focus on "Stay signed in" — inputs empty (0), no "@" in visible text
+logout-confirm-light-desktop — sheet open (second step), the confirm shown — inputs empty (0), no "@" in visible text
+signing-out-light-desktop — a page, its sign-out button reading "Signing out…" and disabled — inputs empty (0), no "@" in visible text
 signedout-light-desktop — hero opacity 0, form opacity 1 — inputs empty (2), no "@" in visible text
 doors-dark-phone — hero opacity 1 — inputs empty (0), no "@" in visible text
 signin-dark-phone — hero opacity 0, form opacity 1 — inputs empty (2), no "@" in visible text
 account-dark-phone — hero opacity 0, form opacity 1 — inputs empty (4), no "@" in visible text
+logout-sheet-dark-phone — sheet open (first step), focus on "Stay signed in" — inputs empty (0), no "@" in visible text
+logout-confirm-dark-phone — sheet open (second step), the confirm shown — inputs empty (0), no "@" in visible text
+signing-out-dark-phone — a page, its sign-out button reading "Signing out…" and disabled — inputs empty (0), no "@" in visible text
 signedout-dark-phone — hero opacity 0, form opacity 1 — inputs empty (2), no "@" in visible text
 doors-light-phone — hero opacity 1 — inputs empty (0), no "@" in visible text
 signin-light-phone — hero opacity 0, form opacity 1 — inputs empty (2), no "@" in visible text
 account-light-phone — hero opacity 0, form opacity 1 — inputs empty (4), no "@" in visible text
+logout-sheet-light-phone — sheet open (first step), focus on "Stay signed in" — inputs empty (0), no "@" in visible text
+logout-confirm-light-phone — sheet open (second step), the confirm shown — inputs empty (0), no "@" in visible text
+signing-out-light-phone — a page, its sign-out button reading "Signing out…" and disabled — inputs empty (0), no "@" in visible text
 signedout-light-phone — hero opacity 0, form opacity 1 — inputs empty (2), no "@" in visible text
