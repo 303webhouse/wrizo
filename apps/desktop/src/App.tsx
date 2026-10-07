@@ -28,6 +28,7 @@ import { useFirstRunGateActive } from './store/firstRunGateActive';
 import { onLogoutRequested } from './store/logoutRequest';
 import { showLogoutBlock, clearLogoutBlock, attemptSignOut, getSigningOut, setSigningOut, endServerSession, bootDecision } from './store/logoutGuard';
 import { useSigningOut } from './store/useSigningOut';
+import { flushAll } from './store/flushRegistry';
 import { LogoutBlockedSheet } from './components/LogoutBlockedSheet';
 import { isSignedOutHere, markSignedOutHere, clearSignedOutHere } from './store/signedOutHere';
 import { SyncIndicator, FullscreenToggle } from './components/ChromeControls';
@@ -271,6 +272,9 @@ export function App() {
     if (getSigningOut()) return;
     setSigningOut(true);
     try {
+      // FLUSH, THEN DECIDE, THEN WIPE — on BOTH paths. Every editor's pending text moves into its record first, so the
+      // unsaved count below sees it, and the unmount that follows the wipe has nothing left to write back.
+      flushAll();
       if (force !== true) {
         const attempt = await attemptSignOut(() => syncOnce(), countDirtyRecords);
         if (attempt.kind === 'blocked') {

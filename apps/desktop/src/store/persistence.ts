@@ -6,6 +6,7 @@ import { deskTerm, type DeskTermId } from './deskLexicon';
 import { getUserPageDefaults } from './pageDefaults';
 import { clearProofingLocal } from './proofing';
 import { reportFlushFailed, reportFlushOk, reportStorageUsage } from './storageHealth';
+import { isSignedOutHere } from './signedOutHere';
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -371,6 +372,11 @@ function upsert<T extends { id: string; updatedAt: string }>(
   collection: T[],
   record: T,
 ): void {
+  // THE BELT (logout flush) — a device that has signed out keeps nothing of the writer's. From the moment the
+  // signed-out flag is set, no record is written: a late timer or an editor's unmount flush that runs after the wipe
+  // can no longer recreate a row (saveDraft is an upsert and WOULD create one) that the next account would then push.
+  // Pulled records do not come through here (applyCollection writes them), and a sign-in clears the flag first.
+  if (isSignedOutHere()) return;
   record.updatedAt = new Date().toISOString();
   const index = collection.findIndex(r => r.id === record.id);
   if (index >= 0) {
