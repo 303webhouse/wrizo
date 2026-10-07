@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiGuest, type AuthUser } from '../store/api';
 import { readGuestTokenFromHash, guestAddressWithoutToken, GUEST_EXPIRED_LINE } from '../store/guestState';
+import { clearSignedOutHere } from '../store/signedOutHere';
 
 // GUEST LOGIN (item 225) — `#/guest?t=<token>`, the beta tester's invite link.
 // The token is read and taken out of the address bar BEFORE anything awaits, so
@@ -25,6 +26,10 @@ export function GuestArrival({ onAuthed }: { onAuthed: (user: AuthUser) => void 
     }
     void apiGuest(token).then((r) => {
       if (r.ok && r.user) {
+        // A guest entering on a device that signed out must lift the signed-out flag, exactly as a sign-in does: while
+        // it is set, the write-belt drops every record write, and the guest would lose everything silently. Cleared
+        // here, explicitly and first, so the guest session never starts under the belt (handleAuthed clears it too).
+        clearSignedOutHere();
         onAuthed(r.user);
         navigate('/', { replace: true });
         return;

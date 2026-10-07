@@ -48,6 +48,9 @@ await withHarness(async (app) => {
   ok('(W1) a refused token shows the server\'s sentence, and nothing else', true, '');
 
   // 2. A valid token: the token is OUT of the address bar before the request is sent.
+  // The device is made to look SIGNED OUT first (the flag a sign-out leaves behind), because the write-belt drops
+  // every record write while that flag is set: a guest entering here must lift it, or lose everything silently.
+  await app.evalJs(`localStorage.setItem('wz.signedOutHere', '1'); true;`);
   await app.evalJs(`location.hash = '#/guest?t=${VALID}'; true;`);
   await app.waitFor(`location.hash === '#/'`, { label: 'landed on the Arrival door' });
   const calls = await app.evalJs('window.__guestCalls');
@@ -58,6 +61,13 @@ await withHarness(async (app) => {
     !!valid && !valid.hrefAtCall.includes(VALID) && !valid.hrefAtCall.includes('t='), valid?.hrefAtCall ?? '');
   const finalHref = await app.evalJs('location.href');
   ok('(W4) and it is still gone after the arrival (nothing re-adds it)', !finalHref.includes(VALID), finalHref);
+  ok('(W4b) the guest session start LIFTED the signed-out flag', (await app.evalJs(`localStorage.getItem('wz.signedOutHere')`)) === null, '');
+  // Create and read in ONE expression, so a sync cannot clear the dirty mark between the two: under the belt this is false.
+  const landed = await app.evalJs(`(() => {
+    window.wrizoCreateJournalPage({ id: 'guest-walk-page', text: 'guest words' });
+    return window.wrizoDirty.records().journalEntries.some((e) => e.id === 'guest-walk-page');
+  })()`);
+  ok('(W4c) a guest\'s first write LANDS as a dirty record (it would be silently dropped if the flag were still set)', landed === true, String(landed));
 
   // 3. Sign out, then arrive with the EXPIRED guest's link: the sync refuses, the sheet appears.
   await app.evalJs(`fetch('/auth/logout', { method: 'POST', credentials: 'include' }).then(() => true)`);

@@ -230,6 +230,64 @@ try {
     sheetSrc.indexOf('useEffect(() => {\n    if (!visible) return;') < sheetSrc.indexOf('if (!visible) return null;'), '');
 }
 
+// =============================================================================
+// PART H — a guest entering on a SIGNED-OUT device must lift the signed-out flag.
+// The write-belt (persistence.upsert) drops every record write while the flag is set. A guest whose session started
+// under it would write, see their words, and lose all of it. Run against the REAL persistence.ts.
+// =============================================================================
+{
+  const { build } = createRequire(require.resolve('vite'))('esbuild');
+  let hn = 0;
+  const loadStore = async () => {
+    hn += 1;
+    const res = await build({
+      stdin: { contents: 'export const __n = ' + hn + ';\nexport * from "./store/persistence";\nexport * from "./store/signedOutHere";', resolveDir: SRC, loader: 'ts' },
+      bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'silent',
+    });
+    // Fresh fake environment installed AFTER the build, immediately before the import (no await between).
+    const m = new Map();
+    globalThis.window = { addEventListener() {}, removeEventListener() {} };
+    globalThis.localStorage = { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => { m.set(k, String(v)); }, removeItem: (k) => { m.delete(k); }, clear: () => m.clear() };
+    Object.defineProperty(globalThis, 'navigator', { value: { userAgent: 'Mozilla/5.0 Chrome/128' }, configurable: true, writable: true });
+    return import('data:text/javascript;base64,' + Buffer.from(res.outputFiles[0].text).toString('base64'));
+  };
+
+  // The device signed out: flag set, data wiped. Then a guest's link is opened.
+  const lockedDevice = await loadStore();
+  lockedDevice.markSignedOutHere();
+  lockedDevice.resetLocalData();
+  lockedDevice.saveDraft('guest-first-words', 'the guest starts writing');
+  ok('(H1) THE HAZARD, reproduced: on a signed-out device with the flag still set, a guest\'s write is DROPPED (no row, nothing dirty) — they would lose everything silently',
+    lockedDevice.getDraft('guest-first-words') === null && lockedDevice.countDirtyRecords() === 0, String(lockedDevice.countDirtyRecords()));
+  lockedDevice.resetLocalData();
+
+  const lifted = await loadStore();
+  lifted.markSignedOutHere();
+  lifted.resetLocalData();
+  lifted.clearSignedOutHere();                 // what the guest session start now does, before anything writes
+  lifted.saveDraft('guest-first-words', 'the guest starts writing');
+  ok('(H2) with the flag cleared at the guest session start, the same write LANDS and is dirty (it will sync)',
+    lifted.getDraft('guest-first-words')?.text === 'the guest starts writing' && lifted.countDirtyRecords() === 1, String(lifted.countDirtyRecords()));
+  lifted.resetLocalData();
+
+  // The wiring, in source.
+  const successBranch = arrival.slice(arrival.indexOf('if (r.ok && r.user) {'), arrival.indexOf('return;', arrival.indexOf('if (r.ok && r.user) {')));
+  ok('(H3) GuestArrival imports clearSignedOutHere', /import \{ clearSignedOutHere \} from '\.\.\/store\/signedOutHere';/.test(arrival), '');
+  ok('(H4) the guest session start clears the flag FIRST in its success branch — before onAuthed (which starts the sync) and before it navigates',
+    /clearSignedOutHere\(\);/.test(successBranch) && successBranch.indexOf('clearSignedOutHere()') < successBranch.indexOf('onAuthed(r.user)'), successBranch.slice(0, 300));
+  const authedFn = app.slice(app.indexOf('const handleAuthed'), app.indexOf('const handleLogout'));
+  ok('(H5) and handleAuthed, which onAuthed reaches, clears it too (two layers, so neither alone is load-bearing)',
+    /clearSignedOutHere\(\);/.test(authedFn), '');
+  ok('(H6) the route guard lets /guest through on a locked device, so the link can be opened at all',
+    /pathname === '\/guest'/.test(app.slice(app.indexOf('function SignedOutRouteGuard'), app.indexOf('function BrandMark'))), '');
+
+  // MUTATION: take the clear out of GuestArrival. H4's predicate must go red.
+  const mutatedArrival = arrival.replace('        clearSignedOutHere();\n', '').replace('        clearSignedOutHere();\r\n', '');
+  const mBranch = mutatedArrival.slice(mutatedArrival.indexOf('if (r.ok && r.user) {'), mutatedArrival.indexOf('return;', mutatedArrival.indexOf('if (r.ok && r.user) {')));
+  ok('(H7) MUTATION KILLED: without the clear in GuestArrival, H4\'s predicate goes red',
+    mutatedArrival !== arrival && !/clearSignedOutHere\(\);/.test(mBranch), '');
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 
 // eslint-disable-next-line no-console
