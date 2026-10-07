@@ -3,12 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wrizo · Page mockup · round 5</title>
+<title>Wrizo · Page mockup · round 6</title>
 <!--
-  docs/mockups/rail — page. Left strip + right pop-out.
-  Tabs stay at the paper edge; only the arrow flips. Panel slides from behind.
-  Icons + tooltips for Actions / Templates. Brass on every selected control.
-  CONNECTIONS tab sized to fit. Phone: overlay inward, paper fully on screen.
+  docs/mockups/rail — FROZEN round 6. Tabs stay; menu clips at the tab and
+  translates its full width (no fade). Typeface name on its own row.
+  Header/Footer hides kicker + foot. Menu body type one step smaller.
   Branch: cursor/rail-mockup.
 -->
 <style>
@@ -77,6 +76,13 @@
     overflow: auto; padding: 28px 48px 40px 56px;
   }
   .paper .kicker { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-on-paper-low); margin-bottom: 18px; }
+  .paper .page-foot {
+    position: absolute; bottom: 16px; left: 56px; right: 48px;
+    font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--ink-on-paper-low);
+  }
+  .paper[data-hf='false'] .kicker,
+  .paper[data-hf='false'] .page-foot { display: none; }
   .paper p { font-family: var(--font-prose); font-size: 18px; line-height: 1.7; margin-bottom: 1.1em; }
   .lnk { background: var(--sea-wash); cursor: pointer; }
   .lnk:hover, .lnk[data-on='true'] { background: var(--sea-wash-deep); }
@@ -91,25 +97,30 @@
   body[data-tool='move'] canvas.ink { cursor: grab; }
   body[data-tool='eraser'] canvas.ink { cursor: cell; }
 
-  /* tabs stay at the paper edge; panel slides out from behind the tab */
+  /* tabs stay; clip at the tab; panel translates its full width (no fade) */
   .sliver {
     position: absolute; top: 18px; bottom: 22px; left: 28px;
     width: var(--pop-w); z-index: 6; pointer-events: none;
   }
-  .sliver .grip, .sliver .panel { pointer-events: auto; }
-  .sliver .panel {
+  .sliver .grip { pointer-events: auto; }
+  .sliver .clip {
     position: absolute; top: 0; bottom: 0; left: 0; right: 16px;
+    overflow: hidden; pointer-events: none;
+  }
+  .sliver[data-open='true'] .clip { pointer-events: auto; }
+  .sliver .panel {
+    position: absolute; inset: 0;
     overflow-y: auto; overflow-x: hidden;
     background: var(--desk-ground); border: 1px solid var(--ink-border); border-right: none;
-    opacity: 0; pointer-events: none; transform: translateX(6px);
-    transition: opacity var(--fade-dur) ease, transform var(--fade-dur) ease;
+    transform: translateX(100%);
+    transition: transform var(--fade-dur) ease;
   }
-  .sliver[data-open='true'] .panel { opacity: 1; pointer-events: auto; transform: translateX(0); }
+  .sliver[data-open='true'] .panel { transform: translateX(0); }
   .sliver .grip {
     position: absolute; top: 16px; right: 0; left: auto; width: 16px; height: 34px; z-index: 3;
     display: flex; align-items: center; justify-content: center;
     background: var(--desk-ground); border: 1px solid var(--ink-border); border-right: none;
-    color: var(--text-mid); font-size: 13px;
+    color: var(--text-mid); font-size: 12px;
     transition: color var(--fade-dur) ease, border-color var(--fade-dur) ease;
   }
   .sliver[data-open='true'] .grip { color: var(--brass); border-color: var(--brass); }
@@ -118,20 +129,25 @@
     position: absolute; top: 18px; bottom: 22px; right: 16px;
     width: var(--pop-w); z-index: 6; pointer-events: none;
   }
-  .popout .grip, .popout .panel { pointer-events: auto; }
-  .popout .panel {
+  .popout .grip { pointer-events: auto; }
+  .popout .clip {
     position: absolute; top: 0; bottom: 0; left: 16px; right: 0;
+    overflow: hidden; pointer-events: none;
+  }
+  .popout[data-open='true'] .clip { pointer-events: auto; }
+  .popout .panel {
+    position: absolute; inset: 0;
     overflow-y: auto; overflow-x: hidden;
     background: var(--desk-ground); border: 1px solid var(--ink-border); border-left: none;
-    opacity: 0; pointer-events: none; transform: translateX(-6px);
-    transition: opacity var(--fade-dur) ease, transform var(--fade-dur) ease;
+    transform: translateX(-100%);
+    transition: transform var(--fade-dur) ease;
   }
-  .popout[data-open='true'] .panel { opacity: 1; pointer-events: auto; transform: translateX(0); }
+  .popout[data-open='true'] .panel { transform: translateX(0); }
   .popout .grip {
     position: absolute; top: 16px; left: 0; width: 16px; height: 34px; z-index: 3;
     display: flex; align-items: center; justify-content: center;
     background: var(--desk-ground); border: 1px solid var(--ink-border); border-left: none;
-    color: var(--text-mid); font-size: 13px;
+    color: var(--text-mid); font-size: 12px;
     transition: color var(--fade-dur) ease, border-color var(--fade-dur) ease;
   }
   .popout[data-open='true'] .grip { left: 0; color: var(--brass); border-color: var(--brass); }
@@ -153,8 +169,8 @@
     background: color-mix(in srgb, var(--brass) 16%, transparent);
   }
   .mode-tbtn {
-    min-width: 26px; height: 26px; padding: 0 4px; border: 1px solid transparent;
-    color: var(--text-mid); font-size: 13px; display: inline-flex; align-items: center; justify-content: center;
+    min-width: 24px; height: 24px; padding: 0 4px; border: 1px solid transparent;
+    color: var(--text-mid); font-size: 12px; display: inline-flex; align-items: center; justify-content: center;
   }
   .mode-tbtn:hover { border-color: var(--ink-border); color: var(--text-hi); }
   .mode-tbtn[data-on='true'] {
@@ -164,40 +180,41 @@
   .mode-tbtn.is-dead { opacity: .45; cursor: default; pointer-events: none; }
   .mode-tbtn svg { display: block; }
   .row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
-  .type-row { display: grid; grid-template-columns: minmax(0, 1fr) 26px 3.2em 26px; gap: 3px; width: 100%; }
+  .type-stack { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+  .type-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) 24px; gap: 3px; width: 100%; }
   .size-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) 24px; gap: 3px; width: 100%; }
   .wz-type-face, .size-val {
-    min-width: 0; text-align: center; padding: 4px 8px; color: var(--brass);
-    border: 1px solid var(--brass); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    width: 100%; text-align: center; padding: 4px 8px; color: var(--brass);
+    border: 1px solid var(--brass); font-size: 13px; white-space: nowrap;
     background: color-mix(in srgb, var(--brass) 12%, transparent);
   }
   .wz-type-face { text-align: left; }
-  .size-val { font-size: 11px; letter-spacing: .04em; padding: 4px 9px; }
+  .size-val { font-size: 10px; letter-spacing: .04em; padding: 4px 9px; }
   .wz-type-num {
-    width: 3.2em; text-align: center; padding: 3px 2px; color: var(--brass);
-    border: 1px solid var(--brass); font-size: 13px;
+    width: auto; min-width: 0; text-align: center; padding: 3px 2px; color: var(--brass);
+    border: 1px solid var(--brass); font-size: 12px;
     background: color-mix(in srgb, var(--brass) 12%, transparent);
   }
   .wz-type-list { list-style: none; border: 1px solid var(--ink-border); }
-  .wz-type-row { padding: 4px 8px; font-size: 14px; color: var(--text-hi); cursor: pointer; }
+  .wz-type-row { padding: 4px 8px; font-size: 13px; color: var(--text-hi); cursor: pointer; }
   .wz-type-row[data-current='true'] {
     color: var(--brass); background: color-mix(in srgb, var(--brass) 12%, transparent);
   }
   .item-btn {
     display: block; width: 100%; text-align: left; border: 1px solid var(--ink-border);
-    color: var(--text-mid); font-size: 13px; padding: 8px 10px;
+    color: var(--text-mid); font-size: 12px; padding: 7px 9px;
   }
   .item-btn:hover { color: var(--text-hi); }
   .item-btn.danger:hover { color: var(--brick); }
-  .chip { border: 1px solid var(--ink-border); color: var(--text-mid); font-size: 11px; padding: 3px 7px; }
+  .chip { border: 1px solid var(--ink-border); color: var(--text-mid); font-size: 10px; padding: 3px 7px; }
   .chip[data-on='true'] {
     color: var(--brass); border-color: var(--brass);
     background: color-mix(in srgb, var(--brass) 12%, transparent);
   }
   .tag-pop { display: flex; flex-wrap: wrap; gap: 4px; }
-  .confirm .q { font-size: 12px; color: var(--text-hi); margin-bottom: 6px; }
-  .confirm .go { border: 1px solid var(--brick); color: var(--brick); padding: 4px 8px; font-size: 12px; }
-  .confirm .no { border: 1px solid var(--ink-border); color: var(--text-mid); padding: 4px 8px; font-size: 12px; }
+  .confirm .q { font-size: 11px; color: var(--text-hi); margin-bottom: 6px; }
+  .confirm .go { border: 1px solid var(--brick); color: var(--brick); padding: 4px 8px; font-size: 11px; }
+  .confirm .no { border: 1px solid var(--ink-border); color: var(--text-mid); padding: 4px 8px; font-size: 11px; }
   .mode-swatch { width: 22px; height: 22px; border: 1px solid var(--ink-border-strong); }
   .mode-swatch.active { outline: 2px solid var(--brass); outline-offset: 1px; }
 
@@ -219,18 +236,18 @@
     color: var(--brass); border-bottom-color: var(--brass);
     background: color-mix(in srgb, var(--brass) 12%, transparent);
   }
-  .math, .empty, .focus-bar { font-size: 11px; color: var(--text-low); line-height: 1.4; }
+  .math, .empty, .focus-bar { font-size: 10px; color: var(--text-low); line-height: 1.4; }
   .focus-bar button { color: var(--accent-rest); }
   .grp { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-mid); margin: 10px 0 4px; }
   .lrow { display: flex; align-items: center; gap: 4px; }
-  .open { flex: 1; min-width: 0; text-align: left; display: flex; gap: 6px; padding: 6px 4px; color: var(--text-mid); font-size: 13px; }
+  .open { flex: 1; min-width: 0; text-align: left; display: flex; gap: 6px; padding: 6px 4px; color: var(--text-mid); font-size: 12px; }
   .open:hover { color: var(--text-hi); background: var(--ink-800); }
   .kind { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-low); }
   .lab { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .unlink { color: var(--text-low); font-size: 11px; padding: 2px 6px; }
   .ask { display: flex; gap: 6px; }
-  .ask input { flex: 1; min-width: 0; background: var(--ink-800); border: 1px solid var(--ink-border); color: var(--text-hi); font-size: 13px; padding: 8px; }
-  .ask button { border: 1px solid var(--ink-border); color: var(--text-mid); padding: 0 10px; font-size: 12px; }
+  .ask input { flex: 1; min-width: 0; background: var(--ink-800); border: 1px solid var(--ink-border); color: var(--text-hi); font-size: 12px; padding: 7px; }
+  .ask button { border: 1px solid var(--ink-border); color: var(--text-mid); padding: 0 10px; font-size: 11px; }
   .thumbs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .thumb { text-align: left; color: var(--text-mid); }
   .thumb .pic {
@@ -241,19 +258,19 @@
   .thumb .pic.page { background: var(--paper); border-top: 2px solid var(--accent-rest); }
   .thumb .pic.doc { background: var(--ink-800); color: var(--text-mid); font-family: var(--font-ui); }
   .thumb .cap { font-size: 10px; margin-top: 4px; }
-  .switch-board { width: 100%; border: 1px solid var(--ink-border); color: var(--text-mid); padding: 6px 8px; text-align: left; font-size: 13px; }
-  .board-list button { display: block; width: 100%; text-align: left; padding: 6px 8px; color: var(--text-mid); font-size: 13px; }
+  .switch-board { width: 100%; border: 1px solid var(--ink-border); color: var(--text-mid); padding: 6px 8px; text-align: left; font-size: 12px; }
+  .board-list button { display: block; width: 100%; text-align: left; padding: 6px 8px; color: var(--text-mid); font-size: 12px; }
   .board-list button[data-current='true'] { color: var(--brass); }
 
   .toast {
     position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 50;
     background: var(--ink-900); border: 1px solid var(--ink-border);
-    color: var(--text-hi); font-size: 13px; padding: 8px 14px; opacity: 0; pointer-events: none;
+    color: var(--text-hi); font-size: 12px; padding: 8px 14px; opacity: 0; pointer-events: none;
   }
   .toast[data-on='true'] { opacity: 1; }
 
   @media (prefers-reduced-motion: reduce) {
-    .sliver .panel, .popout .panel, .sliver .grip, .popout .grip { transition: none; }
+    .sliver .panel, .popout .panel { transition: none; }
   }
 
   @media (max-width: 720px) {
@@ -262,7 +279,7 @@
     .desk { display: none; }
     .paper { inset: 8px; left: 8px; right: 8px; padding: 16px 14px 24px 28px; }
     .paper p { overflow-wrap: anywhere; font-size: 16px; }
-    .sliver, .popout { top: 8px; bottom: 8px; width: 16px; }
+    .sliver, .popout { top: 8px; bottom: 8px; width: min(var(--pop-w), calc(100% - 24px)); }
     .sliver { left: 8px; }
     .popout { right: 8px; }
     .sliver::before, .popout::before {
@@ -272,14 +289,14 @@
     .sliver::before { left: 0; border-right: 1px solid var(--ink-border); }
     .popout::before { right: 0; border-left: 1px solid var(--ink-border); }
     .sliver .grip { left: 0; right: auto; border-right: none; border-left: 1px solid var(--ink-border); }
-    .sliver .panel { left: 16px; right: 0; border-right: 1px solid var(--ink-border); border-left: none; transform: translateX(-6px); }
+    .sliver .clip { left: 16px; right: 0; }
+    .sliver .panel { border-right: 1px solid var(--ink-border); border-left: none; transform: translateX(-100%); }
     .sliver[data-open='true'] .panel { transform: translateX(0); }
     .popout .grip { left: auto; right: 0; }
-    .popout .panel { left: 0; right: 16px; border-left: 1px solid var(--ink-border); border-right: none; transform: translateX(6px); }
+    .popout .clip { left: 0; right: 16px; }
+    .popout .panel { border-left: 1px solid var(--ink-border); border-right: none; transform: translateX(100%); }
     .popout[data-open='true'] .panel { transform: translateX(0); }
-    .sliver[data-open='true'], .popout[data-open='true'] {
-      width: min(var(--pop-w), calc(100% - 24px)); z-index: 8;
-    }
+    .sliver[data-open='true'], .popout[data-open='true'] { z-index: 8; }
     .tab { letter-spacing: .4px; font-size: 9px; }
     .tab[data-tab="connections"] { font-size: 7px; letter-spacing: .02em; }
   }
@@ -287,7 +304,7 @@
 </head>
 <body data-hand="text" data-tool="pen">
 <header class="rig">
-  <b>PAGE · R5</b>
+  <b>PAGE · R6</b>
   <button class="rev" data-view="tools" type="button">Tools</button>
   <button class="rev" data-view="ink" type="button">Ink</button>
   <button class="rev" data-view="tutor" type="button">Tutor</button>
@@ -307,6 +324,7 @@
     </nav>
     <div class="page-col">
       <aside class="sliver" id="sliver" data-open="true" data-hand="text">
+        <div class="clip">
         <div class="panel">
           <div class="body">
             <div class="tabs" role="radiogroup">
@@ -316,11 +334,13 @@
             <div id="textTools">
               <div class="sec">
                 <div class="h">Typeface</div>
-                <div class="type-row">
+                <div class="type-stack">
                   <button class="wz-type-face" id="faceBtn" type="button">Crimson Pro</button>
-                  <button class="mode-tbtn" id="sizeDown" type="button">−</button>
-                  <input class="wz-type-num" id="sizeNum" value="16" readonly>
-                  <button class="mode-tbtn" id="sizeUp" type="button">+</button>
+                  <div class="type-row">
+                    <button class="mode-tbtn" id="sizeDown" type="button">−</button>
+                    <input class="wz-type-num" id="sizeNum" value="16" readonly>
+                    <button class="mode-tbtn" id="sizeUp" type="button">+</button>
+                  </div>
                 </div>
                 <ul class="wz-type-list" id="faceList" hidden>
                   <li class="wz-type-row" data-current="true" data-face="Crimson Pro" data-stack="'Crimson Pro', Georgia, serif">Crimson Pro</li>
@@ -426,10 +446,11 @@
             </div>
           </div>
         </div>
+        </div>
         <button class="grip" id="sliverGrip" type="button" aria-expanded="true">›</button>
       </aside>
 
-      <article class="paper" id="paper">
+      <article class="paper" id="paper" data-hf="true">
         <canvas class="ink" id="ink"></canvas>
         <div class="kicker">Page · Night Kitchen · Chapter 3</div>
         <p>The kettle clicks off and <span class="lnk" data-anchor="a1">she still doesn’t turn around</span>.</p>
@@ -438,10 +459,12 @@
           <button class="gutter" id="gutter" type="button" title="Spot note"></button>
           <p>He could say her name. He doesn’t.</p>
         </div>
+        <div class="page-foot">Night Kitchen · 3</div>
       </article>
 
       <aside class="popout" id="popout" data-open="true">
         <button class="grip" id="popGrip" type="button" aria-expanded="true">‹</button>
+        <div class="clip">
         <div class="panel">
           <div class="body">
             <div class="tabs" role="radiogroup">
@@ -494,6 +517,7 @@
               </div>
             </div>
           </div>
+        </div>
         </div>
       </aside>
     </div>
@@ -687,7 +711,9 @@
   $('tagsBtn').addEventListener('click', () => { $('tagPop').hidden = !$('tagPop').hidden; });
   $('copyBtn').addEventListener('click', () => toast('Copied (fake)'));
   $('hfBtn').addEventListener('click', () => {
-    $('hfBtn').dataset.on = $('hfBtn').dataset.on === 'true' ? 'false' : 'true';
+    const on = $('hfBtn').dataset.on !== 'true';
+    $('hfBtn').dataset.on = on ? 'true' : 'false';
+    $('paper').dataset.hf = on ? 'true' : 'false';
   });
   $('deleteBtn').addEventListener('click', () => { $('deleteAsk').hidden = false; });
   $('deleteNo').addEventListener('click', () => { $('deleteAsk').hidden = true; });
