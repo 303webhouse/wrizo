@@ -17,6 +17,9 @@
 // built passwordHash.js - not re-implemented) as a query parameter over TLS; it never sees the password until
 // smoke-login.mjs posts it over HTTPS.
 //
+// IF IT DIES between the file write and the insert, a rerun says "exists" (the file is there, the account is not): delete
+// ~/.wrizo/smoke-account.json and run it again. (A failed insert deletes the file itself; only a hard kill in between leaves it.)
+//
 // WHAT IT PRINTS: one word - created / rotated / exists - and the file's path. Never the email, the password, a hash or any
 // connection detail; an error prints a short code only (a driver message can carry a host name).
 import { createRequire } from 'node:module';

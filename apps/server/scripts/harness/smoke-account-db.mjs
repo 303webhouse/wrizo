@@ -115,32 +115,37 @@ try {
   // ---------------- PART B: smoke-login.mjs ----------------
   const SECRET = { email: 'smoke-deadbeef@wrizo.invalid', password: 'pw-for-the-fake-server-123456' };
   const COOKIE_VALUE = 'sessionTOKEN123456789';
+  // The fake models the REAL server's session: login creates one, /auth/me is 200 only for a cookie naming a LIVE session,
+  // and logout BOTH destroys the session (req.session.destroy) AND clears the cookie on the client (res.clearCookie) - the
+  // clearing Set-Cookie is why a jar-only check proves nothing. mode 'nodestroy' keeps the clearing but SKIPS the destroy.
   const makeServer = (mode) => new Promise((resolve) => {
-    const seen = { logins: 0, origins: [], syncBodies: [], meNoCookie: 0 };
-    let signedIn = false;
+    const seen = { logins: 0, origins: [], syncBodies: [], meNoCookie: 0, meCalls: 0, replayMe: 0 };
+    const live = new Set();
     const srv = createServer((req, res) => {
       let body = '';
       req.on('data', (c) => (body += c));
       req.on('end', () => {
-        const hasCookie = (req.headers.cookie || '').includes(COOKIE_VALUE);
+        const sid = ((req.headers.cookie || '').match(/connect\.sid=([^;]*)/) || [])[1] || '';
         if (req.method === 'POST') seen.origins.push(req.headers.origin || '');
         if (req.url === '/auth/login') {
           seen.logins += 1;
           const b = JSON.parse(body || '{}');
           if (mode === 'badlogin' || b.email !== SECRET.email || b.password !== SECRET.password) { res.writeHead(401, { 'content-type': 'application/json' }); res.end('{"error":"Invalid email or password"}'); return; }
-          signedIn = true;
+          live.add(COOKIE_VALUE);
           res.writeHead(200, { 'content-type': 'application/json', 'set-cookie': `connect.sid=${COOKIE_VALUE}; Path=/; HttpOnly` });
           res.end(JSON.stringify({ id: 'u1', email: SECRET.email, name: 'Smoke' }));
         } else if (req.url === '/auth/me') {
-          if (!hasCookie) seen.meNoCookie += 1;
-          const live = signedIn && hasCookie;
-          if (mode === 'sticky' && hasCookie) { res.writeHead(200, { 'content-type': 'application/json' }); res.end('{}'); return; } // never ends the session
-          res.writeHead(live ? 200 : 401, { 'content-type': 'application/json' }); res.end(live ? '{"id":"u1"}' : '{"error":"Not authenticated"}');
+          seen.meCalls += 1;
+          if (!sid) seen.meNoCookie += 1;
+          if (sid === COOKIE_VALUE && seen.meCalls > 1 && !live.has(sid)) seen.replayMe += 1;
+          const ok = live.has(sid);
+          res.writeHead(ok ? 200 : 401, { 'content-type': 'application/json' }); res.end(ok ? '{"id":"u1"}' : '{"error":"Not authenticated"}');
         } else if (req.url === '/api/sync') {
           seen.syncBodies.push(body);
-          res.writeHead(hasCookie && signedIn ? 200 : 401, { 'content-type': 'application/json' }); res.end('{"users":[]}');
+          res.writeHead(live.has(sid) ? 200 : 401, { 'content-type': 'application/json' }); res.end('{"users":[]}');
         } else if (req.url === '/auth/logout') {
-          signedIn = false; res.writeHead(204); res.end();
+          if (mode !== 'nodestroy') live.delete(sid); // 'nodestroy' = logout that skips session.destroy
+          res.writeHead(204, { 'set-cookie': 'connect.sid=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT' }); res.end();
         } else { res.writeHead(404); res.end(); }
       });
     });
@@ -153,11 +158,12 @@ try {
   let s = await makeServer('good');
   const g = await runAsync(SMOKE, ['--base', s.base], { SMOKE_ACCOUNT_FILE: sfile });
   s.srv.close();
-  ok('smoke-login against a healthy server: PASS (5/5), exit 0', g.status === 0 && /SMOKE: PASS \(5\/5\)/.test(g.stdout || ''), `status=${g.status} sig=${g.signal} ` + (g.stdout || '').trim().split('\n').pop());
+  ok('smoke-login against a healthy server: PASS (6/6), exit 0', g.status === 0 && /SMOKE: PASS \(6\/6\)/.test(g.stdout || ''), `status=${g.status} sig=${g.signal} ` + (g.stdout || '').trim().split('\n').pop());
   ok('it makes exactly ONE login attempt', s.seen.logins === 1, String(s.seen.logins));
   ok('every POST carried the site\'s own Origin', s.seen.origins.length === 3 && s.seen.origins.every((o) => o === s.base), JSON.stringify(s.seen.origins));
   ok('the sync probe is PULL-ONLY: body is exactly {"lastSyncAt":null,"push":{}}', s.seen.syncBodies.length === 1 && s.seen.syncBodies[0] === '{"lastSyncAt":null,"push":{}}', s.seen.syncBodies[0]);
-  ok('the session cookie rode back on /auth/me (a cookie-less /me was never sent)', s.seen.meNoCookie === 0);
+  ok('/auth/me was called 3 times: signed in, after logout with the (now empty) jar, and with the PRE-LOGOUT cookie replayed', s.seen.meCalls === 3, `meCalls=${s.seen.meCalls} noCookie=${s.seen.meNoCookie}`);
+  ok('the replay really sent the old session id (a cookie-less /me happened only for the jar-emptied step)', s.seen.meNoCookie === 1 && s.seen.replayMe === 1, `noCookie=${s.seen.meNoCookie} replayOnDeadSession=${s.seen.replayMe}`);
   ok('smoke-login printed no email, password or cookie value', leaks(sOut(g), [SECRET.email, SECRET.password, COOKIE_VALUE, 'connect.sid']).length === 0);
 
   s = await makeServer('badlogin');
@@ -166,10 +172,25 @@ try {
   ok('a rejected login: FAIL, exit 1, and STILL exactly one attempt (no retry), nothing after it is called', b.status === 1 && /SMOKE: FAIL/.test(b.stdout || '') && s.seen.logins === 1 && s.seen.syncBodies.length === 0, `logins=${s.seen.logins}`);
   ok('the failure output prints no secret', leaks(sOut(b), [SECRET.email, SECRET.password]).length === 0);
 
-  s = await makeServer('sticky');
+  // THE SERVER-SIDE PROOF: a logout that clears the cookie but SKIPS session.destroy. The jar step still sees 401 (empty
+  // cookie), so ONLY the replayed pre-logout cookie can catch it.
+  s = await makeServer('nodestroy');
   const k = await runAsync(SMOKE, ['--base', s.base], { SMOKE_ACCOUNT_FILE: sfile });
   s.srv.close();
-  ok('a logout that does not end the session FAILS the walk (the last /auth/me must be 401)', k.status === 1 && /FAIL.*after logout/.test(k.stdout || ''), `status=${k.status} ` + (k.stdout || '').trim().split('\n').slice(-2).join(' / '));
+  const kLines = (k.stdout || '').split('\n');
+  ok('a logout that skips session.destroy FAILS the walk - and ONLY at the replayed-cookie step (the jar step passed)', k.status === 1 && kLines.some((l) => /^ok .*after logout, jar.*401/.test(l)) && kLines.some((l) => /^FAIL .*pre-logout cookie replayed.*200/.test(l)) && /SMOKE: FAIL \(5\/6/.test(k.stdout || ''), `status=${k.status} ` + kLines.slice(-3).join(' / '));
+
+  // HTTPS ONLY: nothing is read or sent for a plain-http, non-loopback base - including look-alike loopback hostnames.
+  for (const bad of ['http://example.com', 'http://127.0.0.1.evil.example', 'http://localhost.evil.example', 'ftp://127.0.0.1', 'not a url']) {
+    const r = await runAsync(SMOKE, ['--base', bad], { SMOKE_ACCOUNT_FILE: sfile });
+    ok(`--base ${bad} is refused (exit 2, "Refused", no secret printed)`, r.status === 2 && /Refused/.test(r.stderr || '') && leaks(sOut(r), [SECRET.email, SECRET.password]).length === 0, `status=${r.status}`);
+  }
+  const rOk = await makeServer('good');
+  const rHttps = await runAsync(SMOKE, ['--base', rOk.base], { SMOKE_ACCOUNT_FILE: sfile });
+  rOk.srv.close();
+  ok('loopback http (127.0.0.1) is still accepted - the proof itself depends on it', rHttps.status === 0);
+  const mod2 = await import(pathToFileURL(SMOKE).href);
+  ok('assertSafeBase accepts https and loopback http, refuses the rest', (() => { try { mod2.assertSafeBase('https://writer-studio-app-production.up.railway.app'); mod2.assertSafeBase('http://localhost:3000'); mod2.assertSafeBase('http://[::1]:3000'); } catch { return false; } return ['http://example.com', 'http://0.0.0.0', 'file:///x'].every((u) => { try { mod2.assertSafeBase(u); return false; } catch { return true; } }); })());
 } finally {
   await pool.end(); await pg.stop();
   try { rmSync(work, { recursive: true, force: true, maxRetries: 20, retryDelay: 300 }); } catch { /* a Windows handle on the scratch dir; it is under the OS temp dir */ }
