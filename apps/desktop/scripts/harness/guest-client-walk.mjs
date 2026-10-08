@@ -83,6 +83,12 @@ await withHarness(async (app) => {
   const finalHref = await app.evalJs('location.href');
   ok('(W4) and it is still gone after the arrival (nothing re-adds it)', !finalHref.includes(VALID), finalHref);
   ok('(W4b) the guest session start LIFTED the signed-out flag', (await app.evalJs(`localStorage.getItem('wz.signedOutHere')`)) === null, '');
+  // The seams are attached by the app's own module init; having arrived on a page is not proof they exist (item141: the waitFor is
+  // the proof). Observe them before the first use of either.
+  await app.waitFor(
+    `typeof window.wrizoCreateJournalPage === 'function' && typeof window.wrizoDirty === 'object'`,
+    { label: 'the app\'s page seams (create, dirty) to be installed' },
+  );
   // Create and read in ONE expression, so a sync cannot clear the dirty mark between the two: under the belt this is false.
   const landed = await app.evalJs(`(() => {
     window.wrizoCreateJournalPage({ id: 'guest-walk-page', text: 'guest words' });
