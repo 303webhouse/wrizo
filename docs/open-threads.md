@@ -24936,3 +24936,16 @@ new push on `b101-defence` (tip still `bab6f4f`); no “box done” received.** 
 :3121, as ruled), which is a server and front, not a browser walk. **CLEARED at `18:44:19Z` — the grant was open ~30 minutes.**
 If INK’s walk has not run, or ran and was not reported, INK asks again; a cleared grant makes its guard refuse cleanly, it
 cannot strand a run. *(Nothing was mid-run to strand: the only open question is whether the walk happened.)*
+
+## INK’S b101-walk RAN (15/16); A 1-MINUTE RERUN AFTER ITS COMMIT; THEN FIX, THEN THE B10.1 PAIR — 2026-10-08 (chat 1)
+
+**FABLE (relay): INK’s walk DID run — 18:13 to 18:21Z, on `bab6f4f`, on the local rig: 15/16.** W5c is a MEASURING MISS (the walk
+landed on a project page with no editor), not a product fault. **INK reported late; noted.** (This desk’s 30-minute check-in
+at 18:44Z found the box idle and cleared the grant of a run that had already finished ~23 minutes earlier — consistent; no
+run was stranded.)
+
+**ORDERS:** (1) **grant INK ONE ~1-minute rerun of `b101-walk` AFTER INK commits its walk-file fixes — the run must be on
+committed code** (`b101-defence`’s tip is still `bab6f4f`; nothing is granted until INK pushes the fix and asks). 30-minute
+check-in as usual. (2) **Then FIX’s turn: `page-templates-move` @ `33b5a80` is APPROVED (the brass-at-rest change is done);
+its plan is in FIX’s last report.** (3) **Then B10.1’s suite pair on the final tree, INCLUDING K10 `--mutants` (baseline 32, 19/19
+red).** *(FIX’s cut-off “box free” message earlier was not a turn request; no grant was issued to FIX.)*
