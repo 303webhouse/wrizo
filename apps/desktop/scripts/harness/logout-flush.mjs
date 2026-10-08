@@ -243,12 +243,14 @@ function makeEditor(m, id) {
 // PART F — the capture's logout frames (Batch 10's ship gate), pinned in source. The capture itself needs a box turn.
 // =============================================================================
 {
-  const cap = fs.readFileSync(path.join(DESKTOP, 'scripts', 'harness', 'arrival-signin-capture.mjs'), 'utf8').replace(/\r\n?/g, '\n');
+  const cap = fs.readFileSync(path.join(DESKTOP, 'scripts', 'evidence', 'arrival-signin-capture.mjs'), 'utf8').replace(/\r\n?/g, '\n');
   ok('(F1) the capture takes all three: the sheet\'s first step, its confirm step, and a page with "Signing out…"',
     /save\(app, vp\.name, theme\.name, 'logout-sheet'\)/.test(cap) && /save\(app, vp\.name, theme\.name, 'logout-confirm'\)/.test(cap) && /save\(app, vp\.name, theme\.name, 'signing-out'\)/.test(cap), '');
   ok('(F2) sync is stubbed in the page, failing so a record stays unsaved, and stalling once __stall is set so the push is still waiting',
     /String\(u\)\.includes\('\/api\/sync'\)/.test(cap) && /window\.__stall \? new Promise\(\(\) => \{\}\) : Promise\.reject/.test(cap), '');
-  ok('(F3) the phase boots AUTHED (a session to sign out of) and puts WS_ANON back before the signed-out frame',
+  // SUPERSEDED (Batch 11 port) — by (F3b and F3c) below. Parked, not deleted: it used the first WS_ANON restore, and the combined capture has an earlier one (the guest phase's); it passed only because the first 'signing-out' string is in settle().
+  // Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(F3) the phase boots AUTHED (a session to sign out of) and puts WS_ANON back before the signed-out frame',
     /process\.env\.WS_ANON = '0';/.test(cap) && cap.indexOf("process.env.WS_ANON = '1';") > cap.indexOf("'signing-out'") && cap.indexOf("process.env.WS_ANON = '1';") < cap.indexOf("// signedout —"), '');
   ok('(F4) each frame waits for its own settled state before it is shot: focus on "Stay signed in"; the confirm element; a disabled "Signing out…" button',
     /screen === 'logout-sheet'/.test(cap) && /Stay signed in/.test(cap) && /screen === 'logout-confirm'/.test(cap) && /wz-logout-confirm/.test(cap)
@@ -263,9 +265,36 @@ function makeEditor(m, id) {
   // several times in the ~600 ms after it mounts, and a sheet opened inside that window loses its focus to the editor.
   const quietAt = cap.indexOf("performance.now() - (window.__focusLog.length ? window.__focusLog[window.__focusLog.length - 1].t : 0) > 800");
   ok('(F8) the capture waits for the page\'s caret restore to go quiet (no focus() call for 800 ms) BEFORE it writes the unsaved page and presses Sign out',
-    quietAt > 0 && quietAt < cap.indexOf('window.wrizoCreateJournalPage(') && quietAt < cap.indexOf("await app.click('Sign out')"), String(quietAt));
-  ok('(F9) the focus trace that found it is kept: installed before the page loads, and reported (with the last focus() calls and their stacks) when a frame\'s focus is not where the sheet put it',
+    quietAt > 0 && quietAt < cap.indexOf('window.wrizoCreateJournalPage') && quietAt < cap.indexOf("await app.click('Sign out')"), String(quietAt));
+  // SUPERSEDED (Batch 11 port) — by (F9b) below. Parked, not deleted: it compared against the first goto('/sprint'), which in the combined capture is the guest phase's, before the logout phase installs its trace.
+  // Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(F9) the focus trace that found it is kept: installed before the page loads, and reported (with the last focus() calls and their stacks) when a frame\'s focus is not where the sheet put it',
     /HTMLElement\.prototype\.focus = function/.test(cap) && cap.indexOf('await app.evalJs(FOCUS_TRACE)') < cap.indexOf("await app.goto('/sprint')") && /FOCUS TRACE \(last 8 focus\(\) calls\)/.test(cap), '');
+}
+
+// =============================================================================
+// PART F2 — the same two claims, read against the COMBINED capture (Batch 11: the guest phase and the logout phase). F3 and F9
+// were written when the logout phase was the only phase, and each used the FIRST occurrence of something the guest phase now
+// also contains; F3 passed for the wrong reason (the first 'signing-out' string is in settle()), F9 failed for a right one gone wrong.
+// =============================================================================
+{
+  const cap = fs.readFileSync(path.join(DESKTOP, 'scripts', 'evidence', 'arrival-signin-capture.mjs'), 'utf8').replace(/\r\n?/g, '\n');
+  const frameAt = cap.indexOf("save(app, vp.name, theme.name, 'signing-out')");
+  const lastRestore = cap.lastIndexOf("process.env.WS_ANON = '1';");
+  const signedoutAt = cap.indexOf('// signedout —');
+  const zeros = (cap.match(/process\.env\.WS_ANON = '0';/g) || []).length;
+  const ones = (cap.match(/process\.env\.WS_ANON = '1';/g) || []).length;
+  ok('(F3b) the LAST WS_ANON restore sits after the signing-out FRAME and before the signed-out frame (the guest phase restores earlier; the last one is the logout phase\'s)',
+    zeros > 0 && frameAt > 0 && frameAt < lastRestore && lastRestore < signedoutAt, JSON.stringify({ frameAt, lastRestore, signedoutAt }));
+  ok('(F3c) every phase that switches WS_ANON off switches it back on (as many restores as switches), so the signed-out frame is never shot authed',
+    zeros === ones && zeros >= 2, JSON.stringify({ zeros, ones }));
+
+  const phaseStart = cap.indexOf('// The logout sheet and "Signing out…" — an AUTHED boot');
+  const phase = cap.slice(phaseStart, cap.indexOf('// signedout —'));
+  const traceAt = phase.indexOf('await app.evalJs(FOCUS_TRACE)');
+  const gotoAt = phase.indexOf("await app.goto('/sprint')");
+  ok('(F9b) within the LOGOUT phase, the focus trace is installed before that phase\'s page loads, and it is reported when a frame\'s focus is not where the sheet put it',
+    phaseStart > 0 && /HTMLElement\.prototype\.focus = function/.test(cap) && traceAt > 0 && traceAt < gotoAt && /FOCUS TRACE \(last 8 focus\(\) calls\)/.test(cap), JSON.stringify({ phaseStart, traceAt, gotoAt }));
 }
 
 // =============================================================================

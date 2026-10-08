@@ -292,7 +292,7 @@ try {
 // PART I — the capture's guest screens (Batch 11), pinned in source. The capture itself needs a box turn.
 // =============================================================================
 {
-  const cap = fs.readFileSync(path.join(DESKTOP, 'scripts', 'harness', 'arrival-signin-capture.mjs'), 'utf8');
+  const cap = fs.readFileSync(path.join(DESKTOP, 'scripts', 'evidence', 'arrival-signin-capture.mjs'), 'utf8');
   ok('(I1) the capture takes BOTH guest screens: the claim sheet over a page, and a dead link\'s arrival',
     /save\(app, vp\.name, theme\.name, 'guest-claim'\)/.test(cap) && /save\(app, vp\.name, theme\.name, 'guest-expired'\)/.test(cap), '');
   ok('(I2) the guest 401 is stubbed in the page for exactly the two calls that matter, with the server\'s own reason',
