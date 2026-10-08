@@ -22,6 +22,12 @@ const ok = (name, pass, detail = '') => {
 
 await withHarness(async (app) => {
   await app.freshSprint();
+  // The seams are attached by the app's own module init; a navigation only asks the browser to START loading. The waitFor is the
+  // observation that they exist (item141: the waitFor is the proof, navigation is not), so it comes before the first use of any.
+  await app.waitFor(
+    `typeof window.wrizoCreateJournalPage === 'function' && typeof window.wrizoFlushNow === 'function' && typeof window.wrizoDirty === 'object'`,
+    { label: 'the app\'s page seams (create, flush, dirty) to be installed' },
+  );
 
   // Make every sync fail, then write a page: it is dirty and cannot reach the account.
   await app.evalJs(`
