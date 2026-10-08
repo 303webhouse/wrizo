@@ -24909,3 +24909,21 @@ grant on a BUSY box is left alone and re-checked.)*
 **B10.1 BRIEF APPROVED (Fable):** the stale-client guard is WEB-ONLY and READ-ONLY; the landing WAITS for the pull; a PER-ACCOUNT
 first-run (Nick’s ruling: the ritual runs once per account, ever); a `startSync` generation check; an empty-after-pull retry.
 **INK codes on `b101-defence`; Fable byte-reviews before ANY pair.** B11 (guest) stays paused behind B10.1.
+
+## B10.1 REVIEW FIXES APPROVED (`bab6f4f`); INK’S b101-walk GRANTED; THE PAIR NOTES — 2026-10-08 (chat 1)
+
+**FABLE (relay): INK’s B10.1 fixes (`bab6f4f`, on `b101-defence`; “the Reload is a merge, a just-registered account never
+waits, the Write…”) are byte-reviewed and APPROVED.** Grant INK’s `b101-walk` turn now (~6 min, local rig :3113 / :3121, ONE
+process); apply the 30-minute check-in.
+
+**GRANTED: `2026-10-08T18:13:57Z` (12:13 pm MT), box idle (0 harness processes, 0 browsers, no earlier grant). THE 30-MINUTE
+CHECK-IN is due `18:44Z` (12:44 pm MT); a one-shot reminder is set in this session.** If INK has not said “box done” by then and
+the box is idle, this desk clears the grant and logs the open time.
+
+**FOR B10.1’S PAIR (Fable): include K10 `--mutants` IN FULL — INK did not re-run the 19 mutants after `bab6f4f`: baseline 32 green and
+19/19 red.**
+
+**FIX’s `page-templates-move`: `5867aad` is approved pending ONE tiny change; `290a0dd` still waits on two Nick decisions. FIX’s box
+turn comes after INK’s walk.** **MERGE NOTE from FIX:** its `item211` park block and the card port’s WALK park both land at
+`item211.mjs`’s foot — **keep BOTH blocks when they conflict** (an append-append: both sides unedited).
+Box order: INK’s B10.1 walk, then FIX. B11 stays paused behind B10.1.
