@@ -24949,3 +24949,23 @@ committed code** (`b101-defence`’s tip is still `bab6f4f`; nothing is granted 
 check-in as usual. (2) **Then FIX’s turn: `page-templates-move` @ `33b5a80` is APPROVED (the brass-at-rest change is done);
 its plan is in FIX’s last report.** (3) **Then B10.1’s suite pair on the final tree, INCLUDING K10 `--mutants` (baseline 32, 19/19
 red).** *(FIX’s cut-off “box free” message earlier was not a turn request; no grant was issued to FIX.)*
+
+## INK’S b101-walk RERUN: 16/16 ON `126c970`; GRANT CLEARED; FIX’S TURN GRANTED — 2026-10-08 (chat 1)
+
+**INK (“box done”, received directly): the rerun ended `2026-10-08T21:03:55Z` with 0 harness browsers left; the walk PASSED 16 of 16 on
+`b101-defence` @ `126c970`, committed code, clean tree, local rig only** (:3113 / :3121 + a local Postgres; still up, by ruling,
+until B10.1’s tests pass). INK read the grant file first as asked. **W5c — the miss last time — now PASSES: the editor was found
+(`.forward-only-editor`) and its rect was IDENTICAL before and after the banner showed (the PAGE IS PRIMARY check).** The banner
+reads “Wrizo updated, reload”, outside the app root, with the root inert; a held write was rescued by the Reload and reached the
+account. W1–W4 and the rest of W5 passed as before.
+
+**INK’s summary for the pair:** final SHA `126c970`; product code UNCHANGED since `bab6f4f` (the only later commit is the walk-
+file fix; this desk had verified `apps/desktop/src`, `apps/server/src`, `packages` diff EMPTY); browserless: `b101.mjs` 73 checks (54
+claims + 19 mutants); the other browserless harnesses (`sync-generation`, `arrival-signin`, `item224a`, `logout-flush`,
+`seed-guard`, `item-storage-full`) and `tsc` green AS OF `bab6f4f`; K10 baseline green at 32 — **the K10 mutants are the one thing
+still to run on the final tree, by this desk, in the pair.**
+
+**GRANT LOG: INK’s rerun grant written `21:00:35Z`, CLEARED `21:05:10Z` — open ~4.5 minutes** (the 30-minute reminder for it
+is now moot). **FIX’s turn GRANTED `21:05:10Z` on `page-templates-move` @ `33b5a80`** (approved by Fable; the brass-at-rest change
+is done; the plan is in FIX’s last report). 30-minute check-in due `21:35Z` (3:35 pm MT). Then B10.1’s suite pair on the final
+tree, K10 `--mutants` included (baseline 32, 19/19 red).
