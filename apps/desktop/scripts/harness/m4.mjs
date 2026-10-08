@@ -141,18 +141,21 @@ await withHarness(async (app) => {
       for (let w = 0; w <= 4000; w += 1) { const a = awakeAt(w); if (a < prev) mono = false; prev = a; if (a > max) max = a; seen.add(a); }
       return { samples, mono, max, values: [...seen].sort((a, b) => a - b), ORIGIN_COUNT: E.ORIGIN_COUNT };
     })()`);
-    ok('S1: the engine exposes originsAwake on the test seam (window.__wrizoRhizomeEngine)', !s1.missing, JSON.stringify(s1.samples ?? s1));
-    ok('S1: an UNWRITTEN page wakes exactly ONE origin — origin one grows alone (SV13\'s "one legible root first")',
-      s1.samples && s1.samples['0'] === 1, JSON.stringify({ at0: s1.samples?.['0'] }));
-    ok('S1: the ruled thresholds hold at the seam — 128→1, 129→2, 280→2, 281→3, 466→3, 706→5, 707→5, 1045→6 (~0/129/281/467/707/1045/1623 words, NO new constant)',
-      s1.samples && s1.samples['128'] === 1 && s1.samples['129'] === 2 && s1.samples['280'] === 2
-      && s1.samples['281'] === 3 && s1.samples['466'] === 3 && s1.samples['706'] === 5
-      && s1.samples['707'] === 5 && s1.samples['1045'] === 6,
-      JSON.stringify(s1.samples));
-    ok('S1: an essay-length page has all SEVEN origins awake (3000 words), and the count never exceeds ORIGIN_COUNT',
-      s1.samples && s1.samples['3000'] === 7 && s1.max === s1.ORIGIN_COUNT, JSON.stringify({ at3000: s1.samples?.['3000'], max: s1.max, ORIGIN_COUNT: s1.ORIGIN_COUNT }));
-    ok('S1: the wake count is MONOTONE and steps through EVERY value 1..7 — territory is earned one origin at a time, never un-earned',
-      s1.mono && JSON.stringify(s1.values) === JSON.stringify([1, 2, 3, 4, 5, 6, 7]), JSON.stringify({ mono: s1.mono, values: s1.values }));
+    // PARKED 2026-10-08, rhizome-growth.mjs R2. originsAwake/seven origins are
+    // the old roam. Growth is one network from the starting stroke (or the
+    // survivor). Live seam gone; old engine remains in rhizome-goal-core.
+    // ok('S1: the engine exposes originsAwake on the test seam (window.__wrizoRhizomeEngine)', !s1.missing, JSON.stringify(s1.samples ?? s1));
+    // ok('S1: an UNWRITTEN page wakes exactly ONE origin — origin one grows alone (SV13\'s "one legible root first")',
+    //   s1.samples && s1.samples['0'] === 1, JSON.stringify({ at0: s1.samples?.['0'] }));
+    // ok('S1: the ruled thresholds hold at the seam — 128→1, 129→2, 280→2, 281→3, 466→3, 706→5, 707→5, 1045→6 (~0/129/281/467/707/1045/1623 words, NO new constant)',
+    //   s1.samples && s1.samples['128'] === 1 && s1.samples['129'] === 2 && s1.samples['280'] === 2
+    //   && s1.samples['281'] === 3 && s1.samples['466'] === 3 && s1.samples['706'] === 5
+    //   && s1.samples['707'] === 5 && s1.samples['1045'] === 6,
+    //   JSON.stringify(s1.samples));
+    // ok('S1: an essay-length page has all SEVEN origins awake (3000 words), and the count never exceeds ORIGIN_COUNT',
+    //   s1.samples && s1.samples['3000'] === 7 && s1.max === s1.ORIGIN_COUNT, JSON.stringify({ at3000: s1.samples?.['3000'], max: s1.max, ORIGIN_COUNT: s1.ORIGIN_COUNT }));
+    // ok('S1: the wake count is MONOTONE and steps through EVERY value 1..7 — territory is earned one origin at a time, never un-earned',
+    //   s1.mono && JSON.stringify(s1.values) === JSON.stringify([1, 2, 3, 4, 5, 6, 7]), JSON.stringify({ mono: s1.mono, values: s1.values }));
 
     // The gate is real in growTo, not just in the helper: a barely-written
     // page roots exactly ONE origin's system. Counts DISTINCT ORIGIN ROOTS
@@ -160,6 +163,7 @@ await withHarness(async (app) => {
     // which correctly includes the branches growing FROM origin one.
     const s1b = await app.evalJs(`(() => {
       const E = window.__wrizoRhizomeEngine;
+      if (!E) return { at50: { rooted: [], segs: 0 }, at3000: { rooted: [] } };
       const geo = { width: 1600, height: 1000, paper: { left: 600, top: 120, right: 1000, bottom: 860 } };
       const origins = E.seedOrigins(E.mulberry32(E.hashSeed('m4-s1')), geo);
       const roots = (words) => {
@@ -173,21 +177,26 @@ await withHarness(async (app) => {
       };
       return { at50: roots(50), at3000: roots(3000) };
     })()`);
-    ok('S1: growTo on a barely-written page (50 words) roots EXACTLY ONE origin — origin ONE (index 0), and it still branches its own system',
-      JSON.stringify(s1b.at50.rooted) === '[0]' && s1b.at50.segs > 0,
-      JSON.stringify(s1b.at50));
-    ok('S1: growTo at essay length (3000 words) roots ALL SEVEN origins — new territory arrives as writing earns it',
-      s1b.at3000.rooted.length === 7, JSON.stringify({ rooted: s1b.at3000.rooted, segs: s1b.at3000.segs }));
+    // PARKED 2026-10-08, rhizome-growth.mjs R2. Multi-origin roam is the old
+    // engine. Default growTo without connected:true is still in rhizomeEngine
+    // (rhizome-goal-core); the field no longer calls it.
+    // ok('S1: growTo on a barely-written page (50 words) roots EXACTLY ONE origin — origin ONE (index 0), and it still branches its own system',
+    //   JSON.stringify(s1b.at50.rooted) === '[0]' && s1b.at50.segs > 0,
+    //   JSON.stringify(s1b.at50));
+    // ok('S1: growTo at essay length (3000 words) roots ALL SEVEN origins — new territory arrives as writing earns it',
+    //   s1b.at3000.rooted.length === 7, JSON.stringify({ rooted: s1b.at3000.rooted, segs: s1b.at3000.segs }));
 
     // Determinism unchanged by the new rooting gate (m3.mjs's check shape).
     const det = await app.evalJs(`(() => {
       const E = window.__wrizoRhizomeEngine;
+      if (!E) return {};
       const geo = { width: 1600, height: 1000, paper: { left: 600, top: 120, right: 1000, bottom: 860 } };
       const t = E.saturationTarget(1200);
       const run = () => JSON.stringify(E.growTo(E.createRhizomeState(), E.mulberry32(E.hashSeed('m4det:99')), geo, E.seedOrigins(E.mulberry32(E.hashSeed('m4det')), geo), t).segments);
       return { same: run() === run() };
     })()`);
-    ok('S1: determinism survives the sequencing — the same seed + geo + words still reproduces byte-identical growth', det.same, String(det.same));
+    // PARKED 2026-10-08, rhizome-growth.mjs R6. Live seam gone.
+    // ok('S1: determinism survives the sequencing — the same seed + geo + words still reproduces byte-identical growth', det.same, String(det.same));
   }
 
   // ── S2 — the green (SV14) ────────────────────────────────────────────────

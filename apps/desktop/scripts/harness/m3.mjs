@@ -114,17 +114,20 @@ await withHarness(async (app) => {
       for (let w = 0; w <= 6000; w += 50) { const v = c(w); if (v < prev) mono = false; prev = v; }
       return { CAP, K, c0: c(0), c2500: c(2500), c5000: c(5000), c1e6: c(1000000), mono, ORIGIN_COUNT: E.ORIGIN_COUNT };
     })()`);
-    ok('S3: the engine exposes saturationTarget/SAT_K/ORIGIN_COUNT on the test seam', !s3.missing, JSON.stringify(s3));
-    ok('S3: coverage(0) === 0 (an unwritten page grows nothing)', s3.c0 === 0, String(s3.c0));
-    ok('S3: K === 834 (95% of CAP at ~2500 words, the ruled bounded delta)', s3.K === 834, String(s3.K));
-    ok('S3: coverage(2500 words) >= 0.95 * CAP — visually full at an essay',
-      s3.c2500 >= 0.95 * s3.CAP, JSON.stringify({ c2500: s3.c2500, floor: 0.95 * s3.CAP, CAP: s3.CAP }));
-    ok('S3: coverage(5000) <= CAP and coverage(1e6) <= CAP — never past the hard cap',
-      s3.c5000 <= s3.CAP && s3.c1e6 <= s3.CAP, JSON.stringify({ c5000: s3.c5000, c1e6: s3.c1e6, CAP: s3.CAP }));
-    ok('S3: the curve is MONOTONE non-decreasing across 0..6000 words — more writing never removes ground',
-      s3.mono, String(s3.mono));
-    ok('S3: saturation is STABLE — coverage(5000) - coverage(2500) is a small tail (bounded, not unbounded growth past the essay)',
-      s3.c5000 - s3.c2500 <= 0.05 * s3.CAP, JSON.stringify({ tail: s3.c5000 - s3.c2500 }));
+    // PARKED 2026-10-08, rhizome-growth.mjs R1. saturationTarget/SAT_K are the
+    // old roam curve. Coverage now tracks the writer's goal (FULL_COVER of
+    // visible cells). Live seam gone; old engine remains in rhizome-goal-core.
+    // ok('S3: the engine exposes saturationTarget/SAT_K/ORIGIN_COUNT on the test seam', !s3.missing, JSON.stringify(s3));
+    // ok('S3: coverage(0) === 0 (an unwritten page grows nothing)', s3.c0 === 0, String(s3.c0));
+    // ok('S3: K === 834 (95% of CAP at ~2500 words, the ruled bounded delta)', s3.K === 834, String(s3.K));
+    // ok('S3: coverage(2500 words) >= 0.95 * CAP — visually full at an essay',
+    //   s3.c2500 >= 0.95 * s3.CAP, JSON.stringify({ c2500: s3.c2500, floor: 0.95 * s3.CAP, CAP: s3.CAP }));
+    // ok('S3: coverage(5000) <= CAP and coverage(1e6) <= CAP — never past the hard cap',
+    //   s3.c5000 <= s3.CAP && s3.c1e6 <= s3.CAP, JSON.stringify({ c5000: s3.c5000, c1e6: s3.c1e6, CAP: s3.CAP }));
+    // ok('S3: the curve is MONOTONE non-decreasing across 0..6000 words — more writing never removes ground',
+    //   s3.mono, String(s3.mono));
+    // ok('S3: saturation is STABLE — coverage(5000) - coverage(2500) is a small tail (bounded, not unbounded growth past the essay)',
+    //   s3.c5000 - s3.c2500 <= 0.05 * s3.CAP, JSON.stringify({ tail: s3.c5000 - s3.c2500 }));
   }
 
   // ── S2 — the roam: 7 origins, blue-noise spread, paper-avoiding + the
@@ -132,6 +135,7 @@ await withHarness(async (app) => {
   {
     const s2 = await app.evalJs(`(() => {
       const E = window.__wrizoRhizomeEngine;
+      if (!E) return {};
       const geo = { width: 1600, height: 1000, paper: { left: 600, top: 120, right: 1000, bottom: 860 } };
       const target = E.saturationTarget(2500);
       const inPaper = (x, y, r, eps) => (x > r.left + eps && x < r.right - eps && y > r.top + eps && y < r.bottom - eps);
@@ -176,30 +180,36 @@ await withHarness(async (app) => {
         totalViolations, seedsWithViolations, minSegs, originInPaper,
       };
     })()`);
-    ok('S2: seedOrigins returns exactly SEVEN origins (the ruled count)', s2.count === 7, String(s2.count));
-    ok('S2: origin ONE is the paper\'s bottom-center (continuity with every ground grown so far)', s2.originOneIsPaperBottomCenter, JSON.stringify(s2.originOneIsPaperBottomCenter));
-    ok('S2: no origin sits inside the paper rect', s2.noneInPaper, String(s2.noneInPaper));
-    ok('S2: the origins are SPREAD across the ground (blue noise) — their bounding box spans most of both axes',
-      s2.spreadX > 0.5 && s2.spreadY > 0.4, JSON.stringify({ spreadX: s2.spreadX, spreadY: s2.spreadY }));
-    ok('S2: the scatter is DETERMINISTIC — the same seed produces byte-identical origins (the same page scatters the same way)', s2.originsDet, String(s2.originsDet));
-    ok('S2: growTo(saturation) roots multiple shoots and grows to the target segment count', s2.shoots >= 7 && s2.grownSegs === s2.target, JSON.stringify({ shoots: s2.shoots, grownSegs: s2.grownSegs, target: s2.target }));
-    ok('S2: FULL-GROUND extent — at saturation the growth reaches near all four ruled margins (roams the whole ground, not a confined patch)',
-      s2.extent.l < 0.15 && s2.extent.r > 0.85 && s2.extent.t < 0.2 && s2.extent.b > 0.85, JSON.stringify(s2.extent));
-    ok('S2: the single-fixture grow made ZERO paper violations (the wall holds at full scale)', s2.hit === 0, String(s2.hit));
-    ok('S2: THE 40-SEED STRESS SWEEP on a TIGHT ground — no origin lands in the paper AND zero paper violations across all 40 full-scale grounds (the only acceptable number is zero)',
-      s2.totalViolations === 0 && s2.seedsWithViolations === 0 && s2.originInPaper === 0, JSON.stringify({ totalViolations: s2.totalViolations, seedsWithViolations: s2.seedsWithViolations, originInPaper: s2.originInPaper, minSegs: s2.minSegs }));
+    // PARKED 2026-10-08, rhizome-growth.mjs R2/R4. Seven blue-noise origins are
+    // the old roam. Growth now starts from one stroke and tunnels under the
+    // page (R4). Live seam gone.
+    // ok('S2: seedOrigins returns exactly SEVEN origins (the ruled count)', s2.count === 7, String(s2.count));
+    // ok('S2: origin ONE is the paper\'s bottom-center (continuity with every ground grown so far)', s2.originOneIsPaperBottomCenter, JSON.stringify(s2.originOneIsPaperBottomCenter));
+    // ok('S2: no origin sits inside the paper rect', s2.noneInPaper, String(s2.noneInPaper));
+    // ok('S2: the origins are SPREAD across the ground (blue noise) — their bounding box spans most of both axes',
+    //   s2.spreadX > 0.5 && s2.spreadY > 0.4, JSON.stringify({ spreadX: s2.spreadX, spreadY: s2.spreadY }));
+    // ok('S2: the scatter is DETERMINISTIC — the same seed produces byte-identical origins (the same page scatters the same way)', s2.originsDet, String(s2.originsDet));
+    // ok('S2: growTo(saturation) roots multiple shoots and grows to the target segment count', s2.shoots >= 7 && s2.grownSegs === s2.target, JSON.stringify({ shoots: s2.shoots, grownSegs: s2.grownSegs, target: s2.target }));
+    // ok('S2: FULL-GROUND extent — at saturation the growth reaches near all four ruled margins (roams the whole ground, not a confined patch)',
+    //   s2.extent.l < 0.15 && s2.extent.r > 0.85 && s2.extent.t < 0.2 && s2.extent.b > 0.85, JSON.stringify(s2.extent));
+    // ok('S2: the single-fixture grow made ZERO paper violations (the wall holds at full scale)', s2.hit === 0, String(s2.hit));
+    // ok('S2: THE 40-SEED STRESS SWEEP on a TIGHT ground — no origin lands in the paper AND zero paper violations across all 40 full-scale grounds (the only acceptable number is zero)',
+    //   s2.totalViolations === 0 && s2.seedsWithViolations === 0 && s2.originInPaper === 0, JSON.stringify({ totalViolations: s2.totalViolations, seedsWithViolations: s2.seedsWithViolations, originInPaper: s2.originInPaper, minSegs: s2.minSegs }));
   }
 
   // ── Determinism (S4) — the whole M3 pipeline (scatter + growTo) per seed ───
   {
     const det = await app.evalJs(`(() => {
       const E = window.__wrizoRhizomeEngine;
+      if (!E) return {};
       const geo = { width: 1600, height: 1000, paper: { left: 600, top: 120, right: 1000, bottom: 860 } };
       const t = E.saturationTarget(1200);
       const run = () => JSON.stringify(E.growTo(E.createRhizomeState(), E.mulberry32(E.hashSeed('detK:99')), geo, E.seedOrigins(E.mulberry32(E.hashSeed('detK')), geo), t).segments);
       return { same: run() === run() };
     })()`);
-    ok('S4: determinism — the same seed reproduces byte-identical growth (scatter + curve, per M2\'s engine discipline)', det.same, String(det.same));
+    // PARKED 2026-10-08, rhizome-growth.mjs R6. Live seam gone; planLap is
+    // deterministic per (geo, seed, start).
+    // ok('S4: determinism — the same seed reproduces byte-identical growth (scatter + curve, per M2\'s engine discipline)', det.same, String(det.same));
   }
 
   // ── S1 — the token warmed ─────────────────────────────────────────────────
@@ -266,8 +276,11 @@ await withHarness(async (app) => {
     // and exactly one segment of the finished pattern remains. The old check
     // wanted a near-saturated ~570. One survivor is the proof the driver is
     // the goal lap.
-    ok('Live: SUPERSEDED->rhizome-goal — 2500 words lands on an exact 24-line lap boundary, so one survivor remains rather than a word-saturated ground',
-      !g.error && g.count === 1, JSON.stringify({ count: g.count }));
+    // PARKED 2026-10-08, rhizome-growth.mjs R5. The survivor is SURVIVOR_STEPS
+    // segments batched into one thick <path> plus an empty hairline path, so
+    // .wz-rhizome-seg count is 2, not 1. pickSurvivor is R5.
+    // ok('Live: SUPERSEDED->rhizome-goal — 2500 words lands on an exact 24-line lap boundary, so one survivor remains rather than a word-saturated ground',
+    //   !g.error && g.count === 1, JSON.stringify({ count: g.count }));
     const onPage = await app.evalJs("!!document.querySelector('.wz-rhizome-onpage')");
     ok('Live: SUPERSEDED->rhizome-goal — roots do not portal onto the page',
       onPage === false, JSON.stringify({ count: g.count, onPage }));
@@ -301,8 +314,11 @@ await withHarness(async (app) => {
       }
       return { found, sample };
     })()`);
-    ok('Reduced-motion: SUPERSEDED->rhizome-goal — a prefers-reduced-motion rule fades .wz-rhizome-seg with wz-rhizome-grow',
-      rm && rm.found, JSON.stringify(rm));
+    // PARKED 2026-10-08, rhizome-growth.mjs R4. Reduced motion fades
+    // .wz-rhizome-new with wz-rhizome-appear, not .wz-rhizome-seg with
+    // wz-rhizome-grow.
+    // ok('Reduced-motion: SUPERSEDED->rhizome-goal — a prefers-reduced-motion rule fades .wz-rhizome-seg with wz-rhizome-grow',
+    //   rm && rm.found, JSON.stringify(rm));
   }
 
   // ── Three widths: the field mounts + grows at 1100/1280/2200 (framed) ──────
@@ -316,8 +332,10 @@ await withHarness(async (app) => {
     const g = await geometryReport(app);
     // SUPERSEDED 2026-10-07, rhizome-goal.mjs. Paper crossings are the page
     // background. Original required paperHit === 0.
-    ok(`Geometry @${width}px: the field mounts and grows the current goal lap`,
-      !g.error && g.count > 20, JSON.stringify({ count: g.count, paperHit: g.paperHit, maxPen: g.maxPen }));
+    // PARKED 2026-10-08, rhizome-growth.mjs R1. Settled roots are two <path>s,
+    // so count is 2, not the lap. data-segments on the field is the successor.
+    // ok(`Geometry @${width}px: the field mounts and grows the current goal lap`,
+    //   !g.error && g.count > 20, JSON.stringify({ count: g.count, paperHit: g.paperHit, maxPen: g.maxPen }));
   }
 
   // ── Successor to m2.mjs's parked determinism-live checks (remount-empty +
@@ -337,9 +355,11 @@ await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'M3 determinism revisit' });
     await sleep(800);
     const ground2 = await readSegs();
-    ok('Determinism (live, M3): revisiting a WRITTEN entry reproduces the SAME saturated ground, byte-identical (same seed+geo+total-words => same scatter) — successor to m2.mjs’s parked remount-empty/replay-shape checks',
-      ground1.length > 50 && ground2.length === ground1.length && JSON.stringify(norm(ground1)) === JSON.stringify(norm(ground2)),
-      JSON.stringify({ n1: ground1.length, n2: ground2.length }));
+    // PARKED 2026-10-08, rhizome-growth.mjs R6. Settled roots are two <path>s
+    // (no x1/y1), so this probe's length is 2, not the lap. planLap memo is R6.
+    // ok('Determinism (live, M3): revisiting a WRITTEN entry reproduces the SAME saturated ground, byte-identical (same seed+geo+total-words => same scatter) — successor to m2.mjs’s parked remount-empty/replay-shape checks',
+    //   ground1.length > 50 && ground2.length === ground1.length && JSON.stringify(norm(ground1)) === JSON.stringify(norm(ground2)),
+    //   JSON.stringify({ n1: ground1.length, n2: ground2.length }));
   }
 
   // ── Successor to m2.mjs's parked burst checks: crossing the goal LIVE lands
@@ -354,8 +374,10 @@ await withHarness(async (app) => {
     await sleep(900); // past the settle-tail (burstOrder resets on a refit)
     const growthBefore = await segCount();
     const burstBefore = await burstCount();
-    ok('Burst (M3): a below-goal written page has grown a ground with NO burst-flagged segments before the crossing',
-      growthBefore > 20 && burstBefore === 0, JSON.stringify({ segs: growthBefore, burst: burstBefore }));
+    // PARKED 2026-10-08, rhizome-growth.mjs R1. .wz-rhizome-seg count is 2 paths,
+    // not the lap. Growing pieces are .wz-rhizome-new lines (R3).
+    // ok('Burst (M3): a below-goal written page has grown a ground with NO burst-flagged segments before the crossing',
+    //   growthBefore > 20 && burstBefore === 0, JSON.stringify({ segs: growthBefore, burst: burstBefore }));
     await app.evalJs("document.querySelector('.forward-only-editor').focus()");
     await app.typeKeys('aa bb cc dd ee ff gg '); // 7 words -> 251, crosses the BAR's 250
     // SUPERSEDED 2026-10-07, rhizome-goal.mjs. The rhizome no longer bursts on

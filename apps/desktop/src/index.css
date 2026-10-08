@@ -3413,50 +3413,28 @@ a:focus-visible,
   .desk-frame-goalflare.lit{ animation:none; opacity:.5; }
 }
 
-/* M2 S2/S4 — the growth layer itself (components/RhizomeField.tsx). An SVG
-   fills its own anchor exactly (inset:0) and clips its own content to its
-   own box by default — no separate overflow:hidden wrapper needed. z-index
-   is set on the ANCHOR above (beneath paper and all chrome, per S2); this
-   inline pointer-events:none (also set as a JSX inline style, belt-and-
-   suspenders — the M1 MilestoneBar precedent for "an invariant, not a
-   style choice") plus aria-hidden makes the whole layer structurally inert. */
+/* THE GOAL RHIZOME (Fable, 2026-10-08) — replaces every earlier .wz-rhizome-* rule and @keyframes wz-rhizome-* in index.css.
+   Keep: .desk-frame-rhizome-anchor (z-index:-1 behind the paper) and the --rhizome-ink token (var(--accent-rest)).
+   The field's viewBox equals its measured pixel size, so 1 user unit = 1 CSS px and no vector-effect is needed (and none is
+   used: non-scaling-stroke can break the pathLength-based draw-on in Chromium). */
 .wz-rhizome-field{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
-.wz-rhizome-seg{
-  stroke:var(--rhizome-ink); stroke-width:0.2px; stroke-linecap:round; fill:none; opacity:.32;
-  vector-effect:non-scaling-stroke;
-  stroke-dasharray:1; stroke-dashoffset:0;
-  /* pathLength=1 on the line, so a dash of 1 is the whole segment. */
-  animation:wz-rhizome-draw 320ms linear forwards;
-}
-/* A few shoots are heavier. The rest stay a fine hairline in the ground.
-   non-scaling-stroke keeps the width in CSS pixels when the viewBox scales.
-   The survivor of a lap is forced onto this thicker stroke. */
-.wz-rhizome-seg[data-thick='true']{ stroke-width:0.65px; opacity:.7; }
+
+/* Settled roots: fine hairlines; main stems and the lap's survivor a little heavier. */
+.wz-rhizome-seg{ stroke:var(--rhizome-ink); stroke-width:0.4px; stroke-linecap:round; stroke-linejoin:round; fill:none; opacity:.45; }
+.wz-rhizome-seg[data-thick='true']{ stroke-width:0.8px; opacity:.75; }
+
+/* A new piece GROWS: it draws itself on along its length (pathLength=1 on the <line>, so a dash of 1 is the whole piece). */
+.wz-rhizome-new{ stroke-dasharray:1; stroke-dashoffset:1; animation:wz-rhizome-draw 360ms ease-out both; }
 @keyframes wz-rhizome-draw{ from{ stroke-dashoffset:1; } to{ stroke-dashoffset:0; } }
-@keyframes wz-rhizome-grow{ 0%{ opacity:0; } 100%{ opacity:.32; } }
-@keyframes wz-rhizome-grow-thick{ 0%{ opacity:0; } 100%{ opacity:.7; } }
-/* S4 — the milestone flash: every segment's own stroke eases to the ember
-   token, holds, and returns — growth kept whole (nothing here removes or
-   re-shuffles a segment, only its paint). B4-provisional: the 400ms-hold/
-   800ms-ease-back split (33%/100% keyframe offsets below) has no existing
-   named celebration-grammar constant of its own — B4's ember-accent finish
-   is the brief's own named final authority for this exact timing. The
-   ember COLOR itself is not provisional: --ember already exists (branding
-   §4) and is reused verbatim, never a new literal. */
-.wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ animation:wz-rhizome-flash 1200ms ease; }
-@keyframes wz-rhizome-flash{
-  0%{ stroke:var(--rhizome-ink); }
-  8%{ stroke:var(--brass); }
-  33%{ stroke:var(--brass); }
-  100%{ stroke:var(--brass); }
+
+/* The reward: at the goal the whole network turns brass for the flash (1200 ms, held by RhizomeField), then the lap clears. */
+.wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ stroke:var(--brass); opacity:.9; transition:stroke 160ms ease, opacity 160ms ease; }
+
+@media (prefers-reduced-motion: reduce){
+  .wz-rhizome-new{ stroke-dasharray:none; stroke-dashoffset:0; animation:wz-rhizome-appear 200ms ease both; }
+  .wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ transition:none; }
 }
-@media (prefers-reduced-motion:reduce){
-  /* Reduced motion keeps a plain opacity fade. The draw-on (dashoffset)
-     is the full-motion path. The flash stays a stroke transition. */
-  .wz-rhizome-seg{ stroke-dashoffset:0; animation:wz-rhizome-grow 180ms ease; opacity:.32; transition:stroke 600ms ease; }
-  .wz-rhizome-seg[data-thick='true']{ opacity:.7; animation-name:wz-rhizome-grow-thick; }
-  .wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ animation:none; stroke:var(--brass); }
-}
+@keyframes wz-rhizome-appear{ from{ opacity:0; } }
 
 .desk-frame-meter{ min-height:44px; margin-top:14px; background:var(--desk-ground);
   border:1px solid var(--ink-border); border-radius:var(--radius-md); }
