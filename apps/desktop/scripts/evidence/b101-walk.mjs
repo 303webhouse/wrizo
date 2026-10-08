@@ -94,11 +94,22 @@ await withHarness(async (app) => {
   const w1 = await watchLanding();
   const w1Resume = await resumeRoute();
   say('W1 landing: ' + JSON.stringify({ seen: w1.seen, last: w1.last, resume: w1Resume }));
-  ok('(W1a) a returning writer\'s sign-in lands on their NEWEST PAGE (a /page/<id>), never the blank /page/new',
-    /^#\/page\/(?!new)[^/?]+$/.test(w1.last.hash || '') && w1.last.hash === '#' + w1Resume, JSON.stringify({ hash: w1.last.hash, resume: w1Resume }));
+  const isRealSurface = (h) => /^#\/(page|project)\/(?!new\b)[^/?]+/.test(h || '');
+  ok('(W1a) a returning writer\'s sign-in lands on the account\'s MOST RECENT SURFACE (the resume target - a page or a project), never the blank /page/new',
+    isRealSurface(w1.last.hash) && w1.last.hash === '#' + w1Resume, JSON.stringify({ hash: w1.last.hash, resume: w1Resume }));
   ok('(W1b) the 177 pages had arrived by then', w1.last.pages >= 177, String(w1.last.pages));
-  ok('(W1c) FIRST RUN PER ACCOUNT: no gate for this account on a device whose flag was unset, and the flag is now set so it cannot return',
-    w1.last.gate === false && w1.last.flag === '1' && !(w1.last.usr && w1.last.usr.firstRunGate), JSON.stringify({ gate: w1.last.gate, flag: w1.last.flag, usr: w1.last.usr }));
+  ok('(W1c) FIRST RUN PER ACCOUNT: no gate for this account on a device whose flag was unset (a resumed landing never asks the question)',
+    w1.last.gate === false && !(w1.last.usr && w1.last.usr.firstRunGate), JSON.stringify({ gate: w1.last.gate, flag: w1.last.flag, usr: w1.last.usr }));
+  // ...and the question itself, asked the way a writer asks it on that same fresh device: the Write door. The account holds work, so no gate,
+  // and the flag is set so it cannot come back.
+  await app.goto('/');
+  await arrival();
+  await sleep(500);
+  try { await app.click('Write'); } catch (e) { say('no Write door: ' + String(e).slice(0, 100)); }
+  const w1w = await watchLanding(6000);
+  say('W1 Write door: ' + JSON.stringify(w1w.last));
+  ok('(W1d) the WRITE door on a device that has never seen this account: no gate (the account has work), and the flag is set so it never returns',
+    w1w.last.gate === false && !(w1w.last.usr && w1w.last.usr.firstRunGate) && w1w.last.flag === '1', JSON.stringify({ gate: w1w.last.gate, flag: w1w.last.flag, usr: w1w.last.usr, hash: w1w.last.hash }));
 
   // ---- W2: sign out, sign in again (the very sequence of the incident) --------------------------------------------------------
   await signOut();
@@ -108,8 +119,8 @@ await withHarness(async (app) => {
   const w2 = await watchLanding();
   const w2Resume = await resumeRoute();
   say('W2 landing: ' + JSON.stringify({ seen: w2.seen, last: w2.last, resume: w2Resume }));
-  ok('(W2b) the second sign-in lands on the newest page too (the blank-page landing of the incident is gone)',
-    /^#\/page\/(?!new)[^/?]+$/.test(w2.last.hash || '') && w2.last.hash === '#' + w2Resume && w2.last.pages >= 177, JSON.stringify({ hash: w2.last.hash, resume: w2Resume, pages: w2.last.pages }));
+  ok('(W2b) the second sign-in lands on the resume target too (the blank-page landing of the incident is gone)',
+    isRealSurface(w2.last.hash) && w2.last.hash === '#' + w2Resume && w2.last.pages >= 177, JSON.stringify({ hash: w2.last.hash, resume: w2Resume, pages: w2.last.pages }));
   ok('(W2c) and still no gate', w2.last.gate === false && !(w2.last.usr && w2.last.usr.firstRunGate), JSON.stringify(w2.last));
   say('the quiet loading line was ' + (w1.seen.loading || w2.seen.loading ? 'SEEN' : 'not caught (the pull is fast on the rig)') + ' during a sign-in');
 
@@ -130,6 +141,7 @@ await withHarness(async (app) => {
     w3.seen.firstHash !== null && w3ms >= 2500 && w3ms <= 9000 && w3.seen.loading === true, JSON.stringify({ ms: w3ms, seen: w3.seen }));
   ok('(W3b) a capped pull is NOT first run: no gate, and the flag was not set by guesswork', w3.last.gate === false && w3.last.flag !== '1' && !(w3.last.usr && w3.last.usr.firstRunGate), JSON.stringify(w3.last));
   await app.reload();      // drops the stalled fetch; the session cookie survives
+  await app.goto('/');
   await arrival();
   await sleep(1500);
   await signOut();
@@ -156,6 +168,11 @@ await withHarness(async (app) => {
   await signIn(EMAIL);
   const w5land = await watchLanding();
   say('W5 start: ' + JSON.stringify(w5land.last));
+  // The resume target may be a PROJECT page, which has no single writing surface to measure. Open a real loose page (made through the app's own
+  // seam) so there is an editor whose rect can be compared before and after the banner.
+  const w5page = await app.evalJs(`window.wrizoCreateJournalPage({ text: 'a page to hold still' }).id`);
+  await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(w5page)}; true;`);
+  await sleep(1800);
   const edSel = await app.evalJs(`['.forward-only-editor', '[contenteditable="true"]', 'textarea', 'main'].find((s) => document.querySelector(s)) || null`);
   const rectOf = () => app.evalJs(`(() => { const el = document.querySelector(${JSON.stringify(edSel)}); if (!el) return null; const r = el.getBoundingClientRect(); return JSON.stringify([r.x, r.y, r.width, r.height].map((n) => Math.round(n * 2) / 2)); })()`);
   const rectBefore = await rectOf();
@@ -168,7 +185,7 @@ await withHarness(async (app) => {
   const rectAfter = await rectOf();
   const b = banner ? JSON.parse(banner) : {};
   ok('(W5b) the banner reads "Wrizo updated, reload" with a Reload button, outside the app root, and the root is inert', /Wrizo updated, reload/.test(b.text || '') && b.btn === true && b.parentIsBody === true && b.inert === true, banner || 'no banner');
-  ok('(W5c) PAGE IS PRIMARY: the writing surface did not move or resize (same rect before and after the banner)', rectBefore !== null && rectBefore === rectAfter, JSON.stringify({ rectBefore, rectAfter }));
+  ok('(W5c) PAGE IS PRIMARY: the writing surface (found, not null) did not move or resize - same rect before and after the banner', edSel !== null && rectBefore !== null && rectBefore === rectAfter, JSON.stringify({ edSel, rectBefore, rectAfter }));
   // READ-ONLY: a write made now is held; storage does not gain it.
   const heldId = await app.evalJs(`(() => { const p = window.wrizoCreateJournalPage({ text: 'typed in a stale tab, rescued by Reload' }); return p.id; })()`);
   await sleep(900);
