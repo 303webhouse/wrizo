@@ -7,6 +7,7 @@ import { getUserPageDefaults } from './pageDefaults';
 import { clearProofingLocal } from './proofing';
 import { reportFlushFailed, reportFlushOk, reportStorageUsage } from './storageHealth';
 import { isSignedOutHere } from './signedOutHere';
+import { isStaleClient } from './staleClient';
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -142,7 +143,16 @@ function hydrateDirty(): Record<CollectionName, Set<string>> {
 // names) so a reader can tell "the record itself didn't save" from "the record saved, but sync doesn't know it
 // needs to" — both are real, and they are different repairs.
 const DIRTY_JOURNAL_REPORT_NAME = 'dirtyJournal';
+
+// B10.1 - A STALE TAB IS READ-ONLY. Every tab on this origin shares one localStorage and flushes its WHOLE cache over the
+// collection keys, so an old tab that kept saving would overwrite what the live tab wrote. While the stale-client flag is
+// set the automatic writes below are held (the edits stay in memory, and the dirty set with them); the single exception is
+// flushForReload(), the writer's own Reload, which writes once so the unsent edits survive into the new build.
+let writesForced = false;
+function writesHeld(): boolean { return isStaleClient() && !writesForced; }
+
 function persistDirty(): void {
+  if (writesHeld()) return;
   try {
     const out: Record<string, string[]> = {};
     for (const name of COLLECTIONS) out[name] = [...dirty[name]];
@@ -300,6 +310,7 @@ function maybeReportStorageUsage(): void {
 maybeReportStorageUsage();
 
 function flush(name: CollectionName): void {
+  if (writesHeld()) return;
   const json = JSON.stringify(cache[name]);
   try {
     localStorage.setItem(KEYS[name], json);
@@ -335,6 +346,13 @@ function scheduleFlush(name: CollectionName): void {
 // when the page is about to be torn down (tab hide, route change) — a scheduled
 // 300ms write would otherwise be lost if the page dies first. localStorage
 // writes are synchronous, so the data is durable before the handler returns.
+// B10.1 - the stale tab's Reload: the ONE explicit write a stale tab makes. Callers run flushAll() first so every editor's
+// pending text is already in its record.
+export function flushForReload(): void {
+  writesForced = true;
+  try { flushNow(); } finally { writesForced = false; }
+}
+
 export function flushNow(): void {
   (Object.keys(KEYS) as CollectionName[]).forEach(name => {
     if (flushTimers[name] !== null) {
@@ -1872,6 +1890,13 @@ export function importDraft(binderId: string, pageType: NonNullable<JournalEntry
 // pattern B1 established for '/journal' and '/trash'). Parked, not
 // deleted from history: see docs/wrizo-alpha's own build report and the
 // harness's A4 park sweep for the quoted-verbatim record.
+
+// B10.1 - DOES THIS ACCOUNT ALREADY HOLD WORK? Any journal entry that is not a system board, or any project. Soft-deleted
+// entries COUNT: a writer who deleted everything has still written, and is not new. Read from the raw cache (not
+// getJournalEntries, which hides the deleted) and only meaningful once the first whole-account pull has landed.
+export function accountHasWork(): boolean {
+  return cache.journalEntries.some(e => !getSystemKind(e)) || cache.projects.length > 0;
+}
 
 export function getJournalEntries(): JournalEntry[] {
   return cache.journalEntries

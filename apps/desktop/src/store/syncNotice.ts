@@ -24,11 +24,11 @@
 //                         online" act that would actually help if it fails; signed out there is no account for
 //                         staying online to help reach, so it reads the same as (c) does — nothing else anywhere
 //                         holds a copy, so download one now, before it fails rather than after.
-import type { SyncStatus, TooLargeRecord, RejectedRecord } from './sync';
+import type { SyncStatus, TooLargeRecord, RejectedRecord, PullDiagnostic } from './sync';
 
 export type SyncNoticeLexiconKey =
   | 'syncTooLargeOne' | 'syncTooLargeMany'
-  | 'syncRejectedOne' | 'syncRejectedMany'
+  | 'syncRejectedOne' | 'syncRejectedMany' | 'syncPullShort'
   | 'syncStorageFullPending' | 'syncStorageFullSynced' | 'syncStorageFullAnon'
   | 'syncStorageNearFull' | 'syncStorageNearFullAnon';
 
@@ -41,6 +41,7 @@ export function syncNoticeText(
   hasUnpushedDirty: boolean,
   signedIn: boolean,
   t: (key: SyncNoticeLexiconKey) => string,
+  pullDiagnostic: PullDiagnostic | null = null,
 ): string | null {
   if (storageFailed) {
     if (!signedIn) return t('syncStorageFullAnon');            // (c) — nothing else could ever hold a copy
@@ -60,6 +61,12 @@ export function syncNoticeText(
     return rejected.length === 1
       ? t('syncRejectedOne').replace('{title}', () => rejected[0].title)
       : t('syncRejectedMany').replace('{n}', () => String(rejected.length));
+  }
+  // B10.1 (SAFETY NET) - a whole-account pull carried pages that never reached the cache, even after a retry. Counts only.
+  if (pullDiagnostic) {
+    return t('syncPullShort')
+      .replace('{pulled}', () => String(pullDiagnostic.pulled))
+      .replace('{live}', () => String(pullDiagnostic.live));
   }
   if (storageNearFull) return signedIn ? t('syncStorageNearFull') : t('syncStorageNearFullAnon');
   return null;

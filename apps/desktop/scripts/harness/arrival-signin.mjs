@@ -133,15 +133,26 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
 {
   const arr = read('components/Arrival.tsx');
   const signinFn = arr.slice(arr.indexOf('const handleSignin'), arr.indexOf('const handleCreate'));
-  ok('(E1) a successful sign-in goes where an authed Open goes (onAuthed, then openAsAuthed — it does not sit on the stage)',
+  // SUPERSEDED (B10.1: the landing waits for the first pull) — by (E1b) below. Parked, not deleted: it pinned openAsAuthed() running the
+  // instant the login answered, which is the blank-page landing B10.1 removes.
+  // Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(E1) a successful sign-in goes where an authed Open goes (onAuthed, then openAsAuthed — it does not sit on the stage)',
     /if \(res\.ok && res\.user\) \{ onAuthed\(res\.user\); openAsAuthed\(\); \}/.test(signinFn), signinFn.slice(0, 300));
+  const waitFn = arr.slice(arr.indexOf('const openWhenLoaded'), arr.indexOf('const handleOpen'));
+  ok('(E1b) a successful sign-in still goes where an authed Open goes (onAuthed, then the same door) — after the capped wait for the first pull, never sitting on the stage',
+    /if \(res\.ok && res\.user\) \{ onAuthed\(res\.user\); await openWhenLoaded\(true\); \}/.test(signinFn)
+      && /whenFirstPulled\(FIRST_PULL_CAP_MS\)/.test(waitFn) && /\n    openAsAuthed\(\);/.test(waitFn), signinFn.slice(0, 300));
   const createFn = arr.slice(arr.indexOf('const handleCreate'), arr.indexOf('return (', arr.indexOf('const handleCreate')));
   ok('(E2) so does a successful account creation', /onAuthed\(res\.user\); openAsAuthed\(\);/.test(createFn), '');
   const openFn = arr.slice(arr.indexOf('const openAsAuthed'), arr.indexOf('const handleOpen'));
   ok('(E3) that target is the resume target, else Write — the same one Open uses',
     /getResumeTarget\(\)/.test(openFn) && /navigate\(target\.route/.test(openFn) && /handleWrite\(\)/.test(openFn), '');
-  ok('(E4) Open itself uses the same function (one door, not two copies)',
+  // SUPERSEDED (B10.1) — by (E4b) below. Parked, not deleted: Open on an authed boot now goes through the same capped wait.
+  // Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(E4) Open itself uses the same function (one door, not two copies)',
     /if \(authState === 'authed'\) \{ openAsAuthed\(\); return; \}/.test(arr), '');
+  ok('(E4b) Open itself uses the same door (one door, not two copies): openWhenLoaded, which ends in openAsAuthed',
+    /if \(authState === 'authed'\) \{ void openWhenLoaded\(false\); return; \}/.test(arr), '');
   const app = read('App.tsx');
   const authedFn = app.slice(app.indexOf('const handleAuthed'), app.indexOf('const handleLogout'));
   ok('(E5) the sign-in clears the signed-out flag before anything navigates', /clearSignedOutHere\(\);/.test(authedFn), '');

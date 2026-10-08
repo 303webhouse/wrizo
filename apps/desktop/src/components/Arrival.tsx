@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { unbornHref } from '../store/unbornPage';
 import { setForwardLock } from '../store/forwardLock';
 import { setWritingSettings } from '../store/writingSettings';
-import { getFirstRunComplete, setFirstRunComplete } from '../store/firstRun';
+import { setFirstRunComplete, resolveFirstRun, markRegistered, FIRST_PULL_CAP_MS } from '../store/firstRun';
+import { firstPullDone, whenFirstPulled } from '../store/sync';
+import { accountHasWork } from '../store/persistence';
 import { getResumeTarget } from '../store/resume';
 import { apiLogin, apiRegister, apiSignupStatus, type AuthUser } from '../store/api';
 import { useDeskLexicon } from '../store/deskLexicon';
@@ -66,9 +68,20 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   useEffect(() => { if (authState === 'authed') setStage('doors'); }, [authState]);
   const framed = useDeskFrameViewport();
 
-  const handleWrite = () => {
-    if (!ready) return;
-    const firstRun = !getFirstRunComplete();
+  // B10.1 - a quiet "Loading your pages" state while the landing waits for the account's first pull (capped).
+  const [landing, setLanding] = useState(false);
+  const writing = useRef(false);
+
+  const handleWrite = async () => {
+    if (!ready || writing.current) return;
+    writing.current = true;
+    try { await writeDoor(); } finally { writing.current = false; }
+  };
+
+  const writeDoor = async () => {
+    // B10.1 - derived per account, after the first pull (see store/firstRun.ts). Synchronous in every case but one: a signed-in
+    // writer whose flag is unset and whose first pull has not landed yet.
+    const firstRun = await resolveFirstRun();
     if (firstRun) {
       // S2 — forced first-session defaults, set explicitly (not merely
       // trusted from each store's own DEFAULT, which happens to already
@@ -109,9 +122,21 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
     }
   };
 
+  // B10.1 - THE LANDING WAITS FOR THE FIRST PULL. Choosing resume-or-new the instant a login answered sent a returning writer to a
+  // blank page, because their pages had not arrived yet. 'always' (a sign-in, whose cache was just wiped) waits whatever the
+  // cache holds; Open on an authed boot waits only if the cache is empty and the pull has not landed. The wait is capped, and
+  // every outcome (pulled, capped, failed) then opens exactly as before.
+  const openWhenLoaded = async (always: boolean) => {
+    if (!firstPullDone() && (always || !accountHasWork())) {
+      setLanding(true);
+      try { await whenFirstPulled(FIRST_PULL_CAP_MS); } finally { setLanding(false); }
+    }
+    openAsAuthed();
+  };
+
   const handleOpen = () => {
-    if (!ready) return;
-    if (authState === 'authed') { openAsAuthed(); return; }
+    if (!ready || landing) return;
+    if (authState === 'authed') { void openWhenLoaded(false); return; }
     setError('');
     setStage('signin');
   };
@@ -123,7 +148,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
     // try/finally: whatever happens, the form is given back. A thrown request becomes the network line, not a stuck button.
     try {
       const res = await runAuthCall(() => apiLogin(email.trim(), password));
-      if (res.ok && res.user) { onAuthed(res.user); openAsAuthed(); }
+      if (res.ok && res.user) { onAuthed(res.user); await openWhenLoaded(true); }
       else setError(res.error || 'Could not sign in');
     } finally {
       submitting.current = false;
@@ -137,7 +162,8 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
     setError(''); setBusy(true);
     try {
       const res = await runAuthCall(() => apiRegister(email.trim(), password, name.trim(), inviteCode.trim()));
-      if (res.ok && res.user) { onAuthed(res.user); openAsAuthed(); }
+      // B10.1 - a successful REGISTER is a first run on this device whatever the flag says (once per account).
+      if (res.ok && res.user) { markRegistered(); onAuthed(res.user); openAsAuthed(); }
       else setError(res.error || 'Could not create your account');
     } finally {
       submitting.current = false;
@@ -159,12 +185,13 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
 
         {stage === 'doors' && (
           <div className="wz-arrival-doors">
-            <button type="button" className="wz-btn wz-primary wz-arrival-write" disabled={!ready} onClick={handleWrite}>
+            <button type="button" className="wz-btn wz-primary wz-arrival-write" disabled={!ready || landing} onClick={() => { void handleWrite(); }}>
               Write
             </button>
-            <button type="button" className="wz-link wz-arrival-open" disabled={!ready} onClick={handleOpen}>
+            <button type="button" className="wz-link wz-arrival-open" disabled={!ready || landing} onClick={handleOpen}>
               Open
             </button>
+            {landing && <div className="wz-sub wz-arrival-loading" role="status">Loading your pages…</div>}
             {authState === 'anon' && (
               <button type="button" className="wz-link wz-arrival-signin" onClick={() => { setError(''); setStage('signin'); }}>
                 Sign in

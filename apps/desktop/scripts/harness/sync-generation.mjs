@@ -53,6 +53,9 @@ async function loadClient(tag, syncSourceOverride) {
     'export function markClean() { calls.markClean += 1; }',
     'export function applyRemoteRecords() { calls.applyRemote += 1; }',
     'export function markAllJournalEntriesDirty() { calls.backfill += 1; }',
+    // B10.1 - the safety net reads these two; this proof's pulls carry no journal entries.
+    'export function getJournalEntries() { return []; }',
+    'export function getSystemKind() { return undefined; }',
   ].join('\n'));
   w('entryText.mjs', 'export function boardName(t, f) { return (t || "").split("\\n")[0] || f; }');
   w('api.mjs', [
@@ -64,9 +67,12 @@ async function loadClient(tag, syncSourceOverride) {
   const guestPath = path.join(SRC, 'store/guestState.ts');
   if (fs.existsSync(guestPath)) w('guestState.mjs', transpile(fs.readFileSync(guestPath, 'utf8')));
   w('storageHealth.mjs', transpile(fs.readFileSync(path.join(SRC, 'store/storageHealth.ts'), 'utf8')));
+  // B10.1 - the stale-client guard's two leaf modules, the real files. No build is known here, so the guard never trips.
+  w('clientBuild.mjs', transpile(fs.readFileSync(path.join(SRC, 'store/clientBuild.ts'), 'utf8')));
+  w('staleClient.mjs', transpile(fs.readFileSync(path.join(SRC, 'store/staleClient.ts'), 'utf8')));
   const syncText = (syncSourceOverride ?? fs.readFileSync(path.join(SRC, 'store/sync.ts'), 'utf8'));
   const syncOut = transpile(syncText)
-    .replace(/from (['"])\.\/(persistence|api|entryText|guestState|storageHealth)\1/g, "from './$2.mjs'");
+    .replace(/from (['"])\.\/(persistence|api|entryText|guestState|storageHealth|clientBuild|staleClient)\1/g, "from './$2.mjs'");
   w('sync.mjs', syncOut);
   const url = (n) => 'file://' + path.join(dir, n).replace(/\\/g, '/');
   const stamp = '?t=' + Date.now() + Math.random();
@@ -194,8 +200,14 @@ const syncSrc = fs.readFileSync(path.join(SRC, 'store/sync.ts'), 'utf8');
   ok('(T1) every `await apiSync(` is followed by live() before any write', awaits.length === 3 && missing.length === 0, JSON.stringify({ awaits: awaits.length, missing }));
   ok('(T2) stopSync bumps the generation and releases the in-flight flag',
     /export function stopSync\(\): void \{\s*running = false;[\s\S]*?generation \+= 1;\s*inFlight = false;/.test(syncSrc), '');
-  ok('(T3) the catch drops a stale run before it can set a status or schedule a backoff, and finally releases the flag only for the current generation',
+  // SUPERSEDED (B10.1: runSync reports its outcome) — by (T3b) below. Parked, not deleted: it pinned a BARE `return;`, and the catch now
+  // returns the outcome ('stale' / 'failed') so startSync can tell a failed first pull from a good one.
+  // Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(T3) the catch drops a stale run before it can set a status or schedule a backoff, and finally releases the flag only for the current generation',
     /catch \(e\) \{[\s\S]*?if \(e === STALE \|\| gen !== generation\) return;[\s\S]*?setStatus\('offline'\);[\s\S]*?scheduleBackoff\(\);/.test(syncSrc)
+      && /if \(gen === generation\) inFlight = false;/.test(syncSrc), '');
+  ok('(T3b) the catch still drops a stale run before it can set a status or schedule a backoff (now returning the outcome), and finally releases the flag only for the current generation',
+    /catch \(e\) \{[\s\S]*?if \(e === STALE \|\| gen !== generation\) return 'stale';[\s\S]*?setStatus\('offline'\);[\s\S]*?scheduleBackoff\(\);/.test(syncSrc)
       && /if \(gen === generation\) inFlight = false;/.test(syncSrc), '');
   const lastAt = syncSrc.indexOf('setLastSyncAt(resp.serverTime)');
   ok('(T4) the cursor is written only after a final live() check', /live\(\);\s*setLastSyncAt\(resp\.serverTime\);/.test(syncSrc), String(lastAt));

@@ -250,6 +250,8 @@ export type DeskTermId =
   // ITEM 224(a), SYNC INTEGRITY — a record the server itself refused to
   // store (not a size problem); kept dirty, retried, and named here.
   | 'syncRejectedOne' | 'syncRejectedMany'
+  // B10.1 - the safety net's diagnostic (counts only) and the stale-client banner.
+  | 'syncPullShort' | 'staleClientBody' | 'staleClientReload'
   // LOGOUT SAFETY — a sign-out refused while records have not reached the account, and its second step.
   | 'logoutBlockedBody' | 'logoutBlockedRejected' | 'logoutStay' | 'logoutAnyway' | 'logoutAnywayConfirm' | 'logoutAnywayBack'
   | 'logoutBlockedBodyOne' | 'logoutAnywayOne' | 'logoutAnywayConfirmOne' | 'logoutSigningOut'
@@ -879,6 +881,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   logoutAnywayOne: 'Sign out anyway (1 change will be lost)',
   logoutSigningOut: 'Signing out\u2026',
   logoutAnywayConfirmOne: 'Yes, sign out and lose 1 change',
+  // B10.1 - counts only, never titles or text. Reload fetches the account's pages again.
+  syncPullShort: 'Your account sent {pulled} pages but {live} are showing \u2014 reload to try again',
+  staleClientBody: 'Wrizo updated, reload',
+  staleClientReload: 'Reload',
   syncRejectedMany: '{n} items could not be saved to your account \u2014 they are safe on this device and will keep trying',
   // ITEM 83 M3 (R6). Sentence case on rows, engraved-uppercase on the heading
   // (§1.4) — the heading's dress is CSS, so the term itself stays readable.

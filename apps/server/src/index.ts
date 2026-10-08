@@ -7,6 +7,7 @@ import { authRouter, requireAuth } from './auth';
 import { syncRouter } from './sync';
 import { tutorRouter } from './tutor';
 import { logError } from './logSafe';
+import { getServerBuild } from './build';
 
 const distWeb = resolve(__dirname, '../../desktop/dist-web');
 
@@ -89,7 +90,9 @@ app.use((req: Request, res: Response, next: NextFunction) => (req.path === '/api
 
 // Health check — no DB, no session, always cheap.
 app.get('/healthz', (_req: Request, res: Response) => {
-  res.status(200).json({ ok: true });
+  // B10.1 - the served build rides along, so a deploy smoke can compare it with the stamped one without a session.
+  const build = getServerBuild();
+  res.status(200).json(build ? { ok: true, build } : { ok: true });
 });
 
 app.use(sessionMiddleware);
