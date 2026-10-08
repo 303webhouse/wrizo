@@ -24984,3 +24984,32 @@ IDLE (0 harness processes, 0 browsers); FIX had not sent “box done”; **the g
 worktree. **This desk did not touch it; the ledger is written from a separate worktree (`.claude/worktrees/ledger-desk`) and
 pushed `HEAD:main`.** A deploy needs the primary on `main`, clean; it will be put back (safe: clean tree) before any deploy
 and Cursor asked to stay out.
+
+## B10.1 PAIR: GREEN — 117/118 THEN b101 FIXED, K10 19/19; A GRANT OVERWRITE; THE PRIMARY CHECKOUT IS OCCUPIED — 2026-10-08 (chat 1)
+
+**ASSEMBLED in a worktree (the primary checkout is not on `main`; see below): `b101-pair` = `origin/main` @ `c0f26bc` +
+`b101-defence` (`126c970`, later `b95b181`).** 22 files; the schema/migration diff is EMPTY; the server changed in three small
+places (`build.ts`, `index.ts`, `sync.ts` — the build id behind the stale-client guard).
+
+**BROWSERLESS, in the worktree:** `tsc` x2 exit 0; both builds clean; `item224-server-hardening` 64/64; `set-password-db` 12/12;
+`smoke-account-db` 31/31; **K10 `--mutants` IN FULL: baseline GREEN (32), 19/19 RED, exit 0, none surviving or errored** (as Fable asked,
+since INK had not re-run the 19 after `bab6f4f`).
+
+**THE DESKTOP PAIR: stamp `tree=d233abad bundle=index-C4x8tYhX.js/641310b`; 118 files per leg (the capture tool left out of the list
+again), six chunks of ≤20, no launch crashes: 117/118 on EACH leg — the one red, the same on both: `b101.mjs` NOVERDICT (exit 0)
+because it printed `B101: PASS (73 checks)`, which run-suite does not read as a verdict (it needs a `VERIFY:` line); all 73
+checks passed.** INK pushed the one-line fix `b95b181` (`b101.mjs` only; `apps/desktop/src`, `apps/server/src`, `packages` diff
+EMPTY), merged here (`b101-pair` @ `1b99785`), **the built bundle is byte-identical (`index-C4x8tYhX.js`, 641,310 b), and `b101.mjs`
+alone is CLEAN on BOTH legs: `B101 VERIFY: PASS (73 checks)`** (stamp `tree=1b997854`). Grant cleared; 0 harness processes.
+INK’s `b101-walk` (16/16 on `126c970`) stands as the browser proof.
+
+**► A SLIP, THIS DESK’S: when I wrote the pair grant at `22:02:51Z` a grant file ALREADY EXISTED** (I had cleared FIX’s at
+`21:53:27Z` and written nothing since, so another lane wrote its own) **and I overwrote it without reading it first.** The box was
+idle (0 harness processes, 0 browsers) so nothing was running, but the lane is unknown. Whoever wrote it asks again. From
+now on: READ the grant file before writing one.
+
+**► THE PRIMARY CHECKOUT IS OCCUPIED:** it sits on `cursor/plateau-rhizome-goal-4b92` and Cursor is still committing there (last
+commit `87e1cde`, “Rhizome: grow behind the page, right up to its edge”, 16:34 MT; tree clean). A deploy must run from the primary
+checkout, on `main`, with a bare tree. **This desk will NOT switch it — a Cursor commit after the switch would land on `main`.**
+Asked of Fable: have Cursor move to its own worktree and leave the primary, or authorize this desk to move it at a moment Cursor
+is idle. **B10.1 is green and waits only on that.**
