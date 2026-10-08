@@ -41,7 +41,8 @@ const openStrip = async (app) => {
 };
 const strip = (app) => app.evalJs(`[...document.querySelectorAll('.wz-sliver-templates button')].map(b => ({
   live: b.classList.contains('wz-template-live'), key: b.dataset.template || null, name: b.getAttribute('aria-label'),
-  title: b.title, disabled: b.getAttribute('aria-disabled'), glyph: !!b.querySelector('svg') }))`);
+  title: b.title, disabled: b.getAttribute('aria-disabled'),
+  glyph: (() => { const g = b.querySelector('svg'); if (!g) return false; const r = g.getBoundingClientRect(); return r.width >= 12 && r.height >= 12; })() }))`);
 // The point a writer would press: the control scrolled into view in its own scroller (the strip scrolls - Templates sit below its
 // fold at 1400x900), and only if that point hit-tests to the control itself. A press on anything else is NOT a press (the box
 // turn of 2026-10-08 measured the centre of an unscrolled template hitting .wz-sliver, and a press that did nothing passed as one).
@@ -55,7 +56,7 @@ const press = async (app, sel) => {
   const pt = await centreOf(app, sel);
   if (!pt) return { pressed: false };
   await app.mouseDown(pt.x, pt.y);
-  await sleep(60);
+  await sleep(400);   // .mode-tbtn transitions over .15s: read the press once it has arrived, not partway
   const during = await app.evalJs(`(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (!b) return null;
     const cs = getComputedStyle(b); return { color: cs.color, border: cs.borderTopColor }; })()`);
   await app.mouseUp(pt.x, pt.y);
@@ -100,10 +101,10 @@ await withHarness(async (app) => {
   const s = await strip(app);
   ok('T1 [Draft]: the Templates read Screenplay, Outline, Title page, Bibliography, Custom - in that order, and nothing else',
     JSON.stringify(s.map((b) => b.name)) === JSON.stringify(['Screenplay', 'Outline', 'Title page', 'Bibliography', 'Custom']), JSON.stringify(s.map((b) => b.name)));
-  ok('T1 [Draft]: Screenplay is the ONE live template (not aria-disabled, keyed screenplay, with its glyph) - there is no Sprout and no Plan template',
+  ok('T1 [Draft]: Screenplay is the ONE live template (not aria-disabled, keyed screenplay, with its glyph DRAWN at least 12px) - there is no Sprout and no Plan template',
     JSON.stringify(s.filter((b) => b.live).map((b) => b.key)) === JSON.stringify(['screenplay']) && s.filter((b) => b.live).every((b) => b.disabled === null && b.glyph)
       && (await app.evalJs("!document.querySelector('[data-template=\"sprout\"], [data-template=\"plan\"]')")), JSON.stringify(s));
-  ok('T1 [Draft]: the four after it are grayed placeholders - aria-disabled, titled "Coming soon", each with its glyph',
+  ok('T1 [Draft]: the four after it are grayed placeholders - aria-disabled, titled "Coming soon", each with its glyph DRAWN at least 12px',
     s.filter((b) => !b.live).length === 4 && s.filter((b) => !b.live).every((b) => b.disabled === 'true' && b.title === 'Coming soon' && b.glyph), JSON.stringify(s.filter((b) => !b.live)));
   ok('T1 [Draft]: Plan stays on the PLAN bar', (await app.evalJs("!!document.querySelector('.desk-mode-strip [data-page-plan-door]')")) === true);
   const brass = await rgbOf(app, 'var(--brass)');
