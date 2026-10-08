@@ -24776,3 +24776,43 @@ BYTE-IDENTICAL to `index-DkqE6EFm.js` at 636,455 b (if it changes at all: stop, 
 green, 10/10 red) and `item141` + `arrival-signin-walk` (both legs); (3) merge `batch-ten` to `main`; (4) deploy
 `writer-studio-app` only, rollback target recorded first (Batch 9, `1c34ccfa`, is retired by Railway — the rollback is a
 rebuild from `e66c288`); (5) `smoke-login`; (6) ping Nick for his real sign-in check, which closes the ship gate.
+
+## BATCH 10 DEPLOY MANIFEST — LIVE, SERVED==STAMPED, SMOKE 6/6 — 2026-10-07 (chat 1)
+
+**THE FIXES, as they came:** Fable byte-reviewed and approved `k10-reanchor` @ `9acc8a7` (bar corrected: 19 mutants, so baseline
+green (32) and 19/19 red, exit 0 — not 10/10) and `walk-settle` @ `c35da02` (one file, +6, no `src`/`packages`; the `waitFor` sits
+before the first seam use; all three seams exist in `batch-ten`; no overlap with `k10-reanchor`). Both merged into `batch-ten`.
+
+**GATES BEFORE MERGE:** K10 with mutants — baseline GREEN (32), **19/19 RED, exit 0, no survivors, no instrument errors** (a first
+attempt hit this desk’s own 290 s timeout at 16 and was re-run uncapped). `batch-ten` @ `8ea75af`: `git diff 288cdeb HEAD --
+apps/desktop/src apps/server/src packages` EMPTY; `tsc` x2 exit 0; **the built bundle is `index-DkqE6EFm.js` at 636,455 b, byte-
+identical to the pair’s stamp.** `item141` PASS (11) and `arrival-signin-walk` PASS (15) on BOTH legs, stamp
+`tree=8ea75af8 bundle=index-DkqE6EFm.js/636455b`; grant cleared. (The pair itself: 116/117 per leg with `item141` the only red,
+now cleared; the capture tool was left out of the run list; the full pair was not re-run, per Fable’s plan.)
+
+**MERGED to `main`: `7550452`** (`batch-ten` @ `8ea75af`; `git diff batch-ten HEAD -- apps packages` EMPTY).
+
+**LIVE: `7550452` · railway `63d8cf39-75c0-4c18-9c42-9e9c4b4fce4f`** — service `writer-studio-app`, `railway up --service
+writer-studio-app --ci`, “Deploy complete”. **PREVIOUS LIVE (Batch 9, `1c34ccfa`) is now REMOVING — THE ROLLBACK is a rebuild
+from `e66c288` (a clean checkout, `railway up`).** **ROLLBACK NOW RATCHETS: Batch 9 `e66c288`.** No schema change (the diff names
+no migrate/schema/sql file; none in the merge).
+
+**WHAT SHIPPED:** the sign-in screen (the hero stops showing through, a visible Sign in, the signed-out flag, a dead network no
+longer strands the form, the account-screen back stays), a successful login leaves the screen, sign-out never wipes unsaved
+writing (flush, then decide, then wipe, with a belt for whatever still runs after; the 5 s cap on the server logout and the
+sync late-write guard — a sign-out retires any sync still waiting on the network), the logout sheet with the home palette
+tokens, plus the evidence (28 frames) under `docs/evidence/arrival-signin/`. `main` carries `passwordHash.ts` (the server
+refactor from the smoke tools) — it is in this deploy. **NOT shipped: guest-login, guest-client (Batch 11).**
+
+**CHECKS BEFORE UPLOAD:** `tsc` x2 exit 0; `build:web` exit 0, bundle == stamp; tree bare (0 porcelain INCLUDING untracked);
+**ITEM-98 GUARD:** `writer-studio` / `production` / `writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`, `HEAD ==
+origin/main == 7550452`. **LIVE VERIFICATION:** `/healthz` 200 · `/auth/me` 401 · `/auth/signup-status` `{“open”:false}` (sign-ups
+still closed, as ruled) · server log “listening on :8080”. **SERVED-vs-STAMPED, BOTH ASSETS MATCH, MD5 and bytes:** JS
+`d443275f8868bf2b2dbf66bff3937072` (636,455 b); CSS `2975d971e9aede0872a43aab638c08ac` (150,382 b).
+
+**LIVE SIGNED-IN SMOKE TEST (`smoke-login.mjs`, once, exit 0):** `POST /auth/login` 200 · `GET /auth/me` 200 · `POST /api/sync`
+(pull only) 200 · `POST /auth/logout` 204 · `GET /auth/me` (after logout, jar) 401 · `GET /auth/me` (pre-logout cookie
+replayed) 401 — **`SMOKE: PASS (6/6)`.** *No browser walk of the live site was done by this desk.*
+
+**OWED: NICK’S OWN REAL SIGN-IN CHECK — that closes the ship gate.** Batch 11 (guest) is next: rebase `guest-client-r2` onto
+`main`, INK ports the logout frames into its capture, one box turn.
