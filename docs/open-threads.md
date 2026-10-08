@@ -24863,3 +24863,23 @@ server-pull fault; it changes no data. No schema change in B9 or B10.
 **NEXT (proposed, not started): reproduce Nick’s pull offline and READ-ONLY** — run the REAL server `sync` route against a
 read-only connection and feed its reply to the REAL client `sync.ts` in a node harness (as K10 does), and report only how many
 entries the client ends with and any exception — no contents.
+
+## B10 INCIDENT RESOLVED; BATCH 10’S GATE CLOSED; B10.1 QUEUED AHEAD OF B11; NICK’S FIRST-RUN RULING — 2026-10-07 (chat 1)
+
+**RESOLVED (Fable, relay): B10 post-sign-in empty panel: a stale pre-redesign tab on the same origin was still open and
+syncing; data intact throughout.** Nick closed that tab and reloaded and his pages are back. (No user details recorded here.)
+This desk’s earlier reading — that the local cache was empty because the pull was not returning, failing, or being undone
+afterwards — was consistent with that; the offline repro proposed in the incident entry is NOT needed and was not run.
+The prepared rollback from `e66c288` STANDS DOWN: it was never run and is not wanted.
+
+**BATCH 10’S GATE IS CLOSED — on Nick’s word (Fable, relay: “Nick’s word: close Batch 10’s gate”; Fable had recommended yes).
+BATCH 10 IS SHIPPED: `7550452`, railway deploy `63d8cf39-75c0-4c18-9c42-9e9c4b4fce4f`** (the manifest above stands; its “owed:
+Nick’s real sign-in check” is discharged by this word and by his live use).
+
+**FOLLOW-UP B10.1, queued BEFORE B11 (Fable): “stale-client guard, landing waits for pull, no first-run gate for existing
+accounts” — pending INK’s repro** (an old client and B10 on the same origin). **NICK’S RULING FOR B10.1 (Fable, relay): the
+first-run ritual — the 100-word gate plus the typewriter demo — runs ONCE PER ACCOUNT, EVER. Never again after a sign-out or
+on a new device.** **B11 (guest) stays PAUSED until B10.1 ships.**
+
+**BOX:** INK will ask for ONE box turn for the stale-tab repro (old client + B10, same origin); this desk grants it when asked.
+No grant is live; the box is idle.
