@@ -104,14 +104,11 @@ const clickDoor = async (app, key) => {
   await sleep(300);
 };
 
-// PAGE-TEMPLATES-MOVE (Nick, 2026-10-08) - the page's three doors are the Draft strip's live TEMPLATES now, running the same
-// acts. The same trusted press as clickDoor, on `.wz-template-live[data-template=key]`, after switching to Draft and opening
-// the strip. Never throws: a missing template is reported by the check that follows, not by aborting the file.
-const clickTemplate = async (app, key) => {
-  await app.click('Draft'); await sleep(400);
-  if (!(await app.evalJs("!!document.querySelector('.wz-sliver-templates')"))) await openSliver(app);
-  try { await app.waitFor("!!document.querySelector('.wz-sliver-templates')", { label: 'templates section', timeout: 3000 }); } catch { /* reported below */ }
-  const p = await hittablePointBy(app, `document.querySelector('.wz-template-live[data-template="${key}"]')`);
+// PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08) - the page row's Screenplay and Plan doors are gone. Screenplay is the
+// Draft strip's live TEMPLATE (same act, requestScreenplay); Plan is the mode strip's PLAN door (same act, openPlanBoard).
+// The same trusted press as clickDoor. Neither throws: a missing control is reported by the check that follows.
+const pressAt = async (app, elExpr) => {
+  const p = await hittablePointBy(app, elExpr);
   if (!p || !p.found) return false;
   await app.mouseMove(p.x, p.y);
   await sleep(60);
@@ -120,8 +117,14 @@ const clickTemplate = async (app, key) => {
   await sleep(300);
   return true;
 };
-// the page row's presence where each parked check measured it (PAGE-TEMPLATES-MOVE)
-const pageRowSeen = { typeNow: null, lang: null, esc: null, grammar: null };
+const clickScreenplayTemplate = async (app) => {
+  await app.click('Draft'); await sleep(400);
+  if (!(await app.evalJs("!!document.querySelector('.wz-sliver-templates')"))) await openSliver(app);
+  try { await app.waitFor("!!document.querySelector('.wz-sliver-templates')", { label: 'templates section', timeout: 3000 }); } catch { /* reported below */ }
+  return pressAt(app, `document.querySelector('.wz-template-live[data-template="screenplay"]')`);
+};
+const clickPlanBar = (app) => pressAt(app, `document.querySelector('.desk-mode-strip [data-page-plan-door]')`);
+let pageDoorsSeen = null;   // S2's reading of the page row, kept for its parked record (PAGE-TEMPLATES-MOVE)
 
 // BoardEditor's own board writes are DEBOUNCED (AUTOSAVE_MS = 2000) — a door
 // press mutates the live boxes immediately and the row reacts at once, but the
@@ -277,12 +280,13 @@ await withHarness(async (app) => {
   // S1 — a paired plan board takes OPEN's row (no plan-board branch exists).
   // ==========================================================================
   await freshPage(app, 'bg1-plan-parent', '', LAPTOP_W, 900);
-  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: the page's Beginnings row is retired; templates live in
-  // the tools menu). Kept VERBATIM and no longer run. The same act is the strip's Plan template; the S1 check below is unchanged.
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: the page row keeps ONE door, Sprout, on a
+  // blank Free Write page; Screenplay is the Draft strip's live template; Plan stays on the PLAN bar only). Kept VERBATIM and
+  // no longer run. The same act is the PLAN bar's door; the S1 check below is unchanged.
   //
   // await clickDoor(app, 'plan');
   // ------------------------------------------------------------------
-  await clickTemplate(app, 'plan');
+  await clickPlanBar(app);
   await app.waitFor("!!document.querySelector('.board-canvas, .board-projection')", { label: 'paired plan board mounted' });
   await sleep(350);
   const planBoardDoors = await doorLabels(app);
@@ -295,32 +299,24 @@ await withHarness(async (app) => {
   // ==========================================================================
   await freshPage(app, 'bg1-type-now', '', LAPTOP_W, 900);
   const pageDoors = await doorLabels(app);
-  pageRowSeen.typeNow = await rowPresent(app);
-  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: the page's Beginnings row is retired; templates live in
-  // the tools menu). Kept VERBATIM and no longer run. The three are the strip's templates (page-templates.mjs T1); parked record below.
+  pageDoorsSeen = pageDoors;
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: the page row keeps ONE door, Sprout, on a
+  // blank Free Write page; Screenplay is the Draft strip's live template; Plan stays on the PLAN bar only). Kept VERBATIM and
+  // no longer run. Parked record in the HARNESS_PARKED block below; the successor follows.
   //
   // ok('S2: a zero-word page renders the three start-words — Screenplay · Sprout · Plan (P1 amendment 2; "Sprout" supersedes "Start from a Spark")',
   //   JSON.stringify(pageDoors) === JSON.stringify(['Screenplay', 'Sprout', 'Plan']), JSON.stringify(pageDoors));
   // ------------------------------------------------------------------
+  ok('S2 [page-templates successor]: a zero-word Free Write page renders ONE start-word, Sprout (Screenplay is the Draft strip\'s template, Plan is the PLAN bar\'s door)',
+    JSON.stringify(pageDoors) === JSON.stringify(['Sprout']), JSON.stringify(pageDoors));
 
-  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: the page's Beginnings row is retired; templates live in
-  // the tools menu). Kept VERBATIM and no longer run. Its first half survives as the successor below; the row half has nothing to measure (parked record below).
-  //
-  // const caretLive = await app.evalJs(`(() => {
-  //   const ed = document.querySelector('.forward-only-editor');
-  //   const active = document.activeElement;
-  //   return { focused: !!ed && (ed === active || ed.contains(active)), rowEvents: getComputedStyle(document.querySelector('.wz-beginnings')).pointerEvents };
-  // })()`);
-  // ok('S2: the caret is LIVE under the row from the first frame — the editor already holds focus with nothing clicked, and the row itself is pointer-events:none so it can never intercept it',
-  //   caretLive.focused === true && caretLive.rowEvents === 'none', JSON.stringify(caretLive));
-  // ------------------------------------------------------------------
-  const caretLiveNow = await app.evalJs(`(() => {
+  const caretLive = await app.evalJs(`(() => {
     const ed = document.querySelector('.forward-only-editor');
     const active = document.activeElement;
-    return { focused: !!ed && (ed === active || ed.contains(active)) };
+    return { focused: !!ed && (ed === active || ed.contains(active)), rowEvents: getComputedStyle(document.querySelector('.wz-beginnings')).pointerEvents };
   })()`);
-  ok('S2 [page-templates successor]: the caret is LIVE from the first frame — the editor already holds focus with nothing clicked, and no row exists to intercept it',
-    caretLiveNow.focused === true && pageRowSeen.typeNow === false, JSON.stringify({ ...caretLiveNow, row: pageRowSeen.typeNow }));
+  ok('S2: the caret is LIVE under the row from the first frame — the editor already holds focus with nothing clicked, and the row itself is pointer-events:none so it can never intercept it',
+    caretLive.focused === true && caretLive.rowEvents === 'none', JSON.stringify(caretLive));
 
   // Type immediately, without ever touching the row.
   await app.typeKeys('Straight to the words');
@@ -337,21 +333,15 @@ await withHarness(async (app) => {
   ok('S2: a page that already has words never renders the row at all',
     (await rowPresent(app)) === false);
 
-  await freshPage(app, 'bg1-lang', '', LAPTOP_W, 900);
-  pageRowSeen.lang = await rowPresent(app);
-  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: the page's Beginnings row is retired; templates live in
-  // the tools menu). Kept VERBATIM and no longer run. There is no page row to read or dismiss: the language check is falsified (empty text is not clean), and the Esc check would now pass on NOTHING, so it is parked rather than left green and blind. Live successor for Esc on an empty page: escexit.mjs S4 [page-templates successor]. Parked records below.
-  //
-  // const pageLang = await (async () => { await freshPage(app, 'bg1-lang', '', LAPTOP_W, 900); return rowLanguageClean(app); })();
-  // ok('S2/S3: the page row counts nothing and claims no completion either — same grammar, same silence',
-  //   pageLang.clean, pageLang.text);
-  //
-  // // Esc dismisses.
-  // await app.key('Escape');
-  // await sleep(250);
-  // ok('S2: Esc dismisses the row (and the page is still a page — the editor is untouched)',
-  //   (await rowPresent(app)) === false && (await app.evalJs("!!document.querySelector('.forward-only-editor')")) === true);
-  // ------------------------------------------------------------------
+  const pageLang = await (async () => { await freshPage(app, 'bg1-lang', '', LAPTOP_W, 900); return rowLanguageClean(app); })();
+  ok('S2/S3: the page row counts nothing and claims no completion either — same grammar, same silence',
+    pageLang.clean, pageLang.text);
+
+  // Esc dismisses.
+  await app.key('Escape');
+  await sleep(250);
+  ok('S2: Esc dismisses the row (and the page is still a page — the editor is untouched)',
+    (await rowPresent(app)) === false && (await app.evalJs("!!document.querySelector('.forward-only-editor')")) === true);
 
   // ==========================================================================
   // S2 — Sprout: deck-drawn, never model-drawn; never insertable.
@@ -369,12 +359,7 @@ await withHarness(async (app) => {
     XMLHttpRequest.prototype.open = function (...a) { window.__bg1Net++; return open.apply(this, a); };
     if (window.WebSocket) { const W = window.WebSocket; window.WebSocket = function (...a) { window.__bg1Net++; return new W(...a); }; }
   })()`);
-  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: the page's Beginnings row is retired; templates live in
-  // the tools menu). Kept VERBATIM and no longer run. The same act is the strip's Sprout template; the Sprout checks below are unchanged.
-  //
-  // await clickDoor(app, 'sprout');
-  // ------------------------------------------------------------------
-  await clickTemplate(app, 'sprout');
+  await clickDoor(app, 'sprout');
   const sprouted = await app.evalJs(`({
     prompt: (document.querySelector('.fl-prompt')?.textContent || '').trim(),
     row: !!document.querySelector('.wz-beginnings'),
@@ -403,12 +388,13 @@ await withHarness(async (app) => {
   // an empty page (no modal).
   // ==========================================================================
   await freshPage(app, 'bg1-screenplay', '', LAPTOP_W, 900);
-  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: the page's Beginnings row is retired; templates live in
-  // the tools menu). Kept VERBATIM and no longer run. The same act is the strip's Screenplay template; the check below is unchanged.
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: the page row keeps ONE door, Sprout, on a
+  // blank Free Write page; Screenplay is the Draft strip's live template; Plan stays on the PLAN bar only). Kept VERBATIM and
+  // no longer run. The same act is the Draft strip's Screenplay template; the check below is unchanged.
   //
   // await clickDoor(app, 'screenplay');
   // ------------------------------------------------------------------
-  await clickTemplate(app, 'screenplay');
+  await clickScreenplayTemplate(app);
   await sleep(500);
   const scripted = await app.evalJs(`({
     modal: !!document.querySelector('.structure-confirm-modal'),
@@ -423,12 +409,13 @@ await withHarness(async (app) => {
   // ==========================================================================
   await freshPage(app, 'bg1-plan-door', '', LAPTOP_W, 900);
   const planBefore = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').filter(e => e.pageType === 'board').length");
-  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: the page's Beginnings row is retired; templates live in
-  // the tools menu). Kept VERBATIM and no longer run. The same act is the strip's Plan template; the check below is unchanged.
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: the page row keeps ONE door, Sprout, on a
+  // blank Free Write page; Screenplay is the Draft strip's live template; Plan stays on the PLAN bar only). Kept VERBATIM and
+  // no longer run. The same act is the PLAN bar's door; the check below is unchanged.
   //
   // await clickDoor(app, 'plan');
   // ------------------------------------------------------------------
-  await clickTemplate(app, 'plan');
+  await clickPlanBar(app);
   await sleep(500);
   const planAfter = await app.evalJs(`({
     hash: location.hash,
@@ -443,19 +430,13 @@ await withHarness(async (app) => {
   // S3 — one grammar: one component, one vanish rule, two surfaces.
   // ==========================================================================
   await freshPage(app, 'bg1-grammar-page', '', LAPTOP_W, 900);
-  pageRowSeen.grammar = await rowPresent(app);
-  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: the page's Beginnings row is retired; templates live in
-  // the tools menu). Kept VERBATIM and no longer run. There is one surface left with a row - the board, whose grammar bg2.mjs S1 asserts live. Parked record below.
-  //
-  // await freshPage(app, 'bg1-grammar-page', '', LAPTOP_W, 900);
-  // const pageStyle = await app.evalJs(`(() => { const cs = getComputedStyle(document.querySelector('.wz-beginning'));
-  //   return { font: cs.fontFamily, size: cs.fontSize, color: cs.color, opacity: cs.opacity }; })()`);
-  // await freshBoard(app, 'bg1-grammar-board', [], LAPTOP_W, 900);
-  // const boardStyle = await app.evalJs(`(() => { const cs = getComputedStyle(document.querySelector('.wz-beginning'));
-  //   return { font: cs.fontFamily, size: cs.fontSize, color: cs.color, opacity: cs.opacity }; })()`);
-  // ok('S3: the board row and the page row ARE one component — identical computed type, size, color and resting weight on both surfaces',
-  //   JSON.stringify(pageStyle) === JSON.stringify(boardStyle), JSON.stringify({ pageStyle, boardStyle }));
-  // ------------------------------------------------------------------
+  const pageStyle = await app.evalJs(`(() => { const cs = getComputedStyle(document.querySelector('.wz-beginning'));
+    return { font: cs.fontFamily, size: cs.fontSize, color: cs.color, opacity: cs.opacity }; })()`);
+  await freshBoard(app, 'bg1-grammar-board', [], LAPTOP_W, 900);
+  const boardStyle = await app.evalJs(`(() => { const cs = getComputedStyle(document.querySelector('.wz-beginning'));
+    return { font: cs.fontFamily, size: cs.fontSize, color: cs.color, opacity: cs.opacity }; })()`);
+  ok('S3: the board row and the page row ARE one component — identical computed type, size, color and resting weight on both surfaces',
+    JSON.stringify(pageStyle) === JSON.stringify(boardStyle), JSON.stringify({ pageStyle, boardStyle }));
 
   // ==========================================================================
   // The 1366×768 leg — both rows' geometry at the small-laptop floor.
@@ -549,50 +530,32 @@ if (process.env.HARNESS_PARKED === '1') {
     // being pointer-events:none), but the DOORS, and the hit test at the caret
     // itself. Measured here: the caret sits at x~416, the leftmost door begins
     // at x~521, and elementFromPoint at the caret returns the editor.
-    // ---- PARKED AGAIN - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08): this BG2 park measured the page row's geometry,
-    // and the page row is retired, so its measurement has nothing to read. Kept VERBATIM and no longer run; the record that
-    // replaces it asserts the new truth at the same leg (no row on the empty page).
-    //
-    // await freshPage(app, 'bg1-parked-leg', '', LEG_W, LEG_H);
-    // const legNow = await app.evalJs(`(() => {
-    //   const row = document.querySelector('.wz-beginnings');
-    //   const ed = document.querySelector('.forward-only-editor');
-    //   const r = row.getBoundingClientRect(), e = ed.getBoundingClientRect();
-    //   const lineH = parseFloat(getComputedStyle(ed).lineHeight) || 29;
-    //   const caret = { x: e.left + 2, yTop: e.top, yBot: e.top + lineH };
-    //   const covering = [...document.querySelectorAll('.wz-beginning')].filter((b) => {
-    //     const d = b.getBoundingClientRect();
-    //     return d.left <= caret.x && d.right >= caret.x && d.top <= caret.yBot && d.bottom >= caret.yTop;
-    //   }).length;
-    //   const atCaret = document.elementFromPoint(caret.x + 1, caret.yTop + 8);
-    //   return { doorsCoveringCaret: covering, atCaret: (atCaret && atCaret.className || '').toString(),
-    //     rowLeft: Math.round(r.left), rowRight: Math.round(r.right), rowTop: Math.round(r.top),
-    //     rowBottom: Math.round(r.bottom), vw: innerWidth, vh: innerHeight };
-    // })()`);
-    // pok('PARKED (was "1366x768 leg: the page row sits BELOW the first line (the caret\'s own line stays clear of furniture) and fits the viewport whole") — BG2 S2 centers the row on the sheet per SV19, so first-line-relative geometry no longer applies; the CLAIM survives measured against the doors and the hit test: no door covers the caret, the caret point still hit-tests to the editor, and the row still fits the viewport whole; live successor: bg2.mjs',
-    //   legNow.doorsCoveringCaret === 0 && legNow.atCaret.includes('forward-only-editor') &&
-    //   legNow.rowLeft >= 0 && legNow.rowRight <= legNow.vw &&
-    //   legNow.rowTop >= 0 && legNow.rowBottom <= legNow.vh,
-    //   JSON.stringify(legNow));
-    // ------------------------------------------------------------------
     await freshPage(app, 'bg1-parked-leg', '', LEG_W, LEG_H);
-    const legRow = await app.evalJs("!!document.querySelector('.wz-beginnings')");
-    pok('PARKED (was "1366x768 leg: the page row sits BELOW the first line (the caret\'s own line stays clear of furniture) and fits the viewport whole"; first superseded by BG2 S2) — PAGE-TEMPLATES-MOVE retires the page\'s Beginnings row (Nick, 2026-10-08: templates live in the tools menu): there is no furniture on the empty page at the leg at all; live successor: page-templates.mjs',
-      legRow === false, `pageRow=${legRow}`);
+    const legNow = await app.evalJs(`(() => {
+      const row = document.querySelector('.wz-beginnings');
+      const ed = document.querySelector('.forward-only-editor');
+      const r = row.getBoundingClientRect(), e = ed.getBoundingClientRect();
+      const lineH = parseFloat(getComputedStyle(ed).lineHeight) || 29;
+      const caret = { x: e.left + 2, yTop: e.top, yBot: e.top + lineH };
+      const covering = [...document.querySelectorAll('.wz-beginning')].filter((b) => {
+        const d = b.getBoundingClientRect();
+        return d.left <= caret.x && d.right >= caret.x && d.top <= caret.yBot && d.bottom >= caret.yTop;
+      }).length;
+      const atCaret = document.elementFromPoint(caret.x + 1, caret.yTop + 8);
+      return { doorsCoveringCaret: covering, atCaret: (atCaret && atCaret.className || '').toString(),
+        rowLeft: Math.round(r.left), rowRight: Math.round(r.right), rowTop: Math.round(r.top),
+        rowBottom: Math.round(r.bottom), vw: innerWidth, vh: innerHeight };
+    })()`);
+    pok('PARKED (was "1366x768 leg: the page row sits BELOW the first line (the caret\'s own line stays clear of furniture) and fits the viewport whole") — BG2 S2 centers the row on the sheet per SV19, so first-line-relative geometry no longer applies; the CLAIM survives measured against the doors and the hit test: no door covers the caret, the caret point still hit-tests to the editor, and the row still fits the viewport whole; live successor: bg2.mjs',
+      legNow.doorsCoveringCaret === 0 && legNow.atCaret.includes('forward-only-editor') &&
+      legNow.rowLeft >= 0 && legNow.rowRight <= legNow.vw &&
+      legNow.rowTop >= 0 && legNow.rowBottom <= legNow.vh,
+      JSON.stringify(legNow));
 
-    // PAGE-TEMPLATES-MOVE (2026-10-08) - FIVE more parks, the page row's own checks, each asserting the new truth where the
-    // original measured it (the readings are taken in the live run above).
-    const succ = 'PAGE-TEMPLATES-MOVE retires the page\'s Beginnings row (Nick, 2026-10-08: templates live in the tools menu)';
-    pok(`PARKED (was "S2: a zero-word page renders the three start-words — Screenplay · Sprout · Plan (P1 amendment 2; \"Sprout\" supersedes \"Start from a Spark\")") — ${succ}; the three are the Draft strip's live templates; live successor: page-templates.mjs T1`,
-      pageRowSeen.typeNow === false, `pageRow=${pageRowSeen.typeNow}`);
-    pok(`PARKED (was "S2: the caret is LIVE under the row from the first frame — the editor already holds focus with nothing clicked, and the row itself is pointer-events:none so it can never intercept it") — ${succ}; live successor: S2 [page-templates successor] above`,
-      pageRowSeen.typeNow === false, `pageRow=${pageRowSeen.typeNow}`);
-    pok(`PARKED (was "S2/S3: the page row counts nothing and claims no completion either — same grammar, same silence") — ${succ}; the board row's language is still asserted live (S1)`,
-      pageRowSeen.lang === false, `pageRow=${pageRowSeen.lang}`);
-    pok(`PARKED (was "S2: Esc dismisses the row (and the page is still a page — the editor is untouched)") — ${succ}; with no row it would pass on nothing, so it is parked rather than left green and blind; live successor: escexit.mjs S4 [page-templates successor]`,
-      pageRowSeen.lang === false, `pageRow=${pageRowSeen.lang}`);
-    pok(`PARKED (was "S3: the board row and the page row ARE one component — identical computed type, size, color and resting weight on both surfaces") — ${succ}; one surface keeps a row, the board, whose grammar bg2.mjs S1 asserts live`,
-      pageRowSeen.grammar === false, `pageRow=${pageRowSeen.grammar}`);
+    // PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08) - ONE more park: the three start-words. Its record asserts the new truth
+    // where the original measured it (the reading is taken in the live run above).
+    pok('PARKED (was "S2: a zero-word page renders the three start-words — Screenplay · Sprout · Plan (P1 amendment 2; \"Sprout\" supersedes \"Start from a Spark\")") — PAGE-TEMPLATES-MOVE narrows the page row to ONE door, Sprout, on a blank Free Write page (Screenplay is the Draft strip\'s live template; Plan stays on the PLAN bar); live successors: S2 [page-templates successor] above, page-templates.mjs',
+      JSON.stringify(pageDoorsSeen) === JSON.stringify(['Sprout']), JSON.stringify(pageDoorsSeen));
     return parkedChecks;
   });
   // eslint-disable-next-line no-console
@@ -600,9 +563,9 @@ if (process.env.HARNESS_PARKED === '1') {
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE's parks (2026-10-08). Kept VERBATIM:
+    // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE's park (2026-10-08). Kept VERBATIM:
     // ? `\nBG1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green (BG2 is this file's first tenant; live successors in bg2.mjs).`
-    ? `\nBG1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green (BG2 is this file's first tenant; PAGE-TEMPLATES-MOVE its second: 5 page-row parks + the BG2 leg park re-parked).`
+    ? `\nBG1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green (BG2 is this file's first tenant, live successors in bg2.mjs; PAGE-TEMPLATES-MOVE its second, one park).`
     : `\nBG1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);

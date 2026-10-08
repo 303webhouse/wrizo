@@ -20,6 +20,7 @@ import { withHarness } from '../runtime-verify.mjs';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
 const checks = [];
+let c2Seen = null;   // C2's reading of the placeholders, kept for its parked record (PAGE-TEMPLATES-MOVE)
 const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass, detail }); console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? `  [${detail}]` : ''}`); };
 
 const stored = (app, id) => app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(x => x.id === ${JSON.stringify(id)})||{}).text ?? null`);
@@ -218,8 +219,15 @@ await withHarness(async (app) => {
     await app.click('Draft'); await sleep(300);
     await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(250);
     const tpl = await app.evalJs(`[...document.querySelectorAll('.wz-sliver-templates .wz-template-btn')].map(b => ({ name: b.getAttribute('aria-label'), title: b.title, disabled: b.getAttribute('aria-disabled'), opacity: getComputedStyle(b).opacity }))`);
-    ok('C2: Outline, Bibliography and Title page are dimmed stand-ins - aria-disabled, tooltip "Coming soon"',
-      tpl.map((b) => b.name).join(',') === 'Outline,Bibliography,Title page' && tpl.every((b) => b.disabled === 'true' && b.title === 'Coming soon' && Number(b.opacity) < 1), JSON.stringify(tpl));
+    c2Seen = tpl.map((b) => b.name);
+    // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order. Kept VERBATIM and no
+    // longer run; its parked record is in the HARNESS_PARKED block at the foot of this file, and its successor follows.
+    //
+    // ok('C2: Outline, Bibliography and Title page are dimmed stand-ins - aria-disabled, tooltip "Coming soon"',
+    //   tpl.map((b) => b.name).join(',') === 'Outline,Bibliography,Title page' && tpl.every((b) => b.disabled === 'true' && b.title === 'Coming soon' && Number(b.opacity) < 1), JSON.stringify(tpl));
+    // ------------------------------------------------------------------
+    ok('C2 [page-templates successor]: Outline, Title page, Bibliography and Custom are dimmed stand-ins, in that order - aria-disabled, tooltip "Coming soon"',
+      tpl.map((b) => b.name).join(',') === 'Outline,Title page,Bibliography,Custom' && tpl.every((b) => b.disabled === 'true' && b.title === 'Coming soon' && Number(b.opacity) < 1), JSON.stringify(tpl));
     const textBefore = await stored(app, id);
     await app.evalJs("document.querySelectorAll('.wz-sliver-templates .wz-template-btn').forEach(b => b.click())"); await sleep(300);
     ok('C2: pressing them does nothing to the page', (await stored(app, id)) === textBefore && (await app.evalJs(`!!document.querySelector('${ED}')`)));
@@ -294,6 +302,12 @@ await withHarness(async (app) => {
   }
 });
 
+// === PARKED - gated behind HARNESS_PARKED=1. ONE park: C2's placeholder roster, superseded by PAGE-TEMPLATES-MOVE (2026-10-08). ===
+if (process.env.HARNESS_PARKED === '1') {
+  checks.push({ name: 'PARKED (was "C2: Outline, Bibliography and Title page are dimmed stand-ins - aria-disabled, tooltip \"Coming soon\"") - PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order; live successor: C2 [page-templates successor]',
+    pass: JSON.stringify(c2Seen) === JSON.stringify(['Outline', 'Title page', 'Bibliography', 'Custom']), detail: JSON.stringify(c2Seen) });
+  console.log('\nITEM211 PARKED: 1 check (C2, the placeholder roster)');
+}
 const failed = checks.filter((c) => !c.pass);
 console.log(`\nITEM211 VERIFY: ${failed.length ? `FAIL — ${failed.length}/${checks.length} failed` : `PASS (${checks.length} checks)`}`);
 if (failed.length) process.exitCode = 1;

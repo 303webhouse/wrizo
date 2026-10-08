@@ -237,8 +237,8 @@ await withHarness(async (app) => {
   // ==========================================================================
   await freshDesk(app, LAPTOP_W, 900);
   await app.goto('/page/new?origin=loose');
-  // ---- PARKED driver steps - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: the page's Beginnings row is retired;
-  // templates live in the tools menu). Kept VERBATIM and no longer run. The same act (requestScreenplay) is the Draft strip's
+  // ---- PARKED driver steps - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: the page row has no Screenplay
+  // door; templates live in the tools menu). Kept VERBATIM and no longer run. The same act (requestScreenplay) is the Draft strip's
   // Screenplay template, so the S2 check below is unchanged; a missing template leaves it red rather than aborting the file.
   //
   // await app.waitFor("!!document.querySelector('[data-beginning=\"screenplay\"]')", { label: 'unborn page, Screenplay door' });

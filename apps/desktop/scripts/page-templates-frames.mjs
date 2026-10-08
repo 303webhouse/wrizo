@@ -1,5 +1,6 @@
-// PAGE-TEMPLATES-MOVE - THE FRAMES Fable asked for (2026-10-08): a blank page (dark and light), the Templates section with the
-// three live buttons, and the after-state of each template - on an empty page and on a page with words.
+// PAGE-TEMPLATES-MOVE - THE FRAMES Fable asked for (2026-10-08): a blank page (dark and light), the Templates section (Screenplay
+// live, then Outline, Title page, Bibliography, Custom), and the after-states: Screenplay on an empty page and on a page with words,
+// and Sprout - the blank Free Write page's one door (Nick's rulings, 2026-10-08).
 // NOT in harness/: run-suite runs every .mjs there, and this writes PNGs into the tracked tree. Frames, run by hand.
 // Run: node scripts/page-templates-frames.mjs   (from apps/desktop, dist-web built, box turn granted)
 // Output: docs/evidence/page-templates/<theme>/<frame>.png plus frames.json (one row per frame, with what the DOM said).
@@ -47,10 +48,8 @@ const pressTemplate = async (app, key) => {
   await app.mouseDown(pt.x, pt.y); await sleep(60); await app.mouseUp(pt.x, pt.y);
   return true;
 };
-const settle = async (app, key) => {
-  if (key === 'screenplay') await waitSoft(app, `!!document.querySelector('${SCRIPT}')`, { label: 'script' });
-  else if (key === 'plan') await waitSoft(app, "!!document.querySelector('.board-canvas')", { label: 'board' });
-  else await waitSoft(app, "!!document.querySelector('.fl-invite')", { label: 'invite' });
+const settle = async (app) => {
+  await waitSoft(app, `!!document.querySelector('${SCRIPT}')`, { label: 'script' });
   await sleep(900);
 };
 
@@ -72,30 +71,40 @@ await withHarness(async (app) => {
     await sleep(400);
     await shot(app, th.id, 'templates-section', { opened,
       buttons: await app.evalJs("[...document.querySelectorAll('.wz-sliver-templates button')].map(b => ({ name: b.getAttribute('aria-label'), live: b.classList.contains('wz-template-live') }))") });
-    // each template, on an empty page and on a page with words
-    for (const key of ['screenplay', 'sprout', 'plan']) {
-      await freshDesk(app, th.prefs);
-      await app.goto('/page/new?mode=draft');
-      await waitSoft(app, `!!document.querySelector('${ED}')`, { label: 'blank page, Draft' });
-      await sleep(500);
-      await openStrip(app);
-      const pressed = await pressTemplate(app, key);
-      await settle(app, key);
-      await shot(app, th.id, `after-${key}-empty-page`, { pressed });
+    // Screenplay, on an empty page and on a page with words
+    await freshDesk(app, th.prefs);
+    await app.goto('/page/new?mode=draft');
+    await waitSoft(app, `!!document.querySelector('${ED}')`, { label: 'blank page, Draft' });
+    await sleep(500);
+    await openStrip(app);
+    const pressed = await pressTemplate(app, 'screenplay');
+    await settle(app);
+    await shot(app, th.id, 'after-screenplay-empty-page', { pressed });
 
-      await freshDesk(app, th.prefs);
-      await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: `fr-${key}`, text: WORDS, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
-      await sleep(400);
-      await app.evalJs(`location.hash = '#/page/fr-${key}'`);
-      await waitSoft(app, `!!document.querySelector('${ED}')`, { label: 'page with words' });
-      await sleep(500);
-      await app.click('Draft'); await sleep(700);
-      await openStrip(app);
-      const pressed2 = await pressTemplate(app, key);
-      await settle(app, key);
-      await shot(app, th.id, `after-${key}-page-with-words`, { pressed: pressed2,
-        chip: await app.evalJs("document.querySelector('.wz-back-to-board')?.textContent.trim() ?? null") });
-    }
+    await freshDesk(app, th.prefs);
+    await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'fr-screenplay', text: WORDS, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
+    await sleep(400);
+    await app.evalJs("location.hash = '#/page/fr-screenplay'");
+    await waitSoft(app, `!!document.querySelector('${ED}')`, { label: 'page with words' });
+    await sleep(500);
+    await app.click('Draft'); await sleep(700);
+    await openStrip(app);
+    const pressed2 = await pressTemplate(app, 'screenplay');
+    await settle(app);
+    await shot(app, th.id, 'after-screenplay-page-with-words', { pressed: pressed2,
+      chip: await app.evalJs("document.querySelector('.wz-back-to-board')?.textContent.trim() ?? null") });
+
+    // Sprout: the blank Free Write page's one door, pressed
+    await freshDesk(app, th.prefs);
+    await app.goto('/page/new');
+    await waitSoft(app, "!!document.querySelector('.wz-beginning[data-beginning=\"sprout\"]')", { label: 'Sprout door' });
+    await sleep(500);
+    const spt = await app.evalJs(`(() => { const b = document.querySelector('.wz-beginning[data-beginning="sprout"]'); if (!b) return null;
+      const r = b.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
+    if (spt) { await app.mouseDown(spt.x, spt.y); await sleep(60); await app.mouseUp(spt.x, spt.y); }
+    await waitSoft(app, "!!document.querySelector('.fl-invite')", { label: 'invite' });
+    await sleep(700);
+    await shot(app, th.id, 'after-sprout-blank-free-write', { pressed: !!spt });
   }
   mkdirSync(OUT, { recursive: true });
   writeFileSync(join(OUT, 'frames.json'), JSON.stringify(rows, null, 2) + '\n');

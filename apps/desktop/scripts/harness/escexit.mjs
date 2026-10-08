@@ -4,14 +4,12 @@
 //   S2  from there the keyboard is free: Tab moves on, and focus is not dragged back into the editor
 //   S3  an open popup closes FIRST: with a rail panel open, Esc closes the panel and focus stays put; the next Esc leaves
 //   S4  the same for the empty page's beginnings row
-//       [PAGE-TEMPLATES-MOVE, 2026-10-08: the row is retired - S4 is parked; its successor proves the first Esc leaves an empty page]
 //   S5  Esc does not edit the page (stored text unchanged)
 // Run: node scripts/harness/escexit.mjs   (from apps/desktop, dist-web built, box turn granted)
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
-let s4HadRow = null;   // S4's reading of the empty page's row, kept for its parked records (PAGE-TEMPLATES-MOVE)
-const ok =(name, pass, detail = '') => checks.push({ name, pass, detail });
+const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
 const TEXT = 'A written line of prose.';
@@ -99,29 +97,17 @@ await withHarness(async (app) => {
   await sleep(400);
   const rowUp = () => app.evalJs("!!document.querySelector('.wz-beginnings') && document.querySelector('.wz-beginnings').getClientRects().length > 0");
   const hadRow = await rowUp();
-  s4HadRow = hadRow;
-  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: the page's Beginnings row is retired; templates live in
-  // the tools menu). Kept VERBATIM and no longer run: there is no row on an empty page to close. Parked record in the
-  // HARNESS_PARKED block below; the successor follows.
-  //
-  // ok('S4 (setup) an empty page shows its beginnings row', hadRow === true);
-  // await focusEditor(app);
-  // await armCloseTimer(app, '.wz-beginnings');
-  // await esc(app);
-  // const tRow = await closeTime(app);
-  // ok(`S4 THE ASSUMPTION, MEASURED: the beginnings row is gone inside the same ${SETTLE_MS} ms window`, tRow !== null && tRow >= 0 && tRow < SETTLE_MS, JSON.stringify({ msToClose: tRow, window: SETTLE_MS }));
-  // const b1 = await where(app);
-  // ok('S4 the first Esc dismisses the beginnings row and focus stays in the editor', (await rowUp()) === false && b1.inEditor === true, JSON.stringify(b1));
-  // await esc(app);
-  // const b2 = await where(app);
-  // ok('S4 the second Esc leaves for the current mode tab', !b2.inEditor && !!b2.modeKey && b2.active === true, JSON.stringify(b2));
-  // ------------------------------------------------------------------
-  ok('S4 [page-templates successor] (setup) an empty page shows NO beginnings row - nothing sits over it for Esc to close', hadRow === false);
-  const inEmpty = await focusEditor(app);
-  ok('S4 [page-templates successor] (setup) focus is in the empty page\'s editor', inEmpty === true);
+  ok('S4 (setup) an empty page shows its beginnings row', hadRow === true);
+  await focusEditor(app);
+  await armCloseTimer(app, '.wz-beginnings');
   await esc(app);
-  const b1s = await where(app);
-  ok('S4 [page-templates successor] with nothing open, the FIRST Esc leaves the empty page for the current mode tab', !b1s.inEditor && !!b1s.modeKey && b1s.active === true, JSON.stringify(b1s));
+  const tRow = await closeTime(app);
+  ok(`S4 THE ASSUMPTION, MEASURED: the beginnings row is gone inside the same ${SETTLE_MS} ms window`, tRow !== null && tRow >= 0 && tRow < SETTLE_MS, JSON.stringify({ msToClose: tRow, window: SETTLE_MS }));
+  const b1 = await where(app);
+  ok('S4 the first Esc dismisses the beginnings row and focus stays in the editor', (await rowUp()) === false && b1.inEditor === true, JSON.stringify(b1));
+  await esc(app);
+  const b2 = await where(app);
+  ok('S4 the second Esc leaves for the current mode tab', !b2.inEditor && !!b2.modeKey && b2.active === true, JSON.stringify(b2));
 
   // S6 - the hint: said to a screen reader, never drawn, and it moves nothing
   await openPage(app, 'e-hint', TEXT, 'Draft');
@@ -176,21 +162,6 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);
-// === PARKED - gated behind HARNESS_PARKED=1. FOUR parks: S4's beginnings-row checks, retired by PAGE-TEMPLATES-MOVE
-// (2026-10-08). Each record asserts the new truth - the empty page has no row - and points at the live successors (S4
-// [page-templates successor] above, page-templates.mjs). ===
-if (process.env.HARNESS_PARKED === '1') {
-  const gone = s4HadRow === false;
-  const succ = 'PAGE-TEMPLATES-MOVE retires the page\'s Beginnings row (Nick, 2026-10-08: templates live in the tools menu); live successors: S4 [page-templates successor], page-templates.mjs';
-  const parked = [
-    { name: `PARKED (was "S4 (setup) an empty page shows its beginnings row") - ${succ}`, pass: gone },
-    { name: `PARKED (was "S4 THE ASSUMPTION, MEASURED: the beginnings row is gone inside the same ${SETTLE_MS} ms window") - ${succ}; the 60 ms window stays measured by S3 (the rail panel)`, pass: gone },
-    { name: `PARKED (was "S4 the first Esc dismisses the beginnings row and focus stays in the editor") - ${succ}`, pass: gone },
-    { name: `PARKED (was "S4 the second Esc leaves for the current mode tab") - ${succ}; the FIRST Esc now leaves (no row to close)`, pass: gone },
-  ];
-  for (const c of parked) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}  [hadRow=${s4HadRow}]`);
-  console.log(`\nESCEXIT PARKED: ${parked.every((c) => c.pass) ? 'PASS' : 'FAIL'} (${parked.length} checks) - HARNESS_PARKED=1 armed; escexit parks FOUR: S4's beginnings-row checks, retired by PAGE-TEMPLATES-MOVE.`);
-}
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nESCEXIT VERIFY: PASS (${checks.length} checks)` : `\nESCEXIT VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);

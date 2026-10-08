@@ -1,11 +1,12 @@
-// PAGE-TEMPLATES-MOVE (Nick, 2026-10-08, through Fable): "templates live in the tools menu now". The new page's Beginnings row
-// (Screenplay / Sprout / Plan) is retired; the three are LIVE template buttons in the Draft strip's Templates section, ahead of the
-// three disabled placeholders (Outline, Bibliography, Title page), each running the same act its door ran.
-//   - On an EMPTY page (zero words) a template applies in place.
-//   - On a page WITH words it never touches the text: it opens a NEW page in the same home and finishes there, and the new page
-//     carries the "Back to <title>" chip to the page it left.
-//   - The board and projection rows are not templates and are unchanged.
-// Every read of storage is SETTLED (past the debounces). Buttons are found by data-template, never by label or index.
+// PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08, through Fable): "templates live in the tools menu now".
+//   1. The Draft strip's TEMPLATES read, in order: Screenplay (LIVE) - Outline - Title page - Bibliography - Custom, the last four
+//      grayed "Coming soon" (Custom is new). There is NO Sprout template and NO Plan template; Plan stays on the PLAN bar only.
+//   2. Templates live in Draft and later strips only, NEVER in Free Write.
+//   3. Sprout (the spark deck) stays the ONE door on a blank Free Write page, with the row's same vanish rule.
+//   4. Screenplay on a page WITH words opens a NEW screenplay page and never touches the text; the new page carries the
+//      "Back to <title>" chip. On an empty page it applies in place.
+// The board and projection rows are unchanged. Every read of storage is SETTLED. Buttons are found by data-template / data-
+// beginning key, never by label or index.
 // Run: node scripts/harness/page-templates.mjs   (from apps/desktop, dist-web built, box turn granted)
 import { withHarness } from '../runtime-verify.mjs';
 
@@ -15,7 +16,6 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ROWS_KEY = 'writer-studio-journal-entries';
 const ED = '.forward-only-editor';
 const SCRIPT = '.script-sheet, .script-page, .script-el';
-const KEYS = ['screenplay', 'sprout', 'plan'];
 const WORDS = 'Words already here on this page.';
 
 const freshDesk = async (app) => {
@@ -27,39 +27,40 @@ const freshDesk = async (app) => {
 };
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
 const rows = (app) => app.evalJs(`JSON.parse(localStorage.getItem(${JSON.stringify(ROWS_KEY)}) || '[]').filter(e => !e.deletedAt)
-  .map(e => ({ id: e.id, text: e.text, pageType: e.pageType || null, planBoardId: e.planBoardId || null, origin: e.origin ?? null, projectId: e.projectId ?? null }))`);
+  .map(e => ({ id: e.id, text: e.text, pageType: e.pageType || null, planBoardId: e.planBoardId || null, origin: e.origin ?? null }))`);
 const hash = (app) => app.evalJs('location.hash');
-const pageRow = (app) => app.evalJs("!!document.querySelector('.wz-beginnings')");
+const pageDoors = (app) => app.evalJs("[...document.querySelectorAll('.wz-beginnings .wz-beginning')].map(b => b.dataset.beginning)");
+const activeMode = (app) => app.evalJs("document.querySelector('.desk-mode-tab.active')?.getAttribute('data-mode-key') || null");
 const openStrip = async (app) => {
-  if (await app.evalJs("!!document.querySelector('.wz-sliver-templates')")) return true;
+  if (await app.evalJs("!!document.querySelector('.wz-sliver-body')")) return true;
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
-  return waitSoft(app, "!!document.querySelector('.wz-sliver-templates')", { label: 'templates section', timeout: 3000 });
+  return waitSoft(app, "!!document.querySelector('.wz-sliver-body')", { label: 'strip open', timeout: 3000 });
 };
 const strip = (app) => app.evalJs(`[...document.querySelectorAll('.wz-sliver-templates button')].map(b => ({
   live: b.classList.contains('wz-template-live'), key: b.dataset.template || null, name: b.getAttribute('aria-label'),
-  disabled: b.getAttribute('aria-disabled'), glyph: !!b.querySelector('svg') }))`);
-// press a live template with a real pointer, held long enough to read the press colour, then released ON the button
-const press = async (app, key) => {
-  const pt = await app.evalJs(`(() => { const b = document.querySelector('.wz-template-live[data-template="${key}"]'); if (!b) return null;
-    const r = b.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
+  title: b.title, disabled: b.getAttribute('aria-disabled'), glyph: !!b.querySelector('svg') }))`);
+const centreOf = (app, sel) => app.evalJs(`(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (!b) return null;
+  const r = b.getBoundingClientRect(); return r.width && r.height ? { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) } : null; })()`);
+// a real press, held long enough to read the press colour, released ON the button
+const press = async (app, sel) => {
+  const pt = await centreOf(app, sel);
   if (!pt) return { pressed: false };
   await app.mouseDown(pt.x, pt.y);
   await sleep(60);
-  const during = await app.evalJs(`(() => { const b = document.querySelector('.wz-template-live[data-template="${key}"]'); if (!b) return null;
-    const cs = getComputedStyle(b); return { color: cs.color, border: cs.borderTopColor,
-      brass: getComputedStyle(document.documentElement).getPropertyValue('--brass').trim() }; })()`);
+  const during = await app.evalJs(`(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (!b) return null;
+    const cs = getComputedStyle(b); return { color: cs.color, border: cs.borderTopColor }; })()`);
   await app.mouseUp(pt.x, pt.y);
   return { pressed: true, during };
 };
-// the brass token as an rgb() string, for comparing against computed colours
+const SCREENPLAY = '.wz-template-live[data-template="screenplay"]';
 const rgbOf = (app, cssColor) => app.evalJs(`(() => { const d = document.createElement('div'); d.style.color = ${JSON.stringify(cssColor)};
   document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; })()`);
-const blankDraft = async (app) => {
-  await app.goto('/page/new?mode=draft');
+const blank = async (app, q = '') => {
+  await app.goto(`/page/new${q}`);
   await waitSoft(app, `!!document.querySelector('${ED}')`, { label: 'unborn page' });
-  await sleep(500);
+  await sleep(600);
 };
-const seededDraft = async (app, id) => {
+const seeded = async (app, id) => {
   await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: WORDS, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
   await sleep(400);
   await app.evalJs(`location.hash = '#/page/${id}'`);
@@ -69,117 +70,95 @@ const seededDraft = async (app, id) => {
 };
 
 await withHarness(async (app) => {
-  // ===== T1 - the blank page: no row; the strip carries three live templates ahead of the three placeholders =====
+  // ===== T1 - a blank page in FREE WRITE: the row carries ONE door, Sprout; the strip carries NO templates =====
   await freshDesk(app);
-  await app.goto('/page/new');
-  await waitSoft(app, `!!document.querySelector('${ED}')`, { label: 'unborn page, default mode' });
-  await sleep(600);
-  ok('T1: a blank page (its default mode) shows NO beginnings row', (await pageRow(app)) === false, String(await pageRow(app)));
-  await blankDraft(app);
-  ok('T1: a blank page in Draft shows NO beginnings row', (await pageRow(app)) === false);
-  const opened = await openStrip(app);
-  const s = await strip(app);
-  ok('T1: the Templates section is reachable from the Draft strip', opened === true, JSON.stringify(s));
-  ok('T1: the section reads Screenplay, Sprout, Plan (live) then Outline, Bibliography, Title page (placeholders), in that order',
-    JSON.stringify(s.map((b) => b.name)) === JSON.stringify(['Screenplay', 'Sprout', 'Plan', 'Outline', 'Bibliography', 'Title page']), JSON.stringify(s.map((b) => b.name)));
-  ok('T1: the three templates are LIVE (not aria-disabled), keyed screenplay/sprout/plan, each with its glyph',
-    JSON.stringify(s.filter((b) => b.live).map((b) => b.key)) === JSON.stringify(KEYS) && s.filter((b) => b.live).every((b) => b.disabled === null && b.glyph), JSON.stringify(s));
-  ok('T1: the three placeholders are unchanged - still aria-disabled, still not live',
-    s.filter((b) => !b.live).length === 3 && s.filter((b) => !b.live).every((b) => b.disabled === 'true'), JSON.stringify(s.filter((b) => !b.live)));
-  const restColor = await app.evalJs("getComputedStyle(document.querySelector('.wz-template-live[data-template=\"sprout\"]')).color");
-  const brass = await rgbOf(app, 'var(--brass)');
-  ok('T1: a live template is NOT brass at rest (olive rests, brass is the press)', restColor !== brass, JSON.stringify({ restColor, brass }));
+  await blank(app);
+  const fwMode = await activeMode(app);
+  const fwDoors = await pageDoors(app);
+  ok('T1 [Free Write, blank page]: the page opens in Free Write (the premise of the next checks)', fwMode === 'freewrite', String(fwMode));
+  ok('T1 [Free Write, blank page]: the beginnings row offers ONE door, Sprout - no Screenplay door, no Plan door', JSON.stringify(fwDoors) === JSON.stringify(['sprout']), JSON.stringify(fwDoors));
+  const fwOpen = await openStrip(app);
+  const fwStrip = await app.evalJs("({ body: !!document.querySelector('.wz-sliver-body'), templates: !!document.querySelector('.wz-sliver-templates'), live: document.querySelectorAll('.wz-template-live').length })");
+  ok('T1 [Free Write]: the strip is OPEN (so the next check can see) and carries NO Templates section and no template button at all',
+    fwOpen === true && fwStrip.body === true && fwStrip.templates === false && fwStrip.live === 0, JSON.stringify(fwStrip));
 
-  // ===== T2 - each template on an EMPTY page applies in place =====
-  // Screenplay
-  await freshDesk(app);
-  await blankDraft(app);
+  // ===== T1 - a blank page in DRAFT: no row; the Templates read Screenplay (live), Outline, Title page, Bibliography, Custom =====
+  await blank(app, '?mode=draft');
+  ok('T1 [Draft, blank page]: the beginnings row is NOT drawn (Sprout is the blank Free Write page\'s door)', JSON.stringify(await pageDoors(app)) === '[]', JSON.stringify(await pageDoors(app)));
   await openStrip(app);
-  const sp = await press(app, 'screenplay');
-  ok('T2 brass: pressing a template turns it brass while held (the press, per the standing rule)',
+  const s = await strip(app);
+  ok('T1 [Draft]: the Templates read Screenplay, Outline, Title page, Bibliography, Custom - in that order, and nothing else',
+    JSON.stringify(s.map((b) => b.name)) === JSON.stringify(['Screenplay', 'Outline', 'Title page', 'Bibliography', 'Custom']), JSON.stringify(s.map((b) => b.name)));
+  ok('T1 [Draft]: Screenplay is the ONE live template (not aria-disabled, keyed screenplay, with its glyph) - there is no Sprout and no Plan template',
+    JSON.stringify(s.filter((b) => b.live).map((b) => b.key)) === JSON.stringify(['screenplay']) && s.filter((b) => b.live).every((b) => b.disabled === null && b.glyph)
+      && (await app.evalJs("!document.querySelector('[data-template=\"sprout\"], [data-template=\"plan\"]')")), JSON.stringify(s));
+  ok('T1 [Draft]: the four after it are grayed placeholders - aria-disabled, titled "Coming soon", each with its glyph',
+    s.filter((b) => !b.live).length === 4 && s.filter((b) => !b.live).every((b) => b.disabled === 'true' && b.title === 'Coming soon' && b.glyph), JSON.stringify(s.filter((b) => !b.live)));
+  ok('T1 [Draft]: Plan stays on the PLAN bar', (await app.evalJs("!!document.querySelector('.desk-mode-strip [data-page-plan-door]')")) === true);
+  const brass = await rgbOf(app, 'var(--brass)');
+  const rest = await app.evalJs(`getComputedStyle(document.querySelector(${JSON.stringify(SCREENPLAY)})).color`);
+  ok('T1 [Draft]: the live template is NOT brass at rest (olive rests, brass is the press)', rest !== brass, JSON.stringify({ rest, brass }));
+
+  // ===== T2 - Screenplay on an EMPTY page applies in place; brass on the press =====
+  await freshDesk(app);
+  await blank(app, '?mode=draft');
+  await openStrip(app);
+  const sp = await press(app, SCREENPLAY);
+  ok('T2: pressing the template turns it brass while held (the press, per the standing rule)',
     !!sp.during && sp.during.color === brass && sp.during.border === brass, JSON.stringify({ during: sp.during, brass }));
   await waitSoft(app, `!!document.querySelector('${SCRIPT}')`, { label: 'script surface (empty, in place)' });
   await sleep(700);
-  const r2s = await rows(app);
-  ok('T2 [screenplay, empty page]: applies IN PLACE - the surface becomes the script room and exactly ONE row exists, a script',
-    (await app.evalJs(`!!document.querySelector('${SCRIPT}')`)) && r2s.length === 1 && r2s[0].pageType === 'script', JSON.stringify({ rows: r2s, hash: await hash(app) }));
-  // Sprout
+  const r2 = await rows(app);
+  ok('T2 [Screenplay, empty page]: applies IN PLACE - the surface becomes the script room and exactly ONE row exists, a script',
+    (await app.evalJs(`!!document.querySelector('${SCRIPT}')`)) && r2.length === 1 && r2[0].pageType === 'script', JSON.stringify({ rows: r2, hash: await hash(app) }));
+
+  // ===== T3 - Sprout on a blank Free Write page: the same door, the same vanish rule =====
   await freshDesk(app);
-  await blankDraft(app);
-  await openStrip(app);
+  await blank(app);
   const h0 = await hash(app);
-  await press(app, 'sprout');
-  await sleep(700);
-  ok('T2 [sprout, empty page]: applies IN PLACE - the first-line invitation shows on THIS page, and nothing is written',
-    (await app.evalJs("!!document.querySelector('.fl-invite')")) && (await hash(app)) === h0 && (await rows(app)).length === 0,
-    JSON.stringify({ invite: await app.evalJs("!!document.querySelector('.fl-invite')"), before: h0, after: await hash(app), rows: await rows(app) }));
-  // Plan
+  const sprout = await press(app, '.wz-beginning[data-beginning="sprout"]');
+  await sleep(600);
+  const sprouted = await app.evalJs("({ invite: !!document.querySelector('.fl-invite'), row: !!document.querySelector('.wz-beginnings') })");
+  ok('T3 [Sprout, blank Free Write page]: the door draws the first-line invitation on THIS page, the row goes, and nothing is written',
+    sprout.pressed && sprouted.invite && !sprouted.row && (await hash(app)) === h0 && (await rows(app)).length === 0, JSON.stringify({ sprouted, h0, now: await hash(app), rows: await rows(app) }));
   await freshDesk(app);
-  await blankDraft(app);
-  await openStrip(app);
-  await press(app, 'plan');
-  await waitSoft(app, "!!document.querySelector('.board-canvas')", { label: 'plan board (empty, in place)' });
-  await sleep(800);
-  const r2p = await rows(app);
-  const page2p = r2p.find((r) => r.pageType !== 'board');
-  ok('T2 [plan, empty page]: applies IN PLACE - THIS page is born and paired with its plan board, and the writer is on the board',
-    !!page2p && !!page2p.planBoardId && r2p.some((r) => r.id === page2p.planBoardId && r.pageType === 'board') && (await hash(app)).includes(page2p.planBoardId) && r2p.length === 2,
-    JSON.stringify({ rows: r2p, hash: await hash(app) }));
-
-  // ===== T3 - each template on a page WITH WORDS opens a NEW page and never rewrites this one =====
-  for (const key of KEYS) {
-    await freshDesk(app);
-    const id = `tpl-${key}`;
-    await seededDraft(app, id);
-    await openStrip(app);
-    const before = await rows(app);
-    const r = await press(app, key);
-    if (key === 'screenplay') await waitSoft(app, `!!document.querySelector('${SCRIPT}')`, { label: 'new script page' });
-    else if (key === 'plan') await waitSoft(app, "!!document.querySelector('.board-canvas')", { label: 'new plan board' });
-    else await waitSoft(app, "!!document.querySelector('.fl-invite')", { label: 'new page with the invitation' });
-    await sleep(900);
-    const after = await rows(app);
-    const orig = after.find((e) => e.id === id);
-    const fresh = after.filter((e) => !before.some((b) => b.id === e.id));
-    const where = await hash(app);
-    ok(`T3 [${key}, page with words]: the current page is UNTOUCHED - same text, still prose, no plan pairing`,
-      r.pressed && !!orig && orig.text === WORDS && orig.pageType === null && orig.planBoardId === null, JSON.stringify({ orig, pressed: r.pressed }));
-    if (key === 'screenplay') {
-      const made = fresh.find((e) => e.pageType === 'script');
-      ok('T3 [screenplay, page with words]: a NEW script page is opened (one new row, a script, in the same home) and the writer is on it',
-        fresh.length === 1 && !!made && made.origin === 'loose' && where.includes(made.id) && (await app.evalJs(`!!document.querySelector('${SCRIPT}')`)),
-        JSON.stringify({ fresh, where }));
-    } else if (key === 'sprout') {
-      ok('T3 [sprout, page with words]: a NEW page opens with the invitation, and like any new page it writes nothing until the first word',
-        fresh.length === 0 && where.startsWith('#/page/new') && (await app.evalJs("!!document.querySelector('.fl-invite')")), JSON.stringify({ fresh, where }));
-    } else {
-      const page = fresh.find((e) => e.pageType !== 'board');
-      const board = fresh.find((e) => e.pageType === 'board');
-      ok('T3 [plan, page with words]: a NEW page is born and paired with a NEW plan board, and the writer is on that board',
-        fresh.length === 2 && !!page && !!board && page.planBoardId === board.id && page.text === '' && page.origin === 'loose' && where.includes(board.id),
-        JSON.stringify({ fresh, where }));
-    }
-    // the way back (not for Plan: the board is reached through the new page, and is reported as such)
-    if (key !== 'plan') {
-      const chip = await app.evalJs("(() => { const b = document.querySelector('.wz-back-to-board'); return b ? b.textContent.trim() : null; })()");
-      ok(`T3 [${key}]: the new page carries a one-tap way back that names the page left ("Back to ${WORDS.slice(0, 20)}...")`,
-        typeof chip === 'string' && chip.includes('Back to') && chip.includes(WORDS.slice(0, 20)), JSON.stringify(chip));
-      await app.evalJs("document.querySelector('.wz-back-to-board')?.click()");
-      await waitSoft(app, `location.hash === '#/page/${id}' && !!document.querySelector('${ED}')`, { label: 'back on the original page' });
-      await sleep(600);
-      const back = await app.evalJs(`({ hash: location.hash, text: (document.querySelector('${ED}')?.textContent || '').replace(/\\u200b/g, '') })`);
-      ok(`T3 [${key}]: the chip returns to the original page, its words intact`, back.hash === `#/page/${id}` && back.text.includes(WORDS), JSON.stringify(back));
-    }
-  }
-
-  // ===== T4 - the typing path is untouched: a blank page still births on the first word =====
-  await freshDesk(app);
-  await blankDraft(app);
+  await blank(app);
+  const rowBefore = JSON.stringify(await pageDoors(app));
   await app.evalJs(`document.querySelector('${ED}')?.focus()`);
   await app.typeKeys('First words.');
+  await sleep(400);
+  ok('T3 [vanish rule]: the first keystroke on a blank Free Write page takes the row away', rowBefore === '["sprout"]' && JSON.stringify(await pageDoors(app)) === '[]', JSON.stringify({ rowBefore, after: await pageDoors(app) }));
   await waitSoft(app, `JSON.parse(localStorage.getItem(${JSON.stringify(ROWS_KEY)}) || '[]').some(e => (e.text || '').includes('First words.'))`, { label: 'birth on the first word', timeout: 4000 });
   const born = (await rows(app)).filter((e) => (e.text || '').includes('First words.'));
-  ok('T4: a blank page still births on the first word and saves what was typed (no row interfered with it)', born.length === 1 && born[0].text === 'First words.', JSON.stringify(born));
+  ok('T3 [typing path untouched]: the page births on the first word and saves exactly what was typed', born.length === 1 && born[0].text === 'First words.', JSON.stringify(born));
+
+  // ===== T4 - Screenplay on a page WITH words opens a NEW page and never rewrites this one; the chip returns =====
+  await freshDesk(app);
+  const id = 'tpl-screenplay';
+  await seeded(app, id);
+  await openStrip(app);
+  const before = await rows(app);
+  const r = await press(app, SCREENPLAY);
+  await waitSoft(app, `!!document.querySelector('${SCRIPT}')`, { label: 'new script page' });
+  await sleep(900);
+  const after = await rows(app);
+  const orig = after.find((e) => e.id === id);
+  const fresh = after.filter((e) => !before.some((b) => b.id === e.id));
+  const where = await hash(app);
+  ok('T4 [Screenplay, page with words]: the current page is UNTOUCHED - same text, still prose',
+    r.pressed && !!orig && orig.text === WORDS && orig.pageType === null, JSON.stringify({ orig, pressed: r.pressed }));
+  const made = fresh.find((e) => e.pageType === 'script');
+  ok('T4 [Screenplay, page with words]: a NEW script page opens (one new row, a script, in the same home) and the writer is on it',
+    fresh.length === 1 && !!made && made.origin === 'loose' && where.includes(made.id) && (await app.evalJs(`!!document.querySelector('${SCRIPT}')`)), JSON.stringify({ fresh, where }));
+  const chip = await app.evalJs("(() => { const b = document.querySelector('.wz-back-to-board'); return b ? b.textContent.trim() : null; })()");
+  ok(`T4: the new page carries a one-tap way back that names the page left ("Back to ${WORDS.slice(0, 20)}...")`,
+    typeof chip === 'string' && chip.includes('Back to') && chip.includes(WORDS.slice(0, 20)), JSON.stringify(chip));
+  const chipPt = await centreOf(app, '.wz-back-to-board');
+  if (chipPt) { await app.mouseDown(chipPt.x, chipPt.y); await app.mouseUp(chipPt.x, chipPt.y); }
+  await waitSoft(app, `location.hash === '#/page/${id}' && !!document.querySelector('${ED}')`, { label: 'back on the original page' });
+  await sleep(600);
+  const back = await app.evalJs(`({ hash: location.hash, text: (document.querySelector('${ED}')?.textContent || '').replace(/\\u200b/g, '') })`);
+  ok('T4: the chip returns to the original page, its words intact', back.hash === `#/page/${id}` && back.text.includes(WORDS), JSON.stringify(back));
 
   // ===== T5 - the board's row is unchanged =====
   await freshDesk(app);
@@ -190,8 +169,6 @@ await withHarness(async (app) => {
   const doors = await app.evalJs("[...document.querySelectorAll('.wz-beginning')].map(n => n.dataset.beginning)");
   ok('T5: an empty user board still shows its Beginnings row with its own four doors (newCard, newPageCard, loadDeck, connectPage)',
     JSON.stringify(doors) === JSON.stringify(['newCard', 'newPageCard', 'loadDeck', 'connectPage']), JSON.stringify(doors));
-  ok('T5: and the board offers no page templates (Screenplay/Sprout/Plan are not board doors)',
-    Array.isArray(doors) && !doors.some((k) => KEYS.includes(k)), JSON.stringify(doors));
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);

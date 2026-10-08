@@ -134,10 +134,10 @@ export type SliverContent =
       onPickKind?: (next: PageKindSetting) => void;
       styleGuide?: StyleGuide;
       onPickStyleGuide?: (next: StyleGuide) => void;
-      // PAGE-TEMPLATES-MOVE (Nick, 2026-10-08) - the page's Beginnings (Screenplay, Sprout, Plan) live here now, as LIVE
-      // template buttons ahead of the disabled placeholders. The host owns what each one does (on an empty page it applies in
-      // place; on a page with words it opens a new page), so the strip only renders and calls.
-      templates?: { key: 'screenplay' | 'sprout' | 'plan'; label: string; onApply: () => void }[];
+      // PAGE-TEMPLATES-MOVE (Nick, 2026-10-08) - Screenplay is a LIVE template here, ahead of the disabled placeholders (Sprout
+      // stays the blank Free Write page's door; Plan stays on the PLAN bar). The host owns what it does (on an empty page it
+      // applies in place; on a page with words it opens a new page), so the strip only renders and calls.
+      templates?: { key: 'screenplay'; label: string; onApply: () => void }[];
     }
   // AB4 S5 — the Board's own hand tool(s). FX4 S6 — the Connect toggle
   // RETIRES (replaced by BoardEditor.tsx's own handle-drag thread gesture:
@@ -561,13 +561,17 @@ function BulletControl({ onFormat, t }: { onFormat: (action: FormatAction) => vo
   );
 }
 
-function TemplateIcon({ kind }: { kind: 'outline' | 'bibliography' | 'title' }) {
+function TemplateIcon({ kind }: { kind: 'outline' | 'bibliography' | 'title' | 'custom' }) {
   const svg = { width: 16, height: 16, viewBox: '0 0 16 16', 'aria-hidden': true as const, fill: 'none', stroke: 'currentColor', strokeWidth: 1.3, strokeLinecap: 'round' as const, className: 'wz-format-mark' };
   if (kind === 'outline') {
     return <svg {...svg}><path d="M3 3h10M5 7h8M7 11h6M3 15h8" /></svg>;
   }
   if (kind === 'bibliography') {
     return <svg {...svg}><path d="M3 2.5v11M4.2 2.5h8.3v11H4.2zM6.2 5.5h4.5M6.2 8h4.5M6.2 10.5h3" /></svg>;
+  }
+  if (kind === 'custom') {
+    // a page with a plus: a template the writer makes
+    return <svg {...svg}><path d="M3.5 2.5h6l3 3v8h-9zM8 7.2v4M6 9.2h4" /></svg>;
   }
   return <svg {...svg}><path d="M3.5 2.5h9v11h-9zM6 6.2h4" /></svg>;
 }
@@ -725,9 +729,11 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
                 <span className="wz-format-mark" aria-hidden="true">{BEGINNING_GLYPH[tpl.key]}</span>
               </button>
             ))}
+            {/* Nick's order (2026-10-08): Screenplay, then Outline, Title Page, Bibliography and Custom, still coming soon. */}
             <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateOutline')}><TemplateIcon kind="outline" /></button>
-            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateBibliography')}><TemplateIcon kind="bibliography" /></button>
             <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateTitlePage')}><TemplateIcon kind="title" /></button>
+            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateBibliography')}><TemplateIcon kind="bibliography" /></button>
+            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateCustom')}><TemplateIcon kind="custom" /></button>
           </div>
         </div>
       )}

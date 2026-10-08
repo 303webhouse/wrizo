@@ -46,6 +46,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+let s2bTemplatesSeen = null;   // S2 (b)'s stand-in count, kept for its parked record (PAGE-TEMPLATES-MOVE)
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -124,8 +125,16 @@ await withHarness(async (app) => {
   //   `activeMode=${String(draftMode)} structureSectionPresent=${structureInDraft}`);
   // ----------------------------------------------------------------------
   const draftTemplates = await app.evalJs("document.querySelectorAll('.wz-sliver-templates .wz-template-btn').length");
-  ok('S2 (b) [PR #7 successor]: Draft has no Structure presets either - the zone left the drawer; its place holds the three Template stand-ins, so the drawer itself is present',
-    draftMode === 'Draft' && structureInDraft === false && draftTemplates === 3,
+  s2bTemplatesSeen = draftTemplates;
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order: FOUR stand-ins now,
+  // not three. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
+  //
+  // ok('S2 (b) [PR #7 successor]: Draft has no Structure presets either - the zone left the drawer; its place holds the three Template stand-ins, so the drawer itself is present',
+  //   draftMode === 'Draft' && structureInDraft === false && draftTemplates === 3,
+  //   `activeMode=${String(draftMode)} structureSectionPresent=${structureInDraft} templates=${draftTemplates}`);
+  // ------------------------------------------------------------------
+  ok('S2 (b) [page-templates successor]: Draft has no Structure presets either - the zone left the drawer; its place holds the FOUR Template stand-ins, so the drawer itself is present',
+    draftMode === 'Draft' && structureInDraft === false && draftTemplates === 4,
     `activeMode=${String(draftMode)} structureSectionPresent=${structureInDraft} templates=${draftTemplates}`);
 
   // ==========================================================================
@@ -201,6 +210,9 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // PAGE-TEMPLATES-MOVE (2026-10-08) - S2 (b)'s stand-in count, read in the live run above.
+  pok('PARKED (was "S2 (b) [PR #7 successor]: Draft has no Structure presets either - the zone left the drawer; its place holds the three Template stand-ins, so the drawer itself is present") - PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order; live successor: S2 (b) [page-templates successor]',
+    s2bTemplatesSeen === 4, `templates=${s2bTemplatesSeen}`);
   // ITEM 87 CLAUSE 1 — PARKED 2026-08-17 on Nick amendment. These four are not
   // wrong about what they measured; the DESIGN they measured has been superseded
   // by a New Page chooser (menus arc). Records byte-frozen. No live successor in
@@ -213,7 +225,10 @@ if (process.env.HARNESS_PARKED === '1') {
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   // eslint-disable-next-line no-console
+  // ---- the count line below is stale (it said 0 while four records stood above it) and is kept verbatim; PAGE-TEMPLATES-MOVE
+  // adds a fifth record, and a corrected count follows it.
   console.log('\nITEM87 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 87 parks nothing: Free Write never seeds the typewriter (so every "fresh page ON" record is untouched), and clause 1 is additive (so CD1 S8/A7 stands unreversed). The empty list is the evidence, not an omission.');
+  console.log(`ITEM87 PARKED (corrected): ${parkedChecks.every((c) => c.pass) ? 'PASS' : 'FAIL'} (${parkedChecks.length} checks) - the four item 87 clause-1 records plus PAGE-TEMPLATES-MOVE's S2 (b) stand-in count.`);
 }
 
 const pass = checks.every((c) => c.pass);

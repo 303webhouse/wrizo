@@ -81,8 +81,8 @@ const clickScreenplayDoor = (app) => app.evalJs(
 const beginningKeys = (app) => app.evalJs(
   "[...document.querySelectorAll('.wz-beginning')].map(n => n.dataset.beginning)");
 
-// PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: "templates live in the tools menu now") - the page's Beginnings row is retired and its
-// Screenplay door is the Draft strip's live Screenplay TEMPLATE, running the same act (requestScreenplay). Found by its stable
+// PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: "templates live in the tools menu now") - the page row keeps only Sprout, on a
+// blank Free Write page, and its Screenplay door is the Draft strip's live Screenplay TEMPLATE, running the same act (requestScreenplay). Found by its stable
 // data-template key; the strip is opened first if it is shut. Never throws: a missing template is a red check, not an abort.
 const openStrip = async (app) => {
   if (!(await app.evalJs("!!document.querySelector('.wz-sliver-templates')"))) await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
@@ -109,8 +109,8 @@ await withHarness(async (app) => {
   await sleep(300);
   const doorPresent = await beginningKeys(app);
   s1DoorsSeen = doorPresent;
-  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: the page's Beginnings row is retired; templates live in
-  // the tools menu). Kept VERBATIM and no longer run; its parked record (row absent) is in the HARNESS_PARKED block below, and
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: the page row keeps only Sprout, on a blank Free
+  // Write page; templates live in the tools menu). Kept VERBATIM and no longer run; its parked record (row absent) is in the HARNESS_PARKED block below, and
   // its successor is the next check.
   //
   // ok('S1 (a) — the unborn page offers the Screenplay door (Nick\'s "template icon")',
@@ -158,8 +158,8 @@ await withHarness(async (app) => {
   await app.evalJs(`location.hash = '#/page/${bornId}'`);
   await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'born prose page' });
   await sleep(400);
-  // ---- PARKED driver step - SUPERSEDED by PAGE-TEMPLATES-MOVE (2026-10-08). Kept VERBATIM and no longer run: the page row is
-  // retired. The same act runs from the strip's Screenplay template, which lives in DRAFT (the row showed in any mode), so the
+  // ---- PARKED driver step - SUPERSEDED by PAGE-TEMPLATES-MOVE (2026-10-08). Kept VERBATIM and no longer run: the page row has
+  // no Screenplay door. The same act runs from the strip's Screenplay template, which lives in DRAFT (the row showed in any mode), so the
   // successor switches to Draft first; `doorsOnBorn` now holds the TEMPLATES offered, and the S2 check below is unchanged.
   //
   // const doorsOnBorn = await beginningKeys(app);
@@ -356,16 +356,16 @@ console.log(JSON.stringify(checks, null, 2));
 
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
-  // PAGE-TEMPLATES-MOVE (2026-10-08) - ONE park: S1 (a), the page row's Screenplay door. Its record asserts the new truth (no
-  // page row on the unborn page); its live successor is S1 (a) [template successor] above, and page-templates.mjs.
-  parkedChecks.push({ name: 'PARKED (was "S1 (a) — the unborn page offers the Screenplay door (Nick\'s \\"template icon\\")") — PAGE-TEMPLATES-MOVE retires the page\'s Beginnings row (Nick, 2026-10-08: templates live in the tools menu); live successors: S1 (a) [template successor], page-templates.mjs',
-    pass: Array.isArray(s1DoorsSeen) && s1DoorsSeen.length === 0, detail: `doors=${JSON.stringify(s1DoorsSeen)}` });
+  // PAGE-TEMPLATES-MOVE (2026-10-08) - ONE park: S1 (a), the page row's Screenplay door. Its record asserts the new truth (the
+  // page row offers no Screenplay door); its live successor is S1 (a) [template successor] above, and page-templates.mjs.
+  parkedChecks.push({ name: 'PARKED (was "S1 (a) — the unborn page offers the Screenplay door (Nick\'s \\"template icon\\")") — PAGE-TEMPLATES-MOVE moves Screenplay off the page row to the Draft strip\'s live template (Nick\'s rulings, 2026-10-08); live successors: S1 (a) [template successor], page-templates.mjs',
+    pass: Array.isArray(s1DoorsSeen) && !s1DoorsSeen.includes('screenplay'), detail: `doors=${JSON.stringify(s1DoorsSeen)}` });
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   // ---- PARKED - SUPERSEDED by the park above (2026-10-08): this line printed a hardcoded PASS for zero parks. Kept VERBATIM.
   // console.log('\nITEM104 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 104 parks nothing: no committed assertion covered the unborn surface\'s dispatch, which is why a door that never opened its room survived to a founder session.');
   // eslint-disable-next-line no-console
-  console.log(`\nITEM104 PARKED: ${parkedChecks.every((c) => c.pass) ? 'PASS' : 'FAIL'} (${parkedChecks.length} check) — HARNESS_PARKED=1 armed; item 104 parks ONE: S1 (a), the page row's Screenplay door, retired by PAGE-TEMPLATES-MOVE.`);
+  console.log(`\nITEM104 PARKED: ${parkedChecks.every((c) => c.pass) ? 'PASS' : 'FAIL'} (${parkedChecks.length} check) — HARNESS_PARKED=1 armed; item 104 parks ONE: S1 (a), the page row's Screenplay door, moved to the Draft strip by PAGE-TEMPLATES-MOVE.`);
 }
 
 const pass = checks.every((c) => c.pass);
