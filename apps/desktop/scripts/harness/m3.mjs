@@ -262,11 +262,12 @@ await withHarness(async (app) => {
     //   ok('Live: the saturated live ground makes ZERO paper violations', g.paperHit === 0, ...);
     //   ok('Live: the saturated live ground ROAMS — ...', margins, ...);
     // 2500 of these words is 17239 characters, 288 line-equivalents, and 288 is
-    // an exact multiple of the default 24-line goal — the new lap is empty.
-    // The old check wanted a near-saturated ~570. Empty is the proof the
-    // driver is the goal lap.
-    ok('Live: SUPERSEDED->rhizome-goal — 2500 words lands on an exact 24-line lap boundary, so the ground is empty rather than word-saturated',
-      !g.error && g.count === 0, JSON.stringify({ count: g.count }));
+    // an exact multiple of the default 24-line goal — the new lap has started
+    // and exactly one segment of the finished pattern remains. The old check
+    // wanted a near-saturated ~570. One survivor is the proof the driver is
+    // the goal lap.
+    ok('Live: SUPERSEDED->rhizome-goal — 2500 words lands on an exact 24-line lap boundary, so one survivor remains rather than a word-saturated ground',
+      !g.error && g.count === 1, JSON.stringify({ count: g.count }));
     const onPage = await app.evalJs("!!document.querySelector('.wz-rhizome-onpage')");
     ok('Live: SUPERSEDED->rhizome-goal — roots do not portal onto the page',
       onPage === false, JSON.stringify({ count: g.count, onPage }));

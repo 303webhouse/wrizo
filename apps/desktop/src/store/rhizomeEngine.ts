@@ -361,6 +361,10 @@ export interface GrowToOptions {
   hardCap?: number;
   lenMin?: number;
   lenMax?: number;
+  // Goal-fill only. The first segment of an empty field may root once.
+  // Every segment after that starts at an existing node. Omitted keeps the
+  // M3 multi-origin roam (m2/m3/m4 call growTo without this flag).
+  connected?: boolean;
 }
 
 // Euclidean distance from a point to an axis-aligned rect (0 if inside).
@@ -466,12 +470,165 @@ export function originsAwake(target: number): number {
   return Math.min(ORIGIN_COUNT, Math.floor(ORIGIN_COUNT * Math.max(0, target) / CAP_SEGMENTS) + 1);
 }
 
+function keepOuts(geo: RhizomeGeometry): RhizomeRect[] {
+  const walls: RhizomeRect[] = [];
+  if (geo.avoidPaper !== false) walls.push(geo.paper);
+  if (geo.obstacles) for (const r of geo.obstacles) walls.push(r);
+  return walls;
+}
+
+function pointInKeepOut(x: number, y: number, geo: RhizomeGeometry): boolean {
+  for (const r of keepOuts(geo)) if (inRect(x, y, r)) return true;
+  return false;
+}
+
+// Move a root that landed in a keep-out to the nearest stage-legal point
+// just outside it. The paper's own bottom-center is that case for the first
+// segment: the clear band around the sheet contains it, and the edge below
+// the sheet is often off the stage, so the escape prefers a side that stays
+// on stage. A point already outside is returned unchanged.
+function escapeKeepOut(p: RhizomePoint, geo: RhizomeGeometry): RhizomePoint {
+  const walls = keepOuts(geo);
+  let pt = clampToStage(p, geo);
+  for (let pass = 0; pass < 8; pass++) {
+    const hit = walls.find(r => inRect(pt.x, pt.y, r));
+    if (!hit) return pt;
+    const raw = [
+      { x: hit.right + STAGE_PAD, y: pt.y },
+      { x: hit.left - STAGE_PAD, y: pt.y },
+      { x: pt.x, y: hit.top - STAGE_PAD },
+      { x: pt.x, y: hit.bottom + STAGE_PAD },
+    ];
+    let best: RhizomePoint | null = null;
+    let bestD = Infinity;
+    for (const candidate of raw) {
+      const c = clampToStage(candidate, geo);
+      if (Math.hypot(c.x - candidate.x, c.y - candidate.y) > 0.5) continue;
+      if (walls.some(r => inRect(c.x, c.y, r))) continue;
+      const d = Math.hypot(c.x - p.x, c.y - p.y);
+      if (d < bestD) { bestD = d; best = c; }
+    }
+    if (best) return best;
+    const cx = (hit.left + hit.right) / 2;
+    const cy = (hit.top + hit.bottom) / 2;
+    const dx = pt.x - cx;
+    const dy = pt.y - cy;
+    const mag = Math.hypot(dx, dy) || 1;
+    pt = clampToStage({ x: pt.x + (dx / mag) * 24, y: pt.y + (dy / mag) * 24 }, geo);
+  }
+  return pt;
+}
+
+function appendSegment(state: RhizomeState, tip: RhizomePoint, resolved: { point: RhizomePoint; angle: number }, shootId: number, isNew: boolean): RhizomeState {
+  const segment: RhizomeSegment = {
+    id: state.nextSegmentId, shootId,
+    x1: tip.x, y1: tip.y, x2: resolved.point.x, y2: resolved.point.y,
+    ...(shootIsThick(shootId) ? { thick: true } : {}),
+  };
+  const shoot: ShootTip = { id: shootId, x: resolved.point.x, y: resolved.point.y, angle: resolved.angle };
+  const shoots = isNew
+    ? [...state.shoots, shoot]
+    : state.shoots.map(sh => (sh.id === shootId ? shoot : sh));
+  return {
+    segments: [...state.segments, segment],
+    shoots,
+    nextSegmentId: state.nextSegmentId + 1,
+    nextShootId: isNew ? state.nextShootId + 1 : state.nextShootId,
+    eventIndex: state.eventIndex + 1,
+  };
+}
+
+// One connected segment. An empty field roots once, outside every keep-out.
+// After that, the new segment starts at a node already on the network: a
+// live tip, or either endpoint of an older segment (a mid-branch fork).
+// A tip that cannot leave its corner is skipped; the next try forks from
+// an older node, including past the shoot cap, and never plants a new origin.
+function growConnected(state: RhizomeState, rng: () => number, geo: RhizomeGeometry, origins: RhizomePoint[], opts?: GrowToOptions): RhizomeState {
+  const shootCap = opts?.shootCap ?? CAP_SHOOTS;
+  const lenMin = opts?.lenMin ?? SEG_MIN;
+  const lenMax = opts?.lenMax ?? SEG_MAX;
+
+  if (state.segments.length === 0) {
+    const tip = escapeKeepOut(origins[0] ?? { x: geo.width / 2, y: geo.height / 2 }, geo);
+    if (pointInKeepOut(tip.x, tip.y, geo)) return state;
+    for (let attempt = 0; attempt < 24; attempt++) {
+      const len = lenMin + rng() * (lenMax - lenMin);
+      const angle = rng() * 360;
+      const resolved = resolveSegment(tip, angle, len, geo);
+      if (!resolved || pointInKeepOut(resolved.point.x, resolved.point.y, geo)) continue;
+      if (Math.hypot(resolved.point.x - tip.x, resolved.point.y - tip.y) < 1) continue;
+      return appendSegment(state, tip, resolved, state.nextShootId, true);
+    }
+    return state;
+  }
+
+  for (let attempt = 0; attempt < 36; attempt++) {
+    const len = lenMin + rng() * (lenMax - lenMin);
+    const boxed = attempt >= 8;
+    const atCap = state.shoots.length >= shootCap && !boxed;
+    const fork = state.shoots.length === 0 || boxed || (!atCap && rng() < BRANCH_CHANCE);
+    let tip: RhizomePoint;
+    let angle: number;
+    let shootId: number;
+    let isNew: boolean;
+    if (!fork) {
+      const sh = state.shoots[Math.floor(rng() * state.shoots.length)];
+      tip = { x: sh.x, y: sh.y };
+      angle = sh.angle + (rng() * 2 - 1) * DRIFT_DEG;
+      shootId = sh.id;
+      isNew = false;
+    } else {
+      const seg = state.segments[Math.floor(rng() * state.segments.length)];
+      const useStart = boxed ? rng() < 0.75 : rng() < 0.5;
+      tip = useStart ? { x: seg.x1, y: seg.y1 } : { x: seg.x2, y: seg.y2 };
+      angle = rng() * 360;
+      shootId = state.nextShootId;
+      isNew = true;
+    }
+    if (pointInKeepOut(tip.x, tip.y, geo)) continue;
+    const resolved = resolveSegment(tip, angle, len, geo);
+    if (!resolved || pointInKeepOut(resolved.point.x, resolved.point.y, geo)) continue;
+    if (Math.hypot(resolved.point.x - tip.x, resolved.point.y - tip.y) < 1) continue;
+    return appendSegment(state, tip, resolved, shootId, isNew);
+  }
+  return state;
+}
+
+// The segment a finished lap leaves behind. A separate hash, so the pick
+// does not consume the growth PRNG. The same seed and the same finished
+// pattern always keep the same segment.
+export function pickLapSurvivor(segments: RhizomeSegment[], seed: string): RhizomeSegment {
+  const rng = mulberry32(hashSeed(seed));
+  const i = Math.min(segments.length - 1, Math.floor(rng() * segments.length));
+  return segments[i];
+}
+
+// One segment, both endpoints, and a shoot at its far end so the next lap
+// can only grow from this survivor.
+export function stateFromSurvivor(seg: RhizomeSegment): RhizomeState {
+  const kept: RhizomeSegment = {
+    id: 0, shootId: 0,
+    x1: seg.x1, y1: seg.y1, x2: seg.x2, y2: seg.y2,
+    ...(seg.thick ? { thick: true } : {}),
+  };
+  const angle = (Math.atan2(seg.y2 - seg.y1, seg.x2 - seg.x1) * 180) / Math.PI;
+  return {
+    segments: [kept],
+    shoots: [{ id: 0, x: seg.x2, y: seg.y2, angle }],
+    nextSegmentId: 1,
+    nextShootId: 1,
+    eventIndex: 1,
+  };
+}
+
 // Add exactly ONE segment. Up to `maxOrigins` distinct origins each ROOT a shoot
 // (the blue-noise scatter, sequenced by S1); once the awake origins are rooted,
 // growth branches (~BRANCH_CHANCE) or extends a live shoot exactly as M2's
 // growOne does. Returns the SAME state reference on an honest skip (the
 // resolveSegment paper-corner case) so growTo can retry with fresh draws.
+// `connected` (goal-fill) replaces that roam with one network; see growConnected.
 function growSegment(state: RhizomeState, rng: () => number, geo: RhizomeGeometry, origins: RhizomePoint[], maxOrigins: number, opts?: GrowToOptions): RhizomeState {
+  if (opts?.connected === true) return growConnected(state, rng, geo, origins, opts);
   const shootCap = opts?.shootCap ?? CAP_SHOOTS;
   const lenMin = opts?.lenMin ?? SEG_MIN;
   const lenMax = opts?.lenMax ?? SEG_MAX;
@@ -591,6 +748,6 @@ if (typeof window !== 'undefined') {
     // M3 — the roam + saturation, exposed so m3.mjs proves them against the
     // real algorithm (the same seam discipline as above).
     seedOrigins, saturationTarget, growTo, originsAwake, SAT_K, ORIGIN_COUNT,
-    goalFillTarget, FILL_SEGMENTS, FILL_SHOOTS,
+    goalFillTarget, FILL_SEGMENTS, FILL_SHOOTS, pickLapSurvivor, stateFromSurvivor,
   };
 }

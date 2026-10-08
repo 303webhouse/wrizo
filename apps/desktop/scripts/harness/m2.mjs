@@ -275,12 +275,20 @@ await withHarness(async (app) => {
     // the fill, not one event-segment. Original:
     //   ok('Origin: the very first typed word produces exactly one segment', segs.length === 1, JSON.stringify(segs));
     ok('Origin: SUPERSEDED->rhizome-goal — the first line grows a lap-fraction of the fill (more than one segment)', segs.length > 1, String(segs.length));
-    const expectedX = (report.paper.left + report.paper.right) / 2;
-    const expectedY = report.paper.bottom;
     const first = segs[0];
-    ok('Origin: the first segment roots AT the measured origin (paper bottom-center, stage-relative) — within 1.5px',
-      first && Math.abs(first.x1 - expectedX) < 1.5 && Math.abs(first.y1 - expectedY) < 1.5,
-      JSON.stringify({ first, expectedX, expectedY }));
+    const dist = first && report.paper ? (() => {
+      const dx = Math.max(report.paper.left - first.x1, 0, first.x1 - report.paper.right);
+      const dy = Math.max(report.paper.top - first.y1, 0, first.y1 - report.paper.bottom);
+      return Math.hypot(dx, dy);
+    })() : 0;
+    // SUPERSEDED 2026-10-08, rhizome-goal.mjs. The goal lap's first root sits
+    // outside the sheet and the clear band. The paper's bottom edge is inside
+    // that band, so a 1.5px check against it no longer describes the field.
+    // Original:
+    //   ok('Origin: the first segment roots AT the measured origin (paper bottom-center, stage-relative) — within 1.5px',
+    //     first && Math.abs(first.x1 - expectedX) < 1.5 && Math.abs(first.y1 - expectedY) < 1.5, ...);
+    ok('Origin: SUPERSEDED->rhizome-goal — the first segment roots outside the sheet (clear band), not on the paper edge',
+      first && dist >= 40, JSON.stringify({ first, paper: report.paper, dist }));
   }
 
   // ==========================================================================

@@ -3,6 +3,7 @@ import { useWritingSettings } from '../store/writingSettings';
 import { useWritingGoal, goalCount } from '../store/writingGoal';
 import {
   mulberry32, hashSeed, createRhizomeState, seedOrigins, growTo, goalFillTarget,
+  pickLapSurvivor, stateFromSurvivor,
   FILL_SEGMENTS, FILL_SHOOTS, FILL_LEN_MIN, FILL_LEN_MAX,
   type RhizomeState, type RhizomeGeometry, type RhizomePoint, type RhizomeRect, type RhizomeSegment, type GrowToOptions,
 } from '../store/rhizomeEngine';
@@ -43,16 +44,18 @@ import {
 // Goal-fill (2026-10-07). Coverage is the current lap of the writer's own
 // goal (store/writingGoal.ts — words or lines, whatever they set), not a
 // fixed word count. Fraction 1 fills the ground; crossing the goal flashes
-// the network brass and then clears it for the next lap. A 100-word goal
-// and a 1000-word goal both arrive full at the same moment: the goal.
-// Roots stay in the desk ground around the sheet. They do not cross the
-// page, a card, a board, a popout, the left rail, or the header. The corner
-// logo is not a keep-out. pointer-events stay none. The page rect is not a
+// the network brass, then clears it except one segment. The next lap grows
+// only from that survivor. A 100-word goal and a 1000-word goal both arrive
+// full at the same moment: the goal. Every segment after the first of the
+// first lap starts on the network already drawn. Roots stay in the desk
+// ground around the sheet. They do not cross the page, the clear band, a
+// card, a board, a popout, the left rail, or the header. The corner logo
+// is not a keep-out. pointer-events stay none. The page rect is not a
 // layout participant.
 const SESSION_START = Date.now(); // frozen once per app-load/session (S2: "session-scoped")
 
-// The reward holds the full network in brass, then the field is cleared.
-// Same 1200ms family the old ember flash used; the paint is --brass now.
+// The reward holds the full network in brass, then every segment but one
+// is cleared. Same 1200ms family the old ember flash used; the paint is --brass now.
 const FLASH_MS = 1200;
 
 // Roots stop this far short of the sheet. The network lives in the ground
@@ -81,6 +84,7 @@ const FILL_OPTS: GrowToOptions = {
   hardCap: FILL_SEGMENTS,
   lenMin: FILL_LEN_MIN,
   lenMax: FILL_LEN_MAX,
+  connected: true,
 };
 
 // Stable chrome the roots route around. The corner logo (.brand-mark) is
@@ -147,16 +151,16 @@ function measure(svg: SVGSVGElement, paper: HTMLElement): { geo: RhizomeGeometry
     bottom: sheet.bottom + PAGE_CLEAR,
   };
   const obstacles = rectsInStage(STABLE_CHROME, stageRect);
-  // Growth avoids the sheet itself. The paint hole is the sheet plus the
-  // clear margin, so a stroke that reaches the edge still does not draw
-  // on the page or in the band around it. Inflating the growth rect would
-  // push the first origin off the stage and grow nothing.
+  // Growth avoids the sheet and the clear band. The band is an obstacle,
+  // not the paper rect: inflating `paper` itself pushes the first origin
+  // off the stage and grows nothing. The paint hole is the same band, so
+  // a stroke that reaches the edge still does not draw on the page.
   return {
     geo: {
       width: stageRect.width,
       height: stageRect.height,
       paper: sheet,
-      obstacles,
+      obstacles: [kept, ...obstacles],
     },
     holes: [kept, ...obstacles, ...rectsInStage(LIVE_CHROME, stageRect)],
     // S2's own origin: "the horizontal midpoint of the progress row's own
@@ -182,6 +186,22 @@ function measure(svg: SVGSVGElement, paper: HTMLElement): { geo: RhizomeGeometry
 // paper's top band (invisible — the field is z-beneath the paper — but a real
 // gap in "the roam avoids the paper"). 1px, not 0, so sub-pixel measurement
 // jitter can never thrash a rebuild.
+function saltLap(salt: string): number {
+  const lap = Number(salt.split(':')[2]);
+  return Number.isFinite(lap) && lap > 0 ? Math.floor(lap) : 0;
+}
+
+function saltWithLap(salt: string, lap: number): string {
+  const parts = salt.split(':');
+  return `${parts[0]}:${parts[1]}:${lap}`;
+}
+
+function lapSalt(goalKey: string, count: number): string {
+  const n = Number(goalKey.split(':')[0]);
+  const lap = Number.isFinite(n) && n > 0 ? Math.floor(count / n) : 0;
+  return `${goalKey}:${lap}`;
+}
+
 function rectMoved(a: RhizomeRect, b: RhizomeRect): boolean {
   return Math.abs(a.left - b.left) > 1 || Math.abs(a.top - b.top) > 1
     || Math.abs(a.right - b.right) > 1 || Math.abs(a.bottom - b.bottom) > 1;
@@ -274,7 +294,24 @@ export function RhizomeField({ text, seedKey, paperRef }: {
     setFieldSize(prev => (Math.abs(prev.w - w) < 1 && Math.abs(prev.h - h) < 1 ? prev : { w, h }));
   }, []);
 
+  // The lap before this one, grown to the cap, leaves exactly one segment.
+  // Replaying it from the salt (not from whatever is on screen) keeps a
+  // resize and a reload on the same session deterministic.
+  const carrySurvivor = useCallback((geo: RhizomeGeometry, salt: string): RhizomeState => {
+    const lap = saltLap(salt);
+    if (lap <= 0) return createRhizomeState();
+    const prevSalt = saltWithLap(salt, lap - 1);
+    const prevRng = mulberry32(hashSeed(`${seedKey}:${SESSION_START}:${prevSalt}`));
+    const prevOrigins = seedOrigins(prevRng, geo);
+    const prevStart = carrySurvivor(geo, prevSalt);
+    const prev = growTo(prevStart, prevRng, geo, prevOrigins, FILL_SEGMENTS, FILL_OPTS);
+    if (prev.segments.length === 0) return createRhizomeState();
+    const kept = pickLapSurvivor(prev.segments, `${seedKey}:${SESSION_START}:${prevSalt}:survivor`);
+    return stateFromSurvivor(kept);
+  }, [seedKey]);
+
   const rebuild = useCallback((geo: RhizomeGeometry, target: number, salt: string, mask: RhizomeRect[]) => {
+    const start = carrySurvivor(geo, salt);
     const rng = mulberry32(hashSeed(`${seedKey}:${SESSION_START}:${salt}`));
     rngRef.current = rng;
     const origins = seedOrigins(rng, geo);
@@ -283,10 +320,10 @@ export function RhizomeField({ text, seedKey, paperRef }: {
     builtSaltRef.current = salt;
     saltRef.current = salt;
     paintMask(mask, geo.width, geo.height);
-    const next = growTo(createRhizomeState(), rng, geo, origins, target, FILL_OPTS);
+    const next = growTo(start, rng, geo, origins, target, FILL_OPTS);
     stateRef.current = next;
     setState(next);
-  }, [seedKey, paintMask]);
+  }, [seedKey, paintMask, carrySurvivor]);
 
   const syncField = useCallback(() => {
     if (!active || holdFlashRef.current) return;
@@ -314,7 +351,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
     builtSaltRef.current = null;
     prevCountRef.current = null;
     seenGoalRef.current = null;
-    saltRef.current = `${goalKeyRef.current}:0`;
+    saltRef.current = lapSalt(goalKeyRef.current, countRef.current);
     holdFlashRef.current = false;
     if (flashTimerRef.current) { clearTimeout(flashTimerRef.current); flashTimerRef.current = null; }
     const fresh = createRhizomeState();
@@ -329,7 +366,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
     if (seenGoalRef.current !== goalKey) {
       seenGoalRef.current = goalKey;
       prevCountRef.current = count;
-      saltRef.current = `${goalKey}:0`;
+      saltRef.current = lapSalt(goalKey, count);
       builtGeoRef.current = null;
       syncRef.current();
       return;
@@ -354,10 +391,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
       flashTimerRef.current = setTimeout(() => {
         setFlash(false);
         holdFlashRef.current = false;
-        const g = goalKeyRef.current;
-        const goalN = Number(g.split(':')[0]);
-        const lap = goalN > 0 ? Math.floor(countRef.current / goalN) : 0;
-        saltRef.current = `${g}:${lap}`;
+        saltRef.current = lapSalt(goalKeyRef.current, countRef.current);
         builtGeoRef.current = null;
         syncRef.current();
       }, FLASH_MS);
