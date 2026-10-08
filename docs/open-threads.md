@@ -24927,3 +24927,12 @@ the box is idle, this desk clears the grant and logs the open time.
 turn comes after INK’s walk.** **MERGE NOTE from FIX:** its `item211` park block and the card port’s WALK park both land at
 `item211.mjs`’s foot — **keep BOTH blocks when they conflict** (an append-append: both sides unedited).
 Box order: INK’s B10.1 walk, then FIX. B11 stays paused behind B10.1.
+
+## THE FIRST 30-MINUTE CHECK-IN: INK’S b101-walk GRANT CLEARED IDLE — 2026-10-08 (chat 1)
+
+**The standing rule, applied for the first time.** INK’s `b101-walk` grant (written `2026-10-08T18:13:57Z`) was checked at
+`18:44:08Z`, age 30 minutes: **0 harness node processes, 0 `ws-runtime-verify` browsers, 0 headless browsers of any kind; no
+new push on `b101-defence` (tip still `bab6f4f`); no “box done” received.** INK’s local rig is up (listeners on :3113 and
+:3121, as ruled), which is a server and front, not a browser walk. **CLEARED at `18:44:19Z` — the grant was open ~30 minutes.**
+If INK’s walk has not run, or ran and was not reported, INK asks again; a cleared grant makes its guard refuse cleanly, it
+cannot strand a run. *(Nothing was mid-run to strand: the only open question is whether the walk happened.)*
