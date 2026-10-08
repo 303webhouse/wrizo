@@ -147,11 +147,15 @@ function measure(svg: SVGSVGElement, paper: HTMLElement): { geo: RhizomeGeometry
     bottom: sheet.bottom + PAGE_CLEAR,
   };
   const obstacles = rectsInStage(STABLE_CHROME, stageRect);
+  // Growth avoids the sheet itself. The paint hole is the sheet plus the
+  // clear margin, so a stroke that reaches the edge still does not draw
+  // on the page or in the band around it. Inflating the growth rect would
+  // push the first origin off the stage and grow nothing.
   return {
     geo: {
       width: stageRect.width,
       height: stageRect.height,
-      paper: kept,
+      paper: sheet,
       obstacles,
     },
     holes: [kept, ...obstacles, ...rectsInStage(LIVE_CHROME, stageRect)],
