@@ -31,10 +31,13 @@ const rows = (app) => app.evalJs(`JSON.parse(localStorage.getItem(${JSON.stringi
 const hash = (app) => app.evalJs('location.hash');
 const pageDoors = (app) => app.evalJs("[...document.querySelectorAll('.wz-beginnings .wz-beginning')].map(b => b.dataset.beginning)");
 const activeMode = (app) => app.evalJs("document.querySelector('.desk-mode-tab.active')?.getAttribute('data-mode-key') || null");
+// OPEN means the strip's own state, `.wz-sliver[data-open="true"]` - NOT that its body or a section is in the DOM: the body stays
+// mounted while the drawer is shut, so a presence test reads "open" on a closed strip (the 33b5a80 turn's frames showed exactly that,
+// and every real press then landed on a closed drawer).
 const openStrip = async (app) => {
-  if (await app.evalJs("!!document.querySelector('.wz-sliver-body')")) return true;
+  if (await app.evalJs(`!!document.querySelector(".wz-sliver[data-open='true']")`)) return true;
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
-  return waitSoft(app, "!!document.querySelector('.wz-sliver-body')", { label: 'strip open', timeout: 3000 });
+  return waitSoft(app, `!!document.querySelector(".wz-sliver[data-open='true']")`, { label: 'strip open', timeout: 3000 });
 };
 const strip = (app) => app.evalJs(`[...document.querySelectorAll('.wz-sliver-templates button')].map(b => ({
   live: b.classList.contains('wz-template-live'), key: b.dataset.template || null, name: b.getAttribute('aria-label'),
@@ -86,7 +89,7 @@ await withHarness(async (app) => {
   ok('T1 [Free Write, blank page]: the page opens in Free Write (the premise of the next checks)', fwMode === 'freewrite', String(fwMode));
   ok('T1 [Free Write, blank page]: the beginnings row offers ONE door, Sprout - no Screenplay door, no Plan door', JSON.stringify(fwDoors) === JSON.stringify(['sprout']), JSON.stringify(fwDoors));
   const fwOpen = await openStrip(app);
-  const fwStrip = await app.evalJs("({ body: !!document.querySelector('.wz-sliver-body'), templates: !!document.querySelector('.wz-sliver-templates'), live: document.querySelectorAll('.wz-template-live').length })");
+  const fwStrip = await app.evalJs("({ body: !!document.querySelector(\".wz-sliver[data-open='true'] .wz-sliver-body\"), templates: !!document.querySelector('.wz-sliver-templates'), live: document.querySelectorAll('.wz-template-live').length })");
   ok('T1 [Free Write]: the strip is OPEN (so the next check can see) and carries NO Templates section and no template button at all',
     fwOpen === true && fwStrip.body === true && fwStrip.templates === false && fwStrip.live === 0, JSON.stringify(fwStrip));
 

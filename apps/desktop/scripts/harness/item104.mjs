@@ -84,9 +84,12 @@ const beginningKeys = (app) => app.evalJs(
 // PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: "templates live in the tools menu now") - the page row keeps only Sprout, on a
 // blank Free Write page, and its Screenplay door is the Draft strip's live Screenplay TEMPLATE, running the same act (requestScreenplay). Found by its stable
 // data-template key; the strip is opened first if it is shut. Never throws: a missing template is a red check, not an abort.
+// OPEN means the strip's own state, `.wz-sliver[data-open="true"]` - NOT that its body or a section is in the DOM: the body stays
+// mounted while the drawer is shut, so a presence test reads "open" on a closed strip (the 33b5a80 turn's frames showed exactly that,
+// and every real press then landed on a closed drawer).
 const openStrip = async (app) => {
-  if (!(await app.evalJs("!!document.querySelector('.wz-sliver-templates')"))) await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
-  await waitSoft(app, "!!document.querySelector('.wz-sliver-templates')", { label: 'templates section', timeout: 3000 });
+  if (!(await app.evalJs(`!!document.querySelector(".wz-sliver[data-open='true']")`))) await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await waitSoft(app, `!!document.querySelector(".wz-sliver[data-open='true']")`, { label: 'strip open', timeout: 3000 });
 };
 const templateKeys = async (app) => {
   await openStrip(app);

@@ -37,9 +37,12 @@ const shot = async (app, theme, name, extra = {}) => {
   rows.push({ theme, frame: name, file: `${theme}/${file}`, hash: await app.evalJs('location.hash'),
     beginningsRow: await app.evalJs("!!document.querySelector('.wz-beginnings')"), ...extra });
 };
+// OPEN means the strip's own state, `.wz-sliver[data-open="true"]` - NOT that its body or a section is in the DOM: the body stays
+// mounted while the drawer is shut, so a presence test reads "open" on a closed strip (the 33b5a80 turn's frames showed exactly that,
+// and every real press then landed on a closed drawer).
 const openStrip = async (app) => {
-  if (!(await app.evalJs("!!document.querySelector('.wz-sliver-templates')"))) await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
-  return waitSoft(app, "!!document.querySelector('.wz-sliver-templates')", { label: 'templates', timeout: 3000 });
+  if (!(await app.evalJs(`!!document.querySelector(".wz-sliver[data-open='true']")`))) await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  return waitSoft(app, `!!document.querySelector(".wz-sliver[data-open='true']")`, { label: 'strip open', timeout: 3000 });
 };
 const pressTemplate = async (app, key) => {
   const pt = await app.evalJs(`(() => { const b = document.querySelector('.wz-template-live[data-template="${key}"]'); if (!b) return null;

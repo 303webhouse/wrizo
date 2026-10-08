@@ -119,8 +119,9 @@ const pressAt = async (app, elExpr) => {
 };
 const clickScreenplayTemplate = async (app) => {
   await app.click('Draft'); await sleep(400);
-  if (!(await app.evalJs("!!document.querySelector('.wz-sliver-templates')"))) await openSliver(app);
-  try { await app.waitFor("!!document.querySelector('.wz-sliver-templates')", { label: 'templates section', timeout: 3000 }); } catch { /* reported below */ }
+  // OPEN is the strip's own state (data-open), never the presence of a section: the body stays mounted while the drawer is shut.
+  if (!(await app.evalJs(`!!document.querySelector(".wz-sliver[data-open='true']")`))) await openSliver(app);
+  try { await app.waitFor(`!!document.querySelector(".wz-sliver[data-open='true']")`, { label: 'strip open', timeout: 3000 }); } catch { /* reported below */ }
   // the strip scrolls: Templates sit below its fold, so the control is brought into view first, as a writer would scroll to it
   await app.evalJs(`document.querySelector('.wz-template-live[data-template="screenplay"]')?.scrollIntoView({ block: 'center', inline: 'nearest' })`);
   await sleep(150);
