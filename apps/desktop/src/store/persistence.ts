@@ -6,6 +6,7 @@ import { deskTerm, type DeskTermId } from './deskLexicon';
 import { getUserPageDefaults } from './pageDefaults';
 import { clearProofingLocal } from './proofing';
 import { reportFlushFailed, reportFlushOk, reportStorageUsage } from './storageHealth';
+import { isSignedOutHere } from './signedOutHere';
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -199,6 +200,11 @@ export function hasDirtyRecords(): boolean {
   return COLLECTIONS.some((name) => dirty[name].size > 0);
 }
 
+// LOGOUT SAFETY — how many records the account does not have yet. Rejected records stay dirty, so they count here too.
+export function countDirtyRecords(): number {
+  return COLLECTIONS.reduce((n, name) => n + dirty[name].size, 0);
+}
+
 // Item 89 — test/inspection seam (this file's own established pattern; see
 // `window.wrizoCreateJournalPage` below). The registry is module-private and
 // the whole defect was that its survival across a reload could not be
@@ -366,6 +372,11 @@ function upsert<T extends { id: string; updatedAt: string }>(
   collection: T[],
   record: T,
 ): void {
+  // THE BELT (logout flush) — a device that has signed out keeps nothing of the writer's. From the moment the
+  // signed-out flag is set, no record is written: a late timer or an editor's unmount flush that runs after the wipe
+  // can no longer recreate a row (saveDraft is an upsert and WOULD create one) that the next account would then push.
+  // Pulled records do not come through here (applyCollection writes them), and a sign-in clears the flag first.
+  if (isSignedOutHere()) return;
   record.updatedAt = new Date().toISOString();
   const index = collection.findIndex(r => r.id === record.id);
   if (index >= 0) {
