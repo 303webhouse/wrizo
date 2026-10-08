@@ -326,6 +326,9 @@ export function App() {
         <DeskRail />
         <GlobalHeader onLogout={() => { void handleLogout(); }} authed={authState === 'authed'} />
         <BrandMark />
+        {(import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV === true && (
+          <div className="wz-dev-stamp" aria-hidden="true">bf77a54</div>
+        )}
         <VoiceWallWhisper />
         <ThemeEffectsLayer />
         <FluxBlockCaret />
