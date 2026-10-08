@@ -11,15 +11,15 @@ import { lapPlan, segmentsFor, geometryKey, type GrowthGeometry, type GrowthSegm
 //   - Every new piece grows OUT of an existing stem, and draws itself on along its length (the "growing" animation).
 //   - At the goal the whole network flashes brass, then clears, leaving one short root (drawn heavier). The next lap grows
 //     from that root.
-//   - Roots never paint on the page, its clear band, the rail, the strip, the header or an open menu (clip + mask). They do
-//     pass UNDER the page (unpainted) to reach the other margin.
+//   - Roots grow BEHIND the page, right up to its edge, and are never drawn over it. They also never paint on the rail,
+//     the strip, the header or an open menu (clip + mask). They pass under the page (unpainted) to reach the other margin.
 //
 // The field is ambient: aria-hidden, pointer-events none, beneath the paper (the anchor's z-index -1). Framed stage only
 // (>= 1100px), as before.
 const SESSION_START = Date.now(); // the pattern is session-scoped (M2 S2)
 
 const FLASH_MS = 1200;   // the brass reward
-const PAGE_CLEAR = 56;   // the clear band around the sheet: never painted, growth passes under it
+const PAGE_CLEAR = 0;    // no clear band: roots grow behind the page, right up to its edge, never over it
 const DRAW_MS = 360;     // one segment drawing itself on
 const STAGGER_TOTAL_MS = 700; // a burst of new segments (a pasted paragraph) grows over at most this long
 const ANIMATE_MAX = 160; // beyond this many new segments at once, the oldest of the burst simply appear

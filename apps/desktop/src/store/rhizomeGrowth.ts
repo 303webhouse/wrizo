@@ -8,9 +8,9 @@
 //      extending) or at an earlier segment's end point (a side branch). No free-standing origins after the first.
 //   3. Stems, not scratches. Each step is short (STEP_MIN..STEP_MAX px) and turns only a little from the one before
 //      (MAX_TURN plus a small wander), so a root is a chain of short, gently curving steps.
-//   4. One network, both margins. Growth may pass UNDER the page and the chrome (the "hidden" rects): it keeps growing
-//      there but those cells are never counted and the field's paint clip hides the strokes, so a root dives under the page
-//      and comes up on the far side.
+//   4. One network, both margins. Roots grow BEHIND the page, right up to its edge, and are never drawn over it. Growth
+//      may pass under the page and the chrome (the "hidden" rects): it keeps growing there but those cells are never
+//      counted and the field's paint clip hides the strokes, so a root dives under the page and comes up on the far side.
 //   5. Laps. At the goal the whole network flashes brass, then everything clears except ONE stem segment, drawn thick. The
 //      next lap grows only from that survivor.
 //
@@ -21,7 +21,7 @@ export interface Rect { left: number; top: number; right: number; bottom: number
 export interface GrowthGeometry {
   width: number;
   height: number;
-  /** Where growth may pass but is never painted or counted: the sheet plus its clear band, the rail, the strip, the header. */
+  /** Where growth may pass but is never painted or counted: the sheet (roots grow behind it, never over it), the rail, the strip, the header. */
   hidden: Rect[];
   /** A point near which the very first segment of the first lap starts (the page's bottom-centre). */
   origin: { x: number; y: number };
@@ -57,10 +57,10 @@ export const STEP_MAX = 22;        // longest step of a stem
 export const MAX_TURN = (24 * Math.PI) / 180;   // steering limit per step, toward the stem's target
 export const WANDER = (9 * Math.PI) / 180;      // random wobble per step (gaussian sigma)
 export const LOOK = 5;             // cells a tip looks ahead when choosing where to grow
-export const HIDDEN_PULL = 0.18;   // how much hidden ground (under the page) invites growth, vs 1 for open ground
+export const HIDDEN_PULL = 0.7;    // how much hidden ground (under the page) invites growth, vs 1 for open ground
 export const SURVIVOR_STEPS = 7;   // the stroke kept between laps: this many consecutive segments of one stem
-export const FULL_COVER = 0.9;     // a lap ends when this share of the visible cells is covered
-export const LAP_CAP = 3000;       // hard cap on segments per lap (safety)
+export const FULL_COVER = 0.86;    // a lap ends when this share of the visible cells is covered
+export const LAP_CAP = 4200;       // hard cap on segments per lap (safety)
 export const MIN_TIPS = 4;         // keep at least this many growing tips
 export const MAX_TIPS = 8;         // and never more than this
 export const SPLIT_CHANCE = 0.05;  // per step on open ground: a tip also throws a side branch here

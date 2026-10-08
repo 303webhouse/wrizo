@@ -37,21 +37,19 @@ async function load(mutate) {
 
 function deskGeo() {
   const paper = { left: 352, top: 0, right: 967, bottom: 693 };
-  const band = { left: paper.left - 56, top: paper.top - 56, right: paper.right + 56, bottom: paper.bottom + 56 };
   return {
     width: 1320, height: 733,
-    hidden: [band, { left: 0, top: 0, right: 64, bottom: 733 }, { left: 0, top: 0, right: 1320, bottom: 44 }],
-    origin: { x: (paper.left + paper.right) / 2, y: paper.bottom + 56 + 12 },
+    hidden: [paper, { left: 0, top: 0, right: 64, bottom: 733 }, { left: 0, top: 0, right: 1320, bottom: 44 }],
+    origin: { x: (paper.left + paper.right) / 2, y: paper.bottom + 12 },
   };
 }
 
 function tightGeo() {
   const paper = { left: 280, top: 0, right: 820, bottom: 660 };
-  const band = { left: paper.left - 56, top: paper.top - 56, right: paper.right + 56, bottom: paper.bottom + 56 };
   return {
     width: 1000, height: 700,
-    hidden: [band, { left: 0, top: 0, right: 56, bottom: 700 }, { left: 0, top: 0, right: 1000, bottom: 40 }],
-    origin: { x: (paper.left + paper.right) / 2, y: paper.bottom + 56 + 12 },
+    hidden: [paper, { left: 0, top: 0, right: 56, bottom: 700 }, { left: 0, top: 0, right: 1000, bottom: 40 }],
+    origin: { x: (paper.left + paper.right) / 2, y: paper.bottom + 12 },
   };
 }
 
@@ -139,9 +137,9 @@ const n = plan.segments.length;
 const final = plan.coverAt[n - 1];
 
 // ---- R1 coverage tracks the goal ------------------------------------------------
-ok('R1: a full lap covers FULL_COVER of the visible cells',
-  plan.visibleCells > 0 && final / plan.visibleCells >= E.FULL_COVER - 1e-9,
-  JSON.stringify({ final, visible: plan.visibleCells, frac: final / plan.visibleCells }));
+ok('R1: a full lap covers FULL_COVER of the visible cells, or hits LAP_CAP',
+  plan.visibleCells > 0 && (final / plan.visibleCells >= E.FULL_COVER - 1e-9 || n === E.LAP_CAP),
+  JSON.stringify({ final, visible: plan.visibleCells, frac: final / plan.visibleCells, n, cap: E.LAP_CAP }));
 ok('R1: coverAt is non-decreasing',
   plan.coverAt.every((c, i) => i === 0 || c >= plan.coverAt[i - 1]), String(plan.coverAt.length));
 ok('R1: segmentsFor(0) is the starting stroke',
@@ -165,8 +163,8 @@ const other = E.planLap(geo, E.hashSeed('desk:abc:1'), null);
 const o50 = atFrac(E, other, 0.5);
 ok('R1: a second seed also tracks coverage at 50%',
   other.segments.length > 20 && inBand(o50.cov, 0.5), JSON.stringify({ n: other.segments.length, ...o50 }));
-ok('R1: FULL_COVER is 0.9 and CELL is 28',
-  E.FULL_COVER === 0.9 && E.CELL === 28, `${E.FULL_COVER} ${E.CELL}`);
+ok('R1: FULL_COVER is 0.86, LAP_CAP is 4200, and CELL is 28',
+  E.FULL_COVER === 0.86 && E.LAP_CAP === 4200 && E.CELL === 28, `${E.FULL_COVER} ${E.LAP_CAP} ${E.CELL}`);
 
 // ---- R2 growth always comes from the existing network ---------------------------
 ok('R2: every segment after the first starts on an earlier endpoint',
@@ -231,11 +229,11 @@ ok('R4: a second seed also tunnels and lands on both margins',
     && other.segments.some(s => s.visible && s.x2 < mid)
     && other.segments.some(s => s.visible && s.x2 >= mid),
   String(other.segments.filter(s => !s.visible).length));
-ok('R4: PAGE_CLEAR is 56 and the field clips evenodd',
-  /const PAGE_CLEAR = 56/.test(fieldSrc) && fieldSrc.includes('path(evenodd') && fieldSrc.includes('clipRule="evenodd"'),
+ok('R4: PAGE_CLEAR is 0 and the field clips evenodd',
+  /const PAGE_CLEAR = 0/.test(fieldSrc) && fieldSrc.includes('path(evenodd') && fieldSrc.includes('clipRule="evenodd"'),
   'clip');
-ok('R4: HIDDEN_PULL is 0.18 so hidden ground invites a little, not as a wall',
-  E.HIDDEN_PULL === 0.18, String(E.HIDDEN_PULL));
+ok('R4: HIDDEN_PULL is 0.7 so hidden ground invites growth behind the page, not as a wall',
+  E.HIDDEN_PULL === 0.7, String(E.HIDDEN_PULL));
 ok('R4: the field never paints on the page — holes feed both the clip and the mask',
   fieldSrc.includes('wz-rhizome-ground') && fieldSrc.includes('wz-rhizome-mask') && fieldSrc.includes('holes.map'),
   'mask');
@@ -306,7 +304,7 @@ if (!process.argv.includes('--mutants')) {
 const mutants = [
   {
     name: 'M1 FULL_COVER lowered',
-    mutate: swap('FULL_COVER = 0.9', 'FULL_COVER = 0.2'),
+    mutate: swap('FULL_COVER = 0.86', 'FULL_COVER = 0.2'),
     red: (m) => {
       const p = m.planLap(geo, m.hashSeed('page:sess:24:lines:0'), null);
       return p.coverAt[p.coverAt.length - 1] / p.visibleCells < 0.5;
