@@ -280,11 +280,10 @@ await withHarness(async (app) => {
     const inkRgb = await app.evalJs("(() => { const d = document.createElement('div'); d.style.color = getComputedStyle(document.documentElement).getPropertyValue('--rhizome-ink').trim(); document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; })()");
     ok('Live: NOTHING ORANGE AT REST — a segment\'s stroke resolves to --rhizome-ink, not the ember, with no flash active (an empty lap has no segment to paint)',
       !strokeAtRest || (strokeAtRest.flash === 'false' && strokeAtRest.stroke === inkRgb), JSON.stringify({ strokeAtRest, inkRgb }));
-    // Reduced-motion: segments animation:none (appear instantly, no strobe).
-    // The env can't toggle the OS reduced-motion setting, so assert the CSS
-    // RULE is present (the branch exists): a prefers-reduced-motion media block
-    // sets .wz-rhizome-seg's animation to none. Scan the flattened inner cssText
-    // so minification/spacing can't hide it.
+    // Reduced-motion. SUPERSEDED 2026-10-08, rhizome-goal: the block fades a
+    // segment with wz-rhizome-grow. The flash sub-rule still says animation:none,
+    // so a scan for "animation" + "none" passes even if the fade is gone.
+    // The env can't toggle the OS setting, so assert the RULE is present.
     const rm = await app.evalJs(`(() => {
       let found = false, sample = '';
       for (const s of document.styleSheets) {
@@ -296,16 +295,13 @@ await withHarness(async (app) => {
           let t = '';
           for (const x of r.cssRules) t += x.cssText + ' ';
           if (t.indexOf('wz-rhizome-seg') < 0) continue;
-          if (!sample) sample = t.slice(0, 140);
-          // The reduced-motion rhizome block sets animation to none (the browser
-          // normalizes 'animation: none' to a longhand whose name token is none),
-          // so it suffices that this block names the seg AND nulls its animation.
-          if (t.indexOf('animation') >= 0 && t.indexOf('none') >= 0) found = true;
+          if (!sample) sample = t.slice(0, 180);
+          if (t.indexOf('wz-rhizome-grow') >= 0) found = true;
         }
       }
       return { found, sample };
     })()`);
-    ok('Reduced-motion: a prefers-reduced-motion rule sets .wz-rhizome-seg animation:none (segments appear instantly, no strobe) — scale-independent, holds at saturation',
+    ok('Reduced-motion: SUPERSEDED->rhizome-goal — a prefers-reduced-motion rule fades .wz-rhizome-seg with wz-rhizome-grow',
       rm && rm.found, JSON.stringify(rm));
   }
 

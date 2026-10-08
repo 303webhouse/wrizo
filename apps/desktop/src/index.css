@@ -3424,14 +3424,17 @@ a:focus-visible,
 .wz-rhizome-seg{
   stroke:var(--rhizome-ink); stroke-width:0.2px; stroke-linecap:round; fill:none; opacity:.32;
   vector-effect:non-scaling-stroke;
-  animation:wz-rhizome-grow 180ms ease; /* "the house timing" (S2) — the same 180ms family already used throughout this file */
+  stroke-dasharray:1; stroke-dashoffset:0;
+  /* pathLength=1 on the line, so a dash of 1 is the whole segment. */
+  animation:wz-rhizome-draw 320ms linear forwards;
 }
 /* A few shoots are heavier. The rest stay a fine hairline in the ground.
-   non-scaling-stroke keeps the width in CSS pixels when the viewBox scales. */
+   non-scaling-stroke keeps the width in CSS pixels when the viewBox scales.
+   The survivor of a lap is forced onto this thicker stroke. */
 .wz-rhizome-seg[data-thick='true']{ stroke-width:0.65px; opacity:.7; }
+@keyframes wz-rhizome-draw{ from{ stroke-dashoffset:1; } to{ stroke-dashoffset:0; } }
 @keyframes wz-rhizome-grow{ 0%{ opacity:0; } 100%{ opacity:.32; } }
 @keyframes wz-rhizome-grow-thick{ 0%{ opacity:0; } 100%{ opacity:.7; } }
-.wz-rhizome-seg[data-thick='true']{ animation-name:wz-rhizome-grow-thick; }
 /* S4 — the milestone flash: every segment's own stroke eases to the ember
    token, holds, and returns — growth kept whole (nothing here removes or
    re-shuffles a segment, only its paint). B4-provisional: the 400ms-hold/
@@ -3448,12 +3451,10 @@ a:focus-visible,
   100%{ stroke:var(--brass); }
 }
 @media (prefers-reduced-motion:reduce){
-  /* S2: new segments appear instantly, no transition. S4: "a single soft
-     cross-fade to ember and back, no strobe" — a plain `transition` (not a
-     multi-stop keyframe animation) on the one property that changes,
-     driven by the SAME data-flash toggle the full-motion path uses. */
-  .wz-rhizome-seg{ animation:none; opacity:.32; transition:stroke 600ms ease; }
-  .wz-rhizome-seg[data-thick='true']{ opacity:.7; }
+  /* Reduced motion keeps a plain opacity fade. The draw-on (dashoffset)
+     is the full-motion path. The flash stays a stroke transition. */
+  .wz-rhizome-seg{ stroke-dashoffset:0; animation:wz-rhizome-grow 180ms ease; opacity:.32; transition:stroke 600ms ease; }
+  .wz-rhizome-seg[data-thick='true']{ opacity:.7; animation-name:wz-rhizome-grow-thick; }
   .wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ animation:none; stroke:var(--brass); }
 }
 

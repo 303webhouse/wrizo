@@ -3,8 +3,8 @@ import { useWritingSettings } from '../store/writingSettings';
 import { useWritingGoal, goalCount } from '../store/writingGoal';
 import {
   mulberry32, hashSeed, createRhizomeState, seedOrigins, growTo, goalFillTarget,
-  pickLapSurvivor, stateFromSurvivor,
-  FILL_SEGMENTS, FILL_SHOOTS, FILL_LEN_MIN, FILL_LEN_MAX,
+  pickLapSurvivor, stateFromSurvivor, scaledFillLength,
+  FILL_SEGMENTS, FILL_SHOOTS,
   type RhizomeState, type RhizomeGeometry, type RhizomePoint, type RhizomeRect, type RhizomeSegment, type GrowToOptions,
 } from '../store/rhizomeEngine';
 
@@ -79,13 +79,16 @@ function groundClipPath(w: number, h: number, holes: RhizomeRect[]): string {
   return d;
 }
 
-const FILL_OPTS: GrowToOptions = {
-  shootCap: FILL_SHOOTS,
-  hardCap: FILL_SEGMENTS,
-  lenMin: FILL_LEN_MIN,
-  lenMax: FILL_LEN_MAX,
-  connected: true,
-};
+function fillOpts(geo: RhizomeGeometry): GrowToOptions {
+  const lens = scaledFillLength(geo.width, geo.height);
+  return {
+    shootCap: FILL_SHOOTS,
+    hardCap: FILL_SEGMENTS,
+    lenMin: lens.lenMin,
+    lenMax: lens.lenMax,
+    connected: true,
+  };
+}
 
 // Stable chrome the roots route around. The corner logo (.brand-mark) is
 // absent on purpose. Live menus are painted out of the mask when they open;
@@ -229,6 +232,7 @@ function Segments({ segments, ox, oy }: { segments: RhizomeSegment[]; ox: number
         <line
           key={seg.id}
           className="wz-rhizome-seg"
+          pathLength={1}
           data-thick={seg.thick ? 'true' : undefined}
           x1={seg.x1 - ox} y1={seg.y1 - oy} x2={seg.x2 - ox} y2={seg.y2 - oy}
         />
@@ -304,9 +308,9 @@ export function RhizomeField({ text, seedKey, paperRef }: {
     const prevRng = mulberry32(hashSeed(`${seedKey}:${SESSION_START}:${prevSalt}`));
     const prevOrigins = seedOrigins(prevRng, geo);
     const prevStart = carrySurvivor(geo, prevSalt);
-    const prev = growTo(prevStart, prevRng, geo, prevOrigins, FILL_SEGMENTS, FILL_OPTS);
+    const prev = growTo(prevStart, prevRng, geo, prevOrigins, FILL_SEGMENTS, fillOpts(geo));
     if (prev.segments.length === 0) return createRhizomeState();
-    const kept = pickLapSurvivor(prev.segments, `${seedKey}:${SESSION_START}:${prevSalt}:survivor`);
+    const kept = pickLapSurvivor(prev.segments, `${seedKey}:${SESSION_START}:${prevSalt}:survivor`, geo);
     return stateFromSurvivor(kept);
   }, [seedKey]);
 
@@ -320,7 +324,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
     builtSaltRef.current = salt;
     saltRef.current = salt;
     paintMask(mask, geo.width, geo.height);
-    const next = growTo(start, rng, geo, origins, target, FILL_OPTS);
+    const next = growTo(start, rng, geo, origins, target, fillOpts(geo));
     stateRef.current = next;
     setState(next);
   }, [seedKey, paintMask, carrySurvivor]);
@@ -336,7 +340,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
       return;
     }
     paintMask(m.holes, m.geo.width, m.geo.height);
-    updateState(s => growTo(s, rngRef.current!, m.geo, originsRef.current!, target, FILL_OPTS));
+    updateState(s => growTo(s, rngRef.current!, m.geo, originsRef.current!, target, fillOpts(m.geo)));
   }, [active, measureNow, rebuild, updateState, paintMask]);
 
   const syncRef = useRef(syncField);
@@ -379,7 +383,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
       holdFlashRef.current = true;
       const m = measureNow();
       if (m && rngRef.current && originsRef.current && builtGeoRef.current) {
-        const full = growTo(stateRef.current, rngRef.current, m.geo, originsRef.current, FILL_SEGMENTS, FILL_OPTS);
+        const full = growTo(stateRef.current, rngRef.current, m.geo, originsRef.current, FILL_SEGMENTS, fillOpts(m.geo));
         stateRef.current = full;
         setState(full);
         paintMask(m.holes, m.geo.width, m.geo.height);

@@ -1,8 +1,8 @@
 // Rhizome goal-fill — the Plateau roots follow the writer's own goal.
 // A lap of 100 words and a lap of 1000 words both fill the ground at the
-// goal. Crossing the goal flashes the network brass, then one segment
-// remains and the next lap grows only from it. Every new segment starts
-// on the network already drawn.
+// goal. Crossing the goal flashes the network brass, then one thick stem
+// remains and the next lap grows only from it. Growth tunnels under the
+// sheet (the paint clip hides that stretch) and comes out on both margins.
 // Run from apps/desktop, dist-web built: node scripts/harness/rhizome-goal.mjs
 import { spawnSync } from 'node:child_process';
 import { withHarness } from '../runtime-verify.mjs';
@@ -85,8 +85,10 @@ const field = (app) => app.evalJs(`(() => {
       }
     }
   }
-  let paperHit = 0, keepHit = 0, shares = true;
+  let paperHit = 0, keepHit = 0, shares = true, leftOut = 0, rightOut = 0;
   const segs = [];
+  const bandL = sheet ? sheet.left - PAGE_CLEAR : 0;
+  const bandR = sheet ? sheet.right + PAGE_CLEAR : 0;
   if (svg) {
     for (const el of svg.querySelectorAll('.wz-rhizome-seg')) {
       segs.push({ x1: +el.getAttribute('x1'), y1: +el.getAttribute('y1'), x2: +el.getAttribute('x2'), y2: +el.getAttribute('y2') });
@@ -98,12 +100,19 @@ const field = (app) => app.evalJs(`(() => {
       for (const [x, y] of [[s.x1, s.y1], [s.x2, s.y2]]) {
         if (sheet && x > sheet.left + 0.5 && x < sheet.right - 0.5 && y > sheet.top + 0.5 && y < sheet.bottom - 0.5) paperHit++;
         if (holes.some(r => inside(x, y, r))) keepHit++;
+        if (x < bandL - 0.5) leftOut++;
+        if (x > bandR + 0.5) rightOut++;
       }
       if (i > 0 && !segs.slice(0, i).some(earlier => touch(s, earlier))) shares = false;
     }
   }
   const thinW = seg ? Number.parseFloat(getComputedStyle(seg).strokeWidth) : null;
   const thickW = thick ? Number.parseFloat(getComputedStyle(thick).strokeWidth) : null;
+  const sample = svg && svg.querySelector('.wz-rhizome-seg');
+  const cs = sample ? getComputedStyle(sample) : null;
+  const dur = cs ? cs.animationDuration : '';
+  const drawMs = dur ? (dur.endsWith('ms') ? parseFloat(dur) : parseFloat(dur) * 1000) : null;
+  const clip = svg ? (svg.style.clipPath || (cs && getComputedStyle(svg).clipPath) || '') : '';
   return {
     mounted: !!svg,
     editor: !!ed,
@@ -111,8 +120,21 @@ const field = (app) => app.evalJs(`(() => {
     frac: svg ? svg.dataset.goalFrac : null,
     flash: svg ? svg.dataset.flash : null,
     onPage: !!onPage,
-    paperHit, keepHit, shares,
+    paperHit, keepHit, shares, leftOut, rightOut,
     thinW, thickW,
+    thickCount: svg ? svg.querySelectorAll('.wz-rhizome-seg[data-thick="true"]').length : 0,
+    painted: segs.filter(s => {
+      for (let k = 0; k <= 8; k++) {
+        const t = k / 8;
+        const x = s.x1 + (s.x2 - s.x1) * t;
+        const y = s.y1 + (s.y2 - s.y1) * t;
+        if (!holes.some(r => inside(x, y, r))) return true;
+      }
+      return false;
+    }).length,
+    clip: String(clip).slice(0, 48),
+    drawName: cs ? cs.animationName : null,
+    drawMs, pathLength: sample ? sample.getAttribute('pathLength') : null,
     pointer: svg ? getComputedStyle(svg).pointerEvents : null,
     stroke: seg ? getComputedStyle(seg).stroke : null,
     rect: pr ? { t: Math.round(pr.top), l: Math.round(pr.left), w: Math.round(pr.width), h: Math.round(pr.height) } : null,
@@ -155,10 +177,17 @@ await withHarness(async (app) => {
   const fast = await field(app);
   ok('Live: the same 99 words fill the ground when the goal is 100 (much denser than the 1000-word goal)',
     fast.segments > slow.segments * 4 && fast.segments >= pure.full * 0.9, JSON.stringify({ slow: slow.segments, fast: fast.segments, full: pure.full }));
-  ok('Live: roots stay off the page — no on-page layer, no endpoint inside the sheet, editor still mounted',
-    !fast.onPage && fast.paperHit === 0 && fast.editor && fast.pointer === 'none', JSON.stringify(fast));
-  ok('Live: every segment after the first shares an endpoint, and none sit in a keep-out',
-    fast.shares === true && fast.keepHit === 0 && fast.segments > 1, JSON.stringify({ shares: fast.shares, keepHit: fast.keepHit, segments: fast.segments }));
+  ok('Live: no rhizome layer sits on the page, the editor stays mounted, and the field does not take clicks',
+    !fast.onPage && fast.editor && fast.pointer === 'none', JSON.stringify({ onPage: fast.onPage, editor: fast.editor, pointer: fast.pointer }));
+  // SUPERSEDED 2026-10-08. Endpoints may lie under the sheet: growth tunnels,
+  // and the paint clip is what hides that stretch. Both margins must still
+  // hold endpoints, or the network never crossed.
+  ok('Live: the paint clip is on, both margins hold endpoints, and every segment shares an endpoint',
+    fast.shares === true && fast.segments > 1 && fast.leftOut > 0 && fast.rightOut > 0 && String(fast.clip).includes('evenodd'),
+    JSON.stringify({ shares: fast.shares, leftOut: fast.leftOut, rightOut: fast.rightOut, clip: fast.clip, segments: fast.segments, paperHit: fast.paperHit }));
+  ok('Live: a new segment draws on along its length (250–400ms, pathLength 1)',
+    fast.drawName === 'wz-rhizome-draw' && fast.drawMs >= 250 && fast.drawMs <= 400 && fast.pathLength === '1',
+    JSON.stringify({ drawName: fast.drawName, drawMs: fast.drawMs, pathLength: fast.pathLength }));
   ok('Live: most roots are a fine hairline and a few are thicker',
     fast.thinW != null && fast.thinW < 0.35 && fast.thickW != null && fast.thickW > 0.5 && fast.thickW < 0.9, JSON.stringify(fast));
   ok('Live: at rest the stroke is olive, not brass',
@@ -178,14 +207,15 @@ await withHarness(async (app) => {
   ok('Live: the flash paints brass', brass, JSON.stringify({ stroke: flashing.stroke }));
   await sleep(1400);
   const reset = await field(app);
-  ok('Live: after the flash exactly one segment survives',
-    reset.flash === 'false' && reset.segments === 1 && reset.keepHit === 0 && reset.editor, JSON.stringify(reset));
+  ok('Live: after the flash exactly one thick stem survives, and the clip does not hide it',
+    reset.flash === 'false' && reset.segments === 1 && reset.thickCount === 1 && reset.thickW > 0.5 && reset.thickW < 0.9 && reset.painted === 1 && reset.editor,
+    JSON.stringify(reset));
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys(' more');
   await sleep(400);
   const lap2 = await field(app);
-  ok('Live: the next lap grows from the survivor — its first new segment touches it, and the network stays connected and out of the keep-outs',
-    lap2.segments > 1 && lap2.shares === true && lap2.keepHit === 0 && lap2.flash === 'false', JSON.stringify(lap2));
+  ok('Live: the next lap grows from that thick stem and stays one network',
+    lap2.segments > 1 && lap2.shares === true && lap2.thickCount >= 1 && lap2.flash === 'false', JSON.stringify(lap2));
   ok('Live: the page rect survives the flash and the reset',
     rectAtFull && reset.rect && rectAtFull.w === reset.rect.w && rectAtFull.h === reset.rect.h,
     JSON.stringify({ rectAtFull, reset: reset.rect }));

@@ -348,12 +348,30 @@ export const SAT_K = 834;           // M3 S3 — saturation constant: 95% of CAP
 // still covers the ground around the sheet.
 export const FILL_SEGMENTS = 800;
 export const FILL_SHOOTS = 72;
-export const FILL_LEN_MIN = 20;
-export const FILL_LEN_MAX = 52;
+// A step at 1400×900. scaledFillLength multiplies by the stage diagonal so a
+// bigger desk takes a proportionally longer step, never a long chord.
+export const FILL_LEN_MIN = 12;
+export const FILL_LEN_MAX = 28;
+export const FILL_LEN_STAGE_W = 1400;
+export const FILL_LEN_STAGE_H = 900;
+// Continuing a stem bends by this many degrees, one way or the other.
+const STEM_WANDER_MIN = 15;
+const STEM_WANDER_MAX = 25;
+// Side forks stay rare so the lap reads as stems lengthening.
+const STEM_FORK_CHANCE = 0.04;
 
 export function goalFillTarget(fraction: number): number {
   const f = Math.max(0, Math.min(1, fraction));
   return Math.round(FILL_SEGMENTS * f);
+}
+
+export function fillLengthScale(width: number, height: number): number {
+  return Math.hypot(Math.max(1, width), Math.max(1, height)) / Math.hypot(FILL_LEN_STAGE_W, FILL_LEN_STAGE_H);
+}
+
+export function scaledFillLength(width: number, height: number): { lenMin: number; lenMax: number } {
+  const s = fillLengthScale(width, height);
+  return { lenMin: FILL_LEN_MIN * s, lenMax: FILL_LEN_MAX * s };
 }
 
 export interface GrowToOptions {
@@ -365,6 +383,9 @@ export interface GrowToOptions {
   // Every segment after that starts at an existing node. Omitted keeps the
   // M3 multi-origin roam (m2/m3/m4 call growTo without this flag).
   connected?: boolean;
+  // Internal. growTo builds this for a connected lap and growConnected
+  // updates it. Not part of the M2/M3 call shape.
+  cov?: CovGrid;
 }
 
 // Euclidean distance from a point to an axis-aligned rect (0 if inside).
@@ -519,6 +540,190 @@ function escapeKeepOut(p: RhizomePoint, geo: RhizomeGeometry): RhizomePoint {
   return pt;
 }
 
+interface CovGrid {
+  cell: number;
+  cols: number;
+  rows: number;
+  midX: number;
+  margin: Uint8Array;
+  hit: Uint8Array;
+  leftTotal: number;
+  rightTotal: number;
+  leftHit: number;
+  rightHit: number;
+  total: number;
+  hits: number;
+}
+
+function coverageCell(geo: RhizomeGeometry): number {
+  return 56 * fillLengthScale(geo.width, geo.height);
+}
+
+function headingDeg(x1: number, y1: number, x2: number, y2: number): number {
+  return (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
+}
+
+function angDelta(a: number, b: number): number {
+  let d = a - b;
+  while (d > 180) d -= 360;
+  while (d < -180) d += 360;
+  return d;
+}
+
+function buildCov(geo: RhizomeGeometry): CovGrid {
+  const cell = Math.max(8, coverageCell(geo));
+  const cols = Math.max(1, Math.ceil(geo.width / cell));
+  const rows = Math.max(1, Math.ceil(geo.height / cell));
+  const margin = new Uint8Array(cols * rows);
+  const midX = (geo.paper.left + geo.paper.right) / 2;
+  let leftTotal = 0;
+  let rightTotal = 0;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = (c + 0.5) * cell;
+      const y = (r + 0.5) * cell;
+      if (x < STAGE_PAD || y < STAGE_PAD || x > geo.width - STAGE_PAD || y > geo.height - STAGE_PAD) continue;
+      if (pointInKeepOut(x, y, geo)) continue;
+      const i = r * cols + c;
+      margin[i] = 1;
+      if (x < midX) leftTotal++;
+      else rightTotal++;
+    }
+  }
+  return {
+    cell, cols, rows, midX, margin, hit: new Uint8Array(cols * rows),
+    leftTotal, rightTotal, leftHit: 0, rightHit: 0, total: leftTotal + rightTotal, hits: 0,
+  };
+}
+
+function covIndex(grid: CovGrid, x: number, y: number): number {
+  const c = Math.floor(x / grid.cell);
+  const r = Math.floor(y / grid.cell);
+  if (c < 0 || r < 0 || c >= grid.cols || r >= grid.rows) return -1;
+  return r * grid.cols + c;
+}
+
+function cellCenter(grid: CovGrid, i: number): RhizomePoint {
+  const c = i % grid.cols;
+  const r = Math.floor(i / grid.cols);
+  return { x: (c + 0.5) * grid.cell, y: (r + 0.5) * grid.cell };
+}
+
+function markCovPoint(grid: CovGrid, x: number, y: number): void {
+  const i = covIndex(grid, x, y);
+  if (i < 0 || !grid.margin[i] || grid.hit[i]) return;
+  grid.hit[i] = 1;
+  grid.hits++;
+  if (cellCenter(grid, i).x < grid.midX) grid.leftHit++;
+  else grid.rightHit++;
+}
+
+function markCovSegment(grid: CovGrid, seg: RhizomeSegment, geo: RhizomeGeometry): void {
+  const len = Math.hypot(seg.x2 - seg.x1, seg.y2 - seg.y1);
+  const steps = Math.max(2, Math.ceil(len / (grid.cell * 0.45)));
+  for (let s = 0; s <= steps; s++) {
+    const t = s / steps;
+    const x = seg.x1 + (seg.x2 - seg.x1) * t;
+    const y = seg.y1 + (seg.y2 - seg.y1) * t;
+    if (pointInKeepOut(x, y, geo)) continue;
+    markCovPoint(grid, x, y);
+  }
+}
+
+export interface MarginCoverage {
+  fraction: number;
+  left: number;
+  right: number;
+  cells: number;
+  touched: number;
+  leftCells: number;
+  rightCells: number;
+}
+
+// Fraction of the paintable margin (stage, minus the sheet, the clear band,
+// and the other keep-outs) that the network touches. Cells under the sheet
+// are not margin: a stem crossing there is unpainted and does not count.
+export function marginCoverage(segments: RhizomeSegment[], geo: RhizomeGeometry): MarginCoverage {
+  const grid = buildCov(geo);
+  for (const seg of segments) markCovSegment(grid, seg, geo);
+  return {
+    fraction: grid.total ? grid.hits / grid.total : 0,
+    left: grid.leftTotal ? grid.leftHit / grid.leftTotal : 0,
+    right: grid.rightTotal ? grid.rightHit / grid.rightTotal : 0,
+    cells: grid.total,
+    touched: grid.hits,
+    leftCells: grid.leftTotal,
+    rightCells: grid.rightTotal,
+  };
+}
+
+function laggingSide(grid: CovGrid): 'left' | 'right' | null {
+  if (!grid.leftTotal || !grid.rightTotal) return null;
+  const L = grid.leftHit / grid.leftTotal;
+  const R = grid.rightHit / grid.rightTotal;
+  if (R > L + 0.06) return 'left';
+  if (L > R + 0.06) return 'right';
+  return null;
+}
+
+function nearestEmpty(grid: CovGrid, tip: RhizomePoint, side: 'left' | 'right' | null): RhizomePoint | null {
+  let bestD = Infinity;
+  let best: RhizomePoint | null = null;
+  for (let i = 0; i < grid.margin.length; i++) {
+    if (!grid.margin[i] || grid.hit[i]) continue;
+    const p = cellCenter(grid, i);
+    if (side === 'left' && p.x >= grid.midX) continue;
+    if (side === 'right' && p.x < grid.midX) continue;
+    const d = Math.hypot(p.x - tip.x, p.y - tip.y);
+    if (d < bestD) { bestD = d; best = p; }
+  }
+  return best;
+}
+
+// The sheet and the band stay keep-outs for the PAINT. Connected growth
+// tunnels under them: resolveSegment sees an open stage, and the field's
+// clip hides whatever lies inside the hole.
+function tunnelGeo(geo: RhizomeGeometry): RhizomeGeometry {
+  return { ...geo, avoidPaper: false, obstacles: [] };
+}
+
+function wanderMag(rng: () => number): number {
+  return STEM_WANDER_MIN + rng() * (STEM_WANDER_MAX - STEM_WANDER_MIN);
+}
+
+function scoreStep(tip: RhizomePoint, angle: number, len: number, grid: CovGrid, geo: RhizomeGeometry, seek: boolean, side: 'left' | 'right' | null): number {
+  const rad = (angle * Math.PI) / 180;
+  const x2 = tip.x + Math.cos(rad) * len;
+  const y2 = tip.y + Math.sin(rad) * len;
+  if (x2 < STAGE_PAD || y2 < STAGE_PAD || x2 > geo.width - STAGE_PAD || y2 > geo.height - STAGE_PAD) return -1e6;
+  const target = nearestEmpty(grid, tip, side);
+  const end = { x: x2, y: y2 };
+  // A lagging margin outranks a nearby hole on the side we already filled.
+  // Closing the distance counts even when this step is still under the sheet.
+  if (side && target) {
+    const before = Math.hypot(target.x - tip.x, target.y - tip.y);
+    const after = Math.hypot(target.x - end.x, target.y - end.y);
+    return (before - after) * 10;
+  }
+  let s = 0;
+  if (seek && target) {
+    const want = headingDeg(tip.x, tip.y, target.x, target.y);
+    s += 180 - Math.abs(angDelta(angle, want));
+    const before = Math.hypot(target.x - tip.x, target.y - tip.y);
+    const after = Math.hypot(target.x - end.x, target.y - end.y);
+    s += (before - after) * 4;
+  }
+  if (!pointInKeepOut(x2, y2, geo)) {
+    const i = covIndex(grid, x2, y2);
+    const empty = i >= 0 && grid.margin[i] === 1 && grid.hit[i] === 0;
+    const filled = i >= 0 && grid.margin[i] === 1 && grid.hit[i] === 1;
+    if (seek && empty) s += 70;
+    if (!seek && filled) s += 40;
+    if (!seek && empty) s -= 30;
+  }
+  return s;
+}
+
 function appendSegment(state: RhizomeState, tip: RhizomePoint, resolved: { point: RhizomePoint; angle: number }, shootId: number, isNew: boolean): RhizomeState {
   const segment: RhizomeSegment = {
     id: state.nextSegmentId, shootId,
@@ -538,69 +743,121 @@ function appendSegment(state: RhizomeState, tip: RhizomePoint, resolved: { point
   };
 }
 
-// One connected segment. An empty field roots once, outside every keep-out.
-// After that, the new segment starts at a node already on the network: a
-// live tip, or either endpoint of an older segment (a mid-branch fork).
-// A tip that cannot leave its corner is skipped; the next try forks from
-// an older node, including past the shoot cap, and never plants a new origin.
+// One connected segment. An empty field roots once, outside the keep-out.
+// After that, most steps EXTEND a live tip: the same direction, bent by
+// 15–25°. A few steps are side forks from a recent node. The sheet is not
+// a wall here — a stem aimed at the far margin tunnels under it, and the
+// paint clip hides that stretch. The sign of the bend prefers empty margin
+// cells, and the emptier side when the two margins drift apart.
 function growConnected(state: RhizomeState, rng: () => number, geo: RhizomeGeometry, origins: RhizomePoint[], opts?: GrowToOptions): RhizomeState {
   const shootCap = opts?.shootCap ?? CAP_SHOOTS;
+  const hard = opts?.hardCap ?? FILL_SEGMENTS;
   const lenMin = opts?.lenMin ?? SEG_MIN;
   const lenMax = opts?.lenMax ?? SEG_MAX;
+  const grid = opts?.cov ?? buildCov(geo);
+  const open = tunnelGeo(geo);
+
+  const place = (tip: RhizomePoint, angle: number, len: number, shootId: number, isNew: boolean): RhizomeState | null => {
+    const resolved = resolveSegment(tip, angle, len, open);
+    if (!resolved) return null;
+    if (Math.hypot(resolved.point.x - tip.x, resolved.point.y - tip.y) < 1) return null;
+    const actual = headingDeg(tip.x, tip.y, resolved.point.x, resolved.point.y);
+    if (Math.abs(angDelta(actual, angle)) > 35) return null;
+    const next = appendSegment(state, tip, resolved, shootId, isNew);
+    markCovSegment(grid, next.segments[next.segments.length - 1], geo);
+    return next;
+  };
 
   if (state.segments.length === 0) {
     const tip = escapeKeepOut(origins[0] ?? { x: geo.width / 2, y: geo.height / 2 }, geo);
     if (pointInKeepOut(tip.x, tip.y, geo)) return state;
-    for (let attempt = 0; attempt < 24; attempt++) {
+    const len = lenMin + rng() * (lenMax - lenMin);
+    const cx = (geo.paper.left + geo.paper.right) / 2;
+    const cy = (geo.paper.top + geo.paper.bottom) / 2;
+    const aim = headingDeg(tip.x, tip.y, cx, cy) + (rng() < 0.5 ? -1 : 1) * wanderMag(rng);
+    const placed = place(tip, aim, len, state.nextShootId, true);
+    return placed ?? state;
+  }
+
+  const cap = Math.max(1, hard);
+  const behind = grid.total > 0 && grid.hits / grid.total < state.segments.length / cap - 0.03;
+  const side = laggingSide(grid);
+  const seek = behind || side != null;
+  const fork = state.shoots.length > 0 && state.shoots.length < shootCap && rng() < STEM_FORK_CHANCE;
+
+  if (!fork) {
+    for (let attempt = 0; attempt < 8; attempt++) {
+      // Seek the tip already nearest an empty cell so a hole is filled by
+      // lengthening a stem, and one stem can finish crossing under the sheet.
+      let sh = state.shoots[Math.floor(rng() * state.shoots.length)];
+      if (seek && rng() < 0.75) {
+        let best = sh;
+        let bestD = Infinity;
+        for (const candidate of state.shoots) {
+          const hole = nearestEmpty(grid, candidate, side);
+          if (!hole) continue;
+          const d = Math.hypot(hole.x - candidate.x, hole.y - candidate.y);
+          if (d < bestD) { bestD = d; best = candidate; }
+        }
+        sh = best;
+      }
+      const mag = wanderMag(rng);
       const len = lenMin + rng() * (lenMax - lenMin);
-      const angle = rng() * 360;
-      const resolved = resolveSegment(tip, angle, len, geo);
-      if (!resolved || pointInKeepOut(resolved.point.x, resolved.point.y, geo)) continue;
-      if (Math.hypot(resolved.point.x - tip.x, resolved.point.y - tip.y) < 1) continue;
-      return appendSegment(state, tip, resolved, state.nextShootId, true);
+      const tip = { x: sh.x, y: sh.y };
+      const plus = sh.angle + mag;
+      const minus = sh.angle - mag;
+      const sp = scoreStep(tip, plus, len, grid, geo, seek, side);
+      const sm = scoreStep(tip, minus, len, grid, geo, seek, side);
+      const angle = sp === sm ? (rng() < 0.5 ? plus : minus) : (sp > sm ? plus : minus);
+      const placed = place(tip, angle, len, sh.id, false);
+      if (placed) return placed;
     }
     return state;
   }
 
-  for (let attempt = 0; attempt < 36; attempt++) {
-    const len = lenMin + rng() * (lenMax - lenMin);
-    const boxed = attempt >= 8;
-    const atCap = state.shoots.length >= shootCap && !boxed;
-    const fork = state.shoots.length === 0 || boxed || (!atCap && rng() < BRANCH_CHANCE);
-    let tip: RhizomePoint;
-    let angle: number;
-    let shootId: number;
-    let isNew: boolean;
-    if (!fork) {
-      const sh = state.shoots[Math.floor(rng() * state.shoots.length)];
-      tip = { x: sh.x, y: sh.y };
-      angle = sh.angle + (rng() * 2 - 1) * DRIFT_DEG;
-      shootId = sh.id;
-      isNew = false;
-    } else {
-      const seg = state.segments[Math.floor(rng() * state.segments.length)];
-      const useStart = boxed ? rng() < 0.75 : rng() < 0.5;
-      tip = useStart ? { x: seg.x1, y: seg.y1 } : { x: seg.x2, y: seg.y2 };
-      angle = rng() * 360;
-      shootId = state.nextShootId;
-      isNew = true;
-    }
-    if (pointInKeepOut(tip.x, tip.y, geo)) continue;
-    const resolved = resolveSegment(tip, angle, len, geo);
-    if (!resolved || pointInKeepOut(resolved.point.x, resolved.point.y, geo)) continue;
-    if (Math.hypot(resolved.point.x - tip.x, resolved.point.y - tip.y) < 1) continue;
-    return appendSegment(state, tip, resolved, shootId, isNew);
+  const from = Math.max(0, state.segments.length - 8);
+  const seg = state.segments[from + Math.floor(rng() * (state.segments.length - from))];
+  const node = { x: seg.x1, y: seg.y1 };
+  const parentH = headingDeg(seg.x1, seg.y1, seg.x2, seg.y2);
+  const len = lenMin + rng() * (lenMax - lenMin);
+  let angle: number;
+  const target = seek ? nearestEmpty(grid, node, side) : null;
+  if (target) {
+    const mag = wanderMag(rng);
+    angle = headingDeg(node.x, node.y, target.x, target.y) + (rng() < 0.5 ? -mag : mag);
+  } else {
+    const mag = 40 + rng() * 30;
+    angle = parentH + (rng() < 0.5 ? -mag : mag);
   }
-  return state;
+  return place(node, angle, len, state.nextShootId, true) ?? state;
+}
+
+// Share of a segment that the paint clip will actually show. The clip hides
+// the sheet and the clear band, so a stem that lies entirely inside them is
+// invisible no matter how thick it is.
+export function paintedShare(seg: RhizomeSegment, geo: RhizomeGeometry): number {
+  const steps = 8;
+  let shown = 0;
+  for (let s = 0; s <= steps; s++) {
+    const t = s / steps;
+    const x = seg.x1 + (seg.x2 - seg.x1) * t;
+    const y = seg.y1 + (seg.y2 - seg.y1) * t;
+    if (!pointInKeepOut(x, y, geo)) shown++;
+  }
+  return shown / (steps + 1);
 }
 
 // The segment a finished lap leaves behind. A separate hash, so the pick
 // does not consume the growth PRNG. The same seed and the same finished
-// pattern always keep the same segment.
-export function pickLapSurvivor(segments: RhizomeSegment[], seed: string): RhizomeSegment {
+// pattern always keep the same segment. When geo is passed, the pool is the
+// stems the clip will show — otherwise the one survivor can sit under the
+// sheet and the next lap opens on an empty field.
+export function pickLapSurvivor(segments: RhizomeSegment[], seed: string, geo?: RhizomeGeometry): RhizomeSegment {
+  const pool = geo ? segments.filter(s => paintedShare(s, geo) >= 0.5) : segments;
+  const list = pool.length > 0 ? pool : segments;
   const rng = mulberry32(hashSeed(seed));
-  const i = Math.min(segments.length - 1, Math.floor(rng() * segments.length));
-  return segments[i];
+  const i = Math.min(list.length - 1, Math.floor(rng() * list.length));
+  return list[i];
 }
 
 // One segment, both endpoints, and a shoot at its far end so the next lap
@@ -609,7 +866,7 @@ export function stateFromSurvivor(seg: RhizomeSegment): RhizomeState {
   const kept: RhizomeSegment = {
     id: 0, shootId: 0,
     x1: seg.x1, y1: seg.y1, x2: seg.x2, y2: seg.y2,
-    ...(seg.thick ? { thick: true } : {}),
+    thick: true, /* survivor-stem */
   };
   const angle = (Math.atan2(seg.y2 - seg.y1, seg.x2 - seg.x1) * 180) / Math.PI;
   return {
@@ -692,10 +949,16 @@ export function growTo(state: RhizomeState, rng: () => number, geo: RhizomeGeome
   const hard = opts?.hardCap ?? CAP_SEGMENTS;
   const cap = Math.min(Math.max(0, Math.round(target)), hard);
   const awake = originsAwake(cap); // M4 S1 — only the origins the writing has earned
+  let local = opts;
+  if (opts?.connected === true) {
+    const cov = buildCov(geo);
+    for (const seg of state.segments) markCovSegment(cov, seg, geo);
+    local = { ...opts, cov };
+  }
   let s = state;
   let skips = 0;
   while (s.segments.length < cap) {
-    const next = growSegment(s, rng, geo, origins, awake, opts);
+    const next = growSegment(s, rng, geo, origins, awake, local);
     if (next === s) { if (++skips > 200) break; continue; } // pinned — stop rather than spin
     skips = 0;
     s = next;
@@ -748,6 +1011,7 @@ if (typeof window !== 'undefined') {
     // M3 — the roam + saturation, exposed so m3.mjs proves them against the
     // real algorithm (the same seam discipline as above).
     seedOrigins, saturationTarget, growTo, originsAwake, SAT_K, ORIGIN_COUNT,
-    goalFillTarget, FILL_SEGMENTS, FILL_SHOOTS, pickLapSurvivor, stateFromSurvivor,
+    goalFillTarget, FILL_SEGMENTS, FILL_SHOOTS, FILL_LEN_MIN, FILL_LEN_MAX,
+    scaledFillLength, marginCoverage, paintedShare, pickLapSurvivor, stateFromSurvivor,
   };
 }
