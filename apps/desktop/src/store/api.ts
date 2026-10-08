@@ -103,7 +103,9 @@ export async function apiLogout(): Promise<void> {
 // offline; a 413 (the server refusing a body over its limit) is a different fact from a dead network and is handled
 // differently (split the push, or name the record that cannot travel).
 export class SyncHttpError extends Error {
-  constructor(public readonly status: number) { super(`sync failed: ${status}`); }
+  // GUEST LOGIN (item 225) — `reason` is the server's own machine word on a 401
+  // (`guest_expired`), so the sync loop can tell an expired guest from a dead network.
+  constructor(public readonly status: number, public readonly reason?: string) { super(`sync failed: ${status}`); }
 }
 
 export async function apiSync(payload: {
@@ -114,8 +116,33 @@ export async function apiSync(payload: {
   pull?: false;
 }): Promise<SyncResponse> {
   const res = await postJson('/api/sync', payload);
-  if (!res.ok) throw new SyncHttpError(res.status);
+  if (!res.ok) {
+    let reason: string | undefined;
+    if (res.status === 401) {
+      try { reason = (await res.json())?.reason; } catch { reason = undefined; }
+    }
+    throw new SyncHttpError(res.status, reason);
+  }
   return (await res.json()) as SyncResponse;
+}
+
+// GUEST LOGIN (item 225) — the invite link's one call. The token travels in the
+// body only; it is never logged here, and a refusal's text is the server's own.
+export async function apiGuest(token: string): Promise<AuthResult & { reason?: string }> {
+  const res = await postJson('/auth/guest', { token });
+  if (res.ok) return { ok: true, user: (await res.json()) as AuthUser };
+  // The server's own machine word (guest_expired) travels with its sentence, so a dead link can say so at once.
+  let data: { error?: string; reason?: string } = {};
+  try { data = await res.json(); } catch { data = {}; }
+  return { ok: false, error: data.error || 'This guest link is not valid.', reason: data.reason };
+}
+
+// GUEST LOGIN (item 225) — a guest keeps everything by becoming an account in
+// place. The server refuses (401 guest_expired) only once the grace is over.
+export async function apiClaim(email: string, password: string, name = ''): Promise<AuthResult> {
+  const res = await postJson('/auth/claim', { email, password, name });
+  if (res.ok) return { ok: true, user: (await res.json()) as AuthUser };
+  return { ok: false, error: await errorMessage(res, 'Could not create account') };
 }
 
 // TU1 S5 — the Tutor's one writer-initiated call. Fires only on an

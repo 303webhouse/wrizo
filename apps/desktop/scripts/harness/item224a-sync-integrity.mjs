@@ -202,6 +202,8 @@ function loadSyncClient() {
     "export function __setNextResponse(r) { __next = r; }",
     "export async function apiSync(payload) { __calls.push(payload); if (__next instanceof Error) throw __next; return __next; }",
   ].join('\n'));
+  // guestState (item 225, guest client) — sync.ts now imports markGuestExpired from it; pure, no imports.
+  write('store/guestState.ts', stripTypes(dtRequire, fs.readFileSync(path.join(DESKTOP_SRC, 'store/guestState.ts'), 'utf8')));
   // storageHealth (storage-full, merged in) — the real file, transpiled; it has no imports.
   write('store/storageHealth.ts', stripTypes(dtRequire, fs.readFileSync(path.join(DESKTOP_SRC, 'store/storageHealth.ts'), 'utf8')));
   // B10.1 - the stale-client guard's two leaf modules, the real files. No build is known here, so the guard never trips.

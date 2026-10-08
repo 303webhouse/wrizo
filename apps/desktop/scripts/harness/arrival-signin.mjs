@@ -1,7 +1,7 @@
 // SIGN-IN SCREEN + SIGNED-OUT-HERE — browserless. Proves the per-device flag module
 // (with a fake and a throwing storage), the ordering that keeps a logout from losing
 // the flag, the route guard's exemptions, and the Arrival fixes, all in source.
-// The screenshots and the live walk need a box turn: arrival-signin-capture.mjs.
+// The screenshots and the live walk need a box turn: scripts/evidence/arrival-signin-capture.mjs (an evidence tool, not a check).
 //
 // Run: node scripts/harness/arrival-signin.mjs   (from apps/desktop)
 import fs from 'node:fs';

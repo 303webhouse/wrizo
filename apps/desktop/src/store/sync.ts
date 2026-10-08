@@ -2,6 +2,7 @@ import { getDirtyRecords, markClean, applyRemoteRecords, markAllJournalEntriesDi
 import { getClientBuild, buildIsStale } from './clientBuild';
 import { isStaleClient, markStaleClient } from './staleClient';
 import { apiSync, SyncHttpError, type SyncResponse } from './api';
+import { markGuestExpired } from './guestState';
 import { boardName } from './entryText';
 import { subscribeStorageFailureEvent } from './storageHealth';
 
@@ -445,6 +446,14 @@ async function runSync(fullPull: boolean): Promise<SyncRun> {
   } catch (e) {
     // A stale run writes nothing and schedules nothing: the session it belonged to is over.
     if (e === STALE || gen !== generation) return 'stale';
+    // GUEST LOGIN (item 225) — an expired guest is not offline. Stop asking the
+    // server (it will only refuse again), keep the device's full copy untouched,
+    // and let the claim sheet say so in one plain line. (The run ends like a retired one: nothing was applied.)
+    if (e instanceof SyncHttpError && e.reason === 'guest_expired') {
+      stopSync();
+      markGuestExpired();
+      return 'stale';
+    }
     setStatus('offline');
     scheduleBackoff();
     return 'failed';
