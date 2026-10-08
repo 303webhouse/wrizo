@@ -277,9 +277,9 @@ if (guestAvailable) {
 
   // MUTATION: put the guest branch BEFORE the stale check. S6a and S6b must go red.
   const lf = syncSrc.replace(/\r\n/g, '\n');
-  const staleLine = "    if (e === STALE || gen !== generation) return;\n";
+  const staleLine = "    if (e === STALE || gen !== generation) return 'stale';\n";
   const guestStart = lf.indexOf("    if (e instanceof SyncHttpError && e.reason === 'guest_expired') {");
-  const guestEnd = lf.indexOf('    }\n', lf.indexOf('return;', guestStart)) + 6;
+  const guestEnd = lf.indexOf('    }\n', lf.indexOf("return 'stale';", guestStart)) + 6;
   if (lf.split(staleLine).length !== 2 || guestStart < 0) throw new Error('S6 mutation anchors not found');
   const guestBlock = lf.slice(guestStart, guestEnd);
   const swapped = lf.replace(guestBlock, '').replace(staleLine, guestBlock + staleLine);

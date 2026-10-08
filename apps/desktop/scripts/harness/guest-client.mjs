@@ -156,8 +156,12 @@ try {
   ok('(D1) the sync catch handles guest_expired BEFORE the offline/backoff path',
     catchStart > 0 && catchStart < offlineAfter && catchStart < backoffAfter, JSON.stringify({ catchStart, offlineAfter, backoffAfter }));
   const branch = sync.text.slice(catchStart, offlineAfter);
-  ok('(D2) that branch stops the loop and marks the expired state, then returns',
+  // SUPERSEDED (B10.1: runSync returns its outcome) - by (D2b) below. Parked, not deleted: it pinned a BARE `return;`, and the branch now ends
+  // `return 'stale';` (the run is retired like a stopped one: nothing was applied). Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(D2) that branch stops the loop and marks the expired state, then returns',
     /stopSync\(\);/.test(branch) && /markGuestExpired\(\);/.test(branch) && /return;/.test(branch), '');
+  ok('(D2b) that branch stops the loop and marks the expired state, then returns (its outcome, \'stale\' - the run ended retired)',
+    /stopSync\(\);/.test(branch) && /markGuestExpired\(\);/.test(branch) && /return 'stale';/.test(branch), '');
   ok('(D3) the expired branch does not set the status to offline (the copy is not a dead network)',
     !branch.includes("setStatus('offline')"), '');
 
@@ -185,7 +189,7 @@ try {
 // Mutation: remove the guest_expired branch from the sync catch. D1 must go red.
 {
   const branchStart = sync.text.indexOf("    if (e instanceof SyncHttpError && e.reason === 'guest_expired') {");
-  const branchEnd = sync.text.indexOf('    }', sync.text.indexOf('return;', branchStart)) + 5;
+  const branchEnd = sync.text.indexOf('    }', sync.text.indexOf("return 'stale';", branchStart)) + 5;
   if (branchStart < 0 || branchEnd < branchStart) throw new Error('mutation anchor not found');
   const mutated = sync.text.slice(0, branchStart) + sync.text.slice(branchEnd);
   // D1's own predicate, run on the mutant: the expired branch must be found before offline/backoff.
