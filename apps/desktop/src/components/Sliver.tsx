@@ -14,6 +14,7 @@ import { useWritingGoal, setWritingGoal, goalCount, goalFraction, DEFAULT_GOAL_L
 // repositioning their popover to sit inline in the sliver's own scrolling
 // panel instead of ModeStage's absolute stage-corner placement.
 import { Seg } from './ModeStage';
+import { BEGINNING_GLYPH } from './BeginningsRow';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import type { FormatAction, StructureKind } from '../store/draftFormat';
 import type { PageKindSetting, StyleGuide } from '../types';
@@ -133,6 +134,10 @@ export type SliverContent =
       onPickKind?: (next: PageKindSetting) => void;
       styleGuide?: StyleGuide;
       onPickStyleGuide?: (next: StyleGuide) => void;
+      // PAGE-TEMPLATES-MOVE (Nick, 2026-10-08) - the page's Beginnings (Screenplay, Sprout, Plan) live here now, as LIVE
+      // template buttons ahead of the disabled placeholders. The host owns what each one does (on an empty page it applies in
+      // place; on a page with words it opens a new page), so the strip only renders and calls.
+      templates?: { key: 'screenplay' | 'sprout' | 'plan'; label: string; onApply: () => void }[];
     }
   // AB4 S5 — the Board's own hand tool(s). FX4 S6 — the Connect toggle
   // RETIRES (replaced by BoardEditor.tsx's own handle-drag thread gesture:
@@ -715,6 +720,11 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
         <div className="wz-sliver-section wz-sliver-templates">
           <div className="wz-sliver-h">{t('railTemplates')}</div>
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
+            {content.templates?.map(tpl => (
+              <button key={tpl.key} type="button" className="mode-tbtn wz-template-live" data-template={tpl.key} title={tpl.label} aria-label={tpl.label} onClick={tpl.onApply}>
+                <span className="wz-format-mark" aria-hidden="true">{BEGINNING_GLYPH[tpl.key]}</span>
+              </button>
+            ))}
             <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateOutline')}><TemplateIcon kind="outline" /></button>
             <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateBibliography')}><TemplateIcon kind="bibliography" /></button>
             <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateTitlePage')}><TemplateIcon kind="title" /></button>

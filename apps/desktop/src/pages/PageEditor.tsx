@@ -17,7 +17,7 @@ import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
 import { useFirstLineInvite } from '../components/useFirstLineInvite';
 import { UnbornProvider, useUnborn } from '../components/UnbornSurface';
-import { BeginningsRow, type BeginningDoor } from '../components/BeginningsRow';
+import { unbornHref } from '../store/unbornPage';
 import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset, setSelectionOffsets, getCaretOffset, getSelectionOffsets } from '../store/caretOffset';
 import type { Stroke } from '../types';
@@ -272,6 +272,8 @@ function PageEditorView({ id }: { id: string }) {
   // taken, or Esc). Per mount, never persisted: this is not a preference, it
   // is "the writer is past it on this page." The zero-words gate is the other
   // half of the same rule — see `beginningsVisible` below.
+  // PAGE-TEMPLATES-MOVE: the page's row is retired (its doors are the strip's templates), so nothing reads this now. Its one
+  // writer sits on the typing path (onForward), which this item does not touch; it goes with the next change that does.
   const [beginningsDismissed, setBeginningsDismissed] = useState(false);
   // AB3 S2 — the Page face's sending verbs. Genuinely new capability here
   // (PageEditor never had Move/Copy or Port-to-Board before this ticket —
@@ -599,6 +601,20 @@ function PageEditorView({ id }: { id: string }) {
     requestScreenplay();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // PAGE-TEMPLATES-MOVE - a template chosen on a page WITH WORDS opens a new page and finishes here, on arrival, running the
+  // same act its Beginnings door ran on an empty page. Screenplay rides the address (item 104's `structure`, the effect above);
+  // Sprout and Plan ride the navigation state, because neither is a kind of document - one is an invitation, the other a pairing
+  // made by birth. Latched once per mount and only while unborn, the same three guards as the effect above.
+  const templateDoorRef = useRef(false);
+  useEffect(() => {
+    if (templateDoorRef.current) return;
+    if (!unbornRef.current) return;
+    const template = (location.state as { template?: string } | null)?.template;
+    if (template !== 'sprout' && template !== 'plan') return;
+    templateDoorRef.current = true;
+    if (template === 'sprout') invite.optIn(); else openPlanBoard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
 
   // Exit lands where the page lives: its binder, the Journal if journal-
@@ -744,42 +760,36 @@ function PageEditorView({ id }: { id: string }) {
   // impossible either way.
   if (!realEntry) return <Navigate to="/" replace />;
 
-  // BG1 S2 — the page's beginnings: Screenplay · Sprout · Plan (P1 amendment 2,
-  // Nick's word 2026-07-25 — three single words; "Start from a Spark" is
-  // superseded by "Sprout"). Furniture beside the cursor, never a gate:
-  //
-  //   • The page is ALREADY live and typeable when this renders. The caret is
-  //     under the row from the first frame (ForwardOnlyEditor autofocuses an
-  //     empty page, below) and the row's container is pointer-events:none, so
-  //     it cannot intercept a click or a keystroke meant for the paper. A
-  //     writer who ignores it entirely never knows it was a decision.
-  //   • It renders only while the page has ZERO words, and it is dismissed by
-  //     the first keystroke (A19 — the same `onForward` seam warm-start, TTFK
-  //     and the F6 invite already share), by any door taken, or by Esc.
-  //   • Prose needs no door: prose is what the paper already is.
-  //
-  // Declared before `editorBody` so the row is in scope there; each handler is
-  // wrapped in its own arrow so the functions it calls (`requestScreenplay`
-  // below) are resolved at click time, not at render time.
-  const takeBeginning = (open: () => void) => () => { setBeginningsDismissed(true); open(); };
-  const beginningDoors: BeginningDoor[] = [
-    // Structure, surfaced at the moment it is cheapest to choose: on an empty
-    // page the existing Structure path converts free, with no modal (AB2 S4).
-    { key: 'screenplay', label: dt('beginScreenplay'), onOpen: takeBeginning(() => requestScreenplay()) },
-    // Sprout IS the spark deck, and the spark deck IS the first-line invitation
-    // (P1 amendment 2's addendum: "deck" was overloaded — DeckWizard loads card
-    // decks onto BOARDS; drawing one first line onto a PAGE is this mechanism).
-    // So the door calls FX15's own on-request seam rather than inventing a
-    // page-side deck entry: deck-drawn, never model-drawn, never insertable.
-    { key: 'sprout', label: dt('beginSprout'), onOpen: takeBeginning(() => invite.optIn()) },
-    // The page's own PLAN → door, offered at birth: the Page→Plan pipeline's
-    // on-ramp. Identical act to the bar's door (lazy-born board, then travel).
-    { key: 'plan', label: dt('beginPlan'), onOpen: takeBeginning(openPlanBoard) },
+  // PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: "templates live in the tools menu now") - the page's Beginnings row is retired and
+  // its three doors are the strip's live templates (Sliver.tsx, Templates). Each runs the SAME act its door ran:
+  //   - Screenplay: the Structure path (AB2 S4) - free on an empty page, and it BIRTHS (the ruled amendment to ruling 2).
+  //   - Sprout: FX15's own on-request seam - the first-line invitation, deck-drawn, never model-drawn, never insertable.
+  //   - Plan: the page's own PLAN door - lazy-born board, then travel.
+  // On an EMPTY page (zero words, the row's own test) the act applies in place. On a page WITH words a template never touches
+  // the text: it opens a NEW page in the same home and finishes there (the arrival effect above), and the new page carries the
+  // existing "Back to <title>" chip (state.fromBoardId - the PW1 chip that names the surface actually left), so the departure
+  // keeps a one-tap return.
+  const runTemplate = (key: 'screenplay' | 'sprout' | 'plan') => {
+    if (key === 'screenplay') requestScreenplay();
+    else if (key === 'sprout') invite.optIn();
+    else openPlanBoard();
+  };
+  const applyTemplate = (key: 'screenplay' | 'sprout' | 'plan') => () => {
+    if (wordCount(textRef.current) === 0) { runTemplate(key); return; }
+    flush(); flushNow();
+    const back = { fromBoardId: id, fromBoardTitle: pageTitle };
+    const href = unbornHref({
+      origin: entry.origin === 'journal' ? 'journal' : 'loose',
+      binderId: entry.projectId ?? null,
+      structure: key === 'screenplay' ? 'screenplay' : null,
+    });
+    navigate(href, { state: key === 'screenplay' ? back : { ...back, template: key } });
+  };
+  const pageTemplates = [
+    { key: 'screenplay' as const, label: dt('beginScreenplay'), onApply: applyTemplate('screenplay') },
+    { key: 'sprout' as const, label: dt('beginSprout'), onApply: applyTemplate('sprout') },
+    { key: 'plan' as const, label: dt('beginPlan'), onApply: applyTemplate('plan') },
   ];
-  const beginningsVisible = !beginningsDismissed && !gateActive && wordCount(text) === 0;
-  const beginningsRow = beginningsVisible
-    ? <BeginningsRow surface="page" doors={beginningDoors} onDismiss={() => setBeginningsDismissed(true)} />
-    : null;
 
   // The editor's own render-prop body — identical between the legacy and the
   // AB1-framed ModeStage instance, factored out so the two branches below
@@ -838,14 +848,6 @@ function PageEditorView({ id }: { id: string }) {
           the sheet's first child, so no first-child rule can ever take it for the page. */}
       <span id={ESC_HINT_ID} className="wz-sr-only">{dt('pageEscHint')}</span>
       {gateActive ? null : invite.node}
-      {/* BG1 S2 — the beginnings row, a sibling ABOVE/OUTSIDE the editable DOM
-          (the same warm-start/F6 placement, for the same reason: never
-          selectable, never serialized — the saved bytes are identical whether
-          it showed or not). Set one line below the caret in CSS so the first
-          line stays clear; `gateActive` suppression is already folded into
-          `beginningsVisible`, matching HB1 S3's "the threshold has one
-          sanctioned utterance." */}
-      {beginningsRow}
       {warm.rect && (
         <div
           aria-hidden="true"
@@ -1080,6 +1082,7 @@ function PageEditorView({ id }: { id: string }) {
             onPickKind: kind => patchPageSettings({ kind }),
             styleGuide: entry.pageSettings?.styleGuide ?? STYLE_GUIDE_DEFAULT,
             onPickStyleGuide: styleGuide => patchPageSettings({ styleGuide }),
+            templates: pageTemplates,
           }
         // ITEM 112-A — REVISE'S DESK DRAWER OPENS, AND IT OPENS ONTO NOTHING.
         //
