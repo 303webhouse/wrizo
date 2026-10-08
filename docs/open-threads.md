@@ -24897,3 +24897,15 @@ a diagnostic. INK’s local rig stays up (local only) until B10.1’s tests pass
 release depends on INK’s report reaching this desk, which came in Fable’s relay this morning. At clearing: 0 harness processes,
 0 `ws-runtime-verify` browsers, no grant file. *(During those hours nobody else was waiting on the box; a lane that asks for
 the box after hours should say when it is done, or this desk should ask.)*
+
+## STANDING RULE: “BOX DONE” AND THE 30-MINUTE CHECK-IN; THE B10.1 BRIEF APPROVED — 2026-10-08 (chat 1)
+
+**STANDING RULE (Fable, approved; effective now): (1) every lane says “box done” THE MOMENT a box turn ends. (2) This desk
+CHECKS IN on any live grant after 30 MINUTES and CLEARS it if the box is idle** (0 harness processes, 0 `ws-runtime-verify`
+browsers). *(Cause: INK’s B10.1 repro grant stayed open ~9 hours because the release depended on a report that had not
+reached this desk. A clear on an idle box cannot strand a running lane — its guard refuses cleanly and it asks again — and a
+grant on a BUSY box is left alone and re-checked.)*
+
+**B10.1 BRIEF APPROVED (Fable):** the stale-client guard is WEB-ONLY and READ-ONLY; the landing WAITS for the pull; a PER-ACCOUNT
+first-run (Nick’s ruling: the ritual runs once per account, ever); a `startSync` generation check; an empty-after-pull retry.
+**INK codes on `b101-defence`; Fable byte-reviews before ANY pair.** B11 (guest) stays paused behind B10.1.
