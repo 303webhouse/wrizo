@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrizo · Page mockup · round 7</title>
+<!--
+  docs/mockups/r7 — round 7. r6 (docs/mockups/rail/) stays frozen.
+  Same look: brass for choices, icons over words, thin scrollbars.
+  Nick's Oct 8 rulings:
+    1. Free Write left drawer: TEXT | INK, simplified Typeface (face + size −/+),
+       Format B I U only, plus INK tools. No Actions, no Templates.
+    2. Draft left drawer: as r6, Templates = Screenplay (live) · Outline ·
+       Title page · Bibliography · Custom (last four grayed). No Plan.
+    3. Blank Free Write: one quiet Sprout door near the caret; gone on first keystroke.
+    4. Board's own right drawer, CONNECTIONS: two options side by side —
+       A) everything linked to anything on this board
+       B) only links that leave this board.
+  Branch: cursor/r7-mockup.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=Courier+Prime:ital,wght@0,400;1,400&display=swap');
+
+  :root {
+    --ink-950: #110600; --ink-900: #1F1A16; --ink-800: #2A241E;
+    --ink-border: #332C25; --ink-border-strong: #453B31;
+    --text-hi: #EDE6DA; --text-mid: #B5A998; --text-low: #80766A;
+    --paper: #F3EDE1; --ink-on-paper: #2B2014; --ink-on-paper-low: #8A7C68;
+    --ink-walnut: #1A1206; --ink-iron: #39414A; --ink-oxblood: #6B1F1C; --ink-sea: #17454E;
+    --card-stock: #FBF6EA; --card-hairline: #D9CFB6;
+    --brass: #ff9800; --accent-rest: #96a05a; --accent-door: #4F5730; --brick: #B5543F;
+    --desk-ground: #1F1A16; --rail-surface: #110600;
+    --font-ui: 'Figtree', system-ui, sans-serif;
+    --font-prose: 'Crimson Pro', Georgia, serif;
+    --font-script: 'Courier Prime', 'Courier New', monospace;
+    --sea-wash: rgba(23, 69, 78, 0.14);
+    --sea-wash-deep: rgba(23, 69, 78, 0.22);
+    --fade-dur: .2s;
+    --pop-w: 220px;
+    --sb: color-mix(in srgb, var(--text-low) 28%, transparent);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0;
+      scrollbar-width: thin; scrollbar-color: var(--sb) transparent; }
+  *::-webkit-scrollbar { width: 4px; height: 4px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb { background: var(--sb); }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: #000; color: var(--text-hi); font-family: var(--font-ui); max-width: 100%; }
+  button, input { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  [hidden] { display: none !important; }
+
+  .rig {
+    position: fixed; inset: 0 0 auto 0; z-index: 40;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 7px 12px; background: #000; border-bottom: 1px solid #222;
+    font-size: 11px; color: #9a9a9a;
+  }
+  .rig b { color: #d8d8d8; font-weight: 600; letter-spacing: .06em; }
+  .rig .rev { height: 22px; padding: 0 8px; border: 1px solid #333; color: #c8c8c8; background: #141414; font-size: 11px; }
+  .rig .rev[data-on='true'] { border-color: var(--accent-rest); color: var(--accent-rest); }
+  .rig .hint { margin-left: auto; color: #6e6e6e; }
+  #geom { font-variant-numeric: tabular-nums; color: #8f8f8f; }
+  .stamp {
+    position: fixed; right: 10px; bottom: 10px; z-index: 60;
+    font-size: 10px; letter-spacing: .08em; color: #8a8276;
+    background: rgba(0,0,0,.72); border: 1px solid #2a2a2a; padding: 3px 8px;
+    pointer-events: none;
+  }
+
+  .fit { position: absolute; inset: 42px 0 0 0; overflow: hidden; }
+  .stage {
+    width: min(1280px, 100%); height: 100%; margin: 0 auto;
+    background: var(--ink-950); display: grid; grid-template-columns: 84px minmax(0, 1fr);
+  }
+  .desk {
+    background: var(--rail-surface); border-right: 1px solid var(--ink-border);
+    display: flex; flex-direction: column; align-items: center; padding-top: 14px;
+  }
+  .desk .cat { width: 100%; text-align: center; padding: 9px 0 8px; color: var(--text-low); font-size: 10px; letter-spacing: .08em; }
+  .desk .cat .glyph { display: block; font-size: 15px; margin-bottom: 3px; color: var(--text-mid); }
+  .desk .cat[data-on='true'], .desk .cat[data-on='true'] .glyph { color: var(--accent-rest); }
+
+  .page-col { position: relative; overflow: hidden; min-width: 0; }
+
+  .paper {
+    position: absolute;
+    top: 18px; bottom: 22px;
+    left: calc(28px + var(--pop-w));
+    right: calc(16px + var(--pop-w));
+    background: var(--paper); color: var(--ink-on-paper);
+    box-shadow: 0 0 0 1px rgba(0,0,0,.35);
+    overflow: auto; padding: 28px 48px 40px 56px;
+  }
+  .paper .kicker { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-on-paper-low); margin-bottom: 18px; }
+  .paper .page-foot {
+    position: absolute; bottom: 16px; left: 56px; right: 48px;
+    font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--ink-on-paper-low);
+  }
+  .paper[data-hf='false'] .kicker,
+  .paper[data-hf='false'] .page-foot { display: none; }
+  .paper p { font-family: var(--font-prose); font-size: 18px; line-height: 1.7; margin-bottom: 1.1em; }
+  .paper[data-script='true'] p {
+    font-family: var(--font-script); font-size: 15px; line-height: 1.45; margin-bottom: .7em;
+  }
+  .paper[data-script='true'] .slug { letter-spacing: .04em; text-transform: uppercase; margin-bottom: .4em; }
+  .paper[data-script='true'] .char { text-align: center; margin: 1em 0 0; }
+  .paper[data-script='true'] .dial { padding: 0 18%; }
+  .lnk { background: var(--sea-wash); cursor: pointer; }
+  .lnk:hover, .lnk[data-on='true'] { background: var(--sea-wash-deep); }
+  .para { position: relative; }
+  .gutter {
+    position: absolute; left: -22px; top: .45em; width: 8px; height: 8px;
+    border: 1.5px solid color-mix(in srgb, var(--ink-sea) 70%, transparent);
+    background: var(--sea-wash); cursor: pointer;
+  }
+  canvas.ink { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  body[data-hand='ink'] canvas.ink { pointer-events: auto; cursor: crosshair; }
+  body[data-tool='move'] canvas.ink { cursor: grab; }
+  body[data-tool='eraser'] canvas.ink { cursor: cell; }
+
+  .blank-line { display: flex; align-items: center; gap: 10px; min-height: 28px; }
+  .caret {
+    display: inline-block; width: 1.5px; height: 1.15em; background: var(--ink-on-paper);
+    flex: 0 0 1.5px;
+  }
+  .sprout {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--accent-door); padding: 2px 4px;
+  }
+  .sprout:hover, .sprout:focus-visible { color: var(--brass); }
+  .sprout svg { display: block; }
+  .sprout span { font-size: 13px; letter-spacing: .02em; }
+  .typed {
+    font-family: var(--font-prose); font-size: 18px; line-height: 1.7;
+    min-height: 8em; outline: none; white-space: pre-wrap;
+  }
+
+  .board {
+    position: absolute; inset: 18px 16px 22px calc(28px + 16px);
+    background: var(--desk-ground);
+    border: 1px solid var(--ink-border);
+    overflow: hidden;
+  }
+  body[data-surface='page'] .board { display: none; }
+  body[data-surface='board'] .paper,
+  body[data-surface='board'] .sliver { display: none; }
+  .bcard {
+    position: absolute; width: 210px; min-height: 118px;
+    background: var(--card-stock); color: var(--ink-on-paper);
+    border: 1px solid var(--card-hairline); padding: 12px 14px;
+  }
+  .bcard .kind { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-on-paper-low); margin-bottom: 8px; }
+  .bcard .body { font-family: var(--font-prose); font-size: 15px; line-height: 1.4; }
+  .bcard.c2 { left: 248px; top: 86px; }
+  .bcard.c3 { left: 86px; top: 248px; width: 196px; }
+  .bcard.c1 { left: 36px; top: 36px; }
+
+  .sliver {
+    position: absolute; top: 18px; bottom: 22px; left: 28px;
+    width: var(--pop-w); z-index: 6; pointer-events: none;
+  }
+  .sliver .grip { pointer-events: auto; }
+  .sliver .clip {
+    position: absolute; top: 0; bottom: 0; left: 0; right: 16px;
+    overflow: hidden; pointer-events: none;
+  }
+  .sliver[data-open='true'] .clip { pointer-events: auto; }
+  .sliver .panel {
+    position: absolute; inset: 0;
+    overflow-y: auto; overflow-x: hidden;
+    background: var(--desk-ground); border: 1px solid var(--ink-border); border-right: none;
+    transform: translateX(100%);
+    transition: transform var(--fade-dur) ease;
+  }
+  .sliver[data-open='true'] .panel { transform: translateX(0); }
+  .sliver .grip {
+    position: absolute; top: 16px; right: 0; left: auto; width: 16px; height: 34px; z-index: 3;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--desk-ground); border: 1px solid var(--ink-border); border-right: none;
+    color: var(--text-mid); font-size: 12px;
+    transition: color var(--fade-dur) ease, border-color var(--fade-dur) ease;
+  }
+  .sliver[data-open='true'] .grip { color: var(--brass); border-color: var(--brass); }
+
+  .popout {
+    position: absolute; top: 18px; bottom: 22px; right: 16px;
+    width: var(--pop-w); z-index: 6; pointer-events: none;
+  }
+  .popout .grip { pointer-events: auto; }
+  .popout .clip {
+    position: absolute; top: 0; bottom: 0; left: 16px; right: 0;
+    overflow: hidden; pointer-events: none;
+  }
+  .popout[data-open='true'] .clip { pointer-events: auto; }
+  .popout .panel {
+    position: absolute; inset: 0;
+    overflow-y: auto; overflow-x: hidden;
+    background: var(--desk-ground); border: 1px solid var(--ink-border); border-left: none;
+    transform: translateX(-100%);
+    transition: transform var(--fade-dur) ease;
+  }
+  .popout[data-open='true'] .panel { transform: translateX(0); }
+  .popout .grip {
+    position: absolute; top: 16px; left: 0; width: 16px; height: 34px; z-index: 3;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--desk-ground); border: 1px solid var(--ink-border); border-left: none;
+    color: var(--text-mid); font-size: 12px;
+    transition: color var(--fade-dur) ease, border-color var(--fade-dur) ease;
+  }
+  .popout[data-open='true'] .grip { left: 0; color: var(--brass); border-color: var(--brass); }
+
+  .body { display: flex; flex-direction: column; gap: 20px; padding: 16px 14px; }
+  #textTools, #inkTools, #paneConn, #paneTutor { display: flex; flex-direction: column; gap: 20px; }
+  .h { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-rest); }
+  .sec { display: flex; flex-direction: column; gap: 8px; }
+  .tabs { display: flex; gap: 4px; }
+  .tab {
+    flex: 1; min-width: 0; height: 26px; border: 1px solid var(--ink-border);
+    color: var(--text-mid); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+    background: none; padding: 0 4px;
+  }
+  .tab[data-tab="connections"] { font-size: 7.5px; letter-spacing: .02em; padding: 0 2px; }
+  .tab[data-on='true'] {
+    color: var(--brass); border-color: var(--brass);
+    background: color-mix(in srgb, var(--brass) 16%, transparent);
+  }
+  .mode-tbtn {
+    min-width: 24px; height: 24px; padding: 0 4px; border: 1px solid transparent;
+    color: var(--text-mid); font-size: 12px; display: inline-flex; align-items: center; justify-content: center;
+  }
+  .mode-tbtn:hover { border-color: var(--ink-border); color: var(--text-hi); }
+  .mode-tbtn[data-on='true'] {
+    border-color: var(--brass); color: var(--brass);
+    background: color-mix(in srgb, var(--brass) 16%, transparent);
+  }
+  .mode-tbtn.is-dead { opacity: .45; cursor: default; pointer-events: none; }
+  .mode-tbtn svg { display: block; }
+  .row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+  .type-stack { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+  .type-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) 24px; gap: 3px; width: 100%; }
+  .size-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) 24px; gap: 3px; width: 100%; }
+  .wz-type-face, .size-val {
+    width: 100%; text-align: center; padding: 4px 8px; color: var(--brass);
+    border: 1px solid var(--brass); font-size: 13px; white-space: nowrap;
+    background: color-mix(in srgb, var(--brass) 12%, transparent);
+  }
+  .wz-type-face { text-align: left; }
+  .size-val { font-size: 10px; letter-spacing: .04em; padding: 4px 9px; }
+  .wz-type-num {
+    width: auto; min-width: 0; text-align: center; padding: 3px 2px; color: var(--brass);
+    border: 1px solid var(--brass); font-size: 12px;
+    background: color-mix(in srgb, var(--brass) 12%, transparent);
+  }
+  .wz-type-list { list-style: none; border: 1px solid var(--ink-border); }
+  .wz-type-row { padding: 4px 8px; font-size: 13px; color: var(--text-hi); cursor: pointer; }
+  .wz-type-row[data-current='true'] {
+    color: var(--brass); background: color-mix(in srgb, var(--brass) 12%, transparent);
+  }
+  .chip { border: 1px solid var(--ink-border); color: var(--text-mid); font-size: 10px; padding: 3px 7px; }
+  .chip[data-on='true'] {
+    color: var(--brass); border-color: var(--brass);
+    background: color-mix(in srgb, var(--brass) 12%, transparent);
+  }
+  .tag-pop { display: flex; flex-wrap: wrap; gap: 4px; }
+  .confirm .q { font-size: 11px; color: var(--text-hi); margin-bottom: 6px; }
+  .confirm .go { border: 1px solid var(--brick); color: var(--brick); padding: 4px 8px; font-size: 11px; }
+  .confirm .no { border: 1px solid var(--ink-border); color: var(--text-mid); padding: 4px 8px; font-size: 11px; }
+  .mode-swatch { width: 22px; height: 22px; border: 1px solid var(--ink-border-strong); }
+  .mode-swatch.active { outline: 2px solid var(--brass); outline-offset: 1px; }
+
+  .conn-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .add {
+    width: 26px; height: 26px; border: 1px solid var(--ink-border);
+    color: var(--text-mid); font-size: 16px; line-height: 1;
+  }
+  .add[data-on='true'] {
+    color: var(--brass); border-color: var(--brass);
+    background: color-mix(in srgb, var(--brass) 16%, transparent);
+  }
+  .scope {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  }
+  .scope-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    padding: 8px 4px 6px; border: 1px solid var(--ink-border); color: var(--text-mid);
+  }
+  .scope-btn svg { display: block; }
+  .scope-btn .cap {
+    font-size: 8px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-low);
+  }
+  .scope-btn[data-on='true'] {
+    color: var(--brass); border-color: var(--brass);
+    background: color-mix(in srgb, var(--brass) 16%, transparent);
+  }
+  .scope-btn[data-on='true'] .cap { color: var(--brass); }
+  .sort { display: flex; gap: 4px; border-bottom: 1px solid var(--ink-border); }
+  .sort button {
+    border-bottom: 2px solid transparent; color: var(--text-low);
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 6px 4px;
+  }
+  .sort button[data-on='true'] {
+    color: var(--brass); border-bottom-color: var(--brass);
+    background: color-mix(in srgb, var(--brass) 12%, transparent);
+  }
+  .math, .empty, .focus-bar { font-size: 10px; color: var(--text-low); line-height: 1.4; }
+  .focus-bar button { color: var(--accent-rest); }
+  .grp { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-mid); margin: 10px 0 4px; }
+  .lrow { display: flex; align-items: center; gap: 4px; }
+  .open { flex: 1; min-width: 0; text-align: left; display: flex; gap: 6px; padding: 6px 4px; color: var(--text-mid); font-size: 12px; }
+  .open:hover { color: var(--text-hi); background: var(--ink-800); }
+  .kind { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-low); }
+  .lab { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .unlink { color: var(--text-low); font-size: 11px; padding: 2px 6px; }
+  .ask { display: flex; gap: 6px; }
+  .ask input { flex: 1; min-width: 0; background: var(--ink-800); border: 1px solid var(--ink-border); color: var(--text-hi); font-size: 12px; padding: 7px; }
+  .ask button { border: 1px solid var(--ink-border); color: var(--text-mid); padding: 0 10px; font-size: 11px; }
+  .thumbs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .thumb { text-align: left; color: var(--text-mid); }
+  .thumb .pic {
+    display: block; height: 48px; border: 1px solid var(--ink-border);
+    background: var(--card-stock); color: var(--ink-on-paper);
+    font-family: var(--font-prose); font-size: 10px; line-height: 1.3; padding: 6px; overflow: hidden;
+  }
+  .thumb .pic.page { background: var(--paper); border-top: 2px solid var(--accent-rest); }
+  .thumb .pic.doc { background: var(--ink-800); color: var(--text-mid); font-family: var(--font-ui); }
+  .thumb .cap { font-size: 10px; margin-top: 4px; }
+  .switch-board { width: 100%; border: 1px solid var(--ink-border); color: var(--text-mid); padding: 6px 8px; text-align: left; font-size: 12px; }
+  .board-list button { display: block; width: 100%; text-align: left; padding: 6px 8px; color: var(--text-mid); font-size: 12px; }
+  .board-list button[data-current='true'] { color: var(--brass); }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 50;
+    background: var(--ink-900); border: 1px solid var(--ink-border);
+    color: var(--text-hi); font-size: 12px; padding: 8px 14px; opacity: 0; pointer-events: none;
+  }
+  .toast[data-on='true'] { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sliver .panel, .popout .panel { transition: none; }
+  }
+
+  @media (max-width: 720px) {
+    .rig .hint { display: none; }
+    .stage { grid-template-columns: minmax(0, 1fr); width: 100%; }
+    .desk { display: none; }
+    .paper { inset: 8px; left: 8px; right: 8px; padding: 16px 14px 24px 28px; }
+    .paper p { overflow-wrap: anywhere; font-size: 16px; }
+    .board { inset: 8px; }
+    .sliver, .popout { top: 8px; bottom: 8px; width: min(var(--pop-w), calc(100% - 24px)); }
+    .sliver { left: 8px; }
+    .popout { right: 8px; }
+    .sliver::before, .popout::before {
+      content: ''; position: absolute; top: 0; bottom: 0; width: 16px;
+      background: var(--desk-ground); z-index: 2; pointer-events: none;
+    }
+    .sliver::before { left: 0; border-right: 1px solid var(--ink-border); }
+    .popout::before { right: 0; border-left: 1px solid var(--ink-border); }
+    .sliver .grip { left: 0; right: auto; border-right: none; border-left: 1px solid var(--ink-border); }
+    .sliver .clip { left: 16px; right: 0; }
+    .sliver .panel { border-right: 1px solid var(--ink-border); border-left: none; transform: translateX(-100%); }
+    .sliver[data-open='true'] .panel { transform: translateX(0); }
+    .popout .grip { left: auto; right: 0; }
+    .popout .clip { left: 0; right: 16px; }
+    .popout .panel { border-left: 1px solid var(--ink-border); border-right: none; transform: translateX(100%); }
+    .popout[data-open='true'] .panel { transform: translateX(0); }
+    .sliver[data-open='true'], .popout[data-open='true'] { z-index: 8; }
+    .tab { letter-spacing: .4px; font-size: 9px; }
+    .tab[data-tab="connections"] { font-size: 7px; letter-spacing: .02em; }
+  }
+</style>
+</head>
+<body data-hand="text" data-tool="pen" data-surface="page" data-kind="freewrite" data-blank="false">
+<header class="rig">
+  <b>PAGE · R7</b>
+  <button class="rev" data-view="fw-text" type="button">FW Text</button>
+  <button class="rev" data-view="fw-ink" type="button">FW Ink</button>
+  <button class="rev" data-view="fw-blank" type="button">FW Blank</button>
+  <button class="rev" data-view="draft" type="button">Draft</button>
+  <button class="rev" data-view="board-all" type="button">Board · All</button>
+  <button class="rev" data-view="board-leave" type="button">Board · Leave</button>
+  <span class="hint" id="revHint">Free Write · simplified Typeface + B I U · no Actions, no Templates</span>
+  <span id="geom"></span>
+</header>
+
+<div class="fit">
+  <div class="stage">
+    <nav class="desk" aria-label="Desk">
+      <button class="cat" type="button"><span class="glyph">⌂</span>Desk</button>
+      <button class="cat" id="catPages" data-on="true" type="button"><span class="glyph">✎</span>Pages</button>
+      <button class="cat" id="catBoards" type="button"><span class="glyph">▦</span>Boards</button>
+      <button class="cat" type="button"><span class="glyph">⌘</span>Plan</button>
+    </nav>
+    <div class="page-col">
+      <aside class="sliver" id="sliver" data-open="true" data-hand="text">
+        <div class="clip">
+        <div class="panel">
+          <div class="body">
+            <div class="tabs" role="radiogroup">
+              <button class="tab" data-hand="text" data-on="true" type="button">Text</button>
+              <button class="tab" data-hand="ink" type="button">Ink</button>
+            </div>
+            <div id="textTools">
+              <div class="sec">
+                <div class="h">Typeface</div>
+                <div class="type-stack">
+                  <button class="wz-type-face" id="faceBtn" type="button">Crimson Pro</button>
+                  <div class="type-row">
+                    <button class="mode-tbtn" id="sizeDown" type="button">−</button>
+                    <input class="wz-type-num" id="sizeNum" value="16" readonly>
+                    <button class="mode-tbtn" id="sizeUp" type="button">+</button>
+                  </div>
+                </div>
+                <ul class="wz-type-list" id="faceList" hidden>
+                  <li class="wz-type-row" data-current="true" data-face="Crimson Pro" data-stack="'Crimson Pro', Georgia, serif">Crimson Pro</li>
+                  <li class="wz-type-row" data-face="Figtree" data-stack="'Figtree', system-ui, sans-serif">Figtree</li>
+                </ul>
+              </div>
+              <div class="sec">
+                <div class="h">Format</div>
+                <div class="row">
+                  <button class="mode-tbtn" data-fmt="bold" type="button"><b>B</b></button>
+                  <button class="mode-tbtn" data-fmt="italic" type="button"><i>I</i></button>
+                  <button class="mode-tbtn" data-fmt="underline" type="button"><u>U</u></button>
+                  <button class="mode-tbtn" id="bulletBtn" type="button">•</button>
+                </div>
+              </div>
+              <div class="sec" id="actionsSec">
+                <div class="h">Actions</div>
+                <div class="row">
+                  <button class="mode-tbtn" id="tagsBtn" type="button" title="Tags">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2.5 2.5h6.2L13.5 7.3 8.7 12.1 2.5 5.9z"/><circle cx="5.2" cy="5.2" r=".9" fill="currentColor" stroke="none"/></svg>
+                  </button>
+                  <button class="mode-tbtn" id="copyBtn" type="button" title="Copy">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="5.5" y="5.5" width="8" height="8"/><path d="M10.5 5.5V3.5H2.5v8h2"/></svg>
+                  </button>
+                  <button class="mode-tbtn" id="deleteBtn" type="button" title="Delete">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3.5 4.5h9M6 4.5V3h4v1.5M5.5 6.5v6M8 6.5v6M10.5 6.5v6M4.5 4.5l.7 9h5.6l.7-9"/></svg>
+                  </button>
+                  <button class="mode-tbtn" id="hfBtn" data-on="true" type="button" title="Header/Footer">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3.5" y="2.5" width="9" height="11"/><path d="M3.5 5h9M3.5 11h9"/></svg>
+                  </button>
+                </div>
+                <div class="tag-pop" id="tagPop" hidden>
+                  <button class="chip" data-tag="kitchen" type="button">kitchen</button>
+                  <button class="chip" data-tag="night" type="button">night</button>
+                  <button class="chip" data-tag="voice" type="button">voice</button>
+                </div>
+                <div class="confirm" id="deleteAsk" hidden>
+                  <div class="q">Send this page to Trash?</div>
+                  <button class="go" id="deleteGo" type="button">Trash</button>
+                  <button class="no" id="deleteNo" type="button">Keep</button>
+                </div>
+              </div>
+              <div class="sec" id="tmplSec">
+                <div class="h">Templates</div>
+                <div class="row">
+                  <button class="mode-tbtn" id="tmplScreen" type="button" title="Screenplay">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M2.5 3.5h6M2.5 7h11M5.5 10.5h6M5.5 13h4"/></svg>
+                  </button>
+                  <button class="mode-tbtn is-dead" type="button" title="Outline" aria-disabled="true">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 4h10M5 7.5h8M7 11h6"/></svg>
+                  </button>
+                  <button class="mode-tbtn is-dead" type="button" title="Title page" aria-disabled="true">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3.5" y="2.5" width="9" height="11"/><path d="M5.5 6h5M6.5 8.5h3"/></svg>
+                  </button>
+                  <button class="mode-tbtn is-dead" type="button" title="Bibliography" aria-disabled="true">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3.5 3.5h4.5v9H3.5zM8 3.5h4.5v9H8"/><path d="M8 3.5v9"/></svg>
+                  </button>
+                  <button class="mode-tbtn is-dead" type="button" title="Custom" aria-disabled="true">
+                    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3v10M3 8h10"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div id="inkTools" hidden>
+              <div class="sec">
+                <div class="h">Tip</div>
+                <div class="row">
+                  <button class="mode-tbtn" data-tip="pen" data-on="true" type="button" title="Pen">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M11.5 2.2 4.3 9.4 3 13l3.6-1.3 7.2-7.2z" stroke-linejoin="round"/><path d="M4.3 9.4 6.6 11.7"/></svg>
+                  </button>
+                  <button class="mode-tbtn" data-tip="pencil" type="button" title="Pencil">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M11.2 2.5 3.9 9.8 2.7 13.3l3.5-1.2 7.3-7.3z" stroke-linejoin="round"/><path d="M9.6 4.1 11.9 6.4"/><path d="M2.7 13.3 5 11"/></svg>
+                  </button>
+                  <button class="mode-tbtn" data-tip="marker" type="button" title="Marker">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12.6 2.6 7.4 7.8l-2.6 1 -1 2.6 2.6-1 1-2.6 5.2-5.2z" stroke-linejoin="round"/><path d="M2.6 13.4 4.8 11.2" stroke-linecap="round"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="sec">
+                <div class="h">Size</div>
+                <div class="size-row">
+                  <button class="mode-tbtn" id="nibDown" type="button">−</button>
+                  <div class="size-val" id="nibVal">Regular</div>
+                  <button class="mode-tbtn" id="nibUp" type="button">+</button>
+                </div>
+              </div>
+              <div class="sec">
+                <div class="h">Ink</div>
+                <div class="row">
+                  <button class="mode-swatch active" data-ink="walnut" type="button" title="Walnut" style="background:#1A1206"></button>
+                  <button class="mode-swatch" data-ink="iron" type="button" title="Iron" style="background:#39414A"></button>
+                  <button class="mode-swatch" data-ink="oxblood" type="button" title="Oxblood" style="background:#6B1F1C"></button>
+                  <button class="mode-swatch" data-ink="sea" type="button" title="Sea" style="background:#17454E"></button>
+                </div>
+              </div>
+              <div class="sec">
+                <div class="row">
+                  <button class="mode-tbtn" id="eraserBtn" type="button" title="Eraser">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M5 3.5h6l2.5 2.5v2L8.5 13.5H6L3.5 8V6z"/><path d="M3.8 8.2h8.4"/></svg>
+                  </button>
+                  <button class="mode-tbtn" id="moveBtn" type="button" title="Move">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 2v12M2 8h12"/><path d="M8 2 6.2 4M8 2l1.8 2M8 14 6.2 12M8 14l1.8-2M2 8l2-1.8M2 8l2 1.8M14 8l-2-1.8M14 8l-2 1.8"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+        <button class="grip" id="sliverGrip" type="button" aria-expanded="true">›</button>
+      </aside>
+
+      <article class="paper" id="paper" data-hf="true">
+        <canvas class="ink" id="ink"></canvas>
+        <div id="pageLive">
+          <div class="kicker" id="kicker">Free write · Night Kitchen</div>
+          <div id="prose">
+            <p>The kettle clicks off and <span class="lnk" data-anchor="a1">she still doesn’t turn around</span>.</p>
+            <p><span class="lnk" data-anchor="a2">Steam writes a short sentence</span> on the window, then forgets it.</p>
+            <div class="para">
+              <button class="gutter" id="gutter" type="button" title="Spot note"></button>
+              <p>He could say her name. He doesn’t.</p>
+            </div>
+          </div>
+          <div id="script" hidden>
+            <p class="slug">INT. NIGHT KITCHEN — LATE</p>
+            <p class="char">MARA</p>
+            <p class="dial">If you’re going to stand there, at least put the kettle down.</p>
+            <p class="char">ELLIS</p>
+            <p class="dial">I did. It clicked itself off.</p>
+          </div>
+          <div class="page-foot" id="pageFoot">Night Kitchen · free write</div>
+        </div>
+        <div id="pageBlank" hidden>
+          <div class="blank-line" id="blankLine">
+            <span class="caret" id="caret"></span>
+            <button class="sprout" id="sprout" type="button" title="Sprout">
+              <svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12.5h14"/>
+                <circle cx="6" cy="12.5" r="1.5" fill="currentColor" stroke="none"/>
+                <path d="M6 11C6 8.5 7 6.8 8.8 5.6"/>
+                <path d="M8.8 5.6c1-1.5 2.6-2 4-1.7-.2 1.9-1.7 3.2-4 1.7z"/>
+              </svg>
+              <span>Sprout</span>
+            </button>
+          </div>
+          <div class="typed" id="typed" contenteditable="true" spellcheck="false" hidden></div>
+        </div>
+      </article>
+
+      <div class="board" id="board" hidden>
+        <article class="bcard c1">
+          <div class="kind">Card</div>
+          <div class="body">The first line she won’t say</div>
+        </article>
+        <article class="bcard c2">
+          <div class="kind">Card</div>
+          <div class="body">Kitchen smell — onion, rain</div>
+        </article>
+        <article class="bcard c3">
+          <div class="kind">Note</div>
+          <div class="body">Don’t let him speak first.</div>
+        </article>
+      </div>
+
+      <aside class="popout" id="popout" data-open="false">
+        <button class="grip" id="popGrip" type="button" aria-expanded="false">›</button>
+        <div class="clip">
+        <div class="panel">
+          <div class="body">
+            <div class="tabs" role="radiogroup">
+              <button class="tab" data-tab="tutor" type="button">Tutor</button>
+              <button class="tab" data-tab="connections" data-on="true" type="button">Connections</button>
+            </div>
+            <div id="paneTutor" hidden>
+              <form class="ask" id="tutorForm">
+                <input id="tutorIn" type="text" placeholder="Ask…" autocomplete="off">
+                <button type="submit">Ask</button>
+              </form>
+              <div class="empty" id="tutorLog"></div>
+            </div>
+            <div id="paneConn">
+              <div class="scope" id="boardScope" hidden>
+                <button class="scope-btn" data-scope="all" data-on="true" type="button" title="Everything linked to anything on this board">
+                  <svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.2">
+                    <circle cx="4.2" cy="8" r="1.6"/><circle cx="11.8" cy="4.4" r="1.6"/><circle cx="11.8" cy="11.6" r="1.6"/>
+                    <path d="M5.6 7.4 10.2 5M5.6 8.6 10.2 11M11.8 6v4"/>
+                  </svg>
+                  <span class="cap">On board</span>
+                </button>
+                <button class="scope-btn" data-scope="leave" type="button" title="Only links that leave this board">
+                  <svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.2">
+                    <rect x="2.5" y="3.5" width="7" height="9"/>
+                    <path d="M11 8h3M12.2 6.4 14.5 8 12.2 9.6"/>
+                  </svg>
+                  <span class="cap">Leaving</span>
+                </button>
+              </div>
+              <div class="conn-head">
+                <div class="sort" role="tablist">
+                  <button data-sort="recency" data-on="true" type="button">Recency</button>
+                  <button data-sort="kind" type="button">Kind</button>
+                  <button data-sort="tag" type="button">Tag</button>
+                </div>
+                <button class="add" id="addLink" type="button" title="Add">+</button>
+              </div>
+              <div class="focus-bar" id="focusBar" hidden>
+                Only the source(s) linked.
+                <button type="button" id="showAll">Show everything</button>
+              </div>
+              <div id="list"></div>
+              <div id="picker" hidden>
+                <div class="grp">Cards</div>
+                <div class="thumbs">
+                  <button class="thumb" type="button"><span class="pic">The first line she won’t say</span><span class="cap">Card</span></button>
+                  <button class="thumb" type="button"><span class="pic">Kitchen smell — onion, rain</span><span class="cap">Card</span></button>
+                </div>
+                <div class="grp">Pages</div>
+                <div class="thumbs">
+                  <button class="thumb" type="button"><span class="pic page">Chapter 3</span><span class="cap">Page</span></button>
+                  <button class="thumb" type="button"><span class="pic page">Free write · Oct 4</span><span class="cap">Page</span></button>
+                </div>
+                <div class="grp">Documents</div>
+                <div class="thumbs">
+                  <button class="thumb" type="button"><span class="pic doc">Cast notes</span><span class="cap">Document</span></button>
+                  <button class="thumb" type="button"><span class="pic doc">The house — outline</span><span class="cap">Document</span></button>
+                </div>
+                <button class="switch-board" id="switchBoard" type="button">Switch board</button>
+                <div class="board-list" id="boardList" hidden>
+                  <button type="button" data-current="true">Night Kitchen</button>
+                  <button type="button">The Stairs</button>
+                  <button type="button">Cast Bible</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<div class="stamp" id="shotStamp">R7 · Oct 8 · pending</div>
+<script>
+(function () {
+  const PAGE_LINKS = [
+    { id: 'l1', anchor: 'a1', kind: 'card', label: 'The first line she won’t say', tags: ['voice', 'kitchen'], recency: 5 },
+    { id: 'l2', anchor: 'a2', kind: 'card', label: 'Kitchen smell', tags: ['kitchen'], recency: 4 },
+    { id: 'l3', anchor: 'a1', kind: 'page', label: 'Chapter 3', tags: ['night'], recency: 3 },
+    { id: 'l4', anchor: null, kind: 'page', label: 'Free write · Oct 4', tags: ['voice'], recency: 2 },
+    { id: 'l5', anchor: 'spot', kind: 'note', label: 'Don’t let him speak first', tags: [], recency: 6 },
+    { id: 'l6', anchor: null, kind: 'imported', label: 'Cast notes', tags: ['cast'], recency: 1 }
+  ];
+  const BOARD_LINKS = [
+    { id: 'b1', kind: 'card', label: 'The first line she won’t say', tags: ['voice'], recency: 7, leave: false },
+    { id: 'b2', kind: 'card', label: 'Kitchen smell', tags: ['kitchen'], recency: 6, leave: false },
+    { id: 'b3', kind: 'note', label: 'Don’t let him speak first', tags: [], recency: 5, leave: false },
+    { id: 'b4', kind: 'page', label: 'Chapter 3', tags: ['night'], recency: 4, leave: false },
+    { id: 'b5', kind: 'board', label: 'The Stairs', tags: ['house'], recency: 3, leave: true },
+    { id: 'b6', kind: 'page', label: 'Free write · Oct 6', tags: ['voice'], recency: 2, leave: true },
+    { id: 'b7', kind: 'imported', label: 'Cast notes', tags: ['cast'], recency: 1, leave: true },
+    { id: 'b8', kind: 'board', label: 'Cast Bible', tags: ['cast'], recency: 0, leave: true }
+  ];
+  const KIND_ORDER = ['card', 'page', 'board', 'imported', 'note'];
+  const KIND_LABEL = { card: 'Card', page: 'Page', board: 'Board', imported: 'Doc', note: 'Note' };
+  const NIBS = ['Fine', 'Regular', 'Broad'];
+  const NIB_W = { Fine: 1.4, Regular: 2.4, Broad: 4.6 };
+  const ERASE_W = { Fine: 8, Regular: 16, Broad: 28 };
+  const INKS = { walnut: '#1A1206', iron: '#39414A', oxblood: '#6B1F1C', sea: '#17454E' };
+  const HINTS = {
+    'fw-text': 'Free Write · Typeface + B I U · no Actions, no Templates',
+    'fw-ink': 'Free Write INK · Tip · Size · Ink · Eraser · Move',
+    'fw-blank': 'Blank Free Write · one quiet Sprout by the caret',
+    'draft': 'Draft · r6 drawer · Screenplay live · four templates grayed · no Plan',
+    'board-all': 'Board CONNECTIONS · A) everything on this board',
+    'board-leave': 'Board CONNECTIONS · B) only links that leave'
+  };
+  const $ = (id) => document.getElementById(id);
+  let hand = 'text', tab = 'connections', sort = 'recency', focus = null, picker = false;
+  let gone = new Set(), toastT = 0, size = 16, nib = 1, tool = 'pen';
+  let kind = 'freewrite', surface = 'page', blank = false, scripted = false, scope = 'all';
+  const ink = { tip: 'pen', color: 'walnut' };
+  const strokes = [];
+  let live = null, moving = null;
+  const params = new URLSearchParams(location.search);
+  const STAMP = params.get('stamp') || 'R7 · Oct 8 · pending';
+
+  function phone() { return window.innerWidth <= 720; }
+  function toast(msg) {
+    $('toast').textContent = msg; $('toast').dataset.on = 'true';
+    clearTimeout(toastT); toastT = setTimeout(() => { $('toast').dataset.on = 'false'; }, 2200);
+  }
+  function links() { return surface === 'board' ? BOARD_LINKS : PAGE_LINKS; }
+  function setSliver(open) {
+    $('sliver').dataset.open = open ? 'true' : 'false';
+    $('sliverGrip').setAttribute('aria-expanded', open ? 'true' : 'false');
+    $('sliverGrip').textContent = open ? '›' : '‹';
+    if (open && phone()) setPop(false);
+  }
+  function setPop(open) {
+    $('popout').dataset.open = open ? 'true' : 'false';
+    $('popGrip').setAttribute('aria-expanded', open ? 'true' : 'false');
+    $('popGrip').textContent = open ? '‹' : '›';
+    if (open && phone()) setSliver(false);
+  }
+  function setKind(next) {
+    kind = next;
+    document.body.dataset.kind = next;
+    $('actionsSec').hidden = next === 'freewrite';
+    $('tmplSec').hidden = next === 'freewrite';
+    $('bulletBtn').hidden = next === 'freewrite';
+    if (next === 'draft') {
+      $('kicker').textContent = 'Draft · Night Kitchen · Chapter 3';
+      $('pageFoot').textContent = 'Night Kitchen · 3';
+    } else {
+      $('kicker').textContent = 'Free write · Night Kitchen';
+      $('pageFoot').textContent = 'Night Kitchen · free write';
+      scripted = false;
+      $('paper').dataset.script = 'false';
+      $('tmplScreen').dataset.on = 'false';
+      $('prose').hidden = false;
+      $('script').hidden = true;
+    }
+  }
+  function setBlank(on) {
+    blank = on;
+    document.body.dataset.blank = on ? 'true' : 'false';
+    $('pageLive').hidden = on;
+    $('pageBlank').hidden = !on;
+    if (on) {
+      $('typed').textContent = '';
+      $('typed').hidden = true;
+      $('blankLine').hidden = false;
+      $('sprout').hidden = false;
+    }
+  }
+  function firstKey(text) {
+    if (!blank) return;
+    $('typed').hidden = false;
+    $('typed').textContent = text;
+    $('blankLine').hidden = true;
+    $('sprout').hidden = true;
+    $('typed').focus();
+    const sel = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents($('typed'));
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+  function setSurface(next) {
+    surface = next;
+    document.body.dataset.surface = next;
+    $('board').hidden = next !== 'board';
+    $('boardScope').hidden = next !== 'board';
+    $('catPages').dataset.on = next === 'page' ? 'true' : 'false';
+    $('catBoards').dataset.on = next === 'board' ? 'true' : 'false';
+    if (next === 'board') { setSliver(false); setTab('connections', false); }
+    else { setPop(false); }
+    render();
+  }
+  function setScope(next) {
+    scope = next;
+    document.querySelectorAll('[data-scope]').forEach((b) => {
+      b.dataset.on = b.dataset.scope === next ? 'true' : 'false';
+    });
+    render();
+  }
+  function setHand(next) {
+    hand = next;
+    document.body.dataset.hand = next;
+    $('sliver').dataset.hand = next;
+    document.querySelectorAll('.tab[data-hand]').forEach((t) => {
+      t.dataset.on = t.dataset.hand === next ? 'true' : 'false';
+    });
+    $('textTools').hidden = next !== 'text';
+    $('inkTools').hidden = next !== 'ink';
+    if (next !== 'ink') setTool('pen');
+  }
+  function setTool(next) {
+    tool = next;
+    document.body.dataset.tool = next;
+    $('eraserBtn').dataset.on = next === 'eraser' ? 'true' : 'false';
+    $('moveBtn').dataset.on = next === 'move' ? 'true' : 'false';
+    showNib();
+  }
+  function showNib() {
+    $('nibVal').textContent = tool === 'eraser' ? String(ERASE_W[NIBS[nib]]) : NIBS[nib];
+  }
+  function setTab(name, openPicker) {
+    tab = name;
+    document.querySelectorAll('[data-tab]').forEach((t) => { t.dataset.on = t.dataset.tab === name ? 'true' : 'false'; });
+    $('paneTutor').hidden = name !== 'tutor';
+    $('paneConn').hidden = name !== 'connections';
+    picker = name === 'connections' && !!openPicker;
+    $('addLink').dataset.on = picker ? 'true' : 'false';
+    $('picker').hidden = !picker;
+    $('list').hidden = picker;
+    $('focusBar').hidden = picker || !focus;
+    setPop(true);
+  }
+  function setPicker(on) {
+    if (tab !== 'connections') setTab('connections', on);
+    else {
+      picker = on;
+      $('addLink').dataset.on = on ? 'true' : 'false';
+      $('picker').hidden = !on;
+      $('list').hidden = on;
+    }
+  }
+  function visible() {
+    return links().filter((l) => {
+      if (gone.has(l.id)) return false;
+      if (surface === 'board' && scope === 'leave' && !l.leave) return false;
+      if (focus && l.anchor !== focus) return false;
+      return true;
+    });
+  }
+  function render() {
+    const items = visible();
+    const box = $('list');
+    box.innerHTML = '';
+    if (!picker) $('focusBar').hidden = surface === 'board' || !focus;
+    document.querySelectorAll('.lnk').forEach((el) => { el.dataset.on = el.dataset.anchor === focus ? 'true' : 'false'; });
+    if ($('gutter')) $('gutter').dataset.on = focus === 'spot' ? 'true' : 'false';
+    if (!items.length) { box.innerHTML = '<div class="empty">Nothing linked yet.</div>'; return; }
+    if (sort === 'tag') {
+      const groups = new Map(); let appearances = 0;
+      items.forEach((item) => {
+        (item.tags.length ? item.tags : ['No tag']).forEach((t) => {
+          if (!groups.has(t)) groups.set(t, []);
+          groups.get(t).push(item); appearances += 1;
+        });
+      });
+      const math = document.createElement('div');
+      math.className = 'math';
+      math.textContent = items.length + ' things · ' + appearances + ' appearances';
+      box.appendChild(math);
+      [...groups.keys()].sort((a, b) => (a === 'No tag') - (b === 'No tag') || a.localeCompare(b)).forEach((k) => {
+        const h = document.createElement('div'); h.className = 'grp';
+        h.textContent = (k === 'No tag' ? 'No tag' : '#' + k) + ' · ' + groups.get(k).length;
+        box.appendChild(h);
+        groups.get(k).forEach((item) => box.appendChild(rowEl(item)));
+      });
+      return;
+    }
+    items.slice().sort((a, b) => sort === 'kind' ? KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) : b.recency - a.recency)
+      .forEach((item) => box.appendChild(rowEl(item)));
+  }
+  function rowEl(item) {
+    const wrap = document.createElement('div'); wrap.className = 'lrow';
+    const open = document.createElement('button'); open.className = 'open'; open.type = 'button';
+    open.innerHTML = '<span class="kind">' + KIND_LABEL[item.kind] + '</span><span class="lab"></span>';
+    open.querySelector('.lab').textContent = item.label;
+    open.addEventListener('dblclick', () => toast('Open · ' + item.label));
+    const rm = document.createElement('button'); rm.className = 'unlink'; rm.type = 'button'; rm.textContent = '×';
+    rm.addEventListener('click', () => { gone.add(item.id); toast('Unlinked. Target still exists.'); render(); });
+    wrap.append(open, rm); return wrap;
+  }
+  function setView(name) {
+    document.querySelectorAll('[data-view]').forEach((x) => { x.dataset.on = x.dataset.view === name ? 'true' : 'false'; });
+    $('revHint').textContent = HINTS[name];
+    $('shotStamp').textContent = STAMP + ' · ' + name;
+    if (name === 'fw-text') {
+      setSurface('page'); setKind('freewrite'); setBlank(false); setHand('text'); setSliver(true); setPop(false);
+    }
+    if (name === 'fw-ink') {
+      setSurface('page'); setKind('freewrite'); setBlank(false); setHand('ink'); setSliver(true); setPop(false);
+    }
+    if (name === 'fw-blank') {
+      setSurface('page'); setKind('freewrite'); setBlank(true); setHand('text'); setSliver(false); setPop(false);
+    }
+    if (name === 'draft') {
+      setSurface('page'); setKind('draft'); setBlank(false); setHand('text'); setSliver(true); setPop(false);
+    }
+    if (name === 'board-all') {
+      setKind('freewrite'); setBlank(false); setSurface('board'); setScope('all'); setTab('connections', false);
+    }
+    if (name === 'board-leave') {
+      setKind('freewrite'); setBlank(false); setSurface('board'); setScope('leave'); setTab('connections', false);
+    }
+  }
+
+  $('sliverGrip').addEventListener('click', () => setSliver($('sliver').dataset.open !== 'true'));
+  $('popGrip').addEventListener('click', () => setPop($('popout').dataset.open !== 'true'));
+  document.querySelectorAll('.tab[data-hand]').forEach((t) => t.addEventListener('click', () => setHand(t.dataset.hand)));
+  document.querySelectorAll('.tab[data-tab]').forEach((t) => t.addEventListener('click', () => setTab(t.dataset.tab, false)));
+  $('addLink').addEventListener('click', () => setPicker(!picker));
+  document.querySelectorAll('[data-scope]').forEach((b) => b.addEventListener('click', () => setScope(b.dataset.scope)));
+  document.querySelectorAll('.sort button').forEach((b) => {
+    b.addEventListener('click', () => {
+      sort = b.dataset.sort;
+      document.querySelectorAll('.sort button').forEach((x) => { x.dataset.on = x === b ? 'true' : 'false'; });
+      render();
+    });
+  });
+  document.querySelectorAll('.lnk').forEach((el) => {
+    el.addEventListener('click', (e) => { e.stopPropagation(); focus = el.dataset.anchor; setTab('connections', false); render(); });
+  });
+  $('gutter').addEventListener('click', (e) => { e.stopPropagation(); focus = 'spot'; setTab('connections', false); render(); });
+  $('paper').addEventListener('click', (e) => {
+    if (blank && !e.target.closest('.sprout')) {
+      $('typed').hidden = false;
+      $('typed').focus();
+    }
+    if (!e.target.closest('.lnk, .gutter, canvas, .sprout, .typed')) { focus = null; render(); }
+  });
+  $('showAll').addEventListener('click', () => { focus = null; render(); });
+  $('switchBoard').addEventListener('click', () => { $('boardList').hidden = !$('boardList').hidden; });
+  document.querySelectorAll('.thumb, .board-list button').forEach((b) => b.addEventListener('click', () => toast('Fake — nothing travels')));
+  $('tutorForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const v = $('tutorIn').value.trim(); if (!v) return;
+    $('tutorLog').textContent = 'I won’t write it for you.';
+    $('tutorIn').value = '';
+  });
+  $('faceBtn').addEventListener('click', () => { $('faceList').hidden = !$('faceList').hidden; });
+  document.querySelectorAll('.wz-type-row').forEach((row) => {
+    row.addEventListener('click', () => {
+      document.querySelectorAll('.wz-type-row').forEach((r) => { r.dataset.current = r === row ? 'true' : 'false'; });
+      $('faceBtn').textContent = row.dataset.face;
+      $('paper').style.fontFamily = row.dataset.stack;
+      $('faceList').hidden = true;
+    });
+  });
+  function applySize(n) { size = Math.min(28, Math.max(10, n)); $('sizeNum').value = String(size); $('paper').style.fontSize = size + 'px'; }
+  $('sizeDown').addEventListener('click', () => applySize(size - 1));
+  $('sizeUp').addEventListener('click', () => applySize(size + 1));
+  $('nibDown').addEventListener('click', () => { nib = Math.max(0, nib - 1); showNib(); });
+  $('nibUp').addEventListener('click', () => { nib = Math.min(2, nib + 1); showNib(); });
+  document.querySelectorAll('[data-tip]').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-tip]').forEach((x) => { x.dataset.on = x === b ? 'true' : 'false'; });
+    ink.tip = b.dataset.tip;
+    if (tool === 'eraser' || tool === 'move') setTool('pen');
+  }));
+  document.querySelectorAll('[data-ink]').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-ink]').forEach((x) => x.classList.toggle('active', x === b));
+    ink.color = b.dataset.ink;
+  }));
+  $('eraserBtn').addEventListener('click', () => setTool(tool === 'eraser' ? 'pen' : 'eraser'));
+  $('moveBtn').addEventListener('click', () => setTool(tool === 'move' ? 'pen' : 'move'));
+  $('tmplScreen').addEventListener('click', () => {
+    scripted = !scripted;
+    $('tmplScreen').dataset.on = scripted ? 'true' : 'false';
+    $('paper').dataset.script = scripted ? 'true' : 'false';
+    $('prose').hidden = scripted;
+    $('script').hidden = !scripted;
+    toast(scripted ? 'Screenplay on this page' : 'Screenplay off');
+  });
+  $('tagsBtn').addEventListener('click', () => { $('tagPop').hidden = !$('tagPop').hidden; });
+  $('copyBtn').addEventListener('click', () => toast('Copied (fake)'));
+  $('hfBtn').addEventListener('click', () => {
+    const on = $('hfBtn').dataset.on !== 'true';
+    $('hfBtn').dataset.on = on ? 'true' : 'false';
+    $('paper').dataset.hf = on ? 'true' : 'false';
+  });
+  $('deleteBtn').addEventListener('click', () => { $('deleteAsk').hidden = false; });
+  $('deleteNo').addEventListener('click', () => { $('deleteAsk').hidden = true; });
+  $('deleteGo').addEventListener('click', () => { $('deleteAsk').hidden = true; toast('Page sent to Trash (fake)'); });
+  document.querySelectorAll('[data-fmt]').forEach((b) => {
+    b.addEventListener('click', () => { b.dataset.on = b.dataset.on === 'true' ? 'false' : 'true'; });
+  });
+  $('bulletBtn').addEventListener('click', () => toast('List (fake)'));
+  $('sprout').addEventListener('click', (e) => { e.stopPropagation(); toast('Sprout · the spark deck (fake)'); });
+  $('typed').addEventListener('input', () => {
+    if ($('typed').textContent.length) {
+      $('blankLine').hidden = true;
+      $('sprout').hidden = true;
+    } else if (blank) {
+      $('blankLine').hidden = false;
+      $('sprout').hidden = false;
+    }
+  });
+  window.addEventListener('keydown', (e) => {
+    if (!blank || $('sprout').hidden) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key.length === 1) {
+      e.preventDefault();
+      firstKey(e.key);
+    }
+  });
+
+  const canvas = $('ink'); const ctx = canvas.getContext('2d');
+  function sizeCanvas() {
+    const r = $('paper').getBoundingClientRect(); const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(r.width * dpr); canvas.height = Math.round(r.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    redraw();
+  }
+  function redraw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    strokes.forEach(drawStroke);
+    if (live) drawStroke(live);
+  }
+  function drawStroke(s) {
+    if (s.pts.length < 2) return;
+    ctx.strokeStyle = s.color; ctx.lineWidth = s.width; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(s.pts[0].x, s.pts[0].y);
+    for (let i = 1; i < s.pts.length; i++) ctx.lineTo(s.pts[i].x, s.pts[i].y);
+    ctx.stroke();
+  }
+  function pt(e) { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+  function hitStroke(p) {
+    for (let i = strokes.length - 1; i >= 0; i--) {
+      const s = strokes[i];
+      for (const q of s.pts) {
+        const dx = q.x - p.x, dy = q.y - p.y;
+        if (dx * dx + dy * dy < 100) return i;
+      }
+    }
+    return -1;
+  }
+  function eraseAt(p) {
+    const r = ERASE_W[NIBS[nib]]; const r2 = r * r;
+    for (let i = strokes.length - 1; i >= 0; i--) {
+      if (strokes[i].pts.some((q) => { const dx = q.x - p.x, dy = q.y - p.y; return dx * dx + dy * dy < r2; })) {
+        strokes.splice(i, 1);
+      }
+    }
+    redraw();
+  }
+  canvas.addEventListener('pointerdown', (e) => {
+    if (hand !== 'ink') return;
+    const p = pt(e);
+    if (tool === 'eraser') { eraseAt(p); e.preventDefault(); return; }
+    if (tool === 'move') {
+      const i = hitStroke(p);
+      if (i >= 0) moving = { i, last: p };
+      e.preventDefault(); return;
+    }
+    live = { pts: [p], color: INKS[ink.color], width: NIB_W[NIBS[nib]] };
+    e.preventDefault();
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (hand !== 'ink') return;
+    const p = pt(e);
+    if (tool === 'eraser' && e.buttons) { eraseAt(p); return; }
+    if (moving) {
+      const dx = p.x - moving.last.x, dy = p.y - moving.last.y;
+      strokes[moving.i].pts.forEach((q) => { q.x += dx; q.y += dy; });
+      moving.last = p; redraw(); return;
+    }
+    if (!live) return;
+    live.pts.push(p); redraw();
+  });
+  window.addEventListener('pointerup', () => {
+    if (live && live.pts.length > 1) strokes.push(live);
+    live = null; moving = null; redraw();
+  });
+  sizeCanvas(); window.addEventListener('resize', sizeCanvas);
+
+  document.querySelectorAll('[data-view]').forEach((b) => {
+    b.addEventListener('click', () => setView(b.dataset.view));
+  });
+  window.r7SetView = setView;
+  window.r7FirstKey = firstKey;
+  const start = params.get('view') || 'fw-text';
+  setView(start);
+  if (params.get('typed') === '1') firstKey('The kettle is still warm.');
+  if (phone() && surface === 'page') setPop(false);
+  render();
+  function measure() { $('geom').textContent = window.innerWidth + ' × ' + window.innerHeight; }
+  measure(); window.addEventListener('resize', measure);
+})();
+</script>
+</body>
+</html>
