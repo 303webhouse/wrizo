@@ -1270,10 +1270,6 @@ a:focus-visible,
   pointer-events:none; opacity:.1; transition:opacity .8s ease;
   filter:drop-shadow(0 4px 18px rgba(0,0,0,.5)); }
 .brand-mark.home{ opacity:1; }
-.wz-dev-stamp{ position:fixed; top:8px; left:10px; z-index:130; pointer-events:none;
-  font-family:var(--font-mono); font-size:12px; letter-spacing:.12em; color:var(--brass);
-  background:var(--ink-950); border:1px solid var(--brass); border-radius:var(--radius-sm);
-  padding:2px 7px; }
 
 /* Journal capture strip (B4 #11) — Free Write active, other modes greyed; a
    greyed tab prompts the user to file the entry first. */
