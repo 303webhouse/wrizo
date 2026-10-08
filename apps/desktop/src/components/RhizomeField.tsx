@@ -57,7 +57,24 @@ const FLASH_MS = 1200;
 
 // Roots stop this far short of the sheet. The network lives in the ground
 // around the page; it does not run up to the edge or continue behind it.
-const PAGE_CLEAR = 28;
+const PAGE_CLEAR = 56;
+
+// Even-odd clip: the stage rect, then one subpath per keep-out. The same
+// path feeds the SVG clip and a CSS clip-path on the element, so a mask
+// aligned in the wrong user space cannot leave roots on the sheet.
+function groundClipPath(w: number, h: number, holes: RhizomeRect[]): string {
+  const n = (v: number) => Math.round(v * 10) / 10;
+  let d = `M0 0H${n(w)}V${n(h)}H0Z`;
+  for (const hole of holes) {
+    const l = n(hole.left);
+    const t = n(hole.top);
+    const r = n(hole.right);
+    const b = n(hole.bottom);
+    if (r - l < 1 || b - t < 1) continue;
+    d += `M${l} ${t}H${r}V${b}H${l}Z`;
+  }
+  return d;
+}
 
 const FILL_OPTS: GrowToOptions = {
   shootCap: FILL_SHOOTS,
@@ -372,6 +389,8 @@ export function RhizomeField({ text, seedKey, paperRef }: {
 
   if (!active) return null;
 
+  const clipD = fieldSize.w > 0 ? groundClipPath(fieldSize.w, fieldSize.h, holes) : '';
+
   return (
     <svg
       ref={svgRef}
@@ -381,17 +400,24 @@ export function RhizomeField({ text, seedKey, paperRef }: {
       data-flash={flash ? 'true' : 'false'}
       data-segments={state.segments.length}
       data-goal-frac={frac.toFixed(3)}
-      style={{ pointerEvents: 'none' }}
+      viewBox={fieldSize.w > 0 ? `0 0 ${fieldSize.w} ${fieldSize.h}` : undefined}
+      preserveAspectRatio="none"
+      style={{ pointerEvents: 'none', clipPath: clipD ? `path(evenodd, "${clipD}")` : undefined }}
     >
       {fieldSize.w > 0 && (
-        <mask id="wz-rhizome-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width={fieldSize.w} height={fieldSize.h}>
-          <rect x="0" y="0" width={fieldSize.w} height={fieldSize.h} fill="#fff" />
-          {holes.map((r, i) => (
-            <rect key={i} x={r.left} y={r.top} width={Math.max(0, r.right - r.left)} height={Math.max(0, r.bottom - r.top)} fill="#000" />
-          ))}
-        </mask>
+        <>
+          <clipPath id="wz-rhizome-ground" clipPathUnits="userSpaceOnUse">
+            <path fillRule="evenodd" d={clipD} />
+          </clipPath>
+          <mask id="wz-rhizome-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width={fieldSize.w} height={fieldSize.h}>
+            <rect x="0" y="0" width={fieldSize.w} height={fieldSize.h} fill="#fff" />
+            {holes.map((r, i) => (
+              <rect key={i} x={r.left} y={r.top} width={Math.max(0, r.right - r.left)} height={Math.max(0, r.bottom - r.top)} fill="#000" />
+            ))}
+          </mask>
+        </>
       )}
-      <g mask={fieldSize.w > 0 ? 'url(#wz-rhizome-mask)' : undefined}>
+      <g clipPath={fieldSize.w > 0 ? 'url(#wz-rhizome-ground)' : undefined} mask={fieldSize.w > 0 ? 'url(#wz-rhizome-mask)' : undefined}>
         <Segments segments={state.segments} ox={0} oy={0} />
       </g>
     </svg>

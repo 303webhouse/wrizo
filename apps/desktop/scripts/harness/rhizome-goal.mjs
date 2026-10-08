@@ -125,7 +125,7 @@ await withHarness(async (app) => {
   ok('Live: roots stay off the page — no on-page layer, no endpoint inside the sheet, editor still mounted',
     !fast.onPage && fast.paperHit === 0 && fast.editor && fast.pointer === 'none', JSON.stringify(fast));
   ok('Live: most roots are a fine hairline and a few are thicker',
-    fast.thinW != null && fast.thinW < 0.55 && fast.thickW != null && fast.thickW > 1.4, JSON.stringify(fast));
+    fast.thinW != null && fast.thinW < 0.35 && fast.thickW != null && fast.thickW > 0.5 && fast.thickW < 0.9, JSON.stringify(fast));
   ok('Live: at rest the stroke is olive, not brass',
     fast.flash === 'false' && fast.stroke && fast.stroke !== 'rgb(255, 152, 0)', JSON.stringify({ stroke: fast.stroke, flash: fast.flash }));
 

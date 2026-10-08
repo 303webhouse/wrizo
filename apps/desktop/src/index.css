@@ -3422,13 +3422,15 @@ a:focus-visible,
    style choice") plus aria-hidden makes the whole layer structurally inert. */
 .wz-rhizome-field{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 .wz-rhizome-seg{
-  stroke:var(--rhizome-ink); stroke-width:0.4px; stroke-linecap:round; fill:none; opacity:.62;
+  stroke:var(--rhizome-ink); stroke-width:0.2px; stroke-linecap:round; fill:none; opacity:.32;
+  vector-effect:non-scaling-stroke;
   animation:wz-rhizome-grow 180ms ease; /* "the house timing" (S2) — the same 180ms family already used throughout this file */
 }
-/* A few shoots are heavier. The rest stay a fine hairline in the ground. */
-.wz-rhizome-seg[data-thick='true']{ stroke-width:1.7px; opacity:.9; }
-@keyframes wz-rhizome-grow{ 0%{ opacity:0; } 100%{ opacity:.62; } }
-@keyframes wz-rhizome-grow-thick{ 0%{ opacity:0; } 100%{ opacity:.9; } }
+/* A few shoots are heavier. The rest stay a fine hairline in the ground.
+   non-scaling-stroke keeps the width in CSS pixels when the viewBox scales. */
+.wz-rhizome-seg[data-thick='true']{ stroke-width:0.65px; opacity:.7; }
+@keyframes wz-rhizome-grow{ 0%{ opacity:0; } 100%{ opacity:.32; } }
+@keyframes wz-rhizome-grow-thick{ 0%{ opacity:0; } 100%{ opacity:.7; } }
 .wz-rhizome-seg[data-thick='true']{ animation-name:wz-rhizome-grow-thick; }
 /* S4 — the milestone flash: every segment's own stroke eases to the ember
    token, holds, and returns — growth kept whole (nothing here removes or
@@ -3450,8 +3452,8 @@ a:focus-visible,
      cross-fade to ember and back, no strobe" — a plain `transition` (not a
      multi-stop keyframe animation) on the one property that changes,
      driven by the SAME data-flash toggle the full-motion path uses. */
-  .wz-rhizome-seg{ animation:none; opacity:.62; transition:stroke 600ms ease; }
-  .wz-rhizome-seg[data-thick='true']{ opacity:.9; }
+  .wz-rhizome-seg{ animation:none; opacity:.32; transition:stroke 600ms ease; }
+  .wz-rhizome-seg[data-thick='true']{ opacity:.7; }
   .wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ animation:none; stroke:var(--brass); }
 }
 
