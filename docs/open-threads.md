@@ -24816,3 +24816,50 @@ replayed) 401 — **`SMOKE: PASS (6/6)`.** *No browser walk of the live site was
 
 **OWED: NICK’S OWN REAL SIGN-IN CHECK — that closes the ship gate.** Batch 11 (guest) is next: rebase `guest-client-r2` onto
 `main`, INK ports the logout frames into its capture, one box turn.
+
+## B10 INCIDENT: NICK’S PAGE PANEL EMPTY AFTER SIGN-OUT → SIGN-IN — BACKUP TAKEN, ROWS INTACT, LIVE WALK DONE — 2026-10-07 (chat 1)
+
+**THE REPORT (Fable, relays):** after Nick’s live sign-out → sign-in, the Page panel shows “No pages yet” and he lands on a
+blank page; not a refresh issue; same account he has always used. **B10’s gate stays OPEN; no rollback without Nick’s word.**
+Nick is told not to sign out anywhere until cleared. Orders: (0) protect backups first; (1) a read-only count of his rows;
+(2) a live browser walk with the smoke account; (3) PREPARE (do not run) a rollback rebuild from `e66c288`.
+
+**0 — BACKUP TAKEN (a fresh, separately named object; nothing overwritten or deleted):** `wrizo-backup` was REDEPLOYED
+(`railway redeploy --service wrizo-backup`; its `RUN_ON_STARTUP=true` runs a backup at start). New deployment
+`a09b4f0a-e728-4a9e-a1a8-9835232ff069` SUCCESS; the log shows the dump valid, 667.42 kB, “Backup uploaded to S3…”, “DB backup
+complete…”. **Each backup file is named with its own ISO timestamp (`<prefix>-<timestamp>.tar.gz`), so a new one can never
+overwrite an older one, and the backup application’s source has NO delete of any S3 object — its only `unlink` is the
+temporary local file.** *(What this desk cannot see: a bucket-side lifecycle or retention rule on the R2 bucket — it never
+holds the R2 keys and did not touch them. If one exists it is Nick’s to confirm in the Cloudflare dashboard.)*
+
+**1 — READ-ONLY COUNT (a `begin read only` transaction over the Postgres public proxy; counts and timestamps only, no
+contents, no emails; the per-user figures are in the chat report, not in this public repo):** **Nick’s rows are PRESENT and NOT
+deleted** — hundreds of journal entries and a few dozen projects and sessions-log rows; the only soft-deleted entries are old
+(the newest `deleted_at` is in JULY); the newest `updated_at` is Oct 7, 22:27 MT — minutes before the incident’s last write. This is
+NOT server-side data loss.
+
+**2 — LIVE WALK (smoke account; a throw-away headless browser at the production URL, the harness’s command allowed this
+time; a `fetch` spy recorded only methods, statuses and record COUNTS):** first sign-in landed on `#/page/new` (a blank unborn
+page — NOT the last page); `POST /auth/login` 200 then `POST /api/sync` with `lastSyncAt:null` 200 (nothing to pull: the account
+was empty). One line written through the app’s own seam: 1 local entry; **no sync request fired in the next 6 seconds.** Sign out
+(no “unsaved” sheet): the sign-out itself pushed the one entry (`pushCounts journalEntries:1`, 200) then `POST /auth/logout`
+204; local entries wiped to 0, `wz.signedOutHere` = 1. **Second sign-in: landed on `#/page/new` again; `POST /auth/login` 200;
+`POST /api/sync` with `lastSyncAt:null` fired, 200; local entries came back: 1 live.** After a reload: `/auth/me` 200,
+another `lastSyncAt:null` sync 200, 1 entry. The Journal route redirected to a real page. *(The spy counted only top-level
+keys of the sync reply — `serverTime` and `pull` — so per-collection pulled counts were NOT captured; a rerun should log
+`pull`’s own arrays.)* **So pull + apply works for a one-record account; what it does for 177 entries is not yet shown.**
+
+**READ OF THE EVIDENCE (unproven): the Page panel’s list is `getJournalEntries()` minus boards — “No pages yet” means the
+LOCAL CACHE has no live entries, not that the server does.** Nick’s rows exist on the server, so the pull is either not
+returning them, failing while applying them, or the cache is emptied afterwards. The smoke account cannot tell these apart; it
+has one record. Both the “landed on a blank page” symptom and the empty panel reproduce in shape.
+
+**3 — ROLLBACK PREPARED, NOT RUN (Batch 9 = `e66c288`):** from the primary checkout only, tree bare: `git checkout --detach
+e66c288`; `pnpm --filter @writer-studio/desktop build:web`; verify `railway status` = `writer-studio` / `production` /
+`writer-studio-app`; `railway up --service writer-studio-app --ci`; verify `/healthz`, `/auth/me`, the asset MD5s and the
+smoke test; `git checkout main`. **Only on Nick’s word** — and a rollback restores Batch 9’s CLIENT, which may not cure a
+server-pull fault; it changes no data. No schema change in B9 or B10.
+
+**NEXT (proposed, not started): reproduce Nick’s pull offline and READ-ONLY** — run the REAL server `sync` route against a
+read-only connection and feed its reply to the REAL client `sync.ts` in a node harness (as K10 does), and report only how many
+entries the client ends with and any exception — no contents.
