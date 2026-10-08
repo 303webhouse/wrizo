@@ -24731,3 +24731,48 @@ could not find that path on `origin/main` or on `origin/claude/lucid-fermi-3s9ho
 PW — the `exp1-connect-text-r2` catch-up *(no such branch on origin yet; `exp1-connect-text` and `exp1-visibletext` exist)*;
 TOOLS — item 190’s rail half, AFTER the splash *(`item190-exp1-rail` is on origin)*; Cursor — the frozen reference.
 **Phase 1 (INK) starts AFTER Batch 11 ships.** No change to Batch 10/11 or the existing queue.
+
+## BATCH 10 (SHIP WORD “SHIP IT”, 5:33 pm MT): ASSEMBLED, PAIR RUN — TWO REDS, BOTH INSTRUMENT; NOTHING DEPLOYED — 2026-10-07 (chat 1)
+
+**NICK’S SHIP WORD (Fable, relay), verbatim: “Ship it” (Batch 10), 5:33 pm MT.** Batch 10 = `arrival-signin-screen` (`d2b16ab`) +
+`logout-flush` (`e88834f`, `831cb88`, `5cb82e4`) + evidence. **Fable’s orders: merge to `main` (read the branch first) and confirm
+`main` carries `passwordHash.ts` + the smoke tools; the pair on the full list; deploy from the primary checkout only
+(`railway up --service writer-studio-app`), the rollback target recorded first; `smoke-login` against live → the six step
+lines + PASS/FAIL; any red at any step: stop, do not deploy, report.** Fable (later): the 12 logout frames (`86c5892`) are
+clean; code and all 28 frames CLEARED; Batch 11 follows (rebase `guest-client-r2` onto `main` after B10 merges, INK ports the
+logout frames into B11’s capture, one box turn); `cursor/drawer-handles` @ `ef714d4` CLEARED (CSS only) for Batch 12; the
+board/card/page plan lives in Nick’s claude.ai project, not the repo — 4 phases, each its own batch: P1 shared drawers (INK),
+P2 card rebuild (FIX), P3 Connections (PW+TOOLS), P4 page ink (FIX); no new DB columns expected, any needed go to Nick first.
+
+**ASSEMBLED (read the branch first): `batch-ten` @ `288cdeb`** = `main` @ `59b9066` + `logout-flush` @ `86c5892` (16 commits; all
+five named commits are ancestors; the schema/migration diff is EMPTY; no conflict). Pushed as a branch; NOT merged to `main`.
+`main` carries `apps/server/src/passwordHash.ts`, `create-smoke-account.mjs` and `smoke-login.mjs` (confirmed on disk).
+
+**BROWSERLESS: `tsc` x2 exit 0; both builds clean (desktop bundle `index-DkqE6EFm.js`, 636,455 b); `item224-server-hardening`
+64/64; `set-password-db` 12/12; `smoke-account-db` 31/31.** **RED 1 — K10 (`sync-chunked-push-proof --mutants`) exits 2:**
+baseline green (32), nine mutants red, the tenth “MUTANT DID NOT LAND” — Batch 10’s `sync.ts` generation guard moved the
+`apiSync({ lastSyncAt: null, push: payloadOf(…` line its anchor needs. A stale instrument (as in Batch 9). **Fable: read right;
+INK owns the re-anchor on `k10-reanchor` off `288cdeb`, harness only; Fable byte-reviews, then this desk picks it up.**
+
+**THE DESKTOP PAIR, first attempt VOID, this desk’s error:** run-suite enumerates every `*.mjs` in the harness folder, and
+`arrival-signin-capture.mjs` is an EVIDENCE-CAPTURE tool, not a check — it exited with no verdict and OVERWROTE a tracked
+screenshot (`docs/evidence/arrival-signin/doors-dark-desktop.png`), dirtying the tree (`tree=288cdeb4+1dirty`; the runner
+stopped on the stamp mismatch, by design). Restored the file (`git checkout --`), excluded the capture tool from the
+pair’s file list (it was run in INK’s box turns; it is not in Fable’s list), restarted the whole pair. *(For the registry: a
+capture tool living in the suite’s folder will do this to every future pair; it should be moved out of `scripts/harness/`
+or given a run-suite exemption — INK/TOOLS.)*
+
+**THE RESTARTED PAIR: stamp `tree=288cdeb4 bundle=index-DkqE6EFm.js/636455b`; 117 files per leg, six chunks of ≤20, no launch
+crashes, 0 harness processes between chunks: 116/117 on EACH leg — RED 2, the same file on both: `item141.mjs` (the settle
+guard) “FAIL 1/11”: “no harness reads a `window.wrizo*` seam before a settle — the waitFor is the proof, navigation is not.
+1 file(s) carry the shape” — `arrival-signin-walk.mjs`, INK’s new walk, reads `window.wrizoCreateJournalPage` (line 30) and
+`window.wrizoFlushNow` (line 33) before a waitFor settle.** Instrument only: no product code is implicated. Owner: INK
+(`arrival-signin-walk.mjs`, harness only). Everything else in the suite is green, including `arrival-signin`, `ab1`,
+`item210`, `a11y-signin`, `escexit`, `logout-flush`, `sync-generation`, `item224a`, `seed-guard`.
+
+**NOT DEPLOYED. Grant cleared; 0 harness processes; `main` untouched @ `59b9066`+records.** Needed before a deploy: INK’s
+`k10-reanchor` AND a fix for `arrival-signin-walk.mjs` (item141), both harness-only; then (1) the built bundle must be
+BYTE-IDENTICAL to `index-DkqE6EFm.js` at 636,455 b (if it changes at all: stop, send it to Fable); (2) K10 alone (baseline
+green, 10/10 red) and `item141` + `arrival-signin-walk` (both legs); (3) merge `batch-ten` to `main`; (4) deploy
+`writer-studio-app` only, rollback target recorded first (Batch 9, `1c34ccfa`, is retired by Railway — the rollback is a
+rebuild from `e66c288`); (5) `smoke-login`; (6) ping Nick for his real sign-in check, which closes the ship gate.
