@@ -39,8 +39,14 @@ const openStrip = async (app) => {
 const strip = (app) => app.evalJs(`[...document.querySelectorAll('.wz-sliver-templates button')].map(b => ({
   live: b.classList.contains('wz-template-live'), key: b.dataset.template || null, name: b.getAttribute('aria-label'),
   title: b.title, disabled: b.getAttribute('aria-disabled'), glyph: !!b.querySelector('svg') }))`);
+// The point a writer would press: the control scrolled into view in its own scroller (the strip scrolls - Templates sit below its
+// fold at 1400x900), and only if that point hit-tests to the control itself. A press on anything else is NOT a press (the box
+// turn of 2026-10-08 measured the centre of an unscrolled template hitting .wz-sliver, and a press that did nothing passed as one).
 const centreOf = (app, sel) => app.evalJs(`(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (!b) return null;
-  const r = b.getBoundingClientRect(); return r.width && r.height ? { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) } : null; })()`);
+  b.scrollIntoView({ block: 'center', inline: 'nearest' });
+  const r = b.getBoundingClientRect(); if (!r.width || !r.height) return null;
+  const x = Math.round(r.left + r.width / 2), y = Math.round(r.top + r.height / 2); const hit = document.elementFromPoint(x, y);
+  return hit && (hit === b || b.contains(hit)) ? { x, y } : null; })()`);
 // a real press, held long enough to read the press colour, released ON the button
 const press = async (app, sel) => {
   const pt = await centreOf(app, sel);
@@ -55,10 +61,12 @@ const press = async (app, sel) => {
 const SCREENPLAY = '.wz-template-live[data-template="screenplay"]';
 const rgbOf = (app, cssColor) => app.evalJs(`(() => { const d = document.createElement('div'); d.style.color = ${JSON.stringify(cssColor)};
   document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; })()`);
-const blank = async (app, q = '') => {
-  await app.goto(`/page/new${q}`);
+// `draft`: switch by the mode TAB. The `?mode=draft` address no longer opens Draft (item 87's amendment retired the door's mode).
+const blank = async (app, draft = false) => {
+  await app.goto('/page/new');
   await waitSoft(app, `!!document.querySelector('${ED}')`, { label: 'unborn page' });
   await sleep(600);
+  if (draft) { await app.click('Draft'); await sleep(600); }
 };
 const seeded = async (app, id) => {
   await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: WORDS, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
@@ -83,7 +91,7 @@ await withHarness(async (app) => {
     fwOpen === true && fwStrip.body === true && fwStrip.templates === false && fwStrip.live === 0, JSON.stringify(fwStrip));
 
   // ===== T1 - a blank page in DRAFT: no row; the Templates read Screenplay (live), Outline, Title page, Bibliography, Custom =====
-  await blank(app, '?mode=draft');
+  await blank(app, true);
   ok('T1 [Draft, blank page]: the beginnings row is NOT drawn (Sprout is the blank Free Write page\'s door)', JSON.stringify(await pageDoors(app)) === '[]', JSON.stringify(await pageDoors(app)));
   await openStrip(app);
   const s = await strip(app);
@@ -102,7 +110,7 @@ await withHarness(async (app) => {
 
   // ===== T2 - Screenplay on an EMPTY page applies in place; brass on the press =====
   await freshDesk(app);
-  await blank(app, '?mode=draft');
+  await blank(app, true);
   await openStrip(app);
   const sp = await press(app, SCREENPLAY);
   ok('T2: pressing the template turns it brass while held (the press, per the standing rule)',

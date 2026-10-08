@@ -43,6 +43,7 @@ const openStrip = async (app) => {
 };
 const pressTemplate = async (app, key) => {
   const pt = await app.evalJs(`(() => { const b = document.querySelector('.wz-template-live[data-template="${key}"]'); if (!b) return null;
+    b.scrollIntoView({ block: 'center', inline: 'nearest' });
     const r = b.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
   if (!pt) return false;
   await app.mouseDown(pt.x, pt.y); await sleep(60); await app.mouseUp(pt.x, pt.y);
@@ -61,8 +62,9 @@ await withHarness(async (app) => {
     await waitSoft(app, `!!document.querySelector('${ED}')`, { label: 'blank page' });
     await sleep(900);
     await shot(app, th.id, 'blank-page');
-    await app.goto('/page/new?mode=draft');
+    await app.goto('/page/new');
     await waitSoft(app, `!!document.querySelector('${ED}')`, { label: 'blank page, Draft' });
+    await app.click('Draft'); await sleep(500);
     await sleep(700);
     await shot(app, th.id, 'blank-page-draft');
     // the Templates section, open
@@ -73,8 +75,9 @@ await withHarness(async (app) => {
       buttons: await app.evalJs("[...document.querySelectorAll('.wz-sliver-templates button')].map(b => ({ name: b.getAttribute('aria-label'), live: b.classList.contains('wz-template-live') }))") });
     // Screenplay, on an empty page and on a page with words
     await freshDesk(app, th.prefs);
-    await app.goto('/page/new?mode=draft');
+    await app.goto('/page/new');
     await waitSoft(app, `!!document.querySelector('${ED}')`, { label: 'blank page, Draft' });
+    await app.click('Draft'); await sleep(500);
     await sleep(500);
     await openStrip(app);
     const pressed = await pressTemplate(app, 'screenplay');

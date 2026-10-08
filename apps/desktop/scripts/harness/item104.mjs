@@ -109,6 +109,8 @@ await withHarness(async (app) => {
   await sleep(300);
   const doorPresent = await beginningKeys(app);
   s1DoorsSeen = doorPresent;
+  // The address's `mode=draft` no longer opens Draft (item 87's amendment), and the template lives in Draft: reach it by the TAB.
+  await app.click('Draft'); await sleep(500);
   // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: the page row keeps only Sprout, on a blank Free
   // Write page; templates live in the tools menu). Kept VERBATIM and no longer run; its parked record (row absent) is in the HARNESS_PARKED block below, and
   // its successor is the next check.
