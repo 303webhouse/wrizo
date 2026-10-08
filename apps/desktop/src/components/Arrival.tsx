@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { unbornHref } from '../store/unbornPage';
 import { setForwardLock } from '../store/forwardLock';
 import { setWritingSettings } from '../store/writingSettings';
-import { setFirstRunComplete, resolveFirstRun, markRegistered, FIRST_PULL_CAP_MS } from '../store/firstRun';
+import { setFirstRunComplete, resolveFirstRun, markRegistered, firstRunWillWait, FIRST_PULL_CAP_MS } from '../store/firstRun';
 import { firstPullDone, whenFirstPulled } from '../store/sync';
 import { accountHasWork } from '../store/persistence';
 import { getResumeTarget } from '../store/resume';
@@ -81,7 +81,11 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   const writeDoor = async () => {
     // B10.1 - derived per account, after the first pull (see store/firstRun.ts). Synchronous in every case but one: a signed-in
     // writer whose flag is unset and whose first pull has not landed yet.
-    const firstRun = await resolveFirstRun();
+    // The same quiet state and the doors disabled, but only when the wait is real (a flash on every Write would be noise).
+    const waits = firstRunWillWait();
+    if (waits) setLanding(true);
+    let firstRun: boolean;
+    try { firstRun = await resolveFirstRun(); } finally { if (waits) setLanding(false); }
     if (firstRun) {
       // S2 — forced first-session defaults, set explicitly (not merely
       // trusted from each store's own DEFAULT, which happens to already
@@ -163,7 +167,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
     try {
       const res = await runAuthCall(() => apiRegister(email.trim(), password, name.trim(), inviteCode.trim()));
       // B10.1 - a successful REGISTER is a first run on this device whatever the flag says (once per account).
-      if (res.ok && res.user) { markRegistered(); onAuthed(res.user); openAsAuthed(); }
+      if (res.ok && res.user) { markRegistered(res.user.id); onAuthed(res.user); openAsAuthed(); }
       else setError(res.error || 'Could not create your account');
     } finally {
       submitting.current = false;

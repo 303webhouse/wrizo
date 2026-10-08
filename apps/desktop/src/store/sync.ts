@@ -289,6 +289,8 @@ function beginFirstPull(gen: number): void {
 function noteFullPull(gen: number): void {
   if (firstPull && firstPull.gen === gen && !firstPull.done) { firstPull.done = true; firstPull.settle('pulled'); }
 }
+/** True while a session's first pull is outstanding AND a writer has not yet spent the wait on it - i.e. a door that asks for it now WILL wait. */
+export function firstPullPending(): boolean { return !!firstPull && !firstPull.done && !firstPull.capped; }
 /** True once this session's first whole-account pull has landed. False before it, after a failure, and outside a session. */
 export function firstPullDone(): boolean { return !!firstPull && firstPull.done; }
 /** Waits for this session's first pull, but never longer than capMs. 'failed' also covers "no session" and "the session ended". */

@@ -147,9 +147,9 @@ const DIRTY_JOURNAL_REPORT_NAME = 'dirtyJournal';
 // B10.1 - A STALE TAB IS READ-ONLY. Every tab on this origin shares one localStorage and flushes its WHOLE cache over the
 // collection keys, so an old tab that kept saving would overwrite what the live tab wrote. While the stale-client flag is
 // set the automatic writes below are held (the edits stay in memory, and the dirty set with them); the single exception is
-// flushForReload(), the writer's own Reload, which writes once so the unsent edits survive into the new build.
-let writesForced = false;
-function writesHeld(): boolean { return isStaleClient() && !writesForced; }
+// flushForReload(), the writer's own Reload, which MERGES its unsent edits into storage once (see below) so they survive into
+// the new build.
+function writesHeld(): boolean { return isStaleClient(); }
 
 function persistDirty(): void {
   if (writesHeld()) return;
@@ -346,13 +346,6 @@ function scheduleFlush(name: CollectionName): void {
 // when the page is about to be torn down (tab hide, route change) — a scheduled
 // 300ms write would otherwise be lost if the page dies first. localStorage
 // writes are synchronous, so the data is durable before the handler returns.
-// B10.1 - the stale tab's Reload: the ONE explicit write a stale tab makes. Callers run flushAll() first so every editor's
-// pending text is already in its record.
-export function flushForReload(): void {
-  writesForced = true;
-  try { flushNow(); } finally { writesForced = false; }
-}
-
 export function flushNow(): void {
   (Object.keys(KEYS) as CollectionName[]).forEach(name => {
     if (flushTimers[name] !== null) {
@@ -1890,6 +1883,53 @@ export function importDraft(binderId: string, pageType: NonNullable<JournalEntry
 // pattern B1 established for '/journal' and '/trash'). Parked, not
 // deleted from history: see docs/wrizo-alpha's own build report and the
 // harness's A4 park sweep for the quoted-verbatim record.
+
+// B10.1 - the stale tab's Reload: the ONE explicit write a stale tab makes, and it is a MERGE, never a whole-cache write. The
+// live tab on this origin may hold fresher rows (and unsynced ones) in the same keys; writing this tab's whole, older cache over
+// them is exactly the clobber the read-only hold exists to prevent. So, per collection: read what storage holds NOW, overlay ONLY
+// this tab's DIRTY records by id (the newer updatedAt wins, so a fresher stored copy is never replaced), write that back, and
+// UNION this tab's dirty ids into the id journal rather than replacing it. Callers run flushAll() first so every editor's pending
+// text is already in its record. Any failure leaves storage as it was (best effort, like every other write here).
+export function overlayDirty<T extends { id: string; updatedAt: string }>(stored: T[], mine: T[]): T[] {
+  const out = stored.slice();
+  for (const rec of mine) {
+    const i = out.findIndex(r => r && r.id === rec.id);
+    if (i < 0) out.push(rec);
+    else if (!out[i].updatedAt || rec.updatedAt > out[i].updatedAt) out[i] = rec;
+  }
+  return out;
+}
+
+export function flushForReload(): void {
+  const readArray = (key: string): unknown[] => {
+    try {
+      const v = JSON.parse(localStorage.getItem(key) || '[]');
+      return Array.isArray(v) ? v : [];
+    } catch { return []; }
+  };
+  for (const name of COLLECTIONS) {
+    try {
+      const mine = (cache[name] as Array<{ id: string; updatedAt: string }>).filter(r => dirty[name].has(r.id));
+      if (mine.length === 0) continue;
+      const merged = overlayDirty(readArray(KEYS[name]) as Array<{ id: string; updatedAt: string }>, mine);
+      localStorage.setItem(KEYS[name], JSON.stringify(merged));
+    } catch {
+      // storage full/unavailable: the edit stays in this tab's memory; nothing more can be done from here
+    }
+  }
+  try {
+    const stored = JSON.parse(localStorage.getItem(DIRTY_KEY) || '{}') as Record<string, string[]>;
+    const out: Record<string, string[]> = {};
+    for (const name of COLLECTIONS) {
+      const ids = new Set<string>(Array.isArray(stored?.[name]) ? stored[name] : []);
+      dirty[name].forEach(id => ids.add(id));
+      out[name] = [...ids];
+    }
+    localStorage.setItem(DIRTY_KEY, JSON.stringify(out));
+  } catch {
+    // as above
+  }
+}
 
 // B10.1 - DOES THIS ACCOUNT ALREADY HOLD WORK? Any journal entry that is not a system board, or any project. Soft-deleted
 // entries COUNT: a writer who deleted everything has still written, and is not new. Read from the raw cache (not

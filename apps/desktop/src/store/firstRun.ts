@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { accountHasWork } from './persistence';
-import { firstPullDone, whenFirstPulled } from './sync';
+import { firstPullDone, firstPullPending, whenFirstPulled } from './sync';
 import { getCurrentUser } from './currentUser';
 
 // HB1 F3 — the rite runs once per device. Local-first, pre-account: a
@@ -19,6 +19,7 @@ function load(): boolean {
 }
 
 let current: boolean = load();
+let justRegisteredFor: string | null = null;
 const subs = new Set<(v: boolean) => void>();
 
 export function getFirstRunComplete(): boolean {
@@ -27,6 +28,7 @@ export function getFirstRunComplete(): boolean {
 
 export function setFirstRunComplete(next: boolean): void {
   current = next;
+  if (next) justRegisteredFor = null;
   try { localStorage.setItem(KEY, next ? '1' : '0'); } catch { /* ignore */ }
   subs.forEach(fn => fn(current));
 }
@@ -41,13 +43,24 @@ export function setFirstRunComplete(next: boolean): void {
 //     put a returning writer through the gate. If the account does hold work, the flag is set so it cannot return.
 export const FIRST_PULL_CAP_MS = 3000;
 
-export function markRegistered(): void {
+// A just-registered account is EMPTY BY DEFINITION - it did not exist a moment ago - so there is nothing to pull that could change
+// the answer, and nothing to wait for. Remembered per account id for the session, and dropped when the ritual completes.
+export function markRegistered(userId: string): void {
+  justRegisteredFor = userId;
   setFirstRunComplete(false);
+}
+
+const isJustRegistered = (): boolean => !!justRegisteredFor && getCurrentUser()?.id === justRegisteredFor;
+
+/** True when resolveFirstRun() would have to WAIT for the first pull right now - so a door can show its loading state first. */
+export function firstRunWillWait(): boolean {
+  return !current && getCurrentUser() !== null && !isJustRegistered() && !firstPullDone() && firstPullPending();
 }
 
 export async function resolveFirstRun(): Promise<boolean> {
   if (current) return false;
   if (getCurrentUser() === null) return true;
+  if (isJustRegistered()) return true;
   if (!firstPullDone()) await whenFirstPulled(FIRST_PULL_CAP_MS);
   if (!firstPullDone()) return false;
   if (accountHasWork()) { setFirstRunComplete(true); return false; }

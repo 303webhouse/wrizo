@@ -165,7 +165,18 @@ async function partB(overrides = {}, env = {}) {
   out.heldWrite = (map.get('writer-studio-journal-entries') ?? null) === before;
   out.inMemory = m.getJournalEntries().some((e) => e.id === page.id);
   out.dirtyHeld = !map.has('writer-studio-dirty-v1') || !String(map.get('writer-studio-dirty-v1')).includes(page.id);
+  // THE LIVE TAB'S ROWS: another tab on this origin has written fresher rows into the shared keys (one the stale tab has never seen, and a
+  // newer copy of a row the stale tab also edited), and left its own unsynced id in the id journal. The Reload must not clobber any of it.
+  map.set('writer-studio-journal-entries', JSON.stringify([entry('live-fresh', { updatedAt: '2099-01-01T00:00:00.000Z' }), entry('q-shared', { text: 'live version', updatedAt: '2099-01-01T00:00:00.000Z' })]));
+  map.set('writer-studio-dirty-v1', JSON.stringify({ journalEntries: ['live-fresh'] }));
+  m.saveJournalEntry(entry('q-shared', { text: 'stale version' }));
   m.flushForReload();
+  const storedAfter = JSON.parse(map.get('writer-studio-journal-entries') ?? '[]');
+  out.liveRowSurvived = storedAfter.some((e) => e.id === 'live-fresh');
+  out.freshStoredWins = storedAfter.find((e) => e.id === 'q-shared')?.text === 'live version';
+  out.mineAdded = storedAfter.some((e) => e.id === page.id);
+  const dj = (JSON.parse(map.get('writer-studio-dirty-v1') ?? '{}').journalEntries) || [];
+  out.dirtyUnion = dj.includes('live-fresh') && dj.includes(page.id);
   out.reloadWrote = String(map.get('writer-studio-journal-entries') ?? '').includes(page.id);
   out.reloadDirty = String(map.get('writer-studio-dirty-v1') ?? '').includes(page.id);
   m.flushNow();
@@ -188,6 +199,10 @@ const intervalsBefore = intervalsInstalled;
 
   intervalsInstalled = 0;
   const same = await partB({}, { serverBuild: 'index-OLDBUILD' });
+  ok('(B9a) the Reload is a MERGE: a row the LIVE tab wrote (one this stale tab never saw) survives it',
+    b.liveRowSurvived === true && b.mineAdded === true, JSON.stringify(b));
+  ok('(B9b) and where both tabs hold the same row, the FRESHER stored copy wins (the stale tab\'s older edit does not replace it)', b.freshStoredWins === true, JSON.stringify(b));
+  ok('(B9c) the dirty ids are UNIONED, not replaced: the live tab\'s unsynced id and this tab\'s both stay in the id journal', b.dirtyUnion === true, JSON.stringify(b));
   ok('(B6) CONTROL: the SAME build keeps syncing — not stale, records applied, the timer installed, writes flow',
     same.stale === false && same.remoteApplied === true && same.intervals === 1 && same.heldWrite === false, JSON.stringify(same));
   intervalsInstalled = 0;
@@ -297,7 +312,7 @@ async function partD(overrides = {}) {
     else if (opts.pull === 'fail') net.responder = () => { throw new Error('offline'); };
     else net.responder = () => reply({ pull: opts.pull ?? {} });
     if (opts.signedIn !== false) { const p = m.startSync(); if (opts.pull !== 'hold') await p; }
-    if (opts.register) m.markRegistered();
+    if (opts.register) m.markRegistered(user.id);
     return { m, map };
   }
   const flag = (map) => map.get('wrizo-first-run-complete') ?? null;
@@ -311,6 +326,16 @@ async function partD(overrides = {}) {
   { const s = await session({ pull: { journalEntries: [sysBoard('sb1')] } }); out.onlySystem = await s.m.resolveFirstRun(); }
   { const s = await session({ pull: { journalEntries: [entry('d1', { deletedAt: '2026-01-02T00:00:00.000Z' })] } }); out.onlyDeleted = await s.m.resolveFirstRun(); out.onlyDeletedFlag = flag(s.map); }
   { const s = await session({ storage: { 'wrizo-first-run-complete': '1' }, pull: {}, register: true }); out.registerFlag = flag(s.map); out.registerOnUsedDevice = await s.m.resolveFirstRun(); }
+  // A just-registered account is EMPTY by definition: no wait, even while its first pull is still outstanding.
+  { const s = await session({ pull: 'hold', register: true }); const t0 = Date.now(); out.regPending = await s.m.resolveFirstRun(); out.regPendingMs = Date.now() - t0; out.regWillWait = s.m.firstRunWillWait(); }
+  // ...but only THAT account, and only until the ritual is done
+  { const s = await session({ pull: { journalEntries: [entry('e1')] }, register: true }); s.m.setCurrentUser({ id: 'someone-else', email: 'x@y.z' }); out.otherAccount = await s.m.resolveFirstRun(); }
+  { const s = await session({ pull: {}, register: true }); s.m.setFirstRunComplete(true); out.afterRitual = await s.m.resolveFirstRun(); }
+  // firstRunWillWait: true only when resolveFirstRun would really have to wait
+  { const s = await session({ pull: 'hold' }); out.willWaitPending = s.m.firstRunWillWait(); await s.m.whenFirstPulled(30); out.willWaitAfterCap = s.m.firstRunWillWait(); }
+  { const s = await session({ pull: {} }); out.willWaitDone = s.m.firstRunWillWait(); }
+  { const s = await session({ signedIn: false }); out.willWaitSignedOut = s.m.firstRunWillWait(); }
+  { const s = await session({ storage: { 'wrizo-first-run-complete': '1' }, pull: 'hold' }); out.willWaitFlagSet = s.m.firstRunWillWait(); }
   return out;
 }
 {
@@ -326,6 +351,17 @@ async function partD(overrides = {}) {
   ok('(D7) a SOFT-DELETED entry still counts as work: a writer who deleted everything is not new', d.onlyDeleted === false && d.onlyDeletedFlag === '1', JSON.stringify({ r: d.onlyDeleted, flag: d.onlyDeletedFlag }));
   ok('(D8) a successful REGISTER is a first run regardless of the local flag: it resets a used device\'s flag, and the empty new account gets the ritual',
     d.registerFlag === '0' && d.registerOnUsedDevice === true, JSON.stringify({ flag: d.registerFlag, r: d.registerOnUsedDevice }));
+}
+
+// (D9 etc. belong to PART D; they are asserted below so the claims sit with their data)
+{
+  const d = await partD();
+  ok('(D9) a JUST-REGISTERED account is first run WITHOUT waiting: it is empty by definition, so it returns at once even while its first pull is outstanding',
+    d.regPending === true && d.regPendingMs < 300 && d.regWillWait === false, JSON.stringify({ r: d.regPending, ms: d.regPendingMs, willWait: d.regWillWait }));
+  ok('(D10) it is remembered for THAT account only (another account signing in on the device is judged on its own pull), and dropped when the ritual completes',
+    d.otherAccount === false && d.afterRitual === false, JSON.stringify({ other: d.otherAccount, after: d.afterRitual }));
+  ok('(D11) firstRunWillWait is true exactly when the Write door would really wait (signed in, flag unset, not just registered, first pull outstanding and its wait not yet spent)',
+    d.willWaitPending === true && d.willWaitAfterCap === false && d.willWaitDone === false && d.willWaitSignedOut === false && d.willWaitFlagSet === false, JSON.stringify(d));
 }
 
 // =============================================================================
@@ -430,9 +466,16 @@ async function partF(overrides = {}) {
   ok('(G3) Reload runs flushAll(), then flushForReload(), then reloads — in that order',
     reloadFn.indexOf('flushAll()') > 0 && reloadFn.indexOf('flushForReload()') > reloadFn.indexOf('flushAll()') && reloadFn.indexOf('window.location.reload()') > reloadFn.indexOf('flushForReload()'), reloadFn);
   const pers = read('store/persistence.ts');
-  ok('(G4) persistence holds BOTH its collection flush and its dirty-set write while stale, and only flushForReload lifts the hold',
+  // SUPERSEDED (B10.1 review: the Reload must MERGE) - by (G4b) below. Parked, not deleted: it pinned flushForReload lifting the hold and
+  // flushing the whole cache (writesForced), which is the clobber the review found. Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(G4) persistence holds BOTH its collection flush and its dirty-set write while stale, and only flushForReload lifts the hold',
     /function flush\(name: CollectionName\): void \{\n  if \(writesHeld\(\)\) return;/.test(pers) && /function persistDirty\(\): void \{\n  if \(writesHeld\(\)\) return;/.test(pers)
       && /export function flushForReload\(\): void \{\n  writesForced = true;/.test(pers), '');
+  const reloadBody = pers.slice(pers.indexOf('export function flushForReload(): void {'), pers.indexOf('// B10.1 - DOES THIS ACCOUNT ALREADY HOLD WORK?'));
+  ok('(G4b) persistence holds BOTH its collection flush and its dirty-set write while stale; flushForReload never lifts that hold - it MERGES (overlayDirty over what storage holds now, dirty ids united) and never writes the whole cache',
+    /function flush\(name: CollectionName\): void \{\n  if \(writesHeld\(\)\) return;/.test(pers) && /function persistDirty\(\): void \{\n  if \(writesHeld\(\)\) return;/.test(pers)
+      && /function writesHeld\(\): boolean \{ return isStaleClient\(\); \}/.test(pers) && !/writesForced/.test(pers)
+      && /overlayDirty\(readArray\(KEYS\[name\]\)/.test(reloadBody) && !/JSON\.stringify\(cache\[/.test(reloadBody) && !/flushNow\(\)/.test(reloadBody), reloadBody.slice(0, 200));
   const sync = read('store/sync.ts');
   ok('(G5) sync checks the build on EVERY response path (push-only chunks, the combined push+pull, the final pull) before applying anything',
     (sync.match(/checkBuild\(/g) || []).length === 4 && /checkBuild\(resp\);\n        applyRemoteRecords/.test(sync) && /checkBuild\(resp\);\n      applyRemoteRecords/.test(sync) && /checkBuild\(r\);\n        cleanBatch/.test(sync), String((sync.match(/checkBuild\(/g) || []).length));
@@ -442,7 +485,11 @@ async function partF(overrides = {}) {
   const arrival = read('components/Arrival.tsx');
   ok('(G8) Arrival\'s sign-in waits for the first pull (capped) before opening, shows a quiet loading line, and the Write door asks resolveFirstRun',
     /onAuthed\(res\.user\); await openWhenLoaded\(true\);/.test(arrival) && /whenFirstPulled\(FIRST_PULL_CAP_MS\)/.test(arrival) && /Loading your pages/.test(arrival) && /await resolveFirstRun\(\)/.test(arrival), '');
-  ok('(G9) a successful REGISTER marks the device first-run before it opens', /markRegistered\(\); onAuthed\(res\.user\); openAsAuthed\(\);/.test(arrival), '');
+  const writeFn = arrival.slice(arrival.indexOf('const writeDoor'), arrival.indexOf('const openAsAuthed') > 0 ? arrival.indexOf('const openAsAuthed') : undefined);
+  ok('(G13) the Write door shows the SAME loading state and disables the doors while resolveFirstRun really waits (and only then)',
+    /const waits = firstRunWillWait\(\);\n\s*if \(waits\) setLanding\(true\);/.test(writeFn) && /await resolveFirstRun\(\)/.test(writeFn) && /finally \{ if \(waits\) setLanding\(false\); \}/.test(writeFn)
+      && /disabled=\{!ready \|\| landing\}/.test(arrival) && /\{landing && <div className="wz-sub wz-arrival-loading"/.test(arrival), writeFn.slice(0, 300));
+  ok('(G9) a successful REGISTER marks the device first-run before it opens', /markRegistered\(res\.user\.id\); onAuthed\(res\.user\); openAsAuthed\(\);/.test(arrival), '');
   const srvBuild = fs.readFileSync(path.join(SERVER_SRC, 'build.ts'), 'utf8').replace(/\r\n?/g, '\n');
   const srvSync = fs.readFileSync(path.join(SERVER_SRC, 'sync.ts'), 'utf8').replace(/\r\n?/g, '\n');
   const srvIndex = fs.readFileSync(path.join(SERVER_SRC, 'index.ts'), 'utf8').replace(/\r\n?/g, '\n');
@@ -476,14 +523,29 @@ await mutant('checkBuild removed from the final-pull path',
   { 'store/sync.ts': swap('      checkBuild(resp);\n      applyRemoteRecords', '      applyRemoteRecords') },
   (o) => partB(o, { dirty: false }), (r) => r.stale === false);
 await mutant('writesHeld() always false (a stale tab keeps writing)',
-  { 'store/persistence.ts': swap('function writesHeld(): boolean { return isStaleClient() && !writesForced; }', 'function writesHeld(): boolean { return false; }') },
+  { 'store/persistence.ts': swap('function writesHeld(): boolean { return isStaleClient(); }', 'function writesHeld(): boolean { return false; }') },
   (o) => partB(o), (r) => r.heldWrite === false);
+await mutant('the Reload writes the whole cache over storage (the clobber)',
+  { 'store/persistence.ts': swap('const merged = overlayDirty(readArray(KEYS[name]) as Array<{ id: string; updatedAt: string }>, mine);', 'const merged = cache[name];') },
+  (o) => partB(o), (r) => r.liveRowSurvived !== false || r.mineAdded === false ? false : true);
+await mutant('the Reload lets this tab\'s older copy replace a fresher stored one',
+  { 'store/persistence.ts': swap('else if (!out[i].updatedAt || rec.updatedAt > out[i].updatedAt) out[i] = rec;', 'else out[i] = rec;') },
+  (o) => partB(o), (r) => r.freshStoredWins === false);
+await mutant('the Reload replaces the id journal instead of uniting with it',
+  { 'store/persistence.ts': swap("const ids = new Set<string>(Array.isArray(stored?.[name]) ? stored[name] : []);", 'const ids = new Set<string>();') },
+  (o) => partB(o), (r) => r.dirtyUnion === false);
 await mutant('startSync loses its generation check',
   { 'store/sync.ts': swap('  if (gen !== generation) return;\n  if (result', '  if (result') },
   (o) => partE(o), (r) => r.intervals !== 0 || r.listeners !== 0);
 await mutant('stopSync no longer retires the first-pull session',
   { 'store/sync.ts': swap("  if (firstPull) { firstPull.settle('failed'); firstPull = null; }\n", '') },
   (o) => partC(o), (r) => !(r.doneAfterStop === false && r.noSession === 'failed' && r.secondCapped === 'capped'));
+await mutant('a just-registered account still waits for its pull',
+  { 'store/firstRun.ts': swap('  if (isJustRegistered()) return true;\n', '') },
+  (o) => partD(o), (r) => r.regPending !== true || r.regPendingMs >= 300);
+await mutant('the Write door never learns it will wait (firstRunWillWait always false)',
+  { 'store/firstRun.ts': swap('  return !current && getCurrentUser() !== null && !isJustRegistered() && !firstPullDone() && firstPullPending();', '  return false;') },
+  (o) => partD(o), (r) => r.willWaitPending !== true);
 await mutant('a capped wait is paid again at the next door',
   { 'store/sync.ts': swap("  if (fp.capped) return 'capped';\n", '') },
   (o) => partC(o), (r) => !(r.secondCapMs < 200));
@@ -494,7 +556,7 @@ await mutant('first run ignores the account (flag only)',
   { 'store/firstRun.ts': swap('  if (accountHasWork()) { setFirstRunComplete(true); return false; }\n', '') },
   (o) => partD(o), (r) => r.hasEntry !== false);
 await mutant('register no longer resets the flag',
-  { 'store/firstRun.ts': swap('export function markRegistered(): void {\n  setFirstRunComplete(false);\n}', 'export function markRegistered(): void {\n}') },
+  { 'store/firstRun.ts': swap('  justRegisteredFor = userId;\n  setFirstRunComplete(false);', '  justRegisteredFor = userId;') },
   (o) => partD(o), (r) => r.registerOnUsedDevice !== true);
 await mutant('accountHasWork forgets projects',
   { 'store/persistence.ts': swap('cache.journalEntries.some(e => !getSystemKind(e)) || cache.projects.length > 0', 'cache.journalEntries.some(e => !getSystemKind(e))') },
