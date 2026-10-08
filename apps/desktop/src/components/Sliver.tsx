@@ -137,7 +137,8 @@ export type SliverContent =
       // PAGE-TEMPLATES-MOVE (Nick, 2026-10-08) - Screenplay is a LIVE template here, ahead of the disabled placeholders (Sprout
       // stays the blank Free Write page's door; Plan stays on the PLAN bar). The host owns what it does (on an empty page it
       // applies in place; on a page with words it opens a new page), so the strip only renders and calls.
-      templates?: { key: 'screenplay'; label: string; onApply: () => void }[];
+      // `selected`: the page already IS this template (a screenplay page) - drawn chosen, brass at rest, aria-pressed.
+      templates?: { key: 'screenplay'; label: string; selected?: boolean; onApply: () => void }[];
     }
   // AB4 S5 — the Board's own hand tool(s). FX4 S6 — the Connect toggle
   // RETIRES (replaced by BoardEditor.tsx's own handle-drag thread gesture:
@@ -725,7 +726,7 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           <div className="wz-sliver-h">{t('railTemplates')}</div>
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
             {content.templates?.map(tpl => (
-              <button key={tpl.key} type="button" className="mode-tbtn wz-template-live" data-template={tpl.key} title={tpl.label} aria-label={tpl.label} onClick={tpl.onApply}>
+              <button key={tpl.key} type="button" className="mode-tbtn wz-template-live" data-template={tpl.key} aria-pressed={!!tpl.selected} title={tpl.label} aria-label={tpl.label} onClick={tpl.onApply}>
                 <span className="wz-format-mark" aria-hidden="true">{BEGINNING_GLYPH[tpl.key]}</span>
               </button>
             ))}

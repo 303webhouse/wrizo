@@ -948,6 +948,9 @@ export function ScriptEditor({ id }: { id: string }) {
     kind: 'draft',
     structure: 'screenplay',
     onSwitchStructure,
+    // PAGE-TEMPLATES-MOVE (Nick's standing rule: brass marks a choice the writer has made, at rest) - this page IS a screenplay,
+    // so its Templates row shows the Screenplay template CHOSEN. Pressing a choice already made changes nothing.
+    templates: [{ key: 'screenplay', label: dt('beginScreenplay'), selected: true, onApply: () => {} }],
   };
   // CD1 S6 — the goal system's live text for this surface: the script's
   // elements read as lines (matches the deterministic hard-newline

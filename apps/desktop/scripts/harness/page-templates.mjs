@@ -96,8 +96,9 @@ await withHarness(async (app) => {
     s.filter((b) => !b.live).length === 4 && s.filter((b) => !b.live).every((b) => b.disabled === 'true' && b.title === 'Coming soon' && b.glyph), JSON.stringify(s.filter((b) => !b.live)));
   ok('T1 [Draft]: Plan stays on the PLAN bar', (await app.evalJs("!!document.querySelector('.desk-mode-strip [data-page-plan-door]')")) === true);
   const brass = await rgbOf(app, 'var(--brass)');
-  const rest = await app.evalJs(`getComputedStyle(document.querySelector(${JSON.stringify(SCREENPLAY)})).color`);
-  ok('T1 [Draft]: the live template is NOT brass at rest (olive rests, brass is the press)', rest !== brass, JSON.stringify({ rest, brass }));
+  const rest = await app.evalJs(`(() => { const b = document.querySelector(${JSON.stringify(SCREENPLAY)}); return b ? { color: getComputedStyle(b).color, pressed: b.getAttribute('aria-pressed') } : null; })()`);
+  ok('T1 [Draft, a PROSE page]: the Screenplay template is NOT chosen here - aria-pressed false, and not brass at rest (brass marks a choice made)',
+    !!rest && rest.pressed === 'false' && rest.color !== brass, JSON.stringify({ rest, brass }));
 
   // ===== T2 - Screenplay on an EMPTY page applies in place; brass on the press =====
   await freshDesk(app);
@@ -111,6 +112,15 @@ await withHarness(async (app) => {
   const r2 = await rows(app);
   ok('T2 [Screenplay, empty page]: applies IN PLACE - the surface becomes the script room and exactly ONE row exists, a script',
     (await app.evalJs(`!!document.querySelector('${SCRIPT}')`)) && r2.length === 1 && r2[0].pageType === 'script', JSON.stringify({ rows: r2, hash: await hash(app) }));
+  // Nick's standing rule (Fable, 2026-10-08): brass marks a choice the writer has MADE, at rest. The page IS a screenplay now, so
+  // its strip shows the Screenplay template chosen - read with no press and the pointer parked far from it.
+  await app.mouseMove(5, 5); await sleep(200);
+  await openStrip(app);
+  await waitSoft(app, `!!document.querySelector(${JSON.stringify(SCREENPLAY)})`, { label: 'screenplay page strip', timeout: 3000 });
+  const chosen = await app.evalJs(`(() => { const b = document.querySelector(${JSON.stringify(SCREENPLAY)}); if (!b) return null;
+    const cs = getComputedStyle(b); return { pressed: b.getAttribute('aria-pressed'), color: cs.color, border: cs.borderTopColor, active: b.matches(':active') }; })()`);
+  ok('T2 [chosen]: on a screenplay page the Screenplay template is drawn CHOSEN - aria-pressed, and brass AT REST (no press: not :active)',
+    !!chosen && chosen.pressed === 'true' && chosen.active === false && chosen.color === brass && chosen.border === brass, JSON.stringify({ chosen, brass }));
 
   // ===== T3 - Sprout on a blank Free Write page: the same door, the same vanish rule =====
   await freshDesk(app);
