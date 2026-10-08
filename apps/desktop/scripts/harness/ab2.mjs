@@ -1036,10 +1036,22 @@ if (process.env.HARNESS_PARKED === '1') {
     //     && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
     //   JSON.stringify(draftRailClassRenameCheck));
     // ---------------------------------------------------------------------
-    pok('PARKED, generation 6 (was generation 5, the FIFTEEN-button roster with Round/Hollow/Square bullets) — PR #7 (4d3c84e) changes the MEMBERSHIP: one Round bullet plus a Bullet styles menu, B/I/U titled with their shortcuts, and three Coming soon placeholders, SEVENTEEN in all; the claim is unchanged and re-made at the current membership, in order',
+    // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: "templates live in the tools menu now") - GENERATION 6,
+    // quoted VERBATIM and no longer asserted. The claim is unchanged: the Draft rail carries exactly its ruled roster, in order.
+    // The MEMBERSHIP changed: the page's three Beginnings doors join the Templates row as LIVE buttons (titled Screenplay, Sprout,
+    // Plan) ahead of the three Coming soon placeholders. Generation 7 below re-makes the claim at that membership, pinned in order.
+    //
+    // pok('PARKED, generation 6 (was generation 5, the FIFTEEN-button roster with Round/Hollow/Square bullets) — PR #7 (4d3c84e) changes the MEMBERSHIP: one Round bullet plus a Bullet styles menu, B/I/U titled with their shortcuts, and three Coming soon placeholders, SEVENTEEN in all; the claim is unchanged and re-made at the current membership, in order',
+    //   !draftRailClassRenameCheck.ink && draftRailClassRenameCheck.captureItems === 0
+    //     && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure === false
+    //     && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold (Ctrl+B)', 'Italic (Ctrl+I)', 'Underline (Ctrl+U)', 'Strikethrough', 'Heading', 'Round bullet', 'Bullet styles', 'Block quote', 'Outdent', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right', 'Coming soon', 'Coming soon', 'Coming soon'])
+    //     && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
+    //   JSON.stringify(draftRailClassRenameCheck));
+    // ---------------------------------------------------------------------
+    pok('PARKED, generation 7 (was generation 6, the SEVENTEEN-button roster) — PAGE-TEMPLATES-MOVE (2026-10-08) changes the MEMBERSHIP: the page\'s three Beginnings doors join the Templates row as LIVE buttons, Screenplay, Sprout and Plan, ahead of the three Coming soon placeholders, TWENTY in all; the claim is unchanged and re-made at the current membership, in order',
       !draftRailClassRenameCheck.ink && draftRailClassRenameCheck.captureItems === 0
         && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure === false
-        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold (Ctrl+B)', 'Italic (Ctrl+I)', 'Underline (Ctrl+U)', 'Strikethrough', 'Heading', 'Round bullet', 'Bullet styles', 'Block quote', 'Outdent', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right', 'Coming soon', 'Coming soon', 'Coming soon'])
+        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold (Ctrl+B)', 'Italic (Ctrl+I)', 'Underline (Ctrl+U)', 'Strikethrough', 'Heading', 'Round bullet', 'Bullet styles', 'Block quote', 'Outdent', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right', 'Screenplay', 'Sprout', 'Plan', 'Coming soon', 'Coming soon', 'Coming soon'])
         && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
       JSON.stringify(draftRailClassRenameCheck));
 

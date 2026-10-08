@@ -35,6 +35,7 @@ import { withHarness } from '../runtime-verify.mjs';
 import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
+const pageRowSeen = { s2: null, leg: null };   // the page row's presence where the parked checks measured it (PAGE-TEMPLATES-MOVE)
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -245,51 +246,57 @@ await withHarness(async (app) => {
   // S2 — the page's row, centered on the sheet, and the DoD RE-PROVEN there.
   // ==========================================================================
   await freshPage(app, 'bg2-page', '', LAPTOP_W, 900);
-  const pagePlace = await app.evalJs(`(() => {
-    const row = document.querySelector('.wz-beginnings');
-    const sheet = document.querySelector('.mode-page');
-    const r = row.getBoundingClientRect(), s = sheet.getBoundingClientRect();
-    return { rowMidX: Math.round(r.left + r.width / 2), sheetMidX: Math.round(s.left + s.width / 2),
-      rowTop: Math.round(r.top), rowBottom: Math.round(r.bottom),
-      sheetTop: Math.round(s.top), sheetBottom: Math.round(s.bottom),
-      pointerEvents: getComputedStyle(row).pointerEvents };
-  })()`);
-  ok('S2 (SV19): the page\'s row is centered on the sheet — it reads as a set of modes, not a footnote under the caret (this SUPERSEDES the committee\'s "furniture beside the cursor" by Nick\'s own word)',
-    Math.abs(pagePlace.rowMidX - pagePlace.sheetMidX) <= 12 &&
-    pagePlace.rowTop > pagePlace.sheetTop && pagePlace.rowBottom < pagePlace.sheetBottom,
-    JSON.stringify(pagePlace));
-
-  ok('S2: the row still never intercepts the surface — pointer-events:none on the container, unchanged by the move',
-    pagePlace.pointerEvents === 'none', pagePlace.pointerEvents);
-
-  // The invariant BG1 expressed as "the row sits below the first line" — now
-  // that the row is centered instead, the CLAIM has to be measured where it
-  // actually lives: the doors, and the hit test at the caret. The row's
-  // container spans the sheet by design (that is how flexbox centres it) and
-  // does graze the first line's band at short viewport heights; it is
-  // pointer-events:none, so what matters is that no DOOR sits over the caret
-  // and that the caret point still belongs to the editor.
-  const caretClear = await app.evalJs(`(() => {
-    const ed = document.querySelector('.forward-only-editor');
-    const e = ed.getBoundingClientRect();
-    const lineH = parseFloat(getComputedStyle(ed).lineHeight) || 29;
-    const caret = { x: e.left + 2, yTop: e.top, yBot: e.top + lineH };
-    const covering = [...document.querySelectorAll('.wz-beginning')].filter((b) => {
-      const d = b.getBoundingClientRect();
-      return d.left <= caret.x && d.right >= caret.x && d.top <= caret.yBot && d.bottom >= caret.yTop;
-    }).map((b) => b.dataset.beginning);
-    const atCaret = document.elementFromPoint(caret.x + 1, caret.yTop + 8);
-    const firstDoorLeft = Math.round(document.querySelector('.wz-beginning').getBoundingClientRect().left);
-    return { covering, atCaret: (atCaret && atCaret.className || '').toString(),
-      caretX: Math.round(caret.x), firstDoorLeft };
-  })()`);
-  ok('S2: the caret\'s own place stays clear of furniture at the new placement — NO door overlaps the caret, and the caret point still hit-tests to the editor itself (the invariant BG1 held by sitting below the first line, now held by being centered away from it)',
-    caretClear.covering.length === 0 && caretClear.atCaret.includes('forward-only-editor'),
-    JSON.stringify(caretClear));
-
-  const pageContrast = await app.evalJs(CONTRAST_JS);
-  ok(`S2: the door colour carries on the PAGE too — computed WCAG contrast ${pageContrast.ratio}:1 against the sheet (>=4.5)`,
-    pageContrast.ratio >= 4.5, JSON.stringify(pageContrast));
+  pageRowSeen.s2 = await app.evalJs("!!document.querySelector('.wz-beginnings')");
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: the page's Beginnings row is retired; templates live in
+  // the tools menu). Kept VERBATIM and no longer run: there is no page row to measure. Parked records (the row is absent) are
+  // in the HARNESS_PARKED block below; the live successor is page-templates.mjs.
+  //
+  // const pagePlace = await app.evalJs(`(() => {
+  //   const row = document.querySelector('.wz-beginnings');
+  //   const sheet = document.querySelector('.mode-page');
+  //   const r = row.getBoundingClientRect(), s = sheet.getBoundingClientRect();
+  //   return { rowMidX: Math.round(r.left + r.width / 2), sheetMidX: Math.round(s.left + s.width / 2),
+  //     rowTop: Math.round(r.top), rowBottom: Math.round(r.bottom),
+  //     sheetTop: Math.round(s.top), sheetBottom: Math.round(s.bottom),
+  //     pointerEvents: getComputedStyle(row).pointerEvents };
+  // })()`);
+  // ok('S2 (SV19): the page\'s row is centered on the sheet — it reads as a set of modes, not a footnote under the caret (this SUPERSEDES the committee\'s "furniture beside the cursor" by Nick\'s own word)',
+  //   Math.abs(pagePlace.rowMidX - pagePlace.sheetMidX) <= 12 &&
+  //   pagePlace.rowTop > pagePlace.sheetTop && pagePlace.rowBottom < pagePlace.sheetBottom,
+  //   JSON.stringify(pagePlace));
+// 
+  // ok('S2: the row still never intercepts the surface — pointer-events:none on the container, unchanged by the move',
+  //   pagePlace.pointerEvents === 'none', pagePlace.pointerEvents);
+// 
+  // // The invariant BG1 expressed as "the row sits below the first line" — now
+  // // that the row is centered instead, the CLAIM has to be measured where it
+  // // actually lives: the doors, and the hit test at the caret. The row's
+  // // container spans the sheet by design (that is how flexbox centres it) and
+  // // does graze the first line's band at short viewport heights; it is
+  // // pointer-events:none, so what matters is that no DOOR sits over the caret
+  // // and that the caret point still belongs to the editor.
+  // const caretClear = await app.evalJs(`(() => {
+  //   const ed = document.querySelector('.forward-only-editor');
+  //   const e = ed.getBoundingClientRect();
+  //   const lineH = parseFloat(getComputedStyle(ed).lineHeight) || 29;
+  //   const caret = { x: e.left + 2, yTop: e.top, yBot: e.top + lineH };
+  //   const covering = [...document.querySelectorAll('.wz-beginning')].filter((b) => {
+  //     const d = b.getBoundingClientRect();
+  //     return d.left <= caret.x && d.right >= caret.x && d.top <= caret.yBot && d.bottom >= caret.yTop;
+  //   }).map((b) => b.dataset.beginning);
+  //   const atCaret = document.elementFromPoint(caret.x + 1, caret.yTop + 8);
+  //   const firstDoorLeft = Math.round(document.querySelector('.wz-beginning').getBoundingClientRect().left);
+  //   return { covering, atCaret: (atCaret && atCaret.className || '').toString(),
+  //     caretX: Math.round(caret.x), firstDoorLeft };
+  // })()`);
+  // ok('S2: the caret\'s own place stays clear of furniture at the new placement — NO door overlaps the caret, and the caret point still hit-tests to the editor itself (the invariant BG1 held by sitting below the first line, now held by being centered away from it)',
+  //   caretClear.covering.length === 0 && caretClear.atCaret.includes('forward-only-editor'),
+  //   JSON.stringify(caretClear));
+// 
+  // const pageContrast = await app.evalJs(CONTRAST_JS);
+  // ok(`S2: the door colour carries on the PAGE too — computed WCAG contrast ${pageContrast.ratio}:1 against the sheet (>=4.5)`,
+  //   pageContrast.ratio >= 4.5, JSON.stringify(pageContrast));
+  // ------------------------------------------------------------------
 
   // THE DoD check, re-proven at the new placement (BG2's brief requires it).
   const caretLive = await app.evalJs(`(() => {
@@ -314,13 +321,23 @@ await withHarness(async (app) => {
   const styleOn = `(() => { const cs = getComputedStyle(document.querySelector('.wz-beginning'));
     const g = document.querySelector('.wz-beginning-glyph').getBoundingClientRect();
     return { font: cs.fontFamily, size: cs.fontSize, color: cs.color, dir: cs.flexDirection, glyph: Math.round(g.width) }; })()`;
-  await freshPage(app, 'bg2-grammar-page', '', LAPTOP_W, 900);
-  const pageStyle = await app.evalJs(styleOn);
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: the page's Beginnings row is retired; templates live in
+  // the tools menu). Kept VERBATIM and no longer run: there is no page row to measure. Parked records (the row is absent) are
+  // in the HARNESS_PARKED block below; the live successor is page-templates.mjs.
+  //
+  // await freshPage(app, 'bg2-grammar-page', '', LAPTOP_W, 900);
+  // const pageStyle = await app.evalJs(styleOn);
+  // ------------------------------------------------------------------
   await freshBoard(app, 'bg2-grammar-board2', [], LAPTOP_W, 900);
   const boardStyle = await app.evalJs(styleOn);
-  ok('S1/S3: the revision was made in ONE place and both surfaces inherited it — identical type, colour, stacking direction and glyph size on page and board',
-    JSON.stringify(pageStyle) === JSON.stringify(boardStyle) && pageStyle.dir === 'column',
-    JSON.stringify({ pageStyle, boardStyle }));
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: the page's Beginnings row is retired; templates live in
+  // the tools menu). Kept VERBATIM and no longer run: there is no page row to measure. Parked records (the row is absent) are
+  // in the HARNESS_PARKED block below; the live successor is page-templates.mjs.
+  //
+  // ok('S1/S3: the revision was made in ONE place and both surfaces inherited it — identical type, colour, stacking direction and glyph size on page and board',
+  //   JSON.stringify(pageStyle) === JSON.stringify(boardStyle) && pageStyle.dir === 'column',
+  //   JSON.stringify({ pageStyle, boardStyle }));
+  // ------------------------------------------------------------------
 
   // ==========================================================================
   // The token is slotted, not hardcoded: the one theme with DARK paper.
@@ -354,17 +371,23 @@ await withHarness(async (app) => {
     boardLeg.oneLine === true && Math.abs(boardLeg.midY - boardLeg.canvasMidY) <= 2, JSON.stringify(boardLeg));
 
   await freshPage(app, 'bg2-leg-page', '', LEG_W, LEG_H);
-  const pageLeg = await app.evalJs(`(() => {
-    const r = document.querySelector('.wz-beginnings').getBoundingClientRect();
-    const s = document.querySelector('.mode-page').getBoundingClientRect();
-    const tops = [...document.querySelectorAll('.wz-beginning')].map((b) => Math.round(b.getBoundingClientRect().top));
-    return { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom),
-      oneLine: new Set(tops).size === 1, vw: innerWidth, vh: innerHeight,
-      midX: Math.round(r.left + r.width / 2), sheetMidX: Math.round(s.left + s.width / 2) };
-  })()`);
-  ok('1366x768 leg: the page row fits whole, stays on ONE line (three larger doors, no wrap), and stays centered on the sheet',
-    pageLeg.left >= 0 && pageLeg.right <= pageLeg.vw && pageLeg.top >= 0 && pageLeg.bottom <= pageLeg.vh &&
-    pageLeg.oneLine === true && Math.abs(pageLeg.midX - pageLeg.sheetMidX) <= 12, JSON.stringify(pageLeg));
+  pageRowSeen.leg = await app.evalJs("!!document.querySelector('.wz-beginnings')");
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: the page's Beginnings row is retired; templates live in
+  // the tools menu). Kept VERBATIM and no longer run: there is no page row to measure. Parked records (the row is absent) are
+  // in the HARNESS_PARKED block below; the live successor is page-templates.mjs.
+  //
+  // const pageLeg = await app.evalJs(`(() => {
+  //   const r = document.querySelector('.wz-beginnings').getBoundingClientRect();
+  //   const s = document.querySelector('.mode-page').getBoundingClientRect();
+  //   const tops = [...document.querySelectorAll('.wz-beginning')].map((b) => Math.round(b.getBoundingClientRect().top));
+  //   return { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom),
+  //     oneLine: new Set(tops).size === 1, vw: innerWidth, vh: innerHeight,
+  //     midX: Math.round(r.left + r.width / 2), sheetMidX: Math.round(s.left + s.width / 2) };
+  // })()`);
+  // ok('1366x768 leg: the page row fits whole, stays on ONE line (three larger doors, no wrap), and stays centered on the sheet',
+  //   pageLeg.left >= 0 && pageLeg.right <= pageLeg.vw && pageLeg.top >= 0 && pageLeg.bottom <= pageLeg.vh &&
+  //   pageLeg.oneLine === true && Math.abs(pageLeg.midX - pageLeg.sheetMidX) <= 12, JSON.stringify(pageLeg));
+  // ------------------------------------------------------------------
 
   await app.typeKeys('At the leg too');
   await sleep(300);
@@ -383,12 +406,26 @@ console.log(JSON.stringify(checks, null, 2));
 // falsified them (the P2 standing invariant).
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  // PAGE-TEMPLATES-MOVE (2026-10-08) - BG2's first parks of its own: SIX page-row checks, retired with the page's Beginnings row.
+  // Each record asserts the new truth (no row on the empty page, read where the original measured it). The BOARD's row - S1, S3,
+  // the dark-paper token, the board leg - is unchanged and still runs live above.
+  const succ = 'PAGE-TEMPLATES-MOVE retires the page\'s Beginnings row (Nick, 2026-10-08: templates live in the tools menu); live successor: page-templates.mjs';
+  for (const [was, seen] of [
+    ['S2 (SV19): the page\'s row is centered on the sheet ...', pageRowSeen.s2],
+    ['S2: the row still never intercepts the surface — pointer-events:none on the container, unchanged by the move', pageRowSeen.s2],
+    ['S2: the caret\'s own place stays clear of furniture at the new placement ...', pageRowSeen.s2],
+    ['S2: the door colour carries on the PAGE too — computed WCAG contrast ...', pageRowSeen.s2],
+    ['S1/S3: the revision was made in ONE place and both surfaces inherited it — identical type, colour, stacking direction and glyph size on page and board', pageRowSeen.s2],
+    ['1366x768 leg: the page row fits whole, stays on ONE line (three larger doors, no wrap), and stays centered on the sheet', pageRowSeen.leg],
+  ]) parkedChecks.push({ name: `PARKED (was "${was}") — ${succ}`, pass: seen === false, detail: `pageRow=${seen}` });
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nBG2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; BG2 parks nothing of its own (its two parks live in bg1.mjs, which names this file as the successor).`
+    // ---- PARKED - SUPERSEDED by the six parks above (2026-10-08). Kept VERBATIM:
+    // ? `\nBG2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; BG2 parks nothing of its own (its two parks live in bg1.mjs, which names this file as the successor).`
+    ? `\nBG2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; BG2 parks SIX of its own (the page row, retired by PAGE-TEMPLATES-MOVE); BG1's two BG2 parks still live in bg1.mjs.`
     : `\nBG2 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);
