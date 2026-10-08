@@ -24883,3 +24883,17 @@ on a new device.** **B11 (guest) stays PAUSED until B10.1 ships.**
 
 **BOX:** INK will ask for ONE box turn for the stale-tab repro (old client + B10, same origin); this desk grants it when asked.
 No grant is live; the box is idle.
+
+## INK’S B10.1 REPRO TURN: DONE, NOT REPRODUCIBLE; THE HUNT STOPPED; B10.1 SHIPS DEFENCES — 2026-10-08 (chat 1)
+
+**THE TURN (Fable, relay):** INK’s repro ran on a local-only rig (local Postgres, :3111 server, :3120 front): four launches — three
+driver faults, one clean; 0 browsers left. **RESULT: NOT REPRODUCIBLE on a 177-page account, with or without the real
+pre-redesign bundle (`b2b2dab9` / `index-CsedhZ4m`).** **RULING (Fable): STOP THE HUNT. B10.1 ships the DEFENCES:** the stale-client
+guard, landing waits for the pull, a per-account first-run, a `startSync` generation check, and an empty-after-pull retry plus
+a diagnostic. INK’s local rig stays up (local only) until B10.1’s tests pass. **B11 stays paused behind B10.1.**
+
+**THE GRANT, LOGGED (as asked): written `2026-10-08T05:37:41Z` (Oct 7, 11:37 pm MT) for a ~5-minute turn; CLEARED `2026-10-08T14:50:54Z`
+(8:50 am MT) — open for ~553 MINUTES (about 9 hours).** The grant file has no expiry by design; it stayed up because the
+release depends on INK’s report reaching this desk, which came in Fable’s relay this morning. At clearing: 0 harness processes,
+0 `ws-runtime-verify` browsers, no grant file. *(During those hours nobody else was waiting on the box; a lane that asks for
+the box after hours should say when it is done, or this desk should ask.)*
