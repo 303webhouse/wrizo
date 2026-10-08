@@ -580,5 +580,5 @@ for (const c of checks) {
   if (!c.pass) failed += 1;
   console.log((c.pass ? 'PASS ' : 'FAIL ') + c.name + (c.pass ? '' : ' | ' + String(c.detail).slice(0, 300)));
 }
-console.log(failed === 0 ? `\nB101: PASS (${checks.length} checks)` : `\nB101: FAIL — ${failed}/${checks.length}`);
+console.log(failed === 0 ? `\nB101 VERIFY: PASS (${checks.length} checks)` : `\nB101 VERIFY: FAIL — ${failed}/${checks.length}`);
 process.exit(failed === 0 ? 0 : 1);
