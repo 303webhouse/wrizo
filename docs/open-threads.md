@@ -24969,3 +24969,18 @@ still to run on the final tree, by this desk, in the pair.**
 is now moot). **FIX’s turn GRANTED `21:05:10Z` on `page-templates-move` @ `33b5a80`** (approved by Fable; the brass-at-rest change
 is done; the plan is in FIX’s last report). 30-minute check-in due `21:35Z` (3:35 pm MT). Then B10.1’s suite pair on the final
 tree, K10 `--mutants` included (baseline 32, 19/19 red).
+
+## FIX’S page-templates-move TURN: GRANT CLEARED IDLE AT THE RE-CHECK; THE PRIMARY CHECKOUT MOVED BY ANOTHER LANE AGAIN — 2026-10-08 (chat 1)
+
+**FIX (message, not “box done”): the first pass found three red files, all FIX’s own harness drivers; fix pushed as `23d932f`
+(harness only, product unchanged); a re-run, the mutants and the frames ran in `writer-studio-fx17`.** `page-templates-move`’s
+tip on origin is now `645fdf6` (“Page templates: the Screenplay template’s glyph drew at zero in the strip…”, 15:39 MT).
+This desk’s two checks at 21:37Z (box busy: one harness node process, 11 browsers) and 21:53Z found the first busy, the second
+IDLE (0 harness processes, 0 browsers); FIX had not sent “box done”; **the grant was CLEARED `21:53:27Z` — open 48 minutes**
+(written `21:05:10Z`). FIX’s SHA and counts for the batch are still to come from FIX.
+
+**► THE PRIMARY CHECKOUT WAS MOVED OFF `main` BY ANOTHER LANE, AGAIN:** `git reflog` shows “checkout: moving from main to
+`cursor/plateau-rhizome-goal-4b92`” at `21:20:19Z`, with no uncommitted changes. Fable had told Cursor to work in its own
+worktree. **This desk did not touch it; the ledger is written from a separate worktree (`.claude/worktrees/ledger-desk`) and
+pushed `HEAD:main`.** A deploy needs the primary on `main`, clean; it will be put back (safe: clean tree) before any deploy
+and Cursor asked to stay out.
