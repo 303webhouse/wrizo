@@ -25120,3 +25120,25 @@ minutes, 0 `ws-runtime-verify` browsers, and NO listeners on :3100–3130 — IN
 needs) is DOWN, as Fable had ruled it could be.** The walk could not have run. No “box done” received. **CLEARED `2026-10-09T03:19Z`
 — open ~31 minutes, unused.** INK re-asks once the rig is up (local Postgres, the server on :3107, the front); this desk then writes a
 fresh grant after reading the file.
+
+## CORRECTION: INK’S guest-client-walk GRANT WAS USED (14/14); AN OPEN QUESTION ON 3 BROWSER PROCESSES; FIX’S WINDOW GRANTED — 2026-10-08 (chat 1)
+
+**The entry above (“CLEARED, NEVER USED”) was WRONG — this desk’s second miss of the same kind.** Fable (relay): **INK’s grant was USED:
+the walk ended `02:49:09Z`, 14/14 passing, and INK tore the rig down right after — which is why the ports were empty at `03:19Z`.**
+The grant was written `02:48:06Z`, so the walk ran inside ~63 seconds of it. This desk’s check looked for LIVE processes,
+listeners and recent pushes; a finished run leaves none of those, and INK had not pushed its evidence yet. **Pending: INK’s
+walk START time, to put beside the grant’s write time.** *(Rule, sharpened: an absence of processes is not evidence of non-use;
+before logging “unused” ask the grantee or look at its own evidence output.)* The grant was open ~31 minutes after a ~1-minute
+use; the 30-minute rule did its job on a box that was in fact idle, but the record it produced said the wrong thing.
+
+**OPEN QUESTION (Fable): 3 `ws-runtime-verify` processes were seen around INK’s launch (~`02:47Z`). Whose?** If no lane claims them
+they are recorded as **“unclaimed”**. *(This desk observed none: its 02:48 grant write found 0 browsers, and its earlier 02:30Z
+sighting was a single `b101.mjs` node process. ~02:47Z is before the grant write, so they are not this desk’s and not inside
+the grant; answer expected from INK.)*
+
+**NEXT GRANT (Fable): FIX’s ONE WINDOW — rhizome legs + shots, templates light reshoot. Its commits are verified by this desk on
+origin: `97f95c3` (on `cursor/plateau-rhizome-goal-4b92`: “Rhizome: the first goal crossing after a page opens flashes; park m2’s
+burst check…”) and `194174c` (on `page-templates-move`: “Page templates frames: set the THEME, not only the page tone — light =
+Flux’s lig…”).** GRANTED `2026-10-09T03:46:21Z` (9:46 pm MT), grant file read first (absent), box idle (0 harness processes, 0
+browsers); 30-minute check-in due 10:16 pm MT — this desk will look at FIX’s branches AND for finished-run evidence before clearing.
+**PAIRS AFTER THAT: templates → rhizome → B11 (after INK’s evidence push) → drafts (`56d1e3c`).**
