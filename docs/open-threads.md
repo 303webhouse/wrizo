@@ -25178,3 +25178,14 @@ seen earlier). **It includes the `guest_links` migration, reviewed IN the pair.*
 reviews FIX’s frames) → templates pair → rhizome pair → drafts (`cdced72`). DEPLOY ONLY AFTER NICK’S SHIP WORD, as always.**
 This desk does NOT run the B11 pair during FIX’s window (a heavy node run beside another lane’s browsers is what cut FIX’s turn 2
 short once); it prepares the assembly with git operations only, then pairs once FIX is done.
+
+## FIX’S RE-GRANTED WINDOW CLEARED AT THE RE-CHECK: TEMPLATES HALF RAN, RHIZOME HALF UNCONFIRMED — 2026-10-08 (chat 1)
+
+FIX’s window (`fix-window2-rhizome-templates-20261009`, written `2026-10-09T04:47:56Z`, 10:47 pm MT) was checked at 11:19 pm MT (age 31)
+and left live; re-checked at 11:36 pm MT (age 48): the grant file still named FIX (read first); **box idle (0 harness processes, 0
+browsers); no new push on either branch; no file newer than 22:52 MT in FIX’s worktrees; no “box done”.** **EVIDENCE OF USE:
+`page-templates-move` @ `a301594`, pushed 22:52:57 MT (five minutes after the grant): “Page templates evidence: the LIGHT frames
+reshot @ 194174c…” — the TEMPLATES half RAN.** The RHIZOME half is UNCONFIRMED: `cursor/plateau-rhizome-goal-4b92` still at
+`97f95c3`; the rhizome worktree’s newest file is its 22:48 build; its legs and shots may have run with output kept elsewhere, or
+not. This desk does NOT claim either. **CLEARED `2026-10-09T05:36Z` — open ~48 minutes.** FIX confirms the rhizome half or asks
+again; this desk reads the grant file before writing one. The B11 pair starts next, in its own worktree.
