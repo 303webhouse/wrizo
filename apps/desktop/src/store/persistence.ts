@@ -35,6 +35,7 @@ const KEYS = {
 } as const;
 
 type CollectionName = keyof typeof KEYS;
+export type DirtyCollection = CollectionName;
 
 interface Cache {
   projects: Project[];
@@ -186,15 +187,12 @@ export function getDirtyRecords(): DirtyRecords {
   };
 }
 
-export function markClean(ids: string[]): void {
-  for (const id of ids) {
-    dirty.projects.delete(id);
-    dirty.storyPlans.delete(id);
-    dirty.sessions.delete(id);
-    dirty.drafts.delete(id);
-    dirty.journalEntries.delete(id);
-    dirty.drawers.delete(id);
-  }
+// DRAFTS INTEGRITY - AN ID IS ONLY UNIQUE WITHIN ITS COLLECTION. A project draft is stored under its project's id, so project P and
+// draft P are two different records that share one id. This used to take bare ids and clear each from ALL SIX dirty sets, so landing
+// project P also cleared draft P's dirty mark: if the draft's own request then failed (or the draft was edited meanwhile) the edit was
+// no longer dirty, was never retried, and stayed on this device only. A record is now cleaned in ITS OWN collection and no other.
+export function markClean(items: ReadonlyArray<{ collection: DirtyCollection; id: string }>): void {
+  for (const { collection, id } of items) dirty[collection].delete(id);
   persistDirty();
   // STORAGE-FULL STEP 1 — a successful push is the one thing that can move the sync notice from "changes not yet in
   // the account" to "safe in the account" while storage stays failed; nothing previously told a reactive listener

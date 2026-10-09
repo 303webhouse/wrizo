@@ -183,7 +183,7 @@ function loadSyncClient() {
     "export function __resetCleaned() { __cleanedIds.length = 0; }",
     "export const __cleanedIds = [];",
     "export function getDirtyRecords() { return JSON.parse(JSON.stringify(__store)); }",
-    "export function markClean(ids) { __cleanedIds.push(...ids); }",
+    "export function markClean(items) { __cleanedIds.push(...items.map((i) => i.id)); }",
     "export function applyRemoteRecords() {}",
     "export function markAllJournalEntriesDirty() {}",
     // B10.1 - the safety net reads these two; this proof's fixtures never pull journal entries.
