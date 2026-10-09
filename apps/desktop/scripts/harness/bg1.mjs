@@ -104,6 +104,32 @@ const clickDoor = async (app, key) => {
   await sleep(300);
 };
 
+// PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08) - the page row's Screenplay and Plan doors are gone. Screenplay is the
+// Draft strip's live TEMPLATE (same act, requestScreenplay); Plan is the mode strip's PLAN door (same act, openPlanBoard).
+// The same trusted press as clickDoor. Neither throws: a missing control is reported by the check that follows.
+const pressAt = async (app, elExpr) => {
+  const p = await hittablePointBy(app, elExpr);
+  if (!p || !p.found) return false;
+  await app.mouseMove(p.x, p.y);
+  await sleep(60);
+  await app.mouseDown(p.x, p.y);
+  await app.mouseUp(p.x, p.y);
+  await sleep(300);
+  return true;
+};
+const clickScreenplayTemplate = async (app) => {
+  await app.click('Draft'); await sleep(400);
+  // OPEN is the strip's own state (data-open), never the presence of a section: the body stays mounted while the drawer is shut.
+  if (!(await app.evalJs(`!!document.querySelector(".wz-sliver[data-open='true']")`))) await openSliver(app);
+  try { await app.waitFor(`!!document.querySelector(".wz-sliver[data-open='true']")`, { label: 'strip open', timeout: 3000 }); } catch { /* reported below */ }
+  // the strip scrolls: Templates sit below its fold, so the control is brought into view first, as a writer would scroll to it
+  await app.evalJs(`document.querySelector('.wz-template-live[data-template="screenplay"]')?.scrollIntoView({ block: 'center', inline: 'nearest' })`);
+  await sleep(150);
+  return pressAt(app, `document.querySelector('.wz-template-live[data-template="screenplay"]')`);
+};
+const clickPlanBar = (app) => pressAt(app, `document.querySelector('.desk-mode-strip [data-page-plan-door]')`);
+let pageDoorsSeen = null;   // S2's reading of the page row, kept for its parked record (PAGE-TEMPLATES-MOVE)
+
 // BoardEditor's own board writes are DEBOUNCED (AUTOSAVE_MS = 2000) — a door
 // press mutates the live boxes immediately and the row reacts at once, but the
 // localStorage row it lands in trails it. Wait for the persisted state rather
@@ -258,7 +284,13 @@ await withHarness(async (app) => {
   // S1 — a paired plan board takes OPEN's row (no plan-board branch exists).
   // ==========================================================================
   await freshPage(app, 'bg1-plan-parent', '', LAPTOP_W, 900);
-  await clickDoor(app, 'plan');
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: the page row keeps ONE door, Sprout, on a
+  // blank Free Write page; Screenplay is the Draft strip's live template; Plan stays on the PLAN bar only). Kept VERBATIM and
+  // no longer run. The same act is the PLAN bar's door; the S1 check below is unchanged.
+  //
+  // await clickDoor(app, 'plan');
+  // ------------------------------------------------------------------
+  await clickPlanBar(app);
   await app.waitFor("!!document.querySelector('.board-canvas, .board-projection')", { label: 'paired plan board mounted' });
   await sleep(350);
   const planBoardDoors = await doorLabels(app);
@@ -271,8 +303,16 @@ await withHarness(async (app) => {
   // ==========================================================================
   await freshPage(app, 'bg1-type-now', '', LAPTOP_W, 900);
   const pageDoors = await doorLabels(app);
-  ok('S2: a zero-word page renders the three start-words — Screenplay · Sprout · Plan (P1 amendment 2; "Sprout" supersedes "Start from a Spark")',
-    JSON.stringify(pageDoors) === JSON.stringify(['Screenplay', 'Sprout', 'Plan']), JSON.stringify(pageDoors));
+  pageDoorsSeen = pageDoors;
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: the page row keeps ONE door, Sprout, on a
+  // blank Free Write page; Screenplay is the Draft strip's live template; Plan stays on the PLAN bar only). Kept VERBATIM and
+  // no longer run. Parked record in the HARNESS_PARKED block below; the successor follows.
+  //
+  // ok('S2: a zero-word page renders the three start-words — Screenplay · Sprout · Plan (P1 amendment 2; "Sprout" supersedes "Start from a Spark")',
+  //   JSON.stringify(pageDoors) === JSON.stringify(['Screenplay', 'Sprout', 'Plan']), JSON.stringify(pageDoors));
+  // ------------------------------------------------------------------
+  ok('S2 [page-templates successor]: a zero-word Free Write page renders ONE start-word, Sprout (Screenplay is the Draft strip\'s template, Plan is the PLAN bar\'s door)',
+    JSON.stringify(pageDoors) === JSON.stringify(['Sprout']), JSON.stringify(pageDoors));
 
   const caretLive = await app.evalJs(`(() => {
     const ed = document.querySelector('.forward-only-editor');
@@ -352,7 +392,13 @@ await withHarness(async (app) => {
   // an empty page (no modal).
   // ==========================================================================
   await freshPage(app, 'bg1-screenplay', '', LAPTOP_W, 900);
-  await clickDoor(app, 'screenplay');
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: the page row keeps ONE door, Sprout, on a
+  // blank Free Write page; Screenplay is the Draft strip's live template; Plan stays on the PLAN bar only). Kept VERBATIM and
+  // no longer run. The same act is the Draft strip's Screenplay template; the check below is unchanged.
+  //
+  // await clickDoor(app, 'screenplay');
+  // ------------------------------------------------------------------
+  await clickScreenplayTemplate(app);
   await sleep(500);
   const scripted = await app.evalJs(`({
     modal: !!document.querySelector('.structure-confirm-modal'),
@@ -367,7 +413,13 @@ await withHarness(async (app) => {
   // ==========================================================================
   await freshPage(app, 'bg1-plan-door', '', LAPTOP_W, 900);
   const planBefore = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').filter(e => e.pageType === 'board').length");
-  await clickDoor(app, 'plan');
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: the page row keeps ONE door, Sprout, on a
+  // blank Free Write page; Screenplay is the Draft strip's live template; Plan stays on the PLAN bar only). Kept VERBATIM and
+  // no longer run. The same act is the PLAN bar's door; the check below is unchanged.
+  //
+  // await clickDoor(app, 'plan');
+  // ------------------------------------------------------------------
+  await clickPlanBar(app);
   await sleep(500);
   const planAfter = await app.evalJs(`({
     hash: location.hash,
@@ -503,6 +555,11 @@ if (process.env.HARNESS_PARKED === '1') {
       legNow.rowLeft >= 0 && legNow.rowRight <= legNow.vw &&
       legNow.rowTop >= 0 && legNow.rowBottom <= legNow.vh,
       JSON.stringify(legNow));
+
+    // PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08) - ONE more park: the three start-words. Its record asserts the new truth
+    // where the original measured it (the reading is taken in the live run above).
+    pok('PARKED (was "S2: a zero-word page renders the three start-words — Screenplay · Sprout · Plan (P1 amendment 2; \"Sprout\" supersedes \"Start from a Spark\")") — PAGE-TEMPLATES-MOVE narrows the page row to ONE door, Sprout, on a blank Free Write page (Screenplay is the Draft strip\'s live template; Plan stays on the PLAN bar); live successors: S2 [page-templates successor] above, page-templates.mjs',
+      JSON.stringify(pageDoorsSeen) === JSON.stringify(['Sprout']), JSON.stringify(pageDoorsSeen));
     return parkedChecks;
   });
   // eslint-disable-next-line no-console
@@ -510,7 +567,9 @@ if (process.env.HARNESS_PARKED === '1') {
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nBG1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green (BG2 is this file's first tenant; live successors in bg2.mjs).`
+    // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE's park (2026-10-08). Kept VERBATIM:
+    // ? `\nBG1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green (BG2 is this file's first tenant; live successors in bg2.mjs).`
+    ? `\nBG1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green (BG2 is this file's first tenant, live successors in bg2.mjs; PAGE-TEMPLATES-MOVE its second, one park).`
     : `\nBG1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);

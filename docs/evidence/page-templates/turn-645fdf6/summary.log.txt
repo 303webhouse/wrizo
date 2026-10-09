@@ -1,0 +1,9 @@
+HEAD 645fdf68 toplevel C:/Users/nickh/writer-studio-fx17
+page-templates default exit 0 PAGE-TEMPLATES VERIFY: PASS (20 checks)
+page-templates PARKED exit 0  | PAGE-TEMPLATES VERIFY: PASS (20 checks)
+bg1 default exit 0 BG1 VERIFY: PASS (35 checks)
+bg1 PARKED exit 0 BG1 PARKED: PASS (3 checks) — HARNESS_PARKED=1 armed, all retired-check successors green (BG2 is this file's first ten | BG1 VERIFY: PASS (35 checks)
+mutants exit 0 PAGE-TEMPLATES MUTANTS: PASS (3/3 killed); tree clean after restore: true
+tree after mutants: 0 changed paths
+frames exit 0 PAGE-TEMPLATES FRAMES: 12 frames, 0 failed shots -> docs/evidence/page-templates/
+DONE

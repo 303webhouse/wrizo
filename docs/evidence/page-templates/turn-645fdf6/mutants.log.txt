@@ -1,0 +1,8 @@
+M1: KILLED
+    FAIL  T2 [chosen]: on a screenplay page the Screenplay template is drawn CHOSEN - aria-pressed, and brass AT REST (no press: not :active)  [{"chosen":{"pressed":"false","color":"rgb(181, 169, 152)","border":"rgba(0, 0, 0
+M2: KILLED
+    FAIL  T2 [chosen]: on a screenplay page the Screenplay template is drawn CHOSEN - aria-pressed, and brass AT REST (no press: not :active)  [{"chosen":{"pressed":"true","color":"rgb(181, 169, 152)","border":"rgba(0, 0, 0,
+M3: KILLED
+    FAIL  T1 [Draft]: Screenplay is the ONE live template (not aria-disabled, keyed screenplay, with its glyph DRAWN at least 12px) - there is no Sprout and no Plan template  [[{"live":true,"key":"screenplay","name":"Screenp
+
+PAGE-TEMPLATES MUTANTS: PASS (3/3 killed); tree clean after restore: true

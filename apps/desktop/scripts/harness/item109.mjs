@@ -51,6 +51,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+let coldSeen = null;   // S2's reading of the cold blank page, kept for its parked record (PAGE-TEMPLATES-MOVE)
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -131,8 +132,16 @@ await withHarness(async (app) => {
     !!cold.editor && cold.editor.w > 100,
     JSON.stringify({ editor: cold.editor }));
 
-  ok('S2: THE INVITATION IS DRAWN — the beginnings row offers its doors on the empty page (Sprout / Plan / Screenplay). This is what a writer is offered at a fresh page today; the F6 first-line invite is NOT asserted, because FX15 put it to sleep by default and requiring it would gate a behaviour that was retired on purpose',
-    cold.beginnings.length >= 3 && cold.flInvite === false,
+  coldSeen = { beginnings: cold.beginnings, flInvite: cold.flInvite };
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: the page row keeps ONE door, Sprout, on a blank
+  // Free Write page). Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block below.
+  //
+  // ok('S2: THE INVITATION IS DRAWN — the beginnings row offers its doors on the empty page (Sprout / Plan / Screenplay). This is what a writer is offered at a fresh page today; the F6 first-line invite is NOT asserted, because FX15 put it to sleep by default and requiring it would gate a behaviour that was retired on purpose',
+  //   cold.beginnings.length >= 3 && cold.flInvite === false,
+  //   JSON.stringify({ beginnings: cold.beginnings, flInvite: cold.flInvite }));
+  // ------------------------------------------------------------------
+  ok('S2 [page-templates successor]: THE INVITATION IS DRAWN — the blank Free Write page\'s row offers its ONE door, Sprout (Screenplay is the Draft strip\'s template, Plan the PLAN bar\'s door), and the F6 first-line invite still sleeps',
+    JSON.stringify(cold.beginnings) === JSON.stringify(['Sprout']) && cold.flInvite === false,
     JSON.stringify({ beginnings: cold.beginnings, flInvite: cold.flInvite }));
 
   ok('S2: the tree is genuinely populated, not a blank or an error page',
@@ -171,8 +180,15 @@ if (process.env.HARNESS_PARKED === '1') {
   // MISSING, and a missing gate falsifies nothing when it finally arrives. The
   // ten files that reach this route by navigation all keep claiming exactly what
   // they claimed; S1 simply records what that was worth for a mount-time fault.
+  // ---- PARKED - SUPERSEDED by the park below (PAGE-TEMPLATES-MOVE, 2026-10-08). Kept VERBATIM: item 109 parked nothing until
+  // the page's Beginnings row was narrowed to one door, which falsified its S2 invitation check.
+  // console.log('\nITEM109 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 109 parks nothing. It adds the gate that was missing rather than superseding one, and the navigation-based files it sits beside are untouched.');
+  parkedChecks.push({ name: 'PARKED (was "S2: THE INVITATION IS DRAWN — the beginnings row offers its doors on the empty page (Sprout / Plan / Screenplay). ...") — PAGE-TEMPLATES-MOVE narrows the page row to ONE door, Sprout, on a blank Free Write page (Nick\'s rulings, 2026-10-08); live successors: S2 [page-templates successor], page-templates.mjs',
+    pass: !!coldSeen && JSON.stringify(coldSeen.beginnings) === JSON.stringify(['Sprout']) && coldSeen.flInvite === false, detail: JSON.stringify(coldSeen) });
   // eslint-disable-next-line no-console
-  console.log('\nITEM109 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 109 parks nothing. It adds the gate that was missing rather than superseding one, and the navigation-based files it sits beside are untouched.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  // eslint-disable-next-line no-console
+  console.log(`\nITEM109 PARKED: ${parkedChecks.every((c) => c.pass) ? 'PASS' : 'FAIL'} (${parkedChecks.length} check) — HARNESS_PARKED=1 armed; item 109 parks ONE: S2's invitation check, the page row narrowed to Sprout by PAGE-TEMPLATES-MOVE.`);
 }
 
 const all = checks.concat(parkedChecks);

@@ -278,7 +278,7 @@ export type DeskTermId =
   | 'twPageScroll' | 'footProgress' | 'footFullScreen' | 'footTypewriter' | 'footTarget'
   // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
   | 'draftHeading' | 'draftBullet' | 'draftBulletCircle' | 'draftBulletSquare' | 'draftBulletStyles' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
-  | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage'
+  | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage' | 'templateCustom'
   | 'comingSoon' | 'railTypeface' | 'goalUnitWords' | 'railPageKind'
   | 'footSettings' | 'footMenuTypewriter' | 'footMenuProgress' | 'footMenuPreferences'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
@@ -952,6 +952,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   templateOutline: 'Outline',
   templateBibliography: 'Bibliography',
   templateTitlePage: 'Title page',
+  templateCustom: 'Custom',
   comingSoon: 'Coming soon',
   railTypeface: 'Typeface',
   goalUnitWords: 'words',

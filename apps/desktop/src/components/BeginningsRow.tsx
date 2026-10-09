@@ -95,6 +95,10 @@ const GLYPH: Record<BeginningKey, ReactNode> = {
   ),
 };
 
+// PAGE-TEMPLATES-MOVE - the page's three doors moved to the strip's Templates section and carry their glyphs with them, so
+// a writer meets the same figure for the same act on both surfaces.
+export const BEGINNING_GLYPH = GLYPH;
+
 interface BeginningsRowProps {
   // 'board' centers the row on the empty canvas (where the retired one-line
   // pointer sat); 'projection' is the same row in STORYBOARD/OUTLINE, which

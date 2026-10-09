@@ -1,0 +1,202 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+[
+  {
+    "name": "S1 (OPEN): an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief's order — New Card · New Page Card · Load a Deck · Connect a Page",
+    "pass": true,
+    "detail": "[\"New Card\",\"New Page Card\",\"Load a Deck\",\"Connect a Page\"]"
+  },
+  {
+    "name": "S1: the doors sit on ONE line — a row, never a grid (identical top edge across all four)",
+    "pass": true,
+    "detail": "[449,449,449,449]"
+  },
+  {
+    "name": "S1/S3: the board row counts nothing and claims no completion — no digits, no checkmark, no \"get started\"/step/progress language",
+    "pass": true,
+    "detail": "new cardnew page cardload a deckconnect a page"
+  },
+  {
+    "name": "S1: every door is an icon+label door (a glyph and a word, per the brief)",
+    "pass": true,
+    "detail": "[{\"glyph\":true,\"label\":\"New Card\"},{\"glyph\":true,\"label\":\"New Page Card\"},{\"glyph\":true,\"label\":\"Load a Deck\"},{\"glyph\":true,\"label\":\"Connect a Page\"}]"
+  },
+  {
+    "name": "S1 (STORYBOARD): the row is Load a Deck · New Lane · New Card — the brief's own set for this mode, in order",
+    "pass": true,
+    "detail": "[\"Load a Deck\",\"New Lane\",\"New Card\"]"
+  },
+  {
+    "name": "S1 (OUTLINE): the row is New Card · Load a Deck — the brief's own set for this mode, in order",
+    "pass": true,
+    "detail": "[\"New Card\",\"Load a Deck\"]"
+  },
+  {
+    "name": "S1: the projection's old empty line (\"Add cards in Open, then…\" — the sentence that sent a writer somewhere else) is replaced by the row itself",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S1: New Lane genuinely lays a lane on the board-meta registry (zero schema — the existing lanes[] field), from an empty storyboard where no lane control existed at all before BG1",
+    "pass": true,
+    "detail": "[{\"id\":\"mv0apzbzz8lg52x94\",\"title\":\"Cards 1\"}]"
+  },
+  {
+    "name": "S1: the row survives a lane — a lane is not furniture, so New Lane can be followed by New Card (never a dead end)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S1: New Card in STORYBOARD adds a real card and the row goes — and no card popup is armed in a projection that cannot render one (the OPEN-only popup gate)",
+    "pass": true,
+    "detail": "{\"row\":false,\"cards\":1,\"popup\":false}"
+  },
+  {
+    "name": "S1 precondition: the row is up on the empty OPEN board",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S1: the row is gone the instant the board has furniture — and OPEN's New Card still opens the new card straight into its popup, unchanged",
+    "pass": true,
+    "detail": "{\"row\":false,\"popup\":true}"
+  },
+  {
+    "name": "S1: Load a Deck opens the deck library (DeckWizard) — on this explicit press, never ambiently",
+    "pass": true,
+    "detail": "⋯\nBG1 Board\nOPEN\nSTORYBOARD\nOUTLINE\nPAGE →\nPair with a page…\nThe plan serves the page.\nPage\nPlan\nDrawers\nJournal\nShelf\nS"
+  },
+  {
+    "name": "S1: Connect a Page opens the existing-page picker",
+    "pass": true,
+    "detail": "⋯\nBG1 Board\nOPEN\nSTORYBOARD\nOUTLINE\nPAGE →\nPair with a page…\nThe plan serves the page.\nPage\nPlan\nDrawers\nJournal\nShelf\nS"
+  },
+  {
+    "name": "S1: New Page Card births a linked page and travels to it, pinning its card to this board in one act",
+    "pass": true,
+    "detail": "{\"pageCardHash\":\"#/page/mv0aq73annrdnknt6\",\"pageCardPin\":1}"
+  },
+  {
+    "name": "S1: the Shelf Board renders NO Beginnings row — a system board's cards are derived, so there is nothing here for a writer to begin (absent whole, the absent-not-disabled law)",
+    "pass": true,
+    "detail": "{\"row\":false,\"line\":\"Nothing waiting.\"}"
+  },
+  {
+    "name": "S1: the Shelf Board's own declarative empty line is untouched by BG1 (\"Nothing waiting.\" — B2 S2's one quiet fact)",
+    "pass": true,
+    "detail": "Nothing waiting."
+  },
+  {
+    "name": "S1: the Journal Board renders NO Beginnings row — a system board's cards are derived, so there is nothing here for a writer to begin (absent whole, the absent-not-disabled law)",
+    "pass": true,
+    "detail": "{\"row\":false,\"line\":null}"
+  },
+  {
+    "name": "S1: the Trash Board renders NO Beginnings row — a system board's cards are derived, so there is nothing here for a writer to begin (absent whole, the absent-not-disabled law)",
+    "pass": true,
+    "detail": "{\"row\":false,\"line\":null}"
+  },
+  {
+    "name": "S1: a paired plan board takes OPEN's row — it is an ordinary board and gets the ordinary four doors",
+    "pass": true,
+    "detail": "[\"New Card\",\"New Page Card\",\"Load a Deck\",\"Connect a Page\"]"
+  },
+  {
+    "name": "S2 [page-templates successor]: a zero-word Free Write page renders ONE start-word, Sprout (Screenplay is the Draft strip's template, Plan is the PLAN bar's door)",
+    "pass": true,
+    "detail": "[\"Sprout\"]"
+  },
+  {
+    "name": "S2: the caret is LIVE under the row from the first frame — the editor already holds focus with nothing clicked, and the row itself is pointer-events:none so it can never intercept it",
+    "pass": true,
+    "detail": "{\"focused\":true,\"rowEvents\":\"none\"}"
+  },
+  {
+    "name": "S2 (the DoD): a writer types immediately without touching the row, the words land, and the row is gone the moment they do — the row never asked permission and never blocked a keystroke",
+    "pass": true,
+    "detail": "{\"text\":\"Straight to the words\",\"row\":false}"
+  },
+  {
+    "name": "S2: a page that already has words never renders the row at all",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S2/S3: the page row counts nothing and claims no completion either — same grammar, same silence",
+    "pass": true,
+    "detail": "sprout"
+  },
+  {
+    "name": "S2: Esc dismisses the row (and the page is still a page — the editor is untouched)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S2: Sprout draws a line on request — an invitation appears where nothing was offered unbidden",
+    "pass": true,
+    "detail": "{\"prompt\":\"no one is reading this but you.\",\"row\":false,\"net\":0,\"editorText\":\"\",\"insideEditor\":false,\"controls\":[\"don’t offer again\"]}"
+  },
+  {
+    "name": "S2 (the rail): deck-drawn, never model-drawn — drawing a line makes ZERO outbound requests (fetch/XHR/WebSocket all counted)",
+    "pass": true,
+    "detail": "0"
+  },
+  {
+    "name": "S2 (the rail): the drawn line can never become the writer's text — it renders OUTSIDE the editable DOM, the page still holds zero words, and the only control offered is \"don't offer again\" (no accept, no insert, no tab-fill)",
+    "pass": true,
+    "detail": "{\"prompt\":\"no one is reading this but you.\",\"row\":false,\"net\":0,\"editorText\":\"\",\"insideEditor\":false,\"controls\":[\"don’t offer again\"]}"
+  },
+  {
+    "name": "S2 (the rail): the first keystroke dismisses the drawn line — the writer's ink always wins the space",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S2: the Screenplay door flips structure on an empty page for free — no confirmation modal (AB2 S4: switching an empty page costs nothing), and the page is genuinely a script now",
+    "pass": true,
+    "detail": "{\"modal\":false,\"pageType\":\"script\",\"surface\":false}"
+  },
+  {
+    "name": "S2: the Plan door is the Page→Plan on-ramp, offered at birth — one press births the paired plan board (never before, never automatically) and travels to it",
+    "pass": true,
+    "detail": "{\"planBefore\":0,\"hash\":\"#/page/mv0aqh69gy38x4ogc\",\"boards\":1,\"onBoard\":true}"
+  },
+  {
+    "name": "S3: the board row and the page row ARE one component — identical computed type, size, color and resting weight on both surfaces",
+    "pass": true,
+    "detail": "{\"pageStyle\":{\"font\":\"\\\"Figtree Variable\\\", system-ui, sans-serif\",\"size\":\"19px\",\"color\":\"rgb(79, 87, 48)\",\"opacity\":\"1\"},\"boardStyle\":{\"font\":\"\\\"Figtree Variable\\\", system-ui, sans-serif\",\"size\":\"19px\",\"color\":\"rgb(79, 87, 48)\",\"opacity\":\"1\"}}"
+  },
+  {
+    "name": "1366x768 leg: the board row fits the small-laptop viewport whole and still sits on ONE line — four doors, no wrap, nothing clipped",
+    "pass": true,
+    "detail": "{\"left\":129,\"right\":1217,\"top\":383,\"bottom\":458,\"oneLine\":true,\"vw\":1366,\"vh\":768}"
+  },
+  {
+    "name": "1366x768 leg: the writer still types immediately without touching the row, and the row still goes when they do",
+    "pass": true,
+    "detail": "{\"text\":\"At the leg too\",\"row\":false}"
+  }
+]
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+[
+  {
+    "name": "PARKED (was \"S1: the doors are painted in the house olive (--accent-rest #96a05a), quietly (resting opacity below full) — olive means \\\"this is a door\\\"\") — BG2 S1 steps the SAME olive down in value to --accent-door (#4F5730) for legibility on cream and retires the resting opacity: the door is quiet by value now, not by fade; live successor: bg2.mjs",
+    "pass": true,
+    "detail": "{\"color\":\"rgb(79, 87, 48)\",\"opacity\":\"1\",\"doorToken\":\"#4F5730\",\"oldToken\":\"#96a05a\"}"
+  },
+  {
+    "name": "PARKED (was \"1366x768 leg: the page row sits BELOW the first line (the caret's own line stays clear of furniture) and fits the viewport whole\") — BG2 S2 centers the row on the sheet per SV19, so first-line-relative geometry no longer applies; the CLAIM survives measured against the doors and the hit test: no door covers the caret, the caret point still hit-tests to the editor, and the row still fits the viewport whole; live successor: bg2.mjs",
+    "pass": true,
+    "detail": "{\"doorsCoveringCaret\":0,\"atCaret\":\"forward-only-editor\",\"rowLeft\":414,\"rowRight\":952,\"rowTop\":310,\"rowBottom\":385,\"vw\":1366,\"vh\":768}"
+  },
+  {
+    "name": "PARKED (was \"S2: a zero-word page renders the three start-words — Screenplay · Sprout · Plan (P1 amendment 2; \"Sprout\" supersedes \"Start from a Spark\")\") — PAGE-TEMPLATES-MOVE narrows the page row to ONE door, Sprout, on a blank Free Write page (Screenplay is the Draft strip's live template; Plan stays on the PLAN bar); live successors: S2 [page-templates successor] above, page-templates.mjs",
+    "pass": true,
+    "detail": "[\"Sprout\"]"
+  }
+]
+
+BG1 PARKED: PASS (3 checks) — HARNESS_PARKED=1 armed, all retired-check successors green (BG2 is this file's first tenant, live successors in bg2.mjs; PAGE-TEMPLATES-MOVE its second, one park).
+
+BG1 VERIFY: PASS (35 checks)
