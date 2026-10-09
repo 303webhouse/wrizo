@@ -25329,3 +25329,21 @@ ship.** **CLEARED to re-pair on `cursor/plateau-rhizome-goal-4b92` @ `af7ff4b` (
 run (baseline 48/48, M1–M7 red) stands as that round’s proof. **ORDER: templates frames → rhizome pair → drafts pair (`e4b596c`).**
 FIX’s short grant (`fix-one-frame-flux-20261009`, written `20:53:43Z`, 14:53 MT) is for one Flux frame, no rhizome; FIX pushed `af7ff4b`
 at 15:00:42 MT.
+
+## TEMPLATES LIVE FRAMES TAKEN — 2026-10-09 (chat 1)
+
+**Taken against PRODUCTION (`84f596d6`, the served bundle `index-BFiS3YwB.js` in every frame’s own DOM), in a throw-away anonymous
+profile at 1400×900, the default Plateau theme; nothing written to the server (a harness browser, this desk’s grant `21:04:33Z`, no
+account, no sign-in). Committed under `docs/evidence/templates-live/` (5 PNGs + `frames.json`, each row with the DOM facts):**
+1. `1-front-door` — the doors. 2. `2-sign-in` — Open → the email/password stage. 3. `3-free-write-page` and `3b-free-write-strip-open` —
+a blank Free Write page, **NO Templates section** (`templatesSection:false`, the mode tab “Free Write”, the Sprout door present).
+4. `4-draft-templates-open` — the Draft page with the strip open and the **Templates section present with its five buttons: Screenplay,
+Outline, Title page, Bibliography, Custom** (`templatesSection:true`; the mode tab “Draft”). *(Frame 4 was read by this desk
+only for sanity — the Templates icons render dim next to the Format row; whether that is the intended resting state is Fable’s
+review.)*
+
+**GRANT LOG:** FIX’s short grant (`20:53:43Z`) was CLEARED `21:04:33Z`, 11 minutes in, on evidence the one-frame job was done (FIX’s
+`af7ff4b`, “the light-50 frame replaced by a FLUX frame showing NO rhizome”, pushed 15:00:42 MT; box idle, 0 processes, 0 browsers) —
+EARLIER than the 30-minute rule, a judgement this desk makes visible. This desk’s frames grant (`chat1-live-frames-20261009`) written
+`21:04:33Z`, cleared at completion; 0 harness processes, 0 browsers. **Fable reviews the frames; Nick confirms after; that closes the
+templates gate.** Next: the rhizome pair on `af7ff4b`, then drafts (`e4b596c`).
