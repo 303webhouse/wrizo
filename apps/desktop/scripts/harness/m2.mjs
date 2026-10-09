@@ -226,8 +226,8 @@ await withHarness(async (app) => {
     m2Parked.revisit = { first: first.length, beforeRetype: beforeRetype.length, second: second.length };
     // ---- PARKED - SUPERSEDED by the connected, coverage-tracking rhizome (Fable, 2026-10-08): the milestone burst no longer
     // exists, and this probe counts drawing-on <line>s, which settle into <path>s (162 -> 123 is lines settling, not roots
-    // lost). Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED block. Successors: rhizome-growth.mjs
-    // R1/R5, rhizome-goal.mjs's live flash/reset checks.
+    // lost). Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED block. Successor for THIS check (a revisit
+    // re-fit, not a burst): rhizome-growth.mjs R6 (the same lap replays identically) - Fable, 2026-10-09.
     //
     // ok('SUPERSEDED->M3: the in-app revisit re-fits the SAME entry to a byte-identical normalized ground (same seed+geo+total-words => same scatter); the retyped `second` legitimately reaches a LARGER total (forward-only), no longer equal to `first`',
     //   JSON.stringify(normalize(first)) === JSON.stringify(normalize(beforeRetype)) && beforeRetype.length === first.length && second.length >= first.length,
@@ -710,7 +710,7 @@ if (process.env.HARNESS_PARKED === '1') {
   // run's reading and passes as SUPERSEDED BY DESIGN (item87.mjs's precedent: no truth is invented here; the live successors are
   // rhizome-growth.mjs R1/R5 and rhizome-goal.mjs's flash/reset checks, which assert the new design positively).
   const why = 'the connected, coverage-tracking rhizome (Fable, 2026-10-08): no milestone burst; drawing-on <line>s settle into <path>s; successors rhizome-growth.mjs R1/R5 + rhizome-goal.mjs flash/reset';
-  pok(`PARKED (was "SUPERSEDED->M3: the in-app revisit re-fits the SAME entry to a byte-identical normalized ground ...") - ${why}`, true, JSON.stringify(m2Parked.revisit ?? null));
+  pok(`PARKED (was "SUPERSEDED->M3: the in-app revisit re-fits the SAME entry to a byte-identical normalized ground ...") - ${why}; for this re-fit check the true successor is rhizome-growth.mjs R6 (the same lap replays identically)`, true, JSON.stringify(m2Parked.revisit ?? null));
   pok(`PARKED (was "SUPERSEDED->M3: the milestone burst is one-time — a further keystroke after the goal is already crossed adds NO new burst (delta 0) ...") - ${why}`, true, JSON.stringify(m2Parked.oneTime ?? null));
   pok(`PARKED (was "SUPERSEDED->M3: the burst count is STABLE after the one-time crossing — no second burst fires across a further keystroke (addedCount 0) ...") - ${why}`, true, JSON.stringify(m2Parked.stable ?? null));
   pok(`PARKED (was "Burst: growth kept whole — every segment present BEFORE the burst is still present, unchanged, at the same index") - ${why}`, true, JSON.stringify(m2Parked.whole ?? null));
