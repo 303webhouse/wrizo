@@ -42,10 +42,15 @@ if (!VALID || !EXPIRED) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
+// THE WALK NEVER PRINTS TOKEN TEXT - not whole, not a prefix. Its log is committed as evidence, and the first one printed ten characters
+// of the live fixture's token (W2's detail). Two layers: no check builds a detail out of a body or an address (they report lengths and
+// true/false), and every detail passes through scrub() on its way out, so a future check that forgets cannot leak either.
+const scrub = (s) => String(s).split(VALID).join('<token>').split(EXPIRED).join('<token>');
 // Printed as each check runs, so a failure part-way through still shows everything that came before it.
 const ok = (name, pass, detail = '') => {
-  checks.push({ name, pass, detail });
-  console.log((pass ? 'PASS ' : 'FAIL ') + name + (pass ? '' : ' | ' + String(detail).slice(0, 200))); // eslint-disable-line no-console
+  const safe = scrub(detail);
+  checks.push({ name, pass, detail: safe });
+  console.log((pass ? 'PASS ' : 'FAIL ') + name + (pass ? '' : ' | ' + safe.slice(0, 200))); // eslint-disable-line no-console
 };
 const CLAIM_EMAIL = `walk-${Date.now()}@example.com`;
 
@@ -77,7 +82,7 @@ await withHarness(async (app) => {
   const calls = await app.evalJs('window.__guestCalls');
   const valid = calls.find((c) => c.body.includes(VALID));
   ok('(W2) the request carried the token in its body',
-    !!valid, JSON.stringify(calls.map((c) => c.body.slice(0, 20))));
+    !!valid, JSON.stringify(calls.map((c) => ({ bodyLength: c.body.length, carriesValidToken: c.body.includes(VALID) }))));
   ok('(W3) the token was gone from the address bar BEFORE the request was sent',
     !!valid && !valid.hrefAtCall.includes(VALID) && !valid.hrefAtCall.includes('t='), valid?.hrefAtCall ?? '');
   const finalHref = await app.evalJs('location.href');
