@@ -25347,3 +25347,16 @@ review.)*
 EARLIER than the 30-minute rule, a judgement this desk makes visible. This desk’s frames grant (`chat1-live-frames-20261009`) written
 `21:04:33Z`, cleared at completion; 0 harness processes, 0 browsers. **Fable reviews the frames; Nick confirms after; that closes the
 templates gate.** Next: the rhizome pair on `af7ff4b`, then drafts (`e4b596c`).
+
+## TEMPLATES FRAMES CLEARED; THE SPLASH (ITEM 187) SHIP WORD, CONDITIONAL; THE QUEUE — 2026-10-09 (chat 1)
+
+**TEMPLATES LIVE FRAMES (`286424c`): CLEARED (Fable): the front door, sign-in, Free Write (no Templates, Sprout present) and Draft (five
+Templates) are all as ruled. The dim icons are INTENDED: Screenplay is the only live template; the other four are placeholders until
+built.** **Templates waits ONLY on Nick’s own live check.** (FIX’s grant cleared early: fine — reason recorded.)
+
+**THE SPLASH (item 187): Nick asked to ship it; Fable’s byte review is CLEARED.** TOOLS rebases it (an `index.css` conflict) and asks this
+desk for a SHORT frames grant. **Fable: count Nick’s message as the SHIP WORD, CONDITIONAL on (1) Fable’s frame review, (2) a green pair, (3) the
+usual deploy + smoke + live frames.** *(This desk does not deploy it on the word alone.)*
+
+**QUEUE (Fable): rhizome pair (running: `rhz-pair2` @ `105eae2`, stamp to follow) → drafts pair (`e4b596c`) → splash pair (after TOOLS’ new
+SHA).** Rhizome: counts to Fable when done; he then asks Nick for its ship word.
