@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrizo · Flux · failing-monitor flicker</title>
+<!--
+  docs/mockups/flux-flicker — stand-alone Flux "failing monitor" flicker meter.
+  Fake data. No app code. Branch: cursor/flux-flicker-mockup.
+  Signal Loss vocabulary from flux-rc2.html + flux-foundations.md §3.5:
+  tear-lines, shear bands, noise patches, macroblocks, sync jumps, backlight dips.
+-->
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=Rajdhani:wght@500;600;700&family=Chakra+Petch:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ground: #04141A;
+    --chrome: rgba(9,30,36,.9);
+    --rail: rgba(4,17,22,.78);
+    --line: #1D4A52;
+    --line-active: #00C2FF;
+    --signal: #A6FF3D;
+    --page-light: #EDF6F3;
+    --ink-light: #14231F;
+    --meta-light: #0B7C9E;
+    --muted: #8FB4AC;
+    --orange: #FF9800;
+    --font-chrome: 'Rajdhani', system-ui, sans-serif;
+    --font-ui: 'Chakra Petch', system-ui, sans-serif;
+    --font-prose: 'Crimson Pro', Georgia, serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: #020c10; color: var(--muted); font-family: var(--font-ui); }
+
+  .rig {
+    position: fixed; inset: 0 0 auto 0; z-index: 40;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+    padding: 8px 12px 10px; background: #071014; border-bottom: 1px solid #1a3338;
+    font-family: var(--font-chrome); font-size: 11px; letter-spacing: .04em;
+  }
+  .rig b { color: #d8efe8; font-weight: 700; letter-spacing: .12em; }
+  .rig .tag {
+    color: #7ad4e8; border: 1px solid #1D4A52; padding: 2px 7px;
+    letter-spacing: .14em; font-size: 9px;
+  }
+  .rig label { display: flex; align-items: center; gap: 6px; color: #6E958D; }
+  .rig input[type=range] { width: 110px; accent-color: #00C2FF; }
+  .rig .val { color: #57D0F5; min-width: 3.4em; font-variant-numeric: tabular-nums; }
+  .rig button, .rig .sw {
+    background: #0E2C32; border: 1px solid #1D4A52; color: #8FB4AC;
+    font: inherit; letter-spacing: .1em; padding: 4px 8px; cursor: pointer;
+  }
+  .rig button.on, .rig .sw.on { color: #00C2FF; border-color: #00C2FF; }
+  .rig .read { margin-left: auto; color: #4E7A82; font-variant-numeric: tabular-nums; }
+
+  .fit { position: absolute; inset: 86px 0 0 0; overflow: hidden; }
+  .stage {
+    position: relative; width: min(1280px, 100%); height: 100%; margin: 0 auto;
+    background: var(--ground); border: 1px solid var(--line); overflow: hidden;
+  }
+
+  .top {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--chrome);
+    font-family: var(--font-chrome);
+  }
+  .mark { font-weight: 700; font-size: 15px; color: var(--orange); letter-spacing: .06em; }
+  .chip { font-size: 10px; letter-spacing: .16em; font-weight: 600; color: #00C2FF; border: 1px solid var(--line); padding: 3px 8px; }
+  .tab { padding: 5px 12px; font-family: var(--font-ui); font-size: 12px; color: #6E958D; border: 1px solid transparent; }
+  .tab.on { background: #0E2C32; border-color: #00C2FF; color: #DDEEE9; box-shadow: 0 0 11px rgba(0,194,255,.28); }
+  .flicker-sw {
+    margin-left: auto; display: flex; align-items: center; gap: 8px;
+    font-size: 10px; letter-spacing: .14em; font-weight: 600; color: #6E958D;
+  }
+  .flicker-sw button {
+    min-width: 44px; padding: 4px 10px; border: 1px solid var(--line);
+    background: none; color: #6E958D; font: inherit; cursor: pointer;
+  }
+  .flicker-sw button.on { background: #0E2C32; color: #00C2FF; border-color: #00C2FF; }
+
+  .body { display: flex; height: calc(100% - 49px); position: relative; }
+  .rail {
+    width: 168px; flex-shrink: 0; border-right: 1px solid var(--line);
+    background: var(--rail); padding: 13px 0; font-family: var(--font-ui);
+  }
+  .rail .h { font-family: var(--font-chrome); font-size: 9px; letter-spacing: .16em; font-weight: 600; color: #4E7A82; padding: 0 16px 3px; }
+  .rail .h2 { font-family: var(--font-chrome); font-size: 10px; letter-spacing: .14em; color: #00C2FF; padding: 0 16px 8px; }
+  .rail .it { display: flex; justify-content: space-between; padding: 6px 16px; font-size: 12.5px; color: #A9C7C0; }
+  .rail .it.on { background: #0E2C32; color: #EAF5F1; border-left: 2px solid var(--orange); padding-left: 14px; }
+  .rail .it span { color: #5E837C; font-size: 11.5px; }
+  .rail .nav { margin-top: 14px; padding: 10px 16px 0; border-top: 1px solid #14343A; font-family: var(--font-chrome); font-size: 10.5px; letter-spacing: .12em; color: #6E958D; line-height: 2.3; }
+
+  .col { flex: 1; display: flex; justify-content: center; padding: 22px 18px; overflow: auto; }
+  .page {
+    background: var(--page-light); color: var(--ink-light);
+    width: 100%; max-width: 520px; border: 1px solid #2A6A76;
+    box-shadow: 0 0 0 1px rgba(0,194,255,.12), 0 0 30px rgba(0,194,255,.08), 0 14px 44px rgba(0,0,0,.55);
+    padding: 26px 32px 32px; position: relative; z-index: 1;
+  }
+  .meta { font-family: var(--font-chrome); font-size: 10.5px; letter-spacing: .14em; color: var(--meta-light); display: flex; justify-content: space-between; margin-bottom: 14px; }
+  .prose { font-family: var(--font-prose); font-size: 16.5px; line-height: 1.72; }
+  .prose p { margin: 0 0 1em; }
+  .box {
+    margin-top: 8px; min-height: 4.5em; padding: 10px 12px;
+    border: 1px solid #9ec4bc; background: #f7fbf9;
+    font-family: var(--font-prose); font-size: 16.5px; line-height: 1.72;
+    color: var(--ink-light); outline: none; caret-color: var(--orange);
+  }
+  .box:focus { border-color: #00C2FF; box-shadow: 0 0 0 1px rgba(0,194,255,.28); }
+  .hint { margin-top: 8px; font-family: var(--font-chrome); font-size: 10px; letter-spacing: .1em; color: #0B7C9E; }
+
+  /* Flicker covers the whole product window, including the page. */
+  .fx {
+    position: absolute; inset: 0; z-index: 8; pointer-events: none;
+    overflow: hidden;
+  }
+  .fx.sync { transform: translateY(4px); }
+  .fx.sync2 { transform: translateY(-4px); }
+  .tear { position: absolute; left: 0; right: 0; height: 2px; opacity: 0; }
+  .tear.on { animation: tearf .15s linear; }
+  .tear.hold { height: 3px; opacity: var(--op, .7); }
+  @keyframes tearf { 40% { opacity: var(--op, .7); } }
+  .shear {
+    position: absolute; left: -4%; right: -4%; height: 28px;
+    background: rgba(0,194,255,.07); transform: skewX(-12deg); opacity: 0;
+  }
+  .shear.on { animation: shearf .16s linear; }
+  .shear.hold { opacity: var(--op, .55); }
+  @keyframes shearf { 45% { opacity: var(--op, 1); } }
+  .noise {
+    position: absolute; width: 130px; height: 56px; opacity: 0;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(0deg, rgba(166,255,61,.05) 0 1px, transparent 1px 2px);
+  }
+  .noise.on { animation: noisef .15s linear; }
+  .noise.hold { opacity: var(--op, .7); }
+  @keyframes noisef { 45% { opacity: var(--op, 1); } }
+  .mb { position: absolute; }
+  .dip { position: absolute; inset: 0; background: #000; opacity: 0; transition: opacity .28s; }
+  .rm {
+    position: absolute; inset: 0; opacity: 0; pointer-events: none;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 3px, rgba(0,194,255,.045) 3px 4px),
+      repeating-linear-gradient(90deg, rgba(227,241,236,.03) 0 1px, transparent 1px 3px);
+  }
+
+  .stamp {
+    position: fixed; right: 10px; bottom: 10px; z-index: 50;
+    font-family: var(--font-chrome); font-size: 10px; letter-spacing: .08em;
+    color: #8FB4AC; background: rgba(2,12,16,.78); border: 1px solid #1D4A52;
+    padding: 3px 8px; pointer-events: none;
+  }
+
+  body.phone .rail { display: none; }
+  body.phone .fit { inset: 128px 0 0 0; display: flex; justify-content: center; }
+  body.phone .stage { width: 390px; height: 700px; }
+  body.phone .page { padding: 16px 16px 22px; }
+  body.phone .prose, body.phone .box { font-size: 15px; }
+  @media (max-width: 720px) {
+    .rail { display: none; }
+    .fit { inset: 128px 0 0 0; }
+    .page { padding: 16px 16px 22px; }
+    .prose, .box { font-size: 15px; }
+    .rig label input[type=range] { width: 72px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tear.on, .shear.on, .noise.on { animation: none; opacity: var(--op, .4); }
+  }
+</style>
+</head>
+<body>
+<header class="rig" aria-label="mockup only">
+  <b>MOCKUP ONLY</b>
+  <span class="tag">FLUX · FLICKER</span>
+  <label>Idle <input id="idle" type="range" min="0" max="360" value="20" step="1"><span class="val" id="idleVal">0:20</span></label>
+  <label>Progress <input id="prog" type="range" min="0" max="100" value="0" step="1"><span class="val" id="progVal">0%</span></label>
+  <button type="button" id="liveBtn">LIVE</button>
+  <button type="button" id="spdBtn">×10</button>
+  <button type="button" id="modeBtn" data-mode="idle">IDLE ONLY</button>
+  <button type="button" id="rmBtn">REDUCED MOTION</button>
+  <span class="read" id="readout">I 0.00 · flashes/s 0</span>
+</header>
+
+<div class="fit">
+  <div class="stage" id="stage">
+    <div class="top">
+      <div class="mark">WRIZO</div>
+      <div class="chip">FLUX</div>
+      <div class="tab on">doc-07</div>
+      <div class="tab">worldbook</div>
+      <div class="flicker-sw">
+        FLICKER
+        <button type="button" id="flickOff">OFF</button>
+        <button type="button" id="flickOn" class="on">ON</button>
+      </div>
+    </div>
+    <div class="body">
+      <aside class="rail">
+        <div class="h">CACHE ▸ SOUTHSIDE</div>
+        <div class="h2">RACKS</div>
+        <div class="it">Night Market <span>12</span></div>
+        <div class="it on">The Relay <span>7</span></div>
+        <div class="it">Corpo Files <span>23</span></div>
+        <div class="nav">DECK<br>CIRCUIT<br>LOGS<br>SCHEMATIC</div>
+      </aside>
+      <div class="col">
+        <article class="page">
+          <div class="meta"><span>DOC 07 // THE RELAY</span><span>CHK 3/5</span></div>
+          <div class="prose">
+            <p>By the third hour the rain had learned the shape of the antenna field, and the whole district hummed like a struck wire. Mara kept typing. Below her window the interchange ran its dead loop — signage for stores that had been rubble since the audit, a mascot waving at nobody, cheerful in six colors of static.</p>
+            <p>She had promised herself she would stop describing the city and start indicting it. But the city kept confessing first.</p>
+          </div>
+          <div class="box" id="box" contenteditable="true" spellcheck="false" role="textbox" aria-label="Type here"></div>
+          <div class="hint">TYPE HERE · ANY KEYSTROKE HOLDS THE STORM FOR 30 s</div>
+        </article>
+      </div>
+    </div>
+    <div class="fx" id="fx" aria-hidden="true">
+      <div class="dip" id="dip"></div>
+      <div class="rm" id="rm"></div>
+    </div>
+  </div>
+</div>
+<div class="stamp" id="stamp">FLUX-FLICKER · pending</div>
+
+<script>
+(function () {
+  const IDLE_GATE = 30;
+  const PEAK_AT = 300;
+  const GOAL = 40;
+  const params = new URLSearchParams(location.search);
+  const $ = (id) => document.getElementById(id);
+
+  const state = {
+    flicker: true,
+    live: false,
+    speed: 1,
+    mode: 'idle', // idle | xprog
+    reduced: false,
+    idleSec: 20,
+    progress: 0,
+    lastKey: performance.now(),
+    liveOrigin: performance.now(),
+    liveIdle0: 0,
+    flashes: [],
+    shot: params.has('shot') || params.has('idle'),
+  };
+
+  if (params.get('idle')) state.idleSec = Number(params.get('idle'));
+  if (params.get('progress')) state.progress = Number(params.get('progress')) / 100;
+  if (params.get('mode') === 'xprog') state.mode = 'xprog';
+  if (params.get('rm') === '1') state.reduced = true;
+  if (params.get('live') === '1') state.live = true;
+  if (params.get('speed') === '10') state.speed = 10;
+  if (params.get('flicker') === '0') state.flicker = false;
+  if (params.get('phone') === '1') document.body.classList.add('phone');
+  const STAMP = params.get('stamp') || 'FLUX-FLICKER · pending';
+
+  function fmtIdle(s) {
+    s = Math.max(0, Math.round(s));
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return m + ':' + String(r).padStart(2, '0');
+  }
+  function intensityFromIdle(t) {
+    if (t < IDLE_GATE) return 0;
+    const u = Math.min(1, (t - IDLE_GATE) / (PEAK_AT - IDLE_GATE));
+    return u * u * 0.4 + u * 0.6;
+  }
+  function effectiveI() {
+    let I = intensityFromIdle(state.idleSec);
+    if (state.mode === 'xprog') I *= (1 - state.progress);
+    if (!state.flicker) I = 0;
+    return I;
+  }
+  function canFlash() {
+    const now = performance.now();
+    const q = state.flashes;
+    while (q.length && now - q[0] > 1000) q.shift();
+    if (q.length >= 3) return false;
+    q.push(now);
+    return true;
+  }
+  function flashRate() {
+    const now = performance.now();
+    return state.flashes.filter((t) => now - t <= 1000).length;
+  }
+
+  function lime() { return Math.random() < 0.35; }
+  function bright(I, lo, hi) { return lo + (hi - lo) * I; }
+
+  function spawnTearStorm(I) {
+    if (!canFlash()) return;
+    const n = 3 + Math.floor(Math.random() * 3);
+    const base = 8 + Math.random() * 74;
+    const op = bright(I, 0.28, 0.72);
+    for (let i = 0; i < n; i++) {
+      setTimeout(function () {
+        const t = document.createElement('div');
+        t.className = 'tear';
+        t.style.top = (base + (Math.random() * 14 - 7)) + '%';
+        t.style.background = lime() ? 'rgba(166,255,61,' + op + ')' : 'rgba(0,194,255,' + op + ')';
+        t.style.setProperty('--op', String(op));
+        $('fx').appendChild(t);
+        void t.offsetWidth; t.classList.add('on');
+        setTimeout(function () { t.remove(); }, 200);
+      }, i * 45);
+    }
+  }
+  function spawnShear(I) {
+    if (!canFlash()) return;
+    const sh = document.createElement('div');
+    sh.className = 'shear';
+    sh.style.top = (10 + Math.random() * 72) + '%';
+    sh.style.setProperty('--op', String(bright(I, 0.35, 0.85)));
+    $('fx').appendChild(sh);
+    void sh.offsetWidth; sh.classList.add('on');
+    setTimeout(function () { sh.remove(); }, 220);
+  }
+  function spawnNoise(I) {
+    if (!canFlash()) return;
+    const nz = document.createElement('div');
+    nz.className = 'noise';
+    nz.style.left = (Math.random() * 76).toFixed(1) + '%';
+    nz.style.top = (Math.random() * 80).toFixed(1) + '%';
+    nz.style.setProperty('--op', String(bright(I, 0.4, 1)));
+    $('fx').appendChild(nz);
+    void nz.offsetWidth; nz.classList.add('on');
+    setTimeout(function () { nz.remove(); }, 200);
+  }
+  function spawnMacro(I) {
+    if (!canFlash()) return;
+    const ax = 4 + Math.random() * 88, ay = 4 + Math.random() * 82;
+    const n = 5 + Math.floor(Math.random() * 5);
+    const a = bright(I, 0.08, 0.16);
+    for (let i = 0; i < n; i++) {
+      const d = document.createElement('div');
+      d.className = 'mb';
+      d.style.cssText = 'left:' + (ax + (Math.random() * 13 - 6.5)).toFixed(1) + '%;top:' +
+        (ay + (Math.random() * 13 - 6.5)).toFixed(1) + '%;width:' + (10 + Math.random() * 20).toFixed(0) +
+        'px;height:' + (8 + Math.random() * 15).toFixed(0) + 'px;background:' +
+        (lime() ? 'rgba(166,255,61,' + a + ')' : 'rgba(0,194,255,' + a + ')');
+      $('fx').appendChild(d);
+      (function (el) { setTimeout(function () { el.remove(); }, 80 + Math.random() * 130); })(d);
+    }
+  }
+  function spawnSync() {
+    if (!canFlash()) return;
+    const fx = $('fx');
+    fx.classList.add('sync');
+    setTimeout(function () {
+      fx.classList.remove('sync');
+      if (Math.random() < 0.4) {
+        setTimeout(function () {
+          fx.classList.add('sync2');
+          setTimeout(function () { fx.classList.remove('sync2'); }, 70);
+        }, 60);
+      }
+    }, 80);
+  }
+  function spawnDip(I) {
+    if (!canFlash()) return;
+    const dip = $('dip');
+    const op = bright(I, 0.05, 0.14);
+    dip.style.opacity = String(op);
+    setTimeout(function () {
+      dip.style.opacity = '0';
+      if (Math.random() < 0.5) {
+        setTimeout(function () {
+          dip.style.opacity = String(op * 0.7);
+          setTimeout(function () { dip.style.opacity = '0'; }, 250);
+        }, 350);
+      }
+    }, 400);
+  }
+
+  const nextAt = { tear: 0, shear: 0, noise: 0, macro: 0, sync: 0, dip: 0 };
+  function schedule(kind, baseLo, baseHi, I) {
+    const span = baseLo + Math.random() * (baseHi - baseLo);
+    const scaled = span / Math.max(0.22, 0.22 + 0.78 * I);
+    nextAt[kind] = performance.now() + scaled;
+  }
+
+  function paintStill(I) {
+    const fx = $('fx');
+    fx.querySelectorAll('.tear,.shear,.noise,.mb').forEach((n) => n.remove());
+    fx.classList.remove('sync', 'sync2');
+    $('dip').style.opacity = '0';
+    if (I <= 0) return;
+    const op = Math.max(0.4, bright(I, 0.28, 0.7));
+    const tears = I < 0.2 ? 1 : I < 0.4 ? 2 : I < 0.7 ? 4 : 5;
+    const ys = [36, 22, 51, 67, 81];
+    for (let i = 0; i < tears; i++) {
+      const t = document.createElement('div');
+      t.className = 'tear hold';
+      t.style.top = ys[i] + '%';
+      t.style.setProperty('--op', String(op));
+      t.style.background = (i % 3 === 0) ? 'rgba(166,255,61,' + op + ')' : 'rgba(0,194,255,' + op + ')';
+      fx.appendChild(t);
+    }
+    if (I >= 0.18) {
+      const sh = document.createElement('div');
+      sh.className = 'shear hold';
+      sh.style.top = '42%';
+      sh.style.setProperty('--op', String(bright(I, 0.25, 0.55)));
+      fx.appendChild(sh);
+    }
+    if (I >= 0.06) {
+      const n = I >= 0.6 ? 3 : I >= 0.3 ? 2 : 1;
+      const spots = [[12, 22], [58, 61], [71, 18]];
+      for (let i = 0; i < n; i++) {
+        const nz = document.createElement('div');
+        nz.className = 'noise hold';
+        nz.style.left = spots[i][0] + '%';
+        nz.style.top = spots[i][1] + '%';
+        nz.style.setProperty('--op', String(bright(I, 0.35, 0.8)));
+        fx.appendChild(nz);
+      }
+    }
+    if (I >= 0.1) {
+      const a = bright(I, 0.08, 0.15);
+      for (let i = 0; i < 6 + Math.round(I * 4); i++) {
+        const d = document.createElement('div');
+        d.className = 'mb';
+        d.style.cssText = 'left:' + (62 + (i % 4) * 3.2) + '%;top:' + (28 + Math.floor(i / 4) * 4) +
+          '%;width:14px;height:11px;background:' + (i % 3 === 0 ? 'rgba(166,255,61,' + a + ')' : 'rgba(0,194,255,' + a + ')');
+        fx.appendChild(d);
+      }
+    }
+    if (I >= 0.45) $('dip').style.opacity = String(bright(I, 0.05, 0.12));
+    if (I >= 0.35) fx.classList.add('sync');
+  }
+
+  function tick(now) {
+    if (state.live) {
+      state.idleSec = ((now - state.lastKey) / 1000) * state.speed;
+      $('idle').value = String(Math.min(360, Math.round(state.idleSec)));
+    } else {
+      state.idleSec = Number($('idle').value);
+    }
+    if (state.progress >= 1) {
+      state.progress = 0;
+      $('prog').value = '0';
+    }
+    const I = effectiveI();
+    $('idleVal').textContent = fmtIdle(state.idleSec);
+    $('progVal').textContent = Math.round(state.progress * 100) + '%';
+    $('readout').textContent = 'I ' + I.toFixed(2) + ' · flashes/s ' + flashRate() +
+      (state.reduced ? ' · RM' : '');
+    $('stamp').textContent = STAMP + ' · ' + fmtIdle(state.idleSec) +
+      (state.mode === 'xprog' ? ' · ×p' + Math.round(state.progress * 100) : '');
+
+    if (state.reduced) {
+      $('rm').style.opacity = String(I * 0.42);
+      $('dip').style.opacity = '0';
+      return;
+    }
+    $('rm').style.opacity = '0';
+
+    if (state.shot) return;
+
+    if (I <= 0) return;
+    if (now >= nextAt.tear) { spawnTearStorm(I); schedule('tear', 7000, 12000, I); }
+    if (now >= nextAt.shear) { spawnShear(I); schedule('shear', 9000, 15000, I); }
+    if (now >= nextAt.noise) { spawnNoise(I); schedule('noise', 8000, 14000, I); }
+    if (now >= nextAt.macro) { spawnMacro(I); schedule('macro', 2600, 4800, I); }
+    if (now >= nextAt.sync) { spawnSync(); schedule('sync', 9000, 15000, I); }
+    if (now >= nextAt.dip) { spawnDip(I); schedule('dip', 10000, 17000, I); }
+  }
+
+  function loop(now) { tick(now); requestAnimationFrame(loop); }
+
+  function key() {
+    if (!state.live) return;
+    state.lastKey = performance.now();
+  }
+  $('box').addEventListener('keydown', key);
+  $('box').addEventListener('input', function () {
+    key();
+    if (state.mode !== 'xprog' || !state.live) return;
+    const n = ($('box').innerText || '').trim().split(/\s+/).filter(Boolean).length;
+    const p = Math.min(1, n / GOAL);
+    if (p >= 1 && state.progress < 1) { state.progress = 0; $('prog').value = '0'; }
+    else { state.progress = p; $('prog').value = String(Math.round(p * 100)); }
+  });
+
+  $('idle').addEventListener('input', function () {
+    state.live = false; $('liveBtn').classList.remove('on');
+    state.idleSec = Number($('idle').value);
+    if (state.shot) paintStill(effectiveI());
+  });
+  $('prog').addEventListener('input', function () {
+    let p = Number($('prog').value) / 100;
+    if (p >= 1) { p = 0; $('prog').value = '0'; }
+    state.progress = p;
+    if (state.shot) paintStill(effectiveI());
+  });
+  $('liveBtn').addEventListener('click', function () {
+    state.live = !state.live;
+    this.classList.toggle('on', state.live);
+    if (state.live) { state.lastKey = performance.now(); state.shot = false; }
+  });
+  $('spdBtn').addEventListener('click', function () {
+    state.speed = state.speed === 1 ? 10 : 1;
+    this.classList.toggle('on', state.speed === 10);
+    this.textContent = state.speed === 10 ? '×10 ON' : '×10';
+  });
+  $('modeBtn').addEventListener('click', function () {
+    state.mode = state.mode === 'idle' ? 'xprog' : 'idle';
+    this.dataset.mode = state.mode;
+    this.textContent = state.mode === 'idle' ? 'IDLE ONLY' : 'IDLE × PROGRESS';
+    this.classList.toggle('on', state.mode === 'xprog');
+    if (state.shot) paintStill(effectiveI());
+  });
+  $('rmBtn').addEventListener('click', function () {
+    state.reduced = !state.reduced;
+    this.classList.toggle('on', state.reduced);
+    if (state.reduced) {
+      $('fx').querySelectorAll('.tear,.shear,.noise,.mb').forEach((n) => n.remove());
+      $('fx').classList.remove('sync', 'sync2');
+      $('dip').style.opacity = '0';
+    } else if (state.shot) paintStill(effectiveI());
+  });
+  $('flickOn').addEventListener('click', function () {
+    state.flicker = true; this.classList.add('on'); $('flickOff').classList.remove('on');
+    if (state.shot) paintStill(effectiveI());
+  });
+  $('flickOff').addEventListener('click', function () {
+    state.flicker = false; this.classList.add('on'); $('flickOn').classList.remove('on');
+    $('fx').querySelectorAll('.tear,.shear,.noise,.mb').forEach((n) => n.remove());
+    $('dip').style.opacity = '0'; $('rm').style.opacity = '0';
+  });
+
+  $('idle').value = String(Math.min(360, Math.round(state.idleSec)));
+  $('prog').value = String(Math.round(state.progress * 100));
+  $('liveBtn').classList.toggle('on', state.live);
+  $('spdBtn').classList.toggle('on', state.speed === 10);
+  $('spdBtn').textContent = state.speed === 10 ? '×10 ON' : '×10';
+  $('modeBtn').textContent = state.mode === 'idle' ? 'IDLE ONLY' : 'IDLE × PROGRESS';
+  $('modeBtn').classList.toggle('on', state.mode === 'xprog');
+  $('rmBtn').classList.toggle('on', state.reduced);
+  $('flickOn').classList.toggle('on', state.flicker);
+  $('flickOff').classList.toggle('on', !state.flicker);
+
+  ['tear', 'shear', 'noise', 'macro', 'sync', 'dip'].forEach(function (k) {
+    nextAt[k] = performance.now() + 400 + Math.random() * 800;
+  });
+  if (state.shot) paintStill(effectiveI());
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
