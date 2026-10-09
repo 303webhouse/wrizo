@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { apiGuest, type AuthUser } from '../store/api';
 import { readGuestTokenFromHash, guestAddressWithoutToken, GUEST_EXPIRED_LINE } from '../store/guestState';
 import { clearSignedOutHere } from '../store/signedOutHere';
+import { markGuestStart } from '../store/firstRun';
 import { createAttemptGate } from '../store/attemptGate';
 import { NETWORK_ERROR_LINE } from '../store/authSubmit';
 
@@ -56,6 +57,8 @@ export function GuestArrival({ onAuthed }: { onAuthed: (user: AuthUser) => void 
         // it is set, the write-belt drops every record write, and the guest would lose everything silently. Cleared
         // here, explicitly and first, so the guest session never starts under the belt (handleAuthed clears it too).
         clearSignedOutHere();
+        // A guest link's first sign-in is a first run, like a register (see store/firstRun.ts markGuestStart).
+        markGuestStart();
         onAuthed(r.user);
         navigate('/', { replace: true });
         return;

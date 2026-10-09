@@ -313,6 +313,7 @@ async function partD(overrides = {}) {
     else net.responder = () => reply({ pull: opts.pull ?? {} });
     if (opts.signedIn !== false) { const p = m.startSync(); if (opts.pull !== 'hold') await p; }
     if (opts.register) m.markRegistered(user.id);
+    if (opts.guest) m.markGuestStart();
     return { m, map };
   }
   const flag = (map) => map.get('wrizo-first-run-complete') ?? null;
@@ -331,6 +332,10 @@ async function partD(overrides = {}) {
   // ...but only THAT account, and only until the ritual is done
   { const s = await session({ pull: { journalEntries: [entry('e1')] }, register: true }); s.m.setCurrentUser({ id: 'someone-else', email: 'x@y.z' }); out.otherAccount = await s.m.resolveFirstRun(); }
   { const s = await session({ pull: {}, register: true }); s.m.setFirstRunComplete(true); out.afterRitual = await s.m.resolveFirstRun(); }
+  // A GUEST LINK's sign-in: the device flag is lifted and the derivation decides (an empty guest account is a first run; one that holds work is not)
+  { const s = await session({ storage: { 'wrizo-first-run-complete': '1' }, pull: {}, guest: true }); out.guestFlag = flag(s.map); out.guestEmptyUsedDevice = await s.m.resolveFirstRun(); }
+  { const s = await session({ storage: { 'wrizo-first-run-complete': '1' }, pull: { journalEntries: [entry('g1')] }, guest: true }); out.guestWithWork = await s.m.resolveFirstRun(); out.guestWithWorkFlag = flag(s.map); }
+  { const s = await session({ storage: { 'wrizo-first-run-complete': '1' }, pull: 'hold', guest: true }); out.guestPending = await s.m.resolveFirstRun(); }
   // firstRunWillWait: true only when resolveFirstRun would really have to wait
   { const s = await session({ pull: 'hold' }); out.willWaitPending = s.m.firstRunWillWait(); await s.m.whenFirstPulled(30); out.willWaitAfterCap = s.m.firstRunWillWait(); }
   { const s = await session({ pull: {} }); out.willWaitDone = s.m.firstRunWillWait(); }
@@ -362,6 +367,16 @@ async function partD(overrides = {}) {
     d.otherAccount === false && d.afterRitual === false, JSON.stringify({ other: d.otherAccount, after: d.afterRitual }));
   ok('(D11) firstRunWillWait is true exactly when the Write door would really wait (signed in, flag unset, not just registered, first pull outstanding and its wait not yet spent)',
     d.willWaitPending === true && d.willWaitAfterCap === false && d.willWaitDone === false && d.willWaitSignedOut === false && d.willWaitFlagSet === false, JSON.stringify(d));
+}
+
+{
+  const d = await partD();
+  ok('(D12) a GUEST LINK\'s sign-in is a first run on a device whose flag is already set: the flag is lifted and an EMPTY guest account gets the ritual',
+    d.guestFlag === '0' && d.guestEmptyUsedDevice === true, JSON.stringify({ flag: d.guestFlag, r: d.guestEmptyUsedDevice }));
+  ok('(D13) but a guest who RETURNS through the link after writing is not put through it again: the account holds work, so no ritual, and the flag is set again',
+    d.guestWithWork === false && d.guestWithWorkFlag === '1', JSON.stringify({ r: d.guestWithWork, flag: d.guestWithWorkFlag }));
+  ok('(D14) unlike a register, a guest start is NOT empty by definition: with the pull outstanding it waits to the cap and is not first run',
+    d.guestPending === false, JSON.stringify({ r: d.guestPending }));
 }
 
 // =============================================================================
@@ -540,6 +555,12 @@ await mutant('startSync loses its generation check',
 await mutant('stopSync no longer retires the first-pull session',
   { 'store/sync.ts': swap("  if (firstPull) { firstPull.settle('failed'); firstPull = null; }\n", '') },
   (o) => partC(o), (r) => !(r.doneAfterStop === false && r.noSession === 'failed' && r.secondCapped === 'capped'));
+await mutant('a guest start no longer lifts the device flag',
+  { 'store/firstRun.ts': swap('export function markGuestStart(): void {\n  setFirstRunComplete(false);\n}', 'export function markGuestStart(): void {\n}') },
+  (o) => partD(o), (r) => r.guestEmptyUsedDevice !== true);
+await mutant('a guest start is treated as empty by definition (a returning guest is put through the gate again)',
+  { 'store/firstRun.ts': swap('export function markGuestStart(): void {\n  setFirstRunComplete(false);\n}', 'export function markGuestStart(): void {\n  markRegistered(getCurrentUser()?.id ?? \'\');\n}') },
+  (o) => partD(o), (r) => r.guestWithWork !== false);
 await mutant('a just-registered account still waits for its pull',
   { 'store/firstRun.ts': swap('  if (isJustRegistered()) return true;\n', '') },
   (o) => partD(o), (r) => r.regPending !== true || r.regPendingMs >= 300);

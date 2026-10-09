@@ -50,6 +50,14 @@ export function markRegistered(userId: string): void {
   setFirstRunComplete(false);
 }
 
+// A GUEST LINK's sign-in is a first run too (Nick's ruling): a new, empty account, whatever this device's flag says. But it is NOT "empty
+// by definition" the way a register is: the link can be opened again, later, by a guest who has already written. So this only lifts the
+// device's flag and lets the derivation decide - after the first pull, an empty account is a first run, one that holds work is not (and the
+// flag is set again so it cannot return).
+export function markGuestStart(): void {
+  setFirstRunComplete(false);
+}
+
 const isJustRegistered = (): boolean => !!justRegisteredFor && getCurrentUser()?.id === justRegisteredFor;
 
 /** True when resolveFirstRun() would have to WAIT for the first pull right now - so a door can show its loading state first. */

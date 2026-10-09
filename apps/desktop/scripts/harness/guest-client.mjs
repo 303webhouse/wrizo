@@ -293,6 +293,26 @@ try {
 }
 
 // =============================================================================
+// PART M — a GUEST LINK's sign-in is a first run (Nick's ruling), through the derivation. The behaviour is proved in b101.mjs (D12-D14);
+// here the wiring is pinned in source.
+// =============================================================================
+{
+  const successBranch = arrival.slice(arrival.indexOf('if (r.ok && r.user) {'), arrival.indexOf('return;', arrival.indexOf('if (r.ok && r.user) {')));
+  ok('(M1) GuestArrival imports markGuestStart from the first-run store', /import \{ markGuestStart \} from '\.\.\/store\/firstRun';/.test(arrival), '');
+  ok('(M2) the guest start calls markGuestStart() in its success branch, after the signed-out flag is lifted and BEFORE onAuthed (which starts the sync the verdict waits on)',
+    successBranch.indexOf('clearSignedOutHere()') >= 0 && successBranch.indexOf('markGuestStart()') > successBranch.indexOf('clearSignedOutHere()')
+      && successBranch.indexOf('markGuestStart()') < successBranch.indexOf('onAuthed(r.user)'), successBranch.slice(0, 300));
+  const fr = fs.readFileSync(path.join(SRC, 'store/firstRun.ts'), 'utf8').replace(/\r\n?/g, '\n');
+  const gs = fr.slice(fr.indexOf('export function markGuestStart'), fr.indexOf('const isJustRegistered'));
+  ok('(M3) markGuestStart lifts the device flag and NOTHING MORE: it does not claim "just registered" (a returning guest who has written must not be put through the gate again)',
+    /setFirstRunComplete\(false\);/.test(gs) && !/justRegisteredFor/.test(gs), gs);
+  // MUTATION: take the call out of GuestArrival. M2's predicate must go red.
+  const mutated = arrival.replace('        markGuestStart();\n', '').replace('        markGuestStart();\r\n', '');
+  const mBranch = mutated.slice(mutated.indexOf('if (r.ok && r.user) {'), mutated.indexOf('return;', mutated.indexOf('if (r.ok && r.user) {')));
+  ok('(M4) MUTATION KILLED: without the call in GuestArrival, M2\'s predicate goes red', mutated !== arrival && !/markGuestStart\(\)/.test(mBranch), '');
+}
+
+// =============================================================================
 // PART I — the capture's guest screens (Batch 11), pinned in source. The capture itself needs a box turn.
 // =============================================================================
 {
