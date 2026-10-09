@@ -3,6 +3,7 @@ import { pool } from './db';
 import { requireAuth } from './auth';
 import { asyncHandler } from './asyncHandler';
 import { logError } from './logSafe';
+import { getServerBuild } from './build';
 
 // Record-level last-write-wins sync. All queries are scoped to the session
 // user_id; a pushed record only overwrites a stored row when its updated_at is
@@ -444,6 +445,9 @@ syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {
   const serverTime = await dbNow();
   res.json({
     serverTime,
+    // B10.1 - the build this server is serving, so an older tab can tell it is stale and stop. Absent when the server has
+    // no built client beside it (the same "absence is the healthy state" shape as every optional field here).
+    ...(getServerBuild() ? { build: getServerBuild() } : {}),
     // Absent when nothing was rejected (the ordinary case) — the same
     // "absence is the healthy state" shape this route already uses for
     // every optional field; a client that predates this ticket simply

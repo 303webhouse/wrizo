@@ -85,6 +85,8 @@ function loadSyncRouter(failIds, { sourceOverride } = {}) {
   write('asyncHandler.ts', stripTypes(svRequire, fs.readFileSync(path.join(SERVER_SRC, 'asyncHandler.ts'), 'utf8')));
   // logError (server-hardening, merged in) — sync.ts now imports it.
   write('logSafe.ts', stripTypes(svRequire, fs.readFileSync(path.join(SERVER_SRC, 'logSafe.ts'), 'utf8')));
+  // B10.1 — sync.ts now imports ./build (the served client build). Loaded for real; with no dist-web beside the scratch copy it reports null.
+  write('build.ts', stripTypes(svRequire, fs.readFileSync(path.join(SERVER_SRC, 'build.ts'), 'utf8')));
   fs.writeFileSync(path.join(tmpServer, 'auth.js'), 'exports.requireAuth = (req, res, next) => next();\r\n');
   const dbDest = path.join(tmpServer, 'db.js');
   fs.writeFileSync(dbDest, '');
@@ -184,6 +186,9 @@ function loadSyncClient() {
     "export function markClean(ids) { __cleanedIds.push(...ids); }",
     "export function applyRemoteRecords() {}",
     "export function markAllJournalEntriesDirty() {}",
+    // B10.1 - the safety net reads these two; this proof's fixtures never pull journal entries.
+    "export function getJournalEntries() { return []; }",
+    "export function getSystemKind() { return undefined; }",
   ].join('\n'));
   // Stub entryText.ts: sync.ts's titleFor() reads boardName() only for the
   // journalEntries branch, which this proof's fixtures never exercise.
@@ -199,6 +204,9 @@ function loadSyncClient() {
   ].join('\n'));
   // storageHealth (storage-full, merged in) — the real file, transpiled; it has no imports.
   write('store/storageHealth.ts', stripTypes(dtRequire, fs.readFileSync(path.join(DESKTOP_SRC, 'store/storageHealth.ts'), 'utf8')));
+  // B10.1 - the stale-client guard's two leaf modules, the real files. No build is known here, so the guard never trips.
+  write('store/clientBuild.ts', stripTypes(dtRequire, fs.readFileSync(path.join(DESKTOP_SRC, 'store/clientBuild.ts'), 'utf8')));
+  write('store/staleClient.ts', stripTypes(dtRequire, fs.readFileSync(path.join(DESKTOP_SRC, 'store/staleClient.ts'), 'utf8')));
   const dest = write('store/sync.ts', stripTypes(dtRequire,fs.readFileSync(path.join(DESKTOP_SRC, 'store/sync.ts'), 'utf8')));
   return { mod: import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`), persistencePath: path.join(tmpDesktop, 'store/persistence.mjs'), apiPath: path.join(tmpDesktop, 'store/api.mjs') };
 }

@@ -12,6 +12,9 @@ export interface AuthUser {
 
 export interface SyncResponse {
   serverTime: string;
+  // B10.1 - the client build the server is serving (the entry bundle's name). Absent when the server cannot tell. A client
+  // that finds it different from its own build has been loaded before a deploy and stops syncing (store/staleClient.ts).
+  build?: string;
   // ITEM 224(a), SYNC INTEGRITY — absent when nothing was rejected (the
   // ordinary case). Per-collection, each a list of ids the server could NOT
   // store this push (malformed, or the insert itself failed) — never a

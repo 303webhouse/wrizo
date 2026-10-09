@@ -30,6 +30,7 @@ import { showLogoutBlock, clearLogoutBlock, attemptSignOut, getSigningOut, setSi
 import { useSigningOut } from './store/useSigningOut';
 import { flushAll } from './store/flushRegistry';
 import { LogoutBlockedSheet } from './components/LogoutBlockedSheet';
+import { StaleClientBanner } from './components/StaleClientBanner';
 import { isSignedOutHere, markSignedOutHere, clearSignedOutHere } from './store/signedOutHere';
 import { SyncIndicator, FullscreenToggle } from './components/ChromeControls';
 
@@ -332,6 +333,8 @@ export function App() {
         <SignedOutRouteGuard authState={authState} />
         {/* LOGOUT SAFETY — an overlay beside the routes, never inside one: it cannot unmount the page. */}
         <LogoutBlockedSheet />
+        {/* B10.1 - the stale-client banner: App level, every route and auth state; a portal, so it displaces nothing. */}
+        <StaleClientBanner />
         <AppMain>
         <Routes>
         <Route path="/" element={<Arrival authState={authState} onAuthed={handleAuthed} />} />

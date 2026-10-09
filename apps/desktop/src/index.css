@@ -5419,3 +5419,15 @@ a:focus-visible,
   --wz-whisper:#463b2c; --wz-orange:#ff9800; --wz-orange-line:rgba(255,152,0,.5);
   --wz-hint:#817a70; --wz-ui:var(--font-ui); --wz-text:var(--font-prose);
 }
+
+/* B10.1 - THE STALE-CLIENT BANNER. A fixed overlay in a portal OUTSIDE #root (the root is made inert while it shows), so it displaces
+   nothing and is the one reachable control. Outside .wz-home like the logout sheet, so the palette tokens are set here. */
+.wz-stale-banner {
+  --wz-ground:#110600; --wz-lift:#150a04; --wz-ink:#f0e7d8; --wz-ink-dim:#8c8070;
+  --wz-whisper:#463b2c; --wz-orange:#ff9800; --wz-orange-line:rgba(255,152,0,.5);
+  --wz-hint:#817a70; --wz-ui:var(--font-ui); --wz-text:var(--font-prose);
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999; display: flex; align-items: center; justify-content: center;
+  gap: 14px; padding: 10px 16px; background: var(--wz-lift); color: var(--wz-ink);
+  border-bottom: 1px solid var(--wz-orange-line); box-shadow: 0 6px 24px rgba(0,0,0,.45); font-family: var(--wz-ui);
+}
+.wz-stale-banner-text { font-size: 1rem; line-height: 1.3; }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { subscribeSyncStatus, subscribeTooLarge, subscribeRejected, type SyncStatus, type TooLargeRecord, type RejectedRecord } from '../store/sync';
+import { subscribeSyncStatus, subscribeTooLarge, subscribeRejected, subscribePullDiagnostic, type SyncStatus, type TooLargeRecord, type RejectedRecord, type PullDiagnostic } from '../store/sync';
 import { subscribeStorageFailed, subscribeStorageNearFull } from '../store/storageHealth';
 import { subscribe as subscribePersistence, hasDirtyRecords } from '../store/persistence';
 import { subscribeCurrentUser } from '../store/currentUser';
@@ -48,9 +48,12 @@ export function SyncIndicator() {
   // ITEM 224(a) — a record the server refused to store: the same 'network is fine, one named thing is stuck' register.
   const [rejected, setRejected] = useState<readonly RejectedRecord[]>([]);
   useEffect(() => subscribeRejected(setRejected), []);
+  // B10.1 (SAFETY NET) - a pull that carried pages the cache never showed, after one retry. Counts only.
+  const [pullDiagnostic, setPullDiagnostic] = useState<PullDiagnostic | null>(null);
+  useEffect(() => subscribePullDiagnostic(setPullDiagnostic), []);
   const { t } = useDeskLexicon();
   const style = { fontSize: '0.75rem', color: 'var(--color-text-muted)' } as const;
-  const text = syncNoticeText(status, tooLarge, rejected, storageFailed, storageNearFull, dirty, signedIn, t);
+  const text = syncNoticeText(status, tooLarge, rejected, storageFailed, storageNearFull, dirty, signedIn, t, pullDiagnostic);
   if (text === null) return null;
   return (
     <span
