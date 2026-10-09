@@ -25360,3 +25360,14 @@ usual deploy + smoke + live frames.** *(This desk does not deploy it on the word
 
 **QUEUE (Fable): rhizome pair (running: `rhz-pair2` @ `105eae2`, stamp to follow) → drafts pair (`e4b596c`) → splash pair (after TOOLS’ new
 SHA).** Rhizome: counts to Fable when done; he then asks Nick for its ship word.
+
+## RHIZOME RE-PAIR: GREEN 122/122 ON BOTH LEGS — 2026-10-09 (chat 1)
+
+**`rhz-pair2` @ `105eae2` = `origin/main` @ `8429852` (templates merged) + `cursor/plateau-rhizome-goal-4b92` @ `af7ff4b`** (product =
+`97f95c3` + the one-line Plateau gate, `RhizomeField.tsx` +5/−1; verified by Fable). A clean merge; NO server change, NO migration.
+`tsc` x2 exit 0; `build:web` bundle `index-Czev_mRg.js` 646,733 b. **Browserless: `rhizome-growth --mutants` — baseline 48/48, now printing
+`RHIZOME-GROWTH VERIFY: PASS (48 checks)`, M1–M7 all RED, exit 0.** **THE PAIR: stamp `tree=105eae2a bundle=index-Czev_mRg.js/646733b`;
+122 files per leg in seven chunks of ≤20 (the capture tool left out), no launch crashes: 122/122 DEFAULT, 122/122 PARKED — every file
+clean, including `rhizome-goal-core` and `rhizome-growth` (FIX’s verdict lines) and `m2`/`m3`/`m4`/`rhizome-goal`.** This desk’s grant
+written `21:06:52Z` after the file was read (absent), cleared at completion; 0 harness processes, 0 browsers. **Not deployed; `main`
+untouched — it ships on Nick’s word (Fable asks him) after its smoke and live frames.** Next: the drafts pair (`e4b596c`).
