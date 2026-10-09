@@ -25046,3 +25046,20 @@ only) 200 · `POST /auth/logout` 204 · `GET /auth/me` (after logout, jar) 401 �
 no channel to Nick.* **BOX NEXT (Fable): (1) FIX `page-templates-move` @ `645fdf6`; (2) FIX again for the rhizome branch @
 `87e1cde` (m2/m3/m4/rhizome-goal/rhizome-growth + stamped shots), from FIX’s own worktree.** Grant file read before every write.
 B11 (guest) stays paused until B10.1’s gate closes.
+
+## B11 COMPOSITION, DRAFTS-INTEGRITY, THE SHIP ORDER, AND HOW GUEST LINKS GET MINTED — 2026-10-08 (chat 1)
+
+**FIX’S GRANT, for the record:** written `2026-10-09T01:34:48Z` (7:34 pm MT) after reading the grant file (absent) with the box
+idle; token covers both of FIX’s turns — `page-templates-move` @ `645fdf6`, then the rhizome branch @ `87e1cde` from
+`C:/Users/nickh/writer-studio-rhizome`; 30-minute check-in set for 8:05 pm MT.
+
+**B11 (Fable, relay): `guest-login` @ `de1f170` (server; it carries the `guest_links` migration — Nick’s schema YES of 2026-10-06)
+THEN `guest-client-r4` (a new tip is coming from INK, one small fix).** A trial merge onto `main` @ `1119bb7`: both clean, no
+conflicts. **The migration gets reviewed IN THE PAIR before any deploy.** **`drafts-integrity` (`b5cf501` + `e1e2f46`): CLEARED,
+stacked on B11, ships right after it** (INK rebases it onto B11’s fixed tip).
+
+**SHIP ORDER, unchanged: templates → rhizome → B11 → drafts.** B11 also waits on Nick’s B10.1 live check. **BOX: INK will ask for a
+turn for `guest-client-walk`; granted AFTER FIX’s two turns (templates, then rhizome).**
+
+**GUEST LINKS: after the B11 deploy, NICK MINTS THEM HIMSELF in a terminal; the token never goes into a chat or a doc** (this desk
+will not mint, hold, print or record one).
