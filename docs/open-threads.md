@@ -25142,3 +25142,14 @@ burst check…”) and `194174c` (on `page-templates-move`: “Page templates fr
 Flux’s lig…”).** GRANTED `2026-10-09T03:46:21Z` (9:46 pm MT), grant file read first (absent), box idle (0 harness processes, 0
 browsers); 30-minute check-in due 10:16 pm MT — this desk will look at FIX’s branches AND for finished-run evidence before clearing.
 **PAIRS AFTER THAT: templates → rhizome → B11 (after INK’s evidence push) → drafts (`56d1e3c`).**
+
+## 30-MINUTE CHECK-IN: FIX’S WINDOW GRANT CLEARED ON AN IDLE BOX — USE UNCONFIRMED — 2026-10-08 (chat 1)
+
+FIX’s grant (`fix-window-rhizome-templates-20261008`, written `2026-10-09T03:46:21Z`, 9:46 pm MT) was checked at age 31 minutes. The
+grant file still named FIX (read first, unchanged). **The box is IDLE: 0 harness node processes, 0 `ws-runtime-verify` browsers.**
+**Looking for a finished run, as the sharpened rule says: no push on `cursor/plateau-rhizome-goal-4b92` (tip `97f95c3`, 20:48 MT) or
+`page-templates-move` (tip `194174c`, 20:50 MT) since the grant; no file modified in the last 45 minutes in FIX’s two worktrees
+(`writer-studio-rhizome`, `writer-studio-fx17`).** A wider scan for stamped output elsewhere was too slow to finish. **So: no
+evidence of a run was found — and this desk does NOT claim the grant went unused** (FIX’s evidence could be in its own
+scratchpad, uncommitted). No “box done” received. **CLEARED `2026-10-09T04:17Z`, open ~31 minutes.** Nothing can be stranded on an
+idle box; FIX says whether its window ran and, if not, asks again.
