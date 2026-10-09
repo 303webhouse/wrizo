@@ -1,0 +1,24 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PASS  T1 [Free Write, blank page]: the page opens in Free Write (the premise of the next checks)  [freewrite]
+PASS  T1 [Free Write, blank page]: the beginnings row offers ONE door, Sprout - no Screenplay door, no Plan door  [["sprout"]]
+PASS  T1 [Free Write]: the strip is OPEN (so the next check can see) and carries NO Templates section and no template button at all  [{"body":true,"templates":false,"live":0}]
+PASS  T1 [Draft, blank page]: the beginnings row is NOT drawn (Sprout is the blank Free Write page's door)  [[]]
+PASS  T1 [Draft]: the Templates read Screenplay, Outline, Title page, Bibliography, Custom - in that order, and nothing else  [["Screenplay","Outline","Title page","Bibliography","Custom"]]
+PASS  T1 [Draft]: Screenplay is the ONE live template (not aria-disabled, keyed screenplay, with its glyph DRAWN at least 12px) - there is no Sprout and no Plan template  [[{"live":true,"key":"screenplay","name":"Screenplay","title":"Screenplay","disabled":null,"glyph":true},{"live":false,"key":null,"name":"Outline","title":"Coming soon","disabled":"true","glyph":true},{"live":false,"key":null,"name":"Title page","title":"Coming soon","disabled":"true","glyph":true},{"live":false,"key":null,"name":"Bibliography","title":"Coming soon","disabled":"true","glyph":true},{"live":false,"key":null,"name":"Custom","title":"Coming soon","disabled":"true","glyph":true}]]
+PASS  T1 [Draft]: the four after it are grayed placeholders - aria-disabled, titled "Coming soon", each with its glyph DRAWN at least 12px  [[{"live":false,"key":null,"name":"Outline","title":"Coming soon","disabled":"true","glyph":true},{"live":false,"key":null,"name":"Title page","title":"Coming soon","disabled":"true","glyph":true},{"live":false,"key":null,"name":"Bibliography","title":"Coming soon","disabled":"true","glyph":true},{"live":false,"key":null,"name":"Custom","title":"Coming soon","disabled":"true","glyph":true}]]
+PASS  T1 [Draft]: Plan stays on the PLAN bar
+PASS  T1 [Draft, a PROSE page]: the Screenplay template is NOT chosen here - aria-pressed false, and not brass at rest (brass marks a choice made)  [{"rest":{"color":"rgb(181, 169, 152)","pressed":"false"},"brass":"rgb(255, 152, 0)"}]
+PASS  T2: pressing the template turns it brass while held (the press, per the standing rule)  [{"during":{"color":"rgb(255, 152, 0)","border":"rgb(255, 152, 0)"},"brass":"rgb(255, 152, 0)"}]
+PASS  T2 [Screenplay, empty page]: applies IN PLACE - the surface becomes the script room and exactly ONE row exists, a script  [{"rows":[{"id":"mv0aor267fhj6e4s2","text":"","pageType":"script","planBoardId":null,"origin":"loose"}],"hash":"#/page/mv0aor267fhj6e4s2"}]
+PASS  T2 [chosen]: on a screenplay page the Screenplay template is drawn CHOSEN - aria-pressed, and brass AT REST (no press: not :active)  [{"chosen":{"pressed":"true","color":"rgb(255, 152, 0)","border":"rgb(255, 152, 0)","active":false},"brass":"rgb(255, 152, 0)"}]
+PASS  T3 [Sprout, blank Free Write page]: the door draws the first-line invitation on THIS page, the row goes, and nothing is written  [{"sprouted":{"invite":true,"row":false},"h0":"#/page/new","now":"#/page/new","rows":[]}]
+PASS  T3 [vanish rule]: the first keystroke on a blank Free Write page takes the row away  [{"rowBefore":"[\"sprout\"]","after":[]}]
+PASS  T3 [typing path untouched]: the page births on the first word and saves exactly what was typed  [[{"id":"mv0aove3o7beqlrf7","text":"First words.","pageType":null,"planBoardId":null,"origin":"loose"}]]
+PASS  T4 [Screenplay, page with words]: the current page is UNTOUCHED - same text, still prose  [{"orig":{"id":"tpl-screenplay","text":"Words already here on this page.","pageType":null,"planBoardId":null,"origin":"loose"},"pressed":true}]
+PASS  T4 [Screenplay, page with words]: a NEW script page opens (one new row, a script, in the same home) and the writer is on it  [{"fresh":[{"id":"mv0aoztzz5y7eoh9f","text":"","pageType":"script","planBoardId":null,"origin":"loose"}],"where":"#/page/mv0aoztzz5y7eoh9f"}]
+PASS  T4: the new page carries a one-tap way back that names the page left ("Back to Words already here o...")  ["‹ Back to Words already here on this page."]
+PASS  T4: the chip returns to the original page, its words intact  [{"hash":"#/page/tpl-screenplay","text":"Words already here on this page."}]
+PASS  T5: an empty user board still shows its Beginnings row with its own four doors (newCard, newPageCard, loadDeck, connectPage)  [["newCard","newPageCard","loadDeck","connectPage"]]
+
+PAGE-TEMPLATES VERIFY: PASS (20 checks)

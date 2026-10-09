@@ -1,0 +1,140 @@
+[
+  {
+    "theme": "light",
+    "frame": "blank-page",
+    "file": "light/blank-page.png",
+    "hash": "#/page/new",
+    "beginningsRow": true
+  },
+  {
+    "theme": "light",
+    "frame": "blank-page-draft",
+    "file": "light/blank-page-draft.png",
+    "hash": "#/page/new",
+    "beginningsRow": false
+  },
+  {
+    "theme": "light",
+    "frame": "templates-section",
+    "file": "light/templates-section.png",
+    "hash": "#/page/new",
+    "beginningsRow": false,
+    "opened": true,
+    "buttons": [
+      {
+        "name": "Screenplay",
+        "live": true
+      },
+      {
+        "name": "Outline",
+        "live": false
+      },
+      {
+        "name": "Title page",
+        "live": false
+      },
+      {
+        "name": "Bibliography",
+        "live": false
+      },
+      {
+        "name": "Custom",
+        "live": false
+      }
+    ]
+  },
+  {
+    "theme": "light",
+    "frame": "after-screenplay-empty-page",
+    "file": "light/after-screenplay-empty-page.png",
+    "hash": "#/page/mv0aslntsy16l422t",
+    "beginningsRow": false,
+    "pressed": true
+  },
+  {
+    "theme": "light",
+    "frame": "after-screenplay-page-with-words",
+    "file": "light/after-screenplay-page-with-words.png",
+    "hash": "#/page/mv0asp60dx5fpnrst",
+    "beginningsRow": false,
+    "pressed": true,
+    "chip": "‹ Back to Words already here on this page."
+  },
+  {
+    "theme": "light",
+    "frame": "after-sprout-blank-free-write",
+    "file": "light/after-sprout-blank-free-write.png",
+    "hash": "#/page/new",
+    "beginningsRow": false,
+    "pressed": true
+  },
+  {
+    "theme": "dark",
+    "frame": "blank-page",
+    "file": "dark/blank-page.png",
+    "hash": "#/page/new",
+    "beginningsRow": true
+  },
+  {
+    "theme": "dark",
+    "frame": "blank-page-draft",
+    "file": "dark/blank-page-draft.png",
+    "hash": "#/page/new",
+    "beginningsRow": false
+  },
+  {
+    "theme": "dark",
+    "frame": "templates-section",
+    "file": "dark/templates-section.png",
+    "hash": "#/page/new",
+    "beginningsRow": false,
+    "opened": true,
+    "buttons": [
+      {
+        "name": "Screenplay",
+        "live": true
+      },
+      {
+        "name": "Outline",
+        "live": false
+      },
+      {
+        "name": "Title page",
+        "live": false
+      },
+      {
+        "name": "Bibliography",
+        "live": false
+      },
+      {
+        "name": "Custom",
+        "live": false
+      }
+    ]
+  },
+  {
+    "theme": "dark",
+    "frame": "after-screenplay-empty-page",
+    "file": "dark/after-screenplay-empty-page.png",
+    "hash": "#/page/mv0asuxjsvwf4lt7f",
+    "beginningsRow": false,
+    "pressed": true
+  },
+  {
+    "theme": "dark",
+    "frame": "after-screenplay-page-with-words",
+    "file": "dark/after-screenplay-page-with-words.png",
+    "hash": "#/page/mv0asyex70tijczuf",
+    "beginningsRow": false,
+    "pressed": true,
+    "chip": "‹ Back to Words already here on this page."
+  },
+  {
+    "theme": "dark",
+    "frame": "after-sprout-blank-free-write",
+    "file": "dark/after-sprout-blank-free-write.png",
+    "hash": "#/page/new",
+    "beginningsRow": false,
+    "pressed": true
+  }
+]
