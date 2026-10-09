@@ -92,21 +92,19 @@
     "md5": "0f35b21845f4aaa1943afcb8c3b41464"
   },
   {
-    "file": "97f95c39-light-50-words.png",
-    "sha": "97f95c39",
-    "theme": "light",
+    "file": "b5b15d0c-flux-50-words-flux-no-rhizome.png",
+    "sha": "b5b15d0c",
+    "theme": "flux",
     "words": 50,
-    "frame": "50-words",
-    "when": "2026-10-09T04:51:46Z",
-    "reading": {
-      "segments": 716,
-      "frac": "0.500",
-      "flash": "false",
-      "stroke": "rgb(150, 160, 90)",
-      "thick": 1,
+    "frame": "50-words-flux-no-rhizome",
+    "when": "2026-10-09T20:57:59Z",
+    "reading": null,
+    "noRhizome": {
       "theme": "flux",
-      "page": "light"
+      "page": "light",
+      "field": false,
+      "segs": 0
     },
-    "md5": "89a7f8e1a8b1793884c62d328e3ecdf9"
+    "md5": "a4b15cb5a51d109f4730cd1b8d3ed3d1"
   }
 ]
