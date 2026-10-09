@@ -5456,8 +5456,8 @@ a:focus-visible,
 
    The SIZE is not set here: Splash.tsx computes width/height inline off the
    asset's measured INK bounding box (3077x2458 inside a 3374x2699 canvas) —
-   a fifth of the screen's width, capped so the blurred app always shows on
-   all four sides (item 187). */
+   about a quarter of the screen's area, capped so the blurred app always
+   shows on all four sides (item 187). */
 .wz-splash{
   position:fixed; inset:0; z-index:400; pointer-events:none;
   display:flex; align-items:center; justify-content:center;
