@@ -25153,3 +25153,28 @@ grant file still named FIX (read first, unchanged). **The box is IDLE: 0 harness
 evidence of a run was found — and this desk does NOT claim the grant went unused** (FIX’s evidence could be in its own
 scratchpad, uncommitted). No “box done” received. **CLEARED `2026-10-09T04:17Z`, open ~31 minutes.** Nothing can be stranded on an
 idle box; FIX says whether its window ran and, if not, asks again.
+
+## FIX’S WINDOW RECORDED UNUSED AND RE-GRANTED; INK’S TIMELINE; THE THREE BROWSER PROCESSES; B11 CLEARED TO PAIR — 2026-10-09 (chat 1)
+
+**FIX’S WINDOW: UNUSED (Fable, relay).** FIX never received the hand-off, and its request arrived AFTER this desk had cleared the
+grant at `04:19:37Z`. (The previous entry’s “use unconfirmed” is thus resolved: it was not used. A cleared-idle grant that nobody
+was told about is the fault of the HAND-OFF, not of FIX.) **RE-GRANTED: FIX, `2026-10-09T04:47:56Z` (10:47 pm MT) — the file read
+first (absent), the box idle (0 harness processes, 0 browsers); same scope (rhizome legs + shots on `97f95c3`, templates light
+reshoot on `194174c`), ~30 minutes; check-in due 11:18 pm MT.** **NEW RULE (Fable), starting with this grant: a lane that has asked
+for a turn READS THE GRANT FILE ITSELF every 5 MINUTES and starts when it is named; this desk’s relay is a courtesy. The 30-minute
+idle clock is unchanged.** *(This desk also will not log any grant “unused” without the grantee confirming.)*
+
+**INK’S TIMELINE (Fable, from INK — “clean”), recorded:** grant written `02:48:06.915Z`; walk launched `02:49:02Z`; ended `02:49:09Z`
+— 14/14, a 7-second walk inside a grant open ~31 minutes. This corrects and completes the correction entry above.
+
+**THE 3 `ws-runtime-verify` PROCESSES at ~`02:49Z` (Fable: check the record; if nobody claims them, record “unclaimed”):** this
+desk’s record has NOTHING on them — its last browser count before them was `0` at the `02:48:06Z` grant write, and it did not
+look again until `03:19Z` (when there were none). **They coincide with INK’s launch at `02:49:02Z`, which is the harness starting
+its own browser; this desk cannot confirm that. Recorded as UNCLAIMED BY THIS DESK, probably INK’s own walk browsers;
+INK to confirm.**
+
+**B11 IS CLEARED TO PAIR (Fable): `guest-login` @ `de1f170` FIRST, then `guest-client-r4` @ `501264a`** (a newer tip than the `afe9bb2`
+seen earlier). **It includes the `guest_links` migration, reviewed IN the pair.** **ORDER: FIX’s window → B11 pair (runs while Fable
+reviews FIX’s frames) → templates pair → rhizome pair → drafts (`cdced72`). DEPLOY ONLY AFTER NICK’S SHIP WORD, as always.**
+This desk does NOT run the B11 pair during FIX’s window (a heavy node run beside another lane’s browsers is what cut FIX’s turn 2
+short once); it prepares the assembly with git operations only, then pairs once FIX is done.
