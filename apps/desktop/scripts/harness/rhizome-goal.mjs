@@ -273,7 +273,9 @@ await withHarness(async (app) => {
   } catch { /* the check reports the stored count */ }
   await sleep(1500);
   const crossed = await app.evalJs(`(() => { const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find(x => x.id === ${JSON.stringify(pageId)});
-    return e ? e.text.trim().split(/\s+/).length : null; })()`);
+    return e ? e.text.split(' ').filter(Boolean).length : null; })()`);
+  // (No regex here on purpose: this runs inside a template literal, where `\\s` cooks to a plain `s` - the b5b15d0 window counted
+  //  the stored "word0 ... tail" as ONE word because split(/s+/) found no letter s. The seeded text is single-space separated.)
   const fluxAfter = await app.evalJs("({ theme: document.documentElement.getAttribute('data-theme'), field: !!document.querySelector('.wz-rhizome-field'), segs: document.querySelectorAll('.wz-rhizome-seg').length, flash: window.__fluxFlash })");
   ok('Theme: under Flux the rhizome field renders NOTHING - no field, no segments - and crossing the goal flashes nothing (the rhizome is Plateau\'s only)',
     fluxBefore.theme === 'flux' && !fluxBefore.field && fluxBefore.segs === 0 && fluxAfter.theme === 'flux' && !fluxAfter.field && fluxAfter.segs === 0 && fluxAfter.flash === false && crossed === 8,
