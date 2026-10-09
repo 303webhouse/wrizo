@@ -25222,3 +25222,19 @@ was left out of the list (it needs a live local rig and two minted guest tokens)
 **OPEN, for Fable/Nick before any deploy:** (1) the SCHEMA QUESTION raised earlier — Nick’s recorded yes covers `guest_links`; the migration
 also adds FOUR columns to `users` (code comment: “the four account columns Nick approved”). Confirm his yes covers them. (2) INK’s `guest-login`
 harness fix. (3) Nick’s ship word. **Not deployed; `main` untouched.**
+
+## NICK’S RULING: GUEST LOGIN (B11) IS SHELVED; THE SCHEMA QUESTION WITHDRAWN; TEMPLATES PAIR CLEARED — 2026-10-09 (chat 1)
+
+**NICK’S RULING (Fable, relay): guest login (B11) is SHELVED. Testers get regular accounts via invite codes — already live in
+`auth.ts`; `INVITE_CODES` stays Nick’s to set in Railway.** **Do NOT merge or deploy `guest-login`, `guest-client-r4` or
+`walk-no-token-text`. Keep the branches; record them as SHELVED, not deleted. `b11-pair` is shelved with them.** **The schema
+question (the four `users` columns + `guest_links`) is WITHDRAWN. NO MIGRATION SHIPS.** *(Recorded for the shelf: the B11 pair was
+green 119/119 on both legs and the migration reviewed 9/9 on a real Postgres — `guest-login`’s server harness needed one INK
+line. Branches kept: `guest-login` `de1f170`, `guest-client-r4` `501264a`, `walk-no-token-text` `34f6fc2`, `b11-pair`
+`e493830`. The earlier “merge `walk-no-token-text` after B11” instruction is VOID.)*
+
+**DRAFTS moves onto `main`: INK rebases `drafts-integrity` onto `main`** (Fable test-picked both commits onto `main`: clean).
+
+**TEMPLATES: the light reshoot is verified at `a301594` (Flux, the light page; frames correct). THE TEMPLATES PAIR IS CLEARED — run
+it next: `page-templates-move` @ `a301594`; product = `645fdf6`.** RHIZOME waits on FIX’s evidence commit + Fable’s frame review, then
+its pair. **ORDER NOW: templates pair (`a301594`) → rhizome pair → drafts pair (INK’s new SHA).** Deploy only on Nick’s ship word.
