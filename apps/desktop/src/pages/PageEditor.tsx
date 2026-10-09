@@ -18,6 +18,7 @@ import { useSessionLog } from '../components/useSessionLog';
 import { useFirstLineInvite } from '../components/useFirstLineInvite';
 import { UnbornProvider, useUnborn } from '../components/UnbornSurface';
 import { BeginningsRow, type BeginningDoor } from '../components/BeginningsRow';
+import { unbornHref } from '../store/unbornPage';
 import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset, setSelectionOffsets, getCaretOffset, getSelectionOffsets, rangeFromPlainOffsets } from '../store/caretOffset';
 import type { Stroke } from '../types';
@@ -46,6 +47,7 @@ import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import { applyFormat, marksAt, headingLevelAt, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
 import { hiddenMarkEditingFor } from '../store/hiddenMarksEditing';
 import { createTabChord, type TabAct } from '../store/tabChord';
+import { escapeFromEditor, ESC_HINT_ID } from '../store/escapeExit';
 import { BLOCK_TOKEN } from '../store/markRuns';
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
 import { getRegisteredUndoStack } from '../store/textUndo';
@@ -58,6 +60,8 @@ import { UnlockCeremony } from '../components/UnlockCeremony';
 import type { ThemeId } from '../store/theme';
 import { seedTypewriterDefault, DRAFT_TYPEWRITER_LINE_THRESHOLD } from '../store/writingSettings';
 import { countLineEquivalents } from '../store/lineEquivalents';
+
+import { registerFlush } from '../store/flushRegistry';
 
 // HB1 F1 — the gate's fixed instrument: 100 whitespace-delimited words.
 const FIRST_RUN_WORD_TARGET = 100;
@@ -515,7 +519,10 @@ function PageEditorView({ id }: { id: string }) {
   useEffect(() => {
     const onHide = () => { if (document.visibilityState === 'hidden') { flush(); flushNow(); } };
     document.addEventListener('visibilitychange', onHide);
+    // LOGOUT FLUSH — a sign-out flushes this page's pending text first, so it is counted as unsaved.
+    const unregisterFlush = registerFlush(flush);
     return () => {
+      unregisterFlush();
       document.removeEventListener('visibilitychange', onHide);
       flush();
       flushNow();
@@ -553,7 +560,7 @@ function PageEditorView({ id }: { id: string }) {
   // keyboard-only writer can no longer Tab OUT of the editor to the chrome.
   // That is the standard trade every text editor makes — and the card popup
   // already traps Tab deliberately — but it is a real cost, not a free win,
-  // and Escape is what leaves the surface.
+  // and Escape is what leaves the surface (built by the accessibility audit's A1 fix: store/escapeExit.ts).
   //
   // STEP 3 (Nick, 2026-09-25) - TAB IS NOW A STATE MACHINE (store/tabChord.ts, proved without a browser): every Tab tap is one more
   // first-line level ("keep indenting the text further"), Shift+Tab one level back, and Tab HELD + 1 is one WHOLE-PARAGRAPH (block)
@@ -580,6 +587,9 @@ function PageEditorView({ id }: { id: string }) {
       insertMarkerRef.current?.(act === 'block-indent' ? BLOCK_TOKEN : '\t');
     };
     const onKeyDown = (e: KeyboardEvent) => {
+      // A1 (accessibility audit): Tab indents here, so Esc is the way OUT - to the current mode tab, after any open popup has
+      // closed on its own Esc (store/escapeExit.ts). Every mode, the same key.
+      if (escapeFromEditor(e, el)) return;
       const step = chord.keydown(e);
       if (step.preventDefault) e.preventDefault();
       step.acts.forEach(perform);
@@ -764,9 +774,9 @@ function PageEditorView({ id }: { id: string }) {
   // impossible either way.
   if (!realEntry) return <Navigate to="/" replace />;
 
-  // BG1 S2 — the page's beginnings: Screenplay · Sprout · Plan (P1 amendment 2,
-  // Nick's word 2026-07-25 — three single words; "Start from a Spark" is
-  // superseded by "Sprout"). Furniture beside the cursor, never a gate:
+  // BG1 S2 — the page's beginnings, NARROWED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08): the row keeps ONE door,
+  // Sprout, and shows only on a blank FREE WRITE page. Screenplay is the Draft strip's live template (below); Plan stays on
+  // the PLAN → bar only. Everything else about the row is as BG1 built it - furniture beside the cursor, never a gate:
   //
   //   • The page is ALREADY live and typeable when this renders. The caret is
   //     under the row from the first frame (ForwardOnlyEditor autofocuses an
@@ -775,31 +785,42 @@ function PageEditorView({ id }: { id: string }) {
   //     writer who ignores it entirely never knows it was a decision.
   //   • It renders only while the page has ZERO words, and it is dismissed by
   //     the first keystroke (A19 — the same `onForward` seam warm-start, TTFK
-  //     and the F6 invite already share), by any door taken, or by Esc.
-  //   • Prose needs no door: prose is what the paper already is.
+  //     and the F6 invite already share), by the door taken, or by Esc.
   //
-  // Declared before `editorBody` so the row is in scope there; each handler is
-  // wrapped in its own arrow so the functions it calls (`requestScreenplay`
-  // below) are resolved at click time, not at render time.
+  // Sprout IS the spark deck, and the spark deck IS the first-line invitation
+  // (P1 amendment 2's addendum: "deck" was overloaded — DeckWizard loads card
+  // decks onto BOARDS; drawing one first line onto a PAGE is this mechanism).
+  // So the door calls FX15's own on-request seam rather than inventing a
+  // page-side deck entry: deck-drawn, never model-drawn, never insertable.
   const takeBeginning = (open: () => void) => () => { setBeginningsDismissed(true); open(); };
   const beginningDoors: BeginningDoor[] = [
-    // Structure, surfaced at the moment it is cheapest to choose: on an empty
-    // page the existing Structure path converts free, with no modal (AB2 S4).
-    { key: 'screenplay', label: dt('beginScreenplay'), onOpen: takeBeginning(() => requestScreenplay()) },
-    // Sprout IS the spark deck, and the spark deck IS the first-line invitation
-    // (P1 amendment 2's addendum: "deck" was overloaded — DeckWizard loads card
-    // decks onto BOARDS; drawing one first line onto a PAGE is this mechanism).
-    // So the door calls FX15's own on-request seam rather than inventing a
-    // page-side deck entry: deck-drawn, never model-drawn, never insertable.
     { key: 'sprout', label: dt('beginSprout'), onOpen: takeBeginning(() => invite.optIn()) },
-    // The page's own PLAN → door, offered at birth: the Page→Plan pipeline's
-    // on-ramp. Identical act to the bar's door (lazy-born board, then travel).
-    { key: 'plan', label: dt('beginPlan'), onOpen: takeBeginning(openPlanBoard) },
   ];
-  const beginningsVisible = !beginningsDismissed && !gateActive && wordCount(text) === 0;
+  const beginningsVisible = !beginningsDismissed && !gateActive && mode === 'journal' && wordCount(text) === 0;
   const beginningsRow = beginningsVisible
     ? <BeginningsRow surface="page" doors={beginningDoors} onDismiss={() => setBeginningsDismissed(true)} />
     : null;
+
+  // PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: "templates live in the tools menu now") - Screenplay is the Draft strip's LIVE
+  // template (Sliver.tsx, Templates; Draft and later strips only, never Free Write). It runs the act its door ran: the
+  // Structure path (AB2 S4) - free on an empty page, and it BIRTHS (the ruled amendment to ruling 2).
+  // On an EMPTY page (zero words, the row's own test) it applies in place. On a page WITH words it never touches the text: it
+  // opens a NEW screenplay page in the same home through item 104's own `structure` address (the arrival effect above births
+  // it), and the new page carries the existing "Back to <title>" chip (state.fromBoardId - the PW1 chip that names the surface
+  // actually left), so the departure keeps a one-tap return.
+  const applyScreenplayTemplate = () => {
+    if (wordCount(textRef.current) === 0) { requestScreenplay(); return; }
+    flush(); flushNow();
+    const href = unbornHref({
+      origin: entry.origin === 'journal' ? 'journal' : 'loose',
+      binderId: entry.projectId ?? null,
+      structure: 'screenplay',
+    });
+    navigate(href, { state: { fromBoardId: id, fromBoardTitle: pageTitle } });
+  };
+  const pageTemplates = [
+    { key: 'screenplay' as const, label: dt('beginScreenplay'), onApply: applyScreenplayTemplate },
+  ];
 
   // The editor's own render-prop body — identical between the legacy and the
   // AB1-framed ModeStage instance, factored out so the two branches below
@@ -833,6 +854,7 @@ function PageEditorView({ id }: { id: string }) {
         onBlur={() => { setFocused(false); flush(); }}
         placeholder=""
         ariaLabel="Page writing surface"
+        ariaDescribedBy={ESC_HINT_ID}
         penColor={penColor}
         forwardLock={mode === 'journal' ? forwardLock : true}
         style={{
@@ -853,6 +875,9 @@ function PageEditorView({ id }: { id: string }) {
           utterance; the first-line invite (F6) would speak a second one on
           this exact (empty) page. gateActive is only ever true when framed
           (F4), so this never touches the legacy branch's behavior. */}
+      {/* A1: said to a screen reader, never drawn (1px, clipped) - so it cannot move or resize the page. AFTER the editor, never
+          the sheet's first child, so no first-child rule can ever take it for the page. */}
+      <span id={ESC_HINT_ID} className="wz-sr-only">{dt('pageEscHint')}</span>
       {gateActive ? null : invite.node}
       {/* BG1 S2 — the beginnings row, a sibling ABOVE/OUTSIDE the editable DOM
           (the same warm-start/F6 placement, for the same reason: never
@@ -860,7 +885,7 @@ function PageEditorView({ id }: { id: string }) {
           it showed or not). Set one line below the caret in CSS so the first
           line stays clear; `gateActive` suppression is already folded into
           `beginningsVisible`, matching HB1 S3's "the threshold has one
-          sanctioned utterance." */}
+          sanctioned utterance." PAGE-TEMPLATES-MOVE: Sprout only, Free Write only. */}
       {beginningsRow}
       {warm.rect && (
         <div
@@ -1104,6 +1129,7 @@ function PageEditorView({ id }: { id: string }) {
             onPickKind: kind => patchPageSettings({ kind }),
             styleGuide: entry.pageSettings?.styleGuide ?? STYLE_GUIDE_DEFAULT,
             onPickStyleGuide: styleGuide => patchPageSettings({ styleGuide }),
+            templates: pageTemplates,
           }
         // ITEM 112-A — REVISE'S DESK DRAWER OPENS, AND IT OPENS ONTO NOTHING.
         //

@@ -24162,3 +24162,1157 @@ for Nick’s own eyes.
 **PR #7 IS SHIPPED AND CLOSED.** NEXT per Fable: Batch Nine — `batch-nine-integ` @ `cb8ed98` + `item-esc-exit-main` @
 `ef75954` + FIX’s K10 successor. **Waiting on:** FIX’s `fix-k10-batch-nine` (parked mid-way, not pushed: one mutant
 still to re-anchor after 224(a)). Not started by this desk until that SHA is on origin.
+
+## NICK’S WORDS: THE GUEST_LINKS SCHEMA YES; HIS LIVE REPORT ON PR #7; HEADING LEVELS — 2026-10-06 (chat 1, on Fable’s relays)
+
+**1 · SCHEMA WORD, guest login (Fable’s relay).** The question as put: “May guest login add a small list that remembers
+which invite link belongs to which guest? Without it, a beta tester who switches phones or clears their browser
+can’t get back into their guest account.” **His answer, verbatim: “1. Yes”.** It covers the `guest_links` table
+(hashed token → guest user, `ON DELETE CASCADE`). INK lands it from `migrations/pending` into `migrate.ts` on
+`guest-login`. *(A schema change: this desk will not deploy one without the migration being reviewed in the pair.)*
+
+**2 · NICK’S REPORT, live on PR #7 (a Draft screenshot), verbatim:** “B-I-U-S all seems to be fixed now!” — and,
+in his page’s own words: “I can’t click on the line next to ‘BOLD’ to move my cursor there for some reason. It
+seems to just activate the strip menu, which it shouldn’t do unless I highlight text that has been modified with
+B-I-U, etc.” And on headings: “the heading icon is not highlighted. If I click the ‘H’ icon anyway, it make the
+heading text smaller in steps. Better would be a ‘+/-’ option when a heading is created that hovers over the heading
+text on the page when it is highlighted. The ‘+’ and ‘-’ options should also be easily clickable from the tool
+menu, but if a user hits the ‘H’ icon, all heading modifications should be undone. Also, headings should not
+default to ALL CAPS.” **Recorded as rulings; owner FIX, ahead of 211’s card port.**
+
+**3 · NICK’S WORDS ON HEADING LEVELS, verbatim:** “Let’s go with whatever the standard is for WordPress or other
+web-based apps that the text might get exported to (headings are really for web-formatting purposes since a user can
+just create headings however they choose to style them if the piece is going to print or PDF)”. **RULED (Fable, from
+his words): six heading levels (`#` to `######`, mapping 1:1 to h1–h6); H adds Heading 2 (the WordPress block
+editor’s default) and removes any level; + and − step between h1 and h6. It supersedes the three-level default**
+(“three heading sizes, H starts at the middle one”, vetoable) that the earlier relay had proposed. Owner FIX.
+
+**BOX ORDER after Batch Nine ships (Fable):** TOOLS’ storage experiment → PW’s Experiment 1 run → FIX’s short use
+for the two bugs → INK’s guest walk (once the table lands) and `csp-enforce-walk`.
+
+## BATCH NINE — THE CHUNKED PAIR IS RED ON BOTH LEGS: FOUR FILES, SAME FOUR ON EACH — 2026-10-06 (chat 1)
+
+**`batch-nine` @ `694cbbc`** (pushed to origin as a branch; **NOT merged to `main`, NOT deployed**) = `main` @ `3e5e209` +
+`fix-k10-batch-nine` @ `0360b30` (carries `batch-nine-integ` @ `cb8ed98`) + `item-esc-exit-main` @ `ef75954`. One conflict, in
+`sync-chunked-push-proof.mjs`: `b5b2e24`’s blob == `6ff11df`’s blob (byte-identical, `d7b4120b`), so taking `0360b30`’s
+version is exactly main + FIX’s one extra commit. Browserless before the pair: `tsc` x2 exit 0, seed-guard 36/36, K10
+baseline 32/32 with all 19 mutants red. **Stamp `tree=694cbbc bundle=index-Di3chbyP.js/630375b`; 111 files per leg, six
+chunks of ≤20, one stamp throughout, 0 harness processes between chunks, no launch crashes.**
+
+**RED, BY CHUNK AND LEG (the SAME FOUR files on each leg — none flaked; the reds are not launch crashes):**
+- **default c00** / **parked c00** — `a11y-signin.mjs` NOVERDICT exit=1: `waitFor timed out: account stage reached`, the
+  page showing “For humans writing / Save your writing to an account” with buttons `[“Full screen”, “← back”]`
+  only. Its commit says “add a real keyboard-walk LIVE section (not yet run)” — **this is its first browser run.**
+  Owner: INK.
+- **default c02** / **parked c02** — `item-storage-full.mjs` NOVERDICT exit=1 (0 s): `TypeError: t is not a function` in
+  its own `notice()` helper — it calls `syncNoticeText` with the old argument list, and 224(a) added `rejected` as the
+  3rd argument (the same drift K10 had). It passed on `main`. A STALE INSTRUMENT, not a product fault. Owner: TOOLS.
+- **default c04** — `sc1.mjs` FAIL 2/71 (S3 SC-V4 “a fresh script page begins at the TOP margin of page one”:
+  `gapBelowTopMargin:33`; the first keystroke likewise) and `sc2.mjs` FAIL 12/72 (S1 rhythm: scene `marginTopLines`
+  `rendered:2, expected:0`; S2b P2/P3/P4/P10/P13 and the five “first line at the same offset” cross-checks: first page
+  `firstMarginTop` 32, `firstOffset` 129 vs 97 on pages 2–5, `used:[55,…]` vs a 54-line body). **PARKED c04** — the
+  same two files red (their parked successors). **Both PASSED on `main`.**
+
+**READING, for the owners (Fable routes):** `sc1`/`sc2` are a PRODUCT difference, not an instrument one — the diff vs
+`main` puts `<span id={ESC_HINT_ID} className=“wz-sr-only”>` inside `ScriptEditor.tsx`’s `Fragment` BEFORE the active
+element (`+<span …>{dt(‘pageEscHint’)}</span>`); a new first child on the script page is the likely reason the first
+scene stops counting as the first element (first page: margin 32, offset 129 vs 97). That is the screenplay surface’s
+half of the Esc exit (`escexit`). Owner: FIX. **ALSO NOTED:** `index.css` now carries TWO `.wz-sr-only` rules (a11y A8’s
+near the Tutor panel and escexit’s later one with `clip-path`) — a duplicate utility from two branches; harmless today
+(the later wins) but a trap for whoever edits one.
+
+**NOT SHIPPED — the pair is red, nothing deployed, `main` untouched @ `3e5e209`+records.** Batch Nine holds until the
+four are fixed and a re-run is clean. Grant cleared; 0 harness processes.
+
+**FABLE’S ORDERS (relay, recorded):** let the pair finish, report every red file by chunk and leg (above); grant FIX a
+short box use for `clickhead.mjs` + its regressions on `item-click-headings` @ `233c3b2`. **`guest-login` @ `7d18353`
+server half: CLEARED by Fable’s byte review; ships as its own batch AFTER Batch Nine, once INK’s `guest-client-walk` runs
+clean; merge order `guest-login` first, then `guest-client` (`c43dd55`).** *(This desk notes both branches have moved
+past the reviewed SHAs: `guest-login` tip is `de1f170`, “review cleanups”, one commit past `7d18353`; `guest-client` tip
+is `590ca07`, “a dead link says it is expired at once”, one past `c43dd55`. The byte review covers the SHAs named; Fable
+confirms the delta before the batch is assembled.)* **Box queue after the pair:** TOOLS storage experiment → PW
+Experiment 1 → FIX clickhead → INK guest walk + `csp-enforce-walk`.
+
+## BATCH NINE’S REDS ROUTED AND THREE OF FOUR FIXES IN; FIX’S BOX USE AND THE TYPING-LATENCY FINDING — 2026-10-06 (chat 1)
+
+**ROUTING (Fable, relay):** `sc1`/`sc2` → FIX; `item-storage-full` → TOOLS; `a11y-signin` → INK. **Fable confirmed the
+`sc` cause: `ScriptEditor.tsx:1058` rendered the Esc-hint span as the sheet’s first child, so
+`.script-sheet > *:first-child` (`index.css:1862`) zeroed the span instead of the first scene.** Guest deltas
+covered: `guest-login` @ `de1f170` and `guest-client` @ `590ca07` are byte-reviewed and CLEARED; the guest batch is
+`guest-login` first, then `guest-client`.
+
+**THE FIXES, as they arrive:** (1) INK — `fix-signin-live-double` @ `754b0c5`: the test double answered the USER object
+on `/auth/signup-status`, so the client read sign-up as closed and the account form never rendered; the fix is in
+`runtime-verify.mjs` (+7) plus a browserless `fix-signin-live-double.mjs` (5 checks); `apps/*/src` diff empty. **This
+desk verified the scope on origin; Fable byte-reviewed and CLEARED it.** (2) TOOLS — `fix-storage-full-notice-signature`
+@ `7d72b2c`: `item-storage-full.mjs` only, four call sites to the 8-argument form (`[]` in the `rejected` slot), 56/56
+browserless; `src` diff empty; **verified here and CLEARED by Fable.** (3) FIX — the `sc1`/`sc2` fix on
+`item-esc-exit-main` @ `6862ab8` (ScriptEditor +5/−1, PageEditor +5/−2; the hint span renders once, outside every
+`.script-sheet`, and after the editor in `PageEditor`); FIX’s browserless checks pass, **nothing run in a browser,
+and NOT yet cleared by Fable.** **BATCH NINE REBUILD = `694cbbc` + `754b0c5` + `7d72b2c` + the `sc` fix, then one full pair
+(112 files per leg with `fix-signin-live-double.mjs`); this desk waits for Fable’s clear on `6862ab8`.**
+
+**THE DUPLICATE `.wz-sr-only` (FIX’s lean, handed up, not acted on):** only Batch Nine’s assembly has both copies (A8’s
+three-line rule from `40939b4` and escexit’s, which adds `clip-path`). FIX leans: this desk deletes A8’s copy at
+assembly (same class, mine has the extra); the alternative is the A8 branch dropping its own, which only works if A8 never
+ships without Esc. **Deleting a rule is an edit to a file both owners touched — not a mechanical union — so this desk
+does not do it without Fable’s word.** It is harmless today (the later rule wins).
+
+**FIX’S BOX USE (granted, then cleared by this desk on FIX’s report; 0 browsers, 0 runners at clearing):** on
+`item211-card-port` @ `adbc0ce` — passed `clickhead` 20/20, `item211b` 11/11, `writing-r1/r2/r3` 25/13/33, `item210` 9; **red
+in three files, each harness-only and fixed:** `item211` (both legs: Cursor’s WALK check expected a click past a bold word
+to land inside the pair at 12; Nick’s click rule lands it after the marks at 14 — parked with a successor, on
+`item-click-headings` @ `0215e1e`), `reveal` (both legs: ten Shift+ArrowLeft presses now select ten visible characters =
+14 raw including hidden stars; parked with a successor), `fx5` (a parked-record variable declared below the
+top-level await that assigns it — died in its temporal dead zone; the declaration moved up). **Re-run on
+`item211-card-port` @ `ec562d4`: default leg `item211` 78, `reveal` 19, `fx5` 62, `item211b` 12 pass; parked leg all four
+pass (`item211` parks 2, `reveal` 7, `fx5` 3).** Evidence logs on `b399485` (docs only, now the branch tip). **These are
+FIX’s own runs; they are not this desk’s pair and are not a Batch Nine matter.**
+
+**THE TYPING-LATENCY FINDING (FIX’s measurement, Draft, caret mid-page; keystroke median / p95, caret-move median / p95):**
+500 words 8/11 ms, 10/18 ms · 5,000 words 65/69 ms, 19/27 ms · 20,000 words 327/416 ms, 37/49 ms · 50,000 words 964/1,341 ms,
+68/94 ms. **FIX’s reading: typing is laggy at 5k words and unusable at 20k; caret moves stay cheap; the cost is per
+keystroke and roughly linear in page length, and time-to-paint matches it.** Suspects, NOT yet measured: the whole-page
+`innerText` reads and the full-page redecorate on every key. **FIX asks for a ruling on profiling before touching
+anything — handed to Fable; the one finding that matters for real chapters.**
+
+## BATCH NINE RE-PAIR — 111/112 ON EACH LEG; ONE RED, ONE INSTRUMENT ASSERTION THAT THE RULED DELETION FALSIFIED — 2026-10-06 (chat 1)
+
+**FABLE’S RULING (relay), recorded as his:** `item-esc-exit-main` @ `6862ab8` CLEARED (the hint span is outside every
+`.script-sheet`, absolutely positioned, takes no flex gap; on the page it renders after the editor; the CSS rule is
+unchanged). **DUPLICATE `.wz-sr-only`: DELETE A8’s three-line copy (`index.css` ~3875) at assembly and KEEP escexit’s (with
+`clip-path`).** Rebuild = `694cbbc` + `754b0c5` + `7d72b2c` + `6862ab8`, one full pair. `item211-card-port` (`ec562d4`) stays
+out of Batch Nine until his byte review. **Box order after the pair:** FIX latency profile → TOOLS storage experiment →
+PW Exp 1 → INK guest walk + `csp-enforce-walk`.
+
+**BUILT: `batch-nine-r2` @ `9008b88`** (pushed as a branch; NOT merged to `main`, NOT deployed): the three merges, then
+one commit deleting A8’s 8 lines (comment + rule + blank) from `index.css` — nothing else; one `.wz-sr-only{` rule
+remains. Browserless first: `tsc` x2 exit 0, seed-guard 36/36, `fix-signin-live-double` 5/5. **Stamp
+`tree=9008b88 bundle=index-Bg769niO.js/630378b`; 112 files per leg, six chunks of ≤20, one stamp, no launch crashes.**
+
+**RESULT: DEFAULT 111/112, PARKED 111/112. THE FOUR FIXES HELD — `a11y-signin` PASS 15, `item-storage-full` and `sc1`/`sc2`
+all clean on both legs, `fix-signin-live-double` clean.** **ONE RED, c00 on both legs: `a11y-tutor-live-region.mjs` VERIFY FAIL 1/11**
+— `A8 CSS: .wz-sr-only exists, uses the standard clip-rect(0,0,0,0) pattern, and does NOT use display:none or
+visibility:hidden`. The surviving (escexit) rule reads `clip:rect(0 0 0 0); clip-path:inset(50%)` — the standard clip
+pattern in the space-separated form — and the check’s regex (`harness/a11y-tutor-live-region.mjs:68`,
+`/clip:s*rect(0,0,0,0)/`) demands the COMMA form that only the DELETED A8 copy had. **So the red is the ruled
+deletion falsifying an over-exact instrument assertion; the product rule is a valid sr-only pattern.** (Parked leg: `PARKED
+PASS (0 checks)` — the file parks nothing — and the same VERIFY 1/11 failure.)
+
+**HANDED UP, with a lean:** the instrument’s regex should accept both forms (`rect(0[ ,]+0[ ,]+0[ ,]+0)`) — a harness-only
+edit in INK’s file, one line. **This desk does not make it** (not a mechanical union; INK’s file). Alternatives: keep A8’s
+comma form in the surviving rule (contradicts the ruling’s “keep escexit’s”). On INK’s SHA + Fable’s clear: rebuild
+`batch-nine-r3` = `9008b88` + that one commit, and run **the one file on both legs plus the browserless gates** — the
+other 111 are byte-identical in product and instrument, so a full third pair is a Fable call, not this desk’s. **Not shipped;
+grant cleared; 0 harness processes; `main` untouched.**
+
+## FABLE’S RULING ON THE LAST BATCH NINE RED: OPTION 1, AND HE OWNS THE CAUSE — 2026-10-06 (chat 1)
+
+**Option 1 (Fable, relay): INK widens the regex and adds a one-rule check. “My ruling caused this red” — recorded as his
+ruling’s consequence: the deletion of A8’s `.wz-sr-only` copy falsified `a11y-tutor-live-region.mjs`’s over-exact comma-form
+assertion; the surviving rule is a valid sr-only pattern.** After INK’s SHA and Fable’s clear: `batch-nine-r3` = `9008b88` +
+INK’s commit. **NO third full pair.** The gate: (1) **the built bundle must be byte-identical to r2’s
+(`index-Bg769niO.js`, 630,378 b)** — if the bundle differs AT ALL, STOP and tell Fable (the delta would not be
+instrument-only); (2) run `a11y-tutor-live-region.mjs` on both legs; (3) the browserless gates. If green: merge to `main` and
+deploy on Nick’s standing word; then the box goes to FIX’s latency profile (`latency-profile` @ `fb0597a`).
+**Waiting on INK’s SHA** (none on origin yet). Box idle, grant cleared.
+
+## BATCH NINE DEPLOY MANIFEST — LIVE, SERVED==STAMPED; SIGN-UP IS NOW CLOSED UNTIL NICK SETS INVITE_CODES — 2026-10-06 (chat 1)
+
+**FABLE’S GO (relay):** `78bb7bc` CLEARED (instrument-only: a zero-clip regex in either form, the box properties pinned,
+exactly one `.wz-sr-only` rule). **THIS DESK RAN `a11y-tutor-live-region.mjs` ON BOTH LEGS on `batch-nine-r3` @ `78bb7bc`:
+DEFAULT PASS (13 checks), PARKED “PASS (0 checks)” with the same VERIFY green; stamp `tree=78bb7bc
+bundle=index-Bg769niO.js/630378b` — the SAME bundle as r2’s, so the delta is instrument-only.** Grant cleared.
+
+**LIVE: `e66c288` (product bytes = `batch-nine-r3` @ `78bb7bc`; `git diff batch-nine-r3 HEAD -- apps packages` EMPTY) ·
+railway `1c34ccfa-4253-407c-ab81-6f2f076d59bf`** — service `writer-studio-app`, `railway up --ci` “Deploy complete”.
+**PREVIOUS LIVE: PR #7 · `f86db2e7-aef3-49ea-98b9-0580a5b2c31f` — its status is now REMOVED (Railway retires the prior
+deployment), so a rollback is NOT a button: it is `railway up` from a clean checkout of `b5d0b12`** (PR #7’s product bytes),
+exactly as Batch Eight’s was rebuilt. **ROLLBACK NOW RATCHETS TO `b5d0b12`.** **No schema change** (`git diff` names no
+migrate/schema/sql file).
+
+**WHAT SHIPPED:** item 224 (server hardening rounds 1–3: sign-up by invite code, login throttle that never locks
+indefinitely, Tutor per-person and global daily budgets and a kill switch, safe logging, rate-limit tightening), sync
+integrity (per-record rejections named and kept dirty), a11y sign-in (the two unreachable links, the hint contrast), the
+Tutor’s one-announcement-per-reply live region, the Esc exit (including the screenplay surface), plus the K10 /
+`item-storage-full` / test-double instrument fixes. **NOT shipped: `csp-enforce`, `item211-card-port`, `guest-login`,
+`guest-client`, the storage step 2 experiment.**
+
+**CHECKS BEFORE UPLOAD:** `tsc` x2 exit 0; `build:web` exit 0, local `index-Bg769niO.js` (630,378 b) == the pair stamp;
+tree bare (0 porcelain); **ITEM-98 GUARD:** `writer-studio` / `production` / `writer-studio-app`, toplevel
+`C:/Users/nickh/writer-studio`, `HEAD == origin/main == e66c288`. Pair: r2 111/112 on each leg, the one red cleared by
+`78bb7bc` (above) — **no third full pair, by Fable’s ruling.**
+**LIVE VERIFICATION:** `/healthz` 200 · `/auth/me` 401 · server log “listening on :8080”. **SERVED-vs-STAMPED, BOTH ASSETS
+MATCH, MD5 and bytes:** JS `40034305bf5335e2333760136a3686c1` (630,378 b); CSS `be98f2cf501b520dbdc7bcf0a00ff4f0`
+(149,232 b).
+
+**► A LIVE CONSEQUENCE NICK MUST KNOW, BY DESIGN AND FAIL-CLOSED:** `/auth/signup-status` now answers `{“open”:false}`.
+Presence-only check of Railway (no values printed): `INVITE_CODES` is **ABSENT**; `TUTOR_DISABLED`, `TUTOR_DAILY_BUDGET`,
+`TUTOR_GLOBAL_DAILY_BUDGET` ABSENT; `SESSION_SECRET` and `DATABASE_URL` SET. Per item 224’s own design (unset var =
+no codes configured = registration fails CLOSED with a 503, never open), **NO NEW ACCOUNT CAN BE CREATED until Nick sets
+`INVITE_CODES` in Railway.** Existing accounts and anonymous writing are unaffected. The Tutor now also enforces its
+defaults (50 per person per day, 500 across all accounts). **This desk set no variable and invented no code.**
+
+**NOT DONE — THE LIVE SMOKE TEST FABLE ASKED FOR (sign in, type a line, refresh, see it saved):** this desk has no account
+credentials, and sign-up is closed. An anonymous variant (open the site, write, hard refresh, read local storage back)
+was attempted with a throw-away headless browser at the production URL and **the harness’s command was DENIED by the
+auto-mode classifier — it did not run, and this desk did not route around it.** Nothing was sent to production by the
+attempt; grant file absent, 0 harness processes. **For Nick or Fable: a sign-in smoke needs a real account, and the
+anonymous browser walk needs an explicit go.**
+
+**BATCH NINE IS SHIPPED.** Next per Fable: the box goes to FIX’s latency profile (`latency-profile` @ `fb0597a`).
+
+## SIGN-IN INCIDENT ON PRODUCTION (BATCH NINE): THE ORIGIN CHECK IS NOT THE CAUSE; NO ROLLBACK; THE NEW SHIP GATE — 2026-10-06 (chat 1, on Fable’s urgent relays)
+
+**THE REPORT (Fable, relay):** Nick reports sign-in on production fails after Batch Nine (`1c34ccfa`). **Nick: “Just get
+it fixed.” Rollback is pre-approved ONLY IF the probe shows the Origin check (403 `Forbidden` on a fake-account login);
+if it does not, do not roll back.** Splash (187) is approved by Nick; it ships after the incident closes and Fable’s
+screenshot gate clears.
+
+**NEW SHIP GATE, effective now (Fable):** no deploy is announced until (a) Fable has reviewed screenshots of every touched
+screen plus Arrival, sign-in and a page, and (b) a real signed-in smoke test has passed on production. Fable asked this
+desk to propose how a smoke-test account is held without its password in any chat.
+
+**PROBES (this desk, read-only, announced here: three unauthenticated requests, FAKE credentials, tiny bodies, one to
+`/auth/login` with `Origin: https://<production domain>`, one without Origin, one to `/api/sync` with no session):**
+`POST /auth/login` fake account + matching Origin → **401** `{“error”:“Invalid email or password”}`; the same with NO
+Origin → **401**; `POST /api/sync` no session + matching Origin → **401** `{“error”:“Not authenticated”}`.
+**THE ORIGIN CHECK (`index.ts`, the `req.protocol://host` comparison) IS FINE** — `trust proxy` is set in production, and no
+403 appeared. **THEREFORE NO ROLLBACK, per the relay’s own condition.**
+
+**RAILWAY LOGS for `1c34ccfa`: two lines only** (“Starting Container”, “Writer Studio server listening on :N”). The
+server logs no request lines and no login-failure codes, so there are **zero 403s to count and no codes to list — the
+logs cannot answer the question either way.**
+
+**WHAT THE PROBE DOES NOT COVER, for Fable to route (no code changed, nothing fixed forward):** a fake account never reaches
+the SUCCESS path, which Batch Nine changed — `await regenerateSession(req)` (session-fixation fix) before `req.session.userId
+= user.id` in `auth.ts`’s `/login` — so a real credential is the only probe of it. Also changed and reachable by a real
+user: the per-account throttle (8 failures per email, in memory, then one attempt a minute, cleared after 15 quiet
+minutes or a restart — a 429 “Too many attempts”), the per-IP limiter (20/min on `/auth`), and the client’s sign-up
+screen (`apiSignupStatus` is `false` now — `INVITE_CODES` is unset — so the CREATE-account stage shows “by invitation”;
+the SIGN-IN stage does not read it). **NEEDED to diagnose: what Nick sees on screen (the error text or a blank), and a
+real signed-in probe — which is the smoke-test account below.**
+
+**PROPOSAL, a smoke-test account without a password in any chat (for Fable and Nick):** (1) one dedicated account,
+`smoke+wrizo@…` (a mailbox Nick controls), created ONCE by Nick through the app while he sets `INVITE_CODES`, or by an
+`INSERT` he approves; (2) its password generated on Nick’s own machine and written ONLY to `~/.wrizo/smoke-account.json`,
+readable by his Windows user alone (`icacls`), never printed; (3) one committed script, `scripts/smoke-login.mjs`, reads that
+file, runs login → `/auth/me` → an authenticated `/api/sync` pull → logout over HTTPS and prints STATUS CODES ONLY; (4) it
+runs from this desk after every deploy and its pass line goes in the manifest; (5) Nick rotates the password by rewriting
+the file. A browser type-and-refresh walk needs the same account plus an explicit box grant and go.
+
+**STATE:** `main` @ `2018318`+records, production = Batch Nine `1c34ccfa`, no rollback, grant absent, 0 harness
+processes.
+
+## THE SET-PASSWORD SCRIPT (BRANCH, FOR FABLE’S REVIEW) AND ITEM 230 — 2026-10-06 (chat 1, on Fable’s relay)
+
+**THE NEED (Fable, relay):** Nick does not know his password and there is no reset flow. **Asked:** an owner-run script
+`apps/server/scripts/set-password.mjs`, run by Nick himself via `railway run`; hidden prompts, password entered twice,
+`MIN_PASSWORD_LENGTH` (8), bcrypt at auth.ts’s cost; update `users` for that email (`and not is_guest`); print only
+“updated” or “no such account”; never echo the email, the password or `DATABASE_URL`; delete that user’s `session` rows;
+its own branch, Fable’s review first; then ONE paste-ready line for Nick; the same pattern for the smoke account if
+Nick says yes.
+
+**BUILT: branch `set-password-script` @ `a1f4526` (pushed as a branch; NOT on `main`, NOT deployed, no production
+database touched).** Two files: `apps/server/scripts/set-password.mjs` (145 lines) and a DB proof
+`apps/server/scripts/harness/set-password-db.mjs`. **Choices to review:** (1) the email is read visibly (so a typo is
+catchable) and never printed back; the password is hidden, asked twice, and refused under 8 characters; both are read from
+the keyboard only — never argv, never env, never a file or log; (2) `BCRYPT_COST = 12` and `MIN_PASSWORD_LENGTH = 8`
+mirror `auth.ts` (and the proof asserts they still do); (3) **`and not is_guest` is applied only if the column exists —
+`is_guest` is NOT in `main`’s schema (guest login has not shipped), so the literal query would have errored today**; (4) the
+password update and the session delete (`delete from session where sess->>’userId’ = $1`, connect-pg-simple’s table; skipped
+if the table is absent) are ONE transaction; (5) errors print a short code only, never a driver message (it can carry a
+host name); (6) **`railway run --service Postgres` is required** — `writer-studio-app`’s `DATABASE_URL` is a private
+`.railway.internal` host that a laptop cannot reach, while the Postgres service exposes `DATABASE_PUBLIC_URL` (presence and
+host KIND checked only, no value printed; `railway run --service Postgres` was confirmed to inject it). The script prefers
+`DATABASE_PUBLIC_URL`, falls back to `DATABASE_URL`. **That public proxy is the one the after-trip task removes — once it
+is removed this route needs a different path (a one-off job inside the project); say so before removing it.**
+
+**PROOF (browserless, a REAL throwaway Postgres via `embedded-postgres`, no dependency added to this repo): 12/12:** known
+email → “updated”; the new password verifies and the old does not; that user’s sessions are gone while another user’s and
+an anonymous one remain; the other account untouched; unknown email → “no such account” with nothing deleted; a guest is
+never changed once `is_guest` exists; a database with no `session` table still updates; a failing session delete rolls the
+password back (one transaction); the helpers and the mirrored constants. **NOT proven by this desk:** the interactive
+hidden-typing prompt (it needs a terminal; this desk has none), so Nick’s first run is its first terminal run — every
+failure path prints “Nothing was changed”; and if `railway run` does not hand the script a terminal it refuses with a clear
+message rather than reading a visible password. **No mutation test was run on the script.**
+
+**ITEM 230 (registered; backlog, LATER): “Forgot password?” by email** — needs an email service (none exists). Registry
+next free: **231**.
+
+**WAITING ON:** Fable’s review of `a1f4526`; then this desk merges it to `main` (it is a file in the repo, not shipped
+behaviour, but `railway up` would carry it, so it rides the next deploy under the ship gate) and gives Nick ONE line
+and plain steps. The smoke-account use of the same script waits on Nick’s yes.
+
+## SET-PASSWORD SCRIPT CLEARED AND MERGED; THE PROXY DEPENDENCY RECORDED; A BRANCH SLIP AND ITS UNDO — 2026-10-06 (chat 1)
+
+**FABLE CLEARED `set-password-script` @ `a1f4526`** (the transaction, the guest guard by column check, the hidden
+prompts, the code-only errors, the 12/12 proof). **Merged to `main` as `eb18837`** — scripts only; `git diff
+origin/main HEAD -- apps/desktop packages` EMPTY, so no bundle change and no deploy needed. Nick’s line is:
+`railway run --service Postgres node apps/server/scripts/set-password.mjs`. Smoke account: waiting on Nick’s yes.
+
+**DEPENDENCY, RECORDED ON THE AFTER-TRIP TASK (Fable):** this route depends on the Postgres service’s PUBLIC TCP proxy
+(`DATABASE_PUBLIC_URL`). **Before the after-trip task removes that proxy, a replacement path must be chosen** (candidates:
+a one-off job run inside the project’s private network; or `railway ssh` into a service with the script shipped). The task
+“confirm `writer-studio-app`’s `DATABASE_URL` references the private variable, then remove Postgres’s public TCP proxy” is
+**BLOCKED on that choice.** *(Also noted: `railway services` now lists `writer-studio-app`, `Postgres` and `wrizo-backup` —
+`Postgres-Bduk` no longer appears.)*
+
+**A SLIP, AND ITS UNDO (this desk’s):** the primary checkout was NOT on `main` when I went to merge — another lane had
+switched it to a new local branch `cursor/card-mockup` (created at `a8172a8`, 0 uncommitted changes, no origin
+counterpart). I had run `git pull` and `git merge` in one command without reading the branch first, so my merge (`15aeaad`)
+landed on THAT branch, not on `main`; nothing was pushed from it. **Undone:** checked out `main`, put
+`cursor/card-mockup` back to `a8172a8` (it held only my merge on top), then merged on `main` and pushed.
+**Standing practice from here: read `git branch --show-current` and stop before any merge, never in the same command.**
+And a reminder for every lane: the primary checkout is this desk’s deploy staging area — build in a worktree.
+
+**NICK’S STEPS, handed over with this entry (plain; the password is typed into his own terminal only and appears in no
+chat):** open VS Code on `C:/Users/nickh/writer-studio`, Terminal → New Terminal, confirm the folder and branch `main`, paste
+the one line, answer the three prompts (email; new password twice, hidden), and read the one-word result.
+
+## NICK’S TWO RULINGS: THE SMOKE-TEST ACCOUNT (APPROVED) AND SIGN-UPS (OPTION A, STAY CLOSED) — 2026-10-06 (chat 1, on Fable’s relay)
+
+**1 · SMOKE-TEST ACCOUNT: APPROVED (Nick, as relayed by Fable).** Create ONE dedicated account for live smoke tests. The
+password is generated locally into `~/.wrizo/smoke-account.json`; **never printed, never committed, never pasted into any
+chat or doc.** `scripts/smoke-login.mjs` prints status codes only.
+
+**2 · SIGN-UPS: OPTION A (Nick, as relayed): stay CLOSED until guest links ship. Do NOT set `INVITE_CODES`.**
+
+**FABLE’S CONDITION:** because sign-ups are closed the normal route cannot create the account, so **before anything runs
+against the live database this desk sends Fable its plan (which script, which command, how the password reaches the
+server without being displayed) and WAITS for his OK.** *(Nothing has been run against the live database for this.
+Plan sent in the same turn as this entry.)*
+
+## THE SMOKE-ACCOUNT TOOLS, BUILT FOR FABLE’S REVIEW (BRANCH `smoke-account-tools` @ `2b0aca7`) — 2026-10-06 (chat 1)
+
+**FABLE APPROVED THE PLAN WITH FOUR CHANGES (relay):** (1) email = `smoke-<8 random hex>@wrizo.invalid`, generated in-process
+and stored ONLY in the secret file (never in the repo — public — and the login slow-down could be griefed against a known
+address); first confirm the server’s email check accepts `.invalid`; (2) hash with the SAME function `auth.ts` uses, not a
+re-implementation of cost 12; (3) `smoke-login.mjs`: one attempt, no retries; (4) pull-only: the sync probe stays `push:{}`,
+no walk ever writes as this account. **Also: this adds a 2nd tool on the Postgres public proxy — added to the after-trip
+task’s “needs a new route” list below.**
+
+**BUILT, pushed as a branch only (NOT on `main`, nothing run against the live database):** `smoke-account-tools` @ `2b0aca7`.
+(1) **`.invalid` is accepted — read from source:** `auth.ts` `/register` and `/login` only trim, lowercase and check non-empty;
+there is no email-format validation anywhere on the server. (2) **The shared hash needed ONE small product-source change,
+flagged for review:** `auth.ts` had `BCRYPT_COST` and `MIN_PASSWORD_LENGTH` as private constants and an inline
+`bcrypt.hash(…, BCRYPT_COST)`; they now live in a new `apps/server/src/passwordHash.ts` (`BCRYPT_COST`,
+`MIN_PASSWORD_LENGTH`, `hashPassword`), `auth.ts` imports them (two constant lines removed, the sign-up hash call now
+`hashPassword(password)`; `DUMMY_PASSWORD_HASH` still uses the same cost), and `create-smoke-account.mjs` imports the BUILT
+`dist/passwordHash.js` (it refuses with “Build the server first” if absent). `tsc` x1 exit 0; **the existing
+`item224-server-hardening.mjs` compiles `auth.ts` alone, so it needed `passwordHash.ts` written beside it — one added line in
+its loader; it is 64/64 again (it was 64/64 on `main`).** `set-password-db.mjs`’s “constants mirror” check now reads
+`passwordHash.ts`. *This is a server-code change; it ships with the next deploy, under the new ship gate.*
+
+**THE TOOLS:** `apps/server/scripts/create-smoke-account.mjs` — the secret file `~/.wrizo/smoke-account.json` is created EMPTY
+(`wx`, never clobbers), stripped of inherited ACLs (`icacls /inheritance:r /grant:r <user>:(R,W,D)`), THEN written; the
+password is 24 characters of `crypto.randomBytes`; only a bcrypt hash goes to the server as a TLS query parameter; prints
+one word (`created` / `exists` / `rotated`) and the path, never the email/password/hash/URL; a failed insert deletes the
+file (no orphan credentials); `--rotate` writes the new secret to a locked `.new` first, changes the database in ONE transaction
+(it reuses `set-password.mjs`’s `applyPasswordChange`, so that account’s sessions end), and only then swaps the file.
+`apps/server/scripts/smoke-login.mjs` — login (with the site’s Origin) → `/auth/me` → `POST /api/sync {lastSyncAt:null,
+push:{}}` → logout → `/auth/me` must be 401; ONE login attempt; prints status codes and PASS/FAIL only.
+
+**PROOF (browserless; a REAL throwaway Postgres via `embedded-postgres`, no dependency added to this repo; the create script
+run as a CHILD PROCESS the way the owner runs it): `harness/smoke-account-db.mjs` 22/22** — `smoke-<hex>@wrizo.invalid`
+email and a 24-character password; the stored hash verifies and is cost 12, equal to `dist/passwordHash.js`’s; **nothing
+printed contains the email, password, hash or database URL; on this Windows box the file carries exactly ONE access entry
+(the current user’s)**; a second run changes nothing; a failed connection leaves no credentials file; `--rotate` swaps the
+password, ends only that account’s sessions and leaves no `.new`; a rotate for a missing account leaves the old file
+intact; `smoke-login` makes exactly one login attempt even when it fails, sends the Origin on every POST, a pull-only body,
+carries the cookie, FAILS if logout does not end the session, and prints no secret. **MUTATION SWEEP, 6/6 RED:** no
+`lockDown`, the password printed, a login retry, the email printed by create, a failed insert leaving the file behind,
+and the sync probe pushing — *the sync mutant first “survived” because its anchor matched the header COMMENT, not the
+code; it was re-anchored to the code line and went red.* **A REAL DEFECT THE PROOF FOUND AND FIXED:** `smoke-login`’s
+`process.exit()` crashed Node on this Windows box after a live fetch (exit status 3221226505), turning a PASS into a
+garbage exit code; it now sets `process.exitCode` and drains.
+
+**NOT PROVEN BY THIS DESK:** the live path (a real `railway run` against production — waits for Fable’s OK); the smoke
+account’s sign-in against the live server.
+
+**THE AFTER-TRIP TASK’S “NEEDS A NEW ROUTE BEFORE THE PROXY IS REMOVED” LIST (Fable), now TWO tools:** (1)
+`set-password.mjs`, (2) `create-smoke-account.mjs` (+ its `--rotate`). Removing Postgres’s public TCP proxy stays BLOCKED on
+choosing their replacement path.
+
+**WAITING ON:** Fable’s review of `smoke-account-tools` @ `2b0aca7`. Then this desk merges to `main`, builds the server
+(`dist/passwordHash.js`), and runs `create-smoke-account.mjs` ONCE via `railway run --service Postgres`; the deploy of the
+`auth.ts` refactor waits for the next batch and the ship gate.
+
+## SMOKE-ACCOUNT TOOLS: FABLE’S REVIEW CHANGES BUILT (`smoke-account-tools` @ `61000bf`) — 2026-10-07 (chat 1)
+
+**FABLE’S BYTE REVIEW of `2b0aca7` (relay): good work, two changes, then cleared.** (1) REQUIRED: the last step proved nothing
+server-side — logout’s `Set-Cookie` clears `connect.sid`, so the jar’s `/auth/me` is 401 even if the session survived. Save
+the pre-logout cookie and replay it to `GET /auth/me`, expecting 401; keep the current step; add a mutation where logout skips
+`session.destroy`, which must go red. (2) Refuse `--base` unless `https://` (loopback http allowed for the proof). Noted, no
+change: a hard kill between the file write and the insert leaves a file that a rerun reports as “exists” — delete the
+file and rerun; one line in the script’s header.
+
+**BUILT:** (1) `smoke-login.mjs` walk is now SIX steps: login, `/auth/me`, pull-only sync, logout, `/auth/me` with the emptied
+jar (kept), and `/auth/me` with the saved PRE-LOGOUT cookie replayed (the replay leaves the jar alone). (2) `assertSafeBase`
+— https only; plain http only for the EXACT hostnames `127.0.0.1`, `localhost`, `[::1]` (so `http://127.0.0.1.evil.example`
+and `http://localhost.evil.example` are refused); it runs in `main()` before the credentials file is read and again at the
+top of `walk()`, so a refused base reads and sends nothing. (3) the header line in `create-smoke-account.mjs`.
+
+**PROOF (browserless, real throwaway Postgres): `harness/smoke-account-db.mjs` 30/30.** The fake server now models the
+real session: login creates one, `/auth/me` is 200 only for a live session id, logout clears the cookie on the client
+AND destroys the session — and mode `nodestroy` keeps the clearing but SKIPS the destroy. **That server’s walk FAILS — and
+only at the replayed-cookie step (the jar step passes, which is exactly why the replay is needed).** The refusals are
+proved for `http://example.com`, `http://127.0.0.1.evil.example`, `http://localhost.evil.example`, `ftp://127.0.0.1` and
+a non-URL (exit 2, nothing printed); loopback http still passes. **MUTATIONS (run on this version): M7 skip the replay step →
+RED (5); M8 `assertSafeBase` allows anything → RED (5); M9 the replay sends the emptied jar instead of the saved cookie →
+RED (2).** The six mutants run on `2b0aca7` (no `lockDown`, password printed, login retry, email printed, orphan file,
+sync pushes) were not re-run on this version; the proof they bite is unchanged but this desk claims only what it re-ran.
+
+**WAITING ON:** Fable’s OK on `61000bf`. Then: merge to `main`, build the server, create once, `smoke-login` against
+today’s live site as the baseline.
+
+## THE SMOKE ACCOUNT EXISTS; THE FIRST LIVE SIGNED-IN SMOKE PASSES 6/6; AN ACL GAP FOUND ON THE LIVE RUN — 2026-10-07 (chat 1)
+
+**FABLE CLEARED `smoke-account-tools` @ `61000bf`** (replay step, https-only guard, header note byte-reviewed) and asked for the
+six earlier mutants re-run on it. **9/9 RED:** the six earlier ones (no `lockDown`; the password printed; a login retry; the email
+printed by create; a failed insert leaving the file; the sync probe pushing — the last re-anchored to the code line) re-run
+on `61000bf`, plus the three added mutants (skip the replay; `assertSafeBase` allows anything; the replay sends the emptied
+jar). Merged to `main` as `0c31323`; server built (`dist/passwordHash.js`).
+
+**CREATED ONCE, via `railway run --service Postgres node apps/server/scripts/create-smoke-account.mjs`: output `created (<path>)`
+and nothing else** (the email, password and hash never printed; the file is 130 bytes at `~/.wrizo/smoke-account.json`).
+
+**► AN ACL GAP, FOUND BY THE LIVE RUN, NOT BY THE PROOF:** on the real file `icacls` showed THREE entries — `SYSTEM`
+(F), `Administrators` (F) and the user (R,W,D) — not one. In `~/.wrizo` the file keeps SYSTEM and Administrators as
+entries that `/inheritance:r` does not remove (the same call in a temp directory strips them, which is why the proof’s
+one-entry check passed). *Practical exposure was small — SYSTEM and Administrators can read anything on a single-user
+box — but it falsified “only this user”, so it is recorded as a miss.* **Mitigated on the live file now (one-off
+`icacls /remove:g` by SID, ACL only, content untouched): exactly ONE entry, the user’s; the file is still readable and
+valid.** **FIX, for Fable’s review, on a separate branch `smoke-acl-fix` @ `bc171b9`:** `lockDown` now also removes the SYSTEM
+and Administrators entries by well-known SID (locale-independent) and then COUNTS the entries, refusing (and, via
+`writeSecretFile`, deleting the file) unless exactly one remains; the proof gained a check that gives a file those
+EXPLICIT entries first (before=7 → after=1) — 31/31 — and the mutant that drops the SID removal is RED (killed by the
+`acl-not-locked` refusal the guard raises; the harness does not catch that throw, so it dies rather than printing a FAIL line).
+
+**FIRST LIVE SIGNED-IN SMOKE TEST, against today’s production (Batch Nine, `1c34ccfa`), run once, exit 0:**
+`POST /auth/login` 200 · `GET /auth/me` 200 · `POST /api/sync` (pull only) 200 · `POST /auth/logout` 204 · `GET /auth/me`
+(after logout, jar) 401 · `GET /auth/me` (pre-logout cookie replayed) 401 — **`SMOKE: PASS (6/6)`.** Sign-in and the
+session end work on production for a real, hashed-by-the-app account — so the incident’s cause is not the Origin check
+and not sign-in itself; Nick’s own `set-password` run is the remaining step for HIS account.
+
+**SHIP PAIR LIST for the sign-in batch (Fable):** `main` now carries `passwordHash.ts` (a server change; it ships with that
+batch, under the gate). The pair adds `item224-server-hardening.mjs` (64/64) and `set-password-db.mjs` (12/12) to the
+desktop files; this desk adds `smoke-account-db.mjs` (30/30 on `main`; 31/31 once `smoke-acl-fix` merges) and `smoke-login.mjs`
+after the deploy. *The three server harnesses are not in the desktop suite and need `EMBEDDED_PG_FROM`.*
+
+**INK:** final hash `52f6733` on `arrival-signin-screen` (a sign-out cap of 5 s that finishes the sign-out here if the server
+hangs). The walk + capture grant was re-written for it; this desk clears the grant when INK reports.
+
+## ACL FIX MERGED; INK’S FINAL HASH `cc8aa6a`; THE PAIR LIST GROWS; A CORRECTION ON NICK’S PASSWORD — 2026-10-07 (chat 1)
+
+**`smoke-acl-fix` @ `bc171b9` CLEARED by Fable and merged to `main` as `e21741e`** (two script files, +20/−1; `git diff` of
+`apps/desktop`, `apps/server/src`, `packages` EMPTY). The smoke baseline 6/6 is recorded by Fable.
+
+**CORRECTION (append-only; the entry two above stands as written): Nick’s `set-password` run is DONE — on Oct 6 he
+confirmed he could sign in and that his writing saved. It is NOT owed.** The line “Nick’s own `set-password` run is the
+remaining step for HIS account” in the smoke-baseline entry was this desk’s mistake: that run had already happened.
+
+**BOX (Fable): INK’s final hash is `cc8aa6a`** (`arrival-signin-screen`; “a sign-out retires any sync still waiting on the
+network”, a `sync.ts` late-write guard). Walk + capture run on `cc8aa6a`; if a walk already finished on `52f6733`, rerun the
+WALK only — the screenshots stand, since `sync.ts` draws nothing. Box idle (0 harness processes) when the grant was
+re-written for `cc8aa6a`; this desk clears it when INK reports.
+
+**PAIR LIST for the sign-in batch, now:** the desktop suite plus `arrival-signin`, `ab1`, `item210`, `a11y-signin`, `escexit`; the
+server harnesses `item224-server-hardening` (64/64), `set-password-db` (12/12), `smoke-account-db` (31/31) and, per Fable,
+**`sync-generation` (19/19), `sync-chunked-push-proof` and `item224a`** — the last three are INK’s late-write-guard proofs;
+after the deploy, `smoke-login.mjs`.
+
+## THE SIGN-IN BATCH IS ON HOLD FOR INK’S THREE FIXES; THREE RECORDS FROM FABLE’S REVIEW; THE BOX MOVES TO FIX — 2026-10-07 (chat 1)
+
+**HOLD (Fable, relay): the sign-in batch’s byte review is done; HOLD for INK’s three fixes — the network-error stuck form, the
+locked account-screen dead end, and line endings.** Then ONE more box turn on INK’s new hash: walk + capture, with the
+screenshots committed to `docs/evidence/arrival-signin/` (the folder does not exist yet). *(This desk saw the branch tip
+move to `27d8b35` after `cc8aa6a`; it waits for INK to announce the final hash and does not infer it.)*
+
+**RECORDED, as asked:**
+(a) **New item `logout-flush` (INK): it MUST ship before guest links go live.**
+(b) **`guest-client` MERGE CONDITION: the stale-generation check precedes the `guest_expired` branch** (the order is part of
+what makes the late-write guard hold; checked at the merge, not assumed).
+(c) **RULE: `pageDefaults` / `proofing` sync take the generation guard when they are wired** (they are not wired today).
+
+**BOX:** FIX’s latency profile and TOOLS’ splash frames may take the box while INK fixes. INK’s grant (for `cc8aa6a`) was
+REPLACED by one for FIX’s profile (`latency-profile` @ `fb0597a`: “variant A′ — today’s whole-page path with one `innerText`
+read and one d…”); box idle (0 harness processes, 0 browsers) when written. TOOLS’ splash follows FIX, one lane at a
+time — the grant file holds one.
+
+## THE SIGN-IN BATCH’S FINAL HASHES; THE BOX ORDER; A NEW GUEST-CLIENT MERGE CONDITION — 2026-10-07 (chat 1)
+
+**INK’S FINAL HASHES (Fable, relay; both verified on origin by this desk):** sign-in `d2b16ab` (`arrival-signin-screen`; “Sign-in
+review fixes: a dead network no longer strands the form; the account back stays; LF…”) — byte-reviewed, CLEARED; logout-flush
+`e88834f` (`logout-flush`; “flush, then decide, then wipe; and a belt for whatever still runs after”), STACKED on it —
+byte-reviewed, CLEARED. **THEY SHIP TOGETHER, as one batch.**
+
+**BOX ORDER after FIX’s profile (grant currently FIX’s, for `fb0597a`; no report yet):** (1) INK walk + capture on `d2b16ab`,
+screenshots committed to `docs/evidence/arrival-signin/`; (2) `logout-flush-walk` on `e88834f`; (3) TOOLS’ splash.
+
+**PAIR LIST, additions:** `logout-flush` (27/27) and `seed-guard`. (Now: the desktop suite plus `arrival-signin`, `ab1`, `item210`,
+`a11y-signin`, `escexit`; the server harnesses `item224-server-hardening`, `set-password-db`, `smoke-account-db`,
+`sync-generation`, `sync-chunked-push-proof`, `item224a`; `logout-flush`, `seed-guard`; after the deploy `smoke-login.mjs`.)
+
+**NEW `guest-client` MERGE CONDITION (Fable): entering a guest session clears `wz.signedOutHere` — otherwise the new
+write-belt silently drops a guest’s writing.** Plus a check that proves it. Checked at the merge, not assumed. *(That makes
+three conditions on `guest-client` now: the stale-generation check precedes the `guest_expired` branch; this one; and
+`logout-flush` ships first.)*
+
+## LOGOUT-FLUSH HARNESS FIX CLEARED; `guest-client-r2` REVIEWED; ONE GRANT ON THE GUEST STACK; THE BATCH SPLIT — 2026-10-07 (chat 1)
+
+**CLEARED (Fable, byte review): INK’s `831cb88` (`logout-flush`; “logout-flush harness: isolate each scenario’s storage and
+timers”) — harness only.** **`guest-client-r2` @ `d0a4fa1` REVIEWED: all three merge conditions are met in code** (the stale-
+generation check precedes `guest_expired`; the guest start lifts the signed-out flag; it is stacked on `logout-flush`). The old
+`guest-client` is SUPERSEDED.
+
+**THIS DESK’S CHECK of the stack (read-only):** `d0a4fa1` contains `e88834f` and `d2b16ab`. It does not contain `831cb88` by
+hash, but the stack carries `e9d29f9` — the same message, a re-made copy — and `git diff 831cb88 d0a4fa1 --
+harness/logout-flush.mjs harness/logout-flush-walk.mjs` is EMPTY: the harness fix is in the stack byte for byte.
+
+**BOX (Fable): after FIX’s profile, ONE grant on `d0a4fa1`’s stack covers `arrival-signin-walk` + the 16-shot capture (`d2b16ab`’s
+screens), `logout-flush-walk`, and `guest-client-walk`.** The guest walk needs the `guest-login` server fixtures named in
+its header. Screenshots are committed to `docs/evidence/arrival-signin/`. TOOLS’ splash follows. *(FIX still holds the
+grant for `fb0597a`; no report yet.)*
+
+**SHIP ORDER, unchanged (Fable): BATCH 10 = sign-in (`d2b16ab`) + logout-flush (`e88834f`, `831cb88`). BATCH 11 =
+`guest-login` (server, `de1f170`) + `guest-client-r2` (`d0a4fa1`), with its own screenshots and its own ship gate.**
+The sign-in batch and the guest batch are NOT merged into one pair.
+
+## FIX PREEMPTED; INK’S COMBINED RUN GRANTED ON `guest-client-r2` @ `8f67381` — 2026-10-07 (chat 1)
+
+**FABLE (relay): PREEMPT FIX.** FIX’s grant for `fb0597a` (the typing-latency profile; written 17:23Z, never used — 0 harness
+processes, no push in 80 minutes) was CLEARED, replaced by INK’s combined grant on `guest-client-r2` @ `8f67381`
+(“Guest walk: aim it at a live local server, refuse anything else, fix Shift+Tab”). **Verified by this desk: `8f67381`
+contains `d0a4fa1`; the diff of `apps/desktop/src`, `apps/server/src` and `packages` between them is EMPTY; the three files
+that changed are `arrival-signin-capture.mjs`, `guest-client-walk.mjs` and `guest-client.mjs` — harness only.**
+
+**THE RUN COVERS:** the capture (24 shots) + `arrival-signin-walk` + `logout-flush-walk` + `guest-client-walk` (the last against a
+LOCAL server at `127.0.0.1:3107` with INK’s own throwaway Postgres — never the production database). Box idle (0 harness
+processes, 0 tagged browsers) when written. **FIX re-requests when it is back; TOOLS’ splash follows.** Ship order unchanged:
+Batch 10 = sign-in + flush; Batch 11 = guest.
+
+## INK’S FIRST COMBINED RUN: RESULTS AND THE NEXT TWO TURNS; CURSOR’S LIVE-PAGE ITEM QUEUED — 2026-10-07 (chat 1)
+
+**RESULTS (Fable, relay) of INK’s run on `8f67381`: sign-in 15/15 and flush 9/9 PASS; the guest walk + capture caught TWO REAL
+GUEST BUGS — fixed in `a20f79e` (“Guest client: a second link in the same tab is handled; the claim sheet keeps focus”;
+3 files, +55/−7: `guest-client.mjs`, `GuestArrival.tsx`, `GuestClaimSheet.tsx`), reviewed by Fable — and Fable has asked for ONE MORE
+guard** (not on origin yet; `guest-client-r2`’s tip is `a20f79e`).
+
+**NEXT GRANT, in two turns (Fable):** (1) **Batch 10 @ `831cb88`** (`logout-flush`): `arrival-signin-walk` + `logout-flush-walk`
++ the 16-shot capture → evidence committed on `logout-flush`. (2) **Batch 11 @ INK’s new tip** (after the extra guard): all four
+legs → evidence on `guest-client-r2`. INK’s grant file (token `ink-guest-stack-20261007`, not SHA-bound) is still LIVE and the box
+is idle (0 harness processes), so turn (1) can start on it as it stands; this desk will not rewrite the file between turns
+(a rewrite mid-lane would refuse a run in progress) and clears it when INK reports the second turn.
+
+**QUEUED (Fable): Cursor’s small live-page item — thin scrollbars and drawer handles — branch only, in its OWN worktree.** It
+will need a box turn for screenshots later; **order: TOOLS’ splash, THEN Cursor’s item.** FIX re-requests (its `fb0597a`
+profile) when back. Ship order unchanged: Batch 10 = sign-in + flush; Batch 11 = guest.
+
+## BATCH 10 + 11 CODE AND 40 SCREENSHOTS CLEARED, ONE FRAME GAP; ITEM 231; CURSOR’S ITEM; NICK APPROVED THE BOARD/CARD/PAGE DESIGN — 2026-10-07 (chat 1)
+
+**CLEARED (Fable, relay): Batch 10 + Batch 11 code and the 40 screenshots.** (This desk sees them on origin: `logout-flush` tip
+`21c0ad3` — “Evidence: Batch 10 box run (5cb82e4d) — 16 sign-in screenshots and the manifest”, 17 files under
+`docs/evidence/arrival-signin`; `guest-client-r2` tip `12601d2` — “Evidence: Batch 11 box run (bce0fad6) — 24 screenshots and
+the manifest”, 25 files.) **ONE GAP: Batch 10 needs the logout sheet + “Signing out…” frames — a short INK turn on
+`logout-flush`, granted NEXT, AHEAD OF TOOLS’ splash.** INK’s grant (token `ink-guest-stack-20261007`, not SHA-bound) is
+still live and the box idle (0 harness processes), so the turn can start on it as it stands.
+
+**THE PATH (Fable):** after those frames clear → Batch 10 pair (the list above) → deploy → `smoke-login` → Nick confirms. Batch 11
+follows the same path.
+
+**NEW FOLLOW-UP ITEM 231: the guest cookie race — two guest links opened within ~1 s.** (Registry next free: 232.)
+
+**CURSOR: `cursor/drawer-handles` @ `5ee362e` reviewed, fine, but INCOMPLETE — Cursor is extending it to EVERY scrollbar rule.** It
+will need a box turn for screenshots later; **target Batch 12.**
+
+**NICK APPROVED THE BOARD/CARD/PAGE DESIGN (Fable, record only).** Plan: `claude/board-card-page-build-plan.md` *(this desk
+could not find that path on `origin/main` or on `origin/claude/lucid-fermi-3s9hor`; recorded as given)*. **Phase 0 starts now:**
+PW — the `exp1-connect-text-r2` catch-up *(no such branch on origin yet; `exp1-connect-text` and `exp1-visibletext` exist)*;
+TOOLS — item 190’s rail half, AFTER the splash *(`item190-exp1-rail` is on origin)*; Cursor — the frozen reference.
+**Phase 1 (INK) starts AFTER Batch 11 ships.** No change to Batch 10/11 or the existing queue.
+
+## BATCH 10 (SHIP WORD “SHIP IT”, 5:33 pm MT): ASSEMBLED, PAIR RUN — TWO REDS, BOTH INSTRUMENT; NOTHING DEPLOYED — 2026-10-07 (chat 1)
+
+**NICK’S SHIP WORD (Fable, relay), verbatim: “Ship it” (Batch 10), 5:33 pm MT.** Batch 10 = `arrival-signin-screen` (`d2b16ab`) +
+`logout-flush` (`e88834f`, `831cb88`, `5cb82e4`) + evidence. **Fable’s orders: merge to `main` (read the branch first) and confirm
+`main` carries `passwordHash.ts` + the smoke tools; the pair on the full list; deploy from the primary checkout only
+(`railway up --service writer-studio-app`), the rollback target recorded first; `smoke-login` against live → the six step
+lines + PASS/FAIL; any red at any step: stop, do not deploy, report.** Fable (later): the 12 logout frames (`86c5892`) are
+clean; code and all 28 frames CLEARED; Batch 11 follows (rebase `guest-client-r2` onto `main` after B10 merges, INK ports the
+logout frames into B11’s capture, one box turn); `cursor/drawer-handles` @ `ef714d4` CLEARED (CSS only) for Batch 12; the
+board/card/page plan lives in Nick’s claude.ai project, not the repo — 4 phases, each its own batch: P1 shared drawers (INK),
+P2 card rebuild (FIX), P3 Connections (PW+TOOLS), P4 page ink (FIX); no new DB columns expected, any needed go to Nick first.
+
+**ASSEMBLED (read the branch first): `batch-ten` @ `288cdeb`** = `main` @ `59b9066` + `logout-flush` @ `86c5892` (16 commits; all
+five named commits are ancestors; the schema/migration diff is EMPTY; no conflict). Pushed as a branch; NOT merged to `main`.
+`main` carries `apps/server/src/passwordHash.ts`, `create-smoke-account.mjs` and `smoke-login.mjs` (confirmed on disk).
+
+**BROWSERLESS: `tsc` x2 exit 0; both builds clean (desktop bundle `index-DkqE6EFm.js`, 636,455 b); `item224-server-hardening`
+64/64; `set-password-db` 12/12; `smoke-account-db` 31/31.** **RED 1 — K10 (`sync-chunked-push-proof --mutants`) exits 2:**
+baseline green (32), nine mutants red, the tenth “MUTANT DID NOT LAND” — Batch 10’s `sync.ts` generation guard moved the
+`apiSync({ lastSyncAt: null, push: payloadOf(…` line its anchor needs. A stale instrument (as in Batch 9). **Fable: read right;
+INK owns the re-anchor on `k10-reanchor` off `288cdeb`, harness only; Fable byte-reviews, then this desk picks it up.**
+
+**THE DESKTOP PAIR, first attempt VOID, this desk’s error:** run-suite enumerates every `*.mjs` in the harness folder, and
+`arrival-signin-capture.mjs` is an EVIDENCE-CAPTURE tool, not a check — it exited with no verdict and OVERWROTE a tracked
+screenshot (`docs/evidence/arrival-signin/doors-dark-desktop.png`), dirtying the tree (`tree=288cdeb4+1dirty`; the runner
+stopped on the stamp mismatch, by design). Restored the file (`git checkout --`), excluded the capture tool from the
+pair’s file list (it was run in INK’s box turns; it is not in Fable’s list), restarted the whole pair. *(For the registry: a
+capture tool living in the suite’s folder will do this to every future pair; it should be moved out of `scripts/harness/`
+or given a run-suite exemption — INK/TOOLS.)*
+
+**THE RESTARTED PAIR: stamp `tree=288cdeb4 bundle=index-DkqE6EFm.js/636455b`; 117 files per leg, six chunks of ≤20, no launch
+crashes, 0 harness processes between chunks: 116/117 on EACH leg — RED 2, the same file on both: `item141.mjs` (the settle
+guard) “FAIL 1/11”: “no harness reads a `window.wrizo*` seam before a settle — the waitFor is the proof, navigation is not.
+1 file(s) carry the shape” — `arrival-signin-walk.mjs`, INK’s new walk, reads `window.wrizoCreateJournalPage` (line 30) and
+`window.wrizoFlushNow` (line 33) before a waitFor settle.** Instrument only: no product code is implicated. Owner: INK
+(`arrival-signin-walk.mjs`, harness only). Everything else in the suite is green, including `arrival-signin`, `ab1`,
+`item210`, `a11y-signin`, `escexit`, `logout-flush`, `sync-generation`, `item224a`, `seed-guard`.
+
+**NOT DEPLOYED. Grant cleared; 0 harness processes; `main` untouched @ `59b9066`+records.** Needed before a deploy: INK’s
+`k10-reanchor` AND a fix for `arrival-signin-walk.mjs` (item141), both harness-only; then (1) the built bundle must be
+BYTE-IDENTICAL to `index-DkqE6EFm.js` at 636,455 b (if it changes at all: stop, send it to Fable); (2) K10 alone (baseline
+green, 10/10 red) and `item141` + `arrival-signin-walk` (both legs); (3) merge `batch-ten` to `main`; (4) deploy
+`writer-studio-app` only, rollback target recorded first (Batch 9, `1c34ccfa`, is retired by Railway — the rollback is a
+rebuild from `e66c288`); (5) `smoke-login`; (6) ping Nick for his real sign-in check, which closes the ship gate.
+
+## BATCH 10 DEPLOY MANIFEST — LIVE, SERVED==STAMPED, SMOKE 6/6 — 2026-10-07 (chat 1)
+
+**THE FIXES, as they came:** Fable byte-reviewed and approved `k10-reanchor` @ `9acc8a7` (bar corrected: 19 mutants, so baseline
+green (32) and 19/19 red, exit 0 — not 10/10) and `walk-settle` @ `c35da02` (one file, +6, no `src`/`packages`; the `waitFor` sits
+before the first seam use; all three seams exist in `batch-ten`; no overlap with `k10-reanchor`). Both merged into `batch-ten`.
+
+**GATES BEFORE MERGE:** K10 with mutants — baseline GREEN (32), **19/19 RED, exit 0, no survivors, no instrument errors** (a first
+attempt hit this desk’s own 290 s timeout at 16 and was re-run uncapped). `batch-ten` @ `8ea75af`: `git diff 288cdeb HEAD --
+apps/desktop/src apps/server/src packages` EMPTY; `tsc` x2 exit 0; **the built bundle is `index-DkqE6EFm.js` at 636,455 b, byte-
+identical to the pair’s stamp.** `item141` PASS (11) and `arrival-signin-walk` PASS (15) on BOTH legs, stamp
+`tree=8ea75af8 bundle=index-DkqE6EFm.js/636455b`; grant cleared. (The pair itself: 116/117 per leg with `item141` the only red,
+now cleared; the capture tool was left out of the run list; the full pair was not re-run, per Fable’s plan.)
+
+**MERGED to `main`: `7550452`** (`batch-ten` @ `8ea75af`; `git diff batch-ten HEAD -- apps packages` EMPTY).
+
+**LIVE: `7550452` · railway `63d8cf39-75c0-4c18-9c42-9e9c4b4fce4f`** — service `writer-studio-app`, `railway up --service
+writer-studio-app --ci`, “Deploy complete”. **PREVIOUS LIVE (Batch 9, `1c34ccfa`) is now REMOVING — THE ROLLBACK is a rebuild
+from `e66c288` (a clean checkout, `railway up`).** **ROLLBACK NOW RATCHETS: Batch 9 `e66c288`.** No schema change (the diff names
+no migrate/schema/sql file; none in the merge).
+
+**WHAT SHIPPED:** the sign-in screen (the hero stops showing through, a visible Sign in, the signed-out flag, a dead network no
+longer strands the form, the account-screen back stays), a successful login leaves the screen, sign-out never wipes unsaved
+writing (flush, then decide, then wipe, with a belt for whatever still runs after; the 5 s cap on the server logout and the
+sync late-write guard — a sign-out retires any sync still waiting on the network), the logout sheet with the home palette
+tokens, plus the evidence (28 frames) under `docs/evidence/arrival-signin/`. `main` carries `passwordHash.ts` (the server
+refactor from the smoke tools) — it is in this deploy. **NOT shipped: guest-login, guest-client (Batch 11).**
+
+**CHECKS BEFORE UPLOAD:** `tsc` x2 exit 0; `build:web` exit 0, bundle == stamp; tree bare (0 porcelain INCLUDING untracked);
+**ITEM-98 GUARD:** `writer-studio` / `production` / `writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`, `HEAD ==
+origin/main == 7550452`. **LIVE VERIFICATION:** `/healthz` 200 · `/auth/me` 401 · `/auth/signup-status` `{“open”:false}` (sign-ups
+still closed, as ruled) · server log “listening on :8080”. **SERVED-vs-STAMPED, BOTH ASSETS MATCH, MD5 and bytes:** JS
+`d443275f8868bf2b2dbf66bff3937072` (636,455 b); CSS `2975d971e9aede0872a43aab638c08ac` (150,382 b).
+
+**LIVE SIGNED-IN SMOKE TEST (`smoke-login.mjs`, once, exit 0):** `POST /auth/login` 200 · `GET /auth/me` 200 · `POST /api/sync`
+(pull only) 200 · `POST /auth/logout` 204 · `GET /auth/me` (after logout, jar) 401 · `GET /auth/me` (pre-logout cookie
+replayed) 401 — **`SMOKE: PASS (6/6)`.** *No browser walk of the live site was done by this desk.*
+
+**OWED: NICK’S OWN REAL SIGN-IN CHECK — that closes the ship gate.** Batch 11 (guest) is next: rebase `guest-client-r2` onto
+`main`, INK ports the logout frames into its capture, one box turn.
+
+## B10 INCIDENT: NICK’S PAGE PANEL EMPTY AFTER SIGN-OUT → SIGN-IN — BACKUP TAKEN, ROWS INTACT, LIVE WALK DONE — 2026-10-07 (chat 1)
+
+**THE REPORT (Fable, relays):** after Nick’s live sign-out → sign-in, the Page panel shows “No pages yet” and he lands on a
+blank page; not a refresh issue; same account he has always used. **B10’s gate stays OPEN; no rollback without Nick’s word.**
+Nick is told not to sign out anywhere until cleared. Orders: (0) protect backups first; (1) a read-only count of his rows;
+(2) a live browser walk with the smoke account; (3) PREPARE (do not run) a rollback rebuild from `e66c288`.
+
+**0 — BACKUP TAKEN (a fresh, separately named object; nothing overwritten or deleted):** `wrizo-backup` was REDEPLOYED
+(`railway redeploy --service wrizo-backup`; its `RUN_ON_STARTUP=true` runs a backup at start). New deployment
+`a09b4f0a-e728-4a9e-a1a8-9835232ff069` SUCCESS; the log shows the dump valid, 667.42 kB, “Backup uploaded to S3…”, “DB backup
+complete…”. **Each backup file is named with its own ISO timestamp (`<prefix>-<timestamp>.tar.gz`), so a new one can never
+overwrite an older one, and the backup application’s source has NO delete of any S3 object — its only `unlink` is the
+temporary local file.** *(What this desk cannot see: a bucket-side lifecycle or retention rule on the R2 bucket — it never
+holds the R2 keys and did not touch them. If one exists it is Nick’s to confirm in the Cloudflare dashboard.)*
+
+**1 — READ-ONLY COUNT (a `begin read only` transaction over the Postgres public proxy; counts and timestamps only, no
+contents, no emails; the per-user figures are in the chat report, not in this public repo):** **Nick’s rows are PRESENT and NOT
+deleted** — hundreds of journal entries and a few dozen projects and sessions-log rows; the only soft-deleted entries are old
+(the newest `deleted_at` is in JULY); the newest `updated_at` is Oct 7, 22:27 MT — minutes before the incident’s last write. This is
+NOT server-side data loss.
+
+**2 — LIVE WALK (smoke account; a throw-away headless browser at the production URL, the harness’s command allowed this
+time; a `fetch` spy recorded only methods, statuses and record COUNTS):** first sign-in landed on `#/page/new` (a blank unborn
+page — NOT the last page); `POST /auth/login` 200 then `POST /api/sync` with `lastSyncAt:null` 200 (nothing to pull: the account
+was empty). One line written through the app’s own seam: 1 local entry; **no sync request fired in the next 6 seconds.** Sign out
+(no “unsaved” sheet): the sign-out itself pushed the one entry (`pushCounts journalEntries:1`, 200) then `POST /auth/logout`
+204; local entries wiped to 0, `wz.signedOutHere` = 1. **Second sign-in: landed on `#/page/new` again; `POST /auth/login` 200;
+`POST /api/sync` with `lastSyncAt:null` fired, 200; local entries came back: 1 live.** After a reload: `/auth/me` 200,
+another `lastSyncAt:null` sync 200, 1 entry. The Journal route redirected to a real page. *(The spy counted only top-level
+keys of the sync reply — `serverTime` and `pull` — so per-collection pulled counts were NOT captured; a rerun should log
+`pull`’s own arrays.)* **So pull + apply works for a one-record account; what it does for 177 entries is not yet shown.**
+
+**READ OF THE EVIDENCE (unproven): the Page panel’s list is `getJournalEntries()` minus boards — “No pages yet” means the
+LOCAL CACHE has no live entries, not that the server does.** Nick’s rows exist on the server, so the pull is either not
+returning them, failing while applying them, or the cache is emptied afterwards. The smoke account cannot tell these apart; it
+has one record. Both the “landed on a blank page” symptom and the empty panel reproduce in shape.
+
+**3 — ROLLBACK PREPARED, NOT RUN (Batch 9 = `e66c288`):** from the primary checkout only, tree bare: `git checkout --detach
+e66c288`; `pnpm --filter @writer-studio/desktop build:web`; verify `railway status` = `writer-studio` / `production` /
+`writer-studio-app`; `railway up --service writer-studio-app --ci`; verify `/healthz`, `/auth/me`, the asset MD5s and the
+smoke test; `git checkout main`. **Only on Nick’s word** — and a rollback restores Batch 9’s CLIENT, which may not cure a
+server-pull fault; it changes no data. No schema change in B9 or B10.
+
+**NEXT (proposed, not started): reproduce Nick’s pull offline and READ-ONLY** — run the REAL server `sync` route against a
+read-only connection and feed its reply to the REAL client `sync.ts` in a node harness (as K10 does), and report only how many
+entries the client ends with and any exception — no contents.
+
+## B10 INCIDENT RESOLVED; BATCH 10’S GATE CLOSED; B10.1 QUEUED AHEAD OF B11; NICK’S FIRST-RUN RULING — 2026-10-07 (chat 1)
+
+**RESOLVED (Fable, relay): B10 post-sign-in empty panel: a stale pre-redesign tab on the same origin was still open and
+syncing; data intact throughout.** Nick closed that tab and reloaded and his pages are back. (No user details recorded here.)
+This desk’s earlier reading — that the local cache was empty because the pull was not returning, failing, or being undone
+afterwards — was consistent with that; the offline repro proposed in the incident entry is NOT needed and was not run.
+The prepared rollback from `e66c288` STANDS DOWN: it was never run and is not wanted.
+
+**BATCH 10’S GATE IS CLOSED — on Nick’s word (Fable, relay: “Nick’s word: close Batch 10’s gate”; Fable had recommended yes).
+BATCH 10 IS SHIPPED: `7550452`, railway deploy `63d8cf39-75c0-4c18-9c42-9e9c4b4fce4f`** (the manifest above stands; its “owed:
+Nick’s real sign-in check” is discharged by this word and by his live use).
+
+**FOLLOW-UP B10.1, queued BEFORE B11 (Fable): “stale-client guard, landing waits for pull, no first-run gate for existing
+accounts” — pending INK’s repro** (an old client and B10 on the same origin). **NICK’S RULING FOR B10.1 (Fable, relay): the
+first-run ritual — the 100-word gate plus the typewriter demo — runs ONCE PER ACCOUNT, EVER. Never again after a sign-out or
+on a new device.** **B11 (guest) stays PAUSED until B10.1 ships.**
+
+**BOX:** INK will ask for ONE box turn for the stale-tab repro (old client + B10, same origin); this desk grants it when asked.
+No grant is live; the box is idle.
+
+## INK’S B10.1 REPRO TURN: DONE, NOT REPRODUCIBLE; THE HUNT STOPPED; B10.1 SHIPS DEFENCES — 2026-10-08 (chat 1)
+
+**THE TURN (Fable, relay):** INK’s repro ran on a local-only rig (local Postgres, :3111 server, :3120 front): four launches — three
+driver faults, one clean; 0 browsers left. **RESULT: NOT REPRODUCIBLE on a 177-page account, with or without the real
+pre-redesign bundle (`b2b2dab9` / `index-CsedhZ4m`).** **RULING (Fable): STOP THE HUNT. B10.1 ships the DEFENCES:** the stale-client
+guard, landing waits for the pull, a per-account first-run, a `startSync` generation check, and an empty-after-pull retry plus
+a diagnostic. INK’s local rig stays up (local only) until B10.1’s tests pass. **B11 stays paused behind B10.1.**
+
+**THE GRANT, LOGGED (as asked): written `2026-10-08T05:37:41Z` (Oct 7, 11:37 pm MT) for a ~5-minute turn; CLEARED `2026-10-08T14:50:54Z`
+(8:50 am MT) — open for ~553 MINUTES (about 9 hours).** The grant file has no expiry by design; it stayed up because the
+release depends on INK’s report reaching this desk, which came in Fable’s relay this morning. At clearing: 0 harness processes,
+0 `ws-runtime-verify` browsers, no grant file. *(During those hours nobody else was waiting on the box; a lane that asks for
+the box after hours should say when it is done, or this desk should ask.)*
+
+## STANDING RULE: “BOX DONE” AND THE 30-MINUTE CHECK-IN; THE B10.1 BRIEF APPROVED — 2026-10-08 (chat 1)
+
+**STANDING RULE (Fable, approved; effective now): (1) every lane says “box done” THE MOMENT a box turn ends. (2) This desk
+CHECKS IN on any live grant after 30 MINUTES and CLEARS it if the box is idle** (0 harness processes, 0 `ws-runtime-verify`
+browsers). *(Cause: INK’s B10.1 repro grant stayed open ~9 hours because the release depended on a report that had not
+reached this desk. A clear on an idle box cannot strand a running lane — its guard refuses cleanly and it asks again — and a
+grant on a BUSY box is left alone and re-checked.)*
+
+**B10.1 BRIEF APPROVED (Fable):** the stale-client guard is WEB-ONLY and READ-ONLY; the landing WAITS for the pull; a PER-ACCOUNT
+first-run (Nick’s ruling: the ritual runs once per account, ever); a `startSync` generation check; an empty-after-pull retry.
+**INK codes on `b101-defence`; Fable byte-reviews before ANY pair.** B11 (guest) stays paused behind B10.1.
+
+## B10.1 REVIEW FIXES APPROVED (`bab6f4f`); INK’S b101-walk GRANTED; THE PAIR NOTES — 2026-10-08 (chat 1)
+
+**FABLE (relay): INK’s B10.1 fixes (`bab6f4f`, on `b101-defence`; “the Reload is a merge, a just-registered account never
+waits, the Write…”) are byte-reviewed and APPROVED.** Grant INK’s `b101-walk` turn now (~6 min, local rig :3113 / :3121, ONE
+process); apply the 30-minute check-in.
+
+**GRANTED: `2026-10-08T18:13:57Z` (12:13 pm MT), box idle (0 harness processes, 0 browsers, no earlier grant). THE 30-MINUTE
+CHECK-IN is due `18:44Z` (12:44 pm MT); a one-shot reminder is set in this session.** If INK has not said “box done” by then and
+the box is idle, this desk clears the grant and logs the open time.
+
+**FOR B10.1’S PAIR (Fable): include K10 `--mutants` IN FULL — INK did not re-run the 19 mutants after `bab6f4f`: baseline 32 green and
+19/19 red.**
+
+**FIX’s `page-templates-move`: `5867aad` is approved pending ONE tiny change; `290a0dd` still waits on two Nick decisions. FIX’s box
+turn comes after INK’s walk.** **MERGE NOTE from FIX:** its `item211` park block and the card port’s WALK park both land at
+`item211.mjs`’s foot — **keep BOTH blocks when they conflict** (an append-append: both sides unedited).
+Box order: INK’s B10.1 walk, then FIX. B11 stays paused behind B10.1.
+
+## THE FIRST 30-MINUTE CHECK-IN: INK’S b101-walk GRANT CLEARED IDLE — 2026-10-08 (chat 1)
+
+**The standing rule, applied for the first time.** INK’s `b101-walk` grant (written `2026-10-08T18:13:57Z`) was checked at
+`18:44:08Z`, age 30 minutes: **0 harness node processes, 0 `ws-runtime-verify` browsers, 0 headless browsers of any kind; no
+new push on `b101-defence` (tip still `bab6f4f`); no “box done” received.** INK’s local rig is up (listeners on :3113 and
+:3121, as ruled), which is a server and front, not a browser walk. **CLEARED at `18:44:19Z` — the grant was open ~30 minutes.**
+If INK’s walk has not run, or ran and was not reported, INK asks again; a cleared grant makes its guard refuse cleanly, it
+cannot strand a run. *(Nothing was mid-run to strand: the only open question is whether the walk happened.)*
+
+## INK’S b101-walk RAN (15/16); A 1-MINUTE RERUN AFTER ITS COMMIT; THEN FIX, THEN THE B10.1 PAIR — 2026-10-08 (chat 1)
+
+**FABLE (relay): INK’s walk DID run — 18:13 to 18:21Z, on `bab6f4f`, on the local rig: 15/16.** W5c is a MEASURING MISS (the walk
+landed on a project page with no editor), not a product fault. **INK reported late; noted.** (This desk’s 30-minute check-in
+at 18:44Z found the box idle and cleared the grant of a run that had already finished ~23 minutes earlier — consistent; no
+run was stranded.)
+
+**ORDERS:** (1) **grant INK ONE ~1-minute rerun of `b101-walk` AFTER INK commits its walk-file fixes — the run must be on
+committed code** (`b101-defence`’s tip is still `bab6f4f`; nothing is granted until INK pushes the fix and asks). 30-minute
+check-in as usual. (2) **Then FIX’s turn: `page-templates-move` @ `33b5a80` is APPROVED (the brass-at-rest change is done);
+its plan is in FIX’s last report.** (3) **Then B10.1’s suite pair on the final tree, INCLUDING K10 `--mutants` (baseline 32, 19/19
+red).** *(FIX’s cut-off “box free” message earlier was not a turn request; no grant was issued to FIX.)*
+
+## INK’S b101-walk RERUN: 16/16 ON `126c970`; GRANT CLEARED; FIX’S TURN GRANTED — 2026-10-08 (chat 1)
+
+**INK (“box done”, received directly): the rerun ended `2026-10-08T21:03:55Z` with 0 harness browsers left; the walk PASSED 16 of 16 on
+`b101-defence` @ `126c970`, committed code, clean tree, local rig only** (:3113 / :3121 + a local Postgres; still up, by ruling,
+until B10.1’s tests pass). INK read the grant file first as asked. **W5c — the miss last time — now PASSES: the editor was found
+(`.forward-only-editor`) and its rect was IDENTICAL before and after the banner showed (the PAGE IS PRIMARY check).** The banner
+reads “Wrizo updated, reload”, outside the app root, with the root inert; a held write was rescued by the Reload and reached the
+account. W1–W4 and the rest of W5 passed as before.
+
+**INK’s summary for the pair:** final SHA `126c970`; product code UNCHANGED since `bab6f4f` (the only later commit is the walk-
+file fix; this desk had verified `apps/desktop/src`, `apps/server/src`, `packages` diff EMPTY); browserless: `b101.mjs` 73 checks (54
+claims + 19 mutants); the other browserless harnesses (`sync-generation`, `arrival-signin`, `item224a`, `logout-flush`,
+`seed-guard`, `item-storage-full`) and `tsc` green AS OF `bab6f4f`; K10 baseline green at 32 — **the K10 mutants are the one thing
+still to run on the final tree, by this desk, in the pair.**
+
+**GRANT LOG: INK’s rerun grant written `21:00:35Z`, CLEARED `21:05:10Z` — open ~4.5 minutes** (the 30-minute reminder for it
+is now moot). **FIX’s turn GRANTED `21:05:10Z` on `page-templates-move` @ `33b5a80`** (approved by Fable; the brass-at-rest change
+is done; the plan is in FIX’s last report). 30-minute check-in due `21:35Z` (3:35 pm MT). Then B10.1’s suite pair on the final
+tree, K10 `--mutants` included (baseline 32, 19/19 red).
+
+## FIX’S page-templates-move TURN: GRANT CLEARED IDLE AT THE RE-CHECK; THE PRIMARY CHECKOUT MOVED BY ANOTHER LANE AGAIN — 2026-10-08 (chat 1)
+
+**FIX (message, not “box done”): the first pass found three red files, all FIX’s own harness drivers; fix pushed as `23d932f`
+(harness only, product unchanged); a re-run, the mutants and the frames ran in `writer-studio-fx17`.** `page-templates-move`’s
+tip on origin is now `645fdf6` (“Page templates: the Screenplay template’s glyph drew at zero in the strip…”, 15:39 MT).
+This desk’s two checks at 21:37Z (box busy: one harness node process, 11 browsers) and 21:53Z found the first busy, the second
+IDLE (0 harness processes, 0 browsers); FIX had not sent “box done”; **the grant was CLEARED `21:53:27Z` — open 48 minutes**
+(written `21:05:10Z`). FIX’s SHA and counts for the batch are still to come from FIX.
+
+**► THE PRIMARY CHECKOUT WAS MOVED OFF `main` BY ANOTHER LANE, AGAIN:** `git reflog` shows “checkout: moving from main to
+`cursor/plateau-rhizome-goal-4b92`” at `21:20:19Z`, with no uncommitted changes. Fable had told Cursor to work in its own
+worktree. **This desk did not touch it; the ledger is written from a separate worktree (`.claude/worktrees/ledger-desk`) and
+pushed `HEAD:main`.** A deploy needs the primary on `main`, clean; it will be put back (safe: clean tree) before any deploy
+and Cursor asked to stay out.
+
+## B10.1 PAIR: GREEN — 117/118 THEN b101 FIXED, K10 19/19; A GRANT OVERWRITE; THE PRIMARY CHECKOUT IS OCCUPIED — 2026-10-08 (chat 1)
+
+**ASSEMBLED in a worktree (the primary checkout is not on `main`; see below): `b101-pair` = `origin/main` @ `c0f26bc` +
+`b101-defence` (`126c970`, later `b95b181`).** 22 files; the schema/migration diff is EMPTY; the server changed in three small
+places (`build.ts`, `index.ts`, `sync.ts` — the build id behind the stale-client guard).
+
+**BROWSERLESS, in the worktree:** `tsc` x2 exit 0; both builds clean; `item224-server-hardening` 64/64; `set-password-db` 12/12;
+`smoke-account-db` 31/31; **K10 `--mutants` IN FULL: baseline GREEN (32), 19/19 RED, exit 0, none surviving or errored** (as Fable asked,
+since INK had not re-run the 19 after `bab6f4f`).
+
+**THE DESKTOP PAIR: stamp `tree=d233abad bundle=index-C4x8tYhX.js/641310b`; 118 files per leg (the capture tool left out of the list
+again), six chunks of ≤20, no launch crashes: 117/118 on EACH leg — the one red, the same on both: `b101.mjs` NOVERDICT (exit 0)
+because it printed `B101: PASS (73 checks)`, which run-suite does not read as a verdict (it needs a `VERIFY:` line); all 73
+checks passed.** INK pushed the one-line fix `b95b181` (`b101.mjs` only; `apps/desktop/src`, `apps/server/src`, `packages` diff
+EMPTY), merged here (`b101-pair` @ `1b99785`), **the built bundle is byte-identical (`index-C4x8tYhX.js`, 641,310 b), and `b101.mjs`
+alone is CLEAN on BOTH legs: `B101 VERIFY: PASS (73 checks)`** (stamp `tree=1b997854`). Grant cleared; 0 harness processes.
+INK’s `b101-walk` (16/16 on `126c970`) stands as the browser proof.
+
+**► A SLIP, THIS DESK’S: when I wrote the pair grant at `22:02:51Z` a grant file ALREADY EXISTED** (I had cleared FIX’s at
+`21:53:27Z` and written nothing since, so another lane wrote its own) **and I overwrote it without reading it first.** The box was
+idle (0 harness processes, 0 browsers) so nothing was running, but the lane is unknown. Whoever wrote it asks again. From
+now on: READ the grant file before writing one.
+
+**► THE PRIMARY CHECKOUT IS OCCUPIED:** it sits on `cursor/plateau-rhizome-goal-4b92` and Cursor is still committing there (last
+commit `87e1cde`, “Rhizome: grow behind the page, right up to its edge”, 16:34 MT; tree clean). A deploy must run from the primary
+checkout, on `main`, with a bare tree. **This desk will NOT switch it — a Cursor commit after the switch would land on `main`.**
+Asked of Fable: have Cursor move to its own worktree and leave the primary, or authorize this desk to move it at a moment Cursor
+is idle. **B10.1 is green and waits only on that.**
+
+## B10.1 DEPLOY MANIFEST — LIVE, SERVED==STAMPED, SMOKE 6/6; THE PRIMARY BACK ON `main`; THE UNKNOWN GRANT LANE — 2026-10-08 (chat 1)
+
+**THE HANDOFF (Fable, relay):** `87e1cde` (the rhizome “behind the page” edit) is on origin; Cursor is out of the primary; the
+rhizome Cursor chat is retired (Nick is closing it) — no Cursor will touch the primary. **This desk confirmed `87e1cde` on
+`origin/cursor/plateau-rhizome-goal-4b92` and the tree clean (0 porcelain, including untracked), checked out `main` bare in the
+primary, fast-forwarded to `bb9e8b7`.** Fable tells the Cursor “primary on main”.
+
+**UNKNOWN LANE (Fable: both Cursors deny writing it): the grant file I overwrote at `22:02:51Z` is logged as “unknown lane”.**
+Rule stands: read the grant file before writing one.
+
+**MERGED to `main`: `fd0c258`** (`b101-defence` @ `b95b181`; `git diff b101-pair HEAD -- apps packages` EMPTY — the product is the
+tree that was paired; no migration/schema file).
+**LIVE: `fd0c258` · railway `f31b38bc-98cd-4463-82ef-94cea833f4b7`** — service `writer-studio-app`, `railway up --service
+writer-studio-app --ci`, “Deploy complete”. **PREVIOUS LIVE: Batch 10 · `63d8cf39-75c0-4c18-9c42-9e9c4b4fce4f` (still listed
+SUCCESS, to be retired by Railway) — THE ROLLBACK is a rebuild from `7550452` (clean checkout, `railway up`).** *ROLLBACK RATCHETS
+to `7550452` once `63d8cf39` is retired.* No schema change.
+
+**CHECKS BEFORE UPLOAD:** `tsc` x2 exit 0; `build:web` exit 0, bundle `index-C4x8tYhX.js` 641,310 b == the pair’s stamp; tree bare
+(0 porcelain incl. untracked); **ITEM-98 GUARD:** `writer-studio` / `production` / `writer-studio-app`, toplevel
+`C:/Users/nickh/writer-studio`, `HEAD == origin/main == fd0c258`. **LIVE VERIFICATION:** `/healthz` 200 · `/auth/me` 401 ·
+`/auth/signup-status` `{“open”:false}` (sign-ups still closed, as ruled) · “listening on :8080”. **SERVED-vs-STAMPED, BOTH
+ASSETS MATCH, MD5 and bytes:** JS `068ba7c7fdec374395e58520f7b84861` (641,310 b); CSS `6955adb114011383669f8d73e895d297`
+(150,954 b).
+
+**LIVE SIGNED-IN SMOKE (`smoke-login.mjs`, once, exit 0):** `POST /auth/login` 200 · `GET /auth/me` 200 · `POST /api/sync` (pull
+only) 200 · `POST /auth/logout` 204 · `GET /auth/me` (after logout, jar) 401 · `GET /auth/me` (pre-logout cookie replayed) 401 —
+**`SMOKE: PASS (6/6)`.** No browser walk of the live site by this desk.
+
+**OWED: NICK’S sign-out / sign-back-in check on his own account (relayed by Fable) — it closes B10.1’s gate.** *This desk has
+no channel to Nick.* **BOX NEXT (Fable): (1) FIX `page-templates-move` @ `645fdf6`; (2) FIX again for the rhizome branch @
+`87e1cde` (m2/m3/m4/rhizome-goal/rhizome-growth + stamped shots), from FIX’s own worktree.** Grant file read before every write.
+B11 (guest) stays paused until B10.1’s gate closes.
+
+## B11 COMPOSITION, DRAFTS-INTEGRITY, THE SHIP ORDER, AND HOW GUEST LINKS GET MINTED — 2026-10-08 (chat 1)
+
+**FIX’S GRANT, for the record:** written `2026-10-09T01:34:48Z` (7:34 pm MT) after reading the grant file (absent) with the box
+idle; token covers both of FIX’s turns — `page-templates-move` @ `645fdf6`, then the rhizome branch @ `87e1cde` from
+`C:/Users/nickh/writer-studio-rhizome`; 30-minute check-in set for 8:05 pm MT.
+
+**B11 (Fable, relay): `guest-login` @ `de1f170` (server; it carries the `guest_links` migration — Nick’s schema YES of 2026-10-06)
+THEN `guest-client-r4` (a new tip is coming from INK, one small fix).** A trial merge onto `main` @ `1119bb7`: both clean, no
+conflicts. **The migration gets reviewed IN THE PAIR before any deploy.** **`drafts-integrity` (`b5cf501` + `e1e2f46`): CLEARED,
+stacked on B11, ships right after it** (INK rebases it onto B11’s fixed tip).
+
+**SHIP ORDER, unchanged: templates → rhizome → B11 → drafts.** B11 also waits on Nick’s B10.1 live check. **BOX: INK will ask for a
+turn for `guest-client-walk`; granted AFTER FIX’s two turns (templates, then rhizome).**
+
+**GUEST LINKS: after the B11 deploy, NICK MINTS THEM HIMSELF in a terminal; the token never goes into a chat or a doc** (this desk
+will not mint, hold, print or record one).
+
+## NICK’S B10.1 LIVE CHECK PASSED; B10.1’S GATE CLOSED — 2026-10-08 (chat 1)
+
+**NICK’S LIVE CHECK ON B10.1 (`fd0c258`, deploy `f31b38bc`) — PASSED (Fable, relay; no user details recorded):** sign in → pages
+listed; sign out → the front door; sign back in → pages, no first-run; hard refresh → pages kept. **Step 5 (the pre-update
+tab) was SKIPPED: there was no such tab; the stale-client banner is covered by the `b101` proofs and INK’s `b101-walk` 16/16.**
+
+**B10.1’S GATE IS CLOSED. B10.1 IS SHIPPED AND CLOSED.** B11’s remaining gate: INK’s guest-flag fix + `guest-client-walk` on the new
+tip (a box turn after FIX’s two turns) → Fable’s check → the pair (including the `guest_links` migration review) → Nick’s ship
+word. Ship order unchanged: templates → rhizome → B11 → drafts.
+
+## 30-MINUTE CHECK-IN: FIX’S GRANT CLEARED IDLE, NO TURN OBSERVED — 2026-10-08 (chat 1)
+
+FIX’s grant (`fix-ptm-rhizome-20261008`, written `2026-10-09T01:34:48Z`, 7:34 pm MT) was checked at age 30 minutes: the grant file
+still named FIX (read first, unchanged); **0 harness node processes, 0 `ws-runtime-verify` browsers; FIX had not said “box done”;**
+FIX pushed nothing new (`page-templates-move` still `645fdf6`). **CLEARED; open ~30 minutes.** No run was stranded: nothing was
+running. FIX asks again for its templates turn and, separately, the rhizome turn. *(Origin shows INK pushed `guest-client-r4`
+`afe9bb2` and `drafts-integrity` `56d1e3c` at 19:52 MT — recorded here only as seen; this desk has not been told they are final.)*
+
+## CORRECTION TO THE CHECK-IN ENTRY ABOVE: FIX HAD PUSHED, AND TURN 1 HAD RUN — 2026-10-08 (chat 1)
+
+**The entry above says FIX “pushed nothing new (`page-templates-move` still `645fdf6`)”. THAT WAS WRONG — this desk’s mistake.** It
+listed only the four newest refs on origin and did not look at `page-templates-move`. Its tip is `7a27cec` (pushed 19:40:47 MT, six
+minutes after the grant): “Page templates evidence @ 645fdf6: page-templates 20/20 and bg1 35/35 on both legs (bg1 3 parked),
+mutant…” — 20 files, +591 lines, all under `docs/evidence/page-templates/turn-645fdf6/`; `apps/desktop/src`, `apps/server/src`
+and `packages` diff vs `645fdf6` EMPTY. **So FIX’s FIRST turn (templates) had RUN and finished by 19:40 MT; it simply did not say “box
+done” to this desk.** The grant was therefore cleared after the run, not during one: no run stranded. FIX’s SECOND turn
+(the rhizome branch @ `87e1cde`) was not yet observed; FIX asks for it. *(Practice from here: before clearing on a quiet box,
+look at the grantee’s own branch for a recent push, not just the newest refs.)*
+
+## RECORD: AN UNGRANTED b101.mjs RUN DURING FIX’S GRANT; TEMPLATES CODE CLEARED; THE BOX QUEUE AND THE PAIR ORDER; INK’S guest-client-walk GRANTED — 2026-10-08 (chat 1)
+
+**FACT (Fable, relay): INK’s `b101.mjs` ran WITHOUT A GRANT at 19:43 MT, inside FIX’s grant window; FIX’s turn 2 (the rhizome legs)
+was CUT SHORT by it, not idle.** *(This desk’s 30-minute check-in therefore cleared a grant whose second turn had been interrupted,
+not abandoned; the correction entry above stands. A browserless run of `b101.mjs` is a heavy node process and can disturb a
+browser lane — a lane that runs anything on the box during another lane’s grant should say so first. At 20:30 MT this desk again
+saw a `b101.mjs` process alive while no grant was live; it ended on its own.)*
+
+**TEMPLATES @ `645fdf6` (evidence `7a27cec`): CODE CLEARED (Fable). Pair it after FIX reshoots the light frames.** **RHIZOME:
+FIX makes ONE commit (Fable’s flash fix + the m2 parks), then needs one window.**
+
+**BOX QUEUE (Fable): (1) INK `guest-client-walk`, ~2 minutes, ready now; (2) FIX: the rhizome legs, the rhizome shots, the templates
+light reshoot.** **PAIR ORDER after that: templates pair → rhizome pair → B11 pair (`guest-login` `de1f170`, THEN `guest-client-r4`
+`afe9bb2`) → drafts (`56d1e3c`).**
+
+**GRANTED: INK, `2026-10-09T02:48:06Z` (8:48 pm MT) — the grant file read first (absent), the box with 0 browsers.** 30-minute check-in
+due 9:18 pm MT; this desk looks at INK’s own branches for a push before clearing anything.
+
+## 30-MINUTE CHECK-IN: INK’S guest-client-walk GRANT CLEARED, NEVER USED — 2026-10-08 (chat 1)
+
+INK’s grant (`ink-guest-walk-20261008`, written `2026-10-09T02:48:06Z`, 8:48 pm MT) was checked at age 31 minutes, AFTER reading the
+file (still INK’s, unchanged) and INK’s own branches: **no push since 19:52 MT (`guest-client-r4` `afe9bb2`, `b101-defence`
+`b95b181`, `drafts-integrity` `56d1e3c`, `guest-login` `de1f170`); 0 harness node processes, NO node process started in the last 35
+minutes, 0 `ws-runtime-verify` browsers, and NO listeners on :3100–3130 — INK’s local rig (the live server `guest-client-walk`
+needs) is DOWN, as Fable had ruled it could be.** The walk could not have run. No “box done” received. **CLEARED `2026-10-09T03:19Z`
+— open ~31 minutes, unused.** INK re-asks once the rig is up (local Postgres, the server on :3107, the front); this desk then writes a
+fresh grant after reading the file.
+
+## CORRECTION: INK’S guest-client-walk GRANT WAS USED (14/14); AN OPEN QUESTION ON 3 BROWSER PROCESSES; FIX’S WINDOW GRANTED — 2026-10-08 (chat 1)
+
+**The entry above (“CLEARED, NEVER USED”) was WRONG — this desk’s second miss of the same kind.** Fable (relay): **INK’s grant was USED:
+the walk ended `02:49:09Z`, 14/14 passing, and INK tore the rig down right after — which is why the ports were empty at `03:19Z`.**
+The grant was written `02:48:06Z`, so the walk ran inside ~63 seconds of it. This desk’s check looked for LIVE processes,
+listeners and recent pushes; a finished run leaves none of those, and INK had not pushed its evidence yet. **Pending: INK’s
+walk START time, to put beside the grant’s write time.** *(Rule, sharpened: an absence of processes is not evidence of non-use;
+before logging “unused” ask the grantee or look at its own evidence output.)* The grant was open ~31 minutes after a ~1-minute
+use; the 30-minute rule did its job on a box that was in fact idle, but the record it produced said the wrong thing.
+
+**OPEN QUESTION (Fable): 3 `ws-runtime-verify` processes were seen around INK’s launch (~`02:47Z`). Whose?** If no lane claims them
+they are recorded as **“unclaimed”**. *(This desk observed none: its 02:48 grant write found 0 browsers, and its earlier 02:30Z
+sighting was a single `b101.mjs` node process. ~02:47Z is before the grant write, so they are not this desk’s and not inside
+the grant; answer expected from INK.)*
+
+**NEXT GRANT (Fable): FIX’s ONE WINDOW — rhizome legs + shots, templates light reshoot. Its commits are verified by this desk on
+origin: `97f95c3` (on `cursor/plateau-rhizome-goal-4b92`: “Rhizome: the first goal crossing after a page opens flashes; park m2’s
+burst check…”) and `194174c` (on `page-templates-move`: “Page templates frames: set the THEME, not only the page tone — light =
+Flux’s lig…”).** GRANTED `2026-10-09T03:46:21Z` (9:46 pm MT), grant file read first (absent), box idle (0 harness processes, 0
+browsers); 30-minute check-in due 10:16 pm MT — this desk will look at FIX’s branches AND for finished-run evidence before clearing.
+**PAIRS AFTER THAT: templates → rhizome → B11 (after INK’s evidence push) → drafts (`56d1e3c`).**
+
+## 30-MINUTE CHECK-IN: FIX’S WINDOW GRANT CLEARED ON AN IDLE BOX — USE UNCONFIRMED — 2026-10-08 (chat 1)
+
+FIX’s grant (`fix-window-rhizome-templates-20261008`, written `2026-10-09T03:46:21Z`, 9:46 pm MT) was checked at age 31 minutes. The
+grant file still named FIX (read first, unchanged). **The box is IDLE: 0 harness node processes, 0 `ws-runtime-verify` browsers.**
+**Looking for a finished run, as the sharpened rule says: no push on `cursor/plateau-rhizome-goal-4b92` (tip `97f95c3`, 20:48 MT) or
+`page-templates-move` (tip `194174c`, 20:50 MT) since the grant; no file modified in the last 45 minutes in FIX’s two worktrees
+(`writer-studio-rhizome`, `writer-studio-fx17`).** A wider scan for stamped output elsewhere was too slow to finish. **So: no
+evidence of a run was found — and this desk does NOT claim the grant went unused** (FIX’s evidence could be in its own
+scratchpad, uncommitted). No “box done” received. **CLEARED `2026-10-09T04:17Z`, open ~31 minutes.** Nothing can be stranded on an
+idle box; FIX says whether its window ran and, if not, asks again.
+
+## FIX’S WINDOW RECORDED UNUSED AND RE-GRANTED; INK’S TIMELINE; THE THREE BROWSER PROCESSES; B11 CLEARED TO PAIR — 2026-10-09 (chat 1)
+
+**FIX’S WINDOW: UNUSED (Fable, relay).** FIX never received the hand-off, and its request arrived AFTER this desk had cleared the
+grant at `04:19:37Z`. (The previous entry’s “use unconfirmed” is thus resolved: it was not used. A cleared-idle grant that nobody
+was told about is the fault of the HAND-OFF, not of FIX.) **RE-GRANTED: FIX, `2026-10-09T04:47:56Z` (10:47 pm MT) — the file read
+first (absent), the box idle (0 harness processes, 0 browsers); same scope (rhizome legs + shots on `97f95c3`, templates light
+reshoot on `194174c`), ~30 minutes; check-in due 11:18 pm MT.** **NEW RULE (Fable), starting with this grant: a lane that has asked
+for a turn READS THE GRANT FILE ITSELF every 5 MINUTES and starts when it is named; this desk’s relay is a courtesy. The 30-minute
+idle clock is unchanged.** *(This desk also will not log any grant “unused” without the grantee confirming.)*
+
+**INK’S TIMELINE (Fable, from INK — “clean”), recorded:** grant written `02:48:06.915Z`; walk launched `02:49:02Z`; ended `02:49:09Z`
+— 14/14, a 7-second walk inside a grant open ~31 minutes. This corrects and completes the correction entry above.
+
+**THE 3 `ws-runtime-verify` PROCESSES at ~`02:49Z` (Fable: check the record; if nobody claims them, record “unclaimed”):** this
+desk’s record has NOTHING on them — its last browser count before them was `0` at the `02:48:06Z` grant write, and it did not
+look again until `03:19Z` (when there were none). **They coincide with INK’s launch at `02:49:02Z`, which is the harness starting
+its own browser; this desk cannot confirm that. Recorded as UNCLAIMED BY THIS DESK, probably INK’s own walk browsers;
+INK to confirm.**
+
+**B11 IS CLEARED TO PAIR (Fable): `guest-login` @ `de1f170` FIRST, then `guest-client-r4` @ `501264a`** (a newer tip than the `afe9bb2`
+seen earlier). **It includes the `guest_links` migration, reviewed IN the pair.** **ORDER: FIX’s window → B11 pair (runs while Fable
+reviews FIX’s frames) → templates pair → rhizome pair → drafts (`cdced72`). DEPLOY ONLY AFTER NICK’S SHIP WORD, as always.**
+This desk does NOT run the B11 pair during FIX’s window (a heavy node run beside another lane’s browsers is what cut FIX’s turn 2
+short once); it prepares the assembly with git operations only, then pairs once FIX is done.
+
+## FIX’S RE-GRANTED WINDOW CLEARED AT THE RE-CHECK: TEMPLATES HALF RAN, RHIZOME HALF UNCONFIRMED — 2026-10-08 (chat 1)
+
+FIX’s window (`fix-window2-rhizome-templates-20261009`, written `2026-10-09T04:47:56Z`, 10:47 pm MT) was checked at 11:19 pm MT (age 31)
+and left live; re-checked at 11:36 pm MT (age 48): the grant file still named FIX (read first); **box idle (0 harness processes, 0
+browsers); no new push on either branch; no file newer than 22:52 MT in FIX’s worktrees; no “box done”.** **EVIDENCE OF USE:
+`page-templates-move` @ `a301594`, pushed 22:52:57 MT (five minutes after the grant): “Page templates evidence: the LIGHT frames
+reshot @ 194174c…” — the TEMPLATES half RAN.** The RHIZOME half is UNCONFIRMED: `cursor/plateau-rhizome-goal-4b92` still at
+`97f95c3`; the rhizome worktree’s newest file is its 22:48 build; its legs and shots may have run with output kept elsewhere, or
+not. This desk does NOT claim either. **CLEARED `2026-10-09T05:36Z` — open ~48 minutes.** FIX confirms the rhizome half or asks
+again; this desk reads the grant file before writing one. The B11 pair starts next, in its own worktree.
+
+## B11 PAIR: GREEN 119/119 ON BOTH LEGS; THE MIGRATION REVIEWED ON A REAL POSTGRES; ONE INSTRUMENT RED AND ONE SCHEMA QUESTION OPEN — 2026-10-09 (chat 1)
+
+**ASSEMBLED in its own worktree (`b11-pair` @ `e493830`): `origin/main` @ `0d06ffa` + `guest-login` @ `de1f170` + `guest-client-r4`
+@ `501264a`** — both merges clean; 29 files; the only migration is in `apps/server/src/migrate.ts`.
+
+**BROWSERLESS:** `tsc` x2 exit 0; both builds clean (desktop bundle `index-JbObS-ZG.js`, 646,297 b); `item224-server-hardening` 64/64;
+`set-password-db` 12/12; `smoke-account-db` 31/31; `tutor20-max-messages` 4/4; K10 `--mutants`: baseline GREEN (32), 19/19 RED, exit 0.
+
+**THE MIGRATION, REVIEWED ON A REAL THROWAWAY POSTGRES (the built `migrate.js`, a one-off script, 9/9):** it runs on an empty database;
+an ordinary pre-B11 account gets `is_guest=false`, `tutor_turns_used=0`, `guest_expires_at` and `last_active_at` null; it is IDEMPOTENT
+(run three times); exactly the four additive columns exist on `users` (`is_guest` boolean not null default false,
+`guest_expires_at` timestamptz, `last_active_at` timestamptz, `tutor_turns_used` integer not null default 0); `guest_links` has
+exactly `token_hash` text (PRIMARY KEY), `user_id` uuid (FK, `ON DELETE CASCADE`), `created_at` timestamptz, plus the `guest_links_user`
+index; deleting a guest removes ITS link and only its link; the same token cannot be stored twice. *(The script exited 1 only
+because `migrate.js`’s own pool surfaced an unhandled connection error when the throwaway server stopped — after all 9 checks had
+passed; a harness artifact, not a migration fault.)* **All additive; nothing destructive; rollback to B10.1 leaves the columns/table
+in place, unused.**
+
+**► RED (instrument only, INK’s): `apps/server/scripts/harness/guest-login.mjs` exits 1 — `Cannot find module ‘./passwordHash’`.**
+It compiles `auth.ts` on its own in a scratch folder and `auth.ts` now imports `./passwordHash` (since the smoke-tools refactor); the
+fix is the same one line `item224-server-hardening.mjs` needed — write `passwordHash.ts` beside it in the loader. This desk left the
+file alone (INK’s) and removed the scratch folder the crash left behind. **The guest-login server proof is therefore NOT yet green
+on this tree; it needs INK’s one-line fix and a re-run.**
+
+**THE DESKTOP PAIR: stamp `tree=e4938308 bundle=index-JbObS-ZG.js/646297b`; 119 files per leg, six chunks of ≤20, no launch crashes, 0
+harness processes between chunks: 119/119 on the DEFAULT leg and 119/119 on the PARKED leg — every file clean.** `guest-client-walk.mjs`
+was left out of the list (it needs a live local rig and two minted guest tokens); INK’s walk, 14/14, stands as its proof. Grant written
+`05:44:35Z` after reading the file (absent) and cleared on completion; 0 harness processes, 0 browsers.
+
+**OPEN, for Fable/Nick before any deploy:** (1) the SCHEMA QUESTION raised earlier — Nick’s recorded yes covers `guest_links`; the migration
+also adds FOUR columns to `users` (code comment: “the four account columns Nick approved”). Confirm his yes covers them. (2) INK’s `guest-login`
+harness fix. (3) Nick’s ship word. **Not deployed; `main` untouched.**
+
+## NICK’S RULING: GUEST LOGIN (B11) IS SHELVED; THE SCHEMA QUESTION WITHDRAWN; TEMPLATES PAIR CLEARED — 2026-10-09 (chat 1)
+
+**NICK’S RULING (Fable, relay): guest login (B11) is SHELVED. Testers get regular accounts via invite codes — already live in
+`auth.ts`; `INVITE_CODES` stays Nick’s to set in Railway.** **Do NOT merge or deploy `guest-login`, `guest-client-r4` or
+`walk-no-token-text`. Keep the branches; record them as SHELVED, not deleted. `b11-pair` is shelved with them.** **The schema
+question (the four `users` columns + `guest_links`) is WITHDRAWN. NO MIGRATION SHIPS.** *(Recorded for the shelf: the B11 pair was
+green 119/119 on both legs and the migration reviewed 9/9 on a real Postgres — `guest-login`’s server harness needed one INK
+line. Branches kept: `guest-login` `de1f170`, `guest-client-r4` `501264a`, `walk-no-token-text` `34f6fc2`, `b11-pair`
+`e493830`. The earlier “merge `walk-no-token-text` after B11” instruction is VOID.)*
+
+**DRAFTS moves onto `main`: INK rebases `drafts-integrity` onto `main`** (Fable test-picked both commits onto `main`: clean).
+
+**TEMPLATES: the light reshoot is verified at `a301594` (Flux, the light page; frames correct). THE TEMPLATES PAIR IS CLEARED — run
+it next: `page-templates-move` @ `a301594`; product = `645fdf6`.** RHIZOME waits on FIX’s evidence commit + Fable’s frame review, then
+its pair. **ORDER NOW: templates pair (`a301594`) → rhizome pair → drafts pair (INK’s new SHA).** Deploy only on Nick’s ship word.
+
+## RHIZOME FRAMES CLEARED; DRAFTS VERIFIED; THE NO-GRANT RULE; THE STRAY RUN RECORDED — 2026-10-09 (chat 1)
+
+**RHIZOME: FRAMES CLEARED (Fable) — `9517ffe`; product = `97f95c3`. Pair it after templates.** **DRAFTS: `e4b596c` verified on `main` by
+Fable (range-diff equal to `9ef8199` / `cdced72`; 5 files, +353/−25). CLEARED to pair after rhizome.** **ORDER: templates (running,
+stamp `tree=ac6591fd`) → rhizome → drafts. Each ships on Nick’s word after its smoke.**
+
+**RECORD, no-grant: the stray `scripts/harness/arrival-signin.mjs` node run this desk saw at `2026-10-09T17:0xZ`, 7 seconds old, with NO
+grant file live and 0 browsers, was most likely INK’s browserless set — it read “no grant file” as “free”.** (Earlier ungranted
+`b101.mjs` runs were the same pattern.) **RULE (Fable): NO GRANT FILE = NO PERMISSION. Browserless sets need a grant too; this desk
+gives lanes SHORT grants when they ask.**
+
+**THE TEMPLATES PAIR** is running in its own worktree on `page-templates-move` @ `a301594` merged onto `main` (`tmpl-pair` @ `ac6591f`):
+`tsc` x2 exit 0, `build:web` bundle `index-BFiS3YwB.js` 642,211 b, 119 files per leg (the capture tool left out); this desk’s grant
+written `17:06:14Z` after the file was read (absent) and the box confirmed quiet.
+
+## TEMPLATES PAIR: GREEN 119/119 ON BOTH LEGS — 2026-10-09 (chat 1)
+
+**`tmpl-pair` @ `ac6591f` = `origin/main` @ `7687a06` + `page-templates-move` @ `a301594` (product = `645fdf6`; evidence +
+harness drivers after it): a clean merge, 38 files, product in six `apps/desktop/src` files + `index.css`; NO server change, NO
+migration.** `tsc` x2 exit 0; `build:web` bundle `index-BFiS3YwB.js` 642,211 b. **THE PAIR: stamp `tree=ac6591fd
+bundle=index-BFiS3YwB.js/642211b`; 119 files per leg (the capture tool left out), six chunks of ≤20, no launch crashes, 0 harness
+processes between chunks: 119/119 DEFAULT, 119/119 PARKED — every file clean, no red.** Grant (this desk’s) written
+`2026-10-09T17:06:14Z` after the file was read (absent) and the box quiet; cleared `18:39:58Z`; 0 harness processes, 0 browsers.
+**Not deployed; `main` untouched. Ships on Nick’s word after its smoke.**
+
+**NEXT: the rhizome pair.** The branch tip is now `1e0ee1c` (one commit past the cleared `9517ffe`: `m2.mjs`, “the revisit re-fit park
+names its true successor, rhizome-growth R6 (Fable, 2026-10-09) — wording only”; `apps/desktop/src`, `apps/server/src`, `packages`
+diff vs `9517ffe` EMPTY). Product = `97f95c3`, as cleared.
+
+## RHIZOME PAIR: 119/121 ON EACH LEG — TWO VERDICT-FORMAT NOVERDICTS, BOTH PASSING IN SUBSTANCE — 2026-10-09 (chat 1)
+
+**`rhz-pair` @ `b0a6161` = `origin/main` @ `c312343` + `cursor/plateau-rhizome-goal-4b92` @ `1e0ee1c`** (one commit past the cleared `9517ffe` — an
+`m2.mjs` park-wording commit; `apps/desktop/src`, `apps/server/src`, `packages` diff vs `9517ffe` EMPTY; product = `97f95c3`). A clean
+merge; 14 files outside the evidence folder: six harness files, `DeskInstrument.tsx`, `RhizomeField.tsx`, `index.css`, `JournalEntry.tsx`,
+`PageEditor.tsx`, `rhizomeEngine.ts`, `rhizomeGrowth.ts`, `writingGoal.ts`; no server change, no migration. `tsc` x2 exit 0;
+`build:web` bundle `index-CLQF9CRh.js` 645,799 b.
+
+**THE PAIR: stamp `tree=b0a6161e bundle=index-CLQF9CRh.js/645799b`; 121 files per leg in seven chunks of ≤20 (the capture tool
+left out), no launch crashes: 119/121 on EACH leg — the same two NOVERDICTs on both (exit 0), and nothing else red:**
+- **`rhizome-goal-core.mjs`** prints `RHIZOME-GOAL CORE: PASS (33 checks)` — all 33 checks PASS — but run-suite reads a verdict only
+  from a `VERIFY:` line, so it counts as NOVERDICT.
+- **`rhizome-growth.mjs`** by default prints only `baseline: 48/48` (no verdict line at all; the mutants run only under `--mutants`).
+  **This desk ran `rhizome-growth.mjs --mutants` itself, browserless: baseline 48/48 and mutants M1–M7 ALL RED, exit 0.**
+Both are INSTRUMENT-FORMAT issues of the same kind as `b101.mjs` (a one-line `<NAME> VERIFY: PASS (n checks)` fix, and for
+`rhizome-growth` a default run that includes its mutants or a verdict line). Owner: FIX / the rhizome branch’s authors. **Substance
+is green; the suite’s formal verdict needs the lines.** `m2`, `m3`, `m4`, `rhizome-goal` and every other file are CLEAN on both legs.
+
+Grant (this desk’s) written `2026-10-09T18:41:18Z` after the file was read (absent) and the box quiet; cleared `20:13:08Z`; 0 harness
+processes, 0 browsers. **Not deployed; `main` untouched.** Next: DRAFTS (`e4b596c`) pair. Rhizome ships on Nick’s word after its smoke.
+
+## TEMPLATES DEPLOY MANIFEST — LIVE, SERVED==STAMPED, SMOKE 6/6; FRAMES PENDING — 2026-10-09 (chat 1)
+
+**NICK’S SHIP WORD (Fable, relay), verbatim: “Ship templates” (2026-10-09 14:53 MT).** Condition: `tmpl-pair` green on both legs (it was:
+119/119 default, 119/119 parked, stamp `tree=ac6591fd bundle=index-BFiS3YwB.js/642211b`); any red → stop. Deploy: merge
+`page-templates-move` @ `a301594` to `main` (branch read first), build from the primary, `railway up --service writer-studio-app`; then
+bundle match, signed-in smoke, and frames (front door, sign-in, a page with the Templates section open); Nick confirms after
+Fable’s frame review. Rhizome stays held for FIX’s Plateau gate; drafts pair after templates.
+
+**MERGED to `main`: `25e6610`** (`page-templates-move` @ `a301594`; the branch read first: 11 commits past `main`, product in six
+`apps/desktop/src` files, NO server change, NO migration; `git diff tmpl-pair HEAD -- apps packages` EMPTY — the product is the
+tree that was paired).
+**LIVE: `25e6610` · railway `84f596d6-be7b-4753-bc3b-e6f039967f78`** — service `writer-studio-app`, `railway up --service writer-studio-app --ci`,
+healthcheck succeeded, “Deploy complete”. **PREVIOUS LIVE: B10.1 · `f31b38bc-98cd-4463-82ef-94cea833f4b7` (now REMOVING) — THE ROLLBACK is a
+rebuild from `fd0c258`** (clean checkout, `railway up`). No schema change.
+
+**CHECKS BEFORE UPLOAD:** `tsc` x2 exit 0; `build:web` exit 0, bundle `index-BFiS3YwB.js` 642,211 b == the pair stamp; tree bare (0 porcelain
+incl. untracked); **ITEM-98 GUARD:** `writer-studio` / `production` / `writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`,
+`HEAD == origin/main == 25e6610`. **LIVE VERIFICATION:** `/healthz` 200 · `/auth/me` 401 · `/auth/signup-status` `{“open”:false}`. **SERVED-vs-
+STAMPED, BOTH ASSETS MATCH, MD5 and bytes:** JS `e861574ebbcc33977b13090ed21044b5` (642,211 b); CSS `4cd6ed68b06a88fb866ae3c80ee96c69`
+(151,120 b).
+
+**LIVE SIGNED-IN SMOKE (`smoke-login.mjs`, once, exit 0):** `POST /auth/login` 200 · `GET /auth/me` 200 · `POST /api/sync` (pull only) 200 ·
+`POST /auth/logout` 204 · `GET /auth/me` (after logout, jar) 401 · `GET /auth/me` (pre-logout cookie replayed) 401 — **`SMOKE: PASS (6/6)`.**
+
+**FRAMES: NOT YET TAKEN.** They need a browser walk of the live site (front door, sign-in, a page with the Templates section open) and
+so a box grant; FIX holds a short one-frame grant (written `20:53:43Z`, 14:53 MT) and this desk waits for it (check-in 15:25 MT)
+rather than run a browser beside it. **Owed to Nick: his confirmation after Fable’s frame review — it closes the gate.**

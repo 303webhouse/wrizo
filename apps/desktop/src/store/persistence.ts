@@ -6,6 +6,8 @@ import { deskTerm, type DeskTermId } from './deskLexicon';
 import { getUserPageDefaults } from './pageDefaults';
 import { clearProofingLocal } from './proofing';
 import { reportFlushFailed, reportFlushOk, reportStorageUsage } from './storageHealth';
+import { isSignedOutHere } from './signedOutHere';
+import { isStaleClient } from './staleClient';
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -141,7 +143,16 @@ function hydrateDirty(): Record<CollectionName, Set<string>> {
 // names) so a reader can tell "the record itself didn't save" from "the record saved, but sync doesn't know it
 // needs to" — both are real, and they are different repairs.
 const DIRTY_JOURNAL_REPORT_NAME = 'dirtyJournal';
+
+// B10.1 - A STALE TAB IS READ-ONLY. Every tab on this origin shares one localStorage and flushes its WHOLE cache over the
+// collection keys, so an old tab that kept saving would overwrite what the live tab wrote. While the stale-client flag is
+// set the automatic writes below are held (the edits stay in memory, and the dirty set with them); the single exception is
+// flushForReload(), the writer's own Reload, which MERGES its unsent edits into storage once (see below) so they survive into
+// the new build.
+function writesHeld(): boolean { return isStaleClient(); }
+
 function persistDirty(): void {
+  if (writesHeld()) return;
   try {
     const out: Record<string, string[]> = {};
     for (const name of COLLECTIONS) out[name] = [...dirty[name]];
@@ -197,6 +208,11 @@ export function markClean(ids: string[]): void {
 // for answering "is there anything to push").
 export function hasDirtyRecords(): boolean {
   return COLLECTIONS.some((name) => dirty[name].size > 0);
+}
+
+// LOGOUT SAFETY — how many records the account does not have yet. Rejected records stay dirty, so they count here too.
+export function countDirtyRecords(): number {
+  return COLLECTIONS.reduce((n, name) => n + dirty[name].size, 0);
 }
 
 // Item 89 — test/inspection seam (this file's own established pattern; see
@@ -294,6 +310,7 @@ function maybeReportStorageUsage(): void {
 maybeReportStorageUsage();
 
 function flush(name: CollectionName): void {
+  if (writesHeld()) return;
   const json = JSON.stringify(cache[name]);
   try {
     localStorage.setItem(KEYS[name], json);
@@ -366,6 +383,11 @@ function upsert<T extends { id: string; updatedAt: string }>(
   collection: T[],
   record: T,
 ): void {
+  // THE BELT (logout flush) — a device that has signed out keeps nothing of the writer's. From the moment the
+  // signed-out flag is set, no record is written: a late timer or an editor's unmount flush that runs after the wipe
+  // can no longer recreate a row (saveDraft is an upsert and WOULD create one) that the next account would then push.
+  // Pulled records do not come through here (applyCollection writes them), and a sign-in clears the flag first.
+  if (isSignedOutHere()) return;
   record.updatedAt = new Date().toISOString();
   const index = collection.findIndex(r => r.id === record.id);
   if (index >= 0) {
@@ -1861,6 +1883,60 @@ export function importDraft(binderId: string, pageType: NonNullable<JournalEntry
 // pattern B1 established for '/journal' and '/trash'). Parked, not
 // deleted from history: see docs/wrizo-alpha's own build report and the
 // harness's A4 park sweep for the quoted-verbatim record.
+
+// B10.1 - the stale tab's Reload: the ONE explicit write a stale tab makes, and it is a MERGE, never a whole-cache write. The
+// live tab on this origin may hold fresher rows (and unsynced ones) in the same keys; writing this tab's whole, older cache over
+// them is exactly the clobber the read-only hold exists to prevent. So, per collection: read what storage holds NOW, overlay ONLY
+// this tab's DIRTY records by id (the newer updatedAt wins, so a fresher stored copy is never replaced), write that back, and
+// UNION this tab's dirty ids into the id journal rather than replacing it. Callers run flushAll() first so every editor's pending
+// text is already in its record. Any failure leaves storage as it was (best effort, like every other write here).
+export function overlayDirty<T extends { id: string; updatedAt: string }>(stored: T[], mine: T[]): T[] {
+  const out = stored.slice();
+  for (const rec of mine) {
+    const i = out.findIndex(r => r && r.id === rec.id);
+    if (i < 0) out.push(rec);
+    else if (!out[i].updatedAt || rec.updatedAt > out[i].updatedAt) out[i] = rec;
+  }
+  return out;
+}
+
+export function flushForReload(): void {
+  const readArray = (key: string): unknown[] => {
+    try {
+      const v = JSON.parse(localStorage.getItem(key) || '[]');
+      return Array.isArray(v) ? v : [];
+    } catch { return []; }
+  };
+  for (const name of COLLECTIONS) {
+    try {
+      const mine = (cache[name] as Array<{ id: string; updatedAt: string }>).filter(r => dirty[name].has(r.id));
+      if (mine.length === 0) continue;
+      const merged = overlayDirty(readArray(KEYS[name]) as Array<{ id: string; updatedAt: string }>, mine);
+      localStorage.setItem(KEYS[name], JSON.stringify(merged));
+    } catch {
+      // storage full/unavailable: the edit stays in this tab's memory; nothing more can be done from here
+    }
+  }
+  try {
+    const stored = JSON.parse(localStorage.getItem(DIRTY_KEY) || '{}') as Record<string, string[]>;
+    const out: Record<string, string[]> = {};
+    for (const name of COLLECTIONS) {
+      const ids = new Set<string>(Array.isArray(stored?.[name]) ? stored[name] : []);
+      dirty[name].forEach(id => ids.add(id));
+      out[name] = [...ids];
+    }
+    localStorage.setItem(DIRTY_KEY, JSON.stringify(out));
+  } catch {
+    // as above
+  }
+}
+
+// B10.1 - DOES THIS ACCOUNT ALREADY HOLD WORK? Any journal entry that is not a system board, or any project. Soft-deleted
+// entries COUNT: a writer who deleted everything has still written, and is not new. Read from the raw cache (not
+// getJournalEntries, which hides the deleted) and only meaningful once the first whole-account pull has landed.
+export function accountHasWork(): boolean {
+  return cache.journalEntries.some(e => !getSystemKind(e)) || cache.projects.length > 0;
+}
 
 export function getJournalEntries(): JournalEntry[] {
   return cache.journalEntries

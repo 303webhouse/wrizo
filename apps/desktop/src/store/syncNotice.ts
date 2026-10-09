@@ -1,5 +1,5 @@
-// ITEM 203 (P5) + STORAGE-FULL STEP 1 - WHAT THE WRITER READS when sync (or this device's own storage) cannot do
-// everything. Pure, so it is tested as text and not only as state.
+// ITEM 203 (P5) + STORAGE-FULL STEP 1 + ITEM 224(a) - WHAT THE WRITER READS when sync (or this device's own storage) cannot
+// do everything. Pure, so it is tested as text and not only as state.
 //
 // THE WORDS SAY WHAT'S TRUE AND THE ONE ACT THAT PREVENTS LOSS (Fable's byte review, item 2) — a storage failure is
 // not one fact, it is one of three, and the act that helps differs by which:
@@ -13,29 +13,35 @@
 // PLAIN WORDS, NO ALARM WORDS — no "warning", "critical", "error", capitals or punctuation doing the alarming; the
 // facts themselves carry the weight.
 //
-// Priority (most urgent first) - unchanged in shape from step 1, now with the three-way split at the top:
+// Priority (most urgent first):
 //   * storage FAILED   - see (a)/(b)/(c) above; ahead of anything about the network, which is a separate question.
 //   * offline           - the network round trip is not happening. Everything IS saved on this device.
 //   * too large         - the network is FINE and everything else synced; ONE named page cannot travel in a request.
+//   * rejected          - (ITEM 224(a)) the network is fine and the push succeeded, but the server could not STORE one or
+//                         more named records. It stays dirty and keeps trying — never silently marked clean and lost.
+//                         A different fact from "too large": nothing about its size is the problem.
 //   * storage NEAR FULL - nothing has failed yet; a one-time heads-up before it does. Signed in, it urges the "stay
 //                         online" act that would actually help if it fails; signed out there is no account for
 //                         staying online to help reach, so it reads the same as (c) does — nothing else anywhere
 //                         holds a copy, so download one now, before it fails rather than after.
-import type { SyncStatus, TooLargeRecord } from './sync';
+import type { SyncStatus, TooLargeRecord, RejectedRecord, PullDiagnostic } from './sync';
 
 export type SyncNoticeLexiconKey =
   | 'syncTooLargeOne' | 'syncTooLargeMany'
+  | 'syncRejectedOne' | 'syncRejectedMany' | 'syncPullShort'
   | 'syncStorageFullPending' | 'syncStorageFullSynced' | 'syncStorageFullAnon'
   | 'syncStorageNearFull' | 'syncStorageNearFullAnon';
 
 export function syncNoticeText(
   status: SyncStatus,
   tooLarge: readonly TooLargeRecord[],
+  rejected: readonly RejectedRecord[],
   storageFailed: boolean,
   storageNearFull: boolean,
   hasUnpushedDirty: boolean,
   signedIn: boolean,
   t: (key: SyncNoticeLexiconKey) => string,
+  pullDiagnostic: PullDiagnostic | null = null,
 ): string | null {
   if (storageFailed) {
     if (!signedIn) return t('syncStorageFullAnon');            // (c) — nothing else could ever hold a copy
@@ -43,13 +49,24 @@ export function syncNoticeText(
       : t('syncStorageFullSynced');                             // (b) — the account already does
   }
   if (status === 'offline') return 'Offline — saved here';
+  // A REPLACER FUNCTION, not a replacement string. String.prototype.replace gives `$&`, `$1`, `$'` and `$$` special meaning in a
+  // replacement STRING, and the title is WHATEVER THE WRITER TYPED - a page called "Q&A $& notes" would have come out mangled (with
+  // the template's own `{title}` spliced into it). A function's return value is taken literally.
   if (tooLarge.length > 0) {
-    // A REPLACER FUNCTION, not a replacement string. String.prototype.replace gives `$&`, `$1`, `$'` and `$$` special meaning in a
-    // replacement STRING, and the title is WHATEVER THE WRITER TYPED - a page called "Q&A $& notes" would have come out mangled (with
-    // the template's own `{title}` spliced into it). A function's return value is taken literally.
     return tooLarge.length === 1
       ? t('syncTooLargeOne').replace('{title}', () => tooLarge[0].title)
       : t('syncTooLargeMany').replace('{n}', () => String(tooLarge.length));
+  }
+  if (rejected.length > 0) {
+    return rejected.length === 1
+      ? t('syncRejectedOne').replace('{title}', () => rejected[0].title)
+      : t('syncRejectedMany').replace('{n}', () => String(rejected.length));
+  }
+  // B10.1 (SAFETY NET) - a whole-account pull carried pages that never reached the cache, even after a retry. Counts only.
+  if (pullDiagnostic) {
+    return t('syncPullShort')
+      .replace('{pulled}', () => String(pullDiagnostic.pulled))
+      .replace('{live}', () => String(pullDiagnostic.live));
   }
   if (storageNearFull) return signedIn ? t('syncStorageNearFull') : t('syncStorageNearFullAnon');
   return null;

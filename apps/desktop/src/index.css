@@ -1232,6 +1232,14 @@ a:focus-visible,
 .wz-home {
   --wz-ground:#110600; --wz-lift:#150a04; --wz-ink:#f0e7d8; --wz-ink-dim:#8c8070;
   --wz-whisper:#463b2c; --wz-orange:#ff9800; --wz-orange-line:rgba(255,152,0,.5);
+  /* a11y audit A7 — a DEDICATED hint colour, not a --wz-whisper raise: that
+     token also sets decorative borders/dots/kbd chrome across this palette,
+     none of which need text contrast, and raising it would be a much wider
+     change than this one failing text use needs. 4.60:1 on --wz-lift
+     (#150a04, the field's own background) and 4.72:1 on --wz-ground
+     (#110600) — both clear 4.5:1; measured independently, matching the
+     audit's own number for the identical colour. */
+  --wz-hint:#817a70;
   --wz-ui:var(--font-ui); --wz-text:var(--font-prose);
   position:fixed; inset:0; z-index:100; overflow:hidden;
   background:var(--wz-ground); color:var(--wz-ink); font-family:var(--wz-text);
@@ -1924,13 +1932,22 @@ a:focus-visible,
 .wz-error{ font-family:var(--wz-ui); color:var(--clay); font-size:.9rem; }
 
 .wz-fieldcol{ display:flex; flex-direction:column; align-items:center; gap:.5rem; margin-top:.4rem; }
+/* A real <form> around the fields and the submit button: same column and gap as the .wz-screen it sits in,
+   so wrapping changes nothing about the layout. */
+.wz-form{ display:flex; flex-direction:column; align-items:center; gap:1.5rem; margin:0; }
 .wz-field{ font-family:var(--wz-ui); width:min(360px,86vw); background:var(--wz-lift); border:1px solid var(--wz-whisper); border-radius:0;
   padding:.85rem 1.1rem; color:var(--wz-ink); font-size:1rem; outline:none; text-align:center; transition:border-color .3s; }
 .wz-field:focus{ border-color:var(--wz-orange-line); }
-.wz-field::placeholder{ color:var(--wz-whisper); }
+.wz-field::placeholder{ color:var(--wz-hint); }
 
 .wz-secondary{ display:flex; align-items:center; gap:.7rem; margin-top:.4rem; }
-.wz-link{ font-family:var(--wz-ui); color:var(--wz-ink-dim); font-size:.95rem; cursor:pointer; transition:color .25s; }
+/* a11y audit A2 — these are now real <button>s (Arrival.tsx), so the browser's
+   own button chrome (background, border, default padding/font) is reset here;
+   everything else — colour, size, hover, cursor — is unchanged from the <span>
+   this replaces. Keyboard focus is the global button:focus-visible brass ring
+   (below in this file) — no new focus style needed. */
+.wz-link{ font-family:var(--wz-ui); color:var(--wz-ink-dim); font-size:.95rem; cursor:pointer; transition:color .25s;
+  background:none; border:none; padding:0; margin:0; }
 .wz-link:hover{ color:var(--wz-ink); }
 /* F3 — Catch: the zero-decision capture. A bordered quiet button (tan, NEVER
    orange — the orange budget stays on the return card's primary) + a kbd hint. */
@@ -1972,6 +1989,13 @@ a:focus-visible,
 .wz-arrival-doors{ display:flex; flex-direction:column; align-items:center; gap:.6rem; margin-top:.8rem; }
 .wz-arrival-write:disabled, .wz-arrival-open:disabled{ opacity:.35; cursor:default; }
 .wz-arrival-open{ background:none; border:none; font-size:.95rem; }
+.wz-arrival-signin{ background:none; border:none; font-size:.95rem; }
+/* Browser autofill paints its own light field. Keep an autofilled field on the screen's own palette:
+   the text colour and the field's background, not the browser's. */
+.wz-field:-webkit-autofill, .wz-field:-webkit-autofill:hover, .wz-field:-webkit-autofill:focus{
+  -webkit-text-fill-color:var(--wz-ink); caret-color:var(--wz-ink);
+  -webkit-box-shadow:0 0 0 1000px var(--wz-lift) inset; box-shadow:0 0 0 1000px var(--wz-lift) inset;
+  transition:background-color 9999s ease-out 0s; }
 
 /* Desk (authed home) — v6 "launch" aesthetic. Reuses .wz-home tokens. A top-left
    letterhead (name in Crimson over "Writing Desk" in Figtree) + left-aligned
@@ -3651,6 +3675,12 @@ a:focus-visible,
   padding:4px; background:var(--ink-900); border:1px solid var(--ink-border); }
 .wz-template-btn{ color:var(--text-low); opacity:.45; cursor:default; }
 .wz-template-btn:hover{ color:var(--text-low); background:none; border-color:transparent; }
+/* PAGE-TEMPLATES-MOVE - brass on the press; and, by Nick's standing rule that brass marks a choice the writer has MADE, brass
+   at rest on the template the page already is (a screenplay page's Screenplay template, aria-pressed). */
+.wz-template-live:active, .wz-template-live[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); }
+/* The Beginnings glyphs carry only a viewBox - the row sizes them (.wz-beginning-glyph svg) - so in the strip they are given the
+   strip's own icon size, the TemplateIcon 16px, or they render at zero (the 43839ae frames showed an empty Screenplay slot). */
+.wz-template-live svg{ width:16px; height:16px; display:block; }
 /* ITEM 207 - THE TYPE CONTROL (TypeControl.tsx). As minimal as a strip menu gets: a face button, a `-` `+` pair, and in
    the full form a number between them. No heading, no caption. The listbox drops in FLOW inside the drawer (never a
    second floating panel), each row set in its own face, the current one olive (where you are - the sliver's rest law). */
@@ -4640,6 +4670,9 @@ a:focus-visible,
 ::selection{ background:var(--brass); color:var(--on-brass); }
 ::-moz-selection{ background:var(--brass); color:var(--on-brass); }
 
+/* A1 - text for a screen reader only: in the accessibility tree, never painted, and out of flow so it moves nothing. */
+.wz-sr-only{ position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; border:0; }
+
 /* HEADINGS, six levels (Nick, 2026-10-06), one-to-one with HTML h1-h6: each a distinct size, h1 largest and h6 just above body.
    text-transform is set to none on purpose - a heading is never forced into capitals (Nick: "headings should not default to ALL CAPS"). */
 .md-h1{ font-size:1.6em; font-weight:600; }
@@ -5385,3 +5418,33 @@ a:focus-visible,
 .board-popup-dock-h{ font-size:9px; letter-spacing:2px; text-transform:uppercase;
   color:var(--accent-rest); text-align:center; padding-bottom:2px; }
 @media (prefers-reduced-motion:reduce){ .board-popup-dock{ transition:none; } }
+
+/* LOGOUT SAFETY — the refused-sign-out overlay. Fixed over the page: the page stays mounted behind it
+   (an overlay beside the routes, never a route). */
+.wz-logout-sheet { position: fixed; inset: 0; z-index: 70; display: flex; align-items: center; justify-content: center;
+  padding: 16px; background: rgba(17,6,0,.72); }
+.wz-logout-sheet-panel { width: min(440px, 100%); background: var(--wz-lift, #150a04); color: var(--wz-ink, #f0e7d8); border-radius: 10px;
+  padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.45); }
+.wz-logout-sheet-body { margin: 0; font-size: 1.02rem; line-height: 1.45; }
+.wz-logout-sheet-rejected { margin: 0; font-size: .9rem; opacity: .8; }
+/* The sheet renders beside the routes, OUTSIDE .wz-home, and the shared form classes it uses (.wz-btn, .wz-link, .wz-field,
+   .wz-sub) read the home palette tokens, which are defined only under .wz-home. Outside it they resolve to nothing: a field
+   loses its border and fill, a primary button loses its orange. The same values are set here; a check compares them with
+   .wz-home's own block, so the two cannot drift apart. */
+.wz-logout-sheet {
+  --wz-ground:#110600; --wz-lift:#150a04; --wz-ink:#f0e7d8; --wz-ink-dim:#8c8070;
+  --wz-whisper:#463b2c; --wz-orange:#ff9800; --wz-orange-line:rgba(255,152,0,.5);
+  --wz-hint:#817a70; --wz-ui:var(--font-ui); --wz-text:var(--font-prose);
+}
+
+/* B10.1 - THE STALE-CLIENT BANNER. A fixed overlay in a portal OUTSIDE #root (the root is made inert while it shows), so it displaces
+   nothing and is the one reachable control. Outside .wz-home like the logout sheet, so the palette tokens are set here. */
+.wz-stale-banner {
+  --wz-ground:#110600; --wz-lift:#150a04; --wz-ink:#f0e7d8; --wz-ink-dim:#8c8070;
+  --wz-whisper:#463b2c; --wz-orange:#ff9800; --wz-orange-line:rgba(255,152,0,.5);
+  --wz-hint:#817a70; --wz-ui:var(--font-ui); --wz-text:var(--font-prose);
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999; display: flex; align-items: center; justify-content: center;
+  gap: 14px; padding: 10px 16px; background: var(--wz-lift); color: var(--wz-ink);
+  border-bottom: 1px solid var(--wz-orange-line); box-shadow: 0 6px 24px rgba(0,0,0,.45); font-family: var(--wz-ui);
+}
+.wz-stale-banner-text { font-size: 1rem; line-height: 1.3; }

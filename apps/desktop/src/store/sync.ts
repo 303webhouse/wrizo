@@ -1,4 +1,6 @@
-import { getDirtyRecords, markClean, applyRemoteRecords, markAllJournalEntriesDirty, type DirtyRecords } from './persistence';
+import { getDirtyRecords, markClean, applyRemoteRecords, markAllJournalEntriesDirty, getJournalEntries, getSystemKind, type DirtyRecords } from './persistence';
+import { getClientBuild, buildIsStale } from './clientBuild';
+import { isStaleClient, markStaleClient } from './staleClient';
 import { apiSync, SyncHttpError, type SyncResponse } from './api';
 import { boardName } from './entryText';
 import { subscribeStorageFailureEvent } from './storageHealth';
@@ -104,6 +106,56 @@ function setTooLarge(next: TooLargeRecord[]): void {
   tooLargeListeners.forEach(l => l(tooLarge));
 }
 
+// ITEM 224(a), SYNC INTEGRITY — like item 203's quarantine (TooLargeRecord,
+// above), but a DIFFERENT population and a different reason: these records
+// were SENT and the server itself refused to store them (malformed, or the
+// insert threw) — not withheld for their size. Unlike a true quarantine,
+// a rejected record is NOT excluded from future sends: its cause may be
+// transient (a DB hiccup) or may clear if the writer edits it again, so it
+// stays dirty and keeps trying on the ordinary cadence. This list is only
+// the WRITER'S OWN NOTICE that something is stuck, named — it never
+// prevents a retry the way `isTooLarge` does.
+export interface RejectedRecord { id: string; title: string }
+let rejectedRecords: readonly RejectedRecord[] = [];
+const rejectedListeners = new Set<(list: readonly RejectedRecord[]) => void>();
+/** Records the server refused this push: still dirty, still safe on this device, retried on the ordinary cadence. */
+export function getRejectedRecords(): readonly RejectedRecord[] { return rejectedRecords; }
+export function subscribeRejected(listener: (list: readonly RejectedRecord[]) => void): () => void {
+  rejectedListeners.add(listener);
+  listener(rejectedRecords);
+  return () => { rejectedListeners.delete(listener); };
+}
+function setRejected(next: RejectedRecord[]): void {
+  const same = next.length === rejectedRecords.length && next.every((r, i) => r.id === rejectedRecords[i].id);
+  if (same) return;
+  rejectedRecords = next;
+  rejectedListeners.forEach(l => l(rejectedRecords));
+}
+// B10.1 (SAFETY NET) - a full pull that CARRIED live pages but left none in the cache. Counts only, never titles or text. It is
+// raised only after one retry through syncOnce(true) has failed to fix it, and it clears the next time a pull lands normally.
+export interface PullDiagnostic { pulled: number; live: number }
+let pullDiagnostic: PullDiagnostic | null = null;
+const pullDiagnosticListeners = new Set<(d: PullDiagnostic | null) => void>();
+export function getPullDiagnostic(): PullDiagnostic | null { return pullDiagnostic; }
+export function subscribePullDiagnostic(listener: (d: PullDiagnostic | null) => void): () => void {
+  pullDiagnosticListeners.add(listener);
+  listener(pullDiagnostic);
+  return () => { pullDiagnosticListeners.delete(listener); };
+}
+function setPullDiagnostic(next: PullDiagnostic | null): void {
+  if (next === null && pullDiagnostic === null) return;
+  if (next && pullDiagnostic && next.pulled === pullDiagnostic.pulled && next.live === pullDiagnostic.live) return;
+  pullDiagnostic = next;
+  pullDiagnosticListeners.forEach(l => l(pullDiagnostic));
+}
+
+function rejectedIdSet(rejected: SyncResponse['rejected']): Set<string> {
+  if (!rejected) return new Set();
+  const ids = new Set<string>();
+  for (const list of Object.values(rejected)) for (const id of list ?? []) ids.add(id);
+  return ids;
+}
+
 function titleFor(item: PushItem): string {
   const r = item.rec as unknown as Record<string, unknown>;
   if (item.coll === 'journalEntries') {
@@ -147,11 +199,19 @@ function pack(items: PushItem[]): PushItem[][] {
   return chunks;
 }
 
-// Clean only the records that were not re-edited while the request was in flight.
-function cleanBatch(batch: PushItem[]): void {
+// Clean only the records that were not re-edited while the request was in
+// flight AND that the server actually stored. ITEM 224(a) — `rejectedIds`
+// is new: a record the server refused is excluded here even though the
+// request itself succeeded (200), so it stays dirty and is sent again next
+// cycle instead of being marked clean and silently lost.
+function cleanBatch(batch: PushItem[], rejectedIds: ReadonlySet<string> = EMPTY_SET): void {
   const still = stampMap(getDirtyRecords());
-  markClean(batch.filter(i => { const cur = still.get(i.rec.id); return cur === undefined || cur === i.rec.updatedAt; }).map(i => i.rec.id));
+  markClean(batch.filter(i => {
+    if (rejectedIds.has(i.rec.id)) return false;
+    const cur = still.get(i.rec.id); return cur === undefined || cur === i.rec.updatedAt;
+  }).map(i => i.rec.id));
 }
+const EMPTY_SET: ReadonlySet<string> = new Set();
 
 // One-time journal backfill (journal-resync patch). The new server's /sync pull
 // always carries a `journalEntries` key; the old server never did — so that key's
@@ -192,6 +252,12 @@ function maybeBackfillJournal(pull: unknown): void {
 
 let running = false;
 let inFlight = false;
+// SYNC GENERATION — bumped by stopSync() (every sign-out, and App's unmount). A sync that was already waiting on the
+// network when that happened (a stalled push the sign-out gave up on, say) must not, when its answer finally arrives,
+// write the PREVIOUS session's records, cursor or status into a device that has since been wiped, or into the next
+// writer's account. It captures the generation at entry and checks it after every await, before any write.
+let generation = 0;
+const STALE = Symbol('stale sync');
 let intervalId: ReturnType<typeof setInterval> | null = null;
 let backoffTimer: ReturnType<typeof setTimeout> | null = null;
 let backoffStep = 0;
@@ -205,9 +271,85 @@ function scheduleBackoff(): void {
   }, delay);
 }
 
+// B10.1 - THE FIRST PULL OF THIS SESSION. A sign-in used to choose "resume or new page" the instant the login answered, before
+// the account's pages had arrived (about 630 ms for 177 pages on the local rig) - so a returning writer landed on a blank page,
+// and the first-run ritual could not tell a new account from an old one. whenFirstPulled() lets those doors wait, with a cap.
+//
+// PER SESSION, and tied to the generation: stopSync() (every sign-out) retires it, so a second sign-in can never resolve from
+// the first one's pull. "Done" means a pull with a NULL cursor (the whole account) succeeded - the start-up pull, or a later
+// backoff retry that still had no cursor.
+interface FirstPull { gen: number; done: boolean; capped: boolean; promise: Promise<'pulled' | 'failed'>; settle: (r: 'pulled' | 'failed') => void }
+let firstPull: FirstPull | null = null;
+
+function beginFirstPull(gen: number): void {
+  let settle!: (r: 'pulled' | 'failed') => void;
+  const promise = new Promise<'pulled' | 'failed'>(res => { settle = res; });
+  firstPull = { gen, done: false, capped: false, promise, settle };
+}
+function noteFullPull(gen: number): void {
+  if (firstPull && firstPull.gen === gen && !firstPull.done) { firstPull.done = true; firstPull.settle('pulled'); }
+}
+/** True while a session's first pull is outstanding AND a writer has not yet spent the wait on it - i.e. a door that asks for it now WILL wait. */
+export function firstPullPending(): boolean { return !!firstPull && !firstPull.done && !firstPull.capped; }
+/** True once this session's first whole-account pull has landed. False before it, after a failure, and outside a session. */
+export function firstPullDone(): boolean { return !!firstPull && firstPull.done; }
+/** Waits for this session's first pull, but never longer than capMs. 'failed' also covers "no session" and "the session ended". */
+export async function whenFirstPulled(capMs: number): Promise<'pulled' | 'capped' | 'failed'> {
+  const fp = firstPull;
+  if (!fp) return 'failed';
+  if (fp.done) return 'pulled';
+  // A writer waits for the cap ONCE per session: the sign-in's landing and the Write door behind it must not each make them wait.
+  if (fp.capped) return 'capped';
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const cap = new Promise<'capped'>(res => { timer = setTimeout(() => res('capped'), capMs); });
+  try {
+    const r = await Promise.race([fp.promise, cap]);
+    if (r === 'capped') fp.capped = true;
+    return r;
+  } finally { if (timer) clearTimeout(timer); }
+}
+
+// B10.1 (SAFETY NET) - once per session, retried through syncOnce(true); the second miss is recorded, not retried again.
+let emptyPullRetried = false;
+function verifyPullLanded(pull: SyncResponse['pull'], fullPull: boolean, gen: number): void {
+  if (!fullPull) return;
+  const carried = (pull.journalEntries ?? []).filter(e => !e.deletedAt && !getSystemKind(e)).length;
+  if (carried === 0) { setPullDiagnostic(null); return; }
+  const live = getJournalEntries().filter(e => !getSystemKind(e)).length;
+  if (live > 0) { emptyPullRetried = false; setPullDiagnostic(null); return; }
+  if (!emptyPullRetried) {
+    emptyPullRetried = true;
+    setTimeout(() => { if (gen === generation) void syncOnce(true); }, 0);
+    return;
+  }
+  setPullDiagnostic({ pulled: carried, live });
+}
+
+// B10.1 (THE STALE-CLIENT GUARD) - the server names the build it serves in every reply. A tab that finds a DIFFERENT one was
+// loaded before a deploy: it stops syncing at once (stopSync retires everything in flight, so nothing after this check applies
+// or writes), goes read-only (persistence holds its writes) and asks to be reloaded. Its unsent edits are kept; the new build
+// sends them after the reload. Skipped when either side does not know its build (dev, tests, Electron - see clientBuild.ts).
+function checkBuild(resp: { build?: string }): void {
+  if (buildIsStale(getClientBuild(), resp.build)) {
+    markStaleClient();
+    stopSync();
+    throw STALE;
+  }
+}
+
+type SyncRun = 'ok' | 'failed' | 'skipped' | 'stale';
+
 export async function syncOnce(fullPull = false): Promise<void> {
-  if (inFlight) return;
+  await runSync(fullPull);
+}
+
+async function runSync(fullPull: boolean): Promise<SyncRun> {
+  if (isStaleClient()) return 'stale';
+  if (inFlight) return 'skipped';
   inFlight = true;
+  const gen = generation;
+  // Throws STALE if a sign-out happened while this run was waiting; the catch below turns that into a silent return.
+  const live = (): void => { if (gen !== generation) throw STALE; };
   setStatus('pending');
 
   const cursor = fullPull ? null : getLastSyncAt();
@@ -219,6 +361,16 @@ export async function syncOnce(fullPull = false): Promise<void> {
     // Named before any network: the writer is told even if this sync then fails for another reason.
     setTooLarge(big.map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));
     const quarantined: PushItem[] = [];
+    // ITEM 224(a) — looked up by id as each response names its own rejected
+    // ids, so the notice can carry each one's own title (the server only
+    // ever names an id; it has no reason to know a record's display title).
+    const itemById = new Map(items.map(i => [i.rec.id, i] as const));
+    const rejectedThisSync: PushItem[] = [];
+    const noteRejections = (rejected: SyncResponse['rejected']): Set<string> => {
+      const ids = rejectedIdSet(rejected);
+      for (const id of ids) { const item = itemById.get(id); if (item) rejectedThisSync.push(item); }
+      return ids;
+    };
 
     // A lone record the server refused: remember the limit it revealed, and list it instead of re-sending it.
     const quarantine = (item: PushItem): void => {
@@ -230,16 +382,19 @@ export async function syncOnce(fullPull = false): Promise<void> {
       if (batch.length === 1) { quarantine(batch[0]); return; }
       const mid = batch.length >> 1;
       await pushOnly(batch.slice(0, mid));
+      live();
       await pushOnly(batch.slice(mid));
     };
     const pushOnly = async (batch: PushItem[]): Promise<void> => {
       // The limit may have been learned since this batch was planned.
       if (batch.length === 1 && isTooLarge(batch[0])) { quarantined.push(batch[0]); return; }
       try {
-        await apiSync({ lastSyncAt: null, push: payloadOf(batch), pull: false });
-        cleanBatch(batch);
+        const r = await apiSync({ lastSyncAt: null, push: payloadOf(batch), pull: false });
+        live();
+        checkBuild(r);
+        cleanBatch(batch, noteRejections(r.rejected));
       } catch (e) {
-        if (e instanceof SyncHttpError && e.status === 413) { await onRefused(batch); return; }
+        if (e instanceof SyncHttpError && e.status === 413) { live(); await onRefused(batch); return; }
         throw e;
       }
     };
@@ -250,37 +405,52 @@ export async function syncOnce(fullPull = false): Promise<void> {
       // The common case, and byte-for-byte the old shape: ONE request carries the push AND the pull.
       try {
         resp = await apiSync({ lastSyncAt: cursor, push: payloadOf(chunks[0]) });
+        live();
+        checkBuild(resp);
         applyRemoteRecords(resp.pull);
         maybeBackfillJournal(resp.pull);
-        cleanBatch(chunks[0]);
+        cleanBatch(chunks[0], noteRejections(resp.rejected));
       } catch (e) {
         if (!(e instanceof SyncHttpError && e.status === 413)) throw e;
+        live();
         resp = null;
         await onRefused(chunks[0]);
       }
     } else {
-      for (const chunk of chunks) await pushOnly(chunk);
+      for (const chunk of chunks) { await pushOnly(chunk); live(); }
     }
     if (!resp) {
       // Nothing to push, or the push went out as push-only chunks: one final request pulls.
       resp = await apiSync({ lastSyncAt: cursor, push: {} });
+      live();
+      checkBuild(resp);
       applyRemoteRecords(resp.pull);
       maybeBackfillJournal(resp.pull);
     }
 
+    live();
     setLastSyncAt(resp.serverTime);
+    // B10.1 - after the cursor, with no await between: both only read what the apply above left in the cache.
+    verifyPullLanded(resp.pull, cursor === null, gen);
+    if (cursor === null) noteFullPull(gen);
     setTooLarge([...big, ...quarantined].map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));
+    setRejected(rejectedThisSync.map(i => ({ id: i.rec.id, title: titleFor(i) })));
     backoffStep = 0;
     if (backoffTimer) {
       clearTimeout(backoffTimer);
       backoffTimer = null;
     }
     setStatus('synced');
-  } catch {
+    return 'ok';
+  } catch (e) {
+    // A stale run writes nothing and schedules nothing: the session it belonged to is over.
+    if (e === STALE || gen !== generation) return 'stale';
     setStatus('offline');
     scheduleBackoff();
+    return 'failed';
   } finally {
-    inFlight = false;
+    // Only the CURRENT generation owns the flag. stopSync() already released it, and a newer run may hold it now.
+    if (gen === generation) inFlight = false;
   }
 }
 
@@ -294,10 +464,18 @@ function onVisible(): void {
 // Start syncing after login. Immediately does a full pull (lastSyncAt: null),
 // then runs every 20s while the tab is visible, plus on reconnect and on
 // returning to the tab.
+//
+// B10.1 - the generation is captured BEFORE the first await. A sign-out during that first sync calls stopSync(), which bumps it;
+// without this check the code below would still run afterwards and install a 20 s timer and two listeners for a session that
+// had already ended (the next sign-in would then have two timers). A stale tab never starts.
 export async function startSync(): Promise<void> {
-  if (running) return;
+  if (running || isStaleClient()) return;
   running = true;
-  await syncOnce(true);
+  const gen = generation;
+  beginFirstPull(gen);
+  const result = await runSync(true);
+  if (gen !== generation) return;
+  if (result !== 'ok' && firstPull && firstPull.gen === gen) firstPull.settle('failed');
   intervalId = setInterval(() => {
     if (document.visibilityState === 'visible') void syncOnce();
   }, INTERVAL_MS);
@@ -307,6 +485,10 @@ export async function startSync(): Promise<void> {
 
 export function stopSync(): void {
   running = false;
+  // Retire any sync still waiting on the network, and release the flag it was holding so the next session's first
+  // sync is not skipped behind a request that may never answer.
+  generation += 1;
+  inFlight = false;
   if (intervalId) {
     clearInterval(intervalId);
     intervalId = null;
@@ -321,6 +503,12 @@ export function stopSync(): void {
   // ITEM 203 - what was learned about one account's records, and the names of its too-large pages, must not outlive it.
   learnedLimitBytes = Number.POSITIVE_INFINITY;
   setTooLarge([]);
+  setRejected([]);
+  setPullDiagnostic(null);
+  emptyPullRetried = false;
+  // B10.1 - the session's first pull ends with the session: anyone still waiting on it is released as 'failed', and the next
+  // session starts its own.
+  if (firstPull) { firstPull.settle('failed'); firstPull = null; }
   setStatus('pending');
 }
 

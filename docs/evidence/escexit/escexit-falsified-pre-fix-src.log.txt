@@ -1,0 +1,35 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PASS  S1 [Free Write] (setup) focus is in the writing surface
+FAIL  S1 [Free Write] Esc moves focus OUT of the editor to the CURRENT mode tab ("Free Write")  [{"inEditor":true,"modeKey":null,"active":false,"tag":"DIV","text":"A written line of prose."}]
+FAIL  S2 [Free Write] ...and the keyboard is free from there: Tab moves to another control, not back into the editor  [{"inEditor":true,"modeKey":null,"active":false,"tag":"DIV","text":"A written line of prose."}]
+PASS  S5 [Free Write] Esc did not edit the page
+PASS  S1 [Draft] (setup) focus is in the writing surface
+FAIL  S1 [Draft] Esc moves focus OUT of the editor to the CURRENT mode tab ("Draft")  [{"inEditor":true,"modeKey":null,"active":false,"tag":"DIV","text":"A written line of prose."}]
+FAIL  S2 [Draft] ...and the keyboard is free from there: Tab moves to another control, not back into the editor  [{"inEditor":true,"modeKey":null,"active":false,"tag":"DIV","text":"A written line of prose."}]
+PASS  S5 [Draft] Esc did not edit the page
+PASS  S1 [Revise] (setup) focus is in the writing surface
+FAIL  S1 [Revise] Esc moves focus OUT of the editor to the CURRENT mode tab ("Revise")  [{"inEditor":true,"modeKey":null,"active":false,"tag":"DIV","text":"A written line of prose."}]
+FAIL  S2 [Revise] ...and the keyboard is free from there: Tab moves to another control, not back into the editor  [{"inEditor":true,"modeKey":null,"active":false,"tag":"DIV","text":"A written line of prose."}]
+PASS  S5 [Revise] Esc did not edit the page
+PASS  S3 (setup) a rail item is reachable by a real pointer  [{"x":42,"y":272,"name":"Drawers"}]
+PASS  S3 (setup) the rail panel is open
+PASS  S3 (setup) the panel is still open with focus back in the editor
+PASS  S3 THE ASSUMPTION, MEASURED: the rail panel is gone 60 ms after the Esc keydown - the window escapeExit.ts waits before deciding the key was the popup's  [{"msToClose":1,"window":60}]
+PASS  S3 the first Esc CLOSES THE PANEL and focus stays where it was (in the editor)  [{"open":false,"p1":{"inEditor":true,"modeKey":null,"active":false,"tag":"DIV","text":"A written line of prose."}}]
+FAIL  S3 the second Esc leaves the editor for the current mode tab  [{"inEditor":true,"modeKey":null,"active":false,"tag":"DIV","text":"A written line of prose."}]
+PASS  S4 (setup) an empty page shows its beginnings row
+PASS  S4 THE ASSUMPTION, MEASURED: the beginnings row is gone inside the same 60 ms window  [{"msToClose":3.5,"window":60}]
+PASS  S4 the first Esc dismisses the beginnings row and focus stays in the editor  [{"inEditor":true,"modeKey":null,"active":false,"tag":"DIV","text":""}]
+FAIL  S4 the second Esc leaves for the current mode tab  [{"inEditor":true,"modeKey":null,"active":false,"tag":"DIV","text":""}]
+FAIL  S6 the writing surface is DESCRIBED BY a hint that reads "Press Escape to leave the page" (one element, in the accessibility tree)  [{"id":null,"missing":true}]
+FAIL  S6 the hint is never drawn and is out of flow (1px, clipped, absolute) - it cannot move or resize the page  [{"id":null,"missing":true}]
+PASS  S7 [Free Write, a written line] Tab does NOT move focus (the audit's suggestion is declined by ruling) - and Esc is still the way out  [{"inEditor":true,"modeKey":null,"active":false,"tag":"DIV","text":"A written line of prose."}]
+FAIL  S7 ...Esc leaves from there  [{"inEditor":true,"modeKey":null,"active":false,"tag":"DIV","text":"A written line of prose."}]
+PASS  S8 (setup) the screenplay door is reachable
+PASS  S8 (setup) the screenplay surface is up
+FAIL  S8 (setup) focus is in the active script element, and it carries the same hint  [{"inScript":true,"modeKey":null,"active":false,"described":null,"hint":null}]
+PASS  S8 the premise: Tab is captured on the screenplay (focus stays in the script)  [{"inScript":true,"modeKey":null,"active":false,"described":null,"hint":null}]
+FAIL  S8 Esc moves focus from the screenplay to its current mode tab  [{"inScript":true,"modeKey":null,"active":false,"described":null,"hint":null}]
+
+ESCEXIT VERIFY: FAIL - 13/31 failed

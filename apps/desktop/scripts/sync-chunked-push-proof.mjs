@@ -272,7 +272,9 @@ async function scenarios(run) {
     // signedIn, t): the lexicon function moved from the 3rd argument to the 7th, so this instrument's 3-argument calls handed `t` to
     // `storageFailed` and died on `t is not a function`. Every K10 claim is about the TOO-LARGE notice with storage healthy, so the
     // four new flags are passed as that state - not full, not near full, nothing unpushed, signed in - and the claims are unchanged.
-    const notice = (status, tooLarge) => C.syncNoticeText(status, tooLarge, false, false, false, true, t);
+    // Batch Nine's sync-integrity widened it again: `rejected` (records the server refused) is the 3rd argument, `t` the 8th. K10 is
+    // about the too-large notice with nothing rejected, so `rejected` is empty.
+    const notice = (status, tooLarge) => C.syncNoticeText(status, tooLarge, [], false, false, false, true, t);
     const one = [{ id: 'FAT', title: 'A heavy ink page', bytes: 6e6 }];
     const two = [...one, { id: 'F2', title: 'Another', bytes: 7e6 }];
     const a = notice('synced', one);
@@ -356,9 +358,15 @@ function mutantList() {
   out.push({ name: 'P2: the server ignores `pull: false` (every chunk pulls)', o: { ssync: (t) => must(t, "const wantPull = req.body?.pull !== false;", 'const wantPull = true;') } });
   out.push({ name: 'P2: no chunking (one chunk holds everything)', o: { csync: (t) => must(t, 'const CHUNK_TARGET_BYTES = 1024 * 1024;', 'const CHUNK_TARGET_BYTES = 1e12;') } });
   out.push({ name: 'P2: the single-chunk shortcut removed (a separate pull request always)', o: { csync: (t) => must(t, 'if (chunks.length === 1) {', 'if (false) {') } });
-  out.push({ name: 'P2: a landed chunk is no longer cleaned when it lands', o: { csync: (t) => must(t, "        await apiSync({ lastSyncAt: null, push: payloadOf(batch), pull: false });\n        cleanBatch(batch);", "        await apiSync({ lastSyncAt: null, push: payloadOf(batch), pull: false });") } });
+  // Re-anchored for item 224(a) (sync-integrity, Batch Nine): the chunk's response now carries `rejected`, and cleanBatch takes it.
+  // Re-anchored again for the sync generation guard (cc8aa6a): `live();` now sits between the apiSync line and cleanBatch (a stale
+  // session's answer must not act). The mutant KEEPS `live();` in both the anchor and the replacement and removes ONLY the cleaning,
+  // so it is still the same lie: the chunk landed, the guard passed, and it is not marked clean.
+  out.push({ name: 'P2: a landed chunk is no longer cleaned when it lands', o: { csync: (t) => must(t, "        const r = await apiSync({ lastSyncAt: null, push: payloadOf(batch), pull: false });\n        live();\n        checkBuild(r);\n        cleanBatch(batch, noteRejections(r.rejected));", "        const r = await apiSync({ lastSyncAt: null, push: payloadOf(batch), pull: false });\n        live();\n        checkBuild(r);\n        void r;") } });
   out.push({ name: 'P5: the pre-check removed (a record over the limit is sent to be refused)', o: { csync: (t) => must(t, 'const isTooLarge = (i: PushItem): boolean => i.bytes + ENVELOPE_BYTES > effectiveLimit();', 'const isTooLarge = (i: PushItem): boolean => false;') } });
-  out.push({ name: 'P5: a 413 the client did not predict is treated as offline (the old wedge)', o: { csync: (t) => must(must(t, 'if (e instanceof SyncHttpError && e.status === 413) { await onRefused(batch); return; }', ''), 'if (!(e instanceof SyncHttpError && e.status === 413)) throw e;', 'throw e;') } });
+  // Re-anchored for the sync generation guard (cc8aa6a): the 413 branch in pushOnly now begins `live();` (a stale session must not act on
+  // the refusal). The mutant deletes the WHOLE branch, guard included, as before: a 413 the client did not predict is simply not handled.
+  out.push({ name: 'P5: a 413 the client did not predict is treated as offline (the old wedge)', o: { csync: (t) => must(must(t, 'if (e instanceof SyncHttpError && e.status === 413) { live(); await onRefused(batch); return; }', ''), 'if (!(e instanceof SyncHttpError && e.status === 413)) throw e;', 'throw e;') } });
   out.push({ name: 'P5: a lower limit is not learned (the second big page is sent to be refused too)', o: { csync: (t) => must(t, 'if (batch.length === 1 && isTooLarge(batch[0])) { quarantined.push(batch[0]); return; }', '') } });
   out.push({ name: 'P5: a refused lone record is not remembered as too large (it is dropped from the list)', o: { csync: (t) => must(t, "setTooLarge([...big, ...quarantined].map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));", 'setTooLarge(big.map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));') } });
   out.push({ name: 'P5: the notice splices the title with a replacement STRING (a title of "$&" is mangled)', o: { cnotice: (t) => must(t, "() => tooLarge[0].title", "tooLarge[0].title") } });
@@ -366,7 +374,9 @@ function mutantList() {
   // Re-anchored for item 213, which restructured syncNoticeText (storage states first, then offline, then `if (tooLarge.length > 0)`);
   // the mutant is the same lie: a too-large record reported as "Offline".
   out.push({ name: 'P5: the notice calls a too-large page "Offline" again (the old lie)', o: { cnotice: (t) => must(t, '  if (tooLarge.length > 0) {\n', "  if (tooLarge.length > 0) {\n    return 'Offline \u2014 saved here';\n") } });
-  out.push({ name: 'P5: logout no longer clears the too-large list', o: { csync: (t) => must(t, "  learnedLimitBytes = Number.POSITIVE_INFINITY;\n  setTooLarge([]);\n  setStatus('pending');", "  learnedLimitBytes = Number.POSITIVE_INFINITY;\n  setStatus('pending');") } });
+  // Re-anchored for item 224(a) (sync-integrity, Batch Nine): logout now also clears the rejected list, between the two lines this
+  // mutant used to join. The mutant is unchanged in kind: only the too-large list's clearing is removed.
+  out.push({ name: 'P5: logout no longer clears the too-large list', o: { csync: (t) => must(t, "  learnedLimitBytes = Number.POSITIVE_INFINITY;\n  setTooLarge([]);\n  setRejected([]);", "  learnedLimitBytes = Number.POSITIVE_INFINITY;\n  setRejected([]);") } });
   out.push({ name: 'P5: the too-large list is never set (the writer is never told)', o: { csync: (t) => must(must(t, "setTooLarge(big.map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));\n    const quarantined", "const quarantined"), "setTooLarge([...big, ...quarantined].map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));", '') } });
   return out;
 }

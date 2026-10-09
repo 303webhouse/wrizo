@@ -46,6 +46,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+let e4TemplatesSeen = null;   // E4's stand-in count, kept for its parked record (PAGE-TEMPLATES-MOVE)
 let tabFence = null;   // the E3 Tab fence's observation, kept for its parked record below
 const e3 = {};         // the four line-scope E3 observations, kept for their parked records below
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -801,10 +802,19 @@ await withHarness(async (app) => {
   })()`);
   const pageRect = () => app.evalJs("(() => { const r = document.querySelector('.forward-only-editor').getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round).join(','); })()");
   const pk0 = await pk();
-  ok('E4 [Fable\'s review successor]: prose Draft carries a "Page kind" row directly below the Templates - Normal, Screenplay, Research in that order, Normal preselected, none greyed, one labelled radiogroup - and still no Structure zone',
+  e4TemplatesSeen = e4Prose.templates;
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order: FOUR stand-ins now,
+  // not three. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
+  //
+  // ok('E4 [Fable\'s review successor]: prose Draft carries a "Page kind" row directly below the Templates - Normal, Screenplay, Research in that order, Normal preselected, none greyed, one labelled radiogroup - and still no Structure zone',
+  //   !!pk0 && pk0.heading === 'Page kind' && pk0.afterTemplates && JSON.stringify(pk0.labels) === JSON.stringify(['Normal', 'Screenplay', 'Research'])
+  //     && JSON.stringify(pk0.checked) === JSON.stringify(['normal']) && pk0.anyDisabled === false && pk0.group === 'wz-page-kind-label'
+  //     && e4Prose.structureZone === false && e4Prose.templates === 3, JSON.stringify({ pk0, e4Prose }));
+  // ------------------------------------------------------------------
+  ok('E4 [page-templates successor]: prose Draft carries a "Page kind" row directly below the Templates - Normal, Screenplay, Research in that order, Normal preselected, none greyed, one labelled radiogroup - and still no Structure zone; the Templates hold their FOUR stand-ins',
     !!pk0 && pk0.heading === 'Page kind' && pk0.afterTemplates && JSON.stringify(pk0.labels) === JSON.stringify(['Normal', 'Screenplay', 'Research'])
       && JSON.stringify(pk0.checked) === JSON.stringify(['normal']) && pk0.anyDisabled === false && pk0.group === 'wz-page-kind-label'
-      && e4Prose.structureZone === false && e4Prose.templates === 3, JSON.stringify({ pk0, e4Prose }));
+      && e4Prose.structureZone === false && e4Prose.templates === 4, JSON.stringify({ pk0, e4Prose }));
   ok('E4 [Fable\'s review successor]: the style guides are absent before Research, and the drawer offers no Convert row',
     !!pk0 && pk0.guideLabels.length === 0 && pk0.convertRows === 0, JSON.stringify(pk0));
   const rectBefore = await pageRect();
@@ -859,6 +869,9 @@ console.log(JSON.stringify(checks, null, 2));
 
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  // PAGE-TEMPLATES-MOVE (2026-10-08) - ONE more park: E4's stand-in count, read in the live run above.
+  parkedChecks.push({ name: 'PARKED (was "E4 [Fable\'s review successor]: prose Draft carries a \"Page kind\" row directly below the Templates ... and still no Structure zone" - its e4Prose.templates === 3 clause) - PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order; live successor: E4 [page-templates successor]',
+    pass: e4TemplatesSeen === 4, detail: `templates=${e4TemplatesSeen}` });
   // ONE PARK (item 158): the E3 Tab fence, superseded when Tab was built. Otherwise this file is NEW and supersedes nothing of its own.
   // FOUR MORE PARKS (Nick's line-scope ruling of 2026-09-25): the four E3 paragraph-scope checks, each superseded by its "[line-scope successor]".
   const lineParks = [
@@ -882,7 +895,10 @@ if (process.env.HARNESS_PARKED === '1') {
   // this file falsified nothing, and it is auditable against the wave's own
   // offer record, which names every park by file and count.
   // eslint-disable-next-line no-console
+  // ---- the count line above this one is parked by PAGE-TEMPLATES-MOVE's park (2026-10-08); the line itself is kept verbatim and
+  // a corrected count follows it.
   console.log('\nITEM83F PARKED: 5 checks (the E3 Tab-fence park of item 158 and the four E3 line-scope parks, above) — HARNESS_PARKED=1 armed; the rest of this file parks nothing of its own. The wave\'s six parks live in fx3.mjs (five) and ab2.mjs (one), each beside its successor.');
+  console.log(`ITEM83F PARKED (corrected): ${parkedChecks.length} checks - the five above plus PAGE-TEMPLATES-MOVE's E4 stand-in count.`);
 }
 
 const allChecks = checks.concat(parkedChecks);

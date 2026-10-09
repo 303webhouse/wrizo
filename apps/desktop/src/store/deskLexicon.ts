@@ -247,6 +247,14 @@ export type DeskTermId =
   // all), plus the one-time near-full heads-up.
   | 'syncStorageFullPending' | 'syncStorageFullSynced' | 'syncStorageFullAnon'
   | 'syncStorageNearFull' | 'syncStorageNearFullAnon'
+  // ITEM 224(a), SYNC INTEGRITY — a record the server itself refused to
+  // store (not a size problem); kept dirty, retried, and named here.
+  | 'syncRejectedOne' | 'syncRejectedMany'
+  // B10.1 - the safety net's diagnostic (counts only) and the stale-client banner.
+  | 'syncPullShort' | 'staleClientBody' | 'staleClientReload'
+  // LOGOUT SAFETY — a sign-out refused while records have not reached the account, and its second step.
+  | 'logoutBlockedBody' | 'logoutBlockedRejected' | 'logoutStay' | 'logoutAnyway' | 'logoutAnywayConfirm' | 'logoutAnywayBack'
+  | 'logoutBlockedBodyOne' | 'logoutAnywayOne' | 'logoutAnywayConfirmOne' | 'logoutSigningOut'
   | 'cascadePageNewPage' | 'cascadePlanJustAPage' | 'boardNewPageCard' | 'boardCanvasEmpty'
   // ITEM 83 M3 (R6) — the Page drawer's PAGE SETUP zone: the sheet's own
   // dimension (margins, leading, numbers, headers, footers), as opposed to
@@ -270,7 +278,7 @@ export type DeskTermId =
   | 'twPageScroll' | 'footProgress' | 'footFullScreen' | 'footTypewriter' | 'footTarget'
   // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
   | 'draftHeading' | 'draftHeadingUp' | 'draftHeadingDown' | 'draftBullet' | 'draftBulletCircle' | 'draftBulletSquare' | 'draftBulletStyles' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
-  | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage'
+  | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage' | 'templateCustom'
   | 'comingSoon' | 'railTypeface' | 'goalUnitWords' | 'railPageKind'
   | 'footSettings' | 'footMenuTypewriter' | 'footMenuProgress' | 'footMenuPreferences'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
@@ -552,7 +560,7 @@ export type DeskTermId =
   // board-side explicit pairing entry. "The plan serves the page." travels
   // verbatim from the brief (Nick did not edit the proposed string).
   | 'boardModeOpen' | 'boardModeStoryboard' | 'boardModeOutline'
-  | 'boardPageDoor' | 'pagePlanDoor' | 'boardTelos'
+  | 'boardPageDoor' | 'pagePlanDoor' | 'pageEscHint' | 'boardTelos'
   | 'boardLaneDefault' | 'boardStoryboardEmpty' | 'boardOutlineEmpty'
   | 'boardPairWithPage'
   | 'boardRenameLabel'
@@ -563,7 +571,14 @@ export type DeskTermId =
   // 2026-07-25) — one word each, "Sprout" superseding "Start from a Spark".
   | 'beginNewCard' | 'beginNewPageCard' | 'beginLoadDeck' | 'beginConnectPage'
   | 'beginNewLane'
-  | 'beginScreenplay' | 'beginSprout' | 'beginPlan';
+  | 'beginScreenplay' | 'beginSprout' | 'beginPlan'
+  // ITEM 224 — sign-up by invite code, until launch. Arrival.tsx's own
+  // fields are placeholder-only (no labels) today; this one matches that
+  // existing shape exactly rather than introducing a labelled field alone.
+  | 'authInviteCodePlaceholder'
+  // ITEM 224, ROUND 2 — shown instead of the whole form when no codes are
+  // configured, so the gate reads as a quiet fact, never a submit-and-fail.
+  | 'authSignupByInvitation';
 
 const CANONICAL: Record<DeskTermId, string> = {
   // BM1 — the Board's Own Modes.
@@ -572,6 +587,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   boardModeOutline: 'Outline',
   boardPageDoor: 'Page',
   pagePlanDoor: 'Plan',
+  // A1 (accessibility audit): Tab indents on the page, so the way out is said aloud. Screen-reader-only; never drawn.
+  pageEscHint: 'Press Escape to leave the page',
   boardTelos: 'The plan serves the page.',
   boardLaneDefault: 'Cards',
   boardStoryboardEmpty: 'No cards yet. Add cards in Open, then arrange them into order here.',
@@ -849,6 +866,26 @@ const CANONICAL: Record<DeskTermId, string> = {
   // Fable, 2026-09-30: "near-full reads the same way for a signed-out writer (nothing reaches an account there)" \u2014
   // this desk's own wording, parallel to syncStorageFullAnon's cleared sentence; offered, not pre-cleared.
   syncStorageNearFullAnon: 'This device is running low on storage, and nothing else holds a copy of this writing \u2014 download a copy now from Publish',
+  // ITEM 224(a) \u2014 a different cause from too-large: the record traveled
+  // fine and the server itself could not store it. Still safe here, still
+  // retried; the words say so rather than naming a size limit that isn't
+  // the reason.
+  syncRejectedOne: '\u201c{title}\u201d could not be saved to your account \u2014 it is safe on this device and will keep trying',
+  logoutBlockedBody: '{n} changes haven’t saved to your account yet. Stay signed in until they save, or sign out anyway and lose them.',
+  logoutBlockedRejected: 'The account could not take: {titles}.',
+  logoutStay: 'Stay signed in',
+  logoutAnyway: 'Sign out anyway ({n} changes will be lost)',
+  logoutAnywayConfirm: 'Yes, sign out and lose {n} changes',
+  logoutAnywayBack: 'Keep them',
+  logoutBlockedBodyOne: '1 change hasn’t saved to your account yet. Stay signed in until it saves, or sign out anyway and lose it.',
+  logoutAnywayOne: 'Sign out anyway (1 change will be lost)',
+  logoutSigningOut: 'Signing out\u2026',
+  logoutAnywayConfirmOne: 'Yes, sign out and lose 1 change',
+  // B10.1 - counts only, never titles or text. Reload fetches the account's pages again.
+  syncPullShort: 'Your account sent {pulled} pages but {live} are showing \u2014 reload to try again',
+  staleClientBody: 'Wrizo updated, reload',
+  staleClientReload: 'Reload',
+  syncRejectedMany: '{n} items could not be saved to your account \u2014 they are safe on this device and will keep trying',
   // ITEM 83 M3 (R6). Sentence case on rows, engraved-uppercase on the heading
   // (§1.4) — the heading's dress is CSS, so the term itself stays readable.
   pageSetupHeading: 'Page setup',
@@ -917,6 +954,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   templateOutline: 'Outline',
   templateBibliography: 'Bibliography',
   templateTitlePage: 'Title page',
+  templateCustom: 'Custom',
   comingSoon: 'Coming soon',
   railTypeface: 'Typeface',
   goalUnitWords: 'words',
@@ -1240,6 +1278,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   publishDownloadConfirm: 'Downloading — check your downloads.',
   publishDownloadFailed: 'That download couldn’t be made — nothing was lost, try again.',
   publishComingSoon: 'Publishing options — tailored to this work’s type, destination, and format — are coming soon.',
+
+  // ITEM 224 — the invite-code field.
+  authInviteCodePlaceholder: 'invite code',
+  authSignupByInvitation: 'By invitation, for now.',
 };
 
 // Flux registers its own capture-module name (the app's other live theme

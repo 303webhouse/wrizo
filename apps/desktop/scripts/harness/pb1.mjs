@@ -237,9 +237,20 @@ await withHarness(async (app) => {
   // ==========================================================================
   await freshDesk(app, LAPTOP_W, 900);
   await app.goto('/page/new?origin=loose');
-  await app.waitFor("!!document.querySelector('[data-beginning=\"screenplay\"]')", { label: 'unborn page, Screenplay door' });
+  // ---- PARKED driver steps - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: the page row has no Screenplay
+  // door; templates live in the tools menu). Kept VERBATIM and no longer run. The same act (requestScreenplay) is the Draft strip's
+  // Screenplay template, so the S2 check below is unchanged; a missing template leaves it red rather than aborting the file.
+  //
+  // await app.waitFor("!!document.querySelector('[data-beginning=\"screenplay\"]')", { label: 'unborn page, Screenplay door' });
+  // await sleep(300);
+  // await app.evalJs("document.querySelector('[data-beginning=\"screenplay\"]').click()");
+  // ------------------------------------------------------------------
+  try { await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'unborn page' }); } catch { /* the check reports */ }
+  await app.click('Draft'); await sleep(400);
+  if (!(await app.evalJs("!!document.querySelector('.wz-sliver-templates')"))) await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  try { await app.waitFor("!!document.querySelector('.wz-template-live[data-template=\"screenplay\"]')", { label: 'unborn page, Screenplay template' }); } catch { /* the check reports */ }
   await sleep(300);
-  await app.evalJs("document.querySelector('[data-beginning=\"screenplay\"]').click()");
+  await app.evalJs("document.querySelector('.wz-template-live[data-template=\"screenplay\"]')?.click()");
   await sleep(800);
   const scripted = await liveRows(app);
   ok('S2 (the amendment): Screenplay BIRTHS at zero words — it transforms the document rather than decorating it, so a script page always has a row and there is no unborn script surface to hold',

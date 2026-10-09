@@ -49,6 +49,8 @@ import { TypeControl } from './TypeControl';
 import { cardTypeStyle, ensureFaceLoaded } from '../store/fontRoster';
 import { SIZE_DEFAULT } from '../store/fontSize';
 
+import { registerFlush } from '../store/flushRegistry';
+
 // J4 — the Board: a canvas of positioned boxes (I2/I3 realized). Boxes only
 // ever arrive via a port (J4 Slice 2) or, AB4 S2/S5, a pin (a membership
 // card) or the sliver's own "Add card" tool — this editor selects, moves,
@@ -1148,7 +1150,16 @@ export function BoardEditor({ id }: { id: string }) {
       }
     };
     document.addEventListener('visibilitychange', onHide);
+    // LOGOUT FLUSH — the 2 s boxes debounce has no blur flush, so a sign-out would otherwise miss the last two seconds
+    // of board edits. It flushes them first, the same way the hide handler does, so they are counted as unsaved.
+    const unregisterFlush = registerFlush(() => {
+      if (!unbornRef.current && boxesRef.current !== lastSavedRef.current) {
+        saveBoardBoxes(id, boxesRef.current);
+        lastSavedRef.current = boxesRef.current;
+      }
+    });
     return () => {
+      unregisterFlush();
       document.removeEventListener('visibilitychange', onHide);
       // PB1 — an unborn board leaves nothing behind: no row was written, so
       // there is nothing to flush and nothing to clean up.

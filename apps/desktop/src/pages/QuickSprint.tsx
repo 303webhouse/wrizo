@@ -19,6 +19,8 @@ import { milestonesForProject } from '../store/milestones';
 import { useLexicon } from '../store/themeLexicon';
 import { useDeskLexicon } from '../store/deskLexicon';
 
+import { registerFlush } from '../store/flushRegistry';
+
 const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
 const AUTOSAVE_MS = 2000;
 const SAVED_STAMP_MS = 2000;
@@ -277,7 +279,10 @@ function QuickSprintView() {
       if (document.visibilityState === 'hidden') flushDraft();
     };
     document.addEventListener('visibilitychange', onVisibility);
+    // LOGOUT FLUSH — a sign-out flushes the draft first, so it is counted as unsaved and this unmount has nothing to write.
+    const unregisterFlush = registerFlush(flushDraft);
     return () => {
+      unregisterFlush();
       document.removeEventListener('visibilitychange', onVisibility);
       flushDraft();
     };

@@ -6,15 +6,68 @@ import { sessionMiddleware } from './session';
 import { authRouter, requireAuth } from './auth';
 import { syncRouter } from './sync';
 import { tutorRouter } from './tutor';
+import { logError } from './logSafe';
+import { getServerBuild } from './build';
 
 const distWeb = resolve(__dirname, '../../desktop/dist-web');
 
 const app = express();
+// ITEM 224, ROUND 2 — don't name the framework. A single, free header that
+// tells nothing useful to a writer and one more thing an attacker doesn't
+// have to guess.
+app.disable('x-powered-by');
 
 // Trust Railway's proxy so secure cookies and req.ip work behind it.
 if (env.isProd) {
   app.set('trust proxy', 1);
 }
+
+// ITEM 224 — basic response headers, on every response. No CSP yet (its own
+// measured ticket) — these four are each a single, uncontroversial default
+// with no app behaviour to break:
+//   - nosniff: the browser never second-guesses a response's declared
+//     Content-Type (blocks a classic MIME-sniffing-to-script vector).
+//   - X-Frame-Options: DENY — this app is never meant to render inside
+//     another site's frame (no embed feature exists).
+//   - Referrer-Policy: only the origin crosses a navigation to another
+//     site; the full path (which can carry a page id) never leaks.
+//   - Strict-Transport-Security: tells a browser that has already reached
+//     this host over HTTPS to never try plain HTTP again. Set ONLY in
+//     production — Railway terminates TLS; local dev is plain HTTP, and a
+//     browser ignores HSTS on a non-HTTPS response anyway, so this is
+//     belt-and-suspenders, not load-bearing, in dev.
+app.use((_req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  if (env.isProd) {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  next();
+});
+
+// ITEM 224, ROUND 2 — reject a state-changing request whose Origin isn't
+// this app's own. The session cookie is already `sameSite: 'lax'`
+// (session.ts), which blocks a cookie from riding a cross-site POST at
+// all in a modern browser — this is a second, explicit line, for an older
+// browser or any other path that first line doesn't cover. GET/HEAD/OPTIONS
+// are exempt (nothing state-changing ever rides one in this app). An
+// ABSENT Origin header fails OPEN — some legitimate same-origin requests
+// and most non-browser clients never send one, and this app sets no CORS
+// headers anywhere, so a cross-origin browser request already cannot read
+// the response either way; a MISMATCHED Origin, which a forged cross-site
+// request WILL carry, fails closed.
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') { next(); return; }
+  const origin = req.headers.origin;
+  if (!origin) { next(); return; }
+  const expected = `${req.protocol}://${req.get('host')}`;
+  if (origin !== expected) {
+    res.status(403).json({ error: 'Forbidden' });
+    return;
+  }
+  next();
+});
 
 // ITEM 203 - the limit is a NUMBER the error handler can hand back, and the client mirrors it (store/sync.ts).
 // 'bytes' parses '5mb' as 5 * 1024 * 1024 = 5,242,880 - the boundary measured on this very middleware.
@@ -37,7 +90,9 @@ app.use((req: Request, res: Response, next: NextFunction) => (req.path === '/api
 
 // Health check — no DB, no session, always cheap.
 app.get('/healthz', (_req: Request, res: Response) => {
-  res.status(200).json({ ok: true });
+  // B10.1 - the served build rides along, so a deploy smoke can compare it with the stamped one without a session.
+  const build = getServerBuild();
+  res.status(200).json(build ? { ok: true, build } : { ok: true });
 });
 
 app.use(sessionMiddleware);
@@ -95,8 +150,7 @@ app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
     res.status(status).json({ error: 'bad request' });
     return;
   }
-  // eslint-disable-next-line no-console
-  console.error('[server error]', err);
+  logError('server', err);
   res.status(500).json({ error: 'Internal server error' });
 });
 
@@ -108,7 +162,6 @@ runMigrations()
     });
   })
   .catch((err) => {
-    // eslint-disable-next-line no-console
-    console.error('Failed to start server', err);
+    logError('server-boot', err);
     process.exit(1);
   });

@@ -15,6 +15,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+let s4TemplatesSeen = null;   // S4's placeholder roster, kept for its parked record (PAGE-TEMPLATES-MOVE)
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -464,8 +465,16 @@ await withHarness(async (app) => {
   })()`);
   ok('S4 [PR #7 successor]: Draft\'s drawer carries no Structure zone and no Convert row',
     proseRowLabel === null && (await structureZone(app)) === false && s4Drawer.convertRows === 0, JSON.stringify({ proseRowLabel, ...s4Drawer }));
-  ok('S4 [PR #7 successor]: the zone\'s place holds the Template stand-ins - Outline, Bibliography, Title page - each aria-disabled and titled "Coming soon"',
-    JSON.stringify(s4Drawer.templates) === JSON.stringify(['Outline', 'Bibliography', 'Title page']) && s4Drawer.disabled && JSON.stringify(s4Drawer.titles) === JSON.stringify(['Coming soon']),
+  s4TemplatesSeen = s4Drawer.templates;
+  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order. Kept VERBATIM and no
+  // longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
+  //
+  // ok('S4 [PR #7 successor]: the zone\'s place holds the Template stand-ins - Outline, Bibliography, Title page - each aria-disabled and titled "Coming soon"',
+  //   JSON.stringify(s4Drawer.templates) === JSON.stringify(['Outline', 'Bibliography', 'Title page']) && s4Drawer.disabled && JSON.stringify(s4Drawer.titles) === JSON.stringify(['Coming soon']),
+  //   JSON.stringify(s4Drawer));
+  // ------------------------------------------------------------------
+  ok('S4 [page-templates successor]: the zone\'s place holds the Template stand-ins - Outline, Title page, Bibliography, Custom, in that order - each aria-disabled and titled "Coming soon"',
+    JSON.stringify(s4Drawer.templates) === JSON.stringify(['Outline', 'Title page', 'Bibliography', 'Custom']) && s4Drawer.disabled && JSON.stringify(s4Drawer.titles) === JSON.stringify(['Coming soon']),
     JSON.stringify(s4Drawer));
 
   // === S2 — the forward lock: an explicit persisted toggle, default ON
@@ -826,6 +835,9 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // PAGE-TEMPLATES-MOVE (2026-10-08) - S4's placeholder roster, read in the live run above.
+  pok('PARKED (was "S4 [PR #7 successor]: the zone\'s place holds the Template stand-ins - Outline, Bibliography, Title page - each aria-disabled and titled \"Coming soon\"") - PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order; live successor: S4 [page-templates successor]',
+    JSON.stringify(s4TemplatesSeen) === JSON.stringify(['Outline', 'Title page', 'Bibliography', 'Custom']), JSON.stringify(s4TemplatesSeen));
   await withHarness(async (app) => {
     await freshProsePage(app);
     // CD1 S2/S7 — every `.desk-toolrail-*` selector below is updated to its
@@ -1036,10 +1048,22 @@ if (process.env.HARNESS_PARKED === '1') {
     //     && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
     //   JSON.stringify(draftRailClassRenameCheck));
     // ---------------------------------------------------------------------
-    pok('PARKED, generation 6 (was generation 5, the FIFTEEN-button roster with Round/Hollow/Square bullets) — PR #7 (4d3c84e) changes the MEMBERSHIP: one Round bullet plus a Bullet styles menu, B/I/U titled with their shortcuts, and three Coming soon placeholders, SEVENTEEN in all; the claim is unchanged and re-made at the current membership, in order',
+    // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick, 2026-10-08: "templates live in the tools menu now") - GENERATION 6,
+    // quoted VERBATIM and no longer asserted. The claim is unchanged: the Draft rail carries exactly its ruled roster, in order.
+    // The MEMBERSHIP changed: Screenplay joins the Templates row as a LIVE button (titled Screenplay) ahead of the placeholders,
+    // and a fourth placeholder, Custom, joins them. Generation 7 below re-makes the claim at that membership, pinned in order.
+    //
+    // pok('PARKED, generation 6 (was generation 5, the FIFTEEN-button roster with Round/Hollow/Square bullets) — PR #7 (4d3c84e) changes the MEMBERSHIP: one Round bullet plus a Bullet styles menu, B/I/U titled with their shortcuts, and three Coming soon placeholders, SEVENTEEN in all; the claim is unchanged and re-made at the current membership, in order',
+    //   !draftRailClassRenameCheck.ink && draftRailClassRenameCheck.captureItems === 0
+    //     && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure === false
+    //     && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold (Ctrl+B)', 'Italic (Ctrl+I)', 'Underline (Ctrl+U)', 'Strikethrough', 'Heading', 'Round bullet', 'Bullet styles', 'Block quote', 'Outdent', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right', 'Coming soon', 'Coming soon', 'Coming soon'])
+    //     && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
+    //   JSON.stringify(draftRailClassRenameCheck));
+    // ---------------------------------------------------------------------
+    pok('PARKED, generation 7 (was generation 6, the SEVENTEEN-button roster) — PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08) changes the MEMBERSHIP: Screenplay joins the Templates row as a LIVE button ahead of the placeholders, and a fourth placeholder, Custom, joins them, EIGHTEEN in all; the claim is unchanged and re-made at the current membership, in order',
       !draftRailClassRenameCheck.ink && draftRailClassRenameCheck.captureItems === 0
         && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure === false
-        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold (Ctrl+B)', 'Italic (Ctrl+I)', 'Underline (Ctrl+U)', 'Strikethrough', 'Heading', 'Round bullet', 'Bullet styles', 'Block quote', 'Outdent', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right', 'Coming soon', 'Coming soon', 'Coming soon'])
+        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold (Ctrl+B)', 'Italic (Ctrl+I)', 'Underline (Ctrl+U)', 'Strikethrough', 'Heading', 'Round bullet', 'Bullet styles', 'Block quote', 'Outdent', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right', 'Screenplay', 'Coming soon', 'Coming soon', 'Coming soon', 'Coming soon'])
         && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
       JSON.stringify(draftRailClassRenameCheck));
 

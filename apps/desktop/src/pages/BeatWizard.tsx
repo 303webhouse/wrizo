@@ -13,6 +13,8 @@ import { useLexicon } from '../store/themeLexicon';
 // literal). See the build report's Binder-vs-Drawer section.
 import { useDeskLexicon } from '../store/deskLexicon';
 
+import { registerFlush } from '../store/flushRegistry';
+
 const AUTOSAVE_MS = 2000;
 const SAVED_STAMP_MS = 2000;
 
@@ -117,7 +119,10 @@ export function BeatWizard() {
       if (document.visibilityState === 'hidden') flushNotes();
     };
     document.addEventListener('visibilitychange', onVisibility);
+    // LOGOUT FLUSH — a sign-out flushes the beat notes first, so they are counted as unsaved.
+    const unregisterFlush = registerFlush(flushNotes);
     return () => {
+      unregisterFlush();
       document.removeEventListener('visibilitychange', onVisibility);
       flushNotes();
     };
