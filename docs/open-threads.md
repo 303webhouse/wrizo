@@ -25110,3 +25110,13 @@ light reshoot.** **PAIR ORDER after that: templates pair → rhizome pair → B1
 
 **GRANTED: INK, `2026-10-09T02:48:06Z` (8:48 pm MT) — the grant file read first (absent), the box with 0 browsers.** 30-minute check-in
 due 9:18 pm MT; this desk looks at INK’s own branches for a push before clearing anything.
+
+## 30-MINUTE CHECK-IN: INK’S guest-client-walk GRANT CLEARED, NEVER USED — 2026-10-08 (chat 1)
+
+INK’s grant (`ink-guest-walk-20261008`, written `2026-10-09T02:48:06Z`, 8:48 pm MT) was checked at age 31 minutes, AFTER reading the
+file (still INK’s, unchanged) and INK’s own branches: **no push since 19:52 MT (`guest-client-r4` `afe9bb2`, `b101-defence`
+`b95b181`, `drafts-integrity` `56d1e3c`, `guest-login` `de1f170`); 0 harness node processes, NO node process started in the last 35
+minutes, 0 `ws-runtime-verify` browsers, and NO listeners on :3100–3130 — INK’s local rig (the live server `guest-client-walk`
+needs) is DOWN, as Fable had ruled it could be.** The walk could not have run. No “box done” received. **CLEARED `2026-10-09T03:19Z`
+— open ~31 minutes, unused.** INK re-asks once the rig is up (local Postgres, the server on :3107, the front); this desk then writes a
+fresh grant after reading the file.
