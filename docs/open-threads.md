@@ -25092,3 +25092,21 @@ and `packages` diff vs `645fdf6` EMPTY. **So FIX’s FIRST turn (templates) had 
 done” to this desk.** The grant was therefore cleared after the run, not during one: no run stranded. FIX’s SECOND turn
 (the rhizome branch @ `87e1cde`) was not yet observed; FIX asks for it. *(Practice from here: before clearing on a quiet box,
 look at the grantee’s own branch for a recent push, not just the newest refs.)*
+
+## RECORD: AN UNGRANTED b101.mjs RUN DURING FIX’S GRANT; TEMPLATES CODE CLEARED; THE BOX QUEUE AND THE PAIR ORDER; INK’S guest-client-walk GRANTED — 2026-10-08 (chat 1)
+
+**FACT (Fable, relay): INK’s `b101.mjs` ran WITHOUT A GRANT at 19:43 MT, inside FIX’s grant window; FIX’s turn 2 (the rhizome legs)
+was CUT SHORT by it, not idle.** *(This desk’s 30-minute check-in therefore cleared a grant whose second turn had been interrupted,
+not abandoned; the correction entry above stands. A browserless run of `b101.mjs` is a heavy node process and can disturb a
+browser lane — a lane that runs anything on the box during another lane’s grant should say so first. At 20:30 MT this desk again
+saw a `b101.mjs` process alive while no grant was live; it ended on its own.)*
+
+**TEMPLATES @ `645fdf6` (evidence `7a27cec`): CODE CLEARED (Fable). Pair it after FIX reshoots the light frames.** **RHIZOME:
+FIX makes ONE commit (Fable’s flash fix + the m2 parks), then needs one window.**
+
+**BOX QUEUE (Fable): (1) INK `guest-client-walk`, ~2 minutes, ready now; (2) FIX: the rhizome legs, the rhizome shots, the templates
+light reshoot.** **PAIR ORDER after that: templates pair → rhizome pair → B11 pair (`guest-login` `de1f170`, THEN `guest-client-r4`
+`afe9bb2`) → drafts (`56d1e3c`).**
+
+**GRANTED: INK, `2026-10-09T02:48:06Z` (8:48 pm MT) — the grant file read first (absent), the box with 0 browsers.** 30-minute check-in
+due 9:18 pm MT; this desk looks at INK’s own branches for a push before clearing anything.
