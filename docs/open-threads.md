@@ -25073,3 +25073,11 @@ tab) was SKIPPED: there was no such tab; the stale-client banner is covered by t
 **B10.1’S GATE IS CLOSED. B10.1 IS SHIPPED AND CLOSED.** B11’s remaining gate: INK’s guest-flag fix + `guest-client-walk` on the new
 tip (a box turn after FIX’s two turns) → Fable’s check → the pair (including the `guest_links` migration review) → Nick’s ship
 word. Ship order unchanged: templates → rhizome → B11 → drafts.
+
+## 30-MINUTE CHECK-IN: FIX’S GRANT CLEARED IDLE, NO TURN OBSERVED — 2026-10-08 (chat 1)
+
+FIX’s grant (`fix-ptm-rhizome-20261008`, written `2026-10-09T01:34:48Z`, 7:34 pm MT) was checked at age 30 minutes: the grant file
+still named FIX (read first, unchanged); **0 harness node processes, 0 `ws-runtime-verify` browsers; FIX had not said “box done”;**
+FIX pushed nothing new (`page-templates-move` still `645fdf6`). **CLEARED; open ~30 minutes.** No run was stranded: nothing was
+running. FIX asks again for its templates turn and, separately, the rhizome turn. *(Origin shows INK pushed `guest-client-r4`
+`afe9bb2` and `drafts-integrity` `56d1e3c` at 19:52 MT — recorded here only as seen; this desk has not been told they are final.)*
