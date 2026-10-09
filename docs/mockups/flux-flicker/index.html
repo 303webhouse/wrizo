@@ -237,7 +237,7 @@
     live: false,
     speed: 1,
     mode: 'idle', // idle | xprog
-    reduced: false,
+    reduced: !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches),
     idleSec: 20,
     progress: 0,
     lastKey: performance.now(),
@@ -251,6 +251,7 @@
   if (params.get('progress')) state.progress = Number(params.get('progress')) / 100;
   if (params.get('mode') === 'xprog') state.mode = 'xprog';
   if (params.get('rm') === '1') state.reduced = true;
+  if (params.get('rm') === '0') state.reduced = false;
   if (params.get('live') === '1') state.live = true;
   if (params.get('speed') === '10') state.speed = 10;
   if (params.get('flicker') === '0') state.flicker = false;
@@ -353,6 +354,7 @@
       fx.classList.remove('sync');
       if (Math.random() < 0.4) {
         setTimeout(function () {
+          if (!canFlash()) return;
           fx.classList.add('sync2');
           setTimeout(function () { fx.classList.remove('sync2'); }, 70);
         }, 60);
@@ -368,6 +370,7 @@
       dip.style.opacity = '0';
       if (Math.random() < 0.5) {
         setTimeout(function () {
+          if (!canFlash()) return;
           dip.style.opacity = String(op * 0.7);
           setTimeout(function () { dip.style.opacity = '0'; }, 250);
         }, 350);
