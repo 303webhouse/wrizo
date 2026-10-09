@@ -1,0 +1,112 @@
+[
+  {
+    "file": "97f95c39-dark-25-words.png",
+    "sha": "97f95c39",
+    "theme": "dark",
+    "words": 25,
+    "frame": "25-words",
+    "when": "2026-10-09T04:51:36Z",
+    "reading": {
+      "segments": 495,
+      "frac": "0.250",
+      "flash": "false",
+      "stroke": "rgb(150, 160, 90)",
+      "thick": 1,
+      "theme": "plateau",
+      "page": "dark"
+    },
+    "md5": "e8800e51911daa7bb26d572be0385ce6"
+  },
+  {
+    "file": "97f95c39-dark-50-words.png",
+    "sha": "97f95c39",
+    "theme": "dark",
+    "words": 50,
+    "frame": "50-words",
+    "when": "2026-10-09T04:51:38Z",
+    "reading": {
+      "segments": 776,
+      "frac": "0.500",
+      "flash": "false",
+      "stroke": "rgb(150, 160, 90)",
+      "thick": 1,
+      "theme": "plateau",
+      "page": "dark"
+    },
+    "md5": "92a7f13ed626d05cd8c01b98a3d3b362"
+  },
+  {
+    "file": "97f95c39-dark-99-words.png",
+    "sha": "97f95c39",
+    "theme": "dark",
+    "words": 99,
+    "frame": "99-words",
+    "when": "2026-10-09T04:51:40Z",
+    "reading": {
+      "segments": 3108,
+      "frac": "0.990",
+      "flash": "false",
+      "stroke": "rgb(150, 160, 90)",
+      "thick": 1,
+      "theme": "plateau",
+      "page": "dark"
+    },
+    "md5": "dbdade550d686043ee700753204fe8df"
+  },
+  {
+    "file": "97f95c39-dark-100-words-flash.png",
+    "sha": "97f95c39",
+    "theme": "dark",
+    "words": 100,
+    "frame": "100-words-flash",
+    "when": "2026-10-09T04:51:41Z",
+    "reading": {
+      "segments": 3742,
+      "frac": "0.000",
+      "flash": "true",
+      "stroke": "rgb(255, 152, 0)",
+      "thick": 1,
+      "theme": "plateau",
+      "page": "dark"
+    },
+    "flashSeen": true,
+    "md5": "965b9d2b0576cca9b42a760a189ced6a"
+  },
+  {
+    "file": "97f95c39-dark-100-words-after-reset.png",
+    "sha": "97f95c39",
+    "theme": "dark",
+    "words": 100,
+    "frame": "100-words-after-reset",
+    "when": "2026-10-09T04:51:43Z",
+    "reading": {
+      "segments": 7,
+      "frac": "0.000",
+      "flash": "false",
+      "stroke": "rgb(150, 160, 90)",
+      "thick": 1,
+      "theme": "plateau",
+      "page": "dark"
+    },
+    "resetSeen": true,
+    "md5": "0f35b21845f4aaa1943afcb8c3b41464"
+  },
+  {
+    "file": "97f95c39-light-50-words.png",
+    "sha": "97f95c39",
+    "theme": "light",
+    "words": 50,
+    "frame": "50-words",
+    "when": "2026-10-09T04:51:46Z",
+    "reading": {
+      "segments": 716,
+      "frac": "0.500",
+      "flash": "false",
+      "stroke": "rgb(150, 160, 90)",
+      "thick": 1,
+      "theme": "flux",
+      "page": "light"
+    },
+    "md5": "89a7f8e1a8b1793884c62d328e3ecdf9"
+  }
+]
