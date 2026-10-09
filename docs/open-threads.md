@@ -25253,3 +25253,17 @@ gives lanes SHORT grants when they ask.**
 **THE TEMPLATES PAIR** is running in its own worktree on `page-templates-move` @ `a301594` merged onto `main` (`tmpl-pair` @ `ac6591f`):
 `tsc` x2 exit 0, `build:web` bundle `index-BFiS3YwB.js` 642,211 b, 119 files per leg (the capture tool left out); this desk’s grant
 written `17:06:14Z` after the file was read (absent) and the box confirmed quiet.
+
+## TEMPLATES PAIR: GREEN 119/119 ON BOTH LEGS — 2026-10-09 (chat 1)
+
+**`tmpl-pair` @ `ac6591f` = `origin/main` @ `7687a06` + `page-templates-move` @ `a301594` (product = `645fdf6`; evidence +
+harness drivers after it): a clean merge, 38 files, product in six `apps/desktop/src` files + `index.css`; NO server change, NO
+migration.** `tsc` x2 exit 0; `build:web` bundle `index-BFiS3YwB.js` 642,211 b. **THE PAIR: stamp `tree=ac6591fd
+bundle=index-BFiS3YwB.js/642211b`; 119 files per leg (the capture tool left out), six chunks of ≤20, no launch crashes, 0 harness
+processes between chunks: 119/119 DEFAULT, 119/119 PARKED — every file clean, no red.** Grant (this desk’s) written
+`2026-10-09T17:06:14Z` after the file was read (absent) and the box quiet; cleared `18:39:58Z`; 0 harness processes, 0 browsers.
+**Not deployed; `main` untouched. Ships on Nick’s word after its smoke.**
+
+**NEXT: the rhizome pair.** The branch tip is now `1e0ee1c` (one commit past the cleared `9517ffe`: `m2.mjs`, “the revisit re-fit park
+names its true successor, rhizome-growth R6 (Fable, 2026-10-09) — wording only”; `apps/desktop/src`, `apps/server/src`, `packages`
+diff vs `9517ffe` EMPTY). Product = `97f95c3`, as cleared.
