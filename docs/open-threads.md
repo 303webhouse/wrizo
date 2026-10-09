@@ -25267,3 +25267,24 @@ processes between chunks: 119/119 DEFAULT, 119/119 PARKED — every file clean, 
 **NEXT: the rhizome pair.** The branch tip is now `1e0ee1c` (one commit past the cleared `9517ffe`: `m2.mjs`, “the revisit re-fit park
 names its true successor, rhizome-growth R6 (Fable, 2026-10-09) — wording only”; `apps/desktop/src`, `apps/server/src`, `packages`
 diff vs `9517ffe` EMPTY). Product = `97f95c3`, as cleared.
+
+## RHIZOME PAIR: 119/121 ON EACH LEG — TWO VERDICT-FORMAT NOVERDICTS, BOTH PASSING IN SUBSTANCE — 2026-10-09 (chat 1)
+
+**`rhz-pair` @ `b0a6161` = `origin/main` @ `c312343` + `cursor/plateau-rhizome-goal-4b92` @ `1e0ee1c`** (one commit past the cleared `9517ffe` — an
+`m2.mjs` park-wording commit; `apps/desktop/src`, `apps/server/src`, `packages` diff vs `9517ffe` EMPTY; product = `97f95c3`). A clean
+merge; 14 files outside the evidence folder: six harness files, `DeskInstrument.tsx`, `RhizomeField.tsx`, `index.css`, `JournalEntry.tsx`,
+`PageEditor.tsx`, `rhizomeEngine.ts`, `rhizomeGrowth.ts`, `writingGoal.ts`; no server change, no migration. `tsc` x2 exit 0;
+`build:web` bundle `index-CLQF9CRh.js` 645,799 b.
+
+**THE PAIR: stamp `tree=b0a6161e bundle=index-CLQF9CRh.js/645799b`; 121 files per leg in seven chunks of ≤20 (the capture tool
+left out), no launch crashes: 119/121 on EACH leg — the same two NOVERDICTs on both (exit 0), and nothing else red:**
+- **`rhizome-goal-core.mjs`** prints `RHIZOME-GOAL CORE: PASS (33 checks)` — all 33 checks PASS — but run-suite reads a verdict only
+  from a `VERIFY:` line, so it counts as NOVERDICT.
+- **`rhizome-growth.mjs`** by default prints only `baseline: 48/48` (no verdict line at all; the mutants run only under `--mutants`).
+  **This desk ran `rhizome-growth.mjs --mutants` itself, browserless: baseline 48/48 and mutants M1–M7 ALL RED, exit 0.**
+Both are INSTRUMENT-FORMAT issues of the same kind as `b101.mjs` (a one-line `<NAME> VERIFY: PASS (n checks)` fix, and for
+`rhizome-growth` a default run that includes its mutants or a verdict line). Owner: FIX / the rhizome branch’s authors. **Substance
+is green; the suite’s formal verdict needs the lines.** `m2`, `m3`, `m4`, `rhizome-goal` and every other file are CLEAN on both legs.
+
+Grant (this desk’s) written `2026-10-09T18:41:18Z` after the file was read (absent) and the box quiet; cleared `20:13:08Z`; 0 harness
+processes, 0 browsers. **Not deployed; `main` untouched.** Next: DRAFTS (`e4b596c`) pair. Rhizome ships on Nick’s word after its smoke.
