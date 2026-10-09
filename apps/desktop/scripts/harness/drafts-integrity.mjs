@@ -43,7 +43,7 @@ async function load(overrides = {}) {
   nonce += 1;
   if (previous) { try { previous.sync.stopSync(); previous.persistence.resetLocalData(); } catch { /* best effort */ } previous = null; }
   const res = await build({
-    stdin: { contents: `export const __nonce = ${nonce};\nexport * from './store/persistence';\nexport * from './store/sync';\nexport { net } from 'stub-api';`, resolveDir: SRC, loader: 'ts' },
+    stdin: { contents: `export const __nonce = ${nonce};\nexport * from './store/persistence';\nexport * from './store/sync';\nexport * from './store/currentUser';\nexport { net } from 'stub-api';`, resolveDir: SRC, loader: 'ts' },
     bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'silent',
     nodePaths: [path.join(DESKTOP, 'node_modules')],
     plugins: [{ name: 'ov', setup(b) {
@@ -153,6 +153,80 @@ async function s4(overrides = {}) {
     d.before.projects.includes('P') && d.before.drafts.includes('P') && d.afterOne.projects.length === 0 && d.afterOne.drafts.length === 0, JSON.stringify(d));
 }
 
+// =============================================================================
+// PART A - THE SCRATCH DRAFT IS KEYED BY ACCOUNT ('scratch-<userId>'); a signed-out 'scratch' is adopted at sign-in (Nick's ruling a1).
+// =============================================================================
+const U1 = { id: 'u1', email: 'one@example.com' };
+const U2 = { id: 'u2', email: 'two@example.com' };
+const allDrafts = (m) => JSON.parse(localStorage.getItem('writer-studio-drafts') || '[]');
+async function pa1(overrides = {}) {
+  const { m, net } = await load(overrides);
+  m.saveDraft('scratch', 'typed while signed out');
+  const signedOutId = m.getDirtyRecords().drafts.map((d) => d.id);
+  m.setCurrentUser(U1);
+  const afterSignIn = { dirty: m.getDirtyRecords().drafts.map((d) => ({ id: d.id, text: d.text })), read: m.getDraft('scratch')?.text ?? null };
+  await m.syncOnce();
+  const pushed = net.calls.flatMap((c) => (c.push?.drafts || []).map((d) => d.id));
+  return { signedOutId, afterSignIn, pushed };
+}
+async function pa2(overrides = {}) {
+  const { m } = await load(overrides);
+  m.setCurrentUser(U1);
+  m.saveDraft('scratch', 'signed in');
+  m.saveDraft('P', 'a project draft');
+  const stored = m.getDirtyRecords().drafts.map((d) => d.id).sort();
+  const read = m.getDraft('scratch')?.text ?? null;
+  m.clearDraft('scratch');
+  return { stored, read, afterClear: m.getDirtyRecords().drafts.map((d) => d.id) };
+}
+async function pa3(overrides = {}) {
+  const { m, net } = await load(overrides);
+  m.setCurrentUser(U1);
+  m.saveDraft('scratch', 'one');
+  await m.syncOnce();
+  const one = net.calls.flatMap((c) => (c.push?.drafts || []).map((d) => d.id));
+  m.resetLocalData();                                   // the sign-out wipe
+  m.setCurrentUser(U2);
+  m.saveDraft('scratch', 'two');
+  await m.syncOnce();
+  const two = net.calls.slice(1).flatMap((c) => (c.push?.drafts || []).map((d) => d.id));
+  return { one, two };
+}
+async function pa4(overrides = {}) {
+  const { m, net } = await load(overrides);
+  m.setCurrentUser(U1);
+  const old = { id: 'scratch', text: 'the old server row', updatedAt: '2026-01-01T00:00:00.000Z' };
+  net.responder = () => ({ serverTime: '2026-01-02T00:00:00.000Z', pull: { projects: [], storyPlans: [], sessions: [], drafts: [{ ...old }], drawers: [], journalEntries: [] } });
+  await m.syncOnce(true);
+  await sleep(450);                                      // the debounced flush must land before storage is read
+  const adopted = { ids: allDrafts(m).map((d) => d.id), read: m.getDraft('scratch')?.text ?? null, dirty: m.getDirtyRecords().drafts.map((d) => d.id) };
+  m.saveDraft('scratch', 'a newer edit');                // the writer keeps going
+  await sleep(5);
+  await m.syncOnce(true);                                // ...and the stale server row is pulled AGAIN (a new device, a full pull)
+  await sleep(450);
+  const afterRepull = { ids: allDrafts(m).map((d) => d.id), read: m.getDraft('scratch')?.text ?? null };
+  return { adopted, afterRepull };
+}
+{
+  const a = await pa1();
+  ok('(A1a) signed out, the scratch draft is plain \'scratch\'', a.signedOutId.length === 1 && a.signedOutId[0] === 'scratch', JSON.stringify(a));
+  ok('(A1b) at sign-in the local \'scratch\' is RENAMED to scratch-<userId>, keeps its text, and is dirty - and nothing is left under the old name',
+    a.afterSignIn.dirty.length === 1 && a.afterSignIn.dirty[0].id === 'scratch-u1' && a.afterSignIn.dirty[0].text === 'typed while signed out' && a.afterSignIn.read === 'typed while signed out', JSON.stringify(a.afterSignIn));
+  ok('(A1c) and the next sync pushes it under the NEW id (never \'scratch\'), so two accounts can no longer collide', a.pushed.length === 1 && a.pushed[0] === 'scratch-u1', JSON.stringify(a.pushed));
+
+  const b = await pa2();
+  ok('(A2) signed in, the screen keeps asking for \'scratch\' and it resolves to the account\'s own key (read, write and clear alike); a project draft keeps its project id',
+    JSON.stringify(b.stored) === JSON.stringify(['P', 'scratch-u1']) && b.read === 'signed in' && !b.afterClear.includes('scratch-u1') && b.afterClear.includes('P'), JSON.stringify(b));
+
+  const c = await pa3();
+  ok('(A3) two accounts on the same device (a sign-out between) push DIFFERENT ids: scratch-u1 then scratch-u2', JSON.stringify(c.one) === JSON.stringify(['scratch-u1']) && JSON.stringify(c.two) === JSON.stringify(['scratch-u2']), JSON.stringify(c));
+
+  const d = await pa4();
+  ok('(A4a) the OLD server row \'scratch\' (the one account that owns it) arrives by pull and is adopted under the account\'s key: nothing is left as \'scratch\', the text is there, and it is dirty so it reaches the account under the new id',
+    JSON.stringify(d.adopted.ids) === JSON.stringify(['scratch-u1']) && d.adopted.read === 'the old server row' && d.adopted.dirty.includes('scratch-u1'), JSON.stringify(d.adopted));
+  ok('(A4b) and when that old row is pulled AGAIN later, it never overwrites a newer edit', d.afterRepull.read === 'a newer edit' && JSON.stringify(d.afterRepull.ids) === JSON.stringify(['scratch-u1']), JSON.stringify(d.afterRepull));
+}
+
 // ---- source: no bare-id key is left in the sync engine's record bookkeeping ------------------------------------------------------------
 {
   const sync = noCR(fs.readFileSync(path.join(SRC, 'store/sync.ts'), 'utf8'));
@@ -186,6 +260,20 @@ await mutant('the stamp map is keyed by the bare id again (project P stays dirty
 await mutant('a refusal is matched by the bare id again (refusing draft P also holds project P)',
   { 'store/sync.ts': compose(swap('ids.add(recordKey(coll, id));', 'ids.add(recordKey(coll, id)); ids.add(id);'), swap('if (rejectedIds.has(key)) return false;', 'if (rejectedIds.has(key) || rejectedIds.has(i.rec.id)) return false;')) },
   s3, (r) => r.draftRefused.projects.includes('P') === true);
+
+// --- mutants for part A
+await mutant('saveDraft stops resolving \'scratch\' to the account\'s key',
+  { 'store/persistence.ts': swap("upsert('drafts', cache.drafts, { id: draftKey(id), text, updatedAt: '' });", "upsert('drafts', cache.drafts, { id, text, updatedAt: '' });") },
+  pa2, (r) => !r.stored.includes('scratch-u1'));
+await mutant('nothing adopts the local \'scratch\' at sign-in',
+  { 'store/persistence.ts': swap('subscribeCurrentUser((user) => { if (user) adoptLegacyScratch(); });', 'subscribeCurrentUser(() => {});') },
+  pa1, (r) => r.pushed[0] !== 'scratch-u1');
+await mutant('nothing adopts the old server row after a pull',
+  { 'store/persistence.ts': swap("  adoptLegacyScratch();     // the old server row 'scratch' (its owner's) arrives by pull: it belongs under the account's own key\n", '') },
+  pa4, (r) => r.adopted.ids.includes('scratch') === true);
+await mutant('the adoption overwrites a newer draft with the stale server row',
+  { 'store/persistence.ts': swap('if (!existing || existing.updatedAt < legacy.updatedAt) upsert', 'if (true) upsert') },
+  pa4, (r) => r.afterRepull.read !== 'a newer edit');
 
 let failed = 0;
 for (const c of checks) {
