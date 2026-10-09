@@ -25316,3 +25316,16 @@ STAMPED, BOTH ASSETS MATCH, MD5 and bytes:** JS `e861574ebbcc33977b13090ed21044b
 **FRAMES: NOT YET TAKEN.** They need a browser walk of the live site (front door, sign-in, a page with the Templates section open) and
 so a box grant; FIX holds a short one-frame grant (written `20:53:43Z`, 14:53 MT) and this desk waits for it (check-in 15:25 MT)
 rather than run a browser beside it. **Owed to Nick: his confirmation after Fable’s frame review — it closes the gate.**
+
+## RHIZOME CLEARED TO RE-PAIR AT `af7ff4b` (THE PLATEAU GATE); THE LIVE FRAMES LIST; THE ORDER — 2026-10-09 (chat 1)
+
+**FABLE (relay): templates live (`84f596d6`, smoke 6/6, bundle match) — acknowledged.** **FRAMES (his list), at this desk’s 15:25 MT
+check-in once FIX’s short grant is done: the front door, sign-in, a page with the Templates section open, PLUS a Free Write page
+showing NO Templates.** He reviews them, then Nick confirms.
+
+**RHIZOME: the rhz-pair of `b0a6161` PREDATED Nick’s ruling that the rhizome is Plateau-only (the relay never reached FIX) — it does not
+ship.** **CLEARED to re-pair on `cursor/plateau-rhizome-goal-4b92` @ `af7ff4b` (product = `97f95c3` + the one-line Plateau gate in
+`b5b15d0`; verified by Fable).** FIX also added the check and the verdict lines on both harnesses; this desk’s `rhizome-growth --mutants`
+run (baseline 48/48, M1–M7 red) stands as that round’s proof. **ORDER: templates frames → rhizome pair → drafts pair (`e4b596c`).**
+FIX’s short grant (`fix-one-frame-flux-20261009`, written `20:53:43Z`, 14:53 MT) is for one Flux frame, no rhizome; FIX pushed `af7ff4b`
+at 15:00:42 MT.
