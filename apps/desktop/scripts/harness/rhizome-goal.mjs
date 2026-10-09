@@ -244,6 +244,41 @@ await withHarness(async (app) => {
     rectAtFull && reset.rect && rectAtFull.w === reset.rect.w && rectAtFull.h === reset.rect.h,
     JSON.stringify({ rectAtFull, reset: reset.rect }));
 
+  // ==========================================================================
+  // THE RHIZOME IS PLATEAU'S ONLY (Nick's ruling, via Fable 2026-10-09): every other theme replaces it with its own (Flux's comes
+  // later), so under Flux this field draws NOTHING - no field, no segments, and crossing the goal flashes nothing. The same page,
+  // goal and keystroke as the Plateau crossing above; only the theme differs. Mutant: scripts/rhizome-theme-mutant.mjs drops the
+  // gate and this check must go RED.
+  // ==========================================================================
+  await app.goto('/');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before the Flux seed' });
+  await app.evalJs(`(() => {
+    localStorage.setItem('wrizo-theme', 'flux');
+    window.wrizoSetWritingGoal({ n: 8, unit: 'words' });
+    window.wrizoPatchEntry(${JSON.stringify(pageId)}, { text: Array.from({ length: 7 }, (_, i) => 'word' + i).join(' ') });
+  })()`);
+  await app.reload();
+  await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'the page under Flux' });
+  await sleep(800);
+  const fluxBefore = await app.evalJs("({ theme: document.documentElement.getAttribute('data-theme'), field: !!document.querySelector('.wz-rhizome-field'), segs: document.querySelectorAll('.wz-rhizome-seg').length })");
+  await app.evalJs(`(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false);
+    const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); return true; })()`);
+  await app.evalJs("window.__fluxFlash = false; window.__fluxFlashObs = new MutationObserver(() => { const f = document.querySelector('.wz-rhizome-field'); if (f && f.dataset.flash === 'true') window.__fluxFlash = true; }); window.__fluxFlashObs.observe(document.body, { subtree: true, childList: true, attributes: true }); true");
+  await app.typeKeys(' tail');
+  // a settled read: the editor reaches storage through two debounces, so wait on the STORED text, then give a flash its window
+  try {
+    await app.waitFor(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find(x => x.id === ${JSON.stringify(pageId)}) || {}).text?.includes('tail')`,
+      { label: 'the crossing word stored', timeout: 5000 });
+  } catch { /* the check reports the stored count */ }
+  await sleep(1500);
+  const crossed = await app.evalJs(`(() => { const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find(x => x.id === ${JSON.stringify(pageId)});
+    return e ? e.text.trim().split(/\s+/).length : null; })()`);
+  const fluxAfter = await app.evalJs("({ theme: document.documentElement.getAttribute('data-theme'), field: !!document.querySelector('.wz-rhizome-field'), segs: document.querySelectorAll('.wz-rhizome-seg').length, flash: window.__fluxFlash })");
+  ok('Theme: under Flux the rhizome field renders NOTHING - no field, no segments - and crossing the goal flashes nothing (the rhizome is Plateau\'s only)',
+    fluxBefore.theme === 'flux' && !fluxBefore.field && fluxBefore.segs === 0 && fluxAfter.theme === 'flux' && !fluxAfter.field && fluxAfter.segs === 0 && fluxAfter.flash === false && crossed === 8,
+    JSON.stringify({ fluxBefore, fluxAfter, wordsStored: crossed }));
+
   return checks;
 });
 

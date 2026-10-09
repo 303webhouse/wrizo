@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useWritingSettings } from '../store/writingSettings';
 import { useWritingGoal, goalCount } from '../store/writingGoal';
+import { useTheme } from '../store/theme';
 import { lapPlan, segmentsFor, geometryKey, type GrowthGeometry, type GrowthSegment, type Rect } from '../store/rhizomeGrowth';
 
 // THE GOAL RHIZOME (rewritten by Fable, 2026-10-08; growth model in store/rhizomeGrowth.ts).
@@ -125,7 +126,10 @@ export function RhizomeField({ text, seedKey, paperRef }: {
 }) {
   const settings = useWritingSettings();
   const goal = useWritingGoal();
-  const active = settings.progress === 'words' && settings.progressStyle === 'rhizome' && goal != null && goal.n > 0;
+  // Nick's ruling: the rhizome is PLATEAU'S only. Every other theme replaces it with its own (Flux's comes later), so under
+  // any other theme this field draws nothing - no growth, no flash.
+  const theme = useTheme();
+  const active = settings.progress === 'words' && settings.progressStyle === 'rhizome' && goal != null && goal.n > 0 && theme === 'plateau';
   const count = goal ? goalCount(text, goal) : 0;
   const n = goal?.n ?? 0;
   const lap = n > 0 ? Math.floor(count / n) : 0;

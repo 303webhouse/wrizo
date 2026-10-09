@@ -296,6 +296,9 @@ if (failed.length) {
   for (const c of failed) console.log(`FAIL ${c.name} — ${c.detail}`);
 }
 console.log(`baseline: ${checks.filter(c => c.pass).length}/${checks.length}`);
+// Chat 1 (2026-10-09): a verdict line run-suite can read on the default run (b101.mjs's shape) - a file that prints no VERIFY
+// line is NOVERDICT, whatever its exit code. The baseline's verdict prints in both modes; the mutants add their own line below.
+console.log(failed.length ? `\nRHIZOME-GROWTH VERIFY: FAIL — ${failed.length}/${checks.length} failed` : `\nRHIZOME-GROWTH VERIFY: PASS (${checks.length} checks)`);
 
 if (!process.argv.includes('--mutants')) {
   process.exit(failed.length ? 1 : 0);
@@ -362,4 +365,5 @@ for (const mut of mutants) {
   if (!red) mutantFail++;
 }
 
+console.log(`RHIZOME-GROWTH MUTANTS: ${mutantFail ? 'FAIL' : 'PASS'} (${mutants.length - mutantFail}/${mutants.length} RED)`);
 process.exit(failed.length || mutantFail ? 1 : 0);

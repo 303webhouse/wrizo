@@ -323,5 +323,6 @@ ok('Mutant: removing the draw-on keyframes fails the draw-on check', !drawOn(str
 
 console.log(JSON.stringify(checks, null, 2));
 const pass = checks.every(c => c.pass);
-console.log(pass ? `\nRHIZOME-GOAL CORE: PASS (${checks.length} checks)` : `\nRHIZOME-GOAL CORE: FAIL — ${checks.filter(c => !c.pass).length}/${checks.length} failed`);
+// Chat 1 (2026-10-09): a verdict line run-suite can read - a file that prints no VERIFY line is NOVERDICT, whatever its exit code.
+console.log(pass ? `\nRHIZOME-GOAL-CORE VERIFY: PASS (${checks.length} checks)` : `\nRHIZOME-GOAL-CORE VERIFY: FAIL — ${checks.filter(c => !c.pass).length}/${checks.length} failed`);
 process.exit(pass ? 0 : 1);
