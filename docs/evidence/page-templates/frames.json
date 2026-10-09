@@ -1,74 +1,5 @@
 [
   {
-    "theme": "light",
-    "frame": "blank-page",
-    "file": "light/blank-page.png",
-    "hash": "#/page/new",
-    "beginningsRow": true
-  },
-  {
-    "theme": "light",
-    "frame": "blank-page-draft",
-    "file": "light/blank-page-draft.png",
-    "hash": "#/page/new",
-    "beginningsRow": false
-  },
-  {
-    "theme": "light",
-    "frame": "templates-section",
-    "file": "light/templates-section.png",
-    "hash": "#/page/new",
-    "beginningsRow": false,
-    "opened": true,
-    "buttons": [
-      {
-        "name": "Screenplay",
-        "live": true
-      },
-      {
-        "name": "Outline",
-        "live": false
-      },
-      {
-        "name": "Title page",
-        "live": false
-      },
-      {
-        "name": "Bibliography",
-        "live": false
-      },
-      {
-        "name": "Custom",
-        "live": false
-      }
-    ]
-  },
-  {
-    "theme": "light",
-    "frame": "after-screenplay-empty-page",
-    "file": "light/after-screenplay-empty-page.png",
-    "hash": "#/page/mv0aslntsy16l422t",
-    "beginningsRow": false,
-    "pressed": true
-  },
-  {
-    "theme": "light",
-    "frame": "after-screenplay-page-with-words",
-    "file": "light/after-screenplay-page-with-words.png",
-    "hash": "#/page/mv0asp60dx5fpnrst",
-    "beginningsRow": false,
-    "pressed": true,
-    "chip": "‹ Back to Words already here on this page."
-  },
-  {
-    "theme": "light",
-    "frame": "after-sprout-blank-free-write",
-    "file": "light/after-sprout-blank-free-write.png",
-    "hash": "#/page/new",
-    "beginningsRow": false,
-    "pressed": true
-  },
-  {
     "theme": "dark",
     "frame": "blank-page",
     "file": "dark/blank-page.png",
@@ -136,5 +67,110 @@
     "hash": "#/page/new",
     "beginningsRow": false,
     "pressed": true
+  },
+  {
+    "theme": "light",
+    "frame": "blank-page",
+    "file": "light/blank-page.png",
+    "hash": "#/page/new",
+    "attrs": {
+      "theme": "flux",
+      "page": "light"
+    },
+    "beginningsRow": true,
+    "md5": "5ee77e5c4ad162fd0a325a59379ff38c",
+    "sameAsDark": false
+  },
+  {
+    "theme": "light",
+    "frame": "blank-page-draft",
+    "file": "light/blank-page-draft.png",
+    "hash": "#/page/new",
+    "attrs": {
+      "theme": "flux",
+      "page": "light"
+    },
+    "beginningsRow": false,
+    "md5": "b4d4f40370ce8c0771ebdd1aeb09dfd6",
+    "sameAsDark": false
+  },
+  {
+    "theme": "light",
+    "frame": "templates-section",
+    "file": "light/templates-section.png",
+    "hash": "#/page/new",
+    "attrs": {
+      "theme": "flux",
+      "page": "light"
+    },
+    "beginningsRow": false,
+    "opened": true,
+    "buttons": [
+      {
+        "name": "Screenplay",
+        "live": true
+      },
+      {
+        "name": "Outline",
+        "live": false
+      },
+      {
+        "name": "Title page",
+        "live": false
+      },
+      {
+        "name": "Bibliography",
+        "live": false
+      },
+      {
+        "name": "Custom",
+        "live": false
+      }
+    ],
+    "md5": "8ec1647b2fb211ad50f48bb7fd9b9b35",
+    "sameAsDark": false
+  },
+  {
+    "theme": "light",
+    "frame": "after-screenplay-empty-page",
+    "file": "light/after-screenplay-empty-page.png",
+    "hash": "#/page/mv0hnqokk18qv692n",
+    "attrs": {
+      "theme": "flux",
+      "page": "light"
+    },
+    "beginningsRow": false,
+    "pressed": true,
+    "md5": "ce59019d4aeab31c4125b1b2a2b3dbb3",
+    "sameAsDark": false
+  },
+  {
+    "theme": "light",
+    "frame": "after-screenplay-page-with-words",
+    "file": "light/after-screenplay-page-with-words.png",
+    "hash": "#/page/mv0hnu7wlim2c7k9a",
+    "attrs": {
+      "theme": "flux",
+      "page": "light"
+    },
+    "beginningsRow": false,
+    "pressed": true,
+    "chip": "‹ Back to Words already here on this page.",
+    "md5": "17500959d561f330ee4c3c60b1022e22",
+    "sameAsDark": false
+  },
+  {
+    "theme": "light",
+    "frame": "after-sprout-blank-free-write",
+    "file": "light/after-sprout-blank-free-write.png",
+    "hash": "#/page/new",
+    "attrs": {
+      "theme": "flux",
+      "page": "light"
+    },
+    "beginningsRow": false,
+    "pressed": true,
+    "md5": "8ac579caf3cd83279851e7a3cd0443e7",
+    "sameAsDark": false
   }
 ]
