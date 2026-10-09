@@ -25013,3 +25013,36 @@ commit `87e1cde`, “Rhizome: grow behind the page, right up to its edge”, 16:
 checkout, on `main`, with a bare tree. **This desk will NOT switch it — a Cursor commit after the switch would land on `main`.**
 Asked of Fable: have Cursor move to its own worktree and leave the primary, or authorize this desk to move it at a moment Cursor
 is idle. **B10.1 is green and waits only on that.**
+
+## B10.1 DEPLOY MANIFEST — LIVE, SERVED==STAMPED, SMOKE 6/6; THE PRIMARY BACK ON `main`; THE UNKNOWN GRANT LANE — 2026-10-08 (chat 1)
+
+**THE HANDOFF (Fable, relay):** `87e1cde` (the rhizome “behind the page” edit) is on origin; Cursor is out of the primary; the
+rhizome Cursor chat is retired (Nick is closing it) — no Cursor will touch the primary. **This desk confirmed `87e1cde` on
+`origin/cursor/plateau-rhizome-goal-4b92` and the tree clean (0 porcelain, including untracked), checked out `main` bare in the
+primary, fast-forwarded to `bb9e8b7`.** Fable tells the Cursor “primary on main”.
+
+**UNKNOWN LANE (Fable: both Cursors deny writing it): the grant file I overwrote at `22:02:51Z` is logged as “unknown lane”.**
+Rule stands: read the grant file before writing one.
+
+**MERGED to `main`: `fd0c258`** (`b101-defence` @ `b95b181`; `git diff b101-pair HEAD -- apps packages` EMPTY — the product is the
+tree that was paired; no migration/schema file).
+**LIVE: `fd0c258` · railway `f31b38bc-98cd-4463-82ef-94cea833f4b7`** — service `writer-studio-app`, `railway up --service
+writer-studio-app --ci`, “Deploy complete”. **PREVIOUS LIVE: Batch 10 · `63d8cf39-75c0-4c18-9c42-9e9c4b4fce4f` (still listed
+SUCCESS, to be retired by Railway) — THE ROLLBACK is a rebuild from `7550452` (clean checkout, `railway up`).** *ROLLBACK RATCHETS
+to `7550452` once `63d8cf39` is retired.* No schema change.
+
+**CHECKS BEFORE UPLOAD:** `tsc` x2 exit 0; `build:web` exit 0, bundle `index-C4x8tYhX.js` 641,310 b == the pair’s stamp; tree bare
+(0 porcelain incl. untracked); **ITEM-98 GUARD:** `writer-studio` / `production` / `writer-studio-app`, toplevel
+`C:/Users/nickh/writer-studio`, `HEAD == origin/main == fd0c258`. **LIVE VERIFICATION:** `/healthz` 200 · `/auth/me` 401 ·
+`/auth/signup-status` `{“open”:false}` (sign-ups still closed, as ruled) · “listening on :8080”. **SERVED-vs-STAMPED, BOTH
+ASSETS MATCH, MD5 and bytes:** JS `068ba7c7fdec374395e58520f7b84861` (641,310 b); CSS `6955adb114011383669f8d73e895d297`
+(150,954 b).
+
+**LIVE SIGNED-IN SMOKE (`smoke-login.mjs`, once, exit 0):** `POST /auth/login` 200 · `GET /auth/me` 200 · `POST /api/sync` (pull
+only) 200 · `POST /auth/logout` 204 · `GET /auth/me` (after logout, jar) 401 · `GET /auth/me` (pre-logout cookie replayed) 401 —
+**`SMOKE: PASS (6/6)`.** No browser walk of the live site by this desk.
+
+**OWED: NICK’S sign-out / sign-back-in check on his own account (relayed by Fable) — it closes B10.1’s gate.** *This desk has
+no channel to Nick.* **BOX NEXT (Fable): (1) FIX `page-templates-move` @ `645fdf6`; (2) FIX again for the rhizome branch @
+`87e1cde` (m2/m3/m4/rhizome-goal/rhizome-growth + stamped shots), from FIX’s own worktree.** Grant file read before every write.
+B11 (guest) stays paused until B10.1’s gate closes.
