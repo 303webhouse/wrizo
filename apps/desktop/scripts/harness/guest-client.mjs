@@ -313,6 +313,45 @@ try {
 }
 
 // =============================================================================
+// PART N — the guest-expired flag must not outlive the session that earned it (Fable's review of Batch 11). Three points, one check
+// each, each with a mutant that removes just that point.
+// =============================================================================
+{
+  const lf = (t) => t.replace(/\r\n?/g, '\n');
+  const appLf = lf(app);
+  const authedBody = appLf.slice(appLf.indexOf('const handleAuthed'), appLf.indexOf('const handleLogout'));
+  const logoutBody = appLf.slice(appLf.indexOf('const handleLogout'), appLf.indexOf('useEffect(() => onLogoutRequested'));
+  const wipe = logoutBody.slice(logoutBody.indexOf('stopSync();'), logoutBody.indexOf("setAuthState('anon')"));
+  ok('(N1) the sign-out wipe clears the guest-expired flag beside stopSync (the next account on the device must not inherit the claim sheet)',
+    /clearGuestExpired\(\);/.test(wipe) && wipe.indexOf('stopSync()') < wipe.indexOf('clearGuestExpired()') && /import \{ clearGuestExpired \} from '\.\/store\/guestState';/.test(appLf), wipe);
+  ok('(N2) every sign-in (handleAuthed - which a new guest link also reaches) clears it, before the session is announced', /clearGuestExpired\(\);/.test(authedBody) && authedBody.indexOf('clearGuestExpired()') < authedBody.indexOf('setAuthState'), authedBody.slice(0, 200));
+  const sheetLf = lf(sheet);
+  const sub = sheetLf.slice(sheetLf.indexOf('useEffect(() => subscribeGuestExpired'), sheetLf.indexOf('useEffect(() => {', sheetLf.indexOf('useEffect(() => subscribeGuestExpired') + 10));
+  ok('(N3) the sheet starts UNDISMISSED whenever the flag flips to expired (a later expiry in the same tab shows even after a "Not now")',
+    /const now = isGuestExpired\(\);/.test(sub) && /setOpen\(now\);/.test(sub) && /if \(now\) setDismissed\(false\);/.test(sub), sub);
+
+  // MUTATIONS: remove exactly one point; its own check must go red and the others stay green.
+  const dropLine = (text, needle) => { const i = text.indexOf(needle); if (i < 0) throw new Error('mutation anchor not found: ' + needle); return text.slice(0, i) + text.slice(i + needle.length); };
+  {
+    const m = dropLine(appLf, '      clearGuestExpired();\n      clearLastSyncAt();');
+    const mWipe = m.slice(m.indexOf('const handleLogout')); const w = mWipe.slice(mWipe.indexOf('stopSync();'), mWipe.indexOf("setAuthState('anon')"));
+    ok('(N4) MUTATION KILLED: without the clear in the sign-out wipe, N1\'s predicate goes red', !/clearGuestExpired\(\);/.test(w), '');
+  }
+  {
+    // removes ONLY the clear (the setCurrentUser line that follows it stays)
+    if (!appLf.includes('    clearGuestExpired();\n    setCurrentUser(user);')) throw new Error('mutation anchor not found: handleAuthed');
+    const m = appLf.replace('    clearGuestExpired();\n    setCurrentUser(user);', '    setCurrentUser(user);');
+    const body = m.slice(m.indexOf('const handleAuthed'), m.indexOf('const handleLogout'));
+    ok('(N5) MUTATION KILLED: without the clear in handleAuthed, N2\'s predicate goes red', !/clearGuestExpired\(\);/.test(body), '');
+  }
+  {
+    const m = dropLine(sheetLf, '    if (now) setDismissed(false);\n');
+    const s2 = m.slice(m.indexOf('useEffect(() => subscribeGuestExpired'), m.indexOf('useEffect(() => {', m.indexOf('useEffect(() => subscribeGuestExpired') + 10));
+    ok('(N6) MUTATION KILLED: without the reset in the sheet, N3\'s predicate goes red', !/if \(now\) setDismissed\(false\);/.test(s2), '');
+  }
+}
+
+// =============================================================================
 // PART I — the capture's guest screens (Batch 11), pinned in source. The capture itself needs a box turn.
 // =============================================================================
 {

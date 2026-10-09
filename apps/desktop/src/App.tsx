@@ -35,6 +35,7 @@ import { isSignedOutHere, markSignedOutHere, clearSignedOutHere } from './store/
 import { SyncIndicator, FullscreenToggle } from './components/ChromeControls';
 import { GuestArrival } from './components/GuestArrival';
 import { GuestClaimSheet } from './components/GuestClaimSheet';
+import { clearGuestExpired } from './store/guestState';
 
 // B1 S5 — the old Journal module surface (pages/Journal.tsx, the list/home
 // experience) RETIRES here, the same day its replacement ships
@@ -258,6 +259,8 @@ export function App() {
 
   const handleAuthed = (user: AuthUser) => {
     clearSignedOutHere();
+    // The guest-expired flag belongs to the SESSION that earned it: a sign-in (any - including a new guest link) starts clean.
+    clearGuestExpired();
     setCurrentUser(user);
     setAuthState('authed');
     void startSync();
@@ -298,6 +301,8 @@ export function App() {
       markSignedOutHere();
       window.location.hash = '#/';
       stopSync();
+      // ...and it ends with the session: the next account on this device must not inherit an expired guest's claim sheet.
+      clearGuestExpired();
       clearLastSyncAt();
       resetLocalData();
       setCurrentUser(null);

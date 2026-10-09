@@ -33,7 +33,12 @@ export function GuestClaimSheet() {
   const submitting = useRef(false);
   const visible = open && !dismissed;
 
-  useEffect(() => subscribeGuestExpired(() => setOpen(isGuestExpired())), []);
+  // A LATER expiry in the same tab must show: "Not now" dismisses ONE expiry, so every flip to expired starts undismissed.
+  useEffect(() => subscribeGuestExpired(() => {
+    const now = isGuestExpired();
+    setOpen(now);
+    if (now) setDismissed(false);
+  }), []);
 
   useEffect(() => {
     if (!visible) return;
