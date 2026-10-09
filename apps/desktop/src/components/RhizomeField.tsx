@@ -137,7 +137,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const [m, setM] = useState<Measured | null>(null);
   const [flashLap, setFlashLap] = useState<number | null>(null); // while set, the finished lap is shown whole, in brass
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const prevCount = useRef<number | null>(null);
+  const prevCount = useRef<{ key: string; count: number } | null>(null);
 
   const sync = useCallback(() => {
     const svg = svgRef.current, paper = paperRef.current;
@@ -164,17 +164,18 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   }, [active, paperRef, sync, seedKey]);
 
   // Crossing the goal: hold the finished lap whole and brass for FLASH_MS, then show the new lap (its survivor first).
+  const countKey = `${seedKey}|${goalKey}`;
   useEffect(() => {
-    if (!active || n <= 0) { prevCount.current = count; return; }
     const prev = prevCount.current;
-    prevCount.current = count;
-    if (prev != null && count > prev && Math.floor(count / n) > Math.floor(prev / n)) {
+    prevCount.current = { key: countKey, count };
+    if (!active || n <= 0 || !prev || prev.key !== countKey) return;
+    if (count > prev.count && Math.floor(count / n) > Math.floor(prev.count / n)) {
       setFlashLap(Math.floor(count / n) - 1);
       if (flashTimer.current) clearTimeout(flashTimer.current);
       flashTimer.current = setTimeout(() => setFlashLap(null), FLASH_MS);
     }
-  }, [active, count, n]);
-  useEffect(() => { prevCount.current = null; setFlashLap(null); }, [seedKey, goalKey]);
+  }, [active, count, n, countKey]);
+  useEffect(() => { setFlashLap(null); }, [seedKey, goalKey]);
   useEffect(() => () => { if (flashTimer.current) clearTimeout(flashTimer.current); }, []);
 
   // What to draw. During the flash: the finished lap, whole. Otherwise: the current lap up to the goal fraction.

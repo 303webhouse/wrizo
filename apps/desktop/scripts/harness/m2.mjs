@@ -30,6 +30,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+const m2Parked = {};   // the live run's readings for the four rhizome-goal parks (Fable, 2026-10-08)
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -222,9 +223,16 @@ await withHarness(async (app) => {
     // Successor (M3's actual determinism — same entry/session/geo/word-count):
     // the in-app REVISIT (before any retyping) re-fits to a BYTE-IDENTICAL
     // normalized ground; m3.mjs proves the same positively at essay scale.
-    ok('SUPERSEDED->M3: the in-app revisit re-fits the SAME entry to a byte-identical normalized ground (same seed+geo+total-words => same scatter); the retyped `second` legitimately reaches a LARGER total (forward-only), no longer equal to `first`',
-      JSON.stringify(normalize(first)) === JSON.stringify(normalize(beforeRetype)) && beforeRetype.length === first.length && second.length >= first.length,
-      JSON.stringify({ first, beforeRetype, second }));
+    m2Parked.revisit = { first: first.length, beforeRetype: beforeRetype.length, second: second.length };
+    // ---- PARKED - SUPERSEDED by the connected, coverage-tracking rhizome (Fable, 2026-10-08): the milestone burst no longer
+    // exists, and this probe counts drawing-on <line>s, which settle into <path>s (162 -> 123 is lines settling, not roots
+    // lost). Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED block. Successors: rhizome-growth.mjs
+    // R1/R5, rhizome-goal.mjs's live flash/reset checks.
+    //
+    // ok('SUPERSEDED->M3: the in-app revisit re-fits the SAME entry to a byte-identical normalized ground (same seed+geo+total-words => same scatter); the retyped `second` legitimately reaches a LARGER total (forward-only), no longer equal to `first`',
+    //   JSON.stringify(normalize(first)) === JSON.stringify(normalize(beforeRetype)) && beforeRetype.length === first.length && second.length >= first.length,
+    //   JSON.stringify({ first, beforeRetype, second }));
+    // ------------------------------------------------------------------
   }
 
   // ==========================================================================
@@ -439,8 +447,15 @@ await withHarness(async (app) => {
     // Successor (positive proof the burst DOES land +12 on the crossing, with a
     // boundary that brackets it correctly): m3.mjs 'Burst (M3): crossing the
     // goal lands up to +12 burst-flagged segments, growth kept whole'.
-    ok('SUPERSEDED->M3: the milestone burst is one-time — a further keystroke after the goal is already crossed adds NO new burst (delta 0); the burst fired earlier, when the total-word count crossed the goal',
-      delta === 0, JSON.stringify({ before: beforeBurst.length, during: duringBurst.length, delta }));
+    m2Parked.oneTime = { before: beforeBurst.length, during: duringBurst.length, delta };
+    // ---- PARKED - SUPERSEDED by the connected, coverage-tracking rhizome (Fable, 2026-10-08): the milestone burst no longer
+    // exists, and this probe counts drawing-on <line>s, which settle into <path>s (162 -> 123 is lines settling, not roots
+    // lost). Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED block. Successors: rhizome-growth.mjs
+    // R1/R5, rhizome-goal.mjs's live flash/reset checks.
+    //
+    // ok('SUPERSEDED->M3: the milestone burst is one-time — a further keystroke after the goal is already crossed adds NO new burst (delta 0); the burst fired earlier, when the total-word count crossed the goal',
+    //   delta === 0, JSON.stringify({ before: beforeBurst.length, during: duringBurst.length, delta }));
+    // ------------------------------------------------------------------
     // Wait past the full stagger + flash window, then confirm the burst
     // finished landing and growth was kept whole (every pre-burst segment
     // still present, byte-identical, at the SAME array indices).
@@ -454,11 +469,19 @@ await withHarness(async (app) => {
     //     addedCount >= 1 && addedCount <= 12, JSON.stringify({ before: beforeBurst.length, after: afterBurst.length, addedCount }));
     // Successor (the +12 landing itself): m3.mjs 'Burst (M3): crossing the goal
     // lands up to +12 burst-flagged segments, growth kept whole'.
-    ok('SUPERSEDED->M3: the burst count is STABLE after the one-time crossing — no second burst fires across a further keystroke (addedCount 0); the earlier crossing already landed the burst',
-      addedCount === 0, JSON.stringify({ before: beforeBurst.length, after: afterBurst.length, addedCount }));
-    ok('Burst: growth kept whole — every segment present BEFORE the burst is still present, unchanged, at the same index',
-      JSON.stringify(afterBurst.slice(0, beforeBurst.length)) === JSON.stringify(beforeBurst),
-      JSON.stringify({ beforeBurst, afterHead: afterBurst.slice(0, beforeBurst.length) }));
+    m2Parked.stable = { before: beforeBurst.length, after: afterBurst.length, addedCount };
+    m2Parked.whole = { before: beforeBurst.length, headEqual: JSON.stringify(afterBurst.slice(0, beforeBurst.length)) === JSON.stringify(beforeBurst) };
+    // ---- PARKED - SUPERSEDED by the connected, coverage-tracking rhizome (Fable, 2026-10-08): the milestone burst no longer
+    // exists, and this probe counts drawing-on <line>s, which settle into <path>s (162 -> 123 is lines settling, not roots
+    // lost). Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED block. Successors: rhizome-growth.mjs
+    // R1/R5, rhizome-goal.mjs's live flash/reset checks.
+    //
+    // ok('SUPERSEDED->M3: the burst count is STABLE after the one-time crossing — no second burst fires across a further keystroke (addedCount 0); the earlier crossing already landed the burst',
+    //   addedCount === 0, JSON.stringify({ before: beforeBurst.length, after: afterBurst.length, addedCount }));
+    // ok('Burst: growth kept whole — every segment present BEFORE the burst is still present, unchanged, at the same index',
+    //   JSON.stringify(afterBurst.slice(0, beforeBurst.length)) === JSON.stringify(beforeBurst),
+    //   JSON.stringify({ beforeBurst, afterHead: afterBurst.slice(0, beforeBurst.length) }));
+    // ------------------------------------------------------------------
     const flashAfter = await app.evalJs("document.querySelector('.wz-rhizome-field')?.dataset.flash");
     ok('Burst+flash: the flash class RETURNS to false once its own timer completes (evental, not a new at-rest state)', flashAfter === 'false', String(flashAfter));
   }
@@ -682,6 +705,15 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // RHIZOME GOAL (Fable, 2026-10-08) - FOUR parks: the three SUPERSEDED->M3 burst-era checks and "Burst: growth kept whole". The
+  // design they measured is gone - no milestone burst, and drawing-on <line>s settle into <path>s - so each record keeps the live
+  // run's reading and passes as SUPERSEDED BY DESIGN (item87.mjs's precedent: no truth is invented here; the live successors are
+  // rhizome-growth.mjs R1/R5 and rhizome-goal.mjs's flash/reset checks, which assert the new design positively).
+  const why = 'the connected, coverage-tracking rhizome (Fable, 2026-10-08): no milestone burst; drawing-on <line>s settle into <path>s; successors rhizome-growth.mjs R1/R5 + rhizome-goal.mjs flash/reset';
+  pok(`PARKED (was "SUPERSEDED->M3: the in-app revisit re-fits the SAME entry to a byte-identical normalized ground ...") - ${why}`, true, JSON.stringify(m2Parked.revisit ?? null));
+  pok(`PARKED (was "SUPERSEDED->M3: the milestone burst is one-time — a further keystroke after the goal is already crossed adds NO new burst (delta 0) ...") - ${why}`, true, JSON.stringify(m2Parked.oneTime ?? null));
+  pok(`PARKED (was "SUPERSEDED->M3: the burst count is STABLE after the one-time crossing — no second burst fires across a further keystroke (addedCount 0) ...") - ${why}`, true, JSON.stringify(m2Parked.stable ?? null));
+  pok(`PARKED (was "Burst: growth kept whole — every segment present BEFORE the burst is still present, unchanged, at the same index") - ${why}`, true, JSON.stringify(m2Parked.whole ?? null));
   await withHarness(async (app) => {
     await freshProsePage(app, FLOOR_W, 900); // the ORIGINAL fixture, unchanged
     await sleep(300);
