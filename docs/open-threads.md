@@ -25238,3 +25238,18 @@ line. Branches kept: `guest-login` `de1f170`, `guest-client-r4` `501264a`, `walk
 **TEMPLATES: the light reshoot is verified at `a301594` (Flux, the light page; frames correct). THE TEMPLATES PAIR IS CLEARED — run
 it next: `page-templates-move` @ `a301594`; product = `645fdf6`.** RHIZOME waits on FIX’s evidence commit + Fable’s frame review, then
 its pair. **ORDER NOW: templates pair (`a301594`) → rhizome pair → drafts pair (INK’s new SHA).** Deploy only on Nick’s ship word.
+
+## RHIZOME FRAMES CLEARED; DRAFTS VERIFIED; THE NO-GRANT RULE; THE STRAY RUN RECORDED — 2026-10-09 (chat 1)
+
+**RHIZOME: FRAMES CLEARED (Fable) — `9517ffe`; product = `97f95c3`. Pair it after templates.** **DRAFTS: `e4b596c` verified on `main` by
+Fable (range-diff equal to `9ef8199` / `cdced72`; 5 files, +353/−25). CLEARED to pair after rhizome.** **ORDER: templates (running,
+stamp `tree=ac6591fd`) → rhizome → drafts. Each ships on Nick’s word after its smoke.**
+
+**RECORD, no-grant: the stray `scripts/harness/arrival-signin.mjs` node run this desk saw at `2026-10-09T17:0xZ`, 7 seconds old, with NO
+grant file live and 0 browsers, was most likely INK’s browserless set — it read “no grant file” as “free”.** (Earlier ungranted
+`b101.mjs` runs were the same pattern.) **RULE (Fable): NO GRANT FILE = NO PERMISSION. Browserless sets need a grant too; this desk
+gives lanes SHORT grants when they ask.**
+
+**THE TEMPLATES PAIR** is running in its own worktree on `page-templates-move` @ `a301594` merged onto `main` (`tmpl-pair` @ `ac6591f`):
+`tsc` x2 exit 0, `build:web` bundle `index-BFiS3YwB.js` 642,211 b, 119 files per leg (the capture tool left out); this desk’s grant
+written `17:06:14Z` after the file was read (absent) and the box confirmed quiet.
