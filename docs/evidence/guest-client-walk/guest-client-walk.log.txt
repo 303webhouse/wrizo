@@ -1,0 +1,91 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PASS (W1) a refused token shows the server's sentence, and nothing else
+PASS (W2) the request carried the token in its body
+PASS (W3) the token was gone from the address bar BEFORE the request was sent
+PASS (W4) and it is still gone after the arrival (nothing re-adds it)
+PASS (W4b) the guest session start LIFTED the signed-out flag
+PASS (W4c) a guest's first write LANDS as a dirty record (it would be silently dropped if the flag were still set)
+PASS (W5) the expired sheet shows the one plain line, exactly
+PASS (W6) focus moves into the sheet when it opens
+PASS (W7) six Tab presses never leave the sheet
+PASS (W8) Shift+Tab wraps inside the sheet too
+PASS (W9) Esc closes the sheet and focus is back on the page, not lost
+PASS (W10) "Not now" leaves the page mounted (the same root node, still connected)
+PASS (W11) after "Not now" nothing blocks the page
+PASS (W12) a claim succeeds: the sheet closes and the session is now the claimed account
+[
+  {
+    "name": "(W1) a refused token shows the server's sentence, and nothing else",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(W2) the request carried the token in its body",
+    "pass": true,
+    "detail": "[\"{\\\"token\\\":\\\"not-a-real\",\"{\\\"token\\\":\\\"<redacted-token-prefix>\"]"
+  },
+  {
+    "name": "(W3) the token was gone from the address bar BEFORE the request was sent",
+    "pass": true,
+    "detail": "http://127.0.0.1:3107/#/guest"
+  },
+  {
+    "name": "(W4) and it is still gone after the arrival (nothing re-adds it)",
+    "pass": true,
+    "detail": "http://127.0.0.1:3107/#/"
+  },
+  {
+    "name": "(W4b) the guest session start LIFTED the signed-out flag",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(W4c) a guest's first write LANDS as a dirty record (it would be silently dropped if the flag were still set)",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "(W5) the expired sheet shows the one plain line, exactly",
+    "pass": true,
+    "detail": "Your guest time is over — create an account to keep your work here"
+  },
+  {
+    "name": "(W6) focus moves into the sheet when it opens",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(W7) six Tab presses never leave the sheet",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(W8) Shift+Tab wraps inside the sheet too",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(W9) Esc closes the sheet and focus is back on the page, not lost",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(W10) \"Not now\" leaves the page mounted (the same root node, still connected)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(W11) after \"Not now\" nothing blocks the page",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(W12) a claim succeeds: the sheet closes and the session is now the claimed account",
+    "pass": true,
+    "detail": "{\"email\":\"walk-1791514142979@example.com\"}"
+  }
+]
+
+GUEST-CLIENT-WALK VERIFY: PASS (14 checks)
+exit 0
