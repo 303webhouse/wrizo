@@ -25288,3 +25288,31 @@ is green; the suite’s formal verdict needs the lines.** `m2`, `m3`, `m4`, `rhi
 
 Grant (this desk’s) written `2026-10-09T18:41:18Z` after the file was read (absent) and the box quiet; cleared `20:13:08Z`; 0 harness
 processes, 0 browsers. **Not deployed; `main` untouched.** Next: DRAFTS (`e4b596c`) pair. Rhizome ships on Nick’s word after its smoke.
+
+## TEMPLATES DEPLOY MANIFEST — LIVE, SERVED==STAMPED, SMOKE 6/6; FRAMES PENDING — 2026-10-09 (chat 1)
+
+**NICK’S SHIP WORD (Fable, relay), verbatim: “Ship templates” (2026-10-09 14:53 MT).** Condition: `tmpl-pair` green on both legs (it was:
+119/119 default, 119/119 parked, stamp `tree=ac6591fd bundle=index-BFiS3YwB.js/642211b`); any red → stop. Deploy: merge
+`page-templates-move` @ `a301594` to `main` (branch read first), build from the primary, `railway up --service writer-studio-app`; then
+bundle match, signed-in smoke, and frames (front door, sign-in, a page with the Templates section open); Nick confirms after
+Fable’s frame review. Rhizome stays held for FIX’s Plateau gate; drafts pair after templates.
+
+**MERGED to `main`: `25e6610`** (`page-templates-move` @ `a301594`; the branch read first: 11 commits past `main`, product in six
+`apps/desktop/src` files, NO server change, NO migration; `git diff tmpl-pair HEAD -- apps packages` EMPTY — the product is the
+tree that was paired).
+**LIVE: `25e6610` · railway `84f596d6-be7b-4753-bc3b-e6f039967f78`** — service `writer-studio-app`, `railway up --service writer-studio-app --ci`,
+healthcheck succeeded, “Deploy complete”. **PREVIOUS LIVE: B10.1 · `f31b38bc-98cd-4463-82ef-94cea833f4b7` (now REMOVING) — THE ROLLBACK is a
+rebuild from `fd0c258`** (clean checkout, `railway up`). No schema change.
+
+**CHECKS BEFORE UPLOAD:** `tsc` x2 exit 0; `build:web` exit 0, bundle `index-BFiS3YwB.js` 642,211 b == the pair stamp; tree bare (0 porcelain
+incl. untracked); **ITEM-98 GUARD:** `writer-studio` / `production` / `writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`,
+`HEAD == origin/main == 25e6610`. **LIVE VERIFICATION:** `/healthz` 200 · `/auth/me` 401 · `/auth/signup-status` `{“open”:false}`. **SERVED-vs-
+STAMPED, BOTH ASSETS MATCH, MD5 and bytes:** JS `e861574ebbcc33977b13090ed21044b5` (642,211 b); CSS `4cd6ed68b06a88fb866ae3c80ee96c69`
+(151,120 b).
+
+**LIVE SIGNED-IN SMOKE (`smoke-login.mjs`, once, exit 0):** `POST /auth/login` 200 · `GET /auth/me` 200 · `POST /api/sync` (pull only) 200 ·
+`POST /auth/logout` 204 · `GET /auth/me` (after logout, jar) 401 · `GET /auth/me` (pre-logout cookie replayed) 401 — **`SMOKE: PASS (6/6)`.**
+
+**FRAMES: NOT YET TAKEN.** They need a browser walk of the live site (front door, sign-in, a page with the Templates section open) and
+so a box grant; FIX holds a short one-frame grant (written `20:53:43Z`, 14:53 MT) and this desk waits for it (check-in 15:25 MT)
+rather than run a browser beside it. **Owed to Nick: his confirmation after Fable’s frame review — it closes the gate.**
