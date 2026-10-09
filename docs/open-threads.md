@@ -25081,3 +25081,14 @@ still named FIX (read first, unchanged); **0 harness node processes, 0 `ws-runti
 FIX pushed nothing new (`page-templates-move` still `645fdf6`). **CLEARED; open ~30 minutes.** No run was stranded: nothing was
 running. FIX asks again for its templates turn and, separately, the rhizome turn. *(Origin shows INK pushed `guest-client-r4`
 `afe9bb2` and `drafts-integrity` `56d1e3c` at 19:52 MT — recorded here only as seen; this desk has not been told they are final.)*
+
+## CORRECTION TO THE CHECK-IN ENTRY ABOVE: FIX HAD PUSHED, AND TURN 1 HAD RUN — 2026-10-08 (chat 1)
+
+**The entry above says FIX “pushed nothing new (`page-templates-move` still `645fdf6`)”. THAT WAS WRONG — this desk’s mistake.** It
+listed only the four newest refs on origin and did not look at `page-templates-move`. Its tip is `7a27cec` (pushed 19:40:47 MT, six
+minutes after the grant): “Page templates evidence @ 645fdf6: page-templates 20/20 and bg1 35/35 on both legs (bg1 3 parked),
+mutant…” — 20 files, +591 lines, all under `docs/evidence/page-templates/turn-645fdf6/`; `apps/desktop/src`, `apps/server/src`
+and `packages` diff vs `645fdf6` EMPTY. **So FIX’s FIRST turn (templates) had RUN and finished by 19:40 MT; it simply did not say “box
+done” to this desk.** The grant was therefore cleared after the run, not during one: no run stranded. FIX’s SECOND turn
+(the rhizome branch @ `87e1cde`) was not yet observed; FIX asks for it. *(Practice from here: before clearing on a quiet box,
+look at the grantee’s own branch for a recent push, not just the newest refs.)*
