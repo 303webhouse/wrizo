@@ -25063,3 +25063,13 @@ turn for `guest-client-walk`; granted AFTER FIX’s two turns (templates, then r
 
 **GUEST LINKS: after the B11 deploy, NICK MINTS THEM HIMSELF in a terminal; the token never goes into a chat or a doc** (this desk
 will not mint, hold, print or record one).
+
+## NICK’S B10.1 LIVE CHECK PASSED; B10.1’S GATE CLOSED — 2026-10-08 (chat 1)
+
+**NICK’S LIVE CHECK ON B10.1 (`fd0c258`, deploy `f31b38bc`) — PASSED (Fable, relay; no user details recorded):** sign in → pages
+listed; sign out → the front door; sign back in → pages, no first-run; hard refresh → pages kept. **Step 5 (the pre-update
+tab) was SKIPPED: there was no such tab; the stale-client banner is covered by the `b101` proofs and INK’s `b101-walk` 16/16.**
+
+**B10.1’S GATE IS CLOSED. B10.1 IS SHIPPED AND CLOSED.** B11’s remaining gate: INK’s guest-flag fix + `guest-client-walk` on the new
+tip (a box turn after FIX’s two turns) → Fable’s check → the pair (including the `guest_links` migration review) → Nick’s ship
+word. Ship order unchanged: templates → rhizome → B11 → drafts.
