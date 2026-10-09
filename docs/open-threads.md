@@ -25189,3 +25189,36 @@ reshot @ 194174c…” — the TEMPLATES half RAN.** The RHIZOME half is UNCONFI
 `97f95c3`; the rhizome worktree’s newest file is its 22:48 build; its legs and shots may have run with output kept elsewhere, or
 not. This desk does NOT claim either. **CLEARED `2026-10-09T05:36Z` — open ~48 minutes.** FIX confirms the rhizome half or asks
 again; this desk reads the grant file before writing one. The B11 pair starts next, in its own worktree.
+
+## B11 PAIR: GREEN 119/119 ON BOTH LEGS; THE MIGRATION REVIEWED ON A REAL POSTGRES; ONE INSTRUMENT RED AND ONE SCHEMA QUESTION OPEN — 2026-10-09 (chat 1)
+
+**ASSEMBLED in its own worktree (`b11-pair` @ `e493830`): `origin/main` @ `0d06ffa` + `guest-login` @ `de1f170` + `guest-client-r4`
+@ `501264a`** — both merges clean; 29 files; the only migration is in `apps/server/src/migrate.ts`.
+
+**BROWSERLESS:** `tsc` x2 exit 0; both builds clean (desktop bundle `index-JbObS-ZG.js`, 646,297 b); `item224-server-hardening` 64/64;
+`set-password-db` 12/12; `smoke-account-db` 31/31; `tutor20-max-messages` 4/4; K10 `--mutants`: baseline GREEN (32), 19/19 RED, exit 0.
+
+**THE MIGRATION, REVIEWED ON A REAL THROWAWAY POSTGRES (the built `migrate.js`, a one-off script, 9/9):** it runs on an empty database;
+an ordinary pre-B11 account gets `is_guest=false`, `tutor_turns_used=0`, `guest_expires_at` and `last_active_at` null; it is IDEMPOTENT
+(run three times); exactly the four additive columns exist on `users` (`is_guest` boolean not null default false,
+`guest_expires_at` timestamptz, `last_active_at` timestamptz, `tutor_turns_used` integer not null default 0); `guest_links` has
+exactly `token_hash` text (PRIMARY KEY), `user_id` uuid (FK, `ON DELETE CASCADE`), `created_at` timestamptz, plus the `guest_links_user`
+index; deleting a guest removes ITS link and only its link; the same token cannot be stored twice. *(The script exited 1 only
+because `migrate.js`’s own pool surfaced an unhandled connection error when the throwaway server stopped — after all 9 checks had
+passed; a harness artifact, not a migration fault.)* **All additive; nothing destructive; rollback to B10.1 leaves the columns/table
+in place, unused.**
+
+**► RED (instrument only, INK’s): `apps/server/scripts/harness/guest-login.mjs` exits 1 — `Cannot find module ‘./passwordHash’`.**
+It compiles `auth.ts` on its own in a scratch folder and `auth.ts` now imports `./passwordHash` (since the smoke-tools refactor); the
+fix is the same one line `item224-server-hardening.mjs` needed — write `passwordHash.ts` beside it in the loader. This desk left the
+file alone (INK’s) and removed the scratch folder the crash left behind. **The guest-login server proof is therefore NOT yet green
+on this tree; it needs INK’s one-line fix and a re-run.**
+
+**THE DESKTOP PAIR: stamp `tree=e4938308 bundle=index-JbObS-ZG.js/646297b`; 119 files per leg, six chunks of ≤20, no launch crashes, 0
+harness processes between chunks: 119/119 on the DEFAULT leg and 119/119 on the PARKED leg — every file clean.** `guest-client-walk.mjs`
+was left out of the list (it needs a live local rig and two minted guest tokens); INK’s walk, 14/14, stands as its proof. Grant written
+`05:44:35Z` after reading the file (absent) and cleared on completion; 0 harness processes, 0 browsers.
+
+**OPEN, for Fable/Nick before any deploy:** (1) the SCHEMA QUESTION raised earlier — Nick’s recorded yes covers `guest_links`; the migration
+also adds FOUR columns to `users` (code comment: “the four account columns Nick approved”). Confirm his yes covers them. (2) INK’s `guest-login`
+harness fix. (3) Nick’s ship word. **Not deployed; `main` untouched.**
