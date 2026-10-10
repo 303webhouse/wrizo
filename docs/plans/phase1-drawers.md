@@ -426,3 +426,7 @@ opens a short note on press or focus (keyboard-reachable, `aria-label`, dismisse
 and is not part of the tab's hit area, so pressing it does not switch tabs. **Open:** the explainer's wording (Nick's) and whether the
 "?" is a tooltip or a pressable note; I will build it as a pressable note unless told otherwise, because a hover-only tooltip is not
 reachable by keyboard or touch. The earlier Q10 (icons) is closed: words, per theme.
+
+**A.4 decided (Fable, Oct 9):** the "?" is a **pressable note** (keyboard and touch; Escape or blur closes it), not a hover tooltip.
+Draft copy for Arbor's note, Nick may edit: *"Grafts join pages, cards and boards so your ideas can grow together. Use + to graft something here."*
+(One lexicon key for the note, Arbor-only; Flux has none.)
