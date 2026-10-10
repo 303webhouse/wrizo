@@ -25510,3 +25510,31 @@ frames).
 browser turn. **THE SPLASH SHIPS after (3) passes and Fable clears the frames; NO full re-pair if the bundle is identical.**
 Mockup branches stay off this desk’s queue; FIX’s card port waits for Fable’s review. *(At 8:44 pm MT: no grant file, box idle; no
 asks received yet.)*
+
+## FABLE’S FOUR RUNS, ONE GRANT: (1) EXP1 R2, (2) DRAWERS-P1, (3) SPLASH RE-RUN + FRAMES — 2026-10-09 (chat 1)
+
+**FABLE: all four asks are in; THIS DESK runs all four itself, back to back, in ONE grant, from worktrees, never the primary.** Grant
+(this desk’s) written `2026-10-10T03:33:46Z` after the file was read (absent) and the box confirmed quiet. Run trees: `run-exp1` (branch
+tip `52e76ce`), `run-drawers` (`main` + `phase1-drawers` @ `c3e0dde`, `5a7c546`), `run-splash` (`main` + `splash-screen` @ `75c3b5a`, `ea9cffb`).
+
+**(1) PW, `exp1-connect-text-r2` @ `52e76ce` (browserless):** `seed-guard` PASS (36); `hooks-order-ast` PASS (7); `exp1-b-proof` CLEAN; `exp1-b-mutate`
+all 7 mutants KILLED, restored byte-identical; `exp1-upsert-pairing` CLEAN (6 upserts, four lists agree); `exp1-strip-audit` prints a report (36
+clickables, 11 sections; no verdict). **`exp1-lexicon-guard`: 1 FAILURE — CLAIM 6 flags `authSubmit.ts:6` (“Couldn’t reach Wrizo. Check…”)
+as using the board’s noun for a card thread in a writer-facing literal.** `authSubmit.ts` is main’s B10 sign-in code, which that branch
+caught up to: PW’s own guard fails on main’s code — the literal or the guard is wrong; PW/Fable decide.
+
+**(2) INK, `phase1-drawers` @ `c3e0dde`: `drawers-p1.mjs` (browserless) — `DRAWERS-P1 VERIFY: FAIL — 3/23`:** (B4) “the panels (clip + scroller)
+keep the FADE and the dissolve exactly as before” read `{s:“right:16px”, t:“ transition:opacity var(--drawer-dur-reduced) linear; ”}`; and two
+mutants — “the left arrow is not mirrored from the right: THE MUTATION LANDED” (`anchor missing`) and “the 6px settle comes back on the
+sliver panel: the proof goes RED”. **Ran on `main` + `c3e0dde`; the only difference from INK’s tip is main’s drafts files
+(`persistence.ts`, `sync.ts`) — no CSS, `Sliver.tsx` or `Tutor.tsx` difference — so these are INK’s to read (an anchor that no longer
+matches; line endings in a fresh worktree are a candidate this desk did not test).**
+
+**(3) SPLASH, `splash-screen` @ `75c3b5a` (harness-only, two files; Fable verified): `item141` PASS (11) and `splash.mjs` PASS (41) on BOTH
+legs, stamp `tree=ea9cffb3 bundle=index-P2j5dOLz.js/650072b` — BYTE-IDENTICAL to the pair’s `index-P2j5dOLz.js` 650,072 b** (so no full re-pair,
+as Fable ruled). Then `scripts/splash-frames-batch.mjs` ran (exit 0): five PNGs — `splash-plateau-desktop-1400x900`, `splash-plateau-phone-390x844`,
+`splash-flux-desktop-1400x900`, `splash-flux-phone-390x844`, `splash-postfade-plateau-desktop-1400x900` (“gone”: true) — copied from
+`~/Downloads/splash-187-frames` into `docs/evidence/splash-187/` and committed. **Owed: Fable clears the frames; then the splash deploys on
+Nick’s standing word.**
+
+**(4) INK’s S1 browser checks: running next under the same grant; reported separately.**
