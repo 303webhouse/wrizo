@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrizo · Typewriter mode mockup</title>
+<!--
+  docs/mockups/typewriter — more immersive typewriter (Nick's live notes).
+  Arbor look = Plateau tokens (Nick renamed the display name; theme id still plateau).
+  A real typing box. Active line held at a steady height. History fades
+  after N lines (default 3). Line advance GLIDES (default 300ms ease-out),
+  not a native scroll snap.
+  Mockup-only controls: page width, zoom, fade-after (1–6), glide speed.
+  Branch: cursor/typewriter-mockup.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+  :root {
+    --ink-950: #110600; --ink-900: #1F1A16; --ink-800: #2A241E;
+    --ink-border: #332C25;
+    --text-hi: #EDE6DA; --text-mid: #B5A998; --text-low: #80766A;
+    --paper: #F3EDE1; --paper-dim: #E9E1D2; --paper-border: #d8c8b4;
+    --ink-on-paper: #2B2014; --ink-on-paper-low: #8A7C68;
+    --brass: #ff9800; --accent-rest: #96a05a;
+    --font-ui: 'Figtree', system-ui, sans-serif;
+    --font-prose: 'Crimson Pro', Georgia, serif;
+    --paper-glow: 0 0 0 1px rgba(243, 237, 225, 0.06), 0 4px 32px rgba(212, 162, 78, 0.10), 0 2px 12px rgba(0, 0, 0, 0.45);
+    --hold: 56%;
+    --ch: 74;
+    --zoom: 1.22;
+    --fade-after: 3;
+    --glide: 300ms;
+    --lh: 1.55;
+    --base: 18px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--ink-950); color: var(--text-hi); font-family: var(--font-ui); }
+
+  .rig {
+    position: fixed; inset: 0 0 auto 0; z-index: 20;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 7px 12px 8px; background: #000; border-bottom: 1px solid #222;
+    font-size: 11px; color: #9a9a9a;
+  }
+  .rig b { color: #d8d8d8; font-weight: 600; letter-spacing: .06em; }
+  .only {
+    color: #6e6e6e; letter-spacing: .12em; text-transform: uppercase; font-size: 9px;
+    border: 1px solid #333; padding: 2px 6px; margin-right: 4px;
+  }
+  .rig label { display: flex; align-items: center; gap: 6px; color: #8f8f8f; }
+  .rig input[type='range'] { width: 88px; accent-color: var(--accent-rest); }
+  .rig .val { min-width: 3.6em; color: #c8c8c8; font-variant-numeric: tabular-nums; }
+  .rig .hint { margin-left: auto; color: #5e5e5e; max-width: 42ch; text-align: right; }
+  .stamp {
+    position: fixed; right: 10px; bottom: 10px; z-index: 20;
+    font-size: 10px; letter-spacing: .08em; color: #8a8276;
+    background: rgba(0,0,0,.72); border: 1px solid #2a2a2a; padding: 3px 8px;
+    pointer-events: none;
+  }
+
+  .room {
+    position: absolute; inset: 42px 0 0 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 18px 28px 22px;
+  }
+  .paper {
+    width: min(calc(var(--ch) * 1.05ch * var(--zoom) + 14vw), calc(100vw - 48px));
+    height: min(64vh, 540px);
+    background: var(--paper); color: var(--ink-on-paper);
+    box-shadow: var(--paper-glow);
+    position: relative; overflow: hidden;
+  }
+  .port {
+    position: absolute; inset: 0;
+    overflow: hidden;
+    --lh-px: calc(var(--base) * var(--zoom) * var(--lh));
+    --full-from: calc(var(--hold) - (var(--fade-after) * var(--lh-px)));
+    --ramp-from: calc(var(--full-from) - (3.2 * var(--lh-px)));
+    --full-to: calc(var(--hold) + (1.2 * var(--lh-px)));
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      rgba(0,0,0,.05) 0,
+      rgba(0,0,0,.05) var(--ramp-from),
+      rgba(0,0,0,.22) calc(var(--full-from) - (1.2 * var(--lh-px))),
+      #000 var(--full-from),
+      #000 var(--full-to),
+      rgba(0,0,0,.38) calc(var(--full-to) + (2.4 * var(--lh-px))),
+      rgba(0,0,0,.10) 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      rgba(0,0,0,.05) 0,
+      rgba(0,0,0,.05) var(--ramp-from),
+      rgba(0,0,0,.22) calc(var(--full-from) - (1.2 * var(--lh-px))),
+      #000 var(--full-from),
+      #000 var(--full-to),
+      rgba(0,0,0,.38) calc(var(--full-to) + (2.4 * var(--lh-px))),
+      rgba(0,0,0,.10) 100%
+    );
+  }
+  .sheet {
+    will-change: transform;
+    padding: 0 7vw;
+    transform: translateY(0);
+    transition: transform var(--glide) cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .sheet[data-snap='true'] { transition: none; }
+  .editor {
+    font-family: var(--font-prose);
+    font-size: calc(var(--base) * var(--zoom));
+    line-height: var(--lh);
+    max-width: calc(var(--ch) * 1ch);
+    margin: 0 auto;
+    min-height: 4em;
+    outline: none;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    caret-color: var(--ink-on-paper);
+  }
+  .editor:empty::before {
+    content: attr(data-hint);
+    color: var(--ink-on-paper-low);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sheet { transition: none; }
+  }
+</style>
+</head>
+<body>
+<header class="rig">
+  <b>TYPEWRITER</b>
+  <span class="only">mockup only</span>
+  <label>Width <input id="w" type="range" min="52" max="88" value="74"> <span class="val" id="wv">74ch</span></label>
+  <label>Zoom <input id="z" type="range" min="100" max="140" value="122"> <span class="val" id="zv">122%</span></label>
+  <label>Fade after <input id="f" type="range" min="1" max="6" value="3"> <span class="val" id="fv">3 lines</span></label>
+  <label>Glide <input id="g" type="range" min="180" max="480" step="10" value="300"> <span class="val" id="gv">300ms</span></label>
+  <span class="hint">Active line stays put. History fades after the count. Advance glides.</span>
+</header>
+<div class="stamp" id="stamp">TYPEWRITER · REST</div>
+
+<div class="room">
+  <div class="paper">
+    <div class="port" id="port">
+      <div class="sheet" id="sheet" data-snap="true">
+        <div class="editor" id="editor" contenteditable="true" spellcheck="false" data-hint="" role="textbox" aria-label="Typewriter page"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const REST = [
+    'The kettle ticks once.',
+    'Then again.',
+    'She does not turn.',
+    'Steam on the glass.',
+    'A small weather.',
+    'She lets it.',
+    'Looking would mean deciding.',
+    'Deciding would mean the night.',
+    'Has already started.'
+  ].join('\n');
+
+  const MID = [
+    'The kettle ticks once and then again. She does not turn.',
+    '',
+    'Steam writes a small weather on the glass and she lets it, because looking would mean deciding, and deciding would mean the night has already started.',
+    '',
+    'What he almost said is still in the hall. She can hear it the way you hear a step that never lands. The light in the other room is the one she left on, and it is still doing the only job she asked of it. I left the light on for a reason — she does not say it, she only keeps not turning, and the kettle ticks as if that were an answer.'
+  ].join('\n');
+
+  const root = document.documentElement;
+  const port = document.getElementById('port');
+  const sheet = document.getElementById('sheet');
+  const editor = document.getElementById('editor');
+  const stamp = document.getElementById('stamp');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let lastCaretInSheet = null;
+
+  function applyVars() {
+    const w = +document.getElementById('w').value;
+    const z = +document.getElementById('z').value;
+    const f = +document.getElementById('f').value;
+    const g = +document.getElementById('g').value;
+    root.style.setProperty('--ch', w);
+    root.style.setProperty('--zoom', String(z / 100));
+    root.style.setProperty('--fade-after', f);
+    root.style.setProperty('--glide', (reduce ? 0 : g) + 'ms');
+    document.getElementById('wv').textContent = w + 'ch';
+    document.getElementById('zv').textContent = z + '%';
+    document.getElementById('fv').textContent = f + (f === 1 ? ' line' : ' lines');
+    document.getElementById('gv').textContent = g + 'ms';
+  }
+
+  function caretRect() {
+    const sel = getSelection();
+    if (!sel || sel.rangeCount === 0) return null;
+    const range = sel.getRangeAt(0);
+    const rects = range.getClientRects();
+    if (rects.length) return rects[rects.length - 1];
+    const probe = document.createElement('span');
+    probe.textContent = '\u200b';
+    range.insertNode(probe);
+    const rect = probe.getBoundingClientRect();
+    const parent = probe.parentNode;
+    parent.removeChild(probe);
+    parent.normalize();
+    return rect.width || rect.height ? rect : editor.getBoundingClientRect();
+  }
+
+  function hold(snap) {
+    const rect = caretRect();
+    if (!rect) return;
+    const portBox = port.getBoundingClientRect();
+    const sheetBox = sheet.getBoundingClientRect();
+    const caretInSheet = rect.top - sheetBox.top;
+    if (!snap && lastCaretInSheet !== null && Math.abs(caretInSheet - lastCaretInSheet) < 1.5) return;
+    lastCaretInSheet = caretInSheet;
+    const holdPx = portBox.height * 0.56;
+    const y = holdPx - caretInSheet;
+    if (snap || reduce) sheet.dataset.snap = 'true';
+    sheet.style.transform = 'translateY(' + y + 'px)';
+    if (snap || reduce) {
+      sheet.getBoundingClientRect();
+      sheet.dataset.snap = 'false';
+    }
+  }
+
+  function placeEnd() {
+    const r = document.createRange();
+    r.selectNodeContents(editor);
+    r.collapse(false);
+    const s = getSelection();
+    s.removeAllRanges();
+    s.addRange(r);
+  }
+
+  function placeOffset(n) {
+    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
+    let left = n;
+    let node = walker.nextNode();
+    while (node) {
+      const len = node.textContent.length;
+      if (left <= len) {
+        const r = document.createRange();
+        r.setStart(node, left);
+        r.collapse(true);
+        const s = getSelection();
+        s.removeAllRanges();
+        s.addRange(r);
+        return;
+      }
+      left -= len;
+      node = walker.nextNode();
+    }
+    placeEnd();
+  }
+
+  ['w', 'z', 'f', 'g'].forEach((id) => {
+    document.getElementById(id).addEventListener('input', () => {
+      applyVars();
+      lastCaretInSheet = null;
+      requestAnimationFrame(() => hold(true));
+    });
+  });
+
+  editor.addEventListener('input', () => hold(false));
+  editor.addEventListener('keyup', () => hold(false));
+  editor.addEventListener('click', () => { lastCaretInSheet = null; hold(false); });
+  document.addEventListener('selectionchange', () => {
+    if (document.activeElement === editor) hold(false);
+  });
+  port.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
+
+  const q = new URLSearchParams(location.search);
+  const shot = q.get('shot') === 'mid' ? 'mid' : 'rest';
+  stamp.textContent = shot === 'mid' ? 'TYPEWRITER · MID-PARAGRAPH' : 'TYPEWRITER · REST';
+  editor.textContent = shot === 'mid' ? MID : REST;
+  applyVars();
+  requestAnimationFrame(() => {
+    if (shot === 'mid') {
+      const mark = MID.indexOf('I left the light on for a reason') + 'I left the light on for a reason'.length;
+      placeOffset(mark);
+    } else {
+      placeEnd();
+    }
+    hold(true);
+    editor.focus();
+  });
+})();
+</script>
+</body>
+</html>
