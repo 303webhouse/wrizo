@@ -417,3 +417,12 @@ search), and `menus-probe` geometry (dock and handle rects are unchanged by cons
   `ForwardOnlyEditor.tsx`: not touched** (the harness asserts it).
 - **Tests:** `drawers-p1.mjs` (browserless; written, **not yet run - it needs Chat 1's grant**). Browser confirmation (the measured slide,
   reduced motion, the rects) is the S1 frames/live turn, also unrun.
+
+### A.4 For S3 (Fable, Oct 9, from Nick)
+The right drawer's second tab reads **GRAFTS in Arbor** and **LINKS in Flux**, taken from the per-theme vocabulary (`deskLexicon`), not
+hard-coded. **Arbor's word carries a small "?" beside it.** Plan for it: the tab label is a lexicon term (one key, two theme values), the
+"?" is a separate, theme-conditional element that appears only when the theme's term has an explainer (Arbor's does; Flux's does not),
+opens a short note on press or focus (keyboard-reachable, `aria-label`, dismisses on Escape/blur, an overlay that displaces nothing),
+and is not part of the tab's hit area, so pressing it does not switch tabs. **Open:** the explainer's wording (Nick's) and whether the
+"?" is a tooltip or a pressable note; I will build it as a pressable note unless told otherwise, because a hover-only tooltip is not
+reachable by keyboard or touch. The earlier Q10 (icons) is closed: words, per theme.
