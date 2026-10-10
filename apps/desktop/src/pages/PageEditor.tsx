@@ -24,6 +24,7 @@ import { setCaretOffset, setSelectionOffsets, getCaretOffset, getSelectionOffset
 import type { Stroke } from '../types';
 import { projectMilestones } from '../store/milestones';
 import { copyText } from '../store/clipboard';
+import { buildPageActions } from '../store/pageActions';
 import { BoardEditor } from '../components/BoardEditor';
 import { ScriptEditor } from '../components/ScriptEditor';
 import { useLexicon } from '../store/themeLexicon';
@@ -1096,6 +1097,8 @@ function PageEditorView({ id }: { id: string }) {
             styleGuide: entry.pageSettings?.styleGuide ?? STYLE_GUIDE_DEFAULT,
             onPickStyleGuide: styleGuide => patchPageSettings({ styleGuide }),
             templates: pageTemplates,
+            // PHASE 1 - the Actions section: Tags, Copy, Delete, Header/Footer, wired from this page's own handlers (store/pageActions.ts).
+            actions: unborn ? undefined : buildPageActions({ entry, copy: () => { void doCopy('words'); }, addTag, removeTag, patchPageSettings, navigate }),
           }
         // ITEM 112-A — REVISE'S DESK DRAWER OPENS, AND IT OPENS ONTO NOTHING.
         //

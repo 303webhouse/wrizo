@@ -280,6 +280,9 @@ export type DeskTermId =
   | 'draftHeading' | 'draftBullet' | 'draftBulletCircle' | 'draftBulletSquare' | 'draftBulletStyles' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
   | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage' | 'templateCustom'
   | 'comingSoon' | 'railTypeface' | 'goalUnitWords' | 'railPageKind'
+  // PHASE 1 - the Actions section of the left drawer.
+  | 'railActions' | 'actionTags' | 'actionCopy' | 'actionDelete' | 'actionHeaderFooter' | 'actionTagRemove'
+  | 'actionDeleteConfirm' | 'actionDeleteYes' | 'actionDeleteKeep'
   | 'footSettings' | 'footMenuTypewriter' | 'footMenuProgress' | 'footMenuPreferences'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
   | 'draftConvertToScreenplay' | 'draftConvertToProse'
@@ -948,6 +951,15 @@ const CANONICAL: Record<DeskTermId, string> = {
   draftBulletSquare: 'Square bullet',
   draftBulletStyles: 'Bullet styles',
   railTemplates: 'Templates',
+  railActions: 'Actions',
+  actionTags: 'Tags',
+  actionCopy: 'Copy page text',
+  actionDelete: 'Delete page',
+  actionHeaderFooter: 'Header and footer',
+  actionTagRemove: 'Remove',
+  actionDeleteConfirm: 'Send this page to Trash?',
+  actionDeleteYes: 'Send to Trash',
+  actionDeleteKeep: 'Keep',
   railPageKind: 'Page kind',
   templateOutline: 'Outline',
   templateBibliography: 'Bibliography',

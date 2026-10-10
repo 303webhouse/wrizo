@@ -3568,7 +3568,7 @@ a:focus-visible,
    .desk-frame-sliver-anchor below) instead of a grid track. */
 .wz-sliver{ position:relative; width:100%; height:100%; }
 .wz-sliver-grip{ position:absolute; top:16px; right:0; width:16px; height:34px;
-  display:flex; align-items:center; justify-content:center; z-index:2;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; z-index:2;
   background:var(--desk-ground); border:1px solid var(--ink-border); border-right:none;
   color:var(--text-mid); cursor:pointer; transition:.15s; }
 .wz-sliver-grip:hover{ color:var(--text-hi); }
@@ -3576,6 +3576,10 @@ a:focus-visible,
    --accent-rest only while OPEN (a where-you-are-now state), never brass. */
 .wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--accent-rest); border-color:var(--accent-rest); }
 .wz-sliver-grip-glyph{ font-size:13px; line-height:1; }
+/* PHASE 1 - the instrument mark (a tiny pen while the page is in INK). The tab's box is unchanged (16 x 34); the mark rides the tab's own
+   colour - olive when open, never brass: it says what the page IS, it is not a choice the writer makes. */
+.wz-sliver-grip-mark{ display:flex; width:10px; height:10px; opacity:.9; }
+.wz-sliver-grip-mark svg{ width:10px; height:10px; display:block; }
 .wz-sliver-panel{ position:absolute; top:0; right:16px; width:calc(100% - 16px); height:100%;
   overflow-y:auto; overflow-x:hidden;
   opacity:0; pointer-events:none; transition:opacity var(--fade-dur,.2s) ease;
@@ -3635,6 +3639,29 @@ a:focus-visible,
 .wz-drawer-tab:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:none; }
 .wz-drawer-tab:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+/* PHASE 1 - ACTIONS. Icon buttons in a row; one that is pressed/open wears the brass OUTLINE (no fill). Tags and Delete open a small area
+   inside the drawer. Delete's confirm is in the page: a line, and two plain buttons. */
+.wz-actions{ display:flex; flex-direction:column; gap:8px; }
+.wz-actions-row{ display:flex; gap:6px; }
+.wz-action-btn{ flex:1; height:28px; display:flex; align-items:center; justify-content:center; background:none;
+  border:1px solid var(--ink-border); border-radius:0; color:var(--text-mid); cursor:pointer; transition:color .15s ease, border-color .15s ease; }
+.wz-action-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-action-btn[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:none; }
+.wz-action-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+.wz-actions-tags{ display:flex; flex-wrap:wrap; gap:4px 6px; align-items:center; }
+.wz-actions-tag{ display:inline-flex; align-items:center; gap:4px; padding:2px 6px; border:1px solid var(--ink-border); color:var(--text-mid); font-size:12px; }
+.wz-actions-tag-remove{ background:none; border:0; color:var(--text-low); cursor:pointer; padding:0 2px; font-size:13px; line-height:1; }
+.wz-actions-tag-remove:hover{ color:var(--text-hi); }
+.wz-actions-tag-input{ flex:1; min-width:80px; background:var(--ink-800); border:1px solid var(--ink-border); color:var(--text-hi);
+  font-family:var(--font-ui); font-size:12px; padding:4px 6px; border-radius:0; }
+.wz-actions-confirm{ display:flex; flex-direction:column; gap:8px; padding:8px; border:1px solid var(--ink-border); }
+.wz-actions-confirm-line{ margin:0; font-size:13px; line-height:1.35; color:var(--text-hi); }
+.wz-actions-confirm-buttons{ display:flex; gap:6px; }
+.wz-actions-keep, .wz-actions-send{ flex:1; height:26px; background:none; border:1px solid var(--ink-border); border-radius:0; color:var(--text-mid);
+  font-family:var(--font-ui); font-size:12px; cursor:pointer; }
+.wz-actions-keep:hover, .wz-actions-send:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-actions-send{ color:var(--brick, var(--text-mid)); }
+.wz-actions-keep:focus-visible, .wz-actions-send:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
 /* REDUCED MOTION (Nick): fade only, short. No slide at all; the fade runs on its own short token. (This replaces the two old
    'transition:none' opt-outs: the writer who asked for less motion still sees the drawer arrive, just without travel.) */
 @media (prefers-reduced-motion:reduce){

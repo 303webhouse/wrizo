@@ -23,6 +23,8 @@ import { INKS, NIBS, TIPS } from '../store/ink';
 import { drawerArrow, setDrawerInert } from '../store/drawerShell';
 import { leftTabsFor, sectionAllowed, type DrawerKind, type LeftTab } from '../store/drawerSet';
 import { SideDrawer } from './SideDrawer';
+import { DrawerActions } from './DrawerActions';
+import type { PageActions } from '../store/pageActions';
 import type { StrokeInk, StrokeNib, StrokeTip } from '../types';
 
 // ITEM 114 (item 83 errata E4) — the rosters and their lexicon keys, in one
@@ -107,6 +109,9 @@ export type SliverContent =
     }
   | {
       kind: 'draft';
+      // PHASE 1 - the Actions section (Tags, Copy, Delete, Header/Footer). Present only on a born prose page; a screenplay host and an
+      // unborn page pass none, and then the section is absent from the DOM, never greyed.
+      actions?: PageActions;
       structure: StructureKind;
       onSwitchStructure: (next: StructureKind) => void;
       // ITEM 122 — the Draft rail gains an active state it never had. Optional,
@@ -313,6 +318,12 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
         onClick={toggleOpen}
       >
         <span className="wz-sliver-grip-glyph" aria-hidden="true">{drawerArrow('left', open)}</span>
+        {/* PHASE 1 - "which instrument am I" must stay readable with the drawer SHUT (item 121 I3). The choice now lives in the drawer's tab
+            row, so the fixed arrow tab carries a tiny pen while the page is in INK. It is a state, not a choice: it wears the tab's own olive,
+            never brass, and it is absent in TEXT (the default needs no mark). */}
+        {content.kind === 'freewrite' && content.instrument?.value === 'ink' && (
+          <span className="wz-sliver-grip-mark" data-instrument="ink" aria-hidden="true">{TIP_ICONS.pen}</span>
+        )}
       </button>
 
       {/* item 83 errata E1 (2026-09-03) — THE POP-OUT HOLD.
@@ -749,6 +760,11 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           and reads its ABSENCE as the proof the picker is gone; reusing the
           name made a live assertion false without any ruling having changed.
           Caught by the suite. The picker's name stays retired. */}
+      {/* PHASE 1 - ACTIONS, between Format and Templates (Nick's order: Typeface, Format, Actions, Templates). */}
+      {content.kind === 'draft' && content.actions && allowed('actions') && (
+        <div className="wz-sliver-section wz-sliver-actions"><div className="wz-sliver-h">{t('railActions')}</div><DrawerActions actions={content.actions} /></div>
+      )}
+
       {content.kind === 'draft' && allowed('templates') && (
         <div className="wz-sliver-section wz-sliver-templates">
           <div className="wz-sliver-h">{t('railTemplates')}</div>
