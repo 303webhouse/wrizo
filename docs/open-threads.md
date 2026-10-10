@@ -25371,3 +25371,24 @@ SHA).** Rhizome: counts to Fable when done; he then asks Nick for its ship word.
 clean, including `rhizome-goal-core` and `rhizome-growth` (FIX’s verdict lines) and `m2`/`m3`/`m4`/`rhizome-goal`.** This desk’s grant
 written `21:06:52Z` after the file was read (absent), cleared at completion; 0 harness processes, 0 browsers. **Not deployed; `main`
 untouched — it ships on Nick’s word (Fable asks him) after its smoke and live frames.** Next: the drafts pair (`e4b596c`).
+
+## DRAFTS PAIR: GREEN 120/120 ON BOTH LEGS; RHIZOME RESULT RESENT; TOOLS’ SPLASH-FRAMES GRANT — 2026-10-09 (chat 1)
+
+**`drafts-pair` @ `7045d24` = `origin/main` @ `76916ec`+ `drafts-integrity` @ `e4b596c`** (a clean merge; 5 files, +353/−25:
+`persistence.ts`, `sync.ts`, `drafts-integrity.mjs`, and one-line edits to `item-storage-full.mjs`, `item224a-sync-integrity.mjs`; NO server
+change, NO migration). `tsc` x2 exit 0; `build:web` bundle `index-Cp7GQvFQ.js` 642,660 b. **Browserless: K10 `--mutants` baseline GREEN (32),
+19/19 RED, exit 0 (as `sync.ts` changed); `drafts-integrity.mjs` alone `DRAFTS-INTEGRITY VERIFY: PASS (23 checks)`.** **THE PAIR: stamp
+`tree=7045d246 bundle=index-Cp7GQvFQ.js/642660b`; 120 files per leg in six chunks of ≤20 (the capture tool left out), no launch crashes:
+120/120 DEFAULT, 120/120 PARKED — every file clean, no red.** Grant (this desk’s) written `2026-10-09T22:49:08Z` after the file was read
+(absent), cleared `2026-10-10T00:23:01Z`; 0 harness processes. **Not deployed; `main` untouched — ships on Nick’s word after its smoke.**
+
+**THE RHIZOME RE-PAIR RESULT, resent to Fable at his request (it had not reached him; Nick’s rhizome ship word waits on it):** see the
+entry “RHIZOME RE-PAIR: GREEN 122/122 ON BOTH LEGS” above — stamp `tree=105eae2a bundle=index-Czev_mRg.js/646733b`, 122/122 default,
+122/122 parked, no reds.
+
+**TOOLS’ SPLASH-FRAMES GRANT (Fable: ~10 minutes): written `2026-10-10T00:2xZ` (6:2x pm MT), grant file read first (absent), box idle (0
+harness processes, 0 browsers).** `splash-screen` on origin is `4b2d72a` (“Splash CSS: fix the stale ‘fifth of the width’ wording (wording
+only)”, 15:19 MT), 9 commits past a base of `5559945`; a trial merge onto `main` (`76916ec`) is CLEAN; it adds `Splash.tsx`,
+`backdropTone.ts`, `App.tsx` +7, `index.css` +55 and a survey doc; no server change, no migration. *TOOLS confirms that `4b2d72a` is the
+rebased SHA it wants framed. The splash PAIR follows once TOOLS reports “box done”.* 30-minute check-in applies; this desk looks at
+TOOLS’ branch and evidence for a finished run before clearing.
