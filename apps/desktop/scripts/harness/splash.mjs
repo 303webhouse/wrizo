@@ -18,6 +18,19 @@ const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// S8 (harness-only): the browser's own computed `transitionDuration` under reduced
+// motion is not always the literal string "0s" — a near-zero value can compute as
+// scientific notation ("1e-05s", 0.01ms), which is the app's own "no animation"
+// value, not a leftover transition. Parse the FIRST comma-separated duration (one
+// per transitioned property) to milliseconds rather than string-matching "0s".
+function firstDurationMs(str) {
+  const first = String(str).split(',')[0].trim();
+  const m = /^([\d.eE+-]+)(m?s)$/.exec(first);
+  if (!m) return NaN;
+  const n = parseFloat(m[1]);
+  return m[2] === 'ms' ? n : n * 1000;
+}
+
 // The asset's measured ink bounding box inside its own canvas — the same two
 // numbers Splash.tsx sizes from. Stated here INDEPENDENTLY rather than
 // imported, so a change to the component cannot quietly move this check's
@@ -217,6 +230,9 @@ await withHarness(async (app) => {
   // ==========================================================================
   // S5 — THE ASSET FOLLOWS THE MEASURED BACKDROP, NOT A THEME MAP.
   // ==========================================================================
+  // ITEM 141 (harness-only): the SIZES loop's last `openApp` navigates with no
+  // settle after it — a window.wrizo* seam read right here raced the reload.
+  await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S5 settle' });
   const tone = await app.evalJs('window.wrizoBackdropTone ? window.wrizoBackdropTone.measure() : null');
   ok('S5: the backdrop probe answers (the seam exists and runs in the page)',
     tone === 'dark' || tone === 'light', String(tone));
@@ -234,6 +250,9 @@ await withHarness(async (app) => {
   // S6 — IT LEAVES ON ITS OWN, AND EARLY IF ASKED.
   // ==========================================================================
   await openApp(app);
+  // ITEM 141 (harness-only): same shape as S5 above — openApp navigates with no
+  // settle of its own, so the seam read right after it needs its own waitFor.
+  await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S6 settle' });
   const holdMs = await app.evalJs('window.wrizoSplash ? window.wrizoSplash.HOLD_MS : null');
   ok('S6 (driver): the hold is readable from the page seam', typeof holdMs === 'number', String(holdMs));
   await sleep((holdMs || 1200) + 700);
@@ -279,7 +298,7 @@ await withHarness(async (app) => {
     ok('S8 (driver): reduced motion could not be emulated in this runner, so the plain-appear rule is UNPROVEN here rather than passing by default', false, JSON.stringify(rm));
   } else {
     ok('S8: under reduced motion the fade is removed entirely — a plain appear and disappear, the hold unchanged',
-      /^0s(,|$)/.test(rm.veil) && /^0s(,|$)/.test(rm.mark), JSON.stringify(rm));
+      firstDurationMs(rm.veil) <= 1 && firstDurationMs(rm.mark) <= 1, JSON.stringify(rm));
   }
 });
 
