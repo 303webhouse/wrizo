@@ -1,0 +1,102 @@
+[
+  {
+    "frame": "arbor/desktop/mid-hold",
+    "file": "splash-hold-arbor-desktop-midhold-1400x900.png",
+    "leaving": "false",
+    "tone": "dark",
+    "theme": "plateau",
+    "decoded": true,
+    "rect": {
+      "x": 356,
+      "y": 175,
+      "w": 689,
+      "h": 551
+    },
+    "veilBackground": "color(srgb 0.0666667 0.0235294 0 / 0.75)",
+    "backdropFilter": "none",
+    "vw": 1400,
+    "vh": 900,
+    "veilAlpha": 0.75
+  },
+  {
+    "frame": "arbor/desktop/after-fade",
+    "file": "splash-hold-arbor-desktop-afterfade-1400x900.png",
+    "gone": true,
+    "doorsMounted": true
+  },
+  {
+    "frame": "arbor/phone/mid-hold",
+    "file": "splash-hold-arbor-phone-midhold-390x844.png",
+    "leaving": "false",
+    "tone": "dark",
+    "theme": "plateau",
+    "decoded": true,
+    "rect": {
+      "x": 45,
+      "y": 302,
+      "w": 299,
+      "h": 239
+    },
+    "veilBackground": "color(srgb 0.0666667 0.0235294 0 / 0.75)",
+    "backdropFilter": "none",
+    "vw": 390,
+    "vh": 844,
+    "veilAlpha": 0.75
+  },
+  {
+    "frame": "arbor/phone/after-fade",
+    "file": "splash-hold-arbor-phone-afterfade-390x844.png",
+    "gone": true,
+    "doorsMounted": true
+  },
+  {
+    "frame": "flux/desktop/mid-hold",
+    "file": "splash-hold-flux-desktop-midhold-1400x900.png",
+    "leaving": "false",
+    "tone": "dark",
+    "theme": "flux",
+    "decoded": true,
+    "rect": {
+      "x": 356,
+      "y": 175,
+      "w": 689,
+      "h": 551
+    },
+    "veilBackground": "color(srgb 0.0156863 0.0784314 0.101961 / 0.75)",
+    "backdropFilter": "none",
+    "vw": 1400,
+    "vh": 900,
+    "veilAlpha": 0.75
+  },
+  {
+    "frame": "flux/desktop/after-fade",
+    "file": "splash-hold-flux-desktop-afterfade-1400x900.png",
+    "gone": true,
+    "doorsMounted": true
+  },
+  {
+    "frame": "flux/phone/mid-hold",
+    "file": "splash-hold-flux-phone-midhold-390x844.png",
+    "leaving": "false",
+    "tone": "dark",
+    "theme": "flux",
+    "decoded": true,
+    "rect": {
+      "x": 45,
+      "y": 302,
+      "w": 299,
+      "h": 239
+    },
+    "veilBackground": "color(srgb 0.0156863 0.0784314 0.101961 / 0.75)",
+    "backdropFilter": "none",
+    "vw": 390,
+    "vh": 844,
+    "veilAlpha": 0.75
+  },
+  {
+    "frame": "flux/phone/after-fade",
+    "file": "splash-hold-flux-phone-afterfade-390x844.png",
+    "gone": true,
+    "doorsMounted": true
+  }
+]

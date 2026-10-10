@@ -25647,3 +25647,35 @@ transparent fill, no shadow); the brand mark is a `div` with a brass background 
 footer prefix is the `boardThreadPrefix` word, outside the rename this branch made. *(My first take of these frames caught the splash overlay
 (now live on `main`) over several of them; re-taken with the splash’s hold set short.)* **Nick’s ship word applies once Fable clears the frames AND
 the three reds are resolved.** **NOT DEPLOYED.** Grant (this desk’s) `2026-10-10T05:05:56Z`, cleared at completion; 0 harness processes, 0 browsers.
+
+## ABQ NOT CLEARED; (1) SPLASH-HOLD @ fd56a97 — ITEM141 PASS, SPLASH.MJS S1 A PARSE FAULT, EIGHT FRAMES; (2) INK’S SET @ 95ad0e1 — 10 OF 11 CLEAN — 2026-10-10 (chat 1)
+
+**FABLE: `abq-pair` NOT CLEARED — frames reviewed; 6 visual fixes + the 3 harness reds go back to TOOLS; re-pair on TOOLS’ next SHA. NEW ORDER, all run by
+this desk: (1) `splash-hold` @ `fd56a97` (3 s floor, theme-tinted dim veil, no blur): `splash.mjs` + `item141` both legs + the frames (Arbor + Flux, desktop +
+phone, mid-hold + after the fade) — Nick asked for this; it deploys once Fable clears the frames; (2) INK, `phase1-drawers` @ `95ad0e1`: `drawers-p1` +
+`page-templates`, `fx2`, `fx10`, `item83f`, `item121`, `item126`, `item207`, `ab2`, `fx1`, `fx3`, both legs — not for shipping; (3) `arbor-quiet-brass` on TOOLS’
+new SHA: the full pair + the same 12 frames.** This desk’s one grant for (1)+(2): written `2026-10-10T11:04:38Z` (file read first, absent), cleared
+`11:22:29Z`; 0 harness processes, 0 browsers.
+
+**(1) `splash-hold` @ `fd56a97`** (1 commit past `main`: `Splash.tsx`, `index.css`, `splash.mjs`, `splash-frames-batch.mjs`; no server change, no migration; run tree
+`run-splash2` @ `a59dee8`; bundle `index-Ci_-RHQI.js` 650,080 b). **`item141` PASS (11) on both legs. `splash.mjs` FAIL 1/42 on BOTH legs — S1 (item
+splash-hold): “the veil is a flat dimming tint in the THEME’s own ground colour (`--ink-950`) at ~75% opacity” reads `veilBackground:
+color(srgb 0.0666667 0.0235294 0 / 0.75)`, expected ground {17,6,0}.** **That value IS the ground (0.0666667×255 = 17, 0.0235294×255 = 6, 0) at 0.75 — the
+product is right and the CHECK cannot read it: Chromium reports a `color-mix` as `color(srgb … / a)` and the check parses `rgb(…)` only.** The same parse
+fault stops `scripts/splash-frames-batch.mjs`: its own veil-painted assertion (`/^rgba(…)$/`) throws on the same string, so the batch died on its first frame.
+**FRAMES, taken with a capture copy of the batch** (this desk’s `splashholdframes.mjs`, scratchpad: parses BOTH colour forms, RECORDS the veil instead of throwing,
+and takes an AFTER-FADE frame for every combo, not just one): **eight PNGs under `docs/evidence/splash-hold/`** — Arbor and Flux × desktop 1400×900 and phone
+390×844 × mid-hold and after-the-fade. Facts: the veil is the theme’s own ground at alpha 0.75 (Arbor `rgb(17,6,0)`, Flux `rgb(4,20,26)`), `backdrop-filter: none` in
+every frame, the mark decoded (689×551 desktop, 299×239 phone), and after the fade `.wz-splash` is gone with the doors mounted in all four. **TOOLS fixes the two
+parses (`splash.mjs` S1 and the batch’s assertion); a harness-only change.** Owed: Fable’s frame review; the splash-hold does not deploy until `splash.mjs` is green.
+
+**(2) INK, `phase1-drawers` @ `95ad0e1`** (8 commits past `main`; the drawer shell + `DrawerActions`/`DrawerIcons`/`DrawerTabs`/`SideDrawer`, `Sliver.tsx`, `Tutor.tsx`,
+`PageEditor.tsx`, `index.css`, three stores; no server change, no migration; run tree `run-drawers2` @ `30ac1b5`; bundle `index-Cg-SPb9J.js` 657,281 b; all
+eleven files exist): **TEN OF ELEVEN CLEAN on BOTH legs: `ab2` 25, `fx1` 23, `fx10` 121, `fx2` 33, `fx3` 28, `item121` 43, `item126` 42, `item207` 41, `item83f` 28, `page-templates`
+20 — so the earlier reds are cured, `page-templates` included (the Templates apply again).** **ONE RED, the same on both legs: `drawers-p1.mjs` FAIL 2/64:** (D2) H3 “the
+Templates block in `Sliver.tsx` is unchanged from main (whitespace aside)” — `1837 vs 1814` (the block is 23 characters longer than main’s: either the branch
+touched it or main moved), and (M) “the left arrow is not mirrored from the right: THE MUTATION LANDED” — `anchor missing` (the same stale mutant anchor as before).
+INK’s to read. **Not for shipping, as Fable said.**
+
+**(3) `arbor-quiet-brass`: TOOLS’ new tip `2f7861a` (“round 2: more Flux brown/olive leaks, card-footer vocab, three reds”, 05:14 MT; `cd2`, `fx5`, `pw1`, `th2`,
+`index.css`, `deskLexicon.ts`) — STARTED next: the full pair + the twelve frames.**
