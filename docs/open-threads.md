@@ -25538,3 +25538,31 @@ as Fable ruled). Then `scripts/splash-frames-batch.mjs` ran (exit 0): five PNGs 
 Nick’s standing word.**
 
 **(4) INK’s S1 browser checks: running next under the same grant; reported separately.**
+
+## SET (4): INK’S S1 BROWSER CHECKS ON `phase1-drawers` — FOUR FILES RED, ONE LOOKS LIKE A REAL REGRESSION; THE GRANT CLEARED — 2026-10-09 (chat 1)
+
+**Run tree `run-drawers` = `main` @ `9e6b2e9` + `phase1-drawers` @ `c3e0dde` (`5a7c546`; bundle `index-OJAmA7o-.js` 647,553 b; `tsc` x2 exit 0):**
+the twelve files INK listed that EXIST, on both legs, stamp `tree=5a7c5461`. **`drawers-p1-live.mjs` (“the live half”) DOES NOT EXIST on the branch
+— `drawers-p1.mjs`’s own header calls it “a box turn” but it was never written — so it was NOT run.**
+
+**PASS on both legs (8): `cd1` 25, `e3` 9, `fx1` 23, `fx18` 16, `fx3` 28, `tu1` 93, `tu2` 98, `tu5` 91. RED (4), the same on both legs:**
+- **`fx10` 1/121** — “S1/A15 [Phase 1 successor]: prefers-reduced-motion is FADE ONLY and SHORT — the panel still fades (a short duration, not zero)”:
+  reads `reducedTransition:“1e-05s”`, `reducedLayerTransition:“1e-05s”`, `reducedLayerTransform:“none”` — the 0.01 ms floor again (the same
+  reading as the splash’s S8): the reduced-motion duration resolves to `1e-05s`, not a short real fade.
+- **`fx2` 2/33** — “S1 @ 1280px and @ 2200px: the OPEN sliver panel’s computed background is opaque (alpha=1), never see-through onto the paper”:
+  reads `rgba(0, 0, 0, 0)`, alpha 0 — the panel is transparent. Either the check now measures the wrong node (the new sliding layer) or the
+  open drawer really lost its opaque ground.
+- **`item83f` 1/28** — “E2 (GUARD): Page kind is the LAST zone of the tab body, directly after Templates…”: `pageKindIsLast:true` and the headings
+  `[Typeface, Format, Templates, Page kind]`, but `panelKids:[“wz-drawer-slide wz-drawer-slide--left”]` — the panel’s children are now the new slide
+  layer, so a structure assertion no longer matches.
+- **`page-templates` 6/20 ► THE ONE THAT MATTERS: the Templates do not APPLY.** T2 “pressing the template…”, “Screenplay on an empty page applies IN
+  PLACE” (`rows:[]`, hash `#/page/new`), “chosen” (not pressed), T4 “the current page is UNTOUCHED” / “a NEW script page opens” (`fresh:[]`) and the
+  one-tap way back (`null`). **`page-templates` passed 20/20 on `main` (the templates pair and the live frames), so with `phase1-drawers`
+  merged the Screenplay press does nothing in the harness — a real regression candidate (the new sliding layer or `inert`/pointer handling
+  intercepting the press), not proven to be one: it could also be the harness’s own press path meeting the new layer.**
+
+**NOT FOR DEPLOY: `phase1-drawers` does not pair on this evidence.** Hand to INK/Fable: `page-templates` first (does the press land?), then `fx2`
+(opaque ground), `fx10` and `item83f` (successor parks or fixes), and the missing `drawers-p1-live.mjs`. **(2) above: `drawers-p1.mjs` 3/23.**
+
+**GRANT LOG: this desk’s one grant for the four runs, written `2026-10-10T03:33:46Z`, CLEARED `03:49:45Z` (~16 minutes); 0 harness processes,
+0 browsers; the primary untouched.** Worktrees left in place for inspection: `run-exp1`, `run-drawers`, `run-splash`.
