@@ -126,9 +126,13 @@ function partC(sliver = sliverSrc, tutor = tutorSrc) {
   const c = partC();
   ok('(C1) both tabs get their glyph from drawerArrow (left / right) and neither keeps a hand-written literal', c.sliverArrow && c.tutorArrow && !c.sliverHandWritten && !c.tutorHandWritten, JSON.stringify(c));
   ok('(C2) both closed panels are inert (setDrawerInert on the panel element, the current open state)', c.sliverInert && c.tutorInert, JSON.stringify(c));
-  ok('(C3) both panels wrap their contents in the sliding layer, left and right', c.sliverLayer && c.tutorLayer, JSON.stringify(c));
+  // SUPERSEDED (S2: both hands render through <SideDrawer>) - by (H1) below. Parked, not deleted: it pinned the S1 hand-written sliding-layer wrapper.
+  // Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(C3) both panels wrap their contents in the sliding layer, left and right', c.sliverLayer && c.tutorLayer, JSON.stringify(c));
   const balance = (t, a) => (t.match(/<div className="wz-drawer-slide/g) || []).length === 1 && a;
-  ok('(C4) the Tutor\'s sliding layer encloses the whole panel body (opens before the reply announcement, closes before the panel\'s own close) - the disclosure dialog stays outside it',
+  // SUPERSEDED (S2: both hands render through <SideDrawer>) - by (H1) below. Parked, not deleted: it pinned the S1 hand-written sliding-layer wrapper.
+  // Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(C4) the Tutor\'s sliding layer encloses the whole panel body (opens before the reply announcement, closes before the panel\'s own close) - the disclosure dialog stays outside it',
     tutorSrc.indexOf('wz-drawer-slide wz-drawer-slide--right') < tutorSrc.indexOf('className="wz-sr-only" role="status"')
       && tutorSrc.indexOf(')}\n          </div>\n        </div>\n      </div>\n\n      {showDisclosure && (') > 0 && balance(tutorSrc, true), '');
 }
@@ -137,10 +141,30 @@ function partC(sliver = sliverSrc, tutor = tutorSrc) {
 // PART D - the hard limits (H1: the typing path; H3: Templates), against main.
 // =============================================================================
 function sh(cmd) { try { return execSync(cmd, { cwd: DESKTOP, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); } catch { return null; } }
+// The declared hunk, as a predicate on a unified diff (-U0): every changed line is an ADDITION, and every addition is one of the allowed
+// lines. Pure, so a mutant can show it fails on a diff that touches anything else.
+const ALLOWED_PE_ADDITIONS = [
+  /^\s*\/\/ PHASE 1 - the drawer's TEXT \| INK tab row chooses the same instrument/,
+  /^\s*\/\/ band's menu retires in S2b\)\. Display wiring only: nothing here touches the typing path\./,
+  /^\s*instrument: \{ value: instrument, onChange: setInstrument \},\s*$/,
+];
+function diffConfined(diffText) {
+  const lines = noCR(diffText).split('\n');
+  let added = 0;
+  for (const l of lines) {
+    if (l.startsWith('+++') || l.startsWith('---') || l.startsWith('@@') || l.startsWith('diff ') || l.startsWith('index ') || l === '') continue;
+    if (l.startsWith('-')) return false;
+    if (l.startsWith('+')) { added += 1; if (!ALLOWED_PE_ADDITIONS.some((re) => re.test(l.slice(1)))) return false; }
+  }
+  return added > 0 && added <= 4;
+}
 const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-parse origin/main')?.trim() || null;
 {
-  const pe = baseRef ? sh(`git diff --stat ${baseRef} -- src/pages/PageEditor.tsx src/components/ForwardOnlyEditor.tsx`) : null;
-  ok('(D1) H1: PageEditor.tsx and ForwardOnlyEditor.tsx are byte-identical to main (S1 touches no typing path)', pe !== null && pe.trim() === '', String(pe));
+  const fo = baseRef ? sh(`git diff --stat ${baseRef} -- src/components/ForwardOnlyEditor.tsx`) : null;
+  ok('(D1a) H1: ForwardOnlyEditor.tsx (the typing surface) is byte-identical to main', fo !== null && fo.trim() === '', String(fo));
+  const peDiff = baseRef ? sh(`git diff -U0 ${baseRef} -- src/pages/PageEditor.tsx`) : null;
+  ok('(D1b) H1: PageEditor.tsx differs from main ONLY by the declared hunk - pure additions of the Free Write drawer\'s instrument wiring (a comment and one object member), no line removed or changed',
+    peDiff !== null && diffConfined(peDiff), String(peDiff).slice(0, 300));
   const templatesBlock = (text) => {
     const a = text.indexOf('railTemplates');
     if (a < 0) return null;
@@ -151,6 +175,87 @@ const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-par
   const mainSliver = baseRef ? sh(`git show ${baseRef}:apps/desktop/src/components/Sliver.tsx`) : null;
   const now = templatesBlock(sliverSrc), was = mainSliver ? templatesBlock(noCR(mainSliver)) : null;
   ok('(D2) H3: the Templates block in Sliver.tsx is unchanged from main (whitespace aside)', !!now && now === was, `${now ? now.length : 0} vs ${was ? was.length : 0}`);
+}
+
+// =============================================================================
+// PART E (S2) - THE TABLE: what the left drawer shows, run for real (store/drawerSet.ts is pure).
+// =============================================================================
+const setText = read('store/drawerSet.ts');
+async function loadSet(text = setText) {
+  const js = ts.transpileModule(text, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 } }).outputText;
+  return import('data:text/javascript;base64,' + Buffer.from(js).toString('base64') + '#' + Math.random());
+}
+async function partE(text = setText) {
+  const m = await loadSet(text);
+  const S = (k, t) => [...m.sectionsFor(k, t)];
+  return {
+    tabsFW: m.leftTabsFor('freewrite', true), tabsFWNo: m.leftTabsFor('freewrite', false),
+    tabsOthers: ['draft', 'revise', 'board', 'empty'].map((k) => m.leftTabsFor(k, true).length),
+    fwText: S('freewrite', 'text'), fwInk: S('freewrite', 'ink'), draft: S('draft', 'text'), revise: S('revise', 'text'), board: S('board', 'text'),
+    fwFormat: m.sectionAllowed('freewrite', 'text', 'format') || m.sectionAllowed('freewrite', 'ink', 'format'),
+    fwTemplates: m.sectionAllowed('freewrite', 'text', 'templates'), draftInk: m.sectionAllowed('draft', 'text', 'ink'),
+    reviseExtras: ['format', 'templates', 'pageKind', 'forwardLock'].some((s) => m.sectionAllowed('revise', 'text', s)),
+  };
+}
+{
+  const e = await partE();
+  ok('(E1) only Free Write has a tab row, and only with an instrument: TEXT then INK; no instrument, or Draft/Revise/Board/empty: none (never a lone tab)',
+    JSON.stringify(e.tabsFW) === JSON.stringify(['text', 'ink']) && e.tabsFWNo.length === 0 && e.tabsOthers.every((n) => n === 0), JSON.stringify(e));
+  ok('(E2) Free Write TEXT = Typeface, Forward Lock, Capture; INK = the ink zone, Forward Lock, Capture - and NEVER Format or Templates (Nick Q1: B/I/U wait for the typing-path work)',
+    JSON.stringify(e.fwText) === JSON.stringify(['typeface', 'forwardLock', 'capture']) && JSON.stringify(e.fwInk) === JSON.stringify(['ink', 'forwardLock', 'capture']) && e.fwFormat === false && e.fwTemplates === false, JSON.stringify(e));
+  ok('(E3) Draft = Typeface, Format, Templates, Page kind (and no ink zone); Revise = Typeface only; Board = its tools',
+    JSON.stringify(e.draft) === JSON.stringify(['typeface', 'format', 'templates', 'pageKind']) && e.draftInk === false && JSON.stringify(e.revise) === JSON.stringify(['typeface']) && e.reviseExtras === false && JSON.stringify(e.board) === JSON.stringify(['boardTools']), JSON.stringify(e));
+}
+
+// =============================================================================
+// PART F (S2) - the tab row: the key logic run for real, the semantics and the dress by source.
+// =============================================================================
+const tabsSrc = read('components/DrawerTabs.tsx');
+async function partF(text = tabsSrc) {
+  const a = text.indexOf('export function nextTab');
+  const b = text.indexOf('\ninterface Props', a);
+  const js = ts.transpileModule(text.slice(a, b), { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 } }).outputText;
+  const m = await import('data:text/javascript;base64,' + Buffer.from(js).toString('base64') + '#' + Math.random());
+  const ids = ['text', 'ink'];
+  return { right: m.nextTab(ids, 'text', 'ArrowRight'), wrapR: m.nextTab(ids, 'ink', 'ArrowRight'), left: m.nextTab(ids, 'ink', 'ArrowLeft'), wrapL: m.nextTab(ids, 'text', 'ArrowLeft'),
+    home: m.nextTab(ids, 'ink', 'Home'), end: m.nextTab(ids, 'text', 'End'), other: m.nextTab(ids, 'text', 'x'), none: m.nextTab([], 'text', 'ArrowRight') };
+}
+function partG(tabs = tabsSrc, c = css) {
+  const rule = ruleBody(c, ".wz-drawer-tab[data-on='true']{");
+  const arrowOpen = ruleBody(c, ".wz-sliver[data-open='true'] .wz-sliver-grip{");
+  return {
+    roles: /role="tablist"/.test(tabs) && /role="tab"/.test(tabs) && /aria-selected=\{value === it\.id\}/.test(tabs) && /tabIndex=\{value === it\.id \? 0 : -1\}/.test(tabs),
+    brassOutline: !!rule && /color:var\(--brass\)/.test(rule) && /border-color:var\(--brass\)/.test(rule) && /background:none/.test(rule) && !/color-mix/.test(rule),
+    arrowStaysOlive: !!arrowOpen && /var\(--accent-rest\)/.test(arrowOpen) && !/brass/.test(arrowOpen),
+  };
+}
+{
+  const f = await partF();
+  ok('(F1) the tab row\'s keys: Right/Down next, Left/Up previous (both wrap), Home first, End last, anything else nothing, no tabs nothing',
+    f.right === 'ink' && f.wrapR === 'text' && f.left === 'text' && f.wrapL === 'ink' && f.home === 'text' && f.end === 'ink' && f.other === null && f.none === null, JSON.stringify(f));
+  const g = partG();
+  ok('(F2) the row is a real tablist: tab roles, aria-selected, and a roving tabindex (only the chosen tab is in the Tab order)', g.roles, JSON.stringify(g));
+  ok('(F3) the chosen tab is a BRASS OUTLINE and nothing else (no fill, no color-mix) - and the drawer\'s own arrow tab stays olive (Nick: the open tab is not a choice)', g.brassOutline && g.arrowStaysOlive, JSON.stringify(g));
+}
+
+// =============================================================================
+// PART H (S2) - the shell is shared: both hands use <SideDrawer>, the Sliver asks the table before every section.
+// =============================================================================
+function partH(sliver = sliverSrc, tutor = tutorSrc) {
+  const gated = ['ink', 'typeface', 'forwardLock', 'format', 'templates', 'pageKind', 'capture', 'boardTools'];
+  return {
+    sliverShell: /<SideDrawer side="left" idPrefix="wz-sliver" tabs=\{sideTabs\}/.test(sliver) && /<\/SideDrawer>/.test(sliver),
+    tutorShell: /<SideDrawer side="right" idPrefix="wz-tutor">/.test(tutor) && /<\/SideDrawer>/.test(tutor),
+    noHandWrapper: !/<div className="wz-drawer-slide wz-drawer-slide--(left|right)">/.test(sliver + tutor),
+    ungated: gated.filter((s) => !sliver.includes("allowed('" + s + "')")),
+    tabLabels: /t\('inkModeText'\)/.test(sliver) && /t\('inkModeInk'\)/.test(sliver) && /label: t\('inkInstrument'\)/.test(sliver),
+  };
+}
+{
+  const h = partH();
+  ok('(H1) both hands render through <SideDrawer> (left carries the tab config and the foot; right has no tab row until S3) - the S1 hand-written wrappers are gone', h.sliverShell && h.tutorShell && h.noHandWrapper, JSON.stringify(h));
+  ok('(H2) EVERY Sliver section asks the table first (ink, typeface, forwardLock, format, templates, pageKind, capture, boardTools) - the table is not decorative', h.ungated.length === 0, JSON.stringify(h.ungated));
+  ok('(H3) the tab words are the theme\'s own lexicon terms (Text / Ink and the row\'s name), not literals', h.tabLabels, JSON.stringify(h));
 }
 
 // =============================================================================
@@ -176,6 +281,18 @@ await mutant('reduced motion keeps the slide', async () => partB(mutate(css, '.w
   (b) => !/transform:none; transition:none/.test(b.reduceBlock));
 await mutant('the Tutor panel loses its inert ref', async () => partC(sliverSrc, mutate(tutorSrc, 'ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open}', 'aria-hidden={!open}')), (c) => c.tutorInert === false);
 await mutant('the Sliver keeps a hand-written arrow', async () => partC(mutate(sliverSrc, "{drawerArrow('left', open)}", "{open ? '›' : '‹'}"), tutorSrc), (c) => c.sliverHandWritten === true && c.sliverArrow === false);
+
+await mutant('Free Write grows a Format group', async () => partE(mutate(setText, "text: ['typeface', 'forwardLock', 'capture']", "text: ['typeface', 'format', 'forwardLock', 'capture']")), (e) => e.fwFormat === true);
+await mutant('INK loses its ink zone', async () => partE(mutate(setText, "ink: ['ink', 'forwardLock', 'capture'] }", "ink: ['forwardLock', 'capture'] }")), (e) => !e.fwInk.includes('ink'));
+await mutant('Draft gets a tab row', async () => partE(mutate(setText, "return kind === 'freewrite' && hasInstrument ? ['text', 'ink'] : [];", "return hasInstrument ? ['text', 'ink'] : [];")), (e) => e.tabsOthers.some((n) => n !== 0));
+await mutant('Revise grows Templates', async () => partE(mutate(setText, "revise: { text: ['typeface'], ink: [] }", "revise: { text: ['typeface', 'templates'], ink: [] }")), (e) => e.reviseExtras === true || JSON.stringify(e.revise) !== JSON.stringify(['typeface']));
+await mutant('the tab row does not wrap', async () => partF(mutate(tabsSrc, "return ids[(at + 1) % ids.length];", "return ids[Math.min(at + 1, ids.length - 1)];")), (f) => f.wrapR !== 'text');
+await mutant('the chosen tab gets a fill', async () => partG(tabsSrc, mutate(css, ".wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:none; }", ".wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }")), (g) => g.brassOutline === false);
+await mutant('the arrow tab turns brass when open', async () => partG(tabsSrc, mutate(css, ".wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--accent-rest); border-color:var(--accent-rest); }", ".wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--brass); border-color:var(--brass); }")), (g) => g.arrowStaysOlive === false);
+await mutant('the Sliver stops asking the table for the Typeface', async () => partH(mutate(sliverSrc, "content.type && allowed('typeface') && (", "content.type && ("), tutorSrc), (h) => h.ungated.includes('typeface'));
+await mutant('the Tutor goes back to a hand-written wrapper', async () => partH(sliverSrc, mutate(tutorSrc, '<SideDrawer side="right" idPrefix="wz-tutor">', '<div className="wz-drawer-slide wz-drawer-slide--right">')), (h) => h.noHandWrapper === false || h.tutorShell === false);
+await mutant('PageEditor.tsx is changed outside the declared hunk', async () => ({ ok: diffConfined('@@ -10,0 +11 @@\n+  instrument: { value: instrument, onChange: setInstrument },\n@@ -500,0 +502 @@\n+  onChange(e);\n') }), (r) => r.ok === false);
+await mutant('PageEditor.tsx loses a line outside the declared hunk', async () => ({ ok: diffConfined('@@ -10 +10 @@\n-  const x = 1;\n+  instrument: { value: instrument, onChange: setInstrument },\n') }), (r) => r.ok === false);
 
 let failed = 0;
 for (const c of checks) {

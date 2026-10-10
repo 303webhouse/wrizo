@@ -21,6 +21,8 @@ import type { PageKindSetting, StyleGuide } from '../types';
 import type { InkPen } from './InkStratum';
 import { INKS, NIBS, TIPS } from '../store/ink';
 import { drawerArrow, setDrawerInert } from '../store/drawerShell';
+import { leftTabsFor, sectionAllowed, type DrawerKind, type LeftTab } from '../store/drawerSet';
+import { SideDrawer } from './SideDrawer';
 import type { StrokeInk, StrokeNib, StrokeTip } from '../types';
 
 // ITEM 114 (item 83 errata E4) — the rosters and their lexicon keys, in one
@@ -76,6 +78,10 @@ export type SliverContent =
   | { kind: 'revise'; type?: SliverType }
   | {
       kind: 'freewrite';
+      // PHASE 1 - the TEXT | INK choice, shown as the drawer's tab row. Present only where the host has an instrument (PageEditor's Free
+      // Write); a Journal capture page passes none and its drawer has no tab row. The VALUE is the host's: the paper, the caret and
+      // the drawer all read the same one.
+      instrument?: { value: LeftTab; onChange: (next: LeftTab) => void };
       forwardLock?: {
         on: boolean;
         onToggle: (next: boolean) => void;
@@ -278,6 +284,18 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
   // referentially stable and safe as an effect dependency downstream.
   const [popoutHold, setPopoutHold] = useState(false);
 
+  // PHASE 1 - the left drawer's tab row (TEXT | INK). Only Free Write with an instrument has one; every other surface passes undefined and
+  // shows no row. The labels are the theme's own words (the same lexicon terms the band's switch uses).
+  const leftTabs = leftTabsFor(content.kind as DrawerKind, content.kind === 'freewrite' && !!content.instrument);
+  const sideTabs = leftTabs.length > 1 && content.kind === 'freewrite' && content.instrument
+    ? {
+        items: [{ id: 'text' as const, label: t('inkModeText') }, { id: 'ink' as const, label: t('inkModeInk') }],
+        value: content.instrument.value,
+        onChange: content.instrument.onChange,
+        label: t('inkInstrument'),
+      }
+    : undefined;
+
   return (
     // item 83 M1 — the wave's own contract markers. scripts/menus-probe.mjs
     // binds to these, not to the `wz-` classes, so the acceptance instrument
@@ -314,9 +332,9 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
           state: with no pop-out open this attribute reads 'false' and every fade
           on this surface behaves byte-identically to before. */}
       <div className="wz-sliver-panel chrome-fade desk-dissolve" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-popout-hold={popoutHold ? 'true' : 'false'}>
-        {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller, this is what slides in from behind the tab. */}
-        <div className="wz-drawer-slide wz-drawer-slide--left">
-        <SliverToolsBody content={content} />
+        {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab,
+            with the TEXT | INK tab row when this surface has an instrument. The goal foot and the instruments row ride every tab. */}
+        <SideDrawer side="left" idPrefix="wz-sliver" tabs={sideTabs} foot={(<>
         <SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />
         {/* FX3 S5 — the foot's new instruments row, beneath the goal block.
             Nested inside THIS panel (which already carries chrome-fade
@@ -358,7 +376,9 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
           goalText={goalText}
           onPopoutHold={setPopoutHold}
         />
-        </div>
+        </>)}>
+        <SliverToolsBody content={content} />
+        </SideDrawer>
       </div>
     </div>
   );
@@ -585,6 +605,10 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
   const { t } = useDeskLexicon();
 
   if (content.kind === 'empty') return null;
+  // PHASE 1 - store/drawerSet.ts is the one statement of what each surface and tab may show. The host still decides whether a section
+  // has data (a screenplay passes no type member); this decides whether it may appear here at all.
+  const tab: LeftTab = content.kind === 'freewrite' && content.instrument ? content.instrument.value : 'text';
+  const allowed = (section: Parameters<typeof sectionAllowed>[2]): boolean => sectionAllowed(content.kind as DrawerKind, tab, section);
 
   return (
     <div className="wz-sliver-body">
@@ -605,7 +629,7 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           in TEXT none of this exists in the DOM at all (G3 — a greyed control
           for a capability the surface does not currently have is a locked door
           wearing paint; the typewriter has no nibs). */}
-      {content.kind === 'freewrite' && content.inkOptions && <SliverInkZone opts={content.inkOptions} />}
+      {content.kind === 'freewrite' && content.inkOptions && allowed('ink') && <SliverInkZone opts={content.inkOptions} />}
 
       {/* ITEM 121 I6 (R15/G3) — STYLING IS RETIRED FROM FREE WRITE.
           Nick's analog law: Free Write is a typewriter for text — "no digital
@@ -632,11 +656,11 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           the drawer's tenants. The control itself stays caption-free (his minimal-interface law); the section above it is
           headed "Typeface" like every other drawer zone. Absent, never greyed, wherever the host passes no `type` (a
           screenplay page). */}
-      {(content.kind === 'freewrite' || content.kind === 'draft' || content.kind === 'revise') && content.type && (
+      {(content.kind === 'freewrite' || content.kind === 'draft' || content.kind === 'revise') && content.type && allowed('typeface') && (
         <div className="wz-sliver-section wz-sliver-type"><div className="wz-sliver-h">{t('railTypeface')}</div><TypeControl {...content.type} /></div>
       )}
 
-      {content.kind === 'freewrite' && content.forwardLock && (
+      {content.kind === 'freewrite' && content.forwardLock && allowed('forwardLock') && (
         <div className="wz-sliver-section">
           <div className="wz-sliver-h">{t('railControls')}</div>
           <SliverToggle
@@ -656,7 +680,7 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           (TypewriterToggle's own aria-label, WritingIncentives.tsx,
           unchanged) even though no visible text remains anywhere. */}
 
-      {content.kind === 'draft' && content.format && (
+      {content.kind === 'draft' && content.format && allowed('format') && (
         <div className="wz-sliver-section">
           <div className="wz-sliver-h">{t('railFormat')}</div>
           {/* onMouseDown preventDefault — a sliver button is OUTSIDE the
@@ -725,7 +749,7 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           and reads its ABSENCE as the proof the picker is gone; reusing the
           name made a live assertion false without any ruling having changed.
           Caught by the suite. The picker's name stays retired. */}
-      {content.kind === 'draft' && (
+      {content.kind === 'draft' && allowed('templates') && (
         <div className="wz-sliver-section wz-sliver-templates">
           <div className="wz-sliver-h">{t('railTemplates')}</div>
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
@@ -748,7 +772,7 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           converting the page itself is not offered here. The style guides
           disclose beneath Research only, and MLA reads as the default without
           writing anything until the writer picks. */}
-      {content.kind === 'draft' && content.pageKind && content.onPickKind && (
+      {content.kind === 'draft' && content.pageKind && content.onPickKind && allowed('pageKind') && (
         <div className="wz-sliver-section wz-sliver-page-kind">
           <div className="wz-sliver-h" id="wz-page-kind-label">{t('railPageKind')}</div>
           <div className="wz-page-setup-seg" role="radiogroup" aria-labelledby="wz-page-kind-label">
@@ -789,7 +813,7 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
         </div>
       )}
 
-      {content.kind === 'freewrite' && (
+      {content.kind === 'freewrite' && allowed('capture') && (
         <div className="wz-sliver-section">
           <div className="wz-sliver-h">{t('corkboardJournalTab')}</div>
           {content.captureItems.map(it => <div key={it} className="wz-sliver-item">{it}</div>)}
@@ -802,7 +826,7 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           B1 S3 — on a system Board, BoardEditor.tsx passes neither
           onAddCard nor onAddPageCard at all: both buttons below are
           genuinely absent from the DOM there, not merely disabled. */}
-      {content.kind === 'board' && (
+      {content.kind === 'board' && allowed('boardTools') && (
         <div className="wz-sliver-section">
           <div className="wz-sliver-h">{t('railBoard')}</div>
           {content.onAddCard && (

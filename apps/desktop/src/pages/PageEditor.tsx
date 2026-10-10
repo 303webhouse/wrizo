@@ -1051,6 +1051,9 @@ function PageEditorView({ id }: { id: string }) {
     : mode === 'journal'
       ? {
           kind: 'freewrite',
+          // PHASE 1 - the drawer's TEXT | INK tab row chooses the same instrument the band's switch does (one state, two controls until the
+          // band's menu retires in S2b). Display wiring only: nothing here touches the typing path.
+          instrument: { value: instrument, onChange: setInstrument },
           forwardLock: { on: forwardLock, onToggle: setForwardLock },
           // ITEM 207 - the smallest form (a face button and -/+, no number). Absent in INK: a pen page has no typeface.
           type: instrument === 'ink' ? undefined : typeMember('small'),

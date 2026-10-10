@@ -16,6 +16,7 @@ import { FREE_WRITE_POOLS, DRAW_CEILING, REFILL_WORDS, drawFrom, recentMemoryFor
 import { useMonotonicWordCount } from './FirstRunGate';
 import { capTutorHistory } from '../store/tutorHistory';
 import { drawerArrow, setDrawerInert } from '../store/drawerShell';
+import { SideDrawer } from './SideDrawer';
 
 // TU1 S2/S3/S4/S5 — the Tutor. The sliver, mirrored, on the paper's RIGHT
 // edge — but rendered as TWO separate DeskFrame overlay anchors, not one
@@ -896,8 +897,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
 
       <div className={`desk-frame-tutor-panel-anchor desk-frame-tutor-panel-anchor--${pageKind} wz-tutor-zone`}>
         <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px` } : undefined}>
-          {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller, this is what slides in from behind the tab. */}
-          <div className="wz-drawer-slide wz-drawer-slide--right">
+          {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab.
+              No tab row yet (S3 adds TUTOR | the theme's links word). */}
+          <SideDrawer side="right" idPrefix="wz-tutor">
           {/* A11Y AUDIT A8 — the reply announcement, visually hidden. Lives at
               the panel's own top level (not inside the `{open && …}` content
               body below), so closing/reopening the Tutor never remounts it and
@@ -1201,7 +1203,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             )}
             </div>
           )}
-          </div>
+          </SideDrawer>
         </div>
       </div>
 

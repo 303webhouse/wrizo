@@ -3626,6 +3626,15 @@ a:focus-visible,
 .wz-drawer-slide--left{ border-right:none; transform:translateX(100%); }
 .wz-drawer-slide--right{ border-left:none; transform:translateX(-100%); }
 [data-open='true'] > .wz-drawer-slide{ transform:none; }
+/* PHASE 1 (S2) - THE TAB ROW. The chosen tab wears a BRASS OUTLINE and brass text and NOTHING else - no fill (Nick, Oct 9). The drawer's
+   arrow tab is olive (where you are); this is brass (what you chose). */
+.wz-drawer-tabs{ display:flex; gap:6px; padding:14px 14px 0; }
+.wz-drawer-tab{ flex:1; height:26px; padding:0; background:none; border:1px solid var(--ink-border); border-radius:0;
+  color:var(--text-mid); font-family:var(--font-ui); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+  cursor:pointer; transition:color .15s ease, border-color .15s ease; }
+.wz-drawer-tab:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:none; }
+.wz-drawer-tab:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
 /* REDUCED MOTION (Nick): fade only, short. No slide at all; the fade runs on its own short token. (This replaces the two old
    'transition:none' opt-outs: the writer who asked for less motion still sees the drawer arrive, just without travel.) */
 @media (prefers-reduced-motion:reduce){

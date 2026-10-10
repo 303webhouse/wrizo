@@ -430,3 +430,35 @@ reachable by keyboard or touch. The earlier Q10 (icons) is closed: words, per th
 **A.4 decided (Fable, Oct 9):** the "?" is a **pressable note** (keyboard and touch; Escape or blur closes it), not a hover tooltip.
 Draft copy for Arbor's note, Nick may edit: *"Grafts join pages, cards and boards so your ideas can grow together. Use + to graft something here."*
 (One lexicon key for the note, Arbor-only; Flux has none.)
+
+### A.5 S2a as built (off the box; nothing run)
+**S2 is split.** S2a (this commit) adds the shared frame and the tab row and keeps the band's TEXT|INK hover menu; S2b retires the menu.
+Reason: `item121` and `item126` drive their fixtures through `.wz-ink-switch .wz-ink-switch-side` (about 6 call sites, plus `item121`'s
+"switch in the band" claims). Re-pointing and parking 1,300 lines of browser harness without being able to run it would be guessing, so
+S2b waits for a browser turn. Until then both controls exist and share ONE state (`PageEditor`'s `instrument`); S2a is a branch state,
+not something to ship.
+
+**Built:** `store/drawerSet.ts` (the pure table: `leftTabsFor`, `sectionsFor`, `sectionAllowed`); `components/DrawerTabs.tsx` (a real
+tablist, roving tabindex, `nextTab()` for Left/Right/Home/End; the chosen tab is a **brass outline, no fill**; the arrow tab stays
+olive); `components/SideDrawer.tsx` (the sliding layer, the optional tab row, the tab panel, and a `foot` slot for the standing
+furniture so the goal foot and the instruments row sit outside the tab panel). **Both hands now render through `<SideDrawer>`**; the
+Sliver asks the table before every section (ink, typeface, forwardLock, format, templates, pageKind, capture, boardTools); the Free
+Write arm gains an optional `instrument` and only that arm shows a tab row. Tab words are the existing lexicon terms
+(`inkModeText`, `inkModeInk`, `inkInstrument`).
+
+**The one `PageEditor.tsx` hunk:** three added lines in the Free Write `sliverContent` (a two-line comment and
+`instrument: { value: instrument, onChange: setInstrument }`). Nothing removed or changed; `ForwardOnlyEditor.tsx` untouched; the
+browserless guard (D1a/D1b) fails if the diff leaves that shape.
+
+**Tests (browserless, written, not run):** `drawers-p1.mjs` grows E (the table), F (the tab keys, ARIA, brass-outline-no-fill, arrow
+stays olive), H (both hands use `SideDrawer`, every Sliver section is gated), and 10 more mutants. Two S1 checks that pinned the
+hand-written wrapper (C3, C4) are parked with H1 as their successor.
+
+**A design cost to name.** Item 121's I3 said "which instrument am I" must be readable **with the drawer shut**. With the choice now a tab
+inside the drawer, a closed drawer does not show it. What still shows it: the paper wears the instrument (`data-instrument`, the
+caret sleeps in INK), and the band's menu does until S2b. If Nick wants it readable at rest after S2b, the cheap answer is for the
+fixed arrow tab to carry a tiny instrument mark (the tab stays olive; the mark is not a choice). Not built; **for a ruling**.
+
+**Browser turn will need to look at (found by reading, likely to shift because the Free Write drawer gains a row at its top and a
+`.wz-drawer-body` wrapper):** `item121`, `item126`, `item207` (control counts), `item83f` and `fx1`/`fx3` (drawer layout), `ab2`
+(Free Write contents). None is expected to need a *claim* changed except the two `item121`/`item126` switch locations in S2b.
