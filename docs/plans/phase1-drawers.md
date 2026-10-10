@@ -462,3 +462,29 @@ fixed arrow tab to carry a tiny instrument mark (the tab stays olive; the mark i
 **Browser turn will need to look at (found by reading, likely to shift because the Free Write drawer gains a row at its top and a
 `.wz-drawer-body` wrapper):** `item121`, `item126`, `item207` (control counts), `item83f` and `fx1`/`fx3` (drawer layout), `ab2`
 (Free Write contents). None is expected to need a *claim* changed except the two `item121`/`item126` switch locations in S2b.
+
+### A.6 S1 review fixes, Actions (Q3) and the instrument mark (Fable, Oct 9; off the box, nothing run)
+**The five S1 findings — all instruments reading the old shape, none a product fault** (commit `fb6bf165`):
+1. *page-templates, a press made no page:* the driver returned the instant `data-open` flipped, while the sliding layer was still arriving
+   (translateX 100% → 0 over .2s); it read the control's rect mid-slide and pressed where the control had been. Not `inert` (an open panel has
+   none). `openStrip` now waits for the layer to settle. **Watch for the same shape elsewhere:** any harness that opens a drawer and reads a
+   rect in the next 200 ms will meet it; the cure is the same one-line settle.
+2. *fx2, alpha 0:* the panel is the clip and is transparent by design; the look lives on the layer. Parked, successor reads the layer (opaque).
+3. *item83f E2:* parked; the successor reads one level down (body wrapper, goal foot, instruments row; the panel holds one child).
+4. *fx10 A15, 1e-05s:* the app has ONE global reduced-motion floor (`index.css` L1076: every transition `0.01ms !important`; Chromium prints it
+   as 1e-05s). Accepted as asked (≤ 1 ms). **For a ruling:** that floor also out-ranks the drawers' own `.12s` reduced-motion fade, so under
+   reduced motion the drawers arrive *instantly*, not "fade only, short" as Nick ruled. One line restores his wording
+   (`transition-duration: var(--drawer-dur-reduced) !important` on the two panels). Not done; the `.12s` rule stays as the stated intent.
+5. *drawers-p1:* `ruleBody` read the first textual occurrence of a selector (a comment, then the reduced-motion rule); a rule now starts at the
+   beginning of a line.
+
+**Q3 built — Actions = Tags · Copy · Delete · Header/Footer** (Draft's TEXT tab, between Format and Templates; absent on Revise, the
+screenplay host and an unborn page). Icons with a name; the pressed/open one is a brass outline. Every verb calls what exists:
+Copy = the page's own `doCopy('words')` (it awaits the clipboard and toasts); Tags = the page's `addTag`/`removeTag` in a small editor *inside*
+the drawer; Header/Footer = one switch over the stored `headers.on`/`footers.on` (on only when both are; stored settings, they do not paint on
+screen); **Delete = a soft delete to the Trash behind an in-page confirm** ("Send this page to Trash?" — Keep is focused, Esc cancels, the
+Delete button only *opens* the confirm), then the writer lands on their resume target or the front door. `store/pageActions.ts` builds the four
+from the host's handlers, so `PageEditor.tsx` gains one import and one object member (the guard now allows exactly those, additions only).
+
+**The instrument mark (YES, Fable):** while a Free Write page is in INK, the olive arrow tab carries a tiny pen (10 px, the tab's own
+colour, never brass; the tab stays 16 × 34); absent in TEXT. Nick may veto.

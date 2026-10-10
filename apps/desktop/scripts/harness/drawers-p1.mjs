@@ -150,6 +150,9 @@ const ALLOWED_PE_ADDITIONS = [
   /^\s*\/\/ PHASE 1 - the drawer's TEXT \| INK tab row chooses the same instrument/,
   /^\s*\/\/ band's menu retires in S2b\)\. Display wiring only: nothing here touches the typing path\./,
   /^\s*instrument: \{ value: instrument, onChange: setInstrument \},\s*$/,
+  /^import \{ buildPageActions \} from '\.\.\/store\/pageActions';\s*$/,
+  /^\s*\/\/ PHASE 1 - the Actions section: Tags, Copy, Delete, Header\/Footer, wired from this page's own handlers/,
+  /^\s*actions: unborn \? undefined : buildPageActions\(\{ entry, copy: \(\) => \{ void doCopy\('words'\); \}, addTag, removeTag, patchPageSettings, navigate \}\),\s*$/,
 ];
 function diffConfined(diffText) {
   const lines = noCR(diffText).split('\n');
@@ -159,14 +162,14 @@ function diffConfined(diffText) {
     if (l.startsWith('-')) return false;
     if (l.startsWith('+')) { added += 1; if (!ALLOWED_PE_ADDITIONS.some((re) => re.test(l.slice(1)))) return false; }
   }
-  return added > 0 && added <= 4;
+  return added > 0 && added <= 8;
 }
 const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-parse origin/main')?.trim() || null;
 {
   const fo = baseRef ? sh(`git diff --stat ${baseRef} -- src/components/ForwardOnlyEditor.tsx`) : null;
   ok('(D1a) H1: ForwardOnlyEditor.tsx (the typing surface) is byte-identical to main', fo !== null && fo.trim() === '', String(fo));
   const peDiff = baseRef ? sh(`git diff -U0 ${baseRef} -- src/pages/PageEditor.tsx`) : null;
-  ok('(D1b) H1: PageEditor.tsx differs from main ONLY by the declared hunk - pure additions of the Free Write drawer\'s instrument wiring (a comment and one object member), no line removed or changed',
+  ok('(D1b) H1: PageEditor.tsx differs from main ONLY by the declared hunks - pure additions: the Free Write drawer\'s instrument wiring and the Draft drawer\'s Actions wiring (one import, a comment, one object member); no line removed or changed',
     peDiff !== null && diffConfined(peDiff), String(peDiff).slice(0, 300));
   const templatesBlock = (text) => {
     const a = text.indexOf('railTemplates');
@@ -197,7 +200,7 @@ async function partE(text = setText) {
     fwText: S('freewrite', 'text'), fwInk: S('freewrite', 'ink'), draft: S('draft', 'text'), revise: S('revise', 'text'), board: S('board', 'text'),
     fwFormat: m.sectionAllowed('freewrite', 'text', 'format') || m.sectionAllowed('freewrite', 'ink', 'format'),
     fwTemplates: m.sectionAllowed('freewrite', 'text', 'templates'), draftInk: m.sectionAllowed('draft', 'text', 'ink'),
-    reviseExtras: ['format', 'templates', 'pageKind', 'forwardLock'].some((s) => m.sectionAllowed('revise', 'text', s)),
+    reviseExtras: ['format', 'actions', 'templates', 'pageKind', 'forwardLock'].some((s) => m.sectionAllowed('revise', 'text', s)),
   };
 }
 {
@@ -206,8 +209,8 @@ async function partE(text = setText) {
     JSON.stringify(e.tabsFW) === JSON.stringify(['text', 'ink']) && e.tabsFWNo.length === 0 && e.tabsOthers.every((n) => n === 0), JSON.stringify(e));
   ok('(E2) Free Write TEXT = Typeface, Forward Lock, Capture; INK = the ink zone, Forward Lock, Capture - and NEVER Format or Templates (Nick Q1: B/I/U wait for the typing-path work)',
     JSON.stringify(e.fwText) === JSON.stringify(['typeface', 'forwardLock', 'capture']) && JSON.stringify(e.fwInk) === JSON.stringify(['ink', 'forwardLock', 'capture']) && e.fwFormat === false && e.fwTemplates === false, JSON.stringify(e));
-  ok('(E3) Draft = Typeface, Format, Templates, Page kind (and no ink zone); Revise = Typeface only; Board = its tools',
-    JSON.stringify(e.draft) === JSON.stringify(['typeface', 'format', 'templates', 'pageKind']) && e.draftInk === false && JSON.stringify(e.revise) === JSON.stringify(['typeface']) && e.reviseExtras === false && JSON.stringify(e.board) === JSON.stringify(['boardTools']), JSON.stringify(e));
+  ok('(E3) Draft = Typeface, Format, ACTIONS, Templates, Page kind - in Nick\'s order, and no ink zone; Revise = Typeface only (no Actions); Board = its tools',
+    JSON.stringify(e.draft) === JSON.stringify(['typeface', 'format', 'actions', 'templates', 'pageKind']) && e.draftInk === false && JSON.stringify(e.revise) === JSON.stringify(['typeface']) && e.reviseExtras === false && JSON.stringify(e.board) === JSON.stringify(['boardTools']), JSON.stringify(e));
 }
 
 // =============================================================================
@@ -245,7 +248,7 @@ function partG(tabs = tabsSrc, c = css) {
 // PART H (S2) - the shell is shared: both hands use <SideDrawer>, the Sliver asks the table before every section.
 // =============================================================================
 function partH(sliver = sliverSrc, tutor = tutorSrc) {
-  const gated = ['ink', 'typeface', 'forwardLock', 'format', 'templates', 'pageKind', 'capture', 'boardTools'];
+  const gated = ['ink', 'typeface', 'forwardLock', 'format', 'actions', 'templates', 'pageKind', 'capture', 'boardTools'];
   return {
     sliverShell: /<SideDrawer side="left" idPrefix="wz-sliver" tabs=\{sideTabs\}/.test(sliver) && /<\/SideDrawer>/.test(sliver),
     tutorShell: /<SideDrawer side="right" idPrefix="wz-tutor">/.test(tutor) && /<\/SideDrawer>/.test(tutor),
@@ -259,6 +262,63 @@ function partH(sliver = sliverSrc, tutor = tutorSrc) {
   ok('(H1) both hands render through <SideDrawer> (left carries the tab config and the foot; right has no tab row until S3) - the S1 hand-written wrappers are gone', h.sliverShell && h.tutorShell && h.noHandWrapper, JSON.stringify(h));
   ok('(H2) EVERY Sliver section asks the table first (ink, typeface, forwardLock, format, templates, pageKind, capture, boardTools) - the table is not decorative', h.ungated.length === 0, JSON.stringify(h.ungated));
   ok('(H3) the tab words are the theme\'s own lexicon terms (Text / Ink and the row\'s name), not literals', h.tabLabels, JSON.stringify(h));
+}
+
+// =============================================================================
+// PART I (S2b) - THE ACTIONS (Tags, Copy, Delete, Header/Footer) and the instrument mark on the arrow tab.
+// =============================================================================
+const actionsSrc = read('components/DrawerActions.tsx');
+const pageActionsSrc = read('store/pageActions.ts');
+async function partI(text = pageActionsSrc) {
+  const a = text.indexOf('/** Headers and footers read as ONE switch');
+  const b = text.indexOf('interface BuildArgs');
+  const slice = "const PAGE_SETTINGS_FALLBACK = { headers: { on: false, text: '' }, footers: { on: false, text: '' } };\n" + text.slice(a, b);
+  const js = ts.transpileModule(slice, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 } }).outputText;
+  const m = await import('data:text/javascript;base64,' + Buffer.from(js).toString('base64') + '#' + Math.random());
+  const both = { headers: { on: true, text: 'H' }, footers: { on: true, text: 'F' } };
+  const onlyHeader = { headers: { on: true, text: 'H' }, footers: { on: false, text: 'F' } };
+  return {
+    bothOn: m.headerFooterOn(both), onlyHeaderOn: m.headerFooterOn(onlyHeader), unset: m.headerFooterOn(undefined),
+    turnOn: m.headerFooterPatch(onlyHeader, true), turnOff: m.headerFooterPatch(both, false),
+  };
+}
+function partJ(act = actionsSrc, pa = pageActionsSrc, sliver = sliverSrc, c = css) {
+  const order = [...act.matchAll(/data-action="([a-z-]+)"/g)].map((m) => m[1]);
+  const sendBtn = act.slice(act.indexOf('data-confirm="delete"'), act.indexOf('data-confirm="delete"') + 160);
+  const deleteBtn = act.slice(act.indexOf('data-action="delete"'), act.indexOf('data-action="header-footer"'));
+  const tableOrder = sliver.indexOf("allowed('actions')") > sliver.indexOf("allowed('format')") && sliver.indexOf("allowed('actions')") < sliver.indexOf("allowed('templates')");
+  const pressed = ruleBody(c, ".wz-action-btn[aria-pressed='true']{");
+  const mark = ruleBody(c, '.wz-sliver-grip-mark{');
+  const grip = ruleBody(c, '.wz-sliver-grip{');
+  const del = pa.slice(pa.indexOf('onDelete: () => {'), pa.indexOf('},\n  };', pa.indexOf('onDelete: () => {')));
+  return {
+    order,
+    asksFirst: /onClick=\{\(\) => toggle\('delete'\)\}/.test(deleteBtn) && !/actions\.onDelete/.test(deleteBtn) && (act.match(/actions\.onDelete\(\)/g) || []).length === 1 && /actions\.onDelete\(\)/.test(sendBtn.length ? act.slice(act.indexOf('data-confirm="delete"')) : ''),
+    escCancels: /e\.key === 'Escape' && open\) \{ e\.stopPropagation\(\); setOpen\(null\);/.test(act),
+    focusKeep: /open === 'delete'\) keepRef\.current\?\.focus\(\)/.test(act),
+    confirmWords: /t\('actionDeleteConfirm'\)/.test(act) && /t\('actionDeleteYes'\)/.test(act) && /t\('actionDeleteKeep'\)/.test(act),
+    softOnly: /softDeleteEntry\(entry\.id\)/.test(del) && /flushNow\(\)/.test(del) && /navigate\(getResumeTarget\(\)\?\.route \?\? '\/', \{ replace: true \}\)/.test(del) && !/hardDelete|removeEntry|deleteEntry\(/.test(pa),
+    sliverBetween: tableOrder && /content\.kind === 'draft' && content\.actions && allowed\('actions'\)/.test(sliver),
+    pressedOutline: !!pressed && /color:var\(--brass\)/.test(pressed) && /border-color:var\(--brass\)/.test(pressed) && /background:none/.test(pressed) && !/color-mix/.test(pressed),
+    markInk: /content\.kind === 'freewrite' && content\.instrument\?\.value === 'ink'/.test(sliver) && /data-instrument="ink"/.test(sliver) && /TIP_ICONS\.pen/.test(sliver),
+    markQuiet: !!mark && !/brass/.test(mark) && /width:10px; height:10px/.test(mark),
+    tabBoxSame: !!grip && /width:16px; height:34px/.test(grip),
+  };
+}
+{
+  const i = await partI();
+  ok('(I1) Header/Footer is ONE switch: on only when both are; either alone off reads off; unset reads the default (off); and toggling keeps each one\'s own text',
+    i.bothOn === true && i.onlyHeaderOn === false && i.unset === false
+      && i.turnOn.headers.on === true && i.turnOn.footers.on === true && i.turnOn.headers.text === 'H' && i.turnOn.footers.text === 'F'
+      && i.turnOff.headers.on === false && i.turnOff.footers.on === false && i.turnOff.headers.text === 'H', JSON.stringify(i));
+  const j = partJ();
+  ok('(I2) the four actions are Tags, Copy, Delete, Header/Footer - in that order', JSON.stringify(j.order) === JSON.stringify(['tags', 'copy', 'delete', 'header-footer']), JSON.stringify(j.order));
+  ok('(I3) DELETE ASKS FIRST, in the page: the Delete button only opens the confirm; the one place that runs onDelete is the "Send to Trash" button; Esc and Keep cancel; focus lands on Keep',
+    j.asksFirst && j.escCancels && j.focusKeep && j.confirmWords, JSON.stringify(j));
+  ok('(I4) DELETE IS SOFT: softDeleteEntry (to the Trash) then flush, then the writer goes to their resume target or the front door - and no hard-delete call exists in the module', j.softOnly, JSON.stringify(j));
+  ok('(I5) the Actions section sits between Format and Templates in the Sliver and is gated by both the data and the table', j.sliverBetween, JSON.stringify(j));
+  ok('(I6) a pressed/open action is a BRASS OUTLINE and nothing else (no fill)', j.pressedOutline, JSON.stringify(j));
+  ok('(I7) THE INSTRUMENT MARK: a tiny pen on the arrow tab only in INK; it is quiet (no brass, 10px) and the tab keeps its 16 x 34 box', j.markInk && j.markQuiet && j.tabBoxSame, JSON.stringify(j));
 }
 
 // =============================================================================
@@ -296,6 +356,19 @@ await mutant('the Sliver stops asking the table for the Typeface', async () => p
 await mutant('the Tutor goes back to a hand-written wrapper', async () => partH(sliverSrc, mutate(tutorSrc, '<SideDrawer side="right" idPrefix="wz-tutor">', '<div className="wz-drawer-slide wz-drawer-slide--right">')), (h) => h.noHandWrapper === false || h.tutorShell === false);
 await mutant('PageEditor.tsx is changed outside the declared hunk', async () => ({ ok: diffConfined('@@ -10,0 +11 @@\n+  instrument: { value: instrument, onChange: setInstrument },\n@@ -500,0 +502 @@\n+  onChange(e);\n') }), (r) => r.ok === false);
 await mutant('PageEditor.tsx loses a line outside the declared hunk', async () => ({ ok: diffConfined('@@ -10 +10 @@\n-  const x = 1;\n+  instrument: { value: instrument, onChange: setInstrument },\n') }), (r) => r.ok === false);
+
+await mutant('Revise grows Actions', async () => partE(mutate(setText, "revise: { text: ['typeface'], ink: [] }", "revise: { text: ['typeface', 'actions'], ink: [] }")), (e) => e.reviseExtras === true);
+await mutant('Actions slips ahead of Format in the table', async () => partE(mutate(setText, "text: ['typeface', 'format', 'actions', 'templates', 'pageKind']", "text: ['typeface', 'actions', 'format', 'templates', 'pageKind']")), (e) => JSON.stringify(e.draft) !== JSON.stringify(['typeface', 'format', 'actions', 'templates', 'pageKind']));
+await mutant('Header/Footer turns only the header', async () => partI(mutate(pageActionsSrc, "return { headers: { ...s.headers, on }, footers: { ...s.footers, on } };", "return { headers: { ...s.headers, on }, footers: { ...s.footers } };")), (i) => i.turnOn.footers.on !== true);
+await mutant('Header/Footer reads on when EITHER is on', async () => partI(mutate(pageActionsSrc, "return !!s.headers?.on && !!s.footers?.on;", "return !!s.headers?.on || !!s.footers?.on;")), (i) => i.onlyHeaderOn === true);
+await mutant('the Delete button deletes at once (no confirm)', async () => partJ(mutate(actionsSrc, "title={t('actionDelete')} aria-label={t('actionDelete')} onClick={() => toggle('delete')}", "title={t('actionDelete')} aria-label={t('actionDelete')} onClick={() => actions.onDelete()}")), (j) => j.asksFirst === false);
+await mutant('Esc no longer cancels the confirm', async () => partJ(mutate(actionsSrc, "if (e.key === 'Escape' && open) { e.stopPropagation(); setOpen(null); }", "")), (j) => j.escCancels === false);
+await mutant('Delete hard-deletes', async () => partJ(actionsSrc, mutate(pageActionsSrc, 'softDeleteEntry(entry.id);', 'hardDelete(entry.id);')), (j) => j.softOnly === false);
+await mutant('Delete forgets to flush before leaving', async () => partJ(actionsSrc, mutate(pageActionsSrc, '      flushNow();\n      navigate(getResumeTarget()', '      navigate(getResumeTarget()')), (j) => j.softOnly === false);
+await mutant('the pressed action gets a fill', async () => partJ(actionsSrc, pageActionsSrc, sliverSrc, mutate(css, ".wz-action-btn[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:none; }", ".wz-action-btn[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }")), (j) => j.pressedOutline === false);
+await mutant('the instrument mark shows in TEXT too', async () => partJ(actionsSrc, pageActionsSrc, mutate(sliverSrc, "content.instrument?.value === 'ink' && (", "content.instrument && ("), css), (j) => j.markInk === false);
+await mutant('the instrument mark turns brass', async () => partJ(actionsSrc, pageActionsSrc, sliverSrc, mutate(css, '.wz-sliver-grip-mark{ display:flex; width:10px; height:10px; opacity:.9; }', '.wz-sliver-grip-mark{ display:flex; width:10px; height:10px; opacity:.9; color:var(--brass); }')), (j) => j.markQuiet === false);
+await mutant('the Sliver renders Actions without asking the table', async () => partJ(actionsSrc, pageActionsSrc, mutate(sliverSrc, "content.actions && allowed('actions')", "content.actions"), css), (j) => j.sliverBetween === false);
 
 let failed = 0;
 for (const c of checks) {
