@@ -25623,3 +25623,27 @@ after the file was read (absent). **Result and frames to follow.**
 
 **VOCAB-CENSUS MERGED (docs only): `vocab-census` @ `a788a64` — “Label census: every writer-visible term, Arbor vs. Flux today”, one file,
 `docs/vocab/label-census.md`; no product file touched; merged to `main` with this entry.**
+
+## ARBOR-QUIET-BRASS PAIR: 121/124 ON EACH LEG — THREE REDS, ALL FALSIFIED BY THE INTENDED RENAMES; TWELVE FRAMES TAKEN — 2026-10-10 (chat 1)
+
+**`abq-pair` @ `9831822` = `origin/main` @ `a6cebe1` + `arbor-quiet-brass` @ `d4b4e79`** (2 commits; 15 files, +207/−87; `tsc` x2 exit 0; `build:web`
+bundle `index-CpmjU6ua.js` 650,252 b; NO server change, NO migration). **THE PAIR: stamp `tree=98318224 bundle=index-CpmjU6ua.js/650252b`; 124 files per
+leg in seven chunks of ≤20 (capture tools left out), no launch crashes: 121/124 on EACH leg — the same THREE files red on both:**
+1. **`fx5.mjs` NOVERDICT (exit 1)** — it dies at line 758: `footerToggleBtn.click()` → “Cannot read properties of undefined (reading ‘click’)”. The
+   board sliver’s footer toggle is found by `textContent.includes(‘connections’)`; the label no longer says that (the Connect → Graft/Link rename).
+2. **`pw1.mjs` FAIL 1/41** — “S1, Fable ruling 2: a LOOSE page … still shows its REAL CONNECTIONS, above the creation doors”: `looseRows` has the
+   board (“A board with no drawer”, relation “Not in a drawer”) but `hasHeading:false` — the section heading it looks for is not there under its old words.
+3. **`th2.mjs` FAIL 1/42** — “check 2: the Publish dialog renders Flux’s ‘Connect’” reads `“Uplink”` (parked leg: its successor park of
+   “canonical route /journal still resolves…” also fails).
+**READ: all three assert the OLD words that this branch deliberately renames (Plateau→Arbor, Connect→Graft/Link). `arbor-quiet-brass` edited eight harness
+files (`ab4`, `b2`, `b3`, `bg1`, `cd2`, `hb1`, `pw1`, `tu1`) but not `fx5` or `th2`, and `pw1` still has one unconverted assertion.** Instrument-
+only, TOOLS’ (the branch’s author) to park/convert with successors; this desk edits none. Every other file is CLEAN on both legs.
+
+**THE FRAMES: twelve (six × Arbor and Flux), from the pair tree’s own `dist-web`, committed under `docs/evidence/arbor-quiet-brass/`** (+ `frames.json` with
+DOM facts): `5-front-door`, `6-header`, `1-themes-menu` (names: Arbor, Flux), `2-page-drawer` (Draft page, strip open), `4-dots-settings` (the drawer’s
+three-dot menu open) and `3-card-footer` (two connected cards on a board). Facts read: the front door’s primary is OUTLINE brass (`border rgb(255,152,0)`,
+transparent fill, no shadow); the brand mark is a `div` with a brass background (the mask) in both themes; the Flux front door carries its own ground.
+**OBSERVED, for Fable’s review: the board’s card footer still reads “— thread: …” in BOTH themes** (not “Graft” for Arbor nor “Link” for Flux) — the
+footer prefix is the `boardThreadPrefix` word, outside the rename this branch made. *(My first take of these frames caught the splash overlay
+(now live on `main`) over several of them; re-taken with the splash’s hold set short.)* **Nick’s ship word applies once Fable clears the frames AND
+the three reds are resolved.** **NOT DEPLOYED.** Grant (this desk’s) `2026-10-10T05:05:56Z`, cleared at completion; 0 harness processes, 0 browsers.
