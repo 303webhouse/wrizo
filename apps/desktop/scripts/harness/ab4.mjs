@@ -207,8 +207,10 @@ await withHarness(async (app) => {
     // ORIGINAL, QUOTED VERBATIM AND NO LONGER ASSERTED (A4):
     //   ok('S2: the Page face\'s home block gains a truthful "Also pinned to <board>." membership line',
     //     membership.some((m) => m === 'Also pinned to AB4 Target Board.'), JSON.stringify(membership));
-    ok('S2 (PW1/ruling 4 successor of "the Page face\'s home block gains a truthful \\"Also pinned to <board>.\\" membership line"): the line now reads "Also connected to <board>." — one connecting word across the Plan heading, the Places zone and this prose line, because a member may have no card on the wall at all',
-      membership.some((m) => m === 'Also connected to AB4 Target Board.'), JSON.stringify(membership));
+    // SUPERSEDED (item arbor-quiet-brass): "Connected" renamed to Arbor's own "Grafted".
+    // ok('S2 (PW1/ruling 4 successor of "the Page face\'s home block gains a truthful \\"Also pinned to <board>.\\" membership line"): the line now reads "Also connected to <board>." — one connecting word across the Plan heading, the Places zone and this prose line, because a member may have no card on the wall at all', membership.some((m) => m === 'Also connected to AB4 Target Board.'), JSON.stringify(membership));
+    ok('S2 (arbor-quiet-brass successor): the line now reads "Also grafted to <board>." — Arbor\'s own word for the same membership, across the Plan heading, the Places zone and this prose line',
+      membership.some((m) => m === 'Also grafted to AB4 Target Board.'), JSON.stringify(membership));
 
     const boardBoxes = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'ab4-pin-board')?.boxes");
     const pinBox = (boardBoxes || []).find((b) => b.kind === 'page-pin' && b.entryId === sourcePageId);
@@ -834,8 +836,12 @@ if (process.env.HARNESS_PARKED === '1') {
       // not a bare count — the more maintainable shape every subsequent
       // ticket in this lineage actually settled on, per that file's own
       // comment).
-      pok('PARKED (was "S5: the board sliver carries EXACTLY its two hand tools (Add card, Connect toggle) and nothing else", generation 2: was FX4 S6\'s own re-derivation at exactly ONE tool; generation 3: was FX5 S5\'s own re-derivation at exactly two, Add card + the footer toggle; generation 4: was FX6 S2b\'s own re-derivation at exactly three, Add card + New page card + the footer toggle; generation 5: was B2 S5\'s own re-derivation at exactly four, Add card + New page card + Existing page… + the footer toggle) — B3 S3: a fifth tool joins them (From a deck…) — live successor in b3.mjs\'s own S4 section',
-        sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 5 && sliverShapeNow.labels[0] === 'Add card' && sliverShapeNow.labels[1] === 'New page card' && sliverShapeNow.labels[2] === 'Existing page…' && sliverShapeNow.labels[3] === 'From a deck…' && sliverShapeNow.labels[4] === 'Show connections', JSON.stringify(sliverShapeNow));
+      // SUPERSEDED, generation 6 (item arbor-quiet-brass): the footer toggle's label
+      // renamed "Show connections" -> "Show grafts" (Arbor's own word). The tool COUNT
+      // and ORDER this park's own history tracks are unchanged; only the label is new.
+      // pok('PARKED (was "S5: the board sliver carries EXACTLY its two hand tools (Add card, Connect toggle) and nothing else", generation 2: was FX4 S6's own re-derivation at exactly ONE tool; generation 3: was FX5 S5's own re-derivation at exactly two, Add card + the footer toggle; generation 4: was FX6 S2b's own re-derivation at exactly three, Add card + New page card + the footer toggle; generation 5: was B2 S5's own re-derivation at exactly four, Add card + New page card + Existing page… + the footer toggle) — B3 S3: a fifth tool joins them (From a deck…) — live successor in b3.mjs's own S4 section', sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 5 && sliverShapeNow.labels[0] === 'Add card' && sliverShapeNow.labels[1] === 'New page card' && sliverShapeNow.labels[2] === 'Existing page…' && sliverShapeNow.labels[3] === 'From a deck…' && sliverShapeNow.labels[4] === 'Show connections', JSON.stringify(sliverShapeNow));
+      pok('PARKED, generation 6 (was generation 5\'s re-derivation ending in label "Show connections") — arbor-quiet-brass: the footer toggle now reads "Show grafts"; same five tools, same order — live successor in b3.mjs\'s own S4 section',
+        sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 5 && sliverShapeNow.labels[0] === 'Add card' && sliverShapeNow.labels[1] === 'New page card' && sliverShapeNow.labels[2] === 'Existing page…' && sliverShapeNow.labels[3] === 'From a deck…' && sliverShapeNow.labels[4] === 'Show grafts', JSON.stringify(sliverShapeNow));
 
       const boxesBeforeAddNow = (await app.evalJs('window.wrizoBoard()')) || [];
       await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'Add card')?.click()");

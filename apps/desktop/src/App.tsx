@@ -215,7 +215,11 @@ function SignedOutRouteGuard({ authState }: { authState: AuthState }) {
 function BrandMark() {
   const { pathname } = useLocation();
   if (pathname === '/') return null;
-  return <img className="brand-mark" src="/brand/wrizo-logo.png" alt="" aria-hidden="true" />;
+  // ITEM arbor-quiet-brass — a div, not an <img>: a CSS mask (index.css's own
+  // .brand-mark rule) recolors the PNG brass by painting the mask shape with a
+  // background color, which only works when the element has no image content
+  // of its own to paint over it. No new asset, no filter hack.
+  return <div className="brand-mark" aria-hidden="true" />;
 }
 
 export function App() {

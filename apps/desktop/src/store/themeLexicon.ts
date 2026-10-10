@@ -67,7 +67,11 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForm
     freewrite: { one: 'Overclock', many: 'Overclocks' },
     home: { one: 'Safehouse', many: 'Safehouses' },
     voicewall: { one: 'Firewall', many: 'Firewalls' },
-    publish: { one: 'Connect', many: 'Connect' }, // a verb/label, mirrors Plateau's own .many=.one shape
+    // ITEM arbor-quiet-brass — renamed from "Connect" (Fable's proposal, pending Nick's
+    // word): the board-connection family (deskLexicon.ts) just took "Link" for Flux, and
+    // this unrelated feature (Publish-to-web) collided with it under the same English
+    // word. "Uplink" keeps Flux's own circuit register without the collision.
+    publish: { one: 'Uplink', many: 'Uplink' }, // a verb/label, mirrors Plateau's own .many=.one shape
   },
 };
 

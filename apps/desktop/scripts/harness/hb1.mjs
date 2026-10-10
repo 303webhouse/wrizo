@@ -161,8 +161,10 @@ await withHarness(async (app) => {
     future: [...document.querySelectorAll('.hb1-territory-future')].map(b => b.textContent),
   })`);
   ok('S3→S4: crossing 100 words mounts the unlock ceremony', at100.ceremony === true, JSON.stringify(at100));
-  ok('R1: the ceremony offers Plateau and Flux (Flux stands in for Machina, for now)',
-    JSON.stringify(at100.offered) === JSON.stringify(['Plateau', 'Flux']), JSON.stringify(at100));
+  // SUPERSEDED (item arbor-quiet-brass): "Plateau" renamed "Arbor" (display only).
+  // ok('R1: the ceremony offers Plateau and Flux (Flux stands in for Machina, for now)', JSON.stringify(at100.offered) === JSON.stringify(['Plateau', 'Flux']), JSON.stringify(at100));
+  ok('R1 (arbor-quiet-brass successor): the ceremony offers Arbor and Flux (Flux stands in for Machina, for now)',
+    JSON.stringify(at100.offered) === JSON.stringify(['Arbor', 'Flux']), JSON.stringify(at100));
   ok('R1: Machina, Nomad, Volant are shown grayed as future territories, in that order',
     JSON.stringify(at100.future) === JSON.stringify(['Machina', 'Nomad', 'Volant']), JSON.stringify(at100));
 
@@ -186,8 +188,10 @@ await withHarness(async (app) => {
   await app.evalJs("document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: false, bubbles: true, cancelable: true }))");
   await sleep(80);
   const afterTab = await app.evalJs('document.activeElement?.textContent');
-  ok('hb1.1 F-1: Tab from the last territory wraps back to the first',
-    afterTab === 'Plateau', afterTab);
+  // SUPERSEDED (item arbor-quiet-brass): "Plateau" renamed "Arbor".
+  // ok('hb1.1 F-1: Tab from the last territory wraps back to the first', afterTab === 'Plateau', afterTab);
+  ok('hb1.1 F-1 (arbor-quiet-brass successor): Tab from the last territory wraps back to the first',
+    afterTab === 'Arbor', afterTab);
 
   // ==========================================================================
   // S4 — choosing a territory applies the theme, then the veil lifts.

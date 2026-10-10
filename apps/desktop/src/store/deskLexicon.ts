@@ -603,7 +603,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   beginNewCard: 'New Card',
   beginNewPageCard: 'New Page Card',
   beginLoadDeck: 'Load a Deck',
-  beginConnectPage: 'Connect a Page',
+  beginConnectPage: 'Graft a Page',
   beginNewLane: 'New Lane',
   beginScreenplay: 'Screenplay',
   beginSprout: 'Sprout',
@@ -662,10 +662,11 @@ const CANONICAL: Record<DeskTermId, string> = {
   // ONE connecting word the whole slice speaks in. "Pinned to" named the
   // pin-card, which is now only ONE DISPLAY of the relation; a page can be a
   // member of a board and not appear on its canvas at all, so the old word
-  // would describe a card that may not exist. "Connected" names the
-  // membership itself, and matches S1's own "Boards connected" heading —
-  // one connecting word, two faces. Sentence shape kept.
-  pageFacePinnedTo: 'Also connected to',
+  // would describe a card that may not exist. "Connected" (now Arbor's own
+  // "Grafted", item arbor-quiet-brass) names the membership itself, and
+  // matches S1's own heading — one connecting word, two faces. Sentence
+  // shape kept.
+  pageFacePinnedTo: 'Also grafted to',
   placeFaceOpen: 'Open',
   placeFaceFileSend: 'File/Send',
   placeFacePeek: 'Peek',
@@ -698,7 +699,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   // PW1 S1 — Nick's exact term (Q2), in HIS sentence case. The zone's
   // presentation uppercase rides the CSS register, never the string: the
   // lexicon holds the word, the register holds the voice.
-  cascadePlanBoardsConnected: 'Boards connected',
+  cascadePlanBoardsConnected: 'Boards grafted',
   // PW10 + the three-space canon: "the Plan-board pairing is a SURFACE OWNING A
   // CONTAINER and must be named as such wherever it shows."
   cascadePlanRelationOwn: 'its own plan board',
@@ -759,10 +760,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   boardEditCopy: 'Edit copy',
   boardLayerBringFront: 'Bring to front',
   boardLayerSendBack: 'Send to back',
-  boardThreadGrab: 'Drag to connect',
+  boardThreadGrab: 'Drag to graft',
   boardThreadPrefix: 'thread',
   boardThreadUntitled: 'Untitled',
-  boardFooterToggle: 'Show connections',
+  boardFooterToggle: 'Show grafts',
   tutorOpen: 'Open the Tutor',
   tutorClose: 'Close the Tutor',
   tutorTitle: 'The Tutor',
@@ -1034,7 +1035,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   // on…" would now LIE outright (appearing means being displayed, and this
   // checkbox makes MEMBERSHIP), and "Pinned to boards…" carries the same
   // card-shaped implication one step quieter.
-  placesBoardsTitle: 'Also connected to…',
+  placesBoardsTitle: 'Also grafted to…',
   placesBoardsZoneLabel: 'Boards this page can join',
   placesBoardsEmpty: 'No boards yet.',
   drawersKindBoard: 'Board',
@@ -1292,6 +1293,24 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     // AB3 — the Places face's Journal pull, kept in step with the corkboard
     // tab's own Flux name so the two seams never visibly disagree.
     drawerPlaceJournal: 'Log',
+    // ITEM arbor-quiet-brass — the board-connection family. Arbor's own
+    // CANONICAL words moved from "Connect"/"connected"/"connections" to a
+    // tree register ("Graft"/"grafted"/"grafts"); Flux keeps its own
+    // circuit register here with "Link"/"linked"/"links". (themeLexicon.ts's
+    // unrelated `publish` term is ALSO shown as "Connect" under Flux today —
+    // a different feature, Publish-to-web, not board connections; that one
+    // is being renamed "Uplink" separately so the two words stop colliding.)
+    beginConnectPage: 'Link a Page',
+    pageFacePinnedTo: 'Also linked to',
+    cascadePlanBoardsConnected: 'Boards linked',
+    boardThreadGrab: 'Drag to link',
+    boardFooterToggle: 'Show links',
+    placesBoardsTitle: 'Also linked to…',
+    // ITEM arbor-quiet-brass / Flux fix 5 — the Progress-style option reads
+    // "Glitch" under Flux (Arbor keeps "Rhizome"); RhizomeField.tsx's own
+    // `theme === 'plateau'` gate already renders nothing under Flux, so this
+    // is a label-only fix (see that component's header comment).
+    progressStyleRhizome: 'Glitch',
   },
 };
 

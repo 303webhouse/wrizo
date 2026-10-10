@@ -342,10 +342,14 @@ await withHarness(async (app) => {
   await clickCategory(app, 'theme'); // Themes (Trash left for the foot; Themes is now index 6)
   await sleep(200);
   const themeList = await app.evalJs(`[...document.querySelectorAll('.wz-cascade-theme .wz-cascade-action')].map(b => b.textContent)`);
-  ok('S3: the theme panel lists EXACTLY the available themes (Plateau, Flux) and no others',
-    JSON.stringify(themeList) === JSON.stringify(['Plateau', 'Flux']), JSON.stringify(themeList));
+  // SUPERSEDED (item arbor-quiet-brass): "Plateau" renamed "Arbor" (display only; the
+  // internal theme id stays 'plateau').
+  // ok('S3: the theme panel lists EXACTLY the available themes (Plateau, Flux) and no others', JSON.stringify(themeList) === JSON.stringify(['Plateau', 'Flux']), JSON.stringify(themeList));
+  ok('S3 (arbor-quiet-brass successor): the theme panel lists EXACTLY the available themes (Arbor, Flux) and no others',
+    JSON.stringify(themeList) === JSON.stringify(['Arbor', 'Flux']), JSON.stringify(themeList));
   const activeBefore = await app.evalJs("document.querySelector('.wz-cascade-theme .wz-cascade-action.active')?.textContent");
-  ok('S3: Plateau is marked current (olive) before any switch', activeBefore === 'Plateau', String(activeBefore));
+  // ok('S3: Plateau is marked current (olive) before any switch', activeBefore === 'Plateau', String(activeBefore));
+  ok('S3 (arbor-quiet-brass successor): Arbor is marked current (olive) before any switch', activeBefore === 'Arbor', String(activeBefore));
   await app.evalJs("[...document.querySelectorAll('.wz-cascade-theme .wz-cascade-action')].find(b => b.textContent === 'Flux').click()");
   await sleep(200);
   const afterSwitch = await app.evalJs(`({
@@ -357,8 +361,11 @@ await withHarness(async (app) => {
   ok('S3: one click switches the theme (data-theme flips, Flux now marked current) and persists to storage',
     afterSwitch.dataTheme === 'flux' && afterSwitch.active === 'Flux' && afterSwitch.persisted === 'flux',
     JSON.stringify(afterSwitch));
-  // Switch back so the rest of the suite runs on Plateau (no cross-fixture bleed).
-  await app.evalJs("[...document.querySelectorAll('.wz-cascade-theme .wz-cascade-action')].find(b => b.textContent === 'Plateau').click()");
+  // Switch back so the rest of the suite runs on Arbor/Plateau (no cross-fixture bleed).
+  // ITEM arbor-quiet-brass: the button's text is now "Arbor" (its internal theme id is
+  // still 'plateau', unchanged) — a stale textContent match here would silently fail
+  // to find the button and leave the suite running on Flux for everything after it.
+  await app.evalJs("[...document.querySelectorAll('.wz-cascade-theme .wz-cascade-action')].find(b => b.textContent === 'Arbor').click()");
   await sleep(150);
 
   // ==========================================================================

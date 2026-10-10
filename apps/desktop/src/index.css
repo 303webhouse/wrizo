@@ -592,15 +592,6 @@ h1, h2, h3 {
   text-decoration: none;
 }
 
-.btn-primary {
-  background-color: var(--brass);
-  color: var(--on-brass);
-}
-
-.btn-primary:hover {
-  background-color: var(--brass-hover);
-}
-
 .btn-secondary {
   background-color: var(--ink-800);
   color: var(--text-hi);
@@ -752,17 +743,22 @@ h1, h2, h3 {
   border-radius: var(--radius-sm);
 }
 
+/* ITEM arbor-quiet-brass — default is outline + text, no fill; "exactly one per screen"
+   (the comment above) already means every instance IS that screen's main action, so it
+   keeps a heavier weight (bolder border, bolder text) rather than a second, separate
+   primary-only modifier. */
 .btn-brass {
-  background: var(--brass);
-  color: var(--on-brass);
-  border: none;
+  background: none;
+  color: var(--brass);
+  border: 1.5px solid var(--brass);
+  font-weight: 700;
   padding: var(--space-3) var(--space-6);
   /* catches lamplight (branding §5.4) — ambient bloom, not an orange recolor */
   box-shadow: 0 0 22px rgba(232, 116, 46, 0.22);
-  transition: background-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
-.btn-brass:hover { background: var(--brass-hover); }
-.btn-brass:active { background: var(--brass-press); transform: translateY(1px); }
+.btn-brass:hover { border-color: var(--brass-hover); color: var(--brass-hover); }
+.btn-brass:active { border-color: var(--brass-press); color: var(--brass-press); transform: translateY(1px); }
 
 .btn-ghost {
   background: transparent;
@@ -827,7 +823,9 @@ h1, h2, h3 {
   font-size: 1em;
   line-height: 1;
   letter-spacing: 0.015em;
-  color: var(--text-hi);
+  /* ITEM arbor-quiet-brass — the mark is one of brass's four canonical homes
+     (docs/flux-theme-canon.md §2: "prose caret, bar completion surge, Connect, the mark"). */
+  color: var(--brass);
 }
 
 /* Caps label. */
@@ -1265,9 +1263,19 @@ a:focus-visible,
 .wz-mark.show{ opacity:.4; }
 
 /* One logo element, opacity by surface (B4): bottom-right everywhere, full on the
-   home (above the Desk's full-screen world), a faint watermark elsewhere. */
-.brand-mark{ position:fixed; bottom:1.1rem; right:1.35rem; width:88px; height:auto; z-index:110;
+   home (above the Desk's full-screen world), a faint watermark elsewhere.
+   ITEM arbor-quiet-brass — the mark is one of brass's four canonical homes
+   (docs/flux-theme-canon.md §2). App.tsx's own BrandMark is now a plain div (no
+   <img src>, no visible pixels of its own) so this mask can recolor it: mask-image
+   clips the div's painted background to the PNG's own alpha shape, and the
+   background is brass — no new asset, no filter hack. */
+.brand-mark{ position:fixed; bottom:1.1rem; right:1.35rem; width:88px; height:auto; aspect-ratio:900/400; z-index:110;
   pointer-events:none; opacity:.1; transition:opacity .8s ease;
+  -webkit-mask-image:url('/brand/wrizo-logo.png'); mask-image:url('/brand/wrizo-logo.png');
+  -webkit-mask-size:contain; mask-size:contain;
+  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+  -webkit-mask-position:center; mask-position:center;
+  background:var(--brass);
   filter:drop-shadow(0 4px 18px rgba(0,0,0,.5)); }
 .brand-mark.home{ opacity:1; }
 
@@ -1958,7 +1966,8 @@ a:focus-visible,
 .wz-btn{ font-family:var(--wz-ui); font-weight:600; font-size:.98rem; letter-spacing:.02em; padding:.8rem 1.6rem; border-radius:0;
   border:1px solid var(--wz-orange-line); background:transparent; color:var(--wz-orange); cursor:pointer;
   transition:background .25s, color .25s, border-color .25s; margin-top:.3rem; }
-.wz-btn:hover{ background:var(--wz-orange); color:var(--wz-ground); border-color:var(--wz-orange); }
+/* ITEM arbor-quiet-brass — no solid fill, even on hover: a brighter outline and text instead. */
+.wz-btn:hover{ background:none; color:#ffab33; border-color:#ffab33; }
 .wz-btn:disabled{ opacity:.5; cursor:default; }
 .wz-btn:focus-visible, .wz-field:focus-visible{ outline:1px solid var(--wz-orange); outline-offset:3px; }
 
@@ -2006,9 +2015,14 @@ a:focus-visible,
   filter:drop-shadow(0 4px 18px rgba(0,0,0,.45)); }
 .wz-desksub{ font-family:var(--wz-text); color:var(--wz-ink-dim); font-size:1.06rem; margin-bottom:.5rem; }
 .wz-desk .wz-journal-link{ align-self:flex-start; }
-.wz-btn.wz-primary{ background:var(--wz-orange); color:var(--wz-ground); border-color:var(--wz-orange);
-  padding:.92rem 2.2rem; font-size:1.05rem; box-shadow:0 4px 24px rgba(255,152,0,.22); }
-.wz-btn.wz-primary:hover{ background:#ffab33; border-color:#ffab33; color:var(--wz-ground); }
+/* ITEM arbor-quiet-brass — default is outline + text, no fill (same law as every other
+   choice state); this IS the screen's one main action every place it renders (Arrival's
+   Write, Desk's Start something / Keep writing, the logout sheet's Stay signed in, the
+   stale-client banner's Reload), so it keeps a heavier weight (bolder border, bolder
+   text) to still read first against the plain .wz-btn beside it. */
+.wz-btn.wz-primary{ background:none; color:var(--wz-orange); border-color:var(--wz-orange); border-width:1.5px;
+  font-weight:700; padding:.92rem 2.2rem; font-size:1.05rem; box-shadow:0 4px 24px rgba(255,152,0,.22); }
+.wz-btn.wz-primary:hover{ background:none; border-color:#ffab33; color:#ffab33; }
 .wz-dot{ color:var(--wz-whisper); }
 
 .wz-recent{ display:flex; flex-direction:column; gap:0; width:min(420px,90vw); margin-top:1.2rem; }
@@ -2192,9 +2206,12 @@ a:focus-visible,
   font-family:var(--cp-prose); font-style:italic; font-size:1rem; padding:.75rem .9rem; border-radius:0; }
 .cp-title-input::placeholder{ color:var(--cp-tan-faint); font-style:italic; }
 .cp-title-input:focus{ outline:none; border-color:var(--cp-tan-mid); }
-.cp-go{ font-family:var(--cp-ui); font-size:.85rem; font-weight:600; cursor:pointer; border:1px solid var(--cp-accent);
-  background:var(--cp-accent); color:var(--cp-ground); padding:.75rem 1.25rem; border-radius:0; transition:filter .2s; }
-.cp-go:hover{ filter:brightness(1.06); }
+/* ITEM arbor-quiet-brass — default is outline + text, no fill, same as every other
+   filled-orange button; this screen's one "Go" button keeps a heavier weight
+   (bolder border, bolder weight) since it's always the single primary action here. */
+.cp-go{ font-family:var(--cp-ui); font-size:.85rem; font-weight:700; cursor:pointer; border:1.5px solid var(--cp-accent);
+  background:none; color:var(--cp-accent); padding:.75rem 1.25rem; border-radius:0; transition:filter .2s; }
+.cp-go:hover{ filter:brightness(1.2); }
 .cp-go:disabled{ background:transparent; color:var(--cp-tan-faint); border-color:var(--cp-line); cursor:default; filter:none; }
 .cp-go:focus-visible{ outline:2px solid var(--cp-accent); outline-offset:2px; }
 .cp-micro{ font-size:.68rem; color:var(--cp-tan-faint); margin-top:.65rem; }
@@ -2224,7 +2241,10 @@ a:focus-visible,
 /* Vertical seam splitting the strip into writing | workshop | delivery groups. */
 .mode-tab-sep{ width:1px; height:26px; background:#3a2613; margin:0 9px; align-self:center; flex:0 0 auto; }
 .mode-tab:hover{ color:var(--text-hi); background:var(--ink-800); }
-.mode-tab.active{ color:var(--on-brass); background:var(--brass); border-color:var(--brass); }
+/* ITEM arbor-quiet-brass — a selected mode tab is a WHERE-YOU-ARE state, not an act (the
+   same law item 83's R7 already gave the sliver's ON toggle, line ~3721 above): olive
+   marks state, brass stays evental. No fill, no brass. */
+.mode-tab.active{ color:var(--text-hi); background:none; border-color:var(--accent-rest); }
 .mode-tab.active .mode-tab__sub{ opacity:.85; }
 .mode-tab.deferred{ color:var(--text-low); cursor:not-allowed; opacity:.6; }
 .mode-tab.deferred:hover{ background:none; color:var(--text-low); }
@@ -2299,6 +2319,10 @@ a:focus-visible,
 .mode-rail.left{ border-right:0; }
 .mode-rail.right{ border-left:0; justify-self:start; }
 .mode-rail-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--brass-press); margin-bottom:12px; }
+/* ITEM arbor-quiet-brass — every heading uses the THEME's own heading colour (Arbor's
+   warm brass-press above, Flux's own quiet teal here); brass itself stays reserved for
+   choices and the mark, never a resting heading. */
+[data-theme='flux'] .mode-rail-h{ color:var(--text-mid); }
 .mode-rail-item{ font-size:14px; color:var(--text-mid); padding:10px 11px; cursor:pointer;
   border:1px solid transparent; transition:.18s; }
 .mode-rail-item:hover{ color:var(--text-hi); border-color:var(--ink-border); background:var(--ink-800); }
@@ -2331,7 +2355,6 @@ a:focus-visible,
 .assist-invite{ display:flex; flex-direction:column; gap:14px; }
 .assist-invite-line{ color:var(--text-mid); font-size:13px; line-height:1.6; font-style:normal; }
 .assist-connect{ align-self:flex-start; border:1px solid var(--brass); color:var(--brass); }
-.assist-connect:hover{ background:rgba(255,152,0,.10); }
 .assist-response{ color:var(--text-hi); font-size:14px; line-height:1.6; white-space:pre-wrap; }
 
 .mode-pagecol{ position:relative; z-index:1; width:min(700px,64vw); display:flex; flex-direction:column; }
@@ -2340,6 +2363,8 @@ a:focus-visible,
 .mode-bar{ display:flex; align-items:center; gap:4px; background:var(--ink-900);
   border:1px solid var(--ink-border); border-bottom:0; padding:6px 10px; min-height:42px; }
 .mode-tlabel{ font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--brass-press); margin-right:6px; }
+/* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above. */
+[data-theme='flux'] .mode-tlabel{ color:var(--text-mid); }
 .mode-tbtn{ min-width:30px; height:28px; padding:0 8px; background:none; border:1px solid transparent;
   color:var(--text-mid); cursor:pointer; font-family:var(--font-ui); font-size:14px; transition:.15s; }
 .mode-tbtn:hover{ border-color:var(--ink-border); background:var(--ink-800); color:var(--text-hi); }
@@ -2546,16 +2571,24 @@ a:focus-visible,
 .mode-iconbtn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); background:var(--ink-900); }
 .mode-iconbtn svg{ display:block; }
 .mode-sound.off{ color:var(--text-low); }
-.mode-settings{ position:absolute; top:36px; right:0; width:236px; background:rgba(20,10,2,.96);
+/* ITEM arbor-quiet-brass — was a hardcoded brown-black literal, so Flux inherited
+   Arbor's own brown instead of its own teal-dark chrome. --chrome-surface is already
+   theme-aware (the same token .mode-rail already reads). */
+.mode-settings{ position:absolute; top:36px; right:0; width:236px; background:var(--chrome-surface);
   border:1px solid var(--ink-border); padding:12px 13px; font-size:11px; color:var(--text-mid);
   z-index:6; box-shadow:0 12px 40px rgba(0,0,0,.5); }
 .mode-settings h4{ font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--brass-press); margin-bottom:9px; font-weight:600; }
+/* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above. */
+[data-theme='flux'] .mode-settings h4{ color:var(--text-mid); }
 .mode-crow{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:7px 0; }
 .mode-seg{ display:flex; border:1px solid var(--ink-border); }
 .mode-seg button{ background:none; border:0; border-left:1px solid var(--ink-border); color:var(--text-mid);
   font-size:10px; padding:3px 7px; cursor:pointer; font-family:var(--font-ui); }
 .mode-seg button:first-child{ border-left:0; }
-.mode-seg button.on{ background:var(--brass); color:var(--on-brass); }
+/* ITEM arbor-quiet-brass — brass outline, no fill, theme-invariant (brass is always
+   available). An inset box-shadow stands in for a border here so the flush, divider-
+   separated segments don't reflow when one becomes selected. */
+.mode-seg button.on{ background:none; color:var(--brass); box-shadow:inset 0 0 0 1px var(--brass); }
 .mode-seg button.mode-seg-soon{ color:var(--text-low); opacity:.45; cursor:default; }
 .mode-settings-hint{ margin-top:9px; font-size:9.5px; color:var(--text-low); line-height:1.5; }
 
@@ -3637,6 +3670,9 @@ a:focus-visible,
    the ember to the olive register); it was --text-mid, which read as body
    copy rather than an engraving. */
 .wz-sliver-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent-rest); }
+/* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above (olive here is
+   Arbor's own heading colour; Flux's is its own quiet teal, not olive). */
+[data-theme='flux'] .wz-sliver-h{ color:var(--text-mid); }
 .wz-sliver-inks{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
 .wz-sliver-item{ font-size:14px; color:var(--text-mid); padding:10px 11px; border:1px solid transparent; }
 /* AB4 S5 — "Add card," the board sliver's one non-toggle tool: a real
@@ -3804,15 +3840,13 @@ a:focus-visible,
 .wz-sliver-instruments .mode-settings{ position:static; top:auto; right:auto; width:auto; margin-top:10px; box-shadow:none; }
 .wz-sliver-instruments-panel{ margin-top:10px; }
 .wz-foot-settings-block + .wz-foot-settings-block{ margin-top:14px; padding-top:10px; border-top:1px solid var(--ink-border); }
-/* A Seg's selected option (`.mode-seg button.on`, ModeStage's own base rule)
-   fills brass — correct at the stage's OWN gear (a corner popover, not
-   itself part of the sliver's established visual law), but a resting
-   "where you are" marker inside the sliver should read olive, matching
-   `.desk-mode-tab.active`/every other sliver "active" state
-   (the Structure picker itself was swept with R13.iv — see the note above)
-   already swept under FX1 S6. Scoped the same way as the position override
-   above, for the same reason. */
-.wz-sliver-instruments .mode-seg button.on{ background:var(--accent-rest); color:var(--on-brass); }
+/* SUPERSEDED (item arbor-quiet-brass) — this override used to repaint a Seg's selected
+   option olive inside the sliver (a "where you are" marker, matching the sliver's other
+   active states), while the stage's own gear kept it brass-filled. Both are gone now:
+   `.mode-seg button.on`'s own base rule (ModeStage's own base rule, above) is brass
+   OUTLINE everywhere, theme-invariant (a segmented option is a CHOICE, not a persisted
+   mode — unlike the tabs, which keep the where-you-are olive treatment). Nothing left to
+   override; the base rule alone governs the sliver's gear too. */
 .wz-sliver-instruments .mode-settings h4{ color:var(--accent-rest); }
 /* TU1 S2 — the Tutor (components/Tutor.tsx). The sliver's own class family,
    mirrored (`.wz-sliver-*` -> `.wz-tutor-*`), split across the TWO anchors
@@ -4286,6 +4320,8 @@ a:focus-visible,
 /* item 83 M1 (R7) — the cascade drawer's engraved heading, same register as
    .wz-sliver-h above: one accent site per menu, olive, at rest. */
 .wz-cascade-panel-title{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent-rest); }
+/* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above. */
+[data-theme='flux'] .wz-cascade-panel-title{ color:var(--text-mid); }
 /* The dock's own quiet close affordance (S2: "a quiet close affordance") —
    text-scale, never brass (this is chrome, not an evental action). */
 .wz-cascade-dock-btn{ background:none; border:0; color:var(--text-low); font-family:var(--font-ui);
@@ -4598,6 +4634,8 @@ a:focus-visible,
 /* The interim Journal capture tab, relocated into the corkboard track (S2). */
 .desk-corkboard-journal{ display:flex; flex-direction:column; gap:2px; }
 .desk-corkboard-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--brass-press); margin-bottom:12px; }
+/* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above. */
+[data-theme='flux'] .desk-corkboard-h{ color:var(--text-mid); }
 .desk-corkboard-item{ font-size:14px; color:var(--text-mid); padding:10px 11px; border:1px solid transparent; }
 
 /* AB2 S0/S3 — the iA register (draftDecoration.ts): syntax visible, dimmed;
@@ -4725,7 +4763,8 @@ a:focus-visible,
   width:30px; height:30px; display:flex; align-items:center; justify-content:center;
   font-size:15px; cursor:pointer; transition:.15s; }
 .gh-corner-glyph:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
-.gh-corner-menu{ position:absolute; top:38px; right:0; min-width:180px; background:rgba(20,10,2,.96);
+/* ITEM arbor-quiet-brass — same brown-leak fix as .mode-settings above. */
+.gh-corner-menu{ position:absolute; top:38px; right:0; min-width:180px; background:var(--chrome-surface);
   border:1px solid var(--ink-border); padding:8px; display:flex; flex-direction:column; gap:2px;
   z-index:6; box-shadow:0 12px 40px rgba(0,0,0,.5); }
 .gh-corner-menu button{ text-align:left; background:none; border:0; color:var(--text-mid);
@@ -4751,7 +4790,7 @@ a:focus-visible,
 .dz-new{ align-self:flex-start; background:none; border:1px dashed var(--ink-border-strong);
   color:var(--brass); font-family:var(--font-ui); font-size:13px; font-weight:600;
   padding:7px 12px; cursor:pointer; transition:.15s; }
-.dz-new:hover{ border-color:var(--brass); background:rgba(255,152,0,.08); }
+.dz-new:hover{ border-color:var(--brass); }
 
 .dz-group{ border:1px solid var(--ink-border); background:var(--ink-900); }
 .dz-grouphead{ display:flex; align-items:center; gap:6px; padding:2px 6px 2px 4px; }
@@ -4816,7 +4855,6 @@ a:focus-visible,
 .shelf-list{ display:flex; flex-direction:column; }
 .shelf-row{ display:flex; align-items:flex-start; gap:10px; padding:10px 4px;
   border-bottom:1px solid var(--ink-border); }
-.shelf-row[data-selected='true']{ background:rgba(255,152,0,.06); }
 .shelf-check{ margin-top:4px; flex-shrink:0; cursor:pointer; }
 .shelf-open{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; background:none; border:0;
   text-align:left; cursor:pointer; padding:0; }
@@ -4976,7 +5014,8 @@ a:focus-visible,
 .sprint-toggle-btn{ background:none; border:0; border-left:1px solid var(--ink-border); color:var(--text-mid);
   font-family:var(--font-ui); font-size:13px; font-weight:600; padding:5px 12px; cursor:pointer; }
 .sprint-toggle-btn:first-child{ border-left:0; }
-.sprint-toggle-btn.active{ background:var(--brass); color:var(--on-brass); }
+/* ITEM arbor-quiet-brass — same where-you-are law as .mode-tab.active above. */
+.sprint-toggle-btn.active{ background:none; color:var(--text-hi); border-bottom:2px solid var(--accent-rest); }
 /* Sound — a bare icon toggle (no label). */
 /* Session timer — slim readout merged into the progress row (incentive layer). */
 .mode-timer{ font-family:var(--font-mono); color:var(--text-mid); margin-right:8px; letter-spacing:.3px; }
@@ -5147,6 +5186,10 @@ a:focus-visible,
   color:var(--accent-rest); text-decoration:none;
 }
 .sprint-nav .page-plan-door:hover{ color:var(--accent-rest); text-decoration:none; }
+/* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above; Arbor keeps
+   its own olive, Flux reads its own quiet teal instead. */
+[data-theme='flux'] .sprint-nav .page-plan-door,
+[data-theme='flux'] .sprint-nav .page-plan-door:hover{ color:var(--text-mid); }
 /* FX18 S3 (SV27): the Board's top menu parallels the Page's mode strip — ALL CAPS.
    Scoped to the Board bar (.board-mode-tab + .board-door). The page Plan door
    is capped in the rule above, in olive. DOM textContent stays "Plan". */
@@ -5269,9 +5312,12 @@ a:focus-visible,
   padding:4px 8px; cursor:pointer; border-radius:0; transition:.15s; }
 .wz-page-setup-chip:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-page-setup-chip:active{ color:var(--brass); border-color:var(--brass); }
-/* Olive marks where you are — the chosen value, at rest (R7). */
+/* SUPERSEDED (item arbor-quiet-brass, Fable's explicit ruling): "brass is the
+   through-line in Flux too: choice outlines in brass" — the chip's chosen value now
+   reads brass, not olive's where-you-are treatment (R7's original reasoning, kept here
+   as the reason this diverges from the tab/segmented-option law elsewhere in this file). */
 .wz-page-setup-chip[aria-checked='true'], .wz-page-setup-chip[aria-pressed='true']{
-  color:var(--text-hi); border-color:var(--accent-rest); }
+  color:var(--brass); border-color:var(--brass); }
 .wz-page-setup-chip:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
 .wz-page-setup-range{ flex:1 1 auto; accent-color:var(--accent-rest); }
 .wz-page-setup-text{ width:100%; background:var(--ink-950);

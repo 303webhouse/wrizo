@@ -746,8 +746,11 @@ await withHarness(async (app) => {
     if (!t) return null;
     return { heading: t('cascadePlanBoardsConnected'), places: t('placesBoardsTitle'), face: t('pageFacePinnedTo') };
   })()`);
-  ok('S3/PW27 + ruling 4: ONE CONNECTING WORD, three faces — the Plan panel\'s heading is Nick\'s exact term, and the Places zone and the Page face\'s prose line both read "connected" (never "appears on", which would now LIE: appearing means being displayed, and the checkbox makes membership)',
-    !!words && words.heading === 'Boards connected' && words.places === 'Also connected to…' && words.face === 'Also connected to',
+  // SUPERSEDED (item arbor-quiet-brass): "connected" renamed to Arbor's own "grafted" —
+  // the ONE connecting word is now "grafted", not "connected"; same three faces.
+  // ok('S3/PW27 + ruling 4: ONE CONNECTING WORD, three faces — the Plan panel's heading is Nick's exact term, and the Places zone and the Page face's prose line both read "connected" (never "appears on", which would now LIE: appearing means being displayed, and the checkbox makes membership)', !!words && words.heading === 'Boards connected' && words.places === 'Also connected to…' && words.face === 'Also connected to', JSON.stringify(words));
+  ok('S3/PW27 + ruling 4 (arbor-quiet-brass successor): ONE CONNECTING WORD, three faces — the Plan panel\'s heading, the Places zone and the Page face\'s prose line all read "grafted" now, still never "appears on"',
+    !!words && words.heading === 'Boards grafted' && words.places === 'Also grafted to…' && words.face === 'Also grafted to',
     JSON.stringify(words));
 
 
@@ -788,11 +791,11 @@ await withHarness(async (app) => {
   await sleep(400);
   if (await openPlan(app)) {
     const rows = await planRows(app);
-    ok('ERRATUM 1: a CONDITION-BOARD is never a connection — the loose page does NOT list the Shelf under "Boards connected", and with no plan board yet the zone is absent entirely (PW9)',
+    ok('ERRATUM 1: a CONDITION-BOARD is never a connection — the loose page does NOT list the Shelf under "Boards grafted" (item arbor-quiet-brass: was "Boards connected"), and with no plan board yet the zone is absent entirely (PW9)',
       Array.isArray(rows) && rows.length === 0, JSON.stringify(rows));
   }
   const faceLine = await app.evalJs("[...document.querySelectorAll('.wz-pageface-membership')].map(m => m.textContent)");
-  ok('ERRATUM 1: and the prose line follows the same rule — no "Also connected to The Shelf" anywhere on the face',
+  ok('ERRATUM 1: and the prose line follows the same rule — no "Also grafted to The Shelf" (item arbor-quiet-brass: was "Also connected to") anywhere on the face',
     Array.isArray(faceLine) && !faceLine.some((m) => /shelf|trash|journal board/i.test(m)), JSON.stringify(faceLine));
 
   // ...and a REAL board still lists, so the exclusion is not simply hiding
