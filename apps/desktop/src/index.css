@@ -5427,10 +5427,14 @@ a:focus-visible,
    IT CANNOT BLOCK WRITING, BY CONSTRUCTION. `pointer-events:none` on the
    container and on both children means this overlay is invisible to hit
    testing: a click during the splash reaches whatever is underneath exactly as
-   if the splash were not mounted. Dismissal is driven by PASSIVE window
-   listeners in Splash.tsx, never by this layer catching anything. It is also
-   what lets the backdrop probe read THROUGH the overlay to measure the app's
-   real ground (store/backdropTone.ts).
+   if the splash were not mounted. The PASSIVE window listeners in Splash.tsx
+   stay for the same reason (ITEM splash-hold: they no longer dismiss early,
+   below, but input still passes through them untouched), never by this layer
+   catching anything. pointer-events:none is also what lets the backdrop probe
+   read THROUGH the overlay to measure the app's real ground
+   (store/backdropTone.ts) — unaffected by ITEM splash-hold, since that probe
+   uses `elementFromPoint`/DOM traversal, never anything about the veil's own
+   paint.
 
    z-index 400 sits above the app's whole existing stack (modals, backdrops
    and toasts top out at 300) — deliberately, because at boot this is the
@@ -5438,21 +5442,22 @@ a:focus-visible,
 
    The SIZE is not set here: Splash.tsx computes width/height inline off the
    asset's measured INK bounding box (3077x2458 inside a 3374x2699 canvas) —
-   about a quarter of the screen's area, capped so the blurred app always
+   about a quarter of the screen's area, capped so the dimmed app always
    shows on all four sides (item 187). */
 .wz-splash{
   position:fixed; inset:0; z-index:400; pointer-events:none;
   display:flex; align-items:center; justify-content:center;
 }
-/* The blur is the app itself, live — a real backdrop-filter, never a
-   screenshot (the app is local-first and paints immediately, so any captured
-   frame would already be stale by the time it showed). This is the FIRST
-   backdrop-filter in this stylesheet; the -webkit- pair is kept because the
-   property is still prefixed in parts of the Chromium line this app ships on. */
+/* ITEM splash-hold (Nick, live): "the background should be faded out, not
+   blurred" — SUPERSEDED the backdrop-filter blur below (the app no longer
+   reads as blurred-but-present; it reads as dimmed-but-present). The tint is
+   the THEME's own ground colour (--ink-950, already per-theme: Arbor's own
+   warm brown-dark #110600, Flux's own teal-dark #04141A), at 75% opacity via
+   color-mix — so Arbor dims brown-dark and Flux dims teal-dark, never one
+   fixed colour painted over both. */
 .wz-splash-veil{
   position:absolute; inset:0; pointer-events:none;
-  -webkit-backdrop-filter:blur(18px);
-  backdrop-filter:blur(18px);
+  background:color-mix(in srgb, var(--ink-950) 75%, transparent);
   opacity:1; transition:opacity .38s ease;
 }
 /* The emblem is a SIBLING of the veil, not a child, so it paints on top of the

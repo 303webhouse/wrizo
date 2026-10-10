@@ -68,6 +68,7 @@ const splashState = (app) => app.evalJs(`(() => {
     veilPointerEvents: veilCs ? veilCs.pointerEvents : null,
     markPointerEvents: markCs ? markCs.pointerEvents : null,
     backdrop: veilCs ? (veilCs.backdropFilter || veilCs.webkitBackdropFilter || 'none') : null,
+    veilBackground: veilCs ? veilCs.backgroundColor : null,
     zIndex: cs ? cs.zIndex : null,
     vw: window.innerWidth, vh: window.innerHeight,
   };
@@ -75,14 +76,31 @@ const splashState = (app) => app.evalJs(`(() => {
 
 await withHarness(async (app) => {
   // ==========================================================================
-  // S1 — IT APPEARS, OVER THE REAL APP, BLURRED.
+  // S1 — IT APPEARS, OVER THE REAL APP, DIMMED.
   // ==========================================================================
   await openApp(app);
   const s1 = await splashState(app);
   ok('S1: the splash mounts on opening the app', s1.mounted === true, JSON.stringify({ tone: s1.tone, src: s1.src }));
 
-  ok('S1: the backdrop is a LIVE blur of the app — a real backdrop-filter, not a screenshot. This is the first backdrop-filter in this stylesheet, so it is asserted rather than assumed to composite',
-    typeof s1.backdrop === 'string' && /blur\(/.test(s1.backdrop), String(s1.backdrop));
+  // SUPERSEDED (item splash-hold, Nick live: "the background should be faded out,
+  // not blurred") — the backdrop-filter blur retires whole; there is none to assert.
+  // ok('S1: the backdrop is a LIVE blur of the app — a real backdrop-filter, not a screenshot. This is the first backdrop-filter in this stylesheet, so it is asserted rather than assumed to composite', typeof s1.backdrop === 'string' && /blur\(/.test(s1.backdrop), String(s1.backdrop));
+  ok('S1 (item splash-hold successor): no backdrop-filter remains on the veil — the retirement, proven inert, not just unasserted',
+    s1.backdrop === 'none', String(s1.backdrop));
+
+  const s1Tint = await app.evalJs(`(() => {
+    const m = getComputedStyle(document.documentElement).getPropertyValue('--ink-950').trim();
+    const n = parseInt(m.replace('#', ''), 16);
+    return { ground: { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 } };
+  })()`);
+  const veilRgba = /^rgba?\(([^)]+)\)$/.exec(s1.veilBackground || '');
+  const veilParts = veilRgba ? veilRgba[1].split(',').map((p) => parseFloat(p.trim())) : [];
+  const closeEnough = (a, b) => Math.abs(a - b) <= 2; // color-mix rounding across engines
+  ok('S1 (item splash-hold): the veil is a flat dimming tint in the THEME\'s own ground colour (--ink-950) at ~75% opacity — never one fixed colour painted over every theme',
+    veilParts.length === 4
+      && closeEnough(veilParts[0], s1Tint.ground.r) && closeEnough(veilParts[1], s1Tint.ground.g) && closeEnough(veilParts[2], s1Tint.ground.b)
+      && Math.abs(veilParts[3] - 0.75) <= 0.03,
+    JSON.stringify({ veilBackground: s1.veilBackground, expectedGround: s1Tint.ground }));
 
   ok('S1: it paints above the app\'s whole existing stack (modals/backdrops/toasts top out at 300)',
     Number(s1.zIndex) >= 400, String(s1.zIndex));
@@ -144,7 +162,7 @@ await withHarness(async (app) => {
   await sleep(80);
   const probe = await app.evalJs('window.__splashProbe || []');
 
-  ok('S3 THE TRAP: a keystroke sent WHILE THE SPLASH IS LIVE reaches the page AND arrives un-prevented — the dismissal listeners are passive and non-capturing, so they observe the key and let go of it. The loss this guards against is silent: a writer opens Wrizo, types immediately, and the first character is eaten as the dismiss gesture',
+  ok('S3 THE TRAP: a keystroke sent WHILE THE SPLASH IS LIVE reaches the page AND arrives un-prevented — the window listeners are passive and non-capturing (item splash-hold: they no longer dismiss anything either, but the pass-through claim is unchanged). The loss this guards against is silent: a writer opens Wrizo, types immediately, and the first character is eaten by anything the splash does',
     liveWhileTyping === true && Array.isArray(probe) && probe.length > 0 && probe.every((e) => e.prevented === false),
     JSON.stringify({ liveWhileTyping, probe }));
 
@@ -177,7 +195,7 @@ await withHarness(async (app) => {
   // but that should be big enough to see the text a bit better, no?" So the
   // size is asserted as a BAND, not a pixel. THE LOAD-BEARING CHECK IS HIS
   // EARLIER PURPOSE, unchanged: "smaller than the background so it's clear it's
-  // just a popup over the real app" - at every tested screen size the blurred
+  // just a popup over the real app" - at every tested screen size the dimmed
   // app shows on ALL FOUR SIDES of the emblem (each margin >= 10% of its axis).
   // Measured on the INK, not the canvas (~9% transparent margin per axis).
   // Two caps (height 60%, width 70%) keep that true at extreme shapes; they
@@ -211,7 +229,7 @@ await withHarness(async (app) => {
     };
     const sidesOk = margin.left >= 0.1 * s.vw && margin.right >= 0.1 * s.vw
       && margin.top >= 0.1 * s.vh && margin.bottom >= 0.1 * s.vh;
-    ok(`S4 THE PURPOSE @ ${w}x${h}: the blurred app is visible on ALL FOUR SIDES of the emblem (each margin >= 10% of its axis) - it reads as a popup over the real app, not a takeover`,
+    ok(`S4 THE PURPOSE @ ${w}x${h}: the dimmed app is visible on ALL FOUR SIDES of the emblem (each margin >= 10% of its axis) - it reads as a popup over the real app, not a takeover`,
       sidesOk, JSON.stringify({ margin: { l: Math.round(margin.left), r: Math.round(margin.right), t: Math.round(margin.top), b: Math.round(margin.bottom) }, vw: s.vw, vh: s.vh }));
 
     const areaFraction = (inkW * inkH) / (s.vw * s.vh);
@@ -247,26 +265,34 @@ await withHarness(async (app) => {
     s5.tone === 'dark', String(s5.tone));
 
   // ==========================================================================
-  // S6 — IT LEAVES ON ITS OWN, AND EARLY IF ASKED.
+  // S6 — IT LEAVES ON ITS OWN, AFTER THE FLOOR (item splash-hold).
   // ==========================================================================
   await openApp(app);
   // ITEM 141 (harness-only): same shape as S5 above — openApp navigates with no
   // settle of its own, so the seam read right after it needs its own waitFor.
   await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S6 settle' });
   const holdMs = await app.evalJs('window.wrizoSplash ? window.wrizoSplash.HOLD_MS : null');
-  ok('S6 (driver): the hold is readable from the page seam', typeof holdMs === 'number', String(holdMs));
-  await sleep((holdMs || 1200) + 700);
+  ok('S6 (driver): the hold is readable from the page seam, and is the item splash-hold floor (>= 3000ms, Nick live: "visible for at least 3 seconds")',
+    typeof holdMs === 'number' && holdMs >= 3000, String(holdMs));
+  await sleep((holdMs || 3000) + 700);
   const afterHold = await app.evalJs("!!document.querySelector('.wz-splash')");
   ok('S6: left alone, the splash dismisses ITSELF after its hold — nothing is ever required of the writer',
     afterHold === false, JSON.stringify({ stillMounted: afterHold, holdMs }));
 
+  // SUPERSEDED, RETIRED WHOLE (item splash-hold, Nick live: "...and the background
+  // should be faded out, not blurred" — the SAME sitting also ruled the hold itself a
+  // FLOOR, not a maximum: "visible for at least 3 seconds"). The old claim named here
+  // is now false by design; the successor proves the retirement itself, the same
+  // "no dead surface left behind" discipline this codebase already uses elsewhere
+  // (e.g. fx5.mjs's own S5 section for a different retired gesture).
+  // ok('S6: any input dismisses it EARLY — the hold is a maximum, never a wait', liveBefore === true && afterKey === false, JSON.stringify({ liveBefore, afterKey }));
   await openApp(app);
   const liveBefore = await app.evalJs("!!document.querySelector('.wz-splash')");
   await app.key('Escape');
   await sleep(600);
-  const afterKey = await app.evalJs("!!document.querySelector('.wz-splash')");
-  ok('S6: any input dismisses it EARLY — the hold is a maximum, never a wait',
-    liveBefore === true && afterKey === false, JSON.stringify({ liveBefore, afterKey }));
+  const stillLiveAfterKey = await app.evalJs("!!document.querySelector('.wz-splash')");
+  ok('S6 (item splash-hold successor): input no longer dismisses it early — the gesture is retired whole, proven inert (Escape mid-hold does nothing; only the floor\'s own timer, above, ever ends it)',
+    liveBefore === true && stillLiveAfterKey === true, JSON.stringify({ liveBefore, stillLiveAfterKey }));
 
   // ==========================================================================
   // S7 — IT SHOWS ON EVERY OPEN (Fable's ruling), NOT ONCE EVER.
