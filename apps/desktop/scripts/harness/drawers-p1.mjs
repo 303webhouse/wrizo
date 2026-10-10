@@ -64,7 +64,10 @@ async function partA(text = shellText) {
 // =============================================================================
 const css = read('index.css');
 const ruleBody = (text, selectorStart) => {
-  const i = text.indexOf(selectorStart);
+  // A RULE starts at the beginning of a line. The first textual occurrence of ".wz-sliver-panel{" is inside a comment and of
+  // ".wz-tutor-panel{" inside the reduced-motion rule, so a bare indexOf read the wrong body (B4 went red on it).
+  const at = text.indexOf('\n' + selectorStart);
+  const i = at < 0 ? -1 : at + 1;
   if (i < 0) return null;
   const open = text.indexOf('{', i);
   const close = text.indexOf('}', open);

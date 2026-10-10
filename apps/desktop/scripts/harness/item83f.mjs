@@ -388,13 +388,29 @@ await withHarness(async (app) => {
       panelKids,
     };
   })()`);
-  ok('E2 (GUARD): Page kind is the LAST zone of the tab body, directly after Templates, with the goal foot and the instruments row following it',
+  // SUPERSEDED (PHASE 1 side drawers) - by the successor right after it. Parked, not deleted: it read the PANEL's children, and the
+  // panel's only child is now the sliding layer (<SideDrawer>), which holds the tab body wrapper, the goal foot and the instruments row.
+  // Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('E2 (GUARD): Page kind is the LAST zone of the tab body, directly after Templates, with the goal foot and the instruments row following it',
     zoneOrder.pageKindIsLast === true
       && zoneOrder.panelKids.length === 3
       && zoneOrder.panelKids[0].includes('wz-sliver-body')
       && zoneOrder.panelKids[1].includes('wz-sliver-goal')
       && zoneOrder.panelKids[2].includes('wz-sliver-instruments'),
     JSON.stringify(zoneOrder));
+  const layerKids = await app.evalJs(`(() => {
+    const panelKids = [...document.querySelector('.wz-sliver-panel').children].map(el => el.className);
+    const layerKids = [...document.querySelector('.wz-sliver-panel > .wz-drawer-slide').children].map(el => el.className);
+    return { panelKids, layerKids, bodyInsideWrapper: !!document.querySelector('.wz-sliver-panel > .wz-drawer-slide > .wz-drawer-body > .wz-sliver-body') };
+  })()`);
+  ok('E2 [Phase 1 successor] (GUARD): the panel holds ONE child, the sliding layer; inside it the tab body (wrapped), then the goal foot, then the instruments row - and Page kind is still the last zone of the body, after Templates',
+    zoneOrder.pageKindIsLast === true
+      && layerKids.panelKids.length === 1 && layerKids.panelKids[0].includes('wz-drawer-slide')
+      && layerKids.layerKids.length === 3
+      && layerKids.layerKids[0].includes('wz-drawer-body') && layerKids.bodyInsideWrapper === true
+      && layerKids.layerKids[1].includes('wz-sliver-goal')
+      && layerKids.layerKids[2].includes('wz-sliver-instruments'),
+    JSON.stringify({ zoneOrder, layerKids }));
 
   // ==========================================================================
   // E3 — THE ARROW INDENTS A WHOLE PARAGRAPH, REPEATABLY.
