@@ -270,6 +270,29 @@ console.log('CLAIM 6 — and the ruling cannot be broken by a LITERAL in a compo
     [/\bconnections?\b/i, "the board's noun for a card thread"],
     [/Remove this link/, 'the superseded take-off wording (now "Unlink")'],
   ];
+  // ⛔ A SENSE DISCRIMINATOR, BECAUSE THE WORD IS NOT THE RULING.
+  //
+  // Chat 1's run flagged `store/authSubmit.ts:6` —
+  //   'Couldn’t reach Wrizo. Check your connection and try again.'
+  // — and the GUARD was wrong, not the literal. That "connection" is a NETWORK
+  // connection. The ruling this claim enforces is about the board's noun for a CARD
+  // THREAD ("This page's connections"), a different word spelled the same way. A
+  // guard that cannot tell the senses apart is not enforcing the ruling; it is taxing
+  // ordinary English, and the fix it invites — rewording a plain network error so a
+  // matcher stops complaining — would be the instrument dictating the product's prose.
+  //
+  // WHY A SENSE RULE AND NOT A FILE EXCEPTION. A declared exception for authSubmit.ts
+  // would go stale, would say nothing about the next file to use the word honestly,
+  // and (measured once already in this guard) an exception matched by substring
+  // excuses more than it names. The discrimination belongs in the matcher.
+  //
+  // DEFAULT STILL DENIES. The network sense is recognised only by its own vocabulary
+  // — reach / offline / network / internet / server / try again — AND only in the
+  // SINGULAR. So a bare "Connections" heading still fails, "This page's connections"
+  // still fails, and "Check your connections" (plural, the domain shape) still fails.
+  const NETWORK_CONTEXT = /\b(reach|reached|unreachable|offline|network|internet|server|timed out|try again)\b/i;
+  const inNetworkSense = (t) => /\bconnection\b/i.test(t) && NETWORK_CONTEXT.test(t) && !/\bconnections\b/i.test(t);
+  let networkSenseSeen = 0;
   const SKIP = ['deskLexicon.ts', 'themeLexicon.ts'];
 
   const files = [];
@@ -316,6 +339,12 @@ console.log('CLAIM 6 — and the ruling cannot be broken by a LITERAL in a compo
       for (const [re, why] of FORBIDDEN_IN_SOURCE) {
         if (!re.test(text)) continue;
         const line = raw.slice(0, m.pos).split('\n').length;
+        // The NETWORK sense of "connection" is not the board's noun. Noted, not failed.
+        if (why.startsWith("the board's noun") && inNetworkSense(text)) {
+          networkSenseSeen++;
+          console.log(`  note ${rel}:${line} — NETWORK SENSE, not the board's noun: ${JSON.stringify(text.slice(0, 64))}`);
+          continue;
+        }
         const dec = DECLARED.find((d) => rel.endsWith(d.file.replace('apps/desktop/src', 'src')) || rel === d.file);
         if (dec && text === dec.literal) {
           declaredHits++;
@@ -327,7 +356,16 @@ console.log('CLAIM 6 — and the ruling cannot be broken by a LITERAL in a compo
     }
   }
   if (failures === before) {
-    ok(`${scanned} source files scanned; ${declaredHits} declared exception(s), no new violations`);
+    ok(`${scanned} source files scanned; ${declaredHits} declared exception(s), ${networkSenseSeen} network-sense note(s), no new violations`);
+  }
+  // ⛔ AND THE SENSE RULE MUST STAY LIVE. If it ever matches nothing, either the
+  // network literal was reworded (delete the rule) or the matcher has gone blind and
+  // is exempting by accident. An exemption that never fires cannot be trusted to be
+  // narrow — the "population of zero" failure wearing a different coat.
+  if (networkSenseSeen === 0) {
+    fail('the network-sense rule matched NOTHING — either the network literal changed (remove the rule) or the matcher has gone blind');
+  } else {
+    ok(`the network-sense rule fired ${networkSenseSeen} time(s), so it is live rather than a dead branch`);
   }
   // Only meaningful while something IS declared: a stale exemption must announce
   // itself, but an EMPTY allowlist is the healthy state, not a fault.
