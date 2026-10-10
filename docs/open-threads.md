@@ -25499,3 +25499,14 @@ Every other file is CLEAN on both legs. Grant (this desk’s) written `2026-10-1
 fix for both (harness and/or the reduced-motion rule), Fable’s review, a re-run of `item141` and `splash.mjs` on both legs (bundle must
 be byte-identical if the fix is harness-only), then Nick’s conditional ship word applies (frame review + green pair + deploy + smoke + live
 frames).
+
+## RHIZOME + DRAFTS FRAMES CLEARED; THE BOX ORDER; THE SPLASH PATH — 2026-10-09 (chat 1)
+
+**RHIZOME + DRAFTS LIVE FRAMES (`a474aec`): CLEARED (Fable). Nick’s own live checks are on his list.**
+
+**BOX ORDER (Fable; this desk grants each ON ASK, reading the grant file first):** (1) PW browserless, ~2 minutes
+(`exp1-connect-text-r2` @ `52e76ce`); (2) INK `drawers-p1` browserless; (3) TOOLS: re-run `item141` + `splash.mjs` on BOTH legs
+(a harness-only fix, so the bundle must be BYTE-IDENTICAL to `index-P2j5dOLz.js` 650,072 b) + its splash frames, ONE turn; (4) INK’s S1
+browser turn. **THE SPLASH SHIPS after (3) passes and Fable clears the frames; NO full re-pair if the bundle is identical.**
+Mockup branches stay off this desk’s queue; FIX’s card port waits for Fable’s review. *(At 8:44 pm MT: no grant file, box idle; no
+asks received yet.)*
