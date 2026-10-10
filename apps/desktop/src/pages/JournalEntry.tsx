@@ -1192,7 +1192,7 @@ function JournalEntryView() {
           // gate above is unchanged and now covers both styles — it is the
           // same gate the legacy row applies to the bar, so the framed and
           // legacy surfaces still agree on WHEN a capture gets an instrument.
-          rhizome={authored ? <DeskInstrument unitCount={words} seedKey={entry.id} paperRef={sheetRef} /> : undefined}
+          rhizome={authored ? <DeskInstrument unitCount={words} text={goalText} seedKey={entry.id} paperRef={sheetRef} /> : undefined}
           dissolved={dissolved}
         >
           {/* .desk-frame-stage is a `display:flex` row expecting ONE child

@@ -1,287 +1,222 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useWritingSettings } from '../store/writingSettings';
-import { useGoalProgress, WORD_GOAL, CELEBRATE_MS } from './WritingIncentives';
-import {
-  mulberry32, hashSeed, createRhizomeState, seedOrigins, saturationTarget, growTo, burstSegments,
-  type RhizomeState, type RhizomeGeometry, type RhizomePoint, type RhizomeSegment,
-} from '../store/rhizomeEngine';
+import { useWritingGoal, goalCount } from '../store/writingGoal';
+import { useTheme } from '../store/theme';
+import { lapPlan, segmentsFor, geometryKey, type GrowthGeometry, type GrowthSegment, type Rect } from '../store/rhizomeGrowth';
 
-// M2 — the Rhizome (docs/wrizo-alpha/m2-rhizome-brief.md, S2/S4). A single
-// ambient SVG layer: absolutely positioned, clipped to its own box (an SVG
-// element clips its own content to its own bounds by default — no separate
-// `overflow:hidden` wrapper needed), z-index beneath paper and chrome (index
-// .css's `.wz-rhizome-field`), `pointer-events:none`, `aria-hidden` — purely
-// ambient, can never intercept a click or carry a control.
+// THE GOAL RHIZOME (rewritten by Fable, 2026-10-08; growth model in store/rhizomeGrowth.ts).
 //
-// SCOPE JUDGMENT CALL (disclosed in full in the build report): this build
-// mounts RhizomeField ONLY on the framed (>=1100px) desk stage — the ONE
-// place a "stage" wider than the paper itself genuinely exists in the
-// current app (`.desk-frame-stage`, DeskFrame.tsx's own name for that exact
-// zone — the literal match to S2's own words, "the desk stage"). Below
-// 1100px, ModeStage's own root (`.mode-stage`) shrink-wraps to the paper's
-// own intrinsic width when framed, and even in the legacy (`!framed`)
-// layout the incentive row this ticket would otherwise extend does not
-// currently exist at all inside `.desk-frame-stage` (S5's own mandatory
-// geometry widths — 1100/1280/2200 — are ALL >= DESKFRAME_MIN_WIDTH, i.e.
-// they exercise the framed path exclusively). Building a second, cramped
-// legacy-only mount point would either (a) leave the mandatory geometry
-// proofs untestable, or (b) require reviving DeskFrame's own explicitly-
-// parked "meter track stays empty" law (FX1 S5, reaffirmed verbatim by both
-// PageEditor.tsx's and JournalEntry.tsx's own framed-branch comments) for a
-// feature the brief never asked to un-park. Scoping to framed-only keeps
-// legacy (<1100px) chrome unconditionally byte-identical (this build's own
-// standing instruction), keeps the paper-rect/stage-clamp proofs meaningful
-// at every one of S5's three mandatory widths, and reuses an existing,
-// PROVEN overlay pattern (GoalGlow.tsx/`goalGlow`) instead of inventing a
-// new one. The Progress-style SETTING itself (S1) still stores/persists at
-// any width — only its offering in the gear (ModeStage.tsx's SettingsPanel,
-// `framed` prop) and this component's own visual effect are scoped to
-// framed, so a writer who picks Rhizome on a wide screen sees it resume
-// the instant they're back on one.
+// What the writer sees:
+//   - A root network in the dark ground around the page that fills as they approach their goal (words or lines, whatever
+//     they set). Half the goal, about half the ground; the goal, the ground is full.
+//   - Every new piece grows OUT of an existing stem, and draws itself on along its length (the "growing" animation).
+//   - At the goal the whole network flashes brass, then clears, leaving one short root (drawn heavier). The next lap grows
+//     from that root.
+//   - Roots grow BEHIND the page, right up to its edge, and are never drawn over it. They also never paint on the rail,
+//     the strip, the header or an open menu (clip + mask). They pass under the page (unpainted) to reach the other margin.
 //
-// Self-contained like GoalGlow.tsx: reads its own settings slice, computes
-// its own `celebrating` flag by calling the SAME `useGoalProgress` hook the
-// bar itself calls (imported verbatim, not re-implemented) with the SAME
-// `unitCount` the host already computes for the bar — "the SAME unit event
-// the bar already consumes" as literally as two independent calls to one
-// pure hook can make it. No new subscription to the write/persistence bus:
-// `unitCount` is a plain number prop, recomputed by the host from state it
-// already holds for other reasons (item 18's own force-render ceiling).
-const SESSION_START = Date.now(); // frozen once per app-load/session (S2: "session-scoped")
+// The field is ambient: aria-hidden, pointer-events none, beneath the paper (the anchor's z-index -1). Framed stage only
+// (>= 1100px), as before.
+const SESSION_START = Date.now(); // the pattern is session-scoped (M2 S2)
 
-const BURST_COUNT = 12;
-const BURST_STAGGER_MS = 600; // "staggered ~600ms across live shoots" (S4)
+const FLASH_MS = 1200;   // the brass reward
+const PAGE_CLEAR = 0;    // no clear band: roots grow behind the page, right up to its edge, never over it
+const DRAW_MS = 360;     // one segment drawing itself on
+const STAGGER_TOTAL_MS = 700; // a burst of new segments (a pasted paragraph) grows over at most this long
+const ANIMATE_MAX = 160; // beyond this many new segments at once, the oldest of the burst simply appear
 
-function measure(svg: SVGSVGElement, paper: HTMLElement): { geo: RhizomeGeometry; origin: RhizomePoint } | null {
-  const stageRect = svg.getBoundingClientRect();
-  const paperRect = paper.getBoundingClientRect();
-  if (stageRect.width <= 0 || stageRect.height <= 0) return null;
+const STABLE_CHROME = ['.desk-rail', '.desk-frame-strip', '.sprint-nav', '.gh-corner-glyph'];
+const LIVE_CHROME = [
+  '.gh-corner-menu',
+  '.wz-cascade-panel',
+  '.wz-sliver-panel[data-open="true"]',
+  '.wz-sliver-grip',
+  '.mode-settings',
+  '.wz-ink-menu',
+  '.desk-frame-corkboard',
+];
+
+function isShown(el: Element): boolean {
+  let node: Element | null = el;
+  while (node && node !== document.documentElement) {
+    const cs = getComputedStyle(node);
+    if (cs.display === 'none' || cs.visibility === 'hidden') return false;
+    const op = Number.parseFloat(cs.opacity);
+    if (Number.isFinite(op) && op < 0.04) return false;
+    node = node.parentElement;
+  }
+  const r = el.getBoundingClientRect();
+  return r.width >= 8 && r.height >= 8;
+}
+
+function rectsInStage(selectors: string[], stage: DOMRect): Rect[] {
+  const out: Rect[] = [];
+  for (const sel of selectors) {
+    for (const el of document.querySelectorAll(sel)) {
+      if (el.closest('.brand-mark')) continue;
+      if (!isShown(el)) continue;
+      const r = el.getBoundingClientRect();
+      const rect = { left: r.left - stage.left, top: r.top - stage.top, right: r.right - stage.left, bottom: r.bottom - stage.top };
+      if (rect.right <= 1 || rect.bottom <= 1 || rect.left >= stage.width - 1 || rect.top >= stage.height - 1) continue;
+      out.push(rect);
+    }
+  }
+  return out;
+}
+
+interface Measured { geo: GrowthGeometry; holes: Rect[] }
+
+function measure(svg: SVGSVGElement, paper: HTMLElement): Measured | null {
+  const stage = svg.getBoundingClientRect();
+  const p = paper.getBoundingClientRect();
+  if (stage.width <= 0 || stage.height <= 0 || p.width <= 0) return null;
+  const kept = {
+    left: p.left - stage.left - PAGE_CLEAR,
+    top: p.top - stage.top - PAGE_CLEAR,
+    right: p.right - stage.left + PAGE_CLEAR,
+    bottom: p.bottom - stage.top + PAGE_CLEAR,
+  };
+  const stable = rectsInStage(STABLE_CHROME, stage);
   return {
+    // Growth geometry: only the sheet band and STABLE chrome. Opening a menu must never re-seed the drawing.
     geo: {
-      width: stageRect.width,
-      height: stageRect.height,
-      paper: {
-        left: paperRect.left - stageRect.left,
-        top: paperRect.top - stageRect.top,
-        right: paperRect.right - stageRect.left,
-        bottom: paperRect.bottom - stageRect.top,
-      },
+      width: stage.width,
+      height: stage.height,
+      hidden: [kept, ...stable],
+      origin: { x: (p.left + p.right) / 2 - stage.left, y: p.bottom - stage.top + PAGE_CLEAR + 12 },
     },
-    // S2's own origin: "the horizontal midpoint of the progress row's own
-    // measured rect... first shoot rooted there." No incentive row exists
-    // on the framed desk stage today (see this file's own header comment) —
-    // the paper's own bottom-center reads as its exact equivalent (every
-    // current layout centers the row on the SAME column as the paper, so
-    // the two midpoints already coincide) and is trivially, always
-    // measurable regardless of style/mode.
-    origin: {
-      x: (paperRect.left + paperRect.right) / 2 - stageRect.left,
-      y: paperRect.bottom - stageRect.top,
-    },
+    // Paint holes: the same, plus whatever menu is open right now.
+    holes: [kept, ...stable, ...rectsInStage(LIVE_CHROME, stage)],
   };
 }
 
-// M3 — a MATERIAL change (> 1px on any stage dimension or paper edge) in the
-// measured geometry: the trigger to re-fit the ground to the paper's new place.
-// The paper is NOT still at mount — on a fresh load into an already-written
-// page (S3's own DoD scenario) the chrome above it recedes over ~500ms, so the
-// paper settles up by a few tens of px AFTER the field first measured+grew. A
-// ground grown against the boot-time paper would then sit under the settled
-// paper's top band (invisible — the field is z-beneath the paper — but a real
-// gap in "the roam avoids the paper"). 1px, not 0, so sub-pixel measurement
-// jitter can never thrash a rebuild.
-function geoChanged(a: RhizomeGeometry, b: RhizomeGeometry): boolean {
-  return (
-    Math.abs(a.width - b.width) > 1 ||
-    Math.abs(a.height - b.height) > 1 ||
-    Math.abs(a.paper.left - b.paper.left) > 1 ||
-    Math.abs(a.paper.top - b.paper.top) > 1 ||
-    Math.abs(a.paper.right - b.paper.right) > 1 ||
-    Math.abs(a.paper.bottom - b.paper.bottom) > 1
-  );
+function groundClipPath(w: number, h: number, holes: Rect[]): string {
+  const n = (v: number) => Math.round(v * 10) / 10;
+  let d = `M0 0H${n(w)}V${n(h)}H0Z`;
+  for (const r of holes) {
+    if (r.right - r.left < 1 || r.bottom - r.top < 1) continue;
+    d += `M${n(r.left)} ${n(r.top)}H${n(r.right)}V${n(r.bottom)}H${n(r.left)}Z`;
+  }
+  return d;
 }
 
-export function RhizomeField({ unitCount, seedKey, paperRef }: {
-  unitCount: number;
+function sameRects(a: Rect[], b: Rect[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (Math.abs(a[i].left - b[i].left) > 1 || Math.abs(a[i].top - b[i].top) > 1
+      || Math.abs(a[i].right - b[i].right) > 1 || Math.abs(a[i].bottom - b[i].bottom) > 1) return false;
+  }
+  return true;
+}
+
+/** Many settled segments as ONE path per weight: thousands of <line>s re-rendered on every keystroke would be wasteful. */
+function pathOf(segs: GrowthSegment[], thick: boolean): string {
+  let d = '';
+  for (const s of segs) {
+    if (s.thick !== thick) continue;
+    d += `M${s.x1.toFixed(1)} ${s.y1.toFixed(1)}L${s.x2.toFixed(1)} ${s.y2.toFixed(1)}`;
+  }
+  return d;
+}
+
+export function RhizomeField({ text, seedKey, paperRef }: {
+  text: string;
   seedKey: string;
   paperRef: React.RefObject<HTMLElement | null>;
 }) {
   const settings = useWritingSettings();
-  const active = settings.progress === 'words' && settings.progressStyle === 'rhizome';
-  const { celebrating } = useGoalProgress(unitCount, WORD_GOAL);
+  const goal = useWritingGoal();
+  // Nick's ruling: the rhizome is PLATEAU'S only. Every other theme replaces it with its own (Flux's comes later), so under
+  // any other theme this field draws nothing - no growth, no flash.
+  const theme = useTheme();
+  const active = settings.progress === 'words' && settings.progressStyle === 'rhizome' && goal != null && goal.n > 0 && theme === 'plateau';
+  const count = goal ? goalCount(text, goal) : 0;
+  const n = goal?.n ?? 0;
+  const lap = n > 0 ? Math.floor(count / n) : 0;
+  const frac = n > 0 ? (count % n) / n : 0;
+  const goalKey = goal ? `${goal.n}:${goal.unit}` : 'none';
+  const pageSeed = `${seedKey}:${SESSION_START}:${goalKey}`;
 
   const svgRef = useRef<SVGSVGElement>(null);
-  const [state, setState] = useState<RhizomeState>(createRhizomeState);
-  const [burstOrder, setBurstOrder] = useState<Map<number, number>>(() => new Map());
-  const [flash, setFlash] = useState(false);
+  const [m, setM] = useState<Measured | null>(null);
+  const [flashLap, setFlashLap] = useState<number | null>(null); // while set, the finished lap is shown whole, in brass
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevCount = useRef<{ key: string; count: number } | null>(null);
 
-  const rngRef = useRef<(() => number) | null>(null);
-  const lastUnitRef = useRef<number | null>(null);
-  const prevCelebratingRef = useRef(false);
-  const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // M3 S2 — the 7 blue-noise origins, computed ONCE per entry (in the growth
-  // effect, from the seeded rng + the first successful measure) so the same
-  // page scatters the same way and the rng stream stays deterministic across
-  // every growTo call.
-  const originsRef = useRef<RhizomePoint[] | null>(null);
-  // M3 — the geometry the current ground was BUILT against (null until first
-  // build), and the high-water word count it has been grown to. The high-water
-  // makes the forward-only law survive a geometry re-fit: a rebuild regrows to
-  // the largest count ever seen, so re-fitting to a moved paper never shrinks
-  // the ground (just as deleting words never does). `unitCountRef` mirrors the
-  // prop so the ResizeObserver's refit can read the live count without making
-  // its own effect re-subscribe on every keystroke.
-  const builtGeoRef = useRef<RhizomeGeometry | null>(null);
-  const highWaterRef = useRef(0);
-  const unitCountRef = useRef(unitCount);
-  unitCountRef.current = unitCount;
-
-  // `stateRef` mirrors `state` synchronously (written by `updateState`
-  // below, never independently) so the growth effect and the burst effect
-  // — two SEPARATE effects that can both fire from the SAME commit (a
-  // single word crossing the goal on the very event that also roots the
-  // first-ever shoot) — always compose against each other's latest write,
-  // in declaration order, rather than each closing over a possibly-stale
-  // `state` from the last completed render. `updateState` calls `setState`
-  // with a plain VALUE, never a function, so React 18 StrictMode's own
-  // double-invoke-to-check-purity behavior (main.tsx wraps the app in
-  // `<React.StrictMode>`) can never run the PRNG-consuming computation
-  // twice — that would have silently burned extra `rng()` draws only in
-  // dev, a real (if dev-only) determinism hazard the plain-value form
-  // avoids by construction rather than by care.
-  const stateRef = useRef<RhizomeState>(state);
-  const updateState = useCallback((updater: (s: RhizomeState) => RhizomeState) => {
-    const next = updater(stateRef.current);
-    stateRef.current = next;
-    setState(next);
-  }, []);
-
-  // Re-seed whenever the entry changes (a fresh page => a fresh field —
-  // S2's own seed key is entry id + session start; SESSION_START itself is
-  // fixed for the whole app-load, so revisiting the SAME entry within the
-  // SAME session reproduces the identical PRNG stream from empty, which is
-  // exactly what the harness's determinism proof exercises).
-  useEffect(() => {
-    rngRef.current = mulberry32(hashSeed(`${seedKey}:${SESSION_START}`));
-    lastUnitRef.current = null;
-    originsRef.current = null; // M3 — a fresh entry re-scatters its own ground
-    builtGeoRef.current = null; // and re-fits from empty against its own paper
-    highWaterRef.current = 0;
-    const fresh = createRhizomeState();
-    stateRef.current = fresh;
-    setState(fresh);
-    setBurstOrder(new Map());
-  }, [seedKey]);
-
-  const measureNow = useCallback(() => {
-    const svg = svgRef.current;
-    const paper = paperRef.current;
-    if (!svg || !paper) return null;
-    return measure(svg, paper);
+  const sync = useCallback(() => {
+    const svg = svgRef.current, paper = paperRef.current;
+    if (!svg || !paper) return;
+    const next = measure(svg, paper);
+    if (!next) return;
+    setM(prev => (prev && geometryKey(prev.geo) === geometryKey(next.geo) && sameRects(prev.holes, next.holes) ? prev : next));
   }, [paperRef]);
 
-  // M3 S2/S3 — the growth/re-fit loop. Coverage tracks TOTAL word count (not
-  // M2's session delta) through the saturation curve, so opening a page already
-  // written shows a ground alive to the essay's length (the DoD) rather than
-  // M2's empty-until-you-type. `syncField` is the single path that brings the
-  // ground into agreement with both the current word count AND the current
-  // measured geometry:
-  //   • same paper, more words -> grow FORWARD (M2's incremental, idempotent,
-  //     StrictMode-safe growTo — a no-op, never a shrink, when words drop);
-  //   • paper moved/resized     -> RE-FIT: reset the PRNG to this entry's seed
-  //     and regrow from empty against the new paper, so the rebuilt ground is
-  //     the deterministic image of this seed AT this geometry (same seed + same
-  //     geo => identical scatter), grown to the high-water target so a re-fit
-  //     never shrinks the ground.
-  // The 7 blue-noise origins (S2) are seeded from the rng + the measured geo at
-  // build time; a re-fit re-seeds them for the new geo. growTo is forward-only
-  // and idempotent per target, and a rebuild resets the rng from the seed first,
-  // so a React 18 StrictMode double-invoke adds no segments and burns no extra
-  // rng — the same dev-only determinism hazard updateState's plain-value form
-  // already guards, closed here by construction too.
-  const syncField = useCallback(() => {
-    if (!active || !rngRef.current) return;
-    const m = measureNow();
-    if (!m) return;
-    highWaterRef.current = Math.max(highWaterRef.current, unitCountRef.current);
-    const target = saturationTarget(highWaterRef.current);
-    if (!builtGeoRef.current || geoChanged(m.geo, builtGeoRef.current)) {
-      const rng = mulberry32(hashSeed(`${seedKey}:${SESSION_START}`));
-      rngRef.current = rng;
-      originsRef.current = seedOrigins(rng, m.geo);
-      builtGeoRef.current = m.geo;
-      const rebuilt = growTo(createRhizomeState(), rng, m.geo, originsRef.current, target);
-      stateRef.current = rebuilt;
-      setState(rebuilt);
-      setBurstOrder(new Map());
-    } else {
-      updateState(s => growTo(s, rngRef.current!, m.geo, originsRef.current!, target));
-    }
-    lastUnitRef.current = unitCountRef.current;
-  }, [active, seedKey, measureNow, updateState]);
-
-  // Grow forward whenever the word count advances (and on first mount).
-  useEffect(() => { syncField(); }, [unitCount, syncField]);
-
-  // Re-fit when the paper or stage geometry changes — the boot-time chrome
-  // recede (the paper settles up over ~500ms after first paint, S3's DoD path)
-  // and any later window resize. A ResizeObserver catches size changes; a
-  // single deferred re-sync catches a position-only settle tail (the paper can
-  // finish translating a frame or two after its size stabilizes). Both coalesce
-  // through one rAF so a burst of callbacks becomes a single measure+refit.
+  // Re-measure whenever the stage, the paper or the chrome moves (menus open, chrome recedes, the window resizes).
   useEffect(() => {
     if (!active) return;
-    const svg = svgRef.current;
-    const paper = paperRef.current;
-    if (!svg || !paper || typeof ResizeObserver === 'undefined') return;
+    const svg = svgRef.current, paper = paperRef.current;
+    if (!svg || !paper) return;
     let raf = 0;
-    const schedule = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => { raf = 0; syncField(); });
-    };
-    const ro = new ResizeObserver(schedule);
-    ro.observe(svg);
-    ro.observe(paper);
-    const settleTail = setTimeout(schedule, 600);
-    return () => { if (raf) cancelAnimationFrame(raf); clearTimeout(settleTail); ro.disconnect(); };
-  }, [active, paperRef, syncField]);
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; sync(); }); };
+    schedule();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(schedule) : null;
+    ro?.observe(svg); ro?.observe(paper);
+    const mo = new MutationObserver(schedule);
+    mo.observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['class', 'style', 'data-open', 'hidden', 'aria-expanded', 'data-writing'] });
+    const settle = setTimeout(schedule, 600);
+    return () => { if (raf) cancelAnimationFrame(raf); clearTimeout(settle); ro?.disconnect(); mo.disconnect(); };
+  }, [active, paperRef, sync, seedKey]);
 
-  // S4 — the milestone burst + flash, on the SAME `celebrating` transition
-  // the bar itself already fires on (nothing new invented). Decoupled from
-  // `celebrating`'s own CELEBRATE_MS window on purpose: the flash's own
-  // total (hold + ease-back) runs a little past it, and "growth kept whole"
-  // must not depend on the bar's flag staying true the whole time.
+  // Crossing the goal: hold the finished lap whole and brass for FLASH_MS, then show the new lap (its survivor first).
+  const countKey = `${seedKey}|${goalKey}`;
   useEffect(() => {
-    if (active && celebrating && !prevCelebratingRef.current) {
-      const m = measureNow();
-      if (m && rngRef.current) {
-        const { state: next, added } = burstSegments(stateRef.current, rngRef.current, m.geo, BURST_COUNT);
-        stateRef.current = next;
-        setState(next);
-        if (added.length > 0) {
-          setBurstOrder(prev => {
-            const map = new Map(prev);
-            added.forEach((seg, i) => map.set(seg.id, i));
-            return map;
-          });
-        }
-      }
-      setFlash(true);
-      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
-      // B4-provisional — 1200ms (400ms hold + 800ms ease-back, S4's own
-      // exact split) has no existing named celebration-grammar constant of
-      // its own to read from; CELEBRATE_MS (imported above, reused for
-      // `useGoalProgress` itself) anchors the SAME duration family per the
-      // canon's "same duration family" rule, but not this exact number —
-      // B4's ember-accent finish is the named final authority (brief S4).
-      flashTimerRef.current = setTimeout(() => setFlash(false), 1200);
+    const prev = prevCount.current;
+    prevCount.current = { key: countKey, count };
+    if (!active || n <= 0 || !prev || prev.key !== countKey) return;
+    if (count > prev.count && Math.floor(count / n) > Math.floor(prev.count / n)) {
+      setFlashLap(Math.floor(count / n) - 1);
+      if (flashTimer.current) clearTimeout(flashTimer.current);
+      flashTimer.current = setTimeout(() => setFlashLap(null), FLASH_MS);
     }
-    prevCelebratingRef.current = celebrating;
-  }, [celebrating, active, measureNow]);
+  }, [active, count, n, countKey]);
+  useEffect(() => { setFlashLap(null); }, [seedKey, goalKey]);
+  useEffect(() => () => { if (flashTimer.current) clearTimeout(flashTimer.current); }, []);
 
-  useEffect(() => () => { if (flashTimerRef.current) clearTimeout(flashTimerRef.current); }, []);
+  // What to draw. During the flash: the finished lap, whole. Otherwise: the current lap up to the goal fraction.
+  const shownLap = flashLap ?? lap;
+  const plan = useMemo(() => (m ? lapPlan(m.geo, pageSeed, shownLap) : null), [m, pageSeed, shownLap]);
+  const k = plan ? (flashLap != null ? plan.segments.length : segmentsFor(plan, frac)) : 0;
+
+  // Which segments are still GROWING. A segment that appears gets its own start time (staggered within its burst) and stays
+  // a separate <line> until its draw-on has finished, so typing the next word never cuts the last word's growth short.
+  // Anything that changes the drawing as a whole (another page, another lap, a new geometry, the flash) starts a fresh
+  // record with nothing growing, so a reload or a resize never replays the growth.
+  const growing = useRef<{ key: string; k: number; born: Map<number, { delay: number; until: number }> }>({ key: '', k: 0, born: new Map() });
+  const drawKey = plan && m ? `${pageSeed}#${shownLap}#${geometryKey(m.geo)}#${flashLap != null ? 'flash' : 'grow'}` : '';
+  const segs = plan ? plan.segments.slice(0, k) : [];
+  const now = Date.now();
+  const g = growing.current;
+  if (g.key !== drawKey) {
+    growing.current = { key: drawKey, k, born: new Map() };
+  } else if (k > g.k) {
+    const batch = segs.slice(Math.max(g.k, k - ANIMATE_MAX), k);
+    const step = batch.length > 1 ? Math.min(60, STAGGER_TOTAL_MS / batch.length) : 0;
+    batch.forEach((s, i) => {
+      if (!g.born.has(s.id)) g.born.set(s.id, { delay: Math.round(i * step), until: now + Math.round(i * step) + DRAW_MS + 40 });
+    });
+    g.k = k;
+  } else {
+    g.k = k;
+  }
+  const born = growing.current.born;
+  for (const [id, b] of born) if (b.until < now) born.delete(id);
+  const animated = segs.filter(s => born.has(s.id));
+  const settled = animated.length ? segs.filter(s => !born.has(s.id)) : segs;
 
   if (!active) return null;
+
+  const w = m?.geo.width ?? 0, h = m?.geo.height ?? 0;
+  const clipD = m ? groundClipPath(w, h, m.holes) : '';
 
   return (
     <svg
@@ -289,20 +224,41 @@ export function RhizomeField({ unitCount, seedKey, paperRef }: {
       className="wz-rhizome-field"
       aria-hidden="true"
       focusable="false"
-      data-flash={flash ? 'true' : 'false'}
-      style={{ pointerEvents: 'none' }}
+      data-flash={flashLap != null ? 'true' : 'false'}
+      data-lap={shownLap}
+      data-segments={segs.length}
+      data-goal-frac={frac.toFixed(3)}
+      viewBox={w > 0 ? `0 0 ${w} ${h}` : undefined}
+      preserveAspectRatio="none"
+      style={{ pointerEvents: 'none', clipPath: clipD ? `path(evenodd, "${clipD}")` : undefined }}
     >
-      {state.segments.map((seg: RhizomeSegment) => {
-        const order = burstOrder.get(seg.id);
-        return (
+      {m && (
+        <>
+          <clipPath id="wz-rhizome-ground" clipPathUnits="userSpaceOnUse">
+            <path clipRule="evenodd" fillRule="evenodd" d={clipD} />
+          </clipPath>
+          <mask id="wz-rhizome-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width={w} height={h}>
+            <rect x="0" y="0" width={w} height={h} fill="#fff" />
+            {m.holes.map((r, i) => (
+              <rect key={i} x={r.left} y={r.top} width={Math.max(0, r.right - r.left)} height={Math.max(0, r.bottom - r.top)} fill="#000" />
+            ))}
+          </mask>
+        </>
+      )}
+      <g clipPath={m ? 'url(#wz-rhizome-ground)' : undefined} mask={m ? 'url(#wz-rhizome-mask)' : undefined}>
+        <path className="wz-rhizome-seg" d={pathOf(settled, false)} />
+        <path className="wz-rhizome-seg" data-thick="true" d={pathOf(settled, true)} />
+        {animated.map(s => (
           <line
-            key={seg.id}
-            className="wz-rhizome-seg"
-            x1={seg.x1} y1={seg.y1} x2={seg.x2} y2={seg.y2}
-            style={order != null ? { animationDelay: `${(order * BURST_STAGGER_MS) / BURST_COUNT}ms` } : undefined}
+            key={`${drawKey}:${s.id}`}
+            className="wz-rhizome-seg wz-rhizome-new"
+            data-thick={s.thick ? 'true' : undefined}
+            pathLength={1}
+            style={{ animationDelay: `${born.get(s.id)!.delay}ms` }}
+            x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
           />
-        );
-      })}
+        ))}
+      </g>
     </svg>
   );
 }
