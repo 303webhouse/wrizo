@@ -733,9 +733,13 @@ await withHarness(async (app) => {
     // carries the word), so this asserts the heading's PRESENCE case-blind and
     // leaves the exact term to the lexicon check at the end of this file.
     const bodyText = await app.evalJs("(document.querySelector('.wz-cascade-panel-body')?.innerText ?? '').toUpperCase()");
-    ok('S1, Fable ruling 2: a LOOSE page (no drawer, no project) still shows its REAL CONNECTIONS, above the creation doors — answering "which boards is this page on" with "make a project first" was the panel telling a writer to build what they had already built',
-      looseRows.length > 0 && looseRows.some((r) => r.title === 'A board with no drawer') && bodyText.includes('BOARDS CONNECTED'),
-      JSON.stringify({ looseRows, hasHeading: bodyText.includes('BOARDS CONNECTED') }));
+    // SUPERSEDED (item arbor-quiet-brass): "Connected" renamed to Arbor's own "Grafted" —
+    // this check's own round-1 sweep missed it (a case-SENSITIVE grep for "Boards
+    // connected" never matches this uppercase-transformed "BOARDS CONNECTED").
+    // ok('S1, Fable ruling 2: a LOOSE page (no drawer, no project) still shows its REAL CONNECTIONS, above the creation doors — answering "which boards is this page on" with "make a project first" was the panel telling a writer to build what they had already built', looseRows.length > 0 && looseRows.some((r) => r.title === 'A board with no drawer') && bodyText.includes('BOARDS CONNECTED'), JSON.stringify({ looseRows, hasHeading: bodyText.includes('BOARDS CONNECTED') }));
+    ok('S1, Fable ruling 2 (arbor-quiet-brass successor): a LOOSE page (no drawer, no project) still shows its REAL GRAFTS, above the creation doors — answering "which boards is this page on" with "make a project first" was the panel telling a writer to build what they had already built',
+      looseRows.length > 0 && looseRows.some((r) => r.title === 'A board with no drawer') && bodyText.includes('BOARDS GRAFTED'),
+      JSON.stringify({ looseRows, hasHeading: bodyText.includes('BOARDS GRAFTED') }));
   }
 
   // ==========================================================================

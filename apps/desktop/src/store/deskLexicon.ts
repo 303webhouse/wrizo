@@ -761,7 +761,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   boardLayerBringFront: 'Bring to front',
   boardLayerSendBack: 'Send to back',
   boardThreadGrab: 'Drag to graft',
-  boardThreadPrefix: 'thread',
+  // ITEM arbor-quiet-brass — was 'thread' (composed at the call site as "— thread:
+  // <label>"); now the full connecting phrase itself, same per-theme family as the rest
+  // of the board-connection vocabulary (beginConnectPage etc., in OVERRIDES below).
+  boardThreadPrefix: 'grafted to',
   boardThreadUntitled: 'Untitled',
   boardFooterToggle: 'Show grafts',
   tutorOpen: 'Open the Tutor',
@@ -1306,6 +1309,9 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     boardThreadGrab: 'Drag to link',
     boardFooterToggle: 'Show links',
     placesBoardsTitle: 'Also linked to…',
+    // Round 2: the card footer's own connecting phrase ("— grafted to: <label>"
+    // Arbor, composed at BoardEditor.tsx's call site as "— {prefix}: {label}").
+    boardThreadPrefix: 'linked to',
     // ITEM arbor-quiet-brass / Flux fix 5 — the Progress-style option reads
     // "Glitch" under Flux (Arbor keeps "Rhizome"); RhizomeField.tsx's own
     // `theme === 'plateau'` gate already renders nothing under Flux, so this

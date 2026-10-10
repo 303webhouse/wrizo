@@ -349,7 +349,7 @@ await withHarness(async (app) => {
     JSON.stringify(themeList) === JSON.stringify(['Arbor', 'Flux']), JSON.stringify(themeList));
   const activeBefore = await app.evalJs("document.querySelector('.wz-cascade-theme .wz-cascade-action.active')?.textContent");
   // ok('S3: Plateau is marked current (olive) before any switch', activeBefore === 'Plateau', String(activeBefore));
-  ok('S3 (arbor-quiet-brass successor): Arbor is marked current (olive) before any switch', activeBefore === 'Arbor', String(activeBefore));
+  ok('S3 (arbor-quiet-brass successor): Arbor is marked current (brass outline, round 2 - a theme is a choice) before any switch', activeBefore === 'Arbor', String(activeBefore));
   await app.evalJs("[...document.querySelectorAll('.wz-cascade-theme .wz-cascade-action')].find(b => b.textContent === 'Flux').click()");
   await sleep(200);
   const afterSwitch = await app.evalJs(`({

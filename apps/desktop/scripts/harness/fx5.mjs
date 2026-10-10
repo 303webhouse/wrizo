@@ -754,7 +754,13 @@ await withHarness(async (app) => {
   // used to live here; PARKED below (HARNESS_PARKED=1) — a third tool
   // (New page card) joins Add card + the footer toggle. Live successor:
   // fx6.mjs's own S2 section.
-  const footerToggleBtn = "[...document.querySelectorAll('.wz-sliver-toggle')].find(b => b.textContent.includes('connections'))";
+  // ITEM arbor-quiet-brass: the toggle's label is no longer a fixed string containing
+  // "connections" (Arbor: "Show grafts"; Flux: "Show links") — read the CURRENT label
+  // from the lexicon seam itself rather than hardcoding either word, so this driver
+  // survives the next rename too.
+  const footerLabel = await app.evalJs("window.wrizoDeskLexicon ? window.wrizoDeskLexicon.t('boardFooterToggle') : null");
+  if (!footerLabel) throw new Error('fx5 S5: window.wrizoDeskLexicon seam missing — cannot find the footer toggle by label');
+  const footerToggleBtn = `[...document.querySelectorAll('.wz-sliver-toggle')].find(b => b.textContent.includes(${JSON.stringify(footerLabel)}))`;
   await app.evalJs(`${footerToggleBtn}.click()`);
   await sleep(150);
   const footerAfterToggleOff = await app.evalJs("!!document.querySelector('[data-box-id=\"fx5-s5-a\"] .board-card-footer')");

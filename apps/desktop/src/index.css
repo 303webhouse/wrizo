@@ -1256,6 +1256,15 @@ a:focus-visible,
   background:
     radial-gradient(58% 50% at 50% 42%, rgba(255,150,40,0.22), rgba(255,150,40,0) 70%),
     radial-gradient(115% 95% at 50% 70%, rgba(180,94,30,0.12), transparent 80%); }
+/* ITEM arbor-quiet-brass — the front door's ambient glow was warm orange/brown in
+   both themes; Flux's own canon (docs/flux-theme-canon.md §8) calls its glow family
+   "a radial teal-blue pool", so this is Flux's own --line-active (the canon's
+   electric-blue "system" lane) instead, same two-layer shape and opacity. */
+[data-theme='flux'] .wz-ambient{
+  background:
+    radial-gradient(58% 50% at 50% 42%, color-mix(in srgb, var(--line-active) 22%, transparent), transparent 70%),
+    radial-gradient(115% 95% at 50% 70%, color-mix(in srgb, var(--ink-border-strong) 12%, transparent), transparent 80%);
+}
 .wz-signin{ position:absolute; top:1.5rem; right:1.7rem; font-family:var(--wz-ui); font-size:.8rem; letter-spacing:.04em;
   color:var(--wz-ink-dim); opacity:.5; cursor:pointer; background:none; border:none; transition:opacity .4s; z-index:9; }
 .wz-signin:hover{ opacity:.85; }
@@ -3617,6 +3626,10 @@ a:focus-visible,
 /* Plateau foundations — olive marks where you are; the grip wears
    --accent-rest only while OPEN (a where-you-are-now state), never brass. */
 .wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--accent-rest); border-color:var(--accent-rest); }
+/* ITEM arbor-quiet-brass, round 2 — the drawer's own arrow tab (Sliver.tsx calls this
+   panel "the drawer" throughout its own comments), same heading/where-you-are-colour
+   law as the headings fix above: Arbor keeps olive, Flux reads its own quiet teal. */
+[data-theme='flux'] .wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--text-mid); border-color:var(--text-mid); }
 .wz-sliver-grip-glyph{ font-size:13px; line-height:1; }
 .wz-sliver-panel{ position:absolute; top:0; right:16px; width:calc(100% - 16px); height:100%;
   overflow-y:auto; overflow-x:hidden; background:var(--desk-ground); border:1px solid var(--ink-border); border-right:none;
@@ -3844,6 +3857,8 @@ a:focus-visible,
   background:none; border:1px solid var(--ink-border); color:var(--text-low); cursor:pointer; transition:.15s; }
 .wz-sliver-instruments-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-sliver-instruments-btn[aria-expanded='true']{ color:var(--accent-rest); border-color:var(--accent-rest); }
+/* ITEM arbor-quiet-brass, round 2 — the drawer's own "…" button, same fix as the grip above. */
+[data-theme='flux'] .wz-sliver-instruments-btn[aria-expanded='true']{ color:var(--text-mid); border-color:var(--text-mid); }
 .wz-sliver-instruments-btn svg{ display:block; }
 /* Reused SettingsPanel/ThemePanel/InstrumentsPanel (ModeStage.tsx's own
    `.mode-settings` — position:absolute, anchored to the stage's top-right
@@ -3863,6 +3878,11 @@ a:focus-visible,
    mode — unlike the tabs, which keep the where-you-are olive treatment). Nothing left to
    override; the base rule alone governs the sliver's gear too. */
 .wz-sliver-instruments .mode-settings h4{ color:var(--accent-rest); }
+/* ITEM arbor-quiet-brass — this scoped override (2 classes, wins over the base
+   `.mode-settings h4` rule's own Flux fix above) repaints the sliver's own
+   TYPEWRITER MODE / PROGRESS TRACKING / PREFERENCES headings olive, so they stayed
+   olive-gold under Flux even after the base rule's Flux fix. Same heading-colour law. */
+[data-theme='flux'] .wz-sliver-instruments .mode-settings h4{ color:var(--text-mid); }
 /* TU1 S2 — the Tutor (components/Tutor.tsx). The sliver's own class family,
    mirrored (`.wz-sliver-*` -> `.wz-tutor-*`), split across the TWO anchors
    above (`.wz-tutor-zone` is the shared marker class both anchor roots
@@ -4348,10 +4368,11 @@ a:focus-visible,
   text-align:left; font-family:var(--font-ui); font-size:13px; padding:8px 10px; cursor:pointer;
   transition:.15s; border-radius:var(--radius-sm); }
 .wz-cascade-action:hover{ color:var(--text-hi); background:var(--ink-800); }
-/* Change Theme's current selection (S3: "current marked olive") — the same
-   lawful --accent-rest-not-brass pattern every other where-you-are marker
-   in this app uses. */
-.wz-cascade-action.active{ color:var(--text-hi); border-color:var(--accent-rest); }
+/* ITEM arbor-quiet-brass, round 2 — SUPERSEDED: the theme list's own selection was
+   olive (S3's original "current marked olive"), but Fable's ruling makes this a
+   CHOICE, not a where-you-are tab state — brass outline, theme-invariant, same as
+   every other choice in this ticket (the segmented options, the page-setup chips). */
+.wz-cascade-action.active{ color:var(--brass); border-color:var(--brass); }
 /* FX6 S2a — the New Page door: unmissable at the head of the cascade's Page
    section. Olive (--accent-rest) at rest, not brass — "nothing orange at
    rest" (the olive/orange lane law) still holds; this reads unmissable via
@@ -4938,6 +4959,11 @@ a:focus-visible,
 .sprint-nav{ display:flex; align-items:center; gap:14px; flex-wrap:wrap;
   background:var(--ink-900); border:1px solid var(--ink-border); border-radius:var(--radius-md);
   padding:8px 14px; }
+/* ITEM arbor-quiet-brass — --ink-900 ("cards, surfaces") has no Flux override anywhere
+   in this file, so this strip (the page/board title bar — "Loose — belongs nowhere
+   yet / Untitled") read Arbor's own warm brown under Flux too. --chrome-surface is
+   the same semantic role, already Flux-aware (used by .mode-settings/.gh-corner-menu). */
+[data-theme='flux'] .sprint-nav{ background:var(--chrome-surface); }
 /* Nav-row type unified with the mode tabs: Figtree (font-ui), 13px. */
 .sprint-crumb{ display:flex; align-items:center; gap:7px; font-family:var(--font-ui); font-size:13px;
   color:var(--text-low); min-width:0; }
