@@ -25601,3 +25601,25 @@ me with the pre-logout cookie replayed 401 — `SMOKE: PASS (6/6)`.**
 *(The splash is HELD for the first and third frames with the shipping component’s own capture override, `wrizo-splash-hold`, as the frames
 script does; a natural, unforced load shows it only for its normal short hold.)* **Owed: Fable’s frame review; Nick’s own live check of
 the splash.** Box idle; 0 harness processes.
+
+## PW’S LEXICON GUARD CLEAN; THE NEXT THREE RUNS; VOCAB-CENSUS MERGED — 2026-10-09 (chat 1)
+
+**PW’S ONE-FILE RUN (this desk, `2026-10-10T05:01:06Z` to `05:01:07Z`, grant read-first/absent, cleared): `exp1-connect-text-r2` @ `8d824bd`
+(“the GUARD was too broad, not main’s literal — a sense discriminator”), `exp1-lexicon-guard.mjs`: `EXP1 WORD GUARD: CLEAN`, exit 0; CLAIM 6
+— 180 source files scanned, 0 declared exceptions, 1 network-sense note (`authSubmit.ts:6`, “NETWORK SENSE, not the board’s noun”), no new
+violations; the network-sense rule fired once, so it is live.** (Fable: recorded; the earlier red is resolved by the guard, not main’s literal.)
+
+**NEXT, run by this desk in this order (Fable): (1) `arbor-quiet-brass` @ `d4b4e79` — the pair + six frames (Themes menu, a page drawer, a
+card footer, the “…” settings, the front door, the header; BOTH themes); Nick’s ship word applies once Fable clears the frames. (2) INK,
+`phase1-drawers` @ `c133ce0` or newer (INK adds one reduced-motion line first): `drawers-p1` + `page-templates`, `fx2`, `fx10`, `item83f`, `item121`,
+`item126`, `item207`, `ab2`, `fx1`, `fx3`, both legs — NOT for shipping yet. (3) `splash-hold` (TOOLS, coming): `splash.mjs` + `item141` + frames, then
+deploy on Nick’s word (he asked for the change).**
+
+**(1) IN PROGRESS: `abq-pair` @ `9831822` = `origin/main` @ `a6cebe1` + `arbor-quiet-brass` @ `d4b4e79`** (2 commits — “drop `.wz-primary`’s glow, give
+`.wz-home` its own Flux palette”; 15 files, +207/−87: `App.tsx`, `CascadePanels.tsx`, `ModeStage.tsx`, `index.css`, `deskLexicon.ts`, `themeLexicon.ts`,
+`themeTerritories.ts` and eight harness files; NO server change, NO migration). A clean merge; `tsc` x2 exit 0; `build:web` bundle
+`index-CpmjU6ua.js` 650,252 b; 124 files per leg in seven chunks (capture tools left out); this desk’s grant written `2026-10-10T05:05:56Z`
+after the file was read (absent). **Result and frames to follow.**
+
+**VOCAB-CENSUS MERGED (docs only): `vocab-census` @ `a788a64` — “Label census: every writer-visible term, Arbor vs. Flux today”, one file,
+`docs/vocab/label-census.md`; no product file touched; merged to `main` with this entry.**
