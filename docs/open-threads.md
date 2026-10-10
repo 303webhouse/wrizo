@@ -25566,3 +25566,38 @@ the twelve files INK listed that EXIST, on both legs, stamp `tree=5a7c5461`. **`
 
 **GRANT LOG: this desk’s one grant for the four runs, written `2026-10-10T03:33:46Z`, CLEARED `03:49:45Z` (~16 minutes); 0 harness processes,
 0 browsers; the primary untouched.** Worktrees left in place for inspection: `run-exp1`, `run-drawers`, `run-splash`.
+
+## SPLASH DEPLOY MANIFEST — LIVE, SERVED==BUILT==PAIRED, SMOKE 6/6, LIVE FRAMES TAKEN — 2026-10-09 (chat 1)
+
+**FABLE (relay): splash frames (`docs/evidence/splash-187`) CLEARED. Deploy `splash-screen` @ `75c3b5a` on Nick’s standing word: read the
+branch, deploy, served == built, smoke, live frames (the front door with the splash, then after the fade).** PW’s lexicon-guard red and
+INK’s four reds went back to those lanes. Next box work: TOOLS’ `arbor-quiet-brass` pair + frames after TOOLS pushes the front-door addition;
+INK’s S1 re-run after INK’s fixes — both run by this desk.
+
+**MERGED to `main`: `9c665b5`** (`75c3b5a`; the branch read first: 11 commits past `main` — the splash S0 survey, the build, the sizing
+changes, comment/wording fixes, `splash.mjs`’s harness-only fix and the capture script; 10 non-doc files: `Splash.tsx`, `backdropTone.ts`,
+`App.tsx`, `index.css`, two harness files, two scripts and TWO BRAND PNGs under `public/brand/`; NO server change, NO migration; the
+branch’s “restore `open-threads.md`” commits leave the ledger byte-identical: `git diff origin/main HEAD -- docs/open-threads.md` EMPTY).
+**`git diff run-splash HEAD -- apps packages` EMPTY — the product is the tree that was paired and re-run, and the built bundle is
+byte-identical to its stamp.**
+**LIVE: `9c665b5` · railway `86f21245-9e97-4249-96e9-53ed467b5981`** — `railway up --service writer-studio-app --ci`, “Deploy complete”.
+**PREVIOUS LIVE: drafts · `ab1f6d8e` (now REMOVING) — THE ROLLBACK is a rebuild from `a56c90a`.** No schema change.
+
+**CHECKS BEFORE UPLOAD:** `tsc` x2 exit 0; `build:web` exit 0, bundle `index-P2j5dOLz.js` 650,072 b == the pair/re-run stamp; tree bare (0
+porcelain incl. untracked); **ITEM-98 GUARD:** `writer-studio` / `production` / `writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`,
+`HEAD == origin/main == 9c665b5`. **LIVE VERIFICATION:** `/healthz` 200 · `/auth/me` 401 · `/auth/signup-status` `{“open”:false}`.
+**SERVED-vs-BUILT, BOTH ASSETS MATCH, MD5 and bytes:** JS `62672ae6edd7352342a956148fcc1dcf` (650,072 b); CSS `3fa61e2b5ac3f30514c5fe50e6d196d1`
+(151,958 b). **The two new brand PNGs are served:** `brand/wrizo-sketch-for-dark-theme.png` 200 `image/png` 298,066 b and
+`brand/wrizo-sketch-for-light-theme.png` 200 `image/png` 297,901 b.
+**LIVE SIGNED-IN SMOKE (`smoke-login.mjs`, once, exit 0): login 200 · me 200 · sync (pull only) 200 · logout 204 · me after logout (jar) 401 ·
+me with the pre-logout cookie replayed 401 — `SMOKE: PASS (6/6)`.**
+
+**LIVE FRAMES, taken against PRODUCTION (each frame’s own DOM reports the served bundle `index-P2j5dOLz.js`; throw-away anonymous profile at
+1400×900; nothing written to the server; this desk’s grant `04:51:52Z`, cleared `04:52:07Z`), committed under `docs/evidence/splash-187-live/`:**
+- **`S1-front-door-with-splash-arbor`** — the splash over the front door (Arbor, theme id `plateau`): `splashPresent:true`, `leaving:“false”`, the mark
+  decoded (`wrizo-sketch-for-dark-theme.png`, 689×551 at 356,175), the veil’s `backdrop-filter: blur(18px)`, the doors mounted behind it.
+- **`S2-front-door-after-the-fade-arbor`** — after the fade: `splashPresent:false` (the overlay unmounted), the doors in place.
+- **`S3-front-door-with-splash-flux`** — the same under Flux.
+*(The splash is HELD for the first and third frames with the shipping component’s own capture override, `wrizo-splash-hold`, as the frames
+script does; a natural, unforced load shows it only for its normal short hold.)* **Owed: Fable’s frame review; Nick’s own live check of
+the splash.** Box idle; 0 harness processes.
