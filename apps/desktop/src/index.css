@@ -3663,9 +3663,13 @@ a:focus-visible,
 .wz-actions-send{ color:var(--brick, var(--text-mid)); }
 .wz-actions-keep:focus-visible, .wz-actions-send:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
 /* REDUCED MOTION (Nick): fade only, short. No slide at all; the fade runs on its own short token. (This replaces the two old
-   'transition:none' opt-outs: the writer who asked for less motion still sees the drawer arrive, just without travel.) */
+   'transition:none' opt-outs: the writer who asked for less motion still sees the drawer arrive, just without travel.)
+   THE APP'S GLOBAL REDUCED-MOTION FLOOR (the universal rule near the top of this file: every transition and animation 0.01ms !important)
+   would flatten this fade to nothing too. Opacity is not motion, and Nick ruled that the drawer still FADES, so the two panels carry their
+   own !important duration: a class selector out-ranks the floor's universal selector at equal importance. The sliding layer is NOT exempt -
+   it has no travel under reduced motion, and the floor keeps it instant. */
 @media (prefers-reduced-motion:reduce){
-  .wz-sliver-panel, .wz-tutor-panel{ transition:opacity var(--drawer-dur-reduced) linear; }
+  .wz-sliver-panel, .wz-tutor-panel{ transition:opacity var(--drawer-dur-reduced) linear; transition-duration: var(--drawer-dur-reduced) !important; }
   .wz-drawer-slide, .wz-drawer-slide--left, .wz-drawer-slide--right{ transform:none; transition:none; }
 }
 .wz-sliver-body{ display:flex; flex-direction:column; gap:20px; padding:16px 14px; }
