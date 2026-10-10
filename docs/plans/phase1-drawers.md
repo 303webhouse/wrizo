@@ -356,3 +356,64 @@ Plateau dark and Flux, 1280×800 unless noted. "O" = open, "C" = closed.
 
 Fable's read of this plan and Nick's rulings on Q1–Q6 and Q10 (the rest I can lean on). A box grant for the S5 frames and the live
 check; no harness run before then. S0 and S1 can start on approval — both are small and low-risk.
+
+---
+
+## Addendum A — Nick's answers (Oct 9), S0 findings, and S1 as built
+
+### A.1 Rulings received
+| Q | Answer | Effect on the plan |
+|---|---|---|
+| Q1 | **A.** Free Write = typeface choices + INK in Phase 1; B/I/U after FIX's typing work | §3.1 Free Write row stands as written (no Format group) |
+| Q5 | The open tab stays **olive** ("not a choice the user makes") | §2.4 stands: tab olive, choices brass |
+| Q10 | **No icons.** "Connections" is **renamed app-wide, per theme**: Flux = LINK/LINKS; Arbor's word is pending Nick (TIES likely) | The right-hand tab label is read from the per-theme vocabulary (`deskLexicon`) in S3; the word drops in later with no code change. Tab labels stay words. |
+| new | **Brass-outlined choices lose their light-orange fill — outline only** | The new shell's choice mark is a brass outline (and brass text), no `color-mix` fill. TOOLS cleans up the rest of the app. This replaces the "12-16% brass fill" in §2.4 for everything the drawers draw. Templates stay exactly as shipped (H3), so their existing fill is TOOLS' to change, not mine. |
+| new | Plateau's display name becomes "Arbor" (id stays) | TOOLS does it. Nothing in the drawers hard-codes the word "Plateau". |
+Q2, Q3, Q4, Q6-Q9, Q11, Q12 were not answered; I proceed on my stated leans, none of which S1 depends on.
+
+### A.2 S0 — what the sweep found (static reading; nothing was run)
+S1 changes two things the harness can see: the **shape of the panels' motion** and **reduced motion**. Everything else the survey listed
+(pointer-events and opacity semantics under dissolve and the pop-out hold; the grip's rect and visibility; the anchors; the two-drawer
+law; the Tutor's measured width; geometry) is unchanged, because the panel element keeps its box, its `data-open`, its dissolve
+classes, its opacity transition on `--fade-dur`, and `pointer-events`.
+
+Pins that S1 falsifies (all in `fx10.mjs`, the Tutor's FX10 S1 motion section) - **parked verbatim with successors in the S1 commit**:
+1. "the tutor panel animates opacity + transform" - parked (the panel now animates opacity only);
+2. "the sliver panel's reference shape is unchanged (opacity + transform)" - parked (same reason);
+   → both folded into ONE successor that measures the panel (opacity, never width/border) *and* its sliding layer (transform), same
+   duration and easing on both hands;
+3. "the panel's own transform changes open vs closed" - parked; successor measures the **sliding layer** and asserts the panel itself
+   stays put;
+4. "A15: reduced motion → transition collapses to ~0" - parked; Nick's ruling is fade-only-short, not none; successor asserts the
+   panel still fades in a short, non-zero time and the layer has no travel.
+Park count: 4 parked, 3 successors (two fold into one).
+
+Pins that **hold** (checked by reading, to be confirmed by the run): `e3` S3 (the two panels' transition duration, properties and
+timing function are equal - both are now `opacity var(--fade-dur,.2s) ease`); `fx10` S1 duration/easing equality; `item83f` E1 S5 (the
+transition is identical held and unheld); `fx3` S5, `cd1`, `fx10` S3, `e3` S4 (pointer-events and opacity under dissolve/closed).
+
+Not hand-verified, to confirm on the first grant: whether any check reads the panel's own **background or border colour** (none found by
+search), and `menus-probe` geometry (dock and handle rects are unchanged by construction).
+
+### A.3 S1 as built - and where it departs from §1/§2.3 (flagging, not hiding)
+- **No `SideDrawer` component in S1.** The plan said both drawers would adopt a new shell. On reading the Sliver's shell I found its
+  panel carries `chrome-fade desk-dissolve` *and* the pop-out-hold law (`data-popout-hold`, with a long comment explaining why the hold must
+  ride **that** element: an ancestor's opacity caps every descendant's). Moving those onto a new wrapper element would re-open settled
+  decisions for no gain. So S1 changes the motion **in place** and adds one inner element. `SideDrawer`/`DrawerTabs` arrive in S2, where
+  tabs actually need a home.
+- **The two-opacities "trap" in §2.3 was mis-stated.** The existing design already multiplexes open/close and dissolve on the one
+  `opacity` through `--fade-dur`; that is deliberate and stays. What S1 adds is only the slide.
+- **How "together" is achieved:** the panel (outer) stays the clip and the scroller and keeps the fade on `opacity var(--fade-dur,.2s)`;
+  the box (background, border) and the slide move onto a new inner `.wz-drawer-slide`, which transitions `transform` on the dedicated
+  `--drawer-dur`/`--drawer-ease` (never `--fade-dur`). The `.2s` fallback of the fade and the `.2s` slide token are the same value, so at
+  rest the two run together. **Known limit:** while the vanish engine has written a different `--fade-dur` (mid-dissolve), the fade
+  follows it and the slide does not; that is the dissolve doing its job.
+- **Closed = unreachable:** `setDrawerInert` makes a closed panel `inert` on both hands (`drawerShell.ts`, which also holds the one
+  shared `drawerArrow(side, open)`). The Tutor's E3 comment says adding an `inert` there would "diverge from the mirror" - it is added to
+  **both** hands, so the mirror holds.
+- **Reduced motion:** panels fade over `--drawer-dur-reduced` (.12s, linear); the sliding layer has no transform and no transition.
+- **Files:** `index.css` (tokens, panel rules, sliding layer, reduced-motion block), `Sliver.tsx` (arrow, ref, wrapper), `Tutor.tsx`
+  (arrow, ref, wrapper), new `store/drawerShell.ts`, new `scripts/harness/drawers-p1.mjs`, `fx10.mjs` parks. **`PageEditor.tsx` and
+  `ForwardOnlyEditor.tsx`: not touched** (the harness asserts it).
+- **Tests:** `drawers-p1.mjs` (browserless; written, **not yet run - it needs Chat 1's grant**). Browser confirmation (the measured slide,
+  reduced motion, the rects) is the S1 frames/live turn, also unrun.
