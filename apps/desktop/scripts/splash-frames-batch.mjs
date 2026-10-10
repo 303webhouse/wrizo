@@ -2,9 +2,12 @@
 // review screenshots (splash item 187): Plateau and Flux, desktop 1400x900 and phone
 // 390x844, "splash over the front door" for all four combos, plus one frame just after
 // the fade (app visible, nothing left behind). This reuses the SAME withHarness seam and
-// the SAME safety assertions scripts/harness/splash-frames.mjs already proves (backdrop
-// blur present, four-sided margin, valid PNG) -- it does not introduce any new behavior to
-// verify, so it is not added to scripts/harness/ itself.
+// the SAME CLASS of safety assertions scripts/harness/splash.mjs already proves (four-
+// sided margin, valid PNG) -- it does not introduce any new behavior to verify, so it is
+// not added to scripts/harness/ itself.
+// ITEM splash-hold (Nick, live): the veil is a flat dimming tint now, never a backdrop-
+// filter blur; the safety check below confirms the tint is actually painted (non-
+// transparent) rather than confirming a blur that no longer exists.
 // Run: node scripts/splash-frames-batch.mjs   (from apps/desktop, dist-web freshly
 // built; needs a box turn -- it opens a real browser).
 import { writeFileSync, mkdirSync } from 'node:fs';
@@ -56,7 +59,7 @@ await withHarness(async (app) => {
         theme: document.documentElement.getAttribute('data-theme'),
         complete: mark.complete && mark.naturalWidth > 0,
         rect: { x: r.left, y: r.top, w: r.width, h: r.height },
-        backdrop: getComputedStyle(veil).backdropFilter || getComputedStyle(veil).webkitBackdropFilter,
+        veilBackground: getComputedStyle(veil).backgroundColor,
         vw: innerWidth, vh: innerHeight,
       };
     })()`);
@@ -68,10 +71,14 @@ await withHarness(async (app) => {
     const margins = { l: cx - inkW / 2, r: state.vw - (cx + inkW / 2), t: cy - inkH / 2, b: state.vh - (cy + inkH / 2) };
     const areaPct = ((inkW * inkH) / (state.vw * state.vh)) * 100;
 
+    const veilAlpha = /^rgba\(([^)]+)\)$/.exec(state.veilBackground || '');
+    const veilOpaque = veilAlpha ? parseFloat(veilAlpha[1].split(',')[3]) > 0.1 : false;
+
     if (state.theme !== combo.theme) throw new Error(`theme mismatch: wanted ${combo.theme}, got ${state.theme}`);
     if (state.leaving !== 'false') throw new Error(`${combo.theme}/${combo.name}: already leaving`);
     if (!state.complete) throw new Error(`${combo.theme}/${combo.name}: asset not decoded`);
     if (Math.min(margins.l, margins.r, margins.t, margins.b) <= 0) throw new Error(`${combo.theme}/${combo.name}: app not visible on all four sides`);
+    if (!veilOpaque) throw new Error(`${combo.theme}/${combo.name}: the veil's dimming tint is not actually painted (${state.veilBackground})`);
 
     const shot = Buffer.from(await app.screenshot(), 'base64');
     const file = path.join(OUT_DIR, `splash-${combo.theme}-${combo.name}-${combo.w}x${combo.h}.png`);

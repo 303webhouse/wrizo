@@ -1,10 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { measureBackdropTone, type BackdropTone } from '../store/backdropTone';
 
-// THE SPLASH (item 187) — Nick's own hand-drawn Wrizo, over the live app, blurred behind.
+// THE SPLASH (item 187) — Nick's own hand-drawn Wrizo, over the live app, dimmed behind.
 //
 // Nick: "I would like the opening splash screen to be at most 1/5 the size of
 // the screen with the regular app interface blurred out in the background."
+//
+// ITEM splash-hold (live, Nick): the first ship ran too fast and blurred, not
+// dimmed. "Visible for at least 3 seconds, and the background should be faded
+// out, not blurred." Two changes from that one sentence: the hold is now a
+// FLOOR a writer cannot shorten (S6's old early-dismiss retires whole, below),
+// and the veil is a flat dimming tint in the theme's own ground colour, never
+// a backdrop-filter blur (see .wz-splash-veil, index.css).
 //
 // FOUR THINGS THIS FILE IS CAREFUL ABOUT, each one measured or ruled rather
 // than chosen by taste (docs/menus/splash-s0-survey.md carries the numbers):
@@ -12,11 +19,12 @@ import { measureBackdropTone, type BackdropTone } from '../store/backdropTone';
 // 1. IT NEVER BLOCKS WRITING, LITERALLY AND NOT NEARLY. The whole overlay is
 //    `pointer-events:none` — it cannot intercept anything, so a click during
 //    the splash lands in the app exactly as if the splash were not there. The
-//    dismissal listeners are PASSIVE and on `window`: they observe input and
-//    leave; they never `preventDefault`, never capture, never consume. The
-//    trap this closes is specific — a writer who opens Wrizo and immediately
-//    types must not have that first character eaten as "the dismiss gesture".
-//    The splash is dismissible, never dismissal-REQUIRING.
+//    PASSIVE, non-capturing `window` listeners stay (splash-hold: they no
+//    longer dismiss early — see below — but input still passes through them
+//    exactly as before: they observe and leave, never `preventDefault`,
+//    never capture, never consume). The trap this closes is specific — a
+//    writer who opens Wrizo and immediately types must not have that first
+//    character eaten by anything the splash does.
 //
 // 2. IT IS SIZED BY ITS INK, NOT ITS CANVAS. The asset is 3374x2699 but its
 //    linework occupies only 3077x2458 of that (91.2% x 91.1%) — the rest is
@@ -63,11 +71,13 @@ const MAX_INK_HEIGHT_FRACTION = 0.6;
 const MAX_INK_WIDTH_FRACTION = 0.7;
 
 /**
- * How long the emblem holds if nothing at all happens. A maximum, never a wait.
- * Overridable through localStorage (read at call time), so a capture pass can
- * hold the emblem still long enough to photograph it instead of racing a timer.
+ * How long the emblem holds. ITEM splash-hold (Nick, live): "visible for at
+ * least 3 seconds" — this is now a FLOOR, not a maximum; nothing shortens it
+ * (the old early-dismiss-on-input retires whole, below). Overridable through
+ * localStorage (read at call time), so a capture pass can hold the emblem
+ * for a different span instead of racing this one.
  */
-const DEFAULT_HOLD_MS = 1200;
+const DEFAULT_HOLD_MS = 3000;
 
 let alreadyShown = false;
 
@@ -115,25 +125,32 @@ export function Splash() {
     const resize = () => setBox(splashSizeFor(window.innerWidth, window.innerHeight));
     resize();
 
-    const dismiss = () => {
+    const endHold = () => {
       if (goneRef.current) return;
       goneRef.current = true;
       setLeaving(true);
     };
 
-    const hold = window.setTimeout(dismiss, holdMs());
+    // ITEM splash-hold, SUPERSEDED: the hold used to be a MAXIMUM, ended early by
+    // the first keydown/pointerdown/wheel/touchstart (dismiss() called from each).
+    // Nick's own word made the hold a FLOOR instead ("visible for at least 3
+    // seconds") — nothing shortens it now, so these four listeners no longer call
+    // anything. ONLY `window.setTimeout(endHold, holdMs())` below ends the hold.
+    const hold = window.setTimeout(endHold, holdMs());
 
-    // PASSIVE, non-capturing, on window. Every one of these fires AFTER the
-    // app has already had the event — dismissing is a side effect of the
-    // writer's input, never a toll on it.
+    // PASSIVE, non-capturing, on window — kept for the same reason they always
+    // existed: proof that input reaches the app untouched while the splash is
+    // live (S2/S3's own claim). They observe and leave; they never dismiss
+    // anything now, never `preventDefault`, never capture, never consume.
+    const noop = () => {};
     const opts: AddEventListenerOptions = { passive: true, capture: false };
     const events = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
-    events.forEach((e) => window.addEventListener(e, dismiss, opts));
+    events.forEach((e) => window.addEventListener(e, noop, opts));
     window.addEventListener('resize', resize);
 
     return () => {
       window.clearTimeout(hold);
-      events.forEach((e) => window.removeEventListener(e, dismiss, opts));
+      events.forEach((e) => window.removeEventListener(e, noop, opts));
       window.removeEventListener('resize', resize);
     };
   }, [live]);
