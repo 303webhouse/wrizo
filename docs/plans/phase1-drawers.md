@@ -495,3 +495,24 @@ floor: opacity is not motion, and a class selector out-ranks the floor's univers
 exempt: it has no travel under reduced motion and stays at the floor. Checks: `drawers-p1` B6b (the rule is present and the token is > 0 and
 <= 150 ms, with mutants for each) and the `fx10` successor (the panel reads a real duration in (0, 150] ms; the layer has no transform and
 <= 1 ms).
+
+### A.7 S3 as built (off the box; nothing run)
+The right drawer now has a tab row: **TUTOR | the theme's links word**. The Tutor's content is exactly today's, and renders only on the TUTOR
+tab (its state lives in the component, so switching away and back loses nothing). The second tab is an **empty pane** (Phase 3 fills it);
+its heading and its empty line are the theme's words.
+
+**The words come from the lexicon, never from the component:** `drawerLinks` = **Grafts** (Arbor, the canonical theme) / **Links** (Flux);
+`drawerLinksEmpty` = "Nothing grafted yet." / "Nothing linked yet."; `drawerRightTabsLabel`; `tutorTabTutor`. Arbor's word drops in or
+changes in `deskLexicon.ts` alone.
+
+**The "?"** (`DrawerNote.tsx`): a real button beside the second tab's word, **pressable, not a hover tooltip** - `aria-expanded`/`aria-controls`,
+a `role="note"` panel, closes on Escape, on a press outside, or when focus leaves it. It is an overlay (takes no room) and sits **outside the
+tablist** (a tablist owns tabs only), so pressing it never changes tabs. It exists only where the theme's note term has words: Arbor's is Nick's
+draft copy (*"Grafts join pages, cards and boards so your ideas can grow together. Use + to graft something here."*), Flux's is empty, so Flux
+shows no "?". An open "?" is a brass outline with no fill.
+
+**One thing to flag in Nick's copy:** it says "Use + to graft something here", but the pane has no "+" until Phase 3. Fine as the note's
+eventual wording; until then it points at a control that is not there. Say if it should wait or be shortened for now.
+
+**Browser turn will want to look at (the Tutor panel gained a tab row and a body wrapper):** `tu1`, `tu2`, `tu5`, `fx10`, `fx18`, `e3`, `item84`,
+`item84b` - any check that counts the panel's buttons or assumes the head is its first child. No claim is expected to change.

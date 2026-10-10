@@ -258,7 +258,7 @@ function partH(sliver = sliverSrc, tutor = tutorSrc) {
   const gated = ['ink', 'typeface', 'forwardLock', 'format', 'actions', 'templates', 'pageKind', 'capture', 'boardTools'];
   return {
     sliverShell: /<SideDrawer side="left" idPrefix="wz-sliver" tabs=\{sideTabs\}/.test(sliver) && /<\/SideDrawer>/.test(sliver),
-    tutorShell: /<SideDrawer side="right" idPrefix="wz-tutor">/.test(tutor) && /<\/SideDrawer>/.test(tutor),
+    tutorShell: /<SideDrawer side="right" idPrefix="wz-tutor" tabs=\{rightTabs\}>/.test(tutor) && /<\/SideDrawer>/.test(tutor),
     noHandWrapper: !/<div className="wz-drawer-slide wz-drawer-slide--(left|right)">/.test(sliver + tutor),
     ungated: gated.filter((s) => !sliver.includes("allowed('" + s + "')")),
     tabLabels: /t\('inkModeText'\)/.test(sliver) && /t\('inkModeInk'\)/.test(sliver) && /label: t\('inkInstrument'\)/.test(sliver),
@@ -266,7 +266,7 @@ function partH(sliver = sliverSrc, tutor = tutorSrc) {
 }
 {
   const h = partH();
-  ok('(H1) both hands render through <SideDrawer> (left carries the tab config and the foot; right has no tab row until S3) - the S1 hand-written wrappers are gone', h.sliverShell && h.tutorShell && h.noHandWrapper, JSON.stringify(h));
+  ok('(H1) both hands render through <SideDrawer> (left carries the TEXT|INK config and the foot; right carries the TUTOR|links config) - the S1 hand-written wrappers are gone', h.sliverShell && h.tutorShell && h.noHandWrapper, JSON.stringify(h));
   ok('(H2) EVERY Sliver section asks the table first (ink, typeface, forwardLock, format, templates, pageKind, capture, boardTools) - the table is not decorative', h.ungated.length === 0, JSON.stringify(h.ungated));
   ok('(H3) the tab words are the theme\'s own lexicon terms (Text / Ink and the row\'s name), not literals', h.tabLabels, JSON.stringify(h));
 }
@@ -329,6 +329,68 @@ function partJ(act = actionsSrc, pa = pageActionsSrc, sliver = sliverSrc, c = cs
 }
 
 // =============================================================================
+// PART K (S3) - THE RIGHT DRAWER: TUTOR | the theme's links word, and the "?" note. The words come from the lexicon; the checks read it.
+// =============================================================================
+const lexSrc = read('store/deskLexicon.ts');
+const noteSrc = read('components/DrawerNote.tsx');
+const NICK_NOTE = 'Grafts join pages, cards and boards so your ideas can grow together. Use + to graft something here.';
+function partK(lex = lexSrc) {
+  const canonStart = lex.indexOf('const CANONICAL: Record<DeskTermId, string> = {');
+  const overStart = lex.indexOf('const OVERRIDES: Partial<Record<ThemeId');
+  const canon = lex.slice(canonStart, overStart);
+  const over = lex.slice(overStart, lex.indexOf('function resolveTheme'));
+  const fluxBlock = over.slice(over.indexOf('flux: {'));
+  const val = (block, key) => { const m = new RegExp('\\b' + key + ":\\s*'((?:[^'\\\\]|\\\\.)*)'").exec(block); return m ? m[1] : null; };
+  return {
+    arborWord: val(canon, 'drawerLinks'), fluxWord: val(fluxBlock, 'drawerLinks'),
+    arborNote: val(canon, 'drawerLinksNote'), fluxNote: val(fluxBlock, 'drawerLinksNote'),
+    arborNoteLabel: val(canon, 'drawerLinksNoteLabel'), fluxNoteLabel: val(fluxBlock, 'drawerLinksNoteLabel'),
+    arborEmpty: val(canon, 'drawerLinksEmpty'), fluxEmpty: val(fluxBlock, 'drawerLinksEmpty'),
+    inUnion: /'tutorTabTutor' \| 'drawerLinks' \| 'drawerLinksEmpty' \| 'drawerLinksNote' \| 'drawerLinksNoteLabel' \| 'drawerRightTabsLabel'/.test(lex),
+  };
+}
+async function partL(text = setText) {
+  const m = await loadSet(text);
+  return { tabs: [...m.RIGHT_TABS] };
+}
+function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
+  const noteBtn = ruleBody(c, ".wz-drawer-note-btn[aria-expanded='true']{");
+  const pop = ruleBody(c, '.wz-drawer-note-pop{');
+  const overlay = ruleBody(c, '.wz-drawer-tabnotes{');
+  return {
+    defaultTutor: /useState<RightTab>\('tutor'\)/.test(tutor),
+    bodyOnTutorTab: /\{rightTab === 'tutor' && \(\n\s*<div className="wz-tutor-body">/.test(tutor) && /\{rightTab === 'links' && <ConnectionsDrawerPanel \/>\}/.test(tutor),
+    noteOnlyWhenWords: /notes: linksNote \? \{ links: <DrawerNote label=\{t\('drawerLinksNoteLabel'\)\}>\{linksNote\}<\/DrawerNote> \} : undefined/.test(tutor),
+    tabWords: /label: t\('tutorTabTutor'\)/.test(tutor) && /label: t\('drawerLinks'\)/.test(tutor) && /label: t\('drawerRightTabsLabel'\)/.test(tutor),
+    escCloses: /e\.key === 'Escape' && open\) \{ e\.stopPropagation\(\); setOpen\(false\); \}/.test(note),
+    outsideCloses: /addEventListener\('pointerdown', onDown, true\)/.test(note) && /!wrap\.current\?\.contains\(e\.target as Node\)\) setOpen\(false\)/.test(note),
+    blurCloses: /onBlur=\{e => \{ if \(open && !wrap\.current\?\.contains\(e\.relatedTarget/.test(note),
+    pressable: /<button\s+type="button"/.test(note) && /aria-expanded=\{open\}/.test(note) && /aria-controls=\{id\}/.test(note) && /role="note"/.test(note) && !/onMouseEnter|onMouseOver|onPointerEnter/.test(note),
+    outsideTablist: /\)\)\}\n    <\/div>\n    \{hasNotes && notes && \(/.test(tabs),
+    overlayInert: !!overlay && /pointer-events:none/.test(overlay) && /\.wz-drawer-note\{ pointer-events:auto; \}/.test(c),
+    popOverlay: !!pop && /position:absolute/.test(pop),
+    noteOpenOutline: !!noteBtn && /color:var\(--brass\)/.test(noteBtn) && /background:none/.test(noteBtn) && !/color-mix/.test(noteBtn),
+  };
+}
+{
+  const k = partK();
+  ok('(K1) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Links in Flux',
+    k.arborWord === 'Grafts' && k.fluxWord === 'Links' && k.inUnion, JSON.stringify(k));
+  ok('(K2) the "?" note: Nick\'s draft copy for Arbor, in one place; Flux has NO explainer (an empty term, so no "?") and no label',
+    k.arborNote === NICK_NOTE && k.fluxNote === '' && !!k.arborNoteLabel && k.fluxNoteLabel === '', JSON.stringify(k));
+  ok('(K3) the empty pane\'s line follows the theme too (grafted / linked)', k.arborEmpty === 'Nothing grafted yet.' && k.fluxEmpty === 'Nothing linked yet.', JSON.stringify(k));
+  const l = await partL();
+  ok('(K4) the right drawer\'s tabs are TUTOR then the links tab, from one constant', JSON.stringify(l.tabs) === JSON.stringify(['tutor', 'links']), JSON.stringify(l));
+  const m = partM();
+  ok('(K5) the Tutor opens on the TUTOR tab; its body renders ONLY there and the empty links pane only on the other; the tab words are lexicon terms', m.defaultTutor && m.bodyOnTutorTab && m.tabWords, JSON.stringify(m));
+  ok('(K6) the "?" exists ONLY where the theme\'s term has words (an empty term gives none)', m.noteOnlyWhenWords, JSON.stringify(m));
+  ok('(K7) the note is PRESSABLE, not a hover tooltip: a real button with aria-expanded/aria-controls and a role=note panel, no hover handlers; Escape, a press outside, or focus leaving closes it',
+    m.pressable && m.escCloses && m.outsideCloses && m.blurCloses, JSON.stringify(m));
+  ok('(K8) it displaces nothing and is not part of the tab: the notes overlay sits OUTSIDE the tablist, ignores the pointer except on the "?", and the open note is an absolutely positioned overlay; open is a brass outline, no fill',
+    m.outsideTablist && m.overlayInert && m.popOverlay && m.noteOpenOutline, JSON.stringify(m));
+}
+
+// =============================================================================
 // MUTATIONS - each claim's protection removed in turn; each asserts it LANDED before the red is believed.
 // =============================================================================
 function mutate(text, from, to) { if (!text.includes(from)) throw new Error('mutation anchor missing: ' + from.slice(0, 60)); return text.replace(from, () => to); }
@@ -364,7 +426,7 @@ await mutant('the tab row does not wrap', async () => partF(mutate(tabsSrc, "ret
 await mutant('the chosen tab gets a fill', async () => partG(tabsSrc, mutate(css, ".wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:none; }", ".wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }")), (g) => g.brassOutline === false);
 await mutant('the arrow tab turns brass when open', async () => partG(tabsSrc, mutate(css, ".wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--accent-rest); border-color:var(--accent-rest); }", ".wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--brass); border-color:var(--brass); }")), (g) => g.arrowStaysOlive === false);
 await mutant('the Sliver stops asking the table for the Typeface', async () => partH(mutate(sliverSrc, "content.type && allowed('typeface') && (", "content.type && ("), tutorSrc), (h) => h.ungated.includes('typeface'));
-await mutant('the Tutor goes back to a hand-written wrapper', async () => partH(sliverSrc, mutate(tutorSrc, '<SideDrawer side="right" idPrefix="wz-tutor">', '<div className="wz-drawer-slide wz-drawer-slide--right">')), (h) => h.noHandWrapper === false || h.tutorShell === false);
+await mutant('the Tutor goes back to a hand-written wrapper', async () => partH(sliverSrc, mutate(tutorSrc, '<SideDrawer side="right" idPrefix="wz-tutor" tabs={rightTabs}>', '<div className="wz-drawer-slide wz-drawer-slide--right">')), (h) => h.noHandWrapper === false || h.tutorShell === false);
 await mutant('PageEditor.tsx is changed outside the declared hunk', async () => ({ ok: diffConfined('@@ -10,0 +11 @@\n+  instrument: { value: instrument, onChange: setInstrument },\n@@ -500,0 +502 @@\n+  onChange(e);\n') }), (r) => r.ok === false);
 await mutant('PageEditor.tsx loses a line outside the declared hunk', async () => ({ ok: diffConfined('@@ -10 +10 @@\n-  const x = 1;\n+  instrument: { value: instrument, onChange: setInstrument },\n') }), (r) => r.ok === false);
 
@@ -380,6 +442,20 @@ await mutant('the pressed action gets a fill', async () => partJ(actionsSrc, pag
 await mutant('the instrument mark shows in TEXT too', async () => partJ(actionsSrc, pageActionsSrc, mutate(sliverSrc, "content.instrument?.value === 'ink' && (", "content.instrument && ("), css), (j) => j.markInk === false);
 await mutant('the instrument mark turns brass', async () => partJ(actionsSrc, pageActionsSrc, sliverSrc, mutate(css, '.wz-sliver-grip-mark{ display:flex; width:10px; height:10px; opacity:.9; }', '.wz-sliver-grip-mark{ display:flex; width:10px; height:10px; opacity:.9; color:var(--brass); }')), (j) => j.markQuiet === false);
 await mutant('the Sliver renders Actions without asking the table', async () => partJ(actionsSrc, pageActionsSrc, mutate(sliverSrc, "content.actions && allowed('actions')", "content.actions"), css), (j) => j.sliverBetween === false);
+
+await mutant('Flux gets the explainer too', async () => partK(mutate(lexSrc, "    drawerLinksNote: '',\n", "    drawerLinksNote: 'x',\n")), (k) => k.fluxNote !== '');
+await mutant('Arbor\'s word changes', async () => partK(mutate(lexSrc, "  drawerLinks: 'Grafts',", "  drawerLinks: 'Connections',")), (k) => k.arborWord !== 'Grafts');
+await mutant('the note\'s copy is edited', async () => partK(mutate(lexSrc, 'so your ideas can grow together.', 'so ideas grow.')), (k) => k.arborNote !== NICK_NOTE);
+await mutant('the right drawer gains a third tab', async () => partL(mutate(setText, "['tutor', 'links'] as const", "['tutor', 'links', 'more'] as const")), (l) => l.tabs.length !== 2);
+await mutant('the Tutor opens on the links tab', async () => partM(mutate(tutorSrc, "useState<RightTab>('tutor')", "useState<RightTab>('links')")), (m) => m.defaultTutor === false);
+await mutant('the Tutor body shows on both tabs', async () => partM(mutate(tutorSrc, "{rightTab === 'tutor' && (\n            <div className=\"wz-tutor-body\">", "{(\n            <div className=\"wz-tutor-body\">")), (m) => m.bodyOnTutorTab === false);
+await mutant('the "?" shows even when the theme has no explainer', async () => partM(mutate(tutorSrc, "notes: linksNote ? { links:", "notes: true ? { links:")), (m) => m.noteOnlyWhenWords === false);
+await mutant('Escape no longer closes the note', async () => partM(tutorSrc, tabsSrc, mutate(noteSrc, "if (e.key === 'Escape' && open) { e.stopPropagation(); setOpen(false); }", "")), (m) => m.escCloses === false);
+await mutant('a press outside no longer closes the note', async () => partM(tutorSrc, tabsSrc, mutate(noteSrc, "document.addEventListener('pointerdown', onDown, true);", "")), (m) => m.outsideCloses === false);
+await mutant('the note opens on hover', async () => partM(tutorSrc, tabsSrc, mutate(noteSrc, 'className="wz-drawer-note"', 'className="wz-drawer-note" onMouseEnter={() => setOpen(true)}')), (m) => m.pressable === false);
+await mutant('the notes move inside the tablist', async () => partM(tutorSrc, mutate(tabsSrc, "    </div>\n    {hasNotes && notes && (", "    {hasNotes && notes && ("), noteSrc), (m) => m.outsideTablist === false);
+await mutant('the open note takes room (static, not an overlay)', async () => partM(tutorSrc, tabsSrc, noteSrc, mutate(css, '.wz-drawer-note-pop{ position:absolute;', '.wz-drawer-note-pop{ position:static;')), (m) => m.popOverlay === false);
+await mutant('the open "?" gets a fill', async () => partM(tutorSrc, tabsSrc, noteSrc, mutate(css, ".wz-drawer-note-btn[aria-expanded='true']{ color:var(--brass); border-color:var(--brass); background:none; }", ".wz-drawer-note-btn[aria-expanded='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }")), (m) => m.noteOpenOutline === false);
 
 let failed = 0;
 for (const c of checks) {

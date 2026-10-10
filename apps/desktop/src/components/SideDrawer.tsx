@@ -13,6 +13,8 @@ import type { DrawerSide } from '../store/drawerShell';
 
 export interface DrawerTabsConfig<T extends string> {
   items: readonly DrawerTabItem<T>[];
+  /** Adornments beside a tab's word, keyed by tab (the "?" note). */
+  notes?: Partial<Record<T, ReactNode>>;
   value: T;
   onChange: (next: T) => void;
   /** Accessible name of the tab row (a lexicon term, so it follows the theme). */
@@ -34,7 +36,7 @@ export function SideDrawer<T extends string>({ side, idPrefix, tabs, children, f
   return (
     <div className={`wz-drawer-slide wz-drawer-slide--${side}`}>
       {hasTabs && tabs && (
-        <DrawerTabs items={tabs.items} value={tabs.value} onChange={tabs.onChange} label={tabs.label} idPrefix={idPrefix} />
+        <DrawerTabs items={tabs.items} notes={tabs.notes} value={tabs.value} onChange={tabs.onChange} label={tabs.label} idPrefix={idPrefix} />
       )}
       {hasTabs && tabs ? (
         <div className="wz-drawer-body" role="tabpanel" id={`${idPrefix}-panel`} aria-labelledby={`${idPrefix}-tab-${tabs.value}`}>

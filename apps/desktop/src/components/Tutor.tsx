@@ -16,7 +16,10 @@ import { FREE_WRITE_POOLS, DRAW_CEILING, REFILL_WORDS, drawFrom, recentMemoryFor
 import { useMonotonicWordCount } from './FirstRunGate';
 import { capTutorHistory } from '../store/tutorHistory';
 import { drawerArrow, setDrawerInert } from '../store/drawerShell';
-import { SideDrawer } from './SideDrawer';
+import { SideDrawer, type DrawerTabsConfig } from './SideDrawer';
+import { DrawerNote } from './DrawerNote';
+import { ConnectionsDrawerPanel } from './ConnectionsDrawerPanel';
+import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
 
 // TU1 S2/S3/S4/S5 — the Tutor. The sliver, mirrored, on the paper's RIGHT
 // edge — but rendered as TWO separate DeskFrame overlay anchors, not one
@@ -285,6 +288,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   const { t } = useDeskLexicon();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  // PHASE 1 (S3) - the right drawer's tab: the Tutor (today's contents, untouched) or the theme's links word (empty for now).
+  const [rightTab, setRightTab] = useState<RightTab>('tutor');
   const [docked, setDocked] = useState(false);
   // FX18 S2 (Fable's ruling) — the OPEN panel's live width in px on a WRITING surface,
   // MEASURED (the FX13 measure-effect pattern), or null to defer to CSS. Occupy-margin uses
@@ -875,6 +880,17 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     }
   };
 
+  // PHASE 1 (S3) - THE RIGHT DRAWER'S TAB ROW: TUTOR | the theme's links word (Grafts in Arbor, Links in Flux - from the lexicon, never written
+  // here). The "?" beside it is a pressable note and exists only where the theme's term has an explainer (Arbor's does, Flux's is empty).
+  const linksNote = t('drawerLinksNote');
+  const rightTabs: DrawerTabsConfig<RightTab> = {
+    items: [{ id: RIGHT_TABS[0], label: t('tutorTabTutor') }, { id: RIGHT_TABS[1], label: t('drawerLinks') }],
+    notes: linksNote ? { links: <DrawerNote label={t('drawerLinksNoteLabel')}>{linksNote}</DrawerNote> } : undefined,
+    value: rightTab,
+    onChange: setRightTab,
+    label: t('drawerRightTabsLabel'),
+  };
+
   return (
     <>
       <div className={`desk-frame-tutor-anchor desk-frame-tutor-anchor--${pageKind} wz-tutor-zone`}>
@@ -899,7 +915,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
         <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px` } : undefined}>
           {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab.
               No tab row yet (S3 adds TUTOR | the theme's links word). */}
-          <SideDrawer side="right" idPrefix="wz-tutor">
+          <SideDrawer side="right" idPrefix="wz-tutor" tabs={rightTabs}>
           {/* A11Y AUDIT A8 — the reply announcement, visually hidden. Lives at
               the panel's own top level (not inside the `{open && …}` content
               body below), so closing/reopening the Tutor never remounts it and
@@ -933,7 +949,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
               The panel's own effects are already gated on `open`
               (`if (!open) return;`), so a closed body costs a render and no
               work — nothing is fetched, drawn, or measured while it is hidden. */}
-          {(
+          {rightTab === 'tutor' && (
             <div className="wz-tutor-body">
             <div className="wz-tutor-head">
               <span className="wz-tutor-head-title">{t('tutorTitle')}</span>
@@ -1203,6 +1219,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             )}
             </div>
           )}
+          {rightTab === 'links' && <ConnectionsDrawerPanel />}
           </SideDrawer>
         </div>
       </div>
