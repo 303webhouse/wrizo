@@ -25679,3 +25679,18 @@ INK’s to read. **Not for shipping, as Fable said.**
 
 **(3) `arbor-quiet-brass`: TOOLS’ new tip `2f7861a` (“round 2: more Flux brown/olive leaks, card-footer vocab, three reds”, 05:14 MT; `cd2`, `fx5`, `pw1`, `th2`,
 `index.css`, `deskLexicon.ts`) — STARTED next: the full pair + the twelve frames.**
+
+## (3) ARBOR-QUIET-BRASS ROUND 2 @ 2f7861a: 123/124 ON EACH LEG, ONE CHECK RED (FX5 S5, THE OLD FOOTER WORD); TWELVE FRAMES RE-TAKEN — 2026-10-10 (chat 1)
+
+**`abq-pair2` @ `ff6214f` = `origin/main` @ `67b5b6e` + `arbor-quiet-brass` @ `2f7861a`** (“round 2: more Flux brown/olive leaks, card-footer vocab, three reds”; 17
+files, +263/−97; `tsc` x2 exit 0; `build:web` bundle `index-z-93XQ5x.js` 650,286 b; NO server change, NO migration). **THE PAIR: stamp `tree=ff6214f9
+bundle=index-z-93XQ5x.js/650286b`; 124 files per leg in seven chunks of ≤20 (capture tools left out), no launch crashes: 123/124 on EACH leg.** **The three round-1 reds
+are CURED in substance: `pw1` and `th2` are green on both legs, and `fx5` no longer dies (it RUNS: 61 of 62 checks pass).** **ONE check red, the same on both legs:
+`fx5.mjs` FAIL 1/62 — “S5: a connected card carries ONE quiet footer line (‘— thread: <other card’s title/first words>’) — on BOTH connected cards” reads
+`{onA: “— grafted to: Card B”, onB: “— grafted to: Card A”}`** — the card-footer vocabulary round 2 deliberately changed, while this one assertion still names the old
+“thread:” prefix. Instrument-only, TOOLS’ (a one-check successor/park). Every other file is CLEAN on both legs.
+
+**THE TWELVE FRAMES, re-taken on this tree (the splash held short so none is covered): committed under `docs/evidence/arbor-quiet-brass-r2/`** (+ `frames.json`).
+**The card footer now reads “— grafted to: …” under Arbor and “— linked to: …” under Flux** (round 1 read “— thread: …” in both — the item Fable named). Facts per
+frame (theme, brass reading, names) are in `frames.json`. **Owed: Fable’s frame review; Nick’s ship word applies once he clears the frames and `fx5` S5 is
+converted.** **NOT DEPLOYED.** Grant (this desk’s) `2026-10-10T11:24:11Z`, cleared `12:59:22Z`; 0 harness processes, 0 browsers.
