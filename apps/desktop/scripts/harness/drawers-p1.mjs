@@ -104,9 +104,16 @@ function partB(c = css) {
       && [b.sliverPanel, b.tutorPanel].every((p) => !/background:/.test(p ?? '') && !/border:/.test(p ?? ''))
       && /background:var\(--desk-ground\)/.test(b.slide ?? '') && /border:1px solid var\(--ink-border\)/.test(b.slide ?? ''), '');
   ok('(B6) REDUCED MOTION is fade-only and short: the panels keep an opacity transition on --drawer-dur-reduced, the sliding layer has no transform and no transition, and the two old `transition:none` opt-outs are gone',
-    /\.wz-sliver-panel, \.wz-tutor-panel\{ transition:opacity var\(--drawer-dur-reduced\) linear; \}/.test(b.reduceBlock)
+    /\.wz-sliver-panel, \.wz-tutor-panel\{ transition:opacity var\(--drawer-dur-reduced\) linear;/.test(b.reduceBlock)
       && /\.wz-drawer-slide, \.wz-drawer-slide--left, \.wz-drawer-slide--right\{ transform:none; transition:none; \}/.test(b.reduceBlock)
       && !/\.wz-sliver-panel\{ transition:none; \}/.test(css) && !/\.wz-tutor-panel\{ transition:none; \}/.test(css), b.reduceBlock);
+  // Nick's reduced-motion ruling survives the app's global floor (0.01ms !important on everything): the panels carry their own !important
+  // duration on the short token, and that token is a real, short time.
+  const reduceTok = /--drawer-dur-reduced:\s*([\d.]+)(ms|s);/.exec(b.root);
+  const reduceMs = reduceTok ? parseFloat(reduceTok[1]) * (reduceTok[2] === 's' ? 1000 : 1) : NaN;
+  ok('(B6b) the short reduced-motion FADE survives the global floor: both panels carry `transition-duration: var(--drawer-dur-reduced) !important`, and that token is > 0 and <= 150 ms',
+    /\.wz-sliver-panel, \.wz-tutor-panel\{[^}]*transition-duration:\s*var\(--drawer-dur-reduced\)\s*!important;/.test(b.reduceBlock) && reduceMs > 0 && reduceMs <= 150,
+    JSON.stringify({ reduceMs, block: b.reduceBlock.slice(0, 200) }));
   ok('(B7) the dissolve classes stay ON the panel (one element carries open/close fade AND dissolve, as today - the popout-hold law needs it)',
     /className="wz-sliver-panel chrome-fade desk-dissolve"/.test(read('components/Sliver.tsx')), '');
 }
@@ -338,8 +345,12 @@ await mutant('the slide rides --fade-dur', async () => partB(mutate(css, 'transi
   (b) => /--fade-dur/.test(b.slide ?? '') );
 await mutant('the 6px settle comes back on the sliver panel', async () => partB(mutate(css, 'opacity:0; pointer-events:none; transition:opacity var(--fade-dur,.2s) ease;\n  /* The bar sits', 'opacity:0; pointer-events:none; transform:translateX(6px); transition:opacity var(--fade-dur,.2s) ease;\n  /* The bar sits')),
   (b) => /transform/.test(b.sliverPanel ?? ''));
-await mutant('reduced motion goes back to no transition at all', async () => partB(mutate(css, '.wz-sliver-panel, .wz-tutor-panel{ transition:opacity var(--drawer-dur-reduced) linear; }', '.wz-sliver-panel, .wz-tutor-panel{ transition:none; }')),
+await mutant('reduced motion goes back to no transition at all', async () => partB(mutate(css, '.wz-sliver-panel, .wz-tutor-panel{ transition:opacity var(--drawer-dur-reduced) linear; transition-duration: var(--drawer-dur-reduced) !important; }', '.wz-sliver-panel, .wz-tutor-panel{ transition:none; }')),
   (b) => !/--drawer-dur-reduced\) linear/.test(b.reduceBlock));
+await mutant('the global floor wins again (the panels lose their !important duration)', async () => partB(mutate(css, ' transition-duration: var(--drawer-dur-reduced) !important; }', ' }')),
+  (b) => !/transition-duration:s*var(--drawer-dur-reduced)s*!important/.test(b.reduceBlock));
+await mutant('the reduced-motion fade is no longer short (.3s)', async () => partB(mutate(css, '--drawer-dur-reduced: .12s;', '--drawer-dur-reduced: .3s;')),
+  (b) => { const t = /--drawer-dur-reduced:s*([d.]+)(ms|s);/.exec(b.root); const ms = t ? parseFloat(t[1]) * (t[2] === 's' ? 1000 : 1) : NaN; return !(ms > 0 && ms <= 150); });
 await mutant('reduced motion keeps the slide', async () => partB(mutate(css, '.wz-drawer-slide, .wz-drawer-slide--left, .wz-drawer-slide--right{ transform:none; transition:none; }', '.wz-drawer-slide{ transition:none; }')),
   (b) => !/transform:none; transition:none/.test(b.reduceBlock));
 await mutant('the Tutor panel loses its inert ref', async () => partC(sliverSrc, mutate(tutorSrc, 'ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open}', 'aria-hidden={!open}')), (c) => c.tutorInert === false);

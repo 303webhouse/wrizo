@@ -488,3 +488,10 @@ from the host's handlers, so `PageEditor.tsx` gains one import and one object me
 
 **The instrument mark (YES, Fable):** while a Free Write page is in INK, the olive arrow tab carries a tiny pen (10 px, the tab's own
 colour, never brass; the tab stays 16 × 34); absent in TEXT. Nick may veto.
+
+**A.6 item 4, resolved (Fable, Oct 9): Nick's reduced-motion wording is honoured.** The two panels carry
+`transition-duration: var(--drawer-dur-reduced) !important` inside the reduced-motion block, so the short (.12s) FADE survives the app's global
+floor: opacity is not motion, and a class selector out-ranks the floor's universal selector at equal `!important`. The sliding layer is *not*
+exempt: it has no travel under reduced motion and stays at the floor. Checks: `drawers-p1` B6b (the rule is present and the token is > 0 and
+<= 150 ms, with mutants for each) and the `fx10` successor (the panel reads a real duration in (0, 150] ms; the layer has no transform and
+<= 1 ms).
