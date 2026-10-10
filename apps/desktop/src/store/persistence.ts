@@ -8,6 +8,7 @@ import { clearProofingLocal } from './proofing';
 import { reportFlushFailed, reportFlushOk, reportStorageUsage } from './storageHealth';
 import { isSignedOutHere } from './signedOutHere';
 import { isStaleClient } from './staleClient';
+import { getCurrentUser, subscribeCurrentUser } from './currentUser';
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -35,6 +36,7 @@ const KEYS = {
 } as const;
 
 type CollectionName = keyof typeof KEYS;
+export type DirtyCollection = CollectionName;
 
 interface Cache {
   projects: Project[];
@@ -186,15 +188,12 @@ export function getDirtyRecords(): DirtyRecords {
   };
 }
 
-export function markClean(ids: string[]): void {
-  for (const id of ids) {
-    dirty.projects.delete(id);
-    dirty.storyPlans.delete(id);
-    dirty.sessions.delete(id);
-    dirty.drafts.delete(id);
-    dirty.journalEntries.delete(id);
-    dirty.drawers.delete(id);
-  }
+// DRAFTS INTEGRITY - AN ID IS ONLY UNIQUE WITHIN ITS COLLECTION. A project draft is stored under its project's id, so project P and
+// draft P are two different records that share one id. This used to take bare ids and clear each from ALL SIX dirty sets, so landing
+// project P also cleared draft P's dirty mark: if the draft's own request then failed (or the draft was edited meanwhile) the edit was
+// no longer dirty, was never retried, and stayed on this device only. A record is now cleaned in ITS OWN collection and no other.
+export function markClean(items: ReadonlyArray<{ collection: DirtyCollection; id: string }>): void {
+  for (const { collection, id } of items) dirty[collection].delete(id);
   persistDirty();
   // STORAGE-FULL STEP 1 — a successful push is the one thing that can move the sync notice from "changes not yet in
   // the account" to "safe in the account" while storage stays failed; nothing previously told a reactive listener
@@ -759,20 +758,58 @@ export function setCurrentBeat(planId: string, beatId: string): void {
 // --- Drafts ---------------------------------------------------------------
 // Autosaved writing buffers (A1), keyed by `projectId ?? 'scratch'`.
 
+// DRAFTS INTEGRITY (A) - THE SCRATCH DRAFT IS KEYED BY ACCOUNT. The scratch sprint's draft used the literal id 'scratch', and the server's
+// drafts table has one GLOBAL primary key: the first account to push 'scratch' owned it, and every later account's push was a silent no-op
+// (200, nothing rejected) that the client then marked clean - their scratch text never reached the account (measured on the local server).
+// So a signed-in writer's scratch draft is stored as 'scratch-<userId>'. Callers keep passing 'scratch'; the three accessors below resolve
+// it, so a screen that mounted before the account was known (a boot straight to #/sprint) cannot write under the old name for long.
+// A project draft keeps its project's id, which is already unique. Signed out, the draft stays 'scratch' (there is no account to collide in).
+export const SCRATCH_DRAFT_ID = 'scratch';
+const scratchIdFor = (userId: string): string => SCRATCH_DRAFT_ID + '-' + userId;
+function draftKey(id: string): string {
+  if (id !== SCRATCH_DRAFT_ID) return id;
+  const user = getCurrentUser();
+  return user ? scratchIdFor(user.id) : id;
+}
+
+// A 'scratch' draft that exists while an account is signed in - typed before signing in, or the old row pulled from the server (the one
+// account that owns it) - is adopted into 'scratch-<userId>' and marked dirty so it reaches the account under its new id. It never
+// replaces a draft already under the new id unless that one is OLDER, so a stale server copy re-pulled later cannot undo a newer edit.
+// The old local record goes; the server keeps its old row (there is no delete), which is harmless.
+function adoptLegacyScratch(): void {
+  const user = getCurrentUser();
+  if (!user) return;
+  if (isSignedOutHere()) return;      // the write-belt would drop the adopted record: leave the old one where it is until the flag lifts
+  const at = cache.drafts.findIndex(d => d.id === SCRATCH_DRAFT_ID);
+  if (at < 0) return;
+  const legacy = cache.drafts[at];
+  cache.drafts.splice(at, 1);
+  dirty.drafts.delete(SCRATCH_DRAFT_ID);
+  const to = scratchIdFor(user.id);
+  const existing = cache.drafts.find(d => d.id === to);
+  if (!existing || existing.updatedAt < legacy.updatedAt) upsert('drafts', cache.drafts, { id: to, text: legacy.text, updatedAt: '' });
+  scheduleFlush('drafts');
+  persistDirty();
+  notify();
+}
+subscribeCurrentUser((user) => { if (user) adoptLegacyScratch(); });
+
 export function getDraft(id: string): Draft | null {
-  const draft = cache.drafts.find(d => d.id === id);
+  const key = draftKey(id);
+  const draft = cache.drafts.find(d => d.id === key);
   return draft ? clone(draft) : null;
 }
 
 export function saveDraft(id: string, text: string): void {
-  upsert('drafts', cache.drafts, { id, text, updatedAt: '' });
+  upsert('drafts', cache.drafts, { id: draftKey(id), text, updatedAt: '' });
 }
 
 export function clearDraft(id: string): void {
-  const index = cache.drafts.findIndex(d => d.id === id);
+  const key = draftKey(id);
+  const index = cache.drafts.findIndex(d => d.id === key);
   if (index < 0) return;
   cache.drafts.splice(index, 1);
-  dirty.drafts.delete(id);
+  dirty.drafts.delete(key);
   scheduleFlush('drafts');
   notify();
 }
@@ -3126,6 +3163,7 @@ export function applyRemoteRecords(remote: RemoteRecords): void {
   changed = applyCollection('storyPlans', cache.storyPlans, remote.storyPlans) || changed;
   changed = applyCollection('sessions', cache.sessions, remote.sessions) || changed;
   changed = applyCollection('drafts', cache.drafts, remote.drafts) || changed;
+  adoptLegacyScratch();     // the old server row 'scratch' (its owner's) arrives by pull: it belongs under the account's own key
   changed = applyCollection('journalEntries', cache.journalEntries, remote.journalEntries) || changed;
   changed = applyCollection('drawers', cache.drawers, remote.drawers) || changed;
   if (changed) notify();
