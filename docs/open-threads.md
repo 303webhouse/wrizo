@@ -25316,3 +25316,58 @@ STAMPED, BOTH ASSETS MATCH, MD5 and bytes:** JS `e861574ebbcc33977b13090ed21044b
 **FRAMES: NOT YET TAKEN.** They need a browser walk of the live site (front door, sign-in, a page with the Templates section open) and
 so a box grant; FIX holds a short one-frame grant (written `20:53:43Z`, 14:53 MT) and this desk waits for it (check-in 15:25 MT)
 rather than run a browser beside it. **Owed to Nick: his confirmation after Fable’s frame review — it closes the gate.**
+
+## RHIZOME CLEARED TO RE-PAIR AT `af7ff4b` (THE PLATEAU GATE); THE LIVE FRAMES LIST; THE ORDER — 2026-10-09 (chat 1)
+
+**FABLE (relay): templates live (`84f596d6`, smoke 6/6, bundle match) — acknowledged.** **FRAMES (his list), at this desk’s 15:25 MT
+check-in once FIX’s short grant is done: the front door, sign-in, a page with the Templates section open, PLUS a Free Write page
+showing NO Templates.** He reviews them, then Nick confirms.
+
+**RHIZOME: the rhz-pair of `b0a6161` PREDATED Nick’s ruling that the rhizome is Plateau-only (the relay never reached FIX) — it does not
+ship.** **CLEARED to re-pair on `cursor/plateau-rhizome-goal-4b92` @ `af7ff4b` (product = `97f95c3` + the one-line Plateau gate in
+`b5b15d0`; verified by Fable).** FIX also added the check and the verdict lines on both harnesses; this desk’s `rhizome-growth --mutants`
+run (baseline 48/48, M1–M7 red) stands as that round’s proof. **ORDER: templates frames → rhizome pair → drafts pair (`e4b596c`).**
+FIX’s short grant (`fix-one-frame-flux-20261009`, written `20:53:43Z`, 14:53 MT) is for one Flux frame, no rhizome; FIX pushed `af7ff4b`
+at 15:00:42 MT.
+
+## TEMPLATES LIVE FRAMES TAKEN — 2026-10-09 (chat 1)
+
+**Taken against PRODUCTION (`84f596d6`, the served bundle `index-BFiS3YwB.js` in every frame’s own DOM), in a throw-away anonymous
+profile at 1400×900, the default Plateau theme; nothing written to the server (a harness browser, this desk’s grant `21:04:33Z`, no
+account, no sign-in). Committed under `docs/evidence/templates-live/` (5 PNGs + `frames.json`, each row with the DOM facts):**
+1. `1-front-door` — the doors. 2. `2-sign-in` — Open → the email/password stage. 3. `3-free-write-page` and `3b-free-write-strip-open` —
+a blank Free Write page, **NO Templates section** (`templatesSection:false`, the mode tab “Free Write”, the Sprout door present).
+4. `4-draft-templates-open` — the Draft page with the strip open and the **Templates section present with its five buttons: Screenplay,
+Outline, Title page, Bibliography, Custom** (`templatesSection:true`; the mode tab “Draft”). *(Frame 4 was read by this desk
+only for sanity — the Templates icons render dim next to the Format row; whether that is the intended resting state is Fable’s
+review.)*
+
+**GRANT LOG:** FIX’s short grant (`20:53:43Z`) was CLEARED `21:04:33Z`, 11 minutes in, on evidence the one-frame job was done (FIX’s
+`af7ff4b`, “the light-50 frame replaced by a FLUX frame showing NO rhizome”, pushed 15:00:42 MT; box idle, 0 processes, 0 browsers) —
+EARLIER than the 30-minute rule, a judgement this desk makes visible. This desk’s frames grant (`chat1-live-frames-20261009`) written
+`21:04:33Z`, cleared at completion; 0 harness processes, 0 browsers. **Fable reviews the frames; Nick confirms after; that closes the
+templates gate.** Next: the rhizome pair on `af7ff4b`, then drafts (`e4b596c`).
+
+## TEMPLATES FRAMES CLEARED; THE SPLASH (ITEM 187) SHIP WORD, CONDITIONAL; THE QUEUE — 2026-10-09 (chat 1)
+
+**TEMPLATES LIVE FRAMES (`286424c`): CLEARED (Fable): the front door, sign-in, Free Write (no Templates, Sprout present) and Draft (five
+Templates) are all as ruled. The dim icons are INTENDED: Screenplay is the only live template; the other four are placeholders until
+built.** **Templates waits ONLY on Nick’s own live check.** (FIX’s grant cleared early: fine — reason recorded.)
+
+**THE SPLASH (item 187): Nick asked to ship it; Fable’s byte review is CLEARED.** TOOLS rebases it (an `index.css` conflict) and asks this
+desk for a SHORT frames grant. **Fable: count Nick’s message as the SHIP WORD, CONDITIONAL on (1) Fable’s frame review, (2) a green pair, (3) the
+usual deploy + smoke + live frames.** *(This desk does not deploy it on the word alone.)*
+
+**QUEUE (Fable): rhizome pair (running: `rhz-pair2` @ `105eae2`, stamp to follow) → drafts pair (`e4b596c`) → splash pair (after TOOLS’ new
+SHA).** Rhizome: counts to Fable when done; he then asks Nick for its ship word.
+
+## RHIZOME RE-PAIR: GREEN 122/122 ON BOTH LEGS — 2026-10-09 (chat 1)
+
+**`rhz-pair2` @ `105eae2` = `origin/main` @ `8429852` (templates merged) + `cursor/plateau-rhizome-goal-4b92` @ `af7ff4b`** (product =
+`97f95c3` + the one-line Plateau gate, `RhizomeField.tsx` +5/−1; verified by Fable). A clean merge; NO server change, NO migration.
+`tsc` x2 exit 0; `build:web` bundle `index-Czev_mRg.js` 646,733 b. **Browserless: `rhizome-growth --mutants` — baseline 48/48, now printing
+`RHIZOME-GROWTH VERIFY: PASS (48 checks)`, M1–M7 all RED, exit 0.** **THE PAIR: stamp `tree=105eae2a bundle=index-Czev_mRg.js/646733b`;
+122 files per leg in seven chunks of ≤20 (the capture tool left out), no launch crashes: 122/122 DEFAULT, 122/122 PARKED — every file
+clean, including `rhizome-goal-core` and `rhizome-growth` (FIX’s verdict lines) and `m2`/`m3`/`m4`/`rhizome-goal`.** This desk’s grant
+written `21:06:52Z` after the file was read (absent), cleared at completion; 0 harness processes, 0 browsers. **Not deployed; `main`
+untouched — it ships on Nick’s word (Fable asks him) after its smoke and live frames.** Next: the drafts pair (`e4b596c`).

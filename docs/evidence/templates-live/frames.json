@@ -1,0 +1,76 @@
+[
+  {
+    "frame": "1-front-door",
+    "file": "1-front-door.png",
+    "hash": "#/",
+    "bundle": "index-BFiS3YwB.js",
+    "theme": "plateau",
+    "templatesSection": false,
+    "templateButtons": [],
+    "sproutDoor": false,
+    "stripOpen": false,
+    "modeTab": []
+  },
+  {
+    "frame": "2-sign-in",
+    "file": "2-sign-in.png",
+    "hash": "#/",
+    "bundle": "index-BFiS3YwB.js",
+    "theme": "plateau",
+    "templatesSection": false,
+    "templateButtons": [],
+    "sproutDoor": false,
+    "stripOpen": false,
+    "modeTab": []
+  },
+  {
+    "frame": "3-free-write-page",
+    "file": "3-free-write-page.png",
+    "hash": "#/page/new",
+    "bundle": "index-BFiS3YwB.js",
+    "theme": "plateau",
+    "templatesSection": false,
+    "templateButtons": [],
+    "sproutDoor": true,
+    "stripOpen": false,
+    "modeTab": [
+      "Free Write"
+    ]
+  },
+  {
+    "frame": "3b-free-write-strip-open",
+    "file": "3b-free-write-strip-open.png",
+    "hash": "#/page/new",
+    "bundle": "index-BFiS3YwB.js",
+    "theme": "plateau",
+    "templatesSection": false,
+    "templateButtons": [],
+    "sproutDoor": true,
+    "stripOpen": true,
+    "modeTab": [
+      "Free Write"
+    ],
+    "opened": true
+  },
+  {
+    "frame": "4-draft-templates-open",
+    "file": "4-draft-templates-open.png",
+    "hash": "#/page/new",
+    "bundle": "index-BFiS3YwB.js",
+    "theme": "plateau",
+    "templatesSection": true,
+    "templateButtons": [
+      "Screenplay",
+      "Outline",
+      "Title page",
+      "Bibliography",
+      "Custom"
+    ],
+    "sproutDoor": false,
+    "stripOpen": true,
+    "modeTab": [
+      "Draft"
+    ],
+    "opened": true
+  }
+]
