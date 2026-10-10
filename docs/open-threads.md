@@ -25392,3 +25392,36 @@ only)”, 15:19 MT), 9 commits past a base of `5559945`; a trial merge onto `mai
 `backdropTone.ts`, `App.tsx` +7, `index.css` +55 and a survey doc; no server change, no migration. *TOOLS confirms that `4b2d72a` is the
 rebased SHA it wants framed. The splash PAIR follows once TOOLS reports “box done”.* 30-minute check-in applies; this desk looks at
 TOOLS’ branch and evidence for a finished run before clearing.
+
+## RHIZOME DEPLOY MANIFEST — LIVE, SERVED==STAMPED, SMOKE 6/6; FRAMES PENDING; ARBOR; DRAFTS CLEARED, DEPLOY ON RELAY — 2026-10-09 (chat 1)
+
+**NICK’S SHIP WORD (Fable, relay), verbatim: “Ship it” for the rhizome (2026-10-09 18:22 MT).** After the drafts pair: merge
+`cursor/plateau-rhizome-goal-4b92` @ `af7ff4b` (branch read first), deploy, served == stamped, smoke; live frames: an Arbor (Plateau)
+page at ~50% of a word goal, the brass flash, and a Flux page showing NO rhizome. **LEDGER: Nick RENAMED Plateau → “Arbor” (a display
+name only; the theme id stays `plateau`).**
+
+**MERGED to `main`: `8c58853`** (`af7ff4b`; the branch read first: 19 commits past `main`, 15 files outside the evidence folder —
+`DeskInstrument.tsx`, `RhizomeField.tsx`, `index.css`, `JournalEntry.tsx`, `PageEditor.tsx`, `rhizomeEngine.ts`, `rhizomeGrowth.ts`,
+`writingGoal.ts` and seven harness/script files; NO server change, NO migration). **The product is the tree that was paired —
+`git diff rhz-pair2 HEAD -- apps packages` EMPTY — and the built bundle is byte-identical to its stamp.**
+**LIVE: `8c58853` · railway `41194d35-2a5b-4762-952f-2bd67f8c55fe`** — service `writer-studio-app`, `railway up --service writer-studio-app
+--ci`, “Deploy complete”. **PREVIOUS LIVE: templates · `84f596d6` (now REMOVING) — THE ROLLBACK is a rebuild from `25e6610`.** No schema change.
+
+**CHECKS BEFORE UPLOAD:** `tsc` x2 exit 0; `build:web` exit 0, bundle `index-Czev_mRg.js` 646,733 b == the pair stamp; tree bare (0
+porcelain incl. untracked); **ITEM-98 GUARD:** `writer-studio` / `production` / `writer-studio-app`, toplevel
+`C:/Users/nickh/writer-studio`, `HEAD == origin/main == 8c58853`. **LIVE VERIFICATION:** `/healthz` 200 · `/auth/me` 401 ·
+`/auth/signup-status` `{“open”:false}`. **SERVED-vs-STAMPED, BOTH ASSETS MATCH, MD5 and bytes:** JS `27cea89034ad11a38111d0294c731ba7`
+(646,733 b); CSS `ad9293af7e30da462c1dcc39b073af52` (151,274 b).
+**LIVE SIGNED-IN SMOKE (`smoke-login.mjs`, once, exit 0): login 200 · me 200 · sync (pull only) 200 · logout 204 · me after logout (jar)
+401 · me with the pre-logout cookie replayed 401 — `SMOKE: PASS (6/6)`.**
+
+**FRAMES: NOT YET TAKEN** (they need a browser walk of production and so the box, which TOOLS holds for its splash frames —
+granted `00:23:26Z`, check-in 6:56 pm MT): an Arbor page at ~50% of a word goal, the brass flash, a Flux page with NO rhizome.
+**Owed: Fable’s frame review, then Nick’s confirmation.**
+
+**DRAFTS (Fable): the 120/120 pair CLEARED; Nick’s word is being asked; DEPLOY ONLY WHEN FABLE RELAYS IT.** Order: rhizome (done) then
+drafts; **confirmed from the diffs: rhizome (15 files) and drafts (`persistence.ts`, `sync.ts`, `drafts-integrity.mjs`,
+`item-storage-full.mjs`, `item224a-sync-integrity.mjs`) share ZERO files, and a trial merge of `e4b596c` onto the new `main` is CLEAN.**
+Each is merged in turn, the branch read before each merge, smoke after each deploy; live frames for drafts: the standard front door,
+sign-in and a page. **SPLASH: `4b2d72a` IS the rebased SHA (Fable verified: on `main`’s tip, only the splash files) — frame and pair that
+one.** Then TOOLS’ splash frames → PW browserless (2 min) → the splash pair.
