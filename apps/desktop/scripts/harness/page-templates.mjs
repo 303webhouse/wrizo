@@ -37,7 +37,11 @@ const activeMode = (app) => app.evalJs("document.querySelector('.desk-mode-tab.a
 const openStrip = async (app) => {
   if (await app.evalJs(`!!document.querySelector(".wz-sliver[data-open='true']")`)) return true;
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
-  return waitSoft(app, `!!document.querySelector(".wz-sliver[data-open='true']")`, { label: 'strip open', timeout: 3000 });
+  const opened = await waitSoft(app, `!!document.querySelector(".wz-sliver[data-open='true']")`, { label: 'strip open', timeout: 3000 });
+  // PHASE 1: open is the STATE; the drawer is not THERE until its sliding layer has finished arriving (transform back to none). Every
+  // rect and every press below is read only after that, exactly as a writer's hand would.
+  await waitSoft(app, `getComputedStyle(document.querySelector('.wz-sliver-panel > .wz-drawer-slide')).transform === 'none'`, { label: 'sliding layer settled', timeout: 2000 });
+  return opened;
 };
 const strip = (app) => app.evalJs(`[...document.querySelectorAll('.wz-sliver-templates button')].map(b => ({
   live: b.classList.contains('wz-template-live'), key: b.dataset.template || null, name: b.getAttribute('aria-label'),

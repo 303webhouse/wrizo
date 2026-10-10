@@ -195,8 +195,22 @@ await withHarness(async (app) => {
       const parts = m ? m[1].split(',').map(s => parseFloat(s)) : [];
       return { backgroundColor: cs.backgroundColor, alpha: parts.length === 4 ? parts[3] : 1 };
     })()`);
-    ok(`S1 @ ${width}px: the OPEN sliver panel's computed background is opaque (alpha=1), never see-through onto the paper`,
+    // SUPERSEDED (PHASE 1 side drawers) - by the check after it. Parked, not deleted: it read the background on the PANEL, which is now the
+    // clip and the scroller and is transparent by design; the visible box (background, border) lives on its sliding layer.
+    // Kept verbatim; `if (false)` keeps it out of the verdict.
+    if (false) ok(`S1 @ ${width}px: the OPEN sliver panel's computed background is opaque (alpha=1), never see-through onto the paper`,
       panelBg.alpha === 1, JSON.stringify(panelBg));
+    const layerBg = await app.evalJs(`(() => {
+      const el = document.querySelector('.wz-sliver-panel > .wz-drawer-slide');
+      if (!el) return { missing: true, alpha: 0 };
+      const cs = getComputedStyle(el);
+      const m = cs.backgroundColor.match(/rgba?\\(([^)]+)\\)/);
+      const parts = m ? m[1].split(',').map(s => parseFloat(s)) : [];
+      const panel = getComputedStyle(document.querySelector('.wz-sliver-panel')).backgroundColor;
+      return { backgroundColor: cs.backgroundColor, alpha: parts.length === 4 ? parts[3] : 1, panelBackground: panel };
+    })()`);
+    ok(`S1 @ ${width}px [Phase 1 successor]: the OPEN drawer is opaque (alpha=1), never see-through onto the paper - read on its sliding layer, where the look lives (the panel around it is the clip and is transparent by design)`,
+      layerBg.alpha === 1 && !layerBg.missing, JSON.stringify(layerBg));
 
     ok(`S1 @ ${width}px: the paper rect is byte-identical open vs. closed (extends cd1.mjs's own law to this width)`,
       JSON.stringify(paperClosed) === JSON.stringify(paperOpen), JSON.stringify({ paperClosed, paperOpen }));
