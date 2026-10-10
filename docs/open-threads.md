@@ -25425,3 +25425,32 @@ drafts; **confirmed from the diffs: rhizome (15 files) and drafts (`persistence.
 Each is merged in turn, the branch read before each merge, smoke after each deploy; live frames for drafts: the standard front door,
 sign-in and a page. **SPLASH: `4b2d72a` IS the rebased SHA (Fable verified: on `main`’s tip, only the splash files) — frame and pair that
 one.** Then TOOLS’ splash frames → PW browserless (2 min) → the splash pair.
+
+## DRAFTS DEPLOY MANIFEST — LIVE, SERVED==STAMPED, SMOKE 6/6; THE BOX QUEUE; NICK’S NAMING RULINGS — 2026-10-09 (chat 1)
+
+**NICK’S SHIP WORD (Fable, relay), verbatim: “Ship drafts” (18:37 MT).** Deploy `drafts-integrity` @ `e4b596c` after reading the branch; smoke;
+standard frames (front door, sign-in, a page).
+
+**MERGED to `main`: `a56c90a`** (`e4b596c`; the branch read first: 2 commits — “Drafts integrity (A, option a1): the scratch draft is
+keyed by account” and “(B): a record is identified by its collection AND its id”; 5 files; NO server change, NO migration). **Its 5
+files are byte-identical to the paired tree (`git diff drafts-pair HEAD` on them: 0 lines), and `drafts-integrity.mjs` PASSES (23) on
+the MERGED tree.** *(The pair itself, 120/120 on both legs, ran on `main` WITHOUT the rhizome; the two share no file. The deployed
+bundle is therefore a COMBINATION no suite stamped — `index-CG3IJy_0.js` 647,182 b — and the CSS is unchanged from the rhizome’s.)*
+**LIVE: `a56c90a` · railway `ab1f6d8e-af80-4d77-90f4-dcb8710ed2c3`** — `railway up --service writer-studio-app --ci`, “Deploy complete”.
+**PREVIOUS LIVE: rhizome · `41194d35` (to be retired) — THE ROLLBACK is a rebuild from `8c58853`.** No schema change.
+
+**CHECKS BEFORE UPLOAD:** `tsc` x2 exit 0; `build:web` exit 0; tree bare (0 porcelain incl. untracked); **ITEM-98 GUARD:**
+`writer-studio` / `production` / `writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`, `HEAD == origin/main == a56c90a`.
+**LIVE VERIFICATION:** `/healthz` 200 · `/auth/me` 401 · `/auth/signup-status` `{“open”:false}`. **SERVED-vs-BUILT, BOTH ASSETS MATCH, MD5
+and bytes:** JS `4ced012b8f2656822809c11d1f9c7969` (647,182 b); CSS `ad9293af7e30da462c1dcc39b073af52` (151,274 b).
+**LIVE SIGNED-IN SMOKE (`smoke-login.mjs`, once, exit 0): login 200 · me 200 · sync (pull only) 200 · logout 204 · me after logout (jar) 401 ·
+me with the pre-logout cookie replayed 401 — `SMOKE: PASS (6/6)`.** **FRAMES: not yet taken** (the standard front door, sign-in and a page,
+taken together with the rhizome’s live frames once the box frees). **Owed: Nick’s own live check of drafts (sign-out / sign-in with
+a scratch page) — the very thing it protects.**
+
+**BOX QUEUE (Fable): (1) TOOLS splash frames (now) → (2) rhizome live frames (Arbor page ~50% of a goal, the brass flash, a Flux page
+with NO rhizome) → (3) drafts frames → (4) splash pair (`4b2d72a`) → (5) PW browserless (2 min) → (6) INK drawers-p1 browserless, then INK’s
+S1 browser turn.** FIX’s card port waits for Fable’s review.
+
+**NICK’S NAMING RULINGS (Fable, ledger-only; no build implied here): Arbor’s links are “Graft / Grafts” with a “?” explainer; Flux’s are
+“LINK / LINKS”. Brass is the through-line in EVERY theme. Flux’s progress style is named “Glitch”.**
