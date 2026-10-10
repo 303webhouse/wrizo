@@ -15,6 +15,7 @@ import type { EditorMode } from './ForwardOnlyEditor';
 import { FREE_WRITE_POOLS, DRAW_CEILING, REFILL_WORDS, drawFrom, recentMemoryFor, type FreeWritePresetId } from '../store/tutorFreeWriteDeck';
 import { useMonotonicWordCount } from './FirstRunGate';
 import { capTutorHistory } from '../store/tutorHistory';
+import { drawerArrow, setDrawerInert } from '../store/drawerShell';
 
 // TU1 S2/S3/S4/S5 — the Tutor. The sliver, mirrored, on the paper's RIGHT
 // edge — but rendered as TWO separate DeskFrame overlay anchors, not one
@@ -889,12 +890,14 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           {/* FX18 S1 (SV25): the RIGHT drawer mirrors the left. Closed → '›' (points right/
               outward); open → '‹' (points left/inward, toward the panel that slides out).
               The mirror of Sliver.tsx's left grip; that literal is left untouched. */}
-          <span className="wz-tutor-grip-glyph" aria-hidden="true">{open ? '‹' : '›'}</span>
+          <span className="wz-tutor-grip-glyph" aria-hidden="true">{drawerArrow('right', open)}</span>
         </button>
       </div>
 
       <div className={`desk-frame-tutor-panel-anchor desk-frame-tutor-panel-anchor--${pageKind} wz-tutor-zone`}>
-        <div className="wz-tutor-panel" aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px` } : undefined}>
+        <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px` } : undefined}>
+          {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller, this is what slides in from behind the tab. */}
+          <div className="wz-drawer-slide wz-drawer-slide--right">
           {/* A11Y AUDIT A8 — the reply announcement, visually hidden. Lives at
               the panel's own top level (not inside the `{open && …}` content
               body below), so closing/reopening the Tutor never remounts it and
@@ -1198,6 +1201,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             )}
             </div>
           )}
+          </div>
         </div>
       </div>
 

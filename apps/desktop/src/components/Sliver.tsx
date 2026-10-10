@@ -20,6 +20,7 @@ import type { FormatAction, StructureKind } from '../store/draftFormat';
 import type { PageKindSetting, StyleGuide } from '../types';
 import type { InkPen } from './InkStratum';
 import { INKS, NIBS, TIPS } from '../store/ink';
+import { drawerArrow, setDrawerInert } from '../store/drawerShell';
 import type { StrokeInk, StrokeNib, StrokeTip } from '../types';
 
 // ITEM 114 (item 83 errata E4) — the rosters and their lexicon keys, in one
@@ -293,7 +294,7 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
         title={`${open ? t('sliverClose') : t('sliverOpen')} (${SLIVER_SHORTCUT_LABEL})`}
         onClick={toggleOpen}
       >
-        <span className="wz-sliver-grip-glyph" aria-hidden="true">{open ? '›' : '‹'}</span>
+        <span className="wz-sliver-grip-glyph" aria-hidden="true">{drawerArrow('left', open)}</span>
       </button>
 
       {/* item 83 errata E1 (2026-09-03) — THE POP-OUT HOLD.
@@ -312,7 +313,9 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
           tray standing out of a shut drawer. The hold is scoped to exactly that
           state: with no pop-out open this attribute reads 'false' and every fade
           on this surface behaves byte-identically to before. */}
-      <div className="wz-sliver-panel chrome-fade desk-dissolve" aria-hidden={!open} data-open={open ? 'true' : 'false'} data-popout-hold={popoutHold ? 'true' : 'false'}>
+      <div className="wz-sliver-panel chrome-fade desk-dissolve" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-popout-hold={popoutHold ? 'true' : 'false'}>
+        {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller, this is what slides in from behind the tab. */}
+        <div className="wz-drawer-slide wz-drawer-slide--left">
         <SliverToolsBody content={content} />
         <SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />
         {/* FX3 S5 — the foot's new instruments row, beneath the goal block.
@@ -355,6 +358,7 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
           goalText={goalText}
           onPopoutHold={setPopoutHold}
         />
+        </div>
       </div>
     </div>
   );

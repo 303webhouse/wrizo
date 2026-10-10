@@ -107,6 +107,12 @@
      ticket. */
   --strip-width: 84px;
 
+  /* PHASE 1 (docs/plans/phase1-drawers.md 2.3) - the side drawers' motion. DEDICATED tokens: --fade-dur is WRITTEN AT RUNTIME by
+     useChromeDissolve (the vanish engine) and must keep governing the dissolve fade; the slide never rides it. */
+  --drawer-dur: .2s;
+  --drawer-ease: ease;
+  --drawer-dur-reduced: .12s;
+
   /* FX2 S1 — the composed frame's column-gap, promoted from a bare literal
      in .desk-frame-grid to a token: the sliver anchor's own clearance math
      (below, `.desk-frame-sliver-anchor`) needs the SAME gap value to know
@@ -3571,8 +3577,8 @@ a:focus-visible,
 .wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--accent-rest); border-color:var(--accent-rest); }
 .wz-sliver-grip-glyph{ font-size:13px; line-height:1; }
 .wz-sliver-panel{ position:absolute; top:0; right:16px; width:calc(100% - 16px); height:100%;
-  overflow-y:auto; overflow-x:hidden; background:var(--desk-ground); border:1px solid var(--ink-border); border-right:none;
-  opacity:0; pointer-events:none; transform:translateX(6px); transition:opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s) ease;
+  overflow-y:auto; overflow-x:hidden;
+  opacity:0; pointer-events:none; transition:opacity var(--fade-dur,.2s) ease;
   /* The bar sits on the drawer's left edge. `direction: rtl` is the only
      way a native scrollbar changes sides; the children below stay left to
      right. It is overlay-thin and only paints when the content is taller
@@ -3586,7 +3592,7 @@ a:focus-visible,
 .wz-sliver-panel::-webkit-scrollbar-track{ background: transparent; }
 .wz-sliver-panel::-webkit-scrollbar-thumb{ background: color-mix(in srgb, var(--text-low) 28%, transparent); }
 .wz-sliver-panel::-webkit-scrollbar-thumb:hover{ background: color-mix(in srgb, var(--text-low) 55%, transparent); }
-.wz-sliver-panel[data-open='true']{ opacity:1; pointer-events:auto; transform:translateX(0); }
+.wz-sliver-panel[data-open='true']{ opacity:1; pointer-events:auto; }
 /* item 83 errata E1 (2026-09-03) — THE POP-OUT HOLD. Nick's ruling: a foot
    pop-out fades after FIFTEEN WORDS WRITTEN or A PERIOD ENTERED, never on a
    clock. Sliver.tsx counts and sets `data-popout-hold`; this rule is the whole
@@ -3608,8 +3614,24 @@ a:focus-visible,
    surface is byte-identical to before. */
 .desk-frame[data-writing='true'] .wz-sliver-panel[data-open='true'][data-popout-hold='true'],
 [data-chrome-receded='true'] .wz-sliver-panel[data-open='true'][data-popout-hold='true']{
-  opacity:1; pointer-events:auto; transform:translateX(0); }
-@media (prefers-reduced-motion:reduce){ .wz-sliver-panel{ transition:none; } }
+  opacity:1; pointer-events:auto; }
+/* PHASE 1 - THE SLIDING LAYER, shared by both side drawers (Nick, Oct 9: "the menu slides out from behind the tab AND fades in, together;
+   closing slides back AND fades out").
+   The panel (outer) is the CLIP and the scroller: it ends at the tab, so whatever slides is hidden behind it; it also keeps the fade and
+   the dissolve exactly as before (opacity on --fade-dur, whose fallback is this same .2s, so at rest the fade and the slide run together).
+   The visible box - background, border - and the slide live on THIS layer. The slide uses its own tokens, never --fade-dur.
+   Open is read from the panel's data-open; nothing here knows which drawer it is in except the side. */
+.wz-drawer-slide{ min-height:100%; background:var(--desk-ground); border:1px solid var(--ink-border);
+  transition:transform var(--drawer-dur) var(--drawer-ease); }
+.wz-drawer-slide--left{ border-right:none; transform:translateX(100%); }
+.wz-drawer-slide--right{ border-left:none; transform:translateX(-100%); }
+[data-open='true'] > .wz-drawer-slide{ transform:none; }
+/* REDUCED MOTION (Nick): fade only, short. No slide at all; the fade runs on its own short token. (This replaces the two old
+   'transition:none' opt-outs: the writer who asked for less motion still sees the drawer arrive, just without travel.) */
+@media (prefers-reduced-motion:reduce){
+  .wz-sliver-panel, .wz-tutor-panel{ transition:opacity var(--drawer-dur-reduced) linear; }
+  .wz-drawer-slide, .wz-drawer-slide--left, .wz-drawer-slide--right{ transform:none; transition:none; }
+}
 .wz-sliver-body{ display:flex; flex-direction:column; gap:20px; padding:16px 14px; }
 .wz-sliver-section{ display:flex; flex-direction:column; gap:8px; }
 /* ITEM 114 (item 83 errata E4) — the Structure zone's SUB-LABELS and the rule
@@ -3884,11 +3906,10 @@ a:focus-visible,
      by CSS alone; the inline width supersedes it). The 5 fx10 "full open-w" A4 parks stand. */
   width:clamp(280px, var(--tutor-panel-margin), var(--tutor-panel-open-w));
   max-width:clamp(280px, var(--tutor-panel-margin), var(--tutor-panel-open-w));
-  background:var(--desk-ground); border:1px solid var(--ink-border); border-left:none;
-  opacity:0; pointer-events:none; transform:translateX(-6px);
-  transition:opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s) ease;
+  opacity:0; pointer-events:none;
+  transition:opacity var(--fade-dur,.2s) ease;
 }
-.wz-tutor-panel[data-open='true']{ opacity:1; pointer-events:auto; transform:translateX(0); }
+.wz-tutor-panel[data-open='true']{ opacity:1; pointer-events:auto; }
 /* FX18 S2 regime (3) — the BOARD overlay exception (Fable's ruling): the board is an
    arrangement surface, not sacred paper, so its Tutor panel keeps its natural open-w and
    may overlay the canvas (bounded to the app edge by the flex-end dock; the grip rides atop
@@ -3914,7 +3935,6 @@ a:focus-visible,
 .wz-tutor-panel[data-open='true'][data-docked='true']{
   width:clamp(120px, var(--tutor-panel-margin), var(--tutor-panel-open-w));
   max-width:clamp(120px, var(--tutor-panel-margin), var(--tutor-panel-open-w)); }
-@media (prefers-reduced-motion:reduce){ .wz-tutor-panel{ transition:none; } }
 .wz-tutor-body{ display:flex; flex-direction:column; gap:16px; padding:16px 14px; }
 .wz-tutor-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .wz-tutor-head-title{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }

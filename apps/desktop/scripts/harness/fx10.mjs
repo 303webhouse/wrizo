@@ -217,21 +217,40 @@ await withHarness(async (app) => {
       tutorMotion.duration === sliverMotion.duration, JSON.stringify({ tutorMotion, sliverMotion }));
     ok('S1 motion: the tutor panel\'s own live computed transition-timing-function (easing) EQUALS the tool pop-out\'s own',
       tutorMotion.easing === sliverMotion.easing, JSON.stringify({ tutorMotion, sliverMotion }));
-    ok('S1 motion: the tutor panel animates opacity + transform (a fade+slide, mirroring the sliver\'s own shape) — NOT width/max-width/border-width (TU2\'s superseded collapse)',
+    // SUPERSEDED (PHASE 1 side drawers, Nick Oct 9: slide out from behind the tab AND fade, together) - by the two checks after the parked
+    // ones below. Parked, not deleted: they pinned the fade AND the 6px settle both living on the PANEL element. The panel is now the clip
+    // and the scroller and keeps only the fade (opacity on --fade-dur); the slide moved to the panel's sliding layer (.wz-drawer-slide),
+    // on its own tokens. Kept verbatim; `if (false)` keeps them out of the verdict.
+    if (false) ok('S1 motion: the tutor panel animates opacity + transform (a fade+slide, mirroring the sliver\'s own shape) — NOT width/max-width/border-width (TU2\'s superseded collapse)',
       tutorMotion.property.includes('opacity') && tutorMotion.property.includes('transform')
       && !tutorMotion.property.includes('width') && !tutorMotion.property.includes('border-width'),
       tutorMotion.property);
-    ok('S1 motion: the sliver panel\'s own reference shape is unchanged (opacity + transform) — the constant being measured against wasn\'t itself altered by this ticket',
+    if (false) ok('S1 motion: the sliver panel\'s own reference shape is unchanged (opacity + transform) — the constant being measured against wasn\'t itself altered by this ticket',
       sliverMotion.property.includes('opacity') && sliverMotion.property.includes('transform'), sliverMotion.property);
+    const layerMotion = await app.evalJs(`(() => {
+      const f = (sel) => { const el = document.querySelector(sel); if (!el) return null; const cs = getComputedStyle(el); return { property: cs.transitionProperty, duration: cs.transitionDuration, easing: cs.transitionTimingFunction }; };
+      return { tutor: f('.wz-tutor-panel > .wz-drawer-slide'), sliver: f('.wz-sliver-panel > .wz-drawer-slide') };
+    })()`);
+    ok('S1 motion [Phase 1 successor]: the panel keeps the FADE (opacity, never width/border) and its sliding layer carries the SLIDE (transform) - on both hands, with the same duration and easing',
+      tutorMotion.property.includes('opacity') && !tutorMotion.property.includes('width') && !tutorMotion.property.includes('border-width')
+      && sliverMotion.property.includes('opacity') && !!layerMotion.tutor && !!layerMotion.sliver
+      && layerMotion.tutor.property.includes('transform') && layerMotion.sliver.property.includes('transform')
+      && layerMotion.tutor.duration === layerMotion.sliver.duration && layerMotion.tutor.easing === layerMotion.sliver.easing,
+      JSON.stringify({ tutorMotion, sliverMotion, layerMotion }));
 
     // The panel's own OPEN/CLOSE transform genuinely moves (a real slide,
     // not merely a fade) — mirroring the sliver's own translateX shape,
     // sign flipped (the tutor panel settles in from the paper's side).
     const closedTransform = await app.evalJs("getComputedStyle(document.querySelector('.wz-tutor-panel')).transform");
+    const closedLayerTransform = await app.evalJs("getComputedStyle(document.querySelector('.wz-tutor-panel > .wz-drawer-slide')).transform");
     await openTutor(app);
     const openTransform = await app.evalJs("getComputedStyle(document.querySelector('.wz-tutor-panel')).transform");
-    ok('S1 motion: the panel\'s own transform genuinely changes open vs closed (a real translateX slide, mirroring the sliver\'s own shape) — not a bare opacity fade',
+    const openLayerTransform = await app.evalJs("getComputedStyle(document.querySelector('.wz-tutor-panel > .wz-drawer-slide')).transform");
+    // SUPERSEDED (PHASE 1) - parked verbatim: it read the transform on the PANEL, which no longer moves.
+    if (false) ok('S1 motion: the panel\'s own transform genuinely changes open vs closed (a real translateX slide, mirroring the sliver\'s own shape) — not a bare opacity fade',
       closedTransform !== openTransform, JSON.stringify({ closedTransform, openTransform }));
+    ok('S1 motion [Phase 1 successor]: the SLIDING LAYER\'s transform genuinely changes open vs closed (a real translateX, from behind the tab) while the panel itself stays put',
+      closedLayerTransform !== openLayerTransform && closedTransform === openTransform, JSON.stringify({ closedLayerTransform, openLayerTransform, closedTransform, openTransform }));
 
     // A15 — reduced motion honored: the transition itself is suppressed.
     await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
@@ -242,8 +261,15 @@ await withHarness(async (app) => {
     // "1e-05s", ~10 microseconds — imperceptible, not a real transition) —
     // a numeric tolerance is the honest check, not a brittle string match.
     const reducedIsEffectivelyZero = reducedTransition.split(',').every((d) => Math.abs(parseFloat(d)) < 0.001);
-    ok('S1/A15: prefers-reduced-motion suppresses the panel\'s own transition (duration collapses to effectively 0 under the media query\'s `transition:none`)',
+    // SUPERSEDED (PHASE 1, Nick: reduced motion = FADE ONLY, SHORT - not none) - parked verbatim; successor below.
+    if (false) ok('S1/A15: prefers-reduced-motion suppresses the panel\'s own transition (duration collapses to effectively 0 under the media query\'s `transition:none`)',
       reducedIsEffectivelyZero, reducedTransition);
+    const reducedLayerTransition = await app.evalJs("getComputedStyle(document.querySelector('.wz-tutor-panel > .wz-drawer-slide')).transitionDuration");
+    const reducedLayerTransform = await app.evalJs("getComputedStyle(document.querySelector('.wz-tutor-panel > .wz-drawer-slide')).transform");
+    const reducedPanelSecs = reducedTransition.split(',').map((d) => parseFloat(d));
+    ok('S1/A15 [Phase 1 successor]: prefers-reduced-motion is FADE ONLY and SHORT - the panel still fades (a short duration, not zero), and its sliding layer has no travel (no transform, no transition)',
+      reducedPanelSecs.every((d) => d > 0.05 && d <= 0.2) && reducedLayerTransform === 'none'
+      && reducedLayerTransition.split(',').every((d) => Math.abs(parseFloat(d)) < 0.001), JSON.stringify({ reducedTransition, reducedLayerTransition, reducedLayerTransform }));
     await app.emulateMedia([]);
   }
 
