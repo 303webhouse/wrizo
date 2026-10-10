@@ -25,6 +25,8 @@ export function nextTab<T extends string>(ids: readonly T[], current: T, key: st
 
 interface Props<T extends string> {
   items: readonly DrawerTabItem<T>[];
+  /** Small adornments beside a tab's word (the "?" note), keyed by tab. They live OUTSIDE the tablist: a tablist owns tabs and nothing else. */
+  notes?: Partial<Record<T, ReactNode>>;
   value: T;
   onChange: (next: T) => void;
   /** Accessible name of the whole row. */
@@ -33,7 +35,7 @@ interface Props<T extends string> {
   idPrefix: string;
 }
 
-export function DrawerTabs<T extends string>({ items, value, onChange, label, idPrefix }: Props<T>) {
+export function DrawerTabs<T extends string>({ items, notes, value, onChange, label, idPrefix }: Props<T>) {
   const refs = useRef(new Map<T, HTMLButtonElement>());
   const ids = items.map(i => i.id);
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -43,7 +45,9 @@ export function DrawerTabs<T extends string>({ items, value, onChange, label, id
     onChange(next);
     refs.current.get(next)?.focus();
   };
+  const hasNotes = !!notes && items.some(it => notes[it.id] != null);
   return (
+    <div className="wz-drawer-tabbar">
     <div className="wz-drawer-tabs" role="tablist" aria-label={label} onKeyDown={onKeyDown}>
       {items.map(it => (
         <button
@@ -62,6 +66,12 @@ export function DrawerTabs<T extends string>({ items, value, onChange, label, id
           {it.label}
         </button>
       ))}
+    </div>
+    {hasNotes && notes && (
+      <div className="wz-drawer-tabnotes" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
+        {items.map(it => <div key={it.id} className="wz-drawer-tabnote-cell">{notes[it.id] ?? null}</div>)}
+      </div>
+    )}
     </div>
   );
 }

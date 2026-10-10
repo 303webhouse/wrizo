@@ -11,6 +11,10 @@
 
 export type DrawerKind = 'empty' | 'freewrite' | 'draft' | 'revise' | 'board';
 export type LeftTab = 'text' | 'ink';
+/** The right drawer's tabs, in order (S3). The second tab's WORD is the theme's (lexicon term 'drawerLinks'). Phase 3 fills it. */
+export const RIGHT_TABS = ['tutor', 'links'] as const;
+export type RightTab = typeof RIGHT_TABS[number];
+
 export type DrawerSection = 'typeface' | 'forwardLock' | 'capture' | 'ink' | 'format' | 'actions' | 'templates' | 'pageKind' | 'boardTools';
 
 /** The tabs on a surface's left drawer. Only Free Write has any, and only when its host passes an instrument (a Journal capture page, for

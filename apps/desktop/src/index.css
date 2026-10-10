@@ -3632,13 +3632,28 @@ a:focus-visible,
 [data-open='true'] > .wz-drawer-slide{ transform:none; }
 /* PHASE 1 (S2) - THE TAB ROW. The chosen tab wears a BRASS OUTLINE and brass text and NOTHING else - no fill (Nick, Oct 9). The drawer's
    arrow tab is olive (where you are); this is brass (what you chose). */
-.wz-drawer-tabs{ display:flex; gap:6px; padding:14px 14px 0; }
+.wz-drawer-tabbar{ position:relative; padding:14px 14px 0; }
+.wz-drawer-tabs{ display:flex; gap:6px; }
 .wz-drawer-tab{ flex:1; height:26px; padding:0; background:none; border:1px solid var(--ink-border); border-radius:0;
   color:var(--text-mid); font-family:var(--font-ui); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
   cursor:pointer; transition:color .15s ease, border-color .15s ease; }
 .wz-drawer-tab:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:none; }
 .wz-drawer-tab:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+/* PHASE 1 (S3) - the "?" note beside a tab's word. The overlay shares the tab row's columns, ignores the pointer except on the "?" itself, and
+   sits OUTSIDE the tablist. The note opens below the row as an overlay (it displaces nothing). */
+.wz-drawer-tabnotes{ position:absolute; left:14px; right:14px; top:14px; height:26px; display:grid; gap:6px; pointer-events:none; }
+.wz-drawer-tabnote-cell{ display:flex; align-items:center; justify-content:flex-end; padding-right:3px; min-width:0; }
+.wz-drawer-note{ pointer-events:auto; }
+.wz-drawer-note-btn{ width:15px; height:15px; padding:0; display:flex; align-items:center; justify-content:center; background:none;
+  border:1px solid var(--ink-border); border-radius:0; color:var(--text-low); font-family:var(--font-ui); font-size:9.5px; line-height:1; cursor:pointer;
+  transition:color .15s ease, border-color .15s ease; }
+.wz-drawer-note-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-drawer-note-btn[aria-expanded='true']{ color:var(--brass); border-color:var(--brass); background:none; }
+.wz-drawer-note-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+.wz-drawer-note-pop{ position:absolute; left:14px; right:14px; top:calc(100% + 4px); z-index:5; padding:10px 12px; background:var(--desk-ground);
+  border:1px solid var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-ui); font-size:12.5px; line-height:1.45; pointer-events:auto; }
+.wz-links-pane{ display:flex; flex-direction:column; gap:8px; padding:16px 14px; }
 /* PHASE 1 - ACTIONS. Icon buttons in a row; one that is pressed/open wears the brass OUTLINE (no fill). Tags and Delete open a small area
    inside the drawer. Delete's confirm is in the page: a line, and two plain buttons. */
 .wz-actions{ display:flex; flex-direction:column; gap:8px; }
