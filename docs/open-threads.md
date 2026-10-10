@@ -25476,3 +25476,26 @@ and localhost), so the goal was set through its own storage key (`wrizo-writing-
 seeded through `wrizoPatchEntry` (open on production, as in the Oct 7 walk). My first run failed on the closed seam, wrote nothing,
 and was re-run. **Owed: Fable’s frame review; Nick’s own live checks (rhizome, and drafts: sign out / sign in with a scratch page).**
 **BOX QUEUE NEXT (Fable): the splash pair (`4b2d72a`) → PW browserless (2 min) → INK drawers-p1 browserless, then INK’s S1 browser turn.**
+
+## SPLASH PAIR: 122/124 ON EACH LEG — TWO REDS, BOTH TOOLS’, NOTHING DEPLOYED — 2026-10-09 (chat 1)
+
+**`splash-pair` @ `317f0e4` = `origin/main` @ `a474aec` + `splash-screen` @ `4b2d72a`** (Fable: the rebased SHA, verified on `main`’s tip).
+A clean merge; the splash files only — `Splash.tsx`, `backdropTone.ts`, `App.tsx` +7, `index.css` +55, `splash.mjs`, `splash-frames.mjs`,
+`splash-size.mjs`, two brand PNGs, a survey doc; NO server change, NO migration. `tsc` x2 exit 0; `build:web` bundle
+`index-P2j5dOLz.js` 650,072 b. **`splash-frames.mjs` (a frame-capture tool that writes a file) was left OUT of the run list, like the
+other capture tools.**
+
+**THE PAIR: stamp `tree=317f0e4c bundle=index-P2j5dOLz.js/650072b`; 124 files per leg in seven chunks of ≤20, no launch crashes:
+122/124 on EACH leg — the same TWO reds on both:**
+1. **`item141.mjs` FAIL 1/11 — “no harness reads a `window.wrizo*` seam before a settle”: `splash.mjs` reads `window.wrizoBackdropTone` (line
+   220) and `window.wrizoSplash` (line 237) before a `waitFor`.** Instrument only (the settle law); owner TOOLS.
+2. **`splash.mjs` `SPLASH VERIFY: FAIL — 1/41`: `S8: under reduced motion the fade is removed entirely — a plain appear and
+   disappear, the hold unchanged` reads `{present:true, reduced:true, veil:“1e-05s”, mark:“1e-05s”}`.** Under reduced motion the veil’s and
+   the mark’s animation duration measures `1e-05s` (0.01 ms), not the exact removal the check names; **whether that is a product
+   rule that should say `0s`, or a check that should accept the 0.01 ms floor browsers use for “no animation”, is TOOLS’ and
+   Fable’s to rule — this desk does not decide it.** 40 of 41 `splash.mjs` checks pass.
+Every other file is CLEAN on both legs. Grant (this desk’s) written `2026-10-10T01:00:16Z` after the file was read (absent), cleared
+`02:35:18Z`; 0 harness processes, 0 browsers. **NOT DEPLOYED; `main` untouched. The splash does not ship on this pair.** Needed: TOOLS’
+fix for both (harness and/or the reduced-motion rule), Fable’s review, a re-run of `item141` and `splash.mjs` on both legs (bundle must
+be byte-identical if the fix is harness-only), then Nick’s conditional ship word applies (frame review + green pair + deploy + smoke + live
+frames).
