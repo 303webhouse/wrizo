@@ -25454,3 +25454,25 @@ S1 browser turn.** FIX’s card port waits for Fable’s review.
 
 **NICK’S NAMING RULINGS (Fable, ledger-only; no build implied here): Arbor’s links are “Graft / Grafts” with a “?” explainer; Flux’s are
 “LINK / LINKS”. Brass is the through-line in EVERY theme. Flux’s progress style is named “Glitch”.**
+
+## RHIZOME AND DRAFTS LIVE FRAMES TAKEN; TOOLS’ SPLASH GRANT CLEARED IDLE — 2026-10-09 (chat 1)
+
+**TOOLS’ grant (`tools-splash-frames-20261009`, written `00:23:26Z`, 6:23 pm MT) was checked at 6:56 pm MT (age 33): the file still named
+TOOLS; box idle (0 harness processes, 0 browsers); `origin/splash-screen` unchanged since 15:19 MT (`4b2d72a`); no file modified in the
+last 60 minutes in `.claude/splash`; no “box done”. CLEARED `2026-10-10T00:56:47Z`. NO claim that it went unused — TOOLS confirms
+whether its splash frames ran or asks again.**
+
+**THE FRAMES (Fable’s list), taken against PRODUCTION `ab1f6d8e` — every frame’s own DOM reports the served bundle `index-CG3IJy_0.js` —
+in a throw-away anonymous profile at 1400×900; nothing written to the server; this desk’s grant `00:57:26Z`, cleared at completion; 0
+processes, 0 browsers.** Committed under `docs/evidence/rhizome-drafts-live/` (6 PNGs + `frames.json` with each frame’s DOM facts):
+- **`R1-arbor-50pct-of-100-words`**: Arbor (theme id `plateau`), 50 words against a 100-word goal: `goalFrac 0.500`, the stroke OLIVE
+  (`rgb(150, 160, 90)`), the rhizome visibly drawn in the desk ground around the page, flash false.
+- **`R2-arbor-brass-flash`**: 7 of an 8-word goal, one more word typed: `flash:true`, the stroke BRASS (`rgb(255, 152, 0)`), the whole
+  ground filled.
+- **`R3-flux-no-rhizome`**: the same page under Flux: `rhizomeField:false`, `segments:0` — NO rhizome.
+- **`D1-front-door`, `D2-sign-in`, `D3-a-page`**: the standard frames for drafts.
+**METHOD NOTE, not a product fault:** the goal seam `wrizoSetWritingGoal` is CLOSED on production hosts by design (it opens only on dev
+and localhost), so the goal was set through its own storage key (`wrizo-writing-goal-lines`) on the throw-away profile; the words were
+seeded through `wrizoPatchEntry` (open on production, as in the Oct 7 walk). My first run failed on the closed seam, wrote nothing,
+and was re-run. **Owed: Fable’s frame review; Nick’s own live checks (rhizome, and drafts: sign out / sign in with a scratch page).**
+**BOX QUEUE NEXT (Fable): the splash pair (`4b2d72a`) → PW browserless (2 min) → INK drawers-p1 browserless, then INK’s S1 browser turn.**
