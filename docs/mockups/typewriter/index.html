@@ -10,11 +10,14 @@
   A real typing box. Active line held at a steady height. History fades
   after N lines (default 3). Line advance GLIDES (default 300ms ease-out),
   not a native scroll snap.
-  Mockup-only controls: page width, zoom, fade-after (1–6), glide speed.
+  Mockup-only controls: page width, zoom, fade-after (1–6), glide speed, theme.
+  Oct 10: Typewriter + Progress icons beside … (brass stroke on, quiet off);
+  … menu drops those On/Off rows; leftover rows grey when the mode is off;
+  FORMAT grey while Typewriter is on. Arbor and Flux.
   Branch: cursor/typewriter-mockup.
 -->
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=Rajdhani:wght@400;500;600&family=Chakra+Petch:wght@400;500&display=swap');
 
   :root {
     --ink-950: #110600; --ink-900: #1F1A16; --ink-800: #2A241E;
@@ -25,7 +28,9 @@
     --brass: #ff9800; --accent-rest: #96a05a;
     --font-ui: 'Figtree', system-ui, sans-serif;
     --font-prose: 'Crimson Pro', Georgia, serif;
+    --desk-ground: #1F1A16;
     --paper-glow: 0 0 0 1px rgba(243, 237, 225, 0.06), 0 4px 32px rgba(212, 162, 78, 0.10), 0 2px 12px rgba(0, 0, 0, 0.45);
+    --pop-w: 220px;
     --hold: 56%;
     --ch: 74;
     --zoom: 1.22;
@@ -36,6 +41,16 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; overflow: hidden; }
+  html[data-theme='flux'] {
+    --ink-950: #04141A; --ink-900: #091E24; --ink-800: #0C2A32;
+    --ink-border: #1D4A52; --desk-ground: #07161B;
+    --text-hi: #E3F1EC; --text-mid: #8FB4AC; --text-low: #6E958D;
+    --paper: #0B2429; --paper-dim: #091E23; --paper-border: #2A6A76;
+    --ink-on-paper: #E3F1EC; --ink-on-paper-low: #57D0F5;
+    --accent-rest: #5E837C;
+    --font-ui: 'Rajdhani', system-ui, sans-serif;
+    --paper-glow: 0 0 0 1px rgba(0, 194, 255, 0.08), 0 4px 32px rgba(0, 0, 0, 0.5);
+  }
   body { background: var(--ink-950); color: var(--text-hi); font-family: var(--font-ui); }
 
   .rig {
@@ -52,7 +67,9 @@
   .rig label { display: flex; align-items: center; gap: 6px; color: #8f8f8f; }
   .rig input[type='range'] { width: 88px; accent-color: var(--accent-rest); }
   .rig .val { min-width: 3.6em; color: #c8c8c8; font-variant-numeric: tabular-nums; }
-  .rig .hint { margin-left: auto; color: #5e5e5e; max-width: 42ch; text-align: right; }
+  .rig .rev { height: 22px; padding: 0 8px; border: 1px solid #333; color: #c8c8c8; background: #141414; font-size: 11px; }
+  .rig .rev[data-on='true'] { border-color: var(--accent-rest); color: var(--accent-rest); }
+  .rig .hint { margin-left: auto; color: #5e5e5e; max-width: 36ch; text-align: right; }
   .stamp {
     position: fixed; right: 10px; bottom: 10px; z-index: 20;
     font-size: 10px; letter-spacing: .08em; color: #8a8276;
@@ -62,12 +79,59 @@
 
   .room {
     position: absolute; inset: 42px 0 0 0;
-    display: flex; align-items: center; justify-content: center;
-    padding: 18px 28px 22px;
+    display: flex; align-items: stretch; justify-content: center;
+    padding: 18px 28px 22px 28px;
   }
+  .stage {
+    position: relative; width: min(1280px, 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sliver {
+    position: absolute; top: 0; bottom: 0; left: 0; width: var(--pop-w); z-index: 6;
+    background: var(--desk-ground); border: 1px solid var(--ink-border);
+    overflow: auto; padding: 14px 12px 12px;
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .h { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-rest); margin-bottom: 8px; }
+  .sec { display: flex; flex-direction: column; gap: 8px; }
+  .sec.is-dead { opacity: .38; pointer-events: none; }
+  .row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+  .mode-tbtn {
+    min-width: 24px; height: 24px; padding: 0 4px; border: 1px solid transparent;
+    color: var(--text-mid); font-size: 12px; display: inline-flex; align-items: center; justify-content: center;
+    background: none; cursor: pointer;
+  }
+  .mode-tbtn:hover { border-color: var(--ink-border); color: var(--text-hi); }
+  .foot { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--ink-border); }
+  .icon-btn {
+    width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
+    background: none; border: 1px solid transparent; color: var(--text-low); cursor: pointer;
+  }
+  .icon-btn svg { display: block; fill: none; stroke: currentColor; }
+  .icon-btn[data-on='true'] { color: var(--brass); background: none; }
+  .icon-btn[data-open='true'] { color: var(--accent-rest); }
+  .menu {
+    margin-top: 10px; border: 1px solid var(--ink-border); padding: 10px 10px 8px;
+    background: var(--ink-900);
+  }
+  .menu h4 {
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent-rest); margin: 10px 0 6px; font-weight: 600;
+  }
+  .menu h4:first-child { margin-top: 0; }
+  .crow { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 6px 0; font-size: 11px; color: var(--text-mid); }
+  .crow.is-dead { opacity: .38; pointer-events: none; }
+  .seg { display: flex; border: 1px solid var(--ink-border); }
+  .seg button {
+    background: none; border: 0; border-left: 1px solid var(--ink-border);
+    color: var(--text-mid); font-size: 10px; padding: 3px 7px; cursor: pointer;
+  }
+  .seg button:first-child { border-left: 0; }
+  .seg button[data-on='true'] { color: var(--accent-rest); background: color-mix(in srgb, var(--accent-rest) 16%, transparent); }
   .paper {
-    width: min(calc(var(--ch) * 1.05ch * var(--zoom) + 14vw), calc(100vw - 48px));
+    width: min(calc(var(--ch) * 1.05ch * var(--zoom) + 14vw), calc(100vw - 48px - var(--pop-w)));
     height: min(64vh, 540px);
+    margin-left: calc(var(--pop-w) + 16px);
     background: var(--paper); color: var(--ink-on-paper);
     box-shadow: var(--paper-glow);
     position: relative; overflow: hidden;
@@ -124,6 +188,16 @@
     color: var(--ink-on-paper-low);
   }
 
+  .port[data-tw='false'] {
+    -webkit-mask-image: none; mask-image: none;
+  }
+  .sheet[data-tw='false'] { transform: none !important; transition: none; }
+  .pbar {
+    position: absolute; left: 18px; right: 18px; bottom: 10px; height: 3px;
+    background: var(--paper-dim); border: 1px solid var(--ink-on-paper-low);
+  }
+  .pbar i { display: block; height: 100%; width: 42%; background: #a98a5c; }
+  html[data-theme='flux'] .pbar i { background: var(--accent-rest); }
   @media (prefers-reduced-motion: reduce) {
     .sheet { transition: none; }
   }
@@ -133,6 +207,8 @@
 <header class="rig">
   <b>TYPEWRITER</b>
   <span class="only">mockup only</span>
+  <button class="rev" data-theme="arbor" type="button">Arbor</button>
+  <button class="rev" data-theme="flux" type="button">Flux</button>
   <label>Width <input id="w" type="range" min="52" max="88" value="74"> <span class="val" id="wv">74ch</span></label>
   <label>Zoom <input id="z" type="range" min="100" max="140" value="122"> <span class="val" id="zv">122%</span></label>
   <label>Fade after <input id="f" type="range" min="1" max="6" value="3"> <span class="val" id="fv">3 lines</span></label>
@@ -142,11 +218,68 @@
 <div class="stamp" id="stamp">TYPEWRITER · REST</div>
 
 <div class="room">
-  <div class="paper">
-    <div class="port" id="port">
-      <div class="sheet" id="sheet" data-snap="true">
-        <div class="editor" id="editor" contenteditable="true" spellcheck="false" data-hint="" role="textbox" aria-label="Typewriter page"></div>
+  <div class="stage">
+    <aside class="sliver" id="sliver">
+      <div class="sec" id="formatSec">
+        <div class="h">Format</div>
+        <div class="row">
+          <button class="mode-tbtn" type="button"><b>B</b></button>
+          <button class="mode-tbtn" type="button"><i>I</i></button>
+          <button class="mode-tbtn" type="button"><u>U</u></button>
+          <button class="mode-tbtn" type="button"><s>S</s></button>
+          <button class="mode-tbtn" type="button">H</button>
+        </div>
+        <div class="row">
+          <button class="mode-tbtn" type="button">•</button>
+          <button class="mode-tbtn" type="button">“</button>
+          <button class="mode-tbtn" type="button">¶</button>
+        </div>
       </div>
+      <div class="foot">
+        <div class="row" id="iconRow">
+          <button class="icon-btn" id="twBtn" type="button" title="Typewriter" aria-pressed="true" data-on="true">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="10" rx="1.5"/>
+              <path d="M6 14v2.5M18 14v2.5"/>
+              <path d="M5 20h14l-1.3-3.5H6.3z"/>
+              <path d="M7 8h2M11 8h2M15 8h2M8 11h8"/>
+            </svg>
+          </button>
+          <button class="icon-btn" id="prBtn" type="button" title="Progress" aria-pressed="true" data-on="true">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+              <path d="M4 8h16M4 12h16M4 16h9"/>
+            </svg>
+          </button>
+          <button class="icon-btn" id="moreBtn" type="button" title="More" aria-expanded="false">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill:currentColor;stroke:none">
+              <circle cx="5" cy="12" r="1.6"/>
+              <circle cx="12" cy="12" r="1.6"/>
+              <circle cx="19" cy="12" r="1.6"/>
+            </svg>
+          </button>
+        </div>
+        <div class="menu" id="moreMenu" hidden>
+          <h4>Typewriter</h4>
+          <div class="crow tw-row"><span>Forward Lock</span><div class="seg"><button type="button" data-on="true">On</button><button type="button">Off</button></div></div>
+          <div class="crow tw-row"><span>Line Fade</span><div class="seg"><button type="button" data-on="true">On</button><button type="button">Off</button></div></div>
+          <div class="crow tw-row"><span>Page Scroll</span><div class="seg"><button type="button" data-on="true">On</button><button type="button">Off</button></div></div>
+          <h4>Progress</h4>
+          <div class="crow pr-row"><span>Unit</span><div class="seg"><button type="button" data-on="true">Lines</button><button type="button">Words</button></div></div>
+          <div class="crow pr-row"><span>Goal</span><span>100 lines</span></div>
+          <div class="crow pr-row"><span>Progress</span><div class="seg"><button type="button" data-on="true">Words</button><button type="button">Time</button><button type="button">Off</button></div></div>
+          <div class="crow pr-row"><span>Timer</span><div class="seg"><button type="button">On</button><button type="button" data-on="true">Off</button></div></div>
+          <h4>Preferences</h4>
+          <div class="crow"><span>Recede depth</span><div class="seg"><button type="button" data-on="true">Partial</button><button type="button">Full</button></div></div>
+        </div>
+      </div>
+    </aside>
+    <div class="paper">
+      <div class="port" id="port" data-tw="true">
+        <div class="sheet" id="sheet" data-snap="true" data-tw="true">
+          <div class="editor" id="editor" contenteditable="true" spellcheck="false" data-hint="" role="textbox" aria-label="Typewriter page"></div>
+        </div>
+      </div>
+      <div class="pbar" id="pbar"><i></i></div>
     </div>
   </div>
 </div>
@@ -180,6 +313,9 @@
   const stamp = document.getElementById('stamp');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let lastCaretInSheet = null;
+  let twOn = true;
+  let prOn = true;
+  let menuOpen = false;
 
   function applyVars() {
     const w = +document.getElementById('w').value;
@@ -212,7 +348,36 @@
     return rect.width || rect.height ? rect : editor.getBoundingClientRect();
   }
 
+  function syncChrome() {
+    document.getElementById('twBtn').dataset.on = twOn ? 'true' : 'false';
+    document.getElementById('twBtn').setAttribute('aria-pressed', twOn ? 'true' : 'false');
+    document.getElementById('prBtn').dataset.on = prOn ? 'true' : 'false';
+    document.getElementById('prBtn').setAttribute('aria-pressed', prOn ? 'true' : 'false');
+    document.getElementById('moreBtn').dataset.open = menuOpen ? 'true' : 'false';
+    document.getElementById('moreBtn').setAttribute('aria-expanded', menuOpen ? 'true' : 'false');
+    document.getElementById('moreMenu').hidden = !menuOpen;
+    document.getElementById('formatSec').classList.toggle('is-dead', twOn);
+    document.getElementById('pbar').hidden = !prOn;
+    document.querySelectorAll('.tw-row').forEach((el) => el.classList.toggle('is-dead', !twOn));
+    document.querySelectorAll('.pr-row').forEach((el) => el.classList.toggle('is-dead', !prOn));
+    port.dataset.tw = twOn ? 'true' : 'false';
+    sheet.dataset.tw = twOn ? 'true' : 'false';
+    document.querySelectorAll('.rig .rev[data-theme]').forEach((b) => {
+      const id = b.dataset.theme === 'flux' ? 'flux' : 'arbor';
+      b.dataset.on = (root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor') === id ? 'true' : 'false';
+    });
+  }
+
+  function setTheme(id) {
+    if (id === 'flux') root.setAttribute('data-theme', 'flux');
+    else root.removeAttribute('data-theme');
+    syncChrome();
+    lastCaretInSheet = null;
+    if (twOn) requestAnimationFrame(() => hold(true));
+  }
+
   function hold(snap) {
+    if (!twOn) return;
     const rect = caretRect();
     if (!rect) return;
     const portBox = port.getBoundingClientRect();
@@ -274,13 +439,39 @@
   document.addEventListener('selectionchange', () => {
     if (document.activeElement === editor) hold(false);
   });
-  port.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
+  port.addEventListener('wheel', (e) => { if (twOn) e.preventDefault(); }, { passive: false });
+
+  document.getElementById('twBtn').addEventListener('click', () => {
+    twOn = !twOn;
+    lastCaretInSheet = null;
+    if (!twOn) { sheet.style.transform = 'none'; sheet.dataset.snap = 'true'; }
+    syncChrome();
+    if (twOn) requestAnimationFrame(() => hold(true));
+  });
+  document.getElementById('prBtn').addEventListener('click', () => { prOn = !prOn; syncChrome(); });
+  document.getElementById('moreBtn').addEventListener('click', () => { menuOpen = !menuOpen; syncChrome(); });
+  document.querySelectorAll('.rig .rev[data-theme]').forEach((b) => {
+    b.addEventListener('click', () => setTheme(b.dataset.theme));
+  });
+  document.querySelectorAll('.seg button').forEach((b) => {
+    b.addEventListener('click', () => {
+      const row = b.closest('.crow');
+      if (row && row.classList.contains('is-dead')) return;
+      row.querySelectorAll('.seg button').forEach((x) => { x.dataset.on = 'false'; });
+      b.dataset.on = 'true';
+    });
+  });
 
   const q = new URLSearchParams(location.search);
   const shot = q.get('shot') === 'mid' ? 'mid' : 'rest';
   stamp.textContent = shot === 'mid' ? 'TYPEWRITER · MID-PARAGRAPH' : 'TYPEWRITER · REST';
   editor.textContent = shot === 'mid' ? MID : REST;
+  if (q.get('theme') === 'flux') root.setAttribute('data-theme', 'flux');
+  if (q.get('menu') === '1') menuOpen = true;
+  if (q.get('tw') === '0') twOn = false;
+  if (q.get('pr') === '0') prOn = false;
   applyVars();
+  syncChrome();
   requestAnimationFrame(() => {
     if (shot === 'mid') {
       const mark = MID.indexOf('I left the light on for a reason') + 'I left the light on for a reason'.length;
