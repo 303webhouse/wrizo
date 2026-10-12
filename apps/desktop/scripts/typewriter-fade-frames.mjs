@@ -33,9 +33,21 @@ await withHarness(async (app) => {
   await sleep(600);
   await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false);
     const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()`);
-  await app.typeKeys(' and on');
+  // THE HARNESS'S OWN FIXTURE (chat 1, 2026-10-12: the old ' and on' frame put no line into the fade band, so the images could not
+  // SHOW the order the harness asserts): eight new lines typed with real Enters, then the writer's own scroll settles the oldest
+  // visible line inside the box's first line - the band is full, exactly as typewriter-fade.mjs measures it.
+  for (let i = 1; i <= 8; i += 1) { await app.typeKeys(`\nAnd the writer goes on, line ${i} of the new ones.`); await sleep(120); }
   try { await app.waitFor("document.querySelector('.mode-scroll')?.dataset.scrolled === 'true'", { label: 'scrolled', timeout: 6000 }); } catch { /* recorded */ }
   await sleep(1200);
+  await app.evalJs(`(() => {
+    const scroll = document.querySelector('.mode-scroll'); const ed = document.querySelector('${ED}'); if (!scroll || !ed) return null;
+    const box = scroll.getBoundingClientRect(); const lh = parseFloat(getComputedStyle(ed).lineHeight) || 28;
+    const r = document.createRange(); r.selectNodeContents(ed); const mids = [];
+    for (const rc of r.getClientRects()) { if (rc.height < 4) continue; const mid = (rc.top + rc.bottom) / 2 - box.top; if (!mids.some((m) => Math.abs(m - mid) < 4)) mids.push(mid); }
+    mids.sort((a, b) => a - b); const first = mids.find((m) => m >= 0); if (first == null) return null;
+    if (first > lh / 2) scroll.scrollTop = scroll.scrollTop + (first - lh / 2); return true;
+  })()`);
+  await sleep(500);
   const mask = await app.evalJs("(() => { const s = document.querySelector('.mode-scroll'); const cs = s && getComputedStyle(s); return cs ? (cs.webkitMaskImage || cs.maskImage) : null; })()");
   const when = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
   const name = `${label}-${SHA}-scrolled-history`;
