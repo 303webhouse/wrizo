@@ -1284,10 +1284,17 @@ a:focus-visible,
    exactly as the splash leaves, via each element's own opacity transition
    above/below. Reduced motion already drops to a plain .2s linear fade for
    every .wz-home descendant (the existing blanket rule, below in this file) —
-   these three ride that same rule, no new one needed. */
+   these three ride that same rule, no new one needed.
+   ROUND 5 (Fable's review) — `transition:none` HERE makes the HIDE instant:
+   without it, the moment this attribute lands the element would fade from
+   whatever it was (1, or .92) down to 0 over .38s, which is itself a visible
+   flash the opposite direction. The base rule's own `transition:opacity .38s
+   ease` still governs the REVEAL — once the attribute is gone this selector
+   no longer matches, so the element falls back to that transition and the
+   leaving-fade is unaffected. */
 [data-splash-hold='true'] .wz-logo,
 [data-splash-hold='true'] .wz-tagline,
-[data-splash-hold='true'] .wz-arrival-doors{ opacity:0; }
+[data-splash-hold='true'] .wz-arrival-doors{ opacity:0; transition:none; }
 /* ITEM splash-hold ROUND 4 (Fable's review) — opacity:0 alone still leaves Write and
    Open genuinely clickable (opacity never gates hit-testing). pointer-events:none
    closes that: a hidden door can't be pressed. Keyboard input is unaffected — this
@@ -5552,9 +5559,15 @@ a:focus-visible,
    asset's measured INK bounding box (3077x2458 inside a 3374x2699 canvas) —
    about a quarter of the screen's area, capped so the dimmed app always
    shows on all four sides (item 187). */
+/* ITEM splash-hold ROUND 5 (Fable's review): SUPERSEDED the flex-direction:column
+   + gap below — putting the loading line IN the centred flex stack shifted the
+   drawing 14.8px off true centre (the line's own height, halved, pushing the group
+   up). The drawing's centring is load-bearing (S4's whole claim); the loading line
+   is positioned absolutely instead (.wz-splash-loading, below), never a flex
+   participant, so nothing it does can move the mark again. */
 .wz-splash{
   position:fixed; inset:0; z-index:400; pointer-events:none;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+  display:flex; align-items:center; justify-content:center;
 }
 /* ITEM splash-hold (Nick, live): "the background should be faded out, not
    blurred" — SUPERSEDED the backdrop-filter blur below (the app no longer
@@ -5580,9 +5593,16 @@ a:focus-visible,
 /* ITEM splash-hold ROUND 3 — the cycling loading line, in the theme's own UI
    font and a quiet colour (both already per-theme tokens; no Flux override
    needed). `key`-remounted on every line change (Splash.tsx) restarts this
-   fade; reduced motion drops the animation below, an instant swap. */
+   fade; reduced motion drops the animation below, an instant swap.
+   ROUND 5 — SUPERSEDED being a flex participant (it shifted the drawing off
+   true centre, S4's own claim). Positioned absolutely instead, anchored to
+   `--mark-h` (Splash.tsx's own measured box.height, passed as a CSS custom
+   property on .wz-splash) so it always sits just below the drawing's own
+   rendered edge, whatever that edge currently is. */
 .wz-splash-loading{
-  position:relative; min-height:1.2em; font-family:var(--font-ui); font-size:13px;
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%, calc(-50% + var(--mark-h, 0px) / 2 + 14px));
+  min-height:1.2em; font-family:var(--font-ui); font-size:13px;
   color:var(--text-mid); letter-spacing:.01em; opacity:1; transition:opacity .38s ease;
 }
 .wz-splash-loading-text{ display:inline-block; animation:wz-splash-loading-fade .3s ease; }

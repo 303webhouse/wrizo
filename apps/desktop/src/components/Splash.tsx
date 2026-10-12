@@ -146,9 +146,14 @@ export function splashSizeFor(vw: number, vh: number) {
 export function Splash({ ready }: { ready: boolean }) {
   // Read the flag during the first render rather than in an effect: an effect
   // would let a remount paint one frame of a splash it is about to retract.
+  // ROUND 5 (Fable's review) — `data-splash-hold` moves here too, for the SAME
+  // reason: setting it in the mount effect let the front door paint ONE frame
+  // visible (~0.33s, measured) before the effect ran and hid it. This runs
+  // synchronously during the first render, before that frame ever paints.
   const [live, setLive] = useState(() => {
     if (alreadyShown) return false;
     alreadyShown = true;
+    if (typeof document !== 'undefined') document.documentElement.dataset.splashHold = 'true';
     return true;
   });
   const [leaving, setLeaving] = useState(false);
@@ -176,7 +181,6 @@ export function Splash({ ready }: { ready: boolean }) {
     // overlay (it is pointer-events:none), so it sees the app's own backdrop
     // rather than anything this component paints.
     setTone(measureBackdropTone());
-    document.documentElement.dataset.splashHold = 'true';
 
     const resize = () => setBox(splashSizeFor(window.innerWidth, window.innerHeight));
     resize();
@@ -255,7 +259,17 @@ export function Splash({ ready }: { ready: boolean }) {
     : '/brand/wrizo-sketch-for-light-theme.png';
 
   return (
-    <div className="wz-splash" data-leaving={leaving ? 'true' : 'false'} data-tone={tone} aria-hidden="true">
+    <div
+      className="wz-splash"
+      data-leaving={leaving ? 'true' : 'false'}
+      data-tone={tone}
+      aria-hidden="true"
+      // ROUND 5 — `--mark-h` lets index.css's own .wz-splash-loading anchor itself
+      // just below the drawing's own measured edge (CSS has no sibling-height
+      // combinator), so the loading line can be an absolutely-positioned element,
+      // never a flex participant that could shift the drawing off true centre again.
+      style={{ ['--mark-h' as unknown as string]: `${box.height}px` } as React.CSSProperties}
+    >
       <div className="wz-splash-veil" />
       <img
         className="wz-splash-mark"
