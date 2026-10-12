@@ -435,6 +435,26 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
 }
 
 // =============================================================================
+// PART N (Oct 12) - THE CONTENTS ARE NOT LIVE UNTIL THE SLIDE HAS SETTLED. Chat 1 measured the Screenplay button travelling ~184px in ~150ms: a press aimed at it landed where it WAS. Browserless
+// half: the rule is in the CSS with the right shape. The browser half is scripts/evidence/click-mid-open.mjs (an early press is a clean no-op; a press from settle on lands).
+// =============================================================================
+function partN(c = css) {
+  const kf = /@keyframes wz-drawer-live\{\s*0%,\s*99%\s*\{\s*pointer-events:none;\s*\}\s*100%\s*\{\s*pointer-events:auto;\s*\}\s*\}/.test(c);
+  const use = /^\[data-open='true'\] > \.wz-drawer-slide\{ animation: wz-drawer-live var\(--drawer-dur\) linear; \}/m.test(c);
+  const noFill = !/animation:[^;}]*wz-drawer-live[^;}]*(forwards|both|infinite)/.test(c);
+  const reducedBlock = (/@media \(prefers-reduced-motion:reduce\)\{([\s\S]*?)\n\}/.exec(c) || [])[1] || '';
+  const reduced = /\[data-open='true'\] > \.wz-drawer-slide\{ animation-duration: var\(--drawer-dur-reduced\) !important; \}/.test(c);
+  const notFade = !/wz-drawer-live var\(--fade-dur/.test(c);
+  return { kf, use, noFill, reduced, notFade, reducedBlockSeen: reducedBlock.length > 0 };
+}
+{
+  const n = partN();
+  ok('(N1) the drawer\'s sliding layer takes NO pointer input while it slides: a keyframe holds pointer-events:none until the last 1% of --drawer-dur, then hands control back; it hangs on [data-open=true] so it restarts on every open, and it does not pin the end state (no fill-mode)',
+    n.kf && n.use && n.noFill && n.notFade, JSON.stringify(n));
+  ok('(N2) under reduced motion the guard keeps the short fade\'s length (--drawer-dur-reduced, !important, so the global 0.01ms floor cannot hand the controls back at once)', n.reduced, JSON.stringify(n));
+}
+
+// =============================================================================
 // MUTATIONS - each claim's protection removed in turn; each asserts it LANDED before the red is believed.
 // =============================================================================
 function mutate(text, from, to) { if (!text.includes(from)) throw new Error('mutation anchor missing: ' + from.slice(0, 60)); return text.replace(from, () => to); }
@@ -500,6 +520,12 @@ await mutant('the note opens on hover', async () => partM(tutorSrc, tabsSrc, mut
 await mutant('the notes move inside the tablist', async () => partM(tutorSrc, mutate(tabsSrc, "    </div>\n    {hasNotes && notes && (", "    {hasNotes && notes && ("), noteSrc), (m) => m.outsideTablist === false);
 await mutant('the open note takes room (static, not an overlay)', async () => partM(tutorSrc, tabsSrc, noteSrc, mutate(css, '.wz-drawer-note-pop{ position:absolute;', '.wz-drawer-note-pop{ position:static;')), (m) => m.popOverlay === false);
 await mutant('the open "?" gets a fill', async () => partM(tutorSrc, tabsSrc, noteSrc, mutate(css, ".wz-drawer-note-btn[aria-expanded='true']{ color:var(--brass); border-color:var(--brass); background:none; }", ".wz-drawer-note-btn[aria-expanded='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }")), (m) => m.noteOpenOutline === false);
+
+await mutant('the layer stays live during the slide (the keyframe holds auto)', async () => partN(mutate(css, '@keyframes wz-drawer-live{ 0%, 99% { pointer-events:none; } 100% { pointer-events:auto; } }', '@keyframes wz-drawer-live{ 0%, 99% { pointer-events:auto; } 100% { pointer-events:auto; } }')), (n) => n.kf === false);
+await mutant('the guard is not applied to the open drawer', async () => partN(mutate(css, "[data-open='true'] > .wz-drawer-slide{ animation: wz-drawer-live var(--drawer-dur) linear; }", "[data-open='true'] > .wz-drawer-slide{ }")), (n) => n.use === false);
+await mutant('the guard rides --fade-dur (which the vanish engine rewrites)', async () => partN(mutate(css, 'animation: wz-drawer-live var(--drawer-dur) linear;', 'animation: wz-drawer-live var(--fade-dur,.2s) linear;')), (n) => n.use === false || n.notFade === false);
+await mutant('the guard pins the dead state forever (fill-mode forwards)', async () => partN(mutate(css, 'animation: wz-drawer-live var(--drawer-dur) linear;', 'animation: wz-drawer-live var(--drawer-dur) linear forwards;')), (n) => n.use === false || n.noFill === false);
+await mutant('reduced motion loses the guard\'s length (the floor wins)', async () => partN(mutate(css, "[data-open='true'] > .wz-drawer-slide{ animation-duration: var(--drawer-dur-reduced) !important; }", '')), (n) => n.reduced === false);
 
 let failed = 0;
 for (const c of checks) {

@@ -3732,6 +3732,13 @@ a:focus-visible,
 .wz-drawer-slide--left{ border-right:none; transform:translateX(100%); }
 .wz-drawer-slide--right{ border-left:none; transform:translateX(-100%); }
 [data-open='true'] > .wz-drawer-slide{ transform:none; }
+/* THE CONTENTS ARE NOT LIVE UNTIL THE SLIDE HAS SETTLED (Fable, Oct 12; measured by scripts/evidence/click-mid-open.mjs: the Screenplay button travels ~184px in ~150ms, so a press
+   aimed at it inside that window lands where it WAS, on a neighbour). For the length of the slide (--drawer-dur; the short fade under reduced motion) the sliding layer takes no pointer
+   input: an early click falls through to the drawer's own (inert) panel and does NOTHING - never the wrong control. It is an animation, not a transition, because pointer-events is a
+   discrete property and a keyframe holds 'none' until the last moments and then hands control back; once it ends the layer inherits the panel's 'auto' again. Keyboard focus is not
+   affected (the closed drawer is already inert, and an open one is reachable by Tab as before). It restarts on every open because it hangs on [data-open='true']. */
+@keyframes wz-drawer-live{ 0%, 99% { pointer-events:none; } 100% { pointer-events:auto; } }
+[data-open='true'] > .wz-drawer-slide{ animation: wz-drawer-live var(--drawer-dur) linear; }
 /* PHASE 1 (S2) - THE TAB ROW. The chosen tab wears a BRASS OUTLINE and brass text and NOTHING else - no fill (Nick, Oct 9). The drawer's
    arrow tab is olive (where you are); this is brass (what you chose). */
 .wz-drawer-tabbar{ position:relative; padding:14px 14px 0; }
@@ -3788,6 +3795,8 @@ a:focus-visible,
 @media (prefers-reduced-motion:reduce){
   .wz-sliver-panel, .wz-tutor-panel{ transition:opacity var(--drawer-dur-reduced) linear; transition-duration: var(--drawer-dur-reduced) !important; }
   .wz-drawer-slide, .wz-drawer-slide--left, .wz-drawer-slide--right{ transform:none; transition:none; }
+  /* ...and the global floor (animation-duration 0.01ms !important) would hand the controls back at once; the guard keeps the short fade's length, as the panel does for its fade. */
+  [data-open='true'] > .wz-drawer-slide{ animation-duration: var(--drawer-dur-reduced) !important; }
 }
 .wz-sliver-body{ display:flex; flex-direction:column; gap:20px; padding:16px 14px; }
 .wz-sliver-section{ display:flex; flex-direction:column; gap:8px; }
