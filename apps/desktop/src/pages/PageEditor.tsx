@@ -347,6 +347,25 @@ function PageEditorView({ id }: { id: string }) {
   // it would be embarrassing to reintroduce it while fixing it.
   useEffect(() => {
     if (mode !== 'drafting') return;
+    // The heading line the floating +/- sits beside, as plain offsets, set by the last full recompute. A SCROLL changes where the line
+    // is on screen but nothing the recompute derives (marks, heading level, the selection), so a scroll only re-places the pop -
+    // and only while one is shown, at most once a frame (Fable, 2026-10-12: the full recompute reads the whole page's innerText,
+    // and the typewriter scrolls on every line).
+    let popLine: { ls: number; le: number } | null = null;
+    let raf = 0;
+    const place = (ls: number, le: number) => {
+      const el = editorRef.current;
+      if (!el) return;
+      const lineRange = rangeFromPlainOffsets(el, ls, le);
+      const rects = lineRange ? [...lineRange.getClientRects()].filter(r => r.width > 0) : [];
+      if (rects.length === 0) { setHeadingPop(null); return; }
+      const last = rects[rects.length - 1];
+      const col = el.getBoundingClientRect();
+      const POP_W = 56;
+      setHeadingPop(last.right + 8 + POP_W <= col.right
+        ? { x: Math.round(last.right + 8), y: Math.round(last.top + (last.height - 24) / 2) }
+        : { x: Math.round(col.left - POP_W - 8), y: Math.round(rects[0].top + (rects[0].height - 24) / 2) });
+    };
     const recompute = () => {
       const el = editorRef.current;
       if (!el) return;
@@ -365,24 +384,26 @@ function PageEditorView({ id }: { id: string }) {
       // so the page never moves.
       const sel = window.getSelection();
       const o = level !== null && sel && !sel.isCollapsed ? getSelectionOffsets(el) : null;
-      if (!o) { setHeadingPop(null); return; }
+      if (!o) { popLine = null; setHeadingPop(null); return; }
       const ls = plain.lastIndexOf('\n', Math.max(0, o.start - 1)) + 1;
       let le = plain.indexOf('\n', o.start);
       if (le === -1) le = plain.length;
-      const lineRange = rangeFromPlainOffsets(el, ls, le);
-      const rects = lineRange ? [...lineRange.getClientRects()].filter(r => r.width > 0) : [];
-      if (rects.length === 0) { setHeadingPop(null); return; }
-      const last = rects[rects.length - 1];
-      const col = el.getBoundingClientRect();
-      const POP_W = 56;
-      setHeadingPop(last.right + 8 + POP_W <= col.right
-        ? { x: Math.round(last.right + 8), y: Math.round(last.top + (last.height - 24) / 2) }
-        : { x: Math.round(col.left - POP_W - 8), y: Math.round(rects[0].top + (rects[0].height - 24) / 2) });
+      popLine = { ls, le };
+      place(ls, le);
+    };
+    // A scroll anywhere (the page's own scroller included): no recompute - only the shown pop is re-placed, once per frame.
+    const onScroll = () => {
+      if (!popLine || raf) return;
+      raf = requestAnimationFrame(() => { raf = 0; if (popLine) place(popLine.ls, popLine.le); });
     };
     document.addEventListener('selectionchange', recompute);
-    window.addEventListener('scroll', recompute, true);
+    window.addEventListener('scroll', onScroll, true);
     recompute();
-    return () => { document.removeEventListener('selectionchange', recompute); window.removeEventListener('scroll', recompute, true); };
+    return () => {
+      document.removeEventListener('selectionchange', recompute);
+      window.removeEventListener('scroll', onScroll, true);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, [mode, text]);
 
   const gateActive = framed && firstRunGateRequested.current && !gateUnlocked;

@@ -139,6 +139,30 @@ await withHarness(async (app) => {
   ok('POP: the page did not move (PAGE IS PRIMARY: the pop is an overlay)', pageBefore === pageAfter, JSON.stringify({ pageBefore, pageAfter }));
   await placeCaret(app, 3); await sleep(400);
   ok('POP: a collapsed caret (nothing selected) shows no pop', !(await app.evalJs("!!document.querySelector('.wz-heading-pop')")));
+
+  // THE POP FOLLOWS ITS LINE ON A SCROLL (Fable, 2026-10-12): a scroll no longer reruns the strip's recompute - it only re-places a
+  // pop that is showing, once a frame. So the pop must still move WITH the heading line when the page scrolls under it.
+  const filler = (n, tag) => Array.from({ length: n }, (_, i) => `${tag} line ${i + 1} of the page, long enough to be a real line.`).join('\n');
+  const hpText = `${filler(20, 'Above')}\n## A heading in the middle\n${filler(20, 'Below')}`;
+  await openDraft(app, 'hs', hpText);
+  const hStart = hpText.indexOf('## A heading in the middle');
+  await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); ed.focus(); const a = ${hStart + 5}, b = ${hStart + 12};
+    const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n, acc = 0, sN, sO, eN, eO;
+    while ((n = w.nextNode())) { const L = n.data.length; if (!sN && acc + L > a) { sN = n; sO = a - acc; } if (!eN && acc + L >= b) { eN = n; eO = b - acc; } acc += L; }
+    sN.parentElement.scrollIntoView({ block: 'center' });
+    const r = document.createRange(); r.setStart(sN, sO); r.setEnd(eN, eO); const s = getSelection(); s.removeAllRanges(); s.addRange(r); })()`);
+  await sleep(500);
+  const readPop = () => app.evalJs(`(() => { const p = document.querySelector('.wz-heading-pop'); const s = getSelection();
+    if (!p || !s.rangeCount) return null; const pr = p.getBoundingClientRect(); const lr = s.getRangeAt(0).getBoundingClientRect();
+    return { popTop: Math.round(pr.top), lineTop: Math.round(lr.top), buttons: p.querySelectorAll('button').length }; })()`);
+  const popBefore = await readPop();
+  const scrolled = await app.evalJs("(() => { const s = document.querySelector('.mode-scroll'); if (!s) return null; const before = s.scrollTop; s.scrollTop = before + 56; return Math.round(s.scrollTop - before); })()");
+  await sleep(250);   // past the frame the pop is re-placed on
+  const popAfter = await readPop();
+  ok('POP FOLLOWS ITS LINE: when the page scrolls under a selected heading, the pop moves with the line (same delta) and keeps its buttons',
+    !!popBefore && !!popAfter && scrolled > 0 && Math.abs((popAfter.popTop - popBefore.popTop) - (popAfter.lineTop - popBefore.lineTop)) <= 2
+      && popAfter.lineTop !== popBefore.lineTop && popAfter.buttons === 2,
+    JSON.stringify({ scrolled, popBefore, popAfter }));
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);

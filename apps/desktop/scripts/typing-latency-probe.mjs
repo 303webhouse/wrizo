@@ -48,12 +48,44 @@ await withHarness(async (app) => {
     for (let i = 0; i < 40; i += 1) { await app.typeKeys('a'); await sleep(60); }
     for (let i = 0; i < 40; i += 1) { await app.key('ArrowRight'); await sleep(60); }
     await sleep(500);
+    // SCROLL (Fable, 2026-10-12): the page's own scroller moved one line at a time, 20 steps, the caret collapsed (no heading pop) -
+    // what each scroll costs: the page-wide innerText reads it triggers, and the time from the scroll to the end of its next frame.
+    // Before the fix every scroll ran the full strip recompute (innerText + marksAt + heading level); after it, a scroll with no pop
+    // shown does nothing at all.
+    const scrollM = await app.evalJs(`(async () => {
+      const scroll = document.querySelector('.mode-scroll'); const ed = document.querySelector('${ED}');
+      if (!scroll || !ed) return null;
+      const lh = parseFloat(getComputedStyle(ed).lineHeight) || 28;
+      const it = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'innerText');
+      let reads = 0;
+      Object.defineProperty(HTMLElement.prototype, 'innerText', { configurable: true, set: it.set, get() { reads++; return it.get.call(this); } });
+      const frame = () => new Promise((res) => requestAnimationFrame(() => setTimeout(res, 0)));
+      const times = [], perStep = [];
+      try {
+        scroll.scrollTop = Math.max(0, scroll.scrollTop - 20 * lh);
+        await frame(); await new Promise((r) => setTimeout(r, 120));
+        for (let i = 0; i < 20; i++) {
+          const before = reads, t0 = performance.now();
+          scroll.scrollTop += lh;
+          await frame();
+          times.push(performance.now() - t0);
+          await new Promise((r) => setTimeout(r, 40));
+          perStep.push(reads - before);
+        }
+      } finally { Object.defineProperty(HTMLElement.prototype, 'innerText', it); }
+      const sorted = [...times].sort((a, b) => a - b);
+      return { steps: times.length, innerTextReadsTotal: perStep.reduce((a, b) => a + b, 0), innerTextReadsPerStepMax: Math.max(...perStep),
+        scrollToFrame_median: Math.round(sorted[Math.floor(sorted.length / 2)] * 10) / 10, scrollToFrame_p95: Math.round(sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))] * 10) / 10 };
+    })()`);
     const lat = await app.evalJs('window.__lat');
     const chars = await app.evalJs(`document.querySelector('${ED}').textContent.length`);
     const row = { words, chars, keystroke_median: pct(lat.key, 0.5), keystroke_p95: pct(lat.key, 0.95), toPaint_median: pct(lat.paint, 0.5), toPaint_p95: pct(lat.paint, 0.95), caretMove_median: pct(lat.move, 0.5), caretMove_p95: pct(lat.move, 0.95), n: [lat.key.length, lat.paint.length, lat.move.length] };
+    row.scroll = scrollM;
     rows.push(row);
     console.log(JSON.stringify(row));
   }
+  console.log('\nSCROLL (one line per step, 20 steps, no heading pop): page-wide innerText reads, and ms from the scroll to its next frame');
+  for (const r of rows) console.log(`  ${String(r.words).padStart(6)} words: ${r.scroll ? `${r.scroll.innerTextReadsTotal} innerText reads in ${r.scroll.steps} scrolls (max ${r.scroll.innerTextReadsPerStepMax}/step); scroll-to-frame ${r.scroll.scrollToFrame_median} / p95 ${r.scroll.scrollToFrame_p95}` : 'n/a'}`);
   console.log('\nTYPING LATENCY (ms, Draft, caret mid-page):');
   for (const r of rows) console.log(`  ${String(r.words).padStart(6)} words (${r.chars} chars): keystroke ${r.keystroke_median} / p95 ${r.keystroke_p95};  to paint ${r.toPaint_median} / p95 ${r.toPaint_p95};  caret move ${r.caretMove_median} / p95 ${r.caretMove_p95}`);
 });
