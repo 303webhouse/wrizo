@@ -105,6 +105,17 @@ const toDraft = async (app) => {
   // ----------------------------------------------------------------------
   await app.waitFor("!!document.querySelector('.wz-sliver-templates')", { label: 'Draft sliver Templates zone' });
   await sleep(250);
+  // PHASE 1 S5 (fixture) - MEASURED, not assumed (Chat 1's run, 2026-10-12: the E3 line-scope successors, the Tab fence and the Bulleted-list control read as if the first Indent/Bullet press
+  // did nothing). A fresh chapter page is EMPTY when it first reaches Draft, so under S5 it takes Arbor's default (typewriter ON), which greys and disables the Format group - a disabled
+  // button ignores click(), exactly the symptom. The state is read first (and recorded), then turned OFF through the REAL toggle, then read again, so the premise is in the run itself.
+  const twBefore = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`);
+  const fmtLockedBefore = await app.evalJs(`document.querySelector('.wz-sliver-fieldset')?.disabled ?? 'absent'`);
+  await app.evalJs(`(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]'); if (b && b.getAttribute('aria-pressed') === 'true') b.click(); })()`);
+  await sleep(250);
+  const twAfter = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`);
+  const fmtLockedAfter = await app.evalJs(`document.querySelector('.wz-sliver-fieldset')?.disabled ?? 'absent'`);
+  ok('fixture (Phase 1 S5): the Format group is usable (typewriter OFF, via the real toggle) before Format is pressed',
+    twAfter === 'false' && fmtLockedAfter === false, JSON.stringify({ twBefore, fmtLockedBefore, twAfter, fmtLockedAfter }));
 };
 
 // Open a foot pop-out BY NAME, never by ordinal — fx3.mjs's own parked driver

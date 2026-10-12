@@ -187,8 +187,24 @@ await withHarness(async (app) => {
   // ok('S3 (b) — CONTROL: a Draft page that already holds work (1 line-equivalent, under the 10 threshold) still opens with the typewriter ON — FX2 S2 amended at the EMPTY case only',
   // shortTypewriter === 'true', `data-typewriter=${String(shortTypewriter)}`);
   // ----------------------------------------------------------------------
-  ok('S5 successor to S3 (b) — a Draft page that already holds work (1 line-equivalent) now opens with the typewriter OFF: text with no saved value is OFF, the under-10 ON band is gone',
-    shortTypewriter === 'false', `data-typewriter=${String(shortTypewriter)}`);
+  // MEASURED, not assumed (Chat 1's run, 2026-10-12: this successor read data-typewriter=true). The fixture's page is created EMPTY and first opened EMPTY - so under S5 it took
+  // Arbor's default (ON) and SAVED it - and only then gets text. On the reopen the SAVED value wins over "has text": that is Nick's rule working, not a bug. The premise is read
+  // from the stored key itself, so the check cannot pass for the wrong reason. The other half - a page that ALREADY HAS TEXT the first time it is ever opened - is S3 (c) below.
+  const shortSaved = await app.evalJs(`localStorage.getItem('wrizo-typewriter-page-${shortId}')`);
+  ok('S5 successor to S3 (b) — a Draft page that was EMPTY when first opened (it took Arbor\'s default and SAVED it) keeps that ON when it is reopened holding work: the saved value wins over "has text"',
+    shortTypewriter === 'true' && shortSaved === 'on', `data-typewriter=${String(shortTypewriter)} saved=${String(shortSaved)}`);
+
+  // S3 (c) - the real "has text, nothing saved" case: a page that already holds work the FIRST time it is ever opened opens OFF (in Arbor too), and remembers OFF.
+  await freshDesk(app);
+  const seededId = await app.evalJs(`window.wrizoCreateJournalPage({ id: 'item87-has-text', text: 'A little work already here.', createdAt: new Date().toISOString(), source: null, origin: null }).id`);
+  await app.evalJs(`location.hash = '#/page/${seededId}'`);
+  await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'a first-ever open of a page that already has text' });
+  await sleep(400);
+  const seededMode = await activeModeTab(app);
+  const seededTypewriter = await typewriterDom(app);
+  const seededSaved = await app.evalJs(`localStorage.getItem('wrizo-typewriter-page-${seededId}')`);
+  ok('S3 (c) [Phase 1 S5] — a Draft page that already holds work the FIRST time it is ever opened (nothing saved) opens with the typewriter OFF, and saves OFF',
+    seededMode === 'Draft' && seededTypewriter === 'false' && seededSaved === 'off', `mode=${String(seededMode)} data-typewriter=${String(seededTypewriter)} saved=${String(seededSaved)}`);
 });
 
 // eslint-disable-next-line no-console
