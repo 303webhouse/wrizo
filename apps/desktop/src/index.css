@@ -387,19 +387,27 @@
    thumb immediately above. The app-wide default (FX7 S4, `*`/`::-webkit-
    scrollbar` at the top of this block) is untouched for every OTHER
    scrollable region (dialogs, drawers, cascade panels, the notebook grid) —
-   this override reaches exactly the same three selectors FX7 S4 already
-   named for the writing surface, and ONLY those three, superseding their
-   native thumb colors with "none" so the custom overlay is the only thumb
-   drawn. `scrollbar-width:none` + a zeroed webkit thumb (not `display:none`
-   on the scrollbar itself, which some Chromium builds ignore) is the
-   reliable cross-engine way to keep the track scrollable while drawing no
-   native chrome. */
-.mode-scroll, .desk-frame-scroll-cap, .board-text{
+   this override reaches exactly `.mode-scroll`/`.desk-frame-scroll-cap`,
+   the two selectors ThinScrollbar is actually wired to as a sibling
+   (ModeStage.tsx/ScriptEditor.tsx), superseding their native thumb colors
+   with "none" so the custom overlay is the only thumb drawn there.
+   `.board-text` (a board card's own text body) gets NO ThinScrollbar — see
+   BoardTextBox's own shape, a self-closing `dangerouslySetInnerHTML` div
+   with no sibling slot to mount into, and FX4 S4's "the reflow floor only
+   ever grows" law means it rarely genuinely overflows — so it stays OUT of
+   this hide rule (Fable's review): removing it here without adding an
+   overlay would have left board card text with no scrollbar affordance at
+   all. Its existing thin native thumb (immediately above, FX7 S4's own
+   `--ink-on-paper-low` paper treatment) is therefore untouched and is the
+   only scrollbar it has. `scrollbar-width:none` + a zeroed webkit thumb (not
+   `display:none` on the scrollbar itself, which some Chromium builds
+   ignore) is the reliable cross-engine way to keep the track scrollable
+   while drawing no native chrome. */
+.mode-scroll, .desk-frame-scroll-cap{
   scrollbar-width: none;
 }
 .mode-scroll::-webkit-scrollbar,
-.desk-frame-scroll-cap::-webkit-scrollbar,
-.board-text::-webkit-scrollbar{ width:0; height:0; }
+.desk-frame-scroll-cap::-webkit-scrollbar{ width:0; height:0; }
 
 .wz-thin-scrollbar{
   position:fixed;
@@ -407,7 +415,10 @@
   z-index:50;
   pointer-events:none;
   opacity:0;
-  transition:opacity 1s ease;
+  /* Fable's review: match the mockup — about 1s shown, then a quick 0.35s
+     fade-out (not a 1s one.) The 1s WAIT before this fires lives in
+     ThinScrollbar.tsx's own FADE_OUT_DELAY_MS; this is the fade itself. */
+  transition:opacity .35s ease;
 }
 .wz-thin-scrollbar.active{
   opacity:1;

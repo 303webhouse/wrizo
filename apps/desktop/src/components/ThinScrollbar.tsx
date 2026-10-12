@@ -90,6 +90,16 @@ export function ThinScrollbar() {
     const onScroll = () => { layoutRoot(); layoutThumb(); show(); scheduleHide(); };
     const onTargetEnter = () => show();
     const onTargetLeave = () => { if (!dragging) scheduleHide(); };
+    // Fable's review: the overlay sits geometrically inside the target's own
+    // rect (its rightmost THICKNESS_PX), but it is a SEPARATE element, not a
+    // descendant — so hit-testing resolves the pointer to the overlay once it
+    // covers that strip, and the target's own `mouseleave` fires even though
+    // the pointer never actually left the writing surface. Mirroring the same
+    // show/scheduleHide pair on the overlay itself closes that gap: moving
+    // from the target onto the thumb schedules a hide (target leave) that the
+    // overlay's own enter immediately cancels (show() clears the timer).
+    const onBarEnter = () => show();
+    const onBarLeave = () => { if (!dragging) scheduleHide(); };
 
     const onThumbPointerDown = (e: PointerEvent) => {
       e.preventDefault();
@@ -122,6 +132,8 @@ export function ThinScrollbar() {
     target.addEventListener('scroll', onScroll, { passive: true });
     target.addEventListener('mouseenter', onTargetEnter);
     target.addEventListener('mouseleave', onTargetLeave);
+    root.addEventListener('mouseenter', onBarEnter);
+    root.addEventListener('mouseleave', onBarLeave);
     thumb.addEventListener('pointerdown', onThumbPointerDown);
     window.addEventListener('resize', layoutRoot);
     const ro = new ResizeObserver(() => { layoutRoot(); layoutThumb(); });

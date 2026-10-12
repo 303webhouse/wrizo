@@ -187,7 +187,12 @@ await withHarness(async (app) => {
     JSON.stringify({ active: s.active, opacity: s.opacity, pointerEvents: s.pointerEvents }));
 
   // ==========================================================================
-  // S3 — GONE ~1s AFTER SCROLLING STOPS (not immediately, not never).
+  // S3 — GONE ~1s AFTER SCROLLING STOPS (not immediately, not never). Fable's
+  // review: the mockup's fade-out is ~0.35s, not the 1s this started with —
+  // FADE_OUT_DELAY_MS (the wait before the hide class drops) is unchanged at
+  // 1000ms; only the CSS transition on the fade itself shortened. So `active`
+  // flips false at the ~1000ms mark regardless, but `opacity` doesn't settle
+  // to 0 until ~350ms after that — the two are checked at different delays.
   // ==========================================================================
   await scrollTo(app, '.desk-frame-scroll-cap', 180);
   await sleep(400);
@@ -195,10 +200,15 @@ await withHarness(async (app) => {
   ok('S3: still visible shortly (400ms) after the last scroll — the hide is not immediate',
     s.active === true, JSON.stringify({ active: s.active }));
 
-  await sleep(900); // 400ms + 900ms = 1300ms total, past the 1000ms delay
+  await sleep(750); // 400ms + 750ms = 1150ms total, past the 1000ms wait — the hide class drops here
   s = await barState(app, '.desk-frame-scroll-cap');
-  ok('S3: gone about 1s after scrolling stopped',
-    s.active === false && parseFloat(s.opacity) === 0, JSON.stringify({ active: s.active, opacity: s.opacity }));
+  ok('S3: gone (hide class dropped) about 1s after scrolling stopped',
+    s.active === false, JSON.stringify({ active: s.active }));
+
+  await sleep(400); // +400ms = 1550ms total, past the wait AND the 0.35s fade-out
+  s = await barState(app, '.desk-frame-scroll-cap');
+  ok('S3 (Fable\'s review): and fully faded — opacity 0 once the ~0.35s fade-out itself has had time to finish, not the old ~1s one',
+    parseFloat(s.opacity) === 0, JSON.stringify({ opacity: s.opacity }));
 
   // ==========================================================================
   // S4 — HOVER SHOWS IT; LEAVING LETS IT FADE. DRAGGING THE THUMB SCROLLS
@@ -211,6 +221,23 @@ await withHarness(async (app) => {
   await sleep(150);
   s = await barState(app, '.mode-scroll');
   ok('S4: hovering the writing surface (no scroll) shows the overlay',
+    s.active === true, JSON.stringify({ active: s.active }));
+
+  // Fable's review: the overlay sits geometrically inside the target's own
+  // rightmost 4px, but is a SEPARATE element (not a descendant) — so moving
+  // onto it changes the hit-test result and fires the target's own
+  // `mouseleave`, even though the pointer never left the writing surface.
+  // Without the overlay's own mirrored enter/leave pair, that mouseleave
+  // would schedule a hide the instant the pointer reaches the thumb.
+  const thumbPointForHover = await app.evalJs("(() => { const t = document.querySelector('.mode-scroll').nextElementSibling.querySelector('.wz-thin-scrollbar-thumb'); const r = t.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+  await app.mouseMove(thumbPointForHover.x, thumbPointForHover.y);
+  await sleep(150);
+  s = await barState(app, '.mode-scroll');
+  ok('S4 (Fable\'s review): moving from the writing surface ONTO the thumb keeps it shown — hovering the thumb does not read as leaving',
+    s.active === true, JSON.stringify({ active: s.active }));
+  await sleep(1300); // well past the 1000ms wait — confirms it is genuinely held, not merely not-yet-expired
+  s = await barState(app, '.mode-scroll');
+  ok('S4 (Fable\'s review): and stays shown the whole time the pointer rests on the thumb, past the point it would otherwise have faded',
     s.active === true, JSON.stringify({ active: s.active }));
 
   // Move the pointer well away from the surface entirely.
@@ -316,6 +343,49 @@ await withHarness(async (app) => {
     ok('S7: and hides immediately once scrolling stops — the 1s delay is itself a transition this mode removes',
       s.active === false, JSON.stringify({ active: s.active }));
   }
+
+  // ==========================================================================
+  // S8 — BOARD CARDS KEEP THEIR NATIVE SCROLLBAR (Fable's review). A board
+  // card's own text body (.board-text) gets no ThinScrollbar — BoardTextBox
+  // is a self-closing dangerouslySetInnerHTML div with no sibling slot to
+  // mount one into — so it must NOT have been swept into the native-hide
+  // rule either, or it loses its scrollbar affordance entirely with nothing
+  // to replace it. Confirms both halves: no overlay was injected, and the
+  // FX7 S4 paper-toned native thumb this selector already had is intact.
+  // ==========================================================================
+  await freshDesk(app, 1400, 900);
+  await app.evalJs(`(() => {
+    const now = new Date().toISOString();
+    window.wrizoCreateJournalPage({
+      id: 'sb-board', text: 'scrollbar-minimal board', pageType: 'board',
+      boxes: [{ id: 'sb-card', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.08, z: 1, text: 'Board card text for scrollbar-minimal S8.' }],
+      createdAt: now, origin: null,
+    });
+  })()`);
+  await app.reload();
+  await app.evalJs("location.hash = '#/page/sb-board'");
+  await app.waitFor("!!document.querySelector('[data-box-id=\"sb-card\"] .board-text')", { label: 'Board card mounted, framed' });
+  await sleep(300);
+
+  const boardText = await app.evalJs(`(() => {
+    const el = document.querySelector('[data-box-id="sb-card"] .board-text');
+    if (!el) return { found: false };
+    const cs = getComputedStyle(el);
+    return {
+      found: true,
+      hasOverlaySibling: !!(el.nextElementSibling && el.nextElementSibling.classList.contains('wz-thin-scrollbar')),
+      scrollbarWidth: cs.scrollbarWidth,
+      scrollbarColor: cs.scrollbarColor,
+    };
+  })()`);
+  const expectedBoardThumb = await tokenColor(app, '--ink-on-paper-low');
+  ok('S8: a board card\'s own .board-text gets no ThinScrollbar overlay (it has no sibling slot to hold one)',
+    boardText.found && boardText.hasOverlaySibling === false, JSON.stringify(boardText));
+  ok('S8 (Fable\'s review): and keeps its EXISTING native scrollbar — scrollbar-width is still "thin" (not "none"), never swept into the hide rule meant for the two writing surfaces',
+    boardText.found && boardText.scrollbarWidth === 'thin', JSON.stringify(boardText));
+  ok('S8: its scrollbar-color still names the paper-toned thumb token (FX7 S4\'s own pre-existing treatment for this selector, untouched)',
+    boardText.found && typeof boardText.scrollbarColor === 'string' && boardText.scrollbarColor.length > 0 && expectedBoardThumb.length > 0,
+    JSON.stringify({ scrollbarColor: boardText.scrollbarColor, expectedToken: expectedBoardThumb }));
 });
 
 for (const c of checks) {
