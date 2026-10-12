@@ -25808,3 +25808,24 @@ not decide it.**
 651,656 b): `splash.mjs` PASS 55/55 and `item141` PASS 11/11 on the default AND parked legs (round 4’s S4 ×8 and S9 ×2 are cured). EIGHT FRAMES (Arbor and Flux × desktop and phone × mid-hold and after the fade): `docs/evidence/splash-hold-r5/` (+ `frames.json`).
 The drawing’s mark rect is back at y 175 (round 4: 160); mid-hold frames show the drawing and the loading line with no wordmark or Write behind it.
 **Not run: “TOOLS’ scrollbar box check”** — the only scrollbar item on origin is a Cursor mockup (`cursor/scrollbar-mockup`, one HTML file); I found no harness or script to run and asked Fable what the check is.
+
+## (9) SPLASH-HOLD SHIPPED @ 9336f99f: DEPLOYED, SERVED == BUILT, SMOKE 6/6, FIVE LIVE FRAMES; A PRIVACY SLIP IN AN EARLIER FRAME FOUND AND REMOVED AT THE TIP — 2026-10-12 (chat 1)
+
+**Fable’s word (Oct 12): “I’ve cleared all the frames … Nick’s standing ship word covers both deploys: Ship splash-hold @ 771adccb on its own. Merge, then deploy, then smoke. Live frames: Arbor and Flux mid-hold, then the front door
+after the hold, plus sign-in.”** **MERGED:** `splash-hold` @ `771adccb` (five rounds; TOOLS’ rebase on `5ee716b9`, so no conflict) into `main` as `9336f99f` (the primary fast-forwarded to `origin/main` first; the merge differs from the branch tip by
+docs only), pushed. **Pre-deploy gates:** primary on `main`, clean (0 porcelain lines), HEAD == `origin/main`; `tsc` x2 exit 0; `build:web` bundle `index-v2hpS9ky.js` 651,656 b **== the pair stamp** (`sh-pair` @ `771adccb`); item-98 guard (`railway status` =
+writer-studio / production / writer-studio-app; toplevel `C:/Users/nickh/writer-studio`). **DEPLOYED** from the primary: `railway up --service writer-studio-app --ci`, deployment `5bb3d28a-ca3c-4d1b-b9ac-7c9452753243` (the id in the build-log URL).
+**SERVED == BUILT:** JS `90a944060d675f9487da14cd54435c5d` (651,656 b) and CSS `036e5ccf8ae062009bb931d0020a5e73` (153,986 b), both equal to the local build; the served index names `index-v2hpS9ky.js`. `/healthz` 200, `/auth/me` 401,
+`/auth/signup-status` `{"open":false}`. **`smoke-login.mjs`: `SMOKE: PASS (6/6)`, exit 0** (including the pre-logout cookie replay). **Rollback, if needed:** rebuild from the previous deployed commit `603bb4e2` (the arbor-quiet-brass deploy).
+
+**LIVE FRAMES against production** (anonymous throw-away profile; nothing written to the server; the splash held with the component’s own `wrizo-splash-hold` override where a frame needs it), `docs/evidence/splash-hold-live/` (+ `frames.json`): **P1** Arbor and
+Flux MID-HOLD (veil alpha 0.9; the front door’s doors read opacity 0 under it; the loading line reads “Gathering your pages…” / “Booting the terminal…”; the mark rect y 175, the true centre), **P2** the front door AFTER the hold, both themes (splash gone,
+doors opacity 1, the “Sign in” button present — so the earlier harness frames’ missing “Sign in” was the box having no server, as Fable asked to confirm), **P3** sign-in (the form blanked, both fields empty). Every frame reports the served bundle
+`index-v2hpS9ky.js`. **Owed: Nick’s own live check.**
+
+**THE SLIP (this desk’s): an earlier live frame carried a personal email address.** While taking P3 the sign-in form showed an email address and a password (14 dots) the browser had AUTOFILLED into the harness’s throw-away profile (an environment artefact — not the
+app, not the smoke account; the address is not in the repo’s source). **The first P3 was deleted unpublished and re-taken with the fields blanked and their lengths asserted 0.** Checking the repo for the same artefact: **`docs/evidence/rhizome-drafts-live/D2-sign-in.png`
+(committed in `a474aec3`, the drafts ship’s live frames, 2026-10-10) shows the autofilled email address and a 14-dot password field — and `303webhouse/wrizo` is PUBLIC.** Every other sign-in image in the repo was checked and is clean (the ten-file
+`arrival-signin` set, `templates-live/2-sign-in.png`, the a11y sign-in screen). **Done at once, reversibly: the file was removed at the tip of `main` (`93ea88ef`).** **NOT done, Nick’s call: the address (and the dot count) stay in the git history and in any clone
+until the history is rewritten (`filter-repo`/BFG plus a force-push to `main`, then re-clone everywhere) — and GitHub may keep the blob reachable by its hash for a while; whether the address is worth that is Nick’s to say. The ledger deliberately does not repeat the address.**
+Rule from now on: every live sign-in frame blanks the form before the shot and asserts the field lengths are 0.
