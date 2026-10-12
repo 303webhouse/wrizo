@@ -141,12 +141,15 @@ await withHarness(async (app) => {
   // reload that never itself re-dispatches a mousemove — reading "at rest"
   // without first parking the pointer somewhere neutral risks reading a
   // genuine hover, not a rest state. Each read below is preceded by an
-  // explicit move to a corner no writing surface ever occupies.
+  // explicit move to a corner no writing surface ever occupies, followed by
+  // a sleep LONGER than FADE_OUT_DELAY_MS (1000ms) — moving the pointer away
+  // only SCHEDULES the hide (the same 1s wait as every other hide path); a
+  // short sleep here would just catch it mid-wait, which is not "at rest".
   // ==========================================================================
   await freshDesk(app, 1400, 900);
   await openProsePage(app);
   await app.mouseMove(2, 2);
-  await sleep(80);
+  await sleep(1150);
   let s = await barState(app, '.mode-scroll');
   ok('S1 (prose): the overlay mounts as .mode-scroll\'s own next sibling',
     s.found === true, JSON.stringify({ display: s.display }));
@@ -157,7 +160,7 @@ await withHarness(async (app) => {
   await freshDesk(app, 1400, 900);
   await openScriptPage(app);
   await app.mouseMove(2, 2);
-  await sleep(80);
+  await sleep(1150);
   s = await barState(app, '.desk-frame-scroll-cap');
   ok('S1 (script): the overlay mounts as .desk-frame-scroll-cap\'s own next sibling',
     s.found === true, JSON.stringify({ display: s.display }));
@@ -337,7 +340,17 @@ await withHarness(async (app) => {
   }
 
   // ==========================================================================
-  // S7 — REDUCED MOTION: instant show and hide, no fade.
+  // S7 — REDUCED MOTION: no FADE (an instant appear/disappear), but the WAIT
+  // before hiding is unchanged.
+  //
+  // ROUND 2 fix: this used to also zero the 1s WAIT under reduced motion,
+  // which raced show() and scheduleHide() within the same scroll handler —
+  // the hide's own zero-delay timeout fired before anything could ever
+  // observe it shown, so "shows immediately on scroll" could never actually
+  // be true. prefers-reduced-motion is about ANIMATION (the fade itself,
+  // already instant via index.css's own reduced-motion block), not about
+  // how long something stays visible — the wait is real behaviour and is
+  // the same in every motion mode now.
   // ==========================================================================
   await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
   await freshDesk(app, 1400, 900);
@@ -345,7 +358,7 @@ await withHarness(async (app) => {
   s = await barState(app, '.mode-scroll');
   const reduced = await app.evalJs("matchMedia('(prefers-reduced-motion: reduce)').matches");
   if (!reduced) {
-    ok('S7 (driver): reduced motion could not be emulated in this runner, so the instant-show/hide rule is UNPROVEN here rather than passing by default', false, String(reduced));
+    ok('S7 (driver): reduced motion could not be emulated in this runner, so the instant-fade rule is UNPROVEN here rather than passing by default', false, String(reduced));
   } else {
     const firstMs = (str) => { const first = String(str).split(',')[0].trim(); const m = /^([\d.eE+-]+)(m?s)$/.exec(first); if (!m) return NaN; const n = parseFloat(m[1]); return m[2] === 'ms' ? n : n * 1000; };
     ok('S7: under reduced motion the overlay carries no transition at rest',
@@ -353,12 +366,16 @@ await withHarness(async (app) => {
     await scrollTo(app, '.mode-scroll', 100);
     await sleep(60);
     s = await barState(app, '.mode-scroll');
-    ok('S7: it shows immediately on scroll (no fade-in to wait out)',
-      s.active === true, JSON.stringify({ active: s.active }));
-    await sleep(60); // well short of 1000ms — reduced motion hides with 0 delay instead
+    ok('S7: it shows immediately on scroll, fully opaque with no fade-in to wait out',
+      s.active === true && parseFloat(s.opacity) === 1, JSON.stringify({ active: s.active, opacity: s.opacity }));
+    await sleep(900); // 60ms + 900ms = 960ms total — still short of the 1s wait
     s = await barState(app, '.mode-scroll');
-    ok('S7: and hides immediately once scrolling stops — the 1s delay is itself a transition this mode removes',
-      s.active === false, JSON.stringify({ active: s.active }));
+    ok('S7: still shown just short of the 1s wait — reduced motion never shortens the wait itself, only the fade',
+      s.active === true, JSON.stringify({ active: s.active }));
+    await sleep(250); // past the 1s wait now
+    s = await barState(app, '.mode-scroll');
+    ok('S7: and gone once the SAME 1s wait has passed, snapping straight to invisible rather than fading out',
+      s.active === false && parseFloat(s.opacity) === 0, JSON.stringify({ active: s.active, opacity: s.opacity }));
   }
 
   // ==========================================================================

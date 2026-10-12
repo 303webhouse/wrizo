@@ -41,10 +41,6 @@ const FADE_OUT_DELAY_MS = 1000;
 const MIN_THUMB_PX = 24;
 const THICKNESS_PX = 4;
 
-function prefersReducedMotion(): boolean {
-  return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
 export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLElement | null> }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
@@ -86,30 +82,78 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
       thumb.style.transform = `translateY(${top}px)`;
     };
 
+    // ROUND 2 (Fable's review, c22b9f30): an explicit target ref did not fix
+    // Prose's own ~107px top mismatch — ruled out, exhaustively: the ref IS
+    // `.mode-scroll` (confirmed at the call site), and there is no
+    // transform/filter/contain/will-change/perspective/backdrop-filter
+    // anywhere in the ancestor chain, in index.css OR any inline JSX style,
+    // that could hand `position:fixed` a containing block other than the
+    // viewport. Whatever is moving `.mode-page`'s own box between the
+    // triggering event and the test's 120ms read (an incentive row, a
+    // chrome-fade settling, a font swap — something this component has no
+    // visibility into and no reason to enumerate), the robust fix is to stop
+    // trusting any ONE measurement and keep re-measuring for as long as the
+    // overlay is actually visible: a rAF loop, running only while `active`
+    // (so it costs nothing while hidden, which is nearly always), self-heals
+    // within one frame of whatever moved — far under the 120ms this bug was
+    // caught at, and under any human-perceptible threshold besides.
+    let rafId: number | null = null;
+    const tick = () => {
+      layoutRoot();
+      layoutThumb();
+      if (root.classList.contains('active')) rafId = window.requestAnimationFrame(tick);
+      else rafId = null;
+    };
+    const startTicking = () => { if (rafId === null) rafId = window.requestAnimationFrame(tick); };
+
     // Re-measures right before showing, not just on scroll/resize — a layout
     // shift that happens between mount and the first hover (an incentive row
     // changing height, a font swap, a chrome-fade settling) would otherwise
     // leave the track stale until the next scroll ever corrected it.
-    const show = () => { layoutRoot(); layoutThumb(); root.classList.add('active'); clearHideTimer(); };
+    const show = () => { layoutRoot(); layoutThumb(); root.classList.add('active'); clearHideTimer(); startTicking(); };
+    // ROUND 2 fix: this used to shorten the WAIT itself to 0ms under reduced
+    // motion ("the 1s delay is itself a transition this mode removes" — my
+    // own earlier reasoning, and wrong). `onScroll` calls show() then
+    // scheduleHide() back to back, so a 0ms wait here raced them within the
+    // same tick — the hide's zero-delay timeout fires on the very next
+    // macrotask, before anything (a real user's eye or a check) could ever
+    // observe it shown. `prefers-reduced-motion` is about ANIMATION, not
+    // about how long something stays visible — the WAIT is real behaviour
+    // and stays the same in every motion mode; only the CSS transition that
+    // animates the fade itself is removed (index.css's own reduced-motion
+    // block already does that correctly). The wait is always real.
     const scheduleHide = () => {
       if (dragging) return;
       clearHideTimer();
-      hideTimer = window.setTimeout(() => root.classList.remove('active'), prefersReducedMotion() ? 0 : FADE_OUT_DELAY_MS);
+      hideTimer = window.setTimeout(() => root.classList.remove('active'), FADE_OUT_DELAY_MS);
     };
 
     const onScroll = () => { layoutRoot(); layoutThumb(); show(); scheduleHide(); };
-    const onTargetEnter = () => show();
-    const onTargetLeave = () => { if (!dragging) scheduleHide(); };
+
     // Fable's review: the overlay sits geometrically inside the target's own
     // rect (its rightmost THICKNESS_PX), but it is a SEPARATE element, not a
     // descendant — so hit-testing resolves the pointer to the overlay once it
     // covers that strip, and the target's own `mouseleave` fires even though
-    // the pointer never actually left the writing surface. Mirroring the same
-    // show/scheduleHide pair on the overlay itself closes that gap: moving
-    // from the target onto the thumb schedules a hide (target leave) that the
-    // overlay's own enter immediately cancels (show() clears the timer).
-    const onBarEnter = () => show();
-    const onBarLeave = () => { if (!dragging) scheduleHide(); };
+    // the pointer never actually left the writing surface, as the moving
+    // pointer crosses from target to overlay.
+    //
+    // ROUND 2 fix: a plain "leave schedules, enter cancels" pair on BOTH
+    // elements is ORDER-DEPENDENT — moving target→overlay fires target's
+    // mouseleave and the overlay's mouseenter, but the DOM gives no guarantee
+    // which fires first. Leave-then-enter cancels cleanly; enter-then-leave
+    // does not — show()'s own clearHideTimer() runs on the ENTER, with
+    // nothing left to cancel the hide the LEAVE then schedules immediately
+    // after, which fires exactly FADE_OUT_DELAY_MS later with nobody home to
+    // stop it. A depth counter makes the outcome order-independent: both
+    // elements increment on enter and decrement on leave, and a hide is only
+    // ever scheduled once the pointer has left BOTH — there is no instant
+    // where "one is entered and the other hasn't left yet" can read as zero.
+    let hoverDepth = 0;
+    const onEnter = () => { hoverDepth += 1; show(); };
+    const onLeave = () => {
+      hoverDepth = Math.max(0, hoverDepth - 1);
+      if (hoverDepth === 0 && !dragging) scheduleHide();
+    };
 
     const onThumbPointerDown = (e: PointerEvent) => {
       e.preventDefault();
@@ -131,7 +175,11 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
         dragging = false;
         window.removeEventListener('pointermove', onMove);
         window.removeEventListener('pointerup', onUp);
-        scheduleHide();
+        // Only schedule a hide here if the pointer isn't ALSO still resting
+        // over the target or the bar (hoverDepth > 0) — a drag almost always
+        // ends with the pointer still on the thumb it was dragging, and the
+        // eventual real mouseleave is what should schedule the hide then.
+        if (hoverDepth === 0) scheduleHide();
       };
       window.addEventListener('pointermove', onMove);
       window.addEventListener('pointerup', onUp);
@@ -140,10 +188,10 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
     layoutRoot();
     layoutThumb();
     target.addEventListener('scroll', onScroll, { passive: true });
-    target.addEventListener('mouseenter', onTargetEnter);
-    target.addEventListener('mouseleave', onTargetLeave);
-    root.addEventListener('mouseenter', onBarEnter);
-    root.addEventListener('mouseleave', onBarLeave);
+    target.addEventListener('mouseenter', onEnter);
+    target.addEventListener('mouseleave', onLeave);
+    root.addEventListener('mouseenter', onEnter);
+    root.addEventListener('mouseleave', onLeave);
     thumb.addEventListener('pointerdown', onThumbPointerDown);
     window.addEventListener('resize', layoutRoot);
     const ro = new ResizeObserver(() => { layoutRoot(); layoutThumb(); });
@@ -151,11 +199,12 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
 
     return () => {
       clearHideTimer();
+      if (rafId !== null) window.cancelAnimationFrame(rafId);
       target.removeEventListener('scroll', onScroll);
-      target.removeEventListener('mouseenter', onTargetEnter);
-      target.removeEventListener('mouseleave', onTargetLeave);
-      root.removeEventListener('mouseenter', onBarEnter);
-      root.removeEventListener('mouseleave', onBarLeave);
+      target.removeEventListener('mouseenter', onEnter);
+      target.removeEventListener('mouseleave', onLeave);
+      root.removeEventListener('mouseenter', onEnter);
+      root.removeEventListener('mouseleave', onLeave);
       thumb.removeEventListener('pointerdown', onThumbPointerDown);
       window.removeEventListener('resize', layoutRoot);
       ro.disconnect();
