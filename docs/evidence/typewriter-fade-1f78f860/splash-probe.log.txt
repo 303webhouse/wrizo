@@ -1,0 +1,9 @@
+{"scenario":"A control","moment":"typed after the splash","splash":false,"scrolled":"true","typewriter":"true","scrollTop":67,"scrollHeight":1320,"clientHeight":631,"startOffset":"183px","lineCount":18,"top":{"y":130,"alpha":1},"last":{"y":621,"alpha":1},"inversions":0,"focused":true}
+{"scenario":"B resume","moment":"typed UNDER the splash (splash at keystroke: true)","splash":true,"scrolled":"true","typewriter":"true","scrollTop":83,"scrollHeight":1320,"clientHeight":631,"startOffset":"183px","lineCount":19,"top":{"y":114,"alpha":0.98},"last":{"y":634,"alpha":1},"inversions":0,"focused":true}
+{"scenario":"B resume","moment":"1.5s after the splash left","splash":false,"scrolled":"true","typewriter":"true","scrollTop":83,"scrollHeight":1320,"clientHeight":631,"startOffset":"183px","lineCount":19,"top":{"y":114,"alpha":0.98},"last":{"y":634,"alpha":1},"inversions":0,"focused":true}
+{"scenario":"C carry on","moment":"typed after the splash, same session","splash":false,"scrolled":"true","typewriter":"true","scrollTop":83,"scrollHeight":1320,"clientHeight":631,"startOffset":"183px","lineCount":19,"top":{"y":114,"alpha":0.98},"last":{"y":634,"alpha":1},"inversions":0,"focused":true}
+{"storedTailB":"of the history that rides up into the page. under the splash","everyCharUnderSplash":true,"storedTailC":"of the history that rides up into the page. under the splash","everyCharAfter":false}
+
+TYPEWRITER SPLASH PROBE: 4 readings (a measurement; no verdict)
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.

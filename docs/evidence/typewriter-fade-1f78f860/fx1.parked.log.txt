@@ -1,0 +1,197 @@
+[
+  {
+    "name": "S2 (fixture check): a fresh prose page has typewriter ON by default",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S1: no per-line pop — every line-to-line caret delta is <= 1.25x line-height",
+    "pass": true,
+    "detail": "[28.890625,28.890625,28.890625,28.890625,28.890625,4.890625,0.109375,0.109375,0.109375,0.109375,0.109375,0.109375,0.890625]"
+  },
+  {
+    "name": "S1: the caret is not locked — it moves down line by line before scrolling engages",
+    "pass": true,
+    "detail": "[28.890625,28.890625,28.890625,28.890625]"
+  },
+  {
+    "name": "S1: once scrolling engages, per-line scroll delta is <= 1.25x line-height (no multi-line jump)",
+    "pass": true,
+    "detail": "{\"scrollDeltas\":[29,29,29,29,29,29,28],\"lineHeight\":28.9}"
+  },
+  {
+    "name": "S1: the fade is active once scrolled — the first rendered line's effective (mask-ramp) opacity is < 0.5",
+    "pass": true,
+    "detail": "{\"caretBottom\":522.46875,\"scrollTop\":226,\"scrolled\":true,\"firstOpacity\":0.15}"
+  },
+  {
+    "name": "S1 (C2): a fresh/short page never fades before it has actually scrolled",
+    "pass": true,
+    "detail": "{\"caretBottom\":372.890625,\"scrollTop\":0,\"scrolled\":false,\"firstOpacity\":1}"
+  },
+  {
+    "name": "SC1 S3 (was \"S2 (fixture check): a fresh script page has typewriter ON by default\"): a fresh script page runs NO typewriter — the cap never claims it, and no start-offset padding is applied",
+    "pass": true,
+    "detail": "{\"dataTypewriter\":\"false\",\"capPaddingTop\":0}"
+  },
+  {
+    "name": "SC1 S3 (was \"S1: the script surface shares the SAME no-pop engine — per-line scroll delta <= 1.25x line-height there too\"): the script box never auto-scrolls while typing — no engine runs here, and the page stays where the writer put it",
+    "pass": true,
+    "detail": "[{\"scrollTop\":0,\"scrolled\":false},{\"scrollTop\":0,\"scrolled\":false},{\"scrollTop\":0,\"scrolled\":false},{\"scrollTop\":0,\"scrolled\":false},{\"scrollTop\":0,\"scrolled\":false},{\"scrollTop\":0,\"scrolled\":false},{\"scrollTop\":0,\"scrolled\":false},{\"scrollTop\":0,\"scrolled\":false}]"
+  },
+  {
+    "name": "S2 (Law 1): the script page mounts .mode-pagecol — the SAME paper geometry class the harness already asserts for prose",
+    "pass": true,
+    "detail": "{\"left\":292,\"top\":107,\"width\":816,\"height\":1096}"
+  },
+  {
+    "name": "SC1 S1 (was \"S2: the script paper's rect matches the prose paper's width band\"): the script paper is a TRUE US Letter page — 8.5in wide — and no longer tracks prose's measure at all",
+    "pass": true,
+    "detail": "{\"proseGeomRect\":{\"left\":392.3125,\"top\":107,\"width\":615.359375,\"height\":733},\"scriptGeomRect\":{\"left\":292,\"top\":107,\"width\":816,\"height\":1096},\"expectedIn\":8.5,\"expectedPx\":816}"
+  },
+  {
+    "name": "S2: a scene heading's computed text-align is left (Courier convention, S-arc margin rules)",
+    "pass": true,
+    "detail": "left"
+  },
+  {
+    "name": "CD1 S2 (was \"S3: a LOOSE-origin page's Free Write rail shows the forward-lock control...\"): a LOOSE-origin page's Free Write sliver shows the forward-lock control, with ink/capture items still absent",
+    "pass": true,
+    "detail": "{\"ink\":false,\"forwardLock\":true,\"captureItems\":[]}"
+  },
+  {
+    "name": "CD1 S2 (was \"S3: clicking the loose page's forward-lock control...\"): clicking the loose page's forward-lock control (in the sliver) flips dataset.on AND writes wrizo-forward-lock",
+    "pass": true,
+    "detail": "true -> false, storage=0"
+  },
+  {
+    "name": "S3: with the lock ON, a loose page's backspace STRIKES (.fo-struck appears) — the mechanic, not just the control",
+    "pass": true,
+    "detail": "lock=true struck=true"
+  },
+  {
+    "name": "CD1 S2 (was \"S3: a PROJECT-origin page's Free Write rail ALSO shows...\"): a PROJECT-origin page's Free Write sliver ALSO shows the forward-lock control, with ink/capture items still absent",
+    "pass": true,
+    "detail": "{\"ink\":false,\"forwardLock\":true,\"captureItems\":[]}"
+  },
+  {
+    "name": "CD1 S2 (was \"S3: the forward lock stays mounted independent of the typewriter toggle...\"): the forward lock (sliver) stays mounted independent of the typewriter toggle (no coupling)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S4 (successor to \"...border-radius is 0px on a drawer pull\"): computed border-radius is 0px on a strip item",
+    "pass": true,
+    "detail": "0px"
+  },
+  {
+    "name": "S4 (successor to \"...border-radius is 0px on a place-face verb\"): computed border-radius is 0px on a category panel's action button",
+    "pass": true,
+    "detail": "0px"
+  },
+  {
+    "name": "S4: computed border-radius is 0px on a board sheet (Pin to a Board…)",
+    "pass": true,
+    "detail": "0px"
+  },
+  {
+    "name": "CD1 S5 (was \"S5: ...the corkboard track (named non-goal) is untouched, still present\"): the empty meter-track bar is absent on a fresh framed page; the corkboard track is ALSO absent now (no longer a named non-goal)",
+    "pass": true,
+    "detail": "{\"meter\":0,\"corkboard\":false}"
+  },
+  {
+    "name": "CD1 S2 [DR3 successor, R7-strengthened]: the Structure control (now the Convert row) is not brass at rest - menus rest olive",
+    "pass": true,
+    "detail": "none"
+  },
+  {
+    "name": "CD1 S2 (was \"S6: an eyebrow label's computed color is not brass\"): an eyebrow label (in the sliver) is not brass",
+    "pass": true,
+    "detail": "rgb(150, 160, 90)"
+  },
+  {
+    "name": "SC1 S3 [R5 successor, R7-strengthened]: the Typewriter INSTRUMENT is not brass at rest - menus rest olive, brass is the press only",
+    "pass": true,
+    "detail": "absent"
+  }
+]
+[
+  {
+    "name": "PARKED (was \"S3: a LOOSE-origin page's Free Write rail shows the forward-lock control, with ink/capture items still absent\") — CD1 S2/S7: same truth, .wz-sliver-* selectors",
+    "pass": true,
+    "detail": "{\"ink\":false,\"forwardLock\":true,\"captureItems\":[]}"
+  },
+  {
+    "name": "PARKED (was \"S3: clicking the loose page's forward-lock control flips dataset.on AND writes wrizo-forward-lock\") — CD1 S2/S7: same truth, .wz-sliver-forwardlock",
+    "pass": true,
+    "detail": "true -> false, storage=0"
+  },
+  {
+    "name": "PARKED (was \"S3: a PROJECT-origin page's Free Write rail ALSO shows the forward-lock control, with ink/capture items still absent\") — CD1 S2/S7: same truth, .wz-sliver-* selectors",
+    "pass": true,
+    "detail": "{\"ink\":false,\"forwardLock\":true,\"captureItems\":[]}"
+  },
+  {
+    "name": "PARKED (was \"S3: the forward lock stays mounted independent of the typewriter toggle (no coupling)\") — CD1 S2/S7: same truth, .wz-sliver-forwardlock",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "PARKED (was \"S6: the active Structure button's computed background is not brass\") — CD1 S2/S7: same truth, .wz-sliver-structure-btn.active",
+    "pass": true,
+    "detail": "absent"
+  },
+  {
+    "name": "PARKED (was \"S6: an eyebrow label's computed color is not brass\") — CD1 S2/S7: same truth, .wz-sliver-h",
+    "pass": true,
+    "detail": "rgb(150, 160, 90)"
+  },
+  {
+    "name": "PARKED (was \"S5: ...the corkboard track (named non-goal) is untouched, still present\") — CD1 S5: the corkboard track is ABSENT while empty too, not untouched",
+    "pass": true,
+    "detail": "{\"meter\":0,\"corkboard\":false}"
+  },
+  {
+    "name": "PARKED (was \"S1: a fresh prose page's first line starts within 40-55% of the stage height\") — FX3 S3: the working value moved to a NEW 30-35% band",
+    "pass": true,
+    "detail": "0.29195088676671216"
+  },
+  {
+    "name": "PARKED, generation 3 (was gen-2 \"PARKED, generation 2 (was PARKED-generation-1 'S1: a fresh script page's first line also starts within 40-55% of the stage height') — FX4 S1: START_FRACTION retunes to 0.25, moving script's own value to ~24.97%\") — SC1 S3: the script page starts at the TOP of page one (SC-V4); the fraction is ~0 now, by law; live successor in fx4.mjs's own S1 section",
+    "pass": true,
+    "detail": "0"
+  },
+  {
+    "name": "PARKED (was \"S2: the script paper's rect matches the prose paper's asserted width band [600,800], within 2px of the prose value\") — SC1 S1: script is a true 8.5in US Letter page and no longer shares prose's measure; prose's own band is unchanged",
+    "pass": true,
+    "detail": "{\"proseGeomRectParked\":{\"left\":392.3125,\"top\":107,\"width\":615.359375,\"height\":733},\"scriptGeomRectParked\":{\"left\":292,\"top\":107,\"width\":816,\"height\":1096}}"
+  },
+  {
+    "name": "PARKED (was \"S2 (fixture check): a fresh script page has typewriter ON by default\" + \"S1: the script surface shares the SAME no-pop engine — per-line scroll delta <= 1.25x line-height there too\") — SC1 S3 (Nick's word): the screenplay surface runs NO typewriter, so both subjects are gone; prose still runs the whole engine, unchanged",
+    "pass": true,
+    "detail": "{\"scriptEngineGoneParked\":{\"dataTypewriter\":\"false\",\"capPaddingTop\":0,\"toggleInSliver\":false},\"proseEngineStillThereParked\":{\"dataTypewriter\":\"true\",\"padTop\":183}}"
+  },
+  {
+    "name": "PARKED (was \"S6: the Typewriter glyph's computed color is not brass (typewriter defaults ON, so this is the common resting state)\", measured on a script page) — SC1 S3: no glyph exists on a screenplay page now; the law holds unchanged on prose, where the glyph lives",
+    "pass": true,
+    "detail": "{\"glyphGoneOnScript\":true,\"glyphColorOnProse\":\"absent\"}"
+  },
+  {
+    "name": "PARKED (was \"S4: computed border-radius is 0px on a drawer pull\") — CD2 S1/S5: .wz-drawer-pull is gone entirely; the strip's own item carries the square-corner law now (successor live in this file's own S4 section)",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "PARKED (was \"S4: computed border-radius is 0px on a place-face verb\") — CD2 S1/S5: PlaceFace's own per-item-verb design is gone entirely (not just renamed); a category panel's action button carries the square-corner law now (successor live in this file's own S4 section)",
+    "pass": true,
+    "detail": "true"
+  }
+]
+
+FX1 PARKED: PASS (14 checks) — HARNESS_PARKED=1 armed, all retired-check successors green
+
+FX1 VERIFY: PASS (37 checks)
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
