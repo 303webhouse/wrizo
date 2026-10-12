@@ -22,6 +22,10 @@ await withHarness(async (app) => {
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1')");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+  // splash-hold (5s, unskippable) runs over every fresh load: wait for it to be GONE before navigating and typing (Fable,
+  // 2026-10-12 - the check went red only after splash-hold merged). Whether a writer typing UNDER the splash breaks the
+  // typewriter is a separate question, measured by scripts/typewriter-splash-probe.mjs.
+  await app.waitFor("!document.querySelector('.wz-splash')", { label: 'the splash gone', timeout: 15000 });
   await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'twf', text: LINES, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
   await sleep(400);
   await app.evalJs("location.hash = '#/page/twf'");
@@ -74,7 +78,14 @@ await withHarness(async (app) => {
     }
     tops.sort((a, b) => a - b);
     const lines = tops.map((mid) => ({ y: Math.round(mid - box.top), alpha: Math.round(alphaAt(mid - box.top) * 1000) / 1000 }));
-    return { scrolled: scroll.dataset.scrolled, typewriter: scroll.dataset.typewriter, mask, stops, lines };
+    // the scroll's own geometry, recorded on every run so a red names its mechanism (2026-10-12: the top line sat at y=130)
+    const lh = parseFloat(getComputedStyle(ed).lineHeight) || null;
+    const sel = getSelection(); const cr = sel && sel.rangeCount ? sel.getRangeAt(0).getBoundingClientRect() : null;
+    const geo = { scrollTop: Math.round(scroll.scrollTop), scrollHeight: scroll.scrollHeight, clientHeight: scroll.clientHeight, lineHeight: lh,
+      startOffset: cs.getPropertyValue('--tw-start-offset').trim(), paddingTop: cs.paddingTop, fadeStart: cs.getPropertyValue('--tw-fade-start').trim(),
+      fadeBand: cs.getPropertyValue('--tw-fade-band').trim(), boxTop: Math.round(box.top), caretY: cr ? Math.round(cr.top - box.top) : null,
+      edTop: Math.round(ed.getBoundingClientRect().top - box.top), splash: !!document.querySelector('.wz-splash') };
+    return { scrolled: scroll.dataset.scrolled, typewriter: scroll.dataset.typewriter, mask, stops, lines, geo };
   })()`);
 
   const lines = (m && m.lines) || [];
@@ -86,7 +97,7 @@ await withHarness(async (app) => {
     lines.length >= 6 && inversions.length === 0, JSON.stringify({ inversions: inversions.slice(0, 4), lines: lines.slice(0, 8) }));
   const minAlpha = lines.length ? Math.min(...lines.map((l) => l.alpha)) : null;
   ok('THE OLDEST IS THE FAINTEST: the topmost visible line carries the lowest strength of all, and it is genuinely faded (< 0.5)',
-    lines.length >= 6 && lines[0].alpha === minAlpha && lines[0].alpha < 0.5, JSON.stringify({ top: lines[0], minAlpha }));
+    lines.length >= 6 && lines[0].alpha === minAlpha && lines[0].alpha < 0.5, JSON.stringify({ top: lines[0], minAlpha, geo: m && m.geo }));
   ok('THE NEWEST IS WHOLE: the last visible line (where the writer is) is fully shown',
     lines.length >= 6 && lines[lines.length - 1].alpha >= 0.99, JSON.stringify(lines[lines.length - 1]));
 });

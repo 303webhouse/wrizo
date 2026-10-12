@@ -33,7 +33,7 @@ const run = (file, args = [], env = {}) => {
 const verdict = (out) => (out.split('\n').filter((l) => /\bVERIFY\b[^\n]*:|\bPARKED\b[^\n]*:/.test(l)).map((l) => l.trim()).join(' | ') || '(no verdict)');
 
 say(`TYPEWRITER-FADE VERIFY RUN @ ${execSync('git rev-parse --short HEAD', { cwd: repo, encoding: 'utf8' }).trim()} in ${repo}${DRY ? ' (DRY)' : ''}`);
-const need = ['harness/typewriter-fade.mjs', 'harness/fx5.mjs', 'harness/fx1.mjs', 'typewriter-fade-frames.mjs', 'runtime-verify.mjs'];
+const need = ['harness/typewriter-fade.mjs', 'harness/fx5.mjs', 'harness/fx1.mjs', 'typewriter-fade-frames.mjs', 'typewriter-splash-probe.mjs', 'runtime-verify.mjs'];
 const missing = need.filter((f) => !existsSync(join(here, f)));
 if (missing.length) { say(`REFUSED: missing ${missing.join(', ')}`); process.exit(2); }
 if (dirty()) { say(`REFUSED: the tree is not clean:\n${dirty()}`); process.exit(2); }
@@ -81,6 +81,10 @@ if (!DRY) {
   }
   const f = run('typewriter-fade-frames.mjs', ['fixed']);
   say(`2 frame (fixed): exit ${f.code} ${(f.out.match(/TYPEWRITER-FADE FRAME: \S+/) || ['(none)'])[0]}`);
+  // 3 - a MEASUREMENT (no verdict): does a writer typing UNDER the splash break the typewriter? (Fable, 2026-10-12)
+  const p = run('typewriter-splash-probe.mjs');
+  writeFileSync(join(OUT, 'splash-probe.log.txt'), p.out);
+  say(`3 splash probe (measurement): exit ${p.code} - ${(p.out.match(/^\{"scenario".*$/gm) || []).length} readings; see splash-probe.log.txt`);
 } else say('2 THE FIX: (dry - not built, not run)');
 
 const clean = !dirty();

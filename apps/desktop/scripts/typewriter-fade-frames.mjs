@@ -25,6 +25,7 @@ await withHarness(async (app) => {
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1')");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+  await app.waitFor("!document.querySelector('.wz-splash')", { label: 'the splash gone', timeout: 15000 });   // splash-hold: never shoot under it
   await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'twf', text: LINES, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
   await sleep(400);
   await app.evalJs("location.hash = '#/page/twf'");
