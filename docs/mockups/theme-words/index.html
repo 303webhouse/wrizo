@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrizo · Theme words mockup</title>
+<!--
+  docs/mockups/theme-words — Arbor | Flux side by side.
+  Census: docs/vocab/label-census.md @ vocab-census a788a64.
+  Arbor = today’s words. Flux candidates for labels still identical.
+  Unique pairs keep their Flux word + a “?” explainer.
+  Branch: cursor/theme-words-mockup.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Rajdhani:wght@400;500;600&display=swap');
+  :root {
+    --ink-950: #110600; --ink-900: #1F1A16; --ink-800: #2A241E;
+    --ink-border: #332C25; --text-hi: #EDE6DA; --text-mid: #B5A998; --text-low: #80766A;
+    --paper: #F3EDE1; --ink-on-paper: #2B2014; --ink-on-paper-low: #8A7C68;
+    --brass: #ff9800; --accent-rest: #96a05a;
+    --font-ui: 'Figtree', system-ui, sans-serif;
+    --desk-ground: #1F1A16; --card-stock: #FBF6EA; --card-hairline: #D9CFB6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body { background: #000; color: #c8c8c8; font-family: var(--font-ui); }
+  .rig {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 8px 12px; background: #000; border-bottom: 1px solid #222; font-size: 11px;
+  }
+  .rig b { color: #d8d8d8; letter-spacing: .06em; }
+  .only { color: #6e6e6e; letter-spacing: .12em; text-transform: uppercase; font-size: 9px; border: 1px solid #333; padding: 2px 6px; }
+  .rev { height: 22px; padding: 0 8px; border: 1px solid #333; color: #c8c8c8; background: #141414; cursor: pointer; font: inherit; }
+  .rev[data-on='true'] { border-color: #96a05a; color: #96a05a; }
+  .hint { margin-left: auto; color: #5e5e5e; }
+
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+  .col { border: 1px solid #222; background: #0a0a0a; }
+  .col-h { padding: 8px 10px; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #8a8276; border-bottom: 1px solid #222; }
+  .app { background: var(--ink-950); color: var(--text-hi); min-height: 720px; }
+  .col.flux .app {
+    --ink-950: #04141A; --ink-900: #091E24; --ink-800: #0C2A32;
+    --ink-border: #1D4A52; --text-hi: #E3F1EC; --text-mid: #8FB4AC; --text-low: #6E958D;
+    --paper: #0B2429; --ink-on-paper: #E3F1EC; --ink-on-paper-low: #57D0F5;
+    --accent-rest: #5E837C; --desk-ground: #07161B;
+    --card-stock: #0E2A30; --card-hairline: #1D4A52;
+    font-family: 'Rajdhani', system-ui, sans-serif;
+  }
+
+  .strip { display: flex; gap: 2px; padding: 8px 10px; border-bottom: 1px solid var(--ink-border); }
+  .mtab {
+    background: none; border: 1px solid transparent; color: var(--text-mid);
+    font: inherit; font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+    padding: 4px 8px; cursor: default;
+  }
+  .mtab[data-on='true'] { color: var(--accent-rest); border-color: var(--accent-rest); }
+
+  .body { display: grid; grid-template-columns: 56px 168px minmax(0,1fr) 168px; min-height: 420px; }
+  .rail { background: var(--ink-950); border-right: 1px solid var(--ink-border); padding: 10px 4px; }
+  .rcat { display: block; width: 100%; text-align: center; padding: 8px 2px; color: var(--text-low); font-size: 9px; letter-spacing: .06em; background: none; border: 0; }
+  .rcat[data-on='true'] { color: var(--accent-rest); }
+  .draw { background: var(--desk-ground); border-right: 1px solid var(--ink-border); padding: 10px 8px; overflow: auto; }
+  .draw.r { border-right: 0; border-left: 1px solid var(--ink-border); }
+  .h { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-rest); margin: 10px 0 6px; }
+  .h:first-child { margin-top: 0; }
+  .row { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 6px; }
+  .chip {
+    background: none; border: 1px solid var(--ink-border); color: var(--text-mid);
+    font: inherit; font-size: 10px; padding: 2px 6px;
+  }
+  .page { background: var(--paper); color: var(--ink-on-paper); padding: 14px; font-size: 13px; }
+  .page .ghost { color: var(--ink-on-paper-low); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+  .tab {
+    flex: 1; background: none; border: 1px solid var(--ink-border); color: var(--text-mid);
+    font: inherit; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; padding: 4px 2px;
+  }
+  .tab[data-on='true'] { color: var(--brass); border-color: var(--brass); }
+  .crow { display: flex; justify-content: space-between; gap: 6px; color: var(--text-mid); font-size: 10px; padding: 3px 0; }
+  .menu { border-top: 1px solid var(--ink-border); margin-top: 8px; padding-top: 8px; }
+
+  .board-strip { display: flex; gap: 4px; padding: 8px 10px; border-top: 1px solid var(--ink-border); }
+  .btab {
+    background: none; border: 1px solid var(--ink-border); color: var(--text-mid);
+    font: inherit; font-size: 10px; padding: 3px 8px;
+  }
+  .btab[data-on='true'] { color: var(--accent-rest); border-color: var(--accent-rest); }
+
+  .cards { padding: 10px; background: var(--ink-900); }
+  .card { width: 200px; background: var(--card-stock); color: var(--ink-on-paper); border: 1px solid var(--card-hairline); padding: 8px 10px; }
+  .card .kh { font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-on-paper-low); margin-bottom: 6px; }
+  .card .kf { font-size: 10px; color: var(--ink-on-paper-low); margin-top: 8px; display: flex; justify-content: space-between; gap: 6px; }
+
+  .w { display: inline; }
+  .q {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 12px; height: 12px; margin-left: 3px; vertical-align: 1px;
+    border: 1px solid currentColor; color: inherit; background: none;
+    font: inherit; font-size: 8px; line-height: 1; cursor: pointer; opacity: .7;
+  }
+  .tip {
+    display: none; margin: 4px 0 6px; font-size: 10px; line-height: 1.35; color: var(--text-low);
+  }
+  .tip[data-on='true'] { display: block; }
+  .cand { color: var(--brass); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+  @media (max-width: 1100px) { .pair { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header class="rig">
+  <b>THEME WORDS</b>
+  <span class="only">mockup only</span>
+  <button class="rev" data-cand="1" type="button">Flux candidate 1</button>
+  <button class="rev" data-cand="2" type="button">Flux candidate 2</button>
+  <span class="hint">Arbor = today. Flux 1/2 = proposals for labels still identical. “?” = already unique.</span>
+</header>
+
+<div class="pair">
+  <section class="col arbor" data-side="arbor">
+    <div class="col-h">Arbor</div>
+    <div class="app" id="arbor"></div>
+  </section>
+  <section class="col flux" data-side="flux">
+    <div class="col-h">Flux</div>
+    <div class="app" id="flux"></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  const UNIQUE = {
+    pages: { arbor: 'Pages', flux: 'Docs', tipA: 'The writable leaf.', tipF: 'The filed unit.' },
+    boards: { arbor: 'Boards', flux: 'Circuits', tipA: 'A cork surface for cards.', tipF: 'A wired map of nodes.' },
+    plan: { arbor: 'Plan', flux: 'Schematic', tipA: 'The structure around the page.', tipF: 'The machine drawing of the work.' },
+    journal: { arbor: 'Journal', flux: 'Log', tipA: 'The day’s capture.', tipF: 'The running record.' },
+    publish: { arbor: 'Publish', flux: 'Uplink', tipA: 'Send the work out.', tipF: 'Transmit off the machine.' },
+    grafts: { arbor: 'Grafts', flux: 'LINKS', tipA: 'A living join between pages.', tipF: 'A hard connection on the circuit.' },
+    rhizome: { arbor: 'Rhizome', flux: 'Glitch', tipA: 'Growth that finds its own path.', tipF: 'A signal scar for how far you’ve come.' }
+  };
+
+  const PROP = {
+    modeFreeWrite: ['Free Write', 'Overclock', 'Burn'],
+    modeDraft: ['Draft', 'Compile', 'Cut'],
+    modeRevise: ['Revise', 'Patch', 'Diff'],
+    modeWorkshop: ['Workshop', 'Bay', 'Bench'],
+    railDesk: ['Desk', 'Station', 'Pit'],
+    railTypeface: ['Typeface', 'Face', 'Spec'],
+    railFormat: ['Format', 'Markup', 'Glyph'],
+    actions: ['Actions', 'Ops', 'Acts'],
+    actionTags: ['Tags', 'Flags', 'Marks'],
+    actionCopy: ['Copy', 'Clone', 'Dup'],
+    actionDelete: ['Delete', 'Purge', 'Wipe'],
+    actionHF: ['Header/Footer', 'Frame', 'Bezel'],
+    railTemplates: ['Templates', 'Plates', 'Dies'],
+    templateOutline: ['Outline', 'Nest', 'Spine'],
+    templateBibliography: ['Bibliography', 'Cite', 'Index'],
+    templateTitlePage: ['Title page', 'Cover', 'Mast'],
+    templateCustom: ['Custom', 'User', 'Local'],
+    railPageKind: ['Page Kind', 'Class', 'Kind'],
+    kindNormal: ['Normal', 'Plain', 'Base'],
+    kindScreenplay: ['Screenplay', 'Teleplay', 'Slate'],
+    kindResearch: ['Research', 'Dossier', 'Brief'],
+    footMenuTypewriter: ['Typewriter Mode', 'Feed', 'Carriage'],
+    twForwardLock: ['Forward Lock', 'Clamp', 'One-way'],
+    twLineFade: ['Line Fade', 'Decay', 'Dim'],
+    twPageScroll: ['Page Scroll', 'Advance', 'Scroll'],
+    footMenuProgress: ['Progress Tracking', 'Meter', 'Quota'],
+    sliverInstrumentsUnit: ['Unit', 'Scale', 'Tick'],
+    goalLabel: ['Goal', 'Quota', 'Cap'],
+    progressMetric: ['Progress', 'Load', 'Meter'],
+    timer: ['Timer', 'Clock', 'Tick'],
+    footMenuPreferences: ['Preferences', 'Config', 'Prefs'],
+    recedeDepth: ['Recede depth', 'Dissolve', 'Recede'],
+    recedePartial: ['Partial', 'Soft', 'Half'],
+    recedeFull: ['Full', 'Void', 'Full'],
+    tutorTitle: ['Tutor', 'Console', 'Operator'],
+    tutorLensConsistency: ['Consistency', 'Checksum', 'Match'],
+    tutorLensStructure: ['Structure', 'Schema', 'Frame'],
+    tutorLensFragments: ['Fragments', 'Shards', 'Debris'],
+    boardModeOpen: ['Open', 'Live', 'Clear'],
+    boardModeStoryboard: ['Storyboard', 'Strip', 'Seq'],
+    boardModeOutline: ['Outline', 'Nest', 'Spine'],
+    boardAddCard: ['Add card', 'Add node', 'Add tile'],
+    boardPortedBadge: ['From a page', 'From a doc', 'Ported'],
+    boardThreadPrefix: ['thread', 'splice', 'wire'],
+    boardThreadUntitled: ['Untitled', 'Unnamed', 'Blank']
+  };
+
+  let cand = 1;
+  let tip = '';
+
+  function w(id, side) {
+    const row = PROP[id];
+    const word = side === 'arbor' ? row[0] : row[cand];
+    const cls = side === 'flux' ? ' w cand' : ' w';
+    return '<span class="' + cls + '" data-id="' + id + '">' + word + '</span>';
+  }
+  function u(id, side) {
+    const row = UNIQUE[id];
+    const word = side === 'arbor' ? row.arbor : row.flux;
+    return '<span class="w">' + word + '</span><button class="q" type="button" data-tip="' + id + '" aria-label="What this means">?</button>';
+  }
+  function tipLine(id, side) {
+    const row = UNIQUE[id];
+    return side === 'arbor' ? row.tipA : row.tipF;
+  }
+
+  function screen(side) {
+    return (
+      '<div class="strip">' +
+        '<span class="mtab">' + w('modeFreeWrite', side) + '</span>' +
+        '<span class="mtab" data-on="true">' + w('modeDraft', side) + '</span>' +
+        '<span class="mtab">' + w('modeRevise', side) + '</span>' +
+        '<span class="mtab">' + w('modeWorkshop', side) + '</span>' +
+        '<span class="mtab">' + u('publish', side) + '</span>' +
+      '</div>' +
+      '<div class="body">' +
+        '<nav class="rail">' +
+          '<span class="rcat">' + w('railDesk', side) + '</span>' +
+          '<span class="rcat" data-on="true">' + u('pages', side) + '</span>' +
+          '<span class="rcat">' + u('boards', side) + '</span>' +
+          '<span class="rcat">' + u('plan', side) + '</span>' +
+          '<span class="rcat">' + u('journal', side) + '</span>' +
+        '</nav>' +
+        '<aside class="draw">' +
+          '<div class="h">' + w('railTypeface', side) + '</div>' +
+          '<div class="row"><span class="chip">Crimson Pro</span><span class="chip">18</span></div>' +
+          '<div class="h">' + w('railFormat', side) + '</div>' +
+          '<div class="row"><span class="chip">B</span><span class="chip">I</span><span class="chip">U</span><span class="chip">S</span></div>' +
+          '<div class="h">' + w('actions', side) + '</div>' +
+          '<div class="row"><span class="chip">' + w('actionTags', side) + '</span><span class="chip">' + w('actionCopy', side) + '</span><span class="chip">' + w('actionDelete', side) + '</span><span class="chip">' + w('actionHF', side) + '</span></div>' +
+          '<div class="h">' + w('railTemplates', side) + '</div>' +
+          '<div class="row"><span class="chip">' + w('templateOutline', side) + '</span><span class="chip">' + w('templateBibliography', side) + '</span><span class="chip">' + w('templateTitlePage', side) + '</span><span class="chip">' + w('templateCustom', side) + '</span></div>' +
+          '<div class="h">' + w('railPageKind', side) + '</div>' +
+          '<div class="row"><span class="chip">' + w('kindNormal', side) + '</span><span class="chip">' + w('kindScreenplay', side) + '</span><span class="chip">' + w('kindResearch', side) + '</span></div>' +
+          '<div class="menu">' +
+            '<div class="h">…</div>' +
+            '<div class="crow"><span>' + w('footMenuTypewriter', side) + '</span></div>' +
+            '<div class="crow"><span>' + w('twForwardLock', side) + '</span><span>On</span></div>' +
+            '<div class="crow"><span>' + w('twLineFade', side) + '</span><span>On</span></div>' +
+            '<div class="crow"><span>' + w('twPageScroll', side) + '</span><span>On</span></div>' +
+            '<div class="crow"><span>' + w('footMenuProgress', side) + '</span></div>' +
+            '<div class="crow"><span>' + w('sliverInstrumentsUnit', side) + '</span><span>Lines</span></div>' +
+            '<div class="crow"><span>' + w('goalLabel', side) + '</span><span>100</span></div>' +
+            '<div class="crow"><span>' + w('progressMetric', side) + '</span><span>Words</span></div>' +
+            '<div class="crow"><span>' + u('rhizome', side) + '</span></div>' +
+            '<div class="crow"><span>' + w('timer', side) + '</span><span>Off</span></div>' +
+            '<div class="crow"><span>' + w('footMenuPreferences', side) + '</span></div>' +
+            '<div class="crow"><span>' + w('recedeDepth', side) + '</span><span>' + w('recedePartial', side) + ' · ' + w('recedeFull', side) + '</span></div>' +
+          '</div>' +
+        '</aside>' +
+        '<div class="page"><div class="ghost">Draft</div></div>' +
+        '<aside class="draw r">' +
+          '<div class="tabs">' +
+            '<span class="tab" data-on="true">' + w('tutorTitle', side) + '</span>' +
+            '<span class="tab">' + u('grafts', side) + '</span>' +
+          '</div>' +
+          '<div class="tip" data-tip-slot></div>' +
+          '<div class="row"><span class="chip">' + w('tutorLensConsistency', side) + '</span><span class="chip">' + w('tutorLensStructure', side) + '</span><span class="chip">' + w('tutorLensFragments', side) + '</span></div>' +
+        '</aside>' +
+      '</div>' +
+      '<div class="board-strip">' +
+        '<span class="btab" data-on="true">' + w('boardModeOpen', side) + '</span>' +
+        '<span class="btab">' + w('boardModeStoryboard', side) + '</span>' +
+        '<span class="btab">' + w('boardModeOutline', side) + '</span>' +
+        '<span class="chip">' + w('boardAddCard', side) + '</span>' +
+      '</div>' +
+      '<div class="cards">' +
+        '<div class="card">' +
+          '<div class="kh">' + u('pages', side).replace('Pages','Page').replace('Docs','Doc') + ' · ' + w('boardPortedBadge', side) + '</div>' +
+          '<div>Night Kitchen</div>' +
+          '<div class="kf"><span>— ' + w('boardThreadPrefix', side) + ': ' + w('boardThreadUntitled', side) + '</span><span>' + (side === 'arbor' ? 'Show grafts' : 'Show links') + '</span></div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function paint() {
+    document.getElementById('arbor').innerHTML = screen('arbor');
+    document.getElementById('flux').innerHTML = screen('flux');
+    document.querySelectorAll('.rev[data-cand]').forEach((b) => {
+      b.dataset.on = b.dataset.cand === String(cand) ? 'true' : 'false';
+    });
+    document.querySelectorAll('.q').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        tip = tip === btn.dataset.tip ? '' : btn.dataset.tip;
+        document.querySelectorAll('.tip').forEach((el) => {
+          const side = el.closest('.col').dataset.side;
+          if (!tip) { el.dataset.on = 'false'; el.textContent = ''; return; }
+          el.dataset.on = 'true';
+          el.textContent = tipLine(tip, side);
+        });
+      });
+    });
+    if (tip) {
+      document.querySelectorAll('.tip').forEach((el) => {
+        el.dataset.on = 'true';
+        el.textContent = tipLine(tip, el.closest('.col').dataset.side);
+      });
+    }
+  }
+
+  document.querySelectorAll('.rev[data-cand]').forEach((b) => {
+    b.addEventListener('click', () => { cand = +b.dataset.cand; paint(); });
+  });
+  paint();
+})();
+</script>
+</body>
+</html>
