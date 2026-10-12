@@ -517,7 +517,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
             >
               {children({ noteWrite, penColor: rail.tools === 'pen' ? (penColorProp ?? pen) : undefined })}
             </div>
-            <ThinScrollbar />
+            <ThinScrollbar target={scrollRef} />
             {!framed && <div className="mode-wordcount mode-dissolve">{words} words</div>}
           </div>
 

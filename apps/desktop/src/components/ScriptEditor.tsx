@@ -1170,7 +1170,7 @@ export function ScriptEditor({ id }: { id: string }) {
           <div ref={scrollCapRef} className="desk-frame-scroll-cap" data-typewriter="false">
             <div className="mode-pagecol">{scriptSheet}</div>
           </div>
-          <ThinScrollbar />
+          <ThinScrollbar target={scrollCapRef} />
         </DeskFrame>
 
         {portOpen && <PortToBoardSheet sourceIds={[id]} onClose={() => setPortOpen(false)} />}

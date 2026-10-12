@@ -1,9 +1,13 @@
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, type RefObject } from 'react';
 
 // ITEM scrollbar-minimal (Nick, option B of R7's mockup, cursor/scrollbar-mockup
 // @ c67f1bdb) — a thin, quiet custom scrollbar for the writing surface's own scroll
-// container ONLY (.mode-scroll / .desk-frame-scroll-cap / .board-text). The app-wide
+// container ONLY (.mode-scroll / .desk-frame-scroll-cap). The app-wide
 // ::-webkit-scrollbar rule (index.css, FX7 S4) is untouched everywhere else.
+// Board cards (.board-text) carry NO ThinScrollbar: they grow to fit their own
+// content (FX4 S4's "the reflow floor only ever grows" law), so there is no
+// bounded writing-surface scroll container there to attach one to; the existing
+// native thumb FX7 S4 already gave that selector is untouched.
 //
 // WHY NOT NATIVE: a native scrollbar has no CSS trigger for "invisible at rest,
 // shown only while scrolling/hovering/dragging, fading ~1s after the LAST of those
@@ -18,19 +22,21 @@ import { useEffect, useRef } from 'react';
 // centering regression, not an accidental height cap; `.mode-page`'s narrow-shell
 // height:min(60vh,580px) is a DELIBERATE "simulated paper" ceiling below the 1100px
 // framed threshold), this component tracks the target's OWN getBoundingClientRect()
-// directly, on mount/scroll/resize. Its track is always exactly as tall as the
-// target's own rendered box — never shorter, never guessed — so whatever that box's
-// true height is, this scrollbar's track matches it exactly, proven in this file's
-// own harness check (scripts/harness/scrollbar-minimal.mjs) by comparing the two
-// rects directly rather than asserting a specific number.
+// directly — on mount, on every scroll/resize, and freshly again every time it is
+// about to SHOW (see `show()` below) — so its track is always exactly as tall as
+// the target's own rendered box, never stale and never guessed, proven in this
+// file's own harness check (scripts/harness/scrollbar-minimal.mjs) by comparing
+// the two rects directly rather than asserting a specific number.
 //
-// WHERE THE TARGET COMES FROM: this component takes no target prop. It is rendered
-// as the scroll container's own NEXT SIBLING in the DOM (one line added at each of
-// the three call sites) and finds it via `previousElementSibling` at mount — the
-// same reason FX8's own `.board-text` pattern needs this to work per-CARD on a board
-// with many cards open at once: a prop-threaded ref would need plumbing through
-// three unrelated host components for the same job a DOM lookup already does.
-
+// WHERE THE TARGET COMES FROM (Fable's review, item scrollbar-minimal): this
+// USED to find its target via `previousElementSibling`, which measured the wrong
+// element in ModeStage (S5 read the track ~107px off; S4/S7's hover-only paths
+// never activated at all, since the mismeasured rect's own bounds didn't cover the
+// real pointer position). An explicit `target` ref — the SAME ref each host
+// component already attaches to its own scroll container (ModeStage's
+// `scrollRef`, ScriptEditor's `scrollCapRef`) — removes the DOM-shape guesswork
+// entirely: the overlay measures exactly the element its host says to measure,
+// never a sibling inferred from render order.
 const FADE_OUT_DELAY_MS = 1000;
 const MIN_THUMB_PX = 24;
 const THICKNESS_PX = 4;
@@ -39,14 +45,14 @@ function prefersReducedMotion(): boolean {
   return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-export function ThinScrollbar() {
+export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLElement | null> }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = rootRef.current;
     const thumb = thumbRef.current;
-    const target = root?.previousElementSibling as HTMLElement | null;
+    const target = targetRef.current;
     if (!root || !thumb || !target) return undefined;
 
     let hideTimer: number | null = null;
@@ -80,7 +86,11 @@ export function ThinScrollbar() {
       thumb.style.transform = `translateY(${top}px)`;
     };
 
-    const show = () => { root.classList.add('active'); clearHideTimer(); };
+    // Re-measures right before showing, not just on scroll/resize — a layout
+    // shift that happens between mount and the first hover (an incentive row
+    // changing height, a font swap, a chrome-fade settling) would otherwise
+    // leave the track stale until the next scroll ever corrected it.
+    const show = () => { layoutRoot(); layoutThumb(); root.classList.add('active'); clearHideTimer(); };
     const scheduleHide = () => {
       if (dragging) return;
       clearHideTimer();
@@ -144,11 +154,13 @@ export function ThinScrollbar() {
       target.removeEventListener('scroll', onScroll);
       target.removeEventListener('mouseenter', onTargetEnter);
       target.removeEventListener('mouseleave', onTargetLeave);
+      root.removeEventListener('mouseenter', onBarEnter);
+      root.removeEventListener('mouseleave', onBarLeave);
       thumb.removeEventListener('pointerdown', onThumbPointerDown);
       window.removeEventListener('resize', layoutRoot);
       ro.disconnect();
     };
-  }, []);
+  }, [targetRef]);
 
   return (
     <div ref={rootRef} className="wz-thin-scrollbar" aria-hidden="true">

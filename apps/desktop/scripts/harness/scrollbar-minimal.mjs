@@ -135,9 +135,18 @@ const scrollTo = (app, sel, top) => app.evalJs(`(() => { document.querySelector(
 await withHarness(async (app) => {
   // ==========================================================================
   // S1 — HIDDEN AT REST, on both writing surfaces.
+  //
+  // Fable's review: a leftover CDP pointer position from a PRIOR check can
+  // sit over the new page's writing surface the instant it mounts, under a
+  // reload that never itself re-dispatches a mousemove — reading "at rest"
+  // without first parking the pointer somewhere neutral risks reading a
+  // genuine hover, not a rest state. Each read below is preceded by an
+  // explicit move to a corner no writing surface ever occupies.
   // ==========================================================================
   await freshDesk(app, 1400, 900);
   await openProsePage(app);
+  await app.mouseMove(2, 2);
+  await sleep(80);
   let s = await barState(app, '.mode-scroll');
   ok('S1 (prose): the overlay mounts as .mode-scroll\'s own next sibling',
     s.found === true, JSON.stringify({ display: s.display }));
@@ -147,6 +156,8 @@ await withHarness(async (app) => {
 
   await freshDesk(app, 1400, 900);
   await openScriptPage(app);
+  await app.mouseMove(2, 2);
+  await sleep(80);
   s = await barState(app, '.desk-frame-scroll-cap');
   ok('S1 (script): the overlay mounts as .desk-frame-scroll-cap\'s own next sibling',
     s.found === true, JSON.stringify({ display: s.display }));
@@ -165,14 +176,20 @@ await withHarness(async (app) => {
 
   // ==========================================================================
   // S2 — VISIBLE WHILE SCROLLING.
+  //
+  // Fable's review: the fade-IN transition is .15s — reading opacity at
+  // 120ms after the triggering scroll can land MID-transition (0.9695 was
+  // observed, not a failure of the feature). Wait past .15s and accept a
+  // tolerance rather than exact 1, since a transition's end value is a
+  // float, not guaranteed to land on the literal integer.
   // ==========================================================================
   await freshDesk(app, 1400, 900);
   await openProsePage(app);
   await scrollTo(app, '.mode-scroll', 200);
-  await sleep(120);
+  await sleep(220);
   s = await barState(app, '.mode-scroll');
   ok('S2 (prose): a real scroll event activates the overlay',
-    s.active === true && parseFloat(s.opacity) === 1 && s.pointerEvents === 'auto',
+    s.active === true && parseFloat(s.opacity) >= 0.95 && s.pointerEvents === 'auto',
     JSON.stringify({ active: s.active, opacity: s.opacity, pointerEvents: s.pointerEvents }));
   ok('S2 (prose): the thumb tracks the scroll position (scrollTop > 0 is reflected, not frozen at the top)',
     s.targetScroll.scrollTop === 200, JSON.stringify(s.targetScroll));
@@ -180,10 +197,10 @@ await withHarness(async (app) => {
   await freshDesk(app, 1400, 900);
   await openScriptPage(app);
   await scrollTo(app, '.desk-frame-scroll-cap', 150);
-  await sleep(120);
+  await sleep(220);
   s = await barState(app, '.desk-frame-scroll-cap');
   ok('S2 (script): a real scroll event activates the overlay',
-    s.active === true && parseFloat(s.opacity) === 1 && s.pointerEvents === 'auto',
+    s.active === true && parseFloat(s.opacity) >= 0.95 && s.pointerEvents === 'auto',
     JSON.stringify({ active: s.active, opacity: s.opacity, pointerEvents: s.pointerEvents }));
 
   // ==========================================================================
