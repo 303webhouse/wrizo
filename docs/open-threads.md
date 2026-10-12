@@ -25860,3 +25860,13 @@ two-branch merge, then deploy and smoke. Hold typewriter-fade-order until FIX ex
 the DOM reads the closed drawer panel `data-open=false`, `visibility: hidden`, `opacity: 0`, `data-writing=true` (no ghost); **F1/F2** the Arbor rhizome DURING its flash — in the HOLD (`data-flash=true`, segment opacity 1, stroke brass `rgb(255, 152, 0)`, width 0.9px, 416 ms after the
 goal-crossing keystroke) and MID-FADE (`data-flash=fading`, opacity 0.2046, 1,901 ms after); **D1** the front door and **D2** sign-in (the form blanked, field lengths asserted 0). Every frame reports the served bundle `index-BIsG11Gf.js`. (A first attempt at F caught no flash — the goal was
 set on the page’s own route before the reload; re-taken with the proven seed-then-reload flow, and the unflashed pair of frames discarded.) **Owed: Nick’s own live check.** Grant `chat1-rz-ghost-ship-20261012` (`2026-10-12T08:16:32Z`), cleared `2026-10-12T08:30:26Z`; 0 harness processes, 0 browsers.
+
+## (12) INK’S phase1-drawers @ 1b8b025d: CLEAN ON BOTH LEGS, CLICK MEASUREMENT SHOWS EARLY PRESSES ARE CLEAN NO-OPS — 2026-10-12 (chat 1)
+
+**Fable’s order: “phase1-drawers @ 1b8b025d: click-mid-open, drawers-p1, page-templates, fx10, fx2.”** `run-drawers2` @ `1b8b025d` (INK’s “the drawer’s contents take no pointer input until the slide has settled”; `tsc` exit 0; bundle `index-DqX0JZWU.js` 661,451 b).
+One grant of this desk’s, `chat1-ink-p1-20261012` (`2026-10-12T08:31:17Z`–`08:35:40Z`); 0 harness processes, 0 browsers at the clear. Nothing merged, nothing deployed.
+**Both legs, one stamp `tree=1b8b025d bundle=index-DqX0JZWU.js/661451b`: CLEAN** — `drawers-p1` 93 (was 86), `page-templates` 20, `fx10` 121, `fx2` 34 on the default AND the parked leg.
+**`click-mid-open` on `1b8b025d`:** presses at 0/30/60/100/150 ms after the grip (elapsed 15/45/76/108/155 ms) hit the sliding LAYER or the page (`div.mode-page`, then `div.wz-sliver-panel.chrome-fade.desk-dissolve`), never a button — **a clean no-op, nothing
+activates, nothing under the drawer is hit through it**; presses at 262 and 468 ms (the layer has settled, x=224) hit the Screenplay button’s own SVG and the template applies (2 of 2). **The script’s verdict: “every press before settle was a clean no-op (5 samples) and every press
+from settle on landed (2)” — no PRODUCT BUG? flag.** That answers the finding on `9c35f842` (presses at 45–107 ms missed because the target was still travelling ~184 px): the misses are now deliberate no-ops, not mis-hits. Whether a ~150 ms dead window after opening the
+drawer is acceptable is Fable’s and INK’s call. Raw output: `docs/evidence/click-mid-open/phase1-drawers-1b8b025d.out.txt`.
