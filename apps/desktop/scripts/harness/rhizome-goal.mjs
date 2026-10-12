@@ -253,9 +253,14 @@ await withHarness(async (app) => {
   ok('Live: the flash paints brass', brass, JSON.stringify({ stroke: flashing.stroke }));
   // THE FLASH FADE (Nick, 2026-10-10: "a bit brighter and fade back out slower").
   const bright = await segLook(app);
+  // Tolerances cover the hold's own 160ms ease-in (stroke, opacity and stroke-width all transition): the chat 1 pair read opacity
+  // 0.9988 at onset. Each band stays far from the at-rest values (opacity .45, 0.4px/0.8px, the olive ink), so a flash that did
+  // NOT brighten still fails.
+  const nearBrass = (rgb) => { const n = (String(rgb).match(/[\d.]+/g) || []).map(Number); return n.length >= 3 && Math.abs(n[0] - 255) <= 8 && Math.abs(n[1] - 152) <= 8 && n[2] <= 8; };
+  const px = (w) => parseFloat(w);
   ok('Live [flash fade]: the flash is BRIGHTER while it holds - full opacity and a heavier stroke (thin 0.9px, thick 1.4px), brass',
-    !!bright && bright.flash === 'true' && !!bright.thin && bright.thin.opacity === 1 && bright.thin.width === '0.9px' && bright.thin.stroke === 'rgb(255, 152, 0)'
-      && (!bright.thick || bright.thick.width === '1.4px'), JSON.stringify(bright));
+    !!bright && bright.flash === 'true' && !!bright.thin && bright.thin.opacity >= 0.95 && px(bright.thin.width) >= 0.85 && px(bright.thin.width) <= 0.9
+      && nearBrass(bright.thin.stroke) && (!bright.thick || (px(bright.thick.width) >= 1.3 && px(bright.thick.width) <= 1.4)), JSON.stringify(bright));
   let fadingSeen = true;
   try { await app.waitFor("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'fading'", { label: 'the fade begins', timeout: 2500 }); } catch { fadingSeen = false; }
   await sleep(600);   // inside the 1500ms fade
