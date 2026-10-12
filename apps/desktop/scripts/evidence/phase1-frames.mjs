@@ -1,0 +1,152 @@
+// PHASE 1 - THE FRAMES Fable asked for (Oct 12), for Nick to see before it ships. Arbor (plateau) and Flux, dark and light:
+//   01 left drawer open, Typewriter Mode and Progress Tracking both ON      02 the same, both OFF
+//   03 FORMAT greyed (Typewriter ON), scrolled into view, with the tooltip text recorded (a native title tooltip is not in a PNG - the row carries it)
+//   04 the "..." menu with its greyed rows (both modes OFF)
+//   05 the right drawer: TUTOR | Grafts (Arbor) / Links (Flux), with the "?" note open (Arbor only - Flux has no explainer, by ruling)
+//   06 the narrow-screen locked format bar (1000 x 800, typewriter ON)
+//   07 ONE mid-slide frame (Arbor dark): the drawer paused 100 ms into its arrival
+// Evidence, not a check: it lives in scripts/evidence/ (run-suite runs every file in scripts/harness/, and this writes PNGs into the tracked tree). Run by hand.
+// "Light" for Arbor: `data-page` paints only under Flux (page-templates-frames, 2026-10-09), so Arbor's light frames may be byte-identical to its dark ones - every light
+// frame is compared to its dark twin by MD5 and the row says so, rather than pretending two looks exist.
+// Run: node scripts/evidence/phase1-frames.mjs   (from apps/desktop, dist-web built, box turn granted)
+// Output: docs/evidence/phase1-drawers/<theme>-<tone>/<frame>.png plus frames.json.
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { withHarness } from '../runtime-verify.mjs';
+
+const here = dirname(fileURLToPath(import.meta.url));
+const OUT = join(here, '..', '..', '..', '..', 'docs', 'evidence', 'phase1-drawers');
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const ED = '.forward-only-editor';
+const PAGE = 'p1-frames-page';
+const TEXT = 'The first thing she noticed was the quiet.\nThen the light on the floor, long and thin.\nShe set the cup down and listened.';
+const COMBOS = [
+  { id: 'arbor-dark', theme: 'plateau', prefs: { voice: 'serif', page: 'dark', fade: 'on' } },
+  { id: 'arbor-light', theme: 'plateau', prefs: { voice: 'serif', page: 'light', fade: 'on' } },
+  { id: 'flux-dark', theme: 'flux', prefs: { voice: 'serif', page: 'dark', fade: 'on' } },
+  { id: 'flux-light', theme: 'flux', prefs: { voice: 'serif', page: 'light', fade: 'on' } },
+].filter((t) => !process.env.FRAMES_ONLY || process.env.FRAMES_ONLY === t.id);
+const rows = [];
+const hashes = new Map();
+
+const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
+const freshPage = async (app, combo, width = 1400, height = 900, typewriterSaved = null) => {
+  await app.emulateDpr(1, width, height);
+  await app.goto('/');
+  await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1');
+    localStorage.setItem('wrizo-theme-prefs', ${JSON.stringify(JSON.stringify(combo.prefs))});
+    localStorage.setItem('wrizo-theme', ${JSON.stringify(combo.theme)});
+    ${typewriterSaved ? `localStorage.setItem('wrizo-typewriter-page-${PAGE}', ${JSON.stringify(typewriterSaved)});` : ''}`);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+  await app.evalJs(`window.wrizoCreateJournalPage({ id: ${JSON.stringify(PAGE)}, text: ${JSON.stringify(TEXT)}, createdAt: new Date().toISOString(), source: null, origin: null })`);
+  await sleep(400);
+  await app.evalJs(`location.hash = '#/page/${PAGE}'`);
+  await waitSoft(app, `!!document.querySelector('${ED}')`, { label: 'the frames page' });
+  await sleep(700);
+};
+// A drawer is not THERE until its sliding layer has arrived and is live (transform none, pointer input back).
+const settled = (app, panelSel) => waitSoft(app, `(() => { const l = document.querySelector('${panelSel} > .wz-drawer-slide'); if (!l) return false; const cs = getComputedStyle(l); return cs.transform === 'none' && cs.pointerEvents !== 'none'; })()`, { label: 'drawer settled', timeout: 3000 });
+const openLeft = async (app) => {
+  if (!(await app.evalJs(`!!document.querySelector(".wz-sliver[data-open='true']")`))) await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await waitSoft(app, `!!document.querySelector(".wz-sliver[data-open='true']")`, { label: 'left open', timeout: 3000 });
+  await settled(app, '.wz-sliver-panel'); await sleep(350);
+};
+const closeLeft = async (app) => {
+  if (await app.evalJs(`!!document.querySelector(".wz-sliver[data-open='true']")`)) await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await sleep(500);
+};
+const setToggle = async (app, kind, on) => {
+  await app.evalJs(`(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="${kind}"]'); if (b && (b.getAttribute('aria-pressed') === 'true') !== ${on}) b.click(); })()`);
+  await sleep(300);
+};
+const state = (app) => app.evalJs(`(() => {
+  const t = (k) => document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="' + k + '"]');
+  const f = document.querySelector('.wz-sliver-fieldset');
+  const colour = (el) => el ? getComputedStyle(el).color : null;
+  return { typewriterPressed: t('typewriter')?.getAttribute('aria-pressed') ?? null, progressPressed: t('progress')?.getAttribute('aria-pressed') ?? null,
+    typewriterColor: colour(t('typewriter')), progressColor: colour(t('progress')), typewriterBorder: t('typewriter') ? getComputedStyle(t('typewriter')).borderTopColor : null,
+    formatDisabled: f ? f.disabled : null, formatTitle: f ? f.getAttribute('title') : null, formatOpacity: f ? getComputedStyle(f).opacity : null,
+    attrs: { theme: document.documentElement.getAttribute('data-theme'), page: document.documentElement.getAttribute('data-page') } };
+})()`);
+const shot = async (app, combo, name, extra = {}) => {
+  const dir = join(OUT, combo.id); mkdirSync(dir, { recursive: true });
+  let file = `${name}.png`; let md5 = null;
+  try { const buf = Buffer.from(await app.screenshot(), 'base64'); writeFileSync(join(dir, file), buf); md5 = createHash('md5').update(buf).digest('hex'); } catch (e) { file = `SHOT-FAILED ${e.message}`; }
+  hashes.set(`${combo.id}/${name}`, md5);
+  const twinId = combo.id.endsWith('-light') ? combo.id.replace('-light', '-dark') : null;
+  rows.push({ combo: combo.id, frame: name, file: `${combo.id}/${file}`, md5, sameAsDarkTwin: twinId ? hashes.get(`${twinId}/${name}`) === md5 : null, ...(await state(app)), ...extra });
+};
+
+await withHarness(async (app) => {
+  for (const combo of COMBOS) {
+    // ---- 01 / 02 / 03: the left drawer on a Draft page --------------------------------------------------------------------------------------------------------
+    await freshPage(app, combo);
+    await openLeft(app);
+    await setToggle(app, 'typewriter', true); await setToggle(app, 'progress', true);
+    await shot(app, combo, '01-left-open-both-on');
+    await setToggle(app, 'typewriter', false); await setToggle(app, 'progress', false);
+    await shot(app, combo, '02-left-open-both-off');
+    await setToggle(app, 'typewriter', true);
+    await app.evalJs("document.querySelector('.wz-sliver-fieldset')?.scrollIntoView({ block: 'center', inline: 'nearest' })");
+    await sleep(300);
+    await shot(app, combo, '03-format-greyed-tooltip', { note: 'the tooltip is the fieldset title (a native tooltip is not captured in a PNG); the buttons are disabled and let the pointer through to it' });
+
+    // ---- 04: the "..." menu with greyed rows ---------------------------------------------------------------------------------------------------------------
+    await setToggle(app, 'typewriter', false); await setToggle(app, 'progress', false);
+    await app.evalJs("document.querySelector('.wz-sliver-instruments-btn')?.click()");
+    await waitSoft(app, "!!document.querySelector('.wz-sliver-instruments-panel')", { label: 'the ... menu', timeout: 3000 });
+    await sleep(300);
+    await app.evalJs("document.querySelector('.wz-sliver-instruments-panel')?.scrollIntoView({ block: 'center', inline: 'nearest' })");
+    await sleep(300);
+    const menu = await app.evalJs(`({ greyedRows: document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow[data-disabled="true"]').length,
+      greyedGoal: document.querySelectorAll('.wz-sliver-instruments-panel .wz-tw-number[data-disabled="true"]').length,
+      disabledButtons: document.querySelectorAll('.wz-sliver-instruments-panel button:disabled').length,
+      headings: [...document.querySelectorAll('.wz-sliver-instruments-panel h4')].map(h => h.textContent) })`);
+    await shot(app, combo, '04-menu-greyed-rows', { menu });
+    await app.evalJs("document.querySelector('.wz-sliver-instruments-btn')?.click()");
+    await closeLeft(app);
+
+    // ---- 05: the right drawer, TUTOR | Grafts/Links, the "?" note open ------------------------------------------------------------------------------------
+    await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
+    await waitSoft(app, "!!document.querySelector(\".wz-tutor-panel[data-open='true']\")", { label: 'right open', timeout: 3000 });
+    await settled(app, '.wz-tutor-panel'); await sleep(350);
+    const hadNote = await app.evalJs("!!document.querySelector('.wz-drawer-note-btn')");
+    if (hadNote) { await app.evalJs("document.querySelector('.wz-drawer-note-btn')?.click()"); await sleep(300); }
+    const right = await app.evalJs(`({ tabs: [...document.querySelectorAll('.wz-tutor-panel [role="tab"]')].map(t => t.textContent.trim()),
+      noteShown: !!document.querySelector('.wz-drawer-note-pop'), noteText: document.querySelector('.wz-drawer-note-pop')?.textContent ?? null,
+      noteButton: hadNote })`);
+    await shot(app, combo, '05-right-drawer-tabs-and-note', { right });
+    await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
+    await sleep(500);
+
+    // ---- 06: the narrow-screen locked bar (below the 1100px gate; typewriter saved ON for this page) -------------------------------------------------
+    await freshPage(app, combo, 1000, 800, 'on');
+    const bar = await app.evalJs(`({ present: !!document.querySelector('.mode-bar'), title: document.querySelector('.mode-bar')?.getAttribute('title') ?? null,
+      buttons: document.querySelectorAll('.mode-bar .mode-tbtn').length, disabled: document.querySelectorAll('.mode-bar .mode-tbtn:disabled').length,
+      typewriterOn: document.querySelector('.mode-scroll')?.dataset.typewriter ?? null })`);
+    await shot(app, combo, '06-narrow-locked-bar', { bar });
+
+    // ---- 07: ONE mid-slide frame (Arbor dark only) ------------------------------------------------------------------------------------------------------------------
+    if (combo.id === 'arbor-dark') {
+      await freshPage(app, combo);
+      await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+      const mid = await app.evalJs(`(() => {
+        const anims = document.getAnimations().filter(a => a.effect && a.effect.target && a.effect.target.closest && a.effect.target.closest('.wz-sliver'));
+        anims.forEach((a) => { a.pause(); a.currentTime = 100; });
+        const layer = document.querySelector('.wz-sliver-panel > .wz-drawer-slide'); const cs = layer ? getComputedStyle(layer) : null;
+        const tmpl = document.querySelector('.wz-template-live[data-template="screenplay"]'); const r = tmpl ? tmpl.getBoundingClientRect() : null;
+        return { pausedAnimations: anims.length, at: '100 ms', layerTransform: cs && cs.transform, layerPointerEvents: cs && cs.pointerEvents, panelOpacity: getComputedStyle(document.querySelector('.wz-sliver-panel')).opacity,
+          templateX: r && Math.round(r.left + r.width / 2) };
+      })()`);
+      await sleep(150);
+      await shot(app, combo, '07-mid-slide-100ms', { mid, note: 'animations paused at 100 ms, so the frame is the drawer partway in: faded, shifted, and (pointer-events none) not yet live' });
+    }
+  }
+  const lightSame = rows.filter((r) => r.sameAsDarkTwin === true).map((r) => r.combo + '/' + r.frame);
+  writeFileSync(join(OUT, 'frames.json'), JSON.stringify({ rows, lightFramesByteIdenticalToDarkTwin: lightSame }, null, 2));
+  // eslint-disable-next-line no-console
+  console.log(`PHASE1-FRAMES: ${rows.length} frames written to ${OUT}; light frames byte-identical to their dark twin: ${lightSame.length ? lightSame.join(', ') : 'none'}`);
+});
