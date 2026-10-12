@@ -287,7 +287,7 @@ export type DeskTermId =
   | 'actionDeleteConfirm' | 'actionDeleteYes' | 'actionDeleteKeep'
   | 'footSettings' | 'footMenuTypewriter' | 'footMenuProgress' | 'footMenuPreferences'
   // PHASE 1 (S4) - the two mode toggles beside the drawer's "..." button. Their names are what a screen reader hears; on/off is aria-pressed.
-  | 'modeToggleTypewriter' | 'modeToggleProgress'
+  | 'modeToggleTypewriter' | 'modeToggleProgress' | 'formatLockedByTypewriter'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
   | 'draftConvertToScreenplay' | 'draftConvertToProse'
   // ITEM 207 — the Type control's accessible names. NO visible captions: his law is a strip menu with the fewest marks,
@@ -995,6 +995,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   footMenuProgress: 'Progress Tracking',
   modeToggleTypewriter: 'Typewriter mode',
   modeToggleProgress: 'Progress tracking',
+  formatLockedByTypewriter: 'Typewriter Mode is on',
   footMenuPreferences: 'Preferences',
   draftQuote: 'Block quote',
   draftIndent: 'Indent',

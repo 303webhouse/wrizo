@@ -618,6 +618,8 @@ function TemplateIcon({ kind }: { kind: 'outline' | 'bibliography' | 'title' | '
 function SliverToolsBody({ content }: { content: SliverContent }) {
   const { t } = useDeskLexicon();
   // PHASE 1 (S4) - while Typewriter is on the whole Format group is greyed and unusable (Nick). Read here, above the early return, so the hook order holds.
+  // THE SETTING IS THE RUNNING STATE HERE, so it is not narrowed further: FORMAT is mounted only by PageEditor's `mode === 'drafting'` content (ScriptEditor passes
+  // no `format`), and ModeStage runs the typewriter as `(mode === 'journal' || mode === 'drafting') && settings.typewriter` - for drafting, exactly the setting.
   const formatLocked = useWritingSettings().typewriter;
 
   if (content.kind === 'empty') return null;
@@ -701,7 +703,8 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           <div className="wz-sliver-h">{t('railFormat')}</div>
           {/* PHASE 1 (S4) - a native disabled fieldset: every button inside (the bullet menu's too) is unusable and announced as unavailable, with
               no per-button wiring to forget. The typing shortcuts are blocked at the same moment by PageEditor's applyRailFormat. */}
-          <fieldset className="wz-sliver-fieldset" disabled={formatLocked} data-locked={formatLocked ? 'true' : 'false'}>
+          <fieldset className="wz-sliver-fieldset" disabled={formatLocked} data-locked={formatLocked ? 'true' : 'false'} title={formatLocked ? t('formatLockedByTypewriter') : undefined}>
+          {formatLocked && <legend className="wz-sr-only">{t('formatLockedByTypewriter')}</legend>}
           {/* onMouseDown preventDefault — a sliver button is OUTSIDE the
               contenteditable, so a normal click's mousedown would blur it
               and collapse whatever text was selected (moved verbatim). */}

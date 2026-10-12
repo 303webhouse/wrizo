@@ -554,3 +554,15 @@ with no on/off row"). Read-only audit, not yet run: `ab1`, `ab2`, `sc1`, `item83
 (the toggles use their own class, so `fx1`'s "Typewriter instrument is not brass at rest" now reads `absent` - vacuous, not red; a successor on the new class is owed once the box confirms the colours).
 New: `drawer-toggles.mjs` (browserless, 16 mutants). The browser half (a real click flips a real colour; Tab/Enter/Space; greyed rows refuse a click; Format refuses B and Ctrl+B; Arbor and Flux x light and dark)
 is owed on a box turn, in `drawers-p1-live.mjs`.
+
+### A.10 S4 review changes (Fable, Oct 11)
+
+- **Toggle look:** ON changes only the icon's colour (brass); the square's border is the same quiet line as the "..." in both states, no fill. (A.9's "brass hairline" is superseded.)
+- **FORMAT locks on the running typewriter - and the setting already IS the running state there, so it is left as is.** FORMAT is mounted only by PageEditor's `mode === 'drafting'` content
+  (ScriptEditor passes no `format`), and ModeStage runs the typewriter as `(mode === 'journal' || mode === 'drafting') && settings.typewriter`, which for drafting is exactly the setting.
+  The same holds for the `applyRailFormat` guard (it already returns first unless `mode === 'drafting'`). A comment in `Sliver.tsx` records this.
+- **Legacy On/Off controls in `ModeStage.tsx` are reachable, so they are NOT removed.** The `SettingsPanel` Typewriter row (reached by the gear) and `TypewriterToggle` render only when `!framed`:
+  below the 1100px gate (PageEditor's second `ModeStage`), in `QuickSprint`, and the Journal entry's own row. There is no drawer there, so these are the only typewriter control a writer in those
+  places has; deleting them would leave no way to turn it off. (Those unframed surfaces also keep their legacy format bar, which this change does not lock; say if it should.)
+- **The greyed FORMAT group explains itself:** the fieldset's tooltip is the lexicon term `formatLockedByTypewriter` "Typewriter Mode is on", its buttons let the pointer through so the tooltip shows
+  anywhere on the group, and a screen-reader-only legend says the same.

@@ -93,6 +93,11 @@ function claims(s = { sliver: sliverSrc, stage: stageSrc, lex: lexSrc, pe: peSrc
     hookBeforeReturn: hook > 0 && early > hook,
     wrapsFourRows: countOf(fBody, /className="wz-sliver-format/g) === 3 && /onFormat\('bold'\)/.test(fBody) && /onFormat\('align-right'\)/.test(fBody) && /<BulletControl/.test(fBody),
     sectionOnly: countOf(tools, /<fieldset /g) === 1,
+    // the greyed group says why: a tooltip from the lexicon on the fieldset, a legend for assistive tech, and buttons that let the pointer through to it
+    tooltip: /<fieldset [^>]*title=\{formatLocked \? t\('formatLockedByTypewriter'\) : undefined\}>/.test(tools)
+      && /\{formatLocked && <legend className="wz-sr-only">\{t\('formatLockedByTypewriter'\)\}<\/legend>\}/.test(tools)
+      && /^\.wz-sliver-fieldset:disabled button\{[^}]*pointer-events:none/m.test(s.css)
+      && new RegExp("^  formatLockedByTypewriter: 'Typewriter Mode is on',$", 'm').test(s.lex),
   };
   // ---- T9: the shortcuts ---------------------------------------------------------------------------------------------------
   const arfStart = s.pe.indexOf('  const applyRailFormat = (action: FormatAction) => {');
@@ -113,7 +118,8 @@ function claims(s = { sliver: sliverSrc, stage: stageSrc, lex: lexSrc, pe: peSrc
   const fgrey = rule('.wz-sliver-fieldset:disabled');
   const fres = rule('.wz-sliver-fieldset');
   out.look = {
-    onBrassNoFill: !!pressed && /color:var\(--brass\)/.test(pressed) && /border-color:var\(--brass\)/.test(pressed) && /background:none/.test(pressed) && !/color-mix|rgba?\(|#[0-9a-f]{3}/i.test(pressed),
+    // Fable, Oct 11: ONLY the icon changes colour - the square's border is the same quiet line in both states, and there is no fill.
+    onBrassNoFill: !!pressed && /color:var\(--brass\)/.test(pressed) && /background:none/.test(pressed) && !/border/.test(pressed) && !/color-mix|rgba?\(|#[0-9a-f]{3}/i.test(pressed),
     offQuiet: !!btn && /color:var\(--text-low\)/.test(btn) && /background:none/.test(btn),
     focusRing: /^\.wz-sliver-mode-btn:focus-visible\{[^}]*outline:2px solid var\(--brass\)/m.test(s.css),
     greyRows: !!grey && /opacity:\.4/.test(grey), greyFormat: !!fgrey && /opacity:\.4/.test(fgrey),
@@ -131,7 +137,7 @@ function verdict(c) {
     rowsGone: c.rowsGone?.tw && c.rowsGone?.pr,
     greyed: g.twSegs === 3 && g.twDisabled === 3 && g.twOff && g.prSegs === 4 && g.prDisabled === 4 && g.prOff && g.prInput,
     seg: c.seg?.attr && c.seg?.buttons,
-    format: f.disabledBound && f.hookBeforeReturn && f.wrapsFourRows && f.sectionOnly,
+    format: f.disabledBound && f.hookBeforeReturn && f.wrapsFourRows && f.sectionOnly && f.tooltip,
     shortcuts: sc.guardOrder && sc.keysUseIt && sc.railUsesIt && sc.imported,
     look: l.onBrassNoFill && l.offQuiet && l.focusRing && l.greyRows && l.greyFormat && l.fieldsetReset && l.noLiteralColours && c.icons,
   };
@@ -158,7 +164,7 @@ ok('(T7) the whole FORMAT group sits inside ONE native disabled fieldset bound t
   v.format === true, JSON.stringify(base.format));
 ok('(T8) the formatting SHORTCUTS are blocked with it: applyRailFormat (which the Ctrl/Cmd+B/I/U key handler and the rail share) returns while Typewriter is on, after the Draft-only guard and before anything is applied',
   v.shortcuts === true, JSON.stringify(base.shortcuts));
-ok('(T9) the look: ON = brass icon + brass hairline, NO fill; OFF = quiet; a focus ring; greyed = 40% opacity; the fieldset resets the browser border/padding/min-width; theme TOKENS only (no literal colours), so Arbor and Flux, light and dark, read their own brass',
+ok('(T9) the look: ON = the ICON turns brass and nothing else (same quiet border as the "...", no fill); OFF = quiet; a focus ring; greyed = 40% opacity; the fieldset resets the browser border/padding/min-width; theme TOKENS only (no literal colours), so Arbor and Flux, light and dark, read their own brass',
   v.look === true, JSON.stringify(base.look));
 
 // =============================================================================
@@ -188,8 +194,11 @@ mutant('the Format setting is read AFTER the early return (hook order breach)', 
 mutant('the shortcuts are no longer blocked', 'pe', (t) => mutate(t, '    if (getWritingSettings().typewriter) return;   // PHASE 1 (S4)', '    // PHASE 1 (S4)'), 'shortcuts');
 const GUARD = '    if (getWritingSettings().typewriter) return;   // PHASE 1 (S4): Format is greyed while Typewriter is on, and its shortcuts (Ctrl/Cmd+B/I/U) are blocked with it';
 mutant('the shortcut guard runs AFTER the format is applied', 'pe', (t) => mutate(t, GUARD + '\n    applyFormatAt(action);', '    applyFormatAt(action);\n' + GUARD), 'shortcuts');
-mutant('the ON state gets a fill', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }"), 'look');
-mutant('the ON state is a hard-coded colour (would not follow the theme)', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass);", ".wz-sliver-mode-btn[aria-pressed='true']{ color:#c8a24a;"), 'look');
+mutant('the ON state gets a fill', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }"), 'look');
+mutant('the ON state gets a brass border (Fable: only the icon changes)', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:none; }"), 'look');
+mutant('the greyed Format group loses its tooltip', 'sliver', (t) => mutate(t, " title={formatLocked ? t('formatLockedByTypewriter') : undefined}>", '>'), 'format');
+mutant('the greyed Format buttons swallow the pointer (the group tooltip can never show)', 'css', (t) => mutate(t, '.wz-sliver-fieldset:disabled button{ cursor:default; pointer-events:none; }', '.wz-sliver-fieldset:disabled button{ cursor:default; }'), 'format');
+mutant('the ON state is a hard-coded colour (would not follow the theme)', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:#c8a24a; background:none; }"), 'look');
 mutant('the fieldset keeps the browser border and padding', 'css', (t) => mutate(t, '.wz-sliver-fieldset{ border:0; margin:0; padding:0; min-width:0;', '.wz-sliver-fieldset{ margin:0;'), 'look');
 
 let failed = 0;
