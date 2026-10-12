@@ -1273,8 +1273,35 @@ a:focus-visible,
   gap:clamp(1.5rem,4vh,2.6rem); padding:6vh 7vw; text-align:center; cursor:text;
   transition:transform 1s cubic-bezier(.2,.8,.2,1), opacity .8s ease; z-index:5; }
 .wz-hero.gone{ opacity:0; transform:scale(.96) translateY(-6vh); pointer-events:none; }
-.wz-logo{ width:clamp(250px,40vw,470px); height:auto; display:block; filter:drop-shadow(0 6px 26px rgba(0,0,0,.55)); }
-.wz-tagline{ font-family:var(--wz-ui); font-weight:600; font-size:clamp(1.2rem,2.5vw,1.78rem); letter-spacing:.01em; color:var(--wz-ink); opacity:.92; }
+.wz-logo{ width:clamp(250px,40vw,470px); height:auto; display:block; filter:drop-shadow(0 6px 26px rgba(0,0,0,.55));
+  transition:opacity .38s ease; }
+.wz-tagline{ font-family:var(--wz-ui); font-weight:600; font-size:clamp(1.2rem,2.5vw,1.78rem); letter-spacing:.01em; color:var(--wz-ink); opacity:.92;
+  transition:opacity .38s ease; }
+/* ITEM splash-hold ROUND 3 (Nick's ruling, "no ghost") — the front door's own
+   wordmark/tagline/doors stay hidden for the splash's own hold (the attribute
+   below is set/cleared by Splash.tsx on document.documentElement — the two
+   components never need to know about each other directly) and fade in
+   exactly as the splash leaves, via each element's own opacity transition
+   above/below. Reduced motion already drops to a plain .2s linear fade for
+   every .wz-home descendant (the existing blanket rule, below in this file) —
+   these three ride that same rule, no new one needed.
+   ROUND 5 (Fable's review) — `transition:none` HERE makes the HIDE instant:
+   without it, the moment this attribute lands the element would fade from
+   whatever it was (1, or .92) down to 0 over .38s, which is itself a visible
+   flash the opposite direction. The base rule's own `transition:opacity .38s
+   ease` still governs the REVEAL — once the attribute is gone this selector
+   no longer matches, so the element falls back to that transition and the
+   leaving-fade is unaffected. */
+[data-splash-hold='true'] .wz-logo,
+[data-splash-hold='true'] .wz-tagline,
+[data-splash-hold='true'] .wz-arrival-doors{ opacity:0; transition:none; }
+/* ITEM splash-hold ROUND 4 (Fable's review) — opacity:0 alone still leaves Write and
+   Open genuinely clickable (opacity never gates hit-testing). pointer-events:none
+   closes that: a hidden door can't be pressed. Keyboard input is unaffected — this
+   only ever changes POINTER hit-testing, never focus or keydown, so keystrokes keep
+   reaching the app exactly as before. Scoped to the doors only (Fable's own words
+   named "hidden Write and Open"); logo/tagline were never interactive. */
+[data-splash-hold='true'] .wz-arrival-doors{ pointer-events:none; }
 .wz-invite{ font-family:var(--wz-ui); font-size:.82rem; letter-spacing:.2em; text-transform:uppercase; color:var(--wz-ink-dim);
   opacity:0; animation:wz-rise 1.2s ease .6s forwards; }
 @keyframes wz-rise{ from{opacity:0;transform:translateY(10px);} to{opacity:.55;transform:none;} }
@@ -2013,7 +2040,8 @@ a:focus-visible,
 @media (prefers-reduced-motion:reduce){
   .wz-arrival-bootbar[data-ready='false'] .wz-arrival-bootbar-fill{ animation:none; opacity:.5; width:40%; }
 }
-.wz-arrival-doors{ display:flex; flex-direction:column; align-items:center; gap:.6rem; margin-top:.8rem; }
+.wz-arrival-doors{ display:flex; flex-direction:column; align-items:center; gap:.6rem; margin-top:.8rem;
+  transition:opacity .38s ease; }
 .wz-arrival-write:disabled, .wz-arrival-open:disabled{ opacity:.35; cursor:default; }
 .wz-arrival-open{ background:none; border:none; font-size:.95rem; }
 .wz-arrival-signin{ background:none; border:none; font-size:.95rem; }
@@ -5514,10 +5542,14 @@ a:focus-visible,
    IT CANNOT BLOCK WRITING, BY CONSTRUCTION. `pointer-events:none` on the
    container and on both children means this overlay is invisible to hit
    testing: a click during the splash reaches whatever is underneath exactly as
-   if the splash were not mounted. Dismissal is driven by PASSIVE window
-   listeners in Splash.tsx, never by this layer catching anything. It is also
-   what lets the backdrop probe read THROUGH the overlay to measure the app's
-   real ground (store/backdropTone.ts).
+   if the splash were not mounted. The PASSIVE window listeners in Splash.tsx
+   stay for the same reason (ITEM splash-hold: they no longer dismiss early,
+   below, but input still passes through them untouched), never by this layer
+   catching anything. pointer-events:none is also what lets the backdrop probe
+   read THROUGH the overlay to measure the app's real ground
+   (store/backdropTone.ts) — unaffected by ITEM splash-hold, since that probe
+   uses `elementFromPoint`/DOM traversal, never anything about the veil's own
+   paint.
 
    z-index 400 sits above the app's whole existing stack (modals, backdrops
    and toasts top out at 300) — deliberately, because at boot this is the
@@ -5525,21 +5557,30 @@ a:focus-visible,
 
    The SIZE is not set here: Splash.tsx computes width/height inline off the
    asset's measured INK bounding box (3077x2458 inside a 3374x2699 canvas) —
-   about a quarter of the screen's area, capped so the blurred app always
+   about a quarter of the screen's area, capped so the dimmed app always
    shows on all four sides (item 187). */
+/* ITEM splash-hold ROUND 5 (Fable's review): SUPERSEDED the flex-direction:column
+   + gap below — putting the loading line IN the centred flex stack shifted the
+   drawing 14.8px off true centre (the line's own height, halved, pushing the group
+   up). The drawing's centring is load-bearing (S4's whole claim); the loading line
+   is positioned absolutely instead (.wz-splash-loading, below), never a flex
+   participant, so nothing it does can move the mark again. */
 .wz-splash{
   position:fixed; inset:0; z-index:400; pointer-events:none;
   display:flex; align-items:center; justify-content:center;
 }
-/* The blur is the app itself, live — a real backdrop-filter, never a
-   screenshot (the app is local-first and paints immediately, so any captured
-   frame would already be stale by the time it showed). This is the FIRST
-   backdrop-filter in this stylesheet; the -webkit- pair is kept because the
-   property is still prefixed in parts of the Chromium line this app ships on. */
+/* ITEM splash-hold (Nick, live): "the background should be faded out, not
+   blurred" — SUPERSEDED the backdrop-filter blur below (the app no longer
+   reads as blurred-but-present; it reads as dimmed-but-present). The tint is
+   the THEME's own ground colour (--ink-950, already per-theme: Arbor's own
+   warm brown-dark #110600, Flux's own teal-dark #04141A), via color-mix — so
+   Arbor dims brown-dark and Flux dims teal-dark, never one fixed colour
+   painted over both. ROUND 2 (Nick, live frames): 75% let the front door's
+   logo and the Write door ghost through and clash with the sketch — raised
+   to 90%; the token stays theme-tinted, only the opacity moved. */
 .wz-splash-veil{
   position:absolute; inset:0; pointer-events:none;
-  -webkit-backdrop-filter:blur(18px);
-  backdrop-filter:blur(18px);
+  background:color-mix(in srgb, var(--ink-950) 90%, transparent);
   opacity:1; transition:opacity .38s ease;
 }
 /* The emblem is a SIBLING of the veil, not a child, so it paints on top of the
@@ -5549,15 +5590,34 @@ a:focus-visible,
   max-width:none; max-height:none;
   opacity:1; transition:opacity .38s ease;
 }
+/* ITEM splash-hold ROUND 3 — the cycling loading line, in the theme's own UI
+   font and a quiet colour (both already per-theme tokens; no Flux override
+   needed). `key`-remounted on every line change (Splash.tsx) restarts this
+   fade; reduced motion drops the animation below, an instant swap.
+   ROUND 5 — SUPERSEDED being a flex participant (it shifted the drawing off
+   true centre, S4's own claim). Positioned absolutely instead, anchored to
+   `--mark-h` (Splash.tsx's own measured box.height, passed as a CSS custom
+   property on .wz-splash) so it always sits just below the drawing's own
+   rendered edge, whatever that edge currently is. */
+.wz-splash-loading{
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%, calc(-50% + var(--mark-h, 0px) / 2 + 14px));
+  min-height:1.2em; font-family:var(--font-ui); font-size:13px;
+  color:var(--text-mid); letter-spacing:.01em; opacity:1; transition:opacity .38s ease;
+}
+.wz-splash-loading-text{ display:inline-block; animation:wz-splash-loading-fade .3s ease; }
+@keyframes wz-splash-loading-fade{ from{ opacity:0; } to{ opacity:1; } }
 /* NO ANIMATED ENTRANCE, in either motion mode — the emblem is simply there at
    first paint. Only the LEAVING is eased, and only when motion is welcome. */
 .wz-splash[data-leaving='true'] .wz-splash-veil,
-.wz-splash[data-leaving='true'] .wz-splash-mark{ opacity:0; }
+.wz-splash[data-leaving='true'] .wz-splash-mark,
+.wz-splash[data-leaving='true'] .wz-splash-loading{ opacity:0; }
 
 @media (prefers-reduced-motion:reduce){
+  .wz-splash-loading-text{ animation:none; }
   /* A plain appear and disappear, exactly as briefed: the hold is unchanged,
      the fade is removed. Splash.tsx carries a timer floor as well as the
      transitionend, precisely because this rule can stop that event ever
      arriving. */
-  .wz-splash-veil, .wz-splash-mark{ transition:none; }
+  .wz-splash-veil, .wz-splash-mark, .wz-splash-loading{ transition:none; }
 }

@@ -335,9 +335,12 @@ export function App() {
         {/* Item 187 — the splash. Mounted at app root rather than on a route:
             it belongs to the app OPENING, not to '/' (and Fable's ruling is
             every open, not first-run-only). It renders once per app load, is
-            pointer-events:none throughout, and blurs whatever is genuinely
-            mounted behind it — which at boot is Arrival, the Threshold. */}
-        <Splash />
+            pointer-events:none throughout, and dims whatever is genuinely
+            mounted behind it — which at boot is Arrival, the Threshold.
+            ITEM splash-hold round 3 — `ready` is the SAME derivation Arrival's
+            own boot bar already uses (authState !== 'loading'): the splash's
+            floor holds longer when the app genuinely isn't ready yet. */}
+        <Splash ready={authState !== 'loading'} />
         <VoiceWallWhisper />
         <ThemeEffectsLayer />
         <FluxBlockCaret />

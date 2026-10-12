@@ -578,7 +578,11 @@ export type DeskTermId =
   | 'authInviteCodePlaceholder'
   // ITEM 224, ROUND 2 — shown instead of the whole form when no codes are
   // configured, so the gate reads as a quiet fact, never a submit-and-fail.
-  | 'authSignupByInvitation';
+  | 'authSignupByInvitation'
+  // ITEM splash-hold, ROUND 3 — the splash's own cycling loading line, four
+  // per-theme phrases (Nick's ruling). Arbor's own voice is the canonical one;
+  // Flux's own circuit-register voice is a Flux override, below.
+  | 'splashLoading1' | 'splashLoading2' | 'splashLoading3' | 'splashLoading4';
 
 const CANONICAL: Record<DeskTermId, string> = {
   // BM1 — the Board's Own Modes.
@@ -1284,6 +1288,13 @@ const CANONICAL: Record<DeskTermId, string> = {
   // ITEM 224 — the invite-code field.
   authInviteCodePlaceholder: 'invite code',
   authSignupByInvitation: 'By invitation, for now.',
+
+  // ITEM splash-hold, ROUND 3 — Arbor's own voice, a tree/garden register
+  // matching the rest of this theme's own vocabulary (Graft, Rhizome).
+  splashLoading1: 'Gathering your pages…',
+  splashLoading2: 'Turning the soil…',
+  splashLoading3: 'Watering the roots…',
+  splashLoading4: 'Opening the notebook…',
 };
 
 // Flux registers its own capture-module name (the app's other live theme
@@ -1317,6 +1328,12 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     // `theme === 'plateau'` gate already renders nothing under Flux, so this
     // is a label-only fix (see that component's header comment).
     progressStyleRhizome: 'Glitch',
+    // ITEM splash-hold, ROUND 3 — Flux's own circuit-register voice for the
+    // splash's cycling loading line (Nick's ruling).
+    splashLoading1: 'Booting the terminal…',
+    splashLoading2: 'Calibrating signal…',
+    splashLoading3: 'Decrypting the archive…',
+    splashLoading4: 'Patching the uplink…',
   },
 };
 
