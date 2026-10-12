@@ -1273,8 +1273,21 @@ a:focus-visible,
   gap:clamp(1.5rem,4vh,2.6rem); padding:6vh 7vw; text-align:center; cursor:text;
   transition:transform 1s cubic-bezier(.2,.8,.2,1), opacity .8s ease; z-index:5; }
 .wz-hero.gone{ opacity:0; transform:scale(.96) translateY(-6vh); pointer-events:none; }
-.wz-logo{ width:clamp(250px,40vw,470px); height:auto; display:block; filter:drop-shadow(0 6px 26px rgba(0,0,0,.55)); }
-.wz-tagline{ font-family:var(--wz-ui); font-weight:600; font-size:clamp(1.2rem,2.5vw,1.78rem); letter-spacing:.01em; color:var(--wz-ink); opacity:.92; }
+.wz-logo{ width:clamp(250px,40vw,470px); height:auto; display:block; filter:drop-shadow(0 6px 26px rgba(0,0,0,.55));
+  transition:opacity .38s ease; }
+.wz-tagline{ font-family:var(--wz-ui); font-weight:600; font-size:clamp(1.2rem,2.5vw,1.78rem); letter-spacing:.01em; color:var(--wz-ink); opacity:.92;
+  transition:opacity .38s ease; }
+/* ITEM splash-hold ROUND 3 (Nick's ruling, "no ghost") — the front door's own
+   wordmark/tagline/doors stay hidden for the splash's own hold (the attribute
+   below is set/cleared by Splash.tsx on document.documentElement — the two
+   components never need to know about each other directly) and fade in
+   exactly as the splash leaves, via each element's own opacity transition
+   above/below. Reduced motion already drops to a plain .2s linear fade for
+   every .wz-home descendant (the existing blanket rule, below in this file) —
+   these three ride that same rule, no new one needed. */
+[data-splash-hold='true'] .wz-logo,
+[data-splash-hold='true'] .wz-tagline,
+[data-splash-hold='true'] .wz-arrival-doors{ opacity:0; }
 .wz-invite{ font-family:var(--wz-ui); font-size:.82rem; letter-spacing:.2em; text-transform:uppercase; color:var(--wz-ink-dim);
   opacity:0; animation:wz-rise 1.2s ease .6s forwards; }
 @keyframes wz-rise{ from{opacity:0;transform:translateY(10px);} to{opacity:.55;transform:none;} }
@@ -2013,7 +2026,8 @@ a:focus-visible,
 @media (prefers-reduced-motion:reduce){
   .wz-arrival-bootbar[data-ready='false'] .wz-arrival-bootbar-fill{ animation:none; opacity:.5; width:40%; }
 }
-.wz-arrival-doors{ display:flex; flex-direction:column; align-items:center; gap:.6rem; margin-top:.8rem; }
+.wz-arrival-doors{ display:flex; flex-direction:column; align-items:center; gap:.6rem; margin-top:.8rem;
+  transition:opacity .38s ease; }
 .wz-arrival-write:disabled, .wz-arrival-open:disabled{ opacity:.35; cursor:default; }
 .wz-arrival-open{ background:none; border:none; font-size:.95rem; }
 .wz-arrival-signin{ background:none; border:none; font-size:.95rem; }
@@ -5533,7 +5547,7 @@ a:focus-visible,
    shows on all four sides (item 187). */
 .wz-splash{
   position:fixed; inset:0; z-index:400; pointer-events:none;
-  display:flex; align-items:center; justify-content:center;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
 }
 /* ITEM splash-hold (Nick, live): "the background should be faded out, not
    blurred" — SUPERSEDED the backdrop-filter blur below (the app no longer
@@ -5556,15 +5570,27 @@ a:focus-visible,
   max-width:none; max-height:none;
   opacity:1; transition:opacity .38s ease;
 }
+/* ITEM splash-hold ROUND 3 — the cycling loading line, in the theme's own UI
+   font and a quiet colour (both already per-theme tokens; no Flux override
+   needed). `key`-remounted on every line change (Splash.tsx) restarts this
+   fade; reduced motion drops the animation below, an instant swap. */
+.wz-splash-loading{
+  position:relative; min-height:1.2em; font-family:var(--font-ui); font-size:13px;
+  color:var(--text-mid); letter-spacing:.01em; opacity:1; transition:opacity .38s ease;
+}
+.wz-splash-loading-text{ display:inline-block; animation:wz-splash-loading-fade .3s ease; }
+@keyframes wz-splash-loading-fade{ from{ opacity:0; } to{ opacity:1; } }
 /* NO ANIMATED ENTRANCE, in either motion mode — the emblem is simply there at
    first paint. Only the LEAVING is eased, and only when motion is welcome. */
 .wz-splash[data-leaving='true'] .wz-splash-veil,
-.wz-splash[data-leaving='true'] .wz-splash-mark{ opacity:0; }
+.wz-splash[data-leaving='true'] .wz-splash-mark,
+.wz-splash[data-leaving='true'] .wz-splash-loading{ opacity:0; }
 
 @media (prefers-reduced-motion:reduce){
+  .wz-splash-loading-text{ animation:none; }
   /* A plain appear and disappear, exactly as briefed: the hold is unchanged,
      the fade is removed. Splash.tsx carries a timer floor as well as the
      transitionend, precisely because this rule can stop that event ever
      arriving. */
-  .wz-splash-veil, .wz-splash-mark{ transition:none; }
+  .wz-splash-veil, .wz-splash-mark, .wz-splash-loading{ transition:none; }
 }

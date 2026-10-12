@@ -68,6 +68,16 @@ const openApp = async (app, { width = W, height = H } = {}) => {
   await app.reload();
 };
 
+// ITEM splash-hold round 3: the theme must be set BEFORE the reload (clearing storage
+// first resets it to Arbor's own default) — the clear + theme + first-run-complete
+// write is one evalJs call for exactly that reason.
+const openAppThemed = async (app, theme, { width = W, height = H } = {}) => {
+  await app.emulateDpr(1, width, height);
+  await app.goto('/');
+  await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)});`);
+  await app.reload();
+};
+
 const splashState = (app) => app.evalJs(`(() => {
   const el = document.querySelector('.wz-splash');
   if (!el) return { mounted: false };
@@ -290,27 +300,87 @@ await withHarness(async (app) => {
   // settle of its own, so the seam read right after it needs its own waitFor.
   await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S6 settle' });
   const holdMs = await app.evalJs('window.wrizoSplash ? window.wrizoSplash.HOLD_MS : null');
-  ok('S6 (driver): the hold is readable from the page seam, and is the item splash-hold floor (>= 3000ms, Nick live: "visible for at least 3 seconds")',
-    typeof holdMs === 'number' && holdMs >= 3000, String(holdMs));
-  await sleep((holdMs || 3000) + 700);
-  const afterHold = await app.evalJs("!!document.querySelector('.wz-splash')");
-  ok('S6: left alone, the splash dismisses ITSELF after its hold — nothing is ever required of the writer',
-    afterHold === false, JSON.stringify({ stillMounted: afterHold, holdMs }));
+  // SUPERSEDED (item splash-hold ROUND 3): "minimum 5s per app load" raised the floor
+  // from round 1's 3000ms.
+  // ok('S6 (driver): the hold is readable from the page seam, and is the item splash-hold floor (>= 3000ms, Nick live: "visible for at least 3 seconds")', typeof holdMs === 'number' && holdMs >= 3000, String(holdMs));
+  ok('S6 (driver, ROUND 3 successor): the hold is readable from the page seam, and is the item splash-hold floor (>= 5000ms, Nick live: "minimum 5s per app load")',
+    typeof holdMs === 'number' && holdMs >= 5000, String(holdMs));
+  const mountedAt = Date.now();
+  // A fixed sleep raced the app's OWN readiness (round 3: the hold now also waits for
+  // authState to resolve past 'loading', which a slow harness/CI tick could overrun a
+  // sleep(holdMs+700) by) — waitFor polls instead, with real headroom.
+  await app.waitFor("!document.querySelector('.wz-splash')", { label: 'S6 self-dismiss after the floor', timeout: (holdMs || 5000) + 8000 });
+  const elapsedMs = Date.now() - mountedAt;
+  ok('S6: left alone, the splash dismisses ITSELF after its hold (and only once the app is ready) — nothing is ever required of the writer',
+    elapsedMs >= (holdMs || 5000) - 150, String(elapsedMs));
 
-  // SUPERSEDED, RETIRED WHOLE (item splash-hold, Nick live: "...and the background
-  // should be faded out, not blurred" — the SAME sitting also ruled the hold itself a
-  // FLOOR, not a maximum: "visible for at least 3 seconds"). The old claim named here
-  // is now false by design; the successor proves the retirement itself, the same
-  // "no dead surface left behind" discipline this codebase already uses elsewhere
-  // (e.g. fx5.mjs's own S5 section for a different retired gesture).
-  // ok('S6: any input dismisses it EARLY — the hold is a maximum, never a wait', liveBefore === true && afterKey === false, JSON.stringify({ liveBefore, afterKey }));
   await openApp(app);
   const liveBefore = await app.evalJs("!!document.querySelector('.wz-splash')");
   await app.key('Escape');
   await sleep(600);
   const stillLiveAfterKey = await app.evalJs("!!document.querySelector('.wz-splash')");
-  ok('S6 (item splash-hold successor): input no longer dismisses it early — the gesture is retired whole, proven inert (Escape mid-hold does nothing; only the floor\'s own timer, above, ever ends it)',
+  ok('S6 (item splash-hold): input does not dismiss it early, nor shorten the hold — the gesture is retired whole, proven inert (Escape mid-hold does nothing; only the floor\'s own timer, above, ever ends it)',
     liveBefore === true && stillLiveAfterKey === true, JSON.stringify({ liveBefore, stillLiveAfterKey }));
+
+  // ==========================================================================
+  // S9 — ROUND 3: "NO GHOST" (the front door stays hidden through the hold,
+  // fades in as the splash leaves) AND THE LOADING LINE (from the lexicon,
+  // per theme) — both themes.
+  // ==========================================================================
+  for (const theme of ['plateau', 'flux']) {
+    await openAppThemed(app, theme);
+    await app.waitFor("!!document.querySelector('.wz-splash')", { label: `S9 settle (${theme})` });
+
+    const duringHold = await app.evalJs(`(() => {
+      const logo = document.querySelector('.wz-logo');
+      const tagline = document.querySelector('.wz-tagline');
+      const doors = document.querySelector('.wz-arrival-doors');
+      const lineEl = document.querySelector('.wz-splash-loading');
+      const textEl = document.querySelector('.wz-splash-loading-text');
+      return {
+        theme: document.documentElement.getAttribute('data-theme'),
+        splashHoldAttr: document.documentElement.getAttribute('data-splash-hold'),
+        logoOpacity: logo ? getComputedStyle(logo).opacity : null,
+        taglineOpacity: tagline ? getComputedStyle(tagline).opacity : null,
+        doorsOpacity: doors ? getComputedStyle(doors).opacity : null,
+        loadingRole: lineEl ? lineEl.getAttribute('role') : null,
+        loadingText: textEl ? textEl.textContent : null,
+      };
+    })()`);
+    ok(`S9 (${theme}): "no ghost" — the front door's own wordmark/tagline/doors are invisible while the splash holds`,
+      duringHold.splashHoldAttr === 'true'
+        && duringHold.logoOpacity === '0' && duringHold.taglineOpacity === '0' && duringHold.doorsOpacity === '0',
+      JSON.stringify(duringHold));
+    ok(`S9 (${theme}): the loading line carries role="status" and its text is one of this theme's own lexicon phrases, never a hardcoded string`,
+      duringHold.loadingRole === 'status' && typeof duringHold.loadingText === 'string' && duringHold.loadingText.length > 0,
+      JSON.stringify(duringHold));
+
+    const lexiconLines = await app.evalJs(`(() => {
+      const t = window.wrizoDeskLexicon ? window.wrizoDeskLexicon.t : null;
+      if (!t) return null;
+      return [1, 2, 3, 4].map((n) => t('splashLoading' + n));
+    })()`);
+    ok(`S9 (${theme}): the rendered line is genuinely ONE OF this theme's four lexicon phrases (not coincidentally matching text written elsewhere)`,
+      Array.isArray(lexiconLines) && lexiconLines.includes(duringHold.loadingText),
+      JSON.stringify({ lexiconLines, rendered: duringHold.loadingText }));
+
+    await app.waitFor("!document.querySelector('.wz-splash')", { label: `S9 dismiss (${theme})`, timeout: 14000 });
+    const afterFade = await app.evalJs(`(() => {
+      const logo = document.querySelector('.wz-logo');
+      const tagline = document.querySelector('.wz-tagline');
+      const doors = document.querySelector('.wz-arrival-doors');
+      return {
+        splashHoldAttr: document.documentElement.getAttribute('data-splash-hold'),
+        logoOpacity: logo ? getComputedStyle(logo).opacity : null,
+        taglineOpacity: tagline ? getComputedStyle(tagline).opacity : null,
+        doorsOpacity: doors ? getComputedStyle(doors).opacity : null,
+      };
+    })()`);
+    ok(`S9 (${theme}): and visible again once the splash has fully left — the content faded IN as the splash faded out, never a jump cut`,
+      afterFade.splashHoldAttr === null
+        && afterFade.logoOpacity === '1' && parseFloat(afterFade.taglineOpacity) > 0.9 && afterFade.doorsOpacity === '1',
+      JSON.stringify(afterFade));
+  }
 
   // ==========================================================================
   // S7 — IT SHOWS ON EVERY OPEN (Fable's ruling), NOT ONCE EVER.

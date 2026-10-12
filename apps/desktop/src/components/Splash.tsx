@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { measureBackdropTone, type BackdropTone } from '../store/backdropTone';
+import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 
 // THE SPLASH (item 187) — Nick's own hand-drawn Wrizo, over the live app, dimmed behind.
 //
@@ -9,9 +10,23 @@ import { measureBackdropTone, type BackdropTone } from '../store/backdropTone';
 // ITEM splash-hold (live, Nick): the first ship ran too fast and blurred, not
 // dimmed. "Visible for at least 3 seconds, and the background should be faded
 // out, not blurred." Two changes from that one sentence: the hold is now a
-// FLOOR a writer cannot shorten (S6's old early-dismiss retires whole, below),
+// FLOOR a writer cannot shorten (the old early-dismiss retires whole, below),
 // and the veil is a flat dimming tint in the theme's own ground colour, never
 // a backdrop-filter blur (see .wz-splash-veil, index.css).
+//
+// ITEM splash-hold ROUND 3 (Nick's ruling): "No ghost" — the front door's own
+// wordmark/tagline/doors were visible THROUGH the dimmed veil the whole hold,
+// racing the splash for attention. They now stay hidden for the hold's own
+// duration and fade in exactly as the splash leaves (index.css's own
+// `[data-splash-hold]` attribute rule on document.documentElement, set/cleared
+// below — the two components never need to know about each other directly).
+// The floor itself rose to 5s, and — new — the splash now ALSO waits for the
+// app to be genuinely ready (`ready`, threaded from App.tsx's authState, the
+// SAME derivation Arrival.tsx's own boot bar already uses): the hold is a
+// floor, not a fixed duration, so a slow boot holds longer rather than
+// handing off to a front door that is not ready yet. A cycling loading line
+// under the mark (one of four per-theme lexicon phrases, changing ~1.4s)
+// gives the hold something to say while it waits.
 //
 // FOUR THINGS THIS FILE IS CAREFUL ABOUT, each one measured or ruled rather
 // than chosen by taste (docs/menus/splash-s0-survey.md carries the numbers):
@@ -71,13 +86,18 @@ const MAX_INK_HEIGHT_FRACTION = 0.6;
 const MAX_INK_WIDTH_FRACTION = 0.7;
 
 /**
- * How long the emblem holds. ITEM splash-hold (Nick, live): "visible for at
- * least 3 seconds" — this is now a FLOOR, not a maximum; nothing shortens it
- * (the old early-dismiss-on-input retires whole, below). Overridable through
- * localStorage (read at call time), so a capture pass can hold the emblem
- * for a different span instead of racing this one.
+ * How long the emblem holds, AT LEAST. ITEM splash-hold round 3 (Nick, live):
+ * "Minimum 5s per app load, longer if the app isn't ready yet" — raised from
+ * round 1's 3s floor. Nothing shortens it (the old early-dismiss-on-input
+ * retired whole in round 1). Overridable through localStorage (read at call
+ * time), so a capture pass can hold the emblem for a different span instead
+ * of racing this one.
  */
-const DEFAULT_HOLD_MS = 3000;
+const DEFAULT_HOLD_MS = 5000;
+
+/** The loading line's four per-theme lexicon phrases, and how often they cycle. */
+const LOADING_LINE_KEYS: readonly DeskTermId[] = ['splashLoading1', 'splashLoading2', 'splashLoading3', 'splashLoading4'];
+const LOADING_LINE_CYCLE_MS = 1400;
 
 let alreadyShown = false;
 
@@ -99,7 +119,7 @@ export function splashSizeFor(vw: number, vh: number) {
   return { width: inkW / FILL_X, height: inkH / FILL_Y, inkW, inkH };
 }
 
-export function Splash() {
+export function Splash({ ready }: { ready: boolean }) {
   // Read the flag during the first render rather than in an effect: an effect
   // would let a remount paint one frame of a splash it is about to retract.
   const [live, setLive] = useState(() => {
@@ -112,7 +132,17 @@ export function Splash() {
   const [box, setBox] = useState(() => (typeof window === 'undefined'
     ? { width: 0, height: 0 }
     : splashSizeFor(window.innerWidth, window.innerHeight)));
+  const [lineIndex, setLineIndex] = useState(0);
   const goneRef = useRef(false);
+  // The floor (holdMs()) and readiness (the `ready` prop) each end the hold only
+  // together — neither alone. Refs, not state: the timer's own closure and the
+  // ready-effect below both need the OTHER condition's latest value without
+  // re-running the mount effect (which would restart the timer and the
+  // listeners on every authState change).
+  const floorPassedRef = useRef(false);
+  const readyRef = useRef(ready);
+  readyRef.current = ready;
+  const { t } = useDeskLexicon();
 
   useEffect(() => {
     if (!live) return undefined;
@@ -121,13 +151,15 @@ export function Splash() {
     // overlay (it is pointer-events:none), so it sees the app's own backdrop
     // rather than anything this component paints.
     setTone(measureBackdropTone());
+    document.documentElement.dataset.splashHold = 'true';
 
     const resize = () => setBox(splashSizeFor(window.innerWidth, window.innerHeight));
     resize();
 
-    const endHold = () => {
-      if (goneRef.current) return;
+    const tryEnd = () => {
+      if (goneRef.current || !floorPassedRef.current || !readyRef.current) return;
       goneRef.current = true;
+      delete document.documentElement.dataset.splashHold;
       setLeaving(true);
     };
 
@@ -135,8 +167,11 @@ export function Splash() {
     // the first keydown/pointerdown/wheel/touchstart (dismiss() called from each).
     // Nick's own word made the hold a FLOOR instead ("visible for at least 3
     // seconds") — nothing shortens it now, so these four listeners no longer call
-    // anything. ONLY `window.setTimeout(endHold, holdMs())` below ends the hold.
-    const hold = window.setTimeout(endHold, holdMs());
+    // anything. ROUND 3: the floor alone no longer ends the hold either — it only
+    // flips floorPassedRef, and tryEnd() (called here AND from the ready-effect
+    // below) is what actually ends it, once both conditions hold.
+    const hold = window.setTimeout(() => { floorPassedRef.current = true; tryEnd(); }, holdMs());
+    const lineCycle = window.setInterval(() => setLineIndex((i) => (i + 1) % LOADING_LINE_KEYS.length), LOADING_LINE_CYCLE_MS);
 
     // PASSIVE, non-capturing, on window — kept for the same reason they always
     // existed: proof that input reaches the app untouched while the splash is
@@ -150,10 +185,26 @@ export function Splash() {
 
     return () => {
       window.clearTimeout(hold);
+      window.clearInterval(lineCycle);
       events.forEach((e) => window.removeEventListener(e, noop, opts));
       window.removeEventListener('resize', resize);
+      // Defensive, not the normal path (tryEnd already clears this when leaving
+      // starts): an unmount with the hold never having ended must not leave the
+      // front door's content hidden forever.
+      delete document.documentElement.dataset.splashHold;
     };
   }, [live]);
+
+  // Re-checks the SAME tryEnd condition whenever `ready` flips true — the case
+  // where the app becomes ready AFTER the floor has already passed (the mount
+  // effect's own timeout already fired and found `readyRef.current` still
+  // false back then, so nothing else would ever re-check it).
+  useEffect(() => {
+    if (!live || !ready || !floorPassedRef.current || goneRef.current) return;
+    goneRef.current = true;
+    delete document.documentElement.dataset.splashHold;
+    setLeaving(true);
+  }, [ready, live]);
 
   // The fade-out's end is what unmounts it. Reduced motion zeroes the
   // transition, so `transitionend` may never arrive — hence the timer as the
@@ -181,6 +232,12 @@ export function Splash() {
         style={{ width: `${box.width}px`, height: `${box.height}px` }}
         onTransitionEnd={() => { if (leaving) setLive(false); }}
       />
+      {/* role="status" (Nick's ruling): announced politely, never interrupting.
+          `key` forces a remount on every line change, restarting the CSS fade —
+          reduced motion drops that animation entirely (index.css), an instant swap. */}
+      <div className="wz-splash-loading" role="status">
+        <span key={lineIndex} className="wz-splash-loading-text">{t(LOADING_LINE_KEYS[lineIndex])}</span>
+      </div>
     </div>
   );
 }
