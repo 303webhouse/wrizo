@@ -25714,3 +25714,17 @@ guard (`railway status` = writer-studio / production / writer-studio-app; toplev
 frame reports the served bundle `index-z-93XQ5x.js`. Readings: the front door’s Write button reads `rgb(255, 152, 0)` on both themes, **identical to the pair’s round-2
 front-door readings**; L3 shows the Templates section in the open drawer under Flux, the brand mark `rgb(255, 152, 0)`. **Owed: Fable’s frame review; Nick’s own live check.**
 Grant `chat1-abq-ship-20261011` (written `2026-10-12T03:36:24Z`), cleared `2026-10-12T03:44:58Z`; 0 harness processes, 0 browsers.
+
+## (5) SPLASH-HOLD ROUND 2 @ 3a58cd82: CLEAN ON BOTH LEGS, EIGHT FRAMES TAKEN, NOT DEPLOYED — 2026-10-11 (chat 1)
+
+**`sh-pair` @ `914f8b36` = `origin/main` @ `2832fc94` + `splash-hold` @ `3a58cd82`** (two commits past its old base: `fd56a978` and “round 2: veil to 90% (logo/Write ghosted through
+at 75%), parse color()”; four files: `Splash.tsx`, `index.css`, `splash.mjs`, `splash-frames-batch.mjs`; the product change is the veil value). `tsc` x1 exit 0; `build:web`
+bundle `index-CI5BAjzO.js` 650,294 b. **Fable’s set, both legs, one stamp `tree=914f8b36 bundle=index-CI5BAjzO.js/650294b`: `splash.mjs` PASS (42 checks) and `item141.mjs`
+PASS (11 checks) on the default leg AND on the parked leg; SUITE RESULT: CLEAN twice.**
+
+**EIGHT FRAMES (Arbor and Flux × desktop 1400×900 and phone 390×844 × mid-hold and after the fade), committed under `docs/evidence/splash-hold-r2/`** (+ `frames.json`).
+The batch script’s own veil read throws on Chromium’s `color(srgb …)` form, so these were taken with this desk’s capture copy, which parses both and records the veil:
+**every mid-hold frame reads veil alpha 0.9, `backdrop-filter: none`**; every after-fade frame has the splash gone and the doors mounted. **An honest reading of the pixels:
+at 90% the wordmark and the Write button are still faintly visible through the veil behind the whiteboard drawing (Arbor desktop, Flux phone) — much dimmer than at 75%, not
+gone.** That is Fable’s and Nick’s judgment, not a measurement. **Owed: Fable’s frame review. Nick’s ship word is in (splash on its own), conditional on the cleared frames.**
+**NOT DEPLOYED.** Grant `chat1-splash-hold-20261011` (written `2026-10-12T04:13:37Z`), cleared `2026-10-12T04:15:00Z`; 0 harness processes, 0 browsers.
