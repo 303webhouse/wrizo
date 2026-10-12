@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrizo · Scrollbar mockup</title>
+<!--
+  docs/mockups/scrollbar — three writing-surface scrollbar options.
+  Arbor / Flux switcher. Tokens only: --ink-on-paper-low, --ink-border-strong.
+  Track is the page’s full height in every option. Reduced-motion: no fade.
+  Branch: cursor/scrollbar-mockup.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=Rajdhani:wght@400;500;600&display=swap');
+
+  :root {
+    --ink-950: #110600; --ink-900: #1F1A16; --ink-800: #2A241E;
+    --ink-border: #332C25; --ink-border-strong: #453B31;
+    --text-hi: #EDE6DA; --text-mid: #B5A998; --text-low: #80766A;
+    --paper: #F3EDE1; --paper-dim: #E9E1D2;
+    --ink-on-paper: #2B2014; --ink-on-paper-low: #8A7C68;
+    --brass: #ff9800; --accent-rest: #96a05a;
+    --font-ui: 'Figtree', system-ui, sans-serif;
+    --font-prose: 'Crimson Pro', Georgia, serif;
+    --paper-glow: 0 0 0 1px rgba(243, 237, 225, 0.06), 0 4px 32px rgba(212, 162, 78, 0.10), 0 2px 12px rgba(0, 0, 0, 0.45);
+  }
+  html[data-theme='flux'] {
+    --ink-950: #04141A; --ink-900: #091E24; --ink-border: #1D4A52;
+    --ink-border-strong: #2A6A76;
+    --text-hi: #E3F1EC; --text-mid: #8FB4AC; --text-low: #6E958D;
+    --paper: #0B2429; --paper-dim: #091E23;
+    --ink-on-paper: #E3F1EC; --ink-on-paper-low: #57D0F5;
+    --accent-rest: #5E837C;
+    --font-ui: 'Rajdhani', system-ui, sans-serif;
+    --paper-glow: 0 0 0 1px rgba(0, 194, 255, 0.08), 0 4px 32px rgba(0, 0, 0, 0.5);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--ink-950); color: var(--text-hi); font-family: var(--font-ui); }
+
+  .rig {
+    position: fixed; inset: 0 0 auto 0; z-index: 20;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 7px 12px; background: #000; border-bottom: 1px solid #222;
+    font-size: 11px; color: #9a9a9a;
+  }
+  .rig b { color: #d8d8d8; font-weight: 600; letter-spacing: .06em; }
+  .only { color: #6e6e6e; letter-spacing: .12em; text-transform: uppercase; font-size: 9px; border: 1px solid #333; padding: 2px 6px; }
+  .rev { height: 22px; padding: 0 8px; border: 1px solid #333; color: #c8c8c8; background: #141414; font-size: 11px; cursor: pointer; }
+  .rev[data-on='true'] { border-color: var(--accent-rest); color: var(--accent-rest); }
+  .hint { margin-left: auto; color: #5e5e5e; }
+
+  .room {
+    position: absolute; inset: 42px 0 0 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 22px 28px;
+  }
+  .paper {
+    position: relative;
+    width: min(720px, calc(100vw - 56px));
+    height: min(72vh, 620px);
+    background: var(--paper); color: var(--ink-on-paper);
+    box-shadow: var(--paper-glow);
+    overflow: hidden;
+  }
+  .kicker {
+    position: absolute; top: 18px; left: 40px; right: 28px; z-index: 2;
+    font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--ink-on-paper-low);
+  }
+  .port {
+    position: absolute; inset: 0;
+    overflow-y: auto; overflow-x: hidden;
+    padding: 44px 48px 40px 40px;
+    scrollbar-width: none;
+  }
+  .port::-webkit-scrollbar { width: 0; height: 0; }
+  .port p {
+    font-family: var(--font-prose); font-size: 18px; line-height: 1.7;
+    margin: 0 0 1.1em;
+  }
+
+  .sb {
+    position: absolute; top: 0; bottom: 0; right: 0;
+    pointer-events: none;
+  }
+  .track {
+    position: absolute; top: 0; bottom: 0; right: 0;
+    background: transparent;
+  }
+  .thumb {
+    position: absolute; right: 0; top: 0;
+    background: var(--ink-on-paper-low);
+  }
+
+  /* A: 3 px faint thumb, brightens on hover/drag */
+  .paper[data-opt='a'] .sb { width: 3px; }
+  .paper[data-opt='a'] .track { width: 3px; }
+  .paper[data-opt='a'] .thumb {
+    width: 3px;
+    background: color-mix(in srgb, var(--ink-on-paper-low) 38%, transparent);
+  }
+  .paper[data-opt='a'] .thumb.is-hot,
+  .paper[data-opt='a']:hover .thumb {
+    background: var(--ink-on-paper-low);
+  }
+
+  /* B: 4 px, hidden until scroll or hover, fades after ~1 s */
+  .paper[data-opt='b'] .sb { width: 4px; }
+  .paper[data-opt='b'] .track { width: 4px; }
+  .paper[data-opt='b'] .thumb {
+    width: 4px;
+    opacity: 0;
+    transition: opacity .35s ease;
+  }
+  .paper[data-opt='b'].is-show .thumb { opacity: 1; }
+  .paper[data-opt='b'] .thumb.is-hot { opacity: 1; }
+
+  /* C: 2 px hairline track full height, stronger thumb */
+  .paper[data-opt='c'] .sb { width: 2px; }
+  .paper[data-opt='c'] .track {
+    width: 2px;
+    background: var(--ink-on-paper-low);
+  }
+  .paper[data-opt='c'] .thumb {
+    width: 2px;
+    background: var(--ink-border-strong);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .paper[data-opt='b'] .thumb { transition: none; }
+  }
+</style>
+</head>
+<body>
+<header class="rig">
+  <b>SCROLLBAR</b>
+  <span class="only">mockup only</span>
+  <button class="rev" data-theme="arbor" type="button">Arbor</button>
+  <button class="rev" data-theme="flux" type="button">Flux</button>
+  <button class="rev" data-opt="a" type="button">A · 3px</button>
+  <button class="rev" data-opt="b" type="button">B · hide</button>
+  <button class="rev" data-opt="c" type="button">C · hairline</button>
+  <span class="hint">Writing surface only. Track is the page’s full height.</span>
+</header>
+
+<div class="room">
+  <div class="paper" id="paper" data-opt="a">
+    <div class="kicker">Draft</div>
+    <div class="port" id="port"></div>
+    <div class="sb" aria-hidden="true">
+      <div class="track"></div>
+      <div class="thumb" id="thumb"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const TEXT = [
+    'The kettle ticks once and then again. She does not turn. Steam writes a small weather on the glass and she lets it, because looking would mean deciding, and deciding would mean the night has already started.',
+    'What he almost said is still in the hall. She can hear it the way you hear a step that never lands. The light in the other room is the one she left on, and it is still doing the only job she asked of it.',
+    'I left the light on for a reason — she does not say it, she only keeps not turning, and the kettle ticks as if that were an answer.',
+    'The stairs remember a weight that is not on them. She counts the ticks instead of the steps. Four. Then a longer quiet, the kind that wants a name and does not get one.',
+    'Relay Street is wet without rain. A car goes by and does not stop. She could go to the window. She does not. The glass already has enough weather on it.',
+    'In the drawer by the sink there is a letter she has not opened. The paper is the same stock as this page. That is an accident, or it is not.',
+    'She writes the next sentence in her head and then lets it go. The kettle clicks off. The quiet after a kettle is a different quiet from the one before.',
+    'Night Kitchen is not a place on a map. It is the hour when the house is only hers, and the words arrive without asking whether they are good.',
+    'He will come back up or he will not. Either way the page is still here, and the steam is still writing, and she is still not turning.',
+    'A second pot. A second start. The first line of the new page is the same as the last line of the old one, which she does not reread.',
+    'Somewhere a clock she does not own tells a time she does not keep. She matches it anyway, the way you match a stranger’s walk for three steps and then remember yourself.',
+    'The contact block on the title page is still blank. She will put a name there later. Later is a room she has not walked into.',
+    'Outline: the kettle, the stairs, the letter, the light. She does not number them. Numbering would be deciding.',
+    'When the glass clears she will see the alley and the one window across it that is always lit. Not tonight. Tonight the steam is enough.',
+    'She types until the page is longer than the hour. That is the only measure that has ever worked in this kitchen.'
+  ];
+
+  const port = document.getElementById('port');
+  const paper = document.getElementById('paper');
+  const thumb = document.getElementById('thumb');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let hideTimer = 0;
+  let dragging = false;
+  let dragOffset = 0;
+
+  TEXT.forEach((t) => {
+    const p = document.createElement('p');
+    p.textContent = t;
+    port.append(p);
+  });
+
+  function layoutThumb() {
+    const view = port.clientHeight;
+    const all = port.scrollHeight;
+    const max = Math.max(1, all - view);
+    const ratio = view / all;
+    const h = Math.max(28, view * ratio);
+    const y = (port.scrollTop / max) * (view - h);
+    thumb.style.height = h + 'px';
+    thumb.style.transform = 'translateY(' + y + 'px)';
+  }
+
+  function showB() {
+    paper.classList.add('is-show');
+    clearTimeout(hideTimer);
+    if (paper.dataset.opt !== 'b') return;
+    hideTimer = setTimeout(() => {
+      if (!dragging) paper.classList.remove('is-show');
+    }, reduce ? 0 : 1000);
+  }
+
+  function syncRig() {
+    const theme = document.documentElement.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor';
+    document.querySelectorAll('.rev[data-theme]').forEach((b) => {
+      b.dataset.on = b.dataset.theme === theme ? 'true' : 'false';
+    });
+    document.querySelectorAll('.rev[data-opt]').forEach((b) => {
+      b.dataset.on = b.dataset.opt === paper.dataset.opt ? 'true' : 'false';
+    });
+  }
+
+  port.addEventListener('scroll', () => {
+    layoutThumb();
+    if (paper.dataset.opt === 'b') showB();
+  }, { passive: true });
+
+  paper.addEventListener('mouseenter', () => {
+    if (paper.dataset.opt === 'b') showB();
+  });
+  paper.addEventListener('mouseleave', () => {
+    if (paper.dataset.opt === 'b' && !dragging) {
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => paper.classList.remove('is-show'), reduce ? 0 : 1000);
+    }
+  });
+
+  thumb.style.pointerEvents = 'auto';
+  thumb.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    thumb.classList.add('is-hot');
+    thumb.setPointerCapture(e.pointerId);
+    const box = paper.getBoundingClientRect();
+    const th = thumb.getBoundingClientRect();
+    dragOffset = e.clientY - th.top;
+    if (paper.dataset.opt === 'b') paper.classList.add('is-show');
+    e.preventDefault();
+  });
+  thumb.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const box = paper.getBoundingClientRect();
+    const view = port.clientHeight;
+    const all = port.scrollHeight;
+    const th = thumb.getBoundingClientRect().height;
+    const y = Math.min(view - th, Math.max(0, e.clientY - box.top - dragOffset));
+    const max = Math.max(1, all - view);
+    port.scrollTop = (y / (view - th)) * max;
+  });
+  function endDrag() {
+    dragging = false;
+    thumb.classList.remove('is-hot');
+    if (paper.dataset.opt === 'b') showB();
+  }
+  thumb.addEventListener('pointerup', endDrag);
+  thumb.addEventListener('pointercancel', endDrag);
+
+  document.querySelectorAll('.rev[data-theme]').forEach((b) => {
+    b.addEventListener('click', () => {
+      if (b.dataset.theme === 'flux') document.documentElement.setAttribute('data-theme', 'flux');
+      else document.documentElement.removeAttribute('data-theme');
+      syncRig();
+    });
+  });
+  document.querySelectorAll('.rev[data-opt]').forEach((b) => {
+    b.addEventListener('click', () => {
+      paper.dataset.opt = b.dataset.opt;
+      paper.classList.remove('is-show');
+      if (b.dataset.opt === 'b') showB();
+      syncRig();
+      layoutThumb();
+    });
+  });
+
+  const q = new URLSearchParams(location.search);
+  if (q.get('theme') === 'flux') document.documentElement.setAttribute('data-theme', 'flux');
+  if (q.get('opt')) paper.dataset.opt = q.get('opt');
+  syncRig();
+  requestAnimationFrame(layoutThumb);
+  addEventListener('resize', layoutThumb);
+})();
+</script>
+</body>
+</html>
