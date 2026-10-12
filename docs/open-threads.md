@@ -25753,3 +25753,31 @@ holds work (1 line-equivalent) now opens with the typewriter OFF” reads `data-
 the caret’s line is not the one indented — e.g. `{“beforeTab”:“Alpha one\nAlpha two\n\nBeta one”,“afterTab”:“Alpha one\nAlpha two\n\n\tBeta one”}`; and the Bulleted-list control
 reads `{“bulletOn”:“Gamma”,“bulletOff”:“Gamma”}`). Both look like the S5 typewriter default reaching a fixture that predates it (the same class as `outdent`/`fx6`), but that is a
 reading, not a measurement: **INK’s to read. `phase1-drawers` is NOT clean.** Not deployed; nothing merged. Grant cleared `2026-10-12T06:07:45Z`; 0 harness processes, 0 browsers.
+
+## (7) FIX’S SET, SPLASH-HOLD ROUND 4, INK’S RE-RUNS — 2026-10-12 (chat 1)
+
+**Fable’s order (Oct 12): “splash-hold @ b2526c2e: re-run plus the eight frames. FIX’s set, run by you (no grant to FIX; its watcher failed) … drawer-ghost-fix: re-run page-templates
+once INK pushes the ported harness. phase1-drawers: re-run item87 and item83f once INK pushes. Hold FIX’s batch deploy until 2 and 3 are green and I’ve cleared the frames.”**
+All under this desk’s grant `chat1-fix-batch-20261012` (`2026-10-12T06:45:26Z`; re-written once at ~`06:58Z` for the INK re-runs; cleared `2026-10-12T07:00:50Z`), both legs, from worktrees.
+
+**(1) `splash-hold` @ `b2526c2e` — `splash.mjs` FAIL 10/55 on BOTH legs; `item141` PASS 11/11 on both.** Tree `sh-pair` @ `cd1d299b` = `origin/main` @ `ccdc390f` + `splash-hold`; **the merge CONFLICTS in
+`apps/desktop/src/store/deskLexicon.ts`** (main’s arbor-quiet-brass Flux overrides and the branch’s four `splashLoading` lines both sit at the end of `OVERRIDES.flux`; purely additive, I kept both — TOOLS will
+hit the same conflict at the real merge). `tsc` exit 0; bundle `index-CQkM_UU7.js` 651,598 b. **The same 10 reds on the RAW branch tip** (`sh-tip` @ `b2526c2e`, default leg, bundle `index-CCspwS4D.js` 651,384 b), so they are the
+branch’s, not the merge’s. **S4 ×8 (“the drawing keeps its own proportions and sits centred”): ratio reads 1.252 and the drawing’s centre sits a constant 14.8 px ABOVE the viewport centre at every viewport**
+(`cy = vh/2 − 14.8`; the frames’ mark rect moved from y 175 to y 160) — the loading line now shares the centred stack; the check still assumes the drawing alone is centred. **S9 ×2 (“no ghost”, plateau and flux): the
+front door’s wordmark/tagline/doors read opacity 0.76/0.85 (merged) and 0.66/0.47 (raw tip) — a different value each run, because they are MID-FADE.** MEASURED (60 ms samples from the splash’s mount, plateau): `0.66, 0.27, 0.11, 0.04, 0.003, 0`
+at 1/77/140/202/265/328 ms, `data-splash-hold` already `true`, `transition: opacity 0.38s` — **so the front door IS drawn at the first frames of a load and fades out under the splash over ~0.33 s; it is never gone at the instant the splash
+appears.** Whether that sub-second flash is visible under the 90 % veil is not measured; the check reads it too early. **Not clean: TOOLS’ (S4 successor; S9 either waits for the fade or the product starts the door hidden).**
+**EIGHT FRAMES** (Arbor and Flux × desktop 1400×900 and phone 390×844 × mid-hold and after the fade) on the merged tree: `docs/evidence/splash-hold-r4/` (+ `frames.json`; veil alpha 0.9, `backdrop-filter: none` in all four mid-hold frames;
+after-fade: splash gone, doors mounted). The mid-hold frames show the whiteboard drawing with NO wordmark or Write button behind it, and the cycling loading line under it (“Gathering your pages…” Arbor, “Booting the terminal…” Flux).
+
+**(2) FIX’s `typewriter-fade-order` @ `8a342755` — CLEAN on both legs; the control is RED as required.** **Control `tf-ctl` @ `dca52ee4` = `origin/main` + ONLY the harness commit `924280da`** (bundle `index-z-93XQ5x.js` 650,286 b = the
+bundle now in production, i.e. unfixed main): `typewriter-fade.mjs` FAIL 2/4 on BOTH legs, for the stated reason — “THE ORDER: going down the page no line is fainter than the older line above it” reads `inversions: [{older: {y: 3, alpha: 1}, newer: {y: 32, alpha: 0.179}}]`
+and “THE OLDEST IS THE FAINTEST” reads `top: {y: 3, alpha: 1}, minAlpha: 0.179`; the premise (a scrolled typewriter page with a mask) and “THE NEWEST IS WHOLE” pass. **Fixed `tfo-pair` @ `b17d6d17`** (main + the branch; the `fx5.mjs` and `index.css`
+merges are automatic; `tsc` exit 0; bundle `index-3Q5AJ41n.js` 650,286 b): `typewriter-fade` PASS 4, `fx5` PASS 61, `fx1` PASS 23 on both legs.
+**(3) FIX’s `rhizome-flash-fade` @ `eb7b114e` — CLEAN on both legs.** `rhz-pair3` @ `a54eadc9` (main + the branch, automatic merge, `tsc` exit 0, bundle `index-CyE62Jo9.js` 650,570 b): `rhizome-goal` (CORE 33 + 10), `m2` 26, `m3` 6 on both legs.
+**(4) FIX’s frames runner: NOT RUN — I cannot find it** (neither branch adds a frames script and neither FIX worktree holds one; the repo has only the splash/templates/writing frames scripts). Asked Fable where it lives.
+**(5) INK’s re-runs, both legs clean.** `drawer-ghost-fix` @ `95f5ed70` (harness-only: page-templates waits for the drawer to settle; bundle unchanged `index-sqnFxLZZ.js`): `page-templates` PASS 20 and `drawer-ghost` PASS 13.
+`phase1-drawers` @ `9c35f842` (harness-only; bundle unchanged `index-DCReJq58.js`): `item87` PASS 5 and `item83f` PASS 33 (default) / parked clean. **The drawer-ghost-fix page-templates red is CURED by the harness settle**
+(the press-in-the-slide reading holds: the product CSS did not change between the red and the green).
+**Not deployed; nothing merged.** The parked counts of `fx1`/`fx5`/`item83f` were not audited against any claim (none was made). 0 harness processes, 0 browsers at the clear.
