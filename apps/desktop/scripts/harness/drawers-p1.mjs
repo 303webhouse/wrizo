@@ -340,7 +340,7 @@ function partJ(act = actionsSrc, pa = pageActionsSrc, sliver = sliverSrc, c = cs
 // =============================================================================
 const lexSrc = read('store/deskLexicon.ts');
 const noteSrc = read('components/DrawerNote.tsx');
-const NICK_NOTE = 'Grafts join pages, cards and boards so your ideas can grow together. Use + to graft something here.';
+const NICK_NOTE = 'Grafts join pages, cards and boards so your ideas can grow together.';
 function partK(lex = lexSrc) {
   const canonStart = lex.indexOf('const CANONICAL: Record<DeskTermId, string> = {');
   const overStart = lex.indexOf('const OVERRIDES: Partial<Record<ThemeId');

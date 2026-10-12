@@ -516,3 +516,10 @@ eventual wording; until then it points at a control that is not there. Say if it
 
 **Browser turn will want to look at (the Tutor panel gained a tab row and a body wrapper):** `tu1`, `tu2`, `tu5`, `fx10`, `fx18`, `e3`, `item84`,
 `item84b` - any check that counts the panel's buttons or assumes the head is its first child. No claim is expected to change.
+
+### A.8 Copy trim (Fable, Oct 10-11) - the note drops its "+" sentence until Phase 3
+
+Arbor's "?" note now reads exactly **"Grafts join pages, cards and boards so your ideas can grow together."** The "Use + to graft something here." sentence is
+gone, because the pane has no "+" until Phase 3; it comes back with the control. One place changed: the lexicon term `drawerLinksNote`; the harness
+constant `NICK_NOTE` follows it (K2). The K2 mutant ("the note's copy is edited") keys on the substring `so your ideas can grow together.`, which is still
+present, so it needed no change. (A.7's quotation above is the copy as first built.)

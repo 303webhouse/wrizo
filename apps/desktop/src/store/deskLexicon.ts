@@ -784,7 +784,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorTabTutor: 'Tutor',
   drawerLinks: 'Grafts',
   drawerLinksEmpty: 'Nothing grafted yet.',
-  drawerLinksNote: 'Grafts join pages, cards and boards so your ideas can grow together. Use + to graft something here.',
+  drawerLinksNote: 'Grafts join pages, cards and boards so your ideas can grow together.',
   drawerLinksNoteLabel: 'What are grafts?',
   drawerRightTabsLabel: 'Tutor and grafts',
   tutorDockClose: 'Close, keep dock',
