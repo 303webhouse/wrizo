@@ -205,9 +205,12 @@ function closeFades(rules, reducedRules) {
   for (const kind of ['sliver', 'tutor']) {
     const closed = evalPanel(rules, kind, false, CONTEXTS[0]).transition?.value ?? '';
     const opened = evalPanel(rules, kind, true, CONTEXTS[0]).transition?.value ?? '';
-    const redC = evalPanel(reducedRules, kind, false, CONTEXTS[0]).transition?.value ?? '';
-    const vis = /visibility\s+0s\s+linear\s+var\(--fade-dur,\s*\.2s\)/.test(closed);
-    out[kind] = { closeKeepsFade: /opacity\s+var\(--fade-dur/.test(closed) && vis, openNotClipped: !/visibility/.test(opened), reducedNone: redC === 'none' };
+    const redW = evalPanel(reducedRules, kind, false, CONTEXTS[0]);
+    const redC = redW.transition?.value ?? '';
+    // PHASE 1: the hide waits for the LONGER of the fade and the slide, so a short --fade-dur can never cut the sliding layer off mid-travel
+    const vis = /visibility\s+0s\s+linear\s+max\(var\(--fade-dur,\s*\.2s\),\s*var\(--drawer-dur\)\)/.test(closed);
+    out[kind] = { closeKeepsFade: /opacity\s+var\(--fade-dur/.test(closed) && vis, openNotClipped: !/visibility/.test(opened), reducedShortFade: /opacity\s+var\(--drawer-dur-reduced\)/.test(redC) && /visibility\s+0s\s+linear\s+var\(--drawer-dur-reduced\)/.test(redC)
+        && redW['transition-duration']?.value === 'var(--drawer-dur-reduced)' };
   }
   return out;
 }
@@ -222,13 +225,14 @@ const claims = (rules = rulesNow, reducedRules = rulesReduced) => ({
   ok('(G3) an OPEN drawer is untouched: never hidden; at rest opacity 1; the left drawer still dissolves while writing; the pop-out hold still holds it; the Tutor stays at 1', c.open.length === 0, c.open.join('; '));
   ok('(G4) the CLOSE still fades and the OPEN is not clipped: visibility flips only after the opacity transition (same --fade-dur), and an open panel declares no visibility transition',
     ['sliver', 'tutor'].every((k) => c.fade[k].closeKeepsFade && c.fade[k].openNotClipped), JSON.stringify(c.fade));
-  ok('(G5) reduced motion: a closed drawer has NO transition (hidden at once), as the old opt-out had it', ['sliver', 'tutor'].every((k) => c.fade[k].reducedNone), JSON.stringify(c.fade));
+  ok('(G5) reduced motion (Nick: fade only, short): a closed drawer still FADES on --drawer-dur-reduced, is hidden only after it, and the !important duration that beats the global floor still applies',
+    ['sliver', 'tutor'].every((k) => c.fade[k].reducedShortFade), JSON.stringify(c.fade));
 }
 {
   // the markup the CSS keys on: both panels write data-open as the string 'true' / 'false' from the same open state
   const sliver = read('components/Sliver.tsx'), tutor = read('components/Tutor.tsx');
   ok('(G6) the markup: both panels carry data-open={open ? \'true\' : \'false\'}, so the closed rule and the open rules see one state, and the left panel still carries the dissolve classes (the ghost\'s source)',
-    /className="wz-sliver-panel chrome-fade desk-dissolve"[^>]*data-open=\{open \? 'true' : 'false'\}/.test(sliver) && /className="wz-tutor-panel"[^>]*data-open=\{open \? 'true' : 'false'\}/.test(tutor));
+    /className="wz-sliver-panel chrome-fade desk-dissolve"[\s\S]{0,240}?data-open=\{open \? 'true' : 'false'\}/.test(sliver) && /className="wz-tutor-panel"[\s\S]{0,240}?data-open=\{open \? 'true' : 'false'\}/.test(tutor));
 }
 
 // =============================================================================
@@ -248,9 +252,10 @@ mutant('the explicit opacity:0 for the dissolve contexts is removed (visibility 
   () => mutate(css, "[data-chrome-receded='true'] .wz-tutor-panel:not([data-open='true']){ opacity:0; }", "[data-chrome-receded='true'] .wz-tutor-panel:not([data-open='true']){ opacity:.08; }"), (c) => c.tutorClosed.length > 0);
 mutant('the left drawer\'s opacity override loses to the dissolve (drops below 0,3,0)',
   () => mutate(css, ".desk-frame[data-writing='true'] .wz-sliver-panel:not([data-open='true']),\n[data-chrome-receded='true'] .wz-sliver-panel:not([data-open='true']),", ".wz-sliver-panel:not([data-open='true']) + .never,\n.never2,"), (c) => c.sliverClosed.length > 0);
-mutant('visibility flips at once (the close no longer fades)', () => mutate(css, 'visibility 0s linear var(--fade-dur,.2s);', 'visibility 0s linear 0s;'), (c) => !(c.fade.sliver.closeKeepsFade && c.fade.tutor.closeKeepsFade));
+mutant('visibility flips at once (the close no longer fades or slides out)', () => mutate(css, 'visibility 0s linear max(var(--fade-dur,.2s), var(--drawer-dur));', 'visibility 0s linear 0s;'), (c) => !(c.fade.sliver.closeKeepsFade && c.fade.tutor.closeKeepsFade));
 mutant('the hidden rule also catches an OPEN panel (drops the :not)', () => mutate(css, FIX_HEAD, FIX_HEAD.replace(".wz-sliver-panel:not([data-open='true']),", ".wz-sliver-panel,")), (c) => c.open.length > 0);
-mutant('reduced motion keeps the delayed visibility transition', () => mutate(css, ".wz-sliver-panel:not([data-open='true']), .wz-tutor-panel:not([data-open='true']){ transition:none; }", ".wz-sliver-panel:not([data-open='true']), .wz-tutor-panel:not([data-open='true']){ }"), (c) => !(c.fade.sliver.reducedNone && c.fade.tutor.reducedNone));
+mutant('reduced motion loses the short fade on a closed drawer', () => mutate(css, 'transition:opacity var(--drawer-dur-reduced) linear, visibility 0s linear var(--drawer-dur-reduced); }', 'transition:none; }'), (c) => !(c.fade.sliver.reducedShortFade && c.fade.tutor.reducedShortFade));
+mutant('the hide waits only for the fade (a short --fade-dur could cut the slide off)', () => mutate(css, 'visibility 0s linear max(var(--fade-dur,.2s), var(--drawer-dur));', 'visibility 0s linear var(--fade-dur,.2s);'), (c) => !(c.fade.sliver.closeKeepsFade && c.fade.tutor.closeKeepsFade));
 
 let failed = 0;
 for (const c of checks) {

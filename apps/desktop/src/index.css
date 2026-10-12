@@ -4098,26 +4098,29 @@ a:focus-visible,
 .wz-tutor-panel[data-open='true'][data-docked='true']{
   width:clamp(120px, var(--tutor-panel-margin), var(--tutor-panel-open-w));
   max-width:clamp(120px, var(--tutor-panel-margin), var(--tutor-panel-open-w)); }
-/* THE GHOST FIX (Nick, Oct 10) - A CLOSED DRAWER IS HIDDEN, WHATEVER THE DISSOLVE SAYS. The writing dissolve parks chrome at a DIMMED level
-   (`.desk-frame[data-writing='true'] .desk-dissolve` sets opacity:var(--fade-min), 0,3,0), and that out-specified a closed panel's own
-   `opacity:0` (0,1,0): while writing, a CLOSED left drawer showed its contents (TYPEFACE / FORMAT / TEMPLATES / PAGE KIND) as a faint ghost.
-   A dissolve is a rule about chrome that is SHOWING; a closed drawer is not showing. So a drawer that is not open is `visibility:hidden` - no
-   opacity can bring it back, and it leaves the tab order and the accessibility tree too - and the two dissolve contexts get an explicit
-   opacity:0 for it at a higher specificity (belt and braces: the claim does not rest on one property).
-   The CLOSE still fades: visibility flips only AFTER the opacity transition (delay = the same --fade-dur), and OPENING shows at once
-   (the open state declares no visibility transition), so the fade-in is not clipped. Reduced motion: no transition at all, as before.
-   The pop-out hold and every open-drawer rule are untouched: they all require [data-open='true'], which this rule excludes. */
+/* THE GHOST FIX (Nick, Oct 10; first landed on main by branch drawer-ghost-fix) - A CLOSED DRAWER IS HIDDEN, WHATEVER THE DISSOLVE SAYS. The writing
+   dissolve parks chrome at a DIMMED level (`.desk-frame[data-writing='true'] .desk-dissolve{opacity:var(--fade-min)}`, 0,3,0), and that out-specified a
+   closed panel's own `opacity:0` (0,1,0): while writing, a CLOSED left drawer showed its contents as a faint ghost. A dissolve is a rule about chrome
+   that is SHOWING; a closed drawer is not. So a drawer that is not open is `visibility:hidden` (no opacity can bring it back; it also leaves the tab
+   order and the accessibility tree, beside the `inert` S1 already sets), and the two dissolve contexts get an explicit opacity:0 for it at a higher
+   specificity (belt and braces: the claim does not rest on one property).
+   THE CLOSE STILL FADES AND STILL SLIDES: visibility flips only AFTER both are done - the delay is the longer of the fade (--fade-dur) and the slide
+   (--drawer-dur), so a short --fade-dur can never cut the sliding layer off mid-travel. OPENING shows at once (the open state declares no visibility
+   transition). Every open-drawer rule and the pop-out hold require [data-open='true'], which this rule excludes. */
 .wz-sliver-panel:not([data-open='true']),
 .wz-tutor-panel:not([data-open='true']){
   visibility:hidden;
-  transition:opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s) ease, visibility 0s linear var(--fade-dur,.2s);
+  transition:opacity var(--fade-dur,.2s) ease, visibility 0s linear max(var(--fade-dur,.2s), var(--drawer-dur));
 }
 .desk-frame[data-writing='true'] .wz-sliver-panel:not([data-open='true']),
 [data-chrome-receded='true'] .wz-sliver-panel:not([data-open='true']),
 .desk-frame[data-writing='true'] .wz-tutor-panel:not([data-open='true']),
 [data-chrome-receded='true'] .wz-tutor-panel:not([data-open='true']){ opacity:0; }
+/* Reduced motion keeps its short fade (Nick's ruling above): the closed panel fades on --drawer-dur-reduced and is hidden when that is done. The
+   `!important` duration above (the floor override) applies to this list too; the delay is what holds the hide back. */
 @media (prefers-reduced-motion:reduce){
-  .wz-sliver-panel:not([data-open='true']), .wz-tutor-panel:not([data-open='true']){ transition:none; }
+  .wz-sliver-panel:not([data-open='true']), .wz-tutor-panel:not([data-open='true']){
+    transition:opacity var(--drawer-dur-reduced) linear, visibility 0s linear var(--drawer-dur-reduced); }
 }
 .wz-tutor-body{ display:flex; flex-direction:column; gap:16px; padding:16px 14px; }
 .wz-tutor-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
