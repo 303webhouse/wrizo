@@ -255,9 +255,25 @@ ok('R5: lap 2\'s opening stroke matches the survivor geometry',
   surv.every((s, i) => eq(s.x1, s.y1, lap1.segments[i].x1, lap1.segments[i].y1)
     && eq(s.x2, s.y2, lap1.segments[i].x2, lap1.segments[i].y2)),
   String(lap1.firstCount));
-ok('R5: FLASH_MS is 1200 and the field holds data-flash',
-  /const FLASH_MS = 1200/.test(fieldSrc) && fieldSrc.includes("data-flash={flashLap != null ? 'true' : 'false'}"),
+// ---- PARKED - SUPERSEDED by the flash fade (Nick, 2026-10-10: "a bit brighter and fade back out slower"). Kept VERBATIM and no
+// longer run: data-flash now carries a third state, 'fading', between the hold and the clear. Its record is in the HARNESS_PARKED
+// block at the foot; the successor follows.
+//
+// ok('R5: FLASH_MS is 1200 and the field holds data-flash',
+//   /const FLASH_MS = 1200/.test(fieldSrc) && fieldSrc.includes("data-flash={flashLap != null ? 'true' : 'false'}"),
+//   'flash');
+// ------------------------------------------------------------------
+const r5FlashSeen = { hold: /const FLASH_MS = 1200/.test(fieldSrc), oldExpr: fieldSrc.includes("data-flash={flashLap != null ? 'true' : 'false'}") };
+ok('R5 [fade successor]: FLASH_MS is 1200 (the hold), FADE_MS is 1500 (the fade, not a cut), the field holds data-flash true -> fading -> false, and reduced motion skips the fade',
+  /const FLASH_MS = 1200/.test(fieldSrc) && /const FADE_MS = 1500/.test(fieldSrc)
+    && fieldSrc.includes("data-flash={flashLap != null ? (flashFading ? 'fading' : 'true') : 'false'}")
+    && /if \(reducedMotion\(\)\) \{ setFlashLap\(null\); return; \}/.test(fieldSrc),
   'flash');
+ok('R5 [fade successor]: the flash is BRIGHTER (full opacity, a heavier stroke) and the fading state fades the brass out over 1500ms; reduced motion has no fade transition',
+  /\.wz-rhizome-field\[data-flash='true'\] \.wz-rhizome-seg\{ stroke:var\(--brass\); opacity:1; stroke-width:0\.9px;/.test(css)
+    && /\.wz-rhizome-field\[data-flash='fading'\] \.wz-rhizome-seg\{ stroke:var\(--brass\); opacity:0;[^}]*transition:opacity 1500ms/.test(css)
+    && /prefers-reduced-motion: reduce\)\{[\s\S]*?\.wz-rhizome-field\[data-flash='fading'\] \.wz-rhizome-seg\{ transition:none; \}/.test(css),
+  'fade css');
 ok('R5: the flash paints brass on every segment',
   /\.wz-rhizome-field\[data-flash='true'\] \.wz-rhizome-seg\{ stroke:var\(--brass\)/.test(css), 'brass');
 ok('R5: lapPlan(1) replays from lap 0\'s survivor',
@@ -291,6 +307,12 @@ ok('R6: --rhizome-ink and the z-index:-1 anchor are still the house tokens',
   /--rhizome-ink:\s*var\(--accent-rest\)/.test(css)
     && /\.desk-frame-rhizome-anchor\{[^}]*z-index:-1/.test(css), 'tokens');
 
+// === PARKED - gated behind HARNESS_PARKED=1. ONE park: R5's data-flash expression, superseded by the flash fade (2026-10-10). ===
+if (process.env.HARNESS_PARKED === '1') {
+  checks.push({ name: 'PARKED (was "R5: FLASH_MS is 1200 and the field holds data-flash") - the flash fade (Nick, 2026-10-10) adds a third state, \'fading\', between the hold and the clear; the hold is still 1200; live successor: R5 [fade successor]',
+    pass: r5FlashSeen.hold === true && r5FlashSeen.oldExpr === false, detail: JSON.stringify(r5FlashSeen) });
+  console.log('RHIZOME-GROWTH PARKED: 1 check (R5 data-flash expression)');
+}
 const failed = checks.filter(c => !c.pass);
 if (failed.length) {
   for (const c of failed) console.log(`FAIL ${c.name} — ${c.detail}`);

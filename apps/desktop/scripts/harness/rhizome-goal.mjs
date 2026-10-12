@@ -142,6 +142,31 @@ const field = (app) => app.evalJs(`(() => {
   };
 })()`);
 
+const armFlashLog = (app) => app.evalJs(`(() => {
+  window.__flashLog = [];
+  let last = null;
+  const read = () => { const f = document.querySelector('.wz-rhizome-field'); const v = f ? f.dataset.flash : null;
+    if (v !== last) { last = v; window.__flashLog.push([Math.round(performance.now()), v]); } };
+  read();
+  if (window.__flashObs) window.__flashObs.disconnect();
+  window.__flashObs = new MutationObserver(read);
+  window.__flashObs.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-flash'] });
+  return true;
+})()`);
+const flashPhases = (log) => {
+  const at = (v) => { const e = log.find((x) => x[1] === v); return e ? e[0] : null; };
+  const tTrue = at('true'), tFading = at('fading');
+  const tFalse = (() => { const i = log.findIndex((x) => x[1] === 'true'); const e = i >= 0 ? log.slice(i).find((x) => x[1] === 'false') : null; return e ? e[0] : null; })();
+  return { tTrue, tFading, tFalse, hold: tTrue != null && tFading != null ? tFading - tTrue : null, fade: tFading != null && tFalse != null ? tFalse - tFading : null,
+    holdNoFade: tTrue != null && tFalse != null && tFading == null ? tFalse - tTrue : null, seq: log.map((x) => x[1]).join('>') };
+};
+const segLook = (app) => app.evalJs(`(() => {
+  const f = document.querySelector('.wz-rhizome-field'); if (!f) return null;
+  const thin = f.querySelector('.wz-rhizome-seg:not([data-thick="true"])'), thick = f.querySelector('.wz-rhizome-seg[data-thick="true"]');
+  const look = (el) => { if (!el) return null; const cs = getComputedStyle(el); return { stroke: cs.stroke, opacity: Number(cs.opacity), width: cs.strokeWidth }; };
+  return { flash: f.dataset.flash, thin: look(thin), thick: look(thick) };
+})()`);
+
 await withHarness(async (app) => {
   await freshDesk(app);
 
@@ -215,6 +240,7 @@ await withHarness(async (app) => {
 
   await seedAndReopen(app, pageId, 7, { n: 8, unit: 'words' });
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+  await armFlashLog(app);
   await app.typeKeys(' tail');
   await app.waitFor("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'true'", { label: 'brass flash on goal', timeout: 4000 });
   await sleep(180);
@@ -225,7 +251,23 @@ await withHarness(async (app) => {
   // ok('Live: hitting the goal flashes the network and the ground is full',
   //   flashing.flash === 'true' && flashing.segments >= pure.full * 0.9 && flashing.editor, JSON.stringify(flashing));
   ok('Live: the flash paints brass', brass, JSON.stringify({ stroke: flashing.stroke }));
-  await sleep(1400);
+  // THE FLASH FADE (Nick, 2026-10-10: "a bit brighter and fade back out slower").
+  const bright = await segLook(app);
+  ok('Live [flash fade]: the flash is BRIGHTER while it holds - full opacity and a heavier stroke (thin 0.9px, thick 1.4px), brass',
+    !!bright && bright.flash === 'true' && !!bright.thin && bright.thin.opacity === 1 && bright.thin.width === '0.9px' && bright.thin.stroke === 'rgb(255, 152, 0)'
+      && (!bright.thick || bright.thick.width === '1.4px'), JSON.stringify(bright));
+  let fadingSeen = true;
+  try { await app.waitFor("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'fading'", { label: 'the fade begins', timeout: 2500 }); } catch { fadingSeen = false; }
+  await sleep(600);   // inside the 1500ms fade
+  const midFade = await segLook(app);
+  ok('Live [flash fade]: after the hold the brass FADES out, not a cut - mid-fade a segment is still brass and partly transparent',
+    fadingSeen && !!midFade && midFade.flash === 'fading' && !!midFade.thin && midFade.thin.stroke === 'rgb(255, 152, 0)' && midFade.thin.opacity > 0.05 && midFade.thin.opacity < 0.95,
+    JSON.stringify({ fadingSeen, midFade }));
+  try { await app.waitFor("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'false'", { label: 'the fade ends', timeout: 3000 }); } catch { /* reported below */ }
+  const phases = flashPhases(await app.evalJs('window.__flashLog'));
+  ok('Live [flash fade]: the hold is ~1.2s and the fade ~1.5s - data-flash goes true -> fading -> false',
+    phases.hold != null && phases.hold >= 1100 && phases.hold <= 1500 && phases.fade != null && phases.fade >= 1400 && phases.fade <= 1900 && /true>fading>false/.test(phases.seq),
+    JSON.stringify(phases));
   const reset = await field(app);
   // PARKED 2026-10-08, rhizome-growth.mjs R5. The survivor is SURVIVOR_STEPS
   // consecutive thick visible segments (~100px), not one DOM <line>.
@@ -243,6 +285,23 @@ await withHarness(async (app) => {
   ok('Live: the page rect survives the flash and the reset',
     rectAtFull && reset.rect && rectAtFull.w === reset.rect.w && rectAtFull.h === reset.rect.h,
     JSON.stringify({ rectAtFull, reset: reset.rect }));
+
+  // ==========================================================================
+  // THE FLASH UNDER REDUCED MOTION (Nick, 2026-10-10): no fade animation - the hold stays, and the lap clears at its end.
+  // ==========================================================================
+  await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  await seedAndReopen(app, pageId, 7, { n: 8, unit: 'words' });
+  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+  await armFlashLog(app);
+  await app.typeKeys(' tail');
+  try { await app.waitFor("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'true'", { label: 'reduced-motion flash', timeout: 4000 }); } catch { /* reported below */ }
+  try {
+    await app.waitFor("(window.__flashLog || []).some((x, i, a) => x[1] === 'false' && a.slice(0, i).some((y) => y[1] === 'true'))", { label: 'reduced-motion clear', timeout: 4000 });
+  } catch { /* reported below */ }
+  const rm = flashPhases(await app.evalJs('window.__flashLog'));
+  ok('Live [flash fade, reduced motion]: NO fade - data-flash goes true -> false (never "fading"), and the ~1.2s hold stays',
+    rm.tTrue != null && rm.tFading == null && rm.holdNoFade != null && rm.holdNoFade >= 1100 && rm.holdNoFade <= 1500, JSON.stringify(rm));
+  await app.emulateMedia([]);
 
   // ==========================================================================
   // THE RHIZOME IS PLATEAU'S ONLY (Nick's ruling, via Fable 2026-10-09): every other theme replaces it with its own (Flux's comes

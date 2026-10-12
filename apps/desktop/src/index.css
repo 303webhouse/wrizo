@@ -3512,12 +3512,18 @@ a:focus-visible,
 .wz-rhizome-new{ stroke-dasharray:1; stroke-dashoffset:1; animation:wz-rhizome-draw 360ms ease-out both; }
 @keyframes wz-rhizome-draw{ from{ stroke-dashoffset:1; } to{ stroke-dashoffset:0; } }
 
-/* The reward: at the goal the whole network turns brass for the flash (1200 ms, held by RhizomeField), then the lap clears. */
-.wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ stroke:var(--brass); opacity:.9; transition:stroke 160ms ease, opacity 160ms ease; }
+/* The reward: at the goal the whole network turns brass for the flash (1200 ms, held by RhizomeField). Nick (2026-10-10): "a bit
+   brighter and fade back out slower" - full opacity and a heavier stroke while it holds, then (data-flash="fading") the brass
+   fades out over 1500 ms instead of cutting, and the lap clears at the fade's end. */
+.wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ stroke:var(--brass); opacity:1; stroke-width:0.9px; transition:stroke 160ms ease, opacity 160ms ease, stroke-width 160ms ease; }
+.wz-rhizome-field[data-flash='true'] .wz-rhizome-seg[data-thick='true']{ stroke-width:1.4px; }
+.wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg{ stroke:var(--brass); opacity:0; stroke-width:0.9px; transition:opacity 1500ms ease-out; }
+.wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg[data-thick='true']{ stroke-width:1.4px; }
 
 @media (prefers-reduced-motion: reduce){
   .wz-rhizome-new{ stroke-dasharray:none; stroke-dashoffset:0; animation:wz-rhizome-appear 200ms ease both; }
   .wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ transition:none; }
+  .wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg{ transition:none; }
 }
 @keyframes wz-rhizome-appear{ from{ opacity:0; } }
 

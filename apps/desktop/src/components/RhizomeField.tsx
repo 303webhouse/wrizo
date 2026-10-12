@@ -20,6 +20,10 @@ import { lapPlan, segmentsFor, geometryKey, type GrowthGeometry, type GrowthSegm
 const SESSION_START = Date.now(); // the pattern is session-scoped (M2 S2)
 
 const FLASH_MS = 1200;   // the brass reward
+// Nick (2026-10-10): "a bit brighter and fade back out slower" - after the hold the brass network FADES over FADE_MS instead of
+// cutting. Under reduced motion there is no fade: the hold stays and the lap clears at its end.
+const FADE_MS = 1500;
+const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PAGE_CLEAR = 0;    // no clear band: roots grow behind the page, right up to its edge, never over it
 const DRAW_MS = 360;     // one segment drawing itself on
 const STAGGER_TOTAL_MS = 700; // a burst of new segments (a pasted paragraph) grows over at most this long
@@ -140,6 +144,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const svgRef = useRef<SVGSVGElement>(null);
   const [m, setM] = useState<Measured | null>(null);
   const [flashLap, setFlashLap] = useState<number | null>(null); // while set, the finished lap is shown whole, in brass
+  const [flashFading, setFlashFading] = useState(false);           // the hold is over: the brass lap is fading out
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevCount = useRef<{ key: string; count: number } | null>(null);
 
@@ -175,11 +180,20 @@ export function RhizomeField({ text, seedKey, paperRef }: {
     if (!active || n <= 0 || !prev || prev.key !== countKey) return;
     if (count > prev.count && Math.floor(count / n) > Math.floor(prev.count / n)) {
       setFlashLap(Math.floor(count / n) - 1);
+      setFlashFading(false);
       if (flashTimer.current) clearTimeout(flashTimer.current);
-      flashTimer.current = setTimeout(() => setFlashLap(null), FLASH_MS);
+      // hold FLASH_MS, then fade FADE_MS (not a cut) and clear; reduced motion: no fade, the lap clears at the hold's end
+      flashTimer.current = setTimeout(() => {
+        if (reducedMotion()) { setFlashLap(null); return; }
+        setFlashFading(true);
+        flashTimer.current = setTimeout(() => { setFlashLap(null); setFlashFading(false); }, FADE_MS);
+      }, FLASH_MS);
     }
   }, [active, count, n, countKey]);
-  useEffect(() => { setFlashLap(null); }, [seedKey, goalKey]);
+  useEffect(() => {
+    if (flashTimer.current) clearTimeout(flashTimer.current);
+    setFlashLap(null); setFlashFading(false);
+  }, [seedKey, goalKey]);
   useEffect(() => () => { if (flashTimer.current) clearTimeout(flashTimer.current); }, []);
 
   // What to draw. During the flash: the finished lap, whole. Otherwise: the current lap up to the goal fraction.
@@ -224,7 +238,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
       className="wz-rhizome-field"
       aria-hidden="true"
       focusable="false"
-      data-flash={flashLap != null ? 'true' : 'false'}
+      data-flash={flashLap != null ? (flashFading ? 'fading' : 'true') : 'false'}
       data-lap={shownLap}
       data-segments={segs.length}
       data-goal-frac={frac.toFixed(3)}
