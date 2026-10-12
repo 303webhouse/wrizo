@@ -383,6 +383,74 @@ await withHarness(async (app) => {
   }
 
   // ==========================================================================
+  // S10 — ROUND 4 (Fable's review): NO INVISIBLE CLICKS. opacity:0 never gates
+  // hit-testing on its own — Write and Open must be genuinely unclickable, not
+  // just unseen.
+  // ==========================================================================
+  await openApp(app);
+  await app.waitFor("!!document.querySelector('.wz-arrival-doors')", { label: 'S10 settle' });
+  const doorsState = await app.evalJs(`(() => {
+    const doors = document.querySelector('.wz-arrival-doors');
+    const write = document.querySelector('.wz-arrival-write');
+    const r = write ? write.getBoundingClientRect() : null;
+    const hit = r ? document.elementFromPoint(Math.round(r.left + r.width / 2), Math.round(r.top + r.height / 2)) : null;
+    return {
+      splashHoldAttr: document.documentElement.getAttribute('data-splash-hold'),
+      doorsPointerEvents: doors ? getComputedStyle(doors).pointerEvents : null,
+      hitInsideDoors: !!(hit && hit.closest('.wz-arrival-doors')),
+    };
+  })()`);
+  ok('S10 (item splash-hold round 4): the hidden Write/Open doors cannot be clicked mid-hold — pointer-events:none, confirmed by hit-testing at the Write button\'s own centre (a real press there resolves to something OUTSIDE .wz-arrival-doors, never the button)',
+    doorsState.splashHoldAttr === 'true' && doorsState.doorsPointerEvents === 'none' && doorsState.hitInsideDoors === false,
+    JSON.stringify(doorsState));
+
+  // Keystrokes are unaffected (pointer-events only ever gates the mouse/touch
+  // hit-test, never keydown) — re-derive S3's own claim, scoped to confirm it
+  // still holds after this CSS change specifically.
+  await app.evalJs(`(() => {
+    window.__splashProbeS10 = [];
+    window.addEventListener('keydown', (e) => { window.__splashProbeS10.push({ key: e.key, prevented: e.defaultPrevented }); });
+  })()`);
+  await app.typeKeys('k');
+  await sleep(80);
+  const probeS10 = await app.evalJs('window.__splashProbeS10 || []');
+  ok('S10: keystrokes still pass through untouched — pointer-events:none on the doors changes hit-testing only, never keydown',
+    Array.isArray(probeS10) && probeS10.length > 0 && probeS10.every((e) => e.prevented === false),
+    JSON.stringify(probeS10));
+
+  // ==========================================================================
+  // S11 — ROUND 4 (Fable's review): THE READY CEILING. "/auth/me has no time
+  // limit (api.ts), so a hung network keeps ready false indefinitely" — the
+  // hold must still end, by ~10s, regardless. The force-not-ready seam (test-
+  // only) stands in for the hang without actually hanging a real request.
+  // ==========================================================================
+  await app.emulateDpr(1, W, H);
+  await app.goto('/');
+  await app.evalJs(`(() => {
+    localStorage.clear();
+    localStorage.setItem('wrizo-first-run-complete', '1');
+    localStorage.setItem('wrizo-splash-hold', '500');
+    localStorage.setItem('wrizo-splash-force-not-ready', '1');
+  })()`);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S11 settle' });
+  const maxHoldMs = await app.evalJs('window.wrizoSplash ? window.wrizoSplash.MAX_HOLD_MS : null');
+  ok('S11 (driver): the ceiling is readable from the page seam (>= 10000ms, Fable\'s review: "/auth/me has no time limit")',
+    typeof maxHoldMs === 'number' && maxHoldMs >= 10000, String(maxHoldMs));
+
+  const s11MountedAt = Date.now();
+  await sleep(1200); // well past the 500ms floor, well short of the ceiling
+  const stillUpPastFloor = await app.evalJs("!!document.querySelector('.wz-splash')");
+  ok('S11: with the floor long past and `ready` forced false, the splash is STILL up — readiness alone, not the floor, is what is holding it',
+    stillUpPastFloor === true, String(stillUpPastFloor));
+
+  await app.waitFor("!document.querySelector('.wz-splash')", { label: 'S11 ceiling fires', timeout: maxHoldMs + 5000 });
+  const elapsedFromMount = Date.now() - s11MountedAt;
+  ok(`S11: ready held false -> gone by ~${maxHoldMs}ms anyway (Arrival's own boot bar takes over signalling "still working" from there)`,
+    elapsedFromMount >= maxHoldMs - 200 && elapsedFromMount <= maxHoldMs + 2000,
+    String(elapsedFromMount));
+
+  // ==========================================================================
   // S7 — IT SHOWS ON EVERY OPEN (Fable's ruling), NOT ONCE EVER.
   // firstRunComplete is set by openApp, so a first-run-only splash would be
   // absent on this second open. It is present.

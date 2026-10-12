@@ -95,6 +95,19 @@ const MAX_INK_WIDTH_FRACTION = 0.7;
  */
 const DEFAULT_HOLD_MS = 5000;
 
+/**
+ * ITEM splash-hold round 4 (Fable's review): `/auth/me` carries no time limit
+ * (apps/desktop/src/store/api.ts) — a hung network would keep `ready` false
+ * forever, and the floor+ready gate alone would hold the splash up forever
+ * with it. This is the escape hatch: once this many ms have passed (from
+ * mount, not from the floor), the hold ends regardless of readiness —
+ * Arrival's own boot bar (which already renders whether ready or not) takes
+ * over signalling "still working" from there. Only matters once the floor has
+ * ALSO passed (tryEnd's own gate, below) — a capture pass's longer explicit
+ * hold override is never cut short by this.
+ */
+const MAX_HOLD_MS = 10000;
+
 /** The loading line's four per-theme lexicon phrases, and how often they cycle. */
 const LOADING_LINE_KEYS: readonly DeskTermId[] = ['splashLoading1', 'splashLoading2', 'splashLoading3', 'splashLoading4'];
 const LOADING_LINE_CYCLE_MS = 1400;
@@ -109,6 +122,17 @@ function holdMs(): number {
     return Number.isFinite(n) && n > 0 ? n : DEFAULT_HOLD_MS;
   } catch {
     return DEFAULT_HOLD_MS;
+  }
+}
+
+/** Test-only seam (round 4's own ceiling check): forces `ready` to read as false
+ *  regardless of the real prop, so a harness can prove the ceiling fires without
+ *  actually hanging a network call. Unset in every real launch. */
+function forcedNotReady(): boolean {
+  try {
+    return typeof localStorage !== 'undefined' && localStorage.getItem('wrizo-splash-force-not-ready') === '1';
+  } catch {
+    return false;
   }
 }
 
@@ -140,8 +164,9 @@ export function Splash({ ready }: { ready: boolean }) {
   // re-running the mount effect (which would restart the timer and the
   // listeners on every authState change).
   const floorPassedRef = useRef(false);
+  const ceilingPassedRef = useRef(false);
   const readyRef = useRef(ready);
-  readyRef.current = ready;
+  readyRef.current = ready && !forcedNotReady();
   const { t } = useDeskLexicon();
 
   useEffect(() => {
@@ -157,7 +182,8 @@ export function Splash({ ready }: { ready: boolean }) {
     resize();
 
     const tryEnd = () => {
-      if (goneRef.current || !floorPassedRef.current || !readyRef.current) return;
+      if (goneRef.current || !floorPassedRef.current) return;
+      if (!readyRef.current && !ceilingPassedRef.current) return;
       goneRef.current = true;
       delete document.documentElement.dataset.splashHold;
       setLeaving(true);
@@ -169,8 +195,12 @@ export function Splash({ ready }: { ready: boolean }) {
     // seconds") — nothing shortens it now, so these four listeners no longer call
     // anything. ROUND 3: the floor alone no longer ends the hold either — it only
     // flips floorPassedRef, and tryEnd() (called here AND from the ready-effect
-    // below) is what actually ends it, once both conditions hold.
+    // below) is what actually ends it, once both conditions hold. ROUND 4: a third
+    // way in — the ceiling timer flips ceilingPassedRef, letting tryEnd proceed even
+    // with readyRef still false (but ONLY once the floor has also passed, same gate
+    // everything else goes through — a capture pass's longer explicit hold is safe).
     const hold = window.setTimeout(() => { floorPassedRef.current = true; tryEnd(); }, holdMs());
+    const ceiling = window.setTimeout(() => { ceilingPassedRef.current = true; tryEnd(); }, MAX_HOLD_MS);
     const lineCycle = window.setInterval(() => setLineIndex((i) => (i + 1) % LOADING_LINE_KEYS.length), LOADING_LINE_CYCLE_MS);
 
     // PASSIVE, non-capturing, on window — kept for the same reason they always
@@ -185,6 +215,7 @@ export function Splash({ ready }: { ready: boolean }) {
 
     return () => {
       window.clearTimeout(hold);
+      window.clearTimeout(ceiling);
       window.clearInterval(lineCycle);
       events.forEach((e) => window.removeEventListener(e, noop, opts));
       window.removeEventListener('resize', resize);
@@ -198,9 +229,11 @@ export function Splash({ ready }: { ready: boolean }) {
   // Re-checks the SAME tryEnd condition whenever `ready` flips true — the case
   // where the app becomes ready AFTER the floor has already passed (the mount
   // effect's own timeout already fired and found `readyRef.current` still
-  // false back then, so nothing else would ever re-check it).
+  // false back then, so nothing else would ever re-check it). Round 4's own
+  // force-not-ready seam applies here too — a test proving the ceiling must not
+  // have THIS effect quietly end the hold anyway the moment `ready` turns true.
   useEffect(() => {
-    if (!live || !ready || !floorPassedRef.current || goneRef.current) return;
+    if (!live || !ready || forcedNotReady() || !floorPassedRef.current || goneRef.current) return;
     goneRef.current = true;
     delete document.documentElement.dataset.splashHold;
     setLeaving(true);
@@ -248,6 +281,7 @@ if (typeof window !== 'undefined') {
     sizeFor: splashSizeFor,
     reset: () => { alreadyShown = false; },
     HOLD_MS: DEFAULT_HOLD_MS,
+    MAX_HOLD_MS,
     holdMs,
     INK,
     CANVAS,

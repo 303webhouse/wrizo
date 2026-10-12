@@ -1288,6 +1288,13 @@ a:focus-visible,
 [data-splash-hold='true'] .wz-logo,
 [data-splash-hold='true'] .wz-tagline,
 [data-splash-hold='true'] .wz-arrival-doors{ opacity:0; }
+/* ITEM splash-hold ROUND 4 (Fable's review) — opacity:0 alone still leaves Write and
+   Open genuinely clickable (opacity never gates hit-testing). pointer-events:none
+   closes that: a hidden door can't be pressed. Keyboard input is unaffected — this
+   only ever changes POINTER hit-testing, never focus or keydown, so keystrokes keep
+   reaching the app exactly as before. Scoped to the doors only (Fable's own words
+   named "hidden Write and Open"); logo/tagline were never interactive. */
+[data-splash-hold='true'] .wz-arrival-doors{ pointer-events:none; }
 .wz-invite{ font-family:var(--wz-ui); font-size:.82rem; letter-spacing:.2em; text-transform:uppercase; color:var(--wz-ink-dim);
   opacity:0; animation:wz-rise 1.2s ease .6s forwards; }
 @keyframes wz-rise{ from{opacity:0;transform:translateY(10px);} to{opacity:.55;transform:none;} }
