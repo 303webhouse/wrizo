@@ -22,6 +22,7 @@ import { useWayBack } from './useWayBack';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useLexicon } from '../store/themeLexicon';
 import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
+import { ThinScrollbar } from './ThinScrollbar';
 import { ModeStrip } from './ModeStrip';
 import { Sliver, type SliverContent } from './Sliver';
 import { Tutor } from './Tutor';
@@ -1169,6 +1170,7 @@ export function ScriptEditor({ id }: { id: string }) {
           <div ref={scrollCapRef} className="desk-frame-scroll-cap" data-typewriter="false">
             <div className="mode-pagecol">{scriptSheet}</div>
           </div>
+          <ThinScrollbar />
         </DeskFrame>
 
         {portOpen && <PortToBoardSheet sourceIds={[id]} onClose={() => setPortOpen(false)} />}

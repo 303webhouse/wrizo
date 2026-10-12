@@ -17,6 +17,7 @@ import { useThemePrefs, setThemePrefs } from '../store/themePrefs';
 import { useAmbianceDial, setAmbianceDial } from '../store/ambianceDial';
 import { FirstRunVeil } from './FirstRunGate';
 import { usePageDress, dressVars } from '../store/pageDress';
+import { ThinScrollbar } from './ThinScrollbar';
 
 const ASSIST_INTRO_KEY = 'wrizo-assist-introduced';      // first pop-out fired (once)
 const ASSIST_COLLAPSED_KEY = 'wrizo-assist-collapsed';   // persisted panel state
@@ -516,6 +517,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
             >
               {children({ noteWrite, penColor: rail.tools === 'pen' ? (penColorProp ?? pen) : undefined })}
             </div>
+            <ThinScrollbar />
             {!framed && <div className="mode-wordcount mode-dissolve">{words} words</div>}
           </div>
 

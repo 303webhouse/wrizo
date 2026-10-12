@@ -381,6 +381,53 @@
 .board-text::-webkit-scrollbar-thumb:hover{ background:var(--ink-on-card); }
 
 /* ============================================================================
+   scrollbar-minimal — Nick's option B (cursor/scrollbar-mockup @ c67f1bdb):
+   the writing-surface scroll container ONLY gets a custom overlay thumb
+   (ThinScrollbar.tsx) instead of FX7 S4's always-visible paper-toned native
+   thumb immediately above. The app-wide default (FX7 S4, `*`/`::-webkit-
+   scrollbar` at the top of this block) is untouched for every OTHER
+   scrollable region (dialogs, drawers, cascade panels, the notebook grid) —
+   this override reaches exactly the same three selectors FX7 S4 already
+   named for the writing surface, and ONLY those three, superseding their
+   native thumb colors with "none" so the custom overlay is the only thumb
+   drawn. `scrollbar-width:none` + a zeroed webkit thumb (not `display:none`
+   on the scrollbar itself, which some Chromium builds ignore) is the
+   reliable cross-engine way to keep the track scrollable while drawing no
+   native chrome. */
+.mode-scroll, .desk-frame-scroll-cap, .board-text{
+  scrollbar-width: none;
+}
+.mode-scroll::-webkit-scrollbar,
+.desk-frame-scroll-cap::-webkit-scrollbar,
+.board-text::-webkit-scrollbar{ width:0; height:0; }
+
+.wz-thin-scrollbar{
+  position:fixed;
+  width:4px;
+  z-index:50;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 1s ease;
+}
+.wz-thin-scrollbar.active{
+  opacity:1;
+  pointer-events:auto;
+  transition:opacity .15s ease;
+}
+.wz-thin-scrollbar-thumb{
+  position:absolute;
+  left:0;
+  right:0;
+  border-radius:2px;
+  background:var(--ink-on-paper-low);
+  cursor:pointer;
+}
+@media (prefers-reduced-motion: reduce){
+  .wz-thin-scrollbar,
+  .wz-thin-scrollbar.active{ transition:none; }
+}
+
+/* ============================================================================
    TH1 — the theme seam (docs/th1-theme-seam-brief.md, docs/flux-theme-canon.md).
    Slice 0 token audit: Plateau's existing material-named vars mapped to the
    canon's semantic slots (canon §3). No component reads a slot name directly —
