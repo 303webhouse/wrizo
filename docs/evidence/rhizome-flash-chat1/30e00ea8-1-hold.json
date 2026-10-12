@@ -1,0 +1,11 @@
+{
+  "sha": "30e00ea8",
+  "moment": "1-hold",
+  "when": "2026-10-12T07:18:40Z",
+  "reading": {
+    "flash": "true",
+    "stroke": "rgb(255, 152, 0)",
+    "opacity": 1,
+    "width": "0.9px"
+  }
+}

@@ -1,0 +1,4 @@
+RHIZOME-GROWTH PARKED: 1 check (R5 data-flash expression)
+baseline: 50/50
+
+RHIZOME-GROWTH VERIFY: PASS (50 checks)

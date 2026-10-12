@@ -25781,3 +25781,30 @@ merges are automatic; `tsc` exit 0; bundle `index-3Q5AJ41n.js` 650,286 b): `type
 `phase1-drawers` @ `9c35f842` (harness-only; bundle unchanged `index-DCReJq58.js`): `item87` PASS 5 and `item83f` PASS 33 (default) / parked clean. **The drawer-ghost-fix page-templates red is CURED by the harness settle**
 (the press-in-the-slide reading holds: the product CSS did not change between the red and the green).
 **Not deployed; nothing merged.** The parked counts of `fx1`/`fx5`/`item83f` were not audited against any claim (none was made). 0 harness processes, 0 browsers at the clear.
+
+## (8) FIX’S FRAMES (BOTH VERIFY SCRIPTS PASS), INK’S CLICK MEASUREMENT, SPLASH-HOLD ROUND 5 CLEAN — 2026-10-12 (chat 1)
+
+**Fable’s order (Oct 12): FIX’s two verify scripts from fresh worktrees; INK’s `click-mid-open` on main, `drawer-ghost-fix` @ `95f5ed70` and `phase1-drawers` @ `9c35f842`; the splash re-run once TOOLS pushed. Fable’s note: FIX’s two branches
+changed only script files since this desk’s green runs (product code byte-identical), so those passes stand.** One grant of this desk’s, `chat1-fix-frames-20261012` (written before the first run; the first frame is stamped `07:16:19Z`), cleared `2026-10-12T07:23:14Z`;
+0 harness processes, 0 browsers at the clear. Nothing merged, nothing deployed. Evidence is committed under distinct `-chat1` names so FIX’s own later merge of its evidence folders cannot collide.
+
+**(1) `typewriter-fade-order` @ `b57439b0` (fresh worktree `fix-tw`): `typewriter-fade-verify.mjs` exit 0, “TYPEWRITER-FADE RUN: PASS”.** RED FIRST: the fix reversed in `index.css` alone landed (asserted), `typewriter-fade` on the unfixed product exit 1
+(“THE ORDER” failed, 2/4), `index.css` restored, tree clean. THE FIX: `typewriter-fade` 4/4, `fx5` 61 and `fx1` 23 on BOTH legs. Frames: `unfixed-b57439b0-scrolled-history.png` and `fixed-b57439b0-scrolled-history.png` in
+`docs/evidence/typewriter-fade-chat1/` (+ the six per-leg logs and `summary.log.txt`). The fixed frame: the top lines (01–04) read faint and every line below them is darker, the newest whole.
+**(2) `rhizome-flash-fade` @ `30e00ea8` (fresh worktree `fix-rz`): `rhizome-flash-verify.mjs` exit 0, “RHIZOME-FLASH RUN: PASS”.** Browserless: `rhizome-growth` 49 (default), 50 (parked, its R5 park), `--mutants` 7/7 RED, `rhizome-goal-core` 33. Box: `rhizome-goal`
+(CORE 33 + 10) on both legs, `m2` 26, `m3` 6; three frames shot (`30e00ea8-1-hold`, `-2-mid-fade`, `-3-after`) in `docs/evidence/rhizome-flash-chat1/`. The mid-fade frame shows the brass rhizome partly faded on both sides of the page.
+
+**(3) INK’s `click-mid-open` (a measurement, not a check): a real press at 0/30/60/100/150/250/450 ms after the drawer grip, on a blank Draft page; where the Screenplay button’s centre hit-tests at that instant; whether the template applied.** Raw outputs in
+`docs/evidence/click-mid-open/`. **The table (elapsed ms → landed):**
+**main** (`index-z-93XQ5x.js`; the script copied in untracked): 12 ✓, 43 ✓, 62 ✓, 105 ✓, 154 ✓, 265 ✓, 466 ✓ — **all seven land**; the button’s x moves 230 → 224 (6 px) over the slide.
+**`drawer-ghost-fix` @ `95f5ed70`** (`index-sqnFxLZZ.js`): **15 ms ✗ — the point hit-tests the Format container (`div.wz-sliver-format`), not the button**; 47 ✓, 62 ✓, 106 ✓, 156 ✓, 266 ✓, 463 ✓. **One frame at the very start, as INK suspected (the closed
+drawer’s `visibility:hidden` is inherited by the buttons, whose own 0.15 s transition holds them hidden for the first frame); every press from 47 ms on lands. No PRODUCT BUG? flag.**
+**`phase1-drawers` @ `9c35f842`** (`index-DCReJq58.js`): 15 ✗ (hit `div.mode-page.focused`), **45 ✗, 76 ✗, 107 ✗**, 154 ✓, 261 ✓, 467 ✓. **The script prints “PRODUCT BUG? 2/3 presses 60–160 ms into the open missed”.** The reading: in Phase 1 the
+drawer TRAVELS FAR — the Screenplay button’s x runs 408 → 368 → 302 → 261 → 232 → 224 over ~150 ms (about 184 px, against 6 px on main and the ghost fix), so the point read by the hit-test is gone by the time the press lands, even though the
+hit-test itself reports the button (`svg`, `hitIsButton: true`) at 45/76/107 ms. **That is a design consequence of the new slide, not the ghost fix; whether a person can or should be able to press a moving target inside the first ~150 ms is Fable’s and INK’s call — I did
+not decide it.**
+
+**(4) `splash-hold` @ `771adccb` (round 5: “true centre restored, no launch flash”; TOOLS’ rebase onto `5ee716b9`, so it merges to main without the `deskLexicon.ts` conflict): CLEAN on both legs.** `sh-pair` @ `771adccb` (`tsc` exit 0, bundle `index-v2hpS9ky.js`
+651,656 b): `splash.mjs` PASS 55/55 and `item141` PASS 11/11 on the default AND parked legs (round 4’s S4 ×8 and S9 ×2 are cured). EIGHT FRAMES (Arbor and Flux × desktop and phone × mid-hold and after the fade): `docs/evidence/splash-hold-r5/` (+ `frames.json`).
+The drawing’s mark rect is back at y 175 (round 4: 160); mid-hold frames show the drawing and the loading line with no wordmark or Write behind it.
+**Not run: “TOOLS’ scrollbar box check”** — the only scrollbar item on origin is a Cursor mockup (`cursor/scrollbar-mockup`, one HTML file); I found no harness or script to run and asked Fable what the check is.

@@ -1,0 +1,36 @@
+[
+  {
+    "name": "Live: the Rhizome field mounts on the framed desk stage",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Live: the field's anchor is ordered/stacked beneath the paper (z-order under paper)",
+    "pass": true,
+    "detail": "{\"az\":-1,\"pz\":0,\"anchorBeforePaper\":true}"
+  },
+  {
+    "name": "Live: SUPERSEDED->rhizome-goal — roots do not portal onto the page",
+    "pass": true,
+    "detail": "{\"count\":2,\"onPage\":false}"
+  },
+  {
+    "name": "Live: NOTHING ORANGE AT REST — a segment's stroke resolves to --rhizome-ink, not the ember, with no flash active (an empty lap has no segment to paint)",
+    "pass": true,
+    "detail": "{\"strokeAtRest\":{\"stroke\":\"rgb(150, 160, 90)\",\"flash\":\"false\"},\"inkRgb\":\"rgb(150, 160, 90)\"}"
+  },
+  {
+    "name": "Burst (M3): SUPERSEDED->rhizome-goal — the bar 250-word crossing does not flash or burst the rhizome",
+    "pass": true,
+    "detail": "{\"flash\":\"false\",\"segs\":2}"
+  },
+  {
+    "name": "Legacy (<1100px): the Rhizome field does NOT mount (framed-only) — legacy chrome unconditionally byte-identical",
+    "pass": true,
+    "detail": ""
+  }
+]
+
+M3 VERIFY: PASS (6 checks)
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
