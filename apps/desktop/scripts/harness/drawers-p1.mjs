@@ -187,7 +187,14 @@ const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-par
   };
   const mainSliver = baseRef ? sh(`git show ${baseRef}:apps/desktop/src/components/Sliver.tsx`) : null;
   const now = templatesBlock(sliverSrc), was = mainSliver ? templatesBlock(noCR(mainSliver)) : null;
-  ok('(D2) H3: the Templates block in Sliver.tsx is unchanged from main (whitespace aside)', !!now && now === was, `${now ? now.length : 0} vs ${was ? was.length : 0}`);
+  // SUPERSEDED (S2: the table gates the Templates section with allowed('pageKind') INSIDE the sliced span) - by (D2b) below. Parked, not deleted:
+  // it read 1837 vs 1814 once the declared gate landed. Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(D2) H3: the Templates block in Sliver.tsx is unchanged from main (whitespace aside)', !!now && now === was, `${now ? now.length : 0} vs ${was ? was.length : 0}`);
+  // (D2b) successor: the block is unchanged from main EXCEPT for the one declared gate. Strip exactly that gate, then compare; the gate must be there.
+  const GATE = " && allowed('pageKind')";
+  const gated = !!now && now.split(GATE).length === 2;
+  ok('(D2b) H3: the Templates block in Sliver.tsx is unchanged from main (whitespace aside) save the ONE declared table gate allowed(\'pageKind\'); with that gate removed it is identical',
+    gated && now.replace(GATE, '') === was, `${now ? now.length : 0} (gate ${gated}) vs ${was ? was.length : 0}`);
 }
 
 // =============================================================================
@@ -400,7 +407,7 @@ async function mutant(name, run, expectRed) {
   if (!landed) { ok(`(M) ${name}: THE MUTATION LANDED`, false, 'anchor missing'); return; }
   ok(`(M) ${name}: the proof goes RED`, expectRed(res) === true, JSON.stringify(res).slice(0, 160));
 }
-await mutant('the left arrow is not mirrored from the right', async () => partA(mutate(shellText, "return open ? '\\u203A' : '\\u2039';   // › open, ‹ closed", "return open ? '\\u2039' : '\\u203A';")),
+await mutant('the left arrow is not mirrored from the right', async () => partA(mutate(shellText, "return open ? '\u203A' : '\u2039';   // › open, ‹ closed", "return open ? '\u2039' : '\u203A';")),
   (r) => JSON.stringify(r.L) !== JSON.stringify(['›', '‹']));
 await mutant('a closed drawer is not made inert', async () => partA(mutate(shellText, "if (!el.hasAttribute('inert')) el.setAttribute('inert', '');", '')), (r) => r.afterClose === false);
 await mutant('the slide rides --fade-dur', async () => partB(mutate(css, 'transition:transform var(--drawer-dur) var(--drawer-ease); }\n.wz-drawer-slide--left', 'transition:transform var(--fade-dur,.2s) var(--drawer-ease); }\n.wz-drawer-slide--left')),
