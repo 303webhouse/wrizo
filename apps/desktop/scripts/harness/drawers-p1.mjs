@@ -154,8 +154,8 @@ function sh(cmd) { try { return execSync(cmd, { cwd: DESKTOP, encoding: 'utf8', 
 // The declared hunk, as a predicate on a unified diff (-U0): every changed line is an ADDITION, and every addition is one of the allowed
 // lines. Pure, so a mutant can show it fails on a diff that touches anything else.
 const ALLOWED_PE_ADDITIONS = [
-  /^\s*\/\/ PHASE 1 - the drawer's TEXT \| INK tab row chooses the same instrument/,
-  /^\s*\/\/ band's menu retires in S2b\)\. Display wiring only: nothing here touches the typing path\./,
+  /^\s*\/\/ PHASE 1 - the drawer's TEXT \| INK tab row is the ONE control for this instrument/,
+  /^\s*\/\/ Display wiring only: nothing here touches the typing path\./,
   /^\s*instrument: \{ value: instrument, onChange: setInstrument \},\s*$/,
   /^import \{ buildPageActions \} from '\.\.\/store\/pageActions';\s*$/,
   /^\s*\/\/ PHASE 1 - the Actions section: Tags, Copy, Delete, Header\/Footer, wired from this page's own handlers/,
@@ -189,8 +189,12 @@ const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-par
     /^\s*const fresh = initialText\.trim\(\)\.length === 0;\s*$/,
     /^\s*seedTypewriterDefault\(!fresh && countLineEquivalents\(initialText\) < DRAFT_TYPEWRITER_LINE_THRESHOLD\);\s*$/,
     /^\s*\}\s*$/,
+    // Phase 1, InkSwitch retired: the band's two props leave the call
+    /^\s*instrument=\{mode === 'journal' \? instrument : undefined\}\s*$/,
+    /^\s*onInstrument=\{mode === 'journal' \? setInstrument : undefined\}\s*$/,
   ];
   const S5_ADDED = [
+    /^\s*\{\/\* PHASE 1: the TEXT \| INK choice is the first tab of the left drawer;/,
     /^import \{ enterPageTypewriter, holdTypewriterPage \} from '\.\.\/store\/writingSettings';/,
     /^\s*if \(mode === 'drafting'\) \{ enterPageTypewriter\(id, initialText\.trim\(\)\.length === 0\); typewriterEnteredRef\.current = true; \}/,
     /^\s*const typewriterEnteredRef = useRef\(false\);/,
@@ -208,9 +212,9 @@ const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-par
       if (l.startsWith('-')) { removed += 1; if (!S5_REMOVED.some((re) => re.test(l.slice(1)))) return false; continue; }
       if (l.startsWith('+')) { added += 1; if (![...ALLOWED_PE_ADDITIONS, ...S5_ADDED].some((re) => re.test(l.slice(1)))) return false; }
     }
-    return removed === S5_REMOVED.length && added > 0 && added <= 17;
+    return removed === S5_REMOVED.length && added > 0 && added <= 18;
   }
-  ok('(D1c) H1: PageEditor.tsx differs from main ONLY by the declared hunks - the drawer wiring, S4\'s one guard line, and S5\'s one replacement of the line-count seed with the per-page typewriter memory (five removed lines, all in the mount effect and its import); no typing-path line is touched',
+  ok('(D1c) H1: PageEditor.tsx differs from main ONLY by the declared hunks - the drawer wiring, S4\'s one guard line, and S5\'s one replacement of the line-count seed with the per-page typewriter memory (seven removed lines: five in the mount effect and its import, two being the band\'s retired instrument props); no typing-path line is touched',
     peDiff !== null && diffConfinedS5(peDiff), String(peDiff).slice(0, 300));
   ok('(D1c-mutants) the successor refuses a diff that removes any OTHER line, or adds one that is not declared',
     diffConfinedS5('@@ -1 +1 @@\n-  const x = 1;\n+  instrument: { value: instrument, onChange: setInstrument },\n') === false
@@ -455,6 +459,26 @@ function partN(c = css) {
 }
 
 // =============================================================================
+// PART O (Oct 12) - THE BAND'S TEXT | INK HOVER MENU IS RETIRED: one control for one state (the drawer's first tab). Browserless half; item121/item126 carry the live half.
+// =============================================================================
+const stripSrc = read('components/ModeStrip.tsx');
+function partO(strip = stripSrc, c = css, pe = peSrcO, inkSwitchExists = fs.existsSync(path.join(SRC, 'components/InkSwitch.tsx')), sliver = sliverSrc) {
+  return {
+    fileGone: inkSwitchExists === false,
+    stripClean: !/InkSwitch|wz-ink-menu|onInstrument|desk-mode-freewrite|instrument\??:/.test(strip),
+    cssClean: !/\.wz-ink-menu|\.desk-mode-freewrite|\.wz-ink-switch/.test(c),
+    peClean: !/onInstrument=|InkSwitch/.test(pe),
+    drawerHasTheTabs: /items: \[\{ id: 'text' as const, label: t\('inkModeText'\) \}, \{ id: 'ink' as const, label: t\('inkModeInk'\) \}\]/.test(sliver),
+  };
+}
+const peSrcO = read('pages/PageEditor.tsx');
+{
+  const o = partO();
+  ok('(O1) the band\'s Free Write hover menu and its TEXT|INK switch are RETIRED: InkSwitch.tsx is gone; ModeStrip, the CSS and PageEditor carry no trace (no component, no props, no .wz-ink-menu / .desk-mode-freewrite / .wz-ink-switch rules); the drawer\'s first tab pair is the one control left',
+    Object.values(o).every(Boolean), JSON.stringify(o));
+}
+
+// =============================================================================
 // MUTATIONS - each claim's protection removed in turn; each asserts it LANDED before the red is believed.
 // =============================================================================
 function mutate(text, from, to) { if (!text.includes(from)) throw new Error('mutation anchor missing: ' + from.slice(0, 60)); return text.replace(from, () => to); }
@@ -526,6 +550,12 @@ await mutant('the guard is not applied to the open drawer', async () => partN(mu
 await mutant('the guard rides --fade-dur (which the vanish engine rewrites)', async () => partN(mutate(css, 'animation: wz-drawer-live var(--drawer-dur) linear;', 'animation: wz-drawer-live var(--fade-dur,.2s) linear;')), (n) => n.use === false || n.notFade === false);
 await mutant('the guard pins the dead state forever (fill-mode forwards)', async () => partN(mutate(css, 'animation: wz-drawer-live var(--drawer-dur) linear;', 'animation: wz-drawer-live var(--drawer-dur) linear forwards;')), (n) => n.use === false || n.noFill === false);
 await mutant('reduced motion loses the guard\'s length (the floor wins)', async () => partN(mutate(css, "[data-open='true'] > .wz-drawer-slide{ animation-duration: var(--drawer-dur-reduced) !important; }", '')), (n) => n.reduced === false);
+
+await mutant('the hover menu comes back in the CSS', async () => partO(stripSrc, css + '\n.wz-ink-menu{ display:none; }\n'), (o) => o.cssClean === false);
+await mutant('ModeStrip renders the switch again', async () => partO(mutate(stripSrc, 'export function ModeStrip(', "import { InkSwitch } from './InkSwitch';\nexport function ModeStrip(")), (o) => o.stripClean === false);
+await mutant('PageEditor passes the band an instrument again', async () => partO(stripSrc, css, mutate(peSrcO, '<ModeStrip\n', '<ModeStrip\n              onInstrument={setInstrument}\n')), (o) => o.peClean === false);
+await mutant('the component file is still there', async () => partO(stripSrc, css, peSrcO, true), (o) => o.fileGone === false);
+await mutant('the drawer loses its TEXT|INK tabs', async () => partO(stripSrc, css, peSrcO, false, mutate(sliverSrc, "{ id: 'ink' as const, label: t('inkModeInk') }", "{ id: 'ink2' as const, label: t('inkModeInk') }")), (o) => o.drawerHasTheTabs === false);
 
 let failed = 0;
 for (const c of checks) {

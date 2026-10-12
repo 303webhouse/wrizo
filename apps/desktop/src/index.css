@@ -3649,15 +3649,7 @@ a:focus-visible,
 .desk-mode-tab.deferred{ color:var(--text-low); cursor:not-allowed; }
 .desk-mode-tab.deferred:hover{ background:none; color:var(--text-low); }
 .desk-mode-soon{ margin-left:10px; font-family:var(--font-ui); font-size:11px; color:var(--text-mid); font-style:italic; }
-/* Text and Ink live under Free Write. The menu is out of flow so the band
-   does not grow, and it opens when the pointer is on the tab or the menu. */
-.desk-mode-freewrite{ position:relative; display:flex; align-items:center; }
-.wz-ink-menu{ display:none; position:absolute; top:100%; left:0; z-index:40; padding-top:6px; }
-.desk-mode-freewrite:hover .wz-ink-menu,
-.desk-mode-freewrite:focus-within .wz-ink-menu{ display:block; }
-.wz-ink-menu .wz-ink-switch{ flex-direction:column; background:var(--ink-900); }
-.wz-ink-menu .wz-ink-switch-side{ text-align:left; }
-.wz-ink-menu .wz-ink-switch-side + .wz-ink-switch-side{ border-left:0; border-top:1px solid var(--ink-border); }
+/* PHASE 1 - the band's Free Write hover menu (TEXT | INK) is RETIRED: the same choice is the first tab of the left drawer (DrawerTabs). One control for one state. */
 
 /* CD1 S2/S7 — the sliver (components/Sliver.tsx). ToolRail's retired
    contents move here VERBATIM (same look — .mode-swatch/.mode-nib/
@@ -5157,40 +5149,7 @@ a:focus-visible,
   text-overflow:ellipsis; white-space:nowrap; }
 .sprint-actions{ margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 
-/* ============================================================================
-   ITEM 121 I3 — THE TEXT | INK SWITCH, in the band.
-
-   THE BAND MUST NOT GROW. `.sprint-nav` above has NO fixed height: it is a
-   wrapping flex row whose height is content-derived, so the failure mode at
-   1366 is not a few stray pixels, it is A WHOLE SECOND ROW. Every number below
-   is chosen to sit UNDER the band's existing tallest control
-   (`.sprint-toggle-btn`: 13px type, 5px/12px padding) rather than beside it at
-   its own preferred size: 10.5px type and 4px/10px padding put this switch's
-   border-box comfortably inside that. `min-width:0` + `flex-shrink:1` mean the
-   band gives ground here before it ever wraps. Paper never reflows for chrome.
-
-   THE DRESS (mockup B): engraved uppercase, letter-spaced, olive at rest; the
-   ACTIVE side wears the olive hairline; the press is evental brass. Only
-   colour transitions, so `prefers-reduced-motion` needs no branch here.
-   ==========================================================================*/
-.wz-ink-switch{
-  display:flex; align-items:stretch; min-width:0; flex-shrink:1;
-  border:1px solid var(--ink-border); border-radius:var(--radius-sm); overflow:hidden;
-}
-.wz-ink-switch-side{
-  background:none; border:0; border-bottom:1px solid transparent;
-  color:var(--text-low); font-family:var(--font-chromeLabel, var(--font-ui));
-  font-size:10.5px; letter-spacing:.22em; text-transform:uppercase;
-  padding:4px 10px 3px; cursor:pointer; white-space:nowrap;
-  transition:color var(--t-state) var(--ease), border-color var(--t-state) var(--ease);
-}
-.wz-ink-switch-side + .wz-ink-switch-side{ border-left:1px solid var(--ink-border); }
-.wz-ink-switch-side:hover{ color:var(--text-mid); }
-/* The chosen side wears the olive hairline — the drawer's own chosen-state
-   grammar, so a writer reads "selected" the same way in both places. */
-.wz-ink-switch-side[data-on='true']{ color:var(--text-hi); border-bottom-color:var(--accent-rest); }
-/* Evental press (brass), never a rest colour — the flip is the event. */
-.wz-ink-switch-side:active{ color:var(--brass); }
+/* ITEM 121 I3's TEXT | INK switch in the band is RETIRED by Phase 1 (the drawer's first tab carries the choice); its CSS went with it. */
 
 /* ITEM 121 I3 — THE TYPEWRITER IS PUT DOWN, VISIBLY. The instrument change has
    to be legible on the paper, not only in the switch, so in INK the caret goes

@@ -111,12 +111,17 @@ const toMode = async (app, key) => {
   return true;
 };
 
+// PHASE 1 (driver): the instrument is chosen by the drawer's TEXT | INK tab (id wz-sliver-tab-<text|ink>); the band switch this clicked is retired. Original kept verbatim:
+// const setInstrument = async (app, which) => {
+//   await app.evalJs(`(() => {
+//     const b = [...document.querySelectorAll('.wz-ink-switch .wz-ink-switch-side')]
+//       .find(x => x.textContent.trim().toLowerCase() === ${JSON.stringify(which)});
+//     if (b) b.click();
+//   })()`);
+//   await sleep(250);
+// };
 const setInstrument = async (app, which) => {
-  await app.evalJs(`(() => {
-    const b = [...document.querySelectorAll('.wz-ink-switch .wz-ink-switch-side')]
-      .find(x => x.textContent.trim().toLowerCase() === ${JSON.stringify(which)});
-    if (b) b.click();
-  })()`);
+  await app.evalJs(`(() => { const b = document.querySelector('#wz-sliver-tab-' + ${JSON.stringify(which)}); if (b) b.click(); })()`);
   await sleep(250);
 };
 
@@ -145,7 +150,9 @@ const arc = (n = 12, y = 0.22) => Array.from({ length: n }, (_, i) => {
 const pageWithInk = async (app, width = W1, height = H1) => {
   const id = await freshPage(app, width, height);
   await toMode(app, 'freewrite');
-  await app.waitFor("!!document.querySelector('.wz-ink-switch')", { label: 'Free Write switch' });
+  // PHASE 1 (fixture): the TEXT | INK choice is the drawer's first tab; the band switch is retired. Original wait kept verbatim:
+  // await app.waitFor("!!document.querySelector('.wz-ink-switch')", { label: 'Free Write switch' });
+  await app.waitFor("!!document.querySelector('#wz-sliver-tab-ink')", { label: 'Free Write switch (drawer tabs)' });
   await setInstrument(app, 'ink');
   await safePen(app, SHEET, arc(), 'seed stroke');
   await sleep(700);
@@ -480,7 +487,9 @@ await withHarness(async (app) => {
   // ==========================================================================
   const drawId = await freshPage(app, W1, H1);
   await toMode(app, 'freewrite');
-  await app.waitFor("!!document.querySelector('.wz-ink-switch')", { label: 'Free Write switch (C14)' });
+  // PHASE 1 (fixture): the TEXT | INK choice is the drawer's first tab; the band switch is retired. Original wait kept verbatim:
+  // await app.waitFor("!!document.querySelector('.wz-ink-switch')", { label: 'Free Write switch (C14)' });
+  await app.waitFor("!!document.querySelector('#wz-sliver-tab-ink')", { label: 'Free Write switch (C14) (drawer tabs)' });
   await setInstrument(app, 'ink');
   const dSheet = await app.evalJs(rectOf(SHEET));
   const dBefore = (await strokesOf(app, drawId)).length;

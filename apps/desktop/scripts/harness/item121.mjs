@@ -95,16 +95,29 @@ const freshPage = async (app, width = W1, height = H1) => {
   // checked the stratum's absence — see item126-s0-survey.md §6), and a comment
   // that lies to the next reader is a defect even when nothing goes red.
   await app.evalJs("document.querySelector('.desk-mode-tab[data-mode-key=\"freewrite\"]').click()");
-  await app.waitFor("!!document.querySelector('.wz-ink-switch')", { label: 'Free Write, switch in the band' });
+  // PHASE 1 (fixture): the TEXT | INK choice is the drawer's first tab now; the band no longer mounts a switch. The original wait is kept verbatim below.
+  // await app.waitFor("!!document.querySelector('.wz-ink-switch')", { label: 'Free Write, switch in the band' });
+  await app.waitFor("!!document.querySelector('#wz-sliver-tab-ink')", { label: 'Free Write, TEXT|INK tabs in the drawer' });
   await sleep(400);
   return id;
 };
 
+// PHASE 1 (driver): the instrument is chosen by the drawer's TEXT | INK tab (id wz-sliver-tab-<text|ink>), the one control left for that state. The band switch this
+// driver used to click is retired; its body is kept verbatim, commented, below.
+// const setInstrument = async (app, which) => {
+//   // Clicked, never set through state: the switch IS the feature under test.
+//   await app.evalJs(`(() => {
+//     const sides = [...document.querySelectorAll('${SWITCH} .wz-ink-switch-side')];
+//     const btn = sides.find(b => b.textContent.trim().toLowerCase() === ${JSON.stringify(which)});
+//     if (!btn) return 'missing';
+//     btn.click(); return 'clicked';
+//   })()`);
+//   await sleep(220);
+// };
 const setInstrument = async (app, which) => {
-  // Clicked, never set through state: the switch IS the feature under test.
+  // Clicked, never set through state: the tab IS the feature under test.
   await app.evalJs(`(() => {
-    const sides = [...document.querySelectorAll('${SWITCH} .wz-ink-switch-side')];
-    const btn = sides.find(b => b.textContent.trim().toLowerCase() === ${JSON.stringify(which)});
+    const btn = document.querySelector('#wz-sliver-tab-' + ${JSON.stringify(which)});
     if (!btn) return 'missing';
     btn.click(); return 'clicked';
   })()`);
@@ -481,10 +494,12 @@ await withHarness(async (app) => {
   ok('S7: a trusted erase over that bar REMOVES PAINTED PIXELS — alpha at the same sample point drops (destination-out actually rubbed, rather than painting paper-coloured ink over it)',
     erasedAlpha < inkedAlpha, JSON.stringify({ inkedAlpha, erasedAlpha }));
 
-  const ringInText = await app.evalJs(`(() => {
-    const sides = [...document.querySelectorAll('${SWITCH} .wz-ink-switch-side')];
-    sides.find(b => b.textContent.trim().toLowerCase() === 'text').click();
-    return null; })()`);
+  // PHASE 1 (driver): leave INK through the drawer's TEXT tab (the band switch this clicked is retired). Original kept verbatim:
+  // const ringInText = await app.evalJs(`(() => {
+  // const sides = [...document.querySelectorAll('${SWITCH} .wz-ink-switch-side')];
+  // sides.find(b => b.textContent.trim().toLowerCase() === 'text').click();
+  // return null; })()`);
+  const ringInText = await app.evalJs(`(() => { document.querySelector('#wz-sliver-tab-text')?.click(); return null; })()`);
   void ringInText;
   await sleep(300);
   const ringHidden = await app.evalJs(`(() => { const r = document.querySelector('.wz-ink-sheet .ink-eraser-ring');
@@ -540,9 +555,20 @@ await withHarness(async (app) => {
       const r = band.getBoundingClientRect();
       const out = { height: r.height, width: r.width };
       sw.style.display = prev; return out; })()`);
-    ok(`S9 (${label}): the band's height with the switch mounted EQUALS its height without it — the switch fits the band's existing line and does not wrap it onto a second row (the real failure mode: .sprint-nav is a WRAPPING flex row, so a growth here is a whole row, not a few pixels). Paper never reflows for chrome`,
-      withSwitch != null && !withoutSwitch.missing && Math.abs(withSwitch.height - withoutSwitch.height) < 0.6,
-      JSON.stringify({ withSwitch: withSwitch && withSwitch.height, withoutSwitch: withoutSwitch.height }));
+    // ---- PARKED - SUPERSEDED by Phase 1 (the band's hover TEXT | INK switch is RETIRED: the switch is gone, so "height with it equals height without it" has nothing to remove; Fable, Oct 12), 2026-10-12 ----
+    // Kept VERBATIM and no longer run. The successor follows the parked lines.
+    //
+    // ok(`S9 (${label}): the band's height with the switch mounted EQUALS its height without it — the switch fits the band's existing line and does not wrap it onto a second row (the real failure mode: .sprint-nav is a WRAPPING flex row, so a growth here is a whole row, not a few pixels). Paper never reflows for chrome`,
+    // withSwitch != null && !withoutSwitch.missing && Math.abs(withSwitch.height - withoutSwitch.height) < 0.6,
+    // JSON.stringify({ withSwitch: withSwitch && withSwitch.height, withoutSwitch: withoutSwitch.height }));
+    // ----------------------------------------------------------------------
+    const bandShape = await app.evalJs(`(() => { const band = document.querySelector('${BAND}'); if (!band) return null;
+      const kids = [...band.children].filter((k) => k.getBoundingClientRect().height > 0);
+      const centres = kids.map((k) => { const r = k.getBoundingClientRect(); return r.top + r.height / 2; });
+      return { kids: kids.length, spread: centres.length ? Math.max(...centres) - Math.min(...centres) : null, height: band.getBoundingClientRect().height,
+        switchGone: !document.querySelector('.wz-ink-switch') && !document.querySelector('.desk-mode-freewrite') && !document.querySelector('.wz-ink-menu') }; })()`);
+    ok(`S9 successor (${label}) [Phase 1]: the band carries NO TEXT|INK switch and no hover menu, and its children still share ONE row (a second row is the failure mode this check always guarded)`,
+      bandShape != null && bandShape.switchGone === true && bandShape.spread != null && bandShape.spread < 8, JSON.stringify(bandShape));
   }
 
   await app.emulateDpr(1, W1, H1);
@@ -550,15 +576,29 @@ await withHarness(async (app) => {
   const agreeing = [];
   for (const which of ['ink', 'text', 'ink']) {
     await setInstrument(app, which);
+    // PHASE 1 (instrument): read the drawer's SELECTED tab instead of the band switch's checked side (same shape: { side, paper }). Original kept verbatim:
+    // agreeing.push(await app.evalJs(`(() => {
+    // const on = [...document.querySelectorAll('${SWITCH} .wz-ink-switch-side')]
+    // .find(b => b.getAttribute('aria-checked') === 'true');
+    // const paper = document.querySelector('.mode-page');
+    // return { side: on && on.textContent.trim().toLowerCase(),
+    // paper: paper && paper.getAttribute('data-instrument') }; })()`));
     agreeing.push(await app.evalJs(`(() => {
-      const on = [...document.querySelectorAll('${SWITCH} .wz-ink-switch-side')]
-        .find(b => b.getAttribute('aria-checked') === 'true');
+      const on = document.querySelector('.wz-sliver-panel [role="tab"][aria-selected="true"]');
       const paper = document.querySelector('.mode-page');
-      return { side: on && on.textContent.trim().toLowerCase(),
+      return { side: on && on.id.replace('wz-sliver-tab-', ''),
                paper: paper && paper.getAttribute('data-instrument') }; })()`));
   }
-  ok('S9: after EVERY flip the switch\'s checked side and the paper\'s own data-instrument agree — two independent readings of one state, so a switch that moved without the page following (or the reverse) is caught',
-    agreeing.length === 3 && agreeing.every(a => a.side === a.paper)
+  // ---- PARKED - SUPERSEDED by Phase 1 (the band's hover TEXT | INK switch is RETIRED: the "switch" a flip is read from is now the drawer's selected tab; Fable, Oct 12), 2026-10-12 ----
+  // Kept VERBATIM and no longer run. The successor follows the parked lines.
+  //
+  // ok('S9: after EVERY flip the switch\'s checked side and the paper\'s own data-instrument agree — two independent readings of one state, so a switch that moved without the page following (or the reverse) is caught',
+  // agreeing.length === 3 && agreeing.every(a => a.side === a.paper)
+  // && agreeing[0].paper === 'ink' && agreeing[1].paper === 'text' && agreeing[2].paper === 'ink',
+  // JSON.stringify(agreeing));
+  // ----------------------------------------------------------------------
+  ok('S9 successor [Phase 1]: after EVERY flip the drawer\'s SELECTED tab and the paper\'s own data-instrument agree - two independent readings of one state, so a tab that moved without the page following (or the reverse) is caught',
+    agreeing.length === 3 && agreeing.every((a) => a.side === a.paper)
       && agreeing[0].paper === 'ink' && agreeing[1].paper === 'text' && agreeing[2].paper === 'ink',
     JSON.stringify(agreeing));
 
@@ -615,6 +655,7 @@ await withHarness(async (app) => {
     format: document.querySelectorAll('.wz-sliver-format').length,
     buttons: [...document.querySelectorAll('.wz-sliver-format .mode-tbtn')].map(b => b.title),
     switchPresent: !!document.querySelector('${SWITCH}'),
+    inkTabPresent: !!document.querySelector('#wz-sliver-tab-ink'),   // PHASE 1: the switch is retired, so the original reads absent everywhere; this is the live half
   }))()`);
   // ---- PARKED - SUPERSEDED by PR #7 (3951329: the format buttons are titled "Bold (Ctrl+B)", "Italic (Ctrl+I)", "Underline (Ctrl+U)"), 2026-10-02 ----
   // Kept VERBATIM and no longer run. Only the titles changed; the three buttons are still there.
@@ -628,6 +669,8 @@ await withHarness(async (app) => {
     JSON.stringify(draftDrawer));
   ok('S10: and the TEXT|INK switch does NOT mount on Draft — Draft is not a sketch pad, and an instrument switch offering an instrument the surface does not have would be exactly the locked door R15\'s own grammar forbids',
     draftDrawer.switchPresent === false, JSON.stringify({ switchPresent: draftDrawer.switchPresent }));
+  ok('S10 successor [Phase 1]: and the TEXT|INK TABS do not mount in Draft either - the drawer\'s only TEXT|INK control is Free Write\'s (the original above now holds trivially, the switch being gone)',
+    draftDrawer.inkTabPresent === false, JSON.stringify({ inkTabPresent: draftDrawer.inkTabPresent }));
 
   // ==========================================================================
   // S11 — SHOTS. Prose page in TEXT and INK at both widths, the options zone

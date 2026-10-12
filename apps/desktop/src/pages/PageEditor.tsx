@@ -1114,8 +1114,8 @@ function PageEditorView({ id }: { id: string }) {
     : mode === 'journal'
       ? {
           kind: 'freewrite',
-          // PHASE 1 - the drawer's TEXT | INK tab row chooses the same instrument the band's switch does (one state, two controls until the
-          // band's menu retires in S2b). Display wiring only: nothing here touches the typing path.
+          // PHASE 1 - the drawer's TEXT | INK tab row is the ONE control for this instrument (the band's switch is retired).
+          // Display wiring only: nothing here touches the typing path.
           instrument: { value: instrument, onChange: setInstrument },
           forwardLock: { on: forwardLock, onToggle: setForwardLock },
           // ITEM 207 - the smallest form (a face button and -/+, no number). Absent in INK: a pen page has no typeface.
@@ -1344,12 +1344,11 @@ function PageEditorView({ id }: { id: string }) {
                 Revise are not sketch pads, and a switch offering an instrument
                 the surface does not have would be the locked door wearing
                 paint. Absent, never disabled. */}
+            {/* PHASE 1: the TEXT | INK choice is the first tab of the left drawer; the band no longer carries a second switch for it. */}
             <ModeStrip
               mode={mode}
               onSwitch={switchMode}
               onPublish={() => setShowPublish(true)}
-              instrument={mode === 'journal' ? instrument : undefined}
-              onInstrument={mode === 'journal' ? setInstrument : undefined}
               end={(
                 <button type="button" className="btn-quiet page-plan-door" data-page-plan-door onClick={openPlanBoard}>
                   {dt('pagePlanDoor')} <span aria-hidden="true">→</span>
