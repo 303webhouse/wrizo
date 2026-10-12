@@ -1,0 +1,86 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+{
+  "bundle": "index-DCReJq58.js",
+  "results": [
+    {
+      "delay": 0,
+      "x": 408,
+      "y": 433,
+      "elapsedMs": 15,
+      "hit": "div.mode-page.focused",
+      "hitIsButton": false,
+      "open": "true",
+      "panelOpacity": "0",
+      "landed": false
+    },
+    {
+      "delay": 30,
+      "x": 368,
+      "y": 433,
+      "elapsedMs": 45,
+      "hit": "svg",
+      "hitIsButton": true,
+      "open": "true",
+      "panelOpacity": "0.221418",
+      "landed": false
+    },
+    {
+      "delay": 60,
+      "x": 302,
+      "y": 433,
+      "elapsedMs": 76,
+      "hit": "svg",
+      "hitIsButton": true,
+      "open": "true",
+      "panelOpacity": "0.576569",
+      "landed": false
+    },
+    {
+      "delay": 100,
+      "x": 261,
+      "y": 433,
+      "elapsedMs": 107,
+      "hit": "svg",
+      "hitIsButton": true,
+      "open": "true",
+      "panelOpacity": "0.802816",
+      "landed": false
+    },
+    {
+      "delay": 150,
+      "x": 232,
+      "y": 433,
+      "elapsedMs": 154,
+      "hit": "svg",
+      "hitIsButton": true,
+      "open": "true",
+      "panelOpacity": "0.960559",
+      "landed": true
+    },
+    {
+      "delay": 250,
+      "x": 224,
+      "y": 433,
+      "elapsedMs": 261,
+      "hit": "svg",
+      "hitIsButton": true,
+      "open": "true",
+      "panelOpacity": "1",
+      "landed": true
+    },
+    {
+      "delay": 450,
+      "x": 224,
+      "y": 433,
+      "elapsedMs": 467,
+      "hit": "svg",
+      "hitIsButton": true,
+      "open": "true",
+      "panelOpacity": "1",
+      "landed": true
+    }
+  ]
+}
+
+CLICK-MID-OPEN: PRODUCT BUG? 2/3 presses 60-160 ms into the open missed - index-DCReJq58.js

@@ -158,8 +158,10 @@ await withHarness(async (app) => {
   // ==========================================================================
   await freshBoard(app, 'bg1-open-board', [], LAPTOP_W, 900);
   const openDoors = await doorLabels(app);
-  ok('S1 (OPEN): an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Page Card · Load a Deck · Connect a Page',
-    JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', 'Connect a Page']), JSON.stringify(openDoors));
+  // SUPERSEDED (item arbor-quiet-brass): "Connect a Page" -> "Graft a Page" (Arbor's own word).
+  // ok('S1 (OPEN): an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief's order — New Card · New Page Card · Load a Deck · Connect a Page', JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', 'Connect a Page']), JSON.stringify(openDoors));
+  ok('S1 (OPEN, arbor-quiet-brass successor): an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Page Card · Load a Deck · Graft a Page',
+    JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', 'Graft a Page']), JSON.stringify(openDoors));
 
   // Quiet olive — the brief's own word for the doors' color, and the hue the
   // house reserves for "this is a door" (--accent-rest, #96a05a).
@@ -250,7 +252,7 @@ await withHarness(async (app) => {
 
   await freshBoard(app, 'bg1-connect-board', [], LAPTOP_W, 900);
   await clickDoor(app, 'connectPage');
-  ok('S1: Connect a Page opens the existing-page picker',
+  ok('S1: Graft a Page (arbor-quiet-brass: was "Connect a Page") opens the existing-page picker',
     (await app.evalJs("!!document.querySelector('.board-sheet, .existing-page-picker')")) === true,
     await app.evalJs("document.body.innerText.slice(0, 120)"));
 
@@ -294,8 +296,10 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.board-canvas, .board-projection')", { label: 'paired plan board mounted' });
   await sleep(350);
   const planBoardDoors = await doorLabels(app);
-  ok('S1: a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
-    JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', 'Connect a Page']), JSON.stringify(planBoardDoors));
+  // SUPERSEDED (item arbor-quiet-brass): "Connect a Page" -> "Graft a Page".
+  // ok('S1: a paired plan board takes OPEN's row — it is an ordinary board and gets the ordinary four doors', JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', 'Connect a Page']), JSON.stringify(planBoardDoors));
+  ok('S1 (arbor-quiet-brass successor): a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
+    JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', 'Graft a Page']), JSON.stringify(planBoardDoors));
 
   // ==========================================================================
   // S2 — the page's row. THE load-bearing check first: the page is already

@@ -1,0 +1,99 @@
+[
+  {
+    "frame": "P1-arbor-mid-hold",
+    "file": "P1-arbor-mid-hold.png",
+    "hash": "#/",
+    "bundle": "index-v2hpS9ky.js",
+    "theme": "plateau",
+    "splashPresent": true,
+    "markRect": {
+      "x": 356,
+      "y": 175,
+      "w": 689,
+      "h": 551
+    },
+    "veilBackground": "color(srgb 0.0666667 0.0235294 0 / 0.9)",
+    "loadingText": "Gathering your pages…",
+    "signInButton": true,
+    "signInForm": false,
+    "doorsOpacity": "0",
+    "drawerPanel": null,
+    "writing": null,
+    "hold": 60000
+  },
+  {
+    "frame": "P1-flux-mid-hold",
+    "file": "P1-flux-mid-hold.png",
+    "hash": "#/",
+    "bundle": "index-v2hpS9ky.js",
+    "theme": "flux",
+    "splashPresent": true,
+    "markRect": {
+      "x": 356,
+      "y": 175,
+      "w": 689,
+      "h": 551
+    },
+    "veilBackground": "color(srgb 0.0156863 0.0784314 0.101961 / 0.9)",
+    "loadingText": "Booting the terminal…",
+    "signInButton": true,
+    "signInForm": false,
+    "doorsOpacity": "0",
+    "drawerPanel": null,
+    "writing": null,
+    "hold": 60000
+  },
+  {
+    "frame": "P2-arbor-front-door-after-hold",
+    "file": "P2-arbor-front-door-after-hold.png",
+    "hash": "#/",
+    "bundle": "index-v2hpS9ky.js",
+    "theme": "plateau",
+    "splashPresent": false,
+    "markRect": null,
+    "veilBackground": null,
+    "loadingText": null,
+    "signInButton": true,
+    "signInForm": false,
+    "doorsOpacity": "1",
+    "drawerPanel": null,
+    "writing": null
+  },
+  {
+    "frame": "P2-flux-front-door-after-hold",
+    "file": "P2-flux-front-door-after-hold.png",
+    "hash": "#/",
+    "bundle": "index-v2hpS9ky.js",
+    "theme": "flux",
+    "splashPresent": false,
+    "markRect": null,
+    "veilBackground": null,
+    "loadingText": null,
+    "signInButton": true,
+    "signInForm": false,
+    "doorsOpacity": "1",
+    "drawerPanel": null,
+    "writing": null
+  },
+  {
+    "frame": "P3-sign-in-arbor",
+    "file": "P3-sign-in-arbor.png",
+    "hash": "#/",
+    "bundle": "index-v2hpS9ky.js",
+    "theme": "plateau",
+    "splashPresent": false,
+    "markRect": null,
+    "veilBackground": null,
+    "loadingText": null,
+    "signInButton": false,
+    "signInForm": true,
+    "doorsOpacity": null,
+    "drawerPanel": null,
+    "writing": null,
+    "clicked": true,
+    "fieldsAfterClear": {
+      "emailLen": 0,
+      "pwLen": 0
+    }
+  }
+]

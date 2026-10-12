@@ -25694,3 +25694,153 @@ are CURED in substance: `pw1` and `th2` are green on both legs, and `fx5` no lon
 **The card footer now reads “— grafted to: …” under Arbor and “— linked to: …” under Flux** (round 1 read “— thread: …” in both — the item Fable named). Facts per
 frame (theme, brass reading, names) are in `frames.json`. **Owed: Fable’s frame review; Nick’s ship word applies once he clears the frames and `fx5` S5 is
 converted.** **NOT DEPLOYED.** Grant (this desk’s) `2026-10-10T11:24:11Z`, cleared `12:59:22Z`; 0 harness processes, 0 browsers.
+
+## (4) ARBOR-QUIET-BRASS SHIPPED @ 603bb4e2: DEPLOYED, SERVED == BUILT, SMOKE 6/6, THREE LIVE FRAMES — 2026-10-11 (chat 1)
+
+**Fable’s order: “Re-run fx5 on both legs and confirm the bundle is still index-z-93XQ5x.js at 650,286 bytes. Then deploy on Nick’s standing word, run smoke, and take
+the live frames (Arbor and Flux front door, plus a Flux page with the drawer open).”** The fx5 re-run on `arbor-quiet-brass` @ `99a91e76` (a one-file change, `fx5.mjs`
+only; S5 now reads the lexicon seam, not “thread”) was CLEAN on both legs and the bundle was byte-identical: `index-z-93XQ5x.js`, 650,286 b.
+
+**MERGED:** `arbor-quiet-brass` @ `99a91e76` into `main` as `603bb4e2` (4 commits past main, 17 files; NO server change, NO migration; the ledger untouched), pushed.
+**Pre-deploy gates:** primary on `main`, clean (0 porcelain lines incl. untracked), HEAD == `origin/main`, `tsc` x2 exit 0, `build:web` bundle == the pair stamp, the item-98
+guard (`railway status` = writer-studio / production / writer-studio-app; toplevel `C:/Users/nickh/writer-studio`).
+**DEPLOYED** from the primary: `railway up --service writer-studio-app --ci` → deployment `de062c0a-9167-45a2-b867-aabd3e1811ca`.
+**SERVED == BUILT:** JS `33be878eb89d39f8a4f5f2433dd1c72c` (650,286 b) and CSS `97de197e7f2e450c9e833f456435247f` (153,182 b), both equal to the local build. `/healthz` 200,
+`/auth/me` 401, `/auth/signup-status` `{"open":false}`. **`smoke-login.mjs`: `SMOKE: PASS (6/6)`, exit 0** (including the pre-logout cookie replay).
+**Rollback, if needed:** rebuild from the previous deployed commit `9c665b5` (Railway retires the old deployment).
+
+**LIVE FRAMES, taken against production (anonymous throw-away profile; nothing written to the server; the splash held short so none is covered), committed under
+`docs/evidence/arbor-quiet-brass-live/`** (+ `frames.json`): **L1** the Arbor front door, **L2** the Flux front door, **L3** a Flux page, Draft mode, the drawer open. Every
+frame reports the served bundle `index-z-93XQ5x.js`. Readings: the front door’s Write button reads `rgb(255, 152, 0)` on both themes, **identical to the pair’s round-2
+front-door readings**; L3 shows the Templates section in the open drawer under Flux, the brand mark `rgb(255, 152, 0)`. **Owed: Fable’s frame review; Nick’s own live check.**
+Grant `chat1-abq-ship-20261011` (written `2026-10-12T03:36:24Z`), cleared `2026-10-12T03:44:58Z`; 0 harness processes, 0 browsers.
+
+## (5) SPLASH-HOLD ROUND 2 @ 3a58cd82: CLEAN ON BOTH LEGS, EIGHT FRAMES TAKEN, NOT DEPLOYED — 2026-10-11 (chat 1)
+
+**`sh-pair` @ `914f8b36` = `origin/main` @ `2832fc94` + `splash-hold` @ `3a58cd82`** (two commits past its old base: `fd56a978` and “round 2: veil to 90% (logo/Write ghosted through
+at 75%), parse color()”; four files: `Splash.tsx`, `index.css`, `splash.mjs`, `splash-frames-batch.mjs`; the product change is the veil value). `tsc` x1 exit 0; `build:web`
+bundle `index-CI5BAjzO.js` 650,294 b. **Fable’s set, both legs, one stamp `tree=914f8b36 bundle=index-CI5BAjzO.js/650294b`: `splash.mjs` PASS (42 checks) and `item141.mjs`
+PASS (11 checks) on the default leg AND on the parked leg; SUITE RESULT: CLEAN twice.**
+
+**EIGHT FRAMES (Arbor and Flux × desktop 1400×900 and phone 390×844 × mid-hold and after the fade), committed under `docs/evidence/splash-hold-r2/`** (+ `frames.json`).
+The batch script’s own veil read throws on Chromium’s `color(srgb …)` form, so these were taken with this desk’s capture copy, which parses both and records the veil:
+**every mid-hold frame reads veil alpha 0.9, `backdrop-filter: none`**; every after-fade frame has the splash gone and the doors mounted. **An honest reading of the pixels:
+at 90% the wordmark and the Write button are still faintly visible through the veil behind the whiteboard drawing (Arbor desktop, Flux phone) — much dimmer than at 75%, not
+gone.** That is Fable’s and Nick’s judgment, not a measurement. **Owed: Fable’s frame review. Nick’s ship word is in (splash on its own), conditional on the cleared frames.**
+**NOT DEPLOYED.** Grant `chat1-splash-hold-20261011` (written `2026-10-12T04:13:37Z`), cleared `2026-10-12T04:15:00Z`; 0 harness processes, 0 browsers.
+
+## (6) FIX’S GRANT CLEARED IDLE; INK’S SETS RUN: drawer-ghost-fix RED ON page-templates (6/20), phase1-drawers RED ON item83f (6/28) AND item87 (1/4) — 2026-10-11 (chat 1)
+
+**FIX’s grant** `fix-flash-typewriter-20261011` (written `2026-10-12T04:52:56Z`, 22:52 MT) for `rhizome-flash-fade` @ `eb7b114e` and `typewriter-fade-order` @ `8a342755`: checked at 30 min
+(23:23 MT) and at 60 min (23:53 MT). **Both times: 0 harness node processes, 0 `ws-runtime-verify` browsers, no file modified in either FIX worktree
+(`writer-studio-fx17`, `writer-studio-rhizome`) in the prior 45/65 minutes, no new commit on either branch, and no word from Fable that FIX was mid-run.** Cleared at
+`2026-10-12T05:53:50Z`, logged as “idle at 60 min, no run evidence seen” — **NOT “never used”** (a finished run leaves no process; nothing here proves one did or did not happen).
+**The two FIX branches were therefore NOT run by this desk and are NOT green-pair evidence.**
+
+**INK’s sets, under this desk’s grant `chat1-ink-drawers-20261011` (`2026-10-12T05:53:50Z`–`06:07:45Z`), both legs, run from worktrees (no primary):**
+**(1) `drawer-ghost-fix` @ `dd4417bd`** (`run-drawers`; `tsc` exit 0; bundle `index-sqnFxLZZ.js` 650,072 b): `drawer-ghost` 13/13 on both legs; `fx2` 33, `fx3` 28, `item87` 4: clean on
+both legs. **`page-templates.mjs` FAIL 6/20 on BOTH legs** (T2: “pressing the template turns it brass while held”, “applies IN PLACE”, “chosen … brass AT REST”; T4: “the current
+page is UNTOUCHED”, “a NEW script page opens”, “the new page carries a one-tap way back”) — **all of them downstream of the Screenplay template’s press not landing.** **CONTROLS:**
+`page-templates` is GREEN 20/20 on `d2fcb381` (the fix’s own parent, `dg-base`, bundle `index-P2j5dOLz.js`) and on main + splash (`sh-pair`), so the red is the ghost fix’s
+(`index.css`, +21), not the base. **A probe with a 400 ms settle after the strip opens PASSES T2 on the same tree** (the press then lands): the strip slides in over 0.2 s, and
+on the fixed tree a hit-test at the Screenplay button’s centre at 0 ms returns the Format container (`wz-sliver-format`), where the base returns the button’s own SVG. So the
+harness presses inside the slide and the fix changes what is under the pointer in that window. **A harness-timing fragility or a real (sub-200 ms) press-through regression is
+FIX’s/INK’s to decide — I did not decide it.** `drawer-ghost-fix` ships with FIX’s batch: **this red is open.**
+**(2) `phase1-drawers` @ `79c7585d`** (`run-drawers2`; `tsc` exit 0; bundle `index-DCReJq58.js` 661,451 b; INK’s fixture fix for `outdent`/`fx6` is IN this commit, so `outdent` was run):
+browserless four — `drawer-ghost` 14, `drawer-toggles` 34, `drawers-p1` 86 (INK’s earlier 2/64 is gone), `typewriter-page` 21: clean on both legs. Box set — `fx10` 121, `fx2` 34, `fx3` 28,
+`fx6` 38, `outdent` 10, `page-templates` 20: clean on both legs. **TWO files red, the same on both legs: `item87.mjs` FAIL 1/4** (“S5 successor to S3 (b) — a Draft page that already
+holds work (1 line-equivalent) now opens with the typewriter OFF” reads `data-typewriter=true`) **and `item83f.mjs` FAIL 6/28** (the E3 line-scope successors and the Tab-fence successor:
+the caret’s line is not the one indented — e.g. `{“beforeTab”:“Alpha one\nAlpha two\n\nBeta one”,“afterTab”:“Alpha one\nAlpha two\n\n\tBeta one”}`; and the Bulleted-list control
+reads `{“bulletOn”:“Gamma”,“bulletOff”:“Gamma”}`). Both look like the S5 typewriter default reaching a fixture that predates it (the same class as `outdent`/`fx6`), but that is a
+reading, not a measurement: **INK’s to read. `phase1-drawers` is NOT clean.** Not deployed; nothing merged. Grant cleared `2026-10-12T06:07:45Z`; 0 harness processes, 0 browsers.
+
+## (7) FIX’S SET, SPLASH-HOLD ROUND 4, INK’S RE-RUNS — 2026-10-12 (chat 1)
+
+**Fable’s order (Oct 12): “splash-hold @ b2526c2e: re-run plus the eight frames. FIX’s set, run by you (no grant to FIX; its watcher failed) … drawer-ghost-fix: re-run page-templates
+once INK pushes the ported harness. phase1-drawers: re-run item87 and item83f once INK pushes. Hold FIX’s batch deploy until 2 and 3 are green and I’ve cleared the frames.”**
+All under this desk’s grant `chat1-fix-batch-20261012` (`2026-10-12T06:45:26Z`; re-written once at ~`06:58Z` for the INK re-runs; cleared `2026-10-12T07:00:50Z`), both legs, from worktrees.
+
+**(1) `splash-hold` @ `b2526c2e` — `splash.mjs` FAIL 10/55 on BOTH legs; `item141` PASS 11/11 on both.** Tree `sh-pair` @ `cd1d299b` = `origin/main` @ `ccdc390f` + `splash-hold`; **the merge CONFLICTS in
+`apps/desktop/src/store/deskLexicon.ts`** (main’s arbor-quiet-brass Flux overrides and the branch’s four `splashLoading` lines both sit at the end of `OVERRIDES.flux`; purely additive, I kept both — TOOLS will
+hit the same conflict at the real merge). `tsc` exit 0; bundle `index-CQkM_UU7.js` 651,598 b. **The same 10 reds on the RAW branch tip** (`sh-tip` @ `b2526c2e`, default leg, bundle `index-CCspwS4D.js` 651,384 b), so they are the
+branch’s, not the merge’s. **S4 ×8 (“the drawing keeps its own proportions and sits centred”): ratio reads 1.252 and the drawing’s centre sits a constant 14.8 px ABOVE the viewport centre at every viewport**
+(`cy = vh/2 − 14.8`; the frames’ mark rect moved from y 175 to y 160) — the loading line now shares the centred stack; the check still assumes the drawing alone is centred. **S9 ×2 (“no ghost”, plateau and flux): the
+front door’s wordmark/tagline/doors read opacity 0.76/0.85 (merged) and 0.66/0.47 (raw tip) — a different value each run, because they are MID-FADE.** MEASURED (60 ms samples from the splash’s mount, plateau): `0.66, 0.27, 0.11, 0.04, 0.003, 0`
+at 1/77/140/202/265/328 ms, `data-splash-hold` already `true`, `transition: opacity 0.38s` — **so the front door IS drawn at the first frames of a load and fades out under the splash over ~0.33 s; it is never gone at the instant the splash
+appears.** Whether that sub-second flash is visible under the 90 % veil is not measured; the check reads it too early. **Not clean: TOOLS’ (S4 successor; S9 either waits for the fade or the product starts the door hidden).**
+**EIGHT FRAMES** (Arbor and Flux × desktop 1400×900 and phone 390×844 × mid-hold and after the fade) on the merged tree: `docs/evidence/splash-hold-r4/` (+ `frames.json`; veil alpha 0.9, `backdrop-filter: none` in all four mid-hold frames;
+after-fade: splash gone, doors mounted). The mid-hold frames show the whiteboard drawing with NO wordmark or Write button behind it, and the cycling loading line under it (“Gathering your pages…” Arbor, “Booting the terminal…” Flux).
+
+**(2) FIX’s `typewriter-fade-order` @ `8a342755` — CLEAN on both legs; the control is RED as required.** **Control `tf-ctl` @ `dca52ee4` = `origin/main` + ONLY the harness commit `924280da`** (bundle `index-z-93XQ5x.js` 650,286 b = the
+bundle now in production, i.e. unfixed main): `typewriter-fade.mjs` FAIL 2/4 on BOTH legs, for the stated reason — “THE ORDER: going down the page no line is fainter than the older line above it” reads `inversions: [{older: {y: 3, alpha: 1}, newer: {y: 32, alpha: 0.179}}]`
+and “THE OLDEST IS THE FAINTEST” reads `top: {y: 3, alpha: 1}, minAlpha: 0.179`; the premise (a scrolled typewriter page with a mask) and “THE NEWEST IS WHOLE” pass. **Fixed `tfo-pair` @ `b17d6d17`** (main + the branch; the `fx5.mjs` and `index.css`
+merges are automatic; `tsc` exit 0; bundle `index-3Q5AJ41n.js` 650,286 b): `typewriter-fade` PASS 4, `fx5` PASS 61, `fx1` PASS 23 on both legs.
+**(3) FIX’s `rhizome-flash-fade` @ `eb7b114e` — CLEAN on both legs.** `rhz-pair3` @ `a54eadc9` (main + the branch, automatic merge, `tsc` exit 0, bundle `index-CyE62Jo9.js` 650,570 b): `rhizome-goal` (CORE 33 + 10), `m2` 26, `m3` 6 on both legs.
+**(4) FIX’s frames runner: NOT RUN — I cannot find it** (neither branch adds a frames script and neither FIX worktree holds one; the repo has only the splash/templates/writing frames scripts). Asked Fable where it lives.
+**(5) INK’s re-runs, both legs clean.** `drawer-ghost-fix` @ `95f5ed70` (harness-only: page-templates waits for the drawer to settle; bundle unchanged `index-sqnFxLZZ.js`): `page-templates` PASS 20 and `drawer-ghost` PASS 13.
+`phase1-drawers` @ `9c35f842` (harness-only; bundle unchanged `index-DCReJq58.js`): `item87` PASS 5 and `item83f` PASS 33 (default) / parked clean. **The drawer-ghost-fix page-templates red is CURED by the harness settle**
+(the press-in-the-slide reading holds: the product CSS did not change between the red and the green).
+**Not deployed; nothing merged.** The parked counts of `fx1`/`fx5`/`item83f` were not audited against any claim (none was made). 0 harness processes, 0 browsers at the clear.
+
+## (8) FIX’S FRAMES (BOTH VERIFY SCRIPTS PASS), INK’S CLICK MEASUREMENT, SPLASH-HOLD ROUND 5 CLEAN — 2026-10-12 (chat 1)
+
+**Fable’s order (Oct 12): FIX’s two verify scripts from fresh worktrees; INK’s `click-mid-open` on main, `drawer-ghost-fix` @ `95f5ed70` and `phase1-drawers` @ `9c35f842`; the splash re-run once TOOLS pushed. Fable’s note: FIX’s two branches
+changed only script files since this desk’s green runs (product code byte-identical), so those passes stand.** One grant of this desk’s, `chat1-fix-frames-20261012` (written before the first run; the first frame is stamped `07:16:19Z`), cleared `2026-10-12T07:23:14Z`;
+0 harness processes, 0 browsers at the clear. Nothing merged, nothing deployed. Evidence is committed under distinct `-chat1` names so FIX’s own later merge of its evidence folders cannot collide.
+
+**(1) `typewriter-fade-order` @ `b57439b0` (fresh worktree `fix-tw`): `typewriter-fade-verify.mjs` exit 0, “TYPEWRITER-FADE RUN: PASS”.** RED FIRST: the fix reversed in `index.css` alone landed (asserted), `typewriter-fade` on the unfixed product exit 1
+(“THE ORDER” failed, 2/4), `index.css` restored, tree clean. THE FIX: `typewriter-fade` 4/4, `fx5` 61 and `fx1` 23 on BOTH legs. Frames: `unfixed-b57439b0-scrolled-history.png` and `fixed-b57439b0-scrolled-history.png` in
+`docs/evidence/typewriter-fade-chat1/` (+ the six per-leg logs and `summary.log.txt`). The fixed frame: the top lines (01–04) read faint and every line below them is darker, the newest whole.
+**(2) `rhizome-flash-fade` @ `30e00ea8` (fresh worktree `fix-rz`): `rhizome-flash-verify.mjs` exit 0, “RHIZOME-FLASH RUN: PASS”.** Browserless: `rhizome-growth` 49 (default), 50 (parked, its R5 park), `--mutants` 7/7 RED, `rhizome-goal-core` 33. Box: `rhizome-goal`
+(CORE 33 + 10) on both legs, `m2` 26, `m3` 6; three frames shot (`30e00ea8-1-hold`, `-2-mid-fade`, `-3-after`) in `docs/evidence/rhizome-flash-chat1/`. The mid-fade frame shows the brass rhizome partly faded on both sides of the page.
+
+**(3) INK’s `click-mid-open` (a measurement, not a check): a real press at 0/30/60/100/150/250/450 ms after the drawer grip, on a blank Draft page; where the Screenplay button’s centre hit-tests at that instant; whether the template applied.** Raw outputs in
+`docs/evidence/click-mid-open/`. **The table (elapsed ms → landed):**
+**main** (`index-z-93XQ5x.js`; the script copied in untracked): 12 ✓, 43 ✓, 62 ✓, 105 ✓, 154 ✓, 265 ✓, 466 ✓ — **all seven land**; the button’s x moves 230 → 224 (6 px) over the slide.
+**`drawer-ghost-fix` @ `95f5ed70`** (`index-sqnFxLZZ.js`): **15 ms ✗ — the point hit-tests the Format container (`div.wz-sliver-format`), not the button**; 47 ✓, 62 ✓, 106 ✓, 156 ✓, 266 ✓, 463 ✓. **One frame at the very start, as INK suspected (the closed
+drawer’s `visibility:hidden` is inherited by the buttons, whose own 0.15 s transition holds them hidden for the first frame); every press from 47 ms on lands. No PRODUCT BUG? flag.**
+**`phase1-drawers` @ `9c35f842`** (`index-DCReJq58.js`): 15 ✗ (hit `div.mode-page.focused`), **45 ✗, 76 ✗, 107 ✗**, 154 ✓, 261 ✓, 467 ✓. **The script prints “PRODUCT BUG? 2/3 presses 60–160 ms into the open missed”.** The reading: in Phase 1 the
+drawer TRAVELS FAR — the Screenplay button’s x runs 408 → 368 → 302 → 261 → 232 → 224 over ~150 ms (about 184 px, against 6 px on main and the ghost fix), so the point read by the hit-test is gone by the time the press lands, even though the
+hit-test itself reports the button (`svg`, `hitIsButton: true`) at 45/76/107 ms. **That is a design consequence of the new slide, not the ghost fix; whether a person can or should be able to press a moving target inside the first ~150 ms is Fable’s and INK’s call — I did
+not decide it.**
+
+**(4) `splash-hold` @ `771adccb` (round 5: “true centre restored, no launch flash”; TOOLS’ rebase onto `5ee716b9`, so it merges to main without the `deskLexicon.ts` conflict): CLEAN on both legs.** `sh-pair` @ `771adccb` (`tsc` exit 0, bundle `index-v2hpS9ky.js`
+651,656 b): `splash.mjs` PASS 55/55 and `item141` PASS 11/11 on the default AND parked legs (round 4’s S4 ×8 and S9 ×2 are cured). EIGHT FRAMES (Arbor and Flux × desktop and phone × mid-hold and after the fade): `docs/evidence/splash-hold-r5/` (+ `frames.json`).
+The drawing’s mark rect is back at y 175 (round 4: 160); mid-hold frames show the drawing and the loading line with no wordmark or Write behind it.
+**Not run: “TOOLS’ scrollbar box check”** — the only scrollbar item on origin is a Cursor mockup (`cursor/scrollbar-mockup`, one HTML file); I found no harness or script to run and asked Fable what the check is.
+
+## (9) SPLASH-HOLD SHIPPED @ 9336f99f: DEPLOYED, SERVED == BUILT, SMOKE 6/6, FIVE LIVE FRAMES; A PRIVACY SLIP IN AN EARLIER FRAME FOUND AND REMOVED AT THE TIP — 2026-10-12 (chat 1)
+
+**Fable’s word (Oct 12): “I’ve cleared all the frames … Nick’s standing ship word covers both deploys: Ship splash-hold @ 771adccb on its own. Merge, then deploy, then smoke. Live frames: Arbor and Flux mid-hold, then the front door
+after the hold, plus sign-in.”** **MERGED:** `splash-hold` @ `771adccb` (five rounds; TOOLS’ rebase on `5ee716b9`, so no conflict) into `main` as `9336f99f` (the primary fast-forwarded to `origin/main` first; the merge differs from the branch tip by
+docs only), pushed. **Pre-deploy gates:** primary on `main`, clean (0 porcelain lines), HEAD == `origin/main`; `tsc` x2 exit 0; `build:web` bundle `index-v2hpS9ky.js` 651,656 b **== the pair stamp** (`sh-pair` @ `771adccb`); item-98 guard (`railway status` =
+writer-studio / production / writer-studio-app; toplevel `C:/Users/nickh/writer-studio`). **DEPLOYED** from the primary: `railway up --service writer-studio-app --ci`, deployment `5bb3d28a-ca3c-4d1b-b9ac-7c9452753243` (the id in the build-log URL).
+**SERVED == BUILT:** JS `90a944060d675f9487da14cd54435c5d` (651,656 b) and CSS `036e5ccf8ae062009bb931d0020a5e73` (153,986 b), both equal to the local build; the served index names `index-v2hpS9ky.js`. `/healthz` 200, `/auth/me` 401,
+`/auth/signup-status` `{"open":false}`. **`smoke-login.mjs`: `SMOKE: PASS (6/6)`, exit 0** (including the pre-logout cookie replay). **Rollback, if needed:** rebuild from the previous deployed commit `603bb4e2` (the arbor-quiet-brass deploy).
+
+**LIVE FRAMES against production** (anonymous throw-away profile; nothing written to the server; the splash held with the component’s own `wrizo-splash-hold` override where a frame needs it), `docs/evidence/splash-hold-live/` (+ `frames.json`): **P1** Arbor and
+Flux MID-HOLD (veil alpha 0.9; the front door’s doors read opacity 0 under it; the loading line reads “Gathering your pages…” / “Booting the terminal…”; the mark rect y 175, the true centre), **P2** the front door AFTER the hold, both themes (splash gone,
+doors opacity 1, the “Sign in” button present — so the earlier harness frames’ missing “Sign in” was the box having no server, as Fable asked to confirm), **P3** sign-in (the form blanked, both fields empty). Every frame reports the served bundle
+`index-v2hpS9ky.js`. **Owed: Nick’s own live check.**
+
+**THE SLIP (this desk’s): an earlier live frame carried a personal email address.** While taking P3 the sign-in form showed an email address and a password (14 dots) the browser had AUTOFILLED into the harness’s throw-away profile (an environment artefact — not the
+app, not the smoke account; the address is not in the repo’s source). **The first P3 was deleted unpublished and re-taken with the fields blanked and their lengths asserted 0.** Checking the repo for the same artefact: **`docs/evidence/rhizome-drafts-live/D2-sign-in.png`
+(committed in `a474aec3`, the drafts ship’s live frames, 2026-10-10) shows the autofilled email address and a 14-dot password field — and `303webhouse/wrizo` is PUBLIC.** Every other sign-in image in the repo was checked and is clean (the ten-file
+`arrival-signin` set, `templates-live/2-sign-in.png`, the a11y sign-in screen). **Done at once, reversibly: the file was removed at the tip of `main` (`93ea88ef`).** **NOT done, Nick’s call: the address (and the dot count) stay in the git history and in any clone
+until the history is rewritten (`filter-repo`/BFG plus a force-push to `main`, then re-clone everywhere) — and GitHub may keep the blob reachable by its hash for a while; whether the address is worth that is Nick’s to say. The ledger deliberately does not repeat the address.**
+Rule from now on: every live sign-in frame blanks the form before the shot and asserts the field lengths are 0.
+
+## (10) THE BUG BATCH PAIR @ 7c138698: NOT CLEAN — typewriter-fade RED ON BOTH LEGS (an interaction with splash-hold on main), rhizome-goal ONE INTERMITTENT RED; NOT DEPLOYED — 2026-10-12 (chat 1)
+
+**Fable’s order: merge `typewriter-fade-order` @ `b57439b0`, `rhizome-flash-fade` @ `30e00ea8`, `drawer-ghost-fix` @ `95f5ed70` (`drawer-ghost-fix` has since moved to `443376f1` — an evidence-script-only commit; this desk merged the cleared `95f5ed70`), run the pair on the merged tree, then deploy.
+Stopped at the pair: it is red, so nothing was deployed.** Tree `batch-pair` @ `7c138698` = `origin/main` @ `a260bc06` (splash-hold already on it) + the three branches (all merge automatically; `tsc` exit 0; bundle `index-D814pUd5.js` 651,940 b, CSS 154,977 b).
+Set (12 files), both legs, one stamp `tree=7c138698 bundle=index-D814pUd5.js/651940b`: `drawer-ghost` 13, `fx1` 23, `fx2` 33, `fx3` 28, `fx5` 61, `item87` 4, `m2` 26, `m3` 6, `page-templates` 20, `rhizome-growth` 49 (50 parked) — clean on both legs.
+**RED: (1) `typewriter-fade.mjs` FAIL 1/4 on BOTH legs, and on 3 of 3 re-runs: “THE OLDEST IS THE FAINTEST” reads `{top: {y: 130, alpha: 1}, minAlpha: 1}`** (the premise, “THE ORDER” and “THE NEWEST IS WHOLE” pass; 18 lines are measured, the topmost at y=130 — below the
+mask’s fade band, which ends at 116; the unfixed control measured 23 lines from y=3). **BISECTED:** `main` @ `a260bc06` + `typewriter-fade-order` ALONE (`bis-tfo` @ `4aa37d44`, bundle `index-OAT-iNfW.js`) is RED the same way; `+ghost` (`bis-ghost`) and `+rhizome` (`bis-rhz`) are red too, so
+it is not the ghost fix or the rhizome fix. **The same branch is GREEN 4/4 on both legs on `main` @ `ccdc390f` (`tfo-pair`, before splash-hold) and on its own base `d2fcb381` (`fix-tw`, today 07:16Z). The only product difference between those trees is `splash-hold` @ `771adccb`,
+now on main.** A probe copy of the fixture with `wrizo-splash-hold=50` set (a short hold) fails identically, so it is not simply the splash’s hold timing. **The mechanism is NOT identified** — what in the splash round (`App.tsx`, `Splash.tsx`, `index.css`) moves the typewriter page’s
+measured geometry is TOOLS’ and FIX’s to find; this desk only measured that it does. **(2) `rhizome-goal.mjs` FAIL 1/10 on the DEFAULT leg only** (“Live [flash fade]: the flash is BRIGHTER while it holds”, `opacity 0.998827 / 0.999467`, stroke width `0.898934px / 1.39872px` — read a hair
+before the flash’s full value): green on the parked leg and on 3 of 3 re-runs, and 0 reds in its earlier runs (rhz-pair3 x2, fix-rz). **An intermittent read-timing red — 1 in 5 default runs on the merged tree — not a flake clearance: the check reads at the onset of the flash and its tolerance is
+tighter than the easing; FIX’s to widen or to read after the settle.**
+**NOT DEPLOYED, nothing merged to main by this desk; the batch frames (a Draft page mid-writing with the left drawer closed, the front door, sign-in) were NOT taken.** Grant `chat1-live-splash-20261012` (the splash ship’s, carried through this pair), cleared `2026-10-12T07:54:23Z`; 0 harness
+processes, 0 browsers. Bisect worktrees `bis-tfo`, `bis-ghost`, `bis-rhz`, `batch-pair` left in place for the follow-up.

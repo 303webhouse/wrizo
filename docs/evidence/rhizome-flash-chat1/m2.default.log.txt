@@ -1,0 +1,136 @@
+[
+  {
+    "name": "Determinism (live, pass 2 of 2): typing produced at least one segment on the first visit",
+    "pass": true,
+    "detail": "63"
+  },
+  {
+    "name": "SUPERSEDED->M3: revisiting the SAME written entry no longer remounts empty — the total-word driver grows a ground to saturationTarget(total words) on mount (M3 DoD)",
+    "pass": true,
+    "detail": "2"
+  },
+  {
+    "name": "Origin: SUPERSEDED->rhizome-goal — the first line grows a lap-fraction of the fill (more than one segment)",
+    "pass": true,
+    "detail": "88"
+  },
+  {
+    "name": "Geometry @1100px: no segment endpoint exits the stage's own bounds — no overflow, no scrollbar",
+    "pass": true,
+    "detail": "{\"count\":144,\"paperHit\":178,\"outOfStage\":0,\"stageW\":1034,\"stageH\":733,\"paper\":{\"left\":209.3125,\"top\":0,\"right\":824.671875,\"bottom\":693}}"
+  },
+  {
+    "name": "Geometry @1100px: no horizontal scrollbar introduced",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "Geometry @1280px: no segment endpoint exits the stage's own bounds — no overflow, no scrollbar",
+    "pass": true,
+    "detail": "{\"count\":158,\"paperHit\":175,\"outOfStage\":0,\"stageW\":1203.21875,\"stageH\":733,\"paper\":{\"left\":293.921875,\"top\":0,\"right\":909.28125,\"bottom\":693}}"
+  },
+  {
+    "name": "Geometry @1280px: no horizontal scrollbar introduced",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "Geometry @2200px: no segment endpoint exits the stage's own bounds — no overflow, no scrollbar",
+    "pass": true,
+    "detail": "{\"count\":228,\"paperHit\":241,\"outOfStage\":0,\"stageW\":1720,\"stageH\":733,\"paper\":{\"left\":490.78125,\"top\":0,\"right\":1229.203125,\"bottom\":693}}"
+  },
+  {
+    "name": "Geometry @2200px: no horizontal scrollbar introduced",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "Burst fixture: at least one shoot exists before the goal is crossed (the burst has something live to extend)",
+    "pass": true,
+    "detail": "127"
+  },
+  {
+    "name": "SUPERSEDED->rhizome-goal: the bar 250-word lap does not flash the rhizome while the writer line goal is unmet",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Burst+flash: the flash class RETURNS to false once its own timer completes (evental, not a new at-rest state)",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "Inert walk: the field exists and has actually grown at least one segment (not a vacuous walk)",
+    "pass": true,
+    "detail": "{\"pointerEvents\":\"none\",\"ariaHidden\":\"true\",\"interactive\":0,\"segCount\":119}"
+  },
+  {
+    "name": "Inert walk: pointer-events:none on the layer itself",
+    "pass": true,
+    "detail": "{\"pointerEvents\":\"none\",\"ariaHidden\":\"true\",\"interactive\":0,\"segCount\":119}"
+  },
+  {
+    "name": "Inert walk: aria-hidden=\"true\" on the layer itself",
+    "pass": true,
+    "detail": "{\"pointerEvents\":\"none\",\"ariaHidden\":\"true\",\"interactive\":0,\"segCount\":119}"
+  },
+  {
+    "name": "Inert walk: ZERO interactive descendants (button/a/input/select/textarea/[tabindex]/[onclick]) anywhere inside the layer",
+    "pass": true,
+    "detail": "{\"pointerEvents\":\"none\",\"ariaHidden\":\"true\",\"interactive\":0,\"segCount\":119}"
+  },
+  {
+    "name": "Inert walk: elementFromPoint at the field's own corner never resolves to the field itself (a real click falls through to whatever is actually there)",
+    "pass": true,
+    "detail": "desk-frame-stage desk-frame-stage--prose"
+  },
+  {
+    "name": "rightSlot parity: the legacy row's own timer/track/text is IDENTICAL regardless of the stored Progress-style value (M1 R1 guard, unbroken by this ticket)",
+    "pass": true,
+    "detail": "{\"barRow\":{\"hasTimer\":true,\"hasTrack\":true,\"rowText\":\"0 words⏱ 0:00words\"},\"rhizomeStoredRow\":{\"hasTimer\":true,\"hasTrack\":true,\"rowText\":\"0 words⏱ 0:00words\"}}"
+  },
+  {
+    "name": "rightSlot parity: no Rhizome field ever mounts in the legacy row regardless of the stored style (this build's own scope judgment call)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Style control: OFFERED under framed + Progress:Words",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "Style control: the Progress metric Seg itself is reachable (sanity check before the absence proof)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Style control: ABSENT (not greyed) the instant Progress metric leaves Words — the M1 R1 \"offered only when it exists\" law",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "Style control: ABSENT from the legacy corner gear entirely (this build's own framed-only scope for the growth engine — see RhizomeField.tsx's header comment)",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "Legacy default: a genuinely fresh device has NO stored progressStyle key at all (the DEFAULTS merge supplies 'bar' at read time, never written until the writer touches the gear)",
+    "pass": true,
+    "detail": "null"
+  },
+  {
+    "name": "Legacy default: the ordinary linear track renders on a fresh device, exactly as pre-M2",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "Legacy default: no Rhizome field anywhere on a fresh device",
+    "pass": true,
+    "detail": ""
+  }
+]
+
+M2 VERIFY: PASS (26 checks)
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.

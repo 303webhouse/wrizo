@@ -1086,7 +1086,10 @@ if (process.env.HARNESS_PARKED === '1') {
     // ------------------------------------------------------------------------
     // GENERATION 4 (PW1 S3/PW27) — the SAME no-silent-drift claim, against the
     // connecting word the membership ruling requires.
-    pok('PARKED, generation 4 (was the generation-3 re-assertion of the 9-way deskLexicon comparison) — PW1 S3/PW27: membership is not display, so boardsTitle reads "Also connected to…"; the other seven terms are unchanged and still pinned',
+    // SUPERSEDED, generation 5 (item arbor-quiet-brass): "Connected" renamed to Arbor's
+    // own "Grafted"; the other seven terms are unchanged and still pinned.
+    // pok('PARKED, generation 4 (was the generation-3 re-assertion of the 9-way deskLexicon comparison) — PW1 S3/PW27: membership is not display, so boardsTitle reads "Also connected to…"; the other seven terms are unchanged and still pinned', lexiconTermsNow.shelfHome === 'The Shelf Board — has no drawer home' && lexiconTermsNow.shelfEmpty === 'Nothing waiting.' && lexiconTermsNow.shelfOpen === 'Open the Shelf' && lexiconTermsNow.addExisting === 'Existing page…' && lexiconTermsNow.placesTitle === 'Places' && lexiconTermsNow.placesLoose === 'Loose' && lexiconTermsNow.newDrawer === 'File to a new drawer…' && lexiconTermsNow.boardsTitle === 'Also connected to…', JSON.stringify(lexiconTermsNow));
+    pok('PARKED, generation 5 (was generation 4\'s re-assertion ending in boardsTitle "Also connected to…") — arbor-quiet-brass: boardsTitle reads "Also grafted to…"; the other seven terms are unchanged and still pinned',
       lexiconTermsNow.shelfHome === 'The Shelf Board — has no drawer home'
         && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
         && lexiconTermsNow.shelfOpen === 'Open the Shelf'
@@ -1094,7 +1097,7 @@ if (process.env.HARNESS_PARKED === '1') {
         && lexiconTermsNow.placesTitle === 'Places'
         && lexiconTermsNow.placesLoose === 'Loose'
         && lexiconTermsNow.newDrawer === 'File to a new drawer…'
-        && lexiconTermsNow.boardsTitle === 'Also connected to…',
+        && lexiconTermsNow.boardsTitle === 'Also grafted to…',
       JSON.stringify(lexiconTermsNow));
 
     // CD4 S1 (2026-07-24) — the Shelf Board's own "Done" is REMOVED and replaced

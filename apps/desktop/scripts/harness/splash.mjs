@@ -31,6 +31,25 @@ function firstDurationMs(str) {
   return m[2] === 'ms' ? n : n * 1000;
 }
 
+// ITEM splash-hold round 2 (harness-only): getComputedStyle resolving a color-mix()
+// does not always normalize to legacy rgb()/rgba() — some engines report the modern
+// `color(srgb r g b / a)` form instead, whose r/g/b are FRACTIONS (0..1), not 0..255.
+// Parses either shape to the same { r, g, b, a } (r/g/b always 0..255, a always 0..1).
+function parseComputedColor(str) {
+  const s = String(str).trim();
+  let m = /^rgba?\(([^)]+)\)$/.exec(s);
+  if (m) {
+    const parts = m[1].split(',').map((p) => parseFloat(p.trim()));
+    if (parts.length < 3) return null;
+    return { r: parts[0], g: parts[1], b: parts[2], a: parts.length > 3 ? parts[3] : 1 };
+  }
+  m = /^color\(srgb\s+([\d.eE+-]+)\s+([\d.eE+-]+)\s+([\d.eE+-]+)(?:\s*\/\s*([\d.eE+-]+))?\)$/.exec(s);
+  if (m) {
+    return { r: parseFloat(m[1]) * 255, g: parseFloat(m[2]) * 255, b: parseFloat(m[3]) * 255, a: m[4] !== undefined ? parseFloat(m[4]) : 1 };
+  }
+  return null;
+}
+
 // The asset's measured ink bounding box inside its own canvas — the same two
 // numbers Splash.tsx sizes from. Stated here INDEPENDENTLY rather than
 // imported, so a change to the component cannot quietly move this check's
@@ -46,6 +65,16 @@ const openApp = async (app, { width = W, height = H } = {}) => {
   await app.emulateDpr(1, width, height);
   await app.goto('/');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
+  await app.reload();
+};
+
+// ITEM splash-hold round 3: the theme must be set BEFORE the reload (clearing storage
+// first resets it to Arbor's own default) — the clear + theme + first-run-complete
+// write is one evalJs call for exactly that reason.
+const openAppThemed = async (app, theme, { width = W, height = H } = {}) => {
+  await app.emulateDpr(1, width, height);
+  await app.goto('/');
+  await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)});`);
   await app.reload();
 };
 
@@ -68,6 +97,7 @@ const splashState = (app) => app.evalJs(`(() => {
     veilPointerEvents: veilCs ? veilCs.pointerEvents : null,
     markPointerEvents: markCs ? markCs.pointerEvents : null,
     backdrop: veilCs ? (veilCs.backdropFilter || veilCs.webkitBackdropFilter || 'none') : null,
+    veilBackground: veilCs ? veilCs.backgroundColor : null,
     zIndex: cs ? cs.zIndex : null,
     vw: window.innerWidth, vh: window.innerHeight,
   };
@@ -75,14 +105,30 @@ const splashState = (app) => app.evalJs(`(() => {
 
 await withHarness(async (app) => {
   // ==========================================================================
-  // S1 — IT APPEARS, OVER THE REAL APP, BLURRED.
+  // S1 — IT APPEARS, OVER THE REAL APP, DIMMED.
   // ==========================================================================
   await openApp(app);
   const s1 = await splashState(app);
   ok('S1: the splash mounts on opening the app', s1.mounted === true, JSON.stringify({ tone: s1.tone, src: s1.src }));
 
-  ok('S1: the backdrop is a LIVE blur of the app — a real backdrop-filter, not a screenshot. This is the first backdrop-filter in this stylesheet, so it is asserted rather than assumed to composite',
-    typeof s1.backdrop === 'string' && /blur\(/.test(s1.backdrop), String(s1.backdrop));
+  // SUPERSEDED (item splash-hold, Nick live: "the background should be faded out,
+  // not blurred") — the backdrop-filter blur retires whole; there is none to assert.
+  // ok('S1: the backdrop is a LIVE blur of the app — a real backdrop-filter, not a screenshot. This is the first backdrop-filter in this stylesheet, so it is asserted rather than assumed to composite', typeof s1.backdrop === 'string' && /blur\(/.test(s1.backdrop), String(s1.backdrop));
+  ok('S1 (item splash-hold successor): no backdrop-filter remains on the veil — the retirement, proven inert, not just unasserted',
+    s1.backdrop === 'none', String(s1.backdrop));
+
+  const s1Tint = await app.evalJs(`(() => {
+    const m = getComputedStyle(document.documentElement).getPropertyValue('--ink-950').trim();
+    const n = parseInt(m.replace('#', ''), 16);
+    return { ground: { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 } };
+  })()`);
+  const veilColor = parseComputedColor(s1.veilBackground);
+  const closeEnough = (a, b) => Math.abs(a - b) <= 2; // color-mix rounding across engines
+  ok('S1 (item splash-hold, round 2): the veil is a flat dimming tint in the THEME\'s own ground colour (--ink-950) at ~90% opacity — never one fixed colour painted over every theme',
+    !!veilColor
+      && closeEnough(veilColor.r, s1Tint.ground.r) && closeEnough(veilColor.g, s1Tint.ground.g) && closeEnough(veilColor.b, s1Tint.ground.b)
+      && Math.abs(veilColor.a - 0.90) <= 0.03,
+    JSON.stringify({ veilBackground: s1.veilBackground, parsed: veilColor, expectedGround: s1Tint.ground }));
 
   ok('S1: it paints above the app\'s whole existing stack (modals/backdrops/toasts top out at 300)',
     Number(s1.zIndex) >= 400, String(s1.zIndex));
@@ -144,7 +190,7 @@ await withHarness(async (app) => {
   await sleep(80);
   const probe = await app.evalJs('window.__splashProbe || []');
 
-  ok('S3 THE TRAP: a keystroke sent WHILE THE SPLASH IS LIVE reaches the page AND arrives un-prevented — the dismissal listeners are passive and non-capturing, so they observe the key and let go of it. The loss this guards against is silent: a writer opens Wrizo, types immediately, and the first character is eaten as the dismiss gesture',
+  ok('S3 THE TRAP: a keystroke sent WHILE THE SPLASH IS LIVE reaches the page AND arrives un-prevented — the window listeners are passive and non-capturing (item splash-hold: they no longer dismiss anything either, but the pass-through claim is unchanged). The loss this guards against is silent: a writer opens Wrizo, types immediately, and the first character is eaten by anything the splash does',
     liveWhileTyping === true && Array.isArray(probe) && probe.length > 0 && probe.every((e) => e.prevented === false),
     JSON.stringify({ liveWhileTyping, probe }));
 
@@ -177,7 +223,7 @@ await withHarness(async (app) => {
   // but that should be big enough to see the text a bit better, no?" So the
   // size is asserted as a BAND, not a pixel. THE LOAD-BEARING CHECK IS HIS
   // EARLIER PURPOSE, unchanged: "smaller than the background so it's clear it's
-  // just a popup over the real app" - at every tested screen size the blurred
+  // just a popup over the real app" - at every tested screen size the dimmed
   // app shows on ALL FOUR SIDES of the emblem (each margin >= 10% of its axis).
   // Measured on the INK, not the canvas (~9% transparent margin per axis).
   // Two caps (height 60%, width 70%) keep that true at extreme shapes; they
@@ -211,7 +257,7 @@ await withHarness(async (app) => {
     };
     const sidesOk = margin.left >= 0.1 * s.vw && margin.right >= 0.1 * s.vw
       && margin.top >= 0.1 * s.vh && margin.bottom >= 0.1 * s.vh;
-    ok(`S4 THE PURPOSE @ ${w}x${h}: the blurred app is visible on ALL FOUR SIDES of the emblem (each margin >= 10% of its axis) - it reads as a popup over the real app, not a takeover`,
+    ok(`S4 THE PURPOSE @ ${w}x${h}: the dimmed app is visible on ALL FOUR SIDES of the emblem (each margin >= 10% of its axis) - it reads as a popup over the real app, not a takeover`,
       sidesOk, JSON.stringify({ margin: { l: Math.round(margin.left), r: Math.round(margin.right), t: Math.round(margin.top), b: Math.round(margin.bottom) }, vw: s.vw, vh: s.vh }));
 
     const areaFraction = (inkW * inkH) / (s.vw * s.vh);
@@ -247,26 +293,162 @@ await withHarness(async (app) => {
     s5.tone === 'dark', String(s5.tone));
 
   // ==========================================================================
-  // S6 — IT LEAVES ON ITS OWN, AND EARLY IF ASKED.
+  // S6 — IT LEAVES ON ITS OWN, AFTER THE FLOOR (item splash-hold).
   // ==========================================================================
   await openApp(app);
   // ITEM 141 (harness-only): same shape as S5 above — openApp navigates with no
   // settle of its own, so the seam read right after it needs its own waitFor.
   await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S6 settle' });
   const holdMs = await app.evalJs('window.wrizoSplash ? window.wrizoSplash.HOLD_MS : null');
-  ok('S6 (driver): the hold is readable from the page seam', typeof holdMs === 'number', String(holdMs));
-  await sleep((holdMs || 1200) + 700);
-  const afterHold = await app.evalJs("!!document.querySelector('.wz-splash')");
-  ok('S6: left alone, the splash dismisses ITSELF after its hold — nothing is ever required of the writer',
-    afterHold === false, JSON.stringify({ stillMounted: afterHold, holdMs }));
+  // SUPERSEDED (item splash-hold ROUND 3): "minimum 5s per app load" raised the floor
+  // from round 1's 3000ms.
+  // ok('S6 (driver): the hold is readable from the page seam, and is the item splash-hold floor (>= 3000ms, Nick live: "visible for at least 3 seconds")', typeof holdMs === 'number' && holdMs >= 3000, String(holdMs));
+  ok('S6 (driver, ROUND 3 successor): the hold is readable from the page seam, and is the item splash-hold floor (>= 5000ms, Nick live: "minimum 5s per app load")',
+    typeof holdMs === 'number' && holdMs >= 5000, String(holdMs));
+  const mountedAt = Date.now();
+  // A fixed sleep raced the app's OWN readiness (round 3: the hold now also waits for
+  // authState to resolve past 'loading', which a slow harness/CI tick could overrun a
+  // sleep(holdMs+700) by) — waitFor polls instead, with real headroom.
+  await app.waitFor("!document.querySelector('.wz-splash')", { label: 'S6 self-dismiss after the floor', timeout: (holdMs || 5000) + 8000 });
+  const elapsedMs = Date.now() - mountedAt;
+  ok('S6: left alone, the splash dismisses ITSELF after its hold (and only once the app is ready) — nothing is ever required of the writer',
+    elapsedMs >= (holdMs || 5000) - 150, String(elapsedMs));
 
   await openApp(app);
   const liveBefore = await app.evalJs("!!document.querySelector('.wz-splash')");
   await app.key('Escape');
   await sleep(600);
-  const afterKey = await app.evalJs("!!document.querySelector('.wz-splash')");
-  ok('S6: any input dismisses it EARLY — the hold is a maximum, never a wait',
-    liveBefore === true && afterKey === false, JSON.stringify({ liveBefore, afterKey }));
+  const stillLiveAfterKey = await app.evalJs("!!document.querySelector('.wz-splash')");
+  ok('S6 (item splash-hold): input does not dismiss it early, nor shorten the hold — the gesture is retired whole, proven inert (Escape mid-hold does nothing; only the floor\'s own timer, above, ever ends it)',
+    liveBefore === true && stillLiveAfterKey === true, JSON.stringify({ liveBefore, stillLiveAfterKey }));
+
+  // ==========================================================================
+  // S9 — ROUND 3: "NO GHOST" (the front door stays hidden through the hold,
+  // fades in as the splash leaves) AND THE LOADING LINE (from the lexicon,
+  // per theme) — both themes.
+  // ==========================================================================
+  for (const theme of ['plateau', 'flux']) {
+    await openAppThemed(app, theme);
+    await app.waitFor("!!document.querySelector('.wz-splash')", { label: `S9 settle (${theme})` });
+
+    const duringHold = await app.evalJs(`(() => {
+      const logo = document.querySelector('.wz-logo');
+      const tagline = document.querySelector('.wz-tagline');
+      const doors = document.querySelector('.wz-arrival-doors');
+      const lineEl = document.querySelector('.wz-splash-loading');
+      const textEl = document.querySelector('.wz-splash-loading-text');
+      return {
+        theme: document.documentElement.getAttribute('data-theme'),
+        splashHoldAttr: document.documentElement.getAttribute('data-splash-hold'),
+        logoOpacity: logo ? getComputedStyle(logo).opacity : null,
+        taglineOpacity: tagline ? getComputedStyle(tagline).opacity : null,
+        doorsOpacity: doors ? getComputedStyle(doors).opacity : null,
+        loadingRole: lineEl ? lineEl.getAttribute('role') : null,
+        loadingText: textEl ? textEl.textContent : null,
+      };
+    })()`);
+    ok(`S9 (${theme}): "no ghost" — the front door's own wordmark/tagline/doors are invisible while the splash holds`,
+      duringHold.splashHoldAttr === 'true'
+        && duringHold.logoOpacity === '0' && duringHold.taglineOpacity === '0' && duringHold.doorsOpacity === '0',
+      JSON.stringify(duringHold));
+    ok(`S9 (${theme}): the loading line carries role="status" and its text is one of this theme's own lexicon phrases, never a hardcoded string`,
+      duringHold.loadingRole === 'status' && typeof duringHold.loadingText === 'string' && duringHold.loadingText.length > 0,
+      JSON.stringify(duringHold));
+
+    const lexiconLines = await app.evalJs(`(() => {
+      const t = window.wrizoDeskLexicon ? window.wrizoDeskLexicon.t : null;
+      if (!t) return null;
+      return [1, 2, 3, 4].map((n) => t('splashLoading' + n));
+    })()`);
+    ok(`S9 (${theme}): the rendered line is genuinely ONE OF this theme's four lexicon phrases (not coincidentally matching text written elsewhere)`,
+      Array.isArray(lexiconLines) && lexiconLines.includes(duringHold.loadingText),
+      JSON.stringify({ lexiconLines, rendered: duringHold.loadingText }));
+
+    await app.waitFor("!document.querySelector('.wz-splash')", { label: `S9 dismiss (${theme})`, timeout: 14000 });
+    const afterFade = await app.evalJs(`(() => {
+      const logo = document.querySelector('.wz-logo');
+      const tagline = document.querySelector('.wz-tagline');
+      const doors = document.querySelector('.wz-arrival-doors');
+      return {
+        splashHoldAttr: document.documentElement.getAttribute('data-splash-hold'),
+        logoOpacity: logo ? getComputedStyle(logo).opacity : null,
+        taglineOpacity: tagline ? getComputedStyle(tagline).opacity : null,
+        doorsOpacity: doors ? getComputedStyle(doors).opacity : null,
+      };
+    })()`);
+    ok(`S9 (${theme}): and visible again once the splash has fully left — the content faded IN as the splash faded out, never a jump cut`,
+      afterFade.splashHoldAttr === null
+        && afterFade.logoOpacity === '1' && parseFloat(afterFade.taglineOpacity) > 0.9 && afterFade.doorsOpacity === '1',
+      JSON.stringify(afterFade));
+  }
+
+  // ==========================================================================
+  // S10 — ROUND 4 (Fable's review): NO INVISIBLE CLICKS. opacity:0 never gates
+  // hit-testing on its own — Write and Open must be genuinely unclickable, not
+  // just unseen.
+  // ==========================================================================
+  await openApp(app);
+  await app.waitFor("!!document.querySelector('.wz-arrival-doors')", { label: 'S10 settle' });
+  const doorsState = await app.evalJs(`(() => {
+    const doors = document.querySelector('.wz-arrival-doors');
+    const write = document.querySelector('.wz-arrival-write');
+    const r = write ? write.getBoundingClientRect() : null;
+    const hit = r ? document.elementFromPoint(Math.round(r.left + r.width / 2), Math.round(r.top + r.height / 2)) : null;
+    return {
+      splashHoldAttr: document.documentElement.getAttribute('data-splash-hold'),
+      doorsPointerEvents: doors ? getComputedStyle(doors).pointerEvents : null,
+      hitInsideDoors: !!(hit && hit.closest('.wz-arrival-doors')),
+    };
+  })()`);
+  ok('S10 (item splash-hold round 4): the hidden Write/Open doors cannot be clicked mid-hold — pointer-events:none, confirmed by hit-testing at the Write button\'s own centre (a real press there resolves to something OUTSIDE .wz-arrival-doors, never the button)',
+    doorsState.splashHoldAttr === 'true' && doorsState.doorsPointerEvents === 'none' && doorsState.hitInsideDoors === false,
+    JSON.stringify(doorsState));
+
+  // Keystrokes are unaffected (pointer-events only ever gates the mouse/touch
+  // hit-test, never keydown) — re-derive S3's own claim, scoped to confirm it
+  // still holds after this CSS change specifically.
+  await app.evalJs(`(() => {
+    window.__splashProbeS10 = [];
+    window.addEventListener('keydown', (e) => { window.__splashProbeS10.push({ key: e.key, prevented: e.defaultPrevented }); });
+  })()`);
+  await app.typeKeys('k');
+  await sleep(80);
+  const probeS10 = await app.evalJs('window.__splashProbeS10 || []');
+  ok('S10: keystrokes still pass through untouched — pointer-events:none on the doors changes hit-testing only, never keydown',
+    Array.isArray(probeS10) && probeS10.length > 0 && probeS10.every((e) => e.prevented === false),
+    JSON.stringify(probeS10));
+
+  // ==========================================================================
+  // S11 — ROUND 4 (Fable's review): THE READY CEILING. "/auth/me has no time
+  // limit (api.ts), so a hung network keeps ready false indefinitely" — the
+  // hold must still end, by ~10s, regardless. The force-not-ready seam (test-
+  // only) stands in for the hang without actually hanging a real request.
+  // ==========================================================================
+  await app.emulateDpr(1, W, H);
+  await app.goto('/');
+  await app.evalJs(`(() => {
+    localStorage.clear();
+    localStorage.setItem('wrizo-first-run-complete', '1');
+    localStorage.setItem('wrizo-splash-hold', '500');
+    localStorage.setItem('wrizo-splash-force-not-ready', '1');
+  })()`);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S11 settle' });
+  const maxHoldMs = await app.evalJs('window.wrizoSplash ? window.wrizoSplash.MAX_HOLD_MS : null');
+  ok('S11 (driver): the ceiling is readable from the page seam (>= 10000ms, Fable\'s review: "/auth/me has no time limit")',
+    typeof maxHoldMs === 'number' && maxHoldMs >= 10000, String(maxHoldMs));
+
+  const s11MountedAt = Date.now();
+  await sleep(1200); // well past the 500ms floor, well short of the ceiling
+  const stillUpPastFloor = await app.evalJs("!!document.querySelector('.wz-splash')");
+  ok('S11: with the floor long past and `ready` forced false, the splash is STILL up — readiness alone, not the floor, is what is holding it',
+    stillUpPastFloor === true, String(stillUpPastFloor));
+
+  await app.waitFor("!document.querySelector('.wz-splash')", { label: 'S11 ceiling fires', timeout: maxHoldMs + 5000 });
+  const elapsedFromMount = Date.now() - s11MountedAt;
+  ok(`S11: ready held false -> gone by ~${maxHoldMs}ms anyway (Arrival's own boot bar takes over signalling "still working" from there)`,
+    elapsedFromMount >= maxHoldMs - 200 && elapsedFromMount <= maxHoldMs + 2000,
+    String(elapsedFromMount));
 
   // ==========================================================================
   // S7 — IT SHOWS ON EVERY OPEN (Fable's ruling), NOT ONCE EVER.

@@ -104,7 +104,11 @@ await withHarness(async (app) => {
   await app.evalJs("[...document.querySelectorAll('.mode-tab--action')][1]?.click()");
   await sleep(150);
   const publishDialogTitle = await app.evalJs("document.querySelector('.card-title')?.textContent");
-  ok('check 2: the Publish dialog renders Flux\'s "Connect"', publishDialogTitle === 'Connect', String(publishDialogTitle));
+  // SUPERSEDED (item arbor-quiet-brass): themeLexicon.ts's Flux `publish` override
+  // renamed "Connect" -> "Uplink" (Fable's proposal) so it stops colliding with the
+  // board-connection family's new Flux word "Link".
+  // ok('check 2: the Publish dialog renders Flux's "Connect"', publishDialogTitle === 'Connect', String(publishDialogTitle));
+  ok('check 2 (arbor-quiet-brass successor): the Publish dialog renders Flux\'s "Uplink"', publishDialogTitle === 'Uplink', String(publishDialogTitle));
   await app.evalJs("[...document.querySelectorAll('.btn-quiet')].find(b => b.textContent === 'Close')?.click()");
   await sleep(150);
 
