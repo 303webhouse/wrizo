@@ -149,12 +149,25 @@ ok('(T1) TYPEWRITER MODE and PROGRESS TRACKING are two icon-only native buttons 
   v.buttons === true, JSON.stringify(base.buttons));
 ok('(T2) each button reports on/off with aria-pressed from the stored value, and carries a lexicon name that does not change with the state; the two names differ',
   v.words === true, JSON.stringify({ words: base.words, names: base.names }));
-ok('(T3) they flip the SAME values the old rows flipped - typewriter through setTypewriterExplicit (so the session "the writer chose" flag still arms), instrumentsOn through setWritingSettings - and the stores and the goal are byte-identical to main',
+// SUPERSEDED (Phase 1 S5: writingSettings.ts gains the per-page typewriter memory, so 'byte-identical to main' no longer holds) - by (T3b) below.
+// Parked, not deleted. Kept verbatim; `if (false)` keeps it out of the verdict.
+if (false) ok('(T3) they flip the SAME values the old rows flipped - typewriter through setTypewriterExplicit (so the session "the writer chose" flag still arms), instrumentsOn through setWritingSettings - and the stores and the goal are byte-identical to main',
   v.buttons === true && (() => {
     const baseRef = sh('git merge-base origin/main HEAD')?.trim();
     const d = baseRef ? sh(`git diff --stat ${baseRef} -- src/store/writingSettings.ts src/store/forwardLock.ts src/store/writingGoal.ts`) : null;
     base.storeDiff = d;
     return d !== null && d.trim() === '';
+  })(), JSON.stringify({ buttons: base.buttons, storeDiff: base.storeDiff }));
+// (T3b) successor: the PERSISTED SHAPE is untouched - the settings key, the field list and the other two stores are exactly main's; only code AFTER the
+// store's own functions changed (the per-page memory), and the toggles still go through setTypewriterExplicit / setWritingSettings.
+ok('(T3b) the toggles flip the SAME values the old rows flipped (typewriter through setTypewriterExplicit, instrumentsOn through setWritingSettings) and the persisted shape is main\'s: forwardLock.ts and writingGoal.ts byte-identical, and writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key',
+  v.buttons === true && (() => {
+    const baseRef = sh('git merge-base origin/main HEAD')?.trim();
+    const other = baseRef ? sh(`git diff --stat ${baseRef} -- src/store/forwardLock.ts src/store/writingGoal.ts`) : null;
+    const ws = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/writingSettings.ts`) : null;
+    const removedOrKeyTouched = ws === null ? true : ws.split('\n').some((l) => (l.startsWith('-') || l.startsWith('+')) && !l.startsWith('---') && !l.startsWith('+++') && /wrizo-writing-settings|const KEY|^[-+]\s*[a-zA-Z]+\??: /.test(l));
+    base.storeDiff = { other, removedOrKeyTouched };
+    return other !== null && other.trim() === '' && removedOrKeyTouched === false;
   })(), JSON.stringify({ buttons: base.buttons, storeDiff: base.storeDiff }));
 ok('(T4) the Typewriter on/off row and the Progress "Show" row are gone from the "..." menu', v.rowsGone === true, JSON.stringify(base.rowsGone));
 ok('(T5) when a mode is off every row that stays is disabled: Typewriter -> Forward Lock, Line Fade, Page Scroll (3 of 3); Progress -> Unit, Progress, Progress style, Timer (4 of 4) and the Goal number',

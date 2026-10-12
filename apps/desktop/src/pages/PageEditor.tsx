@@ -60,7 +60,7 @@ import { setFirstRunGateActive } from '../store/firstRunGateActive';
 import { useMonotonicWordCount, FirstRunVeil, FirstRunGateBanner, FirstRunGlow } from '../components/FirstRunGate';
 import { UnlockCeremony } from '../components/UnlockCeremony';
 import type { ThemeId } from '../store/theme';
-import { seedTypewriterDefault, DRAFT_TYPEWRITER_LINE_THRESHOLD } from '../store/writingSettings';
+import { enterPageTypewriter, holdTypewriterPage } from '../store/writingSettings';   // PHASE 1 (S5): per-page typewriter memory
 import { countLineEquivalents } from '../store/lineEquivalents';
 
 import { registerFlush } from '../store/flushRegistry';
@@ -463,13 +463,16 @@ function PageEditorView({ id }: { id: string }) {
   // threshold still opens ON (fx2.mjs's ~3-line check proves it, unchanged).
   // Only the empty case moves, so this is an amendment at the one point the
   // original rule was never really about.
+  const typewriterEnteredRef = useRef(false);   // PHASE 1 (S5): has this mount read the page's typewriter memory yet?
   useEffect(() => {
-    if (mode === 'drafting') {
-      const fresh = initialText.trim().length === 0;
-      seedTypewriterDefault(!fresh && countLineEquivalents(initialText) < DRAFT_TYPEWRITER_LINE_THRESHOLD);
-    }
+    if (mode === 'drafting') { enterPageTypewriter(id, initialText.trim().length === 0); typewriterEnteredRef.current = true; }   // PHASE 1 (S5): read once at mount; replaces the line-count seed
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  useEffect(() => {   // PHASE 1 (S5): a toggle on this Draft page writes ITS memory; a page opened in Free Write reads it the FIRST time it reaches Draft
+    if (mode !== 'drafting') return undefined;
+    if (!typewriterEnteredRef.current) { typewriterEnteredRef.current = true; enterPageTypewriter(id, textRef.current.trim().length === 0); }
+    return holdTypewriterPage(id);
+  }, [mode, id]);
 
   // W2 — the way back. Scroll lives on ModeStage's internal .mode-scroll box
   // (surfaceRef is the .mode-page ancestor the host already owns); caret

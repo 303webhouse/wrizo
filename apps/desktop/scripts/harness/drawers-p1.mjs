@@ -178,8 +178,43 @@ const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-par
   const fo = baseRef ? sh(`git diff --stat ${baseRef} -- src/components/ForwardOnlyEditor.tsx`) : null;
   ok('(D1a) H1: ForwardOnlyEditor.tsx (the typing surface) is byte-identical to main', fo !== null && fo.trim() === '', String(fo));
   const peDiff = baseRef ? sh(`git diff -U0 ${baseRef} -- src/pages/PageEditor.tsx`) : null;
-  ok('(D1b) H1: PageEditor.tsx differs from main ONLY by the declared hunks - pure additions: the Free Write drawer\'s instrument wiring, the Draft drawer\'s Actions wiring (one import, a comment, one object member) and S4\'s one guard line in applyRailFormat (with its import); no line removed or changed',
+  // SUPERSEDED (Phase 1 S5: per-page typewriter memory REPLACES the line-count seed in PageEditor's mount effect, so the file now has five removed lines) - by (D1c) below.
+  // Parked, not deleted: it pinned 'pure additions'. Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(D1b) H1: PageEditor.tsx differs from main ONLY by the declared hunks - pure additions: the Free Write drawer\'s instrument wiring, the Draft drawer\'s Actions wiring (one import, a comment, one object member) and S4\'s one guard line in applyRailFormat (with its import); no line removed or changed',
     peDiff !== null && diffConfined(peDiff), String(peDiff).slice(0, 300));
+  // (D1c) successor: the same hunks PLUS S5's one declared replacement, and nothing else - exactly these five removals, none of them the typing path.
+  const S5_REMOVED = [
+    /^import \{ seedTypewriterDefault, DRAFT_TYPEWRITER_LINE_THRESHOLD \} from '\.\.\/store\/writingSettings';\s*$/,
+    /^\s*if \(mode === 'drafting'\) \{\s*$/,
+    /^\s*const fresh = initialText\.trim\(\)\.length === 0;\s*$/,
+    /^\s*seedTypewriterDefault\(!fresh && countLineEquivalents\(initialText\) < DRAFT_TYPEWRITER_LINE_THRESHOLD\);\s*$/,
+    /^\s*\}\s*$/,
+  ];
+  const S5_ADDED = [
+    /^import \{ enterPageTypewriter, holdTypewriterPage \} from '\.\.\/store\/writingSettings';/,
+    /^\s*if \(mode === 'drafting'\) \{ enterPageTypewriter\(id, initialText\.trim\(\)\.length === 0\); typewriterEnteredRef\.current = true; \}/,
+    /^\s*const typewriterEnteredRef = useRef\(false\);/,
+    /^\s*useEffect\(\(\) => \{   \/\/ PHASE 1 \(S5\): a toggle on this Draft page writes ITS memory/,
+    /^\s*if \(mode !== 'drafting'\) return undefined;\s*$/,
+    /^\s*if \(!typewriterEnteredRef\.current\) \{ typewriterEnteredRef\.current = true; enterPageTypewriter\(id, textRef\.current\.trim\(\)\.length === 0\); \}\s*$/,
+    /^\s*return holdTypewriterPage\(id\);\s*$/,
+    /^\s*\}, \[mode, id\]\);\s*$/,
+  ];
+  function diffConfinedS5(diffText) {
+    const lines = noCR(diffText).split('\n');
+    let added = 0, removed = 0;
+    for (const l of lines) {
+      if (l.startsWith('+++') || l.startsWith('---') || l.startsWith('@@') || l.startsWith('diff ') || l.startsWith('index ') || l === '') continue;
+      if (l.startsWith('-')) { removed += 1; if (!S5_REMOVED.some((re) => re.test(l.slice(1)))) return false; continue; }
+      if (l.startsWith('+')) { added += 1; if (![...ALLOWED_PE_ADDITIONS, ...S5_ADDED].some((re) => re.test(l.slice(1)))) return false; }
+    }
+    return removed === S5_REMOVED.length && added > 0 && added <= 17;
+  }
+  ok('(D1c) H1: PageEditor.tsx differs from main ONLY by the declared hunks - the drawer wiring, S4\'s one guard line, and S5\'s one replacement of the line-count seed with the per-page typewriter memory (five removed lines, all in the mount effect and its import); no typing-path line is touched',
+    peDiff !== null && diffConfinedS5(peDiff), String(peDiff).slice(0, 300));
+  ok('(D1c-mutants) the successor refuses a diff that removes any OTHER line, or adds one that is not declared',
+    diffConfinedS5('@@ -1 +1 @@\n-  const x = 1;\n+  instrument: { value: instrument, onChange: setInstrument },\n') === false
+      && diffConfinedS5('@@ -1,0 +2 @@\n+  onChange(e);\n') === false, 'both must be refused');
   const templatesBlock = (text) => {
     const a = text.indexOf('railTemplates');
     if (a < 0) return null;
