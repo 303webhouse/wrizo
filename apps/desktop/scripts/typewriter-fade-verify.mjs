@@ -37,6 +37,7 @@ const need = ['harness/typewriter-fade.mjs', 'harness/fx5.mjs', 'harness/fx1.mjs
 const missing = need.filter((f) => !existsSync(join(here, f)));
 if (missing.length) { say(`REFUSED: missing ${missing.join(', ')}`); process.exit(2); }
 if (dirty()) { say(`REFUSED: the tree is not clean:\n${dirty()}`); process.exit(2); }
+if (!DRY && !existsSync(join(desktop, 'node_modules'))) { say('REFUSED: no node_modules in this worktree - run pnpm install first (the run builds dist-web)'); process.exit(2); }
 if (!DRY && !process.env.WS_BOX_TURN) { say('REFUSED: WS_BOX_TURN is not set (a granted box turn is required; --dry runs without one)'); process.exit(2); }
 mkdirSync(OUT, { recursive: true });
 
@@ -84,6 +85,8 @@ if (!DRY) {
 
 const clean = !dirty();
 const ok = redOk && legsOk && clean;
-say(`\nTYPEWRITER-FADE RUN: ${ok ? 'PASS' : 'FAIL'} - red-first ${redOk ? 'RED as required' : 'NOT RED'}, legs ${legsOk ? 'all green' : 'NOT all green'}, tree clean=${clean}${DRY ? ' (DRY)' : ''}`);
+say(DRY
+  ? `\nTYPEWRITER-FADE RUN (DRY): ${ok ? 'READY' : 'NOT READY'} - paths, files and the tree checked, the red-first swap landed and restored (clean=${clean}); NOTHING was built or run`
+  : `\nTYPEWRITER-FADE RUN: ${ok ? 'PASS' : 'FAIL'} - red-first ${redOk ? 'RED as required' : 'NOT RED'}, legs ${legsOk ? 'all green' : 'NOT all green'}, tree clean=${clean}`);
 if (!DRY) writeFileSync(join(OUT, 'summary.log.txt'), lines.join('\n') + '\n');
 process.exit(ok ? 0 : 1);
