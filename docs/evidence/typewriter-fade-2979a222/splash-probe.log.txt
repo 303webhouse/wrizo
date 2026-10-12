@@ -1,0 +1,10 @@
+{"scenario":"A control","moment":"typed after the splash","splash":false,"scrolled":"true","typewriter":"true","scrollTop":67,"scrollHeight":1320,"clientHeight":631,"startOffset":"183px","lineCount":18,"top":{"y":130,"alpha":1},"last":{"y":621,"alpha":1},"inversions":0,"focused":true}
+{"scenario":"B resume","moment":"typed UNDER the splash (splash at keystroke: true)","splash":true,"scrolled":"true","typewriter":"true","scrollTop":62,"scrollHeight":1320,"clientHeight":631,"startOffset":"183px","lineCount":18,"top":{"y":135,"alpha":1},"last":{"y":626,"alpha":1},"inversions":0,"focused":true}
+{"scenario":"B resume","moment":"1.5s after the splash left","splash":false,"scrolled":"true","typewriter":"true","scrollTop":62,"scrollHeight":1320,"clientHeight":631,"startOffset":"183px","lineCount":18,"top":{"y":135,"alpha":1},"last":{"y":626,"alpha":1},"inversions":0,"focused":true}
+{"scenario":"C carry on","moment":"typed after the splash, same session (read once the text was stored, or at 8s)","splash":false,"scrolled":"true","typewriter":"true","scrollTop":62,"scrollHeight":1320,"clientHeight":631,"startOffset":"183px","lineCount":18,"top":{"y":135,"alpha":1},"last":{"y":626,"alpha":1},"inversions":0,"focused":true}
+{"storedTailB":"of the history that rides up into the page. under the splash","everyCharUnderSplash":true,"domTailC":"y that rides up into the page. under the splash and after it","onPageAfter":true,"storedTailC":"y that rides up into the page. under the splash and after it","everyCharAfter":true,"msToStoreAfter":2422}
+C VERDICT ON INPUT: NOT LOST - on the page at once, stored after 2422ms (the save debounce)
+
+TYPEWRITER SPLASH PROBE: 4 readings (a measurement; no verdict)
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
