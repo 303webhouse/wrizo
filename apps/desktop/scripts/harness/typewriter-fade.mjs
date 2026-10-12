@@ -34,9 +34,32 @@ await withHarness(async (app) => {
   // the writer is at the end of their text, typing: the typewriter holds the active line low and the history scrolls up
   await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false);
     const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()`);
-  await app.typeKeys(' and on');
+  // ---- SUPERSEDED (Fable, 2026-10-12: the 1f78f860 run left the history at scrollTop 67 of 689, the top line at y=130 - BELOW
+  // the 116px band, so no line was inside it and the check passed or failed on nothing). Kept verbatim, no longer run:
+  //   await app.typeKeys(' and on');
+  //   try { await app.waitFor("document.querySelector('.mode-scroll')?.dataset.scrolled === 'true'", { label: 'the history has scrolled', timeout: 6000 }); } catch { /* reported */ }
+  //   await sleep(1200);   // past the smooth per-line scroll
+  // ------------------------------------------------------------------
+  // The writer goes on writing: eight new lines, each one a real Enter, so the typewriter scrolls the history up a line at a time.
+  for (let i = 1; i <= 8; i += 1) { await app.typeKeys(`\nAnd the writer goes on, line ${i} of the new ones.`); await sleep(120); }
   try { await app.waitFor("document.querySelector('.mode-scroll')?.dataset.scrolled === 'true'", { label: 'the history has scrolled', timeout: 6000 }); } catch { /* reported */ }
   await sleep(1200);   // past the smooth per-line scroll
+  // Then the writer's own scroll (FX5 S1(c): the writer owns the scroll position) settles the OLDEST visible line inside the first
+  // line of the box - the strip FX5's lead-in governed - so the fade band is full and the order bug, if present, cannot hide.
+  const aligned = await app.evalJs(`(() => {
+    const scroll = document.querySelector('.mode-scroll'); const ed = document.querySelector('${ED}');
+    if (!scroll || !ed) return null;
+    const box = scroll.getBoundingClientRect(); const lh = parseFloat(getComputedStyle(ed).lineHeight) || 28;
+    const r = document.createRange(); r.selectNodeContents(ed); const mids = [];
+    for (const rc of r.getClientRects()) { if (rc.height < 4) continue; const mid = (rc.top + rc.bottom) / 2 - box.top; if (!mids.some((m) => Math.abs(m - mid) < 4)) mids.push(mid); }
+    mids.sort((a, b) => a - b);
+    const first = mids.find((m) => m >= 0);
+    if (first == null) return null;
+    const before = scroll.scrollTop;
+    if (first > lh / 2) scroll.scrollTop = before + (first - lh / 2);
+    return { lineHeight: lh, firstCentreBefore: Math.round(first), scrollBefore: Math.round(before), scrollAfter: Math.round(scroll.scrollTop) };
+  })()`);
+  await sleep(500);
 
   const m = await app.evalJs(`(() => {
     const scroll = document.querySelector('.mode-scroll');
@@ -93,6 +116,15 @@ await withHarness(async (app) => {
   for (let i = 1; i < lines.length; i++) if (lines[i].alpha < lines[i - 1].alpha - 0.01) inversions.push({ older: lines[i - 1], newer: lines[i] });
   ok('(premise) the page is a typewriter page whose history has scrolled, with a fade mask and several lines on screen',
     !!m && !m.missing && m.typewriter === 'true' && m.scrolled === 'true' && (m.stops || []).length >= 2 && lines.length >= 6, JSON.stringify({ typewriter: m && m.typewriter, scrolled: m && m.scrolled, stops: m && m.stops, lines: lines.length }));
+  // THE PREMISE THAT MAKES THE ORDER MEASURABLE (Fable, 2026-10-12): at least 3 lines inside the fade band, and the oldest line in
+  // the box's first line (where FX5's lead-in lived). Without it the checks below pass or fail on nothing.
+  const pxOf = (v) => parseFloat(String(v || '').trim()) || 0;
+  const bandEnd = m && m.geo ? pxOf(m.geo.fadeStart) + pxOf(m.geo.fadeBand) : 0;
+  const fadeStart = m && m.geo ? pxOf(m.geo.fadeStart) : 0;
+  const inBand = lines.filter((l) => l.y >= -((m && m.geo && m.geo.lineHeight) || 28) / 2 && l.y <= bandEnd);
+  ok('(premise) the fade band is FULL: at least 3 lines sit inside it, and the oldest visible line sits in the box\'s first line (y < --tw-fade-start)',
+    bandEnd > 0 && inBand.length >= 3 && lines.length > 0 && lines[0].y < fadeStart,
+    JSON.stringify({ bandEnd, fadeStart, inBand: inBand.length, top: lines[0] || null, aligned }));
   ok('THE ORDER: going down the page no line is fainter than the older line above it (Nick: "a newer line dims while the older one above it stays dark")',
     lines.length >= 6 && inversions.length === 0, JSON.stringify({ inversions: inversions.slice(0, 4), lines: lines.slice(0, 8) }));
   const minAlpha = lines.length ? Math.min(...lines.map((l) => l.alpha)) : null;

@@ -56,8 +56,10 @@ try {
     const r = run('harness/typewriter-fade.mjs');
     writeFileSync(join(OUT, 'red-first.typewriter-fade.log.txt'), r.out);
     const orderFailed = /FAIL\s+THE ORDER/.test(r.out);
-    redOk = r.code !== 0 && orderFailed;
-    say(`1 RED FIRST: typewriter-fade on the UNFIXED product - exit ${r.code}, "THE ORDER" failed=${orderFailed} :: ${verdict(r.out)}`);
+    // a red only counts if the band was FULL: the premise must PASS on the unfixed product too, so the red is the order itself
+    const premiseHeld = /PASS\s+\(premise\) the fade band is FULL/.test(r.out);
+    redOk = r.code !== 0 && orderFailed && premiseHeld;
+    say(`1 RED FIRST: typewriter-fade on the UNFIXED product - exit ${r.code}, "THE ORDER" failed=${orderFailed}, band-full premise held=${premiseHeld} :: ${verdict(r.out)}`);
     const f = run('typewriter-fade-frames.mjs', ['unfixed']);
     say(`1 frame (unfixed): exit ${f.code} ${(f.out.match(/TYPEWRITER-FADE FRAME: \S+/) || ['(none)'])[0]}`);
   } else redOk = true;

@@ -81,10 +81,28 @@ await withHarness(async (app) => {
   // C - the writer carries on after the splash
   await caretEnd(app);
   await app.typeKeys(' and after it');
-  await sleep(1500);
-  await row(app, 'C carry on', 'typed after the splash, same session');
-  const textC = await stored(app);
+  // ---- SUPERSEDED (Fable, 2026-10-12: the 1f78f860 run read everyCharAfter:false). The page's own save is DEBOUNCED
+  // (PageEditor AUTOSAVE_MS = 2000, then the store's 300ms flush), so a read 1.5s after the keystrokes can see the old text with
+  // nothing lost. Kept verbatim, no longer run; the reads below separate "not saved YET" from "lost":
+  //   await sleep(1500);
+  //   await row(app, 'C carry on', 'typed after the splash, same session');
+  //   const textC = await stored(app);
+  // ------------------------------------------------------------------
+  // 1. did the keystrokes reach the PAGE? (the editor's own text, read at once - no debounce sits between typing and the DOM)
+  const domC = await app.evalJs(`(document.querySelector('${ED}')?.textContent || '').replace(/\\u200b/g, '')`);
+  const onPage = domC.includes(' under the splash and after it');
+  // 2. when do they reach STORAGE? poll every 100ms for up to 8s and record the time it took
+  const t0 = Date.now();
+  let textC = await stored(app), msToStore = null;
+  while (Date.now() - t0 < 8000) {
+    if (textC.endsWith(' under the splash and after it')) { msToStore = Date.now() - t0; break; }
+    await sleep(100);
+    textC = await stored(app);
+  }
+  await row(app, 'C carry on', 'typed after the splash, same session (read once the text was stored, or at 8s)');
   const tail = (t) => t.slice(-60);
-  console.log(JSON.stringify({ storedTailB: tail(textB), everyCharUnderSplash: textB.endsWith(' under the splash'), storedTailC: tail(textC), everyCharAfter: textC.endsWith(' under the splash and after it') }));
+  console.log(JSON.stringify({ storedTailB: tail(textB), everyCharUnderSplash: textB.endsWith(' under the splash'),
+    domTailC: tail(domC), onPageAfter: onPage, storedTailC: tail(textC), everyCharAfter: textC.endsWith(' under the splash and after it'), msToStoreAfter: msToStore }));
+  console.log(`C VERDICT ON INPUT: ${!onPage ? 'LOST BEFORE THE PAGE - the keystrokes never reached the editor' : msToStore == null ? 'LOST BEFORE STORAGE - on the page but not stored within 8s' : `NOT LOST - on the page at once, stored after ${msToStore}ms (the save debounce)`}`);
   console.log(`\nTYPEWRITER SPLASH PROBE: ${rows.length} readings (a measurement; no verdict)`);
 });
