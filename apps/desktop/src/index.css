@@ -3976,6 +3976,23 @@ a:focus-visible,
 /* ITEM arbor-quiet-brass, round 2 — the drawer's own "…" button, same fix as the grip above. */
 [data-theme='flux'] .wz-sliver-instruments-btn[aria-expanded='true']{ color:var(--text-mid); border-color:var(--text-mid); }
 .wz-sliver-instruments-btn svg{ display:block; }
+/* PHASE 1 (S4) - the head holds the "..." (its own row, unchanged) and the two mode toggles beside it. A toggle is the same 26px quiet square; ON is a
+   brass icon and a brass hairline with NO FILL, OFF is quiet. The state is aria-pressed (never colour alone). */
+.wz-sliver-instruments-head{ display:flex; align-items:center; gap:8px; }
+.wz-sliver-instruments-modes{ display:flex; align-items:center; gap:8px; }
+.wz-sliver-mode-btn{ width:26px; height:26px; display:flex; align-items:center; justify-content:center; padding:0;
+  background:none; border:1px solid var(--ink-border); color:var(--text-low); cursor:pointer; transition:.15s; }
+.wz-sliver-mode-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:none; }
+.wz-sliver-mode-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+.wz-sliver-mode-btn svg{ display:block; }
+/* PHASE 1 (S4) - GREYED = unusable. A Seg row (or the goal number) whose mode is off, and the Format group while Typewriter is on. These are real
+   disabled controls (unfocusable, unclickable, announced as unavailable); this is only how they LOOK. */
+.mode-crow[data-disabled='true'], .wz-tw-number[data-disabled='true']{ opacity:.4; }
+.mode-crow[data-disabled='true'] .mode-seg button:disabled, .wz-tw-number input:disabled{ cursor:default; }
+.wz-sliver-fieldset{ border:0; margin:0; padding:0; min-width:0; display:flex; flex-direction:column; gap:8px; }
+.wz-sliver-fieldset:disabled{ opacity:.4; }
+.wz-sliver-fieldset:disabled .mode-tbtn{ cursor:default; pointer-events:none; }
 /* Reused SettingsPanel/ThemePanel/InstrumentsPanel (ModeStage.tsx's own
    `.mode-settings` — position:absolute, anchored to the stage's top-right
    corner there) need a different, INLINE placement inside the sliver's own

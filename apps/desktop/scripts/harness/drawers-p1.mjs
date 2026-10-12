@@ -159,6 +159,8 @@ const ALLOWED_PE_ADDITIONS = [
   /^\s*instrument: \{ value: instrument, onChange: setInstrument \},\s*$/,
   /^import \{ buildPageActions \} from '\.\.\/store\/pageActions';\s*$/,
   /^\s*\/\/ PHASE 1 - the Actions section: Tags, Copy, Delete, Header\/Footer, wired from this page's own handlers/,
+  /^import \{ getWritingSettings \} from '\.\.\/store\/writingSettings';\s*$/,
+  /^\s*if \(getWritingSettings\(\)\.typewriter\) return;   \/\/ PHASE 1 \(S4\): Format is greyed while Typewriter is on/,
   /^\s*actions: unborn \? undefined : buildPageActions\(\{ entry, copy: \(\) => \{ void doCopy\('words'\); \}, addTag, removeTag, patchPageSettings, navigate \}\),\s*$/,
 ];
 function diffConfined(diffText) {
@@ -176,7 +178,7 @@ const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-par
   const fo = baseRef ? sh(`git diff --stat ${baseRef} -- src/components/ForwardOnlyEditor.tsx`) : null;
   ok('(D1a) H1: ForwardOnlyEditor.tsx (the typing surface) is byte-identical to main', fo !== null && fo.trim() === '', String(fo));
   const peDiff = baseRef ? sh(`git diff -U0 ${baseRef} -- src/pages/PageEditor.tsx`) : null;
-  ok('(D1b) H1: PageEditor.tsx differs from main ONLY by the declared hunks - pure additions: the Free Write drawer\'s instrument wiring and the Draft drawer\'s Actions wiring (one import, a comment, one object member); no line removed or changed',
+  ok('(D1b) H1: PageEditor.tsx differs from main ONLY by the declared hunks - pure additions: the Free Write drawer\'s instrument wiring, the Draft drawer\'s Actions wiring (one import, a comment, one object member) and S4\'s one guard line in applyRailFormat (with its import); no line removed or changed',
     peDiff !== null && diffConfined(peDiff), String(peDiff).slice(0, 300));
   const templatesBlock = (text) => {
     const a = text.indexOf('railTemplates');

@@ -523,3 +523,34 @@ Arbor's "?" note now reads exactly **"Grafts join pages, cards and boards so you
 gone, because the pane has no "+" until Phase 3; it comes back with the control. One place changed: the lexicon term `drawerLinksNote`; the harness
 constant `NICK_NOTE` follows it (K2). The K2 mutant ("the note's copy is edited") keys on the substring `so your ideas can grow together.`, which is still
 present, so it needed no change. (A.7's quotation above is the copy as first built.)
+
+### A.9 S4 as built - the Typewriter Mode and Progress Tracking toggles (Nick, Oct 10, 1:29 pm)
+
+**Made S4, a separate commit** (S3 stays as accepted). What shipped:
+
+- **Two icon-only buttons right beside the "..."** (`Sliver.tsx`, `SliverInstrumentRow`): Typewriter Mode and Progress Tracking, in their own `wz-sliver-instruments-modes` group
+  next to the "..." (which keeps its own row and stays alone in it, so every harness that counts that row's buttons still reads one). Each is a native `<button>`
+  (Tab/Enter/Space for free), named from the lexicon (`modeToggleTypewriter` "Typewriter mode", `modeToggleProgress` "Progress tracking"; the name never changes),
+  and reports its state with `aria-pressed`. ON = brass icon + brass hairline, **no fill**; OFF = quiet. Theme tokens only, so Arbor and Flux, light and dark, wear their own
+  brass. The typewriter button is offered only where the surface offers a typewriter (`typewriterAvailable`, as the old row was).
+- **Same stored values, storage untouched.** Typewriter flips through `setTypewriterExplicit` (so the session's "the writer chose" flag still arms); Progress flips
+  `instrumentsOn` through `setWritingSettings`. `writingSettings.ts`, `forwardLock.ts` and `writingGoal.ts` are byte-identical to main.
+- **The old rows are gone** from the "..." menu: the Typewriter on/off row and Progress's "Show" row.
+- **Greyed means unusable.** `Seg` gained an optional `disabled` (real disabled buttons plus `data-disabled` on the row): Typewriter off greys Forward Lock, Line Fade,
+  Page Scroll; Progress off greys Unit, Goal, Progress, Progress style, Timer. Values are kept and still shown.
+- **FORMAT greys out while Typewriter is on:** the whole group sits in one native disabled `<fieldset>` (so the bullet menu and every B/I/U/S/H/quote/indent/spacing/
+  alignment button lock together, announced as unavailable). **The shortcuts are blocked with it:** `PageEditor.tsx`'s `applyRailFormat` (shared by the rail and the Ctrl/Cmd+B/I/U key
+  handler) now returns while Typewriter is on. That is one added import and one added guard line, the only PageEditor change in S4; the declared-hunk list in `drawers-p1` D1b names exactly those two lines.
+
+**Two things Nick should know (neither is a bug; both follow from what he asked):**
+
+1. **A new Draft opens with Typewriter ON** (FX2 S2 seeds it ON unless the page already holds 10+ lines), so on a fresh or short Draft the Format group starts greyed until the writer
+   turns Typewriter off. That is the ruling applied to the existing default; if it is not what he wants on a blank Draft, the lever is the seed (`seedTypewriterDefault`), not this commit.
+2. **Tab-to-indent is not a "formatting shortcut" here** - it goes through `applyFormatAt`, not `applyRailFormat`, so it still works with Typewriter on. Say if it should be blocked too.
+
+**Harness fallout, named (the two rows are gone by ruling, so these assertions are parked verbatim with successors, never edited):** `fx2.mjs` (two driver steps that pressed the Typewriter row now
+press the toggle), `fx3.mjs` (two "the Settings menu carries a Typewriter row" assertions become "the toggle exists, is named, icon-only, aria-pressed, and the menu opens on Typewriter Mode
+with no on/off row"). Read-only audit, not yet run: `ab1`, `ab2`, `sc1`, `item83f`, `fx1` read `.wz-sliver-instruments-row` buttons (still one) or `.wz-sliver-instruments-btn` by label
+(the toggles use their own class, so `fx1`'s "Typewriter instrument is not brass at rest" now reads `absent` - vacuous, not red; a successor on the new class is owed once the box confirms the colours).
+New: `drawer-toggles.mjs` (browserless, 15 mutants). The browser half (a real click flips a real colour; Tab/Enter/Space; greyed rows refuse a click; Format refuses B and Ctrl+B; Arbor and Flux x light and dark)
+is owed on a box turn, in `drawers-p1-live.mjs`.

@@ -327,7 +327,12 @@ await withHarness(async (app) => {
   // ----------------------------------------------------------------------
   await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'') === 'Settings'); if (b) b.click(); })()");
   await sleep(200);
-  await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
+  // ---- PARKED - SUPERSEDED by Phase 1 S4 (the Typewriter on/off row left the "..." menu for the icon toggle beside it; Nick, Oct 10), 2026-10-11 ----
+  // Kept VERBATIM and no longer run. The successor presses the toggle itself - the same flip.
+  //
+  // await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
+  // ----------------------------------------------------------------------
+  await app.evalJs("document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle=\"typewriter\"]')?.click()");
   await sleep(150);
   const afterExplicitClick = await typewriterDom(app);
   ok('S2: the sliver\'s typewriter toggle actually flips it ON by hand, overriding the ~15-line OFF seed',
@@ -394,7 +399,12 @@ await withHarness(async (app) => {
   // ----------------------------------------------------------------------
   await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'') === 'Settings'); if (b) b.click(); })()");
   await sleep(200);
-  await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
+  // ---- PARKED - SUPERSEDED by Phase 1 S4 (the Typewriter on/off row left the "..." menu for the icon toggle beside it; Nick, Oct 10), 2026-10-11 ----
+  // Kept VERBATIM and no longer run. The successor presses the toggle itself - the same flip.
+  //
+  // await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
+  // ----------------------------------------------------------------------
+  await app.evalJs("document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle=\"typewriter\"]')?.click()");
   await sleep(150);
   const pageAExplicitOff = await typewriterDom(app);
   ok('S2 (cross-page, independent-review addition): explicit click on page A actually flips it OFF by hand',

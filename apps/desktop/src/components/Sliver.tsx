@@ -24,6 +24,7 @@ import { drawerArrow, setDrawerInert } from '../store/drawerShell';
 import { leftTabsFor, sectionAllowed, type DrawerKind, type LeftTab } from '../store/drawerSet';
 import { SideDrawer } from './SideDrawer';
 import { DrawerActions } from './DrawerActions';
+import { TypewriterModeIcon, ProgressModeIcon } from './DrawerIcons';
 import type { PageActions } from '../store/pageActions';
 import type { StrokeInk, StrokeNib, StrokeTip } from '../types';
 
@@ -616,6 +617,8 @@ function TemplateIcon({ kind }: { kind: 'outline' | 'bibliography' | 'title' | '
 
 function SliverToolsBody({ content }: { content: SliverContent }) {
   const { t } = useDeskLexicon();
+  // PHASE 1 (S4) - while Typewriter is on the whole Format group is greyed and unusable (Nick). Read here, above the early return, so the hook order holds.
+  const formatLocked = useWritingSettings().typewriter;
 
   if (content.kind === 'empty') return null;
   // PHASE 1 - store/drawerSet.ts is the one statement of what each surface and tab may show. The host still decides whether a section
@@ -696,6 +699,9 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
       {content.kind === 'draft' && content.format && allowed('format') && (
         <div className="wz-sliver-section">
           <div className="wz-sliver-h">{t('railFormat')}</div>
+          {/* PHASE 1 (S4) - a native disabled fieldset: every button inside (the bullet menu's too) is unusable and announced as unavailable, with
+              no per-button wiring to forget. The typing shortcuts are blocked at the same moment by PageEditor's applyRailFormat. */}
+          <fieldset className="wz-sliver-fieldset" disabled={formatLocked} data-locked={formatLocked ? 'true' : 'false'}>
           {/* onMouseDown preventDefault — a sliver button is OUTSIDE the
               contenteditable, so a normal click's mousedown would blur it
               and collapse whatever text was selected (moved verbatim). */}
@@ -748,6 +754,7 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
             <button type="button" className="mode-tbtn" data-format-glyph="align-center" title={t('draftAlignCenter')} aria-label={t('draftAlignCenter')} onClick={() => content.format!.onFormat('align-center')}><FormatMark kind="center" /></button>
             <button type="button" className="mode-tbtn" data-format-glyph="align-right" title={t('draftAlignRight')} aria-label={t('draftAlignRight')} onClick={() => content.format!.onFormat('align-right')}><FormatMark kind="right" /></button>
           </div>
+          </fieldset>
         </div>
       )}
 
@@ -1075,6 +1082,7 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
 
   return (
     <div className="wz-sliver-instruments">
+      <div className="wz-sliver-instruments-head">
       <div className="wz-sliver-instruments-row">
         <button type="button" className="wz-sliver-instruments-btn"
           aria-label={t('footSettings')} title={t('footSettings')}
@@ -1082,6 +1090,27 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
           onClick={() => setOpen(o => !o)}>
           <MoreGlyph />
         </button>
+      </div>
+      {/* PHASE 1 (S4) - TYPEWRITER MODE and PROGRESS TRACKING, icon-only, right beside the "...". They flip the very values the two rows they replaced
+          flipped (typewriter through setTypewriterExplicit, so the session's "the writer chose" flag still arms; instrumentsOn), so nothing stored changes.
+          ON is a brass icon with no fill, OFF is quiet; the state is aria-pressed, the name never changes. Their own class, NOT the row's: the row stays
+          the "..." button alone. */}
+      <div className="wz-sliver-instruments-modes">
+        {typewriterAvailable && (
+          <button type="button" className="wz-sliver-mode-btn" data-mode-toggle="typewriter"
+            aria-label={t('modeToggleTypewriter')} title={t('modeToggleTypewriter')}
+            aria-pressed={settings.typewriter}
+            onClick={() => setTypewriterExplicit(!settings.typewriter)}>
+            <TypewriterModeIcon />
+          </button>
+        )}
+        <button type="button" className="wz-sliver-mode-btn" data-mode-toggle="progress"
+          aria-label={t('modeToggleProgress')} title={t('modeToggleProgress')}
+          aria-pressed={settings.instrumentsOn}
+          onClick={() => setWritingSettings({ instrumentsOn: !settings.instrumentsOn })}>
+          <ProgressModeIcon />
+        </button>
+      </div>
       </div>
       {open && (
         <div className="mode-settings wz-sliver-instruments-panel" role="menu" data-menus-popout="settings">
@@ -1115,11 +1144,11 @@ function TypewriterFields() {
   const settings = useWritingSettings();
   const forwardLock = useForwardLock();
 
+  // PHASE 1 (S4) - the Typewriter on/off row LEFT this menu for the icon toggle beside the "...". What stays is greyed and unusable while the mode is
+  // off (the values are kept; they simply cannot be changed until it is back on).
+  const off = !settings.typewriter;
   return (
     <>
-      <Seg label={t('footTypewriter')} value={settings.typewriter ? 'on' : 'off'}
-        opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
-        onPick={v => setTypewriterExplicit(v === 'on')} />
 
       {/* ITEM 83 S3 — TRUTH-FIX. The ON/OFF toggles below STAY, because each
           drives a real engine today: Forward Lock writes store/forwardLock.ts
@@ -1137,17 +1166,17 @@ function TypewriterFields() {
           return the moment the engine brief connects them; nothing about
           this is a retreat from R3, only from claiming it early. That brief
           is R12's own flagged engine-touching work. */}
-      <Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'}
+      <Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'} disabled={off}
         opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
         onPick={v => setForwardLock(v === 'on')} />
 
       {/* O-FW2 resolved by merger: the gear's old "Fade depth" lives here now,
           as Line Fade's own on/off. No second fade home. */}
-      <Seg label={t('twLineFade')} value={settings.lineFadeOn ? 'on' : 'off'}
+      <Seg label={t('twLineFade')} value={settings.lineFadeOn ? 'on' : 'off'} disabled={off}
         opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
         onPick={v => setWritingSettings({ lineFadeOn: v === 'on' })} />
 
-      <Seg label={t('twPageScroll')} value={settings.pageScroll ? 'on' : 'off'}
+      <Seg label={t('twPageScroll')} value={settings.pageScroll ? 'on' : 'off'} disabled={off}
         opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
         onPick={v => setWritingSettings({ pageScroll: v === 'on' })} />
     </>
@@ -1174,31 +1203,31 @@ function ProgressFields({ target, hasMilestones }: { target: WritingGoal | null;
   };
   const progressOpts: [string, string][] = [['words', 'Words'], ['time', 'Time'], ['off', 'Off']];
   if (hasMilestones) progressOpts.splice(2, 0, ['project', 'Drawer']);
+  // PHASE 1 (S4) - the Show row LEFT this menu for the icon toggle beside the "...". Every row that stays is greyed and unusable while Progress
+  // Tracking is off; the stored goal, unit and choices are untouched.
+  const off = !settings.instrumentsOn;
 
   return (
     <>
-      <Seg label={t('sliverInstrumentsShow')} value={settings.instrumentsOn ? 'on' : 'off'}
-        opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
-        onPick={v => setWritingSettings({ instrumentsOn: v === 'on' })} />
-      <Seg label={t('sliverInstrumentsUnit')} value={unit}
+      <Seg label={t('sliverInstrumentsUnit')} value={unit} disabled={off}
         opts={[['lines', 'Lines'], ['words', 'Words'], ['time', 'Time']]}
         soon={['time']} soonTitle={t('comingSoon')}
         onPick={v => pickUnit(v as GoalUnit)} />
-      <label className="wz-tw-number">
+      <label className="wz-tw-number" data-disabled={off ? 'true' : undefined}>
         <span>{t('goalLabel')}</span>
-        <input type="number" min={1} value={draft} aria-label={t('goalLabel')}
+        <input type="number" min={1} value={draft} aria-label={t('goalLabel')} disabled={off}
           onChange={e => setDraft(e.target.value)}
           onBlur={() => commit()}
           onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } }} />
         <span className="wz-tw-unit">{unit === 'words' ? t('goalUnitWords') : t('goalUnitLines')}</span>
       </label>
-      <Seg label="Progress" value={settings.progress} opts={progressOpts} onPick={v => setWritingSettings({ progress: v as ProgressMetric })} />
+      <Seg label="Progress" value={settings.progress} disabled={off} opts={progressOpts} onPick={v => setWritingSettings({ progress: v as ProgressMetric })} />
       {settings.progress === 'words' && (
-        <Seg label={t('progressStyleLabel')} value={settings.progressStyle}
+        <Seg label={t('progressStyleLabel')} value={settings.progressStyle} disabled={off}
           opts={[['bar', t('progressStyleBar')], ['rhizome', t('progressStyleRhizome')]]}
           onPick={v => setWritingSettings({ progressStyle: v as ProgressStyle })} />
       )}
-      <Seg label="Timer" value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
+      <Seg label="Timer" value={settings.timer ? 'on' : 'off'} disabled={off} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
     </>
   );
 }

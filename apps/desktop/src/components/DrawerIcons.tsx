@@ -12,6 +12,14 @@ export const CopyIcon = () => (
 export const DeleteIcon = () => (
   <svg {...base}><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.6 8.6h6l.6-8.6M7 7v4M9 7v4" /></svg>
 );
+// PHASE 1 (S4) - the two mode toggles beside the "..." button. Same drawing rules: 16x16, stroke-only, currentColor, so ON is the control's
+// brass and OFF its quiet colour with nothing else changing.
+export const TypewriterModeIcon = () => (
+  <svg {...base}><rect x="2.2" y="2.6" width="11.6" height="6.2" rx="1" /><path d="M4.4 8.8v2.1M11.6 8.8v2.1M3.6 13.6h8.8l-.9-2.7H4.5zM4.6 5.7h1.1M7.4 5.7h1.1M10.2 5.7h1.1" /></svg>
+);
+export const ProgressModeIcon = () => (
+  <svg {...base}><rect x="2" y="5.8" width="12" height="4.4" rx="2.2" /><path d="M4.2 8h4.6" /></svg>
+);
 export const HeaderFooterIcon = () => (
   <svg {...base}><rect x="3" y="2" width="10" height="12" rx="1" /><path d="M3 5h10M3 11h10" /></svg>
 );

@@ -25,6 +25,7 @@ import type { Stroke } from '../types';
 import { projectMilestones } from '../store/milestones';
 import { copyText } from '../store/clipboard';
 import { buildPageActions } from '../store/pageActions';
+import { getWritingSettings } from '../store/writingSettings';
 import { BoardEditor } from '../components/BoardEditor';
 import { ScriptEditor } from '../components/ScriptEditor';
 import { useLexicon } from '../store/themeLexicon';
@@ -999,6 +1000,7 @@ function PageEditorView({ id }: { id: string }) {
   };
   const applyRailFormat = (action: FormatAction) => {
     if (mode !== 'drafting') return;   // 112-A's guard, unchanged in scope
+    if (getWritingSettings().typewriter) return;   // PHASE 1 (S4): Format is greyed while Typewriter is on, and its shortcuts (Ctrl/Cmd+B/I/U) are blocked with it
     applyFormatAt(action);
   };
 
