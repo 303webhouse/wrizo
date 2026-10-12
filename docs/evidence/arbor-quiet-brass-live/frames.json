@@ -1,0 +1,49 @@
+[
+  {
+    "frame": "L1-arbor-front-door",
+    "file": "L1-arbor-front-door.png",
+    "hash": "#/",
+    "bundle": "index-z-93XQ5x.js",
+    "theme": "plateau",
+    "splashPresent": false,
+    "primary": {
+      "color": "rgb(255, 152, 0)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "border": "rgb(255, 152, 0)"
+    },
+    "drawerOpen": false,
+    "templatesSection": false,
+    "mark": null
+  },
+  {
+    "frame": "L2-flux-front-door",
+    "file": "L2-flux-front-door.png",
+    "hash": "#/",
+    "bundle": "index-z-93XQ5x.js",
+    "theme": "flux",
+    "splashPresent": false,
+    "primary": {
+      "color": "rgb(255, 152, 0)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "border": "rgb(255, 152, 0)"
+    },
+    "drawerOpen": false,
+    "templatesSection": false,
+    "mark": null
+  },
+  {
+    "frame": "L3-flux-page-drawer-open",
+    "file": "L3-flux-page-drawer-open.png",
+    "hash": "#/page/new",
+    "bundle": "index-z-93XQ5x.js",
+    "theme": "flux",
+    "splashPresent": false,
+    "primary": null,
+    "drawerOpen": true,
+    "templatesSection": true,
+    "mark": {
+      "tag": "DIV",
+      "bg": "rgb(255, 152, 0)"
+    }
+  }
+]

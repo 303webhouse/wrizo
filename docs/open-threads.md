@@ -25694,3 +25694,23 @@ are CURED in substance: `pw1` and `th2` are green on both legs, and `fx5` no lon
 **The card footer now reads “— grafted to: …” under Arbor and “— linked to: …” under Flux** (round 1 read “— thread: …” in both — the item Fable named). Facts per
 frame (theme, brass reading, names) are in `frames.json`. **Owed: Fable’s frame review; Nick’s ship word applies once he clears the frames and `fx5` S5 is
 converted.** **NOT DEPLOYED.** Grant (this desk’s) `2026-10-10T11:24:11Z`, cleared `12:59:22Z`; 0 harness processes, 0 browsers.
+
+## (4) ARBOR-QUIET-BRASS SHIPPED @ 603bb4e2: DEPLOYED, SERVED == BUILT, SMOKE 6/6, THREE LIVE FRAMES — 2026-10-11 (chat 1)
+
+**Fable’s order: “Re-run fx5 on both legs and confirm the bundle is still index-z-93XQ5x.js at 650,286 bytes. Then deploy on Nick’s standing word, run smoke, and take
+the live frames (Arbor and Flux front door, plus a Flux page with the drawer open).”** The fx5 re-run on `arbor-quiet-brass` @ `99a91e76` (a one-file change, `fx5.mjs`
+only; S5 now reads the lexicon seam, not “thread”) was CLEAN on both legs and the bundle was byte-identical: `index-z-93XQ5x.js`, 650,286 b.
+
+**MERGED:** `arbor-quiet-brass` @ `99a91e76` into `main` as `603bb4e2` (4 commits past main, 17 files; NO server change, NO migration; the ledger untouched), pushed.
+**Pre-deploy gates:** primary on `main`, clean (0 porcelain lines incl. untracked), HEAD == `origin/main`, `tsc` x2 exit 0, `build:web` bundle == the pair stamp, the item-98
+guard (`railway status` = writer-studio / production / writer-studio-app; toplevel `C:/Users/nickh/writer-studio`).
+**DEPLOYED** from the primary: `railway up --service writer-studio-app --ci` → deployment `de062c0a-9167-45a2-b867-aabd3e1811ca`.
+**SERVED == BUILT:** JS `33be878eb89d39f8a4f5f2433dd1c72c` (650,286 b) and CSS `97de197e7f2e450c9e833f456435247f` (153,182 b), both equal to the local build. `/healthz` 200,
+`/auth/me` 401, `/auth/signup-status` `{"open":false}`. **`smoke-login.mjs`: `SMOKE: PASS (6/6)`, exit 0** (including the pre-logout cookie replay).
+**Rollback, if needed:** rebuild from the previous deployed commit `9c665b5` (Railway retires the old deployment).
+
+**LIVE FRAMES, taken against production (anonymous throw-away profile; nothing written to the server; the splash held short so none is covered), committed under
+`docs/evidence/arbor-quiet-brass-live/`** (+ `frames.json`): **L1** the Arbor front door, **L2** the Flux front door, **L3** a Flux page, Draft mode, the drawer open. Every
+frame reports the served bundle `index-z-93XQ5x.js`. Readings: the front door’s Write button reads `rgb(255, 152, 0)` on both themes, **identical to the pair’s round-2
+front-door readings**; L3 shows the Templates section in the open drawer under Flux, the brand mark `rgb(255, 152, 0)`. **Owed: Fable’s frame review; Nick’s own live check.**
+Grant `chat1-abq-ship-20261011` (written `2026-10-12T03:36:24Z`), cleared `2026-10-12T03:44:58Z`; 0 harness processes, 0 browsers.
