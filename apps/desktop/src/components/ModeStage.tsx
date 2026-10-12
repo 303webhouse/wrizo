@@ -422,7 +422,10 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
               own stage, a sibling of this whole ModeStage). Below the gate
               this is unchanged. */}
           {!framed && (
-          <div className="mode-bar mode-dissolve" role="toolbar" aria-label={rail.tools === 'pen' ? 'Pen' : 'Format'}>
+          /* PHASE 1 (S5 follow-up) - the narrow-screen format bar follows the drawer's FORMAT rule: while the typewriter is actually RUNNING here (typewriterOn: Draft/Free Write and the
+              setting) every format button is disabled and greyed, with the same lexicon tooltip. Revise runs no typewriter, so its bar stays usable. */
+          <div className="mode-bar mode-dissolve" role="toolbar" aria-label={rail.tools === 'pen' ? 'Pen' : 'Format'}
+            title={rail.tools === 'format' && typewriterOn ? deskT('formatLockedByTypewriter') : undefined}>
             {rail.tools === 'pen' ? (
               <>
                 {/* ITEM 130 (2026-09-09) — 'Pen', from the lexicon.
@@ -459,16 +462,16 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
             ) : (
               <>
                 <span className="mode-tlabel">format</span>
-                <button type="button" className="mode-tbtn" title="Bold" onClick={() => exec('bold')}><b>B</b></button>
-                <button type="button" className="mode-tbtn" title="Italic" onClick={() => exec('italic')}><i>I</i></button>
-                <button type="button" className="mode-tbtn" title="Underline" onClick={() => exec('underline')}><u>U</u></button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn" title="Bold" onClick={() => exec('bold')}><b>B</b></button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn" title="Italic" onClick={() => exec('italic')}><i>I</i></button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn" title="Underline" onClick={() => exec('underline')}><u>U</u></button>
                 <span className="mode-tdiv" />
-                <button type="button" className="mode-tbtn" title="Heading — coming soon">H</button>
-                <button type="button" className="mode-tbtn" title="Quote — coming soon">&ldquo;</button>
-                <button type="button" className="mode-tbtn" title="Bulleted list" onClick={() => exec('insertUnorderedList')}>&bull;</button>
-                <button type="button" className="mode-tbtn" title="Outdent" onClick={() => exec('outdent')}>&#8676;</button>
-                <button type="button" className="mode-tbtn" title="Indent" onClick={() => exec('indent')}>&#8677;</button>
-                <button type="button" className="mode-tbtn mode-tmore" title="More — coming soon">⋯ more</button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn" title="Heading — coming soon">H</button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn" title="Quote — coming soon">&ldquo;</button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn" title="Bulleted list" onClick={() => exec('insertUnorderedList')}>&bull;</button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn" title="Outdent" onClick={() => exec('outdent')}>&#8676;</button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn" title="Indent" onClick={() => exec('indent')}>&#8677;</button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn mode-tmore" title="More — coming soon">⋯ more</button>
               </>
             )}
           </div>

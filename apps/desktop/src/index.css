@@ -2426,6 +2426,8 @@ a:focus-visible,
 .mode-tbtn{ min-width:30px; height:28px; padding:0 8px; background:none; border:1px solid transparent;
   color:var(--text-mid); cursor:pointer; font-family:var(--font-ui); font-size:14px; transition:.15s; }
 .mode-tbtn:hover{ border-color:var(--ink-border); background:var(--ink-800); color:var(--text-hi); }
+/* PHASE 1 (S5 follow-up) - a locked format bar (typewriter running): greyed, and the pointer falls through to the bar so ITS tooltip ("Typewriter Mode is on") shows. */
+.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; pointer-events:none; }
 .mode-tbtn b{ font-weight:700; } .mode-tbtn i{ font-style:italic; } .mode-tbtn u{ text-decoration:underline; }
 .mode-tdiv{ width:1px; height:18px; background:var(--ink-border); margin:0 5px; }
 .mode-tmore{ margin-left:auto; color:var(--text-low); font-size:12px; }

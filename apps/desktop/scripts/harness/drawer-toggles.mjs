@@ -126,6 +126,15 @@ function claims(s = { sliver: sliverSrc, stage: stageSrc, lex: lexSrc, pe: peSrc
     fieldsetReset: !!fres && /border:0/.test(fres) && /min-width:0/.test(fres) && /padding:0/.test(fres),
     noLiteralColours: [pressed, btn, grey, fgrey].every((r) => !!r && !/#[0-9a-f]{3,8}\b|rgba?\(/i.test(r)),
   };
+  // ---- T10: the NARROW-SCREEN (unframed) format bar follows the same rule, on the RUNNING typewriter ------------------------------------
+  const barStart = s.stage.indexOf('<span className="mode-tlabel">format</span>');
+  const barSeg = barStart < 0 ? '' : s.stage.slice(barStart, s.stage.indexOf('</>', barStart));
+  out.bar = {
+    nine: countOf(barSeg, /<button /g) === 9 && countOf(barSeg, /<button type="button" disabled=\{typewriterOn\} className="mode-tbtn/g) === 9,
+    running: /const typewriterOn = \(mode === 'journal' \|\| mode === 'drafting'\) && settings\.typewriter;/.test(s.stage),
+    tooltip: /title=\{rail\.tools === 'format' && typewriterOn \? deskT\('formatLockedByTypewriter'\) : undefined\}>/.test(s.stage),
+    grey: /^\.mode-bar \.mode-tbtn:disabled\{[^}]*opacity:\.4[^}]*pointer-events:none/m.test(s.css),
+  };
   out.icons = /export const TypewriterModeIcon/.test(s.icons) && /export const ProgressModeIcon/.test(s.icons) && /aria-hidden/.test(s.icons);
   return out;
 }
@@ -139,6 +148,7 @@ function verdict(c) {
     seg: c.seg?.attr && c.seg?.buttons,
     format: f.disabledBound && f.hookBeforeReturn && f.wrapsFourRows && f.sectionOnly && f.tooltip,
     shortcuts: sc.guardOrder && sc.keysUseIt && sc.railUsesIt && sc.imported,
+    bar: c.bar?.nine && c.bar?.running && c.bar?.tooltip && c.bar?.grey,
     look: l.onBrassNoFill && l.offQuiet && l.focusRing && l.greyRows && l.greyFormat && l.fieldsetReset && l.noLiteralColours && c.icons,
   };
 }
@@ -180,6 +190,9 @@ ok('(T8) the formatting SHORTCUTS are blocked with it: applyRailFormat (which th
 ok('(T9) the look: ON = the ICON turns brass and nothing else (same quiet border as the "...", no fill); OFF = quiet; a focus ring; greyed = 40% opacity; the fieldset resets the browser border/padding/min-width; theme TOKENS only (no literal colours), so Arbor and Flux, light and dark, read their own brass',
   v.look === true, JSON.stringify(base.look));
 
+ok('(T10) the NARROW-SCREEN format bar (ModeStage, unframed: below 1100px and QuickSprint) follows the same rule on the RUNNING typewriter: all nine of its buttons are disabled while typewriterOn, the bar carries the same lexicon tooltip, locked buttons grey and let the pointer fall through to it; Revise (no typewriter running) stays usable',
+  v.bar === true, JSON.stringify(base.bar));
+
 // =============================================================================
 // MUTATIONS - each asserts it LANDED before the red is believed.
 // =============================================================================
@@ -213,6 +226,11 @@ mutant('the greyed Format group loses its tooltip', 'sliver', (t) => mutate(t, "
 mutant('the greyed Format buttons swallow the pointer (the group tooltip can never show)', 'css', (t) => mutate(t, '.wz-sliver-fieldset:disabled button{ cursor:default; pointer-events:none; }', '.wz-sliver-fieldset:disabled button{ cursor:default; }'), 'format');
 mutant('the ON state is a hard-coded colour (would not follow the theme)', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:#c8a24a; background:none; }"), 'look');
 mutant('the fieldset keeps the browser border and padding', 'css', (t) => mutate(t, '.wz-sliver-fieldset{ border:0; margin:0; padding:0; min-width:0;', '.wz-sliver-fieldset{ margin:0;'), 'look');
+
+mutant('the narrow bar\'s Bold ignores the lock', 'stage', (t) => mutate(t, '<button type="button" disabled={typewriterOn} className="mode-tbtn" title="Bold"', '<button type="button" className="mode-tbtn" title="Bold"'), 'bar');
+mutant('the narrow bar locks on the stored setting, not the running typewriter', 'stage', (t) => mutate(t, '<button type="button" disabled={typewriterOn} className="mode-tbtn" title="Italic"', '<button type="button" disabled={settings.typewriter} className="mode-tbtn" title="Italic"'), 'bar');
+mutant('the narrow bar loses its tooltip', 'stage', (t) => mutate(t, "title={rail.tools === 'format' && typewriterOn ? deskT('formatLockedByTypewriter') : undefined}>", '>'), 'bar');
+mutant('the narrow bar\'s locked buttons swallow the pointer', 'css', (t) => mutate(t, '.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; pointer-events:none; }', '.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; }'), 'bar');
 
 let failed = 0;
 for (const c of checks) {
