@@ -31,6 +31,25 @@ function firstDurationMs(str) {
   return m[2] === 'ms' ? n : n * 1000;
 }
 
+// ITEM splash-hold round 2 (harness-only): getComputedStyle resolving a color-mix()
+// does not always normalize to legacy rgb()/rgba() — some engines report the modern
+// `color(srgb r g b / a)` form instead, whose r/g/b are FRACTIONS (0..1), not 0..255.
+// Parses either shape to the same { r, g, b, a } (r/g/b always 0..255, a always 0..1).
+function parseComputedColor(str) {
+  const s = String(str).trim();
+  let m = /^rgba?\(([^)]+)\)$/.exec(s);
+  if (m) {
+    const parts = m[1].split(',').map((p) => parseFloat(p.trim()));
+    if (parts.length < 3) return null;
+    return { r: parts[0], g: parts[1], b: parts[2], a: parts.length > 3 ? parts[3] : 1 };
+  }
+  m = /^color\(srgb\s+([\d.eE+-]+)\s+([\d.eE+-]+)\s+([\d.eE+-]+)(?:\s*\/\s*([\d.eE+-]+))?\)$/.exec(s);
+  if (m) {
+    return { r: parseFloat(m[1]) * 255, g: parseFloat(m[2]) * 255, b: parseFloat(m[3]) * 255, a: m[4] !== undefined ? parseFloat(m[4]) : 1 };
+  }
+  return null;
+}
+
 // The asset's measured ink bounding box inside its own canvas — the same two
 // numbers Splash.tsx sizes from. Stated here INDEPENDENTLY rather than
 // imported, so a change to the component cannot quietly move this check's
@@ -93,14 +112,13 @@ await withHarness(async (app) => {
     const n = parseInt(m.replace('#', ''), 16);
     return { ground: { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 } };
   })()`);
-  const veilRgba = /^rgba?\(([^)]+)\)$/.exec(s1.veilBackground || '');
-  const veilParts = veilRgba ? veilRgba[1].split(',').map((p) => parseFloat(p.trim())) : [];
+  const veilColor = parseComputedColor(s1.veilBackground);
   const closeEnough = (a, b) => Math.abs(a - b) <= 2; // color-mix rounding across engines
-  ok('S1 (item splash-hold): the veil is a flat dimming tint in the THEME\'s own ground colour (--ink-950) at ~75% opacity — never one fixed colour painted over every theme',
-    veilParts.length === 4
-      && closeEnough(veilParts[0], s1Tint.ground.r) && closeEnough(veilParts[1], s1Tint.ground.g) && closeEnough(veilParts[2], s1Tint.ground.b)
-      && Math.abs(veilParts[3] - 0.75) <= 0.03,
-    JSON.stringify({ veilBackground: s1.veilBackground, expectedGround: s1Tint.ground }));
+  ok('S1 (item splash-hold, round 2): the veil is a flat dimming tint in the THEME\'s own ground colour (--ink-950) at ~90% opacity — never one fixed colour painted over every theme',
+    !!veilColor
+      && closeEnough(veilColor.r, s1Tint.ground.r) && closeEnough(veilColor.g, s1Tint.ground.g) && closeEnough(veilColor.b, s1Tint.ground.b)
+      && Math.abs(veilColor.a - 0.90) <= 0.03,
+    JSON.stringify({ veilBackground: s1.veilBackground, parsed: veilColor, expectedGround: s1Tint.ground }));
 
   ok('S1: it paints above the app\'s whole existing stack (modals/backdrops/toasts top out at 300)',
     Number(s1.zIndex) >= 400, String(s1.zIndex));

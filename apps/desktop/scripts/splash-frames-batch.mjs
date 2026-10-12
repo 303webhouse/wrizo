@@ -71,8 +71,16 @@ await withHarness(async (app) => {
     const margins = { l: cx - inkW / 2, r: state.vw - (cx + inkW / 2), t: cy - inkH / 2, b: state.vh - (cy + inkH / 2) };
     const areaPct = ((inkW * inkH) / (state.vw * state.vh)) * 100;
 
-    const veilAlpha = /^rgba\(([^)]+)\)$/.exec(state.veilBackground || '');
-    const veilOpaque = veilAlpha ? parseFloat(veilAlpha[1].split(',')[3]) > 0.1 : false;
+    // ITEM splash-hold round 2: getComputedStyle resolving a color-mix() does not
+    // always normalize to rgb()/rgba() -- some engines report the modern
+    // `color(srgb r g b / a)` form instead, whose alpha is still the last term
+    // (0..1), just introduced by '/' rather than a fourth comma-separated value.
+    const veilStr = state.veilBackground || '';
+    const rgbaAlpha = /^rgba?\(([^)]+)\)$/.exec(veilStr);
+    const colorAlpha = /^color\(srgb[^)]*\/\s*([\d.eE+-]+)\)$/.exec(veilStr);
+    const veilOpaque = rgbaAlpha
+      ? parseFloat(rgbaAlpha[1].split(',')[3] ?? '1') > 0.1
+      : colorAlpha ? parseFloat(colorAlpha[1]) > 0.1 : false;
 
     if (state.theme !== combo.theme) throw new Error(`theme mismatch: wanted ${combo.theme}, got ${state.theme}`);
     if (state.leaving !== 'false') throw new Error(`${combo.theme}/${combo.name}: already leaving`);

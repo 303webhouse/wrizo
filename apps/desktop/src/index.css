@@ -5539,12 +5539,14 @@ a:focus-visible,
    blurred" — SUPERSEDED the backdrop-filter blur below (the app no longer
    reads as blurred-but-present; it reads as dimmed-but-present). The tint is
    the THEME's own ground colour (--ink-950, already per-theme: Arbor's own
-   warm brown-dark #110600, Flux's own teal-dark #04141A), at 75% opacity via
-   color-mix — so Arbor dims brown-dark and Flux dims teal-dark, never one
-   fixed colour painted over both. */
+   warm brown-dark #110600, Flux's own teal-dark #04141A), via color-mix — so
+   Arbor dims brown-dark and Flux dims teal-dark, never one fixed colour
+   painted over both. ROUND 2 (Nick, live frames): 75% let the front door's
+   logo and the Write door ghost through and clash with the sketch — raised
+   to 90%; the token stays theme-tinted, only the opacity moved. */
 .wz-splash-veil{
   position:absolute; inset:0; pointer-events:none;
-  background:color-mix(in srgb, var(--ink-950) 75%, transparent);
+  background:color-mix(in srgb, var(--ink-950) 90%, transparent);
   opacity:1; transition:opacity .38s ease;
 }
 /* The emblem is a SIBLING of the veil, not a child, so it paints on top of the
