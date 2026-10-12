@@ -552,5 +552,5 @@ present, so it needed no change. (A.7's quotation above is the copy as first bui
 press the toggle), `fx3.mjs` (two "the Settings menu carries a Typewriter row" assertions become "the toggle exists, is named, icon-only, aria-pressed, and the menu opens on Typewriter Mode
 with no on/off row"). Read-only audit, not yet run: `ab1`, `ab2`, `sc1`, `item83f`, `fx1` read `.wz-sliver-instruments-row` buttons (still one) or `.wz-sliver-instruments-btn` by label
 (the toggles use their own class, so `fx1`'s "Typewriter instrument is not brass at rest" now reads `absent` - vacuous, not red; a successor on the new class is owed once the box confirms the colours).
-New: `drawer-toggles.mjs` (browserless, 15 mutants). The browser half (a real click flips a real colour; Tab/Enter/Space; greyed rows refuse a click; Format refuses B and Ctrl+B; Arbor and Flux x light and dark)
+New: `drawer-toggles.mjs` (browserless, 16 mutants). The browser half (a real click flips a real colour; Tab/Enter/Space; greyed rows refuse a click; Format refuses B and Ctrl+B; Arbor and Flux x light and dark)
 is owed on a box turn, in `drawers-p1-live.mjs`.
