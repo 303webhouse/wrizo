@@ -743,9 +743,15 @@ await withHarness(async (app) => {
     onA: document.querySelector('[data-box-id="fx5-s5-a"] .board-card-footer')?.textContent ?? null,
     onB: document.querySelector('[data-box-id="fx5-s5-b"] .board-card-footer')?.textContent ?? null,
   })`);
-  ok('S5: a connected card carries ONE quiet footer line ("— thread: <other card\'s title/first words>") — on BOTH connected cards',
-    !!footerLines.onA && footerLines.onA.includes('thread') && footerLines.onA.includes('Card B') &&
-    !!footerLines.onB && footerLines.onB.includes('thread') && footerLines.onB.includes('Card A'),
+  // ITEM arbor-quiet-brass: the footer phrase is no longer the fixed word "thread" —
+  // it is the per-theme connecting phrase itself (Arbor "grafted to", Flux "linked
+  // to"). Read the CURRENT phrase from the lexicon seam, same fix as this file's own
+  // S5 driver above, rather than hardcoding either word.
+  const footerPhrase = await app.evalJs("window.wrizoDeskLexicon ? window.wrizoDeskLexicon.t('boardThreadPrefix') : null");
+  if (!footerPhrase) throw new Error('fx5 S5: window.wrizoDeskLexicon seam missing — cannot assert the footer phrase');
+  ok(`S5: a connected card carries ONE quiet footer line ("— ${footerPhrase}: <other card's title/first words>") — on BOTH connected cards`,
+    !!footerLines.onA && footerLines.onA.includes(footerPhrase) && footerLines.onA.includes('Card B') &&
+    !!footerLines.onB && footerLines.onB.includes(footerPhrase) && footerLines.onB.includes('Card A'),
     JSON.stringify(footerLines));
 
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
@@ -754,7 +760,13 @@ await withHarness(async (app) => {
   // used to live here; PARKED below (HARNESS_PARKED=1) — a third tool
   // (New page card) joins Add card + the footer toggle. Live successor:
   // fx6.mjs's own S2 section.
-  const footerToggleBtn = "[...document.querySelectorAll('.wz-sliver-toggle')].find(b => b.textContent.includes('connections'))";
+  // ITEM arbor-quiet-brass: the toggle's label is no longer a fixed string containing
+  // "connections" (Arbor: "Show grafts"; Flux: "Show links") — read the CURRENT label
+  // from the lexicon seam itself rather than hardcoding either word, so this driver
+  // survives the next rename too.
+  const footerLabel = await app.evalJs("window.wrizoDeskLexicon ? window.wrizoDeskLexicon.t('boardFooterToggle') : null");
+  if (!footerLabel) throw new Error('fx5 S5: window.wrizoDeskLexicon seam missing — cannot find the footer toggle by label');
+  const footerToggleBtn = `[...document.querySelectorAll('.wz-sliver-toggle')].find(b => b.textContent.includes(${JSON.stringify(footerLabel)}))`;
   await app.evalJs(`${footerToggleBtn}.click()`);
   await sleep(150);
   const footerAfterToggleOff = await app.evalJs("!!document.querySelector('[data-box-id=\"fx5-s5-a\"] .board-card-footer')");

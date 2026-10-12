@@ -388,8 +388,10 @@ await withHarness(async (app) => {
   //   ORIGINAL:
   //   ok('S3 Structure: a page pinned to a board carries a truthful membership line',
   //     structureFiled.toLowerCase().includes('pinned'), structureFiled);
-  ok('S3 Structure: a page connected to a board carries a truthful membership line (PW1/ruling 4 successor of the same claim, when the word was "pinned")',
-    structureFiled.toLowerCase().includes('connected to'), structureFiled);
+  // SUPERSEDED (item arbor-quiet-brass): "connected" renamed to Arbor's own "grafted".
+  // ok('S3 Structure: a page connected to a board carries a truthful membership line (PW1/ruling 4 successor of the same claim, when the word was "pinned")', structureFiled.toLowerCase().includes('connected to'), structureFiled);
+  ok('S3 Structure (arbor-quiet-brass successor): a page grafted to a board carries a truthful membership line',
+    structureFiled.toLowerCase().includes('grafted to'), structureFiled);
   // FX12 S2 — the beats sentence dies (V3): the ORIGINAL check (parked VERBATIM in
   // this file's PARKED section, A4) asserted the Structure lens NAMES a linked beat;
   // the beats system is dormant (CD4), so the lens no longer speaks a dead language.
