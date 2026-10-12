@@ -25728,3 +25728,28 @@ The batch script’s own veil read throws on Chromium’s `color(srgb …)` form
 at 90% the wordmark and the Write button are still faintly visible through the veil behind the whiteboard drawing (Arbor desktop, Flux phone) — much dimmer than at 75%, not
 gone.** That is Fable’s and Nick’s judgment, not a measurement. **Owed: Fable’s frame review. Nick’s ship word is in (splash on its own), conditional on the cleared frames.**
 **NOT DEPLOYED.** Grant `chat1-splash-hold-20261011` (written `2026-10-12T04:13:37Z`), cleared `2026-10-12T04:15:00Z`; 0 harness processes, 0 browsers.
+
+## (6) FIX’S GRANT CLEARED IDLE; INK’S SETS RUN: drawer-ghost-fix RED ON page-templates (6/20), phase1-drawers RED ON item83f (6/28) AND item87 (1/4) — 2026-10-11 (chat 1)
+
+**FIX’s grant** `fix-flash-typewriter-20261011` (written `2026-10-12T04:52:56Z`, 22:52 MT) for `rhizome-flash-fade` @ `eb7b114e` and `typewriter-fade-order` @ `8a342755`: checked at 30 min
+(23:23 MT) and at 60 min (23:53 MT). **Both times: 0 harness node processes, 0 `ws-runtime-verify` browsers, no file modified in either FIX worktree
+(`writer-studio-fx17`, `writer-studio-rhizome`) in the prior 45/65 minutes, no new commit on either branch, and no word from Fable that FIX was mid-run.** Cleared at
+`2026-10-12T05:53:50Z`, logged as “idle at 60 min, no run evidence seen” — **NOT “never used”** (a finished run leaves no process; nothing here proves one did or did not happen).
+**The two FIX branches were therefore NOT run by this desk and are NOT green-pair evidence.**
+
+**INK’s sets, under this desk’s grant `chat1-ink-drawers-20261011` (`2026-10-12T05:53:50Z`–`06:07:45Z`), both legs, run from worktrees (no primary):**
+**(1) `drawer-ghost-fix` @ `dd4417bd`** (`run-drawers`; `tsc` exit 0; bundle `index-sqnFxLZZ.js` 650,072 b): `drawer-ghost` 13/13 on both legs; `fx2` 33, `fx3` 28, `item87` 4: clean on
+both legs. **`page-templates.mjs` FAIL 6/20 on BOTH legs** (T2: “pressing the template turns it brass while held”, “applies IN PLACE”, “chosen … brass AT REST”; T4: “the current
+page is UNTOUCHED”, “a NEW script page opens”, “the new page carries a one-tap way back”) — **all of them downstream of the Screenplay template’s press not landing.** **CONTROLS:**
+`page-templates` is GREEN 20/20 on `d2fcb381` (the fix’s own parent, `dg-base`, bundle `index-P2j5dOLz.js`) and on main + splash (`sh-pair`), so the red is the ghost fix’s
+(`index.css`, +21), not the base. **A probe with a 400 ms settle after the strip opens PASSES T2 on the same tree** (the press then lands): the strip slides in over 0.2 s, and
+on the fixed tree a hit-test at the Screenplay button’s centre at 0 ms returns the Format container (`wz-sliver-format`), where the base returns the button’s own SVG. So the
+harness presses inside the slide and the fix changes what is under the pointer in that window. **A harness-timing fragility or a real (sub-200 ms) press-through regression is
+FIX’s/INK’s to decide — I did not decide it.** `drawer-ghost-fix` ships with FIX’s batch: **this red is open.**
+**(2) `phase1-drawers` @ `79c7585d`** (`run-drawers2`; `tsc` exit 0; bundle `index-DCReJq58.js` 661,451 b; INK’s fixture fix for `outdent`/`fx6` is IN this commit, so `outdent` was run):
+browserless four — `drawer-ghost` 14, `drawer-toggles` 34, `drawers-p1` 86 (INK’s earlier 2/64 is gone), `typewriter-page` 21: clean on both legs. Box set — `fx10` 121, `fx2` 34, `fx3` 28,
+`fx6` 38, `outdent` 10, `page-templates` 20: clean on both legs. **TWO files red, the same on both legs: `item87.mjs` FAIL 1/4** (“S5 successor to S3 (b) — a Draft page that already
+holds work (1 line-equivalent) now opens with the typewriter OFF” reads `data-typewriter=true`) **and `item83f.mjs` FAIL 6/28** (the E3 line-scope successors and the Tab-fence successor:
+the caret’s line is not the one indented — e.g. `{“beforeTab”:“Alpha one\nAlpha two\n\nBeta one”,“afterTab”:“Alpha one\nAlpha two\n\n\tBeta one”}`; and the Bulleted-list control
+reads `{“bulletOn”:“Gamma”,“bulletOff”:“Gamma”}`). Both look like the S5 typewriter default reaching a fixture that predates it (the same class as `outdent`/`fx6`), but that is a
+reading, not a measurement: **INK’s to read. `phase1-drawers` is NOT clean.** Not deployed; nothing merged. Grant cleared `2026-10-12T06:07:45Z`; 0 harness processes, 0 browsers.
