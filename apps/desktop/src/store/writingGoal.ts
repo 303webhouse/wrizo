@@ -58,6 +58,22 @@ export function setWritingGoal(next: WritingGoal | null): void {
   subs.forEach(fn => fn(current));
 }
 
+// Dev and the local harness only. A packaged build loads file:// and does not
+// expose a goal writer on window. Vite dev is import.meta.env.DEV. The
+// harness serves the production bundle from 127.0.0.1, so that host is the
+// harness half of the same check.
+function goalSeamOpen(): boolean {
+  const dev = (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV === true;
+  if (dev) return true;
+  if (typeof location === 'undefined') return false;
+  const host = location.hostname;
+  return host === '127.0.0.1' || host === 'localhost' || host === '::1';
+}
+
+if (typeof window !== 'undefined' && goalSeamOpen()) {
+  (window as unknown as { wrizoSetWritingGoal?: typeof setWritingGoal }).wrizoSetWritingGoal = setWritingGoal;
+}
+
 export function useWritingGoal(): WritingGoal | null {
   const [value, setValue] = useState(current);
   useEffect(() => {

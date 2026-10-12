@@ -16,6 +16,7 @@ import { PageEditor, UnbornPage } from './pages/PageEditor';
 import { ImportDraft } from './pages/ImportDraft';
 import { VoiceWallWhisper } from './components/VoiceWallWhisper';
 import { ThemeEffectsLayer } from './components/ThemeEffectsLayer';
+import { Splash } from './components/Splash';
 import { FluxBlockCaret } from './components/FluxBlockCaret';
 import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
 import { subscribe, resetLocalData, getOrCreateSystemBoard, countDirtyRecords, getDirtyRecords } from './store/persistence';
@@ -215,7 +216,11 @@ function SignedOutRouteGuard({ authState }: { authState: AuthState }) {
 function BrandMark() {
   const { pathname } = useLocation();
   if (pathname === '/') return null;
-  return <img className="brand-mark" src="/brand/wrizo-logo.png" alt="" aria-hidden="true" />;
+  // ITEM arbor-quiet-brass — a div, not an <img>: a CSS mask (index.css's own
+  // .brand-mark rule) recolors the PNG brass by painting the mask shape with a
+  // background color, which only works when the element has no image content
+  // of its own to paint over it. No new asset, no filter hack.
+  return <div className="brand-mark" aria-hidden="true" />;
 }
 
 export function App() {
@@ -327,6 +332,15 @@ export function App() {
         <DeskRail />
         <GlobalHeader onLogout={() => { void handleLogout(); }} authed={authState === 'authed'} />
         <BrandMark />
+        {/* Item 187 — the splash. Mounted at app root rather than on a route:
+            it belongs to the app OPENING, not to '/' (and Fable's ruling is
+            every open, not first-run-only). It renders once per app load, is
+            pointer-events:none throughout, and dims whatever is genuinely
+            mounted behind it — which at boot is Arrival, the Threshold.
+            ITEM splash-hold round 3 — `ready` is the SAME derivation Arrival's
+            own boot bar already uses (authState !== 'loading'): the splash's
+            floor holds longer when the app genuinely isn't ready yet. */}
+        <Splash ready={authState !== 'loading'} />
         <VoiceWallWhisper />
         <ThemeEffectsLayer />
         <FluxBlockCaret />

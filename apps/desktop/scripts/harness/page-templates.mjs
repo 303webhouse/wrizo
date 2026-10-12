@@ -37,7 +37,14 @@ const activeMode = (app) => app.evalJs("document.querySelector('.desk-mode-tab.a
 const openStrip = async (app) => {
   if (await app.evalJs(`!!document.querySelector(".wz-sliver[data-open='true']")`)) return true;
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
-  return waitSoft(app, `!!document.querySelector(".wz-sliver[data-open='true']")`, { label: 'strip open', timeout: 3000 });
+  const opened = await waitSoft(app, `!!document.querySelector(".wz-sliver[data-open='true']")`, { label: 'strip open', timeout: 3000 });
+  // HARNESS LAW (the same one Phase 1's copy of this file keeps): open is the STATE; the drawer is not THERE until it has finished arriving. The panel eases in over 0.2 s
+  // (opacity and a 6px settle), and a press in the first frames of that window was MEASURED (box turn 2026-10-12) to hit-test the Format container instead of the button.
+  // Suspected cause, not yet measured: the buttons' own 0.15 s "all" transition carrying the inherited visibility in; scripts/evidence/click-mid-open.mjs measures it. Every rect and every press below is read only after the panel is fully in, exactly as a writer's hand would.
+  await waitSoft(app, `(() => { const p = document.querySelector('.wz-sliver-panel'); if (!p) return false; const cs = getComputedStyle(p);
+    return (cs.transform === 'none' || cs.transform === 'matrix(1, 0, 0, 1, 0, 0)') && cs.opacity === '1'; })()`, { label: 'panel settled', timeout: 2000 });
+  await sleep(200);   // the buttons' own 0.15 s transition, after the panel has landed
+  return opened;
 };
 const strip = (app) => app.evalJs(`[...document.querySelectorAll('.wz-sliver-templates button')].map(b => ({
   live: b.classList.contains('wz-template-live'), key: b.dataset.template || null, name: b.getAttribute('aria-label'),

@@ -275,7 +275,7 @@ function installFakeEnv() {
     w3.wrizoCreateJournalPage({ id: 'mc', text: 'x', createdAt: new Date().toISOString(), origin: null });
     ok('markClean(): a fresh page is dirty', P3.hasDirtyRecords() === true, '');
     const notes = []; const unsub = P3.subscribe(() => notes.push(P3.hasDirtyRecords()));
-    P3.markClean(['mc']);
+    P3.markClean([{ collection: 'journalEntries', id: 'mc' }]);
     unsub();
     ok('markClean(): notify() fires (a subscriber sees the dirty set empty) and hasDirtyRecords() reflects it', notes.length >= 1 && notes[notes.length - 1] === false && P3.hasDirtyRecords() === false, JSON.stringify(notes));
   }
@@ -300,7 +300,7 @@ function installFakeEnv() {
     'persistDirty();\n  // STORAGE-FULL STEP 1 — a successful push',
     'persistDirty(); return;\n  // STORAGE-FULL STEP 1 — a successful push',
     (M) => { const w = globalThis.window; w.wrizoCreateJournalPage({ id: 'ntf', text: 'x', createdAt: new Date().toISOString(), origin: null });
-      const seen = []; const unsub = M.subscribe(() => seen.push(1)); M.markClean(['ntf']); unsub(); return seen.length === 0; });
+      const seen = []; const unsub = M.subscribe(() => seen.push(1)); M.markClean([{ collection: 'journalEntries', id: 'ntf' }]); unsub(); return seen.length === 0; });
 
   // Near-full, driven by real data through the real seam (no quota exception needed — just size).
   installFakeEnv();
@@ -399,7 +399,7 @@ function installFakeEnv() {
     G.installBeforeUnloadGuard();
     G.setCurrentUser({ id: 'u1', email: 'w@example.com' });
     globalThis.window.wrizoCreateJournalPage({ id: 'g2', text: 'x', createdAt: new Date().toISOString(), origin: null });
-    G.markClean(['g2']); // simulates "the account already has it" — nothing dirty from here on
+    G.markClean([{ collection: 'journalEntries', id: 'g2' }]); // simulates "the account already has it" — nothing dirty from here on
     throwFor.add('writer-studio-journal-entries');
     // `wrizoFlushNow()` re-serializes every collection unconditionally, WITHOUT touching any collection's dirty
     // state (unlike a create/patch seam, which would dirty a new record and undermine exactly what this state means)

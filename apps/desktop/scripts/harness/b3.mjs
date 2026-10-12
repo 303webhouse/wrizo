@@ -153,11 +153,14 @@ await withHarness(async (app) => {
         const buttons = boardSection ? boardSection.querySelectorAll('button') : [];
         return { buttonCount: buttons.length, labels: [...buttons].map(b => b.textContent.trim()) };
       })()`);
-      ok('ab4.mjs S5 lineage, generation 5: the board sliver carries its five hand tools, in order — Add card, New page card, Existing page…, From a deck…, Show connections',
+      // SUPERSEDED (item arbor-quiet-brass): the footer toggle's label renamed
+      // "Show connections" -> "Show grafts" (Arbor's own word); same five tools, same order.
+      // ok('ab4.mjs S5 lineage, generation 5: the board sliver carries its five hand tools, in order — Add card, New page card, Existing page…, From a deck…, Show connections', sliverShape.buttonCount === 5 && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New page card' && sliverShape.labels[2] === 'Existing page…' && sliverShape.labels[3] === 'From a deck…' && sliverShape.labels[4] === 'Show connections', JSON.stringify(sliverShape));
+      ok('ab4.mjs S5 lineage, generation 6 (arbor-quiet-brass): the board sliver carries its five hand tools, in order — Add card, New page card, Existing page…, From a deck…, Show grafts',
         sliverShape.buttonCount === 5
           && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New page card'
           && sliverShape.labels[2] === 'Existing page…' && sliverShape.labels[3] === 'From a deck…'
-          && sliverShape.labels[4] === 'Show connections',
+          && sliverShape.labels[4] === 'Show grafts',
         JSON.stringify(sliverShape));
     }
 

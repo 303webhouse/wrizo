@@ -18,7 +18,7 @@ export interface Territory {
 // Plateau is the writer's starting theme (never offered, already active);
 // Flux stands in for the spec's Machina pairing until Machina arms.
 export const OFFERED_TERRITORIES: readonly Territory[] = [
-  { id: 'plateau', label: 'Plateau', armed: true, themeId: 'plateau' },
+  { id: 'plateau', label: 'Arbor', armed: true, themeId: 'plateau' },
   { id: 'flux', label: 'Flux', armed: true, themeId: 'flux' },
 ];
 

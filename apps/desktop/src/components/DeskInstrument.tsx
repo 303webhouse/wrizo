@@ -35,8 +35,9 @@ import { RhizomeField } from './RhizomeField';
 // re-opening a long page never re-fires a lap crossed in some earlier
 // session). It fires for BOTH styles: the lane is where crossing the goal is
 // felt, whichever instrument is occupying it.
-export function DeskInstrument({ unitCount, seedKey, paperRef }: {
+export function DeskInstrument({ unitCount, text, seedKey, paperRef }: {
   unitCount: number;
+  text: string;
   seedKey: string;
   paperRef: React.RefObject<HTMLElement | null>;
 }) {
@@ -47,7 +48,7 @@ export function DeskInstrument({ unitCount, seedKey, paperRef }: {
   // segment's 180ms grow animation.
   return (
     <>
-      <RhizomeField unitCount={unitCount} seedKey={seedKey} paperRef={paperRef} />
+      <RhizomeField text={text} seedKey={seedKey} paperRef={paperRef} />
       <DeskGoalLane unitCount={unitCount} />
     </>
   );

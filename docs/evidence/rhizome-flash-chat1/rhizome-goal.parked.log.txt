@@ -1,0 +1,225 @@
+[
+  {
+    "name": "Engine: fraction 1 is still the 800-segment fill",
+    "pass": true,
+    "detail": "800"
+  },
+  {
+    "name": "Engine: a full first lap reaches the 800 cap",
+    "pass": true,
+    "detail": "800"
+  },
+  {
+    "name": "Engine: every segment after the first starts on an earlier endpoint",
+    "pass": true,
+    "detail": "0"
+  },
+  {
+    "name": "Engine: a full lap tunnels under the sheet and emerges on both margins",
+    "pass": true,
+    "detail": "{\"left\":461,\"right\":479,\"under\":457}"
+  },
+  {
+    "name": "Engine: at 25% of the goal, about that fraction of both margins is touched",
+    "pass": true,
+    "detail": "{\"fraction\":0.22377622377622378,\"left\":0.2153846153846154,\"right\":0.23076923076923078,\"cells\":143,\"touched\":32,\"leftCells\":65,\"rightCells\":78}"
+  },
+  {
+    "name": "Engine: at 50% of the goal, about that fraction of both margins is touched",
+    "pass": true,
+    "detail": "{\"fraction\":0.4755244755244755,\"left\":0.47692307692307695,\"right\":0.47435897435897434,\"cells\":143,\"touched\":68,\"leftCells\":65,\"rightCells\":78}"
+  },
+  {
+    "name": "Engine: at 100% of the goal, about that fraction of both margins is touched",
+    "pass": true,
+    "detail": "{\"fraction\":0.9090909090909091,\"left\":0.8923076923076924,\"right\":0.9230769230769231,\"cells\":143,\"touched\":130,\"leftCells\":65,\"rightCells\":78}"
+  },
+  {
+    "name": "Engine: a second seed at 25% stays inside the same coverage band",
+    "pass": true,
+    "detail": "{\"fraction\":0.22377622377622378,\"left\":0.26153846153846155,\"right\":0.19230769230769232,\"cells\":143,\"touched\":32,\"leftCells\":65,\"rightCells\":78}"
+  },
+  {
+    "name": "Engine: a second seed at 50% stays inside the same coverage band",
+    "pass": true,
+    "detail": "{\"fraction\":0.4755244755244755,\"left\":0.5076923076923077,\"right\":0.44871794871794873,\"cells\":143,\"touched\":68,\"leftCells\":65,\"rightCells\":78}"
+  },
+  {
+    "name": "Engine: a second seed at 100% stays inside the same coverage band",
+    "pass": true,
+    "detail": "{\"fraction\":0.7762237762237763,\"left\":0.7692307692307693,\"right\":0.782051282051282,\"cells\":143,\"touched\":111,\"leftCells\":65,\"rightCells\":78}"
+  },
+  {
+    "name": "Engine: at least 80% of segments extend a current tip",
+    "pass": true,
+    "detail": "0.970"
+  },
+  {
+    "name": "Engine: continuing a stem bends by a mean of 15–25°",
+    "pass": true,
+    "detail": "19.94"
+  },
+  {
+    "name": "Engine: no segment is longer than the scaled 12–28px cap",
+    "pass": true,
+    "detail": "{\"longest\":25.383998617062684,\"cap\":25.401300287931903}"
+  },
+  {
+    "name": "Engine: the same seed keeps the same survivor",
+    "pass": true,
+    "detail": "{\"x1\":270.88593656861843,\"y1\":520.4012464924447}"
+  },
+  {
+    "name": "Engine: the survivor sits in the margin the clip will show",
+    "pass": true,
+    "detail": "1"
+  },
+  {
+    "name": "Engine: the survivor is one thick stem even when the source segment was thin",
+    "pass": true,
+    "detail": "{\"id\":0,\"shootId\":0,\"x1\":40,\"y1\":80,\"x2\":58,\"y2\":86,\"thick\":true}"
+  },
+  {
+    "name": "Engine: a new lap at fraction 0 stays the one survivor",
+    "pass": true,
+    "detail": "1"
+  },
+  {
+    "name": "Engine: the next lap still fills to 800, counting the survivor",
+    "pass": true,
+    "detail": "800"
+  },
+  {
+    "name": "Engine: lap 2's first new segment touches the survivor",
+    "pass": true,
+    "detail": "800"
+  },
+  {
+    "name": "Engine: the survivor segment stays thick through the next lap",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "Engine: the next lap grows only from the survivor — no free-standing segment",
+    "pass": true,
+    "detail": "0"
+  },
+  {
+    "name": "Engine: a tight margin still reaches its target without a new origin",
+    "pass": true,
+    "detail": "{\"n\":200,\"free\":0}"
+  },
+  {
+    "name": "Engine: growTo without connected still roots more than one origin",
+    "pass": true,
+    "detail": "{\"rooted\":3,\"origins\":7,\"segs\":180}"
+  },
+  {
+    "name": "Engine: a new segment draws on over 250–400ms and the line carries pathLength 1",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "Mutant: turning connected growth off leaves a free-standing segment (the check fails)",
+    "pass": true,
+    "detail": "{\"free\":2,\"n\":200}"
+  },
+  {
+    "name": "Mutant: growth that cannot tunnel under the sheet misses a margin (the coverage band fails)",
+    "pass": true,
+    "detail": "{\"n\":400,\"fraction\":0.09090909090909091,\"left\":0,\"right\":0.16666666666666666,\"cells\":143,\"touched\":13,\"leftCells\":65,\"rightCells\":78}"
+  },
+  {
+    "name": "Mutant: forking most steps drops the share that extend a current tip below 80%",
+    "pass": true,
+    "detail": "{\"tips\":0.64,\"n\":200}"
+  },
+  {
+    "name": "Mutant: a wider wander leaves the 15–25° band (the check fails)",
+    "pass": true,
+    "detail": "47.43"
+  },
+  {
+    "name": "Mutant: raising the length cap lets a step exceed the real scaled maximum (the check fails)",
+    "pass": true,
+    "detail": "{\"longest\":72.07928834072108,\"cap\":25.401300287931903}"
+  },
+  {
+    "name": "Engine: a buried segment is not the one a lap keeps when a margin stem exists",
+    "pass": true,
+    "detail": "{\"buriedSeed\":\"vis:0\",\"pick\":100,\"shown\":1,\"buried\":0}"
+  },
+  {
+    "name": "Mutant: picking from the whole lap can keep a stem the clip hides (the check fails)",
+    "pass": true,
+    "detail": "{\"id\":0,\"shootId\":0,\"x1\":500,\"y1\":200,\"x2\":518,\"y2\":214}"
+  },
+  {
+    "name": "Mutant: dropping the thick survivor leaves a hairline (the check fails)",
+    "pass": true,
+    "detail": "{\"id\":0,\"shootId\":0,\"x1\":40,\"y1\":80,\"x2\":58,\"y2\":86}"
+  },
+  {
+    "name": "Mutant: removing the draw-on keyframes fails the draw-on check",
+    "pass": true,
+    "detail": "false"
+  }
+]
+
+RHIZOME-GOAL-CORE VERIFY: PASS (33 checks)
+[
+  {
+    "name": "Live: the page rect is unchanged by the roots",
+    "pass": true,
+    "detail": "{\"paperBefore\":{\"t\":107,\"l\":392,\"w\":615,\"h\":693},\"after\":{\"t\":107,\"l\":392,\"w\":615,\"h\":693}}"
+  },
+  {
+    "name": "Live: no rhizome layer sits on the page, the editor stays mounted, and the field does not take clicks",
+    "pass": true,
+    "detail": "{\"onPage\":false,\"editor\":true,\"pointer\":\"none\"}"
+  },
+  {
+    "name": "Live: at rest the stroke is olive, not brass",
+    "pass": true,
+    "detail": "{\"stroke\":\"rgb(150, 160, 90)\",\"flash\":\"false\"}"
+  },
+  {
+    "name": "Live: the flash paints brass",
+    "pass": true,
+    "detail": "{\"stroke\":\"rgb(255, 152, 0)\"}"
+  },
+  {
+    "name": "Live [flash fade]: the flash is BRIGHTER while it holds - full opacity and a heavier stroke (thin 0.9px, thick 1.4px), brass",
+    "pass": true,
+    "detail": "{\"flash\":\"true\",\"thin\":{\"stroke\":\"rgb(255, 152, 0)\",\"opacity\":1,\"width\":\"0.9px\"},\"thick\":{\"stroke\":\"rgb(255, 152, 0)\",\"opacity\":1,\"width\":\"1.4px\"}}"
+  },
+  {
+    "name": "Live [flash fade]: after the hold the brass FADES out, not a cut - mid-fade a segment is still brass and partly transparent",
+    "pass": true,
+    "detail": "{\"fadingSeen\":true,\"midFade\":{\"flash\":\"fading\",\"thin\":{\"stroke\":\"rgb(255, 152, 0)\",\"opacity\":0.351847,\"width\":\"0.9px\"},\"thick\":{\"stroke\":\"rgb(255, 152, 0)\",\"opacity\":0.351847,\"width\":\"1.4px\"}}}"
+  },
+  {
+    "name": "Live [flash fade]: the hold is ~1.2s and the fade ~1.5s - data-flash goes true -> fading -> false",
+    "pass": true,
+    "detail": "{\"tTrue\":1152,\"tFading\":2314,\"tFalse\":3816,\"hold\":1162,\"fade\":1502,\"holdNoFade\":null,\"seq\":\"false>true>fading>false\"}"
+  },
+  {
+    "name": "Live: the page rect survives the flash and the reset",
+    "pass": true,
+    "detail": "{\"rectAtFull\":{\"t\":107,\"l\":392,\"w\":615,\"h\":693},\"reset\":{\"t\":107,\"l\":392,\"w\":615,\"h\":693}}"
+  },
+  {
+    "name": "Live [flash fade, reduced motion]: NO fade - data-flash goes true -> false (never \"fading\"), and the ~1.2s hold stays",
+    "pass": true,
+    "detail": "{\"tTrue\":1142,\"tFading\":null,\"tFalse\":2341,\"hold\":null,\"fade\":null,\"holdNoFade\":1199,\"seq\":\"false>true>false\"}"
+  },
+  {
+    "name": "Theme: under Flux the rhizome field renders NOTHING - no field, no segments - and crossing the goal flashes nothing (the rhizome is Plateau's only)",
+    "pass": true,
+    "detail": "{\"fluxBefore\":{\"theme\":\"flux\",\"field\":false,\"segs\":0},\"fluxAfter\":{\"theme\":\"flux\",\"field\":false,\"segs\":0,\"flash\":false},\"wordsStored\":8}"
+  }
+]
+
+RHIZOME-GOAL VERIFY: PASS (10 checks)
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.

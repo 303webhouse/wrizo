@@ -46,12 +46,16 @@ function setLastSyncAt(value: string): void {
   localStorage.setItem(LAST_SYNC_KEY, value);
 }
 
-// Map of id -> updatedAt across all collections, used to mark clean only the
+// DRAFTS INTEGRITY - a record is identified by its COLLECTION AND its id. A project draft shares its project's id, so a bare id names
+// two records; every map and set below is keyed by recordKey(), never by the id alone.
+const recordKey = (coll: string, id: string): string => coll + ':' + id;
+
+// Map of recordKey -> updatedAt across all collections, used to mark clean only the
 // records that were not re-edited while the request was in flight.
 function stampMap(records: DirtyRecords): Map<string, string> {
   const map = new Map<string, string>();
   (['projects', 'storyPlans', 'sessions', 'drafts', 'journalEntries', 'drawers'] as const).forEach(k => {
-    for (const r of records[k]) map.set(r.id, r.updatedAt);
+    for (const r of records[k]) map.set(recordKey(k, r.id), r.updatedAt);
   });
   return map;
 }
@@ -151,8 +155,9 @@ function setPullDiagnostic(next: PullDiagnostic | null): void {
 
 function rejectedIdSet(rejected: SyncResponse['rejected']): Set<string> {
   if (!rejected) return new Set();
+  // Keyed by COLLECTION and id: the server names the collection of every refused id, and project P's refusal must not hold draft P.
   const ids = new Set<string>();
-  for (const list of Object.values(rejected)) for (const id of list ?? []) ids.add(id);
+  for (const [coll, list] of Object.entries(rejected)) for (const id of list ?? []) ids.add(recordKey(coll, id));
   return ids;
 }
 
@@ -207,9 +212,10 @@ function pack(items: PushItem[]): PushItem[][] {
 function cleanBatch(batch: PushItem[], rejectedIds: ReadonlySet<string> = EMPTY_SET): void {
   const still = stampMap(getDirtyRecords());
   markClean(batch.filter(i => {
-    if (rejectedIds.has(i.rec.id)) return false;
-    const cur = still.get(i.rec.id); return cur === undefined || cur === i.rec.updatedAt;
-  }).map(i => i.rec.id));
+    const key = recordKey(i.coll, i.rec.id);
+    if (rejectedIds.has(key)) return false;
+    const cur = still.get(key); return cur === undefined || cur === i.rec.updatedAt;
+  }).map(i => ({ collection: i.coll, id: i.rec.id })));
 }
 const EMPTY_SET: ReadonlySet<string> = new Set();
 
@@ -364,11 +370,11 @@ async function runSync(fullPull: boolean): Promise<SyncRun> {
     // ITEM 224(a) — looked up by id as each response names its own rejected
     // ids, so the notice can carry each one's own title (the server only
     // ever names an id; it has no reason to know a record's display title).
-    const itemById = new Map(items.map(i => [i.rec.id, i] as const));
+    const itemById = new Map(items.map(i => [recordKey(i.coll, i.rec.id), i] as const));
     const rejectedThisSync: PushItem[] = [];
     const noteRejections = (rejected: SyncResponse['rejected']): Set<string> => {
       const ids = rejectedIdSet(rejected);
-      for (const id of ids) { const item = itemById.get(id); if (item) rejectedThisSync.push(item); }
+      for (const key of ids) { const item = itemById.get(key); if (item) rejectedThisSync.push(item); }
       return ids;
     };
 

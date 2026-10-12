@@ -1,0 +1,60 @@
+[
+  {
+    "frame": "S1-front-door-with-splash-arbor",
+    "file": "S1-front-door-with-splash-arbor.png",
+    "hash": "#/",
+    "bundle": "index-P2j5dOLz.js",
+    "theme": "plateau",
+    "splashPresent": true,
+    "leaving": "false",
+    "tone": "dark",
+    "markDecoded": true,
+    "markSrc": "wrizo-sketch-for-dark-theme.png",
+    "markRect": {
+      "x": 356,
+      "y": 175,
+      "w": 689,
+      "h": 551
+    },
+    "backdrop": "blur(18px)",
+    "doorsBehind": true,
+    "hold": 60000
+  },
+  {
+    "frame": "S2-front-door-after-the-fade-arbor",
+    "file": "S2-front-door-after-the-fade-arbor.png",
+    "hash": "#/",
+    "bundle": "index-P2j5dOLz.js",
+    "theme": "plateau",
+    "splashPresent": false,
+    "leaving": null,
+    "tone": null,
+    "markDecoded": null,
+    "markSrc": null,
+    "markRect": null,
+    "backdrop": null,
+    "doorsBehind": true,
+    "hold": 200
+  },
+  {
+    "frame": "S3-front-door-with-splash-flux",
+    "file": "S3-front-door-with-splash-flux.png",
+    "hash": "#/",
+    "bundle": "index-P2j5dOLz.js",
+    "theme": "flux",
+    "splashPresent": true,
+    "leaving": "false",
+    "tone": "dark",
+    "markDecoded": true,
+    "markSrc": "wrizo-sketch-for-dark-theme.png",
+    "markRect": {
+      "x": 356,
+      "y": 175,
+      "w": 689,
+      "h": 551
+    },
+    "backdrop": "blur(18px)",
+    "doorsBehind": true,
+    "hold": 60000
+  }
+]

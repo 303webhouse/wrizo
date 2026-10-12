@@ -1,0 +1,122 @@
+[
+  {
+    "frame": "D1-front-door",
+    "file": "D1-front-door.png",
+    "hash": "#/",
+    "bundle": "index-BIsG11Gf.js",
+    "theme": "plateau",
+    "splashPresent": false,
+    "drawerPanel": null,
+    "writing": null,
+    "rhizomeField": false,
+    "flash": null,
+    "segOpacity": null,
+    "segStroke": null,
+    "segWidth": null,
+    "signInForm": false
+  },
+  {
+    "frame": "D2-sign-in",
+    "file": "D2-sign-in.png",
+    "hash": "#/",
+    "bundle": "index-BIsG11Gf.js",
+    "theme": "plateau",
+    "splashPresent": false,
+    "drawerPanel": null,
+    "writing": null,
+    "rhizomeField": false,
+    "flash": null,
+    "segOpacity": null,
+    "segStroke": null,
+    "segWidth": null,
+    "signInForm": true,
+    "clicked": true,
+    "fieldsAfterClear": {
+      "emailLen": 0,
+      "pwLen": 0
+    }
+  },
+  {
+    "frame": "F1-arbor-rhizome-flash-hold",
+    "file": "F1-arbor-rhizome-flash-hold.png",
+    "hash": "#/page/mv4zrn7gv8cqwulc2",
+    "bundle": "index-BIsG11Gf.js",
+    "theme": "plateau",
+    "splashPresent": false,
+    "drawerPanel": {
+      "open": "false",
+      "visibility": "hidden",
+      "opacity": "0"
+    },
+    "writing": "true",
+    "rhizomeField": true,
+    "flash": "true",
+    "segOpacity": "1",
+    "segStroke": "rgb(255, 152, 0)",
+    "segWidth": "0.9px",
+    "signInForm": false,
+    "flashed": true,
+    "msSinceType": 416
+  },
+  {
+    "frame": "F2-arbor-rhizome-flash-mid-fade",
+    "file": "F2-arbor-rhizome-flash-mid-fade.png",
+    "hash": "#/page/mv4zrn7gv8cqwulc2",
+    "bundle": "index-BIsG11Gf.js",
+    "theme": "plateau",
+    "splashPresent": false,
+    "drawerPanel": {
+      "open": "false",
+      "visibility": "hidden",
+      "opacity": "0"
+    },
+    "writing": "true",
+    "rhizomeField": true,
+    "flash": "fading",
+    "segOpacity": "0.204567",
+    "segStroke": "rgb(255, 152, 0)",
+    "segWidth": "0.9px",
+    "signInForm": false,
+    "msSinceType": 1901
+  },
+  {
+    "frame": "G-arbor-draft-writing-drawer-closed",
+    "file": "G-arbor-draft-writing-drawer-closed.png",
+    "hash": "#/page/mv4zqm4zgd8ba4jxj",
+    "bundle": "index-BIsG11Gf.js",
+    "theme": "plateau",
+    "splashPresent": false,
+    "drawerPanel": {
+      "open": "false",
+      "visibility": "hidden",
+      "opacity": "0"
+    },
+    "writing": "true",
+    "rhizomeField": false,
+    "flash": null,
+    "segOpacity": null,
+    "segStroke": null,
+    "segWidth": null,
+    "signInForm": false
+  },
+  {
+    "frame": "G-flux-draft-writing-drawer-closed",
+    "file": "G-flux-draft-writing-drawer-closed.png",
+    "hash": "#/page/mv4zqr0d3agtj3kei",
+    "bundle": "index-BIsG11Gf.js",
+    "theme": "flux",
+    "splashPresent": false,
+    "drawerPanel": {
+      "open": "false",
+      "visibility": "hidden",
+      "opacity": "0"
+    },
+    "writing": "true",
+    "rhizomeField": false,
+    "flash": null,
+    "segOpacity": null,
+    "segStroke": null,
+    "segWidth": null,
+    "signInForm": false
+  }
+]

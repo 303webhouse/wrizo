@@ -1,0 +1,11 @@
+baseline: 49/49
+
+RHIZOME-GROWTH VERIFY: PASS (49 checks)
+M1 FULL_COVER lowered: RED
+M2 disconnected push: RED
+M3 STEP_MAX raised: RED
+M4 WANDER widened: RED
+M5 hidden treated as a wall: RED
+M6 SURVIVOR_STEPS cut to 1: RED
+M7 segmentsFor ignores coverage: RED
+RHIZOME-GROWTH MUTANTS: PASS (7/7 RED)

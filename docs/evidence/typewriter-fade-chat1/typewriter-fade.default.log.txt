@@ -1,0 +1,8 @@
+PASS  (premise) the page is a typewriter page whose history has scrolled, with a fade mask and several lines on screen  [{"typewriter":"true","scrolled":"true","stops":[{"alpha":0.15,"at":0},{"alpha":0.15,"at":29},{"alpha":1,"at":116}],"lines":22}]
+PASS  THE ORDER: going down the page no line is fainter than the older line above it (Nick: "a newer line dims while the older one above it stays dark")  [{"inversions":[],"lines":[{"y":12,"alpha":0.15},{"y":41,"alpha":0.267},{"y":70,"alpha":0.551},{"y":99,"alpha":0.834},{"y":128,"alpha":1},{"y":157,"alpha":1},{"y":186,"alpha":1},{"y":214,"alpha":1}]}]
+PASS  THE OLDEST IS THE FAINTEST: the topmost visible line carries the lowest strength of all, and it is genuinely faded (< 0.5)  [{"top":{"y":12,"alpha":0.15},"minAlpha":0.15}]
+PASS  THE NEWEST IS WHOLE: the last visible line (where the writer is) is fully shown  [{"y":619,"alpha":1}]
+
+TYPEWRITER-FADE VERIFY: PASS (4 checks)
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.

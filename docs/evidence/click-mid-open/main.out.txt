@@ -1,0 +1,86 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+{
+  "bundle": "index-z-93XQ5x.js",
+  "results": [
+    {
+      "delay": 0,
+      "x": 230,
+      "y": 433,
+      "elapsedMs": 12,
+      "hit": "svg",
+      "hitIsButton": true,
+      "open": "true",
+      "panelOpacity": "0",
+      "landed": true
+    },
+    {
+      "delay": 30,
+      "x": 229,
+      "y": 433,
+      "elapsedMs": 43,
+      "hit": "svg",
+      "hitIsButton": true,
+      "open": "true",
+      "panelOpacity": "0.22157",
+      "landed": true
+    },
+    {
+      "delay": 60,
+      "x": 228,
+      "y": 433,
+      "elapsedMs": 62,
+      "hit": "svg",
+      "hitIsButton": true,
+      "open": "true",
+      "panelOpacity": "0.409305",
+      "landed": true
+    },
+    {
+      "delay": 100,
+      "x": 226,
+      "y": 433,
+      "elapsedMs": 105,
+      "hit": "svg",
+      "hitIsButton": true,
+      "open": "true",
+      "panelOpacity": "0.706119",
+      "landed": true
+    },
+    {
+      "delay": 150,
+      "x": 225,
+      "y": 433,
+      "elapsedMs": 154,
+      "hit": "svg",
+      "hitIsButton": true,
+      "open": "true",
+      "panelOpacity": "0.960546",
+      "landed": true
+    },
+    {
+      "delay": 250,
+      "x": 224,
+      "y": 433,
+      "elapsedMs": 265,
+      "hit": "svg",
+      "hitIsButton": true,
+      "open": "true",
+      "panelOpacity": "1",
+      "landed": true
+    },
+    {
+      "delay": 450,
+      "x": 224,
+      "y": 433,
+      "elapsedMs": 466,
+      "hit": "svg",
+      "hitIsButton": true,
+      "open": "true",
+      "panelOpacity": "1",
+      "landed": true
+    }
+  ]
+}
+
+CLICK-MID-OPEN: a real press 60-160 ms into the open hits the right button and applies it (3 samples) - index-z-93XQ5x.js

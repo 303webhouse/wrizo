@@ -695,7 +695,7 @@ export function ThemePanel() {
   // (engagement-facts the app already shows, never a solicited/gated
   // target — the M1 anti-gamification frame). Two entries make the order
   // moot today, but the law belongs at the site that will enforce it.
-  const themeOpts: [string, string][] = [['plateau', 'Plateau'], ['flux', 'Flux']];
+  const themeOpts: [string, string][] = [['plateau', 'Arbor'], ['flux', 'Flux']];
   return (
     <div className="mode-settings mode-theme-settings" role="menu">
       <h4>theme</h4>

@@ -1,0 +1,163 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+{
+  "bundle": "index-DqX0JZWU.js",
+  "results": [
+    {
+      "delay": 0,
+      "x": 408,
+      "y": 433,
+      "elapsedMs": 15,
+      "hit": "div.mode-page.focused",
+      "hitIsButton": false,
+      "open": "true",
+      "panelOpacity": "0",
+      "landed": false,
+      "hasLayer": true,
+      "down": {
+        "target": "div.mode-page.focused",
+        "button": null,
+        "live": false
+      },
+      "click": {
+        "target": "div.mode-page",
+        "button": null,
+        "live": false
+      }
+    },
+    {
+      "delay": 30,
+      "x": 333,
+      "y": 433,
+      "elapsedMs": 45,
+      "hit": "div.wz-sliver-panel.chrome-fade.desk-dissolve",
+      "hitIsButton": false,
+      "open": "true",
+      "panelOpacity": "0.409305",
+      "landed": false,
+      "hasLayer": true,
+      "down": {
+        "target": "div.wz-sliver-panel.chrome-fade.desk-dissolve",
+        "button": null,
+        "live": false
+      },
+      "click": {
+        "target": "div.wz-sliver-panel.chrome-fade.desk-dissolve",
+        "button": null,
+        "live": false
+      }
+    },
+    {
+      "delay": 60,
+      "x": 302,
+      "y": 433,
+      "elapsedMs": 76,
+      "hit": "div.wz-sliver-panel.chrome-fade.desk-dissolve",
+      "hitIsButton": false,
+      "open": "true",
+      "panelOpacity": "0.576489",
+      "landed": false,
+      "hasLayer": true,
+      "down": {
+        "target": "div.wz-sliver-panel.chrome-fade.desk-dissolve",
+        "button": null,
+        "live": false
+      },
+      "click": {
+        "target": "div.wz-sliver-panel.chrome-fade.desk-dissolve",
+        "button": null,
+        "live": false
+      }
+    },
+    {
+      "delay": 100,
+      "x": 261,
+      "y": 433,
+      "elapsedMs": 108,
+      "hit": "div.wz-sliver-panel.chrome-fade.desk-dissolve",
+      "hitIsButton": false,
+      "open": "true",
+      "panelOpacity": "0.802682",
+      "landed": false,
+      "hasLayer": true,
+      "down": {
+        "target": "div.wz-sliver-panel.chrome-fade.desk-dissolve",
+        "button": null,
+        "live": false
+      },
+      "click": {
+        "target": "div.wz-sliver-panel.chrome-fade.desk-dissolve",
+        "button": null,
+        "live": false
+      }
+    },
+    {
+      "delay": 150,
+      "x": 232,
+      "y": 433,
+      "elapsedMs": 155,
+      "hit": "div.wz-sliver-panel.chrome-fade.desk-dissolve",
+      "hitIsButton": false,
+      "open": "true",
+      "panelOpacity": "0.960594",
+      "landed": false,
+      "hasLayer": true,
+      "down": {
+        "target": "div.wz-sliver-panel.chrome-fade.desk-dissolve",
+        "button": null,
+        "live": false
+      },
+      "click": {
+        "target": "div.wz-sliver-panel.chrome-fade.desk-dissolve",
+        "button": null,
+        "live": false
+      }
+    },
+    {
+      "delay": 250,
+      "x": 224,
+      "y": 433,
+      "elapsedMs": 262,
+      "hit": "svg",
+      "hitIsButton": true,
+      "open": "true",
+      "panelOpacity": "1",
+      "landed": true,
+      "hasLayer": true,
+      "down": {
+        "target": "svg",
+        "button": "Screenplay",
+        "live": true
+      },
+      "click": {
+        "target": "svg",
+        "button": "Screenplay",
+        "live": true
+      }
+    },
+    {
+      "delay": 450,
+      "x": 224,
+      "y": 433,
+      "elapsedMs": 468,
+      "hit": "svg",
+      "hitIsButton": true,
+      "open": "true",
+      "panelOpacity": "1",
+      "landed": true,
+      "hasLayer": true,
+      "down": {
+        "target": "svg",
+        "button": "Screenplay",
+        "live": true
+      },
+      "click": {
+        "target": "svg",
+        "button": "Screenplay",
+        "live": true
+      }
+    }
+  ]
+}
+
+CLICK-MID-OPEN (sliding layer): every press before settle was a clean no-op (5 samples; targets: div.mode-page.focused | div.wz-sliver-panel.chrome-fade.desk-dissolve | div.wz-sliver-panel.chrome-fade.desk-dissolve | div.wz-sliver-panel.chrome-fade.desk-dissolve | div.wz-sliver-panel.chrome-fade.desk-dissolve) and every press from settle on landed (2) - index-DqX0JZWU.js

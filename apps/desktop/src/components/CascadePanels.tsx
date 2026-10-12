@@ -1061,7 +1061,7 @@ function CascadeSettingsPanel({ navigate }: { navigate: NavigateFunction }) {
 // future themes are ABSENT, not grayed. `themeOpts` below IS the full
 // available list — there is no third entry to hide.
 // ---------------------------------------------------------------------------
-const THEME_OPTS: [ThemeId, string][] = [['plateau', 'Plateau'], ['flux', 'Flux']];
+const THEME_OPTS: [ThemeId, string][] = [['plateau', 'Arbor'], ['flux', 'Flux']];
 
 function CascadeThemePanel() {
   const theme = useTheme();

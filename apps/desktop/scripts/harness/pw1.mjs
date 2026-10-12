@@ -733,9 +733,13 @@ await withHarness(async (app) => {
     // carries the word), so this asserts the heading's PRESENCE case-blind and
     // leaves the exact term to the lexicon check at the end of this file.
     const bodyText = await app.evalJs("(document.querySelector('.wz-cascade-panel-body')?.innerText ?? '').toUpperCase()");
-    ok('S1, Fable ruling 2: a LOOSE page (no drawer, no project) still shows its REAL CONNECTIONS, above the creation doors — answering "which boards is this page on" with "make a project first" was the panel telling a writer to build what they had already built',
-      looseRows.length > 0 && looseRows.some((r) => r.title === 'A board with no drawer') && bodyText.includes('BOARDS CONNECTED'),
-      JSON.stringify({ looseRows, hasHeading: bodyText.includes('BOARDS CONNECTED') }));
+    // SUPERSEDED (item arbor-quiet-brass): "Connected" renamed to Arbor's own "Grafted" —
+    // this check's own round-1 sweep missed it (a case-SENSITIVE grep for "Boards
+    // connected" never matches this uppercase-transformed "BOARDS CONNECTED").
+    // ok('S1, Fable ruling 2: a LOOSE page (no drawer, no project) still shows its REAL CONNECTIONS, above the creation doors — answering "which boards is this page on" with "make a project first" was the panel telling a writer to build what they had already built', looseRows.length > 0 && looseRows.some((r) => r.title === 'A board with no drawer') && bodyText.includes('BOARDS CONNECTED'), JSON.stringify({ looseRows, hasHeading: bodyText.includes('BOARDS CONNECTED') }));
+    ok('S1, Fable ruling 2 (arbor-quiet-brass successor): a LOOSE page (no drawer, no project) still shows its REAL GRAFTS, above the creation doors — answering "which boards is this page on" with "make a project first" was the panel telling a writer to build what they had already built',
+      looseRows.length > 0 && looseRows.some((r) => r.title === 'A board with no drawer') && bodyText.includes('BOARDS GRAFTED'),
+      JSON.stringify({ looseRows, hasHeading: bodyText.includes('BOARDS GRAFTED') }));
   }
 
   // ==========================================================================
@@ -746,8 +750,11 @@ await withHarness(async (app) => {
     if (!t) return null;
     return { heading: t('cascadePlanBoardsConnected'), places: t('placesBoardsTitle'), face: t('pageFacePinnedTo') };
   })()`);
-  ok('S3/PW27 + ruling 4: ONE CONNECTING WORD, three faces — the Plan panel\'s heading is Nick\'s exact term, and the Places zone and the Page face\'s prose line both read "connected" (never "appears on", which would now LIE: appearing means being displayed, and the checkbox makes membership)',
-    !!words && words.heading === 'Boards connected' && words.places === 'Also connected to…' && words.face === 'Also connected to',
+  // SUPERSEDED (item arbor-quiet-brass): "connected" renamed to Arbor's own "grafted" —
+  // the ONE connecting word is now "grafted", not "connected"; same three faces.
+  // ok('S3/PW27 + ruling 4: ONE CONNECTING WORD, three faces — the Plan panel's heading is Nick's exact term, and the Places zone and the Page face's prose line both read "connected" (never "appears on", which would now LIE: appearing means being displayed, and the checkbox makes membership)', !!words && words.heading === 'Boards connected' && words.places === 'Also connected to…' && words.face === 'Also connected to', JSON.stringify(words));
+  ok('S3/PW27 + ruling 4 (arbor-quiet-brass successor): ONE CONNECTING WORD, three faces — the Plan panel\'s heading, the Places zone and the Page face\'s prose line all read "grafted" now, still never "appears on"',
+    !!words && words.heading === 'Boards grafted' && words.places === 'Also grafted to…' && words.face === 'Also grafted to',
     JSON.stringify(words));
 
 
@@ -788,11 +795,11 @@ await withHarness(async (app) => {
   await sleep(400);
   if (await openPlan(app)) {
     const rows = await planRows(app);
-    ok('ERRATUM 1: a CONDITION-BOARD is never a connection — the loose page does NOT list the Shelf under "Boards connected", and with no plan board yet the zone is absent entirely (PW9)',
+    ok('ERRATUM 1: a CONDITION-BOARD is never a connection — the loose page does NOT list the Shelf under "Boards grafted" (item arbor-quiet-brass: was "Boards connected"), and with no plan board yet the zone is absent entirely (PW9)',
       Array.isArray(rows) && rows.length === 0, JSON.stringify(rows));
   }
   const faceLine = await app.evalJs("[...document.querySelectorAll('.wz-pageface-membership')].map(m => m.textContent)");
-  ok('ERRATUM 1: and the prose line follows the same rule — no "Also connected to The Shelf" anywhere on the face',
+  ok('ERRATUM 1: and the prose line follows the same rule — no "Also grafted to The Shelf" (item arbor-quiet-brass: was "Also connected to") anywhere on the face',
     Array.isArray(faceLine) && !faceLine.some((m) => /shelf|trash|journal board/i.test(m)), JSON.stringify(faceLine));
 
   // ...and a REAL board still lists, so the exclusion is not simply hiding

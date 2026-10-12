@@ -1,0 +1,81 @@
+[
+  {
+    "frame": "R1-arbor-50pct-of-100-words",
+    "file": "R1-arbor-50pct-of-100-words.png",
+    "hash": "#/page/mv1oqr5ad946fkbjf",
+    "bundle": "index-CG3IJy_0.js",
+    "theme": "plateau",
+    "rhizomeField": true,
+    "segments": 2,
+    "frac": "0.500",
+    "flash": "false",
+    "stroke": "rgb(150, 160, 90)",
+    "words": 50,
+    "goal": 100
+  },
+  {
+    "frame": "R2-arbor-brass-flash",
+    "file": "R2-arbor-brass-flash.png",
+    "hash": "#/page/mv1oqr5ad946fkbjf",
+    "bundle": "index-CG3IJy_0.js",
+    "theme": "plateau",
+    "rhizomeField": true,
+    "segments": 2,
+    "frac": "0.000",
+    "flash": "true",
+    "stroke": "rgb(255, 152, 0)",
+    "flashed": true,
+    "words": 8,
+    "goal": 8
+  },
+  {
+    "frame": "R3-flux-no-rhizome",
+    "file": "R3-flux-no-rhizome.png",
+    "hash": "#/page/mv1oqr5ad946fkbjf",
+    "bundle": "index-CG3IJy_0.js",
+    "theme": "flux",
+    "rhizomeField": false,
+    "segments": 0,
+    "frac": null,
+    "flash": null,
+    "stroke": null,
+    "words": 4,
+    "goal": 8
+  },
+  {
+    "frame": "D1-front-door",
+    "file": "D1-front-door.png",
+    "hash": "#/",
+    "bundle": "index-CG3IJy_0.js",
+    "theme": "plateau",
+    "rhizomeField": false,
+    "segments": 0,
+    "frac": null,
+    "flash": null,
+    "stroke": null
+  },
+  {
+    "frame": "D2-sign-in",
+    "file": "D2-sign-in.png",
+    "hash": "#/",
+    "bundle": "index-CG3IJy_0.js",
+    "theme": "plateau",
+    "rhizomeField": false,
+    "segments": 0,
+    "frac": null,
+    "flash": null,
+    "stroke": null
+  },
+  {
+    "frame": "D3-a-page",
+    "file": "D3-a-page.png",
+    "hash": "#/page/new",
+    "bundle": "index-CG3IJy_0.js",
+    "theme": "plateau",
+    "rhizomeField": false,
+    "segments": 0,
+    "frac": null,
+    "flash": null,
+    "stroke": null
+  }
+]
