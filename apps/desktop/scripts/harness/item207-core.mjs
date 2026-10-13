@@ -161,8 +161,18 @@ const mount = sliverSrc.match(/content\.type && \(\s*<div className="wz-sliver-s
 // ok('MOUNT: the sliver mounts the control on the Free Write, Draft and Revise arms only, in one section with no heading',
 //   !!mount && /content\.kind === 'freewrite' \|\| content\.kind === 'draft' \|\| content\.kind === 'revise'/.test(sliverSrc) && !/wz-sliver-h/.test(mount[0]), mount ? 'found' : 'mount block not found');
 // ------------------------------------------------------------------
-ok('MOUNT [C3 successor]: the sliver mounts the control on the Free Write, Draft and Revise arms only, in one section headed "Typeface" (the lexicon\'s railTypeface) with the control directly beneath',
-  !!mount && /content\.kind === 'freewrite' \|\| content\.kind === 'draft' \|\| content\.kind === 'revise'/.test(sliverSrc) && /^[^]*?<div className="wz-sliver-h">\{t\('railTypeface'\)\}<\/div><TypeControl \{\.\.\.content\.type\} \/>/.test(mount[0]) && (mount[0].match(/wz-sliver-h/g) || []).length === 1, mount ? 'found' : 'mount block not found');
+// ---- PARKED - SUPERSEDED by the code-shape tolerant successor below (Fable, 2026-10-12: "mount block not found" on INK's
+// phase1-drawers, whose guard adds `&& allowed('typeface')` between `content.type` and the section). Kept VERBATIM and no longer
+// run: it matched only the literal `content.type && (`, so ANY further guard read as a missing mount. The claim is unchanged.
+//
+// ok('MOUNT [C3 successor]: the sliver mounts the control on the Free Write, Draft and Revise arms only, in one section headed "Typeface" (the lexicon\'s railTypeface) with the control directly beneath',
+//   !!mount && /content\.kind === 'freewrite' \|\| content\.kind === 'draft' \|\| content\.kind === 'revise'/.test(sliverSrc) && /^[^]*?<div className="wz-sliver-h">\{t\('railTypeface'\)\}<\/div><TypeControl \{\.\.\.content\.type\} \/>/.test(mount[0]) && (mount[0].match(/wz-sliver-h/g) || []).length === 1, mount ? 'found' : 'mount block not found');
+// ------------------------------------------------------------------
+// The SAME claim on the guard's real shape: the three arms, then content.type, then ANY further guards (`&& allowed(...)` and the
+// like), then the one section. A guard that drops an arm still fails (proved on a constructed source when this was written).
+const mountC3 = sliverSrc.match(/\{\(content\.kind === 'freewrite' \|\| content\.kind === 'draft' \|\| content\.kind === 'revise'\) && content\.type(?: && [^\n]*?)? && \(\s*<div className="wz-sliver-section wz-sliver-type">[\s\S]*?<\/div>\s*\)\}/);
+ok('MOUNT [C3 successor, guard-tolerant]: the sliver mounts the control on the Free Write, Draft and Revise arms only (any further guard allowed), in one section headed "Typeface" (the lexicon\'s railTypeface) with the control directly beneath',
+  !!mountC3 && /^[^]*?<div className="wz-sliver-h">\{t\('railTypeface'\)\}<\/div><TypeControl \{\.\.\.content\.type\} \/>/.test(mountC3[0]) && (mountC3[0].match(/wz-sliver-h/g) || []).length === 1, mountC3 ? 'found' : 'mount block not found');
 const pe = src('pages/PageEditor.tsx');
 ok('FORMS: Free Write passes the SMALL form (and none in INK), Draft and Revise pass the FULL form',
   /type: instrument === 'ink' \? undefined : typeMember\('small'\)/.test(pe) && /kind: 'draft',[\s\S]{0,200}type: typeMember\('full'\)/.test(pe) && /kind: 'revise', type: typeMember\('full'\)/.test(pe), '');
@@ -208,9 +218,14 @@ await mutant('M11 the unchosen label keeps the " Variable" suffix (the package\'
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 300)}]` : ''}`);
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  // ---- PARKED - SUPERSEDED (2026-10-12): the line below said this file parks nothing; it now parks ONE. Kept verbatim:
   // Parks nothing: the roster, loader and ladder are new; no prior assertion is falsified by them.
+  // ONE park (2026-10-12): MOUNT [C3 successor]'s literal-shape match, superseded by its guard-tolerant successor. The record
+  // asserts the new truth: the guard-tolerant match finds the one Typeface section on this tree's Sliver.
+  parkedChecks.push({ name: 'PARKED (was "MOUNT [C3 successor]: the sliver mounts the control on the Free Write, Draft and Revise arms only, in one section headed \\"Typeface\\" ...") - its literal `content.type && (` match read any further guard (phase1-drawers\' `&& allowed(\'typeface\')`) as a missing mount; live successor: MOUNT [C3 successor, guard-tolerant]',
+    pass: !!mountC3, detail: mountC3 ? 'found' : 'mount block not found' });
   console.log(parkedChecks.every((c) => c.pass)
-    ? `\nITEM207-CORE PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; nothing parked`
+    ? `\nITEM207-CORE PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; ONE park: MOUNT [C3 successor]'s literal-shape match`
     : `\nITEM207-CORE PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const all = checks.concat(parkedChecks);
