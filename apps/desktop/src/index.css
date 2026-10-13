@@ -2493,9 +2493,14 @@ a:focus-visible,
    opaque (#000, i.e. fully SHOWN) through --tw-fade-start (one line-height)
    before the SAME 15%-floor ramp begins — the topmost line reads unfaded,
    the ramp's own depth (--tw-fade-band) is untouched. */
+/* TYPEWRITER-FADE-ORDER (Nick's live bug, 2026-10-10: "lines fade out of order - a newer line dims while the older one above it
+   stays dark"). FX5 S1(b)'s fully-shown lead-in did exactly that: the topmost (OLDEST) line read whole while the line under it
+   dropped to the 15% floor. The fade is now MONOTONIC - the topmost line sits at the floor through --tw-fade-start (one line, so
+   the band still "starts one line lower"), then the ramp climbs to fully shown over --tw-fade-band, so the top ~4 lines carry the
+   fade (FX5 S1(c)) and no newer line is ever fainter than an older one. Proved by scripts/harness/typewriter-fade.mjs. */
 .mode-scroll[data-typewriter='true'][data-scrolled='true']{
-  -webkit-mask-image:linear-gradient(to bottom, #000 0, #000 var(--tw-fade-start,28px), rgba(0,0,0,.15) var(--tw-fade-start,28px), #000 calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px)));
-          mask-image:linear-gradient(to bottom, #000 0, #000 var(--tw-fade-start,28px), rgba(0,0,0,.15) var(--tw-fade-start,28px), #000 calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px))); }
+  -webkit-mask-image:linear-gradient(to bottom, rgba(0,0,0,.15) 0, rgba(0,0,0,.15) var(--tw-fade-start,28px), #000 calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px)));
+          mask-image:linear-gradient(to bottom, rgba(0,0,0,.15) 0, rgba(0,0,0,.15) var(--tw-fade-start,28px), #000 calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px))); }
 .mode-wordcount{ position:absolute; bottom:10px; right:14px; z-index:2;
   font-family:var(--font-mono); font-size:13px; color:var(--ink-on-paper-low); }
 

@@ -51,6 +51,7 @@ import { withHarness } from '../runtime-verify.mjs';
 import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
+let fx5MaskSeen = null;   // S1 (b)'s computed mask, kept for its parked record (TYPEWRITER-FADE-ORDER)
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -270,8 +271,17 @@ await withHarness(async (app) => {
     })()`);
     ok('S1 (b): --tw-fade-start is set to approximately one line-height (the fade band\'s own new starting offset)',
       Math.abs(fadeInfo.fadeStartPx - fadeInfo.lineHeight) <= 2, JSON.stringify(fadeInfo));
-    ok('S1 (b): the container mask genuinely carries a two-stage ramp now (opaque lead-in, then the fade) — the gradient string mentions both a #000/opaque leading stop and the fade-band length',
-      typeof fadeInfo.maskImage === 'string' && fadeInfo.maskImage.includes('linear-gradient'), fadeInfo.maskImage);
+    fx5MaskSeen = fadeInfo.maskImage;
+    // ---- PARKED - SUPERSEDED by TYPEWRITER-FADE-ORDER (Nick's live bug, 2026-10-10: "lines fade out of order - a newer line
+    // dims while the older one above it stays dark"). Kept VERBATIM and no longer run. The "opaque lead-in" it names WAS the bug:
+    // it showed the oldest visible line whole above faint newer ones. The mask now holds the 15% floor through --tw-fade-start
+    // and ramps up (the band still starts one line lower; the check above, the token's size, is unchanged). Its assertion only
+    // tested for "linear-gradient", so it would have stayed green while claiming the opposite of the fix. Parked record below;
+    // live successor: typewriter-fade.mjs (the order, measured line by line from the computed mask).
+    //
+    // ok('S1 (b): the container mask genuinely carries a two-stage ramp now (opaque lead-in, then the fade) — the gradient string mentions both a #000/opaque leading stop and the fade-band length',
+    //   typeof fadeInfo.maskImage === 'string' && fadeInfo.maskImage.includes('linear-gradient'), fadeInfo.maskImage);
+    // ------------------------------------------------------------------
   }
 
   // (c) SCROLL FREEDOM: a manual scroll-up is never fought by the next
@@ -1188,6 +1198,10 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // TYPEWRITER-FADE-ORDER (2026-10-10) - S1 (b)'s "opaque lead-in" check. Its record asserts the new truth from the live run's
+  // own reading: the mask's FIRST stop is the 15% floor, not an opaque one.
+  pok('PARKED (was "S1 (b): the container mask genuinely carries a two-stage ramp now (opaque lead-in, then the fade) ...") - TYPEWRITER-FADE-ORDER (Nick, 2026-10-10): the opaque lead-in showed the oldest line whole above fainter newer ones; the mask now starts at the 15% floor; live successor: typewriter-fade.mjs',
+    typeof fx5MaskSeen === 'string' && /linear-gradient\(\s*(?:to bottom,\s*)?rgba\(0, 0, 0, 0\.15\)/.test(fx5MaskSeen), String(fx5MaskSeen));
   await withHarness(async (app) => {
     const ctrlZParked = (sel) => app.evalJs(`document.querySelector('${sel}').dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true, cancelable: true }))`);
     await freshProsePage(app, LAPTOP_W, 900);
