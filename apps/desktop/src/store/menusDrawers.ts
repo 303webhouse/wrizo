@@ -157,7 +157,8 @@ export function requestOpen(id: DrawerId): DrawerId | null {
   let mustClose: DrawerId | null = null;
   if (id !== 'tutor') {
     const other: DrawerId = id === 'cascade' ? 'tools' : 'cascade';
-    mustClose = openDrawer === other && !canCoexist() ? other : null;
+    // `stands`, not `openDrawer`: openDrawer is only the MOST RECENT opener, so after cascade -> Tutor -> Tools it reads 'tutor' and the width law would never see the cascade still standing.
+    mustClose = stands.has(other) && !canCoexist() ? other : null;
     if (mustClose) { stands.delete(mustClose); closers.get(mustClose)?.(); }
   }
   stands.add(id);

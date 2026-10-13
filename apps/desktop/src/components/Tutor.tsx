@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
 import type { JournalEntry, Project, Fact } from '../types';
@@ -294,7 +294,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   const [docked, setDocked] = useState(false);
   // PHASE 1 (Fable, Oct 12) - one drawer at a time: opening the Tutor closes the Tools drawer (and the reverse), at every width. Announced from an effect keyed on `open`
   // so EVERY path that opens it announces (the grip, a shortcut, anything added later) - the same structural rule the Tools drawer follows.
-  useEffect(() => {
+  // A LAYOUT effect, so the hand-over lands before paint: no single frame shows both drawers open.
+  useLayoutEffect(() => {
     if (open) requestOpen('tutor');
     else noteClosed('tutor');
   }, [open]);

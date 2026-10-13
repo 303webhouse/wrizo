@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { TypeControl, type TypeControlProps } from './TypeControl';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
@@ -243,7 +243,8 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
   // and any path added later. A silent open path is no longer possible to
   // write, which is the difference between fixing this bug and closing its
   // class.
-  useEffect(() => {
+  // PHASE 1: a LAYOUT effect (the Tutor's announce is one too), so the one-drawer hand-over lands before paint - no single frame shows both hands open.
+  useLayoutEffect(() => {
     if (open) requestOpen('tools');
     else noteClosed('tools');
   }, [open]);
