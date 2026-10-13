@@ -1,0 +1,12 @@
+PASS  S1 (setup): the Counsel grip is reachable on a born page
+PASS  S1 (setup): the panel is open and its body is mounted
+PASS  S1: the Counsel FADES OUT WITH ITS CONTENTS — there are frames where the panel is part-faded and its body is still mounted (pre-fix the body was gone by frame one, so the fade ran on an empty box)  [{"midFadeFrames":8,"first":{"t":17,"opacity":1,"content":true},"sample":[{"t":34,"opacity":0.929559,"content":true},{"t":49,"opacity":0.778473,"content":true},{"t":67,"opacity":0.591357,"content":true}]}]
+PASS  S1: the body never blinks out ahead of the fade — no sampled frame loses the content while the panel is still substantially opaque  [[]]
+PASS  S1: and the fade actually completes — the panel reaches transparent within the sampling window  [{"fullyFadedAt":183}]
+PASS  S2: the Counsel FADES IN as well — the open is a transition, not a snap (the ruling is fade in AND out)  [{"midFadeFrames":8,"sample":[{"t":16,"opacity":0.0708549,"content":true},{"t":32,"opacity":0.220031,"content":true},{"t":48,"opacity":0.408224,"content":true}]}]
+PASS  S3 successor: The Counsel panel and the tool pop-out share one opacity fade (same duration and timing)  [{"tutor":{"props":["opacity","transform"],"opacityDur":"0.2s","opacityFn":"ease","opacityDelay":"0s","visIndex":-1,"visDelay":null,"visibility":"visible","open":"true"},"sliver":{"props":["opacity","transform","visibility"],"opacityDur":"0.2s","opacityFn":"ease","opacityDelay":"0s","visIndex":2,"visDelay":"0.2s","visibility":"hidden","open":"false"}}]
+PASS  S3 successor: on close, visibility switches off only after the fade ends (the closed tool pop-out: its visibility transition is delayed by at least the opacity fade's duration, and it is hidden)  [{"props":["opacity","transform","visibility"],"opacityDur":"0.2s","opacityFn":"ease","opacityDelay":"0s","visIndex":2,"visDelay":"0.2s","visibility":"hidden","open":"false"}]
+PASS  S3 successor: and the closed Counsel the same - visibility switches off only after ITS fade ends  [{"opacityDur":"0.2s","visDelay":"0.2s","visibility":"hidden","open":"false"}]
+PASS  S4: a CLOSED Counsel keeps its body mounted but marks it aria-hidden and pointer-events:none — the identical posture the left hand has shipped since FX1, inherited rather than invented  [{"tutorHidden":"true","tutorPointer":"none","tutorBodyMounted":true,"sliverBodyMounted":true,"sliverHiddenAttrPresent":true}]
+
+E3 VERIFY: PASS (10 checks)

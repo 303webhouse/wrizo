@@ -1,0 +1,208 @@
+[
+  {
+    "frame": "arbor-C1-typing",
+    "file": "arbor-C1-typing.png",
+    "popup": true,
+    "hash": "#/page/cf-board",
+    "theme": "plateau",
+    "text": "The first line of the card. She sat down and began to write it all out.",
+    "markCount": 0,
+    "shownMarks": [],
+    "headings": [],
+    "italics": [],
+    "bundle": "index-iAy42y5N.js"
+  },
+  {
+    "frame": "arbor-C2-heading",
+    "file": "arbor-C2-heading.png",
+    "popup": true,
+    "hash": "#/page/cf-board",
+    "theme": "plateau",
+    "text": "The first line of the card. She sat down and began to write it all out.\n## A heading for the card",
+    "markCount": 1,
+    "shownMarks": [],
+    "headings": [
+      {
+        "cls": "md-h2",
+        "text": "## A heading for the card",
+        "size": "22.4px",
+        "weight": "600"
+      }
+    ],
+    "italics": [],
+    "bundle": "index-iAy42y5N.js"
+  },
+  {
+    "frame": "arbor-C3a-italic-held-at-bare-caret-NO-ITALIC-RUN",
+    "file": "arbor-C3a-italic-held-at-bare-caret-NO-ITALIC-RUN.png",
+    "popup": true,
+    "hash": "#/page/cf-board",
+    "theme": "plateau",
+    "text": "The first line of the card. She sat down and began to write it all out.\n## A heading for the card\nPlain then slanted words and plain again",
+    "markCount": 1,
+    "shownMarks": [],
+    "headings": [
+      {
+        "cls": "md-h2",
+        "text": "## A heading for the card",
+        "size": "22.4px",
+        "weight": "600"
+      }
+    ],
+    "italics": [],
+    "bundle": "index-iAy42y5N.js"
+  },
+  {
+    "frame": "arbor-C3b-italic-by-selection",
+    "file": "arbor-C3b-italic-by-selection.png",
+    "popup": true,
+    "hash": "#/page/cf-board",
+    "theme": "plateau",
+    "text": "The first line of the card. She sat down and began to write it all out.\n## A heading for the card\nPlain then *slanted words* and plain again",
+    "markCount": 3,
+    "shownMarks": [],
+    "headings": [
+      {
+        "cls": "md-h2",
+        "text": "## A heading for the card",
+        "size": "22.4px",
+        "weight": "600"
+      }
+    ],
+    "italics": [
+      {
+        "text": "*slanted words*",
+        "style": "italic"
+      }
+    ],
+    "bundle": "index-iAy42y5N.js"
+  },
+  {
+    "frame": "arbor-C4-word-delete",
+    "file": "arbor-C4-word-delete.png",
+    "popup": true,
+    "hash": "#/page/cf-board",
+    "theme": "plateau",
+    "text": "The first line of the card. She sat down and began to write it all out.\n## A heading for the card\nPlain then *slanted words* and ",
+    "markCount": 3,
+    "shownMarks": [],
+    "headings": [
+      {
+        "cls": "md-h2",
+        "text": "## A heading for the card",
+        "size": "22.4px",
+        "weight": "600"
+      }
+    ],
+    "italics": [
+      {
+        "text": "*slanted words*",
+        "style": "italic"
+      }
+    ],
+    "bundle": "index-iAy42y5N.js"
+  },
+  {
+    "frame": "flux-C1-typing",
+    "file": "flux-C1-typing.png",
+    "popup": true,
+    "hash": "#/page/cf-board",
+    "theme": "flux",
+    "text": "The first line of the card. She sat down and began to write it all out.",
+    "markCount": 0,
+    "shownMarks": [],
+    "headings": [],
+    "italics": [],
+    "bundle": "index-iAy42y5N.js"
+  },
+  {
+    "frame": "flux-C2-heading",
+    "file": "flux-C2-heading.png",
+    "popup": true,
+    "hash": "#/page/cf-board",
+    "theme": "flux",
+    "text": "The first line of the card. She sat down and began to write it all out.\n## A heading for the card",
+    "markCount": 1,
+    "shownMarks": [],
+    "headings": [
+      {
+        "cls": "md-h2",
+        "text": "## A heading for the card",
+        "size": "22.4px",
+        "weight": "600"
+      }
+    ],
+    "italics": [],
+    "bundle": "index-iAy42y5N.js"
+  },
+  {
+    "frame": "flux-C3a-italic-held-at-bare-caret-NO-ITALIC-RUN",
+    "file": "flux-C3a-italic-held-at-bare-caret-NO-ITALIC-RUN.png",
+    "popup": true,
+    "hash": "#/page/cf-board",
+    "theme": "flux",
+    "text": "The first line of the card. She sat down and began to write it all out.\n## A heading for the card\nPlain then slanted words and plain again",
+    "markCount": 1,
+    "shownMarks": [],
+    "headings": [
+      {
+        "cls": "md-h2",
+        "text": "## A heading for the card",
+        "size": "22.4px",
+        "weight": "600"
+      }
+    ],
+    "italics": [],
+    "bundle": "index-iAy42y5N.js"
+  },
+  {
+    "frame": "flux-C3b-italic-by-selection",
+    "file": "flux-C3b-italic-by-selection.png",
+    "popup": true,
+    "hash": "#/page/cf-board",
+    "theme": "flux",
+    "text": "The first line of the card. She sat down and began to write it all out.\n## A heading for the card\nPlain then *slanted words* and plain again",
+    "markCount": 3,
+    "shownMarks": [],
+    "headings": [
+      {
+        "cls": "md-h2",
+        "text": "## A heading for the card",
+        "size": "22.4px",
+        "weight": "600"
+      }
+    ],
+    "italics": [
+      {
+        "text": "*slanted words*",
+        "style": "italic"
+      }
+    ],
+    "bundle": "index-iAy42y5N.js"
+  },
+  {
+    "frame": "flux-C4-word-delete",
+    "file": "flux-C4-word-delete.png",
+    "popup": true,
+    "hash": "#/page/cf-board",
+    "theme": "flux",
+    "text": "The first line of the card. She sat down and began to write it all out.\n## A heading for the card\nPlain then *slanted words* and ",
+    "markCount": 3,
+    "shownMarks": [],
+    "headings": [
+      {
+        "cls": "md-h2",
+        "text": "## A heading for the card",
+        "size": "22.4px",
+        "weight": "600"
+      }
+    ],
+    "italics": [
+      {
+        "text": "*slanted words*",
+        "style": "italic"
+      }
+    ],
+    "bundle": "index-iAy42y5N.js"
+  }
+]

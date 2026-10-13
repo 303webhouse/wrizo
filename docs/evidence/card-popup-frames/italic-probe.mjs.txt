@@ -1,0 +1,27 @@
+import { withHarness } from 'file:///C:/Users/nickh/writer-studio/.claude/worktrees/cp-ship/apps/desktop/scripts/runtime-verify.mjs';
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const CE = '.board-popup-editor';
+const out = [];
+await withHarness(async (app) => {
+  await app.emulateDpr(1, 1400, 900);
+  await app.goto('/');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');");
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+  try { await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash', timeout: 14000 }); } catch {}
+  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'ci', text: 'card', createdAt: new Date().toISOString(), origin: null, source: 'page', pageType: 'board', projectId: null, boxes: [{ id: 'rc', kind: 'text', x: 0.12, y: 0.12, w: 0.34, h: 0.3, z: 1, text: 'Plain words here' }] })})`);
+  await sleep(400); await app.reload();
+  await app.evalJs("location.hash = '#/page/ci'");
+  await app.waitFor("!!document.querySelector('[data-box-id=\"rc\"]')", { label: 'card' }); await sleep(900);
+  await app.evalJs(`(() => { const el = document.querySelector('[data-box-id="rc"]'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()`);
+  await app.waitFor(`!!document.querySelector('${CE}')`, { label: 'popup' }); await sleep(600);
+  const rd = (tag) => app.evalJs(`({ tag: ${JSON.stringify(tag)}, text: document.querySelector('${CE}').textContent, italics: document.querySelectorAll('${CE} .md-italic').length, marks: [...document.querySelectorAll('${CE} .md-mark')].map(m=>m.textContent), stored: ((JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(x=>x.id==='ci')||{}).boxes||[])[0]?.text })`);
+  // A: select the word "words" with real shift+arrow keys, then Ctrl+I
+  await app.evalJs(`(() => { const ed = document.querySelector('${CE}'); ed.focus(); const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); const n = w.nextNode(); const r = document.createRange(); r.setStart(n, 6); r.setEnd(n, 11); const s = getSelection(); s.removeAllRanges(); s.addRange(r); })()`);
+  await sleep(250); out.push(await rd('selection set'));
+  await app.keyCombo('i'); await sleep(500); out.push(await rd('after Ctrl+I on selection'));
+  // B: the same via a plain press of Ctrl+B for contrast
+  await app.evalJs(`(() => { const ed = document.querySelector('${CE}'); ed.focus(); const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n, seen = 0; while ((n = w.nextNode())) { if (n.data.includes('here')) break; } const i = n.data.indexOf('here'); const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 4); const s = getSelection(); s.removeAllRanges(); s.addRange(r); })()`);
+  await sleep(250); await app.keyCombo('b'); await sleep(500); out.push(await rd('after Ctrl+B on a selection'));
+});
+for (const o of out) console.log('ROW', JSON.stringify(o));

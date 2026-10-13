@@ -1,0 +1,75 @@
+// CARD-POPUP frames (this desk's capture script) from the cp-ship worktree's own dist-web (main + the card port): per theme (Arbor = plateau, Flux),
+// the board card's popup editor (.board-popup-editor) with: C1 TYPING, C2 a HEADING line, C3 an ITALIC run, C4 a WORD DELETE (Ctrl+Backspace x2).
+// Each frame records the popup's own text and the decorated structure (heading / italic / hidden marks), so the image is not the only evidence.
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { withHarness } from 'file:///C:/Users/nickh/writer-studio/.claude/worktrees/cp-ship/apps/desktop/scripts/runtime-verify.mjs';
+
+const OUT = process.env.FRAMES_OUT;
+mkdirSync(OUT, { recursive: true });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const rows = [];
+const CE = '.board-popup-editor';
+const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
+const kev = (app, type, o) => app.cdp('Input.dispatchKeyEvent', { type, ...o });
+const KEYS = { Backspace: 8, Delete: 46, ArrowLeft: 37, ArrowRight: 39, Enter: 13, End: 35 };
+const key = async (app, k, mods = 0) => { const p = { key: k, code: k, windowsVirtualKeyCode: KEYS[k], nativeVirtualKeyCode: KEYS[k], modifiers: mods }; await kev(app, 'rawKeyDown', p); await kev(app, 'keyUp', p); await sleep(160); };
+const facts = (app) => app.evalJs(`(() => {
+  const ed = document.querySelector('${CE}'); if (!ed) return { popup: false };
+  const marks = [...ed.querySelectorAll('.md-mark')]; const shown = marks.filter((m) => !m.classList.contains('md-mark-hidden')).map((m) => m.textContent);
+  const hs = [...ed.querySelectorAll('[class*="md-h"]')].map((e) => ({ cls: e.className, text: e.textContent.slice(0, 40), size: getComputedStyle(e).fontSize, weight: getComputedStyle(e).fontWeight }));
+  const it = [...ed.querySelectorAll('.md-italic')].map((e) => ({ text: e.textContent.slice(0, 40), style: getComputedStyle(e).fontStyle }));
+  return { popup: true, hash: location.hash, theme: document.documentElement.getAttribute('data-theme'), text: ed.textContent, markCount: marks.length, shownMarks: shown, headings: hs, italics: it,
+    bundle: ([...document.scripts].map((s) => s.src).find((s) => /assets\\/index-/.test(s)) || '').replace(/^.*assets\\//, '') };
+})()`);
+const shot = async (app, name) => {
+  writeFileSync(join(OUT, `${name}.png`), Buffer.from(await app.screenshot(), 'base64'));
+  const row = { frame: name, file: `${name}.png`, ...(await facts(app)) }; rows.push(row); console.log(JSON.stringify(row));
+};
+const endOfPopup = (app) => app.evalJs(`(() => { const ed = document.querySelector('${CE}'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()`);
+
+await withHarness(async (app) => {
+  for (const [id, theme] of [['arbor', 'plateau'], ['flux', 'flux']]) {
+    await app.emulateDpr(1, 1400, 900);
+    await app.goto('/');
+    await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-theme','${theme}'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');`);
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+    await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 14000 });
+    await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'cf-board', text: 'card frames', createdAt: new Date().toISOString(), origin: null, source: 'page', pageType: 'board', projectId: null,
+      boxes: [{ id: 'rc', kind: 'text', x: 0.12, y: 0.12, w: 0.34, h: 0.3, z: 1, text: 'The first line of the card.' }, { id: 'rd', kind: 'text', x: 0.55, y: 0.45, w: 0.26, h: 0.14, z: 2, text: 'A second card.' }] })})`);
+    await sleep(400);
+    await app.reload();
+    await app.evalJs("location.hash = '#/page/cf-board'");
+    await app.waitFor("!!document.querySelector('[data-box-id=\"rc\"]')", { label: 'board card' });
+    await sleep(900);
+    await app.evalJs(`(() => { const el = document.querySelector('[data-box-id="rc"]'); const r = el.getBoundingClientRect();
+      el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()`);
+    await app.waitFor(`!!document.querySelector('${CE}')`, { label: 'card popup' });
+    await sleep(700);
+    // C1 TYPING
+    await endOfPopup(app); await sleep(200);
+    await app.typeKeys(' She sat down and began to write it all out.');
+    await sleep(500);
+    await shot(app, `${id}-C1-typing`);
+    // C2 HEADING
+    await key(app, 'Enter'); await app.typeKeys('## A heading for the card');
+    await sleep(500);
+    await shot(app, `${id}-C2-heading`);
+    // C3 ITALIC (Ctrl+I held, letters, Ctrl+I off, plain letters)
+    await key(app, 'Enter'); await app.typeKeys('Plain then ');
+    await app.keyCombo('i'); await sleep(250); await app.typeKeys('slanted words'); await app.keyCombo('i'); await sleep(250); await app.typeKeys(' and plain again');
+    await sleep(500);
+    await shot(app, `${id}-C3a-italic-held-at-bare-caret-NO-ITALIC-RUN`);
+    // the same words, italic by SELECTION (Ctrl+I over a selected word): this one is the working path
+    await app.evalJs(`(() => { const ed = document.querySelector('${CE}'); ed.focus(); const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) { if (n.data.includes('slanted words')) break; } const i = n.data.indexOf('slanted words'); const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 13); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); })()`);
+    await sleep(250); await app.keyCombo('i'); await sleep(600);
+    await shot(app, `${id}-C3b-italic-by-selection`);
+    // C4 WORD DELETE (Ctrl+Backspace x2)
+    await endOfPopup(app); await key(app, 'Backspace', 2); await key(app, 'Backspace', 2);
+    await sleep(500);
+    await shot(app, `${id}-C4-word-delete`);
+  }
+});
+writeFileSync(join(OUT, 'frames.json'), JSON.stringify(rows, null, 2) + '\n');
+console.log(`CARD FRAMES: ${rows.length} frames -> ${OUT}`);
