@@ -4153,6 +4153,23 @@ a:focus-visible,
 .wz-tutor-dock-btn{ background:none; border:0; color:var(--text-low); font-family:var(--font-ui);
   font-size:11px; cursor:pointer; padding:2px 4px; transition:.15s; }
 .wz-tutor-dock-btn:hover{ color:var(--text-hi); }
+/* ITEM word-diet — DrawerNote.tsx's own CSS, ported verbatim from
+   phase1-drawers (PHASE 1 S3), which has not yet merged to main. Only the
+   generic button/pop rules; the drawer-tab-row-specific layout rules
+   (.wz-drawer-tabnotes/.wz-drawer-tabnote-cell) stay on that branch —
+   not needed by word-diet's own call sites, which each supply their own
+   wrapping context. A near-identical duplicate will meet phase1-drawers
+   at merge time; a trivial conflict to resolve then, not a problem now. */
+.wz-drawer-note{ position:relative; pointer-events:auto; display:inline-block; }
+.wz-drawer-note-btn{ width:15px; height:15px; padding:0; display:flex; align-items:center; justify-content:center; background:none;
+  border:1px solid var(--ink-border); border-radius:0; color:var(--text-low); font-family:var(--font-ui); font-size:9.5px; line-height:1; cursor:pointer;
+  transition:color .15s ease, border-color .15s ease; }
+.wz-drawer-note-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-drawer-note-btn[aria-expanded='true']{ color:var(--brass); border-color:var(--brass); background:none; }
+.wz-drawer-note-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+.wz-drawer-note-pop{ position:absolute; left:0; top:calc(100% + 4px); z-index:5; width:max-content; max-width:260px; padding:10px 12px; background:var(--desk-ground);
+  border:1px solid var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-ui); font-size:12.5px; line-height:1.45; pointer-events:auto; }
+
 .wz-tutor-section{ display:flex; flex-direction:column; gap:6px; }
 .wz-tutor-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
 .wz-tutor-note{ font-size:11px; color:var(--text-low); }
@@ -4213,6 +4230,9 @@ a:focus-visible,
 .wz-tutor-convo-send:hover:not(:disabled){ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-tutor-convo-send:disabled{ color:var(--text-low); cursor:default; }
 .wz-tutor-convo-status{ font-size:11px; color:var(--text-low); }
+/* ITEM word-diet — the new "Try again" button beside tutorConversationError. */
+.wz-tutor-retry{ font-size:11px; color:var(--text-hi); background:none; border:1px solid var(--ink-border); border-radius:0; padding:1px 6px; cursor:pointer; }
+.wz-tutor-retry:hover{ border-color:var(--ink-border-strong); }
 /* ITEM 84, THE DECK PHASE — the Free Write roster (three presets) and the one
    standing draw. Rendered ONLY in Free Write (Tutor.tsx's `freeWrite` branch);
    in Draft, on screenplay and on Board this block has nothing to style, which

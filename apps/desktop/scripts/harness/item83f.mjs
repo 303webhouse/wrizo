@@ -872,10 +872,18 @@ await withHarness(async (app) => {
     !!pk2 && JSON.stringify(pk2.checked) === JSON.stringify(['research']) && JSON.stringify(pk2.guideChecked) === JSON.stringify(['chicago']), JSON.stringify(pk2));
   await app.evalJs("(() => { const b = document.querySelector('.wz-strip-item[data-category=page]'); if (b) b.click(); })()");
   await sleep(500);
-  const pressedDefaults = await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => x.textContent.trim() === 'Set as my default page settings'); if (!b) return false; b.click(); return true; })()");
+  // SUPERSEDED (item word-diet, Nick) — pageSetupSaveDefaults shortens to
+  // "Make Default"; see the successor just below.
+  // const pressedDefaults = await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => x.textContent.trim() === 'Set as my default page settings'); if (!b) return false; b.click(); return true; })()");
+  // await sleep(500);
+  // const storedDefaults = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-page-defaults') || 'null')");
+  // ok('E4 [Fable\'s review successor]: "Set as my default page settings" on that Research page saves the dress and NOT the kind or style guide',
+  //   pressedDefaults === true && storedDefaults !== null && storedDefaults.kind === undefined && storedDefaults.styleGuide === undefined && storedDefaults.margins !== undefined,
+  //   JSON.stringify({ pressedDefaults, storedDefaults }));
+  const pressedDefaults = await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => x.textContent.trim() === 'Make Default'); if (!b) return false; b.click(); return true; })()");
   await sleep(500);
   const storedDefaults = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-page-defaults') || 'null')");
-  ok('E4 [Fable\'s review successor]: "Set as my default page settings" on that Research page saves the dress and NOT the kind or style guide',
+  ok('E4 [word-diet successor]: "Make Default" on that Research page saves the dress and NOT the kind or style guide',
     pressedDefaults === true && storedDefaults !== null && storedDefaults.kind === undefined && storedDefaults.styleGuide === undefined && storedDefaults.margins !== undefined,
     JSON.stringify({ pressedDefaults, storedDefaults }));
   await freshScriptPage(app, 1400, 900);

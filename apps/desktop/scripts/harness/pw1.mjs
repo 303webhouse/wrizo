@@ -519,18 +519,18 @@ await withHarness(async (app) => {
     if (await pressCentre(app, '.wz-cascade-boardrow-open', 'open the board\'s contents to reach its membership rows')) {
       await sleep(300);
       const before = await app.evalJs("[...document.querySelectorAll('.wz-cascade-thumb')].map(t => ({ title: t.querySelector('.wz-cascade-thumb-title')?.textContent, note: t.querySelector('.wz-cascade-thumb-note')?.textContent }))");
-      const notShown = (before || []).find((r) => r.note === 'member · not shown on the board');
+      const notShown = (before || []).find((r) => r.note === 'Hidden'); // DRIVER: cascadePinNotShown (item word-diet) -> 'Hidden'
       ok('S3: each row STATES ITS STATE in the second-line slot — display state is a fact on the row, never inferred from the wall',
         !!notShown && notShown.title === 'A page pinned the NEW way', JSON.stringify(before));
 
       // Open that row's own ⋯ and press Display on Board.
-      const idx = (before || []).findIndex((r) => r.note === 'member · not shown on the board');
+      const idx = (before || []).findIndex((r) => r.note === 'Hidden'); // DRIVER: cascadePinNotShown (item word-diet) -> 'Hidden'
       if (idx >= 0) {
         const btnSel = `.wz-cascade-thumb:nth-of-type(1)`; // placeholder, resolved below
         void btnSel;
         const opened = await app.evalJs(`(() => {
           const thumbs = [...document.querySelectorAll('.wz-cascade-thumb')];
-          const t = thumbs.find(t => t.querySelector('.wz-cascade-thumb-note')?.textContent === 'member · not shown on the board');
+          const t = thumbs.find(t => t.querySelector('.wz-cascade-thumb-note')?.textContent === 'Hidden'); // DRIVER: cascadePinNotShown (item word-diet) -> 'Hidden'
           if (!t) return null;
           const b = t.querySelector('.wz-cascade-thumb-menu-btn');
           if (!b) return null;
@@ -567,8 +567,12 @@ await withHarness(async (app) => {
             const flag = await app.evalJs("(() => { const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'pw1-absence-board'); const b = (e.boxes||[]).find(b => b.entryId === 'pw1-newpin-target'); return b ? b.onCanvas : null; })()");
             const noteNow = await app.evalJs("[...document.querySelectorAll('.wz-cascade-thumb')].map(t => ({ title: t.querySelector('.wz-cascade-thumb-title')?.textContent, note: t.querySelector('.wz-cascade-thumb-note')?.textContent }))");
             const moved = (noteNow || []).find((r) => r.title === 'A page pinned the NEW way');
-            ok('S3: "Display on Board" moves the membership ONTO the canvas, and the row\'s state line changes with it — one act, both faces true',
-              flag === true && !!moved && moved.note === 'member · shown on the board', JSON.stringify({ flag, moved }));
+            // SUPERSEDED (item word-diet, Nick) — cascadePinShown's text itself changed,
+            // 'member · shown on the board' -> 'Shown'; ORIGINAL claim parked verbatim:
+            // ok('S3: "Display on Board" moves the membership ONTO the canvas, and the row\'s state line changes with it — one act, both faces true',
+            //   flag === true && !!moved && moved.note === 'member · shown on the board', JSON.stringify({ flag, moved }));
+            ok('S3 [word-diet successor]: "Display on Board" moves the membership ONTO the canvas, and the row\'s state line changes with it — one act, both faces true',
+              flag === true && !!moved && moved.note === 'Shown', JSON.stringify({ flag, moved }));
           }
         }
       }
@@ -710,8 +714,12 @@ await withHarness(async (app) => {
     const c = document.querySelector('.desk-frame-host .sprint-crumb');
     return c ? c.innerText.replace(/\\s+/g, ' ').trim() : null;
   })()`);
-  ok('S6: THE CHAIN NEVER RENDERS EMPTY — a page with no drawer and no project reads its HOME LABEL ("Loose — belongs nowhere yet"), not a bare title. The one case where the writer is most likely to be lost is the case where the address must still say something true',
-    typeof looseCrumb === 'string' && looseCrumb.includes('Loose — belongs nowhere yet'), String(looseCrumb));
+  // SUPERSEDED (item word-diet, Nick) — pageHomeLoose's text itself changed,
+  // "Loose — belongs nowhere yet" -> "Unfiled"; the ORIGINAL claim parked verbatim:
+  // ok('S6: THE CHAIN NEVER RENDERS EMPTY — a page with no drawer and no project reads its HOME LABEL ("Loose — belongs nowhere yet"), not a bare title. The one case where the writer is most likely to be lost is the case where the address must still say something true',
+  //   typeof looseCrumb === 'string' && looseCrumb.includes('Loose — belongs nowhere yet'), String(looseCrumb));
+  ok('S6 [word-diet successor]: THE CHAIN NEVER RENDERS EMPTY — a page with no drawer and no project reads its HOME LABEL ("Unfiled"), not a bare title',
+    typeof looseCrumb === 'string' && looseCrumb.includes('Unfiled'), String(looseCrumb));
 
   // ==========================================================================
   // S1, Fable ruling 2 — a LOOSE page's real connections never hide behind
@@ -855,9 +863,15 @@ await withHarness(async (app) => {
       isCrumbItem: el.classList.contains('crumb-item'),
     };
   })()`);
-  ok('ERRATUM 3: the location phrase renders WHOLE — "Loose — belongs nowhere yet" is not clipped by its own box (measured scrollWidth vs clientWidth), and it no longer wears `crumb-item`, whose 160px ellipsis turned it into the false sentence "Loose — belongs now…"',
+  // SUPERSEDED (item word-diet, Nick) — pageHomeLoose's text itself changed,
+  // "Loose — belongs nowhere yet" -> "Unfiled"; the ORIGINAL claim parked verbatim:
+  // ok('ERRATUM 3: the location phrase renders WHOLE — "Loose — belongs nowhere yet" is not clipped by its own box (measured scrollWidth vs clientWidth), and it no longer wears `crumb-item`, whose 160px ellipsis turned it into the false sentence "Loose — belongs now…"',
+  //   !!crumbGeom && crumbGeom.clipped === false && crumbGeom.isCrumbItem === false
+  //     && crumbGeom.text.includes('belongs nowhere yet'),
+  //   JSON.stringify(crumbGeom));
+  ok('ERRATUM 3 [word-diet successor]: the location phrase renders WHOLE — "Unfiled" is not clipped by its own box, and it no longer wears `crumb-item`',
     !!crumbGeom && crumbGeom.clipped === false && crumbGeom.isCrumbItem === false
-      && crumbGeom.text.includes('belongs nowhere yet'),
+      && crumbGeom.text.includes('Unfiled'),
     JSON.stringify(crumbGeom));
 
   const titleTrunc = await app.evalJs(`(() => {

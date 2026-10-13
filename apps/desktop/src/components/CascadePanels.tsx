@@ -2,6 +2,7 @@ import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon, deskTerm } from '../store/deskLexicon';
 import { boardDrawerLine } from '../store/pageHome';
+import { DrawerNote } from './DrawerNote';
 import { firstLine, plainLines } from '../store/entryText';
 import { useSectionFold } from '../store/sectionFold';
 import {
@@ -443,9 +444,13 @@ function OpenPages({ navigate, currentId, boardId }: {
               <span className="wz-place-page-title">{itemTitle(p)}</span>
               <span className="wz-place-page-home">{homeOf(p)}</span>
             </button>
+            {/* ITEM word-diet (Nick, Oct 13): REMOVE — the only visible
+                trace of this label was the hover tooltip (`title`); the
+                accessible name (`aria-label`) stays, full, per the "screen-
+                reader text may stay" carve-out. */}
             {boardId && (
               <button type="button" className="wz-open-pages-more"
-                aria-label={t('openPagesMore')} title={t('openPagesMore')}
+                aria-label={t('openPagesMore')}
                 aria-haspopup="menu" aria-expanded={menuFor === p.id}
                 onClick={() => setMenuFor(menuFor === p.id ? null : p.id)}>{'\u22ef'}</button>
             )}
@@ -494,7 +499,13 @@ function PageSetupZone({ entry }: { entry: JournalEntry }) {
 
   return (
     <div className="wz-cascade-panel-body wz-page-setup">
-      <div className="wz-cascade-panel-title">{t('pageSetupHeading')}</div>
+      <div className="wz-cascade-panel-title">
+        {t('pageSetupHeading')}{' '}
+        {/* ITEM word-diet (Nick, Oct 13) — the export note moves behind a
+            "?", one plain sentence, beside the heading rather than always
+            standing below the rows. */}
+        <DrawerNote label="About export and print">{t('pageSetupExportNote')}</DrawerNote>
+      </div>
 
       <div className="wz-page-setup-row">
         <span className="wz-page-setup-label">{t('pageSetupMargins')}</span>
@@ -553,8 +564,6 @@ function PageSetupZone({ entry }: { entry: JournalEntry }) {
           )}
         </div>
       ))}
-
-      <p className="wz-page-setup-note">{t('pageSetupExportNote')}</p>
 
       {/* R6's own closing clause: the writer's defaults live at the bottom of
           the PAGE menu, and are a COPY of this page's settings (see
@@ -781,11 +790,9 @@ function PlanPanel({ subject, project, navigate, openSurvey, travelFromCascade }
         {!zone && <div className="wz-cascade-empty" style={{ padding: 0 }}>{t('cascadePlanNoProject')}</div>}
         <button type="button" className="wz-cascade-action" onClick={createBoard}>{t('cascadePlanCreateBoard')}</button>
         <button type="button" className="wz-cascade-action" onClick={plotStory}>{t('cascadePlanPlotStory')}</button>
-        {/* FX6 S2c — a quiet one-line pointer at the OTHER new door: a
-            writer who just wants a page (not a whole board/plan) currently
-            sees only project-creating buttons here — this says where the
-            plainer door actually is. */}
-        <div className="wz-cascade-empty" style={{ padding: 0 }}>{t('cascadePlanJustAPage')}</div>
+        {/* ITEM word-diet (Nick, Oct 13): REMOVE — this pointer's own line
+            is gone whole; cascadePlanJustAPage's lexicon entry is
+            untouched, simply never rendered here now. */}
       </div>
     );
   }
@@ -1330,7 +1337,9 @@ function CardTransferMenu({ boardId, box }: { boardId: string; box: Box }) {
         <PinToBoardSheet
           entryId={boardId}
           title={t('cascadeCardCopyTitle')}
-          note={t('cascadeCardCopyNote')}
+          // ITEM word-diet (Nick, Oct 13) — the copy-note moves behind a
+          // "?", one plain sentence, beside the sheet's own title.
+          note={<DrawerNote label="About copying">{t('cascadeCardCopyNote')}</DrawerNote>}
           onChoose={(targetBoardId) => { copyCardToBoard(boardId, box.id, targetBoardId); }}
           onClose={() => setPickerOpen(false)}
         />

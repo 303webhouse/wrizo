@@ -392,66 +392,30 @@ await withHarness(async (app) => {
   }
 
   // ==========================================================================
-  // DISCLOSURE V2 — shown exactly once per version. (a) A genuinely fresh
-  // device. (b) The brief's own single most important disclosure check: a
-  // device seeded with the OLD v1 boolean flag ALONE does NOT suppress v2.
+  // SUPERSEDED WHOLE (item word-diet, Nick, TRUST) — the one-time modal
+  // this entire block tests (version-keyed, shown once, surviving an OLD
+  // v1-seeded device) retires completely; see tu1.mjs's own S6 section for
+  // the full writeup. Parked whole rather than reworded version-by-
+  // version — a retired mechanism has no "current version" to re-assert
+  // against. ORIGINAL kept in full in this file's own git history (not
+  // re-quoted here at this length); one real successor follows, re-using
+  // this section's own strongest case (a device seeded with the OLD v1
+  // flag) since that is still a meaningful thing to re-confirm: no legacy
+  // flag state brings the modal back.
   // ==========================================================================
   {
-    // (a) Fresh device, no flags at all.
-    await freshProsePage(app, LAPTOP_W, 900, { skipDisclosure: false });
-    // TU5 S6 — the disclosure is v3 now; read v3's body. The three v2-wording /
-    // v2-version assertions this section originally made are parked below (A4,
-    // verbatim), superseded, with the owning successors in tu5.mjs; re-asserted
-    // fresh here against v3.
-    const v3Body = await lex(app, 'tutorDisclosureBodyV3');
-    ok('Disclosure v2: not yet seen on a genuinely fresh device (neither key set)',
-      (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === null);
-    await app.evalJs("document.querySelector('.wz-tutor-grip').click()");
-    await sleep(300);
-    const shownText = await app.evalJs("document.querySelector('.wz-tutor-disclosure-body')?.textContent ?? ''");
-    ok('Disclosure v3: shown on the first-ever open, carrying the CURRENT (v3) wording exactly (lexicon-routed) — the v2-wording assertion this replaces is parked below, superseded by TU5 S6',
-      shownText === v3Body, shownText);
-    await app.evalJs("document.querySelector('.wz-tutor-disclosure-ack').click()");
-    await sleep(250);
-    ok('Disclosure v4: the ack dismisses it and writes the CURRENT version (4) under the version key — the "(3)" assertion this replaces is parked below, superseded by ITEM 84',
-      (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')"))
-      && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '4');
-    await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); // close
-    await sleep(200);
-    await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); // open #2
-    await sleep(300);
-    ok('Disclosure v2: does NOT reappear on the second-ever open (same device, same version)',
-      (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')")));
-
-    // (b) The single most important check: a device that saw v1 (the OLD
-    // boolean flag, '1') and NOTHING else. TU1's own users are exactly this
-    // shape the day TU2 ships.
-    await freshDesk(app, LAPTOP_W, 900, { skipDisclosure: false });
-    await app.evalJs("localStorage.setItem('wrizo-tutor-disclosure-seen', '1')"); // the OLD v1 flag, seeded directly — never the new version key
-    await app.reload(); // tutorDisclosure.ts's own module-level cache is read once at import; the seed must precede this reload, mirroring freshDesk's own discipline
+    await freshDesk(app, LAPTOP_W, 900);
+    await app.evalJs("localStorage.setItem('wrizo-tutor-disclosure-seen', '1')"); // the OLD v1 flag — harmless now, nothing reads it
+    await app.reload();
     await app.goto('/project/new');
     await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (v1-seeded device)' });
     await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
     await app.click('Start writing');
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted (v1-seeded device)' });
     await sleep(400);
-    ok('Disclosure v2 (v1-seeded device): the OLD v1 flag really is present and alone before the first open',
-      (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen')")) === '1'
-      && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === null);
     await app.evalJs("document.querySelector('.wz-tutor-grip').click()");
     await sleep(300);
-    const v1SeededShown = await app.evalJs("!!document.querySelector('.wz-tutor-disclosure')");
-    const v1SeededText = await app.evalJs("document.querySelector('.wz-tutor-disclosure-body')?.textContent ?? ''");
-    ok('Disclosure v3 (v1-seeded device) — the OLD v1 flag does NOT suppress the disclosure — it still shows, once, now with v3\'s own wording (the v2-wording form is parked below, superseded by TU5 S6)',
-      v1SeededShown === true && v1SeededText === v3Body, JSON.stringify({ v1SeededShown, v1SeededText }));
-    await app.evalJs("document.querySelector('.wz-tutor-disclosure-ack').click()");
-    await sleep(250);
-    // Close, reopen — a v1-seeded device that has now ALSO acked v2 does not see it a third time.
-    await app.evalJs("document.querySelector('.wz-tutor-grip').click()");
-    await sleep(200);
-    await app.evalJs("document.querySelector('.wz-tutor-grip').click()");
-    await sleep(300);
-    ok('Disclosure v2 (v1-seeded device): once acked, does not reappear — same "exactly once per version" law applies regardless of how the device arrived',
+    ok('Disclosure [word-diet successor]: even a device carrying the OLD v1 "seen" flag never shows the modal (RETIRED whole, not version-gated anymore)',
       (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')")));
   }
 

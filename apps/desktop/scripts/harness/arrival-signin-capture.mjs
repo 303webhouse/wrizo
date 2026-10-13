@@ -174,7 +174,8 @@ await withHarness(async (app) => {
       await app.waitFor(`!!document.querySelector('.wz-logout-sheet')`, { timeout: 12000, label: 'the logout sheet' });
       await save(app, vp.name, theme.name, 'logout-sheet');
 
-      await app.click('Sign out anyway');
+      // ITEM word-diet: "Sign out anyway (...)" -> "Sign out and lose ... changes" (logoutAnyway/logoutAnywayOne).
+      await app.click('Sign out and lose');
       await save(app, vp.name, theme.name, 'logout-confirm');
 
       // Esc is "Stay signed in". Then make the push stall, press Sign out again, and shoot while the button says so.

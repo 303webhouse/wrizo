@@ -759,8 +759,12 @@ if (process.env.HARNESS_PARKED === '1') {
     // re-asserted here against the new copy. Live successor: b2-1.mjs's
     // own "S6 lexicon + DOM" section.
     const trashBoardHomeLabelNow = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-    pok('PARKED (was "S1/S3/S4: the Trash Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (flatly false)") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
-      trashBoardHomeLabelNow === 'The Trash Board — has no drawer home', String(trashBoardHomeLabelNow));
+    // SUPERSEDED (item word-diet, Nick) — boardHomeLabelTrash shortens again,
+    // "The Trash Board — has no drawer home" -> "Trash"; ORIGINAL parked verbatim:
+    // pok('PARKED (was "S1/S3/S4: the Trash Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (flatly false)") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
+    //   trashBoardHomeLabelNow === 'The Trash Board — has no drawer home', String(trashBoardHomeLabelNow));
+    pok('PARKED [word-diet successor] (was the "drawer home" generation) — the Trash Board\'s own Page face now reads bare "Trash"; live successor: b2-1.mjs',
+      trashBoardHomeLabelNow === 'Trash', String(trashBoardHomeLabelNow));
 
     // A second stamped fixture for the Journal Board's own label (systemKind
     // 'journal', the ternary's ELSE branch in BoardEditor.tsx).
@@ -779,8 +783,12 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
     await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'PARKED Page face (journal system board)' });
     const journalBoardHomeLabelNow = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-    pok('PARKED (was "S1/S3: the Journal Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (self-referential) or a project name it doesn\'t have") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
-      journalBoardHomeLabelNow === 'The Journal Board — has no drawer home', String(journalBoardHomeLabelNow));
+    // SUPERSEDED (item word-diet, Nick) — boardHomeLabelJournal shortens again,
+    // "The Journal Board — has no drawer home" -> "Journal"; ORIGINAL parked verbatim:
+    // pok('PARKED (was "S1/S3: the Journal Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (self-referential) or a project name it doesn\'t have") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
+    //   journalBoardHomeLabelNow === 'The Journal Board — has no drawer home', String(journalBoardHomeLabelNow));
+    pok('PARKED [word-diet successor] (was the "drawer home" generation) — the Journal Board\'s own Page face now reads bare "Journal"; live successor: b2-1.mjs',
+      journalBoardHomeLabelNow === 'Journal', String(journalBoardHomeLabelNow));
 
     // CD3 harness-discipline fix (2026-07-22) — this file's own live S4/S5
     // check (Trash at section C's own foot, index 5) is SUPERSEDED whole:

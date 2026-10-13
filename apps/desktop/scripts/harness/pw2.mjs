@@ -326,7 +326,7 @@ await withHarness(async (app) => {
       doubledEdge: getComputedStyle(el, '::before').content !== 'none',
     };
   })()`);
-  ok('S2 CHECK 4b: the displayed board renders as a BOARD-CARD — its badge reads the board noun (never "From a page"), it carries the doubled edge that teaches the kind by shape, and it is WIDER THAN TALL on the canvas as the same law requires in the rail',
+  ok('S2 CHECK 4b: the displayed board renders as a BOARD-CARD — its badge reads the board noun (never "From Pages"), it carries the doubled edge that teaches the kind by shape, and it is WIDER THAN TALL on the canvas as the same law requires in the rail',
     !!cardFace && /board/i.test(cardFace.badge || '') && cardFace.title === 'Board B'
       && cardFace.doubledEdge === true && cardFace.w > cardFace.h,
     JSON.stringify(cardFace));

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { getDrawers, getProjects, getBinderPages, createBoardPage, pinPageToBoard } from '../store/persistence';
 // B2.1 S6 — "Binder", not "Drawer": this sheet's own root view groups
 // projects under `{drawer.name}` (the OLDER stored-Drawer entity) as its
@@ -32,7 +33,10 @@ export function PinToBoardSheet({ entryId, onClose, onChoose, title, note }: {
   onClose: () => void;
   onChoose?: (boardId: string) => void;
   title?: string;
-  note?: string;
+  // ITEM word-diet — widened from `string` to `ReactNode` so a caller can
+  // pass a DrawerNote-wrapped "?" instead of standing text; every existing
+  // caller passes a plain string (still a valid ReactNode) or nothing.
+  note?: ReactNode;
 }) {
   const { t: lex, tMany: lexMany } = useLexicon();
   const [level, setLevel] = useState<Level>({ kind: 'root' });

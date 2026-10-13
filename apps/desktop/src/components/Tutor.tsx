@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
 import type { JournalEntry, Project, Fact } from '../types';
 import { generateId, getBinderPages, getJournalEntry, appendTutorMessage, advanceTutorCursor, isUnborn } from '../store/persistence';
-import { getTutorDisclosureSeen, setTutorDisclosureSeen } from '../store/tutorDisclosure';
 import { apiTutorChat } from '../store/api';
 import { computeConsistencyObservations } from '../store/tutorConsistency';
 import { computeStructureFacts, computeFragmentItems } from '../store/tutorLenses';
@@ -405,6 +404,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // focus, so there was no cursor until the writer clicked. See the focus
   // effect below.
   const composerRef = useRef<HTMLInputElement | null>(null);
+  // ITEM word-diet — the last-attempted request, for "Try again" (see
+  // `attemptSend`/`lastSendArgsRef.current` below).
+  const lastSendArgsRef = useRef<{ history: { role: 'writer' | 'tutor'; text: string }[]; delta?: string; bible?: string; selection?: string } | null>(null);
 
   // ==========================================================================
   // ITEM 84, THE DRAFT ROSTER — the Draft asks' own state.
@@ -510,28 +512,24 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     return () => window.removeEventListener('resize', measure);
   }, [open, docked, pageKind]);
 
-  const openDisclosureIfNeeded = () => {
-    if (!getTutorDisclosureSeen()) setShowDisclosure(true);
-  };
-
+  // ITEM word-diet (Nick, Oct 13): REMOVE — the one-time "Before you ask"
+  // modal (openDisclosureIfNeeded/acknowledgeDisclosure, below) retires
+  // whole. tutorDisclosureBodyV4 moves behind a "?" beside the Ask box
+  // instead, always available, no standing text and no one-time gate.
+  // showDisclosure stays declared (several OTHER guards below read it) but
+  // is never set true anymore, so those guards are permanently dormant
+  // rather than individually rewired — the same "left inert, not deleted"
+  // treatment store/tutorNudges.ts already carries ("sleeps dormant") for
+  // exactly this kind of retirement.
   const handleGripClick = () => {
     if (docked) { setDocked(false); return; } // reopening the grip while docked restores the panel (Cascade's own T5 rider, mirrored)
-    setOpen((o) => {
-      const next = !o;
-      if (next) openDisclosureIfNeeded();
-      return next;
-    });
+    setOpen((o) => !o);
   };
 
   const handleDockButton = () => {
     if (docked) { setDocked(false); setOpen(false); return; } // the docked panel's own explicit close
     if (availableTutorMargin() >= DOCK_FLOOR_PX) { setDocked(true); return; }
     setOpen(false); // the dock affordance is unavailable below the floor — a plain close instead
-  };
-
-  const acknowledgeDisclosure = () => {
-    setTutorDisclosureSeen(true);
-    setShowDisclosure(false);
   };
 
   // TU5 S3 — the writer's own Bible edits. These handlers ONLY ever call the
@@ -847,7 +845,20 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     // (never an empty string) unless the chip whose own words name it was the
     // press that staged this ask. `pageText` is not passed and never becomes a
     // key: it stays a render prop, per the lock record's own wire precision.
-    const result = await apiTutorChat(history, delta ?? undefined, bible ?? undefined, selection ?? undefined);
+    const args = { history, delta: delta ?? undefined, bible: bible ?? undefined, selection: selection ?? undefined };
+    // ITEM word-diet — the EXACT request just assembled, kept for "Try
+    // again" (tutorConversationError's own new button): a retry replays
+    // this SAME call rather than re-reading armedSelection/re-assembling
+    // the delta against `lastRead`, both of which the lines above already
+    // consumed/advanced past — re-deriving them on retry would silently
+    // send a DIFFERENT, smaller request than the one that actually failed.
+    lastSendArgsRef.current = args;
+    await attemptSend(args);
+  };
+
+  const attemptSend = async (args: { history: { role: 'writer' | 'tutor'; text: string }[]; delta?: string; bible?: string; selection?: string }) => {
+    setSending(true);
+    const result = await apiTutorChat(args.history, args.delta, args.bible, args.selection);
     setSending(false);
     if (!result.ok) { setStatus('error'); return; }
     if (!result.configured) { setStatus('offline'); return; }
@@ -999,7 +1010,17 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
                 )}
               </div>
               {status === 'offline' && <div className="wz-tutor-convo-status">{t('tutorConversationOffline')}</div>}
-              {status === 'error' && <div className="wz-tutor-convo-status">{t('tutorConversationError')}</div>}
+              {/* ITEM word-diet (Nick, Oct 13) — a real "Try again" button,
+                  replaying the EXACT request that failed (lastSendArgsRef),
+                  not a re-derived one. */}
+              {status === 'error' && (
+                <div className="wz-tutor-convo-status">
+                  {t('tutorConversationError')}{' '}
+                  <button type="button" className="wz-tutor-retry" onClick={() => { if (lastSendArgsRef.current) { setStatus('idle'); attemptSend(lastSendArgsRef.current); } }}>
+                    {t('tutorConversationRetry')}
+                  </button>
+                </div>
+              )}
               {status === 'unborn' && <div className="wz-tutor-convo-status">{t('tutorConversationUnborn')}</div>}
               {sending && <div className="wz-tutor-convo-status">{t('tutorConversationSending')}</div>}
               {deltaTruncated && <div className="wz-tutor-convo-status">{t('tutorDeltaTruncated')}</div>}
@@ -1096,6 +1117,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
                 <button type="button" className="wz-tutor-convo-send" disabled={!composerText.trim() || sending} onClick={() => void send()}>
                   {t('tutorConversationSend')}
                 </button>
+                {/* ITEM word-diet (Nick, Oct 13, TRUST) — tutorDisclosureBodyV4,
+                    behind a "?" beside the Ask box, no standing text. */}
+                <DrawerNote label="What travels when you ask">{t('tutorDisclosureBodyV4')}</DrawerNote>
               </div>
             </div>
 
@@ -1125,8 +1149,12 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             </div>
 
             <div className="wz-tutor-section">
-              <div className="wz-tutor-h">{t('tutorLensFragments')}</div>
-              <div className="wz-tutor-note">{t('tutorLensFragmentsNote')}</div>
+              {/* ITEM word-diet (Nick, Oct 13) — the note moves behind a
+                  "?" beside the lens heading. */}
+              <div className="wz-tutor-h">
+                {t('tutorLensFragments')}{' '}
+                <DrawerNote label="About Fragments">{t('tutorLensFragmentsNote')}</DrawerNote>
+              </div>
               {fragments.length === 0
                 ? <div className="wz-tutor-empty">{t('tutorLensFragmentsEmpty')}</div>
                 : (
@@ -1160,7 +1188,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             {entry.projectId && (
               <div className="wz-tutor-section">
                 <div className="wz-tutor-h">{t('tutorBibleTitle')}</div>
-                <div className="wz-tutor-note">{t('tutorBibleNote')}</div>
+                {/* ITEM word-diet (Nick, Oct 13): REMOVE — this explanatory
+                    note is gone whole; tutorBibleNote's lexicon entry is
+                    untouched, simply never rendered here now. */}
                 {bibleFacts.length === 0
                   ? <div className="wz-tutor-empty">{t('tutorBibleEmpty')}</div>
                   : (
@@ -1233,39 +1263,18 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
         </div>
       </div>
 
-      {showDisclosure && (
-        <div className="wz-tutor-disclosure-backdrop wz-tutor-zone">
-          <div className="wz-tutor-disclosure" role="dialog" aria-modal="true" aria-label={t('tutorDisclosureTitle')}>
-            <div className="wz-tutor-disclosure-title">{t('tutorDisclosureTitle')}</div>
-            {/* ITEM 84 — v4, in ANNOTATION FORM. open-threads.md's own ruling is
-                "v3 → superseded by v4 in annotation form (v3 standing verbatim
-                beneath)", so the ratified sentence leads and v3's text stands
-                under it. v3 is REUSED HERE BY ID — never copied, never edited —
-                which is what makes "verbatim" a fact about this line rather than a
-                claim about it, and it is also why nothing v3 promised is withdrawn
-                by the addition. The panel still shows exactly
-                CURRENT_DISCLOSURE_VERSION's own copy; that copy is now these two
-                lines together, and a v1/v2/v3-acknowledged device sees it exactly
-                once (store/tutorDisclosure.ts's integer compare, unchanged).
-
-                WHY V3 KEEPS `.wz-tutor-disclosure-body` AND V4 TAKES A NEW CLASS.
-                "Annotation form" says which of these two is which: v3's
-                enumeration remains THE BODY — the standing promise, unwithdrawn —
-                and v4 is the sentence written above it. Naming them that way round
-                is the structure the ruling describes, and it has the honest side
-                effect that tu2/tu5's existing "the modal carries v3's wording
-                exactly" checks stay TRUE rather than needing to be parked: v3's
-                wording IS still carried, exactly, which is the whole point of
-                "verbatim beneath". Only the two version-NUMBER checks park, because
-                only they stop being true. */}
-            <div className="wz-tutor-disclosure-annotation">{t('tutorDisclosureBodyV4')}</div>
-            <div className="wz-tutor-disclosure-body">{t('tutorDisclosureBodyV3')}</div>
-            <button type="button" className="wz-tutor-disclosure-ack" onClick={acknowledgeDisclosure} autoFocus>
-              {t('tutorDisclosureAck')}
-            </button>
-          </div>
-        </div>
-      )}
+      {/* ITEM word-diet (Nick, Oct 13): REMOVE — the one-time "Before you
+          ask" modal retires whole (ITEM 84's own v3/v4 annotation-form
+          history, kept above in the comment this block used to carry —
+          see the handleGripClick comment above for the pointer). V3's own
+          text (tutorDisclosureBodyV3) is consequently NOT rendered
+          anywhere anymore — flagged for confirmation in the report, since
+          that's a real consequence of this change, not something this
+          instruction stated directly. showDisclosure never becomes true
+          now, so this is dead code already; removed rather than left as
+          an unreachable branch, since a disclosure modal is exactly the
+          kind of thing that should not exist in source looking reachable
+          when it is not. */}
     </>
   );
 }

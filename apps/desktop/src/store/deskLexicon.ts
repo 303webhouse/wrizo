@@ -530,7 +530,8 @@ export type DeskTermId =
   // SettingsPanel/Sliver.tsx's InstrumentsPanel hardcode their OWN terse
   // option strings inline (the FX3 S5 precedent, left as-is — this ticket
   // adds a new control, it does not retrofit its neighbors).
-  | 'progressStyleLabel' | 'progressStyleBar' | 'progressStyleRhizome'
+  | 'progressStyleLabel' | 'progressStyleBar' | 'progressStyleRhizome' | 'recedeHint'
+  | 'tutorConversationRetry' | 'pageHomeLoose' | 'pageHomeJournal' | 'pageHomeProject' | 'pageHomeAlso'
   // E1 S2 — Publish's copy path, working and legible. A brief confirmation
   // (the existing ActionToast quiet-line pattern) after a genuine copy
   // success, split by button so a writer always knows WHICH one just
@@ -604,7 +605,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   boardLaneDefault: 'Cards',
   boardStoryboardEmpty: 'No cards yet. Add cards in Open, then arrange them into order here.',
   boardOutlineEmpty: 'No cards yet. Add cards in Open, then shape them into an outline here.',
-  boardPairWithPage: 'Pair with a page…',
+  // ITEM word-diet (Nick's final pick, HOLD resolved).
+  boardPairWithPage: '+ Pages',
   // ITEM 133 - the board's name, edited where it is displayed.
   boardRenameLabel: 'Rename this board',
   // BG1 — the Beginnings. Title-cased as door names (the brief's own wording,
@@ -614,7 +616,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   beginNewCard: 'New Card',
   beginNewPageCard: 'New Page Card',
   beginLoadDeck: 'Load a Deck',
-  beginConnectPage: 'Graft a Page',
+  // ITEM word-diet (Nick's final pick, HOLD resolved). Flux keeps its own
+  // word for now (its own OVERRIDES entry, untouched here) — flux-words
+  // part 2 can revisit.
+  beginConnectPage: '+ Filed Pages',
   beginNewLane: 'New Lane',
   beginScreenplay: 'Screenplay',
   beginSprout: 'Sprout',
@@ -659,6 +664,17 @@ const CANONICAL: Record<DeskTermId, string> = {
   railStructureProse: 'Prose',
   railStructureScreenplay: 'Screenplay',
   drawerPage: 'Page',
+  // ITEM word-diet (Nick, Oct 13) — store/pageHome.ts's own describePageHome
+  // moves into the lexicon: it was hardcoded, outside both lexicons, found
+  // during the census rather than already flagged. "Just the location",
+  // Nick's own words — pageHomeProject interpolates the place name at the
+  // call site (today that's the project's own title; read as a placeholder
+  // for "wherever this page is filed", not a literal rename to a different
+  // entity — flagged for confirmation in the report).
+  pageHomeLoose: 'Unfiled',
+  pageHomeJournal: 'Journal',
+  pageHomeProject: '{drawer name}',
+  pageHomeAlso: 'Also in the Journal.', // MOCKUP — stays untouched for now
   drawerPlaceJournal: 'Journal',
   drawerPlaceShelf: 'Shelf',
   drawerPlaceDrawers: 'Drawers',
@@ -721,7 +737,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   // PW2 S3 (item 123) — card transfer. COPY ONLY: Move is an ownership
   // transfer and a different act, deferred by name.
   cascadeCardCopyTo: 'Copy to a board…',
-  cascadeCardCopyTitle: 'Copy this card to a board',
+  // ITEM word-diet.
+  cascadeCardCopyTitle: 'Copy to Board',
   // THE TRAY'S DISCLOSURE, before the act. Item 123's ruled sentence also
   // carried "its tags come with it" — DEFERRED ON THE RECORD (Fable,
   // 2026-09-13), successor C4: a Box has no tags field, so cards cannot carry
@@ -741,8 +758,9 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadePlanSectionBoards: 'Boards',
   cascadePlanLinkedHeading: 'Linked to this board',
   // PW1 S3 — display state is a fact ON THE ROW, never inferred from the wall.
-  cascadePinShown: 'member · shown on the board',
-  cascadePinNotShown: 'member · not shown on the board',
+  // ITEM word-diet.
+  cascadePinShown: 'Shown',
+  cascadePinNotShown: 'Hidden',
   cascadePinDisplay: 'Display on Board',
   // Deliberately NOT "Remove": the board card's OWN verb is already Remove,
   // and it deletes the MEMBERSHIP. Two acts a keystroke apart, one ending a
@@ -753,7 +771,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadeBoardDelete: 'Delete',
   cascadeBoardDeleteConfirm: 'Delete',
   cascadeBoardDeleteCancel: 'Cancel',
-  cascadeBoardDeleteQuestion: 'Delete this board? This cannot be undone.',
+  // ITEM word-diet.
+  cascadeBoardDeleteQuestion: 'Delete Permanently?',
   cascadeDrawersChoose: 'Choose a drawer to see what’s filed inside.',
   cascadeDrawersEmpty: 'No drawers yet.',
   cascadeShelfBrowse: 'Browse the Shelf →',
@@ -767,7 +786,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadeSurveyBack: 'Back',
   railBoard: 'Board',
   boardAddCard: 'Add card',
-  boardPortedBadge: 'From a page',
+  // ITEM word-diet.
+  boardPortedBadge: 'From Pages',
   boardEditCopy: 'Edit copy',
   boardLayerBringFront: 'Bring to front',
   boardLayerSendBack: 'Send to back',
@@ -794,8 +814,9 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorLensConsistency: 'Consistency',
   tutorLensStructure: 'Structure',
   tutorLensFragments: 'Fragments',
-  tutorLensConsistencyEmpty: 'No repeated or near-duplicate names found yet.',
-  tutorLensFragmentsEmpty: 'Nothing recent or shared-tagged to resurface yet.',
+  // ITEM word-diet.
+  tutorLensConsistencyEmpty: 'No repeats yet.',
+  tutorLensFragmentsEmpty: 'Nothing to resurface yet.',
   tutorLensFragmentsNote: 'Recency and shared tags only — nothing else.',
   // FX12 S2 — tutorStructureNoBeat ("Not linked to a beat.") retired: the beats system
   // is dormant (CD4); the Structure lens no longer speaks that dead language.
@@ -804,7 +825,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorBibleTitle: "The book's Bible",
   tutorBibleNote: 'Facts you save travel with the book — the Tutor keeps them in mind.',
   tutorBibleEmpty: 'Nothing saved yet.',
-  tutorBibleAddPlaceholder: 'Note a fact to remember…',
+  // ITEM word-diet.
+  tutorBibleAddPlaceholder: 'Add Note',
   tutorBibleAdd: 'Add',
   tutorBibleEdit: 'Edit',
   tutorBibleDelete: 'Delete',
@@ -815,14 +837,19 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorConversationSend: 'Send',
   tutorConversationEmpty: 'Nothing said yet.',
   tutorConversationSending: 'Thinking…',
-  tutorConversationOffline: 'The Tutor is offline or not configured right now — the lenses above still work.',
-  tutorConversationError: 'The Tutor could not be reached. Try again in a moment.',
+  // ITEM word-diet. tutorConversationError now pairs with a real "Try
+  // again" button (Tutor.tsx) — see that component's own call site.
+  tutorConversationOffline: 'Tutor unavailable',
+  tutorConversationError: 'Tutor currently unavailable',
+  // ITEM word-diet — the new "Try again" button beside the error (Tutor.tsx).
+  tutorConversationRetry: 'Try again',
   // E4 — the honest refusal on an UNBORN surface. Same words-family as the
   // one PlacesPanel/AddToSheet already use for the same class of lie (item
   // 88b): name what is missing, name that nothing happened, and say what to
   // do about it. PB1 keeps a page out of the store until its first word, so
   // there is genuinely nothing here for the Tutor to talk about yet.
-  tutorConversationUnborn: 'Write a word first — this page isn’t saved yet, so nothing was sent.',
+  // ITEM word-diet.
+  tutorConversationUnborn: 'No words sent',
   // ITEM 84, THE DECK PHASE — the three preset labels are Nick's own lock-word
   // strings, byte-verbatim from the lock record §1 line 1.
   tutorFreeWriteRoster: 'Free Write presets',
@@ -868,47 +895,57 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorDisclosureAck: 'Got it',
   tutorDisclosureBodyV2: 'When you ask the Tutor, your question — and any new writing on this page since the Tutor last read it — travels to the language model provider configured for this app. Nothing is ever sent unless you ask. Your pages remain yours.',
   tutorDisclosureBodyV3: "When you ask the Tutor, your question — and any new writing on this page since the Tutor last read it, and any facts you've saved in this book's Bible — travels to the language model provider configured for this app. Nothing is ever sent unless you ask. Your pages remain yours.",
-  tutorDisclosureBodyV4: "Nothing leaves your desk unasked: an ask sends your words, this page's recent changes, and your Bible; a counsel that reads more names it on the button and sends only that, only then.",
-  tutorDeltaTruncated: 'Only your latest stretch of new writing was shared this time — earlier new writing since last time went unread.',
+  // ITEM word-diet (Nick, Oct 13, HOLD resolved, TRUST) — moves behind a
+  // "?" beside the Ask box, no standing text (Tutor.tsx's own composer
+  // row). The one-time "Before you ask" modal that used to carry this
+  // text (alongside tutorDisclosureBodyV3) retires whole — see that
+  // component's own comment.
+  tutorDisclosureBodyV4: "Nothing leaves your desk unasked. An ask sends your words, these Pages' recent changes, and your Bible. A counsel that reads more names it on its button, and sends only that, only when pressed.",
+  // ITEM word-diet.
+  tutorDeltaTruncated: 'Only new writing was sent.',
   tutorMeterTurnCost: 'This turn, est.:',
   tutorMeterSessionTotal: 'This session, est.:',
-  tutorMeterTokensOnly: 'This turn (tokens only — no cost estimate for this model), est.:',
+  // ITEM word-diet.
+  tutorMeterTokensOnly: 'This turn (tokens only), est.:',
   tutorMeterTokensUnit: 'tokens',
   cascadePageNewPage: 'New Page',
   // ITEM 203 - a record too large to sync is NAMED, and the writer is told it is safe here. {title} / {n} are filled in.
-  syncTooLargeOne: '\u201C{title}\u201D is too large to sync \u2014 it is saved on this device',
+  // ITEM word-diet.
+  syncTooLargeOne: '\u201C{title}\u201D is too large to sync. Saved on this device.',
   // NOUN-NEUTRAL on purpose: what cannot travel is any synced record (a page, a project, a drawer), so "pages" would sometimes lie.
-  syncTooLargeMany: '{n} items are too large to sync \u2014 they are saved on this device',
+  syncTooLargeMany: '{n} items too large to sync. Saved on this device.',
   // STORAGE-FULL STEP 1 (Fable's byte review, item 2) \u2014 the final strings; plain words, no alarm words. Each says
   // what is true and the one act that prevents loss, for the state it names.
-  syncStorageFullPending: 'This device\u2019s storage is full \u2014 keep Wrizo open and online until these changes reach your account',
-  syncStorageFullSynced: 'This device\u2019s storage is full \u2014 your changes have reached your account, though this device can no longer keep its own copy',
+  // ITEM word-diet. syncStorageFullPending is Nick's final HOLD pick.
+  syncStorageFullPending: 'Storage full. Keep Wrizo open until this syncs.',
+  syncStorageFullSynced: 'Storage full. Your changes synced, but this device can\u2019t keep a copy.',
   // Fable, 2026-09-30, one string, cleared without re-review: names WHERE the download is.
-  syncStorageFullAnon: 'This device\u2019s storage is full, and nothing else holds a copy of this writing \u2014 download a copy now from Publish',
-  syncStorageNearFull: 'This device is running low on storage \u2014 stay online so your writing reaches your account',
+  syncStorageFullAnon: 'Storage full. Download a copy now from Publish.',
+  syncStorageNearFull: 'Storage low. Stay online so your writing syncs.',
   // Fable, 2026-09-30: "near-full reads the same way for a signed-out writer (nothing reaches an account there)" \u2014
   // this desk's own wording, parallel to syncStorageFullAnon's cleared sentence; offered, not pre-cleared.
-  syncStorageNearFullAnon: 'This device is running low on storage, and nothing else holds a copy of this writing \u2014 download a copy now from Publish',
+  syncStorageNearFullAnon: 'Storage low. Download a copy now from Publish.',
   // ITEM 224(a) \u2014 a different cause from too-large: the record traveled
   // fine and the server itself could not store it. Still safe here, still
   // retried; the words say so rather than naming a size limit that isn't
   // the reason.
-  syncRejectedOne: '\u201c{title}\u201d could not be saved to your account \u2014 it is safe on this device and will keep trying',
-  logoutBlockedBody: '{n} changes haven’t saved to your account yet. Stay signed in until they save, or sign out anyway and lose them.',
-  logoutBlockedRejected: 'The account could not take: {titles}.',
+  syncRejectedOne: 'Couldn\u2019t save \u201c{title}\u201d to your account. Safe here; still trying.',
+  logoutBlockedBody: '{n} changes haven’t saved yet. Stay signed in, or sign out and lose them.',
+  // ITEM word-diet.
+  logoutBlockedRejected: 'Not saved: {titles}.',
   logoutStay: 'Stay signed in',
-  logoutAnyway: 'Sign out anyway ({n} changes will be lost)',
-  logoutAnywayConfirm: 'Yes, sign out and lose {n} changes',
+  logoutAnyway: 'Sign out and lose {n} changes',
+  logoutAnywayConfirm: 'Yes, lose {n} changes',
   logoutAnywayBack: 'Keep them',
-  logoutBlockedBodyOne: '1 change hasn’t saved to your account yet. Stay signed in until it saves, or sign out anyway and lose it.',
-  logoutAnywayOne: 'Sign out anyway (1 change will be lost)',
+  logoutBlockedBodyOne: '1 change hasn’t saved yet. Stay signed in, or sign out and lose it.',
+  logoutAnywayOne: 'Sign out and lose 1 change',
   logoutSigningOut: 'Signing out\u2026',
-  logoutAnywayConfirmOne: 'Yes, sign out and lose 1 change',
+  logoutAnywayConfirmOne: 'Yes, lose 1 change',
   // B10.1 - counts only, never titles or text. Reload fetches the account's pages again.
-  syncPullShort: 'Your account sent {pulled} pages but {live} are showing \u2014 reload to try again',
+  syncPullShort: '{pulled} Pages sent, {live} showing. Reload to retry.',
   staleClientBody: 'Wrizo updated, reload',
   staleClientReload: 'Reload',
-  syncRejectedMany: '{n} items could not be saved to your account \u2014 they are safe on this device and will keep trying',
+  syncRejectedMany: '{n} items couldn\u2019t save to your account. Safe here; still trying.',
   // ITEM 83 M3 (R6). Sentence case on rows, engraved-uppercase on the heading
   // (§1.4) — the heading's dress is CSS, so the term itself stays readable.
   pageSetupHeading: 'Page setup',
@@ -925,7 +962,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   pageSetupFooters: 'Footers',
   pageSetupHeaderText: 'Header text',
   pageSetupFooterText: 'Footer text',
-  pageSetupSaveDefaults: 'Set as my default page settings',
+  // ITEM word-diet.
+  pageSetupSaveDefaults: 'Make Default',
   pageSetupSavedDefaults: 'Saved as your default.',
   pageSetupOn: 'On',
   pageSetupOff: 'Off',
@@ -1043,13 +1081,19 @@ const CANONICAL: Record<DeskTermId, string> = {
   placesHomeHeading: 'This page lives in…',
   cascadePlanJustAPage: 'Just need a page? New Page is in the Page section.',
   boardNewPageCard: 'New page card',
-  boardCanvasEmpty: 'Nothing here yet — Add card, or New page card, from the tools.',
+  // ITEM word-diet. Fable's own conditional: a board cannot be added to a
+  // board today (no box kind:'board' exists in persistence.ts — every
+  // Add-flow tool makes kind:'text' or pins an existing page), so this
+  // uses "Add Cards or Pages", not the three-noun form — flagged for
+  // Fable per that instruction.
+  boardCanvasEmpty: 'Add Cards or Pages',
   drawerPlaceTrash: 'Trash',
   cascadeTrashOpen: 'Open the Trash',
   boardRestore: 'Restore',
-  boardHomeLabelJournal: 'The Journal Board — has no drawer home',
-  boardHomeLabelTrash: 'The Trash Board — has no drawer home',
-  boardHomeLabelShelf: 'The Shelf Board — has no drawer home',
+  // ITEM word-diet.
+  boardHomeLabelJournal: 'Journal',
+  boardHomeLabelTrash: 'Trash',
+  boardHomeLabelShelf: 'Shelf',
   shelfBoardEmpty: 'Nothing waiting.',
   cascadeShelfOpen: 'Open the Shelf',
   boardAddExistingPage: 'Existing page…',
@@ -1299,20 +1343,27 @@ const CANONICAL: Record<DeskTermId, string> = {
   progressStyleBar: 'Bar',
   progressStyleRhizome: 'Rhizome',
 
+  // ITEM word-diet (Nick, Oct 13) — the Recede-depth standing paragraph
+  // moves into the lexicon AND behind a "?" (DrawerNote.tsx): the full
+  // explanation lives here now; the Settings panel itself carries no
+  // standing text for it at all.
+  recedeHint: 'Type and the menus fade; pause, reach an edge, or press Esc to bring them back.',
+
   // E1 S2 — Publish's copy path.
-  publishCopyWordsConfirm: 'Copied — your plain words are on the clipboard.',
+  // ITEM word-diet.
+  publishCopyWordsConfirm: 'Copied',
   publishCopyFormattedConfirm: 'Copied — with formatting intact.',
-  publishCopyFailed: 'Copy didn’t go through — try again, or use Download below.',
+  publishCopyFailed: 'Copy failed. Try again, or use Download.',
 
   // E1 S3 — Download.
   publishDownloadTitle: 'Download',
-  publishDownloadPageMd: 'This Page (.md)',
-  publishDownloadPageTxt: 'This Page (.txt)',
+  publishDownloadPageMd: 'Current Pages (.md)',
+  publishDownloadPageTxt: 'Current Pages (.txt)',
   publishDownloadBinder: 'This Binder',
   publishDownloadEverything: 'Everything',
   publishDownloadConfirm: 'Downloading — check your downloads.',
-  publishDownloadFailed: 'That download couldn’t be made — nothing was lost, try again.',
-  publishComingSoon: 'Publishing options — tailored to this work’s type, destination, and format — are coming soon.',
+  publishDownloadFailed: 'Download failed. Nothing lost; try again.',
+  publishComingSoon: 'More publishing options coming soon.',
 
   // ITEM 224 — the invite-code field.
   authInviteCodePlaceholder: 'invite code',

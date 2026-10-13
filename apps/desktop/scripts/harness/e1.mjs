@@ -204,8 +204,11 @@ await withHarness(async (app) => {
   const wordsClip = await app.evalJs("navigator.clipboard.readText()");
   ok('S2: "Copy My Words" places the markdown-stripped plain text on the REAL OS clipboard (a genuine readText() round trip, not just the test seam)',
     wordsClip.replace(/\r\n/g, '\n') === 'A Heading\n\nSome bold and italic words.\n\nA second paragraph.', wordsClip);
-  ok('S2: "Copy My Words" renders a confirmation (the house ActionToast quiet-line pattern) — S1\'s own live finding was total silence here before this fix',
-    wordsToast === 'Copied — your plain words are on the clipboard.', String(wordsToast));
+  // SUPERSEDED (item word-diet, Nick) — publishCopyWordsConfirm shortens to "Copied".
+  // ok('S2: "Copy My Words" renders a confirmation (the house ActionToast quiet-line pattern) — S1\'s own live finding was total silence here before this fix',
+  //   wordsToast === 'Copied — your plain words are on the clipboard.', String(wordsToast));
+  ok('S2 [word-diet successor]: "Copy My Words" renders a confirmation (the house ActionToast quiet-line pattern)',
+    wordsToast === 'Copied', String(wordsToast));
 
   await trustedClick(app, 'Copy Formatted');
   await sleep(300);
@@ -226,8 +229,12 @@ await withHarness(async (app) => {
   await trustedClick(app, 'Copy My Words');
   await sleep(300);
   const failToast = await app.evalJs("document.querySelector('.action-toast')?.textContent");
-  ok('S2: a FORCED total clipboard failure (both the Clipboard API and the execCommand fallback denied) surfaces an HONEST failure message — never silence (the exact hole S1\'s live diagnosis found: an unhandled async rejection with zero fallback and zero surfaced error)',
-    failToast === 'Copy didn’t go through — try again, or use Download below.', String(failToast));
+  // SUPERSEDED (item word-diet, Nick) — publishCopyFailed shortens;
+  // ORIGINAL claim parked verbatim:
+  // ok('S2: a FORCED total clipboard failure (both the Clipboard API and the execCommand fallback denied) surfaces an HONEST failure message — never silence (the exact hole S1\'s live diagnosis found: an unhandled async rejection with zero fallback and zero surfaced error)',
+  //   failToast === 'Copy didn’t go through — try again, or use Download below.', String(failToast));
+  ok('S2 [word-diet successor]: a FORCED total clipboard failure (both the Clipboard API and the execCommand fallback denied) surfaces an HONEST failure message — never silence',
+    failToast === 'Copy failed. Try again, or use Download.', String(failToast));
 
   // ==========================================================================
   // S3/S5 — "This Page" round-trips. Formatted (.md) keeps markdown
@@ -253,9 +260,9 @@ await withHarness(async (app) => {
 
   await trustedClick(app, 'Publish');
   await sleep(250);
-  await trustedClick(app, 'This Page (.md)');
+  await trustedClick(app, 'Current Pages (.md)'); // ITEM word-diet: publishDownloadPageMd
   await sleep(700);
-  await trustedClick(app, 'This Page (.txt)');
+  await trustedClick(app, 'Current Pages (.txt)'); // ITEM word-diet: publishDownloadPageTxt
 
   const pageFiles = await waitForDownloads(pageDl, 2);
   // S1 (E1.1) — the "This Page" base filename now carries a stable id-suffix
@@ -302,14 +309,14 @@ await withHarness(async (app) => {
   await app.cdp('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
   await trustedClick(app, 'Publish');
   await sleep(250);
-  await trustedClick(app, 'This Page (.md)');
+  await trustedClick(app, 'Current Pages (.md)'); // ITEM word-diet: publishDownloadPageMd
   await waitForDownloads(collisionDl, 1);
   await app.cdp('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
   await seedAndOpen(app, { entries: twoSameTitle, waitSel: '.forward-only-editor, textarea, [contenteditable]', hash: '#/page/dupehead-beta66', dlDir: collisionDl });
   await app.cdp('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
   await trustedClick(app, 'Publish');
   await sleep(250);
-  await trustedClick(app, 'This Page (.md)');
+  await trustedClick(app, 'Current Pages (.md)'); // ITEM word-diet: publishDownloadPageMd
   const collisionFiles = await waitForDownloads(collisionDl, 2);
   ok('S1/S2 OFFLINE: two same-first-line pages whose ids share their head and differ only in the tail (the same-tick case) download as TWO DISTINCT files ("Same Title (alpha6).md" + "Same Title (beta66).md") — the tail-drawn id-suffix disambiguates; neither overwrites the other on disk',
     collisionFiles.length === 2 && collisionFiles.includes('Same Title (alpha6).md') && collisionFiles.includes('Same Title (beta66).md'),
@@ -339,7 +346,7 @@ await withHarness(async (app) => {
   await app.cdp('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
   await trustedClick(app, 'Publish');
   await sleep(250);
-  await trustedClick(app, 'This Page (.md)');
+  await trustedClick(app, 'Current Pages (.md)'); // ITEM word-diet: publishDownloadPageMd
   const inkFiles = await waitForDownloads(inkDl, 1);
   const inkBytes = inkFiles.length ? read(inkDl, inkFiles[0]) : '';
   ok('S3 OFFLINE: a page carrying hand-drawn ink alongside typed text exports the typed text PLUS a named placeholder line for the ink — never silently dropped',
@@ -362,7 +369,7 @@ await withHarness(async (app) => {
   await app.cdp('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
   await trustedClick(app, 'Publish');
   await sleep(250);
-  await trustedClick(app, 'This Page (.md)');
+  await trustedClick(app, 'Current Pages (.md)'); // ITEM word-diet: publishDownloadPageMd
   const illegalFiles = await waitForDownloads(illegalDl, 1);
   const ILLEGAL_RE = /[<>:"/\\|?*\x00-\x1f]/;
   ok('S5: a first line full of Windows/macOS-illegal filename characters (< > : " / \\ | ? *) produces exactly one safe, non-empty, successfully-written file — the illegal characters never reach the actual filename on disk',
@@ -599,8 +606,12 @@ await withHarness(async (app) => {
     await trustedClick(app, 'Publish');
     await sleep(250);
     const btns = await app.evalJs("__diag().buttons");
-    ok(`Geometry @${width}px: framed (.desk-frame present) and the full Download row renders (This Page .md/.txt + Everything)`,
-      framedShape === true && btns.includes('This Page (.md)') && btns.includes('This Page (.txt)') && btns.includes('Everything'),
+    // SUPERSEDED (item word-diet, Nick) — "This Page" -> "Current Pages" (publishDownloadPageMd/Txt).
+    // ok(`Geometry @${width}px: framed (.desk-frame present) and the full Download row renders (This Page .md/.txt + Everything)`,
+    //   framedShape === true && btns.includes('This Page (.md)') && btns.includes('This Page (.txt)') && btns.includes('Everything'),
+    //   JSON.stringify({ framedShape, btns: btns.filter(b => /download|page|everything/i.test(b)) }));
+    ok(`Geometry @${width}px [word-diet successor]: framed (.desk-frame present) and the full Download row renders (Current Pages .md/.txt + Everything)`,
+      framedShape === true && btns.includes('Current Pages (.md)') && btns.includes('Current Pages (.txt)') && btns.includes('Everything'),
       JSON.stringify({ framedShape, btns: btns.filter(b => /download|page|everything/i.test(b)) }));
     await app.evalJs("document.querySelector('.sprint-modal-backdrop')?.click()");
     await sleep(150);
@@ -621,8 +632,11 @@ await withHarness(async (app) => {
   await trustedClick(app, 'Publish');
   await sleep(250);
   const legacyBtns = await app.evalJs("__diag().buttons");
-  ok('Legacy (<1100px): the SAME Publish dialog (already shared with the framed host pre-ticket) carries the real Download row too — a legacy-viewport writer gets the same vacation insurance, not a lesser one',
-    legacyBtns.includes('This Page (.md)') && legacyBtns.includes('Everything'), JSON.stringify(legacyBtns.filter(b => /download|page|everything/i.test(b))));
+  // SUPERSEDED (item word-diet, Nick) — "This Page" -> "Current Pages".
+  // ok('Legacy (<1100px): the SAME Publish dialog (already shared with the framed host pre-ticket) carries the real Download row too — a legacy-viewport writer gets the same vacation insurance, not a lesser one',
+  //   legacyBtns.includes('This Page (.md)') && legacyBtns.includes('Everything'), JSON.stringify(legacyBtns.filter(b => /download|page|everything/i.test(b))));
+  ok('Legacy (<1100px) [word-diet successor]: the SAME Publish dialog (already shared with the framed host pre-ticket) carries the real Download row too — a legacy-viewport writer gets the same vacation insurance, not a lesser one',
+    legacyBtns.includes('Current Pages (.md)') && legacyBtns.includes('Everything'), JSON.stringify(legacyBtns.filter(b => /download|page|everything/i.test(b))));
 
   // ==========================================================================
   // ScriptEditor's OWN Publish dialog — a second, independent copy-path
@@ -648,8 +662,11 @@ await withHarness(async (app) => {
   await trustedClick(app, 'Copy My Words');
   await sleep(300);
   const scriptWordsToast = await app.evalJs("document.querySelector('.action-toast')?.textContent");
-  ok('S2 (ScriptEditor\'s own Publish dialog): "Copy My Words" renders the same house confirmation',
-    scriptWordsToast === 'Copied — your plain words are on the clipboard.', String(scriptWordsToast));
+  // SUPERSEDED (item word-diet, Nick).
+  // ok('S2 (ScriptEditor\'s own Publish dialog): "Copy My Words" renders the same house confirmation',
+  //   scriptWordsToast === 'Copied — your plain words are on the clipboard.', String(scriptWordsToast));
+  ok('S2 (ScriptEditor\'s own Publish dialog) [word-diet successor]: "Copy My Words" renders the same house confirmation',
+    scriptWordsToast === 'Copied', String(scriptWordsToast));
   await trustedClick(app, 'Copy Formatted');
   await sleep(300);
   const scriptFmtClip = await app.evalJs('navigator.clipboard.readText()');
@@ -660,8 +677,13 @@ await withHarness(async (app) => {
   await app.emulateDpr(1, LEGACY_W, 900);
   await sleep(200);
   const legacyScriptBtns = await app.evalJs('__diag().buttons');
-  ok('Legacy (<1100px) ScriptEditor: has its OWN pre-existing "Copy script text" toolbar button, with no Publish dialog at all — untouched by this ticket',
-    legacyScriptBtns.includes('Copy script text') && !legacyScriptBtns.includes('This Page (.md)'), JSON.stringify(legacyScriptBtns));
+  // SUPERSEDED (item word-diet, Nick) — "This Page (.md)" -> "Current Pages
+  // (.md)"; checking the OLD text's absence here would now pass vacuously
+  // (it's gone everywhere), not for the reason this check actually claims.
+  // ok('Legacy (<1100px) ScriptEditor: has its OWN pre-existing "Copy script text" toolbar button, with no Publish dialog at all — untouched by this ticket',
+  //   legacyScriptBtns.includes('Copy script text') && !legacyScriptBtns.includes('This Page (.md)'), JSON.stringify(legacyScriptBtns));
+  ok('Legacy (<1100px) ScriptEditor [word-diet successor]: has its OWN pre-existing "Copy script text" toolbar button, with no Publish dialog at all — untouched by this ticket',
+    legacyScriptBtns.includes('Copy script text') && !legacyScriptBtns.includes('Current Pages (.md)'), JSON.stringify(legacyScriptBtns));
   await trustedClick(app, 'Copy script text');
   await sleep(300);
   const legacyScriptClip = await app.evalJs('navigator.clipboard.readText()').catch((e) => `ERR:${e.message}`);
@@ -709,9 +731,9 @@ if (process.env.HARNESS_PARKED === '1') {
     await seedAndOpen(app, { entries: [ROUNDTRIP_ENTRY], waitSel: '.forward-only-editor, textarea, [contenteditable]', hash: '#/page/e1-roundtrip', dlDir: parkPageDl });
     await trustedClick(app, 'Publish');
     await sleep(250);
-    await trustedClick(app, 'This Page (.md)');
+    await trustedClick(app, 'Current Pages (.md)'); // ITEM word-diet: publishDownloadPageMd
     await sleep(700);
-    await trustedClick(app, 'This Page (.txt)');
+    await trustedClick(app, 'Current Pages (.txt)'); // ITEM word-diet: publishDownloadPageTxt
     const parkPageFiles = await waitForDownloads(parkPageDl, 2);
     pok('PARKED (was "S3 OFFLINE: \'This Page\' produced exactly two files (.md + .txt), network fully unavailable throughout" — asserting the bare-title names "Round Trip Title.md/.txt") — S1/E1.1: every "This Page" filename now carries the stable id-suffix; the suffixed form "Round Trip Title (ndtrip).md/.txt" supersedes it — live successor: this file\'s own live S3 round-trip section',
       parkPageFiles.length === 2 && parkPageFiles.includes('Round Trip Title (ndtrip).md') && parkPageFiles.includes('Round Trip Title (ndtrip).txt')

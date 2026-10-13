@@ -66,8 +66,13 @@ await withHarness(async (app) => {
   await app.click('Sign out');
   await app.waitFor(`!!document.querySelector('.wz-logout-sheet')`, { label: 'blocked sheet shown' });
   const body = await app.evalJs(`document.querySelector('.wz-logout-sheet-body')?.textContent || ''`);
-  ok('(W1) the sheet says changes have not saved, in the approved words',
-    /haven.t saved to your account yet|hasn.t saved to your account yet/.test(body), body);
+  // SUPERSEDED (item word-diet, Nick) — logoutBlockedBody/BodyOne drop
+  // "to your account" ("changes haven't saved yet", not "...to your
+  // account yet").
+  // ok('(W1) the sheet says changes have not saved, in the approved words',
+  //   /haven.t saved to your account yet|hasn.t saved to your account yet/.test(body), body);
+  ok('(W1) [word-diet successor] the sheet says changes have not saved, in the approved words',
+    /haven.t saved yet|hasn.t saved yet/.test(body), body);
   const me = await app.evalJs(`fetch('/auth/me', { credentials: 'include' }).then((r) => r.ok)`);
   ok('(W2) the session is still signed in', me === true, '');
   const flagAfterRefusal = await app.evalJs(`localStorage.getItem('wz.signedOutHere')`);
@@ -87,7 +92,8 @@ await withHarness(async (app) => {
   // 3. Sign out anyway: two steps.
   await app.click('Sign out');
   await app.waitFor(`!!document.querySelector('.wz-logout-sheet')`, { label: 'sheet again' });
-  await app.click('Sign out anyway');
+  // ITEM word-diet: "Sign out anyway (...)" -> "Sign out and lose ... changes" (logoutAnyway/logoutAnywayOne).
+  await app.click('Sign out and lose');
   const confirmShown = await app.evalJs(`!!document.querySelector('.wz-logout-confirm')`);
   const flagBeforeConfirm = await app.evalJs(`localStorage.getItem('wz.signedOutHere')`);
   ok('(W6) the first click only asks: a confirm appears and nothing is signed out yet',

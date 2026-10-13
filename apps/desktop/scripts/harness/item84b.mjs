@@ -583,46 +583,18 @@ await withHarness(async (app) => {
   }
 
   // ==========================================================================
-  // S6 — THE DISCLOSURE. v4 leads, v3 stands verbatim beneath, the ack writes 4.
+  // SUPERSEDED WHOLE (item word-diet, Nick, TRUST) — the one-time
+  // "Before you ask" modal (v4-leads/v3-stands-beneath, version-gated)
+  // this section tests retires completely; full writeup in tu1.mjs's own
+  // S6 section. DISCLOSURE_V4's own text also predates word-diet's TRUST
+  // rewrite of the lexicon value — parked for both reasons at once rather
+  // than updated twice. One successor: the modal never shows regardless
+  // of a v3-acknowledged device's own prior state (this section's own
+  // strongest case), and the new "?" carries the CURRENT TRUST text.
   // ==========================================================================
   {
-    await freshProsePage(app, 1400, 900, { skipDisclosure: false });
-    const v4Lex = await lex(app, 'tutorDisclosureBodyV4');
-    const v3Lex = await lex(app, 'tutorDisclosureBodyV3');
-    ok('S6: the lexicon\'s v4 body IS the ratified sentence, byte-exact against its own committee manifest (1 sentence, 183 bytes, md5 9287082c0e3c0a2b243c71ce01c89b43)',
-      v4Lex === DISCLOSURE_V4, JSON.stringify({ lexicon: v4Lex, required: DISCLOSURE_V4 }));
-
-    ok('S6 (precondition): a genuinely fresh device has acknowledged nothing',
-      (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === null);
-    await openTutor(app);
-    const shape = await app.evalJs(`(() => {
-      const modal = document.querySelector('.wz-tutor-disclosure');
-      const ann = document.querySelector('.wz-tutor-disclosure-annotation');
-      const body = document.querySelector('.wz-tutor-disclosure-body');
-      return {
-        shown: !!modal,
-        annotation: ann ? ann.textContent : null,
-        body: body ? body.textContent : null,
-        annotationLeads: !!(ann && body && (ann.compareDocumentPosition(body) & Node.DOCUMENT_POSITION_FOLLOWING)),
-      };
-    })()`);
-    ok('S6: it shows on the first-ever open, and v4\'s sentence renders BYTE-EXACT',
-      shape.shown === true && shape.annotation === DISCLOSURE_V4, JSON.stringify(shape));
-    ok('S6 (ANNOTATION FORM): v4 LEADS and v3 stands VERBATIM BENEATH it — v3\'s own string, unedited and uncopied, still carried exactly',
-      shape.annotationLeads === true && shape.body === v3Lex, JSON.stringify({ leads: shape.annotationLeads, body: shape.body }));
-    await app.evalJs("document.querySelector('.wz-tutor-disclosure-ack').click()");
-    await sleep(250);
-    ok('S6: the ack dismisses it and writes the CURRENT version (4) under the version key',
-      (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')"))
-      && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '4');
-    await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); await sleep(200);
-    await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); await sleep(300);
-    ok('S6: and it does NOT reappear on the second open — exactly once',
-      (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')")));
-
-    // A v3-ACKNOWLEDGED DEVICE — every writer who has already used the Tutor.
-    await freshDesk(app, 1400, 900, { skipDisclosure: false });
-    await app.evalJs("localStorage.setItem('wrizo-tutor-disclosure-seen-version', '3')");
+    await freshDesk(app, 1400, 900);
+    await app.evalJs("localStorage.setItem('wrizo-tutor-disclosure-seen-version', '3')"); // harmless now, nothing reads it
     await app.reload();
     await app.goto('/project/new');
     await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject (v3-seeded)' });
@@ -631,12 +603,12 @@ await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor (v3-seeded)' });
     await sleep(400);
     await openTutor(app);
-    const v3Seeded = await app.evalJs("document.querySelector('.wz-tutor-disclosure-annotation')?.textContent ?? null");
-    ok('S6 (v3-acknowledged device): 3 < 4, so v4 STILL shows exactly once, with its own sentence — no bespoke branch, just the integer compare',
-      v3Seeded === DISCLOSURE_V4, JSON.stringify({ v3Seeded }));
-    await app.evalJs("document.querySelector('.wz-tutor-disclosure-ack').click()"); await sleep(250);
-    ok('S6 (v3-acknowledged device): the ack advances the version to 4',
-      (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '4');
+    ok('S6 [word-diet successor]: even a v3-acknowledged device never shows the modal (RETIRED whole)',
+      (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')")));
+    const v4Lex = await lex(app, 'tutorDisclosureBodyV4');
+    const noteShown = await app.evalJs("(() => { document.querySelector('.wz-tutor-convo-row .wz-drawer-note-btn')?.click(); return document.querySelector('.wz-tutor-convo-row .wz-drawer-note-pop')?.textContent ?? null; })()");
+    ok('S6 [word-diet successor]: the "?" beside the Ask box carries the CURRENT (TRUST) lexicon text exactly',
+      noteShown === v4Lex, JSON.stringify({ noteShown, v4Lex }));
   }
 
   // ==========================================================================

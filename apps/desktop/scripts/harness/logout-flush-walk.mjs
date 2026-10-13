@@ -56,7 +56,8 @@ await withHarness(async (app) => {
     (await app.evalJs(`fetch('/auth/me', { credentials: 'include' }).then((r) => r.ok)`)) === true, '');
 
   // 2. Sign out anyway: nothing may be written back into the wiped device afterwards.
-  await app.click('Sign out anyway');
+  // ITEM word-diet: "Sign out anyway (...)" -> "Sign out and lose ... changes" (logoutAnyway/logoutAnywayOne).
+  await app.click('Sign out and lose');
   await app.click('Yes, sign out and lose');
   await app.waitFor(`!!document.querySelector('.wz-arrival input.wz-field')`, { timeout: 12000, label: 'signed out, on the sign-in screen' });
   await sleep(3500); // past the 2 s debounce, and past the editor's unmount flush, which runs AFTER the wipe

@@ -356,7 +356,10 @@ await withHarness(async (app) => {
 
   await openPageCategory(app);
   const looseHomeText = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  ok('S4/DoD: the loose page\'s Page category text reads exactly "Loose — belongs nowhere yet"', looseHomeText === 'Loose — belongs nowhere yet', looseHomeText);
+  // SUPERSEDED (item word-diet, Nick) — pageHomeLoose's text itself changed,
+  // "Loose — belongs nowhere yet" -> "Unfiled"; the ORIGINAL claim parked verbatim:
+  // ok('S4/DoD: the loose page\'s Page category text reads exactly "Loose — belongs nowhere yet"', looseHomeText === 'Loose — belongs nowhere yet', looseHomeText);
+  ok('S4/DoD [word-diet successor]: the loose page\'s Page category text reads exactly "Unfiled"', looseHomeText === 'Unfiled', looseHomeText);
 
   // Anti-solicitation: no file-it-first prompt anywhere reachable from a
   // loose page (PageEditor.tsx carries no such prompt at all).

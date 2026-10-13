@@ -118,7 +118,16 @@ export function PlacesPanel({ entry: entryProp }: { entry: JournalEntry }) {
     <div className="wz-places">
       <div className="wz-cascade-panel-title wz-places-title">{t('placesTitle')}</div>
 
-      {/* ITEM 83 M7 (PP1) — PROMOTE THE ARIA TO THE EYE.
+      {/* ITEM word-diet (Nick, Oct 13): REMOVE — superseding ITEM 83 M7
+          (PP1) immediately below, kept for the record rather than deleted:
+          M7 added this exact heading BECAUSE Nick's own earlier hardware
+          report named the opposite failure ("a list of binder names ...
+          reads as 'places I can GO' and is in fact 'places I can PUT
+          THIS'"). Flagged to Fable as a real tension, not silently
+          dropped — built as instructed since this round's picks are
+          final, but the two rulings are in direct conversation with each
+          other and a future reviewer should see both.
+          ITEM 83 M7 (PP1) — PROMOTE THE ARIA TO THE EYE.
           Pass 7's census found the defect: this panel's honest language already
           existed and was spoken ONLY to screen readers. The Home zone carried
           aria-label "Home" and rendered NO VISIBLE HEADING at all, while the
@@ -131,7 +140,6 @@ export function PlacesPanel({ entry: entryProp }: { entry: JournalEntry }) {
           eye lands — never verb-prefixed per row (the bench's repeated-word
           tax; CA1's noun/verb agreement inverted correctly, heading carries the
           verb, rows carry the nouns). */}
-      <div className="wz-cascade-panel-title wz-places-title">{t('placesHomeHeading')}</div>
       <div className="wz-places-home" role="radiogroup" aria-label={t('placesHomeZoneLabel')}>
         {/* PP2 — THE STATE SPEAKS FIRST: the current home wears distinct dress
             (hi text + a 1px olive left hairline, index.css) so the zone reads

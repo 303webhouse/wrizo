@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
+import { DrawerNote } from './DrawerNote';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
@@ -670,7 +672,10 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
           onPick={v => setWritingSettings({ progressStyle: v as ProgressStyle })}
         />
       )}
-      <Seg label="Recede depth" value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
+      {/* ITEM word-diet (Nick, Oct 13) — the standing hint below retires;
+          its explanation moves here, behind a "?" beside this row's own
+          label, one plain sentence (recedeHint, deskLexicon.ts). */}
+      <Seg label={<>Recede depth <DrawerNote label="About Recede depth">{deskLex('recedeHint')}</DrawerNote></>} value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
       <Seg label="Timer" value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
       {/* FX2 S2 — routes through setTypewriterExplicit, not the bare
           setter: the gear is the OTHER hand-click surface (beside the
@@ -678,7 +683,6 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
           session-explicit flag so neither can be silently overridden by a
           later Draft-open seed. */}
       {typewriterAvailable && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
-      <div className="mode-settings-hint">Type to dissolve the chrome. Stop, and after a pause it returns slowly. Reach an edge or press Esc to summon it back.</div>
     </div>
   );
 }
@@ -765,7 +769,10 @@ export function GearIcon() {
 // `soon` lists options shown as stand-ins for unbuilt capability: dimmed, inert, titled `soonTitle`.
 // PHASE 1 (S4): `disabled` greys the whole row and makes it unusable (real disabled buttons: unfocusable, unclickable, announced as unavailable). The row's
 // value is untouched - a greyed row still SHOWS what it will do when its mode is back on.
-export function Seg({ label, value, opts, onPick, soon, soonTitle, disabled }: { label: string; value: string; opts: [string, string][]; onPick: (v: string) => void; soon?: string[]; soonTitle?: string; disabled?: boolean }) {
+// ITEM word-diet — `label` widened from `string` to `ReactNode` so a caller
+// can attach a DrawerNote "?" beside it; every existing caller passes a
+// plain string (still a valid ReactNode).
+export function Seg({ label, value, opts, onPick, soon, soonTitle, disabled }: { label: ReactNode; value: string; opts: [string, string][]; onPick: (v: string) => void; soon?: string[]; soonTitle?: string; disabled?: boolean }) {
   return (
     <div className="mode-crow" data-disabled={disabled ? 'true' : undefined}>
       <span>{label}</span>

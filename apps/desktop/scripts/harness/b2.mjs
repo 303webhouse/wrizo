@@ -1089,8 +1089,25 @@ if (process.env.HARNESS_PARKED === '1') {
     // SUPERSEDED, generation 5 (item arbor-quiet-brass): "Connected" renamed to Arbor's
     // own "Grafted"; the other seven terms are unchanged and still pinned.
     // pok('PARKED, generation 4 (was the generation-3 re-assertion of the 9-way deskLexicon comparison) — PW1 S3/PW27: membership is not display, so boardsTitle reads "Also connected to…"; the other seven terms are unchanged and still pinned', lexiconTermsNow.shelfHome === 'The Shelf Board — has no drawer home' && lexiconTermsNow.shelfEmpty === 'Nothing waiting.' && lexiconTermsNow.shelfOpen === 'Open the Shelf' && lexiconTermsNow.addExisting === 'Existing page…' && lexiconTermsNow.placesTitle === 'Places' && lexiconTermsNow.placesLoose === 'Loose' && lexiconTermsNow.newDrawer === 'File to a new drawer…' && lexiconTermsNow.boardsTitle === 'Also connected to…', JSON.stringify(lexiconTermsNow));
-    pok('PARKED, generation 5 (was generation 4\'s re-assertion ending in boardsTitle "Also connected to…") — arbor-quiet-brass: boardsTitle reads "Also grafted to…"; the other seven terms are unchanged and still pinned',
-      lexiconTermsNow.shelfHome === 'The Shelf Board — has no drawer home'
+    // ---- PARKED, generation 5 — SUPERSEDED by item word-diet (Nick), 2026-10-13 ----
+    // Quoted VERBATIM and no longer asserted. One conjunct flips: `shelfHome`
+    // reads 'Shelf' rather than 'The Shelf Board — has no drawer home' (Nick's
+    // word-diet pick, boardHomeLabelShelf). The other seven terms are unchanged
+    // and are still pinned in generation 6 below.
+    //
+    // pok('PARKED, generation 5 (was generation 4\'s re-assertion ending in boardsTitle "Also connected to…") — arbor-quiet-brass: boardsTitle reads "Also grafted to…"; the other seven terms are unchanged and still pinned',
+    //   lexiconTermsNow.shelfHome === 'The Shelf Board — has no drawer home'
+    //     && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
+    //     && lexiconTermsNow.shelfOpen === 'Open the Shelf'
+    //     && lexiconTermsNow.addExisting === 'Existing page…'
+    //     && lexiconTermsNow.placesTitle === 'Places'
+    //     && lexiconTermsNow.placesLoose === 'Loose'
+    //     && lexiconTermsNow.newDrawer === 'File to a new drawer…'
+    //     && lexiconTermsNow.boardsTitle === 'Also grafted to…',
+    //   JSON.stringify(lexiconTermsNow));
+    // ------------------------------------------------------------------------
+    pok('PARKED, generation 6 (was generation 5\'s re-assertion with shelfHome "The Shelf Board — has no drawer home") — item word-diet: shelfHome reads "Shelf"; the other seven terms are unchanged and still pinned',
+      lexiconTermsNow.shelfHome === 'Shelf'
         && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
         && lexiconTermsNow.shelfOpen === 'Open the Shelf'
         && lexiconTermsNow.addExisting === 'Existing page…'

@@ -14,6 +14,7 @@ import { useWritingGoal, setWritingGoal, goalCount, goalFraction, DEFAULT_GOAL_L
 // repositioning their popover to sit inline in the sliver's own scrolling
 // panel instead of ModeStage's absolute stage-corner placement.
 import { Seg } from './ModeStage';
+import { DrawerNote } from './DrawerNote';
 import { BEGINNING_GLYPH } from './BeginningsRow';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import type { FormatAction, StructureKind } from '../store/draftFormat';
@@ -1130,8 +1131,10 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
           </section>
           <section className="wz-foot-settings-block">
             <h4>{t('footMenuPreferences')}</h4>
-            <Seg label="Recede depth" value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
-            <div className="mode-settings-hint">Type to dissolve the chrome. Stop, and after a pause it returns slowly. Reach an edge or press Esc to summon it back.</div>
+            {/* ITEM word-diet (Nick, Oct 13) — same fix as ModeStage.tsx's
+                own copy of this row: the standing hint retires, moved
+                behind a "?" beside the label. */}
+            <Seg label={<>Recede depth <DrawerNote label="About Recede depth">{t('recedeHint')}</DrawerNote></>} value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
           </section>
         </div>
       )}
