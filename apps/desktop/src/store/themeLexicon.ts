@@ -64,7 +64,10 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForm
     journal: { one: 'Log', many: 'Logs' },
     plan: { one: 'Schematic', many: 'Schematics' },
     milestone: { one: 'Checkpoint', many: 'Checkpoints' },
-    freewrite: { one: 'Overclock', many: 'Overclocks' },
+    // ITEM flux-words (Nick) — replaces "Overclock"/"Overclocks" everywhere
+    // Free Write shows under Flux, in both lexicons (this term AND
+    // deskLexicon.ts's own modeFreeWrite seam).
+    freewrite: { one: 'Wire In', many: 'Wire Ins' },
     home: { one: 'Safehouse', many: 'Safehouses' },
     voicewall: { one: 'Firewall', many: 'Firewalls' },
     // ITEM arbor-quiet-brass — renamed from "Connect" (Fable's proposal, pending Nick's

@@ -962,7 +962,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   templateTitlePage: 'Title page',
   templateCustom: 'Custom',
   comingSoon: 'Coming soon',
-  railTypeface: 'Typeface',
+  // ITEM flux-words (Nick) — Arbor's own word for this heading becomes
+  // "Font"; Flux keeps saying "Typeface" (an explicit OVERRIDES entry below
+  // preserves it, since it would otherwise inherit this new default).
+  railTypeface: 'Font',
   goalUnitWords: 'words',
   footSettings: 'Settings',
   footMenuTypewriter: 'Typewriter Mode',
@@ -1334,6 +1337,63 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     splashLoading2: 'Calibrating signal…',
     splashLoading3: 'Decrypting the archive…',
     splashLoading4: 'Patching the uplink…',
+    // ITEM flux-words — Nick's approved Flux word list, mapped to each
+    // term's real id by grepping deskLexicon.ts directly rather than
+    // trusting docs/vocab/label-census.md alone (that file is already
+    // slightly stale — it doesn't list railPageKind, added since; confirmed
+    // live). Mode strip:
+    modeFreeWrite: 'Wire In',
+    modeDraft: 'Build',
+    modeRevise: 'Patch',
+    modeWorkshop: 'Relay',
+    // Format and actions (the two rows this ticket resolved with full
+    // confidence — see the TOOLS report for Actions/Tags/Copy/Delete/
+    // Header-Footer, each either a lean needing confirmation or genuinely
+    // missing a lexicon id):
+    railFormat: 'Markup',
+    // Templates:
+    railTemplates: 'Presets',
+    templateOutline: 'Spine',
+    templateBibliography: 'Sources',
+    templateTitlePage: 'Cover',
+    templateCustom: 'User',
+    // Page kind:
+    railPageKind: 'Doc Type',
+    kindNormal: 'Plain',
+    kindScreenplay: 'Script',
+    kindResearch: 'Intel',
+    // "…" menu:
+    footMenuTypewriter: 'Terminal Mode',
+    twPageScroll: 'Screen Scroll',
+    footMenuProgress: 'Meter',
+    sliverInstrumentsUnit: 'Scale',
+    goalLabel: 'Quota',
+    footProgress: 'Load',
+    footMenuPreferences: 'Config',
+    // Tutor -> Operator, every CANONICAL value that carries the word.
+    // tutorDockClose/tutorDockReopen don't; tutorDisclosureBodyV4 (the only
+    // LIVE disclosure body of the four) doesn't either — v1-v3 are dead
+    // history (superseded in render by v4, per the census) but get the same
+    // word anyway, for consistency, at zero real cost. NOTE: these inherited
+    // sentences still say "pages" verbatim (Flux's own vocabulary says Doc/
+    // Docs) — a pre-existing gap in Flux's own inherited prose, not
+    // something this ticket's word list touches; flagged, not fixed here.
+    tutorOpen: 'Open the Operator',
+    tutorClose: 'Close the Operator',
+    tutorTitle: 'The Operator',
+    tutorBibleNote: 'Facts you save travel with the book — the Operator keeps them in mind.',
+    tutorConversationOffline: 'The Operator is offline or not configured right now — the lenses above still work.',
+    tutorConversationError: 'The Operator could not be reached. Try again in a moment.',
+    tutorDisclosureBody: 'What you ask the Operator travels to a language model; your pages stay yours.',
+    tutorDisclosureBodyV2: 'When you ask the Operator, your question — and any new writing on this page since the Operator last read it — travels to the language model provider configured for this app. Nothing is ever sent unless you ask. Your pages remain yours.',
+    tutorDisclosureBodyV3: "When you ask the Operator, your question — and any new writing on this page since the Operator last read it, and any facts you've saved in this book's Bible — travels to the language model provider configured for this app. Nothing is ever sent unless you ask. Your pages remain yours.",
+    // Board:
+    boardModeOpen: 'Live',
+    boardModeStoryboard: 'Sequence',
+    boardModeOutline: 'Spine',
+    boardAddCard: 'Add node',
+    boardPortedBadge: 'From a doc',
+    boardThreadUntitled: 'Unnamed',
   },
 };
 

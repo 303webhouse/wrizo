@@ -98,7 +98,10 @@ await withHarness(async (app) => {
   await app.click('Start writing');
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted under Flux' });
   const tabLabel = await app.evalJs("document.querySelector('.mode-tab.active .mode-tab__label')?.textContent");
-  ok('check 2: the Free-write tab renders Flux\'s "Overclock" (ModeSwitcher sweep)', tabLabel === 'Overclock', String(tabLabel));
+  // SUPERSEDED (item flux-words, Nick) — "Overclock" retires; "Wire In" replaces
+  // it everywhere Free Write shows under Flux, in both lexicons.
+  // ok('check 2: the Free-write tab renders Flux\'s "Overclock" (ModeSwitcher sweep)', tabLabel === 'Overclock', String(tabLabel));
+  ok('check 2 [flux-words successor]: the Free-write tab renders Flux\'s "Wire In" (ModeSwitcher sweep)', tabLabel === 'Wire In', String(tabLabel));
   // Two .mode-tab--action tabs render (Workshop, then Publish/Connect) —
   // target the second explicitly rather than the ambiguous first match.
   await app.evalJs("[...document.querySelectorAll('.mode-tab--action')][1]?.click()");

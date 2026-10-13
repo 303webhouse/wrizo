@@ -232,7 +232,12 @@ await withHarness(async (app) => {
     await app.evalJs("document.querySelectorAll('.wz-sliver-templates .wz-template-btn').forEach(b => b.click())"); await sleep(300);
     ok('C2: pressing them does nothing to the page', (await stored(app, id)) === textBefore && (await app.evalJs(`!!document.querySelector('${ED}')`)));
     const typeHead = await app.evalJs("(() => { const s = document.querySelector('.wz-sliver-type'); const h = s && s.firstElementChild; return h ? { cls: h.className, text: h.textContent, next: h.nextElementSibling && h.nextElementSibling.className } : null; })()");
-    ok('C3: a "Typeface" heading sits directly above the font controls', typeHead && typeHead.cls === 'wz-sliver-h' && typeHead.text === 'Typeface' && /wz-type/.test(typeHead.next || ''), JSON.stringify(typeHead));
+    // SUPERSEDED (item flux-words, Nick) — Arbor's own word for this heading
+    // becomes "Font"; Flux keeps "Typeface" (an explicit OVERRIDES entry).
+    // This file runs entirely on the default (Arbor) theme.
+    // ok('C3: a "Typeface" heading sits directly above the font controls', typeHead && typeHead.cls === 'wz-sliver-h' && typeHead.text === 'Typeface' && /wz-type/.test(typeHead.next || ''), JSON.stringify(typeHead));
+    ok('C3 [flux-words successor]: a "Font" heading sits directly above the font controls (Arbor\'s own new word; Flux keeps "Typeface")',
+      typeHead && typeHead.cls === 'wz-sliver-h' && typeHead.text === 'Font' && /wz-type/.test(typeHead.next || ''), JSON.stringify(typeHead));
     await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Settings\"]').click()"); await sleep(200);
     const heads = await app.evalJs(`(() => {
       const panel = document.querySelector('.wz-sliver-instruments-panel');
