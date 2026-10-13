@@ -1,0 +1,12 @@
+arbor  01-left-open-both-on             differing px:      53 of 1260000  max channel delta:   1  bbox: 552,70,755,106
+arbor  02-left-open-both-off            differing px:      19 of 1260000  max channel delta: 202  bbox: 664,200,664,218
+arbor  03-format-greyed-tooltip         differing px:       0 of 1260000  max channel delta:   0  bbox: -
+arbor  04-menu-greyed-rows              differing px:      19 of 1260000  max channel delta: 202  bbox: 664,200,664,218
+arbor  05-right-drawer-tabs-and-note    differing px:      19 of 1260000  max channel delta: 202  bbox: 664,200,664,218
+arbor  06-narrow-locked-bar             differing px:      76 of 800000  max channel delta:  47  bbox: 863,12,921,20
+flux   01-left-open-both-on             differing px:  349378 of 1260000  max channel delta: 226  bbox: 450,108,949,820
+flux   02-left-open-both-off            differing px:  349358 of 1260000  max channel delta: 226  bbox: 450,108,949,822
+flux   03-format-greyed-tooltip         differing px:  349318 of 1260000  max channel delta: 226  bbox: 450,108,949,817
+flux   04-menu-greyed-rows              differing px:  349496 of 1260000  max channel delta: 226  bbox: 450,108,949,821
+flux   05-right-drawer-tabs-and-note    differing px:  349321 of 1260000  max channel delta: 226  bbox: 450,108,949,822
+flux   06-narrow-locked-bar             differing px:  223953 of 800000  max channel delta: 226  bbox: 318,201,956,698
