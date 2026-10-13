@@ -197,14 +197,21 @@ async function variantE() {
   const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
   const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return Math.round(s[Math.floor(s.length / 2)] * 10) / 10; };
   const lh = parseFloat(getComputedStyle(el).lineHeight) || 28;
+  // The clones live in their OWN visible host, beside the (hidden) editor, and each clone's copied inline display is CLEARED:
+  // cloneNode copies the editor's inline style, so a clone made after the editor was hidden inherited display:none and laid out at
+  // zero (chat 1's run @ 14032189 read all zeros - FIX's bug, found by chat 1).
+  const host = document.createElement('div');
+  host.className = 'wz-probe-host';
   const mk = (style) => {
     const c = el.cloneNode(false);
     c.removeAttribute('contenteditable'); c.removeAttribute('id'); c.removeAttribute('aria-describedby');
+    c.style.display = '';
     c.innerHTML = lines.map((l, i) => `<div class="wz-probe-row" style="display:block;${style(i)}">${l}${i < lines.length - 1 ? '\n' : ''}</div>`).join('');
-    el.parentElement.insertBefore(c, el.nextSibling);
+    host.appendChild(c);
     return c;
   };
   const prevDisplay = el.style.display;
+  el.parentElement.insertBefore(host, el.nextSibling);
   el.style.display = 'none';
   try {
     // 1. ground truth: the same rows, nothing skipped - each row's true height, and the characters per screen line
@@ -214,6 +221,7 @@ async function variantE() {
     const trueTotal = Math.round(truth.getBoundingClientRect().height);
     const cpls = [];
     [...truth.children].forEach((r, i) => { const n = Math.round(trueH[i] / lh); const chars = (r.textContent || '').replace(/\n$/, '').length; if (n >= 2) cpls.push(chars / n); });
+    const cplFallback = cpls.length === 0;   // no wrapped row measured: the estimate would be a guess - flagged, and the run fails on it
     const cpl = cpls.length ? med(cpls) : Math.max(20, Math.floor(el.clientWidth / (parseFloat(getComputedStyle(el).fontSize) * 0.5)));
     truth.remove();
     // 2. E: contain + content-visibility:auto + an estimated intrinsic size per block
@@ -238,11 +246,12 @@ async function variantE() {
     const at1 = Math.round(far.getBoundingClientRect().top - scroller.getBoundingClientRect().top);
     const estTotalAfter = Math.round(c.getBoundingClientRect().height);
     c.remove();
-    return { blocks: lines.length, lineHeight: lh, charsPerLine: Math.round(cpl * 10) / 10,
+    return { blocks: lines.length, lineHeight: lh, charsPerLine: Math.round(cpl * 10) / 10, charsPerLineFallback: cplFallback, wrappedRowsMeasured: cpls.length,
       oneCharLayout_median: lay.length ? med(lay) : null, renderedBlocksAroundCaret: rendered,
       trueTotalPx: trueTotal, estimatedTotalPx: estTotal, driftPx: estTotal - trueTotal, driftPct: Math.round(((estTotal - trueTotal) / trueTotal) * 10000) / 100,
       scrollJumpPx: at1 - at0, estimatedTotalAfterScrollPx: estTotalAfter };
   } finally {
+    host.remove();
     el.style.display = prevDisplay;
   }
 }
@@ -263,6 +272,7 @@ try {
 await withHarness(async (app) => {
   console.log(`bundle ${main.f}: React region lines ${REACT[0] + 1}-${REACT[1]} (react-dom from ${domAt + 1})`);
   const out = { bundle: main.f, reactLines: [REACT[0] + 1, REACT[1]], sizes: [] };
+  const invalid = [];   // every measurement the guard refuses - the run FAILS on any of them
   for (const words of [20000, 50000]) {
     const gap = words >= 50000 ? 2200 : 900;
     await app.emulateDpr(1, 1400, 900);
@@ -299,6 +309,30 @@ await withHarness(async (app) => {
     const recs = (await app.evalJs('window.__wz.recs')).slice(WARM);
     const calls = await app.evalJs('window.__wz.calls');
     const typed = await app.evalJs(`document.querySelector('${ED}').textContent.length`);
+
+    // THE AUTOSAVE MOMENT - its OWN phase (Fable, 2026-10-13), BEFORE the layout experiments, with the real editor visible and the
+    // caret where the writer left it. A 30-key burst at ~10 keys/s, then a 6-second window from the last key: the page saves
+    // AUTOSAVE_MS (2s) after the writer stops, then the store flushes. Every storage write is logged (key, size, when, how long) and
+    // the longest stall (long task) is reported. The keys are proved LANDED (the page's text grew) - a burst into nothing is not a
+    // measurement.
+    const autosave = await (async () => {
+      const lenBefore = await app.evalJs(`document.querySelector('${ED}').textContent.length`);
+      const focused = await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); const a = document.activeElement; return !!ed && (a === ed || ed.contains(a)); })()`);
+      await app.evalJs(`(${armSaveWatch.toString()})()`);
+      const tStart = await app.evalJs('performance.now()');
+      for (let i = 0; i < 30; i += 1) { await app.typeKeys(i % 6 === 5 ? ' ' : 'e'); await sleep(100); }
+      const tLast = await app.evalJs('performance.now()');
+      await sleep(6000);
+      const sv = await app.evalJs('(() => { const W = window.__save; W.restore(); return { longTasks: W.longTasks, setItems: W.setItems, noObserver: !!W.noObserver }; })()');
+      const lenAfter = await app.evalJs(`document.querySelector('${ED}').textContent.length`);
+      const writes = sv.setItems.filter((s) => s[0] >= tStart).map(([at, ms, key, chars]) => ({ msAfterLastKey: Math.round(at - tLast), key, chars, ms }));
+      const after = sv.longTasks.filter((l) => l[0] >= tLast && l[0] <= tLast + 6000);
+      const during = sv.longTasks.filter((l) => l[0] >= tStart && l[0] < tLast);
+      return { editorFocused: focused, keysLanded: lenAfter - lenBefore, windowMs: 6000, observer: sv.noObserver ? 'unavailable' : 'longtask', writes,
+        longestStallAfterLastKeyMs: after.length ? Math.max(...after.map((l) => l[1])) : 0, stallsAfterLastKey: after.map(([at, d]) => ({ msAfterLastKey: Math.round(at - tLast), ms: d })),
+        longestStallDuringBurstMs: during.length ? Math.max(...during.map((l) => l[1])) : 0 };
+    })();
+    console.log(`AUTOSAVE @ ${words} words: keysLanded=${autosave.keysLanded} writes=${autosave.writes.length} ${autosave.writes.map((w) => `[${w.key} ${w.chars}ch ${w.ms}ms @+${w.msAfterLastKey}ms]`).join(' ')} longestStall=${autosave.longestStallAfterLastKeyMs}ms`);
 
     // per key, the window it owns: keydown to whichever ends last, its paint or its selectionchange work
     const wins = recs.map((r) => [r.t0, Math.max(r.painted ?? r.t0, r.selEnd ?? r.t0) + 2]);
@@ -394,27 +428,40 @@ await withHarness(async (app) => {
     }
     // VARIANT E (plan step 1) - contain + content-visibility with per-block height estimates; layout, rendered blocks, drift, jump
     row.variantE = await app.evalJs(`(${variantE.toString()})()`);
-    // THE AUTOSAVE MOMENT - a 30-key burst at ~10 keys/s, then the pause the 2s autosave waits for; long tasks + storage writes
-    await app.evalJs(`(${armSaveWatch.toString()})()`);
-    for (let i = 0; i < 30; i += 1) { await app.typeKeys(i % 6 === 5 ? ' ' : 'e'); await sleep(100); }
-    const tLast = await app.evalJs('performance.now()');
-    await sleep(3500);
-    const sv = await app.evalJs('(() => { const W = window.__save; W.restore(); return { longTasks: W.longTasks, setItems: W.setItems, noObserver: !!W.noObserver }; })()');
-    const writes = sv.setItems.filter((s) => s[0] >= tLast && /journal-entries/.test(s[2]));
-    const lts = sv.longTasks.filter((l) => l[0] >= tLast + 1500 && l[0] <= tLast + 3500);
-    row.autosave = {
-      savedMsAfterLastKey: writes.length ? Math.round(writes[0][0] - tLast) : null,
-      entriesWriteMs: writes.length ? writes[0][1] : null, entriesPayloadChars: writes.length ? writes[0][3] : null, writes: writes.length,
-      longestLongTaskAtSaveMs: lts.length ? Math.max(...lts.map((l) => l[1])) : 0, longTasksAtSave: lts.length,
-      longTasksDuringBurst: sv.longTasks.filter((l) => l[0] < tLast).length, observer: sv.noObserver ? 'unavailable' : 'longtask',
-    };
+    // ---- SUPERSEDED (Fable, 2026-10-13: chat 1's run @ 14032189 saw 0 writes - this ran AFTER variantE, which had hidden the
+    // editor and moved the selection, so the burst's keys never reached the page). Kept verbatim, no longer run; the autosave is
+    // now its OWN phase, before the layout experiments, with the real editor visible and the keys proved landed (above).
+    //   await app.evalJs(`(${armSaveWatch.toString()})()`);
+    //   for (let i = 0; i < 30; i += 1) { await app.typeKeys(i % 6 === 5 ? ' ' : 'e'); await sleep(100); }
+    //   const tLast = await app.evalJs('performance.now()');
+    //   await sleep(3500);
+    //   ... row.autosave = { savedMsAfterLastKey, entriesWriteMs, entriesPayloadChars, writes, longestLongTaskAtSaveMs, ... };
+    // ------------------------------------------------------------------
+    row.autosave = autosave;
+    // THE GUARD (Fable, 2026-10-13): a measurement of 0, or the characters-per-line fallback, is not a result - it FAILS the run.
+    {
+      const e = row.variantE || {};
+      const why = [];
+      if (e.missing) why.push('variantE: no editor or scroller');
+      for (const k of ['blocks', 'lineHeight', 'charsPerLine', 'trueTotalPx', 'estimatedTotalPx', 'renderedBlocksAroundCaret']) if (!(e[k] > 0)) why.push(`variantE.${k}=${e[k]}`);
+      if (!(e.oneCharLayout_median > 0)) why.push(`variantE.oneCharLayout_median=${e.oneCharLayout_median}`);
+      if (e.charsPerLineFallback) why.push('variantE: the 20-characters-per-line fallback was used (no wrapped row measured)');
+      if (!(autosave.keysLanded > 0)) why.push(`autosave: the burst's keys did not land (keysLanded=${autosave.keysLanded})`);
+      if (!(autosave.writes.length > 0)) why.push('autosave: no storage write in the 6s window');
+      if (why.length) { row.INVALID = why; invalid.push(`${words} words: ${why.join('; ')}`); }
+    }
     out.sizes.push(row);
     console.log(JSON.stringify(row, null, 2));
   }
   const dir = join(here, '..', '..', '..', 'docs', 'evidence', 'latency');
   mkdirSync(dir, { recursive: true });
+  out.invalid = invalid;
   writeFileSync(join(dir, 'profile.json'), JSON.stringify(out, null, 2) + '\n');
   console.log('\nTYPING LATENCY PROFILE written to docs/evidence/latency/profile.json');
+  if (invalid.length) {
+    console.log(`\nTYPING LATENCY PROFILE: INVALID - ${invalid.length} measurement(s) refused:\n  ${invalid.join('\n  ')}`);
+    process.exitCode = 1;
+  } else console.log('\nTYPING LATENCY PROFILE: VALID - no zero measurement, no characters-per-line fallback, the autosave keys landed and wrote');
 });
 } finally {
   if (BUILD) execSync('pnpm build:web', { cwd: join(here, '..'), stdio: 'pipe' });   // back to the normal (minified) build
