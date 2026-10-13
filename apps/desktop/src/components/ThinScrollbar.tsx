@@ -88,20 +88,29 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
     // transform/filter/contain/will-change/perspective/backdrop-filter
     // anywhere in the ancestor chain, in index.css OR any inline JSX style,
     // that could hand `position:fixed` a containing block other than the
-    // viewport. Whatever is moving `.mode-page`'s own box between the
-    // triggering event and the test's 120ms read (an incentive row, a
-    // chrome-fade settling, a font swap — something this component has no
-    // visibility into and no reason to enumerate), the robust fix is to stop
-    // trusting any ONE measurement and keep re-measuring for as long as the
-    // overlay is actually visible: a rAF loop, running only while `active`
-    // (so it costs nothing while hidden, which is nearly always), self-heals
-    // within one frame of whatever moved — far under the 120ms this bug was
-    // caught at, and under any human-perceptible threshold besides.
+    // viewport. The round-2 fix gated continuous re-measurement behind
+    // `active` — which Chat 1 then correctly named as ITS OWN bug: Prose's
+    // own `--font-prose` is a variable font (@fontsource-variable/crimson-pro,
+    // a larger file than Script's two static Courier Prime weights) that can
+    // still be settling its metrics (and therefore `.mode-scroll`'s own
+    // scrollHeight) after mount — if that settling finishes AFTER the one
+    // scroll this harness fires but the bar is not YET (or no longer)
+    // `active` at that exact moment, the loop that only ticks while shown
+    // never saw the correction land, and froze whatever stale rect it had.
+    // ROUND 3: ticking no longer depends on `active` AT ALL for the first
+    // settle window after mount — it runs unconditionally for SETTLE_MS,
+    // covering exactly this class of late, event-less reflow, and ALSO
+    // continues running whenever `active` is true afterward (real
+    // scroll/hover/drag), by the same reasoning as round 2's own comment:
+    // self-heal within one frame, don't trust any single measurement.
+    const SETTLE_MS = 2000;
+    const mountedAt = Date.now();
     let rafId: number | null = null;
     const tick = () => {
       layoutRoot();
       layoutThumb();
-      if (root.classList.contains('active')) rafId = window.requestAnimationFrame(tick);
+      const stillSettling = Date.now() - mountedAt < SETTLE_MS;
+      if (stillSettling || root.classList.contains('active')) rafId = window.requestAnimationFrame(tick);
       else rafId = null;
     };
     const startTicking = () => { if (rafId === null) rafId = window.requestAnimationFrame(tick); };
@@ -187,6 +196,7 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
 
     layoutRoot();
     layoutThumb();
+    startTicking(); // the SETTLE_MS window runs from mount regardless of `active`
     target.addEventListener('scroll', onScroll, { passive: true });
     target.addEventListener('mouseenter', onEnter);
     target.addEventListener('mouseleave', onLeave);

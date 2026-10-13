@@ -296,6 +296,19 @@ await withHarness(async (app) => {
   // standing reference widths, on both writing surfaces. This is the "full
   // height" claim, proven by construction rather than by a guessed CSS
   // number (see file header).
+  //
+  // Chat 1's hypothesis (confirmed): this was measuring the HIDDEN bar — a
+  // rect read is correct regardless of opacity/active (getBoundingClientRect
+  // doesn't care about CSS opacity), but round 2's own re-measure loop only
+  // ran while `active`, so if the bar was not (yet, or no longer) active at
+  // the 120ms read, whatever it last measured — possibly BEFORE a late,
+  // event-less reflow (ThinScrollbar.tsx's own round-3 comment: Prose's
+  // variable font settling its metrics after mount, with no scroll/resize to
+  // catch it) — is exactly what got compared, stale. ROUND 3 fixes the
+  // component (ticks unconditionally for a settle window after mount, not
+  // gated on `active`); belt-and-suspenders here too — assert `active` as an
+  // explicit precondition, so if this ever reads a hidden bar again, THAT
+  // fails loudly instead of silently certifying the wrong element's rect.
   // ==========================================================================
   for (const w of [1280, 2200]) {
     await freshDesk(app, w, 900);
@@ -303,6 +316,8 @@ await withHarness(async (app) => {
     await scrollTo(app, '.mode-scroll', 50); // force a layout pass with the overlay visible
     await sleep(120);
     s = await barState(app, '.mode-scroll');
+    ok(`S5 (prose) @ ${w}px (precondition): the bar being measured is actually SHOWN, not a frozen read of a hidden one`,
+      s.active === true, JSON.stringify({ active: s.active }));
     ok(`S5 (prose) @ ${w}px: the overlay's track height equals the scroll container's own rendered height (full height, by construction)`,
       s.found && Math.abs(s.barRect.height - s.targetRect.height) < 1,
       JSON.stringify({ barHeight: s.barRect.height, targetHeight: s.targetRect.height }));
@@ -315,6 +330,8 @@ await withHarness(async (app) => {
     await scrollTo(app, '.desk-frame-scroll-cap', 50);
     await sleep(120);
     s = await barState(app, '.desk-frame-scroll-cap');
+    ok(`S5 (script) @ ${w}px (precondition): the bar being measured is actually SHOWN`,
+      s.active === true, JSON.stringify({ active: s.active }));
     ok(`S5 (script) @ ${w}px: the overlay's track height equals the scroll container's own rendered height`,
       s.found && Math.abs(s.barRect.height - s.targetRect.height) < 1,
       JSON.stringify({ barHeight: s.barRect.height, targetHeight: s.targetRect.height }));
@@ -368,11 +385,18 @@ await withHarness(async (app) => {
     s = await barState(app, '.mode-scroll');
     ok('S7: it shows immediately on scroll, fully opaque with no fade-in to wait out',
       s.active === true && parseFloat(s.opacity) === 1, JSON.stringify({ active: s.active, opacity: s.opacity }));
-    await sleep(900); // 60ms + 900ms = 960ms total — still short of the 1s wait
+    // 600ms margin before the 1000ms hide, not a tight 40ms one — each
+    // evalJs/CDP round-trip in between (scrollTo, barState) adds real wall-
+    // clock overhead on a loaded box, and a near-zero margin reads as a
+    // product bug when it is really just the test cutting its own timing
+    // too close (ThinScrollbar.tsx has exactly one `classList.remove
+    // ('active')` call site, unconditionally at FADE_OUT_DELAY_MS — there is
+    // nothing in the component that could fire early).
+    await sleep(340); // 60ms + 340ms = 400ms total — comfortably short of the 1s wait
     s = await barState(app, '.mode-scroll');
-    ok('S7: still shown just short of the 1s wait — reduced motion never shortens the wait itself, only the fade',
+    ok('S7: still shown well short of the 1s wait — reduced motion never shortens the wait itself, only the fade',
       s.active === true, JSON.stringify({ active: s.active }));
-    await sleep(250); // past the 1s wait now
+    await sleep(750); // 400ms + 750ms = 1150ms total — comfortably past the 1s wait
     s = await barState(app, '.mode-scroll');
     ok('S7: and gone once the SAME 1s wait has passed, snapping straight to invisible rather than fading out',
       s.active === false && parseFloat(s.opacity) === 0, JSON.stringify({ active: s.active, opacity: s.opacity }));
