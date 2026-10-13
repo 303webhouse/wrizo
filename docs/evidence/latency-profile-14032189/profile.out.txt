@@ -1,0 +1,234 @@
+bundle index-D3Zs9kHm.js: React region lines 51-7018 (react-dom from 587)
+{
+  "words": 20000,
+  "chars": 121207,
+  "wrappedCallsOutsideKeyWindows": 24,
+  "typedOk": true,
+  "keys": 20,
+  "control_uninstrumented": {
+    "handlers": 383.4,
+    "toFrame": 0.6,
+    "frameStyleLayoutPaint": 142.2,
+    "toFirstPaint": 539.1,
+    "toFirstPaint_p95": 800.4,
+    "selectionchange": 31.1,
+    "selectionchangeAfterPaint": "0/6",
+    "total": 539.1,
+    "total_p95": 800.4
+  },
+  "instrumented": {
+    "handlers": 420.3,
+    "toFrame": 0.4,
+    "frameStyleLayoutPaint": 151.9,
+    "toFirstPaint": 576.9,
+    "toFirstPaint_p95": 716,
+    "selectionchange": 38.3,
+    "selectionchangeAfterPaint": "0/20",
+    "total": 576.9,
+    "total_p95": 716
+  },
+  "wrappers_medianPerKey": {
+    "innerText_reads": 7,
+    "innerText_forcedLayout": 0,
+    "innerText_serialise": 40,
+    "rangeText_reads": 4,
+    "rangeText": 1.5,
+    "innerHTML_writes": 1,
+    "innerHTML_parse": 24.5
+  },
+  "cpu_meanPerKey": {
+    "(program): native, outside JS - style/layout/paint": 204.5,
+    "caret walks": 186.3,
+    "idle": 79.2,
+    "211 rules": 38,
+    "innerHTML parse (wrapper)": 24.9,
+    "innerText (wrapper)": 17.8,
+    "redecorate: string build": 9.4,
+    "React: component render": 8.4,
+    "GC": 7,
+    "React: reconcile + commit": 5.5,
+    "the 211 controller": 1.1,
+    "readEditorPlainText (string)": 0.6,
+    "Range text (wrapper)": 0.5,
+    "other app JS": 0.4,
+    "other": 0
+  },
+  "layoutShape": {
+    "A_wholeReplace": {
+      "parse": 22.3,
+      "layout": 191.3
+    },
+    "Aprime_domPath": {
+      "layoutBeforeRead": 118.5,
+      "serialise": 7.2,
+      "parse": 21,
+      "layoutAfter": 171.3,
+      "total": 339.9
+    },
+    "B_singleBlock_oneChar": {
+      "layout": 133.2
+    },
+    "C_blockRows_oneChar": {
+      "layout": 93.3,
+      "textContentIdentical": true,
+      "rows": 1112,
+      "heightVsToday": "64253 vs 64253"
+    },
+    "D_blockRows_rowRewrite": {
+      "parse": 0.1,
+      "layout": 87.3
+    }
+  },
+  "aPrime_estimate": {
+    "decorationsToday": 2,
+    "innerTextReadsToday": 7,
+    "domPath": 339.9,
+    "decorateOnce": 4.7,
+    "readPlainOnce": 0.1,
+    "caretOffsetOnce": 0.4,
+    "react": 13.9,
+    "kept": 231.8,
+    "total": 590.8
+  },
+  "variantE": {
+    "blocks": 1112,
+    "lineHeight": 28.9,
+    "charsPerLine": 20,
+    "oneCharLayout_median": 0,
+    "renderedBlocksAroundCaret": 0,
+    "trueTotalPx": 0,
+    "estimatedTotalPx": 0,
+    "driftPx": 0,
+    "driftPct": null,
+    "scrollJumpPx": 0,
+    "estimatedTotalAfterScrollPx": 0
+  },
+  "autosave": {
+    "savedMsAfterLastKey": null,
+    "entriesWriteMs": null,
+    "entriesPayloadChars": null,
+    "writes": 0,
+    "longestLongTaskAtSaveMs": 0,
+    "longTasksAtSave": 0,
+    "longTasksDuringBurst": 3,
+    "observer": "longtask"
+  }
+}
+{
+  "words": 50000,
+  "chars": 302801,
+  "wrappedCallsOutsideKeyWindows": 24,
+  "typedOk": true,
+  "keys": 20,
+  "control_uninstrumented": {
+    "handlers": 1587.2,
+    "toFrame": 0.5,
+    "frameStyleLayoutPaint": 348.1,
+    "toFirstPaint": 1908.8,
+    "toFirstPaint_p95": 2318.9,
+    "selectionchange": 96.3,
+    "selectionchangeAfterPaint": "0/6",
+    "total": 1908.8,
+    "total_p95": 2318.9
+  },
+  "instrumented": {
+    "handlers": 1087.7,
+    "toFrame": 0.5,
+    "frameStyleLayoutPaint": 333.6,
+    "toFirstPaint": 1437.1,
+    "toFirstPaint_p95": 1966.6,
+    "selectionchange": 89.6,
+    "selectionchangeAfterPaint": "0/20",
+    "total": 1437.1,
+    "total_p95": 1966.6
+  },
+  "wrappers_medianPerKey": {
+    "innerText_reads": 7,
+    "innerText_forcedLayout": 0.1,
+    "innerText_serialise": 96,
+    "rangeText_reads": 4,
+    "rangeText": 2.7,
+    "innerHTML_writes": 1,
+    "innerHTML_parse": 62.8
+  },
+  "cpu_meanPerKey": {
+    "(program): native, outside JS - style/layout/paint": 515.8,
+    "caret walks": 507.3,
+    "innerText (wrapper)": 102.5,
+    "211 rules": 85,
+    "innerHTML parse (wrapper)": 67.1,
+    "idle": 49.4,
+    "React: component render": 43.4,
+    "redecorate: string build": 41.4,
+    "GC": 18.7,
+    "React: reconcile + commit": 14.5,
+    "readEditorPlainText (string)": 5.7,
+    "Range text (wrapper)": 2.8,
+    "the 211 controller": 2.3,
+    "other app JS": 1.3,
+    "strip: marksAt/headingLevelAt": 0.1,
+    "other": 0
+  },
+  "layoutShape": {
+    "A_wholeReplace": {
+      "parse": 54.7,
+      "layout": 540.4
+    },
+    "Aprime_domPath": {
+      "layoutBeforeRead": 398.4,
+      "serialise": 27.3,
+      "parse": 57.5,
+      "layoutAfter": 546.9,
+      "total": 1059.5
+    },
+    "B_singleBlock_oneChar": {
+      "layout": 314.2
+    },
+    "C_blockRows_oneChar": {
+      "layout": 241.6,
+      "textContentIdentical": true,
+      "rows": 2778,
+      "heightVsToday": "160516 vs 160516"
+    },
+    "D_blockRows_rowRewrite": {
+      "parse": 0.1,
+      "layout": 227.6
+    }
+  },
+  "aPrime_estimate": {
+    "decorationsToday": 2,
+    "innerTextReadsToday": 7,
+    "domPath": 1059.5,
+    "decorateOnce": 20.7,
+    "readPlainOnce": 0.8,
+    "caretOffsetOnce": 0.7,
+    "react": 57.9,
+    "kept": 612.4,
+    "total": 1752
+  },
+  "variantE": {
+    "blocks": 2778,
+    "lineHeight": 28.9,
+    "charsPerLine": 20,
+    "oneCharLayout_median": 0,
+    "renderedBlocksAroundCaret": 0,
+    "trueTotalPx": 0,
+    "estimatedTotalPx": 0,
+    "driftPx": 0,
+    "driftPct": null,
+    "scrollJumpPx": 0,
+    "estimatedTotalAfterScrollPx": 0
+  },
+  "autosave": {
+    "savedMsAfterLastKey": null,
+    "entriesWriteMs": null,
+    "entriesPayloadChars": null,
+    "writes": 0,
+    "longestLongTaskAtSaveMs": 0,
+    "longTasksAtSave": 0,
+    "longTasksDuringBurst": 2,
+    "observer": "longtask"
+  }
+}
+
+TYPING LATENCY PROFILE written to docs/evidence/latency/profile.json
