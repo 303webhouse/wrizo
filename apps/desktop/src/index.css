@@ -5609,10 +5609,14 @@ a:focus-visible,
    Arbor dims brown-dark and Flux dims teal-dark, never one fixed colour
    painted over both. ROUND 2 (Nick, live frames): 75% let the front door's
    logo and the Write door ghost through and clash with the sketch — raised
-   to 90%; the token stays theme-tinted, only the opacity moved. */
+   to 90%. ROUND 6 (Nick, live): "make it a solid block" — 100% now; nothing
+   of the app shows through at all. 100% of a theme's own ground colour IS
+   that colour, so `color-mix(... 100%, transparent)` and the bare token
+   paint identically — written as the bare token for clarity, not left as a
+   color-mix whose only remaining "mix" is the whole thing. */
 .wz-splash-veil{
   position:absolute; inset:0; pointer-events:none;
-  background:color-mix(in srgb, var(--ink-950) 90%, transparent);
+  background:var(--ink-950);
   opacity:1; transition:opacity .38s ease;
 }
 /* The emblem is a SIBLING of the veil, not a child, so it paints on top of the
