@@ -250,6 +250,13 @@ await withHarness(async (app) => {
   // Without the overlay's own mirrored enter/leave pair, that mouseleave
   // would schedule a hide the instant the pointer reaches the thumb.
   const thumbPointForHover = await app.evalJs("(() => { const t = document.querySelector('.mode-scroll').nextElementSibling.querySelector('.wz-thin-scrollbar-thumb'); const r = t.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+  // Fable: "prove it, don't theorise" — ThinScrollbar.tsx's own probe seam
+  // (window.wrizoThinScrollbar.probe) records hoverDepth/active/the thumb's
+  // own rendered rect EVERY FRAME. Started right as the pointer lands on the
+  // thumb and read back after the same long rest that fails today, so
+  // whichever of the three actually changes — if any — is in the log,
+  // rather than argued from a static read of the source.
+  await app.evalJs('window.wrizoThinScrollbar.probe.start()');
   await app.mouseMove(thumbPointForHover.x, thumbPointForHover.y);
   await sleep(150);
   s = await barState(app, '.mode-scroll');
@@ -257,8 +264,34 @@ await withHarness(async (app) => {
     s.active === true, JSON.stringify({ active: s.active }));
   await sleep(1300); // well past the 1000ms wait — confirms it is genuinely held, not merely not-yet-expired
   s = await barState(app, '.mode-scroll');
+  const probeLog = await app.evalJs('window.wrizoThinScrollbar.probe.stop(); window.wrizoThinScrollbar.probe.read()');
   ok('S4 (Fable\'s review): and stays shown the whole time the pointer rests on the thumb, past the point it would otherwise have faded',
     s.active === true, JSON.stringify({ active: s.active }));
+
+  // The probe's own verdict — three independent questions, each answerable
+  // straight from the log rather than from the single before/after read
+  // above. Whichever of these three fails IS the answer to "which one
+  // changes"; the raw log rides in the (truncated) detail of each so the
+  // full per-frame trail is still in the evidence if a number needs closer
+  // reading than the summary gives.
+  if (!Array.isArray(probeLog) || probeLog.length === 0) {
+    ok('S4 (probe driver): the per-frame log actually captured samples', false, JSON.stringify({ length: Array.isArray(probeLog) ? probeLog.length : typeof probeLog }));
+  } else {
+    const first = probeLog[0];
+    const hoverDepthDrop = probeLog.find((p) => p.hoverDepth === 0);
+    const activeFlip = probeLog.find((p) => p.active === false);
+    const DRIFT_PX = 0.5;
+    const drifted = probeLog.find((p) => Math.abs(p.thumbTop - first.thumbTop) > DRIFT_PX || Math.abs(p.thumbLeft - first.thumbLeft) > DRIFT_PX);
+    const maxDrift = probeLog.reduce((m, p) => Math.max(m, Math.abs(p.thumbTop - first.thumbTop), Math.abs(p.thumbLeft - first.thumbLeft)), 0);
+    ok(`S4 (probe driver): captured ${probeLog.length} frames over the rest window`,
+      true, JSON.stringify({ first, last: probeLog[probeLog.length - 1] }));
+    ok('S4 (probe): hoverDepth never drops to 0 during the rest (the pointer never reads as having left either element)',
+      !hoverDepthDrop, hoverDepthDrop ? JSON.stringify({ at_ms: hoverDepthDrop.t, sample: hoverDepthDrop }) : 'never dropped');
+    ok('S4 (probe): active never flips false during the rest',
+      !activeFlip, activeFlip ? JSON.stringify({ at_ms: activeFlip.t, sample: activeFlip }) : 'never flipped');
+    ok(`S4 (probe): the thumb's own on-screen position never moves more than ${DRIFT_PX}px during the rest (scrollTop is unchanged — nothing should move it)`,
+      !drifted, JSON.stringify({ maxDriftPx: Math.round(maxDrift * 100) / 100, firstDriftAt_ms: drifted ? drifted.t : null, first: { top: first.thumbTop, left: first.thumbLeft } }));
+  }
 
   // Move the pointer well away from the surface entirely.
   await app.mouseMove(5, 5);

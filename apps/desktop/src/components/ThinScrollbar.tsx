@@ -41,6 +41,12 @@ const FADE_OUT_DELAY_MS = 1000;
 const MIN_THUMB_PX = 24;
 const THICKNESS_PX = 4;
 
+// A single shared probe (harness-only; see the ROUND 4 comment on `tick`
+// below) — fine as a module-level singleton since only one ThinScrollbar is
+// ever the subject of a diagnostic pass at a time.
+type ProbeSample = { t: number; hoverDepth: number; active: boolean; thumbTop: number; thumbLeft: number; thumbHeight: number };
+const probe: { on: boolean; startedAt: number; log: ProbeSample[] } = { on: false, startedAt: 0, log: [] };
+
 export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLElement | null> }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
@@ -106,9 +112,24 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
     const SETTLE_MS = 2000;
     const mountedAt = Date.now();
     let rafId: number | null = null;
+    // Fable: "prove it, don't theorise" — a per-frame probe, off by default,
+    // switched on by the harness around exactly the window S4 holds the
+    // pointer still. Records hoverDepth/active/the thumb's own rendered rect
+    // every tick, so whichever of those three actually moves (if any) is
+    // visible in the captured log rather than argued from a static read of
+    // the source. No cost when not probing (one boolean check per tick).
     const tick = () => {
       layoutRoot();
       layoutThumb();
+      if (probe.on) {
+        const tr = thumb.getBoundingClientRect();
+        probe.log.push({
+          t: Math.round(performance.now() - probe.startedAt),
+          hoverDepth,
+          active: root.classList.contains('active'),
+          thumbTop: tr.top, thumbLeft: tr.left, thumbHeight: tr.height,
+        });
+      }
       const stillSettling = Date.now() - mountedAt < SETTLE_MS;
       if (stillSettling || root.classList.contains('active')) rafId = window.requestAnimationFrame(tick);
       else rafId = null;
@@ -232,5 +253,10 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
 if (typeof window !== 'undefined') {
   (window as unknown as { wrizoThinScrollbar?: unknown }).wrizoThinScrollbar = {
     FADE_OUT_DELAY_MS, MIN_THUMB_PX, THICKNESS_PX,
+    probe: {
+      start: () => { probe.log = []; probe.startedAt = performance.now(); probe.on = true; },
+      stop: () => { probe.on = false; },
+      read: () => probe.log,
+    },
   };
 }
