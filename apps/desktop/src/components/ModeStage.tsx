@@ -667,8 +667,12 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
           onPick={v => setWritingSettings({ progressStyle: v as ProgressStyle })}
         />
       )}
-      <Seg label="Recede depth" value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
-      <Seg label="Timer" value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
+      {/* ITEM flux-words (Fable's ruling) — these two rows' own label +
+          option words now route through deskLexicon (the progressStyle*
+          rows above already set this precedent); their On/Off-shaped
+          siblings keep the established inline convention. */}
+      <Seg label={deskLex('fadeDepthLabel')} value={settings.fadeDepth} opts={[['partial', deskLex('fadeDepthPartial')], ['full', deskLex('fadeDepthFull')]]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
+      <Seg label={deskLex('timerLabel')} value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
       {/* FX2 S2 — routes through setTypewriterExplicit, not the bare
           setter: the gear is the OTHER hand-click surface (beside the
           sliver's own TypewriterToggle), and both must arm the same

@@ -524,6 +524,7 @@ export type DeskTermId =
   // option strings inline (the FX3 S5 precedent, left as-is — this ticket
   // adds a new control, it does not retrofit its neighbors).
   | 'progressStyleLabel' | 'progressStyleBar' | 'progressStyleRhizome'
+  | 'fadeDepthLabel' | 'fadeDepthPartial' | 'fadeDepthFull' | 'timerLabel'
   // E1 S2 — Publish's copy path, working and legible. A brief confirmation
   // (the existing ActionToast quiet-line pattern) after a genuine copy
   // success, split by button so a writer always knows WHICH one just
@@ -1273,6 +1274,16 @@ const CANONICAL: Record<DeskTermId, string> = {
   progressStyleBar: 'Bar',
   progressStyleRhizome: 'Rhizome',
 
+  // ITEM flux-words (Fable's ruling) — moved into the lexicon from
+  // ModeStage.tsx's own SettingsPanel inline Seg strings (the FX3 "every
+  // visible word goes through it" rule, applied to these four specifically;
+  // Progress/Theme/Voice/Page/Fade/Ambiance and every row's own On/Off stay
+  // inline, untouched, matching their established precedent).
+  fadeDepthLabel: 'Recede depth',
+  fadeDepthPartial: 'Partial',
+  fadeDepthFull: 'Full',
+  timerLabel: 'Timer',
+
   // E1 S2 — Publish's copy path.
   publishCopyWordsConfirm: 'Copied — your plain words are on the clipboard.',
   publishCopyFormattedConfirm: 'Copied — with formatting intact.',
@@ -1306,6 +1317,11 @@ const CANONICAL: Record<DeskTermId, string> = {
 // the same theme, even though they're independent maps.
 const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> = {
   flux: {
+    // ITEM flux-words (Fable's ruling) — Desk -> Terminal. Set here
+    // regardless of the term being orphaned (App.tsx's own "Desk menu"
+    // aria-label is a separate hardcoded string, not wired to this seam) —
+    // the lexicon should be correct even where nothing reads it yet.
+    deskMenuGlyph: 'Terminal menu',
     corkboardJournalTab: 'Log',
     // AB3 — the Places face's Journal pull, kept in step with the corkboard
     // tab's own Flux name so the two seams never visibly disagree.
@@ -1317,7 +1333,10 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     // unrelated `publish` term is ALSO shown as "Connect" under Flux today —
     // a different feature, Publish-to-web, not board connections; that one
     // is being renamed "Uplink" separately so the two words stop colliding.)
-    beginConnectPage: 'Link a Page',
+    // ITEM flux-words (Fable) — "Link a Page" was a leftover: Flux's own
+    // vocabulary for the document is Doc/Docs (themeLexicon.ts's `page`
+    // term), not "Page", and this board door had never been swept.
+    beginConnectPage: 'Link a Doc',
     pageFacePinnedTo: 'Also linked to',
     cascadePlanBoardsConnected: 'Boards linked',
     boardThreadGrab: 'Drag to link',
@@ -1394,6 +1413,13 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     boardAddCard: 'Add node',
     boardPortedBadge: 'From a doc',
     boardThreadUntitled: 'Unnamed',
+    // ITEM flux-words (Fable's ruling): "Add a tag" -> "Add a flag".
+    pageFaceAddTag: 'Add a flag',
+    // ITEM flux-words — the four newly-lexicon-routed settings above.
+    fadeDepthLabel: 'Dissolve',
+    fadeDepthPartial: 'Soft',
+    fadeDepthFull: 'Void',
+    timerLabel: 'Clock',
   },
 };
 
