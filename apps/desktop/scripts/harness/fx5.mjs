@@ -52,6 +52,9 @@ import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
 let fx5MaskSeen = null;   // S1 (b)'s computed mask, kept for its parked record (TYPEWRITER-FADE-ORDER)
+// Declared up here, above the harness run that ASSIGNS it: a `let` declared below a top-level await is in its temporal dead zone
+// while that await runs (the first run of the card port died on exactly this: 'Cannot access fx5CardReveal before initialization').
+let fx5CardReveal = null;   // the S6 card reading, kept for its parked record
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -888,8 +891,16 @@ await withHarness(async (app) => {
     const marks = [...document.querySelectorAll('.board-popup-editor .md-mark')];
     return { anyRevealed: marks.some(m => !m.classList.contains('md-mark-hidden')) };
   })()`);
-  ok('S6: reveal-adjacent-to-caret — once the caret sits inside/beside the bold run, its OWN markers become visible again (a real, working escape hatch to see/edit the raw syntax, per the brief\'s own named fallback)',
-    revealState.anyRevealed === true, JSON.stringify(revealState));
+  // ---- PARKED - SUPERSEDED by the 211 card port (2026-10-06): the popup now runs the page's editing rules, so it shows no mark at any caret, as the page ----
+  // Kept VERBATIM and no longer run. Item 211 (Nick's "A", 2026-09-25) retired reveal-at-caret; the card kept an interim form of it
+  // until it had the page's editing rules, and now it has them. Successor below; the parked record is in this file's PARKED section.
+  //
+  // ok('S6: reveal-adjacent-to-caret — once the caret sits inside/beside the bold run, its OWN markers become visible again (a real, working escape hatch to see/edit the raw syntax, per the brief\'s own named fallback)',
+  //   revealState.anyRevealed === true, JSON.stringify(revealState));
+  // ------------------------------------------------------------------
+  fx5CardReveal = revealState;
+  ok('S6 [card-port successor]: with the caret inside the bold run\'s own markers the card shows NO marker - the escape hatch is the B button and Backspace/Delete, which never leave a lone mark',
+    revealState.anyRevealed === false, JSON.stringify(revealState));
 
   // Draft mode's own dimmed-syntax register is untouched: .md-mark there
   // is NEVER given the -hidden class, still just opacity-dimmed.
@@ -1202,6 +1213,9 @@ if (process.env.HARNESS_PARKED === '1') {
   // own reading: the mask's FIRST stop is the 15% floor, not an opaque one.
   pok('PARKED (was "S1 (b): the container mask genuinely carries a two-stage ramp now (opaque lead-in, then the fade) ...") - TYPEWRITER-FADE-ORDER (Nick, 2026-10-10): the opaque lead-in showed the oldest line whole above fainter newer ones; the mask now starts at the 15% floor; live successor: typewriter-fade.mjs',
     typeof fx5MaskSeen === 'string' && /linear-gradient\(\s*(?:to bottom,\s*)?rgba\(0, 0, 0, 0\.15\)/.test(fx5MaskSeen), String(fx5MaskSeen));
+  // The 211 card port (2026-10-06) - one park: S6's reveal-adjacent check; the record follows reality (nothing shows).
+  pok('PARKED (was "S6: reveal-adjacent-to-caret — once the caret sits inside/beside the bold run, its OWN markers become visible again") - 211 card port (2026-10-06): the popup now runs the page\'s editing rules, so it shows no mark at any caret, as the page',
+    !!fx5CardReveal && fx5CardReveal.anyRevealed === false, JSON.stringify(fx5CardReveal));
   await withHarness(async (app) => {
     const ctrlZParked = (sel) => app.evalJs(`document.querySelector('${sel}').dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true, cancelable: true }))`);
     await freshProsePage(app, LAPTOP_W, 900);

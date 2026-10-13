@@ -357,14 +357,27 @@ await withHarness(async (app) => {
   ok('S4 [interim successor]: a REAL click in the middle of the card\'s bold word reveals NOTHING', cardAfter.allHidden === true, JSON.stringify(cardAfter));
   const cardWalk = await walkLine(app, '.board-popup-editor');
   parked.cardWalk = cardWalk;
-  ok('S4 [interim successor] THE RULE on the card, at every caret stop: markers show exactly when the caret touches a marker span - the two surfaces still share one register',
-    lawHolds(cardWalk) && sawBoth(cardWalk), JSON.stringify(cardWalk.map((x) => `${x.off}${x.revealed ? '+' : '-'}`).join(' ')));
+  // ---- PARKED - SUPERSEDED by the 211 card port (2026-10-06): the popup now runs the page's editing rules, so it shows no mark at any caret, as the page ----
+  // Kept VERBATIM and no longer run: the card's interim rule (marks show while the caret touches one) is retired with its option.
+  //
+  // ok('S4 [interim successor] THE RULE on the card, at every caret stop: markers show exactly when the caret touches a marker span - the two surfaces still share one register',
+  //   lawHolds(cardWalk) && sawBoth(cardWalk), JSON.stringify(cardWalk.map((x) => `${x.off}${x.revealed ? '+' : '-'}`).join(' ')));
+  // ------------------------------------------------------------------
+  ok('S4 [card-port successor] at EVERY caret stop along the card\'s line no mark shows - the card and the page share one register, and now one set of editing rules',
+    neverShown(cardWalk), JSON.stringify(cardWalk.map((x) => `${x.off}${x.revealed ? '+' : '-'}`).join(' ')));
   // leave the caret ON a marker, so the Home check below still has something to re-collapse
   await app.key('Home');
   await sleep(200);
   for (let i = 0; i < 6; i += 1) { await app.key('ArrowRight'); await sleep(120); }
   const cardAtEdge = await revealState(app, '.board-popup-editor');
-  ok('S4 (precondition for the Home check): with the caret at the bold word\'s leading edge the markers ARE shown', cardAtEdge.anyRevealed === true, JSON.stringify(cardAtEdge));
+  // ---- PARKED - SUPERSEDED by the 211 card port (2026-10-06): the popup now runs the page's editing rules, so it shows no mark at any caret, as the page ----
+  // Kept VERBATIM and no longer run. Nothing is shown at the word's edge any more, so the Home check below no longer has a reveal to
+  // re-collapse; it stays (it still proves Home leaves everything collapsed) and the successor here says what the edge shows now.
+  //
+  // ok('S4 (precondition for the Home check): with the caret at the bold word\'s leading edge the markers ARE shown', cardAtEdge.anyRevealed === true, JSON.stringify(cardAtEdge));
+  // ------------------------------------------------------------------
+  parked.cardAtEdge = cardAtEdge;
+  ok('S4 [card-port successor]: with the caret at the bold word\'s leading edge the markers stay HIDDEN', cardAtEdge.anyRevealed === false, JSON.stringify(cardAtEdge));
 
   // The enumerated pair's own path: a nav key. It must still work now that
   // nothing listens to keyup — this is the check that would catch a swap that
@@ -382,8 +395,17 @@ await withHarness(async (app) => {
   for (let i = 0; i < 10; i += 1) await app.key('ArrowLeft', { shift: true });
   await sleep(400);
   const cardSel = await selectionNow(app);
-  ok('S4 THE DEFECT THE SWAP FIXES: a selection can be extended across a reveal boundary on a card — the retired mouseup/keyup pair redecorated UNCONDITIONALLY on every nav keyup and every mouseup, and a redecorate restores a COLLAPSED caret, so a selection made this way was destroyed as it was made',
-    cardSel.none === false && cardSel.collapsed === false && cardSel.length === 10, JSON.stringify(cardSel));
+  // ---- PARKED - SUPERSEDED by the 211 card port (2026-10-06): the card's Shift+Arrow now steps over VISIBLE characters ----------
+  // Kept VERBATIM and no longer run. Its claim - the selection SURVIVES being extended across the bold run - is unchanged and asserted
+  // below; only its unit moved. Ten Shift+ArrowLeft presses now select ten characters the writer can SEE ("t BOLD end"), and the
+  // selection's raw string also carries the four hidden stars it spans (14), where the browser's own stepping counted every star.
+  //
+  // ok('S4 THE DEFECT THE SWAP FIXES: a selection can be extended across a reveal boundary on a card — the retired mouseup/keyup pair redecorated UNCONDITIONALLY on every nav keyup and every mouseup, and a redecorate restores a COLLAPSED caret, so a selection made this way was destroyed as it was made',
+  //   cardSel.none === false && cardSel.collapsed === false && cardSel.length === 10, JSON.stringify(cardSel));
+  // ------------------------------------------------------------------
+  parked.cardSel = cardSel;
+  ok('S4 THE DEFECT THE SWAP FIXES [card-port successor]: a selection extended by ten Shift+ArrowLeft presses across the bold run SURVIVES, and covers ten VISIBLE characters ("t BOLD end"; 14 raw, with the hidden stars)',
+    cardSel.none === false && cardSel.collapsed === false && cardSel.text.replace(/\*/g, '').length === 10 && cardSel.length === 14, JSON.stringify(cardSel));
 
   // ==========================================================================
   // S5 — THE TEXT IS NEVER TOUCHED. Every check above rewrote innerHTML
@@ -413,7 +435,8 @@ if (process.env.HARNESS_PARKED === '1') {
   // The three page records below keep their quoted original and their interim note byte-for-byte, and chain the item 211 note
   // after it (a chain, never a rewrite — audit-parked-records.mjs). Each interim CONDITION (lawHolds/sawBoth/turnsOnAndOff,
   // mutations > 0) required a mark to show, and follows reality now: neverShown, bounded. The fourth, the card's, is unchanged:
-  // the card popup keeps the interim rule until it has the page's editing rules (Fable's PR #7 review, 2026-10-03).
+  // the card popup keeps the interim rule until it has the page's editing rules (Fable's PR #7 review, 2026-10-03). [Chained, 2026-10-06:
+  // the card port retired that rule; the fourth record follows reality like the other three, and two card parks join, and the selection park: 7 in all.]
   //   !!parked.pageClick && parked.pageClick.allHidden === true && !!parked.pageWalk && lawHolds(parked.pageWalk) && sawBoth(parked.pageWalk), JSON.stringify(parked.pageClick));
   pok('PARKED (was "S1 THE TICKET: a REAL click into the bold run reveals its own markers on the page") - interim rule: a mid-word click reveals nothing, and the markers show exactly at the marker spans along the walk; then item 211 (2026-10-02): the walk never reveals either',
     !!parked.pageClick && parked.pageClick.allHidden === true && !!parked.pageWalk && neverShown(parked.pageWalk), JSON.stringify(parked.pageClick));
@@ -424,7 +447,15 @@ if (process.env.HARNESS_PARKED === '1') {
   pok('PARKED (was "S2 TERMINATION: one reveal-changing click produces a BOUNDED burst of DOM mutations") - interim rule: the reveal-changing gesture is a key press onto a marker edge; still bounded; then item 211 (2026-10-02): the edge press reveals nothing and does not loop',
     typeof parked.mutations === 'number' && parked.mutations < 40, JSON.stringify({ mutations: parked.mutations }));
   pok('PARKED (was "S4: a REAL click into the card\'s bold run reveals its markers") - interim rule: nothing on a mid-word click, and the same rule along the card\'s walk',
-    !!parked.cardClick && parked.cardClick.allHidden === true && !!parked.cardWalk && lawHolds(parked.cardWalk) && sawBoth(parked.cardWalk), JSON.stringify(parked.cardClick));
+    !!parked.cardClick && parked.cardClick.allHidden === true && !!parked.cardWalk && neverShown(parked.cardWalk), JSON.stringify(parked.cardClick));
+  // The 211 card port: the card record above now follows reality too (neverShown, as the page's do), and the two card checks it
+  // superseded in the default leg are parked here - the count is 6.
+  pok('PARKED (was "S4 [interim successor] THE RULE on the card, at every caret stop: markers show exactly when the caret touches a marker span") - 211 card port (2026-10-06): the popup now runs the page\'s editing rules, so it shows no mark at any caret, as the page',
+    !!parked.cardWalk && neverShown(parked.cardWalk), JSON.stringify(parked.cardWalk));
+  pok('PARKED (was "S4 (precondition for the Home check): with the caret at the bold word\'s leading edge the markers ARE shown") - 211 card port (2026-10-06): the popup now runs the page\'s editing rules, so it shows no mark at any caret, as the page',
+    !!parked.cardAtEdge && parked.cardAtEdge.anyRevealed === false, JSON.stringify(parked.cardAtEdge));
+  pok('PARKED (was "S4 THE DEFECT THE SWAP FIXES: a selection can be extended across a reveal boundary on a card ... cardSel.length === 10") - the 211 card port: Shift+Arrow steps over visible characters, so ten presses select ten visible (14 raw)',
+    !!parked.cardSel && parked.cardSel.collapsed === false && parked.cardSel.text.replace(/\*/g, '').length === 10, JSON.stringify(parked.cardSel));
   for (const c of parkedChecks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);
   console.log(`\nREVEAL PARKED: ${parkedChecks.length} checks - HARNESS_PARKED=1 armed`);
 }

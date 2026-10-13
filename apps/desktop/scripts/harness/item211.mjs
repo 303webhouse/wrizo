@@ -19,6 +19,8 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
+let r1CardShown = null;   // R1's card readings, kept for its parked record
+let clickPast = null;   // the WALK click reading, kept for its parked record
 const checks = [];
 let c2Seen = null;   // C2's reading of the placeholders, kept for its parked record (PAGE-TEMPLATES-MOVE)
 const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass, detail }); console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? `  [${detail}]` : ''}`); };
@@ -118,7 +120,15 @@ await withHarness(async (app) => {
     const pt = await app.evalJs(`(() => { const b = document.querySelector('${ED} .md-bold'); const r = b.getBoundingClientRect(); return { x: Math.round(r.right + 1), y: Math.round(r.top + r.height / 2) }; })()`);
     await app.mouseDown(pt.x, pt.y); await app.mouseUp(pt.x, pt.y); await sleep(250);
     const clicked = await caret(app);
-    ok('WALK: a real click just past the bold word lands after its last visible letter (12), inside the pair', clicked === 12, String(clicked));
+    // ---- PARKED - SUPERSEDED by Nick's live bug (2026-10-06: "I can't click on the line next to 'BOLD' ... It seems to just activate
+    // the strip menu") - FIX's click rule, store/hiddenMarks.ts snapCaretAfterClick. Kept VERBATIM and no longer run. A CLICK now keeps
+    // the side of a run's closing marks it landed on, so a click just past the bold word lands AFTER the marks (14), outside the pair,
+    // and the strip lights nothing; the keyboard keeps the left-character rule (the check above, 14 -> 12 by snap, is unchanged).
+    //
+    // ok('WALK: a real click just past the bold word lands after its last visible letter (12), inside the pair', clicked === 12, String(clicked));
+    // ------------------------------------------------------------------
+    clickPast = clicked;
+    ok('WALK [click-rule successor]: a real click just past the bold word lands AFTER its closing marks (14), outside the pair - where the writer clicked', clicked === 14, String(clicked));
   }
 
   // ---- EDGES ----
@@ -276,8 +286,16 @@ await withHarness(async (app) => {
     for (const off of [3, 6, 8, 10, 12, 14, 16]) shownAt[off] = await cardAt(off);
     ok('R1: on the card popup a mid-word caret (10) and a caret away from the word (3, 16) show no marks',
       [3, 10, 16].every((o) => shownAt[o].length === 0), JSON.stringify(shownAt));
-    ok('R1: on the card popup a caret touching a marker (6, 8, 12, 14) shows that run\'s two marks, so Backspace and Delete act on something visible',
-      [6, 8, 12, 14].every((o) => JSON.stringify(shownAt[o]) === JSON.stringify(['**', '**'])), JSON.stringify(shownAt));
+    // ---- PARKED - SUPERSEDED by the 211 card port (2026-10-06): the popup now runs the page's editing rules, so it shows no mark at any caret, as the page ----
+    // Kept VERBATIM and no longer run. The card kept the interim rule because Backspace and Delete there could half-delete a mark it
+    // could not see; it now runs the page's rules (store/hiddenMarksEditing.ts), so neither can, and nothing needs to show.
+    //
+    // ok('R1: on the card popup a caret touching a marker (6, 8, 12, 14) shows that run\'s two marks, so Backspace and Delete act on something visible',
+    //   [6, 8, 12, 14].every((o) => JSON.stringify(shownAt[o]) === JSON.stringify(['**', '**'])), JSON.stringify(shownAt));
+    // ------------------------------------------------------------------
+    r1CardShown = shownAt;
+    ok('R1 [card-port successor]: on the card popup a caret touching a marker (6, 8, 12, 14) shows NO marks either - the card runs the page\'s editing rules now',
+      [6, 8, 12, 14].every((o) => shownAt[o].length === 0), JSON.stringify(shownAt));
   }
 
   // R2: item 114's page kind and style guide return as one compact "Page kind" row below the Templates. Convert stays out.
@@ -302,11 +320,17 @@ await withHarness(async (app) => {
   }
 });
 
-// === PARKED - gated behind HARNESS_PARKED=1. ONE park: C2's placeholder roster, superseded by PAGE-TEMPLATES-MOVE (2026-10-08). ===
+// === PARKED - gated behind HARNESS_PARKED=1. THREE parks: R1's card-reveal check (the 211 card port) and WALK's click-past check
+// (the click rule), both 2026-10-06; and C2's placeholder roster, superseded by PAGE-TEMPLATES-MOVE (2026-10-08). The count is
+// the check: 3.
 if (process.env.HARNESS_PARKED === '1') {
+  checks.push({ name: 'PARKED (was "R1: on the card popup a caret touching a marker (6, 8, 12, 14) shows that run\'s two marks, so Backspace and Delete act on something visible") - 211 card port (2026-10-06): the popup now runs the page\'s editing rules, so it shows no mark at any caret, as the page',
+    pass: !!r1CardShown && [6, 8, 12, 14].every((o) => r1CardShown[o].length === 0), detail: JSON.stringify(r1CardShown) });
+  checks.push({ name: 'PARKED (was "WALK: a real click just past the bold word lands after its last visible letter (12), inside the pair") - the click rule (Nick, 2026-10-06): a click keeps the side of the closing marks it landed on, so it lands at 14, outside',
+    pass: clickPast === 14, detail: String(clickPast) });
   checks.push({ name: 'PARKED (was "C2: Outline, Bibliography and Title page are dimmed stand-ins - aria-disabled, tooltip \"Coming soon\"") - PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order; live successor: C2 [page-templates successor]',
     pass: JSON.stringify(c2Seen) === JSON.stringify(['Outline', 'Title page', 'Bibliography', 'Custom']), detail: JSON.stringify(c2Seen) });
-  console.log('\nITEM211 PARKED: 1 check (C2, the placeholder roster)');
+  console.log('\nITEM211 PARKED: 3 checks (R1 card reveal; the WALK click park; C2, the placeholder roster)');
 }
 const failed = checks.filter((c) => !c.pass);
 console.log(`\nITEM211 VERIFY: ${failed.length ? `FAIL — ${failed.length}/${checks.length} failed` : `PASS (${checks.length} checks)`}`);

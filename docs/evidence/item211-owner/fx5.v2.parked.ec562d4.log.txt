@@ -1,0 +1,337 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+[
+  {
+    "name": "S1 (a): per-line engage motion — every single scroll step across a 14-line typing run stays within one line-height (+ a generous rounding margin), never a multi-line recenter jump",
+    "pass": true,
+    "detail": "{\"lineHeightPx\":28.9,\"maxStep\":16,\"moved\":true}"
+  },
+  {
+    "name": "S1 (a, first-engage) precondition: the reloaded page genuinely mounted with substantial pre-existing content, past the hold band",
+    "pass": true,
+    "detail": "{\"scrollHeight\":2215,\"clientHeight\":631,\"textLen\":3251}"
+  },
+  {
+    "name": "S1 (a, first-engage): a page that mounts already deep past the hold band settles via the SAME one-line-at-a-time steps, never one big instant jump — \"first-engage especially must not lurch\"",
+    "pass": true,
+    "detail": "{\"lineHeightPx\":28.9,\"maxStep\":5,\"moved\":true,\"finalScrollTop\":153}"
+  },
+  {
+    "name": "S1 (b): --tw-fade-start is set to approximately one line-height (the fade band's own new starting offset)",
+    "pass": true,
+    "detail": "{\"fadeStartPx\":29,\"lineHeight\":28.9,\"scrolled\":\"true\",\"maskImage\":\"linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 29px, rgba(0, 0, 0, 0.15) 29px, rgb(0, 0, 0) 116px)\"}"
+  },
+  {
+    "name": "S1 (b): the container mask genuinely carries a two-stage ramp now (opaque lead-in, then the fade) — the gradient string mentions both a #000/opaque leading stop and the fade-band length",
+    "pass": true,
+    "detail": "linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 29px, rgba(0, 0, 0, 0.15) 29px, rgb(0, 0, 0) 116px)"
+  },
+  {
+    "name": "S1 (c) precondition: the box is genuinely engaged (scrolled) before the freedom test begins",
+    "pass": true,
+    "detail": "290"
+  },
+  {
+    "name": "S1 (c): typing after a manual scroll-up does NOT snap the page back to the band — the post-keystroke scrollTop stays within about one line of the writer's OWN manually-chosen position, not reset toward the (much larger) pre-scroll settled value",
+    "pass": true,
+    "detail": "{\"settled\":290,\"manualTarget\":170,\"afterManualScroll\":170,\"afterTypeScrollTop\":171,\"lineHeightPx\":28.9}"
+  },
+  {
+    "name": "S1 (c): the fade still tracks the VIEWPORT after a manual scroll (data-scrolled reflects the box's current position, not a frozen pre-scroll read)",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S1 (d): the start offset (25%) is unchanged — the visual start still reads as \"about a quarter\"",
+    "pass": true,
+    "detail": "{\"fraction\":0.29195088676671216}"
+  },
+  {
+    "name": "S2: at 50% progress, the retuned curve (0.28) clears a MUCH higher floor than before (>=0.22, was >=0.08) — comfortably below the untouched .34 cap, so this did not fight the ceiling",
+    "pass": true,
+    "detail": "{\"opacity\":0.28,\"intensityVar\":0.28}"
+  },
+  {
+    "name": "S2: at 100% progress the glow still eases to rest exactly at the untouched cap (.34) — \"the field never burns\" holds after the retune",
+    "pass": true,
+    "detail": "0.34"
+  },
+  {
+    "name": "S2: a screenshot was captured at 50%-progress-equivalent state for visual record (see the build report)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S3 (a): the board canvas wrap declares a thin, low-contrast scrollbar (scrollbar-width:thin, a real scrollbar-color pair) — the Firefox-family half of the Plateau treatment",
+    "pass": true,
+    "detail": "{\"scrollbarWidth\":\"thin\",\"scrollbarColor\":\"rgb(69, 59, 49) rgba(0, 0, 0, 0)\"}"
+  },
+  {
+    "name": "S3 (b/c) precondition: the port created a text box carrying the FULL source text in storage (never truncated) — the display-only excerpt is a rendering concern, not a data-loss one",
+    "pass": true,
+    "detail": "{\"found\":true,\"lines\":60}"
+  },
+  {
+    "name": "S3 (b/c): the ported card's own INITIAL height reads as a notecard, not a scroll — comfortably under one page-width tall (was measured at 6.19x for an unclamped 60-line port)",
+    "pass": true,
+    "detail": "0.18428571428571427"
+  },
+  {
+    "name": "S3 (b/c): the card's own FACE shows a bounded excerpt (short rendered text, a quiet badge) — \"the Board organizes ideas, it doesn't read pages,\" not the raw 60-line source",
+    "pass": true,
+    "detail": "{\"rendersExcerptClass\":true,\"visibleTextLength\":273,\"hasBadge\":true}"
+  },
+  {
+    "name": "S3 (c): a ported card can genuinely be shrunk now and it STICKS — the reflow-as-minimum floor no longer fights it back up to the full source's own height (the content-minimum trap, fixed at the root: the excerpt display, not a special-cased resize rule)",
+    "pass": true,
+    "detail": "{\"beforeShrink\":0.18428571428571427,\"afterShrink\":0.16590336134453781}"
+  },
+  {
+    "name": "S3 (b): double-clicking a ported card travels to its own source page now (the quiet open affordance, matching page-pin)",
+    "pass": true,
+    "detail": "#/page/fx5-s3-source"
+  },
+  {
+    "name": "S3 regression: a literal page-pin card's own excerpt (title + up to 3 lines) is UNCHANGED — already correct pre-FX5",
+    "pass": true,
+    "detail": "{\"title\":\"Pin target first line\",\"excerpt\":\"second third fourth\"}"
+  },
+  {
+    "name": "S3 regression: a literal page-pin card still resizes freeform on both axes — UNCHANGED",
+    "pass": true,
+    "detail": "{\"pinBefore\":{\"id\":\"fx5-s3-pin\",\"kind\":\"page-pin\",\"x\":0.05,\"y\":0.05,\"w\":0.28,\"h\":0.12,\"z\":1,\"entryId\":\"fx5-s3-pin-target\"},\"pinAfter\":{\"id\":\"fx5-s3-pin\",\"kind\":\"page-pin\",\"x\":0.05,\"y\":0.05,\"w\":0.33514705882352946,\"h\":0.46082720588235304,\"z\":1,\"entryId\":\"fx5-s3-pin-target\"}}"
+  },
+  {
+    "name": "S4 (a): the diagnosed drag-friction fix — pointer capture engages on the canvas on the VERY FIRST (genuinely trusted) mouse press, before the 6px drag threshold is even reached, not only once a drag is already recognized. RESIDUAL FIDELITY GAP (disclosed): this proves the fix's own mechanism on a real, isTrusted press — it still cannot prove \"a fast real mouse drag across a wide real desk never breaks,\" since headless CDP dispatch has none of a real trackpad/mouse's own sampling irregularity; that fuller claim rests on Nick's own hand.",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S4 (b): OVERLAP IS PERMITTED — dragging card A onto card B leaves both at their own genuine (overlapping) positions, no collision-avoidance nudge pushes either away",
+    "pass": true,
+    "detail": "{\"aAfterOverlap\":{\"id\":\"fx5-s4-a\",\"kind\":\"text\",\"x\":0.5000086167279412,\"y\":0.3999971277573529,\"w\":0.2,\"h\":0.1,\"z\":1,\"text\":\"Card A\"},\"bAfterOverlap\":{\"id\":\"fx5-s4-b\",\"kind\":\"text\",\"x\":0.5,\"y\":0.4,\"w\":0.2,\"h\":0.1,\"z\":2,\"text\":\"Card B\"}}"
+  },
+  {
+    "name": "S4 (c): the quiet layer-order icon appears on a selected card that genuinely overlaps a sibling",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S4 (c): the layer icon toggles the card's own z (the EXISTING field, no new schema) — front/back, a genuine two-state cycle",
+    "pass": true,
+    "detail": "{\"zBefore\":1,\"zAfterFirstToggle\":3,\"zAfterSecondToggle\":1}"
+  },
+  {
+    "name": "S4 (c): a selected but NON-overlapping card shows NO layer icon — minimal, undistracting, only where it's meaningful",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "S5: the fidelity gap CLOSED — a genuinely trusted (isTrusted, CDP, real incremental mouseMove) drag from the olive pin to another card mints the hairline, re-verifying the mechanism the checks below only ever exercise via synthetic dispatch (mirrors S4(a)'s own real-press proof for the identical early-setPointerCapture mechanism)",
+    "pass": true,
+    "detail": "{\"id\":\"mux4pj439jc483wcc\",\"kind\":\"connection\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":3,\"connA\":\"fx5-s5t-a\",\"connB\":\"fx5-s5t-b\"}"
+  },
+  {
+    "name": "S5: the dead handle-double-click gesture is REMOVED, proven inert (double-clicking the resize handle arms nothing)",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "S5: the olive pin — the connection grab — is present on every card, always, not gated on selection (no pre-selection two-step the way the old gesture needed)",
+    "pass": true,
+    "detail": "{\"onA\":true,\"onB\":true}"
+  },
+  {
+    "name": "S5: the pin is a genuine circle (Nick's own ruling, quoted in the brief) — the one deliberate exception to square corners for this small state indicator",
+    "pass": true,
+    "detail": "50%"
+  },
+  {
+    "name": "S5: dragging from the olive pin and releasing inside another card mints the hairline, in ONE continuous gesture",
+    "pass": true,
+    "detail": "{\"id\":\"mux4pk8bh3l5echki\",\"kind\":\"connection\",\"x\":0,\"y\":0,\"w\":0,\"h\":0,\"z\":3,\"connA\":\"fx5-s5-a\",\"connB\":\"fx5-s5-b\"}"
+  },
+  {
+    "name": "S5: Escape cancels a pending pin-drag mid-gesture, no new hairline minted",
+    "pass": true,
+    "detail": "{\"disarmedByEscape\":\"false\",\"linesAfterEscape\":1}"
+  },
+  {
+    "name": "S5: releasing a pin-drag on empty board cancels — no new hairline minted",
+    "pass": true,
+    "detail": "1"
+  },
+  {
+    "name": "S5: de-dupe holds either order via the pin gesture too — attempting B->A after A->B already exists does not mint a second hairline",
+    "pass": true,
+    "detail": "1"
+  },
+  {
+    "name": "S5: a connected card carries ONE quiet footer line (\"— thread: <other card's title/first words>\") — on BOTH connected cards",
+    "pass": true,
+    "detail": "{\"onA\":\"— thread: Card B\",\"onB\":\"— thread: Card A\"}"
+  },
+  {
+    "name": "S5: toggling the footer OFF hides it everywhere on the board",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "S5: toggling the footer back ON restores it",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S5: a legacy board (no board-meta.footerOn field at all) defaults the footer to ON",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S6: storage still holds the literal ** markers (draftFormat's own markdown convention, untouched) — the text content is \"Start **BOLD** end\"",
+    "pass": true,
+    "detail": "{\"text\":\"Start **BOLD** end\",\"allMarksHidden\":true,\"hiddenMarkFontSize\":\"0px\"}"
+  },
+  {
+    "name": "S6: with the caret moved AWAY from the bold run (into \"Start \"), the asterisks are visually hidden (font-size:0) — no visible asterisks on the card, Nick's own verdict",
+    "pass": true,
+    "detail": "{\"text\":\"Start **BOLD** end\",\"allMarksHidden\":true,\"hiddenMarkFontSize\":\"0px\"}"
+  },
+  {
+    "name": "S6 [card-port successor]: with the caret inside the bold run's own markers the card shows NO marker - the escape hatch is the B button and Backspace/Delete, which never leave a lone mark",
+    "pass": true,
+    "detail": "{\"anyRevealed\":false}"
+  },
+  {
+    "name": "S6 [PR #7 successor]: Draft mode hides its marks too - its .md-mark spans carry .md-mark-hidden (item 211 applies to every writing surface)",
+    "pass": true,
+    "detail": "{\"count\":2,\"anyHiddenClass\":true,\"opacity\":\"0\"}"
+  },
+  {
+    "name": "S7: two hyphens between two words, finished by a trailing space, autocorrect to a single em dash — \"Hello--world \" -> \"Hello—world \"",
+    "pass": true,
+    "detail": "\"Hello—world \""
+  },
+  {
+    "name": "S7: typing immediately after an em-dash auto-correct continues APPENDING normally — \"Hello—world continuing\", never landing mid-word (\"Hello—wcontinuingorld \")",
+    "pass": true,
+    "detail": "\"Hello—world continuing\""
+  },
+  {
+    "name": "S7 precondition: a fresh em-dash substitution exists to undo (\"Second—try\")",
+    "pass": true,
+    "detail": "Hello—world continuing\nSecond—try "
+  },
+  {
+    "name": "S7: ONE Ctrl/Cmd+Z reverts JUST the em-dash substitution, restoring the literal hyphens — \"Second--try \" again, not a bigger chunk of the preceding typing. (Native browser undo does not function in this editor at all — confirmed live — so this is a purpose-built shim, not native undo; disclosed, not hidden.)",
+    "pass": true,
+    "detail": "\"Hello—world continuing\\nSecond--try \""
+  },
+  {
+    "name": "S7: three hyphens ALSO convert to a single em dash",
+    "pass": true,
+    "detail": "\"Hello—world continuing\\nSecond--try  Three—dashes \""
+  },
+  {
+    "name": "S7: four+ hyphens do NOT convert — \"no other autocorrects ride along,\" and the brief's own \"two or three\" is a real boundary, not a soft aim",
+    "pass": true,
+    "detail": "\"Hello—world continuing\\nSecond--try  Three—dashes Four----dashes \""
+  },
+  {
+    "name": "S7: ordinary typing (no hyphen-letter-space pattern) is completely unaffected — no stray autocorrects ride along",
+    "pass": true,
+    "detail": "\"Hello—world continuing\\nSecond--try  Three—dashes Four----dashes ordinary words with no hyphens at all \""
+  },
+  {
+    "name": "S7: the SAME em-dash autocorrect fires in the card popup — \"card--popup \" -> \"card—popup \"",
+    "pass": true,
+    "detail": "\"card—popup \""
+  },
+  {
+    "name": "S7: one Ctrl/Cmd+Z in the card popup ALSO reverts just the substitution (the same purpose-built shim), restoring the literal hyphens",
+    "pass": true,
+    "detail": "\"card--popup \""
+  },
+  {
+    "name": "S8: a clean, real (isTrusted) incremental approach to an edge, then holding still, resurfaces faded chrome",
+    "pass": true,
+    "detail": "{\"cleanBefore\":\"true\",\"cleanAfter\":\"false\"}"
+  },
+  {
+    "name": "S8: THE diagnosed defect, fixed — a real hand's own jitter at the edge (a ~3px oscillation crossing the strict boundary, isTrusted, via CDP) no longer cancels the dwell on every single crossing; the resurface still lands within the SAME dwell window (a short leave-grace absorbs the jitter without extending the wait). This is the check FX4's own four synthetic cycles could never have caught — a hand-written test never dispatches noisy coordinates.",
+    "pass": true,
+    "detail": "{\"jitterBefore\":\"true\",\"jitterResurfaced\":true}"
+  },
+  {
+    "name": "S8: a genuine departure BEFORE the dwell completes still correctly cancels — the jitter-tolerance grace window is short, not an unbounded one",
+    "pass": true,
+    "detail": "{\"departBefore\":\"true\",\"departAfter\":\"true\"}"
+  },
+  {
+    "name": "S8: FX4's own multi-cycle fix (inZone reset on timer fire) still holds under REAL trusted pointer events, re-verified rather than assumed unaffected by this ticket's own grace-window addition",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S8: the sliver/tool fade's own timing (--fade-dur) is still being set (untouched by this fix — only the EDGE-DWELL jitter tolerance changed, not the fade durations themselves)",
+    "pass": true,
+    "detail": "0.7s"
+  },
+  {
+    "name": "S10 @ 1280px: the strip sits flush at x===0 (the screen's own left edge, FX4 S3's win, untouched)",
+    "pass": true,
+    "detail": "{\"stripLeft\":0,\"leftGap\":332.3125,\"rightGap\":332.328125,\"viewport\":1280}"
+  },
+  {
+    "name": "S10 @ 1280px: the paper is TRUE-centered in the viewport — |left-paper-gap - right-paper-gap| within tolerance (the strip's own width excluded from the symmetry measure, per the brief's own words)",
+    "pass": true,
+    "detail": "{\"stripLeft\":0,\"leftGap\":332.3125,\"rightGap\":332.328125,\"viewport\":1280}"
+  },
+  {
+    "name": "S10 @ 2200px: the strip sits flush at x===0 (the screen's own left edge, FX4 S3's win, untouched)",
+    "pass": true,
+    "detail": "{\"stripLeft\":0,\"leftGap\":730.78125,\"rightGap\":730.796875,\"viewport\":2200}"
+  },
+  {
+    "name": "S10 @ 2200px: the paper is TRUE-centered in the viewport — |left-paper-gap - right-paper-gap| within tolerance (the strip's own width excluded from the symmetry measure, per the brief's own words)",
+    "pass": true,
+    "detail": "{\"stripLeft\":0,\"leftGap\":730.78125,\"rightGap\":730.796875,\"viewport\":2200}"
+  },
+  {
+    "name": "S10 @ 1100px: the strip sits flush at x===0 (the screen's own left edge, FX4 S3's win, untouched)",
+    "pass": true,
+    "detail": "{\"stripLeft\":0,\"leftGap\":242.3125,\"rightGap\":242.328125,\"viewport\":1100}"
+  },
+  {
+    "name": "S10 @ 1100px: the paper is TRUE-centered in the viewport — |left-paper-gap - right-paper-gap| within tolerance (the strip's own width excluded from the symmetry measure, per the brief's own words)",
+    "pass": true,
+    "detail": "{\"stripLeft\":0,\"leftGap\":242.3125,\"rightGap\":242.328125,\"viewport\":1100}"
+  },
+  {
+    "name": "S10: legacy (<1100px) chrome is untouched — no .desk-frame/.desk-frame-strip mount at all below the floor",
+    "pass": true,
+    "detail": "{\"deskFrameGone\":true,\"stripGone\":true}"
+  }
+]
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+[
+  {
+    "name": "PARKED (was \"S6: reveal-adjacent-to-caret — once the caret sits inside/beside the bold run, its OWN markers become visible again\") - 211 card port (2026-10-06): the popup now runs the page's editing rules, so it shows no mark at any caret, as the page",
+    "pass": true,
+    "detail": "{\"anyRevealed\":false}"
+  },
+  {
+    "name": "PARKED (was \"S7: a SECOND Ctrl/Cmd+Z (nothing pending) is a harmless no-op — genuinely one step, not a repeatable toggle\") — FX6 S1: real, walkable undo/redo replaces the single-shot em-dash shim; a second Ctrl+Z now legitimately continues undoing further back (proven here: the text changes again, further than the first undo) — live successor: fx6.mjs's own S1 section",
+    "pass": true,
+    "detail": "{\"afterOneUndo\":\"Alpha word. Second--try \",\"afterSecondUndo\":\"Alpha word. \"}"
+  },
+  {
+    "name": "PARKED (was \"S5: the board sliver carries EXACTLY two hand tools now — Add card + the footer toggle\") — FX6 S2b: a THIRD tool joins them (New page card, the board-side door); generation 2: B2 S5 adds a FOURTH (Existing page…); generation 3: B3 S3 adds a FIFTH (From a deck…) — live successor: b3.mjs's own S4 section",
+    "pass": true,
+    "detail": "{\"count\":5,\"labels\":[\"Add card\",\"New page card\",\"Existing page…\",\"From a deck…\",\"Show connections\"]}"
+  }
+]
+
+FX5 PARKED: PASS (3 checks) — HARNESS_PARKED=1 armed, all retired-check successors green
+
+FX5 VERIFY: PASS (62 checks)

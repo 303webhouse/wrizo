@@ -1,0 +1,15 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PASS  CARD: walking the caret right along the card shows NO mark at any stop (the interim reveal-at-marker rule is retired)  [[{"off":1,"shown":0},{"off":2,"shown":0},{"off":3,"shown":0},{"off":4,"shown":0},{"off":5,"shown":0},{"off":6,"shown":0},{"off":9,"shown":0},{"off":10,"shown":0},{"off":11,"shown":0},{"off":12,"shown":0},{"off":15,"shown":0},{"off":16,"shown":0},{"off":17,"shown":0},{"off":18,"shown":0},{"off":18,"shown":0},{"off":18,"shown":0}]]
+PASS  CARD: the arrows never stop on a hidden mark - no stop at 7 (between the two opening stars) or 13 (between the closing ones)  [[1,2,3,4,5,6,9,10,11,12,15,16,17,18,18,18]]
+PASS  CARD: Backspace at a bold word's start deletes the SPACE before it, never one of its hidden stars  ["Start**BOLD** end"]
+PASS  CARD: deleting a whole bold word letter by letter leaves NO empty pair behind (no `****`)  ["a  z"]
+PASS  CARD: Enter inside a bold run closes it before the newline and reopens it after - no line is left with one visible mark  ["x **ab**\n**cd** y"]
+PASS  ITALIC: Ctrl+I at a bare caret writes NOTHING (no `**` on the page or in the text)  ["Plain words"]
+PASS  ITALIC: ...and the letters typed next ARE italic, stored as one italic run  ["Plain*xy* words"]
+PASS  ITALIC: moving away before typing forgets the italic - the next letter elsewhere is plain and nothing was left behind  ["Plain worqds"]
+PASS  WORD: Ctrl+Backspace after a bold word removes the word WITH its marks - no lone or empty `**` left  ["one  two"]
+PASS  WORD: Ctrl+Delete before a bold word removes it, its marks and the space after it  ["one two"]
+PASS  WORD: and it is ONE undo step each (Ctrl+Z restores the last word delete whole)  ["two"]
+
+ITEM211B VERIFY: PASS (11 checks)

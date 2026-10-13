@@ -1,0 +1,17 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PASS  [Draft] select-all then Ctrl+B RENDERS bold on both lines (two bold runs, no marker left visible, no native <b>)  [{"text":"**Plain words here**\n**Second line here**","bold":2,"italic":0,"underline":0,"native":0,"visibleMarks":0}]
+PASS  [Draft] ...and stores one pair PER LINE, never one pair across the newline  ["**Plain words here**\n**Second line here**"]
+PASS  [Draft] Ctrl+B again TOGGLES it back to the original text (was `****x****`)  [{"st":"Plain words here\nSecond line here","bold":0}]
+PASS  [Draft] Ctrl+I renders italic on both lines and stores a pair per line  [{"st":"*Plain words here*\n*Second line here*","italic":2}]
+PASS  [Draft] Ctrl+U on top stacks underline OUTSIDE the italic on both lines (stored; its rendering is step 3)  ["__*Plain words here*__\n__*Second line here*__"]
+PASS  [Draft] the toolbar Bold button is reachable by a real pointer  [{"x":221,"y":260}]
+PASS  [Draft] the toolbar Bold button stores exactly what Ctrl+B stores (the same formatter)  ["**Plain words here**\n**Second line here**"]
+PASS  [Draft] the toolbar Bold button toggles too  ["Plain words here\nSecond line here"]
+PASS  [Free Write] Ctrl+B does NOT style (no tools here by ruling): stored text unchanged, nothing bold rendered  [{"st":"Plain words here\nSecond line here","bold":0,"native":0}]
+PASS  [Revise] Ctrl+B does NOT style (no tools here by ruling): stored text unchanged, nothing bold rendered  [{"st":"Plain words here\nSecond line here","bold":0,"native":0}]
+PASS  [Card] the popup opens (setup)
+PASS  [Card] Ctrl+B on a card bolds it through the card's own formatter (rendered, no native <b>, markers stored)  [{"text":"**Card words here**","bold":1,"native":0}]
+PASS  [Card] Ctrl+B again toggles it back  ["Card words here"]
+
+WRITING-R2 VERIFY: PASS (13 checks)

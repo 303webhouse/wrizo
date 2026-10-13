@@ -277,7 +277,7 @@ export type DeskTermId =
   | 'twWritingLine' | 'twLineTop' | 'twLineCenter' | 'twLineBottom'
   | 'twPageScroll' | 'footProgress' | 'footFullScreen' | 'footTypewriter' | 'footTarget'
   // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
-  | 'draftHeading' | 'draftBullet' | 'draftBulletCircle' | 'draftBulletSquare' | 'draftBulletStyles' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
+  | 'draftHeading' | 'draftHeadingUp' | 'draftHeadingDown' | 'draftBullet' | 'draftBulletCircle' | 'draftBulletSquare' | 'draftBulletStyles' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
   | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage' | 'templateCustom'
   | 'comingSoon' | 'railTypeface' | 'goalUnitWords' | 'railPageKind'
   | 'footSettings' | 'footMenuTypewriter' | 'footMenuProgress' | 'footMenuPreferences'
@@ -951,6 +951,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   // ITEM 83 M5 (R4) — Draft's roster. Destination-named verbs (DR3's bench
   // law): never a bare 'Convert'.
   draftHeading: 'Heading',
+  draftHeadingUp: 'Larger heading',
+  draftHeadingDown: 'Smaller heading',
   draftBullet: 'Round bullet',
   draftBulletCircle: 'Hollow bullet',
   draftBulletSquare: 'Square bullet',

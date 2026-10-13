@@ -17,7 +17,7 @@ import { createRequire } from 'node:module';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SRC = join(here, '..', 'src');
-const FILES = ['draftFormat.ts', 'markRuns.ts', 'draftDecoration.ts', 'tabChord.ts', 'entryText.ts'];
+const FILES = ['draftFormat.ts', 'markRuns.ts', 'draftDecoration.ts', 'tabChord.ts', 'entryText.ts', 'hiddenMarks.ts'];
 const requireDesktop = createRequire(join(here, '..', 'package.json'));
 const esbuild = createRequire(requireDesktop.resolve('vite'))('esbuild');
 const tmp = join(tmpdir(), 'wrizo-format-proof');
@@ -36,7 +36,7 @@ async function load(tag, mutant) {
     }
     writeFileSync(join(dir, f), source);
   }
-  writeFileSync(join(dir, 'entry.ts'), "export * from './draftFormat'; export { readMarks } from './markRuns'; export { decorateMarkdownForCard } from './draftDecoration'; export { readLead, stripLine } from './markRuns'; export { createTabChord, CHORD_HOLD_MS } from './tabChord'; export { firstLine, firstPlainLine, plainLines, boardName, substantialLines } from './entryText';");
+  writeFileSync(join(dir, 'entry.ts'), "export * from './draftFormat'; export { readMarks } from './markRuns'; export { decorateMarkdownForCard } from './draftDecoration'; export { readLead, stripLine } from './markRuns'; export { createTabChord, CHORD_HOLD_MS } from './tabChord'; export { firstLine, firstPlainLine, plainLines, boardName, substantialLines } from './entryText'; export { snapCaret, snapCaretAfterClick, wordBackspaceAt, wordDeleteAt } from './hiddenMarks';");
   const outfile = join(dir, 'out.mjs');
   await esbuild.build({ entryPoints: [join(dir, 'entry.ts')], bundle: true, platform: 'node', format: 'esm', outfile, logLevel: 'silent' });
   return import(pathToFileURL(outfile).href + `?t=${Date.now()}`);
@@ -204,15 +204,23 @@ function run(mod) {
     const B = ['a **b** c', '***bi*** x', '__*u*__', '~~s~~ and *i*', '2 * 3 * 4', '>| - **x**'];
     check('REVEAL: every character is still emitted exactly once at EVERY caret position (the 1:1 count the caret restore depends on)', B.every(t => { for (let c = 0; c <= t.length; c += 1) { if (chars(decorateMarkdownForCard(t, c)).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&') !== t) return false; } return true; }), true);
 
-    // ---- THE CARD POPUP keeps the interim rule (Fable's PR #7 review, 2026-10-03) until it has the page's editing rules ----
-    const CARD = { revealAtMarker: true };
-    const cardShown = (c) => /<span class="md-mark">\*\*<\/span>/.test(decorateMarkdownForCard(T, c, CARD));
-    const cardAll = []; for (let c = 0; c <= T.length; c += 1) if (cardShown(c)) cardAll.push(c);
-    check('CARD: with revealAtMarker the bold marks show EXACTLY while the caret touches a marker - 6,7,8 and 12,13,14 - and nowhere inside the word', cardAll, [6, 7, 8, 12, 13, 14]);
-    check('CARD: Nick\'s case on the card - mid-word shows nothing, the word\'s end shows that word\'s marks only', [visible(decorateMarkdownForCard(N, 5, CARD)), visible(decorateMarkdownForCard(N, 9, CARD))], ['TESTING THE DATABASE SYNC', '**TESTING** THE DATABASE SYNC']);
-    check('CARD: a bullet token and a heading hash show while the caret touches them, and hide away from them', [visible(decorateMarkdownForCard('-= Milk', 3, CARD)), visible(decorateMarkdownForCard('-= Milk', 5, CARD)), visible(decorateMarkdownForCard('## Chapter', 3, CARD)), visible(decorateMarkdownForCard('## Chapter', 6, CARD))], ['-= Milk', 'Milk', '## Chapter', 'Chapter']);
-    check('CARD: the 1:1 character count holds at every caret position with revealAtMarker too', B.concat(['# Head **x**', '-+ list *i*']).every(t => { for (let c = 0; c <= t.length; c += 1) { if (chars(decorateMarkdownForCard(t, c, CARD)).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&') !== t) return false; } return true; }), true);
-    check('CARD: without the option (the page) nothing changed - the same carets show no marks', [cardShown(7) && !shown(7), visible(decorateMarkdownForCard('-= Milk', 3)), visible(decorateMarkdownForCard('## Chapter', 3))], [true, 'Milk', 'Chapter']);
+    // ---- PARKED - SUPERSEDED by the 211 card port (2026-10-06): the popup now runs the page's editing rules -----------------
+    // (store/hiddenMarksEditing.ts), so the interim `revealAtMarker` option it alone passed is RETIRED - the option, the code path and
+    // its five checks. Quoted VERBATIM and no longer run. Successor: the card is decorated exactly as the page is - no mark shows at
+    // any caret - which the REVEAL checks above already assert for the one painter both surfaces now share; the line below makes the
+    // claim for the card's own shapes (a bullet token, a heading hash, Nick's line).
+    //
+    // // ---- THE CARD POPUP keeps the interim rule (Fable's PR #7 review, 2026-10-03) until it has the page's editing rules ----
+    // const CARD = { revealAtMarker: true };
+    // const cardShown = (c) => /<span class="md-mark">\*\*<\/span>/.test(decorateMarkdownForCard(T, c, CARD));
+    // const cardAll = []; for (let c = 0; c <= T.length; c += 1) if (cardShown(c)) cardAll.push(c);
+    // check('CARD: with revealAtMarker the bold marks show EXACTLY while the caret touches a marker - 6,7,8 and 12,13,14 - and nowhere inside the word', cardAll, [6, 7, 8, 12, 13, 14]);
+    // check('CARD: Nick\'s case on the card - mid-word shows nothing, the word\'s end shows that word\'s marks only', [visible(decorateMarkdownForCard(N, 5, CARD)), visible(decorateMarkdownForCard(N, 9, CARD))], ['TESTING THE DATABASE SYNC', '**TESTING** THE DATABASE SYNC']);
+    // check('CARD: a bullet token and a heading hash show while the caret touches them, and hide away from them', [visible(decorateMarkdownForCard('-= Milk', 3, CARD)), visible(decorateMarkdownForCard('-= Milk', 5, CARD)), visible(decorateMarkdownForCard('## Chapter', 3, CARD)), visible(decorateMarkdownForCard('## Chapter', 6, CARD))], ['-= Milk', 'Milk', '## Chapter', 'Chapter']);
+    // check('CARD: the 1:1 character count holds at every caret position with revealAtMarker too', B.concat(['# Head **x**', '-+ list *i*']).every(t => { for (let c = 0; c <= t.length; c += 1) { if (chars(decorateMarkdownForCard(t, c, CARD)).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&') !== t) return false; } return true; }), true);
+    // check('CARD: without the option (the page) nothing changed - the same carets show no marks', [cardShown(7) && !shown(7), visible(decorateMarkdownForCard('-= Milk', 3)), visible(decorateMarkdownForCard('## Chapter', 3))], [true, 'Milk', 'Chapter']);
+    // ---------------------------------------------------------------------
+    check('CARD [port successor]: the card is painted as the page is - no mark, bullet token or heading hash shows at ANY caret', ['-= Milk', '## Chapter', N, 'Start **BOLD** end'].every((t) => { for (let c = 0; c <= t.length; c += 1) { if (/<span class="md-mark">(?!\t)/.test(decorateMarkdownForCard(t, c))) return false; } return true; }), true);
   }
 
   // ---- STRIP ----
@@ -265,6 +273,66 @@ function run(mod) {
   check('TABKEY: Ctrl/Meta/Alt+Tab and an IME composition are left entirely alone', [play(createTabChord(), [['d', tab(0, { ctrlKey: true })]])[0], play(createTabChord(), [['d', tab(0, { isComposing: true })]])[0]], [{ preventDefault: false, acts: [] }, { preventDefault: false, acts: [] }]);
   check('TABKEY: a modifier pressed while Tab is held does not count as "another key"', flat(play(createTabChord(), [['d', tab(0)], ['d', K({ key: 'Shift', code: 'ShiftLeft', timeStamp: 30 })], ['u', { key: 'Tab' }]])), '- - indent');
 
+
+  // ---- NICK'S LIVE BUG (2026-10-06): a click past a styled word must not land inside it, and nothing lights unless it should ----
+  {
+    const { marksAt, snapCaret, snapCaretAfterClick } = mod;
+    const L1 = '**BOLD** *TEST* ~~FINAL~~ (hopefully)';          // his line
+    const L2 = 'plain words then **BOLD**';                       // a line that ENDS in a styled word
+    const none = { bold: false, italic: false, underline: false, strike: false };
+    check('CLICK: a click past the end of a line that ends in a bold word lands AFTER its closing marks (the line\'s end), not inside the word', snapCaretAfterClick(L2, L2.length), L2.length);
+    check('CLICK: ...and the strip lights NOTHING there', marksAt(L2, L2.length), none);
+    check('CLICK: a click just after "BOLD" mid-line (raw 8, after the hidden `**`) stays after the marks - the strip lights nothing', [snapCaretAfterClick(L1, 8), marksAt(L1, snapCaretAfterClick(L1, 8))], [8, none]);
+    check('CLICK: a click that lands BETWEEN the two hidden closing stars goes to the group\'s end, never splitting it', snapCaretAfterClick(L1, 7), 8);
+    check('CLICK: nested closers are one group - in `__*x*__ y` a click at 4, 5 or 6 (after x: inside or between the closers) lands at 7, after both', [4, 5, 6].map((p) => snapCaretAfterClick('__*x*__ y', p)), [7, 7, 7]);
+    check('CLICK: an empty pair a press made keeps its interior stop (typing goes into it)', snapCaretAfterClick('a**** b', 3), 3);
+    check('KEYBOARD unchanged: the arrow/typing snap still pulls a caret after the hidden closers back to the last visible letter (the left-character rule)', snapCaret(L2, L2.length), L2.length - 2);
+    check('MARKS: a mark lights exactly when the character to the caret\'s LEFT carries it - inside BOLD and after its last letter, not before its first', [marksAt(L1, 4).bold, marksAt(L1, 6).bold, marksAt(L1, 2).bold, marksAt(L1, 0).bold], [true, true, false, false]);
+    check('MARKS: italic and strike the same; a caret in plain text lights nothing', [marksAt(L1, 12).italic, marksAt(L1, 20).strike, marksAt(L1, 30)], [true, true, none]);
+    check('MARKS: one reader, per line - a lone `*` or `**` on ANOTHER line can no longer pair with this one (the old indexOf reader paired across lines)', marksAt('end of line\n** stray', 5), none);
+    check('MARKS: an empty pair a press just made lights its mark (the next letter is bold)', marksAt('a**** b', 3).bold, true);
+  }
+
+  // ---- HEADINGS: six levels, H toggles (adds Heading 2, removes any level), + toward h1 and - toward h6, clamped ----
+  {
+    const { headingLevelAt } = mod;
+    const lead = (l) => readLead(l).tokens.map((t) => `${t.kind}@${t.start}-${t.end}`);
+    check('HEADINGS: the one lead reader reads # through ###### plus a space; seven hashes, or none after the space, are text', ['# a', '## a', '### a', '#### a', '##### a', '###### a', '####### a', '#a'].map((l) => lead(l)), [['heading@0-2'], ['heading@0-3'], ['heading@0-4'], ['heading@0-5'], ['heading@0-6'], ['heading@0-7'], [], []]);
+    check('HEADINGS: H on a plain line adds Heading 2 (`## `) - the web editors\' default for a new heading', press('Chapter', 3, 3, 'heading').text, '## Chapter');
+    check('HEADINGS: H on ANY heading line removes the heading, whatever its level ("all heading modifications should be undone")', ['# A', '## A', '#### A', '###### A'].map((t) => press(t, t.length, t.length, 'heading').text), ['A', 'A', 'A', 'A']);
+    check('HEADINGS: + steps toward h1 and - toward h6, one level a press', [press('### A', 5, 5, 'heading-up').text, press('### A', 5, 5, 'heading-down').text], ['## A', '#### A']);
+    check('HEADINGS: + is clamped at h1 and - at h6 (no seventh hash, no zero-hash heading)', [press('# A', 3, 3, 'heading-up').text, press('###### A', 8, 8, 'heading-down').text], ['# A', '###### A']);
+    check('HEADINGS: + and - do nothing on a line that is not a heading', [press('Plain', 2, 2, 'heading-up').text, press('Plain', 2, 2, 'heading-down').text], ['Plain', 'Plain']);
+    check('HEADINGS: the token is read where the reader puts it - after a centring token - and H toggles it there', [press('>< Title', 4, 4, 'heading').text, press('>< ## Title', 7, 7, 'heading').text], ['>< ## Title', '>< Title']);
+    check('HEADINGS: the caret keeps the character it was on through H, + and -', (() => { const r = press('## Chapter', 6, 6, 'heading-up'); return r.text.slice(r.start, r.start + 3); })(), 'pte');
+    check('HEADINGS: H lights on a heading line, with its level, and not elsewhere', [headingLevelAt('## A\nplain', 2), headingLevelAt('## A\nplain', 8), headingLevelAt('###### six', 9)], [2, null, 6]);
+    check('HEADINGS: the page paints a distinct class per level, hash hidden', [1, 2, 3, 4, 5, 6].map((n) => { const h = decorateMarkdownForCard('#'.repeat(n) + ' x', null); return h.includes(`md-h${n}`) && visible(h) === 'x'; }), [true, true, true, true, true, true]);
+    check('HEADINGS: titles and Copy My Words strip every level', [firstLine('### Third level'), firstLine('###### Six'), stripMarkdownConventions('#### Four\n###### Six')], ['Third level', 'Six', 'Four\nSix']);
+  }
+
+
+  // ---- THE STRAY `**` (owner's queue): an empty italic cannot be stored, so it is held for the next text typed ----
+  {
+    const r = applyFormat('Plain words', 3, 3, 'italic');
+    check('EMPTY ITALIC: Italic at a bare caret writes NOTHING (an empty italic `**` reads as a lone bold marker and stayed on the page) and holds the mark pending', [r.text, r.start, r.pending], ['Plain words', 3, '*']);
+    check('EMPTY ITALIC: the other empty pairs are readable runs and are stored as before - `****`, `____`, `~~~~`', ['bold', 'underline', 'strike'].map((a) => { const x = applyFormat('ab', 1, 1, a); return [x.text, x.pending ?? null]; }), [['a****b', null], ['a____b', null], ['a~~~~b', null]]);
+    check('EMPTY ITALIC: inside an empty bold pair it IS readable (`***|***`) and is stored', [applyFormat('a****b', 3, 3, 'italic').text, applyFormat('a****b', 3, 3, 'italic').pending ?? null], ['a******b', null]);
+  }
+
+  // ---- CTRL+BACKSPACE / CTRL+DELETE over the visible text ----
+  {
+    const { wordBackspaceAt, wordDeleteAt } = mod;
+    const B = (t, p) => { const r = wordBackspaceAt(t, p); return r ? [r.text, r.caret] : null; };
+    const D = (t, p) => { const r = wordDeleteAt(t, p); return r ? [r.text, r.caret] : null; };
+    check('WORD BACKSPACE: a whole bold word goes with its marks (no lone `**` left), from the caret after its last letter', B('one **bold** two', 10), ['one  two', 4]);
+    check('WORD BACKSPACE: spaces before the caret go with the word before them', B('one two   ', 10), ['one ', 4]);
+    check('WORD BACKSPACE: half of a bold word - the marks of the part that stays survive, nothing empty is left', B('one **boldly** x', 11), ['one **y** x', 4]);
+    check('WORD BACKSPACE: in the middle of a styled word only its first part goes, and the pair still wraps the rest', B('**abcdef**', 5), ['**def**', 0]);
+    check('WORD BACKSPACE: at a line\'s start it is a plain Backspace (the lines join)', B('one\ntwo', 4), ['onetwo', 3]);
+    check('WORD DELETE: the word after the caret and its following spaces go; a styled word takes its marks', [D('one **bold** two', 4), D('one two', 3)], [['one two', 4], ['onetwo', 3]]);
+    check('WORD DELETE: at a line\'s end it is a plain Delete (the lines join)', D('one\ntwo', 3), ['onetwo', 3]);
+  }
+
   return results;
 }
 
@@ -276,6 +344,13 @@ let ok = bad.length === 0;
 
 if (process.argv.includes('--mutants')) {
   const M = [
+    ['EMPTY ITALIC: Italic at a bare caret writes its ambiguous empty pair again', 'draftFormat.ts', (s) => s.replace("return empty ? w : { text, start, end, pending: mark };", "return w;")],
+    ['WORD BACKSPACE: the range is cut raw, not through replaceRange (an emptied pair is left on the page)', 'hiddenMarks.ts', (s) => s.replace(/(while \(i >= li\.leadEnd && !\/\\s\/\.test\(text\[i\]\)\) \{ q = i; i = prevVisible\(q\); \}\s*)return replaceRange\(text, q, p, ''\);/, "$1return { text: text.slice(0, q) + text.slice(p), caret: q, structural: true };")],
+    ['CLICK: a click is snapped by the keyboard rule (back inside the run)', 'hiddenMarks.ts', (s) => s.replace("return end === -1 ? snapCaret(text, p) : end;", "return snapCaret(text, p);")],
+    ['MARKS: a caret after a run\'s closing marks counts as inside it (the old reader)', 'draftFormat.ts', (s) => s.replace("(at > r.open + ml && at <= r.close)", "(at > r.open + ml && at <= r.close + ml)")],
+    ['HEADINGS: only one or two hashes are read', 'markRuns.ts', (s) => s.replace("/^(#{1,6}) /", "/^(#{1,2}) /")],
+    ['HEADINGS: H adds Heading 1', 'draftFormat.ts', (s) => s.replace("cur === null ? 2 : null", "cur === null ? 1 : null")],
+    ['HEADINGS: + and - are not clamped', 'draftFormat.ts', (s) => s.replace("Math.max(1, Math.min(6, cur + (action === 'heading-up' ? -1 : 1)))", "cur + (action === 'heading-up' ? -1 : 1)")],
     ['no toggle: wrap always', 'draftFormat.ts', (s) => s.replace("if (action === 'bold') return toggleInline(", "if (action === 'bold') return wrapSelection(").replace("if (action === 'italic') return toggleInline(", "if (action === 'italic') return wrapSelection(")],
     ['selection is one pair across lines', 'draftFormat.ts', (s) => s.replace("const segs = selectedSegments(text, start, end);", "const segs = [{ a: start, b: end, ls: text.lastIndexOf('\\n', Math.max(0, start - 1)) + 1 }];")],
     ['prefixes not skipped', 'draftFormat.ts', (s) => s.replace("let a = Math.max(start, ls, ls + leadLength(text.slice(ls, le)));", "let a = Math.max(start, ls);")],
@@ -302,10 +377,11 @@ if (process.argv.includes('--mutants')) {
     // ['REVEAL: markers show anywhere inside the run (the old rule)', 'draftDecoration.ts', (s) => s.replace('const reveal = touches(r.open) || touches(r.close);', 'const reveal = caret !== null && caret >= r.open && caret <= end;')],
     // ['REVEAL: only the opening marker is watched', 'draftDecoration.ts', (s) => s.replace('const reveal = touches(r.open) || touches(r.close);', 'const reveal = touches(r.open);')],
     // ----------------------------------------------------------------------
-    ['REVEAL: markers show anywhere inside the run (the old rule)', 'draftDecoration.ts', (s) => s.replace('const reveal = revealAtMarker && (touches(r.open) || touches(r.close));', 'const reveal = caret !== null && caret >= r.open && caret <= end;')],
-    ['REVEAL: the card\'s interim rule leaks onto the page', 'draftDecoration.ts', (s) => s.replace('const reveal = revealAtMarker && (touches(r.open) || touches(r.close));', 'const reveal = touches(r.open) || touches(r.close);')],
-    ['HEADING: the hash stays on the page', 'draftDecoration.ts', (s) => s.replace('const headCls = revealAtMarker && heading', 'const headCls = true || heading')],
-    ['CARD: the popup loses the interim rule (marks never show there either)', 'draftDecoration.ts', (s) => s.replace('const reveal = revealAtMarker && (touches(r.open) || touches(r.close));', 'const reveal = false;')],
+    // Re-anchored by the 211 card port: the reveal option is gone, so the old rule is mutated in where the painter now hard-codes hidden.
+    ['REVEAL: markers show anywhere inside the run (the old rule)', 'draftDecoration.ts', (s) => s.replace("const markCls = 'md-mark md-mark-hidden';", "const markCls = caret !== null && caret >= r.open && caret <= end ? 'md-mark' : 'md-mark md-mark-hidden';")],
+    ['HEADING: the hash stays on the page', 'draftDecoration.ts', (s) => s.replace("const headCls = 'md-mark md-mark-hidden';", "const headCls = 'md-mark';")],
+    // RETIRED with the option they mutated (the 211 card port): 'the card's interim rule leaks onto the page' and 'the popup loses the
+    // interim rule' - there is no interim rule left to leak or to lose.
     ['DECORATOR: marks are not nested (a run inside another is dropped)', 'draftDecoration.ts', (s) => s.replace(/kids\.push\(within\[i \+ 1\]\);\s*i\+\+;/, 'i++;')],
   ];
   for (const [name, file, fn] of M) {

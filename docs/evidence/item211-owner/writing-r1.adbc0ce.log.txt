@@ -1,0 +1,29 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PASS  [Free Write] a bullet line renders as a BULLET: the hanging glyph is drawn and the stored "- " is collapsed, not shown as a hyphen  [{"glyph":"\"•\"","marks":["md-mark md-mark-hidden"]}]
+PASS  [Free Write] a quote line renders with a rule and its "> " collapsed  [{"bw":"3px","it":"italic"}]
+PASS  [Free Write] a centred line is centred in the column (text midpoint within 8px of the column midpoint)  [{"ta":"center","mid":694.984375,"colMid":694.9921875}]
+PASS  [Free Write] a right-aligned line ends at the column's right edge (within 8px)  [{"ta":"right","gap":0}]
+PASS  [Free Write] no directive marker is left visible as literal text ("- ", "> ", ">< ", ">> ")  [0]
+PASS  [Free Write] STORAGE INVARIANT: the editor's text is the stored text byte for byte, markers included  [{"got":"A plain line of prose.\n**bold** and *italic*\n- first bullet\n- second bullet\n> a "}]
+PASS  [Free Write] the wrappers add NO blank line: consecutive bullet lines sit one plain-line step apart  [{"bulletStep":28.890625,"plainStep":28.890625}]
+PASS  [Free Write] still forward-only: the runs are the same `.fo-run` spans (rendering changed, the mechanic did not)
+PASS  [Draft] a bullet line renders as a BULLET: the hanging glyph is drawn and the stored "- " is collapsed, not shown as a hyphen  [{"glyph":"\"•\"","marks":["md-mark md-mark-hidden"]}]
+PASS  [Draft] a quote line renders with a rule and its "> " collapsed  [{"bw":"3px","it":"italic"}]
+PASS  [Draft] a centred line is centred in the column (text midpoint within 8px of the column midpoint)  [{"ta":"center","mid":694.984375,"colMid":694.9921875}]
+PASS  [Draft] a right-aligned line ends at the column's right edge (within 8px)  [{"ta":"right","gap":0}]
+PASS  [Draft] no directive marker is left visible as literal text ("- ", "> ", ">< ", ">> ")  [0]
+PASS  [Draft] STORAGE INVARIANT: the editor's text is the stored text byte for byte, markers included  [{"got":"A plain line of prose.\n**bold** and *italic*\n- first bullet\n- second bullet\n> a "}]
+PASS  [Draft] the wrappers add NO blank line: consecutive bullet lines sit one plain-line step apart  [{"bulletStep":28.890625,"plainStep":28.890625}]
+PASS  [Draft] a real click at the START of a bullet line keeps the glyph and keeps the stored mark hidden  [{"revealed":false,"glyph":"\"•\"","mark":"md-mark md-mark-hidden"}]
+PASS  [Draft] the click did not touch the stored text
+PASS  [Revise] a bullet line renders as a BULLET: the hanging glyph is drawn and the stored "- " is collapsed, not shown as a hyphen  [{"glyph":"\"•\"","marks":["md-mark md-mark-hidden"]}]
+PASS  [Revise] a quote line renders with a rule and its "> " collapsed  [{"bw":"3px","it":"italic"}]
+PASS  [Revise] a centred line is centred in the column (text midpoint within 8px of the column midpoint)  [{"ta":"center","mid":699.984375,"colMid":699.9921875}]
+PASS  [Revise] a right-aligned line ends at the column's right edge (within 8px)  [{"ta":"right","gap":0}]
+PASS  [Revise] no directive marker is left visible as literal text ("- ", "> ", ">< ", ">> ")  [0]
+PASS  [Revise] STORAGE INVARIANT: the editor's text is the stored text byte for byte, markers included  [{"got":"A plain line of prose.\n**bold** and *italic*\n- first bullet\n- second bullet\n> a "}]
+PASS  [Revise] the wrappers add NO blank line: consecutive bullet lines sit one plain-line step apart  [{"bulletStep":28.890625,"plainStep":28.890625}]
+PASS  [Free Write] typing still appends to the stored text after the decorated render (the runway is intact)  ["line\nThe last plain line. more"]
+
+WRITING-R1 VERIFY: PASS (25 checks)

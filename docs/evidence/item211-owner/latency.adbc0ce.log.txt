@@ -1,0 +1,12 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+{"words":500,"chars":2982,"keystroke_median":8,"keystroke_p95":11.3,"toPaint_median":8.6,"toPaint_p95":15.1,"caretMove_median":9.9,"caretMove_p95":18,"n":[40,40,40]}
+{"words":5000,"chars":28815,"keystroke_median":64.6,"keystroke_p95":69.3,"toPaint_median":64.9,"toPaint_p95":69.6,"caretMove_median":19.3,"caretMove_p95":27.4,"n":[40,40,40]}
+{"words":20000,"chars":114816,"keystroke_median":326.9,"keystroke_p95":415.6,"toPaint_median":331.4,"toPaint_p95":420,"caretMove_median":37.3,"caretMove_p95":49.1,"n":[40,40,40]}
+{"words":50000,"chars":286927,"keystroke_median":964.2,"keystroke_p95":1341,"toPaint_median":964.5,"toPaint_p95":1341.5,"caretMove_median":67.8,"caretMove_p95":94.4,"n":[40,40,40]}
+
+TYPING LATENCY (ms, Draft, caret mid-page):
+     500 words (2982 chars): keystroke 8 / p95 11.3;  to paint 8.6 / p95 15.1;  caret move 9.9 / p95 18
+    5000 words (28815 chars): keystroke 64.6 / p95 69.3;  to paint 64.9 / p95 69.6;  caret move 19.3 / p95 27.4
+   20000 words (114816 chars): keystroke 326.9 / p95 415.6;  to paint 331.4 / p95 420;  caret move 37.3 / p95 49.1
+   50000 words (286927 chars): keystroke 964.2 / p95 1341;  to paint 964.5 / p95 1341.5;  caret move 67.8 / p95 94.4

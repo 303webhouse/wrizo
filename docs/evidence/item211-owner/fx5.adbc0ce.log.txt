@@ -1,0 +1,12 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+file:///C:/Users/nickh/writer-studio-fx17/apps/desktop/scripts/harness/fx5.mjs:876
+  fx5CardReveal = revealState;
+                ^
+
+ReferenceError: Cannot access 'fx5CardReveal' before initialization
+    at file:///C:/Users/nickh/writer-studio-fx17/apps/desktop/scripts/harness/fx5.mjs:876:17
+    at async withHarness (file:///C:/Users/nickh/writer-studio-fx17/apps/desktop/scripts/runtime-verify.mjs:856:12)
+    at async file:///C:/Users/nickh/writer-studio-fx17/apps/desktop/scripts/harness/fx5.mjs:135:1
+
+Node.js v24.13.0
