@@ -277,6 +277,10 @@ await withHarness(async (app) => {
 
   // === S3 — Bold writes ** conventions into entry.text (the storage ruling
   // proven at the seam) + the iA register decorates it. ======================
+  // PHASE 1 S5 (fixture): a fresh chapter reaches Draft EMPTY, which takes Arbor's default (typewriter ON) and greys the Format group - a disabled button ignores a press. Turn it OFF through the REAL toggle first.
+  await app.evalJs(`(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]'); if (b && b.getAttribute('aria-pressed') === 'true') b.click(); return true; })()`);
+  await sleep(250);
+  ok('fixture (Phase 1 S5): the typewriter is OFF (via the real toggle) before Bold is pressed', (await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`)) === 'false', 'typewriter state before Format');
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('plain words');
   await sleep(100);
@@ -526,6 +530,10 @@ await withHarness(async (app) => {
   await sleep(150);
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft').click()");
   await sleep(100);
+  // PHASE 1 S5 (fixture): a fresh chapter reaches Draft EMPTY, which takes Arbor's default (typewriter ON) and greys the Format group - a disabled button ignores a press. Turn it OFF through the REAL toggle first.
+  await app.evalJs(`(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]'); if (b && b.getAttribute('aria-pressed') === 'true') b.click(); return true; })()`);
+  await sleep(250);
+  ok('fixture (Phase 1 S5): the typewriter is OFF (via the real toggle) before Bold is pressed', (await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`)) === 'false', 'typewriter state before Format');
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('hello');
   await sleep(100);

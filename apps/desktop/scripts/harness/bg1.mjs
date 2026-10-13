@@ -122,6 +122,9 @@ const clickScreenplayTemplate = async (app) => {
   // OPEN is the strip's own state (data-open), never the presence of a section: the body stays mounted while the drawer is shut.
   if (!(await app.evalJs(`!!document.querySelector(".wz-sliver[data-open='true']")`))) await openSliver(app);
   try { await app.waitFor(`!!document.querySelector(".wz-sliver[data-open='true']")`, { label: 'strip open', timeout: 3000 }); } catch { /* reported below */ }
+  // HARNESS LAW (Chat 1's run, 2026-10-12; the drawer's arrival is ~0.2 s and, by Phase 1's design, its contents take no pointer input until it has settled - an early press is a CLEAN NO-OP): open is the STATE, the drawer is not
+  // THERE until the sliding layer has arrived and is live. Every press below is made only after that, as a writer's hand would.
+  try { await app.waitFor(`(() => { const l = document.querySelector('.wz-sliver-panel > .wz-drawer-slide'); if (!l) return false; const cs = getComputedStyle(l); return cs.transform === 'none' && cs.pointerEvents !== 'none'; })()`, { label: 'drawer settled and live', timeout: 3000 }); } catch { /* reported below */ }
   // the strip scrolls: Templates sit below its fold, so the control is brought into view first, as a writer would scroll to it
   await app.evalJs(`document.querySelector('.wz-template-live[data-template="screenplay"]')?.scrollIntoView({ block: 'center', inline: 'nearest' })`);
   await sleep(150);

@@ -20,6 +20,7 @@ import { SideDrawer, type DrawerTabsConfig } from './SideDrawer';
 import { DrawerNote } from './DrawerNote';
 import { ConnectionsDrawerPanel } from './ConnectionsDrawerPanel';
 import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
+import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 
 // TU1 S2/S3/S4/S5 — the Tutor. The sliver, mirrored, on the paper's RIGHT
 // edge — but rendered as TWO separate DeskFrame overlay anchors, not one
@@ -291,6 +292,13 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // PHASE 1 (S3) - the right drawer's tab: the Tutor (today's contents, untouched) or the theme's links word (empty for now).
   const [rightTab, setRightTab] = useState<RightTab>('tutor');
   const [docked, setDocked] = useState(false);
+  // PHASE 1 (Fable, Oct 12) - one drawer at a time: opening the Tutor closes the Tools drawer (and the reverse), at every width. Announced from an effect keyed on `open`
+  // so EVERY path that opens it announces (the grip, a shortcut, anything added later) - the same structural rule the Tools drawer follows.
+  useEffect(() => {
+    if (open) requestOpen('tutor');
+    else noteClosed('tutor');
+  }, [open]);
+  useEffect(() => registerDrawer('tutor', () => setOpen(false)), []);
   // FX18 S2 (Fable's ruling) — the OPEN panel's live width in px on a WRITING surface,
   // MEASURED (the FX13 measure-effect pattern), or null to defer to CSS. Occupy-margin uses
   // the TRUE geometric margin (stage.right - paper.right) so the panel sits FLUSH to the

@@ -299,9 +299,21 @@ await withHarness(async (app) => {
     await openSliverByGrip(app);
     await openTutorByGrip(app);
     const open = await app.evalJs(DRAWERS);
-    ok(`S7 (§7.7 @ ${w}x${h}): BOTH OPEN THEIR TABS — the Desk drawer opens onto EMPTY CONTENT WITHOUT ERROR, and the Counsel opens onto its own. An empty drawer opens, so G3's absence-over-grayed does not govern it`,
-      open.sliverOpen === 'true' && open.tutorOpen === 'true',
+    // ---- PARKED - SUPERSEDED by Phase 1 (Fable's ruling, Oct 12: ONE DRAWER AT A TIME at every width - opening either hand closes the other), 2026-10-12 ----
+    // Kept VERBATIM and no longer run. The successor follows the parked lines.
+    //
+    // ok(`S7 (§7.7 @ ${w}x${h}): BOTH OPEN THEIR TABS — the Desk drawer opens onto EMPTY CONTENT WITHOUT ERROR, and the Counsel opens onto its own. An empty drawer opens, so G3's absence-over-grayed does not govern it`,
+    // open.sliverOpen === 'true' && open.tutorOpen === 'true',
+    // JSON.stringify(open));
+    // ----------------------------------------------------------------------
+    ok(`S7 successor [one drawer at a time] (§7.7 @ ${w}x${h}): the Counsel opens onto its own tab and the Desk hand HAS YIELDED - only one drawer is open at a time`,
+      open.tutorOpen === 'true' && open.sliverOpen === 'false',
       JSON.stringify(open));
+    await openSliverByGrip(app);   // the other hand: the Desk drawer opens onto EMPTY CONTENT WITHOUT ERROR, and the Counsel yields
+    const deskOnly = await app.evalJs(DRAWERS);
+    ok(`S7 successor (§7.7 @ ${w}x${h}): the Desk drawer opens onto EMPTY CONTENT WITHOUT ERROR (G3's absence-over-grayed does not govern an empty drawer), and the Counsel has yielded`,
+      deskOnly.sliverOpen === 'true' && deskOnly.tutorOpen === 'false',
+      JSON.stringify(deskOnly));
 
     // The empty drawer is empty of TENANTS, not of the sliver's own standing
     // furniture — that distinction is the ruling, and asserting the wrong one would
@@ -318,10 +330,23 @@ await withHarness(async (app) => {
     // as well. A drawer that opens and will not shut is not a walkable room, and
     // the empty Desk drawer is exactly where that failure would hide: an empty
     // panel gives the writer no content to notice is stuck.
-    await openSliverByGrip(app);   // the same grip, a second press
-    await openTutorByGrip(app);
+    // ---- PARKED - SUPERSEDED by Phase 1 (Fable's ruling, Oct 12: ONE DRAWER AT A TIME at every width - opening either hand closes the other), 2026-10-12 ----
+    // Kept VERBATIM and no longer run. The successor follows the parked lines.
+    //
+    // await openSliverByGrip(app);   // the same grip, a second press
+    // await openTutorByGrip(app);
+    // const shut = await app.evalJs(DRAWERS);
+    // ----------------------------------------------------------------------
+    await openSliverByGrip(app);   // the open hand (the Desk) closes by its own grip
     const shut = await app.evalJs(DRAWERS);
-    ok(`S7 (§8 @ ${w}x${h}): BOTH HANDS CLOSE BY THEIR OWN GRIPS — a second press on each shuts it, the empty Desk drawer included. §8's exit names open AND close`,
+    // ---- PARKED - SUPERSEDED by Phase 1 (Fable's ruling, Oct 12: ONE DRAWER AT A TIME at every width - opening either hand closes the other), 2026-10-12 ----
+    // Kept VERBATIM and no longer run. The successor follows the parked lines.
+    //
+    // ok(`S7 (§8 @ ${w}x${h}): BOTH HANDS CLOSE BY THEIR OWN GRIPS — a second press on each shuts it, the empty Desk drawer included. §8's exit names open AND close`,
+    // shut.sliverOpen === 'false' && shut.tutorOpen === 'false',
+    // JSON.stringify({ open, shut }));
+    // ----------------------------------------------------------------------
+    ok(`S7 successor (§8 @ ${w}x${h}): the open hand CLOSES BY ITS OWN GRIP - a second press shuts the empty Desk drawer, and nothing is left open. §8's exit names open AND close`,
       shut.sliverOpen === 'false' && shut.tutorOpen === 'false',
       JSON.stringify({ open, shut }));
   }
@@ -355,8 +380,14 @@ await withHarness(async (app) => {
       same(closed, deskOpen), JSON.stringify({ closed, deskOpen }));
     ok(`S3 (§7.3 @ ${w}x${h}): opening the COUNSEL hand does not move the paper — the same two boxes, unchanged`,
       same(closed, counselOpen), JSON.stringify({ closed, counselOpen }));
-    ok(`S3 (§7.3 @ ${w}x${h}): and with BOTH hands standing, the paper is STILL where it was with both shut — chrome never reflows the writer's line`,
-      same(closed, bothOpen), JSON.stringify({ closed, bothOpen, drawers }));
+    // ---- PARKED - SUPERSEDED by Phase 1 (Fable's ruling, Oct 12: ONE DRAWER AT A TIME at every width - opening either hand closes the other), 2026-10-12 ----
+    // Kept VERBATIM and no longer run. The successor follows the parked lines.
+    //
+    // ok(`S3 (§7.3 @ ${w}x${h}): and with BOTH hands standing, the paper is STILL where it was with both shut — chrome never reflows the writer's line`,
+    // same(closed, bothOpen), JSON.stringify({ closed, bothOpen, drawers }));
+    // ----------------------------------------------------------------------
+    ok(`S3 successor (§7.3 @ ${w}x${h}): and with the hands TAKING TURNS (the second opening closes the first - one drawer at a time) the paper is STILL where it was with both shut - chrome never reflows the writer's line`,
+      same(closed, bothOpen) && drawers.sliverOpen === 'true' && drawers.tutorOpen === 'false', JSON.stringify({ closed, bothOpen, drawers }));
 
     // CONTROL — the measurement must prove it was measuring something real. A
     // collapsed or unrendered sheet would satisfy every equality above trivially.
@@ -546,9 +577,16 @@ await withHarness(async (app) => {
     const sliverPanel = await rectOf(app, '.wz-sliver-panel');
     const tutorPanel = await rectOf(app, '.wz-tutor-panel');
     const state = await app.evalJs(DRAWERS);
-    ok(`S5 (§7.5 @ ${w}x${h}): the two HANDS coexist in Revise — Desk and Counsel both stand open and DO NOT OVERLAP, so every control under either stays reachable (the mirrored pair, item 119)`,
-      state.sliverOpen === 'true' && state.tutorOpen === 'true'
-        && !!sliverPanel && !!tutorPanel && sliverPanel.r <= tutorPanel.l + 1,
+    // ---- PARKED - SUPERSEDED by Phase 1 (Fable's ruling, Oct 12: ONE DRAWER AT A TIME at every width - opening either hand closes the other), 2026-10-12 ----
+    // Kept VERBATIM and no longer run. The successor follows the parked lines.
+    //
+    // ok(`S5 (§7.5 @ ${w}x${h}): the two HANDS coexist in Revise — Desk and Counsel both stand open and DO NOT OVERLAP, so every control under either stays reachable (the mirrored pair, item 119)`,
+    // state.sliverOpen === 'true' && state.tutorOpen === 'true'
+    // && !!sliverPanel && !!tutorPanel && sliverPanel.r <= tutorPanel.l + 1,
+    // JSON.stringify({ state, sliverPanel, tutorPanel }));
+    // ----------------------------------------------------------------------
+    ok(`S5 successor (§7.5 @ ${w}x${h}): the two HANDS TAKE TURNS in Revise - opening the Counsel closes the Desk (one drawer at a time, at every width), and the open Counsel panel is reachable`,
+      state.sliverOpen === 'false' && state.tutorOpen === 'true' && !!tutorPanel,
       JSON.stringify({ state, sliverPanel, tutorPanel }));
   }
 

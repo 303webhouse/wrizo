@@ -38,9 +38,11 @@ const freshPage = async (app, combo, width = 1400, height = 900, typewriterSaved
   await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1');
     localStorage.setItem('wrizo-theme-prefs', ${JSON.stringify(JSON.stringify(combo.prefs))});
     localStorage.setItem('wrizo-theme', ${JSON.stringify(combo.theme)});
+    localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');
     ${typewriterSaved ? `localStorage.setItem('wrizo-typewriter-page-${PAGE}', ${JSON.stringify(typewriterSaved)});` : ''}`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+  await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 14000 });
   await app.evalJs(`window.wrizoCreateJournalPage({ id: ${JSON.stringify(PAGE)}, text: ${JSON.stringify(TEXT)}, createdAt: new Date().toISOString(), source: null, origin: null })`);
   await sleep(400);
   await app.evalJs(`location.hash = '#/page/${PAGE}'`);
@@ -117,7 +119,7 @@ await withHarness(async (app) => {
     if (hadNote) { await app.evalJs("document.querySelector('.wz-drawer-note-btn')?.click()"); await sleep(300); }
     const right = await app.evalJs(`({ tabs: [...document.querySelectorAll('.wz-tutor-panel [role="tab"]')].map(t => t.textContent.trim()),
       noteShown: !!document.querySelector('.wz-drawer-note-pop'), noteText: document.querySelector('.wz-drawer-note-pop')?.textContent ?? null,
-      noteButton: hadNote })`);
+      noteButton: ${hadNote} })`);
     await shot(app, combo, '05-right-drawer-tabs-and-note', { right });
     await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
     await sleep(500);

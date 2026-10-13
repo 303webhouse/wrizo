@@ -8,7 +8,7 @@
 //   L4  CLOSED MEANS CLOSED every control inside a closed panel is inert, not focusable, not hit-testable
 //   L5  CONTENT PER SURFACE Free Write (TEXT, INK), Draft, Revise, Screenplay, Board - the sections each shows, the Board tools arm named button by button
 //   L6  BRASS AND OLIVE     the chosen tab is brass, the unchosen is not; an open drawer's tab is olive
-//   L7  THE TWO-DRAWER LAW  both may open at 1280; at 1100 the later one closes the other
+//   L7  ONE DRAWER AT A TIME (Fable, Oct 12) at EVERY width: opening the right drawer closes the left and the reverse - 1100, 1280 and 1400
 //   L8  SCROLLBAR           at 1366x768 with long content the panel shows the thin bar on its outer edge
 //   L9  ARIA AND KEYBOARD   tablist / tab / aria-selected / aria-controls / roving tabindex, arrow keys move the selection AND the focus, the "?" note opens, reports and closes on Escape,
 //                           the grips report their state, the two mode toggles are operable by keyboard
@@ -45,9 +45,11 @@ const open = async (app, th, kind, w = W, h = H) => {
   await app.emulateDpr(1, w, h);
   await app.goto('/');
   await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1');
-    localStorage.setItem('wrizo-theme-prefs', ${JSON.stringify(JSON.stringify(th.prefs))}); localStorage.setItem('wrizo-theme', ${JSON.stringify(th.theme)});`);
+    localStorage.setItem('wrizo-theme-prefs', ${JSON.stringify(JSON.stringify(th.prefs))}); localStorage.setItem('wrizo-theme', ${JSON.stringify(th.theme)});
+    localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+  await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 14000 });
   await app.evalJs(`window.wrizoCreateJournalPage(${s.row})`);
   await sleep(450);
   await app.evalJs(`location.hash = '#/page/${s.id}'`);
@@ -66,6 +68,14 @@ const ensureLeft = async (app, want) => { if ((await leftOpen(app)) !== want) aw
 const ensureRight = async (app, want) => { if ((await rightOpen(app)) !== want) await toggleRight(app); await waitSoft(app, `document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') === '${want}'`, { timeout: 2500 }); if (want) await settled(app, '.wz-tutor-panel'); await sleep(want ? 300 : 500); };
 const rectOf = (app, sel) => app.evalJs(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return null; const r = e.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(n => Math.round(n * 100) / 100); })()`);
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+// app.key() is rawKeyDown + keyUp: no char event, hence no keypress, hence a plain <button> is never activated by it (Enter on ANY button "does nothing"). A real keyboard sends
+// a keyDown that carries the character; this does the same, so the press the writer makes is the press that is tested.
+const trustedKey = async (app, key, code, vk, text) => {
+  await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key, code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk, text });
+  await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key, code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk });
+};
+const pressEnter = (app) => trustedKey(app, 'Enter', 'Enter', 13, '\r');
+const pressSpace = (app) => trustedKey(app, ' ', 'Space', 32, ' ');
 const varColour = (app, name) => app.evalJs(`(() => { const d = document.createElement('div'); d.style.color = 'var(${name})'; document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; })()`);
 
 await withHarness(async (app) => {
@@ -78,15 +88,17 @@ await withHarness(async (app) => {
         const there = await open(app, th, kind);
         ok(`L1 ${T} fixture: the ${kind} surface opened`, there, '');
         if (!there) return;
-        await app.evalJs("window.__ed = document.querySelector('.forward-only-editor')");
+        // (the first cut returned the assignment's value - the editor NODE - to the runner: "Object reference chain is too long". It is the TEST that carried a node out; the app is fine.)
+        await app.evalJs("(() => { window.__ed = document.querySelector('.forward-only-editor'); return !!window.__ed; })()");
         const R0 = await rectOf(app, '.mode-page');
         const steps = [
           ['open the left drawer', () => toggleLeft(app)],
-          ['open the right drawer too', () => toggleRight(app)],
+          ['open the right drawer (the left yields)', () => toggleRight(app)],
           ['right: Grafts/Links tab', () => app.evalJs("document.querySelector('#wz-tutor-tab-links')?.click()")],
           ['right: back to Tutor', () => app.evalJs("document.querySelector('#wz-tutor-tab-tutor')?.click()")],
           ...(kind === 'free' ? [['left: INK tab', () => app.evalJs("document.querySelector('#wz-sliver-tab-ink')?.click()")], ['left: TEXT tab', () => app.evalJs("document.querySelector('#wz-sliver-tab-text')?.click()")]] : []),
           ['close the right drawer', () => toggleRight(app)],
+          ['open the left drawer again', () => toggleLeft(app)],
           ['close the left drawer', () => toggleLeft(app)],
         ];
         const bad = [];
@@ -99,7 +111,7 @@ await withHarness(async (app) => {
           const after = await rectOf(app, '.mode-page');
           if (!same(R0, during0) || !same(R0, during1) || !same(R0, after)) bad.push({ label, R0, during0, during1, after });
         }
-        ok(`L1 ${T} (${kind}): the paper's rect is IDENTICAL before, during and after every open, close and tab change of either drawer, and of both at once`, bad.length === 0, JSON.stringify(bad).slice(0, 400));
+        ok(`L1 ${T} (${kind}): the paper's rect is IDENTICAL before, during and after every open, close and tab change of either drawer, and of the hand-over from one to the other`, bad.length === 0, JSON.stringify(bad).slice(0, 400));
         const sameNode = await app.evalJs("window.__ed === document.querySelector('.forward-only-editor') && !!window.__ed");
         ok(`L1 ${T} (${kind}): and the editor node is the SAME node throughout (never unmounted)`, sameNode === true, String(sameNode));
       });
@@ -238,17 +250,35 @@ await withHarness(async (app) => {
       ok(`L6 ${T}: an OPEN drawer's tab wears the theme's where-you-are colour (olive in Arbor, mid text in Flux), never brass`, c.gripColor === olive && c.gripBorder === olive && c.gripColor !== brass, JSON.stringify({ olive, brass, grip: [c.gripColor, c.gripBorder] }));
     });
 
-    // ===== L7 - THE TWO-DRAWER LAW ==========================================================================================================================
-    await guard(`L7 ${T}`, async () => {
-      if (!(await open(app, th, 'draft'))) { ok(`L7 ${T} fixture: draft opened`, false); return; }
-      await ensureLeft(app, true); await ensureRight(app, true);
-      ok(`L7 ${T} @1280: BOTH drawers may be open at once`, (await leftOpen(app)) && (await rightOpen(app)), '');
-      if (!(await open(app, th, 'draft', 1100, 800))) { ok(`L7 ${T} fixture: draft opened at 1100`, false); return; }
-      await ensureLeft(app, true);
-      await toggleRight(app); await sleep(900);
-      const later = { left: await leftOpen(app), right: await rightOpen(app) };
-      ok(`L7 ${T} @1100: opening the right drawer while the left is open CLOSES the left - the later one wins`, later.right === true && later.left === false, JSON.stringify(later));
-    });
+    // ===== L7 - ONE DRAWER AT A TIME, AT EVERY WIDTH (Fable, Oct 12) ================================================================================
+    // PARKED - SUPERSEDED by Fable's ruling (Oct 12): "Only one drawer may be open at a time, at every screen width." The block below is the original two-drawer law, kept VERBATIM
+    // and no longer run: it asserted BOTH drawers may stand at 1280 and the later one closes the other only at 1100.
+    //
+    // // ===== L7 - THE TWO-DRAWER LAW ==========================================================================================================================
+    // await guard(`L7 ${T}`, async () => {
+    //   if (!(await open(app, th, 'draft'))) { ok(`L7 ${T} fixture: draft opened`, false); return; }
+    //   await ensureLeft(app, true); await ensureRight(app, true);
+    //   ok(`L7 ${T} @1280: BOTH drawers may be open at once`, (await leftOpen(app)) && (await rightOpen(app)), '');
+    //   if (!(await open(app, th, 'draft', 1100, 800))) { ok(`L7 ${T} fixture: draft opened at 1100`, false); return; }
+    //   await ensureLeft(app, true);
+    //   await toggleRight(app); await sleep(900);
+    //   const later = { left: await leftOpen(app), right: await rightOpen(app) };
+    //   ok(`L7 ${T} @1100: opening the right drawer while the left is open CLOSES the left - the later one wins`, later.right === true && later.left === false, JSON.stringify(later));
+    // });
+
+
+    for (const w of [1100, 1280, 1400]) {
+      await guard(`L7 ${T} @${w}`, async () => {
+        if (!(await open(app, th, 'draft', w, 800))) { ok(`L7 ${T} fixture: draft opened at ${w}`, false); return; }
+        await ensureLeft(app, true);
+        await toggleRight(app); await sleep(900);
+        const a = { left: await leftOpen(app), right: await rightOpen(app) };
+        ok(`L7 ${T} @${w}: opening the RIGHT drawer while the left is open CLOSES the left - one drawer at a time`, a.right === true && a.left === false, JSON.stringify(a));
+        await toggleLeft(app); await sleep(900);
+        const b = { left: await leftOpen(app), right: await rightOpen(app) };
+        ok(`L7 ${T} @${w}: and opening the LEFT drawer while the right is open closes the right (the rule is symmetric)`, b.left === true && b.right === false, JSON.stringify(b));
+      });
+    }
 
     // ===== L8 - THE SCROLLBAR ===============================================================================================================================
     await guard(`L8 ${T}`, async () => {
@@ -284,11 +314,38 @@ await withHarness(async (app) => {
       await modeTab(app, 'draft');
       const t0 = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? null`);
       ok(`L9 ${T}: the Typewriter toggle exists on Draft and reports aria-pressed`, t0 === 'true' || t0 === 'false', String(t0));
+      // PARKED - SUPERSEDED (Oct 12): this driver pressed Enter through app.key(), which sends rawKeyDown + keyUp only - no char event, so no keypress, so NO plain button is ever activated by it.
+      // Chat 1's run read the toggle as "did not flip"; the check was not testing a keyboard. The original is kept verbatim below; the successor sends a TRUSTED keyDown carrying the
+      // character, and proves the instrument on a CONTROL (the plain "..." button, which has no handler of ours) before it accuses the product.
+      //
+      // if (t0 != null) {
+      //   await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]').focus()`);
+      //   await app.key('Enter'); await sleep(400);
+      //   const t1 = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? null`);
+      //   ok(`L9 ${T}: Enter on the focused Typewriter toggle flips it (keyboard-operable)`, t1 != null && t1 !== t0, JSON.stringify({ t0, t1 }));
+      // }
+
       if (t0 != null) {
-        await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]').focus()`);
-        await app.key('Enter'); await sleep(400);
-        const t1 = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? null`);
-        ok(`L9 ${T}: Enter on the focused Typewriter toggle flips it (keyboard-operable)`, t1 != null && t1 !== t0, JSON.stringify({ t0, t1 }));
+        await ensureLeft(app, true);
+        const sel = '.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]';
+        // CONTROL: Enter on the plain "..." button must open its menu (aria-expanded flips) - if THIS fails the instrument is broken, not the toggle
+        await app.evalJs("document.querySelector('.wz-sliver-instruments-btn')?.focus()");
+        const c0 = await app.evalJs("document.querySelector('.wz-sliver-instruments-btn')?.getAttribute('aria-expanded') ?? null");
+        await pressEnter(app); await sleep(350);
+        const c1 = await app.evalJs("document.querySelector('.wz-sliver-instruments-btn')?.getAttribute('aria-expanded') ?? null");
+        ok(`L9 ${T} CONTROL: a trusted Enter activates a plain button (the "..." menu opens) - so the next two checks test the toggle, not the keyboard instrument`, c0 === 'false' && c1 === 'true', JSON.stringify({ c0, c1 }));
+        await pressEnter(app); await sleep(250);   // close it again (Enter on the still-focused "...")
+        await app.evalJs(`document.querySelector('${sel}').focus()`);
+        const focused = await app.evalJs(`document.activeElement === document.querySelector('${sel}')`);
+        ok(`L9 ${T}: the Typewriter toggle can take focus (a precondition: an inert or hidden toggle would make the next press a no-op for the wrong reason)`, focused === true, String(focused));
+        const t1 = await app.evalJs(`document.querySelector('${sel}')?.getAttribute('aria-pressed') ?? null`);
+        await pressEnter(app); await sleep(400);
+        const t2 = await app.evalJs(`document.querySelector('${sel}')?.getAttribute('aria-pressed') ?? null`);
+        ok(`L9 ${T}: Enter on the focused Typewriter toggle FLIPS it, like any button`, t1 != null && t2 != null && t2 !== t1, JSON.stringify({ t1, t2 }));
+        await app.evalJs(`document.querySelector('${sel}')?.focus()`);
+        await pressSpace(app); await sleep(400);
+        const t3 = await app.evalJs(`document.querySelector('${sel}')?.getAttribute('aria-pressed') ?? null`);
+        ok(`L9 ${T}: and Space flips it back`, t3 != null && t3 !== t2, JSON.stringify({ t2, t3 }));
       }
       // the "?" note (Arbor only): opens on press, is reported, closes on Escape
       const hasNote = await app.evalJs("!!document.querySelector('.wz-drawer-note-btn')");
