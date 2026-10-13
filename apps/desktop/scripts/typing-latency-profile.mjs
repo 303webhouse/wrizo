@@ -180,6 +180,85 @@ function layoutShape() {
   return res;
 }
 
+// VARIANT E (Fable, 2026-10-13: plan step 1, measured before anything is built) - block rows WITH `contain: layout style` and
+// `content-visibility: auto`, each block's `contain-intrinsic-size` ESTIMATED from its character count and the characters-per-line
+// measured on fully laid-out rows (a prose "line" is a paragraph that wraps; one line-height would badly underestimate it).
+// Measured with the real editor HIDDEN, so the clone IS the scroller's content and blocks off screen are genuinely skipped (a clone
+// below a 160,000px editor would be skipped whole and measure nothing). Reports: one-character layout at a visible mid-page block;
+// how many blocks the browser actually rendered; the estimate's drift (estimated total height vs the real total, the real total taken
+// from the same rows fully laid out); and the SCROLL JUMP - a block three-quarters down, scrolled to by its estimated position,
+// moves by how many px once it and its neighbours render.
+async function variantE() {
+  const el = document.querySelector('.forward-only-editor');
+  const scroller = document.querySelector('.mode-scroll');
+  if (!el || !scroller) return { missing: true };
+  const html = el.innerHTML;
+  const lines = html.split('\n');
+  const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return Math.round(s[Math.floor(s.length / 2)] * 10) / 10; };
+  const lh = parseFloat(getComputedStyle(el).lineHeight) || 28;
+  const mk = (style) => {
+    const c = el.cloneNode(false);
+    c.removeAttribute('contenteditable'); c.removeAttribute('id'); c.removeAttribute('aria-describedby');
+    c.innerHTML = lines.map((l, i) => `<div class="wz-probe-row" style="display:block;${style(i)}">${l}${i < lines.length - 1 ? '\n' : ''}</div>`).join('');
+    el.parentElement.insertBefore(c, el.nextSibling);
+    return c;
+  };
+  const prevDisplay = el.style.display;
+  el.style.display = 'none';
+  try {
+    // 1. ground truth: the same rows, nothing skipped - each row's true height, and the characters per screen line
+    const truth = mk(() => '');
+    void truth.offsetHeight;
+    const trueH = [...truth.children].map((r) => r.getBoundingClientRect().height);
+    const trueTotal = Math.round(truth.getBoundingClientRect().height);
+    const cpls = [];
+    [...truth.children].forEach((r, i) => { const n = Math.round(trueH[i] / lh); const chars = (r.textContent || '').replace(/\n$/, '').length; if (n >= 2) cpls.push(chars / n); });
+    const cpl = cpls.length ? med(cpls) : Math.max(20, Math.floor(el.clientWidth / (parseFloat(getComputedStyle(el).fontSize) * 0.5)));
+    truth.remove();
+    // 2. E: contain + content-visibility:auto + an estimated intrinsic size per block
+    const est = (i) => { const chars = (lines[i].replace(/<[^>]*>/g, '').length); return Math.max(1, Math.ceil(chars / cpl)) * lh; };
+    const c = mk((i) => `contain:layout style;content-visibility:auto;contain-intrinsic-size:auto ${est(i)}px`);
+    await frame();
+    const estTotal = Math.round(c.getBoundingClientRect().height);
+    const mid = Math.floor(c.children.length / 2);
+    c.children[mid].scrollIntoView({ block: 'center' });
+    await frame();
+    const rendered = [...c.children].filter((r) => r.getBoundingClientRect().height > 0 && getComputedStyle(r).contentVisibility === 'auto' && r.checkVisibility && r.checkVisibility({ contentVisibilityAuto: true })).length;
+    const w = document.createTreeWalker(c.children[mid], NodeFilter.SHOW_TEXT); let t = null, n;
+    while ((n = w.nextNode())) if (n.data.length > 8 && !(n.parentElement && n.parentElement.closest('.md-mark-hidden'))) { t = n; break; }
+    const lay = [];
+    if (t) for (let i = 0; i < 15; i += 1) { t.data = t.data + 'a'; const b = performance.now(); void c.offsetHeight; lay.push(performance.now() - b); }
+    // 3. the scroll jump: go to a block three-quarters down by its ESTIMATED position, then let it and its neighbours render
+    const far = c.children[Math.floor(c.children.length * 0.75)];
+    const sb = scroller.getBoundingClientRect();
+    scroller.scrollTop = scroller.scrollTop + (far.getBoundingClientRect().top - sb.top) - 100;
+    const at0 = Math.round(far.getBoundingClientRect().top - sb.top);
+    await frame(); await frame();
+    const at1 = Math.round(far.getBoundingClientRect().top - scroller.getBoundingClientRect().top);
+    const estTotalAfter = Math.round(c.getBoundingClientRect().height);
+    c.remove();
+    return { blocks: lines.length, lineHeight: lh, charsPerLine: Math.round(cpl * 10) / 10,
+      oneCharLayout_median: lay.length ? med(lay) : null, renderedBlocksAroundCaret: rendered,
+      trueTotalPx: trueTotal, estimatedTotalPx: estTotal, driftPx: estTotal - trueTotal, driftPct: Math.round(((estTotal - trueTotal) / trueTotal) * 10000) / 100,
+      scrollJumpPx: at1 - at0, estimatedTotalAfterScrollPx: estTotalAfter };
+  } finally {
+    el.style.display = prevDisplay;
+  }
+}
+
+// THE AUTOSAVE MOMENT (Fable, 2026-10-13): the page saves AUTOSAVE_MS (2s) after the writer STOPS (each keystroke restarts the
+// timer), then the store flushes (300ms) - a whole-page JSON write. Typed as a writer does - a 30-key burst, then a pause - with a
+// long-task observer and the storage writes timed: does the save moment hitch, and by how much?
+function armSaveWatch() {
+  const W = (window.__save = { longTasks: [], setItems: [] });
+  try { const po = new PerformanceObserver((l) => { for (const e of l.getEntries()) W.longTasks.push([Math.round(e.startTime), Math.round(e.duration)]); }); po.observe({ entryTypes: ['longtask'] }); W.po = po; } catch { W.noObserver = true; }
+  const set = Storage.prototype.setItem;
+  Storage.prototype.setItem = function (k, v) { const a = performance.now(); const r = set.call(this, k, v); W.setItems.push([Math.round(a), Math.round((performance.now() - a) * 10) / 10, k, String(v).length]); return r; };
+  W.restore = () => { Storage.prototype.setItem = set; if (W.po) W.po.disconnect(); };
+  return true;
+}
+
 try {
 await withHarness(async (app) => {
   console.log(`bundle ${main.f}: React region lines ${REACT[0] + 1}-${REACT[1]} (react-dom from ${domAt + 1})`);
@@ -313,6 +392,22 @@ await withHarness(async (app) => {
       row.aPrime_estimate = { decorationsToday: builds, innerTextReadsToday: reads,
         ...Object.fromEntries(Object.entries(parts).map(([k, v]) => [k, r1(v)])), total: r1(Object.values(parts).reduce((a, b) => a + b, 0)) };
     }
+    // VARIANT E (plan step 1) - contain + content-visibility with per-block height estimates; layout, rendered blocks, drift, jump
+    row.variantE = await app.evalJs(`(${variantE.toString()})()`);
+    // THE AUTOSAVE MOMENT - a 30-key burst at ~10 keys/s, then the pause the 2s autosave waits for; long tasks + storage writes
+    await app.evalJs(`(${armSaveWatch.toString()})()`);
+    for (let i = 0; i < 30; i += 1) { await app.typeKeys(i % 6 === 5 ? ' ' : 'e'); await sleep(100); }
+    const tLast = await app.evalJs('performance.now()');
+    await sleep(3500);
+    const sv = await app.evalJs('(() => { const W = window.__save; W.restore(); return { longTasks: W.longTasks, setItems: W.setItems, noObserver: !!W.noObserver }; })()');
+    const writes = sv.setItems.filter((s) => s[0] >= tLast && /journal-entries/.test(s[2]));
+    const lts = sv.longTasks.filter((l) => l[0] >= tLast + 1500 && l[0] <= tLast + 3500);
+    row.autosave = {
+      savedMsAfterLastKey: writes.length ? Math.round(writes[0][0] - tLast) : null,
+      entriesWriteMs: writes.length ? writes[0][1] : null, entriesPayloadChars: writes.length ? writes[0][3] : null, writes: writes.length,
+      longestLongTaskAtSaveMs: lts.length ? Math.max(...lts.map((l) => l[1])) : 0, longTasksAtSave: lts.length,
+      longTasksDuringBurst: sv.longTasks.filter((l) => l[0] < tLast).length, observer: sv.noObserver ? 'unavailable' : 'longtask',
+    };
     out.sizes.push(row);
     console.log(JSON.stringify(row, null, 2));
   }
