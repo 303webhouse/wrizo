@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrizo · Word-diet UI</title>
+<!--
+  docs/mockups/word-diet-ui — four panels, no explanatory copy on the chrome.
+  Arbor / Flux × light / dark. Branch: cursor/word-diet-ui.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=Rajdhani:wght@400;500;600&display=swap');
+
+  :root {
+    --ink-950: #110600; --ink-900: #1F1A16; --ink-800: #2A241E;
+    --ink-border: #332C25; --ink-border-strong: #453B31;
+    --text-hi: #EDE6DA; --text-mid: #B5A998; --text-low: #80766A;
+    --paper: #F3EDE1; --paper-dim: #E9E1D2; --paper-border: #d8c8b4;
+    --ink-on-paper: #2B2014; --ink-on-paper-low: #8A7C68;
+    --brass: #ff9800; --accent-rest: #96a05a;
+    --desk-ground: #1F1A16;
+    --font-ui: 'Figtree', system-ui, sans-serif;
+    --font-prose: 'Crimson Pro', Georgia, serif;
+    --sb: color-mix(in srgb, var(--text-low) 28%, transparent);
+  }
+  html[data-theme='flux'] {
+    --ink-950: #04141A; --ink-900: #091E24; --ink-800: #0C2A32;
+    --ink-border: #1D4A52; --ink-border-strong: #2A6A76;
+    --text-hi: #E3F1EC; --text-mid: #8FB4AC; --text-low: #6E958D;
+    --paper: #EDF6F3; --paper-dim: #E3EFEC; --paper-border: #B7D4CE;
+    --ink-on-paper: #14231F; --ink-on-paper-low: #0B7C9E;
+    --accent-rest: #5E837C;
+    --desk-ground: #07161B;
+    --font-ui: 'Rajdhani', system-ui, sans-serif;
+  }
+  html[data-theme='flux'][data-page='dark'] {
+    --paper: #0B2429; --paper-dim: #091E23; --paper-border: #2A6A76;
+    --ink-on-paper: #E3F1EC; --ink-on-paper-low: #57D0F5;
+  }
+  html[data-page='dark']:not([data-theme='flux']) {
+    --paper: #1A1206; --paper-dim: #24180A; --paper-border: #453B31;
+    --ink-on-paper: #EDE6DA; --ink-on-paper-low: #B5A998;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { scrollbar-width: thin; scrollbar-color: var(--sb) transparent; }
+  *::-webkit-scrollbar { width: 4px; height: 4px; }
+  *::-webkit-scrollbar-thumb { background: var(--sb); }
+  html, body { min-height: 100%; }
+  body { background: var(--ink-950); color: var(--text-hi); font-family: var(--font-ui); }
+
+  .rig {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 7px 12px; background: #000; border-bottom: 1px solid #222;
+    font-size: 11px; color: #9a9a9a;
+  }
+  .rig b { color: #d8d8d8; letter-spacing: .06em; }
+  .only { color: #6e6e6e; letter-spacing: .12em; text-transform: uppercase; font-size: 9px; border: 1px solid #333; padding: 2px 6px; }
+  .rev { height: 22px; padding: 0 8px; border: 1px solid #333; color: #c8c8c8; background: #141414; cursor: pointer; font: inherit; }
+  .rev[data-on='true'] { border-color: var(--accent-rest); color: var(--accent-rest); }
+
+  .grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    padding: 14px; max-width: 1280px; margin: 0 auto;
+  }
+  .panel {
+    background: var(--desk-ground); border: 1px solid var(--ink-border);
+    min-height: 280px;
+  }
+  .sheet { background: var(--paper); color: var(--ink-on-paper); min-height: 280px; }
+
+  /* Filing */
+  .file { padding: 12px 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .add {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    background: none; border: 1px solid transparent; color: var(--text-mid);
+    font: inherit; font-size: 13px; padding: 7px 8px; text-align: left; cursor: pointer;
+  }
+  .add:hover { color: var(--text-hi); background: var(--ink-800); }
+  .add .plus, .drow .plus { color: var(--brass); width: 1.1em; flex: 0 0 auto; }
+  .drow[data-on='true'] .plus { color: var(--brass); }
+  .drawers { max-height: 9.6em; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+  .drow {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    background: none; border: 1px solid transparent; color: var(--text-mid);
+    font: inherit; font-size: 13px; padding: 7px 8px; text-align: left; cursor: pointer;
+  }
+  .drow[data-on='true'] { border-color: var(--brass); color: var(--brass); }
+  .sort {
+    display: flex; gap: 4px; margin: 2px 0 4px;
+  }
+  .sort button {
+    background: none; border: 0; border-bottom: 2px solid transparent;
+    color: var(--text-low); font: inherit; font-size: 10px; letter-spacing: 1px;
+    text-transform: uppercase; padding: 4px 6px; cursor: pointer;
+  }
+  .sort button[data-on='true'] { color: var(--brass); border-bottom-color: var(--brass); }
+  .zone {
+    margin-top: 6px; padding-top: 10px; border-top: 1px solid var(--ink-border);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+
+  /* Place line */
+  .place { padding: 22px 28px; }
+  .place + .place { border-top: 1px solid var(--paper-border); }
+  .pl-home { font-size: 13px; letter-spacing: .04em; color: var(--ink-on-paper); }
+  .pl-else {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 4px; font-size: 12px; color: var(--ink-on-paper-low);
+  }
+  .pl-else svg { display: block; flex: 0 0 auto; }
+
+  /* Tutor */
+  .tutor { padding: 14px; display: flex; flex-direction: column; gap: 16px; }
+  .pagebit {
+    background: var(--paper); color: var(--ink-on-paper);
+    font-family: var(--font-prose); font-size: 16px; line-height: 1.55;
+    padding: 12px 14px;
+  }
+  .mark { background: color-mix(in srgb, var(--accent-rest) 28%, transparent); }
+  .asks { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ask {
+    position: relative;
+    background: none; border: 1px solid var(--ink-border); color: var(--text-mid);
+    font: inherit; font-size: 12px; padding: 6px 10px; cursor: pointer;
+  }
+  .ask[data-on='true'] { color: var(--accent-rest); border-color: var(--accent-rest); }
+  .ask.is-dead {
+    opacity: .38; cursor: default; color: var(--text-low);
+  }
+  .ask .tip {
+    display: none; position: absolute; left: 0; bottom: calc(100% + 6px);
+    white-space: nowrap; background: var(--ink-900); border: 1px solid var(--ink-border);
+    color: var(--text-hi); font-size: 11px; padding: 4px 8px; pointer-events: none;
+  }
+  .ask.is-dead:hover .tip, .ask.is-dead:focus-visible .tip { display: block; }
+
+  /* Empty board */
+  .board {
+    background: var(--ink-900); min-height: 280px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; padding: 24px;
+  }
+  .board .line { font-size: 14px; color: var(--text-mid); }
+  .board .row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .door {
+    background: none; border: 1px solid var(--ink-border); color: var(--text-mid);
+    font: inherit; font-size: 13px; padding: 7px 12px; cursor: pointer;
+  }
+  .door:hover { color: var(--text-hi); border-color: var(--ink-border-strong); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header class="rig">
+  <b>WORD DIET</b>
+  <span class="only">mockup only</span>
+  <button class="rev" data-theme="arbor" type="button">Arbor</button>
+  <button class="rev" data-theme="flux" type="button">Flux</button>
+  <button class="rev" data-page="light" type="button">Light</button>
+  <button class="rev" data-page="dark" type="button">Dark</button>
+</header>
+
+<div class="grid">
+  <section class="panel">
+    <div class="file">
+      <button class="add" type="button"><span class="plus">+</span> New Drawer</button>
+      <div class="sort" id="sort">
+        <button type="button" data-sort="recent" data-on="true">Recent</button>
+        <button type="button" data-sort="az">A–Z</button>
+      </div>
+      <div class="drawers" id="drawers"></div>
+      <div class="zone" id="boards">
+        <button class="add" type="button"><span class="plus">+</span> BOARD</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <div class="place">
+      <div class="pl-home">Night Kitchen</div>
+      <div class="pl-else">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v7h8"/><path d="M8 7l3 3-3 3"/></svg>
+        Journal
+      </div>
+    </div>
+    <div class="place">
+      <div class="pl-home">Journal</div>
+      <div class="pl-else">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v7h8"/><path d="M8 7l3 3-3 3"/></svg>
+        Night Kitchen
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="tutor">
+      <div class="pagebit">The kettle ticks. She does not turn.</div>
+      <div class="asks">
+        <button class="ask is-dead" type="button">This stretch<span class="tip">Select text first</span></button>
+      </div>
+      <div class="pagebit">The kettle ticks. <span class="mark">She does not turn.</span></div>
+      <div class="asks">
+        <button class="ask" data-on="true" type="button">This stretch</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="board">
+      <div class="line">Add Cards, Pages, or Boards</div>
+      <div class="row">
+        <button class="door" type="button">Pair Pages</button>
+        <button class="door" type="button">+ Existing Pages</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  const RECENT = ['Night Kitchen', 'Relay', 'The Stairs', 'Harbor', 'Annex'];
+  const BOARDS = ['Night Kitchen board', 'Harbor map'];
+  let filed = 'Night Kitchen';
+  let sort = 'recent';
+  const root = document.documentElement;
+
+  function names() {
+    const list = RECENT.slice();
+    if (sort === 'az') list.sort((a, b) => a.localeCompare(b));
+    return list;
+  }
+
+  function paintDrawers() {
+    const box = document.getElementById('drawers');
+    box.innerHTML = '';
+    names().forEach((name) => {
+      const b = document.createElement('button');
+      b.className = 'drow';
+      b.type = 'button';
+      b.dataset.on = name === filed ? 'true' : 'false';
+      b.innerHTML = '<span class="plus">+</span> ' + name;
+      b.addEventListener('click', () => { filed = name; paintDrawers(); });
+      box.append(b);
+    });
+  }
+
+  const zone = document.getElementById('boards');
+  BOARDS.forEach((name) => {
+    const b = document.createElement('button');
+    b.className = 'drow';
+    b.type = 'button';
+    b.innerHTML = '<span class="plus">+</span> ' + name;
+    b.addEventListener('click', () => {
+      b.dataset.on = b.dataset.on === 'true' ? 'false' : 'true';
+    });
+    zone.append(b);
+  });
+
+  document.querySelectorAll('#sort button').forEach((b) => {
+    b.addEventListener('click', () => {
+      sort = b.dataset.sort;
+      document.querySelectorAll('#sort button').forEach((x) => {
+        x.dataset.on = x.dataset.sort === sort ? 'true' : 'false';
+      });
+      paintDrawers();
+    });
+  });
+
+  function sync() {
+    const theme = root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor';
+    const page = root.getAttribute('data-page') === 'dark' ? 'dark' : 'light';
+    document.querySelectorAll('.rev[data-theme]').forEach((b) => {
+      b.dataset.on = b.dataset.theme === theme ? 'true' : 'false';
+    });
+    document.querySelectorAll('.rev[data-page]').forEach((b) => {
+      b.dataset.on = b.dataset.page === page ? 'true' : 'false';
+    });
+  }
+
+  document.querySelectorAll('.rev[data-theme]').forEach((b) => {
+    b.addEventListener('click', () => {
+      if (b.dataset.theme === 'flux') root.setAttribute('data-theme', 'flux');
+      else root.removeAttribute('data-theme');
+      sync();
+    });
+  });
+  document.querySelectorAll('.rev[data-page]').forEach((b) => {
+    b.addEventListener('click', () => {
+      if (b.dataset.page === 'dark') root.setAttribute('data-page', 'dark');
+      else root.removeAttribute('data-page');
+      sync();
+    });
+  });
+
+  const q = new URLSearchParams(location.search);
+  if (q.get('theme') === 'flux') root.setAttribute('data-theme', 'flux');
+  if (q.get('page') === 'dark') root.setAttribute('data-page', 'dark');
+  paintDrawers();
+  sync();
+})();
+</script>
+</body>
+</html>
