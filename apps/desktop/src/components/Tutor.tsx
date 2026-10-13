@@ -139,9 +139,14 @@ function assembleTutorDelta(pageText: string, lastRead: { at: string; chars: num
 // time and never again: what travels is frozen the moment the writer pressed the
 // button that names it, which is also why this takes the stretch as an argument
 // rather than reading any live selection of its own.
-function capSelection(stretch: string): { text: string; truncated: boolean } {
-  if (stretch.length <= SELECTION_CHAR_CAP) return { text: stretch, truncated: false };
-  return { text: `[${SELECTION_TRUNCATION_HEADER}]\n${stretch.slice(0, SELECTION_CHAR_CAP)}`, truncated: true };
+function capSelection(stretch: string): { text: string; truncated: boolean; wordsSent: number } {
+  if (stretch.length <= SELECTION_CHAR_CAP) return { text: stretch, truncated: false, wordsSent: 0 };
+  const kept = stretch.slice(0, SELECTION_CHAR_CAP);
+  // ITEM word-diet (Fable) — the writer-facing count is of the part actually
+  // sent (this kept slice), never the whole stretch; whitespace-split, same
+  // as every other word count in this file (pageWords and friends).
+  const wordsSent = kept.trim().split(/\s+/).filter(Boolean).length;
+  return { text: `[${SELECTION_TRUNCATION_HEADER}]\n${kept}`, truncated: true, wordsSent };
 }
 
 // TU5 S4 — the book's Bible's own send-time assembly, mirroring the delta's
@@ -444,6 +449,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // `deltaTruncated` (which describes what just happened) it is set BEFORE the
   // send rather than during it.
   const [selectionTruncated, setSelectionTruncated] = useState(false);
+  // The {n} tutorSelectionTruncated names — set alongside selectionTruncated,
+  // same lifetime (armed by the press, cleared by any press that arms nothing).
+  const [selectionSentWords, setSelectionSentWords] = useState(0);
   const stretch = (selectionText ?? '').trim();
   const hasStretch = stretch.length > 0;
 
@@ -752,9 +760,11 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       const capped = capSelection(stretch);
       setArmedSelection(capped.text);       // FROZEN — see the state's own note
       setSelectionTruncated(capped.truncated);
+      setSelectionSentWords(capped.wordsSent);
     } else {
       setArmedSelection(null);
       setSelectionTruncated(false);
+      setSelectionSentWords(0);
     }
     setComposerText(text);                  // REPLACES — the composer stages one ask
     setStageTick((n) => n + 1);
@@ -1024,7 +1034,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
               {status === 'unborn' && <div className="wz-tutor-convo-status">{t('tutorConversationUnborn')}</div>}
               {sending && <div className="wz-tutor-convo-status">{t('tutorConversationSending')}</div>}
               {deltaTruncated && <div className="wz-tutor-convo-status">{t('tutorDeltaTruncated')}</div>}
-              {selectionTruncated && <div className="wz-tutor-convo-status">{t('tutorSelectionTruncated')}</div>}
+              {selectionTruncated && <div className="wz-tutor-convo-status">{t('tutorSelectionTruncated').replace('{n}', () => String(selectionSentWords))}</div>}
               {/* ITEM 84, THE DECK PHASE — THE FREE WRITE ROSTER. Mounted where
                   the arc already ruled it mounts (lock record §1 line 1: the
                   shared chip row inside "Talk it through", above the composer,

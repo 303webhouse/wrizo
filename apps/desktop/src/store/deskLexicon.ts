@@ -889,7 +889,9 @@ const CANONICAL: Record<DeskTermId, string> = {
   // model-facing half of this honesty is plain data in Tutor.tsx's own
   // SELECTION_TRUNCATION_HEADER and deliberately does NOT route through this
   // lexicon, per that same distinction.
-  tutorSelectionTruncated: 'Only the opening of your selected stretch was shared this time — the rest was too long to travel.',
+  // ITEM word-diet (Fable, Oct 13) — {n} is the word count of the part
+  // actually sent (Tutor.tsx's capSelection/selectionSentWords).
+  tutorSelectionTruncated: 'The first {n} words were sent. Try a shorter passage.',
   tutorDisclosureTitle: 'Before you ask',
   tutorDisclosureBody: 'What you ask the Tutor travels to a language model; your pages stay yours.',
   tutorDisclosureAck: 'Got it',
