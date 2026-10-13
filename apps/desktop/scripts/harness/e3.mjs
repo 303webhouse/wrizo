@@ -133,11 +133,29 @@ await withHarness(async (app) => {
       tutorFn: ct.transitionTimingFunction, sliverFn: cs.transitionTimingFunction,
     };
   })()`);
-  ok('S3: BOTH HANDS, ONE FADE — the Counsel and the tool pop-out resolve to the same transition DURATION (never a copied literal: both read var(--fade-dur))',
-    !mirror.missing && mirror.tutorDur === mirror.sliverDur, JSON.stringify(mirror));
-  ok('S3: the same transitioned PROPERTIES and the same timing FUNCTION on both hands — a divergence in either fails here rather than in a walkthrough',
-    !mirror.missing && mirror.tutorProp === mirror.sliverProp && mirror.tutorFn === mirror.sliverFn,
-    JSON.stringify(mirror));
+  // ---- PARKED - SUPERSEDED by the drawer ghost fix (a CLOSED panel's transition list now also carries `visibility`, delayed until its fade ends; the two panels' whole lists therefore differ by design while one is closed), 2026-10-12 ----
+  // Kept VERBATIM and no longer run. The successor (Fable's wording) follows.
+  //
+  // ok('S3: BOTH HANDS, ONE FADE — the Counsel and the tool pop-out resolve to the same transition DURATION (never a copied literal: both read var(--fade-dur))',
+  // !mirror.missing && mirror.tutorDur === mirror.sliverDur, JSON.stringify(mirror));
+  //
+  // ok('S3: the same transitioned PROPERTIES and the same timing FUNCTION on both hands — a divergence in either fails here rather than in a walkthrough',
+  // !mirror.missing && mirror.tutorProp === mirror.sliverProp && mirror.tutorFn === mirror.sliverFn,
+  // JSON.stringify(mirror));
+  // ----------------------------------------------------------------------
+  const fade = await app.evalJs(`(() => {
+    const read = (sel) => { const el = document.querySelector(sel); if (!el) return null; const cs = getComputedStyle(el);
+      const props = cs.transitionProperty.split(', '); const i = props.indexOf('opacity'); const v = props.indexOf('visibility');
+      const d = cs.transitionDuration.split(', '), f = cs.transitionTimingFunction.split(', '), dl = cs.transitionDelay.split(', ');
+      return { props, opacityDur: i >= 0 ? d[i] : null, opacityFn: i >= 0 ? f[i] : null, opacityDelay: i >= 0 ? dl[i] : null, visIndex: v, visDelay: v >= 0 ? dl[v] : null, visibility: cs.visibility, open: el.getAttribute('data-open') }; };
+    return { tutor: read('.wz-tutor-panel'), sliver: read('.wz-sliver-panel') };
+  })()`);
+  ok('S3 successor: The Counsel panel and the tool pop-out share one opacity fade (same duration and timing)',
+    !!fade.tutor && !!fade.sliver && !!fade.tutor.opacityDur && fade.tutor.opacityDur === fade.sliver.opacityDur && fade.tutor.opacityFn === fade.sliver.opacityFn && fade.tutor.opacityDelay === fade.sliver.opacityDelay,
+    JSON.stringify(fade));
+  ok('S3 successor: on close, visibility switches off only after the fade ends (the closed tool pop-out: its visibility transition is delayed by at least the opacity fade\'s duration, and it is hidden)',
+    !!fade.sliver && fade.sliver.open === 'false' && fade.sliver.visIndex >= 0 && parseFloat(fade.sliver.visDelay) >= parseFloat(fade.sliver.opacityDur) - 0.001 && fade.sliver.visibility === 'hidden',
+    JSON.stringify(fade.sliver));
 
   // ==========================================================================
   // S4 — the a11y posture is INHERITED from the left hand, not invented. A
@@ -146,6 +164,12 @@ await withHarness(async (app) => {
   // ==========================================================================
   await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); // close again
   await sleep(500);
+  const tutorClosedFade = await app.evalJs(`(() => { const el = document.querySelector('.wz-tutor-panel'); if (!el) return null; const cs = getComputedStyle(el);
+    const props = cs.transitionProperty.split(', '); const i = props.indexOf('opacity'); const v = props.indexOf('visibility');
+    return { opacityDur: i >= 0 ? cs.transitionDuration.split(', ')[i] : null, visDelay: v >= 0 ? cs.transitionDelay.split(', ')[v] : null, visibility: cs.visibility, open: el.getAttribute('data-open') }; })()`);
+  ok('S3 successor: and the closed Counsel the same - visibility switches off only after ITS fade ends',
+    !!tutorClosedFade && tutorClosedFade.open === 'false' && tutorClosedFade.visDelay != null && parseFloat(tutorClosedFade.visDelay) >= parseFloat(tutorClosedFade.opacityDur) - 0.001 && tutorClosedFade.visibility === 'hidden',
+    JSON.stringify(tutorClosedFade));
   const posture = await app.evalJs(`(() => {
     const t = document.querySelector('.wz-tutor-panel');
     const s = document.querySelector('.wz-sliver-panel');
