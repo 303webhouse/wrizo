@@ -1024,8 +1024,13 @@ if (process.env.HARNESS_PARKED === '1') {
     // home")', shelfBoardHomeLabel === 'The Shelf Board — has no project
     // home', ...);
     const shelfBoardHomeLabelNow = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-    pok('PARKED (was "S1: the Shelf Board\'s own Page face names ITS home truthfully (\\"no project home\\")") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
-      shelfBoardHomeLabelNow === 'The Shelf Board — has no drawer home', String(shelfBoardHomeLabelNow));
+    // SUPERSEDED (item word-diet, Nick, review fix) — boardHomeLabelShelf
+    // shortens again, "The Shelf Board — has no drawer home" -> "Shelf".
+    // ORIGINAL claim parked verbatim:
+    // pok('PARKED (was "S1: the Shelf Board\'s own Page face names ITS home truthfully (\\"no project home\\")") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
+    //   shelfBoardHomeLabelNow === 'The Shelf Board — has no drawer home', String(shelfBoardHomeLabelNow));
+    pok('PARKED [word-diet successor] (was the "drawer home" generation) — the Shelf Board\'s own Page face now reads bare "Shelf"; live successor: b2-1.mjs',
+      shelfBoardHomeLabelNow === 'Shelf', String(shelfBoardHomeLabelNow));
 
     // ORIGINAL (the S8 lexicon-discipline compound check, all nine
     // conjuncts quoted verbatim in this file's own live S8 section above).

@@ -196,10 +196,16 @@ await withHarness(async (app) => {
     // JSON.stringify(stripShape.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
     // JSON.stringify(stripShape.labels));
     // ----------------------------------------------------------------
-    ok(`VW1 successor of the CD3 roster check @ ${width}px: the strip carries the SAME eight categories as ever, compared as a SET rather than a sequence — order is VW1's to rule and vw1.mjs is what asserts it, so this file no longer duplicates that claim`,
+    // SUPERSEDED (item word-diet, Nick) — drawerPage reworks, "Page" -> "Pages".
+    // ok(`VW1 successor of the CD3 roster check @ ${width}px: the strip carries the SAME eight categories as ever, compared as a SET rather than a sequence — order is VW1's to rule and vw1.mjs is what asserts it, so this file no longer duplicates that claim`,
+    //   stripShape.itemCount === 8
+    //     && JSON.stringify([...stripShape.labels].sort())
+    //        === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
+    //   JSON.stringify(stripShape.labels));
+    ok(`VW1 successor of the CD3 roster check @ ${width}px [word-diet successor]: the strip carries the SAME eight categories as ever, compared as a SET rather than a sequence`,
       stripShape.itemCount === 8
         && JSON.stringify([...stripShape.labels].sort())
-           === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
+           === JSON.stringify(['Drawers', 'Journal', 'Pages', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
       JSON.stringify(stripShape.labels));
   }
 
@@ -243,8 +249,13 @@ await withHarness(async (app) => {
   // B2 S4 park sweep — live successor immediately below: Move/Copy retires
   // (superseded by Places); the ORIGINAL "...Move/Copy, Port..." combined
   // check is PARKED (A4, quoted verbatim) in this file's own PARKED section.
-  ok('B2 S4 successor of "S3/DoD: the Page panel carries the Page face\'s contents (title, star, home line, tags, Move/Copy, Port)": the SAME facts, Move/Copy replaced by the Places panel\'s own presence',
-    pagePanel.title === 'Page' && pagePanel.hasTitle && pagePanel.hasStar && pagePanel.hasHome && pagePanel.hasTags
+  // SUPERSEDED (item word-diet, Nick) — drawerPage (the Page panel's own
+  // title term) reworks, "Page" -> "Pages".
+  // ok('B2 S4 successor of "S3/DoD: the Page panel carries the Page face\'s contents (title, star, home line, tags, Move/Copy, Port)": the SAME facts, Move/Copy replaced by the Places panel\'s own presence',
+  //   pagePanel.title === 'Page' && pagePanel.hasTitle && pagePanel.hasStar && pagePanel.hasHome && pagePanel.hasTags
+  //     && pagePanel.moveCopyGone && pagePanel.hasPort && pagePanel.hasPlaces && pagePanel.footerAbsentOnProjectPage,
+  ok('B2 S4 successor [word-diet successor]: the Page panel carries the Page face\'s contents (title, star, home line, tags, Move/Copy, Port)',
+    pagePanel.title === 'Pages' && pagePanel.hasTitle && pagePanel.hasStar && pagePanel.hasHome && pagePanel.hasTags
       && pagePanel.moveCopyGone && pagePanel.hasPort && pagePanel.hasPlaces && pagePanel.footerAbsentOnProjectPage,
     JSON.stringify(pagePanel));
 
@@ -1193,10 +1204,19 @@ if (process.env.HARNESS_PARKED === '1') {
     // stripShapeParked.itemCount === 8 && JSON.stringify(stripShapeParked.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
     // JSON.stringify(stripShapeParked));
     // ----------------------------------------------------------------
-    pok('PARKED, generation 5 (was the gated re-assertion of the strip roster in the OLD flat sequence, reusing stripShapeParked) — VW1 (item 134): the same eight categories survive as a SET; order is asserted once, by vw1.mjs, which rules it',
+    // ---- PARKED, generation 5 — SUPERSEDED by item word-diet (Nick), 2026-10-14 ----
+    // Quoted VERBATIM. drawerPage reworks, "Page" -> "Pages".
+    //
+    // pok('PARKED, generation 5 (was the gated re-assertion of the strip roster in the OLD flat sequence, reusing stripShapeParked) — VW1 (item 134): the same eight categories survive as a SET; order is asserted once, by vw1.mjs, which rules it',
+    //   stripShapeParked.itemCount === 8
+    //     && JSON.stringify([...stripShapeParked.labels].sort())
+    //        === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
+    //   JSON.stringify(stripShapeParked));
+    // ------------------------------------------------------------------
+    pok('PARKED, generation 6 (was generation 5\'s re-assertion with "Page" in the sorted set) — item word-diet: drawerPage reads "Pages"',
       stripShapeParked.itemCount === 8
         && JSON.stringify([...stripShapeParked.labels].sort())
-           === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
+           === JSON.stringify(['Drawers', 'Journal', 'Pages', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
       JSON.stringify(stripShapeParked));
 
     // B2 (2026-07-20) — two more checks this file's own live sections

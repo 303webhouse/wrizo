@@ -572,16 +572,19 @@ await withHarness(async (app) => {
   // S4 — the "coming soon" line survives, verbatim, but now sits BELOW the
   // real, unmissable Download section rather than leading the dialog.
   // ==========================================================================
+  // SUPERSEDED (item word-diet, Nick) — publishComingSoon shortens, "...
+  // tailored to this work's type, destination, and format — are coming
+  // soon." -> "More publishing options coming soon." (no "are").
   const dialogOrder = await app.evalJs(`(() => {
     const dialog = document.querySelector('[aria-label="Publish"]');
     const text = dialog.innerText;
     return {
       downloadIdx: text.indexOf('Download'),
-      comingSoonIdx: text.indexOf('are coming soon'),
-      hasComingSoon: text.includes('Publishing options'),
+      comingSoonIdx: text.indexOf('coming soon'),
+      hasComingSoon: text.includes('More publishing options'),
     };
   })()`);
-  ok('S4: the download actions render ABOVE the (still true, unchanged) "coming soon" line — Publish no longer reads as a dead end',
+  ok('S4 [word-diet successor]: the download actions render ABOVE the (still true, unchanged) "coming soon" line — Publish no longer reads as a dead end',
     dialogOrder.hasComingSoon && dialogOrder.downloadIdx >= 0 && dialogOrder.downloadIdx < dialogOrder.comingSoonIdx, JSON.stringify(dialogOrder));
 
   // ==========================================================================

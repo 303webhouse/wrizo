@@ -275,8 +275,13 @@ await withHarness(async (app) => {
     createProjectShape.titleAria === 'Drawer title (optional)', JSON.stringify(createProjectShape));
   await app.evalJs("document.querySelector('.cp-else').click()");
   const cpElseNote = await app.evalJs("document.querySelector('.cp-micro')?.textContent");
-  ok('S6e: CreateProject\'s own "Something else" note reads "Opens the Drawer home..." — a genuine omission the prior S6 inventory missed, found and fixed in this fold',
-    cpElseNote === 'Opens the Drawer home — shape it as you go.', String(cpElseNote));
+  // SUPERSEDED (item word-diet, Nick) — createDrawerOpensNote's render site
+  // RETIRES whole (REMOVE); the lexicon entry itself is untouched, simply
+  // never rendered for this branch now. ORIGINAL claim parked verbatim:
+  // ok('S6e: CreateProject\'s own "Something else" note reads "Opens the Drawer home..." — a genuine omission the prior S6 inventory missed, found and fixed in this fold',
+  //   cpElseNote === 'Opens the Drawer home — shape it as you go.', String(cpElseNote));
+  ok('S6e [word-diet successor]: CreateProject\'s own "Something else" note is empty now (REMOVE)',
+    cpElseNote === '', String(cpElseNote));
 
   // ==========================================================================
   // S6e — ProjectHome.tsx: the rename input's aria-label + the domain eyebrow.

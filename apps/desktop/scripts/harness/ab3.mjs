@@ -182,7 +182,7 @@ await withHarness(async (app) => {
   //     && pageFace.footer === 'Saved automatically — even if you never file it to a Drawer or the Shelf.',
   //   JSON.stringify(pageFace));
   ok('B2 S4 successor [word-diet successor]: the SAME facts — title, star (unstarred), Where-it-lives ("Journal", name not narration), tags, Move/Copy replaced by Places, and NO footer at all now (REMOVE)',
-    pageFace.panelTitle === 'Page' && pageFace.title === 'AB3GEOMETRY' && pageFace.starPresent && pageFace.starredNow === 'false'
+    pageFace.panelTitle === 'Pages' && pageFace.title === 'AB3GEOMETRY' && pageFace.starPresent && pageFace.starredNow === 'false'
       && pageFace.home === 'Journal' && pageFace.tagInput && pageFace.moveCopyGone && pageFace.port && pageFace.placesPresent
       && !pageFace.footer,
     JSON.stringify(pageFace));
@@ -271,8 +271,15 @@ await withHarness(async (app) => {
     outsideDrawerNote: !!document.querySelector('body > *:not(.desk-frame) .journal-autosave-note, .desk-frame-stagecol .journal-autosave-note'),
     inPageFace: document.querySelector('.wz-pageface-footer')?.textContent ?? null,
   })`);
-  ok('S3/S2: the saved-silently line appears nowhere outside the Page panel when framed',
-    !footerOnlyInDrawer.outsideDrawerNote && footerOnlyInDrawer.inPageFace === 'Saved automatically — even if you never file it to a Drawer or the Shelf.',
+  // SUPERSEDED (item word-diet, Nick) — the saved-silently footer RETIRES
+  // whole (REMOVE); its premise — that it appears exactly once, inside the
+  // Page panel — no longer holds, since it appears NOWHERE now, panel
+  // included. ORIGINAL claim parked verbatim:
+  // ok('S3/S2: the saved-silently line appears nowhere outside the Page panel when framed',
+  //   !footerOnlyInDrawer.outsideDrawerNote && footerOnlyInDrawer.inPageFace === 'Saved automatically — even if you never file it to a Drawer or the Shelf.',
+  //   JSON.stringify(footerOnlyInDrawer));
+  ok('S3/S2 [word-diet successor]: the saved-silently line appears NOWHERE at all now (REMOVE) — not outside the Page panel, not inside it either',
+    !footerOnlyInDrawer.outsideDrawerNote && footerOnlyInDrawer.inPageFace === null,
     JSON.stringify(footerOnlyInDrawer));
 
   // === ab3.1 R1(b) (Fable review) — the brief's S3 named "JournalEntry's

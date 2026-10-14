@@ -20,6 +20,19 @@ const ok = (name, pass, detail = '') => {
   checks.push({ name, pass, detail });
   console.log((pass ? 'PASS ' : 'FAIL ') + name + (pass ? '' : ' | ' + String(detail).slice(0, 200))); // eslint-disable-line no-console
 };
+// ITEM word-diet (Fable, review fix) — the sign-out sheet's own two buttons
+// are clicked by their stable class now, never by text (LogoutBlockedSheet.tsx's
+// own wording has already changed twice under this ticket and would again).
+// Probe first (this file's own standing driver law): a missing element
+// reports a named DRIVER check rather than dying silently or aborting the file.
+// Used only AFTER the L0-L6 focus-preservation checks above have already run —
+// the mousedown-preventDefault that matters for THOSE checks is irrelevant by
+// this point (the sheet is already open, the registry already read).
+const clickBySelector = async (app, selector, label) => {
+  const present = await app.evalJs(`!!document.querySelector(${JSON.stringify(selector)})`);
+  if (!present) { ok(`DRIVER: ${label} (${selector}) is present to click`, false, 'absent'); return; }
+  await app.evalJs(`document.querySelector(${JSON.stringify(selector)}).click()`);
+};
 
 await withHarness(async (app) => {
   await app.freshSprint();
@@ -56,9 +69,9 @@ await withHarness(async (app) => {
     (await app.evalJs(`fetch('/auth/me', { credentials: 'include' }).then((r) => r.ok)`)) === true, '');
 
   // 2. Sign out anyway: nothing may be written back into the wiped device afterwards.
-  // ITEM word-diet: "Sign out anyway (...)" -> "Sign out and lose ... changes" (logoutAnyway/logoutAnywayOne).
-  await app.click('Sign out and lose');
-  await app.click('Yes, sign out and lose');
+  // ITEM word-diet (Fable, review fix) — click by class, not text (logoutAnyway/logoutAnywayConfirm).
+  await clickBySelector(app, '.wz-logout-anyway', 'the sign-out-anyway button');
+  await clickBySelector(app, '.wz-logout-confirm', 'the sign-out confirm button');
   await app.waitFor(`!!document.querySelector('.wz-arrival input.wz-field')`, { timeout: 12000, label: 'signed out, on the sign-in screen' });
   await sleep(3500); // past the 2 s debounce, and past the editor's unmount flush, which runs AFTER the wipe
   const after = await dirtyCount();

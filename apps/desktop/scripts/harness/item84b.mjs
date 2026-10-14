@@ -606,7 +606,14 @@ await withHarness(async (app) => {
     ok('S6 [word-diet successor]: even a v3-acknowledged device never shows the modal (RETIRED whole)',
       (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')")));
     const v4Lex = await lex(app, 'tutorDisclosureBodyV4');
-    const noteShown = await app.evalJs("(() => { document.querySelector('.wz-tutor-convo-row .wz-drawer-note-btn')?.click(); return document.querySelector('.wz-tutor-convo-row .wz-drawer-note-pop')?.textContent ?? null; })()");
+    // SUPERSEDED (item word-diet, review fix) — click and read were one
+    // synchronous evalJs call, before React's own re-render committed the
+    // opened popover (noteShown read null); split with a settle, matching
+    // tu1.mjs's own working pattern.
+    // const noteShown = await app.evalJs("(() => { document.querySelector('.wz-tutor-convo-row .wz-drawer-note-btn')?.click(); return document.querySelector('.wz-tutor-convo-row .wz-drawer-note-pop')?.textContent ?? null; })()");
+    await app.evalJs("document.querySelector('.wz-tutor-convo-row .wz-drawer-note-btn')?.click()");
+    await sleep(150);
+    const noteShown = await app.evalJs("document.querySelector('.wz-tutor-convo-row .wz-drawer-note-pop')?.textContent ?? null");
     ok('S6 [word-diet successor]: the "?" beside the Ask box carries the CURRENT (TRUST) lexicon text exactly',
       noteShown === v4Lex, JSON.stringify({ noteShown, v4Lex }));
   }

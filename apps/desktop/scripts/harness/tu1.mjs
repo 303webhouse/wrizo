@@ -317,8 +317,14 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-tutor-convo-row .wz-drawer-note-btn')?.click()");
   await sleep(150);
   const noteShown = await app.evalJs("document.querySelector('.wz-tutor-convo-row .wz-drawer-note-pop')?.textContent");
-  ok('S6 [word-diet successor]: pressed, it reveals the TRUST wording, every promise carried',
-    typeof noteShown === 'string' && noteShown.includes('Nothing leaves your desk unasked') && noteShown.includes('these Pages’ recent changes') && noteShown.includes('your Bible'),
+  // SUPERSEDED (item word-diet, review fix) — the substring used a curly
+  // right single quote (U+2019); the actual lexicon value (deskLexicon.ts)
+  // is a plain straight apostrophe, so .includes() never matched.
+  // ok('S6 [word-diet successor]: pressed, it reveals the TRUST wording, every promise carried',
+  //   typeof noteShown === 'string' && noteShown.includes('Nothing leaves your desk unasked') && noteShown.includes('these Pages’ recent changes') && noteShown.includes('your Bible'),
+  //   String(noteShown));
+  ok('S6 [word-diet successor, apostrophe fix]: pressed, it reveals the TRUST wording, every promise carried',
+    typeof noteShown === 'string' && noteShown.includes('Nothing leaves your desk unasked') && noteShown.includes("these Pages' recent changes") && noteShown.includes('your Bible'),
     String(noteShown));
 
   // ==========================================================================
@@ -458,8 +464,16 @@ await withHarness(async (app) => {
   ok('S3 Fragments: a recent capture is resurfaced', fragText.includes('A raw capture'), fragText);
   ok('S3 Fragments: a starred page sharing a tag is resurfaced', fragText.includes('A starred page sharing'), fragText);
   ok('S3 Fragments: a starred page with NO shared tag is correctly excluded', !fragText.includes('no shared tag'), fragText);
-  ok('S3 Fragments: the panel plainly discloses its own recency+tags-only simplicity',
-    fragText.toLowerCase().includes('recency') || fragText.toLowerCase().includes('tags only'), fragText);
+  // SUPERSEDED (item word-diet, Nick) — tutorLensFragmentsNote moves behind
+  // a "?" (rule 3: explanations behind "?", one sentence); the panel no
+  // longer "plainly discloses" it standing — press the note instead.
+  // ok('S3 Fragments: the panel plainly discloses its own recency+tags-only simplicity',
+  //   fragText.toLowerCase().includes('recency') || fragText.toLowerCase().includes('tags only'), fragText);
+  await app.evalJs("Array.from(document.querySelectorAll('.wz-tutor-section'))[2].querySelector('.wz-drawer-note-btn')?.click()");
+  await sleep(150);
+  const fragNote = await app.evalJs("Array.from(document.querySelectorAll('.wz-tutor-section'))[2].querySelector('.wz-drawer-note-pop')?.textContent ?? null");
+  ok('S3 Fragments [word-diet successor]: pressed, the "?" discloses the same recency+tags-only simplicity',
+    typeof fragNote === 'string' && fragNote.toLowerCase().includes('recency') && fragNote.toLowerCase().includes('tags only'), String(fragNote));
   // A fragment item travels — a navigation, never a text-insertion affordance.
   await app.evalJs("document.querySelector('.wz-tutor-frag-item')?.click()");
   await sleep(250);

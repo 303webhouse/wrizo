@@ -127,8 +127,11 @@ await withHarness(async (app) => {
     const ex = await systemBoardExit(app, route);
     ok(`S1 (Fable's ruling): the ${name} Board (framed) mounts the SAME PAGE → door and NO "Done"`,
       ex.hasDoor === true && ex.hasDone === false, JSON.stringify(ex));
-    ok(`S1: the ${name} Board's door reads exactly "Page →" (one door grammar, no system-board dialect)`,
-      ex.doorLabel === 'Page →', String(ex.doorLabel));
+    // SUPERSEDED (item word-diet, Nick) — boardPageDoor reworks, "Page" -> "Pages".
+    // ok(`S1: the ${name} Board's door reads exactly "Page →" (one door grammar, no system-board dialect)`,
+    //   ex.doorLabel === 'Page →', String(ex.doorLabel));
+    ok(`S1 [word-diet successor]: the ${name} Board's door reads exactly "Pages →" (one door grammar, no system-board dialect)`,
+      ex.doorLabel === 'Pages →', String(ex.doorLabel));
   }
 
   // The Shelf Board's door is present across ALL THREE framed widths + legacy.

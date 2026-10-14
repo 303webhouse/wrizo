@@ -19,6 +19,16 @@ const ok = (name, pass, detail = '') => {
   checks.push({ name, pass, detail });
   console.log((pass ? 'PASS ' : 'FAIL ') + name + (pass ? '' : ' | ' + String(detail).slice(0, 200))); // eslint-disable-line no-console
 };
+// ITEM word-diet (Fable, review fix) — the sign-out sheet's own two buttons
+// are clicked by their stable class now, never by text (LogoutBlockedSheet.tsx's
+// own wording has already changed twice under this ticket and would again).
+// Probe first (this file's own standing driver law): a missing element
+// reports a named DRIVER check rather than dying silently or aborting the file.
+const clickBySelector = async (app, selector, label) => {
+  const present = await app.evalJs(`!!document.querySelector(${JSON.stringify(selector)})`);
+  if (!present) { ok(`DRIVER: ${label} (${selector}) is present to click`, false, 'absent'); return; }
+  await app.evalJs(`document.querySelector(${JSON.stringify(selector)}).click()`);
+};
 
 await withHarness(async (app) => {
   await app.freshSprint();
@@ -92,8 +102,8 @@ await withHarness(async (app) => {
   // 3. Sign out anyway: two steps.
   await app.click('Sign out');
   await app.waitFor(`!!document.querySelector('.wz-logout-sheet')`, { label: 'sheet again' });
-  // ITEM word-diet: "Sign out anyway (...)" -> "Sign out and lose ... changes" (logoutAnyway/logoutAnywayOne).
-  await app.click('Sign out and lose');
+  // ITEM word-diet (Fable, review fix) — click by class, not text (logoutAnyway).
+  await clickBySelector(app, '.wz-logout-anyway', 'the sign-out-anyway button');
   const confirmShown = await app.evalJs(`!!document.querySelector('.wz-logout-confirm')`);
   const flagBeforeConfirm = await app.evalJs(`localStorage.getItem('wz.signedOutHere')`);
   ok('(W6) the first click only asks: a confirm appears and nothing is signed out yet',
@@ -110,7 +120,8 @@ await withHarness(async (app) => {
     true;
   `);
   const t1 = Date.now();
-  await app.click('Yes, sign out and lose');
+  // ITEM word-diet (Fable, review fix) — click by class, not text (logoutAnywayConfirm).
+  await clickBySelector(app, '.wz-logout-confirm', 'the sign-out confirm button');
   await app.waitFor(`!!document.querySelector('.wz-arrival input.wz-field')`, { timeout: 9000, label: 'landed on sign-in' });
   const hungTook = Date.now() - t1;
   const flag = await app.evalJs(`localStorage.getItem('wz.signedOutHere')`);
