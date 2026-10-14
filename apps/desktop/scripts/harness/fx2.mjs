@@ -195,8 +195,22 @@ await withHarness(async (app) => {
       const parts = m ? m[1].split(',').map(s => parseFloat(s)) : [];
       return { backgroundColor: cs.backgroundColor, alpha: parts.length === 4 ? parts[3] : 1 };
     })()`);
-    ok(`S1 @ ${width}px: the OPEN sliver panel's computed background is opaque (alpha=1), never see-through onto the paper`,
+    // SUPERSEDED (PHASE 1 side drawers) - by the check after it. Parked, not deleted: it read the background on the PANEL, which is now the
+    // clip and the scroller and is transparent by design; the visible box (background, border) lives on its sliding layer.
+    // Kept verbatim; `if (false)` keeps it out of the verdict.
+    if (false) ok(`S1 @ ${width}px: the OPEN sliver panel's computed background is opaque (alpha=1), never see-through onto the paper`,
       panelBg.alpha === 1, JSON.stringify(panelBg));
+    const layerBg = await app.evalJs(`(() => {
+      const el = document.querySelector('.wz-sliver-panel > .wz-drawer-slide');
+      if (!el) return { missing: true, alpha: 0 };
+      const cs = getComputedStyle(el);
+      const m = cs.backgroundColor.match(/rgba?\\(([^)]+)\\)/);
+      const parts = m ? m[1].split(',').map(s => parseFloat(s)) : [];
+      const panel = getComputedStyle(document.querySelector('.wz-sliver-panel')).backgroundColor;
+      return { backgroundColor: cs.backgroundColor, alpha: parts.length === 4 ? parts[3] : 1, panelBackground: panel };
+    })()`);
+    ok(`S1 @ ${width}px [Phase 1 successor]: the OPEN drawer is opaque (alpha=1), never see-through onto the paper - read on its sliding layer, where the look lives (the panel around it is the clip and is transparent by design)`,
+      layerBg.alpha === 1 && !layerBg.missing, JSON.stringify(layerBg));
 
     ok(`S1 @ ${width}px: the paper rect is byte-identical open vs. closed (extends cd1.mjs's own law to this width)`,
       JSON.stringify(paperClosed) === JSON.stringify(paperOpen), JSON.stringify({ paperClosed, paperOpen }));
@@ -264,10 +278,22 @@ await withHarness(async (app) => {
   const shortDom = await typewriterDom(app);
   const shortSetting = await typewriterSetting(app);
   ok('S2: an untyped support page defaults to Draft on open (the fixture itself, sanity-checked)', shortMode === 'Draft', String(shortMode));
-  ok('S2: a ~3-line page (below the 10-line threshold) opens Draft with typewriter ON — DOM (.mode-scroll[data-typewriter])',
-    shortDom === 'true', String(shortDom));
-  ok('S2: a ~3-line page opens Draft with typewriter ON — the stored setting itself',
-    shortSetting === true, String(shortSetting));
+  // ---- PARKED - SUPERSEDED by Phase 1 S5 (the typewriter is remembered per page: a page that holds text and has no saved value opens OFF, a new empty page takes its theme's default; Nick, Oct 11), 2026-10-11 ----
+  // Kept VERBATIM and no longer run. The successor follows the parked lines.
+  //
+  // ok('S2: a ~3-line page (below the 10-line threshold) opens Draft with typewriter ON — DOM (.mode-scroll[data-typewriter])',
+  // shortDom === 'true', String(shortDom));
+  // ----------------------------------------------------------------------
+  ok('S5 successor: a ~3-line page that holds text and has no saved value opens Draft with typewriter OFF (the 1-9-line seed is gone) - DOM (.mode-scroll[data-typewriter])',
+    shortDom === 'false', String(shortDom));
+  // ---- PARKED - SUPERSEDED by Phase 1 S5 (the typewriter is remembered per page: a page that holds text and has no saved value opens OFF, a new empty page takes its theme's default; Nick, Oct 11), 2026-10-11 ----
+  // Kept VERBATIM and no longer run. The successor follows the parked lines.
+  //
+  // ok('S2: a ~3-line page opens Draft with typewriter ON — the stored setting itself',
+  // shortSetting === true, String(shortSetting));
+  // ----------------------------------------------------------------------
+  ok('S5 successor: a ~3-line page opens Draft with typewriter OFF — the stored setting itself',
+    shortSetting === false, String(shortSetting));
 
   await freshDraftPage(app, longDraftText);
   const longMode = await activeModeTab(app);
@@ -313,7 +339,12 @@ await withHarness(async (app) => {
   // ----------------------------------------------------------------------
   await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'') === 'Settings'); if (b) b.click(); })()");
   await sleep(200);
-  await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
+  // ---- PARKED - SUPERSEDED by Phase 1 S4 (the Typewriter on/off row left the "..." menu for the icon toggle beside it; Nick, Oct 10), 2026-10-11 ----
+  // Kept VERBATIM and no longer run. The successor presses the toggle itself - the same flip.
+  //
+  // await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
+  // ----------------------------------------------------------------------
+  await app.evalJs("document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle=\"typewriter\"]')?.click()");
   await sleep(150);
   const afterExplicitClick = await typewriterDom(app);
   ok('S2: the sliver\'s typewriter toggle actually flips it ON by hand, overriding the ~15-line OFF seed',
@@ -350,8 +381,14 @@ await withHarness(async (app) => {
   await gotoPage(app, 'fx2-draft-a');
   const pageAMode = await activeModeTab(app);
   const pageASeed = await typewriterDom(app);
-  ok('S2 (cross-page, independent-review addition): page A (short) opens Draft with typewriter ON — fixture sanity',
-    pageAMode === 'Draft' && pageASeed === 'true', JSON.stringify({ pageAMode, pageASeed }));
+  // ---- PARKED - SUPERSEDED by Phase 1 S5 (the typewriter is remembered per page: a page that holds text and has no saved value opens OFF, a new empty page takes its theme's default; Nick, Oct 11), 2026-10-11 ----
+  // Kept VERBATIM and no longer run. The successor follows the parked lines.
+  //
+  // ok('S2 (cross-page, independent-review addition): page A (short) opens Draft with typewriter ON — fixture sanity',
+  // pageAMode === 'Draft' && pageASeed === 'true', JSON.stringify({ pageAMode, pageASeed }));
+  // ----------------------------------------------------------------------
+  ok('S5 successor (cross-page): page A (short, holds text, nothing saved) opens Draft with typewriter OFF - fixture sanity',
+    pageAMode === 'Draft' && pageASeed === 'false', JSON.stringify({ pageAMode, pageASeed }));
 
   await openSliver(app);
   await sleep(200);
@@ -380,11 +417,22 @@ await withHarness(async (app) => {
   // ----------------------------------------------------------------------
   await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'') === 'Settings'); if (b) b.click(); })()");
   await sleep(200);
-  await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
+  // ---- PARKED - SUPERSEDED by Phase 1 S4 (the Typewriter on/off row left the "..." menu for the icon toggle beside it; Nick, Oct 10), 2026-10-11 ----
+  // Kept VERBATIM and no longer run. The successor presses the toggle itself - the same flip.
+  //
+  // await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
+  // ----------------------------------------------------------------------
+  await app.evalJs("document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle=\"typewriter\"]')?.click()");
   await sleep(150);
   const pageAExplicitOff = await typewriterDom(app);
-  ok('S2 (cross-page, independent-review addition): explicit click on page A actually flips it OFF by hand',
-    pageAExplicitOff === 'false', String(pageAExplicitOff));
+  // ---- PARKED - SUPERSEDED by Phase 1 S5 (the typewriter is remembered per page: a page that holds text and has no saved value opens OFF, a new empty page takes its theme's default; Nick, Oct 11), 2026-10-11 ----
+  // Kept VERBATIM and no longer run. The successor follows the parked lines.
+  //
+  // ok('S2 (cross-page, independent-review addition): explicit click on page A actually flips it OFF by hand',
+  // pageAExplicitOff === 'false', String(pageAExplicitOff));
+  // ----------------------------------------------------------------------
+  ok('S5 successor (cross-page): explicit click on page A actually flips it ON by hand (it opened OFF)',
+    pageAExplicitOff === 'true', String(pageAExplicitOff));
 
   await gotoPage(app, 'fx2-draft-b');
   const pageBMode = await activeModeTab(app);
@@ -392,10 +440,28 @@ await withHarness(async (app) => {
   const pageBSetting = await typewriterSetting(app);
   ok('S2 (cross-page, independent-review addition): page B (a DIFFERENT page/mount, also short) is Draft, sanity',
     pageBMode === 'Draft', String(pageBMode));
-  ok('S2 (cross-page, independent-review addition): page B does NOT get silently re-seeded ON — the explicit OFF from page A survives the page/mount boundary, matching writingSettings.ts\'s own "different pages/mounts" claim for the module-level flag',
+  // ---- PARKED - SUPERSEDED by Phase 1 S5 (the typewriter is remembered per page: a page that holds text and has no saved value opens OFF, a new empty page takes its theme's default; Nick, Oct 11), 2026-10-11 ----
+  // Kept VERBATIM and no longer run. The successor follows the parked lines.
+  //
+  // ok('S2 (cross-page, independent-review addition): page B does NOT get silently re-seeded ON — the explicit OFF from page A survives the page/mount boundary, matching writingSettings.ts\'s own "different pages/mounts" claim for the module-level flag',
+  // pageBDom === 'false', String(pageBDom));
+  // ----------------------------------------------------------------------
+  ok('S5 successor (cross-page): page B keeps its OWN setting - it opens OFF (text, nothing saved); page A\'s explicit ON did not leak across the page/mount boundary',
     pageBDom === 'false', String(pageBDom));
-  ok('S2 (cross-page, independent-review addition): ...and the stored setting itself is OFF, not reverted by page B\'s own seed',
+  // ---- PARKED - SUPERSEDED by Phase 1 S5 (the typewriter is remembered per page: a page that holds text and has no saved value opens OFF, a new empty page takes its theme's default; Nick, Oct 11), 2026-10-11 ----
+  // Kept VERBATIM and no longer run. The successor follows the parked lines.
+  //
+  // ok('S2 (cross-page, independent-review addition): ...and the stored setting itself is OFF, not reverted by page B\'s own seed',
+  // pageBSetting === false, String(pageBSetting));
+  // ----------------------------------------------------------------------
+  ok('S5 successor (cross-page): ...and the stored setting itself is OFF for page B',
     pageBSetting === false, String(pageBSetting));
+
+  // S5 (new): and A, turned ON by hand, is still ON when the writer comes back to it - the page remembers.
+  await gotoPage(app, 'fx2-draft-a');
+  const pageAAgain = await typewriterDom(app);
+  ok('S5 (cross-page): page A, turned ON by hand, is still ON when the writer returns to it - per-page memory, not a session flag',
+    pageAAgain === 'true', String(pageAAgain));
 
   // ==========================================================================
   // S2 — Free Write is unaffected: a genuinely fresh session's loose page

@@ -352,8 +352,15 @@ await withHarness(async (app) => {
     return panel ? { headings: [...panel.querySelectorAll('h4')].map(h => h.textContent), typewriterRow: [...panel.querySelectorAll('.mode-crow')].some(r => (r.firstElementChild || {}).textContent === 'Typewriter') } : { headings: [] }; })()`);
   await app.evalJs("document.querySelector('.wz-sliver-instruments-row [aria-label=\"Settings\"]')?.click()");
   await sleep(200);
-  ok('SC1 S3 [PR #7 successor]: on a script page the typewriter is still offered - the Settings menu opens on Typewriter Mode, with its Typewriter switch',
-    !!scriptMenu && scriptMenu.headings[0] === 'Typewriter Mode' && scriptMenu.typewriterRow === true, JSON.stringify(scriptMenu));
+  // ---- PARKED - SUPERSEDED by Phase 1 S4 (the Typewriter on/off row left the "..." menu for the icon toggle beside it; Nick, Oct 10), 2026-10-11 ----
+  // Kept VERBATIM and no longer run. The Typewriter ROW is gone from the menu by ruling; the successor asserts what replaced it: the icon toggle beside the "..." and the menu still opening on Typewriter Mode.
+  //
+  // ok('SC1 S3 [PR #7 successor]: on a script page the typewriter is still offered - the Settings menu opens on Typewriter Mode, with its Typewriter switch',
+  // !!scriptMenu && scriptMenu.headings[0] === 'Typewriter Mode' && scriptMenu.typewriterRow === true, JSON.stringify(scriptMenu));
+  // ----------------------------------------------------------------------
+  const scriptMenuToggle = await app.evalJs("(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle=\"typewriter\"]'); return b ? { label: b.getAttribute('aria-label'), pressed: b.getAttribute('aria-pressed'), text: (b.textContent || '').trim() } : null; })()");
+  ok('S4 successor (Phase 1): on a script page the typewriter is still offered - as the icon toggle beside the "...", (named, icon-only, aria-pressed) - and the Settings menu still opens on Typewriter Mode with NO on/off row (its remaining rows greyed or not by the mode)',
+    !!scriptMenu && scriptMenu.headings[0] === 'Typewriter Mode' && scriptMenu.typewriterRow === false && !!scriptMenuToggle && scriptMenuToggle.label === 'Typewriter mode' && scriptMenuToggle.text === '' && (scriptMenuToggle.pressed === 'true' || scriptMenuToggle.pressed === 'false'), JSON.stringify({ scriptMenu, scriptMenuToggle }));
 
   // Repeat the same three assertions on prose (the brief names both
   // surfaces; S7's mirroring convention applies to S5 too).
@@ -404,8 +411,15 @@ await withHarness(async (app) => {
     return panel ? { headings: [...panel.querySelectorAll('h4')].map(h => h.textContent), typewriterRow: [...panel.querySelectorAll('.mode-crow')].some(r => (r.firstElementChild || {}).textContent === 'Typewriter') } : { headings: [] }; })()`);
   await app.evalJs("document.querySelector('.wz-sliver-instruments-row [aria-label=\"Settings\"]')?.click()");
   await sleep(200);
-  ok('S5 (prose) [PR #7 successor]: prose still offers the typewriter - the Settings menu opens on Typewriter Mode, with its Typewriter switch',
-    !!proseMenu && proseMenu.headings[0] === 'Typewriter Mode' && proseMenu.typewriterRow === true, JSON.stringify(proseMenu));
+  // ---- PARKED - SUPERSEDED by Phase 1 S4 (the Typewriter on/off row left the "..." menu for the icon toggle beside it; Nick, Oct 10), 2026-10-11 ----
+  // Kept VERBATIM and no longer run. The Typewriter ROW is gone from the menu by ruling; the successor asserts what replaced it: the icon toggle beside the "..." and the menu still opening on Typewriter Mode.
+  //
+  // ok('S5 (prose) [PR #7 successor]: prose still offers the typewriter - the Settings menu opens on Typewriter Mode, with its Typewriter switch',
+  // !!proseMenu && proseMenu.headings[0] === 'Typewriter Mode' && proseMenu.typewriterRow === true, JSON.stringify(proseMenu));
+  // ----------------------------------------------------------------------
+  const proseMenuToggle = await app.evalJs("(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle=\"typewriter\"]'); return b ? { label: b.getAttribute('aria-label'), pressed: b.getAttribute('aria-pressed'), text: (b.textContent || '').trim() } : null; })()");
+  ok('S4 successor (Phase 1): on prose the typewriter is still offered - as the icon toggle beside the "...", (named, icon-only, aria-pressed) - and the Settings menu still opens on Typewriter Mode with NO on/off row (its remaining rows greyed or not by the mode)',
+    !!proseMenu && proseMenu.headings[0] === 'Typewriter Mode' && proseMenu.typewriterRow === false && !!proseMenuToggle && proseMenuToggle.label === 'Typewriter mode' && proseMenuToggle.text === '' && (proseMenuToggle.pressed === 'true' || proseMenuToggle.pressed === 'false'), JSON.stringify({ proseMenu, proseMenuToggle }));
 
   // -- The instruments panel: opens, carries the three controls (on/off,
   // unit preference, target value), and closes on a keystroke through the

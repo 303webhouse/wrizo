@@ -105,6 +105,17 @@ const toDraft = async (app) => {
   // ----------------------------------------------------------------------
   await app.waitFor("!!document.querySelector('.wz-sliver-templates')", { label: 'Draft sliver Templates zone' });
   await sleep(250);
+  // PHASE 1 S5 (fixture) - MEASURED, not assumed (Chat 1's run, 2026-10-12: the E3 line-scope successors, the Tab fence and the Bulleted-list control read as if the first Indent/Bullet press
+  // did nothing). A fresh chapter page is EMPTY when it first reaches Draft, so under S5 it takes Arbor's default (typewriter ON), which greys and disables the Format group - a disabled
+  // button ignores click(), exactly the symptom. The state is read first (and recorded), then turned OFF through the REAL toggle, then read again, so the premise is in the run itself.
+  const twBefore = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`);
+  const fmtLockedBefore = await app.evalJs(`document.querySelector('.wz-sliver-fieldset')?.disabled ?? 'absent'`);
+  await app.evalJs(`(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]'); if (b && b.getAttribute('aria-pressed') === 'true') b.click(); })()`);
+  await sleep(250);
+  const twAfter = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`);
+  const fmtLockedAfter = await app.evalJs(`document.querySelector('.wz-sliver-fieldset')?.disabled ?? 'absent'`);
+  ok('fixture (Phase 1 S5): the Format group is usable (typewriter OFF, via the real toggle) before Format is pressed',
+    twAfter === 'false' && fmtLockedAfter === false, JSON.stringify({ twBefore, fmtLockedBefore, twAfter, fmtLockedAfter }));
 };
 
 // Open a foot pop-out BY NAME, never by ordinal — fx3.mjs's own parked driver
@@ -388,13 +399,29 @@ await withHarness(async (app) => {
       panelKids,
     };
   })()`);
-  ok('E2 (GUARD): Page kind is the LAST zone of the tab body, directly after Templates, with the goal foot and the instruments row following it',
+  // SUPERSEDED (PHASE 1 side drawers) - by the successor right after it. Parked, not deleted: it read the PANEL's children, and the
+  // panel's only child is now the sliding layer (<SideDrawer>), which holds the tab body wrapper, the goal foot and the instruments row.
+  // Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('E2 (GUARD): Page kind is the LAST zone of the tab body, directly after Templates, with the goal foot and the instruments row following it',
     zoneOrder.pageKindIsLast === true
       && zoneOrder.panelKids.length === 3
       && zoneOrder.panelKids[0].includes('wz-sliver-body')
       && zoneOrder.panelKids[1].includes('wz-sliver-goal')
       && zoneOrder.panelKids[2].includes('wz-sliver-instruments'),
     JSON.stringify(zoneOrder));
+  const layerKids = await app.evalJs(`(() => {
+    const panelKids = [...document.querySelector('.wz-sliver-panel').children].map(el => el.className);
+    const layerKids = [...document.querySelector('.wz-sliver-panel > .wz-drawer-slide').children].map(el => el.className);
+    return { panelKids, layerKids, bodyInsideWrapper: !!document.querySelector('.wz-sliver-panel > .wz-drawer-slide > .wz-drawer-body > .wz-sliver-body') };
+  })()`);
+  ok('E2 [Phase 1 successor] (GUARD): the panel holds ONE child, the sliding layer; inside it the tab body (wrapped), then the goal foot, then the instruments row - and Page kind is still the last zone of the body, after Templates',
+    zoneOrder.pageKindIsLast === true
+      && layerKids.panelKids.length === 1 && layerKids.panelKids[0].includes('wz-drawer-slide')
+      && layerKids.layerKids.length === 3
+      && layerKids.layerKids[0].includes('wz-drawer-body') && layerKids.bodyInsideWrapper === true
+      && layerKids.layerKids[1].includes('wz-sliver-goal')
+      && layerKids.layerKids[2].includes('wz-sliver-instruments'),
+    JSON.stringify({ zoneOrder, layerKids }));
 
   // ==========================================================================
   // E3 — THE ARROW INDENTS A WHOLE PARAGRAPH, REPEATABLY.

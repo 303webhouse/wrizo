@@ -36,7 +36,13 @@ import { useSyncExternalStore } from 'react';
 //     paper.left − rail.right  >=  handleW + toolsW + cascadeW
 // Measured, every layout pass, at whatever the surface actually renders.
 
-export type DrawerId = 'cascade' | 'tools';
+// PHASE 1 (Fable, Oct 12) - ONE DRAWER AT A TIME, AT EVERY WIDTH, for the page's own two hands: the Tools drawer (left, 'tools') and the Tutor drawer (right,
+// 'tutor'). Opening either closes the other, through the other's own close path (so it leaves with the slide it uses when closed independently). This is NOT the
+// width-measured law below, which still governs the far-left cascade against the Tools drawer: that one asks whether the band holds both; this one never asks.
+export type DrawerId = 'cascade' | 'tools' | 'tutor';
+
+/** Which drawers believe they stand open (so the always-exclusive pair can find its rival without measuring anything). */
+const stands = new Set<DrawerId>();
 
 let openDrawer: DrawerId | null = null;      // whichever most recently opened
 const listeners = new Set<() => void>();
@@ -141,15 +147,28 @@ export function registerDrawer(id: DrawerId, close: () => void): () => void {
  * drawer that yielded, or null when both may stand.
  */
 export function requestOpen(id: DrawerId): DrawerId | null {
-  const other: DrawerId = id === 'cascade' ? 'tools' : 'cascade';
-  const mustClose = openDrawer === other && !canCoexist() ? other : null;
-  if (mustClose) closers.get(mustClose)?.();
+  // the page's two hands: always exclusive, no measuring
+  let yielded: DrawerId | null = null;
+  if (id === 'tools' || id === 'tutor') {
+    const rival: DrawerId = id === 'tools' ? 'tutor' : 'tools';
+    if (stands.has(rival)) { stands.delete(rival); closers.get(rival)?.(); yielded = rival; }
+  }
+  // the far-left cascade against the Tools drawer: the width-measured law, exactly as before
+  let mustClose: DrawerId | null = null;
+  if (id !== 'tutor') {
+    const other: DrawerId = id === 'cascade' ? 'tools' : 'cascade';
+    // `stands`, not `openDrawer`: openDrawer is only the MOST RECENT opener, so after cascade -> Tutor -> Tools it reads 'tutor' and the width law would never see the cascade still standing.
+    mustClose = stands.has(other) && !canCoexist() ? other : null;
+    if (mustClose) { stands.delete(mustClose); closers.get(mustClose)?.(); }
+  }
+  stands.add(id);
   openDrawer = id;
   notify();
-  return mustClose;
+  return yielded ?? mustClose;
 }
 
 export function noteClosed(id: DrawerId): void {
+  stands.delete(id);
   if (openDrawer === id) { openDrawer = null; notify(); }
 }
 

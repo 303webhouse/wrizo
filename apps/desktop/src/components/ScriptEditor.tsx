@@ -32,6 +32,7 @@ import type { PageFaceSubject } from './PageFace';
 import { PortToBoardSheet } from './PortToBoardSheet';
 import { PinToBoardSheet } from './PinToBoardSheet';
 import { isScriptEmpty } from '../store/structureConvert';
+import { enterPageTypewriter, holdTypewriterPage } from '../store/writingSettings';   // PHASE 1 (S5): per-page typewriter memory
 import type { Scene, ScriptEl, ScriptElType, Project } from '../types';
 import { LocationCrumb } from './LocationCrumb';
 
@@ -522,6 +523,13 @@ export function ScriptEditor({ id }: { id: string }) {
   // brief's transient gate is not. `true` rather than a mode test for the same
   // reason: there is no other mode to be in here.
   const scriptSelection = useSurfaceSelection('.script-sequence', true);
+  // PHASE 1 (S5) - Screenplay pages follow the same per-page rule as prose Draft (Nick, Oct 11): read once at mount, written on every toggle. This surface does not run
+  // the line-following fade (SC1 S3, below); the stored value still drives the toggle's state and the drawer.
+  useEffect(() => {
+    enterPageTypewriter(id, !initialEntry?.script || isScriptEmpty(initialEntry.script));
+    return holdTypewriterPage(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // FX2 S2 gave this surface the Draft-open typewriter seed: on mount it wrote
   // the GLOBAL typewriter setting from the page's own line count, exactly as
   // PageEditor.tsx does for prose.

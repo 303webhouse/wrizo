@@ -149,6 +149,8 @@ export type DeskTermId =
   // sentences) is composed in code from real page data and cannot be a
   // flat lexicon lookup; only the surrounding labels/disclosures live here.
   | 'tutorOpen' | 'tutorClose' | 'tutorTitle'
+  // PHASE 1 (S3) - the right drawer's tab row. 'drawerLinks' is the per-theme word that replaces "Connections" (Arbor: Grafts, Flux: Links).
+  | 'tutorTabTutor' | 'drawerLinks' | 'drawerLinksEmpty' | 'drawerLinksNote' | 'drawerLinksNoteLabel' | 'drawerRightTabsLabel'
   | 'tutorDockClose' | 'tutorDockReopen'
   | 'tutorLensConsistency' | 'tutorLensStructure' | 'tutorLensFragments'
   | 'tutorLensConsistencyEmpty' | 'tutorLensFragmentsEmpty' | 'tutorLensFragmentsNote'
@@ -280,7 +282,12 @@ export type DeskTermId =
   | 'draftHeading' | 'draftHeadingUp' | 'draftHeadingDown' | 'draftBullet' | 'draftBulletCircle' | 'draftBulletSquare' | 'draftBulletStyles' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
   | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage' | 'templateCustom'
   | 'comingSoon' | 'railTypeface' | 'goalUnitWords' | 'railPageKind'
+  // PHASE 1 - the Actions section of the left drawer.
+  | 'railActions' | 'actionTags' | 'actionCopy' | 'actionDelete' | 'actionHeaderFooter' | 'actionTagRemove'
+  | 'actionDeleteConfirm' | 'actionDeleteYes' | 'actionDeleteKeep'
   | 'footSettings' | 'footMenuTypewriter' | 'footMenuProgress' | 'footMenuPreferences'
+  // PHASE 1 (S4) - the two mode toggles beside the drawer's "..." button. Their names are what a screen reader hears; on/off is aria-pressed.
+  | 'modeToggleTypewriter' | 'modeToggleProgress' | 'formatLockedByTypewriter'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
   | 'draftConvertToScreenplay' | 'draftConvertToProse'
   // ITEM 207 — the Type control's accessible names. NO visible captions: his law is a strip menu with the fewest marks,
@@ -774,6 +781,14 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorOpen: 'Open the Tutor',
   tutorClose: 'Close the Tutor',
   tutorTitle: 'The Tutor',
+  // PHASE 1 (S3) - Nick's words. Arbor is the default (canonical) theme; Flux overrides below. The note is Arbor-only: a theme whose term is
+  // empty gets no "?" (Flux's word explains itself). The note's copy is Nick's draft and his to edit here, in one place.
+  tutorTabTutor: 'Tutor',
+  drawerLinks: 'Grafts',
+  drawerLinksEmpty: 'Nothing grafted yet.',
+  drawerLinksNote: 'Grafts join pages, cards and boards so your ideas can grow together.',
+  drawerLinksNoteLabel: 'What are grafts?',
+  drawerRightTabsLabel: 'Tutor and grafts',
   tutorDockClose: 'Close, keep dock',
   tutorDockReopen: 'Reopen',
   tutorLensConsistency: 'Consistency',
@@ -958,6 +973,15 @@ const CANONICAL: Record<DeskTermId, string> = {
   draftBulletSquare: 'Square bullet',
   draftBulletStyles: 'Bullet styles',
   railTemplates: 'Templates',
+  railActions: 'Actions',
+  actionTags: 'Tags',
+  actionCopy: 'Copy page text',
+  actionDelete: 'Delete page',
+  actionHeaderFooter: 'Header and footer',
+  actionTagRemove: 'Remove',
+  actionDeleteConfirm: 'Send this page to Trash?',
+  actionDeleteYes: 'Send to Trash',
+  actionDeleteKeep: 'Keep',
   railPageKind: 'Page kind',
   templateOutline: 'Outline',
   templateBibliography: 'Bibliography',
@@ -969,6 +993,9 @@ const CANONICAL: Record<DeskTermId, string> = {
   footSettings: 'Settings',
   footMenuTypewriter: 'Typewriter Mode',
   footMenuProgress: 'Progress Tracking',
+  modeToggleTypewriter: 'Typewriter mode',
+  modeToggleProgress: 'Progress tracking',
+  formatLockedByTypewriter: 'Typewriter Mode is on',
   footMenuPreferences: 'Preferences',
   draftQuote: 'Block quote',
   draftIndent: 'Indent',
@@ -1305,6 +1332,12 @@ const CANONICAL: Record<DeskTermId, string> = {
 // the same theme, even though they're independent maps.
 const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> = {
   flux: {
+    // PHASE 1 (S3) - Flux's word for the same tab. No explainer: an empty term means no "?".
+    drawerLinks: 'Links',
+    drawerLinksEmpty: 'Nothing linked yet.',
+    drawerLinksNote: '',
+    drawerLinksNoteLabel: '',
+    drawerRightTabsLabel: 'Tutor and links',
     corkboardJournalTab: 'Log',
     // AB3 — the Places face's Journal pull, kept in step with the corkboard
     // tab's own Flux name so the two seams never visibly disagree.

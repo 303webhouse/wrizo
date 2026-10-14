@@ -143,8 +143,14 @@ await withHarness(async (app) => {
   // at one point, not discarded).
   // ==========================================================================
   const freshTypewriter = await typewriterDom(app);
-  ok('S3 (a) — a FRESH Draft page opens with the typewriter OFF [ITEM 87 CLAUSE 3]',
-    freshTypewriter === 'false', `data-typewriter=${String(freshTypewriter)}`);
+  // ---- PARKED - SUPERSEDED by Phase 1 S5 (a NEW empty page takes its theme's default (Arbor ON, Flux OFF) and a page that holds text opens OFF - the empty-page-OFF amendment and the line-count rule it amended are both retired; Nick, Oct 11), 2026-10-11 ----
+  // Kept VERBATIM and no longer run. The successor follows the parked lines.
+  //
+  // ok('S3 (a) — a FRESH Draft page opens with the typewriter OFF [ITEM 87 CLAUSE 3]',
+  // freshTypewriter === 'false', `data-typewriter=${String(freshTypewriter)}`);
+  // ----------------------------------------------------------------------
+  ok('S5 successor to S3 (a) — a FRESH (empty) Draft page opens with the typewriter ON in the default theme (Arbor); Flux would open it OFF (typewriter-page.mjs runs both)',
+    freshTypewriter === 'true', `data-typewriter=${String(freshTypewriter)}`);
 
   // A page that already holds a little work: FX2 S2's threshold rule, untouched.
   //
@@ -175,8 +181,30 @@ await withHarness(async (app) => {
   await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'a short Draft page' });
   await sleep(400);
   const shortTypewriter = await typewriterDom(app);
-  ok('S3 (b) — CONTROL: a Draft page that already holds work (1 line-equivalent, under the 10 threshold) still opens with the typewriter ON — FX2 S2 amended at the EMPTY case only',
-    shortTypewriter === 'true', `data-typewriter=${String(shortTypewriter)}`);
+  // ---- PARKED - SUPERSEDED by Phase 1 S5 (a NEW empty page takes its theme's default (Arbor ON, Flux OFF) and a page that holds text opens OFF - the empty-page-OFF amendment and the line-count rule it amended are both retired; Nick, Oct 11), 2026-10-11 ----
+  // Kept VERBATIM and no longer run. The successor follows the parked lines.
+  //
+  // ok('S3 (b) — CONTROL: a Draft page that already holds work (1 line-equivalent, under the 10 threshold) still opens with the typewriter ON — FX2 S2 amended at the EMPTY case only',
+  // shortTypewriter === 'true', `data-typewriter=${String(shortTypewriter)}`);
+  // ----------------------------------------------------------------------
+  // MEASURED, not assumed (Chat 1's run, 2026-10-12: this successor read data-typewriter=true). The fixture's page is created EMPTY and first opened EMPTY - so under S5 it took
+  // Arbor's default (ON) and SAVED it - and only then gets text. On the reopen the SAVED value wins over "has text": that is Nick's rule working, not a bug. The premise is read
+  // from the stored key itself, so the check cannot pass for the wrong reason. The other half - a page that ALREADY HAS TEXT the first time it is ever opened - is S3 (c) below.
+  const shortSaved = await app.evalJs(`localStorage.getItem('wrizo-typewriter-page-${shortId}')`);
+  ok('S5 successor to S3 (b) — a Draft page that was EMPTY when first opened (it took Arbor\'s default and SAVED it) keeps that ON when it is reopened holding work: the saved value wins over "has text"',
+    shortTypewriter === 'true' && shortSaved === 'on', `data-typewriter=${String(shortTypewriter)} saved=${String(shortSaved)}`);
+
+  // S3 (c) - the real "has text, nothing saved" case: a page that already holds work the FIRST time it is ever opened opens OFF (in Arbor too), and remembers OFF.
+  await freshDesk(app);
+  const seededId = await app.evalJs(`window.wrizoCreateJournalPage({ id: 'item87-has-text', text: 'A little work already here.', createdAt: new Date().toISOString(), source: null, origin: null }).id`);
+  await app.evalJs(`location.hash = '#/page/${seededId}'`);
+  await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'a first-ever open of a page that already has text' });
+  await sleep(400);
+  const seededMode = await activeModeTab(app);
+  const seededTypewriter = await typewriterDom(app);
+  const seededSaved = await app.evalJs(`localStorage.getItem('wrizo-typewriter-page-${seededId}')`);
+  ok('S3 (c) [Phase 1 S5] — a Draft page that already holds work the FIRST time it is ever opened (nothing saved) opens with the typewriter OFF, and saves OFF',
+    seededMode === 'Draft' && seededTypewriter === 'false' && seededSaved === 'off', `mode=${String(seededMode)} data-typewriter=${String(seededTypewriter)} saved=${String(seededSaved)}`);
 });
 
 // eslint-disable-next-line no-console
@@ -222,6 +250,9 @@ if (process.env.HARNESS_PARKED === '1') {
   pok('PARKED (was "S1 (b) — and a New Page therefore LANDS IN DRAFT [ITEM 87 CLAUSE 1]") — ITEM 87 AMENDMENT: same supersession; a New Page again opens per CD1 S8/A7, unchanged.', true, 'design superseded, not falsified');
   pok('PARKED (was "S1 (d) — and it is STILL Draft on a later visit (the door choice outlives the door)") — ITEM 87 AMENDMENT: the door no longer makes a choice to outlive. THE FINDING IT ENCODED SURVIVES THE DESIGN and is owed to the chooser: a door-made choice that is never persisted is true exactly ONCE, because birth rewrites the address away.', true, 'design superseded; finding carried forward');
   pok('PARKED (was "S1 (c) — CONTROL: Arrival Write door still opens FREE WRITE (CD1 S8/A7 unreversed, not collateral damage)") — ITEM 87 AMENDMENT: with clause 1 held, CD1 S8/A7 is not merely unreversed but untouched, so the control has nothing left to guard.', true, 'control retired with its subject');
+  // PHASE 1 S5 (2026-10-11) - the per-page typewriter memory replaces item 87 clause 3 and FX2 S2's line-count rule. Records byte-frozen; successors are the live S5 checks above.
+  pok('PARKED (was "S3 (a) — a FRESH Draft page opens with the typewriter OFF [ITEM 87 CLAUSE 3]") — PHASE 1 S5: a new empty page takes its theme\'s default (Arbor ON, Flux OFF); successor "S5 successor to S3 (a)" asserts ON in the default theme.', true, 'superseded, successor live');
+  pok('PARKED (was "S3 (b) — CONTROL: a Draft page that already holds work (1 line-equivalent, under the 10 threshold) still opens with the typewriter ON") — PHASE 1 S5: a page with text and no saved value opens OFF; successor "S5 successor to S3 (b)" asserts OFF.', true, 'superseded, successor live');
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   // eslint-disable-next-line no-console
@@ -229,6 +260,8 @@ if (process.env.HARNESS_PARKED === '1') {
   // adds a fifth record, and a corrected count follows it.
   console.log('\nITEM87 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 87 parks nothing: Free Write never seeds the typewriter (so every "fresh page ON" record is untouched), and clause 1 is additive (so CD1 S8/A7 stands unreversed). The empty list is the evidence, not an omission.');
   console.log(`ITEM87 PARKED (corrected): ${parkedChecks.every((c) => c.pass) ? 'PASS' : 'FAIL'} (${parkedChecks.length} checks) - the four item 87 clause-1 records plus PAGE-TEMPLATES-MOVE's S2 (b) stand-in count.`);
+  // PHASE 1 S5 adds two records (S3 (a), S3 (b)): the corrected count is 7 - five above plus these two. The COUNT is the check.
+  console.log(`ITEM87 PARKED (S5): ${parkedChecks.length === 7 && parkedChecks.every((c) => c.pass) ? 'PASS' : 'FAIL'} (${parkedChecks.length} checks, expected 7)`);
 }
 
 const pass = checks.every((c) => c.pass);

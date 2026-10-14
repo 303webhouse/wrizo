@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
 import type { JournalEntry, Project, Fact } from '../types';
@@ -15,6 +15,12 @@ import type { EditorMode } from './ForwardOnlyEditor';
 import { FREE_WRITE_POOLS, DRAW_CEILING, REFILL_WORDS, drawFrom, recentMemoryFor, type FreeWritePresetId } from '../store/tutorFreeWriteDeck';
 import { useMonotonicWordCount } from './FirstRunGate';
 import { capTutorHistory } from '../store/tutorHistory';
+import { drawerArrow, setDrawerInert } from '../store/drawerShell';
+import { SideDrawer, type DrawerTabsConfig } from './SideDrawer';
+import { DrawerNote } from './DrawerNote';
+import { ConnectionsDrawerPanel } from './ConnectionsDrawerPanel';
+import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
+import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 
 // TU1 S2/S3/S4/S5 — the Tutor. The sliver, mirrored, on the paper's RIGHT
 // edge — but rendered as TWO separate DeskFrame overlay anchors, not one
@@ -283,7 +289,17 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   const { t } = useDeskLexicon();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  // PHASE 1 (S3) - the right drawer's tab: the Tutor (today's contents, untouched) or the theme's links word (empty for now).
+  const [rightTab, setRightTab] = useState<RightTab>('tutor');
   const [docked, setDocked] = useState(false);
+  // PHASE 1 (Fable, Oct 12) - one drawer at a time: opening the Tutor closes the Tools drawer (and the reverse), at every width. Announced from an effect keyed on `open`
+  // so EVERY path that opens it announces (the grip, a shortcut, anything added later) - the same structural rule the Tools drawer follows.
+  // A LAYOUT effect, so the hand-over lands before paint: no single frame shows both drawers open.
+  useLayoutEffect(() => {
+    if (open) requestOpen('tutor');
+    else noteClosed('tutor');
+  }, [open]);
+  useEffect(() => registerDrawer('tutor', () => setOpen(false)), []);
   // FX18 S2 (Fable's ruling) — the OPEN panel's live width in px on a WRITING surface,
   // MEASURED (the FX13 measure-effect pattern), or null to defer to CSS. Occupy-margin uses
   // the TRUE geometric margin (stage.right - paper.right) so the panel sits FLUSH to the
@@ -873,6 +889,17 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     }
   };
 
+  // PHASE 1 (S3) - THE RIGHT DRAWER'S TAB ROW: TUTOR | the theme's links word (Grafts in Arbor, Links in Flux - from the lexicon, never written
+  // here). The "?" beside it is a pressable note and exists only where the theme's term has an explainer (Arbor's does, Flux's is empty).
+  const linksNote = t('drawerLinksNote');
+  const rightTabs: DrawerTabsConfig<RightTab> = {
+    items: [{ id: RIGHT_TABS[0], label: t('tutorTabTutor') }, { id: RIGHT_TABS[1], label: t('drawerLinks') }],
+    notes: linksNote ? { links: <DrawerNote label={t('drawerLinksNoteLabel')}>{linksNote}</DrawerNote> } : undefined,
+    value: rightTab,
+    onChange: setRightTab,
+    label: t('drawerRightTabsLabel'),
+  };
+
   return (
     <>
       <div className={`desk-frame-tutor-anchor desk-frame-tutor-anchor--${pageKind} wz-tutor-zone`}>
@@ -889,12 +916,15 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           {/* FX18 S1 (SV25): the RIGHT drawer mirrors the left. Closed → '›' (points right/
               outward); open → '‹' (points left/inward, toward the panel that slides out).
               The mirror of Sliver.tsx's left grip; that literal is left untouched. */}
-          <span className="wz-tutor-grip-glyph" aria-hidden="true">{open ? '‹' : '›'}</span>
+          <span className="wz-tutor-grip-glyph" aria-hidden="true">{drawerArrow('right', open)}</span>
         </button>
       </div>
 
       <div className={`desk-frame-tutor-panel-anchor desk-frame-tutor-panel-anchor--${pageKind} wz-tutor-zone`}>
-        <div className="wz-tutor-panel" aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px` } : undefined}>
+        <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px` } : undefined}>
+          {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab.
+              No tab row yet (S3 adds TUTOR | the theme's links word). */}
+          <SideDrawer side="right" idPrefix="wz-tutor" tabs={rightTabs}>
           {/* A11Y AUDIT A8 — the reply announcement, visually hidden. Lives at
               the panel's own top level (not inside the `{open && …}` content
               body below), so closing/reopening the Tutor never remounts it and
@@ -928,7 +958,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
               The panel's own effects are already gated on `open`
               (`if (!open) return;`), so a closed body costs a render and no
               work — nothing is fetched, drawn, or measured while it is hidden. */}
-          {(
+          {rightTab === 'tutor' && (
             <div className="wz-tutor-body">
             <div className="wz-tutor-head">
               <span className="wz-tutor-head-title">{t('tutorTitle')}</span>
@@ -1198,6 +1228,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             )}
             </div>
           )}
+          {rightTab === 'links' && <ConnectionsDrawerPanel />}
+          </SideDrawer>
         </div>
       </div>
 
