@@ -728,6 +728,14 @@ function BoardCardPopup({
         )}
         <div className="board-popup-strip">
           <span className="eyebrow board-popup-eyebrow">Card</span>
+          {/* card-close-x (Nick's live test, 2026-10-13) - the pop-up closes from an X in its
+              top-right corner (the strip's right end; the eyebrow's margin-right:auto puts it
+              there). It replaces the foot's "Close" button and keeps that button's class,
+              board-popup-done, so every driver that closes a card still finds it. Esc and the
+              backdrop click are unchanged. */}
+          <button type="button" className="board-popup-close board-popup-done" aria-label={dt('boardPopupClose')} title={dt('boardPopupClose')} onClick={onClose}>
+            <span aria-hidden="true">{'\u00d7'}</span>
+          </button>
         </div>
         <div
           ref={elRef}
@@ -739,11 +747,8 @@ function BoardCardPopup({
           aria-label={`${lex('board')} text box`}
           style={cardTypeStyle(fontFace, fontSize)}
         />
-        <div className="board-popup-foot">
-          {/* CD4.1 — "Done" retired: the card-edit popup's close control is a door
-              word now, not a completion word (the class board-popup-done is kept). */}
-          <button type="button" className="btn-brass board-popup-done" onClick={onClose}>Close</button>
-        </div>
+        {/* CD4.1's foot "Close" button retired by card-close-x: the X in the strip above
+            is the close control now (it carries the class board-popup-done). */}
       </div>
     </div>
   );

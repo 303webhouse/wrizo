@@ -272,6 +272,8 @@ export type DeskTermId =
   // default), and the three-instrument foot (R5/R12).
   | 'stylingHeading' | 'stylingOpen' | 'stylingClose' | 'stylingBold' | 'stylingItalic' | 'stylingUnderline'
   | 'stylingStrike'
+  // card-close-x - the card pop-up's corner X: its accessible name.
+  | 'boardPopupClose'
   | 'twMenuHeading' | 'twForwardLock' | 'twForwardLockWindow'
   | 'twUnitWords' | 'twUnitSentences' | 'twLineFade' | 'twLineFadeLines'
   | 'twWritingLine' | 'twLineTop' | 'twLineCenter' | 'twLineBottom'
@@ -927,6 +929,9 @@ const CANONICAL: Record<DeskTermId, string> = {
   stylingItalic: 'Italic (Ctrl+I)',
   stylingUnderline: 'Underline (Ctrl+U)',
   stylingStrike: 'Strikethrough',
+  // card-close-x (Nick's live test, 2026-10-13) - the card pop-up closes from an X in its
+  // top-right corner; this is the X's accessible name (aria-label + title).
+  boardPopupClose: 'Close',
   // ITEM 83 M4 (R3) — the Typewriter menu. Names are Nick's latest (F1's
   // default): "Forward Lock" and "Line Fade" govern; Chamber 1's "Forward
   // Momentum"/"Text Fade" retire.

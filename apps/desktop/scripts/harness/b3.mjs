@@ -258,7 +258,8 @@ await withHarness(async (app) => {
     await app.evalJs("document.querySelector('.board-popup-editor').focus()");
     await app.typeKeys(' Rewritten by the writer.');
     await sleep(200);
-    await app.evalJs("document.querySelector('.board-popup-foot button').click()");
+    // card-close-x (2026-10-13): the foot is gone; its Close button became the corner X, which keeps the class board-popup-done.
+    await app.evalJs("document.querySelector('.board-popup-done').click()");
     await sleep(200);
     const startHereAfterEdit = await app.evalJs("document.querySelectorAll('[data-start-here=\"true\"]').length");
     ok(`@${width}px: "Start Here" vanishes on the FIRST edit to ANY dealt card's content — editing Climax (not Hook) dismissed it`,
@@ -272,7 +273,8 @@ await withHarness(async (app) => {
     await app.evalJs("document.querySelector('.board-popup-editor').focus()");
     await app.typeKeys(' A second edit.');
     await sleep(200);
-    await app.evalJs("document.querySelector('.board-popup-foot button').click()");
+    // card-close-x (2026-10-13): the foot is gone; its Close button became the corner X, which keeps the class board-popup-done.
+    await app.evalJs("document.querySelector('.board-popup-done').click()");
     await sleep(200);
     const startHereAfterSecondEdit = await app.evalJs("document.querySelectorAll('[data-start-here=\"true\"]').length");
     ok(`@${width}px: "Start Here" stays gone after FURTHER edits — it never returns`, startHereAfterSecondEdit === 0, String(startHereAfterSecondEdit));
