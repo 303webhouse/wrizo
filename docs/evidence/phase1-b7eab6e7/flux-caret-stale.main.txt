@@ -1,0 +1,55 @@
+{
+  "bundle": "index-iAy42y5N.js",
+  "rows": [
+    {
+      "scenario": "A: typewriter ON at open, caret placed after layout settled",
+      "overlay": {
+        "left": 723,
+        "top": 384,
+        "height": 19
+      },
+      "real": null,
+      "typewriter": "true",
+      "dy": null,
+      "theme": "flux"
+    },
+    {
+      "scenario": "B0: typewriter OFF, caret at end",
+      "overlay": {
+        "left": 723,
+        "top": 384,
+        "height": 19
+      },
+      "real": null,
+      "typewriter": "true",
+      "dy": null,
+      "theme": "flux"
+    },
+    {
+      "scenario": "B: typewriter switched ON (settings-menu) with NO selection change",
+      "overlay": {
+        "left": 723,
+        "top": 384,
+        "height": 19
+      },
+      "real": null,
+      "typewriter": "false",
+      "dy": null,
+      "theme": "flux"
+    },
+    {
+      "scenario": "C: ...then a selectionchange (caret re-placed at the end)",
+      "overlay": {
+        "left": 723,
+        "top": 201,
+        "height": 19
+      },
+      "real": null,
+      "typewriter": "false",
+      "dy": null,
+      "theme": "flux"
+    }
+  ]
+}
+
+FLUX-CARET: agrees after the shift - index-iAy42y5N.js
