@@ -6,9 +6,11 @@
 // THE FIX: a board that is a page's paired Plan face takes no part in the way-back, decided once per mount (BoardEditor.tsx). The slot keeps the PAGE's own departure.
 //
 //   R1  the fix is in place, and decided ONCE per mount (source pin; a mutant removes it)
-//   R2  while the writer is ON the Plan, the slot still names the PAGE (not the board) - the premise, measured
+//   R2  the Plan's own departure did not overwrite the slot: after the return the page CONSUMED it (the slot is empty). On main the slot is left naming the Plan BOARD. (The first cut looked
+//       WHILE the writer was on the Plan - which is true on both trees, because the board's capture happens when it UNMOUNTS, i.e. on leaving. Chat 1's run on main showed it.)
 //   R3  page -> Plan -> the board's PAGE door -> the page: scroll and caret are where they were (twice in a row)
-//   R4  a page that was never scrolled and has no caret returns without an error (the plain round trip)
+//   R4  a page the writer never scrolled or clicked returns to EXACTLY where it was when they left it (the plain round trip). "Where it was" is measured before leaving: a freshly opened
+//       page is not necessarily at scrollTop 0 (the run read 29), and the first cut asserted "the top" - which main satisfied only by LOSING those 29px.
 //
 // Needs a box turn (withHarness refuses without WS_BOX_TURN). Run: WS_BOX_TURN=<token> node scripts/harness/page-scroll-return.mjs   (from apps/desktop, dist-web built)
 import fs from 'node:fs';
@@ -75,7 +77,8 @@ const toPlanAndBack = async (app) => {
   await app.evalJs("document.querySelector('[data-board-door=\"page\"]').click()");
   const back = await waitSoft(app, `location.hash === '#/page/${PAGE}' && !!document.querySelector('${ED}')`, { label: 'back on the page', timeout: 9000 });
   await sleep(1000);   // the restore ladder runs to ~350 ms
-  return { onPlan, slotOnPlan, back };
+  const slotAfter = await app.evalJs("(() => { try { return JSON.parse(sessionStorage.getItem('wrizo-way-back') || 'null'); } catch { return 'unreadable'; } })()");
+  return { onPlan, slotOnPlan, slotAfter, back };
 };
 
 await withHarness(async (app) => {
@@ -89,8 +92,10 @@ await withHarness(async (app) => {
   const caret1 = await caretNow(app); const scroll1 = await scrollNow(app);
   ok('fixture: the caret and the scroll are set before leaving (scroll > 400, a caret offset exists)', scroll1 > 400 && caret1 != null, JSON.stringify({ scroll1, caret1 }));
   const r1 = await toPlanAndBack(app);
-  ok('R2: while the writer is ON the Plan the way-back slot still names the PAGE, with its scroll - not the Plan board (the cause, measured: a participating board used to overwrite it on unmount)',
-    !!r1.onPlan && r1.slotOnPlan && r1.slotOnPlan !== 'unreadable' && r1.slotOnPlan.entryId === PAGE && r1.slotOnPlan.scrollY > 400, JSON.stringify(r1));
+  ok('R2a (precondition, true on both trees): while the writer is ON the Plan the slot still names the PAGE with its scroll - the board\'s capture happens when it UNMOUNTS, so this cannot show the cause',
+    !!r1.onPlan && r1.slotOnPlan && r1.slotOnPlan !== 'unreadable' && r1.slotOnPlan.entryId === PAGE && r1.slotOnPlan.scrollY > 400, JSON.stringify(r1.slotOnPlan));
+  ok('R2 (the cause, measured): leaving the Plan did NOT overwrite the slot - after the return the page found a slot naming ITSELF and consumed it (the slot is empty). On main the Plan\'s unmount capture leaves the slot naming the Plan board, the page finds a slot that is not its own, and restores nothing',
+    !!r1.back && r1.slotAfter === null, JSON.stringify({ slotAfter: r1.slotAfter }));
   const scrollBack1 = await scrollNow(app); const caretBack1 = await caretNow(app);
   ok('R3: page -> Plan -> the PAGE door -> page puts the writer back where they were: the scroll within 3px of where it was, and the caret at the same offset',
     !!r1.back && scrollBack1 != null && Math.abs(scrollBack1 - scroll1) <= 3 && caretBack1 === caret1, JSON.stringify({ before: { scroll1, caret1 }, after: { scrollBack1, caretBack1 } }));
@@ -107,9 +112,12 @@ await withHarness(async (app) => {
   await fresh(app);
   if (await openPage(app)) {
     await app.evalJs("document.activeElement && document.activeElement.blur && document.activeElement.blur(); window.getSelection().removeAllRanges()");
+    await sleep(300);
+    const topBefore = await scrollNow(app);   // where the page ACTUALLY is when the writer leaves (not assumed to be 0)
     const r3 = await toPlanAndBack(app);
     const top = await scrollNow(app);
-    ok('R4: a page that was never scrolled and had no caret makes the round trip without an error and lands at the top, as it was', !!r3.back && top != null && top <= 3, JSON.stringify({ r3, top }));
+    ok('R4: a page the writer never scrolled or clicked makes the round trip without an error and comes back to EXACTLY where it was when they left it (measured before leaving, within 3px)',
+      !!r3.back && topBefore != null && top != null && Math.abs(top - topBefore) <= 3, JSON.stringify({ topBefore, top, slotOnPlan: r3.slotOnPlan }));
   }
 });
 
