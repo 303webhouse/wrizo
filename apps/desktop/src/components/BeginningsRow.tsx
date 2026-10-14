@@ -110,9 +110,12 @@ interface BeginningsRowProps {
   // it is not covering anything, it IS the empty canvas, and dismissing it
   // would leave the dead end this ticket exists to remove.
   onDismiss?: () => void;
+  // BOARD CLICK-TO-CREATE - the empty board's row fades out on the FIRST click anywhere on the board (the caller owns that fact). It fades with opacity and only
+  // then stops taking the pointer, so a press that LANDS on a door still completes its click: the doors are not disabled the instant the fade starts.
+  faded?: boolean;
 }
 
-export function BeginningsRow({ surface, doors, onDismiss }: BeginningsRowProps) {
+export function BeginningsRow({ surface, doors, onDismiss, faded = false }: BeginningsRowProps) {
   useEffect(() => {
     if (!onDismiss) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onDismiss(); };
@@ -122,7 +125,7 @@ export function BeginningsRow({ surface, doors, onDismiss }: BeginningsRowProps)
 
   if (doors.length === 0) return null;
   return (
-    <div className="wz-beginnings" data-beginnings={surface}>
+    <div className={`wz-beginnings${faded ? ' wz-beginnings--faded' : ''}`} data-beginnings={surface} data-faded={faded ? 'true' : 'false'}>
       {doors.map(door => (
         <button
           key={door.key}

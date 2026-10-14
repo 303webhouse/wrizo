@@ -5473,6 +5473,11 @@ a:focus-visible,
 /* S1 — the same row inside STORYBOARD/OUTLINE, which are ordinary flow blocks
    with no positioned ancestor: it simply takes the place their empty line held. */
 .wz-beginnings[data-beginnings='projection']{ padding:22px 0 6px; }
+/* BOARD CLICK-TO-CREATE - the empty board's starters fade out on the first click anywhere on the board. Opacity first, then they stop taking the pointer (visibility flips AFTER the
+   fade), so a door that was itself the thing pressed still completes its click. */
+.wz-beginnings.wz-beginnings--faded{ opacity:0; visibility:hidden; transition:opacity .35s ease, visibility 0s linear .35s; }
+/* BOARD CLICK-TO-CREATE - the ghost that follows the pointer while a card is being sized (functional default; the look follows the mockup). Never takes the pointer. */
+.board-create-ghost{ position:absolute; box-sizing:border-box; border:1px solid var(--accent-rest); background:none; opacity:.7; pointer-events:none; z-index:50; border-radius:0; }
 
 @media (prefers-reduced-motion:reduce){ .wz-beginning{ transition:none; } }
 
