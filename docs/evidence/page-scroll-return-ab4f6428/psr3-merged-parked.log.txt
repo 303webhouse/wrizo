@@ -1,0 +1,10 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=1 files=2 tree=ab4f6428 bundle=index-DmgtBBtd.js/667704b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/k-psr3-merged-parked
+[01/2] OK        exit=0   15s page-scroll-return.mjs :: PAGE-SCROLL-RETURN VERIFY: PASS (9 checks)
+[02/2] OK        exit=0   33s w2.mjs :: "name": "PARKED (was \"pager: B's scroll was never set BY the way-back mechanism (not A's captured 200)\") — FX4 S1: Journal's new bottom scroll buffer makes B tall enough to genuinely hold the inherited (unrelated, pre-existing) scrollY=200; live successor (caret-based) in this file's own live pager section", ;; W2 PARKED: PASS (1 checks) — HARNESS_PARKED=1 armed, all retired-check successors green ;; W2 VERIFY: PASS (22 checks)
+
+SUITE DONE HARNESS_PARKED=1 — 2/2 of 2 returned a passing verdict
+SUITE RESULT: CLEAN — tree=ab4f6428 bundle=index-DmgtBBtd.js/667704b NO-REBUILD
+EXIT 0

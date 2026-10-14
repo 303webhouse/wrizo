@@ -1,0 +1,109 @@
+[
+  {
+    "name": "PageEditor: caret + scroll positioned pre-departure",
+    "pass": true,
+    "detail": "scroll=300 caret=40"
+  },
+  {
+    "name": "return chip present after departing PageEditor, accessible name is \"Return to the page\"",
+    "pass": true,
+    "detail": "Return to the page"
+  },
+  {
+    "name": "chip label reflects the page's own first line (not a generic string)",
+    "pass": true,
+    "detail": "Return to: Line 0 of the growing ma…"
+  },
+  {
+    "name": "route restored to the exact page",
+    "pass": true,
+    "detail": "#/page/mv8karit5irgo8den"
+  },
+  {
+    "name": "scrollY restored within +/-4px",
+    "pass": true,
+    "detail": "before=300 after=300"
+  },
+  {
+    "name": "caret offset restored exactly",
+    "pass": true,
+    "detail": "caret=40"
+  },
+  {
+    "name": "the editor's mount is fresh-but-equivalent: text byte-identical",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "the chip is gone immediately after being consumed (one-shot)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "R2: a real input cancels the later restore re-asserts (caret stays where the writer moved it, not snapped back)",
+    "pass": true,
+    "detail": "caret=10"
+  },
+  {
+    "name": "QuickSprint: caret + scroll + Draft mode positioned pre-departure",
+    "pass": true,
+    "detail": "scroll=250"
+  },
+  {
+    "name": "return chip present after departing QuickSprint",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "QuickSprint route restored",
+    "pass": true,
+    "detail": "#/sprint"
+  },
+  {
+    "name": "QuickSprint scrollY restored within +/-4px",
+    "pass": true,
+    "detail": "before=250 after=250"
+  },
+  {
+    "name": "QuickSprint caret offset restored exactly",
+    "pass": true,
+    "detail": "caret=20"
+  },
+  {
+    "name": "QuickSprint text byte-identical across the departure/return",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "QuickSprint mode (Draft) persisted across the departure/return",
+    "pass": true,
+    "detail": "Draftmark"
+  },
+  {
+    "name": "return chip present after departing a board page",
+    "pass": true,
+    "detail": "w2-board"
+  },
+  {
+    "name": "w2-board route restored via the chip",
+    "pass": true,
+    "detail": "#/page/w2-board"
+  },
+  {
+    "name": "return chip present after departing a script page",
+    "pass": true,
+    "detail": "w2-script"
+  },
+  {
+    "name": "w2-script route restored via the chip",
+    "pass": true,
+    "detail": "#/page/w2-script"
+  },
+  {
+    "name": "PAGE IS PRIMARY: assist-rail collapse leaves the page rect byte-identical",
+    "pass": true,
+    "detail": "{\"left\":95,\"top\":186.59375,\"width\":620,\"height\":352.390625} -> {\"left\":95,\"top\":186.59375,\"width\":620,\"height\":352.390625}"
+  }
+]
+
+W2 VERIFY: PASS (21 checks)
