@@ -1,0 +1,599 @@
+{
+  "rows": [
+    {
+      "combo": "arbor-dark",
+      "frame": "01-left-open-both-on",
+      "file": "arbor-dark/01-left-open-both-on.png",
+      "md5": "e8e8e7f5df6b8ed7e416e044503b4165",
+      "sameAsDarkTwin": null,
+      "typewriterPressed": "true",
+      "progressPressed": "true",
+      "typewriterColor": "rgb(255, 152, 0)",
+      "progressColor": "rgb(255, 152, 0)",
+      "typewriterBorder": "rgb(51, 44, 37)",
+      "formatDisabled": true,
+      "formatTitle": "Typewriter Mode is on",
+      "formatOpacity": "0.4",
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "02-left-open-both-off",
+      "file": "arbor-dark/02-left-open-both-off.png",
+      "md5": "cdd612d1e4a8278ab24d844828fbf29a",
+      "sameAsDarkTwin": null,
+      "typewriterPressed": "false",
+      "progressPressed": "false",
+      "typewriterColor": "rgb(128, 118, 106)",
+      "progressColor": "rgb(128, 118, 106)",
+      "typewriterBorder": "rgb(51, 44, 37)",
+      "formatDisabled": false,
+      "formatTitle": null,
+      "formatOpacity": "1",
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "03-format-greyed-tooltip",
+      "file": "arbor-dark/03-format-greyed-tooltip.png",
+      "md5": "92d0e77065220934f2c0810001630f53",
+      "sameAsDarkTwin": null,
+      "typewriterPressed": "true",
+      "progressPressed": "false",
+      "typewriterColor": "rgb(255, 152, 0)",
+      "progressColor": "rgb(128, 118, 106)",
+      "typewriterBorder": "rgb(51, 44, 37)",
+      "formatDisabled": true,
+      "formatTitle": "Typewriter Mode is on",
+      "formatOpacity": "0.4",
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      },
+      "note": "the tooltip is the fieldset title (a native tooltip is not captured in a PNG); the buttons are disabled and let the pointer through to it"
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "04-menu-greyed-rows",
+      "file": "arbor-dark/04-menu-greyed-rows.png",
+      "md5": "9ec58108eedf6d2c1f3806d9d3c4cbe1",
+      "sameAsDarkTwin": null,
+      "typewriterPressed": "false",
+      "progressPressed": "false",
+      "typewriterColor": "rgb(128, 118, 106)",
+      "progressColor": "rgb(128, 118, 106)",
+      "typewriterBorder": "rgb(51, 44, 37)",
+      "formatDisabled": false,
+      "formatTitle": null,
+      "formatOpacity": "1",
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      },
+      "menu": {
+        "greyedRows": 7,
+        "greyedGoal": 1,
+        "disabledButtons": 15,
+        "headings": [
+          "Typewriter Mode",
+          "Progress Tracking",
+          "Preferences"
+        ]
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "05-right-drawer-tabs-and-note",
+      "file": "arbor-dark/05-right-drawer-tabs-and-note.png",
+      "md5": "76f17a7cc608e204a216c964c1a90d9a",
+      "sameAsDarkTwin": null,
+      "typewriterPressed": "false",
+      "progressPressed": "false",
+      "typewriterColor": "rgb(128, 118, 106)",
+      "progressColor": "rgb(128, 118, 106)",
+      "typewriterBorder": "rgb(51, 44, 37)",
+      "formatDisabled": false,
+      "formatTitle": null,
+      "formatOpacity": "1",
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      },
+      "right": {
+        "tabs": [
+          "Tutor",
+          "Grafts"
+        ],
+        "noteShown": true,
+        "noteText": "Grafts join pages, cards and boards so your ideas can grow together.",
+        "noteButton": true
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "06-narrow-locked-bar",
+      "file": "arbor-dark/06-narrow-locked-bar.png",
+      "md5": "4307e3b0dfd7075c5163e0ee94d4a40a",
+      "sameAsDarkTwin": null,
+      "typewriterPressed": null,
+      "progressPressed": null,
+      "typewriterColor": null,
+      "progressColor": null,
+      "typewriterBorder": null,
+      "formatDisabled": null,
+      "formatTitle": null,
+      "formatOpacity": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      },
+      "bar": {
+        "present": true,
+        "title": "Typewriter Mode is on",
+        "buttons": 9,
+        "disabled": 9,
+        "typewriterOn": "true"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "07-mid-slide-100ms",
+      "file": "arbor-dark/07-mid-slide-100ms.png",
+      "md5": "6cdd0c0643ceb81bfa93a99936dd3e78",
+      "sameAsDarkTwin": null,
+      "typewriterPressed": "false",
+      "progressPressed": "true",
+      "typewriterColor": "rgb(128, 118, 106)",
+      "progressColor": "rgb(255, 152, 0)",
+      "typewriterBorder": "rgb(51, 44, 37)",
+      "formatDisabled": false,
+      "formatTitle": null,
+      "formatOpacity": "1",
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      },
+      "mid": {
+        "pausedAnimations": 35,
+        "at": "100 ms",
+        "layerTransform": "matrix(1, 0, 0, 1, 36.3578, 0)",
+        "layerPointerEvents": "none",
+        "panelOpacity": "0.802403",
+        "templateX": 261
+      },
+      "note": "animations paused at 100 ms, so the frame is the drawer partway in: faded, shifted, and (pointer-events none) not yet live"
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "01-left-open-both-on",
+      "file": "arbor-light/01-left-open-both-on.png",
+      "md5": "2de26be59ab891c32540d928ae360fae",
+      "sameAsDarkTwin": false,
+      "typewriterPressed": "true",
+      "progressPressed": "true",
+      "typewriterColor": "rgb(255, 152, 0)",
+      "progressColor": "rgb(255, 152, 0)",
+      "typewriterBorder": "rgb(51, 44, 37)",
+      "formatDisabled": true,
+      "formatTitle": "Typewriter Mode is on",
+      "formatOpacity": "0.4",
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "02-left-open-both-off",
+      "file": "arbor-light/02-left-open-both-off.png",
+      "md5": "2f7c15b083352c3a95883be7df5bbd97",
+      "sameAsDarkTwin": false,
+      "typewriterPressed": "false",
+      "progressPressed": "false",
+      "typewriterColor": "rgb(128, 118, 106)",
+      "progressColor": "rgb(128, 118, 106)",
+      "typewriterBorder": "rgb(51, 44, 37)",
+      "formatDisabled": false,
+      "formatTitle": null,
+      "formatOpacity": "1",
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "03-format-greyed-tooltip",
+      "file": "arbor-light/03-format-greyed-tooltip.png",
+      "md5": "2e3c7abbf34b5d746d911434dbcbf4a1",
+      "sameAsDarkTwin": false,
+      "typewriterPressed": "true",
+      "progressPressed": "false",
+      "typewriterColor": "rgb(255, 152, 0)",
+      "progressColor": "rgb(128, 118, 106)",
+      "typewriterBorder": "rgb(51, 44, 37)",
+      "formatDisabled": true,
+      "formatTitle": "Typewriter Mode is on",
+      "formatOpacity": "0.4",
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      },
+      "note": "the tooltip is the fieldset title (a native tooltip is not captured in a PNG); the buttons are disabled and let the pointer through to it"
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "04-menu-greyed-rows",
+      "file": "arbor-light/04-menu-greyed-rows.png",
+      "md5": "d42b2aeff7018a061f06d6675cd2f237",
+      "sameAsDarkTwin": false,
+      "typewriterPressed": "false",
+      "progressPressed": "false",
+      "typewriterColor": "rgb(128, 118, 106)",
+      "progressColor": "rgb(128, 118, 106)",
+      "typewriterBorder": "rgb(51, 44, 37)",
+      "formatDisabled": false,
+      "formatTitle": null,
+      "formatOpacity": "1",
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      },
+      "menu": {
+        "greyedRows": 7,
+        "greyedGoal": 1,
+        "disabledButtons": 15,
+        "headings": [
+          "Typewriter Mode",
+          "Progress Tracking",
+          "Preferences"
+        ]
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "05-right-drawer-tabs-and-note",
+      "file": "arbor-light/05-right-drawer-tabs-and-note.png",
+      "md5": "6267f245187649b211e0f8beb463af80",
+      "sameAsDarkTwin": false,
+      "typewriterPressed": "false",
+      "progressPressed": "false",
+      "typewriterColor": "rgb(128, 118, 106)",
+      "progressColor": "rgb(128, 118, 106)",
+      "typewriterBorder": "rgb(51, 44, 37)",
+      "formatDisabled": false,
+      "formatTitle": null,
+      "formatOpacity": "1",
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      },
+      "right": {
+        "tabs": [
+          "Tutor",
+          "Grafts"
+        ],
+        "noteShown": true,
+        "noteText": "Grafts join pages, cards and boards so your ideas can grow together.",
+        "noteButton": true
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "06-narrow-locked-bar",
+      "file": "arbor-light/06-narrow-locked-bar.png",
+      "md5": "4307e3b0dfd7075c5163e0ee94d4a40a",
+      "sameAsDarkTwin": true,
+      "typewriterPressed": null,
+      "progressPressed": null,
+      "typewriterColor": null,
+      "progressColor": null,
+      "typewriterBorder": null,
+      "formatDisabled": null,
+      "formatTitle": null,
+      "formatOpacity": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      },
+      "bar": {
+        "present": true,
+        "title": "Typewriter Mode is on",
+        "buttons": 9,
+        "disabled": 9,
+        "typewriterOn": "true"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "01-left-open-both-on",
+      "file": "flux-dark/01-left-open-both-on.png",
+      "md5": "2fc77895ce25995d59730e93c1635061",
+      "sameAsDarkTwin": null,
+      "typewriterPressed": "true",
+      "progressPressed": "true",
+      "typewriterColor": "rgb(255, 152, 0)",
+      "progressColor": "rgb(255, 152, 0)",
+      "typewriterBorder": "rgb(29, 74, 82)",
+      "formatDisabled": true,
+      "formatTitle": "Typewriter Mode is on",
+      "formatOpacity": "0.4",
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "02-left-open-both-off",
+      "file": "flux-dark/02-left-open-both-off.png",
+      "md5": "2311e29e0cf159f2ad615bf3f34c183b",
+      "sameAsDarkTwin": null,
+      "typewriterPressed": "false",
+      "progressPressed": "false",
+      "typewriterColor": "rgb(110, 149, 141)",
+      "progressColor": "rgb(110, 149, 141)",
+      "typewriterBorder": "rgb(29, 74, 82)",
+      "formatDisabled": false,
+      "formatTitle": null,
+      "formatOpacity": "1",
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "03-format-greyed-tooltip",
+      "file": "flux-dark/03-format-greyed-tooltip.png",
+      "md5": "887ceb609556715f51fb4bb00ef1f5f4",
+      "sameAsDarkTwin": null,
+      "typewriterPressed": "true",
+      "progressPressed": "false",
+      "typewriterColor": "rgb(255, 152, 0)",
+      "progressColor": "rgb(110, 149, 141)",
+      "typewriterBorder": "rgb(29, 74, 82)",
+      "formatDisabled": true,
+      "formatTitle": "Typewriter Mode is on",
+      "formatOpacity": "0.4",
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      },
+      "note": "the tooltip is the fieldset title (a native tooltip is not captured in a PNG); the buttons are disabled and let the pointer through to it"
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "04-menu-greyed-rows",
+      "file": "flux-dark/04-menu-greyed-rows.png",
+      "md5": "0e562805955c6a9192db5df10d3dfcf3",
+      "sameAsDarkTwin": null,
+      "typewriterPressed": "false",
+      "progressPressed": "false",
+      "typewriterColor": "rgb(110, 149, 141)",
+      "progressColor": "rgb(110, 149, 141)",
+      "typewriterBorder": "rgb(29, 74, 82)",
+      "formatDisabled": false,
+      "formatTitle": null,
+      "formatOpacity": "1",
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      },
+      "menu": {
+        "greyedRows": 7,
+        "greyedGoal": 1,
+        "disabledButtons": 15,
+        "headings": [
+          "Typewriter Mode",
+          "Progress Tracking",
+          "Preferences"
+        ]
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "05-right-drawer-tabs-and-note",
+      "file": "flux-dark/05-right-drawer-tabs-and-note.png",
+      "md5": "55359ebf38266cd0412a58a8180d0c52",
+      "sameAsDarkTwin": null,
+      "typewriterPressed": "false",
+      "progressPressed": "false",
+      "typewriterColor": "rgb(110, 149, 141)",
+      "progressColor": "rgb(110, 149, 141)",
+      "typewriterBorder": "rgb(29, 74, 82)",
+      "formatDisabled": false,
+      "formatTitle": null,
+      "formatOpacity": "1",
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      },
+      "right": {
+        "tabs": [
+          "Tutor",
+          "Links"
+        ],
+        "noteShown": false,
+        "noteText": null,
+        "noteButton": false
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "06-narrow-locked-bar",
+      "file": "flux-dark/06-narrow-locked-bar.png",
+      "md5": "77acbdf9f29a245f75aa547e9bb31aab",
+      "sameAsDarkTwin": null,
+      "typewriterPressed": null,
+      "progressPressed": null,
+      "typewriterColor": null,
+      "progressColor": null,
+      "typewriterBorder": null,
+      "formatDisabled": null,
+      "formatTitle": null,
+      "formatOpacity": null,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      },
+      "bar": {
+        "present": true,
+        "title": "Typewriter Mode is on",
+        "buttons": 9,
+        "disabled": 9,
+        "typewriterOn": "true"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "01-left-open-both-on",
+      "file": "flux-light/01-left-open-both-on.png",
+      "md5": "4f141fee4c41f4c2d8ef391382dd246a",
+      "sameAsDarkTwin": false,
+      "typewriterPressed": "true",
+      "progressPressed": "true",
+      "typewriterColor": "rgb(255, 152, 0)",
+      "progressColor": "rgb(255, 152, 0)",
+      "typewriterBorder": "rgb(29, 74, 82)",
+      "formatDisabled": true,
+      "formatTitle": "Typewriter Mode is on",
+      "formatOpacity": "0.4",
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "02-left-open-both-off",
+      "file": "flux-light/02-left-open-both-off.png",
+      "md5": "a7bd70de485c631a73bd581f1d7b7387",
+      "sameAsDarkTwin": false,
+      "typewriterPressed": "false",
+      "progressPressed": "false",
+      "typewriterColor": "rgb(110, 149, 141)",
+      "progressColor": "rgb(110, 149, 141)",
+      "typewriterBorder": "rgb(29, 74, 82)",
+      "formatDisabled": false,
+      "formatTitle": null,
+      "formatOpacity": "1",
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "03-format-greyed-tooltip",
+      "file": "flux-light/03-format-greyed-tooltip.png",
+      "md5": "a4f357a3a81a1eac83c0dee4b63bdc14",
+      "sameAsDarkTwin": false,
+      "typewriterPressed": "true",
+      "progressPressed": "false",
+      "typewriterColor": "rgb(255, 152, 0)",
+      "progressColor": "rgb(110, 149, 141)",
+      "typewriterBorder": "rgb(29, 74, 82)",
+      "formatDisabled": true,
+      "formatTitle": "Typewriter Mode is on",
+      "formatOpacity": "0.4",
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      },
+      "note": "the tooltip is the fieldset title (a native tooltip is not captured in a PNG); the buttons are disabled and let the pointer through to it"
+    },
+    {
+      "combo": "flux-light",
+      "frame": "04-menu-greyed-rows",
+      "file": "flux-light/04-menu-greyed-rows.png",
+      "md5": "6865fece07db0feca8292798adb31540",
+      "sameAsDarkTwin": false,
+      "typewriterPressed": "false",
+      "progressPressed": "false",
+      "typewriterColor": "rgb(110, 149, 141)",
+      "progressColor": "rgb(110, 149, 141)",
+      "typewriterBorder": "rgb(29, 74, 82)",
+      "formatDisabled": false,
+      "formatTitle": null,
+      "formatOpacity": "1",
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      },
+      "menu": {
+        "greyedRows": 7,
+        "greyedGoal": 1,
+        "disabledButtons": 15,
+        "headings": [
+          "Typewriter Mode",
+          "Progress Tracking",
+          "Preferences"
+        ]
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "05-right-drawer-tabs-and-note",
+      "file": "flux-light/05-right-drawer-tabs-and-note.png",
+      "md5": "5b0b809913b2ef269bb73893021f7ab9",
+      "sameAsDarkTwin": false,
+      "typewriterPressed": "false",
+      "progressPressed": "false",
+      "typewriterColor": "rgb(110, 149, 141)",
+      "progressColor": "rgb(110, 149, 141)",
+      "typewriterBorder": "rgb(29, 74, 82)",
+      "formatDisabled": false,
+      "formatTitle": null,
+      "formatOpacity": "1",
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      },
+      "right": {
+        "tabs": [
+          "Tutor",
+          "Links"
+        ],
+        "noteShown": false,
+        "noteText": null,
+        "noteButton": false
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "06-narrow-locked-bar",
+      "file": "flux-light/06-narrow-locked-bar.png",
+      "md5": "ea5c319a1f660009299d49d175a62517",
+      "sameAsDarkTwin": false,
+      "typewriterPressed": null,
+      "progressPressed": null,
+      "typewriterColor": null,
+      "progressColor": null,
+      "typewriterBorder": null,
+      "formatDisabled": null,
+      "formatTitle": null,
+      "formatOpacity": null,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      },
+      "bar": {
+        "present": true,
+        "title": "Typewriter Mode is on",
+        "buttons": 9,
+        "disabled": 9,
+        "typewriterOn": "true"
+      }
+    }
+  ],
+  "lightFramesByteIdenticalToDarkTwin": [
+    "arbor-light/06-narrow-locked-bar"
+  ]
+}
