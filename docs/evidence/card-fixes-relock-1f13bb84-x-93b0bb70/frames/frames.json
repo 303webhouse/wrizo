@@ -1,0 +1,138 @@
+[
+  {
+    "frame": "arbor-Xa-popup-open-with-X",
+    "file": "arbor-Xa-popup-open-with-X.png",
+    "hash": "#/page/cxf-board",
+    "theme": "plateau",
+    "bundle": "index-DiIq2kU7.js",
+    "popupOpen": true,
+    "closeButton": {
+      "ariaLabel": "Close",
+      "title": "Close",
+      "text": "×",
+      "color": "rgb(138, 124, 104)",
+      "rect": [
+        918,
+        351,
+        28,
+        28
+      ]
+    },
+    "popupRect": [
+      436,
+      386,
+      518,
+      170
+    ],
+    "backdrop": {
+      "parentIsBody": true,
+      "position": "fixed",
+      "zIndex": "210"
+    },
+    "textButtonClose": 0
+  },
+  {
+    "frame": "arbor-Xb-after-click-on-X",
+    "file": "arbor-Xb-after-click-on-X.png",
+    "hash": "#/page/cxf-board",
+    "theme": "plateau",
+    "bundle": "index-DiIq2kU7.js",
+    "popupOpen": false,
+    "closeButton": null,
+    "popupRect": null,
+    "backdrop": null,
+    "textButtonClose": 0,
+    "clickedAt": {
+      "x": 932,
+      "y": 365
+    }
+  },
+  {
+    "frame": "arbor-Xc-after-click-at-rail-centre",
+    "file": "arbor-Xc-after-click-at-rail-centre.png",
+    "hash": "#/page/cxf-board",
+    "theme": "plateau",
+    "bundle": "index-DiIq2kU7.js",
+    "popupOpen": false,
+    "closeButton": null,
+    "popupRect": null,
+    "backdrop": null,
+    "textButtonClose": 0,
+    "clickedAt": {
+      "x": 42,
+      "y": 502
+    },
+    "railCentreByProbe": {
+      "x": 42,
+      "y": 502
+    }
+  },
+  {
+    "frame": "flux-Xa-popup-open-with-X",
+    "file": "flux-Xa-popup-open-with-X.png",
+    "hash": "#/page/cxf-board",
+    "theme": "flux",
+    "bundle": "index-DiIq2kU7.js",
+    "popupOpen": true,
+    "closeButton": {
+      "ariaLabel": "Close",
+      "title": "Close",
+      "text": "×",
+      "color": "rgb(11, 124, 158)",
+      "rect": [
+        918,
+        351,
+        28,
+        28
+      ]
+    },
+    "popupRect": [
+      436,
+      386,
+      518,
+      170
+    ],
+    "backdrop": {
+      "parentIsBody": true,
+      "position": "fixed",
+      "zIndex": "210"
+    },
+    "textButtonClose": 0
+  },
+  {
+    "frame": "flux-Xb-after-click-on-X",
+    "file": "flux-Xb-after-click-on-X.png",
+    "hash": "#/page/cxf-board",
+    "theme": "flux",
+    "bundle": "index-DiIq2kU7.js",
+    "popupOpen": false,
+    "closeButton": null,
+    "popupRect": null,
+    "backdrop": null,
+    "textButtonClose": 0,
+    "clickedAt": {
+      "x": 932,
+      "y": 365
+    }
+  },
+  {
+    "frame": "flux-Xc-after-click-at-rail-centre",
+    "file": "flux-Xc-after-click-at-rail-centre.png",
+    "hash": "#/page/cxf-board",
+    "theme": "flux",
+    "bundle": "index-DiIq2kU7.js",
+    "popupOpen": false,
+    "closeButton": null,
+    "popupRect": null,
+    "backdrop": null,
+    "textButtonClose": 0,
+    "clickedAt": {
+      "x": 42,
+      "y": 502
+    },
+    "railCentreByProbe": {
+      "x": 42,
+      "y": 502
+    }
+  }
+]

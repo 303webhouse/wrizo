@@ -1,0 +1,66 @@
+// CARD CLOSE-X frames (this desk's capture script) from the cx2-green worktree's own dist-web (card-close-x @ 93b0bb70): per theme (Arbor, Flux):
+//  X-a the card popup OPEN with its X in the top-right corner (facts: the X's label, rect, colour; the popup's rect; whether the popup mounts under <body>)
+//  X-b the popup after a REAL click on the X (closed, board un-blurred)
+//  X-c the popup OPEN, then a REAL click at the CENTRE OF THE RAIL (the old hole: the backdrop sat under the fixed rail) - the popup closes
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { withHarness } from 'file:///C:/Users/nickh/writer-studio/.claude/worktrees/cx2-green/apps/desktop/scripts/runtime-verify.mjs';
+
+const OUT = process.env.FRAMES_OUT;
+mkdirSync(OUT, { recursive: true });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const rows = [];
+const CE = '.board-popup-editor';
+const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
+const facts = (app) => app.evalJs(`(() => {
+  const ed = document.querySelector('${CE}'); const pop = ed && (ed.closest('.board-popup, [class*="board-popup"]') || ed.parentElement);
+  const x = [...document.querySelectorAll('button')].find((b) => /close/i.test(b.getAttribute('aria-label') || '') && !/keep dock/i.test(b.textContent));
+  const xr = x ? x.getBoundingClientRect() : null; const pr = pop ? pop.getBoundingClientRect() : null;
+  const bd = document.querySelector('.board-popup-backdrop');
+  return { hash: location.hash, theme: document.documentElement.getAttribute('data-theme'),
+    bundle: ([...document.scripts].map((s) => s.src).find((s) => /assets\\/index-/.test(s)) || '').replace(/^.*assets\\//, ''),
+    popupOpen: !!ed, closeButton: x ? { ariaLabel: x.getAttribute('aria-label'), title: x.getAttribute('title'), text: x.textContent.trim(), color: getComputedStyle(x).color, rect: [Math.round(xr.left), Math.round(xr.top), Math.round(xr.width), Math.round(xr.height)] } : null,
+    popupRect: pr ? [Math.round(pr.left), Math.round(pr.top), Math.round(pr.width), Math.round(pr.height)] : null,
+    backdrop: bd ? { parentIsBody: bd.parentElement === document.body, position: getComputedStyle(bd).position, zIndex: getComputedStyle(bd).zIndex } : null,
+    textButtonClose: [...document.querySelectorAll('button')].filter((b) => b.textContent.trim() === 'Close').length };
+})()`);
+const shot = async (app, name, extra = {}) => {
+  writeFileSync(join(OUT, `${name}.png`), Buffer.from(await app.screenshot(), 'base64'));
+  const row = { frame: name, file: `${name}.png`, ...(await facts(app)), ...extra }; rows.push(row); console.log(JSON.stringify(row));
+};
+const openCard = async (app) => {
+  await app.evalJs(`(() => { const el = document.querySelector('[data-box-id="rc"]'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()`);
+  await app.waitFor(`!!document.querySelector('${CE}')`, { label: 'card popup' }); await sleep(700);
+};
+
+await withHarness(async (app) => {
+  for (const [id, theme] of [['arbor', 'plateau'], ['flux', 'flux']]) {
+    await app.emulateDpr(1, 1400, 900);
+    await app.goto('/');
+    await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-theme','${theme}'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');`);
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+    await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 14000 });
+    await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'cxf-board', text: 'close x frames', createdAt: new Date().toISOString(), origin: null, source: 'page', pageType: 'board', projectId: null,
+      boxes: [{ id: 'rc', kind: 'text', x: 0.12, y: 0.12, w: 0.34, h: 0.3, z: 1, text: 'A card to close with the X.' }, { id: 'rd', kind: 'text', x: 0.55, y: 0.45, w: 0.26, h: 0.14, z: 2, text: 'A second card.' }] })})`);
+    await sleep(400); await app.reload();
+    await app.evalJs("location.hash = '#/page/cxf-board'");
+    await app.waitFor("!!document.querySelector('[data-box-id=\"rc\"]')", { label: 'board card' }); await sleep(900);
+    // X-a
+    await openCard(app);
+    await shot(app, `${id}-Xa-popup-open-with-X`);
+    // X-b: a real click on the X
+    const pt = await app.evalJs(`(() => { const x = [...document.querySelectorAll('button')].find((b) => /close/i.test(b.getAttribute('aria-label') || '') && !/keep dock/i.test(b.textContent)); if (!x) return null; const r = x.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
+    if (pt) { await app.mouseMove(pt.x, pt.y); await sleep(150); await app.mouseDown(pt.x, pt.y); await app.mouseUp(pt.x, pt.y); }
+    await sleep(700);
+    await shot(app, `${id}-Xb-after-click-on-X`, { clickedAt: pt });
+    // X-c: open again, a real click at the centre of the rail
+    await openCard(app);
+    const rail = await app.evalJs(`(() => { const r = document.querySelector('.desk-rail, nav'); const rr = r ? r.getBoundingClientRect() : null; return rr ? { x: Math.round(rr.left + rr.width / 2), y: Math.round(rr.top + rr.height / 2) } : { x: 42, y: 502 }; })()`);
+    await app.mouseMove(42, 502); await sleep(150); await app.mouseDown(42, 502); await app.mouseUp(42, 502);
+    await sleep(700);
+    await shot(app, `${id}-Xc-after-click-at-rail-centre`, { clickedAt: { x: 42, y: 502 }, railCentreByProbe: rail });
+  }
+});
+writeFileSync(join(OUT, 'frames.json'), JSON.stringify(rows, null, 2) + '\n');
+console.log(`CLOSE-X FRAMES: ${rows.length} frames -> ${OUT}`);
