@@ -104,6 +104,7 @@ const barButtons = async (app) =>
 const stripDoor = async (app) =>
   app.evalJs("(() => { const d = document.querySelector('.desk-mode-strip [data-page-plan-door]'); return d ? d.textContent.trim() : null; })()");
 const dispPass = {};   // the display-pass observations, kept for the parked leg's records
+let cd41CloseX = null; // card-close-x - the CD4.1 popup observation, kept for the parked leg's record
 
 await withHarness(async (app) => {
   // ======================================================================
@@ -299,8 +300,16 @@ await withHarness(async (app) => {
     label: document.querySelector('.board-popup-done')?.textContent.trim(),
     popupNoDone: [...document.querySelectorAll('.board-popup button')].every(b => b.textContent.trim() !== 'Done'),
   }))()`);
-  ok('CD4.1: the card-edit popup\'s close button reads exactly "Close" (never "Done"), and no button in the popup says "Done"',
-    popupClose.label === 'Close' && popupClose.popupNoDone === true, JSON.stringify(popupClose));
+  // ---- PARKED — SUPERSEDED by card-close-x (Nick's live test, 2026-10-13) ----
+  // Kept VERBATIM and no longer run: the close control is an X in the pop-up's
+  // top-right corner; it shows a glyph, so its NAME (aria-label) is "Close", not
+  // its text. Parked record in this file's parked section; successor below.
+  // ok('CD4.1: the card-edit popup\'s close button reads exactly "Close" (never "Done"), and no button in the popup says "Done"',
+  //   popupClose.label === 'Close' && popupClose.popupNoDone === true, JSON.stringify(popupClose));
+  // ------------------------------------------------------------------
+  cd41CloseX = { ...popupClose, name: await app.evalJs("document.querySelector('.board-popup-done')?.getAttribute('aria-label') ?? null") };
+  ok('CD4.1 [card-close-x successor]: the card-edit popup\'s close control is named exactly "Close" (never "Done"), and no button in the popup says "Done"',
+    cd41CloseX.name === 'Close' && cd41CloseX.popupNoDone === true, JSON.stringify(cd41CloseX));
   ok('CD4.1 sweep: no control reads exactly "Done" on a board with its card-edit popup open', (await doneCount()) === 0, `doneControls=${await doneCount()}`);
 
   // (b) the Spread's select-mode exit toggle reads "Close", never "Done".
@@ -377,6 +386,10 @@ if (process.env.HARNESS_PARKED === '1') {
     framedNow(dispPass['floor 1100']), JSON.stringify(dispPass['floor 1100']));
   pok('PARKED (was "S2 @wide 2200px: the prose bar is [\\"Pages\\",\\"Plan →\\"] — elder \\"Plan\\" flight tab retired (no bare \\"Plan\\"), \\"Plan →\\" present (framed + legacy consistent)") — display pass (aa11f58): same move; live successor: this file\'s S2 @wide 2200px [display-pass successor]',
     framedNow(dispPass['wide 2200']), JSON.stringify(dispPass['wide 2200']));
+  // CARD-CLOSE-X (2026-10-13) - ONE park: the CD4.1 popup label check, superseded when the close control became a corner X
+  // (a glyph whose accessible name is "Close"). Record byte-frozen; the probe re-verifies the NEW truth from the default section.
+  pok('PARKED (was "CD4.1: the card-edit popup\'s close button reads exactly \\"Close\\" (never \\"Done\\"), and no button in the popup says \\"Done\\"") — card-close-x: the close control is an X whose accessible name is "Close"; live successor: this file\'s CD4.1 [card-close-x successor]',
+    !!cd41CloseX && cd41CloseX.name === 'Close' && cd41CloseX.popupNoDone === true, JSON.stringify(cd41CloseX));
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);

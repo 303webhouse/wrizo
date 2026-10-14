@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { boardName, plainLines } from '../store/entryText';
 import {
@@ -676,7 +677,14 @@ function BoardCardPopup({
 
   applyBoardFormatRef.current = applyBoardFormat;
 
-  return (
+  // card-close-x (Fable, 2026-10-13): "While a pop-up is open, nothing behind it should be clickable." The backdrop is fixed at
+  // z-index 210, but it rendered INSIDE `.desk-frame-stage`, whose `isolation:isolate` (FX4 S2) makes it a stacking context - so 210
+  // only ranked within the stage, and the fixed rail (`.desk-frame-strip`, z-index 1 in the ROOT context) painted over the whole
+  // stage, backdrop included: an outside click landed on the rail's own buttons (chat 1's run: elementFromPoint -> wz-strip, which
+  // holds "Remove"). Portalled to <body>, the backdrop ranks in the root context, above the rail and the page's chrome (toasts and the stale-client banner
+  // still sit above it, as they should). Nothing in this
+  // component reads its DOM ancestors, its colours are :root tokens, and React events still bubble through the component tree.
+  return createPortal(
     <div className="board-popup-backdrop" role="presentation" onClick={onClose}>
       <div
         ref={dialogRef}
@@ -728,6 +736,14 @@ function BoardCardPopup({
         )}
         <div className="board-popup-strip">
           <span className="eyebrow board-popup-eyebrow">Card</span>
+          {/* card-close-x (Nick's live test, 2026-10-13) - the pop-up closes from an X in its
+              top-right corner (the strip's right end; the eyebrow's margin-right:auto puts it
+              there). It replaces the foot's "Close" button and keeps that button's class,
+              board-popup-done, so every driver that closes a card still finds it. Esc and the
+              backdrop click are unchanged. */}
+          <button type="button" className="board-popup-close board-popup-done" aria-label={dt('boardPopupClose')} title={dt('boardPopupClose')} onClick={onClose}>
+            <span aria-hidden="true">{'\u00d7'}</span>
+          </button>
         </div>
         <div
           ref={elRef}
@@ -739,13 +755,11 @@ function BoardCardPopup({
           aria-label={`${lex('board')} text box`}
           style={cardTypeStyle(fontFace, fontSize)}
         />
-        <div className="board-popup-foot">
-          {/* CD4.1 — "Done" retired: the card-edit popup's close control is a door
-              word now, not a completion word (the class board-popup-done is kept). */}
-          <button type="button" className="btn-brass board-popup-done" onClick={onClose}>Close</button>
-        </div>
+        {/* CD4.1's foot "Close" button retired by card-close-x: the X in the strip above
+            is the close control now (it carries the class board-popup-done). */}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
