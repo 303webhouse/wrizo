@@ -1,0 +1,18 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=e40d6979 bundle=index-DAXWgVL4.js/664941b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/wd3-default-c04
+[01/19] OK        exit=0    5s item215.mjs :: ITEM215 VERIFY: PASS (26 checks)
+[02/19] OK        exit=0    1s item224a-sync-integrity.mjs :: ITEM224A VERIFY: PASS (15 checks)
+[03/19] OK        exit=0   16s item83e.mjs :: ITEM83E VERIFY: PASS (13 checks)
+[04/19] OK        exit=0   32s item83f.mjs :: ITEM83F VERIFY: PASS (33 checks)
+
+SUITE ABORTED before item84.mjs: 1 foreign harness browser(s) appeared MID-RUN
+  browserPid=6904 ownerNodePid=23912
+  Another lane started while this sweep was running. Everything measured from here would be
+  measured under contention, so this run is VOID rather than partly trustworthy. Re-run it
+  whole in a quiet window — a sweep cannot be half-clean.
+
+SUITE DONE HARNESS_PARKED=unset — 4/4 of 19 returned a passing verdict
+SUITE RESULT: VOID (aborted mid-run at item84.mjs) — tree=e40d6979 bundle=index-DAXWgVL4.js/664941b NO-REBUILD
+CHUNK 04 EXIT 1
