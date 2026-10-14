@@ -1484,6 +1484,24 @@ export function BoardEditor({ id }: { id: string }) {
     let resizeStart: { w: number; h: number; aspect: number; kind: Box['kind']; pinAspect: number | null } | null = null;
 
     const clearTimer = () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } };
+    // CARD RESIZE RELOCK, THE SECOND CAUSE (chat 1's run, 2026-10-13): a resize or a move drags the mouse across the board, and the
+    // browser selects the text it passes over. The next ordinary press inside that selection - on the corner, a moment later - starts
+    // the browser's own drag of the selected text, which CANCELS the pointer: onCancel -> finish(false) reverts the resize, and the
+    // corner looks locked until a click elsewhere clears the selection (Nick: "until he clicks another card"). Board text is never
+    // selected for its own sake (a card is edited in its popup), so a gesture clears a selection that sits on the board when it starts
+    // and when it ends. A selection anywhere else (the page beside a board) is left alone. The diagnosis is the harness's to prove,
+    // not this comment's: card-resize-relock.mjs R4 (no selection left after a resize) and R5 (no dragstart / pointercancel).
+    const clearBoardSelection = () => {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0 && !sel.isCollapsed && sel.anchorNode && canvas.contains(sel.anchorNode)) sel.removeAllRanges();
+    };
+    // ...and a native drag that starts on a card is refused outright, so no selection, however it was made, can take the pointer.
+    // (The board's one drop target, the survey's drag, starts OUTSIDE the canvas; this never sees it.)
+    const onDragStart = (e: DragEvent) => {
+      const t = e.target as Node | null;
+      const el = t && (t.nodeType === 1 ? (t as HTMLElement) : t.parentElement);
+      if (el && el.closest('.board-box')) e.preventDefault();
+    };
 
     // FX4 S6 — the live preview line's endpoint, updated imperatively
     // (previewLineRef) so a thread-drag never triggers a React render on
@@ -1594,7 +1612,7 @@ export function BoardEditor({ id }: { id: string }) {
       // re-evaluates this box (now that activeResizeIdRef no longer skips
       // it) on the very next render.
       const wasResizing = phase === 'resizing';
-      if (phase === 'resizing' || phase === 'dragging') lastGestureEndRef.current = performance.now();
+      if (phase === 'resizing' || phase === 'dragging') { lastGestureEndRef.current = performance.now(); clearBoardSelection(); }
       phase = 'idle';
       movingIds = [];
       resizingId = null;
@@ -1670,6 +1688,8 @@ export function BoardEditor({ id }: { id: string }) {
       if (handleEl && boxEl) {
         const boxId = boxEl.dataset.boxId!;
         if (boxId !== selectedIdRef.current) return; // handle only active on the selected box
+        // CARD RESIZE RELOCK — no selection already on the board may turn this press into a native drag (see clearBoardSelection above).
+        clearBoardSelection();
         startX = e.clientX; startY = e.clientY; ptype = e.pointerType; activePointerId = e.pointerId;
         try { canvas.setPointerCapture(activePointerId); } catch { /* gone */ }
         beginResize(boxId);
@@ -1682,6 +1702,7 @@ export function BoardEditor({ id }: { id: string }) {
       }
 
       const boxId = boxEl.dataset.boxId!;
+      clearBoardSelection(); // CARD RESIZE RELOCK — a press on a card body never lands inside a selection a gesture left behind
       setSelectedId(boxId);
       setSelectedConnectionId(null); // AB4 S3 — selecting a box clears any connection selection
       startX = e.clientX; startY = e.clientY; ptype = e.pointerType; activePointerId = e.pointerId;
@@ -1865,8 +1886,10 @@ export function BoardEditor({ id }: { id: string }) {
     canvas.addEventListener('pointermove', onMove, { passive: false });
     canvas.addEventListener('pointerup', onUp);
     canvas.addEventListener('pointercancel', onCancel);
+    canvas.addEventListener('dragstart', onDragStart);
     return () => {
       clearTimer();
+      canvas.removeEventListener('dragstart', onDragStart);
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerup', onUp);
