@@ -658,3 +658,8 @@ is owed on a box turn, in `drawers-p1-live.mjs`.
 - **Both announcements are now LAYOUT effects** (the Tutor's as asked; the Tools drawer's too, for the symmetric case), so the hand-over lands before paint and no single frame shows both hands open (`one-drawer.mjs` O7).
 - **`e3` park split out:** `e3-park` branch off main (e3 is red on main itself); removed from this branch.
 - **`item207-core` park dropped from this branch:** FIX's card port already accepts any extra guard in the mount block (covers `allowed('typeface')`); the card port merges first and this branch rebases onto it. Until then `item207-core` MOUNT reads red here.
+
+### A.19 fx18 S1 and the caret script (Oct 13)
+
+- **`fx18` S1 "open, the grips still mirror"** assumed BOTH drawers open at once; under Nick's one-drawer rule opening the right drawer closes the left, so the left grip correctly reads `‹` again (the arrow points the way its drawer will move). Parked verbatim (driver lines included); successor opens each drawer ALONE and checks its open grip - left `›`, right `‹`.
+- **`flux-caret-stale.mjs` was meaningless:** it asked a Range collapsed on the editor ELEMENT for client rects (there are none), so the native caret read null in every row and no verdict could be drawn. It now measures the last character's box in the last text node (right edge = the caret), WITHOUT mutating the editor (a DOM change can fire `selectionchange` and redraw the overlay, hiding the staleness), and prints "NOT MEASURED" instead of a verdict whenever a rect is null. The stale-caret bug itself is not Phase 1's: `FluxBlockCaret.tsx` is on main unchanged, and it goes to FIX's typewriter redesign.

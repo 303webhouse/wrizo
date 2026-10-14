@@ -33,15 +33,24 @@ const fresh = async (app, typewriterOn) => {
   await waitSoft(app, `!!document.querySelector('${ED}')`, { label: 'page' });
   await sleep(1200);
 };
-const caretAtEnd = (app) => app.evalJs(`(() => { const el = document.querySelector('${ED}'); if (!el) return false; el.focus();
-  const r = document.createRange(); r.selectNodeContents(el); r.collapse(false); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()`);
+// THE REAL CARET'S RECT, WITHOUT TOUCHING THE DOM. The first cut collapsed a Range on the editor ELEMENT and asked it for client rects: a Range collapsed at an element boundary has none, so
+// "real" was null in every row and the verdict meant nothing. The caret sits after the LAST CHARACTER of the last text node, so measure that character's box and take its right edge. (The app's
+// own overlay falls back to inserting a zero-width probe span; this measurement must NOT mutate the editor - a DOM change can fire a selectionchange, which redraws the overlay and would hide
+// the very staleness being measured.)
+const lastChar = `(() => { const el = document.querySelector('${ED}'); if (!el) return null;
+  const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let last = null; while (w.nextNode()) { if (w.currentNode.nodeValue && w.currentNode.nodeValue.length) last = w.currentNode; }
+  return last; })()`;
+const caretAtEnd = (app) => app.evalJs(`(() => { const el = document.querySelector('${ED}'); const last = ${lastChar}; if (!el || !last) return false; el.focus();
+  const r = document.createRange(); r.setStart(last, last.nodeValue.length); r.collapse(true); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()`);
 const read = (app) => app.evalJs(`(() => {
   const o = document.querySelector('.flux-block-caret'); const ob = o ? o.getBoundingClientRect() : null;
-  const s = window.getSelection(); let real = null;
-  if (s && s.rangeCount) { const rr = s.getRangeAt(0).cloneRange(); const q = rr.getClientRects()[0]; if (q) real = { left: Math.round(q.left), top: Math.round(q.top), height: Math.round(q.height) }; }
-  const ed = document.querySelector('${ED}'); const tw = document.querySelector('.mode-scroll')?.dataset.typewriter ?? null;
+  const last = ${lastChar}; let real = null;
+  if (last) { const rr = document.createRange(); rr.setStart(last, Math.max(0, last.nodeValue.length - 1)); rr.setEnd(last, last.nodeValue.length);
+    const q = rr.getClientRects()[0]; if (q) real = { left: Math.round(q.right), top: Math.round(q.top), height: Math.round(q.height) }; }
+  const tw = document.querySelector('.mode-scroll')?.dataset.typewriter ?? null;
+  const sel = window.getSelection();
   return { overlay: ob ? { left: Math.round(ob.left), top: Math.round(ob.top), height: Math.round(ob.height) } : null, real, typewriter: tw,
-           dy: ob && real ? Math.round(ob.top - real.top) : null, theme: document.documentElement.getAttribute('data-theme') };
+           dy: ob && real ? Math.round(ob.top - real.top) : null, selectionInEditor: !!(sel && sel.rangeCount && document.querySelector('${ED}')?.contains(sel.anchorNode)), theme: document.documentElement.getAttribute('data-theme') };
 })()`);
 // switch the typewriter ON through whatever control THIS tree has: Phase 1's icon toggle, else the old Settings-menu row
 const toggleOn = async (app) => {
@@ -80,8 +89,9 @@ await withHarness(async (app) => {
   // eslint-disable-next-line no-console
   console.log(JSON.stringify({ bundle, rows }, null, 2));
   const B = rows.find((r) => r.scenario.startsWith('B:')); const C = rows.find((r) => r.scenario.startsWith('C:'));
+  const measured = !!B && B.dy != null && !!C && C.dy != null;
   const stale = B && B.dy != null && Math.abs(B.dy) > 6;
   const redrawn = C && C.dy != null && Math.abs(C.dy) <= 6;
   // eslint-disable-next-line no-console
-  console.log(`\nFLUX-CARET: ${stale ? `STALE after the layout shift (overlay ${B.dy}px from the real caret)` : 'agrees after the shift'}${redrawn ? '; a selectionchange re-draws it correctly (staleness, not a wrong formula)' : ''} - ${bundle}`);
+  console.log(!measured ? `\nFLUX-CARET: NOT MEASURED (a null rect: overlay ${JSON.stringify(B && B.overlay)}, real ${JSON.stringify(B && B.real)}) - no verdict - ${bundle}` : `\nFLUX-CARET: ${stale ? `STALE after the layout shift (overlay ${B.dy}px from the real caret)` : 'agrees after the shift'}${redrawn ? '; a selectionchange re-draws it correctly (staleness, not a wrong formula)' : ''} - ${bundle}`);
 });

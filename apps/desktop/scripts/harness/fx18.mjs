@@ -94,11 +94,22 @@ await withHarness(async (app) => {
     const tutorClosed = await app.evalJs("document.querySelector('.wz-tutor-grip-glyph')?.textContent ?? null");
     ok("S1 (SV25): at rest, the LEFT (sliver) grip points left '‹' and the RIGHT (tutor) grip points right '›' — the right arrow no longer lies about its direction",
       sliverClosed === '‹' && tutorClosed === '›', JSON.stringify({ sliverClosed, tutorClosed }));
-    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(250);
-    await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(250);
+    // ---- PARKED - SUPERSEDED by Phase 1 (Nick's one-drawer rule: opening the right drawer CLOSES the left, so the left grip correctly reads '‹' again - the arrow points the way its drawer will move), 2026-10-13 ----
+    // Kept VERBATIM and no longer run. The premise - BOTH drawers open at once - cannot hold. The successor opens each drawer ALONE and checks its open grip.
+    //
+    // await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(250);
+    // await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(250);
+    // const sliverOpen = await app.evalJs("document.querySelector('.wz-sliver-grip-glyph')?.textContent ?? null");
+    // const tutorOpen = await app.evalJs("document.querySelector('.wz-tutor-grip-glyph')?.textContent ?? null");
+    // ok("S1: open, the grips still mirror — LEFT '›' (inward), RIGHT '‹' (inward) — a true mirror in both states",
+    // sliverOpen === '›' && tutorOpen === '‹', JSON.stringify({ sliverOpen, tutorOpen }));
+    // ----------------------------------------------------------------------
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(450);   // the left drawer, alone
     const sliverOpen = await app.evalJs("document.querySelector('.wz-sliver-grip-glyph')?.textContent ?? null");
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(450);   // shut it
+    await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(450);    // the right drawer, alone
     const tutorOpen = await app.evalJs("document.querySelector('.wz-tutor-grip-glyph')?.textContent ?? null");
-    ok("S1: open, the grips still mirror — LEFT '›' (inward), RIGHT '‹' (inward) — a true mirror in both states",
+    ok("S1 successor [one drawer at a time]: open each drawer ALONE and its grip points inward - the LEFT grip '›' and the RIGHT grip '‹' - the mirror holds in both states (the arrow points the way the drawer will move)",
       sliverOpen === '›' && tutorOpen === '‹', JSON.stringify({ sliverOpen, tutorOpen }));
   }
 
