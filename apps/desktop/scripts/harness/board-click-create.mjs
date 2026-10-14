@@ -31,8 +31,8 @@ const BOARD = 'bcc-board';
 const be = noCR(fs.readFileSync(path.join(SRC, 'components/BoardEditor.tsx'), 'utf8'));
 const pins = (text) => ({
   gate: /createAllowedRef\.current = !isSystemBoard && boardMode === 'open';/.test(text),
-  press: /if \(createAllowedRef\.current && target === canvas && \(e\.pointerType !== 'mouse' \|\| e\.button === 0\)\) \{/.test(text),
-  deselect: /if \(!boxEl\) \{\n\s*setSelectedId\(null\);/.test(text),
+  press: /if \(!hadSelectedCard && createAllowedRef\.current && target === canvas && \(e\.pointerType !== 'mouse' \|\| e\.button === 0\)\) \{/.test(text),
+  deselect: /if \(!boxEl\) \{\n(?:\s*\/\/[^\n]*\n)*\s*const hadSelectedCard = selectedIdRef\.current != null;\n\s*setSelectedId\(null\);/.test(text),
   discard: /if \(freshEmptyIdsRef\.current\.delete\(closingId\)\) \{\n\s*const b = boxesRef\.current\.find\(x => x\.id === closingId\);\n\s*if \(b && b\.kind === 'text' && !\(b\.text \?\? ''\)\.trim\(\)\) \{/.test(text),
   popupOpensOnRelease: /setPopupBoxId\(box\.id\);\n\s*\};\n\n\s*const beginMove/.test(text),
   cancelClean: /if \(phase === 'creating'\) \{ finishCreate\(false\); return; \}/.test(text),
@@ -45,8 +45,26 @@ const pins = (text) => ({
   const m1 = be.replace("target === canvas && ", '');
   const m2 = be.replace("&& !(b.text ?? '').trim()", '');
   const m3 = be.replace("createAllowedRef.current = !isSystemBoard && boardMode === 'open';", 'createAllowedRef.current = !isSystemBoard;');
-  ok('S (mutants): dropping "the press landed on the canvas itself", dropping the "still empty" test, or allowing STORYBOARD/OUTLINE each turn a pin RED (each mutation landed)',
-    m1 !== be && !pins(m1).press && m2 !== be && !pins(m2).discard && m3 !== be && !pins(m3).gate, '');
+  const m4 = be.replace('if (!hadSelectedCard && createAllowedRef.current', 'if (createAllowedRef.current');
+  ok('S (mutants): dropping "the press landed on the canvas itself", dropping the "still empty" test, allowing STORYBOARD/OUTLINE, or dropping "nothing was selected" each turn a pin RED (each mutation landed)',
+    m1 !== be && !pins(m1).press && m2 !== be && !pins(m2).discard && m3 !== be && !pins(m3).gate && m4 !== be && !pins(m4).press, '');
+}
+
+// ---- S3: the approved look (Nick, Oct 14): the board's starters are a thin SQUARE outline at about 40% opacity, lifted on hover/focus; the ghost is a hairline square outline that never takes the pointer ----
+{
+  const css = noCR(fs.readFileSync(path.join(SRC, 'index.css'), 'utf8'));
+  const look = (c) => ({
+    starter: /\.wz-beginnings\[data-beginnings='board'\] \.wz-beginning\{\n\s*border:1px solid currentColor; border-radius:0; opacity:\.4;/.test(c),
+    lift: /\.wz-beginnings\[data-beginnings='board'\] \.wz-beginning:focus-visible\{ opacity:\.9; \}/.test(c),
+    faded: /\.wz-beginnings\.wz-beginnings--faded\{ opacity:0; visibility:hidden; transition:opacity \.35s ease, visibility 0s linear \.35s; \}/.test(c),
+    ghost: /\.board-create-ghost\{[^}]*border:1px solid[^}]*background:none;[^}]*pointer-events:none;[^}]*border-radius:0;/.test(c),
+    boardOnly: !/\n\.wz-beginning\{[^}]*opacity:\.4/.test(c),
+  });
+  const l = look(css);
+  ok('S3: the board\'s starters are a thin square outline at about 40% opacity (lifted on hover and keyboard focus), they fade away with opacity first and visibility after, the ghost is a square hairline outline that never takes the pointer - and the look is scoped to the BOARD row (the page row and STORYBOARD/OUTLINE keep theirs)',
+    Object.values(l).every(Boolean), JSON.stringify(l));
+  const mut = css.replace('border:1px solid currentColor; border-radius:0; opacity:.4;', 'border:1px solid currentColor; border-radius:6px; opacity:.4;');
+  ok('S3 (mutant): a rounded starter turns the pin RED (the mutation landed)', mut !== css && !look(mut).starter, '');
 }
 
 const seedBoard = async (app) => {
@@ -89,7 +107,7 @@ await withHarness(async (app) => {
   await app.mouseUp(p.x, p.y);
   await waitSoft(app, "!!document.querySelector('.board-popup')", { label: 'popup', timeout: 4000 });
   const c1 = await firstCard(app);
-  ok('C1: on release a card exists with its top-left AT the press point, and its pop-up is open; the ghost is gone', (await cards(app)) === 1 && !!c1 && near(c1.left, p.x) && near(c1.top, p.y) && (await popupOpen(app)) && ((await ghost(app)) || {}).display === 'none', JSON.stringify({ p, c1 }));
+  ok('C1: on release a card exists with its top-left AT the press point, and its pop-up is open AT ONCE - as if it had been double-clicked (Nick\'s correction: a plain click opens the pop-up too); the ghost is gone', (await cards(app)) === 1 && !!c1 && near(c1.left, p.x) && near(c1.top, p.y) && (await popupOpen(app)) && ((await ghost(app)) || {}).display === 'none', JSON.stringify({ p, c1 }));
 
   // ===== C3: closed while still empty -> discarded; C4: with words -> kept =======================================================================================================
   await app.key('Escape'); await sleep(500);
@@ -107,11 +125,19 @@ await withHarness(async (app) => {
   await app.mouseMove(card.left + card.width / 2, card.top + card.height / 2); await app.mouseDown(card.left + card.width / 2, card.top + card.height / 2); await sleep(60); await app.mouseUp(card.left + card.width / 2, card.top + card.height / 2); await sleep(300);
   const selectedAfterCardPress = await app.evalJs("document.querySelector('.board-box[data-kind=\"text\"]')?.getAttribute('data-selected')");
   ok('C5: a press ON a card selects it and makes NO new card', (await cards(app)) === 1 && selectedAfterCardPress === 'true', JSON.stringify({ cards: await cards(app), selectedAfterCardPress }));
+  // THE RULING (Fable, Oct 14): with a card selected, the FIRST empty-space click only deselects and creates nothing; the next one (nothing selected) is the one that creates.
   const q = await emptyPoint(app);
   await app.mouseMove(q.x, q.y); await app.mouseDown(q.x, q.y); await sleep(60);
   const selectedDuring = await app.evalJs("document.querySelector('.board-box[data-kind=\"text\"]')?.getAttribute('data-selected')");
-  await app.mouseUp(q.x, q.y); await waitSoft(app, "!!document.querySelector('.board-popup')", { timeout: 3000 }); await app.key('Escape'); await sleep(500);
-  ok('C6: a press on empty space still DESELECTS the selected card (the old behaviour is kept) - and, being empty space on an open board, makes the new card as well, which the empty close then discards', selectedDuring === 'false' && (await cards(app)) === 1, JSON.stringify({ selectedDuring, cards: await cards(app) }));
+  const ghostWhileDeselecting = await ghost(app);
+  await app.mouseUp(q.x, q.y); await sleep(600);
+  ok('C6: with a card SELECTED, the first empty-space click only DESELECTS it - no ghost, no new card, no pop-up (the old deselect, kept)',
+    selectedDuring === 'false' && (await cards(app)) === 1 && !(await popupOpen(app)) && (!ghostWhileDeselecting || ghostWhileDeselecting.display === 'none'), JSON.stringify({ selectedDuring, cards: await cards(app), ghostWhileDeselecting }));
+  await app.mouseMove(q.x, q.y); await app.mouseDown(q.x, q.y); await sleep(60); await app.mouseUp(q.x, q.y);
+  await waitSoft(app, "!!document.querySelector('.board-popup')", { timeout: 3000 });
+  ok('C6: and the NEXT empty-space click, with nothing selected, creates the card and opens its pop-up (the empty close below then discards it)', (await cards(app)) === 2 && (await popupOpen(app)), JSON.stringify({ cards: await cards(app) }));
+  await app.key('Escape'); await sleep(500);
+  ok('C6: closed empty, that new card is discarded; the first card is untouched', (await cards(app)) === 1, JSON.stringify({ cards: await cards(app) }));
 
   // ===== C2: a click-drag ==========================================================================================================================================================
   await seedBoard(app);
@@ -130,6 +156,8 @@ await withHarness(async (app) => {
   // ===== C7: the starters ==========================================================================================================================================================
   await seedBoard(app);
   const s0 = await app.evalJs("(() => { const e = document.querySelector('.wz-beginnings[data-beginnings=\"board\"]'); return e ? { opacity: getComputedStyle(e).opacity, visibility: getComputedStyle(e).visibility } : null; })()");
+  const door0 = await app.evalJs("(() => { const b = document.querySelector('.wz-beginnings[data-beginnings=\"board\"] .wz-beginning'); if (!b) return null; const cs = getComputedStyle(b); return { opacity: cs.opacity, border: cs.borderTopWidth + ' ' + cs.borderTopStyle, radius: cs.borderTopLeftRadius }; })()");
+  ok('C7b: at rest each starter is a thin SQUARE outline at about 40% opacity (1px solid, no radius, opacity 0.4)', !!door0 && door0.opacity === '0.4' && door0.border === '1px solid' && door0.radius === '0px', JSON.stringify(door0));
   const sp = await emptyPoint(app);
   await app.mouseMove(sp.x, sp.y); await app.mouseDown(sp.x, sp.y); await sleep(700);   // HELD: the fade is about the first PRESS, not the release
   const s1 = await app.evalJs("(() => { const e = document.querySelector('.wz-beginnings[data-beginnings=\"board\"]'); return e ? { opacity: getComputedStyle(e).opacity, visibility: getComputedStyle(e).visibility, faded: e.dataset.faded } : null; })()");

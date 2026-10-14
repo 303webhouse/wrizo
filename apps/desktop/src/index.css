@@ -5477,7 +5477,16 @@ a:focus-visible,
    fade), so a door that was itself the thing pressed still completes its click. */
 .wz-beginnings.wz-beginnings--faded{ opacity:0; visibility:hidden; transition:opacity .35s ease, visibility 0s linear .35s; }
 /* BOARD CLICK-TO-CREATE - the ghost that follows the pointer while a card is being sized (functional default; the look follows the mockup). Never takes the pointer. */
-.board-create-ghost{ position:absolute; box-sizing:border-box; border:1px solid var(--accent-rest); background:none; opacity:.7; pointer-events:none; z-index:50; border-radius:0; }
+.board-create-ghost{ position:absolute; box-sizing:border-box; border:1px solid var(--accent-door); background:none; opacity:.7; pointer-events:none; z-index:50; border-radius:0; }
+/* BOARD START (Nick approved the mockup, Oct 14): the empty board's starters are a thin SQUARE OUTLINE at about 40% opacity, quiet until reached for (hover and keyboard focus lift them), and they
+   fade out on the first press (the --faded rule above). The board row only: the same row on the page and in STORYBOARD/OUTLINE keeps its look. The canvas is today's light paper - the outline
+   takes the door's own colour (currentColor), so it reads on whatever paper the theme lays. */
+.wz-beginnings[data-beginnings='board'] .wz-beginning{
+  border:1px solid currentColor; border-radius:0; opacity:.4; padding:12px 18px;
+  transition:color .18s ease, opacity .18s ease;
+}
+.wz-beginnings[data-beginnings='board'] .wz-beginning:hover,
+.wz-beginnings[data-beginnings='board'] .wz-beginning:focus-visible{ opacity:.9; }
 
 @media (prefers-reduced-motion:reduce){ .wz-beginning{ transition:none; } }
 

@@ -1731,9 +1731,11 @@ export function BoardEditor({ id }: { id: string }) {
       }
 
       if (!boxEl) {
+        // RULING (Fable, Oct 14): with a card selected, the FIRST empty-space press only deselects - it makes nothing. The next press, with nothing selected, is the one that creates.
+        const hadSelectedCard = selectedIdRef.current != null;
         setSelectedId(null);   // unchanged: a press on empty space deselects the selected card
-        // BOARD CLICK-TO-CREATE: ...and, on GENUINELY empty canvas (the press landed on the canvas itself - not a door, a hairline, the resize handle or anything laid over it), begins a card.
-        if (createAllowedRef.current && target === canvas && (e.pointerType !== 'mouse' || e.button === 0)) {
+        // BOARD CLICK-TO-CREATE: ...and, on GENUINELY empty canvas (the press landed on the canvas itself - not a door, a hairline, the resize handle or anything laid over it) with nothing selected, begins a card.
+        if (!hadSelectedCard && createAllowedRef.current && target === canvas && (e.pointerType !== 'mouse' || e.button === 0)) {
           e.preventDefault();   // no native text-selection drag starting under the card being sized
           createOrigin = { x: e.clientX, y: e.clientY };
           createDragged = false;
