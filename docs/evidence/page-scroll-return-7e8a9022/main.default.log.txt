@@ -1,0 +1,55 @@
+[
+  {
+    "name": "R1: a board that is a page's paired Plan face takes no part in the way-back (and a system board still does not), decided ONCE per mount (useState initializer, so a later unpairing cannot fire a stray capture)",
+    "pass": false,
+    "detail": "pin not found"
+  },
+  {
+    "name": "R1 (mutant): without the paired-board clause the pin goes RED (the mutation landed and the pin noticed)",
+    "pass": false,
+    "detail": ""
+  },
+  {
+    "name": "fixture: the page is long enough to scroll (the check below would be vacuous on a short page)",
+    "pass": true,
+    "detail": "3684"
+  },
+  {
+    "name": "fixture: the caret and the scroll are set before leaving (scroll > 400, a caret offset exists)",
+    "pass": true,
+    "detail": "{\"scroll1\":520,\"caret1\":7}"
+  },
+  {
+    "name": "R2a (precondition, true on both trees): while the writer is ON the Plan the slot still names the PAGE with its scroll - the board's capture happens when it UNMOUNTS, so this cannot show the cause",
+    "pass": true,
+    "detail": "{\"entryId\":\"psr-page\",\"route\":\"/page/psr-page\",\"scrollY\":520,\"caret\":7,\"mode\":\"drafting\",\"capturedAt\":1791951105137}"
+  },
+  {
+    "name": "R2 (the cause, measured): leaving the Plan did NOT overwrite the slot - after the return the page found a slot naming ITSELF and consumed it (the slot is empty). On main the Plan's unmount capture leaves the slot naming the Plan board, the page finds a slot that is not its own, and restores nothing",
+    "pass": false,
+    "detail": "{\"slotAfter\":{\"entryId\":\"mv7lf5uvr8x9b3eh6\",\"route\":\"/page/mv7lf5uvr8x9b3eh6\",\"scrollY\":0,\"capturedAt\":1791951106051}}"
+  },
+  {
+    "name": "R3: page -> Plan -> the PAGE door -> page puts the writer back where they were: the scroll within 3px of where it was, and the caret at the same offset",
+    "pass": false,
+    "detail": "{\"before\":{\"scroll1\":520,\"caret1\":7},\"after\":{\"scrollBack1\":0,\"caretBack1\":6500}}"
+  },
+  {
+    "name": "R3 (second trip): from a different spot the return is faithful again - the slot was captured afresh on the second departure and the Plan did not clobber it",
+    "pass": false,
+    "detail": "{\"before\":{\"scroll2\":260,\"caret2\":7},\"after\":{\"scrollBack2\":0,\"caretBack2\":6500}}"
+  },
+  {
+    "name": "R4: a page the writer never scrolled or clicked makes the round trip without an error and comes back to EXACTLY where it was when they left it (measured before leaving, within 3px)",
+    "pass": false,
+    "detail": "{\"topBefore\":29,\"top\":0,\"slotOnPlan\":{\"entryId\":\"psr-page\",\"route\":\"/page/psr-page\",\"scrollY\":29,\"caret\":6500,\"mode\":\"drafting\",\"capturedAt\":1791951112154}}"
+  }
+]
+
+PAGE-SCROLL-RETURN VERIFY: FAIL - 6/9
+  FAIL R1: a board that is a page's paired Plan face takes no part in the way-back (and a system board still does not), decided ONCE per mount (useState initializer, so a later unpairing cannot fire a stray capture) | pin not found
+  FAIL R1 (mutant): without the paired-board clause the pin goes RED (the mutation landed and the pin noticed) | 
+  FAIL R2 (the cause, measured): leaving the Plan did NOT overwrite the slot - after the return the page found a slot naming ITSELF and consumed it (the slot is empty). On main the Plan's unmount capture leaves the slot naming the Plan board, the page finds a slot that is not its own, and restores nothing | {"slotAfter":{"entryId":"mv7lf5uvr8x9b3eh6","route":"/page/mv7lf5uvr8x9b3eh6","scrollY":0,"capturedAt":1791951106051}}
+  FAIL R3: page -> Plan -> the PAGE door -> page puts the writer back where they were: the scroll within 3px of where it was, and the caret at the same offset | {"before":{"scroll1":520,"caret1":7},"after":{"scrollBack1":0,"caretBack1":6500}}
+  FAIL R3 (second trip): from a different spot the return is faithful again - the slot was captured afresh on the second departure and the Plan did not clobber it | {"before":{"scroll2":260,"caret2":7},"after":{"scrollBack2":0,"caretBack2":6500}}
+  FAIL R4: a page the writer never scrolled or clicked makes the round trip without an error and comes back to EXACTLY where it was when they left it (measured before leaving, within 3px) | {"topBefore":29,"top":0,"slotOnPlan":{"entryId":"psr-page","route":"/page/psr-page","scrollY":29,"caret":6500,"mode":"drafting","capturedAt":1791951112154}}
