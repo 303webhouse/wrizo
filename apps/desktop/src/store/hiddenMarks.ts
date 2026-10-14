@@ -197,7 +197,7 @@ function repair(doc: Doc): void {
 /** Replace [s, e) with `ins`, keeping every mark whose partner survives the edit (a closer that loses its opener stays in front of
  *  the inserted text, an opener that loses its closer stays after it), then repair: a pair left empty is removed, a pair a space
  *  broke is re-closed with the space outside it. The caret lands after the inserted text. */
-export function replaceRange(text: string, s: number, e: number, ins: string): EditResult {
+function replaceRangeCore(text: string, s: number, e: number, ins: string): EditResult {
   const runs = allRuns(text);
   // a marker the range cuts through is taken whole, never one star of it
   for (let moved = true; moved;) {
@@ -265,7 +265,7 @@ export function nativeRange(text: string, s: number, e: number): { s: number; e:
 }
 
 /** Rule 3, Backspace at a collapsed caret. */
-export function backspaceAt(text: string, p0: number): EditResult | null {
+function backspaceAtCore(text: string, p0: number): EditResult | null {
   const p = snapCaret(text, p0);
   const li = lineAt(text, p);
   let q = p;
@@ -280,14 +280,14 @@ export function backspaceAt(text: string, p0: number): EditResult | null {
     if (q === li.start) {
       if (q === 0) return null;
       // joining onto the line above: this line's lead would become text in the middle of a line, so it goes with the newline
-      return replaceRange(text, q - 1, li.leadEnd, '');
+      return replaceRangeCore(text, q - 1, li.leadEnd, '');
     }
   }
-  return replaceRange(text, q - 1, q, '');
+  return replaceRangeCore(text, q - 1, q, '');
 }
 
 /** Rule 3, Delete at a collapsed caret. */
-export function deleteAt(text: string, p0: number): EditResult | null {
+function deleteAtCore(text: string, p0: number): EditResult | null {
   const p = snapCaret(text, p0);
   const li = lineAt(text, p);
   if (p < li.leadEnd) {
@@ -302,10 +302,10 @@ export function deleteAt(text: string, p0: number): EditResult | null {
   if (q >= text.length) return null;
   if (q === li.end) {
     const next = lineAt(text, q + 1);
-    const r = replaceRange(text, q, next.leadEnd, '');
+    const r = replaceRangeCore(text, q, next.leadEnd, '');
     return { ...r, caret: snapCaret(r.text, Math.min(p, r.text.length)), structural: r.structural || next.leadEnd > q + 1 };
   }
-  const r = replaceRange(text, q, q + 1, '');
+  const r = replaceRangeCore(text, q, q + 1, '');
   return { ...r, caret: snapCaret(r.text, p <= r.text.length ? p : r.text.length) };
 }
 
@@ -315,30 +315,30 @@ export function deleteAt(text: string, p0: number): EditResult | null {
  *  flanking rule, a mark never touches a space on its inner side, so this matches what the writer sees), and never past the line's
  *  hidden lead. What makes it safe is the REMOVAL: through replaceRange, which keeps a mark whose partner survives and removes a pair
  *  left empty. With nothing visible before the caret on its line, it is a plain Backspace (joining lines, or removing the token). */
-export function wordBackspaceAt(text: string, p0: number): EditResult | null {
+function wordBackspaceAtCore(text: string, p0: number): EditResult | null {
   const p = snapCaret(text, p0);
   const li = lineAt(text, p);
   const prevVisible = (x: number) => { let i = x - 1; while (i >= li.leadEnd && hid(li, i) !== 0) i--; return i; };
   let i = prevVisible(p);
-  if (i < li.leadEnd) return backspaceAt(text, p);
+  if (i < li.leadEnd) return backspaceAtCore(text, p);
   let q = p;
   while (i >= li.leadEnd && /\s/.test(text[i])) { q = i; i = prevVisible(q); }
   while (i >= li.leadEnd && !/\s/.test(text[i])) { q = i; i = prevVisible(q); }
-  return replaceRange(text, q, p, '');
+  return replaceRangeCore(text, q, p, '');
 }
 
 /** CTRL+DELETE: forward to the start of the next word - over the rest of this word and the spaces after it, or over the spaces alone
  *  when the caret sits in front of them - skipping hidden marks. With nothing visible after the caret on its line, a plain Delete. */
-export function wordDeleteAt(text: string, p0: number): EditResult | null {
+function wordDeleteAtCore(text: string, p0: number): EditResult | null {
   const p = snapCaret(text, p0);
   const li = lineAt(text, p);
   const nextVisible = (x: number) => { let i = x; while (i < li.end && hid(li, i) !== 0) i++; return i; };
   let i = nextVisible(p);
-  if (i >= li.end) return deleteAt(text, p);
+  if (i >= li.end) return deleteAtCore(text, p);
   let e = p;
   if (!/\s/.test(text[i])) while (i < li.end && !/\s/.test(text[i])) { e = i + 1; i = nextVisible(e); }
   while (i < li.end && /\s/.test(text[i])) { e = i + 1; i = nextVisible(e); }
-  const r = replaceRange(text, p, e, '');
+  const r = replaceRangeCore(text, p, e, '');
   return { ...r, caret: snapCaret(r.text, Math.min(p, r.text.length)) };
 }
 
@@ -371,9 +371,9 @@ export function reabsorb(text: string, closeAt: number, closers: string, wsEnd: 
 
 /** Enter. A run the caret is inside closes before the newline and opens again after it, so neither line shows a mark; a run the
  *  caret is at the END of simply stays on the first line. At a line's start the new line goes above, so a bullet stays a bullet. */
-export function enterAt(text: string, s: number, e: number): EditResult {
+function enterAtCore(text: string, s: number, e: number): EditResult {
   let base: EditResult = { text, caret: snapCaret(text, s), structural: false };
-  if (e > s) { const r = nativeRange(text, s, e); base = replaceRange(text, r.s, r.e, ''); }
+  if (e > s) { const r = nativeRange(text, s, e); base = replaceRangeCore(text, r.s, r.e, ''); }
   const t = base.text;
   const c = base.caret;
   const li = lineAt(t, c);
@@ -410,3 +410,53 @@ export function enterAt(text: string, s: number, e: number): EditResult {
   repair(doc);
   return { text: doc.text, caret: snapCaret(doc.text, doc.caret), structural: base.structural || doc.structural || cs.length > 0 };
 }
+
+// ---- THE WINDOW (typing-latency, 2026-10-13) --------------------------------------------------------------------------------------
+// Every rule above reads LINES: readLead and readMarks take one line, lineAt bounds itself at the '\n's around a position, and no run
+// can cross a newline (Enter closes a run before it and reopens it after). allRuns and repair walk the whole text only because they
+// were handed the whole text - and that walk, on every keystroke, was the 211 rules' share of a 50k-word page's keystroke (81 ms).
+// So each rule runs on a WINDOW of whole lines: the lines the edit touches, plus one whole line on each side (Backspace at a line's
+// start joins the line above, Delete at its end joins the line below), and its result is spliced back. Lines outside the window are
+// not read and come back byte-identical, which is what they would have done in the whole-text run: a run there is neither cut nor
+// emptied, so repair finds it where it was and leaves it. A short text skips the window (nothing to save).
+const WINDOW_FROM = 4000;
+
+function windowAround(text: string, s: number, e: number): { ws: number; we: number } {
+  let ws = s <= 0 ? 0 : text.lastIndexOf('\n', s - 1) + 1;              // the start of s's line
+  if (ws > 0) ws = ws - 1 === 0 ? 0 : text.lastIndexOf('\n', ws - 2) + 1;  // ...and of the line above it
+  let we = text.indexOf('\n', Math.max(e, 0));                           // the end of e's line
+  if (we === -1) we = text.length;
+  else { const n2 = text.indexOf('\n', we + 1); we = n2 === -1 ? text.length : n2; }   // ...and of the line below it
+  return { ws, we };
+}
+
+function inWindow<R extends { text: string; caret: number }>(text: string, s: number, e: number, rule: (t: string, s: number, e: number) => R | null): R | null {
+  if (text.length < WINDOW_FROM) return rule(text, s, e);
+  const lo = Math.max(0, Math.min(s, e, text.length));
+  const hi = Math.min(text.length, Math.max(s, e, 0));
+  const { ws, we } = windowAround(text, lo, hi);
+  const r = rule(text.slice(ws, we), s - ws, e - ws);
+  if (!r) return null;
+  return { ...r, text: text.slice(0, ws) + r.text + text.slice(we), caret: r.caret + ws };
+}
+
+/** Replace [s, e) with `ins`, keeping every mark whose partner survives the edit (a closer that loses its opener stays in front of
+ *  the inserted text, an opener that loses its closer stays after it), then repair: a pair left empty is removed, a pair a space
+ *  broke is re-closed with the space outside it. The caret lands after the inserted text. */
+export function replaceRange(text: string, s: number, e: number, ins: string): EditResult {
+  return inWindow(text, s, e, (t, a, b) => replaceRangeCore(t, a, b, ins))!;
+}
+/** Rule 3, Backspace at a collapsed caret. */
+export function backspaceAt(text: string, p0: number): EditResult | null { return inWindow(text, p0, p0, (t, a) => backspaceAtCore(t, a)); }
+/** Rule 3, Delete at a collapsed caret. */
+export function deleteAt(text: string, p0: number): EditResult | null { return inWindow(text, p0, p0, (t, a) => deleteAtCore(t, a)); }
+/** CTRL+BACKSPACE - see wordBackspaceAtCore. */
+export function wordBackspaceAt(text: string, p0: number): EditResult | null { return inWindow(text, p0, p0, (t, a) => wordBackspaceAtCore(t, a)); }
+/** CTRL+DELETE - see wordDeleteAtCore. */
+export function wordDeleteAt(text: string, p0: number): EditResult | null { return inWindow(text, p0, p0, (t, a) => wordDeleteAtCore(t, a)); }
+/** Enter - see enterAtCore. */
+export function enterAt(text: string, s: number, e: number): EditResult { return inWindow(text, s, e, (t, a, b) => enterAtCore(t, a, b))!; }
+
+/** The unwindowed rules, for the equivalence check only (scripts/typing-latency-window-check.mjs): never call these from the editor. */
+export const __unwindowed = { replaceRange: replaceRangeCore, backspaceAt: backspaceAtCore, deleteAt: deleteAtCore,
+  wordBackspaceAt: wordBackspaceAtCore, wordDeleteAt: wordDeleteAtCore, enterAt: enterAtCore };
