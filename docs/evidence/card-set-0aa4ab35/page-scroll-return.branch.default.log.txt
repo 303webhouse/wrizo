@@ -1,0 +1,45 @@
+[
+  {
+    "name": "R1: a board that is a page's paired Plan face takes no part in the way-back (and a system board still does not), decided ONCE per mount (useState initializer, so a later unpairing cannot fire a stray capture)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "R1 (mutant): without the paired-board clause the pin goes RED (the mutation landed and the pin noticed)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "fixture: the page is long enough to scroll (the check below would be vacuous on a short page)",
+    "pass": true,
+    "detail": "3684"
+  },
+  {
+    "name": "fixture: the caret and the scroll are set before leaving (scroll > 400, a caret offset exists)",
+    "pass": true,
+    "detail": "{\"scroll1\":520,\"caret1\":7}"
+  },
+  {
+    "name": "R2: while the writer is ON the Plan the way-back slot still names the PAGE, with its scroll - not the Plan board (the cause, measured: a participating board used to overwrite it on unmount)",
+    "pass": true,
+    "detail": "{\"onPlan\":true,\"slotOnPlan\":{\"entryId\":\"psr-page\",\"route\":\"/page/psr-page\",\"scrollY\":520,\"caret\":7,\"mode\":\"drafting\",\"capturedAt\":1791950459316},\"back\":true}"
+  },
+  {
+    "name": "R3: page -> Plan -> the PAGE door -> page puts the writer back where they were: the scroll within 3px of where it was, and the caret at the same offset",
+    "pass": true,
+    "detail": "{\"before\":{\"scroll1\":520,\"caret1\":7},\"after\":{\"scrollBack1\":520,\"caretBack1\":7}}"
+  },
+  {
+    "name": "R3 (second trip): from a different spot the return is faithful again - the slot was captured afresh on the second departure and the Plan did not clobber it",
+    "pass": true,
+    "detail": "{\"before\":{\"scroll2\":260,\"caret2\":7},\"after\":{\"scrollBack2\":260,\"caretBack2\":7}}"
+  },
+  {
+    "name": "R4: a page that was never scrolled and had no caret makes the round trip without an error and lands at the top, as it was",
+    "pass": false,
+    "detail": "{\"r3\":{\"onPlan\":true,\"slotOnPlan\":{\"entryId\":\"psr-page\",\"route\":\"/page/psr-page\",\"scrollY\":29,\"caret\":6500,\"mode\":\"drafting\",\"capturedAt\":1791950466160},\"back\":true},\"top\":29}"
+  }
+]
+
+PAGE-SCROLL-RETURN VERIFY: FAIL - 1/8
+  FAIL R4: a page that was never scrolled and had no caret makes the round trip without an error and lands at the top, as it was | {"r3":{"onPlan":true,"slotOnPlan":{"entryId":"psr-page","route":"/page/psr-page","scrollY":29,"caret":6500,"mode":"drafting","capturedAt":1791950466160},"back":true},"top":29}

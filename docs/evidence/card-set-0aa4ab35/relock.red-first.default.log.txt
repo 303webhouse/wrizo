@@ -1,0 +1,9 @@
+PASS  (premise) the card is selected and shows its resize handle, no popup open  [{"w":239,"handle":true,"popup":false,"threadArmed":"false","selected":true}]
+PASS  R1 (premise): a real resize of the corner grows the card  [{"before":239,"after":299}]
+PASS  R2 THE BUG: an IMMEDIATE second resize grows the card again (no lock)  [{"before":299,"after":359,"state":{"w":359,"handle":true,"popup":true,"threadArmed":"false","selected":true}}]
+FAIL  R2: and nothing took the card - no popup opened, no thread armed, the handle is still there  [{"w":359,"handle":true,"popup":true,"threadArmed":"false","selected":true}]
+FAIL  R3: a click on the corner right after a resize leaves the card as it was - no popup, still selected with its handle  [{"w":289,"handle":true,"popup":true,"threadArmed":"false","selected":true}]
+FAIL  R3: and the next resize works  [{"before":289,"after":289,"state":{"w":289,"handle":false,"popup":false,"threadArmed":"false","selected":false}}]
+FAIL  CONTROL: the same second resize WITHOUT the double-click count grows the card (the count is the variable)  [{"before":299,"after":299,"state":{"w":299,"handle":true,"popup":false,"threadArmed":"false","selected":true}}]
+
+CARD-RESIZE-RELOCK VERIFY: FAIL - 4/7 failed
