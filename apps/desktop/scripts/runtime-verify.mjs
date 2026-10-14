@@ -349,6 +349,7 @@ function connect(wsUrl) {
   const ws = new WebSocket(wsUrl);
   const pending = new Map();
   const evWaiters = [];
+  const taps = new Set();   // TYPING-LATENCY: persistent listeners (the one-shot waiters below resolve once and are gone)
   let msgId = 0;
   ws.onmessage = (ev) => {
     const m = JSON.parse(ev.data);
@@ -358,6 +359,7 @@ function connect(wsUrl) {
       return;
     }
     if (m.method) {
+      for (const t of taps) { try { t(m.method, m.params); } catch {} }
       for (let i = evWaiters.length - 1; i >= 0; i--) {
         if (evWaiters[i].method === m.method) {
           evWaiters[i].resolve(m.params);
@@ -383,7 +385,8 @@ function connect(wsUrl) {
         if (i >= 0) { evWaiters.splice(i, 1); resolve(null); }
       }, timeout);
     });
-  return { ws, ready, cdp, waitEvent };
+  const tap = (fn) => { taps.add(fn); return () => taps.delete(fn); };
+  return { ws, ready, cdp, waitEvent, tap };
 }
 
 // Page-side helpers injected into every fresh document.
@@ -411,7 +414,7 @@ window.__setText = (text, sel) => {
 `;
 
 // --- the harness facade given to scenario code ----------------------------
-function makeApp(base, cdp, waitEvent) {
+function makeApp(base, cdp, waitEvent, tap) {
   const evalJs = async (expression) => {
     const r = await cdp('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
     if (r.exceptionDetails) throw new Error('page eval: ' + JSON.stringify(r.exceptionDetails));
@@ -422,6 +425,10 @@ function makeApp(base, cdp, waitEvent) {
   const app = {
     base,
     evalJs,
+    /** TYPING-LATENCY - raw CDP access for an instrument that needs events (a trace): wait for one `method` event (null on timeout),
+     *  and tap every event while a callback is attached (the returned function detaches it). */
+    waitEvent: (method, timeout) => waitEvent(method, timeout),
+    tap: (fn) => (tap ? tap(fn) : () => {}),
     /** Re-inject page helpers (call after a full reload). */
     injectHelpers,
     /** Click a button/link/role=button by exact-then-substring visible text. */
@@ -857,10 +864,40 @@ export async function withHarness(scenario, opts = {}) {
     await conn.ready;
     await conn.cdp('Page.enable');
     await conn.cdp('Runtime.enable');
-    const app = makeApp(base, conn.cdp, conn.waitEvent);
+    const app = makeApp(base, conn.cdp, conn.waitEvent, conn.tap);
+    // TYPING-LATENCY - THE SHADOW-VS-DOM CHECK UNDER EVERY EDITING HARNESS (Fable, 2026-10-13). The page's row editor
+    // (src/store/lineRows.ts) keeps a shadow of its text; in harness mode every render compares it with the DOM, row by row, and a
+    // difference is logged as WZ-ROWS-MISMATCH (and resynced, so the scenario carries on). Armed on every page this harness loads,
+    // before the app's own code runs; counted here from the console, which survives reloads. A file that rendered rows prints one
+    // ROWS-SHADOW VERIFY line with the number of renders checked beside it (a zero is never reported as a pass); a file whose pages
+    // never rendered rows prints nothing. opts.verifyRows === false switches it off (the latency profiler: the check reads the whole
+    // page per keystroke and would be measured as part of the keystroke).
+    const shadowMismatches = [];
+    const verifyRows = opts.verifyRows !== false;
+    if (verifyRows) {
+      conn.tap((method, params) => {
+        if (method !== 'Runtime.consoleAPICalled') return;
+        const first = params && params.args && params.args[0] && params.args[0].value;
+        if (typeof first === 'string' && first.startsWith('WZ-ROWS-MISMATCH')) shadowMismatches.push(first);
+      });
+      const arm = "window.__wzVerifyRows = true;";
+      await conn.cdp('Page.addScriptToEvaluateOnNewDocument', { source: arm });
+      await conn.cdp('Runtime.evaluate', { expression: arm }).catch(() => {});
+    }
     // Wait for the first authed render, then inject helpers.
     await app.injectHelpers().catch(() => {});
-    return await scenario(app);
+    const result = await scenario(app);
+    if (verifyRows) {
+      const checked = await app.evalJs("(() => { try { return Number(sessionStorage.getItem('wz-rows-checks') || 0); } catch { return 0; } })()").catch(() => 0);
+      if (shadowMismatches.length > 0) {
+        // eslint-disable-next-line no-console
+        console.log(`\nROWS-SHADOW VERIFY: FAIL - ${shadowMismatches.length} mismatch(es) between the page's shadow lines and its DOM (renders checked: ${checked}); first: ${shadowMismatches.slice(0, 3).join(' | ')}`);
+      } else if (checked > 0) {
+        // eslint-disable-next-line no-console
+        console.log(`\nROWS-SHADOW VERIFY: PASS (${checked} renders checked, shadow == DOM on every one)`);
+      }
+    }
+    return result;
   } finally {
     try { ws && ws.close(); } catch {}
     killBrowser(proc, udd);

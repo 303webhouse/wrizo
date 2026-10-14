@@ -81,6 +81,7 @@ const OWNERS = [
   ['211 rules', /^(snapCaret|snapCaretAfterClick|stepLeft|stepRight|backspaceAt|deleteAt|wordBackspaceAt|wordDeleteAt|replaceRange|nativeRange|enterAt|reabsorb|closersAt|lineAt|allRuns)(\$\d+)?$/],
   ['the 211 controller', /^(plainNow|repairInput|beforeInput|selectionChange|markKey|pendingMark|setPending)(\$\d+)?$/],
   ['undo + em dash', /^(record|classifyEditKind|findEmDashTrigger|applyEmDash)(\$\d+)?$/],
+  ['the rows (lineRows)', /^(writeRows|replaceRegion|readNativeEdit|noteNativeEdit|rowsOffsetOf|offsetBeforeTop|rowsPointFor|revealRowsAtCaret|recomputeStarts|lineOf|verifyRows|placeRowsCaret|mountRows|rowsCaretOffset|rowsSelectionOffsets|rowsSelectionEnds|rowsDomPoint|editorPlainText|writeRow)(\$\d+)?$/],
 ];
 
 // Installed in the page. Plain function, serialised with toString, so nothing in it passes through a template literal's escapes.
@@ -130,7 +131,10 @@ function pageInstruments() {
 // Installed in the page after the profile. Returns medians in ms.
 function layoutShape() {
   const el = document.querySelector('.forward-only-editor');
-  const html = el.innerHTML;
+  // the editor renders ROWS now (store/lineRows.ts): "today" is the ONE-BLOCK page rebuilt from them - the decorated lines joined by
+  // newlines, then the EOF guard - which is exactly what the editor wrote before rows. (Without rows, its own innerHTML is that.)
+  const html = (() => { const rs = [...el.children].filter((c) => c.classList.contains('wz-row')); if (!rs.length) return el.innerHTML;
+    const g = el.querySelector('.md-eof-guard'); return rs.map((r) => r.innerHTML).join('\n') + (g ? g.outerHTML : ''); })();
   const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return Math.round(s[Math.floor(s.length / 2)] * 10) / 10; };
   const T = 15;
   const make = (inner) => {
@@ -192,7 +196,10 @@ async function variantE() {
   const el = document.querySelector('.forward-only-editor');
   const scroller = document.querySelector('.mode-scroll');
   if (!el || !scroller) return { missing: true };
-  const html = el.innerHTML;
+  // the editor renders ROWS now (store/lineRows.ts): "today" is the ONE-BLOCK page rebuilt from them - the decorated lines joined by
+  // newlines, then the EOF guard - which is exactly what the editor wrote before rows. (Without rows, its own innerHTML is that.)
+  const html = (() => { const rs = [...el.children].filter((c) => c.classList.contains('wz-row')); if (!rs.length) return el.innerHTML;
+    const g = el.querySelector('.md-eof-guard'); return rs.map((r) => r.innerHTML).join('\n') + (g ? g.outerHTML : ''); })();
   const lines = html.split('\n');
   const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
   const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return Math.round(s[Math.floor(s.length / 2)] * 10) / 10; };
@@ -232,6 +239,9 @@ async function variantE() {
     const mid = Math.floor(c.children.length / 2);
     c.children[mid].scrollIntoView({ block: 'center' });
     await frame();
+    // CORRECTION (2026-10-14): this counts every block, because checkVisibility() of a content-visibility:auto element ITSELF is
+    // true - only its contents are skipped. It is kept as recorded; variant G's G1 counts skipping from the browser's own
+    // contentvisibilityautostatechange event instead.
     const rendered = [...c.children].filter((r) => r.getBoundingClientRect().height > 0 && getComputedStyle(r).contentVisibility === 'auto' && r.checkVisibility && r.checkVisibility({ contentVisibilityAuto: true })).length;
     const w = document.createTreeWalker(c.children[mid], NodeFilter.SHOW_TEXT); let t = null, n;
     while ((n = w.nextNode())) if (n.data.length > 8 && !(n.parentElement && n.parentElement.closest('.md-mark-hidden'))) { t = n; break; }
@@ -267,7 +277,10 @@ async function variantE() {
 async function variantF() {
   const el = document.querySelector('.forward-only-editor');
   if (!el) return { missing: true };
-  const html = el.innerHTML;
+  // the editor renders ROWS now (store/lineRows.ts): "today" is the ONE-BLOCK page rebuilt from them - the decorated lines joined by
+  // newlines, then the EOF guard - which is exactly what the editor wrote before rows. (Without rows, its own innerHTML is that.)
+  const html = (() => { const rs = [...el.children].filter((c) => c.classList.contains('wz-row')); if (!rs.length) return el.innerHTML;
+    const g = el.querySelector('.md-eof-guard'); return rs.map((r) => r.innerHTML).join('\n') + (g ? g.outerHTML : ''); })();
   const lines = html.split('\n');
   const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return xs.length ? Math.round(s[Math.floor(s.length / 2)] * 10) / 10 : null; };
   const host = document.createElement('div');
@@ -342,6 +355,159 @@ async function variantF() {
   }
 }
 
+// VARIANT G (Fable, 2026-10-14: "F wins ... but 108 ms is still twice the budget. Find what still lays out per keystroke with F.
+// Content-visibility is now justified to try on F rows, with your character-count height estimate, if it measurably cuts the cost.")
+// THE CORRECTION THIS STARTS FROM: E's "renderedBlocksAroundCaret" read every block (1112/2778) because it asked checkVisibility() of
+// the content-visibility:auto ROW itself - which is always visible; only its CONTENTS are skipped. So the conclusion drawn from it
+// ("content-visibility skipped nothing; containment alone did the work") was FIX's instrument error: F's own run measured containment
+// alone at 108 ms, against E's 7.7 ms WITH content-visibility. Skipping is counted here from the browser's own signal, the
+// `contentvisibilityautostatechange` event (`skipped` true/false per row), never from a geometry or visibility read.
+// Three shapes, each F's rows in the same hidden-editor host F uses:
+//   G1  F + content-visibility:auto, contain-intrinsic-size from the character-count estimate (E's method): one-char layout, rows
+//       actually skipped, the estimate's drift, the scroll jump, and the four identities (copy must stay byte-identical);
+//   G2  F with contain: inline-size added (a row's inline size never depends on its text): does the cost come from intrinsic sizing?
+//   G3  F inside a host with contain: strict and a fixed size: is the cost in the rows, or in the ancestors' layout around them?
+async function variantG() {
+  const el = document.querySelector('.forward-only-editor');
+  const scroller = document.querySelector('.mode-scroll');
+  if (!el || !scroller) return { missing: true };
+  // the page's rows as they are NOW (the product renders rows already); their inner HTML is the line, decorated
+  const live = [...el.children].filter((c) => c.classList.contains('wz-row'));
+  const lines = live.length ? live.map((r) => r.innerHTML) : el.innerHTML.split('\n');
+  const guard = el.querySelector('.md-eof-guard') ? el.querySelector('.md-eof-guard').outerHTML : '';
+  const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return xs.length ? Math.round(s[Math.floor(s.length / 2)] * 10) / 10 : null; };
+  const lh = parseFloat(getComputedStyle(el).lineHeight) || 28;
+  const F = 'display:inline-block;width:100%;box-sizing:border-box;vertical-align:top;';
+  const host = document.createElement('div');
+  host.className = 'wz-probe-host';
+  const mk = (rowStyle, hostStyle = '') => {
+    host.setAttribute('style', hostStyle);
+    const c = el.cloneNode(false);
+    c.removeAttribute('contenteditable'); c.removeAttribute('id'); c.removeAttribute('aria-describedby');
+    c.style.display = '';
+    c.innerHTML = lines.map((l, i) => `<span class="wz-probe-row" style="${F}${rowStyle(i)}">${l}</span>`).join('\n') + guard;
+    host.appendChild(c);
+    return c;
+  };
+  const selectAllText = (c) => { const sel = window.getSelection(); const r = document.createRange(); r.selectNodeContents(c); sel.removeAllRanges(); sel.addRange(r); const s = sel.toString(); sel.removeAllRanges(); return s; };
+  const firstText = (row) => { const w = document.createTreeWalker(row, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) if (n.data.length > 8 && !(n.parentElement && n.parentElement.closest('.md-mark-hidden'))) return n; return null; };
+  const oneChar = (c, row) => { const t = firstText(row); const lay = []; if (t) for (let i = 0; i < 15; i += 1) { t.data = t.data + 'a'; const b = performance.now(); void c.offsetHeight; lay.push(performance.now() - b); } return med(lay); };
+  const prevDisplay = el.style.display;
+  el.parentElement.insertBefore(host, el.nextSibling);
+  el.style.display = 'none';
+  try {
+    // ground truth: F rows, nothing skipped - each row's true height, the characters per screen line, the identities' baseline
+    const truth = mk(() => 'contain:layout style;');
+    void truth.offsetHeight;
+    const rowsT = [...truth.children].filter((r) => r.classList.contains('wz-probe-row'));
+    const trueH = rowsT.map((r) => r.getBoundingClientRect().height);
+    const trueTotal = Math.round(truth.getBoundingClientRect().height);
+    const trueW = Math.round(truth.getBoundingClientRect().width);
+    const base = { text: truth.textContent, inner: truth.innerText, selectAll: selectAllText(truth) };
+    const cpls = [];
+    rowsT.forEach((r, i) => { const n = Math.round(trueH[i] / lh); const chars = (r.textContent || '').length; if (n >= 2) cpls.push(chars / n); });
+    const cpl = cpls.length ? med(cpls) : null;
+    const F_oneChar = oneChar(truth, rowsT[Math.floor(rowsT.length / 2)]);
+    truth.remove();
+    const out = { lines: lines.length, lineHeight: lh, charsPerLine: cpl, wrappedRowsMeasured: cpls.length, trueTotalPx: trueTotal, F_containOnly_oneCharLayout: F_oneChar };
+    // G1 - content-visibility on F rows, estimated sizes
+    if (cpl) {
+      const est = (i) => Math.max(1, Math.ceil((lines[i].replace(/<[^>]*>/g, '').length) / cpl)) * lh;
+      const c = mk((i) => `contain:layout style;content-visibility:auto;contain-intrinsic-size:auto ${est(i)}px;`);
+      const rows = [...c.children].filter((r) => r.classList.contains('wz-probe-row'));
+      const skipped = new Map();
+      rows.forEach((r, i) => r.addEventListener('contentvisibilityautostatechange', (e) => { skipped.set(i, !!e.skipped); }));
+      await frame();
+      const estTotal = Math.round(c.getBoundingClientRect().height);
+      const mid = rows[Math.floor(rows.length / 2)];
+      mid.scrollIntoView({ block: 'center' });
+      await frame(); await frame();
+      const skippedNow = [...skipped.values()].filter(Boolean).length;
+      const g1one = oneChar(c, mid);
+      const far = rows[Math.floor(rows.length * 0.75)];
+      const sb = scroller.getBoundingClientRect();
+      scroller.scrollTop = scroller.scrollTop + (far.getBoundingClientRect().top - sb.top) - 100;
+      const at0 = Math.round(far.getBoundingClientRect().top - sb.top);
+      await frame(); await frame();
+      const at1 = Math.round(far.getBoundingClientRect().top - scroller.getBoundingClientRect().top);
+      out.G1_contentVisibility = { oneCharLayout_median: g1one, rowsSkipped: skippedNow, rowsWithState: skipped.size, rows: rows.length,
+        estimatedTotalPx: estTotal, driftPx: estTotal - trueTotal, driftPct: Math.round(((estTotal - trueTotal) / trueTotal) * 10000) / 100, scrollJumpPx: at1 - at0,
+        textContentIdentical: c.textContent === base.text, innerTextIdentical: c.innerText === base.inner, selectAllTextIdentical: selectAllText(c) === base.selectAll };
+      c.remove();
+    }
+    // G2 - inline-size containment added
+    { const c = mk(() => 'contain:inline-size layout style;'); void c.offsetHeight;
+      const rows = [...c.children].filter((r) => r.classList.contains('wz-probe-row'));
+      out.G2_inlineSize = { oneCharLayout_median: oneChar(c, rows[Math.floor(rows.length / 2)]), heightVsTruth: Math.round(c.getBoundingClientRect().height) - trueTotal,
+        innerTextIdentical: c.innerText === base.inner };
+      c.remove(); }
+    // G3 - the same F rows inside a strictly contained, fixed-size host: the ancestors cannot be involved
+    { const c = mk(() => 'contain:layout style;', `contain:strict;width:${trueW}px;height:${trueTotal}px;overflow:hidden;`); void c.offsetHeight;
+      const rows = [...c.children].filter((r) => r.classList.contains('wz-probe-row'));
+      out.G3_strictHost = { oneCharLayout_median: oneChar(c, rows[Math.floor(rows.length / 2)]) };
+      c.remove(); }
+    return out;
+  } finally {
+    host.remove();
+    host.removeAttribute('style');
+    el.style.display = prevDisplay;
+  }
+}
+
+// THE KEYSTROKE TRACE (Fable, 2026-10-14: "Find what still lays out per keystroke"). Chrome's own timeline over real keystrokes in the
+// REAL editor: per key (keydown to the next keydown), the time in each rendering phase, every Layout's dirty and total object counts
+// (how much of the page each layout touched), and - for a layout JavaScript forced - the function that forced it (the build is
+// unminified, so the names are the source's).
+async function traceKeys(app, n, gap, sleep) {
+  const events = [];
+  const off = app.tap((m, p) => { if (m === 'Tracing.dataCollected' && p && p.value) for (const e of p.value) events.push(e); });
+  await app.cdp('Tracing.start', { categories: 'devtools.timeline,disabled-by-default-devtools.timeline,disabled-by-default-devtools.timeline.stack', transferMode: 'ReportEvents' });
+  for (let i = 0; i < n; i += 1) { await app.typeKeys('a'); await sleep(gap); }
+  const done = app.waitEvent('Tracing.tracingComplete', 60000);
+  await app.cdp('Tracing.end');
+  await done;
+  off();
+  const keydowns = events.filter((e) => e.name === 'EventDispatch' && e.args && e.args.data && e.args.data.type === 'keydown').map((e) => e.ts).sort((a, b) => a - b);
+  const PH = ['Layout', 'UpdateLayoutTree', 'PrePaint', 'Paint', 'Layerize', 'ParseHTML', 'FunctionCall', 'EventDispatch', 'RunMicrotasks'];
+  const keys = keydowns.map((t0, k) => ({ t0, t1: keydowns[k + 1] ?? t0 + gap * 1000, ms: Object.fromEntries(PH.map((p) => [p, 0])), layouts: [] }));
+  const keyOf = (ts) => keys.find((k) => ts >= k.t0 && ts < k.t1);
+  // a phase arrives either as one complete event (ph X, with dur) or as a begin/end pair (B ... E on the same thread): both are read,
+  // the pair folded into one event carrying the begin's args and the end's
+  const flat = [];
+  const open = new Map();
+  for (const e of events) {
+    if (!PH.includes(e.name)) continue;
+    if (e.ph === 'X' && typeof e.dur === 'number') flat.push(e);
+    else if (e.ph === 'B') { const key = e.tid + ':' + e.name; (open.get(key) || open.set(key, []).get(key)).push(e); }
+    else if (e.ph === 'E') { const st = open.get(e.tid + ':' + e.name); const b = st && st.pop(); if (b) flat.push({ name: e.name, ts: b.ts, dur: e.ts - b.ts, args: { ...(b.args || {}), ...(e.args || {}) } }); }
+  }
+  for (const e of flat) {
+    const k = keyOf(e.ts);
+    if (!k) continue;
+    k.ms[e.name] += e.dur / 1000;
+    if (e.name === 'Layout') {
+      const b = (e.args && e.args.beginData) || {};
+      const st = b.stackTrace && b.stackTrace[0];
+      k.layouts.push({ ms: Math.round(e.dur / 100) / 10, dirty: b.dirtyObjects ?? null, total: b.totalObjects ?? null, partial: b.partialLayout ?? null, forcedBy: st ? st.functionName || '(anonymous)' : null });
+    }
+  }
+  const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return xs.length ? Math.round(s[Math.floor(s.length / 2)] * 10) / 10 : null; };
+  const pct = (xs, q) => { const s = [...xs].sort((a, b) => a - b); return xs.length ? Math.round(s[Math.min(s.length - 1, Math.floor(s.length * q))] * 10) / 10 : null; };
+  const forced = {};
+  for (const k of keys) for (const l of k.layouts) if (l.forcedBy) forced[l.forcedBy] = (forced[l.forcedBy] || 0) + 1;
+  return {
+    keys: keys.length, traceEvents: events.length,
+    perKeyMedianMs: Object.fromEntries(PH.map((p) => [p, med(keys.map((k) => k.ms[p]))])),
+    perKeyP95Ms: Object.fromEntries(PH.map((p) => [p, pct(keys.map((k) => k.ms[p]), 0.95)])),
+    layoutsPerKey_median: med(keys.map((k) => k.layouts.length)),
+    dirtyObjects_median: med(keys.flatMap((k) => k.layouts.map((l) => l.dirty).filter((x) => x !== null))),
+    totalObjects_median: med(keys.flatMap((k) => k.layouts.map((l) => l.total).filter((x) => x !== null))),
+    forcedLayoutsBy: forced,
+    sampleKey: keys[Math.floor(keys.length / 2)] ? keys[Math.floor(keys.length / 2)].layouts : [],
+  };
+}
+
 // THE AUTOSAVE MOMENT (Fable, 2026-10-13): the page saves AUTOSAVE_MS (2s) after the writer STOPS (each keystroke restarts the
 // timer), then the store flushes (300ms) - a whole-page JSON write. Typed as a writer does - a 30-key burst, then a pause - with a
 // long-task observer and the storage writes timed: does the save moment hitch, and by how much?
@@ -382,6 +548,8 @@ await withHarness(async (app) => {
     // 4. the control: no wrappers, no profiler
     for (let i = 0; i < CONTROL_KEYS; i += 1) { await app.typeKeys('a'); await sleep(gap); }
     const control = (await app.evalJs('window.__wz.recs')).slice(WARM);
+    // THE KEYSTROKE TRACE (Fable, 2026-10-14): what still lays out per key - before any wrapper or profiler is installed
+    const keystrokeTrace = await traceKeys(app, 25, gap, sleep);
 
     // 1-3. instrumented
     await app.evalJs('window.__wz.recs = []; window.__wz.calls = []; window.__wz.wrap()');
@@ -516,6 +684,10 @@ await withHarness(async (app) => {
     row.variantE = await app.evalJs(`(${variantE.toString()})()`);
     // VARIANT F (the row shape) - E's block rows against today's inline-block .md-line shape, on innerText / copy / height identity
     row.variantF = await app.evalJs(`(${variantF.toString()})()`);
+    // VARIANT G (Fable, 2026-10-14) - content-visibility on F rows (skipping counted from the browser's own event), inline-size
+    // containment, and a strictly contained host: where the remaining per-keystroke layout lives
+    row.variantG = await app.evalJs(`(${variantG.toString()})()`);
+    row.keystrokeTrace = keystrokeTrace;
     // ---- SUPERSEDED (Fable, 2026-10-13: chat 1's run @ 14032189 saw 0 writes - this ran AFTER variantE, which had hidden the
     // editor and moved the selection, so the burst's keys never reached the page). Kept verbatim, no longer run; the autosave is
     // now its OWN phase, before the layout experiments, with the real editor visible and the keys proved landed (above).
@@ -543,6 +715,15 @@ await withHarness(async (app) => {
         if (!(v.heightPx > 0)) why.push(`variantF.${k}.heightPx=${v.heightPx}`);
       }
       if (!((f.today || {}).heightPx > 0)) why.push('variantF: today\'s clone laid out at zero height');
+      const g = row.variantG || {};
+      if (g.missing) why.push('variantG: no editor or scroller');
+      if (!(g.wrappedRowsMeasured > 0)) why.push('variantG: no wrapped row measured (no characters-per-line, so no G1 estimate)');
+      if (!(g.G1_contentVisibility && g.G1_contentVisibility.rowsWithState > 0)) why.push('variantG.G1: no row reported a content-visibility state (skipping unmeasured)');
+      for (const k of ['G1_contentVisibility', 'G2_inlineSize', 'G3_strictHost']) if (!(g[k] && g[k].oneCharLayout_median > 0)) why.push(`variantG.${k}.oneCharLayout_median=${g[k] && g[k].oneCharLayout_median}`);
+      if (!(g.F_containOnly_oneCharLayout > 0)) why.push(`variantG.F_containOnly_oneCharLayout=${g.F_containOnly_oneCharLayout}`);
+      const tr = row.keystrokeTrace || {};
+      if (!(tr.keys >= 20)) why.push(`keystrokeTrace: ${tr.keys} keys traced (25 typed)`);
+      if (!(tr.perKeyMedianMs && tr.perKeyMedianMs.Layout > 0)) why.push('keystrokeTrace: no Layout time in the trace (a category or event-shape problem, not a result)');
       if (!(autosave.keysLanded > 0)) why.push(`autosave: the burst's keys did not land (keysLanded=${autosave.keysLanded})`);
       if (!(autosave.writes.length > 0)) why.push('autosave: no storage write in the 6s window');
       if (why.length) { row.INVALID = why; invalid.push(`${words} words: ${why.join('; ')}`); }
@@ -559,7 +740,7 @@ await withHarness(async (app) => {
     console.log(`\nTYPING LATENCY PROFILE: INVALID - ${invalid.length} measurement(s) refused:\n  ${invalid.join('\n  ')}`);
     process.exitCode = 1;
   } else console.log('\nTYPING LATENCY PROFILE: VALID - no zero measurement, no characters-per-line fallback, the autosave keys landed and wrote');
-});
+}, { verifyRows: false });   // the shadow-vs-DOM check reads the whole page per render; it is not part of a writer's keystroke
 } finally {
   if (BUILD) execSync('pnpm build:web', { cwd: join(here, '..'), stdio: 'pipe' });   // back to the normal (minified) build
 }

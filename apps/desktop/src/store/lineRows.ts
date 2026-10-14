@@ -419,6 +419,8 @@ declare global { interface Window { __wzVerifyRows?: boolean; __wzRowsChecks?: n
 export function verifyRows(R: Rows): void {
   if (typeof window === 'undefined' || !window.__wzVerifyRows) return;
   window.__wzRowsChecks = (window.__wzRowsChecks ?? 0) + 1;
+  // the count the harness reports beside its verdict; sessionStorage, because a scenario's own fixtures reload the page
+  try { sessionStorage.setItem('wz-rows-checks', String(Number(sessionStorage.getItem('wz-rows-checks') || 0) + 1)); } catch { /* storage refused: the count is lower, never the verdict */ }
   const dom = readEditorPlainText(R.el.textContent ?? '', null).plain;
   let why = '';
   if (dom !== R.text) why = 'text';
