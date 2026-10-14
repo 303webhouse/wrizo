@@ -140,6 +140,30 @@ await withHarness(async (app) => {
     ok(`${T} X6: a click outside the card (the backdrop) still closes the pop-up`,
       opened3 && outsideHit === 'board-popup-backdrop' && afterOutside.popupGone && afterOutside.blurGone, JSON.stringify({ opened3, outsideHit, ...afterOutside }));
     if (!afterOutside.popupGone) { await app.key('Escape'); await sleep(300); }
+
+    // X7 (Fable, 2026-10-13: "While a pop-up is open, nothing behind it should be clickable") - chat 1's run found X6's point landing
+    // on the rail (wz-strip, which holds "Remove"). Two points, each probed and then really clicked: one on the open backdrop clear of
+    // all chrome, one at the centre of the rail. Each must hit the backdrop, and the click must only close the pop-up - the address
+    // and the board's cards unchanged (nothing behind took the click).
+    for (const where of ['backdrop', 'rail']) {
+      await sleep(600);
+      const opened4 = await openPopup(app);
+      const pt = opened4 ? await app.evalJs(`(() => {
+        if (${JSON.stringify(where)} === 'rail') { const r = document.querySelector('.desk-frame-strip')?.getBoundingClientRect();
+          return r && r.width > 0 ? { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) } : null; }
+        return { x: Math.round(innerWidth / 2), y: innerHeight - 24 };
+      })()`) : null;
+      const before = await app.evalJs("({ hash: location.hash, cards: document.querySelectorAll('.board-box').length })");
+      const hit = pt ? await app.evalJs(`(() => { const e = document.elementFromPoint(${pt.x}, ${pt.y}); return e ? (e.className && typeof e.className === 'string' ? e.className.split(' ')[0] : e.tagName) : null; })()`) : null;
+      if (pt) await click(app, pt, 1);
+      await sleep(400);
+      const after = await closedState(app);
+      const after2 = await app.evalJs("({ hash: location.hash, cards: document.querySelectorAll('.board-box').length })");
+      ok(`${T} X7 (${where}): a click ${where === 'rail' ? 'at the centre of the rail' : 'on the open backdrop'} hits the backdrop and only closes the pop-up - same address, same cards`,
+        opened4 && !!pt && hit === 'board-popup-backdrop' && after.popupGone && after.blurGone && after2.hash === before.hash && after2.cards === before.cards,
+        JSON.stringify({ opened4, pt, hit, ...after, before, after: after2 }));
+      if (!after.popupGone) { await app.key('Escape'); await sleep(300); }
+    }
   }
 });
 
