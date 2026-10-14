@@ -214,9 +214,13 @@ await withHarness(async (app) => {
     open: !!document.querySelector('.wz-cascade-panel'),
     title: document.querySelector('.wz-cascade-panel-title')?.textContent,
     hasOpenJournal: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'Open the Journal'),
-    hasNewPage: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'New page'),
+    hasNewPage: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'New Pages'),
   })`);
-  ok('S3: clicking Journal opens layer 2 with "Open the Journal" and "New page"',
+  // SUPERSEDED (item word-diet, Nick) — cascadeJournalNewPage reworks, "New page" -> "New Pages".
+  // ok('S3: clicking Journal opens layer 2 with "Open the Journal" and "New page"',
+  //   journalPanel.open && journalPanel.title === 'Journal' && journalPanel.hasOpenJournal && journalPanel.hasNewPage,
+  //   JSON.stringify(journalPanel));
+  ok('S3 [word-diet successor]: clicking Journal opens layer 2 with "Open the Journal" and "New Pages"',
     journalPanel.open && journalPanel.title === 'Journal' && journalPanel.hasOpenJournal && journalPanel.hasNewPage,
     JSON.stringify(journalPanel));
 
@@ -254,16 +258,25 @@ await withHarness(async (app) => {
   // string, not a fabricated project name, keeps this honest to the actual
   // fixture rather than an assumed one.
   const homeLabel = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  ok('S3 (successor to ab3.mjs\'s "S4/S2: the Page face\'s Where-it-lives names the project..."): the home label still names the project ("In Untitled" — this fixture never typed a title) through the cascade\'s Page panel',
-    homeLabel === 'In Untitled', String(homeLabel));
+  // SUPERSEDED (item word-diet, Nick) — pageHomeProject drops its "In " prefix
+  // whole ("{drawer name}", bare); ORIGINAL claim parked verbatim:
+  // ok('S3 (successor to ab3.mjs\'s "S4/S2: the Page face\'s Where-it-lives names the project..."): the home label still names the project ("In Untitled" — this fixture never typed a title) through the cascade\'s Page panel',
+  //   homeLabel === 'In Untitled', String(homeLabel));
+  ok('S3 [word-diet successor]: the home label still names the project ("Untitled" — this fixture never typed a title — name, not narration) through the cascade\'s Page panel',
+    homeLabel === 'Untitled', String(homeLabel));
 
   // The saved-silently footer's positive case — a loose (unfiled) page.
   await freshLoosePage(app, LAPTOP_W, 900);
   await clickCategory(app, 'page'); // Page
   await sleep(200);
   const loosePageFooter = await app.evalJs("document.querySelector('.wz-pageface-footer')?.textContent");
-  ok('S3/DoD: on a loose (unfiled) page, the Page panel carries the saved-silently footer — its only appearance anywhere once framed',
-    !!loosePageFooter && loosePageFooter.includes('Saved automatically'), String(loosePageFooter));
+  // SUPERSEDED (item word-diet, Nick) — the saved-silently footer line
+  // RETIRES whole (JournalEntry.tsx's own footer: subject prop, now
+  // undefined unconditionally). ORIGINAL claim parked verbatim:
+  // ok('S3/DoD: on a loose (unfiled) page, the Page panel carries the saved-silently footer — its only appearance anywhere once framed',
+  //   !!loosePageFooter && loosePageFooter.includes('Saved automatically'), String(loosePageFooter));
+  ok('S3/DoD [word-diet successor]: on a loose (unfiled) page, the Page panel carries NO footer at all now (REMOVE)',
+    !loosePageFooter, String(loosePageFooter));
 
   // Successor to ab3.mjs's own retired "S2: the Page face's star toggle
   // actually persists to entry.starred" (parked there, SUPERSEDED —

@@ -342,8 +342,14 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
   await sleep(200);
   const journalSliverButtons = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].map(b => b.textContent.trim())");
-  ok('S3: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New page card" are genuinely absent, not merely disabled',
-    !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New page card'), JSON.stringify(journalSliverButtons));
+  // SUPERSEDED (item word-diet, Nick) — boardNewPageCard's text itself
+  // changed ("New page card" -> "New Pages Card"); checking the OLD text's
+  // absence would trivially pass once the text is simply different, without
+  // proving the NEW text is absent too. ORIGINAL claim parked verbatim:
+  // ok('S3: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New page card" are genuinely absent, not merely disabled',
+  //   !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New page card'), JSON.stringify(journalSliverButtons));
+  ok('S3 [word-diet successor]: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New Pages Card" are genuinely absent, not merely disabled',
+    !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New Pages Card'), JSON.stringify(journalSliverButtons));
   const journalFooterTogglePresent = await app.evalJs("!!document.querySelector('.wz-sliver-board-footer')");
   ok('S3: the connections-footer toggle STILL works on a system Board — arranging (including the footer) is the full FX5 hand, only Add/Delete are restricted',
     journalFooterTogglePresent === true, String(journalFooterTogglePresent));
@@ -424,8 +430,12 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
   await sleep(200);
   const userBoardSliverButtons = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].map(b => b.textContent.trim())");
-  ok('S3: an ORDINARY user Board still carries BOTH Add controls, byte-identical to before this ticket — the restriction is scoped to system Boards only',
-    userBoardSliverButtons.includes('Add card') && userBoardSliverButtons.includes('New page card'), JSON.stringify(userBoardSliverButtons));
+  // SUPERSEDED (item word-diet, Nick) — boardNewPageCard's text itself
+  // changed, "New page card" -> "New Pages Card". ORIGINAL claim parked verbatim:
+  // ok('S3: an ORDINARY user Board still carries BOTH Add controls, byte-identical to before this ticket — the restriction is scoped to system Boards only',
+  //   userBoardSliverButtons.includes('Add card') && userBoardSliverButtons.includes('New page card'), JSON.stringify(userBoardSliverButtons));
+  ok('S3 [word-diet successor]: an ORDINARY user Board still carries BOTH Add controls — the restriction is scoped to system Boards only',
+    userBoardSliverButtons.includes('Add card') && userBoardSliverButtons.includes('New Pages Card'), JSON.stringify(userBoardSliverButtons));
 
   await app.evalJs(POINTER_HELPER);
   await selectBox(app, 'b1-user-card');

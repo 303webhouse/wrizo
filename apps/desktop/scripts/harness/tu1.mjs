@@ -356,8 +356,13 @@ await withHarness(async (app) => {
   await sleep(250);
   await openTutor(app);
   const structureLoose = await app.evalJs("Array.from(document.querySelectorAll('.wz-tutor-section'))[1].innerText");
-  ok('S3 Structure: a loose page reads its own honest home label',
-    structureLoose.toLowerCase().includes('loose'), structureLoose);
+  // SUPERSEDED (item word-diet, Nick) — pageHomeLoose's text itself changed,
+  // "Loose — belongs nowhere yet" -> "Unfiled" (no longer contains "loose").
+  // ORIGINAL claim parked verbatim:
+  // ok('S3 Structure: a loose page reads its own honest home label',
+  //   structureLoose.toLowerCase().includes('loose'), structureLoose);
+  ok('S3 Structure [word-diet successor]: a loose page reads its own honest home label ("Unfiled")',
+    structureLoose.includes('Unfiled'), structureLoose);
 
   // (b) a filed page (in a project) with a board-pin and a linked beat.
   await freshProsePage(app, 1400, 900);
@@ -388,8 +393,13 @@ await withHarness(async (app) => {
   await sleep(250);
   await openTutor(app);
   const structureFiled = await app.evalJs("Array.from(document.querySelectorAll('.wz-tutor-section'))[1].innerText");
-  ok('S3 Structure: a filed page names its project as home',
-    structureFiled.includes('In '), structureFiled);
+  // SUPERSEDED (item word-diet, Nick) — pageHomeProject drops "In " whole;
+  // this fixture's project is never titled (F4's "no title required" door).
+  // ORIGINAL claim parked verbatim:
+  // ok('S3 Structure: a filed page names its project as home',
+  //   structureFiled.includes('In '), structureFiled);
+  ok('S3 Structure [word-diet successor]: a filed page names its project as home ("Untitled", bare)',
+    structureFiled.includes('Untitled'), structureFiled);
   // PW1 S3/PW27 + Fable's ruling 4 (2026-09-08) — SUPERSEDED IN PLACE, original
   // quoted verbatim (A4). Item 125 separates MEMBERSHIP from DISPLAY: the
   // pin-card is one display of the relation, and a page can be a member of a

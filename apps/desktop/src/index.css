@@ -4168,7 +4168,18 @@ a:focus-visible,
 .wz-drawer-note-btn[aria-expanded='true']{ color:var(--brass); border-color:var(--brass); background:none; }
 .wz-drawer-note-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
 .wz-drawer-note-pop{ position:absolute; left:0; top:calc(100% + 4px); z-index:5; width:max-content; max-width:260px; padding:10px 12px; background:var(--desk-ground);
-  border:1px solid var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-ui); font-size:12.5px; line-height:1.45; pointer-events:auto; }
+  border:1px solid var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-ui); font-size:12.5px; line-height:1.45; pointer-events:auto;
+  /* ITEM word-diet review (Fable, Oct 13) — a DrawerNote beside an UPPERCASE
+     heading (the Fragments lens, .wz-tutor-h) otherwise inherits that
+     transform into the note's own prose; the note's words are never a
+     heading, so reset it explicitly rather than per-call-site. */
+  text-transform:none; }
+/* ITEM word-diet review (Fable, Oct 13, W4) — a "?" near the right edge
+   (the Tutor Ask box) opens its pop RIGHTWARD from left:0, running off the
+   viewport. Measured at open-time (DrawerNote.tsx); this modifier anchors
+   from the button's right edge instead, opening leftward, so the pop stays
+   inside the viewport near any edge. */
+.wz-drawer-note-pop--left{ left:auto; right:0; }
 
 .wz-tutor-section{ display:flex; flex-direction:column; gap:6px; }
 .wz-tutor-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }

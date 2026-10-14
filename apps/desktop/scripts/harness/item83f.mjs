@@ -838,8 +838,13 @@ await withHarness(async (app) => {
   //     && JSON.stringify(pk0.checked) === JSON.stringify(['normal']) && pk0.anyDisabled === false && pk0.group === 'wz-page-kind-label'
   //     && e4Prose.structureZone === false && e4Prose.templates === 3, JSON.stringify({ pk0, e4Prose }));
   // ------------------------------------------------------------------
-  ok('E4 [page-templates successor]: prose Draft carries a "Page kind" row directly below the Templates - Normal, Screenplay, Research in that order, Normal preselected, none greyed, one labelled radiogroup - and still no Structure zone; the Templates hold their FOUR stand-ins',
-    !!pk0 && pk0.heading === 'Page kind' && pk0.afterTemplates && JSON.stringify(pk0.labels) === JSON.stringify(['Normal', 'Screenplay', 'Research'])
+  // SUPERSEDED (item word-diet, Nick) — railPageKind reworks, "Page kind" -> "Pages Kind".
+  // ok('E4 [page-templates successor]: prose Draft carries a "Page kind" row directly below the Templates - Normal, Screenplay, Research in that order, Normal preselected, none greyed, one labelled radiogroup - and still no Structure zone; the Templates hold their FOUR stand-ins',
+  //   !!pk0 && pk0.heading === 'Page kind' && pk0.afterTemplates && JSON.stringify(pk0.labels) === JSON.stringify(['Normal', 'Screenplay', 'Research'])
+  //     && JSON.stringify(pk0.checked) === JSON.stringify(['normal']) && pk0.anyDisabled === false && pk0.group === 'wz-page-kind-label'
+  //     && e4Prose.structureZone === false && e4Prose.templates === 4, JSON.stringify({ pk0, e4Prose }));
+  ok('E4 [word-diet successor]: prose Draft carries a "Pages Kind" row directly below the Templates - Normal, Screenplay, Research in that order, Normal preselected, none greyed, one labelled radiogroup - and still no Structure zone; the Templates hold their FOUR stand-ins',
+    !!pk0 && pk0.heading === 'Pages Kind' && pk0.afterTemplates && JSON.stringify(pk0.labels) === JSON.stringify(['Normal', 'Screenplay', 'Research'])
       && JSON.stringify(pk0.checked) === JSON.stringify(['normal']) && pk0.anyDisabled === false && pk0.group === 'wz-page-kind-label'
       && e4Prose.structureZone === false && e4Prose.templates === 4, JSON.stringify({ pk0, e4Prose }));
   ok('E4 [Fable\'s review successor]: the style guides are absent before Research, and the drawer offers no Convert row',

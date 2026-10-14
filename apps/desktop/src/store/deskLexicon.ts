@@ -597,7 +597,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   boardModeOpen: 'Open',
   boardModeStoryboard: 'Storyboard',
   boardModeOutline: 'Outline',
-  boardPageDoor: 'Page',
+  boardPageDoor: 'Pages', // ITEM word-diet, pages-rename bucket (a)
   pagePlanDoor: 'Plan',
   // A1 (accessibility audit): Tab indents on the page, so the way out is said aloud. Screen-reader-only; never drawn.
   pageEscHint: 'Press Escape to leave the page',
@@ -614,7 +614,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   // tool labels a few rows away: a tool is something you use, a door is
   // somewhere you go.
   beginNewCard: 'New Card',
-  beginNewPageCard: 'New Page Card',
+  beginNewPageCard: 'New Pages Card', // ITEM word-diet, pages-rename bucket (a)
   beginLoadDeck: 'Load a Deck',
   // ITEM word-diet (Nick's final pick, HOLD resolved). Flux keeps its own
   // word for now (its own OVERRIDES entry, untouched here) — flux-words
@@ -631,7 +631,13 @@ const CANONICAL: Record<DeskTermId, string> = {
   modePublish: 'Publish',
   zoneWayfinding: 'Wayfinding',
   zoneStrip: 'Strip',
-  zoneStage: 'Page',
+  // ITEM word-diet (Nick, Oct 13, review fix) — pages-rename bucket (a):
+  // "Page" is always grammatically plural ("these Pages"); the rail/zone
+  // and door labels below join drawerPage/boardPageDoor/cascadePageNewPage/
+  // cascadeJournalNewPage/beginNewPageCard/boardNewPageCard/railPageKind/
+  // boardAddExistingPage. Physical-page rows (pageEscHint, boardTelos,
+  // inkInstrument) are unaffected — bucket (b), untouched.
+  zoneStage: 'Pages',
   zoneCorkboard: 'Corkboard',
   zoneMeter: 'Meter',
   corkboardJournalTab: 'Journal',
@@ -663,7 +669,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   railStructure: 'Structure',
   railStructureProse: 'Prose',
   railStructureScreenplay: 'Screenplay',
-  drawerPage: 'Page',
+  drawerPage: 'Pages', // ITEM word-diet, pages-rename bucket (a)
   // ITEM word-diet (Nick, Oct 13) — store/pageHome.ts's own describePageHome
   // moves into the lexicon: it was hardcoded, outside both lexicons, found
   // during the census rather than already flagged. "Just the location",
@@ -714,7 +720,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   stripSettings: 'Settings',
   stripChangeTheme: 'Themes',
   cascadeJournalOpen: 'Open the Journal',
-  cascadeJournalNewPage: 'New page',
+  cascadeJournalNewPage: 'New Pages', // ITEM word-diet, pages-rename bucket (a)
   cascadeJournalRecent: 'Recent',
   cascadeJournalAll: 'All pages →',
   cascadePlanCreateBoard: 'Create a Board',
@@ -817,7 +823,9 @@ const CANONICAL: Record<DeskTermId, string> = {
   // ITEM word-diet.
   tutorLensConsistencyEmpty: 'No repeats yet.',
   tutorLensFragmentsEmpty: 'Nothing to resurface yet.',
-  tutorLensFragmentsNote: 'Recency and shared tags only — nothing else.',
+  // ITEM word-diet (Nick, Oct 13, review fix) — the text itself, not just
+  // its "?" placement, was missed in the first pass.
+  tutorLensFragmentsNote: 'Uses recency and shared tags only.',
   // FX12 S2 — tutorStructureNoBeat ("Not linked to a beat.") retired: the beats system
   // is dormant (CD4); the Structure lens no longer speaks that dead language.
   tutorNudgesTitle: 'Waiting for you',
@@ -910,7 +918,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   // ITEM word-diet.
   tutorMeterTokensOnly: 'This turn (tokens only), est.:',
   tutorMeterTokensUnit: 'tokens',
-  cascadePageNewPage: 'New Page',
+  cascadePageNewPage: 'New Pages', // ITEM word-diet, pages-rename bucket (a)
   // ITEM 203 - a record too large to sync is NAMED, and the writer is told it is safe here. {title} / {n} are filled in.
   // ITEM word-diet.
   syncTooLargeOne: '\u201C{title}\u201D is too large to sync. Saved on this device.',
@@ -1022,7 +1030,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   actionDeleteConfirm: 'Send this page to Trash?',
   actionDeleteYes: 'Send to Trash',
   actionDeleteKeep: 'Keep',
-  railPageKind: 'Page kind',
+  railPageKind: 'Pages Kind', // ITEM word-diet, pages-rename bucket (a)
   templateOutline: 'Outline',
   templateBibliography: 'Bibliography',
   templateTitlePage: 'Title page',
@@ -1082,7 +1090,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   // have read as a destination, which is the confusion being closed.
   placesHomeHeading: 'This page lives in…',
   cascadePlanJustAPage: 'Just need a page? New Page is in the Page section.',
-  boardNewPageCard: 'New page card',
+  boardNewPageCard: 'New Pages Card', // ITEM word-diet, pages-rename bucket (a)
   // ITEM word-diet. Fable's own conditional: a board cannot be added to a
   // board today (no box kind:'board' exists in persistence.ts — every
   // Add-flow tool makes kind:'text' or pins an existing page), so this
@@ -1098,7 +1106,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   boardHomeLabelShelf: 'Shelf',
   shelfBoardEmpty: 'Nothing waiting.',
   cascadeShelfOpen: 'Open the Shelf',
-  boardAddExistingPage: 'Existing page…',
+  // ITEM word-diet (Fable, Oct 13, review fix) — this button opens the SAME
+  // ExistingPagePicker as beginConnectPage's own "+ Filed Pages" door (both
+  // call setExistingPageOpen(true)); one act, one name, not two.
+  boardAddExistingPage: '+ Filed Pages',
   placesTitle: 'Places',
   placesHomeZoneLabel: 'Home',
   placesLoose: 'Loose',

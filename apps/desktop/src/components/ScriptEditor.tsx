@@ -680,7 +680,8 @@ export function ScriptEditor({ id }: { id: string }) {
     entry: initialEntry,
     homeLabel,
     memberships,
-    footer: initialEntry.projectId == null ? 'Saved automatically — even if you never file it to a Drawer or the Shelf.' : undefined,
+    // ITEM word-diet (Nick, Oct 13): REMOVE — the framed Page panel's own footer line retires whole.
+    footer: undefined,
     onToggleStar: toggleStar,
     onAddTag: addTag,
     onRemoveTag: removeTag,

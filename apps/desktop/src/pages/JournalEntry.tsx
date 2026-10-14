@@ -745,8 +745,10 @@ function JournalEntryView() {
     entry,
     homeLabel,
     memberships,
-    // The saved-silently line — its only appearance anywhere once framed.
-    footer: entry.projectId == null ? 'Saved automatically — even if you never file it to a Drawer or the Shelf.' : undefined,
+    // ITEM word-diet (Nick, Oct 13) — REMOVE. The framed Page panel's own
+    // footer line retires whole (the legacy <1100px .journal-autosave-note
+    // below is a different surface, untouched by this pick).
+    footer: undefined,
     onToggleStar: toggleStar,
     onAddTag: addTag,
     onRemoveTag: removeTag,

@@ -735,7 +735,8 @@ function PageEditorView({ id }: { id: string }) {
     entry,
     homeLabel,
     memberships,
-    footer: entry.projectId == null ? 'Saved automatically — even if you never file it to a Drawer or the Shelf.' : undefined,
+    // ITEM word-diet (Nick, Oct 13): REMOVE — the framed Page panel's own footer line retires whole.
+    footer: undefined,
     // PB1 — ABSENT while unborn. patchJournalEntry resolves nothing to merge
     // into for a page with no row, so these would silently no-op: a star that
     // does not stick is the definition of half-work. They return the moment the

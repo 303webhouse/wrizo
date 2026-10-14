@@ -324,8 +324,13 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
   await sleep(200);
   const shelfSliverButtons = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].map(b => b.textContent.trim())");
-  ok('S1: the Shelf Board\'s own sliver carries NO Add control at all — genuinely absent, the same B1 law inherited via the SAME `isSystemBoard` branch',
-    !shelfSliverButtons.includes('Add card') && !shelfSliverButtons.includes('New page card') && !shelfSliverButtons.includes('Existing page…'), JSON.stringify(shelfSliverButtons));
+  // SUPERSEDED (item word-diet, Nick) — boardNewPageCard/boardAddExistingPage
+  // reword; checking the OLD text's absence would trivially pass once the
+  // text is simply different. ORIGINAL claim parked verbatim:
+  // ok('S1: the Shelf Board\'s own sliver carries NO Add control at all — genuinely absent, the same B1 law inherited via the SAME `isSystemBoard` branch',
+  //   !shelfSliverButtons.includes('Add card') && !shelfSliverButtons.includes('New page card') && !shelfSliverButtons.includes('Existing page…'), JSON.stringify(shelfSliverButtons));
+  ok('S1 [word-diet successor]: the Shelf Board\'s own sliver carries NO Add control at all — genuinely absent, the same B1 law inherited via the SAME `isSystemBoard` branch',
+    !shelfSliverButtons.includes('Add card') && !shelfSliverButtons.includes('New Pages Card') && !shelfSliverButtons.includes('+ Filed Pages'), JSON.stringify(shelfSliverButtons));
   const shelfFooterTogglePresent = await app.evalJs("!!document.querySelector('.wz-sliver-board-footer')");
   ok('S1: the connections-footer toggle STILL works on the Shelf Board — arranging is the full FX5 hand, only Add/Delete are restricted', shelfFooterTogglePresent === true, String(shelfFooterTogglePresent));
 
@@ -703,8 +708,11 @@ await withHarness(async (app) => {
   // ok('S5 [FX15 S3]: the Page pop-out\'s roster is now the single "New Page" door, before the Page face + Places',
   // JSON.stringify(rosterOrder.doorLabels) === JSON.stringify(['New Page']), JSON.stringify(rosterOrder));
   // ------------------------------------------------------------------
-  ok('S5 [R6+R13.ii successor]: the Page drawers roster still LEADS with the New Page door - the roster grew beneath it (PAGE SETUP, Place-page), but the door stays first',
-    rosterOrder.doorLabels[0] === 'New Page', JSON.stringify(rosterOrder));
+  // SUPERSEDED (item word-diet, Nick) — cascadePageNewPage reworks, "New Page" -> "New Pages".
+  // ok('S5 [R6+R13.ii successor]: the Page drawers roster still LEADS with the New Page door - the roster grew beneath it (PAGE SETUP, Place-page), but the door stays first',
+  //   rosterOrder.doorLabels[0] === 'New Page', JSON.stringify(rosterOrder));
+  ok('S5 [word-diet successor]: the Page drawers roster still LEADS with the New Pages door - the roster grew beneath it (PAGE SETUP, Place-page), but the door stays first',
+    rosterOrder.doorLabels[0] === 'New Pages', JSON.stringify(rosterOrder));
   ok('S5: Places renders for the page underfoot, after the Page face', rosterOrder.placesAfterPageFace === true, JSON.stringify(rosterOrder));
 
   // "New Journal Entry" door checks [PARKED — FX15 S3]: the door is RETIRED, so its
@@ -748,9 +756,13 @@ await withHarness(async (app) => {
   const beforeExistingPagePin = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'b2-s5-existing-page')");
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
   await sleep(150);
-  const existingPageBtnPresent = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].some(b => b.textContent.trim() === 'Existing page…')");
-  ok('S5: the Board\'s own Add flow gains "Existing page…" beside New page card', existingPageBtnPresent === true, String(existingPageBtnPresent));
-  await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'Existing page…').click()");
+  const existingPageBtnPresent = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].some(b => b.textContent.trim() === '+ Filed Pages')");
+  // SUPERSEDED (item word-diet, Nick) — boardAddExistingPage/boardNewPageCard
+  // reword, "Existing page…"/"New page card" -> "+ Filed Pages" (the SAME
+  // door beginConnectPage already names)/"New Pages Card".
+  // ok('S5: the Board\'s own Add flow gains "Existing page…" beside New page card', existingPageBtnPresent === true, String(existingPageBtnPresent));
+  ok('S5 [word-diet successor]: the Board\'s own Add flow gains "+ Filed Pages" beside New Pages Card', existingPageBtnPresent === true, String(existingPageBtnPresent));
+  await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === '+ Filed Pages').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Existing-page picker open' });
   await app.evalJs("[...document.querySelectorAll('.board-dest-row')].find(el => el.textContent.includes('S5 existing page'))?.click()");
   await sleep(300);
@@ -1106,11 +1118,27 @@ if (process.env.HARNESS_PARKED === '1') {
     //     && lexiconTermsNow.boardsTitle === 'Also grafted to…',
     //   JSON.stringify(lexiconTermsNow));
     // ------------------------------------------------------------------------
-    pok('PARKED, generation 6 (was generation 5\'s re-assertion with shelfHome "The Shelf Board — has no drawer home") — item word-diet: shelfHome reads "Shelf"; the other seven terms are unchanged and still pinned',
+    // ---- PARKED, generation 6 — SUPERSEDED by item word-diet (Nick, review fix), 2026-10-13 ----
+    // Quoted VERBATIM. One conjunct flips: boardAddExistingPage "Existing
+    // page…" -> "+ Filed Pages" (the SAME door beginConnectPage already
+    // names — one picker, one name, caught on review).
+    //
+    // pok('PARKED, generation 6 (was generation 5\'s re-assertion with shelfHome "The Shelf Board — has no drawer home") — item word-diet: shelfHome reads "Shelf"; the other seven terms are unchanged and still pinned',
+    //   lexiconTermsNow.shelfHome === 'Shelf'
+    //     && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
+    //     && lexiconTermsNow.shelfOpen === 'Open the Shelf'
+    //     && lexiconTermsNow.addExisting === 'Existing page…'
+    //     && lexiconTermsNow.placesTitle === 'Places'
+    //     && lexiconTermsNow.placesLoose === 'Loose'
+    //     && lexiconTermsNow.newDrawer === 'File to a new drawer…'
+    //     && lexiconTermsNow.boardsTitle === 'Also grafted to…',
+    //   JSON.stringify(lexiconTermsNow));
+    // ------------------------------------------------------------------------
+    pok('PARKED, generation 7 (was generation 6\'s re-assertion with addExisting "Existing page…") — item word-diet: addExisting reads "+ Filed Pages"; the other seven terms are unchanged and still pinned',
       lexiconTermsNow.shelfHome === 'Shelf'
         && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
         && lexiconTermsNow.shelfOpen === 'Open the Shelf'
-        && lexiconTermsNow.addExisting === 'Existing page…'
+        && lexiconTermsNow.addExisting === '+ Filed Pages'
         && lexiconTermsNow.placesTitle === 'Places'
         && lexiconTermsNow.placesLoose === 'Loose'
         && lexiconTermsNow.newDrawer === 'File to a new drawer…'

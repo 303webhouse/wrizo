@@ -14,13 +14,26 @@ interface Props {
   children: ReactNode;
 }
 
+// ITEM word-diet review (Fable, Oct 13, W4) — the pop's own CSS opens
+// rightward from the button's left edge (max-width 260px); near the right
+// edge of the viewport (the Tutor Ask box's own "?" is the measured case)
+// that runs the TRUST text off-screen. Measured once at open, not tracked
+// live (the button doesn't move while its own pop is open) — mirrors the
+// hittable-point measurements elsewhere in this codebase: ask the real DOM,
+// never assume a position from the markup alone.
+const POP_MAX_WIDTH = 260;
+const EDGE_MARGIN = 16;
+
 export function DrawerNote({ label, children }: Props) {
   const [open, setOpen] = useState(false);
+  const [openLeft, setOpenLeft] = useState(false);
   const wrap = useRef<HTMLSpanElement>(null);
   const id = useId();
 
   useEffect(() => {
     if (!open) return;
+    const rect = wrap.current?.getBoundingClientRect();
+    if (rect) setOpenLeft(rect.left + POP_MAX_WIDTH > window.innerWidth - EDGE_MARGIN);
     const onDown = (e: PointerEvent) => {
       if (!wrap.current?.contains(e.target as Node)) setOpen(false);
     };
@@ -44,7 +57,7 @@ export function DrawerNote({ label, children }: Props) {
         title={label}
         onClick={() => setOpen(o => !o)}
       >?</button>
-      {open && <span id={id} role="note" className="wz-drawer-note-pop">{children}</span>}
+      {open && <span id={id} role="note" className={openLeft ? 'wz-drawer-note-pop wz-drawer-note-pop--left' : 'wz-drawer-note-pop'}>{children}</span>}
     </span>
   );
 }
