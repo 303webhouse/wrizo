@@ -2,6 +2,7 @@
 // back at a plain-text offset. Two DOM positions can name the same offset (the end of one text node, the start of the next); when
 // one of them is inside a collapsed `.md-mark-hidden` span the caret is drawn zero-height there, so the visible one is preferred.
 import { readEditorPlainText } from './draftDecoration';
+import { rowsDomPoint, rowsSelectionEnds } from './lineRows';
 
 function rawOffsetOf(el: HTMLElement, node: Node, offset: number): number {
   const r = document.createRange();
@@ -12,6 +13,9 @@ function rawOffsetOf(el: HTMLElement, node: Node, offset: number): number {
 
 /** The selection's anchor and focus as offsets into the editor's plain text (the EOF guard removed), or null if it is not ours. */
 export function selectionEnds(el: HTMLElement): { anchor: number; focus: number; collapsed: boolean } | null {
+  // TYPING-LATENCY (step 3): the page's rows answer from the edited row (store/lineRows.ts); this whole-page read is the fallback.
+  const fast = rowsSelectionEnds(el);
+  if (fast !== undefined) return fast;
   const sel = window.getSelection();
   if (!sel || sel.rangeCount === 0 || !sel.anchorNode || !sel.focusNode) return null;
   if (!el.contains(sel.anchorNode) || !el.contains(sel.focusNode)) return null;
@@ -26,7 +30,9 @@ const inHidden = (n: Node) => !!(n.parentElement && n.parentElement.closest('.md
 const inGuard = (n: Node) => !!(n.parentElement && n.parentElement.closest('.md-eof-guard'));
 
 /** The text-node position for a plain offset, preferring one outside a hidden mark. */
-export function domPointFor(el: HTMLElement, target: number): { node: Text; offset: number } | null {
+export function domPointFor(el: HTMLElement, target: number): { node: Node; offset: number } | null {
+  const fast = rowsDomPoint(el, target);
+  if (fast !== undefined) return fast;
   const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
   const cands: { node: Text; offset: number }[] = [];
   let acc = 0;

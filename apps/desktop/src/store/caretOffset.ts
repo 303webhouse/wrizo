@@ -19,9 +19,18 @@
 //        exactly — but if a non-Chromium target ever matters, the safer
 //        order is focus-then-range.
 
+import { rowsCaretOffset, rowsDomPoint, rowsSelectionOffsets } from './lineRows';
+
+// TYPING-LATENCY (step 3): on the page's row editor (store/lineRows.ts) each helper below answers from the edited row - the row's
+// own walk plus its start offset - instead of walking every text node from the top of the page (the profile's 447 ms at 50k).
+// The rows answer only when their map can be trusted; otherwise, and for every other editor, the walk below runs as it always has.
+// The contracts are unchanged: RAW offsets (the EOF guard counted) out, the same honest null.
+
 // Read the caret's linear offset within `el` (chars from the start of its
 // text content), or null if the selection isn't inside `el` at all.
 export function getCaretOffset(el: HTMLElement): number | null {
+  const fast = rowsCaretOffset(el);
+  if (fast !== undefined) return fast;
   const sel = window.getSelection();
   if (!sel || sel.rangeCount === 0) return null;
   const range = sel.getRangeAt(0);
@@ -54,6 +63,8 @@ export function getCaretOffset(el: HTMLElement): number | null {
 // boundary and reading its serialized length is container-type-agnostic —
 // it walks the DOM the same way for both cases.
 export function getSelectionOffsets(el: HTMLElement): { start: number; end: number } | null {
+  const fast = rowsSelectionOffsets(el);
+  if (fast !== undefined) return fast;
   const sel = window.getSelection();
   if (!sel || sel.rangeCount === 0) return null;
   const range = sel.getRangeAt(0);
@@ -73,6 +84,8 @@ export function getSelectionOffsets(el: HTMLElement): { start: number; end: numb
 // substitution) can resolve a linear offset to a live DOM position without
 // duplicating this TreeWalker — reused, not re-derived.
 function resolveOffset(el: HTMLElement, target: number): { node: Text; offset: number } | null {
+  const fast = rowsDomPoint(el, target);
+  if (fast && fast.node.nodeType === 3) return fast as { node: Text; offset: number };
   const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
   let offset = 0;
   let n: Node | null;

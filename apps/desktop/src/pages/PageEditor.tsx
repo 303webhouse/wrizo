@@ -50,6 +50,7 @@ import { createTabChord, type TabAct } from '../store/tabChord';
 import { escapeFromEditor, ESC_HINT_ID } from '../store/escapeExit';
 import { BLOCK_TOKEN } from '../store/markRuns';
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
+import { editorPlainText, writeRows } from '../store/lineRows';
 import { getRegisteredUndoStack } from '../store/textUndo';
 import { proseTextToScriptDoc, isProseEmpty } from '../store/structureConvert';
 import { serializeScriptDoc } from '../store/scriptText';
@@ -370,7 +371,7 @@ function PageEditorView({ id }: { id: string }) {
       const el = editorRef.current;
       if (!el) return;
       const offset = getCaretOffset(el);
-      const plain = readEditorPlainText(el.innerText, null).plain;
+      const plain = editorPlainText(el);   // TYPING-LATENCY: the rows' shadow text (today's innerText read when it cannot be trusted)
       const lit = offset == null ? { bold: false, italic: false, underline: false, strike: false } : marksAt(plain, offset);
       // A held italic (an empty italic is not stored - store/draftFormat.ts) lights I while the caret is where it will be typed.
       const held = hiddenMarkEditingFor(el)?.pendingMark();
@@ -993,7 +994,8 @@ function PageEditorView({ id }: { id: string }) {
     // STEP 2: a marked SELECTION stays selected (so the same press can undo itself), and while a range is selected no marker
     // pair is revealed - the reveal belongs to a caret.
     const collapsed = result.end <= result.start;
-    decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, collapsed ? result.start : null));
+    // TYPING-LATENCY: on the rows only the changed lines are rewritten (store/lineRows.ts), with the same reveal rule
+    if (!writeRows(el, result.text, result.start, collapsed ? result.start : null)) decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, collapsed ? result.start : null));
     if (!collapsed) setSelectionOffsets(el, result.start, result.end);
   };
   const applyRailFormat = (action: FormatAction) => {

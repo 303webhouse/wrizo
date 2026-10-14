@@ -129,7 +129,7 @@ const LINE_CLASS: Record<string, string> = {
   bullet: 'md-bullet', 'bullet-circle': 'md-bullet md-bullet-circle', 'bullet-square': 'md-bullet md-bullet-square',
 };
 
-function decorateLineForCard(rawLine: string, caret: number | null): string {
+export function decorateLineForCard(rawLine: string, caret: number | null): string {
   // STEP 3: the line's structure comes from the ONE reader (store/markRuns.ts readLead), with positions - so the caret-adjacent
   // reveal is a comparison against a token's own span, and this file no longer owns a copy of the token list.
   const lead = readLead(rawLine);
@@ -221,7 +221,7 @@ export function decorateMarkdownForCard(text: string, caret: number | null): str
 // (ForwardOnlyEditor.tsx's drafting branch, PageEditor.tsx's rail format
 // actions) shares this one pair of helpers so neither path can drift back
 // into the unguarded bug.
-const EOF_GUARD = '​';
+export const EOF_GUARD = '​';
 
 /** Strip the EOF guard from raw DOM text, adjusting a raw caret offset to
  * account for any guard characters that preceded it. Wherever the guard

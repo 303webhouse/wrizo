@@ -9,6 +9,7 @@ import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, registerUndoStack, unregisterUndoStack, type EditKind } from '../store/textUndo';
 import { placeCaret } from '../store/hiddenMarksDom';
 import { attachHiddenMarkEditing } from '../store/hiddenMarksEditing';
+import { detachRows, editorPlainText, mountRows, noteNativeEdit, readNativeEdit, revealRowsAtCaret, rowsFor, writeRows } from '../store/lineRows';
 
 // CW2 — the reusable forward-only writing surface. Keyboard-only input on the
 // DM1 Run model: typing appends, backspace walks a short runway and then locks;
@@ -263,14 +264,18 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // in this branch goes through those two shared helpers (also used by
       // PageEditor.tsx's rail format actions) so no path can drift back into
       // the unguarded bug.
+      // TYPING-LATENCY (steps 2-5): on the page this rewrites only the rows that changed (store/lineRows.ts); a host with no rows
+      // attached takes today's whole rewrite.
       const redecorate = (plain: string, caret: number | null) => {
-        decorateEditorFor(el, plain, caret, setPlainOffset);
+        if (!writeRows(el, plain, caret)) decorateEditorFor(el, plain, caret, setPlainOffset);
         if (caret !== null) placeCaret(el, caret);
       };
+      // A native edit is read from the rows it touched (lineRows.readNativeEdit); today's whole-page innerText read is the fallback.
+      const readNative = (keepHint = false) => readNativeEdit(el, { keepHint }) ?? readEditorPlainText(el.innerText, getPlainOffset(el));
       // ITEM 211 — the hidden marks' editing rules: ONE controller (store/hiddenMarksEditing.ts), shared with the board card popup,
       // driving the pure rules in store/hiddenMarks.ts. PR #7 built it inline here; it moved, unchanged in behaviour, so the card could
       // have the same rules instead of a second copy.
-      const plainNow = () => readEditorPlainText(el.innerText, null).plain;
+      const plainNow = () => editorPlainText(el);
       const marks = attachHiddenMarkEditing({
         el,
         plainNow,
@@ -285,7 +290,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       const onInput = () => {
         if (applyingEmDash) return; // the substitution's own synthetic input event — already handled below
         let kind = pendingKind;
-        let { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
+        let { plain, caret } = readNative(composingDraft);
         let repaired = false;
         if (!composingDraft) {
           const wasRange = marks.pendingWasRange();
@@ -319,7 +324,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
             // never a double-undo seam (see store/textUndo.ts's own header
             // comment for the full reasoning).
             undoStack.record({ text: plain, caret }, 'boundary');
-            const after = readEditorPlainText(el.innerText, getPlainOffset(el));
+            const after = readNative();
             onChangeRef.current(after.plain);
             // FX5 S7 — found live, not assumed: execCommand('insertText',
             // ...) collapses the selection to right after the INSERTED em
@@ -385,6 +390,8 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         // type a space": captured here, at beforeinput, before the DOM
         // mutates, so a delete/paste/IME-commit can never masquerade as one.
         justTypedSpace = it === 'insertText' && e.data === ' ';
+        // TYPING-LATENCY: the lines this native edit can touch, captured before the DOM mutates (the input handler reads only those rows)
+        noteNativeEdit(el);
         // FX6 S1 — classify the upcoming edit for the undo stack, the SAME
         // "capture before the DOM mutates" discipline as `justTypedSpace`
         // (store/textUndo.ts's own classifyEditKind — shared with
@@ -425,10 +432,10 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       };
       // ITEM 211 rules 2 and 3 — the arrows move by visible characters, and Backspace and Delete never take a lone hidden mark.
       const onMarkKeyDraft = (e: KeyboardEvent) => { marks.markKey(e); };
-      const onCompStartDraft = () => { composingDraft = true; marks.reset(); };
+      const onCompStartDraft = () => { noteNativeEdit(el); composingDraft = true; marks.reset(); };
       const onCompEndDraft = () => {
         composingDraft = false;
-        const { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
+        const { plain, caret } = readNative();
         // FX6 S1 — an IME-composed insertion is one atomic undo step (no
         // per-candidate-update recording happens above — onInput returns
         // early while composingDraft is true, so the stack's own `current`
@@ -454,7 +461,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       const onSelectionReveal = () => {
         if (composingDraft || applyingEmDash) return;
         marks.selectionChange();
-        revealAtCaret(el, getPlainOffset, setPlainOffset);
+        // the rows re-decorate only the row the caret left and the row it entered; today's whole-page reveal never runs over rows
+        if (rowsFor(el)) revealRowsAtCaret(el);
+        else revealAtCaret(el, getPlainOffset, setPlainOffset);
       };
       document.addEventListener('selectionchange', onSelectionReveal);
       el.addEventListener('input', onInput);
@@ -611,11 +620,20 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     // blank line), collapsing straight to the container's end lands the
     // caret in exactly the trailing-newline-at-EOF state the Chromium quirk
     // (see draftDecoration.ts) corrupts on the very next keystroke.
+    // TYPING-LATENCY (step 2): the page's free-edit surface is built as ROWS, one per line (store/lineRows.ts). The caret lands as
+    // decorateEditorFor landed it: after the EOF guard when the text ends in a newline (no focus move, as before), else through
+    // setCaretOffset (which focuses).
     if (freeEdit) {
       const el = hostRef.current;
-      if (el) decorateEditorFor(el, initialText, initialText.length, setPlainOffset);
+      if (el) {
+        mountRows(el, initialText, initialText.length);
+        if (initialText.endsWith('\n')) placeCaret(el, initialText.length);
+        else setPlainOffset(el, initialText.length);
+      }
     }
     emit();
+    const mounted = hostRef.current;
+    return () => { if (mounted) detachRows(mounted); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -4808,6 +4808,11 @@ a:focus-visible,
    is the full column so text-align has a box to align within. Nothing here reads a theme: the rule colour is derived from the
    run's own ink, so it follows every theme and page tone. */
 .md-line{ display:inline-block; width:100%; box-sizing:border-box; vertical-align:top; }
+/* TYPING-LATENCY (row shape F, ruled 2026-10-14) - the page's free-edit surface is one ROW per line (store/lineRows.ts), the
+   newline between two rows left as text, exactly where it always was: `.md-line`'s own inline-block shape, so textContent,
+   innerText and copied text stay byte-identical (measured, docs/evidence/latency-profile-eb27ea7c), with `contain: layout style`
+   so a row's own layout stays inside it. Nothing inside a row is positioned, so a row becoming a containing block moves nothing. */
+.forward-only-editor .wz-row{ display:inline-block; width:100%; box-sizing:border-box; vertical-align:top; contain:layout style; }
 /* STEP 3 - THE INDENT LOOK (Nick's ruling): a leading tab is a FIRST-LINE indent - the first visual line moves in one step per
    tab and wrapped lines return to the margin - so a tab must be one fixed step wide. `tab-size` makes it 2em (the browser default,
    8 characters, varies with the typeface). The WHOLE-PARAGRAPH indent is the separate `>| ` block token below. */
