@@ -4,7 +4,12 @@
 // the whole walk runs once per theme (Plateau, then Flux). A missing X is RECORDED as a failed check, never a crash, so the
 // red-first run on main reports every check.
 // Run: node scripts/harness/card-close-x.mjs   (from apps/desktop, dist-web built, box turn granted)
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { withHarness } from '../runtime-verify.mjs';
+
+// CCX_FRAMES=<dir>: also save one frame per theme of the open pop-up (for review; no check reads them).
+const FRAMES = process.env.CCX_FRAMES || null;
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -64,6 +69,7 @@ await withHarness(async (app) => {
     const opened = await openPopup(app);
     ok(`${T} (premise) a real double-click on the card opens its pop-up`, opened);
     if (!opened) continue;
+    if (FRAMES) { mkdirSync(FRAMES, { recursive: true }); writeFileSync(join(FRAMES, `card-close-x-${theme}.png`), Buffer.from(await app.screenshot(), 'base64')); }
 
     // X1 - the X is the close control: one button named "Close", showing an X glyph, and no "Close" button left in a foot
     const shape = await app.evalJs(`(() => {
