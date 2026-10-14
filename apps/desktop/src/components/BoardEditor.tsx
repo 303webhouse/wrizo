@@ -938,6 +938,10 @@ export function BoardEditor({ id }: { id: string }) {
   // just reconciled ONCE, cleanly, the instant the drag ends, rather than
   // fighting every intermediate frame.
   const activeResizeIdRef = useRef<string | null>(null);
+  // CARD-RESIZE-RELOCK (Nick, 2026-10-13: "after a card resize, an immediate second resize or a click on the corner does nothing").
+  // When the last resize or move ENDED (performance.now()), so the canvas's double-click can tell a gesture's own second click from
+  // a request to edit - see onDoubleClick below.
+  const lastGestureEndRef = useRef(0);
   // FX4 S6 — the live thread-drag preview line's own endpoint, updated
   // imperatively on pointermove (the same "don't trigger a React render on
   // every move" discipline JournalEntry.tsx's own eraser ring already uses)
@@ -1590,6 +1594,7 @@ export function BoardEditor({ id }: { id: string }) {
       // re-evaluates this box (now that activeResizeIdRef no longer skips
       // it) on the very next render.
       const wasResizing = phase === 'resizing';
+      if (phase === 'resizing' || phase === 'dragging') lastGestureEndRef.current = performance.now();
       phase = 'idle';
       movingIds = [];
       resizingId = null;
@@ -2264,6 +2269,17 @@ export function BoardEditor({ id }: { id: string }) {
             // `finishThreadDrag` (above) already uses for the identical
             // reason.
             const hitEl = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+            // CARD-RESIZE-RELOCK (Nick, 2026-10-13): a quick second press on the corner after a resize is, to the browser, the
+            // second click of a double-click - and it lands HERE (the canvas holds the pointer). It opened the card's popup, and
+            // with a popup open every board gesture stands down: the card read as "locked" until he clicked another card or
+            // double-clicked in and out. So: a double-click on the resize corner opens nothing (the corner has no double-click
+            // action of its own any more), and a double-click whose second press made a resize or a move is that gesture's own
+            // click, never a request to edit.
+            // (The browser fires dblclick straight after its own second mouseup, so a gesture's own double-click arrives within
+            // milliseconds of the gesture's end; 100ms catches it, and a writer's REAL double-click a moment after a drag - fx8 S3's
+            // ~220ms, say - still opens the card.)
+            if (hitEl?.closest('.board-handle')) return;
+            if (performance.now() - lastGestureEndRef.current < 100) return;
             const boxEl = hitEl?.closest('.board-box') as HTMLElement | null;
             const boxId = boxEl?.dataset.boxId;
             if (!boxId) return;
