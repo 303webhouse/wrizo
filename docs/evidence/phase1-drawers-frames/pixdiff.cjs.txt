@@ -1,0 +1,15 @@
+const fs = require('fs');
+const { PNG } = require(process.argv[2]);
+const base = process.argv[3];
+const views = ['01-left-open-both-on','02-left-open-both-off','03-format-greyed-tooltip','04-menu-greyed-rows','05-right-drawer-tabs-and-note','06-narrow-locked-bar'];
+for (const combo of ['arbor','flux']) for (const v of views) {
+  const a = PNG.sync.read(fs.readFileSync(base + '/' + combo + '-dark/' + v + '.png'));
+  const b = PNG.sync.read(fs.readFileSync(base + '/' + combo + '-light/' + v + '.png'));
+  if (a.width !== b.width || a.height !== b.height) { console.log(combo, v, 'SIZE DIFF'); continue; }
+  let n = 0, maxd = 0; const bbox = [1e9, 1e9, -1, -1];
+  for (let i = 0; i < a.data.length; i += 4) {
+    const d = Math.max(Math.abs(a.data[i]-b.data[i]), Math.abs(a.data[i+1]-b.data[i+1]), Math.abs(a.data[i+2]-b.data[i+2]));
+    if (d > 0) { n++; if (d > maxd) maxd = d; const p = i/4, x = p % a.width, y = (p - x) / a.width; if (x<bbox[0]) bbox[0]=x; if (y<bbox[1]) bbox[1]=y; if (x>bbox[2]) bbox[2]=x; if (y>bbox[3]) bbox[3]=y; }
+  }
+  console.log(combo.padEnd(6), v.padEnd(32), 'differing px:', String(n).padStart(7), 'of', a.width*a.height, ' max channel delta:', String(maxd).padStart(3), ' bbox:', n ? bbox.join(',') : '-');
+}

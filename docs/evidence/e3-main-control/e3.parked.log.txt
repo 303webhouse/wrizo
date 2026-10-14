@@ -1,0 +1,11 @@
+PASS  S1 (setup): the Counsel grip is reachable on a born page
+PASS  S1 (setup): the panel is open and its body is mounted
+PASS  S1: the Counsel FADES OUT WITH ITS CONTENTS — there are frames where the panel is part-faded and its body is still mounted (pre-fix the body was gone by frame one, so the fade ran on an empty box)  [{"midFadeFrames":8,"first":{"t":5,"opacity":1,"content":true},"sample":[{"t":20,"opacity":0.929339,"content":true},{"t":35,"opacity":0.7792,"content":true},{"t":52,"opacity":0.590993,"content":true}]}]
+PASS  S1: the body never blinks out ahead of the fade — no sampled frame loses the content while the panel is still substantially opaque  [[]]
+PASS  S1: and the fade actually completes — the panel reaches transparent within the sampling window  [{"fullyFadedAt":169}]
+PASS  S2: the Counsel FADES IN as well — the open is a transition, not a snap (the ruling is fade in AND out)  [{"midFadeFrames":8,"sample":[{"t":14,"opacity":0.0706342,"content":true},{"t":31,"opacity":0.219674,"content":true},{"t":47,"opacity":0.408963,"content":true}]}]
+FAIL  S3: BOTH HANDS, ONE FADE — the Counsel and the tool pop-out resolve to the same transition DURATION (never a copied literal: both read var(--fade-dur))  [{"missing":false,"tutorDur":"0.2s, 0.2s","sliverDur":"0.2s, 0.2s, 0s","tutorProp":"opacity, transform","sliverProp":"opacity, transform, visibility","tutorFn":"ease, ease","sliverFn":"ease, ease, linear"}]
+FAIL  S3: the same transitioned PROPERTIES and the same timing FUNCTION on both hands — a divergence in either fails here rather than in a walkthrough  [{"missing":false,"tutorDur":"0.2s, 0.2s","sliverDur":"0.2s, 0.2s, 0s","tutorProp":"opacity, transform","sliverProp":"opacity, transform, visibility","tutorFn":"ease, ease","sliverFn":"ease, ease, linear"}]
+PASS  S4: a CLOSED Counsel keeps its body mounted but marks it aria-hidden and pointer-events:none — the identical posture the left hand has shipped since FX1, inherited rather than invented  [{"tutorHidden":"true","tutorPointer":"none","tutorBodyMounted":true,"sliverBodyMounted":true,"sliverHiddenAttrPresent":true}]
+
+E3 VERIFY: FAIL — 2/9 failed

@@ -1,0 +1,112 @@
+[
+  {
+    "frame": "arbor-1-at-rest",
+    "file": "arbor-1-at-rest.png",
+    "hash": "#/page/sbf-prose",
+    "theme": "plateau",
+    "bundle": "index-CrT6ybxj.js",
+    "bar": {
+      "active": false,
+      "opacity": "0",
+      "thumbBg": "rgb(138, 124, 104)",
+      "thumbW": 4,
+      "thumbH": 81
+    },
+    "scroll": {
+      "top": 29,
+      "height": 4893,
+      "client": 631
+    },
+    "card": null
+  },
+  {
+    "frame": "arbor-2-mid-scroll",
+    "file": "arbor-2-mid-scroll.png",
+    "hash": "#/page/sbf-prose",
+    "theme": "plateau",
+    "bundle": "index-CrT6ybxj.js",
+    "bar": {
+      "active": true,
+      "opacity": "1",
+      "thumbBg": "rgb(138, 124, 104)",
+      "thumbW": 4,
+      "thumbH": 81
+    },
+    "scroll": {
+      "top": 600,
+      "height": 4893,
+      "client": 631
+    },
+    "card": null
+  },
+  {
+    "frame": "arbor-3-board-card-scrollbar-STAGED-cap150",
+    "file": "arbor-3-board-card-scrollbar-STAGED-cap150.png",
+    "hash": "#/page/sb-board",
+    "theme": "plateau",
+    "bundle": "index-CrT6ybxj.js",
+    "bar": null,
+    "scroll": null,
+    "card": {
+      "scrollbarWidth": "thin",
+      "scrollbarColor": "rgb(138, 124, 104) rgba(0, 0, 0, 0)",
+      "overflows": true,
+      "overlaySibling": false
+    }
+  },
+  {
+    "frame": "flux-1-at-rest",
+    "file": "flux-1-at-rest.png",
+    "hash": "#/page/sbf-prose",
+    "theme": "flux",
+    "bundle": "index-CrT6ybxj.js",
+    "bar": {
+      "active": false,
+      "opacity": "0",
+      "thumbBg": "rgb(11, 124, 158)",
+      "thumbW": 4,
+      "thumbH": 55
+    },
+    "scroll": {
+      "top": 29,
+      "height": 7204,
+      "client": 631
+    },
+    "card": null
+  },
+  {
+    "frame": "flux-2-mid-scroll",
+    "file": "flux-2-mid-scroll.png",
+    "hash": "#/page/sbf-prose",
+    "theme": "flux",
+    "bundle": "index-CrT6ybxj.js",
+    "bar": {
+      "active": true,
+      "opacity": "1",
+      "thumbBg": "rgb(11, 124, 158)",
+      "thumbW": 4,
+      "thumbH": 55
+    },
+    "scroll": {
+      "top": 600,
+      "height": 7204,
+      "client": 631
+    },
+    "card": null
+  },
+  {
+    "frame": "flux-3-board-card-scrollbar-STAGED-cap150",
+    "file": "flux-3-board-card-scrollbar-STAGED-cap150.png",
+    "hash": "#/page/sb-board",
+    "theme": "flux",
+    "bundle": "index-CrT6ybxj.js",
+    "bar": null,
+    "scroll": null,
+    "card": {
+      "scrollbarWidth": "thin",
+      "scrollbarColor": "rgb(11, 124, 158) rgba(0, 0, 0, 0)",
+      "overflows": true,
+      "overlaySibling": false
+    }
+  }
+]

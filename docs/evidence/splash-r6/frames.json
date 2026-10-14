@@ -1,0 +1,102 @@
+[
+  {
+    "frame": "R1-arbor-splash-mid-hold",
+    "file": "R1-arbor-splash-mid-hold.png",
+    "hash": "#/",
+    "theme": "plateau",
+    "bundle": "index-bjkCPwsl.js",
+    "splashPresent": true,
+    "splashBg": "rgba(0, 0, 0, 0)",
+    "veilBg": "rgb(17, 6, 0)",
+    "markRect": {
+      "x": 356,
+      "y": 175,
+      "w": 689,
+      "h": 551
+    },
+    "loadingText": "Gathering your pages…",
+    "doorsOpacity": "0",
+    "signInButton": false,
+    "signInForm": false
+  },
+  {
+    "frame": "R2-arbor-front-door",
+    "file": "R2-arbor-front-door.png",
+    "hash": "#/",
+    "theme": "plateau",
+    "bundle": "index-bjkCPwsl.js",
+    "splashPresent": false,
+    "splashBg": null,
+    "veilBg": null,
+    "markRect": null,
+    "loadingText": null,
+    "doorsOpacity": "1",
+    "signInButton": false,
+    "signInForm": false
+  },
+  {
+    "frame": "R4-arbor-page",
+    "file": "R4-arbor-page.png",
+    "hash": "#/page/mv5y6jnnceucfcc0u",
+    "theme": "plateau",
+    "bundle": "index-bjkCPwsl.js",
+    "splashPresent": false,
+    "splashBg": null,
+    "veilBg": null,
+    "markRect": null,
+    "loadingText": null,
+    "doorsOpacity": null,
+    "signInButton": false,
+    "signInForm": false
+  },
+  {
+    "frame": "R1-flux-splash-mid-hold",
+    "file": "R1-flux-splash-mid-hold.png",
+    "hash": "#/",
+    "theme": "flux",
+    "bundle": "index-bjkCPwsl.js",
+    "splashPresent": true,
+    "splashBg": "rgba(0, 0, 0, 0)",
+    "veilBg": "rgb(4, 20, 26)",
+    "markRect": {
+      "x": 356,
+      "y": 175,
+      "w": 689,
+      "h": 551
+    },
+    "loadingText": "Booting the terminal…",
+    "doorsOpacity": "0",
+    "signInButton": false,
+    "signInForm": false
+  },
+  {
+    "frame": "R2-flux-front-door",
+    "file": "R2-flux-front-door.png",
+    "hash": "#/",
+    "theme": "flux",
+    "bundle": "index-bjkCPwsl.js",
+    "splashPresent": false,
+    "splashBg": null,
+    "veilBg": null,
+    "markRect": null,
+    "loadingText": null,
+    "doorsOpacity": "1",
+    "signInButton": false,
+    "signInForm": false
+  },
+  {
+    "frame": "R4-flux-page",
+    "file": "R4-flux-page.png",
+    "hash": "#/page/mv5y6uo916tvw1k5r",
+    "theme": "flux",
+    "bundle": "index-bjkCPwsl.js",
+    "splashPresent": false,
+    "splashBg": null,
+    "veilBg": null,
+    "markRect": null,
+    "loadingText": null,
+    "doorsOpacity": null,
+    "signInButton": false,
+    "signInForm": false
+  }
+]

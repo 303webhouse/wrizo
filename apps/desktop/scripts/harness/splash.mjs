@@ -13,6 +13,7 @@
 //
 // Run: node scripts/harness/splash.mjs   (from apps/desktop, dist-web built)
 import { withHarness } from '../runtime-verify.mjs';
+import { readFile } from 'node:fs/promises';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -124,10 +125,19 @@ await withHarness(async (app) => {
   })()`);
   const veilColor = parseComputedColor(s1.veilBackground);
   const closeEnough = (a, b) => Math.abs(a - b) <= 2; // color-mix rounding across engines
-  ok('S1 (item splash-hold, round 2): the veil is a flat dimming tint in the THEME\'s own ground colour (--ink-950) at ~90% opacity — never one fixed colour painted over every theme',
+  // SUPERSEDED (item splash-hold ROUND 6, Nick live: "make it a solid block" —
+  // nothing of the app shows through at all) — ~90% let a sliver of the app
+  // through on purpose; that purpose retired. Parked verbatim; see the
+  // successor just below.
+  // ok('S1 (item splash-hold, round 2): the veil is a flat dimming tint in the THEME\'s own ground colour (--ink-950) at ~90% opacity — never one fixed colour painted over every theme',
+  //   !!veilColor
+  //     && closeEnough(veilColor.r, s1Tint.ground.r) && closeEnough(veilColor.g, s1Tint.ground.g) && closeEnough(veilColor.b, s1Tint.ground.b)
+  //     && Math.abs(veilColor.a - 0.90) <= 0.03,
+  //   JSON.stringify({ veilBackground: s1.veilBackground, parsed: veilColor, expectedGround: s1Tint.ground }));
+  ok('S1 (ROUND 6 successor): the veil is a SOLID block in the THEME\'s own ground colour (--ink-950) — 100% opaque, nothing of the app showing through, never one fixed colour painted over every theme',
     !!veilColor
       && closeEnough(veilColor.r, s1Tint.ground.r) && closeEnough(veilColor.g, s1Tint.ground.g) && closeEnough(veilColor.b, s1Tint.ground.b)
-      && Math.abs(veilColor.a - 0.90) <= 0.03,
+      && Math.abs(veilColor.a - 1) <= 0.01,
     JSON.stringify({ veilBackground: s1.veilBackground, parsed: veilColor, expectedGround: s1Tint.ground }));
 
   ok('S1: it paints above the app\'s whole existing stack (modals/backdrops/toasts top out at 300)',
@@ -482,6 +492,65 @@ await withHarness(async (app) => {
     ok('S8: under reduced motion the fade is removed entirely — a plain appear and disappear, the hold unchanged',
       firstDurationMs(rm.veil) <= 1 && firstDurationMs(rm.mark) <= 1, JSON.stringify(rm));
   }
+
+  // ==========================================================================
+  // S12 — ROUND 6 (Nick, live): THE SOLID BLOCK USES THE WRITER'S OWN THEME,
+  // ARBOR BY DEFAULT, AND IT IS THERE BEFORE THE SPLASH'S FIRST PAINT — a
+  // Flux writer must never see an Arbor-coloured flash.
+  //
+  // "Before first paint" cannot be read back from a frame that was never
+  // painted, so this proves the strongest available form: the attribute and
+  // the veil's own resolved colour are read at the EARLIEST moment anything
+  // is observable at all (the instant `.wz-splash` exists in the DOM, polled
+  // by waitFor rather than guessed at with a sleep) — if a themeless/Arbor
+  // flash were reachable, THIS is the read that would catch it, since
+  // nothing downstream ever re-corrects the attribute once set (store/
+  // theme.ts's only two writers are initTheme() at boot and setTheme() on a
+  // user action; there is no "set wrong, fix later" path to race).
+  // ==========================================================================
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
+  await app.goto('/');
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S12 settle (default)' });
+  const s12Default = await app.evalJs("document.documentElement.getAttribute('data-theme')");
+  ok('S12: with no stored preference, the default is Arbor (\'plateau\') — the writer\'s own ground colour rule, applied correctly to the one writer who has never chosen',
+    s12Default === 'plateau', String(s12Default));
+
+  for (const theme of ['flux', 'plateau']) {
+    await openAppThemed(app, theme);
+    await app.waitFor("!!document.querySelector('.wz-splash')", { label: `S12 settle (${theme})` });
+    const s12 = await app.evalJs(`(() => {
+      const veil = document.querySelector('.wz-splash-veil');
+      const groundHex = getComputedStyle(document.documentElement).getPropertyValue('--ink-950').trim();
+      const n = parseInt(groundHex.replace('#', ''), 16);
+      return {
+        theme: document.documentElement.getAttribute('data-theme'),
+        veilBackground: veil ? getComputedStyle(veil).backgroundColor : null,
+        ground: { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 },
+      };
+    })()`);
+    const close = (a, b) => Math.abs(a - b) <= 2;
+    const parsed = parseComputedColor(s12.veilBackground);
+    ok(`S12 (${theme}): the attribute already names this theme the instant the splash exists — never a moment caught reading the OTHER theme first`,
+      s12.theme === theme, JSON.stringify(s12));
+    ok(`S12 (${theme}): and the veil's own resolved colour is already THIS theme's ground (--ink-950), not the other theme's, at that same earliest moment`,
+      !!parsed && close(parsed.r, s12.ground.r) && close(parsed.g, s12.ground.g) && close(parsed.b, s12.ground.b),
+      JSON.stringify({ veilBackground: s12.veilBackground, parsed, ground: s12.ground }));
+  }
+
+  // The architectural reason no flash is reachable at all: initTheme() runs
+  // in main.tsx BEFORE React ever renders anything, not inside an effect
+  // that could let one frame paint first (ROUND 5 paid for exactly this
+  // mistake once already, with data-splash-hold). A source check, not a
+  // runtime one — there is no DOM observation that could distinguish "ran
+  // first" from "ran first and finished before the only frame anyone could
+  // ever catch," so the ordering itself is asserted directly.
+  const mainSrc = await readFile(new URL('../../src/main.tsx', import.meta.url), 'utf8');
+  const initIdx = mainSrc.indexOf('initTheme()');
+  const renderIdx = mainSrc.indexOf('.render(');
+  ok('S12 (source): main.tsx calls initTheme() BEFORE ReactDOM...render() — the attribute lands on <html> before React mounts anything, Splash included',
+    initIdx >= 0 && renderIdx >= 0 && initIdx < renderIdx,
+    JSON.stringify({ initIdx, renderIdx }));
 });
 
 for (const c of checks) {

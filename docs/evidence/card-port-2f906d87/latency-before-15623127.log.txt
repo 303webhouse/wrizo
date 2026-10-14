@@ -1,0 +1,17 @@
+{"words":500,"chars":2982,"keystroke_median":9.6,"keystroke_p95":16.1,"toPaint_median":11.4,"toPaint_p95":17.8,"caretMove_median":10.5,"caretMove_p95":18.9,"n":[40,40,40],"scroll":{"steps":20,"innerTextReadsTotal":20,"innerTextReadsPerStepMax":1,"scrollToFrame_median":3.5,"scrollToFrame_p95":11.3}}
+{"words":5000,"chars":28815,"keystroke_median":70.5,"keystroke_p95":85.5,"toPaint_median":70.9,"toPaint_p95":85.8,"caretMove_median":17.6,"caretMove_p95":25.4,"n":[40,40,40],"scroll":{"steps":20,"innerTextReadsTotal":20,"innerTextReadsPerStepMax":1,"scrollToFrame_median":10.1,"scrollToFrame_p95":16.5}}
+{"words":20000,"chars":114816,"keystroke_median":370.8,"keystroke_p95":473.7,"toPaint_median":376.2,"toPaint_p95":482.5,"caretMove_median":45.6,"caretMove_p95":71.3,"n":[40,40,40],"scroll":{"steps":20,"innerTextReadsTotal":54,"innerTextReadsPerStepMax":3,"scrollToFrame_median":45.2,"scrollToFrame_p95":60.5}}
+{"words":50000,"chars":286927,"keystroke_median":1090.3,"keystroke_p95":1673.4,"toPaint_median":1090.8,"toPaint_p95":1674.1,"caretMove_median":73.9,"caretMove_p95":115.8,"n":[40,40,40],"scroll":{"steps":20,"innerTextReadsTotal":40,"innerTextReadsPerStepMax":2,"scrollToFrame_median":47.3,"scrollToFrame_p95":78.1}}
+SCROLL (one line per step, 20 steps, no heading pop): page-wide innerText reads, and ms from the scroll to its next frame
+     500 words: 20 innerText reads in 20 scrolls (max 1/step); scroll-to-frame 3.5 / p95 11.3
+    5000 words: 20 innerText reads in 20 scrolls (max 1/step); scroll-to-frame 10.1 / p95 16.5
+   20000 words: 54 innerText reads in 20 scrolls (max 3/step); scroll-to-frame 45.2 / p95 60.5
+   50000 words: 40 innerText reads in 20 scrolls (max 2/step); scroll-to-frame 47.3 / p95 78.1
+TYPING LATENCY (ms, Draft, caret mid-page):
+     500 words (2982 chars): keystroke 9.6 / p95 16.1;  to paint 11.4 / p95 17.8;  caret move 10.5 / p95 18.9
+    5000 words (28815 chars): keystroke 70.5 / p95 85.5;  to paint 70.9 / p95 85.8;  caret move 17.6 / p95 25.4
+   20000 words (114816 chars): keystroke 370.8 / p95 473.7;  to paint 376.2 / p95 482.5;  caret move 45.6 / p95 71.3
+   50000 words (286927 chars): keystroke 1090.3 / p95 1673.4;  to paint 1090.8 / p95 1674.1;  caret move 73.9 / p95 115.8
+real	2m30.969s
+user	0m0.030s
+sys	0m0.015s
