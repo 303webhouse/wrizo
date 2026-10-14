@@ -10,7 +10,8 @@
      (today = no outline, full-strength olive). They fade on the first click anywhere.
   2. Drag on empty board: a ghost card outline grows with the pointer;
      on release the card pop-up opens at that size.
-  3. Plain click (no drag): a default-size card at that spot.
+  3. Plain click (no drag): a default-size card at that spot, its pop-up open at once (same as a drag release).
+  Board canvas is today's light paper (--paper) in both themes.
   Arbor / Flux switcher and Reset are mockup only. Reduced motion: no fades.
   Branch: cursor/board-start.
 -->
@@ -22,7 +23,7 @@
     --ink-border: #332C25; --ink-border-strong: #453B31;
     --text-hi: #EDE6DA; --text-mid: #B5A998; --text-low: #80766A;
     --ink-on-paper: #2B2014; --ink-on-paper-low: #8A7C68;
-    --card-stock: #FBF6EA; --card-hairline: #D9CFB6;
+    --paper: #F3EDE1; --card-stock: #FFFDF6; --card-hairline: #D9CFB6;
     --brass: #ff9800; --brass-press: #e88900; --accent-rest: #96a05a; --accent-door: #4F5730;
     --desk-ground: #1F1A16;
     --font-ui: 'Figtree', system-ui, sans-serif;
@@ -35,16 +36,16 @@
     --ink-950: #04141A; --ink-900: #091E24; --ink-800: #0C2A32;
     --ink-border: #1D4A52; --ink-border-strong: #2A6A76;
     --text-hi: #E3F1EC; --text-mid: #8FB4AC; --text-low: #6E958D;
-    --ink-on-paper: #E3F1EC; --ink-on-paper-low: #57D0F5;
-    --card-stock: #0E2A30; --card-hairline: #2A6A76;
-    --accent-rest: #5E837C; --accent-door: #A9B56A;
+    --paper: #EDF6F3; --ink-on-paper: #0E2A30; --ink-on-paper-low: #4A7580;
+    --card-stock: #FFFFFF; --card-hairline: #BFD6D1;
+    --accent-rest: #5E837C; --accent-door: #4F5730;
     --desk-ground: #07161B;
     --font-ui: 'Rajdhani', system-ui, sans-serif;
     --font-label: 'Chakra Petch', system-ui, sans-serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; scrollbar-width: thin; scrollbar-color: var(--sb) transparent; }
   html, body { height: 100%; overflow: hidden; }
-  body { background: var(--ink-950); color: var(--text-hi); font-family: var(--font-ui); }
+  body { background: var(--desk-ground); color: var(--text-hi); font-family: var(--font-ui); }
   button, textarea { font: inherit; color: inherit; background: none; border: 0; }
   button { cursor: pointer; }
 
@@ -63,7 +64,7 @@
   .room { position: absolute; inset: 42px 0 0 0; padding: 18px 28px 22px; display: flex; justify-content: center; }
   .board {
     position: relative; width: min(1100px, 100%); height: 100%;
-    background: var(--desk-ground); border: 1px solid var(--ink-border);
+    background: var(--paper); border: 1px solid var(--ink-border);
     overflow: hidden; cursor: crosshair; touch-action: none; user-select: none;
   }
 
@@ -85,7 +86,6 @@
     font-family: var(--font-label); font-size: 15px; letter-spacing: .01em; white-space: nowrap;
     transition: opacity .15s ease, color .15s ease, border-color .15s ease;
   }
-  html[data-theme='flux'] .starter { border-color: var(--text-low); color: var(--text-mid); }
   .starter:hover, .starter:focus-visible { opacity: 1; color: var(--brass); border-color: var(--brass); }
   .starter:active { color: var(--brass-press); border-color: var(--brass-press); }
   .starter svg { width: 22px; height: 22px; display: block; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
@@ -110,7 +110,7 @@
   }
   .card .kind { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-on-paper-low); margin-bottom: 6px; }
   .card .txt { font-family: var(--font-prose); font-size: 15px; line-height: 1.4; min-height: 1.4em; }
-  .card[data-open='true'] { border-color: var(--brass); z-index: 5; box-shadow: 0 10px 34px rgba(0,0,0,.45); display: flex; flex-direction: column; }
+  .card[data-open='true'] { border-color: var(--brass); z-index: 5; box-shadow: 0 10px 30px rgba(43,32,20,.22); display: flex; flex-direction: column; }
   .card[data-open='true'] textarea {
     flex: 1; min-height: 0; width: 100%; resize: none; outline: none;
     font-family: var(--font-prose); font-size: 15px; line-height: 1.4; color: var(--ink-on-paper);
@@ -254,7 +254,7 @@
       const w = Math.max(MIN_W, Math.abs(d.x - d.x0)), h = Math.max(MIN_H, Math.abs(d.y - d.y0));
       makeCard(clampBox(left, top, w, h), true);
     } else {
-      makeCard(clampBox(d.x0, d.y0, DEFAULT_W, DEFAULT_H), false);
+      makeCard(clampBox(d.x0, d.y0, DEFAULT_W, DEFAULT_H), true);
     }
   }
   board.addEventListener('pointerup', end);
