@@ -1,0 +1,348 @@
+[
+  {
+    "frame": "arbor-W1a-place-line-unfiled",
+    "file": "arbor-W1a-place-line-unfiled.png",
+    "hash": "#/page/wd-loose",
+    "theme": "plateau",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "crumb": "Unfiled/A loose page with a few words in it.",
+    "crumbEls": [],
+    "headerText": "Free WriteTextInkDraftReviseWorkshopPublishPlan →"
+  },
+  {
+    "frame": "arbor-W1b-place-line-journal",
+    "file": "arbor-W1b-place-line-journal.png",
+    "hash": "#/page/wd-journal",
+    "theme": "plateau",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "crumb": "Journal/A journal page about the morning.",
+    "crumbEls": [],
+    "headerText": "Free WriteDraftReviseWorkshopPublishPlan →"
+  },
+  {
+    "frame": "arbor-W1c-place-line-drawer",
+    "file": "arbor-W1c-place-line-drawer.png",
+    "hash": "#/page/wd-drawer",
+    "theme": "plateau",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "crumb": "Fiction/The Harbour Book/A page filed in a drawer.",
+    "crumbEls": [
+      "Fiction",
+      "The Harbour Book"
+    ],
+    "headerText": "Free WriteDraftReviseWorkshopPublishPlan →"
+  },
+  {
+    "frame": "arbor-W2-places-panel",
+    "file": "arbor-W2-places-panel.png",
+    "hash": "#/page/wd-loose",
+    "theme": "plateau",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "places": true,
+    "title": "Places",
+    "radios": [
+      "Journal",
+      "The Harbour Book",
+      "Loose"
+    ]
+  },
+  {
+    "frame": "arbor-W3-empty-board",
+    "file": "arbor-W3-empty-board.png",
+    "hash": "#/page/wd-board",
+    "theme": "plateau",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "buttons": [
+      "⋯",
+      "An empty board",
+      "Open",
+      "Storyboard",
+      "Outline",
+      "Pages →",
+      "+ Pages",
+      "Pages",
+      "Plan",
+      "Drawers",
+      "Journal",
+      "Shelf",
+      "Settings",
+      "Themes",
+      "Trash",
+      "‹",
+      "Add card",
+      "New Pages Card",
+      "+ Filed Pages",
+      "From a deck…",
+      "Show grafts",
+      "›",
+      "Close, keep dock",
+      "Send",
+      "?",
+      "?",
+      "New Card",
+      "New Pages Card",
+      "Load a Deck",
+      "+ Filed Pages"
+    ],
+    "hasPlusPages": true,
+    "hasPlusFiled": true
+  },
+  {
+    "frame": "arbor-W8-left-rail",
+    "file": "arbor-W8-left-rail.png",
+    "hash": "#/page/wd-loose",
+    "theme": "plateau",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "rail": [
+      "Pages",
+      "Plan",
+      "Drawers",
+      "Journal",
+      "Shelf",
+      "Settings",
+      "Themes",
+      "Trash"
+    ]
+  },
+  {
+    "frame": "arbor-W4-tutor-ask-note",
+    "file": "arbor-W4-tutor-ask-note.png",
+    "hash": "#/page/wd-loose",
+    "theme": "plateau",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "noteText": "Nothing leaves your desk unasked. An ask sends your words, these Pages' recent changes, and your Bible. A counsel that reads more names it on its button, and sends only that, only when pressed.",
+    "noteRect": [
+      1085,
+      277,
+      1345,
+      390
+    ],
+    "panelRect": [
+      1008,
+      107,
+      1360,
+      840
+    ],
+    "viewport": [
+      1400,
+      900
+    ],
+    "insideViewport": true,
+    "clippedByAncestor": null,
+    "noteButtons": [
+      "What travels when you ask",
+      "About Fragments"
+    ]
+  },
+  {
+    "frame": "arbor-W7-fragments-note",
+    "file": "arbor-W7-fragments-note.png",
+    "hash": "#/page/wd-loose",
+    "theme": "plateau",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "noteText": "Uses recency and shared tags only."
+  },
+  {
+    "frame": "arbor-W5-tutor-error-try-again",
+    "file": "arbor-W5-tutor-error-try-again.png",
+    "hash": "#/page/wd-loose",
+    "theme": "plateau",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "retry": "Try again",
+    "status": [
+      "Tutor currently unavailable Try again"
+    ]
+  },
+  {
+    "frame": "arbor-W6-dots-menu-recede-note",
+    "file": "arbor-W6-dots-menu-recede-note.png",
+    "hash": "#/page/wd-loose",
+    "theme": "plateau",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "noteText": "Type and the menus fade; pause, reach an edge, or press Esc to bring them back.",
+    "recedeBtn": true
+  },
+  {
+    "frame": "flux-W1a-place-line-unfiled",
+    "file": "flux-W1a-place-line-unfiled.png",
+    "hash": "#/page/wd-loose",
+    "theme": "flux",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "crumb": "Unfiled/A loose page with a few words in it.",
+    "crumbEls": [],
+    "headerText": "Free WriteTextInkDraftReviseWorkshopPublishPlan →"
+  },
+  {
+    "frame": "flux-W1b-place-line-journal",
+    "file": "flux-W1b-place-line-journal.png",
+    "hash": "#/page/wd-journal",
+    "theme": "flux",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "crumb": "Journal/A journal page about the morning.",
+    "crumbEls": [],
+    "headerText": "Free WriteDraftReviseWorkshopPublishPlan →"
+  },
+  {
+    "frame": "flux-W1c-place-line-drawer",
+    "file": "flux-W1c-place-line-drawer.png",
+    "hash": "#/page/wd-drawer",
+    "theme": "flux",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "crumb": "Fiction/The Harbour Book/A page filed in a drawer.",
+    "crumbEls": [
+      "Fiction",
+      "The Harbour Book"
+    ],
+    "headerText": "Free WriteDraftReviseWorkshopPublishPlan →"
+  },
+  {
+    "frame": "flux-W2-places-panel",
+    "file": "flux-W2-places-panel.png",
+    "hash": "#/page/wd-loose",
+    "theme": "flux",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "places": true,
+    "title": "Places",
+    "radios": [
+      "Log",
+      "The Harbour Book",
+      "Loose"
+    ]
+  },
+  {
+    "frame": "flux-W3-empty-board",
+    "file": "flux-W3-empty-board.png",
+    "hash": "#/page/wd-board",
+    "theme": "flux",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "buttons": [
+      "⋯",
+      "An empty board",
+      "Open",
+      "Storyboard",
+      "Outline",
+      "Pages →",
+      "+ Pages",
+      "Pages",
+      "Plan",
+      "Drawers",
+      "Log",
+      "Shelf",
+      "Settings",
+      "Themes",
+      "Trash",
+      "‹",
+      "Add card",
+      "New Pages Card",
+      "+ Filed Pages",
+      "From a deck…",
+      "Show links",
+      "›",
+      "Close, keep dock",
+      "Send",
+      "?",
+      "?",
+      "New Card",
+      "New Pages Card",
+      "Load a Deck",
+      "Link a Page"
+    ],
+    "hasPlusPages": true,
+    "hasPlusFiled": true
+  },
+  {
+    "frame": "flux-W8-left-rail",
+    "file": "flux-W8-left-rail.png",
+    "hash": "#/page/wd-loose",
+    "theme": "flux",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "rail": [
+      "Pages",
+      "Plan",
+      "Drawers",
+      "Log",
+      "Shelf",
+      "Settings",
+      "Themes",
+      "Trash"
+    ]
+  },
+  {
+    "frame": "flux-W4-tutor-ask-note",
+    "file": "flux-W4-tutor-ask-note.png",
+    "hash": "#/page/wd-loose",
+    "theme": "flux",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "noteText": "Nothing leaves your desk unasked. An ask sends your words, these Pages' recent changes, and your Bible. A counsel that reads more names it on its button, and sends only that, only when pressed.",
+    "noteRect": [
+      1085,
+      281,
+      1345,
+      394
+    ],
+    "panelRect": [
+      950,
+      108,
+      1360,
+      841
+    ],
+    "viewport": [
+      1400,
+      900
+    ],
+    "insideViewport": true,
+    "clippedByAncestor": null,
+    "noteButtons": [
+      "What travels when you ask",
+      "About Fragments"
+    ]
+  },
+  {
+    "frame": "flux-W7-fragments-note",
+    "file": "flux-W7-fragments-note.png",
+    "hash": "#/page/wd-loose",
+    "theme": "flux",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "noteText": "Uses recency and shared tags only."
+  },
+  {
+    "frame": "flux-W5-tutor-error-try-again",
+    "file": "flux-W5-tutor-error-try-again.png",
+    "hash": "#/page/wd-loose",
+    "theme": "flux",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "retry": "Try again",
+    "status": [
+      "Tutor currently unavailable Try again"
+    ]
+  },
+  {
+    "frame": "flux-W6-dots-menu-recede-note",
+    "file": "flux-W6-dots-menu-recede-note.png",
+    "hash": "#/page/wd-loose",
+    "theme": "flux",
+    "bundle": "index-DA-y_9jj.js",
+    "splashPresent": false,
+    "noteText": "Type and the menus fade; pause, reach an edge, or press Esc to bring them back.",
+    "recedeBtn": true
+  }
+]
