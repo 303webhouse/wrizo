@@ -1519,7 +1519,10 @@ function PageEditorView({ id }: { id: string }) {
               <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}`); }}>{lexMany('page')}</button>
             </div>
           )}
-          <button type="button" className="btn-quiet page-copy" onClick={() => copyText(textRef.current)} title={`Copy the clean ${lex('page').toLowerCase()} text`}>Copy {lex('page').toLowerCase()} text</button>
+          {/* ITEM word-diet (Nick, review fix, Oct 13) — "page text" was a
+              normal singular-noun-as-modifier compound; "pages text" isn't
+              standard English. Cut the noun (name the act, not the object). */}
+          <button type="button" className="btn-quiet page-copy" onClick={() => copyText(textRef.current)} title="Copy the clean text">Copy Text</button>
           {/* BM1 S3 — the PLAN → door, the mirror of the board's PAGE → door, at
               the end of the page's bar (same arrow grammar). First click on an
               unpaired page BIRTHS the plan board (S2's lazy rule — never before,

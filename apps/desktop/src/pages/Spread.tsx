@@ -419,8 +419,10 @@ export function Spread() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
         <div>
           <div className="eyebrow" style={{ marginBottom: 8 }}>THE SPREAD</div>
+          {/* ITEM word-diet (Nick, review fix, Oct 13) — "Every" + a now-
+              always-plural noun doesn't agree ("Every loose Pages"). */}
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 28, letterSpacing: '-0.01em', color: 'var(--text-hi)' }}>
-            Every loose {lex('page').toLowerCase()}, laid out.
+            All loose {lex('page').toLowerCase()}, laid out.
           </h1>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -430,9 +432,12 @@ export function Spread() {
             </span>
           )}
           {/* J4 Slice 2 — the Spread's FIRST select-mode action (the J3 dead-button rule lifts here). */}
+          {/* ITEM word-diet (Nick, review fix, Oct 13) — "Page" is now
+              invariantly plural (lex('page') === lexMany('page')), so the
+              singular/plural ternary below is dead weight; cut it. */}
           {selectMode && selected.size > 0 && (
             <button type="button" className="btn-quiet spread-port" onClick={() => setPortOpen(true)}>
-              Port {selected.size} {selected.size === 1 ? lex('page').toLowerCase() : lexMany('page').toLowerCase()}…
+              Port {selected.size} {lexMany('page').toLowerCase()}…
             </button>
           )}
           {/* J5 Slice 2/3 — "Add to…" joins Select-mode beside "Port…". */}

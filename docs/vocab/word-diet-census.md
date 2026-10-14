@@ -183,6 +183,49 @@ seed material, not chrome — see the scope note above.
 `tutorDraftAskThreadSlip`, `tutorDraftAskStretch`, `tutorFreeWriteRefill`
 (explicitly locked wording already). Strings-of-record, not narration.
 
+## §6 — themeLexicon's `page` prose ripple (review fix, Oct 13)
+
+Fable's own follow-up finding: `themeLexicon.ts`'s `page` term going
+`{one:'Page', many:'Pages'}` → `{one:'Pages', many:'Pages'}` (built in the
+first word-diet pass, per Fable's instruction) is read directly by ~14
+other prose call sites across the app via `lex('page')`/`lexMany('page')` —
+outside the deskLexicon §2/§3 rows above, and outside the ticket's named
+scope when it was built. Several read with an article ("a page", "this
+page", "an existing page"), which is now a flat grammar violation ("a
+Pages") under Nick's own ruling; a few others disagreed in number only
+(a verb keyed to a numeric count, against a noun that no longer varies by
+count). Fixed here under BOTH rules at once — the grammar ruling (Pages is
+always plural, never "a Pages"/"this Pages") and the word-diet rule (name,
+don't narrate; cut wherever possible) — rather than only patching the
+grammar, since several of these read more naturally once the now-redundant
+singular/plural branching is cut outright.
+
+| Location | Current (before) | Proposed (after) | Rule | SR copy |
+|---|---|---|---|---|
+| `Spread.tsx` H1 | `Every loose page, laid out.` | `All loose Pages, laid out.` | grammar ("Every" + a now-invariant-plural noun doesn't agree) | no |
+| `Spread.tsx` Port button | `Port {n} page…` / `Port {n} pages…` (count ternary) | `Port {n} Pages…` (ternary cut — both branches were already identical) | 1, cut | no |
+| `PageEditor.tsx` Copy button | title `Copy the clean page text`, button `Copy page text` | title `Copy the clean text`, button `Copy Text` | 1 ("pages text" isn't standard English as a compound; name the act, not the object) | no |
+| `JournalEntry.tsx` authored textbox | `aria-label="Journal page"` | `aria-label="Journal"` | 1, cut (role="textbox" already says it's editable text) | **yes** |
+| `JournalEntry.tsx` Copy button | title `Copy the page text`, button `Copy page text` | title `Copy the text`, button `Copy Text` | 1 | no |
+| `JournalEntry.tsx` notebook nav, Previous (×2 call sites, framed + legacy) | `aria-label="Previous page"` | `aria-label="Previous"` | 1, cut | **yes** |
+| `JournalEntry.tsx` notebook nav, Next (×2) | `aria-label="Next page"` | `aria-label="Next"` | 1, cut | **yes** |
+| `JournalEntry.tsx` notebook nav, append (×2) | `aria-label="New page at the end"` | `aria-label="Add at the end"` | 1, cut (`"New Pages at the end"` overstates one page as many) | **yes** |
+| `JournalEntry.tsx` notebook nav, insert (×2) | `aria-label="Insert a page here"` | `aria-label="Insert here"` | grammar (`"a Pages"`) + 1, cut | **yes** |
+| `ImportDraft.tsx` sub-line | `…and it becomes a page you can keep writing.` | `…and keep writing.` | grammar (`"a Pages"`) + 1, cut | no |
+| `AddToSheet.tsx` `fileToShelf` toast | `` `${n} page(s) ${n===1?'stays':'stay'} in the Journal — …` `` | `` `${n} Pages stay in the Journal — …` `` | grammar (verb was agreeing with the count, not the now-fixed-plural noun) | no |
+| `AddToSheet.tsx` `doAttachPlan` toast | `…the page stays in the Journal.` | `…the pages stay in the Journal.` | grammar (plural subject, singular verb) | no |
+| `AddToSheet.tsx` `fileHere` destination row | `File here as a new page` | `File here as new Pages` | grammar (`"a new Pages"`) | no |
+| `ExistingPagePicker.tsx` dialog title + aria-label | `Add an existing page` | `Add existing Pages` | grammar (`"an existing Pages"`) + 1, cut | partial (title visible, aria-label SR) |
+| `PortToBoardSheet.tsx` dialog title | `Port this page to a Board` / `Port {n} pages to a Board` (count ternary) | `Port {n} Pages to a Board` (ternary cut) | grammar (`"this Pages"`, Nick's own named example) + 1, cut | no |
+| `DeskRail.tsx` wayback return chip | `aria-label="Return to the page"` | `aria-label="Return"` | 1, cut (the `title` attribute beside it already names the actual destination) | **yes** |
+
+Verified NOT broken, left untouched (no article, or already plural-safe):
+`QuickSprint.tsx`/`PageEditor.tsx`/`ScriptEditor.tsx`'s bare `{lexMany('page')}`
+tab labels; `ProjectHome.tsx`'s "Support pages"/"No support pages yet"/"+ Add
+support pages"; `Spread.tsx`'s empty-state line (`No loose pages yet — pages
+you write in the Journal…`); `DrawersTree.tsx`'s "New Pages" door;
+`BeatWizard.tsx`'s "sentences are for the pages."
+
 ## Counts
 
 - §1 hardcoded: 7 found (4 from one function, `pageHome.ts`'s
@@ -199,6 +242,13 @@ seed material, not chrome — see the scope note above.
 - `themeLexicon.ts`: 0 rows over 4 words in either CANONICAL or
   `OVERRIDES.flux` — it's a pure noun lexicon (Page/Shelf/Drawer/Binder/
   Box/Board/Notebook/Journal/Plan/Milestone/Free write/Home/Voice Wall/
-  Publish/Script), no prose.
+  Publish/Script), no prose. (Still true of the lexicon entries themselves;
+  §6 is the prose BUILT AROUND one of those entries, in ~14 other files —
+  a ripple from changing `page`'s own identity map, not a second lexicon
+  pass.)
+- §6 (themeLexicon `page` prose ripple, review fix): 16 call sites fixed
+  (14 distinct strings, 2 of them doubled at a framed+legacy call site
+  each) + 5 verified already-safe and left untouched.
 
-66 rows carry an actual word-diet proposal (§2 + §3, minus the 2 in §4).
+66 rows carry an actual word-diet proposal (§2 + §3, minus the 2 in §4),
+plus §6's 16 review-fix sites.

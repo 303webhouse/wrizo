@@ -24,7 +24,10 @@ export function PortToBoardSheet({ sourceIds, onClose }: { sourceIds: string[]; 
     return (
       <div className="board-sheet" role="dialog" aria-label={`Port to a ${lex('board')}`}>
         <div className="board-sheet-inner">
-          <div className="board-sheet-title">Port {sourceIds.length > 1 ? `${sourceIds.length} ${lexMany('page').toLowerCase()}` : `this ${lex('page').toLowerCase()}`} to a {lex('board')}</div>
+          {/* ITEM word-diet (Nick, review fix, Oct 13) — "this Pages" is
+              banned, and "Page" is now invariantly plural, so the
+              single/multi ternary is dead weight; cut it. */}
+          <div className="board-sheet-title">Port {sourceIds.length} {lexMany('page').toLowerCase()} to a {lex('board')}</div>
           <p style={{ color: 'var(--text-mid)', marginBottom: 16 }}>This selection has ink.</p>
           <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
             <button type="button" className="btn-quiet" onClick={() => setIncludeInk(false)}>Text only</button>

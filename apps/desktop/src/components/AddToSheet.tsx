@@ -48,7 +48,10 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
 
   const crumbLabel = (lvl: Level) => (lvl.kind === 'root' ? 'Add to…' : lvl.kind === 'drawer' ? lvl.drawerName : lvl.binderName);
 
-  const pageWord = (count: number) => (count === 1 ? lex('page') : lexMany('page')).toLowerCase();
+  // ITEM word-diet (Nick, review fix, Oct 13) — "Page" is now invariantly
+  // plural (lex('page') === lexMany('page')), so the count branch is dead;
+  // kept as a named call at each site rather than inlined (smallest diff).
+  const pageWord = (_count: number) => lexMany('page').toLowerCase();
 
   // B2 S3 (review fix, 2026-07-20) — a genuine truthfulness defect: this
   // toast used to unconditionally claim "moved; it left the Journal" for
@@ -74,8 +77,11 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
     const stillJournalHomed = sourceIds
       .map(id => getJournalEntry(id))
       .some((e): e is JournalEntry => !!e && inJournalView(e));
+    // ITEM word-diet (Nick, review fix, Oct 13) — the verb agreed with the
+    // numeric count (n===1 -> "stays"), but the noun no longer does ("Pages"
+    // is invariant); "1 Pages stays" disagreed either way. Always plural now.
     const msg = stillJournalHomed
-      ? `${n} ${pageWord(n)} ${n === 1 ? 'stays' : 'stay'} in the ${lex('journal')} — a journal-homed page can't be shelved directly; nothing moved.`
+      ? `${n} ${pageWord(n)} stay in the ${lex('journal')} — a journal-homed page can't be shelved directly; nothing moved.`
       : `Filed ${n} ${pageWord(n)} to the ${lex('shelf')} — moved; it left the ${lex('journal')}.`;
     onDone(msg, 'MOVES');
   };
@@ -98,7 +104,8 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
 
   const doAttachPlan = (binderId: string, beatId: string, beatName: string) => {
     attachToPlanBeat(sourceIds, binderId, beatId);
-    onDone(`Linked — marked routed to "${beatName}"; the ${lex('page').toLowerCase()} stays in the ${lex('journal')}.`, 'LINKS');
+    // ITEM word-diet (Nick, review fix, Oct 13) — plural noun, plural verb.
+    onDone(`Linked — marked routed to "${beatName}"; the ${lex('page').toLowerCase()} stay in the ${lex('journal')}.`, 'LINKS');
   };
 
   const doBoardAppend = (boardId: string, title: string, includeInk: boolean) => {
@@ -180,8 +187,9 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
     const framework = plan ? getFramework(plan.frameworkId) : null;
     body = (
       <>
+        {/* ITEM word-diet (Nick, review fix, Oct 13) — "a new Pages" is banned; drop the article. */}
         <button type="button" className="dz-more add-dest-row" onClick={() => fileHere(binderId)}>
-          File here as a new {lex('page').toLowerCase()} <VerbTag verb="MOVES" />
+          File here as new {lex('page').toLowerCase()} <VerbTag verb="MOVES" />
         </button>
         {chapters.length > 0 && (
           <div style={{ marginTop: 16 }}>

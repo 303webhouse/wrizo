@@ -36,10 +36,12 @@ export function ExistingPagePicker({ boardId, onClose }: { boardId: string; onCl
     onClose();
   };
 
+  // ITEM word-diet (Nick, review fix, Oct 13) — "an existing Pages" is
+  // banned; drop the article (name, don't narrate).
   return (
-    <div className="board-sheet" role="dialog" aria-label={`Add an existing ${lex('page').toLowerCase()}`}>
+    <div className="board-sheet" role="dialog" aria-label={`Add existing ${lex('page').toLowerCase()}`}>
       <div className="board-sheet-inner">
-        <div className="board-sheet-title">Add an existing {lex('page').toLowerCase()}</div>
+        <div className="board-sheet-title">Add existing {lex('page').toLowerCase()}</div>
         {candidates.length === 0 && <p style={{ color: 'var(--text-mid)', marginBottom: 12 }}>Nothing else to add yet.</p>}
         <div style={{ maxHeight: 320, overflow: 'auto' }}>
           {candidates.map(e => (

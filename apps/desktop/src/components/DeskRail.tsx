@@ -108,7 +108,10 @@ export function DeskRail() {
           type="button"
           className="desk-rail-item desk-rail-wayback"
           title={`Return to: ${wayBackLabel}`}
-          aria-label={`Return to the ${lex('page').toLowerCase()}`}
+          // ITEM word-diet (Nick, review fix, Oct 13) — "the Pages" (plural)
+          // overstates one specific return destination; cut the noun (the
+          // title attribute above already names the actual place).
+          aria-label="Return"
           onClick={() => navigate(wayBack.route)}
         >
           <span className="desk-rail-glyph" aria-hidden="true">↩</span>

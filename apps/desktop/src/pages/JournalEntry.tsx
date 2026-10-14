@@ -833,7 +833,10 @@ function JournalEntryView() {
             className="entry-edit"
             role="textbox"
             aria-multiline="true"
-            aria-label={`${lex('journal')} ${lex('page').toLowerCase()}`}
+            // ITEM word-diet (Nick, review fix, Oct 13) — "Journal page" (one
+            // surface) can't become "Journal pages" (role="textbox" already
+            // says it's editable text; cut the now-inaccurate plural noun).
+            aria-label={lex('journal')}
             spellCheck
             // touchAction:'none' suppresses OS stylus handwriting on the text
             // (J10.1) without disabling page/finger scroll on the container.
@@ -968,7 +971,10 @@ function JournalEntryView() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {/* Copy-out is sacred (VW) — clean page text, one tap, no long-press. */}
-          <button type="button" className="btn-quiet entry-copy" onClick={() => copyText(pageTextRef.current)} title={`Copy the ${lex('page').toLowerCase()} text`}>Copy {lex('page').toLowerCase()} text</button>
+          {/* ITEM word-diet (Nick, review fix, Oct 13) — "page text" was a
+              normal singular-noun-as-modifier compound; "pages text" isn't
+              standard English. Cut the noun (name the act, not the object). */}
+          <button type="button" className="btn-quiet entry-copy" onClick={() => copyText(pageTextRef.current)} title="Copy the text">Copy Text</button>
           {/* J4 Slice 2 — the port, single-page flow. Loose pages only. */}
           {isLoose && (
             <button type="button" className="btn-quiet entry-port" onClick={() => setPortOpen(true)}>Port to a Board…</button>
@@ -1150,18 +1156,24 @@ function JournalEntryView() {
           </div>
           {isLoose && (
             <nav className="journal-nav" aria-label={lex('journal')}>
-              <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label={`Previous ${lex('page').toLowerCase()}`}
+              {/* ITEM word-diet (Nick, review fix, Oct 13) — "Page" is always
+                  plural now; an aria-label naming it in a singular-instance
+                  action ("Previous page", "Insert a page") breaks grammar
+                  ("a Pages") or overstates count ("New Pages" for one). Cut
+                  the noun — the nav's own aria-label (lex('journal'), above)
+                  and glyph already carry the context. */}
+              <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label="Previous"
                 onClick={() => prevPage && navigate(routeForEntry(prevPage))}>‹</button>
               <span className="journal-nav-pos">{nbIndex + 1} / {notebook.length}</span>
               {nextPage ? (
-                <button type="button" className="journal-nav-btn" aria-label={`Next ${lex('page').toLowerCase()}`}
+                <button type="button" className="journal-nav-btn" aria-label="Next"
                   onClick={() => navigate(routeForEntry(nextPage))}>›</button>
               ) : (
-                <button type="button" className="journal-nav-btn journal-nav-add" aria-label={`New ${lex('page').toLowerCase()} at the end`}
+                <button type="button" className="journal-nav-btn journal-nav-add" aria-label="Add at the end"
                   onClick={() => openLoose()}>+</button>
               )}
               {nextPage && (
-                <button type="button" className="journal-nav-insert" aria-label={`Insert a ${lex('page').toLowerCase()} here`}
+                <button type="button" className="journal-nav-insert" aria-label="Insert here"
                   onClick={() => openLoose(entry.id)}>+ insert</button>
               )}
             </nav>
@@ -1238,18 +1250,20 @@ function JournalEntryView() {
             one and the next. */}
         {isLoose && (
           <nav className="journal-nav" aria-label={lex('journal')}>
-            <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label={`Previous ${lex('page').toLowerCase()}`}
+            {/* ITEM word-diet (Nick, review fix, Oct 13) — see the framed
+                nav's own identical comment above. */}
+            <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label="Previous"
               onClick={() => prevPage && navigate(routeForEntry(prevPage))}>‹</button>
             <span className="journal-nav-pos">{nbIndex + 1} / {notebook.length}</span>
             {nextPage ? (
-              <button type="button" className="journal-nav-btn" aria-label={`Next ${lex('page').toLowerCase()}`}
+              <button type="button" className="journal-nav-btn" aria-label="Next"
                 onClick={() => navigate(routeForEntry(nextPage))}>›</button>
             ) : (
-              <button type="button" className="journal-nav-btn journal-nav-add" aria-label={`New ${lex('page').toLowerCase()} at the end`}
+              <button type="button" className="journal-nav-btn journal-nav-add" aria-label="Add at the end"
                 onClick={() => openLoose()}>+</button>
             )}
             {nextPage && (
-              <button type="button" className="journal-nav-insert" aria-label={`Insert a ${lex('page').toLowerCase()} here`}
+              <button type="button" className="journal-nav-insert" aria-label="Insert here"
                 onClick={() => openLoose(entry.id)}>+ insert</button>
             )}
           </nav>
