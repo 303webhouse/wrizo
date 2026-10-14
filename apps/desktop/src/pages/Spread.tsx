@@ -419,10 +419,12 @@ export function Spread() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
         <div>
           <div className="eyebrow" style={{ marginBottom: 8 }}>THE SPREAD</div>
-          {/* ITEM word-diet (Nick, review fix, Oct 13) — "Every" + a now-
-              always-plural noun doesn't agree ("Every loose Pages"). */}
+          {/* ITEM word-diet (Fable, review fix, Oct 13) — "Every" + a now-
+              always-plural noun doesn't agree ("Every loose Pages"); the
+              product noun is capitalized (not lowercased), like Journal/
+              Shelf/Drawer. */}
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 28, letterSpacing: '-0.01em', color: 'var(--text-hi)' }}>
-            All loose {lex('page').toLowerCase()}, laid out.
+            All loose {lex('page')}, laid out.
           </h1>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -432,12 +434,13 @@ export function Spread() {
             </span>
           )}
           {/* J4 Slice 2 — the Spread's FIRST select-mode action (the J3 dead-button rule lifts here). */}
-          {/* ITEM word-diet (Nick, review fix, Oct 13) — "Page" is now
-              invariantly plural (lex('page') === lexMany('page')), so the
-              singular/plural ternary below is dead weight; cut it. */}
+          {/* ITEM word-diet (Fable, review fix, Oct 13) — never a number
+              directly before "Pages"; "these Pages" names the selection
+              without one (the selected-count span beside Select already
+              shows the number, so nothing is lost). */}
           {selectMode && selected.size > 0 && (
             <button type="button" className="btn-quiet spread-port" onClick={() => setPortOpen(true)}>
-              Port {selected.size} {lexMany('page').toLowerCase()}…
+              Port these {lexMany('page')}…
             </button>
           )}
           {/* J5 Slice 2/3 — "Add to…" joins Select-mode beside "Port…". */}
@@ -469,8 +472,11 @@ export function Spread() {
         </p>
       )}
 
+      {/* ITEM word-diet (Fable, review fix, Oct 13) — rule 4 (empty states:
+          one short line or nothing); the second clause narrated what the
+          Spread already is. */}
       {pages.length === 0 ? (
-        <p style={{ color: 'var(--text-mid)' }}>No loose {lexMany('page').toLowerCase()} yet — {lexMany('page').toLowerCase()} you write in the {lex('journal')} will spread out here.</p>
+        <p style={{ color: 'var(--text-mid)' }}>No loose {lexMany('page')} yet.</p>
       ) : viewPages.length === 0 ? (
         <p style={{ color: 'var(--text-mid)' }}>Nothing matches this view.</p>
       ) : (

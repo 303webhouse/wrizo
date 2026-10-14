@@ -241,14 +241,14 @@ await withHarness(async (app) => {
   //     JSON.stringify(bar) === JSON.stringify(expected) && noBarePlan && bar.includes('Plan →'), JSON.stringify(bar));
   // }
   // ------------------------------------------------------------------
-  // SUPERSEDED (item word-diet, Nick, review fix) — the legacy bar's own
-  // Copy button text changed, "Copy page text" -> "Copy Text" (pages-rename
-  // prose sweep: "page text" was a singular-noun compound, and "pages text"
-  // isn't standard English). DRIVER updated to current reality below.
+  // SUPERSEDED (item word-diet, Fable, review fix) — the legacy bar's own
+  // Copy button text changed, "Copy page text" -> "Copy text" (sentence
+  // case — "page text" was a singular-noun compound, and "pages text"
+  // isn't standard English, so the noun is cut). DRIVER updated to current reality below.
   for (const [w, tag, expected, framed] of [
     [FLOOR_W, 'floor 1100', ['Pages'], true],
     [WIDE_W, 'wide 2200', ['Pages'], true],
-    [LEGACY_W, 'legacy 1000', ['Pages', 'Copy Text', 'Plan →'], false],
+    [LEGACY_W, 'legacy 1000', ['Pages', 'Copy text', 'Plan →'], false],
   ]) {
     await app.emulateDpr(1, w, 900);
     await app.reload();

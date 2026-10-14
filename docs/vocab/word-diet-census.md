@@ -203,28 +203,41 @@ singular/plural branching is cut outright.
 | Location | Current (before) | Proposed (after) | Rule | SR copy |
 |---|---|---|---|---|
 | `Spread.tsx` H1 | `Every loose page, laid out.` | `All loose Pages, laid out.` | grammar ("Every" + a now-invariant-plural noun doesn't agree) | no |
-| `Spread.tsx` Port button | `Port {n} page…` / `Port {n} pages…` (count ternary) | `Port {n} Pages…` (ternary cut — both branches were already identical) | 1, cut | no |
-| `PageEditor.tsx` Copy button | title `Copy the clean page text`, button `Copy page text` | title `Copy the clean text`, button `Copy Text` | 1 ("pages text" isn't standard English as a compound; name the act, not the object) | no |
-| `JournalEntry.tsx` authored textbox | `aria-label="Journal page"` | `aria-label="Journal"` | 1, cut (role="textbox" already says it's editable text) | **yes** |
-| `JournalEntry.tsx` Copy button | title `Copy the page text`, button `Copy page text` | title `Copy the text`, button `Copy Text` | 1 | no |
-| `JournalEntry.tsx` notebook nav, Previous (×2 call sites, framed + legacy) | `aria-label="Previous page"` | `aria-label="Previous"` | 1, cut | **yes** |
-| `JournalEntry.tsx` notebook nav, Next (×2) | `aria-label="Next page"` | `aria-label="Next"` | 1, cut | **yes** |
-| `JournalEntry.tsx` notebook nav, append (×2) | `aria-label="New page at the end"` | `aria-label="Add at the end"` | 1, cut (`"New Pages at the end"` overstates one page as many) | **yes** |
-| `JournalEntry.tsx` notebook nav, insert (×2) | `aria-label="Insert a page here"` | `aria-label="Insert here"` | grammar (`"a Pages"`) + 1, cut | **yes** |
+| `Spread.tsx` Port button | `Port {n} page…` / `Port {n} pages…` (count ternary) | `Port these Pages…` (ternary cut, count dropped — Fable's review fix: never a number directly before "Pages") | 1, cut | no |
+| `Spread.tsx` empty-state line | `No loose pages yet — pages you write in the Journal will spread out here.` | `No loose Pages yet.` | 4 (empty states: one short line or nothing — Fable's review fix; the second clause only narrated what the Spread already is) | no |
+| `PageEditor.tsx` Copy button | title `Copy the clean page text`, button `Copy page text` | title `Copy the clean text`, button `Copy text` (sentence case — Fable's review fix) | 1 ("pages text" isn't standard English as a compound; name the act, not the object) | no |
+| `JournalEntry.tsx` authored textbox | `aria-label="Journal page"` | *(unchanged — reverted)* | — rule 6 carve-out (SR labels keep full wording); "page" here is the notebook's physical page (bucket b), a literal word, not the lexicon term | **yes** |
+| `JournalEntry.tsx` Copy button | title `Copy the page text`, button `Copy page text` | title `Copy the text`, button `Copy text` (sentence case) | 1 | no |
+| `JournalEntry.tsx` notebook nav, Previous/Next/append/insert (×2 call sites each, framed + legacy) | `aria-label="Previous page"` / `"Next page"` / `"New page at the end"` / `"Insert a page here"` | *(unchanged — reverted)* | — rule 6 carve-out + bucket (b) (same reasoning as the textbox above) | **yes** |
 | `ImportDraft.tsx` sub-line | `…and it becomes a page you can keep writing.` | `…and keep writing.` | grammar (`"a Pages"`) + 1, cut | no |
-| `AddToSheet.tsx` `fileToShelf` toast | `` `${n} page(s) ${n===1?'stays':'stay'} in the Journal — …` `` | `` `${n} Pages stay in the Journal — …` `` | grammar (verb was agreeing with the count, not the now-fixed-plural noun) | no |
-| `AddToSheet.tsx` `doAttachPlan` toast | `…the page stays in the Journal.` | `…the pages stay in the Journal.` | grammar (plural subject, singular verb) | no |
+| `AddToSheet.tsx` `fileToShelf` toast | `` `${n} page(s) ${n===1?'stays':'stay'} in the Journal — …` `` / `` `Filed ${n} page(s) to the Shelf — …` `` | `` `These Pages stay in the Journal — …` `` / `` `Filed these Pages to the Shelf — …` `` (count dropped — Fable's review fix) | grammar + 1, cut | no |
+| `AddToSheet.tsx` `fileStandalone`/`fileHere` toasts | `` `Filed ${n} page(s) to {binder} — …` `` | `` `Filed these Pages to {binder} — …` `` (count dropped) | 1, cut | no |
+| `AddToSheet.tsx` `doAttachPlan` toast | `…the page stays in the Journal.` | `…these Pages stay in the Journal.` | grammar (plural subject, singular verb) | no |
 | `AddToSheet.tsx` `fileHere` destination row | `File here as a new page` | `File here as new Pages` | grammar (`"a new Pages"`) | no |
-| `ExistingPagePicker.tsx` dialog title + aria-label | `Add an existing page` | `Add existing Pages` | grammar (`"an existing Pages"`) + 1, cut | partial (title visible, aria-label SR) |
-| `PortToBoardSheet.tsx` dialog title | `Port this page to a Board` / `Port {n} pages to a Board` (count ternary) | `Port {n} Pages to a Board` (ternary cut) | grammar (`"this Pages"`, Nick's own named example) + 1, cut | no |
-| `DeskRail.tsx` wayback return chip | `aria-label="Return to the page"` | `aria-label="Return"` | 1, cut (the `title` attribute beside it already names the actual destination) | **yes** |
+| `ExistingPagePicker.tsx` dialog title + aria-label | `Add an existing page` | `Add existing Pages` | grammar (`"an existing Pages"`) + 1, cut | partial (title visible, aria-label mirrors it) |
+| `PortToBoardSheet.tsx` dialog title | `Port this page to a Board` / `Port {n} pages to a Board` (count ternary) | `Port these Pages to a Board` (ternary cut, count dropped) | grammar (`"this Pages"`, Nick's own named example) + 1, cut | no |
+| `DeskRail.tsx` wayback return chip | `aria-label="Return to the page"` | *(unchanged — reverted)* | — rule 6 carve-out + page-primacy (the return chip names the literal physical page) | **yes** |
 
 Verified NOT broken, left untouched (no article, or already plural-safe):
 `QuickSprint.tsx`/`PageEditor.tsx`/`ScriptEditor.tsx`'s bare `{lexMany('page')}`
 tab labels; `ProjectHome.tsx`'s "Support pages"/"No support pages yet"/"+ Add
-support pages"; `Spread.tsx`'s empty-state line (`No loose pages yet — pages
-you write in the Journal…`); `DrawersTree.tsx`'s "New Pages" door;
-`BeatWizard.tsx`'s "sentences are for the pages."
+support pages"; `DrawersTree.tsx`'s "New Pages" door; `BeatWizard.tsx`'s
+"sentences are for the pages."
+
+**Review fix (Fable, Oct 13), three corrections to the pass above:**
+1. Screen-reader labels keep full wording (rule 6) — the aria-label CUTS
+   above are reverted (the textbox, the four nav buttons, the wayback
+   chip); their word count stands.
+2. The Journal notebook's paging is a physical page (bucket b): those same
+   five labels use the literal word "page", never the lexicon term — the
+   Pages-plural ruling doesn't reach them. DeskRail's wayback chip is the
+   same bucket, by the page-primacy canon.
+3. Never a number directly before "Pages" — `Spread.tsx`'s Port button,
+   `PortToBoardSheet.tsx`'s title, and `AddToSheet.tsx`'s four toasts all
+   drop the count for "these"/"These" (capital P throughout, matching
+   Journal/Shelf/Drawer's own capitalized treatment — not lowercased via
+   `.toLowerCase()` the way "page" used to be). `Spread.tsx`'s empty line
+   is cut further, to `No loose Pages yet.`
 
 ## Counts
 

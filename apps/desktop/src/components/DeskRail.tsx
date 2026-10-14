@@ -108,10 +108,11 @@ export function DeskRail() {
           type="button"
           className="desk-rail-item desk-rail-wayback"
           title={`Return to: ${wayBackLabel}`}
-          // ITEM word-diet (Nick, review fix, Oct 13) — "the Pages" (plural)
-          // overstates one specific return destination; cut the noun (the
-          // title attribute above already names the actual place).
-          aria-label="Return"
+          // ITEM word-diet (Fable, review fix, Oct 13) — reverted: SR
+          // labels keep full wording (rule 6); the return chip is
+          // page-primacy (docs/page-primacy-canon.md) and this "page" is
+          // the literal word, not the deskLexicon/themeLexicon term.
+          aria-label="Return to the page"
           onClick={() => navigate(wayBack.route)}
         >
           <span className="desk-rail-glyph" aria-hidden="true">↩</span>

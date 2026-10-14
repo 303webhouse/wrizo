@@ -83,12 +83,11 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board (departed PageEditor)' });
   await sleep(150);
   const pageChipLabel = await app.evalJs("document.querySelector('.desk-rail-wayback')?.getAttribute('aria-label')");
-  // SUPERSEDED (item word-diet, Nick, review fix) — the wayback chip's own
-  // aria-label cut the noun entirely ("Return to the Pages" would overstate
-  // one destination as many); the title attribute (checked below) still
-  // names the actual place.
-  // ok('return chip present after departing PageEditor, accessible name is "Return to the page"', pageChipLabel === 'Return to the page', String(pageChipLabel));
-  ok('return chip present after departing PageEditor, accessible name is "Return" [word-diet successor]', pageChipLabel === 'Return', String(pageChipLabel));
+  // ITEM word-diet (Fable, review fix, Oct 13) — reverted to its original
+  // value: the wayback chip's aria-label is SR-only text (rule 6, full
+  // wording) and page-primacy's literal "page" (bucket b), untouched by
+  // this ticket after all.
+  ok('return chip present after departing PageEditor, accessible name is "Return to the page"', pageChipLabel === 'Return to the page', String(pageChipLabel));
   const pageChipTitle = await app.evalJs("document.querySelector('.desk-rail-wayback')?.getAttribute('title')");
   ok('chip label reflects the page\'s own first line (not a generic string)', (pageChipTitle || '').includes('Line 0 of the growing'), pageChipTitle);
 
