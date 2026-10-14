@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrizo · Board start mockup</title>
+<!--
+  docs/mockups/board-start — the empty board's way in.
+  1. Four starter buttons: thin square outline, lower opacity than today
+     (today = no outline, full-strength olive). They fade on the first click anywhere.
+  2. Drag on empty board: a ghost card outline grows with the pointer;
+     on release the card pop-up opens at that size.
+  3. Plain click (no drag): a default-size card at that spot.
+  Arbor / Flux switcher and Reset are mockup only. Reduced motion: no fades.
+  Branch: cursor/board-start.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=Rajdhani:wght@400;500;600&family=Chakra+Petch:wght@400;500&display=swap');
+
+  :root {
+    --ink-950: #110600; --ink-900: #1F1A16; --ink-800: #2A241E;
+    --ink-border: #332C25; --ink-border-strong: #453B31;
+    --text-hi: #EDE6DA; --text-mid: #B5A998; --text-low: #80766A;
+    --ink-on-paper: #2B2014; --ink-on-paper-low: #8A7C68;
+    --card-stock: #FBF6EA; --card-hairline: #D9CFB6;
+    --brass: #ff9800; --brass-press: #e88900; --accent-rest: #96a05a; --accent-door: #4F5730;
+    --desk-ground: #1F1A16;
+    --font-ui: 'Figtree', system-ui, sans-serif;
+    --font-prose: 'Crimson Pro', Georgia, serif;
+    --font-label: 'Figtree', system-ui, sans-serif;
+    --sb: color-mix(in srgb, var(--text-low) 28%, transparent);
+    --start-op: .4;
+  }
+  html[data-theme='flux'] {
+    --ink-950: #04141A; --ink-900: #091E24; --ink-800: #0C2A32;
+    --ink-border: #1D4A52; --ink-border-strong: #2A6A76;
+    --text-hi: #E3F1EC; --text-mid: #8FB4AC; --text-low: #6E958D;
+    --ink-on-paper: #E3F1EC; --ink-on-paper-low: #57D0F5;
+    --card-stock: #0E2A30; --card-hairline: #2A6A76;
+    --accent-rest: #5E837C; --accent-door: #A9B56A;
+    --desk-ground: #07161B;
+    --font-ui: 'Rajdhani', system-ui, sans-serif;
+    --font-label: 'Chakra Petch', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; scrollbar-width: thin; scrollbar-color: var(--sb) transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--ink-950); color: var(--text-hi); font-family: var(--font-ui); }
+  button, textarea { font: inherit; color: inherit; background: none; border: 0; }
+  button { cursor: pointer; }
+
+  .rig {
+    position: fixed; inset: 0 0 auto 0; z-index: 30;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 7px 12px; background: #000; border-bottom: 1px solid #222;
+    font-size: 11px; color: #9a9a9a;
+  }
+  .rig b { color: #d8d8d8; letter-spacing: .06em; }
+  .only { color: #6e6e6e; letter-spacing: .12em; text-transform: uppercase; font-size: 9px; border: 1px solid #333; padding: 2px 6px; }
+  .rev { height: 22px; padding: 0 8px; border: 1px solid #333; color: #c8c8c8; background: #141414; }
+  .rev[data-on='true'] { border-color: var(--accent-rest); color: var(--accent-rest); }
+  .hint { margin-left: auto; color: #5e5e5e; }
+
+  .room { position: absolute; inset: 42px 0 0 0; padding: 18px 28px 22px; display: flex; justify-content: center; }
+  .board {
+    position: relative; width: min(1100px, 100%); height: 100%;
+    background: var(--desk-ground); border: 1px solid var(--ink-border);
+    overflow: hidden; cursor: crosshair; touch-action: none; user-select: none;
+  }
+
+  /* starters */
+  .starters {
+    position: absolute; top: 50%; left: 0; right: 0; transform: translateY(-50%);
+    display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;
+    pointer-events: none; z-index: 2;
+    transition: opacity .35s ease;
+  }
+  .board[data-started='true'] .starters { opacity: 0; }
+  .starter {
+    pointer-events: auto; cursor: pointer;
+    display: inline-flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 16px 20px; min-width: 112px;
+    border: 1px solid var(--accent-door);
+    color: var(--accent-door);
+    opacity: var(--start-op);
+    font-family: var(--font-label); font-size: 15px; letter-spacing: .01em; white-space: nowrap;
+    transition: opacity .15s ease, color .15s ease, border-color .15s ease;
+  }
+  html[data-theme='flux'] .starter { border-color: var(--text-low); color: var(--text-mid); }
+  .starter:hover, .starter:focus-visible { opacity: 1; color: var(--brass); border-color: var(--brass); }
+  .starter:active { color: var(--brass-press); border-color: var(--brass-press); }
+  .starter svg { width: 22px; height: 22px; display: block; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+  /* today: no outline, full strength — comparison only */
+  .board[data-look='today'] .starter { border-color: transparent; opacity: 1; }
+  .board[data-look='today'] .starter:hover { border-color: transparent; }
+
+  /* ghost */
+  .ghost {
+    position: absolute; z-index: 4; display: none; pointer-events: none;
+    border: 1px solid var(--brass);
+    background: color-mix(in srgb, var(--brass) 6%, transparent);
+  }
+  .ghost[data-on='true'] { display: block; }
+
+  /* cards */
+  .card {
+    position: absolute; z-index: 3; cursor: default;
+    background: var(--card-stock); color: var(--ink-on-paper);
+    border: 1px solid var(--card-hairline);
+    padding: 10px 12px; overflow: hidden;
+  }
+  .card .kind { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-on-paper-low); margin-bottom: 6px; }
+  .card .txt { font-family: var(--font-prose); font-size: 15px; line-height: 1.4; min-height: 1.4em; }
+  .card[data-open='true'] { border-color: var(--brass); z-index: 5; box-shadow: 0 10px 34px rgba(0,0,0,.45); display: flex; flex-direction: column; }
+  .card[data-open='true'] textarea {
+    flex: 1; min-height: 0; width: 100%; resize: none; outline: none;
+    font-family: var(--font-prose); font-size: 15px; line-height: 1.4; color: var(--ink-on-paper);
+  }
+  .card .foot { display: flex; justify-content: flex-end; margin-top: 6px; }
+  .card .done {
+    border: 1px solid var(--brass); color: var(--brass);
+    background: color-mix(in srgb, var(--brass) 14%, transparent);
+    font-size: 11px; padding: 3px 10px;
+  }
+  .card:not([data-open='true']) .foot, .card:not([data-open='true']) textarea { display: none; }
+  .card[data-open='true'] .txt { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .starters, .starter { transition: none; }
+  }
+</style>
+</head>
+<body>
+<header class="rig" id="rig">
+  <b>BOARD START</b>
+  <span class="only">mockup only</span>
+  <button class="rev" data-theme="arbor" type="button">Arbor</button>
+  <button class="rev" data-theme="flux" type="button">Flux</button>
+  <button class="rev" data-look="new" type="button">New</button>
+  <button class="rev" data-look="today" type="button">Today</button>
+  <button class="rev" id="reset" type="button">Reset</button>
+  <span class="hint">Click, or drag, on empty board.</span>
+</header>
+
+<div class="room">
+  <div class="board" id="board" data-started="false" data-look="new">
+    <div class="starters" id="starters"></div>
+    <div class="ghost" id="ghost"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const root = document.documentElement;
+  const board = document.getElementById('board');
+  const rig = document.getElementById('rig');
+  const ghost = document.getElementById('ghost');
+  const starters = document.getElementById('starters');
+
+  const WORDS = {
+    arbor: ['New Card', 'New Pages', 'Templates', 'Connect Pages'],
+    flux: ['New Card', 'New Docs', 'Templates', 'Link Docs']
+  };
+  const ICON = [
+    '<path d="M4 5h16v14H4z"/><path d="M12 9v6M9 12h6"/>',
+    '<path d="M6 3h9l3 3v15H6z"/><path d="M9 11h6M9 15h6"/>',
+    '<path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/>',
+    '<path d="M9 8H6a4 4 0 000 8h3M15 8h3a4 4 0 010 8h-3M8 12h8"/>'
+  ];
+  const DEFAULT_W = 210, DEFAULT_H = 118, MIN_W = 96, MIN_H = 64, DRAG_PX = 5;
+  let drag = null;
+
+  function paintStarters() {
+    const side = root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor';
+    starters.innerHTML = WORDS[side].map((w, i) =>
+      '<button class="starter" type="button"><svg viewBox="0 0 24 24" aria-hidden="true">' + ICON[i] + '</svg><span>' + w + '</span></button>'
+    ).join('');
+  }
+
+  function syncRig() {
+    const side = root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor';
+    document.querySelectorAll('.rev[data-theme]').forEach((b) => { b.dataset.on = b.dataset.theme === side ? 'true' : 'false'; });
+    document.querySelectorAll('.rev[data-look]').forEach((b) => { b.dataset.on = b.dataset.look === board.dataset.look ? 'true' : 'false'; });
+  }
+
+  function clampBox(x, y, w, h) {
+    const bw = board.clientWidth, bh = board.clientHeight;
+    w = Math.min(w, bw); h = Math.min(h, bh);
+    return { x: Math.max(0, Math.min(x, bw - w)), y: Math.max(0, Math.min(y, bh - h)), w, h };
+  }
+
+  function closeOpen() {
+    board.querySelectorAll('.card[data-open="true"]').forEach((c) => {
+      const ta = c.querySelector('textarea');
+      c.querySelector('.txt').textContent = ta.value;
+      c.dataset.open = 'false';
+    });
+  }
+
+  function makeCard(box, open) {
+    const c = document.createElement('div');
+    c.className = 'card';
+    c.style.cssText = 'left:' + box.x + 'px;top:' + box.y + 'px;width:' + box.w + 'px;height:' + box.h + 'px';
+    c.dataset.open = open ? 'true' : 'false';
+    c.innerHTML = '<div class="kind">Card</div><div class="txt"></div><textarea aria-label="Card"></textarea><div class="foot"><button class="done" type="button">Done</button></div>';
+    c.addEventListener('pointerdown', (e) => e.stopPropagation());
+    c.querySelector('.done').addEventListener('click', closeOpen);
+    c.addEventListener('dblclick', () => {
+      closeOpen();
+      c.querySelector('textarea').value = c.querySelector('.txt').textContent;
+      c.dataset.open = 'true';
+      c.querySelector('textarea').focus();
+    });
+    board.append(c);
+    if (open) requestAnimationFrame(() => c.querySelector('textarea').focus());
+    return c;
+  }
+
+  function start() { board.dataset.started = 'true'; }
+
+  // first click anywhere (not the mockup rig) fades the starters
+  document.addEventListener('pointerdown', (e) => {
+    if (rig.contains(e.target)) return;
+    start();
+  }, true);
+
+  board.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('.starter') || e.target.closest('.card')) return;
+    if (e.button !== 0) return;
+    closeOpen();
+    const r = board.getBoundingClientRect();
+    drag = { x0: e.clientX - r.left, y0: e.clientY - r.top, moved: false, id: e.pointerId };
+    board.setPointerCapture(e.pointerId);
+  });
+
+  board.addEventListener('pointermove', (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const r = board.getBoundingClientRect();
+    const x = Math.max(0, Math.min(e.clientX - r.left, r.width));
+    const y = Math.max(0, Math.min(e.clientY - r.top, r.height));
+    if (!drag.moved && Math.hypot(x - drag.x0, y - drag.y0) < DRAG_PX) return;
+    drag.moved = true;
+    drag.x = x; drag.y = y;
+    const left = Math.min(drag.x0, x), top = Math.min(drag.y0, y);
+    ghost.style.cssText = 'left:' + left + 'px;top:' + top + 'px;width:' + Math.abs(x - drag.x0) + 'px;height:' + Math.abs(y - drag.y0) + 'px';
+    ghost.dataset.on = 'true';
+  });
+
+  function end(e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    const d = drag; drag = null;
+    ghost.dataset.on = 'false';
+    if (d.moved) {
+      const left = Math.min(d.x0, d.x), top = Math.min(d.y0, d.y);
+      const w = Math.max(MIN_W, Math.abs(d.x - d.x0)), h = Math.max(MIN_H, Math.abs(d.y - d.y0));
+      makeCard(clampBox(left, top, w, h), true);
+    } else {
+      makeCard(clampBox(d.x0, d.y0, DEFAULT_W, DEFAULT_H), false);
+    }
+  }
+  board.addEventListener('pointerup', end);
+  board.addEventListener('pointercancel', (e) => { if (drag && e.pointerId === drag.id) { drag = null; ghost.dataset.on = 'false'; } });
+
+  document.querySelectorAll('.rev[data-theme]').forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.theme === 'flux') root.setAttribute('data-theme', 'flux'); else root.removeAttribute('data-theme');
+    paintStarters(); syncRig();
+  }));
+  document.querySelectorAll('.rev[data-look]').forEach((b) => b.addEventListener('click', () => { board.dataset.look = b.dataset.look; syncRig(); }));
+  document.getElementById('reset').addEventListener('click', () => {
+    board.querySelectorAll('.card').forEach((c) => c.remove());
+    board.dataset.started = 'false';
+  });
+
+  const q = new URLSearchParams(location.search);
+  if (q.get('theme') === 'flux') root.setAttribute('data-theme', 'flux');
+  if (q.get('look') === 'today') board.dataset.look = 'today';
+  paintStarters(); syncRig();
+})();
+</script>
+</body>
+</html>
