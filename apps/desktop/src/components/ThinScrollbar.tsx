@@ -44,7 +44,14 @@ const THICKNESS_PX = 4;
 // A single shared probe (harness-only; see the ROUND 4 comment on `tick`
 // below) — fine as a module-level singleton since only one ThinScrollbar is
 // ever the subject of a diagnostic pass at a time.
-type ProbeSample = { t: number; hoverDepth: number; active: boolean; thumbTop: number; thumbLeft: number; thumbHeight: number };
+// ROUND 5 (Fable, review) — pointerX/pointerY added: the round-4 log could
+// show the thumb's own box moving but not WHERE THE POINTER WAS, so
+// `hoverDepth` reading 0 while the box sat somewhere else was unexplained —
+// one of those could be the pointer genuinely leaving the box's moving
+// position, the other the box leaving the (stationary) pointer. Tracked
+// unconditionally (one cheap listener) so the probe can answer this on the
+// very next capture without a second round-trip.
+type ProbeSample = { t: number; hoverDepth: number; active: boolean; thumbTop: number; thumbLeft: number; thumbHeight: number; pointerX: number; pointerY: number };
 const probe: { on: boolean; startedAt: number; log: ProbeSample[] } = { on: false, startedAt: 0, log: [] };
 
 export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLElement | null> }) {
@@ -59,6 +66,10 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
 
     let hideTimer: number | null = null;
     let dragging = false;
+    // ROUND 5 — see the probe's own header comment above.
+    let lastPointerX = NaN;
+    let lastPointerY = NaN;
+    const onPointerMove = (e: PointerEvent) => { lastPointerX = e.clientX; lastPointerY = e.clientY; };
 
     const clearHideTimer = () => { if (hideTimer !== null) { window.clearTimeout(hideTimer); hideTimer = null; } };
 
@@ -128,6 +139,7 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
           hoverDepth,
           active: root.classList.contains('active'),
           thumbTop: tr.top, thumbLeft: tr.left, thumbHeight: tr.height,
+          pointerX: lastPointerX, pointerY: lastPointerY,
         });
       }
       const stillSettling = Date.now() - mountedAt < SETTLE_MS;
@@ -217,6 +229,25 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
 
     layoutRoot();
     layoutThumb();
+    // ROUND 5 (Fable, review, item scrollbar-minimal) — the S4 probe measured
+    // the thumb's own box moving ~393px/~108px during the first ~1s after
+    // mount, self-correcting by the end of the SETTLE_MS window below. The
+    // strongest lead, from this file's own history: Prose's text column is
+    // `width:min(760px * var(--paper-scale), 60ch)` (index.css,
+    // `.desk-frame-stage--prose .mode-pagecol`) — a ch-based measure that
+    // resolves against whichever font is ACTIVE at the moment of layout, and
+    // `--font-prose` is a variable web font ROUND 2/3 above already named as
+    // settling AFTER mount (there it changed `.mode-scroll`'s own
+    // scrollHeight; the same async swap can equally move 60ch's pixel value
+    // here, since that depends on the loaded font's own character metrics,
+    // not the fallback's). `document.fonts.ready` is the browser's own
+    // deterministic signal for "every font this document uses has finished
+    // loading" — re-measuring on it removes the window where a stale rect
+    // can be read (and shown) at all, rather than only ever catching the
+    // correction inside the blind SETTLE_MS/rAF sweep below. NOT confirmed
+    // live by this lane (no box turn this round) — Chat 1's own re-run of
+    // the S4 probe is what proves whether this is the whole story.
+    if (document.fonts) document.fonts.ready.then(() => { layoutRoot(); layoutThumb(); }).catch(() => {});
     startTicking(); // the SETTLE_MS window runs from mount regardless of `active`
     target.addEventListener('scroll', onScroll, { passive: true });
     target.addEventListener('mouseenter', onEnter);
@@ -225,6 +256,7 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
     root.addEventListener('mouseleave', onLeave);
     thumb.addEventListener('pointerdown', onThumbPointerDown);
     window.addEventListener('resize', layoutRoot);
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
     const ro = new ResizeObserver(() => { layoutRoot(); layoutThumb(); });
     ro.observe(target);
 
@@ -238,6 +270,7 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
       root.removeEventListener('mouseleave', onLeave);
       thumb.removeEventListener('pointerdown', onThumbPointerDown);
       window.removeEventListener('resize', layoutRoot);
+      window.removeEventListener('pointermove', onPointerMove);
       ro.disconnect();
     };
   }, [targetRef]);
