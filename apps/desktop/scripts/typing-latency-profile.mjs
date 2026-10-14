@@ -256,6 +256,92 @@ async function variantE() {
   }
 }
 
+// VARIANT F (typing-latency build, 2026-10-13) - the ROW SHAPE, measured before the DOM half is built. E's rows were display:BLOCK
+// with each line's newline INSIDE its block: textContent stays byte-identical (C proved it), but by the innerText rules every block
+// boundary is a required line break, so the editor's innerText - and the text a writer COPIES out of it - would gain a blank line
+// at every row boundary. E never checked either. F is today's own `.md-line` shape (an INLINE-BLOCK, width 100%, the newline OUTSIDE
+// it, between rows) with `contain: layout style`, which keeps innerText by construction. Each shape is compared against a visible
+// clone of TODAY's editor on four identities (textContent, innerText, the select-all text, total height), and timed: one character
+// changed in a mid-page row, then that one row's innerHTML rewritten. The real editor is hidden while the clones lay out, so a clone
+// IS the scroller's content (the same host E uses).
+async function variantF() {
+  const el = document.querySelector('.forward-only-editor');
+  if (!el) return { missing: true };
+  const html = el.innerHTML;
+  const lines = html.split('\n');
+  const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return xs.length ? Math.round(s[Math.floor(s.length / 2)] * 10) / 10 : null; };
+  const host = document.createElement('div');
+  host.className = 'wz-probe-host';
+  const mk = (inner) => {
+    const c = el.cloneNode(false);
+    c.removeAttribute('contenteditable'); c.removeAttribute('id'); c.removeAttribute('aria-describedby');
+    c.style.display = '';
+    c.innerHTML = inner;
+    host.appendChild(c);
+    return c;
+  };
+  const selectAllText = (c) => {
+    const sel = window.getSelection(); const r = document.createRange(); r.selectNodeContents(c);
+    sel.removeAllRanges(); sel.addRange(r); const s = sel.toString(); sel.removeAllRanges(); return s;
+  };
+  const firstEditableText = (row) => {
+    const w = document.createTreeWalker(row, NodeFilter.SHOW_TEXT); let n;
+    while ((n = w.nextNode())) if (n.data.length > 8 && !(n.parentElement && n.parentElement.closest('.md-mark-hidden'))) return n;
+    return null;
+  };
+  const measure = (c, rowsOf, today) => {
+    const rows = rowsOf(c);
+    const out = {
+      rows: rows.length,
+      textContentIdentical: c.textContent === today.text,
+      innerTextIdentical: c.innerText === today.inner,
+      selectAllTextIdentical: selectAllText(c) === today.selectAll,
+      heightPx: Math.round(c.getBoundingClientRect().height), heightVsToday: Math.round(c.getBoundingClientRect().height) - today.height,
+    };
+    // first lines of a difference, so a FALSE says where (the innerText rule predicts an extra '\n' at each row boundary)
+    if (!out.innerTextIdentical) {
+      const a = c.innerText, b = today.inner; let i = 0; while (i < a.length && a[i] === b[i]) i++;
+      out.innerTextFirstDiff = { at: i, variant: JSON.stringify(a.slice(Math.max(0, i - 12), i + 12)), today: JSON.stringify(b.slice(Math.max(0, i - 12), i + 12)), lengthVariant: a.length, lengthToday: b.length };
+    }
+    const mid = rows[Math.floor(rows.length / 2)];
+    const t = firstEditableText(mid);
+    const lay = [];
+    if (t) for (let i = 0; i < 15; i += 1) { t.data = t.data + 'a'; const b = performance.now(); void c.offsetHeight; lay.push(performance.now() - b); }
+    out.oneCharLayout_median = med(lay);
+    const rowHtml = mid.innerHTML; const set = [], lay2 = [];
+    for (let i = 0; i < 15; i += 1) { const a = performance.now(); mid.innerHTML = rowHtml; const b = performance.now(); void c.offsetHeight; set.push(b - a); lay2.push(performance.now() - b); }
+    out.rowRewrite = { parse: med(set), layout: med(lay2) };
+    return out;
+  };
+  const prevDisplay = el.style.display;
+  el.parentElement.insertBefore(host, el.nextSibling);
+  el.style.display = 'none';
+  try {
+    // today, visible: the baseline every identity is checked against (the hidden editor's own innerText would be its textContent)
+    const t0 = mk(html);
+    void t0.offsetHeight;
+    const today = { text: t0.textContent, inner: t0.innerText, selectAll: selectAllText(t0), height: Math.round(t0.getBoundingClientRect().height) };
+    const bLay = [];
+    { const t = firstEditableText(t0); if (t) for (let i = 0; i < 15; i += 1) { t.data = t.data + 'a'; const b = performance.now(); void t0.offsetHeight; bLay.push(performance.now() - b); } }
+    t0.remove();
+    // E's row shape (block, newline inside), with E's containment and no content-visibility (Fable: content-visibility skipped nothing)
+    const cE = mk(lines.map((l, i) => `<div class="wz-probe-row" style="display:block;contain:layout style">${l}${i < lines.length - 1 ? '\n' : ''}</div>`).join(''));
+    void cE.offsetHeight;
+    const blockRows = measure(cE, (c) => [...c.children], today);
+    cE.remove();
+    // F: today's .md-line shape - inline-block, width 100%, newline between rows - with containment
+    const fStyle = 'display:inline-block;width:100%;box-sizing:border-box;vertical-align:top;contain:layout style';
+    const cF = mk(lines.map((l) => `<span class="wz-probe-row" style="${fStyle}">${l}</span>`).join('\n'));
+    void cF.offsetHeight;
+    const inlineBlockRows = measure(cF, (c) => [...c.children], today);
+    cF.remove();
+    return { lines: lines.length, today: { heightPx: today.height, oneCharLayout_median: med(bLay) }, E_blockRows: blockRows, F_inlineBlockRows: inlineBlockRows };
+  } finally {
+    host.remove();
+    el.style.display = prevDisplay;
+  }
+}
+
 // THE AUTOSAVE MOMENT (Fable, 2026-10-13): the page saves AUTOSAVE_MS (2s) after the writer STOPS (each keystroke restarts the
 // timer), then the store flushes (300ms) - a whole-page JSON write. Typed as a writer does - a 30-key burst, then a pause - with a
 // long-task observer and the storage writes timed: does the save moment hitch, and by how much?
@@ -428,6 +514,8 @@ await withHarness(async (app) => {
     }
     // VARIANT E (plan step 1) - contain + content-visibility with per-block height estimates; layout, rendered blocks, drift, jump
     row.variantE = await app.evalJs(`(${variantE.toString()})()`);
+    // VARIANT F (the row shape) - E's block rows against today's inline-block .md-line shape, on innerText / copy / height identity
+    row.variantF = await app.evalJs(`(${variantF.toString()})()`);
     // ---- SUPERSEDED (Fable, 2026-10-13: chat 1's run @ 14032189 saw 0 writes - this ran AFTER variantE, which had hidden the
     // editor and moved the selection, so the burst's keys never reached the page). Kept verbatim, no longer run; the autosave is
     // now its OWN phase, before the layout experiments, with the real editor visible and the keys proved landed (above).
@@ -446,6 +534,15 @@ await withHarness(async (app) => {
       for (const k of ['blocks', 'lineHeight', 'charsPerLine', 'trueTotalPx', 'estimatedTotalPx', 'renderedBlocksAroundCaret']) if (!(e[k] > 0)) why.push(`variantE.${k}=${e[k]}`);
       if (!(e.oneCharLayout_median > 0)) why.push(`variantE.oneCharLayout_median=${e.oneCharLayout_median}`);
       if (e.charsPerLineFallback) why.push('variantE: the 20-characters-per-line fallback was used (no wrapped row measured)');
+      const f = row.variantF || {};
+      if (f.missing) why.push('variantF: no editor');
+      for (const k of ['E_blockRows', 'F_inlineBlockRows']) {
+        const v = f[k] || {};
+        if (!(v.rows > 0)) why.push(`variantF.${k}.rows=${v.rows}`);
+        if (!(v.oneCharLayout_median > 0)) why.push(`variantF.${k}.oneCharLayout_median=${v.oneCharLayout_median}`);
+        if (!(v.heightPx > 0)) why.push(`variantF.${k}.heightPx=${v.heightPx}`);
+      }
+      if (!((f.today || {}).heightPx > 0)) why.push('variantF: today\'s clone laid out at zero height');
       if (!(autosave.keysLanded > 0)) why.push(`autosave: the burst's keys did not land (keysLanded=${autosave.keysLanded})`);
       if (!(autosave.writes.length > 0)) why.push('autosave: no storage write in the 6s window');
       if (why.length) { row.INVALID = why; invalid.push(`${words} words: ${why.join('; ')}`); }
