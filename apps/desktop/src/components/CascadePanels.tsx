@@ -383,7 +383,11 @@ function OpenPages({ navigate, currentId, boardId }: {
   const homeOf = (p: JournalEntry): string => {
     const proj = p.projectId ? getProjects().find(x => x.id === p.projectId) : null;
     if (proj) return proj.title || t('placesLoose');
-    return inJournalView(p) ? t('drawerPlaceJournal') : t('placesLoose');
+    // ITEM word-diet (Fable, review fix, Oct 14) — a loose page's own tag
+    // here used placesLoose ("Loose"), the Places panel's destination-picker
+    // word; pageHomeLoose ("Unfiled") is the actual place-line word this
+    // list should match, for the SAME state.
+    return inJournalView(p) ? t('drawerPlaceJournal') : t('pageHomeLoose');
   };
 
   // SORT FIRST, AND NEVER CAP THE POPULATION: every page must be reachable by
