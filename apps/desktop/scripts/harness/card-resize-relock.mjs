@@ -16,8 +16,20 @@ const state = (app) => app.evalJs(`(() => {
   const card = document.querySelector('${CARD}'); const h = card && card.querySelector('.board-handle');
   return { w: card ? Math.round(card.getBoundingClientRect().width) : null, handle: !!h,
     popup: !!document.querySelector('.board-popup'), threadArmed: document.querySelector('.board-connections')?.dataset.threadArmed || null,
-    selected: !!card && (card.classList.contains('selected') || card.getAttribute('aria-selected') === 'true' || !!h) };
+    selected: !!card && (card.classList.contains('selected') || card.getAttribute('aria-selected') === 'true' || !!h),
+    // chat 1's run @ 0aa4ab35 (the second cause): a text selection left on the board by a resize - a click-count-1 press inside
+    // one starts the browser's own drag of that text, which cancels the pointer, and finish(false) reverts the resize
+    selInBoard: (() => { const sl = getSelection(); const cv = document.querySelector('.board-canvas');
+      return !!sl && sl.rangeCount > 0 && !sl.isCollapsed && !!cv && cv.contains(sl.anchorNode); })(),
+    selText: (getSelection() || '').toString().slice(0, 40) };
 })()`);
+// every pointer and drag event the board sees, from the moment it is armed (window, capture phase: nothing can hide one)
+const armLog = (app) => app.evalJs(`(() => { window.__crrLog = []; if (window.__crrArmed) return; window.__crrArmed = true;
+  for (const t of ['pointerdown', 'pointerup', 'pointercancel', 'dragstart', 'dblclick']) window.addEventListener(t, (e) => {
+    const el = e.target && e.target.nodeType === 1 ? e.target : e.target && e.target.parentElement;
+    window.__crrLog.push(t + ':' + (el ? (el.className && el.className.baseVal === undefined ? String(el.className).split(' ')[0] : el.tagName) : '?'));
+  }, true); })()`);
+const readLog = (app) => app.evalJs('(window.__crrLog || []).slice()');
 const handleAt = (app) => app.evalJs(`(() => { const h = document.querySelector('${CARD} .board-handle'); if (!h) return null;
   const r = h.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
 const mouse = (app, type, x, y, clickCount, buttons) => app.cdp('Input.dispatchMouseEvent', { type, x, y, button: 'left', buttons, clickCount, pointerType: 'mouse' });
@@ -67,6 +79,7 @@ await withHarness(async (app) => {
   await sleep(150);
   const s1 = await state(app);
   ok('R1 (premise): a real resize of the corner grows the card', s1.w > s0.w + 20, JSON.stringify({ before: s0.w, after: s1.w }));
+  ok('R4 (the second cause): a resize leaves no text selected on the board (a selection is what a native drag would carry off)', !s1.selInBoard, JSON.stringify({ selInBoard: s1.selInBoard, selText: s1.selText }));
   await dragCorner(app, 60, 30, 2);   // at once: the second click of a double-click
   await sleep(400);
   const s2 = await state(app);
@@ -92,12 +105,20 @@ await withHarness(async (app) => {
 
   // ---- the control: the same immediate second resize sent as clickCount 1 (what every earlier harness sent)
   await freshBoard(app);
+  const u0 = await state(app);
   await dragCorner(app, 60, 30, 1);
   await sleep(150);
   const u1 = await state(app);
+  // Fable (2026-10-13): prove the instrument first - the SAME driver, a plain first resize. If this one fails too, the driver is wrong.
+  ok('INSTRUMENT: a plain first resize with this same driver grows the card (so a failing second one is the product, not the driver)', u1.w > u0.w + 20, JSON.stringify({ before: u0.w, after: u1.w }));
+  await armLog(app);
   await dragCorner(app, 60, 30, 1);
   await sleep(400);
   const u2 = await state(app);
+  const u2log = await readLog(app);
+  ok('R5: the second press is not taken by a native drag - no dragstart, no pointercancel, and its pointerdown lands on the handle', !u2log.some((x) => /^(dragstart|pointercancel)/.test(x)) && u2log[0] === 'pointerdown:board-handle', JSON.stringify({ events: u2log, before: u1, after: u2 }));
+  // NOTE (chat 1's run @ 0aa4ab35): this failed on the unfixed AND the fixed tree, so "(the count is the variable)" was a hypothesis,
+  // and wrong - a second cause exists (R4/R5 above). The assertion is unchanged; it is now the fix's main check.
   ok('CONTROL: the same second resize WITHOUT the double-click count grows the card (the count is the variable)', u2.w > u1.w + 20 && !u2.popup, JSON.stringify({ before: u1.w, after: u2.w, state: u2 }));
 });
 
