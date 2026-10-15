@@ -1,4 +1,4 @@
-import { readLead, readMarks, runsOfMark, stripLine, BLOCK_TOKEN } from './markRuns';
+import { closeMark, fontCloseMark, readLead, readMarks, runsOfMark, stripLine, withoutFontMarks, BLOCK_TOKEN } from './markRuns';
 
 // AB2 S3 — Draft's tools, operating as markdown conventions directly on
 // `entry.text` (S0's ruling: no separate rich-text state). Pure string
@@ -193,14 +193,28 @@ function toggleInline(text: string, start: number, end: number, mark: string): F
           if (overlaps && !inside && !covers) { A = Math.min(A, r.open); B = Math.max(B, rEnd); }
         }
       }
+      // FONT-SPAN: a font span is a run too - an emphasis edge that would cut across one pulls it in, so the two nest
+      for (const r of readMarks(line).filter(x => x.kind === 'font')) {
+        const rEnd = r.close + closeMark(r).length;
+        const overlaps = A < rEnd && B > r.open;
+        const inside = A >= r.open + r.mark.length && B <= r.close;
+        const covers = A <= r.open && B >= rEnd;
+        if (overlaps && !inside && !covers) { A = Math.min(A, r.open); B = Math.max(B, rEnd); }
+      }
     }
     const fulls = inner ? [] : runs.filter(r => A <= r.open && r.close + ml <= B);
     // The segment is MARKED when every word-character in it sits inside one of its own runs. Whitespace and the mark
     // characters themselves (`*`, `_`, `~` - another mark's markers) are not words, so a neighbouring mark never makes a
     // fully-marked segment look half-plain.
     let bare = 0;
+    // FONT-SPAN: a font span's own marks (`[` and `]{.font-<slug>}`) are not words either
+    const fontMarkAt = new Set<number>();
+    for (const r of readMarks(line).filter(x => x.kind === 'font')) {
+      fontMarkAt.add(r.open);
+      for (let k = 0; k < closeMark(r).length; k++) fontMarkAt.add(r.close + k);
+    }
     for (let i = A; i < B; i++) {
-      if (/[\s*_~]/.test(line[i])) continue;
+      if (/[\s*_~]/.test(line[i]) || fontMarkAt.has(i)) continue;
       if (!fulls.some(r => i >= r.open && i < r.close + ml)) bare++;
     }
     const marked = !!inner || (fulls.length > 0 && bare === 0);
@@ -585,6 +599,7 @@ export function marksAt(text: string, caret: number): { bold: boolean; italic: b
   const at = caret - ls - lead;
   const out = { bold: false, italic: false, underline: false, strike: false };
   for (const r of readMarks(line.slice(lead))) {
+    if (r.kind === 'font') continue;   // FONT-SPAN: a face is not one of the strip's four styles (fontFaceAt reads it)
     const ml = r.mark.length;
     const empty = r.close === r.open + ml;
     if ((empty && at === r.close) || (at > r.open + ml && at <= r.close)) out[r.kind] = true;
@@ -635,4 +650,152 @@ export function stripMarkdownConventions(text: string): string {
   // markers the page actually paints - so "2 * 3 * 4" exports as it shows, `~~strike~~` is stripped like the rest (the old
   // regex copy never stripped it), and a `>| ` block token goes with the other structure.
   return text.split('\n').map(stripLine).join('\n');
+}
+
+// ---- FONT-SPAN: a font on HIGHLIGHTED words (Nick's ruling, Oct 13; docs/font-span-plan.md, Fable's four additions) --------------
+// A pick is one operation on the plain text, line by line (a selection across lines becomes one span per line, as Bold does):
+//   1. every character's face is read off the line's font spans (none = the page's or card's own face);
+//   2. the selected characters take the picked face (null = the page's own face: the spans there are simply removed);
+//   3. the line is written back with ONE span per stretch of equal face - so neighbours of one face MERGE, a span the selection only
+//      partly covered is SPLIT at the selection's edge, and a word is never inside two font spans (marks never stack);
+//   4. a stretch that would cross a Bold/Italic/Underline/Strike run is split at that run's marks, so the two NEST and the reader never
+//      drops one as crossing (a dropped span would leave its marks on the page as text).
+// The selection comes back on the same words (the highlight stays, as the mockup has it). One call is one undo step for the caller.
+
+interface FontLine { lead: number; base: string; faces: (string | null)[]; toBase: number[] }
+
+// a line's text with its font marks taken out (`base`), each base character's face, and raw -> base positions
+function readFontLine(line: string): FontLine {
+  const lead = readLead(line).length;
+  const rest = line.slice(lead);
+  const runs = readMarks(rest);
+  const fonts = runs.filter(r => r.kind === 'font').sort((a, b) => a.open - b.open);
+  const isMark = new Uint8Array(rest.length);
+  for (const f of fonts) {
+    isMark[f.open] = 1;
+    for (let k = 0; k < closeMark(f).length; k++) isMark[f.close + k] = 1;
+  }
+  const toBase: number[] = new Array(rest.length + 1);
+  let base = '';
+  const rawFace: (string | null)[] = new Array(rest.length).fill(null);
+  for (const f of fonts) for (let i = f.open + 1; i < f.close; i++) rawFace[i] = f.face ?? null;   // inner spans overwrite outer
+  const faces: (string | null)[] = [];
+  for (let i = 0; i < rest.length; i++) {
+    toBase[i] = base.length;
+    if (isMark[i]) continue;
+    base += rest[i];
+    faces.push(rawFace[i]);
+  }
+  toBase[rest.length] = base.length;
+  return { lead, base, faces, toBase };
+}
+
+// the stretches of equal non-null face, split so none crosses an emphasis run of `base`
+function fontStretches(base: string, faces: (string | null)[]): Array<{ s: number; e: number; face: string }> {
+  const emph = readMarks(base).filter(r => r.kind !== 'font');
+  const out: Array<{ s: number; e: number; face: string }> = [];
+  const queue: Array<{ s: number; e: number; face: string }> = [];
+  for (let i = 0; i < faces.length;) {
+    const f = faces[i];
+    let j = i + 1;
+    while (j < faces.length && faces[j] === f) j++;
+    if (f) queue.push({ s: i, e: j, face: f });
+    i = j;
+  }
+  while (queue.length) {
+    const seg = queue.shift()!;
+    if (seg.e <= seg.s) continue;
+    const cross = emph.find(r => {
+      const ro = r.open, re = r.close + r.mark.length;
+      return (seg.s < ro && seg.e > ro && seg.e < re) || (seg.s > ro && seg.s < re && seg.e > re);
+    });
+    if (!cross) {
+      // the marks sit against words (plan: `[` on the first word, `]{.font-…}` on the last): a stretch's edge spaces take the page's
+      // face - invisible - and a stretch of nothing but marks and spaces paints nothing, so no span is written for it
+      let s0 = seg.s, e0 = seg.e;
+      while (s0 < e0 && /\s/.test(base[s0])) s0++;
+      while (e0 > s0 && /\s/.test(base[e0 - 1])) e0--;
+      if (/\S/.test(base.slice(s0, e0).replace(/[*_~]/g, ''))) out.push({ s: s0, e: e0, face: seg.face });
+      continue;
+    }
+    const ro = cross.open, ml = cross.mark.length, rc = cross.close, re = rc + ml;
+    if (seg.s < ro) {                       // starts before the run, ends inside it
+      queue.push({ s: seg.s, e: ro, face: seg.face });
+      queue.push({ s: ro + ml, e: Math.min(seg.e, rc), face: seg.face });
+    } else {                                // starts inside the run, ends after it
+      queue.push({ s: Math.max(seg.s, ro + ml), e: rc, face: seg.face });
+      queue.push({ s: re, e: seg.e, face: seg.face });
+    }
+  }
+  return out.sort((a, b) => a.s - b.s);
+}
+
+// write `base` back with the stretches' marks; `map(p)` gives a base position's place in the result (for the selection)
+function writeFontLine(base: string, stretches: Array<{ s: number; e: number; face: string }>): { rest: string; before: (p: number) => number; atOrBefore: (p: number) => number } {
+  const ins: Array<{ at: number; text: string }> = [];
+  for (const st of stretches) { ins.push({ at: st.s, text: '[' }); ins.push({ at: st.e, text: fontCloseMark(st.face) }); }
+  ins.sort((a, b) => a.at - b.at || (a.text === '[' ? 1 : -1));   // at one position, a closing mark comes before an opening one
+  let rest = '';
+  let from = 0;
+  for (const x of ins) { rest += base.slice(from, x.at) + x.text; from = x.at; }
+  rest += base.slice(from);
+  const before = (p: number) => p + ins.filter(x => x.at < p).reduce((n, x) => n + x.text.length, 0);
+  const atOrBefore = (p: number) => p + ins.filter(x => x.at <= p).reduce((n, x) => n + x.text.length, 0);
+  return { rest, before, atOrBefore };
+}
+
+/** Apply face `slug` (null: the page's or card's own face) to the highlighted text [selStart, selEnd). The selection comes back on the
+ *  same words. A collapsed selection changes nothing (the whole-document pick is the host's, not the text's). */
+export function applyFontPick(text: string, selStart: number, selEnd: number, slug: string | null): FormatResult {
+  const start = Math.min(selStart, selEnd);
+  const end = Math.max(selStart, selEnd);
+  if (start === end) return { text, start, end };
+  const segs = selectedSegments(text, start, end);
+  if (segs.length === 0) return { text, start, end };
+  let out = '';
+  let cursor = 0;
+  let newStart = -1;
+  let newEnd = -1;
+  for (const sg of segs) {
+    let le = text.indexOf('\n', sg.ls);
+    if (le === -1) le = text.length;
+    const line = text.slice(sg.ls, le);
+    const fl = readFontLine(line);
+    const a = fl.toBase[sg.a - sg.ls - fl.lead];
+    const b = fl.toBase[sg.b - sg.ls - fl.lead];
+    const faces = fl.faces.slice();
+    for (let i = a; i < b; i++) faces[i] = slug;
+    const w = writeFontLine(fl.base, fontStretches(fl.base, faces));
+    out += text.slice(cursor, sg.ls) + line.slice(0, fl.lead) + w.rest;
+    const lineStart = out.length - w.rest.length - fl.lead;
+    if (newStart < 0) newStart = lineStart + fl.lead + w.atOrBefore(a);
+    newEnd = lineStart + fl.lead + w.before(b);
+    cursor = le;
+  }
+  out += text.slice(cursor);
+  return { text: out, start: newStart, end: newEnd };
+}
+
+/** The face of the highlighted words, for the picker's brass: the slug when every word carries the same span face, null when every
+ *  word wears the page's (or card's) own face, 'mixed' otherwise (no brass is shown). A collapsed selection reads null. */
+export function fontFaceAt(text: string, selStart: number, selEnd: number): string | null | 'mixed' {
+  const start = Math.min(selStart, selEnd);
+  const end = Math.max(selStart, selEnd);
+  if (start === end) return null;
+  const seen = new Set<string | null>();
+  for (const sg of selectedSegments(text, start, end)) {
+    let le = text.indexOf('\n', sg.ls);
+    if (le === -1) le = text.length;
+    const fl = readFontLine(text.slice(sg.ls, le));
+    const a = fl.toBase[sg.a - sg.ls - fl.lead];
+    const b = fl.toBase[sg.b - sg.ls - fl.lead];
+    for (let i = a; i < b; i++) if (/[^\s*_~]/.test(fl.base[i])) seen.add(fl.faces[i]);
+  }
+  if (seen.size === 0) return null;
+  return seen.size === 1 ? [...seen][0] : 'mixed';
+}
+
+/** The whole-document (whole-card) pick, as the mockup has it: every font span on the text is removed - the new face is the page's. */
+export function clearFontSpans(text: string): string {
+  return withoutFontMarks(text);
 }

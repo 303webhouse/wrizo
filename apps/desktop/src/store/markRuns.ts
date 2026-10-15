@@ -19,13 +19,47 @@ export type MarkKind = 'bold' | 'italic' | 'underline' | 'strike';
 
 export const MARK_OF: Record<MarkKind, string> = { bold: '**', italic: '*', underline: '__', strike: '~~' };
 
+// FONT-SPAN (Nick's ruling, Oct 13; docs/font-span-plan.md): a font on HIGHLIGHTED words is a run too - `[the words]{.font-<slug>}`,
+// the bracketed span Pandoc reads, the slug being the roster face's name lower-cased with hyphens for spaces. Its two marks DIFFER
+// (`[` opens, `]{.font-<slug>}` closes), so a run carries its closing mark when it is not its opening one; every reader that measures
+// a closing mark reads `closeMark(r)`, never `r.mark`. The marks hold no whitespace, so no word counter ever counts one.
+export type RunKind = MarkKind | 'font';
+
 export interface MarkRun {
-  kind: MarkKind;
+  kind: RunKind;
   mark: string;
   /** index of the first character of the OPENING marker */
   open: number;
   /** index of the first character of the CLOSING marker */
   close: number;
+  /** the CLOSING marker when it is not `mark` (a font span's `]{.font-<slug>}`); absent for emphasis, whose two marks are one string */
+  cmark?: string;
+  /** a font span's face, as its slug (store/fontRoster.ts faceForSlug turns it back into a face) */
+  face?: string;
+}
+
+/** A run's closing marker: `mark` for emphasis, the `]{.font-<slug>}` for a font span. */
+export const closeMark = (r: { mark: string; cmark?: string }): string => r.cmark ?? r.mark;
+
+/** A font span's closing marker for a face slug. */
+export const fontCloseMark = (slug: string): string => `]{.font-${slug}}`;
+const FONT_CLOSE = /^\]\{\.font-([a-z0-9]+(?:-[a-z0-9]+)*)\}/;
+
+// The font spans on one line. A `[` opens; `]{.font-<slug>}` closes the nearest open `[`. A PLAIN `]` closes the nearest `[` too, as a
+// literal pair - so a writer's own `[sic]` inside a span keeps the brackets balanced and stays text. An unclosed `[`, and a closing
+// mark with no `[` before it, are text.
+function fontRuns(line: string): MarkRun[] {
+  const out: MarkRun[] = [];
+  const stack: number[] = [];
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '[') { stack.push(i); continue; }
+    if (c !== ']') continue;
+    const o = stack.pop();
+    const m = FONT_CLOSE.exec(line.slice(i, i + 64));
+    if (m && o !== undefined) { out.push({ kind: 'font', mark: '[', open: o, close: i, cmark: m[0], face: m[1] }); i += m[0].length - 1; }
+  }
+  return out;
 }
 
 interface Tok { ch: string; pos: number; len: number; canOpen: boolean; canClose: boolean }
@@ -79,14 +113,16 @@ export function readMarks(line: string): MarkRun[] {
     }
   };
   pairKind('strike'); pairKind('underline'); pairKind('bold'); pairKind('italic');
+  // FONT-SPAN: font spans join the same non-crossing rule - nested in, or apart from, every other run, or the later one is text
+  found.push(...fontRuns(line));
 
   // outermost first; then accept a run only if it nests inside, or sits apart from, everything already accepted
-  found.sort((a, b) => a.open - b.open || (b.close + b.mark.length) - (a.close + a.mark.length));
+  found.sort((a, b) => a.open - b.open || (b.close + closeMark(b).length) - (a.close + closeMark(a).length));
   const accepted: MarkRun[] = [];
   for (const r of found) {
-    const rEnd = r.close + r.mark.length;
+    const rEnd = r.close + closeMark(r).length;
     const crosses = accepted.some(a => {
-      const aEnd = a.close + a.mark.length;
+      const aEnd = a.close + closeMark(a).length;
       const apart = rEnd <= a.open || aEnd <= r.open;
       const nested = (a.open <= r.open && rEnd <= aEnd) || (r.open <= a.open && aEnd <= rEnd);
       return !apart && !nested;
@@ -98,7 +134,7 @@ export function readMarks(line: string): MarkRun[] {
 
 /** The runs of one mark (`**`, `*`, `__`, `~~`) on a line - what the formatter toggles. */
 export function runsOfMark(line: string, mark: string): Array<{ open: number; close: number }> {
-  return readMarks(line).filter(r => r.mark === mark).map(r => ({ open: r.open, close: r.close }));
+  return readMarks(line).filter(r => r.kind !== 'font' && r.mark === mark).map(r => ({ open: r.open, close: r.close }));
 }
 
 // ---- THE LINE'S OWN STRUCTURE, read once (step 3) ------------------------------------------------------------------------
@@ -149,7 +185,9 @@ export function readLead(line: string, opts: { headings?: boolean } = {}): { tok
 export function removeMarkers(text: string, runs: MarkRun[]): string {
   const cut = new Set<number>();
   for (const r of runs) {
-    for (let k = 0; k < r.mark.length; k++) { cut.add(r.open + k); cut.add(r.close + k); }
+    for (let k = 0; k < r.mark.length; k++) cut.add(r.open + k);
+    const cm = closeMark(r);
+    for (let k = 0; k < cm.length; k++) cut.add(r.close + k);
   }
   let out = '';
   for (let i = 0; i < text.length; i++) if (!cut.has(i)) out += text[i];
@@ -161,4 +199,16 @@ export function removeMarkers(text: string, runs: MarkRun[]): string {
 export function stripLine(line: string): string {
   const rest = line.slice(readLead(line).length);
   return removeMarkers(rest, readMarks(rest));
+}
+
+/** FONT-SPAN (Fable's addition 1, Oct 15): the text with every font span's two marks taken out and EVERYTHING else kept exactly - the
+ *  emphasis, the structure tokens, the words. What the Tutor's prompts, Consistency and any reader of the words are given. */
+export function withoutFontMarks(text: string): string {
+  if (!text.includes('{.font-')) return text;
+  return text.split('\n').map((line) => {
+    const lead = readLead(line).length;
+    const rest = line.slice(lead);
+    const fonts = readMarks(rest).filter((r) => r.kind === 'font');
+    return fonts.length ? line.slice(0, lead) + removeMarkers(rest, fonts) : line;
+  }).join('\n');
 }
