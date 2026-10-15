@@ -140,14 +140,17 @@ const dragCard = async (app, boxId, dx, dy, steps = 24) => {
   // ITEM 151 (Shape A) -- verify the drag's START point only; its own
   // mid/end points move deliberately during the drag.
   await assertHittable(app, p.x, p.y, `[data-box-id=${JSON.stringify(boxId)}] (dragCard start)`);
+  // The pointer stays INSIDE the viewport (harness-expired-checks): a long drag would otherwise ask for a coordinate past the window edge. Drags that already end inside are unchanged.
+  const vp = await app.evalJs('({ w: window.innerWidth, h: window.innerHeight })');
+  const endX = Math.max(4, Math.min(Math.round(p.x + dx), vp.w - 4)), endY = Math.max(4, Math.min(Math.round(p.y + dy), vp.h - 4));
   await app.mouseMove(p.x, p.y);
   await app.mouseDown(p.x, p.y);
   for (let i = 1; i <= steps; i++) {
-    await app.mouseMove(Math.round(p.x + (dx * i) / steps), Math.round(p.y + (dy * i) / steps));
+    await app.mouseMove(Math.round(p.x + ((endX - p.x) * i) / steps), Math.round(p.y + ((endY - p.y) * i) / steps));
     await sleep(22);
   }
   await sleep(260);
-  await app.mouseUp(Math.round(p.x + dx), Math.round(p.y + dy));
+  await app.mouseUp(endX, endY);
   await sleep(320);
   return p;
 };
@@ -238,7 +241,10 @@ await withHarness(async (app) => {
       { id: 'c1', kind: 'text', x: 0.10, y: startY, w: 0.25, h: cardH, text: 'to the floor', z: 1 },
     ], LEG_W, LEG_H);
     await startRecorder(app);
-    await dragCard(app, 'c1', 0, 420, 30);   // ~0.39 normalized: overshoots the limit
+    // Fable (Oct 15, harness-expired-checks): the old 420px drag assumed it overshot the ~218px of room, but the card stopped 22px SHORT of the limit (y 2.7801, not 2.80) - the product's clamp held
+    // (the "bottom <= limit" and "travelled" checks passed); the pointer's reachable travel had drifted with the layout above the wrap. The instrument now drags FAR past the limit (>= 600px) and
+    // keeps the pointer inside the viewport, so "the stop is exact" measures the clamp and never the reach.
+    await dragCard(app, 'c1', 0, 640, 40);   // ~0.59 normalized, far past the limit; dragCard keeps the pointer inside the viewport
     const r = await readRecorder(app);
     const box = await liveBox(app, 'c1');
     const geo = await app.evalJs(`(() => {

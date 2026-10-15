@@ -244,8 +244,26 @@ const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-par
     }
     return removed === WD_REMOVED.length && added === WD_ADDED.length;
   }
-  ok('(D1c) [word-diet successor]: PageEditor.tsx differs from origin/main ONLY by word-diet\'s own two declared hunks (the saved-silently footer\'s REMOVE, and "Copy page text" -> "Copy text"); no typing-path line is touched',
-    peDiff !== null && diffConfinedWD(peDiff), String(peDiff).slice(0, 300));
+  // ---- PARKED - EXPIRED BY THE MERGE it described (word-diet landed on main as 79a48182) ----
+  // This check was BRANCH-RELATIVE: it diffed PageEditor.tsx against `git merge-base origin/main HEAD` and demanded exactly word-diet's own six changed lines. It was green while word-diet was unmerged;
+  // once those lines are IN main the merge base is HEAD itself, the diff is empty, and "removed === 6" can never hold again - red on main with nobody having touched the file (neither board-click-to-create
+  // nor connector-a changes PageEditor.tsx). Not falsified: expired. Its claim survives, asserted on CONTENT.
+  // Quoted VERBATIM below. Successor: the two checks directly below (content, and an empty diff on main).
+  // ok('(D1c) [word-diet successor]: PageEditor.tsx differs from origin/main ONLY by word-diet\'s own two declared hunks (the saved-silently footer\'s REMOVE, and "Copy page text" -> "Copy text"); no typing-path line is touched',
+  //   peDiff !== null && diffConfinedWD(peDiff), String(peDiff).slice(0, 300));
+  // (D1c) successor, post-merge: assert the CONTENT word-diet left, and - on main - that nothing has touched the file since (the merge base IS HEAD, so the diff is empty). On a branch the diff is whatever
+  // that branch declares; typing-path branches take the full pair, so the diff is reported, not judged, there.
+  {
+    const pe = read('pages/PageEditor.tsx');
+    const content = {
+      footerGone: !/Saved automatically/.test(pe) && /^\s*footer: undefined,\s*$/m.test(pe),
+      copyText: /title="Copy the clean text">Copy text<\/button>/.test(pe) && !/>Copy \{lex\('page'\)\.toLowerCase\(\)\} text<\/button>/.test(pe) && !/>Copy page text<\/button>/.test(pe),
+    };
+    ok('(D1c) [post-merge successor]: PageEditor.tsx still carries word-diet\'s two changes - the framed Page panel\'s saved-silently footer is gone (footer: undefined) and the button reads "Copy text"', content.footerGone && content.copyText, JSON.stringify(content));
+    const onMain = sh('git rev-parse HEAD')?.trim() === baseRef;
+    ok('(D1c) [post-merge successor]: on main, PageEditor.tsx has no diff against the merge base (nothing has touched the typing page since word-diet); on a branch the diff is reported, not judged (typing-path branches take the full pair)',
+      peDiff !== null && (onMain ? peDiff.trim() === '' : true), `${onMain ? 'on main' : 'on a branch'}: ${String(peDiff).slice(0, 200)}`);
+  }
   ok('(D1c-mutants) the successor refuses a diff that removes any OTHER line, or adds one that is not declared',
     diffConfinedS5('@@ -1 +1 @@\n-  const x = 1;\n+  instrument: { value: instrument, onChange: setInstrument },\n') === false
       && diffConfinedS5('@@ -1,0 +2 @@\n+  onChange(e);\n') === false, 'both must be refused');
