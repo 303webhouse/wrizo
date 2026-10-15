@@ -152,6 +152,19 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
     // or interact with a not-yet-settled thumb.
     let thumbReady = false;
     let lastThumbRect: { top: number; left: number; height: number } | null = null;
+    const forceReady = () => { if (!thumbReady) { thumbReady = true; root.setAttribute('data-ready', 'true'); } };
+    // ROUND 6c (Fable, ledger: new S2 red — "the overlay reads opacity 0
+    // after a real scroll on prose. The ready-gate must never block.") The
+    // 2-stable-frames wait is right for the PASSIVE mount-time drift this
+    // was built for, but Prose's own settle can still be mid-flight when a
+    // REAL scroll fires, and a gate with no ceiling can block a genuine,
+    // deliberate user action indefinitely. Two unconditional releases, on
+    // top of the stability wait, never instead of it: a real scroll IS the
+    // user already interacting — nothing is served by hiding the thumb
+    // from someone actively scrolling — so onScroll (below) force-releases
+    // outright; and a 150ms ceiling release covers hover/mount paths that
+    // never see a scroll at all, so the gate can delay but never withhold.
+    const readyFallbackTimer = window.setTimeout(forceReady, 150);
     // Fable: "prove it, don't theorise" — a per-frame probe, off by default,
     // switched on by the harness around exactly the window S4 holds the
     // pointer still. Records hoverDepth/active/the thumb's own rendered rect
@@ -208,7 +221,7 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
       hideTimer = window.setTimeout(() => root.classList.remove('active'), FADE_OUT_DELAY_MS);
     };
 
-    const onScroll = () => { layoutRoot(); layoutThumb(); show(); scheduleHide(); };
+    const onScroll = () => { layoutRoot(); layoutThumb(); forceReady(); show(); scheduleHide(); };
 
     // Fable's review: the overlay sits geometrically inside the target's own
     // rect (its rightmost THICKNESS_PX), but it is a SEPARATE element, not a
@@ -315,6 +328,7 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
 
     return () => {
       clearHideTimer();
+      window.clearTimeout(readyFallbackTimer);
       if (rafId !== null) window.cancelAnimationFrame(rafId);
       target.removeEventListener('scroll', onScroll);
       target.removeEventListener('mouseenter', onEnter);

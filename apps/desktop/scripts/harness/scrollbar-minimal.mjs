@@ -396,9 +396,22 @@ await withHarness(async (app) => {
     ok(`S5 (prose) @ ${w}px: the overlay's track height equals the scroll container's own rendered height (full height, by construction)`,
       s.found && Math.abs(s.barRect.height - s.targetRect.height) < 1,
       JSON.stringify({ barHeight: s.barRect.height, targetHeight: s.targetRect.height }));
-    ok(`S5 (prose) @ ${w}px: and its top edge matches the container's own top (the track spans the container's full height, not a sub-range of it)`,
-      s.found && Math.abs(s.barRect.top - s.targetRect.top) < 1,
-      JSON.stringify({ barTop: s.barRect.top, targetTop: s.targetRect.top }));
+    // PARKED (Fable, Oct 15 — "park S5 (108px) verbatim with a note") — the
+    // prose top-edge drift this check names is the SAME unresolved ~108px
+    // vertical offset scrollbar-minimal round 6's own PerformanceObserver
+    // instrumentation went looking for (ledger 41/47: readShifts() empty on
+    // both legs — the Layout Instability API doesn't see transform/fixed
+    // moves, so that empty log never proved the drift absent, only that
+    // this specific instrument can't see it). Round 6b/6c's fixes (the
+    // 2-stable-frames gate, the scroll/150ms release) address the WALK and
+    // the OVERLAY'S OWN visibility timing — neither touches this check's
+    // own claim, which is about the track's position relative to the
+    // container, not about when the overlay becomes visible. Left RED,
+    // recorded rather than chased further this round; quoted verbatim:
+    // ok(`S5 (prose) @ ${w}px: and its top edge matches the container's own top (the track spans the container's full height, not a sub-range of it)`,
+    //   s.found && Math.abs(s.barRect.top - s.targetRect.top) < 1,
+    //   JSON.stringify({ barTop: s.barRect.top, targetTop: s.targetRect.top }));
+    console.log(`PARKED  S5 (prose) @ ${w}px: top-edge drift, for the record — ${JSON.stringify({ barTop: s.barRect.top, targetTop: s.targetRect.top, driftPx: s.found ? Math.round((s.barRect.top - s.targetRect.top) * 100) / 100 : null })}`);
 
     await freshDesk(app, w, 900);
     await openScriptPage(app, { w, h: 900 });
