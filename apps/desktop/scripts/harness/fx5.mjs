@@ -625,27 +625,30 @@ await withHarness(async (app) => {
     { id: 'fx5-s5t-b', kind: 'text', x: 0.5, y: 0.3, w: 0.2, h: 0.08, z: 2, text: 'Trusted B' },
   ], LAPTOP_W, 900);
   {
-    const pinPt = await app.evalJs(`(() => { const r = document.querySelector('[data-box-id="fx5-s5t-a"] .board-pin-grab').getBoundingClientRect(); return { x: r.left + r.width/2, y: r.top + r.height/2 }; })()`);
-    const targetPt = await app.evalJs(`(() => { const r = document.querySelector('[data-box-id="fx5-s5t-b"]').getBoundingClientRect(); return { x: r.left + r.width/2, y: r.top + r.height/2 }; })()`);
-    // ITEM 151 (Shape A) -- verify the drag's START point only.
-    await assertHittable(app, pinPt.x, pinPt.y, 'fx5 S5 pin-grab centre');
-    await app.mouseDown(pinPt.x, pinPt.y);
-    const steps = 6;
-    for (let i = 1; i <= steps; i++) {
-      await app.mouseMove(
-        Math.round(pinPt.x + (targetPt.x - pinPt.x) * (i / steps)),
-        Math.round(pinPt.y + (targetPt.y - pinPt.y) * (i / steps)),
-      );
-      await sleep(40);
-    }
-    await app.mouseUp(targetPt.x, targetPt.y);
-    await sleep(200);
-    const linesAfterTrustedDrag = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
-    const connAfterTrustedDrag = (await app.evalJs('window.wrizoBoard()')).find(b => b.kind === 'connection');
-    ok('S5: the fidelity gap CLOSED — a genuinely trusted (isTrusted, CDP, real incremental mouseMove) drag from the olive pin to another card mints the hairline, re-verifying the mechanism the checks below only ever exercise via synthetic dispatch (mirrors S4(a)\'s own real-press proof for the identical early-setPointerCapture mechanism)',
-      linesAfterTrustedDrag === 1 && !!connAfterTrustedDrag &&
-      ((connAfterTrustedDrag.connA === 'fx5-s5t-a' && connAfterTrustedDrag.connB === 'fx5-s5t-b') || (connAfterTrustedDrag.connA === 'fx5-s5t-b' && connAfterTrustedDrag.connB === 'fx5-s5t-a')),
-      JSON.stringify(connAfterTrustedDrag));
+    // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+    // The green tack (.board-pin-grab) is RETIRED: a card is connected from its corner square (double-click / right-click -> connection mode). The trusted pin-drag that minted a hairline no longer exists.
+    // Quoted VERBATIM below. Successor: scripts/harness/connector-a.mjs C3/C5/C6 (a TRUSTED CDP double-click then a move and a release on a card links; a second one unlinks).
+    // const pinPt = await app.evalJs(`(() => { const r = document.querySelector('[data-box-id="fx5-s5t-a"] .board-pin-grab').getBoundingClientRect(); return { x: r.left + r.width/2, y: r.top + r.height/2 }; })()`);
+    // const targetPt = await app.evalJs(`(() => { const r = document.querySelector('[data-box-id="fx5-s5t-b"]').getBoundingClientRect(); return { x: r.left + r.width/2, y: r.top + r.height/2 }; })()`);
+    // // ITEM 151 (Shape A) -- verify the drag's START point only.
+    // await assertHittable(app, pinPt.x, pinPt.y, 'fx5 S5 pin-grab centre');
+    // await app.mouseDown(pinPt.x, pinPt.y);
+    // const steps = 6;
+    // for (let i = 1; i <= steps; i++) {
+    //   await app.mouseMove(
+    //     Math.round(pinPt.x + (targetPt.x - pinPt.x) * (i / steps)),
+    //     Math.round(pinPt.y + (targetPt.y - pinPt.y) * (i / steps)),
+    //   );
+    //   await sleep(40);
+    // }
+    // await app.mouseUp(targetPt.x, targetPt.y);
+    // await sleep(200);
+    // const linesAfterTrustedDrag = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
+    // const connAfterTrustedDrag = (await app.evalJs('window.wrizoBoard()')).find(b => b.kind === 'connection');
+    // ok('S5: the fidelity gap CLOSED — a genuinely trusted (isTrusted, CDP, real incremental mouseMove) drag from the olive pin to another card mints the hairline, re-verifying the mechanism the checks below only ever exercise via synthetic dispatch (mirrors S4(a)\'s own real-press proof for the identical early-setPointerCapture mechanism)',
+    //   linesAfterTrustedDrag === 1 && !!connAfterTrustedDrag &&
+    //   ((connAfterTrustedDrag.connA === 'fx5-s5t-a' && connAfterTrustedDrag.connB === 'fx5-s5t-b') || (connAfterTrustedDrag.connA === 'fx5-s5t-b' && connAfterTrustedDrag.connB === 'fx5-s5t-a')),
+    //   JSON.stringify(connAfterTrustedDrag));
   }
 
   // ==========================================================================
@@ -662,6 +665,8 @@ await withHarness(async (app) => {
   await freshBoard(app, 'fx5-s5-board', [
     { id: 'fx5-s5-a', kind: 'text', x: 0.05, y: 0.05, w: 0.2, h: 0.08, z: 1, text: 'Card A' },
     { id: 'fx5-s5-b', kind: 'text', x: 0.5, y: 0.3, w: 0.2, h: 0.08, z: 2, text: 'Card B' },
+    // connector-a: the link the parked pin gestures minted, SEEDED (minting it is connector-a.mjs's job now)
+    { id: 'fx5-s5-conn', kind: 'connection', x: 0, y: 0, w: 0, h: 0, z: 3, connA: 'fx5-s5-a', connB: 'fx5-s5-b' },
   ], LAPTOP_W, 900);
   await app.evalJs(DRAG_HELPER);
 
@@ -669,11 +674,14 @@ await withHarness(async (app) => {
   // the resize handle no longer arms anything.
   await app.evalJs('__pointerSeq(\'[data-box-id="fx5-s5-a"]\', 0, 0)');
   await sleep(100);
-  await app.evalJs('document.querySelector(\'[data-box-id="fx5-s5-a"] .board-handle\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
-  await sleep(150);
-  const armedByDeadGesture = await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
-  ok('S5: the dead handle-double-click gesture is REMOVED, proven inert (double-clicking the resize handle arms nothing)',
-    armedByDeadGesture === 'false', armedByDeadGesture);
+  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+  // The corner square's double-click is the door INTO connection mode again (on its second pointerdown). This check's synthetic `dblclick` event would still arm nothing, but its CLAIM ("double-clicking the handle arms nothing") is no longer the product's - parked rather than left green about something else.
+  // Quoted VERBATIM below. Successor: scripts/harness/connector-a.mjs C3 (the real double-click enters the mode) and card-resize-relock.mjs (a resize followed by a corner press still enters nothing).
+  // await app.evalJs('document.querySelector(\'[data-box-id="fx5-s5-a"] .board-handle\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
+  // await sleep(150);
+  // const armedByDeadGesture = await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
+  // ok('S5: the dead handle-double-click gesture is REMOVED, proven inert (double-clicking the resize handle arms nothing)',
+  //   armedByDeadGesture === 'false', armedByDeadGesture);
   // That same dblclick BUBBLES to the canvas's own dblclick handler (the
   // handle sits inside the card, and a hand-typed text card's own
   // double-click still opens the edit popup) — close it before continuing,
@@ -684,70 +692,80 @@ await withHarness(async (app) => {
     await sleep(200);
   }
 
-  // The olive pin exists on every card, always (not selection-gated).
-  const pinPresence = await app.evalJs(`({
-    onA: !!document.querySelector('[data-box-id="fx5-s5-a"] .board-pin-grab'),
-    onB: !!document.querySelector('[data-box-id="fx5-s5-b"] .board-pin-grab'),
-  })`);
-  ok('S5: the olive pin — the connection grab — is present on every card, always, not gated on selection (no pre-selection two-step the way the old gesture needed)',
-    pinPresence.onA && pinPresence.onB, JSON.stringify(pinPresence));
-  const pinIsCircle = await app.evalJs("getComputedStyle(document.querySelector('[data-box-id=\"fx5-s5-a\"] .board-pin-grab')).borderRadius");
-  ok('S5: the pin is a genuine circle (Nick\'s own ruling, quoted in the brief) — the one deliberate exception to square corners for this small state indicator',
-    pinIsCircle === '50%', pinIsCircle);
+  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+  // The green tack (.board-pin-grab) is RETIRED: a card is connected from its corner square (double-click / right-click -> connection mode). There is no pin to be present or to be a circle.
+  // Quoted VERBATIM below. Successor: the check directly below (the tack is gone, and each card carries its own hidden connection circle); behaviour in connector-a.mjs C2.
+  // // The olive pin exists on every card, always (not selection-gated).
+  // const pinPresence = await app.evalJs(`({
+  //   onA: !!document.querySelector('[data-box-id="fx5-s5-a"] .board-pin-grab'),
+  //   onB: !!document.querySelector('[data-box-id="fx5-s5-b"] .board-pin-grab'),
+  // })`);
+  // ok('S5: the olive pin — the connection grab — is present on every card, always, not gated on selection (no pre-selection two-step the way the old gesture needed)',
+  //   pinPresence.onA && pinPresence.onB, JSON.stringify(pinPresence));
+  // const pinIsCircle = await app.evalJs("getComputedStyle(document.querySelector('[data-box-id=\"fx5-s5-a\"] .board-pin-grab')).borderRadius");
+  // ok('S5: the pin is a genuine circle (Nick\'s own ruling, quoted in the brief) — the one deliberate exception to square corners for this small state indicator',
+  //   pinIsCircle === '50%', pinIsCircle);
+  ok('S5 [connector-a successor]: the green tack is RETIRED - no card carries a .board-pin-grab, and each card carries its own connection circle (.board-tcircle), hidden at rest',
+    (await app.evalJs("document.querySelectorAll('.board-pin-grab').length")) === 0 &&
+    (await app.evalJs("document.querySelectorAll('[data-box-id=\"fx5-s5-a\"] > .board-tcircle, [data-box-id=\"fx5-s5-b\"] > .board-tcircle').length")) === 2 &&
+    (await app.evalJs("getComputedStyle(document.querySelector('[data-box-id=\"fx5-s5-a\"] > .board-tcircle')).display")) === 'none', '');
 
-  // Drag-from-pin, release inside another card, mints a thread — ONE
-  // continuous gesture, no separate arm step (the old two-step shape is
-  // very likely why it read as "dead": a real double-click's timing is
-  // far less reliable than a script's own).
-  await app.evalJs('__pointerSeqTo(\'[data-box-id="fx5-s5-a"] .board-pin-grab\', \'[data-box-id="fx5-s5-b"]\', {steps:5})');
-  await sleep(200);
-  const linesAfterPinDrag = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
-  const connAfterPinDrag = (await app.evalJs('window.wrizoBoard()')).find(b => b.kind === 'connection');
-  ok('S5: dragging from the olive pin and releasing inside another card mints the hairline, in ONE continuous gesture',
-    linesAfterPinDrag === 1 && !!connAfterPinDrag &&
-    ((connAfterPinDrag.connA === 'fx5-s5-a' && connAfterPinDrag.connB === 'fx5-s5-b') || (connAfterPinDrag.connA === 'fx5-s5-b' && connAfterPinDrag.connB === 'fx5-s5-a')),
-    JSON.stringify(connAfterPinDrag));
+  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+  // The green tack (.board-pin-grab) is RETIRED: a card is connected from its corner square (double-click / right-click -> connection mode). The mint-by-drag, Escape-mid-drag, empty-release and de-dupe checks were all pin gestures; the link they minted is SEEDED in this fixture now (the connection box the footer checks below need), because minting it is connector-a's job.
+  // Quoted VERBATIM below. Successor: scripts/harness/connector-a.mjs C3 (link), C7 (Esc cancels), C8 (release on empty board after a drag cancels), C6 (toggle: a second release on a linked card UNLINKS - the new de-dupe).
+  // // Drag-from-pin, release inside another card, mints a thread — ONE
+  // // continuous gesture, no separate arm step (the old two-step shape is
+  // // very likely why it read as "dead": a real double-click's timing is
+  // // far less reliable than a script's own).
+  // await app.evalJs('__pointerSeqTo(\'[data-box-id="fx5-s5-a"] .board-pin-grab\', \'[data-box-id="fx5-s5-b"]\', {steps:5})');
+  // await sleep(200);
+  // const linesAfterPinDrag = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
+  // const connAfterPinDrag = (await app.evalJs('window.wrizoBoard()')).find(b => b.kind === 'connection');
+  // ok('S5: dragging from the olive pin and releasing inside another card mints the hairline, in ONE continuous gesture',
+  //   linesAfterPinDrag === 1 && !!connAfterPinDrag &&
+  //   ((connAfterPinDrag.connA === 'fx5-s5-a' && connAfterPinDrag.connB === 'fx5-s5-b') || (connAfterPinDrag.connA === 'fx5-s5-b' && connAfterPinDrag.connB === 'fx5-s5-a')),
+  //   JSON.stringify(connAfterPinDrag));
 
-  // Escape cancels a drag mid-gesture (pointer down on the pin, no release
-  // yet).
-  await app.evalJs(`(() => {
-    const pin = document.querySelector('[data-box-id="fx5-s5-a"] .board-pin-grab');
-    const r = pin.getBoundingClientRect();
-    const mk = (type, x, y) => new PointerEvent(type, {clientX:x, clientY:y, pointerId:1, pointerType:'mouse', bubbles:true, cancelable:true, isPrimary:true});
-    pin.dispatchEvent(mk('pointerdown', r.left + r.width/2, r.top + r.height/2));
-  })()`);
-  await sleep(100);
-  await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
-  await sleep(150);
-  const disarmedByEscape = await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
-  const linesAfterEscape = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
-  ok('S5: Escape cancels a pending pin-drag mid-gesture, no new hairline minted',
-    disarmedByEscape === 'false' && linesAfterEscape === 1, JSON.stringify({ disarmedByEscape, linesAfterEscape }));
+  // // Escape cancels a drag mid-gesture (pointer down on the pin, no release
+  // // yet).
+  // await app.evalJs(`(() => {
+  //   const pin = document.querySelector('[data-box-id="fx5-s5-a"] .board-pin-grab');
+  //   const r = pin.getBoundingClientRect();
+  //   const mk = (type, x, y) => new PointerEvent(type, {clientX:x, clientY:y, pointerId:1, pointerType:'mouse', bubbles:true, cancelable:true, isPrimary:true});
+  //   pin.dispatchEvent(mk('pointerdown', r.left + r.width/2, r.top + r.height/2));
+  // })()`);
+  // await sleep(100);
+  // await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
+  // await sleep(150);
+  // const disarmedByEscape = await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
+  // const linesAfterEscape = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
+  // ok('S5: Escape cancels a pending pin-drag mid-gesture, no new hairline minted',
+  //   disarmedByEscape === 'false' && linesAfterEscape === 1, JSON.stringify({ disarmedByEscape, linesAfterEscape }));
 
-  // Releasing on empty board cancels.
-  await app.evalJs(`(() => {
-    const pin = document.querySelector('[data-box-id="fx5-s5-a"] .board-pin-grab');
-    const canvas = document.querySelector('.board-canvas');
-    const r = pin.getBoundingClientRect();
-    const cr = canvas.getBoundingClientRect();
-    const x0 = r.left + r.width/2, y0 = r.top + r.height/2;
-    const x1 = cr.left + cr.width - 20, y1 = cr.top + cr.height - 20;
-    const mk = (type, x, y) => new PointerEvent(type, {clientX:x, clientY:y, pointerId:1, pointerType:'mouse', bubbles:true, cancelable:true, isPrimary:true});
-    pin.dispatchEvent(mk('pointerdown', x0, y0));
-    canvas.dispatchEvent(mk('pointermove', x1, y1));
-    canvas.dispatchEvent(mk('pointerup', x1, y1));
-  })()`);
-  await sleep(200);
-  const linesAfterEmptyRelease = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
-  ok('S5: releasing a pin-drag on empty board cancels — no new hairline minted',
-    linesAfterEmptyRelease === 1, String(linesAfterEmptyRelease));
+  // // Releasing on empty board cancels.
+  // await app.evalJs(`(() => {
+  //   const pin = document.querySelector('[data-box-id="fx5-s5-a"] .board-pin-grab');
+  //   const canvas = document.querySelector('.board-canvas');
+  //   const r = pin.getBoundingClientRect();
+  //   const cr = canvas.getBoundingClientRect();
+  //   const x0 = r.left + r.width/2, y0 = r.top + r.height/2;
+  //   const x1 = cr.left + cr.width - 20, y1 = cr.top + cr.height - 20;
+  //   const mk = (type, x, y) => new PointerEvent(type, {clientX:x, clientY:y, pointerId:1, pointerType:'mouse', bubbles:true, cancelable:true, isPrimary:true});
+  //   pin.dispatchEvent(mk('pointerdown', x0, y0));
+  //   canvas.dispatchEvent(mk('pointermove', x1, y1));
+  //   canvas.dispatchEvent(mk('pointerup', x1, y1));
+  // })()`);
+  // await sleep(200);
+  // const linesAfterEmptyRelease = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
+  // ok('S5: releasing a pin-drag on empty board cancels — no new hairline minted',
+  //   linesAfterEmptyRelease === 1, String(linesAfterEmptyRelease));
 
-  // De-dupe: B->A (reverse order) after A->B already exists doesn't double.
-  await app.evalJs('__pointerSeqTo(\'[data-box-id="fx5-s5-b"] .board-pin-grab\', \'[data-box-id="fx5-s5-a"]\', {steps:5})');
-  await sleep(200);
-  const connCountAfterDedupe = (await app.evalJs('window.wrizoBoard()')).filter(b => b.kind === 'connection').length;
-  ok('S5: de-dupe holds either order via the pin gesture too — attempting B->A after A->B already exists does not mint a second hairline',
-    connCountAfterDedupe === 1, String(connCountAfterDedupe));
+  // // De-dupe: B->A (reverse order) after A->B already exists doesn't double.
+  // await app.evalJs('__pointerSeqTo(\'[data-box-id="fx5-s5-b"] .board-pin-grab\', \'[data-box-id="fx5-s5-a"]\', {steps:5})');
+  // await sleep(200);
+  // const connCountAfterDedupe = (await app.evalJs('window.wrizoBoard()')).filter(b => b.kind === 'connection').length;
+  // ok('S5: de-dupe holds either order via the pin gesture too — attempting B->A after A->B already exists does not mint a second hairline',
+  //   connCountAfterDedupe === 1, String(connCountAfterDedupe));
 
   // ==========================================================================
   // S5 — the connections footer + its per-board toggle.
@@ -773,23 +791,29 @@ await withHarness(async (app) => {
   // used to live here; PARKED below (HARNESS_PARKED=1) — a third tool
   // (New page card) joins Add card + the footer toggle. Live successor:
   // fx6.mjs's own S2 section.
-  // ITEM arbor-quiet-brass: the toggle's label is no longer a fixed string containing
-  // "connections" (Arbor: "Show grafts"; Flux: "Show links") — read the CURRENT label
-  // from the lexicon seam itself rather than hardcoding either word, so this driver
-  // survives the next rename too.
-  const footerLabel = await app.evalJs("window.wrizoDeskLexicon ? window.wrizoDeskLexicon.t('boardFooterToggle') : null");
-  if (!footerLabel) throw new Error('fx5 S5: window.wrizoDeskLexicon seam missing — cannot find the footer toggle by label');
-  const footerToggleBtn = `[...document.querySelectorAll('.wz-sliver-toggle')].find(b => b.textContent.includes(${JSON.stringify(footerLabel)}))`;
-  await app.evalJs(`${footerToggleBtn}.click()`);
-  await sleep(150);
-  const footerAfterToggleOff = await app.evalJs("!!document.querySelector('[data-box-id=\"fx5-s5-a\"] .board-card-footer')");
-  ok('S5: toggling the footer OFF hides it everywhere on the board',
-    footerAfterToggleOff === false, String(footerAfterToggleOff));
-  await app.evalJs(`${footerToggleBtn}.click()`);
-  await sleep(150);
-  const footerAfterToggleOn = await app.evalJs("!!document.querySelector('[data-box-id=\"fx5-s5-a\"] .board-card-footer')");
-  ok('S5: toggling the footer back ON restores it',
-    footerAfterToggleOn === true, String(footerAfterToggleOn));
+  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+  // "Show grafts" / "Show links" is RETIRED: the board sliver has no footer toggle, and a card's connection footers are simply on (a board's old footerOn:false is ignored).
+  // Quoted VERBATIM below. Successor: the check directly below; scripts/harness/connector-a.mjs C11.
+  // // ITEM arbor-quiet-brass: the toggle's label is no longer a fixed string containing
+  // // "connections" (Arbor: "Show grafts"; Flux: "Show links") — read the CURRENT label
+  // // from the lexicon seam itself rather than hardcoding either word, so this driver
+  // // survives the next rename too.
+  // const footerLabel = await app.evalJs("window.wrizoDeskLexicon ? window.wrizoDeskLexicon.t('boardFooterToggle') : null");
+  // if (!footerLabel) throw new Error('fx5 S5: window.wrizoDeskLexicon seam missing — cannot find the footer toggle by label');
+  // const footerToggleBtn = `[...document.querySelectorAll('.wz-sliver-toggle')].find(b => b.textContent.includes(${JSON.stringify(footerLabel)}))`;
+  // await app.evalJs(`${footerToggleBtn}.click()`);
+  // await sleep(150);
+  // const footerAfterToggleOff = await app.evalJs("!!document.querySelector('[data-box-id=\"fx5-s5-a\"] .board-card-footer')");
+  // ok('S5: toggling the footer OFF hides it everywhere on the board',
+  //   footerAfterToggleOff === false, String(footerAfterToggleOff));
+  // await app.evalJs(`${footerToggleBtn}.click()`);
+  // await sleep(150);
+  // const footerAfterToggleOn = await app.evalJs("!!document.querySelector('[data-box-id=\"fx5-s5-a\"] .board-card-footer')");
+  // ok('S5: toggling the footer back ON restores it',
+  //   footerAfterToggleOn === true, String(footerAfterToggleOn));
+  ok('S5 [connector-a successor]: the footer toggle is RETIRED (no .wz-sliver-board-footer in the sliver), and the connected card\'s footer is simply on',
+    (await app.evalJs("document.querySelectorAll('.wz-sliver-board-footer').length")) === 0 &&
+    (await app.evalJs("!!document.querySelector('[data-box-id=\"fx5-s5-a\"] .board-card-footer')")) === true, '');
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); // close
 
   // A LEGACY board (no board-meta at all, footerOn field never set)
@@ -1250,8 +1274,12 @@ if (process.env.HARNESS_PARKED === '1') {
     // GENERATION 3 (B3 S3) — a FIFTH tool joins them: "From a deck…",
     // door 2's own affordance — live successor: b3.mjs's own S4 section
     // (an ordered-labels check, the shape this lineage settled on).
-    pok('PARKED (was "S5: the board sliver carries EXACTLY two hand tools now — Add card + the footer toggle") — FX6 S2b: a THIRD tool joins them (New page card, the board-side door); generation 2: B2 S5 adds a FOURTH (Existing page…); generation 3: B3 S3 adds a FIFTH (From a deck…) — live successor: b3.mjs\'s own S4 section',
-      sliverBoardShape.count === 5, JSON.stringify(sliverBoardShape));
+    // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+    // The footer toggle left the board sliver ("Show grafts" retired): FOUR tools now - Add card, New Pages Card, + Filed Pages, From a deck.
+    // Quoted VERBATIM below. Successor: the pok directly below (generation 4); live ordered-labels successor in b3.mjs (generation 8).
+    // pok('PARKED (was "S5: the board sliver carries EXACTLY two hand tools now — Add card + the footer toggle") — FX6 S2b: a THIRD tool joins them (New page card, the board-side door); generation 2: B2 S5 adds a FOURTH (Existing page…); generation 3: B3 S3 adds a FIFTH (From a deck…) — live successor: b3.mjs\'s own S4 section',
+    //   sliverBoardShape.count === 5, JSON.stringify(sliverBoardShape));
+    pok('PARKED, generation 4 [connector-a successor] - the board sliver carries FOUR hand tools now: the footer toggle is retired', sliverBoardShape.count === 4 && !sliverBoardShape.labels.includes('Show grafts'), JSON.stringify(sliverBoardShape));
 
     return parkedChecks;
   });

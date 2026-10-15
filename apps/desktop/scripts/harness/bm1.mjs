@@ -375,20 +375,26 @@ async function scenario(app) {
   await seedEntries(app, [{ id: 'bm1-link', text: 'link board', projectId: null, pageType: 'board', source: 'page', origin: 'loose', boxes: linkBoxes, createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-01T00:00:00.000Z' }]);
   await app.reload();
   await openBoard(app, 'bm1-link');
-  const link = await app.evalJs(`(() => {
-    const line = document.querySelector('.board-connection-line');
-    if (!line) return { present: false };
-    const svg = document.querySelector('.board-connections');
-    const card = document.querySelector('.board-card, [data-box-id]');
-    const stroke = getComputedStyle(line).stroke;
-    // orange has R markedly > G > B; assert NOT orange (olive/neutral: G >= R)
-    const m = stroke.match(/rgb[a]?\\(([0-9.]+),\\s*([0-9.]+),\\s*([0-9.]+)/);
-    const isOrange = m ? (Number(m[1]) > 180 && Number(m[2]) < Number(m[1]) * 0.7 && Number(m[3]) < 100) : false;
-    const svgZ = svg ? (getComputedStyle(svg).zIndex) : null;
-    return { present: true, stroke, isOrange, svgZ };
-  })()`);
-  ok('S5 linking: the connection (v1 link) renders as a line beneath cards (SVG layer, z-auto), nothing orange at rest',
-    link.present === true && link.isOrange === false, JSON.stringify(link));
+  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+  // Lines are drawn ONLY in connection mode now (no resting hairline at all): a board with a link shows nothing between its cards at rest.
+  // Quoted VERBATIM below. Successor: the check directly below (the link persists as a connection box; no line at rest); the in-mode brass line is connector-a.mjs C4.
+  // const link = await app.evalJs(`(() => {
+  //   const line = document.querySelector('.board-connection-line');
+  //   if (!line) return { present: false };
+  //   const svg = document.querySelector('.board-connections');
+  //   const card = document.querySelector('.board-card, [data-box-id]');
+  //   const stroke = getComputedStyle(line).stroke;
+  //   // orange has R markedly > G > B; assert NOT orange (olive/neutral: G >= R)
+  //   const m = stroke.match(/rgb[a]?\\(([0-9.]+),\\s*([0-9.]+),\\s*([0-9.]+)/);
+  //   const isOrange = m ? (Number(m[1]) > 180 && Number(m[2]) < Number(m[1]) * 0.7 && Number(m[3]) < 100) : false;
+  //   const svgZ = svg ? (getComputedStyle(svg).zIndex) : null;
+  //   return { present: true, stroke, isOrange, svgZ };
+  // })()`);
+  // ok('S5 linking: the connection (v1 link) renders as a line beneath cards (SVG layer, z-auto), nothing orange at rest',
+  //   link.present === true && link.isOrange === false, JSON.stringify(link));
+  const linkBoxNow = ((await app.evalJs('window.wrizoBoard()')) || []).find((b) => b.kind === 'connection');
+  ok('S5 linking [connector-a successor]: the connection (v1 link) is still a connection box in the board\'s stored boxes, and NOTHING is drawn for it at rest (lines show only in connection mode)',
+    !!linkBoxNow && linkBoxNow.connA === 'lc1' && linkBoxNow.connB === 'lc2' && (await app.evalJs("document.querySelectorAll('.board-connection-line').length")) === 0, JSON.stringify(linkBoxNow || null));
 
   return checks;
 }

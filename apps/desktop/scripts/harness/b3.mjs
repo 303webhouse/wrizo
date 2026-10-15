@@ -166,11 +166,20 @@ await withHarness(async (app) => {
       //     && sliverShape.labels[2] === 'Existing page…' && sliverShape.labels[3] === 'From a deck…'
       //     && sliverShape.labels[4] === 'Show grafts',
       //   JSON.stringify(sliverShape));
-      ok('ab4.mjs S5 lineage, generation 7 [word-diet successor]: the board sliver carries its five hand tools, in order — Add card, New Pages Card, + Filed Pages, From a deck…, Show grafts',
-        sliverShape.buttonCount === 5
+      // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+      // The footer toggle left the board sliver: FOUR hand tools now, in the same order - Add card, New Pages Card, + Filed Pages, From a deck…
+      // Quoted VERBATIM below. Successor: the check directly below (generation 8).
+      // ok('ab4.mjs S5 lineage, generation 7 [word-diet successor]: the board sliver carries its five hand tools, in order — Add card, New Pages Card, + Filed Pages, From a deck…, Show grafts',
+      //   sliverShape.buttonCount === 5
+      //     && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New Pages Card'
+      //     && sliverShape.labels[2] === '+ Filed Pages' && sliverShape.labels[3] === 'From a deck…'
+      //     && sliverShape.labels[4] === 'Show grafts',
+      //   JSON.stringify(sliverShape));
+      ok('ab4.mjs S5 lineage, generation 8 [connector-a successor]: the board sliver carries its FOUR hand tools, in order - Add card, New Pages Card, + Filed Pages, From a deck… - and no footer toggle',
+        sliverShape.buttonCount === 4
           && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New Pages Card'
           && sliverShape.labels[2] === '+ Filed Pages' && sliverShape.labels[3] === 'From a deck…'
-          && sliverShape.labels[4] === 'Show grafts',
+          && !sliverShape.labels.includes('Show grafts'),
         JSON.stringify(sliverShape));
     }
 

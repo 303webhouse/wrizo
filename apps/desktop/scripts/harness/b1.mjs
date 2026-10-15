@@ -350,9 +350,13 @@ await withHarness(async (app) => {
   //   !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New page card'), JSON.stringify(journalSliverButtons));
   ok('S3 [word-diet successor]: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New Pages Card" are genuinely absent, not merely disabled',
     !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New Pages Card'), JSON.stringify(journalSliverButtons));
-  const journalFooterTogglePresent = await app.evalJs("!!document.querySelector('.wz-sliver-board-footer')");
-  ok('S3: the connections-footer toggle STILL works on a system Board — arranging (including the footer) is the full FX5 hand, only Add/Delete are restricted',
-    journalFooterTogglePresent === true, String(journalFooterTogglePresent));
+  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+  // "Show grafts" is RETIRED on every board: there is no footer toggle to still work on a system Board.
+  // Quoted VERBATIM below. Successor: the check directly below.
+  // const journalFooterTogglePresent = await app.evalJs("!!document.querySelector('.wz-sliver-board-footer')");
+  // ok('S3: the connections-footer toggle STILL works on a system Board — arranging (including the footer) is the full FX5 hand, only Add/Delete are restricted',
+  //   journalFooterTogglePresent === true, String(journalFooterTogglePresent));
+  ok('S3 [connector-a successor]: the connections-footer toggle is RETIRED on a system Board as on every board - arranging is the full hand, only Add/Delete are restricted, and the footers are simply on', (await app.evalJs("document.querySelectorAll('.wz-sliver-board-footer').length")) === 0, '');
 
   // Delete on a derived card is an inert, quiet no-op.
   const boxesBeforeInertDelete = await app.evalJs('window.wrizoBoard()');

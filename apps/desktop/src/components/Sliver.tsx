@@ -187,10 +187,6 @@ export type SliverContent =
       // options. Same absent-not-disabled law: BoardEditor.tsx passes this
       // only on an ordinary (non-system) Board.
       onAddFromDeck?: () => void;
-      // FX5 S5 — the connections-footer's own per-board visibility toggle,
-      // the sliver's THIRD board control ("Add card + this, two controls"
-      // — the brief's own words, now three with FX6's own addition).
-      footer: { on: boolean; onToggle: (on: boolean) => void };
     };
 
 export interface SliverProps {
@@ -890,13 +886,7 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
               {t('deckWizardFromDeck')}
             </button>
           )}
-          {/* FX5 S5 — the footer toggle, the sliver's third board control. */}
-          <SliverToggle
-            label={t('boardFooterToggle')}
-            on={content.footer.on}
-            onToggle={() => content.footer.onToggle(!content.footer.on)}
-            className="wz-sliver-board-footer"
-          />
+          {/* CONNECTOR-A: the "Show grafts" toggle is RETIRED - a card's connection footers are simply on. */}
         </div>
       )}
     </div>
