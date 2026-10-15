@@ -11,6 +11,9 @@
   2. Right-click empty board: "New Card" and "Delete board" -> "Move this board to Trash?"
      (Flux: circuit) -> Cancel / Delete.
   3. A board row in the drawer: right-click gives the same "Delete board".
+  Every Delete (card, board, drawer board row) opens "Send to Trash?" with Cancel / Delete and a
+  "Don't ask me again" checkbox; ticking it and confirming skips the dialog from then on. The
+  drawer foot shows the Settings row "Ask before deleting" (static: it reflects the setting).
   No "Remove" row anywhere. Same board look as the connector mockup (light paper).
   Arbor / Flux, Reset: mockup only. Branch: cursor/board-context-menu.
 -->
@@ -99,6 +102,20 @@
   .thumb.board::before { left: 3px; top: 3px; width: 11px; height: 8px; }
   .thumb.board::after { right: 3px; bottom: 3px; width: 13px; height: 9px; }
 
+  .chk { display: flex; align-items: center; gap: 9px; margin: -6px 0 16px; font-size: 12px; color: var(--text-mid); cursor: pointer; }
+  .chk input { position: absolute; opacity: 0; pointer-events: none; }
+  .chk .box { width: 12px; height: 12px; border: 1px solid var(--ink-border-strong); display: inline-block; position: relative; flex: 0 0 auto; }
+  .chk input:checked + .box { border-color: var(--brass); background: color-mix(in srgb, var(--brass) 18%, transparent); }
+  .chk input:checked + .box::after { content: ''; position: absolute; left: 3px; top: 0; width: 3px; height: 7px; border: solid var(--brass); border-width: 0 1.5px 1.5px 0; transform: rotate(40deg); }
+  .chk input:focus-visible + .box { outline: 1px solid var(--text-mid); outline-offset: 2px; }
+  .settings { border-top: 1px solid var(--ink-border); padding: 10px 14px 14px; }
+  .shead { font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-low); margin-bottom: 8px; }
+  .srow { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-family: var(--font-label); font-size: 13px; color: var(--text-mid); pointer-events: none; }
+  .sw { position: relative; width: 30px; height: 14px; border: 1px solid var(--ink-border-strong); flex: 0 0 auto; }
+  .sw i { position: absolute; top: 2px; left: 2px; width: 8px; height: 8px; background: var(--text-low); }
+  .sw[data-on='true'] { border-color: var(--brass); }
+  .sw[data-on='true'] i { left: 18px; background: var(--brass); }
+
   /* the small theme-styled menu */
   .ctx {
     position: fixed; z-index: 90; min-width: 150px; padding: 4px 0;
@@ -145,13 +162,18 @@
   <aside class="drawer" aria-label="Drawer">
     <div class="dhead" id="dhead">Drawer</div>
     <div class="dlist" id="dlist"></div>
+    <div class="settings" aria-label="Settings">
+      <div class="shead">Settings</div>
+      <div class="srow"><span>Ask before deleting</span><span class="sw" id="sw" data-on="true"><i></i></span></div>
+    </div>
   </aside>
 </div>
 
 <div class="ctx" id="ctx" role="menu" hidden></div>
 <div class="scrim" id="scrim" hidden>
   <div class="dialog" role="alertdialog" aria-labelledby="dlgTitle">
-    <div class="dtitle" id="dlgTitle"></div>
+    <div class="dtitle" id="dlgTitle">Send to Trash?</div>
+    <label class="chk" id="chkRow"><input type="checkbox" id="chk"><span class="box"></span><span>Don't ask me again</span></label>
     <div class="dbtns"><button class="dbtn" id="dlgNo" type="button">Cancel</button><button class="dbtn go" id="dlgYes" type="button">Delete</button></div>
   </div>
 </div>
@@ -189,6 +211,7 @@
   let removedCards = new Set();
   let nextCard = 1;
   let toastTimer = 0, menuFor = null, pending = null, lastFocus = null;
+  let ask = true;                // Settings: Ask before deleting
 
   /* ---- build ---- */
   function cardEl(c) {
@@ -217,6 +240,7 @@
       r.innerHTML = '<span class="thumb board"></span><span class="dlabel">' + label + '</span>'; dlist.append(r);
     });
     document.getElementById('dhead').textContent = W().head;
+    paintSettings();
     paintCards();
   }
   function paintCards() {
@@ -261,6 +285,15 @@
   }
 
   /* ---- actions ---- */
+  /* every Delete goes through here: confirm unless the setting is off */
+  function requestDelete(run) {
+    if (!ask) { run(); return; }
+    pending = run; lastFocus = document.activeElement;
+    document.getElementById('chk').checked = false;
+    scrim.hidden = false; document.getElementById('dlgNo').focus();
+  }
+  function paintSettings() { document.getElementById('sw').dataset.on = ask ? 'true' : 'false'; }
+
   function deleteCard(id) {
     removedCards.add(id);
     const prev = sel; if (sel === id) sel = null;
@@ -275,23 +308,20 @@
     undo.push(() => { CARDS.splice(CARDS.indexOf(c), 1); if (sel === id) sel = null; });
     build();
   }
-  function askDeleteBoard(id) {
-    pending = id;
-    document.getElementById('dlgTitle').textContent = 'Move this ' + W().board + ' to Trash?';
-    lastFocus = document.activeElement;
-    scrim.hidden = false; document.getElementById('dlgNo').focus();
-  }
-  function closeDialog() { scrim.hidden = true; pending = null; if (lastFocus && lastFocus.focus) lastFocus.blur(); }
-  document.getElementById('dlgNo').addEventListener('click', closeDialog);
-  scrim.addEventListener('mousedown', (e) => { if (e.target === scrim) closeDialog(); });
-  document.getElementById('dlgYes').addEventListener('click', () => {
-    const id = pending; closeDialog();
-    if (!id) return;
+  function deleteBoard(id) {
     deleted.add(id);
     undo.push(() => { deleted.delete(id); });
     build(); say(W().Board + ' moved to Trash');
+  }
+  function closeDialog() { scrim.hidden = true; pending = null; }
+  document.getElementById('dlgNo').addEventListener('click', closeDialog);
+  scrim.addEventListener('mousedown', (e) => { if (e.target === scrim) closeDialog(); });
+  document.getElementById('dlgYes').addEventListener('click', () => {
+    const run = pending, off = document.getElementById('chk').checked;
+    closeDialog();
+    if (off) { ask = false; paintSettings(); }   // only a confirmed Delete saves the tick
+    if (run) run();
   });
-
   /* ---- right-click routing ---- */
   document.addEventListener('contextmenu', (e) => {
     if (e.target.closest('.rig') || !scrim.hidden) return;
@@ -301,13 +331,13 @@
     if (card) {
       e.preventDefault();
       sel = card.dataset.id; paintCards();
-      openMenu(e.clientX, e.clientY, [['Delete', () => deleteCard(card.dataset.id)]]);
+      openMenu(e.clientX, e.clientY, [['Delete', () => requestDelete(() => deleteCard(card.dataset.id))]]);
       return;
     }
     const row = e.target.closest('.drow[data-kind="board"]');
     if (row) {
       e.preventDefault();
-      openMenu(e.clientX, e.clientY, [['Delete ' + W().board, () => askDeleteBoard(row.dataset.id)]]);
+      openMenu(e.clientX, e.clientY, [['Delete ' + W().board, () => requestDelete(() => deleteBoard(row.dataset.id))]]);
       row.dataset.menu = 'true';
       return;
     }
@@ -315,7 +345,7 @@
       e.preventDefault();
       sel = null; paintCards();
       const x = e.clientX, y = e.clientY;
-      openMenu(x, y, [['New Card', () => newCard(x, y)], ['Delete ' + W().board, () => askDeleteBoard(CURRENT)]]);
+      openMenu(x, y, [['New Card', () => newCard(x, y)], ['Delete ' + W().board, () => requestDelete(() => deleteBoard(CURRENT))]]);
     }
   });
 
@@ -352,7 +382,7 @@
   }));
   function reset() {
     closeMenu(); closeDialog(); toast.hidden = true;
-    undo = []; deleted = new Set(); removedCards = new Set(); sel = null;
+    undo = []; deleted = new Set(); removedCards = new Set(); sel = null; ask = true; paintSettings();
     for (let i = CARDS.length - 1; i >= 0; i--) if (CARDS[i].id[0] === 'n') CARDS.splice(i, 1);
     build();
   }
@@ -369,7 +399,8 @@
     if (demo === 'card') { const c = board.querySelector('[data-id=c2]'); const [x, y] = mid(c); sel = 'c2'; paintCards(); openMenu(x, y, [['Delete', () => {}]]); }
     if (demo === 'board') { const br = board.getBoundingClientRect(); openMenu(br.left + 300, br.top + 230, [['New Card', () => {}], ['Delete ' + W().board, () => {}]]); }
     if (demo === 'row') { const r = dlist.querySelector('.drow[data-id=b3]'); r.dataset.menu = 'true'; const [x, y] = mid(r); openMenu(x, y, [['Delete ' + W().board, () => {}]]); }
-    if (demo === 'confirm') askDeleteBoard(CURRENT);
+    if (demo === 'confirm' || demo === 'tick') { requestDelete(() => {}); if (demo === 'tick') document.getElementById('chk').checked = true; }
+    if (demo === 'off') { ask = false; paintSettings(); }
     if (demo === 'toast') { deleteCard('c3'); clearTimeout(toastTimer); }
     if (demo === 'trash') { deleted.add(CURRENT); build(); say(W().Board + ' moved to Trash'); clearTimeout(toastTimer); }
   }, 150);
