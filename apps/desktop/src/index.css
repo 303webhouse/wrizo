@@ -57,6 +57,19 @@
      (TH2's own A4 precedent) until a theme pack needs its own override. */
   --card-stock: #FBF6EA;
   --card-hairline: #D9CFB6;
+  /* flux-card-ink (Chat 1 ledger 47, Nick: Flux dark board, "nearly
+     unreadable") — --card-stock is left un-themed on purpose (above): it's
+     the SAME cream in every theme/tone. --ink-on-paper is NOT un-themed —
+     Flux's dark page deliberately flips it light (#E3F1EC) to read against
+     its own dark --paper, and a card's text/footer/label colour was wired
+     straight to --ink-on-paper, which assumed that ink always lands on a
+     light surface. It doesn't in Flux dark: the card still sits on the
+     cream stock above, a light ink on a light ground. A card-scoped ink
+     pair, aliased to --ink-on-paper/-low everywhere this is already true
+     (Arbor, Flux light) and overridden only where it wasn't (Flux dark,
+     below) — zero visual change outside that one tone. */
+  --ink-on-card: var(--ink-on-paper);
+  --ink-on-card-low: var(--ink-on-paper-low);
 
   /* Accent — the Wrizo orange, primary action (exactly one per screen).
      #ff9800 is locked and invariant — never recolor or remove. (Token name kept
@@ -341,21 +354,31 @@
    `.mode-scroll`/`.desk-frame-scroll-cap` are prose/script's own page
    content areas (used to hide their scrollbar entirely — see each rule's
    own updated comment); `.board-text` is a card's own overflowing body
-   text (`--card-stock`, the SAME light-paper family, one shade lighter). */
-.mode-scroll, .desk-frame-scroll-cap, .board-text{
+   text (`--card-stock`, the SAME light-paper family, one shade lighter).
+   flux-card-ink — `.board-text` split off this shared rule: this comment's
+   own "one shade lighter" assumption held for Arbor and Flux light, where
+   --card-stock and --paper are both light and --ink-on-paper-low tracks
+   both fine, but --card-stock stays cream in Flux DARK while --ink-on-paper
+   flips light to suit the dark --paper around it — the identical bug this
+   ticket fixes on `.board-text`'s own colour, just painted on its
+   scrollbar thumb instead of its text. --ink-on-card-low carries the same
+   "theme-scoped, subdued but legible" property this comment asks for,
+   just measured against the card's own stock rather than the page's. */
+.mode-scroll, .desk-frame-scroll-cap{
   scrollbar-color: var(--ink-on-paper-low) transparent;
 }
+.board-text{ scrollbar-color: var(--ink-on-card-low) transparent; }
 .mode-scroll::-webkit-scrollbar-thumb,
-.desk-frame-scroll-cap::-webkit-scrollbar-thumb,
-.board-text::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); }
+.desk-frame-scroll-cap::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); }
+.board-text::-webkit-scrollbar-thumb{ background:var(--ink-on-card-low); }
 /* Hover darkens toward the paper's own primary ink (--ink-on-paper), the
    mirror of the dark-chrome default's own rest-dark/hover-light relationship
    — a LIGHT surface needs MORE contrast (darker), not less, to read as
    "more visible" on hover; --paper-border would have gone the wrong way
    (lighter, closer to the paper itself, i.e. LESS visible). */
 .mode-scroll::-webkit-scrollbar-thumb:hover,
-.desk-frame-scroll-cap::-webkit-scrollbar-thumb:hover,
-.board-text::-webkit-scrollbar-thumb:hover{ background:var(--ink-on-paper); }
+.desk-frame-scroll-cap::-webkit-scrollbar-thumb:hover{ background:var(--ink-on-paper); }
+.board-text::-webkit-scrollbar-thumb:hover{ background:var(--ink-on-card); }
 
 /* ============================================================================
    TH1 — the theme seam (docs/th1-theme-seam-brief.md, docs/flux-theme-canon.md).
@@ -441,6 +464,16 @@
      value measures 7.3:1 against this block's own --paper. Same hue family,
      same meaning; only the value follows the ground. */
   --accent-door: #A9B56A;
+  /* flux-card-ink — the card is still cream here (--card-stock, un-themed),
+     so its own ink can't follow --ink-on-paper's flip to light. Dark values
+     in the SAME teal family as this tone's own --ink-on-paper-low (#57D0F5)
+     above, measured against --card-stock (#FBF6EA): #14231F is Flux light's
+     own --ink-on-paper verbatim (~15:1, already proven dark enough on this
+     exact cream); #0A6B86 is a darker step of the low tone (~5.6:1) rather
+     than reusing Flux light's own --ink-on-paper-low (#0B7C9E, ~4.4:1 on
+     THIS cream — close, but short of the 4.5:1 floor on different stock). */
+  --ink-on-card: #14231F;
+  --ink-on-card-low: #0A6B86;
 }
 :root[data-theme='flux'][data-page='light'] {
   --paper: #EDF6F3;
@@ -1456,7 +1489,7 @@ a:focus-visible,
   width:100%; height:100%; overflow:auto; padding:6px 8px; box-sizing:border-box;
   border:1px solid var(--card-hairline); border-radius:0; background:var(--card-stock);
   box-shadow:2px 2px 0 var(--card-hairline), 4px 5px 10px rgba(43,39,33,.16);
-  color:var(--ink-on-paper); font-family:var(--font-prose); font-size:calc(15px * var(--card-type-k, 1)); line-height:1.6;
+  color:var(--ink-on-card); font-family:var(--font-prose); font-size:calc(15px * var(--card-type-k, 1)); line-height:1.6;
   white-space:pre-wrap;
   /* FX8 S3 — "whenever the cursor is over the bounds of a box... the
      cursor should change showing that the user can now move the card
@@ -1708,7 +1741,7 @@ a:focus-visible,
   background:rgba(0,0,0,.35);
 }
 .board-popup{
-  width:min(520px,88vw); background:var(--card-stock); color:var(--ink-on-paper);
+  width:min(520px,88vw); background:var(--card-stock); color:var(--ink-on-card);
   border:1px solid var(--card-hairline); border-top:2px solid var(--accent-rest);
   box-shadow:0 14px 44px rgba(0,0,0,.5); border-radius:0;
 }
@@ -1716,26 +1749,27 @@ a:focus-visible,
   display:flex; align-items:center; gap:4px; padding:10px 14px;
   border-bottom:1px solid var(--card-hairline);
 }
-.board-popup-eyebrow{ margin-right:auto; color:var(--ink-on-paper-low); }
+.board-popup-eyebrow{ margin-right:auto; color:var(--ink-on-card-low); }
 .board-popup-tool{ width:30px; height:28px; font-family:var(--font-prose); font-size:14px; }
 .board-popup-editor{
   display:block; width:100%; min-height:170px; padding:18px 22px 6px; box-sizing:border-box;
   outline:none; font-family:var(--font-prose); font-size:calc(16px * var(--card-type-k, 1)); line-height:1.6;
-  white-space:pre-wrap; color:var(--ink-on-paper);
+  white-space:pre-wrap; color:var(--ink-on-card);
 }
 /* ITEM 207 - the card's Type control inside the styling dock: a column, no wider than the dock needs. */
 .board-popup-dock .wz-type{ flex-direction:column; align-items:stretch; width:9.5rem; }
 .board-popup-dock .wz-type-size{ justify-content:center; }
 /* card-close-x (2026-10-13) - the foot and its "Close" button retired; the editor's bottom padding
    takes over the room the foot gave the text. The X sits at the strip's right end, the card's
-   top-right corner, in the card's own ink (both themes define --ink-on-paper and its -low). */
+   top-right corner, in the card's own ink (flux-card-ink: --ink-on-card and its -low, not
+   --ink-on-paper — this X sits on the card's own cream stock, not the page). */
 .board-popup-editor{ padding-bottom:18px; }
 .board-popup-close{
   width:28px; height:28px; margin:-4px -6px -4px 0; padding:0; display:inline-flex; align-items:center; justify-content:center;
   background:none; border:none; border-radius:0; cursor:pointer;
-  color:var(--ink-on-paper-low); font-size:20px; line-height:1; font-family:var(--font-ui);
+  color:var(--ink-on-card-low); font-size:20px; line-height:1; font-family:var(--font-ui);
   transition:color var(--t-fast) var(--ease); }
-.board-popup-close:hover{ color:var(--ink-on-paper); }
+.board-popup-close:hover{ color:var(--ink-on-card); }
 .board-popup-close:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
 
 /* J5 — the lens row: square corners, quiet borders, brass ONLY on the
