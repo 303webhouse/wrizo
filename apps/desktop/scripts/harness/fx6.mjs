@@ -419,8 +419,11 @@ await withHarness(async (app) => {
   // SUPERSEDED (item word-diet, Nick) — cascadePageNewPage reworks, "New Page" -> "New Pages".
   // ok('S2 (a): the cascade\'s Page section carries an unmissable "New Page" door at its own head — genuinely preceding the Page face in document order, carrying the olive-lane door class',
   //   doorShape.present && doorShape.label === 'New Page' && doorShape.precedesFace, JSON.stringify(doorShape));
-  ok('S2 (a) [word-diet successor]: the cascade\'s Page section carries an unmissable "New Pages" door at its own head — genuinely preceding the Page face in document order, carrying the olive-lane door class',
-    doorShape.present && doorShape.label === 'New Pages' && doorShape.precedesFace, JSON.stringify(doorShape));
+  // SUPERSEDED (item word-diet-layouts, Fable Oct 15 — the singular-exception rule) — cascadePageNewPage reworks back, "New Pages" -> "New Page".
+  // ok('S2 (a) [word-diet successor]: the cascade\'s Page section carries an unmissable "New Pages" door at its own head — genuinely preceding the Page face in document order, carrying the olive-lane door class',
+  //   doorShape.present && doorShape.label === 'New Pages' && doorShape.precedesFace, JSON.stringify(doorShape));
+  ok('S2 (a) [word-diet-layouts successor]: the cascade\'s Page section carries an unmissable "New Page" door at its own head — genuinely preceding the Page face in document order, carrying the olive-lane door class',
+    doorShape.present && doorShape.label === 'New Page' && doorShape.precedesFace, JSON.stringify(doorShape));
   const doorColor = await app.evalJs("getComputedStyle(document.querySelector('.wz-cascade-action-door')).borderColor");
   const accentRest = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--accent-rest').trim()");
   ok('S2 (a): the door is olive (--accent-rest) at rest, not brass — "nothing orange at rest" holds; unmissable via CONTRAST against its plain neighbors, not an evental color',
@@ -465,11 +468,14 @@ await withHarness(async (app) => {
   // SUPERSEDED (item word-diet, Nick) — boardNewPageCard reworks, "New page card" -> "New Pages Card".
   // ok('S2 (b): the board sliver carries New page card alongside the existing Add card (a third hand tool)',
   //   boardToolLabels.includes('Add card') && boardToolLabels.includes('New page card'), JSON.stringify(boardToolLabels));
-  ok('S2 (b) [word-diet successor]: the board sliver carries New Pages Card alongside the existing Add card (a third hand tool)',
-    boardToolLabels.includes('Add card') && boardToolLabels.includes('New Pages Card'), JSON.stringify(boardToolLabels));
+  // SUPERSEDED (item word-diet-layouts, Fable Oct 15 — the singular-exception rule) — boardNewPageCard reworks back, "New Pages Card" -> "New Page".
+  // ok('S2 (b) [word-diet successor]: the board sliver carries New Pages Card alongside the existing Add card (a third hand tool)',
+  //   boardToolLabels.includes('Add card') && boardToolLabels.includes('New Pages Card'), JSON.stringify(boardToolLabels));
+  ok('S2 (b) [word-diet-layouts successor]: the board sliver carries New Page alongside the existing Add card (a third hand tool)',
+    boardToolLabels.includes('Add card') && boardToolLabels.includes('New Page'), JSON.stringify(boardToolLabels));
 
   const boxesBeforePageCard = (await app.evalJs('window.wrizoBoard()')) || [];
-  await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'New Pages Card').click()"); // DRIVER: boardNewPageCard (item word-diet) -> 'New Pages Card'
+  await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'New Page').click()"); // DRIVER: boardNewPageCard (item word-diet-layouts) -> 'New Page'
   await sleep(300);
   const hashAfterPageCard = await app.evalJs('location.hash');
   ok('S2 (b): New page card travels straight to the fresh page (Nick\'s own DoD wording: "makes a page-card on a board in one act")',
@@ -703,9 +709,15 @@ if (process.env.HARNESS_PARKED === '1') {
     //   emptyBoardNow.doors.includes('New Card') && emptyBoardNow.doors.includes('New Page Card'),
     //   JSON.stringify(emptyBoardNow));
     // ------------------------------------------------------------------
-    pok('PARKED [word-diet successor] — no `.board-canvas-empty` on an ordinary board, the Beginnings row instead, still naming both tools (New Card, New Pages Card) among its four doors; live successor: bg1.mjs',
+    // ---- PARKED — SUPERSEDED by item word-diet-layouts (Fable, Oct 15, the singular-exception rule), quoted VERBATIM. beginNewPageCard reworks back, "New Pages Card" -> "New Page". ----
+    // pok('PARKED [word-diet successor] — no `.board-canvas-empty` on an ordinary board, the Beginnings row instead, still naming both tools (New Card, New Pages Card) among its four doors; live successor: bg1.mjs',
+    //   emptyBoardNow.oldCopy === false && emptyBoardNow.row === true &&
+    //   emptyBoardNow.doors.includes('New Card') && emptyBoardNow.doors.includes('New Pages Card'),
+    //   JSON.stringify(emptyBoardNow));
+    // ------------------------------------------------------------------
+    pok('PARKED [word-diet-layouts successor] — no `.board-canvas-empty` on an ordinary board, the Beginnings row instead, still naming both tools (New Card, New Page) among its four doors; live successor: bg1.mjs',
       emptyBoardNow.oldCopy === false && emptyBoardNow.row === true &&
-      emptyBoardNow.doors.includes('New Card') && emptyBoardNow.doors.includes('New Pages Card'),
+      emptyBoardNow.doors.includes('New Card') && emptyBoardNow.doors.includes('New Page'),
       JSON.stringify(emptyBoardNow));
     return parkedChecks;
   });

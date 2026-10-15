@@ -348,8 +348,14 @@ await withHarness(async (app) => {
   // proving the NEW text is absent too. ORIGINAL claim parked verbatim:
   // ok('S3: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New page card" are genuinely absent, not merely disabled',
   //   !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New page card'), JSON.stringify(journalSliverButtons));
-  ok('S3 [word-diet successor]: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New Pages Card" are genuinely absent, not merely disabled',
-    !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New Pages Card'), JSON.stringify(journalSliverButtons));
+  // SUPERSEDED (item word-diet-layouts, Fable Oct 15) — boardNewPageCard's
+  // text reworks again, "New Pages Card" -> "New Page"; same reasoning as
+  // above: checking the OLD text's absence would trivially pass once the
+  // text is simply different. ORIGINAL claim parked verbatim:
+  // ok('S3 [word-diet successor]: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New Pages Card" are genuinely absent, not merely disabled',
+  //   !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New Pages Card'), JSON.stringify(journalSliverButtons));
+  ok('S3 [word-diet-layouts successor]: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New Page" are genuinely absent, not merely disabled',
+    !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New Page'), JSON.stringify(journalSliverButtons));
   // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
   // "Show grafts" is RETIRED on every board: there is no footer toggle to still work on a system Board.
   // Quoted VERBATIM below. Successor: the check directly below.
@@ -442,8 +448,11 @@ await withHarness(async (app) => {
   // changed, "New page card" -> "New Pages Card". ORIGINAL claim parked verbatim:
   // ok('S3: an ORDINARY user Board still carries BOTH Add controls, byte-identical to before this ticket — the restriction is scoped to system Boards only',
   //   userBoardSliverButtons.includes('Add card') && userBoardSliverButtons.includes('New page card'), JSON.stringify(userBoardSliverButtons));
-  ok('S3 [word-diet successor]: an ORDINARY user Board still carries BOTH Add controls — the restriction is scoped to system Boards only',
-    userBoardSliverButtons.includes('Add card') && userBoardSliverButtons.includes('New Pages Card'), JSON.stringify(userBoardSliverButtons));
+  // SUPERSEDED (item word-diet-layouts, Fable Oct 15) — boardNewPageCard's text reworks again, "New Pages Card" -> "New Page".
+  // ok('S3 [word-diet successor]: an ORDINARY user Board still carries BOTH Add controls — the restriction is scoped to system Boards only',
+  //   userBoardSliverButtons.includes('Add card') && userBoardSliverButtons.includes('New Pages Card'), JSON.stringify(userBoardSliverButtons));
+  ok('S3 [word-diet-layouts successor]: an ORDINARY user Board still carries BOTH Add controls — the restriction is scoped to system Boards only',
+    userBoardSliverButtons.includes('Add card') && userBoardSliverButtons.includes('New Page'), JSON.stringify(userBoardSliverButtons));
 
   await app.evalJs(POINTER_HELPER);
   await selectBox(app, 'b1-user-card');

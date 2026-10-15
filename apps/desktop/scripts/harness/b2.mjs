@@ -329,8 +329,13 @@ await withHarness(async (app) => {
   // text is simply different. ORIGINAL claim parked verbatim:
   // ok('S1: the Shelf Board\'s own sliver carries NO Add control at all — genuinely absent, the same B1 law inherited via the SAME `isSystemBoard` branch',
   //   !shelfSliverButtons.includes('Add card') && !shelfSliverButtons.includes('New page card') && !shelfSliverButtons.includes('Existing page…'), JSON.stringify(shelfSliverButtons));
-  ok('S1 [word-diet successor]: the Shelf Board\'s own sliver carries NO Add control at all — genuinely absent, the same B1 law inherited via the SAME `isSystemBoard` branch',
-    !shelfSliverButtons.includes('Add card') && !shelfSliverButtons.includes('New Pages Card') && !shelfSliverButtons.includes('+ Filed Pages'), JSON.stringify(shelfSliverButtons));
+  // SUPERSEDED (item word-diet-layouts, Fable Oct 15) — boardNewPageCard
+  // reworks again; same reasoning as above: checking the OLD text's absence
+  // would trivially pass once the text is simply different. ORIGINAL claim parked verbatim:
+  // ok('S1 [word-diet successor]: the Shelf Board\'s own sliver carries NO Add control at all — genuinely absent, the same B1 law inherited via the SAME `isSystemBoard` branch',
+  //   !shelfSliverButtons.includes('Add card') && !shelfSliverButtons.includes('New Pages Card') && !shelfSliverButtons.includes('+ Filed Pages'), JSON.stringify(shelfSliverButtons));
+  ok('S1 [word-diet-layouts successor]: the Shelf Board\'s own sliver carries NO Add control at all — genuinely absent, the same B1 law inherited via the SAME `isSystemBoard` branch',
+    !shelfSliverButtons.includes('Add card') && !shelfSliverButtons.includes('New Page') && !shelfSliverButtons.includes('+ Filed Pages'), JSON.stringify(shelfSliverButtons));
   // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
   // "Show grafts" is RETIRED on every board: there is no footer toggle to still work on the Shelf Board.
   // Quoted VERBATIM below. Successor: the check directly below.
@@ -719,8 +724,11 @@ await withHarness(async (app) => {
   // SUPERSEDED (item word-diet, Nick) — cascadePageNewPage reworks, "New Page" -> "New Pages".
   // ok('S5 [R6+R13.ii successor]: the Page drawers roster still LEADS with the New Page door - the roster grew beneath it (PAGE SETUP, Place-page), but the door stays first',
   //   rosterOrder.doorLabels[0] === 'New Page', JSON.stringify(rosterOrder));
-  ok('S5 [word-diet successor]: the Page drawers roster still LEADS with the New Pages door - the roster grew beneath it (PAGE SETUP, Place-page), but the door stays first',
-    rosterOrder.doorLabels[0] === 'New Pages', JSON.stringify(rosterOrder));
+  // SUPERSEDED (item word-diet-layouts, Fable Oct 15 — the singular-exception rule) — cascadePageNewPage reworks back, "New Pages" -> "New Page".
+  // ok('S5 [word-diet successor]: the Page drawers roster still LEADS with the New Pages door - the roster grew beneath it (PAGE SETUP, Place-page), but the door stays first',
+  //   rosterOrder.doorLabels[0] === 'New Pages', JSON.stringify(rosterOrder));
+  ok('S5 [word-diet-layouts successor]: the Page drawers roster still LEADS with the New Page door - the roster grew beneath it (PAGE SETUP, Place-page), but the door stays first',
+    rosterOrder.doorLabels[0] === 'New Page', JSON.stringify(rosterOrder));
   ok('S5: Places renders for the page underfoot, after the Page face', rosterOrder.placesAfterPageFace === true, JSON.stringify(rosterOrder));
 
   // "New Journal Entry" door checks [PARKED — FX15 S3]: the door is RETIRED, so its
