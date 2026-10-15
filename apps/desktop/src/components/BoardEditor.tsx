@@ -1752,6 +1752,7 @@ export function BoardEditor({ id }: { id: string }) {
       const box = boxesRef.current.find(b => b.id === boxId);
       if (!box) return;
       phase = 'resizing';
+      canvas.dataset.resizing = 'true';   // CARD-RESIZE-AXIS: the whole canvas wears the diagonal arrow while the corner is held (see index.css)
       resizingId = boxId;
       startBoxes = boxesRef.current;
       // ITEM 138 — the LOCK's aspect, resolved from the PINNED ENTRY, never from
@@ -1807,6 +1808,7 @@ export function BoardEditor({ id }: { id: string }) {
       const wasResizing = phase === 'resizing';
       if (phase === 'resizing' || phase === 'dragging') { lastGestureEndRef.current = performance.now(); clearBoardSelection(); }
       phase = 'idle';
+      delete canvas.dataset.resizing;
       movingIds = [];
       resizingId = null;
       resizeStart = null;
@@ -2032,7 +2034,19 @@ export function BoardEditor({ id }: { id: string }) {
           // hand-widened page card back to the page silhouette, not to preserve
           // whatever it currently is.
           if (b.kind === 'page-pin' && resizeStart!.pinAspect != null) {
-            return { ...b, w: newW, h: Math.max(MIN_PIN_H, newW * resizeStart!.pinAspect) };
+            // CARD-RESIZE-AXIS (Nick, Oct 15 3:18am): the card KEEPS its proportions - only its size changes - but the size follows the pointer on BOTH axes. The lock used to read dx alone, so a
+            // sideways drag grew the (tall) card mostly downward, a vertical drag did nothing, and the corner ran away from the pointer. Now: the corner's target is where the pointer has taken it
+            // (the corner moves by dx, dy). THE AXIS THE POINTER HAS MOVED MORE DRIVES THE SIZE (Fable, round 2: projecting the drag onto the diagonal made a sideways drag sluggish - 140px right
+            // gave +48px wide - so the corner lagged the hand): the width changes by dx, or by dy / aspect, whichever has the larger MAGNITUDE (its own sign - so a drag that is mostly up shrinks it even
+            // while it also moves right); the height follows at the aspect. The corner then stays UNDER THE POINTER on the dominant axis, and exactly on it for a drag along the diagonal.
+            // MIN_PIN_H and the min width both floor it (the height floor implies a width floor at this aspect).
+            const a = resizeStart!.pinAspect;
+            const dyFrac = (e.clientY - startY) / pageWidthPx;
+            // A DELTA from the start size, so an outward drag can never SHRINK an older, differently shaped card (item 138's grandfathered wide ones): it takes its kind's shape at the first pixel and grows.
+            const byX = dx, byY = dyFrac / a;
+            const toward = resizeStart!.w + (Math.abs(byX) >= Math.abs(byY) ? byX : byY);
+            const w = Math.max(minW, MIN_PIN_H / a, toward);
+            return { ...b, w, h: Math.max(MIN_PIN_H, w * a) };
           }
           // FX4 S4 — text now resizes freeform on BOTH axes too (height was
           // reflow-only before this ticket): dragging taller sets an
@@ -2073,6 +2087,7 @@ export function BoardEditor({ id }: { id: string }) {
       canvas.removeEventListener('dragstart', onDragStart);
       endConnect();
       clearFlashTimers();
+      delete canvas.dataset.resizing;
       document.removeEventListener('contextmenu', onCtx, true);
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);

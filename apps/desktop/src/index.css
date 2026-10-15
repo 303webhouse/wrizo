@@ -1542,6 +1542,9 @@ a:focus-visible,
 .board-handle[data-circle='true']{ box-sizing:border-box; border-radius:50%; background:var(--paper); border:1.5px solid var(--brass); right:-6px; bottom:-6px; cursor:default; }
 .board-handle[data-circle='true'][data-solid='true']{ background:var(--brass); }
 @media (prefers-reduced-motion: reduce){ .board-handle{ transition:none; } }
+/* CARD-RESIZE-AXIS (Nick, Oct 15): while a card's corner is held the whole canvas - and everything on it - wears the diagonal resize arrow. A pointer that lags the corner (a proportional card moves
+   its corner along a diagonal) used to fall onto card text or the empty canvas and flip to the I-beam / default; now it never leaves the arrow until the corner is let go. */
+.board-canvas[data-resizing='true'], .board-canvas[data-resizing='true'] *{ cursor:nwse-resize !important; }
 /* CONNECTOR-A - a card's own end of a link: hidden until the card is the arm's target, a linked peer, or the far end of the link just made. Open = not linked, solid orange = linked. */
 .board-tcircle{
   position:absolute; right:-6px; bottom:-6px; width:10px; height:10px; box-sizing:border-box; z-index:6;
