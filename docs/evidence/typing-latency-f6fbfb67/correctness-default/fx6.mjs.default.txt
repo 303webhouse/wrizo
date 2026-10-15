@@ -1,0 +1,191 @@
+
+ROWS-SHADOW VERIFY: PASS (128 renders checked, shadow == DOM on every one)
+[
+  {
+    "name": "S1 (a) precondition: the full sentence was genuinely typed, character by character (typeKeys — real per-character key events)",
+    "pass": true,
+    "detail": "The quick brown fox jumps over the lazy dog"
+  },
+  {
+    "name": "S1 (a) precondition: mangled away from the full sentence (4 real Backspace presses)",
+    "pass": true,
+    "detail": "The quick brown fox jumps over the lazy"
+  },
+  {
+    "name": "S1 (a): the FIRST Ctrl/Cmd+Z undoes the mangling (backspacing) — the full, pre-mangle sentence reappears",
+    "pass": true,
+    "detail": "[\"The quick brown fox jumps over the lazy\",\"The quick brown fox jumps over the lazy dog\",\"The quick brown fox jumps over the lazy \",\"The quick brown fox jumps over the \",\"The quick brown fox jumps over \",\"The quick brown fox jumps \",\"The quick brown fox \",\"The quick brown \",\"The quick \",\"The \",\"\"]"
+  },
+  {
+    "name": "S1 (a): the walk genuinely reaches all the way back to empty — \"a writer's full freedom to unwind\"",
+    "pass": true,
+    "detail": "[\"The quick brown fox jumps over the lazy\",\"The quick brown fox jumps over the lazy dog\",\"The quick brown fox jumps over the lazy \",\"The quick brown fox jumps over the \",\"The quick brown fox jumps over \",\"The quick brown fox jumps \",\"The quick brown fox \",\"The quick brown \",\"The quick \",\"The \",\"\"]"
+  },
+  {
+    "name": "S1 (a): coalescing genuinely reads as \"word-ish\" — more than 2 steps (not one giant jump back to empty) and comfortably fewer than the 44-character/9-word count (not per-keystroke)",
+    "pass": true,
+    "detail": "steps=11; [\"The quick brown fox jumps over the lazy\",\"The quick brown fox jumps over the lazy dog\",\"The quick brown fox jumps over the lazy \",\"The quick brown fox jumps over the \",\"The quick brown fox jumps over \",\"The quick brown fox jumps \",\"The quick brown fox \",\"The quick brown \",\"The quick \",\"The \",\"\"]"
+  },
+  {
+    "name": "S1 (a): redo (Ctrl/Cmd+Shift+Z) walks forward again — after redoing exactly as many times as it was undone, the text is back to the pre-undo (mangled) state",
+    "pass": true,
+    "detail": "{\"mangled\":\"The quick brown fox jumps over the lazy\",\"afterFullRedo\":\"The quick brown fox jumps over the lazy\"}"
+  },
+  {
+    "name": "S1 (a): Ctrl+Y (no Shift) ALSO redoes — the Windows convention, honored alongside Ctrl/Cmd+Shift+Z",
+    "pass": true,
+    "detail": "{\"beforeCtrlY\":\"Redo via Ctrl Y\",\"afterUndoForY\":\"Redo via Ctrl \",\"afterCtrlY\":\"Redo via Ctrl Y\"}"
+  },
+  {
+    "name": "S1 (a) precondition: Bold wraps the selection in ** conventions",
+    "pass": true,
+    "detail": "**plain words**"
+  },
+  {
+    "name": "S1 (a): bolds a word, undoes it, sees clean text — Ctrl/Cmd+Z removes the ** conventions entirely, back to the plain pre-bold text (a rail click is a genuine, atomic undo step, wired into the SAME stack a keystroke uses)",
+    "pass": true,
+    "detail": "plain words"
+  },
+  {
+    "name": "S1 (a) precondition: the em-dash autocorrect still fires, unchanged by S1 (Hello--world -> Hello—world)",
+    "pass": true,
+    "detail": "Hello—world "
+  },
+  {
+    "name": "S1 (a): ONE Ctrl/Cmd+Z reverts JUST the em-dash substitution — the literal hyphens return — never a double-undo seam",
+    "pass": true,
+    "detail": "Hello--world "
+  },
+  {
+    "name": "S1 (a): redo restores the em dash again — the fold works both directions",
+    "pass": true,
+    "detail": "Hello—world "
+  },
+  {
+    "name": "S1 (a): the em-dash fold generalizes beyond \"immediately after\" (unlike the old shim) — walking back one step first undoes the LATER typing (\"continuing\"), leaving the em dash from the earlier substitution still standing",
+    "pass": true,
+    "detail": "Hello—world "
+  },
+  {
+    "name": "S1 (a): walking back a SECOND step then reaches the substitution itself and reverts it, restoring the literal hyphens — the whole chain is walkable, not a single-shot shim",
+    "pass": true,
+    "detail": "Hello--world "
+  },
+  {
+    "name": "S1 (b) precondition: the em-dash autocorrect fires in the card popup too",
+    "pass": true,
+    "detail": "Card—words "
+  },
+  {
+    "name": "S1 (b): one Ctrl/Cmd+Z in the card popup ALSO reverts just the substitution (the SAME general stack, not a separate mechanism) — hyphens back",
+    "pass": true,
+    "detail": "Card--words "
+  },
+  {
+    "name": "S1 (b): redo restores it in the popup too",
+    "pass": true,
+    "detail": "Card—words "
+  },
+  {
+    "name": "S1 (b): a plain typed word undoes cleanly in the popup too (not just the em-dash special case)",
+    "pass": true,
+    "detail": "{\"popupBeforePlainUndo\":\"Card—words  plainly\",\"popupAfterPlainUndo\":\"Card—words  \"}"
+  },
+  {
+    "name": "S1 (b): redo restores it",
+    "pass": true,
+    "detail": "Card—words  plainly"
+  },
+  {
+    "name": "S1 (b): a Bold click in the card popup ALSO undoes cleanly (its own atomic step on the SAME stack)",
+    "pass": true,
+    "detail": "{\"popupBolded\":\"**Card—words  plainly**\",\"popupAfterBoldUndo\":\"Card—words  plainly\"}"
+  },
+  {
+    "name": "S1 forward-lock precondition: Free Write, forward lock ON (the default), text genuinely typed",
+    "pass": true,
+    "detail": "Forward locked prose"
+  },
+  {
+    "name": "S1 THE SCOPE LAW: a genuinely trusted Ctrl/Cmd+Z is completely INERT inside forward-lock Free Write — the text is byte-for-byte unchanged. store/textUndo.ts is never imported by the non-drafting branch of ForwardOnlyEditor.tsx at all (verified by diff, not merely by this run) — there is no code path for undo to reach here.",
+    "pass": true,
+    "detail": "{\"beforeLockedCtrlZ\":\"Forward locked prose\",\"afterLockedCtrlZ\":\"Forward locked prose\"}"
+  },
+  {
+    "name": "S1 forward-lock regression: backspace still STRIKES (a struck run, still visible in the DOM) rather than erasing — the typewriter's own deletion discipline is untouched by this ticket",
+    "pass": true,
+    "detail": "{\"afterLockedBackspace\":\"Forward locked prose\",\"struckSpanPresent\":true}"
+  },
+  {
+    "name": "S2 (a): the cascade's Page section carries an unmissable \"New Page\" door at its own head — genuinely preceding the Page face in document order, carrying the olive-lane door class",
+    "pass": true,
+    "detail": "{\"present\":true,\"label\":\"New Page\",\"precedesFace\":true}"
+  },
+  {
+    "name": "S2 (a): the door is olive (--accent-rest) at rest, not brass — \"nothing orange at rest\" holds; unmissable via CONTRAST against its plain neighbors, not an evental color",
+    "pass": true,
+    "detail": "{\"doorColor\":\"rgb(150, 160, 90)\",\"accentRest\":\"#96a05a\"}"
+  },
+  {
+    "name": "S2 (a): clicking New Page travels to a genuinely fresh page (a new /page/:id, distinct from where we started)",
+    "pass": true,
+    "detail": "{\"hashBeforeNewPage\":\"#/page/mv93i6wba8cf5t56q\",\"hashAfterNewPage\":\"#/page/new\"}"
+  },
+  {
+    "name": "S2 (a): the created page's own homing laws — loose, exactly like Arrival's own Write door (createLooseHomePage) — never filed, never journal-membered, \"just a page, from wherever you are\"",
+    "pass": true,
+    "detail": "{\"id\":\"mv93i74jn7dn72tcx\",\"text\":\"N\",\"projectId\":null,\"source\":\"page\",\"origin\":\"loose\",\"createdAt\":\"2026-10-15T05:25:46.316Z\",\"updatedAt\":\"2026-10-15T05:25:46.316Z\"}"
+  },
+  {
+    "name": "S2 (b): the board sliver carries New page card alongside the existing Add card (a third hand tool)",
+    "pass": true,
+    "detail": "[\"Add card\",\"New page card\",\"Existing page…\",\"From a deck…\"]"
+  },
+  {
+    "name": "S2 (b): New page card travels straight to the fresh page (Nick's own DoD wording: \"makes a page-card on a board in one act\")",
+    "pass": true,
+    "detail": "#/page/mv93i8khn5y92fqof"
+  },
+  {
+    "name": "S2 (b): the new page's own homing laws — loose, untouched by the pin (membership != filing)",
+    "pass": true,
+    "detail": "{\"id\":\"mv93i8khn5y92fqof\",\"text\":\"\",\"projectId\":null,\"source\":\"page\",\"origin\":\"loose\",\"createdAt\":\"2026-10-15T05:25:47.873Z\",\"updatedAt\":\"2026-10-15T05:25:47.873Z\"}"
+  },
+  {
+    "name": "S2 (b): the new page's card is pinned to THIS board in the same act — a genuine page-pin membership card, referencing the new page",
+    "pass": true,
+    "detail": "[{\"id\":\"fx6-s2-existing\",\"kind\":\"text\",\"x\":0.05,\"y\":0.05,\"w\":0.2,\"h\":0.08,\"z\":1,\"text\":\"Existing card\"},{\"id\":\"mv93i8khkicldiwd1\",\"kind\":\"page-pin\",\"x\":0.05,\"y\":0.21000000000000002,\"w\":0.16,\"h\":0.22,\"z\":2,\"entryId\":\"mv93i8khn5y92fqof\",\"onCanvas\":true}]"
+  },
+  {
+    "name": "S2 (b): the pinned card's own origin is untouched, and the board gained ONLY the new pin — the pre-existing card is unaffected, exactly one box added",
+    "pass": true,
+    "detail": "{\"preExistingCardStill\":{\"id\":\"fx6-s2-existing\",\"kind\":\"text\",\"x\":0.05,\"y\":0.05,\"w\":0.2,\"h\":0.08,\"z\":1,\"text\":\"Existing card\"},\"before\":1,\"after\":2}"
+  },
+  {
+    "name": "S2 (c): the pointer disappears the moment the board has a card — quiet, not a permanent fixture (BG1: the vehicle is now the Beginnings row)",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "S2 (c): the Plan panel's own no-project branch quietly points at the Page section's New Page door — a writer who just wants a page is told where the plainer door is, not just handed board/plan-creation buttons",
+    "pass": true,
+    "detail": "File this page to a drawer first to plan around it.Create a BoardPlot a StoryJust need a page? New Page is in the Page section."
+  },
+  {
+    "name": "S3 (a1): self-pin closed at the UI end — the Pin sheet's own board list excludes the invoking entry (this board never lists itself as a destination for its own pin), while a genuinely OTHER board in the same project still lists normally",
+    "pass": true,
+    "detail": "[\"FX6 Other Board\"]"
+  },
+  {
+    "name": "S3 (a1): self-pin closed at the FUNCTION end too — pinPageToBoard itself refuses entryId === boardEntryId and returns null, belt and suspenders (a direct call bypassing the sheet's own UI entirely still can't self-pin)",
+    "pass": true,
+    "detail": "null"
+  },
+  {
+    "name": "S3 (a1): the direct self-pin attempt left the board's own boxes genuinely untouched — no self-referencing page-pin was added",
+    "pass": true,
+    "detail": "[]"
+  }
+]
+
+FX6 VERIFY: PASS (37 checks)

@@ -1,0 +1,184 @@
+[
+  {
+    "name": "85-B: the collection keys parse out of persistence.ts itself — a hardcoded copy here would stop guarding a seventh collection the day one is added, silently",
+    "pass": true,
+    "detail": "keys=writer-studio-projects,writer-studio-story-plans,writer-studio-sessions,writer-studio-drafts,writer-studio-journal-entries,writer-studio-drawers"
+  },
+  {
+    "name": "85-B: a persistence.ts this parser cannot read yields NO KEYS — which drives the loud-failure exit rather than an empty scan that would pass every check below while guarding nothing",
+    "pass": true,
+    "detail": "{\"parsed\":null}"
+  },
+  {
+    "name": "85-B: a parse that SUCCEEDS but returns fewer keys than the app has also fails the check above (>= 6) — the dangerous shape is not a thrown error, it is a partial answer that looks like an answer",
+    "pass": true,
+    "detail": "{\"parsed\":[\"writer-studio-projects\",\"writer-studio-drafts\"]}"
+  },
+  {
+    "name": "85-B (the control): an `export const KEYS` — the likely future edit — still parses, so the two checks above are not passing on a parser that simply fails on everything it is handed",
+    "pass": true,
+    "detail": "{\"parsed\":[\"k1\",\"k2\",\"k3\",\"k4\",\"k5\",\"k6\"]}"
+  },
+  {
+    "name": "85-B: NO NEW raw collection write — a harness that seeds past the seam fails here rather than months later as an intermittent red (baseline 2, found 2)",
+    "pass": true,
+    "detail": "none"
+  },
+  {
+    "name": "85-B: the baseline is a RATCHET — every listed file still writes raw, so a migration must delete its line here in the same change. A stale entry is a failure, because a list that rots becomes a permanent excuse",
+    "pass": true,
+    "detail": "none stale"
+  },
+  {
+    "name": "85-B (the worklist, emitted whole): 2 harness files write a persisted collection raw — 0 unclassified migration debt and 2 annotated deliberate, which together account for every one of them",
+    "pass": true,
+    "detail": "{\"population\":2,\"annotated\":[\"scripts/harness/item85c.mjs\",\"scripts/harness/bm1.mjs\"],\"unclassifiedWorklist\":[],\"keysGuarded\":[\"writer-studio-projects\",\"writer-studio-story-plans\",\"writer-studio-sessions\",\"writer-studio-drafts\",\"writer-studio-journal-entries\",\"writer-studio-drawers\"]}"
+  },
+  {
+    "name": "85-B: every DELIBERATE annotation is tracked by the baseline, still describes a file that writes raw, and carries a SUBSTANTIVE reason — the 2026-09-09 ruling enforced rather than remembered",
+    "pass": true,
+    "detail": "{\"annotated\":2,\"faults\":[]}"
+  },
+  {
+    "name": "85-B (the control): a well-formed annotation yields NO fault — so the four falsifications below are not passing on a validator that simply rejects everything handed to it",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "85-B FALSIFICATION: an annotation with an EMPTY reason fails — the reason is required, so its absence is a red rather than a note nobody reads",
+    "pass": true,
+    "detail": "{\"faults\":[{\"file\":\"scripts/harness/x.mjs\",\"fault\":\"reason-missing\"}]}"
+  },
+  {
+    "name": "85-B FALSIFICATION: the word \"deliberate\" is NOT a reason — this is the shape a required justification actually rots into, and it is the one an empty-string check would happily wave through",
+    "pass": true,
+    "detail": "{\"faults\":[{\"file\":\"scripts/harness/x.mjs\",\"fault\":\"reason-not-substantive\"}]}"
+  },
+  {
+    "name": "85-B FALSIFICATION: an annotation on a file that NO LONGER writes raw fails — an exemption must expire with the thing it exempts, or it silently pre-authorises the next raw write into that file",
+    "pass": true,
+    "detail": "{\"faults\":[{\"file\":\"scripts/harness/x.mjs\",\"fault\":\"no-longer-writes-raw\"}]}"
+  },
+  {
+    "name": "85-B FALSIFICATION: an annotation for a file the BASELINE does not track fails — otherwise a raw writer could be exempted without ever being counted, which is the one route around the ratchet that leaves no trace in the population",
+    "pass": true,
+    "detail": "{\"faults\":[{\"file\":\"scripts/harness/y.mjs\",\"fault\":\"not-in-baseline\"}]}"
+  },
+  {
+    "name": "85-B FALSIFICATION: against an EMPTY baseline the guard flags ALL 2 known raw writers — the charter's claim (\"it would have caught all 54\") tested rather than asserted, and the thing a baseline that merely exempts them could never show",
+    "pass": true,
+    "detail": "{\"flagged\":2,\"population\":2,\"sample\":[\"scripts/harness/bm1.mjs\",\"scripts/harness/item85c.mjs\"]}"
+  },
+  {
+    "name": "85-B FALSIFICATION: a baseline entry that no longer writes raw is DETECTED as stale — a migration must delete its line in the same change, or the ratchet quietly stops being one",
+    "pass": true,
+    "detail": "{\"stale\":[\"scripts/harness/definitely-migrated.mjs\"]}"
+  },
+  {
+    "name": "85-B (the control): with the REAL baseline against the REAL tree, nothing is flagged and nothing is stale — so the two falsifications above are not a detector that simply reds on everything",
+    "pass": true,
+    "detail": "{\"newOffenders\":0,\"stale\":0}"
+  },
+  {
+    "name": "85-C (reported): 0 collection writes use a VARIABLE key — the shape this file was blind to until wave 2 tripped over it. Counted in the population by the main scan above; listed here so the sites are named",
+    "pass": true,
+    "detail": "{\"count\":0,\"sites\":[]}"
+  },
+  {
+    "name": "85-C self-proof: the variable-key shape IS caught — this is the exact text found in b1/b2/j5",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "85-C self-proof (the control): a LITERAL key is not flagged by this check — it is the business of the checks above, and double-reporting one write as two findings is how a guard teaches people to skim it",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "85-C/OBS-1: all 13 MUTATING test seams route through durableSeam/durable — a seam that does not flush hands every fixture a debounced write it will reload past, which cost 36 of 80 files on a stamped leg and is invisible to every other static check",
+    "pass": true,
+    "detail": "{\"seams\":13,\"undurable\":[]}"
+  },
+  {
+    "name": "85-C/OBS-1: and the rule is worth checking because it was already broken once — three older seams were left unwrapped when the newer ones gained durability, so this asserts a property of the FILE rather than of the block someone happened to be editing",
+    "pass": true,
+    "detail": "{\"seams\":13}"
+  },
+  {
+    "name": "85-C/OBS-1 FALSIFICATION: an UNDURABLE seam whose durable NEIGHBOUR begins within four lines is caught — the fixed window this check used to read reached past the seam it was judging and would have passed it, which is a false negative in the one check whose job is catching the seam somebody forgot",
+    "pass": true,
+    "detail": "{\"newMatcherSeesDurable\":false,\"oldWindowSawDurable\":true}"
+  },
+  {
+    "name": "85-C/OBS-1 (the control): a DURABLE seam with a body longer than four lines is NOT flagged — the other half of the same fault, which reported item 85-C's own verdict-returning seams as undurable while they flush on every path",
+    "pass": true,
+    "detail": "{\"newMatcherSeesDurable\":true}"
+  },
+  {
+    "name": "85-C/OBS-1 self-proof: an unwrapped mutating seam IS caught — the exact shape the three older seams had",
+    "pass": true,
+    "detail": "[\"wrizoSetPageHome\"]"
+  },
+  {
+    "name": "85-C/OBS-1 self-proof (the control): a WRAPPED seam, a read-only seam, and wrizoFlushNow are all clean — so the check is not one that reds on every seam it sees",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "85-C: all 218 seam call sites are well-formed object literals — the one defect class that passes BOTH node --check (the text is a string inside a template literal) and the raw-write scan above, and then throws in the browser where a dying driver reports nothing",
+    "pass": true,
+    "detail": "{\"sites\":218,\"malformed\":[]}"
+  },
+  {
+    "name": "85-C: no seam call passes a string VALUE as a bare identifier — my own transformer emitted wrizoCreateProject(title, creative), which node --check cannot see (the text is a string inside a template literal) and which throws ReferenceError in the browser, where the file dies reporting nothing",
+    "pass": true,
+    "detail": "{\"unquoted\":[]}"
+  },
+  {
+    "name": "85-C self-proof: the bare-identifier shape IS caught, and its quoted form is NOT — a closed list of always-quoted values, so a legitimate variable passed along cannot trip it",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "85-C self-proof: the real defect text is CAUGHT — a call expression where a key belongs",
+    "pass": true,
+    "detail": "[\"fixture: JSON.stringify(rows)\"]"
+  },
+  {
+    "name": "85-C self-proof (the control): well-formed sites — including a spread and a computed value — are NOT flagged, so the check is not one that reds on everything",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "85-B self-proof: a raw seed of the journal collection is CAUGHT",
+    "pass": true,
+    "detail": "{\"expected\":1,\"got\":1,\"hits\":[{\"line\":1,\"key\":\"writer-studio-journal-entries\",\"op\":\"setItem\"}]}"
+  },
+  {
+    "name": "85-B self-proof: a raw write to ANOTHER collection is caught too — the hazard is per-collection, and flushNow() iterates every key",
+    "pass": true,
+    "detail": "{\"expected\":1,\"got\":1,\"hits\":[{\"line\":1,\"key\":\"writer-studio-story-plans\",\"op\":\"setItem\"}]}"
+  },
+  {
+    "name": "85-B self-proof: removeItem on a collection is caught — erasing a collection raw is the same class as writing one",
+    "pass": true,
+    "detail": "{\"expected\":1,\"got\":1,\"hits\":[{\"line\":1,\"key\":\"writer-studio-drawers\",\"op\":\"removeItem\"}]}"
+  },
+  {
+    "name": "85-B self-proof: the control — localStorage.clear() is the house fresh-desk idiom and is NOT a collection write",
+    "pass": true,
+    "detail": "{\"expected\":0,\"got\":0,\"hits\":[]}"
+  },
+  {
+    "name": "85-B self-proof: the control — READING a collection is harmless and is not flagged",
+    "pass": true,
+    "detail": "{\"expected\":0,\"got\":0,\"hits\":[]}"
+  },
+  {
+    "name": "85-B self-proof: the control — a NON-collection key is not flagged (only the app's own KEYS are the hazard)",
+    "pass": true,
+    "detail": "{\"expected\":0,\"got\":0,\"hits\":[]}"
+  }
+]
+
+SEED-GUARD VERIFY: PASS (36 checks)

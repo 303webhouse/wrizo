@@ -1,0 +1,16 @@
+
+ROWS-SHADOW VERIFY: PASS (7 renders checked, shadow == DOM on every one)
+PASS  setup: the page is seeded through the seam and landed
+PASS  S1 THE TICKET: Tab INDENTS the paragraph in Draft — a leading tab in the STORED text, the definition draftFormat.ts already carried ("Indent is a leading tab")  [{"stored":"\tThe paragraph that should indent."}]
+PASS  S1: and focus never leaves the editor — the founder’s actual report was that Tab moved BROWSER FOCUS, so this is asserted apart from the indent
+PASS  S2: Shift+Tab OUTDENTS it again, floored at zero — the way back is the keystroke, not only Undo  [{"stored":"The paragraph that should indent."}]
+PASS  S2: a second Shift+Tab on an unindented paragraph is a quiet no-op, never a negative indent  [{"stored":"The paragraph that should indent."}]
+PASS  S3: Tab indents in REVISE too — both editable modes answer the key, and through the same formatter, so a keystroke and a rail click cannot drift apart  [{"stored":"\tThe paragraph that should indent."}]
+PASS  S3: and focus stays in the editor in Revise
+PASS  setup: a fresh page for Free Write
+PASS  S4: in Free Write, Tab on a WRITTEN line changes nothing — a leading tab there would land behind the caret, and the forward law forbids editing behind it  [{"stored":"The paragraph that should indent.","mode":null}]
+PASS  S4 THE REPORT, in the mode a page opens in: focus STILL does not leave the editor, even though the key deliberately does nothing
+PASS  S4: but on a BLANK line Tab DOES indent — an insertion at the caret, the paragraph tab a writer reaches for before starting a new paragraph  [{"stored":"The paragraph that should indent.\n\t"}]
+PASS  S4: Shift+Tab in Free Write is inert — an outdent is a deletion, and nothing deletes behind the caret on this surface  [{"before":"The paragraph that should indent.\n\t","after":"The paragraph that should indent.\n\t"}]
+
+ITEM158 VERIFY: PASS (12 checks)
