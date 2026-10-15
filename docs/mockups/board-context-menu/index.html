@@ -14,6 +14,9 @@
   Every Delete (card, board, drawer board row) opens "Send to Trash?" with Cancel / Delete and a
   "Don't ask me again" checkbox; ticking it and confirming skips the dialog from then on. The
   drawer foot shows the Settings row "Ask before deleting" (static: it reflects the setting).
+  The card menu also shows, when they apply: Ungroup (grouped card), Edit copy (ported text card),
+  Restore (page-pin on the Trash board), Pin to a Board… (page-pin on the Shelf) — deskLexicon
+  words — then a separator and Delete last. The Plot / Shelf / Trash switch is mockup only.
   No "Remove" row anywhere. Same board look as the connector mockup (light paper).
   Arbor / Flux, Reset: mockup only. Branch: cursor/board-context-menu.
 -->
@@ -75,6 +78,7 @@
   }
   .card .kind { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-on-paper-low); margin-bottom: 6px; }
   .card .txt { font-family: var(--font-prose); font-size: 15px; line-height: 1.4; overflow: hidden; max-height: calc(100% - 20px); }
+  .card[data-group='true'] { border-style: dashed; border-color: var(--ink-on-paper-low); }
   .card[data-selected='true'] { outline: 1.5px solid var(--brass); z-index: 4; }
   .handle { position: absolute; right: -7px; bottom: -7px; width: 12px; height: 12px; background: var(--paper); border: 1.5px solid var(--brass); display: none; cursor: nwse-resize; z-index: 6; }
   .card[data-selected='true'] .handle { display: block; }
@@ -123,6 +127,7 @@
     box-shadow: 0 8px 24px rgba(0,0,0,.4);
   }
   .ctx[hidden] { display: none; }
+  .ctx .sep { height: 1px; margin: 4px 0; background: var(--ink-border-strong); }
   .ctx button { display: block; width: 100%; text-align: left; padding: 7px 14px; font-family: var(--font-label); font-size: 13px; color: var(--text-mid); }
   .ctx button:hover, .ctx button:focus-visible { color: var(--text-hi); background: var(--ink-800); outline: none; }
 
@@ -153,6 +158,9 @@
   <span class="only">mockup only</span>
   <button class="rev" data-theme="arbor" type="button">Arbor</button>
   <button class="rev" data-theme="flux" type="button">Flux</button>
+  <button class="rev" data-view="plot" type="button">Plot board</button>
+  <button class="rev" data-view="shelf" type="button">Shelf</button>
+  <button class="rev" data-view="trash" type="button">Trash</button>
   <button class="rev" id="reset" type="button">Reset</button>
   <span class="hint">Right-click a card, the board, or a board in the drawer.</span>
 </header>
@@ -195,13 +203,27 @@
   const side = () => (root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor');
   const W = () => WORDS[side()];
 
-  const CARDS = [
-    { id: 'c1', x: 54,  y: 56,  t: 'Opening scene. Ada reaches the harbor an hour before the ferry.' },
-    { id: 'c2', x: 410, y: 70,  t: 'Harbor notes: gulls, diesel, a locked ticket booth.' },
-    { id: 'c3', x: 150, y: 270, t: 'Who knows what, and when they learn it.' },
-    { id: 'c4', x: 500, y: 300, t: 'Timeline: three days, one ferry, no phone.' }
-  ];
-  const PAGES = ['Chapter 1', 'Chapter 2', 'Interview notes', 'Untitled'];
+  const SETS = {
+    plot: [
+      { id: 'c1', x: 40,  y: 40,  type: 'text', t: 'Opening scene. Ada reaches the harbor an hour before the ferry.' },
+      { id: 'c2', x: 290, y: 40,  type: 'text', t: 'Harbor notes: gulls, diesel, a locked ticket booth.' },
+      { id: 'c3', x: 540, y: 40,  type: 'text', t: 'Who knows what, and when they learn it.' },
+      { id: 'c4', x: 40,  y: 200, type: 'text', t: 'Timeline: three days, one ferry, no phone.' },
+      { id: 'c5', x: 290, y: 200, type: 'text', group: 'g1', t: 'Ada counts the ferry crew twice. Still one short.' },
+      { id: 'c6', x: 540, y: 200, type: 'text', src: 'p3', t: 'Interview notes: the harbormaster remembers the night differently.' },
+      { id: 'c7', x: 40,  y: 360, type: 'page-pin', t: 'Chapter 1' }
+    ],
+    shelf: [
+      { id: 's1', x: 40,  y: 40, type: 'page-pin', t: 'Chapter 2' },
+      { id: 's2', x: 290, y: 40, type: 'page-pin', t: 'Untitled' }
+    ],
+    trash: [
+      { id: 't1', x: 40, y: 40, type: 'page-pin', t: 'Chapter 1, first draft' }
+    ]
+  };
+  let view = 'plot';
+  let CARDS = SETS.plot;
+  const SEED = JSON.stringify(SETS);  const PAGES = ['Chapter 1', 'Chapter 2', 'Interview notes', 'Untitled'];
   const BOARDS = [['b1', 'Plot board'], ['b2', 'Characters'], ['b3', 'Research'], ['b4', 'Timeline']];
   const CURRENT = 'b1';
 
@@ -218,14 +240,17 @@
     const el = document.createElement('div');
     el.className = 'card'; el.dataset.id = c.id;
     el.style.left = c.x + 'px'; el.style.top = c.y + 'px';
-    el.innerHTML = '<div class="kind">Card</div><div class="txt"></div><div class="handle"></div>';
+    const kind = c.type === 'page-pin' ? 'Page' : (c.src ? 'Card · From Pages' : 'Card');
+    el.innerHTML = '<div class="kind">' + kind + '</div><div class="txt"></div><div class="handle"></div>';
     el.querySelector('.txt').textContent = c.t;
+    el.dataset.group = c.group ? 'true' : 'false';
     return el;
   }
   function build() {
     board.innerHTML = '';
     CARDS.forEach((c) => { if (!removedCards.has(c.id)) board.append(cardEl(c)); });
-    board.dataset.gone = deleted.has(CURRENT) ? 'true' : 'false';
+    board.dataset.gone = view === 'plot' && deleted.has(CURRENT) ? 'true' : 'false';
+    document.querySelectorAll('.rev[data-view]').forEach((b) => { b.dataset.on = b.dataset.view === view ? 'true' : 'false'; });
     dlist.innerHTML = '';
     const ps = document.createElement('div'); ps.className = 'dsec'; ps.textContent = 'Pages'; dlist.append(ps);
     PAGES.forEach((p) => {
@@ -236,7 +261,7 @@
     BOARDS.forEach(([id, label]) => {
       if (deleted.has(id)) return;
       const r = document.createElement('div'); r.className = 'drow'; r.dataset.kind = 'board'; r.dataset.id = id;
-      if (id === CURRENT) r.dataset.current = 'true';
+      if (id === CURRENT && view === 'plot') r.dataset.current = 'true';
       r.innerHTML = '<span class="thumb board"></span><span class="dlabel">' + label + '</span>'; dlist.append(r);
     });
     document.getElementById('dhead').textContent = W().head;
@@ -255,7 +280,9 @@
   }
   function openMenu(x, y, items) {
     closeMenu();
-    items.forEach(([label, fn]) => {
+    items.forEach((it) => {
+      if (!it) { const s = document.createElement('div'); s.className = 'sep'; ctx.append(s); return; }
+      const [label, fn] = it;
       const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'menuitem'); b.textContent = label;
       b.addEventListener('click', () => { closeMenu(); fn(); });
       ctx.append(b);
@@ -264,7 +291,7 @@
     const r = ctx.getBoundingClientRect();
     ctx.style.left = Math.max(4, Math.min(x, innerWidth - r.width - 4)) + 'px';
     ctx.style.top = Math.max(4, Math.min(y, innerHeight - r.height - 4)) + 'px';
-    ctx.firstChild.focus();
+    ctx.querySelector('button').focus();
   }
   ctx.addEventListener('keydown', (e) => {
     const bs = [...ctx.querySelectorAll('button')], i = bs.indexOf(document.activeElement);
@@ -294,6 +321,30 @@
   }
   function paintSettings() { document.getElementById('sw').dataset.on = ask ? 'true' : 'false'; }
 
+  function note(text) {                          // a mock-only acknowledgement (no undo)
+    toast.textContent = text; toast.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { toast.hidden = true; }, 2500);
+  }
+  function openCardMenu(x, y, id) {
+    const c = CARDS.find((k) => k.id === id);
+    const items = [];
+    if (c.group) items.push(['Ungroup', () => {
+      const g = c.group; delete c.group;
+      undo.push(() => { c.group = g; });
+      build(); say('Ungrouped');
+    }]);
+    if (c.type === 'text' && c.src) items.push(['Edit copy', () => note('Edit copy')]);
+    if (view === 'trash' && c.type === 'page-pin') items.push(['Restore', () => {
+      removedCards.add(id);
+      undo.push(() => { removedCards.delete(id); });
+      build(); say('Restored');
+    }]);
+    if (view === 'shelf' && c.type === 'page-pin') items.push(['Pin to a Board…', () => note('Pin to a Board…')]);
+    if (items.length) items.push(null);          // separator, then Delete last
+    items.push(['Delete', () => requestDelete(() => deleteCard(id))]);
+    openMenu(x, y, items);
+  }
+
   function deleteCard(id) {
     removedCards.add(id);
     const prev = sel; if (sel === id) sel = null;
@@ -304,7 +355,7 @@
     const br = board.getBoundingClientRect();
     const id = 'n' + (nextCard++);
     const c = { id, x: Math.max(0, Math.min(x - br.left, br.width - 212)), y: Math.max(0, Math.min(y - br.top, br.height - 120)), t: '' };
-    CARDS.push(c); sel = id;
+    CARDS.push(c); sel = id; c.type = 'text';
     undo.push(() => { CARDS.splice(CARDS.indexOf(c), 1); if (sel === id) sel = null; });
     build();
   }
@@ -331,7 +382,7 @@
     if (card) {
       e.preventDefault();
       sel = card.dataset.id; paintCards();
-      openMenu(e.clientX, e.clientY, [['Delete', () => requestDelete(() => deleteCard(card.dataset.id))]]);
+      openCardMenu(e.clientX, e.clientY, card.dataset.id);
       return;
     }
     const row = e.target.closest('.drow[data-kind="board"]');
@@ -341,7 +392,7 @@
       row.dataset.menu = 'true';
       return;
     }
-    if (e.target.closest('#board') && board.dataset.gone !== 'true') {
+    if (e.target.closest('#board') && board.dataset.gone !== 'true' && view === 'plot') {
       e.preventDefault();
       sel = null; paintCards();
       const x = e.clientX, y = e.clientY;
@@ -383,9 +434,14 @@
   function reset() {
     closeMenu(); closeDialog(); toast.hidden = true;
     undo = []; deleted = new Set(); removedCards = new Set(); sel = null; ask = true; paintSettings();
-    for (let i = CARDS.length - 1; i >= 0; i--) if (CARDS[i].id[0] === 'n') CARDS.splice(i, 1);
+    const seed = JSON.parse(SEED);
+    Object.keys(seed).forEach((k) => { SETS[k].length = 0; seed[k].forEach((c) => SETS[k].push(c)); });
+    view = 'plot'; CARDS = SETS.plot;
     build();
   }
+  document.querySelectorAll('.rev[data-view]').forEach((b) => b.addEventListener('click', () => {
+    view = b.dataset.view; CARDS = SETS[view]; sel = null; closeMenu(); closeDialog(); build();
+  }));
   document.getElementById('reset').addEventListener('click', reset);
 
   const q = new URLSearchParams(location.search);
@@ -396,7 +452,12 @@
   const demo = q.get('demo');
   if (demo) setTimeout(() => {
     const mid = (el) => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
-    if (demo === 'card') { const c = board.querySelector('[data-id=c2]'); const [x, y] = mid(c); sel = 'c2'; paintCards(); openMenu(x, y, [['Delete', () => {}]]); }
+    const cardDemo = (id, v) => { if (v) { view = v; CARDS = SETS[v]; build(); } const c = board.querySelector('[data-id=' + id + ']'); const [x, y] = mid(c); sel = id; paintCards(); openCardMenu(x, y, id); };
+    if (demo === 'card') cardDemo('c5');
+    if (demo === 'copy') cardDemo('c6');
+    if (demo === 'plain') cardDemo('c2');
+    if (demo === 'shelf') cardDemo('s1', 'shelf');
+    if (demo === 'restore') cardDemo('t1', 'trash');
     if (demo === 'board') { const br = board.getBoundingClientRect(); openMenu(br.left + 300, br.top + 230, [['New Card', () => {}], ['Delete ' + W().board, () => {}]]); }
     if (demo === 'row') { const r = dlist.querySelector('.drow[data-id=b3]'); r.dataset.menu = 'true'; const [x, y] = mid(r); openMenu(x, y, [['Delete ' + W().board, () => {}]]); }
     if (demo === 'confirm' || demo === 'tick') { requestDelete(() => {}); if (demo === 'tick') document.getElementById('chk').checked = true; }
