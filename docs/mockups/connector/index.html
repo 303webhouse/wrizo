@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrizo · Connector mockup</title>
+<!--
+  docs/mockups/connector — Nick's redesign of linking cards.
+  No green tack. Select a card: outline + corner resize square (as today).
+  Double-click or right-click the square: connection mode. The square morphs to a
+  circle; a brass arm follows the pointer. Dragging over another card, or a page /
+  card / board in the side drawer, activates it and reveals its circle: open if the
+  two aren't connected, solid orange if they are. Release on a target: connect (both
+  circles fill solid, a line joins them). Esc, or release on nothing: cancel.
+  Hold the button through the drag (right-click-drag), or release near the square to
+  latch the mode and finish with a click. Seeded: Opening scene <-> Who knows what,
+  Harbor notes <-> Chapter 1. Arbor / Flux, Reset: mockup only.
+  Branch: cursor/connector.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=Rajdhani:wght@400;500;600&family=Chakra+Petch:wght@400;500&display=swap');
+
+  :root {
+    --ink-950: #110600; --ink-900: #1F1A16; --ink-800: #2A241E;
+    --ink-border: #332C25; --ink-border-strong: #453B31;
+    --text-hi: #EDE6DA; --text-mid: #B5A998; --text-low: #80766A;
+    --ink-on-paper: #2B2014; --ink-on-paper-low: #8A7C68;
+    --paper: #F3EDE1; --card-stock: #FFFDF6; --card-hairline: #D9CFB6;
+    --brass: #ff9800; --brass-press: #e88900; --accent-rest: #96a05a; --accent-door: #4F5730;
+    --desk-ground: #1F1A16;
+    --font-ui: 'Figtree', system-ui, sans-serif;
+    --font-prose: 'Crimson Pro', Georgia, serif;
+    --font-label: 'Figtree', system-ui, sans-serif;
+    --sb: color-mix(in srgb, var(--text-low) 28%, transparent);
+    --glide: .18s;
+  }
+  html[data-theme='flux'] {
+    --ink-950: #04141A; --ink-900: #091E24; --ink-800: #0C2A32;
+    --ink-border: #1D4A52; --ink-border-strong: #2A6A76;
+    --text-hi: #E3F1EC; --text-mid: #8FB4AC; --text-low: #6E958D;
+    --paper: #EDF6F3; --ink-on-paper: #0E2A30; --ink-on-paper-low: #4A7580;
+    --card-stock: #FFFFFF; --card-hairline: #BFD6D1;
+    --accent-rest: #5E837C; --accent-door: #4F5730;
+    --desk-ground: #07161B;
+    --font-ui: 'Rajdhani', system-ui, sans-serif;
+    --font-label: 'Chakra Petch', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; scrollbar-width: thin; scrollbar-color: var(--sb) transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--desk-ground); color: var(--text-hi); font-family: var(--font-ui); user-select: none; }
+  body[data-mode='true'], body[data-mode='true'] * { cursor: crosshair !important; }
+
+  .rig {
+    position: fixed; inset: 0 0 auto 0; z-index: 60;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 7px 12px; background: #000; border-bottom: 1px solid #222;
+    font-size: 11px; color: #9a9a9a;
+  }
+  .rig b { color: #d8d8d8; letter-spacing: .06em; }
+  .only { color: #6e6e6e; letter-spacing: .12em; text-transform: uppercase; font-size: 9px; border: 1px solid #333; padding: 2px 6px; }
+  .rev { height: 22px; padding: 0 8px; border: 1px solid #333; color: #c8c8c8; background: #141414; font: inherit; cursor: pointer; }
+  .rev[data-on='true'] { border-color: var(--accent-rest); color: var(--accent-rest); }
+  .hint { margin-left: auto; color: #6a6a6a; }
+
+  .room { position: absolute; inset: 42px 0 0 0; padding: 18px 28px 22px; display: flex; gap: 0; justify-content: center; }
+  .board {
+    position: relative; flex: 1 1 auto; max-width: 960px; height: 100%;
+    background: var(--paper); border: 1px solid var(--ink-border);
+    overflow: hidden; touch-action: none;
+  }
+
+  /* cards */
+  .card {
+    position: absolute; z-index: 3;
+    background: var(--card-stock); color: var(--ink-on-paper);
+    border: 1px solid var(--card-hairline);
+    padding: 10px 12px; width: 210px; height: 118px;
+  }
+  .card .kind { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-on-paper-low); margin-bottom: 6px; }
+  .card .txt { font-family: var(--font-prose); font-size: 15px; line-height: 1.4; overflow: hidden; max-height: calc(100% - 20px); }
+  .card[data-selected='true'] { outline: 1.5px solid var(--brass); outline-offset: 0; z-index: 4; }
+  .card[data-target='true'] { outline: 1.5px solid var(--brass); outline-offset: 0; z-index: 4; box-shadow: 0 6px 20px rgba(43,32,20,.18); }
+
+  /* the corner resize square — as today; morphs to a circle in connection mode */
+  .handle {
+    position: absolute; right: -7px; bottom: -7px; width: 12px; height: 12px;
+    background: var(--paper); border: 1.5px solid var(--brass);
+    display: none; cursor: nwse-resize; z-index: 6;
+    transition: border-radius var(--glide) ease, width var(--glide) ease, height var(--glide) ease, right var(--glide) ease, bottom var(--glide) ease, background-color var(--glide) ease;
+  }
+  .card[data-selected='true'] .handle { display: block; }
+  .handle.is-circle { border-radius: 50%; width: 16px; height: 16px; right: -9px; bottom: -9px; }
+  .handle.is-solid { background: var(--brass); }
+
+  /* target circle: revealed on an active target */
+  .tcircle {
+    position: absolute; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--paper); border: 1.5px solid var(--brass);
+    display: none; z-index: 6; pointer-events: none;
+  }
+  .tcircle.is-solid { background: var(--brass); }
+  .card .tcircle { right: -9px; bottom: -9px; }
+  [data-target='true'] > .tcircle, [data-flash='true'] > .tcircle { display: block; }
+  /* settled anchor dot: where a line ends */
+  .adot { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--brass); display: none; z-index: 5; pointer-events: none; }
+  .card .adot { right: -4px; bottom: -4px; }
+  [data-linked='true'] > .adot { display: block; }
+  [data-flash='true'] > .adot, [data-target='true'] > .adot { display: none; }
+
+  /* the side drawer (mock list) */
+  .drawer {
+    flex: 0 0 252px; height: 100%; background: var(--desk-ground);
+    border: 1px solid var(--ink-border); border-left: none;
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  .dhead { padding: 12px 14px 8px; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--accent-rest); border-bottom: 1px solid var(--ink-border); }
+  .dlist { flex: 1; overflow-y: auto; padding-bottom: 12px; }
+  .dsec { padding: 14px 14px 6px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-low); }
+  .drow {
+    position: relative; display: flex; align-items: center; gap: 10px;
+    height: 46px; margin: 0 8px; padding: 0 12px 0 22px; color: var(--text-mid);
+    border: 1px solid transparent; font-family: var(--font-label); font-size: 13px;
+  }
+  .drow[data-target='true'] { border-color: var(--brass); color: var(--text-hi); background: color-mix(in srgb, var(--brass) 8%, transparent); }
+  .drow .tcircle { left: -9px; top: 50%; margin-top: -8px; background: var(--desk-ground); }
+  .drow .tcircle.is-solid { background: var(--brass); }
+  .drow .adot { left: -4px; top: 50%; margin-top: -3.5px; }
+  .thumb { flex: 0 0 auto; background: var(--ink-800); border: 1px solid var(--ink-border-strong); position: relative; }
+  .thumb.page { width: 24px; height: 32px; }
+  .thumb.page::before { content: ''; position: absolute; inset: 5px 4px; background:
+      repeating-linear-gradient(to bottom, var(--text-low) 0 1px, transparent 1px 4px); opacity: .7; }
+  .thumb.card { width: 34px; height: 24px; background: var(--card-stock); border-color: var(--card-hairline); }
+  .thumb.card::before { content: ''; position: absolute; inset: 5px 5px; background:
+      repeating-linear-gradient(to bottom, var(--ink-on-paper-low) 0 1px, transparent 1px 4px); opacity: .6; }
+  .thumb.board { width: 34px; height: 24px; background: var(--paper); border-color: var(--card-hairline); }
+  .thumb.board::before, .thumb.board::after { content: ''; position: absolute; background: var(--card-stock); border: 1px solid var(--card-hairline); }
+  .thumb.board::before { left: 3px; top: 3px; width: 11px; height: 8px; }
+  .thumb.board::after { right: 3px; bottom: 3px; width: 13px; height: 9px; }
+  .dlabel { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* overlay: lines + the arm */
+  #wires { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 50; pointer-events: none; overflow: visible; }
+  #wires .line { stroke: var(--brass); stroke-width: 1.5; fill: none; stroke-linecap: round; opacity: .9; }
+  #wires .arm { stroke: var(--brass); stroke-width: 2.5; fill: none; stroke-linecap: round; }
+  #wires .tip { fill: var(--brass); }
+
+  @media (prefers-reduced-motion: reduce) { .handle { transition: none; } }
+</style>
+</head>
+<body data-mode="false">
+<header class="rig" id="rig">
+  <b>CONNECTOR</b>
+  <span class="only">mockup only</span>
+  <button class="rev" data-theme="arbor" type="button">Arbor</button>
+  <button class="rev" data-theme="flux" type="button">Flux</button>
+  <button class="rev" id="reset" type="button">Reset</button>
+  <span class="hint" id="hint">Select a card, then double-click or right-click its corner square.</span>
+</header>
+
+<div class="room">
+  <div class="board" id="board"></div>
+  <aside class="drawer" aria-label="Drawer">
+    <div class="dhead" id="dhead">Drawer</div>
+    <div class="dlist" id="dlist"></div>
+  </aside>
+</div>
+<svg id="wires" aria-hidden="true"></svg>
+
+<script>
+(function () {
+  const root = document.documentElement;
+  const board = document.getElementById('board');
+  const dlist = document.getElementById('dlist');
+  const wires = document.getElementById('wires');
+  const hint = document.getElementById('hint');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const SVGNS = 'http://www.w3.org/2000/svg';
+
+  const CARDS = [
+    { id: 'c1', x: 54,  y: 56,  k: 'Card', t: 'Opening scene. Ada reaches the harbor an hour before the ferry.' },
+    { id: 'c2', x: 410, y: 70,  k: 'Card', t: 'Harbor notes: gulls, diesel, a locked ticket booth.' },
+    { id: 'c3', x: 150, y: 270, k: 'Card', t: 'Who knows what, and when they learn it.' },
+    { id: 'c4', x: 500, y: 300, k: 'Card', t: 'Timeline: three days, one ferry, no phone.' }
+  ];
+  const SIDE = {
+    arbor: { Pages: 'Pages', Cards: 'Cards', Boards: 'Boards' },
+    flux: { Pages: 'Docs', Cards: 'Cards', Boards: 'Circuits' }
+  };
+  const DRAWER = [
+    ['Pages', 'page', [['p1', 'Chapter 1'], ['p2', 'Chapter 2'], ['p3', 'Interview notes'], ['p4', 'Untitled']]],
+    ['Cards', 'card', [['k1', 'Harbor map'], ['k2', 'Ada, age 34'], ['k3', 'Ferry schedule']]],
+    ['Boards', 'board', [['b1', 'Plot board'], ['b2', 'Characters'], ['b3', 'Research']]]
+  ];
+  const SEED = [['c1', 'c3'], ['c2', 'p1']];
+
+  let conns = new Set();
+  let sel = null;                // selected card id
+  let mode = null;               // { src, held, ox, oy, moved, px, py, target }
+  let flash = null;              // { a, b }
+  let flashTimer = 0;
+  const els = {};                // id -> element
+
+  const key = (a, b) => [a, b].sort().join('|');
+  const linked = (a, b) => conns.has(key(a, b));
+  const hasAny = (id) => { for (const k of conns) if (k.split('|').includes(id)) return true; return false; };
+
+  function ownDots(el) {
+    el.insertAdjacentHTML('beforeend', '<span class="tcircle"></span><span class="adot"></span>');
+  }
+
+  function build() {
+    board.innerHTML = '';
+    CARDS.forEach((c) => {
+      const el = document.createElement('div');
+      el.className = 'card'; el.dataset.id = c.id; el.dataset.kind = 'card';
+      el.style.left = c.x + 'px'; el.style.top = c.y + 'px';
+      el.innerHTML = '<div class="kind">' + c.k + '</div><div class="txt">' + c.t + '</div><div class="handle"></div>';
+      ownDots(el);
+      board.append(el); els[c.id] = el;
+    });
+    dlist.innerHTML = '';
+    const side = root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor';
+    DRAWER.forEach(([sec, kind, rows]) => {
+      const h = document.createElement('div'); h.className = 'dsec'; h.textContent = SIDE[side][sec]; h.dataset.sec = sec; dlist.append(h);
+      rows.forEach(([id, label]) => {
+        const r = document.createElement('div');
+        r.className = 'drow'; r.dataset.id = id; r.dataset.kind = kind;
+        r.innerHTML = '<span class="thumb ' + kind + '"></span><span class="dlabel">' + label + '</span>';
+        ownDots(r);
+        dlist.append(r); els[id] = r;
+      });
+    });
+    document.getElementById('dhead').textContent = side === 'flux' ? 'Rack' : 'Drawer';
+  }
+
+  function relabel() {
+    const side = root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor';
+    dlist.querySelectorAll('.dsec').forEach((h) => { h.textContent = SIDE[side][h.dataset.sec]; });
+    document.getElementById('dhead').textContent = side === 'flux' ? 'Rack' : 'Drawer';
+  }
+
+  /* ---- state -> DOM ---- */
+  function sync() {
+    document.body.dataset.mode = mode ? 'true' : 'false';
+    Object.keys(els).forEach((id) => {
+      const el = els[id];
+      el.dataset.linked = hasAny(id) ? 'true' : 'false';
+      el.dataset.target = mode && mode.target === id ? 'true' : 'false';
+      el.dataset.flash = flash && flash.b === id ? 'true' : 'false';
+      const tc = el.querySelector(':scope > .tcircle');
+      let solid = false;
+      if (mode && mode.target === id) solid = linked(mode.src, id);
+      if (flash && flash.b === id) solid = true;
+      tc.classList.toggle('is-solid', solid);
+    });
+    CARDS.forEach((c) => {
+      const el = els[c.id];
+      el.dataset.selected = sel === c.id ? 'true' : 'false';
+      const h = el.querySelector('.handle');
+      const inMode = mode && mode.src === c.id;
+      const inFlash = flash && flash.a === c.id;
+      h.classList.toggle('is-circle', !!(inMode || inFlash));
+      h.classList.toggle('is-solid', !!((inMode && mode.target && linked(mode.src, mode.target)) || inFlash));
+    });
+    render();
+  }
+
+  function anchorOf(id) {
+    const el = els[id]; if (!el) return null;
+    const r = el.getBoundingClientRect();
+    if (el.classList.contains('card')) return { x: r.right, y: r.bottom };
+    const lr = dlist.getBoundingClientRect();
+    if (r.top < lr.top || r.bottom > lr.bottom) return null;
+    return { x: r.left, y: r.top + r.height / 2 };
+  }
+
+  function line(a, b, cls) {
+    const l = document.createElementNS(SVGNS, 'line');
+    l.setAttribute('class', cls);
+    l.setAttribute('x1', a.x); l.setAttribute('y1', a.y); l.setAttribute('x2', b.x); l.setAttribute('y2', b.y);
+    wires.append(l);
+  }
+
+  function render() {
+    wires.innerHTML = '';
+    conns.forEach((k) => {
+      const [a, b] = k.split('|');
+      const pa = anchorOf(a), pb = anchorOf(b);
+      if (pa && pb) line(pa, pb, 'line');
+    });
+    if (mode) {
+      const from = anchorOf(mode.src);
+      let to = { x: mode.px, y: mode.py };
+      if (mode.target) { const t = anchorOf(mode.target); if (t) to = t; }
+      if (from) {
+        line(from, to, 'arm');
+        if (!mode.target) {
+          const tip = document.createElementNS(SVGNS, 'circle');
+          tip.setAttribute('class', 'tip'); tip.setAttribute('cx', to.x); tip.setAttribute('cy', to.y); tip.setAttribute('r', 3.5);
+          wires.append(tip);
+        }
+      }
+    }
+  }
+
+  /* ---- connection mode ---- */
+  function enterMode(srcId, held, e) {
+    mode = { src: srcId, held, ox: e.clientX, oy: e.clientY, moved: false, px: e.clientX, py: e.clientY, target: null };
+    clearFlash();
+    hint.textContent = 'Drag to a card or a drawer row. Release to connect. Esc cancels.';
+    sync();
+  }
+  function endMode() {
+    mode = null;
+    hint.textContent = 'Select a card, then double-click or right-click its corner square.';
+    sync();
+  }
+  function targetAt(x, y) {
+    const el = document.elementFromPoint(x, y);
+    if (!el) return null;
+    const row = el.closest('.drow'); if (row) return row.dataset.id;
+    const c = el.closest('.card'); if (c && c.dataset.id !== mode.src) return c.dataset.id;
+    return null;
+  }
+  function clearFlash() { clearTimeout(flashTimer); flash = null; }
+  function commit(tid) {
+    const src = mode.src;
+    conns.add(key(src, tid));
+    flash = { a: src, b: tid };
+    flashTimer = setTimeout(() => { flash = null; sync(); }, 1500);
+    endMode();
+  }
+
+  document.addEventListener('mousemove', (e) => {
+    if (!mode) return;
+    mode.px = e.clientX; mode.py = e.clientY;
+    if (Math.hypot(e.clientX - mode.ox, e.clientY - mode.oy) > 6) mode.moved = true;
+    const t = targetAt(e.clientX, e.clientY);
+    mode.target = t;
+    sync();
+  });
+
+  document.addEventListener('mouseup', (e) => {
+    if (!mode) return;
+    const t = targetAt(e.clientX, e.clientY);
+    if (mode.held) {
+      mode.held = false;
+      if (t) { commit(t); return; }
+      if (mode.moved) { endMode(); return; }   // released on nothing after a drag: cancel
+      return;                                    // released at the square: latch, finish with a click
+    }
+    if (t) commit(t); else endMode();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && mode) endMode();
+  });
+  document.addEventListener('contextmenu', (e) => { if (mode || e.target.closest('.handle')) e.preventDefault(); });
+
+  /* ---- selection + resize ---- */
+  document.addEventListener('mousedown', (e) => {
+    if (e.target.closest('#rig')) return;
+    if (mode) { e.preventDefault(); return; }
+    const handle = e.target.closest('.handle');
+    if (handle) {
+      const card = handle.closest('.card');
+      e.preventDefault(); e.stopPropagation();
+      if (e.button === 2 || (e.button === 0 && e.detail >= 2)) { enterMode(card.dataset.id, true, e); return; }
+      if (e.button !== 0) return;
+      const w0 = card.offsetWidth, h0 = card.offsetHeight, x0 = e.clientX, y0 = e.clientY;
+      const mv = (m) => {
+        card.style.width = Math.max(130, w0 + m.clientX - x0) + 'px';
+        card.style.height = Math.max(76, h0 + m.clientY - y0) + 'px';
+        render();
+      };
+      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
+      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+      return;
+    }
+    const card = e.target.closest('.card');
+    if (card) { sel = card.dataset.id; sync(); return; }
+    if (e.target.closest('#board')) { sel = null; sync(); }
+  }, true);
+
+  dlist.addEventListener('scroll', render);
+  window.addEventListener('resize', render);
+
+  /* ---- mockup chrome ---- */
+  function syncRig() {
+    const side = root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor';
+    document.querySelectorAll('.rev[data-theme]').forEach((b) => { b.dataset.on = b.dataset.theme === side ? 'true' : 'false'; });
+  }
+  document.querySelectorAll('.rev[data-theme]').forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.theme === 'flux') root.setAttribute('data-theme', 'flux'); else root.removeAttribute('data-theme');
+    relabel(); syncRig(); sync();
+  }));
+  function reset() {
+    clearFlash(); mode = null; sel = null;
+    conns = new Set(SEED.map(([a, b]) => key(a, b)));
+    build(); sync();
+  }
+  document.getElementById('reset').addEventListener('click', reset);
+
+  const q = new URLSearchParams(location.search);
+  if (q.get('theme') === 'flux') root.setAttribute('data-theme', 'flux');
+  reset(); syncRig();
+
+  /* ?demo=... sets a still for screenshots */
+  const demo = q.get('demo');
+  if (demo) setTimeout(() => {
+    const at = (id) => { const r = els[id].getBoundingClientRect(); return { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 }; };
+    const src = 'c1';
+    sel = src;
+    if (demo === 'select') { sync(); return; }
+    const ar = els[src].getBoundingClientRect();
+    enterMode(src, false, { clientX: ar.right, clientY: ar.bottom });
+    const tgt = { open: 'p2', linked: 'p1', card: 'c4', cardlinked: 'c3' }[demo];
+    if (demo === 'none') { mode.px = ar.right + 130; mode.py = ar.bottom + 40; sync(); return; }
+    if (demo === 'done') { commit('c4'); clearTimeout(flashTimer); return; }
+    const p = at(tgt); mode.px = p.clientX; mode.py = p.clientY; mode.target = tgt; sync();
+  }, 150);
+})();
+</script>
+</body>
+</html>
