@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrizo · Font choices mockup</title>
+<!--
+  docs/mockups/font-choices — the Tools drawer's Typeface section.
+  (a) Highlight words on the Page, pick a face: only those words change.
+  (b) Nothing highlighted: "Whole document" is the choice, and picking a face changes all the text.
+      (With a highlight you can still tap Whole document to change everything.)
+  (c) The same inside an open card ("Whole card" when nothing is highlighted).
+  Brass marks the current choice; olive marks the open tab/section. The nine faces are the live
+  roster (fontRoster.ts). Choosing is the preview — no Apply. The drawer never moves the page.
+  Arbor / Flux, Page / Card, Reset: mockup only. Branch: cursor/font-choices.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=Lora:ital,wght@0,400;0,500;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Source+Serif+4:ital,wght@0,400;0,500;1,400&family=Tinos:ital,wght@0,400;0,700;1,400&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Arimo:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Rajdhani:wght@400;500;600&family=Chakra+Petch:wght@400;500&display=swap');
+
+  :root {
+    --ink-950: #110600; --ink-900: #1F1A16; --ink-800: #2A241E;
+    --ink-border: #332C25; --ink-border-strong: #453B31;
+    --text-hi: #EDE6DA; --text-mid: #B5A998; --text-low: #80766A;
+    --ink-on-paper: #2B2014; --ink-on-paper-low: #8A7C68;
+    --paper: #F3EDE1; --card-stock: #FFFDF6; --card-hairline: #D9CFB6;
+    --brass: #ff9800; --brass-press: #e88900; --accent-rest: #96a05a;
+    --desk-ground: #1F1A16;
+    --font-ui: 'Figtree', system-ui, sans-serif;
+    --font-label: 'Figtree', system-ui, sans-serif;
+    --sb: color-mix(in srgb, var(--text-low) 28%, transparent);
+  }
+  html[data-theme='flux'] {
+    --ink-950: #04141A; --ink-900: #091E24; --ink-800: #0C2A32;
+    --ink-border: #1D4A52; --ink-border-strong: #2A6A76;
+    --text-hi: #E3F1EC; --text-mid: #8FB4AC; --text-low: #6E958D;
+    --paper: #EDF6F3; --ink-on-paper: #0E2A30; --ink-on-paper-low: #4A7580;
+    --card-stock: #FFFFFF; --card-hairline: #BFD6D1;
+    --accent-rest: #5E837C;
+    --desk-ground: #07161B;
+    --font-ui: 'Rajdhani', system-ui, sans-serif;
+    --font-label: 'Chakra Petch', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; scrollbar-width: thin; scrollbar-color: var(--sb) transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--desk-ground); color: var(--text-hi); font-family: var(--font-ui); user-select: none; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+  .rig {
+    position: fixed; inset: 0 0 auto 0; z-index: 60;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 7px 12px; background: #000; border-bottom: 1px solid #222; font-size: 11px; color: #9a9a9a;
+  }
+  .rig b { color: #d8d8d8; letter-spacing: .06em; }
+  .only { color: #6e6e6e; letter-spacing: .12em; text-transform: uppercase; font-size: 9px; border: 1px solid #333; padding: 2px 6px; }
+  .rev { height: 22px; padding: 0 8px; border: 1px solid #333; color: #c8c8c8; background: #141414; font-size: 11px; }
+  .rev[data-on='true'] { border-color: var(--accent-rest); color: var(--accent-rest); }
+  .hint { margin-left: auto; color: #6a6a6a; }
+
+  .room { position: absolute; inset: 42px 0 0 0; display: flex; padding: 18px 28px 22px 28px; gap: 0; }
+
+  /* the Tools drawer: a fixed track on the left; the page never moves for it */
+  .drawer {
+    flex: 0 0 252px; height: 100%; background: var(--desk-ground);
+    border: 1px solid var(--ink-border); border-right: none; display: flex; flex-direction: column; min-height: 0; overflow-y: auto;
+  }
+  .tabs { display: flex; border-bottom: 1px solid var(--ink-border); }
+  .tab { padding: 12px 14px 8px; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-low); border-bottom: 1px solid transparent; margin-bottom: -1px; cursor: default; }
+  .tab[data-open='true'] { color: var(--accent-rest); border-bottom-color: var(--accent-rest); }
+  .sec { border-bottom: 1px solid var(--ink-border); }
+  .shead { display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-low); }
+  .shead::after { content: ''; width: 6px; height: 6px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(-45deg); opacity: .7; }
+  .sec[data-open='true'] .shead { color: var(--accent-rest); }
+  .sec[data-open='true'] .shead::after { transform: rotate(45deg); }
+  .sbody { padding: 0 8px 10px; }
+
+  .scopes { display: flex; gap: 6px; margin: 0 6px 8px; }
+  .scope { flex: 1 1 0; padding: 6px 4px; font-family: var(--font-label); font-size: 12px; color: var(--text-mid); border: 1px solid var(--ink-border-strong); text-align: center; white-space: nowrap; }
+  .scope:hover { color: var(--text-hi); }
+  .scope[data-on='true'] { color: var(--brass); border-color: var(--brass); }
+  .scope.is-dead { color: var(--text-low); border-color: var(--ink-border); opacity: .55; cursor: default; }
+  .scope.is-dead:hover { color: var(--text-low); }
+
+  .frow { position: relative; padding: 6px 12px 6px 16px; font-size: 16px; color: var(--text-mid); cursor: pointer; line-height: 1.25; border: 1px solid transparent; }
+  .frow:hover { color: var(--text-hi); background: var(--ink-800); }
+  .frow[data-current='true'] { color: var(--brass); }
+  .frow[data-current='true']::before { content: ''; position: absolute; left: 4px; top: 8px; bottom: 8px; width: 2px; background: var(--brass); }
+
+  .stage { position: relative; flex: 1 1 auto; min-width: 0; height: 100%; background: var(--paper); border: 1px solid var(--ink-border); overflow: hidden; }
+  .scene { position: absolute; inset: 0; display: none; }
+  .scene[data-on='true'] { display: block; }
+
+  /* Page */
+  #sceneP { display: none; justify-content: center; }
+  #sceneP[data-on='true'] { display: flex; }
+  .sheet { width: min(660px, 92%); height: 100%; padding: 70px 72px; color: var(--ink-on-paper); }
+  .editable { outline: none; user-select: text; caret-color: var(--brass); line-height: 1.6; }
+  .editable::selection, .editable *::selection { background: color-mix(in srgb, var(--brass) 34%, transparent); }
+  #pageText { font-size: 24px; font-family: 'Crimson Pro', Georgia, serif; }
+
+  /* Card */
+  .bgcard { position: absolute; width: 210px; height: 118px; background: var(--card-stock); border: 1px solid var(--card-hairline); padding: 10px 12px; color: var(--ink-on-paper); opacity: .85; }
+  .bgcard i { display: block; font-style: normal; font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-on-paper-low); margin-bottom: 6px; }
+  .bgcard span { font-family: 'Crimson Pro', Georgia, serif; font-size: 15px; line-height: 1.4; }
+  .popup {
+    position: absolute; left: 50%; top: 50%; width: 460px; height: 260px; transform: translate(-50%, -50%);
+    background: var(--card-stock); color: var(--ink-on-paper); border: 1px solid var(--brass);
+    box-shadow: 0 14px 40px rgba(43,32,20,.28); padding: 16px 20px; display: flex; flex-direction: column;
+  }
+  .popup .kind { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-on-paper-low); margin-bottom: 10px; }
+  #cardText { flex: 1; font-size: 20px; font-family: 'Crimson Pro', Georgia, serif; overflow: auto; }
+</style>
+</head>
+<body>
+<header class="rig">
+  <b>FONT CHOICES</b>
+  <span class="only">mockup only</span>
+  <button class="rev" data-theme="arbor" type="button">Arbor</button>
+  <button class="rev" data-theme="flux" type="button">Flux</button>
+  <button class="rev" data-scene="page" type="button">Page</button>
+  <button class="rev" data-scene="card" type="button">Card</button>
+  <button class="rev" id="reset" type="button">Reset</button>
+  <span class="hint">Highlight words, or none, then pick a typeface.</span>
+</header>
+
+<div class="room">
+  <aside class="drawer" aria-label="Tools">
+    <div class="tabs"><span class="tab" data-open="true">Tools</span><span class="tab">Places</span></div>
+    <div class="sec" data-open="true">
+      <div class="shead">Typeface</div>
+      <div class="sbody">
+        <div class="scopes" id="scopes">
+          <button class="scope" data-scope="sel" type="button">Selection</button>
+          <button class="scope" data-scope="whole" id="wholeBtn" type="button">Whole document</button>
+        </div>
+        <div id="faces" role="listbox" aria-label="Typeface"></div>
+      </div>
+    </div>
+    <div class="sec"><div class="shead">Format</div></div>
+    <div class="sec"><div class="shead">Actions</div></div>
+    <div class="sec"><div class="shead">Templates</div></div>
+    <div class="sec"><div class="shead">Page kind</div></div>
+  </aside>
+
+  <main class="stage">
+    <section class="scene" id="sceneP" data-on="true">
+      <div class="sheet"><div class="editable" id="pageText" contenteditable="true" spellcheck="false" data-base="Crimson Pro"></div></div>
+    </section>
+    <section class="scene" id="sceneC">
+      <div class="bgcard" style="left:44px;top:46px"><i>Card</i><span>Opening scene. Ada reaches the harbor.</span></div>
+      <div class="bgcard" style="right:44px;top:92px"><i>Card</i><span>Who knows what, and when.</span></div>
+      <div class="bgcard" style="left:80px;bottom:44px"><i>Card</i><span>Timeline: three days, one ferry.</span></div>
+      <div class="popup" role="dialog" aria-label="Card">
+        <div class="kind">Card</div>
+        <div class="editable" id="cardText" contenteditable="true" spellcheck="false" data-base="Crimson Pro"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function () {
+  const root = document.documentElement;
+  const ROSTER = [
+    ['Crimson Pro', "'Crimson Pro', Georgia, serif"],
+    ['Lora', "'Lora', Georgia, serif"],
+    ['EB Garamond', "'EB Garamond', Georgia, serif"],
+    ['Source Serif 4', "'Source Serif 4', Georgia, serif"],
+    ['Times New Roman', "'Times New Roman', 'Tinos', Times, serif"],
+    ['Figtree', "'Figtree', system-ui, sans-serif"],
+    ['Atkinson Hyperlegible', "'Atkinson Hyperlegible', system-ui, sans-serif"],
+    ['Arial', "'Arial', 'Arimo', Helvetica, sans-serif"],
+    ['Courier Prime', "'Courier Prime', 'Courier New', monospace"]
+  ];
+  const stackOf = (name) => (ROSTER.find((r) => r[0] === name) || ROSTER[0])[1];
+  const TEXT = {
+    pageText: 'The ferry was late, so Ada counted gulls instead of minutes.',
+    cardText: 'The ferry was late, so Ada counted gulls instead of minutes.'
+  };
+  const surfaces = { page: document.getElementById('pageText'), card: document.getElementById('cardText') };
+  let scene = 'page';
+  let scope = 'auto';            // 'auto' follows the highlight; 'whole' was chosen by hand
+  let hadSel = false;
+
+  const facesEl = document.getElementById('faces');
+  const wholeBtn = document.getElementById('wholeBtn');
+  const selBtn = document.querySelector('.scope[data-scope="sel"]');
+  const cur = () => surfaces[scene];
+
+  function buildFaces() {
+    facesEl.innerHTML = '';
+    ROSTER.forEach(([name, stack]) => {
+      const r = document.createElement('div');
+      r.className = 'frow'; r.setAttribute('role', 'option'); r.dataset.name = name; r.style.fontFamily = stack; r.textContent = name;
+      facesEl.append(r);
+    });
+  }
+
+  function selRange() {
+    const s = getSelection();
+    if (!s.rangeCount || s.isCollapsed) return null;
+    const r = s.getRangeAt(0);
+    return cur().contains(r.commonAncestorContainer) ? r : null;
+  }
+  const effective = (node, surf) => { const sp = (node.parentElement || surf).closest('[data-face]'); return sp && surf.contains(sp) ? sp.dataset.face : surf.dataset.base; };
+  function faceOf(range) {
+    const surf = cur(), tw = document.createTreeWalker(surf, NodeFilter.SHOW_TEXT);
+    const seen = new Set();
+    for (let n = tw.nextNode(); n; n = tw.nextNode()) {
+      if (!range.intersectsNode(n) || !n.nodeValue.length) continue;
+      seen.add(effective(n, surf));
+    }
+    return seen.size === 1 ? [...seen][0] : null;           // mixed: no mark
+  }
+
+  function render() {
+    const r = selRange();
+    const whole = scope === 'whole' || !r;
+    wholeBtn.textContent = scene === 'card' ? 'Whole card' : 'Whole document';
+    selBtn.classList.toggle('is-dead', !r);
+    selBtn.dataset.on = !whole ? 'true' : 'false';
+    wholeBtn.dataset.on = whole ? 'true' : 'false';
+    const current = whole ? cur().dataset.base : (r ? faceOf(r) : null);
+    facesEl.querySelectorAll('.frow').forEach((row) => { row.dataset.current = row.dataset.name === current ? 'true' : 'false'; });
+  }
+
+  function unwrap(el) { const p = el.parentNode; while (el.firstChild) p.insertBefore(el.firstChild, el); p.removeChild(el); }
+
+  function pick(name) {
+    const surf = cur(), r = selRange();
+    const whole = scope === 'whole' || !r;
+    if (whole) {                                            // every word changes
+      surf.querySelectorAll('[data-face]').forEach(unwrap);
+      surf.normalize();
+      surf.dataset.base = name; surf.style.fontFamily = stackOf(name);
+    } else {                                                // only the highlighted words change
+      const frag = r.extractContents();
+      frag.querySelectorAll('[data-face]').forEach(unwrap);
+      const span = document.createElement('span');
+      span.dataset.face = name; span.style.fontFamily = stackOf(name);
+      span.append(frag);
+      r.insertNode(span);
+      const s = getSelection(), nr = document.createRange();
+      nr.selectNodeContents(span); s.removeAllRanges(); s.addRange(nr);   // the highlight stays
+    }
+    render();
+  }
+
+  // the drawer never steals the selection (mousedown is prevented), and choosing is the preview
+  facesEl.addEventListener('mousedown', (e) => e.preventDefault());
+  facesEl.addEventListener('click', (e) => { const row = e.target.closest('.frow'); if (row) pick(row.dataset.name); });
+  document.getElementById('scopes').addEventListener('mousedown', (e) => e.preventDefault());
+  wholeBtn.addEventListener('click', () => { scope = 'whole'; render(); });
+  selBtn.addEventListener('click', () => { if (selRange()) { scope = 'auto'; render(); } });
+
+  document.addEventListener('selectionchange', () => {
+    const has = !!selRange();
+    if (has && !hadSel) scope = 'auto';                     // a fresh highlight returns the choice to Selection
+    hadSel = has; render();
+  });
+
+  /* ---- mockup chrome ---- */
+  function setScene(s) {
+    scene = s; scope = 'auto'; getSelection().removeAllRanges();
+    document.getElementById('sceneP').dataset.on = s === 'page' ? 'true' : 'false';
+    document.getElementById('sceneC').dataset.on = s === 'card' ? 'true' : 'false';
+    document.querySelectorAll('.rev[data-scene]').forEach((b) => { b.dataset.on = b.dataset.scene === s ? 'true' : 'false'; });
+    render();
+  }
+  function syncTheme() {
+    const f = root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor';
+    document.querySelectorAll('.rev[data-theme]').forEach((b) => { b.dataset.on = b.dataset.theme === f ? 'true' : 'false'; });
+  }
+  document.querySelectorAll('.rev[data-theme]').forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.theme === 'flux') root.setAttribute('data-theme', 'flux'); else root.removeAttribute('data-theme');
+    syncTheme();
+  }));
+  document.querySelectorAll('.rev[data-scene]').forEach((b) => b.addEventListener('click', () => setScene(b.dataset.scene)));
+  function reset() {
+    Object.keys(surfaces).forEach((k) => {
+      const el = surfaces[k]; el.textContent = TEXT[el.id]; el.dataset.base = 'Crimson Pro'; el.style.fontFamily = stackOf('Crimson Pro');
+    });
+    scope = 'auto'; getSelection().removeAllRanges(); render();
+  }
+  document.getElementById('reset').addEventListener('click', reset);
+
+  const q = new URLSearchParams(location.search);
+  if (q.get('theme') === 'flux') root.setAttribute('data-theme', 'flux');
+  buildFaces(); reset(); syncTheme(); setScene(q.get('scene') === 'card' ? 'card' : 'page');
+
+  /* ?demo=... sets a still for screenshots (mockup only) */
+  const demo = q.get('demo');
+  if (demo) setTimeout(() => {
+    const surf = cur();
+    const highlight = (word) => {
+      const tn = surf.firstChild, i = tn.nodeValue.indexOf(word), r = document.createRange();
+      r.setStart(tn, i); r.setEnd(tn, i + word.length);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (demo === 'sel' || demo === 'selpicked') { highlight('counted gulls'); if (demo === 'selpicked') pick('Atkinson Hyperlegible'); }
+    if (demo === 'whole') render();
+    if (demo === 'wholepicked') pick('EB Garamond');
+    if (demo === 'selthenwhole') { highlight('counted gulls'); pick('Courier Prime'); getSelection().removeAllRanges(); }
+    render();
+  }, 200);
+})();
+</script>
+</body>
+</html>
