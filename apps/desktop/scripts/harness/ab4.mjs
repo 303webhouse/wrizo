@@ -254,7 +254,7 @@ await withHarness(async (app) => {
       // DRIVER only - the assertion after it (the membership ends) is unchanged.
       // Quoted VERBATIM below. Successor: the Delete key on the selected card (BoardEditor.tsx key handler -> removeSelected, the same snapshot("remove") path); scripts/harness/board-click-create.mjs C10/C11.
       // await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Remove')?.click()");
-      await app.key('Delete'); await sleep(200);
+      await app.evalJs("window.wrizoAskBeforeDelete.set(false)"); await app.key('Delete'); await sleep(200);
       await sleep(200);
       const boxesAfterUnpin = await app.evalJs('window.wrizoBoard ? window.wrizoBoard() : null');
       ok('S2 (PW1 successor of "unpinning removes the card from the board"): the board card\'s own Remove still ends the MEMBERSHIP outright — unchanged mechanic, new precondition. It is deliberately a different act, and a different word, from the rail\'s "Hide from the board", which ends only the display',

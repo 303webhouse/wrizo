@@ -165,6 +165,7 @@ await withHarness(async (app) => {
     for (const key of ['Delete', 'Backspace']) {
       const cx = await firstCard(app);
       await app.mouseMove(cx.left + cx.width / 2, cx.top + cx.height / 2); await app.mouseDown(cx.left + cx.width / 2, cx.top + cx.height / 2); await sleep(60); await app.mouseUp(cx.left + cx.width / 2, cx.top + cx.height / 2); await sleep(400);
+      await app.evalJs("window.wrizoAskBeforeDelete.set(false)");   // BOARD CONTEXT MENU: the Delete key asks "Send to Trash?" unless the writer turned asking off - that dialog is board-context-menu.mjs's subject, this check is about the removal
       await app.key(key); await sleep(400);
       const gone = (await cards(app)) === 0;
       const undoPresent = await app.evalJs(`!!(${undoBtn})`);
@@ -221,12 +222,15 @@ await withHarness(async (app) => {
       const stripBefore12 = await strip(app);
       const gcard = await app.evalJs("(() => { const r = document.querySelector('[data-box-id=\"gr-a\"]').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
       await app.mouseMove(gcard.x, gcard.y); await app.mouseDown(gcard.x, gcard.y); await sleep(60); await app.mouseUp(gcard.x, gcard.y); await sleep(500);
-      const geo = await app.evalJs(`(() => { const row = document.querySelector('.board-action-row'); const wrap = document.querySelector('.board-canvas-wrap'); const cv = document.querySelector('.board-canvas');
-        if (!row || !wrap) return null; const a = row.getBoundingClientRect(), w = wrap.getBoundingClientRect();
-        return { rowInsideWrap: a.left >= w.left && a.right <= w.right && a.top >= w.top && a.bottom <= w.bottom, topRight: a.right > w.left + w.width * 0.6 && a.top - w.top < 40, canvasTop: Math.round(cv.getBoundingClientRect().top * 10) / 10, label: row.textContent.trim().slice(0, 40) }; })()`);
-      const stripAfter12 = await strip(app);
-      ok('C12: with a GROUPED card selected the interim action row (Ungroup) shows, INSIDE the canvas wrapper and in its top-right corner', !!geo && geo.rowInsideWrap && geo.topRight && /Ungroup/.test(geo.label), JSON.stringify(geo));
-      ok('C12: and it never shifts the canvas (the top edge is unchanged) and adds nothing above or over the header strip', !!geo && geo.canvasTop === top0 && JSON.stringify(stripBefore12) === JSON.stringify(stripAfter12), JSON.stringify({ top0, after: geo && geo.canvasTop, added: stripAfter12.filter((x) => !stripBefore12.includes(x)) }));
+      // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15) ----
+      // The interim action row (Ungroup etc.) is DELETED - its actions are the top of the card right-click menu, and the "inside the canvas, top-right" geometry has nothing to describe. "Selecting a card adds nothing above the header strip" stays asserted by C10.
+      // Quoted VERBATIM below. Successor: scripts/harness/board-context-menu.mjs (a grouped card's menu leads with Ungroup; a right-click moves nothing).
+      // const geo = await app.evalJs(`(() => { const row = document.querySelector('.board-action-row'); const wrap = document.querySelector('.board-canvas-wrap'); const cv = document.querySelector('.board-canvas');
+      //   if (!row || !wrap) return null; const a = row.getBoundingClientRect(), w = wrap.getBoundingClientRect();
+      //   return { rowInsideWrap: a.left >= w.left && a.right <= w.right && a.top >= w.top && a.bottom <= w.bottom, topRight: a.right > w.left + w.width * 0.6 && a.top - w.top < 40, canvasTop: Math.round(cv.getBoundingClientRect().top * 10) / 10, label: row.textContent.trim().slice(0, 40) }; })()`);
+      // const stripAfter12 = await strip(app);
+      // ok('C12: with a GROUPED card selected the interim action row (Ungroup) shows, INSIDE the canvas wrapper and in its top-right corner', !!geo && geo.rowInsideWrap && geo.topRight && /Ungroup/.test(geo.label), JSON.stringify(geo));
+      // ok('C12: and it never shifts the canvas (the top edge is unchanged) and adds nothing above or over the header strip', !!geo && geo.canvasTop === top0 && JSON.stringify(stripBefore12) === JSON.stringify(stripAfter12), JSON.stringify({ top0, after: geo && geo.canvasTop, added: stripAfter12.filter((x) => !stripBefore12.includes(x)) }));
       // C13: the title
       const title = await app.evalJs(`(() => { const b = document.querySelector('.crumb-rename-btn'); if (!b) return null; const cs = getComputedStyle(b);
         const probe = document.createElement('span'); probe.className = 'crumb-here'; b.parentElement.appendChild(probe); const ps = getComputedStyle(probe);

@@ -312,7 +312,7 @@ await withHarness(async (app) => {
     // Quoted VERBATIM below. Successor: the Delete key on the selected card (BoardEditor.tsx key handler -> removeSelected, the same snapshot("remove") path); scripts/harness/board-click-create.mjs C10/C11.
     // await app.waitFor("!!document.querySelector('.board-action-row')", { label: `card selected for delete @${width}px` });
     // await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
-    await app.key('Delete'); await sleep(200);
+    await app.evalJs("window.wrizoAskBeforeDelete.set(false)"); await app.key('Delete'); await sleep(200);
     await sleep(200);
     const boxesAfterDelete = await app.evalJs('window.wrizoBoard()');
     ok(`@${width}px: a dealt card is genuinely DELETABLE — Remove takes it out with no protest, no special case`,

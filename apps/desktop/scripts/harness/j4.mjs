@@ -271,7 +271,7 @@ await withHarness(async (app) => {
   // DRIVER only - "Remove deletes the selected box" and the Undo that follows are unchanged (Delete keeps the undo snapshot).
   // Quoted VERBATIM below. Successor: the Delete key on the selected card (BoardEditor.tsx key handler -> removeSelected, the same snapshot("remove") path); scripts/harness/board-click-create.mjs C10/C11.
   // await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Remove').click()");
-  await app.key('Delete'); await sleep(200);
+  await app.evalJs("window.wrizoAskBeforeDelete.set(false)"); await app.key('Delete'); await sleep(200);
   await sleep(150);
   let currentBoxes = await app.evalJs('window.wrizoBoard()');
   ok('Remove deletes the selected box', !currentBoxes.some((b) => b.id === b2ink.id), `count=${currentBoxes.length}`);

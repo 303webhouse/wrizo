@@ -1365,7 +1365,8 @@ export function BoardEditor({ id }: { id: string }) {
   };
 
   // every way to delete a card - the menu's Delete, the Delete / Backspace key - goes through ONE gate (store/deleteGate.ts): "Send to Trash?" unless the writer has turned asking off
-  removeSelectedRef.current = () => requestDelete(removeSelected);
+  // (a system board's cards are derived, so a Delete there is the same quiet no-op as ever - it must not even ask)
+  removeSelectedRef.current = () => { if (isSystemBoard) return; requestDelete(removeSelected); };
 
   // the board itself: soft-delete (the Trash lists it; Restore brings it back), then leave it the way a Page's own delete does
   const deleteThisBoard = () => {

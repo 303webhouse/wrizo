@@ -78,6 +78,16 @@ window.__pointerSeq = function(selector, dx, dy, opts) {
   return true;
 };
 `;
+// BOARD CONTEXT MENU drivers: a trusted right-click on a card, and a pick from the one small menu (.wz-ctx)
+const rightClickAt = async (app, sel) => {
+  const r = await app.evalJs(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return null; const b = e.getBoundingClientRect(); return { x: Math.round(b.left + b.width * 0.3), y: Math.round(b.top + b.height * 0.3) }; })()`);
+  if (!r) throw new Error('rightClickAt: not found ' + sel);
+  await app.mouseMove(r.x, r.y);
+  await app.cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x: r.x, y: r.y, button: 'right', buttons: 2, clickCount: 1, pointerType: 'mouse' });
+  await app.cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x: r.x, y: r.y, button: 'right', buttons: 0, clickCount: 1, pointerType: 'mouse' });
+  await app.waitFor("!!document.querySelector('.wz-ctx')", { label: 'the context menu' });
+};
+const ctxPick = (app, label) => app.evalJs(`(() => { const b = [...document.querySelectorAll('.wz-ctx-item')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (!b) return false; b.click(); return true; })()`);
 const selectBox = (app, boxId) => app.evalJs(`window.__pointerSeq('[data-box-id="${boxId}"]', 0, 0)`);
 
 // The Journal/Trash Board's own live boxes, read via the SAME test seam
@@ -306,10 +316,17 @@ await withHarness(async (app) => {
   // to say so explicitly).
   await app.evalJs(POINTER_HELPER);
   await selectBox(app, trashCardAfterDelete.id);
-  await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'Trash card selected, action row present' });
-  const restoreBtnPresent = await app.evalJs("[...document.querySelectorAll('.board-action-row button')].some(b => b.textContent.trim() === 'Restore')");
-  ok('S4: a selected Trash card offers Restore in the action row (the FX5 action-row precedent)', restoreBtnPresent === true, String(restoreBtnPresent));
-  await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Restore').click()");
+  // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15) ----
+  // The selected-card action row is DELETED; a Trash card's Restore is the first item of its right-click menu.
+  // Quoted VERBATIM below. Successor: the right-click below (Restore, and no Delete on a deleted Page); the Restore act itself is unchanged.
+  // await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'Trash card selected, action row present' });
+  // const restoreBtnPresent = await app.evalJs("[...document.querySelectorAll('.board-action-row button')].some(b => b.textContent.trim() === 'Restore')");
+  // ok('S4: a selected Trash card offers Restore in the action row (the FX5 action-row precedent)', restoreBtnPresent === true, String(restoreBtnPresent));
+  // await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Restore').click()");
+  await rightClickAt(app, `[data-box-id="${trashCardAfterDelete.id}"]`);
+  const trashMenuLabels = await app.evalJs("[...document.querySelectorAll('.wz-ctx-item')].map((b) => b.textContent.trim())");
+  ok('S4 [context-menu successor]: a Trash card offers Restore in its right-click menu (and no Delete: a deleted Page is restored here, not purged)', trashMenuLabels.includes('Restore') && !trashMenuLabels.includes('Delete'), JSON.stringify(trashMenuLabels));
+  await ctxPick(app, 'Restore');
   await sleep(400);
 
   const restoredEntry = await app.evalJs(`JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === ${JSON.stringify(captureId)})`);
@@ -367,7 +384,7 @@ await withHarness(async (app) => {
   // Quoted VERBATIM below. Successor: the Delete key on the selected card (BoardEditor.tsx key handler -> removeSelected, the same snapshot("remove") path); scripts/harness/board-click-create.mjs C10/C11.
   // await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'a Journal card selected' });
   // await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
-  await app.key('Delete'); await sleep(200);
+  await app.evalJs("window.wrizoAskBeforeDelete.set(false)"); await app.key('Delete'); await sleep(200);
   await sleep(300);
   const boxesAfterInertDelete = await app.evalJs('window.wrizoBoard()');
   ok('S3: hand-delete (Remove) on a derived card is an INERT, quiet no-op — the exact same card set survives the click, byte-identical',
@@ -452,7 +469,7 @@ await withHarness(async (app) => {
   // Quoted VERBATIM below. Successor: the Delete key on the selected card (BoardEditor.tsx key handler -> removeSelected, the same snapshot("remove") path); scripts/harness/board-click-create.mjs C10/C11.
   // await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'user board card selected' });
   // await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
-  await app.key('Delete'); await sleep(200);
+  await app.evalJs("window.wrizoAskBeforeDelete.set(false)"); await app.key('Delete'); await sleep(200);
   await sleep(250);
   const userBoardAfterDelete = await app.evalJs('window.wrizoBoard()');
   ok('S3: hand-delete on an ORDINARY board card genuinely REMOVES it — untouched by this ticket\'s inert-delete guard (scoped to system Boards only)',
@@ -461,8 +478,13 @@ await withHarness(async (app) => {
   // A18 — a card deleted on a user Board is genuinely, fully removed; it
   // never surfaces on the Trash Board (A18 scopes to Pages, not cards).
   const trashAfterUserCardDelete = await trashBoardBoxes(app);
-  ok('S4/A18: a card removed from a user Board never appears on the Trash Board — A18 scopes to Pages only, verbatim; card/thread trash stays out of v1',
-    !pinIds(trashAfterUserCardDelete).some((id) => id === 'b1-user-card'), JSON.stringify(pinIds(trashAfterUserCardDelete)));
+  // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15) ----
+  // A deleted CARD is a tombstone now and the Trash board LISTS it (Nick/Fable, Oct 15: "Trash lists them; restore clears the flag"); A18's "card/thread trash stays out of v1" is lifted. Page deletions are untouched.
+  // Quoted VERBATIM below. Successor: the check directly below.
+  // ok('S4/A18: a card removed from a user Board never appears on the Trash Board — A18 scopes to Pages only, verbatim; card/thread trash stays out of v1',
+  //   !pinIds(trashAfterUserCardDelete).some((id) => id === 'b1-user-card'), JSON.stringify(pinIds(trashAfterUserCardDelete)));
+  ok('S4/A18 [context-menu successor]: a card deleted from a user Board DOES appear on the Trash Board now - as a trashed CARD (trashedFrom = the board and the box) beside the deleted pages',
+    trashAfterUserCardDelete.some((b) => b.kind === 'page-pin' && !!b.trashedFrom && b.trashedFrom.boxId === 'b1-user-card'), JSON.stringify(trashAfterUserCardDelete.map((b) => b.trashedFrom || b.entryId)));
 
   // ==========================================================================
   // S4 — the Trash, surfaced: reachable via the cascade's section C, at its

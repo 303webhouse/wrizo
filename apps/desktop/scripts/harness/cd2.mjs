@@ -1122,26 +1122,47 @@ if (process.env.HARNESS_PARKED === '1') {
       } else {
         await app.evalJs("[...document.querySelectorAll('.wz-cascade-thumb-menu-item')].find(b => b.textContent === 'Delete').click()");
         await sleep(200);
-        const confirmState = await app.evalJs(`({
-          confirmShown: !!document.querySelector('.wz-cascade-confirm'),
-          hasCancel: !!document.querySelector('.wz-cascade-confirm-cancel'),
-          hasDanger: !!document.querySelector('.wz-cascade-confirm-danger'),
-        })`);
-        pok('PARKED (was "T4: one plain confirm appears — destructive color lives ONLY here, never at rest (the disclosure item itself stayed --text-mid)") — PW1 S1: unchanged mechanic, re-derived on the panel\'s own board row',
-          confirmState.confirmShown && confirmState.hasCancel && confirmState.hasDanger, JSON.stringify(confirmState));
+        // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15) ----
+        // The Plan panel's board-row Delete no longer carries its own inline confirm (T4's "one plain confirm"): it asks the ONE "Send to Trash?" dialog (Cancel / Delete / Don't ask me again) like every other delete. The act - soft-delete, gone from the list and the store - is unchanged.
+        // Quoted VERBATIM below. Successor: the two poks directly below (generation 2).
+        // const confirmState = await app.evalJs(`({
+        //   confirmShown: !!document.querySelector('.wz-cascade-confirm'),
+        //   hasCancel: !!document.querySelector('.wz-cascade-confirm-cancel'),
+        //   hasDanger: !!document.querySelector('.wz-cascade-confirm-danger'),
+        // })`);
+        // pok('PARKED (was "T4: one plain confirm appears — destructive color lives ONLY here, never at rest (the disclosure item itself stayed --text-mid)") — PW1 S1: unchanged mechanic, re-derived on the panel\'s own board row',
+        //   confirmState.confirmShown && confirmState.hasCancel && confirmState.hasDanger, JSON.stringify(confirmState));
 
-        if (!confirmState.hasDanger) {
-          pok('PARKED-DRIVER: the confirm\'s danger button is present to press', false, 'absent');
-        } else {
-          await app.evalJs("document.querySelector('.wz-cascade-confirm-danger').click()");
-          await sleep(500);
-          const afterDeleteNow = await app.evalJs(`({
-            rows: [...document.querySelectorAll('.wz-cascade-boardrow-title')].map(t => t.textContent),
-            store: (JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'cd2-board-2') || {}).deletedAt || null,
-          })`);
-          pok('PARKED (was "T4/S6 DoD: Delete — one plain confirm, then gone from BOTH the open survey list AND the store (soft-deleted, deletedAt stamped)") — PW1 S1: gone from the PANEL\'s list and the store; and because the zone is ABSENT-NEVER-EMPTY (PW9), deleting the only connection removes the whole zone rather than leaving an empty one',
-            !afterDeleteNow.rows.includes('Second Board') && !!afterDeleteNow.store, JSON.stringify(afterDeleteNow));
-        }
+        // if (!confirmState.hasDanger) {
+        //   pok('PARKED-DRIVER: the confirm\'s danger button is present to press', false, 'absent');
+        // } else {
+        //   await app.evalJs("document.querySelector('.wz-cascade-confirm-danger').click()");
+        //   await sleep(500);
+        //   const afterDeleteNow = await app.evalJs(`({
+        //     rows: [...document.querySelectorAll('.wz-cascade-boardrow-title')].map(t => t.textContent),
+        //     store: (JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'cd2-board-2') || {}).deletedAt || null,
+        //   })`);
+        //   pok('PARKED (was "T4/S6 DoD: Delete — one plain confirm, then gone from BOTH the open survey list AND the store (soft-deleted, deletedAt stamped)") — PW1 S1: gone from the PANEL\'s list and the store; and because the zone is ABSENT-NEVER-EMPTY (PW9), deleting the only connection removes the whole zone rather than leaving an empty one',
+        //     !afterDeleteNow.rows.includes('Second Board') && !!afterDeleteNow.store, JSON.stringify(afterDeleteNow));
+        // }
+        const dlgState = await app.evalJs(`({
+          shown: !!document.querySelector('.wz-delete-dialog'),
+          title: document.querySelector('.wz-delete-title')?.textContent || null,
+          hasCancel: [...document.querySelectorAll('.wz-delete-btn')].some(b => b.textContent === 'Cancel'),
+          hasDelete: !!document.querySelector('.wz-delete-go'),
+          hasDontAsk: !!document.querySelector('.wz-delete-chk'),
+          inlineConfirm: !!document.querySelector('.wz-cascade-confirm'),
+        })`);
+        pok('PARKED, generation 2 [context-menu successor] (was "T4: one plain confirm appears") - the board row\'s Delete opens the ONE "Send to Trash?" dialog (Cancel / Delete / Don\'t ask me again); the inline confirm is retired',
+          dlgState.shown && dlgState.title === 'Send to Trash?' && dlgState.hasCancel && dlgState.hasDelete && dlgState.hasDontAsk && !dlgState.inlineConfirm, JSON.stringify(dlgState));
+        await app.evalJs("document.querySelector('.wz-delete-go')?.click()");
+        await sleep(500);
+        const afterDeleteNow = await app.evalJs(`({
+          rows: [...document.querySelectorAll('.wz-cascade-boardrow-title')].map(t => t.textContent),
+          store: (JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'cd2-board-2') || {}).deletedAt || null,
+        })`);
+        pok('PARKED, generation 2 [context-menu successor] (was "T4/S6 DoD: Delete - one plain confirm, then gone from BOTH the open list AND the store") - after the dialog\'s Delete the board is gone from the PANEL\'s list and soft-deleted in the store (deletedAt stamped)',
+          !afterDeleteNow.rows.includes('Second Board') && !!afterDeleteNow.store, JSON.stringify(afterDeleteNow));
       }
     }
 

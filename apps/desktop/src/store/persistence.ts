@@ -1698,7 +1698,7 @@ export function copyCardToBoard(sourceBoardId: string, boxId: string, targetBoar
   // contents are DERIVED, so a hand-placed copy there would be erased at the
   // next reconcile. One rule about what a writer may author onto, two acts.
   if (getSystemKind(target)) return null;
-  const box = (source.boxes ?? []).find(b => b.id === boxId);
+  const box = liveBoxes(source.boxes).find(b => b.id === boxId);   // a deleted (tombstoned) card cannot be copied
   if (!box) return null;
   // COPY APPLIES TO BOARD-OWNED CONTENT ONLY. A page-pin and a board-card are
   // MEMBERSHIPS, not content — "copying" one would just be a second membership,

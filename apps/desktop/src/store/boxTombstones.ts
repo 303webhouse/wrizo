@@ -74,7 +74,6 @@ export function mergeBoxLists(primary: readonly Box[] | undefined, secondary: re
 export function carryHiddenOnSave(current: readonly Box[] | undefined, incoming: readonly Box[], now: string, restored: ReadonlySet<string> = new Set()): Box[] {
   const cur = current ?? [];
   const curById = new Map(cur.map(b => [b.id, b]));
-  const incomingIds = new Set(incoming.map(b => b.id));
   const kept: Box[] = [];
   for (const b of incoming) {
     const c = curById.get(b.id);
@@ -86,6 +85,8 @@ export function carryHiddenOnSave(current: readonly Box[] | undefined, incoming:
     }
     kept.push(b);
   }
-  const stashed = stashedBoxes(cur).filter(b => !incomingIds.has(b.id));
+  // carried: everything hidden in storage that did not make it into `kept` - which includes a purge marker whose id an editor still held (dropped above, so the marker must stand in its place)
+  const keptIds = new Set(kept.map(b => b.id));
+  const stashed = stashedBoxes(cur).filter(b => !keptIds.has(b.id));
   return [...kept, ...stashed];
 }
