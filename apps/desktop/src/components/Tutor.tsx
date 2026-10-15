@@ -320,6 +320,24 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // floor it becomes natural open-w (overlay). null on Board (the --board CSS rule owns it)
   // and while docked (the docked CSS rule owns it).
   const [panelWidthPx, setPanelWidthPx] = useState(null);
+  // tutor-drawer-arrow (Nick's live bug report, confirmed by tutor-drawer-
+  // probe.mjs, ledger 57) — "anchor the grip to the drawer's board/page-
+  // facing edge, just outside the tab row, the exact mirror of the Tools
+  // drawer's arrow." Sliver's own grip never has this problem because its
+  // panel is a SIMPLE `calc(100% - 16px)` of its own anchor's width — the
+  // 16px gutter holds in every regime by construction. Tutor's panel width
+  // comes from THREE different sources (this file's own JS measure-effect
+  // above, the board CSS override, the base CSS clamp fallback), and in
+  // every one of them the panel's own near edge can land exactly on — or
+  // past — the grip's static, paper-anchored resting spot (TU2 S4's own
+  // algebra: the grip's left edge IS the paper's right edge; the writing-
+  // surface "occupy the margin" regime puts the panel's own left edge at
+  // that exact same coordinate). Rather than re-derive the gutter three
+  // times (and inevitably let them drift), this measures the PANEL's own
+  // FINAL rendered rect directly — correct regardless of which of the
+  // three regimes produced it — and overrides the grip ANCHOR's static
+  // `right` with the one value that actually clears it.
+  const [gripLeftPx, setGripLeftPx] = useState<number | null>(null);
   const [showDisclosure, setShowDisclosure] = useState(false);
   const [composerText, setComposerText] = useState('');
   const [sending, setSending] = useState(false);
@@ -527,6 +545,42 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
   }, [open, docked, pageKind]);
+
+  // tutor-drawer-arrow — the grip's own open-state position, measured from
+  // the panel's ACTUAL rendered rect (see gripLeftPx's own header comment
+  // above for why this reads the panel directly rather than re-deriving
+  // its width a fourth time). GRIP_GUTTER_PX mirrors Sliver's own literal
+  // 16px inset (`.wz-sliver-panel{ right:16px }`) — "the exact mirror of
+  // the Tools drawer's arrow." The anchor's own CSS sets `right` AND
+  // `width`; the JSX below sets `left` AND explicitly clears `right` to
+  // 'auto' (never left ambiguous to the engine's own over-constrained-box
+  // resolution, which direction-flips which edge wins) — `width` stays
+  // from the stylesheet, untouched. The grip itself sits at `left:0`
+  // WITHIN the anchor, so controlling the anchor's own `left` is what
+  // actually moves the grip; the anchor's own width/right edge are
+  // pointer-events:none clearance space nobody else reads.
+  // Depends on panelWidthPx too: a writing-surface resize can change the
+  // panel's own JS-measured width without touching open/docked/pageKind,
+  // and this must re-measure whenever that settles. Closed reverts to
+  // null, handing position back to the static paper-anchored CSS formula
+  // (TU2 S4's own algebra) exactly as before — this effect only ever
+  // overrides the OPEN position.
+  useEffect(() => {
+    if (!open) { setGripLeftPx(null); return; }
+    const GRIP_GUTTER_PX = 16;
+    const GRIP_WIDTH_PX = 16; // .wz-tutor-grip{ width:16px }
+    const measure = () => {
+      const stage = document.querySelector('.desk-frame-stage');
+      const panel = document.querySelector('.wz-tutor-panel');
+      if (!stage || !panel) { setGripLeftPx(null); return; }
+      const stageRect = stage.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
+      setGripLeftPx(Math.round(panelRect.left - GRIP_GUTTER_PX - GRIP_WIDTH_PX - stageRect.left));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [open, docked, pageKind, panelWidthPx]);
 
   // ITEM word-diet (Nick, Oct 13): REMOVE — the one-time "Before you ask"
   // modal (openDisclosureIfNeeded/acknowledgeDisclosure, below) retires
@@ -931,7 +985,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
 
   return (
     <>
-      <div className={`desk-frame-tutor-anchor desk-frame-tutor-anchor--${pageKind} wz-tutor-zone`}>
+      <div className={`desk-frame-tutor-anchor desk-frame-tutor-anchor--${pageKind} wz-tutor-zone`} style={gripLeftPx != null ? { left: `${gripLeftPx}px`, right: 'auto' } : undefined}>
         <button
           type="button"
           className="wz-tutor-grip"

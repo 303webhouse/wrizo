@@ -245,13 +245,22 @@ await withHarness(async (app) => {
       await ensureLeft(app, true);
       // the open tab's where-you-are colour is the theme's: olive (--accent-rest) in Arbor; Flux wears its own mid text colour (index.css: [data-theme='flux'] .wz-sliver[data-open='true'] .wz-sliver-grip)
       const brass = await varColour(app, '--brass'); const olive = await varColour(app, th.id === 'flux' ? '--text-mid' : '--accent-rest');
+      const accentRest = await varColour(app, '--accent-rest');
       const c = await app.evalJs(`(() => { const t = (k) => document.querySelector('#wz-sliver-tab-' + k); const cs = (e) => e ? getComputedStyle(e) : null;
         const grip = document.querySelector('.wz-sliver-grip');
         return { textTab: cs(t('text')) && { color: cs(t('text')).color, border: cs(t('text')).borderTopColor, bg: cs(t('text')).backgroundColor, on: t('text').getAttribute('data-on') },
                  inkTab: cs(t('ink')) && { color: cs(t('ink')).color, border: cs(t('ink')).borderTopColor, on: t('ink').getAttribute('data-on') },
                  gripColor: cs(grip).color, gripBorder: cs(grip).borderTopColor }; })()`);
-      ok(`L6 ${T}: the CHOSEN tab (TEXT) computes to brass and takes no fill; the unchosen one (INK) does not`,
-        c.textTab && (c.textTab.border === brass || c.textTab.color === brass) && c.textTab.bg === 'rgba(0, 0, 0, 0)' && c.inkTab && c.inkTab.border !== brass && c.inkTab.color !== brass, JSON.stringify({ brass, c }));
+      // SUPERSEDED (item tutor-drawer-mirror round 2, Nick's live bug
+      // report, confirmed by tutor-drawer-probe.mjs: the open TUTOR tab
+      // measured brass rgb(255,152,0); "make it olive now") — the chosen
+      // DrawerTabs.tsx tab (shared by both the left Sliver's TEXT|INK row
+      // and the right Tutor's TUTOR|links row — ONE component) no longer
+      // wears brass at all; quoted verbatim:
+      // ok(`L6 ${T}: the CHOSEN tab (TEXT) computes to brass and takes no fill; the unchosen one (INK) does not`,
+      //   c.textTab && (c.textTab.border === brass || c.textTab.color === brass) && c.textTab.bg === 'rgba(0, 0, 0, 0)' && c.inkTab && c.inkTab.border !== brass && c.inkTab.color !== brass, JSON.stringify({ brass, c }));
+      ok(`L6 ${T} [tutor-drawer-mirror round 2 successor]: the CHOSEN tab (TEXT) computes to olive (--accent-rest) and takes no fill - the same "where you are" signal the drawer's own grip already carries; the unchosen one (INK) does not`,
+        c.textTab && (c.textTab.border === accentRest || c.textTab.color === accentRest) && c.textTab.bg === 'rgba(0, 0, 0, 0)' && c.inkTab && c.inkTab.border !== accentRest && c.inkTab.color !== accentRest, JSON.stringify({ accentRest, c }));
       ok(`L6 ${T}: an OPEN drawer's tab wears the theme's where-you-are colour (olive in Arbor, mid text in Flux), never brass`, c.gripColor === olive && c.gripBorder === olive && c.gripColor !== brass, JSON.stringify({ olive, brass, grip: [c.gripColor, c.gripBorder] }));
     });
 
