@@ -1661,14 +1661,15 @@ a:focus-visible,
    replacing AB4's Connect-toggle-mode); the "nothing orange at rest"
    law is unchanged. */
 /* CONNECTOR-A - a line is drawn only in connection mode (or for the moment after a link): thin brass, no glow; a selected line is heavier. */
-.board-connection-line{ stroke:var(--brass); stroke-width:1; stroke-linecap:round; fill:none; opacity:.9; pointer-events:none; }
-.board-connection-line[data-selected='true']{ stroke-width:2.5; opacity:1; }
+/* Widths per the approved mockup spec (Fable, Oct 15): lines 1px, the arm 1.25px, a selected line 2px. non-scaling-stroke: the widths stay true if the board's svg is ever scaled. */
+.board-connection-line{ stroke:var(--brass); stroke-width:1; stroke-linecap:round; fill:none; opacity:.9; pointer-events:none; vector-effect:non-scaling-stroke; }
+.board-connection-line[data-selected='true']{ stroke-width:2; opacity:1; }
 .board-connection-hit{ stroke:transparent; stroke-width:10; fill:none; }
 /* FX4 S6 — the live thread-drag preview line: dashed olive, distinct from
    the solid hairline styles above so it never reads as an already-minted
    connection. Hidden by default (JS toggles display on drag start/end —
    BoardEditor.tsx's own updateThreadPreview/hideThreadPreview). */
-.board-connect-arm{ stroke:var(--brass); stroke-width:2.5; stroke-linecap:round; fill:none; pointer-events:none; }
+.board-connect-arm{ stroke:var(--brass); stroke-width:1.25; stroke-linecap:round; fill:none; pointer-events:none; vector-effect:non-scaling-stroke; }
 .board-connect-tip{ fill:var(--brass); pointer-events:none; }
 /* Thread-drag's own cursor + the origin card's own highlight — dashed
    olive, distinct from the solid brass selection outline so the two

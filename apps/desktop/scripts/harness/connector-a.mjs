@@ -165,8 +165,8 @@ await withHarness(async (app) => {
   const bc = await boxRect(app, 'ca-b'); const bMid = centre(bc);
   await glide(app, h0, bMid, 8);
   const armB = await arm(app); const bCircle2 = await circleOf(app, 'ca-b'); const hsOpen = await handleShape(app, 'ca-a');
-  ok('C5: the pointer over an OPEN (unlinked) card: the arm is drawn, snapped to THAT card\'s corner (not the pointer), 2.5px; the card\'s circle shows OPEN (paper, not brass), the tip dot is hidden, and the origin circle is open too',
-    !!armB && armB.display !== 'none' && near(armB.x2, bc.r) && near(armB.y2, bc.b) && armB.sw === '2.5px' && armB.tip === 'none' && bCircle2.display === 'block' && bCircle2.solid === 'false' && bCircle2.bg === PAPER && hsOpen.solid === 'false' && hsOpen.bg === PAPER,
+  ok('C5: the pointer over an OPEN (unlinked) card: the arm is drawn, snapped to THAT card\'s corner (not the pointer), 1.25px; the card\'s circle shows OPEN (paper, not brass), the tip dot is hidden, and the origin circle is open too',
+    !!armB && armB.display !== 'none' && near(armB.x2, bc.r) && near(armB.y2, bc.b) && armB.sw === '1.25px' && armB.tip === 'none' && bCircle2.display === 'block' && bCircle2.solid === 'false' && bCircle2.bg === PAPER && hsOpen.solid === 'false' && hsOpen.bg === PAPER,
     JSON.stringify({ armB, bc, bCircle2, hsOpen }));
   const ep = await emptyPoint(app);
   await glide(app, bMid, ep, 8);
@@ -175,7 +175,7 @@ await withHarness(async (app) => {
 
   // ============================================================ C6 over a LINKED card
   const cMid = centre(cc);
-  await glide(app, ep, cMid, 8);
+  await glide(app, ep, cMid, 8); await sleep(350);
   const armC = await arm(app); const cCircle2 = await circleOf(app, 'ca-c'); const hsSolid = await handleShape(app, 'ca-a');
   ok('C6: the pointer over a card ALREADY linked to the origin: the arm snaps to its corner, its circle is SOLID, and the origin circle goes SOLID too (solid = linked)',
     !!armC && near(armC.x2, cc.r) && near(armC.y2, cc.b) && cCircle2.display === 'block' && cCircle2.bg === BR && hsSolid.solid === 'true' && hsSolid.bg === BR, JSON.stringify({ armC, cCircle2, hsSolid }));
@@ -264,11 +264,14 @@ await withHarness(async (app) => {
   await dbl(app, h12.x, h12.y);
   const mid = { x: Math.round((a12.r + c12.r) / 2), y: Math.round((a12.b + c12.b) / 2) };
   const onTop = await app.evalJs(`(() => { const el = document.elementsFromPoint(${mid.x}, ${mid.y}).map((e) => e.className && e.className.baseVal !== undefined ? e.className.baseVal : String(e.className)); return el.slice(0, 4); })()`);
+  const cardsBeforeDelete = await app.evalJs("document.querySelectorAll('.board-box').length");
   await app.key('Delete'); await sleep(200);
-  ok('C12 (control): a Delete with NO line selected removes nothing (the link and the mode both survive)', (await conns(app)).length === 2 && (await armed(app)) === 'true', JSON.stringify(await conns(app)));
+  await app.key('Backspace'); await sleep(200);
+  ok('C12 (control): a Delete / Backspace with NO line selected removes nothing - not the link, and NOT THE CARD the mode is running from (the key belongs to the mode) - and the mode survives', (await conns(app)).length === 2 && (await armed(app)) === 'true' && (await app.evalJs("document.querySelectorAll('.board-box').length")) === cardsBeforeDelete, JSON.stringify({ conns: await conns(app), cardsBeforeDelete }));
+  ok('C3b: entering the mode selects NO line (the release at the origin circle, where this card\'s lines begin, is not a click on one) - the line is 1px, not heavy', (await app.evalJs("[...document.querySelectorAll('.board-connection-line')].every((l) => l.dataset.selected === 'false' && getComputedStyle(l).strokeWidth === '1px')")) === true, '');
   await click(app, mid.x, mid.y); await sleep(250);
   const sel = await app.evalJs("[...document.querySelectorAll('.board-connection-line')].map((l) => ({ sel: l.dataset.selected, sw: getComputedStyle(l).strokeWidth }))");
-  ok('C12: clicking a line (the midpoint, in the gap between the cards) SELECTS it - heavier (2.5px) - and the mode stays on', sel.length === 1 && sel[0].sel === 'true' && sel[0].sw === '2.5px' && (await armed(app)) === 'true', JSON.stringify({ sel, mid, onTop }));
+  ok('C12: clicking a line (the midpoint, in the gap between the cards) SELECTS it - heavier (2px) - and the mode stays on', sel.length === 1 && sel[0].sel === 'true' && sel[0].sw === '2px' && (await armed(app)) === 'true', JSON.stringify({ sel, mid, onTop }));
   await app.key('Delete'); await sleep(300);
   const post12 = await conns(app);
   ok('C12: Delete then REMOVES that connection (A-C gone; B-D stays) and the mode is still on', !linked(post12, 'ca-a', 'ca-c') && linked(post12, 'ca-b', 'ca-d') && (await armed(app)) === 'true', JSON.stringify(post12));

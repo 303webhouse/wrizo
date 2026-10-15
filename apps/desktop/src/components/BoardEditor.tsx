@@ -1645,9 +1645,17 @@ export function BoardEditor({ id }: { id: string }) {
       if (t !== connect.target) { connect.target = t; setConnectTarget(t); }
       placeArm();
     }
+    // a point on one of the mode's own circles (the origin's or a linked peer's) belongs to the CIRCLE, not to the line that ends there: the release that enters the mode lands exactly on the origin's
+    // circle, where every line of this card begins, and it must not select one (it did: the first review run found the line already heavy, and a Delete then reached the wrong thing)
+    const onModeCircle = (x: number, y: number): boolean => {
+      if (!connect) return false;
+      const c = canvas.getBoundingClientRect();
+      const ids = [connect.src, ...boxesRef.current.filter(b => b.kind === 'connection' && (b.connA === connect!.src || b.connB === connect!.src)).map(b => (b.connA === connect!.src ? b.connB : b.connA) as string)];
+      return ids.some(id => { const p = cornerOf(id); return !!p && Math.hypot(x - c.left - p.x, y - c.top - p.y) <= 14; });
+    };
     function cUp(e: PointerEvent) {
       if (!connect) return;
-      const hit = document.elementsFromPoint(e.clientX, e.clientY).find(n => (n as Element).classList?.contains('board-connection-hit')) as Element | undefined;
+      const hit = onModeCircle(e.clientX, e.clientY) ? undefined : document.elementsFromPoint(e.clientX, e.clientY).find(n => (n as Element).classList?.contains('board-connection-hit')) as Element | undefined;
       if (hit) {                                   // a click on a line selects it; Delete removes it
         connect.held = false;
         const id = hit.closest('[data-connection-id]')?.getAttribute('data-connection-id');
@@ -2112,7 +2120,8 @@ export function BoardEditor({ id }: { id: string }) {
         return;
       }
       // THE ROW IS GONE (Nick, Oct 15): the key is how a card is removed. A selected hairline takes the key first (above); typing anywhere editable never reaches this; a modified press is not a delete.
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIdRef.current && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      // CONNECTOR-A: while connection mode is on the key belongs to the mode (a selected line, handled above) - it must never delete the card the mode is running from, or that card's links with it
+      if ((e.key === 'Delete' || e.key === 'Backspace') && threadArmedFromRef.current == null && selectedIdRef.current && !e.ctrlKey && !e.metaKey && !e.altKey) {
         const ae = document.activeElement as HTMLElement | null;
         const editable = !!ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT' || ae.isContentEditable);
         if (editable) return;
