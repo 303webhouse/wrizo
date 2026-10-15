@@ -72,18 +72,18 @@
   --ink-on-card-low: var(--ink-on-paper-low);
   /* card-label-contrast (Fable: Nick kept the footers, so they must be
      readable) — .board-card-footer/.board-layer-toggle/.board-pin-badge/
-     .board-pin-excerpt painted straight from the dark-chrome text tiers
-     (--text-low/--text-mid/--accent-rest), tuned for --ink-900-family
-     surfaces, not this card's own --card-stock. Since --card-stock is
-     itself left un-themed (above), ONE value each clears the floor in
-     every theme by construction, no per-tone divergence needed (unlike
-     flux-card-ink's --ink-on-card just above, which genuinely flips
-     light/dark by theme because --ink-on-paper does). --ink-on-card-meta
-     is a darker step of --ink-on-paper-low's own warm-taupe family
-     (~5.8:1 on --card-stock); --badge-on-card reuses the pin-grab
-     gradient's own hand-darkened olive rim stop verbatim (#4F5730, below,
-     ~7.1:1) rather than inventing a second olive the pin's own sphere
-     doesn't use. */
+     .board-pin-excerpt (folded in, same ask, same rule) painted straight
+     from the dark-chrome text tiers (--text-low/--text-mid/--accent-rest),
+     tuned for --ink-900-family surfaces, not this card's own --card-stock.
+     Since --card-stock is itself left un-themed (above), ONE value each
+     clears the floor in every theme by construction, no per-tone
+     divergence needed (unlike flux-card-ink's --ink-on-card just above,
+     which genuinely flips light/dark by theme because --ink-on-paper
+     does). --ink-on-card-meta is a darker step of --ink-on-paper-low's
+     own warm-taupe family (~5.8:1 on --card-stock); --badge-on-card
+     reuses the pin-grab gradient's own hand-darkened olive rim stop
+     verbatim (#4F5730, below, ~7.1:1) rather than inventing a second
+     olive the pin's own sphere doesn't use. */
   --ink-on-card-meta: #6B5F4E;
   --badge-on-card: #4F5730;
 
@@ -1582,7 +1582,7 @@ a:focus-visible,
 .board-pin{ cursor:grab; }
 .board-pin-badge{ font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--badge-on-card); margin-bottom:2px; }
 .board-pin-title{ font-weight:600; }
-.board-pin-excerpt{ font-size:12px; color:var(--text-mid); line-height:1.4; margin-top:2px; }
+.board-pin-excerpt{ font-size:12px; color:var(--ink-on-card-meta); line-height:1.4; margin-top:2px; }
 
 /* ===== PW2 S2 — THE BOARD-CARD (item 128) ================================
    A nested board on its parent's canvas. It rides the SAME `.board-pin` box a

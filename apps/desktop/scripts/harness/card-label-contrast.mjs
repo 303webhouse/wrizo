@@ -1,15 +1,16 @@
 // CARD-LABEL-CONTRAST (Fable, fast lane, after flux-card-ink @ d4c83947) -
-// "Nick kept the footers, so they must be readable." Three selectors paint
+// "Nick kept the footers, so they must be readable." Four selectors paint
 // straight from the dark-chrome text tiers (--text-low/--text-mid/--accent-
 // rest - tuned for --ink-900-family surfaces) onto the board card's own
 // --card-stock: .board-card-footer (the connections footer), .board-pin-
-// badge (a page-pin's "Board pin"/"Board"/ported-card badge), .board-
+// badge (a page-pin's "Board pin"/"Board"/ported-card badge), .board-pin-
+// excerpt (folded in, Fable's follow-up: same ask, same rule), .board-
 // layer-toggle (the layer-order icon on an overlapping selected card). Unlike
 // flux-card-ink's --ink-on-paper (which genuinely flips light/dark by
 // theme), --card-stock is itself left un-themed - so ONE value each
 // (--ink-on-card-meta, --badge-on-card) clears the floor in every theme by
 // construction, no per-tone divergence needed. This file proves that by
-// measuring all three across plateau/light, flux/light, flux/dark alike.
+// measuring all four across plateau/light, flux/light, flux/dark alike.
 //
 // Extends flux-card-ink.mjs's own method verbatim: WCAG 2.x contrast,
 // computed against the first opaque ancestor background (bg2.mjs's
@@ -67,7 +68,10 @@ const freshBoard = async (app, theme, page) => {
   if (theme === 'flux') await app.evalJs("window.wrizoTheme.set('flux')");
   if (page === 'dark') await app.evalJs("window.wrizoThemePrefs.set({ page: 'dark' })");
   await sleep(200);
-  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'clc-pin-target', text: 'A page to pin', origin: 'loose', source: 'page', createdAt: '2026-05-01T00:00:00.000Z' })})`);
+  // multi-line text - notecardExcerpt only fills .board-pin-excerpt from a
+  // SECOND line onward (BoardEditor.tsx), so a one-line page would leave it
+  // empty and untestable.
+  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'clc-pin-target', text: 'A page to pin\nwith a second line, so the pin card has an excerpt to show.', origin: 'loose', source: 'page', createdAt: '2026-05-01T00:00:00.000Z' })})`);
   await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({
     id: 'clc-board', text: 'Label contrast board', pageType: 'board', origin: 'loose', source: 'page', createdAt: '2026-05-01T00:00:00.000Z',
     boxes: [
@@ -99,6 +103,11 @@ await withHarness(async (app) => {
     // C2 - the page-pin's own badge ("Board pin")
     const badgeC = await contrastOf(app, '[data-box-id="clc-pin"] .board-pin-badge');
     ok(`${T} C2: the pin's badge carries against its own card stock (computed ${badgeC?.ratio}:1, >= ${FLOOR})`, !!badgeC && badgeC.ratio >= FLOOR, JSON.stringify(badgeC));
+
+    // C2b - the pin's own excerpt line (folded in, Fable's follow-up: same
+    // ask, same >=4.5:1 rule)
+    const excerptC = await contrastOf(app, '[data-box-id="clc-pin"] .board-pin-excerpt');
+    ok(`${T} C2b: the pin's excerpt carries against its own card stock (computed ${excerptC?.ratio}:1, >= ${FLOOR})`, !!excerptC && excerptC.ratio >= FLOOR, JSON.stringify(excerptC));
 
     // C3 - the layer-order toggle - select the overlapping card A, wait for
     // the board's own data-overlapping attribute rather than compute the
