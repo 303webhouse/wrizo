@@ -50,7 +50,9 @@ import { applyFormat, marksAt, headingLevelAt, stripMarkdownConventions, type Fo
 import { hiddenMarkEditingFor } from '../store/hiddenMarksEditing';
 import { createTabChord, type TabAct } from '../store/tabChord';
 import { escapeFromEditor, ESC_HINT_ID } from '../store/escapeExit';
-import { BLOCK_TOKEN } from '../store/markRuns';
+import { BLOCK_TOKEN, MARK_OF, type MarkKind } from '../store/markRuns';
+// card-held-italic: the strip's button for a held mark, read off the ONE reader's own table (`**` -> bold, `*` -> italic, ...)
+const MARK_KIND: Record<string, MarkKind> = Object.fromEntries(Object.entries(MARK_OF).map(([k, m]) => [m, k as MarkKind]));
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
 import { getRegisteredUndoStack } from '../store/textUndo';
 import { proseTextToScriptDoc, isProseEmpty } from '../store/structureConvert';
@@ -376,7 +378,9 @@ function PageEditorView({ id }: { id: string }) {
       const lit = offset == null ? { bold: false, italic: false, underline: false, strike: false } : marksAt(plain, offset);
       // A held italic (an empty italic is not stored - store/draftFormat.ts) lights I while the caret is where it will be typed.
       const held = hiddenMarkEditingFor(el)?.pendingMark();
-      if (held && held.mark === '*' && offset === held.at) lit.italic = true;
+      if (held && !held.exit && held.mark === '*' && offset === held.at) lit.italic = true;
+      // card-held-italic: a style pressed OFF at its run's end is unlit while the caret waits there (the next letter will be plain)
+      if (held && held.exit && offset === held.at) { const k = MARK_KIND[held.mark]; if (k) lit[k] = false; }
       setDraftMarks(lit);
       const level = offset == null ? null : headingLevelAt(plain, offset);
       setHeadingLevel(level);
@@ -979,6 +983,13 @@ function PageEditorView({ id }: { id: string }) {
     const sel = getSelectionOffsets(el) ?? { start: textRef.current.length, end: textRef.current.length };
     const result = applyFormat(textRef.current, sel.start, sel.end, action);
     // A pending mark (an empty italic cannot be stored as `**`): nothing is written; the editor wraps the next text typed here.
+    // card-held-italic: the style pressed off at its run's end - nothing is written; the editor types what comes next outside the run
+    if (result.exitPending) {
+      hiddenMarkEditingFor(el)?.setPendingExit(result.exitPending, result.start);
+      const k = MARK_KIND[result.exitPending];
+      if (k) setDraftMarks(m => ({ ...m, [k]: false }));
+      return;
+    }
     if (result.pending) {
       hiddenMarkEditingFor(el)?.setPending(result.pending, result.start);
       // light the button now: the press moved no caret, so no selectionchange will recompute it

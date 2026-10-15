@@ -44,8 +44,10 @@ export interface HiddenMarkEditing {
   reset(): void;
   /** Hold `mark` for the next text typed at `at` (a format press whose empty pair cannot be stored - an empty italic). */
   setPending(mark: string, at: number): void;
-  /** The mark held for the next text typed, and where - so the strip can light its button while it is held. */
-  pendingMark(): { mark: string; at: number } | null;
+  /** card-held-italic: hold an EXIT from `mark` - the next text typed at `at` (directly before that run's closing mark) goes after the mark. */
+  setPendingExit(mark: string, at: number): void;
+  /** The mark held for the next text typed, and where - so the strip can light its button while it is held (or unlight it, for an exit). */
+  pendingMark(): { mark: string; at: number; exit?: boolean } | null;
   detach(): void;
 }
 
@@ -65,7 +67,9 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
   let clickPlaced = -1;
   // A mark a format press could not store as an empty pair (an empty italic is `**`, which reads as a lone bold marker): wrapped around
   // the next text typed at `at`, then forgotten. Moving the caret away forgets it too, so nothing is ever left on the page.
-  let pending: { mark: string; at: number } | null = null;
+  // An EXIT (card-held-italic) is the same hold the other way round: the writer pressed a run's style off at its very end, so the next
+  // text typed there lands after the run's closing mark instead of inside the run.
+  let pending: { mark: string; at: number; exit?: boolean } | null = null;
 
   const commit = (r: EditResult | { text: string; caret: number }, kind: EditKind) => { exit = null; host.commit(r, kind); };
 
@@ -75,7 +79,16 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
     if (!before) return null;
     const held = pending;
     pending = null;
-    if (held && before.start === before.end && before.start === held.at && after.length > before.text.length) {
+    if (held && held.exit && before.start === before.end && before.start === held.at && after.length > before.text.length) {
+      const n = after.length - before.text.length;
+      const ins = after.slice(held.at, held.at + n);
+      const ml = held.mark.length;
+      if (after.slice(0, held.at) + after.slice(held.at + n) === before.text && !ins.includes('\n') && before.text.slice(held.at, held.at + ml) === held.mark) {
+        return { text: before.text.slice(0, held.at) + held.mark + ins + before.text.slice(held.at + ml), caret: held.at + ml + n };
+      }
+      return null;
+    }
+    if (held && !held.exit && before.start === before.end && before.start === held.at && after.length > before.text.length) {
       const n = after.length - before.text.length;
       const ins = after.slice(held.at, held.at + n);
       // a space typed first cannot open a mark (the flanking rule), so the mark waits for the first non-space character
@@ -218,6 +231,7 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
     selectionChange,
     reset: () => { beforeEdit = null; exit = null; pending = null; },
     setPending: (mark: string, at: number) => { pending = { mark, at }; },
+    setPendingExit: (mark: string, at: number) => { pending = { mark, at, exit: true }; },
     pendingMark: () => pending,
     detach: () => {
       controllers.delete(el);

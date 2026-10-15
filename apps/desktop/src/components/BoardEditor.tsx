@@ -663,6 +663,8 @@ function BoardCardPopup({
     const result = applyFormat(textRef.current, sel.start, sel.end, action);
     // A pending mark (an empty italic cannot be stored as `**`): nothing is written; the editor wraps the next text typed here.
     if (result.pending) { hiddenMarkEditingFor(el)?.setPending(result.pending, result.start); return; }
+    // card-held-italic: a style pressed off at its run's end - nothing is written; what is typed next lands outside the run
+    if (result.exitPending) { hiddenMarkEditingFor(el)?.setPendingExit(result.exitPending, result.start); return; }
     // FX6 S1 — a Bold/Italic toolbar click is a genuine edit that bypasses
     // the contenteditable's own input events entirely — record its own
     // atomic step (see ForwardOnlyEditor.tsx's applyRailFormat/PageEditor.
