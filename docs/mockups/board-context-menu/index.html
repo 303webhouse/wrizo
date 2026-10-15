@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrizo · Board context menu mockup</title>
+<!--
+  docs/mockups/board-context-menu — right-click delete, fewest words.
+  1. Right-click a card body (not its corner square, which is connector mode): menu "Delete".
+     The card goes; a toast notes Ctrl+Z (and Ctrl+Z really restores it).
+  2. Right-click empty board: "New Card" and "Delete board" -> "Move this board to Trash?"
+     (Flux: circuit) -> Cancel / Delete.
+  3. A board row in the drawer: right-click gives the same "Delete board".
+  No "Remove" row anywhere. Same board look as the connector mockup (light paper).
+  Arbor / Flux, Reset: mockup only. Branch: cursor/board-context-menu.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=Rajdhani:wght@400;500;600&family=Chakra+Petch:wght@400;500&display=swap');
+
+  :root {
+    --ink-950: #110600; --ink-900: #1F1A16; --ink-800: #2A241E;
+    --ink-border: #332C25; --ink-border-strong: #453B31;
+    --text-hi: #EDE6DA; --text-mid: #B5A998; --text-low: #80766A;
+    --ink-on-paper: #2B2014; --ink-on-paper-low: #8A7C68;
+    --paper: #F3EDE1; --card-stock: #FFFDF6; --card-hairline: #D9CFB6;
+    --brass: #ff9800; --brass-press: #e88900; --accent-rest: #96a05a;
+    --desk-ground: #1F1A16;
+    --font-ui: 'Figtree', system-ui, sans-serif;
+    --font-prose: 'Crimson Pro', Georgia, serif;
+    --font-label: 'Figtree', system-ui, sans-serif;
+    --sb: color-mix(in srgb, var(--text-low) 28%, transparent);
+  }
+  html[data-theme='flux'] {
+    --ink-950: #04141A; --ink-900: #091E24; --ink-800: #0C2A32;
+    --ink-border: #1D4A52; --ink-border-strong: #2A6A76;
+    --text-hi: #E3F1EC; --text-mid: #8FB4AC; --text-low: #6E958D;
+    --paper: #EDF6F3; --ink-on-paper: #0E2A30; --ink-on-paper-low: #4A7580;
+    --card-stock: #FFFFFF; --card-hairline: #BFD6D1;
+    --accent-rest: #5E837C;
+    --desk-ground: #07161B;
+    --font-ui: 'Rajdhani', system-ui, sans-serif;
+    --font-label: 'Chakra Petch', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; scrollbar-width: thin; scrollbar-color: var(--sb) transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--desk-ground); color: var(--text-hi); font-family: var(--font-ui); user-select: none; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+  .rig {
+    position: fixed; inset: 0 0 auto 0; z-index: 60;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 7px 12px; background: #000; border-bottom: 1px solid #222;
+    font-size: 11px; color: #9a9a9a;
+  }
+  .rig b { color: #d8d8d8; letter-spacing: .06em; }
+  .only { color: #6e6e6e; letter-spacing: .12em; text-transform: uppercase; font-size: 9px; border: 1px solid #333; padding: 2px 6px; }
+  .rev { height: 22px; padding: 0 8px; border: 1px solid #333; color: #c8c8c8; background: #141414; font-size: 11px; }
+  .rev[data-on='true'] { border-color: var(--accent-rest); color: var(--accent-rest); }
+  .hint { margin-left: auto; color: #6a6a6a; }
+
+  .room { position: absolute; inset: 42px 0 0 0; padding: 18px 28px 22px; display: flex; justify-content: center; }
+  .board {
+    position: relative; flex: 1 1 auto; max-width: 960px; height: 100%;
+    background: var(--paper); border: 1px solid var(--ink-border); overflow: hidden;
+  }
+  .board[data-gone='true'] .card { display: none; }
+
+  .card {
+    position: absolute; z-index: 3; width: 210px; height: 118px;
+    background: var(--card-stock); color: var(--ink-on-paper);
+    border: 1px solid var(--card-hairline); padding: 10px 12px;
+  }
+  .card .kind { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-on-paper-low); margin-bottom: 6px; }
+  .card .txt { font-family: var(--font-prose); font-size: 15px; line-height: 1.4; overflow: hidden; max-height: calc(100% - 20px); }
+  .card[data-selected='true'] { outline: 1.5px solid var(--brass); z-index: 4; }
+  .handle { position: absolute; right: -7px; bottom: -7px; width: 12px; height: 12px; background: var(--paper); border: 1.5px solid var(--brass); display: none; cursor: nwse-resize; z-index: 6; }
+  .card[data-selected='true'] .handle { display: block; }
+
+  .drawer {
+    flex: 0 0 252px; height: 100%; background: var(--desk-ground);
+    border: 1px solid var(--ink-border); border-left: none; display: flex; flex-direction: column; min-height: 0;
+  }
+  .dhead { padding: 12px 14px 8px; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--accent-rest); border-bottom: 1px solid var(--ink-border); }
+  .dlist { flex: 1; overflow-y: auto; padding-bottom: 12px; }
+  .dsec { padding: 14px 14px 6px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-low); }
+  .drow {
+    position: relative; display: flex; align-items: center; gap: 10px; height: 46px; margin: 0 8px; padding: 0 12px 0 22px;
+    color: var(--text-mid); border: 1px solid transparent; font-family: var(--font-label); font-size: 13px;
+  }
+  .drow[data-current='true'] { color: var(--text-hi); }
+  .drow[data-current='true']::before { content: ''; position: absolute; left: 6px; top: 14px; bottom: 14px; width: 2px; background: var(--accent-rest); }
+  .drow[data-menu='true'] { border-color: var(--ink-border-strong); color: var(--text-hi); }
+  .dlabel { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .thumb { flex: 0 0 auto; background: var(--ink-800); border: 1px solid var(--ink-border-strong); position: relative; }
+  .thumb.page { width: 24px; height: 32px; }
+  .thumb.page::before { content: ''; position: absolute; inset: 5px 4px; background: repeating-linear-gradient(to bottom, var(--text-low) 0 1px, transparent 1px 4px); opacity: .7; }
+  .thumb.board { width: 34px; height: 24px; background: var(--paper); border-color: var(--card-hairline); }
+  .thumb.board::before, .thumb.board::after { content: ''; position: absolute; background: var(--card-stock); border: 1px solid var(--card-hairline); }
+  .thumb.board::before { left: 3px; top: 3px; width: 11px; height: 8px; }
+  .thumb.board::after { right: 3px; bottom: 3px; width: 13px; height: 9px; }
+
+  /* the small theme-styled menu */
+  .ctx {
+    position: fixed; z-index: 90; min-width: 150px; padding: 4px 0;
+    background: var(--desk-ground); border: 1px solid var(--ink-border-strong);
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  }
+  .ctx[hidden] { display: none; }
+  .ctx button { display: block; width: 100%; text-align: left; padding: 7px 14px; font-family: var(--font-label); font-size: 13px; color: var(--text-mid); }
+  .ctx button:hover, .ctx button:focus-visible { color: var(--text-hi); background: var(--ink-800); outline: none; }
+
+  .scrim { position: fixed; inset: 0; z-index: 95; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; }
+  .scrim[hidden] { display: none; }
+  .dialog { background: var(--desk-ground); border: 1px solid var(--ink-border-strong); padding: 20px 22px 16px; min-width: 280px; }
+  .dtitle { font-size: 15px; color: var(--text-hi); margin-bottom: 18px; font-family: var(--font-label); }
+  .dbtns { display: flex; justify-content: flex-end; gap: 8px; }
+  .dbtn { font-size: 12px; padding: 5px 14px; color: var(--text-mid); border: 1px solid var(--ink-border-strong); }
+  .dbtn:hover, .dbtn:focus-visible { color: var(--text-hi); border-color: var(--text-mid); outline: none; }
+  .dbtn.go { color: var(--brass); border-color: var(--brass); }
+  .dbtn.go:hover, .dbtn.go:focus-visible { background: color-mix(in srgb, var(--brass) 14%, transparent); color: var(--brass); }
+
+  .toast {
+    position: fixed; z-index: 85; left: 50%; bottom: 34px; transform: translateX(-50%);
+    padding: 8px 16px; background: var(--desk-ground); border: 1px solid var(--ink-border-strong);
+    color: var(--text-mid); font-family: var(--font-label); font-size: 12px; letter-spacing: .02em;
+    transition: opacity .25s ease;
+  }
+  .toast[hidden] { display: none; }
+  .toast kbd { font: inherit; color: var(--text-hi); }
+  @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+</style>
+</head>
+<body>
+<header class="rig">
+  <b>BOARD MENU</b>
+  <span class="only">mockup only</span>
+  <button class="rev" data-theme="arbor" type="button">Arbor</button>
+  <button class="rev" data-theme="flux" type="button">Flux</button>
+  <button class="rev" id="reset" type="button">Reset</button>
+  <span class="hint">Right-click a card, the board, or a board in the drawer.</span>
+</header>
+
+<div class="room">
+  <div class="board" id="board"></div>
+  <aside class="drawer" aria-label="Drawer">
+    <div class="dhead" id="dhead">Drawer</div>
+    <div class="dlist" id="dlist"></div>
+  </aside>
+</div>
+
+<div class="ctx" id="ctx" role="menu" hidden></div>
+<div class="scrim" id="scrim" hidden>
+  <div class="dialog" role="alertdialog" aria-labelledby="dlgTitle">
+    <div class="dtitle" id="dlgTitle"></div>
+    <div class="dbtns"><button class="dbtn" id="dlgNo" type="button">Cancel</button><button class="dbtn go" id="dlgYes" type="button">Delete</button></div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function () {
+  const root = document.documentElement;
+  const board = document.getElementById('board');
+  const dlist = document.getElementById('dlist');
+  const ctx = document.getElementById('ctx');
+  const scrim = document.getElementById('scrim');
+  const toast = document.getElementById('toast');
+
+  const WORDS = {
+    arbor: { board: 'board', Board: 'Board', boards: 'Boards', head: 'Drawer' },
+    flux:  { board: 'circuit', Board: 'Circuit', boards: 'Circuits', head: 'Rack' }
+  };
+  const side = () => (root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor');
+  const W = () => WORDS[side()];
+
+  const CARDS = [
+    { id: 'c1', x: 54,  y: 56,  t: 'Opening scene. Ada reaches the harbor an hour before the ferry.' },
+    { id: 'c2', x: 410, y: 70,  t: 'Harbor notes: gulls, diesel, a locked ticket booth.' },
+    { id: 'c3', x: 150, y: 270, t: 'Who knows what, and when they learn it.' },
+    { id: 'c4', x: 500, y: 300, t: 'Timeline: three days, one ferry, no phone.' }
+  ];
+  const PAGES = ['Chapter 1', 'Chapter 2', 'Interview notes', 'Untitled'];
+  const BOARDS = [['b1', 'Plot board'], ['b2', 'Characters'], ['b3', 'Research'], ['b4', 'Timeline']];
+  const CURRENT = 'b1';
+
+  let sel = null;
+  let undo = [];                 // closures, newest last
+  let deleted = new Set();       // board ids in the Trash
+  let removedCards = new Set();
+  let nextCard = 1;
+  let toastTimer = 0, menuFor = null, pending = null, lastFocus = null;
+
+  /* ---- build ---- */
+  function cardEl(c) {
+    const el = document.createElement('div');
+    el.className = 'card'; el.dataset.id = c.id;
+    el.style.left = c.x + 'px'; el.style.top = c.y + 'px';
+    el.innerHTML = '<div class="kind">Card</div><div class="txt"></div><div class="handle"></div>';
+    el.querySelector('.txt').textContent = c.t;
+    return el;
+  }
+  function build() {
+    board.innerHTML = '';
+    CARDS.forEach((c) => { if (!removedCards.has(c.id)) board.append(cardEl(c)); });
+    board.dataset.gone = deleted.has(CURRENT) ? 'true' : 'false';
+    dlist.innerHTML = '';
+    const ps = document.createElement('div'); ps.className = 'dsec'; ps.textContent = 'Pages'; dlist.append(ps);
+    PAGES.forEach((p) => {
+      const r = document.createElement('div'); r.className = 'drow'; r.dataset.kind = 'page';
+      r.innerHTML = '<span class="thumb page"></span><span class="dlabel">' + p + '</span>'; dlist.append(r);
+    });
+    const bs = document.createElement('div'); bs.className = 'dsec'; bs.textContent = W().boards; bs.id = 'secBoards'; dlist.append(bs);
+    BOARDS.forEach(([id, label]) => {
+      if (deleted.has(id)) return;
+      const r = document.createElement('div'); r.className = 'drow'; r.dataset.kind = 'board'; r.dataset.id = id;
+      if (id === CURRENT) r.dataset.current = 'true';
+      r.innerHTML = '<span class="thumb board"></span><span class="dlabel">' + label + '</span>'; dlist.append(r);
+    });
+    document.getElementById('dhead').textContent = W().head;
+    paintCards();
+  }
+  function paintCards() {
+    board.querySelectorAll('.card').forEach((c) => { c.dataset.selected = sel === c.dataset.id ? 'true' : 'false'; });
+  }
+
+  /* ---- menu ---- */
+  function closeMenu() {
+    ctx.hidden = true; ctx.innerHTML = '';
+    dlist.querySelectorAll('.drow[data-menu]').forEach((r) => r.removeAttribute('data-menu'));
+    menuFor = null;
+  }
+  function openMenu(x, y, items) {
+    closeMenu();
+    items.forEach(([label, fn]) => {
+      const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'menuitem'); b.textContent = label;
+      b.addEventListener('click', () => { closeMenu(); fn(); });
+      ctx.append(b);
+    });
+    ctx.hidden = false;
+    const r = ctx.getBoundingClientRect();
+    ctx.style.left = Math.max(4, Math.min(x, innerWidth - r.width - 4)) + 'px';
+    ctx.style.top = Math.max(4, Math.min(y, innerHeight - r.height - 4)) + 'px';
+    ctx.firstChild.focus();
+  }
+  ctx.addEventListener('keydown', (e) => {
+    const bs = [...ctx.querySelectorAll('button')], i = bs.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); bs[(i + 1) % bs.length].focus(); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); bs[(i - 1 + bs.length) % bs.length].focus(); }
+  });
+
+  /* ---- toast + undo ---- */
+  function say(text) {
+    toast.innerHTML = text + ' &nbsp;<kbd>Ctrl+Z</kbd>';
+    toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.hidden = true; }, 4500);
+  }
+  function doUndo() {
+    const fn = undo.pop(); if (!fn) return;
+    fn(); toast.hidden = true; build();
+  }
+
+  /* ---- actions ---- */
+  function deleteCard(id) {
+    removedCards.add(id);
+    const prev = sel; if (sel === id) sel = null;
+    undo.push(() => { removedCards.delete(id); sel = prev; });
+    build(); say('Card deleted');
+  }
+  function newCard(x, y) {
+    const br = board.getBoundingClientRect();
+    const id = 'n' + (nextCard++);
+    const c = { id, x: Math.max(0, Math.min(x - br.left, br.width - 212)), y: Math.max(0, Math.min(y - br.top, br.height - 120)), t: '' };
+    CARDS.push(c); sel = id;
+    undo.push(() => { CARDS.splice(CARDS.indexOf(c), 1); if (sel === id) sel = null; });
+    build();
+  }
+  function askDeleteBoard(id) {
+    pending = id;
+    document.getElementById('dlgTitle').textContent = 'Move this ' + W().board + ' to Trash?';
+    lastFocus = document.activeElement;
+    scrim.hidden = false; document.getElementById('dlgNo').focus();
+  }
+  function closeDialog() { scrim.hidden = true; pending = null; if (lastFocus && lastFocus.focus) lastFocus.blur(); }
+  document.getElementById('dlgNo').addEventListener('click', closeDialog);
+  scrim.addEventListener('mousedown', (e) => { if (e.target === scrim) closeDialog(); });
+  document.getElementById('dlgYes').addEventListener('click', () => {
+    const id = pending; closeDialog();
+    if (!id) return;
+    deleted.add(id);
+    undo.push(() => { deleted.delete(id); });
+    build(); say(W().Board + ' moved to Trash');
+  });
+
+  /* ---- right-click routing ---- */
+  document.addEventListener('contextmenu', (e) => {
+    if (e.target.closest('.rig') || !scrim.hidden) return;
+    const handle = e.target.closest('.handle');
+    if (handle) { e.preventDefault(); closeMenu(); return; }           // the corner square: connector mode, not this menu
+    const card = e.target.closest('.card');
+    if (card) {
+      e.preventDefault();
+      sel = card.dataset.id; paintCards();
+      openMenu(e.clientX, e.clientY, [['Delete', () => deleteCard(card.dataset.id)]]);
+      return;
+    }
+    const row = e.target.closest('.drow[data-kind="board"]');
+    if (row) {
+      e.preventDefault();
+      openMenu(e.clientX, e.clientY, [['Delete ' + W().board, () => askDeleteBoard(row.dataset.id)]]);
+      row.dataset.menu = 'true';
+      return;
+    }
+    if (e.target.closest('#board') && board.dataset.gone !== 'true') {
+      e.preventDefault();
+      sel = null; paintCards();
+      const x = e.clientX, y = e.clientY;
+      openMenu(x, y, [['New Card', () => newCard(x, y)], ['Delete ' + W().board, () => askDeleteBoard(CURRENT)]]);
+    }
+  });
+
+  document.addEventListener('mousedown', (e) => {
+    if (!ctx.hidden && !e.target.closest('#ctx')) closeMenu();
+    if (e.target.closest('.rig') || e.target.closest('#scrim') || e.button !== 0) return;
+    const handle = e.target.closest('.handle');
+    if (handle) {                                                      // plain resize, as today
+      const card = handle.closest('.card');
+      const w0 = card.offsetWidth, h0 = card.offsetHeight, x0 = e.clientX, y0 = e.clientY;
+      e.preventDefault();
+      const mv = (m) => { card.style.width = Math.max(130, w0 + m.clientX - x0) + 'px'; card.style.height = Math.max(76, h0 + m.clientY - y0) + 'px'; };
+      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
+      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+      return;
+    }
+    const card = e.target.closest('.card');
+    if (card) { sel = card.dataset.id; paintCards(); return; }
+    if (e.target.closest('#board')) { sel = null; paintCards(); }
+  }, true);
+  window.addEventListener('resize', () => { if (!/demo=/.test(location.search)) closeMenu(); });   // stills for screenshots keep the menu
+  dlist.addEventListener('scroll', closeMenu);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { if (!scrim.hidden) closeDialog(); else closeMenu(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && scrim.hidden) { e.preventDefault(); closeMenu(); doUndo(); }
+  });
+
+  /* ---- mockup chrome ---- */
+  function syncRig() { document.querySelectorAll('.rev[data-theme]').forEach((b) => { b.dataset.on = b.dataset.theme === side() ? 'true' : 'false'; }); }
+  document.querySelectorAll('.rev[data-theme]').forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.theme === 'flux') root.setAttribute('data-theme', 'flux'); else root.removeAttribute('data-theme');
+    closeMenu(); closeDialog(); build(); syncRig();
+  }));
+  function reset() {
+    closeMenu(); closeDialog(); toast.hidden = true;
+    undo = []; deleted = new Set(); removedCards = new Set(); sel = null;
+    for (let i = CARDS.length - 1; i >= 0; i--) if (CARDS[i].id[0] === 'n') CARDS.splice(i, 1);
+    build();
+  }
+  document.getElementById('reset').addEventListener('click', reset);
+
+  const q = new URLSearchParams(location.search);
+  if (q.get('theme') === 'flux') root.setAttribute('data-theme', 'flux');
+  reset(); syncRig();
+
+  /* ?demo=... sets a still for screenshots (mockup only) */
+  const demo = q.get('demo');
+  if (demo) setTimeout(() => {
+    const mid = (el) => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+    if (demo === 'card') { const c = board.querySelector('[data-id=c2]'); const [x, y] = mid(c); sel = 'c2'; paintCards(); openMenu(x, y, [['Delete', () => {}]]); }
+    if (demo === 'board') { const br = board.getBoundingClientRect(); openMenu(br.left + 300, br.top + 230, [['New Card', () => {}], ['Delete ' + W().board, () => {}]]); }
+    if (demo === 'row') { const r = dlist.querySelector('.drow[data-id=b3]'); r.dataset.menu = 'true'; const [x, y] = mid(r); openMenu(x, y, [['Delete ' + W().board, () => {}]]); }
+    if (demo === 'confirm') askDeleteBoard(CURRENT);
+    if (demo === 'toast') { deleteCard('c3'); clearTimeout(toastTimer); }
+    if (demo === 'trash') { deleted.add(CURRENT); build(); say(W().Board + ' moved to Trash'); clearTimeout(toastTimer); }
+  }, 150);
+})();
+</script>
+</body>
+</html>
