@@ -1,0 +1,12 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PASS  [plateau] (premise) the board is in the plateau theme  [plateau]
+PASS  [plateau] (backdrop): a click on the open backdrop hits the deck wizard's backdrop and only closes the wizard - same address, same cards  [{"opened":true,"pt":{"x":700,"y":876},"hit":"deck-wizard-backdrop","before":{"hash":"#/page/dwb-board","cards":1,"wizard":true},"after":{"hash":"#/page/dwb-board","cards":1,"wizard":false}}]
+FAIL  [plateau] (rail): a click at the centre of the rail hits the deck wizard's backdrop and only closes the wizard - same address, same cards  [{"opened":true,"pt":{"x":42,"y":502},"hit":"wz-strip","before":{"hash":"#/page/dwb-board","cards":1,"wizard":true},"after":{"hash":"#/page/dwb-board","cards":1,"wizard":true}}]
+PASS  [plateau] the wizard's own X still closes it  [{"opened2":true,"x":{"x":911,"y":194},"afterX":{"hash":"#/page/dwb-board","cards":1,"wizard":false}}]
+PASS  [flux] (premise) the board is in the flux theme  [flux]
+PASS  [flux] (backdrop): a click on the open backdrop hits the deck wizard's backdrop and only closes the wizard - same address, same cards  [{"opened":true,"pt":{"x":700,"y":876},"hit":"deck-wizard-backdrop","before":{"hash":"#/page/dwb-board","cards":1,"wizard":true},"after":{"hash":"#/page/dwb-board","cards":1,"wizard":false}}]
+FAIL  [flux] (rail): a click at the centre of the rail hits the deck wizard's backdrop and only closes the wizard - same address, same cards  [{"opened":true,"pt":{"x":42,"y":502},"hit":"wz-strip","before":{"hash":"#/page/dwb-board","cards":1,"wizard":true},"after":{"hash":"#/page/dwb-board","cards":1,"wizard":true}}]
+PASS  [flux] the wizard's own X still closes it  [{"opened2":true,"x":{"x":912,"y":193},"afterX":{"hash":"#/page/dwb-board","cards":1,"wizard":false}}]
+
+DECKWIZARD-BACKDROP VERIFY: FAIL - 2/8 failed
