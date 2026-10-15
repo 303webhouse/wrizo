@@ -11,10 +11,14 @@
   circle; a brass arm follows the pointer. Dragging over another card, or a page /
   card / board in the side drawer, activates it and reveals its circle: open if the
   two aren't connected, solid orange if they are. Release on a target: connect (both
-  circles fill solid, a line joins them). Esc, or release on nothing: cancel.
+  circles fill solid, a line flashes then goes). Esc, or release on nothing: cancel.
+  Lines are hidden by default. In connection mode only, lines run from the active card to its
+  connections on this board; never to drawer items. Releasing on an already-connected item
+  disconnects it (its circle goes open). Drag a drawer row onto the board: a copy card lands
+  there, already connected to its original.
   Hold the button through the drag (right-click-drag), or release near the square to
-  latch the mode and finish with a click. Seeded: Opening scene <-> Who knows what,
-  Harbor notes <-> Chapter 1. Arbor / Flux, Reset: mockup only.
+  latch the mode and finish with a click. Seeded: Opening scene <-> Who knows what
+  and Harbor notes, Harbor notes <-> Chapter 1 (a drawer link, never drawn). Arbor / Flux, Reset: mockup only.
   Branch: cursor/connector.
 -->
 <style>
@@ -101,11 +105,9 @@
   .tcircle.is-solid { background: var(--brass); }
   .card .tcircle { right: -9px; bottom: -9px; }
   [data-target='true'] > .tcircle, [data-flash='true'] > .tcircle { display: block; }
-  /* settled anchor dot: where a line ends */
-  .adot { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--brass); display: none; z-index: 5; pointer-events: none; }
-  .card .adot { right: -4px; bottom: -4px; }
-  [data-linked='true'] > .adot { display: block; }
-  [data-flash='true'] > .adot, [data-target='true'] > .adot { display: none; }
+  [data-peer='true'] > .tcircle { display: block; }
+  .dragghost { position: fixed; z-index: 70; pointer-events: none; display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: var(--desk-ground); border: 1px solid var(--brass); color: var(--text-hi); font-family: var(--font-label); font-size: 13px; opacity: .92; }
+  body[data-drag='true'], body[data-drag='true'] * { cursor: grabbing !important; }
 
   /* the side drawer (mock list) */
   .drawer {
@@ -124,7 +126,6 @@
   .drow[data-target='true'] { border-color: var(--brass); color: var(--text-hi); background: color-mix(in srgb, var(--brass) 8%, transparent); }
   .drow .tcircle { left: -9px; top: 50%; margin-top: -8px; background: var(--desk-ground); }
   .drow .tcircle.is-solid { background: var(--brass); }
-  .drow .adot { left: -4px; top: 50%; margin-top: -3.5px; }
   .thumb { flex: 0 0 auto; background: var(--ink-800); border: 1px solid var(--ink-border-strong); position: relative; }
   .thumb.page { width: 24px; height: 32px; }
   .thumb.page::before { content: ''; position: absolute; inset: 5px 4px; background:
@@ -173,14 +174,14 @@
   const dlist = document.getElementById('dlist');
   const wires = document.getElementById('wires');
   const hint = document.getElementById('hint');
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const SVGNS = 'http://www.w3.org/2000/svg';
+  const HINT_IDLE = 'Select a card, then double-click or right-click its corner square. Drag a drawer row onto the board to copy it.';
 
   const CARDS = [
-    { id: 'c1', x: 54,  y: 56,  k: 'Card', t: 'Opening scene. Ada reaches the harbor an hour before the ferry.' },
-    { id: 'c2', x: 410, y: 70,  k: 'Card', t: 'Harbor notes: gulls, diesel, a locked ticket booth.' },
-    { id: 'c3', x: 150, y: 270, k: 'Card', t: 'Who knows what, and when they learn it.' },
-    { id: 'c4', x: 500, y: 300, k: 'Card', t: 'Timeline: three days, one ferry, no phone.' }
+    { id: 'c1', x: 54,  y: 56,  t: 'Opening scene. Ada reaches the harbor an hour before the ferry.' },
+    { id: 'c2', x: 410, y: 70,  t: 'Harbor notes: gulls, diesel, a locked ticket booth.' },
+    { id: 'c3', x: 150, y: 270, t: 'Who knows what, and when they learn it.' },
+    { id: 'c4', x: 500, y: 300, t: 'Timeline: three days, one ferry, no phone.' }
   ];
   const SIDE = {
     arbor: { Pages: 'Pages', Cards: 'Cards', Boards: 'Boards' },
@@ -191,76 +192,87 @@
     ['Cards', 'card', [['k1', 'Harbor map'], ['k2', 'Ada, age 34'], ['k3', 'Ferry schedule']]],
     ['Boards', 'board', [['b1', 'Plot board'], ['b2', 'Characters'], ['b3', 'Research']]]
   ];
-  const SEED = [['c1', 'c3'], ['c2', 'p1']];
+  const SEED = [['c1', 'c3'], ['c1', 'c2'], ['c2', 'p1']];
 
   let conns = new Set();
+  let cards = [];                // ids of the cards on this board
+  let nextCopy = 1;
   let sel = null;                // selected card id
   let mode = null;               // { src, held, ox, oy, moved, px, py, target }
-  let flash = null;              // { a, b }
-  let flashTimer = 0;
+  let flash = null;              // { a, b, off, line }
+  let flashTimer = 0, lineTimer = 0;
   const els = {};                // id -> element
 
   const key = (a, b) => [a, b].sort().join('|');
   const linked = (a, b) => conns.has(key(a, b));
-  const hasAny = (id) => { for (const k of conns) if (k.split('|').includes(id)) return true; return false; };
+  const isCard = (id) => cards.includes(id);
+  const peersOf = (id) => [...conns].map((k) => k.split('|')).filter((p) => p.includes(id)).map((p) => (p[0] === id ? p[1] : p[0]));
 
-  function ownDots(el) {
-    el.insertAdjacentHTML('beforeend', '<span class="tcircle"></span><span class="adot"></span>');
+  function addDots(el) { el.insertAdjacentHTML('beforeend', '<span class="tcircle"></span>'); }
+
+  function makeCard(id, x, y, text) {
+    const el = document.createElement('div');
+    el.className = 'card'; el.dataset.id = id;
+    el.style.left = x + 'px'; el.style.top = y + 'px';
+    el.innerHTML = '<div class="kind">Card</div><div class="txt"></div><div class="handle"></div>';
+    el.querySelector('.txt').textContent = text;
+    addDots(el);
+    board.append(el); els[id] = el; cards.push(id);
+    return el;
   }
 
+  function side() { return root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor'; }
+
   function build() {
-    board.innerHTML = '';
-    CARDS.forEach((c) => {
-      const el = document.createElement('div');
-      el.className = 'card'; el.dataset.id = c.id; el.dataset.kind = 'card';
-      el.style.left = c.x + 'px'; el.style.top = c.y + 'px';
-      el.innerHTML = '<div class="kind">' + c.k + '</div><div class="txt">' + c.t + '</div><div class="handle"></div>';
-      ownDots(el);
-      board.append(el); els[c.id] = el;
-    });
+    board.innerHTML = ''; cards = [];
+    Object.keys(els).forEach((k) => delete els[k]);
+    CARDS.forEach((c) => makeCard(c.id, c.x, c.y, c.t));
     dlist.innerHTML = '';
-    const side = root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor';
     DRAWER.forEach(([sec, kind, rows]) => {
-      const h = document.createElement('div'); h.className = 'dsec'; h.textContent = SIDE[side][sec]; h.dataset.sec = sec; dlist.append(h);
+      const h = document.createElement('div'); h.className = 'dsec'; h.dataset.sec = sec; dlist.append(h);
       rows.forEach(([id, label]) => {
         const r = document.createElement('div');
-        r.className = 'drow'; r.dataset.id = id; r.dataset.kind = kind;
+        r.className = 'drow'; r.dataset.id = id; r.dataset.kind = kind; r.dataset.label = label;
         r.innerHTML = '<span class="thumb ' + kind + '"></span><span class="dlabel">' + label + '</span>';
-        ownDots(r);
+        addDots(r);
         dlist.append(r); els[id] = r;
       });
     });
-    document.getElementById('dhead').textContent = side === 'flux' ? 'Rack' : 'Drawer';
+    relabel();
   }
 
   function relabel() {
-    const side = root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor';
-    dlist.querySelectorAll('.dsec').forEach((h) => { h.textContent = SIDE[side][h.dataset.sec]; });
-    document.getElementById('dhead').textContent = side === 'flux' ? 'Rack' : 'Drawer';
+    dlist.querySelectorAll('.dsec').forEach((h) => { h.textContent = SIDE[side()][h.dataset.sec]; });
+    document.getElementById('dhead').textContent = side() === 'flux' ? 'Rack' : 'Drawer';
   }
 
   /* ---- state -> DOM ---- */
   function sync() {
     document.body.dataset.mode = mode ? 'true' : 'false';
+    const peers = mode ? peersOf(mode.src).filter(isCard) : [];
     Object.keys(els).forEach((id) => {
       const el = els[id];
-      el.dataset.linked = hasAny(id) ? 'true' : 'false';
-      el.dataset.target = mode && mode.target === id ? 'true' : 'false';
-      el.dataset.flash = flash && flash.b === id ? 'true' : 'false';
-      const tc = el.querySelector(':scope > .tcircle');
+      const isTarget = !!(mode && mode.target === id);
+      const isPeer = peers.includes(id);
+      const isFlashB = !!(flash && flash.b === id);
+      el.dataset.target = isTarget ? 'true' : 'false';
+      el.dataset.peer = isPeer ? 'true' : 'false';
+      el.dataset.flash = isFlashB ? 'true' : 'false';
+      // connected circles are always solid orange; open means not connected
       let solid = false;
-      if (mode && mode.target === id) solid = linked(mode.src, id);
-      if (flash && flash.b === id) solid = true;
-      tc.classList.toggle('is-solid', solid);
+      if (isTarget) solid = linked(mode.src, id);
+      if (isPeer) solid = true;
+      if (isFlashB) solid = !flash.off;
+      el.querySelector(':scope > .tcircle').classList.toggle('is-solid', solid);
     });
-    CARDS.forEach((c) => {
-      const el = els[c.id];
-      el.dataset.selected = sel === c.id ? 'true' : 'false';
+    cards.forEach((id) => {
+      const el = els[id];
+      el.dataset.selected = sel === id ? 'true' : 'false';
       const h = el.querySelector('.handle');
-      const inMode = mode && mode.src === c.id;
-      const inFlash = flash && flash.a === c.id;
-      h.classList.toggle('is-circle', !!(inMode || inFlash));
-      h.classList.toggle('is-solid', !!((inMode && mode.target && linked(mode.src, mode.target)) || inFlash));
+      const inMode = !!(mode && mode.src === id);
+      const inFlash = !!(flash && flash.a === id);
+      h.classList.toggle('is-circle', inMode || inFlash);
+      h.classList.toggle('is-solid', (inMode && !!mode.target && linked(mode.src, mode.target)) || (inFlash && !flash.off));
     });
     render();
   }
@@ -268,10 +280,7 @@
   function anchorOf(id) {
     const el = els[id]; if (!el) return null;
     const r = el.getBoundingClientRect();
-    if (el.classList.contains('card')) return { x: r.right, y: r.bottom };
-    const lr = dlist.getBoundingClientRect();
-    if (r.top < lr.top || r.bottom > lr.bottom) return null;
-    return { x: r.left, y: r.top + r.height / 2 };
+    return { x: r.right, y: r.bottom };
   }
 
   function line(a, b, cls) {
@@ -281,25 +290,24 @@
     wires.append(l);
   }
 
+  /* lines are hidden by default. Only: (1) connection mode, active card -> its on-board
+     connections; (2) a brief flash just after connecting two on-board cards.
+     Never a line to a drawer item or anything off this board. */
   function render() {
     wires.innerHTML = '';
-    conns.forEach((k) => {
-      const [a, b] = k.split('|');
-      const pa = anchorOf(a), pb = anchorOf(b);
-      if (pa && pb) line(pa, pb, 'line');
-    });
     if (mode) {
       const from = anchorOf(mode.src);
+      peersOf(mode.src).filter(isCard).forEach((id) => { line(from, anchorOf(id), 'line'); });
       let to = { x: mode.px, y: mode.py };
-      if (mode.target) { const t = anchorOf(mode.target); if (t) to = t; }
-      if (from) {
-        line(from, to, 'arm');
-        if (!mode.target) {
-          const tip = document.createElementNS(SVGNS, 'circle');
-          tip.setAttribute('class', 'tip'); tip.setAttribute('cx', to.x); tip.setAttribute('cy', to.y); tip.setAttribute('r', 3.5);
-          wires.append(tip);
-        }
+      if (mode.target) to = anchorOf(mode.target);
+      line(from, to, 'arm');
+      if (!mode.target) {
+        const tip = document.createElementNS(SVGNS, 'circle');
+        tip.setAttribute('class', 'tip'); tip.setAttribute('cx', to.x); tip.setAttribute('cy', to.y); tip.setAttribute('r', 3.5);
+        wires.append(tip);
       }
+    } else if (flash && flash.line && !flash.off && isCard(flash.a) && isCard(flash.b)) {
+      line(anchorOf(flash.a), anchorOf(flash.b), 'line');
     }
   }
 
@@ -307,14 +315,10 @@
   function enterMode(srcId, held, e) {
     mode = { src: srcId, held, ox: e.clientX, oy: e.clientY, moved: false, px: e.clientX, py: e.clientY, target: null };
     clearFlash();
-    hint.textContent = 'Drag to a card or a drawer row. Release to connect. Esc cancels.';
+    hint.textContent = 'Drag onto a card or drawer row. Release to connect; on a connected one, to disconnect. Esc cancels.';
     sync();
   }
-  function endMode() {
-    mode = null;
-    hint.textContent = 'Select a card, then double-click or right-click its corner square.';
-    sync();
-  }
+  function endMode() { mode = null; hint.textContent = HINT_IDLE; sync(); }
   function targetAt(x, y) {
     const el = document.elementFromPoint(x, y);
     if (!el) return null;
@@ -322,21 +326,28 @@
     const c = el.closest('.card'); if (c && c.dataset.id !== mode.src) return c.dataset.id;
     return null;
   }
-  function clearFlash() { clearTimeout(flashTimer); flash = null; }
-  function commit(tid) {
-    const src = mode.src;
-    conns.add(key(src, tid));
-    flash = { a: src, b: tid };
+  function clearFlash() { clearTimeout(flashTimer); clearTimeout(lineTimer); flash = null; }
+  function startFlash(f, keep) {
+    clearFlash();
+    flash = f;
+    if (keep) return;
+    lineTimer = setTimeout(() => { if (flash) { flash.line = false; render(); } }, 650);
     flashTimer = setTimeout(() => { flash = null; sync(); }, 1500);
+  }
+  function commit(tid) {
+    const src = mode.src, k = key(src, tid);
+    const off = conns.has(k);
+    if (off) conns.delete(k); else conns.add(k);
     endMode();
+    startFlash({ a: src, b: tid, off, line: true });
+    sync();
   }
 
   document.addEventListener('mousemove', (e) => {
     if (!mode) return;
     mode.px = e.clientX; mode.py = e.clientY;
     if (Math.hypot(e.clientX - mode.ox, e.clientY - mode.oy) > 6) mode.moved = true;
-    const t = targetAt(e.clientX, e.clientY);
-    mode.target = t;
+    mode.target = targetAt(e.clientX, e.clientY);
     sync();
   });
 
@@ -352,10 +363,41 @@
     if (t) commit(t); else endMode();
   });
 
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && mode) endMode();
-  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && mode) endMode(); });
   document.addEventListener('contextmenu', (e) => { if (mode || e.target.closest('.handle')) e.preventDefault(); });
+
+  /* ---- drawer row dragged onto the board: a copy card, already connected to its original ---- */
+  function dropRow(rowId, x, y) {
+    const br = board.getBoundingClientRect();
+    const px = Math.max(0, Math.min(x - br.left - 105, br.width - 212));
+    const py = Math.max(0, Math.min(y - br.top - 59, br.height - 120));
+    const id = 'n' + (nextCopy++);
+    makeCard(id, px, py, els[rowId].dataset.label);
+    conns.add(key(id, rowId));
+    sel = id;
+    startFlash({ a: id, b: rowId, off: false, line: false });
+    sync();
+  }
+  function startRowDrag(row, e) {
+    const x0 = e.clientX, y0 = e.clientY;
+    let ghost = null;
+    const mv = (m) => {
+      if (!ghost && Math.hypot(m.clientX - x0, m.clientY - y0) > 5) {
+        ghost = document.createElement('div'); ghost.className = 'dragghost';
+        ghost.innerHTML = '<span class="thumb ' + row.dataset.kind + '"></span><span>' + row.dataset.label + '</span>';
+        document.body.append(ghost); document.body.dataset.drag = 'true';
+      }
+      if (ghost) { ghost.style.left = (m.clientX + 10) + 'px'; ghost.style.top = (m.clientY - 20) + 'px'; }
+    };
+    const up = (m) => {
+      document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+      if (!ghost) return;
+      ghost.remove(); delete document.body.dataset.drag;
+      const hit = document.elementFromPoint(m.clientX, m.clientY);
+      if (hit && hit.closest('#board')) dropRow(row.dataset.id, m.clientX, m.clientY);
+    };
+    document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+  }
 
   /* ---- selection + resize ---- */
   document.addEventListener('mousedown', (e) => {
@@ -377,6 +419,8 @@
       document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
       return;
     }
+    const row = e.target.closest('.drow');
+    if (row && e.button === 0) { e.preventDefault(); startRowDrag(row, e); return; }
     const card = e.target.closest('.card');
     if (card) { sel = card.dataset.id; sync(); return; }
     if (e.target.closest('#board')) { sel = null; sync(); }
@@ -387,17 +431,16 @@
 
   /* ---- mockup chrome ---- */
   function syncRig() {
-    const side = root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor';
-    document.querySelectorAll('.rev[data-theme]').forEach((b) => { b.dataset.on = b.dataset.theme === side ? 'true' : 'false'; });
+    document.querySelectorAll('.rev[data-theme]').forEach((b) => { b.dataset.on = b.dataset.theme === side() ? 'true' : 'false'; });
   }
   document.querySelectorAll('.rev[data-theme]').forEach((b) => b.addEventListener('click', () => {
     if (b.dataset.theme === 'flux') root.setAttribute('data-theme', 'flux'); else root.removeAttribute('data-theme');
     relabel(); syncRig(); sync();
   }));
   function reset() {
-    clearFlash(); mode = null; sel = null;
+    clearFlash(); mode = null; sel = null; nextCopy = 1;
     conns = new Set(SEED.map(([a, b]) => key(a, b)));
-    build(); sync();
+    build(); hint.textContent = HINT_IDLE; sync();
   }
   document.getElementById('reset').addEventListener('click', reset);
 
@@ -405,18 +448,20 @@
   if (q.get('theme') === 'flux') root.setAttribute('data-theme', 'flux');
   reset(); syncRig();
 
-  /* ?demo=... sets a still for screenshots */
+  /* ?demo=... sets a still for screenshots (mockup only) */
   const demo = q.get('demo');
   if (demo) setTimeout(() => {
     const at = (id) => { const r = els[id].getBoundingClientRect(); return { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 }; };
     const src = 'c1';
     sel = src;
     if (demo === 'select') { sync(); return; }
+    if (demo === 'drop') { const br = board.getBoundingClientRect(); dropRow('p3', br.left + 330, br.top + 400); clearTimeout(flashTimer); clearTimeout(lineTimer); return; }
     const ar = els[src].getBoundingClientRect();
     enterMode(src, false, { clientX: ar.right, clientY: ar.bottom });
-    const tgt = { open: 'p2', linked: 'p1', card: 'c4', cardlinked: 'c3' }[demo];
     if (demo === 'none') { mode.px = ar.right + 130; mode.py = ar.bottom + 40; sync(); return; }
-    if (demo === 'done') { commit('c4'); clearTimeout(flashTimer); return; }
+    if (demo === 'done') { commit('c4'); clearTimeout(flashTimer); clearTimeout(lineTimer); return; }
+    if (demo === 'off') { commit('c3'); clearTimeout(flashTimer); clearTimeout(lineTimer); return; }
+    const tgt = { open: 'p2', linked: 'c2', card: 'c4', cardlinked: 'c3', menulinked: 'p1' }[demo];
     const p = at(tgt); mode.px = p.clientX; mode.py = p.clientY; mode.target = tgt; sync();
   }, 150);
 })();
