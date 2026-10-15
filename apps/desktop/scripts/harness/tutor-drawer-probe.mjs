@@ -1,19 +1,29 @@
 // TUTOR-DRAWER-PROBE (Fable, fast lane, after tutor-drawer-mirror @ 45693124)
-// - a READ-ONLY dump, not a verify-checks file. Bugs 1-2 ("the '-' arrow tab
-// sits inside the TUTOR tab"; "the open tab shows brass, should be olive")
-// were investigated by reading CSS and doing the anchor-position algebra by
-// hand, but that algebra never confidently matched the described symptom,
-// and this lane has no box turn to look at the live DOM directly. Rather
-// than guess a fix from a theory that already failed once this arc
-// (scrollbar-minimal's fonts.ready lead), this script just DUMPS what the
-// live page actually measures: the grip's own rect + its full parent chain
-// (so an ancestor's own position/right can be read off, not inferred), and
-// the TUTOR tab's computed colour/border plus every stylesheet rule that
-// actually matches it for those properties, in source order (so whichever
-// one wins the cascade is visible, not assumed from reading index.css cold).
+// - a READ-ONLY dump, not a verify-checks file. Bug 2 ("the open tab shows
+// brass, should be olive") is FIXED directly, in index.css/DrawerTabs.tsx -
+// this round 1's own dump confirmed it live (measured rgb(255,152,0)) and
+// Fable's own word ("make it olive now") closed it without needing a
+// second round of guessing. Bug 1 ("the '-' arrow tab sits inside the
+// TUTOR tab") is still open: the anchor-position algebra by hand never
+// confidently matched the described symptom, and this lane has no box turn
+// to look at the live DOM directly. Rather than guess a fix from a theory
+// that already failed once this arc (scrollbar-minimal's fonts.ready
+// lead), this script DUMPS what the live page actually measures: the
+// grip's own rect + its full parent chain, the glyph's own rect + the
+// stylesheet rule that governs IT specifically (walking its own ancestor
+// chain, since the glyph carries no color rule of its own - see
+// matchingRulesJs's own header below), and the TUTOR tab's computed
+// colour/border plus every matching rule at every ancestor level.
+//
+// ROUND 2 (Fable, on round 1's own output) - two bugs in the PROBE, fixed
+// here: `rectAndChainJs(...)` calls that were never passed through
+// app.evalJs(...) (so selfAndParents/glyph printed raw JS source text
+// instead of evaluating it), and matchingRulesJs scoped to the glyph alone
+// (which owns no color rule, so always reported empty - see each fix's own
+// header comment for the full account).
 //
 // No assertions, no PASS/FAIL, no exit code - prints one JSON object and
-// exits 0. Chat 1 runs it and posts the output; the fix for bugs 1-2 comes
+// exits 0. Chat 1 runs it and posts the output; the fix for bug 1 comes
 // from reading THIS, not from re-guessing the algebra a second time.
 // Run: node scripts/harness/tutor-drawer-probe.mjs   (from apps/desktop, dist-web freshly built, box turn granted)
 import { withHarness } from '../runtime-verify.mjs';
@@ -28,31 +38,56 @@ const click = async (app, p, clickCount = 1) => {
 const centerOf = (app, sel) => app.evalJs(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return null;
   const r = el.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
 
-// Every stylesheet rule that MATCHES the element and declares at least one
-// of `props` - plain document.styleSheets, not a DevTools-only API, so it
-// needs no new CDP domain this codebase has never called before. Returned
-// in document/rule order (later wins ties, same as the cascade, modulo
-// specificity - both are printed so a reader can judge which actually won).
-const matchingRulesJs = (sel, props) => `(() => {
-  const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return null;
+// ROUND 2 (Fable, Oct 15, on the first run's output) - two bugs in this
+// probe itself, not in the page it was measuring:
+//
+// (1) selfAndParents/glyph printed SOURCE TEXT. rectAndChainJs/
+//     matchingRulesJs below are plain string-builders - they return the JS
+//     EXPRESSION to evaluate, not its result. Every call site must pass that
+//     string THROUGH app.evalJs(...); four call sites in the walk further
+//     down read `await rectAndChainJs(...)` directly, which just awaits a
+//     plain string (a no-op) and stores the source text itself. Fixed by
+//     wrapping every one of them in app.evalJs(...) - the fix is at the call
+//     sites, not in these two builders, which were already correct.
+//
+// (2) EMPTY RULE LISTS for the glyph specifically. `.wz-tutor-grip-glyph`
+//     carries no CSS rule of its own at all (index.css: `.wz-tutor-grip-
+//     glyph{ font-size:13px; line-height:1; }` - no color) - its "‹" reads
+//     whatever colour it INHERITS from its parent button, which a rule-
+//     matching probe scoped to the glyph element alone can never find by
+//     definition, selector games aside. matchingRulesJs now walks the
+//     element's own ancestor chain (same depth as rectAndChainJs) and
+//     reports which rules match AT EACH LEVEL, labelled by how far up that
+//     level sits - so "the arrow" resolves to its OWN governing rule,
+//     wherever in the chain that rule actually lives.
+const matchingRulesJs = (sel, props, depth = 4) => `(() => {
+  const start = document.querySelector(${JSON.stringify(sel)}); if (!start) return null;
   const props = ${JSON.stringify(props)};
-  const hits = [];
-  for (let si = 0; si < document.styleSheets.length; si++) {
-    let rules; try { rules = document.styleSheets[si].cssRules; } catch { continue; }
-    const walk = (list) => {
-      for (const rule of list) {
-        if (rule.cssRules) { walk(rule.cssRules); continue; } // @media etc.
-        if (!rule.selectorText || !rule.style) continue;
-        let m = false; try { m = el.matches(rule.selectorText); } catch { continue; }
-        if (!m) continue;
-        const decl = props.filter((p) => rule.style.getPropertyValue(p));
-        if (decl.length) hits.push({ sheet: document.styleSheets[si].href || '(inline)', selector: rule.selectorText,
-          declares: Object.fromEntries(decl.map((p) => [p, rule.style.getPropertyValue(p)])) });
-      }
-    };
-    walk(rules);
+  const matchesAt = (el) => {
+    const hits = [];
+    for (let si = 0; si < document.styleSheets.length; si++) {
+      let rules; try { rules = document.styleSheets[si].cssRules; } catch { continue; }
+      const walk = (list) => {
+        for (const rule of list) {
+          if (rule.cssRules) { walk(rule.cssRules); continue; } // @media etc.
+          if (!rule.selectorText || !rule.style) continue;
+          let m = false; try { m = el.matches(rule.selectorText); } catch { continue; }
+          if (!m) continue;
+          const decl = props.filter((p) => rule.style.getPropertyValue(p));
+          if (decl.length) hits.push({ sheet: document.styleSheets[si].href || '(inline)', selector: rule.selectorText,
+            declares: Object.fromEntries(decl.map((p) => [p, rule.style.getPropertyValue(p)])) });
+        }
+      };
+      walk(rules);
+    }
+    return hits;
+  };
+  const byLevel = []; let node = start;
+  for (let i = 0; i < ${depth} && node; i++) {
+    byLevel.push({ level: i, tag: node.tagName.toLowerCase(), className: node.className || null, matches: matchesAt(node) });
+    node = node.parentElement;
   }
-  return hits;
+  return byLevel;
 })()`;
 
 const rectAndChainJs = (sel, depth) => `(() => {
@@ -63,7 +98,7 @@ const rectAndChainJs = (sel, depth) => `(() => {
     return {
       tag: node.tagName.toLowerCase(), id: node.id || null, className: node.className || null,
       rect: { top: Math.round(r.top), left: Math.round(r.left), right: Math.round(r.right), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) },
-      computed: { position: cs.position, top: cs.top, right: cs.right, bottom: cs.bottom, left: cs.left, zIndex: cs.zIndex, transform: cs.transform },
+      computed: { position: cs.position, top: cs.top, right: cs.right, bottom: cs.bottom, left: cs.left, zIndex: cs.zIndex, transform: cs.transform, color: cs.color },
     };
   };
   const chain = []; let node = el;
@@ -97,9 +132,6 @@ await withHarness(async (app) => {
     await freshBoard(app);
     if (theme) { await app.evalJs(`window.wrizoTheme.set('${theme}')`); await sleep(200); }
 
-    const before = await rectAndChainJs('.wz-tutor-grip', 1);
-    const dockedBefore = before ? await app.evalJs("document.querySelector('.wz-tutor-grip').getAttribute('data-docked')") : null;
-
     // open the drawer with a real click, same as the product's own gesture
     const gripPt = await centerOf(app, '.wz-tutor-grip');
     let opened = false;
@@ -112,17 +144,17 @@ await withHarness(async (app) => {
     dump[label] = {
       opened,
       grip: {
-        selfAndParents: await rectAndChainJs('.wz-tutor-grip', 6),
-        glyph: await rectAndChainJs('.wz-tutor-grip-glyph', 1),
-        matchingColorRules: await app.evalJs(matchingRulesJs('.wz-tutor-grip', ['color'])),
+        selfAndParents: await app.evalJs(rectAndChainJs('.wz-tutor-grip', 6)),
+        glyph: await app.evalJs(rectAndChainJs('.wz-tutor-grip-glyph', 1)),
+        matchingColorRulesByLevel: await app.evalJs(matchingRulesJs('.wz-tutor-grip-glyph', ['color'])),
       },
       tutorTab: {
-        selfAndParents: await rectAndChainJs('#wz-tutor-tab-tutor', 3),
+        selfAndParents: await app.evalJs(rectAndChainJs('#wz-tutor-tab-tutor', 3)),
         dataOn: await app.evalJs("document.querySelector('#wz-tutor-tab-tutor')?.getAttribute('data-on') ?? null"),
         computed: await app.evalJs(`(() => { const el = document.querySelector('#wz-tutor-tab-tutor'); if (!el) return null; const cs = getComputedStyle(el);
           return { color: cs.color, borderTopColor: cs.borderTopColor, borderBottomColor: cs.borderBottomColor, borderLeftColor: cs.borderLeftColor, borderRightColor: cs.borderRightColor,
             borderStyle: cs.borderStyle, borderWidth: cs.borderWidth, background: cs.backgroundColor }; })()`),
-        matchingRules: await app.evalJs(matchingRulesJs('#wz-tutor-tab-tutor', ['color', 'border-color', 'border-top-color', 'border-bottom-color', 'border-left-color', 'border-right-color', 'border'])),
+        matchingRulesByLevel: await app.evalJs(matchingRulesJs('#wz-tutor-tab-tutor', ['color', 'border-color', 'border-top-color', 'border-bottom-color', 'border-left-color', 'border-right-color', 'border'])),
       },
       // the reported symptom, directly: do the grip's rect and the TUTOR
       // tab's rect actually overlap on screen?

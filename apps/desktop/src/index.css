@@ -3799,15 +3799,26 @@ a:focus-visible,
    affected (the closed drawer is already inert, and an open one is reachable by Tab as before). It restarts on every open because it hangs on [data-open='true']. */
 @keyframes wz-drawer-live{ 0%, 99% { pointer-events:none; } 100% { pointer-events:auto; } }
 [data-open='true'] > .wz-drawer-slide{ animation: wz-drawer-live var(--drawer-dur) linear; }
-/* PHASE 1 (S2) - THE TAB ROW. The chosen tab wears a BRASS OUTLINE and brass text and NOTHING else - no fill (Nick, Oct 9). The drawer's
-   arrow tab is olive (where you are); this is brass (what you chose). */
+/* PHASE 1 (S2) - THE TAB ROW. ROUND 2 (tutor-drawer-mirror, Nick's live bug
+   report: "the open tab shows brass — open menu tabs are olive (Oct 9
+   ruling)"; confirmed live by scripts/harness/tutor-drawer-probe.mjs,
+   measured rgb(255,152,0) on the open TUTOR tab). The ORIGINAL Oct 9 ruling
+   quoted below drew a distinction between the drawer's own arrow tab
+   ("where you are", olive) and the chosen tab ("what you chose", brass) -
+   Nick's later Oct 9 ruling supersedes that split: choosing a tab is ALSO
+   "where you are" (which section is showing), the same state the arrow
+   already marks, so both read olive now and brass stays reserved for
+   actual action controls, the lane's own standing law.
+   SUPERSEDED (quoted verbatim): "The chosen tab wears a BRASS OUTLINE and
+   brass text and NOTHING else - no fill (Nick, Oct 9). The drawer's arrow
+   tab is olive (where you are); this is brass (what you chose)." */
 .wz-drawer-tabbar{ position:relative; padding:14px 14px 0; }
 .wz-drawer-tabs{ display:flex; gap:6px; }
 .wz-drawer-tab{ flex:1; height:26px; padding:0; background:none; border:1px solid var(--ink-border); border-radius:0;
   color:var(--text-mid); font-family:var(--font-ui); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
   cursor:pointer; transition:color .15s ease, border-color .15s ease; }
 .wz-drawer-tab:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
-.wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:none; }
+.wz-drawer-tab[data-on='true']{ color:var(--accent-rest); border-color:var(--accent-rest); background:none; }
 .wz-drawer-tab:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
 /* PHASE 1 (S3) - the "?" note beside a tab's word. The overlay shares the tab row's columns, ignores the pointer except on the "?" itself, and
    sits OUTSIDE the tablist. The note opens below the row as an overlay (it displaces nothing). */
