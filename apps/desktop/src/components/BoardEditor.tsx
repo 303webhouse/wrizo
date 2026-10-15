@@ -830,7 +830,12 @@ export function BoardEditor({ id }: { id: string }) {
   // writer's chip-click return would otherwise clobber the very
   // information that return needed, the moment its own arrival became
   // chip-visible). An ordinary Board's own behavior is untouched.
-  useWayBack({ entryId: id, participatesInWayBack: !isSystemBoard });
+  // PAGE -> PLAN -> BACK (live bug, Oct 13): a page's PLAN board sits BETWEEN the page's departure and the writer's return, exactly as the Journal Board once did (B1 above) -
+  // and an ordinary board that participates CAPTURES ON UNMOUNT, so leaving the Plan overwrote the one-slot store (which held the PAGE's scroll and caret) with the
+  // BOARD's own entry. The page then mounted, found a slot naming someone else, and restored nothing: the writer landed at the top. A board that is a page's paired
+  // Plan face takes no part in the way-back at all (the slot keeps the PAGE's own departure), decided ONCE per mount so a later unpairing cannot fire a stray capture.
+  const [participatesInWayBack] = useState(() => !isSystemBoard && !getPairedPageId(id));
+  useWayBack({ entryId: id, participatesInWayBack });
 
   // BM1 S3/S8 — the board's own mode, persisted per board (client-local, zero
   // schema, the FX9 family). A system Board is never a projection surface —
