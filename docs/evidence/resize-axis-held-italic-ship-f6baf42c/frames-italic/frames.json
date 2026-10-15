@@ -1,0 +1,18 @@
+[
+  {
+    "frame": "card-popup-held-italic",
+    "shown": "Card start\nPlain then *slanted words* and plain again",
+    "italics": [
+      "slanted words"
+    ],
+    "endsWithWant": true
+  },
+  {
+    "frame": "draft-page-held-italic",
+    "shown": "Page start\nPlain then *slanted words* and plain again",
+    "italics": [
+      "slanted words"
+    ],
+    "endsWithWant": true
+  }
+]
