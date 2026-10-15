@@ -1,0 +1,28 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=20667af6 bundle=index-GtIKxtJl.js/668215b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/fci-default
+[01/19] OK        exit=0   18s arrival-signin-walk.mjs :: ARRIVAL-SIGNIN-WALK VERIFY: PASS (15 checks)
+[02/19] OK        exit=0   20s b3.mjs :: B3 VERIFY: PASS (63 checks)
+[03/19] FAIL      exit=1   35s bg1.mjs :: BG1 VERIFY: FAIL — 1/35 failed
+[04/19] FAIL      exit=1   12s bg2.mjs :: BG2 VERIFY: FAIL — 1/23 failed
+[05/19] OK        exit=0   31s card-close-x.mjs :: CARD-CLOSE-X VERIFY: PASS (24 checks)
+[06/19] OK        exit=0   51s clickhead.mjs :: CLICKHEAD VERIFY: PASS (21 checks)
+[07/19] OK        exit=0  127s drawers-p1-live.mjs :: DRAWERS-P1-LIVE VERIFY: PASS (88 checks)
+[08/19] OK        exit=0   47s flux-card-ink.mjs :: FLUX-CARD-INK VERIFY: PASS (24 checks)
+[09/19] OK        exit=0   39s fx4.mjs :: FX4 VERIFY: PASS (42 checks)
+[10/19] OK        exit=0   76s fx5.mjs :: FX5 VERIFY: PASS (61 checks)
+[11/19] OK        exit=0   11s fx8.mjs :: FX8 VERIFY: PASS (25 checks)
+[12/19] OK        exit=0    9s item-storage-full.mjs :: ITEM-STORAGE-FULL VERIFY: PASS (56 checks)
+[13/19] OK        exit=0   11s item118.mjs :: ITEM118 VERIFY: PASS (10 checks)
+[14/19] OK        exit=0  215s item211.mjs :: ITEM211 VERIFY: PASS (78 checks)
+[15/19] OK        exit=0    1s item224a-sync-integrity.mjs :: ITEM224A VERIFY: PASS (15 checks)
+[16/19] OK        exit=0    9s logout-flush-walk.mjs :: LOGOUT-FLUSH-WALK VERIFY: PASS (9 checks)
+[17/19] OK        exit=0    1s seed-guard.mjs :: SEED-GUARD VERIFY: PASS (36 checks)
+[18/19] OK        exit=0    1s sync-generation.mjs :: SYNC-GENERATION VERIFY: PASS (19 checks)
+[19/19] OK        exit=0   17s writing-r1.mjs :: WRITING-R1 VERIFY: PASS (25 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 17/19 of 19 returned a passing verdict
+  FAIL: bg1.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\fci-default\bg1.mjs.default.txt
+  FAIL: bg2.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\fci-default\bg2.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=20667af6 bundle=index-GtIKxtJl.js/668215b NO-REBUILD
