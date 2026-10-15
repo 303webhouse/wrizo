@@ -236,7 +236,9 @@ await withHarness(async (app) => {
   // card cannot be dragged 2900px in a 768px-tall window, so the fixture brings
   // the boundary to the pointer rather than the reverse.
   {
-    const startY = 2.60, cardH = 0.12;
+    // Fable (Oct 15, "one more look"): 2.60 left ~218px of room, but a card this far down the canvas cannot be scrolled up (the wrap's scrollTop is capped at the canvas's end), so it starts LOW in the 768px
+    // window and the pointer can reach only ~196px before the window's own edge - the card stopped at y 2.7801 (22px short) with a 420px drag AND a 640px drag. 2.74 leaves ~65px of room, inside any reach.
+    const startY = 2.74, cardH = 0.12;
     await freshBoard(app, 'fx17-s3', [
       { id: 'c1', kind: 'text', x: 0.10, y: startY, w: 0.25, h: cardH, text: 'to the floor', z: 1 },
     ], LEG_W, LEG_H);
@@ -244,7 +246,7 @@ await withHarness(async (app) => {
     // Fable (Oct 15, harness-expired-checks): the old 420px drag assumed it overshot the ~218px of room, but the card stopped 22px SHORT of the limit (y 2.7801, not 2.80) - the product's clamp held
     // (the "bottom <= limit" and "travelled" checks passed); the pointer's reachable travel had drifted with the layout above the wrap. The instrument now drags FAR past the limit (>= 600px) and
     // keeps the pointer inside the viewport, so "the stop is exact" measures the clamp and never the reach.
-    await dragCard(app, 'c1', 0, 640, 40);   // ~0.59 normalized, far past the limit; dragCard keeps the pointer inside the viewport
+    const dragStart = await dragCard(app, 'c1', 0, 640, 40);   // ~0.59 normalized, far past the limit; dragCard keeps the pointer inside the viewport
     const r = await readRecorder(app);
     const box = await liveBox(app, 'c1');
     const geo = await app.evalJs(`(() => {
@@ -259,7 +261,7 @@ await withHarness(async (app) => {
     ok('S3: the card actually TRAVELLED to the stop rather than being refused — it moved down from its seeded position and came to rest against the limit',
       box != null && box.y > startY, JSON.stringify({ from: startY, to: box && box.y }));
     ok(`S3: THE STOP IS EXACT — at the stop the canvas measures BOARD_MAX_Y x its own width (${BOARD_MAX_Y} x canvasW), because the clamp and the height formula share the same ${BREATHING} breathing term: the limit is reached on the very frame the card stops, with no dead zone travelled first and nothing to spring back from`,
-      Math.abs(geo.canvasH - BOARD_MAX_Y * geo.canvasW) <= 3, JSON.stringify({ canvasH: geo.canvasH, expected: BOARD_MAX_Y * geo.canvasW, canvasW: geo.canvasW }));
+      Math.abs(geo.canvasH - BOARD_MAX_Y * geo.canvasW) <= 3, JSON.stringify({ canvasH: geo.canvasH, expected: BOARD_MAX_Y * geo.canvasW, canvasW: geo.canvasW, endY: box && box.y, bottom, dragStart, viewportH: LEG_H, reachPx: dragStart ? (LEG_H - 4) - dragStart.y : null }));
     ok('S3: NO STUTTER AT THE STOP — the gutter never flips and the canvas height never shrinks while the card lands and holds against the limit (a rubber-band would show as a height drop here)',
       r.gutterFlips === 0 && r.heightDrops === 0, JSON.stringify({ frames: r.frames, gutterFlips: r.gutterFlips, heightDrops: r.heightDrops }));
   }
