@@ -3413,7 +3413,20 @@ a:focus-visible,
    padding — the same FX2 clearance-law allowance the sliver's mirror twin
    already makes; it never uncovers the text measure itself.) No CSS change
    was needed to satisfy TU2 S4's "grip flush, no gap" clause — it already
-   held, by construction, since TU1. */
+   held, by construction, since TU1.
+   tutor-drawer-arrow — this algebra governs the CLOSED resting position
+   only. OPEN, this exact flush-to-paper spot is also where the panel's
+   own near edge lands in its most common regime (FX18 S2's "occupy the
+   margin"), putting the grip inside the open panel's own tab row. Fixed
+   in Tutor.tsx: a measure-effect (gripLeftPx, mirroring panelWidthPx's own
+   FX13 pattern) overrides this anchor's `left` with the panel's own
+   measured rect minus a 16px gutter, the exact mirror of `.wz-sliver-
+   panel`'s own static 16px inset — but measured, not re-derived, because
+   the panel's width comes from three different sources (this file's board
+   override, the base clamp below, and the JS writing-surface measurement)
+   and only a direct read of its own rendered rect is correct in all three
+   at once. Closed, `open` is false and the inline override is absent, so
+   this formula is exactly as unchanged as the comment above describes. */
 .desk-frame-tutor-anchor--prose{ /* intentionally empty — mirrors the sliver anchor's own hook */ }
 /* SC1 S4 — the exact mirror of `.desk-frame-sliver-anchor--screenplay` (see
    that rule for the full SC-V1 derivation): the screenplay page is 8.5in
