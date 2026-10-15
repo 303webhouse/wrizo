@@ -5147,6 +5147,10 @@ a:focus-visible,
    different sentence. */
 .crumb-here{ color:var(--text-mid); font-weight:600; min-width:0; overflow:hidden;
   text-overflow:ellipsis; white-space:nowrap; }
+/* The board's name is a <button> (Item 133: the name is the rename control) and had NO rule of its own, so it wore the browser's grey button face (Fable, Oct 15). It reads as the plain crumb
+   text now - same family, size, colour and weight as .crumb-here - with a text cursor, the cue that clicking edits it. */
+.crumb-rename-btn{ background:none; border:0; padding:0; margin:0; border-radius:0; box-shadow:none; appearance:none; -webkit-appearance:none;
+  font-family:inherit; font-size:inherit; line-height:inherit; letter-spacing:inherit; text-align:left; cursor:text; }
 .sprint-actions{ margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 
 /* ITEM 121 I3's TEXT | INK switch in the band is RETIRED by Phase 1 (the drawer's first tab carries the choice); its CSS went with it. */

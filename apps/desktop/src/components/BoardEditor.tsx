@@ -2180,7 +2180,7 @@ export function BoardEditor({ id }: { id: string }) {
   // card anymore).
   // B1 S4 — the Trash Board's own Restore, joining the row's existing
   // conditional buttons exactly the way ungroup/Edit-copy already do.
-  // THE ROW NEVER MOVES THE CANVAS (Fable, Oct 15; page-primacy applied to the board). It used to sit IN FLOW above the canvas, so selecting any card mounted it and pushed the canvas down
+  // THE ROW NEVER MOVES THE CANVAS (Fable, Oct 15; page-primacy applied to the board; its PLACE is superseded by the INTERIM note below - it now sits inside the canvas). It used to sit IN FLOW above the canvas, so selecting any card mounted it and pushed the canvas down
   // by its own height (about 45px: Chat 1 measured the new card landing 45px below the press). It is an OVERLAY now: absolutely positioned, right-aligned, growing UP from the canvas's top edge
   // out of a zero-height slot (boardBody, below), over the quiet gap above the canvas - it adds no height whether it is there or not. Its own ground keeps it legible over what it overlaps.
   // The "Remove" button is DELETED (Nick, Oct 15): removing a card is the Delete key now (and a context menu is coming). The row survives ONLY for the conditional actions that have no other door yet - Ungroup, Edit copy, Restore (Trash), Pin to a Board (Shelf) - so an ordinary card shows NO row at all.
@@ -2188,8 +2188,10 @@ export function BoardEditor({ id }: { id: string }) {
     || (selectedBox.kind === 'text' && !!selectedBox.sourceEntryId)
     || (systemKind === 'trash' && selectedBox.kind === 'page-pin' && !!selectedBox.entryId)
     || (systemKind === 'shelf' && selectedBox.kind === 'page-pin' && !!selectedBox.entryId));
+  // INTERIM (Fable, Oct 15): the row sits INSIDE the canvas, top-right (absolute in the canvas wrapper, so it neither scrolls away nor adds height). It never shifts the canvas and never reaches
+  // the header strip. It goes when the card right-click menu (board-context-menu) takes these actions.
   const boardActionRow = selectedBox && hasRowAction && (
-    <div className="board-action-row" style={{ display: 'flex', gap: 12, position: 'absolute', right: 0, bottom: 6, zIndex: 6, padding: '2px 6px', background: 'var(--desk-ground)' }}>
+    <div className="board-action-row" style={{ display: 'flex', gap: 12, position: 'absolute', top: 8, right: 18, zIndex: 8, padding: '3px 10px', background: 'var(--paper)', border: '1px solid var(--ink-border)' }}>
       {selectedBox.groupId && <button type="button" className="btn-quiet" onClick={ungroup}>Ungroup</button>}
       {selectedBox.kind === 'text' && selectedBox.sourceEntryId && (
         <button type="button" className="btn-quiet" onClick={() => setPopupBoxId(selectedBox.id)}>{t('boardEditCopy')}</button>
@@ -2298,6 +2300,7 @@ export function BoardEditor({ id }: { id: string }) {
 
   const boardCanvas = (
     <div style={{ position: 'relative' }}>
+      {boardActionRow}
       <div ref={wrapRef} className="board-canvas-wrap" style={{ overflow: 'auto', maxHeight: availHeightPx != null ? availHeightPx : '78vh', border: '1px solid var(--ink-border)' }}>
         <div
           ref={canvasRef}
@@ -2562,8 +2565,6 @@ export function BoardEditor({ id }: { id: string }) {
   // anywhere — b3.mjs asserts this explicitly, not merely by omission.
   const boardBody = (
     <>
-      {/* the zero-height slot the selected-card row floats up out of (see boardActionRow): the canvas below never moves */}
-      <div className="board-action-slot" style={{ position: 'relative', height: 0 }}>{boardActionRow}</div>
       <div className={`board-canvas-blur-wrap${(popupBox || deckWizardOpen) ? ' board-canvas-blurred' : ''}`}>
         {boardCanvas}
       </div>

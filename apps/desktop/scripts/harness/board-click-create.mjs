@@ -12,6 +12,7 @@
 //   C7 the starters: present on an empty board, fading out on the first press anywhere (while the pointer is still down), and a door pressed as that first click still does its act (one card)
 //   C8 no creation where it does not belong: STORYBOARD, OUTLINE, a system board
 //   C9 selecting a card never moves the canvas       C10 the "Remove" row is DELETED: an ordinary selected card shows no row and no Remove button, and selecting adds NO element above or over the header strip
+//   C12 the interim action row (Ungroup etc., on a grouped card) sits INSIDE the canvas wrapper, top-right: it never shifts the canvas, never reaches the header strip   C13 the board's name reads as plain title text (no button face, text cursor)
 //   C11 Delete and Backspace remove the selected card (the Remove row's path: one undo snapshot, so Undo brings it back); with nothing selected they remove nothing
 //
 // Needs a box turn (withHarness refuses without WS_BOX_TURN). Run: WS_BOX_TURN=<token> node scripts/harness/board-click-create.mjs   (from apps/desktop, dist-web built)
@@ -73,14 +74,14 @@ const pins = (text) => ({
 const strip = (app) => app.evalJs(`(() => { const top = document.querySelector('.board-canvas').getBoundingClientRect().top; const out = [];
   for (const e of document.body.querySelectorAll('*')) { const r = e.getBoundingClientRect(); if (r.width > 0 && r.height > 0 && r.top < top) out.push(e.tagName + '.' + String(e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className)); }
   return out.sort(); })()`);
-const seedBoard = async (app) => {
+const seedBoard = async (app, boxes = []) => {
   await app.emulateDpr(1, 1400, 900);
   await app.goto('/');
   await app.evalJs("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
   await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 14000 });
-  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: BOARD, text: 'Board', pageType: 'board', boxes: [], createdAt: new Date().toISOString(), origin: null, source: null })})`);
+  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: BOARD, text: 'Board', pageType: 'board', boxes, createdAt: new Date().toISOString(), origin: null, source: null })})`);
   await sleep(450);
   await app.evalJs(`location.hash = '#/page/${BOARD}'`);
   const there = await waitSoft(app, "!!document.querySelector('.board-canvas')", { label: 'the board', timeout: 9000 });
@@ -206,6 +207,34 @@ await withHarness(async (app) => {
     await waitSoft(app, "!!document.querySelector('.board-popup')", { timeout: 4000 });
     ok('C7: a starter pressed AS the first click still does its act - exactly ONE card, its pop-up open (the fade does not eat the click, and the press made no card of its own)', (await cards(app)) === 1 && (await popupOpen(app)), JSON.stringify({ cards: await cards(app) }));
     await app.key('Escape'); await sleep(300);
+  }
+
+  // ===== C12 / C13: the interim row inside the canvas; the title as plain text ==================================================================================================
+  {
+    const grouped = await seedBoard(app, [
+      { id: 'gr-a', kind: 'text', x: 0.1, y: 0.1, w: 0.2, h: 0.1, z: 1, text: 'Grouped A', groupId: 'gr-g' },
+      { id: 'gr-b', kind: 'text', x: 0.4, y: 0.1, w: 0.2, h: 0.1, z: 2, text: 'Grouped B', groupId: 'gr-g' },
+    ]);
+    if (!grouped) ok('C12 fixture: the grouped board opened', false);
+    else {
+      const top0 = await app.evalJs("Math.round(document.querySelector('.board-canvas').getBoundingClientRect().top * 10) / 10");
+      const stripBefore12 = await strip(app);
+      const gcard = await app.evalJs("(() => { const r = document.querySelector('[data-box-id=\"gr-a\"]').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+      await app.mouseMove(gcard.x, gcard.y); await app.mouseDown(gcard.x, gcard.y); await sleep(60); await app.mouseUp(gcard.x, gcard.y); await sleep(500);
+      const geo = await app.evalJs(`(() => { const row = document.querySelector('.board-action-row'); const wrap = document.querySelector('.board-canvas-wrap'); const cv = document.querySelector('.board-canvas');
+        if (!row || !wrap) return null; const a = row.getBoundingClientRect(), w = wrap.getBoundingClientRect();
+        return { rowInsideWrap: a.left >= w.left && a.right <= w.right && a.top >= w.top && a.bottom <= w.bottom, topRight: a.right > w.left + w.width * 0.6 && a.top - w.top < 40, canvasTop: Math.round(cv.getBoundingClientRect().top * 10) / 10, label: row.textContent.trim().slice(0, 40) }; })()`);
+      const stripAfter12 = await strip(app);
+      ok('C12: with a GROUPED card selected the interim action row (Ungroup) shows, INSIDE the canvas wrapper and in its top-right corner', !!geo && geo.rowInsideWrap && geo.topRight && /Ungroup/.test(geo.label), JSON.stringify(geo));
+      ok('C12: and it never shifts the canvas (the top edge is unchanged) and adds nothing above or over the header strip', !!geo && geo.canvasTop === top0 && JSON.stringify(stripBefore12) === JSON.stringify(stripAfter12), JSON.stringify({ top0, after: geo && geo.canvasTop, added: stripAfter12.filter((x) => !stripBefore12.includes(x)) }));
+      // C13: the title
+      const title = await app.evalJs(`(() => { const b = document.querySelector('.crumb-rename-btn'); if (!b) return null; const cs = getComputedStyle(b);
+        const probe = document.createElement('span'); probe.className = 'crumb-here'; b.parentElement.appendChild(probe); const ps = getComputedStyle(probe);
+        const out = { bg: cs.backgroundColor, border: cs.borderTopWidth + ' ' + cs.borderTopStyle, cursor: cs.cursor, sameFont: cs.fontFamily === ps.fontFamily && cs.fontSize === ps.fontSize && cs.fontWeight === ps.fontWeight, sameColour: cs.color === ps.color };
+        probe.remove(); return out; })()`);
+      ok('C13: the board\'s name has NO button face - transparent ground, no border - and reads as the crumb text (same family, size, weight and colour as .crumb-here) with a text cursor',
+        !!title && /rgba\(0, 0, 0, 0\)|transparent/.test(title.bg) && (/^0px/.test(title.border) || /none/.test(title.border)) && title.cursor === 'text' && title.sameFont && title.sameColour, JSON.stringify(title));
+    }
   }
 
   // ===== C8: where it does not belong ================================================================================================================================================
