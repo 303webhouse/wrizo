@@ -50,6 +50,26 @@ There is no print or PDF path today, so there is nothing more to decide.
 - **Undo** reverts a font press as one step, like every other format press.
 - **With nothing highlighted**, the choice changes the whole page or card, as today. No "next text typed" font is held. That keeps the bare-caret behaviour exactly what Nick ruled.
 
+## 5. Fable's four additions (Oct 15), ruled in before the build
+
+1. **Every reader of the words reads them without span marks.** One function strips the font span's two marks and keeps every other convention exactly as it is today: `withoutFontMarks(text)`, next to `stripLine` in `markRuns.ts`. It is applied at each reader that takes the text as words:
+   - the Tutor's payload to `/api/tutor/chat` (`messages`, `delta`, `selection`, built in `store/api.ts` and `Tutor.tsx`);
+   - Consistency (`computeConsistencyObservations` in `store/tutorConsistency.ts`, and the lenses in `tutorLenses.ts`);
+   - titles, excerpts and echoes (`entryText.ts plainLines`, through `stripLine`, which learns the span);
+   - every word counter. There are seven private copies of the whitespace counter (PageEditor, Sliver, JournalEntry, ScriptEditor, QuickSprint, HomeFlow, FirstRunGate). The marks contain no whitespace, so a count can't change, but the counters still read through the function so the rule holds by construction rather than by coincidence.
+
+   **Search and find:** the app has no full-text search of its own, so the readers above cover every reading it does. The browser's own find (Ctrl+F) searches what the page's DOM contains. A span's hidden marks are real characters there (collapsed to zero size, never removed, the same as `**` today), so a search for "font" can match inside one. I'm disclosing this, not fixing it: removing the marks from the DOM would break the text the editor reads back.
+2. **Overlapping picks merge or split; marks never stack.** A pick is computed on the plain text as one operation:
+   - remove every font span the selection touches, splitting a span that reaches outside the selection at the selection's edge;
+   - wrap the selection in the new face, unless it is the page's (or card's) own face;
+   - merge it with a neighbouring span of the same face.
+
+   So a word is inside at most one font span, and two font marks are never nested or adjacent. Bold, Italic, Underline and Strike nest with a span as they nest with each other.
+3. **One undo step per pick.** A pick is one atomic record in the editor's undo stack (`textUndo`), the same as every rail press. Picking again over the same words is one more step, never a merge with the last one.
+4. **It gets the full pair**, because it changes saved text.
+
+**The picker (Nick approved Cursor's mockup, `cursor/font-choices` @ `6cc5f529`, frozen):** a Typeface section with two scopes, "Selection" and "Whole document" ("Whole card" in a card), and brass on the current face. With nothing highlighted the "Selection" scope isn't offered. **Frames:** a highlighted pick on a Page, a whole-document pick, and a pick inside a card, in both themes.
+
 ## Scope and checks
 
 - **The build touches:** `markRuns.ts` (the `font` kind and asymmetric marks), `hiddenMarks.ts` (`openLen`/`closeLen`), `draftDecoration.ts` (the span), `draftFormat.ts` (apply, remove, the picker's reading, `stripLine`), the Type control's handler in Sliver (Pages) and in the card pop-up's dock, and the loader.
