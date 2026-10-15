@@ -1503,7 +1503,20 @@ a:focus-visible,
 .board-handle{
   position:absolute; right:-5px; bottom:-5px; width:10px; height:10px;
   background:var(--brass); border-radius:0; cursor:nwse-resize;
+  transition:border-radius .18s ease, background-color .18s ease;
 }
+/* CONNECTOR-A - connection mode: the square morphs to a 10px circle (open = nothing linked under the arm, solid = the arm is over a card already linked to this one). */
+.board-handle[data-circle='true']{ box-sizing:border-box; border-radius:50%; background:var(--paper); border:1.5px solid var(--brass); right:-6px; bottom:-6px; cursor:default; }
+.board-handle[data-circle='true'][data-solid='true']{ background:var(--brass); }
+@media (prefers-reduced-motion: reduce){ .board-handle{ transition:none; } }
+/* CONNECTOR-A - a card's own end of a link: hidden until the card is the arm's target, a linked peer, or the far end of the link just made. Open = not linked, solid orange = linked. */
+.board-tcircle{
+  position:absolute; right:-6px; bottom:-6px; width:10px; height:10px; box-sizing:border-box; z-index:6;
+  border-radius:50%; background:var(--paper); border:1.5px solid var(--brass); display:none; pointer-events:none;
+}
+.board-tcircle[data-solid='true']{ background:var(--brass); }
+.board-box[data-target='true'] > .board-tcircle, .board-box[data-peer='true'] > .board-tcircle{ display:block; }
+.board-box[data-target='true']{ outline:1.5px solid var(--brass); outline-offset:0; }
 /* AB4 S2 — a page-pin card: a MEMBERSHIP card, not a copy. Shares
    .board-text's own look (now Stacked, S7); the badge is the only
    decoration (quiet olive, never brass — "nothing orange at rest" holds
@@ -1599,15 +1612,7 @@ a:focus-visible,
    (the brief's own words), not a generic centered glow. Same ~12px size,
    same border-radius:50% (fx5.mjs's own S5 check still asserts this
    verbatim — confirmed unbroken, no A4 park needed). */
-.board-pin-grab{
-  position:absolute; left:-6px; top:-6px; width:12px; height:12px; z-index:6;
-  border-radius:50%;
-  background:radial-gradient(circle at 35% 28%, #D9DEB8 0%, var(--accent-rest) 50%, #4F5730 100%);
-  border:1px solid var(--ink-950);
-  box-shadow:1px 2px 3px rgba(17,6,0,.5);
-  cursor:grab;
-}
-.board-canvas[data-thread-armed='true'] .board-pin-grab{ cursor:grabbing; }
+/* CONNECTOR-A - the green tack (.board-pin-grab) that lived here is RETIRED: connection mode starts at the corner square (see .board-handle). */
 /* FX8 S3 — Nick's own DoD line: "drags it with one continuous motion" —
    a `grab`-family cursor throughout would already communicate "you CAN
    drag this," but the brief explicitly invites (and CC's own build report
@@ -1655,20 +1660,20 @@ a:focus-visible,
    FX4 S6 — olive now marks the THREAD-DRAG armed state (handle-drag,
    replacing AB4's Connect-toggle-mode); the "nothing orange at rest"
    law is unchanged. */
-.board-connection-line{ stroke:var(--ink-border-strong); stroke-width:1.5; fill:none; }
-.board-connections[data-thread-armed='true'] .board-connection-line{ stroke:var(--accent-rest); }
-.board-connection-line[data-selected='true']{ stroke:var(--brass); stroke-width:2.5; }
+/* CONNECTOR-A - a line is drawn only in connection mode (or for the moment after a link): thin brass, no glow; a selected line is heavier. */
+.board-connection-line{ stroke:var(--brass); stroke-width:1; stroke-linecap:round; fill:none; opacity:.9; pointer-events:none; }
+.board-connection-line[data-selected='true']{ stroke-width:2.5; opacity:1; }
 .board-connection-hit{ stroke:transparent; stroke-width:10; fill:none; }
 /* FX4 S6 — the live thread-drag preview line: dashed olive, distinct from
    the solid hairline styles above so it never reads as an already-minted
    connection. Hidden by default (JS toggles display on drag start/end —
    BoardEditor.tsx's own updateThreadPreview/hideThreadPreview). */
-.board-thread-preview{ stroke:var(--accent-rest); stroke-width:1.5; stroke-dasharray:4 3; fill:none; pointer-events:none; }
+.board-connect-arm{ stroke:var(--brass); stroke-width:2.5; stroke-linecap:round; fill:none; pointer-events:none; }
+.board-connect-tip{ fill:var(--brass); pointer-events:none; }
 /* Thread-drag's own cursor + the origin card's own highlight — dashed
    olive, distinct from the solid brass selection outline so the two
    states never read as the same thing. */
 .board-canvas[data-thread-armed='true']{ cursor:crosshair; }
-.board-box[data-thread-source='true']{ outline:2px dashed var(--accent-rest); outline-offset:1px; }
 /* FX4 S4 — the board canvas's own bottom-right resize handle: quiet at
    rest (the brief's own word), matching the corkboard-adjacent chrome's
    restrained palette rather than the per-card brass handle (this one
