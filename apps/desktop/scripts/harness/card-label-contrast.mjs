@@ -28,8 +28,17 @@ const click = async (app, p, clickCount = 1) => {
   await mouse(app, 'mousePressed', p.x, p.y, clickCount, 1);
   await mouse(app, 'mouseReleased', p.x, p.y, clickCount, 0);
 };
-const centerOf = (app, sel) => app.evalJs(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return null;
-  const r = el.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
+// card-label-contrast round 2 (Fable, Oct 15) — a plain centerOf(A) landed
+// INSIDE the zone A and B share: A is x:[0.08,0.30] y:[0.08,0.24], B is
+// x:[0.14,0.36] y:[0.12,0.28] (both fractions of the board), so A's own
+// geometric center (0.19, 0.16) sits inside the overlap (B covers that
+// point at z:2, above A's z:1) - the click hit B, not A, so A never got
+// selected and its own data-overlapping attribute never had a chance to
+// flip. This reads A's rect and picks a point 12px in from its TOP-LEFT
+// corner instead - inside A, outside the region B covers, so the click
+// can only ever land on A.
+const nonOverlapPointOf = (app, sel) => app.evalJs(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return null;
+  const r = el.getBoundingClientRect(); return { x: Math.round(r.left + 12), y: Math.round(r.top + 12) }; })()`);
 
 // WCAG 2.x contrast - the element's own rendered colour against the first
 // opaque background walking up the ancestor chain. Copied verbatim from
@@ -105,14 +114,25 @@ await withHarness(async (app) => {
     ok(`${T} C2: the pin's badge carries against its own card stock (computed ${badgeC?.ratio}:1, >= ${FLOOR})`, !!badgeC && badgeC.ratio >= FLOOR, JSON.stringify(badgeC));
 
     // C2b - the pin's own excerpt line (folded in, Fable's follow-up: same
-    // ask, same >=4.5:1 rule)
-    const excerptC = await contrastOf(app, '[data-box-id="clc-pin"] .board-pin-excerpt');
-    ok(`${T} C2b: the pin's excerpt carries against its own card stock (computed ${excerptC?.ratio}:1, >= ${FLOOR})`, !!excerptC && excerptC.ratio >= FLOOR, JSON.stringify(excerptC));
+    // ask, same >=4.5:1 rule). Premise named explicitly first: notecardExcerpt
+    // only fills this from the pin target's SECOND line onward, so if the
+    // seeded text or the pin's own render ever regresses, this fails with
+    // its own name rather than contrastOf silently returning null into a
+    // vague "C2b" red.
+    const excerptPremise = await app.evalJs("(() => { const el = document.querySelector('[data-box-id=\"clc-pin\"] .board-pin-excerpt'); return { present: !!el, text: el ? el.textContent : null }; })()");
+    ok(`${T} (premise) the pin's own excerpt element exists and is non-empty`, excerptPremise.present && !!excerptPremise.text, JSON.stringify(excerptPremise));
+    if (excerptPremise.present) {
+      const excerptC = await contrastOf(app, '[data-box-id="clc-pin"] .board-pin-excerpt');
+      ok(`${T} C2b: the pin's excerpt carries against its own card stock (computed ${excerptC?.ratio}:1, >= ${FLOOR})`, !!excerptC && excerptC.ratio >= FLOOR, JSON.stringify(excerptC));
+    }
 
     // C3 - the layer-order toggle - select the overlapping card A, wait for
     // the board's own data-overlapping attribute rather than compute the
-    // overlap geometry a second time here.
-    const a = await centerOf(app, '[data-box-id="clc-text-a"]');
+    // overlap geometry a second time here. Click A's own top-left corner
+    // (nonOverlapPointOf), not its center, which sits inside the zone B
+    // visually covers (B is z:2, above A's z:1) - a center click would
+    // select B instead and A's own data-overlapping would never flip.
+    const a = await nonOverlapPointOf(app, '[data-box-id="clc-text-a"]');
     if (a) await click(app, a, 1);
     let overlapping = false;
     try {
