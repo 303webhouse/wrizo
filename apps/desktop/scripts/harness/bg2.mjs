@@ -160,8 +160,13 @@ await withHarness(async (app) => {
   ok('S1: the door olive is its OWN slotted token (--accent-door), distinct from --accent-rest — the chrome olive is untouched, so re-tuning the door never drags the mode-tab hairlines with it',
     tokens.door === '#4F5730' && tokens.rest === '#96a05a', JSON.stringify(tokens));
 
-  ok('S1: the resting opacity is retired — the colour the check measures is the colour the eye sees (no fade blending the assertion into a half-truth)',
-    parseFloat(m.opacity) === 1, m.opacity);
+  // ---- PARKED - SUPERSEDED by board-click-to-create (Nick's faint-starters ruling, Oct 14-15; merged 7b4a3826) ----
+  // The BOARD starters rest at opacity 0.4 now (a thin square outline, faint), so "the resting opacity is retired" no longer holds on the board row this check measures.
+  // Quoted VERBATIM below. Successor: the check directly below; board-click-create.mjs S3/C7b.
+  // ok('S1: the resting opacity is retired — the colour the check measures is the colour the eye sees (no fade blending the assertion into a half-truth)',
+  //   parseFloat(m.opacity) === 1, m.opacity);
+  ok('S1 [faint-starters successor]: the BOARD starters rest at opacity 0.4 (a thin square outline, faint by Nick\'s ruling) - the colour the eye sees is the olive value at 40%, and the value itself is unchanged (asserted by the colour checks around this one)',
+    parseFloat(m.opacity) === 0.4, m.opacity);
 
   // --- rest / hover / press, under a TRUSTED pointer -------------------------
   const doorBox = await app.evalJs(`(() => { const b = document.querySelector('[data-beginning="newCard"]').getBoundingClientRect();
