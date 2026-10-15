@@ -52,7 +52,22 @@ const THICKNESS_PX = 4;
 // unconditionally (one cheap listener) so the probe can answer this on the
 // very next capture without a second round-trip.
 type ProbeSample = { t: number; hoverDepth: number; active: boolean; thumbTop: number; thumbLeft: number; thumbHeight: number; pointerX: number; pointerY: number };
-const probe: { on: boolean; startedAt: number; log: ProbeSample[] } = { on: false, startedAt: 0, log: [] };
+// ROUND 6 — one shift per `sources` entry the browser reports, `node`
+// reduced to a short tag/id/class string (the raw Node can't survive the
+// CDP round-trip back to Chat 1's harness) so the log can be read as plain
+// JSON on the other end, same as `log` above.
+type ProbeShift = { t: number; value: number; sources: { node: string; previousRect: DOMRectReadOnly; currentRect: DOMRectReadOnly }[] };
+type LayoutShiftEntry = PerformanceEntry & { value: number; sources: { node?: Node | null; previousRect: DOMRectReadOnly; currentRect: DOMRectReadOnly }[] };
+const probe: { on: boolean; startedAt: number; log: ProbeSample[]; shifts: ProbeShift[] } = { on: false, startedAt: 0, log: [], shifts: [] };
+
+function describeNode(node: Node | null): string {
+  if (!node) return '(unknown)';
+  if (node.nodeType !== Node.ELEMENT_NODE) return node.nodeType === Node.TEXT_NODE ? '#text' : `#nodeType(${node.nodeType})`;
+  const el = node as Element;
+  const id = el.id ? `#${el.id}` : '';
+  const cls = el.classList.length ? `.${Array.from(el.classList).join('.')}` : '';
+  return `${el.tagName.toLowerCase()}${id}${cls}`;
+}
 
 export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLElement | null> }) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -229,25 +244,40 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
 
     layoutRoot();
     layoutThumb();
-    // ROUND 5 (Fable, review, item scrollbar-minimal) — the S4 probe measured
-    // the thumb's own box moving ~393px/~108px during the first ~1s after
-    // mount, self-correcting by the end of the SETTLE_MS window below. The
-    // strongest lead, from this file's own history: Prose's text column is
-    // `width:min(760px * var(--paper-scale), 60ch)` (index.css,
-    // `.desk-frame-stage--prose .mode-pagecol`) — a ch-based measure that
-    // resolves against whichever font is ACTIVE at the moment of layout, and
-    // `--font-prose` is a variable web font ROUND 2/3 above already named as
-    // settling AFTER mount (there it changed `.mode-scroll`'s own
-    // scrollHeight; the same async swap can equally move 60ch's pixel value
-    // here, since that depends on the loaded font's own character metrics,
-    // not the fallback's). `document.fonts.ready` is the browser's own
-    // deterministic signal for "every font this document uses has finished
-    // loading" — re-measuring on it removes the window where a stale rect
-    // can be read (and shown) at all, rather than only ever catching the
-    // correction inside the blind SETTLE_MS/rAF sweep below. NOT confirmed
-    // live by this lane (no box turn this round) — Chat 1's own re-run of
-    // the S4 probe is what proves whether this is the whole story.
-    if (document.fonts) document.fonts.ready.then(() => { layoutRoot(); layoutThumb(); }).catch(() => {});
+    // ROUND 5's own lead — DROPPED (Fable, Chat 1 ledger 41): a
+    // document.fonts.ready re-measure landed here and changed nothing — the
+    // drift is still 7/44 red, the same 393px, so a font swap is not the
+    // cause and this lane is not re-guessing a replacement theory blind.
+    // ROUND 6 — INSTRUMENT, DON'T THEORISE AGAIN. Chat 1's own log: the
+    // pointer sits correctly on the thumb's FIRST-frame box; by ~90ms the
+    // thumb settles 391px left / 67px up, so it is specifically the THUMB
+    // that moves out from under a stationary pointer (not the reverse).
+    // `PerformanceObserver({entryTypes:['layout-shift']})` is the browser's
+    // own instrument for "what actually reflowed, and which node caused
+    // it" — logging each shift's sources (not the thumb's own derived rect
+    // a second time) for the first 200ms answers Fable's own question
+    // directly: a REAL on-screen jump (a named node's rect changing) is a
+    // bug to fix; no shift logged at all would mean the walk itself placed
+    // the pointer before the page had its first stable frame, in which case
+    // the FIX is in the harness's own wait, not here.
+    const shiftObserver = (typeof PerformanceObserver !== 'undefined' && PerformanceObserver.supportedEntryTypes?.includes('layout-shift'))
+      ? new PerformanceObserver((list) => {
+          if (!probe.on) return;
+          const t = Math.round(performance.now() - probe.startedAt);
+          if (t > 200) return;
+          for (const entry of list.getEntries() as unknown as LayoutShiftEntry[]) {
+            probe.shifts.push({
+              t, value: entry.value,
+              sources: (entry.sources ?? []).map((s) => ({
+                node: describeNode(s.node ?? null),
+                previousRect: s.previousRect,
+                currentRect: s.currentRect,
+              })),
+            });
+          }
+        })
+      : null;
+    try { shiftObserver?.observe({ type: 'layout-shift', buffered: true }); } catch { /* unsupported in this engine; probe.shifts stays empty, not a crash */ }
     startTicking(); // the SETTLE_MS window runs from mount regardless of `active`
     target.addEventListener('scroll', onScroll, { passive: true });
     target.addEventListener('mouseenter', onEnter);
@@ -272,6 +302,7 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
       window.removeEventListener('resize', layoutRoot);
       window.removeEventListener('pointermove', onPointerMove);
       ro.disconnect();
+      shiftObserver?.disconnect();
     };
   }, [targetRef]);
 
@@ -287,9 +318,10 @@ if (typeof window !== 'undefined') {
   (window as unknown as { wrizoThinScrollbar?: unknown }).wrizoThinScrollbar = {
     FADE_OUT_DELAY_MS, MIN_THUMB_PX, THICKNESS_PX,
     probe: {
-      start: () => { probe.log = []; probe.startedAt = performance.now(); probe.on = true; },
+      start: () => { probe.log = []; probe.shifts = []; probe.startedAt = performance.now(); probe.on = true; },
       stop: () => { probe.on = false; },
       read: () => probe.log,
+      readShifts: () => probe.shifts,
     },
   };
 }
