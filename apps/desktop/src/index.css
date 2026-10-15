@@ -5371,7 +5371,7 @@ a:focus-visible,
 }
 .deck-wizard-dialog{
   width:min(480px,90vw); max-height:82vh; display:flex; flex-direction:column;
-  background:var(--card-stock); color:var(--ink-on-paper);
+  background:var(--card-stock); color:var(--ink-on-card);
   border:1px solid var(--card-hairline); border-top:2px solid var(--accent-rest);
   box-shadow:0 14px 44px rgba(0,0,0,.5); border-radius:0;
 }
@@ -5379,29 +5379,35 @@ a:focus-visible,
   display:flex; align-items:center; gap:4px; padding:10px 14px;
   border-bottom:1px solid var(--card-hairline);
 }
-.deck-wizard-eyebrow{ margin-right:auto; color:var(--ink-on-paper-low); }
+/* deckwizard-ink (Chat 1 ledger 53; Fable, Oct 15) - the sheet is the same un-themed cream as a card (--card-stock), so its text
+   takes the CARD's ink, never --ink-on-paper, which Flux's dark page flips light (1.08:1 on cream - the illegible deck titles).
+   Every text here is --ink-on-card, >= 4.5:1 in every tone (flux-card-ink.mjs C5 measures each): the -low tier is not used on
+   this sheet, because it is under 4.5:1 on cream in Plateau and Flux light (3.77 / 4.43 - card-label-contrast's subject). The
+   small labels stay apart by their type (mono caps), a picked option by its olive border, a hovered row by an olive underline. */
+.deck-wizard-eyebrow{ margin-right:auto; color:var(--ink-on-card); }
+.deck-wizard-dialog .btn-quiet, .deck-wizard-dialog .btn-quiet:hover{ color:var(--ink-on-card); }
 .deck-wizard-close{ font-size:18px; line-height:1; padding:2px 8px; }
 .deck-wizard-body{ padding:18px 22px; overflow:auto; }
 .deck-wizard-room-group + .deck-wizard-room-group{ margin-top:16px; }
 .deck-wizard-room-heading{
   font-family:var(--font-mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase;
-  color:var(--ink-on-paper-low); margin-bottom:6px;
+  color:var(--ink-on-card); margin-bottom:6px;
 }
 .deck-wizard-deck-row{
   display:block; width:100%; text-align:left; background:none; border:none; cursor:pointer;
-  padding:8px 4px; font-family:var(--font-prose); font-size:15px; color:var(--ink-on-paper);
+  padding:8px 4px; font-family:var(--font-prose); font-size:15px; color:var(--ink-on-card);
 }
-.deck-wizard-deck-row:hover{ color:var(--accent-rest); }
+.deck-wizard-deck-row:hover{ color:var(--ink-on-card); text-decoration:underline; text-decoration-color:var(--accent-rest); text-underline-offset:3px; }
 .deck-wizard-question{ font-family:var(--font-display); font-size:16px; margin-bottom:14px; }
 .deck-wizard-options{ display:flex; flex-direction:column; gap:8px; }
 .deck-wizard-option-btn{
   text-align:left; padding:10px 14px; font-family:var(--font-prose); font-size:15px;
-  color:var(--ink-on-paper); background:none; border:1px solid var(--card-hairline); border-radius:0; cursor:pointer;
+  color:var(--ink-on-card); background:none; border:1px solid var(--card-hairline); border-radius:0; cursor:pointer;
 }
 .deck-wizard-option-btn:hover{ border-color:var(--accent-rest); }
-.deck-wizard-option-btn[aria-pressed="true"]{ border-color:var(--accent-rest); color:var(--accent-rest); }
+.deck-wizard-option-btn[aria-pressed="true"]{ border-color:var(--accent-rest); color:var(--ink-on-card); }
 .deck-wizard-note{ margin-top:14px; }
-.deck-wizard-note p{ color:var(--ink-on-paper-low); font-size:14px; margin-bottom:10px; }
+.deck-wizard-note p{ color:var(--ink-on-card); font-size:14px; margin-bottom:10px; }
 .deck-wizard-foot{ display:flex; justify-content:space-between; padding:12px 16px 18px; }
 
 /* CreateProject.tsx's own analog of .board-canvas-blur-wrap/.board-canvas-
