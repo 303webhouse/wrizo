@@ -11,6 +11,8 @@
 //   C5 a press ON a card makes no card (it selects); C6 a press on empty space still deselects
 //   C7 the starters: present on an empty board, fading out on the first press anywhere (while the pointer is still down), and a door pressed as that first click still does its act (one card)
 //   C8 no creation where it does not belong: STORYBOARD, OUTLINE, a system board
+//   C9 selecting a card never moves the canvas       C10 the "Remove" row is DELETED: an ordinary selected card shows no row and no Remove button, and selecting adds NO element above or over the header strip
+//   C11 Delete and Backspace remove the selected card (the Remove row's path: one undo snapshot, so Undo brings it back); with nothing selected they remove nothing
 //
 // Needs a box turn (withHarness refuses without WS_BOX_TURN). Run: WS_BOX_TURN=<token> node scripts/harness/board-click-create.mjs   (from apps/desktop, dist-web built)
 import fs from 'node:fs';
@@ -67,6 +69,10 @@ const pins = (text) => ({
   ok('S3 (mutant): a rounded starter turns the pin RED (the mutation landed)', mut !== css && !look(mut).starter, '');
 }
 
+// every element that has any area above the canvas's top edge (the header strip and whatever overlays it), as a sorted descriptor list - selecting a card must not add to it
+const strip = (app) => app.evalJs(`(() => { const top = document.querySelector('.board-canvas').getBoundingClientRect().top; const out = [];
+  for (const e of document.body.querySelectorAll('*')) { const r = e.getBoundingClientRect(); if (r.width > 0 && r.height > 0 && r.top < top) out.push(e.tagName + '.' + String(e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className)); }
+  return out.sort(); })()`);
 const seedBoard = async (app) => {
   await app.emulateDpr(1, 1400, 900);
   await app.goto('/');
@@ -125,11 +131,16 @@ await withHarness(async (app) => {
 
   // ===== C5 / C6: a press ON a card makes none; a press on empty still deselects ==================================================================================================
   const card = await firstCard(app);
+  const stripBefore = await strip(app);
   const canvasTopBeforeSelect = await app.evalJs("Math.round(document.querySelector('.board-canvas').getBoundingClientRect().top * 10) / 10");
   await app.mouseMove(card.left + card.width / 2, card.top + card.height / 2); await app.mouseDown(card.left + card.width / 2, card.top + card.height / 2); await sleep(60); await app.mouseUp(card.left + card.width / 2, card.top + card.height / 2); await sleep(300);
   const selectedAfterCardPress = await app.evalJs("document.querySelector('.board-box[data-kind=\"text\"]')?.getAttribute('data-selected')");
   const canvasTopAfterSelect = await app.evalJs("Math.round(document.querySelector('.board-canvas').getBoundingClientRect().top * 10) / 10");
   ok('C9: SELECTING a card never moves the canvas (the selected-card row is an overlay that adds no height) - the canvas top is the same before and after, for an EXISTING card', canvasTopBeforeSelect != null && canvasTopBeforeSelect === canvasTopAfterSelect, JSON.stringify({ canvasTopBeforeSelect, canvasTopAfterSelect }));
+  const stripAfter = await strip(app);
+  const removeRow = await app.evalJs("({ rows: document.querySelectorAll('.board-action-row').length, removeBtn: [...document.querySelectorAll('button')].filter((b) => b.textContent.trim() === 'Remove').length })");
+  ok('C10: the "Remove" row is DELETED - an ordinary selected card shows no action row and no Remove button anywhere', removeRow.rows === 0 && removeRow.removeBtn === 0, JSON.stringify(removeRow));
+  ok('C10: and selecting a card adds NO element above or over the header strip (the list of elements with area above the canvas is identical before and after)', JSON.stringify(stripBefore) === JSON.stringify(stripAfter) && stripBefore.length > 0, JSON.stringify({ before: stripBefore.length, after: stripAfter.length, added: stripAfter.filter((x) => !stripBefore.includes(x)) }));
   ok('C5: a press ON a card selects it and makes NO new card', (await cards(app)) === 1 && selectedAfterCardPress === 'true', JSON.stringify({ cards: await cards(app), selectedAfterCardPress }));
   // THE RULING (Fable, Oct 14): with a card selected, the FIRST empty-space click only deselects and creates nothing; the next one (nothing selected) is the one that creates.
   const q = await emptyPoint(app);
@@ -144,6 +155,24 @@ await withHarness(async (app) => {
   ok('C6: and the NEXT empty-space click, with nothing selected, creates the card and opens its pop-up (the empty close below then discards it)', (await cards(app)) === 2 && (await popupOpen(app)), JSON.stringify({ cards: await cards(app) }));
   await app.key('Escape'); await sleep(500);
   ok('C6: closed empty, that new card is discarded; the first card is untouched', (await cards(app)) === 1, JSON.stringify({ cards: await cards(app) }));
+
+  // ===== C11: the Delete key is how a card is removed now =========================================================================================================================
+  {
+    const undoBtn = "[...document.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Undo')";
+    await app.key('Delete'); await sleep(300);
+    ok('C11 (control): Delete with NOTHING selected removes nothing', (await cards(app)) === 1, JSON.stringify({ cards: await cards(app) }));
+    for (const key of ['Delete', 'Backspace']) {
+      const cx = await firstCard(app);
+      await app.mouseMove(cx.left + cx.width / 2, cx.top + cx.height / 2); await app.mouseDown(cx.left + cx.width / 2, cx.top + cx.height / 2); await sleep(60); await app.mouseUp(cx.left + cx.width / 2, cx.top + cx.height / 2); await sleep(400);
+      await app.key(key); await sleep(400);
+      const gone = (await cards(app)) === 0;
+      const undoPresent = await app.evalJs(`!!(${undoBtn})`);
+      if (undoPresent) await app.evalJs(`(${undoBtn}).click()`);
+      await sleep(400);
+      ok(`C11: ${key} on the selected card REMOVES it, and the one undo snapshot brings it back (Undo)`, gone && undoPresent && (await cards(app)) === 1, JSON.stringify({ gone, undoPresent, cardsAfterUndo: await cards(app) }));
+      await app.mouseMove(5, 5); await sleep(200);
+    }
+  }
 
   // ===== C2: a click-drag ==========================================================================================================================================================
   await seedBoard(app);

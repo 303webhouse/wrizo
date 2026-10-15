@@ -588,22 +588,33 @@ await withHarness(async (app) => {
   const selectedShape = await app.evalJs(`document.querySelector('[data-box-id="${toRemove.id}"]').dataset.selected`);
   ok('S6 ROOT-CAUSED (not a code defect — S5\'s own downstream symptom, disclosed plainly): a single genuinely trusted click SELECTS a dealt card correctly — selection was never touched by the S5 regression at all',
     selectedShape === 'true', selectedShape);
-  const removeBtnRect = await app.evalJs(`(() => {
-    const btns = [...document.querySelectorAll('.board-action-row button')];
-    const btn = btns.find(b => b.textContent === 'Remove');
-    if (!btn) return null;
-    const r = btn.getBoundingClientRect();
-    return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) };
-  })()`);
-  ok('S6: the board-action-row\'s own Remove button is present once a dealt card is selected', !!removeBtnRect, JSON.stringify(removeBtnRect));
-  if (removeBtnRect) {
-    const countBefore = await app.evalJs('window.wrizoBoard().length');
-    await clickAt(app, removeBtnRect.x, removeBtnRect.y);
-    await sleep(400);
-    const stillThere = await app.evalJs(`!!document.querySelector('[data-box-id="${toRemove.id}"]')`);
-    const countAfter = await app.evalJs('window.wrizoBoard()?.length');
-    ok('S6: clicking Remove genuinely deletes the ACTUAL dealt card (and its own thread, if any) — already fully functional, confirmed live on the real door, not assumed from the hand-typed baseline alone',
-      !stillThere && countAfter < countBefore, JSON.stringify({ stillThere, countBefore, countAfter }));
+  // ---- PARKED - SUPERSEDED by board-click-to-create (Nick, Oct 15 1:39am): the "Remove" row is DELETED from the board surface ----
+  // S6 asserted the row's own Remove BUTTON is present and clicked it; the button no longer exists.
+  // Quoted VERBATIM below. Successor: the Delete key on the selected card (BoardEditor.tsx key handler -> removeSelected, the same snapshot("remove") path); scripts/harness/board-click-create.mjs C10/C11.
+  // const removeBtnRect = await app.evalJs(`(() => {
+  //   const btns = [...document.querySelectorAll('.board-action-row button')];
+  //   const btn = btns.find(b => b.textContent === 'Remove');
+  //   if (!btn) return null;
+  //   const r = btn.getBoundingClientRect();
+  //   return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) };
+  // })()`);
+  // ok('S6: the board-action-row\'s own Remove button is present once a dealt card is selected', !!removeBtnRect, JSON.stringify(removeBtnRect));
+  // if (removeBtnRect) {
+  //   const countBefore = await app.evalJs('window.wrizoBoard().length');
+  //   await clickAt(app, removeBtnRect.x, removeBtnRect.y);
+  //   await sleep(400);
+  //   const stillThere = await app.evalJs(`!!document.querySelector('[data-box-id="${toRemove.id}"]')`);
+  //   const countAfter = await app.evalJs('window.wrizoBoard()?.length');
+  //   ok('S6: clicking Remove genuinely deletes the ACTUAL dealt card (and its own thread, if any) — already fully functional, confirmed live on the real door, not assumed from the hand-typed baseline alone',
+  //     !stillThere && countAfter < countBefore, JSON.stringify({ stillThere, countBefore, countAfter }));
+  // }
+  {
+  ok('S6 [click-to-create successor]: there is NO Remove button on the board any more (and no action row for an ordinary selected card)', (await app.evalJs("![...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Remove') && !document.querySelector('.board-action-row')")) === true, '');
+  const countBefore = await app.evalJs('window.wrizoBoard().length');
+  await app.key('Delete'); await sleep(400);
+  const stillThere = await app.evalJs(`!!document.querySelector('[data-box-id="${toRemove.id}"]')`);
+  const countAfter = await app.evalJs('window.wrizoBoard()?.length');
+  ok('S6 [click-to-create successor]: the Delete key genuinely deletes the ACTUAL dealt card (and its own thread, if any)', !stillThere && countAfter < countBefore, JSON.stringify({ stillThere, countBefore, countAfter }));
   }
 
   // --- S7: resize one-directional --------------------------------------------

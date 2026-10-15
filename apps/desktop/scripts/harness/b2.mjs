@@ -332,8 +332,12 @@ await withHarness(async (app) => {
   // Delete inert on a derived card.
   await app.evalJs(POINTER_HELPER);
   await selectBox(app, inertCard.id);
-  await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'inert card selected' });
-  await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
+  // ---- PARKED - SUPERSEDED by board-click-to-create (Nick, Oct 15 1:39am): the "Remove" row is DELETED from the board surface ----
+  // DRIVER only - the inert-delete assertion after it is unchanged.
+  // Quoted VERBATIM below. Successor: the Delete key on the selected card (BoardEditor.tsx key handler -> removeSelected, the same snapshot("remove") path); scripts/harness/board-click-create.mjs C10/C11.
+  // await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'inert card selected' });
+  // await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
+  await app.key('Delete'); await sleep(200);
   await sleep(300);
   const boxesAfterInertRemove = await app.evalJs('window.wrizoBoard()');
   ok('S1: hand-delete (Remove) on a derived Shelf card is an INERT, quiet no-op — the exact same card set survives the click',

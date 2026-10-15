@@ -906,6 +906,8 @@ export function BoardEditor({ id }: { id: string }) {
   useEffect(() => { cardFaceNames.split('|').forEach(n => { if (n) void ensureFaceLoaded(n); }); }, [cardFaceNames]);
   boxesRef.current = boxes;
   const selectedIdRef = useRef(selectedId);
+  // Delete / Backspace on a selected card removes it (the "Remove" row is gone) - the key handler is a [] effect, so it calls the current render's removeSelected through this ref
+  const removeSelectedRef = useRef<() => void>(() => {});
   selectedIdRef.current = selectedId;
   const popupBoxIdRef = useRef(popupBoxId);
   popupBoxIdRef.current = popupBoxId;
@@ -1295,6 +1297,8 @@ export function BoardEditor({ id }: { id: string }) {
     }));
     setSelectedId(null);
   };
+
+  removeSelectedRef.current = removeSelected;
 
   // AB4 S3 — thread deletion: confirm-free (a thread is cheap; re-drawing is
   // one gesture, the brief's own words).
@@ -1991,6 +1995,15 @@ export function BoardEditor({ id }: { id: string }) {
         if (editable) return;
         e.preventDefault();
         removeConnection(selectedConnectionIdRef.current);
+        return;
+      }
+      // THE ROW IS GONE (Nick, Oct 15): the key is how a card is removed. A selected hairline takes the key first (above); typing anywhere editable never reaches this; a modified press is not a delete.
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIdRef.current && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const ae = document.activeElement as HTMLElement | null;
+        const editable = !!ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT' || ae.isContentEditable);
+        if (editable) return;
+        e.preventDefault();
+        removeSelectedRef.current();
       }
     };
     window.addEventListener('keydown', onKey);
@@ -2170,7 +2183,12 @@ export function BoardEditor({ id }: { id: string }) {
   // THE ROW NEVER MOVES THE CANVAS (Fable, Oct 15; page-primacy applied to the board). It used to sit IN FLOW above the canvas, so selecting any card mounted it and pushed the canvas down
   // by its own height (about 45px: Chat 1 measured the new card landing 45px below the press). It is an OVERLAY now: absolutely positioned, right-aligned, growing UP from the canvas's top edge
   // out of a zero-height slot (boardBody, below), over the quiet gap above the canvas - it adds no height whether it is there or not. Its own ground keeps it legible over what it overlaps.
-  const boardActionRow = selectedBox && (
+  // The "Remove" button is DELETED (Nick, Oct 15): removing a card is the Delete key now (and a context menu is coming). The row survives ONLY for the conditional actions that have no other door yet - Ungroup, Edit copy, Restore (Trash), Pin to a Board (Shelf) - so an ordinary card shows NO row at all.
+  const hasRowAction = !!selectedBox && (!!selectedBox.groupId
+    || (selectedBox.kind === 'text' && !!selectedBox.sourceEntryId)
+    || (systemKind === 'trash' && selectedBox.kind === 'page-pin' && !!selectedBox.entryId)
+    || (systemKind === 'shelf' && selectedBox.kind === 'page-pin' && !!selectedBox.entryId));
+  const boardActionRow = selectedBox && hasRowAction && (
     <div className="board-action-row" style={{ display: 'flex', gap: 12, position: 'absolute', right: 0, bottom: 6, zIndex: 6, padding: '2px 6px', background: 'var(--desk-ground)' }}>
       {selectedBox.groupId && <button type="button" className="btn-quiet" onClick={ungroup}>Ungroup</button>}
       {selectedBox.kind === 'text' && selectedBox.sourceEntryId && (
@@ -2187,7 +2205,6 @@ export function BoardEditor({ id }: { id: string }) {
       {systemKind === 'shelf' && selectedBox.kind === 'page-pin' && selectedBox.entryId && (
         <button type="button" className="btn-quiet" onClick={() => setShelfPinEntryId(selectedBox.entryId!)}>{t('pageFacePin')}</button>
       )}
-      <button type="button" className="btn-quiet" onClick={removeSelected}>Remove</button>
     </div>
   );
 
