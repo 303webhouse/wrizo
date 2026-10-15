@@ -1,0 +1,9 @@
+PASS  CARD (setup): a real double-click opens the card pop-up
+PASS  CARD: Ctrl+I, words, Ctrl+I, more words - the held italic STAYS on its words and ends where the writer pressed it off  [{"shown":"Card start\nPlain then *slanted words* and plain again","italics":["slanted words"]}]
+PASS  CARD: ...and that is what is stored  ["Card start\nPlain then *slanted words* and plain again"]
+PASS  PAGE (setup): the page opens in Draft
+PASS  PAGE: the same sequence on a Draft page keeps the italic on "slanted words" and stores it  [{"stored":"Page start\nPlain then *slanted words* and plain again","italics":["slanted words"]}]
+PASS  CONTROL: Ctrl+I with the caret in the middle of an italic run still removes the run (unchanged)  ["a slanted b"]
+PASS  END OF RUN: Ctrl+I there writes nothing, and the next letter lands OUTSIDE the run (plain)  [{"mid":"a *slanted* b","stored":"a *slanted*X b"}]
+
+CARD-HELD-ITALIC VERIFY: PASS (7 checks)
