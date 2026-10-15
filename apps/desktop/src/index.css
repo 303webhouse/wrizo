@@ -420,7 +420,12 @@
      ThinScrollbar.tsx's own FADE_OUT_DELAY_MS; this is the fade itself. */
   transition:opacity .35s ease;
 }
-.wz-thin-scrollbar.active{
+/* ROUND 6 (ThinScrollbar.tsx's own comment on `thumbReady`) — opacity/
+   pointer-events only ever reach their visible values once the thumb's
+   own rect has read stable for 2 consecutive ticks; `.active` alone (a
+   hover/scroll/drag in progress) is not enough while a layout is still
+   settling. */
+.wz-thin-scrollbar[data-ready='true'].active{
   opacity:1;
   pointer-events:auto;
   transition:opacity .15s ease;
@@ -435,7 +440,15 @@
 }
 @media (prefers-reduced-motion: reduce){
   .wz-thin-scrollbar,
-  .wz-thin-scrollbar.active{ transition:none; }
+  .wz-thin-scrollbar.active,
+  /* same specificity as the compound selector above (2 classes + 1
+     attribute each) — ties resolve by SOURCE ORDER, and this block comes
+     later, so it still wins and reduced motion still gets transition:none
+     once data-ready flips true. Without this line the compound rule above
+     would simply be a HIGHER-specificity match (2 classes + an attribute
+     vs. this block's 2 classes) and reduced motion would silently stop
+     applying the moment the thumb settled. */
+  .wz-thin-scrollbar[data-ready='true'].active{ transition:none; }
 }
 
 /* ============================================================================

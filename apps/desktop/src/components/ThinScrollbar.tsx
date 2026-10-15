@@ -138,6 +138,20 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
     const SETTLE_MS = 2000;
     const mountedAt = Date.now();
     let rafId: number | null = null;
+    // ROUND 6 (Fable, ledger 47) — "the overlay stays at opacity 0 until
+    // its first real measurement." Before this, `show()` could make the
+    // bar visible on the VERY FIRST hover, painting whatever `layoutRoot`/
+    // `layoutThumb` measured on that first tick — exactly "the pointer sits
+    // on the thumb's FIRST-frame box" Chat 1's own clue named, if that first
+    // measurement hadn't settled yet. `data-ready` only flips to 'true' once
+    // the thumb's own rect reads IDENTICAL on two consecutive ticks (the
+    // same 2-stable-frames bar the harness's own walk now waits for below —
+    // see scrollbar-minimal.mjs's waitForStableRect) — the CSS below keeps
+    // opacity/pointer-events at their rest values until then, even if
+    // `.active` is already set, so nobody (harness or writer) can ever see
+    // or interact with a not-yet-settled thumb.
+    let thumbReady = false;
+    let lastThumbRect: { top: number; left: number; height: number } | null = null;
     // Fable: "prove it, don't theorise" — a per-frame probe, off by default,
     // switched on by the harness around exactly the window S4 holds the
     // pointer still. Records hoverDepth/active/the thumb's own rendered rect
@@ -147,6 +161,15 @@ export function ThinScrollbar({ target: targetRef }: { target: RefObject<HTMLEle
     const tick = () => {
       layoutRoot();
       layoutThumb();
+      if (!thumbReady) {
+        const tr = thumb.getBoundingClientRect();
+        const cur = { top: Math.round(tr.top * 100) / 100, left: Math.round(tr.left * 100) / 100, height: Math.round(tr.height * 100) / 100 };
+        if (lastThumbRect && cur.top === lastThumbRect.top && cur.left === lastThumbRect.left && cur.height === lastThumbRect.height) {
+          thumbReady = true;
+          root.setAttribute('data-ready', 'true');
+        }
+        lastThumbRect = cur;
+      }
       if (probe.on) {
         const tr = thumb.getBoundingClientRect();
         probe.log.push({

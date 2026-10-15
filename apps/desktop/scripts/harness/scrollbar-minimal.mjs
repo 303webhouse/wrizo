@@ -132,6 +132,37 @@ const tokenColor = (app, token) => app.evalJs(`getComputedStyle(document.documen
 // the real code path, not a stand-in for it.
 const scrollTo = (app, sel, top) => app.evalJs(`(() => { document.querySelector(${JSON.stringify(sel)}).scrollTop = ${top}; })()`);
 
+// ROUND 6 (Fable, ledger 47 — "find what moves at ~90ms", then the
+// layout-shift read: the empty log proves nothing, since the Layout
+// Instability API never sees a transform/fixed-position move). The S4
+// walk used to read the thumb's rect ONCE, synchronously, right as the
+// pointer landed on the writing surface, and placed the pointer there
+// immediately — exactly "the thumb's FIRST-frame box" Chat 1's own clue
+// named. This waits for the LIVE rect to read identical on two CONSECUTIVE
+// animation frames before resolving, entirely in-page (rAF, not a harness-
+// side sleep guess) so it is paced by the browser's own paint clock, not
+// wall-clock timing. Bails after maxFrames rather than hang the suite if
+// the rect never settles — recorded either way, never a silent guess.
+const waitForStableRect = (app, sel, maxFrames = 120) => app.evalJs(`new Promise((resolve) => {
+  const el = document.querySelector(${JSON.stringify(sel)});
+  if (!el) { resolve({ stable: false, rect: null, frames: 0 }); return; }
+  let last = null, stableStreak = 0, frames = 0;
+  const round = (n) => Math.round(n * 100) / 100;
+  const tick = () => {
+    frames += 1;
+    const r = el.getBoundingClientRect();
+    const cur = { top: round(r.top), left: round(r.left), height: round(r.height) };
+    if (last && cur.top === last.top && cur.left === last.left && cur.height === last.height) {
+      stableStreak += 1;
+      if (stableStreak >= 1) { resolve({ stable: true, rect: cur, frames }); return; } // this frame + the one before it: 2 in a row
+    } else { stableStreak = 0; }
+    last = cur;
+    if (frames >= ${maxFrames}) { resolve({ stable: false, rect: cur, frames }); return; }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+})`);
+
 await withHarness(async (app) => {
   // ==========================================================================
   // S1 — HIDDEN AT REST, on both writing surfaces.
@@ -249,7 +280,18 @@ await withHarness(async (app) => {
   // `mouseleave`, even though the pointer never left the writing surface.
   // Without the overlay's own mirrored enter/leave pair, that mouseleave
   // would schedule a hide the instant the pointer reaches the thumb.
-  const thumbPointForHover = await app.evalJs("(() => { const t = document.querySelector('.mode-scroll').nextElementSibling.querySelector('.wz-thin-scrollbar-thumb'); const r = t.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+  //
+  // ROUND 6: wait for the thumb's own rect to settle (2 consecutive stable
+  // frames) BEFORE computing where to place the pointer — see
+  // waitForStableRect's own header. Recorded as its own check: if this
+  // ever stops settling within maxFrames, that is itself worth seeing,
+  // not a silent fallback to the old first-frame read.
+  const thumbSettle = await waitForStableRect(app, '.wz-thin-scrollbar-thumb');
+  ok('S4 (walk): the thumb\'s own rect reaches 2 stable frames before the pointer is placed on it',
+    thumbSettle.stable === true, JSON.stringify(thumbSettle));
+  const thumbRectForHover = thumbSettle.rect || await app.evalJs("(() => { const t = document.querySelector('.mode-scroll').nextElementSibling.querySelector('.wz-thin-scrollbar-thumb'); const r = t.getBoundingClientRect(); return { top: r.top, left: r.left, height: r.height }; })()");
+  const thumbWidthForHover = await app.evalJs("document.querySelector('.wz-thin-scrollbar-thumb').getBoundingClientRect().width");
+  const thumbPointForHover = { x: Math.round(thumbRectForHover.left + thumbWidthForHover / 2), y: Math.round(thumbRectForHover.top + thumbRectForHover.height / 2) };
   // Fable: "prove it, don't theorise" — ThinScrollbar.tsx's own probe seam
   // (window.wrizoThinScrollbar.probe) records hoverDepth/active/the thumb's
   // own rendered rect EVERY FRAME. Started right as the pointer lands on the
