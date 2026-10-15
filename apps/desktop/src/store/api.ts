@@ -1,4 +1,5 @@
 import type { DirtyRecords, RemoteRecords } from './persistence';
+import { withoutFontMarks } from './markRuns';
 
 // Thin fetch wrappers around the server's /auth and /api endpoints. Same-origin
 // in production (server serves the app); a vite dev proxy covers local dev.
@@ -162,7 +163,14 @@ export async function apiTutorChat(
   selection?: string,
 ): Promise<TutorChatResult> {
   try {
-    const res = await postJson('/api/tutor/chat', { messages, delta, bible, selection });
+    // FONT-SPAN (Fable's addition 1, Oct 15): the Tutor reads the WORDS - a font span's marks (`[`, `]{.font-<slug>}`) are taken out of
+    // every text it is sent, here at the one wire call, so no prompt builder above can forget it. Every other convention is kept as
+    // it always travelled; a text with no span is passed through untouched (and an absent key stays absent).
+    const plain = (t: string | undefined) => (t === undefined ? undefined : withoutFontMarks(t));
+    const res = await postJson('/api/tutor/chat', {
+      messages: messages.map((m) => (m.text.includes('{.font-') ? { ...m, text: withoutFontMarks(m.text) } : m)),
+      delta: plain(delta), bible: plain(bible), selection: plain(selection),
+    });
     if (!res.ok) return { ok: false, configured: true };
     const data = (await res.json()) as {
       configured: boolean;

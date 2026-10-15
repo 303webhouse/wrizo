@@ -3907,6 +3907,19 @@ a:focus-visible,
 .wz-type-row{ padding:4px 8px; font-size:14px; cursor:pointer; color:var(--text-hi); }
 .wz-type-row:hover{ background:var(--ink-800, rgba(0,0,0,.06)); }
 .wz-type-row[data-current='true']{ color:var(--accent-rest); }
+/* FONT-SPAN (cursor/font-choices @ 6cc5f529, Nick approved Oct 15) - the scoped Typeface section, where words can be highlighted
+   (Draft, a card): the two scopes over the roster SHOWN as a list. Brass marks the current choice - the scope in force and the face
+   that is current for it (none for a mixed highlight); a dead Selection (nothing highlighted) is dimmed and inert. Choosing is the
+   preview, no Apply; nothing here moves the page. */
+.wz-type-scopes{ flex:1 0 100%; display:flex; gap:6px; }
+.wz-type-scope{ flex:1 1 0; min-width:0; padding:6px 4px; font-family:var(--font-label, var(--font-ui)); font-size:12px; color:var(--text-mid);
+  background:none; border:1px solid var(--ink-border-strong); border-radius:0; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; }
+.wz-type-scope:hover{ color:var(--text-hi); }
+.wz-type-scope[data-on='true']{ color:var(--brass); border-color:var(--brass); }
+.wz-type-scope[aria-disabled='true']{ opacity:.4; cursor:default; }
+.wz-type-scope[aria-disabled='true']:hover{ color:var(--text-mid); }
+.wz-type[data-scoped='true'] .wz-type-list-inline{ border:none; padding:0; }
+.wz-type[data-scoped='true'] .wz-type-row[data-current='true']{ color:var(--brass); }
 .wz-type-size{ display:flex; align-items:center; gap:2px; }
 .wz-type-step[aria-disabled='true']{ opacity:.35; cursor:default; }
 .wz-type-num{ width:3.2em; text-align:center; padding:3px 2px; background:none; color:var(--text-hi);
