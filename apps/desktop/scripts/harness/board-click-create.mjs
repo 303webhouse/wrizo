@@ -100,6 +100,7 @@ await withHarness(async (app) => {
   ok('fixture: an empty board, with its starters, and no card', starters0 === true && (await cards(app)) === 0, String(starters0));
   const p = await emptyPoint(app);
   if (!p) { ok('fixture: a point on the empty canvas exists', false); return; }
+  const canvasTop0 = await app.evalJs("Math.round(document.querySelector('.board-canvas').getBoundingClientRect().top * 10) / 10");
   await app.mouseMove(p.x, p.y); await sleep(80);
   await app.mouseDown(p.x, p.y); await sleep(120);
   const gHeld = await ghost(app);
@@ -107,6 +108,8 @@ await withHarness(async (app) => {
   await app.mouseUp(p.x, p.y);
   await waitSoft(app, "!!document.querySelector('.board-popup')", { label: 'popup', timeout: 4000 });
   const c1 = await firstCard(app);
+  const canvasTopAfterCreate = await app.evalJs("Math.round(document.querySelector('.board-canvas').getBoundingClientRect().top * 10) / 10");
+  ok('C9: and creating (which selects) the new card does not move the canvas either - so the card lands where the pointer was', canvasTop0 != null && canvasTop0 === canvasTopAfterCreate, JSON.stringify({ canvasTop0, canvasTopAfterCreate }));
   ok('C1: on release a card exists with its top-left AT the press point, and its pop-up is open AT ONCE - as if it had been double-clicked (Nick\'s correction: a plain click opens the pop-up too); the ghost is gone', (await cards(app)) === 1 && !!c1 && near(c1.left, p.x) && near(c1.top, p.y) && (await popupOpen(app)) && ((await ghost(app)) || {}).display === 'none', JSON.stringify({ p, c1 }));
 
   // ===== C3: closed while still empty -> discarded; C4: with words -> kept =======================================================================================================
@@ -122,8 +125,11 @@ await withHarness(async (app) => {
 
   // ===== C5 / C6: a press ON a card makes none; a press on empty still deselects ==================================================================================================
   const card = await firstCard(app);
+  const canvasTopBeforeSelect = await app.evalJs("Math.round(document.querySelector('.board-canvas').getBoundingClientRect().top * 10) / 10");
   await app.mouseMove(card.left + card.width / 2, card.top + card.height / 2); await app.mouseDown(card.left + card.width / 2, card.top + card.height / 2); await sleep(60); await app.mouseUp(card.left + card.width / 2, card.top + card.height / 2); await sleep(300);
   const selectedAfterCardPress = await app.evalJs("document.querySelector('.board-box[data-kind=\"text\"]')?.getAttribute('data-selected')");
+  const canvasTopAfterSelect = await app.evalJs("Math.round(document.querySelector('.board-canvas').getBoundingClientRect().top * 10) / 10");
+  ok('C9: SELECTING a card never moves the canvas (the selected-card row is an overlay that adds no height) - the canvas top is the same before and after, for an EXISTING card', canvasTopBeforeSelect != null && canvasTopBeforeSelect === canvasTopAfterSelect, JSON.stringify({ canvasTopBeforeSelect, canvasTopAfterSelect }));
   ok('C5: a press ON a card selects it and makes NO new card', (await cards(app)) === 1 && selectedAfterCardPress === 'true', JSON.stringify({ cards: await cards(app), selectedAfterCardPress }));
   // THE RULING (Fable, Oct 14): with a card selected, the FIRST empty-space click only deselects and creates nothing; the next one (nothing selected) is the one that creates.
   const q = await emptyPoint(app);

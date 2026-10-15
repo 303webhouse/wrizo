@@ -2167,8 +2167,11 @@ export function BoardEditor({ id }: { id: string }) {
   // card anymore).
   // B1 S4 — the Trash Board's own Restore, joining the row's existing
   // conditional buttons exactly the way ungroup/Edit-copy already do.
+  // THE ROW NEVER MOVES THE CANVAS (Fable, Oct 15; page-primacy applied to the board). It used to sit IN FLOW above the canvas, so selecting any card mounted it and pushed the canvas down
+  // by its own height (about 45px: Chat 1 measured the new card landing 45px below the press). It is an OVERLAY now: absolutely positioned, right-aligned, growing UP from the canvas's top edge
+  // out of a zero-height slot (boardBody, below), over the quiet gap above the canvas - it adds no height whether it is there or not. Its own ground keeps it legible over what it overlaps.
   const boardActionRow = selectedBox && (
-    <div className="board-action-row" style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
+    <div className="board-action-row" style={{ display: 'flex', gap: 12, position: 'absolute', right: 0, bottom: 6, zIndex: 6, padding: '2px 6px', background: 'var(--desk-ground)' }}>
       {selectedBox.groupId && <button type="button" className="btn-quiet" onClick={ungroup}>Ungroup</button>}
       {selectedBox.kind === 'text' && selectedBox.sourceEntryId && (
         <button type="button" className="btn-quiet" onClick={() => setPopupBoxId(selectedBox.id)}>{t('boardEditCopy')}</button>
@@ -2542,7 +2545,8 @@ export function BoardEditor({ id }: { id: string }) {
   // anywhere — b3.mjs asserts this explicitly, not merely by omission.
   const boardBody = (
     <>
-      {boardActionRow}
+      {/* the zero-height slot the selected-card row floats up out of (see boardActionRow): the canvas below never moves */}
+      <div className="board-action-slot" style={{ position: 'relative', height: 0 }}>{boardActionRow}</div>
       <div className={`board-canvas-blur-wrap${(popupBox || deckWizardOpen) ? ' board-canvas-blurred' : ''}`}>
         {boardCanvas}
       </div>
