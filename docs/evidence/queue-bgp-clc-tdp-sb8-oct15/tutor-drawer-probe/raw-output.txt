@@ -1,0 +1,84 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+{
+  "plateau": {
+    "opened": true,
+    "grip": {
+      "selfAndParents": "(() => {\n  const el = document.querySelector(\".wz-tutor-grip\"); if (!el) return null;\n  const describe = (node) => {\n    const r = node.getBoundingClientRect();\n    const cs = getComputedStyle(node);\n    return {\n      tag: node.tagName.toLowerCase(), id: node.id || null, className: node.className || null,\n      rect: { top: Math.round(r.top), left: Math.round(r.left), right: Math.round(r.right), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) },\n      computed: { position: cs.position, top: cs.top, right: cs.right, bottom: cs.bottom, left: cs.left, zIndex: cs.zIndex, transform: cs.transform },\n    };\n  };\n  const chain = []; let node = el;\n  for (let i = 0; i < 6 && node; i++) { chain.push(describe(node)); node = node.parentElement; }\n  return chain;\n})()",
+      "glyph": "(() => {\n  const el = document.querySelector(\".wz-tutor-grip-glyph\"); if (!el) return null;\n  const describe = (node) => {\n    const r = node.getBoundingClientRect();\n    const cs = getComputedStyle(node);\n    return {\n      tag: node.tagName.toLowerCase(), id: node.id || null, className: node.className || null,\n      rect: { top: Math.round(r.top), left: Math.round(r.left), right: Math.round(r.right), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) },\n      computed: { position: cs.position, top: cs.top, right: cs.right, bottom: cs.bottom, left: cs.left, zIndex: cs.zIndex, transform: cs.transform },\n    };\n  };\n  const chain = []; let node = el;\n  for (let i = 0; i < 1 && node; i++) { chain.push(describe(node)); node = node.parentElement; }\n  return chain;\n})()",
+      "matchingColorRules": []
+    },
+    "tutorTab": {
+      "selfAndParents": "(() => {\n  const el = document.querySelector(\"#wz-tutor-tab-tutor\"); if (!el) return null;\n  const describe = (node) => {\n    const r = node.getBoundingClientRect();\n    const cs = getComputedStyle(node);\n    return {\n      tag: node.tagName.toLowerCase(), id: node.id || null, className: node.className || null,\n      rect: { top: Math.round(r.top), left: Math.round(r.left), right: Math.round(r.right), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) },\n      computed: { position: cs.position, top: cs.top, right: cs.right, bottom: cs.bottom, left: cs.left, zIndex: cs.zIndex, transform: cs.transform },\n    };\n  };\n  const chain = []; let node = el;\n  for (let i = 0; i < 3 && node; i++) { chain.push(describe(node)); node = node.parentElement; }\n  return chain;\n})()",
+      "dataOn": "true",
+      "computed": {
+        "color": "rgb(255, 152, 0)",
+        "borderTopColor": "rgb(255, 152, 0)",
+        "borderBottomColor": "rgb(255, 152, 0)",
+        "borderLeftColor": "rgb(255, 152, 0)",
+        "borderRightColor": "rgb(255, 152, 0)",
+        "borderStyle": "solid",
+        "borderWidth": "1px",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "matchingRules": []
+    },
+    "overlap": {
+      "grip": {
+        "left": 1250,
+        "top": 121,
+        "right": 1266,
+        "bottom": 155
+      },
+      "tutorTab": {
+        "left": 914,
+        "top": 120,
+        "right": 1127,
+        "bottom": 146
+      },
+      "intersects": false,
+      "intersectArea": 0
+    }
+  },
+  "flux": {
+    "opened": true,
+    "grip": {
+      "selfAndParents": "(() => {\n  const el = document.querySelector(\".wz-tutor-grip\"); if (!el) return null;\n  const describe = (node) => {\n    const r = node.getBoundingClientRect();\n    const cs = getComputedStyle(node);\n    return {\n      tag: node.tagName.toLowerCase(), id: node.id || null, className: node.className || null,\n      rect: { top: Math.round(r.top), left: Math.round(r.left), right: Math.round(r.right), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) },\n      computed: { position: cs.position, top: cs.top, right: cs.right, bottom: cs.bottom, left: cs.left, zIndex: cs.zIndex, transform: cs.transform },\n    };\n  };\n  const chain = []; let node = el;\n  for (let i = 0; i < 6 && node; i++) { chain.push(describe(node)); node = node.parentElement; }\n  return chain;\n})()",
+      "glyph": "(() => {\n  const el = document.querySelector(\".wz-tutor-grip-glyph\"); if (!el) return null;\n  const describe = (node) => {\n    const r = node.getBoundingClientRect();\n    const cs = getComputedStyle(node);\n    return {\n      tag: node.tagName.toLowerCase(), id: node.id || null, className: node.className || null,\n      rect: { top: Math.round(r.top), left: Math.round(r.left), right: Math.round(r.right), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) },\n      computed: { position: cs.position, top: cs.top, right: cs.right, bottom: cs.bottom, left: cs.left, zIndex: cs.zIndex, transform: cs.transform },\n    };\n  };\n  const chain = []; let node = el;\n  for (let i = 0; i < 1 && node; i++) { chain.push(describe(node)); node = node.parentElement; }\n  return chain;\n})()",
+      "matchingColorRules": []
+    },
+    "tutorTab": {
+      "selfAndParents": "(() => {\n  const el = document.querySelector(\"#wz-tutor-tab-tutor\"); if (!el) return null;\n  const describe = (node) => {\n    const r = node.getBoundingClientRect();\n    const cs = getComputedStyle(node);\n    return {\n      tag: node.tagName.toLowerCase(), id: node.id || null, className: node.className || null,\n      rect: { top: Math.round(r.top), left: Math.round(r.left), right: Math.round(r.right), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) },\n      computed: { position: cs.position, top: cs.top, right: cs.right, bottom: cs.bottom, left: cs.left, zIndex: cs.zIndex, transform: cs.transform },\n    };\n  };\n  const chain = []; let node = el;\n  for (let i = 0; i < 3 && node; i++) { chain.push(describe(node)); node = node.parentElement; }\n  return chain;\n})()",
+      "dataOn": "true",
+      "computed": {
+        "color": "rgb(255, 152, 0)",
+        "borderTopColor": "rgb(255, 152, 0)",
+        "borderBottomColor": "rgb(255, 152, 0)",
+        "borderLeftColor": "rgb(255, 152, 0)",
+        "borderRightColor": "rgb(255, 152, 0)",
+        "borderStyle": "solid",
+        "borderWidth": "1px",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "matchingRules": []
+    },
+    "overlap": {
+      "grip": {
+        "left": 1250,
+        "top": 122,
+        "right": 1266,
+        "bottom": 156
+      },
+      "tutorTab": {
+        "left": 914,
+        "top": 121,
+        "right": 1127,
+        "bottom": 147
+      },
+      "intersects": false,
+      "intersectArea": 0
+    }
+  }
+}
+
+TUTOR-DRAWER-PROBE: dump complete, no assertions - read above, do not grep for VERIFY.

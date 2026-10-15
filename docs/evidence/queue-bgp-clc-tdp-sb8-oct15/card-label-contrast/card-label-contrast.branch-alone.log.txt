@@ -1,0 +1,21 @@
+PASS  [plateau/light] (premise) the board is in theme=plateau page=light  [{"theme":"plateau","page":"light"}]
+PASS  [plateau/light] C1: the connections footer carries against its own card stock (computed 5.77:1, >= 4.5)  [{"fg":"rgb(107, 95, 78)","bg":"rgb(251, 246, 234)","ratio":5.77}]
+PASS  [plateau/light] C2: the pin's badge carries against its own card stock (computed 7.11:1, >= 4.5)  [{"fg":"rgb(79, 87, 48)","bg":"rgb(251, 246, 234)","ratio":7.11}]
+PASS  [plateau/light] C2b: the pin's excerpt carries against its own card stock (computed 5.77:1, >= 4.5)  [{"fg":"rgb(107, 95, 78)","bg":"rgb(251, 246, 234)","ratio":5.77}]
+FAIL  [plateau/light] (premise) selecting the overlapping card A sets data-overlapping
+PASS  [flux/light] (premise) the board is in theme=flux page=light  [{"theme":"flux","page":"light"}]
+PASS  [flux/light] C1: the connections footer carries against its own card stock (computed 5.77:1, >= 4.5)  [{"fg":"rgb(107, 95, 78)","bg":"rgb(251, 246, 234)","ratio":5.77}]
+PASS  [flux/light] C2: the pin's badge carries against its own card stock (computed 7.11:1, >= 4.5)  [{"fg":"rgb(79, 87, 48)","bg":"rgb(251, 246, 234)","ratio":7.11}]
+PASS  [flux/light] C2b: the pin's excerpt carries against its own card stock (computed 5.77:1, >= 4.5)  [{"fg":"rgb(107, 95, 78)","bg":"rgb(251, 246, 234)","ratio":5.77}]
+FAIL  [flux/light] (premise) selecting the overlapping card A sets data-overlapping
+PASS  [flux/dark] (premise) the board is in theme=flux page=dark  [{"theme":"flux","page":"dark"}]
+PASS  [flux/dark] C1: the connections footer carries against its own card stock (computed 5.77:1, >= 4.5)  [{"fg":"rgb(107, 95, 78)","bg":"rgb(251, 246, 234)","ratio":5.77}]
+PASS  [flux/dark] C2: the pin's badge carries against its own card stock (computed 7.11:1, >= 4.5)  [{"fg":"rgb(79, 87, 48)","bg":"rgb(251, 246, 234)","ratio":7.11}]
+PASS  [flux/dark] C2b: the pin's excerpt carries against its own card stock (computed 5.77:1, >= 4.5)  [{"fg":"rgb(107, 95, 78)","bg":"rgb(251, 246, 234)","ratio":5.77}]
+FAIL  [flux/dark] (premise) selecting the overlapping card A sets data-overlapping
+PASS  [plateau/light] C4: --ink-on-card-meta/--badge-on-card resolve (#6B5F4E / #4F5730)  [{"meta":"#6B5F4E","badge":"#4F5730"}]
+PASS  [flux/light] C4: --ink-on-card-meta/--badge-on-card resolve (#6B5F4E / #4F5730)  [{"meta":"#6B5F4E","badge":"#4F5730"}]
+PASS  [flux/dark] C4: --ink-on-card-meta/--badge-on-card resolve (#6B5F4E / #4F5730)  [{"meta":"#6B5F4E","badge":"#4F5730"}]
+PASS  C4: the same two values resolve in every tone - one un-themed ink, not three coincidences  [["{\"meta\":\"#6B5F4E\",\"badge\":\"#4F5730\"}"]]
+
+CARD-LABEL-CONTRAST VERIFY: FAIL - 3/19 failed

@@ -1,0 +1,9 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=1 tree=9c92eda4 bundle=index-CUHmuTaN.js/668215b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/q2-clca
+[01/1] FAIL      exit=1   54s card-label-contrast.mjs :: CARD-LABEL-CONTRAST VERIFY: FAIL - 3/19 failed
+
+SUITE DONE HARNESS_PARKED=unset — 0/1 of 1 returned a passing verdict
+  FAIL: card-label-contrast.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\q2-clca\card-label-contrast.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=9c92eda4 bundle=index-CUHmuTaN.js/668215b NO-REBUILD
