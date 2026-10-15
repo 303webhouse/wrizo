@@ -250,7 +250,11 @@ await withHarness(async (app) => {
       await app.evalJs(`document.querySelector('[data-box-id="${pinBox.id}"]').dispatchEvent(new PointerEvent('pointerdown', { clientX: 1, clientY: 1, pointerId: 1, pointerType: 'mouse', bubbles: true, isPrimary: true }))`);
       await app.evalJs(`document.querySelector('[data-box-id="${pinBox.id}"]').dispatchEvent(new PointerEvent('pointerup', { clientX: 1, clientY: 1, pointerId: 1, pointerType: 'mouse', bubbles: true, isPrimary: true }))`);
       await sleep(150);
-      await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Remove')?.click()");
+      // ---- PARKED - SUPERSEDED by board-click-to-create (Nick, Oct 15 1:39am): the "Remove" row is DELETED from the board surface ----
+      // DRIVER only - the assertion after it (the membership ends) is unchanged.
+      // Quoted VERBATIM below. Successor: the Delete key on the selected card (BoardEditor.tsx key handler -> removeSelected, the same snapshot("remove") path); scripts/harness/board-click-create.mjs C10/C11.
+      // await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Remove')?.click()");
+      await app.key('Delete'); await sleep(200);
       await sleep(200);
       const boxesAfterUnpin = await app.evalJs('window.wrizoBoard ? window.wrizoBoard() : null');
       ok('S2 (PW1 successor of "unpinning removes the card from the board"): the board card\'s own Remove still ends the MEMBERSHIP outright — unchanged mechanic, new precondition. It is deliberately a different act, and a different word, from the rail\'s "Hide from the board", which ends only the display',

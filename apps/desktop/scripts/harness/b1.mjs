@@ -358,8 +358,12 @@ await withHarness(async (app) => {
   const boxesBeforeInertDelete = await app.evalJs('window.wrizoBoard()');
   const someCardId = boxesBeforeInertDelete.find((b) => b.kind === 'page-pin')?.id;
   await selectBox(app, someCardId);
-  await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'a Journal card selected' });
-  await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
+  // ---- PARKED - SUPERSEDED by board-click-to-create (Nick, Oct 15 1:39am): the "Remove" row is DELETED from the board surface ----
+  // DRIVER only - a derived card has no row action now, so there is no row to wait for; the inert-delete assertion after it is unchanged (the Delete key on a system Board is the same quiet no-op).
+  // Quoted VERBATIM below. Successor: the Delete key on the selected card (BoardEditor.tsx key handler -> removeSelected, the same snapshot("remove") path); scripts/harness/board-click-create.mjs C10/C11.
+  // await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'a Journal card selected' });
+  // await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
+  await app.key('Delete'); await sleep(200);
   await sleep(300);
   const boxesAfterInertDelete = await app.evalJs('window.wrizoBoard()');
   ok('S3: hand-delete (Remove) on a derived card is an INERT, quiet no-op — the exact same card set survives the click, byte-identical',
@@ -439,8 +443,12 @@ await withHarness(async (app) => {
 
   await app.evalJs(POINTER_HELPER);
   await selectBox(app, 'b1-user-card');
-  await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'user board card selected' });
-  await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
+  // ---- PARKED - SUPERSEDED by board-click-to-create (Nick, Oct 15 1:39am): the "Remove" row is DELETED from the board surface ----
+  // DRIVER only - the assertion after it (an ordinary board card is genuinely removed) is unchanged.
+  // Quoted VERBATIM below. Successor: the Delete key on the selected card (BoardEditor.tsx key handler -> removeSelected, the same snapshot("remove") path); scripts/harness/board-click-create.mjs C10/C11.
+  // await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'user board card selected' });
+  // await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
+  await app.key('Delete'); await sleep(200);
   await sleep(250);
   const userBoardAfterDelete = await app.evalJs('window.wrizoBoard()');
   ok('S3: hand-delete on an ORDINARY board card genuinely REMOVES it — untouched by this ticket\'s inert-delete guard (scoped to system Boards only)',

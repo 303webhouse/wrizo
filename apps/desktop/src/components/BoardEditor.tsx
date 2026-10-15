@@ -925,9 +925,20 @@ export function BoardEditor({ id }: { id: string }) {
   useEffect(() => { cardFaceNames.split('|').forEach(n => { if (n) void ensureFaceLoaded(n); }); }, [cardFaceNames]);
   boxesRef.current = boxes;
   const selectedIdRef = useRef(selectedId);
+  // Delete / Backspace on a selected card removes it (the "Remove" row is gone) - the key handler is a [] effect, so it calls the current render's removeSelected through this ref
+  const removeSelectedRef = useRef<() => void>(() => {});
   selectedIdRef.current = selectedId;
   const popupBoxIdRef = useRef(popupBoxId);
   popupBoxIdRef.current = popupBoxId;
+  // BOARD CLICK-TO-CREATE (Fable, Oct 14) - a click on EMPTY board space makes a card there; a click-drag sizes it first, with a ghost outline following the pointer; on release the card
+  // pop-up opens, and a card made this way and closed while still empty is discarded. OPEN projection on an ordinary board only (STORYBOARD/OUTLINE have their own card doors, a system
+  // board's cards are derived). These are refs because the gesture lives in the canvas's native pointer listeners (below), which must read the CURRENT answer, not a stale closure.
+  const createAllowedRef = useRef(false);
+  createAllowedRef.current = !isSystemBoard && boardMode === 'open';
+  const ghostRef = useRef<HTMLDivElement | null>(null);
+  const freshEmptyIdsRef = useRef<Set<string>>(new Set());
+  // the starters' fade (BeginningsRow): the first press anywhere on the board dismisses them; a board that gets cards and later empties again starts them fresh
+  const [startersFaded, setStartersFaded] = useState(false);
   const threadArmedFromRef = useRef(threadArmedFrom);
   threadArmedFromRef.current = threadArmedFrom;
   const selectedConnectionIdRef = useRef(selectedConnectionId);
@@ -1310,6 +1321,8 @@ export function BoardEditor({ id }: { id: string }) {
     setSelectedId(null);
   };
 
+  removeSelectedRef.current = removeSelected;
+
   // AB4 S3 — thread deletion: confirm-free (a thread is cheap; re-drawing is
   // one gesture, the brief's own words).
   const removeConnection = (connId: string) => {
@@ -1493,7 +1506,10 @@ export function BoardEditor({ id }: { id: string }) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    let phase: 'idle' | 'pending' | 'dragging' | 'resizing' | 'threadDrag' = 'idle';
+    let phase: 'idle' | 'pending' | 'dragging' | 'resizing' | 'threadDrag' | 'creating' = 'idle';
+    // BOARD CLICK-TO-CREATE - the press that may become a card: where it began (client px), whether it has been dragged past the threshold, and the geometry the ghost shows
+    let createOrigin: { x: number; y: number } | null = null;
+    let createDragged = false;
     let startX = 0, startY = 0, ptype = 'mouse';
     let activePointerId: number | null = null;
     let longPressTimer: ReturnType<typeof setTimeout> | null = null;
@@ -1564,6 +1580,52 @@ export function BoardEditor({ id }: { id: string }) {
       const maxZ = boxesRef.current.reduce((m, x) => Math.max(m, x.z), 0);
       const conn: Box = { id: generateId(), kind: 'connection', x: 0, y: 0, w: 0, h: 0, z: maxZ + 1, connA: from, connB: targetId };
       setBoxes(prev => [...prev, conn]);
+    };
+
+    // BOARD CLICK-TO-CREATE - the card the press would make, in the board's own units (x and BOTH y and h are fractions of the WIDTH, as every box here is). A plain press takes the
+    // default card size with its top-left AT the press; a drag takes the rectangle between the press and the pointer. Always floored at the minimum card and clamped to the board.
+    const createRectAt = (clientX: number, clientY: number) => {
+      const cr = canvas.getBoundingClientRect();
+      const W = cr.width || pageWidthPx;
+      const ox = ((createOrigin as { x: number; y: number }).x - cr.left) / W;
+      const oy = ((createOrigin as { x: number; y: number }).y - cr.top) / W;
+      let x: number, y: number, w: number, h: number;
+      if (!createDragged) { x = ox; y = oy; w = NEW_CARD_W; h = NEW_CARD_H; }
+      else {
+        const px = (clientX - cr.left) / W, py = (clientY - cr.top) / W;
+        x = Math.min(ox, px); y = Math.min(oy, py); w = Math.abs(px - ox); h = Math.abs(py - oy);
+      }
+      w = Math.min(Math.max(w, MIN_TEXT_W), 1);
+      h = Math.max(h, MIN_TEXT_H);
+      x = Math.min(Math.max(x, 0), Math.max(1 - w, 0));
+      y = Math.min(Math.max(y, 0), Math.max(BOARD_MAX_Y - BOARD_BREATHING_ROOM - h, 0));
+      return { x, y, w, h };
+    };
+    const showGhost = (clientX: number, clientY: number) => {
+      const g = ghostRef.current;
+      if (!g || !createOrigin) return;
+      const r = createRectAt(clientX, clientY);
+      g.style.display = 'block';
+      g.style.left = `${r.x * pageWidthPx}px`; g.style.top = `${r.y * pageWidthPx}px`;
+      g.style.width = `${r.w * pageWidthPx}px`; g.style.height = `${r.h * pageWidthPx}px`;
+    };
+    const hideGhost = () => { const g = ghostRef.current; if (g) g.style.display = 'none'; };
+    const finishCreate = (commit: boolean, e?: PointerEvent) => {
+      if (activePointerId != null && canvas.hasPointerCapture(activePointerId)) {
+        try { canvas.releasePointerCapture(activePointerId); } catch { /* already released */ }
+      }
+      hideGhost();
+      const origin = createOrigin;
+      phase = 'idle';
+      if (!commit || !origin || !e) { createOrigin = null; createDragged = false; return; }
+      const r = createRectAt(e.clientX, e.clientY);
+      createOrigin = null; createDragged = false;
+      const maxZ = boxesRef.current.reduce((m, b) => Math.max(m, b.z), 0);
+      const box: Box = { id: generateId(), kind: 'text', x: r.x, y: r.y, w: r.w, h: r.h, z: maxZ + 1, text: '' };
+      freshEmptyIdsRef.current.add(box.id);   // a card made by this gesture and closed still empty is discarded (the pop-up's onClose, below)
+      setBoxes(prev => [...prev, box]);
+      setSelectedId(box.id);
+      setPopupBoxId(box.id);
     };
 
     const beginMove = (ids: string[]) => {
@@ -1643,6 +1705,7 @@ export function BoardEditor({ id }: { id: string }) {
     const onDown = (e: PointerEvent) => {
       if (popupBoxIdRef.current) return; // the card popup is open — board gestures stand down
       const target = e.target as HTMLElement;
+      setStartersFaded(true);   // BOARD CLICK-TO-CREATE: the empty board's starters fade on the first press anywhere on the board
 
       // FX7 S8 — root-caused live (not guessed): the layer-toggle button's
       // own `onMouseDown={e => e.stopPropagation()}` (below, in the card's
@@ -1716,7 +1779,19 @@ export function BoardEditor({ id }: { id: string }) {
       }
 
       if (!boxEl) {
-        setSelectedId(null);
+        // RULING (Fable, Oct 14): with a card selected, the FIRST empty-space press only deselects - it makes nothing. The next press, with nothing selected, is the one that creates.
+        const hadSelectedCard = selectedIdRef.current != null;
+        setSelectedId(null);   // unchanged: a press on empty space deselects the selected card
+        // BOARD CLICK-TO-CREATE: ...and, on GENUINELY empty canvas (the press landed on the canvas itself - not a door, a hairline, the resize handle or anything laid over it) with nothing selected, begins a card.
+        if (!hadSelectedCard && createAllowedRef.current && target === canvas && (e.pointerType !== 'mouse' || e.button === 0)) {
+          e.preventDefault();   // no native text-selection drag starting under the card being sized
+          createOrigin = { x: e.clientX, y: e.clientY };
+          createDragged = false;
+          activePointerId = e.pointerId; startX = e.clientX; startY = e.clientY; ptype = e.pointerType;
+          phase = 'creating';
+          try { canvas.setPointerCapture(activePointerId); } catch { /* gone */ }
+          showGhost(e.clientX, e.clientY);
+        }
         return;
       }
 
@@ -1759,6 +1834,12 @@ export function BoardEditor({ id }: { id: string }) {
     };
 
     const onMove = (e: PointerEvent) => {
+      if (phase === 'creating') {
+        if (!createDragged && Math.hypot(e.clientX - startX, e.clientY - startY) > MOUSE_DRAG_THRESHOLD) createDragged = true;
+        if (createDragged) e.preventDefault();
+        showGhost(e.clientX, e.clientY);
+        return;
+      }
       if (phase === 'threadDrag') {
         e.preventDefault();
         updateThreadPreview(e.clientX, e.clientY);
@@ -1880,6 +1961,7 @@ export function BoardEditor({ id }: { id: string }) {
     };
 
     const onUp = (e: PointerEvent) => {
+      if (phase === 'creating') { finishCreate(true, e); return; }
       if (phase === 'threadDrag') { finishThreadDrag(e); return; }
       finish(true);
     };
@@ -1887,6 +1969,7 @@ export function BoardEditor({ id }: { id: string }) {
       // A genuine pointercancel (not a plain release) always disarms
       // without ever committing — never trust wherever the OS happened to
       // report the pointer at cancel time.
+      if (phase === 'creating') { finishCreate(false); return; }   // a touch drag that turned into a native scroll cancels the card, cleanly
       if (phase === 'threadDrag') {
         clearTimer();
         if (activePointerId != null && canvas.hasPointerCapture(activePointerId)) {
@@ -1959,6 +2042,15 @@ export function BoardEditor({ id }: { id: string }) {
         if (editable) return;
         e.preventDefault();
         removeConnection(selectedConnectionIdRef.current);
+        return;
+      }
+      // THE ROW IS GONE (Nick, Oct 15): the key is how a card is removed. A selected hairline takes the key first (above); typing anywhere editable never reaches this; a modified press is not a delete.
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIdRef.current && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const ae = document.activeElement as HTMLElement | null;
+        const editable = !!ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT' || ae.isContentEditable);
+        if (editable) return;
+        e.preventDefault();
+        removeSelectedRef.current();
       }
     };
     window.addEventListener('keydown', onKey);
@@ -2135,8 +2227,18 @@ export function BoardEditor({ id }: { id: string }) {
   // card anymore).
   // B1 S4 — the Trash Board's own Restore, joining the row's existing
   // conditional buttons exactly the way ungroup/Edit-copy already do.
-  const boardActionRow = selectedBox && (
-    <div className="board-action-row" style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
+  // THE ROW NEVER MOVES THE CANVAS (Fable, Oct 15; page-primacy applied to the board; its PLACE is superseded by the INTERIM note below - it now sits inside the canvas). It used to sit IN FLOW above the canvas, so selecting any card mounted it and pushed the canvas down
+  // by its own height (about 45px: Chat 1 measured the new card landing 45px below the press). It is an OVERLAY now: absolutely positioned, right-aligned, growing UP from the canvas's top edge
+  // out of a zero-height slot (boardBody, below), over the quiet gap above the canvas - it adds no height whether it is there or not. Its own ground keeps it legible over what it overlaps.
+  // The "Remove" button is DELETED (Nick, Oct 15): removing a card is the Delete key now (and a context menu is coming). The row survives ONLY for the conditional actions that have no other door yet - Ungroup, Edit copy, Restore (Trash), Pin to a Board (Shelf) - so an ordinary card shows NO row at all.
+  const hasRowAction = !!selectedBox && (!!selectedBox.groupId
+    || (selectedBox.kind === 'text' && !!selectedBox.sourceEntryId)
+    || (systemKind === 'trash' && selectedBox.kind === 'page-pin' && !!selectedBox.entryId)
+    || (systemKind === 'shelf' && selectedBox.kind === 'page-pin' && !!selectedBox.entryId));
+  // INTERIM (Fable, Oct 15): the row sits INSIDE the canvas, top-right (absolute in the canvas wrapper, so it neither scrolls away nor adds height). It never shifts the canvas and never reaches
+  // the header strip. It goes when the card right-click menu (board-context-menu) takes these actions.
+  const boardActionRow = selectedBox && hasRowAction && (
+    <div className="board-action-row" style={{ display: 'flex', gap: 12, position: 'absolute', top: 8, right: 18, zIndex: 8, padding: '3px 10px', background: 'var(--paper)', border: '1px solid var(--ink-border)' }}>
       {selectedBox.groupId && <button type="button" className="btn-quiet" onClick={ungroup}>Ungroup</button>}
       {selectedBox.kind === 'text' && selectedBox.sourceEntryId && (
         <button type="button" className="btn-quiet" onClick={() => setPopupBoxId(selectedBox.id)}>{t('boardEditCopy')}</button>
@@ -2152,7 +2254,6 @@ export function BoardEditor({ id }: { id: string }) {
       {systemKind === 'shelf' && selectedBox.kind === 'page-pin' && selectedBox.entryId && (
         <button type="button" className="btn-quiet" onClick={() => setShelfPinEntryId(selectedBox.entryId!)}>{t('pageFacePin')}</button>
       )}
-      <button type="button" className="btn-quiet" onClick={removeSelected}>Remove</button>
     </div>
   );
 
@@ -2246,6 +2347,7 @@ export function BoardEditor({ id }: { id: string }) {
 
   const boardCanvas = (
     <div style={{ position: 'relative' }}>
+      {boardActionRow}
       <div ref={wrapRef} className="board-canvas-wrap" style={{ overflow: 'auto', maxHeight: availHeightPx != null ? availHeightPx : '78vh', border: '1px solid var(--ink-border)' }}>
         <div
           ref={canvasRef}
@@ -2397,7 +2499,9 @@ export function BoardEditor({ id }: { id: string }) {
               fx6.mjs with its successor named in bg1.mjs (A4).
               B1 S3/B2 S2 are untouched: a system Board still shows no row at all,
               and the Shelf still carries its own one quiet fact. */}
-          {sorted.length === 0 && !isSystemBoard && <BeginningsRow surface="board" doors={beginningDoors} />}
+          {sorted.length === 0 && !isSystemBoard && <BeginningsRow surface="board" doors={beginningDoors} faded={startersFaded} />}
+          {/* BOARD CLICK-TO-CREATE - the ghost outline of the card being made; moved imperatively (no render per pointermove), never takes the pointer */}
+          {!isSystemBoard && <div ref={ghostRef} className="board-create-ghost" aria-hidden="true" style={{ display: 'none' }} />}
           {sorted.length === 0 && systemKind === 'shelf' && <div className="board-canvas-empty" aria-hidden="true">{t('shelfBoardEmpty')}</div>}
           {sorted.map(box => {
           const selected = selectedIds.has(box.id);
@@ -2519,7 +2623,6 @@ export function BoardEditor({ id }: { id: string }) {
   // anywhere — b3.mjs asserts this explicitly, not merely by omission.
   const boardBody = (
     <>
-      {boardActionRow}
       <div className={`board-canvas-blur-wrap${(popupBox || deckWizardOpen) ? ' board-canvas-blurred' : ''}`}>
         {boardCanvas}
       </div>
@@ -2530,7 +2633,19 @@ export function BoardEditor({ id }: { id: string }) {
           fontFace={popupBox.fontFace}
           fontSize={popupBox.fontSize}
           onType={patch => commitType(popupBox.id, patch)}
-          onClose={() => setPopupBoxId(null)}
+          onClose={() => {
+            // BOARD CLICK-TO-CREATE: a card this gesture made and the writer closed while it is STILL EMPTY is discarded (nothing was ever written, so nothing is kept). The
+            // pop-up commits every keystroke into the box, so the box's text is already current here. Once closed, the card is an ordinary card for good.
+            const closingId = popupBox.id;
+            if (freshEmptyIdsRef.current.delete(closingId)) {
+              const b = boxesRef.current.find(x => x.id === closingId);
+              if (b && b.kind === 'text' && !(b.text ?? '').trim()) {
+                setBoxes(prev => prev.filter(x => x.id !== closingId));
+                setSelectedId(cur => (cur === closingId ? null : cur));
+              }
+            }
+            setPopupBoxId(null);
+          }}
         />
       )}
       {deckWizardOpen && (
