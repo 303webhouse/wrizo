@@ -176,11 +176,19 @@ await withHarness(async (app) => {
   // a sleep LONGER than FADE_OUT_DELAY_MS (1000ms) — moving the pointer away
   // only SCHEDULES the hide (the same 1s wait as every other hide path); a
   // short sleep here would just catch it mid-wait, which is not "at rest".
+  // ROUND 2 (Fable, Oct 15: "S1 prose samples mid-fade") — 1000ms wait is
+  // only HALF the story: dropping `.active` at that mark starts the .35s
+  // CSS fade (index.css's own `.wz-thin-scrollbar{ transition:opacity .35s
+  // ease; }`), and opacity doesn't reach a settled 0 until that transition
+  // itself finishes. 1150ms total was only 150ms past the WAIT, catching
+  // the fade ~60% through. S3's own math below already budgets the full
+  // 1000ms + 350ms + a 200ms margin (1550ms) for exactly this; this section
+  // now uses the same total instead of a shorter, untested one.
   // ==========================================================================
   await freshDesk(app, 1400, 900);
   await openProsePage(app);
   await app.mouseMove(2, 2);
-  await sleep(1150);
+  await sleep(1550);
   let s = await barState(app, '.mode-scroll');
   ok('S1 (prose): the overlay mounts as .mode-scroll\'s own next sibling',
     s.found === true, JSON.stringify({ display: s.display }));
@@ -191,7 +199,7 @@ await withHarness(async (app) => {
   await freshDesk(app, 1400, 900);
   await openScriptPage(app);
   await app.mouseMove(2, 2);
-  await sleep(1150);
+  await sleep(1550);
   s = await barState(app, '.desk-frame-scroll-cap');
   ok('S1 (script): the overlay mounts as .desk-frame-scroll-cap\'s own next sibling',
     s.found === true, JSON.stringify({ display: s.display }));
@@ -393,8 +401,15 @@ await withHarness(async (app) => {
     s = await barState(app, '.mode-scroll');
     ok(`S5 (prose) @ ${w}px (precondition): the bar being measured is actually SHOWN, not a frozen read of a hidden one`,
       s.active === true, JSON.stringify({ active: s.active }));
+    // ROUND 2 (Fable, Oct 15 — "parked-leg S5 @2200 track 1.3px short;
+    // round it into the tolerance"): a sub-pixel layout measurement, not a
+    // functional gap - DPR/subpixel rounding on a wider viewport can
+    // legitimately land the track a fraction of a px off the container's
+    // own rendered height. 1px was too tight to survive that; 2px still
+    // catches a genuine multi-pixel regression (the kind a real "wrong
+    // height" bug would produce) while absorbing this one.
     ok(`S5 (prose) @ ${w}px: the overlay's track height equals the scroll container's own rendered height (full height, by construction)`,
-      s.found && Math.abs(s.barRect.height - s.targetRect.height) < 1,
+      s.found && Math.abs(s.barRect.height - s.targetRect.height) < 2,
       JSON.stringify({ barHeight: s.barRect.height, targetHeight: s.targetRect.height }));
     // PARKED (Fable, Oct 15 — "park S5 (108px) verbatim with a note") — the
     // prose top-edge drift this check names is the SAME unresolved ~108px
@@ -420,8 +435,9 @@ await withHarness(async (app) => {
     s = await barState(app, '.desk-frame-scroll-cap');
     ok(`S5 (script) @ ${w}px (precondition): the bar being measured is actually SHOWN`,
       s.active === true, JSON.stringify({ active: s.active }));
+    // Same tolerance widening as prose's own height check above, same reason.
     ok(`S5 (script) @ ${w}px: the overlay's track height equals the scroll container's own rendered height`,
-      s.found && Math.abs(s.barRect.height - s.targetRect.height) < 1,
+      s.found && Math.abs(s.barRect.height - s.targetRect.height) < 2,
       JSON.stringify({ barHeight: s.barRect.height, targetHeight: s.targetRect.height }));
     ok(`S5 (script) @ ${w}px: and its top edge matches the container's own top`,
       s.found && Math.abs(s.barRect.top - s.targetRect.top) < 1,

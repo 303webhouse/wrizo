@@ -445,12 +445,25 @@ await withHarness(async (app) => {
   await app.click('Draft');
   await sleep(200);
   const modeScrollStyle = await app.evalJs(`(() => {
-    const cs = getComputedStyle(document.querySelector('.mode-scroll'));
-    return { scrollbarWidth: cs.scrollbarWidth, scrollbarColor: cs.scrollbarColor };
+    const el = document.querySelector('.mode-scroll');
+    const cs = getComputedStyle(el);
+    const next = el.nextElementSibling;
+    return { scrollbarWidth: cs.scrollbarWidth, scrollbarColor: cs.scrollbarColor, overlaySibling: !!(next && next.classList.contains('wz-thin-scrollbar')) };
   })()`);
   const inkOnPaperLow = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--ink-on-paper-low').trim()");
-  ok('S4: the page/script editor content area (.mode-scroll — used to hide its scrollbar ENTIRELY) now carries the minimal, THIN, paper-toned treatment instead of the bulky OS default',
-    modeScrollStyle.scrollbarWidth === 'thin' && modeScrollStyle.scrollbarColor.includes('rgba(0, 0, 0, 0)'),
+  // SUPERSEDED (item scrollbar-minimal, Fable Oct 15) — scrollbar-minimal's
+  // own later rule (index.css, `.mode-scroll, .desk-frame-scroll-cap{
+  // scrollbar-width: none; }`) wins the cascade over FX7 S4's own paper-
+  // toned native thumb for exactly these two selectors (ThinScrollbar's own
+  // wiring, ModeStage.tsx/ScriptEditor.tsx) — the native bar is gone, not
+  // thin-and-paper-toned, because the custom overlay thumb is the only one
+  // drawn there now. Quoted verbatim; historical shape re-proven in the
+  // parked block below (HARNESS_PARKED=1), live successor here.
+  // ok('S4: the page/script editor content area (.mode-scroll — used to hide its scrollbar ENTIRELY) now carries the minimal, THIN, paper-toned treatment instead of the bulky OS default',
+  //   modeScrollStyle.scrollbarWidth === 'thin' && modeScrollStyle.scrollbarColor.includes('rgba(0, 0, 0, 0)'),
+  //   JSON.stringify({ modeScrollStyle, inkOnPaperLow }));
+  ok('S4 [scrollbar-minimal successor]: the page/script editor content area (.mode-scroll) carries NO native scrollbar at all (scrollbar-width:none) - the custom overlay (ThinScrollbar, its own next sibling) is the only thumb drawn there now',
+    modeScrollStyle.scrollbarWidth === 'none' && modeScrollStyle.overlaySibling === true,
     JSON.stringify({ modeScrollStyle, inkOnPaperLow }));
 
   await openPageCategory(app);
@@ -872,6 +885,16 @@ if (process.env.HARNESS_PARKED === '1') {
         dip <= 38.5 && sliverAnchor.right <= textLeft,
         JSON.stringify({ sliverAnchorRight: sliverAnchor.right, pagecolLeft: pagecol.left, dip, textLeft }));
     }
+
+    // scrollbar-minimal's own S4 park is NOT re-measured here, unlike SC1
+    // S4 just above - that one adjusts a NUMBER while the same underlying
+    // LAW stays live and provable; this one's underlying mechanism (FX7
+    // S4's native paper-toned thumb for .mode-scroll) was structurally
+    // superseded, not renumbered, so re-running the old assertion against
+    // live code would read red forever by construction, not report
+    // anything. The quoted-verbatim record lives where the check used to
+    // run, in this file's own live S4 section above; its successor runs
+    // there too.
 
     return parkedChecks;
   });
