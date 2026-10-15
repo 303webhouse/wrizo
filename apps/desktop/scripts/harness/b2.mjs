@@ -331,8 +331,12 @@ await withHarness(async (app) => {
   //   !shelfSliverButtons.includes('Add card') && !shelfSliverButtons.includes('New page card') && !shelfSliverButtons.includes('Existing page…'), JSON.stringify(shelfSliverButtons));
   ok('S1 [word-diet successor]: the Shelf Board\'s own sliver carries NO Add control at all — genuinely absent, the same B1 law inherited via the SAME `isSystemBoard` branch',
     !shelfSliverButtons.includes('Add card') && !shelfSliverButtons.includes('New Pages Card') && !shelfSliverButtons.includes('+ Filed Pages'), JSON.stringify(shelfSliverButtons));
-  const shelfFooterTogglePresent = await app.evalJs("!!document.querySelector('.wz-sliver-board-footer')");
-  ok('S1: the connections-footer toggle STILL works on the Shelf Board — arranging is the full FX5 hand, only Add/Delete are restricted', shelfFooterTogglePresent === true, String(shelfFooterTogglePresent));
+  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+  // "Show grafts" is RETIRED on every board: there is no footer toggle to still work on the Shelf Board.
+  // Quoted VERBATIM below. Successor: the check directly below.
+  // const shelfFooterTogglePresent = await app.evalJs("!!document.querySelector('.wz-sliver-board-footer')");
+  // ok('S1: the connections-footer toggle STILL works on the Shelf Board — arranging is the full FX5 hand, only Add/Delete are restricted', shelfFooterTogglePresent === true, String(shelfFooterTogglePresent));
+  ok('S1 [connector-a successor]: the connections-footer toggle is RETIRED on the Shelf Board as on every board - only Add/Delete are restricted', (await app.evalJs("document.querySelectorAll('.wz-sliver-board-footer').length")) === 0, '');
 
   // Delete inert on a derived card.
   await app.evalJs(POINTER_HELPER);

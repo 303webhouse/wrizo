@@ -747,8 +747,12 @@ if (process.env.HARNESS_PARKED === '1') {
     // door 2's own affordance. Five tools now — live successor in
     // b3.mjs's own S4 section (an ordered-labels check, the shape this
     // lineage settled on).
-    pok('PARKED (was "S6: the sliver\'s Connect toggle RETIRES — the board sliver carries Add card alone now") — FX5 S5: a SECOND control joins it (the connections-footer toggle, "Add card + this, two controls" — the brief\'s own words); generation 2: FX6 S2b adds a THIRD (New page card); generation 3: B2 S5 adds a FOURTH (Existing page…); generation 4: B3 S3 adds a FIFTH (From a deck…) — live successor in b3.mjs\'s own S4 section',
-      sliverShape.buttonCount === 5, JSON.stringify(sliverShape));
+    // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+    // The footer toggle left the board sliver: FOUR tools now.
+    // Quoted VERBATIM below. Successor: the pok directly below (generation 5); live ordered-labels successor in b3.mjs generation 8.
+    // pok('PARKED (was "S6: the sliver\'s Connect toggle RETIRES — the board sliver carries Add card alone now") — FX5 S5: a SECOND control joins it (the connections-footer toggle, "Add card + this, two controls" — the brief\'s own words); generation 2: FX6 S2b adds a THIRD (New page card); generation 3: B2 S5 adds a FOURTH (Existing page…); generation 4: B3 S3 adds a FIFTH (From a deck…) — live successor in b3.mjs\'s own S4 section',
+    //   sliverShape.buttonCount === 5, JSON.stringify(sliverShape));
+    pok('PARKED, generation 5 [connector-a successor] - the board sliver carries FOUR hand tools now: the footer toggle is retired', sliverShape.buttonCount === 4 && !sliverShape.labels.includes('Show grafts'), JSON.stringify(sliverShape));
 
     // CD4.1 (2026-07-24) — the card-edit popup's close button is relabeled
     // "Done" -> "Close" (Fable's ruling; the DoD says no surface says Done). The

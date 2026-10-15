@@ -1554,8 +1554,10 @@ export function BoardEditor({ id }: { id: string }) {
     //   LINES  shown ONLY in this mode, only this card's own links (clipped to the board by the canvas itself); a click selects one, Delete removes it (the existing key handler).
     // The arm and the target circle move imperatively (no React render per pointermove, the preview line's old discipline); React only hears of the target card changing.
     // ============================================================================================================================================================
-    type Connect = { src: string; held: boolean; ox: number; oy: number; moved: boolean; px: number; py: number; target: string | null };
+    type Connect = { src: string; held: boolean; right: boolean; ox: number; oy: number; moved: boolean; px: number; py: number; target: string | null };
     let connect: Connect | null = null;
+    // the browser's context menu is suppressed ONLY: on the corner square, while the mode is on, and for a beat after a right-button gesture ends (Windows fires `contextmenu` AFTER `pointerup`, by which time the mode is already over)
+    let ctxQuietUntil = 0;
     // the last press on a corner square: a SECOND one at the same spot, soon, with nothing moved in between, is a double-click (a resize in between is not)
     let handleClick: { t: number; x: number; y: number; moved: boolean; boxId: string } | null = null;
     let flashTimers: ReturnType<typeof setTimeout>[] = [];
@@ -1604,8 +1606,8 @@ export function BoardEditor({ id }: { id: string }) {
       document.removeEventListener('pointermove', cMove, true);
       document.removeEventListener('pointerup', cUp, true);
       document.removeEventListener('pointerdown', cDown, true);
-      document.removeEventListener('contextmenu', cCtx, true);
       if (!connect) return;
+      if (connect.right) ctxQuietUntil = performance.now() + 500;
       connect = null;
       threadArmedFromRef.current = null;
       setThreadArmedFrom(null);
@@ -1666,10 +1668,9 @@ export function BoardEditor({ id }: { id: string }) {
       if (!connect) return;
       e.preventDefault(); e.stopPropagation();
     }
-    function cCtx(e: Event) { e.preventDefault(); }
     const enterConnect = (src: string, held: boolean, e: PointerEvent) => {
       clearFlashTimers(); setConnectFlash(null);
-      connect = { src, held, ox: e.clientX, oy: e.clientY, moved: false, px: e.clientX, py: e.clientY, target: null };
+      connect = { src, held, right: e.button === 2, ox: e.clientX, oy: e.clientY, moved: false, px: e.clientX, py: e.clientY, target: null };
       threadArmedFromRef.current = src;
       setSelectedConnectionId(null);
       setConnectTarget(null);
@@ -1677,13 +1678,12 @@ export function BoardEditor({ id }: { id: string }) {
       document.addEventListener('pointermove', cMove, true);
       document.addEventListener('pointerup', cUp, true);
       document.addEventListener('pointerdown', cDown, true);
-      document.addEventListener('contextmenu', cCtx, true);
       requestAnimationFrame(placeArm);   // the arm element mounts with the state above; place it as soon as it exists
     };
-    // a right-click on the square is suppressed ONLY there (the browser's own menu would cover the very thing being asked for)
-    const onCanvasContextMenu = (e: Event) => {
+    // a right-click on the square is suppressed ONLY there (the browser's own menu would cover the very thing being asked for) - plus while the mode is on, plus the beat after a right-drag lets go
+    const onCtx = (e: Event) => {
       const t = e.target as Element | null;
-      if (t?.closest?.('.board-handle')) e.preventDefault();
+      if (connect || performance.now() < ctxQuietUntil || t?.closest?.('.board-handle')) e.preventDefault();
     };
 
     // BOARD CLICK-TO-CREATE - the card the press would make, in the board's own units (x and BOTH y and h are fractions of the WIDTH, as every box here is). A plain press takes the
@@ -2054,7 +2054,7 @@ export function BoardEditor({ id }: { id: string }) {
     };
 
     connectEndRef.current = endConnect;
-    canvas.addEventListener('contextmenu', onCanvasContextMenu);
+    document.addEventListener('contextmenu', onCtx, true);
     canvas.addEventListener('pointerdown', onDown);
     canvas.addEventListener('pointermove', onMove, { passive: false });
     canvas.addEventListener('pointerup', onUp);
@@ -2065,7 +2065,7 @@ export function BoardEditor({ id }: { id: string }) {
       canvas.removeEventListener('dragstart', onDragStart);
       endConnect();
       clearFlashTimers();
-      canvas.removeEventListener('contextmenu', onCanvasContextMenu);
+      document.removeEventListener('contextmenu', onCtx, true);
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerup', onUp);

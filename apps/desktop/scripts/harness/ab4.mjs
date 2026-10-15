@@ -853,8 +853,13 @@ if (process.env.HARNESS_PARKED === '1') {
       // pok('PARKED, generation 6 (was generation 5\'s re-derivation ending in label "Show connections") — arbor-quiet-brass: the footer toggle now reads "Show grafts"; same five tools, same order — live successor in b3.mjs\'s own S4 section',
       //   sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 5 && sliverShapeNow.labels[0] === 'Add card' && sliverShapeNow.labels[1] === 'New page card' && sliverShapeNow.labels[2] === 'Existing page…' && sliverShapeNow.labels[3] === 'From a deck…' && sliverShapeNow.labels[4] === 'Show grafts', JSON.stringify(sliverShapeNow));
       // ------------------------------------------------------------------------
-      pok('PARKED, generation 7 (was generation 6\'s re-derivation with "New page card"/"Existing page…") — item word-diet: boardNewPageCard reads "New Pages Card", boardAddExistingPage reads "+ Filed Pages"; same five tools, same order — live successor in b3.mjs\'s own S4 section',
-        sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 5 && sliverShapeNow.labels[0] === 'Add card' && sliverShapeNow.labels[1] === 'New Pages Card' && sliverShapeNow.labels[2] === '+ Filed Pages' && sliverShapeNow.labels[3] === 'From a deck…' && sliverShapeNow.labels[4] === 'Show grafts', JSON.stringify(sliverShapeNow));
+      // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+      // The footer toggle left the board sliver: FOUR tools now.
+      // Quoted VERBATIM below. Successor: the pok directly below (generation 8); the live ordered-labels successor is b3.mjs generation 8.
+      // pok('PARKED, generation 7 (was generation 6\'s re-derivation with "New page card"/"Existing page…") — item word-diet: boardNewPageCard reads "New Pages Card", boardAddExistingPage reads "+ Filed Pages"; same five tools, same order — live successor in b3.mjs\'s own S4 section',
+      //   sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 5 && sliverShapeNow.labels[0] === 'Add card' && sliverShapeNow.labels[1] === 'New Pages Card' && sliverShapeNow.labels[2] === '+ Filed Pages' && sliverShapeNow.labels[3] === 'From a deck…' && sliverShapeNow.labels[4] === 'Show grafts', JSON.stringify(sliverShapeNow));
+      pok('PARKED, generation 8 (was generation 7\'s re-derivation ending in "Show grafts") - connector-a: the footer toggle is retired; four tools, same order - live successor in b3.mjs\'s own S4 section',
+        sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 4 && sliverShapeNow.labels[0] === 'Add card' && sliverShapeNow.labels[1] === 'New Pages Card' && sliverShapeNow.labels[2] === '+ Filed Pages' && sliverShapeNow.labels[3] === 'From a deck…' && !sliverShapeNow.labels.includes('Show grafts'), JSON.stringify(sliverShapeNow));
 
       const boxesBeforeAddNow = (await app.evalJs('window.wrizoBoard()')) || [];
       await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'Add card')?.click()");
@@ -922,90 +927,94 @@ if (process.env.HARNESS_PARKED === '1') {
       // itself can't be faked from script, so events are targeted where
       // the real listeners live, matching every other synthetic drag in
       // this suite).
-      const dragPinTo = (fromSel, toSel) => app.evalJs(`(() => {
-        const pin = document.querySelector('${fromSel} .board-pin-grab');
-        const target = document.querySelector('${toSel}');
-        const canvas = document.querySelector('.board-canvas');
-        const pr = pin.getBoundingClientRect();
-        const tr = target.getBoundingClientRect();
-        const x0 = pr.left + pr.width/2, y0 = pr.top + pr.height/2;
-        const x1 = tr.left + tr.width/2, y1 = tr.top + tr.height/2;
-        const mk = (type, x, y) => new PointerEvent(type, {clientX:x, clientY:y, pointerId:1, pointerType:'mouse', bubbles:true, cancelable:true, isPrimary:true});
-        pin.dispatchEvent(mk('pointerdown', x0, y0));
-        canvas.dispatchEvent(mk('pointermove', (x0+x1)/2, (y0+y1)/2));
-        canvas.dispatchEvent(mk('pointerup', x1, y1));
-      })()`);
-      const armPinOnly = (fromSel) => app.evalJs(`(() => {
-        const pin = document.querySelector('${fromSel} .board-pin-grab');
-        const mk = (type, x, y) => new PointerEvent(type, {clientX:x, clientY:y, pointerId:1, pointerType:'mouse', bubbles:true, cancelable:true, isPrimary:true});
-        const r = pin.getBoundingClientRect();
-        pin.dispatchEvent(mk('pointerdown', r.left + r.width/2, r.top + r.height/2));
-      })()`);
+      // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+      // The green tack is RETIRED, so the whole pin-drag lineage in this section (mint by pin-drag, Esc mid-drag, survive a reload, click the hairline, Delete) has no pin to start from, and a hairline is no longer drawn at rest to be clicked. FIVE parked checks retire here; ONE successor below. The mint / Esc / select / Delete behaviours live on in connector-a.mjs, and the reload-survival of a link is the persistence layer's, unchanged.
+      // Quoted VERBATIM below. Successor: scripts/harness/connector-a.mjs C3 (mint), C7 (Esc), C9 (click a line selects it; Delete removes it), C10 (a link made by the gesture survives a reload).
+      // const dragPinTo = (fromSel, toSel) => app.evalJs(`(() => {
+      //   const pin = document.querySelector('${fromSel} .board-pin-grab');
+      //   const target = document.querySelector('${toSel}');
+      //   const canvas = document.querySelector('.board-canvas');
+      //   const pr = pin.getBoundingClientRect();
+      //   const tr = target.getBoundingClientRect();
+      //   const x0 = pr.left + pr.width/2, y0 = pr.top + pr.height/2;
+      //   const x1 = tr.left + tr.width/2, y1 = tr.top + tr.height/2;
+      //   const mk = (type, x, y) => new PointerEvent(type, {clientX:x, clientY:y, pointerId:1, pointerType:'mouse', bubbles:true, cancelable:true, isPrimary:true});
+      //   pin.dispatchEvent(mk('pointerdown', x0, y0));
+      //   canvas.dispatchEvent(mk('pointermove', (x0+x1)/2, (y0+y1)/2));
+      //   canvas.dispatchEvent(mk('pointerup', x1, y1));
+      // })()`);
+      // const armPinOnly = (fromSel) => app.evalJs(`(() => {
+      //   const pin = document.querySelector('${fromSel} .board-pin-grab');
+      //   const mk = (type, x, y) => new PointerEvent(type, {clientX:x, clientY:y, pointerId:1, pointerType:'mouse', bubbles:true, cancelable:true, isPrimary:true});
+      //   const r = pin.getBoundingClientRect();
+      //   pin.dispatchEvent(mk('pointerdown', r.left + r.width/2, r.top + r.height/2));
+      // })()`);
 
-      await dragPinTo('[data-box-id="ab4-parked-thread-a"]', '[data-box-id="ab4-parked-thread-b"]');
-      await sleep(200);
-      const linesAfterConnectNow = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
-      pok('PARKED (was "S3: the sliver\'s Connect toggle arms connect mode" + "S3: click card A then card B draws a hairline between them") — FX5 S5: re-derived a second time — a single continuous drag from the olive pin, released inside card B, arms AND mints the hairline in one gesture (no separate arm step at all anymore)',
-        linesAfterConnectNow === 1, String(linesAfterConnectNow));
+      // await dragPinTo('[data-box-id="ab4-parked-thread-a"]', '[data-box-id="ab4-parked-thread-b"]');
+      // await sleep(200);
+      // const linesAfterConnectNow = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
+      // pok('PARKED (was "S3: the sliver\'s Connect toggle arms connect mode" + "S3: click card A then card B draws a hairline between them") — FX5 S5: re-derived a second time — a single continuous drag from the olive pin, released inside card B, arms AND mints the hairline in one gesture (no separate arm step at all anymore)',
+      //   linesAfterConnectNow === 1, String(linesAfterConnectNow));
 
-      // ORIGINAL: ok('S3: Escape disarms connect mode', ...) + ok('S3: the
-      // hairline is quiet (not orange) at rest, and reads differently
-      // while armed vs. at rest', armedColor !== restColor, ...).
-      // FX4 S6 — the connect-mode-wide armed color state retires with the
-      // toggle; the armed state is now scoped to the ORIGIN CARD's own
-      // dashed outline (data-thread-source), not the hairline's own color,
-      // since a hairline no longer exists yet while merely armed (it's
-      // minted atomically on release). Re-derived as: arming again and
-      // Escaping cancels it (no new hairline), proving the disarm half of
-      // the original claim; the color-differs half no longer has a
-      // meaningful equivalent (there is no "armed hairline" state anymore
-      // to compare against "at rest" — a hairline exists only once minted).
-      //
-      // GENERATION 2 (FX5 S5) — re-derived once more: pressing down on the
-      // pin (no release yet) arms a drag; Escape cancels it mid-gesture.
-      await armPinOnly('[data-box-id="ab4-parked-thread-a"]');
-      await sleep(150);
-      await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
-      await sleep(150);
-      const disarmedByEscapeNow = await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
-      const linesAfterEscapeNow = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
-      pok('PARKED (was "S3: Escape disarms connect mode" + "S3: the hairline is quiet (not orange) at rest, and reads differently while armed vs. at rest") — FX5 S5: re-derived a second time — Escape disarms a pending pin-drag mid-gesture without minting a second hairline',
-        disarmedByEscapeNow === 'false' && linesAfterEscapeNow === 1, JSON.stringify({ disarmedByEscapeNow, linesAfterEscapeNow }));
+      // // ORIGINAL: ok('S3: Escape disarms connect mode', ...) + ok('S3: the
+      // // hairline is quiet (not orange) at rest, and reads differently
+      // // while armed vs. at rest', armedColor !== restColor, ...).
+      // // FX4 S6 — the connect-mode-wide armed color state retires with the
+      // // toggle; the armed state is now scoped to the ORIGIN CARD's own
+      // // dashed outline (data-thread-source), not the hairline's own color,
+      // // since a hairline no longer exists yet while merely armed (it's
+      // // minted atomically on release). Re-derived as: arming again and
+      // // Escaping cancels it (no new hairline), proving the disarm half of
+      // // the original claim; the color-differs half no longer has a
+      // // meaningful equivalent (there is no "armed hairline" state anymore
+      // // to compare against "at rest" — a hairline exists only once minted).
+      // //
+      // // GENERATION 2 (FX5 S5) — re-derived once more: pressing down on the
+      // // pin (no release yet) arms a drag; Escape cancels it mid-gesture.
+      // await armPinOnly('[data-box-id="ab4-parked-thread-a"]');
+      // await sleep(150);
+      // await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
+      // await sleep(150);
+      // const disarmedByEscapeNow = await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
+      // const linesAfterEscapeNow = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
+      // pok('PARKED (was "S3: Escape disarms connect mode" + "S3: the hairline is quiet (not orange) at rest, and reads differently while armed vs. at rest") — FX5 S5: re-derived a second time — Escape disarms a pending pin-drag mid-gesture without minting a second hairline',
+      //   disarmedByEscapeNow === 'false' && linesAfterEscapeNow === 1, JSON.stringify({ disarmedByEscapeNow, linesAfterEscapeNow }));
 
-      // ORIGINAL: await sleep(2200); await app.reload(); ... const
-      // boxesAfterReload = ...; const conn = (boxesAfterReload || []).
-      // find(b => b.kind === 'connection' && ...); ok('S3: the thread
-      // survives a reload', !!conn, ...);
-      await sleep(2200);
-      await app.reload();
-      await app.evalJs(DRAG_HELPER);
-      await app.evalJs("location.hash = '#/page/ab4-parked-thread-board'");
-      await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'PARKED thread board reloaded' });
-      await sleep(250);
-      const boxesAfterReloadNow = await app.evalJs('window.wrizoBoard()');
-      const connNow = (boxesAfterReloadNow || []).find((b) => b.kind === 'connection');
-      pok('PARKED (was "S3: the thread survives a reload") — FX4 S6: re-derived — a handle-drag-minted thread survives a reload identically',
-        !!connNow, JSON.stringify(connNow));
+      // // ORIGINAL: await sleep(2200); await app.reload(); ... const
+      // // boxesAfterReload = ...; const conn = (boxesAfterReload || []).
+      // // find(b => b.kind === 'connection' && ...); ok('S3: the thread
+      // // survives a reload', !!conn, ...);
+      // await sleep(2200);
+      // await app.reload();
+      // await app.evalJs(DRAG_HELPER);
+      // await app.evalJs("location.hash = '#/page/ab4-parked-thread-board'");
+      // await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'PARKED thread board reloaded' });
+      // await sleep(250);
+      // const boxesAfterReloadNow = await app.evalJs('window.wrizoBoard()');
+      // const connNow = (boxesAfterReloadNow || []).find((b) => b.kind === 'connection');
+      // pok('PARKED (was "S3: the thread survives a reload") — FX4 S6: re-derived — a handle-drag-minted thread survives a reload identically',
+      //   !!connNow, JSON.stringify(connNow));
 
-      // ORIGINAL: await app.evalJs("...board-connection-hit...click..."); ...
-      // const selected = ...; ok('S3: clicking the hairline selects it
-      // (brass, matching the board\'s own selection language)', selected
-      // === 'true', selected); await app.evalJs("...Delete..."); ... ok(
-      // 'S3: Delete removes the selected thread immediately, no confirm',
-      // linesAfterDelete === 0 && ..., ...);
-      // FX4 S6 — selection + deletion are UNCHANGED mechanics (only the
-      // creation gesture differs) — re-derived on the SAME thread.
-      await app.evalJs("document.querySelector('.board-connection-hit').dispatchEvent(new MouseEvent('click', { bubbles: true }))");
-      await sleep(150);
-      const selectedNow = await app.evalJs("document.querySelector('.board-connection-line')?.dataset.selected");
-      pok('PARKED (was "S3: clicking the hairline selects it (brass, matching the board\'s own selection language)") — FX4 S6: unchanged mechanic, re-derived on a handle-drag-minted thread',
-        selectedNow === 'true', selectedNow);
-      await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }))");
-      await sleep(200);
-      const linesAfterDeleteNow = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
-      const boxesAfterDeleteNow = await app.evalJs('window.wrizoBoard()');
-      pok('PARKED (was "S3: Delete removes the selected thread immediately, no confirm") — FX4 S6: unchanged mechanic, re-derived on a handle-drag-minted thread',
-        linesAfterDeleteNow === 0 && !(boxesAfterDeleteNow || []).some((b) => b.kind === 'connection'), String(linesAfterDeleteNow));
+      // // ORIGINAL: await app.evalJs("...board-connection-hit...click..."); ...
+      // // const selected = ...; ok('S3: clicking the hairline selects it
+      // // (brass, matching the board\'s own selection language)', selected
+      // // === 'true', selected); await app.evalJs("...Delete..."); ... ok(
+      // // 'S3: Delete removes the selected thread immediately, no confirm',
+      // // linesAfterDelete === 0 && ..., ...);
+      // // FX4 S6 — selection + deletion are UNCHANGED mechanics (only the
+      // // creation gesture differs) — re-derived on the SAME thread.
+      // await app.evalJs("document.querySelector('.board-connection-hit').dispatchEvent(new MouseEvent('click', { bubbles: true }))");
+      // await sleep(150);
+      // const selectedNow = await app.evalJs("document.querySelector('.board-connection-line')?.dataset.selected");
+      // pok('PARKED (was "S3: clicking the hairline selects it (brass, matching the board\'s own selection language)") — FX4 S6: unchanged mechanic, re-derived on a handle-drag-minted thread',
+      //   selectedNow === 'true', selectedNow);
+      // await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }))");
+      // await sleep(200);
+      // const linesAfterDeleteNow = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
+      // const boxesAfterDeleteNow = await app.evalJs('window.wrizoBoard()');
+      // pok('PARKED (was "S3: Delete removes the selected thread immediately, no confirm") — FX4 S6: unchanged mechanic, re-derived on a handle-drag-minted thread',
+      //   linesAfterDeleteNow === 0 && !(boxesAfterDeleteNow || []).some((b) => b.kind === 'connection'), String(linesAfterDeleteNow));
+      pok('PARKED, generation 3 [connector-a successor] - the green tack is retired: no card on the board carries a .board-pin-grab', (await app.evalJs("document.querySelectorAll('.board-pin-grab').length")) === 0, '');
     }
 
     return parkedChecks;

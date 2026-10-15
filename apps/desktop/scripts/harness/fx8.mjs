@@ -104,17 +104,21 @@ await withHarness(async (app) => {
   await freshBoard(app, 'fx8-s1-board', [
     { id: 'fx8-s1-card', kind: 'text', x: 0.1, y: 0.1, w: 0.3, h: 0.12, z: 1, text: 'Pin Card\nBody text for the dome check.' },
   ], LAPTOP_W, 900);
-  const pinStyle = await app.evalJs(`(() => {
-    const cs = getComputedStyle(document.querySelector('[data-box-id="fx8-s1-card"] .board-pin-grab'));
-    return { backgroundImage: cs.backgroundImage, boxShadow: cs.boxShadow, borderRadius: cs.borderRadius, width: cs.width, height: cs.height };
-  })()`);
-  ok('S1: the pin is no longer a flat single-color fill — computed backgroundImage is a genuine radial-gradient (a flat fill would report "none" here, with the color only on backgroundColor)',
-    pinStyle.backgroundImage.startsWith('radial-gradient('), JSON.stringify(pinStyle));
-  ok('S1: the pin now casts a real box-shadow (was previously none) — "a small box-shadow... the way a raised sphere would cast one" (the brief\'s own words)',
-    pinStyle.boxShadow !== 'none' && pinStyle.boxShadow.length > 0, pinStyle.boxShadow);
-  ok('S1: same ~12px size, unchanged by the dome treatment', pinStyle.width === '12px' && pinStyle.height === '12px', JSON.stringify(pinStyle));
-  ok('S1: still the SAME recorded circular exception to square corners (border-radius:50%, unchanged — fx5.mjs\'s own S5 check asserts this identically)',
-    pinStyle.borderRadius === '50%', pinStyle.borderRadius);
+  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+  // The green tack (.board-pin-grab) is RETIRED. Its dome (radial gradient, shadow, 12px, 50% radius) has nothing to describe. (They also read the pin's computed style off a node that no longer exists, which would abort this file.)
+  // Quoted VERBATIM below. Successor: scripts/harness/connector-a.mjs C2 (no tack anywhere) + the corner circle's own look in C4.
+  // const pinStyle = await app.evalJs(`(() => {
+  //   const cs = getComputedStyle(document.querySelector('[data-box-id="fx8-s1-card"] .board-pin-grab'));
+  //   return { backgroundImage: cs.backgroundImage, boxShadow: cs.boxShadow, borderRadius: cs.borderRadius, width: cs.width, height: cs.height };
+  // })()`);
+  // ok('S1: the pin is no longer a flat single-color fill — computed backgroundImage is a genuine radial-gradient (a flat fill would report "none" here, with the color only on backgroundColor)',
+  //   pinStyle.backgroundImage.startsWith('radial-gradient('), JSON.stringify(pinStyle));
+  // ok('S1: the pin now casts a real box-shadow (was previously none) — "a small box-shadow... the way a raised sphere would cast one" (the brief\'s own words)',
+  //   pinStyle.boxShadow !== 'none' && pinStyle.boxShadow.length > 0, pinStyle.boxShadow);
+  // ok('S1: same ~12px size, unchanged by the dome treatment', pinStyle.width === '12px' && pinStyle.height === '12px', JSON.stringify(pinStyle));
+  // ok('S1: still the SAME recorded circular exception to square corners (border-radius:50%, unchanged — fx5.mjs\'s own S5 check asserts this identically)',
+  //   pinStyle.borderRadius === '50%', pinStyle.borderRadius);
+  ok('S1 [connector-a successor]: the dome pin is gone with the tack - the card renders and carries no .board-pin-grab', (await app.evalJs("document.querySelectorAll('.board-pin-grab').length")) === 0 && (await app.evalJs("!!document.querySelector('[data-box-id=\"fx8-s1-card\"]')")) === true, '');
   // A real screenshot, cropped tight around the pin and upscaled with
   // nearest-neighbor (no blur added by resampling) — written to disk for a
   // human/agent eyeball look, the brief's own "verify visually" instruction.
@@ -127,22 +131,25 @@ await withHarness(async (app) => {
   ok('S1: a full-viewport screenshot was captured for visual dome verification (see the build report\'s own cropped/zoomed artifact)',
     typeof png === 'string' && png.length > 1000, `card at (${Math.round(cardRect.x)}, ${Math.round(cardRect.y)})`);
 
-  // The grabbing-state variant still works — thread-drag arm still swaps
-  // the pin's own cursor, unaffected by the dome restyle (background/
-  // border/box-shadow changed; the cursor rule pair did not).
-  await app.evalJs(`(() => {
-    const pin = document.querySelector('[data-box-id="fx8-s1-card"] .board-pin-grab');
-    const r = pin.getBoundingClientRect();
-    const mk = (type, x, y) => new PointerEvent(type, {clientX:x, clientY:y, pointerId:1, pointerType:'mouse', bubbles:true, cancelable:true, isPrimary:true});
-    pin.dispatchEvent(mk('pointerdown', r.left + r.width/2, r.top + r.height/2));
-  })()`);
-  await sleep(150);
-  const armedShape = await app.evalJs(`(() => ({
-    threadArmed: document.querySelector('.board-canvas').dataset.threadArmed,
-    pinCursor: getComputedStyle(document.querySelector('[data-box-id="fx8-s1-card"] .board-pin-grab')).cursor,
-  }))()`);
-  ok('S1: the pin\'s own grabbing-state variant (data-thread-armed) still works, unbroken by the dome restyle',
-    armedShape.threadArmed === 'true' && armedShape.pinCursor === 'grabbing', JSON.stringify(armedShape));
+  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+  // The green tack (.board-pin-grab) is RETIRED. The pin's grabbing cursor pair (and the pointerdown on the pin that armed the thread) are gone.
+  // Quoted VERBATIM below. Successor: scripts/harness/connector-a.mjs C3 (the canvas reads data-thread-armed=true in connection mode).
+  // // The grabbing-state variant still works — thread-drag arm still swaps
+  // // the pin's own cursor, unaffected by the dome restyle (background/
+  // // border/box-shadow changed; the cursor rule pair did not).
+  // await app.evalJs(`(() => {
+  //   const pin = document.querySelector('[data-box-id="fx8-s1-card"] .board-pin-grab');
+  //   const r = pin.getBoundingClientRect();
+  //   const mk = (type, x, y) => new PointerEvent(type, {clientX:x, clientY:y, pointerId:1, pointerType:'mouse', bubbles:true, cancelable:true, isPrimary:true});
+  //   pin.dispatchEvent(mk('pointerdown', r.left + r.width/2, r.top + r.height/2));
+  // })()`);
+  // await sleep(150);
+  // const armedShape = await app.evalJs(`(() => ({
+  //   threadArmed: document.querySelector('.board-canvas').dataset.threadArmed,
+  //   pinCursor: getComputedStyle(document.querySelector('[data-box-id="fx8-s1-card"] .board-pin-grab')).cursor,
+  // }))()`);
+  // ok('S1: the pin\'s own grabbing-state variant (data-thread-armed) still works, unbroken by the dome restyle',
+  //   armedShape.threadArmed === 'true' && armedShape.pinCursor === 'grabbing', JSON.stringify(armedShape));
   await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
   await sleep(150);
 
@@ -213,14 +220,19 @@ await withHarness(async (app) => {
     return [Math.round(r.x + r.width / 2), Math.round(r.y + r.height / 2)];
   })()));
   await sleep(200);
-  const exclusionCursors = await app.evalJs(`(() => ({
-    pin: getComputedStyle(document.querySelector('[data-box-id="fx8-s3-text"] .board-pin-grab')).cursor,
-    handle: getComputedStyle(document.querySelector('.board-handle')).cursor,
-  }))()`);
-  ok('S3: the olive pin keeps its OWN cursor (grab, its own state meaning) — never stolen by the new card-body rule',
-    exclusionCursors.pin === 'grab', JSON.stringify(exclusionCursors));
-  ok('S3: the resize handle keeps its OWN cursor (nwse-resize) — never stolen by the new card-body rule',
-    exclusionCursors.handle === 'nwse-resize', JSON.stringify(exclusionCursors));
+  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+  // The green tack (.board-pin-grab) is RETIRED. The pin's own cursor is gone; the handle's own cursor (nwse-resize, never stolen by the card-body rule) is re-asserted without it.
+  // Quoted VERBATIM below. Successor: the check directly below.
+  // const exclusionCursors = await app.evalJs(`(() => ({
+  //   pin: getComputedStyle(document.querySelector('[data-box-id="fx8-s3-text"] .board-pin-grab')).cursor,
+  //   handle: getComputedStyle(document.querySelector('.board-handle')).cursor,
+  // }))()`);
+  // ok('S3: the olive pin keeps its OWN cursor (grab, its own state meaning) — never stolen by the new card-body rule',
+  //   exclusionCursors.pin === 'grab', JSON.stringify(exclusionCursors));
+  // ok('S3: the resize handle keeps its OWN cursor (nwse-resize) — never stolen by the new card-body rule',
+  //   exclusionCursors.handle === 'nwse-resize', JSON.stringify(exclusionCursors));
+  ok('S3 [connector-a successor]: the resize handle keeps its OWN cursor (nwse-resize) - never stolen by the new card-body rule - and the pin it was once compared with is gone',
+    (await app.evalJs("getComputedStyle(document.querySelector('.board-handle')).cursor")) === 'nwse-resize' && (await app.evalJs("document.querySelectorAll('.board-pin-grab').length")) === 0, '');
 
   // A ported card's own double-click still travels (FX5 S3's own
   // affordance, untouched by S3's cursor supersession — only the resting
