@@ -335,7 +335,7 @@ await withHarness(async (app) => {
   const drawer = await app.evalJs(`(() => ({ toggle: document.querySelectorAll('.wz-sliver-board-footer').length, labels: [...document.querySelectorAll('.wz-sliver-body .wz-sliver-item-btn')].map((b) => b.textContent.trim()),
     footerA: document.querySelector('[data-box-id="ca-a"] .board-card-footer')?.textContent ?? null }))()`);
   const phrase = await app.evalJs("window.wrizoDeskLexicon ? window.wrizoDeskLexicon.t('boardThreadPrefix') : null");
-  ok('C16: the board drawer carries no "Show grafts" / "Show links" toggle, and a linked card\'s footer ("— grafted to: Card C") is simply on', drawer.toggle === 0 && !drawer.labels.some((l) => /Show (grafts|links|connections)/.test(l)) && !!drawer.footerA && !!phrase && drawer.footerA.includes(phrase) && drawer.footerA.includes('Card C'), JSON.stringify({ drawer, phrase }));
+  ok('C16: the board drawer carries no "Show grafts" / "Show links" toggle, and a linked card\'s footer ("— grafted to: Card C") is ALWAYS ON (Nick overruled the hide, Oct 15) and the link itself is stored', drawer.toggle === 0 && !drawer.labels.some((l) => /Show (grafts|links|connections)/.test(l)) && !!drawer.footerA && !!phrase && drawer.footerA.includes(phrase) && drawer.footerA.includes('Card C') && ((await app.evalJs('window.wrizoBoard()')) || []).some((b) => b.kind === 'connection' && b.connA === 'ca-a' && b.connB === 'ca-c'), JSON.stringify({ drawer, phrase }));
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);
