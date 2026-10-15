@@ -80,6 +80,12 @@ ok('PICK: a collapsed caret changes nothing (the whole-document pick is the host
 const S = 'a [bc]{.font-lora} d';
 const b1 = hm.backspaceAt(S, 5);
 ok('211: Backspace after the span\'s last letter takes the LETTER, never a mark', b1 && b1.text === 'a [b]{.font-lora} d', JSON.stringify(b1));
+// (a mutant that hid only the closing mark's FIRST character survived the checks around this line - nothing pressed a key just after a
+//  span's closing mark; these two do, so the whole closing mark must be hidden)
+const afterClose = S.indexOf(' d');
+const bA = hm.backspaceAt(S, afterClose);
+ok('211: Backspace with the caret just AFTER a span takes its last LETTER - the whole closing mark is hidden and stepped over', bA && bA.text === 'a [b]{.font-lora} d', JSON.stringify(bA));
+ok('211: the right arrow from the last letter steps over the whole closing mark and the space, to the next word', hm.stepRight(S, 5) === S.indexOf('d'), String(hm.stepRight(S, 5)));
 const b2 = b1 && hm.backspaceAt(b1.text, 4);
 ok('211: deleting every word inside a span removes the span (no empty marks left)', b2 && b2.text === 'a  d', JSON.stringify(b2));
 const d1 = hm.deleteAt(S, 4);   // between b and c
