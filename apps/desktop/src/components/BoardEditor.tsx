@@ -2036,13 +2036,15 @@ export function BoardEditor({ id }: { id: string }) {
           if (b.kind === 'page-pin' && resizeStart!.pinAspect != null) {
             // CARD-RESIZE-AXIS (Nick, Oct 15 3:18am): the card KEEPS its proportions - only its size changes - but the size follows the pointer on BOTH axes. The lock used to read dx alone, so a
             // sideways drag grew the (tall) card mostly downward, a vertical drag did nothing, and the corner ran away from the pointer. Now: the corner's target is where the pointer has taken it
-            // (the corner moves by dx, dy); the width grows by that drag's projection onto the card's diagonal (h = aspect * w), so a sideways, a downward or a diagonal drag all scale the card
-            // and the corner stays as close to the pointer as a proportional card can. MIN_PIN_H and the min width both floor it (the height floor implies a width floor at this aspect).
+            // (the corner moves by dx, dy). THE AXIS THE POINTER HAS MOVED MORE DRIVES THE SIZE (Fable, round 2: projecting the drag onto the diagonal made a sideways drag sluggish - 140px right
+            // gave +48px wide - so the corner lagged the hand): the width changes by dx, or by dy / aspect, whichever has the larger MAGNITUDE (its own sign - so a drag that is mostly up shrinks it even
+            // while it also moves right); the height follows at the aspect. The corner then stays UNDER THE POINTER on the dominant axis, and exactly on it for a drag along the diagonal.
+            // MIN_PIN_H and the min width both floor it (the height floor implies a width floor at this aspect).
             const a = resizeStart!.pinAspect;
             const dyFrac = (e.clientY - startY) / pageWidthPx;
-            // Projected as a DELTA (the drag vector onto the diagonal), not as an absolute target: for a card already at its kind's aspect the two are identical, and for an older, differently shaped card
-            // (item 138's grandfathered wide ones) an outward drag can never SHRINK it - the card takes its kind's shape at the first pixel and grows from there.
-            const toward = resizeStart!.w + (dx + a * dyFrac) / (1 + a * a);
+            // A DELTA from the start size, so an outward drag can never SHRINK an older, differently shaped card (item 138's grandfathered wide ones): it takes its kind's shape at the first pixel and grows.
+            const byX = dx, byY = dyFrac / a;
+            const toward = resizeStart!.w + (Math.abs(byX) >= Math.abs(byY) ? byX : byY);
             const w = Math.max(minW, MIN_PIN_H / a, toward);
             return { ...b, w, h: Math.max(MIN_PIN_H, w * a) };
           }

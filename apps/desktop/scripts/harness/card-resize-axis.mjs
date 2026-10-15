@@ -1,14 +1,13 @@
 // CARD RESIZE AXIS (Nick, Oct 15 3:18am; Fable). "Dragging a card's corner sideways forces the cursor vertical and the card only grows downward" - on the Journal board's pins.
 // Cause (read, not guessed): item 138's lock derived a page-pin's height from the width and read ONLY dx - so a sideways drag grew the tall card mostly downward, a vertical drag did nothing, and the
-// corner ran away from the pointer. THE RULING: page-pin and board-pin cards KEEP their proportions (only the size changes), but the size follows the pointer along the card's DIAGONAL - dx AND dy both
-// count - so a sideways, a downward or a diagonal drag all scale the card and the corner stays as close to the pointer as a proportional card can; the cursor stays the diagonal arrow throughout;
+// corner ran away from the pointer. THE RULING: page-pin and board-pin cards KEEP their proportions (only the size changes), but THE AXIS THE POINTER MOVED MORE DRIVES THE SIZE (round 2: width += dx, or += dy / aspect, whichever is larger in magnitude, with its own sign) - so a sideways, a downward or a diagonal drag all scale the card and the corner stays under the pointer on the dominant axis; the cursor stays the diagonal arrow throughout;
 // text and ink cards stay free; MIN_PIN_H and a min width floor it.
 //
 //   S  source pins (browserless, with mutants): the pin branch reads dy; the whole canvas wears the diagonal arrow while the corner is held
 //   C1 drag RIGHT -> bigger, ratio unchanged (page card)      C2 drag DOWN -> bigger, ratio unchanged (before: nothing happened)
-//   C3 a drag ALONG the diagonal -> the corner lands on the pointer (within 12px)     C4 a SIDEWAYS drag -> the corner ends nearer the pointer than the old dx-only lock left it
+//   C3 a drag ALONG the diagonal -> the corner lands on the pointer (within 12px)     C4 a SIDEWAYS drag -> the right edge is under the pointer (140px right = +140px wide); C2 also pins the bottom edge under the pointer
 //   C5 drag UP-LEFT -> smaller, ratio unchanged, both floors respected     C6 the same for a BOARD pin (wide): right -> bigger, down -> bigger, ratio unchanged
-//   C9 an OLDER wide page card dragged right never gets narrower (the projection is a delta)
+//   C9 an OLDER wide page card dragged right never gets narrower (the change is a delta from the start size)
 //   C7 a TEXT card is still free on both axes (width and height move independently)
 //   C8 the cursor is the diagonal arrow over the card text, over empty canvas and over the handle for the WHOLE gesture - and is released after (not stuck)
 //
@@ -41,16 +40,16 @@ const TOL = 0.03;
 const be = noCR(fs.readFileSync(path.join(SRC, 'components/BoardEditor.tsx'), 'utf8'));
 const css = noCR(fs.readFileSync(path.join(SRC, 'index.css'), 'utf8'));
 const pins = (b, c) => ({
-  readsDy: /const dyFrac = \(e\.clientY - startY\) \/ pageWidthPx;\n(?:\s*\/\/[^\n]*\n)*\s*const toward = resizeStart!\.w \+ \(dx \+ a \* dyFrac\) \/ \(1 \+ a \* a\);/.test(b),
+  readsDy: /const dyFrac = \(e\.clientY - startY\) \/ pageWidthPx;\n(?:\s*\/\/[^\n]*\n)*\s*const byX = dx, byY = dyFrac \/ a;\n\s*const toward = resizeStart!\.w \+ \(Math\.abs\(byX\) >= Math\.abs\(byY\) \? byX : byY\);/.test(b),
   floors: /const w = Math\.max\(minW, MIN_PIN_H \/ a, toward\);\n\s*return \{ \.\.\.b, w, h: Math\.max\(MIN_PIN_H, w \* a\) \};/.test(b),
   flag: /canvas\.dataset\.resizing = 'true';/.test(b) && /delete canvas\.dataset\.resizing;\n\s*movingIds = \[\];/.test(b),
   arrow: /\.board-canvas\[data-resizing='true'\], \.board-canvas\[data-resizing='true'\] \*\{ cursor:nwse-resize !important; \}/.test(c),
 });
 {
   const p = pins(be, css);
-  ok('S1: a page-pin resize reads BOTH dx and dy (the width grows by the drag\'s projection onto the card\'s diagonal), the height follows at the kind\'s aspect, and MIN_PIN_H plus a min width floor it', p.readsDy && p.floors, JSON.stringify(p));
+  ok('S1: a page-pin resize reads BOTH dx and dy (the axis the pointer moved MORE drives the width: dx, or dy / aspect, whichever is larger in magnitude), the height follows at the kind\'s aspect, and MIN_PIN_H plus a min width floor it', p.readsDy && p.floors, JSON.stringify(p));
   ok('S2: the canvas carries data-resizing for the length of the gesture (set when the corner is taken, cleared when it ends) and CSS makes the whole canvas wear the diagonal arrow while it is set', p.flag && p.arrow, JSON.stringify(p));
-  const m1 = be.replace(' + a * dyFrac', '');
+  const m1 = be.replace('const byX = dx, byY = dyFrac / a;', 'const byX = dx, byY = 0;');
   const m2 = be.replace('Math.max(minW, MIN_PIN_H / a, toward)', 'Math.max(minW, toward)');
   const m3 = css.replace("cursor:nwse-resize !important;", 'cursor:default !important;');
   const m4 = be.replace("canvas.dataset.resizing = 'true';", '');
@@ -74,8 +73,12 @@ const wall = async (app) => {
   await freshDesk(app);
   const rows = [
     { id: W, text: 'Resize wall', origin: null, source: null, projectId: null, pageType: 'board',
+      // Every card is placed ON SCREEN (the visible canvas is ~0.67 of its width tall at 1400x900) and clear of the others' growth - the first run's pins came from the pin seam's default slots, which sat
+      // below the viewport (y 0.7 and 1.0), so the driver could not find a handle to take.
       boxes: [{ id: 'cra-text', kind: 'text', x: 0.62, y: 0.5, w: 0.22, h: 0.12, z: 9, text: 'A free text card' },
-        { id: 'cra-oldpin', kind: 'page-pin', x: 0.3, y: 0.3, w: 0.28, h: 0.12, z: 8, entryId: O }] },   // an OLDER, wide page card (item 138's grandfathered shape)
+        { id: 'cra-oldpin', kind: 'page-pin', x: 0.45, y: 0.3, w: 0.28, h: 0.12, z: 8, entryId: O },    // an OLDER, wide page card (item 138's grandfathered shape)
+        { id: 'cra-pagepin', kind: 'page-pin', x: 0.05, y: 0.05, w: 0.16, h: 0.22, z: 5, entryId: P },  // a page card at its born silhouette
+        { id: 'cra-boardpin', kind: 'page-pin', x: 0.55, y: 0.05, w: 0.32, h: 0.10, z: 6, entryId: N }] },   // a nested board's card at its born (wide) silhouette
     { id: P, text: 'Resize page', origin: null, source: null, projectId: null, pageType: 'manuscript' },
     { id: N, text: 'Resize nested board', origin: null, source: null, projectId: null, pageType: 'board', boxes: [] },
     { id: O, text: 'Resize old page', origin: null, source: null, projectId: null, pageType: 'manuscript' },
@@ -84,14 +87,12 @@ const wall = async (app) => {
   await settle(app, `(() => { const es = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').map(e => e.id); return ${JSON.stringify([W, P, N, O])}.every(id => es.includes(id)); })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after seed' });
-  const a = await app.evalJs(`!!window.wrizoPinPageToBoard(${JSON.stringify(P)}, ${JSON.stringify(W)}, { display: true })`);
-  const b = await app.evalJs(`!!window.wrizoPinPageToBoard(${JSON.stringify(N)}, ${JSON.stringify(W)}, { display: true })`);
   await app.evalJs('window.wrizoFlushNow()');
   await app.evalJs(`location.hash = '#/page/${W}'`);
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'the wall' });
   await sleep(500);
   const boxes = (await app.evalJs('window.wrizoBoard()')) || [];
-  return { pinned: a && b, page: boxes.find((x) => x.entryId === P), board: boxes.find((x) => x.entryId === N), text: boxes.find((x) => x.id === 'cra-text'), old: boxes.find((x) => x.id === 'cra-oldpin') };
+  return { pinned: true, page: boxes.find((x) => x.id === 'cra-pagepin'), board: boxes.find((x) => x.id === 'cra-boardpin'), text: boxes.find((x) => x.id === 'cra-text'), old: boxes.find((x) => x.id === 'cra-oldpin') };
 };
 const boxOf = async (app, id) => ((await app.evalJs('window.wrizoBoard()')) || []).find((b) => b.id === id);
 const rectOf = (app, id) => app.evalJs(`(() => { const e = document.querySelector('[data-box-id="${id}"]'); if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height }; })()`);
@@ -120,7 +121,7 @@ const ratio = (b) => b.h / b.w;
 await withHarness(async (app) => {
   // ============================================================ C1 / C2 / C4 / C5: the page card
   let f = await wall(app);
-  ok('fixture: a page card and a nested-board card are on the wall (pinned through the product\'s own seam), with a free text card', f.pinned && !!f.page && !!f.board && !!f.text, JSON.stringify({ pinned: f.pinned, page: !!f.page, board: !!f.board, text: !!f.text }));
+  ok('fixture: a page card and a nested-board card are on the wall and ON SCREEN (seeded in the wall\'s own boxes), with a free text card', f.pinned && !!f.page && !!f.board && !!f.text, JSON.stringify({ pinned: f.pinned, page: !!f.page, board: !!f.board, text: !!f.text }));
   if (f.page && f.board && f.text) {
     if (await select(app, f.page.id)) {
       const b0 = await boxOf(app, f.page.id);
@@ -131,16 +132,13 @@ await withHarness(async (app) => {
       ok('C1: dragging the corner RIGHT makes the page card BIGGER (both axes grow) and its proportions do not change', b1.w > b0.w + 0.02 && b1.h > b0.h + 0.02 && Math.abs(ratio(b1) - PAGE_ASPECT) < TOL, JSON.stringify({ b0, b1, want: PAGE_ASPECT }));
       // C4: where the corner ended vs the pointer, against what the old dx-only lock would have done
       const end = { x: start.x + dx, y: start.y };
-      const ours = Math.hypot(r1.r - end.x, r1.b - end.y);
-      const aPx = r0.h / r0.w; const oldW = r0.w + dx;
-      const oldCorner = { x: r0.l + oldW, y: r0.t + oldW * aPx };
-      const theirs = Math.hypot(oldCorner.x - end.x, oldCorner.y - end.y);
-      ok('C4: after a SIDEWAYS drag the card\'s corner ends NEARER the pointer than the old dx-only lock left it (it used to run away downward)', ours < theirs - 8, JSON.stringify({ ours: Math.round(ours), old: Math.round(theirs) }));
+      ok('C4: after a SIDEWAYS drag the card\'s right edge is UNDER THE POINTER (within 3px) - 140px right is +140px wide: the axis the pointer moved more drives the size, so the corner keeps up with the hand on that axis', Math.abs(r1.r - end.x) <= 3, JSON.stringify({ edgeX: Math.round(r1.r), pointerX: end.x }));
 
       const p2 = await boxOf(app, f.page.id);
       await drag(app, f.page.id, 0, 120);
       const b2 = await boxOf(app, f.page.id);
-      ok('C2: dragging the corner DOWN makes the card BIGGER and its proportions do not change (a vertical drag used to do nothing at all)', b2.w > p2.w + 0.01 && b2.h > p2.h + 0.02 && Math.abs(ratio(b2) - PAGE_ASPECT) < TOL, JSON.stringify({ before: p2, after: b2 }));
+      const r2 = await rectOf(app, f.page.id);
+      ok('C2: dragging the corner DOWN makes the card BIGGER, its proportions do not change, and its bottom edge is UNDER THE POINTER (within 3px) - a vertical drag used to do nothing at all', b2.w > p2.w + 0.01 && b2.h > p2.h + 0.02 && Math.abs(ratio(b2) - PAGE_ASPECT) < TOL && Math.abs(r2.b - (r1.b + 120)) <= 3, JSON.stringify({ before: p2, after: b2, bottom: Math.round(r2.b), pointerY: Math.round(r1.b + 120) }));
 
       // C3: along the diagonal the corner lands on the pointer
       const r3 = await rectOf(app, f.page.id);
