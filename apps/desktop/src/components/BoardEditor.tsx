@@ -2677,9 +2677,11 @@ export function BoardEditor({ id }: { id: string }) {
       </button>
     </div>
   );
-  const boardTelos = !isSystemBoard ? (
-    <div className="board-telos" data-board-telos>{t('boardTelos')}</div>
-  ) : null;
+  // ITEM word-diet (Nick, Oct 13): REMOVE — the narration line is gone
+  // whole; the board's own pairing is read from its visible context now,
+  // not a standing sentence. boardTelos's lexicon entry is untouched (text
+  // still there for whoever reads deskLexicon.ts), simply never rendered.
+  const boardTelos = null;
 
   // The three views of one board. OPEN is the existing canvas (byte-identical);
   // STORYBOARD/OUTLINE render the ONE structure description (store/

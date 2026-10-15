@@ -196,10 +196,16 @@ await withHarness(async (app) => {
     // JSON.stringify(stripShape.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
     // JSON.stringify(stripShape.labels));
     // ----------------------------------------------------------------
-    ok(`VW1 successor of the CD3 roster check @ ${width}px: the strip carries the SAME eight categories as ever, compared as a SET rather than a sequence — order is VW1's to rule and vw1.mjs is what asserts it, so this file no longer duplicates that claim`,
+    // SUPERSEDED (item word-diet, Nick) — drawerPage reworks, "Page" -> "Pages".
+    // ok(`VW1 successor of the CD3 roster check @ ${width}px: the strip carries the SAME eight categories as ever, compared as a SET rather than a sequence — order is VW1's to rule and vw1.mjs is what asserts it, so this file no longer duplicates that claim`,
+    //   stripShape.itemCount === 8
+    //     && JSON.stringify([...stripShape.labels].sort())
+    //        === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
+    //   JSON.stringify(stripShape.labels));
+    ok(`VW1 successor of the CD3 roster check @ ${width}px [word-diet successor]: the strip carries the SAME eight categories as ever, compared as a SET rather than a sequence`,
       stripShape.itemCount === 8
         && JSON.stringify([...stripShape.labels].sort())
-           === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
+           === JSON.stringify(['Drawers', 'Journal', 'Pages', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
       JSON.stringify(stripShape.labels));
   }
 
@@ -214,9 +220,13 @@ await withHarness(async (app) => {
     open: !!document.querySelector('.wz-cascade-panel'),
     title: document.querySelector('.wz-cascade-panel-title')?.textContent,
     hasOpenJournal: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'Open the Journal'),
-    hasNewPage: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'New page'),
+    hasNewPage: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'New Pages'),
   })`);
-  ok('S3: clicking Journal opens layer 2 with "Open the Journal" and "New page"',
+  // SUPERSEDED (item word-diet, Nick) — cascadeJournalNewPage reworks, "New page" -> "New Pages".
+  // ok('S3: clicking Journal opens layer 2 with "Open the Journal" and "New page"',
+  //   journalPanel.open && journalPanel.title === 'Journal' && journalPanel.hasOpenJournal && journalPanel.hasNewPage,
+  //   JSON.stringify(journalPanel));
+  ok('S3 [word-diet successor]: clicking Journal opens layer 2 with "Open the Journal" and "New Pages"',
     journalPanel.open && journalPanel.title === 'Journal' && journalPanel.hasOpenJournal && journalPanel.hasNewPage,
     JSON.stringify(journalPanel));
 
@@ -239,8 +249,13 @@ await withHarness(async (app) => {
   // B2 S4 park sweep — live successor immediately below: Move/Copy retires
   // (superseded by Places); the ORIGINAL "...Move/Copy, Port..." combined
   // check is PARKED (A4, quoted verbatim) in this file's own PARKED section.
-  ok('B2 S4 successor of "S3/DoD: the Page panel carries the Page face\'s contents (title, star, home line, tags, Move/Copy, Port)": the SAME facts, Move/Copy replaced by the Places panel\'s own presence',
-    pagePanel.title === 'Page' && pagePanel.hasTitle && pagePanel.hasStar && pagePanel.hasHome && pagePanel.hasTags
+  // SUPERSEDED (item word-diet, Nick) — drawerPage (the Page panel's own
+  // title term) reworks, "Page" -> "Pages".
+  // ok('B2 S4 successor of "S3/DoD: the Page panel carries the Page face\'s contents (title, star, home line, tags, Move/Copy, Port)": the SAME facts, Move/Copy replaced by the Places panel\'s own presence',
+  //   pagePanel.title === 'Page' && pagePanel.hasTitle && pagePanel.hasStar && pagePanel.hasHome && pagePanel.hasTags
+  //     && pagePanel.moveCopyGone && pagePanel.hasPort && pagePanel.hasPlaces && pagePanel.footerAbsentOnProjectPage,
+  ok('B2 S4 successor [word-diet successor]: the Page panel carries the Page face\'s contents (title, star, home line, tags, Move/Copy, Port)',
+    pagePanel.title === 'Pages' && pagePanel.hasTitle && pagePanel.hasStar && pagePanel.hasHome && pagePanel.hasTags
       && pagePanel.moveCopyGone && pagePanel.hasPort && pagePanel.hasPlaces && pagePanel.footerAbsentOnProjectPage,
     JSON.stringify(pagePanel));
 
@@ -254,16 +269,25 @@ await withHarness(async (app) => {
   // string, not a fabricated project name, keeps this honest to the actual
   // fixture rather than an assumed one.
   const homeLabel = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  ok('S3 (successor to ab3.mjs\'s "S4/S2: the Page face\'s Where-it-lives names the project..."): the home label still names the project ("In Untitled" — this fixture never typed a title) through the cascade\'s Page panel',
-    homeLabel === 'In Untitled', String(homeLabel));
+  // SUPERSEDED (item word-diet, Nick) — pageHomeProject drops its "In " prefix
+  // whole ("{drawer name}", bare); ORIGINAL claim parked verbatim:
+  // ok('S3 (successor to ab3.mjs\'s "S4/S2: the Page face\'s Where-it-lives names the project..."): the home label still names the project ("In Untitled" — this fixture never typed a title) through the cascade\'s Page panel',
+  //   homeLabel === 'In Untitled', String(homeLabel));
+  ok('S3 [word-diet successor]: the home label still names the project ("Untitled" — this fixture never typed a title — name, not narration) through the cascade\'s Page panel',
+    homeLabel === 'Untitled', String(homeLabel));
 
   // The saved-silently footer's positive case — a loose (unfiled) page.
   await freshLoosePage(app, LAPTOP_W, 900);
   await clickCategory(app, 'page'); // Page
   await sleep(200);
   const loosePageFooter = await app.evalJs("document.querySelector('.wz-pageface-footer')?.textContent");
-  ok('S3/DoD: on a loose (unfiled) page, the Page panel carries the saved-silently footer — its only appearance anywhere once framed',
-    !!loosePageFooter && loosePageFooter.includes('Saved automatically'), String(loosePageFooter));
+  // SUPERSEDED (item word-diet, Nick) — the saved-silently footer line
+  // RETIRES whole (JournalEntry.tsx's own footer: subject prop, now
+  // undefined unconditionally). ORIGINAL claim parked verbatim:
+  // ok('S3/DoD: on a loose (unfiled) page, the Page panel carries the saved-silently footer — its only appearance anywhere once framed',
+  //   !!loosePageFooter && loosePageFooter.includes('Saved automatically'), String(loosePageFooter));
+  ok('S3/DoD [word-diet successor]: on a loose (unfiled) page, the Page panel carries NO footer at all now (REMOVE)',
+    !loosePageFooter, String(loosePageFooter));
 
   // Successor to ab3.mjs's own retired "S2: the Page face's star toggle
   // actually persists to entry.starred" (parked there, SUPERSEDED —
@@ -1180,10 +1204,19 @@ if (process.env.HARNESS_PARKED === '1') {
     // stripShapeParked.itemCount === 8 && JSON.stringify(stripShapeParked.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
     // JSON.stringify(stripShapeParked));
     // ----------------------------------------------------------------
-    pok('PARKED, generation 5 (was the gated re-assertion of the strip roster in the OLD flat sequence, reusing stripShapeParked) — VW1 (item 134): the same eight categories survive as a SET; order is asserted once, by vw1.mjs, which rules it',
+    // ---- PARKED, generation 5 — SUPERSEDED by item word-diet (Nick), 2026-10-14 ----
+    // Quoted VERBATIM. drawerPage reworks, "Page" -> "Pages".
+    //
+    // pok('PARKED, generation 5 (was the gated re-assertion of the strip roster in the OLD flat sequence, reusing stripShapeParked) — VW1 (item 134): the same eight categories survive as a SET; order is asserted once, by vw1.mjs, which rules it',
+    //   stripShapeParked.itemCount === 8
+    //     && JSON.stringify([...stripShapeParked.labels].sort())
+    //        === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
+    //   JSON.stringify(stripShapeParked));
+    // ------------------------------------------------------------------
+    pok('PARKED, generation 6 (was generation 5\'s re-assertion with "Page" in the sorted set) — item word-diet: drawerPage reads "Pages"',
       stripShapeParked.itemCount === 8
         && JSON.stringify([...stripShapeParked.labels].sort())
-           === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
+           === JSON.stringify(['Drawers', 'Journal', 'Pages', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
       JSON.stringify(stripShapeParked));
 
     // B2 (2026-07-20) — two more checks this file's own live sections

@@ -838,8 +838,13 @@ await withHarness(async (app) => {
   //     && JSON.stringify(pk0.checked) === JSON.stringify(['normal']) && pk0.anyDisabled === false && pk0.group === 'wz-page-kind-label'
   //     && e4Prose.structureZone === false && e4Prose.templates === 3, JSON.stringify({ pk0, e4Prose }));
   // ------------------------------------------------------------------
-  ok('E4 [page-templates successor]: prose Draft carries a "Page kind" row directly below the Templates - Normal, Screenplay, Research in that order, Normal preselected, none greyed, one labelled radiogroup - and still no Structure zone; the Templates hold their FOUR stand-ins',
-    !!pk0 && pk0.heading === 'Page kind' && pk0.afterTemplates && JSON.stringify(pk0.labels) === JSON.stringify(['Normal', 'Screenplay', 'Research'])
+  // SUPERSEDED (item word-diet, Nick) — railPageKind reworks, "Page kind" -> "Pages Kind".
+  // ok('E4 [page-templates successor]: prose Draft carries a "Page kind" row directly below the Templates - Normal, Screenplay, Research in that order, Normal preselected, none greyed, one labelled radiogroup - and still no Structure zone; the Templates hold their FOUR stand-ins',
+  //   !!pk0 && pk0.heading === 'Page kind' && pk0.afterTemplates && JSON.stringify(pk0.labels) === JSON.stringify(['Normal', 'Screenplay', 'Research'])
+  //     && JSON.stringify(pk0.checked) === JSON.stringify(['normal']) && pk0.anyDisabled === false && pk0.group === 'wz-page-kind-label'
+  //     && e4Prose.structureZone === false && e4Prose.templates === 4, JSON.stringify({ pk0, e4Prose }));
+  ok('E4 [word-diet successor]: prose Draft carries a "Pages Kind" row directly below the Templates - Normal, Screenplay, Research in that order, Normal preselected, none greyed, one labelled radiogroup - and still no Structure zone; the Templates hold their FOUR stand-ins',
+    !!pk0 && pk0.heading === 'Pages Kind' && pk0.afterTemplates && JSON.stringify(pk0.labels) === JSON.stringify(['Normal', 'Screenplay', 'Research'])
       && JSON.stringify(pk0.checked) === JSON.stringify(['normal']) && pk0.anyDisabled === false && pk0.group === 'wz-page-kind-label'
       && e4Prose.structureZone === false && e4Prose.templates === 4, JSON.stringify({ pk0, e4Prose }));
   ok('E4 [Fable\'s review successor]: the style guides are absent before Research, and the drawer offers no Convert row',
@@ -872,10 +877,18 @@ await withHarness(async (app) => {
     !!pk2 && JSON.stringify(pk2.checked) === JSON.stringify(['research']) && JSON.stringify(pk2.guideChecked) === JSON.stringify(['chicago']), JSON.stringify(pk2));
   await app.evalJs("(() => { const b = document.querySelector('.wz-strip-item[data-category=page]'); if (b) b.click(); })()");
   await sleep(500);
-  const pressedDefaults = await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => x.textContent.trim() === 'Set as my default page settings'); if (!b) return false; b.click(); return true; })()");
+  // SUPERSEDED (item word-diet, Nick) — pageSetupSaveDefaults shortens to
+  // "Make Default"; see the successor just below.
+  // const pressedDefaults = await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => x.textContent.trim() === 'Set as my default page settings'); if (!b) return false; b.click(); return true; })()");
+  // await sleep(500);
+  // const storedDefaults = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-page-defaults') || 'null')");
+  // ok('E4 [Fable\'s review successor]: "Set as my default page settings" on that Research page saves the dress and NOT the kind or style guide',
+  //   pressedDefaults === true && storedDefaults !== null && storedDefaults.kind === undefined && storedDefaults.styleGuide === undefined && storedDefaults.margins !== undefined,
+  //   JSON.stringify({ pressedDefaults, storedDefaults }));
+  const pressedDefaults = await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => x.textContent.trim() === 'Make Default'); if (!b) return false; b.click(); return true; })()");
   await sleep(500);
   const storedDefaults = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-page-defaults') || 'null')");
-  ok('E4 [Fable\'s review successor]: "Set as my default page settings" on that Research page saves the dress and NOT the kind or style guide',
+  ok('E4 [word-diet successor]: "Make Default" on that Research page saves the dress and NOT the kind or style guide',
     pressedDefaults === true && storedDefaults !== null && storedDefaults.kind === undefined && storedDefaults.styleGuide === undefined && storedDefaults.margins !== undefined,
     JSON.stringify({ pressedDefaults, storedDefaults }));
   await freshScriptPage(app, 1400, 900);

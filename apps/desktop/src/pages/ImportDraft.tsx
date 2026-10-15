@@ -63,7 +63,9 @@ export function ImportDraft() {
       <Link to={id ? `/project/${id}` : '/drawers'} className="btn-quiet import-back">&larr; Back</Link>
       <div className="eyebrow import-eyebrow">Import a draft → {targetTitle}</div>
       <h1 className="import-title">Paste your draft</h1>
-      <p className="import-sub">Your own work is always welcome in. Paste it below, choose where it lands, and it becomes a {lex('page').toLowerCase()} you can keep writing.</p>
+      {/* ITEM word-diet (Nick, review fix, Oct 13) — "a Pages" is banned;
+          cut the noun rather than reword around it. */}
+      <p className="import-sub">Your own work is always welcome in. Paste it below, choose where it lands, and keep writing.</p>
 
       <textarea
         className="import-textarea"

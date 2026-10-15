@@ -272,39 +272,60 @@ await withHarness(async (app) => {
     && (await app.evalJs("document.querySelector('.wz-tutor-panel').dataset.open")) === 'true');
 
   // ==========================================================================
-  // S6 — the disclosure appears exactly once across two opens.
-  // ==========================================================================
-  await freshProsePage(app, 1400, 900, { skipDisclosure: false });
-  ok('S5 disclosure: not yet seen on a fresh device',
-    (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen')")) !== '1');
+  // S6 — SUPERSEDED WHOLE (item word-diet, Nick, TRUST) — the one-time
+  // "Before you ask" modal this whole section tests (shown once per
+  // device, acknowledged, version-keyed) retires completely: Tutor.tsx's
+  // own handleGripClick no longer calls anything that could ever set
+  // showDisclosure true. tutorDisclosureBodyV4 now lives behind a "?"
+  // beside the Ask box, always available, no seen-once gate at all — so
+  // every claim below (shown on first open, dismissed by an ack, a seen
+  // flag, not reappearing on a second open) is about a mechanism that no
+  // longer exists, not a wording change a word-diet successor could carry
+  // forward. Parked whole, verbatim, rather than individually reworded;
+  // one real successor follows instead of a reworked lineage.
+  //
+  // ORIGINAL, quoted verbatim:
+  // await freshProsePage(app, 1400, 900, { skipDisclosure: false });
+  // ok('S5 disclosure: not yet seen on a fresh device',
+  //   (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen')")) !== '1');
+  // await app.evalJs("document.querySelector('.wz-tutor-grip').click()");
+  // await sleep(300);
+  // ok('S5 disclosure: shown on the FIRST-ever open',
+  //   (await app.evalJs("!!document.querySelector('.wz-tutor-disclosure')")) === true);
+  // await app.evalJs("document.querySelector('.wz-tutor-disclosure-ack').click()");
+  // await sleep(250);
+  // ok('S5 disclosure: dismissed by its own explicit ack, and the seen flag persists (v4 key)',
+  //   (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')"))
+  //   && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '4');
+  // await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); // close
+  // await sleep(200);
+  // await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); // open #2
+  // await sleep(300);
+  // ok('S5 disclosure: does NOT reappear on the second-ever open',
+  //   (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')")));
+  //
+  // [word-diet successor] — the modal never exists, regardless of the old
+  // seen-flag's own state, and the "?" is there instead, carrying the new
+  // TRUST text.
+  await freshProsePage(app, 1400, 900);
   await app.evalJs("document.querySelector('.wz-tutor-grip').click()");
   await sleep(300);
-  ok('S5 disclosure: shown on the FIRST-ever open',
-    (await app.evalJs("!!document.querySelector('.wz-tutor-disclosure')")) === true);
-  await app.evalJs("document.querySelector('.wz-tutor-disclosure-ack').click()");
-  await sleep(250);
-  // TU2 S6 park sweep parked the original legacy-boolean form of this check and
-  // re-asserted it fresh against the '2' version key.
-  // TU5 S6 park sweep — that '2'-key re-assertion is itself now superseded:
-  // CURRENT_DISCLOSURE_VERSION is 3, so the ack writes '3', not '2'. Parked
-  // below (A4, quoted verbatim, confirmed false live against the TU5 build) and
-  // re-asserted fresh here against the CURRENT ('3') key — never rewritten in
-  // place. Live successor also in tu5.mjs's own disclosure v3 section.
-  // ITEM 84 park sweep — the '3'-key re-assertion is itself now superseded:
-  // CURRENT_DISCLOSURE_VERSION is 4 (TD4, the selection ask, reads past v3's
-  // three named travelers). Parked below verbatim and re-asserted fresh here
-  // against the CURRENT ('4') key — never rewritten in place. Live successor
-  // also in item84b.mjs's own disclosure section.
-  ok('S5 disclosure: dismissed by its own explicit ack, and the seen flag persists (v4 key)',
-    (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')"))
-    && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '4');
-  // Close, then open a SECOND time — the brief's own "exactly once across two opens".
-  await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); // close
-  await sleep(200);
-  await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); // open #2
-  await sleep(300);
-  ok('S5 disclosure: does NOT reappear on the second-ever open',
+  ok('S6 [word-diet successor]: the one-time disclosure modal never appears on the first-ever open (RETIRED whole)',
     (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')")));
+  const noteLabel = await app.evalJs("document.querySelector('.wz-tutor-convo-row .wz-drawer-note-btn')?.getAttribute('aria-label')");
+  ok('S6 [word-diet successor]: a "?" note sits beside the Ask box instead', !!noteLabel, String(noteLabel));
+  await app.evalJs("document.querySelector('.wz-tutor-convo-row .wz-drawer-note-btn')?.click()");
+  await sleep(150);
+  const noteShown = await app.evalJs("document.querySelector('.wz-tutor-convo-row .wz-drawer-note-pop')?.textContent");
+  // SUPERSEDED (item word-diet, review fix) — the substring used a curly
+  // right single quote (U+2019); the actual lexicon value (deskLexicon.ts)
+  // is a plain straight apostrophe, so .includes() never matched.
+  // ok('S6 [word-diet successor]: pressed, it reveals the TRUST wording, every promise carried',
+  //   typeof noteShown === 'string' && noteShown.includes('Nothing leaves your desk unasked') && noteShown.includes('these Pages’ recent changes') && noteShown.includes('your Bible'),
+  //   String(noteShown));
+  ok('S6 [word-diet successor, apostrophe fix]: pressed, it reveals the TRUST wording, every promise carried',
+    typeof noteShown === 'string' && noteShown.includes('Nothing leaves your desk unasked') && noteShown.includes("these Pages' recent changes") && noteShown.includes('your Bible'),
+    String(noteShown));
 
   // ==========================================================================
   // S3 — Consistency lens determinism on a seeded misspelling fixture
@@ -341,8 +362,13 @@ await withHarness(async (app) => {
   await sleep(250);
   await openTutor(app);
   const structureLoose = await app.evalJs("Array.from(document.querySelectorAll('.wz-tutor-section'))[1].innerText");
-  ok('S3 Structure: a loose page reads its own honest home label',
-    structureLoose.toLowerCase().includes('loose'), structureLoose);
+  // SUPERSEDED (item word-diet, Nick) — pageHomeLoose's text itself changed,
+  // "Loose — belongs nowhere yet" -> "Unfiled" (no longer contains "loose").
+  // ORIGINAL claim parked verbatim:
+  // ok('S3 Structure: a loose page reads its own honest home label',
+  //   structureLoose.toLowerCase().includes('loose'), structureLoose);
+  ok('S3 Structure [word-diet successor]: a loose page reads its own honest home label ("Unfiled")',
+    structureLoose.includes('Unfiled'), structureLoose);
 
   // (b) a filed page (in a project) with a board-pin and a linked beat.
   await freshProsePage(app, 1400, 900);
@@ -373,8 +399,13 @@ await withHarness(async (app) => {
   await sleep(250);
   await openTutor(app);
   const structureFiled = await app.evalJs("Array.from(document.querySelectorAll('.wz-tutor-section'))[1].innerText");
-  ok('S3 Structure: a filed page names its project as home',
-    structureFiled.includes('In '), structureFiled);
+  // SUPERSEDED (item word-diet, Nick) — pageHomeProject drops "In " whole;
+  // this fixture's project is never titled (F4's "no title required" door).
+  // ORIGINAL claim parked verbatim:
+  // ok('S3 Structure: a filed page names its project as home',
+  //   structureFiled.includes('In '), structureFiled);
+  ok('S3 Structure [word-diet successor]: a filed page names its project as home ("Untitled", bare)',
+    structureFiled.includes('Untitled'), structureFiled);
   // PW1 S3/PW27 + Fable's ruling 4 (2026-09-08) — SUPERSEDED IN PLACE, original
   // quoted verbatim (A4). Item 125 separates MEMBERSHIP from DISPLAY: the
   // pin-card is one display of the relation, and a page can be a member of a
@@ -433,8 +464,16 @@ await withHarness(async (app) => {
   ok('S3 Fragments: a recent capture is resurfaced', fragText.includes('A raw capture'), fragText);
   ok('S3 Fragments: a starred page sharing a tag is resurfaced', fragText.includes('A starred page sharing'), fragText);
   ok('S3 Fragments: a starred page with NO shared tag is correctly excluded', !fragText.includes('no shared tag'), fragText);
-  ok('S3 Fragments: the panel plainly discloses its own recency+tags-only simplicity',
-    fragText.toLowerCase().includes('recency') || fragText.toLowerCase().includes('tags only'), fragText);
+  // SUPERSEDED (item word-diet, Nick) — tutorLensFragmentsNote moves behind
+  // a "?" (rule 3: explanations behind "?", one sentence); the panel no
+  // longer "plainly discloses" it standing — press the note instead.
+  // ok('S3 Fragments: the panel plainly discloses its own recency+tags-only simplicity',
+  //   fragText.toLowerCase().includes('recency') || fragText.toLowerCase().includes('tags only'), fragText);
+  await app.evalJs("Array.from(document.querySelectorAll('.wz-tutor-section'))[2].querySelector('.wz-drawer-note-btn')?.click()");
+  await sleep(150);
+  const fragNote = await app.evalJs("Array.from(document.querySelectorAll('.wz-tutor-section'))[2].querySelector('.wz-drawer-note-pop')?.textContent ?? null");
+  ok('S3 Fragments [word-diet successor]: pressed, the "?" discloses the same recency+tags-only simplicity',
+    typeof fragNote === 'string' && fragNote.toLowerCase().includes('recency') && fragNote.toLowerCase().includes('tags only'), String(fragNote));
   // A fragment item travels — a navigation, never a text-insertion affordance.
   await app.evalJs("document.querySelector('.wz-tutor-frag-item')?.click()");
   await sleep(250);

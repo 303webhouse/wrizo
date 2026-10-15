@@ -229,7 +229,13 @@ async function scenario(app) {
       JSON.stringify(bar.tabs) === JSON.stringify(['open', 'storyboard', 'outline']) && bar.doorPresent === true,
       JSON.stringify(bar));
     ok(`S3 @${width}px: the door NEVER carries a selected/active state`, bar.doorHasSelected === false);
-    ok(`S3 @${width}px: telos line present, static, exact string`, bar.telosText === TELOS, `telos=${bar.telosText}`);
+    // SUPERSEDED (item word-diet, Nick, Oct 13) — boardTelos REMOVE: the
+    // standing line is gone whole (BoardEditor.tsx's own `boardTelos` var
+    // is now always null); the lexicon's own text is untouched (TELOS
+    // still matches it, see the lexicon-sourced check below), simply
+    // never rendered.
+    // ok(`S3 @${width}px: telos line present, static, exact string`, bar.telosText === TELOS, `telos=${bar.telosText}`);
+    ok(`S3 @${width}px [word-diet successor]: the telos line is REMOVED — no .board-telos element at all`, bar.telosText === null, `telos=${bar.telosText}`);
     ok(`S3 @${width}px: A4 sweep no-op — board has NO page mode-tabs / .desk-mode-strip (w1/ab1 stay true)`, bar.noPageModeTabs === true);
   }
   const telosLex = await app.evalJs("window.wrizoDeskLexicon.t('boardTelos')");

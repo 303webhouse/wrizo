@@ -156,10 +156,20 @@ await withHarness(async (app) => {
       // SUPERSEDED (item arbor-quiet-brass): the footer toggle's label renamed
       // "Show connections" -> "Show grafts" (Arbor's own word); same five tools, same order.
       // ok('ab4.mjs S5 lineage, generation 5: the board sliver carries its five hand tools, in order — Add card, New page card, Existing page…, From a deck…, Show connections', sliverShape.buttonCount === 5 && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New page card' && sliverShape.labels[2] === 'Existing page…' && sliverShape.labels[3] === 'From a deck…' && sliverShape.labels[4] === 'Show connections', JSON.stringify(sliverShape));
-      ok('ab4.mjs S5 lineage, generation 6 (arbor-quiet-brass): the board sliver carries its five hand tools, in order — Add card, New page card, Existing page…, From a deck…, Show grafts',
+      // SUPERSEDED (item word-diet, Nick) — boardNewPageCard reworks "New page
+      // card" -> "New Pages Card"; boardAddExistingPage reworks "Existing
+      // page…" -> "+ Filed Pages" (the SAME door beginConnectPage already
+      // names — one picker, one name). ORIGINAL claim parked verbatim:
+      // ok('ab4.mjs S5 lineage, generation 6 (arbor-quiet-brass): the board sliver carries its five hand tools, in order — Add card, New page card, Existing page…, From a deck…, Show grafts',
+      //   sliverShape.buttonCount === 5
+      //     && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New page card'
+      //     && sliverShape.labels[2] === 'Existing page…' && sliverShape.labels[3] === 'From a deck…'
+      //     && sliverShape.labels[4] === 'Show grafts',
+      //   JSON.stringify(sliverShape));
+      ok('ab4.mjs S5 lineage, generation 7 [word-diet successor]: the board sliver carries its five hand tools, in order — Add card, New Pages Card, + Filed Pages, From a deck…, Show grafts',
         sliverShape.buttonCount === 5
-          && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New page card'
-          && sliverShape.labels[2] === 'Existing page…' && sliverShape.labels[3] === 'From a deck…'
+          && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New Pages Card'
+          && sliverShape.labels[2] === '+ Filed Pages' && sliverShape.labels[3] === 'From a deck…'
           && sliverShape.labels[4] === 'Show grafts',
         JSON.stringify(sliverShape));
     }

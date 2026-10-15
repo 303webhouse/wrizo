@@ -416,8 +416,11 @@ await withHarness(async (app) => {
       precedesFace: door && face ? !!(door.compareDocumentPosition(face) & Node.DOCUMENT_POSITION_FOLLOWING) : false,
     };
   })()`);
-  ok('S2 (a): the cascade\'s Page section carries an unmissable "New Page" door at its own head — genuinely preceding the Page face in document order, carrying the olive-lane door class',
-    doorShape.present && doorShape.label === 'New Page' && doorShape.precedesFace, JSON.stringify(doorShape));
+  // SUPERSEDED (item word-diet, Nick) — cascadePageNewPage reworks, "New Page" -> "New Pages".
+  // ok('S2 (a): the cascade\'s Page section carries an unmissable "New Page" door at its own head — genuinely preceding the Page face in document order, carrying the olive-lane door class',
+  //   doorShape.present && doorShape.label === 'New Page' && doorShape.precedesFace, JSON.stringify(doorShape));
+  ok('S2 (a) [word-diet successor]: the cascade\'s Page section carries an unmissable "New Pages" door at its own head — genuinely preceding the Page face in document order, carrying the olive-lane door class',
+    doorShape.present && doorShape.label === 'New Pages' && doorShape.precedesFace, JSON.stringify(doorShape));
   const doorColor = await app.evalJs("getComputedStyle(document.querySelector('.wz-cascade-action-door')).borderColor");
   const accentRest = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--accent-rest').trim()");
   ok('S2 (a): the door is olive (--accent-rest) at rest, not brass — "nothing orange at rest" holds; unmissable via CONTRAST against its plain neighbors, not an evental color',
@@ -459,11 +462,14 @@ await withHarness(async (app) => {
   await openSliver(app);
   await sleep(150);
   const boardToolLabels = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].map(b => b.textContent.trim())");
-  ok('S2 (b): the board sliver carries New page card alongside the existing Add card (a third hand tool)',
-    boardToolLabels.includes('Add card') && boardToolLabels.includes('New page card'), JSON.stringify(boardToolLabels));
+  // SUPERSEDED (item word-diet, Nick) — boardNewPageCard reworks, "New page card" -> "New Pages Card".
+  // ok('S2 (b): the board sliver carries New page card alongside the existing Add card (a third hand tool)',
+  //   boardToolLabels.includes('Add card') && boardToolLabels.includes('New page card'), JSON.stringify(boardToolLabels));
+  ok('S2 (b) [word-diet successor]: the board sliver carries New Pages Card alongside the existing Add card (a third hand tool)',
+    boardToolLabels.includes('Add card') && boardToolLabels.includes('New Pages Card'), JSON.stringify(boardToolLabels));
 
   const boxesBeforePageCard = (await app.evalJs('window.wrizoBoard()')) || [];
-  await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'New page card').click()");
+  await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'New Pages Card').click()"); // DRIVER: boardNewPageCard (item word-diet) -> 'New Pages Card'
   await sleep(300);
   const hashAfterPageCard = await app.evalJs('location.hash');
   ok('S2 (b): New page card travels straight to the fresh page (Nick\'s own DoD wording: "makes a page-card on a board in one act")',
@@ -528,8 +534,15 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-cascade-panel-body')", { label: 'Plan panel open (Plan pointer)' });
   await sleep(150);
   const planPanelText = await app.evalJs("document.querySelector('.wz-cascade-panel-body')?.textContent");
-  ok('S2 (c): the Plan panel\'s own no-project branch quietly points at the Page section\'s New Page door — a writer who just wants a page is told where the plainer door is, not just handed board/plan-creation buttons',
-    !!planPanelText && planPanelText.includes('New Page') && planPanelText.includes('Page section'), planPanelText);
+  // SUPERSEDED (item word-diet, Nick) — cascadePlanJustAPage REMOVED whole
+  // (CascadePanels.tsx's own comment at the old render site); the pointer
+  // line this check named no longer exists at all, replacement or not.
+  // ORIGINAL claim parked verbatim:
+  // ok('S2 (c): the Plan panel\'s own no-project branch quietly points at the Page section\'s New Page door — a writer who just wants a page is told where the plainer door is, not just handed board/plan-creation buttons',
+  //   !!planPanelText && planPanelText.includes('New Page') && planPanelText.includes('Page section'), planPanelText);
+  ok('S2 (c) [word-diet successor]: the Plan panel\'s own no-project branch carries no "just a page" pointer at all now (REMOVE) — only the truthful lead sentence and the two board/plan-creation buttons',
+    !!planPanelText && !planPanelText.includes('Page section') && planPanelText.includes('File this page to a drawer first') && planPanelText.includes('Create a Board') && planPanelText.includes('Plot a Story'),
+    planPanelText);
 
   // ==========================================================================
   // S3 (a) — self-pin impossible at both ends.
@@ -682,9 +695,17 @@ if (process.env.HARNESS_PARKED === '1') {
       row: !!document.querySelector('.wz-beginnings'),
       doors: [...document.querySelectorAll('.wz-beginning')].map(b => b.textContent.trim()),
     })`);
-    pok('PARKED (was "S2 (c): the empty board (zero cards — carried NO empty-state copy at all before this ticket) shows a quiet one-line pointer naming both board-side tools") — BG1 S1 replaces the pointer with the doors themselves: no `.board-canvas-empty` on an ordinary board, the Beginnings row instead, still naming both tools among its four doors; live successor: bg1.mjs',
+    // ---- PARKED — SUPERSEDED by item word-diet (Nick), 2026-10-13 ----
+    // Quoted VERBATIM. beginNewPageCard reworks, "New Page Card" -> "New Pages Card".
+    //
+    // pok('PARKED (was "S2 (c): the empty board (zero cards — carried NO empty-state copy at all before this ticket) shows a quiet one-line pointer naming both board-side tools") — BG1 S1 replaces the pointer with the doors themselves: no `.board-canvas-empty` on an ordinary board, the Beginnings row instead, still naming both tools among its four doors; live successor: bg1.mjs',
+    //   emptyBoardNow.oldCopy === false && emptyBoardNow.row === true &&
+    //   emptyBoardNow.doors.includes('New Card') && emptyBoardNow.doors.includes('New Page Card'),
+    //   JSON.stringify(emptyBoardNow));
+    // ------------------------------------------------------------------
+    pok('PARKED [word-diet successor] — no `.board-canvas-empty` on an ordinary board, the Beginnings row instead, still naming both tools (New Card, New Pages Card) among its four doors; live successor: bg1.mjs',
       emptyBoardNow.oldCopy === false && emptyBoardNow.row === true &&
-      emptyBoardNow.doors.includes('New Card') && emptyBoardNow.doors.includes('New Page Card'),
+      emptyBoardNow.doors.includes('New Card') && emptyBoardNow.doors.includes('New Pages Card'),
       JSON.stringify(emptyBoardNow));
     return parkedChecks;
   });

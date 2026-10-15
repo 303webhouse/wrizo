@@ -745,8 +745,10 @@ function JournalEntryView() {
     entry,
     homeLabel,
     memberships,
-    // The saved-silently line — its only appearance anywhere once framed.
-    footer: entry.projectId == null ? 'Saved automatically — even if you never file it to a Drawer or the Shelf.' : undefined,
+    // ITEM word-diet (Nick, Oct 13) — REMOVE. The framed Page panel's own
+    // footer line retires whole (the legacy <1100px .journal-autosave-note
+    // below is a different surface, untouched by this pick).
+    footer: undefined,
     onToggleStar: toggleStar,
     onAddTag: addTag,
     onRemoveTag: removeTag,
@@ -831,7 +833,11 @@ function JournalEntryView() {
             className="entry-edit"
             role="textbox"
             aria-multiline="true"
-            aria-label={`${lex('journal')} ${lex('page').toLowerCase()}`}
+            // ITEM word-diet (Fable, review fix, Oct 13) — reverted: SR
+            // labels keep full wording (rule 6), and this "page" is the
+            // notebook's physical page (bucket b), a literal word, not the
+            // deskLexicon/themeLexicon product term.
+            aria-label={`${lex('journal')} page`}
             spellCheck
             // touchAction:'none' suppresses OS stylus handwriting on the text
             // (J10.1) without disabling page/finger scroll on the container.
@@ -966,7 +972,10 @@ function JournalEntryView() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {/* Copy-out is sacred (VW) — clean page text, one tap, no long-press. */}
-          <button type="button" className="btn-quiet entry-copy" onClick={() => copyText(pageTextRef.current)} title={`Copy the ${lex('page').toLowerCase()} text`}>Copy {lex('page').toLowerCase()} text</button>
+          {/* ITEM word-diet (Nick, review fix, Oct 13) — "page text" was a
+              normal singular-noun-as-modifier compound; "pages text" isn't
+              standard English. Cut the noun (name the act, not the object). */}
+          <button type="button" className="btn-quiet entry-copy" onClick={() => copyText(pageTextRef.current)} title="Copy the text">Copy text</button>
           {/* J4 Slice 2 — the port, single-page flow. Loose pages only. */}
           {isLoose && (
             <button type="button" className="btn-quiet entry-port" onClick={() => setPortOpen(true)}>Port to a Board…</button>
@@ -1148,18 +1157,23 @@ function JournalEntryView() {
           </div>
           {isLoose && (
             <nav className="journal-nav" aria-label={lex('journal')}>
-              <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label={`Previous ${lex('page').toLowerCase()}`}
+              {/* ITEM word-diet (Fable, review fix, Oct 13) — reverted: SR
+                  labels keep full wording (rule 6), and the Journal
+                  notebook's paging is the physical page (bucket b) — a
+                  literal word, not the deskLexicon/themeLexicon term, so
+                  the Pages-plural ruling doesn't apply to it. */}
+              <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label="Previous page"
                 onClick={() => prevPage && navigate(routeForEntry(prevPage))}>‹</button>
               <span className="journal-nav-pos">{nbIndex + 1} / {notebook.length}</span>
               {nextPage ? (
-                <button type="button" className="journal-nav-btn" aria-label={`Next ${lex('page').toLowerCase()}`}
+                <button type="button" className="journal-nav-btn" aria-label="Next page"
                   onClick={() => navigate(routeForEntry(nextPage))}>›</button>
               ) : (
-                <button type="button" className="journal-nav-btn journal-nav-add" aria-label={`New ${lex('page').toLowerCase()} at the end`}
+                <button type="button" className="journal-nav-btn journal-nav-add" aria-label="New page at the end"
                   onClick={() => openLoose()}>+</button>
               )}
               {nextPage && (
-                <button type="button" className="journal-nav-insert" aria-label={`Insert a ${lex('page').toLowerCase()} here`}
+                <button type="button" className="journal-nav-insert" aria-label="Insert a page here"
                   onClick={() => openLoose(entry.id)}>+ insert</button>
               )}
             </nav>
@@ -1236,18 +1250,20 @@ function JournalEntryView() {
             one and the next. */}
         {isLoose && (
           <nav className="journal-nav" aria-label={lex('journal')}>
-            <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label={`Previous ${lex('page').toLowerCase()}`}
+            {/* ITEM word-diet (Fable, review fix, Oct 13) — see the framed
+                nav's own identical comment above. */}
+            <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label="Previous page"
               onClick={() => prevPage && navigate(routeForEntry(prevPage))}>‹</button>
             <span className="journal-nav-pos">{nbIndex + 1} / {notebook.length}</span>
             {nextPage ? (
-              <button type="button" className="journal-nav-btn" aria-label={`Next ${lex('page').toLowerCase()}`}
+              <button type="button" className="journal-nav-btn" aria-label="Next page"
                 onClick={() => navigate(routeForEntry(nextPage))}>›</button>
             ) : (
-              <button type="button" className="journal-nav-btn journal-nav-add" aria-label={`New ${lex('page').toLowerCase()} at the end`}
+              <button type="button" className="journal-nav-btn journal-nav-add" aria-label="New page at the end"
                 onClick={() => openLoose()}>+</button>
             )}
             {nextPage && (
-              <button type="button" className="journal-nav-insert" aria-label={`Insert a ${lex('page').toLowerCase()} here`}
+              <button type="button" className="journal-nav-insert" aria-label="Insert a page here"
                 onClick={() => openLoose(entry.id)}>+ insert</button>
             )}
           </nav>

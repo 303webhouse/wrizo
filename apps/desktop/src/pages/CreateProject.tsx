@@ -107,15 +107,10 @@ export function CreateProject() {
   const note = !selected
     ? 'Pick a form to begin — no title required.'
     : selected === 'other'
-      // NOT context-aware, unlike the eyebrow/title-label below: this
-      // specific note previews the 'other' path's own real destination,
-      // ProjectHome.tsx (see `start()` above) — which always reads
-      // "Drawer" (its own domain eyebrow is untouched by this review fix,
-      // for the same "match the majority of inbound links" reasoning
-      // QuickSprint.tsx's own updated comment explains). Varying this
-      // note by inDrawer would just relocate the same contradiction one
-      // line down instead of closing it.
-      ? t('createDrawerOpensNote')
+      // ITEM word-diet (Nick, Oct 13): REMOVE — this branch's own
+      // explanatory note is gone whole; createDrawerOpensNote's lexicon
+      // entry is untouched, simply never rendered here now.
+      ? ''
       : `${KIND_META[selected].label} starts on its first page, in Free write, with the caret waiting.`;
 
   return (

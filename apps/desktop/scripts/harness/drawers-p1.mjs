@@ -214,8 +214,38 @@ const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-par
     }
     return removed === S5_REMOVED.length && added > 0 && added <= 18;
   }
-  ok('(D1c) H1: PageEditor.tsx differs from main ONLY by the declared hunks - the drawer wiring, S4\'s one guard line, and S5\'s one replacement of the line-count seed with the per-page typewriter memory (seven removed lines: five in the mount effect and its import, two being the band\'s retired instrument props); no typing-path line is touched',
-    peDiff !== null && diffConfinedS5(peDiff), String(peDiff).slice(0, 300));
+  // SUPERSEDED (item word-diet, Fable, review fix) — baseRef is `git
+  // merge-base origin/main HEAD`, computed fresh each run; once word-diet
+  // merges, Phase 1's own hunks are already IN origin/main, so this diff
+  // shows only whatever landed AFTER it — today, word-diet's own two
+  // hunks (the footer line's REMOVE, and "Copy page text" -> "Copy text").
+  // Neither touches the typing path either; parked word for word.
+  // ok('(D1c) H1: PageEditor.tsx differs from main ONLY by the declared hunks - the drawer wiring, S4\'s one guard line, and S5\'s one replacement of the line-count seed with the per-page typewriter memory (seven removed lines: five in the mount effect and its import, two being the band\'s retired instrument props); no typing-path line is touched',
+  //   peDiff !== null && diffConfinedS5(peDiff), String(peDiff).slice(0, 300));
+  const WD_REMOVED = [
+    /^\s*footer: entry\.projectId == null \? 'Saved automatically — even if you never file it to a Drawer or the Shelf\.' : undefined,\s*$/,
+    /^\s*<button type="button" className="btn-quiet page-copy" onClick=\{\(\) => copyText\(textRef\.current\)\} title=\{`Copy the clean \$\{lex\('page'\)\.toLowerCase\(\)\} text`\}>Copy \{lex\('page'\)\.toLowerCase\(\)\} text<\/button>\s*$/,
+  ];
+  const WD_ADDED = [
+    /^\s*\/\/ ITEM word-diet \(Nick, Oct 13\): REMOVE — the framed Page panel's own footer line retires whole\.\s*$/,
+    /^\s*footer: undefined,\s*$/,
+    /^\s*\{\/\* ITEM word-diet \(Nick, review fix, Oct 13\) — "page text" was a\s*$/,
+    /^\s*normal singular-noun-as-modifier compound; "pages text" isn't\s*$/,
+    /^\s*standard English\. Cut the noun \(name the act, not the object\)\. \*\/\}\s*$/,
+    /^\s*<button type="button" className="btn-quiet page-copy" onClick=\{\(\) => copyText\(textRef\.current\)\} title="Copy the clean text">Copy text<\/button>\s*$/,
+  ];
+  function diffConfinedWD(diffText) {
+    const lines = noCR(diffText).split('\n');
+    let added = 0, removed = 0;
+    for (const l of lines) {
+      if (l.startsWith('+++') || l.startsWith('---') || l.startsWith('@@') || l.startsWith('diff ') || l.startsWith('index ') || l === '') continue;
+      if (l.startsWith('-')) { removed += 1; if (!WD_REMOVED.some((re) => re.test(l.slice(1)))) return false; continue; }
+      if (l.startsWith('+')) { added += 1; if (!WD_ADDED.some((re) => re.test(l.slice(1)))) return false; }
+    }
+    return removed === WD_REMOVED.length && added === WD_ADDED.length;
+  }
+  ok('(D1c) [word-diet successor]: PageEditor.tsx differs from origin/main ONLY by word-diet\'s own two declared hunks (the saved-silently footer\'s REMOVE, and "Copy page text" -> "Copy text"); no typing-path line is touched',
+    peDiff !== null && diffConfinedWD(peDiff), String(peDiff).slice(0, 300));
   ok('(D1c-mutants) the successor refuses a diff that removes any OTHER line, or adds one that is not declared',
     diffConfinedS5('@@ -1 +1 @@\n-  const x = 1;\n+  instrument: { value: instrument, onChange: setInstrument },\n') === false
       && diffConfinedS5('@@ -1,0 +2 @@\n+  onChange(e);\n') === false, 'both must be refused');
@@ -234,8 +264,17 @@ const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-par
   // (D2b) successor: the block is unchanged from main EXCEPT for the one declared gate. Strip exactly that gate, then compare; the gate must be there.
   const GATE = " && allowed('pageKind')";
   const gated = !!now && now.split(GATE).length === 2;
-  ok('(D2b) H3: the Templates block in Sliver.tsx is unchanged from main (whitespace aside) save the ONE declared table gate allowed(\'pageKind\'); with that gate removed it is identical',
-    gated && now.replace(GATE, '') === was, `${now ? now.length : 0} (gate ${gated}) vs ${was ? was.length : 0}`);
+  // SUPERSEDED (item word-diet, Fable, review fix) — baseRef is `git
+  // merge-base origin/main HEAD`, computed fresh each run; S2's own gate
+  // is already IN origin/main now (phase1-drawers merged), so `was` (main)
+  // ALREADY carries it too — stripping it ONLY from `now` compares a
+  // gate-less `now` against a gated `was`, an artificial mismatch the gate
+  // itself didn't cause. Word-diet made no change inside this slice at
+  // all; parked word for word.
+  // ok('(D2b) H3: the Templates block in Sliver.tsx is unchanged from main (whitespace aside) save the ONE declared table gate allowed(\'pageKind\'); with that gate removed it is identical',
+  //   gated && now.replace(GATE, '') === was, `${now ? now.length : 0} (gate ${gated}) vs ${was ? was.length : 0}`);
+  ok('(D2b) [word-diet successor]: the Templates block in Sliver.tsx is BYTE-IDENTICAL to origin/main (whitespace aside) — S2\'s own gate is already in both, and word-diet changed nothing inside this slice',
+    gated && now === was, `${now ? now.length : 0} (gate ${gated}) vs ${was ? was.length : 0}`);
 }
 
 // =============================================================================
@@ -415,7 +454,13 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
     blurCloses: /onBlur=\{e => \{ if \(open && !wrap\.current\?\.contains\(e\.relatedTarget/.test(note),
     pressable: /<button\s+type="button"/.test(note) && /aria-expanded=\{open\}/.test(note) && /aria-controls=\{id\}/.test(note) && /role="note"/.test(note) && !/onMouseEnter|onMouseOver|onPointerEnter/.test(note),
     outsideTablist: /\)\)\}\n    <\/div>\n    \{hasNotes && notes && \(/.test(tabs),
-    overlayInert: !!overlay && /pointer-events:none/.test(overlay) && /\.wz-drawer-note\{ pointer-events:auto; \}/.test(c),
+    // DRIVER (item word-diet, review fix) — .wz-drawer-note's own rule body,
+    // not a literal-text match on the exact declaration: word-diet's CSS
+    // consolidation (merging its own near-duplicate with this one) added
+    // position:relative/display:inline-block alongside pointer-events:auto,
+    // so the OLD exact-string regex stopped matching a rule that still, in
+    // fact, sets pointer-events:auto. Reads current reality, same claim.
+    overlayInert: !!overlay && /pointer-events:none/.test(overlay) && /pointer-events:auto/.test(ruleBody(c, '.wz-drawer-note{') || ''),
     popOverlay: !!pop && /position:absolute/.test(pop),
     noteOpenOutline: !!noteBtn && /color:var\(--brass\)/.test(noteBtn) && /background:none/.test(noteBtn) && !/color-mix/.test(noteBtn),
   };

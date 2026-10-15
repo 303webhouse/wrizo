@@ -3755,15 +3755,12 @@ a:focus-visible,
    sits OUTSIDE the tablist. The note opens below the row as an overlay (it displaces nothing). */
 .wz-drawer-tabnotes{ position:absolute; left:14px; right:14px; top:14px; height:26px; display:grid; gap:6px; pointer-events:none; }
 .wz-drawer-tabnote-cell{ display:flex; align-items:center; justify-content:flex-end; padding-right:3px; min-width:0; }
-.wz-drawer-note{ pointer-events:auto; }
-.wz-drawer-note-btn{ width:15px; height:15px; padding:0; display:flex; align-items:center; justify-content:center; background:none;
-  border:1px solid var(--ink-border); border-radius:0; color:var(--text-low); font-family:var(--font-ui); font-size:9.5px; line-height:1; cursor:pointer;
-  transition:color .15s ease, border-color .15s ease; }
-.wz-drawer-note-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
-.wz-drawer-note-btn[aria-expanded='true']{ color:var(--brass); border-color:var(--brass); background:none; }
-.wz-drawer-note-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
-.wz-drawer-note-pop{ position:absolute; left:14px; right:14px; top:calc(100% + 4px); z-index:5; padding:10px 12px; background:var(--desk-ground);
-  border:1px solid var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-ui); font-size:12.5px; line-height:1.45; pointer-events:auto; }
+/* .wz-drawer-note/-btn/-pop's own GENERAL rules moved below (merge with
+   word-diet, 2026-10-14) to the single definition every caller now shares;
+   only this row's own stretch-to-the-margins override stays here, scoped
+   by specificity (two classes) rather than by source order, so it wins
+   over the general rule regardless of which is declared first. */
+.wz-drawer-tabnotes .wz-drawer-note-pop{ left:14px; right:14px; width:auto; max-width:none; }
 .wz-links-pane{ display:flex; flex-direction:column; gap:8px; padding:16px 14px; }
 /* PHASE 1 - ACTIONS. Icon buttons in a row; one that is pressed/open wears the brass OUTLINE (no fill). Tags and Delete open a small area
    inside the drawer. Delete's confirm is in the page: a line, and two plain buttons. */
@@ -4163,6 +4160,33 @@ a:focus-visible,
 .wz-tutor-dock-btn{ background:none; border:0; color:var(--text-low); font-family:var(--font-ui);
   font-size:11px; cursor:pointer; padding:2px 4px; transition:.15s; }
 .wz-tutor-dock-btn:hover{ color:var(--text-hi); }
+/* DrawerNote.tsx's own CSS — the SINGLE definition every caller shares
+   (merged with phase1-drawers, 2026-10-14; that branch's own near-identical
+   copy, flagged as a future conflict when word-diet first ported this
+   component, is consolidated into this one block). The tab row's own
+   stretch-to-the-margins override lives beside .wz-drawer-tabnotes above,
+   scoped by specificity so it wins there without duplicating the rest. */
+.wz-drawer-note{ position:relative; pointer-events:auto; display:inline-block; }
+.wz-drawer-note-btn{ width:15px; height:15px; padding:0; display:flex; align-items:center; justify-content:center; background:none;
+  border:1px solid var(--ink-border); border-radius:0; color:var(--text-low); font-family:var(--font-ui); font-size:9.5px; line-height:1; cursor:pointer;
+  transition:color .15s ease, border-color .15s ease; }
+.wz-drawer-note-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-drawer-note-btn[aria-expanded='true']{ color:var(--brass); border-color:var(--brass); background:none; }
+.wz-drawer-note-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+.wz-drawer-note-pop{ position:absolute; left:0; top:calc(100% + 4px); z-index:5; width:max-content; max-width:260px; padding:10px 12px; background:var(--desk-ground);
+  border:1px solid var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-ui); font-size:12.5px; line-height:1.45; pointer-events:auto;
+  /* ITEM word-diet review (Fable, Oct 13) — a DrawerNote beside an UPPERCASE
+     heading (the Fragments lens, .wz-tutor-h) otherwise inherits that
+     transform into the note's own prose; the note's words are never a
+     heading, so reset it explicitly rather than per-call-site. */
+  text-transform:none; }
+/* ITEM word-diet review (Fable, Oct 13, W4) — a "?" near the right edge
+   (the Tutor Ask box) opens its pop RIGHTWARD from left:0, running off the
+   viewport. Measured at open-time (DrawerNote.tsx); this modifier anchors
+   from the button's right edge instead, opening leftward, so the pop stays
+   inside the viewport near any edge. */
+.wz-drawer-note-pop--left{ left:auto; right:0; }
+
 .wz-tutor-section{ display:flex; flex-direction:column; gap:6px; }
 .wz-tutor-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
 .wz-tutor-note{ font-size:11px; color:var(--text-low); }
@@ -4223,6 +4247,9 @@ a:focus-visible,
 .wz-tutor-convo-send:hover:not(:disabled){ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-tutor-convo-send:disabled{ color:var(--text-low); cursor:default; }
 .wz-tutor-convo-status{ font-size:11px; color:var(--text-low); }
+/* ITEM word-diet — the new "Try again" button beside tutorConversationError. */
+.wz-tutor-retry{ font-size:11px; color:var(--text-hi); background:none; border:1px solid var(--ink-border); border-radius:0; padding:1px 6px; cursor:pointer; }
+.wz-tutor-retry:hover{ border-color:var(--ink-border-strong); }
 /* ITEM 84, THE DECK PHASE — the Free Write roster (three presets) and the one
    standing draw. Rendered ONLY in Free Write (Tutor.tsx's `freeWrite` branch);
    in Draft, on screenplay and on Board this block has nothing to style, which

@@ -108,7 +108,11 @@ export function DeskRail() {
           type="button"
           className="desk-rail-item desk-rail-wayback"
           title={`Return to: ${wayBackLabel}`}
-          aria-label={`Return to the ${lex('page').toLowerCase()}`}
+          // ITEM word-diet (Fable, review fix, Oct 13) — reverted: SR
+          // labels keep full wording (rule 6); the return chip is
+          // page-primacy (docs/page-primacy-canon.md) and this "page" is
+          // the literal word, not the deskLexicon/themeLexicon term.
+          aria-label="Return to the page"
           onClick={() => navigate(wayBack.route)}
         >
           <span className="desk-rail-glyph" aria-hidden="true">↩</span>

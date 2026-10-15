@@ -342,8 +342,14 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
   await sleep(200);
   const journalSliverButtons = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].map(b => b.textContent.trim())");
-  ok('S3: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New page card" are genuinely absent, not merely disabled',
-    !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New page card'), JSON.stringify(journalSliverButtons));
+  // SUPERSEDED (item word-diet, Nick) — boardNewPageCard's text itself
+  // changed ("New page card" -> "New Pages Card"); checking the OLD text's
+  // absence would trivially pass once the text is simply different, without
+  // proving the NEW text is absent too. ORIGINAL claim parked verbatim:
+  // ok('S3: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New page card" are genuinely absent, not merely disabled',
+  //   !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New page card'), JSON.stringify(journalSliverButtons));
+  ok('S3 [word-diet successor]: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New Pages Card" are genuinely absent, not merely disabled',
+    !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New Pages Card'), JSON.stringify(journalSliverButtons));
   const journalFooterTogglePresent = await app.evalJs("!!document.querySelector('.wz-sliver-board-footer')");
   ok('S3: the connections-footer toggle STILL works on a system Board — arranging (including the footer) is the full FX5 hand, only Add/Delete are restricted',
     journalFooterTogglePresent === true, String(journalFooterTogglePresent));
@@ -424,8 +430,12 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
   await sleep(200);
   const userBoardSliverButtons = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].map(b => b.textContent.trim())");
-  ok('S3: an ORDINARY user Board still carries BOTH Add controls, byte-identical to before this ticket — the restriction is scoped to system Boards only',
-    userBoardSliverButtons.includes('Add card') && userBoardSliverButtons.includes('New page card'), JSON.stringify(userBoardSliverButtons));
+  // SUPERSEDED (item word-diet, Nick) — boardNewPageCard's text itself
+  // changed, "New page card" -> "New Pages Card". ORIGINAL claim parked verbatim:
+  // ok('S3: an ORDINARY user Board still carries BOTH Add controls, byte-identical to before this ticket — the restriction is scoped to system Boards only',
+  //   userBoardSliverButtons.includes('Add card') && userBoardSliverButtons.includes('New page card'), JSON.stringify(userBoardSliverButtons));
+  ok('S3 [word-diet successor]: an ORDINARY user Board still carries BOTH Add controls — the restriction is scoped to system Boards only',
+    userBoardSliverButtons.includes('Add card') && userBoardSliverButtons.includes('New Pages Card'), JSON.stringify(userBoardSliverButtons));
 
   await app.evalJs(POINTER_HELPER);
   await selectBox(app, 'b1-user-card');
@@ -759,8 +769,12 @@ if (process.env.HARNESS_PARKED === '1') {
     // re-asserted here against the new copy. Live successor: b2-1.mjs's
     // own "S6 lexicon + DOM" section.
     const trashBoardHomeLabelNow = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-    pok('PARKED (was "S1/S3/S4: the Trash Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (flatly false)") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
-      trashBoardHomeLabelNow === 'The Trash Board — has no drawer home', String(trashBoardHomeLabelNow));
+    // SUPERSEDED (item word-diet, Nick) — boardHomeLabelTrash shortens again,
+    // "The Trash Board — has no drawer home" -> "Trash"; ORIGINAL parked verbatim:
+    // pok('PARKED (was "S1/S3/S4: the Trash Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (flatly false)") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
+    //   trashBoardHomeLabelNow === 'The Trash Board — has no drawer home', String(trashBoardHomeLabelNow));
+    pok('PARKED [word-diet successor] (was the "drawer home" generation) — the Trash Board\'s own Page face now reads bare "Trash"; live successor: b2-1.mjs',
+      trashBoardHomeLabelNow === 'Trash', String(trashBoardHomeLabelNow));
 
     // A second stamped fixture for the Journal Board's own label (systemKind
     // 'journal', the ternary's ELSE branch in BoardEditor.tsx).
@@ -779,8 +793,12 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
     await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'PARKED Page face (journal system board)' });
     const journalBoardHomeLabelNow = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-    pok('PARKED (was "S1/S3: the Journal Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (self-referential) or a project name it doesn\'t have") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
-      journalBoardHomeLabelNow === 'The Journal Board — has no drawer home', String(journalBoardHomeLabelNow));
+    // SUPERSEDED (item word-diet, Nick) — boardHomeLabelJournal shortens again,
+    // "The Journal Board — has no drawer home" -> "Journal"; ORIGINAL parked verbatim:
+    // pok('PARKED (was "S1/S3: the Journal Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (self-referential) or a project name it doesn\'t have") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
+    //   journalBoardHomeLabelNow === 'The Journal Board — has no drawer home', String(journalBoardHomeLabelNow));
+    pok('PARKED [word-diet successor] (was the "drawer home" generation) — the Journal Board\'s own Page face now reads bare "Journal"; live successor: b2-1.mjs',
+      journalBoardHomeLabelNow === 'Journal', String(journalBoardHomeLabelNow));
 
     // CD3 harness-discipline fix (2026-07-22) — this file's own live S4/S5
     // check (Trash at section C's own foot, index 5) is SUPERSEDED whole:

@@ -27,7 +27,10 @@ export interface TermForms { one: string; many: string }
 // the ship report, not "fixed" on either side. 'publish'.many mirrors .one
 // ("Publish") — it's an action label, not a count noun.
 const CANONICAL: Record<TermId, TermForms> = {
-  page: { one: 'Page', many: 'Pages' },
+  // ITEM word-diet (Nick, Oct 13, review fix) — "Page" is always
+  // grammatically plural (pages-rename bucket (a)); Flux's own override
+  // below (Doc/Docs) is untouched.
+  page: { one: 'Pages', many: 'Pages' },
   shelf: { one: 'Shelf', many: 'Shelves' },
   drawer: { one: 'Drawer', many: 'Drawers' },
   binder: { one: 'Binder', many: 'Binders' },

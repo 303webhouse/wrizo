@@ -79,12 +79,21 @@ await withHarness(async (app) => {
     const fallThroughMany = tMany('drawer', 'nonexistent-theme'); // R1: many falls through too
     const pageOne = t('page');
     const pageMany = tMany('page');
-    return { mapped, allNonEmpty, fallThrough, fallThroughMany, pageOne, pageMany };
+    const shelfOne = t('shelf');
+    const shelfMany = tMany('shelf');
+    return { mapped, allNonEmpty, fallThrough, fallThroughMany, pageOne, pageMany, shelfOne, shelfMany };
   })()`);
   ok('check 2: every canonical term ID maps to a non-empty display string', lexiconCheck.allNonEmpty, JSON.stringify(lexiconCheck.mapped));
   ok('check 2: an unregistered theme id falls through to the canonical noun (t/one)', lexiconCheck.fallThrough === 'Journal', String(lexiconCheck.fallThrough));
   ok('check 2 (R1): an unregistered theme id falls through to the canonical plural (tMany/many)', lexiconCheck.fallThroughMany === 'Drawers', String(lexiconCheck.fallThroughMany));
-  ok('check 2 (R1): t() and tMany() resolve distinct, correct number forms for the same term', lexiconCheck.pageOne === 'Page' && lexiconCheck.pageMany === 'Pages', JSON.stringify(lexiconCheck));
+  // SUPERSEDED (item word-diet, Nick) — 'page' itself went invariant
+  // ({one:'Pages', many:'Pages'}), so it can no longer DEMONSTRATE the
+  // distinct-forms mechanism; 'shelf' (Shelf/Shelves, untouched) takes
+  // over as the demonstration term, and 'page's own new invariance gets
+  // its own successor check instead of being folded into this one silently.
+  // ok('check 2 (R1): t() and tMany() resolve distinct, correct number forms for the same term', lexiconCheck.pageOne === 'Page' && lexiconCheck.pageMany === 'Pages', JSON.stringify(lexiconCheck));
+  ok('check 2 (R1) [word-diet successor]: t() and tMany() resolve distinct, correct number forms for the same term (shelf)', lexiconCheck.shelfOne === 'Shelf' && lexiconCheck.shelfMany === 'Shelves', JSON.stringify(lexiconCheck));
+  ok('check 2 (R1) [word-diet successor]: "page" itself is now invariant — t() and tMany() return the SAME form ("Pages"), the Pages-rename grammar ruling', lexiconCheck.pageOne === 'Pages' && lexiconCheck.pageMany === 'Pages', JSON.stringify(lexiconCheck));
 
   // B1 S5 — '/journal' now bridges to the Journal Board (pages/Journal.tsx
   // deleted); this check only ever needed DeskRail mounted and visible to
