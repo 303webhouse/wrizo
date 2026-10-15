@@ -1,0 +1,110 @@
+[
+  {
+    "frame": "arbor-footers-and-page-pin",
+    "file": "arbor-footers-and-page-pin.png",
+    "origin": "http://127.0.0.1:52310",
+    "theme": "plateau",
+    "page": "dark",
+    "bundle": "index-BWUoZbpV.js",
+    "splashPresent": false,
+    "footer": [
+      {
+        "text": "— grafted to: Mara",
+        "color": "rgb(107, 95, 78)",
+        "bg": "rgb(251, 246, 234)",
+        "opacity": "1",
+        "contrast": 5.77
+      },
+      {
+        "text": "— grafted to: The harbour scene",
+        "color": "rgb(107, 95, 78)",
+        "bg": "rgb(251, 246, 234)",
+        "opacity": "1",
+        "contrast": 5.77
+      }
+    ],
+    "badge": [
+      {
+        "text": "Board pin",
+        "color": "rgb(79, 87, 48)",
+        "bg": "rgb(251, 246, 234)",
+        "opacity": "1",
+        "contrast": 7.11
+      }
+    ],
+    "excerpt": [],
+    "toggle": []
+  },
+  {
+    "frame": "flux-dark-footers-and-page-pin",
+    "file": "flux-dark-footers-and-page-pin.png",
+    "origin": "http://127.0.0.1:52310",
+    "theme": "flux",
+    "page": "dark",
+    "bundle": "index-BWUoZbpV.js",
+    "splashPresent": false,
+    "footer": [
+      {
+        "text": "— linked to: Mara",
+        "color": "rgb(107, 95, 78)",
+        "bg": "rgb(251, 246, 234)",
+        "opacity": "1",
+        "contrast": 5.77
+      },
+      {
+        "text": "— linked to: The harbour scene",
+        "color": "rgb(107, 95, 78)",
+        "bg": "rgb(251, 246, 234)",
+        "opacity": "1",
+        "contrast": 5.77
+      }
+    ],
+    "badge": [
+      {
+        "text": "Circuit pin",
+        "color": "rgb(79, 87, 48)",
+        "bg": "rgb(251, 246, 234)",
+        "opacity": "1",
+        "contrast": 7.11
+      }
+    ],
+    "excerpt": [],
+    "toggle": []
+  },
+  {
+    "frame": "flux-light-footers-and-page-pin",
+    "file": "flux-light-footers-and-page-pin.png",
+    "origin": "http://127.0.0.1:52310",
+    "theme": "flux",
+    "page": "light",
+    "bundle": "index-BWUoZbpV.js",
+    "splashPresent": false,
+    "footer": [
+      {
+        "text": "— linked to: Mara",
+        "color": "rgb(107, 95, 78)",
+        "bg": "rgb(251, 246, 234)",
+        "opacity": "1",
+        "contrast": 5.77
+      },
+      {
+        "text": "— linked to: The harbour scene",
+        "color": "rgb(107, 95, 78)",
+        "bg": "rgb(251, 246, 234)",
+        "opacity": "1",
+        "contrast": 5.77
+      }
+    ],
+    "badge": [
+      {
+        "text": "Circuit pin",
+        "color": "rgb(79, 87, 48)",
+        "bg": "rgb(251, 246, 234)",
+        "opacity": "1",
+        "contrast": 7.11
+      }
+    ],
+    "excerpt": [],
+    "toggle": []
+  }
+]
