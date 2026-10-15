@@ -95,17 +95,17 @@
     transition: border-radius var(--glide) ease, width var(--glide) ease, height var(--glide) ease, right var(--glide) ease, bottom var(--glide) ease, background-color var(--glide) ease;
   }
   .card[data-selected='true'] .handle { display: block; }
-  .handle.is-circle { border-radius: 50%; width: 16px; height: 16px; right: -9px; bottom: -9px; }
+  .handle.is-circle { border-radius: 50%; width: 10px; height: 10px; right: -6px; bottom: -6px; }
   .handle.is-solid { background: var(--brass); }
 
   /* target circle: revealed on an active target */
   .tcircle {
-    position: absolute; width: 16px; height: 16px; border-radius: 50%;
+    position: absolute; width: 10px; height: 10px; border-radius: 50%;
     background: var(--paper); border: 1.5px solid var(--brass);
     display: none; z-index: 6; pointer-events: none;
   }
   .tcircle.is-solid { background: var(--brass); }
-  .card .tcircle { right: -9px; bottom: -9px; }
+  .card .tcircle { right: -6px; bottom: -6px; }
   [data-target='true'] > .tcircle, [data-flash='true'] > .tcircle { display: block; }
   [data-peer='true'] > .tcircle { display: block; }
   .dragghost { position: fixed; z-index: 70; pointer-events: none; display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: var(--desk-ground); border: 1px solid var(--brass); color: var(--text-hi); font-family: var(--font-label); font-size: 13px; opacity: .92; }
@@ -143,7 +143,7 @@
     border: 1px solid transparent; font-family: var(--font-label); font-size: 13px;
   }
   .drow[data-target='true'] { border-color: var(--brass); color: var(--text-hi); background: color-mix(in srgb, var(--brass) 8%, transparent); }
-  .drow .tcircle { left: -9px; top: 50%; margin-top: -8px; background: var(--desk-ground); }
+  .drow .tcircle { left: 2px; top: 50%; margin-top: -5px; background: var(--desk-ground); }
   .drow .tcircle.is-solid { background: var(--brass); }
   .thumb { flex: 0 0 auto; background: var(--ink-800); border: 1px solid var(--ink-border-strong); position: relative; }
   .thumb.page { width: 24px; height: 32px; }
@@ -160,12 +160,11 @@
 
   /* overlay: lines + the arm */
   #wires { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 50; pointer-events: none; overflow: visible; }
-  #wires .line { stroke: var(--brass); stroke-width: 1.5; fill: none; stroke-linecap: round; opacity: .9; }
+  #wires .line { stroke: var(--brass); stroke-width: 1; fill: none; stroke-linecap: round; opacity: .9; }
   #wires .arm { stroke: var(--brass); stroke-width: 2.5; fill: none; stroke-linecap: round; }
   #wires .tip { fill: var(--brass); }
   #wires .hit { stroke: transparent; stroke-width: 14; fill: none; pointer-events: stroke; cursor: pointer; }
-  #wires .halo { stroke: var(--brass); stroke-width: 9; opacity: .28; fill: none; stroke-linecap: round; }
-  #wires .line.is-sel { stroke-width: 3.5; opacity: 1; }
+  #wires .line.is-sel { stroke-width: 2.5; opacity: 1; }
 
   @media (prefers-reduced-motion: reduce) { .handle { transition: none; } }
 </style>
@@ -311,14 +310,15 @@
   function anchorOf(id) {
     const el = els[id]; if (!el) return null;
     const r = el.getBoundingClientRect();
+    if (el.classList.contains('drow')) return { x: r.left + 1 + 2 + 5, y: r.top + r.height / 2 };   // centre of the row's open circle
     return { x: r.right, y: r.bottom };
   }
 
-  function line(a, b, cls) {
+  function line(a, b, cls, parent) {
     const l = document.createElementNS(SVGNS, 'line');
     l.setAttribute('class', cls);
     l.setAttribute('x1', a.x); l.setAttribute('y1', a.y); l.setAttribute('x2', b.x); l.setAttribute('y2', b.y);
-    wires.append(l);
+    (parent || wires).append(l);
     return l;
   }
 
@@ -327,24 +327,36 @@
      Never a line to a drawer item or anything off this board. */
   function render() {
     wires.innerHTML = '';
+    // card-to-card lines (and their click targets) live in a group clipped to the board's
+    // visible rectangle, so they are never drawn over the rail. The arm is NOT clipped.
+    const br = board.getBoundingClientRect();
+    wires.insertAdjacentHTML('afterbegin', '<defs><clipPath id="boardClip"><rect x="' + br.left + '" y="' + br.top + '" width="' + br.width + '" height="' + br.height + '"/></clipPath></defs>');
+    const g = document.createElementNS(SVGNS, 'g');
+    g.setAttribute('clip-path', 'url(#boardClip)');
+    wires.append(g);
     if (mode) {
       const from = anchorOf(mode.src);
       peersOf(mode.src).filter(isCard).forEach((id) => {
         const to2 = anchorOf(id), k = key(mode.src, id), on = selLine === k;
-        if (on) line(from, to2, 'halo');
-        line(from, to2, on ? 'line is-sel' : 'line');
-        line(from, to2, 'hit').dataset.key = k;
+        line(from, to2, on ? 'line is-sel' : 'line', g);
+        line(from, to2, 'hit', g).dataset.key = k;
       });
-      let to = { x: mode.px, y: mode.py };
-      if (mode.target) to = anchorOf(mode.target);
-      line(from, to, 'arm');
-      if (!mode.target) {
-        const tip = document.createElementNS(SVGNS, 'circle');
-        tip.setAttribute('class', 'tip'); tip.setAttribute('cx', to.x); tip.setAttribute('cy', to.y); tip.setAttribute('r', 3.5);
-        wires.append(tip);
+      // pointer over a drawer row already linked to the active card: no arm, no tip, only
+      // that row's solid circle. The arm returns when the pointer leaves.
+      const tg = mode.target;
+      const onLinkedRow = !!tg && !isCard(tg) && linked(mode.src, tg);
+      if (!onLinkedRow) {
+        let to = { x: mode.px, y: mode.py };
+        if (tg) to = anchorOf(tg);
+        line(from, to, 'arm');
+        if (!tg) {
+          const tip = document.createElementNS(SVGNS, 'circle');
+          tip.setAttribute('class', 'tip'); tip.setAttribute('cx', to.x); tip.setAttribute('cy', to.y); tip.setAttribute('r', 3.5);
+          wires.append(tip);
+        }
       }
     } else if (flash && flash.line && !flash.off && isCard(flash.a) && isCard(flash.b)) {
-      line(anchorOf(flash.a), anchorOf(flash.b), 'line');
+      line(anchorOf(flash.a), anchorOf(flash.b), 'line', g);
     }
   }
 
@@ -519,7 +531,17 @@
   }, true);
 
   dlist.addEventListener('scroll', render);
-  window.addEventListener('resize', render);
+  /* mockup only: in a narrow window, keep every card inside the board so none sit under the rail */
+  function clampCards() {
+    const bw = board.clientWidth, bh = board.clientHeight;
+    cards.forEach((id) => {
+      const el = els[id];
+      const x = Math.max(0, Math.min(el.offsetLeft, bw - el.offsetWidth - 8));
+      const y = Math.max(0, Math.min(el.offsetTop, bh - el.offsetHeight - 8));
+      el.style.left = x + 'px'; el.style.top = y + 'px';
+    });
+  }
+  window.addEventListener('resize', () => { clampCards(); render(); });
 
   /* ---- mockup chrome ---- */
   function syncRig() {
@@ -532,19 +554,19 @@
   function reset() {
     clearFlash(); mode = null; sel = null; selLine = null; nextCopy = 1; tab = 'lib'; closeDialog();
     conns = new Set(SEED.map(([a, b]) => key(a, b)));
-    build(); hint.textContent = HINT_IDLE; sync();
+    build(); clampCards(); hint.textContent = HINT_IDLE; sync();
   }
   document.getElementById('reset').addEventListener('click', reset);
 
   const q = new URLSearchParams(location.search);
   if (q.get('theme') === 'flux') root.setAttribute('data-theme', 'flux');
-  reset(); syncRig();
+  reset(); clampCards(); sync(); syncRig();
 
   /* ?demo=... sets a still for screenshots (mockup only) */
   const demo = q.get('demo');
   if (demo) setTimeout(() => {
     const at = (id) => { const r = els[id].getBoundingClientRect(); return { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 }; };
-    const src = 'c1';
+    const src = demo === 'rowlinked' ? 'c2' : 'c1';
     sel = src;
     if (demo === 'select') { sync(); return; }
     if (demo === 'grafts' || demo === 'confirm') {
@@ -562,7 +584,7 @@
     if (demo === 'done') { commit('c4'); clearTimeout(flashTimer); clearTimeout(lineTimer); return; }
     if (demo === 'off') { commit('c3'); clearTimeout(flashTimer); clearTimeout(lineTimer); return; }
     if (demo === 'lineselect') { selLine = key('c1', 'c2'); mode.px = ar.right + 120; mode.py = ar.bottom + 60; sync(); return; }
-    const tgt = { open: 'p2', linked: 'c2', card: 'c4', cardlinked: 'c3', menulinked: 'p1' }[demo];
+    const tgt = { open: 'p2', linked: 'c2', card: 'c4', cardlinked: 'c3', menulinked: 'p1', rowlinked: 'p1' }[demo];
     const p = at(tgt); mode.px = p.clientX; mode.py = p.clientY; mode.target = tgt; sync();
   }, 150);
 })();
