@@ -15,7 +15,9 @@
   Lines are hidden by default. In connection mode only, lines run from the active card to its
   connections on this board; never to drawer items. Releasing on an already-connected item
   disconnects it (its circle goes open). Drag a drawer row onto the board: a copy card lands
-  there, already connected to its original.
+  there, already connected to its original. Two more removals: the right drawer's Grafts tab (Flux:
+  Links) lists the selected card's connected thumbnails, each with an X that opens a confirm
+  dialog; and in connection mode a click selects a line and Delete removes it.
   Hold the button through the drag (right-click-drag), or release near the square to
   latch the mode and finish with a click. Seeded: Opening scene <-> Who knows what
   and Harbor notes, Harbor notes <-> Chapter 1 (a drawer link, never drawn). Arbor / Flux, Reset: mockup only.
@@ -115,7 +117,24 @@
     border: 1px solid var(--ink-border); border-left: none;
     display: flex; flex-direction: column; min-height: 0;
   }
-  .dhead { padding: 12px 14px 8px; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--accent-rest); border-bottom: 1px solid var(--ink-border); }
+  .dtabs { display: flex; border-bottom: 1px solid var(--ink-border); }
+  .dtab { padding: 12px 14px 8px; font: inherit; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-low); background: none; border: 0; border-bottom: 1px solid transparent; margin-bottom: -1px; cursor: pointer; }
+  .dtab:hover { color: var(--text-hi); }
+  .dtab[data-on='true'] { color: var(--accent-rest); border-bottom-color: var(--accent-rest); }
+  .dlist[hidden] { display: none; }
+  .gitem { position: relative; display: flex; align-items: center; gap: 10px; height: 52px; margin: 8px 8px 0; padding: 0 34px 0 12px; border: 1px solid var(--ink-border); color: var(--text-mid); font-family: var(--font-label); font-size: 13px; }
+  .gx { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 13px; line-height: 1; color: var(--text-mid); background: none; border: 1px solid var(--ink-border-strong); cursor: pointer; }
+  .gx:hover, .gx:focus-visible { color: var(--brass); border-color: var(--brass); outline: none; }
+  .gnone { padding: 16px 14px; font-size: 12px; color: var(--text-low); }
+  .scrim { position: fixed; inset: 0; z-index: 80; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; }
+  .scrim[hidden] { display: none; }
+  .dialog { background: var(--desk-ground); border: 1px solid var(--ink-border-strong); padding: 20px 22px 16px; min-width: 260px; }
+  .dtitle { font-size: 15px; color: var(--text-hi); margin-bottom: 18px; font-family: var(--font-label); }
+  .dbtns { display: flex; justify-content: flex-end; gap: 8px; }
+  .dbtn { font: inherit; font-size: 12px; padding: 5px 14px; color: var(--text-mid); background: none; border: 1px solid var(--ink-border-strong); cursor: pointer; }
+  .dbtn:hover, .dbtn:focus-visible { color: var(--text-hi); border-color: var(--text-mid); outline: none; }
+  .dbtn.go { color: var(--brass); border-color: var(--brass); }
+  .dbtn.go:hover, .dbtn.go:focus-visible { background: color-mix(in srgb, var(--brass) 14%, transparent); color: var(--brass); border-color: var(--brass); }
   .dlist { flex: 1; overflow-y: auto; padding-bottom: 12px; }
   .dsec { padding: 14px 14px 6px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-low); }
   .drow {
@@ -144,6 +163,9 @@
   #wires .line { stroke: var(--brass); stroke-width: 1.5; fill: none; stroke-linecap: round; opacity: .9; }
   #wires .arm { stroke: var(--brass); stroke-width: 2.5; fill: none; stroke-linecap: round; }
   #wires .tip { fill: var(--brass); }
+  #wires .hit { stroke: transparent; stroke-width: 14; fill: none; pointer-events: stroke; cursor: pointer; }
+  #wires .halo { stroke: var(--brass); stroke-width: 9; opacity: .28; fill: none; stroke-linecap: round; }
+  #wires .line.is-sel { stroke-width: 3.5; opacity: 1; }
 
   @media (prefers-reduced-motion: reduce) { .handle { transition: none; } }
 </style>
@@ -161,11 +183,13 @@
 <div class="room">
   <div class="board" id="board"></div>
   <aside class="drawer" aria-label="Drawer">
-    <div class="dhead" id="dhead">Drawer</div>
+    <div class="dtabs" role="tablist"><button class="dtab" data-tab="lib" id="tabLib" type="button">Drawer</button><button class="dtab" data-tab="graft" id="tabGraft" type="button">Grafts</button></div>
     <div class="dlist" id="dlist"></div>
+    <div class="dlist" id="glist" hidden></div>
   </aside>
 </div>
 <svg id="wires" aria-hidden="true"></svg>
+<div class="scrim" id="scrim" hidden><div class="dialog" role="alertdialog" aria-labelledby="dlgTitle"><div class="dtitle" id="dlgTitle">Remove graft?</div><div class="dbtns"><button class="dbtn" id="dlgNo" type="button">Cancel</button><button class="dbtn go" id="dlgYes" type="button">Remove</button></div></div></div>
 
 <script>
 (function () {
@@ -178,10 +202,10 @@
   const HINT_IDLE = 'Select a card, then double-click or right-click its corner square. Drag a drawer row onto the board to copy it.';
 
   const CARDS = [
-    { id: 'c1', x: 54,  y: 56,  t: 'Opening scene. Ada reaches the harbor an hour before the ferry.' },
-    { id: 'c2', x: 410, y: 70,  t: 'Harbor notes: gulls, diesel, a locked ticket booth.' },
-    { id: 'c3', x: 150, y: 270, t: 'Who knows what, and when they learn it.' },
-    { id: 'c4', x: 500, y: 300, t: 'Timeline: three days, one ferry, no phone.' }
+    { id: 'c1', x: 54,  y: 56,  n: 'Opening scene', t: 'Opening scene. Ada reaches the harbor an hour before the ferry.' },
+    { id: 'c2', x: 410, y: 70,  n: 'Harbor notes', t: 'Harbor notes: gulls, diesel, a locked ticket booth.' },
+    { id: 'c3', x: 150, y: 270, n: 'Who knows what', t: 'Who knows what, and when they learn it.' },
+    { id: 'c4', x: 500, y: 300, n: 'Timeline', t: 'Timeline: three days, one ferry, no phone.' }
   ];
   const SIDE = {
     arbor: { Pages: 'Pages', Cards: 'Cards', Boards: 'Boards' },
@@ -200,19 +224,23 @@
   let sel = null;                // selected card id
   let mode = null;               // { src, held, ox, oy, moved, px, py, target }
   let flash = null;              // { a, b, off, line }
+  let selLine = null;            // key of the line selected in connection mode
+  let tab = 'lib';               // right drawer: 'lib' | 'graft'
+  let pendingRemove = null;      // [card, peer] awaiting the confirm dialog
   let flashTimer = 0, lineTimer = 0;
   const els = {};                // id -> element
 
   const key = (a, b) => [a, b].sort().join('|');
   const linked = (a, b) => conns.has(key(a, b));
   const isCard = (id) => cards.includes(id);
+  const hasAny = (id) => peersOf(id).length > 0;
   const peersOf = (id) => [...conns].map((k) => k.split('|')).filter((p) => p.includes(id)).map((p) => (p[0] === id ? p[1] : p[0]));
 
   function addDots(el) { el.insertAdjacentHTML('beforeend', '<span class="tcircle"></span>'); }
 
-  function makeCard(id, x, y, text) {
+  function makeCard(id, x, y, text, label) {
     const el = document.createElement('div');
-    el.className = 'card'; el.dataset.id = id;
+    el.className = 'card'; el.dataset.id = id; el.dataset.label = label || text;
     el.style.left = x + 'px'; el.style.top = y + 'px';
     el.innerHTML = '<div class="kind">Card</div><div class="txt"></div><div class="handle"></div>';
     el.querySelector('.txt').textContent = text;
@@ -226,7 +254,7 @@
   function build() {
     board.innerHTML = ''; cards = [];
     Object.keys(els).forEach((k) => delete els[k]);
-    CARDS.forEach((c) => makeCard(c.id, c.x, c.y, c.t));
+    CARDS.forEach((c) => makeCard(c.id, c.x, c.y, c.t, c.n));
     dlist.innerHTML = '';
     DRAWER.forEach(([sec, kind, rows]) => {
       const h = document.createElement('div'); h.className = 'dsec'; h.dataset.sec = sec; dlist.append(h);
@@ -243,7 +271,9 @@
 
   function relabel() {
     dlist.querySelectorAll('.dsec').forEach((h) => { h.textContent = SIDE[side()][h.dataset.sec]; });
-    document.getElementById('dhead').textContent = side() === 'flux' ? 'Rack' : 'Drawer';
+    document.getElementById('tabLib').textContent = side() === 'flux' ? 'Rack' : 'Drawer';
+    document.getElementById('tabGraft').textContent = side() === 'flux' ? 'Links' : 'Grafts';
+    document.getElementById('dlgTitle').textContent = side() === 'flux' ? 'Remove link?' : 'Remove graft?';
   }
 
   /* ---- state -> DOM ---- */
@@ -262,7 +292,7 @@
       let solid = false;
       if (isTarget) solid = linked(mode.src, id);
       if (isPeer) solid = true;
-      if (isFlashB) solid = !flash.off;
+      if (isFlashB) solid = flash.off ? hasAny(id) : true;
       el.querySelector(':scope > .tcircle').classList.toggle('is-solid', solid);
     });
     cards.forEach((id) => {
@@ -272,8 +302,9 @@
       const inMode = !!(mode && mode.src === id);
       const inFlash = !!(flash && flash.a === id);
       h.classList.toggle('is-circle', inMode || inFlash);
-      h.classList.toggle('is-solid', (inMode && !!mode.target && linked(mode.src, mode.target)) || (inFlash && !flash.off));
+      h.classList.toggle('is-solid', (inMode && !!mode.target && linked(mode.src, mode.target)) || (inFlash && (flash.off ? hasAny(id) : true)));
     });
+    renderTabs(); renderGrafts();
     render();
   }
 
@@ -288,6 +319,7 @@
     l.setAttribute('class', cls);
     l.setAttribute('x1', a.x); l.setAttribute('y1', a.y); l.setAttribute('x2', b.x); l.setAttribute('y2', b.y);
     wires.append(l);
+    return l;
   }
 
   /* lines are hidden by default. Only: (1) connection mode, active card -> its on-board
@@ -297,7 +329,12 @@
     wires.innerHTML = '';
     if (mode) {
       const from = anchorOf(mode.src);
-      peersOf(mode.src).filter(isCard).forEach((id) => { line(from, anchorOf(id), 'line'); });
+      peersOf(mode.src).filter(isCard).forEach((id) => {
+        const to2 = anchorOf(id), k = key(mode.src, id), on = selLine === k;
+        if (on) line(from, to2, 'halo');
+        line(from, to2, on ? 'line is-sel' : 'line');
+        line(from, to2, 'hit').dataset.key = k;
+      });
       let to = { x: mode.px, y: mode.py };
       if (mode.target) to = anchorOf(mode.target);
       line(from, to, 'arm');
@@ -313,17 +350,19 @@
 
   /* ---- connection mode ---- */
   function enterMode(srcId, held, e) {
+    selLine = null;
     mode = { src: srcId, held, ox: e.clientX, oy: e.clientY, moved: false, px: e.clientX, py: e.clientY, target: null };
     clearFlash();
     hint.textContent = 'Drag onto a card or drawer row. Release to connect; on a connected one, to disconnect. Esc cancels.';
     sync();
   }
-  function endMode() { mode = null; hint.textContent = HINT_IDLE; sync(); }
+  function endMode() { mode = null; selLine = null; hint.textContent = HINT_IDLE; sync(); }
   function targetAt(x, y) {
-    const el = document.elementFromPoint(x, y);
-    if (!el) return null;
-    const row = el.closest('.drow'); if (row) return row.dataset.id;
-    const c = el.closest('.card'); if (c && c.dataset.id !== mode.src) return c.dataset.id;
+    for (const el of document.elementsFromPoint(x, y)) {
+      if (el.closest('#wires')) continue;
+      const row = el.closest('.drow'); if (row) return row.dataset.id;
+      const c = el.closest('.card'); if (c && c.dataset.id !== mode.src) return c.dataset.id;
+    }
     return null;
   }
   function clearFlash() { clearTimeout(flashTimer); clearTimeout(lineTimer); flash = null; }
@@ -353,6 +392,10 @@
 
   document.addEventListener('mouseup', (e) => {
     if (!mode) return;
+    const hit = document.elementsFromPoint(e.clientX, e.clientY).find((n) => n.classList && n.classList.contains('hit'));
+    if (hit) {                                   // a click on a line selects it; Delete removes it
+      mode.held = false; selLine = hit.dataset.key; mode.target = null; sync(); return;
+    }
     const t = targetAt(e.clientX, e.clientY);
     if (mode.held) {
       mode.held = false;
@@ -363,7 +406,16 @@
     if (t) commit(t); else endMode();
   });
 
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && mode) endMode(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { if (!scrim.hidden) { closeDialog(); return; } if (mode) endMode(); return; }
+    if ((e.key === 'Delete' || e.key === 'Backspace') && mode && selLine) {
+      e.preventDefault();
+      const [a, b] = selLine.split('|'), peer = a === mode.src ? b : a;
+      conns.delete(selLine); selLine = null;
+      startFlash({ a: mode.src, b: peer, off: true, line: false });
+      sync();
+    }
+  });
   document.addEventListener('contextmenu', (e) => { if (mode || e.target.closest('.handle')) e.preventDefault(); });
 
   /* ---- drawer row dragged onto the board: a copy card, already connected to its original ---- */
@@ -399,10 +451,50 @@
     document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
   }
 
+  /* ---- right drawer: Grafts (Flux: Links), the selected card's connected thumbnails ---- */
+  const glist = document.getElementById('glist');
+  const scrim = document.getElementById('scrim');
+  function renderTabs() {
+    document.getElementById('tabLib').dataset.on = tab === 'lib' ? 'true' : 'false';
+    document.getElementById('tabGraft').dataset.on = tab === 'graft' ? 'true' : 'false';
+    dlist.hidden = tab !== 'lib'; glist.hidden = tab !== 'graft';
+  }
+  function renderGrafts() {
+    glist.innerHTML = '';
+    if (!sel) { glist.innerHTML = '<div class="gnone">Select a card</div>'; return; }
+    const peers = peersOf(sel);
+    if (!peers.length) { glist.innerHTML = '<div class="gnone">None</div>'; return; }
+    peers.forEach((id) => {
+      const el = els[id], kind = isCard(id) ? 'card' : el.dataset.kind;
+      const row = document.createElement('div'); row.className = 'gitem'; row.dataset.id = id;
+      row.innerHTML = '<span class="thumb ' + kind + '"></span><span class="dlabel"></span><button class="gx" type="button" aria-label="Remove">&times;</button>';
+      row.querySelector('.dlabel').textContent = el.dataset.label;
+      glist.append(row);
+    });
+  }
+  glist.addEventListener('click', (e) => {
+    const x = e.target.closest('.gx'); if (!x) return;
+    pendingRemove = [sel, x.closest('.gitem').dataset.id];
+    scrim.hidden = false; document.getElementById('dlgNo').focus();
+  });
+  function closeDialog() { scrim.hidden = true; pendingRemove = null; }
+  document.getElementById('dlgNo').addEventListener('click', closeDialog);
+  scrim.addEventListener('mousedown', (e) => { if (e.target === scrim) closeDialog(); });
+  document.getElementById('dlgYes').addEventListener('click', () => {
+    if (pendingRemove) {
+      const [a, b] = pendingRemove;
+      conns.delete(key(a, b));
+      startFlash({ a, b, off: true, line: false });
+    }
+    closeDialog(); sync();
+  });
+  document.querySelectorAll('.dtab').forEach((b) => b.addEventListener('click', () => { tab = b.dataset.tab; sync(); }));
+
   /* ---- selection + resize ---- */
   document.addEventListener('mousedown', (e) => {
-    if (e.target.closest('#rig')) return;
+    if (e.target.closest('#rig') || e.target.closest('#scrim')) return;
     if (mode) { e.preventDefault(); return; }
+    if (e.target.closest('.dtab') || e.target.closest('#glist')) return;
     const handle = e.target.closest('.handle');
     if (handle) {
       const card = handle.closest('.card');
@@ -438,7 +530,7 @@
     relabel(); syncRig(); sync();
   }));
   function reset() {
-    clearFlash(); mode = null; sel = null; nextCopy = 1;
+    clearFlash(); mode = null; sel = null; selLine = null; nextCopy = 1; tab = 'lib'; closeDialog();
     conns = new Set(SEED.map(([a, b]) => key(a, b)));
     build(); hint.textContent = HINT_IDLE; sync();
   }
@@ -455,12 +547,21 @@
     const src = 'c1';
     sel = src;
     if (demo === 'select') { sync(); return; }
+    if (demo === 'grafts' || demo === 'confirm') {
+      tab = 'graft'; sync();
+      if (demo === 'confirm') { const x = glist.querySelector('.gx'); pendingRemove = [sel, x.closest('.gitem').dataset.id]; scrim.hidden = false; }
+      return;
+    }
+    if (demo === 'removed') {
+      tab = 'graft'; conns.delete(key('c1', 'c3')); startFlash({ a: 'c1', b: 'c3', off: true, line: false }); clearTimeout(flashTimer); clearTimeout(lineTimer); sync(); return;
+    }
     if (demo === 'drop') { const br = board.getBoundingClientRect(); dropRow('p3', br.left + 330, br.top + 400); clearTimeout(flashTimer); clearTimeout(lineTimer); return; }
     const ar = els[src].getBoundingClientRect();
     enterMode(src, false, { clientX: ar.right, clientY: ar.bottom });
     if (demo === 'none') { mode.px = ar.right + 130; mode.py = ar.bottom + 40; sync(); return; }
     if (demo === 'done') { commit('c4'); clearTimeout(flashTimer); clearTimeout(lineTimer); return; }
     if (demo === 'off') { commit('c3'); clearTimeout(flashTimer); clearTimeout(lineTimer); return; }
+    if (demo === 'lineselect') { selLine = key('c1', 'c2'); mode.px = ar.right + 120; mode.py = ar.bottom + 60; sync(); return; }
     const tgt = { open: 'p2', linked: 'c2', card: 'c4', cardlinked: 'c3', menulinked: 'p1' }[demo];
     const p = at(tgt); mode.px = p.clientX; mode.py = p.clientY; mode.target = tgt; sync();
   }, 150);
