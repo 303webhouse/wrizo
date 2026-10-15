@@ -37,6 +37,8 @@ const typeShape = (app) => app.evalJs(`(() => {
 })()`);
 const rectOf = (app, sel) => app.evalJs(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return null; const r = e.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(n => Math.round(n * 100) / 100); })()`);
 const press = (app, expr, what) => trustedDispatch(app, expr, what, { report: ok });
+// FONT-SPAN: what the default section observed, for the parked leg's records (the CD4 / dispPass pattern)
+const i207Parks = {};
 const typeInto = async (app, value) => {
   await press(app, "document.querySelector('.wz-type-num')", 'the number field (focus)');
   await app.keyCombo('a');
@@ -45,7 +47,11 @@ const typeInto = async (app, value) => {
   await sleep(250);
 };
 const pickFace = async (app, name) => {
-  await press(app, "document.querySelector('.wz-type-face')", `the face button (open, for ${name})`);
+  // FONT-SPAN (2026-10-15): in Draft and a card the roster is SHOWN (the approved font-choices mockup), so there is no face button to
+  // open first; where one exists (Free Write, Revise) it is pressed as before. A driver change only - every assertion stands.
+  if (await app.evalJs("!!document.querySelector('.wz-type-face') && !document.querySelector('.wz-type-list')")) {
+    await press(app, "document.querySelector('.wz-type-face')", `the face button (open, for ${name})`);
+  }
   await sleep(120);
   await press(app, `[...document.querySelectorAll('.wz-type-row')].find(r => r.textContent === ${JSON.stringify(name)})`, `the roster row "${name}"`);
   await sleep(500);
@@ -100,7 +106,16 @@ await withHarness(async (app) => {
   await openPage(app, { id: 'i207-dr', mode: 'drafting' });
   await openDrawer(app);
   const dr = await typeShape(app);
-  ok('DRAFT: the Type control is mounted, full form — a face button, `-` `+` (3 buttons) and ONE number field', !!dr && dr.buttons === 3 && dr.inputs === 1, JSON.stringify(dr && { buttons: dr.buttons, inputs: dr.inputs }));
+  // ---- PARKED - SUPERSEDED by font-span (Nick approved the font-choices mockup, cursor/font-choices @ 6cc5f529, 2026-10-15) ----
+  // Kept VERBATIM and no longer run. Draft is the mode with styling tools, so its Typeface section now carries the two scopes
+  // ("Selection" / "Whole document") over the roster SHOWN as a list - no face button. Record in this file's parked section.
+  // ok('DRAFT: the Type control is mounted, full form — a face button, `-` `+` (3 buttons) and ONE number field', !!dr && dr.buttons === 3 && dr.inputs === 1, JSON.stringify(dr && { buttons: dr.buttons, inputs: dr.inputs }));
+  // ------------------------------------------------------------------
+  const drScoped = await app.evalJs(`(() => { const t = document.querySelector('.wz-sliver .wz-type'); if (!t) return null; return { buttons: t.querySelectorAll('button').length, inputs: t.querySelectorAll('input').length,
+    faceButton: !!t.querySelector('.wz-type-face'), scopes: [...t.querySelectorAll('.wz-type-scope')].map(b => b.textContent), rows: t.querySelectorAll('.wz-type-list-inline .wz-type-row').length }; })()`);
+  i207Parks.draftForm = drScoped;
+  ok('DRAFT [font-span successor]: the Typeface control is the scoped form - "Selection" / "Whole document" over the nine faces shown as a list, `-` `+` and ONE number field, no face button',
+    !!drScoped && drScoped.buttons === 4 && drScoped.inputs === 1 && !drScoped.faceButton && JSON.stringify(drScoped.scopes) === JSON.stringify(['Selection', 'Whole document']) && drScoped.rows === 9, JSON.stringify(drScoped));
 
   await openPage(app, { id: 'i207-rv', mode: 'revise' });
   await openDrawer(app);
@@ -124,8 +139,19 @@ await withHarness(async (app) => {
   const labelNow = await app.evalJs(`(() => { const b = document.querySelector('.wz-type-face'); const e = document.querySelector('.forward-only-editor'); if (!b || !e) return null;
     const first = getComputedStyle(e).fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').replace(/ Variable$/, '');
     return { label: b.textContent, rendered: first, buttonFamily: getComputedStyle(b).fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').replace(/ Variable$/, '') }; })()`);
-  ok('LABEL: on a page that never chose, the face button names the face that ACTUALLY renders (the first family the editor computes) and is set in it',
-    labelNow && labelNow.label === labelNow.rendered && labelNow.buttonFamily === labelNow.rendered, JSON.stringify(labelNow));
+  // ---- PARKED - SUPERSEDED by font-span (the approved mockup, 2026-10-15): Draft has no face button now; the current face is the
+  // roster row in brass. Kept VERBATIM and no longer run; record in this file's parked section, successor below.
+  // ok('LABEL: on a page that never chose, the face button names the face that ACTUALLY renders (the first family the editor computes) and is set in it',
+  //   labelNow && labelNow.label === labelNow.rendered && labelNow.buttonFamily === labelNow.rendered, JSON.stringify(labelNow));
+  // ------------------------------------------------------------------
+  void labelNow;
+  const brassNow = await app.evalJs(`(() => { const r = document.querySelector('.wz-type-row[data-current="true"]'); const e = document.querySelector('.forward-only-editor'); if (!r || !e) return null;
+    const first = getComputedStyle(e).fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').replace(/ Variable$/, '');
+    return { label: r.textContent, rendered: first, rowFamily: getComputedStyle(r).fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').replace(/ Variable$/, ''), color: getComputedStyle(r).color,
+      brass: getComputedStyle(document.documentElement).getPropertyValue('--brass').trim() }; })()`);
+  i207Parks.label = brassNow;
+  ok('LABEL [font-span successor]: on a page that never chose, the BRASS row of the roster names the face that ACTUALLY renders and is set in it',
+    !!brassNow && brassNow.label === brassNow.rendered && brassNow.rowFamily === brassNow.rendered, JSON.stringify(brassNow));
   ok('SIZE: the number field opens at 11', (await numAt()) === '11', String(await numAt()));
   await press(app, "document.querySelectorAll('.wz-type-step')[1]", 'the `+` button');
   await sleep(300);
@@ -223,7 +249,16 @@ await withHarness(async (app) => {
     if (!(await app.evalJs("!!document.querySelector('.board-popup-dock .wz-type')"))) await press(app, "document.querySelector('.board-popup-dock-grip')", "the card's styling dock grip");
     await sleep(300);
     const cs = await app.evalJs(`(() => { const t = document.querySelector('.board-popup-dock .wz-type'); return t ? { buttons: t.querySelectorAll('button').length, inputs: t.querySelectorAll('input').length } : null; })()`);
-    ok('CARD: the styling dock carries the smallest form — a face button and `-` `+` (3 buttons), no number field', cs && cs.buttons === 3 && cs.inputs === 0, JSON.stringify(cs));
+    // ---- PARKED - SUPERSEDED by font-span (the approved mockup's card scene, 2026-10-15): the dock's Typeface control carries the two
+    // scopes ("Selection" / "Whole card") over the roster shown as a list - no face button. Kept VERBATIM, no longer run.
+    // ok('CARD: the styling dock carries the smallest form — a face button and `-` `+` (3 buttons), no number field', cs && cs.buttons === 3 && cs.inputs === 0, JSON.stringify(cs));
+    // ------------------------------------------------------------------
+    void cs;
+    const csScoped = await app.evalJs(`(() => { const t = document.querySelector('.board-popup-dock .wz-type'); if (!t) return null; return { buttons: t.querySelectorAll('button').length, inputs: t.querySelectorAll('input').length,
+    faceButton: !!t.querySelector('.wz-type-face'), scopes: [...t.querySelectorAll('.wz-type-scope')].map(b => b.textContent), rows: t.querySelectorAll('.wz-type-list-inline .wz-type-row').length }; })()`);
+    i207Parks.cardForm = csScoped;
+    ok('CARD [font-span successor]: the dock carries the scoped small form - "Selection" / "Whole card" over the nine faces, `-` `+`, no number field, no face button',
+      !!csScoped && csScoped.buttons === 4 && csScoped.inputs === 0 && !csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 9, JSON.stringify(csScoped));
     await press(app, "document.querySelectorAll('.board-popup-dock .wz-type-step')[1]", "the card's `+`");
     await sleep(300);
     await pickFace(app, 'Atkinson Hyperlegible');
@@ -244,11 +279,21 @@ await withHarness(async (app) => {
 
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  // FONT-SPAN (2026-10-15) - THREE parks, each record frozen with its original name and re-verifying the NEW truth from the default
+  // section's own observations (i207Parks). The line just below said this file parks nothing; it is kept as it was.
+  const pk = (name, pass, detail) => parkedChecks.push({ name, pass, detail });
+  const d = i207Parks.draftForm, l = i207Parks.label, c = i207Parks.cardForm;
+  pk('PARKED (was "DRAFT: the Type control is mounted, full form — a face button, `-` `+` (3 buttons) and ONE number field") - font-span: the scoped form, no face button; live successor: DRAFT [font-span successor]',
+    !!d && d.buttons === 4 && d.inputs === 1 && !d.faceButton && d.rows === 9, JSON.stringify(d));
+  pk('PARKED (was "LABEL: on a page that never chose, the face button names the face that ACTUALLY renders (the first family the editor computes) and is set in it") - font-span: the brass roster row does; live successor: LABEL [font-span successor]',
+    !!l && l.label === l.rendered && l.rowFamily === l.rendered, JSON.stringify(l));
+  pk('PARKED (was "CARD: the styling dock carries the smallest form — a face button and `-` `+` (3 buttons), no number field") - font-span: the scoped small form; live successor: CARD [font-span successor]',
+    !!c && c.buttons === 4 && c.inputs === 0 && !c.faceButton && c.rows === 9, JSON.stringify(c));
   // Parks nothing: 207a adds a control and falsifies no earlier assertion. (Item 83's "the sought door is never offered" and
   // 177-Q3's "typeface hidden with Typewriter ON" are superseded by the design, but no committed check asserts either; the
   // count is printed from the array so a later park cannot be added without this line seeing it.)
   console.log(parkedChecks.every((c) => c.pass)
-    ? `\nITEM207 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; nothing parked`
+    ? `\nITEM207 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; font-span's three parks re-verified`
     : `\nITEM207 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const all = checks.concat(parkedChecks);
