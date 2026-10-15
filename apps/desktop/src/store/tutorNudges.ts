@@ -7,6 +7,7 @@
 // grip's own rendering must never differ whether it returns [] or not —
 // see Tutor.tsx's own header comment for where that invariant is enforced.
 import { getJournalEntries } from './persistence';
+import { liveBoxes } from './boxTombstones';
 import { titleOf } from './tutorLenses';
 
 const STALE_STAR_DAYS = 7;
@@ -30,7 +31,7 @@ export function computeNudges(currentEntryId: string): string[] {
   }
 
   // A board with an empty region — v1: a board page with zero boxes.
-  const emptyBoards = all.filter(e => e.pageType === 'board' && (e.boxes ?? []).length === 0);
+  const emptyBoards = all.filter(e => e.pageType === 'board' && liveBoxes(e.boxes).length === 0);
   for (const e of emptyBoards.slice(0, MAX_PER_KIND)) {
     nudges.push(`"${titleOf(e)}" is a board with nothing on it yet.`);
   }

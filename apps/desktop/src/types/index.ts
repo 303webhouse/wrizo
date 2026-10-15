@@ -547,6 +547,16 @@ export interface Box {
   // costs zero schema, zero migration, and zero server change. Approved as the
   // storage home by Fable, on this S0's measurement (item 125).
   onCanvas?: boolean;   // kind 'page-pin' — absent/true: on the canvas; false: member only
+  // BOARD CONTEXT MENU (Oct 15) - A DELETED CARD IS A TOMBSTONE, NOT A REMOVAL. Three additive optional fields inside the board's own `boxes` jsonb (zero schema - sync stores the blob whole):
+  //   deletedAt  - stamped when the card is sent to Trash; the box stays in `boxes`, hidden from every reader (store/boxTombstones.ts: liveBoxes), listed on the Trash board; Restore clears it.
+  //   updatedAt  - the per-box CHANGE TIME. Set when a card is deleted or restored; absent on every card that predates this. It, and nothing else, decides which side of a merge wins.
+  //   purgedAt   - a permanent delete from Trash replaces the box with `{ id, kind, purgedAt }` + zeros. Final: a stale save cannot resurrect it.
+  deletedAt?: string;
+  updatedAt?: string;
+  purgedAt?: string;
+  // BOARD CONTEXT MENU - a card on the TRASH board that stands for a tombstoned CARD (not a page): where it came from. Derived by the Trash board's reconcile, never authored; the face reads the
+  // tombstoned source box. Absent on every real card.
+  trashedFrom?: { boardId: string; boxId: string };
   // PW2 S3 (item 123) — A COPY GETS ITS OWN FIELD. Ruled, and the reason is
   // the whole of it: `sourceEntryId` means "this card MIRRORS that entry", and
   // BoardEditor's double-click dispatch is built on that meaning — a text card

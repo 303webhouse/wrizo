@@ -1,3 +1,4 @@
+import { liveBoxes } from '../store/boxTombstones';
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -849,7 +850,7 @@ export function BoardEditor({ id }: { id: string }) {
   const [boardModeRaw, setBoardMode] = useBoardMode(id);
   const boardMode = isSystemBoard ? 'open' : boardModeRaw;
 
-  const [boxes, setBoxes] = useState<Box[]>(() => initialEntry?.boxes ?? []);
+  const [boxes, setBoxes] = useState<Box[]>(() => liveBoxes(initialEntry?.boxes));   // LIVE boxes only: a deleted card is a tombstone in storage, carried through every save by saveBoardBoxes
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // FX4 S5 — the card popup (inline contenteditable editing RETIRES whole):
   // the id of the text card currently open in BoardCardPopup, or null. The
@@ -1441,7 +1442,7 @@ export function BoardEditor({ id }: { id: string }) {
     // PW1 S3 — BOARD-SIDE: the writer pressed a door ON THIS CANVAS asking for
     // a card here, so the card appears here. Arrangement they authored.
     const updated = pinPageToBoard(page.id, id, { display: true });
-    const pin = (updated?.boxes ?? []).find(b => b.kind === 'page-pin' && b.entryId === page.id);
+    const pin = liveBoxes(updated?.boxes).find(b => b.kind === 'page-pin' && b.entryId === page.id);
     if (pin) {
       const next = [...boxesRef.current, pin];
       setBoxes(next);

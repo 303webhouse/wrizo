@@ -1,3 +1,4 @@
+import { liveBoxes } from '../store/boxTombstones';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
@@ -592,7 +593,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // tolerance BoardPinBox itself already extends to a missing referent.
   const consistencyScope = panelVisible
     ? (pageKind === 'board'
-        ? [pageText, ...(entry.boxes ?? [])
+        ? [pageText, ...liveBoxes(entry.boxes)
             .filter((b) => b.kind === 'page-pin' && b.entryId)
             .map((b) => getJournalEntry(b.entryId!)?.text)
             .filter((t): t is string => t != null)]

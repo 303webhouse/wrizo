@@ -9,6 +9,7 @@ import { reportFlushFailed, reportFlushOk, reportStorageUsage } from './storageH
 import { isSignedOutHere } from './signedOutHere';
 import { isStaleClient } from './staleClient';
 import { getCurrentUser, subscribeCurrentUser } from './currentUser';
+import { liveBoxes, carryHiddenOnSave, tombstone, restoreBox, purgeMarker, mergeBoxLists, isTombstoned, isHiddenSelf } from './boxTombstones';
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -1217,10 +1218,73 @@ export function createBoardPage(binderId: string, title?: string): JournalEntry 
 
 // Persist a Board's box array (Slice 3 autosave) — merges into the latest
 // record so metadata written elsewhere is never clobbered.
-export function saveBoardBoxes(id: string, boxes: Box[]): void {
+//
+// BOARD CONTEXT MENU - THE WRITE BOUNDARY FOR TOMBSTONES. `boxes` here is what an EDITOR holds: live boxes only. The stored board also carries the cards that were deleted (tombstones), the markers a
+// permanent delete leaves, and the connections hanging off a tombstoned card; `carryHiddenOnSave` (store/boxTombstones.ts) re-attaches them so an ordinary autosave can never strip them, drops an
+// incoming box that is purged in storage, and keeps a tombstone standing against a STALE view of the card unless the caller names the id in `restored` (an explicit Undo).
+export function saveBoardBoxes(id: string, boxes: Box[], restored?: readonly string[]): void {
   const latest = getJournalEntry(id);
   if (!latest) return;
-  saveJournalEntry({ ...latest, boxes });
+  saveJournalEntry({ ...latest, boxes: carryHiddenOnSave(latest.boxes, boxes, new Date().toISOString(), new Set(restored ?? [])) });
+}
+
+// A card is deleted: STAMP IT IN PLACE (deletedAt + updatedAt), keep it in `boxes`. Connections and board-meta are never tombstoned - a connection is hidden by its endpoint and returns with it.
+// Returns the ids actually tombstoned. A system board's cards are derived, so nothing is stashed there.
+export function stashDeletedBoxes(boardId: string, ids: readonly string[]): string[] {
+  const board = getJournalEntry(boardId);
+  if (!board || board.pageType !== 'board' || getSystemKind(board)) return [];
+  const now = new Date().toISOString();
+  const want = new Set(ids);
+  const done: string[] = [];
+  const next = (board.boxes ?? []).map(b => {
+    if (!want.has(b.id) || b.kind === 'connection' || b.kind === 'board-meta' || isHiddenSelf(b)) return b;
+    done.push(b.id);
+    return tombstone(b, now);
+  });
+  if (done.length) saveJournalEntry({ ...board, boxes: next });
+  return done;
+}
+
+// Restore from Trash: clear the flag, stamp the change time so it beats the older tombstone in any merge. The connections that hung off it come back with it (they were never touched).
+export function restoreDeletedBox(boardId: string, boxId: string): boolean {
+  const board = getJournalEntry(boardId);
+  if (!board || board.deletedAt) return false;
+  const boxes = board.boxes ?? [];
+  const b = boxes.find(x => x.id === boxId);
+  if (!b || !isTombstoned(b)) return false;
+  const now = new Date().toISOString();
+  saveJournalEntry({ ...board, boxes: boxes.map(x => (x.id === boxId ? restoreBox(x, now) : x)) });
+  return true;
+}
+
+// Permanent delete from Trash: the box is replaced by an id-only marker, so a stale save can never bring the card back.
+export function purgeDeletedBox(boardId: string, boxId: string): boolean {
+  const board = getJournalEntry(boardId);
+  if (!board) return false;
+  const boxes = board.boxes ?? [];
+  const b = boxes.find(x => x.id === boxId);
+  if (!b || !isTombstoned(b)) return false;
+  const now = new Date().toISOString();
+  saveJournalEntry({ ...board, boxes: boxes.map(x => (x.id === boxId ? purgeMarker(x, now) : x)) });
+  return true;
+}
+
+/** The tombstoned CARDS on every live, ordinary board - what the Trash board lists next to the deleted pages. A board that is itself in Trash keeps its cards (they return with the board). */
+export function getTrashedCards(): { boardId: string; boardTitle: string; box: Box }[] {
+  const out: { boardId: string; boardTitle: string; box: Box }[] = [];
+  for (const e of cache.journalEntries) {
+    if (e.deletedAt || e.pageType !== 'board' || getSystemKind(e) !== undefined) continue;
+    for (const b of e.boxes ?? []) {
+      if (isTombstoned(b) && b.kind !== 'connection' && b.kind !== 'board-meta') out.push({ boardId: e.id, boardTitle: e.text.trim() ? e.text.trim().split('\n')[0].slice(0, 60) : 'Untitled board', box: clone(b) });
+    }
+  }
+  return out;
+}
+
+/** One tombstoned box, read for a Trash card's face. */
+export function getTombstonedBox(boardId: string, boxId: string): Box | null {
+  const b = (cache.journalEntries.find(e => e.id === boardId)?.boxes ?? []).find(x => x.id === boxId);
+  return b && isTombstoned(b) ? clone(b) : null;
 }
 
 // Port loose Journal pages onto a Board (J4 Slice 2 — I2 realized): COPY,
@@ -1282,8 +1346,9 @@ export function appendToBoard(sourceIds: string[], boardEntryId: string, include
   const board = getJournalEntry(boardEntryId);
   if (!board || board.pageType !== 'board') return null;
   const existing = board.boxes ?? [];
-  const startY = existing.reduce((m, b) => Math.max(m, b.y + b.h), 0) + BOARD_STACK_GAP;
-  const startZ = existing.reduce((m, b) => Math.max(m, b.z), 0) + 1;
+  const liveNow = liveBoxes(existing);   // tombstones do not take up room
+  const startY = liveNow.reduce((m, b) => Math.max(m, b.y + b.h), 0) + BOARD_STACK_GAP;
+  const startZ = liveNow.reduce((m, b) => Math.max(m, b.z), 0) + 1;
   const newBoxes = buildPortedBoxes(sourceIds, includeInk, startY, startZ);
   saveJournalEntry({ ...board, boxes: [...existing, ...newBoxes] });
   return getJournalEntry(boardEntryId);
@@ -1530,8 +1595,8 @@ export function pinPageToBoard(entryId: string, boardEntryId: string, opts?: { d
   // it: trivial to prevent, expensive to find.
   if (wouldNestCycle(entryId, boardEntryId)) return null;
   const existing = board.boxes ?? [];
-  if (existing.some(b => b.kind === 'page-pin' && b.entryId === entryId)) return board; // already pinned — idempotent
-  const startY = existing.reduce((m, b) => Math.max(m, b.y + b.h), 0) + BOARD_STACK_GAP;
+  if (liveBoxes(existing).some(b => b.kind === 'page-pin' && b.entryId === entryId)) return board; // already pinned — idempotent (a tombstoned pin is NOT a membership)
+  const startY = liveBoxes(existing).reduce((m, b) => Math.max(m, b.y + b.h), 0) + BOARD_STACK_GAP;
   const startZ = existing.reduce((m, b) => Math.max(m, b.z), 0) + 1;
   // PW1 S3 (item 125) — the pin is the MEMBERSHIP record, and a new membership
   // is NOT displayed until the writer places it. `onCanvas: false` is written
@@ -1566,7 +1631,7 @@ export function setPinDisplayed(boardEntryId: string, entryId: string, displayed
   const board = getJournalEntry(boardEntryId);
   if (!board || board.pageType !== 'board') return null;
   const boxes = board.boxes ?? [];
-  const idx = boxes.findIndex(b => b.kind === 'page-pin' && b.entryId === entryId);
+  const idx = boxes.findIndex(b => b.kind === 'page-pin' && b.entryId === entryId && !isHiddenSelf(b));
   if (idx < 0) return null;
   const topZ = boxes.reduce((m, b) => Math.max(m, b.z), 0) + 1;
   const next = boxes.slice();
@@ -1581,7 +1646,7 @@ export function setPinDisplayed(boardEntryId: string, entryId: string, displayed
 // means displayed, in this reader exactly as on the canvas — one law, read
 // the same way everywhere it is read.
 export function isPinDisplayed(boardEntryId: string, entryId: string): boolean {
-  const pin = (getJournalEntry(boardEntryId)?.boxes ?? []).find(b => b.kind === 'page-pin' && b.entryId === entryId);
+  const pin = liveBoxes(getJournalEntry(boardEntryId)?.boxes).find(b => b.kind === 'page-pin' && b.entryId === entryId);
   return !!pin && pin.onCanvas !== false;
 }
 
@@ -1643,8 +1708,8 @@ export function copyCardToBoard(sourceBoardId: string, boxId: string, targetBoar
   if (box.kind !== 'text' && box.kind !== 'ink') return null;
 
   const existing = target.boxes ?? [];
-  const startY = existing.reduce((m, b) => Math.max(m, b.y + b.h), 0) + COPY_OFFSET;
-  const startZ = existing.reduce((m, b) => Math.max(m, b.z), 0) + 1;
+  const startY = liveBoxes(existing).reduce((m, b) => Math.max(m, b.y + b.h), 0) + COPY_OFFSET;
+  const startZ = liveBoxes(existing).reduce((m, b) => Math.max(m, b.z), 0) + 1;
   // ⚠ THE COPY IS BUILT FROM A WHITELIST, NOT SPREAD-AND-STRIP. Ruled, and the
   // reason is a defect this function already had: it was written as
   // `{ ...box }` minus a strip list, and copying a PORTED card carried
@@ -1744,7 +1809,7 @@ if (typeof window !== 'undefined') {
 // the host board's own kind is being tested rather than interpreted.
 export function getBoardsPinning(entryId: string): { id: string; title: string }[] {
   return cache.journalEntries
-    .filter(e => !e.deletedAt && e.pageType === 'board' && (e.boxes ?? []).some(b => b.kind === 'page-pin' && b.entryId === entryId))
+    .filter(e => !e.deletedAt && e.pageType === 'board' && liveBoxes(e.boxes).some(b => b.kind === 'page-pin' && b.entryId === entryId))
     .map(e => ({ id: e.id, title: e.text.trim() ? e.text.trim().split('\n')[0].slice(0, 60) : 'Untitled board' }));
 }
 
@@ -2057,7 +2122,7 @@ export function getJournalPages(): JournalEntry[] {
 function isPinnedOnAnyUserBoard(entryId: string): boolean {
   return cache.journalEntries.some(e =>
     !e.deletedAt && e.pageType === 'board' && getSystemKind(e) === undefined
-    && (e.boxes ?? []).some(b => b.kind === 'page-pin' && b.entryId === entryId));
+    && liveBoxes(e.boxes).some(b => b.kind === 'page-pin' && b.entryId === entryId));
 }
 
 // T3 itself — a single predicate, called by BOTH the Shelf Board's own
@@ -2371,7 +2436,7 @@ export function unpinPageFromBoard(entryId: string, boardEntryId: string): Journ
   const board = getJournalEntry(boardEntryId);
   if (!board || board.pageType !== 'board') return null;
   const existing = board.boxes ?? [];
-  const next = existing.filter(b => !(b.kind === 'page-pin' && b.entryId === entryId));
+  const next = existing.filter(b => !(b.kind === 'page-pin' && b.entryId === entryId && !isHiddenSelf(b)));   // a tombstoned pin stays in Trash
   if (next.length === existing.length) return board; // nothing to remove — idempotent
   saveJournalEntry({ ...board, boxes: next });
   return getJournalEntry(boardEntryId);
@@ -2815,23 +2880,32 @@ export function reconcileSystemBoard(boardId: string): Box[] | null {
   const boxes = board.boxes ?? [];
   const qualifying = qualifyingPagesFor(kind, boardId);
   const qualifyingIds = new Set(qualifying.map(p => p.id));
-  const existingPins = boxes.filter(b => b.kind === 'page-pin');
+  // BOARD CONTEXT MENU: the Trash board also holds a card for every TOMBSTONED CARD on a live board (trashedFrom = where it came from). They are keyed by board:box, not by page.
+  const trashedNow = kind === 'trash' ? getTrashedCards() : [];
+  const trashedKeys = new Set(trashedNow.map(t => `${t.boardId}:${t.box.id}`));
+  const existingCardPins = boxes.filter(b => b.kind === 'page-pin' && !!b.trashedFrom);
+  const existingCardKeys = new Set(existingCardPins.map(b => `${b.trashedFrom!.boardId}:${b.trashedFrom!.boxId}`));
+  const existingPins = boxes.filter(b => b.kind === 'page-pin' && !b.trashedFrom);
   const existingPinnedIds = new Set(existingPins.map(b => b.entryId).filter((eid): eid is string => !!eid));
 
   // Cards whose page no longer qualifies leave (deleted, for the Journal
   // Board; restored or re-homed, for the Trash Board — either way, the
   // underlying real act already happened elsewhere; this only ever reacts).
   const staleIds = new Set(existingPins.filter(b => !b.entryId || !qualifyingIds.has(b.entryId)).map(b => b.id));
+  existingCardPins.forEach(b => { if (!trashedKeys.has(`${b.trashedFrom!.boardId}:${b.trashedFrom!.boxId}`)) staleIds.add(b.id); });
   // Qualifying pages missing a card gain one.
   const missing = qualifying.filter(p => !existingPinnedIds.has(p.id)).sort((a, b) => a.id.localeCompare(b.id));
+  const missingCards = trashedNow.filter(t => !existingCardKeys.has(`${t.boardId}:${t.box.id}`)).sort((a, b) => `${a.boardId}:${a.box.id}`.localeCompare(`${b.boardId}:${b.box.id}`));
 
-  if (staleIds.size === 0 && missing.length === 0) return null; // idempotent no-op
+  if (staleIds.size === 0 && missing.length === 0 && missingCards.length === 0) return null; // idempotent no-op
 
   const kept = boxes.filter(b => !staleIds.has(b.id));
   const keptPinCount = kept.filter(b => b.kind === 'page-pin').length;
   const startZ = kept.reduce((m, b) => Math.max(m, b.z), 0) + 1;
   const newBoxes = placeNewCards(missing, keptPinCount, startZ);
-  return [...kept, ...newBoxes];
+  const newCardBoxes = placeNewCards(missingCards.map(t => ({ id: '' } as JournalEntry)), keptPinCount + newBoxes.length, startZ + newBoxes.length)
+    .map((box, i) => { const { entryId: _e, ...rest } = box; void _e; return { ...rest, trashedFrom: { boardId: missingCards[i].boardId, boxId: missingCards[i].box.id } } as Box; });
+  return [...kept, ...newBoxes, ...newCardBoxes];
 }
 
 // --- Drawers (Drawers D1) -------------------------------------------------
@@ -2985,6 +3059,14 @@ if (typeof window !== 'undefined') {
   // Flush on demand — the escape hatch for a fixture that writes through some
   // other product path and needs it landed before a reload.
   seams.wrizoFlushNow = () => flushNow();
+
+  // BOARD CONTEXT MENU - the tombstone acts and their reads, for a fixture that must stash / restore / purge a card or read what is stored, through the product's own functions (never raw storage).
+  seams.wrizoStashDeleted = (boardId: string, ids: string[]) => { const r = stashDeletedBoxes(boardId, ids); flushNow(); return r; };
+  seams.wrizoRestoreDeleted = (boardId: string, boxId: string) => { const r = restoreDeletedBox(boardId, boxId); flushNow(); return r; };
+  seams.wrizoPurgeDeleted = (boardId: string, boxId: string) => { const r = purgeDeletedBox(boardId, boxId); flushNow(); return r; };
+  seams.wrizoTrashedCards = () => getTrashedCards();
+  seams.wrizoStoredBoxes = (boardId: string) => clone(cache.journalEntries.find(e => e.id === boardId)?.boxes ?? []);
+  seams.wrizoApplyRemoteBoard = (rec: JournalEntry) => { applyRemoteRecords({ journalEntries: [rec] }); flushNow(); return clone(cache.journalEntries.find(e => e.id === rec.id)?.boxes ?? []); };
 
   // ITEM 85-C — ESTABLISH RECENCY BY TOUCHING, NOT BY ASSERTING A TIMESTAMP.
   //
@@ -3143,13 +3225,35 @@ function applyCollection<T extends { id: string; updatedAt: string }>(
   let changed = false;
   for (const rec of remote) {
     if (!rec || !rec.id) continue;
-    if (dirty[name].has(rec.id)) continue; // local unsynced edit wins
+    if (dirty[name].has(rec.id)) {
+      // local unsynced edit wins - but its BOARD BOXES still merge by per-box change time (BOARD CONTEXT MENU): a newer tombstone / purge from elsewhere must not be undone by a stale local copy of the card
+      if (name === 'journalEntries') {
+        const idx = collection.findIndex(r => r.id === rec.id);
+        if (idx >= 0) {
+          const loc = collection[idx] as unknown as JournalEntry, rem = rec as unknown as JournalEntry;
+          if (loc.pageType === 'board' && (loc.boxes || rem.boxes)) {
+            const merged = mergeBoxLists(loc.boxes, rem.boxes);
+            if (JSON.stringify(merged) !== JSON.stringify(loc.boxes ?? [])) { (collection[idx] as unknown as JournalEntry).boxes = merged; changed = true; }
+          }
+        }
+      }
+      continue;
+    }
     const index = collection.findIndex(r => r.id === rec.id);
     if (index < 0) {
       collection.push(clone(rec));
       changed = true;
     } else if (!collection[index].updatedAt || rec.updatedAt > collection[index].updatedAt) {
-      collection[index] = clone(rec);
+      const incoming = clone(rec);
+      if (name === 'journalEntries') {
+        // the newer remote wins the entry; the boxes merge per box, so a local tombstone (or Restore) the server has not seen yet is not lost - and when it survives, the entry is marked unsynced so it travels back
+        const loc = collection[index] as unknown as JournalEntry, inc = incoming as unknown as JournalEntry;
+        if (loc.pageType === 'board' && (loc.boxes || inc.boxes)) {
+          const merged = mergeBoxLists(inc.boxes, loc.boxes);
+          if (JSON.stringify(merged) !== JSON.stringify(inc.boxes ?? [])) { inc.boxes = merged; dirty[name].add(rec.id); persistDirty(); }
+        }
+      }
+      collection[index] = incoming;
       changed = true;
     }
   }

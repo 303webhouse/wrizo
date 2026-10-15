@@ -5834,3 +5834,46 @@ a:focus-visible,
      arriving. */
   .wz-splash-veil, .wz-splash-mark, .wz-splash-loading{ transition:none; }
 }
+
+/* BOARD CONTEXT MENU (Nick, Oct 15; cursor/board-context-menu mockup @ 0df8bf30) - the small themed menu, the "Send to Trash?" dialog, and the Settings switch. All overlays (position:fixed in a portal):
+   page primacy - none of them moves or resizes anything beneath it. Tokens only, so Arbor and Flux both wear them. */
+.wz-ctx{
+  position:fixed; z-index:9000; min-width:150px; padding:4px 0;
+  background:var(--desk-ground); border:1px solid var(--ink-border-strong);
+  box-shadow:0 8px 24px rgba(0,0,0,.4);
+}
+.wz-ctx-sep{ height:1px; margin:4px 0; background:var(--ink-border-strong); }
+.wz-ctx-item{
+  display:block; width:100%; text-align:left; padding:7px 14px; background:none; border:0; border-radius:0; cursor:pointer;
+  font-family:var(--font-ui); font-size:13px; color:var(--text-mid);
+}
+.wz-ctx-item:hover, .wz-ctx-item:focus-visible{ color:var(--text-hi); background:var(--ink-800); outline:none; }
+
+.wz-delete-scrim{ position:fixed; inset:0; z-index:9500; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; }
+.wz-delete-dialog{ background:var(--desk-ground); border:1px solid var(--ink-border-strong); padding:20px 22px 16px; min-width:280px; }
+.wz-delete-title{ font-family:var(--font-ui); font-size:15px; color:var(--text-hi); margin-bottom:14px; }
+.wz-delete-chk{ display:flex; align-items:center; gap:9px; margin-bottom:18px; cursor:pointer; font-family:var(--font-ui); font-size:12px; color:var(--text-mid); }
+.wz-delete-chk input{ position:absolute; opacity:0; width:1px; height:1px; }
+.wz-delete-box{ width:13px; height:13px; box-sizing:border-box; border:1px solid var(--ink-border-strong); background:none; flex:none; }
+.wz-delete-chk input:checked + .wz-delete-box{ background:var(--brass); border-color:var(--brass); }
+.wz-delete-chk input:focus-visible + .wz-delete-box{ outline:1px solid var(--brass); outline-offset:2px; }
+.wz-delete-btns{ display:flex; justify-content:flex-end; gap:8px; }
+.wz-delete-btn{
+  font-family:var(--font-ui); font-size:12px; padding:5px 14px; background:none; border-radius:0; cursor:pointer;
+  color:var(--text-mid); border:1px solid var(--ink-border-strong);
+}
+.wz-delete-btn:hover, .wz-delete-btn:focus-visible{ color:var(--text-hi); border-color:var(--text-mid); outline:none; }
+.wz-delete-go{ color:var(--brass); border-color:var(--brass); }
+.wz-delete-go:hover, .wz-delete-go:focus-visible{ background:color-mix(in srgb, var(--brass) 14%, transparent); color:var(--brass); border-color:var(--brass); }
+
+/* the Settings row "Ask before deleting" - a small switch (the mockup's .sw) */
+.wz-cascade-switch{
+  display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; padding:6px 0; background:none; border:0; cursor:pointer;
+  font-family:var(--font-ui); font-size:13px; color:var(--text-mid); text-align:left;
+}
+.wz-cascade-switch:hover, .wz-cascade-switch:focus-visible{ color:var(--text-hi); outline:none; }
+.wz-cascade-switch-track{ position:relative; width:30px; height:14px; box-sizing:border-box; border:1px solid var(--ink-border-strong); flex:none; }
+.wz-cascade-switch-track i{ position:absolute; top:2px; left:2px; width:8px; height:8px; background:var(--text-low); transition:left .15s ease, background-color .15s ease; }
+.wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track{ border-color:var(--brass); }
+.wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track i{ left:18px; background:var(--brass); }
+@media (prefers-reduced-motion: reduce){ .wz-cascade-switch-track i{ transition:none; } }

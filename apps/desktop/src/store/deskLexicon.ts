@@ -142,6 +142,9 @@ export type DeskTermId =
   // handle-double-click gesture whole) + the footer line/toggle threads
   // render as.
   | 'boardThreadGrab' | 'boardThreadPrefix' | 'boardThreadUntitled' | 'boardFooterToggle'
+  // BOARD CONTEXT MENU (Nick, Oct 15) - the right-click menus, the "Send to Trash?" dialog, the Settings row, and the toasts.
+  | 'ctxDelete' | 'ctxDeleteBoard' | 'ctxUngroup' | 'deleteDialogTitle' | 'deleteDialogPurgeTitle' | 'deleteDialogCancel' | 'deleteDialogConfirm' | 'deleteDialogDontAsk'
+  | 'settingsAskBeforeDelete' | 'toastCardDeleted' | 'toastCardRestored' | 'toastBoardTrashed' | 'trashCardBadge'
   // TU1 S2/S3/S4/S5 — the Tutor (components/Tutor.tsx), the sliver's own
   // mirror on the paper's right edge. One seam, all of the Tutor's static
   // chrome — the lenses' own DYNAMIC observation text (Consistency's
@@ -806,6 +809,19 @@ const CANONICAL: Record<DeskTermId, string> = {
   boardThreadPrefix: 'grafted to',
   boardThreadUntitled: 'Untitled',
   boardFooterToggle: 'Show grafts',
+  ctxDelete: 'Delete',
+  ctxDeleteBoard: 'Delete board',
+  ctxUngroup: 'Ungroup',
+  deleteDialogTitle: 'Send to Trash?',
+  deleteDialogPurgeTitle: 'Delete for good?',
+  deleteDialogCancel: 'Cancel',
+  deleteDialogConfirm: 'Delete',
+  deleteDialogDontAsk: "Don't ask me again",
+  settingsAskBeforeDelete: 'Ask before deleting',
+  toastCardDeleted: 'Card deleted',
+  toastCardRestored: 'Card restored',
+  toastBoardTrashed: 'Board moved to Trash',
+  trashCardBadge: 'Card',
   tutorOpen: 'Open the Tutor',
   tutorClose: 'Close the Tutor',
   tutorTitle: 'The Tutor',
@@ -1423,6 +1439,8 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     cascadePlanBoardsConnected: 'Boards linked',
     boardThreadGrab: 'Drag to link',
     boardFooterToggle: 'Show links',
+    ctxDeleteBoard: 'Delete circuit',
+    toastBoardTrashed: 'Circuit moved to Trash',
     placesBoardsTitle: 'Also linked to…',
     // Round 2: the card footer's own connecting phrase ("— grafted to: <label>"
     // Arbor, composed at BoardEditor.tsx's call site as "— {prefix}: {label}").

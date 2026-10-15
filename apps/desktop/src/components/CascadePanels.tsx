@@ -1,3 +1,5 @@
+import { liveBoxes } from '../store/boxTombstones';
+import { useAskBeforeDelete, setAskBeforeDelete } from '../store/deleteGate';
 import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon, deskTerm } from '../store/deskLexicon';
@@ -1049,10 +1051,16 @@ function CascadeSettingsPanel({ navigate }: { navigate: NavigateFunction }) {
   const { t } = useDeskLexicon();
   const authed = !!getCurrentUser();
   const signingOut = useSigningOut();
+  const askBeforeDelete = useAskBeforeDelete();
   return (
     <div className="wz-cascade-panel-body">
       <div className="wz-cascade-row"><FullscreenToggle /></div>
       <div className="wz-cascade-row"><SyncIndicator /></div>
+      {/* BOARD CONTEXT MENU: the one setting for every delete - ticking "Don't ask me again" in the dialog turns it off; this turns it back on (per device) */}
+      <button type="button" className="wz-cascade-switch" role="switch" aria-checked={askBeforeDelete ? 'true' : 'false'} onClick={() => setAskBeforeDelete(!askBeforeDelete)}>
+        <span>{t('settingsAskBeforeDelete')}</span>
+        <span className="wz-cascade-switch-track" aria-hidden="true"><i /></span>
+      </button>
       {authed && (
         <button
           type="button"
@@ -1173,7 +1181,7 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
   // plain text/ink card travels to the board itself (nothing else to open),
   // so the board stays reachable from the survey exactly as the old
   // board-list click used to be, just one layer further in.
-  const allBoxes = (getJournalEntry(kind.boardId)?.boxes ?? []).filter((b) => b.kind !== 'connection' && b.kind !== 'board-meta');
+  const allBoxes = liveBoxes(getJournalEntry(kind.boardId)?.boxes).filter((b) => b.kind !== 'connection' && b.kind !== 'board-meta');
 
   // PW1 S2, Q14 — THE BOARD'S OWN READING ORDER. Sort by `y`, THEN `x`: the
   // arrangement the writer authored, read the way a page is read. What shipped
