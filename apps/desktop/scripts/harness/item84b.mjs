@@ -102,6 +102,18 @@ const ASKS = [
 const ASK_IDS = ['drag', 'loadBearing', 'threadSlip', 'stretch'];
 const STRETCH_ASK = ASKS[3];              // TD4 — the one chip that adds a payload
 
+// word-diet-layouts (Fable, Oct 15, "per Nick") — ask 4's own VISIBLE chip
+// text is now the short word "Selection" (the mockup's own illustration,
+// cursor/word-diet-ui @ 5933454c), while the STRING IT STAGES INTO THE
+// COMPOSER stays ASKS[3] verbatim ("prompt text unchanged" — Fable's own
+// words). Asks 1-3 are untouched: their visible text and their staged text
+// are still the SAME string, as the button law always required. ASK_LABELS
+// is "what every chip's own face reads now"; ASKS stays "what gets staged/
+// sent" for every chip, ask 4 included — the split this ticket's own code
+// change makes (Tutor.tsx renders `ask.label ?? ask.term` for the FACE,
+// `pressAsk` still stages `t(ask.term)` unconditionally for the WIRE).
+const ASK_LABELS = [ASKS[0], ASKS[1], ASKS[2], 'Selection'];
+
 // The OVERTURNED string: what ask 3 reads in Pass 2 and in the mockup HTML. It is
 // asserted ABSENT. This is the check that catches a copy from either source.
 const OVERTURNED_ASK_3 = 'Where do I lose the thread?';
@@ -361,10 +373,21 @@ await withHarness(async (app) => {
     const st = await rosterState(app);
     ok('S0: the Draft roster renders exactly FOUR asks, in the lock record\'s own order',
       st.labels.length === 4 && JSON.stringify(st.ids) === JSON.stringify(ASK_IDS), JSON.stringify(st.ids));
-    for (let i = 0; i < 4; i++) {
+    // SUPERSEDED (word-diet-layouts, Fable, Oct 15) — this loop ran i < 4
+    // against ASKS for every chip, i.e. for i===3 it asserted verbatim:
+    //   ok(`S0 [ask 4]: the chip's text is BYTE-EXACT against the build
+    //   brief's §2 table — "Look at just this stretch — what's it doing?"`,
+    //   st.labels[3] === ASKS[3], ...)
+    // Ask 4's own visible face is now the short word "Selection" (Nick's
+    // own word, per the mockup) — ASKS[3] is still what it STAGES, proven
+    // separately in S2's successor below, not what it shows. Asks 1-3 keep
+    // the original byte-exact loop unchanged; i<3, not i<4.
+    for (let i = 0; i < 3; i++) {
       ok(`S0 [ask ${i + 1}]: the chip's text is BYTE-EXACT against the build brief's §2 table — ${JSON.stringify(ASKS[i])}`,
         st.labels[i] === ASKS[i], JSON.stringify({ rendered: st.labels[i], required: ASKS[i] }));
     }
+    ok(`S0 [ask 4, successor — word-diet-layouts]: the chip's own FACE reads the short word Nick chose, not the sentence it stages — ${JSON.stringify(ASK_LABELS[3])}`,
+      st.labels[3] === ASK_LABELS[3], JSON.stringify({ rendered: st.labels[3], required: ASK_LABELS[3] }));
     ok('S0 (THE TRAP): the OVERTURNED ask 3 — the pre-amendment string that still stands in Pass 2 and in the mockup HTML — appears NOWHERE in the rendered app. This is the check that catches a copy from either invalid source',
       st.bodyHasOverturned === false && st.labels.every(l => l !== OVERTURNED_ASK_3), JSON.stringify(st.labels));
     ok('S0: exactly ONE chip declares that it sends a selection, and it is ask 4 (TD4) — the per-button wire declaration',
@@ -391,8 +414,13 @@ await withHarness(async (app) => {
 
     await switchMode(app, 'Draft');
     const back = await rosterState(app);
+    // SUPERSEDED (word-diet-layouts, Fable, Oct 15) — this line compared
+    // against ASKS verbatim: `JSON.stringify(back.labels) ===
+    // JSON.stringify(ASKS)`. ASK_LABELS is the same four strings with ask
+    // 4 now "Selection" (its own visible face); ASKS itself is unchanged
+    // and still names what gets staged (S2's successor below).
     ok('S1: switching back to Draft restores it — the mode branch is live, not decided once at mount',
-      back.rosterPresent === true && JSON.stringify(back.labels) === JSON.stringify(ASKS), JSON.stringify(back.labels));
+      back.rosterPresent === true && JSON.stringify(back.labels) === JSON.stringify(ASK_LABELS), JSON.stringify(back.labels));
 
     // REVISE — SUCCESSOR CHECK (ITEM 112-A). The original assertion here proved the
     // roster could not render in Revise by proving REVISE ITSELF COULD NOT BE
@@ -426,8 +454,11 @@ await withHarness(async (app) => {
     const script = await rosterState(app);
     ok('S1 (SCREENPLAY): a screenplay page IS a Draft page (ScriptEditor mounts the panel with mode="drafting"), so the Draft roster renders there too, and the Free Write roster does not',
       script.rosterPresent === true && script.fwRosterPresent === false && script.convoPresent === true, JSON.stringify(script));
+    // SUPERSEDED (word-diet-layouts, Fable, Oct 15) — verbatim:
+    // `JSON.stringify(script.labels) === JSON.stringify(ASKS)`. Same fix
+    // as S1's own successor just above — ASK_LABELS, not ASKS.
     ok('S1 (SCREENPLAY): and it carries the same four strings of record',
-      JSON.stringify(script.labels) === JSON.stringify(ASKS), JSON.stringify(script.labels));
+      JSON.stringify(script.labels) === JSON.stringify(ASK_LABELS), JSON.stringify(script.labels));
   }
 
   {
@@ -524,6 +555,16 @@ await withHarness(async (app) => {
     ok('S4 (precondition): the stretch is selected and TD4 is live',
       sel && sel.text === STRETCH, JSON.stringify(sel));
     await pressAsk(app, 'stretch');
+    // word-diet-layouts successor (Fable, Oct 15, "prompt text unchanged")
+    // — read BEFORE sendComposer clears it: ask 4's FACE now reads
+    // "Selection" (S0's own successor above), but what the press staged
+    // into the composer is still ASKS[3] verbatim, byte-exact, same as
+    // every press before this ticket. This is the direct proof the split
+    // is real — not "the code wasn't touched", but "the staged string is
+    // still measured and still matches".
+    const stagedByStretch = await composerState(app);
+    ok('S4 [word-diet-layouts successor]: pressing ask 4 still stages its own full sentence into the composer, byte-exact — the chip\'s shortened FACE never shortens what it SENDS',
+      stagedByStretch.value === ASKS[3], JSON.stringify({ staged: stagedByStretch.value, required: ASKS[3] }));
     await sendComposer(app);
     const td4 = await lastTutorBody(app);
     const keys = Object.keys(td4 || {}).sort();

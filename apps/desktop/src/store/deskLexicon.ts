@@ -187,11 +187,20 @@ export type DeskTermId =
   // the overturned string absent from the DOM, precisely to catch a copy from
   // either of them.
   //
-  // `tutorDraftAskStretch` is TD4, the one chip that adds a payload: its own words
-  // ARE its button-naming under the disclosure's condition (a), which is why the
-  // string may never be softened into a generic label.
+  // `tutorDraftAskStretch` is TD4, the one chip that adds a payload: its own
+  // words ARE its button-naming under the disclosure's condition (a) — the
+  // WIRE must still name what it sends, byte-exact (item84b.mjs's own S4
+  // "THE BUTTON LAW" proves this mechanically, not by inspection).
+  // SUPERSEDED in part (Nick's ruling, Oct 13, word-diet-layouts, "per Nick"
+  // in cursor/word-diet-ui @ 5933454c): the FACE no longer has to BE those
+  // words — "the chip's visible label becomes 'Selection'; the prompt it
+  // sends stays word for word." `tutorDraftAskStretchLabel` carries the new
+  // face; `tutorDraftAskStretch` itself is untouched and still names the
+  // wire — Tutor.tsx's own DRAFT_ASKS reads `label ?? term` for display and
+  // `term` unconditionally for the press, so the two can never drift apart
+  // by accident.
   | 'tutorDraftRoster' | 'tutorDraftAskDrag' | 'tutorDraftAskLoadBearing'
-  | 'tutorDraftAskThreadSlip' | 'tutorDraftAskStretch'
+  | 'tutorDraftAskThreadSlip' | 'tutorDraftAskStretch' | 'tutorDraftAskStretchLabel'
   | 'tutorDraftStretchNeedsSelection' | 'tutorSelectionTruncated'
   | 'tutorDisclosureTitle' | 'tutorDisclosureBody' | 'tutorDisclosureAck'
   // TU2 S3 — the disclosure's v2 body, Nick's ratified string verbatim
@@ -904,6 +913,9 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorDraftAskLoadBearing: "What's load-bearing here — and what could go?",
   tutorDraftAskThreadSlip: "Where does the thread slip?",
   tutorDraftAskStretch: "Look at just this stretch — what's it doing?",
+  // word-diet-layouts (Nick's ruling, Oct 13) — the chip's own FACE, not its
+  // prompt. See the DeskTermId union's own comment above for the split.
+  tutorDraftAskStretchLabel: 'Selection',
   // TD4's disabled-visible state, named. The chip holds its slot without a
   // selection rather than appearing and vanishing (its gate flips by the second,
   // and layout stability outranks purity of absence for that case) — so it owes
