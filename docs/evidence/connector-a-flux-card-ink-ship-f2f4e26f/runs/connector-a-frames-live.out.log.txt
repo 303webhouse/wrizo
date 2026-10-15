@@ -1,0 +1,3 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+CONNECTOR-A-FRAMES: 5 frames written to C:\Users\nickh\writer-studio\.claude\worktrees\ca2\docs\evidence\connector-a; light frames byte-identical to their dark twin: none
