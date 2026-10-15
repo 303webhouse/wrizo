@@ -25,10 +25,10 @@ if (!esbuildBin || !existsSync(esbuildBin)) { console.log('FONT-SPAN-CHECK VERIF
 const tmp = mkdtempSync(join(tmpdir(), 'wz-fontspan-'));
 const entry = join(tmp, 'entry.ts');
 const store = join(here, '..', 'src', 'store').replace(/\\/g, '/');
-writeFileSync(entry, `export * as mr from '${store}/markRuns';\nexport * as df from '${store}/draftFormat';\nexport * as hm from '${store}/hiddenMarks';\n`);
+writeFileSync(entry, `export * as mr from '${store}/markRuns';\nexport * as df from '${store}/draftFormat';\nexport * as hm from '${store}/hiddenMarks';\nexport * as api from '${store}/api';\nexport * as tc from '${store}/tutorConsistency';\n`);
 const out = join(tmp, 'bundle.mjs');
 execFileSync(process.execPath, [esbuildBin, entry, '--bundle', '--format=esm', '--platform=neutral', `--outfile=${out}`, '--log-level=error'], { stdio: 'pipe' });
-const { mr, df, hm } = await import(pathToFileURL(out).href);
+const { mr, df, hm, api, tc } = await import(pathToFileURL(out).href);
 rmSync(tmp, { recursive: true, force: true });
 
 const checks = [];
@@ -109,6 +109,25 @@ ok('READERS: withoutFontMarks removes ONLY the span marks - headings, bullets, b
 const counted = [p1.text, p2.text, p3.text, p4.text, p6.text, p7.text, mixed];
 ok('READERS: the house word count is the same with and without the span marks, on every text above',
   counted.every((t) => words(t) === words(mr.withoutFontMarks(t))), JSON.stringify(counted.map((t) => [words(t), words(mr.withoutFontMarks(t))])));
+
+// ---- READERS through the real wire and the real lens (Fable's addition 1)
+{
+  let sent = null;
+  globalThis.fetch = async (_path, init) => { sent = init && init.body; return { ok: true, json: async () => ({ configured: true, reply: 'ok' }) }; };
+  await api.apiTutorChat([{ role: 'writer', text: 'about [Ada]{.font-lora} and **her** boat' }], 'the [ferry]{.font-arial} was late', 'bible [entry]{.font-figtree}', 'sel [words]{.font-courier-prime} here');
+  const body = sent ? JSON.parse(sent) : null;
+  ok('TUTOR: the one wire call sends every text WITHOUT span marks - messages, delta, bible, selection - and keeps the other conventions',
+    !!body && !String(sent).includes('{.font-') && body.messages[0].text === 'about Ada and **her** boat' && body.delta === 'the ferry was late' && body.bible === 'bible entry' && body.selection === 'sel words here', String(sent));
+  sent = null;
+  await api.apiTutorChat([{ role: 'writer', text: 'plain' }]);
+  const b2 = sent ? JSON.parse(sent) : null;
+  ok('TUTOR: an ask with no delta, bible or selection still sends no such key (absent stays absent)', !!b2 && !('delta' in b2) && !('bible' in b2) && !('selection' in b2), String(sent));
+}
+{
+  const obs = tc.computeConsistencyObservations(['Ada met [Ada]{.font-lora} at the [Harbour]{.font-arial}.', 'Later Ada left the Harbour.']);
+  ok('CONSISTENCY: no observation names a span mark (the lens reads the words)', obs.every((o) => !/font|\{\.|\]\{/.test(o)), JSON.stringify(obs));
+}
+ok('EXPORT: the .txt / Copy My Words reading strips a span to its words', df.stripMarkdownConventions('- the [two **words**]{.font-lora} here') === 'the two words here', JSON.stringify(df.stripMarkdownConventions('- the [two **words**]{.font-lora} here')));
 
 // ---- WHOLE
 ok('WHOLE: the whole-document pick removes every span', df.clearFontSpans(p4.text + '\n' + p7.text) === 'The ferry was late\n' + two, JSON.stringify(df.clearFontSpans(p4.text + '\n' + p7.text)));
