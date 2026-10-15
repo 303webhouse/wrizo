@@ -105,3 +105,13 @@ Additive by construction, so rollback is a ladder, cheapest first, nothing destr
 2. **No migration runs, in any environment I touch, without Fable's review and a CONFIRMED BACKUP.** Proposal: before the server deploy, Chat 1 takes a full `pg_dump` of the production database, records per-table row counts, and restores it into a scratch database to prove it opens; Fable/Nick confirm that rehearsal. I do not run `railway` anything (deploys are Chat 1's, from the primary checkout only).
 3. Deploy order: **server → verify (healthz, a sync round trip with the smoke account) → client.**
 4. connector-a waits for `board-click-to-create` to land (both rewrite the canvas's pointer handling in `BoardEditor.tsx`; main also now carries FIX's selection-clear and native-drag refusal, which connector-a must keep), then branches off main.
+
+## 9. Approved (Fable, Oct 14) and the amendments
+
+**Approved:** the additive nullable `page_links jsonb default '[]'`; single-owner records with a reverse cache scan (no mirroring); one truth (same-board card↔card is always a connection box); the old-client guard.
+
+- **The guard, as ruled, verbatim:** `case when excluded.page_links is null or excluded.page_links = 'null'::jsonb then journal_entries.page_links else excluded.page_links end`.
+- **It is pinned by a harness that sends an OLD-SHAPE upsert** — a journal-entry record with NO `pageLinks` key at all, byte-for-byte what today's client sends — against a row that already holds links, and proves the links survive; its mutant is the plain `= excluded.page_links`, which must turn that case red (`page-links-db.mjs`, §7).
+- **Link arrays are last-write-wins, like `boxes`:** the whole array is replaced by the entry's later `updated_at`; two writers editing different links on one entry inside one sync window do not merge (§3, "known limit"). Same law as `boxes` today, deliberately not softened here.
+- **Later list (not part of this build):** (1) **tombstone pruning** — a `deletedAt` record is kept so a delete syncs and cannot resurrect, but it must not accumulate forever: prune tombstones older than a retention window once every known device has had the chance to sync past them; (2) the client-side per-record merge on pull (§3); (3) cleanup of links whose end was hard-deleted; (4) EXP1's Shape B tables with a `links_target` index, if the cache scan stops being enough.
+- **Order:** `board-click-to-create` → connector-a → connector-b. **The migration deploys only after Chat 1's verified backup** (a full `pg_dump`, per-table row counts, restored into a scratch database to prove it opens), after Fable's review of the code, and server-first.
