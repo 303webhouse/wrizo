@@ -1,0 +1,27 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=cccee9f9 bundle=index-8fp-Wcri.js/683678b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bc2-default-c04
+[01/19] OK        exit=0    0s item140.mjs :: ITEM140 VERIFY: PASS (13 checks)
+[02/19] OK        exit=0    0s item141.mjs :: ITEM141 VERIFY: PASS (11 checks)
+[03/19] OK        exit=0   42s item158.mjs :: ITEM158 VERIFY: PASS (12 checks)
+[04/19] OK        exit=0    9s item159.mjs :: ITEM159 VERIFY: PASS (9 checks)
+[05/19] OK        exit=0    8s item163.mjs :: ITEM163 VERIFY: PASS (14 checks)
+[06/19] OK        exit=0   19s item170.mjs :: ITEM170 VERIFY: PASS (19 checks)
+[07/19] OK        exit=0    4s item207-core.mjs :: ITEM207-CORE VERIFY: PASS (47 checks)
+[08/19] OK        exit=0   46s item207.mjs :: ITEM207 VERIFY: PASS (41 checks)
+[09/19] OK        exit=0   16s item210.mjs :: ITEM210 VERIFY: PASS (9 checks)
+[10/19] OK        exit=0  214s item211.mjs :: ITEM211 VERIFY: PASS (78 checks)
+[11/19] OK        exit=0   64s item211b.mjs :: ITEM211B VERIFY: PASS (12 checks)
+[12/19] OK        exit=0    1s item215.mjs :: ITEM215 VERIFY: PASS (26 checks)
+[13/19] OK        exit=0    1s item224a-sync-integrity.mjs :: ITEM224A VERIFY: PASS (15 checks)
+[14/19] OK        exit=0   17s item83e.mjs :: ITEM83E VERIFY: PASS (13 checks)
+[15/19] OK        exit=0   32s item83f.mjs :: ITEM83F VERIFY: PASS (33 checks)
+[16/19] OK        exit=0   34s item84.mjs :: ITEM84 VERIFY: PASS (57 checks)
+[17/19] OK        exit=0   42s item84b.mjs :: ITEM84B VERIFY: PASS (57 checks)
+[18/19] OK        exit=0    7s item85c.mjs :: ITEM85C VERIFY: PASS (19 checks)
+[19/19] OK        exit=0    9s item87.mjs :: ITEM87 VERIFY: PASS (5 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 19/19 of 19 returned a passing verdict
+SUITE RESULT: CLEAN — tree=cccee9f9 bundle=index-8fp-Wcri.js/683678b NO-REBUILD
+CHUNK 04 EXIT 0

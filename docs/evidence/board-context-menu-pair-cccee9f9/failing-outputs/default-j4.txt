@@ -1,0 +1,11 @@
+file:///C:/Users/nickh/writer-studio/.claude/worktrees/bcm2/apps/desktop/scripts/runtime-verify.mjs:655
+      throw new Error('waitFor timed out: ' + label + '; diag=' + JSON.stringify(await evalJs('__diag()')));
+            ^
+
+Error: waitFor timed out: text box popup open (via Edit copy); diag={"href":"http://127.0.0.1:61217/#/page/mvaqv42gt9sc7x9go","buttons":["＋Catch","❧Journal","▤Shelf","▥Drawers","▣Library","Full screen","Sign out","Open","Storyboard","Outline","Pages →","Start Pages","Undo"],"body":"＋\nCatch\n❧\nJournal\n▤\nShelf\n▥\nDrawers\n▣\nLibrary\nFull screen\nSign out\nUntitled\n/\nUntitled\nOPEN\nSTORYBOARD\nOUTLINE\nPAGES →\nStart Pages\nUndo\nFROM PAGES\nPage One text.\nFROM PAGES\nPage Two text."}
+    at Object.waitFor (file:///C:/Users/nickh/writer-studio/.claude/worktrees/bcm2/apps/desktop/scripts/runtime-verify.mjs:655:13)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/bcm2/apps/desktop/scripts/harness/j4.mjs:213:3
+    at async withHarness (file:///C:/Users/nickh/writer-studio/.claude/worktrees/bcm2/apps/desktop/scripts/runtime-verify.mjs:863:12)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/bcm2/apps/desktop/scripts/harness/j4.mjs:46:1
+
+Node.js v24.13.0

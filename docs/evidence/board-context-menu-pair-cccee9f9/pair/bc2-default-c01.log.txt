@@ -1,0 +1,28 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=cccee9f9 bundle=index-8fp-Wcri.js/683678b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bc2-default-c01
+[01/19] OK        exit=0   30s card-close-x.mjs :: CARD-CLOSE-X VERIFY: PASS (24 checks)
+[02/19] OK        exit=0   51s card-held-italic.mjs :: CARD-HELD-ITALIC VERIFY: PASS (7 checks)
+[03/19] OK        exit=0   45s card-label-contrast.mjs :: CARD-LABEL-CONTRAST VERIFY: PASS (25 checks)
+[04/19] OK        exit=0   17s card-resize-axis.mjs :: CARD-RESIZE-AXIS VERIFY: PASS (16 checks)
+[05/19] OK        exit=0   29s card-resize-relock.mjs :: CARD-RESIZE-RELOCK VERIFY: PASS (10 checks)
+[06/19] OK        exit=0   13s cd1.mjs :: CD1 VERIFY: PASS (25 checks)
+[07/19] OK        exit=0   33s cd2.mjs :: CD2 VERIFY: PASS (50 checks)
+[08/19] OK        exit=0   22s cd4.mjs :: CD4 VERIFY: PASS (27 checks)
+[09/19] OK        exit=0   51s clickhead.mjs :: CLICKHEAD VERIFY: PASS (21 checks)
+[10/19] FAIL      exit=1   45s connector-a.mjs :: CONNECTOR-A VERIFY: FAIL - 2/37 failed
+[11/19] OK        exit=0   22s deckwizard-backdrop.mjs :: DECKWIZARD-BACKDROP VERIFY: PASS (8 checks)
+[12/19] OK        exit=0    4s drafts-integrity.mjs :: DRAFTS-INTEGRITY VERIFY: PASS (23 checks)
+[13/19] OK        exit=0    1s drawer-ghost.mjs :: DRAWER-GHOST VERIFY: PASS (14 checks)
+[14/19] OK        exit=0    0s drawer-toggles.mjs :: DRAWER-TOGGLES VERIFY: PASS (34 checks)
+[15/19] OK        exit=0  126s drawers-p1-live.mjs :: DRAWERS-P1-LIVE VERIFY: PASS (88 checks)
+[16/19] OK        exit=0    1s drawers-p1.mjs :: DRAWERS-P1 VERIFY: PASS (100 checks)
+[17/19] OK        exit=0   27s e1.mjs :: E1 VERIFY: PASS (41 checks)
+[18/19] OK        exit=0    8s e3.mjs :: E3 VERIFY: PASS (10 checks)
+[19/19] OK        exit=0   11s e4.mjs :: E4 VERIFY: PASS (19 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 18/19 of 19 returned a passing verdict
+  FAIL: connector-a.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bc2-default-c01\connector-a.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=cccee9f9 bundle=index-8fp-Wcri.js/683678b NO-REBUILD
+CHUNK 01 EXIT 1
