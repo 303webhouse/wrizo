@@ -39,6 +39,11 @@ const word = () => {
   if (r < 0.31) return `***${w}***`;
   if (r < 0.33) return '**';           // a lone or empty-pair mark
   if (r < 0.35) return '*';
+  // TYPING-LATENCY x FONT-SPAN (ledger 79): font spans - two DIFFERENT marks (`[` and `]{.font-<slug>}`), one holding emphasis, and a
+  // bare bracket - so the window is proven to read a font span exactly as the whole text does
+  if (r < 0.39) return `[${w} ${pick(WORDS)}]{.font-courier-prime}`;
+  if (r < 0.41) return `[**${w}**]{.font-atkinson-hyperlegible}`;
+  if (r < 0.42) return `[${w}]`;
   return w;
 };
 const line = () => {

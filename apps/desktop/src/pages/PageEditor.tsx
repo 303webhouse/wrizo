@@ -1040,7 +1040,9 @@ function PageEditorView({ id }: { id: string }) {
     if (result.text !== cur) {
       getRegisteredUndoStack(el)?.record({ text: result.text, caret: result.start }, 'atomic');
       setText(result.text);
-      decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, null));
+      // TYPING-LATENCY x FONT-SPAN (ledger 79): through the rows, as a format press is - a bare decorateEditorFor replaced the rows'
+      // DOM behind the row model's back (its shadow kept the old text: 60 chars vs the page's 91), so the highlight and the face were lost
+      if (!writeRows(el, result.text, result.start, null)) decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, null));
     }
     setSelectionOffsets(el, result.start, result.end);
     setFontSel({ has: true, face: fontFaceAt(result.text, result.start, result.end) });
@@ -1056,7 +1058,8 @@ function PageEditorView({ id }: { id: string }) {
     const caret = Math.min(getCaretOffset(el) ?? next.length, next.length);
     getRegisteredUndoStack(el)?.record({ text: next, caret }, 'atomic');
     setText(next);
-    decorateEditorFor(el, next, caret, setCaretOffset, t => decorateMarkdownForCard(t, null));
+    // TYPING-LATENCY x FONT-SPAN: through the rows (the same repair as applyFontAt's)
+    if (!writeRows(el, next, caret, null)) decorateEditorFor(el, next, caret, setCaretOffset, t => decorateMarkdownForCard(t, null));
   };
   const applyRailFormat = (action: FormatAction) => {
     if (mode !== 'drafting') return;   // 112-A's guard, unchanged in scope
