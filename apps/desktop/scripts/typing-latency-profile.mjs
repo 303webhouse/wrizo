@@ -65,6 +65,7 @@ const pageOf = (words) => { const per = PARA.split(' ').length; return Array.fro
 const CONTROL_KEYS = 8;
 const KEYS = 20;
 const WARM = 2;
+const TRACE_KEYS = 25;   // the keystroke trace's own keys (typed between the control and the instrumented phase)
 const r1 = (x) => (x === null || x === undefined ? null : Math.round(x * 10) / 10);
 const pct = (xs, p) => { const s = xs.filter((x) => typeof x === 'number').sort((a, b) => a - b); return s.length ? r1(s[Math.min(s.length - 1, Math.floor(p * s.length))]) : null; };
 
@@ -424,6 +425,10 @@ async function variantG() {
       mid.scrollIntoView({ block: 'center' });
       await frame(); await frame();
       const skippedNow = [...skipped.values()].filter(Boolean).length;
+      // the identities are read HERE - with the rows skipped, and BEFORE anything below edits the clone. (Chat 1's run @ f6fbfb67 read
+      // them after oneChar had appended 15 'a's to a row, so its three "not identical" were FIX's instrument error, not a finding.)
+      const g1Ids = { textContentIdentical: c.textContent === base.text, innerTextIdentical: c.innerText === base.inner, selectAllTextIdentical: selectAllText(c) === base.selectAll,
+        rowsSkippedWhileRead: [...skipped.values()].filter(Boolean).length };
       const g1one = oneChar(c, mid);
       const far = rows[Math.floor(rows.length * 0.75)];
       const sb = scroller.getBoundingClientRect();
@@ -433,14 +438,17 @@ async function variantG() {
       const at1 = Math.round(far.getBoundingClientRect().top - scroller.getBoundingClientRect().top);
       out.G1_contentVisibility = { oneCharLayout_median: g1one, rowsSkipped: skippedNow, rowsWithState: skipped.size, rows: rows.length,
         estimatedTotalPx: estTotal, driftPx: estTotal - trueTotal, driftPct: Math.round(((estTotal - trueTotal) / trueTotal) * 10000) / 100, scrollJumpPx: at1 - at0,
-        textContentIdentical: c.textContent === base.text, innerTextIdentical: c.innerText === base.inner, selectAllTextIdentical: selectAllText(c) === base.selectAll };
+        ...g1Ids };
+      // ---- SUPERSEDED (2026-10-15, FIX's instrument error, see g1Ids above) - kept verbatim, no longer run:
+      //   textContentIdentical: c.textContent === base.text, innerTextIdentical: c.innerText === base.inner, selectAllTextIdentical: selectAllText(c) === base.selectAll };
       c.remove();
     }
     // G2 - inline-size containment added
     { const c = mk(() => 'contain:inline-size layout style;'); void c.offsetHeight;
       const rows = [...c.children].filter((r) => r.classList.contains('wz-probe-row'));
+      const g2Inner = c.innerText === base.inner;   // read before oneChar edits the clone (the same instrument error as G1's)
       out.G2_inlineSize = { oneCharLayout_median: oneChar(c, rows[Math.floor(rows.length / 2)]), heightVsTruth: Math.round(c.getBoundingClientRect().height) - trueTotal,
-        innerTextIdentical: c.innerText === base.inner };
+        innerTextIdentical: g2Inner };
       c.remove(); }
     // G3 - the same F rows inside a strictly contained, fixed-size host: the ancestors cannot be involved
     { const c = mk(() => 'contain:layout style;', `contain:strict;width:${trueW}px;height:${trueTotal}px;overflow:hidden;`); void c.offsetHeight;
@@ -549,7 +557,7 @@ await withHarness(async (app) => {
     for (let i = 0; i < CONTROL_KEYS; i += 1) { await app.typeKeys('a'); await sleep(gap); }
     const control = (await app.evalJs('window.__wz.recs')).slice(WARM);
     // THE KEYSTROKE TRACE (Fable, 2026-10-14): what still lays out per key - before any wrapper or profiler is installed
-    const keystrokeTrace = await traceKeys(app, 25, gap, sleep);
+    const keystrokeTrace = await traceKeys(app, TRACE_KEYS, gap, sleep);
 
     // 1-3. instrumented
     await app.evalJs('window.__wz.recs = []; window.__wz.calls = []; window.__wz.wrap()');
@@ -563,6 +571,18 @@ await withHarness(async (app) => {
     const recs = (await app.evalJs('window.__wz.recs')).slice(WARM);
     const calls = await app.evalJs('window.__wz.calls');
     const typed = await app.evalJs(`document.querySelector('${ED}').textContent.length`);
+    // THE REAL EDITOR'S IDENTITIES (content-visibility on the rows; Fable's condition for F: copied text must stay byte-identical). Read
+    // on the live editor, the caret mid-page so most rows are off screen (skipped): its innerText, and the text a select-all copies,
+    // each against its own textContent (the EOF guard removed). The same probe on main (the latency-baseline branch) prints the same
+    // field, so a difference that is not content-visibility's shows up on main too.
+    const realEditorIdentity = await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); const strip = (t) => t.split('\\u200b').join('');
+      const want = strip(ed.textContent); const inner = strip(ed.innerText);
+      const sel = getSelection(); const keep = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
+      const r = document.createRange(); r.selectNodeContents(ed); sel.removeAllRanges(); sel.addRange(r); const all = strip(sel.toString()); sel.removeAllRanges(); if (keep) sel.addRange(keep);
+      const diff = (a, b) => { let i = 0; while (i < a.length && a[i] === b[i]) i++; return i === a.length && i === b.length ? null
+        : { at: i, got: JSON.stringify(a.slice(Math.max(0, i - 15), i + 15)), want: JSON.stringify(b.slice(Math.max(0, i - 15), i + 15)), lengths: [a.length, b.length] }; };
+      return { rows: ed.querySelectorAll(':scope > .wz-row').length, contentVisibility: (ed.querySelector(':scope > .wz-row') ? getComputedStyle(ed.querySelector(':scope > .wz-row')).contentVisibility : null),
+        innerTextIdentical: inner === want, selectAllIdentical: all === want, innerDiff: diff(inner, want), selectDiff: diff(all, want) }; })()`);
 
     // THE AUTOSAVE MOMENT - its OWN phase (Fable, 2026-10-13), BEFORE the layout experiments, with the real editor visible and the
     // caret where the writer left it. A 30-key burst at ~10 keys/s, then a 6-second window from the last key: the page saves
@@ -649,7 +669,13 @@ await withHarness(async (app) => {
     const med = (f) => pct(recs.map(f), 0.5);
     const shape = await app.evalJs(`(${layoutShape.toString()})()`);
     const row = {
-      words, chars, wrappedCallsOutsideKeyWindows: outside, typedOk: typed === chars + CONTROL_KEYS + KEYS + WARM, keys: n,
+      // TYPED (chat 1's flag, ledgers 39 and 61): the keystroke trace types TRACE_KEYS keys of its own, between the control and the
+      // instrumented phase, and the old sum left them out - so every run since the trace was added read false with the typing intact
+      // (it was true at eb27ea7c, the last run without the trace). The sum now counts them, and BOTH lengths are recorded, never a bare
+      // boolean. Kept verbatim, no longer run:  typedOk: typed === chars + CONTROL_KEYS + KEYS + WARM,
+      words, chars, wrappedCallsOutsideKeyWindows: outside,
+      typed, typedExpected: chars + CONTROL_KEYS + TRACE_KEYS + KEYS + WARM, typedOk: typed === chars + CONTROL_KEYS + TRACE_KEYS + KEYS + WARM, keys: n,
+      realEditorIdentity,
       control_uninstrumented: phase(control),
       instrumented: phase(recs),
       wrappers_medianPerKey: {
@@ -715,6 +741,8 @@ await withHarness(async (app) => {
         if (!(v.heightPx > 0)) why.push(`variantF.${k}.heightPx=${v.heightPx}`);
       }
       if (!((f.today || {}).heightPx > 0)) why.push('variantF: today\'s clone laid out at zero height');
+      // the probe's keys must LAND: a profile of keys that never reached the page measures nothing (chat 1, ledgers 39 and 61)
+      if (!row.typedOk) why.push(`typed: the editor holds ${row.typed} characters, ${row.typedExpected} expected (seeded + every key typed)`);
       const g = row.variantG || {};
       if (g.missing) why.push('variantG: no editor or scroller');
       if (!(g.wrappedRowsMeasured > 0)) why.push('variantG: no wrapped row measured (no characters-per-line, so no G1 estimate)');
