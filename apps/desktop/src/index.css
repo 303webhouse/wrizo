@@ -70,6 +70,22 @@
      below) — zero visual change outside that one tone. */
   --ink-on-card: var(--ink-on-paper);
   --ink-on-card-low: var(--ink-on-paper-low);
+  /* card-label-contrast (Fable: Nick kept the footers, so they must be
+     readable) — .board-card-footer/.board-layer-toggle/.board-pin-badge/
+     .board-pin-excerpt (folded in, same ask, same rule) painted straight
+     from the dark-chrome text tiers (--text-low/--text-mid/--accent-rest),
+     tuned for --ink-900-family surfaces, not this card's own --card-stock.
+     Since --card-stock is itself left un-themed (above), ONE value each
+     clears the floor in every theme by construction, no per-tone
+     divergence needed (unlike flux-card-ink's --ink-on-card just above,
+     which genuinely flips light/dark by theme because --ink-on-paper
+     does). --ink-on-card-meta is a darker step of --ink-on-paper-low's
+     own warm-taupe family (~5.8:1 on --card-stock); --badge-on-card
+     reuses the pin-grab gradient's own hand-darkened olive rim stop
+     verbatim (#4F5730, below, ~7.1:1) rather than inventing a second
+     olive the pin's own sphere doesn't use. */
+  --ink-on-card-meta: #6B5F4E;
+  --badge-on-card: #4F5730;
 
   /* Accent — the Wrizo orange, primary action (exactly one per screen).
      #ff9800 is locked and invariant — never recolor or remove. (Token name kept
@@ -1567,9 +1583,9 @@ a:focus-visible,
    needed — no committed harness check ever asserted this cursor value
    (grepped scripts/harness/ before this change; confirmed clean). */
 .board-pin{ cursor:grab; }
-.board-pin-badge{ font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent-rest); margin-bottom:2px; }
+.board-pin-badge{ font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--badge-on-card); margin-bottom:2px; }
 .board-pin-title{ font-weight:600; }
-.board-pin-excerpt{ font-size:12px; color:var(--text-mid); line-height:1.4; margin-top:2px; }
+.board-pin-excerpt{ font-size:12px; color:var(--ink-on-card-meta); line-height:1.4; margin-top:2px; }
 
 /* ===== PW2 S2 — THE BOARD-CARD (item 128) ================================
    A nested board on its parent's canvas. It rides the SAME `.board-pin` box a
@@ -1677,7 +1693,7 @@ a:focus-visible,
   position:absolute; right:-7px; top:-7px; width:16px; height:16px; z-index:6;
   display:flex; align-items:center; justify-content:center; padding:0; line-height:1;
   background:var(--card-stock); border:1px solid var(--ink-border-strong); border-radius:0;
-  color:var(--text-mid); font-size:10px; cursor:pointer;
+  color:var(--ink-on-card-meta); font-size:10px; cursor:pointer;
 }
 /* FX5 S5 — the connections footer: one quiet line per thread, an overlay
    strip pinned to the card's own bottom edge (never grows the card's own
@@ -1686,7 +1702,7 @@ a:focus-visible,
 .board-card-footer{
   position:absolute; left:0; right:0; bottom:0; z-index:4; max-height:44%;
   padding:2px 8px; background:var(--card-stock); overflow:hidden;
-  font-size:10px; line-height:1.35; color:var(--text-low); pointer-events:none;
+  font-size:10px; line-height:1.35; color:var(--ink-on-card-meta); pointer-events:none;
 }
 .board-card-footer-line{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 /* AB4 S3 — threads: quiet hairlines at rest, a selected hairline goes
