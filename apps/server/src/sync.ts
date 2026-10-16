@@ -83,7 +83,7 @@ function rowToDraft(r: any) {
   return { id: r.id, text: r.text, updatedAt: iso(r.updated_at) };
 }
 
-function rowToJournalEntry(r: any) {
+export function rowToJournalEntry(r: any) {
   return {
     id: r.id,
     text: r.text ?? '',
@@ -268,7 +268,7 @@ async function upsertDrawers(userId: string, records: any[]): Promise<string[]> 
   return rejected;
 }
 
-async function upsertJournalEntries(userId: string, records: any[]): Promise<string[]> {
+export async function upsertJournalEntries(userId: string, records: any[]): Promise<string[]> {
   const rejected: string[] = [];
   for (const e of records) {
     if (!e?.id || !e?.updatedAt || !e?.createdAt) { if (e?.id) rejected.push(e.id); continue; }
