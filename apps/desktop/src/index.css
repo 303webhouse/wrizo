@@ -4594,7 +4594,24 @@ a:focus-visible,
    reference widths, the 1100px floor, AND a wide (2200px) viewport past
    the --frame-max seam. */
 .desk-frame-cascade-anchor{
-  position:absolute; top:0; height:100%; z-index:6;
+  /* tutor-drawer-v2 (Chat 1 ledger 64, bisected; revert 409d9e3f) — raised
+     from 6 to 60. tutor-drawer-mirror raised the Sliver/Tutor drawer
+     anchors to 55/56 to beat a busy board's own unbounded card z-index
+     (BoardEditor.tsx, box.z) within THIS SAME isolated stage
+     (.desk-frame-stage{isolation:isolate}) - but never checked this
+     anchor, which lives in the identical isolated context and sat at only
+     z-index:6. The result: .wz-sliver (the Tools drawer's own wrapper,
+     always mounted at its anchor's position whether open or closed) now
+     out-ranked the cascade panel underneath it everywhere their boxes
+     overlap (CD2 S2's own design: both anchor near the strip's edge, by
+     construction) - a real click on a Pages/Plan/Drawers row landed on
+     the invisible Sliver wrapper instead and never opened the page (pw1
+     4/32, pw2 2/20, item170 1/19 red; chat1's own bisection + revert note
+     named wz-sliver as the topmost element verbatim). 60 restores the
+     correct order: board (unbounded, but realistically well under 55) <
+     drawers (55/56) < this panel (60) < dialogs (board-sheet/popup,
+     already 200+, untouched either way). */
+  position:absolute; top:0; height:100%; z-index:60;
   /* FX7 S3 — see this rule's own header comment above for the full
      root-cause + derivation. `--fx7-cascade-grid-margin` mirrors
      `.desk-frame-grid`'s own `margin:0 auto` centering math exactly (zero
