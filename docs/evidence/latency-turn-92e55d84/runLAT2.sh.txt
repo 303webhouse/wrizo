@@ -1,0 +1,21 @@
+#!/bin/bash
+# FIX's turn (Oct 16): typing-latency @ 92e55d84 (tl92): the --build profile, typing-latency-scroll.mjs, the editing set; latency-baseline @ 13f09d16 (lbs): the same profile;
+# item112a-deterministic @ ec6d208b (i112d = main 43e333cd + branch, harness-only): item112a on both legs. Sequential, one grant, one status file.
+export WS_BOX_TURN=chat1-lat2-20261015
+SD="C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad"
+ST="$SD/lat2-status.txt"
+W=/c/Users/nickh/writer-studio/.claude/worktrees
+step() { # name, dir, cmd...
+  local name="$1" dir="$2"; shift 2
+  echo "START $name $(date -u +%H:%M:%SZ)" >> "$ST"
+  ( cd "$dir" && "$@" ) > "$SD/lat2-$name.out" 2>&1
+  echo "END $name exit=$? $(date -u +%H:%M:%SZ)" >> "$ST"
+}
+EDIT="item211.mjs,item211b.mjs,writing-r1.mjs,writing-r2.mjs,writing-r3.mjs,clickhead.mjs,escexit.mjs,item158.mjs,fx5.mjs,fx6.mjs"
+step tl92-profile "$W/tl92/apps/desktop" node scripts/typing-latency-profile.mjs --build
+step tl92-scroll  "$W/tl92/apps/desktop" node scripts/run-suite.mjs --no-rebuild --only typing-latency-scroll.mjs --out "$SD/lat2-tl92-scroll"
+step tl92-edit    "$W/tl92/apps/desktop" node scripts/run-suite.mjs --no-rebuild --only "$EDIT" --out "$SD/lat2-tl92-edit"
+step lbs-profile  "$W/lbs/apps/desktop"  node scripts/typing-latency-profile.mjs --build
+step i112d-default "$W/i112d/apps/desktop" node scripts/run-suite.mjs --only item112a.mjs,seed-guard.mjs --out "$SD/lat2-i112d-default"
+step i112d-parked  "$W/i112d/apps/desktop" node scripts/run-suite.mjs --parked --no-rebuild --only item112a.mjs --out "$SD/lat2-i112d-parked"
+echo "LAT2 COMPLETE" >> "$ST"

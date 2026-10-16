@@ -1,0 +1,13 @@
+START tl92-profile 10:29:12Z
+END tl92-profile exit=0 10:34:48Z
+START tl92-scroll 10:34:48Z
+END tl92-scroll exit=1 10:35:20Z
+START tl92-edit 10:35:20Z
+END tl92-edit exit=0 10:47:00Z
+START lbs-profile 10:47:00Z
+END lbs-profile exit=0 10:54:36Z
+START i112d-default 10:54:36Z
+END i112d-default exit=0 10:55:44Z
+START i112d-parked 10:55:44Z
+END i112d-parked exit=0 10:56:46Z
+LAT2 COMPLETE
