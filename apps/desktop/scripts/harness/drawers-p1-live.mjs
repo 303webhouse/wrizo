@@ -124,8 +124,8 @@ await withHarness(async (app) => {
         const g = document.querySelector('${grip}'), p = document.querySelector('${panel}'), l = document.querySelector('${layer}');
         if (!g || !p || !l) return { missing: true };
         const t0 = performance.now(); const out = [];
-        const read = () => { const m = new DOMMatrixReadOnly(getComputedStyle(l).transform); const r = g.getBoundingClientRect();
-          return { t: Math.round(performance.now() - t0), tx: Math.round(m.m41 * 10) / 10, op: Math.round(parseFloat(getComputedStyle(p).opacity) * 1000) / 1000, grip: [r.left, r.top, r.width, r.height].map(n => Math.round(n * 100) / 100), glyph: (g.textContent || '').trim() }; };
+        const read = () => { const m = new DOMMatrixReadOnly(getComputedStyle(l).transform); const r = g.getBoundingClientRect(); const pr = p.getBoundingClientRect();
+          return { t: Math.round(performance.now() - t0), tx: Math.round(m.m41 * 10) / 10, op: Math.round(parseFloat(getComputedStyle(p).opacity) * 1000) / 1000, grip: [r.left, r.top, r.width, r.height].map(n => Math.round(n * 100) / 100), panelLeft: Math.round(pr.left * 100) / 100, glyph: (g.textContent || '').trim() }; };
         out.push(read()); g.click();
         await new Promise((res) => { const tick = () => { out.push(read()); if (performance.now() - t0 < 520) requestAnimationFrame(tick); else res(); }; requestAnimationFrame(tick); });
         return { samples: out }; })()`;
@@ -139,7 +139,25 @@ await withHarness(async (app) => {
         const s = o.samples; const startTx = s[0].tx; const endTx = s[s.length - 1].tx;
         ok(`L2 ${T} (${hand}, OPEN): the slide and the fade are both strictly mid-way at the SAME sample (they run together), and it ends at rest (transform none, opacity 1)`,
           together(s, startTx, endTx) && endTx === 0 && s[s.length - 1].op === 1, JSON.stringify({ startTx, endTx, mid: s.filter((x) => x.op > 0 && x.op < 1).slice(0, 4) }));
-        ok(`L2 ${T} (${hand}): the tab's rect never changes while the drawer opens (only its glyph)`, s.every((x) => same(x.grip, s[0].grip)), JSON.stringify(s.map((x) => x.grip).filter((g, i, a) => i === 0 || !same(g, a[0])).slice(0, 3)));
+        // SUPERSEDED for the RIGHT hand only (item tutor-drawer-v2, Fable
+        // Oct 16: "Tutor grip moves 32px left on open - that's your arrow
+        // fix, intended"). LEFT (Sliver) keeps the ORIGINAL claim verbatim
+        // - its own panel is a static 16px inset of its anchor, so its
+        // grip genuinely never moves. RIGHT (Tutor) now has its own
+        // successor: the grip SETTLES exactly GRIP_GUTTER_PX (16) outside
+        // the open panel's own left edge, Tutor.tsx's own measured value,
+        // not a guessed one.
+        if (hand === 'left') {
+          ok(`L2 ${T} (${hand}): the tab's rect never changes while the drawer opens (only its glyph)`, s.every((x) => same(x.grip, s[0].grip)), JSON.stringify(s.map((x) => x.grip).filter((g, i, a) => i === 0 || !same(g, a[0])).slice(0, 3)));
+        } else {
+          // ok(`L2 ${T} (${hand}): the tab's rect never changes while the drawer opens (only its glyph)`, s.every((x) => same(x.grip, s[0].grip)), JSON.stringify(s.map((x) => x.grip).filter((g, i, a) => i === 0 || !same(g, a[0])).slice(0, 3)));
+          const GRIP_GUTTER_PX = 16; // Tutor.tsx's own GRIP_GUTTER_PX
+          const last = s[s.length - 1];
+          const gripRight = last.grip[0] + last.grip[2];
+          const gap = Math.round((last.panelLeft - gripRight) * 100) / 100;
+          ok(`L2 ${T} (${hand}) [tutor-drawer-arrow successor]: the tab's rect MOVES while the drawer opens, settling ${GRIP_GUTTER_PX}px outside the open panel's own left edge (never inside its tab row)`,
+            Math.abs(gap - GRIP_GUTTER_PX) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap }));
+        }
         const glyphs = [...new Set(s.map((x) => x.glyph))];
         ok(`L3 ${T} (${hand}): the arrow glyph flips and nothing else on the tab does`, glyphs.length === 2, JSON.stringify(glyphs));
         await sleep(300);
