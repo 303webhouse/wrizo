@@ -53,8 +53,13 @@ await withHarness(async (app) => {
   await sleep(600);
   await app.evalJs(`location.hash = '#/page/${PAGE}'`);
   const up = await waitSoft(app, `!!document.querySelector('${ED} .wz-row')`, { label: 'the 50k page, as rows', timeout: 30000 });
-  ok('(premise) the 50k-word page opens in Draft as rows, with content-visibility on them', up && (await app.evalJs(`getComputedStyle(document.querySelector('${ED} .wz-row')).contentVisibility`)) === 'auto',
-    String(up && await app.evalJs(`getComputedStyle(document.querySelector('${ED} .wz-row')).contentVisibility`)));
+  // ---- PARKED - SUPERSEDED by Fable's ruling of Oct 16 (chat 1's ledger 67): content-visibility is REMOVED from the rows (it took the
+  // off-screen rows' text out of innerText, and failed S1 and S5 below). Kept VERBATIM and no longer run; successor directly below.
+  // ok('(premise) the 50k-word page opens in Draft as rows, with content-visibility on them', up && (await app.evalJs(`getComputedStyle(document.querySelector('${ED} .wz-row')).contentVisibility`)) === 'auto',
+  //   String(up && await app.evalJs(`getComputedStyle(document.querySelector('${ED} .wz-row')).contentVisibility`)));
+  // ------------------------------------------------------------------
+  const cvNow = up ? await app.evalJs(`getComputedStyle(document.querySelector('${ED} .wz-row')).contentVisibility`) : null;
+  ok('(premise) [content-visibility removed] the 50k-word page opens in Draft as rows, and no row is skipped by content-visibility', up && cvNow === 'visible', String(cvNow));
   if (!up) return;
   await sleep(1500);
   await app.evalJs(`document.querySelector('${ED}').focus()`);
@@ -91,6 +96,13 @@ await withHarness(async (app) => {
   await settle();
   const t1 = await caret(app);
   ok('S3: typing there advances the caret by one, and the line stays where it is (within 2 px)', !!c1 && !!t1 && t1.offset === c1.offset + 1 && t1.top !== null && Math.abs(t1.top - c1.top) <= 2, JSON.stringify({ c1, t1 }));
+  // S3b (Fable, Oct 16: no save reads the rendered rows - "only from the model"): once the autosave lands, the STORED text is the editor's
+  // whole text, the letter typed three-quarters down included (the static half is scripts/typing-latency-readers-guard.mjs)
+  const storedText = async () => app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(x => x.id === ${JSON.stringify(PAGE)})||{}).text ?? null`);
+  let st = await storedText(); for (let i = 0; i < 40; i += 1) { await sleep(200); const n = await storedText(); if (n === st && i > 12) break; st = n; }
+  const edText = await app.evalJs(`document.querySelector('${ED}').textContent.split('\\u200b').join('')`);
+  ok('S3b: the page SAVES its whole text from the model - the stored text equals the editor\'s, the letter typed far down included', typeof st === 'string' && st === edText,
+    JSON.stringify({ storedLength: st && st.length, editorLength: edText.length, same: st === edText }));
 
   // ---- S4 Ctrl+Home
   await key(app, 'Home', 'Home', 36, 2);
