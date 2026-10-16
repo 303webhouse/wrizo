@@ -51,8 +51,11 @@ const FONT_CLOSE = /^\]\{\.font-([a-z0-9]+(?:-[a-z0-9]+)*)\}/;
 function fontRuns(line: string): MarkRun[] {
   const out: MarkRun[] = [];
   const stack: number[] = [];
+  // TYPED-LITERAL: a typed bracket is stored escaped (`\[`, `\]`) - text, so it neither opens a span nor closes one
+  const escaped = new Set(readEscapes(line).map((e) => e + 1));
   for (let i = 0; i < line.length; i++) {
     const c = line[i];
+    if (escaped.has(i)) continue;
     if (c === '[') { stack.push(i); continue; }
     if (c !== ']') continue;
     const o = stack.pop();
@@ -71,7 +74,7 @@ const isSpace = (c: string | undefined): boolean => c === undefined || /\s/.test
 // shows the literal character in any Markdown reader. An ESCAPE is a backslash followed by one of these; the backslash is the escape's
 // hidden mark (the page shows the character alone), and the character is plain text. `\\` is an escaped backslash, so in `\\*` the star
 // is real markup again (Markdown's own rule). Saved text from before the ruling holds no escapes and reads exactly as it did.
-export const ESCAPABLE = new Set(['\\', '*', '_', '~', '#', '-', '>', '[']);
+export const ESCAPABLE = new Set(['\\', '*', '_', '~', '#', '-', '>', '[', ']']);
 
 /** The positions of the escape backslashes on one line (each escapes the character right after it). */
 export function readEscapes(line: string): number[] {

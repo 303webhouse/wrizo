@@ -164,7 +164,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   // escaped for where they land on the page's text (store/hiddenMarks.ts escapeTyped). The rail's own insertion (insertMarkerRef) is a
   // tool, not typing, and keeps calling handleInput directly.
   const handleTyped = (data: string) => {
-    if (!/[\\*_~#\->]/.test(data)) { handleInput(data); return; }
+    if (!/[\\*_~#\->[\]]/.test(data)) { handleInput(data); return; }
     const now = derivedText(contentRef.current) + wordRef.current;
     handleInput(escapeTyped(data, now, now.length));
   };

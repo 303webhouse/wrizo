@@ -10,7 +10,7 @@
 // Every fragment line is checked against its source before it is written: if it would not read back as the same characters with the same
 // styles, that line is written as literal text instead (escaped, so it can never become markup). Nothing styled is ever invented.
 import { escapeTyped } from './hiddenMarks';
-import { readEscapes, readLead, readMarks, type MarkRun } from './markRuns';
+import { closeMark, readEscapes, readLead, readMarks, type MarkRun } from './markRuns';
 import { recordShadow } from './voiceWall';
 
 export const WRIZO_MIME = 'application/x-wrizo-fragment';
@@ -25,8 +25,8 @@ export interface CopyPayload {
 }
 
 const KINDS = ['bold', 'italic', 'underline', 'strike'] as const;
-// a run's closing mark: `mark` for emphasis (a font span's differs once font-span is on this branch - its runs carry `cmark`)
-const closeOf = (r: MarkRun): string => (r as MarkRun & { cmark?: string }).cmark ?? r.mark;
+// a run's closing mark: `mark` for emphasis, `]{.font-<slug>}` for a font span
+const closeOf = closeMark;
 
 /** The visible characters of a line's text after its structure tokens, by position, each with the styles over it (a space's style is not
  *  drawn as a style - a mark cannot open or close beside one - so it is ''). */
@@ -40,7 +40,11 @@ function visibleOf(rest: string): Array<{ i: number; ch: string; style: string }
   const out: Array<{ i: number; ch: string; style: string }> = [];
   for (let i = 0; i < rest.length; i++) {
     if (hidden.has(i)) continue;
-    const style = /\s/.test(rest[i]) ? '' : KINDS.filter((kd) => runs.some((r) => r.kind === kd && i >= r.open + r.mark.length && i < r.close)).join('+');
+    // a font span's face is a style too, so a span that would not read back is caught like a bold that would not
+    const style = /\s/.test(rest[i]) ? '' : [
+      ...KINDS.filter((kd) => runs.some((r) => r.kind === kd && i >= r.open + r.mark.length && i < r.close)),
+      ...runs.filter((r) => r.kind === 'font' && i >= r.open + r.mark.length && i < r.close).map((r) => `font=${r.face ?? ''}`),
+    ].join('+');
     out.push({ i, ch: rest[i], style });
   }
   return out;

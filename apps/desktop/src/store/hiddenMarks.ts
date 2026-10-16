@@ -76,7 +76,8 @@ export function escapeTyped(ins: string, text: string, at: number): string {
   let out = '';
   for (const c of ins) {
     if (c === '\n') { out += c; atStart = true; continue; }
-    if (c === '\\' || c === '*' || c === '_' || c === '~') out += '\\' + c;
+    // FONT-SPAN: `[` opens a font span and a bare `]` closes one (store/markRuns.ts fontRuns), so a typed bracket is escaped too
+    if (c === '\\' || c === '*' || c === '_' || c === '~' || c === '[' || c === ']') out += '\\' + c;
     else if (atStart && (c === '#' || c === '-' || c === '>')) out += '\\' + c;
     else out += c;
     atStart = false;
