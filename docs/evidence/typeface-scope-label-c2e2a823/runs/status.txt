@@ -1,0 +1,7 @@
+START redA 18:30:48Z
+END redA exit=1 18:32:02Z
+START redB 18:32:02Z
+END redB exit=1 18:33:16Z
+START lane 18:33:16Z
+END lane exit=0 18:47:45Z
+TSL COMPLETE
