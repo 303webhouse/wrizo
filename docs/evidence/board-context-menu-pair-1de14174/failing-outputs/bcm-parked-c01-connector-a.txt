@@ -1,0 +1,10 @@
+file:///C:/Users/nickh/writer-studio/.claude/worktrees/bcm/apps/desktop/scripts/harness/connector-a.mjs:222
+  await rightDown(app, h9.x, h9.y); await sleep(120);
+                          ^
+
+TypeError: Cannot read properties of null (reading 'x')
+    at file:///C:/Users/nickh/writer-studio/.claude/worktrees/bcm/apps/desktop/scripts/harness/connector-a.mjs:222:27
+    at async withHarness (file:///C:/Users/nickh/writer-studio/.claude/worktrees/bcm/apps/desktop/scripts/runtime-verify.mjs:863:12)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/bcm/apps/desktop/scripts/harness/connector-a.mjs:133:1
+
+Node.js v24.13.0

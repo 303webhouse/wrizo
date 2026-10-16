@@ -1,0 +1,21 @@
+PASS  setup: 36 pages and one board are seeded through the seam and have landed
+PASS  S1 FAULT 2: on a PAGE surface the Page hand carries the list at all — before, it mounted only on a board, so a writer standing on a page had no list of pages anywhere in that hand  [true]
+PASS  S1: the section is named for what it does — "Open Pages", not "Place page on board"  [{"heading":"Open Pages"}]
+PASS  S1 FAULT 3: a LOOSE page is listed — the origin New Page and the Desk create, which getJournalPages() could never return, so the list most likely to be searched for a new page could not show it  [{"loose":true,"journal":true}]
+PASS  S1 FAULT 4: every one of the 35 JOURNAL pages is listed, the oldest included — the old list capped at 30 BEFORE sorting, so the five oldest were unreachable by any sort  [{"journalListed":35,"of":35,"oldestListed":true,"boardListed":false}]
+PASS  S1: sorted A–Z, the oldest page leads — sorting runs over every page, not over a capped slice of the newest  [{"firstTitle":"Aardvark oldest"}]
+PASS  S1: on a page there is no board to place onto, so the secondary act is ABSENT rather than present and inert  [{"moreButtons":0}]
+PASS  S2 (setup): the Journal page's row has a real on-screen box to click
+FAIL  S2 THE TICKET: a REAL click on a row OPENS that page — the URL names it and the crumb names it  [{"hash":"#/page/i170-loose","crumb":"Loose draft bravo"}]
+PASS  S3 (setup): on the board the same list is there, and every row carries its ⋯  [{"openedOnBoard":true,"rows":36,"more":36}]
+PASS  S3: the ⋯ opens the row's secondary act, named by its own verb  [true]
+PASS  S3: "Place on this board" still PLACES — the loose page lands on the board as a card  [{"pinned":true,"hash":"#/page/i170-board"}]
+PASS  S3: and placing does NOT navigate — the page lands on the board and the writer stays on the board they were arranging  [{"pinned":true,"hash":"#/page/i170-board"}]
+PASS  S3: from the board, clicking a row's NAME opens that page — one list, one meaning, on every surface  [{"hash":"#/page/i170-journal","crumb":"Journal note alpha"}]
+PASS  S4 (from the SITTING): the menu of the LAST row opens fully inside the visible box of the list, read WITHOUT scrolling to it — the first cut opened it below the row, and the overflow of the list clipped it from view  [{"lastId":"i170-oldest","menu":true,"inside":true,"menuTop":314,"menuBottom":338,"listTop":251,"listBottom":339}]
+PASS  S4: Escape dismisses the open menu — no stuck state that only a second press of the ⋯ could clear  [true]
+PASS  S5: OPEN PAGES shows THREE rows and scrolls through the rest — a viewport, not a population cap, so no page is ever out of reach  [{"list":true,"wholeRows":3,"totalRows":36,"scrolls":true}]
+PASS  S5: the last EDITED page leads the list, not the last created — a page written long ago and revised this morning is what a writer reaching for recent work means  [{"first":"i170-oldest","expected":"i170-oldest"}]
+PASS  S5: a STARRED page sorts first, above the most recently edited one — a star is the writer saying "this one", and an ordering that ignored it would make them say it twice  [{"first":"i170-journal","second":"i170-oldest"}]
+
+ITEM170 VERIFY: FAIL — 1/19 failed

@@ -1,0 +1,104 @@
+[
+  {
+    "name": "S1 control: a lawful nest still succeeds — board B into board A. Every refusal below is only meaningful because this one passes",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S1 ⚠ CHECK 1 (the build law): the ancestor walk fires at a LATER write — A already contains B, so nesting A INTO B is refused and NO box is created. A first-write-only guard would pass the naive case and miss exactly this one",
+    "pass": true,
+    "detail": "{\"cycleBA\":null,\"bPins\":[]}"
+  },
+  {
+    "name": "S1: and it walks the whole chain, not just one level — with A > B > C, nesting A into C is refused. This is what distinguishes an ancestor WALK from a parent check",
+    "pass": true,
+    "detail": "{\"deepCycle\":null,\"cPins\":[]}"
+  },
+  {
+    "name": "S1 CHECK 2: a board on ITSELF is refused outright — nonsense rather than a refusal worth teaching, and the built self-pin guard already held it",
+    "pass": true,
+    "detail": "null"
+  },
+  {
+    "name": "S1 CLAUSE (drawer id): no drawer existed in this fixture to test with — the general unresolvable-id check below carries the same law",
+    "pass": true,
+    "detail": "no drawer row in a fresh store; general case asserted"
+  },
+  {
+    "name": "S1 CLAUSE (the general case): ANY unresolvable id is refused the same way, and no box is created. This is the wider hole the positive form closes — before it, a foreign id fell through and wrote a page-pin pointing at nothing, which renders \"Missing page\" and is a member forever",
+    "pass": true,
+    "detail": "{\"ghostPin\":null,\"afterGhost\":[\"pw2-b\"]}"
+  },
+  {
+    "name": "S1 CLAUSE: a normal PAGE still pins, and a normal BOARD still nests — the guard refuses only what cannot be held, never narrowing what can",
+    "pass": true,
+    "detail": "{\"pagePin\":true,\"nestedAB\":true}"
+  },
+  {
+    "name": "S1 TARGET SIDE: a CONDITION BOARD as target is refused with no box created — and the pre-S1 build ADMITTED this write (a condition board passes pageType !== \"board\", and the built guard checked getSystemKind on the SOURCE only). A condition board's pins are DERIVED, never authored, so a hand-placed card there is erased at the next reconcile and wrong until then",
+    "pass": true,
+    "detail": "{\"sysTarget\":null,\"before\":1,\"after\":1}"
+  },
+  {
+    "name": "S2 CHECK 4a: a nested board is a MEMBER and NOT displayed — one rule covers pages and boards, so there is no second model to learn",
+    "pass": true,
+    "detail": "{\"nestedBox\":{\"id\":\"mvadekbq4q4wjxoib\",\"kind\":\"page-pin\",\"x\":0.05,\"y\":0.08,\"w\":0.32,\"h\":0.1,\"z\":1,\"entryId\":\"pw2-b\",\"onCanvas\":false},\"nestedRendered\":false}"
+  },
+  {
+    "name": "S2 CHECK 4b: the displayed board renders as a BOARD-CARD — its badge reads the board noun (never \"From Pages\"), it carries the doubled edge that teaches the kind by shape, and it is WIDER THAN TALL on the canvas as the same law requires in the rail",
+    "pass": true,
+    "detail": "{\"badge\":\"Board\",\"title\":\"Board B\",\"w\":348.15625,\"h\":108.796875,\"doubledEdge\":true}"
+  },
+  {
+    "name": "S2 CHECK 3a: at depth the crumb carries the NEST CHAIN, outermost first — the address answers \"where am I\" without opening anything",
+    "pass": true,
+    "detail": "{\"text\":\"Board A / Board B / Board C\",\"nest\":[\"Board A\",\"Board B\"],\"lines\":19}"
+  },
+  {
+    "name": "S2 CHECK 3b: the parent segment is the DOOR OUT and it travels DIRECTLY — escaping three levels is ONE press, not three. This is the test a recursive container has to pass",
+    "pass": true,
+    "detail": "#/page/pw2-a"
+  },
+  {
+    "name": "DRIVER: open board A's contents from the page — a point inside the target is reachable by a real pointer (not occluded)",
+    "pass": false,
+    "detail": "{\"found\":false,\"why\":\"occluded\",\"by\":\"wz-sliver\"}"
+  },
+  {
+    "name": "S3 CHECK 5a: the copy lands on the destination as a NEW card with a NEW id, and the ORIGINAL STAYS on the source — copy, never move",
+    "pass": true,
+    "detail": "{\"theCopy\":{\"id\":\"mvadeq67rgn75mt36\",\"kind\":\"text\",\"x\":0.05,\"y\":0.02,\"z\":1,\"w\":0.3,\"h\":0.1,\"text\":\"The original card\",\"copiedFromBoardId\":\"pw2-src\"},\"srcStill\":[\"pw2-card\",\"pw2-other\",\"pw2-thread\",\"pw2-ported\"]}"
+  },
+  {
+    "name": "S3 CHECK 5b: THREADS DO NOT TRAVEL — a thread is a connection box whose endpoints are BOX IDS on the source board, so a copied one would be a hairline to nowhere. None is created",
+    "pass": true,
+    "detail": "[\"text\"]"
+  },
+  {
+    "name": "S3 CHECK 5c: NO SHARED IDENTITY — the copy carries no mirror fields at all (sourceEntryId/portedAt absent), which is what makes \"edits do not follow\" true by construction rather than by discipline: there is no shared row to diverge",
+    "pass": true,
+    "detail": "{\"id\":\"mvadeq67rgn75mt36\",\"kind\":\"text\",\"x\":0.05,\"y\":0.02,\"z\":1,\"w\":0.3,\"h\":0.1,\"text\":\"The original card\",\"copiedFromBoardId\":\"pw2-src\"}"
+  },
+  {
+    "name": "S3 ⚠ THE WHITELIST CASE: a copy OF A PORTED CARD carries NO sourceEntryId — the copy is independent of both the board it came from and anything the original mirrored. Spread-and-strip carried that field through, which would have cost the copy the editing gesture every card has",
+    "pass": true,
+    "detail": "{\"id\":\"mvadeqhvtiaao4bnz\",\"kind\":\"text\",\"x\":0.05,\"y\":0.14,\"z\":2,\"w\":0.3,\"h\":0.1,\"text\":\"A ported card\",\"copiedFromBoardId\":\"pw2-src\"}"
+  },
+  {
+    "name": "S3 THE PAIR (i): a COPY's double-click OPENS THE EDIT POPUP and does not travel — a copy is independent, so it keeps the editing gesture every card has",
+    "pass": true,
+    "detail": "{\"popup\":true,\"hash\":\"#/page/pw2-dst\"}"
+  },
+  {
+    "name": "S3 THE PAIR (ii): a PORTED card's double-click still TRAVELS to its source — the mirror relationship is untouched, which is the whole reason a copy needed its own field instead of borrowing this one",
+    "pass": true,
+    "detail": "#/page/pw2-ptarget"
+  },
+  {
+    "name": "DRIVER: open the source board's contents — a point inside the target is reachable by a real pointer (not occluded)",
+    "pass": false,
+    "detail": "{\"found\":false,\"why\":\"occluded\",\"by\":\"wz-sliver\"}"
+  }
+]
+
+PW2 VERIFY: FAIL — 2/20 failed

@@ -1,0 +1,13 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=3 tree=46091073 bundle=index-Bs9j9408.js/672281b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bis1
+[01/3] FAIL      exit=1   19s item170.mjs :: ITEM170 VERIFY: FAIL — 1/19 failed
+[02/3] FAIL      exit=1   42s pw1.mjs :: PW1 VERIFY: FAIL — 4/32 failed
+[03/3] FAIL      exit=1   17s pw2.mjs :: PW2 VERIFY: FAIL — 2/20 failed
+
+SUITE DONE HARNESS_PARKED=unset — 0/3 of 3 returned a passing verdict
+  FAIL: item170.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bis1\item170.mjs.default.txt
+  FAIL: pw1.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bis1\pw1.mjs.default.txt
+  FAIL: pw2.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bis1\pw2.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=46091073 bundle=index-Bs9j9408.js/672281b NO-REBUILD
