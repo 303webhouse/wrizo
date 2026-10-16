@@ -25,7 +25,13 @@ const WORDS = 50000;
 const VOCAB = ['the', 'writer', 'kept', 'going', 'past', 'midnight', 'and', 'a', 'quiet', 'river', 'ran', 'under', 'window', 'of', 'room', 'where', 'she', 'had', 'left', 'her', 'coat'];
 const pageOf = (n) => { const out = []; let w = 0; let i = 7; while (w < n) { const len = 40 + (i % 90); const line = []; for (let k = 0; k < len && w < n; k++) { line.push(VOCAB[(i * 7 + k * 3) % VOCAB.length]); w++; } out.push(line.join(' ') + '.'); i++; } return out.join('\n'); };
 
-const key = (app, k, code, vk, modifiers) => app.cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: k, code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk, modifiers })
+// ---- SUPERSEDED DRIVER (chat 1's ledger 70): a `rawKeyDown` Ctrl+End performs NO editing command - the page opened with the caret already
+// at the end, the key changed nothing, and S1 went red on main's build as well. Kept verbatim, no longer used:
+// const key = (app, k, code, vk, modifiers) => app.cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: k, code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk, modifiers })
+//   .then(() => app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: k, code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk, modifiers }));
+// The key as the browser performs it: a `keyDown` carrying its editing command (chat 1's own probe: on main, the baseline and the branch alike,
+// Ctrl+End with `moveToEndOfDocument` moves the caret and scrolls).
+const key = (app, k, code, vk, modifiers, command) => app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: k, code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk, modifiers, ...(command ? { commands: [command] } : {}) })
   .then(() => app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: k, code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk, modifiers }));
 const mouse = (app, type, x, y, n, b) => app.cdp('Input.dispatchMouseEvent', { type, x, y, button: 'left', buttons: b, clickCount: n, pointerType: 'mouse' });
 // the caret: its plain offset, and its place on screen relative to the scroller (a 1-character range when the collapsed one has no rect)
@@ -65,14 +71,24 @@ await withHarness(async (app) => {
   await app.evalJs(`document.querySelector('${ED}').focus()`);
 
   // ---- S1 Ctrl+End
-  await key(app, 'End', 'End', 35, 2);
+  // start from the TOP, so the key has somewhere to go (the page opens with the caret already at its end)
+  await key(app, 'Home', 'Home', 36, 2, 'moveToBeginningOfDocument');
+  await settle();
+  const top0 = await caret(app);
+  await key(app, 'End', 'End', 35, 2, 'moveToEndOfDocument');
   await sleep(150);
   const e0 = await caret(app);
   await settle();
   const e1 = await caret(app);
   ok('S1: Ctrl+End puts the caret at the very end of the 50k page, and it is on screen', !!e0 && !!e1 && e1.offset === e1.textLength && e1.visible, JSON.stringify({ e0, e1 }));
   ok('S1: as the rows settle, neither the caret\'s place on screen nor the scroll moves (within 2 px)', !!e0 && !!e1 && e0.top !== null && e1.top !== null && Math.abs(e1.top - e0.top) <= 2 && Math.abs(e1.scrollTop - e0.scrollTop) <= 2, JSON.stringify({ e0, e1 }));
-  ok('S1: the end is the true end - the scroller sits at its bottom, no estimated space left below the last line', !!e1 && e1.atBottom, JSON.stringify(e1));
+  // ---- PARKED - SUPERSEDED (chat 1's ledger 70): the native Ctrl+End scrolls the caret's line into view, NOT the scroller to its very bottom -
+  // on main the scroller stops 276 px above it too (the page's own space below the text) - and the estimated space this guarded against left
+  // with content-visibility. Kept VERBATIM, no longer run; successor below.
+  // ok('S1: the end is the true end - the scroller sits at its bottom, no estimated space left below the last line', !!e1 && e1.atBottom, JSON.stringify(e1));
+  // ------------------------------------------------------------------
+  ok('S1 [native-route successor]: from the top, Ctrl+End really scrolls the page down to the last line - the caret starts at 0 and ends at the end, fully on screen',
+    !!top0 && top0.offset === 0 && !!e1 && e1.offset === e1.textLength && e1.visible && e1.scrollTop > top0.scrollTop + 1000, JSON.stringify({ top0, e1 }));
 
   // ---- S2 a real click three-quarters down
   await app.evalJs("(() => { const sc = document.querySelector('.mode-scroll'); sc.scrollTop = Math.round((sc.scrollHeight - sc.clientHeight) * 0.75); })()");
@@ -105,7 +121,7 @@ await withHarness(async (app) => {
     JSON.stringify({ storedLength: st && st.length, editorLength: edText.length, same: st === edText }));
 
   // ---- S4 Ctrl+Home
-  await key(app, 'Home', 'Home', 36, 2);
+  await key(app, 'Home', 'Home', 36, 2, 'moveToBeginningOfDocument');
   await sleep(150);
   const h0 = await caret(app);
   await settle();
