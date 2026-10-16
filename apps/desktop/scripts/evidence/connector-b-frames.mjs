@@ -23,9 +23,9 @@ const rows = []; const hashes = new Map();
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
 const ID = 'cbf-board', B2 = 'cbf-research', B3 = 'cbf-characters';
 const BOXES = [
-  { id: 'cbf-a', kind: 'text', x: 0.05, y: 0.06, w: 0.22, h: 0.13, z: 1, text: 'The harbour scene\nWhere Mara first sees the ship.' },
-  { id: 'cbf-b', kind: 'text', x: 0.5, y: 0.06, w: 0.22, h: 0.13, z: 2, text: 'The letter\nWhat the captain left unsaid.' },
-  { id: 'cbf-c', kind: 'text', x: 0.05, y: 0.4, w: 0.22, h: 0.13, z: 3, text: 'Mara\nHer reasons for staying.' },
+  { id: 'cbf-a', kind: 'text', x: 0.38, y: 0.06, w: 0.22, h: 0.13, z: 1, text: 'The harbour scene\nWhere Mara first sees the ship.' },
+  { id: 'cbf-b', kind: 'text', x: 0.68, y: 0.06, w: 0.22, h: 0.13, z: 2, text: 'The letter\nWhat the captain left unsaid.' },
+  { id: 'cbf-c', kind: 'text', x: 0.38, y: 0.4, w: 0.22, h: 0.13, z: 3, text: 'Mara\nHer reasons for staying.' },
   { id: 'cbf-ac', kind: 'connection', x: 0, y: 0, w: 0, h: 0, z: 4, connA: 'cbf-a', connB: 'cbf-c' },
 ];
 const R = (app, sel) => app.evalJs(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, t: r.top, w: r.width, h: r.height }; })()`);
@@ -43,7 +43,8 @@ const shot = async (app, combo, name) => {
 };
 const enterMode = async (app) => {
   const a = await R(app, '[data-box-id="cbf-a"]'); await mouse(app, 'mousePressed', Math.round(a.l + a.w * 0.3), Math.round(a.t + a.h * 0.3)); await mouse(app, 'mouseReleased', Math.round(a.l + a.w * 0.3), Math.round(a.t + a.h * 0.3)); await sleep(600);
-  const h = centre(await R(app, '[data-box-id="cbf-a"] .board-handle'));
+  const hr = await R(app, '[data-box-id="cbf-a"] .board-handle'); if (!hr) return null;   // a missing handle ends the combo with a named row, never a crash
+  const h = centre(hr);
   await app.mouseMove(h.x, h.y);
   await mouse(app, 'mousePressed', h.x, h.y, { clickCount: 1 }); await mouse(app, 'mouseReleased', h.x, h.y, { clickCount: 1 }); await sleep(60);
   await mouse(app, 'mousePressed', h.x, h.y, { clickCount: 2 }); await mouse(app, 'mouseReleased', h.x, h.y, { clickCount: 2 }); await sleep(300);
@@ -75,6 +76,7 @@ await withHarness(async (app) => {
     if (!t2 || !t3) { rows.push({ combo: combo.id, frame: 'FIXTURE', error: 'the Drawers tiles are not in the rail' }); continue; }
     // 01 / 02 - the arm over a thumbnail, then linking
     const h = await enterMode(app);
+    if (!h) { rows.push({ combo: combo.id, frame: 'FIXTURE', error: 'the card did not select (a click on it lands on a panel tile?)' }); continue; }
     await glide(app, h, centre(t2)); await sleep(250);
     await shot(app, combo, '01-arm-over-a-rail-thumbnail');
     await mouse(app, 'mousePressed', ...Object.values(centre(t2))); await mouse(app, 'mouseReleased', ...Object.values(centre(t2))); await sleep(300);
@@ -82,6 +84,7 @@ await withHarness(async (app) => {
     await sleep(1800);
     // 03 - the arm over a thumbnail it is already linked to
     const h2 = await enterMode(app);
+    if (!h2) { rows.push({ combo: combo.id, frame: 'FIXTURE', error: 'the card did not select (a click on it lands on a panel tile?)' }); continue; }
     await glide(app, h2, centre(t2)); await sleep(250);
     await shot(app, combo, '03-arm-over-an-already-linked-thumbnail');
     await app.key('Escape'); await sleep(300);

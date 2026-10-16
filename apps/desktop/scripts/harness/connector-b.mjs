@@ -33,8 +33,8 @@ const fresh = async (app) => {
   await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 14000 });
   const now = () => new Date().toISOString();
   const boxes = [
-    { id: 'cb-a', kind: 'text', x: 0.05, y: 0.06, w: 0.2, h: 0.12, z: 1, text: 'Card A' },
-    { id: 'cb-b', kind: 'text', x: 0.5, y: 0.06, w: 0.2, h: 0.12, z: 2, text: 'Card B' },
+    { id: 'cb-a', kind: 'text', x: 0.38, y: 0.06, w: 0.2, h: 0.12, z: 1, text: 'Card A' },
+    { id: 'cb-b', kind: 'text', x: 0.68, y: 0.06, w: 0.2, h: 0.12, z: 2, text: 'Card B' },
   ];
   for (const row of [
     { id, text: 'Link board', pageType: 'board', boxes, createdAt: now(), origin: null, source: null },
@@ -60,7 +60,7 @@ const dbl = async (app, x, y) => {
   await mouse(app, 'mousePressed', x, y, { clickCount: 2 }); await mouse(app, 'mouseReleased', x, y, { clickCount: 2 }); await sleep(250);
 };
 const selectCard = async (app, cardId) => { const r = await R(app, `[data-box-id="${cardId}"]`); await click(app, Math.round(r.l + r.w * 0.3), Math.round(r.t + r.h * 0.3)); await sleep(600); };
-const enterMode = async (app, cardId) => { await selectCard(app, cardId); const h = await R(app, `[data-box-id="${cardId}"] .board-handle`); const p = centre(h); await dbl(app, p.x, p.y); return p; };
+const enterMode = async (app, cardId) => { await selectCard(app, cardId); const h = await R(app, `[data-box-id="${cardId}"] .board-handle`); if (!h) return null; const p = centre(h); await dbl(app, p.x, p.y); return p; };   // null, never a crash: a missing handle is a failed check
 const tile = (app, title) => app.evalJs(`(() => { const t = [...document.querySelectorAll('.wz-drawers-tile[data-link-entry]')].find((b) => b.textContent.includes(${JSON.stringify(title)})); if (!t) return null; const r = t.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height, entry: t.dataset.linkEntry }; })()`);
 const tileState = (app, entry) => app.evalJs(`(() => { const t = document.querySelector('[data-link-entry="${entry}"]'); if (!t) return null; const cs = getComputedStyle(t, '::before'); return { target: t.getAttribute('data-link-target'), peer: t.getAttribute('data-link-peer'), solid: t.getAttribute('data-link-solid'), flash: t.getAttribute('data-link-flash'), circle: cs.content !== 'none' && cs.width === '10px', radius: cs.borderTopLeftRadius, bg: cs.backgroundColor }; })()`);
 const armGeo = (app) => app.evalJs(`(() => { const l = document.querySelector('.board-connect-arm'); const o = document.querySelector('.board-connect-overlay'); if (!l || !o) return null; return { x1: +l.getAttribute('x1'), y1: +l.getAttribute('y1'), x2: +l.getAttribute('x2'), y2: +l.getAttribute('y2'), inBody: o.parentElement === document.body, display: getComputedStyle(l).display }; })()`);
@@ -83,6 +83,7 @@ await withHarness(async (app) => {
 
   // B1
   const h = await enterMode(app, 'cb-a');
+  if (!h) { ok('fixture: the card selected and its corner handle rendered (the select click must land on the CARD, not on a panel tile)', false, JSON.stringify(await R(app, '[data-box-id="cb-a"]'))); return; }
   ok('fixture: connection mode is on (double-click on the corner square)', (await armed(app)) === 'true', String(await armed(app)));
   await glide(app, h, centre(tb2), 10); await sleep(300);
   const st1 = await tileState(app, f.b2); const arm1 = await armGeo(app); const cvR = await R(app, '.board-canvas');
@@ -113,6 +114,7 @@ await withHarness(async (app) => {
   await openDrawers(app);
   const tb2b = await tile(app, 'Research board');
   const h4 = await enterMode(app, 'cb-a');
+  if (!h4) { ok('fixture: the card selected and its corner handle rendered (the select click must land on the CARD, not on a panel tile)', false, JSON.stringify(await R(app, '[data-box-id="cb-a"]'))); return; }
   await glide(app, h4, centre(tb2b), 10); await sleep(300);
   const st4 = await tileState(app, f.b2);
   ok('B4: the thumbnail the card is ALREADY linked to shows its circle SOLID (peer, brass)', !!st4 && st4.target === 'true' && st4.solid === 'true' && st4.bg === BR, JSON.stringify(st4));
@@ -129,6 +131,7 @@ await withHarness(async (app) => {
   if (!tnest) ok('B5 fixture: the nested board\'s thumbnail is in the rail', false, 'absent');
   else {
     const h5 = await enterMode(app, 'cb-a');
+    if (!h5) { ok('fixture: the card selected and its corner handle rendered (the select click must land on the CARD, not on a panel tile)', false, JSON.stringify(await R(app, '[data-box-id="cb-a"]'))); return; }
     await glide(app, h5, centre(tnest), 10); await sleep(250);
     await mouse(app, 'mousePressed', ...Object.values(centre(tnest))); await mouse(app, 'mouseReleased', ...Object.values(centre(tnest))); await sleep(400);
     const cs5 = await conns(app); const pin = ((await app.evalJs('window.wrizoBoard()')) || []).find((b) => b.kind === 'page-pin' && b.entryId === f.nest);
