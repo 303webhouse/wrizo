@@ -89,6 +89,13 @@ const at = (text, needle) => { const i = text.indexOf(needle); if (i < 0) throw 
   const f8 = P(w, s8, e8);
   ok('FRAGMENT: a cut run whose selected part starts with a space reopens AFTER the space (a mark before a space would not pair)',
     f8.fragment === ' **world**' && f8.plain === ' world', JSON.stringify(f8));
+  const g = 'Ada [counted gulls]{.font-courier-prime} now';
+  const [s9, e9] = at(g, 'ted gu');
+  const f9 = P(g, s9, e9);
+  ok('FRAGMENT: a font span the selection cuts is closed and reopened at the cut with its own two marks (its face kept)',
+    f9.fragment === '[ted gu]{.font-courier-prime}' && f9.plain === 'ted gu', JSON.stringify(f9));
+  const p9 = P(g);
+  ok('PLAIN: a font span\'s marks do not reach another app', p9.plain === 'Ada counted gulls now', JSON.stringify(p9));
 }
 
 // ---- FALLBACK: a line whose markup would not read back the same is written as literal text (the path ROUND's vocabulary never reaches:
@@ -118,6 +125,10 @@ const word = () => {
   if (r < 0.45) return `${w}${B}_${w}`;
   if (r < 0.46) return `${B}${B}`;
   if (r < 0.47) return '*';
+  // FONT-SPAN (on this branch since the rebase): a span, one holding emphasis, and a typed bracket pair (escaped)
+  if (r < 0.50) return `[${w} ${pick(WORDS)}]{.font-courier-prime}`;
+  if (r < 0.52) return `[**${w}**]{.font-lora}`;
+  if (r < 0.53) return `${B}[${w}${B}]`;
   return w;
 };
 const line = () => {
@@ -138,7 +149,8 @@ const styledChars = (text) => {
     for (const r of runs) { const cl = (r.cmark ?? r.mark).length; for (let k = 0; k < r.mark.length; k++) hidden.add(r.open + k); for (let k = 0; k < cl; k++) hidden.add(r.close + k); }
     for (let i = 0; i < rest.length; i++) {
       if (hidden.has(i)) continue;
-      const st = /\s/.test(rest[i]) ? '' : KINDS.filter((kd) => runs.some((r) => r.kind === kd && i >= r.open + r.mark.length && i < r.close)).join('+');
+      const st = /\s/.test(rest[i]) ? '' : KINDS.filter((kd) => runs.some((r) => r.kind === kd && i >= r.open + r.mark.length && i < r.close))
+        .concat(runs.filter((r) => r.kind === 'font' && i >= r.open + r.mark.length && i < r.close).map((r) => `font=${r.face}`)).join('+');
       out.push(rest[i] + ':' + st);
     }
     out.push('\n:');
@@ -161,7 +173,8 @@ const styledSlice = (text, s, e) => {
       for (let i = 0; i < rest.length; i++) {
         const g = ls + lead + i;
         if (g < s || g >= e || hidden.has(i)) continue;
-        const st = /\s/.test(rest[i]) ? '' : KINDS.filter((kd) => runs.some((r) => r.kind === kd && i >= r.open + r.mark.length && i < r.close)).join('+');
+        const st = /\s/.test(rest[i]) ? '' : KINDS.filter((kd) => runs.some((r) => r.kind === kd && i >= r.open + r.mark.length && i < r.close))
+        .concat(runs.filter((r) => r.kind === 'font' && i >= r.open + r.mark.length && i < r.close).map((r) => `font=${r.face}`)).join('+');
         out.push(rest[i] + ':' + st);
       }
     }

@@ -49,6 +49,20 @@ ok('ESCAPE: # - > are escaped at the start of a line\'s text (a heading, bullet 
 ok('ESCAPE: ...and NOT mid-line - a hyphen in a word stays bare', E('well-known', 'It is ') === 'well-known' && E('#', 'a ') === '#' && E('>', 'x') === '>', JSON.stringify([E('well-known', 'It is '), E('#', 'a ')]));
 ok('ESCAPE: after a line\'s own structure (a bullet made by the menu) the text still begins there: a # typed after it is escaped', E('#', '- ') === `${B}#`, E('#', '- '));
 ok('ESCAPE: a pasted run of lines is escaped line by line', E('a\n- b\n**c**') === `a\n${B}- b\n${esc('**c**')}`, E('a\n- b\n**c**'));
+// FONT-SPAN, now on this branch (Fable, Oct 16: "add `[` to the always-escaped characters"): a font span is `[words]{.font-<slug>}`, so a
+// typed `[` is escaped wherever it is typed - and `]` with it: font-span's reader closes the nearest `[` with a PLAIN `]` too, so a typed
+// `[sic]` INSIDE a span, its `[` escaped and its `]` bare, would close the span's own `[` and break the span.
+ok('ESCAPE: [ and ] are escaped wherever they are typed (a font span opens with `[` and a bare `]` closes one)',
+  E('[') === `${B}[` && E(']') === `${B}]` && E('see [sic] here', 'It said ') === `see ${B}[sic${B}] here` && E('[x]{.font-lora}') === `${B}[x${B}]{.font-lora}`,
+  JSON.stringify([E('['), E(']'), E('see [sic] here', 'It said '), E('[x]{.font-lora}')]));
+ok('READ: a typed (escaped) `[x]{.font-lora}` is text - no font span', mr.readMarks(E('[x]{.font-lora}')).length === 0, JSON.stringify(mr.readMarks(E('[x]{.font-lora}'))));
+{
+  const inSpan = `Ada [counted ${E('[sic]', 'x ')} gulls]{.font-courier-prime} now`;
+  const fonts = mr.readMarks(inSpan).filter((r) => r.kind === 'font');
+  ok('READ: a typed `[sic]` INSIDE a real font span leaves the span whole (its escaped brackets close nothing)',
+    fonts.length === 1 && fonts[0].open === inSpan.indexOf('[counted') && inSpan.slice(fonts[0].close).startsWith(']{.font-courier-prime}'), JSON.stringify({ inSpan, fonts }));
+  ok('READ: ...and the page shows the typed brackets as themselves', mr.stripLine(inSpan) === 'Ada counted [sic] gulls now', mr.stripLine(inSpan));
+}
 
 // ---- READ
 ok('READ: escaped stars are text - no run at all', mr.readMarks(esc('**x**')).length === 0, JSON.stringify(mr.readMarks(esc('**x**'))));
