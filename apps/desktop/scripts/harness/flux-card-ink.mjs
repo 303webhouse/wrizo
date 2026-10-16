@@ -116,14 +116,26 @@ await withHarness(async (app) => {
       // already-shipped number, so a future regression still goes red here.
       const eyebrowC = await contrastOf(app, '.board-popup-eyebrow');
       const closeC = await contrastOf(app, '.board-popup-close');
-      if (theme === 'flux' && page === 'dark') {
-        ok(`${T} C3: the pop-up's eyebrow label carries against its stock (computed ${eyebrowC?.ratio}:1, >= ${FLOOR})`, !!eyebrowC && eyebrowC.ratio >= FLOOR, JSON.stringify(eyebrowC));
-        ok(`${T} C3: the pop-up's close-X carries against its stock (computed ${closeC?.ratio}:1, >= ${FLOOR})`, !!closeC && closeC.ratio >= FLOOR, JSON.stringify(closeC));
-      } else {
-        const PRE_EXISTING_FLOOR = 3.5; // below even Arbor's own pre-existing ~3.77:1 would be a real regression
-        ok(`${T} C3 (pre-existing, not this ticket's fix): the eyebrow label's own baseline contrast holds (computed ${eyebrowC?.ratio}:1, >= ${PRE_EXISTING_FLOOR})`, !!eyebrowC && eyebrowC.ratio >= PRE_EXISTING_FLOOR, JSON.stringify(eyebrowC));
-        ok(`${T} C3 (pre-existing, not this ticket's fix): the close-X's own baseline contrast holds (computed ${closeC?.ratio}:1, >= ${PRE_EXISTING_FLOOR})`, !!closeC && closeC.ratio >= PRE_EXISTING_FLOOR, JSON.stringify(closeC));
-      }
+      // SUPERSEDED (faint-text-sweep, Fable Oct 16: "the -low tier you
+      // flagged" - this file's own C3 comment, just above, is where that
+      // flag was made). Kept verbatim, no longer run - the premise it
+      // asserted ("pre-existing, not this ticket's fix", floored at a bare
+      // 3.5 for Plateau/Flux-light) is false now that --ink-on-paper-low
+      // itself is darkened: those two tones carry the identical FLOOR
+      // branch flux/dark already used, below.
+      //   if (theme === 'flux' && page === 'dark') {
+      //     ok(`${T} C3: the pop-up's eyebrow label carries against its stock (computed ${eyebrowC?.ratio}:1, >= ${FLOOR})`, !!eyebrowC && eyebrowC.ratio >= FLOOR, JSON.stringify(eyebrowC));
+      //     ok(`${T} C3: the pop-up's close-X carries against its stock (computed ${closeC?.ratio}:1, >= ${FLOOR})`, !!closeC && closeC.ratio >= FLOOR, JSON.stringify(closeC));
+      //   } else {
+      //     const PRE_EXISTING_FLOOR = 3.5; // below even Arbor's own pre-existing ~3.77:1 would be a real regression
+      //     ok(`${T} C3 (pre-existing, not this ticket's fix): the eyebrow label's own baseline contrast holds (computed ${eyebrowC?.ratio}:1, >= ${PRE_EXISTING_FLOOR})`, !!eyebrowC && eyebrowC.ratio >= PRE_EXISTING_FLOOR, JSON.stringify(eyebrowC));
+      //     ok(`${T} C3 (pre-existing, not this ticket's fix): the close-X's own baseline contrast holds (computed ${closeC?.ratio}:1, >= ${PRE_EXISTING_FLOOR})`, !!closeC && closeC.ratio >= PRE_EXISTING_FLOOR, JSON.stringify(closeC));
+      //   }
+      // Successor (faint-text-sweep): --ink-on-paper-low/--ink-on-card-low
+      // now clear 4.5:1 on --card-stock in every tone, so every tone gets
+      // the SAME floor flux/dark already had - no more per-tone branch.
+      ok(`${T} C3 [faint-text-sweep successor]: the pop-up's eyebrow label carries against its stock (computed ${eyebrowC?.ratio}:1, >= ${FLOOR})`, !!eyebrowC && eyebrowC.ratio >= FLOOR, JSON.stringify(eyebrowC));
+      ok(`${T} C3 [faint-text-sweep successor]: the pop-up's close-X carries against its stock (computed ${closeC?.ratio}:1, >= ${FLOOR})`, !!closeC && closeC.ratio >= FLOOR, JSON.stringify(closeC));
 
       await app.key('Escape');
       await sleep(300);
