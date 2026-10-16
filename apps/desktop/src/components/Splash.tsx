@@ -177,9 +177,11 @@ export function Splash({ ready }: { ready: boolean }) {
   useEffect(() => {
     if (!live) return undefined;
 
-    // Measured AFTER mount, deliberately: the probe reads through this very
-    // overlay (it is pointer-events:none), so it sees the app's own backdrop
-    // rather than anything this component paints.
+    // Measured AFTER mount, deliberately: the veil (`.wz-splash-veil`, this
+    // very overlay) has to actually exist in the DOM for the probe to read
+    // its own painted background — see backdropTone.ts's header comment for
+    // why that is the right thing to read now (fix/splash-tone), not what is
+    // logically behind the overlay.
     setTone(measureBackdropTone());
 
     const resize = () => setBox(splashSizeFor(window.innerWidth, window.innerHeight));
