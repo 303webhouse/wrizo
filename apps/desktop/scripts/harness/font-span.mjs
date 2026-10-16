@@ -42,7 +42,9 @@ const highlight = (app, sel, words) => app.evalJs(`(() => { const ed = document.
     if (i >= 0) { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + ${JSON.stringify(words)}.length); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; } }
   return false; })()`);
 const scopeState = (app, root) => app.evalJs(`(() => { const t = document.querySelector('${root} .wz-type'); if (!t) return null;
-  const sc = [...t.querySelectorAll('.wz-type-scope')].map(b => ({ text: b.textContent, on: b.dataset.on, dead: b.getAttribute('aria-disabled') }));
+  const tr = t.getBoundingClientRect();
+  const sc = [...t.querySelectorAll('.wz-type-scope')].map(b => { const r = b.getBoundingClientRect(); return { text: b.textContent, on: b.dataset.on, dead: b.getAttribute('aria-disabled'),
+    clipped: b.scrollWidth > b.clientWidth, sw: b.scrollWidth, cw: b.clientWidth, inside: r.left >= tr.left - 0.5 && r.right <= tr.right + 0.5 }; });
   const cur = [...t.querySelectorAll('.wz-type-row')].filter(r => r.dataset.current === 'true').map(r => ({ name: r.textContent, color: getComputedStyle(r).color }));
   const probe = document.createElement('span'); probe.style.color = 'var(--brass)'; t.appendChild(probe); const brass = getComputedStyle(probe).color; probe.remove();
   return { scopes: sc, current: cur, brass }; })()`);
@@ -74,6 +76,9 @@ await withHarness(async (app) => {
     const s0 = await scopeState(app, '.wz-sliver');
     ok(`${T} PAGE: nothing highlighted - "Selection" is dead and "Whole document" is the scope, in brass`,
       !!s0 && s0.scopes.length === 2 && s0.scopes[0].text === 'Selection' && s0.scopes[0].dead === 'true' && s0.scopes[1].text === 'Whole document' && s0.scopes[1].on === 'true', JSON.stringify(s0));
+    // typeface-scope-label (Fable, Oct 16: "Whole document" was clipped to "Whole doc…" on a Page in both themes)
+    ok(`${T} PAGE: both scope labels FIT at the drawer's width - neither is clipped, and both sit inside the Typeface section`,
+      !!s0 && s0.scopes.length === 2 && s0.scopes.every((b) => !b.clipped && b.inside), JSON.stringify(s0 && s0.scopes));
     const hl = await highlight(app, ED, 'counted gulls');
     await sleep(300);
     const s1 = await scopeState(app, '.wz-sliver');
@@ -130,6 +135,8 @@ await withHarness(async (app) => {
     const c0 = await scopeState(app, '.board-popup-dock');
     ok(`${T} CARD: the dock's scopes read "Selection" / "Whole card", and the highlight puts it on Selection`,
       !!c0 && c0.scopes.length === 2 && c0.scopes[0].text === 'Selection' && c0.scopes[1].text === 'Whole card' && c0.scopes[0].on === 'true', JSON.stringify(c0));
+    ok(`${T} CARD: both scope labels FIT at the dock's width - neither is clipped, and both sit inside the Typeface section`,
+      !!c0 && c0.scopes.length === 2 && c0.scopes.every((b) => !b.clipped && b.inside), JSON.stringify(c0 && c0.scopes));
     await press(app, rowExpr('.board-popup-dock', 'Courier Prime'), "the card's Courier Prime row");
     await sleep(600);
     const csp = await spanState(app, CE);
