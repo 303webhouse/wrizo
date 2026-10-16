@@ -40,7 +40,7 @@ const callers = (srcDir, mutate = {}) => {
   for (const f of walk(srcDir)) {
     const rel = path.relative(srcDir, f).split('\\').join('/');
     if (rel === 'store/persistence.ts') continue;
-    // a PAGE asks IN THE PAGE (DrawerActions' own "Send this page to Trash?" confirm, one dialog - no second one stacked on it); S3 pins that it honours the setting
+    // a PAGE's delete reaches softDeleteEntry through pageActions.onDelete, which DrawerActions calls ONLY inside requestDelete(...) - S3 pins that
     if (rel === 'store/pageActions.ts') continue;
     const text = live(mutate[rel] ? mutate[rel](noCR(fs.readFileSync(f, 'utf8'))) : noCR(fs.readFileSync(f, 'utf8')));
     // each `softDeleteEntry(` CALL (not an import) must sit inside a `requestDelete(` that opened earlier in the file and has not closed on its own line
@@ -62,10 +62,10 @@ const callers = (srcDir, mutate = {}) => {
   ok('S1 (mutant): a delete that skips the gate turns the guard RED (the mutation landed)', mut.length > 0, JSON.stringify(mut));
   const da = noCR(fs.readFileSync(path.join(SRC, 'components/DrawerActions.tsx'), 'utf8'));
   const pa = noCR(fs.readFileSync(path.join(SRC, 'store/pageActions.ts'), 'utf8'));
-  const s3 = { honours: /which === 'delete' && !getAskBeforeDelete\(\)\) \{ setOpen\(null\); deleteNow\(\); return; \}/.test(da), keepsConfirm: /data-confirm="delete"/.test(da), noSecondDialog: !/requestDelete/.test(pa) && /softDeleteEntry\(entry\.id\);\n\s*flushNow\(\);/.test(pa) };
-  ok('S3: a PAGE\'s delete asks IN THE PAGE (its own "Send this page to Trash?" confirm, unchanged) - never a second dialog on top of it - and honours the ONE setting: with asking off the Delete icon sends the page to Trash at once; it is still soft (softDeleteEntry, flush, leave)', s3.honours && s3.keepsConfirm && s3.noSecondDialog, JSON.stringify(s3));
-  const sMut = da.replace("which === 'delete' && !getAskBeforeDelete()", 'false');
-  ok('S3 (mutant): a Page delete that ignores the setting turns the pin RED (the mutation landed)', sMut !== da && !/which === 'delete' && !getAskBeforeDelete\(\)\) \{ setOpen\(null\); deleteNow\(\); return; \}/.test(sMut), '');
+  const s3 = { viaGate: /onClick=\{\(\) => requestDelete\(\(\) => actions\.onDelete\(\)\)\}/.test(da), noInPageConfirm: !/data-confirm="delete"|role="alertdialog"/.test(da), oneCall: (da.match(/actions\.onDelete\(\)/g) || []).length === 1, pageActionsPlain: !/requestDelete/.test(pa) && /softDeleteEntry\(entry\.id\);\n\s*flushNow\(\);/.test(pa) };
+  ok('S3: a PAGE\'s delete asks through the ONE standard dialog (Fable, Oct 16): the Actions Delete icon calls requestDelete(() => actions.onDelete()), the in-page "Send this page to Trash?" confirm is gone, and what runs after the dialog is unchanged - softDeleteEntry, flush, leave (still soft)', s3.viaGate && s3.noInPageConfirm && s3.oneCall && s3.pageActionsPlain, JSON.stringify(s3));
+  const sMut = da.replace('onClick={() => requestDelete(() => actions.onDelete())}', 'onClick={() => actions.onDelete()}');
+  ok('S3 (mutant): a Page delete that skips the gate turns the pin RED (the mutation landed)', sMut !== da && !/onClick=\{\(\) => requestDelete\(\(\) => actions\.onDelete\(\)\)\}/.test(sMut), '');
   ok('S2: the Delete / Backspace key goes through the gate (removeSelectedRef -> requestDelete), a system board never asks, and the dialog + the menu are mounted ONCE in App',
     /removeSelectedRef\.current = \(\) => \{ if \(isSystemBoard\) return; requestDelete\(removeSelected\); \};/.test(be) && /<ContextMenuHost \/>/.test(app) && /<DeleteDialog \/>/.test(app) && (app.match(/<DeleteDialog \/>/g) || []).length === 1, '');
 }

@@ -406,6 +406,8 @@ function partJ(act = actionsSrc, pa = pageActionsSrc, sliver = sliverSrc, c = cs
   return {
     order,
     asksFirst: /onClick=\{\(\) => toggle\('delete'\)\}/.test(deleteBtn) && !/actions\.onDelete/.test(deleteBtn) && (act.match(/actions\.onDelete\(\)/g) || []).length === 1 && /actions\.onDelete\(\)/.test(sendBtn.length ? act.slice(act.indexOf('data-confirm="delete"')) : ''),
+    // one-dialog (Oct 16): the Delete icon asks through the standard requestDelete dialog; the module's ONE onDelete call sits inside it; no in-page confirm survives
+    asksViaGate: /onClick=\{\(\) => requestDelete\(\(\) => actions\.onDelete\(\)\)\}/.test(deleteBtn) && (act.match(/actions\.onDelete\(\)/g) || []).length === 1 && !/data-confirm="delete"|role="alertdialog"/.test(act),
     escCancels: /e\.key === 'Escape' && open\) \{ e\.stopPropagation\(\); setOpen\(null\);/.test(act),
     focusKeep: /open === 'delete'\) keepRef\.current\?\.focus\(\)/.test(act),
     confirmWords: /t\('actionDeleteConfirm'\)/.test(act) && /t\('actionDeleteYes'\)/.test(act) && /t\('actionDeleteKeep'\)/.test(act),
@@ -425,8 +427,13 @@ function partJ(act = actionsSrc, pa = pageActionsSrc, sliver = sliverSrc, c = cs
       && i.turnOff.headers.on === false && i.turnOff.footers.on === false && i.turnOff.headers.text === 'H', JSON.stringify(i));
   const j = partJ();
   ok('(I2) the four actions are Tags, Copy, Delete, Header/Footer - in that order', JSON.stringify(j.order) === JSON.stringify(['tags', 'copy', 'delete', 'header-footer']), JSON.stringify(j.order));
-  ok('(I3) DELETE ASKS FIRST, in the page: the Delete button only opens the confirm; the one place that runs onDelete is the "Send to Trash" button; Esc and Keep cancel; focus lands on Keep',
-    j.asksFirst && j.escCancels && j.focusKeep && j.confirmWords, JSON.stringify(j));
+  // ---- PARKED - SUPERSEDED by board-context-menu (Fable ruling, Oct 16: "one pop-up for every delete") ----
+  // The Page's own in-page confirm ("Send this page to Trash?" with Send to Trash / Keep, focus on Keep) is RETIRED: Delete asks through the ONE standard dialog (Cancel / Delete / "Don't ask me again"), the same as a card, a board and a Drawers row. Esc still cancels the Tags editor (the check below).
+  // Quoted VERBATIM below. Successor: the check directly below; scripts/harness/board-context-menu.mjs S1/S3 (the gate) and box-tombstones.mjs T12 (the delete itself is still soft).
+  // ok('(I3) DELETE ASKS FIRST, in the page: the Delete button only opens the confirm; the one place that runs onDelete is the "Send to Trash" button; Esc and Keep cancel; focus lands on Keep',
+  //   j.asksFirst && j.escCancels && j.focusKeep && j.confirmWords, JSON.stringify(j));
+  ok('(I3) [one-dialog successor]: DELETE ASKS FIRST, through the ONE standard dialog: the Delete icon calls requestDelete(...), the module\'s one onDelete call sits inside it, and no in-page confirm survives (Esc still cancels the Tags editor)',
+    j.asksViaGate && j.escCancels, JSON.stringify(j));
   ok('(I4) DELETE IS SOFT: softDeleteEntry (to the Trash) then flush, then the writer goes to their resume target or the front door - and no hard-delete call exists in the module', j.softOnly, JSON.stringify(j));
   ok('(I5) the Actions section sits between Format and Templates in the Sliver and is gated by both the data and the table', j.sliverBetween, JSON.stringify(j));
   ok('(I6) a pressed/open action is a BRASS OUTLINE and nothing else (no fill)', j.pressedOutline, JSON.stringify(j));
@@ -585,7 +592,11 @@ await mutant('Revise grows Actions', async () => partE(mutate(setText, "revise: 
 await mutant('Actions slips ahead of Format in the table', async () => partE(mutate(setText, "text: ['typeface', 'format', 'actions', 'templates', 'pageKind']", "text: ['typeface', 'actions', 'format', 'templates', 'pageKind']")), (e) => JSON.stringify(e.draft) !== JSON.stringify(['typeface', 'format', 'actions', 'templates', 'pageKind']));
 await mutant('Header/Footer turns only the header', async () => partI(mutate(pageActionsSrc, "return { headers: { ...s.headers, on }, footers: { ...s.footers, on } };", "return { headers: { ...s.headers, on }, footers: { ...s.footers } };")), (i) => i.turnOn.footers.on !== true);
 await mutant('Header/Footer reads on when EITHER is on', async () => partI(mutate(pageActionsSrc, "return !!s.headers?.on && !!s.footers?.on;", "return !!s.headers?.on || !!s.footers?.on;")), (i) => i.onlyHeaderOn === true);
-await mutant('the Delete button deletes at once (no confirm)', async () => partJ(mutate(actionsSrc, "title={t('actionDelete')} aria-label={t('actionDelete')} onClick={() => toggle('delete')}", "title={t('actionDelete')} aria-label={t('actionDelete')} onClick={() => actions.onDelete()}")), (j) => j.asksFirst === false);
+// ---- PARKED - SUPERSEDED by board-context-menu (Fable ruling, Oct 16: "one pop-up for every delete") ----
+// The mutation anchored on the old in-page confirm's Delete button (`toggle('delete')`), which is gone.
+// Quoted VERBATIM below. Successor: the mutant directly below.
+// await mutant('the Delete button deletes at once (no confirm)', async () => partJ(mutate(actionsSrc, "title={t('actionDelete')} aria-label={t('actionDelete')} onClick={() => toggle('delete')}", "title={t('actionDelete')} aria-label={t('actionDelete')} onClick={() => actions.onDelete()}")), (j) => j.asksFirst === false);
+await mutant('the Delete button deletes at once (skips the gate) [one-dialog successor]', async () => partJ(mutate(actionsSrc, "onClick={() => requestDelete(() => actions.onDelete())}", "onClick={() => actions.onDelete()}")), (j) => j.asksViaGate === false);
 await mutant('Esc no longer cancels the confirm', async () => partJ(mutate(actionsSrc, "if (e.key === 'Escape' && open) { e.stopPropagation(); setOpen(null); }", "")), (j) => j.escCancels === false);
 await mutant('Delete hard-deletes', async () => partJ(actionsSrc, mutate(pageActionsSrc, 'softDeleteEntry(entry.id);', 'hardDelete(entry.id);')), (j) => j.softOnly === false);
 await mutant('Delete forgets to flush before leaving', async () => partJ(actionsSrc, mutate(pageActionsSrc, '      flushNow();\n      navigate(getResumeTarget()', '      navigate(getResumeTarget()')), (j) => j.softOnly === false);
