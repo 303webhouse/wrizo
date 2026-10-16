@@ -1,0 +1,56 @@
+[
+  {
+    "tone": "arbor",
+    "wordCount": {
+      "fg": "rgb(107, 95, 78)",
+      "bg": "rgb(243, 237, 225)",
+      "ratio": 5.34
+    },
+    "missingPin": {
+      "fg": "rgb(107, 95, 78)",
+      "bg": "rgb(251, 246, 234)",
+      "ratio": 5.77
+    },
+    "tokens": {
+      "paperLow": "#6B5F4E",
+      "cardLow": "#6B5F4E",
+      "bundle": "index-D9JzrCCw.js"
+    }
+  },
+  {
+    "tone": "flux-light",
+    "wordCount": {
+      "fg": "rgb(9, 105, 134)",
+      "bg": "rgb(237, 246, 243)",
+      "ratio": 5.65
+    },
+    "missingPin": {
+      "fg": "rgb(107, 95, 78)",
+      "bg": "rgb(251, 246, 234)",
+      "ratio": 5.77
+    },
+    "tokens": {
+      "paperLow": "#096986",
+      "cardLow": "#096986",
+      "bundle": "index-D9JzrCCw.js"
+    }
+  },
+  {
+    "tone": "flux-dark",
+    "wordCount": {
+      "fg": "rgb(87, 208, 245)",
+      "bg": "rgb(11, 36, 41)",
+      "ratio": 9.05
+    },
+    "missingPin": {
+      "fg": "rgb(107, 95, 78)",
+      "bg": "rgb(251, 246, 234)",
+      "ratio": 5.77
+    },
+    "tokens": {
+      "paperLow": "#57D0F5",
+      "cardLow": "#0A6B86",
+      "bundle": "index-D9JzrCCw.js"
+    }
+  }
+]

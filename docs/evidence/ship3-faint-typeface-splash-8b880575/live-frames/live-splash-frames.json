@@ -1,0 +1,28 @@
+[
+  {
+    "frame": "flux-light",
+    "up": true,
+    "mounted": true,
+    "tone": "dark",
+    "src": "/brand/wrizo-sketch-for-dark-theme.png",
+    "veilBg": "rgb(4, 20, 26)",
+    "measured": "dark",
+    "hash": "#/page/sp-flux-light",
+    "theme": "flux",
+    "page": "light",
+    "bundle": "index-D9JzrCCw.js"
+  },
+  {
+    "frame": "arbor",
+    "up": true,
+    "mounted": true,
+    "tone": "dark",
+    "src": "/brand/wrizo-sketch-for-dark-theme.png",
+    "veilBg": "rgb(17, 6, 0)",
+    "measured": "dark",
+    "hash": "#/page/sp-arbor",
+    "theme": "plateau",
+    "page": "dark",
+    "bundle": "index-D9JzrCCw.js"
+  }
+]

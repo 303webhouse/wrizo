@@ -1,0 +1,6 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+FFR {"tone":"arbor","wordCount":{"fg":"rgb(107, 95, 78)","bg":"rgb(243, 237, 225)","ratio":5.34},"missingPin":{"fg":"rgb(107, 95, 78)","bg":"rgb(251, 246, 234)","ratio":5.77},"tokens":{"paperLow":"#6B5F4E","cardLow":"#6B5F4E","bundle":"index-D9JzrCCw.js"}}
+FFR {"tone":"flux-light","wordCount":{"fg":"rgb(9, 105, 134)","bg":"rgb(237, 246, 243)","ratio":5.65},"missingPin":{"fg":"rgb(107, 95, 78)","bg":"rgb(251, 246, 234)","ratio":5.77},"tokens":{"paperLow":"#096986","cardLow":"#096986","bundle":"index-D9JzrCCw.js"}}
+FFR {"tone":"flux-dark","wordCount":{"fg":"rgb(87, 208, 245)","bg":"rgb(11, 36, 41)","ratio":9.05},"missingPin":{"fg":"rgb(107, 95, 78)","bg":"rgb(251, 246, 234)","ratio":5.77},"tokens":{"paperLow":"#57D0F5","cardLow":"#0A6B86","bundle":"index-D9JzrCCw.js"}}
+FFR FRAMES: 3 tones x 3 -> C:/Users/nickh/writer-studio/.claude/evidence-local/ship3-8b880575/faint
