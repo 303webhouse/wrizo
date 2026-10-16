@@ -55,6 +55,7 @@ let fx5MaskSeen = null;   // S1 (b)'s computed mask, kept for its parked record 
 // Declared up here, above the harness run that ASSIGNS it: a `let` declared below a top-level await is in its temporal dead zone
 // while that await runs (the first run of the card port died on exactly this: 'Cannot access fx5CardReveal before initialization').
 let fx5CardReveal = null;   // the S6 card reading, kept for its parked record
+let fx5DraftBold = null;    // TYPED-LITERAL: S6's Ctrl+B reading, kept for its parked record
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -947,8 +948,21 @@ await withHarness(async (app) => {
   //   draftMarkState.count > 0 && !draftMarkState.anyHiddenClass && Math.abs(parseFloat(draftMarkState.opacity) - 0.38) < 0.05,
   //   JSON.stringify(draftMarkState));
   // ----------------------------------------------------------------------
-  ok('S6 [PR #7 successor]: Draft mode hides its marks too - its .md-mark spans carry .md-mark-hidden (item 211 applies to every writing surface)',
-    draftMarkState.count > 0 && draftMarkState.anyHiddenClass, JSON.stringify(draftMarkState));
+  // ---- PARKED - SUPERSEDED by typed-literal (Nick's ruling, Oct 16: a hand-typed `**` is LITERAL, stored escaped) ----
+  // Kept VERBATIM and no longer run. Typed `**bold in draft**` makes no bold run now - its stars are escaped - so the hidden marks this
+  // counted are the escapes' backslashes, and the check would pass for the wrong reason. Bold comes from Ctrl+B: successor below.
+  // ok('S6 [PR #7 successor]: Draft mode hides its marks too - its .md-mark spans carry .md-mark-hidden (item 211 applies to every writing surface)',
+  //   draftMarkState.count > 0 && draftMarkState.anyHiddenClass, JSON.stringify(draftMarkState));
+  // ------------------------------------------------------------------
+  void draftMarkState;
+  await app.keyCombo('a'); await sleep(150);
+  await app.keyCombo('b'); await sleep(300);
+  fx5DraftBold = await app.evalJs(`(() => {
+    const marks = [...document.querySelectorAll('.forward-only-editor .md-bold > .md-mark')].filter(m => !m.classList.contains('md-escape'));
+    return { bold: document.querySelectorAll('.forward-only-editor .md-bold').length, marks: marks.length, allHidden: marks.every(m => m.classList.contains('md-mark-hidden')) };
+  })()`);
+  ok('S6 [typed-literal successor]: Draft mode hides its marks too - a bold made with Ctrl+B carries its two real marks, both .md-mark-hidden (item 211 applies to every writing surface)',
+    !!fx5DraftBold && fx5DraftBold.bold >= 1 && fx5DraftBold.marks >= 2 && fx5DraftBold.allHidden, JSON.stringify(fx5DraftBold));
 
   // ==========================================================================
   // S7 — the em dash (Word convention): "--word " -> "—word ". Scoped to
@@ -1237,6 +1251,9 @@ if (process.env.HARNESS_PARKED === '1') {
   // own reading: the mask's FIRST stop is the 15% floor, not an opaque one.
   pok('PARKED (was "S1 (b): the container mask genuinely carries a two-stage ramp now (opaque lead-in, then the fade) ...") - TYPEWRITER-FADE-ORDER (Nick, 2026-10-10): the opaque lead-in showed the oldest line whole above fainter newer ones; the mask now starts at the 15% floor; live successor: typewriter-fade.mjs',
     typeof fx5MaskSeen === 'string' && /linear-gradient\(\s*(?:to bottom,\s*)?rgba\(0, 0, 0, 0\.15\)/.test(fx5MaskSeen), String(fx5MaskSeen));
+  // TYPED-LITERAL (2026-10-16) - S6's typed-marks reading. Its record asserts the new truth from the live run: the hidden marks are a Ctrl+B run's.
+  pok('PARKED (was "S6 [PR #7 successor]: Draft mode hides its marks too - its .md-mark spans carry .md-mark-hidden (item 211 applies to every writing surface)") - typed-literal: typed `**` is literal now; live successor: S6 [typed-literal successor] (Ctrl+B)',
+    !!fx5DraftBold && fx5DraftBold.bold >= 1 && fx5DraftBold.marks >= 2 && fx5DraftBold.allHidden, JSON.stringify(fx5DraftBold));
   // The 211 card port (2026-10-06) - one park: S6's reveal-adjacent check; the record follows reality (nothing shows).
   pok('PARKED (was "S6: reveal-adjacent-to-caret — once the caret sits inside/beside the bold run, its OWN markers become visible again") - 211 card port (2026-10-06): the popup now runs the page\'s editing rules, so it shows no mark at any caret, as the page',
     !!fx5CardReveal && fx5CardReveal.anyRevealed === false, JSON.stringify(fx5CardReveal));
