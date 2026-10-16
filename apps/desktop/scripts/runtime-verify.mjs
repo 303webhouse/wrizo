@@ -44,6 +44,17 @@ import { fileURLToPath } from 'node:url';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_DIST = path.resolve(HERE, '..', 'dist-web');
 
+// RESUME ON OPEN: this double answers /auth/me with a test user, so EVERY harness boot is a signed-in cold boot at `#/`
+// - and the app now lands a signed-in writer on their last place instead of the front door. The ~120 harnesses that
+// start at the front door (goto('/') + .wz-arrival) would all be carried away. So the double serves index.html with the
+// landing switched OFF (window.__wrizoNoLanding, read by components/LandingGate.tsx) unless WS_LANDING=1, which only
+// scripts/harness/resume-on-open.mjs sets. Served in the HTML itself, not injected after launch, so even the very first
+// document is covered; a localStorage.clear() in a harness cannot undo it.
+function noLandingIndex(body) {
+  if (process.env.WS_LANDING === '1') return body;
+  return Buffer.from(String(body).replace('<head>', '<head><script>window.__wrizoNoLanding=true</script>'));
+}
+
 const MIME = {
   '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css',
   '.woff2': 'font/woff2', '.woff': 'font/woff', '.json': 'application/json',
@@ -257,13 +268,13 @@ function startServer(dist) {
     const rel = p === '/' || p === '' ? '/index.html' : p;
     const file = path.join(dist, rel);
     if (file.startsWith(dist) && existsSync(file) && !file.endsWith(path.sep)) {
-      const body = await readFile(file);
+      const body = path.basename(file) === 'index.html' ? noLandingIndex(await readFile(file)) : await readFile(file);
       res.writeHead(200, { 'content-type': MIME[path.extname(file)] || 'application/octet-stream' });
       return res.end(body);
     }
     // SPA fallback (hash routing rarely needs it, but harmless).
     res.writeHead(200, { 'content-type': 'text/html' });
-    res.end(await readFile(path.join(dist, 'index.html')));
+    res.end(noLandingIndex(await readFile(path.join(dist, 'index.html'))));
   });
   return new Promise((resolve) => {
     server.listen(0, '127.0.0.1', () => resolve({ server, port: server.address().port }));

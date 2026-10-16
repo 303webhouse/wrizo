@@ -17,6 +17,7 @@ import { ImportDraft } from './pages/ImportDraft';
 import { VoiceWallWhisper } from './components/VoiceWallWhisper';
 import { ThemeEffectsLayer } from './components/ThemeEffectsLayer';
 import { Splash } from './components/Splash';
+import { LandingGate } from './components/LandingGate';
 import { FluxBlockCaret } from './components/FluxBlockCaret';
 import { ContextMenuHost } from './components/ContextMenuHost';
 import { DeleteDialog } from './components/DeleteDialog';
@@ -35,6 +36,7 @@ import { flushAll } from './store/flushRegistry';
 import { LogoutBlockedSheet } from './components/LogoutBlockedSheet';
 import { StaleClientBanner } from './components/StaleClientBanner';
 import { isSignedOutHere, markSignedOutHere, clearSignedOutHere } from './store/signedOutHere';
+import { clearLastPlace } from './store/lastPlace';
 import { SyncIndicator, FullscreenToggle } from './components/ChromeControls';
 
 // B1 S5 — the old Journal module surface (pages/Journal.tsx, the list/home
@@ -301,6 +303,7 @@ export function App() {
       await endServerSession(apiLogout);
       // Mark first: even if the local reset below fails, this device stays on the sign-in screen.
       markSignedOutHere();
+      clearLastPlace(); // RESUME ON OPEN: this device's pointer goes with the session (it cannot throw, so "mark first" still holds)
       window.location.hash = '#/';
       stopSync();
       clearLastSyncAt();
@@ -350,6 +353,8 @@ export function App() {
         <ContextMenuHost />
         <DeleteDialog />
         <SignedOutRouteGuard authState={authState} />
+        {/* RESUME ON OPEN: remembers the open Page/board and, on the first signed-in boot, lands there instead of the front door. Renders nothing. */}
+        <LandingGate authState={authState} />
         {/* LOGOUT SAFETY — an overlay beside the routes, never inside one: it cannot unmount the page. */}
         <LogoutBlockedSheet />
         {/* B10.1 - the stale-client banner: App level, every route and auth state; a portal, so it displaces nothing. */}
