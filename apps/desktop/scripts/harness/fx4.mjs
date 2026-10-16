@@ -34,6 +34,7 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+let fx4S5CloseX = null; // card-close-x - the live S5 observation, kept for the parked leg's record
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const LAPTOP_W = 1280;
@@ -506,6 +507,8 @@ await withHarness(async (app) => {
   // and THIS is its live successor — the button reads "Close" and still closes,
   // un-blurs, and commits (class board-popup-done + behavior all unchanged).
   const closeBtnLabel = await app.evalJs("document.querySelector('.board-popup-done')?.textContent.trim()");
+  // card-close-x — the X's accessible name (its textContent is the glyph).
+  const closeBtnName = await app.evalJs("document.querySelector('.board-popup-done')?.getAttribute('aria-label') ?? null");
   await app.evalJs("document.querySelector('.board-popup-done').click()");
   await sleep(300);
   const afterDone = await app.evalJs(`(() => ({
@@ -513,8 +516,19 @@ await withHarness(async (app) => {
     blurGone: !document.querySelector('.board-canvas-blur-wrap').classList.contains('board-canvas-blurred'),
     committedText: (window.wrizoBoard() || []).find(b => b.id === 'fx4-s5-card')?.text,
   }))()`);
-  ok('S5 (CD4.1 successor): the "Close" button closes the popup, un-blurs the board, and commits the edit — the card-edit popup close control relabeled Close (class board-popup-done + behavior unchanged)',
-    afterDone.popupGone && afterDone.blurGone && afterDone.committedText === '**Before edit**' && closeBtnLabel === 'Close', JSON.stringify({ ...afterDone, closeBtnLabel }));
+  // ---- PARKED — SUPERSEDED by card-close-x (Nick's live test, 2026-10-13) ----
+  // Kept VERBATIM and no longer run. The close control is an X in the pop-up's
+  // top-right corner now: it SHOWS a glyph, not the word, so its textContent is
+  // no longer "Close" - its accessible NAME is (aria-label + title). It keeps the
+  // class board-popup-done, so the click above still drives it. The record lives
+  // on in this file's parked section; the live successor follows.
+  //
+  // ok('S5 (CD4.1 successor): the "Close" button closes the popup, un-blurs the board, and commits the edit — the card-edit popup close control relabeled Close (class board-popup-done + behavior unchanged)',
+  //   afterDone.popupGone && afterDone.blurGone && afterDone.committedText === '**Before edit**' && closeBtnLabel === 'Close', JSON.stringify({ ...afterDone, closeBtnLabel }));
+  // ------------------------------------------------------------------
+  fx4S5CloseX = { ...afterDone, closeBtnLabel, closeBtnName };
+  ok('S5 [card-close-x successor]: the close X (accessible name "Close", class board-popup-done) closes the popup, un-blurs the board, and commits the edit',
+    afterDone.popupGone && afterDone.blurGone && afterDone.committedText === '**Before edit**' && closeBtnName === 'Close', JSON.stringify(fx4S5CloseX));
 
   // Escape also closes.
   // FX7 S5 — same coordinate-carrying fix (see above).
@@ -733,8 +747,12 @@ if (process.env.HARNESS_PARKED === '1') {
     // door 2's own affordance. Five tools now — live successor in
     // b3.mjs's own S4 section (an ordered-labels check, the shape this
     // lineage settled on).
-    pok('PARKED (was "S6: the sliver\'s Connect toggle RETIRES — the board sliver carries Add card alone now") — FX5 S5: a SECOND control joins it (the connections-footer toggle, "Add card + this, two controls" — the brief\'s own words); generation 2: FX6 S2b adds a THIRD (New page card); generation 3: B2 S5 adds a FOURTH (Existing page…); generation 4: B3 S3 adds a FIFTH (From a deck…) — live successor in b3.mjs\'s own S4 section',
-      sliverShape.buttonCount === 5, JSON.stringify(sliverShape));
+    // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+    // The footer toggle left the board sliver: FOUR tools now.
+    // Quoted VERBATIM below. Successor: the pok directly below (generation 5); live ordered-labels successor in b3.mjs generation 8.
+    // pok('PARKED (was "S6: the sliver\'s Connect toggle RETIRES — the board sliver carries Add card alone now") — FX5 S5: a SECOND control joins it (the connections-footer toggle, "Add card + this, two controls" — the brief\'s own words); generation 2: FX6 S2b adds a THIRD (New page card); generation 3: B2 S5 adds a FOURTH (Existing page…); generation 4: B3 S3 adds a FIFTH (From a deck…) — live successor in b3.mjs\'s own S4 section',
+    //   sliverShape.buttonCount === 5, JSON.stringify(sliverShape));
+    pok('PARKED, generation 5 [connector-a successor] - the board sliver carries FOUR hand tools now: the footer toggle is retired', sliverShape.buttonCount === 4 && !sliverShape.labels.includes('Show grafts'), JSON.stringify(sliverShape));
 
     // CD4.1 (2026-07-24) — the card-edit popup's close button is relabeled
     // "Done" -> "Close" (Fable's ruling; the DoD says no surface says Done). The
@@ -755,8 +773,15 @@ if (process.env.HARNESS_PARKED === '1') {
       const btn = document.querySelector('.board-popup-done');
       return { present: !!btn, label: btn ? btn.textContent.trim() : null };
     })()`);
-    pok('PARKED (was "S5: Done closes the popup, un-blurs the board, and commits the edit") — CD4.1: the card-edit popup close button is relabeled "Close" (class board-popup-done + behavior unchanged); live successor: this file\'s own live S5 section',
-      popupCloseNow.present === true && popupCloseNow.label === 'Close', JSON.stringify(popupCloseNow));
+    // SUPERSEDED by card-close-x (2026-10-13) — kept VERBATIM, no longer run: the
+    // close control's textContent is the X glyph now, its NAME is "Close".
+    // pok('PARKED (was "S5: Done closes the popup, un-blurs the board, and commits the edit") — CD4.1: the card-edit popup close button is relabeled "Close" (class board-popup-done + behavior unchanged); live successor: this file\'s own live S5 section',
+    //   popupCloseNow.present === true && popupCloseNow.label === 'Close', JSON.stringify(popupCloseNow));
+    const popupCloseName = await app.evalJs("document.querySelector('.board-popup-done')?.getAttribute('aria-label') ?? null");
+    pok('PARKED (was "S5: Done closes the popup, un-blurs the board, and commits the edit") — CD4.1: relabeled "Close"; generation 2 (card-close-x): the close control is an X in the top-right corner whose accessible name is "Close" (class board-popup-done + behavior unchanged); live successor: this file\'s own live S5 section',
+      popupCloseNow.present === true && popupCloseName === 'Close', JSON.stringify({ ...popupCloseNow, name: popupCloseName }));
+    pok('PARKED (was "S5 (CD4.1 successor): the \\"Close\\" button closes the popup, un-blurs the board, and commits the edit — the card-edit popup close control relabeled Close (class board-popup-done + behavior unchanged)") — card-close-x: the close control is an X whose accessible name is "Close"; live successor: this file\'s own live S5 [card-close-x successor]',
+      !!fx4S5CloseX && fx4S5CloseX.popupGone && fx4S5CloseX.blurGone && fx4S5CloseX.closeBtnName === 'Close', JSON.stringify(fx4S5CloseX));
 
     // ORIGINAL (this file's own live S1 section, pre-SC1): await
     // freshScriptPage(app, LAPTOP_W, 900); const scriptInfo = await

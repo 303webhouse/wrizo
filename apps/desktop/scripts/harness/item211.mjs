@@ -307,8 +307,11 @@ await withHarness(async (app) => {
       return { heading: r.querySelector('.wz-sliver-h').textContent, afterTemplates: !!r.previousElementSibling && r.previousElementSibling.classList.contains('wz-sliver-templates'),
         kinds: [...r.querySelectorAll('[data-page-kind]')].map(b => b.textContent + (b.getAttribute('aria-checked') === 'true' ? '*' : '')),
         convert: [...document.querySelectorAll('.wz-sliver .wz-cascade-action')].filter(b => /^Convert to/.test(b.textContent || '')).length }; })()`);
-    ok('R2: Draft\'s drawer has a "Page kind" row directly below the Templates - Normal (chosen), Screenplay, Research - and no Convert row',
-      !!row && row.heading === 'Page kind' && row.afterTemplates && row.kinds.join(',') === 'Normal*,Screenplay,Research' && row.convert === 0, JSON.stringify(row));
+  // SUPERSEDED (item word-diet, Nick) — railPageKind reworks, "Page kind" -> "Pages Kind".
+  // ok('R2: Draft\'s drawer has a "Page kind" row directly below the Templates - Normal (chosen), Screenplay, Research - and no Convert row',
+  //   !!row && row.heading === 'Page kind' && row.afterTemplates && row.kinds.join(',') === 'Normal*,Screenplay,Research' && row.convert === 0, JSON.stringify(row));
+    ok('R2 [word-diet successor]: Draft\'s drawer has a "Pages Kind" row directly below the Templates - Normal (chosen), Screenplay, Research - and no Convert row',
+      !!row && row.heading === 'Pages Kind' && row.afterTemplates && row.kinds.join(',') === 'Normal*,Screenplay,Research' && row.convert === 0, JSON.stringify(row));
     const rect = () => app.evalJs(`(() => { const r = document.querySelector('${ED}').getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round).join(','); })()`);
     const r0 = await rect();
     await app.evalJs("document.querySelector('.wz-sliver-page-kind [data-page-kind=\"research\"]').click()"); await sleep(500);

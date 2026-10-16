@@ -1,0 +1,13 @@
+BGP DEFAULT DONE
+BGP PARKED DONE
+bg1 main default exit 1
+bg1 main parked exit 1
+bg2 main default exit 1
+bg2 main parked exit 1
+BGP CONTROL DONE
+CLC LANE DONE
+CLC FRAMES DONE exit 0
+TDP DONE exit 0
+SB8 DEFAULT DONE
+SB8 PARKED DONE
+Q COMPLETE

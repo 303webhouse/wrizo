@@ -63,23 +63,32 @@ export function boardDrawerLine(board: JournalEntry): string {
 // BoardEditor.tsx, ScriptEditor.tsx) is untouched; only what this function
 // itself decides changes.
 export function describePageHome(entry: JournalEntry, project: Project | null, pinnedBoardTitles: string[] = []): { homeLabel: string; memberships: string[] } {
+  // ITEM word-diet (Nick, Oct 13) — "just the location", found hardcoded
+  // during the census and moved into the lexicon: pageHomeLoose/
+  // pageHomeJournal/pageHomeProject/pageHomeAlso. pageHomeProject's own
+  // "{drawer name}" is a literal placeholder token in the lexicon value,
+  // substituted here the same way syncNotice.ts's own {title}/{n} are —
+  // read as "interpolate the place name" rather than a rename to a
+  // different underlying entity (today that's still the project's own
+  // title; flagged for confirmation in the report).
+  const journalLabel = deskTerm('pageHomeJournal');
   let homeLabel: string;
   if (entry.projectId) {
-    homeLabel = `In ${project?.title || 'Untitled'}`;
+    homeLabel = deskTerm('pageHomeProject').replace('{drawer name}', () => project?.title || 'Untitled');
   } else if (inJournalView(entry)) {
-    homeLabel = 'In the Journal';
+    homeLabel = journalLabel;
   } else if (entry.origin === 'loose') {
-    homeLabel = 'Loose — belongs nowhere yet';
+    homeLabel = deskTerm('pageHomeLoose');
   } else {
     // Not filed, not journal-homed, and not the loose-origin door either
     // (a 'project'-origin page un-filed, or a legacy grandfathered row
     // that used to read `shelved` true) — the honest fact is the same
     // "belongs nowhere yet" the loose door already uses; T3 (persistence.ts)
     // is what actually lands it on the Shelf at the next reconcile.
-    homeLabel = 'Loose — belongs nowhere yet';
+    homeLabel = deskTerm('pageHomeLoose');
   }
   const memberships: string[] = [];
-  if (inJournalView(entry) && homeLabel !== 'In the Journal') memberships.push('Also in the Journal.');
+  if (inJournalView(entry) && homeLabel !== journalLabel) memberships.push(deskTerm('pageHomeAlso'));
   for (const title of pinnedBoardTitles) memberships.push(`${deskTerm('pageFacePinnedTo')} ${title}.`);
   return { homeLabel, memberships };
 }

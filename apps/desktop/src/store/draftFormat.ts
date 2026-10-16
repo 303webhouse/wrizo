@@ -55,6 +55,9 @@ export interface FormatResult {
   /** A mark to wrap around the NEXT text typed at `start`, when an empty pair of it cannot be stored (see toggleInline). The text is
    *  unchanged; the editor holds the mark until the writer types there, or moves away. */
   pending?: string;
+  /** card-held-italic: a mark whose run ENDS for the next text typed at `start` - the caret sat directly before the run's own closing
+   *  mark when the writer pressed it off. The text is unchanged; the editor types what comes next OUTSIDE the closing mark. */
+  exitPending?: string;
 }
 
 function lineBounds(text: string, at: number): { start: number; end: number } {
@@ -157,6 +160,12 @@ function toggleInline(text: string, start: number, end: number, mark: string): F
       const empty = runsOf(w.text.slice(wls, wle), mark).some(r => r.open === start - wls && r.close === r.open + ml);
       return empty ? w : { text, start, end, pending: mark };
     }
+    // CARD-HELD-ITALIC (chat 1's card-port frames, C3a; the page did the same): a press with the caret DIRECTLY BEFORE this run's own
+    // closing mark, the run holding text, is the writer turning the style OFF where they are typing - Ctrl+I, words, Ctrl+I, more words.
+    // Removing the run there unwrapped the very words the held mark had just made. So the run stays, and the mark is held as an EXIT:
+    // what is typed next lands after the closing mark (store/hiddenMarksEditing.ts). Anywhere else inside a run - the middle, the start
+    // - the press removes the run, as it always has; an EMPTY pair (a press just made it) is not an exit either.
+    if (at === run.close && run.close > run.open + ml) return { text, start, end, exitPending: mark };
     const o = ls + run.open;
     const c = ls + run.close;
     const next = text.slice(0, o) + text.slice(o + ml, c) + text.slice(c + ml);

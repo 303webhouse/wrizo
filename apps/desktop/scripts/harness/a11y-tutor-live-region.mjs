@@ -57,8 +57,21 @@ ok('A8: the writer\'s own message append (a separate line, earlier in the same f
 
 // ---- it lives where aria-hidden already silences it while closed ----------
 const panelOpenTag = tutorSrc.match(/<div className="wz-tutor-panel" aria-hidden=\{!open\}[^>]*>\r?\n(\s*\{\/\*[\s\S]*?\*\/\}\r?\n)?\s*<div className="wz-sr-only"/);
-ok('A8: the live region is the FIRST thing inside .wz-tutor-panel (aria-hidden={!open}) — an aria-hidden ancestor already keeps a live region silent while the Tutor is closed, so no new closed-state guard was needed',
-  !!panelOpenTag, '');
+// ---- PARKED - SUPERSEDED by Phase 1 (the Tutor panel's only child is now the sliding layer, <SideDrawer>, which holds the tab row and the bodies; "the FIRST thing inside .wz-tutor-panel" is no longer literal, the CLAIM it guarded is unchanged), 2026-10-12 ----
+// Kept VERBATIM and no longer run. The successor follows.
+//
+// ok('A8: the live region is the FIRST thing inside .wz-tutor-panel (aria-hidden={!open}) — an aria-hidden ancestor already keeps a live region silent while the Tutor is closed, so no new closed-state guard was needed',
+//   !!panelOpenTag, '');
+// ----------------------------------------------------------------------
+const panelTagStart = tutorSrc.indexOf('<div className="wz-tutor-panel"');
+const panelTagLine = panelTagStart < 0 ? '' : tutorSrc.slice(panelTagStart, tutorSrc.indexOf('\n', panelTagStart));
+const sdStart = tutorSrc.indexOf('<SideDrawer side="right"');
+const liveStart = tutorSrc.indexOf('<div className="wz-sr-only" role="status"');
+const bodyCond = tutorSrc.indexOf("{rightTab === 'tutor' && (");
+const betweenSdAndLive = sdStart < 0 || liveStart < 0 ? 'x' : tutorSrc.slice(tutorSrc.indexOf('>', sdStart) + 1, liveStart);
+ok('A8 successor [Phase 1 drawers]: the live region is still INSIDE the aria-hidden .wz-tutor-panel - now the first thing inside its <SideDrawer>, ahead of the tab bodies and OUTSIDE the rightTab conditional - so the aria-hidden ancestor still keeps it silent while the Tutor is closed, and a tab switch never remounts it (no new closed-state guard was needed)',
+  panelTagStart >= 0 && panelTagLine.includes('aria-hidden={!open}') && panelTagStart < sdStart && sdStart < liveStart && liveStart < bodyCond && /^\s*(\{\/\*[\s\S]*?\*\/\}\s*)?$/.test(betweenSdAndLive),
+  JSON.stringify({ panelTagStart, sdStart, liveStart, bodyCond }));
 
 // ---- CSS: sr-only is the clip pattern (AT-visible, visually hidden) — ----
 // NOT display:none or visibility:hidden, either of which would ALSO hide it

@@ -1,0 +1,28 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=3cf3c1b8 bundle=index-CQYnxuzP.js/682407b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/tlp-default-c01
+[01/19] OK        exit=0   17s card-resize-axis.mjs :: CARD-RESIZE-AXIS VERIFY: PASS (16 checks)
+[02/19] OK        exit=0   29s card-resize-relock.mjs :: CARD-RESIZE-RELOCK VERIFY: PASS (10 checks)
+[03/19] OK        exit=0   14s cd1.mjs :: ROWS-SHADOW VERIFY: PASS (23 renders checked, shadow == DOM on every one) ;; CD1 VERIFY: PASS (25 checks)
+[04/19] OK        exit=0   34s cd2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; CD2 VERIFY: PASS (50 checks)
+[05/19] OK        exit=0   24s cd4.mjs :: CD4 VERIFY: PASS (27 checks)
+[06/19] OK        exit=0   52s clickhead.mjs :: ROWS-SHADOW VERIFY: PASS (18 renders checked, shadow == DOM on every one) ;; CLICKHEAD VERIFY: PASS (21 checks)
+[07/19] OK        exit=0   46s connector-a.mjs :: CONNECTOR-A VERIFY: PASS (37 checks)
+[08/19] OK        exit=0   23s deckwizard-backdrop.mjs :: DECKWIZARD-BACKDROP VERIFY: PASS (8 checks)
+[09/19] OK        exit=0    4s drafts-integrity.mjs :: DRAFTS-INTEGRITY VERIFY: PASS (23 checks)
+[10/19] OK        exit=0    1s drawer-ghost.mjs :: DRAWER-GHOST VERIFY: PASS (14 checks)
+[11/19] OK        exit=0    0s drawer-toggles.mjs :: DRAWER-TOGGLES VERIFY: PASS (34 checks)
+[12/19] OK        exit=0  144s drawers-p1-live.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; DRAWERS-P1-LIVE VERIFY: PASS (88 checks)
+[13/19] FAIL      exit=1    2s drawers-p1.mjs :: DRAWERS-P1 VERIFY: FAIL — 2/99
+[14/19] OK        exit=0   37s e1.mjs :: E1 VERIFY: PASS (41 checks)
+[15/19] OK        exit=0    8s e3.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; E3 VERIFY: PASS (10 checks)
+[16/19] OK        exit=0   11s e4.mjs :: E4 VERIFY: PASS (19 checks)
+[17/19] OK        exit=0   30s escexit.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; ESCEXIT VERIFY: PASS (31 checks)
+[18/19] OK        exit=0    0s fix-signin-live-double.mjs :: FIX-SIGNIN-LIVE-DOUBLE VERIFY: PASS (5 checks) — live walk not run (box turn)
+[19/19] OK        exit=0   48s flux-card-ink.mjs :: FLUX-CARD-INK VERIFY: PASS (24 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 18/19 of 19 returned a passing verdict
+  FAIL: drawers-p1.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\tlp-default-c01\drawers-p1.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=3cf3c1b8 bundle=index-CQYnxuzP.js/682407b NO-REBUILD
+CHUNK 01 EXIT 1

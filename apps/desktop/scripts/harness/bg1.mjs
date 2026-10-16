@@ -122,6 +122,9 @@ const clickScreenplayTemplate = async (app) => {
   // OPEN is the strip's own state (data-open), never the presence of a section: the body stays mounted while the drawer is shut.
   if (!(await app.evalJs(`!!document.querySelector(".wz-sliver[data-open='true']")`))) await openSliver(app);
   try { await app.waitFor(`!!document.querySelector(".wz-sliver[data-open='true']")`, { label: 'strip open', timeout: 3000 }); } catch { /* reported below */ }
+  // HARNESS LAW (Chat 1's run, 2026-10-12; the drawer's arrival is ~0.2 s and, by Phase 1's design, its contents take no pointer input until it has settled - an early press is a CLEAN NO-OP): open is the STATE, the drawer is not
+  // THERE until the sliding layer has arrived and is live. Every press below is made only after that, as a writer's hand would.
+  try { await app.waitFor(`(() => { const l = document.querySelector('.wz-sliver-panel > .wz-drawer-slide'); if (!l) return false; const cs = getComputedStyle(l); return cs.transform === 'none' && cs.pointerEvents !== 'none'; })()`, { label: 'drawer settled and live', timeout: 3000 }); } catch { /* reported below */ }
   // the strip scrolls: Templates sit below its fold, so the control is brought into view first, as a writer would scroll to it
   await app.evalJs(`document.querySelector('.wz-template-live[data-template="screenplay"]')?.scrollIntoView({ block: 'center', inline: 'nearest' })`);
   await sleep(150);
@@ -160,8 +163,16 @@ await withHarness(async (app) => {
   const openDoors = await doorLabels(app);
   // SUPERSEDED (item arbor-quiet-brass): "Connect a Page" -> "Graft a Page" (Arbor's own word).
   // ok('S1 (OPEN): an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief's order — New Card · New Page Card · Load a Deck · Connect a Page', JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', 'Connect a Page']), JSON.stringify(openDoors));
-  ok('S1 (OPEN, arbor-quiet-brass successor): an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Page Card · Load a Deck · Graft a Page',
-    JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', 'Graft a Page']), JSON.stringify(openDoors));
+  // SUPERSEDED (item word-diet, Nick, HOLD resolved): "Graft a Page" ->
+  // "+ Filed Pages".
+  // ok('S1 (OPEN, arbor-quiet-brass successor): an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Page Card · Load a Deck · Graft a Page',
+  //   JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', 'Graft a Page']), JSON.stringify(openDoors));
+  // SUPERSEDED (item word-diet, Nick, review fix) — beginNewPageCard reworks,
+  // "New Page Card" -> "New Pages Card" (pages-rename bucket (a)).
+  // ok('S1 (OPEN, word-diet successor): an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Page Card · Load a Deck · + Filed Pages',
+  //   JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', '+ Filed Pages']), JSON.stringify(openDoors));
+  ok('S1 (OPEN) [word-diet successor]: an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Pages Card · Load a Deck · + Filed Pages',
+    JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Pages Card', 'Load a Deck', '+ Filed Pages']), JSON.stringify(openDoors));
 
   // Quiet olive — the brief's own word for the doors' color, and the hue the
   // house reserves for "this is a door" (--accent-rest, #96a05a).
@@ -298,8 +309,15 @@ await withHarness(async (app) => {
   const planBoardDoors = await doorLabels(app);
   // SUPERSEDED (item arbor-quiet-brass): "Connect a Page" -> "Graft a Page".
   // ok('S1: a paired plan board takes OPEN's row — it is an ordinary board and gets the ordinary four doors', JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', 'Connect a Page']), JSON.stringify(planBoardDoors));
-  ok('S1 (arbor-quiet-brass successor): a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
-    JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', 'Graft a Page']), JSON.stringify(planBoardDoors));
+  // SUPERSEDED (item word-diet, Nick, HOLD resolved): "Graft a Page" -> "+ Filed Pages".
+  // ok('S1 (arbor-quiet-brass successor): a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
+  //   JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', 'Graft a Page']), JSON.stringify(planBoardDoors));
+  // SUPERSEDED (item word-diet, Nick, review fix) — beginNewPageCard reworks,
+  // "New Page Card" -> "New Pages Card".
+  // ok('S1 (word-diet successor): a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
+  //   JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', '+ Filed Pages']), JSON.stringify(planBoardDoors));
+  ok('S1 [word-diet successor]: a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
+    JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Pages Card', 'Load a Deck', '+ Filed Pages']), JSON.stringify(planBoardDoors));
 
   // ==========================================================================
   // S2 — the page's row. THE load-bearing check first: the page is already
@@ -443,8 +461,24 @@ await withHarness(async (app) => {
   await freshBoard(app, 'bg1-grammar-board', [], LAPTOP_W, 900);
   const boardStyle = await app.evalJs(`(() => { const cs = getComputedStyle(document.querySelector('.wz-beginning'));
     return { font: cs.fontFamily, size: cs.fontSize, color: cs.color, opacity: cs.opacity }; })()`);
-  ok('S3: the board row and the page row ARE one component — identical computed type, size, color and resting weight on both surfaces',
-    JSON.stringify(pageStyle) === JSON.stringify(boardStyle), JSON.stringify({ pageStyle, boardStyle }));
+  // ---- PARKED - SUPERSEDED by board-click-to-create (Nick's faint-starters ruling, Oct 14-15; merged 7b4a3826) ----
+  // The BOARD's starters are a thin square outline at 40% opacity now (the page row keeps full strength), so "identical ... resting weight" - compared through opacity - is no longer true.
+  // Quoted VERBATIM below. Successor: the two checks directly below (same component: identical type/size/colour, board faint at 0.4, page 1; the board starters fade on the first press).
+  // ok('S3: the board row and the page row ARE one component — identical computed type, size, color and resting weight on both surfaces',
+  //   JSON.stringify(pageStyle) === JSON.stringify(boardStyle), JSON.stringify({ pageStyle, boardStyle }));
+  const noOpacity = (s) => ({ font: s.font, size: s.size, color: s.color });
+  ok('S3 [faint-starters successor]: the board row and the page row ARE one component - identical computed type, size and color on both surfaces - and differ in ONE thing only, by ruling: the board starters rest at opacity 0.4, the page row at 1',
+    JSON.stringify(noOpacity(pageStyle)) === JSON.stringify(noOpacity(boardStyle)) && boardStyle.opacity === '0.4' && pageStyle.opacity === '1', JSON.stringify({ pageStyle, boardStyle }));
+  {
+    const fp = await app.evalJs("(() => { const c = document.querySelector('.board-canvas'); const r = c.getBoundingClientRect(); for (let y = r.top + 60; y < Math.min(r.bottom, innerHeight - 150); y += 30) for (let x = r.left + 60; x < r.right - 60; x += 30) if (document.elementFromPoint(x, y) === c) return { x: Math.round(x), y: Math.round(y) }; return null; })()");
+    if (!fp) ok('S3 [faint-starters successor]: a point on the empty board canvas exists to press', false, 'none');
+    else {
+      await app.mouseMove(fp.x, fp.y); await app.mouseDown(fp.x, fp.y); await sleep(700);
+      const faded = await app.evalJs("(() => { const s = document.querySelector('.wz-beginnings[data-beginnings=\"board\"]'); if (!s) return null; const cs = getComputedStyle(s); return { opacity: cs.opacity, visibility: cs.visibility }; })()");
+      await app.mouseUp(fp.x, fp.y); await sleep(500); await app.key('Escape'); await sleep(400);   // the press made a card and opened its pop-up; closed empty, it is discarded
+      ok('S3 [faint-starters successor]: the board starters FADE on the first press anywhere on the board (opacity 0, hidden) while the pointer is still down', !!faded && faded.opacity === '0' && faded.visibility === 'hidden', JSON.stringify(faded));
+    }
+  }
 
   // ==========================================================================
   // The 1366×768 leg — both rows' geometry at the small-laptop floor.
@@ -516,8 +550,15 @@ if (process.env.HARNESS_PARKED === '1') {
         doorToken: doc.getPropertyValue('--accent-door').trim(),
         oldToken: doc.getPropertyValue('--accent-rest').trim() };
     })()`);
-    pok('PARKED (was "S1: the doors are painted in the house olive (--accent-rest #96a05a), quietly (resting opacity below full) — olive means \\"this is a door\\"") — BG2 S1 steps the SAME olive down in value to --accent-door (#4F5730) for legibility on cream and retires the resting opacity: the door is quiet by value now, not by fade; live successor: bg2.mjs',
-      paintNow.color === 'rgb(79, 87, 48)' && parseFloat(paintNow.opacity) === 1 &&
+    // ---- PARKED - SUPERSEDED by board-click-to-create (Nick's faint-starters ruling, Oct 14-15; merged 7b4a3826) ----
+    // The board door is still the house olive at --accent-door (#4F5730) but rests at opacity 0.4 now, not 1 (BG2 had retired the resting opacity; the faint-starters ruling restores a quiet one, on the BOARD row only).
+    // Quoted VERBATIM below. Successor: the pok directly below (generation 2).
+    // pok('PARKED (was "S1: the doors are painted in the house olive (--accent-rest #96a05a), quietly (resting opacity below full) — olive means \\"this is a door\\"") — BG2 S1 steps the SAME olive down in value to --accent-door (#4F5730) for legibility on cream and retires the resting opacity: the door is quiet by value now, not by fade; live successor: bg2.mjs',
+    //   paintNow.color === 'rgb(79, 87, 48)' && parseFloat(paintNow.opacity) === 1 &&
+    //   paintNow.doorToken === '#4F5730' && paintNow.oldToken === '#96a05a',
+    //   JSON.stringify(paintNow));
+    pok('PARKED, generation 2 [faint-starters successor] (was the BG2-S1 re-derivation asserting opacity 1) - the board door keeps the olive value --accent-door (#4F5730) and rests at opacity 0.4 by Nick\'s faint-starters ruling',
+      paintNow.color === 'rgb(79, 87, 48)' && parseFloat(paintNow.opacity) === 0.4 &&
       paintNow.doorToken === '#4F5730' && paintNow.oldToken === '#96a05a',
       JSON.stringify(paintNow));
 

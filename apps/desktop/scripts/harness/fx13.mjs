@@ -59,8 +59,15 @@ await withHarness(async (app) => {
     const telos = await rectOf(app, '.board-telos');
     const door = await rectOf(app, '.board-door');
     const tab = await rectOf(app, '.board-mode-tab');
-    ok('S3 leg (1366x768): the board CHROME is wholly in the room — mode strip, telos, the PAGE door, and a mode tab all sit within the viewport (top>=0, bottom<=768)',
-      inRoom(modeStrip, LEG_H) && inRoom(telos, LEG_H) && inRoom(door, LEG_H) && inRoom(tab, LEG_H),
+    // SUPERSEDED (item word-diet, Nick) — boardTelos REMOVED whole
+    // (BoardEditor.tsx's own boardTelos const is now `null`), so `.board-telos`
+    // no longer exists at all; a geometry claim about a gone element is a
+    // category error, not a text change. ORIGINAL claim parked verbatim:
+    // ok('S3 leg (1366x768): the board CHROME is wholly in the room — mode strip, telos, the PAGE door, and a mode tab all sit within the viewport (top>=0, bottom<=768)',
+    //   inRoom(modeStrip, LEG_H) && inRoom(telos, LEG_H) && inRoom(door, LEG_H) && inRoom(tab, LEG_H),
+    //   JSON.stringify({ modeStrip, telos, door, tab, vpH: LEG_H }));
+    ok('S3 leg (1366x768) [word-diet successor]: the board CHROME is wholly in the room — mode strip, the PAGE door, and a mode tab all sit within the viewport (top>=0, bottom<=768); telos is genuinely gone (REMOVE), not merely out of room',
+      inRoom(modeStrip, LEG_H) && telos === null && inRoom(door, LEG_H) && inRoom(tab, LEG_H),
       JSON.stringify({ modeStrip, telos, door, tab, vpH: LEG_H }));
 
     // The height-law fix: the canvas WRAP fills the DeskFrame stage and never

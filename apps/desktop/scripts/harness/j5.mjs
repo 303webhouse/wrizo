@@ -378,8 +378,12 @@ await withHarness(async (app) => {
   await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim().startsWith('The Shelf')).click()");
   await sleep(400); // clear the 300ms debounced-flush window before reading localStorage
   const toastShelf = await app.evalJs("document.querySelector('.action-toast')?.textContent ?? null");
-  ok('Review fix (B2 S3): the "File to Shelf" toast is now HONEST for a journal-homed page — it says nothing moved, instead of falsely claiming it left the Journal',
-    toastShelf === "1 page stays in the Journal — a journal-homed page can't be shelved directly; nothing moved.", toastShelf);
+  // SUPERSEDED (item word-diet, Fable, review fix) — never a number
+  // directly before "Pages"; "These Pages" names the selection without one.
+  // ok('Review fix (B2 S3): the "File to Shelf" toast is now HONEST for a journal-homed page — it says nothing moved, instead of falsely claiming it left the Journal',
+  //   toastShelf === "1 page stays in the Journal — a journal-homed page can't be shelved directly; nothing moved.", toastShelf);
+  ok('Review fix (B2 S3) [word-diet successor]: the "File to Shelf" toast is now HONEST for a journal-homed page — it says nothing moved, instead of falsely claiming it left the Journal',
+    toastShelf === "These Pages stay in the Journal — a journal-homed page can't be shelved directly; nothing moved.", toastShelf);
   entries = await app.localJSON('writer-studio-journal-entries');
   const aAfter = entries.find((e) => e.id === A.id);
   ok('B2 S3 successor of "A is now on the Shelf (projectId null, shelved true)": projectId is cleared, but `shelved` is never written (dormant column) — un-filing a journal-origin page returns it to the Journal, not a Shelf-flag',
@@ -427,7 +431,10 @@ await withHarness(async (app) => {
   await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Standalone document here')).click()");
   await sleep(400); // clear the 300ms debounced-flush window before reading localStorage
   const toastStandalone = await app.evalJs("document.querySelector('.action-toast')?.textContent ?? null");
-  ok('FILE-standalone toast says "Untitled" and uses MOVES language', toastStandalone === 'Filed 1 page to Untitled — moved; it left the Journal.', toastStandalone);
+  // SUPERSEDED (item word-diet, Fable, review fix) — never a number
+  // directly before "Pages"; "these Pages" replaces the count.
+  // ok('FILE-standalone toast says "Untitled" and uses MOVES language', toastStandalone === 'Filed 1 page to Untitled — moved; it left the Journal.', toastStandalone);
+  ok('FILE-standalone toast says "Untitled" and uses MOVES language [word-diet successor]', toastStandalone === 'Filed these Pages to Untitled — moved; it left the Journal.', toastStandalone);
   const projectsAfterStandalone = await app.localJSON('writer-studio-projects');
   const standaloneBinder = projectsAfterStandalone.find((p) => p.drawerId === newDrawer.id);
   entries = await app.localJSON('writer-studio-journal-entries');
@@ -462,7 +469,7 @@ await withHarness(async (app) => {
   await app.evalJs(`[...document.querySelectorAll('button')].find(b => b.textContent.includes(${JSON.stringify(newDrawer.name)})).click()`); // root -> the drawer
   await app.waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('Untitled'))", { label: 'drawer level (3)' });
   await app.evalJs(`[...document.querySelectorAll('button')].find(b => b.textContent.includes('Untitled')).click()`); // drawer -> the standalone binder (title "Untitled")
-  await app.waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('File here as a new page'))", { label: 'binder level' });
+  await app.waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('File here as new Pages'))", { label: 'binder level' }); // DRIVER: AddToSheet's own text (item word-diet) -> 'File here as new Pages'
   const inkNoticeShown = await app.evalJs("!!document.querySelector('.add-ink-notice')");
   ok('the ink notice shows when the selection carries ink', inkNoticeShown === true);
   await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Append to')).click()");
@@ -570,7 +577,10 @@ await withHarness(async (app) => {
   await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Setup')).click()");
   await sleep(400); // clear the 300ms debounced-flush window before reading localStorage
   const toastLink = await app.evalJs("document.querySelector('.action-toast')?.textContent ?? null");
-  ok('plan-link toast carries the exact LINKS language', toastLink === 'Linked — marked routed to "Setup"; the page stays in the Journal.', toastLink);
+  // SUPERSEDED (item word-diet, Fable, review fix) — "these Pages" (capital
+  // P, not lowercased) replaces "the page(s)".
+  // ok('plan-link toast carries the exact LINKS language', toastLink === 'Linked — marked routed to "Setup"; the page stays in the Journal.', toastLink);
+  ok('plan-link toast carries the exact LINKS language [word-diet successor]', toastLink === 'Linked — marked routed to "Setup"; these Pages stay in the Journal.', toastLink);
   entries = await app.localJSON('writer-studio-journal-entries');
   const eAfter = entries.find((e) => e.id === E.id);
   ok('beatId + routedProjectIds set; nothing moved (projectId still null)', eAfter.beatId === 'setup' && eAfter.routedProjectIds?.includes(standaloneBinder.id) && eAfter.projectId == null, JSON.stringify({ beatId: eAfter.beatId, routed: eAfter.routedProjectIds, projectId: eAfter.projectId }));

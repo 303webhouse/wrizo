@@ -1,0 +1,665 @@
+# PHASE 1 — one shared drawer system for the page and the card
+
+**Status: PLAN ONLY — no code. For Fable's review, then Nick's rulings on §10.**
+**Branch:** `phase1-drawers` off `main` @ `76916ec8`. **Author:** INK. **Date:** 2026-10-09.
+**Source of truth for the design:** the board/card/page build plan (§1 + §3) lives in Nick's claude.ai project, not the repo (ledger,
+"NICK APPROVED THE BOARD/CARD/PAGE DESIGN"). INK has the brief as relayed plus the mockups, not the plan text. Anything below that
+leans on the plan's wording is marked *(per the brief)*; if the plan says otherwise, the plan wins.
+**Mockups read** (HTML/CSS/JS, via git; the PNGs were not viewed): `cursor/r7-mockup` @ `1eb2773` (`docs/mockups/r7/`),
+`cursor/card-mockup` and `cursor/rail-mockup` (round 6, frozen; `docs/mockups/{cards,rail}/`). The rail file is byte-identical on
+the r7 branch.
+
+**Naming.** In this repo "Drawers" already means the filing containers (D1, `/drawers`, "Add to…"). This plan says **side drawer**
+for the new tool panels and `SideDrawer` in code, and never "Drawers" for them. UI strings stay as the mockups have them (no word
+"drawer" is shown to the writer).
+
+---
+
+## 0. What Nick has ruled, as I am building to it
+
+| # | Ruling | Where it lands |
+|---|---|---|
+| R1 | ONE drawer system for page and card | §1 `SideDrawer`; page now, card by the same component (§4 for the P2 boundary) |
+| R2 | Fixed arrow tabs; **only the arrow flips** | §2.2 |
+| R3 | **Motion: the menu SLIDES out from behind the tab AND FADES in, together; closing slides back AND fades out. Reduced motion: fade only, short.** *(Nick, Oct 9)* | §2.3 |
+| R4 | Brass marks every choice | §2.4 |
+| R5 | Icons over words | §2.5 |
+| R6 | Thin scrollbars | §2.6 |
+| R7 | Left drawer: TEXT \| INK, then TYPEFACE, FORMAT, ACTIONS, TEMPLATES. Free Write gets only the simplified Typeface/Format set + INK | §3 |
+| R8 | Right drawer: TUTOR \| CONNECTIONS, Connections empty for now | §3.4 |
+| H1 | Do not touch `PageEditor.tsx`'s typing path (FIX's typing-speed work) | §6 |
+| H2 | No schema change | nothing here needs one (§7) |
+| H3 | Templates stay exactly as shipped (`25e6610`) | §3.3, §8 |
+
+---
+
+## 1. Components
+
+The framed layout (≥1100px) already has the two drawers this plan unifies: the **Sliver** (left, tools; `Sliver.tsx`, 1174 lines)
+and the **Tutor** (right; `Tutor.tsx`, 1239 lines), plus a third, smaller copy in the board's **card popup dock**
+(`BoardEditor.tsx`, `.board-popup-dock`). They are three hand-built shells. Phase 1 gives them one shell and re-sorts the content.
+
+**New (all under `apps/desktop/src/`):**
+
+| Component / module | What it is |
+|---|---|
+| `components/SideDrawer.tsx` | The shell. Props: `side: 'left' \| 'right'`, `open`, `onToggle`, `tabs`, `activeTab`, `onTab`, `label`, `drawerId` (registers with `menusDrawers`), children = the panel body. Renders `.wz-drawer[data-side][data-open]` > `.wz-drawer-clip` > `.wz-drawer-panel`, and the fixed `button.wz-drawer-tab`. Owns the motion (§2.3), the arrow (§2.2), focus/inert while closed, Escape. Knows nothing about page, card or Tutor. |
+| `components/DrawerTabs.tsx` | The tab row (TEXT \| INK, TUTOR \| CONNECTIONS): `role=tablist`, `data-on` = brass (§2.4). Replaces `InkSwitch.tsx`. |
+| `components/DrawerSection.tsx` | A heading (`10px`, uppercase, `--accent-rest`) plus body, the mockups' `.h` / `.sec`. |
+| `components/DrawerIcons.tsx` | The inline-SVG icon set (§2.5): `viewBox 0 0 16 16`, `stroke currentColor`, `1.2`. |
+| `store/drawerSet.ts` | **A pure function** `drawerSet({ surface, kind, instrument })` returning `{ tabs, sections }`. The single table that says what each surface shows (§3). Browserless-testable; the components just render it. |
+| `components/drawers/TextDrawerPanel.tsx` | Typeface / Format / Actions / Templates, driven by `drawerSet`. Wraps the existing `TypeControl`, the existing Format section, the existing Templates strip (moved, byte-for-byte behaviour), and the new Actions section. |
+| `components/drawers/InkDrawerPanel.tsx` | The existing `SliverInkZone` (tip, nib, ink, eraser) re-homed; Move added only if it already exists as an INK-mode act (§10 Q8). |
+| `components/drawers/ConnectionsDrawerPanel.tsx` | The empty Connections pane (Phase 3 fills it). |
+
+**Changed, not new:** `Sliver.tsx` becomes the left drawer's *content builder* wrapped in `SideDrawer` (the foot, goal hairline,
+timer and ⋯ instruments row stay exactly as they are); `Tutor.tsx` swaps its own grip/panel markup for `SideDrawer` and puts its
+existing content under the TUTOR tab; `BoardEditor.tsx`'s card-popup dock swaps its markup for `SideDrawer` (§4).
+
+**Kept as they are:** `DeskFrame.tsx` and its out-of-flow anchors (`.desk-frame-sliver-anchor`, the Tutor's two anchors), the
+Cascade, `menusDrawers.ts` (the two-drawer law), `useChromeDissolve`, `TypeControl.tsx`, the Templates code and CSS.
+
+---
+
+## 2. The system itself
+
+### 2.1 Geometry and the page-primacy law
+
+Today's drawers are **out of flow**: the paper never moves, the drawer overlays the margin (`.desk-frame-*-anchor`). The mockups
+instead *reserve* 248px / 236px columns beside the paper even when closed. **I keep the app's way**, not the mockups': reserving
+columns would shrink or shift the paper, which `docs/page-primacy-canon.md` forbids. The drawer is still a 16px tab plus a panel;
+only the shell's inside changes. Self-check from `AGENTS.md`: (1) page rect unchanged when a drawer opens or closes; (2) the
+editor never unmounts; (3) a drawer is a tool, not a departure, so no return chip is needed. §8 turns each into a check.
+
+### 2.2 The fixed arrow tab
+
+`button.wz-drawer-tab`: 16 × 34 at `top: 16px`, on the page-side edge, identical to today's `.wz-sliver-grip` /
+`.wz-tutor-grip` (so no geometry change). **Only the glyph changes** between states (`‹`/`›`, mirrored for the right drawer); the
+tab's rect, class list and position are constant, and the glyph rule is one pure function `arrow(side, open)` shared by both drawers
+(today the two components each hand-write it). `aria-expanded`, `aria-controls`, an accessible name per side.
+
+### 2.3 Motion — Nick's ruling
+
+*Open:* the panel starts clipped behind the tab and **translates in from behind it while its opacity rises, on one transition,
+together.* *Close:* the reverse, together.* Concretely:
+
+```
+.wz-drawer-clip   { overflow: hidden; position: absolute; … ends 16px short of the tab }   /* "from behind the tab" */
+.wz-drawer-panel  { transform: translateX(±100%); opacity: 0; visibility: hidden;
+                    transition: transform var(--drawer-dur) var(--drawer-ease),
+                                opacity   var(--drawer-dur) var(--drawer-ease),
+                                visibility 0s linear var(--drawer-dur); }          /* hidden only AFTER it has faded */
+.wz-drawer[data-open='true'] .wz-drawer-panel
+                  { transform: none; opacity: 1; visibility: visible; transition-delay: 0s; }
+@media (prefers-reduced-motion: reduce)
+  .wz-drawer-panel { transform: none; transition: opacity var(--drawer-dur-reduced) linear,
+                                                 visibility 0s linear var(--drawer-dur-reduced); }
+```
+
+Tokens: `--drawer-dur: .2s`, `--drawer-ease: ease` (the mockups' value), `--drawer-dur-reduced: .12s`. Reduced motion: **no slide, fade
+only, short**.
+
+Three traps the plan designs around:
+1. **Do not use `--fade-dur`.** The mockups name their slide duration `--fade-dur`, but in the app `--fade-dur` is *written at
+   runtime* by `useChromeDissolve` (seconds, up to 120s on resurface; 2.8s on a write). Today's Sliver rides it
+   (`.wz-sliver-panel{ transition: opacity var(--fade-dur,.2s)…}`), so a drawer opened while writing would crawl. The new tokens are
+   dedicated and never written by JS.
+2. **Two opacities on one element.** The Sliver panel is also `chrome-fade desk-dissolve` (chrome dissolves with the writing
+   session). Open/close opacity and dissolve opacity must not fight, so **the dissolve classes stay on the outer `.wz-drawer`, and the
+   open/close motion lives on the inner panel**.
+3. **A closed panel must not be reachable.** Opacity 0 alone leaves controls focusable and clickable. `visibility: hidden` after
+   the fade (and `inert` on the panel) fixes it; today's panel only has `pointer-events: none`.
+
+Today's actual motion is a 6px nudge plus fade (`translateX(6px)`), not a slide — so this *is* a visible behaviour change on the
+existing Sliver and Tutor, not just a new drawer.
+
+### 2.4 Brass marks every choice
+
+One rule, one place: a chosen option (the active tab, the current face, B/I/U on, the chosen tip/nib/ink, the applied template,
+the current scope) wears **brass** — `--brass` text and border, `color-mix(brass 12–16%)` fill — never a filled bar. This is the
+mockups' `[data-on]` family and the app's existing `.mode-tbtn[data-on]` / `.wz-template-live[aria-pressed]`. I reuse those
+classes rather than add a parallel set, so Templates stay exactly as shipped. **Mismatch to rule on (§10 Q5):** the mockups also turn
+the *open tab* brass; the app deliberately wears `--accent-rest` (olive) on an open grip ("where you are", Plateau foundations),
+brass being reserved for a *choice*. I keep olive for the tab and brass for choices unless Nick says otherwise.
+
+### 2.5 Icons over words
+
+Tools and actions are icons with a `title` and an `aria-label` (the mockups do this); headings and the four tab labels stay words.
+Icons are inline SVG (no new dependency): Pen, Pencil, Marker, Eraser, Move (INK); Tags, Copy, Delete, Header/Footer (Actions).
+Templates keep the glyphs that shipped (`BEGINNING_GLYPH`, `TemplateIcon`). The Sprout door is unchanged.
+
+### 2.6 Thin scrollbars
+
+The app already has the global thin scrollbar (`index.css` ~L319, 8px) and a 4px left-hand one on the Sliver panel (`direction: rtl`
+trick). The drawer panel gets **one** rule — the Sliver's 4px thin bar, on the panel's *outer* edge for both sides — so the two
+drawers match; no new global rule. (`cursor/drawer-handles` @ `ef714d4`, CSS only, is cleared for Batch 12 and also touches
+scrollbar rules; I rebase on it if it lands first — §9.)
+
+---
+
+## 3. What moves where
+
+### 3.1 The left drawer: one table (`store/drawerSet.ts`)
+
+| Surface (framed) | Tabs | Sections, in order |
+|---|---|---|
+| **Free Write** (`mode==='journal'`) | TEXT \| INK | TEXT: Typeface (simplified: face + size −/+, no number box). INK: tip, nib, ink, eraser. *(Forward Lock toggle, Capture list, goal foot: unchanged, kept below the sections.)* |
+| **Draft** (`'drafting'`) | TEXT | Typeface (full), Format, Actions, Templates (Screenplay live + 4 coming-soon, as shipped); the existing page-kind chips stay where they are |
+| **Revise** | TEXT | Typeface (full) only (the standing "empty drawer opens" ruling) |
+| **Screenplay host** | TEXT | Templates only (Screenplay chosen), as today |
+| **Board** (page-level) | — | the existing board tools arm unchanged for now (§4, Q9) |
+| **Card popup** | TEXT | the existing card dock (B/I/U + small Typeface), moved onto `SideDrawer` unchanged (§4) |
+
+Today's differences from the mockups, all deliberate and listed for review: Free Write has **no Format group** (item 121 I6 / R15,
+"no digital styling") though r7 shows B/I/U — see **Q1**; the **INK tab exists only in Free Write** in the app (the instrument
+switch is a Free Write notion; Draft "is a word processor, not in TEXT", `PageEditor.tsx` comment at the switch) though r7 shows
+it in Draft — see **Q2**.
+
+### 3.2 What moves out of the old places
+
+| From | To |
+|---|---|
+| The TEXT \| INK hover menu under the Free Write tab (`ModeStrip.tsx`: `.desk-mode-freewrite > .wz-ink-menu > InkSwitch`) | The drawer's tab row. Same state (`PageEditor` `instrument`, `useState<'text'\|'ink'>`, unchanged); only the control moves. |
+| `SliverInkZone` (in `Sliver.tsx`) | The INK tab (`InkDrawerPanel`). Unchanged behaviour. |
+| The Sliver's Typeface / Format / Templates / page-kind blocks | `TextDrawerPanel`, in the order of §3.1. Templates markup, classes and data attributes untouched. |
+| The Tutor's hand-built grip and panel shell | `SideDrawer` (right). Content under the TUTOR tab, untouched. Its measured-width/dock logic and the two anchors stay. |
+| The card popup dock's grip and panel (`.board-popup-dock-grip`, `.board-popup-dock`) | `SideDrawer` anchored to the card (§4). |
+
+### 3.3 Templates — exactly as shipped (H3)
+
+Templates are rendered in the Draft arm, `Sliver.tsx` L724–740, from `content.templates` (`{key:'screenplay', label, selected?,
+onApply}`), with four disabled stand-ins (Outline, Title page, Bibliography, Custom) and the 16px glyph fix (`645fdf6`). I move the
+*block* into `TextDrawerPanel` and change nothing inside it: same classes (`.wz-template-live`, `.wz-template-btn`), same
+`data-template`, same `aria-pressed`, same `applyScreenplayTemplate` path. `page-templates.mjs` (119 checks) and
+`scripts/page-templates-mutants.mjs` must pass **unchanged**; that is the proof (§8).
+
+### 3.4 The right drawer
+
+TUTOR \| CONNECTIONS. TUTOR = today's Tutor, unchanged inside. CONNECTIONS = an empty panel (Phase 3). The label does not fit a 10.5px
+tab (every mockup hacks it to 7.5px) — see **Q10**. Default open state: unchanged from today (closed), not the mockups' "both open".
+
+### 3.5 Actions (new section — the one place Phase 1 adds capability)
+
+No "Actions" menu exists today. Each verb must call something that already exists:
+
+| Verb | Calls | Note |
+|---|---|---|
+| Copy | `store/clipboard.ts` `copyText` (what Publish → Copy My Words uses) | no new behaviour |
+| Header/Footer | the `pageSettings` headers/footers toggles (`PageSetupZone`) | no new behaviour |
+| Tags | opens the page's existing tag editor (`PageFace`) | needs a small popover decision |
+| Delete | `softDeleteEntry` + the Trash board, behind a "Send this page to Trash?" confirm | **new on a page** — today only board cards and boards can be deleted from chrome. See **Q3** |
+
+---
+
+## 4. The card, and the Phase 2 boundary
+
+Phase 2 (FIX) rebuilds the card. Phase 1 must not do FIX's work, so it stops at the shell: `SideDrawer` supports
+`anchor: 'page' | 'card'` (the card mockup hugs the card's edges, the page mockup the page column), and the existing card-popup dock
+is re-homed onto it **with its current content only** (B/I/U + small Typeface). The card mockup's fuller left drawer (Actions,
+INK, "new INK card" template, the `Connect` button, the fade-while-composing) is Phase 2's content, built on the shell this phase
+delivers. *(Confirm: Q7.)*
+
+---
+
+## 5. What gets retired
+
+| Retired | When |
+|---|---|
+| `InkSwitch.tsx` and `.wz-ink-menu` / `.desk-mode-freewrite` hover menu + CSS (`index.css` ~L3568–3575, ~L4935–4952) | S2 (replaced by `DrawerTabs`) |
+| The Sliver's and the Tutor's separate grip/panel markup and their open/close CSS (the 6px nudge, the `--fade-dur` dependence) | S1 (replaced by `.wz-drawer*`) |
+| The card dock's separate grip/panel CSS | S4 |
+| The three hand-written arrow glyph expressions | S1 (`arrow()`) |
+
+**Not retired in Phase 1, on purpose:** the old class names. ~25 harness files bind to `.wz-sliver-*` / `.wz-tutor-*` /
+`data-menus-*` (ab2 alone has ~107 references). So the new shell elements carry **both** class sets (`wz-drawer` *and* the old
+`wz-sliver-*` / `wz-tutor-*`) and every `data-menus-*` hook is preserved. The old names go in a later cleanup batch, in one sweep,
+with the parks done once. Also not retired: the legacy unframed chrome (`ModeSwitcher`, `ModeStage` bar/rails/gear, `DeskRail`) —
+see **Q6**.
+
+---
+
+## 6. Hard limits, and how the plan keeps them
+
+- **H1 — PageEditor typing path.** I will not edit input handlers, `onChange`/`keydown`, `ForwardOnlyEditor`, or anything the
+  typing-speed work touches. The **only** `PageEditor.tsx` hunk is the `sliverContent` builder (~L1049–1124) and its `instrument`
+  wiring, and I propose moving the builder into a new module (`store/pageDrawerContent.ts`) so the diff in `PageEditor.tsx` is a
+  one-line call. A **browserless guard** (§8) fails if `git diff` of `PageEditor.tsx` against `main` leaves that hunk. If FIX
+  prefers, that one hunk waits until their work lands (S2 is sequenced late for exactly this).
+- **H2 — no schema change.** Nothing here stores anything new. Drawer open/closed state is session state as today. (Q10 below
+  proposes keeping it unpersisted.)
+- **H3 — Templates.** §3.3.
+- **Harness law.** No harness run without Chat 1's grant, browserless included; grant file read first. Every superseded check is
+  parked verbatim with a successor, never edited (the standing "park, never edit" rule).
+
+---
+
+## 7. Build slices (each its own commit; the order is the risk order)
+
+| Slice | Content | Product files |
+|---|---|---|
+| **S0** | Verify + sweep, no code: re-read each pin in §8's park list against the live source; a behaviour sweep (what the change *does*, not what it renames) of the 25 files; confirm Fable's rulings on §10. | none |
+| **S1** | `SideDrawer`, `DrawerTabs`, `DrawerSection`, tokens, motion, `arrow()`, closed-panel inert. **Sliver and Tutor adopt the shell with their content untouched** (dual classes). | new components, `Sliver.tsx` shell, `Tutor.tsx` shell, `index.css` |
+| **S2** | `drawerSet`, `TextDrawerPanel`, `InkDrawerPanel`, `DrawerIcons`, TEXT\|INK tabs, hover menu retired, Actions. The `PageEditor.tsx` `sliverContent` hunk (§6). | `Sliver.tsx`, `ModeStrip.tsx`, `PageEditor.tsx` (one hunk) |
+| **S3** | Right drawer: TUTOR \| CONNECTIONS tabs, empty Connections. | `Tutor.tsx`, new panel |
+| **S4** | Card popup dock onto `SideDrawer`, content unchanged. | `BoardEditor.tsx` (dock block only) |
+| **S5** | Dead-CSS removal for what S1–S4 replaced; evidence frames; the live walk. | `index.css`, docs |
+
+---
+
+## 8. Harness checks
+
+**New, browserless** — `scripts/harness/drawers-p1.mjs`:
+- `drawerSet` table: every surface/kind row of §3.1 (tabs and section ids), including *Free Write has no Format, no Templates, no
+  Actions; Draft has all four; Revise has Typeface only; Screenplay has Templates only*. Mutants: add Format to Free Write; drop
+  Templates from Draft; give Draft an INK tab.
+- `arrow(side, open)` truth table (both sides, both states, and that left/right are mirrors).
+- Source pins on the CSS: the panel's transition lists `transform` **and** `opacity` with the same duration and easing; uses
+  `--drawer-dur`, never `--fade-dur` (mutant: swap in `--fade-dur`); the reduced-motion block has **no** transform and keeps opacity;
+  `visibility` is hidden after the fade; the dissolve classes are on the outer element, the motion on the inner; the tab is 16×34 and
+  has no transform/transition on its box (only on colour).
+- The H1 guard: `PageEditor.tsx` diff vs `main` is confined to the declared hunk (mutant: touch a handler).
+- Thin-scrollbar rule present on the drawer panel.
+- Templates block byte-identical to `main`'s (a hash of the extracted block) — the cheap early tripwire for H3.
+
+**New, browser (needs a grant)** — `scripts/harness/drawers-p1-live.mjs` (framed, 1280×800; Plateau and Flux):
+- **Page-primacy self-check:** the paper's rect before/during/after open and close of each drawer, each tab, and both at once —
+  identical (check 1); the editor node is the same node throughout (check 2).
+- **Motion, measured:** sample computed `transform` and `opacity` mid-transition on open *and* on close: both strictly between
+  their end values at the same sample (proves "together"); the tab's rect never changes; with `prefers-reduced-motion` emulated
+  (`Emulation.setEmulatedMedia`), `transform` stays `none` throughout and opacity still changes, over a shorter time.
+- **Arrow:** only the glyph differs between states (rect, classes, position equal).
+- **Closed means closed:** every control inside a closed panel is non-focusable and not hit-testable.
+- **Content per surface** (control counts, in the style of `item207`): Free Write, Draft, Revise, Screenplay, Board, card popup.
+- **Brass marks:** chosen face/tab/template compute to brass; unchosen do not; the open tab is olive (or brass if Q5 flips it).
+- **Two-drawer law** still holds at 1280 (both may open) and 1100 (the later open closes the other).
+- **Scrollbar:** at 1366×768 with long content the panel shows the thin bar, on the outer edge.
+
+**Existing — must stay green unchanged:** `page-templates.mjs` (119), `page-templates-mutants.mjs`, `tu1/tu2/tu5` (Tutor), `item207`,
+`item121`'s ink behaviour (not its switch location), `w2`, `fx2`/`fx3` geometry, `cd2` (Cascade), `ab2` (dual classes keep its pins).
+
+**To park with successors** (the checks whose *claim* changes, found by the survey; S0 re-verifies each): `item121` (the TEXT|INK
+hover-menu location), `item83f` (open/close timing on `--fade-dur`, the 6px nudge), `fx18` (drawer arrows mirror), `fx1`/`fx3`
+(sliver open/close timing where pinned), `menus-probe` (dock/handle geometry — expected to survive via `data-menus-*`). Estimated: 4–6 files, a handful of checks each.
+
+**Mutation law:** every new check above has a mutant that turns it red; each mutant asserts it *landed* before the red is believed.
+
+---
+
+## 9. Screenshot list (one box turn, after S5; both themes unless noted)
+
+Plateau dark and Flux, 1280×800 unless noted. "O" = open, "C" = closed.
+
+1. Free Write, text, left O — Typeface only (simplified).
+2. Free Write, **INK tab**, left O — tip/nib/ink/eraser.
+3. Free Write blank: both C, Sprout door.
+4. Free Write typed: both C.
+5. Draft, left O — Typeface, Format, Actions, Templates.
+6. Draft with the Screenplay template pressed (brass).
+7. Revise, left O — Typeface only.
+8. Screenplay host, left O — Templates only.
+9. Right drawer O, TUTOR tab.
+10. Right drawer O, CONNECTIONS tab (empty).
+11. Both drawers O at 1280; at 1100 (the later one closes the other) — two frames.
+12. Board (page-level): left tools arm O, right drawer O.
+13. Card popup with its dock O (re-homed, content unchanged).
+14. **Motion strips:** left drawer at t≈0, 100, 200 ms on open and on close (three frames each), plus the same under reduced motion
+    (fade only, no slide) — the evidence for R3.
+15. States: tab hover, tab keyboard-focus ring, a chosen vs unchosen choice (brass mark), a coming-soon Template (dim), an Action
+    hover with its tooltip.
+16. Scrollbar: Draft drawer at 1366×768 with the page-kind block expanded.
+17. Delete confirm ("Send this page to Trash?") if Q3 is yes.
+
+≈ 30 frames. Captured by an evidence tool in `scripts/evidence/` (never `scripts/harness/`, which `run-suite` enumerates).
+
+---
+
+## 10. Questions for Fable / Nick (each with my lean)
+
+1. **Free Write Format (B/I/U).** r7 shows it; the app has none in Free Write by ruling (item 121 I6 / R15), and making B/I/U work in
+   Free Write means formatting in the forward-only editor — **a typing-path change (H1)**. *Lean:* Free Write = Typeface + INK in
+   Phase 1; B/I/U waits for FIX's typing-path work and a ruling. (The alternative, a dead group, I would not ship.)
+2. **INK tab in Draft/Revise?** r7 shows TEXT\|INK everywhere; the app today offers the instrument switch in Free Write only, on
+   purpose. *Lean:* Free Write only; Draft/Revise show TEXT with no tab row.
+3. **Actions.** Which verbs, and is **Delete** wanted on a page (new capability; soft delete to Trash with a confirm)? Tags needs a
+   small popover. *Lean:* Copy, Header/Footer, Tags now; Delete only on Nick's word.
+4. **Widths.** Mockup drawer = 220px (204 panel + 16 tab); app Sliver ≈200, Tutor panel measured 280+. *Lean:* keep today's widths
+   (changing them re-tunes the two-drawer coexist math and ~10 geometry checks for no visible gain).
+5. **Open-tab colour.** Mockup brass; app olive (Plateau). *Lean:* olive for the tab, brass for choices (§2.4).
+6. **Narrow screens and phone.** The mockups include ≤720px drawer layouts; the app's framed layout is ≥1100px, below which the
+   legacy chrome shows (and `QuickSprint` is always legacy). *Lean:* Phase 1 is framed only; narrow/phone is its own slice after the
+   tablet gate, and I would not guess the phone arrow direction (the mockup's phone arrows look un-mirrored; unverified without the
+   PNG).
+7. **Card scope vs Phase 2.** §4: shell + current dock content only. *Confirm.*
+8. **INK "Move"** (r7 lists a Move tool next to Eraser): does an INK-mode move act exist today? If not it is Phase 4 (page ink), not here.
+9. **Board left drawer.** r7 shows none on the board; the app's board has a tools arm (Add card, New page card, Existing page…, From a
+   deck…) with no other home until R13.iv. *Lean:* keep it, on the new shell.
+10. **Connections tab label.** Too long for the tab at 10.5px (every mockup shrinks it to 7.5px, which makes the two right-hand tabs
+    uneven). *Options:* (a) the word, smaller, as mocked; (b) all four tabs (TEXT, INK, TUTOR, CONNECTIONS) as icons with a tooltip and an
+    `aria-label`, in keeping with "icons over words"; (c) shorter label. *Lean:* (b) is the consistent answer to the brief's rule, (a) is
+    the cheapest; Nick's call.
+11. **Drawer open/closed persistence.** *Lean:* none (session state), as today; avoids any storage question.
+12. **Terminology.** "Side drawer" in code/plan; the writer never sees the word. Confirm no UI string should say "drawer".
+
+---
+
+## 11. Risks
+
+- **Harness volume.** ~25 files touch these surfaces. The dual-class migration is the lever that keeps the parks to 4–6 files.
+- **The `--fade-dur` trap** (§2.3) — the most likely silent bug; it has its own check.
+- **Two opacities** (open/close vs chrome dissolve) — same.
+- **`Tutor.tsx` is 1239 lines and FIX/TU lanes touch it**: S3 is a shell-only edit, and I will rebase just before it.
+- **`PageEditor.tsx` collision with FIX** — mitigated by the single declared hunk and the guard; S2 is sequenced late.
+- **`cursor/drawer-handles`** (CSS-only scrollbar/handle work, Batch 12) overlaps §2.6; whichever lands second rebases.
+- **Unverified here:** the PNG renders of all three mockups; the phone arrow direction; whether `Move` exists as an INK act.
+
+## 12. What I need to start
+
+Fable's read of this plan and Nick's rulings on Q1–Q6 and Q10 (the rest I can lean on). A box grant for the S5 frames and the live
+check; no harness run before then. S0 and S1 can start on approval — both are small and low-risk.
+
+---
+
+## Addendum A — Nick's answers (Oct 9), S0 findings, and S1 as built
+
+### A.1 Rulings received
+| Q | Answer | Effect on the plan |
+|---|---|---|
+| Q1 | **A.** Free Write = typeface choices + INK in Phase 1; B/I/U after FIX's typing work | §3.1 Free Write row stands as written (no Format group) |
+| Q5 | The open tab stays **olive** ("not a choice the user makes") | §2.4 stands: tab olive, choices brass |
+| Q10 | **No icons.** "Connections" is **renamed app-wide, per theme**: Flux = LINK/LINKS; Arbor's word is pending Nick (TIES likely) | The right-hand tab label is read from the per-theme vocabulary (`deskLexicon`) in S3; the word drops in later with no code change. Tab labels stay words. |
+| new | **Brass-outlined choices lose their light-orange fill — outline only** | The new shell's choice mark is a brass outline (and brass text), no `color-mix` fill. TOOLS cleans up the rest of the app. This replaces the "12-16% brass fill" in §2.4 for everything the drawers draw. Templates stay exactly as shipped (H3), so their existing fill is TOOLS' to change, not mine. |
+| new | Plateau's display name becomes "Arbor" (id stays) | TOOLS does it. Nothing in the drawers hard-codes the word "Plateau". |
+Q2, Q3, Q4, Q6-Q9, Q11, Q12 were not answered; I proceed on my stated leans, none of which S1 depends on.
+
+### A.2 S0 — what the sweep found (static reading; nothing was run)
+S1 changes two things the harness can see: the **shape of the panels' motion** and **reduced motion**. Everything else the survey listed
+(pointer-events and opacity semantics under dissolve and the pop-out hold; the grip's rect and visibility; the anchors; the two-drawer
+law; the Tutor's measured width; geometry) is unchanged, because the panel element keeps its box, its `data-open`, its dissolve
+classes, its opacity transition on `--fade-dur`, and `pointer-events`.
+
+Pins that S1 falsifies (all in `fx10.mjs`, the Tutor's FX10 S1 motion section) - **parked verbatim with successors in the S1 commit**:
+1. "the tutor panel animates opacity + transform" - parked (the panel now animates opacity only);
+2. "the sliver panel's reference shape is unchanged (opacity + transform)" - parked (same reason);
+   → both folded into ONE successor that measures the panel (opacity, never width/border) *and* its sliding layer (transform), same
+   duration and easing on both hands;
+3. "the panel's own transform changes open vs closed" - parked; successor measures the **sliding layer** and asserts the panel itself
+   stays put;
+4. "A15: reduced motion → transition collapses to ~0" - parked; Nick's ruling is fade-only-short, not none; successor asserts the
+   panel still fades in a short, non-zero time and the layer has no travel.
+Park count: 4 parked, 3 successors (two fold into one).
+
+Pins that **hold** (checked by reading, to be confirmed by the run): `e3` S3 (the two panels' transition duration, properties and
+timing function are equal - both are now `opacity var(--fade-dur,.2s) ease`); `fx10` S1 duration/easing equality; `item83f` E1 S5 (the
+transition is identical held and unheld); `fx3` S5, `cd1`, `fx10` S3, `e3` S4 (pointer-events and opacity under dissolve/closed).
+
+Not hand-verified, to confirm on the first grant: whether any check reads the panel's own **background or border colour** (none found by
+search), and `menus-probe` geometry (dock and handle rects are unchanged by construction).
+
+### A.3 S1 as built - and where it departs from §1/§2.3 (flagging, not hiding)
+- **No `SideDrawer` component in S1.** The plan said both drawers would adopt a new shell. On reading the Sliver's shell I found its
+  panel carries `chrome-fade desk-dissolve` *and* the pop-out-hold law (`data-popout-hold`, with a long comment explaining why the hold must
+  ride **that** element: an ancestor's opacity caps every descendant's). Moving those onto a new wrapper element would re-open settled
+  decisions for no gain. So S1 changes the motion **in place** and adds one inner element. `SideDrawer`/`DrawerTabs` arrive in S2, where
+  tabs actually need a home.
+- **The two-opacities "trap" in §2.3 was mis-stated.** The existing design already multiplexes open/close and dissolve on the one
+  `opacity` through `--fade-dur`; that is deliberate and stays. What S1 adds is only the slide.
+- **How "together" is achieved:** the panel (outer) stays the clip and the scroller and keeps the fade on `opacity var(--fade-dur,.2s)`;
+  the box (background, border) and the slide move onto a new inner `.wz-drawer-slide`, which transitions `transform` on the dedicated
+  `--drawer-dur`/`--drawer-ease` (never `--fade-dur`). The `.2s` fallback of the fade and the `.2s` slide token are the same value, so at
+  rest the two run together. **Known limit:** while the vanish engine has written a different `--fade-dur` (mid-dissolve), the fade
+  follows it and the slide does not; that is the dissolve doing its job.
+- **Closed = unreachable:** `setDrawerInert` makes a closed panel `inert` on both hands (`drawerShell.ts`, which also holds the one
+  shared `drawerArrow(side, open)`). The Tutor's E3 comment says adding an `inert` there would "diverge from the mirror" - it is added to
+  **both** hands, so the mirror holds.
+- **Reduced motion:** panels fade over `--drawer-dur-reduced` (.12s, linear); the sliding layer has no transform and no transition.
+- **Files:** `index.css` (tokens, panel rules, sliding layer, reduced-motion block), `Sliver.tsx` (arrow, ref, wrapper), `Tutor.tsx`
+  (arrow, ref, wrapper), new `store/drawerShell.ts`, new `scripts/harness/drawers-p1.mjs`, `fx10.mjs` parks. **`PageEditor.tsx` and
+  `ForwardOnlyEditor.tsx`: not touched** (the harness asserts it).
+- **Tests:** `drawers-p1.mjs` (browserless; written, **not yet run - it needs Chat 1's grant**). Browser confirmation (the measured slide,
+  reduced motion, the rects) is the S1 frames/live turn, also unrun.
+
+### A.4 For S3 (Fable, Oct 9, from Nick)
+The right drawer's second tab reads **GRAFTS in Arbor** and **LINKS in Flux**, taken from the per-theme vocabulary (`deskLexicon`), not
+hard-coded. **Arbor's word carries a small "?" beside it.** Plan for it: the tab label is a lexicon term (one key, two theme values), the
+"?" is a separate, theme-conditional element that appears only when the theme's term has an explainer (Arbor's does; Flux's does not),
+opens a short note on press or focus (keyboard-reachable, `aria-label`, dismisses on Escape/blur, an overlay that displaces nothing),
+and is not part of the tab's hit area, so pressing it does not switch tabs. **Open:** the explainer's wording (Nick's) and whether the
+"?" is a tooltip or a pressable note; I will build it as a pressable note unless told otherwise, because a hover-only tooltip is not
+reachable by keyboard or touch. The earlier Q10 (icons) is closed: words, per theme.
+
+**A.4 decided (Fable, Oct 9):** the "?" is a **pressable note** (keyboard and touch; Escape or blur closes it), not a hover tooltip.
+Draft copy for Arbor's note, Nick may edit: *"Grafts join pages, cards and boards so your ideas can grow together. Use + to graft something here."*
+(One lexicon key for the note, Arbor-only; Flux has none.)
+
+### A.5 S2a as built (off the box; nothing run)
+**S2 is split.** S2a (this commit) adds the shared frame and the tab row and keeps the band's TEXT|INK hover menu; S2b retires the menu.
+Reason: `item121` and `item126` drive their fixtures through `.wz-ink-switch .wz-ink-switch-side` (about 6 call sites, plus `item121`'s
+"switch in the band" claims). Re-pointing and parking 1,300 lines of browser harness without being able to run it would be guessing, so
+S2b waits for a browser turn. Until then both controls exist and share ONE state (`PageEditor`'s `instrument`); S2a is a branch state,
+not something to ship.
+
+**Built:** `store/drawerSet.ts` (the pure table: `leftTabsFor`, `sectionsFor`, `sectionAllowed`); `components/DrawerTabs.tsx` (a real
+tablist, roving tabindex, `nextTab()` for Left/Right/Home/End; the chosen tab is a **brass outline, no fill**; the arrow tab stays
+olive); `components/SideDrawer.tsx` (the sliding layer, the optional tab row, the tab panel, and a `foot` slot for the standing
+furniture so the goal foot and the instruments row sit outside the tab panel). **Both hands now render through `<SideDrawer>`**; the
+Sliver asks the table before every section (ink, typeface, forwardLock, format, templates, pageKind, capture, boardTools); the Free
+Write arm gains an optional `instrument` and only that arm shows a tab row. Tab words are the existing lexicon terms
+(`inkModeText`, `inkModeInk`, `inkInstrument`).
+
+**The one `PageEditor.tsx` hunk:** three added lines in the Free Write `sliverContent` (a two-line comment and
+`instrument: { value: instrument, onChange: setInstrument }`). Nothing removed or changed; `ForwardOnlyEditor.tsx` untouched; the
+browserless guard (D1a/D1b) fails if the diff leaves that shape.
+
+**Tests (browserless, written, not run):** `drawers-p1.mjs` grows E (the table), F (the tab keys, ARIA, brass-outline-no-fill, arrow
+stays olive), H (both hands use `SideDrawer`, every Sliver section is gated), and 10 more mutants. Two S1 checks that pinned the
+hand-written wrapper (C3, C4) are parked with H1 as their successor.
+
+**A design cost to name.** Item 121's I3 said "which instrument am I" must be readable **with the drawer shut**. With the choice now a tab
+inside the drawer, a closed drawer does not show it. What still shows it: the paper wears the instrument (`data-instrument`, the
+caret sleeps in INK), and the band's menu does until S2b. If Nick wants it readable at rest after S2b, the cheap answer is for the
+fixed arrow tab to carry a tiny instrument mark (the tab stays olive; the mark is not a choice). Not built; **for a ruling**.
+
+**Browser turn will need to look at (found by reading, likely to shift because the Free Write drawer gains a row at its top and a
+`.wz-drawer-body` wrapper):** `item121`, `item126`, `item207` (control counts), `item83f` and `fx1`/`fx3` (drawer layout), `ab2`
+(Free Write contents). None is expected to need a *claim* changed except the two `item121`/`item126` switch locations in S2b.
+
+### A.6 S1 review fixes, Actions (Q3) and the instrument mark (Fable, Oct 9; off the box, nothing run)
+**The five S1 findings — all instruments reading the old shape, none a product fault** (commit `fb6bf165`):
+1. *page-templates, a press made no page:* the driver returned the instant `data-open` flipped, while the sliding layer was still arriving
+   (translateX 100% → 0 over .2s); it read the control's rect mid-slide and pressed where the control had been. Not `inert` (an open panel has
+   none). `openStrip` now waits for the layer to settle. **Watch for the same shape elsewhere:** any harness that opens a drawer and reads a
+   rect in the next 200 ms will meet it; the cure is the same one-line settle.
+2. *fx2, alpha 0:* the panel is the clip and is transparent by design; the look lives on the layer. Parked, successor reads the layer (opaque).
+3. *item83f E2:* parked; the successor reads one level down (body wrapper, goal foot, instruments row; the panel holds one child).
+4. *fx10 A15, 1e-05s:* the app has ONE global reduced-motion floor (`index.css` L1076: every transition `0.01ms !important`; Chromium prints it
+   as 1e-05s). Accepted as asked (≤ 1 ms). **For a ruling:** that floor also out-ranks the drawers' own `.12s` reduced-motion fade, so under
+   reduced motion the drawers arrive *instantly*, not "fade only, short" as Nick ruled. One line restores his wording
+   (`transition-duration: var(--drawer-dur-reduced) !important` on the two panels). Not done; the `.12s` rule stays as the stated intent.
+5. *drawers-p1:* `ruleBody` read the first textual occurrence of a selector (a comment, then the reduced-motion rule); a rule now starts at the
+   beginning of a line.
+
+**Q3 built — Actions = Tags · Copy · Delete · Header/Footer** (Draft's TEXT tab, between Format and Templates; absent on Revise, the
+screenplay host and an unborn page). Icons with a name; the pressed/open one is a brass outline. Every verb calls what exists:
+Copy = the page's own `doCopy('words')` (it awaits the clipboard and toasts); Tags = the page's `addTag`/`removeTag` in a small editor *inside*
+the drawer; Header/Footer = one switch over the stored `headers.on`/`footers.on` (on only when both are; stored settings, they do not paint on
+screen); **Delete = a soft delete to the Trash behind an in-page confirm** ("Send this page to Trash?" — Keep is focused, Esc cancels, the
+Delete button only *opens* the confirm), then the writer lands on their resume target or the front door. `store/pageActions.ts` builds the four
+from the host's handlers, so `PageEditor.tsx` gains one import and one object member (the guard now allows exactly those, additions only).
+
+**The instrument mark (YES, Fable):** while a Free Write page is in INK, the olive arrow tab carries a tiny pen (10 px, the tab's own
+colour, never brass; the tab stays 16 × 34); absent in TEXT. Nick may veto.
+
+**A.6 item 4, resolved (Fable, Oct 9): Nick's reduced-motion wording is honoured.** The two panels carry
+`transition-duration: var(--drawer-dur-reduced) !important` inside the reduced-motion block, so the short (.12s) FADE survives the app's global
+floor: opacity is not motion, and a class selector out-ranks the floor's universal selector at equal `!important`. The sliding layer is *not*
+exempt: it has no travel under reduced motion and stays at the floor. Checks: `drawers-p1` B6b (the rule is present and the token is > 0 and
+<= 150 ms, with mutants for each) and the `fx10` successor (the panel reads a real duration in (0, 150] ms; the layer has no transform and
+<= 1 ms).
+
+### A.7 S3 as built (off the box; nothing run)
+The right drawer now has a tab row: **TUTOR | the theme's links word**. The Tutor's content is exactly today's, and renders only on the TUTOR
+tab (its state lives in the component, so switching away and back loses nothing). The second tab is an **empty pane** (Phase 3 fills it);
+its heading and its empty line are the theme's words.
+
+**The words come from the lexicon, never from the component:** `drawerLinks` = **Grafts** (Arbor, the canonical theme) / **Links** (Flux);
+`drawerLinksEmpty` = "Nothing grafted yet." / "Nothing linked yet."; `drawerRightTabsLabel`; `tutorTabTutor`. Arbor's word drops in or
+changes in `deskLexicon.ts` alone.
+
+**The "?"** (`DrawerNote.tsx`): a real button beside the second tab's word, **pressable, not a hover tooltip** - `aria-expanded`/`aria-controls`,
+a `role="note"` panel, closes on Escape, on a press outside, or when focus leaves it. It is an overlay (takes no room) and sits **outside the
+tablist** (a tablist owns tabs only), so pressing it never changes tabs. It exists only where the theme's note term has words: Arbor's is Nick's
+draft copy (*"Grafts join pages, cards and boards so your ideas can grow together. Use + to graft something here."*), Flux's is empty, so Flux
+shows no "?". An open "?" is a brass outline with no fill.
+
+**One thing to flag in Nick's copy:** it says "Use + to graft something here", but the pane has no "+" until Phase 3. Fine as the note's
+eventual wording; until then it points at a control that is not there. Say if it should wait or be shortened for now.
+
+**Browser turn will want to look at (the Tutor panel gained a tab row and a body wrapper):** `tu1`, `tu2`, `tu5`, `fx10`, `fx18`, `e3`, `item84`,
+`item84b` - any check that counts the panel's buttons or assumes the head is its first child. No claim is expected to change.
+
+### A.8 Copy trim (Fable, Oct 10-11) - the note drops its "+" sentence until Phase 3
+
+Arbor's "?" note now reads exactly **"Grafts join pages, cards and boards so your ideas can grow together."** The "Use + to graft something here." sentence is
+gone, because the pane has no "+" until Phase 3; it comes back with the control. One place changed: the lexicon term `drawerLinksNote`; the harness
+constant `NICK_NOTE` follows it (K2). The K2 mutant ("the note's copy is edited") keys on the substring `so your ideas can grow together.`, which is still
+present, so it needed no change. (A.7's quotation above is the copy as first built.)
+
+### A.9 S4 as built - the Typewriter Mode and Progress Tracking toggles (Nick, Oct 10, 1:29 pm)
+
+**Made S4, a separate commit** (S3 stays as accepted). What shipped:
+
+- **Two icon-only buttons right beside the "..."** (`Sliver.tsx`, `SliverInstrumentRow`): Typewriter Mode and Progress Tracking, in their own `wz-sliver-instruments-modes` group
+  next to the "..." (which keeps its own row and stays alone in it, so every harness that counts that row's buttons still reads one). Each is a native `<button>`
+  (Tab/Enter/Space for free), named from the lexicon (`modeToggleTypewriter` "Typewriter mode", `modeToggleProgress` "Progress tracking"; the name never changes),
+  and reports its state with `aria-pressed`. ON = brass icon + brass hairline, **no fill**; OFF = quiet. Theme tokens only, so Arbor and Flux, light and dark, wear their own
+  brass. The typewriter button is offered only where the surface offers a typewriter (`typewriterAvailable`, as the old row was).
+- **Same stored values, storage untouched.** Typewriter flips through `setTypewriterExplicit` (so the session's "the writer chose" flag still arms); Progress flips
+  `instrumentsOn` through `setWritingSettings`. `writingSettings.ts`, `forwardLock.ts` and `writingGoal.ts` are byte-identical to main.
+- **The old rows are gone** from the "..." menu: the Typewriter on/off row and Progress's "Show" row.
+- **Greyed means unusable.** `Seg` gained an optional `disabled` (real disabled buttons plus `data-disabled` on the row): Typewriter off greys Forward Lock, Line Fade,
+  Page Scroll; Progress off greys Unit, Goal, Progress, Progress style, Timer. Values are kept and still shown.
+- **FORMAT greys out while Typewriter is on:** the whole group sits in one native disabled `<fieldset>` (so the bullet menu and every B/I/U/S/H/quote/indent/spacing/
+  alignment button lock together, announced as unavailable). **The shortcuts are blocked with it:** `PageEditor.tsx`'s `applyRailFormat` (shared by the rail and the Ctrl/Cmd+B/I/U key
+  handler) now returns while Typewriter is on. That is one added import and one added guard line, the only PageEditor change in S4; the declared-hunk list in `drawers-p1` D1b names exactly those two lines.
+
+**Two things Nick should know (neither is a bug; both follow from what he asked):**
+
+1. **A new Draft opens with Typewriter ON** (FX2 S2 seeds it ON unless the page already holds 10+ lines), so on a fresh or short Draft the Format group starts greyed until the writer
+   turns Typewriter off. That is the ruling applied to the existing default; if it is not what he wants on a blank Draft, the lever is the seed (`seedTypewriterDefault`), not this commit.
+2. **Tab-to-indent is not a "formatting shortcut" here** - it goes through `applyFormatAt`, not `applyRailFormat`, so it still works with Typewriter on. Say if it should be blocked too.
+
+**Harness fallout, named (the two rows are gone by ruling, so these assertions are parked verbatim with successors, never edited):** `fx2.mjs` (two driver steps that pressed the Typewriter row now
+press the toggle), `fx3.mjs` (two "the Settings menu carries a Typewriter row" assertions become "the toggle exists, is named, icon-only, aria-pressed, and the menu opens on Typewriter Mode
+with no on/off row"). Read-only audit, not yet run: `ab1`, `ab2`, `sc1`, `item83f`, `fx1` read `.wz-sliver-instruments-row` buttons (still one) or `.wz-sliver-instruments-btn` by label
+(the toggles use their own class, so `fx1`'s "Typewriter instrument is not brass at rest" now reads `absent` - vacuous, not red; a successor on the new class is owed once the box confirms the colours).
+New: `drawer-toggles.mjs` (browserless, 16 mutants). The browser half (a real click flips a real colour; Tab/Enter/Space; greyed rows refuse a click; Format refuses B and Ctrl+B; Arbor and Flux x light and dark)
+is owed on a box turn, in `drawers-p1-live.mjs`.
+
+### A.10 S4 review changes (Fable, Oct 11)
+
+- **Toggle look:** ON changes only the icon's colour (brass); the square's border is the same quiet line as the "..." in both states, no fill. (A.9's "brass hairline" is superseded.)
+- **FORMAT locks on the running typewriter - and the setting already IS the running state there, so it is left as is.** FORMAT is mounted only by PageEditor's `mode === 'drafting'` content
+  (ScriptEditor passes no `format`), and ModeStage runs the typewriter as `(mode === 'journal' || mode === 'drafting') && settings.typewriter`, which for drafting is exactly the setting.
+  The same holds for the `applyRailFormat` guard (it already returns first unless `mode === 'drafting'`). A comment in `Sliver.tsx` records this.
+- **Legacy On/Off controls in `ModeStage.tsx` are reachable, so they are NOT removed.** The `SettingsPanel` Typewriter row (reached by the gear) and `TypewriterToggle` render only when `!framed`:
+  below the 1100px gate (PageEditor's second `ModeStage`), in `QuickSprint`, and the Journal entry's own row. There is no drawer there, so these are the only typewriter control a writer in those
+  places has; deleting them would leave no way to turn it off. (Those unframed surfaces also keep their legacy format bar, which this change does not lock; say if it should.)
+- **The greyed FORMAT group explains itself:** the fieldset's tooltip is the lexicon term `formatLockedByTypewriter` "Typewriter Mode is on", its buttons let the pointer through so the tooltip shows
+  anywhere on the group, and a screen-reader-only legend says the same.
+
+### A.11 S5 as built - the typewriter is remembered per page (Fable's replacement spec, Oct 11)
+
+- **Memory:** a plain localStorage key per page, `wrizo-typewriter-page-<id>`, next to item 112-A's `wrizo-mode-page-<id>`. Written on every toggle, read once at mount. No database, no schema, no server.
+  `typewriter` in `wrizo-writing-settings` stays the one live value every consumer reads; the page memory is what puts a value INTO it when a page opens.
+- **The rule (`enterPageTypewriter`, `store/writingSettings.ts`):** saved value -> that; none + empty page -> the theme's default; none + holds text -> OFF; the result is then saved ("then it remembers").
+- **Theme default is a value in each theme's config** (`THEME_CONFIG`, `store/theme.ts`): plateau (Arbor) on, flux off. Machina (off), Nomad (on) and Volant (TBD - not guessed) are marked slots in the comment; they join the union and the table together.
+- **Gone:** the 1-9-line seed (`seedTypewriterDefault`, `DRAFT_TYPEWRITER_LINE_THRESHOLD`) and the session flag `explicitlySetThisSession`. `setTypewriterExplicit` keeps its name and its three callers; it now writes the live value and, on a held Draft/Screenplay page, that page's key.
+- **Wiring:** PageEditor's mount effect calls `enterPageTypewriter` (Draft only; Free Write never does and a toggle there writes no page value) and a second effect holds the page while Draft is mounted. ScriptEditor does the same for Screenplay pages (that surface does not run the fade - SC1 S3 - but the toggle and drawer read the same value).
+  Tab still indents (`applyFormatAt` is untouched).
+- **One addition to the spec, for Fable to confirm:** a page that OPENS in Free Write and first reaches Draft by the strip reads its memory at that first arrival (once per mount; empty-ness taken from the live text). Without it, such a page would be handed the global value left by whatever page was last open, which contradicts "the page remembers". Free Write itself is untouched.
+- **Parked verbatim with successors:** fx2 (the two "~3-line opens ON" halves, and the cross-page group whose mechanism - the session flag - is gone: A opens OFF, a click turns it ON, B keeps its own OFF, A is still ON on return), item87 S3 (a) (fresh opens ON in Arbor) and S3 (b) (a page with work opens OFF), with two new PARKED records (count now 7). `drawers-p1` D1b (pure additions) -> D1c (the same hunks plus the one declared replacement: five removed lines, all in the mount effect and its import); `drawer-toggles` T3 -> T3b (persisted shape unchanged).
+- **New:** `typewriter-page.mjs` - browserless but REAL (the shipped stores bundled with esbuild over a fake localStorage; "reload" is a fresh module instance): new page ON in Arbor / OFF in Flux; toggle -> reload -> same page keeps it (both ways); a second page keeps its own; a pre-existing page with text opens OFF and stays so; Free Write writes nothing; the retired machinery is gone; nine mutants.
+- **Consequence to know:** a NEW empty Draft in Arbor now opens with the typewriter ON, so its FORMAT group starts greyed (S4) - that is the rule working. `outdent.mjs` opens an empty book chapter, clicks Draft and presses Format controls, so it will read red until its fixture turns the typewriter off; `writing-r2` (a page with text) should now be FORMAT-enabled where S4 alone had it locked. Read-only audit of the other Format-pressing files (`ab2`, `cd1`, `fx4`, `fx5`, `fx6`, `item83f`, `item121`): mostly Board, script or presence checks; the run will say.
+
+### A.12 S5 follow-ups (Fable, Oct 11)
+
+- **The narrow-screen (unframed) format bar locks too** - `ModeStage.tsx`, the bar shown below 1100px and in QuickSprint: all nine buttons are `disabled={typewriterOn}`, the bar carries the same lexicon tooltip ("Typewriter Mode is on"),
+  locked buttons grey and let the pointer fall through to it. It keys on the RUNNING typewriter (`(mode === 'journal' || mode === 'drafting') && settings.typewriter`), so Revise's bar stays usable. The only format-shortcut path in
+  these hosts is PageEditor's `applyRailFormat` (already guarded); QuickSprint has no format-key handler. Checked by `drawer-toggles` T10 (+4 mutants).
+- **Fixtures fixed rather than left to go red:** `outdent.mjs` (empty book chapter -> Draft -> Format) and `fx6.mjs` S1 (a) Bold press now turn the typewriter OFF through the real toggle and assert it. Both were already exposed by S4 and are made certain by S5 (an empty Arbor Draft opens ON).
+  Read-only audit of the other Draft/Format files: `writing-r2` (a page with text) now opens OFF so Format is usable; `fx5`'s Bold is the Board card popup; `ab2`/`cd1`/`fx4`/`item83f` use script or presence checks; `item121` only checks the buttons exist; `hb1`/`hb2` are Free Write (unchanged).
+- **Housekeeping, no action now:** a page opened and then abandoned leaves one small `wrizo-typewriter-page-<id>` key behind (`enterPageTypewriter` saves on first open). Same for a page deleted later. A sweep at delete / on boot against the page list would clear them; they are ~20 bytes each.
+
+### A.13 Chat 1's run of 79c7585d (Oct 12): three reds, what each was
+
+- **`item87` S3 (b) - a fixture reading, now corrected and measured in-run.** The fixture creates a page EMPTY, opens it empty (so it takes Arbor's default ON and SAVES it), then types, leaves and returns. On the reopen the saved ON wins over "has text" - Nick's rule working, not an S5 bug.
+  My successor had asserted OFF for a premise the fixture does not have. It now asserts ON *and* reads `wrizo-typewriter-page-<id>` = on, so the premise is in the run. The case that WOULD be a bug - a page that already holds text the first time it is ever opened - is new S3 (c): seeded through the seam, first-opened, must read OFF and save OFF.
+- **`item83f` (E3 line-scope successors, Tab fence, Bulleted list) - the predicted fixture class.** `toDraft` reaches Draft on an empty book chapter, so the page takes Arbor's default ON and the Format group is a disabled fieldset; the drawer's `clickFormat` is a `click()` on a disabled button, which does nothing. The
+  `beforeTab`/`afterTab` pair in the ledger fits exactly (Tab then adds the FIRST tab, not a second). `toDraft` now reads the toggle and the fieldset's `disabled`, turns the typewriter OFF through the real toggle, reads them again, and records all four values in a check.
+- **`page-templates` on `drawer-ghost-fix` - harness timing, with one open measurement.** That tree opens the panel over 0.2 s; the Screenplay press landed inside it and hit-tested to the Format container. Ported Phase 1's law (read rects and press only once the panel has arrived: transform settled, opacity 1, plus the buttons' own 0.15 s).
+  Suspected mechanism, NOT yet measured: the new `visibility:hidden` is inherited by the buttons, which carry `transition:.15s` (= `all`), so for the first frame after open each button's own inherited visibility is still at its start value while its container is already visible. That window is one frame (a writer cannot be inside it), but Fable asked for a real-click measurement:
+  `scripts/evidence/click-mid-open.mjs` (identical on both branches) presses the Screenplay button 0 / 30 / 60 / 100 / 150 / 250 / 450 ms after the grip, reports the elapsed time it actually read, where the point hit-tests, and whether the template applied. It needs a box turn; if the 60-160 ms samples miss on either tree it prints `PRODUCT BUG?`.
+
+### A.14 The drawer's contents are not live until the slide has settled (Fable, Oct 12; Chat 1's click-mid-open on 9c35f842)
+
+- **Measured:** on Phase 1 the Screenplay button travels ~184 px in ~150 ms (408 -> 224; main and the ghost fix move 6 px). Presses at 15, 45, 76 and 107 ms missed; 154 ms and later landed.
+- **What the missed presses actually hit - and what is NOT known.** The script as run recorded only the hit-test and whether the template applied; it did not record the press's own target. Reasoned, not measured: a press goes in a few ms after the hit-test, by which time the layer has moved LEFT, so the fixed point sits over whatever is now to the RIGHT of
+  Screenplay on the same row. On the Templates row that is Outline / Title page / Bibliography / Custom - all `aria-disabled` stand-ins with no handler - or the gap, so the missed Screenplay presses pressed nothing. The 15 ms sample's point (x 408) was outside the panel's box and hit the PAGE (`div.mode-page.focused`), not a control.
+  **But the same geometry on a row of adjacent LIVE controls (Format's B I U S H, the Actions icons, the Typeface controls) could put the press on a NEIGHBOUR: a different, working button. That is the hazard this change removes; it was not observed.** The extended script now records the real mousedown/click targets, whether a button was among them and whether it was live, so the re-run says it outright.
+- **Fix (CSS only):** `@keyframes wz-drawer-live` holds `pointer-events:none` on the sliding layer until the last 1% of `--drawer-dur`, applied on `[data-open='true'] > .wz-drawer-slide`. An early press falls through to the drawer's own panel (no handler) and does nothing. It is an animation, not a transition (pointer-events is discrete), has no fill-mode (the layer inherits the panel's `auto` again at the end), restarts on every open, and covers both hands (they share the layer).
+  Reduced motion keeps the short length: `animation-duration: var(--drawer-dur-reduced) !important` out-ranks the global 0.01ms floor, as the panel's fade does.
+- **Checks:** `drawers-p1` Part N (N1, N2, five mutants). `page-templates`' settle wait now also requires the layer to be live. `scripts/evidence/click-mid-open.mjs` is tree-aware: with a sliding layer, every press before settle (< 190 ms) must be a clean no-op (nothing applied, no live control pressed) and every press from 250 ms on must land; without one it keeps the original rule.
+
+### A.15 Rebased onto main (b4628f4c); what is and is not done against §7; the run list; the frames
+
+- **Rebase:** 20 commits onto `origin/main` @ b4628f4c (abq, the splash and the ghost fix are all on it). Three conflict hunks, all resolved by taking Phase 1's side where Phase 1 modifies main's version: S1 removed the one-line reduced-motion opt-out beside main's ghost block; the ghost block itself is main's rule with the slide-aware delay (`max(--fade-dur, --drawer-dur)`) and the reduced-motion short fade; `page-templates`' settle wait is the sliding-layer one (live as well as arrived). ONE `drawer-ghost.mjs` (the Phase 1 shape); `tsc` clean; the PageEditor diff against the new base is still exactly the declared hunks (16 added / 5 removed lines, all matched).
+- **§7 status.** S0 done. S1 (shell, motion, inert, arrow) done. S2 (drawerSet, TEXT|INK tabs, Actions, the PageEditor hunk) **done in the drawer; its retirement half is NOT** (below). S3 (right drawer TUTOR | Grafts/Links, the "?" note) done. **The slices after S3 were renumbered by Nick's later asks:** what the plan calls S4 (card popup dock onto `SideDrawer`) and S5 (dead-CSS removal, the frames, the live walk) were NOT built; "S4" and "S5" in the commits are the toggles and the per-page typewriter memory.
+- **Deferred, plainly:**
+  1. **Card popup dock onto `SideDrawer`** (plan S4; `BoardEditor.tsx`): not started. `SideDrawer` has no `anchor: 'card'` yet. The card's own dock still carries its old markup.
+  2. **S2b - retiring the band's hover menu** (`InkSwitch.tsx`, `.wz-ink-menu` / `.desk-mode-freewrite` CSS): the TEXT|INK tabs exist in the drawer, so the band's switch is now a SECOND control for the same state. Retiring it needs `item121`/`item126` re-pointed and parked, which needs a box turn.
+  3. **Dead-CSS removal and the old class names** (plan §5): deliberately kept, per the plan; one later sweep.
+  4. **`drawers-p1-live.mjs`** (the plan's browser half): not written; `click-mid-open`, `page-templates` and the frames cover its motion and press claims, but not its full list (rects at both widths, the tab ARIA walk, Board page-level tools arm).
+  5. **Plan §9 frames 12-13 (Board tools arm; card popup dock)** depend on 1.
+  6. **Housekeeping:** the abandoned-page typewriter key.
+- **Frames:** `scripts/evidence/phase1-frames.mjs` (box turn; `FRAMES_ONLY=<combo>` for one). Per combo (arbor/flux x dark/light): 01 left drawer open, both toggles ON; 02 both OFF; 03 FORMAT greyed (tooltip text recorded in `frames.json` - a native tooltip is not in a PNG); 04 the "..." menu with greyed rows; 05 right drawer TUTOR | Grafts/Links with the "?" note open (Arbor only; Flux has none by ruling); 06 the narrow-screen locked bar; plus ONE mid-slide frame (arbor-dark, animations paused at 100 ms). 25 frames. Arbor's light frames are compared to their dark twins by MD5 (`data-page` paints under Flux only).
+
+### A.16 Fable's rulings of Oct 12 (after A.15)
+
+- **Moved to Phase 2:** the card popup dock onto `SideDrawer` (plan S4) and frames 12-13. Left out of Phase 1. Items 3 (old class names / dead CSS) and 6 (the abandoned-page key) stay in the later sweep.
+- **The band's hover menu is RETIRED (deferred item 2, now done).** `InkSwitch.tsx` is deleted; `ModeStrip` no longer takes `instrument` / `onInstrument` and renders no menu; `PageEditor` stops passing them (two removed lines, one added comment - the declared hunk in `drawers-p1` D1c now lists them); the `.wz-ink-menu`, `.desk-mode-freewrite` and `.wz-ink-switch*` CSS is gone; `RhizomeField`'s live-chrome list drops `.wz-ink-menu`. The one control for that state is the drawer's first tab pair (`#wz-sliver-tab-text` / `#wz-sliver-tab-ink`).
+  `item121` and `item126` are re-pointed: their drivers and waits now use the tabs (original lines kept verbatim, commented); `item121`'s two band-height checks (S9 x2) and its "switch's checked side agrees with the paper" check (S9) are PARKED verbatim with successors (the band carries no switch and its children still share one row; the SELECTED TAB and the paper agree); the S10 "switch does not mount on Draft" check, now trivially true, gets a live companion (the TABS do not mount in Draft). `drawers-p1` Part O is the browserless half.
+- **`drawers-p1-live.mjs` written (deferred item 4, now done)** - the plan's §8 browser half, framed at 1280x800, Arbor and Flux: L1 page-is-primary (the paper's rect before/during/after each open, close and tab change, either drawer or both; the editor node never changes), L2 motion measured in-page by rAF (slide and fade mid-way at the same sample, open and close; the tab never moves; reduced motion: no travel, short fade), L3 the arrow, L4 closed means closed, L5 content per surface (Free Write TEXT/INK, Draft in order, Revise, Screenplay, and the BOARD tools arm button by button), L6 brass and olive, L7 the two-drawer law at 1280 and 1100, L8 the thin outer scrollbar at 1366x768, L9 ARIA and keyboard (tablist, roving tabindex, arrow keys move selection AND focus, grips, the toggles by keyboard, the "?" note). Every driver probes first, so a missing node fails a check instead of ending the file. Unrun.
+- **Run order for Chat 1:** (1) a full suite pair, `run-suite` default and parked legs, which includes `drawers-p1-live` automatically; (2) `scripts/evidence/phase1-frames.mjs` (25 frames) and `click-mid-open`.
+
+### A.17 Chat 1's full pair on 92f74782 and Fable's verdicts (Oct 12): what each was
+
+**Real product changes**
+- **One drawer at a time, at every width (ruled).** `store/menusDrawers.ts` gains `'tutor'`: opening the Tutor closes the Tools drawer and the reverse, through each one's own registered close path, with no measuring. The Tutor now announces from an effect keyed on its open state and registers its close path (as the Tools drawer already did). The far-left cascade keeps its width-measured law against the Tools drawer, untouched.
+  (Frame 05 had shown one drawer only because my frames script closed the left first; at 1100 nothing coordinated the two hands at all - the old "later one closes the other" law was in my plan, not in the code.) `one-drawer.mjs` runs the real store; `drawers-p1-live` L7 is now 1100 / 1280 / 1400, symmetric; the old L7 is parked verbatim.
+  Falsified by the ruling and parked verbatim with successors: `item112a` S7 "both open their tabs", S7 "both hands close by their own grips", S3 "with both hands standing", S5 "the two hands coexist". **Not yet read:** `item112a` S4 opens both hands and measures their rects against Draft's - it may still hold (rects of anchored elements), the run will say.
+
+**Test bugs (the app is fine)**
+- **L9, Enter on the Typewriter toggle:** `app.key()` is `rawKeyDown` + `keyUp` - no char event, so no keypress, so NO plain button is ever activated by it. The toggle was not tested; the instrument was. The source has no handler eating Enter (the only global key handlers are Ctrl+/, Escape, and the Tutor's "a keystroke closes it"). The successor sends a trusted keyDown carrying the character, proves the instrument first on a CONTROL (Enter on the plain "..." button), asserts the toggle can take focus, then Enter and Space on the toggle. If the control passes and the toggle still does not flip, THAT is the product bug.
+- **L1 "Object reference chain is too long":** my driver's assignment expression returned the editor node. Returns a boolean now.
+- `a11y-tutor-live-region` A8 "first thing inside .wz-tutor-panel": the panel's only child is now the sliding layer; the claim (inside the aria-hidden panel, ahead of the bodies, outside the tab conditional, never remounted) holds and is asserted by the successor.
+- `ab2` S3/S5 and the dependent checks: the fresh chapter reaches Draft empty -> typewriter ON (Arbor's default) -> the Format group is a disabled fieldset -> Bold does nothing. Fixture now turns it off through the real toggle first (as `outdent`/`fx6`/`item83f`).
+- `bg1` S2: the Screenplay template pressed inside the drawer's ~0.2 s arrival, which by design (A.14) is a clean no-op. Fixture waits for the layer to be live.
+- `item207-core` MOUNT: the mount block reads `content.type && allowed('typeface') && (` since S2; parked with a successor that reads it as it is.
+- `e3` S3 (x2): the closed panel's transition list gained `visibility` with the ghost fix (already on main), so the two panels' whole lists differ by design. Parked verbatim; successors: the two share one opacity fade (duration, timing, delay), and on close visibility switches off only after the fade ends (the tool pop-out now, the Counsel after S4 closes it).
+- `phase1-frames.mjs`: `hadNote` was node-side but used inside a page-evaluated template (needed `${hadNote}`); plus Chat 1's two cover-ups (the splash hold and the Tutor disclosure keys, and waiting for the splash to leave), so Chat 1 needs no patched copy. The same two guards went into `drawers-p1-live`'s fixture.
+
+**Two questions answered**
+- **The brass dash under PAGE KIND (frames 01, 07, Flux 01; not 02-04):** it is the Tools drawer's goal progress hairline - `.wz-sliver-goal-hairline-fill` (filled to words-written / the goal), coloured `--accent-rest`, shown only while `target != null && settings.instrumentsOn`. Frames 01 and 07 have Progress Tracking ON; 02-04 turn it OFF, which hides it. Not a stray mark.
+- **The block caret ~3 lines above the text (Flux, Typewriter ON):** `components/FluxBlockCaret.tsx` redraws only on `selectionchange`; the typewriter's top padding arrives when it is switched on (frame 01's order: caret placed, THEN Typewriter turned ON) with no selection change, so the overlay stays where the caret WAS. That component is not part of Phase 1, so main should do the same; not yet measured. `scripts/evidence/flux-caret-stale.mjs` measures it on whichever tree is built (A control, B the frames' order, C a selectionchange re-draws it). If main shows B stale, it goes to FIX's typewriter redesign.
+
+### A.18 Fable's byte review of a9e5ff04 (Oct 12)
+
+- **Bug fixed - the cascade was invisible to the width law after a three-step sequence.** `requestOpen` tested `openDrawer === other`, but `openDrawer` is only the MOST RECENT opener: cascade opens, Tutor opens (`openDrawer` = 'tutor'), Tools opens -> Tools closed the Tutor, the width law never saw the cascade, and the cascade and Tools both stood where they cannot fit. It now tests `stands.has(other)` (the store's own record of everything standing). `one-drawer.mjs` O5b runs exactly that sequence under a fake document whose band says NO, and a mutant restores `openDrawer === other`.
+- **Both announcements are now LAYOUT effects** (the Tutor's as asked; the Tools drawer's too, for the symmetric case), so the hand-over lands before paint and no single frame shows both hands open (`one-drawer.mjs` O7).
+- **`e3` park split out:** `e3-park` branch off main (e3 is red on main itself); removed from this branch.
+- **`item207-core` park dropped from this branch:** FIX's card port already accepts any extra guard in the mount block (covers `allowed('typeface')`); the card port merges first and this branch rebases onto it. Until then `item207-core` MOUNT reads red here.
+
+### A.19 fx18 S1 and the caret script (Oct 13)
+
+- **`fx18` S1 "open, the grips still mirror"** assumed BOTH drawers open at once; under Nick's one-drawer rule opening the right drawer closes the left, so the left grip correctly reads `‹` again (the arrow points the way its drawer will move). Parked verbatim (driver lines included); successor opens each drawer ALONE and checks its open grip - left `›`, right `‹`.
+- **`flux-caret-stale.mjs` was meaningless:** it asked a Range collapsed on the editor ELEMENT for client rects (there are none), so the native caret read null in every row and no verdict could be drawn. It now measures the last character's box in the last text node (right edge = the caret), WITHOUT mutating the editor (a DOM change can fire `selectionchange` and redraw the overlay, hiding the staleness), and prints "NOT MEASURED" instead of a verdict whenever a rect is null. The stale-caret bug itself is not Phase 1's: `FluxBlockCaret.tsx` is on main unchanged, and it goes to FIX's typewriter redesign.

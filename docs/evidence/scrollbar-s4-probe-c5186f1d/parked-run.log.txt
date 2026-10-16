@@ -1,0 +1,9 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=1 files=1 tree=c5186f1d bundle=index-CSSbNkZl.js/654748b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/sb5-parked
+[01/1] FAIL      exit=1   26s scrollbar-minimal.mjs :: SCROLLBAR-MINIMAL VERIFY: FAIL — 7/44 failed
+
+SUITE DONE HARNESS_PARKED=1 — 0/1 of 1 returned a passing verdict
+  FAIL: scrollbar-minimal.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\sb5-parked\scrollbar-minimal.mjs.parked.txt
+SUITE RESULT: NOT CLEAN — tree=c5186f1d bundle=index-CSSbNkZl.js/654748b NO-REBUILD

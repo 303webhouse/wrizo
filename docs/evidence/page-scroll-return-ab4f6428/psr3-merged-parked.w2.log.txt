@@ -1,0 +1,118 @@
+[
+  {
+    "name": "PageEditor: caret + scroll positioned pre-departure",
+    "pass": true,
+    "detail": "scroll=300 caret=40"
+  },
+  {
+    "name": "return chip present after departing PageEditor, accessible name is \"Return to the page\"",
+    "pass": true,
+    "detail": "Return to the page"
+  },
+  {
+    "name": "chip label reflects the page's own first line (not a generic string)",
+    "pass": true,
+    "detail": "Return to: Line 0 of the growing ma…"
+  },
+  {
+    "name": "route restored to the exact page",
+    "pass": true,
+    "detail": "#/page/mv8k9npxmybsz44mc"
+  },
+  {
+    "name": "scrollY restored within +/-4px",
+    "pass": true,
+    "detail": "before=300 after=300"
+  },
+  {
+    "name": "caret offset restored exactly",
+    "pass": true,
+    "detail": "caret=40"
+  },
+  {
+    "name": "the editor's mount is fresh-but-equivalent: text byte-identical",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "the chip is gone immediately after being consumed (one-shot)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "R2: a real input cancels the later restore re-asserts (caret stays where the writer moved it, not snapped back)",
+    "pass": true,
+    "detail": "caret=10"
+  },
+  {
+    "name": "QuickSprint: caret + scroll + Draft mode positioned pre-departure",
+    "pass": true,
+    "detail": "scroll=250"
+  },
+  {
+    "name": "return chip present after departing QuickSprint",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "QuickSprint route restored",
+    "pass": true,
+    "detail": "#/sprint"
+  },
+  {
+    "name": "QuickSprint scrollY restored within +/-4px",
+    "pass": true,
+    "detail": "before=250 after=250"
+  },
+  {
+    "name": "QuickSprint caret offset restored exactly",
+    "pass": true,
+    "detail": "caret=20"
+  },
+  {
+    "name": "QuickSprint text byte-identical across the departure/return",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "QuickSprint mode (Draft) persisted across the departure/return",
+    "pass": true,
+    "detail": "Draftmark"
+  },
+  {
+    "name": "return chip present after departing a board page",
+    "pass": true,
+    "detail": "w2-board"
+  },
+  {
+    "name": "w2-board route restored via the chip",
+    "pass": true,
+    "detail": "#/page/w2-board"
+  },
+  {
+    "name": "return chip present after departing a script page",
+    "pass": true,
+    "detail": "w2-script"
+  },
+  {
+    "name": "w2-script route restored via the chip",
+    "pass": true,
+    "detail": "#/page/w2-script"
+  },
+  {
+    "name": "PAGE IS PRIMARY: assist-rail collapse leaves the page rect byte-identical",
+    "pass": true,
+    "detail": "{\"left\":95,\"top\":186.59375,\"width\":620,\"height\":352.390625} -> {\"left\":95,\"top\":186.59375,\"width\":620,\"height\":352.390625}"
+  }
+]
+[
+  {
+    "name": "PARKED (was \"pager: B's scroll was never set BY the way-back mechanism (not A's captured 200)\") — FX4 S1: Journal's new bottom scroll buffer makes B tall enough to genuinely hold the inherited (unrelated, pre-existing) scrollY=200; live successor (caret-based) in this file's own live pager section",
+    "pass": true,
+    "detail": "FX14 S2: probe retired — the JournalEntry surface this re-verified on is unrouted (/journal/:id -> /page/:id); successor is J7 (journal pager retires with the surface)"
+  }
+]
+
+W2 PARKED: PASS (1 checks) — HARNESS_PARKED=1 armed, all retired-check successors green
+
+W2 VERIFY: PASS (22 checks)

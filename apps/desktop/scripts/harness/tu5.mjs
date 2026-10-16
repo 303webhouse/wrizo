@@ -349,40 +349,16 @@ await withHarness(async (app) => {
   }
 
   // ==========================================================================
-  // DISCLOSURE V3 — shown exactly once per version, including on legacy devices.
-  // (a) fresh device; (b) a v2-acknowledged device (2 < 3 -> v3 once); (c) the
-  // OLD v1 boolean flag alone -> v3 once. The successors for tu2.mjs's parked
-  // v2 checks.
+  // SUPERSEDED WHOLE (item word-diet, Nick, TRUST) — the one-time modal
+  // this whole section tests (shown once per version, surviving a
+  // v2-acknowledged device and the old v1 boolean flag alike) retires
+  // completely; full writeup in tu1.mjs's own S6 section. One successor:
+  // the v2-acknowledged case (this section's own "seeded-legacy proof")
+  // re-confirmed against the retirement.
   // ==========================================================================
   {
-    const v3Body = await lex(app, 'tutorDisclosureBodyV3');
-
-    // (a) Fresh device.
-    await freshProsePage(app, LAPTOP_W, 900, { skipDisclosure: false });
-    ok('Disclosure v3: not yet seen on a genuinely fresh device (neither key set)',
-      (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === null);
-    await app.evalJs("document.querySelector('.wz-tutor-grip').click()");
-    await sleep(300);
-    const shown = await app.evalJs("document.querySelector('.wz-tutor-disclosure-body')?.textContent ?? ''");
-    ok('Disclosure v3: shown on the first-ever open, carrying the v3 wording exactly (lexicon-routed, names the Bible)',
-      shown === v3Body && shown.includes('Bible'), shown);
-    await app.evalJs("document.querySelector('.wz-tutor-disclosure-ack').click()");
-    await sleep(250);
-    // ITEM 84 park sweep — CURRENT_DISCLOSURE_VERSION is 4 now; the '3' form of
-    // this check is parked verbatim at the foot of this file, re-asserted fresh
-    // here. The v3 WORDING checks around it are untouched and still true: v4
-    // renders in annotation form, so v3's body still carries v3's words exactly.
-    ok('Disclosure v4: the ack dismisses it and writes the CURRENT version (4) under the version key',
-      (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')"))
-      && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '4');
-    await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); await sleep(200);
-    await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); await sleep(300);
-    ok('Disclosure v3: does NOT reappear on the second open (same device, same version)',
-      (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')")));
-
-    // (b) A v2-acknowledged device — the seeded-legacy proof the brief names.
-    await freshDesk(app, LAPTOP_W, 900, { skipDisclosure: false });
-    await app.evalJs("localStorage.setItem('wrizo-tutor-disclosure-seen-version', '2')"); // v2 acknowledged, nothing newer
+    await freshDesk(app, LAPTOP_W, 900);
+    await app.evalJs("localStorage.setItem('wrizo-tutor-disclosure-seen-version', '2')"); // harmless now, nothing reads it
     await app.reload();
     await app.goto('/project/new');
     await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject (v2-seeded)' });
@@ -390,31 +366,10 @@ await withHarness(async (app) => {
     await app.click('Start writing');
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor (v2-seeded)' });
     await sleep(400);
-    ok('Disclosure v3 (v2-seeded device): the stored seenVersion really is 2 before the first open',
-      (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '2');
     await app.evalJs("document.querySelector('.wz-tutor-grip').click()");
     await sleep(300);
-    const v2SeededShown = await app.evalJs("document.querySelector('.wz-tutor-disclosure-body')?.textContent ?? ''");
-    ok('Disclosure v3 (v2-seeded device): 2 < 3, so v3 STILL shows exactly once, with v3\'s own wording — no bespoke branch',
-      v2SeededShown === v3Body, v2SeededShown);
-    await app.evalJs("document.querySelector('.wz-tutor-disclosure-ack').click()"); await sleep(250);
-    ok('Disclosure v4 (v2-seeded device): the ack advances the version to 4', (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '4');
-
-    // (c) The OLD v1 boolean flag alone.
-    await freshDesk(app, LAPTOP_W, 900, { skipDisclosure: false });
-    await app.evalJs("localStorage.setItem('wrizo-tutor-disclosure-seen', '1')"); // the pre-versioning v1 flag, alone
-    await app.reload();
-    await app.goto('/project/new');
-    await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject (v1-seeded)' });
-    await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
-    await app.click('Start writing');
-    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor (v1-seeded)' });
-    await sleep(400);
-    await app.evalJs("document.querySelector('.wz-tutor-grip').click()");
-    await sleep(300);
-    const v1SeededShown = await app.evalJs("document.querySelector('.wz-tutor-disclosure-body')?.textContent ?? ''");
-    ok('Disclosure v3 (v1-boolean-seeded device): the OLD v1 flag does NOT suppress v3 — it shows once, v3 wording',
-      v1SeededShown === v3Body, v1SeededShown);
+    ok('Disclosure [word-diet successor]: even a v2-acknowledged device never shows the modal (RETIRED whole)',
+      (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')")));
   }
 
   // ==========================================================================

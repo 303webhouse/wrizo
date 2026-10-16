@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { boardName, plainLines } from '../store/entryText';
 import {
@@ -662,6 +663,8 @@ function BoardCardPopup({
     const result = applyFormat(textRef.current, sel.start, sel.end, action);
     // A pending mark (an empty italic cannot be stored as `**`): nothing is written; the editor wraps the next text typed here.
     if (result.pending) { hiddenMarkEditingFor(el)?.setPending(result.pending, result.start); return; }
+    // card-held-italic: a style pressed off at its run's end - nothing is written; what is typed next lands outside the run
+    if (result.exitPending) { hiddenMarkEditingFor(el)?.setPendingExit(result.exitPending, result.start); return; }
     // FX6 S1 — a Bold/Italic toolbar click is a genuine edit that bypasses
     // the contenteditable's own input events entirely — record its own
     // atomic step (see ForwardOnlyEditor.tsx's applyRailFormat/PageEditor.
@@ -676,7 +679,14 @@ function BoardCardPopup({
 
   applyBoardFormatRef.current = applyBoardFormat;
 
-  return (
+  // card-close-x (Fable, 2026-10-13): "While a pop-up is open, nothing behind it should be clickable." The backdrop is fixed at
+  // z-index 210, but it rendered INSIDE `.desk-frame-stage`, whose `isolation:isolate` (FX4 S2) makes it a stacking context - so 210
+  // only ranked within the stage, and the fixed rail (`.desk-frame-strip`, z-index 1 in the ROOT context) painted over the whole
+  // stage, backdrop included: an outside click landed on the rail's own buttons (chat 1's run: elementFromPoint -> wz-strip, which
+  // holds "Remove"). Portalled to <body>, the backdrop ranks in the root context, above the rail and the page's chrome (toasts and the stale-client banner
+  // still sit above it, as they should). Nothing in this
+  // component reads its DOM ancestors, its colours are :root tokens, and React events still bubble through the component tree.
+  return createPortal(
     <div className="board-popup-backdrop" role="presentation" onClick={onClose}>
       <div
         ref={dialogRef}
@@ -728,6 +738,14 @@ function BoardCardPopup({
         )}
         <div className="board-popup-strip">
           <span className="eyebrow board-popup-eyebrow">Card</span>
+          {/* card-close-x (Nick's live test, 2026-10-13) - the pop-up closes from an X in its
+              top-right corner (the strip's right end; the eyebrow's margin-right:auto puts it
+              there). It replaces the foot's "Close" button and keeps that button's class,
+              board-popup-done, so every driver that closes a card still finds it. Esc and the
+              backdrop click are unchanged. */}
+          <button type="button" className="board-popup-close board-popup-done" aria-label={dt('boardPopupClose')} title={dt('boardPopupClose')} onClick={onClose}>
+            <span aria-hidden="true">{'\u00d7'}</span>
+          </button>
         </div>
         <div
           ref={elRef}
@@ -739,13 +757,11 @@ function BoardCardPopup({
           aria-label={`${lex('board')} text box`}
           style={cardTypeStyle(fontFace, fontSize)}
         />
-        <div className="board-popup-foot">
-          {/* CD4.1 — "Done" retired: the card-edit popup's close control is a door
-              word now, not a completion word (the class board-popup-done is kept). */}
-          <button type="button" className="btn-brass board-popup-done" onClick={onClose}>Close</button>
-        </div>
+        {/* CD4.1's foot "Close" button retired by card-close-x: the X in the strip above
+            is the close control now (it carries the class board-popup-done). */}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -816,7 +832,12 @@ export function BoardEditor({ id }: { id: string }) {
   // writer's chip-click return would otherwise clobber the very
   // information that return needed, the moment its own arrival became
   // chip-visible). An ordinary Board's own behavior is untouched.
-  useWayBack({ entryId: id, participatesInWayBack: !isSystemBoard });
+  // PAGE -> PLAN -> BACK (live bug, Oct 13): a page's PLAN board sits BETWEEN the page's departure and the writer's return, exactly as the Journal Board once did (B1 above) -
+  // and an ordinary board that participates CAPTURES ON UNMOUNT, so leaving the Plan overwrote the one-slot store (which held the PAGE's scroll and caret) with the
+  // BOARD's own entry. The page then mounted, found a slot naming someone else, and restored nothing: the writer landed at the top. A board that is a page's paired
+  // Plan face takes no part in the way-back at all (the slot keeps the PAGE's own departure), decided ONCE per mount so a later unpairing cannot fire a stray capture.
+  const [participatesInWayBack] = useState(() => !isSystemBoard && !getPairedPageId(id));
+  useWayBack({ entryId: id, participatesInWayBack });
 
   // BM1 S3/S8 — the board's own mode, persisted per board (client-local, zero
   // schema, the FX9 family). A system Board is never a projection surface —
@@ -884,6 +905,12 @@ export function BoardEditor({ id }: { id: string }) {
   // 'connection' Box creation/storage below is UNCHANGED from AB4 — only
   // the gesture that triggers it is new.
   const [threadArmedFrom, setThreadArmedFrom] = useState<string | null>(null);
+  // CONNECTOR-A (Nick's approved mockup v6): `threadArmedFrom` IS connection mode now - the card whose corner square was double-clicked or right-clicked. These are the rest of its
+  // render state: the card the arm is over (its circle shows), and the brief flash after a link or unlink.
+  const [connectTarget, setConnectTarget] = useState<string | null>(null);
+  const [connectFlash, setConnectFlash] = useState<{ a: string; b: string; off: boolean; line: boolean } | null>(null);
+  const connectEndRef = useRef<(() => void) | null>(null);
+  const armTipRef = useRef<SVGCircleElement | null>(null);
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
   // AB4 S2 — the Page face's sending sheets (Port, Pin) — Board never had
   // these before that ticket (S5's own "every surface carries the same
@@ -906,9 +933,20 @@ export function BoardEditor({ id }: { id: string }) {
   useEffect(() => { cardFaceNames.split('|').forEach(n => { if (n) void ensureFaceLoaded(n); }); }, [cardFaceNames]);
   boxesRef.current = boxes;
   const selectedIdRef = useRef(selectedId);
+  // Delete / Backspace on a selected card removes it (the "Remove" row is gone) - the key handler is a [] effect, so it calls the current render's removeSelected through this ref
+  const removeSelectedRef = useRef<() => void>(() => {});
   selectedIdRef.current = selectedId;
   const popupBoxIdRef = useRef(popupBoxId);
   popupBoxIdRef.current = popupBoxId;
+  // BOARD CLICK-TO-CREATE (Fable, Oct 14) - a click on EMPTY board space makes a card there; a click-drag sizes it first, with a ghost outline following the pointer; on release the card
+  // pop-up opens, and a card made this way and closed while still empty is discarded. OPEN projection on an ordinary board only (STORYBOARD/OUTLINE have their own card doors, a system
+  // board's cards are derived). These are refs because the gesture lives in the canvas's native pointer listeners (below), which must read the CURRENT answer, not a stale closure.
+  const createAllowedRef = useRef(false);
+  createAllowedRef.current = !isSystemBoard && boardMode === 'open';
+  const ghostRef = useRef<HTMLDivElement | null>(null);
+  const freshEmptyIdsRef = useRef<Set<string>>(new Set());
+  // the starters' fade (BeginningsRow): the first press anywhere on the board dismisses them; a board that gets cards and later empties again starts them fresh
+  const [startersFaded, setStartersFaded] = useState(false);
   const threadArmedFromRef = useRef(threadArmedFrom);
   threadArmedFromRef.current = threadArmedFrom;
   const selectedConnectionIdRef = useRef(selectedConnectionId);
@@ -938,6 +976,10 @@ export function BoardEditor({ id }: { id: string }) {
   // just reconciled ONCE, cleanly, the instant the drag ends, rather than
   // fighting every intermediate frame.
   const activeResizeIdRef = useRef<string | null>(null);
+  // CARD-RESIZE-RELOCK (Nick, 2026-10-13: "after a card resize, an immediate second resize or a click on the corner does nothing").
+  // When the last resize or move ENDED (performance.now()), so the canvas's double-click can tell a gesture's own second click from
+  // a request to edit - see onDoubleClick below.
+  const lastGestureEndRef = useRef(0);
   // FX4 S6 — the live thread-drag preview line's own endpoint, updated
   // imperatively on pointermove (the same "don't trigger a React render on
   // every move" discipline JournalEntry.tsx's own eraser ring already uses)
@@ -1287,6 +1329,8 @@ export function BoardEditor({ id }: { id: string }) {
     setSelectedId(null);
   };
 
+  removeSelectedRef.current = removeSelected;
+
   // AB4 S3 — thread deletion: confirm-free (a thread is cheap; re-drawing is
   // one gesture, the brief's own words).
   const removeConnection = (connId: string) => {
@@ -1470,7 +1514,10 @@ export function BoardEditor({ id }: { id: string }) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    let phase: 'idle' | 'pending' | 'dragging' | 'resizing' | 'threadDrag' = 'idle';
+    let phase: 'idle' | 'pending' | 'dragging' | 'resizing' | 'creating' = 'idle';
+    // BOARD CLICK-TO-CREATE - the press that may become a card: where it began (client px), whether it has been dragged past the threshold, and the geometry the ghost shows
+    let createOrigin: { x: number; y: number } | null = null;
+    let createDragged = false;
     let startX = 0, startY = 0, ptype = 'mouse';
     let activePointerId: number | null = null;
     let longPressTimer: ReturnType<typeof setTimeout> | null = null;
@@ -1480,49 +1527,219 @@ export function BoardEditor({ id }: { id: string }) {
     let resizeStart: { w: number; h: number; aspect: number; kind: Box['kind']; pinAspect: number | null } | null = null;
 
     const clearTimer = () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } };
+    // CARD RESIZE RELOCK, THE SECOND CAUSE (chat 1's run, 2026-10-13): a resize or a move drags the mouse across the board, and the
+    // browser selects the text it passes over. The next ordinary press inside that selection - on the corner, a moment later - starts
+    // the browser's own drag of the selected text, which CANCELS the pointer: onCancel -> finish(false) reverts the resize, and the
+    // corner looks locked until a click elsewhere clears the selection (Nick: "until he clicks another card"). Board text is never
+    // selected for its own sake (a card is edited in its popup), so a gesture clears a selection that sits on the board when it starts
+    // and when it ends. A selection anywhere else (the page beside a board) is left alone. The diagnosis is the harness's to prove,
+    // not this comment's: card-resize-relock.mjs R4 (no selection left after a resize) and R5 (no dragstart / pointercancel).
+    const clearBoardSelection = () => {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0 && !sel.isCollapsed && sel.anchorNode && canvas.contains(sel.anchorNode)) sel.removeAllRanges();
+    };
+    // ...and a native drag that starts on a card is refused outright, so no selection, however it was made, can take the pointer.
+    // (The board's one drop target, the survey's drag, starts OUTSIDE the canvas; this never sees it.)
+    const onDragStart = (e: DragEvent) => {
+      const t = e.target as Node | null;
+      const el = t && (t.nodeType === 1 ? (t as HTMLElement) : t.parentElement);
+      if (el && el.closest('.board-box')) e.preventDefault();
+    };
 
-    // FX4 S6 — the live preview line's endpoint, updated imperatively
-    // (previewLineRef) so a thread-drag never triggers a React render on
-    // every pointermove, matching JournalEntry.tsx's own eraser-ring
-    // discipline for the identical reason.
-    const updateThreadPreview = (x: number, y: number) => {
-      const line = previewLineRef.current;
-      if (!line) return;
-      const canvasRect = canvas.getBoundingClientRect();
-      line.setAttribute('x2', String(x - canvasRect.left));
-      line.setAttribute('y2', String(y - canvasRect.top));
+    // ============================================================================================================================================================
+    // CONNECTION MODE (connector-a; Nick's approved mockup v6, docs/mockups/connector on cursor/connector). It REPLACES the green tack and the thread-drag it armed.
+    //   ENTER  double-click the selected card's corner square with the pointer unmoved between the clicks, or right-click it (the browser menu is suppressed only there). The square
+    //          morphs to a 10px circle.
+    //   ARM    a thin brass line from that circle to the pointer; over another card it snaps to THAT card's circle - open = not linked, solid = linked.
+    //   COMMIT release on a card TOGGLES the link (a connection box, same board, stored exactly as before - no schema); a brief flash; then the lines hide.
+    //   CANCEL Esc, or a release on empty board after a drag. Released AT the square without moving, the mode latches and a click finishes it.
+    //   LINES  shown ONLY in this mode, only this card's own links (clipped to the board by the canvas itself); a click selects one, Delete removes it (the existing key handler).
+    // The arm and the target circle move imperatively (no React render per pointermove, the preview line's old discipline); React only hears of the target card changing.
+    // ============================================================================================================================================================
+    type Connect = { src: string; held: boolean; right: boolean; ox: number; oy: number; moved: boolean; px: number; py: number; target: string | null };
+    let connect: Connect | null = null;
+    // the browser's context menu is suppressed ONLY: on the corner square, while the mode is on, and for a beat after a right-button gesture ends (Windows fires `contextmenu` AFTER `pointerup`, by which time the mode is already over)
+    let ctxQuietUntil = 0;
+    // the last press on a corner square: a SECOND one at the same spot, soon, with nothing moved in between, is a double-click (a resize in between is not)
+    let handleClick: { t: number; x: number; y: number; moved: boolean; boxId: string } | null = null;
+    let flashTimers: ReturnType<typeof setTimeout>[] = [];
+    const LINKABLE = new Set<string>(['text', 'ink', 'page-pin']);
+
+    const cornerOf = (boxId: string) => {
+      const el = canvas.querySelector(`[data-box-id="${boxId}"]`) as HTMLElement | null;
+      if (!el) return null;
+      const r = el.getBoundingClientRect(), c = canvas.getBoundingClientRect();
+      return { x: r.right - c.left, y: r.bottom - c.top };
+    };
+    const placeArm = () => {
+      const line = previewLineRef.current, tip = armTipRef.current;
+      if (!connect || !line) return;
+      const from = cornerOf(connect.src);
+      if (!from) return;
+      const c = canvas.getBoundingClientRect();
+      let to = { x: connect.px - c.left, y: connect.py - c.top };
+      const snap = connect.target ? cornerOf(connect.target) : null;
+      if (snap) to = snap;
+      line.setAttribute('x1', String(from.x)); line.setAttribute('y1', String(from.y));
+      line.setAttribute('x2', String(to.x)); line.setAttribute('y2', String(to.y));
       line.style.display = 'block';
+      if (tip) {
+        // the tip rides the pointer; over a card the circle on that card takes its place
+        tip.setAttribute('cx', String(to.x)); tip.setAttribute('cy', String(to.y));
+        tip.style.display = snap ? 'none' : 'block';
+      }
     };
-    const hideThreadPreview = () => {
-      const line = previewLineRef.current;
-      if (line) line.style.display = 'none';
+    const targetAt = (x: number, y: number): string | null => {
+      if (!connect) return null;
+      for (const el of document.elementsFromPoint(x, y)) {
+        if ((el as Element).closest?.('.board-connections')) continue;
+        const b = (el as Element).closest?.('.board-box') as HTMLElement | null;
+        if (!b || !canvas.contains(b)) continue;
+        const id = b.dataset.boxId;
+        if (!id || id === connect.src) continue;
+        const box = boxesRef.current.find(q => q.id === id);
+        if (box && LINKABLE.has(box.kind)) return id;
+      }
+      return null;
+    };
+    const pairBox = (a: string, b: string) => boxesRef.current.find(x => x.kind === 'connection' && ((x.connA === a && x.connB === b) || (x.connA === b && x.connB === a)));
+
+    function endConnect() {
+      document.removeEventListener('pointermove', cMove, true);
+      document.removeEventListener('pointerup', cUp, true);
+      document.removeEventListener('pointerdown', cDown, true);
+      if (!connect) return;
+      if (connect.right) ctxQuietUntil = performance.now() + 500;
+      connect = null;
+      threadArmedFromRef.current = null;
+      setThreadArmedFrom(null);
+      setConnectTarget(null);
+      setSelectedConnectionId(null);
+      const line = previewLineRef.current; if (line) line.style.display = 'none';
+    }
+    const clearFlashTimers = () => { flashTimers.forEach(clearTimeout); flashTimers = []; };
+    const startFlash = (f: { a: string; b: string; off: boolean; line: boolean }) => {
+      clearFlashTimers();
+      setConnectFlash(f);
+      // the line is brief (it is a confirmation, not a feature); the circles linger a little longer; then everything is hidden again
+      flashTimers.push(setTimeout(() => setConnectFlash(cur => (cur ? { ...cur, line: false } : cur)), 650));
+      flashTimers.push(setTimeout(() => setConnectFlash(null), 1500));
+    };
+    const commit = (tid: string) => {
+      if (!connect) return;
+      const src = connect.src;
+      const existing = pairBox(src, tid);
+      if (existing) {
+        setBoxes(prev => prev.filter(x => x.id !== existing.id));     // linked already: releasing on it UNLINKS
+      } else {
+        const maxZ = boxesRef.current.reduce((m, x) => Math.max(m, x.z), 0);
+        const conn: Box = { id: generateId(), kind: 'connection', x: 0, y: 0, w: 0, h: 0, z: maxZ + 1, connA: src, connB: tid };
+        setBoxes(prev => [...prev, conn]);                              // not linked: releasing on it LINKS (the same box shape as ever)
+      }
+      endConnect();
+      startFlash({ a: src, b: tid, off: !!existing, line: true });
+    };
+    function cMove(e: PointerEvent) {
+      if (!connect) return;
+      connect.px = e.clientX; connect.py = e.clientY;
+      if (Math.hypot(e.clientX - connect.ox, e.clientY - connect.oy) > MOUSE_DRAG_THRESHOLD) connect.moved = true;
+      const t = targetAt(e.clientX, e.clientY);
+      if (t !== connect.target) { connect.target = t; setConnectTarget(t); }
+      placeArm();
+    }
+    // a point on one of the mode's own circles (the origin's or a linked peer's) belongs to the CIRCLE, not to the line that ends there: the release that enters the mode lands exactly on the origin's
+    // circle, where every line of this card begins, and it must not select one (it did: the first review run found the line already heavy, and a Delete then reached the wrong thing)
+    const onModeCircle = (x: number, y: number): boolean => {
+      if (!connect) return false;
+      const c = canvas.getBoundingClientRect();
+      const ids = [connect.src, ...boxesRef.current.filter(b => b.kind === 'connection' && (b.connA === connect!.src || b.connB === connect!.src)).map(b => (b.connA === connect!.src ? b.connB : b.connA) as string)];
+      return ids.some(id => { const p = cornerOf(id); return !!p && Math.hypot(x - c.left - p.x, y - c.top - p.y) <= 14; });
+    };
+    function cUp(e: PointerEvent) {
+      if (!connect) return;
+      const hit = onModeCircle(e.clientX, e.clientY) ? undefined : document.elementsFromPoint(e.clientX, e.clientY).find(n => (n as Element).classList?.contains('board-connection-hit')) as Element | undefined;
+      if (hit) {                                   // a click on a line selects it; Delete removes it
+        connect.held = false;
+        const id = hit.closest('[data-connection-id]')?.getAttribute('data-connection-id');
+        if (id) setSelectedConnectionId(id);
+        return;
+      }
+      const t = targetAt(e.clientX, e.clientY);
+      if (connect.held) {
+        connect.held = false;
+        if (t) { commit(t); return; }
+        if (connect.moved) { endConnect(); return; }   // released on nothing after a drag: cancel
+        return;                                         // released at the square: the mode latches; a click finishes it
+      }
+      if (t) commit(t); else endConnect();
+    }
+    function cDown(e: PointerEvent) {
+      // connection mode owns every press: the board's own select / move / resize stand down (and a stray press cannot start a native drag)
+      if (!connect) return;
+      e.preventDefault(); e.stopPropagation();
+    }
+    const enterConnect = (src: string, held: boolean, e: PointerEvent) => {
+      clearFlashTimers(); setConnectFlash(null);
+      connect = { src, held, right: e.button === 2, ox: e.clientX, oy: e.clientY, moved: false, px: e.clientX, py: e.clientY, target: null };
+      threadArmedFromRef.current = src;
+      setSelectedConnectionId(null);
+      setConnectTarget(null);
+      setThreadArmedFrom(src);
+      document.addEventListener('pointermove', cMove, true);
+      document.addEventListener('pointerup', cUp, true);
+      document.addEventListener('pointerdown', cDown, true);
+      requestAnimationFrame(placeArm);   // the arm element mounts with the state above; place it as soon as it exists
+    };
+    // a right-click on the square is suppressed ONLY there (the browser's own menu would cover the very thing being asked for) - plus while the mode is on, plus the beat after a right-drag lets go
+    const onCtx = (e: Event) => {
+      const t = e.target as Element | null;
+      if (connect || performance.now() < ctxQuietUntil || t?.closest?.('.board-handle')) e.preventDefault();
     };
 
-    // FX4 S6 — the thread-drag's own commit: released inside a DIFFERENT
-    // card mints a hairline (de-duped either order, same as AB4's own
-    // connect-mode gesture); released on empty board, or on the SAME card
-    // it started from, cancels. The 'connection' Box shape/creation is
-    // UNCHANGED from AB4 — only this gesture triggers it now.
-    const finishThreadDrag = (e: PointerEvent) => {
-      clearTimer();
+    // BOARD CLICK-TO-CREATE - the card the press would make, in the board's own units (x and BOTH y and h are fractions of the WIDTH, as every box here is). A plain press takes the
+    // default card size with its top-left AT the press; a drag takes the rectangle between the press and the pointer. Always floored at the minimum card and clamped to the board.
+    const createRectAt = (clientX: number, clientY: number) => {
+      const cr = canvas.getBoundingClientRect();
+      const W = cr.width || pageWidthPx;
+      const ox = ((createOrigin as { x: number; y: number }).x - cr.left) / W;
+      const oy = ((createOrigin as { x: number; y: number }).y - cr.top) / W;
+      let x: number, y: number, w: number, h: number;
+      if (!createDragged) { x = ox; y = oy; w = NEW_CARD_W; h = NEW_CARD_H; }
+      else {
+        const px = (clientX - cr.left) / W, py = (clientY - cr.top) / W;
+        x = Math.min(ox, px); y = Math.min(oy, py); w = Math.abs(px - ox); h = Math.abs(py - oy);
+      }
+      w = Math.min(Math.max(w, MIN_TEXT_W), 1);
+      h = Math.max(h, MIN_TEXT_H);
+      x = Math.min(Math.max(x, 0), Math.max(1 - w, 0));
+      y = Math.min(Math.max(y, 0), Math.max(BOARD_MAX_Y - BOARD_BREATHING_ROOM - h, 0));
+      return { x, y, w, h };
+    };
+    const showGhost = (clientX: number, clientY: number) => {
+      const g = ghostRef.current;
+      if (!g || !createOrigin) return;
+      const r = createRectAt(clientX, clientY);
+      g.style.display = 'block';
+      g.style.left = `${r.x * pageWidthPx}px`; g.style.top = `${r.y * pageWidthPx}px`;
+      g.style.width = `${r.w * pageWidthPx}px`; g.style.height = `${r.h * pageWidthPx}px`;
+    };
+    const hideGhost = () => { const g = ghostRef.current; if (g) g.style.display = 'none'; };
+    const finishCreate = (commit: boolean, e?: PointerEvent) => {
       if (activePointerId != null && canvas.hasPointerCapture(activePointerId)) {
         try { canvas.releasePointerCapture(activePointerId); } catch { /* already released */ }
       }
-      hideThreadPreview();
+      hideGhost();
+      const origin = createOrigin;
       phase = 'idle';
-      const from = threadArmedFromRef.current;
-      threadArmedFromRef.current = null;
-      setThreadArmedFrom(null);
-      if (!from) return;
-      const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
-      const targetBoxEl = el?.closest('.board-box') as HTMLElement | null;
-      const targetId = targetBoxEl?.dataset.boxId;
-      if (!targetId || targetId === from) return; // empty board or same card — cancel
-      const exists = boxesRef.current.some(x => x.kind === 'connection' && ((x.connA === from && x.connB === targetId) || (x.connA === targetId && x.connB === from)));
-      if (exists) return;
-      const maxZ = boxesRef.current.reduce((m, x) => Math.max(m, x.z), 0);
-      const conn: Box = { id: generateId(), kind: 'connection', x: 0, y: 0, w: 0, h: 0, z: maxZ + 1, connA: from, connB: targetId };
-      setBoxes(prev => [...prev, conn]);
+      if (!commit || !origin || !e) { createOrigin = null; createDragged = false; return; }
+      const r = createRectAt(e.clientX, e.clientY);
+      createOrigin = null; createDragged = false;
+      const maxZ = boxesRef.current.reduce((m, b) => Math.max(m, b.z), 0);
+      const box: Box = { id: generateId(), kind: 'text', x: r.x, y: r.y, w: r.w, h: r.h, z: maxZ + 1, text: '' };
+      freshEmptyIdsRef.current.add(box.id);   // a card made by this gesture and closed still empty is discarded (the pop-up's onClose, below)
+      setBoxes(prev => [...prev, box]);
+      setSelectedId(box.id);
+      setPopupBoxId(box.id);
     };
 
     const beginMove = (ids: string[]) => {
@@ -1537,6 +1754,7 @@ export function BoardEditor({ id }: { id: string }) {
       const box = boxesRef.current.find(b => b.id === boxId);
       if (!box) return;
       phase = 'resizing';
+      canvas.dataset.resizing = 'true';   // CARD-RESIZE-AXIS: the whole canvas wears the diagonal arrow while the corner is held (see index.css)
       resizingId = boxId;
       startBoxes = boxesRef.current;
       // ITEM 138 — the LOCK's aspect, resolved from the PINNED ENTRY, never from
@@ -1590,7 +1808,9 @@ export function BoardEditor({ id }: { id: string }) {
       // re-evaluates this box (now that activeResizeIdRef no longer skips
       // it) on the very next render.
       const wasResizing = phase === 'resizing';
+      if (phase === 'resizing' || phase === 'dragging') { lastGestureEndRef.current = performance.now(); clearBoardSelection(); }
       phase = 'idle';
+      delete canvas.dataset.resizing;
       movingIds = [];
       resizingId = null;
       resizeStart = null;
@@ -1601,6 +1821,7 @@ export function BoardEditor({ id }: { id: string }) {
     const onDown = (e: PointerEvent) => {
       if (popupBoxIdRef.current) return; // the card popup is open — board gestures stand down
       const target = e.target as HTMLElement;
+      setStartersFaded(true);   // BOARD CLICK-TO-CREATE: the empty board's starters fade on the first press anywhere on the board
 
       // FX7 S8 — root-caused live (not guessed): the layer-toggle button's
       // own `onMouseDown={e => e.stopPropagation()}` (below, in the card's
@@ -1624,47 +1845,29 @@ export function BoardEditor({ id }: { id: string }) {
       // the click proceed natively to the button's own onClick.
       if (target.closest('.board-layer-toggle')) return;
 
-      const pinEl = target.closest('.board-pin-grab') as HTMLElement | null;
-      const pinBoxEl = pinEl?.closest('.board-box') as HTMLElement | null;
-
-      // FX5 S5 — the olive pin is the connection grab now; the dead handle-
-      // double-click gesture (armThreadDrag on a .board-handle dblclick) is
-      // REMOVED whole, not repaired (Nick's own ruling — the DoD names the
-      // pin explicitly). Pointer-down ON the pin arms AND begins tracking
-      // in the SAME gesture — one continuous drag, no separate two-step
-      // arm-then-drag the old gesture needed (that two-step, double-click-
-      // dependent shape is very likely WHY it read as "dead": a real hand's
-      // double-click timing is far less reliable than a script's).
-      if (pinEl && pinBoxEl) {
-        e.preventDefault();
-        e.stopPropagation();
-        const boxId = pinBoxEl.dataset.boxId!;
-        armThreadDrag(boxId);
-        activePointerId = e.pointerId;
-        phase = 'threadDrag';
-        try { canvas.setPointerCapture(activePointerId); } catch { /* gone */ }
-        updateThreadPreview(e.clientX, e.clientY);
-        return;
-      }
-
+      // THE GREEN TACK IS RETIRED (connector-a): there is no pin to press. A card is connected from its corner square (below).
       const handleEl = target.closest('.board-handle') as HTMLElement | null;
       const boxEl = target.closest('.board-box') as HTMLElement | null;
 
-      // Retained for defense-in-depth (an already-armed thread from a prior
-      // gesture, e.g. re-pressing after Escape didn't fully clear a stale
-      // ref — the pin above is the only path that ARMS one now).
-      if (threadArmedFromRef.current != null) {
-        e.preventDefault();
-        activePointerId = e.pointerId;
-        phase = 'threadDrag';
-        try { canvas.setPointerCapture(activePointerId); } catch { /* gone */ }
-        updateThreadPreview(e.clientX, e.clientY);
-        return;
-      }
+      // Connection mode owns every press (see cDown); this is belt and braces for a press that arrives before its listeners do.
+      if (connect) return;
 
       if (handleEl && boxEl) {
         const boxId = boxEl.dataset.boxId!;
         if (boxId !== selectedIdRef.current) return; // handle only active on the selected box
+        // CONNECTOR-A - THE CORNER SQUARE'S TWO NEW DOORS. Right-click: connection mode, button held. Double-click: a SECOND press at the same spot, soon after the first, with the pointer
+        // unmoved in between (a first press that went on to RESIZE does not count - that is the writer resizing twice, and the card-resize-relock law below still holds for it).
+        if (e.button === 2) { e.preventDefault(); enterConnect(boxId, true, e); return; }
+        if (e.button !== 0) return;
+        {
+          const now = performance.now();
+          if (handleClick && handleClick.boxId === boxId && now - handleClick.t < 450 && !handleClick.moved && Math.hypot(e.clientX - handleClick.x, e.clientY - handleClick.y) <= 4) {
+            handleClick = null; e.preventDefault(); enterConnect(boxId, true, e); return;
+          }
+          handleClick = { t: now, x: e.clientX, y: e.clientY, moved: false, boxId };
+        }
+        // CARD RESIZE RELOCK — no selection already on the board may turn this press into a native drag (see clearBoardSelection above).
+        clearBoardSelection();
         startX = e.clientX; startY = e.clientY; ptype = e.pointerType; activePointerId = e.pointerId;
         try { canvas.setPointerCapture(activePointerId); } catch { /* gone */ }
         beginResize(boxId);
@@ -1672,11 +1875,24 @@ export function BoardEditor({ id }: { id: string }) {
       }
 
       if (!boxEl) {
-        setSelectedId(null);
+        // RULING (Fable, Oct 14): with a card selected, the FIRST empty-space press only deselects - it makes nothing. The next press, with nothing selected, is the one that creates.
+        const hadSelectedCard = selectedIdRef.current != null;
+        setSelectedId(null);   // unchanged: a press on empty space deselects the selected card
+        // BOARD CLICK-TO-CREATE: ...and, on GENUINELY empty canvas (the press landed on the canvas itself - not a door, a hairline, the resize handle or anything laid over it) with nothing selected, begins a card.
+        if (!hadSelectedCard && createAllowedRef.current && target === canvas && (e.pointerType !== 'mouse' || e.button === 0)) {
+          e.preventDefault();   // no native text-selection drag starting under the card being sized
+          createOrigin = { x: e.clientX, y: e.clientY };
+          createDragged = false;
+          activePointerId = e.pointerId; startX = e.clientX; startY = e.clientY; ptype = e.pointerType;
+          phase = 'creating';
+          try { canvas.setPointerCapture(activePointerId); } catch { /* gone */ }
+          showGhost(e.clientX, e.clientY);
+        }
         return;
       }
 
       const boxId = boxEl.dataset.boxId!;
+      clearBoardSelection(); // CARD RESIZE RELOCK — a press on a card body never lands inside a selection a gesture left behind
       setSelectedId(boxId);
       setSelectedConnectionId(null); // AB4 S3 — selecting a box clears any connection selection
       startX = e.clientX; startY = e.clientY; ptype = e.pointerType; activePointerId = e.pointerId;
@@ -1714,11 +1930,14 @@ export function BoardEditor({ id }: { id: string }) {
     };
 
     const onMove = (e: PointerEvent) => {
-      if (phase === 'threadDrag') {
-        e.preventDefault();
-        updateThreadPreview(e.clientX, e.clientY);
+      if (phase === 'creating') {
+        if (!createDragged && Math.hypot(e.clientX - startX, e.clientY - startY) > MOUSE_DRAG_THRESHOLD) createDragged = true;
+        if (createDragged) e.preventDefault();
+        showGhost(e.clientX, e.clientY);
         return;
       }
+      // a press on the corner that has gone on to move is a resize, not the first half of a double-click
+      if (handleClick && !handleClick.moved && Math.hypot(e.clientX - handleClick.x, e.clientY - handleClick.y) > 3) handleClick.moved = true;
       if (phase === 'pending') {
         const dist = Math.hypot(e.clientX - startX, e.clientY - startY);
         if (ptype === 'mouse') {
@@ -1817,7 +2036,19 @@ export function BoardEditor({ id }: { id: string }) {
           // hand-widened page card back to the page silhouette, not to preserve
           // whatever it currently is.
           if (b.kind === 'page-pin' && resizeStart!.pinAspect != null) {
-            return { ...b, w: newW, h: Math.max(MIN_PIN_H, newW * resizeStart!.pinAspect) };
+            // CARD-RESIZE-AXIS (Nick, Oct 15 3:18am): the card KEEPS its proportions - only its size changes - but the size follows the pointer on BOTH axes. The lock used to read dx alone, so a
+            // sideways drag grew the (tall) card mostly downward, a vertical drag did nothing, and the corner ran away from the pointer. Now: the corner's target is where the pointer has taken it
+            // (the corner moves by dx, dy). THE AXIS THE POINTER HAS MOVED MORE DRIVES THE SIZE (Fable, round 2: projecting the drag onto the diagonal made a sideways drag sluggish - 140px right
+            // gave +48px wide - so the corner lagged the hand): the width changes by dx, or by dy / aspect, whichever has the larger MAGNITUDE (its own sign - so a drag that is mostly up shrinks it even
+            // while it also moves right); the height follows at the aspect. The corner then stays UNDER THE POINTER on the dominant axis, and exactly on it for a drag along the diagonal.
+            // MIN_PIN_H and the min width both floor it (the height floor implies a width floor at this aspect).
+            const a = resizeStart!.pinAspect;
+            const dyFrac = (e.clientY - startY) / pageWidthPx;
+            // A DELTA from the start size, so an outward drag can never SHRINK an older, differently shaped card (item 138's grandfathered wide ones): it takes its kind's shape at the first pixel and grows.
+            const byX = dx, byY = dyFrac / a;
+            const toward = resizeStart!.w + (Math.abs(byX) >= Math.abs(byY) ? byX : byY);
+            const w = Math.max(minW, MIN_PIN_H / a, toward);
+            return { ...b, w, h: Math.max(MIN_PIN_H, w * a) };
           }
           // FX4 S4 — text now resizes freeform on BOTH axes too (height was
           // reflow-only before this ticket): dragging taller sets an
@@ -1835,33 +2066,31 @@ export function BoardEditor({ id }: { id: string }) {
     };
 
     const onUp = (e: PointerEvent) => {
-      if (phase === 'threadDrag') { finishThreadDrag(e); return; }
+      if (phase === 'creating') { finishCreate(true, e); return; }
       finish(true);
     };
     const onCancel = () => {
       // A genuine pointercancel (not a plain release) always disarms
       // without ever committing — never trust wherever the OS happened to
       // report the pointer at cancel time.
-      if (phase === 'threadDrag') {
-        clearTimer();
-        if (activePointerId != null && canvas.hasPointerCapture(activePointerId)) {
-          try { canvas.releasePointerCapture(activePointerId); } catch { /* already released */ }
-        }
-        hideThreadPreview();
-        phase = 'idle';
-        threadArmedFromRef.current = null;
-        setThreadArmedFrom(null);
-        return;
-      }
+      if (phase === 'creating') { finishCreate(false); return; }   // a touch drag that turned into a native scroll cancels the card, cleanly
       finish(false);
     };
 
+    connectEndRef.current = endConnect;
+    document.addEventListener('contextmenu', onCtx, true);
     canvas.addEventListener('pointerdown', onDown);
     canvas.addEventListener('pointermove', onMove, { passive: false });
     canvas.addEventListener('pointerup', onUp);
     canvas.addEventListener('pointercancel', onCancel);
+    canvas.addEventListener('dragstart', onDragStart);
     return () => {
       clearTimer();
+      canvas.removeEventListener('dragstart', onDragStart);
+      endConnect();
+      clearFlashTimers();
+      delete canvas.dataset.resizing;
+      document.removeEventListener('contextmenu', onCtx, true);
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerup', onUp);
@@ -1890,16 +2119,9 @@ export function BoardEditor({ id }: { id: string }) {
     const onKey = (e: KeyboardEvent) => {
       if (popupBoxIdRef.current) return;
       if (e.key === 'Escape') {
-        // FX4 S6 — cancels the arm itself AND, if a drag is already in
-        // progress (button held), the in-flight preview line too: the
-        // pointer-effect's own `finishThreadDrag` reads threadArmedFromRef
-        // to decide commit-vs-cancel on release, so nulling it here means
-        // the eventual pointerup can never mint a connection even if the
-        // writer releases over a card afterward.
+        // CONNECTOR-A - Esc cancels connection mode (the pointer effect owns the mode, so it is asked to end it).
         if (threadArmedFromRef.current != null) {
-          threadArmedFromRef.current = null;
-          setThreadArmedFrom(null);
-          if (previewLineRef.current) previewLineRef.current.style.display = 'none';
+          connectEndRef.current?.();
           return;
         }
         if (selectedConnectionIdRef.current) { setSelectedConnectionId(null); return; }
@@ -1912,6 +2134,16 @@ export function BoardEditor({ id }: { id: string }) {
         if (editable) return;
         e.preventDefault();
         removeConnection(selectedConnectionIdRef.current);
+        return;
+      }
+      // THE ROW IS GONE (Nick, Oct 15): the key is how a card is removed. A selected hairline takes the key first (above); typing anywhere editable never reaches this; a modified press is not a delete.
+      // CONNECTOR-A: while connection mode is on the key belongs to the mode (a selected line, handled above) - it must never delete the card the mode is running from, or that card's links with it
+      if ((e.key === 'Delete' || e.key === 'Backspace') && threadArmedFromRef.current == null && selectedIdRef.current && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const ae = document.activeElement as HTMLElement | null;
+        const editable = !!ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT' || ae.isContentEditable);
+        if (editable) return;
+        e.preventDefault();
+        removeSelectedRef.current();
       }
     };
     window.addEventListener('keydown', onKey);
@@ -2088,8 +2320,18 @@ export function BoardEditor({ id }: { id: string }) {
   // card anymore).
   // B1 S4 — the Trash Board's own Restore, joining the row's existing
   // conditional buttons exactly the way ungroup/Edit-copy already do.
-  const boardActionRow = selectedBox && (
-    <div className="board-action-row" style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
+  // THE ROW NEVER MOVES THE CANVAS (Fable, Oct 15; page-primacy applied to the board; its PLACE is superseded by the INTERIM note below - it now sits inside the canvas). It used to sit IN FLOW above the canvas, so selecting any card mounted it and pushed the canvas down
+  // by its own height (about 45px: Chat 1 measured the new card landing 45px below the press). It is an OVERLAY now: absolutely positioned, right-aligned, growing UP from the canvas's top edge
+  // out of a zero-height slot (boardBody, below), over the quiet gap above the canvas - it adds no height whether it is there or not. Its own ground keeps it legible over what it overlaps.
+  // The "Remove" button is DELETED (Nick, Oct 15): removing a card is the Delete key now (and a context menu is coming). The row survives ONLY for the conditional actions that have no other door yet - Ungroup, Edit copy, Restore (Trash), Pin to a Board (Shelf) - so an ordinary card shows NO row at all.
+  const hasRowAction = !!selectedBox && (!!selectedBox.groupId
+    || (selectedBox.kind === 'text' && !!selectedBox.sourceEntryId)
+    || (systemKind === 'trash' && selectedBox.kind === 'page-pin' && !!selectedBox.entryId)
+    || (systemKind === 'shelf' && selectedBox.kind === 'page-pin' && !!selectedBox.entryId));
+  // INTERIM (Fable, Oct 15): the row sits INSIDE the canvas, top-right (absolute in the canvas wrapper, so it neither scrolls away nor adds height). It never shifts the canvas and never reaches
+  // the header strip. It goes when the card right-click menu (board-context-menu) takes these actions.
+  const boardActionRow = selectedBox && hasRowAction && (
+    <div className="board-action-row" style={{ display: 'flex', gap: 12, position: 'absolute', top: 8, right: 18, zIndex: 8, padding: '3px 10px', background: 'var(--paper)', border: '1px solid var(--ink-border)' }}>
       {selectedBox.groupId && <button type="button" className="btn-quiet" onClick={ungroup}>Ungroup</button>}
       {selectedBox.kind === 'text' && selectedBox.sourceEntryId && (
         <button type="button" className="btn-quiet" onClick={() => setPopupBoxId(selectedBox.id)}>{t('boardEditCopy')}</button>
@@ -2105,7 +2347,6 @@ export function BoardEditor({ id }: { id: string }) {
       {systemKind === 'shelf' && selectedBox.kind === 'page-pin' && selectedBox.entryId && (
         <button type="button" className="btn-quiet" onClick={() => setShelfPinEntryId(selectedBox.entryId!)}>{t('pageFacePin')}</button>
       )}
-      <button type="button" className="btn-quiet" onClick={removeSelected}>Remove</button>
     </div>
   );
 
@@ -2120,16 +2361,7 @@ export function BoardEditor({ id }: { id: string }) {
   // reads whichever content source a box actually carries (its own text,
   // or a page-pin/ported card's referenced entry).
   const boardMeta = boxes.find(b => b.kind === 'board-meta');
-  const footerOn = boardMeta?.footerOn !== false;
-  const toggleFooter = (on: boolean) => {
-    setBoxes(prev => {
-      const existing = prev.find(b => b.kind === 'board-meta');
-      const meta: Box = existing
-        ? { ...existing, footerOn: on }
-        : { id: generateId(), kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, footerOn: on };
-      return existing ? prev.map(b => (b.id === existing.id ? meta : b)) : [...prev, meta];
-    });
-  };
+  const footerOn = true;   // CONNECTOR-A: "Show grafts" is RETIRED - the card footers are simply on (a board's old footerOn:false is ignored)
   const boxLabel = (b: Box): string => {
     if (b.kind === 'page-pin') {
       // B1 S4 — the deleted-inclusive read (see BoardPinBox's own comment):
@@ -2151,10 +2383,6 @@ export function BoardEditor({ id }: { id: string }) {
   // onDoubleClick (text edit / page-pin travel, below) from ALSO firing —
   // the handle sits inside `.board-box`, so the event would otherwise
   // bubble into that handler too.
-  const armThreadDrag = (boxId: string) => {
-    threadArmedFromRef.current = boxId;
-    setThreadArmedFrom(boxId);
-  };
 
   // FX4 S4 — the canvas's own bottom-right resize handle: a plain pointer
   // drag (no long-press/threshold ceremony — "a quiet bottom-right drag,"
@@ -2199,6 +2427,7 @@ export function BoardEditor({ id }: { id: string }) {
 
   const boardCanvas = (
     <div style={{ position: 'relative' }}>
+      {boardActionRow}
       <div ref={wrapRef} className="board-canvas-wrap" style={{ overflow: 'auto', maxHeight: availHeightPx != null ? availHeightPx : '78vh', border: '1px solid var(--ink-border)' }}>
         <div
           ref={canvasRef}
@@ -2264,6 +2493,18 @@ export function BoardEditor({ id }: { id: string }) {
             // `finishThreadDrag` (above) already uses for the identical
             // reason.
             const hitEl = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+            // CARD-RESIZE-RELOCK (Nick, 2026-10-13): a quick second press on the corner after a resize is, to the browser, the
+            // second click of a double-click - and it lands HERE (the canvas holds the pointer). It opened the card's popup, and
+            // with a popup open every board gesture stands down: the card read as "locked" until he clicked another card or
+            // double-clicked in and out. So: a double-click on the resize corner opens nothing (CONNECTOR-A: the corner's double-click now
+            // ENTERS CONNECTION MODE in the pointer effect, on the second pointerdown - so by the time the browser's dblclick lands here the mode has it, and this guard
+            // REPLACES the old 'no action of its own' with 'the action is not an edit'), and a double-click whose second press made a resize or a move is that gesture's own
+            // click, never a request to edit.
+            // (The browser fires dblclick straight after its own second mouseup, so a gesture's own double-click arrives within
+            // milliseconds of the gesture's end; 100ms catches it, and a writer's REAL double-click a moment after a drag - fx8 S3's
+            // ~220ms, say - still opens the card.)
+            if (hitEl?.closest('.board-handle')) return;
+            if (performance.now() - lastGestureEndRef.current < 100) return;
             const boxEl = hitEl?.closest('.board-box') as HTMLElement | null;
             const boxId = boxEl?.dataset.boxId;
             if (!boxId) return;
@@ -2292,29 +2533,44 @@ export function BoardEditor({ id }: { id: string }) {
             data-thread-armed={threadArmedFrom != null ? 'true' : 'false'}
             width={pageWidthPx}
             height={canvasHeightPx}
-            style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+            style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', zIndex: threadArmedFrom != null ? 100000 : undefined }}
             aria-hidden="true"
           >
-            {connections.map(conn => {
-              const a = boxes.find(b => b.id === conn.connA);
-              const b = boxes.find(b => b.id === conn.connB);
-              if (!a || !b) return null;
-              const x1 = boxCx(a), y1 = boxCy(a), x2 = boxCx(b), y2 = boxCy(b);
-              const selected = conn.id === selectedConnectionId;
-              return (
-                <g key={conn.id} data-connection-id={conn.id}>
-                  <line x1={x1} y1={y1} x2={x2} y2={y2} className="board-connection-hit"
-                    style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
-                    onClick={() => { setSelectedConnectionId(conn.id); setSelectedId(null); }} />
-                  <line x1={x1} y1={y1} x2={x2} y2={y2} className="board-connection-line" data-selected={selected ? 'true' : 'false'} />
-                </g>
-              );
-            })}
-            {threadArmedFrom != null && (() => {
-              const from = boxes.find(b => b.id === threadArmedFrom);
-              if (!from) return null;
-              const x1 = boxCx(from), y1 = boxCy(from);
-              return <line ref={previewLineRef} className="board-thread-preview" x1={x1} y1={y1} x2={x1} y2={y1} style={{ display: 'none' }} />;
+            {/* CONNECTOR-A: a line is drawn ONLY in connection mode - this card's own same-board links, corner circle to corner circle - or, for a moment, the one just made.
+                The canvas wrap clips them to the board. */}
+            {(() => {
+              const anchor = (b: Box) => ({ x: (b.x + b.w) * pageWidthPx, y: (b.y + b.h) * pageWidthPx });
+              const out: JSX.Element[] = [];
+              if (threadArmedFrom != null) {
+                const src = boxes.find(b => b.id === threadArmedFrom);
+                if (src) {
+                  const from = anchor(src);
+                  connections.forEach(conn => {
+                    if (conn.connA !== src.id && conn.connB !== src.id) return;
+                    const other = boxes.find(b => b.id === (conn.connA === src.id ? conn.connB : conn.connA));
+                    if (!other) return;
+                    const to = anchor(other);
+                    const selected = conn.id === selectedConnectionId;
+                    out.push(
+                      <g key={conn.id} data-connection-id={conn.id}>
+                        <line x1={from.x} y1={from.y} x2={to.x} y2={to.y} className="board-connection-hit"
+                          style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+                          onClick={() => { setSelectedConnectionId(conn.id); }} />
+                        <line x1={from.x} y1={from.y} x2={to.x} y2={to.y} className="board-connection-line" data-selected={selected ? 'true' : 'false'} />
+                      </g>,
+                    );
+                  });
+                  out.push(<line key="arm" ref={previewLineRef} className="board-connect-arm" x1={from.x} y1={from.y} x2={from.x} y2={from.y} style={{ display: 'none' }} />);
+                  out.push(<circle key="tip" ref={armTipRef} className="board-connect-tip" r={3.5} cx={from.x} cy={from.y} style={{ display: 'none' }} />);
+                }
+              } else if (connectFlash && connectFlash.line && !connectFlash.off) {
+                const a = boxes.find(b => b.id === connectFlash.a), b = boxes.find(b => b.id === connectFlash.b);
+                if (a && b) {
+                  const p = anchor(a), q = anchor(b);
+                  out.push(<line key="flash" x1={p.x} y1={p.y} x2={q.x} y2={q.y} className="board-connection-line" data-selected="false" />);
+                }
+              }
+              return out;
             })()}
           </svg>
           {/* FX6 S2c — the empty board's own quiet one-line pointer at
@@ -2339,11 +2595,25 @@ export function BoardEditor({ id }: { id: string }) {
               fx6.mjs with its successor named in bg1.mjs (A4).
               B1 S3/B2 S2 are untouched: a system Board still shows no row at all,
               and the Shelf still carries its own one quiet fact. */}
-          {sorted.length === 0 && !isSystemBoard && <BeginningsRow surface="board" doors={beginningDoors} />}
+          {sorted.length === 0 && !isSystemBoard && <BeginningsRow surface="board" doors={beginningDoors} faded={startersFaded} />}
+          {/* BOARD CLICK-TO-CREATE - the ghost outline of the card being made; moved imperatively (no render per pointermove), never takes the pointer */}
+          {!isSystemBoard && <div ref={ghostRef} className="board-create-ghost" aria-hidden="true" style={{ display: 'none' }} />}
           {sorted.length === 0 && systemKind === 'shelf' && <div className="board-canvas-empty" aria-hidden="true">{t('shelfBoardEmpty')}</div>}
           {sorted.map(box => {
           const selected = selectedIds.has(box.id);
           const boxConnections = footerOn ? connectionsFor(box.id) : [];
+          // CONNECTOR-A - the circle a card shows while it is the arm's target, a linked peer of the card in connection mode, or the far end of the link just made. Open = not linked, solid = linked.
+          const inMode = threadArmedFrom != null;
+          const linkedToSrc = inMode && connections.some(c => (c.connA === threadArmedFrom && c.connB === box.id) || (c.connB === threadArmedFrom && c.connA === box.id));
+          const isTarget = inMode && connectTarget === box.id;
+          const isPeer = inMode && linkedToSrc;
+          const isFlashB = !inMode && connectFlash != null && connectFlash.b === box.id;
+          const hasAnyLink = connections.some(c => c.connA === box.id || c.connB === box.id);
+          const circleSolid = isTarget ? linkedToSrc : isPeer ? true : isFlashB ? (connectFlash!.off ? hasAnyLink : true) : false;
+          const handleInMode = inMode && threadArmedFrom === box.id;
+          const handleInFlash = !inMode && connectFlash != null && connectFlash.a === box.id;
+          const handleSolid = (handleInMode && connectTarget != null && connections.some(c => (c.connA === box.id && c.connB === connectTarget) || (c.connB === box.id && c.connA === connectTarget)))
+            || (handleInFlash && (connectFlash!.off ? hasAnyLink : true));
           const showLayerToggle = selected && box.id === selectedId && isOverlapping;
           return (
             <div
@@ -2353,7 +2623,8 @@ export function BoardEditor({ id }: { id: string }) {
               data-kind={box.kind}
               data-selected={selected ? 'true' : 'false'}
               data-grouped={box.groupId ? 'true' : 'false'}
-              data-thread-source={box.id === threadArmedFrom ? 'true' : 'false'}
+              data-target={isTarget || isFlashB ? 'true' : 'false'}
+              data-peer={isPeer ? 'true' : 'false'}
               data-overlapping={selected && box.id === selectedId && isOverlapping ? 'true' : 'false'}
               style={{
                 position: 'absolute',
@@ -2375,12 +2646,8 @@ export function BoardEditor({ id }: { id: string }) {
                   typeStyle={cardTypeStyle(box.fontFace, box.fontSize)}
                 />
               )}
-              {/* FX5 S5 — the olive pin: the connection grab, on every card,
-                  always (not gated on selection — the dead handle-double-
-                  click gesture it replaces required a select-then-double-
-                  click two-step; one continuous drag-from-here is the whole
-                  point). Wired in the pointer-effect's own onDown above. */}
-              <div className="board-pin-grab" data-pin="true" aria-hidden="true" title={t('boardThreadGrab')} />
+              {/* CONNECTOR-A - the green tack is RETIRED. The circle below is the card's end of a link: shown only while the card is a target, a peer, or the far end of a link just made. */}
+              <span className="board-tcircle" data-solid={circleSolid ? 'true' : 'false'} aria-hidden="true" />
               {/* B3 S1 — "Start Here" (R6's own hint): quiet, brass, present
                   only on the currently-armed deal's own first card, and
                   only until the writer's first genuine edit to ANY dealt
@@ -2404,6 +2671,8 @@ export function BoardEditor({ id }: { id: string }) {
                 <div
                   className="board-handle"
                   data-handle="se"
+                  data-circle={handleInMode || handleInFlash ? 'true' : 'false'}
+                  data-solid={handleSolid ? 'true' : 'false'}
                   aria-hidden="true"
                 />
               )}
@@ -2461,7 +2730,6 @@ export function BoardEditor({ id }: { id: string }) {
   // anywhere — b3.mjs asserts this explicitly, not merely by omission.
   const boardBody = (
     <>
-      {boardActionRow}
       <div className={`board-canvas-blur-wrap${(popupBox || deckWizardOpen) ? ' board-canvas-blurred' : ''}`}>
         {boardCanvas}
       </div>
@@ -2472,7 +2740,19 @@ export function BoardEditor({ id }: { id: string }) {
           fontFace={popupBox.fontFace}
           fontSize={popupBox.fontSize}
           onType={patch => commitType(popupBox.id, patch)}
-          onClose={() => setPopupBoxId(null)}
+          onClose={() => {
+            // BOARD CLICK-TO-CREATE: a card this gesture made and the writer closed while it is STILL EMPTY is discarded (nothing was ever written, so nothing is kept). The
+            // pop-up commits every keystroke into the box, so the box's text is already current here. Once closed, the card is an ordinary card for good.
+            const closingId = popupBox.id;
+            if (freshEmptyIdsRef.current.delete(closingId)) {
+              const b = boxesRef.current.find(x => x.id === closingId);
+              if (b && b.kind === 'text' && !(b.text ?? '').trim()) {
+                setBoxes(prev => prev.filter(x => x.id !== closingId));
+                setSelectedId(cur => (cur === closingId ? null : cur));
+              }
+            }
+            setPopupBoxId(null);
+          }}
         />
       )}
       {deckWizardOpen && (
@@ -2619,9 +2899,11 @@ export function BoardEditor({ id }: { id: string }) {
       </button>
     </div>
   );
-  const boardTelos = !isSystemBoard ? (
-    <div className="board-telos" data-board-telos>{t('boardTelos')}</div>
-  ) : null;
+  // ITEM word-diet (Nick, Oct 13): REMOVE — the narration line is gone
+  // whole; the board's own pairing is read from its visible context now,
+  // not a standing sentence. boardTelos's lexicon entry is untouched (text
+  // still there for whoever reads deskLexicon.ts), simply never rendered.
+  const boardTelos = null;
 
   // The three views of one board. OPEN is the existing canvas (byte-identical);
   // STORYBOARD/OUTLINE render the ONE structure description (store/
@@ -2637,10 +2919,10 @@ export function BoardEditor({ id }: { id: string }) {
           beginnings={<BeginningsRow surface="projection" doors={beginningDoors} />} />;
 
   const sliverContent: SliverContent = isSystemBoard
-    ? { kind: 'board', footer: { on: footerOn, onToggle: toggleFooter } }
+    ? { kind: 'board' }
     : {
         kind: 'board', onAddCard, onAddPageCard, onAddExistingPage: () => setExistingPageOpen(true),
-        onAddFromDeck, footer: { on: footerOn, onToggle: toggleFooter },
+        onAddFromDeck,
       };
 
   const pageFaceSheets = (

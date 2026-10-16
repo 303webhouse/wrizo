@@ -156,11 +156,30 @@ await withHarness(async (app) => {
       // SUPERSEDED (item arbor-quiet-brass): the footer toggle's label renamed
       // "Show connections" -> "Show grafts" (Arbor's own word); same five tools, same order.
       // ok('ab4.mjs S5 lineage, generation 5: the board sliver carries its five hand tools, in order — Add card, New page card, Existing page…, From a deck…, Show connections', sliverShape.buttonCount === 5 && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New page card' && sliverShape.labels[2] === 'Existing page…' && sliverShape.labels[3] === 'From a deck…' && sliverShape.labels[4] === 'Show connections', JSON.stringify(sliverShape));
-      ok('ab4.mjs S5 lineage, generation 6 (arbor-quiet-brass): the board sliver carries its five hand tools, in order — Add card, New page card, Existing page…, From a deck…, Show grafts',
-        sliverShape.buttonCount === 5
-          && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New page card'
-          && sliverShape.labels[2] === 'Existing page…' && sliverShape.labels[3] === 'From a deck…'
-          && sliverShape.labels[4] === 'Show grafts',
+      // SUPERSEDED (item word-diet, Nick) — boardNewPageCard reworks "New page
+      // card" -> "New Pages Card"; boardAddExistingPage reworks "Existing
+      // page…" -> "+ Filed Pages" (the SAME door beginConnectPage already
+      // names — one picker, one name). ORIGINAL claim parked verbatim:
+      // ok('ab4.mjs S5 lineage, generation 6 (arbor-quiet-brass): the board sliver carries its five hand tools, in order — Add card, New page card, Existing page…, From a deck…, Show grafts',
+      //   sliverShape.buttonCount === 5
+      //     && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New page card'
+      //     && sliverShape.labels[2] === 'Existing page…' && sliverShape.labels[3] === 'From a deck…'
+      //     && sliverShape.labels[4] === 'Show grafts',
+      //   JSON.stringify(sliverShape));
+      // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+      // The footer toggle left the board sliver: FOUR hand tools now, in the same order - Add card, New Pages Card, + Filed Pages, From a deck…
+      // Quoted VERBATIM below. Successor: the check directly below (generation 8).
+      // ok('ab4.mjs S5 lineage, generation 7 [word-diet successor]: the board sliver carries its five hand tools, in order — Add card, New Pages Card, + Filed Pages, From a deck…, Show grafts',
+      //   sliverShape.buttonCount === 5
+      //     && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New Pages Card'
+      //     && sliverShape.labels[2] === '+ Filed Pages' && sliverShape.labels[3] === 'From a deck…'
+      //     && sliverShape.labels[4] === 'Show grafts',
+      //   JSON.stringify(sliverShape));
+      ok('ab4.mjs S5 lineage, generation 8 [connector-a successor]: the board sliver carries its FOUR hand tools, in order - Add card, New Pages Card, + Filed Pages, From a deck… - and no footer toggle',
+        sliverShape.buttonCount === 4
+          && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New Pages Card'
+          && sliverShape.labels[2] === '+ Filed Pages' && sliverShape.labels[3] === 'From a deck…'
+          && !sliverShape.labels.includes('Show grafts'),
         JSON.stringify(sliverShape));
     }
 
@@ -258,7 +277,8 @@ await withHarness(async (app) => {
     await app.evalJs("document.querySelector('.board-popup-editor').focus()");
     await app.typeKeys(' Rewritten by the writer.');
     await sleep(200);
-    await app.evalJs("document.querySelector('.board-popup-foot button').click()");
+    // card-close-x (2026-10-13): the foot is gone; its Close button became the corner X, which keeps the class board-popup-done.
+    await app.evalJs("document.querySelector('.board-popup-done').click()");
     await sleep(200);
     const startHereAfterEdit = await app.evalJs("document.querySelectorAll('[data-start-here=\"true\"]').length");
     ok(`@${width}px: "Start Here" vanishes on the FIRST edit to ANY dealt card's content — editing Climax (not Hook) dismissed it`,
@@ -272,7 +292,8 @@ await withHarness(async (app) => {
     await app.evalJs("document.querySelector('.board-popup-editor').focus()");
     await app.typeKeys(' A second edit.');
     await sleep(200);
-    await app.evalJs("document.querySelector('.board-popup-foot button').click()");
+    // card-close-x (2026-10-13): the foot is gone; its Close button became the corner X, which keeps the class board-popup-done.
+    await app.evalJs("document.querySelector('.board-popup-done').click()");
     await sleep(200);
     const startHereAfterSecondEdit = await app.evalJs("document.querySelectorAll('[data-start-here=\"true\"]').length");
     ok(`@${width}px: "Start Here" stays gone after FURTHER edits — it never returns`, startHereAfterSecondEdit === 0, String(startHereAfterSecondEdit));
@@ -286,8 +307,12 @@ await withHarness(async (app) => {
 
     // Delete one — no protest, genuinely gone.
     await selectBox(app, resolutionBox.id);
-    await app.waitFor("!!document.querySelector('.board-action-row')", { label: `card selected for delete @${width}px` });
-    await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
+    // ---- PARKED - SUPERSEDED by board-click-to-create (Nick, Oct 15 1:39am): the "Remove" row is DELETED from the board surface ----
+    // DRIVER only - the assertion after it (a dealt card is genuinely deletable) is unchanged.
+    // Quoted VERBATIM below. Successor: the Delete key on the selected card (BoardEditor.tsx key handler -> removeSelected, the same snapshot("remove") path); scripts/harness/board-click-create.mjs C10/C11.
+    // await app.waitFor("!!document.querySelector('.board-action-row')", { label: `card selected for delete @${width}px` });
+    // await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
+    await app.key('Delete'); await sleep(200);
     await sleep(200);
     const boxesAfterDelete = await app.evalJs('window.wrizoBoard()');
     ok(`@${width}px: a dealt card is genuinely DELETABLE — Remove takes it out with no protest, no special case`,

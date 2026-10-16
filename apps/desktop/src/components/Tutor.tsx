@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
 import type { JournalEntry, Project, Fact } from '../types';
 import { generateId, getBinderPages, getJournalEntry, appendTutorMessage, advanceTutorCursor, isUnborn } from '../store/persistence';
-import { getTutorDisclosureSeen, setTutorDisclosureSeen } from '../store/tutorDisclosure';
 import { apiTutorChat } from '../store/api';
 import { computeConsistencyObservations } from '../store/tutorConsistency';
 import { computeStructureFacts, computeFragmentItems } from '../store/tutorLenses';
@@ -15,6 +14,12 @@ import type { EditorMode } from './ForwardOnlyEditor';
 import { FREE_WRITE_POOLS, DRAW_CEILING, REFILL_WORDS, drawFrom, recentMemoryFor, type FreeWritePresetId } from '../store/tutorFreeWriteDeck';
 import { useMonotonicWordCount } from './FirstRunGate';
 import { capTutorHistory } from '../store/tutorHistory';
+import { drawerArrow, setDrawerInert } from '../store/drawerShell';
+import { SideDrawer, type DrawerTabsConfig } from './SideDrawer';
+import { DrawerNote } from './DrawerNote';
+import { ConnectionsDrawerPanel } from './ConnectionsDrawerPanel';
+import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
+import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 
 // TU1 S2/S3/S4/S5 — the Tutor. The sliver, mirrored, on the paper's RIGHT
 // edge — but rendered as TWO separate DeskFrame overlay anchors, not one
@@ -134,9 +139,14 @@ function assembleTutorDelta(pageText: string, lastRead: { at: string; chars: num
 // time and never again: what travels is frozen the moment the writer pressed the
 // button that names it, which is also why this takes the stretch as an argument
 // rather than reading any live selection of its own.
-function capSelection(stretch: string): { text: string; truncated: boolean } {
-  if (stretch.length <= SELECTION_CHAR_CAP) return { text: stretch, truncated: false };
-  return { text: `[${SELECTION_TRUNCATION_HEADER}]\n${stretch.slice(0, SELECTION_CHAR_CAP)}`, truncated: true };
+function capSelection(stretch: string): { text: string; truncated: boolean; wordsSent: number } {
+  if (stretch.length <= SELECTION_CHAR_CAP) return { text: stretch, truncated: false, wordsSent: 0 };
+  const kept = stretch.slice(0, SELECTION_CHAR_CAP);
+  // ITEM word-diet (Fable) — the writer-facing count is of the part actually
+  // sent (this kept slice), never the whole stretch; whitespace-split, same
+  // as every other word count in this file (pageWords and friends).
+  const wordsSent = kept.trim().split(/\s+/).filter(Boolean).length;
+  return { text: `[${SELECTION_TRUNCATION_HEADER}]\n${kept}`, truncated: true, wordsSent };
 }
 
 // TU5 S4 — the book's Bible's own send-time assembly, mirroring the delta's
@@ -283,7 +293,17 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   const { t } = useDeskLexicon();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  // PHASE 1 (S3) - the right drawer's tab: the Tutor (today's contents, untouched) or the theme's links word (empty for now).
+  const [rightTab, setRightTab] = useState<RightTab>('tutor');
   const [docked, setDocked] = useState(false);
+  // PHASE 1 (Fable, Oct 12) - one drawer at a time: opening the Tutor closes the Tools drawer (and the reverse), at every width. Announced from an effect keyed on `open`
+  // so EVERY path that opens it announces (the grip, a shortcut, anything added later) - the same structural rule the Tools drawer follows.
+  // A LAYOUT effect, so the hand-over lands before paint: no single frame shows both drawers open.
+  useLayoutEffect(() => {
+    if (open) requestOpen('tutor');
+    else noteClosed('tutor');
+  }, [open]);
+  useEffect(() => registerDrawer('tutor', () => setOpen(false)), []);
   // FX18 S2 (Fable's ruling) — the OPEN panel's live width in px on a WRITING surface,
   // MEASURED (the FX13 measure-effect pattern), or null to defer to CSS. Occupy-margin uses
   // the TRUE geometric margin (stage.right - paper.right) so the panel sits FLUSH to the
@@ -389,6 +409,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // focus, so there was no cursor until the writer clicked. See the focus
   // effect below.
   const composerRef = useRef<HTMLInputElement | null>(null);
+  // ITEM word-diet — the last-attempted request, for "Try again" (see
+  // `attemptSend`/`lastSendArgsRef.current` below).
+  const lastSendArgsRef = useRef<{ history: { role: 'writer' | 'tutor'; text: string }[]; delta?: string; bible?: string; selection?: string } | null>(null);
 
   // ==========================================================================
   // ITEM 84, THE DRAFT ROSTER — the Draft asks' own state.
@@ -426,6 +449,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // `deltaTruncated` (which describes what just happened) it is set BEFORE the
   // send rather than during it.
   const [selectionTruncated, setSelectionTruncated] = useState(false);
+  // The {n} tutorSelectionTruncated names — set alongside selectionTruncated,
+  // same lifetime (armed by the press, cleared by any press that arms nothing).
+  const [selectionSentWords, setSelectionSentWords] = useState(0);
   const stretch = (selectionText ?? '').trim();
   const hasStretch = stretch.length > 0;
 
@@ -494,28 +520,24 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     return () => window.removeEventListener('resize', measure);
   }, [open, docked, pageKind]);
 
-  const openDisclosureIfNeeded = () => {
-    if (!getTutorDisclosureSeen()) setShowDisclosure(true);
-  };
-
+  // ITEM word-diet (Nick, Oct 13): REMOVE — the one-time "Before you ask"
+  // modal (openDisclosureIfNeeded/acknowledgeDisclosure, below) retires
+  // whole. tutorDisclosureBodyV4 moves behind a "?" beside the Ask box
+  // instead, always available, no standing text and no one-time gate.
+  // showDisclosure stays declared (several OTHER guards below read it) but
+  // is never set true anymore, so those guards are permanently dormant
+  // rather than individually rewired — the same "left inert, not deleted"
+  // treatment store/tutorNudges.ts already carries ("sleeps dormant") for
+  // exactly this kind of retirement.
   const handleGripClick = () => {
     if (docked) { setDocked(false); return; } // reopening the grip while docked restores the panel (Cascade's own T5 rider, mirrored)
-    setOpen((o) => {
-      const next = !o;
-      if (next) openDisclosureIfNeeded();
-      return next;
-    });
+    setOpen((o) => !o);
   };
 
   const handleDockButton = () => {
     if (docked) { setDocked(false); setOpen(false); return; } // the docked panel's own explicit close
     if (availableTutorMargin() >= DOCK_FLOOR_PX) { setDocked(true); return; }
     setOpen(false); // the dock affordance is unavailable below the floor — a plain close instead
-  };
-
-  const acknowledgeDisclosure = () => {
-    setTutorDisclosureSeen(true);
-    setShowDisclosure(false);
   };
 
   // TU5 S3 — the writer's own Bible edits. These handlers ONLY ever call the
@@ -738,9 +760,11 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       const capped = capSelection(stretch);
       setArmedSelection(capped.text);       // FROZEN — see the state's own note
       setSelectionTruncated(capped.truncated);
+      setSelectionSentWords(capped.wordsSent);
     } else {
       setArmedSelection(null);
       setSelectionTruncated(false);
+      setSelectionSentWords(0);
     }
     setComposerText(text);                  // REPLACES — the composer stages one ask
     setStageTick((n) => n + 1);
@@ -831,7 +855,20 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     // (never an empty string) unless the chip whose own words name it was the
     // press that staged this ask. `pageText` is not passed and never becomes a
     // key: it stays a render prop, per the lock record's own wire precision.
-    const result = await apiTutorChat(history, delta ?? undefined, bible ?? undefined, selection ?? undefined);
+    const args = { history, delta: delta ?? undefined, bible: bible ?? undefined, selection: selection ?? undefined };
+    // ITEM word-diet — the EXACT request just assembled, kept for "Try
+    // again" (tutorConversationError's own new button): a retry replays
+    // this SAME call rather than re-reading armedSelection/re-assembling
+    // the delta against `lastRead`, both of which the lines above already
+    // consumed/advanced past — re-deriving them on retry would silently
+    // send a DIFFERENT, smaller request than the one that actually failed.
+    lastSendArgsRef.current = args;
+    await attemptSend(args);
+  };
+
+  const attemptSend = async (args: { history: { role: 'writer' | 'tutor'; text: string }[]; delta?: string; bible?: string; selection?: string }) => {
+    setSending(true);
+    const result = await apiTutorChat(args.history, args.delta, args.bible, args.selection);
     setSending(false);
     if (!result.ok) { setStatus('error'); return; }
     if (!result.configured) { setStatus('offline'); return; }
@@ -873,6 +910,17 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     }
   };
 
+  // PHASE 1 (S3) - THE RIGHT DRAWER'S TAB ROW: TUTOR | the theme's links word (Grafts in Arbor, Links in Flux - from the lexicon, never written
+  // here). The "?" beside it is a pressable note and exists only where the theme's term has an explainer (Arbor's does, Flux's is empty).
+  const linksNote = t('drawerLinksNote');
+  const rightTabs: DrawerTabsConfig<RightTab> = {
+    items: [{ id: RIGHT_TABS[0], label: t('tutorTabTutor') }, { id: RIGHT_TABS[1], label: t('drawerLinks') }],
+    notes: linksNote ? { links: <DrawerNote label={t('drawerLinksNoteLabel')}>{linksNote}</DrawerNote> } : undefined,
+    value: rightTab,
+    onChange: setRightTab,
+    label: t('drawerRightTabsLabel'),
+  };
+
   return (
     <>
       <div className={`desk-frame-tutor-anchor desk-frame-tutor-anchor--${pageKind} wz-tutor-zone`}>
@@ -889,12 +937,15 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           {/* FX18 S1 (SV25): the RIGHT drawer mirrors the left. Closed → '›' (points right/
               outward); open → '‹' (points left/inward, toward the panel that slides out).
               The mirror of Sliver.tsx's left grip; that literal is left untouched. */}
-          <span className="wz-tutor-grip-glyph" aria-hidden="true">{open ? '‹' : '›'}</span>
+          <span className="wz-tutor-grip-glyph" aria-hidden="true">{drawerArrow('right', open)}</span>
         </button>
       </div>
 
       <div className={`desk-frame-tutor-panel-anchor desk-frame-tutor-panel-anchor--${pageKind} wz-tutor-zone`}>
-        <div className="wz-tutor-panel" aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px` } : undefined}>
+        <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px` } : undefined}>
+          {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab.
+              No tab row yet (S3 adds TUTOR | the theme's links word). */}
+          <SideDrawer side="right" idPrefix="wz-tutor" tabs={rightTabs}>
           {/* A11Y AUDIT A8 — the reply announcement, visually hidden. Lives at
               the panel's own top level (not inside the `{open && …}` content
               body below), so closing/reopening the Tutor never remounts it and
@@ -928,7 +979,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
               The panel's own effects are already gated on `open`
               (`if (!open) return;`), so a closed body costs a render and no
               work — nothing is fetched, drawn, or measured while it is hidden. */}
-          {(
+          {rightTab === 'tutor' && (
             <div className="wz-tutor-body">
             <div className="wz-tutor-head">
               <span className="wz-tutor-head-title">{t('tutorTitle')}</span>
@@ -969,11 +1020,21 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
                 )}
               </div>
               {status === 'offline' && <div className="wz-tutor-convo-status">{t('tutorConversationOffline')}</div>}
-              {status === 'error' && <div className="wz-tutor-convo-status">{t('tutorConversationError')}</div>}
+              {/* ITEM word-diet (Nick, Oct 13) — a real "Try again" button,
+                  replaying the EXACT request that failed (lastSendArgsRef),
+                  not a re-derived one. */}
+              {status === 'error' && (
+                <div className="wz-tutor-convo-status">
+                  {t('tutorConversationError')}{' '}
+                  <button type="button" className="wz-tutor-retry" onClick={() => { if (lastSendArgsRef.current) { setStatus('idle'); attemptSend(lastSendArgsRef.current); } }}>
+                    {t('tutorConversationRetry')}
+                  </button>
+                </div>
+              )}
               {status === 'unborn' && <div className="wz-tutor-convo-status">{t('tutorConversationUnborn')}</div>}
               {sending && <div className="wz-tutor-convo-status">{t('tutorConversationSending')}</div>}
               {deltaTruncated && <div className="wz-tutor-convo-status">{t('tutorDeltaTruncated')}</div>}
-              {selectionTruncated && <div className="wz-tutor-convo-status">{t('tutorSelectionTruncated')}</div>}
+              {selectionTruncated && <div className="wz-tutor-convo-status">{t('tutorSelectionTruncated').replace('{n}', () => String(selectionSentWords))}</div>}
               {/* ITEM 84, THE DECK PHASE — THE FREE WRITE ROSTER. Mounted where
                   the arc already ruled it mounts (lock record §1 line 1: the
                   shared chip row inside "Talk it through", above the composer,
@@ -1066,6 +1127,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
                 <button type="button" className="wz-tutor-convo-send" disabled={!composerText.trim() || sending} onClick={() => void send()}>
                   {t('tutorConversationSend')}
                 </button>
+                {/* ITEM word-diet (Nick, Oct 13, TRUST) — tutorDisclosureBodyV4,
+                    behind a "?" beside the Ask box, no standing text. */}
+                <DrawerNote label="What travels when you ask">{t('tutorDisclosureBodyV4')}</DrawerNote>
               </div>
             </div>
 
@@ -1095,8 +1159,12 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             </div>
 
             <div className="wz-tutor-section">
-              <div className="wz-tutor-h">{t('tutorLensFragments')}</div>
-              <div className="wz-tutor-note">{t('tutorLensFragmentsNote')}</div>
+              {/* ITEM word-diet (Nick, Oct 13) — the note moves behind a
+                  "?" beside the lens heading. */}
+              <div className="wz-tutor-h">
+                {t('tutorLensFragments')}{' '}
+                <DrawerNote label="About Fragments">{t('tutorLensFragmentsNote')}</DrawerNote>
+              </div>
               {fragments.length === 0
                 ? <div className="wz-tutor-empty">{t('tutorLensFragmentsEmpty')}</div>
                 : (
@@ -1130,7 +1198,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             {entry.projectId && (
               <div className="wz-tutor-section">
                 <div className="wz-tutor-h">{t('tutorBibleTitle')}</div>
-                <div className="wz-tutor-note">{t('tutorBibleNote')}</div>
+                {/* ITEM word-diet (Nick, Oct 13): REMOVE — this explanatory
+                    note is gone whole; tutorBibleNote's lexicon entry is
+                    untouched, simply never rendered here now. */}
                 {bibleFacts.length === 0
                   ? <div className="wz-tutor-empty">{t('tutorBibleEmpty')}</div>
                   : (
@@ -1198,42 +1268,23 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             )}
             </div>
           )}
+          {rightTab === 'links' && <ConnectionsDrawerPanel />}
+          </SideDrawer>
         </div>
       </div>
 
-      {showDisclosure && (
-        <div className="wz-tutor-disclosure-backdrop wz-tutor-zone">
-          <div className="wz-tutor-disclosure" role="dialog" aria-modal="true" aria-label={t('tutorDisclosureTitle')}>
-            <div className="wz-tutor-disclosure-title">{t('tutorDisclosureTitle')}</div>
-            {/* ITEM 84 — v4, in ANNOTATION FORM. open-threads.md's own ruling is
-                "v3 → superseded by v4 in annotation form (v3 standing verbatim
-                beneath)", so the ratified sentence leads and v3's text stands
-                under it. v3 is REUSED HERE BY ID — never copied, never edited —
-                which is what makes "verbatim" a fact about this line rather than a
-                claim about it, and it is also why nothing v3 promised is withdrawn
-                by the addition. The panel still shows exactly
-                CURRENT_DISCLOSURE_VERSION's own copy; that copy is now these two
-                lines together, and a v1/v2/v3-acknowledged device sees it exactly
-                once (store/tutorDisclosure.ts's integer compare, unchanged).
-
-                WHY V3 KEEPS `.wz-tutor-disclosure-body` AND V4 TAKES A NEW CLASS.
-                "Annotation form" says which of these two is which: v3's
-                enumeration remains THE BODY — the standing promise, unwithdrawn —
-                and v4 is the sentence written above it. Naming them that way round
-                is the structure the ruling describes, and it has the honest side
-                effect that tu2/tu5's existing "the modal carries v3's wording
-                exactly" checks stay TRUE rather than needing to be parked: v3's
-                wording IS still carried, exactly, which is the whole point of
-                "verbatim beneath". Only the two version-NUMBER checks park, because
-                only they stop being true. */}
-            <div className="wz-tutor-disclosure-annotation">{t('tutorDisclosureBodyV4')}</div>
-            <div className="wz-tutor-disclosure-body">{t('tutorDisclosureBodyV3')}</div>
-            <button type="button" className="wz-tutor-disclosure-ack" onClick={acknowledgeDisclosure} autoFocus>
-              {t('tutorDisclosureAck')}
-            </button>
-          </div>
-        </div>
-      )}
+      {/* ITEM word-diet (Nick, Oct 13): REMOVE — the one-time "Before you
+          ask" modal retires whole (ITEM 84's own v3/v4 annotation-form
+          history, kept above in the comment this block used to carry —
+          see the handleGripClick comment above for the pointer). V3's own
+          text (tutorDisclosureBodyV3) is consequently NOT rendered
+          anywhere anymore — flagged for confirmation in the report, since
+          that's a real consequence of this change, not something this
+          instruction stated directly. showDisclosure never becomes true
+          now, so this is dead code already; removed rather than left as
+          an unreachable branch, since a disclosure modal is exactly the
+          kind of thing that should not exist in source looking reachable
+          when it is not. */}
     </>
   );
 }

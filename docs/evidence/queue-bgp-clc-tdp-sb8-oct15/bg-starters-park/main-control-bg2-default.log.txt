@@ -1,0 +1,121 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+[
+  {
+    "name": "S1: icons sit ABOVE their labels, not inline — the glyph ends before the label begins, and the two share a vertical centre line (a stacked door, per SV19)",
+    "pass": true,
+    "detail": "{\"glyphPx\":24,\"labelPx\":19,\"doorW\":125,\"doorH\":81,\"glyphBottom\":467,\"labelTop\":475,\"glyphMidX\":351,\"labelMidX\":351,\"oneLine\":true,\"doorCount\":4,\"rowPos\":\"absolute\",\"opacity\":\"0.4\",\"color\":\"rgb(79, 87, 48)\"}"
+  },
+  {
+    "name": "S1: the glyph is ~50% larger than BG1's (16px -> 24px, >=1.4x) — Nick's \"much too small\" answered in the icon",
+    "pass": true,
+    "detail": "16 -> 24"
+  },
+  {
+    "name": "S1: the label is ~50% larger than BG1's (13px -> 19px, >=1.4x)",
+    "pass": true,
+    "detail": "13 -> 19"
+  },
+  {
+    "name": "S1: the hit target grew with it — each door is a genuine target (>=44px on both axes), not a word to aim at",
+    "pass": true,
+    "detail": "{\"doorW\":125,\"doorH\":81}"
+  },
+  {
+    "name": "S1: the row is still ONE line, never a grid — every door shares a top edge at the new size (the wrap this ticket had to fix)",
+    "pass": true,
+    "detail": "{\"oneLine\":true,\"doorCount\":4}"
+  },
+  {
+    "name": "S1: the door colour CARRIES against the ground it actually sits on — computed WCAG contrast 6.58:1 on the board (>=4.5), not eyeballed",
+    "pass": true,
+    "detail": "{\"fg\":\"rgb(79, 87, 48)\",\"bg\":\"rgb(243, 237, 225)\",\"bgFrom\":\"board-canvas\",\"ratio\":6.58}"
+  },
+  {
+    "name": "S1: the door olive is its OWN slotted token (--accent-door), distinct from --accent-rest — the chrome olive is untouched, so re-tuning the door never drags the mode-tab hairlines with it",
+    "pass": true,
+    "detail": "{\"door\":\"#4F5730\",\"rest\":\"#96a05a\",\"paper\":\"#F3EDE1\",\"brass\":\"#ff9800\",\"brassPress\":\"#e88900\"}"
+  },
+  {
+    "name": "S1: the resting opacity is retired — the colour the check measures is the colour the eye sees (no fade blending the assertion into a half-truth)",
+    "pass": false,
+    "detail": "0.4"
+  },
+  {
+    "name": "S1 (the lane law, trusted pointer): DARK OLIVE at rest — brass on hover — orange on press. Three distinct states, driven through the browser's own input layer, never a page-side dispatch",
+    "pass": true,
+    "detail": "{\"restColour\":\"rgb(79, 87, 48)\",\"hoverColour\":\"rgb(255, 152, 0)\",\"pressColour\":\"rgb(232, 137, 0)\"}"
+  },
+  {
+    "name": "S1: nothing orange at REST — the house law holds; orange is reached only by the hand",
+    "pass": true,
+    "detail": "{\"restColour\":\"rgb(79, 87, 48)\",\"hoverColour\":\"rgb(255, 152, 0)\",\"pressColour\":\"rgb(232, 137, 0)\"}"
+  },
+  {
+    "name": "S1 precondition, stated: the press above was sampled and then CANCELLED (released off-target), so the colour law was proven without taking the door — the row is still standing",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S3: the board's row keeps the centering SV20 confirmed as already correct — dead centre of the canvas on both axes, at the new size",
+    "pass": true,
+    "detail": "{\"rowMidY\":471,\"canvasMidY\":471,\"rowMidX\":635,\"canvasMidX\":635}"
+  },
+  {
+    "name": "S2 (SV19): the page's row is centered on the sheet — it reads as a set of modes, not a footnote under the caret (this SUPERSEDES the committee's \"furniture beside the cursor\" by Nick's own word)",
+    "pass": true,
+    "detail": "{\"rowMidX\":640,\"sheetMidX\":640,\"rowTop\":373,\"rowBottom\":448,\"sheetTop\":107,\"sheetBottom\":800,\"pointerEvents\":\"none\"}"
+  },
+  {
+    "name": "S2: the row still never intercepts the surface — pointer-events:none on the container, unchanged by the move",
+    "pass": true,
+    "detail": "none"
+  },
+  {
+    "name": "S2: the caret's own place stays clear of furniture at the new placement — NO door overlaps the caret, and the caret point still hit-tests to the editor itself (the invariant BG1 held by sitting below the first line, now held by being centered away from it)",
+    "pass": true,
+    "detail": "{\"covering\":[],\"atCaret\":\"forward-only-editor\",\"caretX\":373,\"firstDoorLeft\":598}"
+  },
+  {
+    "name": "S2: the door colour carries on the PAGE too — computed WCAG contrast 6.58:1 against the sheet (>=4.5)",
+    "pass": true,
+    "detail": "{\"fg\":\"rgb(79, 87, 48)\",\"bg\":\"rgb(243, 237, 225)\",\"bgFrom\":\"mode-page focused\",\"ratio\":6.58}"
+  },
+  {
+    "name": "S2 (the DoD, re-proven at the new placement): the caret is LIVE from the first frame with nothing clicked — centering the row did not cost the page its readiness",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S2 (the DoD, re-proven): a writer types immediately without touching the row, the words land, and the row is gone the moment they do",
+    "pass": true,
+    "detail": "{\"text\":\"Centered and still mine\",\"row\":false}"
+  },
+  {
+    "name": "S1/S3: the revision was made in ONE place and both surfaces inherited it — identical type, colour, stacking direction and glyph size on page and board",
+    "pass": true,
+    "detail": "{\"pageStyle\":{\"font\":\"\\\"Figtree Variable\\\", system-ui, sans-serif\",\"size\":\"19px\",\"color\":\"rgb(79, 87, 48)\",\"dir\":\"column\",\"glyph\":24},\"boardStyle\":{\"font\":\"\\\"Figtree Variable\\\", system-ui, sans-serif\",\"size\":\"19px\",\"color\":\"rgb(79, 87, 48)\",\"dir\":\"column\",\"glyph\":24}}"
+  },
+  {
+    "name": "S1: the door olive is SLOTTED, not hardcoded — on the one theme whose paper is dark it steps back up the same ramp (#A9B56A) and still measures 7.32:1 (>=4.5). A value that only worked on cream would be a trap laid for this theme",
+    "pass": true,
+    "detail": "{\"darkToken\":\"#A9B56A\",\"darkContrast\":{\"fg\":\"rgb(169, 181, 106)\",\"bg\":\"rgb(11, 36, 41)\",\"bgFrom\":\"board-canvas\",\"ratio\":7.32}}"
+  },
+  {
+    "name": "1366x768 leg: the board row fits whole, stays on ONE line at the new size (four larger doors, no wrap), and stays centered",
+    "pass": true,
+    "detail": "{\"left\":134,\"right\":1222,\"top\":364,\"bottom\":445,\"oneLine\":true,\"vw\":1366,\"vh\":768,\"midY\":405,\"canvasMidY\":405}"
+  },
+  {
+    "name": "1366x768 leg: the page row fits whole, stays on ONE line (three larger doors, no wrap), and stays centered on the sheet",
+    "pass": true,
+    "detail": "{\"left\":414,\"right\":952,\"top\":310,\"bottom\":385,\"oneLine\":true,\"vw\":1366,\"vh\":768,\"midX\":683,\"sheetMidX\":683}"
+  },
+  {
+    "name": "1366x768 leg: the writer still types immediately without touching the row at the new placement, and the row still goes when they do",
+    "pass": true,
+    "detail": "{\"text\":\"At the leg too\",\"row\":false}"
+  }
+]
+
+BG2 VERIFY: FAIL — 1/23 failed

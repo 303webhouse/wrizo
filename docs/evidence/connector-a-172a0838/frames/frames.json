@@ -1,0 +1,543 @@
+{
+  "rows": [
+    {
+      "combo": "arbor-dark",
+      "frame": "01-mode-on",
+      "file": "arbor-dark/01-mode-on.png",
+      "md5": "4fd3611cf27f589b3de8f6181ff688a0",
+      "sameAsDarkTwin": null,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "02-arm-over-open-card",
+      "file": "arbor-dark/02-arm-over-open-card.png",
+      "md5": "cb2f386ef2e0cf7b44ede5dcec0d2acd",
+      "sameAsDarkTwin": null,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "false"
+        },
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "03-arm-over-linked-card",
+      "file": "arbor-dark/03-arm-over-linked-card.png",
+      "md5": "f3782015be6b700e38a2ad1548a43ed7",
+      "sameAsDarkTwin": null,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "true"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "04-just-after-linking",
+      "file": "arbor-dark/04-just-after-linking.png",
+      "md5": "8cfc8346d6ec4b92f47b9748ca36257b",
+      "sameAsDarkTwin": null,
+      "armed": "false",
+      "lines": 1,
+      "arm": false,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "true"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "05-line-selected",
+      "file": "arbor-dark/05-line-selected.png",
+      "md5": "29734266663859ba07ac8bbc7ade7012",
+      "sameAsDarkTwin": null,
+      "armed": "true",
+      "lines": 2,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "true"
+        },
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "01-mode-on",
+      "file": "arbor-light/01-mode-on.png",
+      "md5": "4fd3611cf27f589b3de8f6181ff688a0",
+      "sameAsDarkTwin": true,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "02-arm-over-open-card",
+      "file": "arbor-light/02-arm-over-open-card.png",
+      "md5": "cb2f386ef2e0cf7b44ede5dcec0d2acd",
+      "sameAsDarkTwin": true,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "false"
+        },
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "03-arm-over-linked-card",
+      "file": "arbor-light/03-arm-over-linked-card.png",
+      "md5": "f3782015be6b700e38a2ad1548a43ed7",
+      "sameAsDarkTwin": true,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "true"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "04-just-after-linking",
+      "file": "arbor-light/04-just-after-linking.png",
+      "md5": "8cfc8346d6ec4b92f47b9748ca36257b",
+      "sameAsDarkTwin": true,
+      "armed": "false",
+      "lines": 1,
+      "arm": false,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "true"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "05-line-selected",
+      "file": "arbor-light/05-line-selected.png",
+      "md5": "29734266663859ba07ac8bbc7ade7012",
+      "sameAsDarkTwin": true,
+      "armed": "true",
+      "lines": 2,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "true"
+        },
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "01-mode-on",
+      "file": "flux-dark/01-mode-on.png",
+      "md5": "a29e33ce7a023e248b134b1a7b7f1cad",
+      "sameAsDarkTwin": null,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "02-arm-over-open-card",
+      "file": "flux-dark/02-arm-over-open-card.png",
+      "md5": "af6125ee6a5e9205dcc2aba069871d32",
+      "sameAsDarkTwin": null,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "false"
+        },
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "03-arm-over-linked-card",
+      "file": "flux-dark/03-arm-over-linked-card.png",
+      "md5": "0030af8c0d49e4683249a260b06ab7ab",
+      "sameAsDarkTwin": null,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "true"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "04-just-after-linking",
+      "file": "flux-dark/04-just-after-linking.png",
+      "md5": "90477094f0e85a5e564ba8cac88308b4",
+      "sameAsDarkTwin": null,
+      "armed": "false",
+      "lines": 1,
+      "arm": false,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "true"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "05-line-selected",
+      "file": "flux-dark/05-line-selected.png",
+      "md5": "6e74ccd5dbbcb03666b27ec55240d1b9",
+      "sameAsDarkTwin": null,
+      "armed": "true",
+      "lines": 2,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "true"
+        },
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "01-mode-on",
+      "file": "flux-light/01-mode-on.png",
+      "md5": "573eae7b5717ac4144cb56e06c4d1722",
+      "sameAsDarkTwin": false,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "02-arm-over-open-card",
+      "file": "flux-light/02-arm-over-open-card.png",
+      "md5": "b92c490a0f5685daf2207be72dd28cc2",
+      "sameAsDarkTwin": false,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "false"
+        },
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "03-arm-over-linked-card",
+      "file": "flux-light/03-arm-over-linked-card.png",
+      "md5": "8e03fc1065974dc3c8844b9d674c71f8",
+      "sameAsDarkTwin": false,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "true"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "04-just-after-linking",
+      "file": "flux-light/04-just-after-linking.png",
+      "md5": "7e79381ea9b1b31f904b2ce067ac936d",
+      "sameAsDarkTwin": false,
+      "armed": "false",
+      "lines": 1,
+      "arm": false,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "true"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "05-line-selected",
+      "file": "flux-light/05-line-selected.png",
+      "md5": "f4ce7c63cb3e5bf3e0034cc9fc303904",
+      "sameAsDarkTwin": false,
+      "armed": "true",
+      "lines": 2,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "true"
+        },
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    }
+  ],
+  "lightFramesByteIdenticalToDarkTwin": [
+    "arbor-light/01-mode-on",
+    "arbor-light/02-arm-over-open-card",
+    "arbor-light/03-arm-over-linked-card",
+    "arbor-light/04-just-after-linking",
+    "arbor-light/05-line-selected"
+  ]
+}

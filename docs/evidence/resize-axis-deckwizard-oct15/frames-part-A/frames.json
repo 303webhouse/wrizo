@@ -1,0 +1,92 @@
+[
+  {
+    "frame": "arbor-A0-page-pin-selected",
+    "file": "arbor-A0-page-pin-selected.png",
+    "origin": "http://127.0.0.1:62733",
+    "theme": "plateau",
+    "bundle": "index-D8l4mU83.js",
+    "splashPresent": false,
+    "rect": {
+      "l": 238,
+      "t": 171,
+      "w": 273,
+      "h": 375,
+      "ratioHW": 1.375
+    },
+    "selectedHandle": true,
+    "railCentreHit": "wz-strip",
+    "wizard": null,
+    "pinned": "inline page-pin box (placed on-screen; the seam put it below the fold)",
+    "pinId": "rz-pin"
+  },
+  {
+    "frame": "arbor-A1-after-drag-right",
+    "file": "arbor-A1-after-drag-right.png",
+    "origin": "http://127.0.0.1:62733",
+    "theme": "plateau",
+    "bundle": "index-D8l4mU83.js",
+    "splashPresent": false,
+    "rect": {
+      "l": 238,
+      "t": 171,
+      "w": 321,
+      "h": 441,
+      "ratioHW": 1.375
+    },
+    "selectedHandle": true,
+    "railCentreHit": "wz-strip",
+    "wizard": null,
+    "drag": {
+      "from": {
+        "x": 511,
+        "y": 546
+      },
+      "to": {
+        "x": 651,
+        "y": 546
+      }
+    },
+    "before": {
+      "l": 238,
+      "t": 171,
+      "w": 273,
+      "h": 375,
+      "ratioHW": 1.375
+    }
+  },
+  {
+    "frame": "arbor-A2-after-drag-down",
+    "file": "arbor-A2-after-drag-down.png",
+    "origin": "http://127.0.0.1:62733",
+    "theme": "plateau",
+    "bundle": "index-D8l4mU83.js",
+    "splashPresent": false,
+    "rect": {
+      "l": 238,
+      "t": 171,
+      "w": 364,
+      "h": 500,
+      "ratioHW": 1.375
+    },
+    "selectedHandle": true,
+    "railCentreHit": "wz-strip",
+    "wizard": null,
+    "drag": {
+      "from": {
+        "x": 559,
+        "y": 613
+      },
+      "to": {
+        "x": 559,
+        "y": 703
+      }
+    },
+    "before": {
+      "l": 238,
+      "t": 171,
+      "w": 321,
+      "h": 441,
+      "ratioHW": 1.375
+    }
+  }
+]

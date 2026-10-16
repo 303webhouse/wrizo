@@ -1,0 +1,224 @@
+[
+  {
+    "name": "S1 @1100px: the script paper (.mode-pagecol) is genuinely centered in the stage — |center delta| < 1px",
+    "pass": true,
+    "detail": "{\"stageCx\":550,\"pagecolCx\":550}"
+  },
+  {
+    "name": "S1 @1100px: the paper never overflows the stage on either side (both reference widths + the 1100 floor)",
+    "pass": true,
+    "detail": "{\"stage\":{\"x\":33,\"y\":107,\"width\":1034,\"height\":733,\"top\":107,\"right\":1067,\"bottom\":840,\"left\":33},\"pagecol\":{\"x\":142,\"y\":107,\"width\":816,\"height\":1096,\"top\":107,\"right\":958,\"bottom\":1203,\"left\":142}}"
+  },
+  {
+    "name": "SC1 S4 @1100px (was \"S1: the sliver anchor's right edge is flush against the paper's left edge, within 30px\"): the anchor rides the paper's edge, dipping no further than the documented 38px pad ceiling and NEVER into the text measure",
+    "pass": true,
+    "detail": "{\"sliverAnchorRight\":180,\"pagecolLeft\":142,\"dip\":38,\"scriptTextLeft\":286}"
+  },
+  {
+    "name": "S1 @1100px: the Tutor's own grip anchor is flush against the paper's own right edge (within the documented paper-padding dip)",
+    "pass": true,
+    "detail": "{\"tutorAnchorLeft\":935,\"pagecolRight\":958}"
+  },
+  {
+    "name": "S1 @1280px: the script paper (.mode-pagecol) is genuinely centered in the stage — |center delta| < 1px",
+    "pass": true,
+    "detail": "{\"stageCx\":640,\"pagecolCx\":640}"
+  },
+  {
+    "name": "S1 @1280px: the paper never overflows the stage on either side (both reference widths + the 1100 floor)",
+    "pass": true,
+    "detail": "{\"stage\":{\"x\":38.390625,\"y\":107,\"width\":1203.21875,\"height\":733,\"top\":107,\"right\":1241.609375,\"bottom\":840,\"left\":38.390625},\"pagecol\":{\"x\":232,\"y\":107,\"width\":816,\"height\":1096,\"top\":107,\"right\":1048,\"bottom\":1203,\"left\":232}}"
+  },
+  {
+    "name": "SC1 S4 @1280px (was \"S1: the sliver anchor's right edge is flush against the paper's left edge, within 30px\"): the anchor rides the paper's edge, dipping no further than the documented 38px pad ceiling and NEVER into the text measure",
+    "pass": true,
+    "detail": "{\"sliverAnchorRight\":269.984375,\"pagecolLeft\":232,\"dip\":37.984375,\"scriptTextLeft\":376}"
+  },
+  {
+    "name": "S1 @1280px: the Tutor's own grip anchor is flush against the paper's own right edge (within the documented paper-padding dip)",
+    "pass": true,
+    "detail": "{\"tutorAnchorLeft\":1048,\"pagecolRight\":1048}"
+  },
+  {
+    "name": "S1 @2200px: the script paper (.mode-pagecol) is genuinely centered in the stage — |center delta| < 1px",
+    "pass": true,
+    "detail": "{\"stageCx\":1100,\"pagecolCx\":1100}"
+  },
+  {
+    "name": "S1 @2200px: the paper never overflows the stage on either side (both reference widths + the 1100 floor)",
+    "pass": true,
+    "detail": "{\"stage\":{\"x\":240,\"y\":107,\"width\":1720,\"height\":733,\"top\":107,\"right\":1960,\"bottom\":840,\"left\":240},\"pagecol\":{\"x\":692,\"y\":107,\"width\":816,\"height\":1096,\"top\":107,\"right\":1508,\"bottom\":1203,\"left\":692}}"
+  },
+  {
+    "name": "SC1 S4 @2200px (was \"S1: the sliver anchor's right edge is flush against the paper's left edge, within 30px\"): the anchor rides the paper's edge, dipping no further than the documented 38px pad ceiling and NEVER into the text measure",
+    "pass": true,
+    "detail": "{\"sliverAnchorRight\":692,\"pagecolLeft\":692,\"dip\":0,\"scriptTextLeft\":836}"
+  },
+  {
+    "name": "S1 @2200px: the Tutor's own grip anchor is flush against the paper's own right edge (within the documented paper-padding dip)",
+    "pass": true,
+    "detail": "{\"tutorAnchorLeft\":1508,\"pagecolRight\":1508}"
+  },
+  {
+    "name": "S1: legacy (<1100px) stays byte-identical — no DeskFrame, no .mode-pagecol, the exact pre-AB1 .script-page markup",
+    "pass": true,
+    "detail": "{\"hasDeskFrame\":false,\"hasModePagecol\":false,\"hasScriptPage\":true}"
+  },
+  {
+    "name": "S2 [ITEM 121 I6 / R15 successor]: Free Write’s own rail carries NO Styling section at all - the zone R1 created and R15 retired, gone by ABSENCE rather than by a disabled mount (what the analog page cannot do, the chrome does not offer)",
+    "pass": true,
+    "detail": "[\"Typeface\",\"Controls\",\"Journal\"]"
+  },
+  {
+    "name": "S2 [R2+G3 successor]: Free Writes rail carries NO ink-tool placeholder - absent, not disabled",
+    "pass": true,
+    "detail": "{\"present\":false}"
+  },
+  {
+    "name": "S2 [ITEM 121 I6 / R15 successor]: with STYLING retired, Free Write’s rail has NO format zone and NO format buttons - and nothing in its drawer is disabled or aria-disabled either, so the removal is absence throughout rather than a greyed door",
+    "pass": true,
+    "detail": "{\"zone\":0,\"buttons\":0,\"disabled\":0}"
+  },
+  {
+    "name": "S2: forward-lock's deletion discipline is UNTOUCHED by the rail-driven marker insertion — a real Backspace still STRIKES (struck span present, text unchanged), never erases",
+    "pass": true,
+    "detail": "{\"beforeBackspace\":\"Hello world\",\"afterBackspace\":\"Hello world\",\"struckPresent\":true}"
+  },
+  {
+    "name": "S3 @1100px [R10.i successor]: the cascade drawer sits FLUSH ON the strip — zero gap, the --frame-gap term retired from .desk-frame-cascade-anchor",
+    "pass": true,
+    "detail": "{\"gap\":0,\"retiredFrameGap\":28,\"strip\":{\"x\":0,\"y\":103,\"width\":84,\"height\":797,\"top\":103,\"right\":84,\"bottom\":900,\"left\":0},\"panel\":{\"x\":84,\"y\":107,\"width\":300,\"height\":733,\"top\":107,\"right\":384,\"bottom\":840,\"left\":84}}"
+  },
+  {
+    "name": "S3 @1100px [R10.i successor]: no meaningful overlap — the drawer's left edge never crosses the strip's right edge beyond a subpixel rounding artifact",
+    "pass": true,
+    "detail": "{\"panelLeft\":84,\"stripRight\":84,\"delta\":0}"
+  },
+  {
+    "name": "S3 @1280px [R10.i successor]: the cascade drawer sits FLUSH ON the strip — zero gap, the --frame-gap term retired from .desk-frame-cascade-anchor",
+    "pass": true,
+    "detail": "{\"gap\":-0.015625,\"retiredFrameGap\":28,\"strip\":{\"x\":0,\"y\":103,\"width\":84,\"height\":797,\"top\":103,\"right\":84,\"bottom\":900,\"left\":0},\"panel\":{\"x\":83.984375,\"y\":107,\"width\":300,\"height\":733,\"top\":107,\"right\":383.984375,\"bottom\":840,\"left\":83.984375}}"
+  },
+  {
+    "name": "S3 @1280px [R10.i successor]: no meaningful overlap — the drawer's left edge never crosses the strip's right edge beyond a subpixel rounding artifact",
+    "pass": true,
+    "detail": "{\"panelLeft\":83.984375,\"stripRight\":84,\"delta\":-0.015625}"
+  },
+  {
+    "name": "S3 @2200px [R10.i successor]: the cascade drawer sits FLUSH ON the strip — zero gap, the --frame-gap term retired from .desk-frame-cascade-anchor",
+    "pass": true,
+    "detail": "{\"gap\":0,\"retiredFrameGap\":28,\"strip\":{\"x\":0,\"y\":103,\"width\":84,\"height\":797,\"top\":103,\"right\":84,\"bottom\":900,\"left\":0},\"panel\":{\"x\":84,\"y\":107,\"width\":300,\"height\":733,\"top\":107,\"right\":384,\"bottom\":840,\"left\":84}}"
+  },
+  {
+    "name": "S3 @2200px [R10.i successor]: no meaningful overlap — the drawer's left edge never crosses the strip's right edge beyond a subpixel rounding artifact",
+    "pass": true,
+    "detail": "{\"panelLeft\":84,\"stripRight\":84,\"delta\":0}"
+  },
+  {
+    "name": "S3 [R10.i successor]: the Plan category's own panel (a distinct cascade tenant) is ALSO flush ON the strip — the zero-gap law lives on the shared anchor, not a one-off per-panel patch",
+    "pass": true,
+    "detail": "{\"planPanel\":{\"x\":84,\"y\":107,\"width\":300,\"height\":733,\"top\":107,\"right\":384,\"bottom\":840,\"left\":84},\"stripForSurvey\":{\"x\":0,\"y\":103,\"width\":84,\"height\":797,\"top\":103,\"right\":84,\"bottom\":900,\"left\":0},\"retiredFrameGap\":28}"
+  },
+  {
+    "name": "S4: the page/script editor content area (.mode-scroll — used to hide its scrollbar ENTIRELY) now carries the minimal, THIN, paper-toned treatment instead of the bulky OS default",
+    "pass": false,
+    "detail": "{\"modeScrollStyle\":{\"scrollbarWidth\":\"none\",\"scrollbarColor\":\"rgb(138, 124, 104) rgba(0, 0, 0, 0)\"},\"inkOnPaperLow\":\"#8A7C68\"}"
+  },
+  {
+    "name": "S4: a cascade panel (explicitly named in the brief) carries the minimal thin scrollbar, themed via the dark-chrome token pair (--ink-border-strong)",
+    "pass": true,
+    "detail": "{\"cascadePanelStyle\":{\"scrollbarWidth\":\"thin\",\"scrollbarColor\":\"rgb(69, 59, 49) rgba(0, 0, 0, 0)\"},\"inkBorderStrong\":\"#453B31\"}"
+  },
+  {
+    "name": "S4: the sliver panel ALSO carries the minimal thin scrollbar — the systemic default reaches it with no per-class opt-in needed",
+    "pass": true,
+    "detail": "thin"
+  },
+  {
+    "name": "S4: Flux resolves its OWN scrollbar color (a different --ink-border-strong value) with zero theme-specific scrollbar CSS of its own — genuinely \"consistent with the colors and mood of each unique theme\"",
+    "pass": true,
+    "detail": "{\"fluxInkBorderStrong\":\"#2A6A76\",\"inkBorderStrong\":\"#453B31\",\"fluxCascadeColor\":\"rgb(42, 106, 118) rgba(0, 0, 0, 0)\"}"
+  },
+  {
+    "name": "S5 ROOT-CAUSED: a genuinely trusted double-click on an ACTUAL dealt card (materializeDeck's own layout, real \"Start from a deck…\" door) now opens the edit popup — was a genuine code regression (FX5 S4(a)'s own immediate-capture-on-pointerdown fix retargeting the native dblclick's own e.target to .board-canvas), fixed via document.elementFromPoint in the onDoubleClick handler (the SAME technique this file's own finishThreadDrag already used) — not a harness fidelity gap: this is isTrusted:true CDP input throughout",
+    "pass": true,
+    "detail": "{\"id\":\"mv9yh1fw882752rla\",\"x\":374,\"y\":170}"
+  },
+  {
+    "name": "S5: the opened popup genuinely shows THIS card's own dealt text (title + body, materializeDeck's own \"title\\nbody\" shape), not empty/wrong content",
+    "pass": true,
+    "detail": "Character A: Want vs. Need\nWhat they think they want — and what they actually need."
+  },
+  {
+    "name": "S5 universality: an ORDINARY hand-typed card has the IDENTICAL defect and the IDENTICAL fix — confirms this was never deck-specific (materializeDeck's own layout/overlap was a red herring, not the cause)",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S6 ROOT-CAUSED (not a code defect — S5's own downstream symptom, disclosed plainly): a single genuinely trusted click SELECTS a dealt card correctly — selection was never touched by the S5 regression at all",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S6 [click-to-create successor]: there is NO Remove button on the board any more (and no action row for an ordinary selected card)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S6 [click-to-create successor]: the Delete key genuinely deletes the ACTUAL dealt card (and its own thread, if any)",
+    "pass": true,
+    "detail": "{\"stillThere\":false,\"countBefore\":11,\"countAfter\":9}"
+  },
+  {
+    "name": "S7 ROOT-CAUSED: dragging the resize handle to shrink a dealt card is MONOTONIC — height never reverses direction mid-drag (the reflow-floor effect no longer fights the pointer in real time)",
+    "pass": true,
+    "detail": "[0.10621323529411764,0.08783088235294118,0.06485294117647059,0.045]"
+  },
+  {
+    "name": "S7: the card genuinely ends up smaller than after the upsize, in BOTH dimensions — downsize actually works now, matching Nick's own DoD (\"upsizes then downsizes a card freely\")",
+    "pass": true,
+    "detail": "{\"afterUpsize\":{\"id\":\"mv9yh7c3ucmcgrkz4\",\"kind\":\"text\",\"x\":0.03,\"y\":0.04,\"w\":0.45999999999999996,\"h\":0.12,\"z\":1,\"text\":\"Character A: Want vs. Need\\nWhat they think they want — and what they actually need.\"},\"afterDownsize\":{\"id\":\"mv9yh7c3ucmcgrkz4\",\"kind\":\"text\",\"x\":0.03,\"y\":0.04,\"w\":0.3313235294117647,\"h\":0.07720588235294118,\"z\":1,\"text\":\"Character A: Want vs. Need\\nWhat they think they want — and what they actually need.\"}}"
+  },
+  {
+    "name": "S7 invariant preserved: the content-minimum floor still applies on RELEASE — an aggressive narrow+tiny-height drag never clips the card's own text (scrollHeight <= clientHeight)",
+    "pass": true,
+    "detail": "{\"scrollHeight\":132,\"clientHeight\":130}"
+  },
+  {
+    "name": "S8: a selected, genuinely overlapping card gets the quiet layer-order icon (FX5 S4(c))",
+    "pass": true,
+    "detail": "{\"overlapping\":\"true\",\"togglePresent\":true}"
+  },
+  {
+    "name": "S8 ROOT-CAUSED: clicking the layer-order icon genuinely changes AND persists the card's own z — was retargeted to .board-canvas (the SAME class of bug as S5), fixed with an onDown early-return mirroring the existing .board-pin-grab/.board-handle pattern",
+    "pass": true,
+    "detail": "{\"zBefore\":2,\"zAfter\":0}"
+  },
+  {
+    "name": "S8: the new z-order persists to storage across a reload",
+    "pass": true,
+    "detail": "{\"zAfter\":0,\"zPersisted\":0}"
+  },
+  {
+    "name": "S9: the OLDER, pre-existing \"Plot a Story\" button lives in the Cascade's own Plan panel — a genuinely different doorway from either of B3's own two \"…a deck…\" doors",
+    "pass": true,
+    "detail": "[\"Create a Board\",\"Plot a Story\"]"
+  },
+  {
+    "name": "S9 CONFIRMED: \"Plot a Story\" navigates to the OLD /project/:id/wizard route (StructureWizard.tsx) — a full-PAGE route change, never DeckWizard's own pop-out-over-blur — matching Nick's own \"leading back to the old, deprecated wizard\" verdict exactly",
+    "pass": true,
+    "detail": "{\"oldWizardHash\":\"#/project/mv9yhdyrbfqc491dt/wizard\",\"oldWizardBody\":\"↩\\nUntitled\\n＋\\nCatch\\n❧\\nJournal\\n▤\\nShelf\\n▥\\nDrawers\\n▣\\nLibrary\\nFull screen\\nSign out\\nTurning the soil…\\n← Back to Drawer\\nSTRUCTURE WIZARD\\nA few quick questions\\nWhat genre best describes your story?\\nAction/Thr\"}"
+  },
+  {
+    "name": "S9: B3's own door 1 (\"Start from a deck…\", CreateProject.tsx) launches the GENUINE DeckWizard pop-out-over-blur — the CORRECT B3-built experience, no silent fallthrough to the old wizard",
+    "pass": true,
+    "detail": "{\"hasBackdrop\":true,\"hasBlurredPicker\":\"deck-wizard-blur-wrap deck-wizard-blurred\",\"deckRowCount\":7}"
+  },
+  {
+    "name": "S9: B3's own door 2 (\"From a deck…\", BoardEditor.tsx's sliver) ALSO launches the GENUINE DeckWizard pop-out-over-blur correctly — both of B3's own doors are sound; the routing defect Nick hit belongs to a completely different, pre-existing button",
+    "pass": true,
+    "detail": "{\"hasBackdrop\":true,\"hasBlurredBoard\":\"board-canvas-blur-wrap board-canvas-blurred\",\"deckRowCount\":7}"
+  }
+]
+
+FX7 VERIFY (partial): FAIL — 1/44 failed

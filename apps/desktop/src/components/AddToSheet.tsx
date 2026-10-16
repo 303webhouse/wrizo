@@ -33,7 +33,6 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
   const { t: lex, tMany: lexMany } = useLexicon();
   const [path, setPath] = useState<Level[]>([{ kind: 'root' }]);
   const [pendingBoard, setPendingBoard] = useState<{ id: string; title: string } | null>(null);
-  const n = sourceIds.length;
   const anyInk = sourceIds.some(id => (getJournalEntry(id)?.strokes?.length ?? 0) > 0);
 
   useEffect(() => {
@@ -47,8 +46,6 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
   const popTo = (i: number) => setPath(p => p.slice(0, i + 1));
 
   const crumbLabel = (lvl: Level) => (lvl.kind === 'root' ? 'Add to…' : lvl.kind === 'drawer' ? lvl.drawerName : lvl.binderName);
-
-  const pageWord = (count: number) => (count === 1 ? lex('page') : lexMany('page')).toLowerCase();
 
   // B2 S3 (review fix, 2026-07-20) — a genuine truthfulness defect: this
   // toast used to unconditionally claim "moved; it left the Journal" for
@@ -74,21 +71,23 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
     const stillJournalHomed = sourceIds
       .map(id => getJournalEntry(id))
       .some((e): e is JournalEntry => !!e && inJournalView(e));
+    // ITEM word-diet (Fable, review fix, Oct 13) — never a number directly
+    // before "Pages"; "these Pages" names the selection without one.
     const msg = stillJournalHomed
-      ? `${n} ${pageWord(n)} ${n === 1 ? 'stays' : 'stay'} in the ${lex('journal')} — a journal-homed page can't be shelved directly; nothing moved.`
-      : `Filed ${n} ${pageWord(n)} to the ${lex('shelf')} — moved; it left the ${lex('journal')}.`;
+      ? `These ${lexMany('page')} stay in the ${lex('journal')} — a journal-homed page can't be shelved directly; nothing moved.`
+      : `Filed these ${lexMany('page')} to the ${lex('shelf')} — moved; it left the ${lex('journal')}.`;
     onDone(msg, 'MOVES');
   };
 
   const fileStandalone = (drawerId?: string) => {
     const binder = fileToNewBinder(sourceIds, drawerId);
-    onDone(`Filed ${n} ${pageWord(n)} to ${binder.title || 'Untitled'} — moved; it left the ${lex('journal')}.`, 'MOVES');
+    onDone(`Filed these ${lexMany('page')} to ${binder.title || 'Untitled'} — moved; it left the ${lex('journal')}.`, 'MOVES');
   };
 
   const fileHere = (binderId: string) => {
     for (const id of sourceIds) setPageHome(id, binderId);
     const binder = getProject(binderId);
-    onDone(`Filed ${n} ${pageWord(n)} to ${binder?.title || 'Untitled'} — moved; it left the ${lex('journal')}.`, 'MOVES');
+    onDone(`Filed these ${lexMany('page')} to ${binder?.title || 'Untitled'} — moved; it left the ${lex('journal')}.`, 'MOVES');
   };
 
   const doAppendChapter = (chapter: JournalEntry) => {
@@ -98,7 +97,10 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
 
   const doAttachPlan = (binderId: string, beatId: string, beatName: string) => {
     attachToPlanBeat(sourceIds, binderId, beatId);
-    onDone(`Linked — marked routed to "${beatName}"; the ${lex('page').toLowerCase()} stays in the ${lex('journal')}.`, 'LINKS');
+    // ITEM word-diet (Fable, review fix, Oct 13) — "these Pages" (capital P,
+    // not a number, not lowercased — the product noun is capitalized like
+    // Journal/Shelf/Drawer).
+    onDone(`Linked — marked routed to "${beatName}"; these ${lexMany('page')} stay in the ${lex('journal')}.`, 'LINKS');
   };
 
   const doBoardAppend = (boardId: string, title: string, includeInk: boolean) => {
@@ -180,8 +182,11 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
     const framework = plan ? getFramework(plan.frameworkId) : null;
     body = (
       <>
+        {/* ITEM word-diet (Fable, review fix, Oct 13) — "a new Pages" is
+            banned (drop the article); the product noun is capitalized, not
+            lowercased. */}
         <button type="button" className="dz-more add-dest-row" onClick={() => fileHere(binderId)}>
-          File here as a new {lex('page').toLowerCase()} <VerbTag verb="MOVES" />
+          File here as new {lex('page')} <VerbTag verb="MOVES" />
         </button>
         {chapters.length > 0 && (
           <div style={{ marginTop: 16 }}>

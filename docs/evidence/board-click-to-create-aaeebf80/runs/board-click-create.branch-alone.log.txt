@@ -1,0 +1,116 @@
+[
+  {
+    "name": "S1: the gesture is gated to the OPEN projection on an ordinary board, begins only when the press lands ON the canvas itself (not a door, a hairline, the resize handle) with the primary button, and the old deselect is still the first thing an empty press does",
+    "pass": true,
+    "detail": "{\"gate\":true,\"press\":true,\"deselect\":true,\"discard\":true,\"popupOpensOnRelease\":true,\"cancelClean\":true}"
+  },
+  {
+    "name": "S2: closing the pop-up discards a card this gesture made ONLY if it is still empty text; a pointercancel (a touch drag turning into a scroll) cancels the card cleanly; release opens the pop-up",
+    "pass": true,
+    "detail": "{\"gate\":true,\"press\":true,\"deselect\":true,\"discard\":true,\"popupOpensOnRelease\":true,\"cancelClean\":true}"
+  },
+  {
+    "name": "S (mutants): dropping \"the press landed on the canvas itself\", dropping the \"still empty\" test, allowing STORYBOARD/OUTLINE, or dropping \"nothing was selected\" each turn a pin RED (each mutation landed)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S3: the board's starters are a thin square outline at about 40% opacity (lifted on hover and keyboard focus), they fade away with opacity first and visibility after, the ghost is a square hairline outline that never takes the pointer - and the look is scoped to the BOARD row (the page row and STORYBOARD/OUTLINE keep theirs)",
+    "pass": true,
+    "detail": "{\"starter\":true,\"lift\":true,\"faded\":true,\"ghost\":true,\"boardOnly\":true}"
+  },
+  {
+    "name": "S3 (mutant): a rounded starter turns the pin RED (the mutation landed)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "fixture: an empty board, with its starters, and no card",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "C1: while the press is HELD the ghost outline is on the board at the press point (its top-left at the pointer), not yet a card",
+    "pass": true,
+    "detail": "{\"p\":{\"x\":196,\"y\":172},\"gHeld\":{\"display\":\"block\",\"left\":196,\"top\":172,\"width\":435,\"height\":87}}"
+  },
+  {
+    "name": "C1: on release a card exists with its top-left AT the press point, and its pop-up is open AT ONCE - as if it had been double-clicked (Nick's correction: a plain click opens the pop-up too); the ghost is gone",
+    "pass": false,
+    "detail": "{\"p\":{\"x\":196,\"y\":172},\"c1\":{\"left\":196,\"top\":217,\"width\":435,\"height\":87,\"id\":\"mv96llof7sdxya1nv\"}}"
+  },
+  {
+    "name": "C3: closing the pop-up while the new card is STILL EMPTY discards it (no card is left)",
+    "pass": true,
+    "detail": "{\"cards\":0}"
+  },
+  {
+    "name": "C4: a card that has words in it when its pop-up closes is KEPT",
+    "pass": true,
+    "detail": "{\"kept\":\"first words\"}"
+  },
+  {
+    "name": "C5: a press ON a card selects it and makes NO new card",
+    "pass": true,
+    "detail": "{\"cards\":1,\"selectedAfterCardPress\":\"true\"}"
+  },
+  {
+    "name": "C6: with a card SELECTED, the first empty-space click only DESELECTS it - no ghost, no new card, no pop-up (the old deselect, kept)",
+    "pass": true,
+    "detail": "{\"selectedDuring\":\"false\",\"cards\":1,\"ghostWhileDeselecting\":{\"display\":\"none\",\"left\":0,\"top\":0,\"width\":0,\"height\":0}}"
+  },
+  {
+    "name": "C6: and the NEXT empty-space click, with nothing selected, creates the card and opens its pop-up (the empty close below then discards it)",
+    "pass": true,
+    "detail": "{\"cards\":2}"
+  },
+  {
+    "name": "C6: closed empty, that new card is discarded; the first card is untouched",
+    "pass": true,
+    "detail": "{\"cards\":1}"
+  },
+  {
+    "name": "C2: during a click-drag the ghost outline FOLLOWS the pointer - anchored at the press, sized to the rectangle dragged so far (about 240 x 120)",
+    "pass": true,
+    "detail": "{\"d\":{\"x\":196,\"y\":172},\"gDrag\":{\"display\":\"block\",\"left\":196,\"top\":172,\"width\":240,\"height\":120}}"
+  },
+  {
+    "name": "C2: on release the card has the DRAGGED size and sits where the drag began, and its pop-up is open",
+    "pass": false,
+    "detail": "{\"d\":{\"x\":196,\"y\":172},\"cd\":{\"left\":196,\"top\":217,\"width\":240,\"height\":120,\"id\":\"mv96lqjs43ae94y2h\"}}"
+  },
+  {
+    "name": "C7b: at rest each starter is a thin SQUARE outline at about 40% opacity (1px solid, no radius, opacity 0.4)",
+    "pass": true,
+    "detail": "{\"opacity\":\"0.4\",\"border\":\"1px solid\",\"radius\":\"0px\"}"
+  },
+  {
+    "name": "C7: the empty board's starters are there at first (opaque, visible) and FADE OUT on the first press anywhere on the board (faded, opacity 0, no longer visible - while the pointer is still down)",
+    "pass": true,
+    "detail": "{\"s0\":{\"opacity\":\"1\",\"visibility\":\"visible\"},\"s1\":{\"opacity\":\"0\",\"visibility\":\"hidden\",\"faded\":\"true\"}}"
+  },
+  {
+    "name": "C7: a starter pressed AS the first click still does its act - exactly ONE card, its pop-up open (the fade does not eat the click, and the press made no card of its own)",
+    "pass": true,
+    "detail": "{\"cards\":1}"
+  },
+  {
+    "name": "C8: in STORYBOARD a click on empty space makes no card and opens no pop-up (those projections have their own card doors)",
+    "pass": true,
+    "detail": "{\"cards\":0}"
+  },
+  {
+    "name": "C8: in OUTLINE a click on empty space makes no card and opens no pop-up (those projections have their own card doors)",
+    "pass": true,
+    "detail": "{\"cards\":0}"
+  },
+  {
+    "name": "C8: on a SYSTEM board (its cards are derived) a click on empty space makes no card and opens no pop-up",
+    "pass": true,
+    "detail": "{\"cards\":0}"
+  }
+]
+
+BOARD-CLICK-CREATE VERIFY: FAIL - 2/22
+  FAIL C1: on release a card exists with its top-left AT the press point, and its pop-up is open AT ONCE - as if it had been double-clicked (Nick's correction: a plain click opens the pop-up too); the ghost is gone | {"p":{"x":196,"y":172},"c1":{"left":196,"top":217,"width":435,"height":87,"id":"mv96llof7sdxya1nv"}}
+  FAIL C2: on release the card has the DRAGGED size and sits where the drag began, and its pop-up is open | {"d":{"x":196,"y":172},"cd":{"left":196,"top":217,"width":240,"height":120,"id":"mv96lqjs43ae94y2h"}}

@@ -1,0 +1,22 @@
+PASS  [plateau] (premise) the board is in the plateau theme  [plateau]
+PASS  [plateau] (premise) a real double-click on the card opens its pop-up
+FAIL  [plateau] X1: the pop-up's close control is an X named "Close" for assistive tech (aria-label + title; the glyph itself aria-hidden)  [{"x":false,"ariaLabel":null,"title":null,"shown":null,"glyphHidden":false,"namedClose":0,"isX":false,"textClose":1,"foot":true}]
+FAIL  [plateau] X1: the "Close" text button is gone - no button reads "Close", and the foot that held it is gone  [{"x":false,"ariaLabel":null,"title":null,"shown":null,"glyphHidden":false,"namedClose":0,"isX":false,"textClose":1,"foot":true}]
+FAIL  [plateau] X2: the X sits in the pop-up's top-right corner (inside the card, within 16px of its top and right edges, upper-right quadrant, not covered)  [null]
+FAIL  [plateau] X2: the X is a real target (at least 24x24 px)  [null]
+FAIL  [plateau] X3: the X paints in the theme's card ink (--ink-on-paper-low), never the card's own background  [null]
+FAIL  [plateau] X4: a real click on the X closes the pop-up, un-blurs the board, and commits the edit  [{"clicked":false,"popupGone":false,"blurGone":false,"text":"A card to close edited"}]
+PASS  [plateau] X5: Esc still closes the pop-up and un-blurs the board  [{"opened2":true,"popupGone":true,"blurGone":true,"text":"A card to close edited"}]
+FAIL  [plateau] X6: a click outside the card (the backdrop) still closes the pop-up  [{"opened3":true,"outsideHit":"wz-strip","popupGone":false,"blurGone":false,"text":"A card to close edited"}]
+PASS  [flux] (premise) the board is in the flux theme  [flux]
+PASS  [flux] (premise) a real double-click on the card opens its pop-up
+FAIL  [flux] X1: the pop-up's close control is an X named "Close" for assistive tech (aria-label + title; the glyph itself aria-hidden)  [{"x":false,"ariaLabel":null,"title":null,"shown":null,"glyphHidden":false,"namedClose":0,"isX":false,"textClose":1,"foot":true}]
+FAIL  [flux] X1: the "Close" text button is gone - no button reads "Close", and the foot that held it is gone  [{"x":false,"ariaLabel":null,"title":null,"shown":null,"glyphHidden":false,"namedClose":0,"isX":false,"textClose":1,"foot":true}]
+FAIL  [flux] X2: the X sits in the pop-up's top-right corner (inside the card, within 16px of its top and right edges, upper-right quadrant, not covered)  [null]
+FAIL  [flux] X2: the X is a real target (at least 24x24 px)  [null]
+FAIL  [flux] X3: the X paints in the theme's card ink (--ink-on-paper-low), never the card's own background  [null]
+FAIL  [flux] X4: a real click on the X closes the pop-up, un-blurs the board, and commits the edit  [{"clicked":false,"popupGone":false,"blurGone":false,"text":"A card to close edited"}]
+PASS  [flux] X5: Esc still closes the pop-up and un-blurs the board  [{"opened2":true,"popupGone":true,"blurGone":true,"text":"A card to close edited"}]
+FAIL  [flux] X6: a click outside the card (the backdrop) still closes the pop-up  [{"opened3":true,"outsideHit":"wz-strip","popupGone":false,"blurGone":false,"text":"A card to close edited"}]
+
+CARD-CLOSE-X VERIFY: FAIL - 14/20 failed

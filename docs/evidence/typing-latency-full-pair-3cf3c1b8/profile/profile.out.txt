@@ -1,0 +1,521 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+bundle index-D08hqB7d.js: React region lines 51-7018 (react-dom from 587)
+AUTOSAVE @ 20000 words: keysLanded=30 writes=4 [writer-studio-journal-entries 122556ch 0.4ms @+2172ms] [writer-studio-dirty-v1 96ch 0ms @+2172ms] [writer-studio-dirty-v1 90ch 0.1ms @+4981ms] [writer-studio-last-sync 24ch 0ms @+4981ms] longestStall=0ms
+{
+  "words": 20000,
+  "chars": 121207,
+  "wrappedCallsOutsideKeyWindows": 24,
+  "typedOk": false,
+  "keys": 20,
+  "control_uninstrumented": {
+    "handlers": 115.5,
+    "toFrame": 0.2,
+    "frameStyleLayoutPaint": 81.7,
+    "toFirstPaint": 197.4,
+    "toFirstPaint_p95": 229.3,
+    "selectionchange": 8,
+    "selectionchangeAfterPaint": "0/6",
+    "total": 197.4,
+    "total_p95": 229.3
+  },
+  "instrumented": {
+    "handlers": 119,
+    "toFrame": 0.2,
+    "frameStyleLayoutPaint": 77.1,
+    "toFirstPaint": 197.3,
+    "toFirstPaint_p95": 323.2,
+    "selectionchange": 7.2,
+    "selectionchangeAfterPaint": "0/20",
+    "total": 197.3,
+    "total_p95": 323.2
+  },
+  "wrappers_medianPerKey": {
+    "innerText_reads": 0,
+    "innerText_forcedLayout": 0,
+    "innerText_serialise": 0,
+    "rangeText_reads": 12,
+    "rangeText": 0.1,
+    "innerHTML_writes": 0,
+    "innerHTML_parse": 0
+  },
+  "cpu_meanPerKey": {
+    "idle": 73.6,
+    "(program): native, outside JS - style/layout/paint": 65.8,
+    "the rows (lineRows)": 51.6,
+    "React: component render": 7.6,
+    "redecorate: string build": 4.5,
+    "React: reconcile + commit": 3.8,
+    "other app JS": 3.2,
+    "the 211 controller": 0.4,
+    "211 rules": 0.2,
+    "other": 0.1,
+    "GC": 0.1,
+    "Range text (wrapper)": 0,
+    "strip: marksAt/headingLevelAt": 0
+  },
+  "layoutShape": {
+    "A_wholeReplace": {
+      "parse": 20.4,
+      "layout": 165.2
+    },
+    "Aprime_domPath": {
+      "layoutBeforeRead": 105.5,
+      "serialise": 7,
+      "parse": 18.5,
+      "layoutAfter": 150.6,
+      "total": 305.6
+    },
+    "B_singleBlock_oneChar": {
+      "layout": 96.4
+    },
+    "C_blockRows_oneChar": {
+      "layout": 74.7,
+      "textContentIdentical": true,
+      "rows": 1112,
+      "heightVsToday": "64311 vs 64311"
+    },
+    "D_blockRows_rowRewrite": {
+      "parse": 0.1,
+      "layout": 73.7
+    }
+  },
+  "aPrime_estimate": {
+    "decorationsToday": 2,
+    "innerTextReadsToday": 1,
+    "domPath": 305.6,
+    "decorateOnce": 2.3,
+    "readPlainOnce": 0,
+    "caretOffsetOnce": 0,
+    "react": 11.4,
+    "kept": 3.5,
+    "total": 322.8
+  },
+  "variantE": {
+    "blocks": 1112,
+    "lineHeight": 28.9,
+    "charsPerLine": 54,
+    "charsPerLineFallback": false,
+    "wrappedRowsMeasured": 1112,
+    "oneCharLayout_median": 3.9,
+    "renderedBlocksAroundCaret": 1112,
+    "trueTotalPx": 64311,
+    "estimatedTotalPx": 64327,
+    "driftPx": 16,
+    "driftPct": 0.02,
+    "scrollJumpPx": 0,
+    "estimatedTotalAfterScrollPx": 64326
+  },
+  "variantF": {
+    "lines": 1112,
+    "today": {
+      "heightPx": 64311,
+      "oneCharLayout_median": 60.1
+    },
+    "E_blockRows": {
+      "rows": 1112,
+      "textContentIdentical": true,
+      "innerTextIdentical": false,
+      "selectAllTextIdentical": true,
+      "heightPx": 64311,
+      "heightVsToday": 0,
+      "innerTextFirstDiff": {
+        "at": 109,
+        "variant": "\"own at all.\\n\\nThe writer \"",
+        "today": "\"own at all.\\nThe writer k\"",
+        "lengthVariant": 122403,
+        "lengthToday": 121292
+      },
+      "oneCharLayout_median": 36.8,
+      "rowRewrite": {
+        "parse": 0.1,
+        "layout": 36.1
+      }
+    },
+    "F_inlineBlockRows": {
+      "rows": 1112,
+      "textContentIdentical": true,
+      "innerTextIdentical": true,
+      "selectAllTextIdentical": true,
+      "heightPx": 64311,
+      "heightVsToday": 0,
+      "oneCharLayout_median": 39.2,
+      "rowRewrite": {
+        "parse": 0.1,
+        "layout": 39.5
+      }
+    }
+  },
+  "variantG": {
+    "lines": 1112,
+    "lineHeight": 28.9,
+    "charsPerLine": 54,
+    "wrappedRowsMeasured": 1112,
+    "trueTotalPx": 64311,
+    "F_containOnly_oneCharLayout": 39.9,
+    "G1_contentVisibility": {
+      "oneCharLayout_median": 7.1,
+      "rowsSkipped": 1054,
+      "rowsWithState": 1112,
+      "rows": 1112,
+      "estimatedTotalPx": 64327,
+      "driftPx": 16,
+      "driftPct": 0.02,
+      "scrollJumpPx": 0,
+      "textContentIdentical": false,
+      "innerTextIdentical": false,
+      "selectAllTextIdentical": false
+    },
+    "G2_inlineSize": {
+      "oneCharLayout_median": 41.3,
+      "heightVsTruth": 0,
+      "innerTextIdentical": false
+    },
+    "G3_strictHost": {
+      "oneCharLayout_median": 1.2
+    }
+  },
+  "keystrokeTrace": {
+    "keys": 25,
+    "traceEvents": 70897,
+    "perKeyMedianMs": {
+      "Layout": 76.4,
+      "UpdateLayoutTree": 1.3,
+      "PrePaint": 21.4,
+      "Paint": 11.1,
+      "Layerize": 0.6,
+      "ParseHTML": 0.1,
+      "FunctionCall": 87.5,
+      "EventDispatch": 309.1,
+      "RunMicrotasks": 0
+    },
+    "perKeyP95Ms": {
+      "Layout": 80.5,
+      "UpdateLayoutTree": 1.4,
+      "PrePaint": 24.1,
+      "Paint": 14.1,
+      "Layerize": 0.8,
+      "ParseHTML": 0.1,
+      "FunctionCall": 91,
+      "EventDispatch": 324.6,
+      "RunMicrotasks": 0
+    },
+    "layoutsPerKey_median": 2,
+    "dirtyObjects_median": 50,
+    "totalObjects_median": 34857,
+    "forcedLayoutsBy": {
+      "placeRowsCaret": 25
+    },
+    "sampleKey": [
+      {
+        "ms": 40.3,
+        "dirty": 20,
+        "total": 34857,
+        "partial": false,
+        "forcedBy": null
+      },
+      {
+        "ms": 37.5,
+        "dirty": 50,
+        "total": 34857,
+        "partial": false,
+        "forcedBy": "placeRowsCaret"
+      }
+    ]
+  },
+  "autosave": {
+    "editorFocused": true,
+    "keysLanded": 30,
+    "windowMs": 6000,
+    "observer": "longtask",
+    "writes": [
+      {
+        "msAfterLastKey": 2172,
+        "key": "writer-studio-journal-entries",
+        "chars": 122556,
+        "ms": 0.4
+      },
+      {
+        "msAfterLastKey": 2172,
+        "key": "writer-studio-dirty-v1",
+        "chars": 96,
+        "ms": 0
+      },
+      {
+        "msAfterLastKey": 4981,
+        "key": "writer-studio-dirty-v1",
+        "chars": 90,
+        "ms": 0.1
+      },
+      {
+        "msAfterLastKey": 4981,
+        "key": "writer-studio-last-sync",
+        "chars": 24,
+        "ms": 0
+      }
+    ],
+    "longestStallAfterLastKeyMs": 0,
+    "stallsAfterLastKey": [],
+    "longestStallDuringBurstMs": 178
+  }
+}
+AUTOSAVE @ 50000 words: keysLanded=30 writes=4 [writer-studio-dirty-v1 90ch 0ms @+-7721ms] [writer-studio-last-sync 24ch 0ms @+-7721ms] [writer-studio-journal-entries 305816ch 0.6ms @+2104ms] [writer-studio-dirty-v1 96ch 0ms @+2105ms] longestStall=0ms
+{
+  "words": 50000,
+  "chars": 302801,
+  "wrappedCallsOutsideKeyWindows": 24,
+  "typedOk": false,
+  "keys": 20,
+  "control_uninstrumented": {
+    "handlers": 283.6,
+    "toFrame": 0.3,
+    "frameStyleLayoutPaint": 151.2,
+    "toFirstPaint": 435.8,
+    "toFirstPaint_p95": 480.5,
+    "selectionchange": 13.7,
+    "selectionchangeAfterPaint": "0/6",
+    "total": 435.8,
+    "total_p95": 480.5
+  },
+  "instrumented": {
+    "handlers": 302.8,
+    "toFrame": 0.2,
+    "frameStyleLayoutPaint": 166.1,
+    "toFirstPaint": 467.9,
+    "toFirstPaint_p95": 494.9,
+    "selectionchange": 14.3,
+    "selectionchangeAfterPaint": "0/20",
+    "total": 467.9,
+    "total_p95": 494.9
+  },
+  "wrappers_medianPerKey": {
+    "innerText_reads": 0,
+    "innerText_forcedLayout": 0,
+    "innerText_serialise": 0,
+    "rangeText_reads": 12,
+    "rangeText": 0.1,
+    "innerHTML_writes": 0,
+    "innerHTML_parse": 0
+  },
+  "cpu_meanPerKey": {
+    "(program): native, outside JS - style/layout/paint": 241.5,
+    "the rows (lineRows)": 128.1,
+    "idle": 51.2,
+    "React: component render": 30.1,
+    "redecorate: string build": 10.2,
+    "React: reconcile + commit": 8.6,
+    "211 rules": 1.3,
+    "GC": 1.2,
+    "other app JS": 0.5,
+    "Range text (wrapper)": 0.2,
+    "the 211 controller": 0.1
+  },
+  "layoutShape": {
+    "A_wholeReplace": {
+      "parse": 46.9,
+      "layout": 401.6
+    },
+    "Aprime_domPath": {
+      "layoutBeforeRead": 301.9,
+      "serialise": 23.1,
+      "parse": 47.9,
+      "layoutAfter": 418.7,
+      "total": 809.7
+    },
+    "B_singleBlock_oneChar": {
+      "layout": 259.2
+    },
+    "C_blockRows_oneChar": {
+      "layout": 189.8,
+      "textContentIdentical": true,
+      "rows": 2778,
+      "heightVsToday": "160574 vs 160574"
+    },
+    "D_blockRows_rowRewrite": {
+      "parse": 0.1,
+      "layout": 189.2
+    }
+  },
+  "aPrime_estimate": {
+    "decorationsToday": 2,
+    "innerTextReadsToday": 1,
+    "domPath": 809.7,
+    "decorateOnce": 5.1,
+    "readPlainOnce": 0,
+    "caretOffsetOnce": 0,
+    "react": 38.7,
+    "kept": 3,
+    "total": 856.5
+  },
+  "variantE": {
+    "blocks": 2778,
+    "lineHeight": 28.9,
+    "charsPerLine": 54,
+    "charsPerLineFallback": false,
+    "wrappedRowsMeasured": 2778,
+    "oneCharLayout_median": 7.5,
+    "renderedBlocksAroundCaret": 2778,
+    "trueTotalPx": 160574,
+    "estimatedTotalPx": 160617,
+    "driftPx": 43,
+    "driftPct": 0.03,
+    "scrollJumpPx": -1,
+    "estimatedTotalAfterScrollPx": 160616
+  },
+  "variantF": {
+    "lines": 2778,
+    "today": {
+      "heightPx": 160574,
+      "oneCharLayout_median": 175.4
+    },
+    "E_blockRows": {
+      "rows": 2778,
+      "textContentIdentical": true,
+      "innerTextIdentical": false,
+      "selectAllTextIdentical": true,
+      "heightPx": 160574,
+      "heightVsToday": 0,
+      "innerTextFirstDiff": {
+        "at": 109,
+        "variant": "\"own at all.\\n\\nThe writer \"",
+        "today": "\"own at all.\\nThe writer k\"",
+        "lengthVariant": 305663,
+        "lengthToday": 302886
+      },
+      "oneCharLayout_median": 90.7,
+      "rowRewrite": {
+        "parse": 0.1,
+        "layout": 89.6
+      }
+    },
+    "F_inlineBlockRows": {
+      "rows": 2778,
+      "textContentIdentical": true,
+      "innerTextIdentical": true,
+      "selectAllTextIdentical": true,
+      "heightPx": 160574,
+      "heightVsToday": 0,
+      "oneCharLayout_median": 97.1,
+      "rowRewrite": {
+        "parse": 0.1,
+        "layout": 98.1
+      }
+    }
+  },
+  "variantG": {
+    "lines": 2778,
+    "lineHeight": 28.9,
+    "charsPerLine": 54,
+    "wrappedRowsMeasured": 2778,
+    "trueTotalPx": 160574,
+    "F_containOnly_oneCharLayout": 110.1,
+    "G1_contentVisibility": {
+      "oneCharLayout_median": 16,
+      "rowsSkipped": 2720,
+      "rowsWithState": 2778,
+      "rows": 2778,
+      "estimatedTotalPx": 160617,
+      "driftPx": 43,
+      "driftPct": 0.03,
+      "scrollJumpPx": 0,
+      "textContentIdentical": false,
+      "innerTextIdentical": false,
+      "selectAllTextIdentical": false
+    },
+    "G2_inlineSize": {
+      "oneCharLayout_median": 99,
+      "heightVsTruth": 0,
+      "innerTextIdentical": false
+    },
+    "G3_strictHost": {
+      "oneCharLayout_median": 2.6
+    }
+  },
+  "keystrokeTrace": {
+    "keys": 25,
+    "traceEvents": 53010,
+    "perKeyMedianMs": {
+      "Layout": 195.1,
+      "UpdateLayoutTree": 4.2,
+      "PrePaint": 55.1,
+      "Paint": 23.2,
+      "Layerize": 0.7,
+      "ParseHTML": 0.1,
+      "FunctionCall": 262.2,
+      "EventDispatch": 776.1,
+      "RunMicrotasks": 0
+    },
+    "perKeyP95Ms": {
+      "Layout": 239.6,
+      "UpdateLayoutTree": 4.7,
+      "PrePaint": 62.5,
+      "Paint": 24.9,
+      "Layerize": 0.8,
+      "ParseHTML": 0.1,
+      "FunctionCall": 316.7,
+      "EventDispatch": 967.4,
+      "RunMicrotasks": 0
+    },
+    "layoutsPerKey_median": 2,
+    "dirtyObjects_median": 50,
+    "totalObjects_median": 86503,
+    "forcedLayoutsBy": {
+      "placeRowsCaret": 25
+    },
+    "sampleKey": [
+      {
+        "ms": 98.8,
+        "dirty": 20,
+        "total": 86503,
+        "partial": false,
+        "forcedBy": null
+      },
+      {
+        "ms": 93.5,
+        "dirty": 50,
+        "total": 86503,
+        "partial": false,
+        "forcedBy": "placeRowsCaret"
+      }
+    ]
+  },
+  "autosave": {
+    "editorFocused": true,
+    "keysLanded": 30,
+    "windowMs": 6000,
+    "observer": "longtask",
+    "writes": [
+      {
+        "msAfterLastKey": -7721,
+        "key": "writer-studio-dirty-v1",
+        "chars": 90,
+        "ms": 0
+      },
+      {
+        "msAfterLastKey": -7721,
+        "key": "writer-studio-last-sync",
+        "chars": 24,
+        "ms": 0
+      },
+      {
+        "msAfterLastKey": 2104,
+        "key": "writer-studio-journal-entries",
+        "chars": 305816,
+        "ms": 0.6
+      },
+      {
+        "msAfterLastKey": 2105,
+        "key": "writer-studio-dirty-v1",
+        "chars": 96,
+        "ms": 0
+      }
+    ],
+    "longestStallAfterLastKeyMs": 0,
+    "stallsAfterLastKey": [],
+    "longestStallDuringBurstMs": 432
+  }
+}
+
+TYPING LATENCY PROFILE written to docs/evidence/latency/profile.json
+
+TYPING LATENCY PROFILE: VALID - no zero measurement, no characters-per-line fallback, the autosave keys landed and wrote

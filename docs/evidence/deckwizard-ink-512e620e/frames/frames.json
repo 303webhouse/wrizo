@@ -1,0 +1,38 @@
+[
+  {
+    "frame": "arbor-B-deck-wizard-over-the-rail",
+    "file": "arbor-B-deck-wizard-over-the-rail.png",
+    "origin": "http://127.0.0.1:52274",
+    "theme": "plateau",
+    "bundle": "index-CQ7HXZyF.js",
+    "splashPresent": false,
+    "rect": null,
+    "selectedHandle": false,
+    "railCentreHit": "deck-wizard-backdrop",
+    "wizard": {
+      "parentIsBody": true,
+      "position": "fixed",
+      "zIndex": "220"
+    },
+    "pressed": true,
+    "open": true
+  },
+  {
+    "frame": "flux-B-deck-wizard-over-the-rail",
+    "file": "flux-B-deck-wizard-over-the-rail.png",
+    "origin": "http://127.0.0.1:52274",
+    "theme": "flux",
+    "bundle": "index-CQ7HXZyF.js",
+    "splashPresent": false,
+    "rect": null,
+    "selectedHandle": false,
+    "railCentreHit": "deck-wizard-backdrop",
+    "wizard": {
+      "parentIsBody": true,
+      "position": "fixed",
+      "zIndex": "220"
+    },
+    "pressed": true,
+    "open": true
+  }
+]

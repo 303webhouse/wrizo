@@ -43,6 +43,12 @@ const freshDraftPage = async (app) => {
   await sleep(400);
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
   await sleep(250);
+  // PHASE 1 S5 (fixture) - a NEW empty Draft opens with the typewriter ON in Arbor, which greys the Format group. Turn it OFF through the REAL toggle before Format is pressed,
+  // and fail a check (rather than die) if the toggle is missing or the state did not flip.
+  await app.evalJs(`(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]'); if (b && b.getAttribute('aria-pressed') === 'true') b.click(); })()`);
+  await sleep(250);
+  const typewriterAfterToggle = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`);
+  ok('fixture (Phase 1 S5): the typewriter is OFF (via the real toggle) before Format is pressed', typewriterAfterToggle === 'false', String(typewriterAfterToggle));
 };
 
 // A press that FAILS A CHECK instead of killing the file. Against a product

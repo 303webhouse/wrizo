@@ -36,7 +36,6 @@ const LIVE_CHROME = [
   '.wz-sliver-panel[data-open="true"]',
   '.wz-sliver-grip',
   '.mode-settings',
-  '.wz-ink-menu',
   '.desk-frame-corkboard',
 ];
 

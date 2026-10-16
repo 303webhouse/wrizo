@@ -173,10 +173,18 @@ await withHarness(async (app) => {
   // (superseded by Places); the ORIGINAL "...Move/Copy + Port-to-Board..."
   // combined check is PARKED (A4, quoted verbatim) in this file's own
   // PARKED section.
-  ok('B2 S4 successor of "S2: the Page category shows title, star (unstarred), Where-it-lives, tags, Move/Copy + Port-to-Board, and the quiet footer": the SAME facts, Move/Copy replaced by the Places panel\'s own presence',
-    pageFace.panelTitle === 'Page' && pageFace.title === 'AB3GEOMETRY' && pageFace.starPresent && pageFace.starredNow === 'false'
-      && pageFace.home === 'In the Journal' && pageFace.tagInput && pageFace.moveCopyGone && pageFace.port && pageFace.placesPresent
-      && pageFace.footer === 'Saved automatically — even if you never file it to a Drawer or the Shelf.',
+  // SUPERSEDED (item word-diet, Nick) — pageHomeJournal drops "In " whole
+  // ("In the Journal" -> "Journal"), and the saved-silently footer line
+  // RETIRES (REMOVE) rather than changing text. ORIGINAL claim parked verbatim:
+  // ok('B2 S4 successor of "S2: the Page category shows title, star (unstarred), Where-it-lives, tags, Move/Copy + Port-to-Board, and the quiet footer": the SAME facts, Move/Copy replaced by the Places panel\'s own presence',
+  //   pageFace.panelTitle === 'Page' && pageFace.title === 'AB3GEOMETRY' && pageFace.starPresent && pageFace.starredNow === 'false'
+  //     && pageFace.home === 'In the Journal' && pageFace.tagInput && pageFace.moveCopyGone && pageFace.port && pageFace.placesPresent
+  //     && pageFace.footer === 'Saved automatically — even if you never file it to a Drawer or the Shelf.',
+  //   JSON.stringify(pageFace));
+  ok('B2 S4 successor [word-diet successor]: the SAME facts — title, star (unstarred), Where-it-lives ("Journal", name not narration), tags, Move/Copy replaced by Places, and NO footer at all now (REMOVE)',
+    pageFace.panelTitle === 'Pages' && pageFace.title === 'AB3GEOMETRY' && pageFace.starPresent && pageFace.starredNow === 'false'
+      && pageFace.home === 'Journal' && pageFace.tagInput && pageFace.moveCopyGone && pageFace.port && pageFace.placesPresent
+      && !pageFace.footer,
     JSON.stringify(pageFace));
 
   // Star toggling from the Page face actually persists (S2 wires the star).
@@ -263,8 +271,15 @@ await withHarness(async (app) => {
     outsideDrawerNote: !!document.querySelector('body > *:not(.desk-frame) .journal-autosave-note, .desk-frame-stagecol .journal-autosave-note'),
     inPageFace: document.querySelector('.wz-pageface-footer')?.textContent ?? null,
   })`);
-  ok('S3/S2: the saved-silently line appears nowhere outside the Page panel when framed',
-    !footerOnlyInDrawer.outsideDrawerNote && footerOnlyInDrawer.inPageFace === 'Saved automatically — even if you never file it to a Drawer or the Shelf.',
+  // SUPERSEDED (item word-diet, Nick) — the saved-silently footer RETIRES
+  // whole (REMOVE); its premise — that it appears exactly once, inside the
+  // Page panel — no longer holds, since it appears NOWHERE now, panel
+  // included. ORIGINAL claim parked verbatim:
+  // ok('S3/S2: the saved-silently line appears nowhere outside the Page panel when framed',
+  //   !footerOnlyInDrawer.outsideDrawerNote && footerOnlyInDrawer.inPageFace === 'Saved automatically — even if you never file it to a Drawer or the Shelf.',
+  //   JSON.stringify(footerOnlyInDrawer));
+  ok('S3/S2 [word-diet successor]: the saved-silently line appears NOWHERE at all now (REMOVE) — not outside the Page panel, not inside it either',
+    !footerOnlyInDrawer.outsideDrawerNote && footerOnlyInDrawer.inPageFace === null,
     JSON.stringify(footerOnlyInDrawer));
 
   // === ab3.1 R1(b) (Fable review) — the brief's S3 named "JournalEntry's
@@ -301,7 +316,12 @@ await withHarness(async (app) => {
 
   await openPageCategory(app);
   const projectHome = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  ok('S4/S2: the Page category\'s Where-it-lives names the project by title (not the Journal)', projectHome?.startsWith('In ') && projectHome !== 'In the Journal', projectHome);
+  // SUPERSEDED (item word-diet, Nick) — pageHomeProject drops "In " whole
+  // (bare "{drawer name}"); this fixture's project is never titled (F4's
+  // "no title required" door), so pageHome.ts's own fallback applies.
+  // ORIGINAL claim parked verbatim:
+  // ok('S4/S2: the Page category\'s Where-it-lives names the project by title (not the Journal)', projectHome?.startsWith('In ') && projectHome !== 'In the Journal', projectHome);
+  ok('S4/S2 [word-diet successor]: the Page category\'s Where-it-lives names the project by bare title ("Untitled" — not the Journal)', projectHome === 'Untitled', projectHome);
 
   // B1 park sweep — the retired Journal LIST's own row-count read is
   // PARKED below (A4, quoted verbatim); this is its live successor,
@@ -356,7 +376,10 @@ await withHarness(async (app) => {
 
   await openPageCategory(app);
   const looseHomeText = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  ok('S4/DoD: the loose page\'s Page category text reads exactly "Loose — belongs nowhere yet"', looseHomeText === 'Loose — belongs nowhere yet', looseHomeText);
+  // SUPERSEDED (item word-diet, Nick) — pageHomeLoose's text itself changed,
+  // "Loose — belongs nowhere yet" -> "Unfiled"; the ORIGINAL claim parked verbatim:
+  // ok('S4/DoD: the loose page\'s Page category text reads exactly "Loose — belongs nowhere yet"', looseHomeText === 'Loose — belongs nowhere yet', looseHomeText);
+  ok('S4/DoD [word-diet successor]: the loose page\'s Page category text reads exactly "Unfiled"', looseHomeText === 'Unfiled', looseHomeText);
 
   // Anti-solicitation: no file-it-first prompt anywhere reachable from a
   // loose page (PageEditor.tsx carries no such prompt at all).
@@ -420,8 +443,14 @@ await withHarness(async (app) => {
     home: document.querySelector('.wz-pageface-home-label')?.textContent,
     memberships: [...document.querySelectorAll('.wz-pageface-membership')].map(el => el.textContent),
   })`);
-  ok('B2 S7 successor of "S5/S2: Where-it-lives tells BOTH truths — homed in the project, Also in the Journal.": the pinned law means dual membership no longer happens — homed in the project, NO "Also in the Journal." line (origin still \'journal\', per the check above — provenance stays, membership doesn\'t)',
-    bothTruths.home?.startsWith('In ') && bothTruths.home !== 'In the Journal' && !bothTruths.memberships.includes('Also in the Journal.'),
+  // SUPERSEDED (item word-diet, Nick) — pageHomeProject drops "In " whole;
+  // this fixture filed the page to a drawer literally named "AB3 Drawer".
+  // ORIGINAL claim parked verbatim:
+  // ok('B2 S7 successor of "S5/S2: Where-it-lives tells BOTH truths — homed in the project, Also in the Journal.": the pinned law means dual membership no longer happens — homed in the project, NO "Also in the Journal." line (origin still \'journal\', per the check above — provenance stays, membership doesn\'t)',
+  //   bothTruths.home?.startsWith('In ') && bothTruths.home !== 'In the Journal' && !bothTruths.memberships.includes('Also in the Journal.'),
+  //   JSON.stringify(bothTruths));
+  ok('B2 S7 successor [word-diet successor]: Where-it-lives names the drawer bare ("AB3 Drawer", not "In the Journal") and NO "Also in the Journal." line (dual membership no longer happens)',
+    bothTruths.home === 'AB3 Drawer' && !bothTruths.memberships.includes('Also in the Journal.'),
     JSON.stringify(bothTruths));
 
   // The Places panel's own Home zone reflects this too: Journal unchecks

@@ -1,0 +1,23 @@
+STAMP: tree=e40d6979 bundle=index-DAXWgVL4.js/664941b
+default c00: CLEAN same stamp
+default c01: NOT CLEAN; non-launch-crash failures=2
+RED (real) at default c01 — continuing to collect all reds
+default c02: CLEAN same stamp
+default c03: CLEAN same stamp
+default c04: CLEAN same stamp
+STAMP MISMATCH at default c05: [] vs [tree=e40d6979 bundle=index-DAXWgVL4.js/664941b]
+STOP: stamp mismatch
+RESUME at default c04 (c04 was VOID: a foreign browser appeared mid-run; c05 REFUSED for the same); runner now treats VOID/REFUSED as not-a-verdict
+default c04: CLEAN same stamp (verified not VOID)
+default c05: CLEAN same stamp (verified not VOID)
+default c06: CLEAN same stamp (verified not VOID)
+DEFAULT LEG COMPLETE
+parked c00: CLEAN same stamp (verified not VOID)
+parked c01: NOT CLEAN; non-launch-crash failures=2
+RED (real) at parked c01 - continuing to collect all reds
+parked c02: CLEAN same stamp (verified not VOID)
+parked c03: CLEAN same stamp (verified not VOID)
+parked c04: CLEAN same stamp (verified not VOID)
+parked c05: CLEAN same stamp (verified not VOID)
+parked c06: CLEAN same stamp (verified not VOID)
+PAIR COMPLETE

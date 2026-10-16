@@ -1,0 +1,10 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+const src = process.argv[2], out = process.argv[3];
+let s = readFileSync(src, 'utf8');
+s = s.replace("from '../runtime-verify.mjs'", "from 'file:///C:/Users/nickh/writer-studio/.claude/worktrees/sb7/apps/desktop/scripts/runtime-verify.mjs'");
+const a = "const probeLog = await app.evalJs('window.wrizoThinScrollbar.probe.stop(); window.wrizoThinScrollbar.probe.read()');";
+if (!s.includes(a)) throw new Error('anchor missing');
+const b = "const shiftsLog = await app.evalJs('JSON.stringify(window.wrizoThinScrollbar.probe.readShifts ? window.wrizoThinScrollbar.probe.readShifts() : \"NO readShifts\")');\n  const probeLog = await app.evalJs('window.wrizoThinScrollbar.probe.stop(); window.wrizoThinScrollbar.probe.read()');\n  ok('S4 (readShifts, informational): the layout-shift log over the first 200ms of the rest window', true, String(shiftsLog));";
+s = s.replace(a, b);
+writeFileSync(out, s);
+console.log('ok', s.includes('readShifts, informational'), s.includes('sb7/apps/desktop/scripts/runtime-verify'));

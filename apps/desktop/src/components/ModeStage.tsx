@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
+import { DrawerNote } from './DrawerNote';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
@@ -422,7 +424,10 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
               own stage, a sibling of this whole ModeStage). Below the gate
               this is unchanged. */}
           {!framed && (
-          <div className="mode-bar mode-dissolve" role="toolbar" aria-label={rail.tools === 'pen' ? 'Pen' : 'Format'}>
+          /* PHASE 1 (S5 follow-up) - the narrow-screen format bar follows the drawer's FORMAT rule: while the typewriter is actually RUNNING here (typewriterOn: Draft/Free Write and the
+              setting) every format button is disabled and greyed, with the same lexicon tooltip. Revise runs no typewriter, so its bar stays usable. */
+          <div className="mode-bar mode-dissolve" role="toolbar" aria-label={rail.tools === 'pen' ? 'Pen' : 'Format'}
+            title={rail.tools === 'format' && typewriterOn ? deskT('formatLockedByTypewriter') : undefined}>
             {rail.tools === 'pen' ? (
               <>
                 {/* ITEM 130 (2026-09-09) — 'Pen', from the lexicon.
@@ -459,16 +464,16 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
             ) : (
               <>
                 <span className="mode-tlabel">format</span>
-                <button type="button" className="mode-tbtn" title="Bold" onClick={() => exec('bold')}><b>B</b></button>
-                <button type="button" className="mode-tbtn" title="Italic" onClick={() => exec('italic')}><i>I</i></button>
-                <button type="button" className="mode-tbtn" title="Underline" onClick={() => exec('underline')}><u>U</u></button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn" title="Bold" onClick={() => exec('bold')}><b>B</b></button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn" title="Italic" onClick={() => exec('italic')}><i>I</i></button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn" title="Underline" onClick={() => exec('underline')}><u>U</u></button>
                 <span className="mode-tdiv" />
-                <button type="button" className="mode-tbtn" title="Heading — coming soon">H</button>
-                <button type="button" className="mode-tbtn" title="Quote — coming soon">&ldquo;</button>
-                <button type="button" className="mode-tbtn" title="Bulleted list" onClick={() => exec('insertUnorderedList')}>&bull;</button>
-                <button type="button" className="mode-tbtn" title="Outdent" onClick={() => exec('outdent')}>&#8676;</button>
-                <button type="button" className="mode-tbtn" title="Indent" onClick={() => exec('indent')}>&#8677;</button>
-                <button type="button" className="mode-tbtn mode-tmore" title="More — coming soon">⋯ more</button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn" title="Heading — coming soon">H</button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn" title="Quote — coming soon">&ldquo;</button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn" title="Bulleted list" onClick={() => exec('insertUnorderedList')}>&bull;</button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn" title="Outdent" onClick={() => exec('outdent')}>&#8676;</button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn" title="Indent" onClick={() => exec('indent')}>&#8677;</button>
+                <button type="button" disabled={typewriterOn} className="mode-tbtn mode-tmore" title="More — coming soon">⋯ more</button>
               </>
             )}
           </div>
@@ -667,7 +672,10 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
           onPick={v => setWritingSettings({ progressStyle: v as ProgressStyle })}
         />
       )}
-      <Seg label="Recede depth" value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
+      {/* ITEM word-diet (Nick, Oct 13) — the standing hint below retires;
+          its explanation moves here, behind a "?" beside this row's own
+          label, one plain sentence (recedeHint, deskLexicon.ts). */}
+      <Seg label={<>Recede depth <DrawerNote label="About Recede depth">{deskLex('recedeHint')}</DrawerNote></>} value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
       <Seg label="Timer" value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
       {/* FX2 S2 — routes through setTypewriterExplicit, not the bare
           setter: the gear is the OTHER hand-click surface (beside the
@@ -675,7 +683,6 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
           session-explicit flag so neither can be silently overridden by a
           later Draft-open seed. */}
       {typewriterAvailable && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
-      <div className="mode-settings-hint">Type to dissolve the chrome. Stop, and after a pause it returns slowly. Reach an edge or press Esc to summon it back.</div>
     </div>
   );
 }
@@ -760,14 +767,19 @@ export function GearIcon() {
 }
 
 // `soon` lists options shown as stand-ins for unbuilt capability: dimmed, inert, titled `soonTitle`.
-export function Seg({ label, value, opts, onPick, soon, soonTitle }: { label: string; value: string; opts: [string, string][]; onPick: (v: string) => void; soon?: string[]; soonTitle?: string }) {
+// PHASE 1 (S4): `disabled` greys the whole row and makes it unusable (real disabled buttons: unfocusable, unclickable, announced as unavailable). The row's
+// value is untouched - a greyed row still SHOWS what it will do when its mode is back on.
+// ITEM word-diet — `label` widened from `string` to `ReactNode` so a caller
+// can attach a DrawerNote "?" beside it; every existing caller passes a
+// plain string (still a valid ReactNode).
+export function Seg({ label, value, opts, onPick, soon, soonTitle, disabled }: { label: ReactNode; value: string; opts: [string, string][]; onPick: (v: string) => void; soon?: string[]; soonTitle?: string; disabled?: boolean }) {
   return (
-    <div className="mode-crow">
+    <div className="mode-crow" data-disabled={disabled ? 'true' : undefined}>
       <span>{label}</span>
       <div className="mode-seg">
         {opts.map(([v, txt]) => soon?.includes(v)
           ? <button key={v} type="button" className="mode-seg-soon" aria-disabled="true" title={soonTitle}>{txt}</button>
-          : <button key={v} type="button" className={value === v ? 'on' : ''} onClick={() => onPick(v)}>{txt}</button>
+          : <button key={v} type="button" className={value === v ? 'on' : ''} disabled={disabled} onClick={() => onPick(v)}>{txt}</button>
         )}
       </div>
     </div>

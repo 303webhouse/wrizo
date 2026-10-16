@@ -1,0 +1,17 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 1 harness browser(s), 1 owner(s) — 23912:DEAD/4-4s | floor=300s | targets=0
+REAPER: 1 browser(s) of 1 dead-reading owner(s) are YOUNGER than the 300s floor and are SPARED — 23912
+  young, owner-unresolved: SUSPECT A LIVE RUN WITH DETACHED PARENTAGE. On Edge a browser 30s
+  old has been observed reporting its owner GONE while a foreign suite was actively running it,
+  so a dead-owner reading alone is NECESSARY AND NOT SUFFICIENT. If these are genuinely corpses
+  they become reapable at 300s; until then this run refuses rather than guesses.
+  spare browserPid=6904 ownerNodePid=23912 age=4s (floor 300s)
+REAPER: nothing to reap — 1 browser(s) belong to LIVE owner(s)  and are untouched.
+SUITE REFUSED: 1 harness browser process(es) on this machine were not spawned by this runner.
+  browserPid=6904 ownerNodePid=23912
+  Another lane is mid-suite, or a killed run left orphans. Either way this run would be
+  measuring a contended machine: browser starvation presents as "CDP page target never
+  appeared" or a silent hang, which is indistinguishable from a flaky test and is not one.
+  Wait for the quiet window, or pass --ignore-foreign to run anyway (the result is then
+  stamped CONTAMINATED and must not be cited as a clean sweep).
+CHUNK 05 EXIT 2

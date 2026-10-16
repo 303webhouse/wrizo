@@ -1,0 +1,55 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PASS  [plateau/light] (premise) the board is in theme=plateau page=light  [{"theme":"plateau","page":"light"}]
+PASS  [plateau/light] C1: a card's own body text carries against its stock (computed 14.76:1, >= 4.5)  [{"fg":"rgb(43, 32, 20)","bg":"rgb(251, 246, 234)","ratio":14.76}]
+PASS  [plateau/light] (premise) a real double-click opens the card's pop-up
+PASS  [plateau/light] C2: the card's own editor text carries against the pop-up's stock (computed 14.76:1, >= 4.5)  [{"fg":"rgb(43, 32, 20)","bg":"rgb(251, 246, 234)","ratio":14.76}]
+PASS  [plateau/light] C3 (pre-existing, not this ticket's fix): the eyebrow label's own baseline contrast holds (computed 3.77:1, >= 3.5)  [{"fg":"rgb(138, 124, 104)","bg":"rgb(251, 246, 234)","ratio":3.77}]
+PASS  [plateau/light] C3 (pre-existing, not this ticket's fix): the close-X's own baseline contrast holds (computed 3.77:1, >= 3.5)  [{"fg":"rgb(138, 124, 104)","bg":"rgb(251, 246, 234)","ratio":3.77}]
+PASS  [plateau/light] (premise) C5: the deck wizard opens over the board  [{"wOpen":true}]
+PASS  [plateau/light] C5: the deck wizard's a deck title carries against its cream sheet (computed 14.76:1, >= 4.5)  [{"fg":"rgb(43, 32, 20)","bg":"rgb(251, 246, 234)","ratio":14.76}]
+FAIL  [plateau/light] C5: the deck wizard's a room heading carries against its cream sheet (computed 3.77:1, >= 4.5)  [{"fg":"rgb(138, 124, 104)","bg":"rgb(251, 246, 234)","ratio":3.77}]
+FAIL  [plateau/light] C5: the deck wizard's the eyebrow carries against its cream sheet (computed 3.77:1, >= 4.5)  [{"fg":"rgb(138, 124, 104)","bg":"rgb(251, 246, 234)","ratio":3.77}]
+FAIL  [plateau/light] C5: the deck wizard's the close X carries against its cream sheet (computed 2.14:1, >= 4.5)  [{"fg":"rgb(181, 169, 152)","bg":"rgb(251, 246, 234)","ratio":2.14}]
+FAIL  [plateau/light] C5: the deck wizard's Cancel carries against its cream sheet (computed 2.14:1, >= 4.5)  [{"fg":"rgb(181, 169, 152)","bg":"rgb(251, 246, 234)","ratio":2.14}]
+PASS  [plateau/light] (premise) C5: a deck's question step opens (character-study)
+PASS  [plateau/light] C5: the deck wizard's question carries against its cream sheet (computed 14.76:1, >= 4.5)  [{"fg":"rgb(43, 32, 20)","bg":"rgb(251, 246, 234)","ratio":14.76}]
+PASS  [plateau/light] C5: the deck wizard's first option carries against its cream sheet (computed 14.76:1, >= 4.5)  [{"fg":"rgb(43, 32, 20)","bg":"rgb(251, 246, 234)","ratio":14.76}]
+PASS  [flux/light] (premise) the board is in theme=flux page=light  [{"theme":"flux","page":"light"}]
+PASS  [flux/light] C1: a card's own body text carries against its stock (computed 15.1:1, >= 4.5)  [{"fg":"rgb(20, 35, 31)","bg":"rgb(251, 246, 234)","ratio":15.1}]
+PASS  [flux/light] (premise) a real double-click opens the card's pop-up
+PASS  [flux/light] C2: the card's own editor text carries against the pop-up's stock (computed 15.1:1, >= 4.5)  [{"fg":"rgb(20, 35, 31)","bg":"rgb(251, 246, 234)","ratio":15.1}]
+PASS  [flux/light] C3 (pre-existing, not this ticket's fix): the eyebrow label's own baseline contrast holds (computed 4.43:1, >= 3.5)  [{"fg":"rgb(11, 124, 158)","bg":"rgb(251, 246, 234)","ratio":4.43}]
+PASS  [flux/light] C3 (pre-existing, not this ticket's fix): the close-X's own baseline contrast holds (computed 4.43:1, >= 3.5)  [{"fg":"rgb(11, 124, 158)","bg":"rgb(251, 246, 234)","ratio":4.43}]
+PASS  [flux/light] (premise) C5: the deck wizard opens over the board  [{"wOpen":true}]
+PASS  [flux/light] C5: the deck wizard's a deck title carries against its cream sheet (computed 15.1:1, >= 4.5)  [{"fg":"rgb(20, 35, 31)","bg":"rgb(251, 246, 234)","ratio":15.1}]
+FAIL  [flux/light] C5: the deck wizard's a room heading carries against its cream sheet (computed 4.43:1, >= 4.5)  [{"fg":"rgb(11, 124, 158)","bg":"rgb(251, 246, 234)","ratio":4.43}]
+FAIL  [flux/light] C5: the deck wizard's the eyebrow carries against its cream sheet (computed 4.43:1, >= 4.5)  [{"fg":"rgb(11, 124, 158)","bg":"rgb(251, 246, 234)","ratio":4.43}]
+FAIL  [flux/light] C5: the deck wizard's the close X carries against its cream sheet (computed 2.1:1, >= 4.5)  [{"fg":"rgb(143, 180, 172)","bg":"rgb(251, 246, 234)","ratio":2.1}]
+FAIL  [flux/light] C5: the deck wizard's Cancel carries against its cream sheet (computed 2.1:1, >= 4.5)  [{"fg":"rgb(143, 180, 172)","bg":"rgb(251, 246, 234)","ratio":2.1}]
+PASS  [flux/light] (premise) C5: a deck's question step opens (character-study)
+PASS  [flux/light] C5: the deck wizard's question carries against its cream sheet (computed 15.1:1, >= 4.5)  [{"fg":"rgb(20, 35, 31)","bg":"rgb(251, 246, 234)","ratio":15.1}]
+PASS  [flux/light] C5: the deck wizard's first option carries against its cream sheet (computed 15.1:1, >= 4.5)  [{"fg":"rgb(20, 35, 31)","bg":"rgb(251, 246, 234)","ratio":15.1}]
+PASS  [flux/dark] (premise) the board is in theme=flux page=dark  [{"theme":"flux","page":"dark"}]
+PASS  [flux/dark] C1: a card's own body text carries against its stock (computed 15.1:1, >= 4.5)  [{"fg":"rgb(20, 35, 31)","bg":"rgb(251, 246, 234)","ratio":15.1}]
+PASS  [flux/dark] (premise) a real double-click opens the card's pop-up
+PASS  [flux/dark] C2: the card's own editor text carries against the pop-up's stock (computed 15.1:1, >= 4.5)  [{"fg":"rgb(20, 35, 31)","bg":"rgb(251, 246, 234)","ratio":15.1}]
+PASS  [flux/dark] C3: the pop-up's eyebrow label carries against its stock (computed 5.63:1, >= 4.5)  [{"fg":"rgb(10, 107, 134)","bg":"rgb(251, 246, 234)","ratio":5.63}]
+PASS  [flux/dark] C3: the pop-up's close-X carries against its stock (computed 5.63:1, >= 4.5)  [{"fg":"rgb(10, 107, 134)","bg":"rgb(251, 246, 234)","ratio":5.63}]
+PASS  [flux/dark] (premise) C5: the deck wizard opens over the board  [{"wOpen":true}]
+FAIL  [flux/dark] C5: the deck wizard's a deck title carries against its cream sheet (computed 1.08:1, >= 4.5)  [{"fg":"rgb(227, 241, 236)","bg":"rgb(251, 246, 234)","ratio":1.08}]
+FAIL  [flux/dark] C5: the deck wizard's a room heading carries against its cream sheet (computed 1.66:1, >= 4.5)  [{"fg":"rgb(87, 208, 245)","bg":"rgb(251, 246, 234)","ratio":1.66}]
+FAIL  [flux/dark] C5: the deck wizard's the eyebrow carries against its cream sheet (computed 1.66:1, >= 4.5)  [{"fg":"rgb(87, 208, 245)","bg":"rgb(251, 246, 234)","ratio":1.66}]
+FAIL  [flux/dark] C5: the deck wizard's the close X carries against its cream sheet (computed 2.1:1, >= 4.5)  [{"fg":"rgb(143, 180, 172)","bg":"rgb(251, 246, 234)","ratio":2.1}]
+FAIL  [flux/dark] C5: the deck wizard's Cancel carries against its cream sheet (computed 2.1:1, >= 4.5)  [{"fg":"rgb(143, 180, 172)","bg":"rgb(251, 246, 234)","ratio":2.1}]
+PASS  [flux/dark] (premise) C5: a deck's question step opens (character-study)
+FAIL  [flux/dark] C5: the deck wizard's question carries against its cream sheet (computed 1.08:1, >= 4.5)  [{"fg":"rgb(227, 241, 236)","bg":"rgb(251, 246, 234)","ratio":1.08}]
+FAIL  [flux/dark] C5: the deck wizard's first option carries against its cream sheet (computed 1.08:1, >= 4.5)  [{"fg":"rgb(227, 241, 236)","bg":"rgb(251, 246, 234)","ratio":1.08}]
+PASS  [plateau/light] C4: --ink-on-card aliases --ink-on-paper (#2B2014 vs #2B2014)  [{"card":"#2B2014","cardLow":"#8A7C68","paper":"#2B2014","paperLow":"#8A7C68"}]
+PASS  [plateau/light] C4: --ink-on-card-low aliases --ink-on-paper-low (#8A7C68 vs #8A7C68)  [{"card":"#2B2014","cardLow":"#8A7C68","paper":"#2B2014","paperLow":"#8A7C68"}]
+PASS  [flux/light] C4: --ink-on-card aliases --ink-on-paper (#14231F vs #14231F)  [{"card":"#14231F","cardLow":"#0B7C9E","paper":"#14231F","paperLow":"#0B7C9E"}]
+PASS  [flux/light] C4: --ink-on-card-low aliases --ink-on-paper-low (#0B7C9E vs #0B7C9E)  [{"card":"#14231F","cardLow":"#0B7C9E","paper":"#14231F","paperLow":"#0B7C9E"}]
+PASS  [flux/dark] C4: --ink-on-card diverges from --ink-on-paper (#14231F vs #E3F1EC)  [{"card":"#14231F","cardLow":"#0A6B86","paper":"#E3F1EC","paperLow":"#57D0F5"}]
+PASS  [flux/dark] C4: --ink-on-card-low diverges from --ink-on-paper-low (#0A6B86 vs #57D0F5)  [{"card":"#14231F","cardLow":"#0A6B86","paper":"#E3F1EC","paperLow":"#57D0F5"}]
+
+FLUX-CARD-INK VERIFY: FAIL - 15/51 failed

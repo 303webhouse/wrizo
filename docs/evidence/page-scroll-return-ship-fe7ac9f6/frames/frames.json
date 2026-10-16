@@ -1,0 +1,198 @@
+[
+  {
+    "frame": "arbor-T1a-page-scrolled-caret-placed",
+    "file": "arbor-T1a-page-scrolled-caret-placed.png",
+    "hash": "#/page/psr-page",
+    "theme": "plateau",
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "bundle": "index-P8YLqTCk.js",
+    "splashPresent": false,
+    "scrollTop": 520,
+    "caretOffset": 7,
+    "wayBackSlot": null
+  },
+  {
+    "frame": "arbor-T1b-on-the-plan",
+    "file": "arbor-T1b-on-the-plan.png",
+    "hash": "#/page/mv8z0rggh3puus1w5",
+    "theme": "plateau",
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "bundle": "index-P8YLqTCk.js",
+    "splashPresent": false,
+    "scrollTop": null,
+    "caretOffset": null,
+    "wayBackSlot": {
+      "entryId": "psr-page",
+      "route": "/page/psr-page",
+      "scrollY": 520,
+      "caret": 7,
+      "mode": "drafting",
+      "capturedAt": 1792034414088
+    }
+  },
+  {
+    "frame": "arbor-T1c-back-on-the-page",
+    "file": "arbor-T1c-back-on-the-page.png",
+    "hash": "#/page/psr-page",
+    "theme": "plateau",
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "bundle": "index-P8YLqTCk.js",
+    "splashPresent": false,
+    "scrollTop": 520,
+    "caretOffset": 7,
+    "wayBackSlot": null,
+    "before": {
+      "scrollTop": 520,
+      "caretOffset": 7
+    },
+    "sameScrollWithin3px": true,
+    "sameCaret": true
+  },
+  {
+    "frame": "arbor-T2a-page-scrolled-caret-placed",
+    "file": "arbor-T2a-page-scrolled-caret-placed.png",
+    "hash": "#/page/psr-page",
+    "theme": "plateau",
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "bundle": "index-P8YLqTCk.js",
+    "splashPresent": false,
+    "scrollTop": 260,
+    "caretOffset": 7,
+    "wayBackSlot": null
+  },
+  {
+    "frame": "arbor-T2b-on-the-plan",
+    "file": "arbor-T2b-on-the-plan.png",
+    "hash": "#/page/mv8z0rggh3puus1w5",
+    "theme": "plateau",
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "bundle": "index-P8YLqTCk.js",
+    "splashPresent": false,
+    "scrollTop": null,
+    "caretOffset": null,
+    "wayBackSlot": {
+      "entryId": "psr-page",
+      "route": "/page/psr-page",
+      "scrollY": 260,
+      "caret": 7,
+      "mode": "drafting",
+      "capturedAt": 1792034416977
+    }
+  },
+  {
+    "frame": "arbor-T2c-back-on-the-page",
+    "file": "arbor-T2c-back-on-the-page.png",
+    "hash": "#/page/psr-page",
+    "theme": "plateau",
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "bundle": "index-P8YLqTCk.js",
+    "splashPresent": false,
+    "scrollTop": 260,
+    "caretOffset": 7,
+    "wayBackSlot": null,
+    "before": {
+      "scrollTop": 260,
+      "caretOffset": 7
+    },
+    "sameScrollWithin3px": true,
+    "sameCaret": true
+  },
+  {
+    "frame": "flux-T1a-page-scrolled-caret-placed",
+    "file": "flux-T1a-page-scrolled-caret-placed.png",
+    "hash": "#/page/psr-page",
+    "theme": "flux",
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "bundle": "index-P8YLqTCk.js",
+    "splashPresent": false,
+    "scrollTop": 520,
+    "caretOffset": 7,
+    "wayBackSlot": null
+  },
+  {
+    "frame": "flux-T1b-on-the-plan",
+    "file": "flux-T1b-on-the-plan.png",
+    "hash": "#/page/mv8z0xncs9rn6vo43",
+    "theme": "flux",
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "bundle": "index-P8YLqTCk.js",
+    "splashPresent": false,
+    "scrollTop": null,
+    "caretOffset": null,
+    "wayBackSlot": {
+      "entryId": "psr-page",
+      "route": "/page/psr-page",
+      "scrollY": 520,
+      "caret": 7,
+      "mode": "drafting",
+      "capturedAt": 1792034422109
+    }
+  },
+  {
+    "frame": "flux-T1c-back-on-the-page",
+    "file": "flux-T1c-back-on-the-page.png",
+    "hash": "#/page/psr-page",
+    "theme": "flux",
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "bundle": "index-P8YLqTCk.js",
+    "splashPresent": false,
+    "scrollTop": 520,
+    "caretOffset": 7,
+    "wayBackSlot": null,
+    "before": {
+      "scrollTop": 520,
+      "caretOffset": 7
+    },
+    "sameScrollWithin3px": true,
+    "sameCaret": true
+  },
+  {
+    "frame": "flux-T2a-page-scrolled-caret-placed",
+    "file": "flux-T2a-page-scrolled-caret-placed.png",
+    "hash": "#/page/psr-page",
+    "theme": "flux",
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "bundle": "index-P8YLqTCk.js",
+    "splashPresent": false,
+    "scrollTop": 260,
+    "caretOffset": 7,
+    "wayBackSlot": null
+  },
+  {
+    "frame": "flux-T2b-on-the-plan",
+    "file": "flux-T2b-on-the-plan.png",
+    "hash": "#/page/mv8z0xncs9rn6vo43",
+    "theme": "flux",
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "bundle": "index-P8YLqTCk.js",
+    "splashPresent": false,
+    "scrollTop": null,
+    "caretOffset": null,
+    "wayBackSlot": {
+      "entryId": "psr-page",
+      "route": "/page/psr-page",
+      "scrollY": 260,
+      "caret": 7,
+      "mode": "drafting",
+      "capturedAt": 1792034425082
+    }
+  },
+  {
+    "frame": "flux-T2c-back-on-the-page",
+    "file": "flux-T2c-back-on-the-page.png",
+    "hash": "#/page/psr-page",
+    "theme": "flux",
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "bundle": "index-P8YLqTCk.js",
+    "splashPresent": false,
+    "scrollTop": 260,
+    "caretOffset": 7,
+    "wayBackSlot": null,
+    "before": {
+      "scrollTop": 260,
+      "caretOffset": 7
+    },
+    "sameScrollWithin3px": true,
+    "sameCaret": true
+  }
+]

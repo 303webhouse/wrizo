@@ -1,0 +1,75 @@
+{
+  "bundle": "index-D8e5lfDN.js",
+  "rows": [
+    {
+      "scenario": "A: typewriter ON at open, caret placed after layout settled",
+      "overlay": {
+        "left": 723,
+        "top": 384,
+        "height": 19
+      },
+      "real": {
+        "left": 723,
+        "top": 384,
+        "height": 19
+      },
+      "typewriter": "true",
+      "dy": 0,
+      "selectionInEditor": true,
+      "theme": "flux"
+    },
+    {
+      "scenario": "B0: typewriter OFF, caret at end",
+      "overlay": {
+        "left": 723,
+        "top": 201,
+        "height": 19
+      },
+      "real": {
+        "left": 723,
+        "top": 201,
+        "height": 19
+      },
+      "typewriter": "false",
+      "dy": 0,
+      "selectionInEditor": true,
+      "theme": "flux"
+    },
+    {
+      "scenario": "B: typewriter switched ON (phase1-toggle) with NO selection change",
+      "overlay": {
+        "left": 723,
+        "top": 201,
+        "height": 19
+      },
+      "real": {
+        "left": 723,
+        "top": 384,
+        "height": 19
+      },
+      "typewriter": "true",
+      "dy": -183,
+      "selectionInEditor": true,
+      "theme": "flux"
+    },
+    {
+      "scenario": "C: ...then a selectionchange (caret re-placed at the end)",
+      "overlay": {
+        "left": 723,
+        "top": 384,
+        "height": 19
+      },
+      "real": {
+        "left": 723,
+        "top": 384,
+        "height": 19
+      },
+      "typewriter": "true",
+      "dy": 0,
+      "selectionInEditor": true,
+      "theme": "flux"
+    }
+  ]
+}
+
+FLUX-CARET: STALE after the layout shift (overlay -183px from the real caret); a selectionchange re-draws it correctly (staleness, not a wrong formula) - index-D8e5lfDN.js

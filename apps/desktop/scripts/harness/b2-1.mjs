@@ -184,11 +184,22 @@ await withHarness(async (app) => {
       && lex.journalRouteEmptyDrawers === 'No Drawers yet.'
       && lex.journalRoutePromoteDrawer === 'Promote to a new Drawer',
     JSON.stringify(lex));
-  ok('S6a: every PRE-EXISTING deskLexicon term this fold\'s word swap changes now reads "drawer", never "project" — b1.mjs/b2.mjs\'s own PARKED sections hold the quoted-verbatim OLD values',
+  // SUPERSEDED (item word-diet, Nick) — boardHomeLabelJournal/Trash/Shelf
+  // shorten to the bare place name ("Journal"/"Trash"/"Shelf"); see the
+  // successor just below. cascadePlanNoProject is a word-diet MOCKUP row
+  // (stays untouched for now), so that conjunct is unaffected and carries
+  // over unchanged.
+  // ok('S6a: every PRE-EXISTING deskLexicon term this fold\'s word swap changes now reads "drawer", never "project" — b1.mjs/b2.mjs\'s own PARKED sections hold the quoted-verbatim OLD values',
+  //   lex.cascadePlanNoProject === 'File this page to a drawer first to plan around it.'
+  //     && lex.boardHomeLabelJournal === 'The Journal Board — has no drawer home'
+  //     && lex.boardHomeLabelTrash === 'The Trash Board — has no drawer home'
+  //     && lex.boardHomeLabelShelf === 'The Shelf Board — has no drawer home',
+  //   JSON.stringify(lex));
+  ok('S6a [word-diet successor]: cascadePlanNoProject (MOCKUP, unchanged) still reads "drawer", and boardHomeLabelJournal/Trash/Shelf are now the bare place name',
     lex.cascadePlanNoProject === 'File this page to a drawer first to plan around it.'
-      && lex.boardHomeLabelJournal === 'The Journal Board — has no drawer home'
-      && lex.boardHomeLabelTrash === 'The Trash Board — has no drawer home'
-      && lex.boardHomeLabelShelf === 'The Shelf Board — has no drawer home',
+      && lex.boardHomeLabelJournal === 'Journal'
+      && lex.boardHomeLabelTrash === 'Trash'
+      && lex.boardHomeLabelShelf === 'Shelf',
     JSON.stringify(lex));
 
   // ==========================================================================
@@ -203,8 +214,12 @@ await withHarness(async (app) => {
   await openPageCategory(app);
   await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'Page face (Journal board)' });
   const journalHomeLabel = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  ok('S6b live successor (was b1.mjs\'s "no project home" check): the Journal Board\'s own Page face now reads "has no drawer home", never "In the Journal" (self-referential)',
-    journalHomeLabel === 'The Journal Board — has no drawer home', String(journalHomeLabel));
+  // SUPERSEDED (item word-diet, Nick) — boardHomeLabelJournal shortens to
+  // the bare place name.
+  // ok('S6b live successor (was b1.mjs\'s "no project home" check): the Journal Board\'s own Page face now reads "has no drawer home", never "In the Journal" (self-referential)',
+  //   journalHomeLabel === 'The Journal Board — has no drawer home', String(journalHomeLabel));
+  ok('S6b [word-diet successor]: the Journal Board\'s own Page face now reads the bare place name, "Journal"',
+    journalHomeLabel === 'Journal', String(journalHomeLabel));
 
   await app.goto('/trash');
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Trash Board mounted' });
@@ -212,8 +227,11 @@ await withHarness(async (app) => {
   await openPageCategory(app);
   await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'Page face (Trash board)' });
   const trashHomeLabel = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  ok('S6b live successor (was b1.mjs\'s "no project home" check): the Trash Board\'s own Page face now reads "has no drawer home"',
-    trashHomeLabel === 'The Trash Board — has no drawer home', String(trashHomeLabel));
+  // SUPERSEDED (item word-diet, Nick).
+  // ok('S6b live successor (was b1.mjs\'s "no project home" check): the Trash Board\'s own Page face now reads "has no drawer home"',
+  //   trashHomeLabel === 'The Trash Board — has no drawer home', String(trashHomeLabel));
+  ok('S6b [word-diet successor]: the Trash Board\'s own Page face now reads the bare place name, "Trash"',
+    trashHomeLabel === 'Trash', String(trashHomeLabel));
 
   await app.goto('/shelf');
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf Board mounted' });
@@ -221,8 +239,11 @@ await withHarness(async (app) => {
   await openPageCategory(app);
   await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'Page face (Shelf board)' });
   const shelfHomeLabel = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  ok('S6b live successor (was b2.mjs\'s "no project home" + S8 compound checks): the Shelf Board\'s own Page face now reads "has no drawer home"',
-    shelfHomeLabel === 'The Shelf Board — has no drawer home', String(shelfHomeLabel));
+  // SUPERSEDED (item word-diet, Nick).
+  // ok('S6b live successor (was b2.mjs\'s "no project home" + S8 compound checks): the Shelf Board\'s own Page face now reads "has no drawer home"',
+  //   shelfHomeLabel === 'The Shelf Board — has no drawer home', String(shelfHomeLabel));
+  ok('S6b [word-diet successor]: the Shelf Board\'s own Page face now reads the bare place name, "Shelf"',
+    shelfHomeLabel === 'Shelf', String(shelfHomeLabel));
 
   // ==========================================================================
   // S6c — CascadePanels' Plan panel, no-project branch: the truthful line
@@ -254,8 +275,13 @@ await withHarness(async (app) => {
     createProjectShape.titleAria === 'Drawer title (optional)', JSON.stringify(createProjectShape));
   await app.evalJs("document.querySelector('.cp-else').click()");
   const cpElseNote = await app.evalJs("document.querySelector('.cp-micro')?.textContent");
-  ok('S6e: CreateProject\'s own "Something else" note reads "Opens the Drawer home..." — a genuine omission the prior S6 inventory missed, found and fixed in this fold',
-    cpElseNote === 'Opens the Drawer home — shape it as you go.', String(cpElseNote));
+  // SUPERSEDED (item word-diet, Nick) — createDrawerOpensNote's render site
+  // RETIRES whole (REMOVE); the lexicon entry itself is untouched, simply
+  // never rendered for this branch now. ORIGINAL claim parked verbatim:
+  // ok('S6e: CreateProject\'s own "Something else" note reads "Opens the Drawer home..." — a genuine omission the prior S6 inventory missed, found and fixed in this fold',
+  //   cpElseNote === 'Opens the Drawer home — shape it as you go.', String(cpElseNote));
+  ok('S6e [word-diet successor]: CreateProject\'s own "Something else" note is empty now (REMOVE)',
+    cpElseNote === '', String(cpElseNote));
 
   // ==========================================================================
   // S6e — ProjectHome.tsx: the rename input's aria-label + the domain eyebrow.

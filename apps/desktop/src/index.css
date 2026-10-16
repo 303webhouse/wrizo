@@ -57,6 +57,19 @@
      (TH2's own A4 precedent) until a theme pack needs its own override. */
   --card-stock: #FBF6EA;
   --card-hairline: #D9CFB6;
+  /* flux-card-ink (Chat 1 ledger 47, Nick: Flux dark board, "nearly
+     unreadable") — --card-stock is left un-themed on purpose (above): it's
+     the SAME cream in every theme/tone. --ink-on-paper is NOT un-themed —
+     Flux's dark page deliberately flips it light (#E3F1EC) to read against
+     its own dark --paper, and a card's text/footer/label colour was wired
+     straight to --ink-on-paper, which assumed that ink always lands on a
+     light surface. It doesn't in Flux dark: the card still sits on the
+     cream stock above, a light ink on a light ground. A card-scoped ink
+     pair, aliased to --ink-on-paper/-low everywhere this is already true
+     (Arbor, Flux light) and overridden only where it wasn't (Flux dark,
+     below) — zero visual change outside that one tone. */
+  --ink-on-card: var(--ink-on-paper);
+  --ink-on-card-low: var(--ink-on-paper-low);
 
   /* Accent — the Wrizo orange, primary action (exactly one per screen).
      #ff9800 is locked and invariant — never recolor or remove. (Token name kept
@@ -106,6 +119,12 @@
      not a panel — flag at review. No theme claims a different value this
      ticket. */
   --strip-width: 84px;
+
+  /* PHASE 1 (docs/plans/phase1-drawers.md 2.3) - the side drawers' motion. DEDICATED tokens: --fade-dur is WRITTEN AT RUNTIME by
+     useChromeDissolve (the vanish engine) and must keep governing the dissolve fade; the slide never rides it. */
+  --drawer-dur: .2s;
+  --drawer-ease: ease;
+  --drawer-dur-reduced: .12s;
 
   /* FX2 S1 — the composed frame's column-gap, promoted from a bare literal
      in .desk-frame-grid to a token: the sliver anchor's own clearance math
@@ -335,21 +354,31 @@
    `.mode-scroll`/`.desk-frame-scroll-cap` are prose/script's own page
    content areas (used to hide their scrollbar entirely — see each rule's
    own updated comment); `.board-text` is a card's own overflowing body
-   text (`--card-stock`, the SAME light-paper family, one shade lighter). */
-.mode-scroll, .desk-frame-scroll-cap, .board-text{
+   text (`--card-stock`, the SAME light-paper family, one shade lighter).
+   flux-card-ink — `.board-text` split off this shared rule: this comment's
+   own "one shade lighter" assumption held for Arbor and Flux light, where
+   --card-stock and --paper are both light and --ink-on-paper-low tracks
+   both fine, but --card-stock stays cream in Flux DARK while --ink-on-paper
+   flips light to suit the dark --paper around it — the identical bug this
+   ticket fixes on `.board-text`'s own colour, just painted on its
+   scrollbar thumb instead of its text. --ink-on-card-low carries the same
+   "theme-scoped, subdued but legible" property this comment asks for,
+   just measured against the card's own stock rather than the page's. */
+.mode-scroll, .desk-frame-scroll-cap{
   scrollbar-color: var(--ink-on-paper-low) transparent;
 }
+.board-text{ scrollbar-color: var(--ink-on-card-low) transparent; }
 .mode-scroll::-webkit-scrollbar-thumb,
-.desk-frame-scroll-cap::-webkit-scrollbar-thumb,
-.board-text::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); }
+.desk-frame-scroll-cap::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); }
+.board-text::-webkit-scrollbar-thumb{ background:var(--ink-on-card-low); }
 /* Hover darkens toward the paper's own primary ink (--ink-on-paper), the
    mirror of the dark-chrome default's own rest-dark/hover-light relationship
    — a LIGHT surface needs MORE contrast (darker), not less, to read as
    "more visible" on hover; --paper-border would have gone the wrong way
    (lighter, closer to the paper itself, i.e. LESS visible). */
 .mode-scroll::-webkit-scrollbar-thumb:hover,
-.desk-frame-scroll-cap::-webkit-scrollbar-thumb:hover,
-.board-text::-webkit-scrollbar-thumb:hover{ background:var(--ink-on-paper); }
+.desk-frame-scroll-cap::-webkit-scrollbar-thumb:hover{ background:var(--ink-on-paper); }
+.board-text::-webkit-scrollbar-thumb:hover{ background:var(--ink-on-card); }
 
 /* ============================================================================
    TH1 — the theme seam (docs/th1-theme-seam-brief.md, docs/flux-theme-canon.md).
@@ -435,6 +464,16 @@
      value measures 7.3:1 against this block's own --paper. Same hue family,
      same meaning; only the value follows the ground. */
   --accent-door: #A9B56A;
+  /* flux-card-ink — the card is still cream here (--card-stock, un-themed),
+     so its own ink can't follow --ink-on-paper's flip to light. Dark values
+     in the SAME teal family as this tone's own --ink-on-paper-low (#57D0F5)
+     above, measured against --card-stock (#FBF6EA): #14231F is Flux light's
+     own --ink-on-paper verbatim (~15:1, already proven dark enough on this
+     exact cream); #0A6B86 is a darker step of the low tone (~5.6:1) rather
+     than reusing Flux light's own --ink-on-paper-low (#0B7C9E, ~4.4:1 on
+     THIS cream — close, but short of the 4.5:1 floor on different stock). */
+  --ink-on-card: #14231F;
+  --ink-on-card-low: #0A6B86;
 }
 :root[data-theme='flux'][data-page='light'] {
   --paper: #EDF6F3;
@@ -1450,7 +1489,7 @@ a:focus-visible,
   width:100%; height:100%; overflow:auto; padding:6px 8px; box-sizing:border-box;
   border:1px solid var(--card-hairline); border-radius:0; background:var(--card-stock);
   box-shadow:2px 2px 0 var(--card-hairline), 4px 5px 10px rgba(43,39,33,.16);
-  color:var(--ink-on-paper); font-family:var(--font-prose); font-size:calc(15px * var(--card-type-k, 1)); line-height:1.6;
+  color:var(--ink-on-card); font-family:var(--font-prose); font-size:calc(15px * var(--card-type-k, 1)); line-height:1.6;
   white-space:pre-wrap;
   /* FX8 S3 — "whenever the cursor is over the bounds of a box... the
      cursor should change showing that the user can now move the card
@@ -1497,7 +1536,23 @@ a:focus-visible,
 .board-handle{
   position:absolute; right:-5px; bottom:-5px; width:10px; height:10px;
   background:var(--brass); border-radius:0; cursor:nwse-resize;
+  transition:border-radius .18s ease, background-color .18s ease;
 }
+/* CONNECTOR-A - connection mode: the square morphs to a 10px circle (open = nothing linked under the arm, solid = the arm is over a card already linked to this one). */
+.board-handle[data-circle='true']{ box-sizing:border-box; border-radius:50%; background:var(--paper); border:1.5px solid var(--brass); right:-6px; bottom:-6px; cursor:default; }
+.board-handle[data-circle='true'][data-solid='true']{ background:var(--brass); }
+@media (prefers-reduced-motion: reduce){ .board-handle{ transition:none; } }
+/* CARD-RESIZE-AXIS (Nick, Oct 15): while a card's corner is held the whole canvas - and everything on it - wears the diagonal resize arrow. A pointer that lags the corner (a proportional card moves
+   its corner along a diagonal) used to fall onto card text or the empty canvas and flip to the I-beam / default; now it never leaves the arrow until the corner is let go. */
+.board-canvas[data-resizing='true'], .board-canvas[data-resizing='true'] *{ cursor:nwse-resize !important; }
+/* CONNECTOR-A - a card's own end of a link: hidden until the card is the arm's target, a linked peer, or the far end of the link just made. Open = not linked, solid orange = linked. */
+.board-tcircle{
+  position:absolute; right:-6px; bottom:-6px; width:10px; height:10px; box-sizing:border-box; z-index:6;
+  border-radius:50%; background:var(--paper); border:1.5px solid var(--brass); display:none; pointer-events:none;
+}
+.board-tcircle[data-solid='true']{ background:var(--brass); }
+.board-box[data-target='true'] > .board-tcircle, .board-box[data-peer='true'] > .board-tcircle{ display:block; }
+.board-box[data-target='true']{ outline:1.5px solid var(--brass); outline-offset:0; }
 /* AB4 S2 — a page-pin card: a MEMBERSHIP card, not a copy. Shares
    .board-text's own look (now Stacked, S7); the badge is the only
    decoration (quiet olive, never brass — "nothing orange at rest" holds
@@ -1593,15 +1648,7 @@ a:focus-visible,
    (the brief's own words), not a generic centered glow. Same ~12px size,
    same border-radius:50% (fx5.mjs's own S5 check still asserts this
    verbatim — confirmed unbroken, no A4 park needed). */
-.board-pin-grab{
-  position:absolute; left:-6px; top:-6px; width:12px; height:12px; z-index:6;
-  border-radius:50%;
-  background:radial-gradient(circle at 35% 28%, #D9DEB8 0%, var(--accent-rest) 50%, #4F5730 100%);
-  border:1px solid var(--ink-950);
-  box-shadow:1px 2px 3px rgba(17,6,0,.5);
-  cursor:grab;
-}
-.board-canvas[data-thread-armed='true'] .board-pin-grab{ cursor:grabbing; }
+/* CONNECTOR-A - the green tack (.board-pin-grab) that lived here is RETIRED: connection mode starts at the corner square (see .board-handle). */
 /* FX8 S3 — Nick's own DoD line: "drags it with one continuous motion" —
    a `grab`-family cursor throughout would already communicate "you CAN
    drag this," but the brief explicitly invites (and CC's own build report
@@ -1649,20 +1696,21 @@ a:focus-visible,
    FX4 S6 — olive now marks the THREAD-DRAG armed state (handle-drag,
    replacing AB4's Connect-toggle-mode); the "nothing orange at rest"
    law is unchanged. */
-.board-connection-line{ stroke:var(--ink-border-strong); stroke-width:1.5; fill:none; }
-.board-connections[data-thread-armed='true'] .board-connection-line{ stroke:var(--accent-rest); }
-.board-connection-line[data-selected='true']{ stroke:var(--brass); stroke-width:2.5; }
+/* CONNECTOR-A - a line is drawn only in connection mode (or for the moment after a link): thin brass, no glow; a selected line is heavier. */
+/* Widths per the approved mockup spec (Fable, Oct 15): lines 1px, the arm 1.25px, a selected line 2px. non-scaling-stroke: the widths stay true if the board's svg is ever scaled. */
+.board-connection-line{ stroke:var(--brass); stroke-width:1; stroke-linecap:round; fill:none; opacity:.9; pointer-events:none; vector-effect:non-scaling-stroke; }
+.board-connection-line[data-selected='true']{ stroke-width:2; opacity:1; }
 .board-connection-hit{ stroke:transparent; stroke-width:10; fill:none; }
 /* FX4 S6 — the live thread-drag preview line: dashed olive, distinct from
    the solid hairline styles above so it never reads as an already-minted
    connection. Hidden by default (JS toggles display on drag start/end —
    BoardEditor.tsx's own updateThreadPreview/hideThreadPreview). */
-.board-thread-preview{ stroke:var(--accent-rest); stroke-width:1.5; stroke-dasharray:4 3; fill:none; pointer-events:none; }
+.board-connect-arm{ stroke:var(--brass); stroke-width:1.25; stroke-linecap:round; fill:none; pointer-events:none; vector-effect:non-scaling-stroke; }
+.board-connect-tip{ fill:var(--brass); pointer-events:none; }
 /* Thread-drag's own cursor + the origin card's own highlight — dashed
    olive, distinct from the solid brass selection outline so the two
    states never read as the same thing. */
 .board-canvas[data-thread-armed='true']{ cursor:crosshair; }
-.board-box[data-thread-source='true']{ outline:2px dashed var(--accent-rest); outline-offset:1px; }
 /* FX4 S4 — the board canvas's own bottom-right resize handle: quiet at
    rest (the brief's own word), matching the corkboard-adjacent chrome's
    restrained palette rather than the per-card brass handle (this one
@@ -1702,7 +1750,7 @@ a:focus-visible,
   background:rgba(0,0,0,.35);
 }
 .board-popup{
-  width:min(520px,88vw); background:var(--card-stock); color:var(--ink-on-paper);
+  width:min(520px,88vw); background:var(--card-stock); color:var(--ink-on-card);
   border:1px solid var(--card-hairline); border-top:2px solid var(--accent-rest);
   box-shadow:0 14px 44px rgba(0,0,0,.5); border-radius:0;
 }
@@ -1710,17 +1758,28 @@ a:focus-visible,
   display:flex; align-items:center; gap:4px; padding:10px 14px;
   border-bottom:1px solid var(--card-hairline);
 }
-.board-popup-eyebrow{ margin-right:auto; color:var(--ink-on-paper-low); }
+.board-popup-eyebrow{ margin-right:auto; color:var(--ink-on-card-low); }
 .board-popup-tool{ width:30px; height:28px; font-family:var(--font-prose); font-size:14px; }
 .board-popup-editor{
   display:block; width:100%; min-height:170px; padding:18px 22px 6px; box-sizing:border-box;
   outline:none; font-family:var(--font-prose); font-size:calc(16px * var(--card-type-k, 1)); line-height:1.6;
-  white-space:pre-wrap; color:var(--ink-on-paper);
+  white-space:pre-wrap; color:var(--ink-on-card);
 }
 /* ITEM 207 - the card's Type control inside the styling dock: a column, no wider than the dock needs. */
 .board-popup-dock .wz-type{ flex-direction:column; align-items:stretch; width:9.5rem; }
 .board-popup-dock .wz-type-size{ justify-content:center; }
-.board-popup-foot{ display:flex; justify-content:flex-end; padding:12px 16px 18px; }
+/* card-close-x (2026-10-13) - the foot and its "Close" button retired; the editor's bottom padding
+   takes over the room the foot gave the text. The X sits at the strip's right end, the card's
+   top-right corner, in the card's own ink (flux-card-ink: --ink-on-card and its -low, not
+   --ink-on-paper — this X sits on the card's own cream stock, not the page). */
+.board-popup-editor{ padding-bottom:18px; }
+.board-popup-close{
+  width:28px; height:28px; margin:-4px -6px -4px 0; padding:0; display:inline-flex; align-items:center; justify-content:center;
+  background:none; border:none; border-radius:0; cursor:pointer;
+  color:var(--ink-on-card-low); font-size:20px; line-height:1; font-family:var(--font-ui);
+  transition:color var(--t-fast) var(--ease); }
+.board-popup-close:hover{ color:var(--ink-on-card); }
+.board-popup-close:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
 
 /* J5 — the lens row: square corners, quiet borders, brass ONLY on the
    active chip. No transitions (reduced-motion is a non-issue: none used). */
@@ -2420,6 +2479,8 @@ a:focus-visible,
 .mode-tbtn{ min-width:30px; height:28px; padding:0 8px; background:none; border:1px solid transparent;
   color:var(--text-mid); cursor:pointer; font-family:var(--font-ui); font-size:14px; transition:.15s; }
 .mode-tbtn:hover{ border-color:var(--ink-border); background:var(--ink-800); color:var(--text-hi); }
+/* PHASE 1 (S5 follow-up) - a locked format bar (typewriter running): greyed, and the pointer falls through to the bar so ITS tooltip ("Typewriter Mode is on") shows. */
+.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; pointer-events:none; }
 .mode-tbtn b{ font-weight:700; } .mode-tbtn i{ font-style:italic; } .mode-tbtn u{ text-decoration:underline; }
 .mode-tdiv{ width:1px; height:18px; background:var(--ink-border); margin:0 5px; }
 .mode-tmore{ margin-left:auto; color:var(--text-low); font-size:12px; }
@@ -3641,15 +3702,7 @@ a:focus-visible,
 .desk-mode-tab.deferred{ color:var(--text-low); cursor:not-allowed; }
 .desk-mode-tab.deferred:hover{ background:none; color:var(--text-low); }
 .desk-mode-soon{ margin-left:10px; font-family:var(--font-ui); font-size:11px; color:var(--text-mid); font-style:italic; }
-/* Text and Ink live under Free Write. The menu is out of flow so the band
-   does not grow, and it opens when the pointer is on the tab or the menu. */
-.desk-mode-freewrite{ position:relative; display:flex; align-items:center; }
-.wz-ink-menu{ display:none; position:absolute; top:100%; left:0; z-index:40; padding-top:6px; }
-.desk-mode-freewrite:hover .wz-ink-menu,
-.desk-mode-freewrite:focus-within .wz-ink-menu{ display:block; }
-.wz-ink-menu .wz-ink-switch{ flex-direction:column; background:var(--ink-900); }
-.wz-ink-menu .wz-ink-switch-side{ text-align:left; }
-.wz-ink-menu .wz-ink-switch-side + .wz-ink-switch-side{ border-left:0; border-top:1px solid var(--ink-border); }
+/* PHASE 1 - the band's Free Write hover menu (TEXT | INK) is RETIRED: the same choice is the first tab of the left drawer (DrawerTabs). One control for one state. */
 
 /* CD1 S2/S7 — the sliver (components/Sliver.tsx). ToolRail's retired
    contents move here VERBATIM (same look — .mode-swatch/.mode-nib/
@@ -3658,7 +3711,7 @@ a:focus-visible,
    .desk-frame-sliver-anchor below) instead of a grid track. */
 .wz-sliver{ position:relative; width:100%; height:100%; }
 .wz-sliver-grip{ position:absolute; top:16px; right:0; width:16px; height:34px;
-  display:flex; align-items:center; justify-content:center; z-index:2;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; z-index:2;
   background:var(--desk-ground); border:1px solid var(--ink-border); border-right:none;
   color:var(--text-mid); cursor:pointer; transition:.15s; }
 .wz-sliver-grip:hover{ color:var(--text-hi); }
@@ -3670,9 +3723,13 @@ a:focus-visible,
    law as the headings fix above: Arbor keeps olive, Flux reads its own quiet teal. */
 [data-theme='flux'] .wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--text-mid); border-color:var(--text-mid); }
 .wz-sliver-grip-glyph{ font-size:13px; line-height:1; }
+/* PHASE 1 - the instrument mark (a tiny pen while the page is in INK). The tab's box is unchanged (16 x 34); the mark rides the tab's own
+   colour - olive when open, never brass: it says what the page IS, it is not a choice the writer makes. */
+.wz-sliver-grip-mark{ display:flex; width:10px; height:10px; opacity:.9; }
+.wz-sliver-grip-mark svg{ width:10px; height:10px; display:block; }
 .wz-sliver-panel{ position:absolute; top:0; right:16px; width:calc(100% - 16px); height:100%;
-  overflow-y:auto; overflow-x:hidden; background:var(--desk-ground); border:1px solid var(--ink-border); border-right:none;
-  opacity:0; pointer-events:none; transform:translateX(6px); transition:opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s) ease;
+  overflow-y:auto; overflow-x:hidden;
+  opacity:0; pointer-events:none; transition:opacity var(--fade-dur,.2s) ease;
   /* The bar sits on the drawer's left edge. `direction: rtl` is the only
      way a native scrollbar changes sides; the children below stay left to
      right. It is overlay-thin and only paints when the content is taller
@@ -3686,7 +3743,7 @@ a:focus-visible,
 .wz-sliver-panel::-webkit-scrollbar-track{ background: transparent; }
 .wz-sliver-panel::-webkit-scrollbar-thumb{ background: color-mix(in srgb, var(--text-low) 28%, transparent); }
 .wz-sliver-panel::-webkit-scrollbar-thumb:hover{ background: color-mix(in srgb, var(--text-low) 55%, transparent); }
-.wz-sliver-panel[data-open='true']{ opacity:1; pointer-events:auto; transform:translateX(0); }
+.wz-sliver-panel[data-open='true']{ opacity:1; pointer-events:auto; }
 /* item 83 errata E1 (2026-09-03) — THE POP-OUT HOLD. Nick's ruling: a foot
    pop-out fades after FIFTEEN WORDS WRITTEN or A PERIOD ENTERED, never on a
    clock. Sliver.tsx counts and sets `data-popout-hold`; this rule is the whole
@@ -3708,8 +3765,81 @@ a:focus-visible,
    surface is byte-identical to before. */
 .desk-frame[data-writing='true'] .wz-sliver-panel[data-open='true'][data-popout-hold='true'],
 [data-chrome-receded='true'] .wz-sliver-panel[data-open='true'][data-popout-hold='true']{
-  opacity:1; pointer-events:auto; transform:translateX(0); }
-@media (prefers-reduced-motion:reduce){ .wz-sliver-panel{ transition:none; } }
+  opacity:1; pointer-events:auto; }
+/* PHASE 1 - THE SLIDING LAYER, shared by both side drawers (Nick, Oct 9: "the menu slides out from behind the tab AND fades in, together;
+   closing slides back AND fades out").
+   The panel (outer) is the CLIP and the scroller: it ends at the tab, so whatever slides is hidden behind it; it also keeps the fade and
+   the dissolve exactly as before (opacity on --fade-dur, whose fallback is this same .2s, so at rest the fade and the slide run together).
+   The visible box - background, border - and the slide live on THIS layer. The slide uses its own tokens, never --fade-dur.
+   Open is read from the panel's data-open; nothing here knows which drawer it is in except the side. */
+.wz-drawer-slide{ min-height:100%; background:var(--desk-ground); border:1px solid var(--ink-border);
+  transition:transform var(--drawer-dur) var(--drawer-ease); }
+.wz-drawer-slide--left{ border-right:none; transform:translateX(100%); }
+.wz-drawer-slide--right{ border-left:none; transform:translateX(-100%); }
+[data-open='true'] > .wz-drawer-slide{ transform:none; }
+/* THE CONTENTS ARE NOT LIVE UNTIL THE SLIDE HAS SETTLED (Fable, Oct 12; measured by scripts/evidence/click-mid-open.mjs: the Screenplay button travels ~184px in ~150ms, so a press
+   aimed at it inside that window lands where it WAS, on a neighbour). For the length of the slide (--drawer-dur; the short fade under reduced motion) the sliding layer takes no pointer
+   input: an early click falls through to the drawer's own (inert) panel and does NOTHING - never the wrong control. It is an animation, not a transition, because pointer-events is a
+   discrete property and a keyframe holds 'none' until the last moments and then hands control back; once it ends the layer inherits the panel's 'auto' again. Keyboard focus is not
+   affected (the closed drawer is already inert, and an open one is reachable by Tab as before). It restarts on every open because it hangs on [data-open='true']. */
+@keyframes wz-drawer-live{ 0%, 99% { pointer-events:none; } 100% { pointer-events:auto; } }
+[data-open='true'] > .wz-drawer-slide{ animation: wz-drawer-live var(--drawer-dur) linear; }
+/* PHASE 1 (S2) - THE TAB ROW. The chosen tab wears a BRASS OUTLINE and brass text and NOTHING else - no fill (Nick, Oct 9). The drawer's
+   arrow tab is olive (where you are); this is brass (what you chose). */
+.wz-drawer-tabbar{ position:relative; padding:14px 14px 0; }
+.wz-drawer-tabs{ display:flex; gap:6px; }
+.wz-drawer-tab{ flex:1; height:26px; padding:0; background:none; border:1px solid var(--ink-border); border-radius:0;
+  color:var(--text-mid); font-family:var(--font-ui); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+  cursor:pointer; transition:color .15s ease, border-color .15s ease; }
+.wz-drawer-tab:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:none; }
+.wz-drawer-tab:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+/* PHASE 1 (S3) - the "?" note beside a tab's word. The overlay shares the tab row's columns, ignores the pointer except on the "?" itself, and
+   sits OUTSIDE the tablist. The note opens below the row as an overlay (it displaces nothing). */
+.wz-drawer-tabnotes{ position:absolute; left:14px; right:14px; top:14px; height:26px; display:grid; gap:6px; pointer-events:none; }
+.wz-drawer-tabnote-cell{ display:flex; align-items:center; justify-content:flex-end; padding-right:3px; min-width:0; }
+/* .wz-drawer-note/-btn/-pop's own GENERAL rules moved below (merge with
+   word-diet, 2026-10-14) to the single definition every caller now shares;
+   only this row's own stretch-to-the-margins override stays here, scoped
+   by specificity (two classes) rather than by source order, so it wins
+   over the general rule regardless of which is declared first. */
+.wz-drawer-tabnotes .wz-drawer-note-pop{ left:14px; right:14px; width:auto; max-width:none; }
+.wz-links-pane{ display:flex; flex-direction:column; gap:8px; padding:16px 14px; }
+/* PHASE 1 - ACTIONS. Icon buttons in a row; one that is pressed/open wears the brass OUTLINE (no fill). Tags and Delete open a small area
+   inside the drawer. Delete's confirm is in the page: a line, and two plain buttons. */
+.wz-actions{ display:flex; flex-direction:column; gap:8px; }
+.wz-actions-row{ display:flex; gap:6px; }
+.wz-action-btn{ flex:1; height:28px; display:flex; align-items:center; justify-content:center; background:none;
+  border:1px solid var(--ink-border); border-radius:0; color:var(--text-mid); cursor:pointer; transition:color .15s ease, border-color .15s ease; }
+.wz-action-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-action-btn[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:none; }
+.wz-action-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+.wz-actions-tags{ display:flex; flex-wrap:wrap; gap:4px 6px; align-items:center; }
+.wz-actions-tag{ display:inline-flex; align-items:center; gap:4px; padding:2px 6px; border:1px solid var(--ink-border); color:var(--text-mid); font-size:12px; }
+.wz-actions-tag-remove{ background:none; border:0; color:var(--text-low); cursor:pointer; padding:0 2px; font-size:13px; line-height:1; }
+.wz-actions-tag-remove:hover{ color:var(--text-hi); }
+.wz-actions-tag-input{ flex:1; min-width:80px; background:var(--ink-800); border:1px solid var(--ink-border); color:var(--text-hi);
+  font-family:var(--font-ui); font-size:12px; padding:4px 6px; border-radius:0; }
+.wz-actions-confirm{ display:flex; flex-direction:column; gap:8px; padding:8px; border:1px solid var(--ink-border); }
+.wz-actions-confirm-line{ margin:0; font-size:13px; line-height:1.35; color:var(--text-hi); }
+.wz-actions-confirm-buttons{ display:flex; gap:6px; }
+.wz-actions-keep, .wz-actions-send{ flex:1; height:26px; background:none; border:1px solid var(--ink-border); border-radius:0; color:var(--text-mid);
+  font-family:var(--font-ui); font-size:12px; cursor:pointer; }
+.wz-actions-keep:hover, .wz-actions-send:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-actions-send{ color:var(--brick, var(--text-mid)); }
+.wz-actions-keep:focus-visible, .wz-actions-send:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+/* REDUCED MOTION (Nick): fade only, short. No slide at all; the fade runs on its own short token. (This replaces the two old
+   'transition:none' opt-outs: the writer who asked for less motion still sees the drawer arrive, just without travel.)
+   THE APP'S GLOBAL REDUCED-MOTION FLOOR (the universal rule near the top of this file: every transition and animation 0.01ms !important)
+   would flatten this fade to nothing too. Opacity is not motion, and Nick ruled that the drawer still FADES, so the two panels carry their
+   own !important duration: a class selector out-ranks the floor's universal selector at equal importance. The sliding layer is NOT exempt -
+   it has no travel under reduced motion, and the floor keeps it instant. */
+@media (prefers-reduced-motion:reduce){
+  .wz-sliver-panel, .wz-tutor-panel{ transition:opacity var(--drawer-dur-reduced) linear; transition-duration: var(--drawer-dur-reduced) !important; }
+  .wz-drawer-slide, .wz-drawer-slide--left, .wz-drawer-slide--right{ transform:none; transition:none; }
+  /* ...and the global floor (animation-duration 0.01ms !important) would hand the controls back at once; the guard keeps the short fade's length, as the panel does for its fade. */
+  [data-open='true'] > .wz-drawer-slide{ animation-duration: var(--drawer-dur-reduced) !important; }
+}
 .wz-sliver-body{ display:flex; flex-direction:column; gap:20px; padding:16px 14px; }
 .wz-sliver-section{ display:flex; flex-direction:column; gap:8px; }
 /* ITEM 114 (item 83 errata E4) — the Structure zone's SUB-LABELS and the rule
@@ -3899,6 +4029,26 @@ a:focus-visible,
 /* ITEM arbor-quiet-brass, round 2 — the drawer's own "…" button, same fix as the grip above. */
 [data-theme='flux'] .wz-sliver-instruments-btn[aria-expanded='true']{ color:var(--text-mid); border-color:var(--text-mid); }
 .wz-sliver-instruments-btn svg{ display:block; }
+/* PHASE 1 (S4) - the head holds the "..." (its own row, unchanged) and the two mode toggles beside it. A toggle is the same 26px quiet square as the "...";
+   ON changes ONLY the icon's colour (brass/orange) - the square's border is the same quiet line in both states, and there is no fill. The state is
+   aria-pressed (never colour alone). */
+.wz-sliver-instruments-head{ display:flex; align-items:center; gap:8px; }
+.wz-sliver-instruments-modes{ display:flex; align-items:center; gap:8px; }
+.wz-sliver-mode-btn{ width:26px; height:26px; display:flex; align-items:center; justify-content:center; padding:0;
+  background:none; border:1px solid var(--ink-border); color:var(--text-low); cursor:pointer; transition:.15s; }
+.wz-sliver-mode-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); background:none; }
+.wz-sliver-mode-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+.wz-sliver-mode-btn svg{ display:block; }
+/* PHASE 1 (S4) - GREYED = unusable. A Seg row (or the goal number) whose mode is off, and the Format group while Typewriter is on. These are real
+   disabled controls (unfocusable, unclickable, announced as unavailable); this is only how they LOOK. */
+.mode-crow[data-disabled='true'], .wz-tw-number[data-disabled='true']{ opacity:.4; }
+.mode-crow[data-disabled='true'] .mode-seg button:disabled, .wz-tw-number input:disabled{ cursor:default; }
+.wz-sliver-fieldset{ border:0; margin:0; padding:0; min-width:0; display:flex; flex-direction:column; gap:8px; }
+.wz-sliver-fieldset:disabled{ opacity:.4; }
+/* A locked group explains itself: its buttons let the pointer fall through to the fieldset, so hovering anywhere on it shows the fieldset's tooltip
+   ("Typewriter Mode is on") rather than a button's own name. */
+.wz-sliver-fieldset:disabled button{ cursor:default; pointer-events:none; }
 /* Reused SettingsPanel/ThemePanel/InstrumentsPanel (ModeStage.tsx's own
    `.mode-settings` — position:absolute, anchored to the stage's top-right
    corner there) need a different, INLINE placement inside the sliver's own
@@ -3992,11 +4142,10 @@ a:focus-visible,
      by CSS alone; the inline width supersedes it). The 5 fx10 "full open-w" A4 parks stand. */
   width:clamp(280px, var(--tutor-panel-margin), var(--tutor-panel-open-w));
   max-width:clamp(280px, var(--tutor-panel-margin), var(--tutor-panel-open-w));
-  background:var(--desk-ground); border:1px solid var(--ink-border); border-left:none;
-  opacity:0; pointer-events:none; transform:translateX(-6px);
-  transition:opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s) ease;
+  opacity:0; pointer-events:none;
+  transition:opacity var(--fade-dur,.2s) ease;
 }
-.wz-tutor-panel[data-open='true']{ opacity:1; pointer-events:auto; transform:translateX(0); }
+.wz-tutor-panel[data-open='true']{ opacity:1; pointer-events:auto; }
 /* FX18 S2 regime (3) — the BOARD overlay exception (Fable's ruling): the board is an
    arrangement surface, not sacred paper, so its Tutor panel keeps its natural open-w and
    may overlay the canvas (bounded to the app edge by the flex-end dock; the grip rides atop
@@ -4022,27 +4171,29 @@ a:focus-visible,
 .wz-tutor-panel[data-open='true'][data-docked='true']{
   width:clamp(120px, var(--tutor-panel-margin), var(--tutor-panel-open-w));
   max-width:clamp(120px, var(--tutor-panel-margin), var(--tutor-panel-open-w)); }
-@media (prefers-reduced-motion:reduce){ .wz-tutor-panel{ transition:none; } }
-/* THE GHOST FIX (Nick, Oct 10) - A CLOSED DRAWER IS HIDDEN, WHATEVER THE DISSOLVE SAYS. The writing dissolve parks chrome at a DIMMED level
-   (`.desk-frame[data-writing='true'] .desk-dissolve` sets opacity:var(--fade-min), 0,3,0), and that out-specified a closed panel's own
-   `opacity:0` (0,1,0): while writing, a CLOSED left drawer showed its contents (TYPEFACE / FORMAT / TEMPLATES / PAGE KIND) as a faint ghost.
-   A dissolve is a rule about chrome that is SHOWING; a closed drawer is not showing. So a drawer that is not open is `visibility:hidden` - no
-   opacity can bring it back, and it leaves the tab order and the accessibility tree too - and the two dissolve contexts get an explicit
-   opacity:0 for it at a higher specificity (belt and braces: the claim does not rest on one property).
-   The CLOSE still fades: visibility flips only AFTER the opacity transition (delay = the same --fade-dur), and OPENING shows at once
-   (the open state declares no visibility transition), so the fade-in is not clipped. Reduced motion: no transition at all, as before.
-   The pop-out hold and every open-drawer rule are untouched: they all require [data-open='true'], which this rule excludes. */
+/* THE GHOST FIX (Nick, Oct 10; first landed on main by branch drawer-ghost-fix) - A CLOSED DRAWER IS HIDDEN, WHATEVER THE DISSOLVE SAYS. The writing
+   dissolve parks chrome at a DIMMED level (`.desk-frame[data-writing='true'] .desk-dissolve{opacity:var(--fade-min)}`, 0,3,0), and that out-specified a
+   closed panel's own `opacity:0` (0,1,0): while writing, a CLOSED left drawer showed its contents as a faint ghost. A dissolve is a rule about chrome
+   that is SHOWING; a closed drawer is not. So a drawer that is not open is `visibility:hidden` (no opacity can bring it back; it also leaves the tab
+   order and the accessibility tree, beside the `inert` S1 already sets), and the two dissolve contexts get an explicit opacity:0 for it at a higher
+   specificity (belt and braces: the claim does not rest on one property).
+   THE CLOSE STILL FADES AND STILL SLIDES: visibility flips only AFTER both are done - the delay is the longer of the fade (--fade-dur) and the slide
+   (--drawer-dur), so a short --fade-dur can never cut the sliding layer off mid-travel. OPENING shows at once (the open state declares no visibility
+   transition). Every open-drawer rule and the pop-out hold require [data-open='true'], which this rule excludes. */
 .wz-sliver-panel:not([data-open='true']),
 .wz-tutor-panel:not([data-open='true']){
   visibility:hidden;
-  transition:opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s) ease, visibility 0s linear var(--fade-dur,.2s);
+  transition:opacity var(--fade-dur,.2s) ease, visibility 0s linear max(var(--fade-dur,.2s), var(--drawer-dur));
 }
 .desk-frame[data-writing='true'] .wz-sliver-panel:not([data-open='true']),
 [data-chrome-receded='true'] .wz-sliver-panel:not([data-open='true']),
 .desk-frame[data-writing='true'] .wz-tutor-panel:not([data-open='true']),
 [data-chrome-receded='true'] .wz-tutor-panel:not([data-open='true']){ opacity:0; }
+/* Reduced motion keeps its short fade (Nick's ruling above): the closed panel fades on --drawer-dur-reduced and is hidden when that is done. The
+   `!important` duration above (the floor override) applies to this list too; the delay is what holds the hide back. */
 @media (prefers-reduced-motion:reduce){
-  .wz-sliver-panel:not([data-open='true']), .wz-tutor-panel:not([data-open='true']){ transition:none; }
+  .wz-sliver-panel:not([data-open='true']), .wz-tutor-panel:not([data-open='true']){
+    transition:opacity var(--drawer-dur-reduced) linear, visibility 0s linear var(--drawer-dur-reduced); }
 }
 .wz-tutor-body{ display:flex; flex-direction:column; gap:16px; padding:16px 14px; }
 .wz-tutor-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
@@ -4052,6 +4203,33 @@ a:focus-visible,
 .wz-tutor-dock-btn{ background:none; border:0; color:var(--text-low); font-family:var(--font-ui);
   font-size:11px; cursor:pointer; padding:2px 4px; transition:.15s; }
 .wz-tutor-dock-btn:hover{ color:var(--text-hi); }
+/* DrawerNote.tsx's own CSS — the SINGLE definition every caller shares
+   (merged with phase1-drawers, 2026-10-14; that branch's own near-identical
+   copy, flagged as a future conflict when word-diet first ported this
+   component, is consolidated into this one block). The tab row's own
+   stretch-to-the-margins override lives beside .wz-drawer-tabnotes above,
+   scoped by specificity so it wins there without duplicating the rest. */
+.wz-drawer-note{ position:relative; pointer-events:auto; display:inline-block; }
+.wz-drawer-note-btn{ width:15px; height:15px; padding:0; display:flex; align-items:center; justify-content:center; background:none;
+  border:1px solid var(--ink-border); border-radius:0; color:var(--text-low); font-family:var(--font-ui); font-size:9.5px; line-height:1; cursor:pointer;
+  transition:color .15s ease, border-color .15s ease; }
+.wz-drawer-note-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-drawer-note-btn[aria-expanded='true']{ color:var(--brass); border-color:var(--brass); background:none; }
+.wz-drawer-note-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+.wz-drawer-note-pop{ position:absolute; left:0; top:calc(100% + 4px); z-index:5; width:max-content; max-width:260px; padding:10px 12px; background:var(--desk-ground);
+  border:1px solid var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-ui); font-size:12.5px; line-height:1.45; pointer-events:auto;
+  /* ITEM word-diet review (Fable, Oct 13) — a DrawerNote beside an UPPERCASE
+     heading (the Fragments lens, .wz-tutor-h) otherwise inherits that
+     transform into the note's own prose; the note's words are never a
+     heading, so reset it explicitly rather than per-call-site. */
+  text-transform:none; }
+/* ITEM word-diet review (Fable, Oct 13, W4) — a "?" near the right edge
+   (the Tutor Ask box) opens its pop RIGHTWARD from left:0, running off the
+   viewport. Measured at open-time (DrawerNote.tsx); this modifier anchors
+   from the button's right edge instead, opening leftward, so the pop stays
+   inside the viewport near any edge. */
+.wz-drawer-note-pop--left{ left:auto; right:0; }
+
 .wz-tutor-section{ display:flex; flex-direction:column; gap:6px; }
 .wz-tutor-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
 .wz-tutor-note{ font-size:11px; color:var(--text-low); }
@@ -4112,6 +4290,9 @@ a:focus-visible,
 .wz-tutor-convo-send:hover:not(:disabled){ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-tutor-convo-send:disabled{ color:var(--text-low); cursor:default; }
 .wz-tutor-convo-status{ font-size:11px; color:var(--text-low); }
+/* ITEM word-diet — the new "Try again" button beside tutorConversationError. */
+.wz-tutor-retry{ font-size:11px; color:var(--text-hi); background:none; border:1px solid var(--ink-border); border-radius:0; padding:1px 6px; cursor:pointer; }
+.wz-tutor-retry:hover{ border-color:var(--ink-border-strong); }
 /* ITEM 84, THE DECK PHASE — the Free Write roster (three presets) and the one
    standing draw. Rendered ONLY in Free Write (Tutor.tsx's `freeWrite` branch);
    in Draft, on screenplay and on Board this block has nothing to style, which
@@ -5051,42 +5232,13 @@ a:focus-visible,
    different sentence. */
 .crumb-here{ color:var(--text-mid); font-weight:600; min-width:0; overflow:hidden;
   text-overflow:ellipsis; white-space:nowrap; }
+/* The board's name is a <button> (Item 133: the name is the rename control) and had NO rule of its own, so it wore the browser's grey button face (Fable, Oct 15). It reads as the plain crumb
+   text now - same family, size, colour and weight as .crumb-here - with a text cursor, the cue that clicking edits it. */
+.crumb-rename-btn{ background:none; border:0; padding:0; margin:0; border-radius:0; box-shadow:none; appearance:none; -webkit-appearance:none;
+  font-family:inherit; font-size:inherit; line-height:inherit; letter-spacing:inherit; text-align:left; cursor:text; }
 .sprint-actions{ margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 
-/* ============================================================================
-   ITEM 121 I3 — THE TEXT | INK SWITCH, in the band.
-
-   THE BAND MUST NOT GROW. `.sprint-nav` above has NO fixed height: it is a
-   wrapping flex row whose height is content-derived, so the failure mode at
-   1366 is not a few stray pixels, it is A WHOLE SECOND ROW. Every number below
-   is chosen to sit UNDER the band's existing tallest control
-   (`.sprint-toggle-btn`: 13px type, 5px/12px padding) rather than beside it at
-   its own preferred size: 10.5px type and 4px/10px padding put this switch's
-   border-box comfortably inside that. `min-width:0` + `flex-shrink:1` mean the
-   band gives ground here before it ever wraps. Paper never reflows for chrome.
-
-   THE DRESS (mockup B): engraved uppercase, letter-spaced, olive at rest; the
-   ACTIVE side wears the olive hairline; the press is evental brass. Only
-   colour transitions, so `prefers-reduced-motion` needs no branch here.
-   ==========================================================================*/
-.wz-ink-switch{
-  display:flex; align-items:stretch; min-width:0; flex-shrink:1;
-  border:1px solid var(--ink-border); border-radius:var(--radius-sm); overflow:hidden;
-}
-.wz-ink-switch-side{
-  background:none; border:0; border-bottom:1px solid transparent;
-  color:var(--text-low); font-family:var(--font-chromeLabel, var(--font-ui));
-  font-size:10.5px; letter-spacing:.22em; text-transform:uppercase;
-  padding:4px 10px 3px; cursor:pointer; white-space:nowrap;
-  transition:color var(--t-state) var(--ease), border-color var(--t-state) var(--ease);
-}
-.wz-ink-switch-side + .wz-ink-switch-side{ border-left:1px solid var(--ink-border); }
-.wz-ink-switch-side:hover{ color:var(--text-mid); }
-/* The chosen side wears the olive hairline — the drawer's own chosen-state
-   grammar, so a writer reads "selected" the same way in both places. */
-.wz-ink-switch-side[data-on='true']{ color:var(--text-hi); border-bottom-color:var(--accent-rest); }
-/* Evental press (brass), never a rest colour — the flip is the event. */
-.wz-ink-switch-side:active{ color:var(--brass); }
+/* ITEM 121 I3's TEXT | INK switch in the band is RETIRED by Phase 1 (the drawer's first tab carries the choice); its CSS went with it. */
 
 /* ITEM 121 I3 — THE TYPEWRITER IS PUT DOWN, VISIBLY. The instrument change has
    to be legible on the paper, not only in the switch, so in INK the caret goes
@@ -5410,6 +5562,20 @@ a:focus-visible,
 /* S1 — the same row inside STORYBOARD/OUTLINE, which are ordinary flow blocks
    with no positioned ancestor: it simply takes the place their empty line held. */
 .wz-beginnings[data-beginnings='projection']{ padding:22px 0 6px; }
+/* BOARD CLICK-TO-CREATE - the empty board's starters fade out on the first click anywhere on the board. Opacity first, then they stop taking the pointer (visibility flips AFTER the
+   fade), so a door that was itself the thing pressed still completes its click. */
+.wz-beginnings.wz-beginnings--faded{ opacity:0; visibility:hidden; transition:opacity .35s ease, visibility 0s linear .35s; }
+/* BOARD CLICK-TO-CREATE - the ghost that follows the pointer while a card is being sized (functional default; the look follows the mockup). Never takes the pointer. */
+.board-create-ghost{ position:absolute; box-sizing:border-box; border:1px solid var(--accent-door); background:none; opacity:.7; pointer-events:none; z-index:50; border-radius:0; }
+/* BOARD START (Nick approved the mockup, Oct 14): the empty board's starters are a thin SQUARE OUTLINE at about 40% opacity, quiet until reached for (hover and keyboard focus lift them), and they
+   fade out on the first press (the --faded rule above). The board row only: the same row on the page and in STORYBOARD/OUTLINE keeps its look. The canvas is today's light paper - the outline
+   takes the door's own colour (currentColor), so it reads on whatever paper the theme lays. */
+.wz-beginnings[data-beginnings='board'] .wz-beginning{
+  border:1px solid currentColor; border-radius:0; opacity:.4; padding:12px 18px;
+  transition:color .18s ease, opacity .18s ease;
+}
+.wz-beginnings[data-beginnings='board'] .wz-beginning:hover,
+.wz-beginnings[data-beginnings='board'] .wz-beginning:focus-visible{ opacity:.9; }
 
 @media (prefers-reduced-motion:reduce){ .wz-beginning{ transition:none; } }
 

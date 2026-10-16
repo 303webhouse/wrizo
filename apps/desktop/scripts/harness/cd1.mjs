@@ -260,10 +260,16 @@ await withHarness(async (app) => {
   // && JSON.stringify(scriptCascade.stripLabels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
   // JSON.stringify(scriptCascade));
   // ------------------------------------------------------------------
-  ok('VW1 successor of the CD3 script-cascade check: ScriptEditor mounts the SAME cascade as prose — all eight categories present, compared as a SET rather than a sequence, because the claim was ever about parity between surfaces and never about the rail order (which VW1 now owns and vw1.mjs asserts)',
+  // SUPERSEDED (item word-diet, Nick) — drawerPage reworks, "Page" -> "Pages".
+  // ok('VW1 successor of the CD3 script-cascade check: ScriptEditor mounts the SAME cascade as prose — all eight categories present, compared as a SET rather than a sequence, because the claim was ever about parity between surfaces and never about the rail order (which VW1 now owns and vw1.mjs asserts)',
+  //   scriptCascade.stripItemCount === 8
+  //     && JSON.stringify([...scriptCascade.stripLabels].sort())
+  //        === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
+  //   JSON.stringify(scriptCascade));
+  ok('VW1 successor of the CD3 script-cascade check [word-diet successor]: ScriptEditor mounts the SAME cascade as prose — all eight categories present, compared as a SET rather than a sequence',
     scriptCascade.stripItemCount === 8
       && JSON.stringify([...scriptCascade.stripLabels].sort())
-         === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
+         === JSON.stringify(['Drawers', 'Journal', 'Pages', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
     JSON.stringify(scriptCascade));
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
   await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open on script' });
@@ -672,10 +678,19 @@ if (process.env.HARNESS_PARKED === '1') {
     // && JSON.stringify(scriptCascadeParked.stripLabels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
     // JSON.stringify(scriptCascadeParked));
     // ----------------------------------------------------------------
-    pok('PARKED, generation 4 (was the CD3 gated re-assertion of the strip label SEQUENCE on the script surface) — VW1 (item 134): parity between script and prose is the claim and it survives whole; only the ORDER it spelled out has changed, so the successor compares the eight as a SET',
+    // ---- PARKED, generation 4 — SUPERSEDED by item word-diet (Nick), 2026-10-14 ----
+    // Quoted VERBATIM. drawerPage reworks, "Page" -> "Pages".
+    //
+    // pok('PARKED, generation 4 (was the CD3 gated re-assertion of the strip label SEQUENCE on the script surface) — VW1 (item 134): parity between script and prose is the claim and it survives whole; only the ORDER it spelled out has changed, so the successor compares the eight as a SET',
+    //   scriptCascadeParked.stripItemCount === 8
+    //     && JSON.stringify([...scriptCascadeParked.stripLabels].sort())
+    //        === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
+    //   JSON.stringify(scriptCascadeParked));
+    // ------------------------------------------------------------------
+    pok('PARKED, generation 5 (was generation 4\'s re-assertion with "Page" in the sorted set) — item word-diet: drawerPage reads "Pages"',
       scriptCascadeParked.stripItemCount === 8
         && JSON.stringify([...scriptCascadeParked.stripLabels].sort())
-           === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
+           === JSON.stringify(['Drawers', 'Journal', 'Pages', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
       JSON.stringify(scriptCascadeParked));
 
     // ORIGINAL (this file's own live S1/cd1.1 section, pre-CD3):

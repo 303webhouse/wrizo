@@ -342,18 +342,32 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
   await sleep(200);
   const journalSliverButtons = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].map(b => b.textContent.trim())");
-  ok('S3: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New page card" are genuinely absent, not merely disabled',
-    !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New page card'), JSON.stringify(journalSliverButtons));
-  const journalFooterTogglePresent = await app.evalJs("!!document.querySelector('.wz-sliver-board-footer')");
-  ok('S3: the connections-footer toggle STILL works on a system Board — arranging (including the footer) is the full FX5 hand, only Add/Delete are restricted',
-    journalFooterTogglePresent === true, String(journalFooterTogglePresent));
+  // SUPERSEDED (item word-diet, Nick) — boardNewPageCard's text itself
+  // changed ("New page card" -> "New Pages Card"); checking the OLD text's
+  // absence would trivially pass once the text is simply different, without
+  // proving the NEW text is absent too. ORIGINAL claim parked verbatim:
+  // ok('S3: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New page card" are genuinely absent, not merely disabled',
+  //   !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New page card'), JSON.stringify(journalSliverButtons));
+  ok('S3 [word-diet successor]: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New Pages Card" are genuinely absent, not merely disabled',
+    !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New Pages Card'), JSON.stringify(journalSliverButtons));
+  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
+  // "Show grafts" is RETIRED on every board: there is no footer toggle to still work on a system Board.
+  // Quoted VERBATIM below. Successor: the check directly below.
+  // const journalFooterTogglePresent = await app.evalJs("!!document.querySelector('.wz-sliver-board-footer')");
+  // ok('S3: the connections-footer toggle STILL works on a system Board — arranging (including the footer) is the full FX5 hand, only Add/Delete are restricted',
+  //   journalFooterTogglePresent === true, String(journalFooterTogglePresent));
+  ok('S3 [connector-a successor]: the connections-footer toggle is RETIRED on a system Board as on every board - arranging is the full hand, only Add/Delete are restricted, and the footers are simply on', (await app.evalJs("document.querySelectorAll('.wz-sliver-board-footer').length")) === 0, '');
 
   // Delete on a derived card is an inert, quiet no-op.
   const boxesBeforeInertDelete = await app.evalJs('window.wrizoBoard()');
   const someCardId = boxesBeforeInertDelete.find((b) => b.kind === 'page-pin')?.id;
   await selectBox(app, someCardId);
-  await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'a Journal card selected' });
-  await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
+  // ---- PARKED - SUPERSEDED by board-click-to-create (Nick, Oct 15 1:39am): the "Remove" row is DELETED from the board surface ----
+  // DRIVER only - a derived card has no row action now, so there is no row to wait for; the inert-delete assertion after it is unchanged (the Delete key on a system Board is the same quiet no-op).
+  // Quoted VERBATIM below. Successor: the Delete key on the selected card (BoardEditor.tsx key handler -> removeSelected, the same snapshot("remove") path); scripts/harness/board-click-create.mjs C10/C11.
+  // await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'a Journal card selected' });
+  // await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
+  await app.key('Delete'); await sleep(200);
   await sleep(300);
   const boxesAfterInertDelete = await app.evalJs('window.wrizoBoard()');
   ok('S3: hand-delete (Remove) on a derived card is an INERT, quiet no-op — the exact same card set survives the click, byte-identical',
@@ -424,13 +438,21 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
   await sleep(200);
   const userBoardSliverButtons = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].map(b => b.textContent.trim())");
-  ok('S3: an ORDINARY user Board still carries BOTH Add controls, byte-identical to before this ticket — the restriction is scoped to system Boards only',
-    userBoardSliverButtons.includes('Add card') && userBoardSliverButtons.includes('New page card'), JSON.stringify(userBoardSliverButtons));
+  // SUPERSEDED (item word-diet, Nick) — boardNewPageCard's text itself
+  // changed, "New page card" -> "New Pages Card". ORIGINAL claim parked verbatim:
+  // ok('S3: an ORDINARY user Board still carries BOTH Add controls, byte-identical to before this ticket — the restriction is scoped to system Boards only',
+  //   userBoardSliverButtons.includes('Add card') && userBoardSliverButtons.includes('New page card'), JSON.stringify(userBoardSliverButtons));
+  ok('S3 [word-diet successor]: an ORDINARY user Board still carries BOTH Add controls — the restriction is scoped to system Boards only',
+    userBoardSliverButtons.includes('Add card') && userBoardSliverButtons.includes('New Pages Card'), JSON.stringify(userBoardSliverButtons));
 
   await app.evalJs(POINTER_HELPER);
   await selectBox(app, 'b1-user-card');
-  await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'user board card selected' });
-  await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
+  // ---- PARKED - SUPERSEDED by board-click-to-create (Nick, Oct 15 1:39am): the "Remove" row is DELETED from the board surface ----
+  // DRIVER only - the assertion after it (an ordinary board card is genuinely removed) is unchanged.
+  // Quoted VERBATIM below. Successor: the Delete key on the selected card (BoardEditor.tsx key handler -> removeSelected, the same snapshot("remove") path); scripts/harness/board-click-create.mjs C10/C11.
+  // await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'user board card selected' });
+  // await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
+  await app.key('Delete'); await sleep(200);
   await sleep(250);
   const userBoardAfterDelete = await app.evalJs('window.wrizoBoard()');
   ok('S3: hand-delete on an ORDINARY board card genuinely REMOVES it — untouched by this ticket\'s inert-delete guard (scoped to system Boards only)',
@@ -759,8 +781,12 @@ if (process.env.HARNESS_PARKED === '1') {
     // re-asserted here against the new copy. Live successor: b2-1.mjs's
     // own "S6 lexicon + DOM" section.
     const trashBoardHomeLabelNow = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-    pok('PARKED (was "S1/S3/S4: the Trash Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (flatly false)") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
-      trashBoardHomeLabelNow === 'The Trash Board — has no drawer home', String(trashBoardHomeLabelNow));
+    // SUPERSEDED (item word-diet, Nick) — boardHomeLabelTrash shortens again,
+    // "The Trash Board — has no drawer home" -> "Trash"; ORIGINAL parked verbatim:
+    // pok('PARKED (was "S1/S3/S4: the Trash Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (flatly false)") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
+    //   trashBoardHomeLabelNow === 'The Trash Board — has no drawer home', String(trashBoardHomeLabelNow));
+    pok('PARKED [word-diet successor] (was the "drawer home" generation) — the Trash Board\'s own Page face now reads bare "Trash"; live successor: b2-1.mjs',
+      trashBoardHomeLabelNow === 'Trash', String(trashBoardHomeLabelNow));
 
     // A second stamped fixture for the Journal Board's own label (systemKind
     // 'journal', the ternary's ELSE branch in BoardEditor.tsx).
@@ -779,8 +805,12 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
     await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'PARKED Page face (journal system board)' });
     const journalBoardHomeLabelNow = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-    pok('PARKED (was "S1/S3: the Journal Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (self-referential) or a project name it doesn\'t have") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
-      journalBoardHomeLabelNow === 'The Journal Board — has no drawer home', String(journalBoardHomeLabelNow));
+    // SUPERSEDED (item word-diet, Nick) — boardHomeLabelJournal shortens again,
+    // "The Journal Board — has no drawer home" -> "Journal"; ORIGINAL parked verbatim:
+    // pok('PARKED (was "S1/S3: the Journal Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (self-referential) or a project name it doesn\'t have") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
+    //   journalBoardHomeLabelNow === 'The Journal Board — has no drawer home', String(journalBoardHomeLabelNow));
+    pok('PARKED [word-diet successor] (was the "drawer home" generation) — the Journal Board\'s own Page face now reads bare "Journal"; live successor: b2-1.mjs',
+      journalBoardHomeLabelNow === 'Journal', String(journalBoardHomeLabelNow));
 
     // CD3 harness-discipline fix (2026-07-22) — this file's own live S4/S5
     // check (Trash at section C's own foot, index 5) is SUPERSEDED whole:

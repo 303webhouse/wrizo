@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getTheme, THEME_CONFIG } from './theme';
 
 // Mode-aware editor (Phase 2) — the writer's chrome settings, behind the gear in
 // the writing studio. Real toggles, persisted; read by ModeStage (rails/glow/
@@ -148,49 +149,47 @@ export function useWritingSettings(): WritingSettings {
   return value;
 }
 
-// FX2 S2 (docs/wrizo-alpha/fx2-second-sitting-brief.md) — the Draft-open
-// typewriter default: Draft opens with typewriter ON unless the page
-// already holds 10+ line-equivalents at mount; Free Write is unaffected.
-// `typewriter` itself stays the ONE global, persisted value above (no
-// per-page storage) — what's new is the SESSION-scoped (in-memory only; a
-// fresh app load is a fresh session) bookkeeping needed to tell "the app
-// auto-seeding a Draft-open default" apart from "the writer explicitly
-// chose a value" — the latter must win for the rest of the session and
-// never be silently re-imposed by a later page-open seed. A page-level ref
-// (PageEditor.tsx's warmRef idiom) can't carry this: the flag has to
-// survive across DIFFERENT pages/mounts within one session, not just one
-// component's lifetime, so it lives at module scope instead, exactly like
-// `current`/`subs` above.
-let explicitlySetThisSession = false;
+// PHASE 1 (S5) - THE TYPEWRITER IS REMEMBERED PER PAGE, on this device (Nick, Oct 11). This REPLACES two things, both gone: FX2 S2's line-count seed
+// ("opens ON under 10 line-equivalents", with item 87's empty-page amendment) and its session-only `explicitlySetThisSession` flag. The pattern is item
+// 112-A's `wrizo-mode-page-<id>`: a plain localStorage key per page, WRITTEN ON EVERY TOGGLE and READ ONCE AT MOUNT. No database, no schema, no server.
+//
+// `typewriter` above stays the ONE global, persisted, live value every consumer reads; what is new is what puts a value INTO it when a page opens:
+//   · a saved value for this page      -> that;
+//   · none, and the page is EMPTY      -> the theme's default (store/theme.ts THEME_CONFIG: Arbor on, Flux off) - a new page;
+//   · none, and the page holds text    -> OFF (a page that existed before this shipped is not surprised);
+// and whichever applied is then saved, so the page remembers from its first open. FREE WRITE IS UNCHANGED: it never calls this and a toggle there writes no page value.
+// Prose Draft and Screenplay pages both call it (ScriptEditor reads it too; that surface does not run the fade, per SC1 S3, but the toggle and the Format lock read the
+// same value). Tab still indents - this touches nothing but the one boolean.
+const pageKey = (id: string) => `wrizo-typewriter-page-${id}`;
 
-// The toggle's own click handlers (Sliver.tsx, ModeStage.tsx's SettingsPanel
-// Seg) call this instead of the bare setter — it both writes the setting
-// AND arms the flag that makes every later seedTypewriterDefault() a no-op,
-// for the rest of this session.
-export function setTypewriterExplicit(on: boolean): void {
-  explicitlySetThisSession = true;
-  setWritingSettings({ typewriter: on });
+export function readPageTypewriter(id: string): boolean | null {
+  try {
+    const v = localStorage.getItem(pageKey(id));
+    return v === 'on' ? true : v === 'off' ? false : null;
+  } catch { return null; }
+}
+function writePageTypewriter(id: string, on: boolean): void {
+  try { localStorage.setItem(pageKey(id), on ? 'on' : 'off'); } catch { /* ignore */ }
 }
 
-// The line-equivalents threshold (store/lineEquivalents.ts's canonical
-// measure) below which a fresh Draft-open seeds typewriter ON rather than
-// OFF. Shared here (not duplicated in PageEditor.tsx/ScriptEditor.tsx, its
-// only two callers) so the two hosts can't drift on what "already holds
-// substantial work" means.
-export const DRAFT_TYPEWRITER_LINE_THRESHOLD = 10;
+// The page whose Draft surface is mounted right now (set by holdTypewriterPage). The shared toggles (Sliver, ModeStage, JournalEntry) call
+// setTypewriterExplicit without knowing a page; this is how a Draft page's toggle reaches its own key. Null on Free Write and everywhere else.
+let heldPageId: string | null = null;
+export function holdTypewriterPage(id: string): () => void {
+  heldPageId = id;
+  return () => { if (heldPageId === id) heldPageId = null; };
+}
 
-// Called once per surface mount, only when the EFFECTIVE mode at OPEN is
-// Draft (PageEditor.tsx's per-page remembered mode, or ScriptEditor.tsx's
-// always-Draft posture). Callers guard the "once per mount, never re-armed
-// by a later mode switch" part themselves — an effect with empty deps is
-// enough since both hosts already remount per page via `key={id}`
-// (PageEditor.tsx's warmRef / Sliver.tsx's initialGoalTextRef are the same
-// "captured once at mount" idiom for cases that need an explicit ref
-// instead) — that guard is inherently per-component, not something this
-// module-level store can own. A no-op once the writer has explicitly
-// chosen a value this session — the one thing this whole mechanism exists
-// to prevent.
-export function seedTypewriterDefault(on: boolean): void {
-  if (explicitlySetThisSession) return;
+/** The writer's toggle. Writes the live value and, on a held Draft/Screenplay page, that page's own memory. */
+export function setTypewriterExplicit(on: boolean): void {
   setWritingSettings({ typewriter: on });
+  if (heldPageId != null) writePageTypewriter(heldPageId, on);
+}
+
+/** Once per page mount (PageEditor / ScriptEditor, when the page opens into Draft). `empty` = the page holds no text yet. */
+export function enterPageTypewriter(id: string, empty: boolean): void {
+  const saved = readPageTypewriter(id);
+  const on = saved ?? (empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);
+  setWritingSettings({ typewriter: on });
+  if (saved == null) writePageTypewriter(id, on);
 }

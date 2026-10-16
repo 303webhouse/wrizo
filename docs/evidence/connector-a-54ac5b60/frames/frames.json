@@ -1,0 +1,543 @@
+{
+  "rows": [
+    {
+      "combo": "arbor-dark",
+      "frame": "01-mode-on",
+      "file": "arbor-dark/01-mode-on.png",
+      "md5": "7654aff5d11137586eacad38ba1de196",
+      "sameAsDarkTwin": null,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "02-arm-over-open-card",
+      "file": "arbor-dark/02-arm-over-open-card.png",
+      "md5": "41324d2ea2c3ec784b3567f91b4ed913",
+      "sameAsDarkTwin": null,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "false"
+        },
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "03-arm-over-linked-card",
+      "file": "arbor-dark/03-arm-over-linked-card.png",
+      "md5": "d6e6cfba974442a3a25751b4f1e5d651",
+      "sameAsDarkTwin": null,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "true"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "04-just-after-linking",
+      "file": "arbor-dark/04-just-after-linking.png",
+      "md5": "5a6188f6a6f31a121aefd3058c3421c6",
+      "sameAsDarkTwin": null,
+      "armed": "false",
+      "lines": 1,
+      "arm": false,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "true"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "05-line-selected",
+      "file": "arbor-dark/05-line-selected.png",
+      "md5": "47a4a537781160e153ebfae6a0a8bb38",
+      "sameAsDarkTwin": null,
+      "armed": "true",
+      "lines": 2,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "true"
+        },
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "01-mode-on",
+      "file": "arbor-light/01-mode-on.png",
+      "md5": "7654aff5d11137586eacad38ba1de196",
+      "sameAsDarkTwin": true,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "02-arm-over-open-card",
+      "file": "arbor-light/02-arm-over-open-card.png",
+      "md5": "41324d2ea2c3ec784b3567f91b4ed913",
+      "sameAsDarkTwin": true,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "false"
+        },
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "03-arm-over-linked-card",
+      "file": "arbor-light/03-arm-over-linked-card.png",
+      "md5": "d6e6cfba974442a3a25751b4f1e5d651",
+      "sameAsDarkTwin": true,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "true"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "04-just-after-linking",
+      "file": "arbor-light/04-just-after-linking.png",
+      "md5": "5a6188f6a6f31a121aefd3058c3421c6",
+      "sameAsDarkTwin": true,
+      "armed": "false",
+      "lines": 1,
+      "arm": false,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "true"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "05-line-selected",
+      "file": "arbor-light/05-line-selected.png",
+      "md5": "47a4a537781160e153ebfae6a0a8bb38",
+      "sameAsDarkTwin": true,
+      "armed": "true",
+      "lines": 2,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "true"
+        },
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "01-mode-on",
+      "file": "flux-dark/01-mode-on.png",
+      "md5": "eeb5cf2d93183db30605bce0bc77944e",
+      "sameAsDarkTwin": null,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "02-arm-over-open-card",
+      "file": "flux-dark/02-arm-over-open-card.png",
+      "md5": "c93c806e7739b5b89563e76f04ff0b04",
+      "sameAsDarkTwin": null,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "false"
+        },
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "03-arm-over-linked-card",
+      "file": "flux-dark/03-arm-over-linked-card.png",
+      "md5": "3faecaabf4a676958bb34c80d2e014c1",
+      "sameAsDarkTwin": null,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "true"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "04-just-after-linking",
+      "file": "flux-dark/04-just-after-linking.png",
+      "md5": "a353554b5855520d3f7d0db9ea8ada42",
+      "sameAsDarkTwin": null,
+      "armed": "false",
+      "lines": 1,
+      "arm": false,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "true"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "05-line-selected",
+      "file": "flux-dark/05-line-selected.png",
+      "md5": "322eff4a447fe428a1038e651083b90b",
+      "sameAsDarkTwin": null,
+      "armed": "true",
+      "lines": 2,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "true"
+        },
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "01-mode-on",
+      "file": "flux-light/01-mode-on.png",
+      "md5": "e2cf058e6f879005047b20f07e4140b7",
+      "sameAsDarkTwin": false,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "02-arm-over-open-card",
+      "file": "flux-light/02-arm-over-open-card.png",
+      "md5": "5629647c74bc53c9e64f74b79fa51f12",
+      "sameAsDarkTwin": false,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "false"
+        },
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "03-arm-over-linked-card",
+      "file": "flux-light/03-arm-over-linked-card.png",
+      "md5": "9ac2b348a6250e4b3a8bdac782b15bbf",
+      "sameAsDarkTwin": false,
+      "armed": "true",
+      "lines": 1,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "true"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "04-just-after-linking",
+      "file": "flux-light/04-just-after-linking.png",
+      "md5": "b6a33e99c24cde7b4e3e04dba20d5c40",
+      "sameAsDarkTwin": false,
+      "armed": "false",
+      "lines": 1,
+      "arm": false,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "true"
+      },
+      "selectedLine": false,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "05-line-selected",
+      "file": "flux-light/05-line-selected.png",
+      "md5": "7a458194047747c426da6007c62dfe97",
+      "sameAsDarkTwin": false,
+      "armed": "true",
+      "lines": 2,
+      "arm": true,
+      "circles": [
+        {
+          "card": "ca-b",
+          "solid": "true"
+        },
+        {
+          "card": "ca-c",
+          "solid": "true"
+        }
+      ],
+      "handle": {
+        "circle": "true",
+        "solid": "false"
+      },
+      "selectedLine": true,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    }
+  ],
+  "lightFramesByteIdenticalToDarkTwin": [
+    "arbor-light/01-mode-on",
+    "arbor-light/02-arm-over-open-card",
+    "arbor-light/03-arm-over-linked-card",
+    "arbor-light/04-just-after-linking",
+    "arbor-light/05-line-selected"
+  ]
+}

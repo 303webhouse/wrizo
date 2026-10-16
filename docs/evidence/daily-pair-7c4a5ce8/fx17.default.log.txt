@@ -1,0 +1,94 @@
+[
+  {
+    "name": "S1: the scrollbar gutter is RESERVED even with nothing to scroll — the measured width no longer depends on whether a scrollbar is showing (the feedback edge is gone at its source)",
+    "pass": true,
+    "detail": "{\"gutter\":12,\"scrollable\":0,\"clientW\":1088}"
+  },
+  {
+    "name": "S1: THE STUTTER IS GONE — across a full trusted-pointer drag to the bottom edge the scrollbar gutter NEVER flips (pre-fix: 71 flips in 142 frames, one every other frame)",
+    "pass": true,
+    "detail": "{\"frames\":148,\"gutterFlips\":0}"
+  },
+  {
+    "name": "S1: the wrap's clientWidth holds a SINGLE value throughout the drag (pre-fix it oscillated 1098<->1088, exactly the scrollbar's 10px)",
+    "pass": true,
+    "detail": "[1088]"
+  },
+  {
+    "name": "S1: the canvas WIDTH holds a single value throughout the drag — nothing downstream of the width is being rescaled mid-gesture",
+    "pass": true,
+    "detail": "[1088]"
+  },
+  {
+    "name": "S1: the canvas height is MONOTONE across the drag — it grows as the card descends and never once shrinks (a single drop would be the loop restarting)",
+    "pass": true,
+    "detail": "{\"heightDrops\":0,\"distinctHeights\":18}"
+  },
+  {
+    "name": "S2 (1366x768): the wrap's standing clientWidth is 1088 — the gutter is reserved permanently, so this is the width with or without a scrollbar",
+    "pass": true,
+    "detail": "{\"clientW\":1088}"
+  },
+  {
+    "name": "S2 (1366x768): THE BOARD REACHES ITS FLOOR — the wrap now ends at the stage's own bottom (within the 2px of its deliberate border), where before FX17 it stopped 39px short and left granted room unspent",
+    "pass": true,
+    "detail": "{\"stageBottom\":706,\"wrapBottom\":704,\"gap\":2}"
+  },
+  {
+    "name": "S2 (1366x768): the canvas fills the wrap's CONTENT box exactly — zero residual scroll on a lightly-populated board (the 2px border term). A board that always has something to scroll has not reached its floor",
+    "pass": true,
+    "detail": "{\"canvasH\":597,\"clientH\":597,\"scrollH\":597,\"residual\":0}"
+  },
+  {
+    "name": "S2 (1366x768): the whole wrap is still IN THE ROOM — FX13's law is unchanged and governs (chrome fits the room, content scrolls within its wrap)",
+    "pass": true,
+    "detail": "{\"wrapBottom\":704,\"viewportH\":768}"
+  },
+  {
+    "name": "S2 legacy (<1100px): no DeskFrame stage exists, so availHeightPx stays null and the canvas keeps its pre-FX17 constant floor of 560 — the untouched path, unconditionally",
+    "pass": true,
+    "detail": "{\"framed\":false,\"canvasH\":560}"
+  },
+  {
+    "name": "S3: THE HARD STOP — the card cannot be dragged past the stated limit: its bottom lands at or above BOARD_MAX_Y - 0.08 = 2.92, despite the pointer travelling well beyond it",
+    "pass": true,
+    "detail": "{\"y\":2.7801470588235295,\"bottom\":2.9001470588235296,\"limit\":2.92}"
+  },
+  {
+    "name": "S3: the card actually TRAVELLED to the stop rather than being refused — it moved down from its seeded position and came to rest against the limit",
+    "pass": true,
+    "detail": "{\"from\":2.6,\"to\":2.7801470588235295}"
+  },
+  {
+    "name": "S3: THE STOP IS EXACT — at the stop the canvas measures BOARD_MAX_Y x its own width (3 x canvasW), because the clamp and the height formula share the same 0.08 breathing term: the limit is reached on the very frame the card stops, with no dead zone travelled first and nothing to spring back from",
+    "pass": false,
+    "detail": "{\"canvasH\":3242,\"expected\":3264,\"canvasW\":1088}"
+  },
+  {
+    "name": "S3: NO STUTTER AT THE STOP — the gutter never flips and the canvas height never shrinks while the card lands and holds against the limit (a rubber-band would show as a height drop here)",
+    "pass": true,
+    "detail": "{\"frames\":122,\"gutterFlips\":0,\"heightDrops\":0}"
+  },
+  {
+    "name": "S3: THE GROUP KEEPS ITS SHAPE through the landing — the pair's separation is byte-identical before and after a drag that drives the LOWER card into the floor. A per-box clamp would have let the upper card keep travelling and visibly deformed the selection",
+    "pass": true,
+    "detail": "{\"sepBefore\":0.2,\"sepAfter\":0.2,\"before\":{\"a\":2.4,\"b\":2.6},\"after\":{\"a\":2.5999999999999996,\"b\":2.8}}"
+  },
+  {
+    "name": "S3: and the group genuinely LANDED — the lower card of the pair rests against the limit, so the shape invariant above was tested at the clamp and not merely in free space",
+    "pass": true,
+    "detail": "{\"lowerBottom\":2.92,\"limit\":2.92}"
+  },
+  {
+    "name": "S3: A LIMIT STOPS; IT NEVER RELOCATES — a card already sitting BELOW the limit (seeded at y=3.60, past BOARD_MAX_Y) keeps its y EXACTLY through a sideways drag. Clamping to a negative headroom would have yanked it upward the instant it was touched: a silent correction of the writer's layout, which is worse than the unbounded growth this slice replaced",
+    "pass": true,
+    "detail": "{\"yBefore\":3.6,\"yAfter\":3.6}"
+  },
+  {
+    "name": "S3: and that card still MOVED sideways — the stop is confined to the one axis it governs; it did not freeze the gesture outright",
+    "pass": true,
+    "detail": "{\"x\":0.24705882352941178}"
+  }
+]
+
+FX17 VERIFY: FAIL — 1/18 failed

@@ -1,0 +1,87 @@
+[
+  {
+    "name": "S1 (SV25): at rest, the LEFT (sliver) grip points left '‹' and the RIGHT (tutor) grip points right '›' — the right arrow no longer lies about its direction",
+    "pass": true,
+    "detail": "{\"sliverClosed\":\"‹\",\"tutorClosed\":\"›\"}"
+  },
+  {
+    "name": "S1 successor [one drawer at a time]: open each drawer ALONE and its grip points inward - the LEFT grip '›' and the RIGHT grip '‹' - the mirror holds in both states (the arrow points the way the drawer will move)",
+    "pass": true,
+    "detail": "{\"sliverOpen\":\"›\",\"tutorOpen\":\"‹\"}"
+  },
+  {
+    "name": "S2 DEGRADATION (Page @ 1100x900, margin 209px < 280 — the documented narrow-screen mode, NOT the norm): the OPEN panel OVERLAYS the paper at natural open-w (~374px), stays in the room, grip STAYS reachable atop it",
+    "pass": true,
+    "detail": "{\"panel\":{\"l\":693,\"r\":1067,\"t\":107,\"b\":840,\"w\":374,\"h\":733},\"paper\":{\"l\":242,\"r\":858,\"t\":107,\"b\":840,\"w\":615,\"h\":733},\"margin\":209,\"expectedOpenW\":374,\"grip\":true,\"gd\":{\"reachable\":true,\"hit\":\"span.wz-tutor-grip-glyph\",\"gripRect\":{\"l\":858,\"r\":874,\"t\":123},\"x\":866,\"y\":140,\"gripZ\":\"2\",\"gripPE\":\"auto\",\"anchorZ\":\"7\",\"anchorPE\":\"none\",\"panelAnchorZ\":\"6\"},\"w\":1100}"
+  },
+  {
+    "name": "S2 WIDE LAW (Page @ 1366x768, margin 335px >= 280): the OPEN panel OCCUPIES the margin and NEVER covers the paper (panel.left >= paper.right), stays wholly in the room, grip reachable",
+    "pass": true,
+    "detail": "{\"panel\":{\"l\":991,\"r\":1326,\"t\":107,\"b\":708,\"w\":335,\"h\":601},\"paper\":{\"l\":375,\"r\":991,\"t\":107,\"b\":708,\"w\":615,\"h\":601},\"margin\":335,\"grip\":true,\"gd\":{\"reachable\":true,\"hit\":\"span.wz-tutor-grip-glyph\",\"gripRect\":{\"l\":991,\"r\":1007,\"t\":123},\"x\":999,\"y\":140,\"gripZ\":\"2\",\"gripPE\":\"auto\",\"anchorZ\":\"7\",\"anchorPE\":\"none\",\"panelAnchorZ\":\"6\"},\"w\":1366}"
+  },
+  {
+    "name": "S2 WIDE LAW (Page @ 1366x768): the open left toolbar and the open right panel DO NOT overlap — every control under them stays reachable (SV26)",
+    "pass": true,
+    "detail": "{\"sliverPanel\":{\"l\":175,\"r\":359,\"t\":107,\"b\":708,\"w\":184,\"h\":601},\"tutorPanel\":{\"l\":991,\"r\":1326,\"t\":107,\"b\":708,\"w\":335,\"h\":601}}"
+  },
+  {
+    "name": "S2 WIDE LAW (Page @ 2200x900, margin 491px >= 280): the OPEN panel OCCUPIES the margin and NEVER covers the paper (panel.left >= paper.right), stays wholly in the room, grip reachable",
+    "pass": true,
+    "detail": "{\"panel\":{\"l\":1500,\"r\":1960,\"t\":107,\"b\":840,\"w\":460,\"h\":733},\"paper\":{\"l\":731,\"r\":1469,\"t\":107,\"b\":840,\"w\":738,\"h\":733},\"margin\":491,\"grip\":true,\"gd\":{\"reachable\":true,\"hit\":\"span.wz-tutor-grip-glyph\",\"gripRect\":{\"l\":1469,\"r\":1485,\"t\":123},\"x\":1477,\"y\":140,\"gripZ\":\"2\",\"gripPE\":\"auto\",\"anchorZ\":\"7\",\"anchorPE\":\"none\",\"panelAnchorZ\":\"6\"},\"w\":2200}"
+  },
+  {
+    "name": "S2 WIDE LAW (Page @ 2200x900): the open left toolbar and the open right panel DO NOT overlap — every control under them stays reachable (SV26)",
+    "pass": true,
+    "detail": "{\"sliverPanel\":{\"l\":531,\"r\":715,\"t\":107,\"b\":840,\"w\":184,\"h\":733},\"tutorPanel\":{\"l\":1500,\"r\":1960,\"t\":107,\"b\":840,\"w\":460,\"h\":733}}"
+  },
+  {
+    "name": "S2 DEGRADATION (Script @ 1100x900, margin 109px < 280 — the documented narrow-screen mode, NOT the norm): the OPEN panel OVERLAYS the paper at natural open-w (~374px), stays in the room, grip STAYS reachable atop it",
+    "pass": true,
+    "detail": "{\"panel\":{\"l\":693,\"r\":1067,\"t\":107,\"b\":840,\"w\":374,\"h\":733},\"paper\":{\"l\":142,\"r\":958,\"t\":107,\"b\":1203,\"w\":816,\"h\":1096},\"margin\":109,\"expectedOpenW\":374,\"grip\":true,\"gd\":{\"reachable\":true,\"hit\":\"span.wz-tutor-grip-glyph\",\"gripRect\":{\"l\":935,\"r\":951,\"t\":123},\"x\":943,\"y\":140,\"gripZ\":\"2\",\"gripPE\":\"auto\",\"anchorZ\":\"7\",\"anchorPE\":\"none\",\"panelAnchorZ\":\"6\"},\"w\":1100}"
+  },
+  {
+    "name": "S2 DEGRADATION (Script @ 1366x768, margin 235px < 280 — the documented narrow-screen mode, NOT the norm): the OPEN panel OVERLAYS the paper at natural open-w (~460px), stays in the room, grip STAYS reachable atop it",
+    "pass": true,
+    "detail": "{\"panel\":{\"l\":866,\"r\":1326,\"t\":107,\"b\":708,\"w\":460,\"h\":601},\"paper\":{\"l\":275,\"r\":1091,\"t\":107,\"b\":1203,\"w\":816,\"h\":1096},\"margin\":235,\"expectedOpenW\":460,\"grip\":true,\"gd\":{\"reachable\":true,\"hit\":\"span.wz-tutor-grip-glyph\",\"gripRect\":{\"l\":1091,\"r\":1107,\"t\":123},\"x\":1099,\"y\":140,\"gripZ\":\"2\",\"gripPE\":\"auto\",\"anchorZ\":\"7\",\"anchorPE\":\"none\",\"panelAnchorZ\":\"6\"},\"w\":1366}"
+  },
+  {
+    "name": "S2 WIDE LAW (Script @ 2200x900, margin 452px >= 280): the OPEN panel OCCUPIES the margin and NEVER covers the paper (panel.left >= paper.right), stays wholly in the room, grip reachable",
+    "pass": true,
+    "detail": "{\"panel\":{\"l\":1508,\"r\":1960,\"t\":107,\"b\":840,\"w\":452,\"h\":733},\"paper\":{\"l\":692,\"r\":1508,\"t\":107,\"b\":1203,\"w\":816,\"h\":1096},\"margin\":452,\"grip\":true,\"gd\":{\"reachable\":true,\"hit\":\"span.wz-tutor-grip-glyph\",\"gripRect\":{\"l\":1508,\"r\":1524,\"t\":123},\"x\":1516,\"y\":140,\"gripZ\":\"2\",\"gripPE\":\"auto\",\"anchorZ\":\"7\",\"anchorPE\":\"none\",\"panelAnchorZ\":\"6\"},\"w\":2200}"
+  },
+  {
+    "name": "S2 WIDE LAW (Script @ 2200x900): the open left toolbar and the open right panel DO NOT overlap — every control under them stays reachable (SV26)",
+    "pass": true,
+    "detail": "{\"sliverPanel\":{\"l\":492,\"r\":676,\"t\":107,\"b\":840,\"w\":184,\"h\":733},\"tutorPanel\":{\"l\":1508,\"r\":1960,\"t\":107,\"b\":840,\"w\":452,\"h\":733}}"
+  },
+  {
+    "name": "S2 BOARD OVERLAY EXCEPTION (@ 1100x900): the board panel keeps natural open-w (~374px), MAY overlay the canvas, but stays WHOLLY in the room (right <= 1100) and its grip is reachable atop it (the z-lift)",
+    "pass": true,
+    "detail": "{\"panel\":{\"l\":683,\"r\":1057,\"t\":121,\"b\":854,\"w\":374,\"h\":733},\"expectedOpenW\":374,\"grip\":true,\"gd\":{\"reachable\":true,\"hit\":\"span.wz-tutor-grip-glyph\",\"gripRect\":{\"l\":1057,\"r\":1073,\"t\":137},\"x\":1065,\"y\":154,\"gripZ\":\"2\",\"gripPE\":\"auto\",\"anchorZ\":\"7\",\"anchorPE\":\"none\",\"panelAnchorZ\":\"6\"},\"w\":1100}"
+  },
+  {
+    "name": "S2 BOARD OVERLAY EXCEPTION (@ 1366x768): the board panel keeps natural open-w (~460px), MAY overlay the canvas, but stays WHOLLY in the room (right <= 1366) and its grip is reachable atop it (the z-lift)",
+    "pass": true,
+    "detail": "{\"panel\":{\"l\":856,\"r\":1316,\"t\":121,\"b\":722,\"w\":460,\"h\":601},\"expectedOpenW\":460,\"grip\":true,\"gd\":{\"reachable\":true,\"hit\":\"span.wz-tutor-grip-glyph\",\"gripRect\":{\"l\":1228,\"r\":1244,\"t\":137},\"x\":1236,\"y\":154,\"gripZ\":\"2\",\"gripPE\":\"auto\",\"anchorZ\":\"7\",\"anchorPE\":\"none\",\"panelAnchorZ\":\"6\"},\"w\":1366}"
+  },
+  {
+    "name": "S2 BOARD OVERLAY EXCEPTION (@ 2200x900): the board panel keeps natural open-w (~460px), MAY overlay the canvas, but stays WHOLLY in the room (right <= 2200) and its grip is reachable atop it (the z-lift)",
+    "pass": true,
+    "detail": "{\"panel\":{\"l\":1495,\"r\":1955,\"t\":124,\"b\":857,\"w\":460,\"h\":733},\"expectedOpenW\":460,\"grip\":true,\"gd\":{\"reachable\":true,\"hit\":\"span.wz-tutor-grip-glyph\",\"gripRect\":{\"l\":1645,\"r\":1661,\"t\":140},\"x\":1653,\"y\":157,\"gripZ\":\"2\",\"gripPE\":\"auto\",\"anchorZ\":\"7\",\"anchorPE\":\"none\",\"panelAnchorZ\":\"6\"},\"w\":2200}"
+  },
+  {
+    "name": "S3 (SV27): the Board's mode tabs render ALL CAPS (computed text-transform: uppercase) — mirroring the Page's mode strip; the words/DOM text are unchanged",
+    "pass": true,
+    "detail": "{\"transform\":\"uppercase\",\"barLeft\":803,\"navCenter\":678,\"crumbLeft\":55,\"navLeft\":40}"
+  },
+  {
+    "name": "S3: the Board's mode bar is RIGHT-aligned (its left edge is past the nav's centre) while the crumb stays on the left — the two top menus read as siblings",
+    "pass": true,
+    "detail": "{\"transform\":\"uppercase\",\"barLeft\":803,\"navCenter\":678,\"crumbLeft\":55,\"navLeft\":40}"
+  }
+]
+[]
+
+FX18 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; FX18 parks nothing of its own.
+
+FX18 VERIFY: PASS (16 checks)

@@ -24,6 +24,8 @@ import { setCaretOffset, setSelectionOffsets, getCaretOffset, getSelectionOffset
 import type { Stroke } from '../types';
 import { projectMilestones } from '../store/milestones';
 import { copyText } from '../store/clipboard';
+import { buildPageActions } from '../store/pageActions';
+import { getWritingSettings } from '../store/writingSettings';
 import { BoardEditor } from '../components/BoardEditor';
 import { ScriptEditor } from '../components/ScriptEditor';
 import { useLexicon } from '../store/themeLexicon';
@@ -48,7 +50,9 @@ import { applyFormat, marksAt, headingLevelAt, stripMarkdownConventions, type Fo
 import { hiddenMarkEditingFor } from '../store/hiddenMarksEditing';
 import { createTabChord, type TabAct } from '../store/tabChord';
 import { escapeFromEditor, ESC_HINT_ID } from '../store/escapeExit';
-import { BLOCK_TOKEN } from '../store/markRuns';
+import { BLOCK_TOKEN, MARK_OF, type MarkKind } from '../store/markRuns';
+// card-held-italic: the strip's button for a held mark, read off the ONE reader's own table (`**` -> bold, `*` -> italic, ...)
+const MARK_KIND: Record<string, MarkKind> = Object.fromEntries(Object.entries(MARK_OF).map(([k, m]) => [m, k as MarkKind]));
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
 import { editorPlainText, writeRows } from '../store/lineRows';
 import { getRegisteredUndoStack } from '../store/textUndo';
@@ -59,7 +63,7 @@ import { setFirstRunGateActive } from '../store/firstRunGateActive';
 import { useMonotonicWordCount, FirstRunVeil, FirstRunGateBanner, FirstRunGlow } from '../components/FirstRunGate';
 import { UnlockCeremony } from '../components/UnlockCeremony';
 import type { ThemeId } from '../store/theme';
-import { seedTypewriterDefault, DRAFT_TYPEWRITER_LINE_THRESHOLD } from '../store/writingSettings';
+import { enterPageTypewriter, holdTypewriterPage } from '../store/writingSettings';   // PHASE 1 (S5): per-page typewriter memory
 import { countLineEquivalents } from '../store/lineEquivalents';
 
 import { registerFlush } from '../store/flushRegistry';
@@ -375,7 +379,9 @@ function PageEditorView({ id }: { id: string }) {
       const lit = offset == null ? { bold: false, italic: false, underline: false, strike: false } : marksAt(plain, offset);
       // A held italic (an empty italic is not stored - store/draftFormat.ts) lights I while the caret is where it will be typed.
       const held = hiddenMarkEditingFor(el)?.pendingMark();
-      if (held && held.mark === '*' && offset === held.at) lit.italic = true;
+      if (held && !held.exit && held.mark === '*' && offset === held.at) lit.italic = true;
+      // card-held-italic: a style pressed OFF at its run's end is unlit while the caret waits there (the next letter will be plain)
+      if (held && held.exit && offset === held.at) { const k = MARK_KIND[held.mark]; if (k) lit[k] = false; }
       setDraftMarks(lit);
       const level = offset == null ? null : headingLevelAt(plain, offset);
       setHeadingLevel(level);
@@ -462,13 +468,16 @@ function PageEditorView({ id }: { id: string }) {
   // threshold still opens ON (fx2.mjs's ~3-line check proves it, unchanged).
   // Only the empty case moves, so this is an amendment at the one point the
   // original rule was never really about.
+  const typewriterEnteredRef = useRef(false);   // PHASE 1 (S5): has this mount read the page's typewriter memory yet?
   useEffect(() => {
-    if (mode === 'drafting') {
-      const fresh = initialText.trim().length === 0;
-      seedTypewriterDefault(!fresh && countLineEquivalents(initialText) < DRAFT_TYPEWRITER_LINE_THRESHOLD);
-    }
+    if (mode === 'drafting') { enterPageTypewriter(id, initialText.trim().length === 0); typewriterEnteredRef.current = true; }   // PHASE 1 (S5): read once at mount; replaces the line-count seed
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  useEffect(() => {   // PHASE 1 (S5): a toggle on this Draft page writes ITS memory; a page opened in Free Write reads it the FIRST time it reaches Draft
+    if (mode !== 'drafting') return undefined;
+    if (!typewriterEnteredRef.current) { typewriterEnteredRef.current = true; enterPageTypewriter(id, textRef.current.trim().length === 0); }
+    return holdTypewriterPage(id);
+  }, [mode, id]);
 
   // W2 — the way back. Scroll lives on ModeStage's internal .mode-scroll box
   // (surfaceRef is the .mode-page ancestor the host already owns); caret
@@ -731,7 +740,8 @@ function PageEditorView({ id }: { id: string }) {
     entry,
     homeLabel,
     memberships,
-    footer: entry.projectId == null ? 'Saved automatically — even if you never file it to a Drawer or the Shelf.' : undefined,
+    // ITEM word-diet (Nick, Oct 13): REMOVE — the framed Page panel's own footer line retires whole.
+    footer: undefined,
     // PB1 — ABSENT while unborn. patchJournalEntry resolves nothing to merge
     // into for a page with no row, so these would silently no-op: a star that
     // does not stick is the definition of half-work. They return the moment the
@@ -974,6 +984,13 @@ function PageEditorView({ id }: { id: string }) {
     const sel = getSelectionOffsets(el) ?? { start: textRef.current.length, end: textRef.current.length };
     const result = applyFormat(textRef.current, sel.start, sel.end, action);
     // A pending mark (an empty italic cannot be stored as `**`): nothing is written; the editor wraps the next text typed here.
+    // card-held-italic: the style pressed off at its run's end - nothing is written; the editor types what comes next outside the run
+    if (result.exitPending) {
+      hiddenMarkEditingFor(el)?.setPendingExit(result.exitPending, result.start);
+      const k = MARK_KIND[result.exitPending];
+      if (k) setDraftMarks(m => ({ ...m, [k]: false }));
+      return;
+    }
     if (result.pending) {
       hiddenMarkEditingFor(el)?.setPending(result.pending, result.start);
       // light the button now: the press moved no caret, so no selectionchange will recompute it
@@ -1000,6 +1017,7 @@ function PageEditorView({ id }: { id: string }) {
   };
   const applyRailFormat = (action: FormatAction) => {
     if (mode !== 'drafting') return;   // 112-A's guard, unchanged in scope
+    if (getWritingSettings().typewriter) return;   // PHASE 1 (S4): Format is greyed while Typewriter is on, and its shortcuts (Ctrl/Cmd+B/I/U) are blocked with it
     applyFormatAt(action);
   };
 
@@ -1110,6 +1128,9 @@ function PageEditorView({ id }: { id: string }) {
     : mode === 'journal'
       ? {
           kind: 'freewrite',
+          // PHASE 1 - the drawer's TEXT | INK tab row is the ONE control for this instrument (the band's switch is retired).
+          // Display wiring only: nothing here touches the typing path.
+          instrument: { value: instrument, onChange: setInstrument },
           forwardLock: { on: forwardLock, onToggle: setForwardLock },
           // ITEM 207 - the smallest form (a face button and -/+, no number). Absent in INK: a pen page has no typeface.
           type: instrument === 'ink' ? undefined : typeMember('small'),
@@ -1153,6 +1174,8 @@ function PageEditorView({ id }: { id: string }) {
             styleGuide: entry.pageSettings?.styleGuide ?? STYLE_GUIDE_DEFAULT,
             onPickStyleGuide: styleGuide => patchPageSettings({ styleGuide }),
             templates: pageTemplates,
+            // PHASE 1 - the Actions section: Tags, Copy, Delete, Header/Footer, wired from this page's own handlers (store/pageActions.ts).
+            actions: unborn ? undefined : buildPageActions({ entry, copy: () => { void doCopy('words'); }, addTag, removeTag, patchPageSettings, navigate }),
           }
         // ITEM 112-A — REVISE'S DESK DRAWER OPENS, AND IT OPENS ONTO NOTHING.
         //
@@ -1335,12 +1358,11 @@ function PageEditorView({ id }: { id: string }) {
                 Revise are not sketch pads, and a switch offering an instrument
                 the surface does not have would be the locked door wearing
                 paint. Absent, never disabled. */}
+            {/* PHASE 1: the TEXT | INK choice is the first tab of the left drawer; the band no longer carries a second switch for it. */}
             <ModeStrip
               mode={mode}
               onSwitch={switchMode}
               onPublish={() => setShowPublish(true)}
-              instrument={mode === 'journal' ? instrument : undefined}
-              onInstrument={mode === 'journal' ? setInstrument : undefined}
               end={(
                 <button type="button" className="btn-quiet page-plan-door" data-page-plan-door onClick={openPlanBoard}>
                   {dt('pagePlanDoor')} <span aria-hidden="true">→</span>
@@ -1510,7 +1532,10 @@ function PageEditorView({ id }: { id: string }) {
               <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}`); }}>{lexMany('page')}</button>
             </div>
           )}
-          <button type="button" className="btn-quiet page-copy" onClick={() => copyText(textRef.current)} title={`Copy the clean ${lex('page').toLowerCase()} text`}>Copy {lex('page').toLowerCase()} text</button>
+          {/* ITEM word-diet (Nick, review fix, Oct 13) — "page text" was a
+              normal singular-noun-as-modifier compound; "pages text" isn't
+              standard English. Cut the noun (name the act, not the object). */}
+          <button type="button" className="btn-quiet page-copy" onClick={() => copyText(textRef.current)} title="Copy the clean text">Copy text</button>
           {/* BM1 S3 — the PLAN → door, the mirror of the board's PAGE → door, at
               the end of the page's bar (same arrow grammar). First click on an
               unpaired page BIRTHS the plan board (S2's lazy rule — never before,
