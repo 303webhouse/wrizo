@@ -14,6 +14,7 @@
 //   L6  Free Write: typed stars are stored escaped and make no run - and the word still being typed shows its star, not `\*`.
 //   L7  the card pop-up: the same.
 //   L8  determinism: one key script, typed in a burst and typed slowly, stores the same text.
+//   L9  a typed `[sic]` inside a real font span: both brackets escaped, the span whole.
 // Run: node scripts/harness/typed-literal.mjs   (from apps/desktop, dist-web built, box turn granted)
 import { withHarness } from '../runtime-verify.mjs';
 
@@ -238,6 +239,25 @@ await withHarness(async (app) => {
   ok('L8: the same keys give the same text at any speed (the caret settles synchronously)', !!results.burst && results.burst === results.slow, JSON.stringify(results));
   ok('L8: ...and that text holds both the Ctrl+B bold and the escaped literals', typeof results.burst === 'string' && results.burst.includes('**two**')
     && results.burst.includes(`${B}*three${B}*`) && results.burst.includes(`${B}_y${B}_`), JSON.stringify(results.burst));
+
+  // ---- L9: a typed bracket pair INSIDE a real font span (font-span is on this branch since the rebase). Both brackets are escaped: the
+  // span's reader closes the nearest `[` with a bare `]`, so an unescaped `]` would have closed the span's own `[` and broken the span.
+  const SPAN = 'Ada [counted gulls]{.font-courier-prime} now';
+  const d9 = await openPage(app, 'tl9', SPAN, 'draft');
+  ok('L9 (setup): the page with a font span opens in Draft', d9);
+  if (d9) {
+    // the caret after the visible "Ada counted" - inside the span's words
+    const placed = await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); ed.focus(); const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n, acc = 0; const want = 'Ada counted'.length;
+      while ((n = w.nextNode())) { if (n.parentElement && n.parentElement.closest('.md-mark-hidden')) continue; if (acc + n.data.length >= want) { const r = document.createRange(); r.setStart(n, want - acc); r.collapse(true); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return !!n.parentElement.closest('.md-font'); } acc += n.data.length; } return false; })()`);
+    ok('L9 (driver): the caret is inside the span, after "counted"', placed);
+    await app.typeKeys(' [sic]');
+    await sleep(400);
+    const f9 = await app.evalJs(`[...document.querySelectorAll('${ED} .md-font')].map((s) => [...s.childNodes].filter((c) => !(c.nodeType === 1 && c.classList.contains('md-mark-hidden'))).map((c) => c.textContent).join(''))`);
+    const st9 = await settledBy(() => pageText(app, 'tl9'));
+    ok('L9: the span stays whole - one span, its words "counted [sic] gulls", the typed brackets shown as themselves',
+      Array.isArray(f9) && f9.length === 1 && f9[0] === 'counted [sic] gulls', JSON.stringify(f9));
+    ok('L9: ...stored with both typed brackets escaped, inside the span\'s own marks', unz(st9) === `Ada [counted ${B}[sic${B}] gulls]{.font-courier-prime} now`, JSON.stringify(st9));
+  }
 });
 
 if (process.env.HARNESS_PARKED === '1') {
