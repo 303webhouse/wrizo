@@ -1,0 +1,16 @@
+{
+  "cases": 4000,
+  "perRule": {
+    "replaceRange": 667,
+    "backspaceAt": 667,
+    "deleteAt": 667,
+    "wordBackspaceAt": 667,
+    "wordDeleteAt": 666,
+    "enterAt": 666
+  },
+  "casesThatChangedTheText": 3946,
+  "failures": 0,
+  "firstFailures": []
+}
+
+TYPING-LATENCY WINDOW VERIFY: PASS (4000 cases, windowed == whole-text on every rule)

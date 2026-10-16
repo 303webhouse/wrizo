@@ -1,0 +1,30 @@
+
+ROWS-SHADOW VERIFY: FAIL - 2 mismatch(es) between the page's shadow lines and its DOM (renders checked: 6); first: WZ-ROWS-MISMATCH text (shadow 60 chars, dom 91) | WZ-ROWS-MISMATCH text (shadow 60 chars, dom 91)
+PASS  [plateau] (setup) the Draft page opens
+PASS  [plateau] PAGE: nothing highlighted - "Selection" is dead and "Whole document" is the scope, in brass  [{"scopes":[{"text":"Selection","on":"false","dead":"true"},{"text":"Whole document","on":"true","dead":null}],"current":[{"name":"Crimson Pro","color":"rgb(255, 152, 0)"}],"brass":"rgb(255, 152, 0)"}]
+PASS  [plateau] PAGE: words highlighted - the scope follows to "Selection"  [{"hl":true,"s1":{"scopes":[{"text":"Selection","on":"true","dead":"false"},{"text":"Whole document","on":"false","dead":null}],"current":[{"name":"Crimson Pro","color":"rgb(255, 152, 0)"}],"brass":"rgb(255, 152, 0)"}}]
+FAIL  [plateau] PAGE: ONLY the highlighted words take the face - painted in it, its marks hidden (zero size), and the words stay highlighted  [{"words":"counted gulls","family":"\"Atkinson Hyperlegible\", system-ui, sans-serif","marks":["0px","0px"],"sel":""}]
+FAIL  [plateau] PAGE: the picked face's row is the one in brass  [{"scopes":[{"text":"Selection","on":"false","dead":"true"},{"text":"Whole document","on":"true","dead":null}],"current":[{"name":"Crimson Pro","color":"rgb(255, 152, 0)"}],"brass":"rgb(255, 152, 0)"}]
+PASS  [plateau] PAGE: the span is stored in the page's text, and nothing else changed  ["The ferry was late, so Ada [counted gulls]{.font-atkinson-hyperlegible} instead of minutes."]
+PASS  [plateau] PAGE: ONE Ctrl+Z undoes the pick, whole  ["The ferry was late, so Ada counted gulls instead of minutes."]
+PASS  [plateau] PAGE: "Whole document" then a face - every word takes it: the spans are gone and the page's own face is set  [{"text":"The ferry was late, so Ada counted gulls instead of minutes.","face":{"name":"EB Garamond","generic":"serif","source":"bundled"},"fam":"\"EB Garamond Variable\", Georgia, serif"}]
+PASS  [plateau] (setup) a real double-click opens the card
+PASS  [plateau] CARD: the dock's scopes read "Selection" / "Whole card", and the highlight puts it on Selection  [{"scopes":[{"text":"Selection","on":"true","dead":"false"},{"text":"Whole card","on":"false","dead":null}],"current":[{"name":"Crimson Pro","color":"rgb(255, 152, 0)"}],"brass":"rgb(255, 152, 0)"}]
+PASS  [plateau] CARD: ONLY the highlighted words take the face in the card, painted, marks hidden, still highlighted  [{"words":"counted gulls","family":"\"Courier Prime\", \"Courier New\", monospace","marks":["0px","0px"],"sel":"counted gulls"}]
+PASS  [plateau] CARD: the span is stored in the card's text  ["The ferry was late, so Ada [counted gulls]{.font-courier-prime} instead of minutes."]
+PASS  [plateau] CARD: the card's face on the board paints the span too  [{"words":"counted gulls","family":"\"Courier Prime\", \"Courier New\", monospace"}]
+PASS  [flux] (setup) the Draft page opens
+PASS  [flux] PAGE: nothing highlighted - "Selection" is dead and "Whole document" is the scope, in brass  [{"scopes":[{"text":"Selection","on":"false","dead":"true"},{"text":"Whole document","on":"true","dead":null}],"current":[{"name":"Crimson Pro","color":"rgb(255, 152, 0)"}],"brass":"rgb(255, 152, 0)"}]
+PASS  [flux] PAGE: words highlighted - the scope follows to "Selection"  [{"hl":true,"s1":{"scopes":[{"text":"Selection","on":"true","dead":"false"},{"text":"Whole document","on":"false","dead":null}],"current":[{"name":"Crimson Pro","color":"rgb(255, 152, 0)"}],"brass":"rgb(255, 152, 0)"}}]
+FAIL  [flux] PAGE: ONLY the highlighted words take the face - painted in it, its marks hidden (zero size), and the words stay highlighted  [{"words":"counted gulls","family":"\"Atkinson Hyperlegible\", system-ui, sans-serif","marks":["0px","0px"],"sel":""}]
+FAIL  [flux] PAGE: the picked face's row is the one in brass  [{"scopes":[{"text":"Selection","on":"false","dead":"true"},{"text":"Whole document","on":"true","dead":null}],"current":[{"name":"Crimson Pro","color":"rgb(255, 152, 0)"}],"brass":"rgb(255, 152, 0)"}]
+PASS  [flux] PAGE: the span is stored in the page's text, and nothing else changed  ["The ferry was late, so Ada [counted gulls]{.font-atkinson-hyperlegible} instead of minutes."]
+PASS  [flux] PAGE: ONE Ctrl+Z undoes the pick, whole  ["The ferry was late, so Ada counted gulls instead of minutes."]
+PASS  [flux] PAGE: "Whole document" then a face - every word takes it: the spans are gone and the page's own face is set  [{"text":"The ferry was late, so Ada counted gulls instead of minutes.","face":{"name":"EB Garamond","generic":"serif","source":"bundled"},"fam":"\"EB Garamond Variable\", Georgia, serif"}]
+PASS  [flux] (setup) a real double-click opens the card
+PASS  [flux] CARD: the dock's scopes read "Selection" / "Whole card", and the highlight puts it on Selection  [{"scopes":[{"text":"Selection","on":"true","dead":"false"},{"text":"Whole card","on":"false","dead":null}],"current":[{"name":"Crimson Pro","color":"rgb(255, 152, 0)"}],"brass":"rgb(255, 152, 0)"}]
+PASS  [flux] CARD: ONLY the highlighted words take the face in the card, painted, marks hidden, still highlighted  [{"words":"counted gulls","family":"\"Courier Prime\", \"Courier New\", monospace","marks":["0px","0px"],"sel":"counted gulls"}]
+PASS  [flux] CARD: the span is stored in the card's text  ["The ferry was late, so Ada [counted gulls]{.font-courier-prime} instead of minutes."]
+PASS  [flux] CARD: the card's face on the board paints the span too  [{"words":"counted gulls","family":"\"Courier Prime\", \"Courier New\", monospace"}]
+
+FONT-SPAN VERIFY: FAIL - 4/26 failed

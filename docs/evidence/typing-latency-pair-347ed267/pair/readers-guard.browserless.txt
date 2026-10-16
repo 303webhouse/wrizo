@@ -1,0 +1,30 @@
+files scanned: 189; reads found: 22; classified entries: 20
+  OK  components/BoardEditor.tsx:455  [the board card]  const plainNow = () => readEditorPlainText(el.innerText, null).plain;
+  OK  components/BoardEditor.tsx:470  [the board card]  let { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
+  OK  components/BoardEditor.tsx:491  [the board card]  const after = readEditorPlainText(el.innerText, getCaretOffset(el));
+  OK  components/BoardEditor.tsx:547  [the board card]  const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
+  OK  components/ForwardOnlyEditor.tsx:274  [a free-edit surface WITHOUT rows]  const readNative = (keepHint = false) => readNativeEdit(el, { keepHint }) ?? readEditorPlainText(el.innerText,
+  OK  components/ScriptEditor.tsx:229  [the screenplay]  const len = textNode.textContent?.length ?? 0;
+  OK  components/ScriptEditor.tsx:371  [the screenplay]  onInput={() => onInput(nodeRef.current?.textContent ?? '')}
+  OK  components/ScriptEditor.tsx:769  [the screenplay]  const text = node?.textContent ?? activeEl?.text ?? '';
+  OK  components/ScriptEditor.tsx:840  [the screenplay]  const domText = activeElRef.current?.textContent;
+  OK  pages/JournalEntry.tsx:553  [the Journal sheet]  pageTextRef.current = el.innerText;
+  OK  pages/JournalEntry.tsx:554  [the Journal sheet]  setWords(wordCount(el.innerText));
+  OK  pages/JournalEntry.tsx:599  [the Journal sheet]  lastActionRef.current = { type: 'text', before: el.innerText };
+  OK  pages/JournalEntry.tsx:606  [the Journal sheet]  pageTextRef.current = el.innerText;
+  OK  pages/JournalEntry.tsx:607  [the Journal sheet]  setWords(wordCount(el.innerText));
+  OK  pages/JournalEntry.tsx:608  [the Journal sheet]  setGoalText(el.innerText);
+  OK  store/draftDecoration.ts:370  [the board card]  const { plain, caret } = readEditorPlainText(el.innerText, getCaret(el));
+  OK  store/hiddenMarksDom.ts:22  [page rows (editing) + the board card]  const raw = el.innerText;
+  OK  store/lineRows.ts:348  [page rows (editing)]  return readEditorPlainText(el.innerText, null).plain;
+  OK  store/lineRows.ts:404  [page rows (editing)]  if (a === b && mid.length === 1 && row && row.parentNode === el && row.textContent === mid[0] && !opts.keepHin
+  OK  store/lineRows.ts:427  [page rows (editing: DOM -> model)]  plain = readEditorPlainText(el.textContent ?? '', null).plain;
+  OK  store/lineRows.ts:458  [harness only]  const dom = readEditorPlainText(R.el.textContent ?? '', null).plain;
+  OK  store/lineRows.ts:465  [harness only]  if (row.textContent !== R.lines[i]) { why = `row ${i} text`; break; }
+PASS  COVERAGE: the sweep read the source (a guard that read nothing would pass blind)
+PASS  EVERY read of innerText/textContent in apps/desktop/src is classified - none is a save, sync, count, copy, export or Tutor path
+PASS  EVERY classified read still exists (the list cannot rot into a blanket pass)
+PASS  THE PATHS: the page's save and counts (PageEditor), copy (clipboard), export (pageExport), sync (persistence, api) and the Tutor (Tutor, tutorConsistency) read no innerText/textContent at all - only the model
+PASS  LIVENESS: a planted innerText read in the save path is caught as unclassified (the guard can go red)
+
+TYPING-LATENCY READERS VERIFY: PASS (5 checks, 22 reads classified)
