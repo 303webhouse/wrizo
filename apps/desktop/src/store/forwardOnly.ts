@@ -11,6 +11,7 @@
 // Forward-only is total here too: text is appended, runs are struck, NOTHING is
 // erased and no run text is edited in place.
 import type { Run } from '../types';
+import { readEscapes } from './markRuns';
 
 // Seed a fragment's runs from an initial text (one unstruck run, or empty).
 export function seedContent(text: string): Run[] {
@@ -45,12 +46,19 @@ export function lastUnstruckText(content: Run[]): string {
 // their own struck run (stay visible, line-through; drop from derived prose); the
 // rest of the run stays unstruck. Forward-only: nothing is erased, the run text
 // is only re-partitioned. Reports whether anything changed (for locked presses).
+// TYPED-LITERAL: a typed formatting character is stored escaped (`\\*`, store/markRuns.ts); the runway never splits an escape - a strike
+// or an erase that would take the character alone takes its backslash with it, so no lone backslash is left to show.
+const keepEscapeWhole = (text: string, take: number): number => {
+  const k = text.length - take - 1;
+  return k >= 0 && take < text.length && readEscapes(text).includes(k) ? take + 1 : take;
+};
+
 export function strikeTail(content: Run[], n: number): { content: Run[]; changed: boolean } {
   if (n <= 0) return { content, changed: false };
   for (let i = content.length - 1; i >= 0; i--) {
     const run = content[i];
     if (run.struck || run.text.length === 0) continue;
-    const take = Math.min(n, run.text.length);
+    const take = keepEscapeWhole(run.text, Math.min(n, run.text.length));
     const head = run.text.slice(0, run.text.length - take);
     const tail = run.text.slice(run.text.length - take);
     const repl: Run[] = head ? [{ text: head, struck: false }, { text: tail, struck: true }]
@@ -73,7 +81,7 @@ export function eraseTail(content: Run[], n: number): Run[] {
   for (let i = content.length - 1; i >= 0; i--) {
     const run = content[i];
     if (run.struck || run.text.length === 0) continue;
-    const take = Math.min(n, run.text.length);
+    const take = keepEscapeWhole(run.text, Math.min(n, run.text.length));
     const head = run.text.slice(0, run.text.length - take);
     const next = content.slice();
     if (head) next.splice(i, 1, { ...run, text: head });

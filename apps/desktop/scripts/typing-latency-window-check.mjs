@@ -39,6 +39,10 @@ const word = () => {
   if (r < 0.31) return `***${w}***`;
   if (r < 0.33) return '**';           // a lone or empty-pair mark
   if (r < 0.35) return '*';
+  // TYPED-LITERAL (Oct 16): typed formatting characters are stored escaped - the window must treat an escape exactly as the whole text does
+  if (r < 0.38) return `\\*${w}\\*`;
+  if (r < 0.40) return `${w}\\_${w}`;
+  if (r < 0.41) return '\\\\';
   return w;
 };
 const line = () => {

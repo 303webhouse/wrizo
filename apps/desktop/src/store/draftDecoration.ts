@@ -10,7 +10,7 @@
 // input (only <span> wrapping is added), which is what lets a caller restore
 // a plain-text caret offset after re-decorating (see ForwardOnlyEditor.tsx).
 
-import { readLead, readMarks, type MarkKind, type MarkRun } from './markRuns';
+import { readEscapes, readLead, readMarks, type MarkKind, type MarkRun } from './markRuns';
 
 function escHtml(s: string): string {
   return s.replace(/[&<>]/g, c => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'));
@@ -68,6 +68,20 @@ function decorateInlineForCard(text: string, caret: number | null): string {
   // ITEM 211: on the page the marks never reveal. Every character is still emitted exactly once, so the 1:1 count the caret
   // restore depends on holds.
   const runs = readMarks(text);
+  // TYPED-LITERAL: a typed formatting character is stored escaped (`\*`); its backslash is a hidden mark, so the page shows the character
+  // alone and still holds every stored character (the 1:1 count the caret restore depends on). `seg` writes plain text with its escapes.
+  const escapes = readEscapes(text);
+  const ESC = '<span class="md-mark md-mark-hidden md-escape">\\</span>';
+  const seg = (a: number, b: number): string => {
+    let out = '';
+    let from = a;
+    for (const x of escapes) {
+      if (x < a || x >= b) continue;
+      out += escHtml(text.slice(from, x)) + ESC;
+      from = x + 1;
+    }
+    return out + escHtml(text.slice(from, b));
+  };
   const cls: Record<MarkKind, string> = { bold: 'md-bold', italic: 'md-italic', underline: 'md-underline', strike: 'md-strike' };
   const emit = (lo: number, hi: number, within: MarkRun[]): string => {
     let out = '';
@@ -89,11 +103,11 @@ function decorateInlineForCard(text: string, caret: number | null): string {
       // the text, so storage, undo, and innerText are unchanged.
       void caret;   // kept in the signature: a caret move and a format press call the same painter
       const markCls = 'md-mark md-mark-hidden';
-      out += escHtml(text.slice(cur, r.open));
+      out += seg(cur, r.open);
       out += `<span class="${cls[r.kind]}"><span class="${markCls}">${escHtml(r.mark)}</span>${emit(r.open + ml, r.close, kids)}<span class="${markCls}">${escHtml(r.mark)}</span></span>`;
       cur = end;
     }
-    return out + escHtml(text.slice(cur, hi));
+    return out + seg(cur, hi);
   };
   return emit(0, text.length, runs);
 }

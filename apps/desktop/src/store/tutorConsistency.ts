@@ -15,6 +15,7 @@
 // as an observation if they collide (case-vary or near-duplicate) with
 // something else, which a short common-word list makes rare in practice.
 
+import { unescapeTyped } from './markRuns';
 const COMMON_WORDS = new Set([
   'The', 'A', 'An', 'And', 'But', 'Or', 'Nor', 'So', 'Yet', 'For', 'It', 'He', 'She', 'They',
   'We', 'You', 'I', 'In', 'On', 'At', 'To', 'Of', 'By', 'From', 'With', 'As', 'Is', 'Was',
@@ -80,7 +81,9 @@ function mostCommonForm(forms: Map<string, number>): string {
 // One observation per finding, plain and quiet — the panel renders these
 // as read-only lines; this lens computes them fresh every call, storing
 // nothing (S1's own "lens results are derived, never stored" law).
-export function computeConsistencyObservations(texts: string[]): string[] {
+export function computeConsistencyObservations(rawTexts: string[]): string[] {
+  // TYPED-LITERAL (Oct 16): Consistency reads the words - a typed character's escape backslash is taken out first
+  const texts = rawTexts.map(unescapeTyped);
   const fullText = texts.join('\n');
   const tokens = texts.flatMap(harvestProperNouns);
   if (tokens.length === 0) return [];

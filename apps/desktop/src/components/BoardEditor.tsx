@@ -541,10 +541,13 @@ function BoardCardPopup({
       marks.enter(e);
     };
     const onMarkKey = (e: KeyboardEvent) => { marks.markKey(e); };
-    const onCompStart = () => { composing = true; marks.reset(); };
+    // TYPED-LITERAL: a composition's committed text is typed text too - captured at its start, escaped at its end
+    const onCompStart = () => { marks.reset(); marks.noteComposition(); composing = true; };
     const onCompEnd = () => {
       composing = false;
-      const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
+      let { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
+      const lit = marks.repairInput(plain);
+      if (lit) { plain = lit.text; caret = lit.caret; }
       // FX6 S1 — an IME-composed insertion is one atomic undo step (no
       // per-candidate-update recording happens above — onInput returns
       // early while `composing` is true).

@@ -1,4 +1,5 @@
 import type { DirtyRecords, RemoteRecords } from './persistence';
+import { unescapeTyped } from './markRuns';
 
 // Thin fetch wrappers around the server's /auth and /api endpoints. Same-origin
 // in production (server serves the app); a vite dev proxy covers local dev.
@@ -162,7 +163,13 @@ export async function apiTutorChat(
   selection?: string,
 ): Promise<TutorChatResult> {
   try {
-    const res = await postJson('/api/tutor/chat', { messages, delta, bible, selection });
+    // TYPED-LITERAL (Oct 16): the Tutor reads the words - a typed formatting character's escape backslash (`\\*`) is taken out of the PAGE's
+    // text it is sent (delta, bible, selection), here at the one wire call; everything else travels as before, an absent key stays absent.
+    const plain = (t: string | undefined) => (t === undefined ? undefined : unescapeTyped(t));
+    const res = await postJson('/api/tutor/chat', {
+      messages,   // the writer's own chat lines: typed in the Tutor's box, never escaped by the editor, so sent as they are
+      delta: plain(delta), bible: plain(bible), selection: plain(selection),
+    });
     if (!res.ok) return { ok: false, configured: true };
     const data = (await res.json()) as {
       configured: boolean;
