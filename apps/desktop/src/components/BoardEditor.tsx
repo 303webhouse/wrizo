@@ -1,6 +1,7 @@
 import { liveBoxes } from '../store/boxTombstones';
 import { openContextMenu, type ContextMenuItem } from '../store/contextMenu';
 import { requestDelete } from '../store/deleteGate';
+import { publishBoardSnapshot, registerBoardActions } from '../store/boardSelection';
 import { getResumeTarget } from '../store/resume';
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -12,7 +13,7 @@ import {
   getSystemKind, reconcileSystemBoard, restoreEntry, getJournalEntryIncludingDeleted, subscribe,
   stashDeletedBoxes, restoreDeletedBox, purgeDeletedBox, getTombstonedBox, softDeleteEntry,
   getPairedPageId, pairBoardWithPage,
-  setPinDisplayed,
+  setPinDisplayed, toggleEntryLink, isCardLinkedToEntry, livePinFor, getLinkPeersByCard, addPageLink,
   boardNestChain, pinAspectFor } from '../store/persistence';
 import { SURVEY_DRAG_TYPE } from './CascadeSurvey';
 import { useBoardMode } from '../store/boardMode';
@@ -1011,6 +1012,10 @@ export function BoardEditor({ id }: { id: string }) {
   const selectedIdRef = useRef(selectedId);
   // Delete / Backspace on a selected card removes it (the "Remove" row is gone) - the key handler is a [] effect, so it calls the current render's removeSelected through this ref
   const removeSelectedRef = useRef<() => void>(() => {});
+  const removeConnectionRef = useRef<(connId: string) => void>(() => {});
+  // CONNECTOR-B: a thumbnail dropped on the board becomes a LINKED COPY - the pointer effect (a []-ish effect) reaches the board's state through this
+  const linkedCopyRef = useRef<(entryId: string, x: number, y: number) => void>(() => {});
+  const [linkTick, setLinkTick] = useState(0);
   const undoRef = useRef<() => void>(() => {});
   // the right-click menus are built from this render's state; the pointer effect (a []-ish effect) reaches them through this ref
   const ctxActionsRef = useRef<{ card: (x: number, y: number, boxId: string) => void; board: (x: number, y: number) => void }>({ card: () => {}, board: () => {} });
@@ -1422,6 +1427,81 @@ export function BoardEditor({ id }: { id: string }) {
   // every way to delete a card - the menu's Delete, the Delete / Backspace key - goes through ONE gate (store/deleteGate.ts): "Send to Trash?" unless the writer has turned asking off
   // (a system board's cards are derived, so a Delete there is the same quiet no-op as ever - it must not even ask)
   removeSelectedRef.current = () => { if (isSystemBoard) return; requestDelete(removeSelected); };
+  removeConnectionRef.current = (connId: string) => removeConnection(connId);
+
+  // ---- CONNECTOR-B: the Grafts / Links tab (the right drawer) reads the open board through a small seam ----
+  useEffect(() => { publishBoardSnapshot({ boardId: id, boxes, selectedId }); }, [id, boxes, selectedId]);
+  useEffect(() => {
+    registerBoardActions({ removeConnection: (connId) => removeConnectionRef.current(connId) });
+    return () => { registerBoardActions(null); publishBoardSnapshot(null); };
+  }, []);
+  // a link made or removed anywhere redraws this board's footers
+  useEffect(() => subscribe(() => setLinkTick(n => n + 1)), []);
+
+  // ---- CONNECTOR-B: drag a rail thumbnail onto the board -> a LINKED COPY (a card made from the page or board, already tied to its original by a link record) ----
+  linkedCopyRef.current = (entryId: string, cx: number, cy: number) => {
+    if (isSystemBoard) return;
+    const entry = getJournalEntryIncludingDeleted(entryId);
+    const cv = canvasRef.current;
+    if (!entry || !cv || entryId === id) return;
+    const cr = cv.getBoundingClientRect(), W = cr.width || pageWidthPx;
+    const w = 0.26, h = 0.14;
+    const x = Math.min(Math.max((cx - cr.left) / W, 0), Math.max(1 - w, 0));
+    const y = Math.min(Math.max((cy - cr.top) / W, 0), Math.max(BOARD_MAX_Y - BOARD_BREATHING_ROOM - h, 0));
+    const words = entry.pageType === 'board' ? ((entry.text ?? '').trim().split('\n')[0] || 'Untitled board') : (entry.text ?? '').trim().slice(0, 800);
+    const maxZ = boxesRef.current.reduce((m, b) => Math.max(m, b.z), 0);
+    const box: Box = { id: generateId(), kind: 'text', x, y, w, h, z: maxZ + 1, text: words };
+    const next = [...boxesRef.current, box];
+    setBoxes(next);
+    saveBoardBoxes(id, next);                       // the card exists in storage before the record that names it
+    lastSavedRef.current = next;
+    addPageLink(id, { aBoxId: box.id, bEntryId: entryId });
+    setSelectedId(box.id);
+  };
+  useEffect(() => {
+    let press: { x: number; y: number; entryId: string; label: string } | null = null;
+    let ghost: HTMLElement | null = null;
+    const finish = () => {
+      window.removeEventListener('pointermove', onMove, true); window.removeEventListener('pointerup', onUp, true); window.removeEventListener('pointercancel', onCancel, true);
+      ghost?.remove(); ghost = null; delete document.body.dataset.linkDrag; press = null;
+    };
+    function onMove(e: PointerEvent) {
+      if (!press) return;
+      if (!ghost) {
+        if (Math.hypot(e.clientX - press.x, e.clientY - press.y) < 6) return;
+        ghost = document.createElement('div'); ghost.className = 'wz-link-ghost'; ghost.textContent = press.label;
+        document.body.appendChild(ghost); document.body.dataset.linkDrag = 'true';
+      }
+      e.preventDefault();
+      ghost.style.left = `${e.clientX + 10}px`; ghost.style.top = `${e.clientY - 20}px`;
+    }
+    function onUp(e: PointerEvent) {
+      const p = press, dragged = !!ghost;
+      finish();
+      if (!p || !dragged) return;
+      // the thumbnail's own click (it travels to the page) must not fire for a drag
+      const swallow = (ev: Event) => { ev.stopPropagation(); ev.preventDefault(); };
+      window.addEventListener('click', swallow, true);
+      setTimeout(() => window.removeEventListener('click', swallow, true), 80);
+      const over = document.elementFromPoint(e.clientX, e.clientY);
+      const cv = canvasRef.current;
+      if (over && cv && cv.contains(over)) linkedCopyRef.current(p.entryId, e.clientX, e.clientY);   // dropped anywhere on the board (empty space or over a card): a card lands there
+    }
+    function onCancel() { finish(); }
+    const onDown = (e: PointerEvent) => {
+      if (e.button !== 0 || e.pointerType === 'touch' || threadArmedFromRef.current != null || popupBoxIdRef.current) return;
+      const el = (e.target as Element | null)?.closest?.('[data-link-entry]') as HTMLElement | null;
+      if (!el || canvasRef.current?.contains(el)) return;
+      if (el.closest('[draggable="true"]') || (e.target as Element).closest('.wz-cascade-thumb-menu-btn, .wz-cascade-thumb-menu')) return;   // a draggable survey row keeps its own (membership) drag
+      const eid = el.dataset.linkEntry!;
+      if (eid === id || !getJournalEntryIncludingDeleted(eid)) return;
+      press = { x: e.clientX, y: e.clientY, entryId: eid, label: (el.textContent ?? '').trim().split('\n')[0].slice(0, 60) || 'Untitled' };
+      window.addEventListener('pointermove', onMove, true); window.addEventListener('pointerup', onUp, true); window.addEventListener('pointercancel', onCancel, true);
+    };
+    document.addEventListener('pointerdown', onDown, true);
+    return () => { document.removeEventListener('pointerdown', onDown, true); finish(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   // the board itself: soft-delete (the Trash lists it; Restore brings it back), then leave it the way a Page's own delete does
   const deleteThisBoard = () => {
@@ -1656,7 +1736,7 @@ export function BoardEditor({ id }: { id: string }) {
     //   LINES  shown ONLY in this mode, only this card's own links (clipped to the board by the canvas itself); a click selects one, Delete removes it (the existing key handler).
     // The arm and the target circle move imperatively (no React render per pointermove, the preview line's old discipline); React only hears of the target card changing.
     // ============================================================================================================================================================
-    type Connect = { src: string; held: boolean; right: boolean; ox: number; oy: number; moved: boolean; px: number; py: number; target: string | null };
+    type Connect = { src: string; held: boolean; right: boolean; ox: number; oy: number; moved: boolean; px: number; py: number; target: string | null; railEntry: string | null; railEl: HTMLElement | null };
     let connect: Connect | null = null;
     // the browser's context menu is suppressed ONLY: on the corner square, while the mode is on, and for a beat after a right-button gesture ends (Windows fires `contextmenu` AFTER `pointerup`, by which time the mode is already over)
     let ctxQuietUntil = 0;
@@ -1671,22 +1751,69 @@ export function BoardEditor({ id }: { id: string }) {
       const r = el.getBoundingClientRect(), c = canvas.getBoundingClientRect();
       return { x: r.right - c.left, y: r.bottom - c.top };
     };
+    // CONNECTOR-B: the arm lives in a VIEWPORT overlay (a portal on body, position:fixed) - it has to reach the rail's thumbnails, which are outside the board, and the board canvas clips. Its coordinates are CLIENT
+    // coordinates, so there is no canvas offset to subtract. The lines between cards stay inside the canvas (clipped to the board, never over the rail).
+    const cornerClient = (boxId: string) => {
+      const el = canvas.querySelector(`[data-box-id="${boxId}"]`) as HTMLElement | null;
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { x: r.right, y: r.bottom };
+    };
     const placeArm = () => {
       const line = previewLineRef.current, tip = armTipRef.current;
       if (!connect || !line) return;
-      const from = cornerOf(connect.src);
+      const from = cornerClient(connect.src);
       if (!from) return;
-      const c = canvas.getBoundingClientRect();
-      let to = { x: connect.px - c.left, y: connect.py - c.top };
-      const snap = connect.target ? cornerOf(connect.target) : null;
-      if (snap) to = snap;
+      let to = { x: connect.px, y: connect.py };
+      let snapped = false;
+      const snap = connect.target ? cornerClient(connect.target) : null;
+      if (snap) { to = snap; snapped = true; }
+      else if (connect.railEl) { const r = connect.railEl.getBoundingClientRect(); to = { x: r.left + 9, y: r.top + r.height / 2 }; snapped = true; }   // a rail thumbnail: the arm lands on ITS circle
       line.setAttribute('x1', String(from.x)); line.setAttribute('y1', String(from.y));
       line.setAttribute('x2', String(to.x)); line.setAttribute('y2', String(to.y));
       line.style.display = 'block';
       if (tip) {
-        // the tip rides the pointer; over a card the circle on that card takes its place
+        // the tip rides the pointer; over a card or a thumbnail the circle on that one takes its place
         tip.setAttribute('cx', String(to.x)); tip.setAttribute('cy', String(to.y));
-        tip.style.display = snap ? 'none' : 'block';
+        tip.style.display = snapped ? 'none' : 'block';
+      }
+    };
+    // ---- the rail: an element wearing data-link-entry stands for an ENTRY (a page or a board); outside the canvas it is a connector target ----
+    const railEntryAt = (x: number, y: number): { el: HTMLElement; entryId: string } | null => {
+      for (const el of document.elementsFromPoint(x, y)) {
+        const th = (el as Element).closest?.('[data-link-entry]') as HTMLElement | null;
+        if (!th || canvas.contains(th)) continue;
+        const eid = th.dataset.linkEntry;
+        if (!eid || eid === id || !getJournalEntryIncludingDeleted(eid)) continue;   // not an entry (a card's id in a survey), or this very board
+        return { el: th, entryId: eid };
+      }
+      return null;
+    };
+    let railPaintAt = 0;
+    const paintRail = () => {
+      railPaintAt = performance.now();
+      document.body.dataset.connecting = connect ? 'true' : 'false';
+      for (const el of document.querySelectorAll<HTMLElement>('[data-link-entry]')) {
+        if (canvas.contains(el)) continue;
+        const eid = el.dataset.linkEntry!;
+        const pin = connect ? livePinFor(id, eid) : null;
+        const linked = !!connect && (pin ? !!pairBox(connect.src, pin.id) : isCardLinkedToEntry(id, connect.src, eid));
+        const isTarget = !!connect && connect.railEntry === eid;
+        if (isTarget) el.setAttribute('data-link-target', 'true'); else el.removeAttribute('data-link-target');
+        if (connect && linked) el.setAttribute('data-link-peer', 'true'); else el.removeAttribute('data-link-peer');
+        if ((isTarget || (connect && linked)) && linked) el.setAttribute('data-link-solid', 'true'); else el.removeAttribute('data-link-solid');
+      }
+    };
+    const clearRailPaint = () => {
+      document.body.dataset.connecting = 'false';
+      for (const el of document.querySelectorAll<HTMLElement>('[data-link-entry]')) { el.removeAttribute('data-link-target'); el.removeAttribute('data-link-peer'); if (!el.hasAttribute('data-link-flash')) el.removeAttribute('data-link-solid'); }
+    };
+    const flashRail = (entryId: string, linked: boolean) => {
+      for (const el of document.querySelectorAll<HTMLElement>('[data-link-entry]')) {
+        if (canvas.contains(el) || el.dataset.linkEntry !== entryId) continue;
+        el.setAttribute('data-link-flash', linked ? 'on' : 'off');
+        if (linked) el.setAttribute('data-link-solid', 'true'); else el.removeAttribute('data-link-solid');
+        flashTimers.push(setTimeout(() => { el.removeAttribute('data-link-flash'); el.removeAttribute('data-link-solid'); }, 1500));
       }
     };
     const targetAt = (x: number, y: number): string | null => {
@@ -1715,6 +1842,7 @@ export function BoardEditor({ id }: { id: string }) {
       setConnectTarget(null);
       setSelectedConnectionId(null);
       const line = previewLineRef.current; if (line) line.style.display = 'none';
+      clearRailPaint();
     }
     const clearFlashTimers = () => { flashTimers.forEach(clearTimeout); flashTimers = []; };
     const startFlash = (f: { a: string; b: string; off: boolean; line: boolean }) => {
@@ -1738,12 +1866,27 @@ export function BoardEditor({ id }: { id: string }) {
       endConnect();
       startFlash({ a: src, b: tid, off: !!existing, line: true });
     };
+    // the connector's release on an ENTRY: if that entry is ALREADY a live pin card on this board it is a CARD (the one-truth rule: two cards of one board join by a connection box, never a record) - otherwise a
+    // page_links record toggles (linked <-> unlinked), owned by this board. Then a brief flash on the thumbnail, and the mode is over.
+    const commitEntry = (entryId: string) => {
+      if (!connect) return;
+      const pin = livePinFor(id, entryId);
+      if (pin) { commit(pin.id); return; }
+      const src = connect.src;
+      const res = toggleEntryLink(id, src, entryId);
+      endConnect();
+      if (res) flashRail(entryId, res === 'linked');
+    };
     function cMove(e: PointerEvent) {
       if (!connect) return;
       connect.px = e.clientX; connect.py = e.clientY;
       if (Math.hypot(e.clientX - connect.ox, e.clientY - connect.oy) > MOUSE_DRAG_THRESHOLD) connect.moved = true;
       const t = targetAt(e.clientX, e.clientY);
       if (t !== connect.target) { connect.target = t; setConnectTarget(t); }
+      const rail = t ? null : railEntryAt(e.clientX, e.clientY);
+      const railId = rail ? rail.entryId : null;
+      if (railId !== connect.railEntry) { connect.railEntry = railId; connect.railEl = rail ? rail.el : null; paintRail(); }
+      else if (performance.now() - railPaintAt > 200) paintRail();   // the rail may have changed under a still pointer (a panel opened)
       placeArm();
     }
     // a point on one of the mode's own circles (the origin's or a linked peer's) belongs to the CIRCLE, not to the line that ends there: the release that enters the mode lands exactly on the origin's
@@ -1767,13 +1910,15 @@ export function BoardEditor({ id }: { id: string }) {
         return;
       }
       const t = targetAt(e.clientX, e.clientY);
+      const rail = t ? null : railEntryAt(e.clientX, e.clientY);
       if (connect.held) {
         connect.held = false;
         if (t) { commit(t); return; }
+        if (rail) { commitEntry(rail.entryId); return; }
         if (connect.moved) { endConnect(); return; }   // released on nothing after a drag: cancel
         return;                                         // released at the square: the mode latches; a click finishes it
       }
-      if (t) commit(t); else endConnect();
+      if (t) commit(t); else if (rail) commitEntry(rail.entryId); else endConnect();
     }
     function cDown(e: PointerEvent) {
       // connection mode owns every press: the board's own select / move / resize stand down (and a stray press cannot start a native drag)
@@ -1782,7 +1927,7 @@ export function BoardEditor({ id }: { id: string }) {
     }
     const enterConnect = (src: string, held: boolean, e: PointerEvent) => {
       clearFlashTimers(); setConnectFlash(null);
-      connect = { src, held, right: e.button === 2, ox: e.clientX, oy: e.clientY, moved: false, px: e.clientX, py: e.clientY, target: null };
+      connect = { src, held, right: e.button === 2, ox: e.clientX, oy: e.clientY, moved: false, px: e.clientX, py: e.clientY, target: null, railEntry: null, railEl: null };
       threadArmedFromRef.current = src;
       setSelectedConnectionId(null);
       setConnectTarget(null);
@@ -1790,6 +1935,7 @@ export function BoardEditor({ id }: { id: string }) {
       document.addEventListener('pointermove', cMove, true);
       document.addEventListener('pointerup', cUp, true);
       document.addEventListener('pointerdown', cDown, true);
+      paintRail();
       requestAnimationFrame(placeArm);   // the arm element mounts with the state above; place it as soon as it exists
     };
     // a right-click on the square is suppressed ONLY there (the browser's own menu would cover the very thing being asked for) - plus while the mode is on, plus the beat after a right-drag lets go
@@ -2512,6 +2658,9 @@ export function BoardEditor({ id }: { id: string }) {
     }
     return notecardExcerpt(b.text ?? '').title || t('boardThreadUntitled');
   };
+  // CONNECTOR-B: every card's page / board / other-board links, in ONE scan of the cache (the footers draw on every render); linkTick re-reads it when any link changes
+  void linkTick;
+  const linkPeersByCard = getLinkPeersByCard(id, boxes);
   const connectionsFor = (boxId: string) => connections
     .map(c => (c.connA === boxId ? c.connB : c.connB === boxId ? c.connA : null))
     .filter((otherId): otherId is string => !!otherId)
@@ -2567,6 +2716,14 @@ export function BoardEditor({ id }: { id: string }) {
 
   const boardCanvas = (
     <div style={{ position: 'relative' }}>
+      {/* CONNECTOR-B: the connector's arm and its tip, in a VIEWPORT overlay so the arm can reach the rail's thumbnails (the board canvas clips); client coordinates, placed imperatively by the pointer effect */}
+      {threadArmedFrom != null && createPortal(
+        <svg className="board-connect-overlay" aria-hidden="true">
+          <line ref={previewLineRef} className="board-connect-arm" x1="0" y1="0" x2="0" y2="0" style={{ display: 'none' }} />
+          <circle ref={armTipRef} className="board-connect-tip" r={3.5} cx="0" cy="0" style={{ display: 'none' }} />
+        </svg>,
+        document.body,
+      )}
       <div ref={wrapRef} className="board-canvas-wrap" style={{ overflow: 'auto', maxHeight: availHeightPx != null ? availHeightPx : '78vh', border: '1px solid var(--ink-border)' }}>
         <div
           ref={canvasRef}
@@ -2699,8 +2856,6 @@ export function BoardEditor({ id }: { id: string }) {
                       </g>,
                     );
                   });
-                  out.push(<line key="arm" ref={previewLineRef} className="board-connect-arm" x1={from.x} y1={from.y} x2={from.x} y2={from.y} style={{ display: 'none' }} />);
-                  out.push(<circle key="tip" ref={armTipRef} className="board-connect-tip" r={3.5} cx={from.x} cy={from.y} style={{ display: 'none' }} />);
                 }
               } else if (connectFlash && connectFlash.line && !connectFlash.off) {
                 const a = boxes.find(b => b.id === connectFlash.a), b = boxes.find(b => b.id === connectFlash.b);
@@ -2741,6 +2896,7 @@ export function BoardEditor({ id }: { id: string }) {
           {sorted.map(box => {
           const selected = selectedIds.has(box.id);
           const boxConnections = footerOn ? connectionsFor(box.id) : [];
+          const boxLinkPeers = footerOn ? (linkPeersByCard.get(box.id) ?? []) : [];   // CONNECTOR-B: page / board / other-board-card links join the same footer
           // CONNECTOR-A - the circle a card shows while it is the arm's target, a linked peer of the card in connection mode, or the far end of the link just made. Open = not linked, solid = linked.
           const inMode = threadArmedFrom != null;
           const linkedToSrc = inMode && connections.some(c => (c.connA === threadArmedFrom && c.connB === box.id) || (c.connB === threadArmedFrom && c.connA === box.id));
@@ -2799,10 +2955,13 @@ export function BoardEditor({ id }: { id: string }) {
               )}
               {/* FX5 S5 — the connections footer: one quiet line per thread,
                   hidden whole when the board's own footer toggle is off. */}
-              {boxConnections.length > 0 && (
+              {(boxConnections.length > 0 || boxLinkPeers.length > 0) && (
                 <div className="board-card-footer">
                   {boxConnections.map(other => (
                     <div key={other.id} className="board-card-footer-line">— {t('boardThreadPrefix')}: {boxLabel(other)}</div>
+                  ))}
+                  {boxLinkPeers.map(p => (
+                    <div key={p.key} className="board-card-footer-line" data-link-peer-line={p.kind}>— {t('boardThreadPrefix')}: {p.label}</div>
                   ))}
                 </div>
               )}
