@@ -1,0 +1,490 @@
+{
+  "rows": [
+    {
+      "combo": "arbor-dark",
+      "frame": "01-card-menu",
+      "file": "arbor-dark/01-card-menu.png",
+      "md5": "f99974070ffc943bebcc10826c2d3e77",
+      "sameAsDarkTwin": null,
+      "menu": [
+        "Delete"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "02-grouped-card-menu",
+      "file": "arbor-dark/02-grouped-card-menu.png",
+      "md5": "0e33784bb89877a2d278b4f1f4342529",
+      "sameAsDarkTwin": null,
+      "menu": [
+        "Ungroup",
+        "---",
+        "Delete"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "03-board-menu",
+      "file": "arbor-dark/03-board-menu.png",
+      "md5": "8168494b99c3d7b54dee9c2908ea2c7f",
+      "sameAsDarkTwin": null,
+      "menu": [
+        "New Card",
+        "Delete board"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "04-drawers-board-menu",
+      "file": "arbor-dark/04-drawers-board-menu.png",
+      "md5": "b847f6c3262cd80990c825b305ece992",
+      "sameAsDarkTwin": null,
+      "menu": [
+        "Delete board"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "05-send-to-trash-dialog",
+      "file": "arbor-dark/05-send-to-trash-dialog.png",
+      "md5": "b29cc4e6d52c1c3ca5c9c743747fc410",
+      "sameAsDarkTwin": null,
+      "menu": null,
+      "dialog": "Send to Trash?",
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "06-trash-shows-the-deleted-card",
+      "file": "arbor-dark/06-trash-shows-the-deleted-card.png",
+      "md5": "cbab503a2638feac55c37fca91bb83e9",
+      "sameAsDarkTwin": null,
+      "menu": null,
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "07-trash-card-menu",
+      "file": "arbor-dark/07-trash-card-menu.png",
+      "md5": "d8d443430ac499066879368af5a4d431",
+      "sameAsDarkTwin": null,
+      "menu": [
+        "Restore",
+        "---",
+        "Delete"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "08-restored-card-back-on-its-board",
+      "file": "arbor-dark/08-restored-card-back-on-its-board.png",
+      "md5": "9dc7987daea553b8cd641dfa6f269e82",
+      "sameAsDarkTwin": null,
+      "menu": null,
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "01-card-menu",
+      "file": "arbor-light/01-card-menu.png",
+      "md5": "f99974070ffc943bebcc10826c2d3e77",
+      "sameAsDarkTwin": true,
+      "menu": [
+        "Delete"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "02-grouped-card-menu",
+      "file": "arbor-light/02-grouped-card-menu.png",
+      "md5": "0e33784bb89877a2d278b4f1f4342529",
+      "sameAsDarkTwin": true,
+      "menu": [
+        "Ungroup",
+        "---",
+        "Delete"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "03-board-menu",
+      "file": "arbor-light/03-board-menu.png",
+      "md5": "8168494b99c3d7b54dee9c2908ea2c7f",
+      "sameAsDarkTwin": true,
+      "menu": [
+        "New Card",
+        "Delete board"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "04-drawers-board-menu",
+      "file": "arbor-light/04-drawers-board-menu.png",
+      "md5": "b847f6c3262cd80990c825b305ece992",
+      "sameAsDarkTwin": true,
+      "menu": [
+        "Delete board"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "05-send-to-trash-dialog",
+      "file": "arbor-light/05-send-to-trash-dialog.png",
+      "md5": "b29cc4e6d52c1c3ca5c9c743747fc410",
+      "sameAsDarkTwin": true,
+      "menu": null,
+      "dialog": "Send to Trash?",
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "06-trash-shows-the-deleted-card",
+      "file": "arbor-light/06-trash-shows-the-deleted-card.png",
+      "md5": "cbab503a2638feac55c37fca91bb83e9",
+      "sameAsDarkTwin": true,
+      "menu": null,
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "07-trash-card-menu",
+      "file": "arbor-light/07-trash-card-menu.png",
+      "md5": "d8d443430ac499066879368af5a4d431",
+      "sameAsDarkTwin": true,
+      "menu": [
+        "Restore",
+        "---",
+        "Delete"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "08-restored-card-back-on-its-board",
+      "file": "arbor-light/08-restored-card-back-on-its-board.png",
+      "md5": "9dc7987daea553b8cd641dfa6f269e82",
+      "sameAsDarkTwin": true,
+      "menu": null,
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "01-card-menu",
+      "file": "flux-dark/01-card-menu.png",
+      "md5": "59526a9e898f4efceaf4259a1b62d4cf",
+      "sameAsDarkTwin": null,
+      "menu": [
+        "Delete"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "02-grouped-card-menu",
+      "file": "flux-dark/02-grouped-card-menu.png",
+      "md5": "b5034a578e0ccc5f1aeafbd0b7a3ccef",
+      "sameAsDarkTwin": null,
+      "menu": [
+        "Ungroup",
+        "---",
+        "Delete"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "03-board-menu",
+      "file": "flux-dark/03-board-menu.png",
+      "md5": "d12f1c15f07e3b9733e38a62035f4edf",
+      "sameAsDarkTwin": null,
+      "menu": [
+        "New Card",
+        "Delete circuit"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "04-drawers-board-menu",
+      "file": "flux-dark/04-drawers-board-menu.png",
+      "md5": "167c27585cd0eff1e0ac50beb674cb0a",
+      "sameAsDarkTwin": null,
+      "menu": [
+        "Delete circuit"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "05-send-to-trash-dialog",
+      "file": "flux-dark/05-send-to-trash-dialog.png",
+      "md5": "bfcba586275314ae366b7a4a640ebe8a",
+      "sameAsDarkTwin": null,
+      "menu": null,
+      "dialog": "Send to Trash?",
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "06-trash-shows-the-deleted-card",
+      "file": "flux-dark/06-trash-shows-the-deleted-card.png",
+      "md5": "008a1295310feeb48340176003e1b20a",
+      "sameAsDarkTwin": null,
+      "menu": null,
+      "dialog": null,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "07-trash-card-menu",
+      "file": "flux-dark/07-trash-card-menu.png",
+      "md5": "6d4f93bbc13ead2b22e0bd22078897ea",
+      "sameAsDarkTwin": null,
+      "menu": [
+        "Restore",
+        "---",
+        "Delete"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "08-restored-card-back-on-its-board",
+      "file": "flux-dark/08-restored-card-back-on-its-board.png",
+      "md5": "c7f67d62f2474bd5f23c76a6bdf9d813",
+      "sameAsDarkTwin": null,
+      "menu": null,
+      "dialog": null,
+      "attrs": {
+        "theme": "flux",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "01-card-menu",
+      "file": "flux-light/01-card-menu.png",
+      "md5": "1d74a95ea6f190d19a56f33fc83bd433",
+      "sameAsDarkTwin": false,
+      "menu": [
+        "Delete"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "02-grouped-card-menu",
+      "file": "flux-light/02-grouped-card-menu.png",
+      "md5": "3e008563a80f2061efd1b1d42236d6fa",
+      "sameAsDarkTwin": false,
+      "menu": [
+        "Ungroup",
+        "---",
+        "Delete"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "03-board-menu",
+      "file": "flux-light/03-board-menu.png",
+      "md5": "6cfd96f936907bcf66bbf883831737aa",
+      "sameAsDarkTwin": false,
+      "menu": [
+        "New Card",
+        "Delete circuit"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "04-drawers-board-menu",
+      "file": "flux-light/04-drawers-board-menu.png",
+      "md5": "9d9f17eb81e6f5bfc4d66d8d15631c21",
+      "sameAsDarkTwin": false,
+      "menu": [
+        "Delete circuit"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "05-send-to-trash-dialog",
+      "file": "flux-light/05-send-to-trash-dialog.png",
+      "md5": "d7993844a67359431fbb9906cc68a088",
+      "sameAsDarkTwin": false,
+      "menu": null,
+      "dialog": "Send to Trash?",
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "06-trash-shows-the-deleted-card",
+      "file": "flux-light/06-trash-shows-the-deleted-card.png",
+      "md5": "e9c124a745f408cc07e02f30863d5a5e",
+      "sameAsDarkTwin": false,
+      "menu": null,
+      "dialog": null,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "07-trash-card-menu",
+      "file": "flux-light/07-trash-card-menu.png",
+      "md5": "a4d49d897937f51e07b7d8b6b665b7bc",
+      "sameAsDarkTwin": false,
+      "menu": [
+        "Restore",
+        "---",
+        "Delete"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    },
+    {
+      "combo": "flux-light",
+      "frame": "08-restored-card-back-on-its-board",
+      "file": "flux-light/08-restored-card-back-on-its-board.png",
+      "md5": "8168387fb2a7a96718e5f9e1e293f1a7",
+      "sameAsDarkTwin": false,
+      "menu": null,
+      "dialog": null,
+      "attrs": {
+        "theme": "flux",
+        "page": "light"
+      }
+    }
+  ],
+  "lightFramesByteIdenticalToDarkTwin": [
+    "arbor-light/01-card-menu",
+    "arbor-light/02-grouped-card-menu",
+    "arbor-light/03-board-menu",
+    "arbor-light/04-drawers-board-menu",
+    "arbor-light/05-send-to-trash-dialog",
+    "arbor-light/06-trash-shows-the-deleted-card",
+    "arbor-light/07-trash-card-menu",
+    "arbor-light/08-restored-card-back-on-its-board"
+  ]
+}
