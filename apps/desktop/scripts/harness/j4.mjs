@@ -209,7 +209,12 @@ await withHarness(async (app) => {
   // paste proof still has real, current text to work with, same as before.
   await app.evalJs(`__pointerSeq('[data-box-id="${b1.id}"]', 0, 0)`);
   await sleep(100);
-  await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Edit copy')?.click()");
+  // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15; pair ledger 69) ----
+  // DRIVER only - the selected-card action row (and its "Edit copy" button) is DELETED; Edit copy is the first item of a ported text card's right-click menu (K3). The assertions after it (the pop-up opens, the edit persists) are unchanged. Ledger 69: j4 crashed here, so every step after it was unrun.
+  // Quoted VERBATIM below. Successor: the right-click below.
+  // await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Edit copy')?.click()");
+  await rightClickAt(app, `[data-box-id="${b1.id}"]`);
+  await ctxPick(app, 'Edit copy');
   await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: 'text box popup open (via Edit copy)' });
   await app.typeKeys(' EDITED AGAIN');
   await sleep(150);

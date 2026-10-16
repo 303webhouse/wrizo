@@ -57,8 +57,14 @@ const pins = (text) => ({
   const p = pins(be);
   ok('S1: the tack is gone from the component; the corner square has BOTH new doors (a second press at the same spot, soon, with nothing moved in between; a right-button press); the relock guard is KEPT (the dblclick-on-the-corner return, the <100ms-after-a-gesture return, the selection clear before a resize, the native-drag refusal)',
     p.noTack && p.doubleDoor && p.rightDoor && p.relockKept, JSON.stringify(p));
-  ok('S2: a release on a linked card removes the connection, on an unlinked one makes the SAME connection box as ever (no new field - zero schema); a release on empty board after a drag cancels; lines are drawn only inside the mode; targets are same-board cards only; the context menu is suppressed only on the square',
-    p.toggle && p.cancelOnEmpty && p.linesOnlyInMode && p.sameBoard && p.ctxScoped && p.footersOn, JSON.stringify(p));
+  // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15; pair ledger 69) ----
+  // `ctxScoped` is a SOURCE regex on the board's contextmenu handler as connector-a wrote it (`... ) e.preventDefault();`). board-context-menu rewrote that handler: the browser's menu is still suppressed in connection mode, on the corner square and for the beat after a right-drag lets go, and a right-click ANYWHERE ELSE on a card or on empty board now opens the board's own menu. The literal text is gone; the claim (the corner square, and only it, is connection mode; nothing but the app's own menu ever shows) stands.
+  // Quoted VERBATIM below. Successor: the check directly below (the new handler's shape) + board-context-menu.mjs K1/K2 (behaviour: a card right-click opens the menu, the corner square is connection mode with no menu).
+  // ok('S2: a release on a linked card removes the connection, on an unlinked one makes the SAME connection box as ever (no new field - zero schema); a release on empty board after a drag cancels; lines are drawn only inside the mode; targets are same-board cards only; the context menu is suppressed only on the square',
+  //   p.toggle && p.cancelOnEmpty && p.linesOnlyInMode && p.sameBoard && p.ctxScoped && p.footersOn, JSON.stringify(p));
+  const ctxNew = (text) => /if \(connect \|\| performance\.now\(\) < ctxQuietUntil \|\| t\?\.closest\?\.\('\.board-handle'\)\) \{ e\.preventDefault\(\); return; \}/.test(text);
+  ok('S2 [context-menu successor]: a release on a linked card removes the connection, on an unlinked one makes the SAME connection box as ever (no new field - zero schema); a release on empty board after a drag cancels; lines are drawn only inside the mode; targets are same-board cards only; the browser\'s menu is suppressed in connection mode, on the corner square and for the beat after a right-drag lets go (the handler\'s new shape)',
+    p.toggle && p.cancelOnEmpty && p.linesOnlyInMode && p.sameBoard && ctxNew(be) && p.footersOn, JSON.stringify({ ...p, ctxNew: ctxNew(be) }));
   ok('S3: CSS has no tack rule, no olive dashed preview, no source outline; Sliver has no footer toggle', !/board-pin-grab|data-thread-source|board-thread-preview/.test(live(css)) && !/boardFooterToggle|content\.footer/.test(live(sliver)), '');
   const m1 = be.replace(' && !handleClick.moved', '');
   const m2 = be.replace("if (connect || performance.now() < ctxQuietUntil || t?.closest?.('.board-handle')) e.preventDefault();", 'e.preventDefault();');
@@ -67,8 +73,14 @@ const pins = (text) => ({
   const m5 = be.replace('if (existing) {', 'if (false) {');
   const m6 = be + '\nconst tack = <div className="board-pin-grab" />;\n';
   const m7 = be + '\n// a history comment naming board-pin-grab must NOT trip the pin\n';
-  ok('S (mutants): dropping "nothing moved in between", suppressing the menu everywhere, dropping the cancel-on-empty, dropping the relock return, dropping the unlink branch, or putting the tack back each turn a pin RED, while a history COMMENT naming the tack does not (each mutation landed)',
-    m1 !== be && !pins(m1).doubleDoor && m2 !== be && !pins(m2).ctxScoped && m3 !== be && !pins(m3).cancelOnEmpty && m4 !== be && !pins(m4).relockKept && m5 !== be && !pins(m5).toggle && m6 !== be && !pins(m6).noTack && m7 !== be && pins(m7).noTack, '');
+  // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15; pair ledger 69) ----
+  // The suppress-the-menu-everywhere mutant (m2) and its pin were written against the handler's old text; the mutation no longer lands on the rewritten handler.
+  // Quoted VERBATIM below. Successor: the check directly below (the same mutants, m2 re-aimed at the new handler).
+  // ok('S (mutants): dropping "nothing moved in between", suppressing the menu everywhere, dropping the cancel-on-empty, dropping the relock return, dropping the unlink branch, or putting the tack back each turn a pin RED, while a history COMMENT naming the tack does not (each mutation landed)',
+  //   m1 !== be && !pins(m1).doubleDoor && m2 !== be && !pins(m2).ctxScoped && m3 !== be && !pins(m3).cancelOnEmpty && m4 !== be && !pins(m4).relockKept && m5 !== be && !pins(m5).toggle && m6 !== be && !pins(m6).noTack && m7 !== be && pins(m7).noTack, '');
+  const m2b = be.replace("if (connect || performance.now() < ctxQuietUntil || t?.closest?.('.board-handle')) { e.preventDefault(); return; }", 'e.preventDefault();');
+  ok('S (mutants) [context-menu successor]: dropping "nothing moved in between", suppressing the menu everywhere (re-aimed at the rewritten handler), dropping the cancel-on-empty, dropping the relock return, dropping the unlink branch, or putting the tack back each turn a pin RED, while a history COMMENT naming the tack does not (each mutation landed)',
+    m1 !== be && !pins(m1).doubleDoor && m2b !== be && !ctxNew(m2b) && m3 !== be && !pins(m3).cancelOnEmpty && m4 !== be && !pins(m4).relockKept && m5 !== be && !pins(m5).toggle && m6 !== be && !pins(m6).noTack && m7 !== be && pins(m7).noTack, '');
 }
 
 // ---- the box half -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
