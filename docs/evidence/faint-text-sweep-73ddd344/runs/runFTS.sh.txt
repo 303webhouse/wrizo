@@ -1,0 +1,20 @@
+#!/bin/bash
+# faint-text-sweep @ 73ddd344 + typeface-scope-label @ c2e2a823 (cleared), merged onto origin/main @ 73906480 -> fts c53b534f.
+# (1) RED-FIRST: the branch's faint-text-sweep.mjs (a copy) on main's own product (fp = main@3a71e34b + flux-page-ink = the product production serves, index-CM-bq2go.js).
+# (2) the fast lane on fts. (3) frames before (fp) and after (fts). One grant, sequential.
+export WS_BOX_TURN=chat1-fts-20261016
+SD="C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad"
+ST="$SD/fts-status.txt"
+W=/c/Users/nickh/writer-studio/.claude/worktrees
+LOC="C:/Users/nickh/writer-studio/.claude/evidence-local/faint-text-sweep-73ddd344"
+mkdir -p "$LOC/before-main" "$LOC/after-fts"
+step() { local name="$1" dir="$2"; shift 2; echo "START $name $(date -u +%H:%M:%SZ)" >> "$ST"; ( cd "$dir" && "$@" ) > "$SD/fts-$name.out" 2>&1; echo "END $name exit=$? $(date -u +%H:%M:%SZ)" >> "$ST"; }
+H="$W/fp/apps/desktop/scripts/harness"
+cp "$W/fts/apps/desktop/scripts/harness/faint-text-sweep.mjs" "$H/faint-text-sweep.mjs"
+step redfirst "$W/fp/apps/desktop" node scripts/harness/faint-text-sweep.mjs
+rm -f "$H/faint-text-sweep.mjs"
+FILES="faint-text-sweep.mjs,flux-card-ink.mjs,flux-page-ink.mjs,card-label-contrast.mjs,bg1.mjs,bg2.mjs,cd2.mjs,th1.mjs,th2.mjs,fx5.mjs,fx6.mjs,fx7.mjs,fx10.mjs,b3.mjs,font-span.mjs,item207.mjs,item207-core.mjs,drawers-p1.mjs,drawers-p1-live.mjs,pw1.mjs,pw2.mjs,item170.mjs,writing-r1.mjs,clickhead.mjs,logout-flush-walk.mjs,item-storage-full.mjs,arrival-signin-walk.mjs,sync-generation.mjs,item224a-sync-integrity.mjs,card-close-x.mjs,item118.mjs,item211.mjs,seed-guard.mjs"
+step lane "$W/fts/apps/desktop" node scripts/run-suite.mjs --no-rebuild --only "$FILES" --out "$SD/fts-lane"
+step framesbefore "$W/fp/apps/desktop" env WT=fp FRAMES_OUT="$LOC/before-main" node "$SD/faintframes.mjs"
+step framesafter "$W/fts/apps/desktop" env WT=fts FRAMES_OUT="$LOC/after-fts" node "$SD/faintframes.mjs"
+echo "FTS COMPLETE" >> "$ST"
