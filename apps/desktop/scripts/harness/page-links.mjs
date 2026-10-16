@@ -186,6 +186,33 @@ const pinsOf = (m, s) => ({
   ok('S (mutants): dropping the migration\'s "if not exists", the mapper\'s null-to-absent, the 25th placeholder, the guard (the plain "= excluded.page_links"), or the parameter turns its OWN pin RED (each landed)', reds.every(([, v]) => v), JSON.stringify(reds));
 }
 
+// ---- the surfaces, in source (the browser half is connector-b.mjs)
+{
+  const rd = (rel) => noCR(fs.readFileSync(path.join(SRC, rel), 'utf8'));
+  const be = rd('components/BoardEditor.tsx'), panels = rd('components/CascadePanels.tsx'), survey = rd('components/CascadeSurvey.tsx'), links = rd('components/ConnectionsDrawerPanel.tsx'), dlg = rd('components/DeleteDialog.tsx');
+  const ui = (b, p, s, l, d) => ({
+    railTagged: /data-link-entry=\{item\.id\}/.test(s) && (p.match(/data-link-entry=\{(anchor|b|d)\.id\}/g) || []).length === 3 && /data-link-entry=\{row\.id\}/.test(p),
+    oneTruthAtTheDoor: /const pin = livePinFor\(id, entryId\);\n\s*if \(pin\) \{ commit\(pin\.id\); return; \}\n\s*const src = connect\.src;\n\s*const res = toggleEntryLink\(id, src, entryId\);/.test(b),
+    armOverlay: /createPortal\(\n\s*<svg className="board-connect-overlay" aria-hidden="true">/.test(b) && /document\.body,\n\s*\)\}/.test(b),
+    footerReadsLinks: /const boxLinkPeers = footerOn \? \(linkPeersByCard\.get\(box\.id\) \?\? \[\]\) : \[\];/.test(b) && /data-link-peer-line=\{p\.kind\}/.test(b),
+    copyIsLinked: /saveBoardBoxes\(id, next\);[^\n]*\n\s*lastSavedRef\.current = next;\n\s*addPageLink\(id, \{ aBoxId: box\.id, bEntryId: entryId \}\);/.test(b),
+    tabAsksFirst: /requestDelete\(\(\) => \{[\s\S]*?\}, \{ title: t\('linksRemoveTitle'\), always: true, noDontAsk: true \}\)/.test(l) && /removePageLink\(p\.linkId\)/.test(l) && /getBoardActions\(\)\?\.removeConnection\(p\.connId\)/.test(l),
+    dialogNoTick: /\{!pending\.noDontAsk && \(/.test(d),
+  });
+  const u = ui(be, panels, survey, links, dlg);
+  ok('S6-S9: the rail\'s thumbnails declare their entry (CascadeSurvey, the three Drawers tiles, the Plan board row); the release consults livePinFor BEFORE toggling a record (one truth at the door); the arm travels in a body portal; the footers read page links; a dropped thumbnail saves the card BEFORE the record that names it; the tab\'s X asks first without the "Don\'t ask me again" tick', Object.values(u).every(Boolean), JSON.stringify(u));
+  const um = [
+    ['railTagged', () => ui(be, panels, survey.replace('data-link-entry={item.id}', ''), links, dlg)],
+    ['oneTruthAtTheDoor', () => ui(be.replace('if (pin) { commit(pin.id); return; }', ''), panels, survey, links, dlg)],
+    ['armOverlay', () => ui(be.replace('<svg className="board-connect-overlay" aria-hidden="true">', '<svg className="board-connections" aria-hidden="true">'), panels, survey, links, dlg)],
+    ['copyIsLinked', () => ui(be.replace('addPageLink(id, { aBoxId: box.id, bEntryId: entryId });', ''), panels, survey, links, dlg)],
+    ['tabAsksFirst', () => ui(be, panels, survey, links.replace('always: true, noDontAsk: true', 'always: false'), dlg)],
+    ['dialogNoTick', () => ui(be, panels, survey, links, dlg.replace('{!pending.noDontAsk && (', '{true && ('))],
+  ];
+  const ured = um.map(([k, fn]) => [k, fn()[k] === false]);
+  ok('S (UI mutants): untagging a thumbnail, dropping the one-truth door, moving the arm back into the clipped canvas svg, dropping the link on a copy, letting the tab\'s X skip its confirm, or showing the tick on an unlink each turn their OWN pin RED (each landed)', ured.every(([, v]) => v), JSON.stringify(ured));
+}
+
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : `  [${c.detail}]`}`);
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nPAGE-LINKS VERIFY: PASS (${checks.length} checks)` : `\nPAGE-LINKS VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);

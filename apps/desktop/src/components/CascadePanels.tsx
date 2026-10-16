@@ -687,7 +687,7 @@ export function resolveStickyPlanSurvey(page: JournalEntry): CascadeSurveyKind |
 function BoardConnectedRow({ row, onOpenContents, onTravel }: { row: ConnectedBoard; onOpenContents: () => void; onTravel: () => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
   return (
-    <div className="wz-cascade-boardrow" data-own={row.own ? 'true' : 'false'}>
+    <div className="wz-cascade-boardrow" data-own={row.own ? 'true' : 'false'} data-link-entry={row.id}>
       <button
         type="button"
         className="wz-cascade-boardrow-open"
@@ -944,7 +944,7 @@ function DrawersPanel({ navigate }: CascadeContext) {
           <span className="wz-drawers-tile-title">{t('drawerPlaceShelf')}</span>
         </button>
         {anchor && (
-          <button type="button" className="wz-drawers-tile wz-drawers-tile-anchor" onClick={() => travel(anchor)} onContextMenu={(e) => boardMenu(e, anchor)}>
+          <button type="button" className="wz-drawers-tile wz-drawers-tile-anchor" data-link-entry={anchor.id} onClick={() => travel(anchor)} onContextMenu={(e) => boardMenu(e, anchor)}>
             <TileKindMark kind={anchor.kind} />
             <span className="wz-drawers-tile-title">{anchor.title}</span>
           </button>
@@ -966,7 +966,7 @@ function DrawersPanel({ navigate }: CascadeContext) {
           >
             <div className="wz-drawers-cluster">
               {c.items.map((b) => (
-                <button key={b.id} type="button" className="wz-drawers-tile" onClick={() => travel(b)} onContextMenu={(e) => boardMenu(e, b)}>
+                <button key={b.id} type="button" className="wz-drawers-tile" data-link-entry={b.id} onClick={() => travel(b)} onContextMenu={(e) => boardMenu(e, b)}>
                   <TileKindMark kind="board" />
                   <span className="wz-drawers-tile-title">{b.title}</span>
                 </button>
@@ -987,7 +987,7 @@ function DrawersPanel({ navigate }: CascadeContext) {
           >
             <div className="wz-drawers-cluster">
               {sortedDocs.map((d) => (
-                <button key={d.id} type="button" className="wz-drawers-tile" onClick={() => travel(d)}>
+                <button key={d.id} type="button" className="wz-drawers-tile" data-link-entry={d.id} onClick={() => travel(d)}>
                   <TileKindMark kind="doc" />
                   <span className="wz-drawers-tile-title">{d.title}</span>
                 </button>
