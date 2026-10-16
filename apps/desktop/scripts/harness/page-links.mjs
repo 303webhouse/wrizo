@@ -1,0 +1,192 @@
+// PAGE LINKS (connector-b; Nick's route (b), plan approved by Fable Oct 14: docs/plans/connector-b-page-links.md) - BROWSERLESS. The pairs a same-board connection box cannot hold - a card <-> a page or a board, a card <->
+// a card on another board - are SINGLE-OWNER records in the additive jsonb array `page_links` on the entry where the writer started the link; the reverse is a cache scan; a delete is a tombstone. A same-board card <-> card
+// pair stays a connection box. This file runs the REAL persistence.ts (bundled with esbuild against a fake browser - the drafts-integrity pattern) and reads the SERVER's source for the five edit sites; every claim has a mutant.
+//
+//   P1 a link is stored ONCE, on the OWNER; the target has no record and no key; the owner's updatedAt moves; adding it again - or from the other end - never doubles it
+//   P2 the reverse read finds it from the other end; the peer list (one union: connection boxes + records) names it with its kind and its words
+//   P3 a delete is a TOMBSTONE (deletedAt + updatedAt on the record, owner saved) - hidden from every read, never resurrected: a later link is a NEW record
+//   P4 the connector's toggle: linked -> unlinked -> linked; the thumbnail's circle (isCardLinkedToEntry) follows
+//   P5 the ONE-TRUTH rule at the door: an entry that is already a live pin on this board is a CARD (livePinFor) - the caller makes a connection box, no record; the peer list shows both kinds without doubling
+//   P6 spread-preservation: a board autosave, a patch, a card delete/restore never drop the records; an entry that never had a link has NO `pageLinks` key; an end that does not exist is refused
+//   P7 the sync round trip on the client: a pulled entry's records arrive whole; the server's "absent" is "no links"
+//   S1-S6 THE SERVER, in source: the migration (additive, default '[]', idempotent), the read mapper (absent for null / jsonb null / []), the INSERT list and its 25 placeholders, the old-client GUARD verbatim, the parameter
+//        array - each removed in turn by a mutant that must turn its pin RED
+//
+// Browserless. Run: node scripts/harness/page-links.mjs   (from apps/desktop)
+import fs from 'node:fs';
+import path from 'node:path';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const DESKTOP = path.resolve(here, '..', '..');
+const SRC = path.join(DESKTOP, 'src');
+const SERVER = path.join(DESKTOP, '..', 'server', 'src');
+const require = createRequire(path.join(DESKTOP, 'package.json'));
+const { build } = createRequire(require.resolve('vite'))('esbuild');
+const noCR = (t) => t.replace(/\r\n?/g, '\n');
+const checks = [];
+const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
+
+let nonce = 0;
+async function load(overrides = {}) {
+  nonce += 1;
+  const res = await build({
+    stdin: { contents: `export const __nonce = ${nonce};\nexport * from './store/persistence';`, resolveDir: SRC, loader: 'ts' },
+    bundle: true, write: false, format: 'esm', platform: 'node', logLevel: 'silent',
+    nodePaths: [path.join(DESKTOP, 'node_modules')],
+    plugins: [{ name: 'ov', setup(b) {
+      b.onLoad({ filter: /\.ts$/ }, (args) => {
+        const rel = path.relative(SRC, args.path).split('\\').join('/');
+        const text = noCR(fs.readFileSync(args.path, 'utf8'));
+        return { contents: overrides[rel] ? overrides[rel](text) : text, loader: 'ts' };
+      });
+    } }],
+  });
+  const map = new Map();
+  globalThis.window = { addEventListener() {}, removeEventListener() {}, dispatchEvent() {} };
+  globalThis.document = { visibilityState: 'visible', addEventListener() {}, removeEventListener() {}, querySelectorAll: () => [], documentElement: { getAttribute: () => null } };
+  globalThis.location = { protocol: 'https:', origin: 'https://app.test', href: 'https://app.test/#/' };
+  Object.defineProperty(globalThis, 'navigator', { value: { userAgent: 'Mozilla/5.0 Chrome/128' }, configurable: true, writable: true });
+  globalThis.localStorage = { getItem: (k) => (map.has(k) ? map.get(k) : null), setItem: (k, v) => { map.set(k, String(v)); }, removeItem: (k) => { map.delete(k); }, clear: () => map.clear() };
+  return import('data:text/javascript;base64,' + Buffer.from(res.outputFiles[0].text).toString('base64'));
+}
+
+const card = (id, text = id) => ({ id, kind: 'text', x: 0.1, y: 0.1, w: 0.2, h: 0.1, z: 1, text });
+const conn = (id, a, b) => ({ id, kind: 'connection', x: 0, y: 0, w: 0, h: 0, z: 9, connA: a, connB: b });
+const seed = (m, id, o = {}) => m.createJournalPage({ id, text: id, origin: null, source: null, ...o });
+const sleepMs = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function suite(m) {
+  const r = {};
+  const keep = (k, pass, detail = '') => { r[k] = { pass: !!pass, detail }; };
+  seed(m, 'bd', { pageType: 'board', boxes: [card('A', 'Card A\nmore'), card('B', 'Card B')] });
+  seed(m, 'pg', { text: 'The harbour chapter\nIt begins at dawn.' });
+  seed(m, 'bd2', { pageType: 'board', text: 'Research board', boxes: [card('R1', 'A card on another board')] });
+  const owner0 = m.getJournalEntry('bd').updatedAt;
+  await sleepMs(5);
+
+  // P1
+  const l1 = m.addPageLink('bd', { aBoxId: 'A', bEntryId: 'pg' });
+  const bd = m.getJournalEntry('bd'), pg = m.getJournalEntry('pg');
+  keep('P1a', !!l1 && bd.pageLinks.length === 1 && bd.pageLinks[0].aEntryId === 'bd' && bd.pageLinks[0].aBoxId === 'A' && bd.pageLinks[0].bEntryId === 'pg' && !bd.pageLinks[0].bBoxId && !('pageLinks' in pg) && bd.updatedAt > owner0, JSON.stringify({ links: bd.pageLinks, targetHasKey: 'pageLinks' in pg }));
+  const again = m.addPageLink('bd', { aBoxId: 'A', bEntryId: 'pg' });
+  const fromOther = m.addPageLink('pg', { bEntryId: 'bd' });   // a different pair (page -> board, no card ends): a NEW record owned by the page
+  keep('P1b', again.id === l1.id && m.getJournalEntry('bd').pageLinks.length === 1 && !!fromOther && m.getJournalEntry('pg').pageLinks.length === 1, JSON.stringify({ same: again.id === l1.id }));
+  const rev = m.addPageLink('pg', { bEntryId: 'bd', bBoxId: 'A' });   // the SAME pair as l1 written from the other end (card A <-> page pg): returns l1, no second record
+  keep('P1c', rev && rev.id === l1.id && m.getJournalEntry('pg').pageLinks.length === 1, JSON.stringify({ revId: rev?.id, l1: l1.id }));
+
+  // P2
+  const to = m.getPageLinksTo('pg').map((x) => x.id);
+  const peers = m.getLinkPeersOfCard('bd', 'A');
+  keep('P2', to.includes(l1.id) && peers.length === 1 && peers[0].via === 'link' && peers[0].kind === 'page' && peers[0].label === 'The harbour chapter' && peers[0].linkId === l1.id && !peers[0].reverse, JSON.stringify({ to, peers }));
+  // a card on ANOTHER board: reverse peers
+  const lc = m.addPageLink('bd2', { aBoxId: 'R1', bEntryId: 'bd', bBoxId: 'B' });
+  const peersB = m.getLinkPeersOfCard('bd', 'B');
+  keep('P2b', !!lc && peersB.length === 1 && peersB[0].reverse === true && peersB[0].kind === 'card' && peersB[0].label === 'A card on another board' && m.getLinkPeersOfCard('bd2', 'R1')[0]?.label === 'Card B', JSON.stringify(peersB));
+
+  // P3
+  const ownerBefore = m.getJournalEntry('bd').updatedAt;
+  await sleepMs(5);
+  const gone = m.removePageLink(l1.id);
+  const tomb = (m.getJournalEntry('bd').pageLinks || []).find((x) => x.id === l1.id);
+  keep('P3a', gone === true && !!tomb && !!tomb.deletedAt && tomb.updatedAt === tomb.deletedAt && m.getJournalEntry('bd').updatedAt > ownerBefore && m.getPageLinksOf('bd').length === 0 && !m.getPageLinksTo('pg').some((x) => x.id === l1.id) && m.getLinkPeersOfCard('bd', 'A').length === 0, JSON.stringify(tomb));
+  const second = m.removePageLink(l1.id);
+  const l1b = m.addPageLink('bd', { aBoxId: 'A', bEntryId: 'pg' });
+  keep('P3b', second === false && !!l1b && l1b.id !== l1.id && m.getPageLinksOf('bd').length === 1 && (m.getJournalEntry('bd').pageLinks || []).length === 2, JSON.stringify({ second, newId: l1b?.id !== l1.id }));
+
+  // P4
+  const t0 = m.isCardLinkedToEntry('bd', 'A', 'pg');
+  const tg1 = m.toggleEntryLink('bd', 'A', 'pg'), c1 = m.isCardLinkedToEntry('bd', 'A', 'pg');
+  const tg2 = m.toggleEntryLink('bd', 'A', 'pg'), c2 = m.isCardLinkedToEntry('bd', 'A', 'pg');
+  keep('P4', t0 === true && tg1 === 'unlinked' && c1 === false && tg2 === 'linked' && c2 === true && m.toggleEntryLink('bd', 'A', 'bd') === null, JSON.stringify({ t0, tg1, c1, tg2, c2 }));
+
+  // P5
+  seed(m, 'pg2', { text: 'A page that is also pinned here' });
+  m.pinPageToBoard('pg2', 'bd', { display: true });
+  const pinned = m.livePinFor('bd', 'pg2'), notPinned = m.livePinFor('bd', 'pg');
+  const pinBox = m.getJournalEntry('bd').boxes.find((b) => b.kind === 'page-pin' && b.entryId === 'pg2');
+  m.saveBoardBoxes('bd', [...m.getJournalEntry('bd').boxes, conn('conn-AP', 'A', pinBox.id)]);
+  const unionPeers = m.getLinkPeersOfCard('bd', 'A');
+  keep('P5', !!pinned && pinned.id === pinBox.id && notPinned === null && unionPeers.some((p) => p.via === 'card' && p.kind === 'page' && p.label === 'A page that is also pinned here') && unionPeers.some((p) => p.via === 'link' && p.label === 'The harbour chapter') && new Set(unionPeers.map((p) => p.key)).size === unionPeers.length, JSON.stringify(unionPeers.map((p) => [p.via, p.label])));
+
+  // P6
+  const before = JSON.stringify(m.getJournalEntry('bd').pageLinks);
+  m.saveBoardBoxes('bd', m.getJournalEntry('bd').boxes.filter((b) => b.id !== 'B'));
+  m.patchJournalEntry('bd', m.getJournalEntry('bd').text, {});
+  m.stashDeletedBoxes('bd', ['A']); m.restoreDeletedBox('bd', 'A');
+  const afterSave = JSON.stringify(m.getJournalEntry('bd').pageLinks);
+  seed(m, 'plain', {});
+  m.saveJournalEntry({ ...m.getJournalEntry('plain'), text: 'edited' });
+  m.flushNow();
+  const raw = JSON.parse(globalThis.localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === 'plain');
+  keep('P6a', before === afterSave && before !== undefined, JSON.stringify({ before, afterSave }));
+  keep('P6b', !('pageLinks' in raw), JSON.stringify(Object.keys(raw)));
+  keep('P6c', m.addPageLink('bd', { aBoxId: 'A', bEntryId: 'does-not-exist' }) === null, '');
+  // a soft-deleted end shows as such, never "Missing"
+  m.softDeleteEntry('pg');
+  const trashedPeer = m.getLinkPeersOfCard('bd', 'A').find((p) => p.linkId);
+  keep('P6d', !!trashedPeer && trashedPeer.trashed === true && trashedPeer.label === 'The harbour chapter', JSON.stringify(trashedPeer));
+  m.restoreEntry('pg');
+
+  // P7 - the pull: an entry's records arrive whole; the server's "absent" is no links
+  m.markClean([{ collection: 'journalEntries', id: 'plain' }]);
+  const links = [{ id: 'srv-1', aEntryId: 'plain', aBoxId: 'x', bEntryId: 'pg', createdAt: '2026-10-01T00:00:00.000Z', updatedAt: '2026-10-01T00:00:00.000Z' }];
+  m.applyRemoteRecords({ journalEntries: [{ ...m.getJournalEntry('plain'), updatedAt: '2030-01-01T00:00:00.000Z', pageLinks: links }] });
+  const arrived = m.getJournalEntry('plain').pageLinks;
+  m.markClean([{ collection: 'journalEntries', id: 'plain' }]);
+  const noKey = { ...m.getJournalEntry('plain'), updatedAt: '2031-01-01T00:00:00.000Z' }; delete noKey.pageLinks;
+  m.applyRemoteRecords({ journalEntries: [noKey] });
+  keep('P7', JSON.stringify(arrived) === JSON.stringify(links) && !('pageLinks' in m.getJournalEntry('plain')), JSON.stringify({ arrived: arrived?.length, keyAfterAbsent: 'pageLinks' in m.getJournalEntry('plain') }));
+  return r;
+}
+
+const base = await load();
+const res0 = await suite(base);
+for (const [k, v] of Object.entries(res0)) ok(`${k} (baseline)`, v.pass, v.detail);
+
+const P = 'store/persistence.ts';
+const MUT = [
+  ['addPageLink forgets to dedupe', P, (t) => t.replace("  const existing = findLinkBetween(ownerEntryId, end.aBoxId, end.bEntryId, end.bBoxId);\n  if (existing) return clone(existing.link);\n", ''), ['P1b', 'P1c']],
+  ['a delete is a hard removal (no tombstone)', P, (t) => t.replace("pageLinks: (e.pageLinks ?? []).map(x => (x.id === linkId ? { ...x, deletedAt: now, updatedAt: now } : x)) });", "pageLinks: (e.pageLinks ?? []).filter(x => x.id !== linkId) });"), ['P3a']],
+  ['the reverse read returns tombstoned records', P, (t) => t.replace('if (!liveLink(l) || l.bEntryId !== entryId) continue;', 'if (l.bEntryId !== entryId) continue;'), ['P3a']],
+  ['the toggle never unlinks', P, (t) => t.replace("if (found) return removePageLink(found.link.id) ? 'unlinked' : null;", "if (found) return 'unlinked';"), ['P4']],
+  ['the pin door forgets the card is on this board', P, (t) => t.replace("x.kind === 'page-pin' && x.entryId === entryId && x.onCanvas !== false);\n  return b ? clone(b) : null;", "x.kind === 'page-pin' && x.entryId === '__never__');\n  return b ? clone(b) : null;"), ['P5']],
+  ['a link to nothing is accepted', P, (t) => t.replace("  if (!cache.journalEntries.some(x => x.id === end.bEntryId)) return null;\n", ''), ['P6c']],
+];
+for (const [name, file, fn, expectRed] of MUT) {
+  const orig = noCR(fs.readFileSync(path.join(SRC, file), 'utf8'));
+  const landed = fn(orig) !== orig;
+  let red = [];
+  if (landed) { const mm = await load({ [file]: fn }); const rr = await suite(mm); red = Object.entries(rr).filter(([, v]) => !v.pass).map(([k]) => k); }
+  ok(`MUTANT "${name}": the mutation landed and turns ${expectRed.join(' + ')} RED`, landed && expectRed.every((k) => red.includes(k)), JSON.stringify({ landed, red }));
+}
+
+// ---- the server's source: the five edit sites + the guard (each with a mutant)
+const mig = noCR(fs.readFileSync(path.join(SERVER, 'migrate.ts'), 'utf8'));
+const syn = noCR(fs.readFileSync(path.join(SERVER, 'sync.ts'), 'utf8'));
+const pinsOf = (m, s) => ({
+  migration: /alter table journal_entries add column if not exists page_links jsonb default '\[\]'::jsonb/.test(m),
+  mapper: /pageLinks: Array\.isArray\(r\.page_links\) && r\.page_links\.length > 0 \? r\.page_links : undefined,/.test(s),
+  insertList: /plan_board_id, page_settings, page_links\)\n\s*values \(\$1,\$2,\$3,\$4,\$5,\$6,\$7,\$8,\$9,\$10,\$11,\$12,\$13::jsonb,\$14::jsonb,\$15,\$16::jsonb,\$17::jsonb,\$18::jsonb,\$19::jsonb,\$20,\$21,\$22,\$23,\$24::jsonb,\$25::jsonb\)/.test(s),
+  guard: /page_links = case\n\s*when excluded\.page_links is null or excluded\.page_links = 'null'::jsonb then journal_entries\.page_links\n\s*else excluded\.page_links\n\s*end,/.test(s),
+  params: /JSON\.stringify\(e\.pageSettings \?\? null\), JSON\.stringify\(e\.pageLinks \?\? null\)\],/.test(s),
+});
+{
+  const p = pinsOf(mig, syn);
+  ok('S1-S5: the migration is additive and idempotent (add column if not exists, jsonb, default \'[]\'); the read mapper makes null / jsonb null / [] ABSENT; the INSERT lists page_links with 25 placeholders; the old-client GUARD is the ruled clause verbatim; the parameter array carries JSON.stringify(e.pageLinks ?? null)', Object.values(p).every(Boolean), JSON.stringify(p));
+  const muts = [
+    ['migration', () => pinsOf(mig.replace('add column if not exists page_links', 'add column page_links'), syn)],
+    ['mapper', () => pinsOf(mig, syn.replace('r.page_links.length > 0 ? r.page_links : undefined', 'r.page_links'))],
+    ['insertList', () => pinsOf(mig, syn.replace('$24::jsonb,$25::jsonb)', '$24::jsonb)'))],
+    ['guard', () => pinsOf(mig, syn.replace(/page_links = case[\s\S]*?end,/, 'page_links = excluded.page_links,'))],
+    ['params', () => pinsOf(mig, syn.replace(', JSON.stringify(e.pageLinks ?? null)]', ']'))],
+  ];
+  const reds = muts.map(([k, f]) => [k, f()[k] === false]);
+  ok('S (mutants): dropping the migration\'s "if not exists", the mapper\'s null-to-absent, the 25th placeholder, the guard (the plain "= excluded.page_links"), or the parameter turns its OWN pin RED (each landed)', reds.every(([, v]) => v), JSON.stringify(reds));
+}
+
+for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : `  [${c.detail}]`}`);
+const passed = checks.filter((c) => c.pass).length;
+console.log(passed === checks.length ? `\nPAGE-LINKS VERIFY: PASS (${checks.length} checks)` : `\nPAGE-LINKS VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
+process.exit(passed === checks.length ? 0 : 1);
