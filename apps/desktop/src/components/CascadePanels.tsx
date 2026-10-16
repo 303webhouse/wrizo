@@ -1,3 +1,6 @@
+import { liveBoxes } from '../store/boxTombstones';
+import { useAskBeforeDelete, setAskBeforeDelete, requestDelete } from '../store/deleteGate';
+import { openContextMenu } from '../store/contextMenu';
 import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon, deskTerm } from '../store/deskLexicon';
@@ -844,25 +847,12 @@ function PlanPanel({ subject, project, navigate, openSurvey, travelFromCascade }
 function BoardRowMenu({ id }: { id: string }) {
   const { t } = useDeskLexicon();
   const [moveOpen, setMoveOpen] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  // BOARD CONTEXT MENU: the inline "are you sure" this row used to carry (T4: one plain confirm) is the ONE "Send to Trash?" dialog now - same gate as a card, a Page, a Drawers row.
   return (
     <>
       <button type="button" className="wz-cascade-thumb-menu-item" onClick={() => setMoveOpen(true)}>{t('cascadeBoardMove')}</button>
       {moveOpen && <AddToSheet sourceIds={[id]} onClose={() => setMoveOpen(false)} onDone={() => setMoveOpen(false)} />}
-      {!confirmOpen && (
-        <button type="button" className="wz-cascade-thumb-menu-item" onClick={() => setConfirmOpen(true)}>{t('cascadeBoardDelete')}</button>
-      )}
-      {confirmOpen && (
-        <div className="wz-cascade-confirm">
-          <div className="wz-cascade-confirm-q">{t('cascadeBoardDeleteQuestion')}</div>
-          <div className="wz-cascade-confirm-row">
-            <button type="button" className="wz-cascade-confirm-danger" onClick={() => { softDeleteEntry(id); setConfirmOpen(false); }}>
-              {t('cascadeBoardDeleteConfirm')}
-            </button>
-            <button type="button" className="wz-cascade-confirm-cancel" onClick={() => setConfirmOpen(false)}>{t('cascadeBoardDeleteCancel')}</button>
-          </div>
-        </div>
-      )}
+      <button type="button" className="wz-cascade-thumb-menu-item" onClick={() => requestDelete(() => { softDeleteEntry(id); })}>{t('cascadeBoardDelete')}</button>
     </>
   );
 }
@@ -935,6 +925,16 @@ function DrawersPanel({ navigate }: CascadeContext) {
     if (tItem.kind === 'board') { navigate(`/page/${tItem.id}`); return; }
     if (tItem.entry) navigate(routeForEntry(tItem.entry));
   };
+  // BOARD CONTEXT MENU: a board's tile in the Drawers panel takes the same right-click as a board's empty canvas - "Delete board" -> the one dialog -> the Trash (and, if that board is the one open,
+  // away from it, the way a Page's own delete leaves).
+  const boardMenu = (e: { clientX: number; clientY: number; preventDefault: () => void }, tItem: DrawerTile) => {
+    if (tItem.kind !== 'board') return;
+    e.preventDefault();
+    openContextMenu(e.clientX, e.clientY, [{ label: t('ctxDeleteBoard'), onSelect: () => requestDelete(() => {
+      softDeleteEntry(tItem.id);
+      if (window.location.hash.endsWith(`/page/${tItem.id}`)) navigate('/', { replace: true });
+    }) }]);
+  };
 
   return (
     <div className="wz-cascade-panel-body">
@@ -944,7 +944,7 @@ function DrawersPanel({ navigate }: CascadeContext) {
           <span className="wz-drawers-tile-title">{t('drawerPlaceShelf')}</span>
         </button>
         {anchor && (
-          <button type="button" className="wz-drawers-tile wz-drawers-tile-anchor" onClick={() => travel(anchor)}>
+          <button type="button" className="wz-drawers-tile wz-drawers-tile-anchor" onClick={() => travel(anchor)} onContextMenu={(e) => boardMenu(e, anchor)}>
             <TileKindMark kind={anchor.kind} />
             <span className="wz-drawers-tile-title">{anchor.title}</span>
           </button>
@@ -966,7 +966,7 @@ function DrawersPanel({ navigate }: CascadeContext) {
           >
             <div className="wz-drawers-cluster">
               {c.items.map((b) => (
-                <button key={b.id} type="button" className="wz-drawers-tile" onClick={() => travel(b)}>
+                <button key={b.id} type="button" className="wz-drawers-tile" onClick={() => travel(b)} onContextMenu={(e) => boardMenu(e, b)}>
                   <TileKindMark kind="board" />
                   <span className="wz-drawers-tile-title">{b.title}</span>
                 </button>
@@ -1049,10 +1049,16 @@ function CascadeSettingsPanel({ navigate }: { navigate: NavigateFunction }) {
   const { t } = useDeskLexicon();
   const authed = !!getCurrentUser();
   const signingOut = useSigningOut();
+  const askBeforeDelete = useAskBeforeDelete();
   return (
     <div className="wz-cascade-panel-body">
       <div className="wz-cascade-row"><FullscreenToggle /></div>
       <div className="wz-cascade-row"><SyncIndicator /></div>
+      {/* BOARD CONTEXT MENU: the one setting for every delete - ticking "Don't ask me again" in the dialog turns it off; this turns it back on (per device) */}
+      <button type="button" className="wz-cascade-switch" role="switch" aria-checked={askBeforeDelete ? 'true' : 'false'} onClick={() => setAskBeforeDelete(!askBeforeDelete)}>
+        <span>{t('settingsAskBeforeDelete')}</span>
+        <span className="wz-cascade-switch-track" aria-hidden="true"><i /></span>
+      </button>
       {authed && (
         <button
           type="button"
@@ -1173,7 +1179,7 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
   // plain text/ink card travels to the board itself (nothing else to open),
   // so the board stays reachable from the survey exactly as the old
   // board-list click used to be, just one layer further in.
-  const allBoxes = (getJournalEntry(kind.boardId)?.boxes ?? []).filter((b) => b.kind !== 'connection' && b.kind !== 'board-meta');
+  const allBoxes = liveBoxes(getJournalEntry(kind.boardId)?.boxes).filter((b) => b.kind !== 'connection' && b.kind !== 'board-meta');
 
   // PW1 S2, Q14 — THE BOARD'S OWN READING ORDER. Sort by `y`, THEN `x`: the
   // arrangement the writer authored, read the way a page is read. What shipped
