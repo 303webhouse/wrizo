@@ -18,7 +18,7 @@
 // Buttons preventDefault on mousedown so pressing one never steals the caret from a writing surface.
 import { useEffect, useRef, useState } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
-import { ROSTER, faceStack, faceNameFromStack, storedFaceFor, ensureFaceLoaded, DEFAULT_FACE_NAME, type StoredFace } from '../store/fontRoster';
+import { ROSTER, faceStack, faceNameFromStack, storedFaceFor, ensureFaceLoaded, faceForSlug, fontSlug, DEFAULT_FACE_NAME, type StoredFace } from '../store/fontRoster';
 import { stepUp, stepDown, normalizeTypedSize, formatSize } from '../store/fontSize';
 
 export interface TypeControlProps {
@@ -29,6 +29,21 @@ export interface TypeControlProps {
   size: number;
   onPickFace: (face: StoredFace) => void;
   onSize: (points: number) => void;
+  /** FONT-SPAN (Nick approved the font-choices mockup, cursor/font-choices @ 6cc5f529): where words can be highlighted and given their
+   *  own face (Draft, a card), the Typeface section carries the two scopes - "Selection" and "Whole document" ("Whole card") - over the
+   *  roster shown as a list, the current face in brass. Absent (Free Write, Revise): today's face button. */
+  scope?: TypeScope;
+}
+
+export interface TypeScope {
+  /** Words are highlighted in this surface right now. */
+  has: boolean;
+  /** The highlight's face: a slug, null for the surface's own face, 'mixed' for more than one. */
+  face: string | null | 'mixed';
+  /** "Whole document" on a page, "Whole card" in a card. */
+  wholeLabel: string;
+  /** Give the highlighted words a face: a slug, or null for the surface's own face (their spans removed). One undo step. */
+  onPickSelection: (slug: string | null) => void;
 }
 
 /** The face that ACTUALLY renders when nothing is chosen: the first family of the resolved `--font-prose` (voice dial and
@@ -37,7 +52,7 @@ function everydayFaceName(): string {
   try { return faceNameFromStack(getComputedStyle(document.documentElement).getPropertyValue('--font-prose')) ?? DEFAULT_FACE_NAME; } catch { return DEFAULT_FACE_NAME; }
 }
 
-export function TypeControl({ form, face, size, onPickFace, onSize }: TypeControlProps) {
+export function TypeControl({ form, face, size, onPickFace, onSize, scope }: TypeControlProps) {
   const { t } = useDeskLexicon();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -56,6 +71,29 @@ export function TypeControl({ form, face, size, onPickFace, onSize }: TypeContro
   }, [open]);
 
   const keepFocus = (e: React.MouseEvent) => e.preventDefault();
+  // FONT-SPAN: the scope. It FOLLOWS the highlight - a fresh highlight returns the choice to Selection - unless the writer tapped
+  // Whole document while words were highlighted (the mockup's own rule). With nothing highlighted, Selection is dead: the pick is whole.
+  const [wholeByHand, setWholeByHand] = useState(false);
+  const had = useRef(false);
+  useEffect(() => {
+    const has = !!scope?.has;
+    if (has && !had.current) setWholeByHand(false);
+    had.current = has;
+  }, [scope?.has]);
+  const whole = !scope || !scope.has || wholeByHand;
+  // the face in brass: the surface's own face for a whole pick; the highlight's face for a selection (none when it is mixed)
+  const brassName = !scope ? currentName
+    : whole ? currentName
+      : scope.face === 'mixed' ? null
+        : scope.face === null ? currentName
+          : faceForSlug(scope.face).name;
+  const pickRow = (name: string) => {
+    const f = ROSTER.find((x) => x.name === name);
+    if (!f) return;
+    void ensureFaceLoaded(f.name);
+    if (!scope || whole) { onPickFace(storedFaceFor(f)); return; }
+    scope.onPickSelection(f.name === currentName ? null : fontSlug(f.name));
+  };
   const up = stepUp(size); const down = stepDown(size);
   const commitDraft = () => {
     if (draft === null) return;
@@ -65,8 +103,31 @@ export function TypeControl({ form, face, size, onPickFace, onSize }: TypeContro
   };
 
   return (
-    <div className="wz-type" data-form={form} role="group" aria-label={t('typeGroup')} ref={rootRef}>
-      <button
+    <div className="wz-type" data-form={form} data-scoped={scope ? 'true' : undefined} role="group" aria-label={t('typeGroup')} ref={rootRef}>
+      {scope && (
+        <>
+          <div className="wz-type-scopes" role="group" aria-label={t('typeScope')}>
+            <button type="button" className="wz-type-scope" data-scope="selection" data-on={!whole ? 'true' : 'false'} aria-pressed={!whole}
+              aria-disabled={!scope.has} onMouseDown={keepFocus} onClick={() => { if (scope.has) setWholeByHand(false); }}>{t('typeScopeSelection')}</button>
+            <button type="button" className="wz-type-scope" data-scope="whole" data-on={whole ? 'true' : 'false'} aria-pressed={whole}
+              onMouseDown={keepFocus} onClick={() => setWholeByHand(true)}>{scope.wholeLabel}</button>
+          </div>
+          <ul className="wz-type-list wz-type-list-inline" role="listbox" aria-label={t('typeFace')} onMouseDown={keepFocus}>
+            {ROSTER.map((f) => (
+              <li
+                key={f.name}
+                role="option"
+                aria-selected={f.name === brassName}
+                data-current={f.name === brassName ? 'true' : 'false'}
+                className="wz-type-row"
+                style={{ fontFamily: f.stack }}
+                onClick={() => pickRow(f.name)}
+              >{f.name}</li>
+            ))}
+          </ul>
+        </>
+      )}
+      {!scope && <button
         type="button"
         className="wz-type-face"
         aria-haspopup="listbox"
@@ -75,8 +136,8 @@ export function TypeControl({ form, face, size, onPickFace, onSize }: TypeContro
         style={{ fontFamily: currentStack }}
         onMouseDown={keepFocus}
         onClick={() => setOpen((o) => !o)}
-      >{currentName}</button>
-      {open && (
+      >{currentName}</button>}
+      {!scope && open && (
         <ul className="wz-type-list" role="listbox" aria-label={t('typeFace')} onMouseDown={keepFocus}>
           {ROSTER.map((f) => (
             <li

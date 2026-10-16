@@ -19,7 +19,7 @@ import { unbornHref } from '../store/unbornPage';
 import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { getSelectionOffsets, getCaretOffset, setCaretOffset, setSelectionOffsets } from '../store/caretOffset';
-import { applyFormat, formatShortcutAction, type FormatAction } from '../store/draftFormat';
+import { applyFormat, formatShortcutAction, applyFontPick, fontFaceAt, clearFontSpans, type FormatAction } from '../store/draftFormat';
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
 import { attachHiddenMarkEditing, hiddenMarkEditingFor } from '../store/hiddenMarksEditing';
 import { placeCaret } from '../store/hiddenMarksDom';
@@ -391,6 +391,25 @@ function BoardCardPopup({
   // belongs with the HOOKS, because proximity to its own feature is the pull
   // that puts it below an early return.
   const [dockOpen, setDockOpen] = useState(false);
+  // FONT-SPAN: whether words are highlighted in the card, and their face - the dock's Typeface scopes and brass read it. Declared
+  // with the hooks (item 133's lesson, above).
+  const [fontSel, setFontSel] = useState<{ has: boolean; face: string | null | 'mixed' }>({ has: false, face: null });
+  useEffect(() => {
+    const onSel = () => {
+      const el = elRef.current;
+      if (!el) return;
+      const fs = window.getSelection();
+      const ranged = !!fs && fs.rangeCount > 0 && !fs.isCollapsed && !!fs.anchorNode && !!fs.focusNode && el.contains(fs.anchorNode) && el.contains(fs.focusNode);
+      const fo = ranged ? getSelectionOffsets(el) : null;
+      const cur = textRef.current;
+      const lo = fo ? Math.min(fo.start, fo.end, cur.length) : 0;
+      const hi = fo ? Math.min(Math.max(fo.start, fo.end), cur.length) : 0;
+      const next = fo && hi > lo ? { has: true, face: fontFaceAt(cur, lo, hi) } : { has: false, face: null };
+      setFontSel((prev) => (prev.has === next.has && prev.face === next.face ? prev : next));
+    };
+    document.addEventListener('selectionchange', onSel);
+    return () => document.removeEventListener('selectionchange', onSel);
+  }, []);
   // FX6 S1 — the real undo/redo stack (store/textUndo.ts's own header
   // comment carries the full mechanism-choice + coalescing-granularity +
   // em-dash-shim-fold reasoning, shared verbatim with ForwardOnlyEditor.
@@ -679,6 +698,40 @@ function BoardCardPopup({
 
   applyBoardFormatRef.current = applyBoardFormat;
 
+  // FONT-SPAN (docs/font-span-plan.md; the approved mockup's card scene): a face for the HIGHLIGHTED words of this card only - the
+  // dock's own road, as applyBoardFormat: one atomic undo step, the card's text committed, the highlight left on the same words.
+  const applyBoardFont = (slug: string | null) => {
+    const el = elRef.current;
+    if (!el) return;
+    el.focus();
+    const sel = getSelectionOffsets(el);
+    if (!sel || sel.start === sel.end) return;
+    const cur = textRef.current;
+    const result = applyFontPick(cur, Math.min(sel.start, cur.length), Math.min(sel.end, cur.length), slug);
+    if (result.text !== cur) {
+      undoStackRef.current?.record({ text: result.text, caret: result.start }, 'atomic');
+      textRef.current = result.text;
+      onCommit(result.text);
+      decorateEditorFor(el, result.text, result.start, setCaretOffset, text => decorateMarkdownForCard(text, null));
+    }
+    setSelectionOffsets(el, result.start, result.end);
+    setFontSel({ has: true, face: fontFaceAt(result.text, result.start, result.end) });
+  };
+  // FONT-SPAN: the Whole card pick - every word takes the card's new face, so the card's spans go (one undo step), then the face.
+  const pickWholeCardFace = (face: StoredFace) => {
+    const el = elRef.current;
+    const cur = textRef.current;
+    const next = clearFontSpans(cur);
+    if (el && next !== cur) {
+      const caret = Math.min(getCaretOffset(el) ?? next.length, next.length);
+      undoStackRef.current?.record({ text: next, caret }, 'atomic');
+      textRef.current = next;
+      onCommit(next);
+      decorateEditorFor(el, next, caret, setCaretOffset, text => decorateMarkdownForCard(text, null));
+    }
+    onType({ fontFace: face });
+  };
+
   // card-close-x (Fable, 2026-10-13): "While a pop-up is open, nothing behind it should be clickable." The backdrop is fixed at
   // z-index 210, but it rendered INSIDE `.desk-frame-stage`, whose `isolation:isolate` (FX4 S2) makes it a stacking context - so 210
   // only ranked within the stage, and the fixed rail (`.desk-frame-strip`, z-index 1 in the ROOT context) painted over the whole
@@ -732,8 +785,10 @@ function BoardCardPopup({
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingBold')} onClick={() => applyBoardFormat('bold')}><b>B</b></button>
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingItalic')} onClick={() => applyBoardFormat('italic')}><i>I</i></button>
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingUnderline')} onClick={() => applyBoardFormat('underline')}><u>U</u></button>
-          {/* ITEM 207 - the card's face and size: the smallest form (a face button and -/+, no number, no heading). */}
-          <TypeControl form="small" face={fontFace} size={fontSize ?? SIZE_DEFAULT} onPickFace={face => onType({ fontFace: face })} onSize={size => onType({ fontSize: size })} />
+          {/* ITEM 207 - the card's face and size: the smallest form (-/+, no number, no heading). FONT-SPAN: the face is chosen through
+              the two scopes - Selection / Whole card - over the roster as a list (the approved mockup's card scene). */}
+          <TypeControl form="small" face={fontFace} size={fontSize ?? SIZE_DEFAULT} onPickFace={pickWholeCardFace} onSize={size => onType({ fontSize: size })}
+            scope={{ has: fontSel.has, face: fontSel.face, wholeLabel: dt('typeScopeWholeCard'), onPickSelection: applyBoardFont }} />
         </div>
         )}
         <div className="board-popup-strip">

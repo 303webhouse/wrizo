@@ -77,6 +77,21 @@ export function rosterFace(name: string | undefined): RosterFace | undefined {
   return name === undefined ? undefined : ROSTER.find((f) => f.name === name);
 }
 
+// FONT-SPAN (docs/font-span-plan.md): a font on highlighted words is stored in the text as `[words]{.font-<slug>}`; the slug is the
+// face's name, lower-cased, with a hyphen for each run of spaces or other characters (`EB Garamond` -> `eb-garamond`).
+export function fontSlug(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+/** The stored face a span's slug names: the roster face when this build knows it; otherwise a face NAMED from the slug, rendered by
+ *  faceStack's own rule (its name first, then a serif - the fallback is faithful in kind, never a sans for a serif). */
+export function faceForSlug(slug: string): StoredFace {
+  const known = ROSTER.find((f) => fontSlug(f.name) === slug);
+  if (known) return storedFaceFor(known);
+  const name = slug.split('-').map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w)).join(' ');
+  return { name, generic: 'serif', source: 'named' };
+}
+
 /** The stored form of a roster face (what a page writes when the writer chooses it). */
 export function storedFaceFor(face: RosterFace): StoredFace {
   return face.fallback

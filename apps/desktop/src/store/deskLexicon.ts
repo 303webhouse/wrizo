@@ -304,6 +304,8 @@ export type DeskTermId =
   // ITEM 207 — the Type control's accessible names. NO visible captions: his law is a strip menu with the fewest marks,
   // so each control's name lives in its aria-label, never as helper text.
   | 'typeGroup' | 'typeFace' | 'typeSmaller' | 'typeLarger' | 'typeSize'
+  // FONT-SPAN - the Typeface section's two scopes (the approved font-choices mockup)
+  | 'typeScope' | 'typeScopeSelection' | 'typeScopeWholeDocument' | 'typeScopeWholeCard'
   // ITEM 114 (item 83 errata E4) — the page's declared KIND and, under
   // Research, its style guide. Two sub-labels join them, and they are the
   // load-bearing half of the answer to the Screenplay name collision: one zone
@@ -1084,6 +1086,11 @@ const CANONICAL: Record<DeskTermId, string> = {
   draftSpacing: 'Line spacing',
   typeGroup: 'Type',
   typeFace: 'Typeface',
+  // FONT-SPAN (cursor/font-choices @ 6cc5f529, Nick approved Oct 15): highlighted words take the face alone; the whole choice changes all.
+  typeScope: 'Apply the typeface to',
+  typeScopeSelection: 'Selection',
+  typeScopeWholeDocument: 'Whole document',
+  typeScopeWholeCard: 'Whole card',
   typeSmaller: 'Smaller',
   typeLarger: 'Larger',
   typeSize: 'Size in points',
