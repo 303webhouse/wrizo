@@ -10,7 +10,7 @@
   The picker is the open TEMPLATES section in the Tools drawer: each row carries a tiny page sketch;
   brass marks the current choice, olive marks the open tab and section. Picking swaps the page's
   layout; the drawer never moves the page. Outline: Tab / Shift+Tab change the level, Enter adds a row.
-  Arbor / Flux, Reset: mockup only. Branch: cursor/templates.
+  Round 2: Flux words (Presets, Spine, Cover, Sources, Script, Raw); Arbor heading "Font"; picking a template\n  on a page that already has words opens a NEW page in that template (the words never move), with a\n  small "Opened as a new page" note and a way back. On an empty page it applies in place.\n  Arbor / Flux, Empty page, Reset: mockup only. Branch: cursor/templates.
 -->
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Rajdhani:wght@400;500;600&family=Chakra+Petch:wght@400;500&display=swap');
@@ -81,7 +81,12 @@
   .mini i { position: absolute; display: block; height: 1px; background: var(--ink-on-paper-low); opacity: .85; }
   .trow[data-current='true'] .mini { border-color: var(--brass); }
 
-  .stage { position: relative; flex: 1 1 auto; min-width: 0; height: 100%; background: var(--paper); border: 1px solid var(--ink-border); overflow: auto; }
+  .stagewrap { position: relative; flex: 1 1 auto; min-width: 0; height: 100%; }
+  .note { position: absolute; top: 12px; right: 18px; z-index: 5; display: flex; align-items: center; gap: 14px; padding: 6px 6px 6px 12px; background: var(--desk-ground); border: 1px solid var(--ink-border-strong); color: var(--text-mid); font-family: var(--font-label); font-size: 12px; }
+  .note[hidden] { display: none; }
+  .note button { padding: 2px 8px; border: 1px solid var(--ink-border-strong); color: var(--text-mid); font-size: 11px; }
+  .note button:hover { color: var(--text-hi); border-color: var(--text-mid); }
+  .stage { position: relative; width: 100%; height: 100%; background: var(--paper); border: 1px solid var(--ink-border); overflow: auto; }
   .sheet { position: relative; width: min(660px, 92%); min-height: 100%; margin: 0 auto; padding: 64px 72px 72px; color: var(--ink-on-paper); }
   .sheet[data-kind='blank'], .sheet[data-kind='outline'], .sheet[data-kind='bibliography'] { font-family: var(--font-prose); font-size: 19px; line-height: 1.65; }
   .sheet[data-kind='title'], .sheet[data-kind='screenplay'] { font-family: var(--font-script); font-size: 15px; line-height: 1.5; }
@@ -125,6 +130,7 @@
   <span class="only">mockup only</span>
   <button class="rev" data-theme="arbor" type="button">Arbor</button>
   <button class="rev" data-theme="flux" type="button">Flux</button>
+  <button class="rev" id="empty" type="button">Empty page</button>
   <button class="rev" id="reset" type="button">Reset</button>
   <span class="hint">Pick a template.</span>
 </header>
@@ -132,35 +138,41 @@
 <div class="room">
   <aside class="drawer" aria-label="Tools">
     <div class="tabs"><span class="tab" data-open="true">Tools</span><span class="tab">Places</span></div>
-    <div class="sec"><div class="shead">Typeface</div></div>
+    <div class="sec"><div class="shead" id="fontHead">Font</div></div>
     <div class="sec"><div class="shead">Format</div></div>
     <div class="sec"><div class="shead">Actions</div></div>
     <div class="sec" data-open="true">
-      <div class="shead">Templates</div>
+      <div class="shead" id="tmplHead">Templates</div>
       <div class="sbody" id="picker" role="listbox" aria-label="Templates"></div>
     </div>
     <div class="sec"><div class="shead">Page kind</div></div>
   </aside>
-  <main class="stage"><div class="sheet" id="sheet" data-kind="blank"></div></main>
+  <div class="stagewrap">
+    <main class="stage" id="stage"></main>
+    <div class="note" id="note" hidden><span>Opened as a new page</span><button type="button" id="noteBack">Back</button></div>
+  </div>
 </div>
 
 <script>
 (function () {
   const root = document.documentElement;
-  const sheet = document.getElementById('sheet');
+  const stage = document.getElementById('stage');
   const picker = document.getElementById('picker');
+  const note = document.getElementById('note');
 
-  // [id, label, sketch lines: [left%, top%, width%] in a 24x32 box]
+  // [id, Arbor word, Flux word, sketch lines [left%, top%, width%]]
   const KINDS = [
-    ['blank', 'Blank', [[18,18,64],[18,32,64],[18,46,50],[18,60,64],[18,74,36]]],
-    ['screenplay', 'Screenplay', [[18,16,50],[18,32,64],[36,48,28],[26,58,46],[26,68,40]]],
-    ['outline', 'Outline', [[16,16,40],[28,30,50],[28,44,40],[16,58,46],[28,72,38]]],
-    ['title', 'Title Page', [[14,12,34],[30,46,40],[40,58,20],[34,68,32]]],
-    ['bibliography', 'Bibliography', [[14,16,72],[26,28,58],[14,46,72],[26,58,58],[14,76,60]]]
+    ['blank', 'Blank', 'Raw', [[18,18,64],[18,32,64],[18,46,50],[18,60,64],[18,74,36]]],
+    ['screenplay', 'Screenplay', 'Script', [[18,16,50],[18,32,64],[36,48,28],[26,58,46],[26,68,40]]],
+    ['outline', 'Outline', 'Spine', [[16,16,40],[28,30,50],[28,44,40],[16,58,46],[28,72,38]]],
+    ['title', 'Title Page', 'Cover', [[14,12,34],[30,46,40],[40,58,20],[34,68,32]]],
+    ['bibliography', 'Bibliography', 'Sources', [[14,16,72],[26,28,58],[14,46,72],[26,58,58],[14,76,60]]]
   ];
+  const side = () => (root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor');
+  const word = (k) => (side() === 'flux' ? k[2] : k[1]);
 
-  let kind = 'blank';
-  let rows = [];                 // outline rows: { l, t }
+  let pages = [];                // { kind, el, rows }
+  let cur = 0, from = -1;        // current page; the page a new page was opened from
   const SEED_OUTLINE = [
     { l: 0, t: 'Arrival' }, { l: 1, t: 'The late ferry' }, { l: 1, t: 'Gulls on the rail' },
     { l: 0, t: 'The harbormaster' }, { l: 1, t: 'What he saw' }, { l: 2, t: 'The lamp, twice' }, { l: 1, t: 'What he left out' },
@@ -176,54 +188,60 @@
 
   function buildPicker() {
     picker.innerHTML = '';
-    KINDS.forEach(([id, label, lines]) => {
+    KINDS.forEach((k) => {
       const r = document.createElement('div');
-      r.className = 'trow'; r.setAttribute('role', 'option'); r.dataset.id = id;
-      r.innerHTML = '<span class="mini">' + lines.map(([x, y, w]) => '<i style="left:' + x + '%;top:' + y + '%;width:' + w + '%"></i>').join('') + '</span><span></span>';
-      r.lastChild.textContent = label;
+      r.className = 'trow'; r.setAttribute('role', 'option'); r.dataset.id = k[0];
+      r.innerHTML = '<span class="mini">' + k[3].map(([x, y, w]) => '<i style="left:' + x + '%;top:' + y + '%;width:' + w + '%"></i>').join('') + '</span><span class="w"></span>';
       picker.append(r);
     });
+    labels();
+  }
+  function labels() {
+    picker.querySelectorAll('.trow').forEach((r) => { r.querySelector('.w').textContent = word(KINDS.find((k) => k[0] === r.dataset.id)); });
+    document.getElementById('tmplHead').textContent = side() === 'flux' ? 'Presets' : 'Templates';
+    document.getElementById('fontHead').textContent = side() === 'flux' ? 'Typeface' : 'Font';
   }
   function paintPicker() {
-    picker.querySelectorAll('.trow').forEach((r) => { r.dataset.current = r.dataset.id === kind ? 'true' : 'false'; });
+    const k = pages[cur].kind;
+    picker.querySelectorAll('.trow').forEach((r) => { r.dataset.current = r.dataset.id === k ? 'true' : 'false'; });
   }
 
-  /* ---- pages ---- */
-  const numberOf = (i) => {
+  /* ---- page renderers: each page is its own sheet, so words never move ---- */
+  const numberOf = (p, i) => {
     const c = [0, 0, 0];
-    for (let k = 0; k <= i; k++) { c[rows[k].l]++; for (let d = rows[k].l + 1; d < 3; d++) c[d] = 0; }
-    return c.slice(0, rows[i].l + 1).join('.');
+    for (let k = 0; k <= i; k++) { c[p.rows[k].l]++; for (let d = p.rows[k].l + 1; d < 3; d++) c[d] = 0; }
+    return c.slice(0, p.rows[i].l + 1).join('.');
   };
-  function renderOutline(focus) {
-    sheet.innerHTML = '<ul class="ol"></ul>';
-    const ul = sheet.firstChild;
-    rows.forEach((r, i) => {
+  function renderOutline(p, focus) {
+    p.el.innerHTML = '<ul class="ol"></ul>';
+    const ul = p.el.firstChild;
+    p.rows.forEach((r, i) => {
       const li = document.createElement('li'); li.dataset.l = r.l; li.style.paddingLeft = (r.l * 2) + 'em';
       li.innerHTML = '<span class="num"></span><span class="txt" contenteditable="true" spellcheck="false" data-hint="Heading"></span>';
-      li.querySelector('.num').textContent = numberOf(i) + (r.l === 0 ? '.' : '');
+      li.querySelector('.num').textContent = numberOf(p, i) + (r.l === 0 ? '.' : '');
       const txt = li.querySelector('.txt'); txt.textContent = r.t;
       txt.addEventListener('input', () => { r.t = txt.textContent; });
-      txt.addEventListener('keydown', (e) => outlineKey(e, i));
+      txt.addEventListener('keydown', (e) => outlineKey(p, e, i));
       ul.append(li);
     });
     if (focus != null) { const t = ul.children[focus].querySelector('.txt'); t.focus(); const s = getSelection(), rg = document.createRange(); rg.selectNodeContents(t); rg.collapse(false); s.removeAllRanges(); s.addRange(rg); }
   }
-  function outlineKey(e, i) {
-    const r = rows[i];
+  function outlineKey(p, e, i) {
+    const r = p.rows[i];
     if (e.key === 'Tab') {
       e.preventDefault();
       if (e.shiftKey) r.l = Math.max(0, r.l - 1);
-      else r.l = Math.min(2, i === 0 ? 0 : Math.min(r.l + 1, rows[i - 1].l + 1));
-      renderOutline(i);
+      else r.l = Math.min(2, i === 0 ? 0 : Math.min(r.l + 1, p.rows[i - 1].l + 1));
+      renderOutline(p, i);
     } else if (e.key === 'Enter') {
-      e.preventDefault(); rows.splice(i + 1, 0, { l: r.l, t: '' }); renderOutline(i + 1);
-    } else if (e.key === 'Backspace' && !r.t && rows.length > 1) {
-      e.preventDefault(); rows.splice(i, 1); renderOutline(Math.max(0, i - 1));
+      e.preventDefault(); p.rows.splice(i + 1, 0, { l: r.l, t: '' }); renderOutline(p, i + 1);
+    } else if (e.key === 'Backspace' && !r.t && p.rows.length > 1) {
+      e.preventDefault(); p.rows.splice(i, 1); renderOutline(p, Math.max(0, i - 1));
     }
   }
-  function renderBib() {
-    sheet.innerHTML = '<ul class="bib"></ul>';
-    const ul = sheet.firstChild;
+  function renderBib(p) {
+    p.el.innerHTML = '<ul class="bib"></ul>';
+    const ul = p.el.firstChild;
     BIB.forEach((h) => {
       const li = document.createElement('li'); li.contentEditable = 'true'; li.spellcheck = false; li.dataset.hint = 'Author. Title. Place: Publisher, Year.'; li.innerHTML = h;
       li.addEventListener('keydown', (e) => {
@@ -232,53 +250,86 @@
       ul.append(li);
     });
   }
-  function renderTitle() {
-    sheet.innerHTML =
+  function renderTitle(p) {
+    p.el.innerHTML =
       '<div class="ms">' +
       '<div class="ms-contact" contenteditable="true" spellcheck="false" data-hint="Name, address, email">Ada Marsh\n14 Quay Street\nOban PA6 5ZZ\nada@example.com</div>' +
       '<div class="ms-words" contenteditable="true" spellcheck="false">About 62,000 words</div>' +
       '<div class="ms-mid"><div class="ms-title" contenteditable="true" spellcheck="false" data-hint="Title">The Late Ferry</div>' +
       '<div class="ms-by">by</div><div contenteditable="true" spellcheck="false" data-hint="Author">Ada Marsh</div></div></div>';
   }
-  function renderScript() {
-    sheet.innerHTML =
+  function renderScript(p) {
+    p.el.innerHTML =
       '<div class="slug">INT. FERRY TERMINAL - DAWN</div>' +
       '<div class="act">Gulls on the rail. ADA counts them, then the clock. The ticket booth is locked.</div>' +
       '<div class="char">Ada</div><div class="dial">It said seven. It always says seven.</div>' +
       '<div class="char">Harbormaster</div><div class="dial">The boat knows when it is wanted.</div>';
   }
-  function renderBlank() {
-    sheet.innerHTML = '<div class="draft" contenteditable="true" spellcheck="false" data-hint="Start writing">The ferry was late, so Ada counted gulls instead of minutes.</div>';
+  function renderBlank(p, text) {
+    p.el.innerHTML = '<div class="draft" contenteditable="true" spellcheck="false" data-hint="Start writing"></div>';
+    p.el.firstChild.textContent = text || '';
   }
+  function fill(p, kind, text) {
+    p.kind = kind; p.el.dataset.kind = kind;
+    if (kind === 'outline') { p.rows = SEED_OUTLINE.map((r) => ({ ...r })); renderOutline(p); }
+    else if (kind === 'bibliography') renderBib(p);
+    else if (kind === 'title') renderTitle(p);
+    else if (kind === 'screenplay') renderScript(p);
+    else renderBlank(p, text);
+  }
+  function makePage(kind, text) {
+    const el = document.createElement('div'); el.className = 'sheet'; stage.append(el);
+    const p = { kind, el, rows: [] };
+    fill(p, kind, text);
+    pages.push(p);
+    return p;
+  }
+  const hasWords = (p) => p.el.textContent.trim().length > 0;
 
-  function show(next) {
-    kind = next; sheet.dataset.kind = next;
-    if (next === 'outline') renderOutline();
-    else if (next === 'bibliography') renderBib();
-    else if (next === 'title') renderTitle();
-    else if (next === 'screenplay') renderScript();
-    else renderBlank();
+  function go(i) {
+    cur = i;
+    pages.forEach((p, k) => { p.el.style.display = k === i ? '' : 'none'; });
     paintPicker();
   }
 
-  picker.addEventListener('click', (e) => { const r = e.target.closest('.trow'); if (r) show(r.dataset.id); });
+  /* picking a template: on a page with words it opens a NEW page; the words never move */
+  function pick(kind) {
+    const p = pages[cur];
+    if (kind === p.kind && hasWords(p)) return;
+    if (hasWords(p)) {
+      const from0 = cur;
+      makePage(kind);
+      go(pages.length - 1);
+      from = from0; note.hidden = false;
+    } else {
+      fill(p, kind);                                   // an empty page simply takes the template
+      note.hidden = true; paintPicker();
+    }
+  }
+  picker.addEventListener('click', (e) => { const r = e.target.closest('.trow'); if (r) pick(r.dataset.id); });
+  document.getElementById('noteBack').addEventListener('click', () => { if (from >= 0) go(from); note.hidden = true; });
+  stage.addEventListener('input', () => { note.hidden = true; });
 
   /* ---- mockup chrome ---- */
   function syncTheme() {
-    const f = root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor';
-    document.querySelectorAll('.rev[data-theme]').forEach((b) => { b.dataset.on = b.dataset.theme === f ? 'true' : 'false'; });
+    document.querySelectorAll('.rev[data-theme]').forEach((b) => { b.dataset.on = b.dataset.theme === side() ? 'true' : 'false'; });
   }
   document.querySelectorAll('.rev[data-theme]').forEach((b) => b.addEventListener('click', () => {
     if (b.dataset.theme === 'flux') root.setAttribute('data-theme', 'flux'); else root.removeAttribute('data-theme');
-    syncTheme();
+    labels(); syncTheme();
   }));
-  function reset() { rows = SEED_OUTLINE.map((r) => ({ ...r })); show('blank'); }
+  function start(text) {
+    stage.innerHTML = ''; pages = []; cur = 0; from = -1; note.hidden = true;
+    makePage('blank', text); go(0);
+  }
+  function reset() { start('The ferry was late, so Ada counted gulls instead of minutes.'); }
   document.getElementById('reset').addEventListener('click', reset);
+  document.getElementById('empty').addEventListener('click', () => start(''));
 
   const q = new URLSearchParams(location.search);
   if (q.get('theme') === 'flux') root.setAttribute('data-theme', 'flux');
-  buildPicker(); reset(); syncTheme();
-  const k = q.get('kind'); if (k && KINDS.some((x) => x[0] === k)) show(k);
+  buildPicker(); if (q.get('empty') === '1') start(''); else reset(); syncTheme();
+  const k = q.get('kind'); if (k && KINDS.some((x) => x[0] === k)) pick(k);
 })();
 </script>
 </body>
