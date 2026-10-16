@@ -176,7 +176,18 @@ function diffConfined(diffText) {
 const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-parse origin/main')?.trim() || null;
 {
   const fo = baseRef ? sh(`git diff --stat ${baseRef} -- src/components/ForwardOnlyEditor.tsx`) : null;
-  ok('(D1a) H1: ForwardOnlyEditor.tsx (the typing surface) is byte-identical to main', fo !== null && fo.trim() === '', String(fo));
+  // SUPERSEDED (typing-latency, 2026-10-15; Fable: "drawers-p1 D1a/D1c: intended - park verbatim with successors"). D1a pinned that
+  // Phase 1's drawers left the typing surface untouched, and they did (Phase 1 is merged). It then read ANY later branch that changes
+  // the typing surface as a breach: typing-latency rebuilds the free-edit surface as rows, a declared typing-path change that takes
+  // the full pair. Not falsified: expired - the same shape as (D1c) below. Quoted VERBATIM; successor directly below.
+  // ok('(D1a) H1: ForwardOnlyEditor.tsx (the typing surface) is byte-identical to main', fo !== null && fo.trim() === '', String(fo));
+  // (D1a) successor, post-merge: on main, nothing has touched ForwardOnlyEditor.tsx since the merge base (the base IS HEAD, so the diff
+  // is empty); on a branch the diff is REPORTED, not judged - a branch that changes the typing surface takes the full pair.
+  {
+    const onMainA = sh('git rev-parse HEAD')?.trim() === baseRef;
+    ok('(D1a) [post-merge successor]: on main, ForwardOnlyEditor.tsx (the typing surface) has no diff against the merge base; on a branch the diff is reported, not judged (typing-path branches take the full pair)',
+      fo !== null && (onMainA ? fo.trim() === '' : true), `${onMainA ? 'on main' : 'on a branch'}: ${String(fo).slice(0, 200)}`);
+  }
   const peDiff = baseRef ? sh(`git diff -U0 ${baseRef} -- src/pages/PageEditor.tsx`) : null;
   // SUPERSEDED (Phase 1 S5: per-page typewriter memory REPLACES the line-count seed in PageEditor's mount effect, so the file now has five removed lines) - by (D1c) below.
   // Parked, not deleted: it pinned 'pure additions'. Kept verbatim; `if (false)` keeps it out of the verdict.
