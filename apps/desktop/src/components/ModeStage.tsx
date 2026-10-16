@@ -13,7 +13,7 @@ import { AmbientGlow, MilestoneBar, ProgressBar, TypewriterToggle, useGoalProgre
 import type { Milestones } from '../store/milestones';
 import { useTheme, setTheme, type ThemeId } from '../store/theme';
 import { useLexicon } from '../store/themeLexicon';
-import { useThemePrefs, setThemePrefs } from '../store/themePrefs';
+import { useThemePrefs, setThemePrefs, type PageTone } from '../store/themePrefs';
 import { useAmbianceDial, setAmbianceDial } from '../store/ambianceDial';
 import { FirstRunVeil } from './FirstRunGate';
 import { usePageDress, dressVars } from '../store/pageDress';
@@ -45,6 +45,24 @@ const ASSIST_COLLAPSED_KEY = 'wrizo-assist-collapsed';   // persisted panel stat
 // below (the pen bar itself retires from the frame; its palette does not
 // change).
 export const PEN_INKS = ['#1a0f06', '#b8231f', '#1f4fb8']; // black-brown, red, blue
+
+// FLUX-PAGE-INK — PEN_INKS is a fixed, theme-independent swatch list tuned for
+// a light page. Flux's dark page (--paper:#0B2429) is the one combination
+// where that assumption breaks: the default swatch measured 1.16:1 against it
+// (Chat 1 ledger 62/72). Arbor has no dark-page variant (canon §11 debt,
+// themePrefs.ts), so Flux dark is the only tone that needs a substitute. Each
+// swatch keeps its hue family; only lightness moves, enough to clear 7:1
+// against #0B2429 (black-brown reuses --ink-on-paper itself, ~13.9:1; red and
+// blue are hand-lightened, ~7.4:1 and ~7.7:1).
+const PEN_INKS_FLUX_DARK: Record<string, string> = {
+  '#1a0f06': '#E3F1EC',
+  '#b8231f': '#FF9088',
+  '#1f4fb8': '#8AB4FF',
+};
+
+function effectivePenInk(ink: string, theme: ThemeId, pageTone: PageTone): string {
+  return theme === 'flux' && pageTone === 'dark' ? (PEN_INKS_FLUX_DARK[ink] ?? ink) : ink;
+}
 
 interface RailDef { heading: string; items: string[]; ai: 'sealed' | 'open'; tools: 'pen' | 'format'; }
 const RAILS: Record<EditorMode, RailDef> = {
@@ -188,6 +206,12 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   useEffect(() => () => { if (typingIdleRef.current) clearTimeout(typingIdleRef.current); }, []);
 
   const [pen, setPen] = useState(PEN_INKS[0]);
+  // FLUX-PAGE-INK — resolves the page-text colour actually handed to the
+  // editor (below, at the render-prop hand-off): the same correction reaches
+  // both the unframed bar's own `pen` state and the framed host's controlled
+  // `penColorProp` (PageEditor.tsx), since both funnel through that one line.
+  const penTheme = useTheme();
+  const { page: penPageTone } = useThemePrefs();
   const [gearOpen, setGearOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [, tick] = useReducer((n: number) => n + 1, 0);
@@ -514,7 +538,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
               data-typewriter={typewriterOn ? 'true' : 'false'}
               onClick={focusEditor}
             >
-              {children({ noteWrite, penColor: rail.tools === 'pen' ? (penColorProp ?? pen) : undefined })}
+              {children({ noteWrite, penColor: rail.tools === 'pen' ? effectivePenInk(penColorProp ?? pen, penTheme, penPageTone) : undefined })}
             </div>
             {!framed && <div className="mode-wordcount mode-dissolve">{words} words</div>}
           </div>
