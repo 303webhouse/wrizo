@@ -18,6 +18,8 @@ import { VoiceWallWhisper } from './components/VoiceWallWhisper';
 import { ThemeEffectsLayer } from './components/ThemeEffectsLayer';
 import { Splash } from './components/Splash';
 import { FluxBlockCaret } from './components/FluxBlockCaret';
+import { ContextMenuHost } from './components/ContextMenuHost';
+import { DeleteDialog } from './components/DeleteDialog';
 import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
 import { subscribe, resetLocalData, getOrCreateSystemBoard, countDirtyRecords, getDirtyRecords } from './store/persistence';
 import { apiMe, apiLogout, type AuthUser } from './store/api';
@@ -344,6 +346,9 @@ export function App() {
         <VoiceWallWhisper />
         <ThemeEffectsLayer />
         <FluxBlockCaret />
+        {/* BOARD CONTEXT MENU: the one small menu and the one "Send to Trash?" dialog, mounted once - every surface asks for them through store/contextMenu.ts and store/deleteGate.ts */}
+        <ContextMenuHost />
+        <DeleteDialog />
         <SignedOutRouteGuard authState={authState} />
         {/* LOGOUT SAFETY — an overlay beside the routes, never inside one: it cannot unmount the page. */}
         <LogoutBlockedSheet />

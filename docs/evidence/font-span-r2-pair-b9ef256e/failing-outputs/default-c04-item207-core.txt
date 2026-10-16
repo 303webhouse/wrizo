@@ -1,0 +1,51 @@
+(node:64632) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS  LATTICE: from 11, `+` visits 11..18 by ones, 20..30 by twos, 34..118 by fours, and then is inert  [ends 118; steps 36]
+PASS  LATTICE: from 11, `-` walks 10..6 by ones and is inert at 6  [[11,10,9,8,7,6]]
+PASS  LATTICE: `-` from 118 walks back down every stop (118, 114 ... 34, 30, 28 ... 20, 18 ... 6)  [41 stops]
+PASS  LATTICE: from an off-lattice typed value the buttons find the neighbouring stops (25: +26 -24 · 32: +34 -30 · 10.5: +11 -10)  [[26,24,34,30,11,10]]
+PASS  LATTICE: the top of the ladder — `+` at 118 is inert, `+` at 119/120 is inert, `-` from 119 and 120 is 118  [[null,null,null,118,118]]
+PASS  LATTICE: the bottom is inert (`-` at 6 and below) and `+` from below the floor goes to 6  [[null,null,6]]
+PASS  TYPED NUMBER: rounds to the nearest half point, clamps to 6..120, and refuses what is not a number (the caller keeps the previous value)  [[10.5,10.5,10,6,120,119,120,null,null,null]]
+PASS  TYPED NUMBER: displays "10.5" and "11", never "10.50" or "11.0"  [["10.5","11"]]
+PASS  11 = TODAY: a page that never chose (no face, no size) yields an EMPTY style — byte-identical to the prior build  [{}]
+PASS  11 = TODAY: an explicit 11 yields no font-size either (the default is the absence of a rule)
+PASS  SIZE: 12 renders 17px x 12/11 x the paper scale, and 6 / 120 scale the same way (the number is the printed size; the screen is a uniform zoom)  [calc(17px * 1.0909090909090908 * var(--paper-scale))]
+PASS  ROSTER: exactly the nine approved faces, by name  [["Crimson Pro","Lora","EB Garamond","Source Serif 4","Times New Roman","Figtree","Atkinson Hyperlegible","Arial","Courier Prime"]]
+PASS  ROSTER: Times New Roman and Arial are NAMED (source "named"), installed-first, with Tinos / Arimo as the metric-compatible fallback in the stack  [["'Times New Roman', 'Tinos', Times, serif","'Arial', 'Arimo', Helvetica, sans-serif"]]
+PASS  ROSTER: the stored form of a named face carries its fallback; a bundled one does not  [{"name":"Times New Roman","generic":"serif","source":"named","fallback":"Tinos"}]
+PASS  SIZE-ADJUST (Fable's ruling): every face carries sizeAdjust and every one is 1 — the number is literal printed points; the field is the seam
+PASS  RESOLVER: a known face resolves to its stack; an absent face resolves to nothing (the theme/voice face stands)
+PASS  FALLBACK IN KIND: a face this build does not know still renders — its own name, then its generic class (a serif falls back to a serif, a monospace to a monospace, never a sans)  ['Some Device Font', Georgia, serif]
+PASS  RESOLVER: a hostile name cannot break out of the font-family value (quotes and backslashes are stripped)  ['A; } body { x:', Georgia, serif]
+PASS  LOAD-ON-CHOOSE: main.tsx imports NONE of the six new families eagerly (the eager list did not grow)  [["@fontsource-variable/figtree","@fontsource-variable/crimson-pro","@fontsource/courier-prime/400.css","@fontsource/courier-prime/700.css","@fontsource/rajdhani/500.css","@fontsource/rajdhani/600.css","@fontsource/rajdhani/700.css","@fontsource/chakra-petch/400.css","@fontsource/chakra-petch/500.css]
+PASS  LOAD-ON-CHOOSE: the roster's eager faces are exactly the ones main.tsx imports (Crimson Pro, Figtree, Courier Prime), and every other face has a real loader
+PASS  BUILD: the web build ran and produced output (a scan of an empty directory proves nothing)  [265 files ]
+PASS  LICENCE GUARD: no Times New Roman or Arial font file ships in the build output — only Tinos and Arimo (open) do  [tinos 64 · arimo 64 files]
+PASS  LOAD-ON-CHOOSE (the build): the eagerly-loaded CSS carries @font-face for the default faces and NONE of the six new families  [1 eager css file(s), 159 KB]
+PASS  LOAD-ON-CHOOSE (the build): each of the six new families is in a SEPARATE lazily-fetched CSS chunk, so choosing fetches it and opening the app does not  [["lora","eb-garamond","source-serif-4","atkinson-hyperlegible","tinos","arimo"]]
+PASS  REPORT: eager entry bytes (the entry JS + eager CSS) — recorded so the next change can be compared, not judged  [824 KB across 2 files; lazy font CSS 18 chunk(s)]
+PASS  MINIMAL [font-span successor]: the control is a face button (unscoped hosts) OR the two scope buttons (scoped hosts), plus the `-` `+` pair - 5 buttons in source, the scope pair only under `scope`, the face button only without it - and ONE number input, only in the full form  [{"buttons":5,"inputs":1,"inputGuardedByFullForm":true,"addDoor":false,"caption":false,"scopeOnly":true}]
+PASS  MINIMAL: no caption or heading of any kind in the control (no label, legend or heading element, no eyebrow class) — a control's name lives in its aria-label  [{"buttons":5,"inputs":1,"inputGuardedByFullForm":true,"addDoor":false,"caption":false}]
+PASS  NO ADD DOOR (207a): the control carries no "Add a font…" row — it arrives with Route A (207b), and Free Write never gets it (his Q2)
+PASS  LABEL: the unchosen face is named from what ACTUALLY renders — the first family of the resolved --font-prose, quotes and " Variable" removed (Crimson Pro, Figtree, and under the Flux voice Chakra Petch — never the voice dial's own word)  [["Crimson Pro","Chakra Petch",null]]
+PASS  LABEL: the control reads the resolved --font-prose, not the voice attribute (no data-voice lookup remains in it)
+PASS  MOUNT [C3 successor, guard-tolerant]: the sliver mounts the control on the Free Write, Draft and Revise arms only (any further guard allowed), in one section headed "Typeface" (the lexicon's railTypeface) with the control directly beneath  [found]
+FAIL  FORMS: Free Write passes the SMALL form (and none in INK), Draft and Revise pass the FULL form
+PASS  SCREENPLAY: absent, not greyed — the screenplay editor passes no `type` to its sliver content (its face is the format's)
+PASS  CARD: the card's styling dock mounts the SMALL form (no number), in the popup only
+PASS  CARD COPY: copyCardToBoard carries fontFace and fontSize (a copy that came back in the everyday font is not the same card)
+PASS  NO SCHEMA (207a): the server is untouched — no migration or sync.ts mapper mentions face or size
+PASS  FALSIFICATION M1 the ladder's two-point band is dropped — must go RED
+PASS  FALSIFICATION M2 `+` is allowed to reach 120 — must go RED
+PASS  FALSIFICATION M3 the default is no longer today's rendering (an untouched page would emit a rule) — must go RED
+PASS  FALSIFICATION M4 a face is size-adjusted (the literal-points ruling broken) — must go RED
+PASS  FALSIFICATION M5 the fallback stops being faithful in kind (a serif falls back to a sans) — must go RED
+PASS  FALSIFICATION M6 a name is no longer sanitised (a hostile font name breaks out of the value) — must go RED
+PASS  FALSIFICATION M7 Times New Roman loses its open fallback — must go RED
+PASS  FALSIFICATION M11 the unchosen label keeps the " Variable" suffix (the package's name leaks to the writer) — must go RED
+PASS  FALSIFICATION M8 an extra button (an add door) is added to the control — must go RED
+PASS  FALSIFICATION M9 the number input is shown in EVERY form (Free Write would gain it) — must go RED
+PASS  FALSIFICATION M10 a heading is added above the control — must go RED
+
+ITEM207-CORE VERIFY: FAIL — 1/47 failed

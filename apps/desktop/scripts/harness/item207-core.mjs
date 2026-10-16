@@ -142,8 +142,18 @@ const ctlShape = (t) => {
   };
 };
 const shape = ctlShape(src('components/TypeControl.tsx'));
-ok('MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form',
-  shape.buttons === 3 && shape.inputs === 1 && shape.inputGuardedByFullForm, JSON.stringify(shape));
+const coreParks = {};   // FONT-SPAN: the default leg's observations, for the parked leg's records
+// ---- PARKED - SUPERSEDED by font-span (Nick approved the font-choices mockup, cursor/font-choices @ 6cc5f529, 2026-10-15) ----
+// Kept VERBATIM and no longer run. The control gains the two scope buttons ("Selection" / "Whole document" or "Whole card"), rendered
+// only where a host passes `scope` (Draft, a card); Free Write and Revise still render exactly the face button and the step pair.
+// ok('MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form',
+//   shape.buttons === 3 && shape.inputs === 1 && shape.inputGuardedByFullForm, JSON.stringify(shape));
+// ------------------------------------------------------------------
+const scopeOnly = /\{scope && \(\s*<>\s*<div className="wz-type-scopes"[\s\S]*?<button[\s\S]*?<button[\s\S]*?<\/div>/.test(noComments(src('components/TypeControl.tsx')))
+  && /\{!scope && <button/.test(noComments(src('components/TypeControl.tsx')));
+coreParks.minimal = { ...shape, scopeOnly };
+ok('MINIMAL [font-span successor]: the control is a face button (unscoped hosts) OR the two scope buttons (scoped hosts), plus the `-` `+` pair - 5 buttons in source, the scope pair only under `scope`, the face button only without it - and ONE number input, only in the full form',
+  shape.buttons === 5 && scopeOnly && shape.inputs === 1 && shape.inputGuardedByFullForm, JSON.stringify(coreParks.minimal));
 ok('MINIMAL: no caption or heading of any kind in the control (no label, legend or heading element, no eyebrow class) — a control\'s name lives in its aria-label', !shape.caption, JSON.stringify(shape));
 ok('NO ADD DOOR (207a): the control carries no "Add a font…" row — it arrives with Route A (207b), and Free Write never gets it (his Q2)', !shape.addDoor, '');
 const LBL = M.faceNameFromStack;
@@ -174,8 +184,21 @@ const mountC3 = sliverSrc.match(/\{\(content\.kind === 'freewrite' \|\| content\
 ok('MOUNT [C3 successor, guard-tolerant]: the sliver mounts the control on the Free Write, Draft and Revise arms only (any further guard allowed), in one section headed "Typeface" (the lexicon\'s railTypeface) with the control directly beneath',
   !!mountC3 && /^[^]*?<div className="wz-sliver-h">\{t\('railTypeface'\)\}<\/div><TypeControl \{\.\.\.content\.type\} \/>/.test(mountC3[0]) && (mountC3[0].match(/wz-sliver-h/g) || []).length === 1, mountC3 ? 'found' : 'mount block not found');
 const pe = src('pages/PageEditor.tsx');
-ok('FORMS: Free Write passes the SMALL form (and none in INK), Draft and Revise pass the FULL form',
-  /type: instrument === 'ink' \? undefined : typeMember\('small'\)/.test(pe) && /kind: 'draft',[\s\S]{0,200}type: typeMember\('full'\)/.test(pe) && /kind: 'revise', type: typeMember\('full'\)/.test(pe), '');
+// ---- PARKED - SUPERSEDED by font-span (Nick approved the font-choices mockup, cursor/font-choices @ 6cc5f529; chat 1's ledger 68) ----
+// Kept VERBATIM and no longer run. Draft now passes the full form WITH its scope flag - `typeMember('full', true)`, the Selection /
+// Whole document pair - so the literal `typeMember('full')` no longer matches Draft's line, though the claim (Draft passes the FULL
+// form) still holds. The successor reads the form and the scope flag apart; its record is in this file's parked section.
+// ok('FORMS: Free Write passes the SMALL form (and none in INK), Draft and Revise pass the FULL form',
+//   /type: instrument === 'ink' \? undefined : typeMember\('small'\)/.test(pe) && /kind: 'draft',[\s\S]{0,200}type: typeMember\('full'\)/.test(pe) && /kind: 'revise', type: typeMember\('full'\)/.test(pe), '');
+// ------------------------------------------------------------------
+const formsNow = {
+  freeWriteSmall: /type: instrument === 'ink' \? undefined : typeMember\('small'\)/.test(pe),
+  draftFullScoped: /kind: 'draft',[\s\S]{0,200}type: typeMember\('full', true\)/.test(pe),
+  reviseFullUnscoped: /kind: 'revise', type: typeMember\('full'\)/.test(pe),
+};
+coreParks.forms = formsNow;
+ok('FORMS [font-span successor]: Free Write passes the SMALL form (and none in INK); Draft passes the FULL form WITH the Selection scope; Revise passes the FULL form WITHOUT it (no styling tools there by ruling)',
+  formsNow.freeWriteSmall && formsNow.draftFullScoped && formsNow.reviseFullUnscoped, JSON.stringify(formsNow));
 ok('SCREENPLAY: absent, not greyed — the screenplay editor passes no `type` to its sliver content (its face is the format\'s)',
   !/\btype:\s*(typeMember|\{)/.test(noComments(src('components/ScriptEditor.tsx'))), '');
 const be = src('components/BoardEditor.tsx');
@@ -220,12 +243,20 @@ const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   // ---- PARKED - SUPERSEDED (2026-10-12): the line below said this file parks nothing; it now parks ONE. Kept verbatim:
   // Parks nothing: the roster, loader and ladder are new; no prior assertion is falsified by them.
+  // FONT-SPAN (2026-10-16, chat 1's ledger 68) - a THIRD park: FORMS' literal `typeMember('full')` for Draft. Record frozen; it
+  // re-verifies the new truth from the default leg's observation (coreParks.forms).
+  { const f = coreParks.forms; parkedChecks.push({ name: 'PARKED (was "FORMS: Free Write passes the SMALL form (and none in INK), Draft and Revise pass the FULL form") - font-span: Draft passes the full form with its scope flag; live successor: FORMS [font-span successor]',
+    pass: !!f && f.freeWriteSmall && f.draftFullScoped && f.reviseFullUnscoped, detail: JSON.stringify(f) }); }
+  // FONT-SPAN (2026-10-15) - a SECOND park: MINIMAL's three buttons, superseded by the scope pair. Record frozen; it re-verifies the new
+  // truth from the default leg's observation (coreParks.minimal).
+  { const m = coreParks.minimal; parkedChecks.push({ name: 'PARKED (was "MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form") - font-span: 5 buttons in source, the scope pair only under `scope`; live successor: MINIMAL [font-span successor]',
+    pass: !!m && m.buttons === 5 && m.scopeOnly && m.inputs === 1 && m.inputGuardedByFullForm, detail: JSON.stringify(m) }); }
   // ONE park (2026-10-12): MOUNT [C3 successor]'s literal-shape match, superseded by its guard-tolerant successor. The record
   // asserts the new truth: the guard-tolerant match finds the one Typeface section on this tree's Sliver.
   parkedChecks.push({ name: 'PARKED (was "MOUNT [C3 successor]: the sliver mounts the control on the Free Write, Draft and Revise arms only, in one section headed \\"Typeface\\" ...") - its literal `content.type && (` match read any further guard (phase1-drawers\' `&& allowed(\'typeface\')`) as a missing mount; live successor: MOUNT [C3 successor, guard-tolerant]',
     pass: !!mountC3, detail: mountC3 ? 'found' : 'mount block not found' });
   console.log(parkedChecks.every((c) => c.pass)
-    ? `\nITEM207-CORE PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; ONE park: MOUNT [C3 successor]'s literal-shape match`
+    ? `\nITEM207-CORE PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; THREE parks: MOUNT [C3 successor]'s literal-shape match, MINIMAL's three buttons and FORMS' literal Draft form (font-span)`
     : `\nITEM207-CORE PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const all = checks.concat(parkedChecks);

@@ -46,7 +46,7 @@ import { PAGE_KIND_DEFAULT, PAGE_SETTINGS_FALLBACK, STYLE_GUIDE_DEFAULT } from '
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
-import { applyFormat, marksAt, headingLevelAt, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
+import { applyFormat, marksAt, headingLevelAt, stripMarkdownConventions, applyFontPick, fontFaceAt, clearFontSpans, type FormatAction } from '../store/draftFormat';
 import { hiddenMarkEditingFor } from '../store/hiddenMarksEditing';
 import { createTabChord, type TabAct } from '../store/tabChord';
 import { escapeFromEditor, ESC_HINT_ID } from '../store/escapeExit';
@@ -308,6 +308,8 @@ function PageEditorView({ id }: { id: string }) {
   // HEADINGS (Nick, 2026-10-06): the caret line's heading level, and where the small floating +/- sits while a heading is selected.
   const [headingLevel, setHeadingLevel] = useState<number | null>(null);
   const [headingPop, setHeadingPop] = useState<{ x: number; y: number } | null>(null);
+  // FONT-SPAN: whether words are highlighted on the page, and their face - the Typeface section's scope and brass read it
+  const [fontSel, setFontSel] = useState<{ has: boolean; face: string | null | 'mixed' }>({ has: false, face: null });
   // ITEM 121 I6 — FX7 S2's rail-driven marker-insertion escape hatch is gone
   // with the STYLING zone that was its only caller. ForwardOnlyEditor's
   // `insertMarkerRef` PROP is deliberately left standing: it is that shared
@@ -385,6 +387,16 @@ function PageEditorView({ id }: { id: string }) {
       setDraftMarks(lit);
       const level = offset == null ? null : headingLevelAt(plain, offset);
       setHeadingLevel(level);
+      // FONT-SPAN: a highlight on the page, and the face of its words (the same selectionchange that lights B and I)
+      {
+        const fs = window.getSelection();
+        const ranged = !!fs && fs.rangeCount > 0 && !fs.isCollapsed && !!fs.anchorNode && !!fs.focusNode && el.contains(fs.anchorNode) && el.contains(fs.focusNode);
+        const fo = ranged ? getSelectionOffsets(el) : null;
+        const lo = fo ? Math.min(fo.start, fo.end, plain.length) : 0;
+        const hi = fo ? Math.min(Math.max(fo.start, fo.end), plain.length) : 0;
+        const next = fo && hi > lo ? { has: true, face: fontFaceAt(plain, lo, hi) } : { has: false, face: null };
+        setFontSel((prev) => (prev.has === next.has && prev.face === next.face ? prev : next));
+      }
       // THE FLOATING +/- (Nick: "a '+/-' option ... that hovers over the heading text on the page when it is highlighted"). Shown only
       // while a SELECTION sits on a heading line. It is placed where it can never cover a word: just past the end of the heading's own
       // last line of text; if that would run off the column, in the column's left margin beside the heading. Fixed-position overlay,
@@ -1015,6 +1027,37 @@ function PageEditorView({ id }: { id: string }) {
     if (!writeRows(el, result.text, result.start, collapsed ? result.start : null)) decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, collapsed ? result.start : null));
     if (!collapsed) setSelectionOffsets(el, result.start, result.end);
   };
+  // FONT-SPAN (docs/font-span-plan.md; Nick approved the font-choices mockup): a face for the HIGHLIGHTED words only - the same road
+  // a format press takes: ONE atomic undo step, the text written through the same decorator, and the highlight left on the same words.
+  const applyFontAt = (slug: string | null) => {
+    const el = editorRef.current;
+    if (!el) return;
+    el.focus();
+    const sel = getSelectionOffsets(el);
+    if (!sel || sel.start === sel.end) return;
+    const cur = textRef.current;
+    const result = applyFontPick(cur, Math.min(sel.start, cur.length), Math.min(sel.end, cur.length), slug);
+    if (result.text !== cur) {
+      getRegisteredUndoStack(el)?.record({ text: result.text, caret: result.start }, 'atomic');
+      setText(result.text);
+      decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, null));
+    }
+    setSelectionOffsets(el, result.start, result.end);
+    setFontSel({ has: true, face: fontFaceAt(result.text, result.start, result.end) });
+  };
+  // FONT-SPAN: the Whole document pick, as the mockup has it - every word takes the page's new face, so the spans go (free-edit modes,
+  // where the page's text can be rewritten in place; Free Write's forward-only runway is never rewritten by a tool). One undo step.
+  const clearFontSpansOnPage = () => {
+    const el = editorRef.current;
+    if (!el || (mode !== 'drafting' && mode !== 'revise')) return;
+    const cur = textRef.current;
+    const next = clearFontSpans(cur);
+    if (next === cur) return;
+    const caret = Math.min(getCaretOffset(el) ?? next.length, next.length);
+    getRegisteredUndoStack(el)?.record({ text: next, caret }, 'atomic');
+    setText(next);
+    decorateEditorFor(el, next, caret, setCaretOffset, t => decorateMarkdownForCard(t, null));
+  };
   const applyRailFormat = (action: FormatAction) => {
     if (mode !== 'drafting') return;   // 112-A's guard, unchanged in scope
     if (getWritingSettings().typewriter) return;   // PHASE 1 (S4): Format is greyed while Typewriter is on, and its shortcuts (Ctrl/Cmd+B/I/U) are blocked with it
@@ -1115,12 +1158,15 @@ function PageEditorView({ id }: { id: string }) {
 
   // ITEM 207 - the Type control's props, one funnel into the page's own page_settings (the same patch every page-level
   // choice uses). `size` reads through the default 11 and is written as the number of points; a face is written whole.
-  const typeMember = (form: 'small' | 'full') => ({
+  // FONT-SPAN: `scoped` gives the section its two scopes and the roster as a list (Draft only: the mode with styling tools - Free Write
+  // and Revise carry none by ruling, so they keep the face button, and a pick there is always the whole page's).
+  const typeMember = (form: 'small' | 'full', scoped = false) => ({
     form,
     face: pageFace,
     size: entry.pageSettings?.size ?? SIZE_DEFAULT,
-    onPickFace: (face: StoredFace) => patchPageSettings({ face }),
+    onPickFace: (face: StoredFace) => { clearFontSpansOnPage(); patchPageSettings({ face }); },
     onSize: (size: number) => patchPageSettings({ size }),
+    scope: scoped ? { has: fontSel.has, face: fontSel.face, wholeLabel: dt('typeScopeWholeDocument'), onPickSelection: applyFontAt } : undefined,
   });
 
   const sliverContent: SliverContent = !framed
@@ -1159,7 +1205,7 @@ function PageEditorView({ id }: { id: string }) {
             kind: 'draft',
             structure: 'prose',
             onSwitchStructure,
-            type: typeMember('full'),
+            type: typeMember('full', true),
             format: {
               onFormat: applyRailFormat,
               boldOn: draftMarks.bold, italicOn: draftMarks.italic,

@@ -1,0 +1,26 @@
+PASS  P1a (baseline)
+PASS  P1b (baseline)
+PASS  P1c (baseline)
+PASS  P2 (baseline)
+PASS  P2b (baseline)
+PASS  P3a (baseline)
+PASS  P3b (baseline)
+PASS  P4 (baseline)
+PASS  P5 (baseline)
+PASS  P6a (baseline)
+PASS  P6b (baseline)
+PASS  P6c (baseline)
+PASS  P6d (baseline)
+PASS  P7 (baseline)
+PASS  MUTANT "addPageLink forgets to dedupe": the mutation landed and turns P1b + P1c RED
+PASS  MUTANT "a delete is a hard removal (no tombstone)": the mutation landed and turns P3a RED
+PASS  MUTANT "the reverse read returns tombstoned records": the mutation landed and turns P3a RED
+PASS  MUTANT "the toggle never unlinks": the mutation landed and turns P4 RED
+PASS  MUTANT "the pin door forgets the card is on this board": the mutation landed and turns P5 RED
+PASS  MUTANT "a link to nothing is accepted": the mutation landed and turns P6c RED
+PASS  S1-S5: the migration is additive and idempotent (add column if not exists, jsonb, default '[]'); the read mapper makes null / jsonb null / [] ABSENT; the INSERT lists page_links with 25 placeholders; the old-client GUARD is the ruled clause verbatim; the parameter array carries JSON.stringify(e.pageLinks ?? null)
+PASS  S (mutants): dropping the migration's "if not exists", the mapper's null-to-absent, the 25th placeholder, the guard (the plain "= excluded.page_links"), or the parameter turns its OWN pin RED (each landed)
+PASS  S6-S9: the rail's thumbnails declare their entry (CascadeSurvey, the three Drawers tiles, the Plan board row); the release consults livePinFor BEFORE toggling a record (one truth at the door); the arm travels in a body portal; the footers read page links; a dropped thumbnail saves the card BEFORE the record that names it; the tab's X asks first without the "Don't ask me again" tick
+PASS  S (UI mutants): untagging a thumbnail, dropping the one-truth door, moving the arm back into the clipped canvas svg, dropping the link on a copy, letting the tab's X skip its confirm, or showing the tick on an unlink each turn their OWN pin RED (each landed)
+
+PAGE-LINKS VERIFY: PASS (24 checks)

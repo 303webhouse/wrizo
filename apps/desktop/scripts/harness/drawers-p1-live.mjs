@@ -124,8 +124,8 @@ await withHarness(async (app) => {
         const g = document.querySelector('${grip}'), p = document.querySelector('${panel}'), l = document.querySelector('${layer}');
         if (!g || !p || !l) return { missing: true };
         const t0 = performance.now(); const out = [];
-        const read = () => { const m = new DOMMatrixReadOnly(getComputedStyle(l).transform); const r = g.getBoundingClientRect();
-          return { t: Math.round(performance.now() - t0), tx: Math.round(m.m41 * 10) / 10, op: Math.round(parseFloat(getComputedStyle(p).opacity) * 1000) / 1000, grip: [r.left, r.top, r.width, r.height].map(n => Math.round(n * 100) / 100), glyph: (g.textContent || '').trim() }; };
+        const read = () => { const m = new DOMMatrixReadOnly(getComputedStyle(l).transform); const r = g.getBoundingClientRect(); const pr = p.getBoundingClientRect();
+          return { t: Math.round(performance.now() - t0), tx: Math.round(m.m41 * 10) / 10, op: Math.round(parseFloat(getComputedStyle(p).opacity) * 1000) / 1000, grip: [r.left, r.top, r.width, r.height].map(n => Math.round(n * 100) / 100), panelLeft: Math.round(pr.left * 100) / 100, glyph: (g.textContent || '').trim() }; };
         out.push(read()); g.click();
         await new Promise((res) => { const tick = () => { out.push(read()); if (performance.now() - t0 < 520) requestAnimationFrame(tick); else res(); }; requestAnimationFrame(tick); });
         return { samples: out }; })()`;
@@ -139,7 +139,25 @@ await withHarness(async (app) => {
         const s = o.samples; const startTx = s[0].tx; const endTx = s[s.length - 1].tx;
         ok(`L2 ${T} (${hand}, OPEN): the slide and the fade are both strictly mid-way at the SAME sample (they run together), and it ends at rest (transform none, opacity 1)`,
           together(s, startTx, endTx) && endTx === 0 && s[s.length - 1].op === 1, JSON.stringify({ startTx, endTx, mid: s.filter((x) => x.op > 0 && x.op < 1).slice(0, 4) }));
-        ok(`L2 ${T} (${hand}): the tab's rect never changes while the drawer opens (only its glyph)`, s.every((x) => same(x.grip, s[0].grip)), JSON.stringify(s.map((x) => x.grip).filter((g, i, a) => i === 0 || !same(g, a[0])).slice(0, 3)));
+        // SUPERSEDED for the RIGHT hand only (item tutor-drawer-v2, Fable
+        // Oct 16: "Tutor grip moves 32px left on open - that's your arrow
+        // fix, intended"). LEFT (Sliver) keeps the ORIGINAL claim verbatim
+        // - its own panel is a static 16px inset of its anchor, so its
+        // grip genuinely never moves. RIGHT (Tutor) now has its own
+        // successor: the grip SETTLES exactly GRIP_GUTTER_PX (16) outside
+        // the open panel's own left edge, Tutor.tsx's own measured value,
+        // not a guessed one.
+        if (hand === 'left') {
+          ok(`L2 ${T} (${hand}): the tab's rect never changes while the drawer opens (only its glyph)`, s.every((x) => same(x.grip, s[0].grip)), JSON.stringify(s.map((x) => x.grip).filter((g, i, a) => i === 0 || !same(g, a[0])).slice(0, 3)));
+        } else {
+          // ok(`L2 ${T} (${hand}): the tab's rect never changes while the drawer opens (only its glyph)`, s.every((x) => same(x.grip, s[0].grip)), JSON.stringify(s.map((x) => x.grip).filter((g, i, a) => i === 0 || !same(g, a[0])).slice(0, 3)));
+          const GRIP_GUTTER_PX = 16; // Tutor.tsx's own GRIP_GUTTER_PX
+          const last = s[s.length - 1];
+          const gripRight = last.grip[0] + last.grip[2];
+          const gap = Math.round((last.panelLeft - gripRight) * 100) / 100;
+          ok(`L2 ${T} (${hand}) [tutor-drawer-arrow successor]: the tab's rect MOVES while the drawer opens, settling ${GRIP_GUTTER_PX}px outside the open panel's own left edge (never inside its tab row)`,
+            Math.abs(gap - GRIP_GUTTER_PX) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap }));
+        }
         const glyphs = [...new Set(s.map((x) => x.glyph))];
         ok(`L3 ${T} (${hand}): the arrow glyph flips and nothing else on the tab does`, glyphs.length === 2, JSON.stringify(glyphs));
         await sleep(300);
@@ -235,7 +253,7 @@ await withHarness(async (app) => {
       // Quoted VERBATIM below. Successor: the check directly below.
       // ok(`L5 ${T} BOARD (page-level): the tools arm keeps its list, now on the shared shell - FOUR door buttons (Add card, New page card, Existing page, From a deck) and the footer toggle, with no Typeface/Format/Actions/Templates and no tab row`,
       //   b.items.length === 4 && b.items.every((x) => x.length > 0) && b.footerToggle.length === 1 && b.otherSections === 0 && b.tabs === 0, JSON.stringify(b));
-      ok(`L5 ${T} BOARD (page-level) [connector-a successor]: the tools arm keeps its list on the shared shell - FOUR door buttons (Add card, New Pages Card, + Filed Pages, From a deck) and NO footer toggle (retired), with no Typeface/Format/Actions/Templates and no tab row`,
+      ok(`L5 ${T} BOARD (page-level) [connector-a successor]: the tools arm keeps its list on the shared shell - FOUR door buttons (Add card, New Page, + Filed Pages, From a deck) and NO footer toggle (retired), with no Typeface/Format/Actions/Templates and no tab row`,
         b.items.length === 4 && b.items.every((x) => x.length > 0) && b.footerToggle.length === 0 && b.otherSections === 0 && b.tabs === 0, JSON.stringify(b));
     });
 
@@ -245,13 +263,22 @@ await withHarness(async (app) => {
       await ensureLeft(app, true);
       // the open tab's where-you-are colour is the theme's: olive (--accent-rest) in Arbor; Flux wears its own mid text colour (index.css: [data-theme='flux'] .wz-sliver[data-open='true'] .wz-sliver-grip)
       const brass = await varColour(app, '--brass'); const olive = await varColour(app, th.id === 'flux' ? '--text-mid' : '--accent-rest');
+      const accentRest = await varColour(app, '--accent-rest');
       const c = await app.evalJs(`(() => { const t = (k) => document.querySelector('#wz-sliver-tab-' + k); const cs = (e) => e ? getComputedStyle(e) : null;
         const grip = document.querySelector('.wz-sliver-grip');
         return { textTab: cs(t('text')) && { color: cs(t('text')).color, border: cs(t('text')).borderTopColor, bg: cs(t('text')).backgroundColor, on: t('text').getAttribute('data-on') },
                  inkTab: cs(t('ink')) && { color: cs(t('ink')).color, border: cs(t('ink')).borderTopColor, on: t('ink').getAttribute('data-on') },
                  gripColor: cs(grip).color, gripBorder: cs(grip).borderTopColor }; })()`);
-      ok(`L6 ${T}: the CHOSEN tab (TEXT) computes to brass and takes no fill; the unchosen one (INK) does not`,
-        c.textTab && (c.textTab.border === brass || c.textTab.color === brass) && c.textTab.bg === 'rgba(0, 0, 0, 0)' && c.inkTab && c.inkTab.border !== brass && c.inkTab.color !== brass, JSON.stringify({ brass, c }));
+      // SUPERSEDED (item tutor-drawer-mirror round 2, Nick's live bug
+      // report, confirmed by tutor-drawer-probe.mjs: the open TUTOR tab
+      // measured brass rgb(255,152,0); "make it olive now") — the chosen
+      // DrawerTabs.tsx tab (shared by both the left Sliver's TEXT|INK row
+      // and the right Tutor's TUTOR|links row — ONE component) no longer
+      // wears brass at all; quoted verbatim:
+      // ok(`L6 ${T}: the CHOSEN tab (TEXT) computes to brass and takes no fill; the unchosen one (INK) does not`,
+      //   c.textTab && (c.textTab.border === brass || c.textTab.color === brass) && c.textTab.bg === 'rgba(0, 0, 0, 0)' && c.inkTab && c.inkTab.border !== brass && c.inkTab.color !== brass, JSON.stringify({ brass, c }));
+      ok(`L6 ${T} [tutor-drawer-mirror round 2 successor]: the CHOSEN tab (TEXT) computes to olive (--accent-rest) and takes no fill - the same "where you are" signal the drawer's own grip already carries; the unchosen one (INK) does not`,
+        c.textTab && (c.textTab.border === accentRest || c.textTab.color === accentRest) && c.textTab.bg === 'rgba(0, 0, 0, 0)' && c.inkTab && c.inkTab.border !== accentRest && c.inkTab.color !== accentRest, JSON.stringify({ accentRest, c }));
       ok(`L6 ${T}: an OPEN drawer's tab wears the theme's where-you-are colour (olive in Arbor, mid text in Flux), never brass`, c.gripColor === olive && c.gripBorder === olive && c.gripColor !== brass, JSON.stringify({ olive, brass, grip: [c.gripColor, c.gripBorder] }));
     });
 

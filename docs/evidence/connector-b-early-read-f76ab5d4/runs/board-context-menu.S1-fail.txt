@@ -1,0 +1,58 @@
+FAIL  S1: every call of softDeleteEntry outside persistence.ts (and a Page's own in-page confirm, S3) sits inside requestDelete(...) - the ONE gate: a board (menu, Plan row, Drawers tile) and a card can only be deleted through "Send to Trash?" or with asking turned off  [["components/BoardEditor.tsx:1486"]]
+PASS  S1 (mutant): a delete that skips the gate turns the guard RED (the mutation landed)  [["components/BoardEditor.tsx:1486","components/CascadePanels.tsx:799"]]
+PASS  S3: a PAGE's delete asks through the ONE standard dialog (Fable, Oct 16): the Actions Delete icon calls requestDelete(() => actions.onDelete()), the in-page "Send this page to Trash?" confirm is gone, and what runs after the dialog is unchanged - softDeleteEntry, flush, leave (still soft)  [{"viaGate":true,"noInPageConfirm":true,"oneCall":true,"pageActionsPlain":true}]
+PASS  S3 (mutant): a Page delete that skips the gate turns the pin RED (the mutation landed)
+PASS  S2: the Delete / Backspace key goes through the gate (removeSelectedRef -> requestDelete), a system board never asks, and the dialog + the menu are mounted ONCE in App
+PASS  fixture: the board opened (plain, grouped and ported cards, one link)  [{"there":true,"id":"bcm-board-1","src":"bcm-src-1"}]
+PASS  K1: a right-click on a plain card opens the small menu AT the pointer with Delete only, and selects the card  [{"m1":["Delete"],"mr":{"l":271,"t":200,"r":421,"b":239,"w":150,"h":39},"pa":{"x":271,"y":200}}]
+PASS  K4: the menu is an overlay - the canvas rect is identical with it open (page primacy)  [{"canvas0":{"l":151,"t":106,"r":1239,"b":835,"w":1088,"h":729},"canvas1":{"l":151,"t":106,"r":1239,"b":835,"w":1088,"h":729}}]
+PASS  K4: Esc closes it
+PASS  K4: a press outside closes it
+PASS  K2: a right-click on the corner square is CONNECTION MODE (armed) and opens NO menu - connector-a is untouched  [{"armed":"true"}]
+PASS  K3: a GROUPED card's menu leads with Ungroup, then a separator, then Delete  [["Ungroup","---","Delete"]]
+PASS  K3: Ungroup does its act - no card is grouped any more  [0]
+PASS  K3: a PORTED text card's menu leads with Edit copy, a separator, then Delete  [["Edit copy","---","Delete"]]
+PASS  K5: Delete opens "Send to Trash?" with Cancel / Delete and a "Don't ask me again" checkbox, focus on Cancel, and the card is still there  [{"title":"Send to Trash?","buttons":["Cancel","Delete"],"dontAsk":"Don't ask me again","focused":"Cancel"}]
+PASS  K5: the dialog moves nothing behind it (the canvas rect is identical)
+PASS  K5: Cancel closes it and keeps the card
+PASS  K5: Esc cancels it too
+PASS  K5: a press on the scrim cancels it
+PASS  K6: the dialog's Delete REMOVES the card from the board - and STORES it as a tombstone (deletedAt + updatedAt), not a removal  [{"id":"bcm-a","kind":"text","x":0.05,"y":0.05,"w":0.2,"h":0.12,"z":1,"text":"Card A","deletedAt":"2026-10-16T19:38:22.552Z","updatedAt":"2026-10-16T19:38:22.552Z"}]
+PASS  K6: a toast names Ctrl+Z  [Card deleted  ·  Ctrl+Z]
+PASS  K6: the card's connection goes with it - Card B no longer shows "grafted to: Card A" - and the connection box is still stored (it returns with the card)  [null]
+PASS  K7: Ctrl+Z brings the card BACK - on the board and live in storage (no deletedAt, stamped newer) - and its link and footer return with it  [{"sA2":{"id":"bcm-a","kind":"text","x":0.05,"y":0.05,"w":0.2,"h":0.12,"z":1,"text":"Card A","updatedAt":"2026-10-16T19:38:23.070Z"},"footerB":"— grafted to: Card A"}]
+PASS  K8: the Delete key ASKS ("Send to Trash?") - it does not delete at once  [{"title":"Send to Trash?","buttons":["Cancel","Delete"],"dontAsk":"Don't ask me again","focused":"Cancel"}]
+PASS  K8: so does Backspace
+PASS  K9: "Don't ask me again" ticked and then CANCELLED saves nothing - asking stays on  [true]
+PASS  K9: ticked and CONFIRMED, asking turns OFF for good (per device) and the card is deleted  [false]
+PASS  K8: with asking OFF the Delete key is immediate - no dialog, the card is gone
+PASS  K9: Settings carries "Ask before deleting" as a switch - OFF now - and pressing it turns asking back ON  [{"opened":true,"sw0":"false","sw1":"true"}]
+PASS  K9: its label reads "Ask before deleting"  [Ask before deleting]
+PASS  K10: a right-click on empty board offers New Card and Delete board  [["New Card","Delete board"]]
+PASS  K10: New Card makes a card AT the pointer and opens its pop-up  [{"ncr":{"l":191,"t":386,"r":626.1875,"b":473.03125,"w":435.1875,"h":87.03125},"ep":{"x":191,"y":386}}]
+PASS  K10: closed while still empty, that card is discarded  [6]
+PASS  K11: Delete board asks "Send to Trash?" first  [{"title":"Send to Trash?","buttons":["Cancel","Delete"],"dontAsk":"Don't ask me again","focused":"Cancel"}]
+PASS  K11: after Delete the board is soft-deleted (deletedAt stamped, its cards untouched) and the writer has LEFT it  [{"deletedAt":"2026-10-16T19:38:31.899Z","n":6}]
+PASS  K16: the deleted board (soft-deleted through the gate) is LISTED on the Trash board - a card for it  [mvbdet0trv26r9d6f]
+PASS  K16: its menu offers Restore (and no Delete), and Restore clears deletedAt - the board is back, with every card it had  [{"m16":["Restore"],"n":6}]
+PASS  K12: a board tile's right-click offers Delete board  [["Delete board"]]
+PASS  K12: and asks "Send to Trash?"
+PASS  K12: the board is soft-deleted and its tile is gone from the panel  [{"deletedAt":"2026-10-16T19:38:41.527Z"}]
+PASS  K13: the Trash board lists the deleted CARD - badge "Card", its words, and where it came from  [{"id":"mvbdf07lcrxgcavxf","from":{"boardId":"bcm-board-6","boxId":"bcm-a"},"text":"CardCard A"}]
+PASS  K13: its menu is Restore, a separator, Delete  [["Restore","---","Delete"]]
+PASS  K13: Restore brings the card back to its board (storage: live, stamped) and it leaves the Trash  [{"id":"bcm-a","kind":"text","x":0.05,"y":0.05,"w":0.2,"h":0.12,"z":1,"text":"Card A","updatedAt":"2026-10-16T19:38:46.756Z"}]
+PASS  K13: and it is on the board again (drawn, with its link)
+PASS  K13: a PERMANENT delete asks even with asking turned OFF (it is the one that cannot be undone) - and asks "Delete for good?"  [{"title":"Delete for good?","buttons":["Cancel","Delete"],"dontAsk":"Don't ask me again","focused":"Cancel"}]
+PASS  K13: it leaves an id-only marker (purgedAt, no words) and is gone from the Trash  [{"id":"bcm-a","kind":"text","x":0,"y":0,"w":0,"h":0,"z":0,"purgedAt":"2026-10-16T19:38:50.019Z"}]
+PASS  K14: a derived card on the Journal board has NO Delete (its menu is absent)  [null]
+PASS  K14: and the Delete key on it does not even ask
+PASS  K17 fixture: a Draft page is open with the left drawer showing its Actions  [true]
+PASS  K17: the Actions Delete asks through the ONE standard dialog - "Send to Trash?", Cancel / Delete, "Don't ask me again", focus on Cancel - and there is NO second, in-page confirm; the page is not deleted yet and nothing behind the dialog moved  [{"d17":{"title":"Send to Trash?","buttons":["Cancel","Delete"],"dontAsk":"Don't ask me again","focused":"Cancel"}}]
+PASS  K17: Cancel keeps the page - still stored live, still open  [#/page/bcm-draft]
+PASS  K17: the dialog's Delete SOFT-deletes the page (deletedAt stamped, its words intact, nothing removed) and the writer has LEFT it  [{"deletedAt":"2026-10-16T19:38:59.454Z","text":"The first thing she noticed was the quiet.\nThen the light on the floor, long and thin.","hash":"#/"}]
+PASS  K17: the deleted page is LISTED on the Trash board - a card for it  [mvbdfbnyee8m75lau]
+PASS  K17: its menu offers Restore (no Delete) and Restore clears deletedAt - the page is back with every word  [{"mm":["Restore"]}]
+PASS  K17: with "Ask before deleting" OFF the Actions Delete is immediate - no dialog - and still soft (deletedAt stamped)  [{"deletedAt":"2026-10-16T19:39:03.821Z"}]
+PASS  K15: Flux wears its own word - "Delete circuit"  [["New Card","Delete circuit"]]
+
+BOARD-CONTEXT-MENU VERIFY: FAIL - 1/56 failed

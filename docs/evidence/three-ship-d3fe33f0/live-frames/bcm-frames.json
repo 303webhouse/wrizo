@@ -1,0 +1,124 @@
+{
+  "rows": [
+    {
+      "combo": "arbor-dark",
+      "frame": "01-card-menu",
+      "file": "arbor-dark/01-card-menu.png",
+      "md5": "f99974070ffc943bebcc10826c2d3e77",
+      "sameAsDarkTwin": null,
+      "menu": [
+        "Delete"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "02-grouped-card-menu",
+      "file": "arbor-dark/02-grouped-card-menu.png",
+      "md5": "0e33784bb89877a2d278b4f1f4342529",
+      "sameAsDarkTwin": null,
+      "menu": [
+        "Ungroup",
+        "---",
+        "Delete"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "03-board-menu",
+      "file": "arbor-dark/03-board-menu.png",
+      "md5": "8168494b99c3d7b54dee9c2908ea2c7f",
+      "sameAsDarkTwin": null,
+      "menu": [
+        "New Card",
+        "Delete board"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "04-drawers-board-menu",
+      "file": "arbor-dark/04-drawers-board-menu.png",
+      "md5": "b847f6c3262cd80990c825b305ece992",
+      "sameAsDarkTwin": null,
+      "menu": [
+        "Delete board"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "05-send-to-trash-dialog",
+      "file": "arbor-dark/05-send-to-trash-dialog.png",
+      "md5": "b29cc4e6d52c1c3ca5c9c743747fc410",
+      "sameAsDarkTwin": null,
+      "menu": null,
+      "dialog": "Send to Trash?",
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "06-trash-shows-the-deleted-card",
+      "file": "arbor-dark/06-trash-shows-the-deleted-card.png",
+      "md5": "cbab503a2638feac55c37fca91bb83e9",
+      "sameAsDarkTwin": null,
+      "menu": null,
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "07-trash-card-menu",
+      "file": "arbor-dark/07-trash-card-menu.png",
+      "md5": "d8d443430ac499066879368af5a4d431",
+      "sameAsDarkTwin": null,
+      "menu": [
+        "Restore",
+        "---",
+        "Delete"
+      ],
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "08-restored-card-back-on-its-board",
+      "file": "arbor-dark/08-restored-card-back-on-its-board.png",
+      "md5": "9dc7987daea553b8cd641dfa6f269e82",
+      "sameAsDarkTwin": null,
+      "menu": null,
+      "dialog": null,
+      "attrs": {
+        "theme": "plateau",
+        "page": "dark"
+      }
+    }
+  ],
+  "lightFramesByteIdenticalToDarkTwin": []
+}

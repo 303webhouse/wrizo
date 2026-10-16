@@ -1,0 +1,46 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=38 tree=322291be bundle=index-Dy-nSj14.js/703324b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/tlf-lane
+[01/38] OK        exit=0   17s arrival-signin-walk.mjs :: ARRIVAL-SIGNIN-WALK VERIFY: PASS (15 checks)
+[02/38] OK        exit=0   20s b3.mjs :: B3 VERIFY: PASS (63 checks)
+[03/38] OK        exit=0   59s board-context-menu.mjs :: BOARD-CONTEXT-MENU VERIFY: PASS (56 checks)
+[04/38] OK        exit=0    1s box-tombstones.mjs :: BOX-TOMBSTONES VERIFY: PASS (31 checks)
+[05/38] OK        exit=0   30s card-close-x.mjs :: CARD-CLOSE-X VERIFY: PASS (24 checks)
+[06/38] OK        exit=0   51s card-held-italic.mjs :: ROWS-SHADOW VERIFY: PASS (51 renders checked, shadow == DOM on every one) ;; CARD-HELD-ITALIC VERIFY: PASS (7 checks)
+[07/38] OK        exit=0   51s clickhead.mjs :: ROWS-SHADOW VERIFY: PASS (18 renders checked, shadow == DOM on every one) ;; CLICKHEAD VERIFY: PASS (21 checks)
+[08/38] OK        exit=0   45s connector-a.mjs :: CONNECTOR-A VERIFY: PASS (37 checks)
+[09/38] OK        exit=0  126s drawers-p1-live.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; DRAWERS-P1-LIVE VERIFY: PASS (88 checks)
+[10/38] OK        exit=0    1s drawers-p1.mjs :: DRAWERS-P1 VERIFY: PASS (100 checks)
+[11/38] OK        exit=0   30s escexit.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; ESCEXIT VERIFY: PASS (31 checks)
+[12/38] OK        exit=0   49s flux-card-ink.mjs :: FLUX-CARD-INK VERIFY: PASS (51 checks)
+[13/38] OK        exit=0   51s flux-page-ink.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; FLUX-PAGE-INK VERIFY: PASS (29 checks)
+[14/38] FAIL      exit=1   70s font-span.mjs :: ROWS-SHADOW VERIFY: FAIL - 2 mismatch(es) between the page's shadow lines and its DOM (renders checked: 6); first: WZ-ROWS-MISMATCH text (shadow 60 chars, dom 91) | WZ-ROWS-MISMATCH text (shadow 60 chars, dom 91) ;; FONT-SPAN VERIFY: FAIL - 4/26 failed
+[15/38] OK        exit=0   21s fx17.mjs :: FX17 VERIFY: PASS (18 checks)
+[16/38] OK        exit=0   69s fx5.mjs :: ROWS-SHADOW VERIFY: PASS (126 renders checked, shadow == DOM on every one) ;; FX5 VERIFY: PASS (53 checks)
+[17/38] OK        exit=0   30s fx6.mjs :: ROWS-SHADOW VERIFY: PASS (128 renders checked, shadow == DOM on every one) ;; FX6 VERIFY: PASS (38 checks)
+[18/38] OK        exit=0   32s fx7.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX7 VERIFY (partial): PASS (44 checks)
+[19/38] OK        exit=0    9s item-storage-full.mjs :: ITEM-STORAGE-FULL VERIFY: PASS (56 checks)
+[20/38] OK        exit=0   58s item112a.mjs :: ROWS-SHADOW VERIFY: PASS (53 renders checked, shadow == DOM on every one) ;; ITEM112A VERIFY: PASS (57 checks)
+[21/38] OK        exit=0   11s item118.mjs :: ITEM118 VERIFY: PASS (10 checks)
+[22/38] OK        exit=0   42s item158.mjs :: ROWS-SHADOW VERIFY: PASS (7 renders checked, shadow == DOM on every one) ;; ITEM158 VERIFY: PASS (12 checks)
+[23/38] OK        exit=0   19s item170.mjs :: ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one) ;; ITEM170 VERIFY: PASS (19 checks)
+[24/38] OK        exit=0    4s item207-core.mjs :: ITEM207-CORE VERIFY: PASS (47 checks)
+[25/38] OK        exit=0   46s item207.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; ITEM207 VERIFY: PASS (41 checks)
+[26/38] OK        exit=0  214s item211.mjs :: ROWS-SHADOW VERIFY: PASS (106 renders checked, shadow == DOM on every one) ;; ITEM211 VERIFY: PASS (78 checks)
+[27/38] OK        exit=0   64s item211b.mjs :: ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one) ;; ITEM211B VERIFY: PASS (12 checks)
+[28/38] OK        exit=0    1s item224a-sync-integrity.mjs :: ITEM224A VERIFY: PASS (15 checks)
+[29/38] OK        exit=0   11s j4.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; J4 VERIFY: PASS (24 checks)
+[30/38] OK        exit=0    7s logout-flush-walk.mjs :: LOGOUT-FLUSH-WALK VERIFY: PASS (9 checks)
+[31/38] OK        exit=0   48s pw1.mjs :: PW1 VERIFY: PASS (41 checks)
+[32/38] OK        exit=0   20s pw2.mjs :: PW2 VERIFY: PASS (24 checks)
+[33/38] OK        exit=0    1s seed-guard.mjs :: SEED-GUARD VERIFY: PASS (36 checks)
+[34/38] OK        exit=0    1s sync-generation.mjs :: SYNC-GENERATION VERIFY: PASS (19 checks)
+[35/38] OK        exit=0   30s typing-latency-scroll.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+[36/38] OK        exit=0   16s writing-r1.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; WRITING-R1 VERIFY: PASS (25 checks)
+[37/38] OK        exit=0   47s writing-r2.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; WRITING-R2 VERIFY: PASS (13 checks)
+[38/38] OK        exit=0  118s writing-r3.mjs :: ROWS-SHADOW VERIFY: PASS (33 renders checked, shadow == DOM on every one) ;; WRITING-R3 VERIFY: PASS (33 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 37/38 of 38 returned a passing verdict
+  FAIL: font-span.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\tlf-lane\font-span.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=322291be bundle=index-Dy-nSj14.js/703324b NO-REBUILD

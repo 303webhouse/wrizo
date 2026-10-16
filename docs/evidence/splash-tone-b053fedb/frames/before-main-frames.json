@@ -1,0 +1,28 @@
+[
+  {
+    "frame": "flux-light",
+    "up": true,
+    "mounted": true,
+    "tone": "light",
+    "src": "/brand/wrizo-sketch-for-light-theme.png",
+    "veilBg": "rgb(4, 20, 26)",
+    "measured": "light",
+    "hash": "#/page/sp-flux-light",
+    "theme": "flux",
+    "page": "light",
+    "bundle": "index-CM-bq2go.js"
+  },
+  {
+    "frame": "arbor",
+    "up": true,
+    "mounted": true,
+    "tone": "light",
+    "src": "/brand/wrizo-sketch-for-light-theme.png",
+    "veilBg": "rgb(17, 6, 0)",
+    "measured": "light",
+    "hash": "#/page/sp-arbor",
+    "theme": "plateau",
+    "page": "dark",
+    "bundle": "index-CM-bq2go.js"
+  }
+]

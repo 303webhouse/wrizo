@@ -1,0 +1,6 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+CTRLEND tl92 {"up":true,"before":{"offset":253849,"textLength":253849,"scrollTop":29,"scrollHeight":104941,"clientHeight":631,"atBottom":false,"rows":592,"bundle":"index-oJfuqat4.js"},"at150":{"offset":253849,"textLength":253849,"scrollTop":29,"scrollHeight":104941,"clientHeight":631,"atBottom":false,"rows":592,"bundle":"index-oJfuqat4.js"},"at1650":{"offset":253849,"textLength":253849,"scrollTop":29,"scrollHeight":104941,"clientHeight":631,"atBottom":false,"rows":592,"bundle":"index-oJfuqat4.js"}}
+CTRLEND-CMD tl92 {"offset":253849,"textLength":253849,"scrollTop":104034,"scrollHeight":104941,"clientHeight":631,"atBottom":false,"rows":592,"bundle":"index-oJfuqat4.js"}
+
+ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one)

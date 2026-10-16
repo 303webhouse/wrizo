@@ -1,0 +1,16 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=7 tree=4c3934d1 bundle=index-Cw6Bijil.js/703562b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/cbb-lane
+[01/7] FAIL      exit=1   59s board-context-menu.mjs :: BOARD-CONTEXT-MENU VERIFY: FAIL - 1/56 failed
+[02/7] OK        exit=0    1s box-tombstones.mjs :: BOX-TOMBSTONES VERIFY: PASS (31 checks)
+[03/7] OK        exit=0   45s connector-a.mjs :: CONNECTOR-A VERIFY: PASS (37 checks)
+[04/7] NOVERDICT exit=1    7s connector-b.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\cbb-lane\connector-b.mjs.default.txt)
+[05/7] OK        exit=0    1s drawers-p1.mjs :: DRAWERS-P1 VERIFY: PASS (100 checks)
+[06/7] OK        exit=0    1s page-links.mjs :: PAGE-LINKS VERIFY: PASS (24 checks)
+[07/7] OK        exit=0    1s seed-guard.mjs :: SEED-GUARD VERIFY: PASS (36 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 5/7 of 7 returned a passing verdict
+  FAIL: board-context-menu.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\cbb-lane\board-context-menu.mjs.default.txt
+  NOVERDICT: connector-b.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\cbb-lane\connector-b.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=4c3934d1 bundle=index-Cw6Bijil.js/703562b NO-REBUILD

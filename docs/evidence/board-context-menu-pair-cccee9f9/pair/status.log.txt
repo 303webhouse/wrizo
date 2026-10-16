@@ -1,0 +1,23 @@
+STAMP: tree=cccee9f9 bundle=index-8fp-Wcri.js/683678b
+default c00: CLEAN same stamp (verified not VOID)
+default c01: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c01 - continuing to collect all reds
+default c02: CLEAN same stamp (verified not VOID)
+default c03: CLEAN same stamp (verified not VOID)
+default c04: CLEAN same stamp (verified not VOID)
+default c05: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c05 - continuing to collect all reds
+default c06: CLEAN same stamp (verified not VOID)
+default c07: CLEAN same stamp (verified not VOID)
+DEFAULT LEG COMPLETE
+parked c00: CLEAN same stamp (verified not VOID)
+parked c01: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c01 - continuing to collect all reds
+parked c02: CLEAN same stamp (verified not VOID)
+parked c03: CLEAN same stamp (verified not VOID)
+parked c04: CLEAN same stamp (verified not VOID)
+parked c05: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c05 - continuing to collect all reds
+parked c06: CLEAN same stamp (verified not VOID)
+parked c07: CLEAN same stamp (verified not VOID)
+PAIR COMPLETE

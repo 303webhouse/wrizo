@@ -1,0 +1,18 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=6 tree=80b504e1 bundle=index--2pAtwpC.js/672494b out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bcmctl-default
+(node:6840) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/6] OK        exit=0   45s connector-a.mjs :: CONNECTOR-A VERIFY: PASS (37 checks)
+[02/6] OK        exit=0    1s drawers-p1.mjs :: DRAWERS-P1 VERIFY: PASS (100 checks)
+[03/6] FAIL      exit=1   19s item170.mjs :: ITEM170 VERIFY: FAIL — 1/19 failed
+[04/6] OK        exit=0   11s j4.mjs :: J4 VERIFY: PASS (24 checks)
+[05/6] FAIL      exit=1   42s pw1.mjs :: PW1 VERIFY: FAIL — 4/32 failed
+[06/6] FAIL      exit=1   17s pw2.mjs :: PW2 VERIFY: FAIL — 2/20 failed
+
+SUITE DONE HARNESS_PARKED=unset — 3/6 of 6 returned a passing verdict
+  FAIL: item170.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bcmctl-default\item170.mjs.default.txt
+  FAIL: pw1.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bcmctl-default\pw1.mjs.default.txt
+  FAIL: pw2.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bcmctl-default\pw2.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=80b504e1 bundle=index--2pAtwpC.js/672494b

@@ -1,0 +1,6 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: profile dirs — 2 found, 2 removed (owner verified dead, unheld), 0 kept.
+REAPER: nothing to reap.
+PAGESROW {"combo":"arbor","listOpen":true,"probe":{"row":true,"rect":[98,253,359,279],"reachable":true,"topmost":"wz-place-page-title"},"clicked":true,"after":{"hash":"#/page/pr-third","crumb":"Third page charlie","bundle":"index-DSIEFlQQ.js","origin":"https://writer-studio-app-production.up.railway.app"},"opened":true}
+PAGESROW {"combo":"flux","listOpen":true,"probe":{"row":true,"rect":[98,256,359,283],"reachable":true,"topmost":"wz-place-page-title"},"clicked":true,"after":{"hash":"#/page/pr-third","crumb":"Third page charlie","bundle":"index-DSIEFlQQ.js","origin":"https://writer-studio-app-production.up.railway.app"},"opened":true}
+PAGESROW FRAMES: 2 combos -> C:/Users/nickh/writer-studio/.claude/evidence-local/revert-tutor-drawer-mirror-409d9e3f/live; opened 2/2

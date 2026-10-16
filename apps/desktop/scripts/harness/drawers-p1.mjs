@@ -354,7 +354,11 @@ function partG(tabs = tabsSrc, c = css) {
   const arrowOpen = ruleBody(c, ".wz-sliver[data-open='true'] .wz-sliver-grip{");
   return {
     roles: /role="tablist"/.test(tabs) && /role="tab"/.test(tabs) && /aria-selected=\{value === it\.id\}/.test(tabs) && /tabIndex=\{value === it\.id \? 0 : -1\}/.test(tabs),
-    brassOutline: !!rule && /color:var\(--brass\)/.test(rule) && /border-color:var\(--brass\)/.test(rule) && /background:none/.test(rule) && !/color-mix/.test(rule),
+    // SUPERSEDED (tutor-drawer-mirror round 2, Nick's live bug report,
+    // confirmed by tutor-drawer-probe.mjs: the open TUTOR tab measured
+    // brass rgb(255,152,0); "make it olive now") — was:
+    // brassOutline: !!rule && /color:var\(--brass\)/.test(rule) && /border-color:var\(--brass\)/.test(rule) && /background:none/.test(rule) && !/color-mix/.test(rule),
+    chosenOutline: !!rule && /color:var\(--accent-rest\)/.test(rule) && /border-color:var\(--accent-rest\)/.test(rule) && /background:none/.test(rule) && !/color-mix/.test(rule),
     arrowStaysOlive: !!arrowOpen && /var\(--accent-rest\)/.test(arrowOpen) && !/brass/.test(arrowOpen),
   };
 }
@@ -364,7 +368,10 @@ function partG(tabs = tabsSrc, c = css) {
     f.right === 'ink' && f.wrapR === 'text' && f.left === 'text' && f.wrapL === 'ink' && f.home === 'text' && f.end === 'ink' && f.other === null && f.none === null, JSON.stringify(f));
   const g = partG();
   ok('(F2) the row is a real tablist: tab roles, aria-selected, and a roving tabindex (only the chosen tab is in the Tab order)', g.roles, JSON.stringify(g));
-  ok('(F3) the chosen tab is a BRASS OUTLINE and nothing else (no fill, no color-mix) - and the drawer\'s own arrow tab stays olive (Nick: the open tab is not a choice)', g.brassOutline && g.arrowStaysOlive, JSON.stringify(g));
+  // SUPERSEDED (tutor-drawer-mirror round 2) — quoted verbatim:
+  // ok('(F3) the chosen tab is a BRASS OUTLINE and nothing else (no fill, no color-mix) - and the drawer\'s own arrow tab stays olive (Nick: the open tab is not a choice)', g.brassOutline && g.arrowStaysOlive, JSON.stringify(g));
+  ok('(F3) [tutor-drawer-mirror round 2 successor] the chosen tab is an OLIVE OUTLINE and nothing else (no fill, no color-mix) - the same "where you are" signal the drawer\'s own arrow tab already carries, not a one-off action (brass)',
+    g.chosenOutline && g.arrowStaysOlive, JSON.stringify(g));
 }
 
 // =============================================================================
@@ -417,6 +424,8 @@ function partJ(act = actionsSrc, pa = pageActionsSrc, sliver = sliverSrc, c = cs
   return {
     order,
     asksFirst: /onClick=\{\(\) => toggle\('delete'\)\}/.test(deleteBtn) && !/actions\.onDelete/.test(deleteBtn) && (act.match(/actions\.onDelete\(\)/g) || []).length === 1 && /actions\.onDelete\(\)/.test(sendBtn.length ? act.slice(act.indexOf('data-confirm="delete"')) : ''),
+    // one-dialog (Oct 16): the Delete icon asks through the standard requestDelete dialog; the module's ONE onDelete call sits inside it; no in-page confirm survives
+    asksViaGate: /onClick=\{\(\) => requestDelete\(\(\) => actions\.onDelete\(\)\)\}/.test(deleteBtn) && (act.match(/actions\.onDelete\(\)/g) || []).length === 1 && !/data-confirm="delete"|role="alertdialog"/.test(act),
     escCancels: /e\.key === 'Escape' && open\) \{ e\.stopPropagation\(\); setOpen\(null\);/.test(act),
     focusKeep: /open === 'delete'\) keepRef\.current\?\.focus\(\)/.test(act),
     confirmWords: /t\('actionDeleteConfirm'\)/.test(act) && /t\('actionDeleteYes'\)/.test(act) && /t\('actionDeleteKeep'\)/.test(act),
@@ -436,8 +445,13 @@ function partJ(act = actionsSrc, pa = pageActionsSrc, sliver = sliverSrc, c = cs
       && i.turnOff.headers.on === false && i.turnOff.footers.on === false && i.turnOff.headers.text === 'H', JSON.stringify(i));
   const j = partJ();
   ok('(I2) the four actions are Tags, Copy, Delete, Header/Footer - in that order', JSON.stringify(j.order) === JSON.stringify(['tags', 'copy', 'delete', 'header-footer']), JSON.stringify(j.order));
-  ok('(I3) DELETE ASKS FIRST, in the page: the Delete button only opens the confirm; the one place that runs onDelete is the "Send to Trash" button; Esc and Keep cancel; focus lands on Keep',
-    j.asksFirst && j.escCancels && j.focusKeep && j.confirmWords, JSON.stringify(j));
+  // ---- PARKED - SUPERSEDED by board-context-menu (Fable ruling, Oct 16: "one pop-up for every delete") ----
+  // The Page's own in-page confirm ("Send this page to Trash?" with Send to Trash / Keep, focus on Keep) is RETIRED: Delete asks through the ONE standard dialog (Cancel / Delete / "Don't ask me again"), the same as a card, a board and a Drawers row. Esc still cancels the Tags editor (the check below).
+  // Quoted VERBATIM below. Successor: the check directly below; scripts/harness/board-context-menu.mjs S1/S3 (the gate) and box-tombstones.mjs T12 (the delete itself is still soft).
+  // ok('(I3) DELETE ASKS FIRST, in the page: the Delete button only opens the confirm; the one place that runs onDelete is the "Send to Trash" button; Esc and Keep cancel; focus lands on Keep',
+  //   j.asksFirst && j.escCancels && j.focusKeep && j.confirmWords, JSON.stringify(j));
+  ok('(I3) [one-dialog successor]: DELETE ASKS FIRST, through the ONE standard dialog: the Delete icon calls requestDelete(...), the module\'s one onDelete call sits inside it, and no in-page confirm survives (Esc still cancels the Tags editor)',
+    j.asksViaGate && j.escCancels, JSON.stringify(j));
   ok('(I4) DELETE IS SOFT: softDeleteEntry (to the Trash) then flush, then the writer goes to their resume target or the front door - and no hard-delete call exists in the module', j.softOnly, JSON.stringify(j));
   ok('(I5) the Actions section sits between Format and Templates in the Sliver and is gated by both the data and the table', j.sliverBetween, JSON.stringify(j));
   ok('(I6) a pressed/open action is a BRASS OUTLINE and nothing else (no fill)', j.pressedOutline, JSON.stringify(j));
@@ -585,7 +599,9 @@ await mutant('INK loses its ink zone', async () => partE(mutate(setText, "ink: [
 await mutant('Draft gets a tab row', async () => partE(mutate(setText, "return kind === 'freewrite' && hasInstrument ? ['text', 'ink'] : [];", "return hasInstrument ? ['text', 'ink'] : [];")), (e) => e.tabsOthers.some((n) => n !== 0));
 await mutant('Revise grows Templates', async () => partE(mutate(setText, "revise: { text: ['typeface'], ink: [] }", "revise: { text: ['typeface', 'templates'], ink: [] }")), (e) => e.reviseExtras === true || JSON.stringify(e.revise) !== JSON.stringify(['typeface']));
 await mutant('the tab row does not wrap', async () => partF(mutate(tabsSrc, "return ids[(at + 1) % ids.length];", "return ids[Math.min(at + 1, ids.length - 1)];")), (f) => f.wrapR !== 'text');
-await mutant('the chosen tab gets a fill', async () => partG(tabsSrc, mutate(css, ".wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:none; }", ".wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }")), (g) => g.brassOutline === false);
+// SUPERSEDED (tutor-drawer-mirror round 2) — the anchor string itself was the brass-era rule; quoted verbatim:
+// await mutant('the chosen tab gets a fill', async () => partG(tabsSrc, mutate(css, ".wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:none; }", ".wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }")), (g) => g.brassOutline === false);
+await mutant('the chosen tab gets a fill', async () => partG(tabsSrc, mutate(css, ".wz-drawer-tab[data-on='true']{ color:var(--accent-rest); border-color:var(--accent-rest); background:none; }", ".wz-drawer-tab[data-on='true']{ color:var(--accent-rest); border-color:var(--accent-rest); background:color-mix(in srgb,var(--accent-rest) 14%,transparent); }")), (g) => g.chosenOutline === false);
 await mutant('the arrow tab turns brass when open', async () => partG(tabsSrc, mutate(css, ".wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--accent-rest); border-color:var(--accent-rest); }", ".wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--brass); border-color:var(--brass); }")), (g) => g.arrowStaysOlive === false);
 await mutant('the Sliver stops asking the table for the Typeface', async () => partH(mutate(sliverSrc, "content.type && allowed('typeface') && (", "content.type && ("), tutorSrc), (h) => h.ungated.includes('typeface'));
 await mutant('the Tutor goes back to a hand-written wrapper', async () => partH(sliverSrc, mutate(tutorSrc, '<SideDrawer side="right" idPrefix="wz-tutor" tabs={rightTabs}>', '<div className="wz-drawer-slide wz-drawer-slide--right">')), (h) => h.noHandWrapper === false || h.tutorShell === false);
@@ -596,7 +612,11 @@ await mutant('Revise grows Actions', async () => partE(mutate(setText, "revise: 
 await mutant('Actions slips ahead of Format in the table', async () => partE(mutate(setText, "text: ['typeface', 'format', 'actions', 'templates', 'pageKind']", "text: ['typeface', 'actions', 'format', 'templates', 'pageKind']")), (e) => JSON.stringify(e.draft) !== JSON.stringify(['typeface', 'format', 'actions', 'templates', 'pageKind']));
 await mutant('Header/Footer turns only the header', async () => partI(mutate(pageActionsSrc, "return { headers: { ...s.headers, on }, footers: { ...s.footers, on } };", "return { headers: { ...s.headers, on }, footers: { ...s.footers } };")), (i) => i.turnOn.footers.on !== true);
 await mutant('Header/Footer reads on when EITHER is on', async () => partI(mutate(pageActionsSrc, "return !!s.headers?.on && !!s.footers?.on;", "return !!s.headers?.on || !!s.footers?.on;")), (i) => i.onlyHeaderOn === true);
-await mutant('the Delete button deletes at once (no confirm)', async () => partJ(mutate(actionsSrc, "title={t('actionDelete')} aria-label={t('actionDelete')} onClick={() => toggle('delete')}", "title={t('actionDelete')} aria-label={t('actionDelete')} onClick={() => actions.onDelete()}")), (j) => j.asksFirst === false);
+// ---- PARKED - SUPERSEDED by board-context-menu (Fable ruling, Oct 16: "one pop-up for every delete") ----
+// The mutation anchored on the old in-page confirm's Delete button (`toggle('delete')`), which is gone.
+// Quoted VERBATIM below. Successor: the mutant directly below.
+// await mutant('the Delete button deletes at once (no confirm)', async () => partJ(mutate(actionsSrc, "title={t('actionDelete')} aria-label={t('actionDelete')} onClick={() => toggle('delete')}", "title={t('actionDelete')} aria-label={t('actionDelete')} onClick={() => actions.onDelete()}")), (j) => j.asksFirst === false);
+await mutant('the Delete button deletes at once (skips the gate) [one-dialog successor]', async () => partJ(mutate(actionsSrc, "onClick={() => requestDelete(() => actions.onDelete())}", "onClick={() => actions.onDelete()}")), (j) => j.asksViaGate === false);
 await mutant('Esc no longer cancels the confirm', async () => partJ(mutate(actionsSrc, "if (e.key === 'Escape' && open) { e.stopPropagation(); setOpen(null); }", "")), (j) => j.escCancels === false);
 await mutant('Delete hard-deletes', async () => partJ(actionsSrc, mutate(pageActionsSrc, 'softDeleteEntry(entry.id);', 'hardDelete(entry.id);')), (j) => j.softOnly === false);
 await mutant('Delete forgets to flush before leaving', async () => partJ(actionsSrc, mutate(pageActionsSrc, '      flushNow();\n      navigate(getResumeTarget()', '      navigate(getResumeTarget()')), (j) => j.softOnly === false);

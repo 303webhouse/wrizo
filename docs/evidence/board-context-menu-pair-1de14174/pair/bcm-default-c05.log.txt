@@ -1,0 +1,28 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=1de14174 bundle=index-C6X7EJ8u.js/684271b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bcm-default-c05
+[01/19] OK        exit=0   11s item88.mjs :: ITEM88 VERIFY: PASS (10 checks)
+[02/19] OK        exit=0   10s item89.mjs :: ITEM89 VERIFY: PASS (14 checks)
+[03/19] OK        exit=0   18s item9192.mjs :: ITEM9192 VERIFY: PASS (16 checks)
+[04/19] OK        exit=0    7s item97.mjs :: ITEM97 VERIFY: PASS (7 checks)
+[05/19] OK        exit=0    5s item99.mjs :: ITEM99 VERIFY: PASS (41 checks)
+[06/19] NOVERDICT exit=1    7s j4.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bcm-default-c05\j4.mjs.default.txt)
+[07/19] OK        exit=0   18s j5.mjs :: J5 VERIFY: PASS (37 checks)
+[08/19] OK        exit=0   30s j6.mjs :: J6 VERIFY: PASS (33 checks)
+[09/19] OK        exit=0    9s logout-flush-walk.mjs :: LOGOUT-FLUSH-WALK VERIFY: PASS (9 checks)
+[10/19] OK        exit=0    1s logout-flush.mjs :: LOGOUT-FLUSH VERIFY: PASS (39 checks) — live walk not run (box turn)
+[11/19] OK        exit=0   16s m1.mjs :: M1 VERIFY: PASS (29 checks)
+[12/19] OK        exit=0   35s m2.mjs :: M2 VERIFY: PASS (26 checks)
+[13/19] OK        exit=0   29s m3.mjs :: M3 VERIFY: PASS (6 checks)
+[14/19] OK        exit=0   29s m4.mjs :: M4 VERIFY: PASS (35 checks)
+[15/19] OK        exit=0    0s one-drawer.mjs :: ONE-DRAWER VERIFY: PASS (13 checks)
+[16/19] OK        exit=0    9s outdent.mjs :: OUTDENT VERIFY: PASS (10 checks)
+[17/19] OK        exit=0   16s page-scroll-return.mjs :: PAGE-SCROLL-RETURN VERIFY: PASS (9 checks)
+[18/19] OK        exit=0   23s page-templates.mjs :: PAGE-TEMPLATES VERIFY: PASS (20 checks)
+[19/19] OK        exit=0   37s pb1.mjs :: PB1 VERIFY: PASS (22 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 18/19 of 19 returned a passing verdict
+  NOVERDICT: j4.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bcm-default-c05\j4.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=1de14174 bundle=index-C6X7EJ8u.js/684271b NO-REBUILD
+CHUNK 05 EXIT 1

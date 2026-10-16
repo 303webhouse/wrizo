@@ -128,6 +128,35 @@ await withHarness(async (app) => {
       await app.key('Escape');
       await sleep(300);
     }
+
+    // C5 - DECKWIZARD-INK (Chat 1 ledger 53; Fable, Oct 15: "in Flux the deck titles on the wizard's cream sheet are pale and nearly
+    // illegible - same bug flux-card-ink fixed. Use the --ink-on-card tokens; >= 4.5:1 in every theme; extend the contrast check.")
+    // The wizard's sheet is the same un-themed cream (--card-stock), so every text on it is measured, in every tone, against 4.5:1:
+    // the library (a deck title, a room heading, the eyebrow, the close X, Cancel) and a deck's question step (the question, an option).
+    // Opened from the board's own "From a deck…" tool (b3's door 2); a missing control is a failed check, never a crash.
+    const wOpen = await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-sliver-item-btn')].find(x => x.textContent.trim() === 'From a deck…'); if (!b) return false; b.click(); return true; })()");
+    const wUp = wOpen && await app.waitFor("!!document.querySelector('.deck-wizard-dialog')", { label: 'deck wizard', timeout: 4000 }).then(() => true, () => false);
+    ok(`${T} (premise) C5: the deck wizard opens over the board`, !!wUp, JSON.stringify({ wOpen }));
+    if (wUp) {
+      await sleep(250);
+      const lib = {
+        'a deck title': await contrastOf(app, '.deck-wizard-deck-row[data-deck-id="character-study"]'),
+        'a room heading': await contrastOf(app, '.deck-wizard-room-heading'),
+        'the eyebrow': await contrastOf(app, '.deck-wizard-eyebrow'),
+        'the close X': await contrastOf(app, '.deck-wizard-close'),
+        'Cancel': await contrastOf(app, '.deck-wizard-cancel'),
+      };
+      for (const [what, c] of Object.entries(lib)) ok(`${T} C5: the deck wizard's ${what} carries against its cream sheet (computed ${c?.ratio}:1, >= ${FLOOR})`, !!c && c.ratio >= FLOOR, JSON.stringify(c));
+      await app.evalJs("document.querySelector('.deck-wizard-deck-row[data-deck-id=\"character-study\"]')?.click()");
+      const qUp = await app.waitFor("document.querySelectorAll('.deck-wizard-option-btn').length > 0", { label: 'deck question', timeout: 4000 }).then(() => true, () => false);
+      ok(`${T} (premise) C5: a deck's question step opens (character-study)`, qUp);
+      if (qUp) {
+        const q = { 'question': await contrastOf(app, '.deck-wizard-question'), 'first option': await contrastOf(app, '.deck-wizard-option-btn') };
+        for (const [what, c] of Object.entries(q)) ok(`${T} C5: the deck wizard's ${what} carries against its cream sheet (computed ${c?.ratio}:1, >= ${FLOOR})`, !!c && c.ratio >= FLOOR, JSON.stringify(c));
+      }
+      await app.evalJs("document.querySelector('.deck-wizard-close')?.click()");
+      await sleep(300);
+    }
   }
 
   // C4 - the mechanism, not just the outcome: --ink-on-card/-low alias to

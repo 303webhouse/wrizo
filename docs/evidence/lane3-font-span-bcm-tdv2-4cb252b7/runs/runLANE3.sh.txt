@@ -1,0 +1,18 @@
+#!/bin/bash
+# FABLE's queue (Oct 16): font-span-r2 @ 7b29ab8f + board-context-menu @ 6f82b466 + tutor-drawer-v2 @ 008aa74a, merged clean onto origin/main @ 442d2a92 -> lane3 tree.
+# ONE fast lane (default leg) with the union of the three file lists + the core set, then the three frames tools. One grant, sequential.
+export WS_BOX_TURN=chat1-lane3-20261016
+SD="C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad"
+ST="$SD/lane3-status.txt"
+W=/c/Users/nickh/writer-studio/.claude/worktrees
+LOC="C:/Users/nickh/writer-studio/.claude/evidence-local/lane3-oct16"
+mkdir -p "$LOC/fs-frames" "$LOC/drawers" "$LOC/pagesrow"
+step() { local name="$1" dir="$2"; shift 2; echo "START $name $(date -u +%H:%M:%SZ)" >> "$ST"; ( cd "$dir" && "$@" ) > "$SD/lane3-$name.out" 2>&1; echo "END $name exit=$? $(date -u +%H:%M:%SZ)" >> "$ST"; }
+FILES=$(paste -sd, "$SD/lane3-files.txt")
+export FS_FRAMES="$LOC/fs-frames"
+step lane    "$W/lane3/apps/desktop" node scripts/run-suite.mjs --no-rebuild --only "$FILES" --out "$SD/lane3-default"
+unset FS_FRAMES
+step bcmframes "$W/lane3/apps/desktop" node scripts/evidence/board-context-menu-frames.mjs
+step drawerframes "$W/lane3/apps/desktop" env WT=lane3 FRAMES_OUT="$LOC/drawers" node "$SD/drawerarrow.mjs"
+step pagesrow "$W/lane3/apps/desktop" env WT=lane3 FRAMES_OUT="$LOC/pagesrow" node "$SD/pagesrow.mjs"
+echo "LANE3 COMPLETE" >> "$ST"

@@ -80,6 +80,16 @@ window.__pointerSeq = function(selector, dx, dy, opts) {
   return true;
 };
 `;
+// BOARD CONTEXT MENU drivers: a trusted right-click on a card, and a pick from the one small menu (.wz-ctx)
+const rightClickAt = async (app, sel) => {
+  const r = await app.evalJs(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return null; const b = e.getBoundingClientRect(); return { x: Math.round(b.left + b.width * 0.3), y: Math.round(b.top + b.height * 0.3) }; })()`);
+  if (!r) throw new Error('rightClickAt: not found ' + sel);
+  await app.mouseMove(r.x, r.y);
+  await app.cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x: r.x, y: r.y, button: 'right', buttons: 2, clickCount: 1, pointerType: 'mouse' });
+  await app.cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x: r.x, y: r.y, button: 'right', buttons: 0, clickCount: 1, pointerType: 'mouse' });
+  await app.waitFor("!!document.querySelector('.wz-ctx')", { label: 'the context menu' });
+};
+const ctxPick = (app, label) => app.evalJs(`(() => { const b = [...document.querySelectorAll('.wz-ctx-item')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (!b) return false; b.click(); return true; })()`);
 const selectBox = (app, boxId) => app.evalJs(`window.__pointerSeq('[data-box-id="${boxId}"]', 0, 0)`);
 
 // The Shelf Board's own live boxes, read via the SAME test seam
@@ -242,10 +252,17 @@ await withHarness(async (app) => {
   const cardToPin = shelfBoxesBeforePin.find((b) => b.kind === 'page-pin' && b.entryId === 'b2-t3-qualifies');
   await app.evalJs(POINTER_HELPER); // re-inject — reload() wipes the page's own JS context
   await selectBox(app, cardToPin.id);
-  await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'Shelf card selected' });
-  const pinBtnPresent = await app.evalJs("[...document.querySelectorAll('.board-action-row button')].some(b => b.textContent.trim() === 'Pin to a Board…')");
-  ok('S2: a selected Shelf card offers "Pin to a Board…" in the action row (the existing PinToBoardSheet — nothing new invented)', pinBtnPresent === true, String(pinBtnPresent));
-  await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Pin to a Board…').click()");
+  // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15) ----
+  // The selected-card action row is DELETED; a Shelf card's "Pin to a Board…" is its right-click menu (the same PinToBoardSheet).
+  // Quoted VERBATIM below. Successor: the right-click below.
+  // await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'Shelf card selected' });
+  // const pinBtnPresent = await app.evalJs("[...document.querySelectorAll('.board-action-row button')].some(b => b.textContent.trim() === 'Pin to a Board…')");
+  // ok('S2: a selected Shelf card offers "Pin to a Board…" in the action row (the existing PinToBoardSheet — nothing new invented)', pinBtnPresent === true, String(pinBtnPresent));
+  // await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Pin to a Board…').click()");
+  await rightClickAt(app, `[data-box-id="${cardToPin.id}"]`);
+  const shelfMenuLabels = await app.evalJs("[...document.querySelectorAll('.wz-ctx-item')].map((b) => b.textContent.trim())");
+  ok('S2 [context-menu successor]: a Shelf card offers "Pin to a Board…" in its right-click menu (the existing PinToBoardSheet - nothing new invented), and no Delete (a derived card)', shelfMenuLabels.includes('Pin to a Board…') && !shelfMenuLabels.includes('Delete'), JSON.stringify(shelfMenuLabels));
+  await ctxPick(app, 'Pin to a Board…');
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Pin sheet open (Shelf)' });
   // ---------------------------------------------------------------------------
   // FIXTURE RACE, CLOSED (found by the item 112-A lane, 2026-09-05; harness-only,
@@ -329,8 +346,13 @@ await withHarness(async (app) => {
   // text is simply different. ORIGINAL claim parked verbatim:
   // ok('S1: the Shelf Board\'s own sliver carries NO Add control at all — genuinely absent, the same B1 law inherited via the SAME `isSystemBoard` branch',
   //   !shelfSliverButtons.includes('Add card') && !shelfSliverButtons.includes('New page card') && !shelfSliverButtons.includes('Existing page…'), JSON.stringify(shelfSliverButtons));
-  ok('S1 [word-diet successor]: the Shelf Board\'s own sliver carries NO Add control at all — genuinely absent, the same B1 law inherited via the SAME `isSystemBoard` branch',
-    !shelfSliverButtons.includes('Add card') && !shelfSliverButtons.includes('New Pages Card') && !shelfSliverButtons.includes('+ Filed Pages'), JSON.stringify(shelfSliverButtons));
+  // SUPERSEDED (item word-diet-layouts, Fable Oct 15) — boardNewPageCard
+  // reworks again; same reasoning as above: checking the OLD text's absence
+  // would trivially pass once the text is simply different. ORIGINAL claim parked verbatim:
+  // ok('S1 [word-diet successor]: the Shelf Board\'s own sliver carries NO Add control at all — genuinely absent, the same B1 law inherited via the SAME `isSystemBoard` branch',
+  //   !shelfSliverButtons.includes('Add card') && !shelfSliverButtons.includes('New Pages Card') && !shelfSliverButtons.includes('+ Filed Pages'), JSON.stringify(shelfSliverButtons));
+  ok('S1 [word-diet-layouts successor]: the Shelf Board\'s own sliver carries NO Add control at all — genuinely absent, the same B1 law inherited via the SAME `isSystemBoard` branch',
+    !shelfSliverButtons.includes('Add card') && !shelfSliverButtons.includes('New Page') && !shelfSliverButtons.includes('+ Filed Pages'), JSON.stringify(shelfSliverButtons));
   // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
   // "Show grafts" is RETIRED on every board: there is no footer toggle to still work on the Shelf Board.
   // Quoted VERBATIM below. Successor: the check directly below.
@@ -346,7 +368,7 @@ await withHarness(async (app) => {
   // Quoted VERBATIM below. Successor: the Delete key on the selected card (BoardEditor.tsx key handler -> removeSelected, the same snapshot("remove") path); scripts/harness/board-click-create.mjs C10/C11.
   // await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'inert card selected' });
   // await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Remove').click()");
-  await app.key('Delete'); await sleep(200);
+  await app.evalJs("window.wrizoAskBeforeDelete.set(false)"); await app.key('Delete'); await sleep(200);
   await sleep(300);
   const boxesAfterInertRemove = await app.evalJs('window.wrizoBoard()');
   ok('S1: hand-delete (Remove) on a derived Shelf card is an INERT, quiet no-op — the exact same card set survives the click',
@@ -719,8 +741,11 @@ await withHarness(async (app) => {
   // SUPERSEDED (item word-diet, Nick) — cascadePageNewPage reworks, "New Page" -> "New Pages".
   // ok('S5 [R6+R13.ii successor]: the Page drawers roster still LEADS with the New Page door - the roster grew beneath it (PAGE SETUP, Place-page), but the door stays first',
   //   rosterOrder.doorLabels[0] === 'New Page', JSON.stringify(rosterOrder));
-  ok('S5 [word-diet successor]: the Page drawers roster still LEADS with the New Pages door - the roster grew beneath it (PAGE SETUP, Place-page), but the door stays first',
-    rosterOrder.doorLabels[0] === 'New Pages', JSON.stringify(rosterOrder));
+  // SUPERSEDED (item word-diet-layouts, Fable Oct 15 — the singular-exception rule) — cascadePageNewPage reworks back, "New Pages" -> "New Page".
+  // ok('S5 [word-diet successor]: the Page drawers roster still LEADS with the New Pages door - the roster grew beneath it (PAGE SETUP, Place-page), but the door stays first',
+  //   rosterOrder.doorLabels[0] === 'New Pages', JSON.stringify(rosterOrder));
+  ok('S5 [word-diet-layouts successor]: the Page drawers roster still LEADS with the New Page door - the roster grew beneath it (PAGE SETUP, Place-page), but the door stays first',
+    rosterOrder.doorLabels[0] === 'New Page', JSON.stringify(rosterOrder));
   ok('S5: Places renders for the page underfoot, after the Page face', rosterOrder.placesAfterPageFace === true, JSON.stringify(rosterOrder));
 
   // "New Journal Entry" door checks [PARKED — FX15 S3]: the door is RETIRED, so its

@@ -1,0 +1,19 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PASS  [plateau/light] (premise) the page is in theme=plateau page=light  [{"theme":"plateau","page":"light"}]
+FAIL  [plateau/light] P1: --ink-on-paper-low carries against --paper (computed 3.49:1, >= 4.5)  [{"fg":"#8A7C68","bg":"#F3EDE1","ratio":3.49}]
+FAIL  [plateau/light] P1: --ink-on-card-low carries against --card-stock (computed 3.77:1, >= 4.5)  [{"fg":"#8A7C68","bg":"#FBF6EA","ratio":3.77}]
+PASS  [flux/light] (premise) the page is in theme=flux page=light  [{"theme":"flux","page":"light"}]
+FAIL  [flux/light] P1: --ink-on-paper-low carries against --paper (computed 4.34:1, >= 4.5)  [{"fg":"#0B7C9E","bg":"#EDF6F3","ratio":4.34}]
+FAIL  [flux/light] P1: --ink-on-card-low carries against --card-stock (computed 4.43:1, >= 4.5)  [{"fg":"#0B7C9E","bg":"#FBF6EA","ratio":4.43}]
+PASS  [flux/dark] (premise) the page is in theme=flux page=dark  [{"theme":"flux","page":"dark"}]
+PASS  [flux/dark] P1: --ink-on-paper-low carries against --paper (computed 9.05:1, >= 4.5)  [{"fg":"#57D0F5","bg":"#0B2429","ratio":9.05}]
+PASS  [flux/dark] P1: --ink-on-card-low carries against --card-stock (computed 5.63:1, >= 4.5)  [{"fg":"#0A6B86","bg":"#FBF6EA","ratio":5.63}]
+FAIL  [plateau/light] P2: the missing-page pin's own label carries against its card stock (computed 4.13:1, >= 4.5)  [{"fg":"rgb(128, 118, 106)","bg":"rgb(251, 246, 234)","ratio":4.13}]
+FAIL  [flux/light] P2: the missing-page pin's own label carries against its card stock (computed 3.07:1, >= 4.5)  [{"fg":"rgb(110, 149, 141)","bg":"rgb(251, 246, 234)","ratio":3.07}]
+FAIL  [flux/dark] P2: the missing-page pin's own label carries against its card stock (computed 3.07:1, >= 4.5)  [{"fg":"rgb(110, 149, 141)","bg":"rgb(251, 246, 234)","ratio":3.07}]
+FAIL  [plateau/light] P3: the page's own word-count carries against its sheet (computed 3.49:1, >= 4.5)  [{"fg":"rgb(138, 124, 104)","bg":"rgb(243, 237, 225)","ratio":3.49}]
+FAIL  [flux/light] P3: the page's own word-count carries against its sheet (computed 4.34:1, >= 4.5)  [{"fg":"rgb(11, 124, 158)","bg":"rgb(237, 246, 243)","ratio":4.34}]
+PASS  [flux/dark] P3: the page's own word-count carries against its sheet (computed 9.05:1, >= 4.5)  [{"fg":"rgb(87, 208, 245)","bg":"rgb(11, 36, 41)","ratio":9.05}]
+
+FAINT-TEXT-SWEEP VERIFY: FAIL - 9/15 failed

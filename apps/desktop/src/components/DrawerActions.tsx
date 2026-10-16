@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
 import type { PageActions } from '../store/pageActions';
+import { requestDelete } from '../store/deleteGate';
 import { CopyIcon, DeleteIcon, HeaderFooterIcon, TagsIcon } from './DrawerIcons';
 
 // PHASE 1 - the ACTIONS section of the left drawer (Draft): Tags, Copy, Delete, Header/Footer, in that order, as icons with a name.
@@ -9,19 +10,19 @@ import { CopyIcon, DeleteIcon, HeaderFooterIcon, TagsIcon } from './DrawerIcons'
 // area INSIDE the drawer (never a dialog, never a route): Tags opens its editor, Delete opens its confirm. At most one is open at a
 // time. A chosen/open one wears a brass OUTLINE and nothing else (no fill).
 //
-// DELETE IS A SOFT DELETE TO THE TRASH, AND ASKS FIRST, IN THE PAGE: "Send this page to Trash?" with Send to Trash / Keep. Esc and Keep
-// cancel; focus lands on Keep (the safe answer) when it opens. Nothing is deleted until Send to Trash is pressed.
+// DELETE IS A SOFT DELETE TO THE TRASH, AND ASKS FIRST - THROUGH THE ONE DIALOG (Nick/Fable, Oct 16): the Delete icon calls requestDelete(...), the same "Send to Trash?" (Cancel / Delete / "Don't ask me again") every
+// other delete uses; with asking turned off (the one setting, "Ask before deleting") it sends the page to Trash at once. The in-page "Send this page to Trash?" confirm this section used to carry is RETIRED - one
+// pop-up for every delete. Nothing is deleted until the dialog's Delete.
 
-type Open = 'tags' | 'delete' | null;
+type Open = 'tags' | null;
 
 export function DrawerActions({ actions }: { actions: PageActions }) {
   const { t } = useDeskLexicon();
   const [open, setOpen] = useState<Open>(null);
   const [tagDraft, setTagDraft] = useState('');
-  const keepRef = useRef<HTMLButtonElement>(null);
   const tagInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { if (open === 'delete') keepRef.current?.focus(); else if (open === 'tags') tagInputRef.current?.focus(); }, [open]);
+  useEffect(() => { if (open === 'tags') tagInputRef.current?.focus(); }, [open]);
 
   const toggle = (which: Exclude<Open, null>) => setOpen(o => (o === which ? null : which));
   const commitTag = () => {
@@ -41,8 +42,8 @@ export function DrawerActions({ actions }: { actions: PageActions }) {
           title={t('actionTags')} aria-label={t('actionTags')} onClick={() => toggle('tags')}><TagsIcon /></button>
         <button type="button" className="wz-action-btn" data-action="copy"
           title={t('actionCopy')} aria-label={t('actionCopy')} onClick={actions.onCopy}><CopyIcon /></button>
-        <button type="button" className="wz-action-btn" data-action="delete" aria-expanded={open === 'delete'} aria-pressed={open === 'delete'}
-          title={t('actionDelete')} aria-label={t('actionDelete')} onClick={() => toggle('delete')}><DeleteIcon /></button>
+        <button type="button" className="wz-action-btn" data-action="delete"
+          title={t('actionDelete')} aria-label={t('actionDelete')} onClick={() => requestDelete(() => actions.onDelete())}><DeleteIcon /></button>
         <button type="button" className="wz-action-btn" data-action="header-footer" aria-pressed={actions.headerFooter.on}
           title={t('actionHeaderFooter')} aria-label={t('actionHeaderFooter')} onClick={actions.headerFooter.onToggle}><HeaderFooterIcon /></button>
       </div>
@@ -64,16 +65,6 @@ export function DrawerActions({ actions }: { actions: PageActions }) {
             placeholder={t('pageFaceAddTag')}
             aria-label={t('actionTags')}
           />
-        </div>
-      )}
-
-      {open === 'delete' && (
-        <div className="wz-actions-confirm" role="alertdialog" aria-label={t('actionDeleteConfirm')} data-actions-area="delete">
-          <p className="wz-actions-confirm-line">{t('actionDeleteConfirm')}</p>
-          <div className="wz-actions-confirm-buttons">
-            <button type="button" ref={keepRef} className="wz-actions-keep" onClick={() => setOpen(null)}>{t('actionDeleteKeep')}</button>
-            <button type="button" className="wz-actions-send" data-confirm="delete" onClick={() => { setOpen(null); actions.onDelete(); }}>{t('actionDeleteYes')}</button>
-          </div>
         </div>
       )}
     </div>

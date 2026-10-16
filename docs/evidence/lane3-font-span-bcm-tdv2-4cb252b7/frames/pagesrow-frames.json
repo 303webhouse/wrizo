@@ -1,0 +1,48 @@
+[
+  {
+    "combo": "arbor",
+    "listOpen": true,
+    "probe": {
+      "row": true,
+      "rect": [
+        98,
+        253,
+        359,
+        279
+      ],
+      "reachable": true,
+      "topmost": "wz-place-page-title"
+    },
+    "clicked": true,
+    "after": {
+      "hash": "#/page/pr-third",
+      "crumb": "Third page charlie",
+      "bundle": "index-DlmcA1tI.js",
+      "origin": "http://127.0.0.1:63982"
+    },
+    "opened": true
+  },
+  {
+    "combo": "flux",
+    "listOpen": true,
+    "probe": {
+      "row": true,
+      "rect": [
+        98,
+        256,
+        359,
+        283
+      ],
+      "reachable": true,
+      "topmost": "wz-place-page-title"
+    },
+    "clicked": true,
+    "after": {
+      "hash": "#/page/pr-third",
+      "crumb": "Third page charlie",
+      "bundle": "index-DlmcA1tI.js",
+      "origin": "http://127.0.0.1:63982"
+    },
+    "opened": true
+  }
+]

@@ -209,7 +209,7 @@ await withHarness(async (app) => {
   ok('S1b (a) — precondition staged: the board has an UNSAVED card (store still empty)',
     storeBeforeDoor === 0, `boxesInStore=${storeBeforeDoor}`);
 
-  await clickSliver(app, 'New Pages Card'); // pins in the store, then navigates. DRIVER: boardNewPageCard (item word-diet) -> 'New Pages Card'
+  await clickSliver(app, 'New Page'); // pins in the store, then navigates. DRIVER: boardNewPageCard (item word-diet-layouts) -> 'New Page'
   await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'travelled to the new page (S1b)' });
   const racedPageId = await app.evalJs("location.hash.split('/page/')[1] || ''");
 

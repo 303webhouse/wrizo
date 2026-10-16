@@ -1,0 +1,17 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=10 tree=92e55d84+1dirty bundle=index-oJfuqat4.js/683098b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/lat2-tl92-edit
+[01/10] OK        exit=0   51s clickhead.mjs :: ROWS-SHADOW VERIFY: PASS (18 renders checked, shadow == DOM on every one) ;; CLICKHEAD VERIFY: PASS (21 checks)
+[02/10] OK        exit=0   30s escexit.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; ESCEXIT VERIFY: PASS (31 checks)
+[03/10] OK        exit=0   71s fx5.mjs :: ROWS-SHADOW VERIFY: PASS (126 renders checked, shadow == DOM on every one) ;; FX5 VERIFY: PASS (53 checks)
+[04/10] OK        exit=0   30s fx6.mjs :: ROWS-SHADOW VERIFY: PASS (128 renders checked, shadow == DOM on every one) ;; FX6 VERIFY: PASS (38 checks)
+[05/10] OK        exit=0   42s item158.mjs :: ROWS-SHADOW VERIFY: PASS (7 renders checked, shadow == DOM on every one) ;; ITEM158 VERIFY: PASS (12 checks)
+[06/10] OK        exit=0  217s item211.mjs :: ROWS-SHADOW VERIFY: PASS (106 renders checked, shadow == DOM on every one) ;; ITEM211 VERIFY: PASS (78 checks)
+[07/10] OK        exit=0   65s item211b.mjs :: ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one) ;; ITEM211B VERIFY: PASS (12 checks)
+[08/10] OK        exit=0   17s writing-r1.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; WRITING-R1 VERIFY: PASS (25 checks)
+[09/10] OK        exit=0   48s writing-r2.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; WRITING-R2 VERIFY: PASS (13 checks)
+[10/10] OK        exit=0  119s writing-r3.mjs :: ROWS-SHADOW VERIFY: PASS (33 renders checked, shadow == DOM on every one) ;; WRITING-R3 VERIFY: PASS (33 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 10/10 of 10 returned a passing verdict
+SUITE RESULT: CLEAN — tree=92e55d84+1dirty bundle=index-oJfuqat4.js/683098b NO-REBUILD

@@ -1,0 +1,35 @@
+PASS  READ: the reader finds one font span and its face
+PASS  READ: stripLine reads it as its words
+PASS  READ: a writer's own [sic] is text, not a span
+PASS  READ: [sic] inside a span stays text, and the span still reads
+PASS  READ: an unclosed [ and a stray closing mark are text
+PASS  PICK: the highlight is wrapped in its face and STAYS highlighted on the same words
+PASS  PICK: the same face on the neighbouring words MERGES into one span
+PASS  PICK: the page's own face on part of a span SPLITS it - the words outside keep their face
+PASS  PICK: a new face over part of an old span REPLACES it there - never two spans on one word
+PASS  PICK: the page's own face over everything removes every span
+PASS  PICK: a stretch that would CROSS a bold run is split so the two NEST - the reader keeps every run and the words read clean
+PASS  PICK: a highlight across two lines becomes one span per line (as Bold does)
+PASS  PICK: the picker reads the highlight's face (brass), the page's face (null) and a mix
+PASS  PICK: a collapsed caret changes nothing (the whole-document pick is the host's)
+PASS  211: Backspace after the span's last letter takes the LETTER, never a mark
+PASS  211: Backspace with the caret just AFTER a span takes its last LETTER - the whole closing mark is hidden and stepped over
+PASS  211: the right arrow from the last letter steps over the whole closing mark and the space, to the next word
+PASS  211: deleting every word inside a span removes the span (no empty marks left)
+PASS  211: Delete inside the span takes the letter, never a mark
+PASS  211: Delete at the start of a span takes its first letter, never the [
+PASS  211: Enter inside a span closes it before the newline and opens it again after
+PASS  211: the caret never stops inside a mark - a caret just after the hidden [ snaps to before it (rule 1: after the nearest visible character)
+PASS  211: Ctrl+Backspace after a span's only word removes the word WITH its span
+PASS  BOLD: Bold over half a span pulls the span in, so the two nest
+PASS  BOLD: Bold toggles OFF over a bold run that holds a span (its marks are not counted as plain words)
+PASS  STRIP: marksAt reads no face as a style
+PASS  READERS: withoutFontMarks removes ONLY the span marks - headings, bullets, bold all kept
+PASS  READERS: the house word count is the same with and without the span marks, on every text above
+PASS  TUTOR: the one wire call sends every text WITHOUT span marks - messages, delta, bible, selection - and keeps the other conventions
+PASS  TUTOR: an ask with no delta, bible or selection still sends no such key (absent stays absent)
+PASS  CONSISTENCY: no observation names a span mark (the lens reads the words)
+PASS  EXPORT: the .txt / Copy My Words reading strips a span to its words
+PASS  WHOLE: the whole-document pick removes every span
+
+FONT-SPAN-CHECK VERIFY: PASS (33 checks)

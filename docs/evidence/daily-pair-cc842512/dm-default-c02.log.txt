@@ -1,0 +1,27 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=cc842512 bundle=index-DSIEFlQQ.js/672593b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/dm-default-c02
+[01/19] OK        exit=0   49s flux-card-ink.mjs :: FLUX-CARD-INK VERIFY: PASS (51 checks)
+[02/19] OK        exit=0   23s fx1.mjs :: FX1 VERIFY: PASS (23 checks)
+[03/19] OK        exit=0   62s fx10.mjs :: FX10 VERIFY: PASS (121 checks)
+[04/19] OK        exit=0   17s fx11.mjs :: FX11 VERIFY: PASS (19 checks)
+[05/19] OK        exit=0    9s fx12.mjs :: FX12 VERIFY: PASS (5 checks)
+[06/19] OK        exit=0    9s fx13.mjs :: FX13 VERIFY: PASS (10 checks)
+[07/19] OK        exit=0    8s fx14.mjs :: FX14 VERIFY: PASS (11 checks)
+[08/19] OK        exit=0   12s fx15.mjs :: FX15 VERIFY: PASS (13 checks)
+[09/19] OK        exit=0    8s fx16.mjs :: FX16 VERIFY: PASS (6 checks)
+[10/19] OK        exit=0   21s fx17.mjs :: FX17 VERIFY: PASS (18 checks)
+[11/19] OK        exit=0   21s fx18.mjs :: FX18 VERIFY: PASS (16 checks)
+[12/19] OK        exit=0   14s fx2.mjs :: FX2 VERIFY: PASS (34 checks)
+[13/19] OK        exit=0   15s fx3.mjs :: FX3 VERIFY: PASS (28 checks)
+[14/19] OK        exit=0   36s fx4.mjs :: FX4 VERIFY: PASS (42 checks)
+[15/19] OK        exit=0   71s fx5.mjs :: FX5 VERIFY: PASS (53 checks)
+[16/19] OK        exit=0   30s fx6.mjs :: FX6 VERIFY: PASS (38 checks)
+[17/19] OK        exit=0   33s fx7.mjs :: FX7 VERIFY (partial): PASS (44 checks)
+[18/19] OK        exit=0   11s fx8.mjs :: FX8 VERIFY: PASS (20 checks)
+[19/19] OK        exit=0   25s fx9.mjs :: FX9 VERIFY: PASS (41 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 19/19 of 19 returned a passing verdict
+SUITE RESULT: CLEAN — tree=cc842512 bundle=index-DSIEFlQQ.js/672593b NO-REBUILD
+CHUNK 02 EXIT 0

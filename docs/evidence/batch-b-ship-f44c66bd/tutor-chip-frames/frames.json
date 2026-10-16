@@ -1,0 +1,186 @@
+[
+  {
+    "frame": "arbor-tutor-open",
+    "file": "arbor-tutor-open.png",
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "theme": "plateau",
+    "bundle": "index--2pAtwpC.js",
+    "splashPresent": false,
+    "panelOpen": true,
+    "chips": [
+      {
+        "text": "Tutor",
+        "title": null,
+        "aria": null,
+        "cls": "wz-drawer-tab",
+        "data": {
+          "on": "true"
+        }
+      },
+      {
+        "text": "Grafts",
+        "title": null,
+        "aria": null,
+        "cls": "wz-drawer-tab",
+        "data": {
+          "on": "false"
+        }
+      },
+      {
+        "text": "⊙",
+        "title": "Close, keep dock",
+        "aria": "Close, keep dock",
+        "cls": "wz-tutor-dock-btn",
+        "data": {}
+      },
+      {
+        "text": "Writing Prompt",
+        "title": null,
+        "aria": null,
+        "cls": "wz-tutor-fw-preset",
+        "data": {
+          "preset": "writingPrompt",
+          "spent": "false"
+        }
+      },
+      {
+        "text": "Unblock",
+        "title": null,
+        "aria": null,
+        "cls": "wz-tutor-fw-preset",
+        "data": {
+          "preset": "unblock",
+          "spent": "false"
+        }
+      },
+      {
+        "text": "Free Writing Tips",
+        "title": null,
+        "aria": null,
+        "cls": "wz-tutor-fw-preset",
+        "data": {
+          "preset": "tips",
+          "spent": "false"
+        }
+      },
+      {
+        "text": "Send",
+        "title": null,
+        "aria": null,
+        "cls": "wz-tutor-convo-send",
+        "data": {}
+      }
+    ],
+    "tab": {
+      "dataOn": "true",
+      "color": "rgb(150, 160, 90)",
+      "borderColor": "rgb(150, 160, 90)",
+      "background": "rgba(0, 0, 0, 0)"
+    },
+    "tabRect": {
+      "l": 1022,
+      "t": 122,
+      "r": 1181,
+      "b": 148
+    },
+    "gripRect": {
+      "l": 1008,
+      "t": 123,
+      "r": 1024,
+      "b": 157
+    },
+    "gripInsideTab": false
+  },
+  {
+    "frame": "flux-dark-tutor-open",
+    "file": "flux-dark-tutor-open.png",
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "theme": "flux",
+    "bundle": "index--2pAtwpC.js",
+    "splashPresent": false,
+    "panelOpen": true,
+    "chips": [
+      {
+        "text": "Tutor",
+        "title": null,
+        "aria": null,
+        "cls": "wz-drawer-tab",
+        "data": {
+          "on": "true"
+        }
+      },
+      {
+        "text": "Links",
+        "title": null,
+        "aria": null,
+        "cls": "wz-drawer-tab",
+        "data": {
+          "on": "false"
+        }
+      },
+      {
+        "text": "⊙",
+        "title": "Close, keep dock",
+        "aria": "Close, keep dock",
+        "cls": "wz-tutor-dock-btn",
+        "data": {}
+      },
+      {
+        "text": "Writing Prompt",
+        "title": null,
+        "aria": null,
+        "cls": "wz-tutor-fw-preset",
+        "data": {
+          "preset": "writingPrompt",
+          "spent": "false"
+        }
+      },
+      {
+        "text": "Unblock",
+        "title": null,
+        "aria": null,
+        "cls": "wz-tutor-fw-preset",
+        "data": {
+          "preset": "unblock",
+          "spent": "false"
+        }
+      },
+      {
+        "text": "Free Writing Tips",
+        "title": null,
+        "aria": null,
+        "cls": "wz-tutor-fw-preset",
+        "data": {
+          "preset": "tips",
+          "spent": "false"
+        }
+      },
+      {
+        "text": "Send",
+        "title": null,
+        "aria": null,
+        "cls": "wz-tutor-convo-send",
+        "data": {}
+      }
+    ],
+    "tab": {
+      "dataOn": "true",
+      "color": "rgb(150, 160, 90)",
+      "borderColor": "rgb(150, 160, 90)",
+      "background": "rgba(0, 0, 0, 0)"
+    },
+    "tabRect": {
+      "l": 964,
+      "t": 123,
+      "r": 1152,
+      "b": 149
+    },
+    "gripRect": {
+      "l": 950,
+      "t": 124,
+      "r": 966,
+      "b": 158
+    },
+    "gripInsideTab": false
+  }
+]

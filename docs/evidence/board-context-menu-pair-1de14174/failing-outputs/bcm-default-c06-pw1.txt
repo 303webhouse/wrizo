@@ -1,0 +1,164 @@
+[
+  {
+    "name": "S1: the Plan panel lists the boards CONNECTED to this page (planBoardId ∪ getBoardsPinning) and NOT a drawer sibling that pins nothing — co-location is not connection",
+    "pass": true,
+    "detail": "[{\"title\":\"Stark\",\"relation\":\"in Untitled\"}]"
+  },
+  {
+    "name": "S1/PW10: the second line names the RELATION or the DRAWER, and NO DIGIT appears in any of them — the no-count law asserted as a property, not as one string",
+    "pass": true,
+    "detail": "[{\"title\":\"Stark\",\"relation\":\"in Untitled\"}]"
+  },
+  {
+    "name": "S1/PW3: \"Open…\" has retired — the panel IS the list, so no cascade-link door remains in it",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S1, Fable ruling 3: the \"Open the drawer →\" foot row is ABSENT — G3, never a door onto nothing (no drawer-board surface exists in this slice)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "S1/PW9: no connections → the zone is ABSENT FROM THE DOM (not present-and-empty), and \"No boards yet.\" appears nowhere — nothing announces a capability the writer has not reached for",
+    "pass": true,
+    "detail": "{\"zone\":false,\"row\":false,\"bodyText\":\"Create a Board\\nPlot a Story\"}"
+  },
+  {
+    "name": "S1/PW10: the page's own (untitled) plan board is titled FROM ITS PAGE (\"<page title> — plan\") and its second line names the RELATION — a surface owning a container, named as such",
+    "pass": true,
+    "detail": "[{\"title\":\"The coat on the train — plan\",\"relation\":\"its own plan board\"}]"
+  },
+  {
+    "name": "DRIVER: ONE PRESS on a board row opens the side menu — a point inside the target is reachable by a real pointer (not occluded)",
+    "pass": false,
+    "detail": "{\"found\":false,\"why\":\"occluded\",\"by\":\"wz-sliver\"}"
+  },
+  {
+    "name": "S2/PW22 (the twin): \"Open the board\" rides the row's own ⋯ — the double-click is a shortcut, never the only path (the keyboard and the unfamiliar hand keep a way in)",
+    "pass": true,
+    "detail": "[\"Open the board\",\"Move to… / Copy to…\",\"Delete\"]"
+  },
+  {
+    "name": "S2 (Q4): DOUBLE-CLICK on a board row travels — the surface switches to that board",
+    "pass": true,
+    "detail": "{\"hash\":\"#/page/pw1-order-board\",\"canvas\":true}"
+  },
+  {
+    "name": "S4(i): the cascade SURVIVES TRAVEL — the destination mounts with the Plan panel still open (the trail is the rail; the way back is a row already under the writer's eye)",
+    "pass": true,
+    "detail": "{\"panel\":true,\"survey\":true}"
+  },
+  {
+    "name": "DRIVER: open a board's contents to make it the remembered one — a point inside the target is reachable by a real pointer (not occluded)",
+    "pass": false,
+    "detail": "{\"found\":false,\"why\":\"occluded\",\"by\":\"wz-sliver\"}"
+  },
+  {
+    "name": "S3 (storage): the grandfathered pin carries NO onCanvas field at all, while the NEW membership writes `false` EXPLICITLY — the shape serves the law, not the reverse",
+    "pass": true,
+    "detail": "[{\"entryId\":\"pw1-grandfathered-target\",\"hasFlag\":false},{\"entryId\":\"pw1-newpin-target\",\"hasFlag\":true,\"onCanvas\":false}]"
+  },
+  {
+    "name": "S3 ⚠ ABSENCE MEANS DISPLAYED (direction 1): a pin written WITHOUT the flag — the pre-existing shape — RENDERS ON THE CANVAS. Every already-arranged board reads unchanged on first launch",
+    "pass": true,
+    "detail": "[\"pw1-old-pin\"]"
+  },
+  {
+    "name": "S3 ⚠ ABSENCE MEANS DISPLAYED (direction 2, SAME FIXTURE): a NEW membership is NOT displayed — membership without display is the default, and the writer chooses the position",
+    "pass": true,
+    "detail": "{\"newPinBoxId\":\"mvaddyaklpl6ei3ac\",\"onWall\":[\"pw1-old-pin\"]}"
+  },
+  {
+    "name": "S3: a membership that is NOT displayed is still, in every list, a MEMBER — the undisplayed page lists its board exactly as a displayed one would",
+    "pass": true,
+    "detail": "[{\"title\":\"The already-arranged board\",\"relation\":\"in Untitled\"}]"
+  },
+  {
+    "name": "DRIVER: open the board's contents to reach its membership rows — a point inside the target is reachable by a real pointer (not occluded)",
+    "pass": false,
+    "detail": "{\"found\":false,\"why\":\"occluded\",\"by\":\"wz-sliver\"}"
+  },
+  {
+    "name": "S3 (the two sides of one act): a page placed from the BOARD’s own side lands ON the canvas — arrangement the writer authored, on the surface they were looking at — while a membership declared from a PAGE stays undisplayed. Same function, opposite answers, because they are opposite acts",
+    "pass": true,
+    "detail": "{\"onCanvas\":true,\"rendered\":true,\"boxesNow\":2,\"before\":1}"
+  },
+  {
+    "name": "DRIVER: open the connected board’s contents from the page — a point inside the target is reachable by a real pointer (not occluded)",
+    "pass": false,
+    "detail": "{\"found\":false,\"why\":\"occluded\",\"by\":\"wz-sliver\"}"
+  },
+  {
+    "name": "S6 (Q7) @ 1280px: the FRAMED PAGE renders the location crumb again — restored in the shape the Board already proved, left-set while the strip and actions group right",
+    "pass": true,
+    "detail": "{\"text\":\"Untitled / Untitled\",\"leftSet\":true}"
+  },
+  {
+    "name": "S6 (Q7) @ 2200px: the FRAMED PAGE renders the location crumb again — restored in the shape the Board already proved, left-set while the strip and actions group right",
+    "pass": true,
+    "detail": "{\"text\":\"Untitled / Untitled\",\"leftSet\":true}"
+  },
+  {
+    "name": "S6 (Q7): the FRAMED SCREENPLAY renders the location crumb too — one component, three surfaces, so Page and Script cannot drift the way their two hand-rolled copies already had",
+    "pass": true,
+    "detail": "Unfiled / A screenplay"
+  },
+  {
+    "name": "S6 [word-diet successor]: THE CHAIN NEVER RENDERS EMPTY — a page with no drawer and no project reads its HOME LABEL (\"Unfiled\"), not a bare title",
+    "pass": true,
+    "detail": "Unfiled / A loose page"
+  },
+  {
+    "name": "S1, Fable ruling 2 (arbor-quiet-brass successor): a LOOSE page (no drawer, no project) still shows its REAL GRAFTS, above the creation doors — answering \"which boards is this page on\" with \"make a project first\" was the panel telling a writer to build what they had already built",
+    "pass": true,
+    "detail": "{\"looseRows\":[{\"title\":\"A board with no drawer\",\"relation\":\"Not in a drawer\"}],\"hasHeading\":true}"
+  },
+  {
+    "name": "S3/PW27 + ruling 4 (arbor-quiet-brass successor): ONE CONNECTING WORD, three faces — the Plan panel's heading, the Places zone and the Page face's prose line all read \"grafted\" now, still never \"appears on\"",
+    "pass": true,
+    "detail": "{\"heading\":\"Boards grafted\",\"places\":\"Also grafted to…\",\"face\":\"Also grafted to\"}"
+  },
+  {
+    "name": "ERRATUM 1 (precondition): the Shelf board really does carry a DERIVED page-pin for the loose page — so the exclusion below is excluding something that is genuinely there, not passing vacuously",
+    "pass": true,
+    "detail": "[{\"kind\":\"shelf\",\"pinsLoose\":true}]"
+  },
+  {
+    "name": "ERRATUM 1: a CONDITION-BOARD is never a connection — the loose page does NOT list the Shelf under \"Boards grafted\" (item arbor-quiet-brass: was \"Boards connected\"), and with no plan board yet the zone is absent entirely (PW9)",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "ERRATUM 1: and the prose line follows the same rule — no \"Also grafted to The Shelf\" (item arbor-quiet-brass: was \"Also connected to\") anywhere on the face",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "ERRATUM 1 (the other direction): a REAL board still lists — the exclusion removes the condition-boards, not the connections",
+    "pass": true,
+    "detail": "[{\"title\":\"A real board\",\"relation\":\"Not in a drawer\"}]"
+  },
+  {
+    "name": "ERRATUM 2: with a connection listed, the no-project lead sentence (\"File this page to a drawer first to plan around it\") is ABSENT — it would contradict the row directly above it and tell the writer to build what they have built",
+    "pass": true,
+    "detail": "\"BOARDS GRAFTED\\nA real board\\nNot in a drawer\\n⋯\\nCreate a Board\\nPlot a Story\""
+  },
+  {
+    "name": "ERRATUM 2 (the other direction): with NO connections the sentence still speaks — it was never wrong, only wrong BENEATH a listed board, so it is withheld by state rather than deleted",
+    "pass": true,
+    "detail": "\"File this page to a drawer first to plan around it.\\nCreate a Board\\nPlot a Story\""
+  },
+  {
+    "name": "ERRATUM 3 [word-diet successor]: the location phrase renders WHOLE — \"Unfiled\" is not clipped by its own box, and it no longer wears `crumb-item`",
+    "pass": true,
+    "detail": "{\"text\":\"Unfiled\",\"clipped\":false,\"overflow\":\"visible\",\"textOverflow\":\"clip\",\"maxWidth\":\"none\",\"isCrumbItem\":false}"
+  },
+  {
+    "name": "ERRATUM 3: and TRUNCATION TAKES THE TITLE instead — the one part of the chain that can be shortened without lying, because a clipped name still reads as a name",
+    "pass": true,
+    "detail": "{\"textOverflow\":\"ellipsis\",\"overflow\":\"hidden\",\"whiteSpace\":\"nowrap\"}"
+  }
+]
+
+PW1 VERIFY: FAIL — 4/32 failed

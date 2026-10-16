@@ -1,0 +1,12 @@
+file:///C:/Users/nickh/writer-studio/.claude/worktrees/cbb/apps/desktop/scripts/harness/connector-b.mjs:53
+const centre = (r) => ({ x: Math.round(r.l + r.w / 2), y: Math.round(r.t + r.h / 2) });
+                                         ^
+
+TypeError: Cannot read properties of null (reading 'l')
+    at centre (file:///C:/Users/nickh/writer-studio/.claude/worktrees/cbb/apps/desktop/scripts/harness/connector-b.mjs:53:42)
+    at enterMode (file:///C:/Users/nickh/writer-studio/.claude/worktrees/cbb/apps/desktop/scripts/harness/connector-b.mjs:63:152)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/cbb/apps/desktop/scripts/harness/connector-b.mjs:85:13
+    at async withHarness (file:///C:/Users/nickh/writer-studio/.claude/worktrees/cbb/apps/desktop/scripts/runtime-verify.mjs:863:12)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/cbb/apps/desktop/scripts/harness/connector-b.mjs:74:1
+
+Node.js v24.13.0

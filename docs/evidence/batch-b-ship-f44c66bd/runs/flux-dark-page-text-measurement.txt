@@ -1,0 +1,7 @@
+FDT p1-fd flux-dark {"theme":"flux","page":"dark","editorColor":"rgb(26, 15, 6)","bg":{"color":"rgb(11, 36, 41)","tag":"mode-page"},"ratio":1.16,"bundle":"index-D8e5lfDN.js"}
+FDT p1-fd flux-light {"theme":"flux","page":"light","editorColor":"rgb(26, 15, 6)","bg":{"color":"rgb(237, 246, 243)","tag":"mode-page"},"ratio":17.11,"bundle":"index-D8e5lfDN.js"}
+FDT p1-fd arbor {"theme":"plateau","page":"dark","editorColor":"rgb(26, 15, 6)","bg":{"color":"rgb(243, 237, 225)","tag":"mode-page"},"ratio":16.16,"bundle":"index-D8e5lfDN.js"}
+FDT dws flux-dark {"theme":"flux","page":"dark","editorColor":"rgb(26, 15, 6)","bg":{"color":"rgb(11, 36, 41)","tag":"mode-page"},"ratio":1.16,"bundle":"index-CbghkJBs.js"}
+FDT ri flux-dark {"theme":"flux","page":"dark","editorColor":"rgb(26, 15, 6)","bg":{"color":"rgb(11, 36, 41)","tag":"mode-page"},"ratio":1.16,"bundle":"index-C5j1fwmS.js"}
+FDT bship flux-dark {"theme":"flux","page":"dark","editorColor":"rgb(26, 15, 6)","bg":{"color":"rgb(11, 36, 41)","tag":"mode-page"},"ratio":1.16,"bundle":"index--2pAtwpC.js"}
+(the dws/ri/bship flux-light and arbor lines read 17.11 and 16.16 respectively; transcribed from this desk's console output, the full set was printed once - not stored by the script)

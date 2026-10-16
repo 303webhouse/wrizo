@@ -1,3 +1,7 @@
+import { liveBoxes } from '../store/boxTombstones';
+import { openContextMenu, type ContextMenuItem } from '../store/contextMenu';
+import { requestDelete } from '../store/deleteGate';
+import { getResumeTarget } from '../store/resume';
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -6,6 +10,7 @@ import {
   getJournalEntry, saveBoardBoxes, flushNow, getDrawer, getProject,
   patchJournalEntry, getBoardsConnecting, generateId, createLooseHomePage, pinPageToBoard,
   getSystemKind, reconcileSystemBoard, restoreEntry, getJournalEntryIncludingDeleted, subscribe,
+  stashDeletedBoxes, restoreDeletedBox, purgeDeletedBox, getTombstonedBox, softDeleteEntry,
   getPairedPageId, pairBoardWithPage,
   setPinDisplayed,
   boardNestChain, pinAspectFor } from '../store/persistence';
@@ -19,7 +24,7 @@ import { unbornHref } from '../store/unbornPage';
 import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { getSelectionOffsets, getCaretOffset, setCaretOffset, setSelectionOffsets } from '../store/caretOffset';
-import { applyFormat, formatShortcutAction, type FormatAction } from '../store/draftFormat';
+import { applyFormat, formatShortcutAction, applyFontPick, fontFaceAt, clearFontSpans, type FormatAction } from '../store/draftFormat';
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
 import { attachHiddenMarkEditing, hiddenMarkEditingFor } from '../store/hiddenMarksEditing';
 import { placeCaret } from '../store/hiddenMarksDom';
@@ -214,6 +219,22 @@ function notecardExcerpt(text: string): { title: string; excerpt: string } {
 
 function BoardPinBox({ box }: { box: Box }) {
   const { t: lex } = useLexicon();
+  const { t: dt } = useDeskLexicon();
+  // BOARD CONTEXT MENU: a card on the TRASH board that stands for a deleted CARD (not a page): read the tombstoned source box for its face. Read-only; Restore / Delete live on its right-click menu.
+  if (box.trashedFrom) {
+    const src = getTombstonedBox(box.trashedFrom.boardId, box.trashedFrom.boxId);
+    const srcPage = src?.kind === 'page-pin' && src.entryId ? getJournalEntryIncludingDeleted(src.entryId) : null;
+    const text = src?.kind === 'text' ? src.text ?? '' : srcPage ? srcPage.text : '';
+    const { title: tt, excerpt: ex } = notecardExcerpt(text);
+    const title = tt || (src?.kind === 'ink' ? 'A sketch' : 'Untitled');
+    return (
+      <div className="board-text board-pin">
+        <div className="board-pin-badge">{dt('trashCardBadge')}</div>
+        <div className="board-pin-title">{title}</div>
+        {ex && <div className="board-pin-excerpt">{ex}</div>}
+      </div>
+    );
+  }
   const entry = box.entryId ? getJournalEntryIncludingDeleted(box.entryId) : null;
   if (!entry) {
     return <div className="board-text board-pin board-pin-missing">Missing page</div>;
@@ -391,6 +412,25 @@ function BoardCardPopup({
   // belongs with the HOOKS, because proximity to its own feature is the pull
   // that puts it below an early return.
   const [dockOpen, setDockOpen] = useState(false);
+  // FONT-SPAN: whether words are highlighted in the card, and their face - the dock's Typeface scopes and brass read it. Declared
+  // with the hooks (item 133's lesson, above).
+  const [fontSel, setFontSel] = useState<{ has: boolean; face: string | null | 'mixed' }>({ has: false, face: null });
+  useEffect(() => {
+    const onSel = () => {
+      const el = elRef.current;
+      if (!el) return;
+      const fs = window.getSelection();
+      const ranged = !!fs && fs.rangeCount > 0 && !fs.isCollapsed && !!fs.anchorNode && !!fs.focusNode && el.contains(fs.anchorNode) && el.contains(fs.focusNode);
+      const fo = ranged ? getSelectionOffsets(el) : null;
+      const cur = textRef.current;
+      const lo = fo ? Math.min(fo.start, fo.end, cur.length) : 0;
+      const hi = fo ? Math.min(Math.max(fo.start, fo.end), cur.length) : 0;
+      const next = fo && hi > lo ? { has: true, face: fontFaceAt(cur, lo, hi) } : { has: false, face: null };
+      setFontSel((prev) => (prev.has === next.has && prev.face === next.face ? prev : next));
+    };
+    document.addEventListener('selectionchange', onSel);
+    return () => document.removeEventListener('selectionchange', onSel);
+  }, []);
   // FX6 S1 — the real undo/redo stack (store/textUndo.ts's own header
   // comment carries the full mechanism-choice + coalescing-granularity +
   // em-dash-shim-fold reasoning, shared verbatim with ForwardOnlyEditor.
@@ -679,6 +719,40 @@ function BoardCardPopup({
 
   applyBoardFormatRef.current = applyBoardFormat;
 
+  // FONT-SPAN (docs/font-span-plan.md; the approved mockup's card scene): a face for the HIGHLIGHTED words of this card only - the
+  // dock's own road, as applyBoardFormat: one atomic undo step, the card's text committed, the highlight left on the same words.
+  const applyBoardFont = (slug: string | null) => {
+    const el = elRef.current;
+    if (!el) return;
+    el.focus();
+    const sel = getSelectionOffsets(el);
+    if (!sel || sel.start === sel.end) return;
+    const cur = textRef.current;
+    const result = applyFontPick(cur, Math.min(sel.start, cur.length), Math.min(sel.end, cur.length), slug);
+    if (result.text !== cur) {
+      undoStackRef.current?.record({ text: result.text, caret: result.start }, 'atomic');
+      textRef.current = result.text;
+      onCommit(result.text);
+      decorateEditorFor(el, result.text, result.start, setCaretOffset, text => decorateMarkdownForCard(text, null));
+    }
+    setSelectionOffsets(el, result.start, result.end);
+    setFontSel({ has: true, face: fontFaceAt(result.text, result.start, result.end) });
+  };
+  // FONT-SPAN: the Whole card pick - every word takes the card's new face, so the card's spans go (one undo step), then the face.
+  const pickWholeCardFace = (face: StoredFace) => {
+    const el = elRef.current;
+    const cur = textRef.current;
+    const next = clearFontSpans(cur);
+    if (el && next !== cur) {
+      const caret = Math.min(getCaretOffset(el) ?? next.length, next.length);
+      undoStackRef.current?.record({ text: next, caret }, 'atomic');
+      textRef.current = next;
+      onCommit(next);
+      decorateEditorFor(el, next, caret, setCaretOffset, text => decorateMarkdownForCard(text, null));
+    }
+    onType({ fontFace: face });
+  };
+
   // card-close-x (Fable, 2026-10-13): "While a pop-up is open, nothing behind it should be clickable." The backdrop is fixed at
   // z-index 210, but it rendered INSIDE `.desk-frame-stage`, whose `isolation:isolate` (FX4 S2) makes it a stacking context - so 210
   // only ranked within the stage, and the fixed rail (`.desk-frame-strip`, z-index 1 in the ROOT context) painted over the whole
@@ -732,8 +806,10 @@ function BoardCardPopup({
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingBold')} onClick={() => applyBoardFormat('bold')}><b>B</b></button>
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingItalic')} onClick={() => applyBoardFormat('italic')}><i>I</i></button>
           <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingUnderline')} onClick={() => applyBoardFormat('underline')}><u>U</u></button>
-          {/* ITEM 207 - the card's face and size: the smallest form (a face button and -/+, no number, no heading). */}
-          <TypeControl form="small" face={fontFace} size={fontSize ?? SIZE_DEFAULT} onPickFace={face => onType({ fontFace: face })} onSize={size => onType({ fontSize: size })} />
+          {/* ITEM 207 - the card's face and size: the smallest form (-/+, no number, no heading). FONT-SPAN: the face is chosen through
+              the two scopes - Selection / Whole card - over the roster as a list (the approved mockup's card scene). */}
+          <TypeControl form="small" face={fontFace} size={fontSize ?? SIZE_DEFAULT} onPickFace={pickWholeCardFace} onSize={size => onType({ fontSize: size })}
+            scope={{ has: fontSel.has, face: fontSel.face, wholeLabel: dt('typeScopeWholeCard'), onPickSelection: applyBoardFont }} />
         </div>
         )}
         <div className="board-popup-strip">
@@ -849,7 +925,7 @@ export function BoardEditor({ id }: { id: string }) {
   const [boardModeRaw, setBoardMode] = useBoardMode(id);
   const boardMode = isSystemBoard ? 'open' : boardModeRaw;
 
-  const [boxes, setBoxes] = useState<Box[]>(() => initialEntry?.boxes ?? []);
+  const [boxes, setBoxes] = useState<Box[]>(() => liveBoxes(initialEntry?.boxes));   // LIVE boxes only: a deleted card is a tombstone in storage, carried through every save by saveBoardBoxes
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // FX4 S5 — the card popup (inline contenteditable editing RETIRES whole):
   // the id of the text card currently open in BoardCardPopup, or null. The
@@ -935,6 +1011,9 @@ export function BoardEditor({ id }: { id: string }) {
   const selectedIdRef = useRef(selectedId);
   // Delete / Backspace on a selected card removes it (the "Remove" row is gone) - the key handler is a [] effect, so it calls the current render's removeSelected through this ref
   const removeSelectedRef = useRef<() => void>(() => {});
+  const undoRef = useRef<() => void>(() => {});
+  // the right-click menus are built from this render's state; the pointer effect (a []-ish effect) reaches them through this ref
+  const ctxActionsRef = useRef<{ card: (x: number, y: number, boxId: string) => void; board: (x: number, y: number) => void }>({ card: () => {}, board: () => {} });
   selectedIdRef.current = selectedId;
   const popupBoxIdRef = useRef(popupBoxId);
   popupBoxIdRef.current = popupBoxId;
@@ -1286,12 +1365,16 @@ export function BoardEditor({ id }: { id: string }) {
   const undo = () => {
     const la = lastActionRef.current;
     if (!la) return;
+    // the ids this Undo brings BACK (cards deleted since the snapshot): named to the save, which otherwise keeps a tombstone standing against a stale view of its card
+    const liveNow = new Set(boxesRef.current.map(b => b.id));
+    const restoredIds = la.before.filter(b => !liveNow.has(b.id)).map(b => b.id);
     setBoxes(la.before);
     lastSavedRef.current = boxesRef.current; // force the autosave effect to see a change
-    saveBoardBoxes(id, la.before);
+    saveBoardBoxes(id, la.before, restoredIds);
     lastActionRef.current = null;
     setCanUndo(false);
   };
+  undoRef.current = undo;
 
   const selectedBox = boxes.find(b => b.id === selectedId) ?? null;
   const selectedGroup = selectedBox ? groupMembers(boxes, selectedBox.groupId) : [];
@@ -1316,20 +1399,37 @@ export function BoardEditor({ id }: { id: string }) {
   // button stays visibly present (the brief's own wording: "Delete ON ONE
   // must be an inert quiet no-op" describes the CLICK's effect, not the
   // button's presence) — clicking it on a system Board simply does nothing.
+  //
+  // BOARD CONTEXT MENU (Nick, Oct 15): a deleted card is a TOMBSTONE. The editor's own state drops it (and its connection boxes - they leave the VIEW, but stay in storage: liveBoxes hides a connection
+  // whose endpoint is hidden, so they come back with Restore); storage keeps the card stamped deletedAt. The board is saved FIRST so a card made a moment ago is in storage to be stamped.
   const removeSelected = () => {
     if (!selectedBox) return;
     if (isSystemBoard) return;
     snapshot('remove');
     const idsToRemove = selectedIds;
+    saveBoardBoxes(id, boxesRef.current);
+    stashDeletedBoxes(id, [...idsToRemove]);
     setBoxes(prev => prev.filter(b => {
       if (idsToRemove.has(b.id)) return false;
       if (b.kind === 'connection' && (idsToRemove.has(b.connA ?? '') || idsToRemove.has(b.connB ?? ''))) return false;
       return true;
     }));
+    lastSavedRef.current = boxesRef.current;
     setSelectedId(null);
+    actionToast.show(`${t('toastCardDeleted')}  ·  Ctrl+Z`);
   };
 
-  removeSelectedRef.current = removeSelected;
+  // every way to delete a card - the menu's Delete, the Delete / Backspace key - goes through ONE gate (store/deleteGate.ts): "Send to Trash?" unless the writer has turned asking off
+  // (a system board's cards are derived, so a Delete there is the same quiet no-op as ever - it must not even ask)
+  removeSelectedRef.current = () => { if (isSystemBoard) return; requestDelete(removeSelected); };
+
+  // the board itself: soft-delete (the Trash lists it; Restore brings it back), then leave it the way a Page's own delete does
+  const deleteThisBoard = () => {
+    if (isSystemBoard) return;
+    softDeleteEntry(id);
+    flushNow();
+    navigate(getResumeTarget()?.route ?? '/', { replace: true });
+  };
 
   // AB4 S3 — thread deletion: confirm-free (a thread is cheap; re-drawing is
   // one gesture, the brief's own words).
@@ -1441,7 +1541,7 @@ export function BoardEditor({ id }: { id: string }) {
     // PW1 S3 — BOARD-SIDE: the writer pressed a door ON THIS CANVAS asking for
     // a card here, so the card appears here. Arrangement they authored.
     const updated = pinPageToBoard(page.id, id, { display: true });
-    const pin = (updated?.boxes ?? []).find(b => b.kind === 'page-pin' && b.entryId === page.id);
+    const pin = liveBoxes(updated?.boxes).find(b => b.kind === 'page-pin' && b.entryId === page.id);
     if (pin) {
       const next = [...boxesRef.current, pin];
       setBoxes(next);
@@ -1609,7 +1709,6 @@ export function BoardEditor({ id }: { id: string }) {
       document.removeEventListener('pointerup', cUp, true);
       document.removeEventListener('pointerdown', cDown, true);
       if (!connect) return;
-      if (connect.right) ctxQuietUntil = performance.now() + 500;
       connect = null;
       threadArmedFromRef.current = null;
       setThreadArmedFrom(null);
@@ -1657,6 +1756,9 @@ export function BoardEditor({ id }: { id: string }) {
     };
     function cUp(e: PointerEvent) {
       if (!connect) return;
+      // the browser fires `contextmenu` right after a right-button release (on Windows, after pointerup): that one belongs to THIS gesture and is suppressed. It is a short beat tied to the release itself -
+      // an Esc that ends the mode, or the writer's NEXT right-click, is not inside it (the first review run lost a card's menu to a 500ms window that ran from the mode's end).
+      if (connect.right) ctxQuietUntil = performance.now() + 250;
       const hit = onModeCircle(e.clientX, e.clientY) ? undefined : document.elementsFromPoint(e.clientX, e.clientY).find(n => (n as Element).classList?.contains('board-connection-hit')) as Element | undefined;
       if (hit) {                                   // a click on a line selects it; Delete removes it
         connect.held = false;
@@ -1693,7 +1795,17 @@ export function BoardEditor({ id }: { id: string }) {
     // a right-click on the square is suppressed ONLY there (the browser's own menu would cover the very thing being asked for) - plus while the mode is on, plus the beat after a right-drag lets go
     const onCtx = (e: Event) => {
       const t = e.target as Element | null;
-      if (connect || performance.now() < ctxQuietUntil || t?.closest?.('.board-handle')) e.preventDefault();
+      if (connect || performance.now() < ctxQuietUntil || t?.closest?.('.board-handle')) { e.preventDefault(); return; }
+      // BOARD CONTEXT MENU: a right-click ON a card opens the card menu, on empty board the board menu (the corner square and a right-drag are connection mode, handled above). The card pop-up owns
+      // its own right-clicks (the browser's spelling menu), and nothing opens while a thread is armed.
+      if (popupBoxIdRef.current) return;
+      const me = e as MouseEvent;
+      if (!canvas.contains(t as Node | null)) return;
+      const hit = document.elementFromPoint(me.clientX, me.clientY) as HTMLElement | null;   // not e.target: a held pointer retargets mouse events to the canvas
+      const boxEl = hit?.closest?.('.board-box') as HTMLElement | null;
+      e.preventDefault();
+      if (boxEl?.dataset.boxId) { setSelectedId(boxEl.dataset.boxId); ctxActionsRef.current.card(me.clientX, me.clientY, boxEl.dataset.boxId); return; }
+      if (hit === canvas || hit?.closest?.('.board-connections') || hit?.classList?.contains('board-canvas')) { setSelectedId(null); ctxActionsRef.current.board(me.clientX, me.clientY); }
     };
 
     // BOARD CLICK-TO-CREATE - the card the press would make, in the board's own units (x and BOTH y and h are fractions of the WIDTH, as every box here is). A plain press takes the
@@ -2136,6 +2248,15 @@ export function BoardEditor({ id }: { id: string }) {
         removeConnection(selectedConnectionIdRef.current);
         return;
       }
+      // BOARD CONTEXT MENU: Ctrl+Z / Cmd+Z undoes the board's last act (the toast on a deleted card names it). Typing anywhere editable keeps its own undo.
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'z') {
+        const ae = document.activeElement as HTMLElement | null;
+        const editable = !!ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT' || ae.isContentEditable);
+        if (editable) return;
+        e.preventDefault();
+        undoRef.current();
+        return;
+      }
       // THE ROW IS GONE (Nick, Oct 15): the key is how a card is removed. A selected hairline takes the key first (above); typing anywhere editable never reaches this; a modified press is not a delete.
       // CONNECTOR-A: while connection mode is on the key belongs to the mode (a selected line, handled above) - it must never delete the card the mode is running from, or that card's links with it
       if ((e.key === 'Delete' || e.key === 'Backspace') && threadArmedFromRef.current == null && selectedIdRef.current && !e.ctrlKey && !e.metaKey && !e.altKey) {
@@ -2324,31 +2445,50 @@ export function BoardEditor({ id }: { id: string }) {
   // by its own height (about 45px: Chat 1 measured the new card landing 45px below the press). It is an OVERLAY now: absolutely positioned, right-aligned, growing UP from the canvas's top edge
   // out of a zero-height slot (boardBody, below), over the quiet gap above the canvas - it adds no height whether it is there or not. Its own ground keeps it legible over what it overlaps.
   // The "Remove" button is DELETED (Nick, Oct 15): removing a card is the Delete key now (and a context menu is coming). The row survives ONLY for the conditional actions that have no other door yet - Ungroup, Edit copy, Restore (Trash), Pin to a Board (Shelf) - so an ordinary card shows NO row at all.
-  const hasRowAction = !!selectedBox && (!!selectedBox.groupId
-    || (selectedBox.kind === 'text' && !!selectedBox.sourceEntryId)
-    || (systemKind === 'trash' && selectedBox.kind === 'page-pin' && !!selectedBox.entryId)
-    || (systemKind === 'shelf' && selectedBox.kind === 'page-pin' && !!selectedBox.entryId));
-  // INTERIM (Fable, Oct 15): the row sits INSIDE the canvas, top-right (absolute in the canvas wrapper, so it neither scrolls away nor adds height). It never shifts the canvas and never reaches
-  // the header strip. It goes when the card right-click menu (board-context-menu) takes these actions.
-  const boardActionRow = selectedBox && hasRowAction && (
-    <div className="board-action-row" style={{ display: 'flex', gap: 12, position: 'absolute', top: 8, right: 18, zIndex: 8, padding: '3px 10px', background: 'var(--paper)', border: '1px solid var(--ink-border)' }}>
-      {selectedBox.groupId && <button type="button" className="btn-quiet" onClick={ungroup}>Ungroup</button>}
-      {selectedBox.kind === 'text' && selectedBox.sourceEntryId && (
-        <button type="button" className="btn-quiet" onClick={() => setPopupBoxId(selectedBox.id)}>{t('boardEditCopy')}</button>
-      )}
-      {systemKind === 'trash' && selectedBox.kind === 'page-pin' && selectedBox.entryId && (
-        <button type="button" className="btn-quiet" onClick={() => restoreSelected(selectedBox.entryId!)}>{t('boardRestore')}</button>
-      )}
-      {/* B2 S2 — the Shelf's own selected-card action: Pin to a Board,
-          reusing PinToBoardSheet verbatim ("nothing new invented"); pinning
-          removes the card from the Shelf at the NEXT reconcile (T3 doing
-          its job — the SAME reconcile-subscription mechanism the Trash's
-          own Restore already rides, not a second removal path). */}
-      {systemKind === 'shelf' && selectedBox.kind === 'page-pin' && selectedBox.entryId && (
-        <button type="button" className="btn-quiet" onClick={() => setShelfPinEntryId(selectedBox.entryId!)}>{t('pageFacePin')}</button>
-      )}
-    </div>
-  );
+  // BOARD CONTEXT MENU (Nick approved the mockup, Oct 15): the interim action row is DELETED. Its actions - Ungroup, Edit copy, Restore (Trash), Pin to a Board… (Shelf) - are the top of the CARD menu,
+  // where they apply; a separator; Delete last. A right-click on empty board offers New Card and Delete board. A right-click on a card's corner square stays connection mode (the pointer effect owns it).
+  const openCardMenu = (x: number, y: number, boxId: string) => {
+    const box = boxesRef.current.find(b => b.id === boxId);
+    if (!box || box.kind === 'connection' || box.kind === 'board-meta') return;
+    const items: ContextMenuItem[] = [];
+    if (box.groupId) items.push({ label: t('ctxUngroup'), onSelect: ungroup });
+    if (box.kind === 'text' && box.sourceEntryId) items.push({ label: t('boardEditCopy'), onSelect: () => setPopupBoxId(box.id) });
+    if (systemKind === 'trash' && box.kind === 'page-pin' && box.entryId) items.push({ label: t('boardRestore'), onSelect: () => restoreSelected(box.entryId!) });
+    if (systemKind === 'trash' && box.trashedFrom) {
+      const from = box.trashedFrom;
+      items.push({ label: t('boardRestore'), onSelect: () => { restoreDeletedBox(from.boardId, from.boxId); setSelectedId(null); flushNow(); actionToast.show(t('toastCardRestored')); } });
+    }
+    if (systemKind === 'shelf' && box.kind === 'page-pin' && box.entryId) items.push({ label: t('pageFacePin'), onSelect: () => setShelfPinEntryId(box.entryId!) });
+    const deletable = !isSystemBoard;
+    const purgeable = systemKind === 'trash' && !!box.trashedFrom;
+    if (items.length > 0 && (deletable || purgeable)) items.push(null);
+    if (deletable) items.push({ label: t('ctxDelete'), onSelect: () => removeSelectedRef.current() });
+    // Trash only: a permanent delete of a trashed CARD leaves an id-only marker. It always asks - it is the one delete that cannot be undone.
+    if (purgeable) items.push({ label: t('ctxDelete'), onSelect: () => requestDelete(() => { purgeDeletedBox(box.trashedFrom!.boardId, box.trashedFrom!.boxId); setSelectedId(null); flushNow(); }, { title: t('deleteDialogPurgeTitle'), always: true }) });
+    openContextMenu(x, y, items);
+  };
+  const openBoardMenu = (x: number, y: number) => {
+    if (isSystemBoard) return;
+    const items: ContextMenuItem[] = [
+      { label: t('beginNewCard'), onSelect: () => {
+        const cv = canvasRef.current;
+        if (!cv) return;
+        const cr = cv.getBoundingClientRect(), W = cr.width || pageWidthPx;
+        const w = Math.min(NEW_CARD_W, 1), h = NEW_CARD_H;
+        const px = Math.min(Math.max((x - cr.left) / W, 0), Math.max(1 - w, 0));
+        const py = Math.min(Math.max((y - cr.top) / W, 0), Math.max(BOARD_MAX_Y - BOARD_BREATHING_ROOM - h, 0));
+        const maxZ = boxesRef.current.reduce((m, b) => Math.max(m, b.z), 0);
+        const box: Box = { id: generateId(), kind: 'text', x: px, y: py, w, h, z: maxZ + 1, text: '' };
+        freshEmptyIdsRef.current.add(box.id);   // like a click-made card: closed still empty, it is discarded
+        setBoxes(prev => [...prev, box]);
+        setSelectedId(box.id);
+        setPopupBoxId(box.id);
+      } },
+      { label: t('ctxDeleteBoard'), onSelect: () => requestDelete(deleteThisBoard) },
+    ];
+    openContextMenu(x, y, items);
+  };
+  ctxActionsRef.current = { card: openCardMenu, board: openBoardMenu };
 
   const boxCx = (b: Box) => (b.x + b.w / 2) * pageWidthPx;
   const boxCy = (b: Box) => (b.y + b.h / 2) * pageWidthPx;
@@ -2427,7 +2567,6 @@ export function BoardEditor({ id }: { id: string }) {
 
   const boardCanvas = (
     <div style={{ position: 'relative' }}>
-      {boardActionRow}
       <div ref={wrapRef} className="board-canvas-wrap" style={{ overflow: 'auto', maxHeight: availHeightPx != null ? availHeightPx : '78vh', border: '1px solid var(--ink-border)' }}>
         <div
           ref={canvasRef}

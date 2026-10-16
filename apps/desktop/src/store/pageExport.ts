@@ -1,5 +1,6 @@
 import type { JournalEntry, Project } from '../types';
 import { firstLine } from './entryText';
+import { liveBoxes } from './boxTombstones';
 import { stripMarkdownConventions } from './draftFormat';
 import { serializeScriptDoc, plainScriptWords } from './scriptText';
 import { describePageHome } from './pageHome';
@@ -101,7 +102,7 @@ function boardBody(entry: JournalEntry): string {
   const meta = (entry.boxes ?? []).find((b) => b.kind === 'board-meta');
   const laneTitles = (meta?.lanes ?? []).map((l) => l.title?.trim()).filter((t): t is string => !!t);
   const laneHeader = laneTitles.length > 0 ? `Lanes: ${laneTitles.join(', ')}\n\n` : '';
-  for (const box of entry.boxes ?? []) {
+  for (const box of liveBoxes(entry.boxes)) {   // a tombstoned card is not exported
     if (box.kind === 'connection' || box.kind === 'board-meta') continue; // not cards — skipped by name (lane titles ride the header above)
     if (box.kind === 'text') {
       const title = firstLine(box.text ?? '');

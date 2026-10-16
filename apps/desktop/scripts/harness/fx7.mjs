@@ -611,7 +611,7 @@ await withHarness(async (app) => {
   {
   ok('S6 [click-to-create successor]: there is NO Remove button on the board any more (and no action row for an ordinary selected card)', (await app.evalJs("![...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Remove') && !document.querySelector('.board-action-row')")) === true, '');
   const countBefore = await app.evalJs('window.wrizoBoard().length');
-  await app.key('Delete'); await sleep(400);
+  await app.evalJs("window.wrizoAskBeforeDelete.set(false)"); await app.key('Delete'); await sleep(400);
   const stillThere = await app.evalJs(`!!document.querySelector('[data-box-id="${toRemove.id}"]')`);
   const countAfter = await app.evalJs('window.wrizoBoard()?.length');
   ok('S6 [click-to-create successor]: the Delete key genuinely deletes the ACTUAL dealt card (and its own thread, if any)', !stillThere && countAfter < countBefore, JSON.stringify({ stillThere, countBefore, countAfter }));

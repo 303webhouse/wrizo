@@ -139,7 +139,7 @@ await withHarness(async (app) => {
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after door-probe seed' });
-  for (const [doorLabel, expectOrigin] of [['New Pages', null]]) { // FX15 S3: "New Journal Entry" iteration retired (door removed) — see park note above. DRIVER: cascadePageNewPage (item word-diet) -> 'New Pages'
+  for (const [doorLabel, expectOrigin] of [['New Page', null]]) { // FX15 S3: "New Journal Entry" iteration retired (door removed) — see park note above. DRIVER: cascadePageNewPage (item word-diet-layouts) -> 'New Page'
     await app.evalJs("location.hash = '#/page/fx14-door-probe'");
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: `THE Page (before "${doorLabel}")` });
     await openPageCategory(app);

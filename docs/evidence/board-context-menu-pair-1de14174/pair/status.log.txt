@@ -1,0 +1,32 @@
+STAMP: tree=1de14174 bundle=index-C6X7EJ8u.js/684271b
+default c00: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c00 - continuing to collect all reds
+default c01: NOT CLEAN; non-launch-crash failures=3
+RED (real) at default c01 - continuing to collect all reds
+default c02: CLEAN same stamp (verified not VOID)
+default c03: CLEAN same stamp (verified not VOID)
+default c04: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c04 - continuing to collect all reds
+default c05: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c05 - continuing to collect all reds
+default c06: NOT CLEAN; non-launch-crash failures=2
+RED (real) at default c06 - continuing to collect all reds
+default c07: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c07 - continuing to collect all reds
+DEFAULT LEG COMPLETE
+parked c00: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c00 - continuing to collect all reds
+parked c01: NOT CLEAN; non-launch-crash failures=3
+RED (real) at parked c01 - continuing to collect all reds
+parked c02: CLEAN same stamp (verified not VOID)
+parked c03: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c03 - continuing to collect all reds
+parked c04: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c04 - continuing to collect all reds
+parked c05: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c05 - continuing to collect all reds
+parked c06: NOT CLEAN; non-launch-crash failures=2
+RED (real) at parked c06 - continuing to collect all reds
+parked c07: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c07 - continuing to collect all reds
+PAIR COMPLETE

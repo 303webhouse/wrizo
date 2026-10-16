@@ -1,0 +1,21 @@
+#!/bin/bash
+# typeface-scope-label @ c2e2a823 (Fable: red-first at 1ecde169, then green; fast lane). tsl = origin/main @ dfc6b695 + the branch -> 9fd7b266.
+# RED-FIRST on main's own product (lane3 = main's product, bundle index-DlmcA1tI.js): (A) font-span.mjs at 1ecde169 VERBATIM; (B) the branch tip's font-span.mjs.
+# GREEN + lane on tsl. FS_FRAMES frames before (main) and after (tsl). One grant, sequential.
+export WS_BOX_TURN=chat1-tsl-20261016
+SD="C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad"
+ST="$SD/tsl-status.txt"
+W=/c/Users/nickh/writer-studio/.claude/worktrees
+LOC="C:/Users/nickh/writer-studio/.claude/evidence-local/typeface-scope-label-c2e2a823"
+mkdir -p "$LOC/before-main" "$LOC/before-main-1ecde169" "$LOC/after-tsl"
+step() { local name="$1" dir="$2"; shift 2; echo "START $name $(date -u +%H:%M:%SZ)" >> "$ST"; ( cd "$dir" && "$@" ) > "$SD/tsl-$name.out" 2>&1; echo "END $name exit=$? $(date -u +%H:%M:%SZ)" >> "$ST"; }
+H="$W/lane3/apps/desktop/scripts/harness"
+git -C "$W/tsl" show 1ecde169:apps/desktop/scripts/harness/font-span.mjs > "$H/font-span-at1ecde169.mjs"
+cp "$W/tsl/apps/desktop/scripts/harness/font-span.mjs" "$H/font-span-tip.mjs"
+step redA "$W/lane3/apps/desktop" env FS_FRAMES="$LOC/before-main-1ecde169" node scripts/harness/font-span-at1ecde169.mjs
+step redB "$W/lane3/apps/desktop" env FS_FRAMES="$LOC/before-main" node scripts/harness/font-span-tip.mjs
+rm -f "$H/font-span-at1ecde169.mjs" "$H/font-span-tip.mjs"
+FILES="font-span.mjs,item207.mjs,item207-core.mjs,drawers-p1.mjs,drawers-p1-live.mjs,b3.mjs,fx7.mjs,fx10.mjs,pw1.mjs,pw2.mjs,item170.mjs,writing-r1.mjs,clickhead.mjs,logout-flush-walk.mjs,item-storage-full.mjs,arrival-signin-walk.mjs,sync-generation.mjs,item224a-sync-integrity.mjs,card-close-x.mjs,item118.mjs,item211.mjs,seed-guard.mjs"
+export FS_FRAMES="$LOC/after-tsl"
+step lane "$W/tsl/apps/desktop" node scripts/run-suite.mjs --no-rebuild --only "$FILES" --out "$SD/tsl-lane"
+echo "TSL COMPLETE" >> "$ST"

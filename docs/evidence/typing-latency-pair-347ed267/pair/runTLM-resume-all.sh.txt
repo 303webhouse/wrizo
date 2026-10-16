@@ -1,0 +1,51 @@
+#!/bin/bash
+# typing-latency full pair: default c00..c07 then parked c00..c07, one stamp.
+# A VOID or REFUSED chunk (a foreign browser) is NOT a verdict and is never counted clean.
+SD="C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad"
+STATUS="$SD/tlm-status.txt"
+STAMP="tree=5eddf7de bundle=index-KjV3uvW3.js/683311b"
+ps1() { powershell -NoProfile -Command "$1" | tr -d '\r\n '; }
+procs() { ps1 "(Get-CimInstance Win32_Process | Where-Object { \$_.CommandLine -match 'run-suite|scripts.harness' -and \$_.Name -match 'node' } | Measure-Object).Count"; }
+browsers() { ps1 "(Get-CimInstance Win32_Process | Where-Object { \$_.CommandLine -match 'user-data-dir=.*ws-runtime-verify' -and \$_.Name -match 'msedge|chrome' } | Measure-Object).Count"; }
+attempt() { # 0 clean, 1 crash-only, 2 real fail, 7 void/refused, 9 stamp problem
+  local leg="$1" idx="$2" pf="$3" tag="$4" rb="$5"
+  local p; p=$(procs); local b; b=$(browsers)
+  if [ "$p" != "0" ] || [ "$b" != "0" ]; then echo "STOP before $leg c$idx$tag: $p harness node processes, $b browsers" >> "$STATUS"; exit 3; fi
+  bash "$SD/runTLM.sh" "$leg" "$idx" "$pf" "$rb" "$tag"
+  local log="$SD/tlm-${leg}-c${idx}${tag}.out"
+  local res; res=$(grep "SUITE RESULT" "$log" | tail -1)
+  if [ -z "$res" ] || echo "$res" | grep -q "VOID" || grep -q "SUITE REFUSED" "$log"; then
+    echo "$leg c$idx$tag: VOID/REFUSED - NOT a verdict ($(echo "$res" | cut -c1-80))" >> "$STATUS"; return 7; fi
+  local st; st=$(echo "$res" | grep -o "tree=[^ ]* bundle=[^ ]*")
+  if [ -z "$STAMP" ]; then STAMP="$st"; echo "STAMP: $STAMP" >> "$STATUS"; fi
+  if [ "$st" != "$STAMP" ]; then echo "STAMP MISMATCH at $leg c$idx$tag: [$st] vs [$STAMP]" >> "$STATUS"; return 9; fi
+  if ! echo "$res" | grep -q "NOT CLEAN"; then echo "$leg c$idx$tag: CLEAN same stamp (verified not VOID)" >> "$STATUS"; return 0; fi
+  local real; real=$(grep "^\[" "$log" | grep -v " OK " | grep -v "NOVERDICT exit=3221225794" | wc -l)
+  echo "$leg c$idx$tag: NOT CLEAN; non-launch-crash failures=$real" >> "$STATUS"
+  [ "$real" != "0" ] && return 2
+  return 1
+}
+run_chunk() {
+  local leg="$1" idx="$2" pf="$3" rb="$4"
+  attempt "$leg" "$idx" "$pf" "" "$rb"; local r=$?
+  [ $r = 0 ] && return
+  if [ $r = 9 ]; then echo "STOP: stamp mismatch" >> "$STATUS"; exit 4; fi
+  if [ $r = 2 ]; then echo "RED (real) at $leg c$idx - continuing to collect all reds" >> "$STATUS"; return; fi
+  if [ $r = 7 ]; then
+    echo "$leg c$idx: whole-chunk re-run after a void (no sweep)" >> "$STATUS"
+    attempt "$leg" "$idx" "$pf" "v" "--no-rebuild"; r=$?
+    [ $r = 7 ] && { echo "STOP: void twice at $leg c$idx" >> "$STATUS"; exit 5; }
+    [ $r = 9 ] && { echo "STOP: stamp mismatch" >> "$STATUS"; exit 4; }
+    [ $r = 2 ] && echo "RED (real) at $leg c${idx}v - continuing" >> "$STATUS"
+    return
+  fi
+  local p; p=$(procs); if [ "$p" != "0" ]; then echo "STOP: harness processes alive after crash at $leg c$idx" >> "$STATUS"; exit 3; fi
+  echo "$leg c$idx: launch crash only; one re-run, no sweep" >> "$STATUS"
+  attempt "$leg" "$idx" "$pf" "r" "--no-rebuild"; r=$?
+  [ $r != 0 ] && echo "RED: $leg c$idx not clean after the one re-run (rc=$r) - continuing" >> "$STATUS"
+}
+echo "RESUMED from default c04 on the SAME tree and stamp ($(date -u +%H:%M:%SZ)); c00-c03 were CLEAN before the pause" >> "$STATUS"
+for i in 04 05 06 07 ; do run_chunk default $i "" "--no-rebuild"; done
+echo "DEFAULT LEG COMPLETE" >> "$STATUS"
+for i in 00 01 02 03 04 05 06 07 ; do run_chunk parked $i "--parked" "--no-rebuild"; done
+echo "PAIR COMPLETE" >> "$STATUS"

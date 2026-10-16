@@ -12,9 +12,11 @@
 // WHAT IS HIDDEN, exactly as the decorator hides it: every marker of every run readMarks accepts on a line's text, and the lead
 // tokens of kind bullet / bullet-circle / bullet-square / heading. Tabs are the indent itself, and the alignment, quote and block
 // tokens still show while the caret touches them, so the caret treats those as visible characters.
-import { readLead, readMarks, type LeadToken } from './markRuns';
+import { closeMark, readLead, readMarks, type LeadToken } from './markRuns';
 
-export interface AbsRun { mark: string; open: number; close: number }
+// FONT-SPAN: `cmark` is the run's CLOSING mark - the same string as `mark` for emphasis, `]{.font-<slug>}` for a font span. Every
+// length or identity below that concerns the closing side reads `cmark`; the opening side reads `mark`.
+export interface AbsRun { mark: string; cmark: string; open: number; close: number }
 
 interface LineInfo {
   start: number;
@@ -37,9 +39,10 @@ function lineAt(text: string, p: number): LineInfo {
   const hidden = new Uint8Array(line.length);
   const tokens = lead.tokens.map(t => ({ ...t, start: t.start + start, end: t.end + start }));
   for (const t of lead.tokens) if (HIDDEN_LEAD.has(t.kind)) for (let i = t.start; i < t.end; i++) hidden[i] = 1;
-  const runs = readMarks(line.slice(lead.length)).map(r => ({ mark: r.mark, open: r.open + lead.length + start, close: r.close + lead.length + start }));
+  const runs = readMarks(line.slice(lead.length)).map(r => ({ mark: r.mark, cmark: closeMark(r), open: r.open + lead.length + start, close: r.close + lead.length + start }));
   for (const r of runs) {
-    for (let k = 0; k < r.mark.length; k++) { hidden[r.open - start + k] = 2; hidden[r.close - start + k] = 2; }
+    for (let k = 0; k < r.mark.length; k++) hidden[r.open - start + k] = 2;
+    for (let k = 0; k < r.cmark.length; k++) hidden[r.close - start + k] = 2;
   }
   return { start, end, leadEnd: start + lead.length, tokens, runs, hidden };
 }
@@ -91,8 +94,9 @@ export function snapCaretAfterClick(text: string, p: number): number {
     const from = end === -1 ? p : end;
     for (const r of li.runs) {
       const ml = r.mark.length;
+      const cl = r.cmark.length;
       if (r.close === r.open + ml) continue;
-      if (from >= r.close && from <= r.close + ml && r.close + ml > end) { end = r.close + ml; moved = true; }
+      if (from >= r.close && from <= r.close + cl && r.close + cl > end) { end = r.close + cl; moved = true; }
     }
     if (end === from) moved = false;
   }
@@ -122,7 +126,7 @@ export interface EditResult { text: string; caret: number; structural: boolean }
 
 // ---- THE REPAIR: an edit never leaves a pair broken or emptied --------------------------------------------------------------
 
-interface Expected { mark: string; open: number; close: number; wasEmpty: boolean; dead?: boolean }
+interface Expected { mark: string; cmark: string; open: number; close: number; wasEmpty: boolean; dead?: boolean }
 
 class Doc {
   constructor(public text: string, public caret: number, public expected: Expected[]) {}
@@ -149,13 +153,14 @@ function repair(doc: Doc): void {
     let acted = false;
     for (const x of doc.expected) {
       const ml = x.mark.length;
-      const found = now.some(r => r.mark === x.mark && r.open === x.open && r.close === x.close);
+      const cl = x.cmark.length;
+      const found = now.some(r => r.mark === x.mark && r.cmark === x.cmark && r.open === x.open && r.close === x.close);
       // emptiness is read from the positions, not from the reader: an emptied italic `*` `*` is `**`, which pairs as nothing
       if (found || x.close === x.open + ml) {
         if (!x.wasEmpty && x.close === x.open + ml) {
           // rules 3 and 4: a pair the edit left empty goes, both marks at once
           const c = doc.caret;
-          doc.splice(x.close, x.close + ml, '', c > x.close ? (c >= x.close + ml ? c - ml : x.close) : c);
+          doc.splice(x.close, x.close + cl, '', c > x.close ? (c >= x.close + cl ? c - cl : x.close) : c);
           const c2 = doc.caret;
           doc.splice(x.open, x.open + ml, '', c2 > x.open ? (c2 >= x.open + ml ? c2 - ml : x.open) : c2);
           x.dead = true; doc.structural = true; acted = true; break;
@@ -178,9 +183,9 @@ function repair(doc: Doc): void {
       const fixClose = () => {
         const ws = doc.text.slice(x.close - kc, x.close);
         const c = doc.caret;
-        const at = c > x.close - kc && c <= x.close ? c + ml : c;
+        const at = c > x.close - kc && c <= x.close ? c + cl : c;
         const from = x.close - kc;
-        doc.splice(from, x.close + ml, x.mark + ws, at);
+        doc.splice(from, x.close + cl, x.cmark + ws, at);
         x.close = from; x.dead = false; acted = true;
       };
       if (x.wasEmpty && ko > 0) fixOpen();
@@ -203,7 +208,7 @@ function replaceRangeCore(text: string, s: number, e: number, ins: string): Edit
   for (let moved = true; moved;) {
     moved = false;
     for (const r of runs) for (const m of [r.open, r.close]) {
-      const me = m + r.mark.length;
+      const me = m + (m === r.open ? r.mark.length : r.cmark.length);
       if (s > m && s < me) { s = m; moved = true; }
       if (e > m && e < me) { e = me; moved = true; }
     }
@@ -212,27 +217,28 @@ function replaceRangeCore(text: string, s: number, e: number, ins: string): Edit
   const closers: { pos: number; r: AbsRun }[] = [];
   const openers: { pos: number; r: AbsRun }[] = [];
   for (const r of runs) {
-    const oi = inside(r.open, r.mark.length), ci = inside(r.close, r.mark.length);
+    const oi = inside(r.open, r.mark.length), ci = inside(r.close, r.cmark.length);
     if (oi && !ci) openers.push({ pos: r.open, r });
     if (ci && !oi) closers.push({ pos: r.close, r });
   }
   closers.sort((a, b) => a.pos - b.pos);
   openers.sort((a, b) => a.pos - b.pos);
-  const cs = closers.map(c => c.r.mark).join('');
+  const cs = closers.map(c => c.r.cmark).join('');
   const os = openers.map(o => o.r.mark).join('');
   const total = cs.length + ins.length + os.length;
   const map = (m: number) => (m < s ? m : m - (e - s) + total);
   const keptAt = new Map<string, number>();
   let off = s;
-  for (const c of closers) { keptAt.set(`c${c.pos}`, off); off += c.r.mark.length; }
+  for (const c of closers) { keptAt.set(`c${c.pos}`, off); off += c.r.cmark.length; }
   off = s + cs.length + ins.length;
   for (const o of openers) { keptAt.set(`o${o.pos}`, off); off += o.r.mark.length; }
   const expected: Expected[] = [];
   for (const r of runs) {
-    const oi = inside(r.open, r.mark.length), ci = inside(r.close, r.mark.length);
+    const oi = inside(r.open, r.mark.length), ci = inside(r.close, r.cmark.length);
     if (oi && ci) continue;
     expected.push({
       mark: r.mark,
+      cmark: r.cmark,
       open: oi ? keptAt.get(`o${r.open}`)! : map(r.open),
       close: ci ? keptAt.get(`c${r.close}`)! : map(r.close),
       wasEmpty: r.close === r.open + r.mark.length,
@@ -349,8 +355,8 @@ export function closersAt(text: string, p: number): string {
   let q = p;
   let out = '';
   for (let r = li.runs.find(x => x.close === q && x.close > x.open + x.mark.length); r; r = li.runs.find(x => x.close === q && x.close > x.open + x.mark.length)) {
-    out += r.mark;
-    q += r.mark.length;
+    out += r.cmark;
+    q += r.cmark.length;
   }
   return out;
 }
@@ -386,24 +392,24 @@ function enterAtCore(text: string, s: number, e: number): EditResult {
   for (let moved = true; moved;) {
     moved = false;
     const done = containing.find(r => r.close === q);
-    if (done) { q += done.mark.length; containing = containing.filter(r => r !== done); moved = true; }
+    if (done) { q += done.cmark.length; containing = containing.filter(r => r !== done); moved = true; }
   }
   const inner = [...containing].sort((a, b) => a.close - b.close);
   const outer = [...containing].sort((a, b) => a.open - b.open);
-  const cs = inner.map(r => r.mark).join('');
+  const cs = inner.map(r => r.cmark).join('');
   const os = outer.map(r => r.mark).join('');
   const ins = cs + '\n' + os;
   const map = (m: number) => (m < q ? m : m + ins.length);
   const expected: Expected[] = [];
   for (const r of allRuns(t)) {
     const empty = r.close === r.open + r.mark.length;
-    if (containing.some(x => x.open === r.open && x.close === r.close && x.mark === r.mark)) {
-      let co = q; for (const x of inner) { if (x.open === r.open && x.mark === r.mark) break; co += x.mark.length; }
-      let oo = q + cs.length + 1; for (const x of outer) { if (x.open === r.open && x.mark === r.mark) break; oo += x.mark.length; }
-      expected.push({ mark: r.mark, open: r.open, close: co, wasEmpty: false });
-      expected.push({ mark: r.mark, open: oo, close: map(r.close), wasEmpty: false });
+    if (containing.some(x => x.open === r.open && x.close === r.close && x.mark === r.mark && x.cmark === r.cmark)) {
+      let co = q; for (const x of inner) { if (x.open === r.open && x.mark === r.mark && x.cmark === r.cmark) break; co += x.cmark.length; }
+      let oo = q + cs.length + 1; for (const x of outer) { if (x.open === r.open && x.mark === r.mark && x.cmark === r.cmark) break; oo += x.mark.length; }
+      expected.push({ mark: r.mark, cmark: r.cmark, open: r.open, close: co, wasEmpty: false });
+      expected.push({ mark: r.mark, cmark: r.cmark, open: oo, close: map(r.close), wasEmpty: false });
     } else {
-      expected.push({ mark: r.mark, open: map(r.open), close: map(r.close), wasEmpty: empty });
+      expected.push({ mark: r.mark, cmark: r.cmark, open: map(r.open), close: map(r.close), wasEmpty: empty });
     }
   }
   const doc = new Doc(t.slice(0, q) + ins + t.slice(q), q + ins.length, expected);

@@ -1,0 +1,6 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+CBDIAG {"there":true,"label":"before the select click","card":true,"cardClass":"board-box","handlesInDoc":0,"handlesInCard":0,"selectedBoxes":[],"handleParents":[],"sliverOpen":false,"tutorOpen":false,"hash":"#/page/cbd-board"}
+CBDIAG {"click":{"x":271,"y":210},"rect":{"l":205.390625,"t":171.265625,"w":217.59375,"h":130.546875},"label":"after the select click (700 ms)","card":true,"cardClass":"board-box","handlesInDoc":1,"handlesInCard":1,"selectedBoxes":["cb-a"],"handleParents":["cb-a"],"sliverOpen":false,"tutorOpen":false,"hash":"#/page/cbd-board"}
+CBDIAG {"label":"after another 1.5 s","card":true,"cardClass":"board-box","handlesInDoc":1,"handlesInCard":1,"selectedBoxes":["cb-a"],"handleParents":["cb-a"],"sliverOpen":false,"tutorOpen":false,"hash":"#/page/cbd-board"}
+CBDIAG {"topmostAtClick":{"tag":"DIV","cls":"board-text","box":"cb-a"}}

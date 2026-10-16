@@ -10,7 +10,8 @@
 // input (only <span> wrapping is added), which is what lets a caller restore
 // a plain-text caret offset after re-decorating (see ForwardOnlyEditor.tsx).
 
-import { readLead, readMarks, type MarkKind, type MarkRun } from './markRuns';
+import { closeMark, readLead, readMarks, type MarkKind, type MarkRun } from './markRuns';
+import { ensureFaceLoaded, faceForSlug, faceStack } from './fontRoster';
 
 function escHtml(s: string): string {
   return s.replace(/[&<>]/g, c => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'));
@@ -75,10 +76,11 @@ function decorateInlineForCard(text: string, caret: number | null): string {
     for (let i = 0; i < within.length; i++) {
       const r = within[i];
       const ml = r.mark.length;
-      const end = r.close + ml;
+      const cm = closeMark(r);
+      const end = r.close + cm.length;
       // the runs nested inside this one are the ones that follow it and end no later than it does
       const kids: MarkRun[] = [];
-      while (i + 1 < within.length && within[i + 1].open >= r.open + ml && within[i + 1].close + within[i + 1].mark.length <= r.close) {
+      while (i + 1 < within.length && within[i + 1].open >= r.open + ml && within[i + 1].close + closeMark(within[i + 1]).length <= r.close) {
         kids.push(within[i + 1]);
         i++;
       }
@@ -90,7 +92,15 @@ function decorateInlineForCard(text: string, caret: number | null): string {
       void caret;   // kept in the signature: a caret move and a format press call the same painter
       const markCls = 'md-mark md-mark-hidden';
       out += escHtml(text.slice(cur, r.open));
-      out += `<span class="${cls[r.kind]}"><span class="${markCls}">${escHtml(r.mark)}</span>${emit(r.open + ml, r.close, kids)}<span class="${markCls}">${escHtml(r.mark)}</span></span>`;
+      // FONT-SPAN: a font span paints its face (the roster's whole stack) on its words; its two marks are hidden like every other
+      // mark. A face this build does not have loaded yet is fetched now (memoised; the stack's fallback shows meanwhile).
+      let wrap: string;
+      if (r.kind === 'font') {
+        const face = faceForSlug(r.face ?? '');
+        void ensureFaceLoaded(face.name);
+        wrap = `<span class="md-font" data-face="${escHtml(face.name).replace(/"/g, '&quot;')}" style="font-family:${escHtml(faceStack(face) ?? '').replace(/"/g, '&quot;')}">`;
+      } else wrap = `<span class="${cls[r.kind]}">`;
+      out += `${wrap}<span class="${markCls}">${escHtml(r.mark)}</span>${emit(r.open + ml, r.close, kids)}<span class="${markCls}">${escHtml(cm)}</span></span>`;
       cur = end;
     }
     return out + escHtml(text.slice(cur, hi));

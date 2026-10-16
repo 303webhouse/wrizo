@@ -254,7 +254,7 @@ await withHarness(async (app) => {
       // DRIVER only - the assertion after it (the membership ends) is unchanged.
       // Quoted VERBATIM below. Successor: the Delete key on the selected card (BoardEditor.tsx key handler -> removeSelected, the same snapshot("remove") path); scripts/harness/board-click-create.mjs C10/C11.
       // await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Remove')?.click()");
-      await app.key('Delete'); await sleep(200);
+      await app.evalJs("window.wrizoAskBeforeDelete.set(false)"); await app.key('Delete'); await sleep(200);
       await sleep(200);
       const boxesAfterUnpin = await app.evalJs('window.wrizoBoard ? window.wrizoBoard() : null');
       ok('S2 (PW1 successor of "unpinning removes the card from the board"): the board card\'s own Remove still ends the MEMBERSHIP outright — unchanged mechanic, new precondition. It is deliberately a different act, and a different word, from the rail\'s "Hide from the board", which ends only the display',
@@ -858,8 +858,12 @@ if (process.env.HARNESS_PARKED === '1') {
       // Quoted VERBATIM below. Successor: the pok directly below (generation 8); the live ordered-labels successor is b3.mjs generation 8.
       // pok('PARKED, generation 7 (was generation 6\'s re-derivation with "New page card"/"Existing page…") — item word-diet: boardNewPageCard reads "New Pages Card", boardAddExistingPage reads "+ Filed Pages"; same five tools, same order — live successor in b3.mjs\'s own S4 section',
       //   sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 5 && sliverShapeNow.labels[0] === 'Add card' && sliverShapeNow.labels[1] === 'New Pages Card' && sliverShapeNow.labels[2] === '+ Filed Pages' && sliverShapeNow.labels[3] === 'From a deck…' && sliverShapeNow.labels[4] === 'Show grafts', JSON.stringify(sliverShapeNow));
-      pok('PARKED, generation 8 (was generation 7\'s re-derivation ending in "Show grafts") - connector-a: the footer toggle is retired; four tools, same order - live successor in b3.mjs\'s own S4 section',
-        sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 4 && sliverShapeNow.labels[0] === 'Add card' && sliverShapeNow.labels[1] === 'New Pages Card' && sliverShapeNow.labels[2] === '+ Filed Pages' && sliverShapeNow.labels[3] === 'From a deck…' && !sliverShapeNow.labels.includes('Show grafts'), JSON.stringify(sliverShapeNow));
+      // ---- PARKED - SUPERSEDED by word-diet-layouts (Fable Oct 15, the singular-exception rule) ----
+      // boardNewPageCard reworks back, "New Pages Card" -> "New Page". Quoted VERBATIM below. Successor: the pok directly below (generation 9); live ordered-labels successor in b3.mjs generation 9.
+      // pok('PARKED, generation 8 (was generation 7\'s re-derivation ending in "Show grafts") - connector-a: the footer toggle is retired; four tools, same order - live successor in b3.mjs\'s own S4 section',
+      //   sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 4 && sliverShapeNow.labels[0] === 'Add card' && sliverShapeNow.labels[1] === 'New Pages Card' && sliverShapeNow.labels[2] === '+ Filed Pages' && sliverShapeNow.labels[3] === 'From a deck…' && !sliverShapeNow.labels.includes('Show grafts'), JSON.stringify(sliverShapeNow));
+      pok('PARKED, generation 9 (was generation 8\'s re-derivation with "New Pages Card") - word-diet-layouts: boardNewPageCard reads "New Page"; four tools, same order - live successor in b3.mjs\'s own S4 section',
+        sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 4 && sliverShapeNow.labels[0] === 'Add card' && sliverShapeNow.labels[1] === 'New Page' && sliverShapeNow.labels[2] === '+ Filed Pages' && sliverShapeNow.labels[3] === 'From a deck…' && !sliverShapeNow.labels.includes('Show grafts'), JSON.stringify(sliverShapeNow));
 
       const boxesBeforeAddNow = (await app.evalJs('window.wrizoBoard()')) || [];
       await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'Add card')?.click()");
