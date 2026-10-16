@@ -40,7 +40,9 @@ function visibleOf(rest: string): Array<{ i: number; ch: string; style: string }
   const out: Array<{ i: number; ch: string; style: string }> = [];
   for (let i = 0; i < rest.length; i++) {
     if (hidden.has(i)) continue;
-    // a font span's face is a style too, so a span that would not read back is caught like a bold that would not
+    // a font span's face is compared too - a belt, not a catch of its own: a span reopens with its OWN closing mark, which carries its
+    // face, and every way a span can fail to re-pair (an old page's bare bracket, nesting) already changes the characters compared
+    // (a mutant removing this line survives every check, for that reason)
     const style = /\s/.test(rest[i]) ? '' : [
       ...KINDS.filter((kd) => runs.some((r) => r.kind === kd && i >= r.open + r.mark.length && i < r.close)),
       ...runs.filter((r) => r.kind === 'font' && i >= r.open + r.mark.length && i < r.close).map((r) => `font=${r.face ?? ''}`),
