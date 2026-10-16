@@ -36,6 +36,11 @@ export interface Rows {
   stale: boolean;
   /** The selection's lines when the pending native edit began (beforeinput / compositionstart). */
   hint: { a: number; b: number } | null;
+  /** A native edit that touched ONE row and left its structure as it was (the row element still in place between its separators):
+   *  that row is KEPT, and writeRows rewrites it only if its live markup differs from what it should be. */
+  keep: number | null;
+  /** A row's estimated height in px for its character count, for content-visibility (null: not measured). */
+  estimate: ((line: string) => number) | null;
 }
 
 // What was last WRITTEN into each row, compared instead of the row's innerHTML: the browser's serialisation of our string is not
@@ -68,7 +73,34 @@ export function lineOf(R: Rows, p: number): number {
 }
 
 const rowHtml = (line: string, local: number | null) => decorateLineForCard(line, local);
-const rowSpan = (html: string) => `<span class="wz-row">${html}</span>`;
+// TYPING-LATENCY (Fable, Oct 14: "Content-visibility is now justified to try on F rows, with your character-count height estimate"):
+// a row off screen is SKIPPED by the browser's layout (index.css: content-visibility:auto), so a keystroke lays out the rows on screen
+// rather than the whole page (the profile's variant G1: 7.1 / 16 ms against containment alone's 40 / 110). A skipped row is sized by
+// its estimate until it has been rendered once; `auto` then remembers its real size. The estimate is the probe's own method: the
+// row's characters over the characters per line measured on the editor itself, times the line height.
+const rowSpan = (html: string, est: number | null) => (est === null
+  ? `<span class="wz-row">${html}</span>`
+  : `<span class="wz-row" style="contain-intrinsic-block-size:auto ${est}px">${html}</span>`);
+
+// the editor's own characters per line and line height, measured once (a hidden probe in the editor's font, at its width)
+function measureEstimate(el: HTMLElement): ((line: string) => number) | null {
+  try {
+    const cs = getComputedStyle(el);
+    let lh = parseFloat(cs.lineHeight);
+    if (!(lh > 0)) lh = (parseFloat(cs.fontSize) || 16) * 1.6;
+    const width = el.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+    const probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;left:0;top:0';
+    const SAMPLE = 'The writer kept going past midnight and a quiet river ran under the window of the room. ';
+    probe.textContent = SAMPLE;
+    el.appendChild(probe);
+    const per = probe.getBoundingClientRect().width / SAMPLE.length;
+    probe.remove();
+    if (!(per > 0) || !(width > 0)) return null;
+    const cpl = Math.max(10, Math.floor(width / per));
+    return (line: string) => Math.max(1, Math.ceil(line.length / cpl)) * Math.round(lh * 100) / 100;
+  } catch { return null; }
+}
 const localCaret = (R: Rows, i: number, caret: number | null) => {
   if (caret === null) return null;
   const l = caret - R.starts[i];
@@ -78,10 +110,11 @@ const localCaret = (R: Rows, i: number, caret: number | null) => {
 /** Render the whole page as rows (mount, and the recovery path). The caret is placed by the caller. */
 export function mountRows(el: HTMLElement, text: string, caret: number | null): Rows {
   const lines = text.split('\n');
-  const R: Rows = { el, lines, starts: [], rows: [], text, revealLine: -1, dirty: null, stale: false, hint: null };
+  const R: Rows = { el, lines, starts: [], rows: [], text, revealLine: -1, dirty: null, stale: false, hint: null, keep: null, estimate: measureEstimate(el) };
   recomputeStarts(R);
   const at = caret === null ? -1 : lineOf(R, caret);
-  el.innerHTML = lines.map((l, i) => rowSpan(rowHtml(l, i === at ? localCaret(R, i, caret) : null))).join('\n') + (text.endsWith('\n') ? GUARD_HTML : '');
+  const est = (l: string) => (R.estimate ? R.estimate(l) : null);
+  el.innerHTML = lines.map((l, i) => rowSpan(rowHtml(l, i === at ? localCaret(R, i, caret) : null), est(l))).join('\n') + (text.endsWith('\n') ? GUARD_HTML : '');
   R.rows = [...el.children].filter((c) => c.classList.contains('wz-row')) as HTMLElement[];
   R.rows.forEach((row, i) => written.set(row!, rowHtml(lines[i], i === at ? localCaret(R, i, caret) : null)));
   R.revealLine = at;
@@ -105,7 +138,7 @@ function replaceRegion(R: Rows, a: number, b: number, mid: string[], caret: numb
   const lastLine = R.lines.length - 1;
   const inner = mid.map((l, k) => rowHtml(l, localCaret(R, a + k, caret)));
   const html = (prev ? '\n' : '')
-    + inner.map(rowSpan).join('\n')
+    + inner.map((h, k) => rowSpan(h, R.estimate ? R.estimate(mid[k]) : null)).join('\n')
     + (next ? '\n' : (lastLine > 0 && R.lines[lastLine] === '' ? GUARD_HTML : ''));   // the guard: a text ENDING IN A NEWLINE only
   const range = document.createRange();
   if (prev) range.setStartAfter(prev); else range.setStart(el, 0);
@@ -141,6 +174,21 @@ export function writeRows(el: HTMLElement, text: string, caret: number | null, r
     b--;
   }
   const unchanged = text === old;
+  // A KEPT row (a native edit inside one row, its structure intact - lineRows.readNativeEdit): compare its live markup with what it
+  // should be, and rewrite it only if they differ. A typed letter in a plain stretch is already exactly right in the DOM, so the page is
+  // neither parsed nor re-laid out by us, and the caret the browser placed is left where it is - no caret write, so no forced layout
+  // (the profile's trace: one of the two full layouts per key was forced by placing the caret).
+  let keptAsIs = false;
+  if (unchanged && R.dirty && R.keep !== null && R.dirty.a === R.keep && R.dirty.b === R.keep && R.rows[R.keep]) {
+    const i = R.keep;
+    const row = R.rows[i]!;
+    const atK = revealAt === null ? -1 : lineOf(R, revealAt);
+    const want = rowHtml(R.lines[i], i === atK ? localCaret(R, i, revealAt) : null);
+    if (row.innerHTML === want) { written.set(row, want); keptAsIs = true; }
+    else { row.innerHTML = want; written.set(row, want); }
+    R.dirty = null;
+  }
+  R.keep = null;
   // the rows a native edit left dirty must be rewritten even when the text matches them
   if (R.dirty) { if (unchanged) { a = R.dirty.a; b = R.dirty.b; } else { a = Math.min(a, R.dirty.a); b = Math.max(b, R.dirty.b); } }
   if (!unchanged || R.dirty) {
@@ -163,7 +211,7 @@ export function writeRows(el: HTMLElement, text: string, caret: number | null, r
     if (row) writeRow(row, rowHtml(R.lines[i], i === at ? localCaret(R, i, revealAt) : null));
   }
   R.revealLine = at;
-  if (caret !== null) placeRowsCaret(R, caret);
+  if (caret !== null && !keptAsIs) placeRowsCaret(R, caret);
   verifyRows(R);
   return true;
 }
@@ -376,8 +424,20 @@ export function readNativeEdit(el: HTMLElement, opts: { keepHint?: boolean } = {
           pre.setEnd(caretPt.startContainer, caretPt.startOffset);
           caret = base + pre.toString().split(EOF_GUARD).join('').length;
         }
+        // the one row a typed character lands in, its structure intact - [separator] row [separator], nothing else between its
+        // neighbours - is KEPT (writeRows compares its live markup instead of rebuilding it); anything else is rebuilt
+        const row = R.rows[a];
+        let kept = false;
+        if (a === b && mid.length === 1 && row && row.parentNode === el && row.textContent === mid[0] && !opts.keepHint) {
+          const seq: Node[] = [];
+          for (let n: Node | null = prev ? prev.nextSibling : el.firstChild; n && n !== next; n = n.nextSibling) seq.push(n);
+          const sep = (n: Node | undefined) => !!n && n.nodeType === 3 && (n as Text).data === '\n';
+          const want = (prev ? 1 : 0) + 1 + (next ? 1 : 0);
+          kept = seq.length === want && (!prev || sep(seq[0])) && seq[prev ? 1 : 0] === row && (!next || sep(seq[seq.length - 1]));
+        }
         R.lines.splice(a, b - a + 1, ...mid);
-        R.rows.splice(a, b - a + 1, ...mid.map(() => null));
+        R.rows.splice(a, b - a + 1, ...mid.map((_, k) => (kept && k === 0 ? row : null)));
+        R.keep = kept ? a : null;
         recomputeStarts(R, a);
         R.text = R.lines.join('\n');
         // a dirty range already pending (the inputs of one composition) is widened, never forgotten
@@ -394,6 +454,7 @@ export function readNativeEdit(el: HTMLElement, opts: { keepHint?: boolean } = {
     plain = readEditorPlainText(el.textContent ?? '', null).plain;
     R.lines = plain.split('\n');
     R.rows = R.lines.map(() => null);
+    R.keep = null;
     recomputeStarts(R);
     R.text = plain;
     R.dirty = { a: 0, b: R.lines.length - 1 };

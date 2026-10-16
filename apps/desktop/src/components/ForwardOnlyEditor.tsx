@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useReducer, useRef } from 'react';
+import { forwardRef, useEffect, useMemo, useReducer, useRef } from 'react';
 import type { Run } from '../types';
 import { append, derivedText, eraseTail, isBoundary, seedContent, strikeStep } from '../store/forwardOnly';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
@@ -688,12 +688,16 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   // 'input' listener below re-decorates imperatively on every keystroke instead,
   // AB2 S0/S3's iA register). Journal renders its runs (struck spans stay
   // visible, drop from derived).
+  // TYPING-LATENCY: the free-edit first paint, built ONCE per initialText. It sat in the render body, so every keystroke's re-render
+  // rebuilt the whole page's decorated string (the profile's 'redecorate: string build', 4.5 / 10 ms at 20k / 50k) for React to compare
+  // and discard - the page itself is written by the rows (store/lineRows.ts), never by this string after mount.
+  const freeHtml = useMemo(() => (freeEdit ? decorateMarkdownForCard(initialText, null) : ''), [freeEdit, initialText]);
   const html = freeEdit
     // ITEM 122 — first paint collapses its markers too, with a NULL caret:
     // nothing is adjacent to nothing before the writer has placed one, and a
     // first paint that showed syntax and then hid it on the first keystroke
     // would read as a flicker rather than a register.
-    ? decorateMarkdownForCard(initialText, null)
+    ? freeHtml
     : isEmpty
       ? ''
       // WRITING-SURFACE S0 STEP 1 - Free Write RENDERS what the writer has stored (bold, headings, bullets, quotes, alignment),
