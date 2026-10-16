@@ -12,7 +12,7 @@
 //   - the arrows move by visible characters; Backspace and Delete never take a lone hidden mark.
 //   - a caret is snapped off hidden marks after every move; a CLICK keeps the side of a run's closing marks it landed on.
 // Copy and paste, and IME composition, stay native - never rebuilt.
-import { backspaceAt, closersAt, deleteAt, enterAt, nativeRange, reabsorb, replaceRange, snapCaret, snapCaretAfterClick, stepLeft, stepRight, wordBackspaceAt, wordDeleteAt, type EditResult } from './hiddenMarks';
+import { backspaceAt, closersAt, deleteAt, enterAt, escapeTyped, nativeRange, reabsorb, replaceRange, snapCaret, snapCaretAfterClick, stepLeft, stepRight, wordBackspaceAt, wordDeleteAt, type EditResult } from './hiddenMarks';
 import { extendSelection, placeCaret, selectionEnds } from './hiddenMarksDom';
 import { getSelectionOffsets } from './caretOffset';
 import type { EditKind } from './textUndo';
@@ -42,6 +42,9 @@ export interface HiddenMarkEditing {
   selectionChange(): void;
   /** Forget a pending edit (composition start, undo/redo, a programmatic rewrite). */
   reset(): void;
+  /** TYPED-LITERAL: an IME composition is starting - remember the text and selection it starts from, so its committed text can be escaped
+   *  at compositionend (call AFTER reset). */
+  noteComposition(): void;
   /** Hold `mark` for the next text typed at `at` (a format press whose empty pair cannot be stored - an empty italic). */
   setPending(mark: string, at: number): void;
   /** card-held-italic: hold an EXIT from `mark` - the next text typed at `at` (directly before that run's closing mark) goes after the mark. */
@@ -84,7 +87,8 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
       const ins = after.slice(held.at, held.at + n);
       const ml = held.mark.length;
       if (after.slice(0, held.at) + after.slice(held.at + n) === before.text && !ins.includes('\n') && before.text.slice(held.at, held.at + ml) === held.mark) {
-        return { text: before.text.slice(0, held.at) + held.mark + ins + before.text.slice(held.at + ml), caret: held.at + ml + n };
+        const lit = escapeTyped(ins, before.text, held.at + ml);   // TYPED-LITERAL
+        return { text: before.text.slice(0, held.at) + held.mark + lit + before.text.slice(held.at + ml), caret: held.at + ml + lit.length };
       }
       return null;
     }
@@ -94,8 +98,9 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
       // a space typed first cannot open a mark (the flanking rule), so the mark waits for the first non-space character
       if (/^[^\S\n]+$/.test(ins) && after.slice(0, held.at) + after.slice(held.at + n) === before.text) { pending = { mark: held.mark, at: held.at + n }; return null; }
       if (after.slice(0, held.at) + after.slice(held.at + n) === before.text && !ins.includes('\n')) {
-        const text = before.text.slice(0, held.at) + held.mark + ins + held.mark + before.text.slice(held.at);
-        return { text, caret: held.at + held.mark.length + n };
+        const lit = escapeTyped(ins, before.text, held.at);   // TYPED-LITERAL
+        const text = before.text.slice(0, held.at) + held.mark + lit + held.mark + before.text.slice(held.at);
+        return { text, caret: held.at + held.mark.length + lit.length };
       }
     }
     const T = before.text;
@@ -106,9 +111,19 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
     const maxS = Math.min(T.length - Math.max(P, before.end), after.length - P);
     while (S < maxS && T[T.length - 1 - S] === after[after.length - 1 - S]) S++;
     const ins = after.slice(P, after.length - S);
-    const span = nativeRange(T, P, T.length - S);
+    let span = nativeRange(T, P, T.length - S);
     if (span.s === span.e && ins === '') return null;
-    if (exit && before.start === before.end && P === exit.wsEnd && span.s === P && span.e === P) {
+    // SYNCHRONOUS SETTLING (Nick's ruling 2, Oct 16): a typed insertion at a collapsed caret lands where the caret SETTLES (rule 1, or
+    // the click's own side), not wherever the browser held it - so whether the asynchronous settle on selectionchange ran before the key
+    // no longer changes the text. The same keys give the same text at any speed.
+    let settledMove = false;
+    if (before.start === before.end && span.s === span.e && P === before.start) {
+      const q = before.start === clickPlaced ? before.start : snapCaret(T, before.start);
+      if (q !== before.start) { P = q; span = { s: q, e: q }; settledMove = true; }
+    }
+    // TYPED-LITERAL: the typed (or pasted) text, its formatting characters escaped for where it lands
+    const lit = escapeTyped(ins, T, span.s);
+    if (exit && lit === ins && !settledMove && before.start === before.end && P === exit.wsEnd && span.s === P && span.e === P) {
       if (ins.length === 1 && !/\s/.test(ins)) {
         const back = reabsorb(after, exit.closeAt, exit.closers, exit.wsEnd);
         exit = null;
@@ -119,15 +134,16 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
       } else exit = null;
     } else exit = null;
     const closers = before.start === before.end && /^[^\S\n]$/.test(ins) ? closersAt(T, P) : '';
-    const r = replaceRange(T, span.s, span.e, ins);
+    const r = replaceRange(T, span.s, span.e, lit);
     if (closers && r.text.slice(P, P + closers.length + 1) === closers + ins) exit = { closeAt: P, closers, wsEnd: P + closers.length + 1 };
-    return r.text === after ? null : r;
+    return r.text === after && !settledMove ? null : r;
   };
 
   const beforeInput = (e: InputEvent) => {
     const it = e.inputType || '';
     beforeEdit = null;
-    if (host.busy() || e.isComposing || it === 'insertCompositionText' || it === 'insertFromPaste' || it === 'insertFromDrop') return;
+    // TYPED-LITERAL (Nick, Oct 16: pasted ** is literal too): a paste or drop is captured like typing, so its text is escaped on input
+    if (host.busy() || e.isComposing || it === 'insertCompositionText') return;
     const o = getSelectionOffsets(el);
     if (!o) return;
     const text = host.plainNow();
@@ -230,6 +246,12 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
     markKey,
     selectionChange,
     reset: () => { beforeEdit = null; exit = null; pending = null; },
+    noteComposition: () => {
+      const o = getSelectionOffsets(el);
+      if (!o) { beforeEdit = null; return; }
+      const text = host.plainNow();
+      beforeEdit = { text, start: Math.min(o.start, text.length), end: Math.min(o.end, text.length) };
+    },
     setPending: (mark: string, at: number) => { pending = { mark, at }; },
     setPendingExit: (mark: string, at: number) => { pending = { mark, at, exit: true }; },
     pendingMark: () => pending,

@@ -44,6 +44,10 @@ const word = () => {
   if (r < 0.39) return `[${w} ${pick(WORDS)}]{.font-courier-prime}`;
   if (r < 0.41) return `[**${w}**]{.font-atkinson-hyperlegible}`;
   if (r < 0.42) return `[${w}]`;
+  // TYPED-LITERAL (Oct 16): typed formatting characters are stored escaped - the window must treat an escape exactly as the whole text does
+  if (r < 0.45) return `\\*${w}\\*`;
+  if (r < 0.47) return `${w}\\_${w}`;
+  if (r < 0.48) return '\\\\';
   return w;
 };
 const line = () => {

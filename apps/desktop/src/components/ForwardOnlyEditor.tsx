@@ -8,6 +8,8 @@ import { getCaretOffset as getPlainOffset, setCaretOffset as setPlainOffset } fr
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, registerUndoStack, unregisterUndoStack, type EditKind } from '../store/textUndo';
 import { placeCaret } from '../store/hiddenMarksDom';
+import { escapeTyped } from '../store/hiddenMarks';
+import { readEscapes } from '../store/markRuns';
 import { attachHiddenMarkEditing } from '../store/hiddenMarksEditing';
 import { detachRows, editorPlainText, mountRows, noteNativeEdit, readNativeEdit, revealRowsAtCaret, rowsFor, writeRows } from '../store/lineRows';
 
@@ -155,6 +157,15 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     resetRunway();
     onForwardRef.current?.();
     changed();
+  };
+
+  // TYPED-LITERAL (Nick, Oct 16): what the writer TYPES (or pastes, or composes) on the runway is literal - its formatting characters
+  // escaped for where they land on the page's text (store/hiddenMarks.ts escapeTyped). The rail's own insertion (insertMarkerRef) is a
+  // tool, not typing, and keeps calling handleInput directly.
+  const handleTyped = (data: string) => {
+    if (!/[\\*_~#\->]/.test(data)) { handleInput(data); return; }
+    const now = derivedText(contentRef.current) + wordRef.current;
+    handleInput(escapeTyped(data, now, now.length));
   };
 
   // FX7 S2 — populate the rail's own insertion escape hatch (see this
@@ -432,10 +443,13 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       };
       // ITEM 211 rules 2 and 3 — the arrows move by visible characters, and Backspace and Delete never take a lone hidden mark.
       const onMarkKeyDraft = (e: KeyboardEvent) => { marks.markKey(e); };
-      const onCompStartDraft = () => { noteNativeEdit(el); composingDraft = true; marks.reset(); };
+      // TYPED-LITERAL: a composition's committed text is typed text too - captured at its start, escaped at its end
+      const onCompStartDraft = () => { noteNativeEdit(el); marks.reset(); marks.noteComposition(); composingDraft = true; };
       const onCompEndDraft = () => {
         composingDraft = false;
-        const { plain, caret } = readNative();
+        let { plain, caret } = readNative();
+        const lit = marks.repairInput(plain);
+        if (lit) { plain = lit.text; caret = lit.caret; }
         // FX6 S1 — an IME-composed insertion is one atomic undo step (no
         // per-candidate-update recording happens above — onInput returns
         // early while composingDraft is true, so the stack's own `current`
@@ -515,13 +529,13 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         // VW Slice 4 — own ink: route through the SAME append path typed input
         // uses (forward-only's law holds — text still enters at the runway tip).
         const text = extractIncomingText(e);
-        if (shadowAllows(text)) { handleInput(text); return; }
+        if (shadowAllows(text)) { handleTyped(text); return; }
         notePasteBlocked();
         return;
       }
       if (it.startsWith('insert')) {
         const data = e.data ?? ((it === 'insertParagraph' || it === 'insertLineBreak') ? '\n' : '');
-        if (data) handleInput(data);
+        if (data) handleTyped(data);
       }
     };
     const onKeyDown = (e: KeyboardEvent) => {
@@ -536,7 +550,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       composingRef.current = false;
       if (skipCompEndRef.current) { skipCompEndRef.current = false; return; } // a delete aborted this composition
       const data = e.data || '';
-      if (data) handleInput(data); // commit the finalized text; the re-render replaces the browser's draft
+      if (data) handleTyped(data); // commit the finalized text; the re-render replaces the browser's draft
     };
     const block = (e: Event) => e.preventDefault(); // cut: block (removes committed text). Copy-out is NOT blocked.
     // Paste + drop are the foreign-voice wall — block AND whisper (belt-and-
@@ -548,7 +562,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     const blockPaste = (e: Event) => {
       e.preventDefault();
       const text = extractIncomingText(e);
-      if (shadowAllows(text)) { handleInput(text); return; }
+      if (shadowAllows(text)) { handleTyped(text); return; }
       notePasteBlocked();
     };
 
@@ -706,7 +720,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // an unstruck run is decorated with a null caret (the runway owns the caret, so nothing is ever revealed here). The
       // `.fo-run` wrapper is kept, so a reader of its textContent still gets every character.
       : content.map(run => run.struck
-        ? `<span class="fo-run fo-struck">${escHtml(run.text)}</span>`
+        ? `<span class="fo-run fo-struck">${struckHtml(run.text)}</span>`
         : `<span class="fo-run">${decorateMarkdownForCard(run.text, null)}</span>`).join('')
         + `<span class="fo-word">${escHtml(word)}</span>`;
 
@@ -746,4 +760,14 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
 
 function escHtml(s: string): string {
   return s.replace(/[&<>]/g, c => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'));
+}
+
+// TYPED-LITERAL: a struck run shows the writer's characters as typed - an escape's backslash is hidden here as it is in a live run
+function struckHtml(text: string): string {
+  const esc = readEscapes(text);
+  if (!esc.length) return escHtml(text);
+  let out = '';
+  let from = 0;
+  for (const x of esc) { out += escHtml(text.slice(from, x)) + '<span class="md-mark md-mark-hidden md-escape">\\</span>'; from = x + 1; }
+  return out + escHtml(text.slice(from));
 }
