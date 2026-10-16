@@ -1,0 +1,14 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+file:///C:/Users/nickh/writer-studio/.claude/worktrees/cbb/apps/desktop/scripts/evidence/connector-b-frames.mjs:32
+const centre = (r) => ({ x: Math.round(r.l + r.w / 2), y: Math.round(r.t + r.h / 2) });
+                                         ^
+
+TypeError: Cannot read properties of null (reading 'l')
+    at centre (file:///C:/Users/nickh/writer-studio/.claude/worktrees/cbb/apps/desktop/scripts/evidence/connector-b-frames.mjs:32:42)
+    at enterMode (file:///C:/Users/nickh/writer-studio/.claude/worktrees/cbb/apps/desktop/scripts/evidence/connector-b-frames.mjs:46:13)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/cbb/apps/desktop/scripts/evidence/connector-b-frames.mjs:77:15
+    at async withHarness (file:///C:/Users/nickh/writer-studio/.claude/worktrees/cbb/apps/desktop/scripts/runtime-verify.mjs:863:12)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/cbb/apps/desktop/scripts/evidence/connector-b-frames.mjs:53:1
+
+Node.js v24.13.0
