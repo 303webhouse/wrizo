@@ -187,11 +187,20 @@ export type DeskTermId =
   // the overturned string absent from the DOM, precisely to catch a copy from
   // either of them.
   //
-  // `tutorDraftAskStretch` is TD4, the one chip that adds a payload: its own words
-  // ARE its button-naming under the disclosure's condition (a), which is why the
-  // string may never be softened into a generic label.
+  // `tutorDraftAskStretch` is TD4, the one chip that adds a payload: its own
+  // words ARE its button-naming under the disclosure's condition (a) — the
+  // WIRE must still name what it sends, byte-exact (item84b.mjs's own S4
+  // "THE BUTTON LAW" proves this mechanically, not by inspection).
+  // SUPERSEDED in part (Nick's ruling, Oct 13, word-diet-layouts, "per Nick"
+  // in cursor/word-diet-ui @ 5933454c): the FACE no longer has to BE those
+  // words — "the chip's visible label becomes 'Selection'; the prompt it
+  // sends stays word for word." `tutorDraftAskStretchLabel` carries the new
+  // face; `tutorDraftAskStretch` itself is untouched and still names the
+  // wire — Tutor.tsx's own DRAFT_ASKS reads `label ?? term` for display and
+  // `term` unconditionally for the press, so the two can never drift apart
+  // by accident.
   | 'tutorDraftRoster' | 'tutorDraftAskDrag' | 'tutorDraftAskLoadBearing'
-  | 'tutorDraftAskThreadSlip' | 'tutorDraftAskStretch'
+  | 'tutorDraftAskThreadSlip' | 'tutorDraftAskStretch' | 'tutorDraftAskStretchLabel'
   | 'tutorDraftStretchNeedsSelection' | 'tutorSelectionTruncated'
   | 'tutorDisclosureTitle' | 'tutorDisclosureBody' | 'tutorDisclosureAck'
   // TU2 S3 — the disclosure's v2 body, Nick's ratified string verbatim
@@ -607,8 +616,13 @@ const CANONICAL: Record<DeskTermId, string> = {
   boardLaneDefault: 'Cards',
   boardStoryboardEmpty: 'No cards yet. Add cards in Open, then arrange them into order here.',
   boardOutlineEmpty: 'No cards yet. Add cards in Open, then shape them into an outline here.',
-  // ITEM word-diet (Nick's final pick, HOLD resolved).
-  boardPairWithPage: '+ Pages',
+  // ITEM word-diet-layouts (Fable, Oct 15) — '+ Pages' collided with the
+  // Pages panel's/Journal's own create button (cascadePageNewPage /
+  // cascadeJournalNewPage, both literally "+Pages"-family words) even
+  // though this button does something else entirely (pair THIS board with
+  // a new page, one-to-one). "Start Pages" names the act without the
+  // collision; Flux's own override ('Start Docs') sits in OVERRIDES below.
+  boardPairWithPage: 'Start Pages',
   // ITEM 133 - the board's name, edited where it is displayed.
   boardRenameLabel: 'Rename this board',
   // BG1 — the Beginnings. Title-cased as door names (the brief's own wording,
@@ -616,12 +630,23 @@ const CANONICAL: Record<DeskTermId, string> = {
   // tool labels a few rows away: a tool is something you use, a door is
   // somewhere you go.
   beginNewCard: 'New Card',
-  beginNewPageCard: 'New Pages Card', // ITEM word-diet, pages-rename bucket (a)
-  beginLoadDeck: 'Load a Deck',
-  // ITEM word-diet (Nick's final pick, HOLD resolved). Flux keeps its own
-  // word for now (its own OVERRIDES entry, untouched here) — flux-words
-  // part 2 can revisit.
-  beginConnectPage: '+ Filed Pages',
+  // ITEM word-diet-layouts (Fable, Oct 15) — the singular-exception rule:
+  // every "make a new one" button is singular. Joins boardNewPageCard/
+  // cascadeJournalNewPage/cascadePageNewPage below, all four moving
+  // together (the same "pages-rename bucket (a)" family, deskLexicon's own
+  // standing note). Flux's own override ('New Doc') sits in OVERRIDES below.
+  beginNewPageCard: 'New Page',
+  // ITEM word-diet-layouts (Fable, Oct 15) — the board's own starter words:
+  // Arbor "New Card · New Page · Templates · Connect Pages". "Load a Deck"
+  // named the OBJECT it loads; "Templates" names what that object IS, the
+  // same noun-door convention every other beginning here already uses.
+  beginLoadDeck: 'Templates',
+  // ITEM word-diet-layouts (Fable, Oct 15) — Arbor's own word for this door
+  // is now "Connect Pages" (was "+ Filed Pages", the ExistingPagePicker's
+  // own button-face borrowed here; the two doors open the same sheet but
+  // name a different act — THIS one invites connecting a page to the
+  // board, not filing one). Flux's own override ('Link Docs') sits below.
+  beginConnectPage: 'Connect Pages',
   beginNewLane: 'New Lane',
   beginScreenplay: 'Screenplay',
   beginSprout: 'Sprout',
@@ -722,7 +747,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   stripSettings: 'Settings',
   stripChangeTheme: 'Themes',
   cascadeJournalOpen: 'Open the Journal',
-  cascadeJournalNewPage: 'New Pages', // ITEM word-diet, pages-rename bucket (a)
+  cascadeJournalNewPage: 'New Page', // ITEM word-diet-layouts, the singular-exception rule (Fable, Oct 15)
   cascadeJournalRecent: 'Recent',
   cascadeJournalAll: 'All pages →',
   cascadePlanCreateBoard: 'Create a Board',
@@ -888,6 +913,9 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorDraftAskLoadBearing: "What's load-bearing here — and what could go?",
   tutorDraftAskThreadSlip: "Where does the thread slip?",
   tutorDraftAskStretch: "Look at just this stretch — what's it doing?",
+  // word-diet-layouts (Nick's ruling, Oct 13) — the chip's own FACE, not its
+  // prompt. See the DeskTermId union's own comment above for the split.
+  tutorDraftAskStretchLabel: 'Selection',
   // TD4's disabled-visible state, named. The chip holds its slot without a
   // selection rather than appearing and vanishing (its gate flips by the second,
   // and layout stability outranks purity of absence for that case) — so it owes
@@ -920,7 +948,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   // ITEM word-diet.
   tutorMeterTokensOnly: 'This turn (tokens only), est.:',
   tutorMeterTokensUnit: 'tokens',
-  cascadePageNewPage: 'New Pages', // ITEM word-diet, pages-rename bucket (a)
+  cascadePageNewPage: 'New Page', // ITEM word-diet-layouts, the singular-exception rule (Fable, Oct 15)
   // ITEM 203 - a record too large to sync is NAMED, and the writer is told it is safe here. {title} / {n} are filled in.
   // ITEM word-diet.
   syncTooLargeOne: '\u201C{title}\u201D is too large to sync. Saved on this device.',
@@ -1095,7 +1123,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   // have read as a destination, which is the confusion being closed.
   placesHomeHeading: 'This page lives in…',
   cascadePlanJustAPage: 'Just need a page? New Page is in the Page section.',
-  boardNewPageCard: 'New Pages Card', // ITEM word-diet, pages-rename bucket (a)
+  boardNewPageCard: 'New Page', // ITEM word-diet-layouts, the singular-exception rule (Fable, Oct 15)
   // ITEM word-diet. Fable's own conditional: a board cannot be added to a
   // board today (no box kind:'board' exists in persistence.ts — every
   // Add-flow tool makes kind:'text' or pins an existing page), so this
@@ -1418,7 +1446,20 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     // unrelated `publish` term is ALSO shown as "Connect" under Flux today —
     // a different feature, Publish-to-web, not board connections; that one
     // is being renamed "Uplink" separately so the two words stop colliding.)
-    beginConnectPage: 'Link a Page',
+    // ITEM word-diet-layouts (Fable, Oct 15) — the board's own starter
+    // words, Flux: "New Card · New Doc · Templates · Link Docs"; the
+    // singular-exception rule (New Doc, not New Docs) joins this theme's
+    // own circuit register (Link, not Graft — beginConnectPage was never
+    // part of the arbor-quiet-brass Graft/Link family above; it is its
+    // own door, independent of it, same as it was when it read "+ Filed
+    // Pages"/"Link a Page"). boardPairWithPage's own override sits beside
+    // its CANONICAL ('Start Pages') for the same collision reason.
+    beginNewPageCard: 'New Doc',
+    boardNewPageCard: 'New Doc',
+    cascadeJournalNewPage: 'New Doc',
+    cascadePageNewPage: 'New Doc',
+    beginConnectPage: 'Link Docs',
+    boardPairWithPage: 'Start Docs',
     pageFacePinnedTo: 'Also linked to',
     cascadePlanBoardsConnected: 'Boards linked',
     boardThreadGrab: 'Drag to link',

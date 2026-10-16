@@ -171,8 +171,13 @@ await withHarness(async (app) => {
   // "New Page Card" -> "New Pages Card" (pages-rename bucket (a)).
   // ok('S1 (OPEN, word-diet successor): an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Page Card · Load a Deck · + Filed Pages',
   //   JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', '+ Filed Pages']), JSON.stringify(openDoors));
-  ok('S1 (OPEN) [word-diet successor]: an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Pages Card · Load a Deck · + Filed Pages',
-    JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Pages Card', 'Load a Deck', '+ Filed Pages']), JSON.stringify(openDoors));
+  // SUPERSEDED (item word-diet-layouts, Fable Oct 15 — the board starter words
+  // + the singular-exception rule): "New Pages Card" -> "New Page", "Load a
+  // Deck" -> "Templates", "+ Filed Pages" -> "Connect Pages".
+  // ok('S1 (OPEN) [word-diet successor]: an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Pages Card · Load a Deck · + Filed Pages',
+  //   JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Pages Card', 'Load a Deck', '+ Filed Pages']), JSON.stringify(openDoors));
+  ok('S1 (OPEN) [word-diet-layouts successor]: an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Page · Templates · Connect Pages',
+    JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Page', 'Templates', 'Connect Pages']), JSON.stringify(openDoors));
 
   // Quiet olive — the brief's own word for the doors' color, and the hue the
   // house reserves for "this is a door" (--accent-rest, #96a05a).
@@ -199,14 +204,20 @@ await withHarness(async (app) => {
   // STORYBOARD's own three.
   await setBoardMode(app, 'storyboard');
   const sbDoors = await doorLabels(app);
-  ok('S1 (STORYBOARD): the row is Load a Deck · New Lane · New Card — the brief\'s own set for this mode, in order',
-    JSON.stringify(sbDoors) === JSON.stringify(['Load a Deck', 'New Lane', 'New Card']), JSON.stringify(sbDoors));
+  // SUPERSEDED (item word-diet-layouts, Fable Oct 15) — beginLoadDeck reworks, "Load a Deck" -> "Templates" (both board modes that carry this door).
+  // ok('S1 (STORYBOARD): the row is Load a Deck · New Lane · New Card — the brief\'s own set for this mode, in order',
+  //   JSON.stringify(sbDoors) === JSON.stringify(['Load a Deck', 'New Lane', 'New Card']), JSON.stringify(sbDoors));
+  ok('S1 (STORYBOARD) [word-diet-layouts successor]: the row is Templates · New Lane · New Card — the brief\'s own set for this mode, in order',
+    JSON.stringify(sbDoors) === JSON.stringify(['Templates', 'New Lane', 'New Card']), JSON.stringify(sbDoors));
 
   // OUTLINE's own two.
   await setBoardMode(app, 'outline');
   const olDoors = await doorLabels(app);
-  ok('S1 (OUTLINE): the row is New Card · Load a Deck — the brief\'s own set for this mode, in order',
-    JSON.stringify(olDoors) === JSON.stringify(['New Card', 'Load a Deck']), JSON.stringify(olDoors));
+  // SUPERSEDED (item word-diet-layouts, Fable Oct 15) — same beginLoadDeck rework.
+  // ok('S1 (OUTLINE): the row is New Card · Load a Deck — the brief\'s own set for this mode, in order',
+  //   JSON.stringify(olDoors) === JSON.stringify(['New Card', 'Load a Deck']), JSON.stringify(olDoors));
+  ok('S1 (OUTLINE) [word-diet-layouts successor]: the row is New Card · Templates — the brief\'s own set for this mode, in order',
+    JSON.stringify(olDoors) === JSON.stringify(['New Card', 'Templates']), JSON.stringify(olDoors));
 
   // The projections' old empty lines are gone where the row stands.
   const projectionEmptyGone = await app.evalJs("!document.querySelector('.board-projection-empty')");
@@ -257,7 +268,7 @@ await withHarness(async (app) => {
   // ==========================================================================
   await freshBoard(app, 'bg1-deck-board', [], LAPTOP_W, 900);
   await clickDoor(app, 'loadDeck');
-  ok('S1: Load a Deck opens the deck library (DeckWizard) — on this explicit press, never ambiently',
+  ok('S1: Templates opens the deck library (DeckWizard) — on this explicit press, never ambiently',
     (await app.evalJs("!!document.querySelector('.deck-wizard, .deck-wizard-backdrop')")) === true,
     await app.evalJs("document.body.innerText.slice(0, 120)"));
 
@@ -316,8 +327,11 @@ await withHarness(async (app) => {
   // "New Page Card" -> "New Pages Card".
   // ok('S1 (word-diet successor): a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
   //   JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', '+ Filed Pages']), JSON.stringify(planBoardDoors));
-  ok('S1 [word-diet successor]: a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
-    JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Pages Card', 'Load a Deck', '+ Filed Pages']), JSON.stringify(planBoardDoors));
+  // SUPERSEDED (item word-diet-layouts, Fable Oct 15) — the same OPEN-row rework as S1 (OPEN) above.
+  // ok('S1 [word-diet successor]: a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
+  //   JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Pages Card', 'Load a Deck', '+ Filed Pages']), JSON.stringify(planBoardDoors));
+  ok('S1 [word-diet-layouts successor]: a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
+    JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Page', 'Templates', 'Connect Pages']), JSON.stringify(planBoardDoors));
 
   // ==========================================================================
   // S2 — the page's row. THE load-bearing check first: the page is already

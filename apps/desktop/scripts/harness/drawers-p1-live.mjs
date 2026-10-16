@@ -235,7 +235,7 @@ await withHarness(async (app) => {
       // Quoted VERBATIM below. Successor: the check directly below.
       // ok(`L5 ${T} BOARD (page-level): the tools arm keeps its list, now on the shared shell - FOUR door buttons (Add card, New page card, Existing page, From a deck) and the footer toggle, with no Typeface/Format/Actions/Templates and no tab row`,
       //   b.items.length === 4 && b.items.every((x) => x.length > 0) && b.footerToggle.length === 1 && b.otherSections === 0 && b.tabs === 0, JSON.stringify(b));
-      ok(`L5 ${T} BOARD (page-level) [connector-a successor]: the tools arm keeps its list on the shared shell - FOUR door buttons (Add card, New Pages Card, + Filed Pages, From a deck) and NO footer toggle (retired), with no Typeface/Format/Actions/Templates and no tab row`,
+      ok(`L5 ${T} BOARD (page-level) [connector-a successor]: the tools arm keeps its list on the shared shell - FOUR door buttons (Add card, New Page, + Filed Pages, From a deck) and NO footer toggle (retired), with no Typeface/Format/Actions/Templates and no tab row`,
         b.items.length === 4 && b.items.every((x) => x.length > 0) && b.footerToggle.length === 0 && b.otherSections === 0 && b.tabs === 0, JSON.stringify(b));
     });
 

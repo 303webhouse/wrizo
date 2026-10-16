@@ -175,9 +175,17 @@ await withHarness(async (app) => {
       //     && sliverShape.labels[2] === '+ Filed Pages' && sliverShape.labels[3] === 'From a deck…'
       //     && sliverShape.labels[4] === 'Show grafts',
       //   JSON.stringify(sliverShape));
-      ok('ab4.mjs S5 lineage, generation 8 [connector-a successor]: the board sliver carries its FOUR hand tools, in order - Add card, New Pages Card, + Filed Pages, From a deck… - and no footer toggle',
+      // ---- PARKED - SUPERSEDED by word-diet-layouts (Fable Oct 15, the singular-exception rule) ----
+      // boardNewPageCard reworks back "New Pages Card" -> "New Page". Quoted VERBATIM below. Successor: the check directly below (generation 9).
+      // ok('ab4.mjs S5 lineage, generation 8 [connector-a successor]: the board sliver carries its FOUR hand tools, in order - Add card, New Pages Card, + Filed Pages, From a deck… - and no footer toggle',
+      //   sliverShape.buttonCount === 4
+      //     && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New Pages Card'
+      //     && sliverShape.labels[2] === '+ Filed Pages' && sliverShape.labels[3] === 'From a deck…'
+      //     && !sliverShape.labels.includes('Show grafts'),
+      //   JSON.stringify(sliverShape));
+      ok('ab4.mjs S5 lineage, generation 9 [word-diet-layouts successor]: the board sliver carries its FOUR hand tools, in order - Add card, New Page, + Filed Pages, From a deck… - and no footer toggle',
         sliverShape.buttonCount === 4
-          && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New Pages Card'
+          && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New Page'
           && sliverShape.labels[2] === '+ Filed Pages' && sliverShape.labels[3] === 'From a deck…'
           && !sliverShape.labels.includes('Show grafts'),
         JSON.stringify(sliverShape));

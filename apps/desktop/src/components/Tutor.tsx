@@ -276,11 +276,19 @@ const DRAFT_ASKS: {
   id: DraftAskId;
   term: 'tutorDraftAskDrag' | 'tutorDraftAskLoadBearing' | 'tutorDraftAskThreadSlip' | 'tutorDraftAskStretch';
   sendsSelection: boolean;
+  // word-diet-layouts (Nick's ruling, Oct 13): "the chip's visible label
+  // becomes 'Selection'; the prompt it sends stays word for word." `term`
+  // alone used to serve BOTH the face and the wire; `label`, where present,
+  // overrides only the face — pressAsk (below) still reads `term`
+  // unconditionally, so what gets staged into the composer is byte-exact
+  // unchanged. Absent on asks 1-3: their face and their wire are still the
+  // same string, exactly as before this ruling.
+  label?: 'tutorDraftAskStretchLabel';
 }[] = [
   { id: 'drag', term: 'tutorDraftAskDrag', sendsSelection: false },
   { id: 'loadBearing', term: 'tutorDraftAskLoadBearing', sendsSelection: false },
   { id: 'threadSlip', term: 'tutorDraftAskThreadSlip', sendsSelection: false },
-  { id: 'stretch', term: 'tutorDraftAskStretch', sendsSelection: true },
+  { id: 'stretch', term: 'tutorDraftAskStretch', sendsSelection: true, label: 'tutorDraftAskStretchLabel' },
 ];
 
 interface DisplayMessage {
@@ -1108,7 +1116,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
                         title={gated ? t('tutorDraftStretchNeedsSelection') : undefined}
                         onClick={() => pressAsk(ask)}
                       >
-                        {t(ask.term)}
+                        {t(ask.label ?? ask.term)}
                       </button>
                     );
                   })}

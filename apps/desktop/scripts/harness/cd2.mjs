@@ -220,13 +220,17 @@ await withHarness(async (app) => {
     open: !!document.querySelector('.wz-cascade-panel'),
     title: document.querySelector('.wz-cascade-panel-title')?.textContent,
     hasOpenJournal: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'Open the Journal'),
-    hasNewPage: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'New Pages'),
+    hasNewPage: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'New Page'),
   })`);
   // SUPERSEDED (item word-diet, Nick) — cascadeJournalNewPage reworks, "New page" -> "New Pages".
   // ok('S3: clicking Journal opens layer 2 with "Open the Journal" and "New page"',
   //   journalPanel.open && journalPanel.title === 'Journal' && journalPanel.hasOpenJournal && journalPanel.hasNewPage,
   //   JSON.stringify(journalPanel));
-  ok('S3 [word-diet successor]: clicking Journal opens layer 2 with "Open the Journal" and "New Pages"',
+  // SUPERSEDED (item word-diet-layouts, Fable Oct 15 — the singular-exception rule) — cascadeJournalNewPage reworks back, "New Pages" -> "New Page".
+  // ok('S3 [word-diet successor]: clicking Journal opens layer 2 with "Open the Journal" and "New Pages"',
+  //   journalPanel.open && journalPanel.title === 'Journal' && journalPanel.hasOpenJournal && journalPanel.hasNewPage,
+  //   JSON.stringify(journalPanel));
+  ok('S3 [word-diet-layouts successor]: clicking Journal opens layer 2 with "Open the Journal" and "New Page"',
     journalPanel.open && journalPanel.title === 'Journal' && journalPanel.hasOpenJournal && journalPanel.hasNewPage,
     JSON.stringify(journalPanel));
 
