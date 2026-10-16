@@ -31,15 +31,15 @@ export function useAskBeforeDelete(): boolean {
 }
 
 // ---- the pending request the dialog host renders ----
-export interface PendingDelete { run: () => void; title?: string }
+export interface PendingDelete { run: () => void; title?: string; noDontAsk?: boolean }
 let pending: PendingDelete | null = null;
 const pendingListeners = new Set<() => void>();
 const notifyPending = () => pendingListeners.forEach(l => l());
 
 /** The gate. Runs `run` now when the writer has turned asking off; otherwise opens the dialog and runs it on Delete. `title` overrides the dialog's question (a permanent delete asks a different one). */
-export function requestDelete(run: () => void, opts?: { title?: string; always?: boolean }): void {
+export function requestDelete(run: () => void, opts?: { title?: string; always?: boolean; noDontAsk?: boolean }): void {
   if (!opts?.always && !currentAsk()) { run(); return; }
-  pending = { run, title: opts?.title };
+  pending = { run, title: opts?.title, noDontAsk: opts?.noDontAsk };
   notifyPending();
 }
 

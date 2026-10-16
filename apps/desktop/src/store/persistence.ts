@@ -1339,11 +1339,11 @@ function describeEnd(entryId: string, boxId: string | undefined): { kind: 'card'
 }
 
 /** Everything a card on a board is connected to: the same-board connection boxes AND the page_links records (owned or reverse) - ONE list for the Grafts/Links tab. */
-export function getLinkPeersOfCard(boardId: string, boxId: string): LinkPeer[] {
+export function getLinkPeersOfCard(boardId: string, boxId: string, boxes?: readonly Box[]): LinkPeer[] {
   const board = cache.journalEntries.find(x => x.id === boardId);
   if (!board) return [];
   const out: LinkPeer[] = [];
-  const live = liveBoxes(board.boxes);
+  const live = liveBoxes(boxes ?? board.boxes);
   for (const c of live) {
     if (c.kind !== 'connection' || (c.connA !== boxId && c.connB !== boxId)) continue;
     const otherId = c.connA === boxId ? c.connB : c.connA;
@@ -1363,6 +1363,29 @@ export function getLinkPeersOfCard(boardId: string, boxId: string): LinkPeer[] {
     const d = describeEnd(l.aEntryId, l.aBoxId);
     if (d) out.push({ key: `link:${l.id}`, via: 'link', linkId: l.id, entryId: l.aEntryId, boxId: l.aBoxId, reverse: true, ...d });
   }
+  return out;
+}
+
+/** EVERY card of a board at once - one scan of the cache, not one per card (the footers draw on every render). */
+export function getLinkPeersByCard(boardId: string, boxes: readonly Box[]): Map<string, LinkPeer[]> {
+  const out = new Map<string, LinkPeer[]>();
+  const board = cache.journalEntries.find(x => x.id === boardId);
+  if (!board) return out;
+  const push = (cardId: string, peer: LinkPeer) => { const a = out.get(cardId); if (a) a.push(peer); else out.set(cardId, [peer]); };
+  for (const l of board.pageLinks ?? []) {
+    if (!liveLink(l) || !l.aBoxId) continue;
+    const d = describeEnd(l.bEntryId, l.bBoxId);
+    if (d) push(l.aBoxId, { key: `link:${l.id}`, via: 'link', linkId: l.id, entryId: l.bEntryId, boxId: l.bBoxId, ...d });
+  }
+  for (const e of cache.journalEntries) {
+    if (e.deletedAt || e.id === boardId) continue;
+    for (const l of e.pageLinks ?? []) {
+      if (!liveLink(l) || l.bEntryId !== boardId || !l.bBoxId) continue;
+      const d = describeEnd(l.aEntryId, l.aBoxId);
+      if (d) push(l.bBoxId, { key: `link:${l.id}`, via: 'link', linkId: l.id, entryId: l.aEntryId, boxId: l.aBoxId, reverse: true, ...d });
+    }
+  }
+  void boxes;
   return out;
 }
 

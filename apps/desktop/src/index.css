@@ -5986,3 +5986,37 @@ a:focus-visible,
 .wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track{ border-color:var(--brass); }
 .wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track i{ left:18px; background:var(--brass); }
 @media (prefers-reduced-motion: reduce){ .wz-cascade-switch-track i{ transition:none; } }
+
+/* CONNECTOR-B (Nick's approved connector mockup v6) - the Grafts / Links list in the right drawer; the circles the rail's thumbnails wear while a card is in connection mode; the ghost a thumbnail leaves under the
+   pointer when it is dragged onto a board; and the viewport-level overlay the connector's arm travels in (it must reach the rail, so it cannot live inside the board canvas, which clips). */
+.wz-links-list{ list-style:none; margin:4px 0 0; padding:0; display:flex; flex-direction:column; gap:8px; }
+.wz-links-item{
+  position:relative; display:flex; align-items:center; gap:10px; min-height:44px; padding:0 34px 0 12px;
+  border:1px solid var(--ink-border); color:var(--text-mid); font-family:var(--font-ui); font-size:13px;
+}
+.wz-links-item[data-trashed='true'] .wz-links-label{ opacity:.55; }
+.wz-links-label{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.wz-links-thumb{ flex:none; display:block; background:var(--ink-800); border:1px solid var(--ink-border-strong); position:relative; }
+.wz-links-thumb--page{ width:22px; height:30px; }
+.wz-links-thumb--card{ width:32px; height:22px; background:var(--card-stock); border-color:var(--card-hairline); }
+.wz-links-thumb--board{ width:32px; height:22px; background:var(--paper); border-color:var(--card-hairline); }
+.wz-links-x{
+  position:absolute; top:4px; right:4px; width:18px; height:18px; padding:0; display:flex; align-items:center; justify-content:center;
+  font-size:13px; line-height:1; color:var(--text-mid); background:none; border:1px solid var(--ink-border-strong); border-radius:0; cursor:pointer;
+}
+.wz-links-x:hover, .wz-links-x:focus-visible{ color:var(--brass); border-color:var(--brass); outline:none; }
+
+/* a rail thumbnail that STANDS FOR AN ENTRY (data-link-entry) is a target while a card is in connection mode: its circle is open if the card is not linked to it, solid orange if it is. The state is written onto the element by
+   the board's pointer effect (data-link-target while the arm is over it, data-link-peer for the entries the card is linked to, data-link-flash for the beat after a link/unlink); the circle itself is this ::before. */
+[data-link-entry]{ position:relative; }
+[data-link-entry][data-link-target='true']::before, [data-link-entry][data-link-peer='true']::before, [data-link-entry][data-link-flash]::before{
+  content:''; position:absolute; left:4px; top:50%; width:10px; height:10px; margin-top:-5px; box-sizing:border-box; z-index:6; pointer-events:none;
+  border-radius:50%; background:var(--desk-ground); border:1.5px solid var(--brass);
+}
+[data-link-entry][data-link-solid='true']::before{ background:var(--brass); }
+[data-link-entry][data-link-target='true']{ outline:1px solid var(--brass); outline-offset:-1px; }
+
+.wz-link-ghost{ position:fixed; z-index:9400; pointer-events:none; display:flex; align-items:center; gap:10px; padding:6px 12px; background:var(--desk-ground); border:1px solid var(--brass); color:var(--text-hi); font-family:var(--font-ui); font-size:13px; opacity:.92; }
+body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !important; }
+
+.board-connect-overlay{ position:fixed; inset:0; width:100%; height:100%; z-index:9300; pointer-events:none; overflow:visible; }

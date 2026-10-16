@@ -145,6 +145,8 @@ export type DeskTermId =
   // BOARD CONTEXT MENU (Nick, Oct 15) - the right-click menus, the "Send to Trash?" dialog, the Settings row, and the toasts.
   | 'ctxDelete' | 'ctxDeleteBoard' | 'ctxUngroup' | 'deleteDialogTitle' | 'deleteDialogPurgeTitle' | 'deleteDialogCancel' | 'deleteDialogConfirm' | 'deleteDialogDontAsk'
   | 'settingsAskBeforeDelete' | 'toastCardDeleted' | 'toastCardRestored' | 'toastBoardTrashed' | 'trashCardBadge'
+  // CONNECTOR-B (Nick's approved connector mockup v6): the right drawer's Grafts / Links tab lists the selected card's connections, each with an X that asks first.
+  | 'linksSelectCard' | 'linksRemoveTitle' | 'linksRemoveAria' | 'linksKindPage' | 'linksKindBoard' | 'linksKindCard'
   // TU1 S2/S3/S4/S5 — the Tutor (components/Tutor.tsx), the sliver's own
   // mirror on the paper's right edge. One seam, all of the Tutor's static
   // chrome — the lenses' own DYNAMIC observation text (Consistency's
@@ -849,6 +851,12 @@ const CANONICAL: Record<DeskTermId, string> = {
   toastCardRestored: 'Card restored',
   toastBoardTrashed: 'Board moved to Trash',
   trashCardBadge: 'Card',
+  linksSelectCard: 'Select a card',
+  linksRemoveTitle: 'Remove graft?',
+  linksRemoveAria: 'Remove',
+  linksKindPage: 'Page',
+  linksKindBoard: 'Board',
+  linksKindCard: 'Card',
   tutorOpen: 'Open the Tutor',
   tutorClose: 'Close the Tutor',
   tutorTitle: 'The Tutor',
@@ -1489,6 +1497,9 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     boardFooterToggle: 'Show links',
     ctxDeleteBoard: 'Delete circuit',
     toastBoardTrashed: 'Circuit moved to Trash',
+    linksRemoveTitle: 'Remove link?',
+    linksKindPage: 'Doc',
+    linksKindBoard: 'Circuit',
     placesBoardsTitle: 'Also linked to…',
     // Round 2: the card footer's own connecting phrase ("— grafted to: <label>"
     // Arbor, composed at BoardEditor.tsx's call site as "— {prefix}: {label}").

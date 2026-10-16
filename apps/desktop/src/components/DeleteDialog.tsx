@@ -41,11 +41,13 @@ export function DeleteDialog() {
     <div className="wz-delete-scrim" onMouseDown={(e) => { if (e.target === e.currentTarget) resolveDelete(false); }}>
       <div ref={boxRef} className="wz-delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="wz-delete-title">
         <div className="wz-delete-title" id="wz-delete-title">{pending.title ?? t('deleteDialogTitle')}</div>
+        {!pending.noDontAsk && (
         <label className="wz-delete-chk">
           <input type="checkbox" checked={dontAsk} onChange={(e) => setDontAsk(e.target.checked)} />
           <span className="wz-delete-box" aria-hidden="true" />
           <span>{t('deleteDialogDontAsk')}</span>
         </label>
+        )}
         <div className="wz-delete-btns">
           <button type="button" className="wz-delete-btn" ref={cancelRef} onClick={() => resolveDelete(false)}>{t('deleteDialogCancel')}</button>
           <button type="button" className="wz-delete-btn wz-delete-go" onClick={() => resolveDelete(true, dontAsk)}>{t('deleteDialogConfirm')}</button>
