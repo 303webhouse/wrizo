@@ -6,7 +6,7 @@
 <title>Wrizo - Help buttons mockup</title>
 <!--
   docs/mockups/help-buttons - a tiny "?" beside each theme-unique name.
-  Tap it: one plain sentence appears, then closes (tap again, tap elsewhere, Esc, or after a few seconds).
+  Tap it: one plain sentence appears. It closes on a second tap, a tap elsewhere, or Esc - never on a timer.
   Shown in Arbor and Flux on: Grafts / Links, Templates / Presets, Outline / Spine, Title Page / Cover,
   Publish / Uplink, Free Write / Wire In, Recede depth / Dissolve. The Recede-depth hint lives ONLY behind its "?".
   The "?" is olive in Arbor and teal in Flux - never brass (brass stays "current choice").
@@ -222,7 +222,7 @@
   var demo = qs.get('demo');
   var root = document.documentElement, pop = document.getElementById('pop'), page = document.getElementById('page');
   var theme = qs.get('theme') === 'flux' ? 'flux' : 'arbor';
-  var openBtn = null, timer = 0, base = null;
+  var openBtn = null, base = null;
 
   function rectKey() { var r = page.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round).join(','); }
   function showRect() {
@@ -245,7 +245,6 @@
   }
 
   function close() {
-    clearTimeout(timer);
     if (openBtn) { openBtn.setAttribute('aria-expanded', 'false'); openBtn.removeAttribute('aria-controls'); }
     openBtn = null; pop.hidden = true; showRect();
   }
@@ -259,7 +258,6 @@
     var left = b.left; if (left + pw > vw - 8) left = Math.max(8, b.right - pw);          // open leftward near the right edge
     var top = b.bottom + 4; if (top + ph > vh - 8) top = Math.max(8, b.top - ph - 4);      // open upward near the bottom
     pop.style.left = left + 'px'; pop.style.top = top + 'px';
-    if (!demo) timer = setTimeout(close, 7000);
     showRect();
   }
 
