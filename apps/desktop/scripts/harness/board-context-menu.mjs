@@ -16,6 +16,8 @@
 //   K13 the Trash board lists a deleted card (badge "Card"); its menu is Restore + Delete; Restore returns it to its board; a permanent Delete ALWAYS asks, leaves a marker, and unlists it
 //   K14 system boards: a derived card has no Delete (Journal), a Shelf card offers only Pin to a Board..., and the Delete key on a derived card does not even ask
 //   K15 Flux wears its own word: "Delete circuit"
+//   K16 a board delete through the gate is SOFT: listed on the Trash, Restore brings it back with every card
+//   K17 a PAGE's delete: a Draft page's Actions Delete (left drawer open) asks through the ONE dialog (no in-page confirm), soft-deletes, lands in the Trash, Restore brings it back - and is immediate when asking is off
 //
 // Seeding goes through the app's seams; input is trusted CDP mouse/key events. Needs a box turn (withHarness refuses without WS_BOX_TURN).
 // Run: WS_BOX_TURN=<token> node scripts/harness/board-context-menu.mjs   (from apps/desktop, dist-web built)
@@ -356,6 +358,75 @@ await withHarness(async (app) => {
     await select(app, jc);
     await app.key('Delete'); await sleep(350);
     ok('K14: and the Delete key on it does not even ask', (await dialog(app)) === null, '');
+  }
+
+  // ============================================================ K17 a PAGE's delete: the Draft page's Actions Delete (left drawer open) -> the ONE dialog -> the Trash -> Restore (Fable, Oct 16)
+  {
+    const DRAFT = 'bcm-draft';
+    const WORDS = 'The first thing she noticed was the quiet.\nThen the light on the floor, long and thin.';
+    const openDraft = async () => {
+      await app.evalJs(`location.hash = '#/page/${DRAFT}'`);
+      const there = await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'the Draft page', timeout: 9000 });
+      await sleep(700);
+      if (there) {
+        if (!(await app.evalJs("document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true'"))) { await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); }
+        await waitSoft(app, "document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true'", { timeout: 3000 });
+        await sleep(700);   // the slide
+      }
+      return there;
+    };
+    const rowOf = () => app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(DRAFT)}) || {})`);
+    const clickDelete = async () => {
+      const p = await pointIn(app, '.wz-sliver [data-action="delete"]', 0.5, 0.5);
+      if (!p) return false;
+      await click(app, p.x, p.y); await sleep(450);
+      return true;
+    };
+    await app.emulateDpr(1, 1280, 800);
+    await app.goto('/');
+    await app.evalJs("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');");
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+    await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 14000 });
+    await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: DRAFT, text: WORDS, createdAt: new Date().toISOString(), origin: null, source: null })})`);
+    await sleep(450);
+    const opened = await openDraft();
+    ok('K17 fixture: a Draft page is open with the left drawer showing its Actions', opened && !!(await R(app, '.wz-sliver [data-action="delete"]')), String(opened));
+    if (opened && (await R(app, '.wz-sliver [data-action="delete"]'))) {
+      const cv = await R(app, '.forward-only-editor');
+      await clickDelete();
+      const d17 = await dialog(app); const cv2 = await R(app, '.forward-only-editor');
+      ok('K17: the Actions Delete asks through the ONE standard dialog - "Send to Trash?", Cancel / Delete, "Don\'t ask me again", focus on Cancel - and there is NO second, in-page confirm; the page is not deleted yet and nothing behind the dialog moved',
+        !!d17 && d17.title === 'Send to Trash?' && JSON.stringify(d17.buttons) === JSON.stringify(['Cancel', 'Delete']) && d17.dontAsk === "Don't ask me again" && d17.focused === 'Cancel'
+        && !(await app.evalJs("!!document.querySelector('.wz-actions-confirm')")) && !(await rowOf()).deletedAt && JSON.stringify(cv) === JSON.stringify(cv2), JSON.stringify({ d17, deletedAt: (await rowOf()).deletedAt }));
+      await dlgClick(app, 'cancel'); await sleep(300);
+      ok('K17: Cancel keeps the page - still stored live, still open', (await dialog(app)) === null && !(await rowOf()).deletedAt && (await app.evalJs('location.hash')).endsWith(`/page/${DRAFT}`), String(await app.evalJs('location.hash')));
+      await clickDelete(); await dlgClick(app, 'go'); await sleep(900);
+      await app.evalJs('window.wrizoFlushNow()');
+      const gone = await rowOf();
+      ok('K17: the dialog\'s Delete SOFT-deletes the page (deletedAt stamped, its words intact, nothing removed) and the writer has LEFT it', !!gone.deletedAt && gone.text === WORDS && !(await app.evalJs('location.hash')).endsWith(`/page/${DRAFT}`), JSON.stringify({ deletedAt: gone.deletedAt, text: gone.text, hash: await app.evalJs('location.hash') }));
+      // it lands in the Trash, and Restore brings it back
+      await app.goto('/trash');
+      await waitSoft(app, "!!document.querySelector('.board-canvas')", { label: 'the Trash board', timeout: 9000 }); await sleep(700);
+      const tp = await app.evalJs(`(() => { const b = (window.wrizoBoard() || []).find((x) => x.kind === 'page-pin' && x.entryId === ${JSON.stringify(DRAFT)}); return b ? b.id : null; })()`);
+      ok('K17: the deleted page is LISTED on the Trash board - a card for it', !!tp, String(tp));
+      if (tp) {
+        const pt = await pointIn(app, `[data-box-id="${tp}"]`);
+        await rightClick(app, pt.x, pt.y);
+        const mm = await menuItems(app);
+        await pick(app, 'Restore'); await sleep(700);
+        await app.evalJs('window.wrizoFlushNow()');
+        const back = await rowOf();
+        ok('K17: its menu offers Restore (no Delete) and Restore clears deletedAt - the page is back with every word', Array.isArray(mm) && mm.includes('Restore') && !mm.includes('Delete') && !back.deletedAt && back.text === WORDS, JSON.stringify({ mm, deletedAt: back.deletedAt }));
+      }
+      // with asking turned OFF the same icon sends the page to Trash at once
+      await ask(app, false);
+      if (await openDraft()) {
+        await clickDelete(); await sleep(500); await app.evalJs('window.wrizoFlushNow()');
+        const imm = await rowOf();
+        ok('K17: with "Ask before deleting" OFF the Actions Delete is immediate - no dialog - and still soft (deletedAt stamped)', (await dialog(app)) === null && !!imm.deletedAt && imm.text === WORDS, JSON.stringify({ deletedAt: imm.deletedAt }));
+      } else ok('K17 fixture: the Draft page reopens for the asking-off leg', false, 'no editor');
+    }
   }
 
   // ============================================================ K15 Flux
