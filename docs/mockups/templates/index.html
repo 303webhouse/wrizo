@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrizo · Templates mockup</title>
+<!--
+  docs/mockups/templates — the Draft page's TEMPLATES section.
+  Screenplay is live (shown for reference); mocked: Outline, Title Page, Bibliography.
+  The picker is the open TEMPLATES section in the Tools drawer: each row carries a tiny page sketch;
+  brass marks the current choice, olive marks the open tab and section. Picking swaps the page's
+  layout; the drawer never moves the page. Outline: Tab / Shift+Tab change the level, Enter adds a row.
+  Arbor / Flux, Reset: mockup only. Branch: cursor/templates.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Rajdhani:wght@400;500;600&family=Chakra+Petch:wght@400;500&display=swap');
+
+  :root {
+    --ink-950: #110600; --ink-900: #1F1A16; --ink-800: #2A241E;
+    --ink-border: #332C25; --ink-border-strong: #453B31;
+    --text-hi: #EDE6DA; --text-mid: #B5A998; --text-low: #80766A;
+    --ink-on-paper: #2B2014; --ink-on-paper-low: #8A7C68;
+    --paper: #F3EDE1;
+    --brass: #ff9800; --accent-rest: #96a05a;
+    --desk-ground: #1F1A16;
+    --font-ui: 'Figtree', system-ui, sans-serif;
+    --font-label: 'Figtree', system-ui, sans-serif;
+    --font-prose: 'Crimson Pro', Georgia, serif;
+    --font-script: 'Courier Prime', 'Courier New', monospace;
+    --sb: color-mix(in srgb, var(--text-low) 28%, transparent);
+  }
+  html[data-theme='flux'] {
+    --ink-950: #04141A; --ink-900: #091E24; --ink-800: #0C2A32;
+    --ink-border: #1D4A52; --ink-border-strong: #2A6A76;
+    --text-hi: #E3F1EC; --text-mid: #8FB4AC; --text-low: #6E958D;
+    --paper: #EDF6F3; --ink-on-paper: #0E2A30; --ink-on-paper-low: #4A7580;
+    --accent-rest: #5E837C;
+    --desk-ground: #07161B;
+    --font-ui: 'Rajdhani', system-ui, sans-serif;
+    --font-label: 'Chakra Petch', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; scrollbar-width: thin; scrollbar-color: var(--sb) transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--desk-ground); color: var(--text-hi); font-family: var(--font-ui); user-select: none; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+  .rig {
+    position: fixed; inset: 0 0 auto 0; z-index: 60;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 7px 12px; background: #000; border-bottom: 1px solid #222; font-size: 11px; color: #9a9a9a;
+  }
+  .rig b { color: #d8d8d8; letter-spacing: .06em; }
+  .only { color: #6e6e6e; letter-spacing: .12em; text-transform: uppercase; font-size: 9px; border: 1px solid #333; padding: 2px 6px; }
+  .rev { height: 22px; padding: 0 8px; border: 1px solid #333; color: #c8c8c8; background: #141414; font-size: 11px; }
+  .rev[data-on='true'] { border-color: var(--accent-rest); color: var(--accent-rest); }
+  .hint { margin-left: auto; color: #6a6a6a; }
+
+  .room { position: absolute; inset: 42px 0 0 0; display: flex; padding: 18px 28px 22px; }
+
+  /* the Tools drawer: a fixed track; the page never moves for it */
+  .drawer {
+    flex: 0 0 252px; height: 100%; background: var(--desk-ground);
+    border: 1px solid var(--ink-border); border-right: none; display: flex; flex-direction: column; min-height: 0; overflow-y: auto;
+  }
+  .tabs { display: flex; border-bottom: 1px solid var(--ink-border); }
+  .tab { padding: 12px 14px 8px; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-low); border-bottom: 1px solid transparent; margin-bottom: -1px; }
+  .tab[data-open='true'] { color: var(--accent-rest); border-bottom-color: var(--accent-rest); }
+  .sec { border-bottom: 1px solid var(--ink-border); }
+  .shead { display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-low); }
+  .shead::after { content: ''; width: 6px; height: 6px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(-45deg); opacity: .7; }
+  .sec[data-open='true'] .shead { color: var(--accent-rest); }
+  .sec[data-open='true'] .shead::after { transform: rotate(45deg); }
+  .sbody { padding: 0 8px 12px; }
+
+  .trow { position: relative; display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 12px 0 16px; color: var(--text-mid); font-family: var(--font-label); font-size: 13px; cursor: pointer; border: 1px solid transparent; }
+  .trow:hover { color: var(--text-hi); background: var(--ink-800); }
+  .trow[data-current='true'] { color: var(--brass); border-color: var(--brass); background: color-mix(in srgb, var(--brass) 8%, transparent); }
+
+  /* tiny page sketches */
+  .mini { position: relative; flex: 0 0 auto; width: 24px; height: 32px; background: var(--paper); border: 1px solid var(--ink-border-strong); }
+  .mini i { position: absolute; display: block; height: 1px; background: var(--ink-on-paper-low); opacity: .85; }
+  .trow[data-current='true'] .mini { border-color: var(--brass); }
+
+  .stage { position: relative; flex: 1 1 auto; min-width: 0; height: 100%; background: var(--paper); border: 1px solid var(--ink-border); overflow: auto; }
+  .sheet { position: relative; width: min(660px, 92%); min-height: 100%; margin: 0 auto; padding: 64px 72px 72px; color: var(--ink-on-paper); }
+  .sheet[data-kind='blank'], .sheet[data-kind='outline'], .sheet[data-kind='bibliography'] { font-family: var(--font-prose); font-size: 19px; line-height: 1.65; }
+  .sheet[data-kind='title'], .sheet[data-kind='screenplay'] { font-family: var(--font-script); font-size: 15px; line-height: 1.5; }
+  [contenteditable] { outline: none; user-select: text; caret-color: var(--brass); }
+  [contenteditable]:empty::before { content: attr(data-hint); color: var(--ink-on-paper-low); }
+
+  /* Outline */
+  .ol { list-style: none; }
+  .ol li { display: flex; align-items: baseline; gap: 10px; margin-bottom: .12em; }
+  .ol .num { flex: 0 0 auto; font-variant-numeric: tabular-nums; color: var(--ink-on-paper-low); min-width: 2.4em; }
+  .ol .txt { flex: 1; min-width: 0; white-space: pre-wrap; }
+  .ol li[data-l='0'] .txt { font-weight: 500; }
+
+  /* Title page: standard manuscript */
+  .ms { position: relative; min-height: 560px; }
+  .ms-contact { position: absolute; top: 0; left: 0; max-width: 28ch; white-space: pre-wrap; }
+  .ms-words { position: absolute; top: 0; right: 0; text-align: right; }
+  .ms-mid { position: absolute; top: 40%; left: 0; right: 0; text-align: center; }
+  .ms-title { text-transform: uppercase; letter-spacing: .12em; }
+  .ms-by { margin: 1.1em 0; }
+
+  /* Bibliography: hanging indent */
+  .bib { list-style: none; }
+  .bib li { padding-left: 2.4em; text-indent: -2.4em; margin-bottom: 1em; min-height: 1.65em; }
+  .bib li:empty::before { text-indent: 0; }
+
+  /* Screenplay (live) */
+  .slug { text-transform: uppercase; margin: 1.6em 0 .5em; }
+  .slug:first-child { margin-top: 0; }
+  .act { margin: .7em 0; max-width: 60ch; }
+  .char { text-align: center; margin-top: 1.1em; text-transform: uppercase; }
+  .dial { padding-left: 10ch; max-width: 45ch; }
+
+  /* Blank draft */
+  .draft { min-height: 8em; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<header class="rig">
+  <b>TEMPLATES</b>
+  <span class="only">mockup only</span>
+  <button class="rev" data-theme="arbor" type="button">Arbor</button>
+  <button class="rev" data-theme="flux" type="button">Flux</button>
+  <button class="rev" id="reset" type="button">Reset</button>
+  <span class="hint">Pick a template.</span>
+</header>
+
+<div class="room">
+  <aside class="drawer" aria-label="Tools">
+    <div class="tabs"><span class="tab" data-open="true">Tools</span><span class="tab">Places</span></div>
+    <div class="sec"><div class="shead">Typeface</div></div>
+    <div class="sec"><div class="shead">Format</div></div>
+    <div class="sec"><div class="shead">Actions</div></div>
+    <div class="sec" data-open="true">
+      <div class="shead">Templates</div>
+      <div class="sbody" id="picker" role="listbox" aria-label="Templates"></div>
+    </div>
+    <div class="sec"><div class="shead">Page kind</div></div>
+  </aside>
+  <main class="stage"><div class="sheet" id="sheet" data-kind="blank"></div></main>
+</div>
+
+<script>
+(function () {
+  const root = document.documentElement;
+  const sheet = document.getElementById('sheet');
+  const picker = document.getElementById('picker');
+
+  // [id, label, sketch lines: [left%, top%, width%] in a 24x32 box]
+  const KINDS = [
+    ['blank', 'Blank', [[18,18,64],[18,32,64],[18,46,50],[18,60,64],[18,74,36]]],
+    ['screenplay', 'Screenplay', [[18,16,50],[18,32,64],[36,48,28],[26,58,46],[26,68,40]]],
+    ['outline', 'Outline', [[16,16,40],[28,30,50],[28,44,40],[16,58,46],[28,72,38]]],
+    ['title', 'Title Page', [[14,12,34],[30,46,40],[40,58,20],[34,68,32]]],
+    ['bibliography', 'Bibliography', [[14,16,72],[26,28,58],[14,46,72],[26,58,58],[14,76,60]]]
+  ];
+
+  let kind = 'blank';
+  let rows = [];                 // outline rows: { l, t }
+  const SEED_OUTLINE = [
+    { l: 0, t: 'Arrival' }, { l: 1, t: 'The late ferry' }, { l: 1, t: 'Gulls on the rail' },
+    { l: 0, t: 'The harbormaster' }, { l: 1, t: 'What he saw' }, { l: 2, t: 'The lamp, twice' }, { l: 1, t: 'What he left out' },
+    { l: 0, t: 'The crossing' }
+  ];
+  const BIB = [
+    'Ahmed, Sara. <i>Harbors and Memory: Coastal Towns in Fiction</i>. Edinburgh: Northgate Press, 2019.',
+    'Bell, Marian. “The Last Ferry.” <i>Island Review</i> 14, no. 2 (2021): 33–48.',
+    'Hollis, Dev. <i>Counting Gulls: A Field Guide to Waiting</i>. London: Tern &amp; Quay, 2016.',
+    'Marsh, Ada. “Notes on the Harbormaster.” Unpublished interview, 2024.',
+    'Okafor, Lena. <i>Small Crossings</i>. New York: Ledger Books, 2022.'
+  ];
+
+  function buildPicker() {
+    picker.innerHTML = '';
+    KINDS.forEach(([id, label, lines]) => {
+      const r = document.createElement('div');
+      r.className = 'trow'; r.setAttribute('role', 'option'); r.dataset.id = id;
+      r.innerHTML = '<span class="mini">' + lines.map(([x, y, w]) => '<i style="left:' + x + '%;top:' + y + '%;width:' + w + '%"></i>').join('') + '</span><span></span>';
+      r.lastChild.textContent = label;
+      picker.append(r);
+    });
+  }
+  function paintPicker() {
+    picker.querySelectorAll('.trow').forEach((r) => { r.dataset.current = r.dataset.id === kind ? 'true' : 'false'; });
+  }
+
+  /* ---- pages ---- */
+  const numberOf = (i) => {
+    const c = [0, 0, 0];
+    for (let k = 0; k <= i; k++) { c[rows[k].l]++; for (let d = rows[k].l + 1; d < 3; d++) c[d] = 0; }
+    return c.slice(0, rows[i].l + 1).join('.');
+  };
+  function renderOutline(focus) {
+    sheet.innerHTML = '<ul class="ol"></ul>';
+    const ul = sheet.firstChild;
+    rows.forEach((r, i) => {
+      const li = document.createElement('li'); li.dataset.l = r.l; li.style.paddingLeft = (r.l * 2) + 'em';
+      li.innerHTML = '<span class="num"></span><span class="txt" contenteditable="true" spellcheck="false" data-hint="Heading"></span>';
+      li.querySelector('.num').textContent = numberOf(i) + (r.l === 0 ? '.' : '');
+      const txt = li.querySelector('.txt'); txt.textContent = r.t;
+      txt.addEventListener('input', () => { r.t = txt.textContent; });
+      txt.addEventListener('keydown', (e) => outlineKey(e, i));
+      ul.append(li);
+    });
+    if (focus != null) { const t = ul.children[focus].querySelector('.txt'); t.focus(); const s = getSelection(), rg = document.createRange(); rg.selectNodeContents(t); rg.collapse(false); s.removeAllRanges(); s.addRange(rg); }
+  }
+  function outlineKey(e, i) {
+    const r = rows[i];
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      if (e.shiftKey) r.l = Math.max(0, r.l - 1);
+      else r.l = Math.min(2, i === 0 ? 0 : Math.min(r.l + 1, rows[i - 1].l + 1));
+      renderOutline(i);
+    } else if (e.key === 'Enter') {
+      e.preventDefault(); rows.splice(i + 1, 0, { l: r.l, t: '' }); renderOutline(i + 1);
+    } else if (e.key === 'Backspace' && !r.t && rows.length > 1) {
+      e.preventDefault(); rows.splice(i, 1); renderOutline(Math.max(0, i - 1));
+    }
+  }
+  function renderBib() {
+    sheet.innerHTML = '<ul class="bib"></ul>';
+    const ul = sheet.firstChild;
+    BIB.forEach((h) => {
+      const li = document.createElement('li'); li.contentEditable = 'true'; li.spellcheck = false; li.dataset.hint = 'Author. Title. Place: Publisher, Year.'; li.innerHTML = h;
+      li.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); const n = document.createElement('li'); n.contentEditable = 'true'; n.spellcheck = false; n.dataset.hint = li.dataset.hint; li.after(n); n.focus(); }
+      });
+      ul.append(li);
+    });
+  }
+  function renderTitle() {
+    sheet.innerHTML =
+      '<div class="ms">' +
+      '<div class="ms-contact" contenteditable="true" spellcheck="false" data-hint="Name, address, email">Ada Marsh\n14 Quay Street\nOban PA6 5ZZ\nada@example.com</div>' +
+      '<div class="ms-words" contenteditable="true" spellcheck="false">About 62,000 words</div>' +
+      '<div class="ms-mid"><div class="ms-title" contenteditable="true" spellcheck="false" data-hint="Title">The Late Ferry</div>' +
+      '<div class="ms-by">by</div><div contenteditable="true" spellcheck="false" data-hint="Author">Ada Marsh</div></div></div>';
+  }
+  function renderScript() {
+    sheet.innerHTML =
+      '<div class="slug">INT. FERRY TERMINAL - DAWN</div>' +
+      '<div class="act">Gulls on the rail. ADA counts them, then the clock. The ticket booth is locked.</div>' +
+      '<div class="char">Ada</div><div class="dial">It said seven. It always says seven.</div>' +
+      '<div class="char">Harbormaster</div><div class="dial">The boat knows when it is wanted.</div>';
+  }
+  function renderBlank() {
+    sheet.innerHTML = '<div class="draft" contenteditable="true" spellcheck="false" data-hint="Start writing">The ferry was late, so Ada counted gulls instead of minutes.</div>';
+  }
+
+  function show(next) {
+    kind = next; sheet.dataset.kind = next;
+    if (next === 'outline') renderOutline();
+    else if (next === 'bibliography') renderBib();
+    else if (next === 'title') renderTitle();
+    else if (next === 'screenplay') renderScript();
+    else renderBlank();
+    paintPicker();
+  }
+
+  picker.addEventListener('click', (e) => { const r = e.target.closest('.trow'); if (r) show(r.dataset.id); });
+
+  /* ---- mockup chrome ---- */
+  function syncTheme() {
+    const f = root.getAttribute('data-theme') === 'flux' ? 'flux' : 'arbor';
+    document.querySelectorAll('.rev[data-theme]').forEach((b) => { b.dataset.on = b.dataset.theme === f ? 'true' : 'false'; });
+  }
+  document.querySelectorAll('.rev[data-theme]').forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.theme === 'flux') root.setAttribute('data-theme', 'flux'); else root.removeAttribute('data-theme');
+    syncTheme();
+  }));
+  function reset() { rows = SEED_OUTLINE.map((r) => ({ ...r })); show('blank'); }
+  document.getElementById('reset').addEventListener('click', reset);
+
+  const q = new URLSearchParams(location.search);
+  if (q.get('theme') === 'flux') root.setAttribute('data-theme', 'flux');
+  buildPicker(); reset(); syncTheme();
+  const k = q.get('kind'); if (k && KINDS.some((x) => x[0] === k)) show(k);
+})();
+</script>
+</body>
+</html>
