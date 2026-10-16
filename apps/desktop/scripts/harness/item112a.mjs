@@ -37,6 +37,7 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 // the REFERENCE loop) can park where they stand. Same shape as item84b.mjs's.
 const parkedChecks = [];
 const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+const i112aParks = {};   // item112a-deterministic: the default leg's observation, for the parked record
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // THE TWO REFERENCE WIDTHS, and they are law for this ticket (brief §5): the frame's
@@ -277,8 +278,24 @@ await withHarness(async (app) => {
       md.bold >= 1 && md.marks >= 2, JSON.stringify(md));
 
     const plain = await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); return e ? e.innerText.replace(/\\u200b/g, '') : null; })()");
-    ok("S2/§3: and `entry.text` stays PLAIN — the convention characters are still real characters in the surface (count preserved 1:1 through decoration), which is the constraint that makes the caret restore valid and the CSS-only flag law the only lawful one",
-      typeof plain === 'string' && plain.includes('**bold**'), JSON.stringify({ plain }));
+    // ---- PARKED - SUPERSEDED (item112a-deterministic, Oct 16; chat 1's ledgers 64 and 67) ----
+    // Kept VERBATIM and no longer run. `includes('**bold**')` pinned WHERE the closing marks land, which is not this check's claim and is
+    // timing-dependent: by the 211 rules a keyboard caret sits after the nearest VISIBLE character (store/hiddenMarks.ts snapCaret), so
+    // once the closing `**` is typed the caret settles BEFORE it, and " done" is then typed into the run - the rules' own reabsorb, "two
+    // words typed into a bold pair stays bold". That settling move runs on selectionchange, so a fast enough typist beats it and the
+    // text reads `**bold** done`; otherwise `**bold done**`. Chat 1 measured both on main (ledger 67: one typeKeys call came out
+    // `**bold** done`; split calls and a writer's pace `**bold done**`), and the check failed once on a tree without typing-latency (64).
+    // The claim itself - every convention character is still a REAL character, the count preserved 1:1 - holds either way: successor below.
+    // ok("S2/§3: and `entry.text` stays PLAIN — the convention characters are still real characters in the surface (count preserved 1:1 through decoration), which is the constraint that makes the caret restore valid and the CSS-only flag law the only lawful one",
+    //   typeof plain === 'string' && plain.includes('**bold**'), JSON.stringify({ plain }));
+    // ------------------------------------------------------------------
+    const typedRun = ' **bold** done';
+    const words = typeof plain === 'string' ? plain.replace(/\*/g, '') : null;
+    const countOk = typeof plain === 'string' && plain.length === 'Alpha beta gamma'.length + typedRun.length
+      && (plain.match(/\*/g) || []).length === 4 && words === 'Alpha beta gamma bold done';
+    i112aParks.s2s3 = { plain, countOk };
+    ok("S2/§3 [deterministic successor]: and `entry.text` stays PLAIN — every convention character typed is still a REAL character in the surface: the four `*` all present and the count preserved 1:1 (wherever the 211 rules' reabsorb puts the closing pair)",
+      countOk, JSON.stringify({ plain, length: plain && plain.length, want: 'Alpha beta gamma'.length + typedRun.length }));
   }
 
   // =========================================================================
@@ -766,12 +783,16 @@ console.log(JSON.stringify(checks, null, 2));
 // now carries the Type control, exactly the tenant 112-A said 112-C would bring. Each keeps its text VERBATIM in its parked record.
 // ---------------------------------------------------------------------------
 if (process.env.HARNESS_PARKED === '1') {
+  // item112a-deterministic (Oct 16): S2/§3's literal `**bold**` placement, parked - the record re-verifies the claim on the default leg's text
+  { const o = i112aParks.s2s3 || {};
+    pok('PARKED (was "S2/§3: and `entry.text` stays PLAIN — the convention characters are still real characters in the surface (count preserved 1:1 through decoration), which is the constraint that makes the caret restore valid and the CSS-only flag law the only lawful one", asserted as `includes(\'**bold**\')`) - timing-dependent placement of the closing pair (the 211 reabsorb vs a fast typist); live successor: S2/§3 [deterministic successor]',
+      !!o.countOk, JSON.stringify(o)); }
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nITEM112A PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; this FILE parks 3 since ITEM 207 (S7 at the two reference widths, S8 once) - and, before it, 0 of its own; the ticket's ONE original park is in item84b.mjs (the file that owns the assertion): "the Revise tab is inert", superseded by Revise standing up. See this file's park block for why the first sweep counted 0 and how the suite corrected it.`
+    ? `\nITEM112A PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; this FILE parks 4: 3 since ITEM 207 (S7 at the two reference widths, S8 once) and S2/§3's placement (item112a-deterministic) - and, before it, 0 of its own; the ticket's ONE original park is in item84b.mjs (the file that owns the assertion): "the Revise tab is inert", superseded by Revise standing up. See this file's park block for why the first sweep counted 0 and how the suite corrected it.`
     : `\nITEM112A PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);
