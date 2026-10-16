@@ -39,8 +39,6 @@ export interface Rows {
   /** A native edit that touched ONE row and left its structure as it was (the row element still in place between its separators):
    *  that row is KEPT, and writeRows rewrites it only if its live markup differs from what it should be. */
   keep: number | null;
-  /** A row's estimated height in px for its character count, for content-visibility (null: not measured). */
-  estimate: ((line: string) => number) | null;
 }
 
 // What was last WRITTEN into each row, compared instead of the row's innerHTML: the browser's serialisation of our string is not
@@ -73,34 +71,10 @@ export function lineOf(R: Rows, p: number): number {
 }
 
 const rowHtml = (line: string, local: number | null) => decorateLineForCard(line, local);
-// TYPING-LATENCY (Fable, Oct 14: "Content-visibility is now justified to try on F rows, with your character-count height estimate"):
-// a row off screen is SKIPPED by the browser's layout (index.css: content-visibility:auto), so a keystroke lays out the rows on screen
-// rather than the whole page (the profile's variant G1: 7.1 / 16 ms against containment alone's 40 / 110). A skipped row is sized by
-// its estimate until it has been rendered once; `auto` then remembers its real size. The estimate is the probe's own method: the
-// row's characters over the characters per line measured on the editor itself, times the line height.
-const rowSpan = (html: string, est: number | null) => (est === null
-  ? `<span class="wz-row">${html}</span>`
-  : `<span class="wz-row" style="contain-intrinsic-block-size:auto ${est}px">${html}</span>`);
+// (content-visibility and the per-row size estimates it needed were REMOVED on Fable's ruling of Oct 16 - see index.css: a skipped row
+// carries no text for innerText, Ctrl+End left the caret off screen, and the way-back restored the scroll over re-estimated rows.)
+const rowSpan = (html: string) => `<span class="wz-row">${html}</span>`;
 
-// the editor's own characters per line and line height, measured once (a hidden probe in the editor's font, at its width)
-function measureEstimate(el: HTMLElement): ((line: string) => number) | null {
-  try {
-    const cs = getComputedStyle(el);
-    let lh = parseFloat(cs.lineHeight);
-    if (!(lh > 0)) lh = (parseFloat(cs.fontSize) || 16) * 1.6;
-    const width = el.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
-    const probe = document.createElement('span');
-    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;left:0;top:0';
-    const SAMPLE = 'The writer kept going past midnight and a quiet river ran under the window of the room. ';
-    probe.textContent = SAMPLE;
-    el.appendChild(probe);
-    const per = probe.getBoundingClientRect().width / SAMPLE.length;
-    probe.remove();
-    if (!(per > 0) || !(width > 0)) return null;
-    const cpl = Math.max(10, Math.floor(width / per));
-    return (line: string) => Math.max(1, Math.ceil(line.length / cpl)) * Math.round(lh * 100) / 100;
-  } catch { return null; }
-}
 const localCaret = (R: Rows, i: number, caret: number | null) => {
   if (caret === null) return null;
   const l = caret - R.starts[i];
@@ -110,11 +84,10 @@ const localCaret = (R: Rows, i: number, caret: number | null) => {
 /** Render the whole page as rows (mount, and the recovery path). The caret is placed by the caller. */
 export function mountRows(el: HTMLElement, text: string, caret: number | null): Rows {
   const lines = text.split('\n');
-  const R: Rows = { el, lines, starts: [], rows: [], text, revealLine: -1, dirty: null, stale: false, hint: null, keep: null, estimate: measureEstimate(el) };
+  const R: Rows = { el, lines, starts: [], rows: [], text, revealLine: -1, dirty: null, stale: false, hint: null, keep: null };
   recomputeStarts(R);
   const at = caret === null ? -1 : lineOf(R, caret);
-  const est = (l: string) => (R.estimate ? R.estimate(l) : null);
-  el.innerHTML = lines.map((l, i) => rowSpan(rowHtml(l, i === at ? localCaret(R, i, caret) : null), est(l))).join('\n') + (text.endsWith('\n') ? GUARD_HTML : '');
+  el.innerHTML = lines.map((l, i) => rowSpan(rowHtml(l, i === at ? localCaret(R, i, caret) : null))).join('\n') + (text.endsWith('\n') ? GUARD_HTML : '');
   R.rows = [...el.children].filter((c) => c.classList.contains('wz-row')) as HTMLElement[];
   R.rows.forEach((row, i) => written.set(row!, rowHtml(lines[i], i === at ? localCaret(R, i, caret) : null)));
   R.revealLine = at;
@@ -138,7 +111,7 @@ function replaceRegion(R: Rows, a: number, b: number, mid: string[], caret: numb
   const lastLine = R.lines.length - 1;
   const inner = mid.map((l, k) => rowHtml(l, localCaret(R, a + k, caret)));
   const html = (prev ? '\n' : '')
-    + inner.map((h, k) => rowSpan(h, R.estimate ? R.estimate(mid[k]) : null)).join('\n')
+    + inner.map(rowSpan).join('\n')
     + (next ? '\n' : (lastLine > 0 && R.lines[lastLine] === '' ? GUARD_HTML : ''));   // the guard: a text ENDING IN A NEWLINE only
   const range = document.createRange();
   if (prev) range.setStartAfter(prev); else range.setStart(el, 0);
