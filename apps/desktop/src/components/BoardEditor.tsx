@@ -1654,7 +1654,6 @@ export function BoardEditor({ id }: { id: string }) {
       document.removeEventListener('pointerup', cUp, true);
       document.removeEventListener('pointerdown', cDown, true);
       if (!connect) return;
-      if (connect.right) ctxQuietUntil = performance.now() + 500;
       connect = null;
       threadArmedFromRef.current = null;
       setThreadArmedFrom(null);
@@ -1702,6 +1701,9 @@ export function BoardEditor({ id }: { id: string }) {
     };
     function cUp(e: PointerEvent) {
       if (!connect) return;
+      // the browser fires `contextmenu` right after a right-button release (on Windows, after pointerup): that one belongs to THIS gesture and is suppressed. It is a short beat tied to the release itself -
+      // an Esc that ends the mode, or the writer's NEXT right-click, is not inside it (the first review run lost a card's menu to a 500ms window that ran from the mode's end).
+      if (connect.right) ctxQuietUntil = performance.now() + 250;
       const hit = onModeCircle(e.clientX, e.clientY) ? undefined : document.elementsFromPoint(e.clientX, e.clientY).find(n => (n as Element).classList?.contains('board-connection-hit')) as Element | undefined;
       if (hit) {                                   // a click on a line selects it; Delete removes it
         connect.held = false;

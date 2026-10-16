@@ -40,6 +40,8 @@ const callers = (srcDir, mutate = {}) => {
   for (const f of walk(srcDir)) {
     const rel = path.relative(srcDir, f).split('\\').join('/');
     if (rel === 'store/persistence.ts') continue;
+    // a PAGE asks IN THE PAGE (DrawerActions' own "Send this page to Trash?" confirm, one dialog - no second one stacked on it); S3 pins that it honours the setting
+    if (rel === 'store/pageActions.ts') continue;
     const text = live(mutate[rel] ? mutate[rel](noCR(fs.readFileSync(f, 'utf8'))) : noCR(fs.readFileSync(f, 'utf8')));
     // each `softDeleteEntry(` CALL (not an import) must sit inside a `requestDelete(` that opened earlier in the file and has not closed on its own line
     const lines = text.split('\n');
@@ -55,9 +57,15 @@ const callers = (srcDir, mutate = {}) => {
   const be = noCR(fs.readFileSync(path.join(SRC, 'components/BoardEditor.tsx'), 'utf8'));
   const app = noCR(fs.readFileSync(path.join(SRC, 'App.tsx'), 'utf8'));
   const bad = callers(SRC);
-  ok('S1: every call of softDeleteEntry outside persistence.ts sits inside requestDelete(...) - the ONE gate: a Page, a board (menu, Plan row, Drawers tile) and a card can only be deleted through "Send to Trash?" or with asking turned off', bad.length === 0, JSON.stringify(bad));
-  const mut = callers(SRC, { 'store/pageActions.ts': (t) => t.replace('onDelete: () => requestDelete(() => {', 'onDelete: () => (() => {') });
+  ok('S1: every call of softDeleteEntry outside persistence.ts (and a Page\'s own in-page confirm, S3) sits inside requestDelete(...) - the ONE gate: a board (menu, Plan row, Drawers tile) and a card can only be deleted through "Send to Trash?" or with asking turned off', bad.length === 0, JSON.stringify(bad));
+  const mut = callers(SRC, { 'components/CascadePanels.tsx': (t) => t.replace('onClick={() => requestDelete(() => { softDeleteEntry(id); })}', 'onClick={() => { softDeleteEntry(id); }}') });
   ok('S1 (mutant): a delete that skips the gate turns the guard RED (the mutation landed)', mut.length > 0, JSON.stringify(mut));
+  const da = noCR(fs.readFileSync(path.join(SRC, 'components/DrawerActions.tsx'), 'utf8'));
+  const pa = noCR(fs.readFileSync(path.join(SRC, 'store/pageActions.ts'), 'utf8'));
+  const s3 = { honours: /which === 'delete' && !getAskBeforeDelete\(\)\) \{ setOpen\(null\); deleteNow\(\); return; \}/.test(da), keepsConfirm: /data-confirm="delete"/.test(da), noSecondDialog: !/requestDelete/.test(pa) && /softDeleteEntry\(entry\.id\);\n\s*flushNow\(\);/.test(pa) };
+  ok('S3: a PAGE\'s delete asks IN THE PAGE (its own "Send this page to Trash?" confirm, unchanged) - never a second dialog on top of it - and honours the ONE setting: with asking off the Delete icon sends the page to Trash at once; it is still soft (softDeleteEntry, flush, leave)', s3.honours && s3.keepsConfirm && s3.noSecondDialog, JSON.stringify(s3));
+  const sMut = da.replace("which === 'delete' && !getAskBeforeDelete()", 'false');
+  ok('S3 (mutant): a Page delete that ignores the setting turns the pin RED (the mutation landed)', sMut !== da && !/which === 'delete' && !getAskBeforeDelete\(\)\) \{ setOpen\(null\); deleteNow\(\); return; \}/.test(sMut), '');
   ok('S2: the Delete / Backspace key goes through the gate (removeSelectedRef -> requestDelete), a system board never asks, and the dialog + the menu are mounted ONCE in App',
     /removeSelectedRef\.current = \(\) => \{ if \(isSystemBoard\) return; requestDelete\(removeSelected\); \};/.test(be) && /<ContextMenuHost \/>/.test(app) && /<DeleteDialog \/>/.test(app) && (app.match(/<DeleteDialog \/>/g) || []).length === 1, '');
 }
@@ -241,6 +249,33 @@ await withHarness(async (app) => {
     await dlgClick(app, 'go'); await sleep(700);
     const row = await app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(f.id)}) || {})`);
     ok('K11: after Delete the board is soft-deleted (deletedAt stamped, its cards untouched) and the writer has LEFT it', !!row.deletedAt && (row.boxes || []).length === 6 && !(await app.evalJs("!!document.querySelector('.board-canvas')")), JSON.stringify({ deletedAt: row.deletedAt, n: (row.boxes || []).length }));
+  }
+
+  // ============================================================ K16 a board delete through the gate is SOFT - it is in the Trash, and Restore brings it back (Fable, Oct 15, ledger 64)
+  {
+    const g = await fresh(app);
+    const p16 = await app.evalJs(`(() => { const c = document.querySelector('.board-canvas'); const r = c.getBoundingClientRect();
+      for (let y = r.top + 280; y < Math.min(r.bottom, innerHeight - 120); y += 25) for (let x = r.left + 40; x < r.right - 60; x += 25) if (document.elementFromPoint(x, y) === c) return { x: Math.round(x), y: Math.round(y) };
+      return null; })()`);
+    if (!p16) ok('K16 fixture: an empty point on the board', false, 'none');
+    else {
+      await rightClick(app, p16.x, p16.y); await pick(app, 'Delete board'); await sleep(350);
+      await dlgClick(app, 'go'); await sleep(700);
+      await app.evalJs('window.wrizoFlushNow()');
+      await app.goto('/trash');
+      await waitSoft(app, "!!document.querySelector('.board-canvas')", { label: 'the Trash board', timeout: 9000 }); await sleep(700);
+      const listed = await app.evalJs(`(() => { const b = (window.wrizoBoard() || []).find((x) => x.kind === 'page-pin' && x.entryId === ${JSON.stringify(g.id)}); return b ? b.id : null; })()`);
+      ok('K16: the deleted board (soft-deleted through the gate) is LISTED on the Trash board - a card for it', !!listed, String(listed));
+      if (listed) {
+        const pt16 = await pointIn(app, `[data-box-id="${listed}"]`);
+        await rightClick(app, pt16.x, pt16.y);
+        const m16 = await menuItems(app);
+        await pick(app, 'Restore'); await sleep(700);
+        await app.evalJs('window.wrizoFlushNow()');
+        const row16 = await app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(g.id)}) || {})`);
+        ok('K16: its menu offers Restore (and no Delete), and Restore clears deletedAt - the board is back, with every card it had', Array.isArray(m16) && m16.includes('Restore') && !m16.includes('Delete') && !row16.deletedAt && (row16.boxes || []).length === 6, JSON.stringify({ m16, deletedAt: row16.deletedAt, n: (row16.boxes || []).length }));
+      }
+    }
   }
 
   // ============================================================ K12 Drawers

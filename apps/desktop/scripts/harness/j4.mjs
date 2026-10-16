@@ -7,6 +7,16 @@ import { withHarness } from '../runtime-verify.mjs';
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// BOARD CONTEXT MENU drivers: a trusted right-click on a card, and a pick from the one small menu (.wz-ctx)
+const rightClickAt = async (app, sel) => {
+  const r = await app.evalJs(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return null; const b = e.getBoundingClientRect(); return { x: Math.round(b.left + b.width * 0.3), y: Math.round(b.top + b.height * 0.3) }; })()`);
+  if (!r) throw new Error('rightClickAt: not found ' + sel);
+  await app.mouseMove(r.x, r.y);
+  await app.cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x: r.x, y: r.y, button: 'right', buttons: 2, clickCount: 1, pointerType: 'mouse' });
+  await app.cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x: r.x, y: r.y, button: 'right', buttons: 0, clickCount: 1, pointerType: 'mouse' });
+  await app.waitFor("!!document.querySelector('.wz-ctx')", { label: 'the context menu' });
+};
+const ctxPick = (app, label) => app.evalJs(`(() => { const b = [...document.querySelectorAll('.wz-ctx-item')].find((x) => x.textContent.trim() === ${JSON.stringify(label)}); if (!b) return false; b.click(); return true; })()`);
 
 // Board selection/drag/resize are pointerdown-driven (delegated on the
 // canvas), not click handlers — a bare .click() only synthesizes 'click',
@@ -157,7 +167,12 @@ await withHarness(async (app) => {
   ok('group-move: both members shift by the same delta', dxText > 0 && Math.abs(dxText - dxInk) < 0.001, `dxText=${dxText} dxInk=${dxInk}`);
 
   // -- ungroup: frees both members --------------------------------------------
-  await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Ungroup').click()");
+  // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15) ----
+  // DRIVER only - the selected-card action row (and its Ungroup button) is DELETED; Ungroup is the first item of a grouped card's right-click menu. The assertions after it (both members freed) are unchanged.
+  // Quoted VERBATIM below. Successor: the right-click below.
+  // await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Ungroup').click()");
+  await rightClickAt(app, `[data-box-id="${b2text.id}"]`);
+  await ctxPick(app, 'Ungroup');
   await sleep(150);
   const afterUngroup = await app.evalJs('window.wrizoBoard()');
   const g1 = afterUngroup.find((b) => b.id === b2text.id).groupId;

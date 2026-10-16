@@ -181,6 +181,19 @@ async function suite(m) {
   m.pinPageToBoard('pg1', 'bd4', { display: true });
   const live10 = m.liveBoxes(stored(m, 'bd4')).filter((b) => b.kind === 'page-pin' && b.entryId === 'pg1').length;
   keep('T10', before.includes('bd4') && !during.includes('bd4') && live10 === 1, JSON.stringify({ before, during, live10 }));
+  // ---- T12 a Page / board delete is SOFT (Fable, Oct 15: "prove a Page/board delete still soft-deletes - deletedAt, appears in Trash, Restore works")
+  seed(m, 'sd-page', [], { pageType: undefined });
+  seed(m, 'sd-board', [card('Q')]);
+  m.softDeleteEntry('sd-page'); m.softDeleteEntry('sd-board');
+  const rowOf = (id) => JSON.parse(globalThis.localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === id);
+  m.flushNow();
+  const deletedIds = m.getDeletedEntries().map((e) => e.id);
+  const tb2 = m.getOrCreateSystemBoard('trash');
+  const rec12 = m.reconcileSystemBoard(tb2.id) || [];
+  const pagePins = rec12.filter((b) => b.kind === 'page-pin' && b.entryId).map((b) => b.entryId);
+  keep('T12a', !!rowOf('sd-page')?.deletedAt && !!rowOf('sd-board')?.deletedAt && (rowOf('sd-board').boxes || []).length === 1 && deletedIds.includes('sd-page') && deletedIds.includes('sd-board') && pagePins.includes('sd-page') && pagePins.includes('sd-board'), JSON.stringify({ deletedIds, pagePins }));
+  m.restoreEntry('sd-page'); m.restoreEntry('sd-board'); m.flushNow();
+  keep('T12b', !rowOf('sd-page')?.deletedAt && !rowOf('sd-board')?.deletedAt && !m.getDeletedEntries().some((e) => e.id === 'sd-page' || e.id === 'sd-board'), JSON.stringify({ page: rowOf('sd-page')?.deletedAt, board: rowOf('sd-board')?.deletedAt }));
   return r;
 }
 

@@ -1,7 +1,6 @@
 import type { JournalEntry, PageSettings } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
 import { softDeleteEntry, flushNow } from './persistence';
-import { requestDelete } from './deleteGate';
 import { getResumeTarget } from './resume';
 
 // PHASE 1 (docs/plans/phase1-drawers.md 3.5) - THE ACTIONS the left drawer offers on a Draft page: Tags, Copy, Delete, Header/Footer
@@ -49,11 +48,10 @@ export function buildPageActions({ entry, copy, addTag, removeTag, patchPageSett
     onCopy: copy,
     tags: { list: entry.tags ?? [], onAdd: addTag, onRemove: removeTag },
     headerFooter: { on, onToggle: () => patchPageSettings(headerFooterPatch(entry.pageSettings, !on)) },
-    // BOARD CONTEXT MENU: a Page's delete asks "Send to Trash?" like every other delete (store/deleteGate.ts) unless the writer has turned asking off
-    onDelete: () => requestDelete(() => {
+    onDelete: () => {
       softDeleteEntry(entry.id);
       flushNow();
       navigate(getResumeTarget()?.route ?? '/', { replace: true });
-    }),
+    },
   };
 }

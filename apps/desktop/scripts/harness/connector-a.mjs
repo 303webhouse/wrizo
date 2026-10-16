@@ -211,10 +211,16 @@ await withHarness(async (app) => {
   f = await fresh(app);
   await app.evalJs("window.__ctx = []; window.addEventListener('contextmenu', (e) => window.__ctx.push({ prevented: e.defaultPrevented, cls: String(e.target.className && e.target.className.baseVal === undefined ? e.target.className : 'svg').split(' ')[0] }));");
   // the control: the instrument sees a right-click on a place the menu must NOT be suppressed
-  const free = await emptyPoint(app);
-  await rightDown(app, free.x, free.y); await rightUp(app, free.x, free.y); await sleep(200);
+  // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15) ----
+  // A right-click on EMPTY BOARD opens the board menu now (New Card / Delete board) and is default-prevented - so it can no longer be the control "a right-click the app does not suppress". (It also left that menu open over the card the next step pressed: the first review run's crash at the card's handle.)
+  // Quoted VERBATIM below. Successor: the control directly below: a right-click OUTSIDE the board, which the app never touches.
+  // const free = await emptyPoint(app);
+  // await rightDown(app, free.x, free.y); await rightUp(app, free.x, free.y); await sleep(200);
+  // const ctlLog = await app.evalJs('window.__ctx.slice()');
+  // ok('C9 (instrument): a right-click on empty board reaches the page as a contextmenu event and is NOT suppressed (so a suppressed one below is the product, not a blind instrument)', ctlLog.length >= 1 && ctlLog[ctlLog.length - 1].prevented === false, JSON.stringify(ctlLog));
+  await rightDown(app, 4, 4); await rightUp(app, 4, 4); await sleep(200);   // the window's corner: outside the board entirely
   const ctlLog = await app.evalJs('window.__ctx.slice()');
-  ok('C9 (instrument): a right-click on empty board reaches the page as a contextmenu event and is NOT suppressed (so a suppressed one below is the product, not a blind instrument)', ctlLog.length >= 1 && ctlLog[ctlLog.length - 1].prevented === false, JSON.stringify(ctlLog));
+  ok('C9 (instrument) [context-menu successor]: a right-click OUTSIDE the board (the window\'s corner) reaches the page as a contextmenu event and is NOT suppressed (so a suppressed one below is the product, not a blind instrument)', ctlLog.length >= 1 && ctlLog[ctlLog.length - 1].prevented === false, JSON.stringify(ctlLog));
   await select(app, 'ca-a');
   const h9 = await handleAt(app, 'ca-a'); const b9 = centre(await boxRect(app, 'ca-b'));
   await app.evalJs('window.__ctx.length = 0');
@@ -230,8 +236,15 @@ await withHarness(async (app) => {
   await app.evalJs('window.__ctx.length = 0');
   const bm = centre(await boxRect(app, 'ca-d'));
   await rightDown(app, bm.x, bm.y); await rightUp(app, bm.x, bm.y); await sleep(250);
+  // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15) ----
+  // A right-click on a card BODY opens that card's menu now (default-prevented, by design); only the corner square is connection mode. The browser's own menu is never what shows on the board.
+  // Quoted VERBATIM below. Successor: the check directly below (the card menu opens, prevented) and board-context-menu.mjs K1/K2.
+  // const ctx9b = await app.evalJs('window.__ctx.slice()');
+  // ok('C9: and a right-click anywhere else (a card body) is NOT suppressed - the menu rule is only on the square', ctx9b.length >= 1 && ctx9b.every((e) => e.prevented === false), JSON.stringify(ctx9b));
   const ctx9b = await app.evalJs('window.__ctx.slice()');
-  ok('C9: and a right-click anywhere else (a card body) is NOT suppressed - the menu rule is only on the square', ctx9b.length >= 1 && ctx9b.every((e) => e.prevented === false), JSON.stringify(ctx9b));
+  const menuOnCard = await app.evalJs("!!document.querySelector('.wz-ctx')");
+  ok('C9 [context-menu successor]: a right-click on a card BODY is not connection mode and not the browser\'s menu - the board\'s own card menu opens (default-prevented); the corner square alone is connection mode', ctx9b.length >= 1 && ctx9b.every((e) => e.prevented === true) && menuOnCard, JSON.stringify({ ctx9b, menuOnCard }));
+  await app.key('Escape'); await sleep(200);
 
   // ============================================================ C10 Esc cancels   C11 release on empty cancels
   f = await fresh(app);

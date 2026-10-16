@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
 import type { PageActions } from '../store/pageActions';
+import { getAskBeforeDelete } from '../store/deleteGate';
 import { CopyIcon, DeleteIcon, HeaderFooterIcon, TagsIcon } from './DrawerIcons';
 
 // PHASE 1 - the ACTIONS section of the left drawer (Draft): Tags, Copy, Delete, Header/Footer, in that order, as icons with a name.
@@ -23,7 +24,13 @@ export function DrawerActions({ actions }: { actions: PageActions }) {
 
   useEffect(() => { if (open === 'delete') keepRef.current?.focus(); else if (open === 'tags') tagInputRef.current?.focus(); }, [open]);
 
-  const toggle = (which: Exclude<Open, null>) => setOpen(o => (o === which ? null : which));
+  // BOARD CONTEXT MENU: "Ask before deleting" is ONE setting for every kind of delete. A Page asks IN THE PAGE (below: "Send this page to Trash?" - its own, themed confirm, no second dialog on top of it);
+  // with asking turned off, the Delete icon sends the page to Trash at once. (`deleteNow` is the same onDelete the confirm's "Send to Trash" button calls.)
+  const { onDelete: deleteNow } = actions;
+  const toggle = (which: Exclude<Open, null>) => {
+    if (which === 'delete' && !getAskBeforeDelete()) { setOpen(null); deleteNow(); return; }
+    setOpen(o => (o === which ? null : which));
+  };
   const commitTag = () => {
     const tag = tagDraft.trim();
     if (!tag) return;
