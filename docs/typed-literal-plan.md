@@ -20,7 +20,8 @@ The escape is Markdown's own: a backslash before the character (`\*`). So a `.md
 | `\` | anywhere | `\\` | so a typed backslash can't be read as an escape |
 
 - **Typed means:** any text the browser inserts from the keyboard (the editor's native `input` path, which `repairInput` already reads), an IME composition's committed text, and the em-dash substitution's own input. The formatter's writes (Ctrl+B/I/U, the menus, Tab's indent chord, font picks) never pass through the escaper, so they stay markup.
-- **Paste is the one open question for Nick.** By the letter of the ruling, pasted text is typed text, so pasted `**` is literal. But copying text out of the editor today carries its hidden marks as characters, so copy-then-paste within the app would lose its bold. **My lean:** paste is literal (the ruling's letter, and the Voice Wall already treats paste as foreign), and in-app formatting survives a copy only once we add our own copy format, which would be a separate ticket.
+- **Paste is literal too (Nick's ruling, Oct 16).** Pasted text goes through the same escaper as typed text, so a pasted `**` is a literal `**`. Until the follow-on lands, a copy-then-paste inside the app loses its formatting.
+- **Follow-on ticket, `in-app-copy-format`, planned after this one (Nick):** a copy inside Wrizo carries Wrizo's own format beside the plain text, so pasting back into Wrizo keeps bold, italic and font spans. Pasting anywhere else gets the plain text.
 - **Old Pages are not rewritten.** The reader still reads unescaped markup as markup, so `**bold**` saved before this change stays bold. Only new typing is escaped.
 
 ## 2. How it is shown and edited
