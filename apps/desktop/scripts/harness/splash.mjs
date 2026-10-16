@@ -303,6 +303,83 @@ await withHarness(async (app) => {
     s5.tone === 'dark', String(s5.tone));
 
   // ==========================================================================
+  // S5b — fix/splash-tone (Fable, Oct 16; Nick live: "the splash swaps to the
+  // light-theme sketch on the dark veil"). S5 above never catches this: every
+  // openApp/openAppThemed call lands on Arrival ('/'), which is genuinely dark
+  // chrome, so even the OLD `elementFromPoint`-through-the-veil measurement
+  // read correctly there. The bug only shows once the last-open ROUTE is a
+  // page whose own --paper is light and the veil sits on top of it — exactly
+  // what a reopen after writing restores. Seeded through the seam (never raw
+  // localStorage on a collection — the seeding law), the hash set BEFORE the
+  // reload that actually reproduces it.
+  // ==========================================================================
+  await app.goto('/');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ voice: 'serif', page: 'light', fade: 'on' }));");
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk, for S5b seeding' });
+  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'splash-tone-light-page', text: 'A light page behind the splash veil.', origin: 'loose', source: 'page', createdAt: '2026-05-01T00:00:00.000Z' })})`);
+  await sleep(300);
+  await app.evalJs("location.hash = '#/page/splash-tone-light-page';");
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S5b settle' });
+  await sleep(200);
+
+  const s5b = await app.evalJs(`(() => {
+    const page = document.querySelector('.mode-page');
+    const paperBg = page ? getComputedStyle(page).backgroundColor : null;
+    const splash = document.querySelector('.wz-splash');
+    const mark = splash ? splash.querySelector('.wz-splash-mark') : null;
+    const veil = splash ? splash.querySelector('.wz-splash-veil') : null;
+    return {
+      pageTone: document.documentElement.getAttribute('data-page'),
+      pageMounted: !!page, paperBg,
+      splashMounted: !!splash,
+      src: mark ? mark.getAttribute('src') : null,
+      tone: splash ? splash.getAttribute('data-tone') : null,
+      veilBg: veil ? getComputedStyle(veil).backgroundColor : null,
+    };
+  })()`);
+  ok('S5b (premise): a light page (data-page=light) is the mounted route behind the splash, its own paper genuinely painted',
+    s5b.pageMounted && s5b.pageTone === 'light' && !!s5b.paperBg, JSON.stringify(s5b));
+  ok('S5b (premise): the splash is still up to measure against',
+    s5b.splashMounted, JSON.stringify(s5b));
+
+  // THE RED-FIRST CLAIM: the veil is always --ink-950 (dark, every theme this
+  // app ships) regardless of what route is behind it, so the DARK-theme asset
+  // (cream linework — its own line pixels are LIGHT) must be chosen even here,
+  // on a light page. Pre-fix, `elementFromPoint` read the light page THROUGH
+  // the pointer-events:none veil and this went red: 'light' measured, the
+  // warm-ink asset chosen, its dark pixels landing on the ALSO-dark veil.
+  ok('S5b [fix/splash-tone]: on a light PAGE, the splash still measures the veil\'s own (always dark) paint, not the page behind it — the dark-theme asset is chosen',
+    s5b.tone === 'dark' && /for-dark-theme/.test(s5b.src || ''), JSON.stringify(s5b));
+
+  // Sample the actual asset's own rendered pixels (never eyeballed, never
+  // assumed from the filename): draw it to an offscreen canvas and read the
+  // mean colour of its opaque ink, the same WCAG luminance crossover
+  // backdropTone.ts itself uses to classify a colour as light or dark.
+  const inkSample = await app.evalJs(`(() => {
+    const img = document.querySelector('.wz-splash-mark');
+    if (!img || !img.naturalWidth) return null;
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth; c.height = img.naturalHeight;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const d = ctx.getImageData(0, 0, c.width, c.height).data;
+    let sumR = 0, sumG = 0, sumB = 0, n = 0;
+    const STRIDE = 97; // a prime stride, so it never aliases with a regular pattern in the linework
+    for (let i = 3; i < d.length; i += 4 * STRIDE) { if (d[i] > 200) { sumR += d[i - 3]; sumG += d[i - 2]; sumB += d[i - 1]; n += 1; } }
+    return n > 0 ? { r: Math.round(sumR / n), g: Math.round(sumG / n), b: Math.round(sumB / n), n } : { n: 0 };
+  })()`);
+  const lin = (v) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; };
+  const inkLum = inkSample && inkSample.n > 0
+    ? 0.2126 * lin(inkSample.r) + 0.7152 * lin(inkSample.g) + 0.0722 * lin(inkSample.b)
+    : null;
+  ok('S5b (premise): the shown asset\'s own opaque ink was actually sampled (a non-zero population, not a filename guess)',
+    !!inkSample && inkSample.n > 0, JSON.stringify(inkSample));
+  ok('S5b [fix/splash-tone]: the chosen (dark-theme) asset\'s own line pixels are genuinely LIGHT (luminance >= the same 0.179 crossover backdropTone.ts classifies by) — cream ink, legible on the dark veil it actually sits on',
+    inkLum != null && inkLum >= 0.179, JSON.stringify({ inkSample, inkLum }));
+
+  // ==========================================================================
   // S6 — IT LEAVES ON ITS OWN, AFTER THE FLOOR (item splash-hold).
   // ==========================================================================
   await openApp(app);

@@ -15,20 +15,36 @@
 // So this measures the backdrop instead, and the measurement follows any theme
 // anyone adds later without being told about it.
 //
-// HOW, and why it is a real measurement rather than a token read: the app's
-// ground is not a plain colour anywhere you could simply look it up —
-// `html` carries a HARDCODED `#110600` (not the themed token), and `body`
-// paints `var(--lamp-glow)` over it, a GRADIENT, so `body`'s own
-// `background-color` computes to transparent. Reading either one alone would
-// be reading the wrong thing confidently. Instead: ask the page what is
-// actually at the point the emblem will cover, and walk up from there until a
-// genuinely painted surface answers.
+// fix/splash-tone (Fable, Oct 16; Nick live: "the splash swaps to the
+// light-theme sketch on the dark veil") — WHAT IS MEASURED, CORRECTED. This
+// used to walk `document.elementFromPoint` to find "what is really there,"
+// the same primitive item 130/151 settled on — and that was the bug: the
+// splash's own veil (`.wz-splash-veil`) is `pointer-events:none`, so
+// `elementFromPoint` sees straight THROUGH it to whatever the app underneath
+// happens to be showing — a journal page's own light `--paper`, say, if that
+// was the last open route. But the veil is NOT a window onto the app; ROUND 6
+// (index.css's own comment on `.wz-splash-veil`) made it a SOLID, 100%-opaque
+// block in the theme's own `--ink-950` — always dark, in every theme this app
+// has ever shipped. The eye never sees the app underneath at all while the
+// splash holds; it sees the veil, with the sketch painted on top of it. So
+// the measurement now reads the VEIL'S OWN computed background directly —
+// the thing actually on screen — rather than a point behind an overlay that
+// was never meant to be seen through for THIS purpose (it stays
+// `pointer-events:none` for the separate, still-true reason item 1 in
+// Splash.tsx names: a click during the splash must reach the app untouched).
 //
-// `document.elementFromPoint` is the same primitive item 130/151 settled on
-// for "what is really there" — and it composes with the splash's own design:
-// the overlay is `pointer-events:none` (so it never blocks writing), which is
-// exactly what makes it invisible to hit-testing, so this reads THROUGH it to
-// the app underneath without having to unmount or hide anything first.
+// Reading the veil's own paint keeps this a genuine measurement, not a map:
+// a future theme whose `--ink-950` ever turned light would still be read
+// correctly, because this asks the veil what colour IT rendered, not what a
+// theme id implies it should be.
+//
+// Falls back, in order, to the themed `--ink-950` token and then to the root
+// background, so a call before the splash mounts (or in a context with no
+// veil at all) still answers with something true rather than throwing. `html`
+// carries a HARDCODED `#110600` (not the themed token) and `body` paints
+// `var(--lamp-glow)` over it, a GRADIENT, so `body`'s own `background-color`
+// computes to transparent — reading either one alone would be reading the
+// wrong thing confidently, which is why the token is tried before the walk.
 
 export type BackdropTone = 'dark' | 'light';
 
@@ -77,18 +93,25 @@ function paintedBackgroundOf(start: Element | null): { r: number; g: number; b: 
 }
 
 /**
- * Measure the tone behind a point (the viewport centre by default — where the
- * emblem sits). Falls back, in order, to the themed ground token and then to
- * the root background, so a headless or mid-paint call still answers with
- * something true rather than throwing.
+ * Measure the splash veil's own rendered tone — not the app underneath it
+ * (fix/splash-tone; see the header comment for why `elementFromPoint` was the
+ * wrong primitive here). Falls back, in order, to the themed ground token and
+ * then to the root background, so a call with no veil mounted yet (or a
+ * headless/mid-paint call) still answers with something true rather than
+ * throwing.
  */
-export function measureBackdropTone(x?: number, y?: number): BackdropTone {
+export function measureBackdropTone(): BackdropTone {
   if (typeof document === 'undefined' || typeof getComputedStyle === 'undefined') return 'dark';
 
-  const cx = x ?? Math.round(window.innerWidth / 2);
-  const cy = y ?? Math.round(window.innerHeight / 2);
-
-  let painted = paintedBackgroundOf(document.elementFromPoint(cx, cy));
+  // The veil's own paint — what is actually on screen, not whatever the app
+  // underneath happens to be showing (see header comment: the veil is a
+  // solid, 100%-opaque block; `elementFromPoint` would see through it).
+  const veil = document.querySelector('.wz-splash-veil');
+  // Typed to just r/g/b (never `a` — nothing below reads it): parseCss's own
+  // return carries `a` too, and leaving that in the inference would make
+  // hexToRgb's a-less shape (below) a type error on reassignment, not a
+  // reflection of anything that actually matters here.
+  let painted: { r: number; g: number; b: number } | null = veil ? parseCss(getComputedStyle(veil).backgroundColor) : null;
 
   if (!painted) {
     // The themed ground token — themed, unlike `html`'s hardcoded literal, so
