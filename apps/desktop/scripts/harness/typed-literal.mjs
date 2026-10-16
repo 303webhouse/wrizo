@@ -7,7 +7,9 @@
 //   L2  Draft: a `#` where a line's text begins is escaped (no heading); a `#` mid-line is left alone.
 //   L3  Draft: Ctrl+B still makes bold, around the literal stars.
 //   L4  Draft: an old page's saved `**bold**` and `*it*` stay styled, and typing on that page does not rewrite them.
-//   L5  Draft: a PASTE is literal too - own words copied and pasted back come in escaped (until in-app-copy-format, a copy-then-paste
+//   L5  Draft: own words copied and pasted back (in-app-copy-format's copy half: the copy is the plain characters) - L5b: TYPED stars
+//       copied and pasted back stay literal, with no backslash added. The original L5 (a copy of `**bold**` pasted literal) is parked.
+//       (was: a PASTE is literal too - own words copied and pasted back come in escaped (until in-app-copy-format, a copy-then-paste
 //       inside the app loses its formatting: stated, not hidden).
 //   L6  Free Write: typed stars are stored escaped and make no run - and the word still being typed shows its star, not `\*`.
 //   L7  the card pop-up: the same.
@@ -23,6 +25,9 @@ const CE = '.board-popup-editor';
 const B = String.fromCharCode(92);   // one backslash, built rather than escaped (a cooked template eats `\*`)
 const ZW = String.fromCharCode(0x200b);
 const unz = (s) => (typeof s === 'string' ? s.split(ZW).join('') : s);
+const parkedChecks = [];
+const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass, detail });
+const tlParks = {};   // IN-APP-COPY-FORMAT: L5's readings, for its parked records
 
 const freshDesk = async (app) => {
   await app.emulateDpr(1, 1400, 900);
@@ -150,10 +155,39 @@ await withHarness(async (app) => {
     const st5 = await settledBy(() => pageText(app, 'tl5'));
     const pasted = typeof st5 === 'string' && unz(st5).length > MINE.length + 1;
     ok('L5 (driver): the paste landed (the stored text grew past the typed space) - a driver that pastes nothing must not pass the checks below', pasted, JSON.stringify(st5));
-    ok('L5: a pasted `**` is LITERAL - the pasted copy is stored escaped and the saved bold before it is untouched',
-      unz(st5) === `${MINE} Mine ${B}*${B}*bold${B}*${B}* words`, JSON.stringify(st5));
-    ok('L5: ...so the page shows the pasted stars and still exactly one bold run (the original): the in-app round trip loses formatting until in-app-copy-format',
-      !!s5 && s5.bold === 1 && s5.visible === 'Mine bold words Mine **bold** words', JSON.stringify(s5));
+    // ---- PARKED - SUPERSEDED by in-app-copy-format's copy half (Fable, Oct 16; one deploy with typed-literal): a copy now writes the PLAIN
+    // characters, so the writer's own `**bold**` is copied as `bold` - there are no stars left to paste. Kept VERBATIM and no longer run;
+    // successors below (and L5b, which still pastes literal stars, from a page whose stars were TYPED).
+    // ok('L5: a pasted `**` is LITERAL - the pasted copy is stored escaped and the saved bold before it is untouched',
+    //   unz(st5) === `${MINE} Mine ${B}*${B}*bold${B}*${B}* words`, JSON.stringify(st5));
+    // ok('L5: ...so the page shows the pasted stars and still exactly one bold run (the original): the in-app round trip loses formatting until in-app-copy-format',
+    //   !!s5 && s5.bold === 1 && s5.visible === 'Mine bold words Mine **bold** words', JSON.stringify(s5));
+    // ------------------------------------------------------------------
+    tlParks.l5 = { st5: unz(st5), s5 };
+    ok('L5 [copy-half successor]: own words copied and pasted back arrive as their PLAIN characters - nothing to escape, and the saved bold before them untouched (the formatting comes back with the paste half)',
+      unz(st5) === `${MINE} Mine bold words`, JSON.stringify(st5));
+    ok('L5 [copy-half successor]: ...so the page shows the words twice and still exactly one bold run (the original)',
+      !!s5 && s5.bold === 1 && s5.visible === 'Mine bold words Mine bold words', JSON.stringify(s5));
+  }
+
+  // ---- L5b: a paste is still literal - TYPED stars copied and pasted back stay literal stars, and no backslash is added on the way
+  // (before the copy half, each round trip added one visible backslash: the copy carried `\*`, and the paste escaped it again)
+  const TYPED = `Mine ${B}*${B}*lit${B}*${B}* words`;
+  const d5b = await openPage(app, 'tl5b', TYPED, 'draft');
+  ok('L5b (setup): the page opens in Draft', d5b);
+  if (d5b) {
+    await caretEnd(app, ED);
+    await app.keyCombo('a'); await sleep(200);
+    await command(app, 'c', 'KeyC', 67, 2, 'copy'); await sleep(200);
+    await command(app, 'End', 'End', 35, 2, 'moveToEndOfDocument'); await sleep(200);
+    await app.typeKeys(' ');
+    await command(app, 'v', 'KeyV', 86, 2, 'paste'); await sleep(600);
+    const s5b = await seen(app, ED);
+    const st5b = await settledBy(() => pageText(app, 'tl5b'));
+    ok('L5b (driver): the paste landed', typeof st5b === 'string' && unz(st5b).length > TYPED.length + 1, JSON.stringify(st5b));
+    ok('L5b: pasted `**` is LITERAL - stored escaped exactly as the typed original, no backslash added',
+      unz(st5b) === `${TYPED} ${TYPED}`, JSON.stringify(st5b));
+    ok('L5b: ...and the page shows the stars as typed, twice, and no bold', !!s5b && s5b.bold === 0 && s5b.visible === 'Mine **lit** words Mine **lit** words', JSON.stringify(s5b));
   }
 
   // ---- L6: Free Write
@@ -206,6 +240,19 @@ await withHarness(async (app) => {
     && results.burst.includes(`${B}*three${B}*`) && results.burst.includes(`${B}_y${B}_`), JSON.stringify(results.burst));
 });
 
+if (process.env.HARNESS_PARKED === '1') {
+  // IN-APP-COPY-FORMAT (2026-10-16) - TWO parks: L5's literal-paste readings of a copy of `**bold**`. Records frozen; each re-verifies the
+  // new truth from the default leg's own readings (tlParks).
+  const a = tlParks.l5 || {};
+  pok('PARKED (was "L5: a pasted `**` is LITERAL - the pasted copy is stored escaped and the saved bold before it is untouched") - the copy half writes plain characters; live successor: L5 [copy-half successor] and L5b',
+    a.st5 === 'Mine **bold** words Mine bold words', JSON.stringify(a));
+  pok('PARKED (was "L5: ...so the page shows the pasted stars and still exactly one bold run (the original): the in-app round trip loses formatting until in-app-copy-format") - live successor: L5 [copy-half successor]',
+    !!a.s5 && a.s5.bold === 1 && a.s5.visible === 'Mine bold words Mine bold words', JSON.stringify(a));
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  console.log(parkedPass ? `\nTYPED-LITERAL PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed; this FILE parks 2: L5's two literal-paste checks (in-app-copy-format's copy half)`
+    : `\nTYPED-LITERAL PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+}
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nTYPED-LITERAL VERIFY: PASS (${checks.length} checks)` : `\nTYPED-LITERAL VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);

@@ -91,6 +91,15 @@ const at = (text, needle) => { const i = text.indexOf(needle); if (i < 0) throw 
     f8.fragment === ' **world**' && f8.plain === ' world', JSON.stringify(f8));
 }
 
+// ---- FALLBACK: a line whose markup would not read back the same is written as literal text (the path ROUND's vocabulary never reaches:
+// it fell back on 0 lines there, so it is exercised here, on an old page's star soup - an adversarial fuzz found it on ~4.5% of such lines)
+{
+  const soup = '*aa*******x y***_~~~**';
+  const f = P(soup, 1, 15);
+  ok('FALLBACK: a selection of star soup whose raw markup would pair differently is written as LITERAL text - it reads back as exactly the plain characters, unstyled, and is counted',
+    f.fallbackLines === 1 && f.plain === 'aa*******x y*' && mr.readMarks(f.fragment).length === 0 && mr.stripLine(f.fragment) === f.plain, JSON.stringify(f));
+}
+
 // ---- ROUND: seeded random pages, random selections
 let seed = 20261016;
 const rnd = () => { seed = (seed + 0x6D2B79F5) | 0; let t = seed; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
@@ -116,7 +125,8 @@ const line = () => {
   const lead = pick(['', '', '', '', '- ', '# ', '> ', '\t', '>< ', `${B}# `]);
   return lead + Array.from({ length: 1 + Math.floor(rnd() * 9) }, word).join(' ');
 };
-// the page's truth, read from the source with the one reader: each VISIBLE character and the styles over it
+// the page's truth, read from the source with the one reader: each VISIBLE character and the styles over it. A space's style is not
+// compared (set ''): a mark cannot open or close beside a space, so a run cut at a space reopens after it - the space is not drawn bold.
 const KINDS = ['bold', 'italic', 'underline', 'strike'];
 const styledChars = (text) => {
   const out = [];
@@ -128,7 +138,7 @@ const styledChars = (text) => {
     for (const r of runs) { const cl = (r.cmark ?? r.mark).length; for (let k = 0; k < r.mark.length; k++) hidden.add(r.open + k); for (let k = 0; k < cl; k++) hidden.add(r.close + k); }
     for (let i = 0; i < rest.length; i++) {
       if (hidden.has(i)) continue;
-      const st = KINDS.filter((kd) => runs.some((r) => r.kind === kd && i >= r.open + r.mark.length && i < r.close)).join('+');
+      const st = /\s/.test(rest[i]) ? '' : KINDS.filter((kd) => runs.some((r) => r.kind === kd && i >= r.open + r.mark.length && i < r.close)).join('+');
       out.push(rest[i] + ':' + st);
     }
     out.push('\n:');
@@ -151,7 +161,7 @@ const styledSlice = (text, s, e) => {
       for (let i = 0; i < rest.length; i++) {
         const g = ls + lead + i;
         if (g < s || g >= e || hidden.has(i)) continue;
-        const st = KINDS.filter((kd) => runs.some((r) => r.kind === kd && i >= r.open + r.mark.length && i < r.close)).join('+');
+        const st = /\s/.test(rest[i]) ? '' : KINDS.filter((kd) => runs.some((r) => r.kind === kd && i >= r.open + r.mark.length && i < r.close)).join('+');
         out.push(rest[i] + ':' + st);
       }
     }

@@ -11,9 +11,13 @@
 //   - Enter is computed (enterAt): a run the caret is inside closes before the newline and reopens after it.
 //   - the arrows move by visible characters; Backspace and Delete never take a lone hidden mark.
 //   - a caret is snapped off hidden marks after every move; a CLICK keeps the side of a run's closing marks it landed on.
-// Copy and paste, and IME composition, stay native - never rebuilt.
+// IME composition stays native - never rebuilt. A paste is captured like typing (typed-literal). IN-APP-COPY-FORMAT: a copy or cut writes
+// two formats - the plain characters for other apps, Wrizo's own markup beside them (store/clipboardFormat.ts) - and a cut then deletes
+// through replaceRange, the same rule a native cut's input rebuild applied (it has to: once the clipboard is written, the browser deletes
+// nothing).
 import { backspaceAt, closersAt, deleteAt, enterAt, escapeTyped, nativeRange, reabsorb, replaceRange, snapCaret, snapCaretAfterClick, stepLeft, stepRight, wordBackspaceAt, wordDeleteAt, type EditResult } from './hiddenMarks';
 import { extendSelection, placeCaret, selectionEnds } from './hiddenMarksDom';
+import { copyPayload, putOnClipboard } from './clipboardFormat';
 import { getSelectionOffsets } from './caretOffset';
 import type { EditKind } from './textUndo';
 
@@ -237,6 +241,21 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
   el.addEventListener('pointerdown', onPointerDown);
   window.addEventListener('pointerup', onPointerUp);
   window.addEventListener('pointercancel', onPointerUp);
+  // IN-APP-COPY-FORMAT: copy and cut. A collapsed selection, or one outside this editor, is left to the browser (it copies nothing).
+  const onCopyOrCut = (e: ClipboardEvent) => {
+    if (host.busy() || !e.clipboardData) return;
+    const ends = selectionEnds(el);
+    if (!ends || ends.collapsed) return;
+    const text = host.plainNow();
+    const s = Math.min(ends.anchor, ends.focus, text.length);
+    const t = Math.min(Math.max(ends.anchor, ends.focus), text.length);
+    if (s === t) return;
+    e.preventDefault();
+    putOnClipboard(e.clipboardData, copyPayload(text, s, t));
+    if (e.type === 'cut') { beforeEdit = null; commit(replaceRange(text, s, t, ''), 'atomic'); }
+  };
+  el.addEventListener('copy', onCopyOrCut);
+  el.addEventListener('cut', onCopyOrCut);
 
   const api: HiddenMarkEditing = {
     beforeInput,
@@ -258,6 +277,8 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
     detach: () => {
       controllers.delete(el);
       el.removeEventListener('pointerdown', onPointerDown);
+      el.removeEventListener('copy', onCopyOrCut);
+      el.removeEventListener('cut', onCopyOrCut);
       window.removeEventListener('pointerup', onPointerUp);
       window.removeEventListener('pointercancel', onPointerUp);
     },
