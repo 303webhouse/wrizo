@@ -3,12 +3,13 @@ import type { Run } from '../types';
 import { append, derivedText, eraseTail, isBoundary, seedContent, strikeStep } from '../store/forwardOnly';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { formatShortcutAction, type FormatAction } from '../store/draftFormat';
-import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
+import { decorateEditorFor, decorateMarkdownForCard, EOF_GUARD, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
 import { getCaretOffset as getPlainOffset, setCaretOffset as setPlainOffset } from '../store/caretOffset';
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, registerUndoStack, unregisterUndoStack, type EditKind } from '../store/textUndo';
 import { placeCaret } from '../store/hiddenMarksDom';
 import { escapeTyped } from '../store/hiddenMarks';
+import { copyPayload, putOnClipboard } from '../store/clipboardFormat';
 import { readEscapes } from '../store/markRuns';
 import { attachHiddenMarkEditing } from '../store/hiddenMarksEditing';
 import { detachRows, editorPlainText, mountRows, noteNativeEdit, readNativeEdit, revealRowsAtCaret, rowsFor, writeRows } from '../store/lineRows';
@@ -553,6 +554,15 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       if (data) handleTyped(data); // commit the finalized text; the re-render replaces the browser's draft
     };
     const block = (e: Event) => e.preventDefault(); // cut: block (removes committed text). Copy-out is NOT blocked.
+    // IN-APP-COPY-FORMAT: copy-out writes the plain characters and Wrizo's markup of the DERIVED text - the struck letters are history, not
+    // prose, so they are left out of both (Q3, Nick, Oct 16), as Copy My Words leaves them out.
+    const onCopyFree = (e: ClipboardEvent) => {
+      if (!e.clipboardData) return;
+      const o = liveSelection(el);
+      if (!o || o.s === o.e) return;
+      e.preventDefault();
+      putOnClipboard(e.clipboardData, copyPayload(derivedText(contentRef.current) + wordRef.current, o.s, o.e));
+    };
     // Paste + drop are the foreign-voice wall — block AND whisper (belt-and-
     // suspenders alongside the beforeinput branch, for any browser that fires the
     // event without a beforeinput). The once-per-session gate dedups. Own ink
@@ -573,7 +583,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     el.addEventListener('paste', blockPaste);
     el.addEventListener('drop', blockPaste);
     el.addEventListener('cut', block);
+    el.addEventListener('copy', onCopyFree);
     return () => {
+      el.removeEventListener('copy', onCopyFree);
       el.removeEventListener('beforeinput', onBeforeInput as EventListener);
       el.removeEventListener('keydown', onKeyDown);
       el.removeEventListener('compositionstart', onCompStart);
@@ -764,6 +776,35 @@ function escHtml(s: string): string {
 
 // TYPED-LITERAL: a struck run and the word still being typed show the writer's characters as typed - an escape's backslash is hidden
 // there as it is in a live run (the word in progress drew it raw, so `*on` read `\*on` until the space)
+// IN-APP-COPY-FORMAT: Free Write's selection as offsets into its DERIVED text (runs, then the word in progress): every text node counts
+// except a struck run's (and the EOF guard character). The page renders each unstruck run's characters exactly once, in order, so the
+// count is the derived offset.
+function liveSelection(el: HTMLElement): { s: number; e: number } | null {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return null;
+  const R = sel.getRangeAt(0);
+  if (!el.contains(R.startContainer) || !el.contains(R.endContainer)) return null;
+  // characters of `t` before the boundary point (node, offset): all of them when the point is past the node, none when it is before
+  const upTo = (t: Text, node: Node, offset: number): number => {
+    if (node === t) return offset;
+    const p = document.createRange();
+    p.setStart(node, offset);
+    return p.comparePoint(t, 0) >= 0 ? 0 : t.data.length;
+  };
+  const live = (t: Text, n: number) => n - (t.data.slice(0, n).split(EOF_GUARD).length - 1);
+  const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  let s = 0;
+  let e = 0;
+  let n: Node | null;
+  while ((n = w.nextNode())) {
+    const t = n as Text;
+    if (t.parentElement && t.parentElement.closest('.fo-struck')) continue;
+    s += live(t, upTo(t, R.startContainer, R.startOffset));
+    e += live(t, upTo(t, R.endContainer, R.endOffset));
+  }
+  return { s, e };
+}
+
 function typedHtml(text: string): string {
   const esc = readEscapes(text);
   if (!esc.length) return escHtml(text);
