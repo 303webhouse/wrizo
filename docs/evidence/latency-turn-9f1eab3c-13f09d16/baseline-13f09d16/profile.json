@@ -1,0 +1,568 @@
+{
+  "bundle": "index-CS_Y5SiQ.js",
+  "reactLines": [
+    51,
+    7018
+  ],
+  "sizes": [
+    {
+      "words": 20000,
+      "chars": 121207,
+      "wrappedCallsOutsideKeyWindows": 24,
+      "typed": 121262,
+      "typedExpected": 121262,
+      "typedOk": true,
+      "keys": 20,
+      "realEditorIdentity": {
+        "rows": 0,
+        "contentVisibility": null,
+        "innerTextIdentical": true,
+        "selectAllIdentical": true,
+        "innerDiff": null,
+        "selectDiff": null
+      },
+      "control_uninstrumented": {
+        "handlers": 407.1,
+        "toFrame": 0.3,
+        "frameStyleLayoutPaint": 138.8,
+        "toFirstPaint": 546.2,
+        "toFirstPaint_p95": 753.6,
+        "selectionchange": 32.8,
+        "selectionchangeAfterPaint": "0/6",
+        "total": 546.2,
+        "total_p95": 753.6
+      },
+      "instrumented": {
+        "handlers": 338.4,
+        "toFrame": 0.2,
+        "frameStyleLayoutPaint": 126,
+        "toFirstPaint": 454.3,
+        "toFirstPaint_p95": 649.6,
+        "selectionchange": 33.8,
+        "selectionchangeAfterPaint": "0/20",
+        "total": 454.3,
+        "total_p95": 649.6
+      },
+      "wrappers_medianPerKey": {
+        "innerText_reads": 7,
+        "innerText_forcedLayout": 0,
+        "innerText_serialise": 32.6,
+        "rangeText_reads": 4,
+        "rangeText": 1.2,
+        "innerHTML_writes": 1,
+        "innerHTML_parse": 22.2
+      },
+      "cpu_meanPerKey": {
+        "caret walks": 164.4,
+        "(program): native, outside JS - style/layout/paint": 160.2,
+        "idle": 81.3,
+        "innerHTML parse (wrapper)": 22.2,
+        "211 rules": 17,
+        "innerText (wrapper)": 14.1,
+        "React: component render": 8.9,
+        "redecorate: string build": 8.8,
+        "React: reconcile + commit": 5.4,
+        "other app JS": 3.6,
+        "GC": 2.3,
+        "the 211 controller": 0.7,
+        "Range text (wrapper)": 0.5,
+        "readEditorPlainText (string)": 0.5,
+        "other": 0
+      },
+      "layoutShape": {
+        "A_wholeReplace": {
+          "parse": 19.5,
+          "layout": 163.4
+        },
+        "Aprime_domPath": {
+          "layoutBeforeRead": 114.9,
+          "serialise": 7,
+          "parse": 19.2,
+          "layoutAfter": 158.6,
+          "total": 319.6
+        },
+        "B_singleBlock_oneChar": {
+          "layout": 107.7
+        },
+        "C_blockRows_oneChar": {
+          "layout": 87.2,
+          "textContentIdentical": true,
+          "rows": 1112,
+          "heightVsToday": "64311 vs 64311"
+        },
+        "D_blockRows_rowRewrite": {
+          "parse": 0.1,
+          "layout": 82.4
+        }
+      },
+      "aPrime_estimate": {
+        "decorationsToday": 2,
+        "innerTextReadsToday": 7,
+        "domPath": 319.6,
+        "decorateOnce": 4.4,
+        "readPlainOnce": 0.1,
+        "caretOffsetOnce": 0.3,
+        "react": 14.3,
+        "kept": 187.3,
+        "total": 526
+      },
+      "variantE": {
+        "blocks": 1112,
+        "lineHeight": 28.9,
+        "charsPerLine": 54,
+        "charsPerLineFallback": false,
+        "wrappedRowsMeasured": 1112,
+        "oneCharLayout_median": 4,
+        "renderedBlocksAroundCaret": 1112,
+        "trueTotalPx": 64311,
+        "estimatedTotalPx": 64327,
+        "driftPx": 16,
+        "driftPct": 0.02,
+        "scrollJumpPx": 0,
+        "estimatedTotalAfterScrollPx": 64326
+      },
+      "variantF": {
+        "lines": 1112,
+        "today": {
+          "heightPx": 64311,
+          "oneCharLayout_median": 64.8
+        },
+        "E_blockRows": {
+          "rows": 1112,
+          "textContentIdentical": true,
+          "innerTextIdentical": false,
+          "selectAllTextIdentical": true,
+          "heightPx": 64311,
+          "heightVsToday": 0,
+          "innerTextFirstDiff": {
+            "at": 109,
+            "variant": "\"own at all.\\n\\nThe writer \"",
+            "today": "\"own at all.\\nThe writer k\"",
+            "lengthVariant": 122403,
+            "lengthToday": 121292
+          },
+          "oneCharLayout_median": 38,
+          "rowRewrite": {
+            "parse": 0.1,
+            "layout": 41.4
+          }
+        },
+        "F_inlineBlockRows": {
+          "rows": 1112,
+          "textContentIdentical": true,
+          "innerTextIdentical": true,
+          "selectAllTextIdentical": true,
+          "heightPx": 64311,
+          "heightVsToday": 0,
+          "oneCharLayout_median": 41.2,
+          "rowRewrite": {
+            "parse": 0.1,
+            "layout": 40
+          }
+        }
+      },
+      "variantG": {
+        "lines": 1112,
+        "lineHeight": 28.9,
+        "charsPerLine": 54,
+        "wrappedRowsMeasured": 1112,
+        "trueTotalPx": 64311,
+        "F_containOnly_oneCharLayout": 45.7,
+        "G1_contentVisibility": {
+          "oneCharLayout_median": 8.8,
+          "rowsSkipped": 1054,
+          "rowsWithState": 1112,
+          "rows": 1112,
+          "estimatedTotalPx": 64327,
+          "driftPx": 16,
+          "driftPct": 0.02,
+          "scrollJumpPx": 0,
+          "textContentIdentical": true,
+          "innerTextIdentical": false,
+          "selectAllTextIdentical": true,
+          "rowsSkippedWhileRead": 1054
+        },
+        "G2_inlineSize": {
+          "oneCharLayout_median": 44.9,
+          "heightVsTruth": 0,
+          "innerTextIdentical": true
+        },
+        "G3_strictHost": {
+          "oneCharLayout_median": 1.2
+        }
+      },
+      "keystrokeTrace": {
+        "keys": 25,
+        "traceEvents": 120110,
+        "perKeyMedianMs": {
+          "Layout": 176.9,
+          "UpdateLayoutTree": 32.4,
+          "PrePaint": 30,
+          "Paint": 12.4,
+          "Layerize": 0.8,
+          "ParseHTML": 12.2,
+          "FunctionCall": 294.6,
+          "EventDispatch": 996.1,
+          "RunMicrotasks": 0
+        },
+        "perKeyP95Ms": {
+          "Layout": 205,
+          "UpdateLayoutTree": 48.1,
+          "PrePaint": 36.6,
+          "Paint": 14.1,
+          "Layerize": 1,
+          "ParseHTML": 15.2,
+          "FunctionCall": 389.9,
+          "EventDispatch": 1257.7,
+          "RunMicrotasks": 0
+        },
+        "layoutsPerKey_median": 2,
+        "dirtyObjects_median": 31155,
+        "totalObjects_median": 31523,
+        "forcedLayoutsBy": {
+          "setCaretOffset$1": 25
+        },
+        "sampleKey": [
+          {
+            "ms": 69,
+            "dirty": 19,
+            "total": 31523,
+            "partial": false,
+            "forcedBy": null
+          },
+          {
+            "ms": 127.9,
+            "dirty": 31155,
+            "total": 31523,
+            "partial": false,
+            "forcedBy": "setCaretOffset$1"
+          }
+        ]
+      },
+      "autosave": {
+        "editorFocused": true,
+        "keysLanded": 30,
+        "windowMs": 6000,
+        "observer": "longtask",
+        "writes": [
+          {
+            "msAfterLastKey": 2156,
+            "key": "writer-studio-journal-entries",
+            "chars": 122556,
+            "ms": 0.3
+          },
+          {
+            "msAfterLastKey": 2156,
+            "key": "writer-studio-dirty-v1",
+            "chars": 96,
+            "ms": 0.1
+          },
+          {
+            "msAfterLastKey": 3046,
+            "key": "writer-studio-dirty-v1",
+            "chars": 90,
+            "ms": 0
+          },
+          {
+            "msAfterLastKey": 3047,
+            "key": "writer-studio-last-sync",
+            "chars": 24,
+            "ms": 0
+          }
+        ],
+        "longestStallAfterLastKeyMs": 0,
+        "stallsAfterLastKey": [],
+        "longestStallDuringBurstMs": 415
+      }
+    },
+    {
+      "words": 50000,
+      "chars": 302801,
+      "wrappedCallsOutsideKeyWindows": 24,
+      "typed": 302856,
+      "typedExpected": 302856,
+      "typedOk": true,
+      "keys": 20,
+      "realEditorIdentity": {
+        "rows": 0,
+        "contentVisibility": null,
+        "innerTextIdentical": true,
+        "selectAllIdentical": true,
+        "innerDiff": null,
+        "selectDiff": null
+      },
+      "control_uninstrumented": {
+        "handlers": 1255.5,
+        "toFrame": 0.2,
+        "frameStyleLayoutPaint": 260.3,
+        "toFirstPaint": 1515.5,
+        "toFirstPaint_p95": 1577.7,
+        "selectionchange": 70.1,
+        "selectionchangeAfterPaint": "0/6",
+        "total": 1515.5,
+        "total_p95": 1577.7
+      },
+      "instrumented": {
+        "handlers": 987.1,
+        "toFrame": 0.3,
+        "frameStyleLayoutPaint": 319.4,
+        "toFirstPaint": 1311.5,
+        "toFirstPaint_p95": 1501.6,
+        "selectionchange": 91.2,
+        "selectionchangeAfterPaint": "0/20",
+        "total": 1311.5,
+        "total_p95": 1501.6
+      },
+      "wrappers_medianPerKey": {
+        "innerText_reads": 7,
+        "innerText_forcedLayout": 0.1,
+        "innerText_serialise": 92.3,
+        "rangeText_reads": 4,
+        "rangeText": 2.7,
+        "innerHTML_writes": 1,
+        "innerHTML_parse": 60.1
+      },
+      "cpu_meanPerKey": {
+        "(program): native, outside JS - style/layout/paint": 467.2,
+        "caret walks": 446,
+        "innerText (wrapper)": 92,
+        "211 rules": 85.2,
+        "innerHTML parse (wrapper)": 58.9,
+        "idle": 57.5,
+        "redecorate: string build": 38.2,
+        "React: component render": 35.9,
+        "GC": 14.1,
+        "React: reconcile + commit": 13.6,
+        "readEditorPlainText (string)": 5.6,
+        "Range text (wrapper)": 2.6,
+        "other app JS": 1,
+        "the 211 controller": 0.8,
+        "other": 0
+      },
+      "layoutShape": {
+        "A_wholeReplace": {
+          "parse": 48.4,
+          "layout": 440.3
+        },
+        "Aprime_domPath": {
+          "layoutBeforeRead": 318.9,
+          "serialise": 23.1,
+          "parse": 48.2,
+          "layoutAfter": 443.6,
+          "total": 907.4
+        },
+        "B_singleBlock_oneChar": {
+          "layout": 325.6
+        },
+        "C_blockRows_oneChar": {
+          "layout": 251,
+          "textContentIdentical": true,
+          "rows": 2778,
+          "heightVsToday": "160574 vs 160574"
+        },
+        "D_blockRows_rowRewrite": {
+          "parse": 0.1,
+          "layout": 223.3
+        }
+      },
+      "aPrime_estimate": {
+        "decorationsToday": 2,
+        "innerTextReadsToday": 7,
+        "domPath": 907.4,
+        "decorateOnce": 19.1,
+        "readPlainOnce": 0.8,
+        "caretOffsetOnce": 0.7,
+        "react": 49.5,
+        "kept": 546.2,
+        "total": 1523.7
+      },
+      "variantE": {
+        "blocks": 2778,
+        "lineHeight": 28.9,
+        "charsPerLine": 54,
+        "charsPerLineFallback": false,
+        "wrappedRowsMeasured": 2778,
+        "oneCharLayout_median": 7.6,
+        "renderedBlocksAroundCaret": 2778,
+        "trueTotalPx": 160574,
+        "estimatedTotalPx": 160617,
+        "driftPx": 43,
+        "driftPct": 0.03,
+        "scrollJumpPx": -1,
+        "estimatedTotalAfterScrollPx": 160616
+      },
+      "variantF": {
+        "lines": 2778,
+        "today": {
+          "heightPx": 160574,
+          "oneCharLayout_median": 183.4
+        },
+        "E_blockRows": {
+          "rows": 2778,
+          "textContentIdentical": true,
+          "innerTextIdentical": false,
+          "selectAllTextIdentical": true,
+          "heightPx": 160574,
+          "heightVsToday": 0,
+          "innerTextFirstDiff": {
+            "at": 109,
+            "variant": "\"own at all.\\n\\nThe writer \"",
+            "today": "\"own at all.\\nThe writer k\"",
+            "lengthVariant": 305663,
+            "lengthToday": 302886
+          },
+          "oneCharLayout_median": 94.4,
+          "rowRewrite": {
+            "parse": 0.1,
+            "layout": 96.6
+          }
+        },
+        "F_inlineBlockRows": {
+          "rows": 2778,
+          "textContentIdentical": true,
+          "innerTextIdentical": true,
+          "selectAllTextIdentical": true,
+          "heightPx": 160574,
+          "heightVsToday": 0,
+          "oneCharLayout_median": 112.5,
+          "rowRewrite": {
+            "parse": 0.1,
+            "layout": 119.8
+          }
+        }
+      },
+      "variantG": {
+        "lines": 2778,
+        "lineHeight": 28.9,
+        "charsPerLine": 54,
+        "wrappedRowsMeasured": 2778,
+        "trueTotalPx": 160574,
+        "F_containOnly_oneCharLayout": 103.2,
+        "G1_contentVisibility": {
+          "oneCharLayout_median": 21.7,
+          "rowsSkipped": 2720,
+          "rowsWithState": 2778,
+          "rows": 2778,
+          "estimatedTotalPx": 160617,
+          "driftPx": 43,
+          "driftPct": 0.03,
+          "scrollJumpPx": 0,
+          "textContentIdentical": true,
+          "innerTextIdentical": false,
+          "selectAllTextIdentical": true,
+          "rowsSkippedWhileRead": 2720
+        },
+        "G2_inlineSize": {
+          "oneCharLayout_median": 103.2,
+          "heightVsTruth": 0,
+          "innerTextIdentical": true
+        },
+        "G3_strictHost": {
+          "oneCharLayout_median": 2.8
+        }
+      },
+      "keystrokeTrace": {
+        "keys": 25,
+        "traceEvents": 69670,
+        "perKeyMedianMs": {
+          "Layout": 493.5,
+          "UpdateLayoutTree": 78.6,
+          "PrePaint": 80.1,
+          "Paint": 30.8,
+          "Layerize": 0.9,
+          "ParseHTML": 28.5,
+          "FunctionCall": 888,
+          "EventDispatch": 2767.5,
+          "RunMicrotasks": 0
+        },
+        "perKeyP95Ms": {
+          "Layout": 571,
+          "UpdateLayoutTree": 85.5,
+          "PrePaint": 101.4,
+          "Paint": 42.1,
+          "Layerize": 1.2,
+          "ParseHTML": 35.5,
+          "FunctionCall": 1020.5,
+          "EventDispatch": 3091.5,
+          "RunMicrotasks": 0
+        },
+        "layoutsPerKey_median": 2,
+        "dirtyObjects_median": 77803,
+        "totalObjects_median": 78171,
+        "forcedLayoutsBy": {
+          "setCaretOffset$1": 25
+        },
+        "sampleKey": [
+          {
+            "ms": 198.9,
+            "dirty": 19,
+            "total": 78171,
+            "partial": false,
+            "forcedBy": null
+          },
+          {
+            "ms": 247.7,
+            "dirty": 77803,
+            "total": 78171,
+            "partial": false,
+            "forcedBy": "setCaretOffset$1"
+          }
+        ]
+      },
+      "autosave": {
+        "editorFocused": true,
+        "keysLanded": 30,
+        "windowMs": 6000,
+        "observer": "longtask",
+        "writes": [
+          {
+            "msAfterLastKey": -27521,
+            "key": "writer-studio-dirty-v1",
+            "chars": 90,
+            "ms": 0.1
+          },
+          {
+            "msAfterLastKey": -27520,
+            "key": "writer-studio-last-sync",
+            "chars": 24,
+            "ms": 0
+          },
+          {
+            "msAfterLastKey": -8075,
+            "key": "writer-studio-last-sync",
+            "chars": 24,
+            "ms": 0.1
+          },
+          {
+            "msAfterLastKey": 1971,
+            "key": "writer-studio-journal-entries",
+            "chars": 305816,
+            "ms": 0.7
+          },
+          {
+            "msAfterLastKey": 1971,
+            "key": "writer-studio-dirty-v1",
+            "chars": 96,
+            "ms": 0
+          },
+          {
+            "msAfterLastKey": 5924,
+            "key": "writer-studio-dirty-v1",
+            "chars": 90,
+            "ms": 0
+          },
+          {
+            "msAfterLastKey": 5924,
+            "key": "writer-studio-last-sync",
+            "chars": 24,
+            "ms": 0
+          }
+        ],
+        "longestStallAfterLastKeyMs": 0,
+        "stallsAfterLastKey": [],
+        "longestStallDuringBurstMs": 1355
+      }
+    }
+  ],
+  "invalid": []
+}

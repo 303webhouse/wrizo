@@ -1,0 +1,11 @@
+START tl9-profile 05:41:41Z
+END tl9-profile exit=0 05:46:55Z
+START tl9-probe 05:46:55Z
+END tl9-probe exit=0 05:47:29Z
+START tl9-scroll 05:47:29Z
+END tl9-scroll exit=1 05:47:59Z
+START lbs-profile 05:47:59Z
+END lbs-profile exit=0 05:55:28Z
+START lbs-probe 05:55:28Z
+END lbs-probe exit=0 05:56:03Z
+LAT COMPLETE

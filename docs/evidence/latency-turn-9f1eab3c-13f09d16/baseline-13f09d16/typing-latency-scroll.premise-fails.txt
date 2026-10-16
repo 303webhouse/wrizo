@@ -1,0 +1,3 @@
+FAIL  (premise) the 50k-word page opens in Draft as rows, with content-visibility on them  [false]
+
+TYPING-LATENCY-SCROLL VERIFY: FAIL - 1/1 failed

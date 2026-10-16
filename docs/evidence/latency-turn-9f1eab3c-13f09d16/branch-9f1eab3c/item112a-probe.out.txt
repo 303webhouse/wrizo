@@ -1,0 +1,246 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+{
+  "harnessSpeed": [
+    {
+      "label": "after \" **bold**\" (harness speed, no wait)",
+      "text": "Alpha beta gamma **bold**",
+      "caret": 25,
+      "where": {
+        "nodeType": 3,
+        "data": "\"**\"",
+        "offset": 2,
+        "inHiddenMark": true,
+        "inRow": true,
+        "parentClass": "md-mark md-mark-hidden"
+      }
+    },
+    {
+      "label": "...and 300 ms later (any selectionchange has run)",
+      "text": "Alpha beta gamma **bold**",
+      "caret": 23,
+      "where": {
+        "nodeType": 3,
+        "data": "\"bold\"",
+        "offset": 4,
+        "inHiddenMark": false,
+        "inRow": true,
+        "parentClass": "md-bold"
+      }
+    },
+    {
+      "label": "after \" done\"",
+      "text": "Alpha beta gamma **bold done**",
+      "caret": 28,
+      "where": {
+        "nodeType": 3,
+        "data": "\"bold done\"",
+        "offset": 9,
+        "inHiddenMark": false,
+        "inRow": true,
+        "parentClass": "md-bold"
+      }
+    }
+  ],
+  "item112aExact": {
+    "label": "item112a exact: one typeKeys(\" **bold** done\")",
+    "text": "Alpha beta gamma **bold** done",
+    "caret": 30,
+    "where": {
+      "nodeType": 3,
+      "data": "\" done\"",
+      "offset": 5,
+      "inHiddenMark": false,
+      "inRow": true,
+      "parentClass": "wz-row"
+    }
+  },
+  "writersPace": [
+    {
+      "label": "after \" \"",
+      "text": "Alpha beta gamma ",
+      "caret": 17,
+      "where": {
+        "nodeType": 3,
+        "data": "\"Alpha beta gamma \"",
+        "offset": 17,
+        "inHiddenMark": false,
+        "inRow": true,
+        "parentClass": "wz-row"
+      }
+    },
+    {
+      "label": "after \"*\"",
+      "text": "Alpha beta gamma *",
+      "caret": 18,
+      "where": {
+        "nodeType": 3,
+        "data": "\"Alpha beta gamma *\"",
+        "offset": 18,
+        "inHiddenMark": false,
+        "inRow": true,
+        "parentClass": "wz-row"
+      }
+    },
+    {
+      "label": "after \"*\"",
+      "text": "Alpha beta gamma **",
+      "caret": 19,
+      "where": {
+        "nodeType": 3,
+        "data": "\"Alpha beta gamma **\"",
+        "offset": 19,
+        "inHiddenMark": false,
+        "inRow": true,
+        "parentClass": "wz-row"
+      }
+    },
+    {
+      "label": "after \"b\"",
+      "text": "Alpha beta gamma **b",
+      "caret": 20,
+      "where": {
+        "nodeType": 3,
+        "data": "\"Alpha beta gamma **b\"",
+        "offset": 20,
+        "inHiddenMark": false,
+        "inRow": true,
+        "parentClass": "wz-row"
+      }
+    },
+    {
+      "label": "after \"o\"",
+      "text": "Alpha beta gamma **bo",
+      "caret": 21,
+      "where": {
+        "nodeType": 3,
+        "data": "\"Alpha beta gamma **bo\"",
+        "offset": 21,
+        "inHiddenMark": false,
+        "inRow": true,
+        "parentClass": "wz-row"
+      }
+    },
+    {
+      "label": "after \"l\"",
+      "text": "Alpha beta gamma **bol",
+      "caret": 22,
+      "where": {
+        "nodeType": 3,
+        "data": "\"Alpha beta gamma **bol\"",
+        "offset": 22,
+        "inHiddenMark": false,
+        "inRow": true,
+        "parentClass": "wz-row"
+      }
+    },
+    {
+      "label": "after \"d\"",
+      "text": "Alpha beta gamma **bold",
+      "caret": 23,
+      "where": {
+        "nodeType": 3,
+        "data": "\"Alpha beta gamma **bold\"",
+        "offset": 23,
+        "inHiddenMark": false,
+        "inRow": true,
+        "parentClass": "wz-row"
+      }
+    },
+    {
+      "label": "after \"*\"",
+      "text": "Alpha beta gamma **bold*",
+      "caret": 24,
+      "where": {
+        "nodeType": 3,
+        "data": "\"Alpha beta gamma **bold*\"",
+        "offset": 24,
+        "inHiddenMark": false,
+        "inRow": true,
+        "parentClass": "wz-row"
+      }
+    },
+    {
+      "label": "after \"*\"",
+      "text": "Alpha beta gamma **bold**",
+      "caret": 23,
+      "where": {
+        "nodeType": 3,
+        "data": "\"bold\"",
+        "offset": 4,
+        "inHiddenMark": false,
+        "inRow": true,
+        "parentClass": "md-bold"
+      }
+    },
+    {
+      "label": "after \" \"",
+      "text": "Alpha beta gamma **bold** ",
+      "caret": 26,
+      "where": {
+        "nodeType": 3,
+        "data": "\" \"",
+        "offset": 1,
+        "inHiddenMark": false,
+        "inRow": true,
+        "parentClass": "wz-row"
+      }
+    },
+    {
+      "label": "after \"d\"",
+      "text": "Alpha beta gamma **bold d**",
+      "caret": 25,
+      "where": {
+        "nodeType": 3,
+        "data": "\"bold d\"",
+        "offset": 6,
+        "inHiddenMark": false,
+        "inRow": true,
+        "parentClass": "md-bold"
+      }
+    },
+    {
+      "label": "after \"o\"",
+      "text": "Alpha beta gamma **bold do**",
+      "caret": 26,
+      "where": {
+        "nodeType": 3,
+        "data": "\"bold do\"",
+        "offset": 7,
+        "inHiddenMark": false,
+        "inRow": true,
+        "parentClass": "md-bold"
+      }
+    },
+    {
+      "label": "after \"n\"",
+      "text": "Alpha beta gamma **bold don**",
+      "caret": 27,
+      "where": {
+        "nodeType": 3,
+        "data": "\"bold don\"",
+        "offset": 8,
+        "inHiddenMark": false,
+        "inRow": true,
+        "parentClass": "md-bold"
+      }
+    },
+    {
+      "label": "after \"e\"",
+      "text": "Alpha beta gamma **bold done**",
+      "caret": 28,
+      "where": {
+        "nodeType": 3,
+        "data": "\"bold done\"",
+        "offset": 9,
+        "inHiddenMark": false,
+        "inRow": true,
+        "parentClass": "md-bold"
+      }
+    }
+  ]
+}
+
+ITEM112A-PROBE: harness-speed text "Alpha beta gamma **bold done**" | exact "Alpha beta gamma **bold** done" | writer's pace "Alpha beta gamma **bold done**"
+
+ROWS-SHADOW VERIFY: PASS (103 renders checked, shadow == DOM on every one)
