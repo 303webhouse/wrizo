@@ -1,0 +1,9 @@
+START redfirst 18:11:03Z
+END redfirst exit=1 18:11:58Z
+START lane 18:11:58Z
+END lane exit=0 18:27:46Z
+START framesbefore 18:27:46Z
+END framesbefore exit=0 18:28:11Z
+START framesafter 18:28:11Z
+END framesafter exit=0 18:28:36Z
+FP COMPLETE

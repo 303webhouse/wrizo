@@ -1,0 +1,86 @@
+[
+  {
+    "frame": "flux-dark-freewrite",
+    "theme": "flux",
+    "page": "dark",
+    "mode": "Free Write",
+    "editorColor": "rgb(26, 15, 6)",
+    "bg": {
+      "color": "rgb(11, 36, 41)",
+      "tag": "mode-page"
+    },
+    "ratio": 1.16,
+    "bundle": "index-DlmcA1tI.js",
+    "origin": "http://127.0.0.1:54256"
+  },
+  {
+    "frame": "flux-dark-draft",
+    "theme": "flux",
+    "page": "dark",
+    "mode": "Draft",
+    "editorColor": "rgb(227, 241, 236)",
+    "bg": {
+      "color": "rgb(11, 36, 41)",
+      "tag": "mode-page"
+    },
+    "ratio": 13.91,
+    "bundle": "index-DlmcA1tI.js",
+    "origin": "http://127.0.0.1:54256"
+  },
+  {
+    "frame": "flux-light-freewrite",
+    "theme": "flux",
+    "page": "light",
+    "mode": "Free Write",
+    "editorColor": "rgb(26, 15, 6)",
+    "bg": {
+      "color": "rgb(237, 246, 243)",
+      "tag": "mode-page"
+    },
+    "ratio": 17.11,
+    "bundle": "index-DlmcA1tI.js",
+    "origin": "http://127.0.0.1:54256"
+  },
+  {
+    "frame": "flux-light-draft",
+    "theme": "flux",
+    "page": "light",
+    "mode": "Draft",
+    "editorColor": "rgb(20, 35, 31)",
+    "bg": {
+      "color": "rgb(237, 246, 243)",
+      "tag": "mode-page"
+    },
+    "ratio": 14.79,
+    "bundle": "index-DlmcA1tI.js",
+    "origin": "http://127.0.0.1:54256"
+  },
+  {
+    "frame": "arbor-freewrite",
+    "theme": "plateau",
+    "page": "dark",
+    "mode": "Free Write",
+    "editorColor": "rgb(26, 15, 6)",
+    "bg": {
+      "color": "rgb(243, 237, 225)",
+      "tag": "mode-page"
+    },
+    "ratio": 16.16,
+    "bundle": "index-DlmcA1tI.js",
+    "origin": "http://127.0.0.1:54256"
+  },
+  {
+    "frame": "arbor-draft",
+    "theme": "plateau",
+    "page": "dark",
+    "mode": "Draft",
+    "editorColor": "rgb(43, 32, 20)",
+    "bg": {
+      "color": "rgb(243, 237, 225)",
+      "tag": "mode-page"
+    },
+    "ratio": 13.65,
+    "bundle": "index-DlmcA1tI.js",
+    "origin": "http://127.0.0.1:54256"
+  }
+]

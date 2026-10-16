@@ -1,0 +1,19 @@
+#!/bin/bash
+# flux-page-ink @ eef860b5 (Fable: URGENT, fast lane + flux-page-ink.mjs, frames to Fable). fp = origin/main @ 3a71e34b + the branch -> 3f339628.
+# (1) RED-FIRST: the branch's flux-page-ink.mjs (a copy) on main's own product (lane3 = main d3fe33f0's product, bundle index-DlmcA1tI.js).
+# (2) the fast lane on fp. (3) frames: main (before) and fp (after). One grant, sequential.
+export WS_BOX_TURN=chat1-fp-20261016
+SD="C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad"
+ST="$SD/fp-status.txt"
+W=/c/Users/nickh/writer-studio/.claude/worktrees
+LOC="C:/Users/nickh/writer-studio/.claude/evidence-local/flux-page-ink-eef860b5"
+mkdir -p "$LOC/before-main" "$LOC/after-fp"
+step() { local name="$1" dir="$2"; shift 2; echo "START $name $(date -u +%H:%M:%SZ)" >> "$ST"; ( cd "$dir" && "$@" ) > "$SD/fp-$name.out" 2>&1; echo "END $name exit=$? $(date -u +%H:%M:%SZ)" >> "$ST"; }
+cp "$W/fp/apps/desktop/scripts/harness/flux-page-ink.mjs" "$W/lane3/apps/desktop/scripts/harness/flux-page-ink.mjs"
+step redfirst "$W/lane3/apps/desktop" node scripts/run-suite.mjs --no-rebuild --only flux-page-ink.mjs --out "$SD/fp-redfirst"
+rm -f "$W/lane3/apps/desktop/scripts/harness/flux-page-ink.mjs"
+FILES="flux-page-ink.mjs,flux-card-ink.mjs,cd2.mjs,th1.mjs,th2.mjs,fx5.mjs,fx6.mjs,fx7.mjs,b3.mjs,drawers-p1-live.mjs,drawers-p1.mjs,pw1.mjs,pw2.mjs,item170.mjs,writing-r1.mjs,clickhead.mjs,logout-flush-walk.mjs,item-storage-full.mjs,arrival-signin-walk.mjs,sync-generation.mjs,item224a-sync-integrity.mjs,card-close-x.mjs,item118.mjs,item211.mjs,seed-guard.mjs"
+step lane "$W/fp/apps/desktop" node scripts/run-suite.mjs --no-rebuild --only "$FILES" --out "$SD/fp-lane"
+step framesbefore "$W/lane3/apps/desktop" env WT=lane3 FRAMES_OUT="$LOC/before-main" node "$SD/fluxpageframes.mjs"
+step framesafter "$W/fp/apps/desktop" env WT=fp FRAMES_OUT="$LOC/after-fp" node "$SD/fluxpageframes.mjs"
+echo "FP COMPLETE" >> "$ST"
