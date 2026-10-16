@@ -22,7 +22,17 @@
   --paper-dim: #E9E1D2;
   --paper-border: #d8c8b4; /* TH2 — was a hardcoded literal on .mode-page; slotted so a Page:dark theme can carry its own border (canon §3) */
   --ink-on-paper: #2B2014;
-  --ink-on-paper-low: #8A7C68;
+  /* faint-text-sweep (Fable, Oct 16: "the -low tier you flagged") — #8A7C68
+     measured 3.49:1 against this theme's own --paper and 3.77:1 against
+     --card-stock (card-label-contrast's own cream), both under the 4.5:1
+     floor: every placeholder/ghost-text/page-title/word-count/footer that
+     paints from this tier was faint by defect, not by design (the ONE
+     deliberately faint exception, .fl-affordance/.fl-prompt/.fl-never's own
+     opacity .55-.75, is untouched — that fade is a named choice, F6's own
+     comment, not this tier's base colour). Darkened to the exact value
+     --ink-on-card-meta already proved safe on cream (card-label-contrast):
+     5.34:1 on --paper, 5.77:1 on --card-stock. */
+  --ink-on-paper-low: #6B5F4E;
   --ink-stroke: #1A1206; /* pen ink — very dark brown, almost black (J9) */
   /* ITEM 121 I1/I4 — THE DESK'S FOUR INKS (item83-ink-pass.md §0.5: "a journal
      has the inks on the desk", never a colour picker). Plateau's four, named
@@ -486,8 +496,12 @@
      above, measured against --card-stock (#FBF6EA): #14231F is Flux light's
      own --ink-on-paper verbatim (~15:1, already proven dark enough on this
      exact cream); #0A6B86 is a darker step of the low tone (~5.6:1) rather
-     than reusing Flux light's own --ink-on-paper-low (#0B7C9E, ~4.4:1 on
-     THIS cream — close, but short of the 4.5:1 floor on different stock). */
+     than reusing Flux light's own --ink-on-paper-low. At the time this was
+     written that value was #0B7C9E (~4.4:1 on this cream — short of the
+     4.5:1 floor on different stock); faint-text-sweep has since darkened it
+     (below) to #096986, which WOULD now clear this card-stock floor too,
+     but this override stays — a per-theme card/paper split already exists
+     here and collapsing it is a separate, un-asked-for refactor. */
   --ink-on-card: #14231F;
   --ink-on-card-low: #0A6B86;
 }
@@ -496,7 +510,12 @@
   --paper-dim: #E3EFEC;
   --paper-border: #B7D4CE;
   --ink-on-paper: #14231F;
-  --ink-on-paper-low: #0B7C9E;    /* canon's "meta" slot, light */
+  /* faint-text-sweep (Fable, Oct 16: "the -low tier you flagged") — #0B7C9E
+     measured 4.34:1 against this theme's own --paper and 4.43:1 against
+     --card-stock, both under the 4.5:1 floor (the flux-dark override above
+     quotes the same defect). Darkened one step down the same teal ramp to
+     clear both: 5.65:1 on --paper, 5.77:1 on --card-stock. */
+  --ink-on-paper-low: #096986;    /* canon's "meta" slot, light */
 }
 
 /* Slice 4 — the effects compositor scaffold (canon §6, ThemeEffectsLayer.tsx).
@@ -1620,7 +1639,14 @@ a:focus-visible,
    treatment, and needs no code change here — later in source order than
    `.board-pin` (both share equal 0,1,0 specificity), so it already wins
    the cascade on a card carrying both classes, exactly as before. */
-.board-pin-missing{ color:var(--text-low); font-style:italic; cursor:default; }
+/* faint-text-sweep — this was var(--text-low), the dark-chrome tier
+   (tuned for --ink-900-family surfaces), painted straight onto this card's
+   own --card-stock: card-label-contrast's exact bug class, missed in that
+   sweep. 4.13:1 (Plateau) / 3.07:1 (Flux) on --card-stock, both under the
+   4.5:1 floor. --ink-on-card-meta is card-label-contrast's own already-
+   proven-safe cream ink (>=4.5:1 in every theme by construction); the
+   italic stays as the "this one's broken" signal, dim no longer needed. */
+.board-pin-missing{ color:var(--ink-on-card-meta); font-style:italic; cursor:default; }
 /* FX5 S3 — a ported text card's own excerpt face (BoardEditor.tsx's
    BoardTextBox, the sourceEntryId branch) reuses .board-pin-badge/-title/
    -excerpt verbatim (the SAME notecard shape). FX8 S3 — cursor:pointer
@@ -5487,9 +5513,12 @@ a:focus-visible,
 }
 /* deckwizard-ink (Chat 1 ledger 53; Fable, Oct 15) - the sheet is the same un-themed cream as a card (--card-stock), so its text
    takes the CARD's ink, never --ink-on-paper, which Flux's dark page flips light (1.08:1 on cream - the illegible deck titles).
-   Every text here is --ink-on-card, >= 4.5:1 in every tone (flux-card-ink.mjs C5 measures each): the -low tier is not used on
-   this sheet, because it is under 4.5:1 on cream in Plateau and Flux light (3.77 / 4.43 - card-label-contrast's subject). The
-   small labels stay apart by their type (mono caps), a picked option by its olive border, a hovered row by an olive underline. */
+   Every text here is --ink-on-card, >= 4.5:1 in every tone (flux-card-ink.mjs C5 measures each): the -low tier was not used on
+   this sheet when this was written, because it then measured under 4.5:1 on cream in Plateau and Flux light (3.77 / 4.43 -
+   card-label-contrast's subject). faint-text-sweep has since darkened --ink-on-paper-low/--ink-on-card-low itself (both now
+   >=4.5:1 on every stock this app ships), so that reason no longer holds - this dialog simply never needed the dimmer tier
+   at all (every string here is a real label or title, not a meta/hint line), and stays on --ink-on-card unchanged.
+   The small labels stay apart by their type (mono caps), a picked option by its olive border, a hovered row by an olive underline. */
 .deck-wizard-eyebrow{ margin-right:auto; color:var(--ink-on-card); }
 .deck-wizard-dialog .btn-quiet, .deck-wizard-dialog .btn-quiet:hover{ color:var(--ink-on-card); }
 .deck-wizard-close{ font-size:18px; line-height:1; padding:2px 8px; }
