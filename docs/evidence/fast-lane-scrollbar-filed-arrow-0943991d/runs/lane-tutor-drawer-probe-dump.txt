@@ -1,0 +1,648 @@
+{
+  "plateau": {
+    "opened": true,
+    "grip": {
+      "selfAndParents": [
+        {
+          "tag": "button",
+          "id": null,
+          "className": "wz-tutor-grip",
+          "rect": {
+            "top": 121,
+            "left": 868,
+            "right": 884,
+            "bottom": 155,
+            "width": 16,
+            "height": 34
+          },
+          "computed": {
+            "position": "absolute",
+            "top": "16px",
+            "right": "122px",
+            "bottom": "683px",
+            "left": "0px",
+            "zIndex": "2",
+            "transform": "none",
+            "color": "rgb(150, 160, 90)"
+          }
+        },
+        {
+          "tag": "div",
+          "id": null,
+          "className": "desk-frame-tutor-anchor desk-frame-tutor-anchor--board wz-tutor-zone",
+          "rect": {
+            "top": 105,
+            "left": 868,
+            "right": 1006,
+            "bottom": 838,
+            "width": 138,
+            "height": 733
+          },
+          "computed": {
+            "position": "absolute",
+            "top": "0px",
+            "right": "354px",
+            "bottom": "0px",
+            "left": "828px",
+            "zIndex": "56",
+            "transform": "none",
+            "color": "rgb(237, 230, 218)"
+          }
+        },
+        {
+          "tag": "div",
+          "id": null,
+          "className": "desk-frame-stage desk-frame-stage--board",
+          "rect": {
+            "top": 105,
+            "left": 40,
+            "right": 1360,
+            "bottom": 838,
+            "width": 1320,
+            "height": 733
+          },
+          "computed": {
+            "position": "relative",
+            "top": "0px",
+            "right": "0px",
+            "bottom": "0px",
+            "left": "0px",
+            "zIndex": "auto",
+            "transform": "none",
+            "color": "rgb(237, 230, 218)"
+          }
+        },
+        {
+          "tag": "div",
+          "id": null,
+          "className": "desk-frame-stagecol",
+          "rect": {
+            "top": 105,
+            "left": 40,
+            "right": 1360,
+            "bottom": 838,
+            "width": 1320,
+            "height": 733
+          },
+          "computed": {
+            "position": "static",
+            "top": "auto",
+            "right": "auto",
+            "bottom": "auto",
+            "left": "auto",
+            "zIndex": "auto",
+            "transform": "none",
+            "color": "rgb(237, 230, 218)"
+          }
+        },
+        {
+          "tag": "div",
+          "id": null,
+          "className": "desk-frame-grid",
+          "rect": {
+            "top": 105,
+            "left": 40,
+            "right": 1360,
+            "bottom": 838,
+            "width": 1320,
+            "height": 733
+          },
+          "computed": {
+            "position": "static",
+            "top": "auto",
+            "right": "auto",
+            "bottom": "auto",
+            "left": "auto",
+            "zIndex": "auto",
+            "transform": "none",
+            "color": "rgb(237, 230, 218)"
+          }
+        },
+        {
+          "tag": "div",
+          "id": null,
+          "className": "desk-frame",
+          "rect": {
+            "top": 105,
+            "left": 40,
+            "right": 1360,
+            "bottom": 838,
+            "width": 1320,
+            "height": 733
+          },
+          "computed": {
+            "position": "relative",
+            "top": "0px",
+            "right": "0px",
+            "bottom": "0px",
+            "left": "0px",
+            "zIndex": "auto",
+            "transform": "none",
+            "color": "rgb(237, 230, 218)"
+          }
+        }
+      ],
+      "glyph": [
+        {
+          "tag": "span",
+          "id": null,
+          "className": "wz-tutor-grip-glyph",
+          "rect": {
+            "top": 132,
+            "left": 873,
+            "right": 878,
+            "bottom": 145,
+            "width": 4,
+            "height": 13
+          },
+          "computed": {
+            "position": "static",
+            "top": "auto",
+            "right": "auto",
+            "bottom": "auto",
+            "left": "auto",
+            "zIndex": "auto",
+            "transform": "none",
+            "color": "rgb(150, 160, 90)"
+          }
+        }
+      ],
+      "matchingColorRulesByLevel": [
+        {
+          "level": 0,
+          "tag": "span",
+          "className": "wz-tutor-grip-glyph",
+          "matches": []
+        },
+        {
+          "level": 1,
+          "tag": "button",
+          "className": "wz-tutor-grip",
+          "matches": []
+        },
+        {
+          "level": 2,
+          "tag": "div",
+          "className": "desk-frame-tutor-anchor desk-frame-tutor-anchor--board wz-tutor-zone",
+          "matches": []
+        },
+        {
+          "level": 3,
+          "tag": "div",
+          "className": "desk-frame-stage desk-frame-stage--board",
+          "matches": []
+        }
+      ]
+    },
+    "tutorTab": {
+      "selfAndParents": [
+        {
+          "tag": "button",
+          "id": "wz-tutor-tab-tutor",
+          "className": "wz-drawer-tab",
+          "rect": {
+            "top": 120,
+            "left": 914,
+            "right": 1127,
+            "bottom": 146,
+            "width": 213,
+            "height": 26
+          },
+          "computed": {
+            "position": "static",
+            "top": "auto",
+            "right": "auto",
+            "bottom": "auto",
+            "left": "auto",
+            "zIndex": "auto",
+            "transform": "none",
+            "color": "rgb(150, 160, 90)"
+          }
+        },
+        {
+          "tag": "div",
+          "id": null,
+          "className": "wz-drawer-tabs",
+          "rect": {
+            "top": 120,
+            "left": 914,
+            "right": 1345,
+            "bottom": 146,
+            "width": 431,
+            "height": 26
+          },
+          "computed": {
+            "position": "static",
+            "top": "auto",
+            "right": "auto",
+            "bottom": "auto",
+            "left": "auto",
+            "zIndex": "auto",
+            "transform": "none",
+            "color": "rgb(237, 230, 218)"
+          }
+        },
+        {
+          "tag": "div",
+          "id": null,
+          "className": "wz-drawer-tabbar",
+          "rect": {
+            "top": 106,
+            "left": 900,
+            "right": 1359,
+            "bottom": 146,
+            "width": 459,
+            "height": 40
+          },
+          "computed": {
+            "position": "relative",
+            "top": "0px",
+            "right": "0px",
+            "bottom": "0px",
+            "left": "0px",
+            "zIndex": "auto",
+            "transform": "none",
+            "color": "rgb(237, 230, 218)"
+          }
+        }
+      ],
+      "dataOn": "true",
+      "computed": {
+        "color": "rgb(150, 160, 90)",
+        "borderTopColor": "rgb(150, 160, 90)",
+        "borderBottomColor": "rgb(150, 160, 90)",
+        "borderLeftColor": "rgb(150, 160, 90)",
+        "borderRightColor": "rgb(150, 160, 90)",
+        "borderStyle": "solid",
+        "borderWidth": "1px",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "matchingRulesByLevel": [
+        {
+          "level": 0,
+          "tag": "button",
+          "className": "wz-drawer-tab",
+          "matches": []
+        },
+        {
+          "level": 1,
+          "tag": "div",
+          "className": "wz-drawer-tabs",
+          "matches": []
+        },
+        {
+          "level": 2,
+          "tag": "div",
+          "className": "wz-drawer-tabbar",
+          "matches": []
+        },
+        {
+          "level": 3,
+          "tag": "div",
+          "className": "wz-drawer-slide wz-drawer-slide--right",
+          "matches": []
+        }
+      ]
+    },
+    "overlap": {
+      "grip": {
+        "left": 868,
+        "top": 121,
+        "right": 884,
+        "bottom": 155
+      },
+      "tutorTab": {
+        "left": 914,
+        "top": 120,
+        "right": 1127,
+        "bottom": 146
+      },
+      "intersects": false,
+      "intersectArea": 0
+    }
+  },
+  "flux": {
+    "opened": true,
+    "grip": {
+      "selfAndParents": [
+        {
+          "tag": "button",
+          "id": null,
+          "className": "wz-tutor-grip",
+          "rect": {
+            "top": 122,
+            "left": 868,
+            "right": 884,
+            "bottom": 156,
+            "width": 16,
+            "height": 34
+          },
+          "computed": {
+            "position": "absolute",
+            "top": "16px",
+            "right": "122px",
+            "bottom": "683px",
+            "left": "0px",
+            "zIndex": "2",
+            "transform": "none",
+            "color": "rgb(150, 160, 90)"
+          }
+        },
+        {
+          "tag": "div",
+          "id": null,
+          "className": "desk-frame-tutor-anchor desk-frame-tutor-anchor--board wz-tutor-zone",
+          "rect": {
+            "top": 106,
+            "left": 868,
+            "right": 1006,
+            "bottom": 839,
+            "width": 138,
+            "height": 733
+          },
+          "computed": {
+            "position": "absolute",
+            "top": "0px",
+            "right": "354px",
+            "bottom": "0px",
+            "left": "828px",
+            "zIndex": "56",
+            "transform": "none",
+            "color": "rgb(227, 241, 236)"
+          }
+        },
+        {
+          "tag": "div",
+          "id": null,
+          "className": "desk-frame-stage desk-frame-stage--board",
+          "rect": {
+            "top": 106,
+            "left": 40,
+            "right": 1360,
+            "bottom": 839,
+            "width": 1320,
+            "height": 733
+          },
+          "computed": {
+            "position": "relative",
+            "top": "0px",
+            "right": "0px",
+            "bottom": "0px",
+            "left": "0px",
+            "zIndex": "auto",
+            "transform": "none",
+            "color": "rgb(227, 241, 236)"
+          }
+        },
+        {
+          "tag": "div",
+          "id": null,
+          "className": "desk-frame-stagecol",
+          "rect": {
+            "top": 106,
+            "left": 40,
+            "right": 1360,
+            "bottom": 839,
+            "width": 1320,
+            "height": 733
+          },
+          "computed": {
+            "position": "static",
+            "top": "auto",
+            "right": "auto",
+            "bottom": "auto",
+            "left": "auto",
+            "zIndex": "auto",
+            "transform": "none",
+            "color": "rgb(227, 241, 236)"
+          }
+        },
+        {
+          "tag": "div",
+          "id": null,
+          "className": "desk-frame-grid",
+          "rect": {
+            "top": 106,
+            "left": 40,
+            "right": 1360,
+            "bottom": 839,
+            "width": 1320,
+            "height": 733
+          },
+          "computed": {
+            "position": "static",
+            "top": "auto",
+            "right": "auto",
+            "bottom": "auto",
+            "left": "auto",
+            "zIndex": "auto",
+            "transform": "none",
+            "color": "rgb(227, 241, 236)"
+          }
+        },
+        {
+          "tag": "div",
+          "id": null,
+          "className": "desk-frame",
+          "rect": {
+            "top": 106,
+            "left": 40,
+            "right": 1360,
+            "bottom": 839,
+            "width": 1320,
+            "height": 733
+          },
+          "computed": {
+            "position": "relative",
+            "top": "0px",
+            "right": "0px",
+            "bottom": "0px",
+            "left": "0px",
+            "zIndex": "auto",
+            "transform": "none",
+            "color": "rgb(227, 241, 236)"
+          }
+        }
+      ],
+      "glyph": [
+        {
+          "tag": "span",
+          "id": null,
+          "className": "wz-tutor-grip-glyph",
+          "rect": {
+            "top": 133,
+            "left": 873,
+            "right": 878,
+            "bottom": 146,
+            "width": 4,
+            "height": 13
+          },
+          "computed": {
+            "position": "static",
+            "top": "auto",
+            "right": "auto",
+            "bottom": "auto",
+            "left": "auto",
+            "zIndex": "auto",
+            "transform": "none",
+            "color": "rgb(150, 160, 90)"
+          }
+        }
+      ],
+      "matchingColorRulesByLevel": [
+        {
+          "level": 0,
+          "tag": "span",
+          "className": "wz-tutor-grip-glyph",
+          "matches": []
+        },
+        {
+          "level": 1,
+          "tag": "button",
+          "className": "wz-tutor-grip",
+          "matches": []
+        },
+        {
+          "level": 2,
+          "tag": "div",
+          "className": "desk-frame-tutor-anchor desk-frame-tutor-anchor--board wz-tutor-zone",
+          "matches": []
+        },
+        {
+          "level": 3,
+          "tag": "div",
+          "className": "desk-frame-stage desk-frame-stage--board",
+          "matches": []
+        }
+      ]
+    },
+    "tutorTab": {
+      "selfAndParents": [
+        {
+          "tag": "button",
+          "id": "wz-tutor-tab-tutor",
+          "className": "wz-drawer-tab",
+          "rect": {
+            "top": 121,
+            "left": 914,
+            "right": 1127,
+            "bottom": 147,
+            "width": 213,
+            "height": 26
+          },
+          "computed": {
+            "position": "static",
+            "top": "auto",
+            "right": "auto",
+            "bottom": "auto",
+            "left": "auto",
+            "zIndex": "auto",
+            "transform": "none",
+            "color": "rgb(150, 160, 90)"
+          }
+        },
+        {
+          "tag": "div",
+          "id": null,
+          "className": "wz-drawer-tabs",
+          "rect": {
+            "top": 121,
+            "left": 914,
+            "right": 1345,
+            "bottom": 147,
+            "width": 431,
+            "height": 26
+          },
+          "computed": {
+            "position": "static",
+            "top": "auto",
+            "right": "auto",
+            "bottom": "auto",
+            "left": "auto",
+            "zIndex": "auto",
+            "transform": "none",
+            "color": "rgb(227, 241, 236)"
+          }
+        },
+        {
+          "tag": "div",
+          "id": null,
+          "className": "wz-drawer-tabbar",
+          "rect": {
+            "top": 107,
+            "left": 900,
+            "right": 1359,
+            "bottom": 147,
+            "width": 459,
+            "height": 40
+          },
+          "computed": {
+            "position": "relative",
+            "top": "0px",
+            "right": "0px",
+            "bottom": "0px",
+            "left": "0px",
+            "zIndex": "auto",
+            "transform": "none",
+            "color": "rgb(227, 241, 236)"
+          }
+        }
+      ],
+      "dataOn": "true",
+      "computed": {
+        "color": "rgb(150, 160, 90)",
+        "borderTopColor": "rgb(150, 160, 90)",
+        "borderBottomColor": "rgb(150, 160, 90)",
+        "borderLeftColor": "rgb(150, 160, 90)",
+        "borderRightColor": "rgb(150, 160, 90)",
+        "borderStyle": "solid",
+        "borderWidth": "1px",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "matchingRulesByLevel": [
+        {
+          "level": 0,
+          "tag": "button",
+          "className": "wz-drawer-tab",
+          "matches": []
+        },
+        {
+          "level": 1,
+          "tag": "div",
+          "className": "wz-drawer-tabs",
+          "matches": []
+        },
+        {
+          "level": 2,
+          "tag": "div",
+          "className": "wz-drawer-tabbar",
+          "matches": []
+        },
+        {
+          "level": 3,
+          "tag": "div",
+          "className": "wz-drawer-slide wz-drawer-slide--right",
+          "matches": []
+        }
+      ]
+    },
+    "overlap": {
+      "grip": {
+        "left": 868,
+        "top": 122,
+        "right": 884,
+        "bottom": 156
+      },
+      "tutorTab": {
+        "left": 914,
+        "top": 121,
+        "right": 1127,
+        "bottom": 147
+      },
+      "intersects": false,
+      "intersectArea": 0
+    }
+  }
+}
+
+TUTOR-DRAWER-PROBE: dump complete, no assertions - read above, do not grep for VERIFY.
