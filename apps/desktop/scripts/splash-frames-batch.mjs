@@ -75,7 +75,10 @@ await withHarness(async (app) => {
         tone: el.getAttribute('data-tone'),
         theme: document.documentElement.getAttribute('data-theme'),
         splashHoldAttr: document.documentElement.getAttribute('data-splash-hold'),
-        complete: mark.complete && mark.naturalWidth > 0,
+        // splash-sweep: the mark is SplashMark's own per-theme SVG now, not a
+        // single decoded <img> — "complete" means the right theme's root
+        // actually mounted inside it.
+        complete: !!mark.querySelector('.wz-splash-arbor, .wz-splash-flux'),
         rect: { x: r.left, y: r.top, w: r.width, h: r.height },
         veilBackground: getComputedStyle(veil).backgroundColor,
         logoOpacity: logo ? getComputedStyle(logo).opacity : null,
@@ -119,7 +122,7 @@ await withHarness(async (app) => {
     })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-splash-mark')", { label: `splash pre-fade (${combo.theme}/${combo.name})` });
-    await sleep(FAST_HOLD + 420 + 300); // hold + the .38s fade (CSS) + buffer
+    await sleep(FAST_HOLD + 490 + 300); // hold + the .45s fade (CSS, splash-sweep) + buffer
 
     const after = await app.evalJs(`(() => {
       const logo = document.querySelector('.wz-logo');

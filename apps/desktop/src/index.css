@@ -5951,14 +5951,18 @@ a:focus-visible,
 .wz-splash-veil{
   position:absolute; inset:0; pointer-events:none;
   background:var(--ink-950);
-  opacity:1; transition:opacity .38s ease;
+  /* splash-sweep (Nick's brief): "a short hold, then a 0.45s fade" — was .38s. */
+  opacity:1; transition:opacity .45s ease;
 }
 /* The emblem is a SIBLING of the veil, not a child, so it paints on top of the
-   blur at full clarity — the interface goes soft, the drawing does not. */
+   blur at full clarity — the interface goes soft, the drawing does not.
+   splash-sweep: now a wrapper around the per-theme SplashMark (ArborMark's
+   layered SVG or FluxMark's schematic), not a single <img> — the class and
+   this rule's own job (position the mark, carry the leaving-fade) unchanged. */
 .wz-splash-mark{
   position:relative; pointer-events:none; user-select:none;
   max-width:none; max-height:none;
-  opacity:1; transition:opacity .38s ease;
+  opacity:1; transition:opacity .45s ease;
 }
 /* ITEM splash-hold ROUND 3 — the cycling loading line, in the theme's own UI
    font and a quiet colour (both already per-theme tokens; no Flux override
@@ -5973,7 +5977,7 @@ a:focus-visible,
   position:absolute; top:50%; left:50%;
   transform:translate(-50%, calc(-50% + var(--mark-h, 0px) / 2 + 14px));
   min-height:1.2em; font-family:var(--font-ui); font-size:13px;
-  color:var(--text-mid); letter-spacing:.01em; opacity:1; transition:opacity .38s ease;
+  color:var(--text-mid); letter-spacing:.01em; opacity:1; transition:opacity .45s ease;
 }
 .wz-splash-loading-text{ display:inline-block; animation:wz-splash-loading-fade .3s ease; }
 @keyframes wz-splash-loading-fade{ from{ opacity:0; } to{ opacity:1; } }
@@ -5991,6 +5995,28 @@ a:focus-visible,
      arriving. */
   .wz-splash-veil, .wz-splash-mark, .wz-splash-loading{ transition:none; }
 }
+
+/* FLUX SCHEMATIC (splash-sweep, SplashMark.tsx's own FluxMark) — colours
+   moved to Flux's own tokens per docs/briefs/splash-build-kit.md §2's own
+   mapping: #2A6A76 -> --ink-border-strong, #1D4A52 -> --ink-border,
+   #E3F1EC -> --text-hi, #8FB4AC -> --text-mid, #00C2FF -> --line-active,
+   brass -> --brass. Static (dim/dot-grid/tree/label) layers use the tokens
+   directly inline on the SVG elements (SplashMark.tsx); these classes are
+   the ones the TIMELINE actually drives (a connector or node's own .lit
+   state) or that need a transition to animate smoothly between states. */
+.fx-dim{ fill:none; stroke:var(--ink-border-strong); stroke-width:3; stroke-linecap:square; stroke-linejoin:miter; }
+.fx-hot{ fill:none; stroke:var(--brass); stroke-width:4; stroke-linecap:square; stroke-linejoin:miter; }
+.fx-box{ fill:#04141A; stroke:var(--ink-border-strong); stroke-width:3; }
+.fx-name{ fill:var(--text-hi); font-family:'Rajdhani','Figtree',sans-serif; font-weight:600; font-size:27px; letter-spacing:.08em; }
+.fx-tag{ fill:var(--line-active); font-family:'Chakra Petch','Figtree',sans-serif; font-size:17px; letter-spacing:.12em; }
+.fx-sub{ fill:var(--text-mid); font-family:'Chakra Petch','Figtree',sans-serif; font-size:19px; letter-spacing:.14em; }
+.fx-tree{ fill:none; stroke:var(--ink-border); stroke-width:2; }
+.fx-grid{ fill:var(--ink-border); }
+.tile rect{ fill:#04141A; stroke:var(--text-mid); stroke-width:3; transition:stroke .3s; }
+.tile text{ fill:var(--text-hi); font-family:'Rajdhani','Figtree',sans-serif; font-weight:600; font-size:28px; text-anchor:middle; transition:fill .3s; }
+.tile.lit rect{ stroke:var(--brass); }
+.fx-node rect, .fx-node circle{ transition:stroke .35s; }
+.fx-node.lit rect, .fx-node.lit circle{ stroke:var(--brass); }
 
 /* BOARD CONTEXT MENU (Nick, Oct 15; cursor/board-context-menu mockup @ 0df8bf30) - the small themed menu, the "Send to Trash?" dialog, and the Settings switch. All overlays (position:fixed in a portal):
    page primacy - none of them moves or resizes anything beneath it. Tokens only, so Arbor and Flux both wear them. */

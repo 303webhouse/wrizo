@@ -284,7 +284,13 @@ await withHarness(async (app) => {
   }
 
   // ==========================================================================
-  // S5 — THE ASSET FOLLOWS THE MEASURED BACKDROP, NOT A THEME MAP.
+  // S5 — THE BACKDROP PROBE (store/backdropTone.ts). SUPERSEDED in PART by
+  // splash-sweep (docs/briefs/splash-brief.md): the mark is no longer chosen
+  // by this measurement — every theme now draws its own built animation,
+  // chosen by `wrizo-theme` (S13 below). `tone`/`data-tone` stays wired
+  // (Splash.tsx's own header comment: live diagnostic data, and ready for a
+  // future theme that ships without a dedicated animation yet), so the probe
+  // itself is still asserted; only the "it picks the asset" claims are gone.
   // ==========================================================================
   // ITEM 141 (harness-only): the SIZES loop's last `openApp` navigates with no
   // settle after it — a window.wrizo* seam read right here raced the reload.
@@ -293,25 +299,31 @@ await withHarness(async (app) => {
   ok('S5: the backdrop probe answers (the seam exists and runs in the page)',
     tone === 'dark' || tone === 'light', String(tone));
 
+  // SUPERSEDED (splash-sweep: the mark is theme-chosen now, not tone-chosen —
+  // `.wz-splash-mark` is a wrapper around SplashMark's per-theme SVG, never an
+  // <img src>, so there is no "asset shown" to compare against the tone any
+  // more). Kept verbatim, no longer run:
+  //   const s5 = await splashState(app);
+  //   const agrees = (s5.tone === 'dark' && /for-dark-theme/.test(s5.src || ''))
+  //     || (s5.tone === 'light' && /for-light-theme/.test(s5.src || ''));
+  //   ok('S5: the asset SHOWN matches the tone MEASURED — cream linework over a dark ground, warm ink over a light one. The failure this guards is the one a theme→asset map would have shipped silently: ink the same colour as the ground, i.e. no visible art at all',
+  //     agrees, JSON.stringify({ measuredTone: s5.tone, src: s5.src }));
+  //   ok('S5: on this app\'s own ground (every registered theme is dark: plateau #110600, flux #04141A) the measurement selects the DARK asset',
+  //     s5.tone === 'dark', String(s5.tone));
+  // Successor: the measurement itself still reads correctly (it just no
+  // longer drives anything splash-side) — on this app's own ground (every
+  // registered theme is dark: plateau #110600, flux #04141A) it still reads dark.
   const s5 = await splashState(app);
-  const agrees = (s5.tone === 'dark' && /for-dark-theme/.test(s5.src || ''))
-    || (s5.tone === 'light' && /for-light-theme/.test(s5.src || ''));
-  ok('S5: the asset SHOWN matches the tone MEASURED — cream linework over a dark ground, warm ink over a light one. The failure this guards is the one a theme→asset map would have shipped silently: ink the same colour as the ground, i.e. no visible art at all',
-    agrees, JSON.stringify({ measuredTone: s5.tone, src: s5.src }));
-
-  ok('S5: on this app\'s own ground (every registered theme is dark: plateau #110600, flux #04141A) the measurement selects the DARK asset',
+  ok('S5 [splash-sweep successor]: the backdrop probe still reads correctly on this app\'s own (always-dark) ground, even though nothing splash-side consumes it for asset choice any more',
     s5.tone === 'dark', String(s5.tone));
 
   // ==========================================================================
-  // S5b — fix/splash-tone (Fable, Oct 16; Nick live: "the splash swaps to the
-  // light-theme sketch on the dark veil"). S5 above never catches this: every
-  // openApp/openAppThemed call lands on Arrival ('/'), which is genuinely dark
-  // chrome, so even the OLD `elementFromPoint`-through-the-veil measurement
-  // read correctly there. The bug only shows once the last-open ROUTE is a
-  // page whose own --paper is light and the veil sits on top of it — exactly
-  // what a reopen after writing restores. Seeded through the seam (never raw
-  // localStorage on a collection — the seeding law), the hash set BEFORE the
-  // reload that actually reproduces it.
+  // S5b — fix/splash-tone's own regression guard (Fable, Oct 16; Nick live:
+  // "the splash swaps to the light-theme sketch on the dark veil"), SUPERSEDED
+  // IN PART by splash-sweep for the same reason as S5: there is no "chosen
+  // asset" to verify any more, only the measurement's own correctness. The
+  // scenario this sets up (a light Page as the mounted route behind the
+  // splash) is unchanged and still the one case S1-S5 never reach.
   // ==========================================================================
   await app.goto('/');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ voice: 'serif', page: 'light', fade: 'on' }));");
@@ -328,13 +340,11 @@ await withHarness(async (app) => {
     const page = document.querySelector('.mode-page');
     const paperBg = page ? getComputedStyle(page).backgroundColor : null;
     const splash = document.querySelector('.wz-splash');
-    const mark = splash ? splash.querySelector('.wz-splash-mark') : null;
     const veil = splash ? splash.querySelector('.wz-splash-veil') : null;
     return {
       pageTone: document.documentElement.getAttribute('data-page'),
       pageMounted: !!page, paperBg,
       splashMounted: !!splash,
-      src: mark ? mark.getAttribute('src') : null,
       tone: splash ? splash.getAttribute('data-tone') : null,
       veilBg: veil ? getComputedStyle(veil).backgroundColor : null,
     };
@@ -344,62 +354,63 @@ await withHarness(async (app) => {
   ok('S5b (premise): the splash is still up to measure against',
     s5b.splashMounted, JSON.stringify(s5b));
 
-  // THE RED-FIRST CLAIM: the veil is always --ink-950 (dark, every theme this
-  // app ships) regardless of what route is behind it, so the DARK-theme asset
-  // (cream linework — its own line pixels are LIGHT) must be chosen even here,
-  // on a light page. Pre-fix, `elementFromPoint` read the light page THROUGH
-  // the pointer-events:none veil and this went red: 'light' measured, the
-  // warm-ink asset chosen, its dark pixels landing on the ALSO-dark veil.
-  ok('S5b [fix/splash-tone]: on a light PAGE, the splash still measures the veil\'s own (always dark) paint, not the page behind it — the dark-theme asset is chosen',
-    s5b.tone === 'dark' && /for-dark-theme/.test(s5b.src || ''), JSON.stringify(s5b));
-
-  // Sample the actual asset's own rendered pixels (never eyeballed, never
-  // assumed from the filename): draw it to an offscreen canvas and read the
-  // mean colour of its opaque ink, the same WCAG luminance crossover
-  // backdropTone.ts itself uses to classify a colour as light or dark.
-  const inkSample = await app.evalJs(`(() => {
-    const img = document.querySelector('.wz-splash-mark');
-    if (!img || !img.naturalWidth) return null;
-    const c = document.createElement('canvas');
-    c.width = img.naturalWidth; c.height = img.naturalHeight;
-    const ctx = c.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    const d = ctx.getImageData(0, 0, c.width, c.height).data;
-    let sumR = 0, sumG = 0, sumB = 0, n = 0;
-    const STRIDE = 97; // a prime stride, so it never aliases with a regular pattern in the linework
-    for (let i = 3; i < d.length; i += 4 * STRIDE) { if (d[i] > 200) { sumR += d[i - 3]; sumG += d[i - 2]; sumB += d[i - 1]; n += 1; } }
-    return n > 0 ? { r: Math.round(sumR / n), g: Math.round(sumG / n), b: Math.round(sumB / n), n } : { n: 0 };
-  })()`);
-  const lin = (v) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; };
-  const inkLum = inkSample && inkSample.n > 0
-    ? 0.2126 * lin(inkSample.r) + 0.7152 * lin(inkSample.g) + 0.0722 * lin(inkSample.b)
-    : null;
-  ok('S5b (premise): the shown asset\'s own opaque ink was actually sampled (a non-zero population, not a filename guess)',
-    !!inkSample && inkSample.n > 0, JSON.stringify(inkSample));
-  ok('S5b [fix/splash-tone]: the chosen (dark-theme) asset\'s own line pixels are genuinely LIGHT (luminance >= the same 0.179 crossover backdropTone.ts classifies by) — cream ink, legible on the dark veil it actually sits on',
-    inkLum != null && inkLum >= 0.179, JSON.stringify({ inkSample, inkLum }));
+  // SUPERSEDED (splash-sweep): `.wz-splash-mark` carries no `src` any more, so
+  // there is no "chosen asset" (filename or sampled ink colour) to verify on
+  // a light page. Kept verbatim, no longer run:
+  //   ok('S5b [fix/splash-tone]: on a light PAGE, the splash still measures the veil\'s own (always dark) paint, not the page behind it — the dark-theme asset is chosen',
+  //     s5b.tone === 'dark' && /for-dark-theme/.test(s5b.src || ''), JSON.stringify(s5b));
+  //   const inkSample = await app.evalJs(`(() => {
+  //     const img = document.querySelector('.wz-splash-mark');
+  //     if (!img || !img.naturalWidth) return null;
+  //     const c = document.createElement('canvas');
+  //     c.width = img.naturalWidth; c.height = img.naturalHeight;
+  //     const ctx = c.getContext('2d');
+  //     ctx.drawImage(img, 0, 0);
+  //     const d = ctx.getImageData(0, 0, c.width, c.height).data;
+  //     let sumR = 0, sumG = 0, sumB = 0, n = 0;
+  //     const STRIDE = 97;
+  //     for (let i = 3; i < d.length; i += 4 * STRIDE) { if (d[i] > 200) { sumR += d[i - 3]; sumG += d[i - 2]; sumB += d[i - 1]; n += 1; } }
+  //     return n > 0 ? { r: Math.round(sumR / n), g: Math.round(sumG / n), b: Math.round(sumB / n), n } : { n: 0 };
+  //   })()`);
+  //   ok('S5b [fix/splash-tone]: the chosen (dark-theme) asset\'s own line pixels are genuinely LIGHT...', ...);
+  // Successor — the CORE claim fix/splash-tone actually fixed, narrowed to
+  // what still applies: the measurement itself still reads the veil's own
+  // (always dark) paint, not the light page behind it, regardless of whether
+  // anything downstream still uses that reading to choose an asset.
+  ok('S5b [splash-sweep successor]: on a light PAGE, the splash still measures the veil\'s own (always dark) paint, not the page behind it',
+    s5b.tone === 'dark', JSON.stringify(s5b));
 
   // ==========================================================================
-  // S6 — IT LEAVES ON ITS OWN, AFTER THE FLOOR (item splash-hold).
+  // S6 — IT LEAVES ON ITS OWN, AFTER THE FLOOR. SUPERSEDED IN PART by
+  // splash-sweep (Nick's round 4: "the old 5s minimum hold is replaced by the
+  // animation's own length") — there is no longer one fixed HOLD_MS to read
+  // back from the page seam (Splash.tsx's own comment on the window-seam
+  // block), so the floor is measured empirically instead: the real elapsed
+  // time from mount to self-dismiss, which S16 (below) checks is in the
+  // theme's own expected band. This section keeps the STILL-TRUE half ("it
+  // dismisses itself, nothing required of the writer") and drops the
+  // fixed->=5000ms assertion.
   // ==========================================================================
   await openApp(app);
   // ITEM 141 (harness-only): same shape as S5 above — openApp navigates with no
   // settle of its own, so the seam read right after it needs its own waitFor.
   await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S6 settle' });
-  const holdMs = await app.evalJs('window.wrizoSplash ? window.wrizoSplash.HOLD_MS : null');
-  // SUPERSEDED (item splash-hold ROUND 3): "minimum 5s per app load" raised the floor
-  // from round 1's 3000ms.
-  // ok('S6 (driver): the hold is readable from the page seam, and is the item splash-hold floor (>= 3000ms, Nick live: "visible for at least 3 seconds")', typeof holdMs === 'number' && holdMs >= 3000, String(holdMs));
-  ok('S6 (driver, ROUND 3 successor): the hold is readable from the page seam, and is the item splash-hold floor (>= 5000ms, Nick live: "minimum 5s per app load")',
-    typeof holdMs === 'number' && holdMs >= 5000, String(holdMs));
+  // SUPERSEDED (splash-sweep): HOLD_MS is gone from the seam (there is no
+  // single floor to report any more — see Splash.tsx's own comment on the
+  // window-seam block). Kept verbatim, no longer run:
+  //   const holdMs = await app.evalJs('window.wrizoSplash ? window.wrizoSplash.HOLD_MS : null');
+  //   ok('S6 (driver, ROUND 3 successor): the hold is readable from the page seam, and is the item splash-hold floor (>= 5000ms, Nick live: "minimum 5s per app load")',
+  //     typeof holdMs === 'number' && holdMs >= 5000, String(holdMs));
   const mountedAt = Date.now();
   // A fixed sleep raced the app's OWN readiness (round 3: the hold now also waits for
   // authState to resolve past 'loading', which a slow harness/CI tick could overrun a
-  // sleep(holdMs+700) by) — waitFor polls instead, with real headroom.
-  await app.waitFor("!document.querySelector('.wz-splash')", { label: 'S6 self-dismiss after the floor', timeout: (holdMs || 5000) + 8000 });
+  // sleep by) — waitFor polls instead, with real headroom. 15s ceiling: generous above
+  // any real per-theme animation (S16 below expects well under 5s) and above the 10s
+  // readiness ceiling too.
+  await app.waitFor("!document.querySelector('.wz-splash')", { label: 'S6 self-dismiss after the floor', timeout: 15000 });
   const elapsedMs = Date.now() - mountedAt;
-  ok('S6: left alone, the splash dismisses ITSELF after its hold (and only once the app is ready) — nothing is ever required of the writer',
-    elapsedMs >= (holdMs || 5000) - 150, String(elapsedMs));
+  ok('S6: left alone, the splash dismisses ITSELF (and only once the app is ready) — nothing is ever required of the writer',
+    elapsedMs > 0, String(elapsedMs));
 
   await openApp(app);
   const liveBefore = await app.evalJs("!!document.querySelector('.wz-splash')");
@@ -628,6 +639,206 @@ await withHarness(async (app) => {
   ok('S12 (source): main.tsx calls initTheme() BEFORE ReactDOM...render() — the attribute lands on <html> before React mounts anything, Splash included',
     initIdx >= 0 && renderIdx >= 0 && initIdx < renderIdx,
     JSON.stringify({ initIdx, renderIdx }));
+
+  // ==========================================================================
+  // splash-sweep (Fable, Oct 16; docs/briefs/splash-brief.md + splash-build-
+  // kit.md). S13-S17 below extend this file per Fable's own list: per-theme
+  // asset; IDEAS before FINAL DRAFT; no brass on letter pixels; floor = the
+  // animation's own length; the reduced-motion end state.
+  // ==========================================================================
+  const SPEED = 0.7; // SplashMark.tsx's own SPEED constant, mirrored here deliberately — a regression in either place is what this guards
+
+  // ==========================================================================
+  // S13 — THE MARK FOLLOWS THE LAST-PICKED THEME, ARBOR BY DEFAULT.
+  // ==========================================================================
+  for (const theme of ['plateau', 'flux']) {
+    await openAppThemed(app, theme);
+    await app.waitFor("!!document.querySelector('.wz-splash')", { label: `S13 settle (${theme})` });
+    const s13 = await app.evalJs(`(() => {
+      const splash = document.querySelector('.wz-splash');
+      return {
+        splashTheme: splash ? splash.getAttribute('data-splash-theme') : null,
+        arbor: !!document.querySelector('.wz-splash-arbor'),
+        flux: !!document.querySelector('.wz-splash-flux'),
+      };
+    })()`);
+    ok(`S13 (${theme}): the splash's own data-splash-theme attribute matches the last-picked theme (wrizo-theme)`,
+      s13.splashTheme === theme, JSON.stringify(s13));
+    const expectArbor = theme === 'plateau';
+    ok(`S13 (${theme}): ${expectArbor ? 'the Arbor sketch (.wz-splash-arbor)' : 'the Flux schematic (.wz-splash-flux)'} renders, and the OTHER theme's mark does not mount at all`,
+      expectArbor ? (s13.arbor === true && s13.flux === false) : (s13.flux === true && s13.arbor === false),
+      JSON.stringify(s13));
+  }
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
+  await app.goto('/'); await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S13 settle (default)' });
+  const s13Default = await app.evalJs("!!document.querySelector('.wz-splash-arbor') && !document.querySelector('.wz-splash-flux')");
+  ok('S13: with no stored preference, the default mark is Arbor\'s (matches S12\'s own default-theme claim)', s13Default === true, String(s13Default));
+
+  // Real motion from here on — S8 above emulated prefers-reduced-motion:reduce
+  // and never reset it; S14/S16 both need the genuine, time-based animation.
+  await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+
+  // ==========================================================================
+  // S14/S16 — IDEAS BEFORE FINAL DRAFT, AND THE FLOOR IS THE ANIMATION'S OWN
+  // LENGTH (not a fixed 5s - Nick's round 4). One pass per theme: sample EARLY
+  // (IDEAS/the first tiles should be lit, FINAL DRAFT should not be yet),
+  // sample LATE (FINAL DRAFT should be lit by then), and measure the real
+  // elapsed time to self-dismiss against this theme's own expected band.
+  //   Flux's own band is computed EXACTLY from SplashMark.tsx's own literal
+  //   timeline constants (finalAt=3230, pop 260+480ms, hold 500ms) * SPEED -
+  //   no rendering-dependent unknowns, so the tolerance is tight. Arbor's
+  //   depends on the real rendered connector lengths (getTotalLength(), not
+  //   knowable without rendering), so it is checked against the BRIEF's own
+  //   stated total ("about 3.7s in Arbor", fade included - 0.45s fade removed
+  //   below) with a wider tolerance.
+  // ==========================================================================
+  const fluxFloorMs = (3230 + 260 + 480 + 500) * SPEED;
+  const arborFloorMsExpected = 3700 - 450; // brief: "about 3.7s", fade (0.45s) not part of the floor itself
+  const EARLY_MS = { plateau: 700, flux: 500 };     // after IDEAS/the first tiles light, well before FINAL DRAFT
+  const LATE_FRACTION = 0.92;                        // just before the floor — FINAL DRAFT's own pop should have landed
+
+  for (const theme of ['plateau', 'flux']) {
+    await openAppThemed(app, theme);
+    await app.waitFor("!!document.querySelector('.wz-splash')", { label: `S14 settle (${theme})` });
+    const mountedAt = Date.now();
+
+    await sleep(EARLY_MS[theme]);
+    const early = await app.evalJs(`(() => {
+      const ideas = document.querySelector('[data-stage="ideas"]');
+      const final = document.querySelector('[data-stage="final"]');
+      const firstTile = document.querySelector('[data-tile="I"]');
+      const fxFinal = document.querySelector('[data-node="fxFinal"]');
+      return {
+        ideasOpacity: ideas ? parseFloat(getComputedStyle(ideas).opacity) : null,
+        finalOpacity: final ? parseFloat(getComputedStyle(final).opacity) : null,
+        firstTileLit: firstTile ? firstTile.classList.contains('lit') : null,
+        fxFinalLit: fxFinal ? fxFinal.classList.contains('lit') : null,
+      };
+    })()`);
+    if (theme === 'plateau') {
+      ok(`S14 (${theme}) EARLY: IDEAS' own outline has already begun lighting (opacity > 0.3) ...`,
+        early.ideasOpacity != null && early.ideasOpacity > 0.3, JSON.stringify(early));
+      ok(`S14 (${theme}) EARLY: ... while FINAL DRAFT has not (opacity < 0.1) — IDEAS lights before FINAL DRAFT, never the reverse`,
+        early.finalOpacity != null && early.finalOpacity < 0.1, JSON.stringify(early));
+    } else {
+      ok(`S14 (${theme}) EARLY: the first IDEAS tile has already snapped into place and lit ...`,
+        early.firstTileLit === true, JSON.stringify(early));
+      ok(`S14 (${theme}) EARLY: ... while FINAL DRAFT has not — IDEAS lights before FINAL DRAFT, never the reverse`,
+        early.fxFinalLit === false, JSON.stringify(early));
+    }
+
+    const expectedFloor = theme === 'flux' ? fluxFloorMs : arborFloorMsExpected;
+    await sleep(Math.max(0, expectedFloor * LATE_FRACTION - EARLY_MS[theme]));
+    const late = await app.evalJs(`(() => {
+      const final = document.querySelector('[data-stage="final"]');
+      const fxFinal = document.querySelector('[data-node="fxFinal"]');
+      return {
+        finalOpacity: final ? parseFloat(getComputedStyle(final).opacity) : null,
+        fxFinalLit: fxFinal ? fxFinal.classList.contains('lit') : null,
+      };
+    })()`);
+    if (theme === 'plateau') {
+      ok(`S14 (${theme}) LATE: by just before the floor, FINAL DRAFT's own outline has now lit (opacity > 0.8)`,
+        late.finalOpacity != null && late.finalOpacity > 0.8, JSON.stringify(late));
+    } else {
+      ok(`S14 (${theme}) LATE: by just before the floor, FINAL DRAFT has now lit`,
+        late.fxFinalLit === true, JSON.stringify(late));
+    }
+
+    await app.waitFor("!document.querySelector('.wz-splash')", { label: `S16 self-dismiss (${theme})`, timeout: 15000 });
+    const elapsed = Date.now() - mountedAt;
+    const tolerance = theme === 'flux' ? 450 : 900; // flux: exact formula; arbor: the brief's own rounded "about" figure
+    ok(`S16 (${theme}) [splash-sweep]: the hold floor is the animation's own length (${Math.round(expectedFloor)}ms +/-${tolerance}ms), not a fixed 5s (measured ${elapsed}ms)`,
+      Math.abs(elapsed - expectedFloor) <= tolerance, JSON.stringify({ elapsed, expectedFloor, tolerance }));
+    ok(`S16 (${theme}): and it is well UNDER the old fixed 5000ms floor — the whole point of round 4`,
+      elapsed < 5000, String(elapsed));
+  }
+
+  // ==========================================================================
+  // S15 — NO BRASS ON LETTER PIXELS. The cutting script's own claim (splash-
+  // build-kit.md §1): the five outline/FINAL layers are "brass outline
+  // layers, letters left out" — so each one's own opaque-pixel COUNT should
+  // be MEANINGFULLY SMALLER than the same bounding box's ink in the always-
+  // cream base/final-cream layer (which DOES carry the letters). Measured
+  // from the asset FILES themselves (fetch + canvas, same-origin, no CORS),
+  // not from a live render — the claim is about what was CUT, not how it is
+  // shown. Reduced motion (S8's own emulation stayed off since S14 reset it;
+  // re-armed here on purpose, since this check only needs the FINISHED state).
+  // ==========================================================================
+  await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  await openAppThemed(app, 'plateau');
+  await app.waitFor("!!document.querySelector('.wz-splash-arbor')", { label: 'S15 settle' });
+  const inkCounts = await app.evalJs(`(async () => {
+    const count = async (file, x, y, w, h) => {
+      const img = new Image();
+      img.src = '/brand/splash-arbor/' + file;
+      await img.decode();
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
+      const d = ctx.getImageData(0, 0, w, h).data;
+      let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 40) n += 1;
+      return n;
+    };
+    const stages = [
+      { name: 'ideas', outline: 'ideas.png', base: 'base.png', x: 1915, y: 1039, w: 608, h: 754 },
+      { name: 'text', outline: 'text.png', base: 'base.png', x: 1276, y: 1379, w: 463, h: 351 },
+      { name: 'feedback', outline: 'feedback.png', base: 'base.png', x: 478, y: 1185, w: 727, h: 426 },
+      { name: 'page', outline: 'page.png', base: 'base.png', x: 1398, y: 481, w: 414, h: 459 },
+      { name: 'final', outline: 'final.png', base: 'final-cream.png', x: 2362, y: 442, w: 395, h: 431 },
+    ];
+    const out = {};
+    for (const s of stages) {
+      const outlineN = await count(s.outline, 0, 0, s.w, s.h);
+      const baseN = await count(s.base, s.x, s.y, s.w, s.h);
+      out[s.name] = { outlineN, baseN };
+    }
+    return out;
+  })()`);
+  for (const [stage, { outlineN, baseN }] of Object.entries(inkCounts)) {
+    ok(`S15 (premise) ${stage}: both layers actually have ink to compare (a non-zero population)`,
+      outlineN > 0 && baseN > 0, JSON.stringify({ stage, outlineN, baseN }));
+    ok(`S15 [splash-sweep] ${stage}: the brass outline layer's own ink is MEANINGFULLY LESS than the same box's cream ink (outline ${outlineN} < 70% of base ${baseN}) — something besides the outline strokes (the letters) was left out of the brass layer`,
+      outlineN < baseN * 0.7, JSON.stringify({ stage, outlineN, baseN, ratio: baseN > 0 ? Math.round((outlineN / baseN) * 100) / 100 : null }));
+  }
+
+  // ==========================================================================
+  // S17 — REDUCED MOTION: THE FINISHED DRAWING SHOWS AT ONCE (brief: "the
+  // finished brass drawing shows at once, then the usual fade"), both themes.
+  // S8 already proved this for the veil/mark's OWN transition; this proves it
+  // for the MARK'S OWN CONTENT (every outline/connector/tile/node already lit,
+  // no mid-sweep frame ever reachable) — a stronger, content-level claim S8
+  // never made since the single-<img> mark had no "mid-sweep" state to skip.
+  // ==========================================================================
+  for (const theme of ['plateau', 'flux']) {
+    await openAppThemed(app, theme);
+    await app.waitFor("!!document.querySelector('.wz-splash')", { label: `S17 settle (${theme})` });
+    await sleep(80); // one frame's worth of headroom — reduced motion sets the end state synchronously in SplashMark's own mount effect
+    const s17 = theme === 'plateau'
+      ? await app.evalJs(`(() => {
+          const stages = [...document.querySelectorAll('[data-stage]')].map((el) => Math.round(parseFloat(getComputedStyle(el).opacity) * 100) / 100);
+          const dashoffsets = [...document.querySelectorAll('.wz-splash-arbor mask path')].map((p) => getComputedStyle(p).strokeDashoffset);
+          return { stages, dashoffsets };
+        })()`)
+      : await app.evalJs(`(() => {
+          const tilesLit = [...document.querySelectorAll('[data-tile]')].every((el) => el.classList.contains('lit'));
+          const nodesLit = [...document.querySelectorAll('[data-node]')].every((el) => el.classList.contains('lit'));
+          const dashoffsets = [...document.querySelectorAll('.wz-splash-flux .fx-hot')].map((p) => getComputedStyle(p).strokeDashoffset);
+          return { tilesLit, nodesLit, dashoffsets };
+        })()`);
+    if (theme === 'plateau') {
+      ok(`S17 (${theme}): every stage outline is already fully lit (opacity 1) at the FIRST readable moment — no mid-sweep frame`,
+        Array.isArray(s17.stages) && s17.stages.length === 5 && s17.stages.every((o) => o === 1), JSON.stringify(s17));
+      ok(`S17 (${theme}): every connector's own reveal path is already fully drawn (dashoffset 0)`,
+        Array.isArray(s17.dashoffsets) && s17.dashoffsets.length === 6 && s17.dashoffsets.every((d) => parseFloat(d) === 0), JSON.stringify(s17));
+    } else {
+      ok(`S17 (${theme}): every tile has already snapped into place and lit, every node already lit — no mid-sweep frame`,
+        s17.tilesLit === true && s17.nodesLit === true, JSON.stringify(s17));
+      ok(`S17 (${theme}): every wire's own reveal path is already fully drawn (dashoffset 0)`,
+        Array.isArray(s17.dashoffsets) && s17.dashoffsets.length === 5 && s17.dashoffsets.every((d) => parseFloat(d) === 0), JSON.stringify(s17));
+    }
+  }
 });
 
 for (const c of checks) {
