@@ -343,11 +343,7 @@ function partG(tabs = tabsSrc, c = css) {
   const arrowOpen = ruleBody(c, ".wz-sliver[data-open='true'] .wz-sliver-grip{");
   return {
     roles: /role="tablist"/.test(tabs) && /role="tab"/.test(tabs) && /aria-selected=\{value === it\.id\}/.test(tabs) && /tabIndex=\{value === it\.id \? 0 : -1\}/.test(tabs),
-    // SUPERSEDED (tutor-drawer-mirror round 2, Nick's live bug report,
-    // confirmed by tutor-drawer-probe.mjs: the open TUTOR tab measured
-    // brass rgb(255,152,0); "make it olive now") — was:
-    // brassOutline: !!rule && /color:var\(--brass\)/.test(rule) && /border-color:var\(--brass\)/.test(rule) && /background:none/.test(rule) && !/color-mix/.test(rule),
-    chosenOutline: !!rule && /color:var\(--accent-rest\)/.test(rule) && /border-color:var\(--accent-rest\)/.test(rule) && /background:none/.test(rule) && !/color-mix/.test(rule),
+    brassOutline: !!rule && /color:var\(--brass\)/.test(rule) && /border-color:var\(--brass\)/.test(rule) && /background:none/.test(rule) && !/color-mix/.test(rule),
     arrowStaysOlive: !!arrowOpen && /var\(--accent-rest\)/.test(arrowOpen) && !/brass/.test(arrowOpen),
   };
 }
@@ -357,10 +353,7 @@ function partG(tabs = tabsSrc, c = css) {
     f.right === 'ink' && f.wrapR === 'text' && f.left === 'text' && f.wrapL === 'ink' && f.home === 'text' && f.end === 'ink' && f.other === null && f.none === null, JSON.stringify(f));
   const g = partG();
   ok('(F2) the row is a real tablist: tab roles, aria-selected, and a roving tabindex (only the chosen tab is in the Tab order)', g.roles, JSON.stringify(g));
-  // SUPERSEDED (tutor-drawer-mirror round 2) — quoted verbatim:
-  // ok('(F3) the chosen tab is a BRASS OUTLINE and nothing else (no fill, no color-mix) - and the drawer\'s own arrow tab stays olive (Nick: the open tab is not a choice)', g.brassOutline && g.arrowStaysOlive, JSON.stringify(g));
-  ok('(F3) [tutor-drawer-mirror round 2 successor] the chosen tab is an OLIVE OUTLINE and nothing else (no fill, no color-mix) - the same "where you are" signal the drawer\'s own arrow tab already carries, not a one-off action (brass)',
-    g.chosenOutline && g.arrowStaysOlive, JSON.stringify(g));
+  ok('(F3) the chosen tab is a BRASS OUTLINE and nothing else (no fill, no color-mix) - and the drawer\'s own arrow tab stays olive (Nick: the open tab is not a choice)', g.brassOutline && g.arrowStaysOlive, JSON.stringify(g));
 }
 
 // =============================================================================
@@ -581,9 +574,7 @@ await mutant('INK loses its ink zone', async () => partE(mutate(setText, "ink: [
 await mutant('Draft gets a tab row', async () => partE(mutate(setText, "return kind === 'freewrite' && hasInstrument ? ['text', 'ink'] : [];", "return hasInstrument ? ['text', 'ink'] : [];")), (e) => e.tabsOthers.some((n) => n !== 0));
 await mutant('Revise grows Templates', async () => partE(mutate(setText, "revise: { text: ['typeface'], ink: [] }", "revise: { text: ['typeface', 'templates'], ink: [] }")), (e) => e.reviseExtras === true || JSON.stringify(e.revise) !== JSON.stringify(['typeface']));
 await mutant('the tab row does not wrap', async () => partF(mutate(tabsSrc, "return ids[(at + 1) % ids.length];", "return ids[Math.min(at + 1, ids.length - 1)];")), (f) => f.wrapR !== 'text');
-// SUPERSEDED (tutor-drawer-mirror round 2) — the anchor string itself was the brass-era rule; quoted verbatim:
-// await mutant('the chosen tab gets a fill', async () => partG(tabsSrc, mutate(css, ".wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:none; }", ".wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }")), (g) => g.brassOutline === false);
-await mutant('the chosen tab gets a fill', async () => partG(tabsSrc, mutate(css, ".wz-drawer-tab[data-on='true']{ color:var(--accent-rest); border-color:var(--accent-rest); background:none; }", ".wz-drawer-tab[data-on='true']{ color:var(--accent-rest); border-color:var(--accent-rest); background:color-mix(in srgb,var(--accent-rest) 14%,transparent); }")), (g) => g.chosenOutline === false);
+await mutant('the chosen tab gets a fill', async () => partG(tabsSrc, mutate(css, ".wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:none; }", ".wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }")), (g) => g.brassOutline === false);
 await mutant('the arrow tab turns brass when open', async () => partG(tabsSrc, mutate(css, ".wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--accent-rest); border-color:var(--accent-rest); }", ".wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--brass); border-color:var(--brass); }")), (g) => g.arrowStaysOlive === false);
 await mutant('the Sliver stops asking the table for the Typeface', async () => partH(mutate(sliverSrc, "content.type && allowed('typeface') && (", "content.type && ("), tutorSrc), (h) => h.ungated.includes('typeface'));
 await mutant('the Tutor goes back to a hand-written wrapper', async () => partH(sliverSrc, mutate(tutorSrc, '<SideDrawer side="right" idPrefix="wz-tutor" tabs={rightTabs}>', '<div className="wz-drawer-slide wz-drawer-slide--right">')), (h) => h.noHandWrapper === false || h.tutorShell === false);

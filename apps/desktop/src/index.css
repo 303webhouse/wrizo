@@ -3231,13 +3231,7 @@ a:focus-visible,
    (`.wz-sliver-panel`, `width:calc(100% - 16px)`) and the grip both ride
    this anchor's width/position, so neither needs its own separate clamp. */
 .desk-frame-sliver-anchor{
-  /* ITEM tutor-drawer-mirror (Nick, review fix) — raised for the SAME
-     reason as the tutor anchor's own comment (below, .desk-frame-tutor-
-     anchor): a busy board's own cards (BoardEditor.tsx, unbounded box.z)
-     already outrank z-index:5 within this stage's isolated context. One
-     value, not a grip/panel pair — Sliver's own panel is inset 16px, so
-     its grip already sits in an uncovered gutter and needs no separate lift. */
-  position:absolute; top:0; z-index:55; height:100%;
+  position:absolute; top:0; z-index:5; height:100%;
   /* FX3 S2 — scales in lockstep with .mode-pagecol's own width formula (the
      SAME font-size pin, the SAME scaled px cap): without this, the anchor's
      positioning math silently drifts away from the paper's actual (now
@@ -3406,17 +3400,7 @@ a:focus-visible,
      (`.wz-sliver-panel{right:16px}`) so its grip already sits in an uncovered
      gutter — the tutor panel is a flex-end child, geometrically decoupled
      from its grip, so it takes the stacking cure instead of the inset one. */
-  /* ITEM tutor-drawer-mirror (Nick, review fix, 2026-10-15) — z-index 6/7
-     only ranked WITHIN this stacking context (.desk-frame-stage's own
-     isolation:isolate), where a board's own cards ALSO rank: box.z climbs
-     with every new card/reorder (BoardEditor.tsx, `z: maxZ + 1`), unbounded,
-     so a busy board's own cards already outrank 6/7 and draw over the open
-     drawer. Raised to the SAME "safely above ordinary board content" tier
-     this stage already establishes elsewhere (.board-create-ghost's own
-     z-index:50) rather than a number picked to beat today's card count —
-     56/55 keeps the grip-above-panel relationship this file's own history
-     already proves out (one more than the panel, not a bare coincidence). */
-  position:absolute; top:0; z-index:56; pointer-events:none; height:100%;
+  position:absolute; top:0; z-index:7; pointer-events:none; height:100%;
   font-size:calc(1rem * var(--paper-scale));
   --tutor-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
   --tutor-paper-pad: 38px;   /* .mode-page{ padding:30px 38px } — hand-synced, mirrors --sliver-paper-pad's own comment */
@@ -3469,9 +3453,7 @@ a:focus-visible,
   --tutor-paper-pad: 0px;
 }
 .desk-frame-tutor-panel-anchor{
-  /* ITEM tutor-drawer-mirror (Nick, review fix) — raised with the grip
-     anchor above (same comment there); one below it, same relationship. */
-  position:absolute; top:0; left:0; right:0; height:100%; z-index:55;
+  position:absolute; top:0; left:0; right:0; height:100%; z-index:6;
   display:flex; align-items:stretch; justify-content:flex-end; pointer-events:none;
   font-size:calc(1rem * var(--paper-scale));
   --tutor-panel-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
@@ -3818,26 +3800,15 @@ a:focus-visible,
    affected (the closed drawer is already inert, and an open one is reachable by Tab as before). It restarts on every open because it hangs on [data-open='true']. */
 @keyframes wz-drawer-live{ 0%, 99% { pointer-events:none; } 100% { pointer-events:auto; } }
 [data-open='true'] > .wz-drawer-slide{ animation: wz-drawer-live var(--drawer-dur) linear; }
-/* PHASE 1 (S2) - THE TAB ROW. ROUND 2 (tutor-drawer-mirror, Nick's live bug
-   report: "the open tab shows brass — open menu tabs are olive (Oct 9
-   ruling)"; confirmed live by scripts/harness/tutor-drawer-probe.mjs,
-   measured rgb(255,152,0) on the open TUTOR tab). The ORIGINAL Oct 9 ruling
-   quoted below drew a distinction between the drawer's own arrow tab
-   ("where you are", olive) and the chosen tab ("what you chose", brass) -
-   Nick's later Oct 9 ruling supersedes that split: choosing a tab is ALSO
-   "where you are" (which section is showing), the same state the arrow
-   already marks, so both read olive now and brass stays reserved for
-   actual action controls, the lane's own standing law.
-   SUPERSEDED (quoted verbatim): "The chosen tab wears a BRASS OUTLINE and
-   brass text and NOTHING else - no fill (Nick, Oct 9). The drawer's arrow
-   tab is olive (where you are); this is brass (what you chose)." */
+/* PHASE 1 (S2) - THE TAB ROW. The chosen tab wears a BRASS OUTLINE and brass text and NOTHING else - no fill (Nick, Oct 9). The drawer's
+   arrow tab is olive (where you are); this is brass (what you chose). */
 .wz-drawer-tabbar{ position:relative; padding:14px 14px 0; }
 .wz-drawer-tabs{ display:flex; gap:6px; }
 .wz-drawer-tab{ flex:1; height:26px; padding:0; background:none; border:1px solid var(--ink-border); border-radius:0;
   color:var(--text-mid); font-family:var(--font-ui); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
   cursor:pointer; transition:color .15s ease, border-color .15s ease; }
 .wz-drawer-tab:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
-.wz-drawer-tab[data-on='true']{ color:var(--accent-rest); border-color:var(--accent-rest); background:none; }
+.wz-drawer-tab[data-on='true']{ color:var(--brass); border-color:var(--brass); background:none; }
 .wz-drawer-tab:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
 /* PHASE 1 (S3) - the "?" note beside a tab's word. The overlay shares the tab row's columns, ignores the pointer except on the "?" itself, and
    sits OUTSIDE the tablist. The note opens below the row as an overlay (it displaces nothing). */
@@ -4169,17 +4140,7 @@ a:focus-visible,
    (opacity:0) and inert (pointer-events:none) regardless of its own
    footprint, exactly like the sliver's already does today. */
 .wz-tutor-panel{
-  /* ITEM tutor-drawer-mirror (Nick, review fix) — unlike `.wz-sliver-panel`
-     (position:absolute, taken out of flow, no flex constraint at all),
-     this panel is a GENUINE flex item of `.desk-frame-tutor-panel-anchor`'s
-     flex row. A flex item's default min-height:auto can resolve to its own
-     CONTENT's min-content height, overriding `height:100%` and letting a
-     long lens section (Consistency, on a page with many near-duplicates)
-     grow the panel taller than its box instead of scrolling inside it —
-     the DOCUMENT scrolls instead, "the scrollbar outside the panel." The
-     same min-height:0 escape `.desk-frame-stage` itself already uses
-     (index.css, that rule's own header) for the identical reason. */
-  flex:0 0 auto; min-height:0; height:100%; overflow-y:auto; overflow-x:hidden;
+  flex:0 0 auto; height:100%; overflow-y:auto; overflow-x:hidden;
   /* FX18 S2 (SV24/SV26) — Fable's ruling (2026-07-29): FX18 SUPERSEDES FX10 S1's fixed-vw
      OVERLAY law (a founder's device verdict outranks the architect's earlier "no-JS,
      overlay-as-today" convenience ruling; FX13's measure-effect is now the house's proven
@@ -4250,17 +4211,14 @@ a:focus-visible,
   .wz-sliver-panel:not([data-open='true']), .wz-tutor-panel:not([data-open='true']){
     transition:opacity var(--drawer-dur-reduced) linear, visibility 0s linear var(--drawer-dur-reduced); }
 }
-.wz-tutor-body{ position:relative; display:flex; flex-direction:column; gap:16px; padding:16px 14px; }
-/* ITEM tutor-drawer-mirror (Nick, review fix) — the standing "THE TUTOR"
-   header retires whole (REMOVE); the dock toggle survives as a small quiet
-   corner control (no header row to carry it), icon-only, matching
-   DrawerNote's own "?" button's size/border look rather than the former
-   text-scale link. */
-.wz-tutor-dock-btn{ position:absolute; top:10px; right:10px; width:18px; height:18px; padding:0;
-  display:flex; align-items:center; justify-content:center; background:none;
-  border:1px solid var(--ink-border); border-radius:0; color:var(--text-low); font-family:var(--font-ui);
-  font-size:12px; line-height:1; cursor:pointer; transition:color .15s ease, border-color .15s ease; }
-.wz-tutor-dock-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-tutor-body{ display:flex; flex-direction:column; gap:16px; padding:16px 14px; }
+.wz-tutor-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.wz-tutor-head-title{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
+/* The dock's own quiet close/reopen affordance — text-scale, never brass
+   (chrome, not an evental action), the exact `.wz-cascade-dock-btn` look. */
+.wz-tutor-dock-btn{ background:none; border:0; color:var(--text-low); font-family:var(--font-ui);
+  font-size:11px; cursor:pointer; padding:2px 4px; transition:.15s; }
+.wz-tutor-dock-btn:hover{ color:var(--text-hi); }
 /* DrawerNote.tsx's own CSS — the SINGLE definition every caller shares
    (merged with phase1-drawers, 2026-10-14; that branch's own near-identical
    copy, flagged as a future conflict when word-diet first ported this
@@ -4299,9 +4257,7 @@ a:focus-visible,
 .wz-tutor-frag-item:hover{ color:var(--text-hi); background:var(--ink-800); }
 /* TU5 S3 — the book's Bible section. Writer-authored facts, a plain add input,
    per-fact edit/delete. Nothing brass at rest: the edit/delete controls are
-   text-scale quiet buttons (background:none, no border — the dock toggle
-   this once matched is now a small bordered corner square instead, item
-   tutor-drawer-mirror; this shape is its own now), always legible (never
+   text-scale quiet buttons (the .wz-tutor-dock-btn look), always legible (never
    hover-hidden, so touch reaches them too), brightening on hover only. No count
    anywhere (the FX9 law). No private scroll region — the list grows with its
    content; the panel's own overflow is the single scroller. */

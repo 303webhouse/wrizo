@@ -4,11 +4,9 @@ import type { ReactNode } from 'react';
 // PHASE 1 - THE DRAWER'S TAB ROW (TEXT | INK now; TUTOR | the theme's links word in S3).
 //
 // Tabs, not buttons-that-look-like-tabs: role=tablist / tab with aria-selected and a ROVING tabindex (only the chosen tab is in the Tab
-// order; Left/Right/Home/End move between them and choose). tutor-drawer-mirror ROUND 2 (Nick, live bug report, confirmed by
-// scripts/harness/tutor-drawer-probe.mjs): the chosen tab reads OLIVE now, the same "where you are" state the drawer's own arrow tab
-// already carries - choosing a tab is that state too, not a one-off action, so brass stays reserved for actual action controls.
-// SUPERSEDED (Nick, Oct 9, quoted verbatim): "The chosen tab wears a BRASS OUTLINE and nothing else - no fill (brass-outlined choices
-// lose the light-orange background). The drawer's arrow tab stays olive; that is 'where you are', this is 'what you chose'."
+// order; Left/Right/Home/End move between them and choose). The chosen tab wears a BRASS OUTLINE and nothing else - no fill (Nick,
+// Oct 9: brass-outlined choices lose the light-orange background). The drawer's arrow tab stays olive; that is "where you are", this is
+// "what you chose".
 //
 // Controlled: the host owns the value (for Free Write that is PageEditor's `instrument`, so the paper, the caret and the drawer agree).
 
