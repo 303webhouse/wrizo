@@ -44,7 +44,7 @@ const highlight = (app, sel, words) => app.evalJs(`(() => { const ed = document.
 const scopeState = (app, root) => app.evalJs(`(() => { const t = document.querySelector('${root} .wz-type'); if (!t) return null;
   const tr = t.getBoundingClientRect();
   const sc = [...t.querySelectorAll('.wz-type-scope')].map(b => { const r = b.getBoundingClientRect(); return { text: b.textContent, on: b.dataset.on, dead: b.getAttribute('aria-disabled'),
-    clipped: b.scrollWidth > b.clientWidth || getComputedStyle(b).textOverflow === 'ellipsis' && b.scrollWidth > b.clientWidth, sw: b.scrollWidth, cw: b.clientWidth, inside: r.left >= tr.left - 0.5 && r.right <= tr.right + 0.5 }; });
+    clipped: b.scrollWidth > b.clientWidth, sw: b.scrollWidth, cw: b.clientWidth, inside: r.left >= tr.left - 0.5 && r.right <= tr.right + 0.5 }; });
   const cur = [...t.querySelectorAll('.wz-type-row')].filter(r => r.dataset.current === 'true').map(r => ({ name: r.textContent, color: getComputedStyle(r).color }));
   const probe = document.createElement('span'); probe.style.color = 'var(--brass)'; t.appendChild(probe); const brass = getComputedStyle(probe).color; probe.remove();
   return { scopes: sc, current: cur, brass }; })()`);
