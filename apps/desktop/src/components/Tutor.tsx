@@ -989,12 +989,15 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
               work — nothing is fetched, drawn, or measured while it is hidden. */}
           {rightTab === 'tutor' && (
             <div className="wz-tutor-body">
-            <div className="wz-tutor-head">
-              <span className="wz-tutor-head-title">{t('tutorTitle')}</span>
-              <button type="button" className="wz-tutor-dock-btn" aria-label={docked ? t('tutorClose') : t('tutorDockClose')} onClick={handleDockButton}>
-                {docked ? '×' : t('tutorDockClose')}
-              </button>
-            </div>
+            {/* ITEM tutor-drawer-mirror (Nick, Oct 15, 2:42am) — the standing
+                "THE TUTOR" header is deleted whole (word diet; the tab row
+                already names it — Sliver carries no equivalent header at
+                all). The dock toggle survives, icon-only, no standing text
+                label (full wording stays on aria-label/title, the SR
+                carve-out) — a small quiet corner control, not a header row. */}
+            <button type="button" className="wz-tutor-dock-btn" aria-label={docked ? t('tutorClose') : t('tutorDockClose')} title={docked ? t('tutorClose') : t('tutorDockClose')} onClick={handleDockButton}>
+              {docked ? '×' : '⊙'}
+            </button>
 
             {/* FX10 S1 — the conversation is now the panel's own center of
                 gravity ("with the room this much wider, the composer and
