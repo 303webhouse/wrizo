@@ -720,9 +720,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // an unstruck run is decorated with a null caret (the runway owns the caret, so nothing is ever revealed here). The
       // `.fo-run` wrapper is kept, so a reader of its textContent still gets every character.
       : content.map(run => run.struck
-        ? `<span class="fo-run fo-struck">${struckHtml(run.text)}</span>`
+        ? `<span class="fo-run fo-struck">${typedHtml(run.text)}</span>`
         : `<span class="fo-run">${decorateMarkdownForCard(run.text, null)}</span>`).join('')
-        + `<span class="fo-word">${escHtml(word)}</span>`;
+        + `<span class="fo-word">${typedHtml(word)}</span>`;
 
   return (
     <div className="forward-only-editor-wrap" style={{ position: 'relative', display: 'flex', flexDirection: 'column', ...style }}>
@@ -762,8 +762,9 @@ function escHtml(s: string): string {
   return s.replace(/[&<>]/g, c => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'));
 }
 
-// TYPED-LITERAL: a struck run shows the writer's characters as typed - an escape's backslash is hidden here as it is in a live run
-function struckHtml(text: string): string {
+// TYPED-LITERAL: a struck run and the word still being typed show the writer's characters as typed - an escape's backslash is hidden
+// there as it is in a live run (the word in progress drew it raw, so `*on` read `\*on` until the space)
+function typedHtml(text: string): string {
   const esc = readEscapes(text);
   if (!esc.length) return escHtml(text);
   let out = '';
