@@ -1,0 +1,35 @@
+
+ROWS-SHADOW VERIFY: PASS (136 renders checked, shadow == DOM on every one)
+PASS  L1 (setup): the page opens in Draft by its strip tab
+PASS  L1: the typed stars, underscores and tilde are SHOWN as themselves, and make no run (no bold, italic, underline, strike, no shown mark)  [{"visible":"Start a *b* c __d__ e~f\n# not a heading #tag","bold":0,"italic":0,"underline":0,"strike":0,"escapes":8,"shownMarks":0}]
+PASS  L1: ...and are STORED escaped, every one  [{"stored":"Start a \\*b\\* c \\_\\_d\\_\\_ e\\~f\n\\# not a heading #tag","want":"Start a \\*b\\* c \\_\\_d\\_\\_ e\\~f\n\\# not a heading #tag"}]
+PASS  L2: a `#` where a line's text begins is escaped (no heading); the `#` mid-line is stored as it was typed  ["Start a \\*b\\* c \\_\\_d\\_\\_ e\\~f\n\\# not a heading #tag"]
+PASS  L3: Ctrl+B still makes bold (a run per line, its marks hidden), the literal stars still shown inside it  [{"visible":"Start a *b* c __d__ e~f\n# not a heading #tag","bold":2,"italic":0,"underline":0,"strike":0,"escapes":8,"shownMarks":0}]
+PASS  L3: ...stored as real marks around the escaped text  ["**Start a \\*b\\* c \\_\\_d\\_\\_ e\\~f**\n**\\# not a heading #tag**"]
+PASS  L4 (setup): the old page opens in Draft
+PASS  L4: an old page's saved `**bold**` and `*it*` still render styled (existing markup is not rewritten)  [{"visible":"old bold and it stay","bold":1,"italic":1,"underline":0,"strike":0,"escapes":0,"shownMarks":0}]
+PASS  L4: typing on that page leaves its saved markup exactly as it was  ["**old bold** and *it* stay more"]
+PASS  L5 (setup): the page opens in Draft
+PASS  L5 (driver): the paste landed (the stored text grew past the typed space) - a driver that pastes nothing must not pass the checks below  ["Mine **bold** words Mine **bold** words"]
+PASS  L5 [paste-half successor]: own words copied and pasted back keep their formatting - the stored text holds the same markup twice, and the saved bold before them untouched  ["Mine **bold** words Mine **bold** words"]
+PASS  L5 [paste-half successor]: ...so the page shows the words twice, bold twice, no mark shown  [{"visible":"Mine bold words Mine bold words","bold":2,"italic":0,"underline":0,"strike":0,"escapes":0,"shownMarks":0}]
+PASS  L5b (setup): the page opens in Draft
+PASS  L5b (driver): the paste landed  ["Mine \\*\\*lit\\*\\* words Mine \\*\\*lit\\*\\* words"]
+PASS  L5b: pasted `**` is LITERAL - stored escaped exactly as the typed original, no backslash added  ["Mine \\*\\*lit\\*\\* words Mine \\*\\*lit\\*\\* words"]
+PASS  L5b: ...and the page shows the stars as typed, twice, and no bold  [{"visible":"Mine **lit** words Mine **lit** words","bold":0,"italic":0,"underline":0,"strike":0,"escapes":8,"shownMarks":0}]
+PASS  L6 (setup): the page opens in Free Write by its strip tab
+PASS  L6: the word still being typed shows its star as typed - no backslash appears before the word is finished  [{"visible":"Run go *on","bold":0,"italic":0,"underline":0,"strike":0,"escapes":1,"shownMarks":0}]
+PASS  L6: Free Write shows the typed stars and makes no run  [{"visible":"Run go *on* now","bold":0,"italic":0,"underline":0,"strike":0,"escapes":2,"shownMarks":0}]
+PASS  L6: ...and stores them escaped  ["Run go \\*on\\* now"]
+PASS  L7 (setup): a real double-click opens the card pop-up
+PASS  L7: the card shows the typed stars and underscores and makes no run  [{"visible":"Card start *x* and _y_","bold":0,"italic":0,"underline":0,"strike":0,"escapes":4,"shownMarks":0}]
+PASS  L7: ...and stores them escaped  ["Card start \\*x\\* and \\_y\\_"]
+PASS  L8 (setup): both runs opened and stored text  [{"burst":"Begin one **two** \\*three\\_y\\_\\*  end","slow":"Begin one **two** \\*three\\_y\\_\\*  end"}]
+PASS  L8: the same keys give the same text at any speed (the caret settles synchronously)  [{"burst":"Begin one **two** \\*three\\_y\\_\\*  end","slow":"Begin one **two** \\*three\\_y\\_\\*  end"}]
+FAIL  L8: ...and that text holds both the Ctrl+B bold and the escaped literals  ["Begin one **two** \\*three\\_y\\_\\*  end"]
+PASS  L9 (setup): the page with a font span opens in Draft
+PASS  L9 (driver): the caret is inside the span, after "counted"
+PASS  L9: the span stays whole - one span, its words "counted [sic] gulls", the typed brackets shown as themselves  [["counted [sic] gulls"]]
+PASS  L9: ...stored with both typed brackets escaped, inside the span's own marks  ["Ada [counted \\[sic\\] gulls]{.font-courier-prime} now"]
+
+TYPED-LITERAL VERIFY: FAIL - 1/31 failed

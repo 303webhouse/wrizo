@@ -1,0 +1,28 @@
+PASS  fixture: the board opened with two cards and a nested board pinned on it; two more boards exist  [{"there":true,"id":"cb-board-1","b2":"cb-b2-1","nest":"cb-nest-1"}]
+PASS  fixture: the rail's Drawers panel shows the other board as a thumbnail that declares its entry (data-link-entry)  [{"l":98,"t":304,"r":369,"b":341,"w":271,"h":37,"entry":"cb-b2-1"}]
+PASS  fixture: connection mode is on (double-click on the corner square)  [true]
+PASS  B1: the thumbnail under the arm wears a circle - OPEN (not brass-filled), a 10px circle - and the arm LANDS on it  [{"st1":{"target":"true","peer":null,"solid":null,"flash":null,"circle":true,"radius":"50%","bg":"rgb(31, 26, 22)"},"arm1":{"x1":782.03125,"y1":301.8125,"x2":107,"y2":322.5,"inBody":true,"display":"block"},"tb2":{"l":98,"t":304,"r":369,"b":341,"w":271,"h":37,"entry":"cb-b2-1"}}]
+FAIL  B1 [rail-side successor]: the arm is drawn in a viewport overlay (a portal on body), UNCLIPPED - it ends past the board's RIGHT edge, on the rail's side, over the rail  [{"arm1":{"x1":782.03125,"y1":301.8125,"x2":107,"y2":322.5,"inBody":true,"display":"block"},"railLeft":false,"canvas":{"l":151,"r":1239}}]
+PASS  B8: with the arm over the rail the board has not moved - the canvas rect is identical
+PASS  B2: a release on the thumbnail LINKS - ONE record on THIS board (aBoxId = the card, bEntryId = that board), no connection box - and the mode is over  [{"links2":[{"id":"mvcnx2cbmcml0iix3","aEntryId":"cb-board-1","bEntryId":"cb-b2-1","createdAt":"2026-10-17T17:20:30.491Z","updatedAt":"2026-10-17T17:20:30.491Z","aBoxId":"cb-a"}],"armed":"false"}]
+PASS  B2: the thumbnail flashes its circle SOLID for a beat (data-link-flash on, brass-filled)  [{"target":null,"peer":null,"solid":"true","flash":"on","circle":true,"radius":"50%","bg":"rgb(255, 152, 0)"}]
+PASS  B2: the release that LINKED did not also travel - the writer is STILL ON THE BOARD (the click that follows a release on a thumbnail is swallowed; page-primacy line 3)  [#/page/cb-board-1]
+PASS  B2: then it hides again (no circle, no flash)  [{"target":null,"peer":null,"solid":null,"flash":null,"circle":false,"radius":"0px","bg":"rgba(0, 0, 0, 0)"}]
+PASS  B3: the card's footer reads "- grafted to: Research board" (the link joins the same footer as a same-board connection)  [— grafted to: Research board]
+PASS  B3: the link and the footer survive a reload  [— grafted to: Research board]
+PASS  B4: the thumbnail the card is ALREADY linked to shows its circle SOLID (peer, brass)  [{"target":"true","peer":"true","solid":"true","flash":null,"circle":true,"radius":"50%","bg":"rgb(255, 152, 0)"}]
+PASS  B4: releasing there UNLINKS - the record is a TOMBSTONE (deletedAt + updatedAt stamped, nothing removed), no live link remains, and the footer goes  [{"stored4":1,"stored4b":[{"id":"mvcnx2cbmcml0iix3","aEntryId":"cb-board-1","bEntryId":"cb-b2-1","createdAt":"2026-10-17T17:20:30.491Z","updatedAt":"2026-10-17T17:20:35.963Z","aBoxId":"cb-a","deletedAt":"2026-10-17T17:20:35.963Z"}]}]
+PASS  B5: a thumbnail whose page is ALREADY a pin card on this board IS that card - the release makes a CONNECTION BOX between the two cards and NO page-link record  [{"cs5":1,"links":0}]
+PASS  B6: the Grafts / Links tab lists the selected card's connections - the page-link (a board) AND the same-board connection (the pinned nested board) - each with an X  [[{"via":"card","kind":"board","label":"Nested board","x":true},{"via":"link","kind":"board","label":"Research board","x":true}]]
+PASS  B6: the X asks "Remove graft?" - with Cancel / Delete and NO "Don't ask me again" - even with the asking setting OFF (an unlink keeps its own confirm)  [{"title":"Remove graft?","dontAsk":false,"buttons":["Cancel","Delete"]}]
+PASS  B6: Cancel keeps the link
+PASS  B6: Delete removes the page-link (tombstoned, gone from the list); the same-board connection is untouched  [["card"]]
+PASS  B6: and the X on a same-board connection removes its connection BOX (through the board)  [0]
+PASS  B7: dragging the thumbnail shows a ghost under the pointer, and releasing on the board makes a LINKED COPY - a card at the drop point holding that board's words, tied to its original by a record (card -> that entry)  [{"ghost":true,"copy":"mvcnxf8byv69rkj0w","copyRect":{"l":566,"t":406,"r":848.875,"b":558.3125,"w":282.875,"h":152.3125},"drop":{"x":566,"y":406},"links":[{"id":"mvcnxf8cxs5d4o8k2","aEntryId":"cb-board-1","bEntryId":"cb-b2-1","createdAt":"2026-10-17T17:20:47.196Z","updatedAt":"2026-10-17T17:20:47.196Z","aBoxId":"mvcnxf8byv69rkj0w"}]}]
+PASS  B7: the thumbnail's own click (it travels to the page) did NOT fire - the writer is still on the board  [#/page/cb-board-1]
+PASS  B7: the copy is a real card - selected, and its footer names its original  [— grafted to: Research board]
+PASS  B9 [held path]: press the corner square, drag onto a rail thumbnail and release there toggles the link (one record more or fewer), the mode having been armed during the drag  [{"armed9":"true","before":1,"after":2}]
+PASS  B9 [held path]: and the writer is STILL ON THE BOARD (a release is not a click on the thumbnail)  [#/page/cb-board-1]
+FAIL  B9: after the beat, a deliberate click on the thumbnail travels as it always did (the swallow is a beat, not a lock)  [#/page/cb-board-1]
+
+CONNECTOR-B VERIFY: FAIL - 2/26 failed

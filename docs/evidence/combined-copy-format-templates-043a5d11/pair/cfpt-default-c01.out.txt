@@ -1,0 +1,27 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=043a5d11 bundle=index-Swk7HJyW.js/721334b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/cfpt-default-c01
+[01/19] OK        exit=0   29s card-close-x.mjs :: CARD-CLOSE-X VERIFY: PASS (24 checks)
+[02/19] OK        exit=0   49s card-held-italic.mjs :: ROWS-SHADOW VERIFY: PASS (51 renders checked, shadow == DOM on every one) ;; CARD-HELD-ITALIC VERIFY: PASS (7 checks)
+[03/19] OK        exit=0   44s card-label-contrast.mjs :: CARD-LABEL-CONTRAST VERIFY: PASS (25 checks)
+[04/19] OK        exit=0   15s card-resize-axis.mjs :: CARD-RESIZE-AXIS VERIFY: PASS (16 checks)
+[05/19] OK        exit=0   28s card-resize-relock.mjs :: CARD-RESIZE-RELOCK VERIFY: PASS (10 checks)
+[06/19] OK        exit=0   11s cd1.mjs :: ROWS-SHADOW VERIFY: PASS (23 renders checked, shadow == DOM on every one) ;; CD1 VERIFY: PASS (25 checks)
+[07/19] OK        exit=0   31s cd2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; CD2 VERIFY: PASS (50 checks)
+[08/19] OK        exit=0   19s cd4.mjs :: CD4 VERIFY: PASS (27 checks)
+[09/19] OK        exit=0   49s clickhead.mjs :: ROWS-SHADOW VERIFY: PASS (18 renders checked, shadow == DOM on every one) ;; CLICKHEAD VERIFY: PASS (21 checks)
+[10/19] OK        exit=0   43s connector-a.mjs :: CONNECTOR-A VERIFY: PASS (37 checks)
+[11/19] OK        exit=0   21s deckwizard-backdrop.mjs :: DECKWIZARD-BACKDROP VERIFY: PASS (8 checks)
+[12/19] OK        exit=0    4s drafts-integrity.mjs :: DRAFTS-INTEGRITY VERIFY: PASS (23 checks)
+[13/19] OK        exit=0    1s drawer-ghost.mjs :: DRAWER-GHOST VERIFY: PASS (14 checks)
+[14/19] OK        exit=0    0s drawer-toggles.mjs :: DRAWER-TOGGLES VERIFY: PASS (34 checks)
+[15/19] OK        exit=0  124s drawers-p1-live.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; DRAWERS-P1-LIVE VERIFY: PASS (88 checks)
+[16/19] OK        exit=0    1s drawers-p1.mjs :: DRAWERS-P1 VERIFY: PASS (100 checks)
+[17/19] OK        exit=0   25s e1.mjs :: E1 VERIFY: PASS (41 checks)
+[18/19] OK        exit=0    6s e3.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; E3 VERIFY: PASS (10 checks)
+[19/19] OK        exit=0    9s e4.mjs :: E4 VERIFY: PASS (19 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 19/19 of 19 returned a passing verdict
+SUITE RESULT: CLEAN — tree=043a5d11 bundle=index-Swk7HJyW.js/721334b NO-REBUILD
+CHUNK 01 EXIT 0

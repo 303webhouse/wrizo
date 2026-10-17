@@ -1,0 +1,17 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=9 tree=7bac9b71 bundle=index-BEKxX3ap.js/716997b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/cb4-lane
+[01/9] OK        exit=0   33s board-click-create.mjs :: BOARD-CLICK-CREATE VERIFY: PASS (30 checks)
+[02/9] OK        exit=0   58s board-context-menu.mjs :: BOARD-CONTEXT-MENU VERIFY: PASS (58 checks)
+[03/9] OK        exit=0   15s card-resize-axis.mjs :: CARD-RESIZE-AXIS VERIFY: PASS (16 checks)
+[04/9] OK        exit=0   44s connector-a.mjs :: CONNECTOR-A VERIFY: PASS (37 checks)
+[05/9] NOVERDICT exit=1   18s connector-b.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\cb4-lane\connector-b.mjs.default.txt)
+[06/9] OK        exit=0  124s drawers-p1-live.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; DRAWERS-P1-LIVE VERIFY: PASS (88 checks)
+[07/9] OK        exit=0   18s item170.mjs :: ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one) ;; ITEM170 VERIFY: PASS (19 checks)
+[08/9] OK        exit=0   47s pw1.mjs :: PW1 VERIFY: PASS (41 checks)
+[09/9] OK        exit=0   19s pw2.mjs :: PW2 VERIFY: PASS (24 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 8/9 of 9 returned a passing verdict
+  NOVERDICT: connector-b.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\cb4-lane\connector-b.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=7bac9b71 bundle=index-BEKxX3ap.js/716997b NO-REBUILD

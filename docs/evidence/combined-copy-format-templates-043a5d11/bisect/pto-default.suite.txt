@@ -1,0 +1,12 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=3 tree=f0e0b311 bundle=index-jMZlTeV4.js/714058b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bis-pto-default
+[01/3] OK        exit=0   76s fx5.mjs :: ROWS-SHADOW VERIFY: PASS (126 renders checked, shadow == DOM on every one) ;; FX5 VERIFY: PASS (53 checks)
+[02/3] FAIL      exit=1   13s page-templates-r2.mjs :: PAGE-TEMPLATES-R2 VERIFY: FAIL - 1/91 failed
+[03/3] FAIL      exit=1    6s revspell.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; REVSPELL VERIFY: FAIL — 1/11 failed
+
+SUITE DONE HARNESS_PARKED=unset — 1/3 of 3 returned a passing verdict
+  FAIL: page-templates-r2.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bis-pto-default\page-templates-r2.mjs.default.txt
+  FAIL: revspell.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bis-pto-default\revspell.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=f0e0b311 bundle=index-jMZlTeV4.js/714058b NO-REBUILD
