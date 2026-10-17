@@ -211,6 +211,66 @@ ok(`ROUND: ...and every character the fragment shows carries exactly the styles 
 ok('ROUND (coverage): most selections hold styled text, so the style check is not passing on plain prose', cutRuns >= CASES * 0.5, `${cutRuns}/${CASES}`);
 ok('ROUND (fallback rate): at most 1% of the copied lines fall back to literal text - the markup is carried, not given up', fellBack <= lines * 0.01, `${fellBack}/${lines}`);
 
+// ---- PASTE (the paste half; Fable, Oct 16: Wrizo's markup is used only when the paste passes the Voice Wall and the markup matches its plain
+// text, otherwise the paste is literal). The Voice Wall itself is the surface's (unchanged); these are the two trust tests after it, and
+// what the paste writes.
+const env = (fragment, plain, v = 1) => JSON.stringify({ v, text: fragment, plain });
+{
+  const frag = 'Mine **bold** and *it*';
+  const plain = 'Mine bold and it';
+  ok('PASTE/ENVELOPE: a well-formed envelope whose plain text IS the text pasted beside it is read - its markup', cf.readEnvelope(env(frag, plain), plain) === frag, String(cf.readEnvelope(env(frag, plain), plain)));
+  const bad = [cf.readEnvelope('{oops', plain), cf.readEnvelope(env(frag, plain, 2), plain), cf.readEnvelope(null, plain), cf.readEnvelope('', plain), cf.readEnvelope(JSON.stringify({ v: 1, text: 7, plain }), plain)];
+  ok('PASTE/ENVELOPE: refused - not JSON, another version, no envelope, or no text in it', bad.every((x) => x === null), JSON.stringify(bad));
+  ok('PASTE/ENVELOPE: refused - its plain text is not the text pasted beside it (a stale envelope, or another app\'s plain text)', cf.readEnvelope(env(frag, plain), 'Other words') === null);
+  ok('PASTE/ENVELOPE: refused - its markup does not read as its own plain text (an envelope claiming the right plain text while carrying other words)',
+    cf.readEnvelope(env('**Other** words', plain), plain) === null);
+}
+{
+  const t = 'Start  end';
+  const r = cf.pasteEdit(t, 6, 6, '**bold** and *it*', 'bold and it');
+  ok('PASTE: a trusted fragment goes in AS MARKUP at the caret - bold stays bold, italic italic - and the caret lands after it',
+    r.formatted && r.text === 'Start **bold** and *it* end' && r.caret === 6 + '**bold** and *it*'.length, JSON.stringify(r));
+  const r2 = cf.pasteEdit(t, 6, 6, null, 'a *star*');
+  ok('PASTE: with no trusted fragment the plain text goes in LITERAL (typed-literal: escaped)', !r2.formatted && r2.text === `Start a ${B}*star${B}* end`, JSON.stringify(r2));
+  const r3 = cf.pasteEdit('one two three', 4, 7, '*x*', 'x');
+  ok('PASTE: over a selection, the fragment replaces it', r3.formatted && r3.text === 'one *x* three', JSON.stringify(r3));
+  const r4 = cf.pasteEdit('a b', 2, 2, '# Title\n- item', 'Title\nitem');
+  ok('PASTE (Q2): mid-line, the fragment\'s first-line structure token is dropped (a `# ` mid-line is no heading, it would only show); its later lines keep theirs',
+    r4.formatted && r4.text === 'a Title\n- itemb', JSON.stringify(r4));
+  const r5 = cf.pasteEdit('x\n', 2, 2, '# Title', 'Title');
+  ok('PASTE (Q2): at a line\'s start, the first line keeps its structure token (a copied heading pastes as a heading)', r5.formatted && r5.text === 'x\n# Title', JSON.stringify(r5));
+  const r6 = cf.pasteEdit('**ab**', 3, 3, '**x**', 'x');
+  ok('PASTE: a bold fragment pasted INSIDE a bold run joins the run (its own marks dropped) - `**a**x**b**` would have shown the pasted word plain',
+    r6.formatted && r6.text === '**axb**', JSON.stringify(r6));
+  const r7 = cf.pasteEdit('**ab**', 3, 3, '*x*', 'x');
+  ok('PASTE: ...while another kind nests inside it (an italic pasted into bold is bold italic)', r7.formatted && r7.text === '**a*x*b**' && mr.readMarks(r7.text).some((m) => m.kind === 'italic'), JSON.stringify(r7));
+  const r8 = cf.pasteEdit('a *', 3, 3, '*x*', 'x');
+  ok('PASTE: markup that would read differently beside the text it lands in (an old page\'s lone star) goes in LITERAL - the page shows exactly the characters a literal paste would',
+    !r8.formatted && r8.text === 'a *x', JSON.stringify(r8));
+}
+// the round trip: copy a random selection, paste it into an empty page - the page shows the same characters with the same styles
+{
+  let same = 0, formatted = 0, n = 0;
+  const fails = [];
+  for (let c = 0; c < 3000; c++) {
+    const page = Array.from({ length: 1 + Math.floor(rnd() * 3) }, line).join('\n');
+    let s = Math.floor(rnd() * (page.length + 1));
+    let e = Math.floor(rnd() * (page.length + 1));
+    if (s > e) [s, e] = [e, s];
+    if (s === e) continue;
+    n++;
+    const p = P(page, s, e);
+    const frag = cf.readEnvelope(cf.writeEnvelope(p), p.plain);
+    const r = cf.pasteEdit('', 0, 0, frag, p.plain);
+    if (r.formatted) formatted++;
+    const okNow = JSON.stringify(styledChars(r.text)) === JSON.stringify(styledSlice(page, s, e)) || (p.fallbackLines ?? 0) > 0;
+    if (okNow) same++; else if (fails.length < 3) fails.push({ page, s, e, fragment: p.fragment, pasted: r.text });
+  }
+  console.log(JSON.stringify({ roundTrips: n, formatted, fails }, null, 2));
+  ok(`PASTE ROUND TRIP: ${n} random selections copied and pasted into an empty page show the same characters with the same styles`, same === n, `${same}/${n}`);
+  ok('PASTE ROUND TRIP (coverage): every one of them went in as markup, not literal', formatted === n, `${formatted}/${n}`);
+}
+
 // ---- ENVELOPE
 {
   const p = P('a **b** c');

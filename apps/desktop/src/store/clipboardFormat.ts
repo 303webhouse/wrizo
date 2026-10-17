@@ -9,7 +9,7 @@
 //     structure tokens come only when the selection starts at that line's start (Q2, Fable, Oct 16).
 // Every fragment line is checked against its source before it is written: if it would not read back as the same characters with the same
 // styles, that line is written as literal text instead (escaped, so it can never become markup). Nothing styled is ever invented.
-import { escapeTyped } from './hiddenMarks';
+import { escapeTyped, replaceRange } from './hiddenMarks';
 import { closeMark, readEscapes, readLead, readMarks, type MarkRun } from './markRuns';
 import { recordShadow } from './voiceWall';
 
@@ -138,4 +138,20 @@ export function putOnClipboard(dt: DataTransfer, p: CopyPayload): void {
   dt.setData('text/plain', p.plain);
   dt.setData(WRIZO_MIME, writeEnvelope(p));
   recordShadow(p.plain);
+}
+
+// ---- THE PASTE HALF (Fable, Oct 16: Wrizo's markup is used only when the paste passes the Voice Wall and the markup matches its plain
+// text; otherwise the paste is literal). RED-FIRST STUBS: today's paste - the envelope is never read, the plain text is pasted literal.
+
+/** The fragment a paste's Wrizo envelope carries, or null when it cannot be trusted. */
+export function readEnvelope(raw: string | null | undefined, plain: string): string | null {
+  void raw; void plain;
+  return null;
+}
+
+/** A paste of `plain` (and, when trusted, its `fragment`) over [s, e) of `text`. */
+export function pasteEdit(text: string, s: number, e: number, fragment: string | null, plain: string): { text: string; caret: number; formatted: boolean } {
+  void fragment;
+  const r = replaceRange(text, s, e, escapeTyped(plain, text, s));
+  return { text: r.text, caret: r.caret, formatted: false };
 }

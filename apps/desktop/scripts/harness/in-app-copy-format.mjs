@@ -178,6 +178,122 @@ await withHarness(async (app) => {
     const c5 = await captured(app);
     ok('K5: a copy from the card writes the plain characters and the stored markup', twoFormats(c5, 'Card bold *lit*', CARD), JSON.stringify(c5));
   }
+
+  // ======================== THE PASTE HALF (Fable, Oct 16): Wrizo's markup only when the paste passes the Voice Wall AND the markup
+  // matches its plain text; otherwise literal ========================
+  const pasteKey = (app) => command(app, 'v', 'KeyV', 86, 'paste');
+  const runs = (app, sel) => app.evalJs(`(() => { const ed = document.querySelector('${sel}'); if (!ed) return null; return { bold: ed.querySelectorAll('.md-bold').length, italic: ed.querySelectorAll('.md-italic').length,
+    shownMarks: [...ed.querySelectorAll('.md-mark')].filter(m => !m.classList.contains('md-mark-hidden')).length }; })()`);
+
+  // ---- P1: Draft - copy, paste back: the formatting comes with it; one undo takes the paste back out
+  const MINE = 'Mine **bold** and *it* words';
+  const p1 = await openPage(app, 'cp1', MINE, 'draft');
+  ok('P1 (setup): the page opens in Draft', p1);
+  if (p1) {
+    const selected = await selectAll(app, ED);
+    ok('P1 (driver): select-all made a selection', selected);
+    await copyKey(app); await sleep(250);
+    await command(app, 'End', 'End', 35, 'moveToEndOfDocument'); await sleep(200);
+    await app.typeKeys(' ');
+    await sleep(300);
+    await pasteKey(app); await sleep(600);
+    const st1 = await settledBy(() => pageText(app, 'cp1'));
+    const r1 = await runs(app, ED);
+    ok('P1: own words copied and pasted back keep their formatting - the stored text holds the same markup twice, and the page shows two bold runs and two italics, no mark shown',
+      unz(st1) === `${MINE} ${MINE}` && !!r1 && r1.bold === 2 && r1.italic === 2 && r1.shownMarks === 0, JSON.stringify({ st1, r1 }));
+    await app.evalJs(`document.querySelector('${ED}')?.focus()`);
+    await app.keyCombo('z'); await sleep(400);
+    const st1u = await settledBy(() => pageText(app, 'cp1'));
+    ok('P1: ONE undo takes the whole paste back out', unz(st1u) === `${MINE} `, JSON.stringify(st1u));
+  }
+
+  // ---- P2: card -> page, in one session (no reload between: the Voice Wall's own-ink record lives in the running app)
+  await freshDesk(app);
+  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'cp2', text: 'Page start', createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
+  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'cp2b', text: 'Card board', pageType: 'board', createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page',
+    boxes: [{ id: 'cp2b-c', kind: 'text', x: 0.06, y: 0.06, w: 0.5, h: 0.16, z: 1, text: 'Card **bold**' }] })})`);
+  await app.evalJs("localStorage.setItem('wrizo-mode-page-cp2', 'drafting')");
+  await sleep(500);
+  await app.evalJs("location.hash = '#/page/cp2b'");
+  const cardUp = await app.waitFor('!!document.querySelector(\'[data-box-id="cp2b-c"]\')', { label: 'the card' }).then(() => true, () => false);
+  let popped = false;
+  if (cardUp) {
+    await sleep(600);
+    const c = await app.evalJs(`(() => { const r = document.querySelector('[data-box-id="cp2b-c"]').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
+    const m = (type, n, b) => app.cdp('Input.dispatchMouseEvent', { type, x: c.x, y: c.y, button: 'left', buttons: b, clickCount: n, pointerType: 'mouse' });
+    await m('mousePressed', 1, 1); await m('mouseReleased', 1, 0); await sleep(60); await m('mousePressed', 2, 1); await m('mouseReleased', 2, 0);
+    popped = await app.waitFor(`!!document.querySelector('${CE}')`, { label: 'card popup' }).then(() => true, () => false);
+  }
+  ok('P2 (setup): the card pop-up opens', popped);
+  if (popped) {
+    await selectAll(app, CE);
+    await copyKey(app); await sleep(250);
+    await app.key('Escape'); await sleep(400);
+    await app.evalJs("location.hash = '#/page/cp2'");
+    const pageUp = await app.waitFor(`!!document.querySelector('${ED} .wz-row')`, { label: 'the page, in Draft' }).then(() => true, () => false);
+    ok('P2 (setup): the page opens in Draft (no reload)', pageUp);
+    if (pageUp) {
+      await sleep(600);
+      await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); })()`);
+      await app.typeKeys(' ');
+      await sleep(300);
+      await pasteKey(app); await sleep(600);
+      const st2 = await settledBy(() => pageText(app, 'cp2'));
+      const r2 = await runs(app, ED);
+      ok('P2: a copy from a card pasted on a page keeps its bold', unz(st2) === 'Page start Card **bold**' && !!r2 && r2.bold === 1, JSON.stringify({ st2, r2 }));
+    }
+  }
+
+  // ---- P3: Free Write - a styled paste lands at the runway's tip, styled
+  const RUN = 'Run **bold** it';
+  const p3 = await openPage(app, 'cp3', RUN, 'freewrite');
+  ok('P3 (setup): the page opens in Free Write', p3);
+  if (p3) {
+    await selectAll(app, ED);
+    await copyKey(app); await sleep(250);
+    await app.evalJs(`document.querySelector('${ED}')?.focus()`);
+    await app.typeKeys(' ');
+    await sleep(300);
+    await pasteKey(app); await sleep(600);
+    const st3 = await settledBy(() => pageText(app, 'cp3'));
+    const r3 = await runs(app, ED);
+    ok('P3: in Free Write the paste lands at the tip with its formatting', unz(st3) === `${RUN} ${RUN}` && !!r3 && r3.bold === 2, JSON.stringify({ st3, r3 }));
+  }
+
+  // ---- P4: foreign text (copied from outside a writing surface) is still blocked by the Voice Wall - the regression check
+  const p4 = await openPage(app, 'cp4', 'Kept words', 'draft');
+  ok('P4 (setup): the page opens in Draft', p4);
+  if (p4) {
+    await app.evalJs("(() => { const t = document.createElement('textarea'); t.id = 'wz-foreign'; t.value = 'Foreign **text**'; t.style.cssText = 'position:fixed;left:0;top:0;width:200px;height:60px;z-index:99999'; document.body.appendChild(t); t.focus(); t.select(); return true; })()");
+    await copyKey(app); await sleep(250);
+    await app.evalJs("document.getElementById('wz-foreign')?.remove()");
+    await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); })()`);
+    await pasteKey(app); await sleep(600);
+    const st4 = await settledBy(() => pageText(app, 'cp4'));
+    ok('P4: text copied from outside a writing surface is still blocked by the Voice Wall - the page is unchanged', unz(st4) === 'Kept words', JSON.stringify(st4));
+  }
+
+  // ---- P5: the envelope's own trust test, at the surface (a page-made paste event: the browser offers no other way to hand the editor an
+  // envelope it did not write). CONTROL first - a true envelope IS read - so the forged one's "nothing" is the test's, not a dead driver's.
+  const p5 = await openPage(app, 'cp5', 'Kept words', 'draft');
+  ok('P5 (setup): the page opens in Draft', p5);
+  if (p5) {
+    await selectAll(app, ED);
+    await copyKey(app); await sleep(250);   // the Voice Wall now knows "Kept words" as own ink
+    const synth = (envelope) => app.evalJs(`(() => { const ed = document.querySelector('${ED}'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      const dt = new DataTransfer(); dt.setData('text/plain', 'Kept words'); dt.setData('${MIME}', ${JSON.stringify(envelope)});
+      ed.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })); return true; })()`);
+    await synth(JSON.stringify({ v: 1, text: 'Kept **words**', plain: 'Kept words' }));
+    await sleep(500);
+    const st5 = await settledBy(() => pageText(app, 'cp5'));
+    ok('P5 (CONTROL): a true envelope beside its own plain text is pasted as markup', unz(st5) === 'Kept wordsKept **words**', JSON.stringify(st5));
+    await synth(JSON.stringify({ v: 1, text: '**Other** words', plain: 'Kept words' }));
+    await sleep(500);
+    const st5b = await settledBy(() => pageText(app, 'cp5'));
+    ok('P5: an envelope whose markup does not read as its plain text is refused - nothing of its markup reaches the page',
+      unz(st5b) === 'Kept wordsKept **words**', JSON.stringify(st5b));
+  }
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);
