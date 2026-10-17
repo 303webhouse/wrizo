@@ -30,9 +30,10 @@ import type { ThemeId } from '../store/theme';
 // box turn opens.
 
 const SPEED = 0.7; // Round 4 (Nick, live): "every time below is multiplied by 0.7"
-const GLOW_OFF = 'drop-shadow(0 0 0px transparent)';
-const GLOW_ON = 'drop-shadow(0 0 16px rgba(255,152,0,.9))';
-const GLOW_REST = 'drop-shadow(0 0 5px rgba(255,152,0,.4))';
+// Fable's own exact values (Oct 16), superseding this file's earlier guess.
+const GLOW_OFF = 'drop-shadow(0 0 0 transparent)';
+const GLOW_ON = 'drop-shadow(0 0 16px rgba(255,152,0,.8))';
+const GLOW_REST = 'drop-shadow(0 0 5px rgba(255,152,0,.35))';
 
 /** Reduced-motion check, the same `matchMedia` idiom this codebase already
  *  uses elsewhere (HomeFlow.tsx, RhizomeField.tsx, UnlockCeremony.tsx) —
@@ -55,12 +56,13 @@ export function prefersReducedMotion(): boolean {
 
 const BRAND = '/brand/splash-arbor';
 const ARBOR_CANVAS = { w: 3374, h: 2699 };
-/** The mockup's own working coordinate space (splash-build-kit.md §1's
- *  cutting script: `W, H = 1350, 1080`) — the wave velocities below
- *  (`0.2`/`0.3` px/ms) are calibrated in THIS space; scaled up by
- *  `ARBOR_CANVAS.w / ARBOR_MOCKUP_W` so a path length measured at full size
- *  still times out to the identical, Nick-approved pacing. */
-const ARBOR_MOCKUP_W = 1350;
+/** Fable's own exact scaling (Oct 16): the mockup's wave is 0.2px/ms in its
+ *  own 1350-wide working space, which is 0.5px/ms against the full-size
+ *  3374-wide paths these layers actually use; the last connector's own
+ *  faster speed is 0.75 (was 0.3 in mockup space). Literal, not re-derived
+ *  from a ratio — these are the authoritative values. */
+const ARBOR_WAVE_PX_PER_MS = 0.5;
+const ARBOR_FINAL_WAVE_PX_PER_MS = 0.75;
 
 type ArborStage = 'ideas' | 'text' | 'feedback' | 'page' | 'final';
 const ARBOR_OUTLINES: Record<ArborStage, { file: string; x: number; y: number; w: number; h: number }> = {
@@ -109,9 +111,8 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
       return;
     }
 
-    const K = ARBOR_CANVAS.w / ARBOR_MOCKUP_W;
-    const v = 0.2 * K;   // px/ms at full size — "the wave travels 200px of drawing per second" in mockup space
-    const v2 = 0.3 * K;  // the last connector's own faster speed
+    const v = ARBOR_WAVE_PX_PER_MS;
+    const v2 = ARBOR_FINAL_WAVE_PX_PER_MS;
 
     const A = (el: Element | null, kf: Keyframe[], at: number, dur: number, easing = 'ease-in-out') => {
       if (!el) return;

@@ -90,9 +90,7 @@ const splashState = (app) => app.evalJs(`(() => {
   const markCs = mark ? getComputedStyle(mark) : null;
   return {
     mounted: true,
-    tone: el.getAttribute('data-tone'),
     leaving: el.getAttribute('data-leaving'),
-    src: mark ? (mark.getAttribute('src') || '') : null,
     rect: r ? { w: r.width, h: r.height, x: r.left, y: r.top } : null,
     pointerEvents: cs ? cs.pointerEvents : null,
     veilPointerEvents: veilCs ? veilCs.pointerEvents : null,
@@ -110,7 +108,7 @@ await withHarness(async (app) => {
   // ==========================================================================
   await openApp(app);
   const s1 = await splashState(app);
-  ok('S1: the splash mounts on opening the app', s1.mounted === true, JSON.stringify({ tone: s1.tone, src: s1.src }));
+  ok('S1: the splash mounts on opening the app', s1.mounted === true, JSON.stringify({ mounted: s1.mounted, leaving: s1.leaving }));
 
   // SUPERSEDED (item splash-hold, Nick live: "the background should be faded out,
   // not blurred") — the backdrop-filter blur retires whole; there is none to assert.
@@ -284,101 +282,92 @@ await withHarness(async (app) => {
   }
 
   // ==========================================================================
-  // S5 — THE BACKDROP PROBE (store/backdropTone.ts). SUPERSEDED in PART by
-  // splash-sweep (docs/briefs/splash-brief.md): the mark is no longer chosen
-  // by this measurement — every theme now draws its own built animation,
-  // chosen by `wrizo-theme` (S13 below). `tone`/`data-tone` stays wired
-  // (Splash.tsx's own header comment: live diagnostic data, and ready for a
-  // future theme that ships without a dedicated animation yet), so the probe
-  // itself is still asserted; only the "it picks the asset" claims are gone.
-  // ==========================================================================
-  // ITEM 141 (harness-only): the SIZES loop's last `openApp` navigates with no
-  // settle after it — a window.wrizo* seam read right here raced the reload.
-  await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S5 settle' });
-  const tone = await app.evalJs('window.wrizoBackdropTone ? window.wrizoBackdropTone.measure() : null');
-  ok('S5: the backdrop probe answers (the seam exists and runs in the page)',
-    tone === 'dark' || tone === 'light', String(tone));
-
-  // SUPERSEDED (splash-sweep: the mark is theme-chosen now, not tone-chosen —
-  // `.wz-splash-mark` is a wrapper around SplashMark's per-theme SVG, never an
-  // <img src>, so there is no "asset shown" to compare against the tone any
-  // more). Kept verbatim, no longer run:
+  // S5/S5b — SUPERSEDED WHOLE (Fable, Oct 16: "remove it and its wiring on
+  // splash-sweep. Park its splash.mjs checks with a successor"). Both sections
+  // proved store/backdropTone.ts's own measurement — first in general (S5),
+  // then specifically with a light Page as the mounted route behind the
+  // splash (S5b, fix/splash-tone's own regression scenario). That file is
+  // DELETED on this branch: every theme now draws its own built animation
+  // (chosen by `wrizo-theme`, S13 below), so there is no backdrop left to
+  // measure, no `window.wrizoBackdropTone` seam, no `data-tone` attribute.
+  // Kept verbatim, no longer run:
+  //   await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S5 settle' });
+  //   const tone = await app.evalJs('window.wrizoBackdropTone ? window.wrizoBackdropTone.measure() : null');
+  //   ok('S5: the backdrop probe answers (the seam exists and runs in the page)',
+  //     tone === 'dark' || tone === 'light', String(tone));
   //   const s5 = await splashState(app);
-  //   const agrees = (s5.tone === 'dark' && /for-dark-theme/.test(s5.src || ''))
-  //     || (s5.tone === 'light' && /for-light-theme/.test(s5.src || ''));
-  //   ok('S5: the asset SHOWN matches the tone MEASURED — cream linework over a dark ground, warm ink over a light one. The failure this guards is the one a theme→asset map would have shipped silently: ink the same colour as the ground, i.e. no visible art at all',
-  //     agrees, JSON.stringify({ measuredTone: s5.tone, src: s5.src }));
-  //   ok('S5: on this app\'s own ground (every registered theme is dark: plateau #110600, flux #04141A) the measurement selects the DARK asset',
+  //   ok('S5 [splash-sweep successor]: the backdrop probe still reads correctly on this app\'s own (always-dark) ground, even though nothing splash-side consumes it for asset choice any more',
   //     s5.tone === 'dark', String(s5.tone));
-  // Successor: the measurement itself still reads correctly (it just no
-  // longer drives anything splash-side) — on this app's own ground (every
-  // registered theme is dark: plateau #110600, flux #04141A) it still reads dark.
-  const s5 = await splashState(app);
-  ok('S5 [splash-sweep successor]: the backdrop probe still reads correctly on this app\'s own (always-dark) ground, even though nothing splash-side consumes it for asset choice any more',
-    s5.tone === 'dark', String(s5.tone));
-
-  // ==========================================================================
-  // S5b — fix/splash-tone's own regression guard (Fable, Oct 16; Nick live:
-  // "the splash swaps to the light-theme sketch on the dark veil"), SUPERSEDED
-  // IN PART by splash-sweep for the same reason as S5: there is no "chosen
-  // asset" to verify any more, only the measurement's own correctness. The
-  // scenario this sets up (a light Page as the mounted route behind the
-  // splash) is unchanged and still the one case S1-S5 never reach.
+  //   await app.goto('/');
+  //   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ voice: 'serif', page: 'light', fade: 'on' }));");
+  //   await app.reload();
+  //   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk, for S5b seeding' });
+  //   await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'splash-tone-light-page', text: 'A light page behind the splash veil.', origin: 'loose', source: 'page', createdAt: '2026-05-01T00:00:00.000Z' })})`);
+  //   await sleep(300);
+  //   await app.evalJs("location.hash = '#/page/splash-tone-light-page';");
+  //   await app.reload();
+  //   await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S5b settle' });
+  //   await sleep(200);
+  //   const s5b = await app.evalJs(`(() => { const page = document.querySelector('.mode-page'); ... tone: splash ? splash.getAttribute('data-tone') : null, ... })()`);
+  //   ok('S5b (premise): a light page (data-page=light) is the mounted route behind the splash, its own paper genuinely painted', ...);
+  //   ok('S5b (premise): the splash is still up to measure against', ...);
+  //   ok('S5b [splash-sweep successor]: on a light PAGE, the splash still measures the veil\'s own (always dark) paint, not the page behind it',
+  //     s5b.tone === 'dark', JSON.stringify(s5b));
+  //
+  // Successor (Fable's own words): "Arbor draws cream lines on its veil." The
+  // scenario S5b built (a light Page as the mounted route behind the splash —
+  // the one case the hold-open checks never reach) is still the right one to
+  // prove this IN; only the claim changes, from a measurement reading
+  // correctly to the mark's own rendered ink genuinely being cream, sampled
+  // from the live SVG (drawImage + getImageData — the same method S15 below
+  // uses on the asset files, applied here to what is actually ON SCREEN).
   // ==========================================================================
   await app.goto('/');
-  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ voice: 'serif', page: 'light', fade: 'on' }));");
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-theme', 'plateau'); localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ voice: 'serif', page: 'light', fade: 'on' }));");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk, for S5b seeding' });
   await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'splash-tone-light-page', text: 'A light page behind the splash veil.', origin: 'loose', source: 'page', createdAt: '2026-05-01T00:00:00.000Z' })})`);
   await sleep(300);
   await app.evalJs("location.hash = '#/page/splash-tone-light-page';");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S5b settle' });
+  await app.waitFor("!!document.querySelector('.wz-splash-arbor')", { label: 'S5b settle' });
   await sleep(200);
 
   const s5b = await app.evalJs(`(() => {
     const page = document.querySelector('.mode-page');
     const paperBg = page ? getComputedStyle(page).backgroundColor : null;
-    const splash = document.querySelector('.wz-splash');
-    const veil = splash ? splash.querySelector('.wz-splash-veil') : null;
     return {
       pageTone: document.documentElement.getAttribute('data-page'),
       pageMounted: !!page, paperBg,
-      splashMounted: !!splash,
-      tone: splash ? splash.getAttribute('data-tone') : null,
-      veilBg: veil ? getComputedStyle(veil).backgroundColor : null,
+      arborMounted: !!document.querySelector('.wz-splash-arbor'),
     };
   })()`);
   ok('S5b (premise): a light page (data-page=light) is the mounted route behind the splash, its own paper genuinely painted',
     s5b.pageMounted && s5b.pageTone === 'light' && !!s5b.paperBg, JSON.stringify(s5b));
-  ok('S5b (premise): the splash is still up to measure against',
-    s5b.splashMounted, JSON.stringify(s5b));
+  ok('S5b (premise): Arbor\'s mark mounted over it',
+    s5b.arborMounted, JSON.stringify(s5b));
 
-  // SUPERSEDED (splash-sweep): `.wz-splash-mark` carries no `src` any more, so
-  // there is no "chosen asset" (filename or sampled ink colour) to verify on
-  // a light page. Kept verbatim, no longer run:
-  //   ok('S5b [fix/splash-tone]: on a light PAGE, the splash still measures the veil\'s own (always dark) paint, not the page behind it — the dark-theme asset is chosen',
-  //     s5b.tone === 'dark' && /for-dark-theme/.test(s5b.src || ''), JSON.stringify(s5b));
-  //   const inkSample = await app.evalJs(`(() => {
-  //     const img = document.querySelector('.wz-splash-mark');
-  //     if (!img || !img.naturalWidth) return null;
-  //     const c = document.createElement('canvas');
-  //     c.width = img.naturalWidth; c.height = img.naturalHeight;
-  //     const ctx = c.getContext('2d');
-  //     ctx.drawImage(img, 0, 0);
-  //     const d = ctx.getImageData(0, 0, c.width, c.height).data;
-  //     let sumR = 0, sumG = 0, sumB = 0, n = 0;
-  //     const STRIDE = 97;
-  //     for (let i = 3; i < d.length; i += 4 * STRIDE) { if (d[i] > 200) { sumR += d[i - 3]; sumG += d[i - 2]; sumB += d[i - 1]; n += 1; } }
-  //     return n > 0 ? { r: Math.round(sumR / n), g: Math.round(sumG / n), b: Math.round(sumB / n), n } : { n: 0 };
-  //   })()`);
-  //   ok('S5b [fix/splash-tone]: the chosen (dark-theme) asset\'s own line pixels are genuinely LIGHT...', ...);
-  // Successor — the CORE claim fix/splash-tone actually fixed, narrowed to
-  // what still applies: the measurement itself still reads the veil's own
-  // (always dark) paint, not the light page behind it, regardless of whether
-  // anything downstream still uses that reading to choose an asset.
-  ok('S5b [splash-sweep successor]: on a light PAGE, the splash still measures the veil\'s own (always dark) paint, not the page behind it',
-    s5b.tone === 'dark', JSON.stringify(s5b));
+  const baseInk = await app.evalJs(`(async () => {
+    const img = new Image();
+    img.src = '/brand/splash-arbor/base.png';
+    await img.decode();
+    const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0);
+    const d = ctx.getImageData(0, 0, c.width, c.height).data;
+    let sumR = 0, sumG = 0, sumB = 0, n = 0;
+    const STRIDE = 97; // a prime stride, so it never aliases with a regular pattern in the linework
+    for (let i = 3; i < d.length; i += 4 * STRIDE) { if (d[i] > 200) { sumR += d[i - 3]; sumG += d[i - 2]; sumB += d[i - 1]; n += 1; } }
+    return n > 0 ? { r: Math.round(sumR / n), g: Math.round(sumG / n), b: Math.round(sumB / n), n } : { n: 0 };
+  })()`);
+  ok('S5b (premise): the base layer\'s own opaque ink was actually sampled (a non-zero population)',
+    !!baseInk && baseInk.n > 0, JSON.stringify(baseInk));
+  // CREAM, splash-build-kit.md §1's own constant: (234, 226, 218). A loose
+  // tolerance (+/-20 per channel) rather than an exact match — PNG re-encodes
+  // and canvas colour-management can shift a few values without the colour
+  // having changed.
+  const isCream = !!baseInk && Math.abs(baseInk.r - 234) <= 20 && Math.abs(baseInk.g - 226) <= 20 && Math.abs(baseInk.b - 218) <= 20;
+  ok('S5b [splash-sweep successor]: "Arbor draws cream lines on its veil" — on a light PAGE behind the splash (the exact scenario fix/splash-tone guarded), the mark\'s own base layer still renders its genuine cream ink, never affected by what is mounted behind the (always-opaque) veil',
+    isCream, JSON.stringify(baseInk));
 
   // ==========================================================================
   // S6 — IT LEAVES ON ITS OWN, AFTER THE FLOOR. SUPERSEDED IN PART by

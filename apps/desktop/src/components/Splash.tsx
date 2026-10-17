@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { measureBackdropTone, type BackdropTone } from '../store/backdropTone';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useTheme } from '../store/theme';
 import { SplashMark, prefersReducedMotion } from './SplashMark';
@@ -66,12 +65,12 @@ import { SplashMark, prefersReducedMotion } from './SplashMark';
 //    splash-brief.md). Each theme draws its own animation — Arbor sweeps
 //    Nick's hand-drawn sketch brass from IDEAS to FINAL DRAFT (SplashMark.tsx's
 //    own ArborMark, cut by splash-build-kit.md's own script); Flux sweeps a
-//    vector schematic of the same five steps (FluxMark). `tone`/`data-tone`
-//    below (store/backdropTone.ts) still measures the veil's own paint — it
-//    no longer SELECTS content (every theme's mark is cream/brass-on-dark by
-//    construction, same as the veil itself), but it stays wired and correct
-//    (fix/splash-tone) as live diagnostic data and for any future theme that
-//    ships without a dedicated animation yet.
+//    vector schematic of the same five steps (FluxMark). Both draw cream
+//    lines/tokens on the veil's own (always-dark) ground by construction, so
+//    there is no backdrop to measure any more — store/backdropTone.ts
+//    (fix/splash-tone) is REMOVED here on Fable's own word: it existed to
+//    choose between a cream and a warm-ink copy of ONE asset, a choice that
+//    no longer exists once every theme ships its own built animation.
 //
 // splash-sweep ROUND 4 (Nick, live): "every [mockup] time below is multiplied
 // by 0.7" and "the old 5s minimum hold is replaced by the animation's own
@@ -182,7 +181,6 @@ export function Splash({ ready }: { ready: boolean }) {
     return true;
   });
   const [leaving, setLeaving] = useState(false);
-  const [tone, setTone] = useState<BackdropTone>('dark');
   const [box, setBox] = useState(() => (typeof window === 'undefined'
     ? { width: 0, height: 0 }
     : splashSizeFor(window.innerWidth, window.innerHeight)));
@@ -218,13 +216,6 @@ export function Splash({ ready }: { ready: boolean }) {
 
   useEffect(() => {
     if (!live) return undefined;
-
-    // Measured AFTER mount, deliberately: the veil (`.wz-splash-veil`, this
-    // very overlay) has to actually exist in the DOM for the probe to read
-    // its own painted background — see backdropTone.ts's header comment for
-    // why that is the right thing to read now (fix/splash-tone), not what is
-    // logically behind the overlay.
-    setTone(measureBackdropTone());
 
     const resize = () => setBox(splashSizeFor(window.innerWidth, window.innerHeight));
     resize();
@@ -308,7 +299,6 @@ export function Splash({ ready }: { ready: boolean }) {
     <div
       className="wz-splash"
       data-leaving={leaving ? 'true' : 'false'}
-      data-tone={tone}
       data-splash-theme={theme}
       aria-hidden="true"
       // ROUND 5 — `--mark-h` lets index.css's own .wz-splash-loading anchor itself

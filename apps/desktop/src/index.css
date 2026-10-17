@@ -5911,11 +5911,7 @@ a:focus-visible,
    if the splash were not mounted. The PASSIVE window listeners in Splash.tsx
    stay for the same reason (ITEM splash-hold: they no longer dismiss early,
    below, but input still passes through them untouched), never by this layer
-   catching anything. pointer-events:none is also what lets the backdrop probe
-   read THROUGH the overlay to measure the app's real ground
-   (store/backdropTone.ts) — unaffected by ITEM splash-hold, since that probe
-   uses `elementFromPoint`/DOM traversal, never anything about the veil's own
-   paint.
+   catching anything.
 
    z-index 400 sits above the app's whole existing stack (modals, backdrops
    and toasts top out at 300) — deliberately, because at boot this is the
