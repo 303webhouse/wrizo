@@ -1,0 +1,12 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+HPROBE {"step":"0 before","expanded":"false","popOpen":false,"activeIsHelpButton":false,"active":"DIV.forward-only-editor"}
+HPROBE {"step":"A1 synthetic click opens","expanded":"true","popOpen":true,"activeIsHelpButton":false,"active":"DIV.forward-only-editor"}
+HPROBE {"step":"A2 real Escape after a synthetic open","expanded":"false","popOpen":false,"activeIsHelpButton":false,"active":"DIV.forward-only-editor"}
+HPROBE {"step":"B1 real press opens","expanded":"true","popOpen":true,"activeIsHelpButton":true,"active":"BUTTON.wz-help"}
+HPROBE {"step":"B2 real Escape closes - and where does focus go","expanded":"false","popOpen":false,"activeIsHelpButton":true,"active":"BUTTON.wz-help"}
+HPROBE {"step":"B3 real press on the page closes","expanded":"false","popOpen":false,"activeIsHelpButton":false,"active":"DIV.forward-only-editor"}
+HPROBE {"step":"C Recede depth \"?\" in Draft","inDraftSliver":false,"anywhere":false,"tabs":["Free Write","Draft","Revise","Workshop","Publish"]}
+HPROBE {"step":"C2 same, after switching to Free Write","inSliverNow":false,"anywhere":false,"oldDrawerNote":false}
+
+ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one)

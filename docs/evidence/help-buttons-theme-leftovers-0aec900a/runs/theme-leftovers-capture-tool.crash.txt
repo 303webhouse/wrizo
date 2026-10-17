@@ -1,0 +1,14 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+  wrote: flux-loose-page.jpg — captured
+file:///C:/Users/nickh/writer-studio/.claude/worktrees/hb/apps/desktop/scripts/runtime-verify.mjs:673
+      throw new Error('waitFor timed out: ' + label + '; diag=' + JSON.stringify(await evalJs('__diag()')));
+            ^
+
+Error: waitFor timed out: Desk, for seeding (2); diag={"href":"http://127.0.0.1:65209/#/page/tl-flux-page","buttons":["＋Catch","❧Log","▤Cache","▥Racks","▣Library","Full screen","Sign out","Wire Ingenerate","Draftmark","Revisedress","Formatconvention","Workshopcoming soon","Uplinkexport","Copy text","Plan →"],"body":"＋\nCatch\n❧\nLog\n▤\nCache\n▥\nRacks\n▣\nLibrary\nFull screen\nSign out\nA loose page under Flux.\nWire In\nGENERATE\nDraft\nMARK\nRevise\nDRESS\nFormat\nCONVENTION\nWorkshop\nCOMING SOON\nUplink\nEXPORT\nCopy text\nPLAN\n→\nPEN\nA loose page under Flux.\nPress Escape to leave the page\n5 words\n5 words\nWORDS"}
+    at Object.waitFor (file:///C:/Users/nickh/writer-studio/.claude/worktrees/hb/apps/desktop/scripts/runtime-verify.mjs:673:13)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/hb/apps/desktop/scripts/harness/theme-leftovers-capture.mjs:55:3
+    at async withHarness (file:///C:/Users/nickh/writer-studio/.claude/worktrees/hb/apps/desktop/scripts/runtime-verify.mjs:900:20)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/hb/apps/desktop/scripts/harness/theme-leftovers-capture.mjs:36:1
+
+Node.js v24.13.0

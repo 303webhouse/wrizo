@@ -1,0 +1,106 @@
+[
+  {
+    "theme": "arbor",
+    "which": "templates",
+    "buttonFound": true,
+    "pop": {
+      "text": "Ready-made page layouts.",
+      "color": "rgb(237, 230, 218)",
+      "bg": "rgb(31, 26, 22)",
+      "border": "rgb(69, 59, 49)",
+      "usesBrass": false
+    },
+    "pageRectBefore": [
+      332,
+      107,
+      615,
+      593
+    ],
+    "pageRectAfter": [
+      332,
+      107,
+      615,
+      593
+    ],
+    "pageRectUnchanged": true,
+    "bundle": "index-xjSrkKL0.js"
+  },
+  {
+    "theme": "arbor",
+    "which": "free-write-tab",
+    "buttonFound": true,
+    "pop": {
+      "text": "Write forward only. No going back to edit.",
+      "color": "rgb(237, 230, 218)",
+      "bg": "rgb(31, 26, 22)",
+      "border": "rgb(69, 59, 49)",
+      "usesBrass": false
+    },
+    "pageRectBefore": [
+      332,
+      107,
+      615,
+      593
+    ],
+    "pageRectAfter": [
+      332,
+      107,
+      615,
+      593
+    ],
+    "pageRectUnchanged": true,
+    "bundle": "index-xjSrkKL0.js"
+  },
+  {
+    "theme": "flux",
+    "which": "templates",
+    "buttonFound": true,
+    "pop": {
+      "text": "Ready-made doc layouts.",
+      "color": "rgb(227, 241, 236)",
+      "bg": "rgba(9, 30, 36, 0.9)",
+      "border": "rgb(42, 106, 118)",
+      "usesBrass": false
+    },
+    "pageRectBefore": [
+      390,
+      108,
+      499,
+      593
+    ],
+    "pageRectAfter": [
+      390,
+      108,
+      499,
+      593
+    ],
+    "pageRectUnchanged": true,
+    "bundle": "index-xjSrkKL0.js"
+  },
+  {
+    "theme": "flux",
+    "which": "free-write-tab",
+    "buttonFound": true,
+    "pop": {
+      "text": "Write forward only. No editing back.",
+      "color": "rgb(227, 241, 236)",
+      "bg": "rgba(9, 30, 36, 0.9)",
+      "border": "rgb(42, 106, 118)",
+      "usesBrass": false
+    },
+    "pageRectBefore": [
+      390,
+      108,
+      499,
+      593
+    ],
+    "pageRectAfter": [
+      390,
+      108,
+      499,
+      593
+    ],
+    "pageRectUnchanged": true,
+    "bundle": "index-xjSrkKL0.js"
+  }
+]

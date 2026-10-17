@@ -1,0 +1,30 @@
+[
+  {
+    "frame": "flux-loose-page",
+    "htmlBg": "rgb(4, 20, 26)",
+    "bodyBgImage": "radial-gradient(135% 95% at 50% -8%, rgb(15, 45, 54) 0%, rgb(16, 32, 37) 38%, rgb(10, 20, 23) 70%, rgb(7, 14, 16) 100%)",
+    "lampGlowToken": "radial-gradient(135% 95% at 50% -8%, #0F2D36 0%, #102025 38%, #0A1417 70%, #070E10 100%)",
+    "dataTheme": "flux",
+    "bundle": "index-xjSrkKL0.js"
+  },
+  {
+    "frame": "flux-light-freewrite-ink",
+    "mode": null,
+    "inkColor": "rgb(20, 35, 31)",
+    "pageBg": "rgb(237, 246, 243)",
+    "ratio": 14.79,
+    "bundle": "index-xjSrkKL0.js"
+  },
+  {
+    "frame": "arbor-font-heading",
+    "typeSectionHeading": "Font",
+    "allSliverHeadings": [
+      "Font",
+      "Format",
+      "Actions",
+      "Templates ?",
+      "Pages Kind"
+    ],
+    "bundle": "index-xjSrkKL0.js"
+  }
+]

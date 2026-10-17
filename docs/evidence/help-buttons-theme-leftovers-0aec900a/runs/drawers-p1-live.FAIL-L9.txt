@@ -1,0 +1,448 @@
+
+ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one)
+[
+  {
+    "name": "L1 [arbor] fixture: the draft surface opened",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "L1 [arbor] (draft): the paper's rect is IDENTICAL before, during and after every open, close and tab change of either drawer, and of the hand-over from one to the other",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "L1 [arbor] (draft): and the editor node is the SAME node throughout (never unmounted)",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "L1 [arbor] fixture: the free surface opened",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "L1 [arbor] (free): the paper's rect is IDENTICAL before, during and after every open, close and tab change of either drawer, and of the hand-over from one to the other",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "L1 [arbor] (free): and the editor node is the SAME node throughout (never unmounted)",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "L2 [arbor] (left, OPEN): the slide and the fade are both strictly mid-way at the SAME sample (they run together), and it ends at rest (transform none, opacity 1)",
+    "pass": true,
+    "detail": "{\"startTx\":174,\"endTx\":0,\"mid\":[{\"t\":24,\"tx\":161.7,\"op\":0.071,\"grip\":[316.31,123,16,34],\"panelLeft\":132.31,\"glyph\":\"›\"},{\"t\":41,\"tx\":135.5,\"op\":0.221,\"grip\":[316.31,123,16,34],\"panelLeft\":132.31,\"glyph\":\"›\"},{\"t\":56,\"tx\":102.8,\"op\":0.409,\"grip\":[316.31,123,16,34],\"panelLeft\":132.31,\"glyph\":\"›\"},{\"t\":73,\"tx\":73.8,\"op\":0.576,\"grip\":[316.31,123,16,34],\"panelLeft\":132.31,\"glyph\":\"›\"}]}"
+  },
+  {
+    "name": "L2 [arbor] (left): the tab's rect never changes while the drawer opens (only its glyph)",
+    "pass": true,
+    "detail": "[[316.31,123,16,34]]"
+  },
+  {
+    "name": "L3 [arbor] (left): the arrow glyph flips and nothing else on the tab does",
+    "pass": true,
+    "detail": "[\"‹\",\"›\"]"
+  },
+  {
+    "name": "L2 [arbor] (left, CLOSE): slide and fade are both mid-way at the same sample on the way out too, and it ends hidden",
+    "pass": true,
+    "detail": "{\"first\":{\"t\":0,\"tx\":0,\"op\":1,\"grip\":[316.31,123,16,34],\"panelLeft\":132.31,\"glyph\":\"›\"},\"last\":{\"t\":535,\"tx\":174,\"op\":0,\"grip\":[316.31,123,16,34],\"panelLeft\":132.31,\"glyph\":\"‹\"}}"
+  },
+  {
+    "name": "L2 [arbor] (right, OPEN): the slide and the fade are both strictly mid-way at the SAME sample (they run together), and it ends at rest (transform none, opacity 1)",
+    "pass": true,
+    "detail": "{\"startTx\":-321.9,\"endTx\":0,\"mid\":[{\"t\":14,\"tx\":-273.2,\"op\":0.071,\"grip\":[915.39,123,16,34],\"panelLeft\":947.61,\"glyph\":\"‹\"},{\"t\":30,\"tx\":-229,\"op\":0.221,\"grip\":[915.39,123,16,34],\"panelLeft\":947.61,\"glyph\":\"‹\"},{\"t\":46,\"tx\":-174,\"op\":0.408,\"grip\":[915.39,123,16,34],\"panelLeft\":947.61,\"glyph\":\"‹\"},{\"t\":63,\"tx\":-124.7,\"op\":0.576,\"grip\":[915.39,123,16,34],\"panelLeft\":947.61,\"glyph\":\"‹\"}]}"
+  },
+  {
+    "name": "L2 [arbor] (right) [tutor-drawer-arrow successor]: the tab's rect MOVES while the drawer opens, settling 16px outside the open panel's own left edge (never inside its tab row)",
+    "pass": true,
+    "detail": "{\"gripRight\":931.39,\"panelLeft\":947.61,\"gap\":16.22}"
+  },
+  {
+    "name": "L3 [arbor] (right): the arrow glyph flips and nothing else on the tab does",
+    "pass": true,
+    "detail": "[\"›\",\"‹\"]"
+  },
+  {
+    "name": "L2 [arbor] (right, CLOSE): slide and fade are both mid-way at the same sample on the way out too, and it ends hidden",
+    "pass": true,
+    "detail": "{\"first\":{\"t\":0,\"tx\":0,\"op\":1,\"grip\":[915.39,123,16,34],\"panelLeft\":947.61,\"glyph\":\"‹\"},\"last\":{\"t\":536,\"tx\":-321.9,\"op\":0,\"grip\":[947.69,123,16,34],\"panelLeft\":919.69,\"glyph\":\"›\"}}"
+  },
+  {
+    "name": "L3 [arbor]: the two hands are mirrors - closed left shows ‹ and closed right shows ›",
+    "pass": true,
+    "detail": "{\"left\":\"‹\",\"right\":\"›\"}"
+  },
+  {
+    "name": "L2 [arbor] (REDUCED MOTION): the layer never travels (transform none at every sample) and the fade still happens, over a short time (full by <= ~250 ms with frame slack)",
+    "pass": true,
+    "detail": "{\"fadeSamples\":6,\"reachedFullAt\":146,\"travelled\":0}"
+  },
+  {
+    "name": "L4 [arbor] (left): CLOSED MEANS CLOSED - inert, aria-hidden, visibility hidden, opacity 0, and of 37 controls inside none can take focus and none is hit-testable",
+    "pass": true,
+    "detail": "{\"controls\":37,\"focusable\":0,\"hittable\":0,\"inert\":true,\"ariaHidden\":\"true\",\"visibility\":\"hidden\",\"opacity\":\"0\"}"
+  },
+  {
+    "name": "L4 [arbor] (right): CLOSED MEANS CLOSED - inert, aria-hidden, visibility hidden, opacity 0, and of 12 controls inside none can take focus and none is hit-testable",
+    "pass": true,
+    "detail": "{\"controls\":12,\"focusable\":0,\"hittable\":0,\"inert\":true,\"ariaHidden\":\"true\",\"visibility\":\"hidden\",\"opacity\":\"0\"}"
+  },
+  {
+    "name": "L5 [arbor] Free Write, TEXT: tabs TEXT|INK; Typeface only - no Format, no Actions, no Templates, no page-kind, no ink zone",
+    "pass": true,
+    "detail": "{\"heads\":[\"Font\",\"Controls\",\"Journal\"],\"typeface\":1,\"format\":0,\"actions\":0,\"templates\":0,\"pageKind\":0,\"ink\":0,\"tabs\":[\"text\",\"ink\"],\"disabledOrGrey\":0}"
+  },
+  {
+    "name": "L5 [arbor] Free Write, INK: the ink zone is there and the Typeface is not",
+    "pass": true,
+    "detail": "{\"heads\":[\"Tip\",\"Nib\",\"Ink\",\"Controls\",\"Journal\"],\"typeface\":0,\"format\":0,\"actions\":0,\"templates\":0,\"pageKind\":0,\"ink\":2,\"tabs\":[\"text\",\"ink\"],\"disabledOrGrey\":0}"
+  },
+  {
+    "name": "L5 [arbor] Draft: Typeface, Format, Actions, Templates, page-kind - in that order, no tab row",
+    "pass": true,
+    "detail": "{\"heads\":[\"Font\",\"Format\",\"Actions\",\"Templates ?\",\"Pages Kind\"],\"typeface\":1,\"format\":1,\"actions\":1,\"templates\":1,\"pageKind\":1,\"ink\":0,\"tabs\":[],\"disabledOrGrey\":1}"
+  },
+  {
+    "name": "L5 [arbor] Draft: the sections run Typeface, Format, Actions, Templates, Page kind",
+    "pass": true,
+    "detail": "[\"wz-sliver-type\",\"format\",\"wz-sliver-actions\",\"wz-sliver-templates\",\"wz-sliver-page-kind\"]"
+  },
+  {
+    "name": "L5 [arbor] Revise: the Typeface and nothing else",
+    "pass": true,
+    "detail": "{\"heads\":[\"Font\"],\"typeface\":1,\"format\":0,\"actions\":0,\"templates\":0,\"pageKind\":0,\"ink\":0,\"tabs\":[],\"disabledOrGrey\":0}"
+  },
+  {
+    "name": "L5 [arbor] Screenplay: Templates only",
+    "pass": true,
+    "detail": "{\"heads\":[\"Templates ?\"],\"typeface\":0,\"format\":0,\"actions\":0,\"templates\":1,\"pageKind\":0,\"ink\":0,\"tabs\":[],\"disabledOrGrey\":0}"
+  },
+  {
+    "name": "L5 [arbor] BOARD (page-level) [connector-a successor]: the tools arm keeps its list on the shared shell - FOUR door buttons (Add card, New Page, + Filed Pages, From a deck) and NO footer toggle (retired), with no Typeface/Format/Actions/Templates and no tab row",
+    "pass": true,
+    "detail": "{\"heading\":\"Board\",\"items\":[\"Add card\",\"New Page\",\"+ Filed Pages\",\"From a deck…\"],\"footerToggle\":[],\"otherSections\":0,\"tabs\":0}"
+  },
+  {
+    "name": "L6 [arbor] [tutor-drawer-mirror round 2 successor]: the CHOSEN tab (TEXT) computes to olive (--accent-rest) and takes no fill - the same \"where you are\" signal the drawer's own grip already carries; the unchosen one (INK) does not",
+    "pass": true,
+    "detail": "{\"accentRest\":\"rgb(150, 160, 90)\",\"c\":{\"textTab\":{\"color\":\"rgb(150, 160, 90)\",\"border\":\"rgb(150, 160, 90)\",\"bg\":\"rgba(0, 0, 0, 0)\",\"on\":\"true\"},\"inkTab\":{\"color\":\"rgb(181, 169, 152)\",\"border\":\"rgb(51, 44, 37)\",\"on\":\"false\"},\"gripColor\":\"rgb(150, 160, 90)\",\"gripBorder\":\"rgb(150, 160, 90)\"}}"
+  },
+  {
+    "name": "L6 [arbor]: an OPEN drawer's tab wears the theme's where-you-are colour (olive in Arbor, mid text in Flux), never brass",
+    "pass": true,
+    "detail": "{\"olive\":\"rgb(150, 160, 90)\",\"brass\":\"rgb(255, 152, 0)\",\"grip\":[\"rgb(150, 160, 90)\",\"rgb(150, 160, 90)\"]}"
+  },
+  {
+    "name": "L7 [arbor] @1100: opening the RIGHT drawer while the left is open CLOSES the left - one drawer at a time",
+    "pass": true,
+    "detail": "{\"left\":false,\"right\":true}"
+  },
+  {
+    "name": "L7 [arbor] @1100: and opening the LEFT drawer while the right is open closes the right (the rule is symmetric)",
+    "pass": true,
+    "detail": "{\"left\":true,\"right\":false}"
+  },
+  {
+    "name": "L7 [arbor] @1280: opening the RIGHT drawer while the left is open CLOSES the left - one drawer at a time",
+    "pass": true,
+    "detail": "{\"left\":false,\"right\":true}"
+  },
+  {
+    "name": "L7 [arbor] @1280: and opening the LEFT drawer while the right is open closes the right (the rule is symmetric)",
+    "pass": true,
+    "detail": "{\"left\":true,\"right\":false}"
+  },
+  {
+    "name": "L7 [arbor] @1400: opening the RIGHT drawer while the left is open CLOSES the left - one drawer at a time",
+    "pass": true,
+    "detail": "{\"left\":false,\"right\":true}"
+  },
+  {
+    "name": "L7 [arbor] @1400: and opening the LEFT drawer while the right is open closes the right (the rule is symmetric)",
+    "pass": true,
+    "detail": "{\"left\":true,\"right\":false}"
+  },
+  {
+    "name": "L8 [arbor] @1366x768: the panel scrolls, shows the THIN bar, and on its OUTER edge (direction rtl, children keep ltr)",
+    "pass": true,
+    "detail": "{\"overflowY\":\"auto\",\"scrollbarWidth\":\"thin\",\"direction\":\"rtl\",\"canScroll\":true}"
+  },
+  {
+    "name": "L9 [arbor]: the left tablist is named, has two tabs with exactly one selected, a ROVING tabindex (0 on the selected, -1 on the other), and aria-controls points at a real panel",
+    "pass": true,
+    "detail": "{\"label\":\"The page’s instrument\",\"n\":2,\"selected\":1,\"tabindex\":[\"0\",\"-1\"],\"controlsExist\":true,\"panelRole\":\"tabpanel\"}"
+  },
+  {
+    "name": "L9 [arbor]: ArrowRight moves the selection to INK AND the focus with it",
+    "pass": true,
+    "detail": "{\"selected\":\"wz-sliver-tab-ink\",\"focused\":\"wz-sliver-tab-ink\"}"
+  },
+  {
+    "name": "L9 [arbor]: ArrowLeft brings it back to TEXT",
+    "pass": true,
+    "detail": "wz-sliver-tab-text"
+  },
+  {
+    "name": "L9 [arbor]: both tabs are real buttons with a name, and the left one reports aria-expanded true while open",
+    "pass": true,
+    "detail": "{\"left\":{\"label\":\"Close hand tools\",\"expanded\":\"true\",\"tag\":\"BUTTON\"},\"right\":{\"label\":\"Open the Tutor\",\"expanded\":\"false\",\"tag\":\"BUTTON\"}}"
+  },
+  {
+    "name": "L9 [arbor]: the Typewriter toggle exists on Draft and reports aria-pressed",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "L9 [arbor] CONTROL: a trusted Enter activates a plain button (the \"...\" menu opens) - so the next two checks test the toggle, not the keyboard instrument",
+    "pass": true,
+    "detail": "{\"c0\":\"false\",\"c1\":\"true\"}"
+  },
+  {
+    "name": "L9 [arbor]: the Typewriter toggle can take focus (a precondition: an inert or hidden toggle would make the next press a no-op for the wrong reason)",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "L9 [arbor]: Enter on the focused Typewriter toggle FLIPS it, like any button",
+    "pass": true,
+    "detail": "{\"t1\":\"true\",\"t2\":\"false\"}"
+  },
+  {
+    "name": "L9 [arbor]: and Space flips it back",
+    "pass": true,
+    "detail": "{\"t2\":\"false\",\"t3\":\"true\"}"
+  },
+  {
+    "name": "L9 [arbor] [help-buttons successor]: the Grafts/Links tab's own \"?\" is a button that reports aria-expanded, opens the shared role=note overlay with THIS theme's own sentence, closes on Escape, and returns focus to itself",
+    "pass": false,
+    "detail": "{\"hn0\":\"false\",\"hn1\":{\"expanded\":\"true\",\"role\":\"note\",\"text\":\"Grafts join pages, cards and boards.\"},\"hn2\":{\"expanded\":\"false\",\"focused\":false}}"
+  },
+  {
+    "name": "L1 [flux] fixture: the draft surface opened",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "L1 [flux] (draft): the paper's rect is IDENTICAL before, during and after every open, close and tab change of either drawer, and of the hand-over from one to the other",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "L1 [flux] (draft): and the editor node is the SAME node throughout (never unmounted)",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "L1 [flux] fixture: the free surface opened",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "L1 [flux] (free): the paper's rect is IDENTICAL before, during and after every open, close and tab change of either drawer, and of the hand-over from one to the other",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "L1 [flux] (free): and the editor node is the SAME node throughout (never unmounted)",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "L2 [flux] (left, OPEN): the slide and the fade are both strictly mid-way at the SAME sample (they run together), and it ends at rest (transform none, opacity 1)",
+    "pass": true,
+    "detail": "{\"startTx\":174,\"endTx\":0,\"mid\":[{\"t\":23,\"tx\":161.7,\"op\":0.07,\"grip\":[374.39,124,16,34],\"panelLeft\":190.39,\"glyph\":\"›\"},{\"t\":39,\"tx\":135.6,\"op\":0.22,\"grip\":[374.39,124,16,34],\"panelLeft\":190.39,\"glyph\":\"›\"},{\"t\":55,\"tx\":102.9,\"op\":0.409,\"grip\":[374.39,124,16,34],\"panelLeft\":190.39,\"glyph\":\"›\"},{\"t\":73,\"tx\":73.7,\"op\":0.576,\"grip\":[374.39,124,16,34],\"panelLeft\":190.39,\"glyph\":\"›\"}]}"
+  },
+  {
+    "name": "L2 [flux] (left): the tab's rect never changes while the drawer opens (only its glyph)",
+    "pass": true,
+    "detail": "[[374.39,124,16,34]]"
+  },
+  {
+    "name": "L3 [flux] (left): the arrow glyph flips and nothing else on the tab does",
+    "pass": true,
+    "detail": "[\"‹\",\"›\"]"
+  },
+  {
+    "name": "L2 [flux] (left, CLOSE): slide and fade are both mid-way at the same sample on the way out too, and it ends hidden",
+    "pass": true,
+    "detail": "{\"first\":{\"t\":0,\"tx\":0,\"op\":1,\"grip\":[374.39,124,16,34],\"panelLeft\":190.39,\"glyph\":\"›\"},\"last\":{\"t\":527,\"tx\":174,\"op\":0,\"grip\":[374.39,124,16,34],\"panelLeft\":190.39,\"glyph\":\"‹\"}}"
+  },
+  {
+    "name": "L2 [flux] (right, OPEN): the slide and the fade are both strictly mid-way at the SAME sample (they run together), and it ends at rest (transform none, opacity 1)",
+    "pass": true,
+    "detail": "{\"startTx\":-380,\"endTx\":0,\"mid\":[{\"t\":31,\"tx\":-327,\"op\":0.071,\"grip\":[857.39,124,16,34],\"panelLeft\":889.61,\"glyph\":\"‹\"},{\"t\":47,\"tx\":-274.4,\"op\":0.22,\"grip\":[857.39,124,16,34],\"panelLeft\":889.61,\"glyph\":\"‹\"},{\"t\":65,\"tx\":-208.1,\"op\":0.409,\"grip\":[857.39,124,16,34],\"panelLeft\":889.61,\"glyph\":\"‹\"},{\"t\":81,\"tx\":-149.1,\"op\":0.576,\"grip\":[857.39,124,16,34],\"panelLeft\":889.61,\"glyph\":\"‹\"}]}"
+  },
+  {
+    "name": "L2 [flux] (right) [tutor-drawer-arrow successor]: the tab's rect MOVES while the drawer opens, settling 16px outside the open panel's own left edge (never inside its tab row)",
+    "pass": true,
+    "detail": "{\"gripRight\":873.39,\"panelLeft\":889.61,\"gap\":16.22}"
+  },
+  {
+    "name": "L3 [flux] (right): the arrow glyph flips and nothing else on the tab does",
+    "pass": true,
+    "detail": "[\"›\",\"‹\"]"
+  },
+  {
+    "name": "L2 [flux] (right, CLOSE): slide and fade are both mid-way at the same sample on the way out too, and it ends hidden",
+    "pass": true,
+    "detail": "{\"first\":{\"t\":0,\"tx\":0,\"op\":1,\"grip\":[857.39,124,16,34],\"panelLeft\":889.61,\"glyph\":\"‹\"},\"last\":{\"t\":529,\"tx\":-380,\"op\":0,\"grip\":[889.61,124,16,34],\"panelLeft\":861.61,\"glyph\":\"›\"}}"
+  },
+  {
+    "name": "L3 [flux]: the two hands are mirrors - closed left shows ‹ and closed right shows ›",
+    "pass": true,
+    "detail": "{\"left\":\"‹\",\"right\":\"›\"}"
+  },
+  {
+    "name": "L2 [flux] (REDUCED MOTION): the layer never travels (transform none at every sample) and the fade still happens, over a short time (full by <= ~250 ms with frame slack)",
+    "pass": true,
+    "detail": "{\"fadeSamples\":6,\"reachedFullAt\":154,\"travelled\":0}"
+  },
+  {
+    "name": "L4 [flux] (left): CLOSED MEANS CLOSED - inert, aria-hidden, visibility hidden, opacity 0, and of 37 controls inside none can take focus and none is hit-testable",
+    "pass": true,
+    "detail": "{\"controls\":37,\"focusable\":0,\"hittable\":0,\"inert\":true,\"ariaHidden\":\"true\",\"visibility\":\"hidden\",\"opacity\":\"0\"}"
+  },
+  {
+    "name": "L4 [flux] (right): CLOSED MEANS CLOSED - inert, aria-hidden, visibility hidden, opacity 0, and of 12 controls inside none can take focus and none is hit-testable",
+    "pass": true,
+    "detail": "{\"controls\":12,\"focusable\":0,\"hittable\":0,\"inert\":true,\"ariaHidden\":\"true\",\"visibility\":\"hidden\",\"opacity\":\"0\"}"
+  },
+  {
+    "name": "L5 [flux] Free Write, TEXT: tabs TEXT|INK; Typeface only - no Format, no Actions, no Templates, no page-kind, no ink zone",
+    "pass": true,
+    "detail": "{\"heads\":[\"Typeface\",\"Controls\",\"Log\"],\"typeface\":1,\"format\":0,\"actions\":0,\"templates\":0,\"pageKind\":0,\"ink\":0,\"tabs\":[\"text\",\"ink\"],\"disabledOrGrey\":0}"
+  },
+  {
+    "name": "L5 [flux] Free Write, INK: the ink zone is there and the Typeface is not",
+    "pass": true,
+    "detail": "{\"heads\":[\"Tip\",\"Nib\",\"Ink\",\"Controls\",\"Log\"],\"typeface\":0,\"format\":0,\"actions\":0,\"templates\":0,\"pageKind\":0,\"ink\":2,\"tabs\":[\"text\",\"ink\"],\"disabledOrGrey\":0}"
+  },
+  {
+    "name": "L5 [flux] Draft: Typeface, Format, Actions, Templates, page-kind - in that order, no tab row",
+    "pass": true,
+    "detail": "{\"heads\":[\"Typeface\",\"Format\",\"Actions\",\"Templates ?\",\"Pages Kind\"],\"typeface\":1,\"format\":1,\"actions\":1,\"templates\":1,\"pageKind\":1,\"ink\":0,\"tabs\":[],\"disabledOrGrey\":1}"
+  },
+  {
+    "name": "L5 [flux] Draft: the sections run Typeface, Format, Actions, Templates, Page kind",
+    "pass": true,
+    "detail": "[\"wz-sliver-type\",\"format\",\"wz-sliver-actions\",\"wz-sliver-templates\",\"wz-sliver-page-kind\"]"
+  },
+  {
+    "name": "L5 [flux] Revise: the Typeface and nothing else",
+    "pass": true,
+    "detail": "{\"heads\":[\"Typeface\"],\"typeface\":1,\"format\":0,\"actions\":0,\"templates\":0,\"pageKind\":0,\"ink\":0,\"tabs\":[],\"disabledOrGrey\":0}"
+  },
+  {
+    "name": "L5 [flux] Screenplay: Templates only",
+    "pass": true,
+    "detail": "{\"heads\":[\"Templates ?\"],\"typeface\":0,\"format\":0,\"actions\":0,\"templates\":1,\"pageKind\":0,\"ink\":0,\"tabs\":[],\"disabledOrGrey\":0}"
+  },
+  {
+    "name": "L5 [flux] BOARD (page-level) [connector-a successor]: the tools arm keeps its list on the shared shell - FOUR door buttons (Add card, New Page, + Filed Pages, From a deck) and NO footer toggle (retired), with no Typeface/Format/Actions/Templates and no tab row",
+    "pass": true,
+    "detail": "{\"heading\":\"Board\",\"items\":[\"Add card\",\"New Doc\",\"+ Filed Pages\",\"From a deck…\"],\"footerToggle\":[],\"otherSections\":0,\"tabs\":0}"
+  },
+  {
+    "name": "L6 [flux] [tutor-drawer-mirror round 2 successor]: the CHOSEN tab (TEXT) computes to olive (--accent-rest) and takes no fill - the same \"where you are\" signal the drawer's own grip already carries; the unchosen one (INK) does not",
+    "pass": true,
+    "detail": "{\"accentRest\":\"rgb(150, 160, 90)\",\"c\":{\"textTab\":{\"color\":\"rgb(150, 160, 90)\",\"border\":\"rgb(150, 160, 90)\",\"bg\":\"rgba(0, 0, 0, 0)\",\"on\":\"true\"},\"inkTab\":{\"color\":\"rgb(143, 180, 172)\",\"border\":\"rgb(29, 74, 82)\",\"on\":\"false\"},\"gripColor\":\"rgb(143, 180, 172)\",\"gripBorder\":\"rgb(143, 180, 172)\"}}"
+  },
+  {
+    "name": "L6 [flux]: an OPEN drawer's tab wears the theme's where-you-are colour (olive in Arbor, mid text in Flux), never brass",
+    "pass": true,
+    "detail": "{\"olive\":\"rgb(143, 180, 172)\",\"brass\":\"rgb(255, 152, 0)\",\"grip\":[\"rgb(143, 180, 172)\",\"rgb(143, 180, 172)\"]}"
+  },
+  {
+    "name": "L7 [flux] @1100: opening the RIGHT drawer while the left is open CLOSES the left - one drawer at a time",
+    "pass": true,
+    "detail": "{\"left\":false,\"right\":true}"
+  },
+  {
+    "name": "L7 [flux] @1100: and opening the LEFT drawer while the right is open closes the right (the rule is symmetric)",
+    "pass": true,
+    "detail": "{\"left\":true,\"right\":false}"
+  },
+  {
+    "name": "L7 [flux] @1280: opening the RIGHT drawer while the left is open CLOSES the left - one drawer at a time",
+    "pass": true,
+    "detail": "{\"left\":false,\"right\":true}"
+  },
+  {
+    "name": "L7 [flux] @1280: and opening the LEFT drawer while the right is open closes the right (the rule is symmetric)",
+    "pass": true,
+    "detail": "{\"left\":true,\"right\":false}"
+  },
+  {
+    "name": "L7 [flux] @1400: opening the RIGHT drawer while the left is open CLOSES the left - one drawer at a time",
+    "pass": true,
+    "detail": "{\"left\":false,\"right\":true}"
+  },
+  {
+    "name": "L7 [flux] @1400: and opening the LEFT drawer while the right is open closes the right (the rule is symmetric)",
+    "pass": true,
+    "detail": "{\"left\":true,\"right\":false}"
+  },
+  {
+    "name": "L8 [flux] @1366x768: the panel scrolls, shows the THIN bar, and on its OUTER edge (direction rtl, children keep ltr)",
+    "pass": true,
+    "detail": "{\"overflowY\":\"auto\",\"scrollbarWidth\":\"thin\",\"direction\":\"rtl\",\"canScroll\":true}"
+  },
+  {
+    "name": "L9 [flux]: the left tablist is named, has two tabs with exactly one selected, a ROVING tabindex (0 on the selected, -1 on the other), and aria-controls points at a real panel",
+    "pass": true,
+    "detail": "{\"label\":\"The page’s instrument\",\"n\":2,\"selected\":1,\"tabindex\":[\"0\",\"-1\"],\"controlsExist\":true,\"panelRole\":\"tabpanel\"}"
+  },
+  {
+    "name": "L9 [flux]: ArrowRight moves the selection to INK AND the focus with it",
+    "pass": true,
+    "detail": "{\"selected\":\"wz-sliver-tab-ink\",\"focused\":\"wz-sliver-tab-ink\"}"
+  },
+  {
+    "name": "L9 [flux]: ArrowLeft brings it back to TEXT",
+    "pass": true,
+    "detail": "wz-sliver-tab-text"
+  },
+  {
+    "name": "L9 [flux]: both tabs are real buttons with a name, and the left one reports aria-expanded true while open",
+    "pass": true,
+    "detail": "{\"left\":{\"label\":\"Close hand tools\",\"expanded\":\"true\",\"tag\":\"BUTTON\"},\"right\":{\"label\":\"Open the Tutor\",\"expanded\":\"false\",\"tag\":\"BUTTON\"}}"
+  },
+  {
+    "name": "L9 [flux]: the Typewriter toggle exists on Draft and reports aria-pressed",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "L9 [flux] CONTROL: a trusted Enter activates a plain button (the \"...\" menu opens) - so the next two checks test the toggle, not the keyboard instrument",
+    "pass": true,
+    "detail": "{\"c0\":\"false\",\"c1\":\"true\"}"
+  },
+  {
+    "name": "L9 [flux]: the Typewriter toggle can take focus (a precondition: an inert or hidden toggle would make the next press a no-op for the wrong reason)",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "L9 [flux]: Enter on the focused Typewriter toggle FLIPS it, like any button",
+    "pass": true,
+    "detail": "{\"t1\":\"false\",\"t2\":\"true\"}"
+  },
+  {
+    "name": "L9 [flux]: and Space flips it back",
+    "pass": true,
+    "detail": "{\"t2\":\"true\",\"t3\":\"false\"}"
+  },
+  {
+    "name": "L9 [flux] [help-buttons successor]: the Grafts/Links tab's own \"?\" is a button that reports aria-expanded, opens the shared role=note overlay with THIS theme's own sentence, closes on Escape, and returns focus to itself",
+    "pass": false,
+    "detail": "{\"hn0\":\"false\",\"hn1\":{\"expanded\":\"true\",\"role\":\"note\",\"text\":\"Links join docs, cards and circuits.\"},\"hn2\":{\"expanded\":\"false\",\"focused\":false}}"
+  }
+]
+
+DRAWERS-P1-LIVE VERIFY: FAIL - 2/88
+  FAIL L9 [arbor] [help-buttons successor]: the Grafts/Links tab's own "?" is a button that reports aria-expanded, opens the shared role=note overlay with THIS theme's own sentence, closes on Escape, and returns focus to itself | {"hn0":"false","hn1":{"expanded":"true","role":"note","text":"Grafts join pages, cards and boards."},"hn2":{"expanded":"false","focused":false}}
+  FAIL L9 [flux] [help-buttons successor]: the Grafts/Links tab's own "?" is a button that reports aria-expanded, opens the shared role=note overlay with THIS theme's own sentence, closes on Escape, and returns focus to itself | {"hn0":"false","hn1":{"expanded":"true","role":"note","text":"Links join docs, cards and circuits."},"hn2":{"expanded":"false","focused":false}}
