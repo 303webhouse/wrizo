@@ -1,0 +1,28 @@
+STAMP: tree=09a14d31 bundle=index-B7I0FUIk.js/716825b
+default c00: CLEAN same stamp (verified not VOID)
+default c01: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c01 - continuing to collect all reds
+default c02: CLEAN same stamp (verified not VOID)
+default c03: CLEAN same stamp (verified not VOID)
+default c04: CLEAN same stamp (verified not VOID)
+default c05: CLEAN same stamp (verified not VOID)
+STOP before default c06: 1 harness node processes, 0 browsers
+RESUMED from default c06 on the SAME tree and stamp (07:21:36Z); the pair had STOPPED before c06 because another lane started a harness (b101.mjs); c00-c05 as recorded above
+default c06: CLEAN same stamp (verified not VOID)
+default c07: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c07 - continuing to collect all reds
+default c08: CLEAN same stamp (verified not VOID)
+DEFAULT LEG COMPLETE
+parked c00: CLEAN same stamp (verified not VOID)
+parked c01: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c01 - continuing to collect all reds
+parked c02: CLEAN same stamp (verified not VOID)
+parked c03: CLEAN same stamp (verified not VOID)
+parked c04: CLEAN same stamp (verified not VOID)
+parked c05: CLEAN same stamp (verified not VOID)
+parked c06: CLEAN same stamp (verified not VOID)
+parked c07: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c07 - continuing to collect all reds
+parked c08: CLEAN same stamp (verified not VOID)
+PAIR COMPLETE
+released (mine)

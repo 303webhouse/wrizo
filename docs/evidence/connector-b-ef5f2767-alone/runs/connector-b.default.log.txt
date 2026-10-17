@@ -1,0 +1,14 @@
+PASS  fixture: the board opened with two cards and a nested board pinned on it; two more boards exist  [{"there":true,"id":"cb-board-1","b2":"cb-b2-1","nest":"cb-nest-1"}]
+PASS  fixture: the rail's Drawers panel shows the other board as a thumbnail that declares its entry (data-link-entry)  [{"l":98,"t":304,"r":369,"b":341,"w":271,"h":37,"entry":"cb-b2-1"}]
+PASS  fixture: connection mode is on (double-click on the corner square)  [true]
+PASS  B1: the thumbnail under the arm wears a circle - OPEN (not brass-filled), a 10px circle - and the arm LANDS on it  [{"st1":{"target":"true","peer":null,"solid":null,"flash":null,"circle":true,"radius":"50%","bg":"rgb(31, 26, 22)"},"arm1":{"x1":782.03125,"y1":301.8125,"x2":107,"y2":322.5,"inBody":true,"display":"block"},"tb2":{"l":98,"t":304,"r":369,"b":341,"w":271,"h":37,"entry":"cb-b2-1"}}]
+FAIL  B1: the arm is drawn in a viewport overlay (a portal on body), UNCLIPPED - it ends past the board's right edge, over the rail  [{"arm1":{"x1":782.03125,"y1":301.8125,"x2":107,"y2":322.5,"inBody":true,"display":"block"},"canvasRight":1239}]
+PASS  B8: with the arm over the rail the board has not moved - the canvas rect is identical
+PASS  B2: a release on the thumbnail LINKS - ONE record on THIS board (aBoxId = the card, bEntryId = that board), no connection box - and the mode is over  [{"links2":[{"id":"mvc5g3zy3845w4zif","aEntryId":"cb-board-1","bEntryId":"cb-b2-1","createdAt":"2026-10-17T08:43:26.398Z","updatedAt":"2026-10-17T08:43:26.398Z","aBoxId":"cb-a"}],"armed":"false"}]
+FAIL  B2: the thumbnail flashes its circle SOLID for a beat (data-link-flash on, brass-filled)  [null]
+FAIL  B2: then it hides again (no circle, no flash)  [null]
+FAIL  B3: the card's footer reads "- grafted to: Research board" (the link joins the same footer as a same-board connection)  [null]
+FAIL  B3: the link and the footer survive a reload  [null]
+FAIL  fixture: the card selected and its corner handle rendered (the select click must land on the CARD, not on a panel tile)  [null]
+
+CONNECTOR-B VERIFY: FAIL - 6/12 failed
