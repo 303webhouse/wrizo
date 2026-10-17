@@ -5147,6 +5147,18 @@ a:focus-visible,
    skipped (the estimate stands in), paint containment always (nothing in a row draws outside it - bullets and quote borders are inside
    its padding). The real editor's innerText and select-all text are checked against its text at 50k by the profile, every run.
    .forward-only-editor .wz-row{ content-visibility:auto; }   <- the removed rule */
+/* PAGE TEMPLATES - THE LENS, on the rows (store/lineRows.ts applyOutlineLens; docs/plans/page-templates.md section 1). It is drawn through the editor's data-template
+   and, for the Outline, two data attributes on the ROW element itself (never in the row's markup, so the kept-row compare and the shadow lines are untouched, and never as
+   text: ::before content is in no innerText, no selection and no copy). OUTLINE: the row leaves a gutter on its left; the derived number sits in it at the row's level, and
+   the leading tabs (the writer's own indent, 2em a step) carry the text to the same level - so number and text step in together, as in the approved mockup. Top-level
+   headings are a touch heavier. BIBLIOGRAPHY: a hanging indent per entry - the first line at the margin, wrapped lines under it - with a gap between entries. Both are
+   decoration on the page's own rows: nothing here moves the sheet. */
+.forward-only-editor[data-template='outline'] .wz-row{ position:relative; padding-left:2.8em; }
+.forward-only-editor[data-template='outline'] .wz-row[data-ol]::before{ content:attr(data-ol); position:absolute; left:0; top:0; text-indent:0; white-space:nowrap; color:color-mix(in srgb, currentColor 55%, transparent); font-variant-numeric:tabular-nums; }
+.forward-only-editor[data-template='outline'] .wz-row[data-lvl='1']::before{ left:2em; }
+.forward-only-editor[data-template='outline'] .wz-row[data-lvl='2']::before{ left:4em; }
+.forward-only-editor[data-template='outline'] .wz-row[data-lvl='0']{ font-weight:500; }
+.forward-only-editor[data-template='bibliography'] .wz-row{ padding-left:2.4em; text-indent:-2.4em; margin-bottom:.6em; }
 /* STEP 3 - THE INDENT LOOK (Nick's ruling): a leading tab is a FIRST-LINE indent - the first visual line moves in one step per
    tab and wrapped lines return to the margin - so a tab must be one fixed step wide. `tab-size` makes it 2em (the browser default,
    8 characters, varies with the typeface). The WHOLE-PARAGRAPH indent is the separate `>| ` block token below. */

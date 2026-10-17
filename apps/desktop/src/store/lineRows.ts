@@ -20,6 +20,7 @@
 //
 // THE BOARD CARD keeps today's single-block path: a card is small, and nothing here is attached to it.
 import { decorateLineForCard, EOF_GUARD, readEditorPlainText } from './draftDecoration';
+import { outlineNumbers, outlineRows } from './outlineText';
 
 export interface Rows {
   el: HTMLElement;
@@ -39,6 +40,8 @@ export interface Rows {
   /** A native edit that touched ONE row and left its structure as it was (the row element still in place between its separators):
    *  that row is KEPT, and writeRows rewrites it only if its live markup differs from what it should be. */
   keep: number | null;
+  /** PAGE TEMPLATES: the Outline's number / level attributes are on some rows (so a lens that goes off knows to clear them). */
+  lensDrawn: boolean;
 }
 
 // What was last WRITTEN into each row, compared instead of the row's innerHTML: the browser's serialisation of our string is not
@@ -84,7 +87,7 @@ const localCaret = (R: Rows, i: number, caret: number | null) => {
 /** Render the whole page as rows (mount, and the recovery path). The caret is placed by the caller. */
 export function mountRows(el: HTMLElement, text: string, caret: number | null): Rows {
   const lines = text.split('\n');
-  const R: Rows = { el, lines, starts: [], rows: [], text, revealLine: -1, dirty: null, stale: false, hint: null, keep: null };
+  const R: Rows = { el, lines, starts: [], rows: [], text, revealLine: -1, dirty: null, stale: false, hint: null, keep: null, lensDrawn: false };
   recomputeStarts(R);
   const at = caret === null ? -1 : lineOf(R, caret);
   el.innerHTML = lines.map((l, i) => rowSpan(rowHtml(l, i === at ? localCaret(R, i, caret) : null))).join('\n') + (text.endsWith('\n') ? GUARD_HTML : '');
@@ -92,9 +95,35 @@ export function mountRows(el: HTMLElement, text: string, caret: number | null): 
   R.rows.forEach((row, i) => written.set(row!, rowHtml(lines[i], i === at ? localCaret(R, i, caret) : null)));
   R.revealLine = at;
   ROWS.set(el, R);
+  applyOutlineLens(R);
   verifyRows(R);
   return R;
 }
+
+// PAGE TEMPLATES - THE OUTLINE LENS (docs/plans/page-templates.md section 1). While the editor carries data-template="outline", every ROW element wears its derived number and
+// effective level as data attributes (store/outlineText.ts: the one place the levels and numbers are derived, never stored). They are attributes on the row ELEMENT, not
+// markup inside it, on purpose: `written` (what each row was last given) and the kept-row compare read innerHTML, so the lens never makes a typed letter's row look changed;
+// and the number is drawn by CSS ::before from the attribute, so it is in no text. A number depends on the rows above it, so this runs over every row after each write
+// (a Tab changes the numbers of rows whose own text did not change, and writeRows rewrites only what changed); it touches an attribute only when it differs, and it does
+// nothing at all on a page that is not an Outline. Cheap by construction: an outline is a short document.
+export function applyOutlineLens(R: Rows): void {
+  if (R.el.dataset.template !== 'outline') {
+    if (R.lensDrawn) { for (const row of R.rows) if (row) { delete row.dataset.ol; delete row.dataset.lvl; } R.lensDrawn = false; }
+    return;
+  }
+  const rows = outlineRows(R.text);
+  const nums = outlineNumbers(rows);
+  R.rows.forEach((row, i) => {
+    if (!row || !rows[i]) return;
+    const lvl = String(rows[i].level);
+    if (row.dataset.ol !== nums[i]) row.dataset.ol = nums[i];
+    if (row.dataset.lvl !== lvl) row.dataset.lvl = lvl;
+  });
+  R.lensDrawn = true;
+}
+
+/** The host switched a page's template under a mounted editor (the picker): draw or clear the lens now, without waiting for the next write. */
+export function refreshLens(el: HTMLElement): void { const R = ROWS.get(el); if (R) applyOutlineLens(R); }
 
 export function detachRows(el: HTMLElement): void { ROWS.delete(el); }
 
@@ -184,6 +213,7 @@ export function writeRows(el: HTMLElement, text: string, caret: number | null, r
     if (row) writeRow(row, rowHtml(R.lines[i], i === at ? localCaret(R, i, revealAt) : null));
   }
   R.revealLine = at;
+  applyOutlineLens(R);
   if (caret !== null && !keptAsIs) placeRowsCaret(R, caret);
   verifyRows(R);
   return true;

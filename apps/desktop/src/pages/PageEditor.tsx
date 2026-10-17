@@ -20,6 +20,7 @@ import { UnbornProvider, useUnborn } from '../components/UnbornSurface';
 import { BeginningsRow, type BeginningDoor } from '../components/BeginningsRow';
 import { unbornHref } from '../store/unbornPage';
 import { TEMPLATE_ORDER, type TemplateKey } from '../components/TemplateSketch';
+import { outlineNextRowPrefix, outlineShift } from '../store/outlineText';
 import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset, setSelectionOffsets, getCaretOffset, getSelectionOffsets, rangeFromPlainOffsets } from '../store/caretOffset';
 import type { Stroke } from '../types';
@@ -911,6 +912,8 @@ function PageEditorView({ id }: { id: string }) {
         autoFocus={initialText.trim() === ''}
         onChange={onTextChange}
         onFormatKey={mode === 'drafting' ? applyRailFormat : undefined}
+        lens={lensActive}
+        onLensKey={applyLensKey}
         onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); invite.dismiss(); setBeginningsDismissed(true); }}
         onFocus={() => setFocused(true)}
         onBlur={() => { setFocused(false); flush(); }}
@@ -1078,6 +1081,40 @@ function PageEditorView({ id }: { id: string }) {
     setText(next);
     // TYPING-LATENCY x FONT-SPAN: through the rows (the same repair as applyFontAt's)
     if (!writeRows(el, next, caret, null)) decorateEditorFor(el, next, caret, setCaretOffset, t => decorateMarkdownForCard(t, null));
+  };
+  // PAGE TEMPLATES - THE LENS (docs/plans/page-templates.md section 1). An Outline or a Bibliography is the page's ordinary text drawn through one more wrapper
+  // (store/draftDecoration.ts lensHtml, in the one decoration funnel); it applies in Draft and Revise, never in Free Write's forward-only runway. The Outline also
+  // owns three keys in Draft: Tab / Shift+Tab change the level of the rows the selection touches (clamped, store/outlineText.ts), Enter opens the next row at the
+  // same level. Each is ONE atomic undo step, written through the same road a format press takes. Typewriter still blocks them, as it blocks the Format group.
+  const lensActive: 'outline' | 'bibliography' | null = mode !== 'journal' && (entry.pageSettings?.template === 'outline' || entry.pageSettings?.template === 'bibliography') ? entry.pageSettings.template : null;
+  const applyLensKey = (e: KeyboardEvent): boolean => {
+    if (lensActive !== 'outline' || mode !== 'drafting' || e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return false;
+    if (e.key !== 'Tab' && !(e.key === 'Enter' && !e.shiftKey)) return false;
+    if (getWritingSettings().typewriter) return false;
+    const el = editorRef.current;
+    if (!el) return false;
+    const sel = getSelectionOffsets(el);
+    if (!sel) return false;
+    const cur = textRef.current;
+    const start = Math.min(sel.start, cur.length);
+    const end = Math.min(sel.end, cur.length);
+    let result: { text: string; start: number; end: number };
+    if (e.key === 'Tab') {
+      result = outlineShift(cur, start, end, e.shiftKey ? -1 : 1);
+    } else {
+      const prefix = outlineNextRowPrefix(cur, start);
+      const caret = start + 1 + prefix.length;
+      result = { text: cur.slice(0, start) + '\n' + prefix + cur.slice(end), start: caret, end: caret };
+    }
+    e.preventDefault();
+    if (result.text !== cur) {
+      getRegisteredUndoStack(el)?.record({ text: result.text, caret: result.start }, 'atomic');
+      setText(result.text);
+      // TYPING-LATENCY: on the rows only the changed lines are rewritten (store/lineRows.ts), and the Outline's numbers are re-derived in the same write (applyOutlineLens)
+      if (!writeRows(el, result.text, result.start, null)) decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, null));
+      if (result.end > result.start) setSelectionOffsets(el, result.start, result.end);
+    }
+    return true;
   };
   const applyRailFormat = (action: FormatAction) => {
     if (mode !== 'drafting') return;   // 112-A's guard, unchanged in scope
