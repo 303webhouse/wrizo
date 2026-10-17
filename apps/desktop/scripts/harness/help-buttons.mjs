@@ -17,6 +17,25 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
 
+// REPAIR (Fable, Oct 17, ledger 85) — every tap on a "?" or its popover, and
+// the press outside it, now goes through a genuinely TRUSTED CDP pointer
+// event (app.mouseDown/mouseUp over the element's own measured centre), the
+// same standing law splash.mjs already keeps ("nothing uses page-side
+// .click()"). A page-side el.click() establishes no real pointer identity
+// and no real focus the way a writer's actual tap does — exactly the gap
+// S4 (Esc returns focus) needs closed under a trusted press, not a synthetic
+// one. Missing elements fail loudly (never a silent no-op), per house law.
+const realClick = async (app, selector) => {
+  const rect = await app.evalJs(`(() => {
+    const el = document.querySelector(${JSON.stringify(selector)});
+    if (!el) throw new Error('realClick: no element ' + ${JSON.stringify(selector)});
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  })()`);
+  await app.mouseDown(rect.x, rect.y);
+  await app.mouseUp(rect.x, rect.y);
+};
+
 const freshPage = async (app, theme, { width = 1400, id = 'hb-page' } = {}) => {
   await app.emulateDpr(1, width, 900);
   await app.goto('/');
@@ -42,11 +61,21 @@ const openTutorDrawer = async (app) => {
   await sleep(400);
 };
 
+// REPAIR (Fable, Oct 17) — Recede depth's own Seg lives inside the sliver's
+// FOOT SETTINGS POPOUT (Sliver.tsx's .wz-sliver-instruments-panel), a second
+// disclosure nested inside the sliver itself ("..." button, aria-label
+// footSettings) — reading the Draft sliver open is not enough to reach it.
+const openDraftSliverSettings = async (app) => {
+  await openDraftSliver(app);
+  await app.evalJs("document.querySelector('.wz-sliver-instruments-btn')?.click()");
+  await sleep(300);
+};
+
 // Each location, how to reach it, and the selector of its own "?".
 const LOCATIONS = [
   { key: 'helpTemplates', subject: 'Templates', reach: openDraftSliver, sel: '.wz-sliver-templates .wz-sliver-h .wz-help' },
   { key: 'helpOutline', subject: 'Outline', reach: openDraftSliver, sel: '.wz-sliver-templates .wz-help[aria-label="What is Outline?"]' },
-  { key: 'recedeHint', subject: 'Recede depth', reach: openDraftSliver, sel: '.wz-help[aria-label="What is Recede depth?"]' },
+  { key: 'recedeHint', subject: 'Recede depth', reach: openDraftSliverSettings, sel: '.wz-help[aria-label="What is Recede depth?"]' },
   { key: 'helpFreeWrite', subject: 'Free Write', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Free"]' },
   { key: 'helpPublish', subject: 'Publish', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Publish"]' },
   { key: 'helpGrafts', subject: 'Grafts/Links', reach: openTutorDrawer, sel: '.wz-drawer-tabnotes .wz-help' },
@@ -82,12 +111,12 @@ await withHarness(async (app) => {
       await loc.reach(app);
       const exists = await app.evalJs(`!!document.querySelector(${JSON.stringify(loc.sel)})`);
       if (!exists) { ok(`S1 [${theme}] ${loc.subject}: the "?" exists`, false, 'not found'); continue; }
-      await app.evalJs(`document.querySelector(${JSON.stringify(loc.sel)})?.click()`);
+      await realClick(app, loc.sel);
       await sleep(250);
       const text = await app.evalJs("document.querySelector('.wz-help-pop')?.textContent ?? null");
       const expected = SENTENCES[theme][loc.key];
       ok(`S1 [${theme}] ${loc.subject}: the "?" opens THIS theme's own sentence`, text === expected, JSON.stringify({ text, expected }));
-      await app.evalJs(`document.querySelector(${JSON.stringify(loc.sel)})?.click()`);
+      await realClick(app, loc.sel);
       await sleep(250);
     }
   }
@@ -101,24 +130,24 @@ await withHarness(async (app) => {
   const SEL = '.wz-sliver-templates .wz-sliver-h .wz-help';
 
   // S2 — a second tap of the SAME "?" closes it.
-  await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.click()`);
+  await realClick(app, SEL);
   await sleep(250);
   const s2Open = await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.getAttribute('aria-expanded')`);
-  await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.click()`);
+  await realClick(app, SEL);
   await sleep(250);
   const s2Closed = await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.getAttribute('aria-expanded')`);
   ok('S2: a second tap of the SAME "?" closes it', s2Open === 'true' && s2Closed === 'false', JSON.stringify({ s2Open, s2Closed }));
 
   // S3 — a tap/press anywhere outside closes it.
-  await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.click()`);
+  await realClick(app, SEL);
   await sleep(250);
-  await app.evalJs("document.querySelector('.mode-page, .wz-sliver-body')?.click()");
+  await realClick(app, '.mode-page, .wz-sliver-body');
   await sleep(250);
   const s3Closed = await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.getAttribute('aria-expanded')`);
   ok('S3: a press outside the "?" and its popover closes it', s3Closed === 'false', String(s3Closed));
 
   // S4 — Esc closes it AND returns focus to the "?" (Fable's own explicit ask).
-  await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.click()`);
+  await realClick(app, SEL);
   await sleep(250);
   await app.key('Escape');
   await sleep(250);
@@ -127,11 +156,11 @@ await withHarness(async (app) => {
 
   // S5 — NO TIMER: left open, it stays open (Nick's own ruling — the
   // mockup's own commit d4d1c835 removed an earlier auto-close timer).
-  await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.click()`);
+  await realClick(app, SEL);
   await sleep(3000);
   const s5Still = await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.getAttribute('aria-expanded')`);
   ok('S5: left alone, the popover stays open — NO auto-close timer', s5Still === 'true', String(s5Still));
-  await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.click()`);
+  await realClick(app, SEL);
   await sleep(250);
 
   // S6 — PAGE PRIMACY: the page's own rect is byte-identical before the "?"
@@ -139,7 +168,7 @@ await withHarness(async (app) => {
   // proved this; this is the same proof against the real editor's own rect.
   const rect = () => app.evalJs(`(() => { const r = document.querySelector('${ED}').getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round).join(','); })()`);
   const r0 = await rect();
-  await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.click()`);
+  await realClick(app, SEL);
   await sleep(250);
   const r1 = await rect();
   await app.key('Escape');

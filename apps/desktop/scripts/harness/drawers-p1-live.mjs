@@ -20,6 +20,21 @@ import { withHarness } from '../runtime-verify.mjs';
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// REPAIR (Fable, Oct 17, ledger 85) — L9's help-buttons successor used a
+// page-side el.click(), never trusted; the "?"'s own outside-close listener
+// is a real `pointerdown` (components/HelpPop.tsx), which a page-side click
+// never dispatches at all. Same fix as help-buttons.mjs's own realClick.
+const realClick = async (app, selector) => {
+  const rect = await app.evalJs(`(() => {
+    const el = document.querySelector(${JSON.stringify(selector)});
+    if (!el) throw new Error('realClick: no element ' + ${JSON.stringify(selector)});
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  })()`);
+  await app.mouseDown(rect.x, rect.y);
+  await app.mouseUp(rect.x, rect.y);
+};
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
 const guard = async (name, fn) => { try { await fn(); } catch (e) { ok(`${name}: THE DRIVER THREW (not a product finding)`, false, String(e).slice(0, 240)); } };
 
@@ -402,7 +417,7 @@ await withHarness(async (app) => {
       // on Escape, returning focus to the "?" itself.
       await ensureRight(app, true);
       const hn0 = await app.evalJs(`document.querySelector('.wz-drawer-tabnotes .wz-help')?.getAttribute('aria-expanded') ?? null`);
-      await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-help')?.click()"); await sleep(300);
+      await realClick(app, '.wz-drawer-tabnotes .wz-help'); await sleep(300);
       const hn1 = await app.evalJs(`({ expanded: document.querySelector('.wz-drawer-tabnotes .wz-help')?.getAttribute('aria-expanded'), role: document.querySelector('.wz-help-pop')?.getAttribute('role') ?? null, text: document.querySelector('.wz-help-pop')?.textContent ?? null })`);
       await app.key('Escape'); await sleep(300);
       const hn2 = await app.evalJs(`({ expanded: document.querySelector('.wz-drawer-tabnotes .wz-help')?.getAttribute('aria-expanded') ?? null, focused: document.activeElement === document.querySelector('.wz-drawer-tabnotes .wz-help') })`);
