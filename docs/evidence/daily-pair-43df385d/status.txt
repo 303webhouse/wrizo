@@ -1,0 +1,24 @@
+STAMP: tree=43df385d bundle=index-CPgPsazr.js/705857b
+default c00: CLEAN same stamp (verified not VOID)
+default c01: CLEAN same stamp (verified not VOID)
+default c02: CLEAN same stamp (verified not VOID)
+default c03: CLEAN same stamp (verified not VOID)
+default c04: CLEAN same stamp (verified not VOID)
+default c05: CLEAN same stamp (verified not VOID)
+default c06: CLEAN same stamp (verified not VOID)
+default c07: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c07 - continuing to collect all reds
+default c08: CLEAN same stamp (verified not VOID)
+DEFAULT LEG COMPLETE
+parked c00: CLEAN same stamp (verified not VOID)
+parked c01: CLEAN same stamp (verified not VOID)
+parked c02: CLEAN same stamp (verified not VOID)
+parked c03: CLEAN same stamp (verified not VOID)
+parked c04: CLEAN same stamp (verified not VOID)
+parked c05: CLEAN same stamp (verified not VOID)
+parked c06: CLEAN same stamp (verified not VOID)
+parked c07: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c07 - continuing to collect all reds
+parked c08: CLEAN same stamp (verified not VOID)
+PAIR COMPLETE
+released (mine)
