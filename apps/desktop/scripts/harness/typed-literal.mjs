@@ -244,8 +244,18 @@ await withHarness(async (app) => {
   }
   ok('L8 (setup): both runs opened and stored text', typeof results.burst === 'string' && typeof results.slow === 'string', JSON.stringify(results));
   ok('L8: the same keys give the same text at any speed (the caret settles synchronously)', !!results.burst && results.burst === results.slow, JSON.stringify(results));
-  ok('L8: ...and that text holds both the Ctrl+B bold and the escaped literals', typeof results.burst === 'string' && results.burst.includes('**two**')
-    && results.burst.includes(`${B}*three${B}*`) && results.burst.includes(`${B}_y${B}_`), JSON.stringify(results.burst));
+  // ---- PARKED - SUPERSEDED (ledger 87, Oct 17): the check was wrong, not the caret. The script types ` *three* ` (stored `\*three\* `), then
+  // two ArrowLefts - and the arrows move by VISIBLE characters (item 211 rule 2), the escape `\*` being ONE: past the trailing space, then
+  // past the closing `*`, which leaves the caret between `three` and `\*`. So `_y_` lands INSIDE the stars - `\*three\_y\_\*` - exactly
+  // as the combined pair stored it, at both speeds. The `\*three\*` substring could never hold for this script. Kept VERBATIM and no longer
+  // run; successor below: the whole text, exactly.
+  // ok('L8: ...and that text holds both the Ctrl+B bold and the escaped literals', typeof results.burst === 'string' && results.burst.includes('**two**')
+  //   && results.burst.includes(`${B}*three${B}*`) && results.burst.includes(`${B}_y${B}_`), JSON.stringify(results.burst));
+  // ------------------------------------------------------------------
+  const wantL8 = `Begin one **two** ${B}*three${B}_y${B}_${B}*  end`;
+  tlParks.l8 = { burst: results.burst, wantL8 };
+  ok('L8 [exact successor]: ...and that text is exactly what the keys make - the Ctrl+B bold, and the typed stars and underscores escaped, `_y_` where two visible-character ArrowLefts put the caret (inside the stars)',
+    results.burst === wantL8, JSON.stringify({ burst: results.burst, wantL8 }));
 
   // ---- L9: a typed bracket pair INSIDE a real font span (font-span is on this branch since the rebase). Both brackets are escaped: the
   // span's reader closes the nearest `[` with a bare `]`, so an unescaped `]` would have closed the span's own `[` and broken the span.
@@ -289,9 +299,12 @@ if (process.env.HARNESS_PARKED === '1') {
     a.st5 === full, JSON.stringify(a));
   pok('PARKED (was "L5 [copy-half successor]: ...so the page shows the words twice and still exactly one bold run (the original)") - the paste half; live successor: L5 [paste-half successor]',
     !!a.s5 && a.s5.bold === 2 && a.s5.shownMarks === 0, JSON.stringify(a));
+  // LEDGER 87 (2026-10-17) - ONE park: L8's substring check. Its record asserts the new truth from the live run: the exact text.
+  { const c = tlParks.l8 || {}; pok('PARKED (was "L8: ...and that text holds both the Ctrl+B bold and the escaped literals") - ledger 87: two visible-character ArrowLefts put `_y_` inside the stars, so the `\\*three\\*` substring never held; live successor: L8 [exact successor]',
+      typeof c.burst === 'string' && c.burst === c.wantL8, JSON.stringify(c)); }
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
-  console.log(parkedPass ? `\nTYPED-LITERAL PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed; this FILE parks 4: L5's two literal-paste checks (in-app-copy-format's copy half) and their two copy-half successors (the paste half)`
+  console.log(parkedPass ? `\nTYPED-LITERAL PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed; this FILE parks 5: L8's substring (ledger 87), L5's two literal-paste checks (in-app-copy-format's copy half) and their two copy-half successors (the paste half)`
     : `\nTYPED-LITERAL PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);

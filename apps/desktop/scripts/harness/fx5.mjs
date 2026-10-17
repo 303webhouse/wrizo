@@ -56,6 +56,7 @@ let fx5MaskSeen = null;   // S1 (b)'s computed mask, kept for its parked record 
 // while that await runs (the first run of the card port died on exactly this: 'Cannot access fx5CardReveal before initialization').
 let fx5CardReveal = null;   // the S6 card reading, kept for its parked record
 let fx5DraftBold = null;    // TYPED-LITERAL: S6's Ctrl+B reading, kept for its parked record
+let fx5TwBlocked = null;    // ledger 87: S6's Ctrl+B reading WITH the Typewriter on (a new Arbor page opens with it on), for its parked record
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -957,11 +958,33 @@ await withHarness(async (app) => {
   void draftMarkState;
   await app.keyCombo('a'); await sleep(150);
   await app.keyCombo('b'); await sleep(300);
-  fx5DraftBold = await app.evalJs(`(() => {
+  const boldNow = `(() => {
     const marks = [...document.querySelectorAll('.forward-only-editor .md-bold > .md-mark')].filter(m => !m.classList.contains('md-escape'));
-    return { bold: document.querySelectorAll('.forward-only-editor .md-bold').length, marks: marks.length, allHidden: marks.every(m => m.classList.contains('md-mark-hidden')) };
-  })()`);
-  ok('S6 [typed-literal successor]: Draft mode hides its marks too - a bold made with Ctrl+B carries its two real marks, both .md-mark-hidden (item 211 applies to every writing surface)',
+    const tw = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]');
+    return { bold: document.querySelectorAll('.forward-only-editor .md-bold').length, marks: marks.length, allHidden: marks.every(m => m.classList.contains('md-mark-hidden')),
+      typewriter: tw ? tw.getAttribute('aria-pressed') : null };
+  })()`;
+  fx5TwBlocked = await app.evalJs(boldNow);
+  // ---- PARKED - SUPERSEDED (ledger 87, Oct 17): the check was wrong, not the product. This page is NEW and EMPTY, and a new Arbor page opens with
+  // the Typewriter ON (store/theme.ts THEME_CONFIG, Phase 1 S5); while the Typewriter is on, Format and its shortcuts are blocked (Phase 1 S4,
+  // PageEditor.tsx applyRailFormat) - so Ctrl+B rightly made NO bold here ({bold: 0, marks: 0} in the combined pair). typed-literal.mjs L3's
+  // page starts with text, so its Typewriter opens off and the same Ctrl+B bolds. Kept VERBATIM and no longer run; successor below: the
+  // Typewriter turned off first, the way a writer does (the foot's own toggle).
+  // ok('S6 [typed-literal successor]: Draft mode hides its marks too - a bold made with Ctrl+B carries its two real marks, both .md-mark-hidden (item 211 applies to every writing surface)',
+  //   !!fx5DraftBold && fx5DraftBold.bold >= 1 && fx5DraftBold.marks >= 2 && fx5DraftBold.allHidden, JSON.stringify(fx5DraftBold));
+  // ------------------------------------------------------------------
+  // the Typewriter off by its own foot toggle (the drawer opened first if it is shut); probed, never assumed
+  await app.evalJs("(() => { const p = document.querySelector('.wz-sliver-panel'); if (!(p && p.dataset.open === 'true')) document.querySelector('.wz-sliver-grip')?.click(); return true; })()");
+  await sleep(500);
+  await app.evalJs(`(() => { const tw = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]'); if (tw && tw.getAttribute('aria-pressed') === 'true') tw.click(); return true; })()`);
+  await sleep(400);
+  const twOff = await app.evalJs(`(() => { const tw = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]'); return tw ? tw.getAttribute('aria-pressed') : null; })()`);
+  ok('S6 (driver): the Typewriter is off before the format key (its own foot toggle reads not-pressed)', twOff === 'false', String(twOff));
+  await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
+  await app.keyCombo('a'); await sleep(150);
+  await app.keyCombo('b'); await sleep(300);
+  fx5DraftBold = await app.evalJs(boldNow);
+  ok('S6 [typewriter-off successor]: Draft mode hides its marks too - with the Typewriter off, a bold made with Ctrl+B carries its two real marks, both .md-mark-hidden (item 211 applies to every writing surface)',
     !!fx5DraftBold && fx5DraftBold.bold >= 1 && fx5DraftBold.marks >= 2 && fx5DraftBold.allHidden, JSON.stringify(fx5DraftBold));
 
   // ==========================================================================
@@ -1254,6 +1277,10 @@ if (process.env.HARNESS_PARKED === '1') {
   // TYPED-LITERAL (2026-10-16) - S6's typed-marks reading. Its record asserts the new truth from the live run: the hidden marks are a Ctrl+B run's.
   pok('PARKED (was "S6 [PR #7 successor]: Draft mode hides its marks too - its .md-mark spans carry .md-mark-hidden (item 211 applies to every writing surface)") - typed-literal: typed `**` is literal now; live successor: S6 [typed-literal successor] (Ctrl+B)',
     !!fx5DraftBold && fx5DraftBold.bold >= 1 && fx5DraftBold.marks >= 2 && fx5DraftBold.allHidden, JSON.stringify(fx5DraftBold));
+  // LEDGER 87 (2026-10-17) - S6's typed-literal successor, parked: it pressed Ctrl+B with the Typewriter on. Its record asserts the truth it
+  // actually measured, from the live run: with the Typewriter on, the format key makes no bold (Phase 1 S4 - the product right).
+  pok('PARKED (was "S6 [typed-literal successor]: Draft mode hides its marks too - a bold made with Ctrl+B carries its two real marks, both .md-mark-hidden (item 211 applies to every writing surface)") - ledger 87: a new Arbor page opens with the Typewriter on, which blocks Ctrl+B; live successor: S6 [typewriter-off successor]',
+    !!fx5TwBlocked && fx5TwBlocked.typewriter === 'true' && fx5TwBlocked.bold === 0, JSON.stringify(fx5TwBlocked));
   // The 211 card port (2026-10-06) - one park: S6's reveal-adjacent check; the record follows reality (nothing shows).
   pok('PARKED (was "S6: reveal-adjacent-to-caret — once the caret sits inside/beside the bold run, its OWN markers become visible again") - 211 card port (2026-10-06): the popup now runs the page\'s editing rules, so it shows no mark at any caret, as the page',
     !!fx5CardReveal && fx5CardReveal.anyRevealed === false, JSON.stringify(fx5CardReveal));
