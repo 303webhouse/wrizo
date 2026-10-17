@@ -289,6 +289,14 @@ ok('P10 the host owns the act, one place: applyTemplate - same template is a no-
 const se = read('components/ScriptEditor.tsx');
 ok('P11 an EMPTY Screenplay converts in place (Q2): the same row, pageType manuscript, the script cleared, the template set; a Screenplay with words opens a new page', /isScriptEmpty\(\{ v: 1, scenes \}\)\) \{\s*saveScriptDoc\(id[^]*pageType: 'manuscript', script: undefined,[^]*template/.test(se), '');
 
+const tps = read('components/TitlePageSheet.tsx');
+ok('P12 the Title Page sheet writes ONLY the canonical text: every field edit goes serializeTitlePage -> the host\'s one onChange; it keeps no second model and touches no storage',
+  /serializeTitlePage\(next\)/.test(tps) && /onChange\(t\)/.test(tps) && !/localStorage|saveJournalEntry|persistence/.test(tps), '');
+ok('P13 the host mounts the sheet ONLY in Draft, for template "title", while the text parses (otherwise plain Draft text - a decline loses nothing)',
+  /const titleSheet = mode === 'drafting' && entry\.pageSettings\?\.template === 'title' && isTitlePageText\(text\);/.test(pe) && /\{titleSheet \? \(\s*<TitlePageSheet/.test(pe), '');
+ok('P14 the paragraph-indent Tab machine (item 158) stands aside while an Outline is in Draft, so Tab acts on the row and not on the whole one-paragraph outline',
+  /outlineKeysRef\.current = mode === 'drafting' && realEntry\?\.pageSettings\?\.template === 'outline';/.test(pe) && (pe.match(/if \(outlineKeysRef\.current && !getWritingSettings\(\)\.typewriter\) return;/g) || []).length === 2, '');
+
 // ============================================================================================================
 // PART 2 - the real app (a box turn). Written with the standing driver rules: probe first, never abort, real pointer events, seed through the seams.
 // S2 scenarios here; S3 to S5 append theirs.
@@ -460,6 +468,35 @@ async function part2() {
     // ---- X9: no lens in Free Write's forward-only runway --------------------------------------------------------------------------------------------------------
     await app.click('Free Write'); await sleep(700);
     ok('X9 in Free Write the page is drawn plain (no lens wrapper at all)', (await app.evalJs("document.querySelectorAll('.forward-only-editor .ol-body, .forward-only-editor .bib-row').length")) === 0, '');
+
+    // ---- X10 (S5): the TITLE PAGE - five fields over the canonical text ----------------------------------------------------------------------------------------------
+    await fresh('plateau');
+    await app.goto('/page/new'); await waitSoft("!!document.querySelector('.forward-only-editor')", { label: 'unborn page' }); await sleep(600);
+    await toDraft(); await openStrip();
+    await press('title'); await sleep(700);
+    ok('X10 Title Page on an empty unborn page: the five-field sheet replaces the flowing editor (title, author, word line, contact), and nothing is born', (await app.evalJs("['title', 'author', 'words', 'contact'].every((f) => !!document.querySelector('.wz-title-sheet [data-field=\"' + f + '\"]'))")) === true && (await rows()).length === 0, JSON.stringify({ rows: (await rows()).length }));
+    const geo = await app.evalJs("(() => { const g = (f) => { const e = document.querySelector('.wz-title-sheet [data-field=\"' + f + '\"]'); const r = e.getBoundingClientRect(); return { l: Math.round(r.left), t: Math.round(r.top), r: Math.round(r.right), w: Math.round(r.width) }; }; return { contact: g('contact'), words: g('words'), title: g('title'), author: g('author') }; })()");
+    ok('X10 the sheet is the manuscript layout: the word line sits to the RIGHT of the contact block on the top row; the title and author sit lower and centred; the author is under the title', geo.words.l > geo.contact.r && Math.abs(geo.words.t - geo.contact.t) < 6 && geo.title.t > geo.contact.t + 60 && geo.author.t > geo.title.t, JSON.stringify(geo));
+    await app.evalJs("document.querySelector('.wz-title-sheet [data-field=\"title\"]')?.focus()"); await app.typeKeys('The Late Ferry');
+    await waitSoft(`JSON.parse(localStorage.getItem(${JSON.stringify(ROWS)}) || '[]').some((e) => (e.text || '').includes('The Late Ferry'))`, { label: 'birth on the first word', timeout: 5000 }); await sleep(500);
+    const tp = (await rows()).find((e) => (e.text || '').includes('The Late Ferry'));
+    ok('X10 the first word typed into the title births the page WITH the template, and the stored text is the canonical Title Page text', !!tp && tp.pageSettings?.template === 'title' && tp.text === '>> \n\n>< The Late Ferry\n>< by\n>< ', JSON.stringify(tp && { t: tp.text, s: tp.pageSettings && tp.pageSettings.template }));
+    await app.evalJs("document.querySelector('.wz-title-sheet [data-field=\"author\"]')?.focus()"); await app.typeKeys('Ada Marsh');
+    await app.evalJs("document.querySelector('.wz-title-sheet [data-field=\"words\"]')?.focus()"); await app.typeKeys('About 62,000 words');
+    await sleep(900);
+    const tp2 = (await rows()).find((e) => (e.text || '').includes('The Late Ferry'));
+    ok('X10 author and word line land in the canonical text (the word line right-aligned with ">> ", the author centred under "by")', !!tp2 && tp2.text === '>> About 62,000 words\n\n>< The Late Ferry\n>< by\n>< Ada Marsh', JSON.stringify(tp2 && tp2.text));
+    await app.reload(); await waitSoft("!!document.querySelector('.wz-title-sheet')", { label: 'sheet after reload', timeout: 9000 }); await sleep(600);
+    const back = await app.evalJs("({ title: document.querySelector('.wz-title-sheet [data-field=\"title\"]')?.value, author: document.querySelector('.wz-title-sheet [data-field=\"author\"]')?.value, words: document.querySelector('.wz-title-sheet [data-field=\"words\"]')?.value })");
+    ok('X10 after a reload the fields read back from the text (save, flush and hydrate keep every field)', back.title === 'The Late Ferry' && back.author === 'Ada Marsh' && back.words === 'About 62,000 words', JSON.stringify(back));
+
+    // ---- X11: text that is not a Title Page shape declines: plain Draft text, nothing lost ------------------------------------------------------------------------
+    await fresh('plateau');
+    await seed('tpl-r2-title-bad', { text: 'Ada\n>> words\nstray line' });
+    await app.evalJs(`window.wrizoPatchEntry('tpl-r2-title-bad', { pageSettings: ${JSON.stringify(SETTINGS('title'))} })`);
+    await app.evalJs('window.wrizoFlushNow()'); await sleep(400);
+    await toDraft(); await sleep(500);
+    ok('X11 a page marked Title Page whose text is not that shape draws as plain Draft text (no sheet), and its text is untouched', (await app.evalJs("!document.querySelector('.wz-title-sheet') && !!document.querySelector('.forward-only-editor')")) === true && ((await rowOf('tpl-r2-title-bad')) || {}).text === 'Ada\n>> words\nstray line', '');
   });
 }
 

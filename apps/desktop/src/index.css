@@ -5159,6 +5159,18 @@ a:focus-visible,
 .forward-only-editor[data-template='outline'] .wz-row[data-lvl='2']::before{ left:4em; }
 .forward-only-editor[data-template='outline'] .wz-row[data-lvl='0']{ font-weight:500; }
 .forward-only-editor[data-template='bibliography'] .wz-row{ padding-left:2.4em; text-indent:-2.4em; margin-bottom:.6em; }
+/* PAGE TEMPLATES, S5 - THE TITLE PAGE (components/TitlePageSheet.tsx): the standard manuscript sheet, five fields. Contact top-left, the word line top-right, the title, the
+   fixed word "by" and the author centred lower (the approved mockup). The fields have no chrome of their own - they take the page's type and ink - so the sheet reads as a page,
+   not a form. The title's capitals are drawn here, never stored. Nothing here moves the sheet: it fills the editor's own track. */
+.wz-title-sheet{ position:relative; width:100%; min-height:560px; font:inherit; color:inherit; }
+.wz-title-sheet input, .wz-title-sheet textarea{ font:inherit; color:inherit; background:transparent; border:0; outline:none; padding:0; margin:0; resize:none; caret-color:var(--brass); width:100%; }
+.wz-title-sheet input::placeholder, .wz-title-sheet textarea::placeholder{ color:color-mix(in srgb, currentColor 40%, transparent); }
+.wz-ts-contact{ position:absolute; top:0; left:0; width:28ch !important; max-width:50%; white-space:pre-wrap; line-height:1.5; }
+.wz-ts-words{ position:absolute; top:0; right:0; width:40% !important; text-align:right; }
+.wz-ts-mid{ position:absolute; top:40%; left:0; right:0; text-align:center; }
+.wz-ts-title{ text-align:center; text-transform:uppercase; letter-spacing:.12em; }
+.wz-ts-by{ margin:1.1em 0; }
+.wz-ts-author{ text-align:center; }
 /* STEP 3 - THE INDENT LOOK (Nick's ruling): a leading tab is a FIRST-LINE indent - the first visual line moves in one step per
    tab and wrapped lines return to the margin - so a tab must be one fixed step wide. `tab-size` makes it 2em (the browser default,
    8 characters, varies with the typeface). The WHOLE-PARAGRAPH indent is the separate `>| ` block token below. */

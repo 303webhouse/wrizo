@@ -21,6 +21,8 @@ import { BeginningsRow, type BeginningDoor } from '../components/BeginningsRow';
 import { unbornHref } from '../store/unbornPage';
 import { TEMPLATE_ORDER, type TemplateKey } from '../components/TemplateSketch';
 import { outlineNextRowPrefix, outlineShift } from '../store/outlineText';
+import { isTitlePageText } from '../store/titlePage';
+import { TitlePageSheet } from '../components/TitlePageSheet';
 import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset, setSelectionOffsets, getCaretOffset, getSelectionOffsets, rangeFromPlainOffsets } from '../store/caretOffset';
 import type { Stroke } from '../types';
@@ -612,6 +614,11 @@ function PageEditorView({ id }: { id: string }) {
   // level per press of the 1 (Shift+Tab held + 1 one back). A tap is applied on release; a quick Tab-then-1 (a numbered list) types
   // its 1. Draft and Revise act everywhere; Free Write acts on a BLANK line only and never outdents (a deletion), and there a 1 is
   // always just typed unless the chord may act.
+  // PAGE TEMPLATES - an OUTLINE owns Tab in Draft: each row is a heading with its own level (store/outlineText.ts, the lens's onLensKey), while this machine indents
+  // the whole PARAGRAPH - and an outline is one unbroken paragraph. So while an Outline is in Draft this machine stands aside (a ref, read at press time: the template
+  // can change under a mounted editor; this hook sits above the early return, deliberately, like its neighbours). Esc still leaves the surface.
+  const outlineKeysRef = useRef(false);
+  outlineKeysRef.current = mode === 'drafting' && realEntry?.pageSettings?.template === 'outline';
   useEffect(() => {
     const el = editorRef.current;
     if (!el) return;
@@ -635,11 +642,13 @@ function PageEditorView({ id }: { id: string }) {
       // A1 (accessibility audit): Tab indents here, so Esc is the way OUT - to the current mode tab, after any open popup has
       // closed on its own Esc (store/escapeExit.ts). Every mode, the same key.
       if (escapeFromEditor(e, el)) return;
+      if (outlineKeysRef.current && !getWritingSettings().typewriter) return;   // PAGE TEMPLATES: the Outline's own Tab (onLensKey) acts instead
       const step = chord.keydown(e);
       if (step.preventDefault) e.preventDefault();
       step.acts.forEach(perform);
     };
     const onKeyUp = (e: KeyboardEvent) => {
+      if (outlineKeysRef.current && !getWritingSettings().typewriter) return;
       const step = chord.keyup(e);
       if (step.preventDefault) e.preventDefault();
       step.acts.forEach(perform);
@@ -903,6 +912,17 @@ function PageEditorView({ id }: { id: string }) {
       className="wz-ink-sheet"
       style={{ position: 'relative', width: '100%', minHeight: '100%' }}
     >
+      {titleSheet ? (
+        <TitlePageSheet
+          key={`${id}-title`}
+          text={text}
+          autoFocus={initialText.trim() === ''}
+          onChange={onTextChange}
+          onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); invite.dismiss(); setBeginningsDismissed(true); }}
+          onFocus={() => setFocused(true)}
+          onBlur={() => { setFocused(false); flush(); }}
+        />
+      ) : (
       <ForwardOnlyEditor
         key={`${id}-${mode}`}
         ref={editorRef}
@@ -936,6 +956,7 @@ function PageEditorView({ id }: { id: string }) {
           fontSize: typeStyle.fontSize ?? 'calc(17px * var(--paper-scale))', lineHeight: 1.7,
         }}
       />
+      )}
       {/* HB1 S3 — the gate's instruction is the threshold's one sanctioned
           utterance; the first-line invite (F6) would speak a second one on
           this exact (empty) page. gateActive is only ever true when framed
@@ -1086,6 +1107,9 @@ function PageEditorView({ id }: { id: string }) {
   // (store/draftDecoration.ts lensHtml, in the one decoration funnel); it applies in Draft and Revise, never in Free Write's forward-only runway. The Outline also
   // owns three keys in Draft: Tab / Shift+Tab change the level of the rows the selection touches (clamped, store/outlineText.ts), Enter opens the next row at the
   // same level. Each is ONE atomic undo step, written through the same road a format press takes. Typewriter still blocks them, as it blocks the Format group.
+  // The Title Page is not a lens on the flowing editor: in Draft its five fields are a small structured editor over the same text (components/TitlePageSheet.tsx),
+  // mounted only while the text parses as a Title Page (otherwise the page draws as plain Draft text and nothing is lost). Free Write and Revise draw the text plain.
+  const titleSheet = mode === 'drafting' && entry.pageSettings?.template === 'title' && isTitlePageText(text);
   const lensActive: 'outline' | 'bibliography' | null = mode !== 'journal' && (entry.pageSettings?.template === 'outline' || entry.pageSettings?.template === 'bibliography') ? entry.pageSettings.template : null;
   const applyLensKey = (e: KeyboardEvent): boolean => {
     if (lensActive !== 'outline' || mode !== 'drafting' || e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return false;
