@@ -42,7 +42,9 @@ const shot = async (app, combo, name) => {
   rows.push({ combo: combo.id, frame: name, file: `${combo.id}/${file}`, md5, sameAsDarkTwin: twin ? hashes.get(`${twin}/${name}`) === md5 : null });
 };
 const enterMode = async (app) => {
-  const a = await R(app, '[data-box-id="cbf-a"]'); await mouse(app, 'mousePressed', Math.round(a.l + a.w * 0.3), Math.round(a.t + a.h * 0.3)); await mouse(app, 'mouseReleased', Math.round(a.l + a.w * 0.3), Math.round(a.t + a.h * 0.3)); await sleep(600);
+  let a = null; for (let i = 0; i < 40 && !a; i += 1) { a = await R(app, '[data-box-id="cbf-a"]'); if (!a) await sleep(150); }
+  if (!a) return null;   // a card that never rendered ends the combo with a named FIXTURE row, never a crash
+  await mouse(app, 'mousePressed', Math.round(a.l + a.w * 0.3), Math.round(a.t + a.h * 0.3)); await mouse(app, 'mouseReleased', Math.round(a.l + a.w * 0.3), Math.round(a.t + a.h * 0.3)); await sleep(600);
   const hr = await R(app, '[data-box-id="cbf-a"] .board-handle'); if (!hr) return null;   // a missing handle ends the combo with a named row, never a crash
   const h = centre(hr);
   await app.mouseMove(h.x, h.y);

@@ -59,8 +59,25 @@ const dbl = async (app, x, y) => {
   await mouse(app, 'mousePressed', x, y, { clickCount: 1 }); await mouse(app, 'mouseReleased', x, y, { clickCount: 1 }); await sleep(60);
   await mouse(app, 'mousePressed', x, y, { clickCount: 2 }); await mouse(app, 'mouseReleased', x, y, { clickCount: 2 }); await sleep(250);
 };
-const selectCard = async (app, cardId) => { const r = await R(app, `[data-box-id="${cardId}"]`); await click(app, Math.round(r.l + r.w * 0.3), Math.round(r.t + r.h * 0.3)); await sleep(600); };
-const enterMode = async (app, cardId) => { await selectCard(app, cardId); const h = await R(app, `[data-box-id="${cardId}"] .board-handle`); if (!h) return null; const p = centre(h); await dbl(app, p.x, p.y); return p; };   // null, never a crash: a missing handle is a failed check
+// A card is looked for, not assumed: after a reload the board re-renders in its own time (B4 died here on a null rect with the card not yet drawn). Wait for it; if it still is not
+// there, re-open the board once (leave the address and come back) and wait again; a card that never appears is a NAMED check at the caller, never a crash.
+const cardRect = async (app, cardId, patience = 40) => {
+  for (let i = 0; i < patience; i += 1) { const r = await R(app, `[data-box-id="${cardId}"]`); if (r && r.w > 0 && r.h > 0) return r; await sleep(150); }
+  return null;
+};
+const selectCard = async (app, cardId) => {
+  let r = await cardRect(app, cardId);
+  if (!r) {
+    const here = await app.evalJs('location.hash');
+    await app.evalJs("location.hash = '#/'"); await sleep(500);
+    await app.evalJs(`location.hash = ${JSON.stringify(here)}`); await sleep(900);
+    r = await cardRect(app, cardId);
+  }
+  if (!r) return false;
+  await click(app, Math.round(r.l + r.w * 0.3), Math.round(r.t + r.h * 0.3)); await sleep(600);
+  return true;
+};
+const enterMode = async (app, cardId) => { if (!(await selectCard(app, cardId))) return null; const h = await R(app, `[data-box-id="${cardId}"] .board-handle`); if (!h) return null; const p = centre(h); await dbl(app, p.x, p.y); return p; };   // null, never a crash: a missing handle is a failed check
 const tile = (app, title) => app.evalJs(`(() => { const t = [...document.querySelectorAll('.wz-drawers-tile[data-link-entry]')].find((b) => b.textContent.includes(${JSON.stringify(title)})); if (!t) return null; const r = t.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height, entry: t.dataset.linkEntry }; })()`);
 const tileState = (app, entry) => app.evalJs(`(() => { const t = document.querySelector('[data-link-entry="${entry}"]'); if (!t) return null; const cs = getComputedStyle(t, '::before'); return { target: t.getAttribute('data-link-target'), peer: t.getAttribute('data-link-peer'), solid: t.getAttribute('data-link-solid'), flash: t.getAttribute('data-link-flash'), circle: cs.content !== 'none' && cs.width === '10px', radius: cs.borderTopLeftRadius, bg: cs.backgroundColor }; })()`);
 const armGeo = (app) => app.evalJs(`(() => { const l = document.querySelector('.board-connect-arm'); const o = document.querySelector('.board-connect-overlay'); if (!l || !o) return null; return { x1: +l.getAttribute('x1'), y1: +l.getAttribute('y1'), x2: +l.getAttribute('x2'), y2: +l.getAttribute('y2'), inBody: o.parentElement === document.body, display: getComputedStyle(l).display }; })()`);
@@ -113,6 +130,7 @@ await withHarness(async (app) => {
   // B4
   await openDrawers(app);
   const tb2b = await tile(app, 'Research board');
+  if (!tb2b) { ok('B4 fixture: the rail's Drawers panel shows the Research board thumbnail after the reload', false, 'absent'); return; }
   const h4 = await enterMode(app, 'cb-a');
   if (!h4) { ok('fixture: the card selected and its corner handle rendered (the select click must land on the CARD, not on a panel tile)', false, JSON.stringify(await R(app, '[data-box-id="cb-a"]'))); return; }
   await glide(app, h4, centre(tb2b), 10); await sleep(300);
