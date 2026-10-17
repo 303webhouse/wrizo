@@ -7,7 +7,7 @@ export const FLASH_LIMIT = 3;
 const WINDOW_MS = 1000;
 const granted: number[] = [];
 
-declare global { interface Window { __wzVerifyFlashes?: boolean; __wzFlashLog?: Array<{ t: number; kind: string; ok: boolean }> } }
+declare global { interface Window { __wzVerifyFlashes?: boolean; __wzFlashLog?: Array<{ t: number; kind: string; ok: boolean }>; __wzOnFlashGrant?: ((kind: string) => void) | null } }
 
 const clock = (): number => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
@@ -18,6 +18,8 @@ export function tryFlash(kind: string, now: number = clock()): boolean {
   if (ok) granted.push(now);
   // harness mode only: every grant and refusal, for glitch-meter.mjs G4 (plain data behind a flag read at call time)
   if (typeof window !== 'undefined' && window.__wzVerifyFlashes) (window.__wzFlashLog ??= []).push({ t: now, kind, ok });
+  // harness mode only: glitch-meter.mjs takes its frames ON a granted pulse (ledger 90), through this hook; unset, nothing happens
+  if (ok && typeof window !== 'undefined' && typeof window.__wzOnFlashGrant === 'function') window.__wzOnFlashGrant(kind);
   return ok;
 }
 

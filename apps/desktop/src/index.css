@@ -577,8 +577,9 @@
 .glitch-meter-layer.jmp{ transform:translateY(4px); }
 .glitch-meter-layer.jmp2{ transform:translateY(-4px); }
 .glitch-meter-layer .theme-fx-backlight{ transition:opacity .28s; }
-/* the reduced-motion still: a faint scan-and-grain overlay, opacity = intensity x 0.42 (set per frame), EASED so a change never reads as a
-   flash (Fable, Oct 17) - no motion at all */
+/* the still: a faint scan-and-grain overlay, opacity = intensity x 0.42 (set per frame) - no motion at all. Under the OS's reduced motion the
+   global rule below (every transition 0.01 ms) applies to it too, and is honoured (Fable, Oct 17, ledger 90): there it simply APPEARS. The
+   2.4 s ease is for Ambiance 0, Wrizo's own "no motion", where the global rule does not apply. */
 .glitch-meter-still{ position:absolute; inset:0; opacity:0; pointer-events:none; transition:opacity 2.4s ease;
   background:
     repeating-linear-gradient(0deg, transparent 0 3px, rgba(0,194,255,.045) 3px 4px),

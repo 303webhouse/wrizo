@@ -24,7 +24,8 @@ import { bright, idleSeconds, meterIntensity, meterSeam, meterState, nextGapMs, 
 // SAFETY (the brief's floor, not optional): every flash asks store/flashBudget.ts first (never more than 3 in any second across the whole
 // screen, the ambient texture's included; a double dip or jump counts 2). Large events stay low-contrast: the dip is black at <= .14, the
 // shear a 26 px band, nothing red. Under reduced motion - the OS setting, followed live, or the Ambiance dial at 0 (Wrizo's own "no motion")
-// - it fires nothing and shows a faint still scan overlay whose opacity follows intensity, eased in (index.css .glitch-meter-still).
+// - it fires nothing and shows a faint still scan overlay whose opacity follows intensity (index.css .glitch-meter-still: under the OS
+// setting it appears with no easing - the global reduced-motion rule, honoured by Fable's ruling, ledger 90; at Ambiance 0 it eases in).
 const SPANS: Record<MeterKind, [number, number]> = {
   tear: [7000, 12000], shear: [9000, 15000], noise: [8000, 14000], macro: [2600, 4800], sync: [9000, 15000], dip: [10000, 17000],
 };

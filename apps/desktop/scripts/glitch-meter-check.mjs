@@ -85,6 +85,27 @@ const curve = (t) => { if (t < 30) return 0; const u = Math.min(1, (t - 30) / 27
   ok('BUDGET: on 10,000 random attempts no sliding second ever holds more than 3 grants, and every refusal had 3 already in its window (it refuses only when it must)',
     worst <= 3 && forced && refusals.length > 100 && grants.length > 100, JSON.stringify({ worst, grants: grants.length, refusals: refusals.length, forced }));
 }
+// ---- THE GRANT HOOK (ledger 90: glitch-meter.mjs takes its frames ON a granted pulse) - called on every grant, never on a refusal, and absent
+// it is nothing at all
+{
+  const hadWindow = 'window' in globalThis;
+  const prev = globalThis.window;
+  const seen = [];
+  globalThis.window = { __wzOnFlashGrant: (k) => seen.push(k) };
+  try {
+    fb.__resetFlashBudget();
+    const res = [0, 1, 2, 3, 4].map((i) => fb.tryFlash(`k${i}`, 5000 + i));
+    globalThis.window = {};
+    const quiet = fb.tryFlash('after', 9000);
+    ok('HOOK: the harness grant hook is called once per GRANTED flash and never for a refused one; unset, a grant goes on without it',
+      JSON.stringify(res) === JSON.stringify([true, true, true, false, false]) && JSON.stringify(seen) === JSON.stringify(['k0', 'k1', 'k2']) && quiet === true,
+      JSON.stringify({ res, seen, quiet }));
+  } finally {
+    if (hadWindow) globalThis.window = prev; else delete globalThis.window;
+    fb.__resetFlashBudget();
+  }
+}
+
 // ---- DOUBLE (fake timers that run at once, a fake element)
 {
   const realST = globalThis.setTimeout;

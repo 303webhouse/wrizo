@@ -52,6 +52,10 @@ function loop(minMs: number, maxMs: number, isBusy: () => boolean, getDial: () =
   return () => { stopped = true; if (timer) clearTimeout(timer); };
 }
 
+type SignalLossKind = 'tear' | 'shear' | 'noise' | 'macro' | 'sync' | 'dip';
+// the mounted texture's own fire, for the harness seam (null while Flux's texture is not mounted)
+let slFire: ((kind: SignalLossKind) => boolean) | null = null;
+
 function mount(container: HTMLDivElement, getDial: () => number, isBusy: () => boolean): () => void {
   const stops: Array<() => void> = [];
 
@@ -76,46 +80,47 @@ function mount(container: HTMLDivElement, getDial: () => number, isBusy: () => b
   // skipped, as a busy tick is.
 
   // Tear-line storm — 7-12s, 3-5 lines, ~45ms stagger, ~150ms each, ~35% lime.
-  stops.push(loop(7000, 12000, isBusy, getDial, () => {
-    if (tryFlash('sl-tear')) tearStorm(container);
-  }));
+  // Each event is ONE named fire, asked of the budget: its loop calls it, and so does the harness seam below (ledger 90 - the loops skip
+  // while the session reads busy, so a check that must see this texture pulse beside the meter forces it here, through the same code).
+  const fires: Record<SignalLossKind, () => boolean> = {
+    tear: () => { if (!tryFlash('sl-tear')) return false; tearStorm(container); return true; },
+    shear: () => { if (!tryFlash('sl-shear')) return false; shearBand(shear); return true; },
+    noise: () => { if (!tryFlash('sl-noise')) return false; noisePatch(noise); return true; },
+    macro: () => { if (!tryFlash('sl-macro')) return false; macroCluster(container); return true; },
+    sync: () => { if (!tryFlash('sl-sync')) return false; syncJump(container, Math.random() < 0.4, () => tryFlash('sl-sync2')); return true; },
+    dip: () => { if (!tryFlash('sl-dip')) return false; backlightDip(dip, 0.13, 0.09, Math.random() < 0.5, () => tryFlash('sl-dip2')); return true; },
+  };
+  slFire = (kind) => (fires[kind] ? fires[kind]() : false);
+  stops.push(() => { slFire = null; });
+
+  stops.push(loop(7000, 12000, isBusy, getDial, () => { fires.tear(); }));
 
   // Shear band — 9-15s, 26px band, skewX(-12deg), ~160ms.
   const shear = document.createElement('div');
   shear.className = 'theme-fx-shear';
   container.appendChild(shear);
   stops.push(() => shear.remove());
-  stops.push(loop(9000, 15000, isBusy, getDial, () => {
-    if (tryFlash('sl-shear')) shearBand(shear);
-  }));
+  stops.push(loop(9000, 15000, isBusy, getDial, () => { fires.shear(); }));
 
   // Noise patch — 8-14s, 130x56 striped patch, ~150ms.
   const noise = document.createElement('div');
   noise.className = 'theme-fx-noise';
   container.appendChild(noise);
   stops.push(() => noise.remove());
-  stops.push(loop(8000, 14000, isBusy, getDial, () => {
-    if (tryFlash('sl-noise')) noisePatch(noise);
-  }));
+  stops.push(loop(8000, 14000, isBusy, getDial, () => { fires.noise(); }));
 
   // Macroblock cluster — 2.6-4.8s, 5-9 blocks 10-30px, 80-210ms each.
-  stops.push(loop(2600, 4800, isBusy, getDial, () => {
-    if (tryFlash('sl-macro')) macroCluster(container);
-  }));
+  stops.push(loop(2600, 4800, isBusy, getDial, () => { fires.macro(); }));
 
   // Sync jump — 9-15s, texture layer ±4px, ~80ms; 40% double-jump (the second jump is its own flash).
-  stops.push(loop(9000, 15000, isBusy, getDial, () => {
-    if (tryFlash('sl-sync')) syncJump(container, Math.random() < 0.4, () => tryFlash('sl-sync2'));
-  }));
+  stops.push(loop(9000, 15000, isBusy, getDial, () => { fires.sync(); }));
 
   // Backlight dip — 10-17s, black overlay to .13 for ~400ms; 50% double-dip to .09 (the second dip is its own flash).
   const dip = document.createElement('div');
   dip.className = 'theme-fx-backlight';
   container.appendChild(dip);
   stops.push(() => dip.remove());
-  stops.push(loop(10000, 17000, isBusy, getDial, () => {
-    if (tryFlash('sl-dip')) backlightDip(dip, 0.13, 0.09, Math.random() < 0.5, () => tryFlash('sl-dip2'));
-  }));
+  stops.push(loop(10000, 17000, isBusy, getDial, () => { fires.dip(); }));
 
   return () => stops.forEach(stop => stop());
 }
@@ -129,5 +134,7 @@ if (typeof window !== 'undefined') {
   (window as unknown as { wrizoFluxFx?: unknown }).wrizoFluxFx = {
     clampedIntervalMs,
     macroblockFloorMs: 2600 * FLOOR_FRACTION,
+    // GLITCH METER (ledger 90): one Signal Loss event NOW, through the flash budget like any other (true if it was granted and drawn)
+    fire: (kind: SignalLossKind) => (slFire ? slFire(kind) : false),
   };
 }
