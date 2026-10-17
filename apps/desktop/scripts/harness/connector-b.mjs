@@ -130,7 +130,7 @@ await withHarness(async (app) => {
   // B4
   await openDrawers(app);
   const tb2b = await tile(app, 'Research board');
-  if (!tb2b) { ok('B4 fixture: the rail's Drawers panel shows the Research board thumbnail after the reload', false, 'absent'); return; }
+  if (!tb2b) { ok('B4 fixture: the Drawers panel shows the Research board thumbnail after the reload', false, 'absent'); return; }
   const h4 = await enterMode(app, 'cb-a');
   if (!h4) { ok('fixture: the card selected and its corner handle rendered (the select click must land on the CARD, not on a panel tile)', false, JSON.stringify(await R(app, '[data-box-id="cb-a"]'))); return; }
   await glide(app, h4, centre(tb2b), 10); await sleep(300);
