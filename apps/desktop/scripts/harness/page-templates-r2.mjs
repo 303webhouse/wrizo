@@ -66,7 +66,6 @@ const ENTRY = `
   export * from './bibliographyText';
   export { pageBodyFormatted, pageBodyPlain } from './pageExport';
   export { setUserPageDefaults, getUserPageDefaults } from './pageDefaults';
-  export { lensHtml, decorateMarkdownForCard } from './draftDecoration';
 `;
 
 const MOCKUP_OUTLINE = ['Arrival', '\tThe late ferry', '\tGulls on the rail', 'The harbormaster', '\tWhat he saw', '\t\tThe lamp, twice', '\tWhat he left out', 'The crossing'].join('\n');
@@ -144,23 +143,6 @@ async function suite(mutate = {}) {
   r.exportOrdinaryPageUnchanged = M.pageBodyFormatted(pg('plain *page*')) === 'plain *page*' && M.pageBodyPlain(pg('plain *page*')) === 'plain page';
   r.exportTabbedOrdinaryPageNotNumbered = !M.pageBodyPlain(pg('A\n\tB')).includes('1.');
 
-  // ---- the lens: one wrapper per line, in the one decoration funnel -----------------------------------------------------------------------
-  const unesc = (h) => h.replace(/<[^>]*>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
-  const deco = (t) => M.decorateMarkdownForCard(t, null);
-  const olHtml = M.lensHtml(MOCKUP_OUTLINE, deco(MOCKUP_OUTLINE), 'outline');
-  const olLines = olHtml.split('\n');
-  r.lensNumbers = same([...olHtml.matchAll(/data-ol="([^"]*)"/g)].map((m) => m[1]), ['1.', '1.1', '1.2', '2.', '2.1', '2.1.1', '2.2', '3.']);
-  r.lensLevels = same([...olHtml.matchAll(/data-lvl="(\d)"/g)].map((m) => +m[1]), [0, 1, 1, 0, 1, 2, 1, 0]);
-  r.lensTextIdentity = unesc(olHtml) === MOCKUP_OUTLINE;
-  r.lensTabMarkBeforeNumber = olLines.filter((l, i) => MOCKUP_OUTLINE.split('\n')[i].startsWith('\t')).every((l) => /^<span class="md-mark">\t+<\/span><span class="ol-body"/.test(l));
-  r.lensNumberIsAttributeNotText = !/>[0-9]+\.[0-9.]*\s/.test(olHtml.replace(/data-ol="[^"]*"/g, ''));
-  r.lensEmptyTrailingRow = same([...M.lensHtml('A\n', deco('A\n'), 'outline').matchAll(/data-ol="([^"]*)"/g)].map((m) => m[1]), ['1.', '2.']);
-  const bibPlain = 'Ahmed. *Harbors*.\nBell. Last Ferry.';
-  const bibHtml = M.lensHtml(bibPlain, deco(bibPlain), 'bibliography');
-  r.lensBib = (bibHtml.match(/<span class="bib-row">/g) || []).length === 2 && unesc(bibHtml) === bibPlain.replace(/\*/g, '*');
-  r.lensOffUnchanged = M.lensHtml(MOCKUP_OUTLINE, deco(MOCKUP_OUTLINE), null) === deco(MOCKUP_OUTLINE) && M.lensHtml('x', deco('x'), 'title') === deco('x') && M.lensHtml('x', deco('x'), undefined) === deco('x');
-  r.lensUnexpectedShapeUntouched = M.lensHtml('A\nB', 'only one line', 'outline') === 'only one line' && M.lensHtml('A', 'a\nb', 'bibliography') === 'a\nb';
-
   // ---- the per-user default never carries the template -----------------------------------------------------------------
   M.setUserPageDefaults({ margins: 'wide', lineSpacing: 1.6, pageNumbers: { on: false, placement: 'bottom-center' }, headers: { on: false, text: '' }, footers: { on: false, text: '' }, template: 'outline', kind: 'research' });
   const d = M.getUserPageDefaults();
@@ -215,15 +197,6 @@ const LABELS = {
   exportOrdinaryPageUnchanged: 'E5 an ordinary page\'s bodies are byte-identical to before',
   exportTabbedOrdinaryPageNotNumbered: 'E6 a tabbed ORDINARY page is not numbered (the branch is the template\'s, not the tab\'s)',
   defaultsKeepDress: 'D1 "Set as my default" still keeps the dress',
-  lensNumbers: 'L1 the Outline lens draws the derived numbers as data-ol attributes (1. / 1.1 / 1.2 / 2. / 2.1 / 2.1.1 / 2.2 / 3.)',
-  lensLevels: 'L2 ...and the effective level as data-lvl',
-  lensTextIdentity: 'L3 THE LENS ADDS NO TEXT: the decorated HTML, tags stripped, is the stored text byte for byte',
-  lensTabMarkBeforeNumber: 'L4 an indented row keeps its tab mark FIRST; the number sits after the indent, not before it',
-  lensNumberIsAttributeNotText: 'L5 no number appears as a text node (it is an attribute for ::before, so it is never copied or read back)',
-  lensEmptyTrailingRow: 'L6 a trailing empty row (where the caret sits after Enter) is numbered',
-  lensBib: 'L7 the Bibliography lens wraps each line in a .bib-row and adds no text',
-  lensOffUnchanged: 'L8 with no lens (null, undefined, "title") the decorated HTML is byte-identical to before',
-  lensUnexpectedShapeUntouched: 'L9 a shape the lens does not expect (lines not matching) is left undecorated - it never guesses',
   defaultsStripTemplate: 'D2 ...and never carries the template (or the kind) into the per-user default',
 };
 for (const k of Object.keys(LABELS)) ok(LABELS[k], base[k] === true, String(base[k]));
@@ -240,10 +213,6 @@ const MUTANTS = [
   { name: 'Title Page: "by" always written', file: 'store/titlePage.ts', from: 'if (title || author) { out.push', to: 'if (words || title || author) { out.push', red: ['byOnlyWithTitleOrAuthor'] },
   { name: 'Bibliography: entries not blank-line separated', file: 'store/bibliographyText.ts', from: ").join('\\n\\n');", to: ").join('\\n');", red: ['bibFormatted', 'bibPlainStripsItalics'] },
   { name: 'Export: the Outline branch is gone', file: 'store/pageExport.ts', from: "if (entry.pageSettings?.template === 'outline') return outlineBody(entry.text ?? '', 'plain');", to: '', red: ['exportOutline'] },
-  { name: 'Lens: the number is written into the text, not an attribute', file: 'store/draftDecoration.ts', from: '`${lead}<span class="ol-body" data-ol="${nums[i]}" data-lvl="${rows[i].level}">${h.slice(lead.length)}</span>`', to: '`${lead}<span class="ol-body" data-ol="${nums[i]}" data-lvl="${rows[i].level}">${nums[i]} ${h.slice(lead.length)}</span>`', red: ['lensTextIdentity'] },
-  { name: 'Lens: the number is placed before the tab mark', file: 'store/draftDecoration.ts', from: "const lead = LEAD_TAB_HTML.exec(h)?.[0] ?? '';", to: "const lead = '';", red: ['lensTabMarkBeforeNumber'] },
-  { name: 'Lens: guesses at an unexpected shape', file: 'store/draftDecoration.ts', from: "if (lines.length !== plain.split('\\n').length) return html;", to: '', red: ['lensUnexpectedShapeUntouched'] },
-  { name: 'Lens: applied with no lens', file: 'store/draftDecoration.ts', from: "if (lens !== 'outline' && lens !== 'bibliography') return html;", to: '', red: ['lensOffUnchanged'] },
   { name: 'Defaults: the template is not stripped', file: 'store/pageDefaults.ts', from: 'void kind; void styleGuide; void template;', to: 'void kind; void styleGuide; void template; return v;', red: ['defaultsStripTemplate'] },
 ];
 let landed = 0; let killed = 0;
@@ -296,6 +265,62 @@ ok('P13 the host mounts the sheet ONLY in Draft, for template "title", while the
   /const titleSheet = mode === 'drafting' && entry\.pageSettings\?\.template === 'title' && isTitlePageText\(text\);/.test(pe) && /\{titleSheet \? \(\s*<TitlePageSheet/.test(pe), '');
 ok('P14 the paragraph-indent Tab machine (item 158) stands aside while an Outline is in Draft, so Tab acts on the row and not on the whole one-paragraph outline',
   /outlineKeysRef\.current = mode === 'drafting' && realEntry\?\.pageSettings\?\.template === 'outline';/.test(pe) && (pe.match(/if \(outlineKeysRef\.current && !getWritingSettings\(\)\.typewriter\) return;/g) || []).length === 2, '');
+
+// ---- the lens on main's row model (typing-latency's lineRows): the Outline's numbers are attributes on the ROW element, applied on every write -------------------------------
+const lineRows = read('store/lineRows.ts');
+const css = read('index.css');
+function lensPins(text, cssText, peText) {
+  return {
+    attrsOnRowNotMarkup: /export function applyOutlineLens\(R: Rows\): void \{[^]*?row\.dataset\.ol = nums\[i\];[^]*?row\.dataset\.lvl = lvl;/.test(text) && !/rowHtml\([^)]*\bol\b/.test(text),
+    derivedByTheOnePlace: /const rows = outlineRows\(R\.text\);\s*const nums = outlineNumbers\(rows\);/.test(text),
+    onlyOnAnOutline: /if \(R\.el\.dataset\.template !== 'outline'\) \{\s*if \(R\.lensDrawn\)/.test(text),
+    clearsWhenOff: /delete row\.dataset\.ol; delete row\.dataset\.lvl; \} R\.lensDrawn = false;/.test(text),
+    appliedOnMount: /ROWS\.set\(el, R\);\s*applyOutlineLens\(R\);/.test(text),
+    appliedOnEveryWrite: /R\.revealLine = at;\s*applyOutlineLens\(R\);\s*if \(caret !== null && !keptAsIs\)/.test(text),
+    cssNumberFromAttribute: /\.wz-row\[data-ol\]::before\{ content:attr\(data-ol\);/.test(cssText),
+    cssBibliographyHangs: /\[data-template='bibliography'\] \.wz-row\{ padding-left:2\.4em; text-indent:-2\.4em;/.test(cssText),
+    outlineTabThroughWriteRows: /if \(!writeRows\(el, result\.text, result\.start, null\)\) decorateEditorFor\([^;]*;\s*if \(result\.end > result\.start\) setSelectionOffsets/.test(peText),
+  };
+}
+const pinsNow = lensPins(lineRows, css, pe);
+const PIN_LABELS = {
+  attrsOnRowNotMarkup: 'R1 the Outline\'s number and level are attributes on the ROW element, never inside the row\'s markup (so the kept-row compare and the shadow lines are untouched)',
+  derivedByTheOnePlace: 'R2 they are derived by store/outlineText.ts (outlineRows + outlineNumbers), the one place, never stored',
+  onlyOnAnOutline: 'R3 the lens does nothing on a page that is not an Outline (an early return)',
+  clearsWhenOff: 'R4 and clears its attributes when the lens goes off (a template switched under a mounted editor)',
+  appliedOnMount: 'R5 it is applied when the rows are mounted',
+  appliedOnEveryWrite: 'R6 ...and after EVERY writeRows (a Tab changes the numbers of rows whose own text did not change)',
+  cssNumberFromAttribute: 'R7 the number is drawn by ::before from the attribute (so it is in no text, no selection, no copy)',
+  cssBibliographyHangs: 'R8 the Bibliography is pure CSS on the rows: a hanging indent per entry',
+  outlineTabThroughWriteRows: 'R9 the Outline\'s Tab / Enter write through writeRows, like every format press (decorateEditorFor only as the no-rows fallback)',
+};
+for (const k of Object.keys(PIN_LABELS)) ok(PIN_LABELS[k], pinsNow[k] === true, String(pinsNow[k]));
+const PIN_MUTANTS = [
+  { name: 'the number is written into the row markup', file: 'lineRows', from: "if (row.dataset.ol !== nums[i]) row.dataset.ol = nums[i];", to: "row.insertAdjacentText('afterbegin', nums[i]);", red: ['attrsOnRowNotMarkup'] },
+  { name: 'the lens is not applied after a write', file: 'lineRows', from: "R.revealLine = at;\n  applyOutlineLens(R);\n  if (caret !== null && !keptAsIs)", to: "R.revealLine = at;\n  if (caret !== null && !keptAsIs)", red: ['appliedOnEveryWrite'] },
+  { name: 'the lens is not applied at mount', file: 'lineRows', from: "ROWS.set(el, R);\n  applyOutlineLens(R);", to: "ROWS.set(el, R);", red: ['appliedOnMount'] },
+  { name: 'the lens runs on every page', file: 'lineRows', from: "if (R.el.dataset.template !== 'outline') {", to: "if (false) {", red: ['onlyOnAnOutline'] },
+  { name: 'the attributes are not cleared when the lens goes off', file: 'lineRows', from: "delete row.dataset.ol; delete row.dataset.lvl; } R.lensDrawn = false;", to: "} R.lensDrawn = false;", red: ['clearsWhenOff'] },
+  { name: 'the Outline Tab bypasses writeRows', file: 'pe', from: "if (!writeRows(el, result.text, result.start, null)) decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, null));\n      if (result.end > result.start) setSelectionOffsets(el, result.start, result.end);", to: "decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, null));\n      if (result.end > result.start) setSelectionOffsets(el, result.start, result.end);", red: ['outlineTabThroughWriteRows'] },
+  { name: 'the number is drawn from text, not the attribute', file: 'css', from: "content:attr(data-ol);", to: "content:'1.';", red: ['cssNumberFromAttribute'] },
+];
+let pinLanded = 0; let pinKilled = 0;
+for (const m of PIN_MUTANTS) {
+  const src = m.file === 'lineRows' ? lineRows : m.file === 'pe' ? pe : css;
+  const idx = src.indexOf(m.from);
+  if (idx < 0 || src.indexOf(m.from, idx + 1) >= 0) { ok(`pin mutant "${m.name}": the mutation LANDED (anchor found exactly once)`, false, 'anchor missing or not unique'); continue; }
+  pinLanded += 1;
+  const mutated = src.replace(m.from, m.to);
+  const res = lensPins(m.file === 'lineRows' ? mutated : lineRows, m.file === 'css' ? mutated : css, m.file === 'pe' ? mutated : pe);
+  const went = m.red.filter((k) => res[k] !== true);
+  ok(`pin mutant "${m.name}" is KILLED (reddens: ${m.red.join(', ')})`, went.length === m.red.length, `red: ${went.join(', ') || 'none'}`);
+  if (went.length === m.red.length) pinKilled += 1;
+}
+ok(`all ${PIN_MUTANTS.length} pin mutations landed and ${PIN_MUTANTS.length} were killed`, pinLanded === PIN_MUTANTS.length && pinKilled === PIN_MUTANTS.length, `${pinLanded} landed / ${pinKilled} killed`);
+const fo = read('components/ForwardOnlyEditor.tsx');
+ok('R10 the editor carries the lens as data-template and the host\'s key door, and re-draws the lens when the template changes under it (refreshLens on [lens])',
+  /data-template=\{lens \?\? undefined\}/.test(fo) && /if \(onLensKeyRef\.current\?\.\(e\)\) return;/.test(fo) && /useEffect\(\(\) => \{ const h = hostRef\.current; if \(h\) refreshLens\(h\); \}, \[lens\]\);/.test(fo), '');
+ok('R11 NOTHING of the lens remains in the string decoration path (store/draftDecoration.ts is byte-identical to main\'s: the rows model owns the page)', !/lensHtml|outlineText/.test(read('store/draftDecoration.ts')), '');
 
 // ============================================================================================================
 // PART 2 - the real app (a box turn). Written with the standing driver rules: probe first, never abort, real pointer events, seed through the seams.
@@ -435,11 +460,11 @@ async function part2() {
     await app.evalJs(`window.wrizoPatchEntry('tpl-r2-outline', { pageSettings: ${JSON.stringify(SETTINGS('outline'))} })`);
     await app.evalJs('window.wrizoFlushNow()'); await sleep(400);
     await toDraft(); await sleep(500);
-    const nums = () => app.evalJs("[...document.querySelectorAll('.forward-only-editor .ol-body')].map((n) => n.dataset.ol)");
+    const nums = () => app.evalJs("[...document.querySelectorAll('.forward-only-editor .wz-row')].map((n) => n.dataset.ol ?? null)");
     ok('X7 an Outline page in Draft draws the derived numbers (1. 1.1 1.2 2. 2.1 2.1.1 2.2 3.)', JSON.stringify(await nums()) === JSON.stringify(['1.', '1.1', '1.2', '2.', '2.1', '2.1.1', '2.2', '3.']), JSON.stringify(await nums()));
     ok('X7 THE NUMBERS ARE NOT TEXT: the editor\'s text is the stored text, byte for byte (and the stored text has no digit it did not have)',
       (await app.evalJs("(document.querySelector('.forward-only-editor')?.textContent || '').replace(/\\u200b/g, '')")) === OUTLINE && ((await rowOf('tpl-r2-outline')) || {}).text === OUTLINE, '');
-    const shown = await app.evalJs("(() => { const n = document.querySelector('.forward-only-editor .ol-body'); return n ? getComputedStyle(n, '::before').content : null; })()");
+    const shown = await app.evalJs("(() => { const n = document.querySelector('.forward-only-editor .wz-row[data-ol]'); return n ? getComputedStyle(n, '::before').content : null; })()");
     ok('X7 the number is drawn by ::before (its content reads the attribute)', typeof shown === 'string' && shown.includes('1.'), JSON.stringify(shown));
     const caretToEnd = () => app.evalJs(`(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); const sl = getSelection(); sl.removeAllRanges(); sl.addRange(r); return true; })()`);
     await caretToEnd(); await app.key('Tab'); await sleep(500);
@@ -453,6 +478,12 @@ async function part2() {
     ok('X7 Enter opens the next row at the SAME level and typing goes into it (stored: the new row carries one tab)', (await afterTab()).endsWith('\n\tThe crossing\n\tSea'), JSON.stringify((await afterTab()).slice(-30)));
     await app.keyCombo('z'); await sleep(500);
     ok('X7 one undo takes the typed word back; the Outline keys were atomic undo steps (the page still reads as an outline)', (await afterTab()).includes('The crossing') && (await nums()).length >= 8, JSON.stringify({ n: (await nums()).length }));
+    // THE ROWS-SHADOW CHECK, PER LENS (typing-latency's instrument, armed on every page this harness loads): after Tab, Shift+Tab, Enter, typing and an undo the shadow lines
+    // equal the DOM on every render, and renders really were checked (a zero is never a pass)
+    const shO = await app.evalJs("({ checks: window.__wzRowsChecks || Number(sessionStorage.getItem('wz-rows-checks') || 0), mismatches: (window.__wzRowsMismatches || []).length })");
+    ok('X7 ROWS-SHADOW, Outline lens: no shadow-vs-DOM mismatch across Tab / Shift+Tab / Enter / typing / undo, with renders checked', shO.mismatches === 0 && shO.checks > 0, JSON.stringify(shO));
+    const lvls = await app.evalJs("[...document.querySelectorAll('.forward-only-editor .wz-row')].map((n) => n.dataset.lvl ?? null)");
+    ok('X7 the level attribute follows the stored tabs (the opening rows: 0 1 1 0)', JSON.stringify(lvls.slice(0, 4)) === JSON.stringify(['0', '1', '1', '0']), JSON.stringify(lvls));
 
     // ---- X8 (S4): the BIBLIOGRAPHY lens: a hanging indent per entry, no text added -------------------------------------------------------------------------------
     const BIB = ['Ahmed, Sara. *Harbors and Memory*. Edinburgh: Northgate Press, 2019.', 'Bell, Marian. "The Last Ferry." Island Review 14, no. 2 (2021): 33-48.'].join('\n');
@@ -461,13 +492,17 @@ async function part2() {
     await app.evalJs(`window.wrizoPatchEntry('tpl-r2-bib', { pageSettings: ${JSON.stringify(SETTINGS('bibliography'))} })`);
     await app.evalJs('window.wrizoFlushNow()'); await sleep(400);
     await toDraft(); await sleep(500);
-    const bib = await app.evalJs("(() => { const rows = [...document.querySelectorAll('.forward-only-editor .bib-row')]; return { n: rows.length, hang: rows.map((r) => { const cs = getComputedStyle(r); return { pl: parseFloat(cs.paddingLeft), ti: parseFloat(cs.textIndent) }; }) }; })()");
+    const bib = await app.evalJs("(() => { const rows = [...document.querySelectorAll('.forward-only-editor[data-template=\"bibliography\"] .wz-row')]; return { n: rows.length, hang: rows.map((r) => { const cs = getComputedStyle(r); return { pl: parseFloat(cs.paddingLeft), ti: parseFloat(cs.textIndent) }; }) }; })()");
     ok('X8 a Bibliography page in Draft draws each entry as a hanging indent (padding-left positive, text-indent its negative)', bib.n === 2 && bib.hang.every((h) => h.pl > 0 && Math.abs(h.pl + h.ti) < 1), JSON.stringify(bib));
     ok('X8 ...and adds no text: the editor\'s text is the stored text', (await app.evalJs("(document.querySelector('.forward-only-editor')?.textContent || '').replace(/\\u200b/g, '')")) === BIB, '');
+    await app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); const sl = getSelection(); sl.removeAllRanges(); sl.addRange(r); })()");
+    await app.key('Enter'); await app.typeKeys('Hollis, Dev. *Counting Gulls*. 2016.'); await sleep(600);
+    const shB = await app.evalJs("({ checks: window.__wzRowsChecks || Number(sessionStorage.getItem('wz-rows-checks') || 0), mismatches: (window.__wzRowsMismatches || []).length, rows: document.querySelectorAll('.forward-only-editor[data-template=\\\"bibliography\\\"] .wz-row').length })");
+    ok('X8 ROWS-SHADOW, Bibliography lens: typing a new entry (Enter, then words with an italic title) leaves no shadow-vs-DOM mismatch, and the new entry is a third hanging row', shB.mismatches === 0 && shB.checks > 0 && shB.rows === 3, JSON.stringify(shB));
 
     // ---- X9: no lens in Free Write's forward-only runway --------------------------------------------------------------------------------------------------------
     await app.click('Free Write'); await sleep(700);
-    ok('X9 in Free Write the page is drawn plain (no lens wrapper at all)', (await app.evalJs("document.querySelectorAll('.forward-only-editor .ol-body, .forward-only-editor .bib-row').length")) === 0, '');
+    ok('X9 in Free Write the page is drawn plain (no lens: the editor has no data-template and no row wears a number)', (await app.evalJs("!document.querySelector('.forward-only-editor[data-template]') && document.querySelectorAll('.forward-only-editor .wz-row[data-ol]').length === 0")) === true, '');
 
     // ---- X10 (S5): the TITLE PAGE - five fields over the canonical text ----------------------------------------------------------------------------------------------
     await fresh('plateau');
