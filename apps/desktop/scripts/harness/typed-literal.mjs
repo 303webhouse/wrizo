@@ -165,10 +165,17 @@ await withHarness(async (app) => {
     //   !!s5 && s5.bold === 1 && s5.visible === 'Mine bold words Mine **bold** words', JSON.stringify(s5));
     // ------------------------------------------------------------------
     tlParks.l5 = { st5: unz(st5), s5 };
-    ok('L5 [copy-half successor]: own words copied and pasted back arrive as their PLAIN characters - nothing to escape, and the saved bold before them untouched (the formatting comes back with the paste half)',
-      unz(st5) === `${MINE} Mine bold words`, JSON.stringify(st5));
-    ok('L5 [copy-half successor]: ...so the page shows the words twice and still exactly one bold run (the original)',
-      !!s5 && s5.bold === 1 && s5.visible === 'Mine bold words Mine bold words', JSON.stringify(s5));
+    // ---- PARKED - SUPERSEDED by in-app-copy-format's paste half (Fable, Oct 16): the copy's Wrizo markup now comes back with the paste, so
+    // the writer's own `**bold**` pastes back bold. Kept VERBATIM and no longer run; successors below.
+    // ok('L5 [copy-half successor]: own words copied and pasted back arrive as their PLAIN characters - nothing to escape, and the saved bold before them untouched (the formatting comes back with the paste half)',
+    //   unz(st5) === `${MINE} Mine bold words`, JSON.stringify(st5));
+    // ok('L5 [copy-half successor]: ...so the page shows the words twice and still exactly one bold run (the original)',
+    //   !!s5 && s5.bold === 1 && s5.visible === 'Mine bold words Mine bold words', JSON.stringify(s5));
+    // ------------------------------------------------------------------
+    ok('L5 [paste-half successor]: own words copied and pasted back keep their formatting - the stored text holds the same markup twice, and the saved bold before them untouched',
+      unz(st5) === `${MINE} ${MINE}`, JSON.stringify(st5));
+    ok('L5 [paste-half successor]: ...so the page shows the words twice, bold twice, no mark shown',
+      !!s5 && s5.bold === 2 && s5.shownMarks === 0 && s5.visible === 'Mine bold words Mine bold words', JSON.stringify(s5));
   }
 
   // ---- L5b: a paste is still literal - TYPED stars copied and pasted back stay literal stars, and no backslash is added on the way
@@ -264,13 +271,27 @@ if (process.env.HARNESS_PARKED === '1') {
   // IN-APP-COPY-FORMAT (2026-10-16) - TWO parks: L5's literal-paste readings of a copy of `**bold**`. Records frozen; each re-verifies the
   // new truth from the default leg's own readings (tlParks).
   const a = tlParks.l5 || {};
-  pok('PARKED (was "L5: a pasted `**` is LITERAL - the pasted copy is stored escaped and the saved bold before it is untouched") - the copy half writes plain characters; live successor: L5 [copy-half successor] and L5b',
-    a.st5 === 'Mine **bold** words Mine bold words', JSON.stringify(a));
-  pok('PARKED (was "L5: ...so the page shows the pasted stars and still exactly one bold run (the original): the in-app round trip loses formatting until in-app-copy-format") - live successor: L5 [copy-half successor]',
-    !!a.s5 && a.s5.bold === 1 && a.s5.visible === 'Mine bold words Mine bold words', JSON.stringify(a));
+  // ---- PARKED RECORDS - SUPERSEDED by in-app-copy-format's paste half: these re-verified the copy half's truth (a plain paste-back), which
+  // the paste half changes. Kept VERBATIM and no longer run; successor records directly below.
+  // pok('PARKED (was "L5: a pasted `**` is LITERAL - the pasted copy is stored escaped and the saved bold before it is untouched") - the copy half writes plain characters; live successor: L5 [copy-half successor] and L5b',
+  //   a.st5 === 'Mine **bold** words Mine bold words', JSON.stringify(a));
+  // pok('PARKED (was "L5: ...so the page shows the pasted stars and still exactly one bold run (the original): the in-app round trip loses formatting until in-app-copy-format") - live successor: L5 [copy-half successor]',
+  //   !!a.s5 && a.s5.bold === 1 && a.s5.visible === 'Mine bold words Mine bold words', JSON.stringify(a));
+  // ------------------------------------------------------------------
+  const full = 'Mine **bold** words Mine **bold** words';
+  pok('PARKED (was "L5: a pasted `**` is LITERAL - the pasted copy is stored escaped and the saved bold before it is untouched") - the copy half writes plain characters, and the paste half brings the markup back; live successor: L5 [paste-half successor] and L5b',
+    a.st5 === full, JSON.stringify(a));
+  pok('PARKED (was "L5: ...so the page shows the pasted stars and still exactly one bold run (the original): the in-app round trip loses formatting until in-app-copy-format") - the round trip keeps its formatting now; live successor: L5 [paste-half successor]',
+    !!a.s5 && a.s5.bold === 2 && a.s5.visible === 'Mine bold words Mine bold words', JSON.stringify(a));
+  // IN-APP-COPY-FORMAT's paste half (2026-10-16) - TWO parks: L5's copy-half successors (a plain paste-back). Records re-verify the paste
+  // half's truth from the default leg's own readings.
+  pok('PARKED (was "L5 [copy-half successor]: own words copied and pasted back arrive as their PLAIN characters - nothing to escape, and the saved bold before them untouched (the formatting comes back with the paste half)") - the paste half; live successor: L5 [paste-half successor]',
+    a.st5 === full, JSON.stringify(a));
+  pok('PARKED (was "L5 [copy-half successor]: ...so the page shows the words twice and still exactly one bold run (the original)") - the paste half; live successor: L5 [paste-half successor]',
+    !!a.s5 && a.s5.bold === 2 && a.s5.shownMarks === 0, JSON.stringify(a));
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
-  console.log(parkedPass ? `\nTYPED-LITERAL PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed; this FILE parks 2: L5's two literal-paste checks (in-app-copy-format's copy half)`
+  console.log(parkedPass ? `\nTYPED-LITERAL PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed; this FILE parks 4: L5's two literal-paste checks (in-app-copy-format's copy half) and their two copy-half successors (the paste half)`
     : `\nTYPED-LITERAL PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);

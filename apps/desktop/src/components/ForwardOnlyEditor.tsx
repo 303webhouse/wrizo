@@ -9,7 +9,7 @@ import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, registerUndoStack, unregisterUndoStack, type EditKind } from '../store/textUndo';
 import { placeCaret } from '../store/hiddenMarksDom';
 import { escapeTyped } from '../store/hiddenMarks';
-import { copyPayload, putOnClipboard } from '../store/clipboardFormat';
+import { copyPayload, pasteEdit, putOnClipboard, readEnvelope, WRIZO_MIME } from '../store/clipboardFormat';
 import { readEscapes } from '../store/markRuns';
 import { attachHiddenMarkEditing } from '../store/hiddenMarksEditing';
 import { detachRows, editorPlainText, mountRows, noteNativeEdit, readNativeEdit, revealRowsAtCaret, rowsFor, writeRows } from '../store/lineRows';
@@ -460,7 +460,8 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         redecorate(plain, caret);
       };
       const blockPaste = (e: Event) => {
-        if (shadowAllows(extractIncomingText(e))) return;
+        // IN-APP-COPY-FORMAT: own ink passes the wall; Wrizo's own markup is then pasted when its envelope can be trusted
+        if (shadowAllows(extractIncomingText(e))) { if (e.type === 'paste') marks.paste(e as ClipboardEvent); return; }
         e.preventDefault(); notePasteBlocked();
       };
       // REVEAL-ON-CLICK — the page surface had NO caret-move reveal at all:
@@ -572,7 +573,17 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     const blockPaste = (e: Event) => {
       e.preventDefault();
       const text = extractIncomingText(e);
-      if (shadowAllows(text)) { handleTyped(text); return; }
+      if (shadowAllows(text)) {
+        // IN-APP-COPY-FORMAT: Wrizo's own markup, when its envelope can be trusted, enters at the runway's tip like any typed text
+        const fragment = e.type === 'paste' ? readEnvelope((e as ClipboardEvent).clipboardData?.getData(WRIZO_MIME), text) : null;
+        if (fragment !== null) {
+          const now = derivedText(contentRef.current) + wordRef.current;
+          const r = pasteEdit(now, now.length, now.length, fragment, text);
+          if (r.formatted && r.text.startsWith(now)) { handleInput(r.text.slice(now.length)); return; }
+        }
+        handleTyped(text);
+        return;
+      }
       notePasteBlocked();
     };
 

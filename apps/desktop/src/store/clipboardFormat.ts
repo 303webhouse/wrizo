@@ -10,7 +10,7 @@
 // Every fragment line is checked against its source before it is written: if it would not read back as the same characters with the same
 // styles, that line is written as literal text instead (escaped, so it can never become markup). Nothing styled is ever invented.
 import { escapeTyped, replaceRange } from './hiddenMarks';
-import { closeMark, readEscapes, readLead, readMarks, type MarkRun } from './markRuns';
+import { closeMark, readEscapes, readLead, readMarks, removeMarkers, stripLine, type MarkRun } from './markRuns';
 import { recordShadow } from './voiceWall';
 
 export const WRIZO_MIME = 'application/x-wrizo-fragment';
@@ -141,17 +141,59 @@ export function putOnClipboard(dt: DataTransfer, p: CopyPayload): void {
 }
 
 // ---- THE PASTE HALF (Fable, Oct 16: Wrizo's markup is used only when the paste passes the Voice Wall and the markup matches its plain
-// text; otherwise the paste is literal). RED-FIRST STUBS: today's paste - the envelope is never read, the plain text is pasted literal.
+// text; otherwise the paste is literal). The Voice Wall stays the surface's own and runs FIRST: a paste it blocks never reaches here. Two
+// trust tests follow: the envelope's (readEnvelope) and the page's (pasteEdit) - the markup must read, beside the text it lands in, as
+// exactly the characters a literal paste would show, or the literal paste is what happens.
 
-/** The fragment a paste's Wrizo envelope carries, or null when it cannot be trusted. */
+const lf = (t: string): string => t.replace(/\r\n?/g, '\n');   // a platform clipboard may carry text/plain with CRLF; the envelope does not
+const stripAll = (t: string): string => t.split('\n').map(stripLine).join('\n');
+
+/** The fragment a paste's Wrizo envelope carries, or null when it cannot be trusted: not JSON, not version 1, no text, a plain text that
+ *  is not the text/plain pasted beside it (a stale envelope, or another app's text), or markup that does not read as its own plain text. */
 export function readEnvelope(raw: string | null | undefined, plain: string): string | null {
-  void raw; void plain;
-  return null;
+  if (!raw) return null;
+  let env: unknown;
+  try { env = JSON.parse(raw); } catch { return null; }
+  if (!env || typeof env !== 'object') return null;
+  const { v, text, plain: ep } = env as { v?: unknown; text?: unknown; plain?: unknown };
+  if (v !== 1 || typeof text !== 'string' || typeof ep !== 'string') return null;
+  if (lf(ep) !== lf(plain)) return null;
+  if (stripAll(text) !== lf(ep)) return null;
+  return text;
 }
 
-/** A paste of `plain` (and, when trusted, its `fragment`) over [s, e) of `text`. */
+/** The fragment as it can stand at `at`: its first line's structure tokens only where a line's text begins (Q2 - a `# ` mid-line is no
+ *  heading, it would only show), and without the kinds already open around `at` (the run there gives the pasted words that style;
+ *  `**a**x**b**` would have shown a pasted bold word plain). Only the first line meets the caret's line. */
+function fitFragment(fragment: string, text: string, at: number): string {
+  const ls = at <= 0 ? 0 : text.lastIndexOf('\n', at - 1) + 1;
+  const prefix = text.slice(ls, at);
+  const lines = fragment.split('\n');
+  let first = lines[0];
+  if (readLead(prefix).length !== prefix.length) first = first.slice(readLead(first).length);
+  const le = text.indexOf('\n', at);
+  const line = text.slice(ls, le < 0 ? text.length : le);
+  const lead = readLead(line).length;
+  const p = at - ls - lead;
+  if (p >= 0) {
+    const kinds = new Set(readMarks(line.slice(lead)).filter((r) => p >= r.open + r.mark.length && p <= r.close).map((r) => r.kind));
+    if (kinds.size) {
+      const fl = readLead(first).length;
+      const rest = first.slice(fl);
+      first = first.slice(0, fl) + removeMarkers(rest, readMarks(rest).filter((r) => kinds.has(r.kind)));
+    }
+  }
+  lines[0] = first;
+  return lines.join('\n');
+}
+
+/** A paste of `plain` over [s, e) of `text`: the trusted `fragment` as markup when it reads, where it lands, as exactly the characters the
+ *  literal paste would show; otherwise the literal paste (typed-literal: escaped). */
 export function pasteEdit(text: string, s: number, e: number, fragment: string | null, plain: string): { text: string; caret: number; formatted: boolean } {
-  void fragment;
-  const r = replaceRange(text, s, e, escapeTyped(plain, text, s));
-  return { text: r.text, caret: r.caret, formatted: false };
+  const L = replaceRange(text, s, e, escapeTyped(lf(plain), text, s));
+  if (fragment !== null) {
+    const F = replaceRange(text, s, e, fitFragment(fragment, text, s));
+    if (stripAll(F.text) === stripAll(L.text)) return { text: F.text, caret: F.caret, formatted: true };
+  }
+  return { text: L.text, caret: L.caret, formatted: false };
 }

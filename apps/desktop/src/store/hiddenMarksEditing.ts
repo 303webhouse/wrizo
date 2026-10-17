@@ -17,7 +17,7 @@
 // nothing).
 import { backspaceAt, closersAt, deleteAt, enterAt, escapeTyped, nativeRange, reabsorb, replaceRange, snapCaret, snapCaretAfterClick, stepLeft, stepRight, wordBackspaceAt, wordDeleteAt, type EditResult } from './hiddenMarks';
 import { extendSelection, placeCaret, selectionEnds } from './hiddenMarksDom';
-import { copyPayload, putOnClipboard } from './clipboardFormat';
+import { copyPayload, pasteEdit, putOnClipboard, readEnvelope, WRIZO_MIME } from './clipboardFormat';
 import { getSelectionOffsets } from './caretOffset';
 import type { EditKind } from './textUndo';
 
@@ -46,6 +46,9 @@ export interface HiddenMarkEditing {
   selectionChange(): void;
   /** Forget a pending edit (composition start, undo/redo, a programmatic rewrite). */
   reset(): void;
+  /** IN-APP-COPY-FORMAT: a paste the Voice Wall has let through - Wrizo's own markup is pasted when its envelope can be trusted (true when
+   *  it took the paste; false leaves the native paste, escaped on input). Call it only for a paste the wall allows. */
+  paste(e: ClipboardEvent): boolean;
   /** TYPED-LITERAL: an IME composition is starting - remember the text and selection it starts from, so its committed text can be escaped
    *  at compositionend (call AFTER reset). */
   noteComposition(): void;
@@ -260,6 +263,20 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
   const api: HiddenMarkEditing = {
     beforeInput,
     pendingWasRange: () => !!beforeEdit && beforeEdit.end > beforeEdit.start,
+    paste: (e: ClipboardEvent): boolean => {
+      if (host.busy() || !e.clipboardData) return false;
+      const plain = e.clipboardData.getData('text/plain');
+      const fragment = readEnvelope(e.clipboardData.getData(WRIZO_MIME), plain);
+      if (fragment === null) return false;
+      const o = getSelectionOffsets(el);
+      if (!o) return false;
+      e.preventDefault();
+      beforeEdit = null;
+      const text = host.plainNow();
+      const r = pasteEdit(text, Math.min(o.start, text.length), Math.min(o.end, text.length), fragment, plain);
+      commit({ text: r.text, caret: r.caret }, 'atomic');   // one undo step, as a format press is
+      return true;
+    },
     repairInput,
     enter,
     markKey,

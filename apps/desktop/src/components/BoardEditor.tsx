@@ -613,7 +613,8 @@ function BoardCardPopup({
       }
     };
     const blockForeign = (e: Event) => {
-      if (shadowAllows(extractIncomingText(e))) return;
+      // IN-APP-COPY-FORMAT: own ink passes the wall; Wrizo's own markup is then pasted when its envelope can be trusted
+      if (shadowAllows(extractIncomingText(e))) { if (e.type === 'paste') marks.paste(e as ClipboardEvent); return; }
       e.preventDefault();
       notePasteBlocked();
     };

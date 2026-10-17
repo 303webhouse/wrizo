@@ -229,7 +229,10 @@ const env = (fragment, plain, v = 1) => JSON.stringify({ v, text: fragment, plai
   const t = 'Start  end';
   const r = cf.pasteEdit(t, 6, 6, '**bold** and *it*', 'bold and it');
   ok('PASTE: a trusted fragment goes in AS MARKUP at the caret - bold stays bold, italic italic - and the caret lands after it',
-    r.formatted && r.text === 'Start **bold** and *it* end' && r.caret === 6 + '**bold** and *it*'.length, JSON.stringify(r));
+    // (the caret by the 211 rules: right after the last VISIBLE character pasted - before the italic's hidden closing mark, as after any
+    // styled word - so what is checked is that nothing but the paste's own closing mark lies between the caret and the paste's end)
+    r.formatted && r.text === 'Start **bold** and *it* end' && r.caret >= 6 + '**bold** and *it'.length && r.caret <= 6 + '**bold** and *it*'.length
+      && r.text.slice(r.caret, 6 + '**bold** and *it*'.length).replace(/\*/g, '') === '', JSON.stringify(r));
   const r2 = cf.pasteEdit(t, 6, 6, null, 'a *star*');
   ok('PASTE: with no trusted fragment the plain text goes in LITERAL (typed-literal: escaped)', !r2.formatted && r2.text === `Start a ${B}*star${B}* end`, JSON.stringify(r2));
   const r3 = cf.pasteEdit('one two three', 4, 7, '*x*', 'x');

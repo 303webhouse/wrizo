@@ -10,6 +10,12 @@
 //   K3  Draft, a CUT through a bold run's middle: the same two formats; the run is cut cleanly (no mark shown), one undo restores it
 //   K4  Free Write: the plain text leaves out the struck letters (Q3) and shows the typed star as a star
 //   K5  the card pop-up: the same two formats
+// THE PASTE HALF (Fable, Oct 16: Wrizo's markup only when the paste passes the Voice Wall AND the markup matches its plain text):
+//   P1  Draft: own words copied and pasted back keep their formatting; one undo takes the paste out
+//   P2  a card's words pasted on a page keep their bold (one session - the wall's own-ink record lives in the running app)
+//   P3  Free Write: a styled paste lands at the runway's tip, styled
+//   P4  text copied from outside a writing surface is still blocked by the Voice Wall
+//   P5  a page-made paste event: a true envelope is read (CONTROL); a forged one changes nothing
 // Run: node scripts/harness/in-app-copy-format.mjs   (from apps/desktop, dist-web built, box turn granted)
 import { withHarness } from '../runtime-verify.mjs';
 
