@@ -1897,6 +1897,15 @@ export function BoardEditor({ id }: { id: string }) {
       const ids = [connect.src, ...boxesRef.current.filter(b => b.kind === 'connection' && (b.connA === connect!.src || b.connB === connect!.src)).map(b => (b.connA === connect!.src ? b.connB : b.connA) as string)];
       return ids.some(id => { const p = cornerOf(id); return !!p && Math.hypot(x - c.left - p.x, y - c.top - p.y) <= 14; });
     };
+    // THE CLICK THAT FOLLOWS A RELEASE ON A RAIL THUMBNAIL (ledger 86, a real product bug). The browser fires `click` on the tile right after this pointerup, and the tile's own onClick travels
+    // to its page - so the writer left the board the moment the link was made (page-primacy line 3: leaving is an explicit act, never a side effect of a tool). The thumbnail DRAG swallows its own
+    // follow-up click the same way (above); a connector release on the rail does too, whichever path made it - a latched click on the thumbnail, or the held path (press the corner, release over
+    // it). A short beat tied to the release itself, never a lock: the writer's next deliberate click on a thumbnail still travels.
+    const swallowReleaseClick = () => {
+      const swallow = (ev: Event) => { ev.stopPropagation(); ev.preventDefault(); };
+      window.addEventListener('click', swallow, true);
+      setTimeout(() => window.removeEventListener('click', swallow, true), 100);
+    };
     function cUp(e: PointerEvent) {
       if (!connect) return;
       // the browser fires `contextmenu` right after a right-button release (on Windows, after pointerup): that one belongs to THIS gesture and is suppressed. It is a short beat tied to the release itself -
@@ -1911,6 +1920,7 @@ export function BoardEditor({ id }: { id: string }) {
       }
       const t = targetAt(e.clientX, e.clientY);
       const rail = t ? null : railEntryAt(e.clientX, e.clientY);
+      if (rail) swallowReleaseClick();   // the click the browser fires on the thumbnail after this release must not travel to its page
       if (connect.held) {
         connect.held = false;
         if (t) { commit(t); return; }

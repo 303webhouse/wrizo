@@ -211,6 +211,17 @@ const pinsOf = (m, s) => ({
   ];
   const ured = um.map(([k, fn]) => [k, fn()[k] === false]);
   ok('S (UI mutants): untagging a thumbnail, dropping the one-truth door, moving the arm back into the clipped canvas svg, dropping the link on a copy, letting the tab\'s X skip its confirm, or showing the tick on an unlink each turn their OWN pin RED (each landed)', ured.every(([, v]) => v), JSON.stringify(ured));
+  // ledger 86: a release on a rail thumbnail swallows the click that follows it, on BOTH paths (latched and held), BEFORE the held / latched split; the swallow is a beat that removes itself
+  const swallowPin = (b) => /const swallowReleaseClick = \(\) => \{\s*const swallow = \(ev: Event\) => \{ ev\.stopPropagation\(\); ev\.preventDefault\(\); \};\s*window\.addEventListener\('click', swallow, true\);\s*setTimeout\(\(\) => window\.removeEventListener\('click', swallow, true\), 100\);\s*\};/.test(b)
+    && /const rail = t \? null : railEntryAt\(e\.clientX, e\.clientY\);\s*if \(rail\) swallowReleaseClick\(\);[^\n]*\n\s*if \(connect\.held\) \{/.test(b);
+  ok('S10 (ledger 86): a connector release on a rail thumbnail swallows the click that follows it - before the held / latched split, so BOTH paths are covered - and the swallow removes itself after a beat', swallowPin(be), '');
+  const swMut = [
+    ['the swallow call is gone', be.replace('if (rail) swallowReleaseClick();', '')],
+    ['the swallow only covers the latched path', be.replace(/(const rail = t \? null : railEntryAt\(e\.clientX, e\.clientY\);\s*)if \(rail\) swallowReleaseClick\(\);[^\n]*\n(\s*if \(connect\.held\) \{)/, '$1$2').replace('if (t) commit(t); else if (rail) commitEntry(rail.entryId); else endConnect();', 'if (t) commit(t); else if (rail) { swallowReleaseClick(); commitEntry(rail.entryId); } else endConnect();')],
+    ['the swallow never lets go', be.replace("setTimeout(() => window.removeEventListener('click', swallow, true), 100);", '')],
+  ];
+  const swRed = swMut.map(([k, t]) => [k, t !== be && swallowPin(t) === false]);
+  ok('S10 (mutants): dropping the swallow, keeping it on the latched path only (the held path then leaks the click), or never removing it turns the pin RED (each landed)', swRed.every(([, v]) => v), JSON.stringify(swRed));
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : `  [${c.detail}]`}`);

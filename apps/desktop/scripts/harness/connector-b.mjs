@@ -105,7 +105,12 @@ await withHarness(async (app) => {
   await glide(app, h, centre(tb2), 10); await sleep(300);
   const st1 = await tileState(app, f.b2); const arm1 = await armGeo(app); const cvR = await R(app, '.board-canvas');
   ok('B1: the thumbnail under the arm wears a circle - OPEN (not brass-filled), a 10px circle - and the arm LANDS on it', !!st1 && st1.target === 'true' && st1.circle && st1.radius === '50%' && st1.solid === null && st1.bg !== BR && !!arm1 && Math.abs(arm1.x2 - (tb2.l + 9)) <= 3 && Math.abs(arm1.y2 - (tb2.t + tb2.h / 2)) <= 3, JSON.stringify({ st1, arm1, tb2 }));
-  ok('B1: the arm is drawn in a viewport overlay (a portal on body), UNCLIPPED - it ends past the board\'s right edge, over the rail', !!arm1 && arm1.inBody && arm1.display !== 'none' && arm1.x2 > cvR.r, JSON.stringify({ arm1, canvasRight: cvR.r }));
+  // ---- PARKED - SUPERSEDED (Fable Oct 17, ledger 86): the original B1 assumed the rail is on the RIGHT of the board. It is on the LEFT. Kept VERBATIM below and no longer run; its successor reads the side.
+  //
+  // ok('B1: the arm is drawn in a viewport overlay (a portal on body), UNCLIPPED - it ends past the board\'s right edge, over the rail', !!arm1 && arm1.inBody && arm1.display !== 'none' && arm1.x2 > cvR.r, JSON.stringify({ arm1, canvasRight: cvR.r }));
+  // the rail's side is READ from where the thumbnail is, never assumed
+  const railLeft = centre(tb2).x < cvR.l;
+  ok(`B1 [rail-side successor]: the arm is drawn in a viewport overlay (a portal on body), UNCLIPPED - it ends past the board's ${railLeft ? 'LEFT' : 'RIGHT'} edge, on the rail's side, over the rail`, !!arm1 && arm1.inBody && arm1.display !== 'none' && (railLeft ? arm1.x2 < cvR.l : arm1.x2 > cvR.r), JSON.stringify({ arm1, railLeft, canvas: { l: cvR.l, r: cvR.r } }));
   ok('B8: with the arm over the rail the board has not moved - the canvas rect is identical', JSON.stringify(cv0) === JSON.stringify(cvR), '');
 
   // B2
@@ -118,6 +123,7 @@ await withHarness(async (app) => {
   ok('B2: the thumbnail flashes its circle SOLID for a beat (data-link-flash on, brass-filled)', !!flash2 && flash2.flash === 'on' && flash2.circle && flash2.bg === BR, JSON.stringify(flash2));
   await sleep(1800);
   const gone2 = await tileState(app, f.b2);
+  ok('B2: the release that LINKED did not also travel - the writer is STILL ON THE BOARD (the click that follows a release on a thumbnail is swallowed; page-primacy line 3)', (await app.evalJs('location.hash')) === `#/page/${f.id}`, String(await app.evalJs('location.hash')));
   ok('B2: then it hides again (no circle, no flash)', !!gone2 && gone2.flash === null && gone2.target === null && gone2.peer === null, JSON.stringify(gone2));
 
   // B3
@@ -203,6 +209,33 @@ await withHarness(async (app) => {
       JSON.stringify({ ghost, copy: copy && copy.id, copyRect, drop, links: lk }));
     ok('B7: the thumbnail\'s own click (it travels to the page) did NOT fire - the writer is still on the board', (await app.evalJs('location.hash')) === hash0 && !(await app.evalJs("!!document.querySelector('.wz-link-ghost')")), String(await app.evalJs('location.hash')));
     ok('B7: the copy is a real card - selected, and its footer names its original', (await footer(app, copy ? copy.id : 'none')) !== null && /Research board/.test((await footer(app, copy.id)) || ''), String(copy && (await footer(app, copy.id))));
+  }
+
+  // B9 - THE HELD PATH (Fable Oct 17, ledger 86): press the corner square, DRAG to a rail thumbnail holding the button, release there. The release toggles the link and the writer STAYS on the board; the beat then
+  // ends, so a later deliberate click on the same thumbnail still travels (the swallow is a beat, not a lock).
+  await openDrawers(app);
+  const tb9 = await tile(app, 'Research board');
+  const hash9 = await app.evalJs('location.hash');
+  if (!tb9) ok('B9 fixture: the Research board thumbnail is in the rail', false, 'absent');
+  else if (!(await selectCard(app, 'cb-a'))) ok('B9 fixture: the card selected', false, JSON.stringify(await R(app, '[data-box-id="cb-a"]')));
+  else {
+    const hr9 = await R(app, '[data-box-id="cb-a"] .board-handle');
+    if (!hr9) ok('B9 fixture: the card\'s corner square rendered', false, 'absent');
+    else {
+      const n9 = (await linksOf(app, f.id)).length;
+      const hp = centre(hr9);
+      await app.mouseMove(hp.x, hp.y); await mouse(app, 'mousePressed', hp.x, hp.y);
+      await glide(app, hp, centre(tb9), 12); await sleep(250);
+      const armed9 = await armed(app);
+      await mouse(app, 'mouseReleased', ...Object.values(centre(tb9))); await sleep(500);
+      const n9b = (await linksOf(app, f.id)).length;
+      ok('B9 [held path]: press the corner square, drag onto a rail thumbnail and release there toggles the link (one record more or fewer), the mode having been armed during the drag', armed9 === 'true' && Math.abs(n9b - n9) === 1, JSON.stringify({ armed9, before: n9, after: n9b }));
+      ok('B9 [held path]: and the writer is STILL ON THE BOARD (a release is not a click on the thumbnail)', (await app.evalJs('location.hash')) === hash9, String(await app.evalJs('location.hash')));
+      await sleep(400);
+      const tb9b = await tile(app, 'Research board');
+      if (tb9b) { await click(app, ...Object.values(centre(tb9b))); await waitSoft(app, `location.hash === '#/page/${f.b2}'`, { label: 'travel', timeout: 4000 }); }
+      ok('B9: after the beat, a deliberate click on the thumbnail travels as it always did (the swallow is a beat, not a lock)', (await app.evalJs('location.hash')) === `#/page/${f.b2}`, String(await app.evalJs('location.hash')));
+    }
   }
 });
 
