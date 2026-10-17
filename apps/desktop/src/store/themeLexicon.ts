@@ -67,7 +67,9 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForm
     journal: { one: 'Log', many: 'Logs' },
     plan: { one: 'Schematic', many: 'Schematics' },
     milestone: { one: 'Checkpoint', many: 'Checkpoints' },
-    freewrite: { one: 'Overclock', many: 'Overclocks' },
+    // theme-leftovers (Nick approved Oct 16) — "Overclock" retired for
+    // "Wire In" (plural "Wire-ins"), Fable's own exact forms.
+    freewrite: { one: 'Wire In', many: 'Wire-ins' },
     home: { one: 'Safehouse', many: 'Safehouses' },
     voicewall: { one: 'Firewall', many: 'Firewalls' },
     // ITEM arbor-quiet-brass — renamed from "Connect" (Fable's proposal, pending Nick's

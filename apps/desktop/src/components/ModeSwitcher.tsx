@@ -1,6 +1,7 @@
 import { Fragment, useState } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { useLexicon } from '../store/themeLexicon';
+import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 
 // Mode switcher (writing-screen redesign). Top-bar tabs with stage sub-labels;
 // active tab filled brass. Internal keys stay journal/drafting so the editor +
@@ -41,12 +42,19 @@ import { useLexicon } from '../store/themeLexicon';
 // defaults false), so what changes there is one word of a sub-label and nothing
 // else. Recorded because "one line" and "reaches two surfaces" are both true and
 // only one of them is obvious.
-interface ModeDef { key: string; term?: 'freewrite'; label: string; sub: string; live: boolean }
+// theme-leftovers (Fable: "route the legacy strip's Draft/Revise/Format
+// through the same lexicon terms the framed mode strip uses; reuse, don't
+// invent") — `deskTerm` reuses ModeStrip.tsx's own terms (modeDraft/
+// modeRevise, deskLexicon.ts) for the two it already has; Format has no
+// top-level mode term there (ModeStrip carries no Format tab at all), so
+// this reuses the Sliver's own section-heading word for the same English
+// term, railFormat, rather than inventing a new lexicon key for one tab.
+interface ModeDef { key: string; term?: 'freewrite'; deskTerm?: DeskTermId; label: string; sub: string; live: boolean }
 const MODES: ModeDef[] = [
   { key: 'journal', term: 'freewrite', label: 'Free write', sub: 'generate', live: true },
-  { key: 'drafting', label: 'Draft', sub: 'mark', live: true },
-  { key: 'revise', label: 'Revise', sub: 'dress', live: true },
-  { key: 'formatting', label: 'Format', sub: 'convention', live: false },
+  { key: 'drafting', deskTerm: 'modeDraft', label: 'Draft', sub: 'mark', live: true },
+  { key: 'revise', deskTerm: 'modeRevise', label: 'Revise', sub: 'dress', live: true },
+  { key: 'formatting', deskTerm: 'railFormat', label: 'Format', sub: 'convention', live: false },
 ];
 
 // A trailing action tab (Workshop / Publish) — styled like a mode tab but a file
@@ -57,10 +65,11 @@ export function ModeSwitcher({ mode, onSwitch, actions = [], reviseEnabled = fal
   const [soon, setSoon] = useState<string | null>(null);
   const flashSoon = (label: string) => { setSoon(label); setTimeout(() => setSoon(null), 1800); };
   const { t: lex } = useLexicon();
+  const { t: deskT } = useDeskLexicon();
   return (
     <div className="mode-tabs" role="tablist" aria-label="Writing mode">
       {MODES.filter(m => m.key !== 'revise' || reviseEnabled).map(m => {
-        const label = m.term ? lex(m.term) : m.label;
+        const label = m.term ? lex(m.term) : m.deskTerm ? deskT(m.deskTerm) : m.label;
         return (
           <button
             key={m.key}

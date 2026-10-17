@@ -457,6 +457,13 @@
    out of TH2's scope. */
 :root[data-theme='flux'] {
   --ink-950: #04141A;             /* ground */
+  /* theme-leftovers (Nick approved Oct 16) — the teal twin of --lamp-glow's
+     own brown gradient: the SAME stop positions/lightness/saturation ramp,
+     hue shifted to this theme's own register (~194deg, between --ink-950's
+     196.4deg and the dark page's own --paper 190deg). Was unset, so body's
+     backdrop stayed Arbor-brown under Flux wherever a route's own content
+     doesn't paint full-bleed over it (the unframed page view, Journal/Shelf). */
+  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #0F2D36 0%, #102025 38%, #0A1417 70%, #070E10 100%);
   --chrome-surface: rgba(9, 30, 36, .9);
   --rail-surface: rgba(4, 17, 22, .78);
   --ink-border: #1D4A52;          /* line */
@@ -583,7 +590,10 @@
 }
 
 html {
-  background-color: #110600;
+  /* theme-leftovers (Nick approved Oct 16) — was a hardcoded Arbor literal,
+     never themed (the one place --ink-950 existed to prevent exactly this).
+     Themed now, matching .wz-splash-veil's own identical move. */
+  background-color: var(--ink-950);
 }
 
 body {

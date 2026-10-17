@@ -1087,7 +1087,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   templateTitlePage: 'Title page',
   templateCustom: 'Custom',
   comingSoon: 'Coming soon',
-  railTypeface: 'Typeface',
+  // theme-leftovers (Nick approved Oct 12, "Flux Word Picker"; never built
+  // until now) — Arbor's own word for the Sliver's type section is "Font",
+  // not "Typeface". Flux keeps "Typeface" (its own OVERRIDES entry, below).
+  railTypeface: 'Font',
   goalUnitWords: 'words',
   footSettings: 'Settings',
   footMenuTypewriter: 'Typewriter Mode',
@@ -1498,6 +1501,10 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     // `theme === 'plateau'` gate already renders nothing under Flux, so this
     // is a label-only fix (see that component's header comment).
     progressStyleRhizome: 'Glitch',
+    // theme-leftovers (Nick approved Oct 12) — Flux keeps "Typeface" for the
+    // Sliver's type section; Arbor's own CANONICAL word changed to "Font"
+    // above, so this is now an explicit override rather than a shared default.
+    railTypeface: 'Typeface',
     // ITEM splash-hold, ROUND 3 — Flux's own circuit-register voice for the
     // splash's cycling loading line (Nick's ruling).
     splashLoading1: 'Booting the terminal…',

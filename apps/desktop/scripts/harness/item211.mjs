@@ -242,7 +242,13 @@ await withHarness(async (app) => {
     await app.evalJs("document.querySelectorAll('.wz-sliver-templates .wz-template-btn').forEach(b => b.click())"); await sleep(300);
     ok('C2: pressing them does nothing to the page', (await stored(app, id)) === textBefore && (await app.evalJs(`!!document.querySelector('${ED}')`)));
     const typeHead = await app.evalJs("(() => { const s = document.querySelector('.wz-sliver-type'); const h = s && s.firstElementChild; return h ? { cls: h.className, text: h.textContent, next: h.nextElementSibling && h.nextElementSibling.className } : null; })()");
-    ok('C3: a "Typeface" heading sits directly above the font controls', typeHead && typeHead.cls === 'wz-sliver-h' && typeHead.text === 'Typeface' && /wz-type/.test(typeHead.next || ''), JSON.stringify(typeHead));
+    // SUPERSEDED (theme-leftovers, Nick approved Oct 12, built Oct 16): this
+    // file never switches theme, so it runs on Arbor's own default - which
+    // now reads "Font" ("Flux Word Picker": Arbor "Font", Flux "Typeface").
+    // Kept verbatim, no longer run:
+    //   ok('C3: a "Typeface" heading sits directly above the font controls', typeHead && typeHead.cls === 'wz-sliver-h' && typeHead.text === 'Typeface' && /wz-type/.test(typeHead.next || ''), JSON.stringify(typeHead));
+    ok('C3 [theme-leftovers successor]: a "Font" heading (Arbor\'s own word) sits directly above the font controls',
+      typeHead && typeHead.cls === 'wz-sliver-h' && typeHead.text === 'Font' && /wz-type/.test(typeHead.next || ''), JSON.stringify(typeHead));
     await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Settings\"]').click()"); await sleep(200);
     const heads = await app.evalJs(`(() => {
       const panel = document.querySelector('.wz-sliver-instruments-panel');
