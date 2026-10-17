@@ -228,11 +228,15 @@ async function part2() {
     const flags = (hold = 50) => app.evalJs(`(() => { localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','${hold}');
       localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4'); })()`);
     const settled = async () => { await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }).catch(() => {}); await sleep(900); };
-    const coldBoot = async (hold = 50) => { await flags(hold); await app.reload(); await settled(); };
+    // A reload on a page address is a deep link, and a deep link correctly wins over the landing - so every cold boot first goes to the
+    // front-door address (the pointer lives in storage and survives), then reloads. (E5 is the one test that WANTS the deep link.)
+    const toDoor = async () => { await app.evalJs("location.hash = '#/'"); await sleep(500); };
+    const coldBoot = async (hold = 50, { deepLink = false } = {}) => { await flags(hold); if (!deepLink) await toDoor(); await app.reload(); await settled(); };
     const mk = (id, extra = {}) => app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: `Words on ${id}`, origin: 'loose', source: 'page', createdAt: new Date().toISOString(), ...extra })})`);
     const activeTab = () => app.evalJs("document.querySelector('.desk-mode-tab.active')?.textContent || null");
     const waitHash = (re, label) => app.waitFor(`/${re}/.test(location.hash)`, { label, timeout: 15000 }).then(() => true).catch(() => false);
 
+    await app.emulateDpr(1, 1280, 800); // the mode strip (the Free Write tab) exists from 1100px; the harness default is narrower
     await app.goto('/');
     await settled();
 
@@ -257,10 +261,19 @@ async function part2() {
     await mk('roo-a'); await sleep(60); await mk('roo-b');
     await app.evalJs("window.wrizoFlushNow()");
     await app.evalJs("window.wrizoRecordLastPlace('test-user', 'page', 'roo-a')");
+    const PROBE = `(() => { window.__landProbe = { leftAt: null, hold: null, splash: null, doorsMax: 0, doorsSeen: false };
+      const tick = () => { const p = window.__landProbe; const h = location.hash;
+        const d = document.querySelector('.wz-arrival-doors'); if (d) { p.doorsSeen = true; p.doorsMax = Math.max(p.doorsMax, parseFloat(getComputedStyle(d).opacity) || 0); }
+        if (p.leftAt === null && h !== '' && h !== '#' && h !== '#/') { p.leftAt = Date.now(); p.hold = document.documentElement.dataset.splashHold || null; p.splash = !!document.querySelector('.wz-splash'); } };
+      setInterval(tick, 10); })();`;
+    const probeId = (await app.cdp('Page.addScriptToEvaluateOnNewDocument', { source: PROBE }))?.identifier;
     await coldBoot(2500);
+    const probe = await app.evalJs('window.__landProbe');
+    if (probeId) await app.cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier: probeId });
     ok('E3 signed-in cold boot lands on the remembered Page (roo-a), not the newer roo-b', await waitHash('^#\\/page\\/roo-a$', 'last place'), String(await hash()));
-    // the no-ghost hold: still held at the moment we are on the page; the door never painted
-    ok('E3 ...while the splash hold is STILL on (navigated under the veil, not after it)', (await app.evalJs("document.documentElement.dataset.splashHold === 'true' && !!document.querySelector('.wz-splash')")) === true, '');
+    // the no-ghost hold, sampled DURING the splash (a probe ticking every 10ms from before the page loads), not read after it settles
+    ok('E3 ...and the address LEFT the front door while the splash hold was still on (data-splash-hold set, splash mounted): it navigated under the veil, not after it', !!probe && probe.leftAt !== null && probe.hold === 'true' && probe.splash === true, JSON.stringify(probe));
+    ok('E3 ...and the front door\'s doors never showed: whenever they existed their opacity was 0 (the hold hides them)', !!probe && probe.doorsMax === 0, JSON.stringify(probe));
     ok('E3 ...and the front door is already unmounted, so it left while the hold (which hides its doors) was on: it never painted',(await app.evalJs("!document.querySelector('.wz-arrival-doors')")) === true, '');
     await settled();
     ok('E3 ...the Page\'s words are on it', (await app.evalJs("document.body.innerText.includes('Words on roo-a')")) === true, '');
@@ -274,7 +287,7 @@ async function part2() {
     // ---- E5: a deep link wins ---------------------------------------------------------------------------------------
     await app.evalJs("location.hash = '#/page/roo-b'");
     await sleep(600);
-    await coldBoot();
+    await coldBoot(50, { deepLink: true });
     ok('E5 a deep link (reload on roo-b) stays on roo-b although the pointer says roo-a... then the recorder moves it to roo-b', (await hash()) === '#/page/roo-b' && (await pointer())?.id === 'roo-b', `${await hash()} ${JSON.stringify(await pointer())}`);
 
     // ---- E6: a board ------------------------------------------------------------------------------------------------
@@ -343,5 +356,7 @@ if (process.env.BROWSERLESS_ONLY !== '1') {
 }
 const failed = checks.filter((c) => !c.pass);
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
-console.log(`\nRESUME-ON-OPEN: ${checks.length - failed.length}/${checks.length}${failed.length ? ` (${failed.length} FAILED)` : ''}`);
+console.log(failed.length ? `
+RESUME-ON-OPEN VERIFY: FAIL - ${failed.length}/${checks.length} failed` : `
+RESUME-ON-OPEN VERIFY: PASS (${checks.length} checks)`);
 process.exit(failed.length ? 1 : 0);
