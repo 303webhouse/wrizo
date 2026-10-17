@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
+import { useTheme } from '../store/theme';
 import { TypeControl, type TypeControlProps } from './TypeControl';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
@@ -1020,6 +1021,7 @@ function countPeriods(text: string): number {
 function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, goalText, onPopoutHold }: { hasMilestones?: boolean; target: WritingGoal | null; typewriterAvailable?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
+  const theme = useTheme();
 
   // The foot is one three-dot menu. Typewriter, progress, and the remaining
   // preferences open together, under those three headings. Full screen is
@@ -1113,6 +1115,16 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
             <section className="wz-foot-settings-block">
               <h4>{t('footMenuTypewriter')}</h4>
               <TypewriterFields />
+            </section>
+          )}
+          {/* GLITCH METER (Fable, Oct 17: "the Flicker switch goes in the '...' settings panel beside Typewriter"). Flux only: the meter is
+              Flux's, and a switch with nothing to switch would teach a writer it does something. */}
+          {theme === 'flux' && (
+            <section className="wz-foot-settings-block">
+              <h4>{t('footMenuFlicker')}</h4>
+              <Seg label={t('footMenuFlicker')} value={settings.flicker ? 'on' : 'off'}
+                opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
+                onPick={v => setWritingSettings({ flicker: v === 'on' })} />
             </section>
           )}
           <section className="wz-foot-settings-block">

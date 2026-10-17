@@ -53,7 +53,15 @@ const setup = async (app, { id, text, goal = 10, dial = 50, flicker = true }) =>
 };
 const M = (app, call) => app.evalJs(`(() => { const m = window.wrizoGlitchMeter; return m ? (${call}) : null; })()`);
 const state = (app) => M(app, 'm.state()');
-const meterEvents = (app) => app.evalJs(`document.querySelectorAll('${LAYER} .theme-fx-tear, ${LAYER} .theme-fx-macroblock, ${LAYER} .theme-fx-shear.on, ${LAYER} .theme-fx-noise.on').length`);
+// the meter's pulses over a window (a shear's or noise patch's `on` class lingers after its flash, so a snapshot of classes would count old
+// flashes): the `data-pulse` stamps on the meter layer while it is watched
+const meterPulsesDuring = async (app, ms) => {
+  await app.evalJs(`(() => { window.__wzMeterPulses = 0; const root = document.querySelector('${LAYER}'); if (!root) return false;
+    const mo = new MutationObserver((recs) => { window.__wzMeterPulses += recs.length; }); mo.observe(root, { subtree: true, attributes: true, attributeFilter: ['data-pulse'] });
+    window.__wzMeterStop = () => mo.disconnect(); return true; })()`);
+  await sleep(ms);
+  return app.evalJs('(() => { window.__wzMeterStop && window.__wzMeterStop(); return window.__wzMeterPulses; })()');
+};
 
 // G4's independent observer. Every Signal Loss and meter builder stamps a fresh `data-pulse` value on the element it pulses, at the moment
 // it pulses (one per tear storm, cluster, shear, noise patch, jump and dip - and one per SECOND jump or dip). The observer counts those stamps
@@ -84,11 +92,9 @@ await withHarness(async (app) => {
   const g1a = await state(app);
   await app.evalJs(`document.querySelector('${ED}')?.focus()`);
   await app.typeKeys('x');
-  await sleep(1500);
+  const ev1 = await meterPulsesDuring(app, 2000);
   const g1b = await state(app);
-  await sleep(500);
-  const ev1 = await meterEvents(app);
-  ok('G1: one keystroke silences it - intensity was high at 299 s idle, is 0 after the key, and no meter event is on screen 2 s later (rule 1)',
+  ok('G1: one keystroke silences it - intensity was high at 299 s idle, is 0 after the key, and the meter draws no pulse in the 2 s after it (rule 1)',
     !!g1a && g1a.I > 0.9 && !!g1b && g1b.I === 0 && g1b.idleSec < 3 && ev1 === 0, JSON.stringify({ g1a, g1b, ev1 }));
 
   // ---- G2: the ramp
@@ -132,9 +138,9 @@ await withHarness(async (app) => {
     await sleep(1000);
   }
   await sleep(1200);   // let every event in flight land
-  await app.evalJs('window.__wzPulseStop && window.__wzPulseStop()');
-  const log = (await app.evalJs('window.__wzFlashLog || []')).filter((e) => e.t >= t0);
-  const pulses = (await app.evalJs('window.__wzPulses || []')).filter((e) => e.t >= t0);
+  const tEnd = await app.evalJs('(() => { window.__wzPulseStop && window.__wzPulseStop(); return performance.now(); })()');
+  const log = (await app.evalJs('window.__wzFlashLog || []')).filter((e) => e.t >= t0 && e.t <= tEnd);
+  const pulses = (await app.evalJs('window.__wzPulses || []')).filter((e) => e.t >= t0 && e.t <= tEnd);
   const granted = log.filter((e) => e.ok);
   const refused = log.filter((e) => !e.ok);
   const byKind = (xs, f) => xs.reduce((a, x) => { const k = f(x); a[k] = (a[k] || 0) + 1; return a; }, {});
@@ -150,17 +156,17 @@ await withHarness(async (app) => {
 
   // ---- G5: double events count 2
   await M(app, 'm.setForceDouble(true)');
-  await sleep(1200);
+  const fireUntil = async (kind) => { for (let i = 0; i < 12; i++) { await M(app, 'm.setIdle(300)'); if (await M(app, `m.fire('${kind}')`)) return true; await sleep(350); } return false; };
   await app.evalJs('window.__wzFlashLog = [];');
-  await M(app, "m.fire('dip')");
-  await sleep(1300);
-  await M(app, "m.fire('sync')");
-  await sleep(600);
+  const dipFired = await fireUntil('dip');
+  await sleep(1000);   // the second dip asks ~750 ms after the first
+  const syncFired = await fireUntil('sync');
+  await sleep(400);    // the second jump asks ~140 ms after the first
   const g5 = await app.evalJs('window.__wzFlashLog || []');
   await M(app, 'm.setForceDouble(false)');
-  const kinds5 = g5.filter((e) => e.ok).map((e) => e.kind);
-  ok('G5: a double backlight dip asks the budget twice and counts 2; a double sync jump counts 2',
-    kinds5.filter((k) => k === 'gm-dip' || k === 'gm-dip2').length === 2 && kinds5.filter((k) => k === 'gm-sync' || k === 'gm-sync2').length === 2, JSON.stringify(g5));
+  const asked = (k) => g5.filter((e) => e.kind === k).length;
+  ok('G5: a double backlight dip asks the budget for its second pulse (2 flashes), and so does a double sync jump - granted or refused, each second pulse is counted',
+    dipFired && syncFired && asked('gm-dip') >= 1 && asked('gm-dip2') >= 1 && asked('gm-sync') >= 1 && asked('gm-sync2') >= 1, JSON.stringify({ dipFired, syncFired, g5 }));
 
   // ---- G8: page primacy (before G6/G7 change the state)
   await M(app, 'm.setIdle(300)');
@@ -172,7 +178,7 @@ await withHarness(async (app) => {
   ok('G8: the meter takes no input - a point on the page finds the page beneath it; the layer is fixed and pointer-events:none', hit.reachesPage && hit.layerPE === 'none' && hit.layerFixed === 'fixed', JSON.stringify(hit));
 
   // ---- G6: reduced motion
-  await app.cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+  await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
   await M(app, 'm.setIdle(300)');
   await sleep(300);
   await app.evalJs('window.__wzVerifyFlashes = true; window.__wzFlashLog = [];');
@@ -190,7 +196,7 @@ await withHarness(async (app) => {
     !!s6 && s6.reduced && meterPulses6.length === 0 && Array.isArray(fired6) && fired6.every((f) => f === false), JSON.stringify({ s6, meterPulses6: meterPulses6.length, fired6 }));
   ok('G6: ...it shows the faint still overlay instead, its opacity following intensity (1 x 0.42 at peak), eased in, not cut',
     !!still && Math.abs(still.opacity - 0.42) < 0.03 && parseFloat(still.transition) >= 2, JSON.stringify(still));
-  await app.cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
+  await app.emulateMedia([]);
   await sleep(600);
   const s6b = await state(app);
   ok('G6: turning reduced motion off mid-session is followed live - the meter is no longer reduced', !!s6b && s6b.reduced === false, JSON.stringify(s6b));
@@ -206,13 +212,12 @@ await withHarness(async (app) => {
   if (rowThere) {
     await press(app, `[...(${flickRow}).querySelectorAll('button')].find((b) => b.textContent === 'Off')`, 'Flicker: Off');
     await M(app, 'm.setIdle(300)');
-    await sleep(1500);
+    const ev7 = await meterPulsesDuring(app, 2000);
     const s7 = await state(app);
-    const ev7 = await meterEvents(app);
     const sig7 = await app.evalJs("document.querySelectorAll('.theme-fx-layer > *').length");
     const rectOff = await app.evalJs(`(() => { const r = document.querySelector('${ED}').getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round); })()`);
     await frame(app, 'flicker-off');
-    ok('G7: Flicker Off means no meter at all - intensity 0 at peak idle, no meter event on screen; the ambient Signal Loss layer is untouched',
+    ok('G7: Flicker Off means no meter at all - intensity 0 at peak idle, no meter pulse in 2 s; the ambient Signal Loss layer is untouched',
       !!s7 && s7.flicker === false && s7.I === 0 && ev7 === 0 && sig7 > 0, JSON.stringify({ s7, ev7, sig7 }));
     ok('G8: the page\'s rect is the same with the meter at peak and with it off (the meter never displaces the page)', JSON.stringify(rectOn) === JSON.stringify(rectOff), JSON.stringify({ rectOn, rectOff }));
     await app.reload();

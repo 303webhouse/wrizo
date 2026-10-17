@@ -541,19 +541,20 @@
    prose column. */
 .theme-fx-tear{ position:absolute; left:0; right:0; height:2px; opacity:0; }
 .theme-fx-tear.on{ animation:theme-fx-tear-flash .15s linear; }
-@keyframes theme-fx-tear-flash{ 40%{ opacity:.75; } }
+/* GLITCH METER: the peak reads --op when a caller sets one (the meter's intensity); unset, it is Signal Loss's own value, as before */
+@keyframes theme-fx-tear-flash{ 40%{ opacity:var(--op, .75); } }
 
 .theme-fx-shear{ position:absolute; left:-4%; right:-4%; height:26px;
   background:rgba(0,194,255,.08); transform:skewX(-12deg); opacity:0; }
 .theme-fx-shear.on{ animation:theme-fx-shear-flash .16s linear; }
-@keyframes theme-fx-shear-flash{ 45%{ opacity:1; } }
+@keyframes theme-fx-shear-flash{ 45%{ opacity:var(--op, 1); } }
 
 .theme-fx-noise{ position:absolute; width:130px; height:56px;
   background:repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 1px,transparent 1px 3px),
               repeating-linear-gradient(0deg,rgba(166,255,61,.06) 0 1px,transparent 1px 2px);
   opacity:0; }
 .theme-fx-noise.on{ animation:theme-fx-noise-flash .15s linear; }
-@keyframes theme-fx-noise-flash{ 45%{ opacity:1; } }
+@keyframes theme-fx-noise-flash{ 45%{ opacity:var(--op, 1); } }
 
 .theme-fx-macroblock{ position:absolute; }
 
@@ -563,8 +564,25 @@
 @media (prefers-reduced-motion:reduce){
   .theme-fx-tear.on, .theme-fx-shear.on, .theme-fx-noise.on{ animation:none; opacity:0; }
   .theme-fx-layer.jmp, .theme-fx-layer.jmp2{ transform:translateY(0); }
+  .glitch-meter-layer.jmp, .glitch-meter-layer.jmp2{ transform:translateY(0); }   /* belt: the meter fires nothing under reduced motion */
   .theme-fx-backlight{ transition:none; opacity:0 !important; }
 }
+
+/* GLITCH METER (brief docs/briefs/flux-flicker-meter-brief.md; components/GlitchMeter.tsx) - Flux's progress animation, OVER the whole
+   screen, page and text included (Nick's ruling: it never runs while typing). Its own layer, portalled to <body>: fixed, pointer-events none,
+   zero layout participation - above the page and the chrome, below the block caret (60); it takes no input, so a modal or a menu under it is
+   still pressed through it. The Signal Loss events inside it are the same .theme-fx-* elements as the ambient texture's, at the meter's
+   intensity (--op). */
+.glitch-meter-layer{ position:fixed; inset:0; z-index:55; pointer-events:none; overflow:hidden; transform:translateY(0); }
+.glitch-meter-layer.jmp{ transform:translateY(4px); }
+.glitch-meter-layer.jmp2{ transform:translateY(-4px); }
+.glitch-meter-layer .theme-fx-backlight{ transition:opacity .28s; }
+/* the reduced-motion still: a faint scan-and-grain overlay, opacity = intensity x 0.42 (set per frame), EASED so a change never reads as a
+   flash (Fable, Oct 17) - no motion at all */
+.glitch-meter-still{ position:absolute; inset:0; opacity:0; pointer-events:none; transition:opacity 2.4s ease;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(0,194,255,.045) 3px 4px),
+    repeating-linear-gradient(90deg, rgba(227,241,236,.03) 0 1px, transparent 1px 3px); }
 
 /* TH2 Slice 5 — the wide orange block caret (canon §13). Positioned via
    getClientRects() in FluxBlockCaret.tsx (viewport coordinates — position:

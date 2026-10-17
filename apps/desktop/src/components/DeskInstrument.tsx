@@ -1,6 +1,7 @@
 import { useWritingSettings } from '../store/writingSettings';
 import { ProgressBar, useGoalProgress, WORD_GOAL } from './WritingIncentives';
 import { RhizomeField } from './RhizomeField';
+import { GlitchMeter } from './GlitchMeter';
 
 // M4 S3/S4 (SV15/SV16) — the progress instrument's framed home.
 //
@@ -35,11 +36,14 @@ import { RhizomeField } from './RhizomeField';
 // re-opening a long page never re-fires a lap crossed in some earlier
 // session). It fires for BOTH styles: the lane is where crossing the goal is
 // felt, whichever instrument is occupying it.
-export function DeskInstrument({ unitCount, text, seedKey, paperRef }: {
+export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = false }: {
   unitCount: number;
   text: string;
   seedKey: string;
   paperRef: React.RefObject<HTMLElement | null>;
+  // GLITCH METER: Flux's own progress animation, the rhizome's counterpart (it self-gates on the theme and the same settings). WRITING PAGES
+  // only (Fable, Oct 17): PageEditor passes it; the Journal sheet does not.
+  glitch?: boolean;
 }) {
   // Both children self-gate on the settings (RhizomeField already did, and
   // still does, verbatim) — rendered as SIBLINGS rather than as a ternary so
@@ -49,6 +53,7 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef }: {
   return (
     <>
       <RhizomeField text={text} seedKey={seedKey} paperRef={paperRef} />
+      {glitch && <GlitchMeter text={text} />}
       <DeskGoalLane unitCount={unitCount} />
     </>
   );

@@ -90,14 +90,14 @@ const curve = (t) => { if (t < 30) return 0; const u = Math.min(1, (t - 30) / 27
   const realST = globalThis.setTimeout;
   globalThis.setTimeout = (fn) => { fn(); return 0; };
   try {
-    const el = { style: { opacity: '0' } };
+    const el = { style: { opacity: '0' }, setAttribute() {} };   // each pulse stamps data-pulse (glitch-meter.mjs G4 counts them)
     const asks = [];
     sl.backlightDip(el, 0.13, 0.09, true, () => { asks.push('second'); return true; });
     const once = [];
     sl.backlightDip(el, 0.13, 0.09, false, () => { once.push('second'); return true; });
     const refused = [];
     const seen = [];
-    const watched = { style: new Proxy({ opacity: '0' }, { set(o, k, v) { o[k] = v; if (k === 'opacity') seen.push(v); return true; } }) };
+    const watched = { setAttribute() {}, style: new Proxy({ opacity: '0' }, { set(o, k, v) { o[k] = v; if (k === 'opacity') seen.push(v); return true; } }) };
     sl.backlightDip(watched, 0.13, 0.09, true, () => { refused.push('second'); return false; });
     ok('DOUBLE: a double backlight dip asks the budget for its second pulse (2 flashes, as 0eb36a6a counts it); a single dip asks for none',
       asks.length === 1 && once.length === 0, JSON.stringify({ asks, once }));
