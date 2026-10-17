@@ -811,8 +811,25 @@ await withHarness(async (app) => {
   // no mid-sweep frame ever reachable) — a stronger, content-level claim S8
   // never made since the single-<img> mark had no "mid-sweep" state to skip.
   // ==========================================================================
+  // FIX (Fable, Oct 17, ledger 88-90) — S17's own crash on Flux, no verdict:
+  // the SAME race S12 had, relocated rather than removed. openAppThemed's
+  // reload leaves `ready` to resolve for real, and by S17 (near the end of
+  // this whole suite, after S1-S16's own many reloads) the auth double is
+  // warmed up enough that reduced motion's synchronous floor-reached can
+  // beat `waitFor`'s very first poll to the punch — plateau, first in this
+  // loop, still wins that race by luck; flux, warmed up one reload further,
+  // does not. S17 only needs the FINISHED, synchronous mutation reduced
+  // motion makes inside each mark's own mount effect (ArborMark's JSX
+  // opacity, FluxMark's .lit classes) — none of that depends on the hold
+  // ever actually ending, so there is no need to race it at all. S11's own
+  // seam forces `ready` false, so tryEnd() can never fire and the splash
+  // stays mounted (well past this check) regardless of how warmed up the
+  // connection is — the race is removed, not out-waited.
   for (const theme of ['plateau', 'flux']) {
-    await openAppThemed(app, theme);
+    await app.emulateDpr(1, W, H);
+    await app.goto('/');
+    await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)}); localStorage.setItem('wrizo-splash-force-not-ready', '1');`);
+    await app.reload();
     await app.waitFor("!!document.querySelector('.wz-splash')", { label: `S17 settle (${theme})` });
     await sleep(80); // one frame's worth of headroom — reduced motion sets the end state synchronously in SplashMark's own mount effect
     const s17 = theme === 'plateau'
