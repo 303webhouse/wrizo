@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useReducer, useRef } from 'react';
+import { forwardRef, useEffect, useMemo, useReducer, useRef } from 'react';
 import type { Run } from '../types';
 import { append, derivedText, eraseTail, isBoundary, seedContent, strikeStep } from '../store/forwardOnly';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
@@ -9,6 +9,7 @@ import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, registerUndoStack, unregisterUndoStack, type EditKind } from '../store/textUndo';
 import { placeCaret } from '../store/hiddenMarksDom';
 import { attachHiddenMarkEditing } from '../store/hiddenMarksEditing';
+import { detachRows, editorPlainText, mountRows, noteNativeEdit, readNativeEdit, revealRowsAtCaret, rowsFor, writeRows } from '../store/lineRows';
 
 // CW2 — the reusable forward-only writing surface. Keyboard-only input on the
 // DM1 Run model: typing appends, backspace walks a short runway and then locks;
@@ -263,14 +264,18 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // in this branch goes through those two shared helpers (also used by
       // PageEditor.tsx's rail format actions) so no path can drift back into
       // the unguarded bug.
+      // TYPING-LATENCY (steps 2-5): on the page this rewrites only the rows that changed (store/lineRows.ts); a host with no rows
+      // attached takes today's whole rewrite.
       const redecorate = (plain: string, caret: number | null) => {
-        decorateEditorFor(el, plain, caret, setPlainOffset);
+        if (!writeRows(el, plain, caret)) decorateEditorFor(el, plain, caret, setPlainOffset);
         if (caret !== null) placeCaret(el, caret);
       };
+      // A native edit is read from the rows it touched (lineRows.readNativeEdit); today's whole-page innerText read is the fallback.
+      const readNative = (keepHint = false) => readNativeEdit(el, { keepHint }) ?? readEditorPlainText(el.innerText, getPlainOffset(el));
       // ITEM 211 — the hidden marks' editing rules: ONE controller (store/hiddenMarksEditing.ts), shared with the board card popup,
       // driving the pure rules in store/hiddenMarks.ts. PR #7 built it inline here; it moved, unchanged in behaviour, so the card could
       // have the same rules instead of a second copy.
-      const plainNow = () => readEditorPlainText(el.innerText, null).plain;
+      const plainNow = () => editorPlainText(el);
       const marks = attachHiddenMarkEditing({
         el,
         plainNow,
@@ -285,7 +290,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       const onInput = () => {
         if (applyingEmDash) return; // the substitution's own synthetic input event — already handled below
         let kind = pendingKind;
-        let { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
+        let { plain, caret } = readNative(composingDraft);
         let repaired = false;
         if (!composingDraft) {
           const wasRange = marks.pendingWasRange();
@@ -319,7 +324,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
             // never a double-undo seam (see store/textUndo.ts's own header
             // comment for the full reasoning).
             undoStack.record({ text: plain, caret }, 'boundary');
-            const after = readEditorPlainText(el.innerText, getPlainOffset(el));
+            const after = readNative();
             onChangeRef.current(after.plain);
             // FX5 S7 — found live, not assumed: execCommand('insertText',
             // ...) collapses the selection to right after the INSERTED em
@@ -385,6 +390,8 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         // type a space": captured here, at beforeinput, before the DOM
         // mutates, so a delete/paste/IME-commit can never masquerade as one.
         justTypedSpace = it === 'insertText' && e.data === ' ';
+        // TYPING-LATENCY: the lines this native edit can touch, captured before the DOM mutates (the input handler reads only those rows)
+        noteNativeEdit(el);
         // FX6 S1 — classify the upcoming edit for the undo stack, the SAME
         // "capture before the DOM mutates" discipline as `justTypedSpace`
         // (store/textUndo.ts's own classifyEditKind — shared with
@@ -425,10 +432,10 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       };
       // ITEM 211 rules 2 and 3 — the arrows move by visible characters, and Backspace and Delete never take a lone hidden mark.
       const onMarkKeyDraft = (e: KeyboardEvent) => { marks.markKey(e); };
-      const onCompStartDraft = () => { composingDraft = true; marks.reset(); };
+      const onCompStartDraft = () => { noteNativeEdit(el); composingDraft = true; marks.reset(); };
       const onCompEndDraft = () => {
         composingDraft = false;
-        const { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
+        const { plain, caret } = readNative();
         // FX6 S1 — an IME-composed insertion is one atomic undo step (no
         // per-candidate-update recording happens above — onInput returns
         // early while composingDraft is true, so the stack's own `current`
@@ -454,7 +461,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       const onSelectionReveal = () => {
         if (composingDraft || applyingEmDash) return;
         marks.selectionChange();
-        revealAtCaret(el, getPlainOffset, setPlainOffset);
+        // the rows re-decorate only the row the caret left and the row it entered; today's whole-page reveal never runs over rows
+        if (rowsFor(el)) revealRowsAtCaret(el);
+        else revealAtCaret(el, getPlainOffset, setPlainOffset);
       };
       document.addEventListener('selectionchange', onSelectionReveal);
       el.addEventListener('input', onInput);
@@ -611,11 +620,20 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     // blank line), collapsing straight to the container's end lands the
     // caret in exactly the trailing-newline-at-EOF state the Chromium quirk
     // (see draftDecoration.ts) corrupts on the very next keystroke.
+    // TYPING-LATENCY (step 2): the page's free-edit surface is built as ROWS, one per line (store/lineRows.ts). The caret lands as
+    // decorateEditorFor landed it: after the EOF guard when the text ends in a newline (no focus move, as before), else through
+    // setCaretOffset (which focuses).
     if (freeEdit) {
       const el = hostRef.current;
-      if (el) decorateEditorFor(el, initialText, initialText.length, setPlainOffset);
+      if (el) {
+        mountRows(el, initialText, initialText.length);
+        if (initialText.endsWith('\n')) placeCaret(el, initialText.length);
+        else setPlainOffset(el, initialText.length);
+      }
     }
     emit();
+    const mounted = hostRef.current;
+    return () => { if (mounted) detachRows(mounted); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -670,12 +688,16 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   // 'input' listener below re-decorates imperatively on every keystroke instead,
   // AB2 S0/S3's iA register). Journal renders its runs (struck spans stay
   // visible, drop from derived).
+  // TYPING-LATENCY: the free-edit first paint, built ONCE per initialText. It sat in the render body, so every keystroke's re-render
+  // rebuilt the whole page's decorated string (the profile's 'redecorate: string build', 4.5 / 10 ms at 20k / 50k) for React to compare
+  // and discard - the page itself is written by the rows (store/lineRows.ts), never by this string after mount.
+  const freeHtml = useMemo(() => (freeEdit ? decorateMarkdownForCard(initialText, null) : ''), [freeEdit, initialText]);
   const html = freeEdit
     // ITEM 122 — first paint collapses its markers too, with a NULL caret:
     // nothing is adjacent to nothing before the writer has placed one, and a
     // first paint that showed syntax and then hid it on the first keystroke
     // would read as a flicker rather than a register.
-    ? decorateMarkdownForCard(initialText, null)
+    ? freeHtml
     : isEmpty
       ? ''
       // WRITING-SURFACE S0 STEP 1 - Free Write RENDERS what the writer has stored (bold, headings, bullets, quotes, alignment),

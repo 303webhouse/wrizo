@@ -54,6 +54,7 @@ import { BLOCK_TOKEN, MARK_OF, type MarkKind } from '../store/markRuns';
 // card-held-italic: the strip's button for a held mark, read off the ONE reader's own table (`**` -> bold, `*` -> italic, ...)
 const MARK_KIND: Record<string, MarkKind> = Object.fromEntries(Object.entries(MARK_OF).map(([k, m]) => [m, k as MarkKind]));
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
+import { editorPlainText, writeRows } from '../store/lineRows';
 import { getRegisteredUndoStack } from '../store/textUndo';
 import { proseTextToScriptDoc, isProseEmpty } from '../store/structureConvert';
 import { serializeScriptDoc } from '../store/scriptText';
@@ -376,7 +377,7 @@ function PageEditorView({ id }: { id: string }) {
       const el = editorRef.current;
       if (!el) return;
       const offset = getCaretOffset(el);
-      const plain = readEditorPlainText(el.innerText, null).plain;
+      const plain = editorPlainText(el);   // TYPING-LATENCY: the rows' shadow text (today's innerText read when it cannot be trusted)
       const lit = offset == null ? { bold: false, italic: false, underline: false, strike: false } : marksAt(plain, offset);
       // A held italic (an empty italic is not stored - store/draftFormat.ts) lights I while the caret is where it will be typed.
       const held = hiddenMarkEditingFor(el)?.pendingMark();
@@ -1022,7 +1023,8 @@ function PageEditorView({ id }: { id: string }) {
     // STEP 2: a marked SELECTION stays selected (so the same press can undo itself), and while a range is selected no marker
     // pair is revealed - the reveal belongs to a caret.
     const collapsed = result.end <= result.start;
-    decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, collapsed ? result.start : null));
+    // TYPING-LATENCY: on the rows only the changed lines are rewritten (store/lineRows.ts), with the same reveal rule
+    if (!writeRows(el, result.text, result.start, collapsed ? result.start : null)) decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, collapsed ? result.start : null));
     if (!collapsed) setSelectionOffsets(el, result.start, result.end);
   };
   // FONT-SPAN (docs/font-span-plan.md; Nick approved the font-choices mockup): a face for the HIGHLIGHTED words only - the same road
@@ -1038,7 +1040,9 @@ function PageEditorView({ id }: { id: string }) {
     if (result.text !== cur) {
       getRegisteredUndoStack(el)?.record({ text: result.text, caret: result.start }, 'atomic');
       setText(result.text);
-      decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, null));
+      // TYPING-LATENCY x FONT-SPAN (ledger 79): through the rows, as a format press is - a bare decorateEditorFor replaced the rows'
+      // DOM behind the row model's back (its shadow kept the old text: 60 chars vs the page's 91), so the highlight and the face were lost
+      if (!writeRows(el, result.text, result.start, null)) decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, null));
     }
     setSelectionOffsets(el, result.start, result.end);
     setFontSel({ has: true, face: fontFaceAt(result.text, result.start, result.end) });
@@ -1054,7 +1058,8 @@ function PageEditorView({ id }: { id: string }) {
     const caret = Math.min(getCaretOffset(el) ?? next.length, next.length);
     getRegisteredUndoStack(el)?.record({ text: next, caret }, 'atomic');
     setText(next);
-    decorateEditorFor(el, next, caret, setCaretOffset, t => decorateMarkdownForCard(t, null));
+    // TYPING-LATENCY x FONT-SPAN: through the rows (the same repair as applyFontAt's)
+    if (!writeRows(el, next, caret, null)) decorateEditorFor(el, next, caret, setCaretOffset, t => decorateMarkdownForCard(t, null));
   };
   const applyRailFormat = (action: FormatAction) => {
     if (mode !== 'drafting') return;   // 112-A's guard, unchanged in scope

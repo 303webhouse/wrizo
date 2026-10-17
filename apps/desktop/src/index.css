@@ -5121,6 +5121,22 @@ a:focus-visible,
    is the full column so text-align has a box to align within. Nothing here reads a theme: the rule colour is derived from the
    run's own ink, so it follows every theme and page tone. */
 .md-line{ display:inline-block; width:100%; box-sizing:border-box; vertical-align:top; }
+/* TYPING-LATENCY (row shape F, ruled 2026-10-14) - the page's free-edit surface is one ROW per line (store/lineRows.ts), the
+   newline between two rows left as text, exactly where it always was: `.md-line`'s own inline-block shape, so textContent,
+   innerText and copied text stay byte-identical (measured, docs/evidence/latency-profile-eb27ea7c), with `contain: layout style`
+   so a row's own layout stays inside it. Nothing inside a row is positioned, so a row becoming a containing block moves nothing. */
+.forward-only-editor .wz-row{ display:inline-block; width:100%; box-sizing:border-box; vertical-align:top; contain:layout style; }
+/* TYPING-LATENCY - content-visibility WAS HERE, and is REMOVED (Fable's ruling, Oct 16; chat 1's ledger 67). It cut the keystroke a
+   great deal, but a skipped row carries no text for innerText (the editor's innerText read 7,430 of 121,262 characters at 20k), Ctrl+End
+   left the caret off screen, and a page -> Plan -> back return restored the scroll over re-estimated rows and showed other text. The
+   original note is kept below for the record; the rule itself is gone.
+   WAS: TYPING-LATENCY (Fable, Oct 14: content-visibility "justified to try on F rows ... if it measurably cuts the cost"; the profile's G1:
+   one-character layout 7.1 / 16 ms at 20k / 50k against containment alone's 40 / 110). A row off screen is skipped by layout; its height
+   until first rendered is the per-row estimate store/lineRows.ts writes inline (contain-intrinsic-block-size: auto <est>px), after
+   which the browser remembers its real size. What a skipped row implies is all inside the row's own box: size containment while
+   skipped (the estimate stands in), paint containment always (nothing in a row draws outside it - bullets and quote borders are inside
+   its padding). The real editor's innerText and select-all text are checked against its text at 50k by the profile, every run.
+   .forward-only-editor .wz-row{ content-visibility:auto; }   <- the removed rule */
 /* STEP 3 - THE INDENT LOOK (Nick's ruling): a leading tab is a FIRST-LINE indent - the first visual line moves in one step per
    tab and wrapped lines return to the margin - so a tab must be one fixed step wide. `tab-size` makes it 2em (the browser default,
    8 characters, varies with the typeface). The WHOLE-PARAGRAPH indent is the separate `>| ` block token below. */

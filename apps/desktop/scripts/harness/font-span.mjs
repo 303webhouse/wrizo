@@ -48,6 +48,10 @@ const scopeState = (app, root) => app.evalJs(`(() => { const t = document.queryS
   const cur = [...t.querySelectorAll('.wz-type-row')].filter(r => r.dataset.current === 'true').map(r => ({ name: r.textContent, color: getComputedStyle(r).color }));
   const probe = document.createElement('span'); probe.style.color = 'var(--brass)'; t.appendChild(probe); const brass = getComputedStyle(probe).color; probe.remove();
   return { scopes: sc, current: cur, brass }; })()`);
+// TYPING-LATENCY x FONT-SPAN (ledger 79): the page's rows - how many line rows the editor holds, and the row model's shadow-vs-DOM
+// mismatches logged so far (the harness arms window.__wzVerifyRows; store/lineRows.ts verifyRows counts them)
+const rowsState = (app) => app.evalJs(`(() => { const ed = document.querySelector('${ED}'); if (!ed) return null;
+  return { rows: ed.querySelectorAll(':scope > .wz-row').length, mismatches: (window.__wzRowsMismatches || []).length, armed: !!window.__wzVerifyRows }; })()`);
 const rowExpr = (root, name) => `[...document.querySelectorAll('${root} .wz-type-row')].find(r => r.textContent === ${JSON.stringify(name)})`;
 const spanState = (app, sel) => app.evalJs(`(() => { const s = document.querySelector('${sel} .md-font'); if (!s) return null;
   const marks = [...s.querySelectorAll(':scope > .md-mark-hidden')].map(m => getComputedStyle(m).fontSize);
@@ -73,6 +77,9 @@ await withHarness(async (app) => {
     await sleep(500);
     await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); })()`);
     await sleep(250);
+    const r0 = await rowsState(app);
+    ok(`${T} PAGE + ROWS (premise): the Draft page renders as rows (typing-latency's row model), and no shadow mismatch yet`,
+      !!r0 && r0.rows === 1 && r0.mismatches === 0, JSON.stringify(r0));
     const s0 = await scopeState(app, '.wz-sliver');
     ok(`${T} PAGE: nothing highlighted - "Selection" is dead and "Whole document" is the scope, in brass`,
       !!s0 && s0.scopes.length === 2 && s0.scopes[0].text === 'Selection' && s0.scopes[0].dead === 'true' && s0.scopes[1].text === 'Whole document' && s0.scopes[1].on === 'true', JSON.stringify(s0));
@@ -90,6 +97,9 @@ await withHarness(async (app) => {
     ok(`${T} PAGE: ONLY the highlighted words take the face - painted in it, its marks hidden (zero size), and the words stay highlighted`,
       !!sp && sp.words === 'counted gulls' && /Atkinson/.test(sp.family) && sp.marks.length === 2 && sp.marks.every((f) => f === '0px') && sp.sel === 'counted gulls', JSON.stringify(sp));
     ok(`${T} PAGE: the picked face's row is the one in brass`, !!s2 && s2.current.length === 1 && s2.current[0].name === 'Atkinson Hyperlegible' && s2.current[0].color === s2.brass, JSON.stringify(s2));
+    const r1 = await rowsState(app);
+    ok(`${T} PAGE + ROWS: the pick is written THROUGH the rows - the page is still rows, and the row model's shadow agrees with the page (no WZ-ROWS-MISMATCH; ledger 79's was shadow 60 vs dom 91)`,
+      !!r1 && r1.rows === 1 && r1.mismatches === 0, JSON.stringify(r1));
     const e1 = await settledBy(() => stored(app, id));
     ok(`${T} PAGE: the span is stored in the page's text, and nothing else changed`, e1.text === 'The ferry was late, so Ada [counted gulls]{.font-atkinson-hyperlegible} instead of minutes.', JSON.stringify(e1.text));
     await frame(app, `${theme}-page-selection`);
@@ -110,6 +120,17 @@ await withHarness(async (app) => {
     ok(`${T} PAGE: "Whole document" then a face - every word takes it: the spans are gone and the page's own face is set`,
       !String(e3.text).includes('{.font-') && e3.text === TEXT && e3.pageSettings && e3.pageSettings.face && e3.pageSettings.face.name === 'EB Garamond' && /EB Garamond/.test(fam),
       JSON.stringify({ text: e3.text, face: e3.pageSettings && e3.pageSettings.face, fam }));
+    const r3 = await rowsState(app);
+    ok(`${T} PAGE + ROWS: the "Whole document" pick (the spans cleared) is written through the rows too - still rows, no mismatch`,
+      !!r3 && r3.rows === 1 && r3.mismatches === 0, JSON.stringify(r3));
+    // and the page goes on typing on the row model after both picks: the text stored is the text typed
+    await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); })()`);
+    await sleep(200);
+    await app.typeKeys(' Then home.');
+    const e4 = await settledBy(() => stored(app, id));
+    const r4 = await rowsState(app);
+    ok(`${T} PAGE + ROWS: typing after the picks lands where it is typed and the shadow still agrees with the page`,
+      e4.text === TEXT + ' Then home.' && !!r4 && r4.rows === 1 && r4.mismatches === 0, JSON.stringify({ text: e4.text, r4 }));
     await frame(app, `${theme}-page-whole`);
 
     // ======================== CARD ========================
