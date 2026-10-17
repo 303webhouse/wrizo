@@ -1,0 +1,18 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=11 tree=b5c9766c bundle=index-CPgPsazr.js/705857b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/ro2-lane
+[01/11] OK        exit=0   17s arrival-signin-walk.mjs :: ARRIVAL-SIGNIN-WALK VERIFY: PASS (15 checks)
+[02/11] OK        exit=0    0s fix-signin-live-double.mjs :: FIX-SIGNIN-LIVE-DOUBLE VERIFY: PASS (5 checks) — live walk not run (box turn)
+[03/11] OK        exit=0   76s font-span.mjs :: ROWS-SHADOW VERIFY: PASS (32 renders checked, shadow == DOM on every one) ;; FONT-SPAN VERIFY: PASS (38 checks)
+[04/11] OK        exit=0   14s hb1.mjs :: HB1 VERIFY: PASS (32 checks)
+[05/11] OK        exit=0    9s hb2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; HB2 VERIFY: PASS (10 checks)
+[06/11] OK        exit=0    7s item89.mjs :: ROWS-SHADOW VERIFY: PASS (38 renders checked, shadow == DOM on every one) ;; ITEM89 VERIFY: PASS (14 checks)
+[07/11] OK        exit=0    6s logout-flush-walk.mjs :: LOGOUT-FLUSH-WALK VERIFY: PASS (9 checks)
+[08/11] OK        exit=0   37s resume-on-open.mjs :: RESUME-ON-OPEN VERIFY: PASS (57 checks)
+[09/11] OK        exit=0    1s seed-guard.mjs :: SEED-GUARD VERIFY: PASS (36 checks)
+[10/11] OK        exit=0   39s splash.mjs :: SPLASH VERIFY: PASS (66 checks)
+[11/11] OK        exit=0   29s typing-latency-scroll.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 11/11 of 11 returned a passing verdict
+SUITE RESULT: CLEAN — tree=b5c9766c bundle=index-CPgPsazr.js/705857b NO-REBUILD

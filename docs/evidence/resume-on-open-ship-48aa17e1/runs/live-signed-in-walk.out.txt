@@ -1,0 +1,10 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+LIVEWALK {"frame":"1-anonymous-front-door","hash":"#/","frontDoor":true,"signInForm":false,"editor":false,"board":false,"crumb":null,"activeTab":null,"pointer":null,"origin":"https://writer-studio-app-production.up.railway.app","bundle":"index-CPgPsazr.js"}
+LIVEWALK {"frame":"2-after-sign-in","hash":"#/page/muz1sckaq7ncleqlv","frontDoor":false,"signInForm":false,"editor":true,"board":false,"crumb":"live walk line","activeTab":"Draft","pointer":{"kind":"page","hasId":true},"origin":"https://writer-studio-app-production.up.railway.app","bundle":"index-CPgPsazr.js"}
+LIVEWALK {"signedInMovedAwayFromFrontDoor":true}
+LIVEWALK {"frame":"3-cold-boot-signed-in","hash":"#/page/muz1sckaq7ncleqlv","frontDoor":false,"signInForm":false,"editor":true,"board":false,"crumb":"live walk line","activeTab":"Draft","pointer":{"kind":"page","hasId":true},"origin":"https://writer-studio-app-production.up.railway.app","bundle":"index-CPgPsazr.js"}
+LIVEWALK {"logoutStatus":204}
+
+ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one)
+LIVEWALK FRAMES: 3 -> C:/Users/nickh/writer-studio/.claude/evidence-local/resume-on-open-ship-48aa17e1

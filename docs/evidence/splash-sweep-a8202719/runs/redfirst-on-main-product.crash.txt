@@ -1,0 +1,13 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+file:///C:/Users/nickh/writer-studio/.claude/worktrees/ro2/apps/desktop/scripts/runtime-verify.mjs:673
+      throw new Error('waitFor timed out: ' + label + '; diag=' + JSON.stringify(await evalJs('__diag()')));
+            ^
+
+Error: waitFor timed out: S5b settle; diag={"href":"http://127.0.0.1:54773/#/page/splash-tone-light-page","buttons":["⋯","Free Write","Draft","Revise","Workshop","Publish","Plan →","Pages","Plan","Drawers","Journal","Shelf","Settings","Themes","Trash","‹","Text","Ink","Crimson Pro","−","+","Forward lock","›","Tutor","Grafts","?","⊙","Writing Prompt","Unblock","Free Writing Tips","Send","?","?"],"body":"⋯\nUnfiled\n/\nA light page behind the splash veil.\nFREE WRITE\nDRAFT\nREVISE\nWORKSHOP\nPUBLISH\nPLAN\n→\nPages\nPlan\nDrawers\nJournal\nShelf\nSettings\nThemes\nTrash\n7 words\nWORDS\n‹\n›\nA light page behind the splash veil.\nPress Escape to leave the page"}
+    at Object.waitFor (file:///C:/Users/nickh/writer-studio/.claude/worktrees/ro2/apps/desktop/scripts/runtime-verify.mjs:673:13)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/ro2/apps/desktop/scripts/harness/splash-new.mjs:333:3
+    at async withHarness (file:///C:/Users/nickh/writer-studio/.claude/worktrees/ro2/apps/desktop/scripts/runtime-verify.mjs:900:20)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/ro2/apps/desktop/scripts/harness/splash-new.mjs:105:1
+
+Node.js v24.13.0

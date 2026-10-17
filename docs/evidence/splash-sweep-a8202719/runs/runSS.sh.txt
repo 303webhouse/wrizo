@@ -1,0 +1,19 @@
+#!/bin/bash
+# splash-sweep @ a8202719 (per-theme animated splash; removes backdropTone whole). ss = origin/main @ 0c028776 + the branch -> 73923b60. Fable: frames to Fable BEFORE shipping.
+# (1) RED-FIRST: the branch's splash.mjs (a copy as splash-new.mjs) on main's own product (ro2 = main + resume-on-open = the product production serves, index-CPgPsazr.js).
+# (2) the lane on ss. (3) the branch's own capture tool (authored, never run) on ss. One grant, taken and released with grantsafe.
+SD="C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad"
+TOK=chat1-ss-20261016
+node "$SD/grantsafe.mjs" take $TOK || { echo "GRANT HELD BY ANOTHER - NOT RUNNING" > "$SD/ss-status.txt"; exit 1; }
+export WS_BOX_TURN=$TOK
+W=/c/Users/nickh/writer-studio/.claude/worktrees
+ST="$SD/ss-status.txt"; : > "$ST"
+step() { local name="$1" dir="$2"; shift 2; echo "START $name $(date -u +%H:%M:%SZ)" >> "$ST"; ( cd "$dir" && "$@" ) > "$SD/ss-$name.out" 2>&1; echo "END $name exit=$? $(date -u +%H:%M:%SZ)" >> "$ST"; }
+cp "$W/ss/apps/desktop/scripts/harness/splash.mjs" "$W/ro2/apps/desktop/scripts/harness/splash-new.mjs"
+step redfirst "$W/ro2/apps/desktop" node scripts/harness/splash-new.mjs
+rm -f "$W/ro2/apps/desktop/scripts/harness/splash-new.mjs"
+FILES="splash.mjs,arrival-signin.mjs,arrival-signin-walk.mjs,resume-on-open.mjs,hb1.mjs,hb2.mjs,item89.mjs,logout-flush-walk.mjs,fix-signin-live-double.mjs,flux-page-ink.mjs,th1.mjs,th2.mjs,drawers-p1.mjs,drawers-p1-live.mjs,pw1.mjs,pw2.mjs,item170.mjs,writing-r1.mjs,clickhead.mjs,item-storage-full.mjs,sync-generation.mjs,item224a-sync-integrity.mjs,card-close-x.mjs,item118.mjs,item211.mjs,seed-guard.mjs"
+step lane "$W/ss/apps/desktop" node scripts/run-suite.mjs --no-rebuild --only "$FILES" --out "$SD/ss-lane"
+step capture "$W/ss/apps/desktop" node scripts/harness/splash-sweep-capture.mjs
+node "$SD/grantsafe.mjs" release $TOK >> "$ST" 2>&1
+echo "SS COMPLETE" >> "$ST"
