@@ -581,10 +581,13 @@ function BoardCardPopup({
       marks.enter(e);
     };
     const onMarkKey = (e: KeyboardEvent) => { marks.markKey(e); };
-    const onCompStart = () => { composing = true; marks.reset(); };
+    // TYPED-LITERAL: a composition's committed text is typed text too - captured at its start, escaped at its end
+    const onCompStart = () => { marks.reset(); marks.noteComposition(); composing = true; };
     const onCompEnd = () => {
       composing = false;
-      const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
+      let { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
+      const lit = marks.repairInput(plain);
+      if (lit) { plain = lit.text; caret = lit.caret; }
       // FX6 S1 — an IME-composed insertion is one atomic undo step (no
       // per-candidate-update recording happens above — onInput returns
       // early while `composing` is true).
@@ -610,7 +613,8 @@ function BoardCardPopup({
       }
     };
     const blockForeign = (e: Event) => {
-      if (shadowAllows(extractIncomingText(e))) return;
+      // IN-APP-COPY-FORMAT: own ink passes the wall; Wrizo's own markup is then pasted when its envelope can be trusted
+      if (shadowAllows(extractIncomingText(e))) { if (e.type === 'paste') marks.paste(e as ClipboardEvent); return; }
       e.preventDefault();
       notePasteBlocked();
     };

@@ -15,7 +15,7 @@
 // as an observation if they collide (case-vary or near-duplicate) with
 // something else, which a short common-word list makes rare in practice.
 
-import { withoutFontMarks } from './markRuns';
+import { unescapeTyped, withoutFontMarks } from './markRuns';
 const COMMON_WORDS = new Set([
   'The', 'A', 'An', 'And', 'But', 'Or', 'Nor', 'So', 'Yet', 'For', 'It', 'He', 'She', 'They',
   'We', 'You', 'I', 'In', 'On', 'At', 'To', 'Of', 'By', 'From', 'With', 'As', 'Is', 'Was',
@@ -84,7 +84,8 @@ function mostCommonForm(forms: Map<string, number>): string {
 export function computeConsistencyObservations(rawTexts: string[]): string[] {
   // FONT-SPAN (Fable's addition 1): Consistency reads the words, never a font span's marks (`]{.font-eb-garamond}` would otherwise
   // harvest as a word); every other convention is read exactly as before.
-  const texts = rawTexts.map(withoutFontMarks);
+  // TYPED-LITERAL (Oct 16): and a typed character's escape backslash is taken out - after the font marks (an escaped `\[` is text)
+  const texts = rawTexts.map((t) => unescapeTyped(withoutFontMarks(t)));
   const fullText = texts.join('\n');
   const tokens = texts.flatMap(harvestProperNouns);
   if (tokens.length === 0) return [];
