@@ -14,7 +14,7 @@ import { useWritingGoal, setWritingGoal, goalCount, goalFraction, DEFAULT_GOAL_L
 // repositioning their popover to sit inline in the sliver's own scrolling
 // panel instead of ModeStage's absolute stage-corner placement.
 import { Seg } from './ModeStage';
-import { DrawerNote } from './DrawerNote';
+import { HelpButton } from './HelpButton';
 import { BEGINNING_GLYPH } from './BeginningsRow';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import type { FormatAction, StructureKind } from '../store/draftFormat';
@@ -783,7 +783,7 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
 
       {content.kind === 'draft' && allowed('templates') && (
         <div className="wz-sliver-section wz-sliver-templates">
-          <div className="wz-sliver-h">{t('railTemplates')}</div>
+          <div className="wz-sliver-h">{t('railTemplates')} <HelpButton helpKey="helpTemplates" subjectLabel={t('railTemplates')} /></div>
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
             {content.templates?.map(tpl => (
               <button key={tpl.key} type="button" className="mode-tbtn wz-template-live" data-template={tpl.key} aria-pressed={!!tpl.selected} title={tpl.label} aria-label={tpl.label} onClick={tpl.onApply}>
@@ -792,7 +792,9 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
             ))}
             {/* Nick's order (2026-10-08): Screenplay, then Outline, Title Page, Bibliography and Custom, still coming soon. */}
             <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateOutline')}><TemplateIcon kind="outline" /></button>
+            <HelpButton helpKey="helpOutline" subjectLabel={t('templateOutline')} />
             <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateTitlePage')}><TemplateIcon kind="title" /></button>
+            <HelpButton helpKey="helpTitlePage" subjectLabel={t('templateTitlePage')} />
             <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateBibliography')}><TemplateIcon kind="bibliography" /></button>
             <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateCustom')}><TemplateIcon kind="custom" /></button>
           </div>
@@ -1124,7 +1126,7 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
             {/* ITEM word-diet (Nick, Oct 13) — same fix as ModeStage.tsx's
                 own copy of this row: the standing hint retires, moved
                 behind a "?" beside the label. */}
-            <Seg label={<>Recede depth <DrawerNote label="About Recede depth">{t('recedeHint')}</DrawerNote></>} value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
+            <Seg label={<>Recede depth <HelpButton helpKey="recedeHint" subjectLabel="Recede depth" /></>} value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
           </section>
         </div>
       )}

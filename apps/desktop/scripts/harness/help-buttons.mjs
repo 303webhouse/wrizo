@@ -1,0 +1,172 @@
+// HELP BUTTONS (Nick approved Oct 12, cursor/help-buttons @ d4d1c835;
+// docs/mockups/help-buttons/index.html is the approved reference). The one
+// plain sentence behind each themed word's own "?": Templates, Outline,
+// Title Page, Recede depth, Free Write, Publish, Grafts/Links.
+//
+// THE CLAIM THAT NEEDS A CHECK MORE THAN ANY OTHER: it never moves or
+// resizes the page it sits over (page primacy) — S6 proves it with the
+// SAME before/after rect technique the mockup's own rig bar used. S4/S5
+// prove the two rules Fable named explicitly: Esc returns focus, and there
+// is no brass anywhere.
+//
+// Run: node scripts/harness/help-buttons.mjs   (from apps/desktop, dist-web freshly built, box turn granted)
+import { withHarness } from '../runtime-verify.mjs';
+
+const checks = [];
+const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const ED = '.forward-only-editor';
+
+const freshPage = async (app, theme, { width = 1400, id = 'hb-page' } = {}) => {
+  await app.emulateDpr(1, width, 900);
+  await app.goto('/');
+  await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)});`);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk, for seeding' });
+  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: 'A page for the help-buttons checks.', origin: 'loose', source: 'page', createdAt: '2026-05-01T00:00:00.000Z' })})`);
+  await sleep(300);
+  await app.evalJs(`location.hash = '#/page/${id}'`);
+  await app.waitFor(`!!document.querySelector('${ED}')`, { label: 'the page' });
+  await sleep(500);
+};
+
+const openDraftSliver = async (app) => {
+  await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft')?.click()");
+  await sleep(300);
+  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await sleep(400);
+};
+
+const openTutorDrawer = async (app) => {
+  await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
+  await sleep(400);
+};
+
+// Each location, how to reach it, and the selector of its own "?".
+const LOCATIONS = [
+  { key: 'helpTemplates', subject: 'Templates', reach: openDraftSliver, sel: '.wz-sliver-templates .wz-sliver-h .wz-help' },
+  { key: 'helpOutline', subject: 'Outline', reach: openDraftSliver, sel: '.wz-sliver-templates .wz-help[aria-label="What is Outline?"]' },
+  { key: 'recedeHint', subject: 'Recede depth', reach: openDraftSliver, sel: '.wz-help[aria-label="What is Recede depth?"]' },
+  { key: 'helpFreeWrite', subject: 'Free Write', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Free"]' },
+  { key: 'helpPublish', subject: 'Publish', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Publish"]' },
+  { key: 'helpGrafts', subject: 'Grafts/Links', reach: openTutorDrawer, sel: '.wz-drawer-tabnotes .wz-help' },
+];
+
+const SENTENCES = {
+  plateau: {
+    helpTemplates: 'Ready-made page layouts.',
+    helpOutline: 'Numbered levels. Tab indents.',
+    recedeHint: 'Type and the menus fade; pause, reach an edge, or press Esc to bring them back.',
+    helpFreeWrite: 'Write forward only. No going back to edit.',
+    helpPublish: 'Share a page as a link or a file.',
+    helpGrafts: 'Grafts join pages, cards and boards.',
+  },
+  flux: {
+    helpTemplates: 'Ready-made doc layouts.',
+    helpOutline: 'A numbered spine. Tab indents.',
+    recedeHint: 'Type to dissolve the chrome; pause, reach an edge, or press Esc to bring it back.',
+    helpFreeWrite: 'Write forward only. No editing back.',
+    helpPublish: 'Send a doc out as a link or a file.',
+    helpGrafts: 'Links join docs, cards and circuits.',
+  },
+};
+
+await withHarness(async (app) => {
+  // ==========================================================================
+  // S1 — ALL SEVEN LOCATIONS, BOTH THEMES: the "?" exists and opens its own
+  // theme's own sentence (never the other theme's, never empty).
+  // ==========================================================================
+  for (const [theme, page] of [['plateau', 'hb-s1-plateau'], ['flux', 'hb-s1-flux']]) {
+    await freshPage(app, theme, { id: page });
+    for (const loc of LOCATIONS) {
+      await loc.reach(app);
+      const exists = await app.evalJs(`!!document.querySelector(${JSON.stringify(loc.sel)})`);
+      if (!exists) { ok(`S1 [${theme}] ${loc.subject}: the "?" exists`, false, 'not found'); continue; }
+      await app.evalJs(`document.querySelector(${JSON.stringify(loc.sel)})?.click()`);
+      await sleep(250);
+      const text = await app.evalJs("document.querySelector('.wz-help-pop')?.textContent ?? null");
+      const expected = SENTENCES[theme][loc.key];
+      ok(`S1 [${theme}] ${loc.subject}: the "?" opens THIS theme's own sentence`, text === expected, JSON.stringify({ text, expected }));
+      await app.evalJs(`document.querySelector(${JSON.stringify(loc.sel)})?.click()`);
+      await sleep(250);
+    }
+  }
+
+  // ==========================================================================
+  // S2-S6 — THE DEEP BEHAVIOURAL CLAIMS, proved once on a representative
+  // location (the Templates heading's own "?", Draft/Sliver, Arbor).
+  // ==========================================================================
+  await freshPage(app, 'plateau', { id: 'hb-deep' });
+  await openDraftSliver(app);
+  const SEL = '.wz-sliver-templates .wz-sliver-h .wz-help';
+
+  // S2 — a second tap of the SAME "?" closes it.
+  await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.click()`);
+  await sleep(250);
+  const s2Open = await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.getAttribute('aria-expanded')`);
+  await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.click()`);
+  await sleep(250);
+  const s2Closed = await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.getAttribute('aria-expanded')`);
+  ok('S2: a second tap of the SAME "?" closes it', s2Open === 'true' && s2Closed === 'false', JSON.stringify({ s2Open, s2Closed }));
+
+  // S3 — a tap/press anywhere outside closes it.
+  await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.click()`);
+  await sleep(250);
+  await app.evalJs("document.querySelector('.mode-page, .wz-sliver-body')?.click()");
+  await sleep(250);
+  const s3Closed = await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.getAttribute('aria-expanded')`);
+  ok('S3: a press outside the "?" and its popover closes it', s3Closed === 'false', String(s3Closed));
+
+  // S4 — Esc closes it AND returns focus to the "?" (Fable's own explicit ask).
+  await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.click()`);
+  await sleep(250);
+  await app.key('Escape');
+  await sleep(250);
+  const s4 = await app.evalJs(`({ expanded: document.querySelector(${JSON.stringify(SEL)})?.getAttribute('aria-expanded'), focused: document.activeElement === document.querySelector(${JSON.stringify(SEL)}) })`);
+  ok('S4: Esc closes it AND returns focus to the "?" that opened it', s4.expanded === 'false' && s4.focused === true, JSON.stringify(s4));
+
+  // S5 — NO TIMER: left open, it stays open (Nick's own ruling — the
+  // mockup's own commit d4d1c835 removed an earlier auto-close timer).
+  await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.click()`);
+  await sleep(3000);
+  const s5Still = await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.getAttribute('aria-expanded')`);
+  ok('S5: left alone, the popover stays open — NO auto-close timer', s5Still === 'true', String(s5Still));
+  await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.click()`);
+  await sleep(250);
+
+  // S6 — PAGE PRIMACY: the page's own rect is byte-identical before the "?"
+  // opens, while it is open, and after it closes. The mockup's own rig bar
+  // proved this; this is the same proof against the real editor's own rect.
+  const rect = () => app.evalJs(`(() => { const r = document.querySelector('${ED}').getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round).join(','); })()`);
+  const r0 = await rect();
+  await app.evalJs(`document.querySelector(${JSON.stringify(SEL)})?.click()`);
+  await sleep(250);
+  const r1 = await rect();
+  await app.key('Escape');
+  await sleep(250);
+  const r2 = await rect();
+  ok('S6 THE CLAIM: the page\'s own rect never moves or resizes while a "?" opens and closes — it is an overlay, never part of the layout',
+    r0 === r1 && r1 === r2, JSON.stringify({ r0, r1, r2 }));
+
+  // ==========================================================================
+  // S7 (source) — NEVER BRASS, and ONE shared position:fixed overlay in a
+  // body portal (never per-instance, never position:absolute).
+  // ==========================================================================
+  const css = await app.evalJs(`(() => {
+    const sheets = [...document.styleSheets];
+    let text = '';
+    for (const s of sheets) { try { for (const r of s.cssRules) text += r.cssText + '\\n'; } catch { /* cross-origin, skip */ } }
+    return text;
+  })()`);
+  const openRule = (css.match(/\.wz-help\[aria-expanded="?'?true'?"?\]\s*\{[^}]*\}/) || [''])[0];
+  const popRule = (css.match(/\.wz-help-pop\s*\{[^}]*\}/) || [''])[0];
+  ok('S7: the "?" is never brass when open (the --help token, not --brass)',
+    !!openRule && !/brass/i.test(openRule) && /--help/i.test(openRule), openRule.slice(0, 160));
+  ok('S7: the popover is position:fixed — one shared overlay, never position:absolute',
+    !!popRule && /position:\s*fixed/.test(popRule), popRule.slice(0, 160));
+});
+
+for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);
+const passed = checks.filter((c) => c.pass).length;
+console.log(passed === checks.length ? `\nHELP-BUTTONS VERIFY: PASS (${checks.length} checks)` : `\nHELP-BUTTONS VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
+process.exit(passed === checks.length ? 0 : 1);

@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
-import { useDeskLexicon } from '../store/deskLexicon';
+import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
+import { HelpButton } from './HelpButton';
 
 // AB1 S2 — the real unified mode strip, ratified exact strings (title case):
 // Free Write · Draft · Revise · Workshop · Publish. Lives ABOVE the stage on
@@ -46,10 +47,11 @@ export function ModeStrip({ mode, onSwitch, onPublish, freeWriteEnabled = true, 
   const [soon, setSoon] = useState<string | null>(null);
   const flashSoon = (label: string) => { setSoon(label); setTimeout(() => setSoon(null), 1800); };
 
-  const items: { key: string; label: string; live: boolean; active: boolean; onClick: () => void }[] = [
+  const items: { key: string; label: string; live: boolean; active: boolean; onClick: () => void; help?: DeskTermId }[] = [
     {
       key: 'freewrite', label: t('modeFreeWrite'), live: freeWriteEnabled, active: mode === 'journal',
       onClick: () => (freeWriteEnabled ? onSwitch('journal') : flashSoon(t('modeFreeWrite'))),
+      help: 'helpFreeWrite',
     },
     {
       key: 'draft', label: t('modeDraft'), live: true, active: mode === 'drafting',
@@ -60,15 +62,15 @@ export function ModeStrip({ mode, onSwitch, onPublish, freeWriteEnabled = true, 
       onClick: () => (reviseEnabled ? onSwitch('revise') : flashSoon(t('modeRevise'))),
     },
     { key: 'workshop', label: t('modeWorkshop'), live: false, active: false, onClick: () => flashSoon(t('modeWorkshop')) },
-    { key: 'publish', label: t('modePublish'), live: true, active: false, onClick: onPublish },
+    { key: 'publish', label: t('modePublish'), live: true, active: false, onClick: onPublish, help: 'helpPublish' },
   ];
 
   return (
     <div className="desk-mode-strip" role="tablist" aria-label="Writing mode">
       {items.map(it => {
-        return (
+        const tab = (
           <button
-            key={it.key}
+            key={it.help ? undefined : it.key}
             type="button"
             role="tab"
             /* ITEM 112-A — a CONTRACT MARKER, the same behaviour-free idiom
@@ -85,6 +87,19 @@ export function ModeStrip({ mode, onSwitch, onPublish, freeWriteEnabled = true, 
           >
             {it.label}
           </button>
+        );
+        // help-buttons (Nick approved Oct 12) — the "?" sits BESIDE the tab,
+        // never inside it: role="tab" is a real <button>, and a <button>
+        // nested inside a <button> is both invalid HTML and would fire the
+        // tab's own onClick (switching mode) on every "?" press. A wrapper
+        // span only for the two tabs that carry one, so the other three's
+        // DOM shape is untouched.
+        if (!it.help) return tab;
+        return (
+          <span key={it.key} className="desk-mode-tab-wrap">
+            {tab}
+            <HelpButton helpKey={it.help} subjectLabel={it.label} />
+          </span>
         );
       })}
       {soon && <span className="desk-mode-soon" role="status">{soon} — coming soon</span>}

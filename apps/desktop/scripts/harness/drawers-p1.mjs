@@ -302,8 +302,31 @@ const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-par
   // all; parked word for word.
   // ok('(D2b) H3: the Templates block in Sliver.tsx is unchanged from main (whitespace aside) save the ONE declared table gate allowed(\'pageKind\'); with that gate removed it is identical',
   //   gated && now.replace(GATE, '') === was, `${now ? now.length : 0} (gate ${gated}) vs ${was ? was.length : 0}`);
-  ok('(D2b) [word-diet successor]: the Templates block in Sliver.tsx is BYTE-IDENTICAL to origin/main (whitespace aside) — S2\'s own gate is already in both, and word-diet changed nothing inside this slice',
-    gated && now === was, `${now ? now.length : 0} (gate ${gated}) vs ${was ? was.length : 0}`);
+  // SUPERSEDED (help-buttons, Nick approved Oct 12): word-diet's own claim
+  // ("changed nothing inside this slice") stops being true the moment
+  // ANY later ticket touches the slice for a real reason - this one adds
+  // three HelpButton calls (the Templates heading's own "?", and one each
+  // for Outline/Title Page). Kept verbatim, no longer run:
+  //   ok('(D2b) [word-diet successor]: the Templates block in Sliver.tsx is BYTE-IDENTICAL to origin/main (whitespace aside) — S2\'s own gate is already in both, and word-diet changed nothing inside this slice',
+  //     gated && now === was, `${now ? now.length : 0} (gate ${gated}) vs ${was ? was.length : 0}`);
+  // Successor (D2c): the SAME strip-named-deltas-then-compare technique,
+  // with help-buttons' own three insertions added as named gates alongside
+  // pageKind's. Anything OUTSIDE these four named deltas must still match.
+  const HELP_GATES = [
+    ' <HelpButton helpKey="helpTemplates" subjectLabel={t(\'railTemplates\')} />',
+    ' <HelpButton helpKey="helpOutline" subjectLabel={t(\'templateOutline\')} />',
+    ' <HelpButton helpKey="helpTitlePage" subjectLabel={t(\'templateTitlePage\')} />',
+  ];
+  const helpGated = HELP_GATES.every((g) => !!now && now.split(g).length === 2);
+  // D2b's own established reading (comment above, SUPERSEDED block): origin/
+  // main ALREADY carries the pageKind gate (phase1-drawers long merged), so
+  // `was` has it too - stripping GATE from `now` before comparing would be
+  // the artificial-mismatch mistake that comment names. Only help-buttons'
+  // OWN three new insertions are stripped; the pageKind gate is left in
+  // both sides, where it already agrees.
+  const nowStripped = HELP_GATES.reduce((t, g) => t.replace(g, ''), now ?? '');
+  ok('(D2c) [help-buttons successor]: the Templates block in Sliver.tsx is BYTE-IDENTICAL to origin/main (whitespace aside, pageKind gate already in both) save help-buttons\' own three named insertions; nothing else inside this slice moved',
+    gated && helpGated && nowStripped === was, `${now ? now.length : 0} (gate ${gated}, help ${helpGated}) vs ${was ? was.length : 0}`);
 }
 
 // =============================================================================
@@ -510,20 +533,76 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
 }
 {
   const k = partK();
-  ok('(K1) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Links in Flux',
-    k.arborWord === 'Grafts' && k.fluxWord === 'Links' && k.inUnion, JSON.stringify(k));
-  ok('(K2) the "?" note: Nick\'s draft copy for Arbor, in one place; Flux has NO explainer (an empty term, so no "?") and no label',
-    k.arborNote === NICK_NOTE && k.fluxNote === '' && !!k.arborNoteLabel && k.fluxNoteLabel === '', JSON.stringify(k));
+  // SUPERSEDED IN PART (help-buttons, Nick approved Oct 12): K1's own
+  // `inUnion` read the union string drawerLinksNote/-NoteLabel were still
+  // part of; both retired (below). Kept verbatim, no longer run:
+  //   ok('(K1) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Links in Flux',
+  //     k.arborWord === 'Grafts' && k.fluxWord === 'Links' && k.inUnion, JSON.stringify(k));
+  // Successor: the SAME core claim (the word itself), against the union's
+  // own current, accurate shape.
+  const inUnionNow = /'tutorTabTutor' \| 'drawerLinks' \| 'drawerLinksEmpty' \| 'drawerRightTabsLabel'/.test(lexSrc);
+  ok('(K1 [help-buttons successor]) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Links in Flux',
+    k.arborWord === 'Grafts' && k.fluxWord === 'Links' && inUnionNow, JSON.stringify({ ...k, inUnionNow }));
+
+  // SUPERSEDED WHOLE (help-buttons): drawerLinksNote/-NoteLabel are DELETED
+  // (not emptied) - the Arbor-only/Flux-empty explainer model this check
+  // proved is gone, replaced below by helpGrafts (BOTH themes carry text
+  // now, through the shared HelpButton, not a per-instance DrawerNote).
+  // Kept verbatim, no longer run:
+  //   ok('(K2) the "?" note: Nick\'s draft copy for Arbor, in one place; Flux has NO explainer (an empty term, so no "?") and no label',
+  //     k.arborNote === NICK_NOTE && k.fluxNote === '' && !!k.arborNoteLabel && k.fluxNoteLabel === '', JSON.stringify(k));
+  // The KEY pattern (name immediately followed by a colon), not a bare word
+  // match — this file's own comments explain the retirement by naming the
+  // old keys in prose, which a bare \bdrawerLinksNote\b would also catch.
+  const noteKeysGone = !/\bdrawerLinksNote:/.test(lexSrc) && !/\bdrawerLinksNoteLabel:/.test(lexSrc);
+  const helpGraftsArbor = (new RegExp("helpGrafts:\\s*'([^']*)'").exec(lexSrc.slice(0, lexSrc.indexOf("const OVERRIDES"))) || [])[1] ?? null;
+  const helpGraftsFlux = (new RegExp("helpGrafts:\\s*'([^']*)'").exec(lexSrc.slice(lexSrc.indexOf("const OVERRIDES"))) || [])[1] ?? null;
+  ok('(K2 [help-buttons successor]) drawerLinksNote/-NoteLabel are retired whole; helpGrafts carries BOTH themes\' own sentences now, never empty in either',
+    noteKeysGone && !!helpGraftsArbor && !!helpGraftsFlux && helpGraftsArbor !== helpGraftsFlux,
+    JSON.stringify({ noteKeysGone, helpGraftsArbor, helpGraftsFlux }));
+
   ok('(K3) the empty pane\'s line follows the theme too (grafted / linked)', k.arborEmpty === 'Nothing grafted yet.' && k.fluxEmpty === 'Nothing linked yet.', JSON.stringify(k));
   const l = await partL();
   ok('(K4) the right drawer\'s tabs are TUTOR then the links tab, from one constant', JSON.stringify(l.tabs) === JSON.stringify(['tutor', 'links']), JSON.stringify(l));
   const m = partM();
   ok('(K5) the Tutor opens on the TUTOR tab; its body renders ONLY there and the empty links pane only on the other; the tab words are lexicon terms', m.defaultTutor && m.bodyOnTutorTab && m.tabWords, JSON.stringify(m));
-  ok('(K6) the "?" exists ONLY where the theme\'s term has words (an empty term gives none)', m.noteOnlyWhenWords, JSON.stringify(m));
+
+  // SUPERSEDED (help-buttons): the conditional-on-`linksNote` shape is gone -
+  // the "?" now renders unconditionally (helpGrafts always has words in both
+  // themes, so the old "an empty term gives none" gate is dead code this
+  // ticket removes along with it). Kept verbatim, no longer run:
+  //   ok('(K6) the "?" exists ONLY where the theme\'s term has words (an empty term gives none)', m.noteOnlyWhenWords, JSON.stringify(m));
+  const notesAlwaysRender = /notes: \{ links: <HelpButton helpKey="helpGrafts" subjectLabel=\{t\('drawerLinks'\)\} \/> \}/.test(tutorSrc);
+  ok('(K6 [help-buttons successor]) the "?" renders unconditionally now - helpGrafts always has words in both themes, so there is no longer a theme that gets none',
+    notesAlwaysRender, String(notesAlwaysRender));
+
   ok('(K7) the note is PRESSABLE, not a hover tooltip: a real button with aria-expanded/aria-controls and a role=note panel, no hover handlers; Escape, a press outside, or focus leaving closes it',
     m.pressable && m.escCloses && m.outsideCloses && m.blurCloses, JSON.stringify(m));
-  ok('(K8) it displaces nothing and is not part of the tab: the notes overlay sits OUTSIDE the tablist, ignores the pointer except on the "?", and the open note is an absolutely positioned overlay; open is a brass outline, no fill',
-    m.outsideTablist && m.overlayInert && m.popOverlay && m.noteOpenOutline, JSON.stringify(m));
+
+  // SUPERSEDED (help-buttons): K8's own "brass outline" claim described
+  // DrawerNote's CSS, which this one call site no longer uses at all (it
+  // still reads true, since DrawerNote's OWN css is untouched for its other
+  // callers - but it is no longer describing the Grafts/Links tab, so it is
+  // a green check about the wrong thing now). Kept verbatim, no longer run:
+  //   ok('(K8) it displaces nothing and is not part of the tab: the notes overlay sits OUTSIDE the tablist, ignores the pointer except on the "?", and the open note is an absolutely positioned overlay; open is a brass outline, no fill',
+  //     m.outsideTablist && m.overlayInert && m.popOverlay && m.noteOpenOutline, JSON.stringify(m));
+  // Successor: the SAME shape of claim, read from the NEW mechanism's own
+  // files - HelpButton.tsx/HelpPop.tsx/their CSS, not DrawerNote's.
+  const helpBtnSrc = read('components/HelpButton.tsx');
+  const helpPopSrc = read('components/HelpPop.tsx');
+  const wzHelpOpen = ruleBody(css, ".wz-help[aria-expanded='true']{");
+  const wzHelpPop = ruleBody(css, '.wz-help-pop{');
+  const k8b = {
+    // m.outsideTablist, already computed above: DrawerTabs.tsx's own DOM
+    // shape (the notes row sits after the tablist's closing </div>) is
+    // UNCHANGED by this ticket - still the same mechanism the "?" rides.
+    outsideTablist: m.outsideTablist,
+    neverBrass: !!wzHelpOpen && !/var\(--brass\)/.test(wzHelpOpen) && /var\(--help/.test(wzHelpOpen),
+    oneFixedOverlay: !!wzHelpPop && /position:fixed/.test(wzHelpPop) && /createPortal/.test(helpPopSrc) && /document\.body/.test(helpPopSrc),
+    outsideClosesOpenBtn: /toggleHelp\(helpKey, \{ left: r\.left, right: r\.right, top: r\.top, bottom: r\.bottom \}\)/.test(helpBtnSrc),
+  };
+  ok('(K8 [help-buttons successor]) the "?" still displaces nothing: the note overlay is NOT part of the tab (sibling to the tab button, per DrawerTabsConfig\'s own notes slot) and is now ONE shared position:fixed overlay in a body portal (never per-instance, never position:absolute) - and it is never brass',
+    k8b.outsideTablist && k8b.neverBrass && k8b.oneFixedOverlay && k8b.outsideClosesOpenBtn, JSON.stringify(k8b));
 }
 
 // =============================================================================
@@ -625,13 +704,44 @@ await mutant('the instrument mark shows in TEXT too', async () => partJ(actionsS
 await mutant('the instrument mark turns brass', async () => partJ(actionsSrc, pageActionsSrc, sliverSrc, mutate(css, '.wz-sliver-grip-mark{ display:flex; width:10px; height:10px; opacity:.9; }', '.wz-sliver-grip-mark{ display:flex; width:10px; height:10px; opacity:.9; color:var(--brass); }')), (j) => j.markQuiet === false);
 await mutant('the Sliver renders Actions without asking the table', async () => partJ(actionsSrc, pageActionsSrc, mutate(sliverSrc, "content.actions && allowed('actions')", "content.actions"), css), (j) => j.sliverBetween === false);
 
-await mutant('Flux gets the explainer too', async () => partK(mutate(lexSrc, "    drawerLinksNote: '',\n", "    drawerLinksNote: 'x',\n")), (k) => k.fluxNote !== '');
+// SUPERSEDED (help-buttons, Nick approved Oct 12): drawerLinksNote is
+// DELETED, not emptied - this anchor string no longer exists, so mutate()
+// would throw "mutation anchor missing" (mutant() already reports that as a
+// named red, not a crash - proving the premise changed rather than hiding
+// it). Kept verbatim, no longer run:
+//   await mutant('Flux gets the explainer too', async () => partK(mutate(lexSrc, "    drawerLinksNote: '',\n", "    drawerLinksNote: 'x',\n")), (k) => k.fluxNote !== '');
+// Successor: the SAME claim against helpGrafts's own Flux override - mutate
+// it to empty and the K2 successor's "never empty in either theme" must go red.
+await mutant('Flux\'s helpGrafts goes empty [help-buttons successor]', async () => {
+  const mutated = mutate(lexSrc, "helpGrafts: 'Links join docs, cards and circuits.',", "helpGrafts: '',");
+  const over = mutated.slice(mutated.indexOf('const OVERRIDES'));
+  const fluxVal = (new RegExp("helpGrafts:\\s*'([^']*)'").exec(over) || [])[1] ?? null;
+  return { fluxVal };
+}, (r) => !r.fluxVal);
 await mutant('Arbor\'s word changes', async () => partK(mutate(lexSrc, "  drawerLinks: 'Grafts',", "  drawerLinks: 'Connections',")), (k) => k.arborWord !== 'Grafts');
-await mutant('the note\'s copy is edited', async () => partK(mutate(lexSrc, 'so your ideas can grow together.', 'so ideas grow.')), (k) => k.arborNote !== NICK_NOTE);
+// SUPERSEDED (help-buttons): the literal sentence this anchored on is gone
+// (drawerLinksNote retired). Kept verbatim, no longer run:
+//   await mutant('the note\'s copy is edited', async () => partK(mutate(lexSrc, 'so your ideas can grow together.', 'so ideas grow.')), (k) => k.arborNote !== NICK_NOTE);
+// Successor: the same claim against helpGrafts's own Arbor sentence.
+await mutant('Arbor\'s helpGrafts copy is edited [help-buttons successor]', async () => {
+  const mutated = mutate(lexSrc, 'Grafts join pages, cards and boards.', 'Grafts join pages.');
+  const canon = mutated.slice(0, mutated.indexOf('const OVERRIDES'));
+  const arborVal = (new RegExp("helpGrafts:\\s*'([^']*)'").exec(canon) || [])[1] ?? null;
+  return { arborVal };
+}, (r) => r.arborVal !== 'Grafts join pages, cards and boards.');
 await mutant('the right drawer gains a third tab', async () => partL(mutate(setText, "['tutor', 'links'] as const", "['tutor', 'links', 'more'] as const")), (l) => l.tabs.length !== 2);
 await mutant('the Tutor opens on the links tab', async () => partM(mutate(tutorSrc, "useState<RightTab>('tutor')", "useState<RightTab>('links')")), (m) => m.defaultTutor === false);
 await mutant('the Tutor body shows on both tabs', async () => partM(mutate(tutorSrc, "{rightTab === 'tutor' && (\n            <div className=\"wz-tutor-body\">", "{(\n            <div className=\"wz-tutor-body\">")), (m) => m.bodyOnTutorTab === false);
-await mutant('the "?" shows even when the theme has no explainer', async () => partM(mutate(tutorSrc, "notes: linksNote ? { links:", "notes: true ? { links:")), (m) => m.noteOnlyWhenWords === false);
+// SUPERSEDED (help-buttons): the ternary this anchored on is gone - the "?"
+// renders unconditionally now, so there is no longer a "theme has no
+// explainer" state to force. Kept verbatim, no longer run:
+//   await mutant('the "?" shows even when the theme has no explainer', async () => partM(mutate(tutorSrc, "notes: linksNote ? { links:", "notes: true ? { links:")), (m) => m.noteOnlyWhenWords === false);
+// Successor: the opposite direction - prove the "?" going away would be
+// caught (the K6 successor's own regex must go red if the notes config is lost).
+await mutant('the "?" is dropped from the tab entirely [help-buttons successor]', async () => {
+  const mutated = mutate(tutorSrc, "notes: { links: <HelpButton helpKey=\"helpGrafts\" subjectLabel={t('drawerLinks')} /> }", 'notes: undefined');
+  return { rendersNow: /notes: \{ links: <HelpButton helpKey="helpGrafts" subjectLabel=\{t\('drawerLinks'\)\} \/> \}/.test(mutated) };
+}, (r) => r.rendersNow === false);
 await mutant('Escape no longer closes the note', async () => partM(tutorSrc, tabsSrc, mutate(noteSrc, "if (e.key === 'Escape' && open) { e.stopPropagation(); setOpen(false); }", "")), (m) => m.escCloses === false);
 await mutant('a press outside no longer closes the note', async () => partM(tutorSrc, tabsSrc, mutate(noteSrc, "document.addEventListener('pointerdown', onDown, true);", "")), (m) => m.outsideCloses === false);
 await mutant('the note opens on hover', async () => partM(tutorSrc, tabsSrc, mutate(noteSrc, 'className="wz-drawer-note"', 'className="wz-drawer-note" onMouseEnter={() => setOpen(true)}')), (m) => m.pressable === false);

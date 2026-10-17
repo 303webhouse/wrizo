@@ -20,6 +20,7 @@ import { Splash } from './components/Splash';
 import { LandingGate } from './components/LandingGate';
 import { FluxBlockCaret } from './components/FluxBlockCaret';
 import { ContextMenuHost } from './components/ContextMenuHost';
+import { HelpPop } from './components/HelpPop';
 import { DeleteDialog } from './components/DeleteDialog';
 import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
 import { subscribe, resetLocalData, getOrCreateSystemBoard, countDirtyRecords, getDirtyRecords } from './store/persistence';
@@ -352,6 +353,8 @@ export function App() {
         {/* BOARD CONTEXT MENU: the one small menu and the one "Send to Trash?" dialog, mounted once - every surface asks for them through store/contextMenu.ts and store/deleteGate.ts */}
         <ContextMenuHost />
         <DeleteDialog />
+        {/* HELP BUTTONS: the one shared "?" sentence overlay, mounted once - every HelpButton asks for it through store/help.ts. An overlay beside the routes, never inside one: it cannot move or resize the page. */}
+        <HelpPop />
         <SignedOutRouteGuard authState={authState} />
         {/* RESUME ON OPEN: remembers the open Page/board and, on the first signed-in boot, lands there instead of the front door. Renders nothing. */}
         <LandingGate authState={authState} />

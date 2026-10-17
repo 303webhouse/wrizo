@@ -379,28 +379,36 @@ await withHarness(async (app) => {
         const t3 = await app.evalJs(`document.querySelector('${sel}')?.getAttribute('aria-pressed') ?? null`);
         ok(`L9 ${T}: and Space flips it back`, t3 != null && t3 !== t2, JSON.stringify({ t2, t3 }));
       }
-      // the "?" note (Arbor only): opens on press, is reported, closes on Escape.
-      // SUPERSEDED (item word-diet, Fable, review fix) — a bare
-      // '.wz-drawer-note-btn' query is DOCUMENT-WIDE, and word-diet's own
-      // "?" notes (the Tutor's Ask box, its Fragments lens, Recede depth,
-      // etc.) are NOT Arbor-exclusive, so on Flux this fixture (the right
-      // drawer defaults to the Tutor tab, per K5) now finds one of THOSE
-      // regardless of theme — a false "has a note" reading that was never
-      // the tab row's own claim. Scope to the tab row's own overlay
-      // (.wz-drawer-tabnotes), matching the CSS's own scoping anchor.
-      // const hasNote = await app.evalJs("!!document.querySelector('.wz-drawer-note-btn')");
-      const hasNote = await app.evalJs("!!document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')");
-      if (th.id === 'arbor') {
-        await ensureRight(app, true);
-        const n0 = await app.evalJs(`document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.getAttribute('aria-expanded') ?? null`);
-        await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.click()"); await sleep(300);
-        const n1 = await app.evalJs(`({ expanded: document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.getAttribute('aria-expanded'), role: document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-pop')?.getAttribute('role') ?? null })`);
-        await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.focus()"); await app.key('Escape'); await sleep(300);
-        const n2 = await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.getAttribute('aria-expanded') ?? null");
-        ok(`L9 ${T}: the Arbor "?" note is a button that reports aria-expanded, opens a role=note panel on press, and closes on Escape`, n0 === 'false' && n1.expanded === 'true' && n1.role === 'note' && n2 === 'false', JSON.stringify({ n0, n1, n2 }));
-      } else {
-        ok(`L9 ${T} [word-diet successor]: Flux's own tab row has NO "?" note (its word explains itself - by ruling)`, hasNote === false, String(hasNote));
-      }
+      // SUPERSEDED WHOLE (help-buttons, Nick approved Oct 12): the Grafts/
+      // Links tab's own "?" moved off DrawerNote (.wz-drawer-note-btn) onto
+      // the new shared HelpButton (.wz-help, store/help.ts) - AND the
+      // Arbor-only/Flux-empty ruling this Flux branch asserted is ITSELF
+      // retired: helpGrafts now carries a real sentence in BOTH themes, so
+      // Flux gets a "?" too. Kept verbatim, no longer run:
+      //   const hasNote = await app.evalJs("!!document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')");
+      //   if (th.id === 'arbor') {
+      //     await ensureRight(app, true);
+      //     const n0 = await app.evalJs(`document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.getAttribute('aria-expanded') ?? null`);
+      //     await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.click()"); await sleep(300);
+      //     const n1 = await app.evalJs(`({ expanded: document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.getAttribute('aria-expanded'), role: document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-pop')?.getAttribute('role') ?? null })`);
+      //     await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.focus()"); await app.key('Escape'); await sleep(300);
+      //     const n2 = await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.getAttribute('aria-expanded') ?? null");
+      //     ok(`L9 ${T}: the Arbor "?" note is a button that reports aria-expanded, opens a role=note panel on press, and closes on Escape`, n0 === 'false' && n1.expanded === 'true' && n1.role === 'note' && n2 === 'false', JSON.stringify({ n0, n1, n2 }));
+      //   } else {
+      //     ok(`L9 ${T} [word-diet successor]: Flux's own tab row has NO "?" note (its word explains itself - by ruling)`, hasNote === false, String(hasNote));
+      //   }
+      // Successor: BOTH themes now carry the same claim - a "?" that reports
+      // aria-expanded, opens the SHARED fixed overlay (role=note), and closes
+      // on Escape, returning focus to the "?" itself.
+      await ensureRight(app, true);
+      const hn0 = await app.evalJs(`document.querySelector('.wz-drawer-tabnotes .wz-help')?.getAttribute('aria-expanded') ?? null`);
+      await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-help')?.click()"); await sleep(300);
+      const hn1 = await app.evalJs(`({ expanded: document.querySelector('.wz-drawer-tabnotes .wz-help')?.getAttribute('aria-expanded'), role: document.querySelector('.wz-help-pop')?.getAttribute('role') ?? null, text: document.querySelector('.wz-help-pop')?.textContent ?? null })`);
+      await app.key('Escape'); await sleep(300);
+      const hn2 = await app.evalJs(`({ expanded: document.querySelector('.wz-drawer-tabnotes .wz-help')?.getAttribute('aria-expanded') ?? null, focused: document.activeElement === document.querySelector('.wz-drawer-tabnotes .wz-help') })`);
+      ok(`L9 ${T} [help-buttons successor]: the Grafts/Links tab's own "?" is a button that reports aria-expanded, opens the shared role=note overlay with THIS theme's own sentence, closes on Escape, and returns focus to itself`,
+        hn0 === 'false' && hn1.expanded === 'true' && hn1.role === 'note' && !!hn1.text && hn2.expanded === 'false' && hn2.focused === true,
+        JSON.stringify({ hn0, hn1, hn2 }));
     });
   }
 });

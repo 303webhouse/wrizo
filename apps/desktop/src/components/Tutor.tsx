@@ -18,6 +18,7 @@ import { capTutorHistory } from '../store/tutorHistory';
 import { drawerArrow, setDrawerInert } from '../store/drawerShell';
 import { SideDrawer, type DrawerTabsConfig } from './SideDrawer';
 import { DrawerNote } from './DrawerNote';
+import { HelpButton } from './HelpButton';
 import { ConnectionsDrawerPanel } from './ConnectionsDrawerPanel';
 import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
@@ -974,11 +975,16 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   };
 
   // PHASE 1 (S3) - THE RIGHT DRAWER'S TAB ROW: TUTOR | the theme's links word (Grafts in Arbor, Links in Flux - from the lexicon, never written
-  // here). The "?" beside it is a pressable note and exists only where the theme's term has an explainer (Arbor's does, Flux's is empty).
-  const linksNote = t('drawerLinksNote');
+  // here).
+  // help-buttons (Nick approved Oct 12) - the "?" beside it now routes through
+  // the shared HelpButton/helpGrafts (store/help.ts), which carries BOTH
+  // themes' own sentences - this ticket's own fix for drawerLinksNote's old
+  // gap (Arbor had an explainer, Flux's own was the empty string, so the "?"
+  // simply never rendered there). drawerLinksNote/-NoteLabel retired; their
+  // content is byte-near-identical to helpGrafts's own Arbor sentence.
   const rightTabs: DrawerTabsConfig<RightTab> = {
     items: [{ id: RIGHT_TABS[0], label: t('tutorTabTutor') }, { id: RIGHT_TABS[1], label: t('drawerLinks') }],
-    notes: linksNote ? { links: <DrawerNote label={t('drawerLinksNoteLabel')}>{linksNote}</DrawerNote> } : undefined,
+    notes: { links: <HelpButton helpKey="helpGrafts" subjectLabel={t('drawerLinks')} /> },
     value: rightTab,
     onChange: setRightTab,
     label: t('drawerRightTabsLabel'),
