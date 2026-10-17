@@ -3,6 +3,8 @@ import { firstLine } from './entryText';
 import { liveBoxes } from './boxTombstones';
 import { stripMarkdownConventions } from './draftFormat';
 import { serializeScriptDoc, plainScriptWords } from './scriptText';
+import { outlineBody } from './outlineText';
+import { bibliographyBody } from './bibliographyText';
 import { describePageHome } from './pageHome';
 import { getProject, getJournalEntry, getJournalEntries, getBinderPages, getSystemKind, getDeletedEntries } from './persistence';
 
@@ -130,6 +132,10 @@ function boardBody(entry: JournalEntry): string {
 export function pageBodyFormatted(entry: JournalEntry): string {
   if (entry.pageType === 'script') return entry.script ? serializeScriptDoc(entry.script) : (entry.text ?? '');
   if (entry.pageType === 'board') return boardBody(entry);
+  // PAGE TEMPLATES - an Outline writes its derived numbers (no leading tab: that is a code block in Markdown) and a Bibliography one
+  // entry per paragraph. A Title Page needs no branch: it is the page dialect, kept in .md and stripped in .txt like any page.
+  if (entry.pageSettings?.template === 'outline') return outlineBody(entry.text ?? '', 'formatted');
+  if (entry.pageSettings?.template === 'bibliography') return bibliographyBody(entry.text ?? '', 'formatted');
   return entry.text ?? '';
 }
 
@@ -138,6 +144,8 @@ export function pageBodyFormatted(entry: JournalEntry): string {
 export function pageBodyPlain(entry: JournalEntry): string {
   if (entry.pageType === 'script') return entry.script ? plainScriptWords(entry.script) : (entry.text ?? '');
   if (entry.pageType === 'board') return boardBody(entry); // no separate "plain" convention for a card list
+  if (entry.pageSettings?.template === 'outline') return outlineBody(entry.text ?? '', 'plain');
+  if (entry.pageSettings?.template === 'bibliography') return bibliographyBody(entry.text ?? '', 'plain');
   return stripMarkdownConventions(entry.text ?? '');
 }
 

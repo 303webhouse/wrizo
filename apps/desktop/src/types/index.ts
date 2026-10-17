@@ -432,7 +432,14 @@ export interface PageSettings {
   // NOT added to PAGE_SETTINGS_FALLBACK, for the reason kind and styleGuide are not. `size` is the number of POINTS.
   face?: StoredFace;
   size?: number;
+  // PAGE TEMPLATES (docs/plans/page-templates.md) - which lens draws this page's text: an Outline, a Bibliography or a Title Page.
+  // Absent, never null, on every page that never chose (Blank takes no setting; a Screenplay is `pageType: 'script'`). The TEXT is the
+  // truth and the template only a lens, so losing this key leaves a readable Draft page. NOT dress: like `kind` it is a fact about THIS
+  // page, so store/pageDefaults.ts strips it from the per-user default.
+  template?: PageTemplate;
 }
+
+export type PageTemplate = 'outline' | 'title' | 'bibliography';
 
 // The app's own floor, used wherever a page carries no settings and no user
 // default exists. Deliberately the values the app already renders today, so
