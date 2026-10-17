@@ -1,0 +1,47 @@
+[
+  {
+    "frame": "1-anonymous-front-door",
+    "hash": "#/",
+    "frontDoor": true,
+    "signInForm": false,
+    "editor": false,
+    "board": false,
+    "crumb": null,
+    "activeTab": null,
+    "pointer": null,
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "bundle": "index-CPgPsazr.js"
+  },
+  {
+    "frame": "2-after-sign-in",
+    "hash": "#/page/muz1sckaq7ncleqlv",
+    "frontDoor": false,
+    "signInForm": false,
+    "editor": true,
+    "board": false,
+    "crumb": "live walk line",
+    "activeTab": "Draft",
+    "pointer": {
+      "kind": "page",
+      "hasId": true
+    },
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "bundle": "index-CPgPsazr.js"
+  },
+  {
+    "frame": "3-cold-boot-signed-in",
+    "hash": "#/page/muz1sckaq7ncleqlv",
+    "frontDoor": false,
+    "signInForm": false,
+    "editor": true,
+    "board": false,
+    "crumb": "live walk line",
+    "activeTab": "Draft",
+    "pointer": {
+      "kind": "page",
+      "hasId": true
+    },
+    "origin": "https://writer-studio-app-production.up.railway.app",
+    "bundle": "index-CPgPsazr.js"
+  }
+]
