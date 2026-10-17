@@ -60,8 +60,22 @@ const PEN_INKS_FLUX_DARK: Record<string, string> = {
   '#1f4fb8': '#8AB4FF',
 };
 
+// theme-leftovers (Fable, Oct 16): "Flux light Free Write's default pen ink
+// is Arbor's #1A0F06; use Flux's ink instead." Not a contrast gap (Arbor's
+// black-brown already carries on Flux light's paper) but an identity one —
+// the default swatch was never re-pointed to Flux's own ink at all, only its
+// dark-page variant was (above). #14231F is Flux light's own --ink-on-paper
+// (index.css), the same "reuse the theme's own ink" move the dark case
+// already makes. Scoped to the default swatch only, per the ticket's own
+// wording — red/blue aren't named and aren't touched.
+const PEN_INKS_FLUX_LIGHT: Record<string, string> = {
+  '#1a0f06': '#14231F',
+};
+
 function effectivePenInk(ink: string, theme: ThemeId, pageTone: PageTone): string {
-  return theme === 'flux' && pageTone === 'dark' ? (PEN_INKS_FLUX_DARK[ink] ?? ink) : ink;
+  if (theme !== 'flux') return ink;
+  if (pageTone === 'dark') return PEN_INKS_FLUX_DARK[ink] ?? ink;
+  return PEN_INKS_FLUX_LIGHT[ink] ?? ink;
 }
 
 interface RailDef { heading: string; items: string[]; ai: 'sealed' | 'open'; tools: 'pen' | 'format'; }
