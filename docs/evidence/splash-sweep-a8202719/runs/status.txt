@@ -1,0 +1,8 @@
+START redfirst 01:29:58Z
+END redfirst exit=1 01:30:14Z
+START lane 01:30:14Z
+END lane exit=1 01:43:06Z
+START capture 01:43:06Z
+END capture exit=0 01:43:20Z
+released (mine)
+SS COMPLETE

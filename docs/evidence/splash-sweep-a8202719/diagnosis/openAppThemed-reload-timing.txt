@@ -1,0 +1,16 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+RELOADDBG {"theme":"plateau","reloadMs":201,"splashAtReturn":true}
+RELOADDBG {"theme":"flux","reloadMs":220,"splashAtReturn":true}
+RELOADDBG {"theme":"flux","reloadMs":221,"splashAtReturn":false}
+file:///C:/Users/nickh/writer-studio/.claude/worktrees/ss/apps/desktop/scripts/runtime-verify.mjs:673
+      throw new Error('waitFor timed out: ' + label + '; diag=' + JSON.stringify(await evalJs('__diag()')));
+            ^
+
+Error: waitFor timed out: S12 settle (flux); diag={"href":"http://127.0.0.1:58784/#/","buttons":["Full screen","Sign out","Write","Open"],"body":"Full screen\nSign out\nFor humans writing\nWrite\nOpen"}
+    at Object.waitFor (file:///C:/Users/nickh/writer-studio/.claude/worktrees/ss/apps/desktop/scripts/runtime-verify.mjs:673:13)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/ss/apps/desktop/scripts/harness/splash-dbg2.mjs:601:5
+    at async withHarness (file:///C:/Users/nickh/writer-studio/.claude/worktrees/ss/apps/desktop/scripts/runtime-verify.mjs:900:20)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/ss/apps/desktop/scripts/harness/splash-dbg2.mjs:108:1
+
+Node.js v24.13.0
