@@ -11,6 +11,9 @@ import { parseTitlePage, serializeTitlePage, type TitleSheetFields } from '../st
 // The title is stored as typed; the sheet's capitals and letter-spacing are CSS. "by" is drawn, never typed, and is written into the text only once a title or
 // author exists, so a fresh Title Page is the empty string (no words, nothing born).
 
+// SPELL-CHECK (Fable's ruling, Oct 17): ON for the title - it is the writer's own words, like the page - and OFF for the author, the contact block and the word line, which are
+// names, addresses and a count the checker only underlines. The title carries NO spellCheck attribute at all (the browser's default is on), so the page-wide census in
+// scripts/harness/revspell.mjs sees only the three deliberate `spellCheck={false}` fields and still finds no third host that turns the checker ON.
 export function TitlePageSheet({
   text, onChange, onForward, onFocus, onBlur, autoFocus,
 }: {
@@ -61,7 +64,7 @@ export function TitlePageSheet({
       <div className="wz-ts-mid">
         <input
           ref={titleRef}
-          className="wz-ts-title" data-field="title" type="text" spellCheck={false}
+          className="wz-ts-title" data-field="title" type="text"
           aria-label="Title" placeholder="Title"
           value={fields.title}
           onChange={e => commit({ ...fields, title: e.target.value })}

@@ -70,8 +70,20 @@ const ENTRY = `
 
 const MOCKUP_OUTLINE = ['Arrival', '\tThe late ferry', '\tGulls on the rail', 'The harbormaster', '\tWhat he saw', '\t\tThe lamp, twice', '\tWhat he left out', 'The crossing'].join('\n');
 
+// THE LAUNCH CRASH (ledger 87: PART 2 died at browser launch, every run, "CDP page target never appeared"): PART 1 gave pageDefaults a quiet `fetch` and `localStorage`
+// by assigning them on globalThis, and never gave them back - so runtime-verify's discovery of the browser's page target (which asks the real `fetch` for the debugging
+// port's /json list) got the stub's `{ ok: false }` and never saw the target. A stub installed for a suite is restored when the suite ends; a check below proves the
+// process leaves PART 1 with the fetch it started with.
+const REAL_FETCH = globalThis.fetch;
+const REAL_LS_DESCRIPTOR = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
 async function suite(mutate = {}) {
-  // pageDefaults reaches for fetch and localStorage; give it quiet ones
+  try { return await suiteInner(mutate); } finally {
+    globalThis.fetch = REAL_FETCH;
+    if (REAL_LS_DESCRIPTOR) Object.defineProperty(globalThis, 'localStorage', REAL_LS_DESCRIPTOR); else delete globalThis.localStorage;
+  }
+}
+async function suiteInner(mutate = {}) {
+  // pageDefaults reaches for fetch and localStorage; give it quiet ones (restored by suite())
   const store = new Map();
   globalThis.localStorage = { getItem: (k) => (store.has(k) ? store.get(k) : null), setItem: (k, v) => store.set(k, String(v)), removeItem: (k) => store.delete(k) };
   globalThis.fetch = async () => ({ ok: false, json: async () => ({}) });
@@ -227,6 +239,8 @@ for (const m of MUTANTS) {
   if (went.length === m.red.length) killed += 1;
 }
 ok(`all ${MUTANTS.length} mutations landed and ${MUTANTS.length} were killed`, landed === MUTANTS.length && killed === MUTANTS.length, `${landed} landed / ${killed} killed`);
+
+ok('P0 PART 1 leaves the process\'s fetch and localStorage as it found them (PART 2\'s browser discovery asks the REAL fetch for the debugging port - a leftover stub is what crashed its launch)', globalThis.fetch === REAL_FETCH, String(typeof globalThis.fetch));
 
 // ---- source pins -------------------------------------------------------------------------------------------------------------------
 const types = read('types/index.ts');

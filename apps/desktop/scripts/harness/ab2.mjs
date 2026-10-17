@@ -1082,10 +1082,20 @@ if (process.env.HARNESS_PARKED === '1') {
     //     && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
     //   JSON.stringify(draftRailClassRenameCheck));
     // ---------------------------------------------------------------------
-    pok('PARKED, generation 7 (was generation 6, the SEVENTEEN-button roster) — PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08) changes the MEMBERSHIP: Screenplay joins the Templates row as a LIVE button ahead of the placeholders, and a fourth placeholder, Custom, joins them, EIGHTEEN in all; the claim is unchanged and re-made at the current membership, in order',
+    // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (Fable Oct 17, ledger 87) - GENERATION 7, quoted VERBATIM and no longer asserted. The claim is unchanged: the Draft rail carries exactly its ruled roster, in order.
+    // The MEMBERSHIP changed again: the Templates section is a five-row PICKER (page sketches and words, components/TemplateSketch.tsx), no longer a row of .mode-tbtn buttons, so the live Screenplay button and the four
+    // "Coming soon" placeholders leave the roster the check counts. Generation 8 below re-makes the claim at that membership, pinned in order.
+    //
+    // pok('PARKED, generation 7 (was generation 6, the SEVENTEEN-button roster) — PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08) changes the MEMBERSHIP: Screenplay joins the Templates row as a LIVE button ahead of the placeholders, and a fourth placeholder, Custom, joins them, EIGHTEEN in all; the claim is unchanged and re-made at the current membership, in order',
+    //   !draftRailClassRenameCheck.ink && draftRailClassRenameCheck.captureItems === 0
+    //     && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure === false
+    //     && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold (Ctrl+B)', 'Italic (Ctrl+I)', 'Underline (Ctrl+U)', 'Strikethrough', 'Heading', 'Round bullet', 'Bullet styles', 'Block quote', 'Outdent', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right', 'Screenplay', 'Coming soon', 'Coming soon', 'Coming soon', 'Coming soon'])
+    //     && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
+    //   JSON.stringify(draftRailClassRenameCheck));
+    pok('PARKED, generation 8 (was generation 7, the NINETEEN-button roster) — PAGE TEMPLATES R2 (Fable Oct 17, ledger 87) changes the MEMBERSHIP: the Templates section is a five-row picker, not .mode-tbtn buttons, so the Screenplay button and the four Coming-soon placeholders leave the roster, FOURTEEN format buttons in all; the claim is unchanged and re-made at the current membership, in order',
       !draftRailClassRenameCheck.ink && draftRailClassRenameCheck.captureItems === 0
         && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure === false
-        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold (Ctrl+B)', 'Italic (Ctrl+I)', 'Underline (Ctrl+U)', 'Strikethrough', 'Heading', 'Round bullet', 'Bullet styles', 'Block quote', 'Outdent', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right', 'Screenplay', 'Coming soon', 'Coming soon', 'Coming soon', 'Coming soon'])
+        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold (Ctrl+B)', 'Italic (Ctrl+I)', 'Underline (Ctrl+U)', 'Strikethrough', 'Heading', 'Round bullet', 'Bullet styles', 'Block quote', 'Outdent', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right'])
         && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
       JSON.stringify(draftRailClassRenameCheck));
 
