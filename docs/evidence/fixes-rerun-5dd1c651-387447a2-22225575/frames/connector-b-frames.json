@@ -1,0 +1,209 @@
+{
+  "rows": [
+    {
+      "combo": "arbor-dark",
+      "frame": "01-arm-over-a-rail-thumbnail",
+      "file": "arbor-dark/01-arm-over-a-rail-thumbnail.png",
+      "md5": "574d269f20d54f6dc3b4c8b3db8aa7c2",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "02-just-after-linking",
+      "file": "arbor-dark/02-just-after-linking.png",
+      "md5": "ed71856a064f00c0e554f66fa6f63a7f",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "03-arm-over-an-already-linked-thumbnail",
+      "file": "arbor-dark/03-arm-over-an-already-linked-thumbnail.png",
+      "md5": "0ea39298770a906e1b9928d0628853c0",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "04-grafts-links-tab",
+      "file": "arbor-dark/04-grafts-links-tab.png",
+      "md5": "6760ef3c667a5476a5b6a64cc5cd5019",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "05-remove-graft-dialog",
+      "file": "arbor-dark/05-remove-graft-dialog.png",
+      "md5": "26de771d63bdf72e66d2d2c66dbece60",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "06-dragging-a-thumbnail-onto-the-board",
+      "file": "arbor-dark/06-dragging-a-thumbnail-onto-the-board.png",
+      "md5": "6620ae38a5f1b3ab989526d3d8db3874",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "07-the-linked-copy",
+      "file": "arbor-dark/07-the-linked-copy.png",
+      "md5": "bc4bc212aa653f139f817146634891a2",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "01-arm-over-a-rail-thumbnail",
+      "file": "arbor-light/01-arm-over-a-rail-thumbnail.png",
+      "md5": "574d269f20d54f6dc3b4c8b3db8aa7c2",
+      "sameAsDarkTwin": true
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "02-just-after-linking",
+      "file": "arbor-light/02-just-after-linking.png",
+      "md5": "ed71856a064f00c0e554f66fa6f63a7f",
+      "sameAsDarkTwin": true
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "03-arm-over-an-already-linked-thumbnail",
+      "file": "arbor-light/03-arm-over-an-already-linked-thumbnail.png",
+      "md5": "0ea39298770a906e1b9928d0628853c0",
+      "sameAsDarkTwin": true
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "04-grafts-links-tab",
+      "file": "arbor-light/04-grafts-links-tab.png",
+      "md5": "6760ef3c667a5476a5b6a64cc5cd5019",
+      "sameAsDarkTwin": true
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "05-remove-graft-dialog",
+      "file": "arbor-light/05-remove-graft-dialog.png",
+      "md5": "26de771d63bdf72e66d2d2c66dbece60",
+      "sameAsDarkTwin": true
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "06-dragging-a-thumbnail-onto-the-board",
+      "file": "arbor-light/06-dragging-a-thumbnail-onto-the-board.png",
+      "md5": "6620ae38a5f1b3ab989526d3d8db3874",
+      "sameAsDarkTwin": true
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "07-the-linked-copy",
+      "file": "arbor-light/07-the-linked-copy.png",
+      "md5": "bc4bc212aa653f139f817146634891a2",
+      "sameAsDarkTwin": true
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "01-arm-over-a-rail-thumbnail",
+      "file": "flux-dark/01-arm-over-a-rail-thumbnail.png",
+      "md5": "8dacb1dcea5c8abb752683b8407e9957",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "02-just-after-linking",
+      "file": "flux-dark/02-just-after-linking.png",
+      "md5": "fff406056b97616d90c282d762e62b9a",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "03-arm-over-an-already-linked-thumbnail",
+      "file": "flux-dark/03-arm-over-an-already-linked-thumbnail.png",
+      "md5": "9d7d2fbe96984662e28b9aefeca227ab",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "04-grafts-links-tab",
+      "file": "flux-dark/04-grafts-links-tab.png",
+      "md5": "300f5c6c3bf7d5d911a35f0d3f6099e6",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "05-remove-graft-dialog",
+      "file": "flux-dark/05-remove-graft-dialog.png",
+      "md5": "f56377780b9f59d34eef725c15e28b47",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "06-dragging-a-thumbnail-onto-the-board",
+      "file": "flux-dark/06-dragging-a-thumbnail-onto-the-board.png",
+      "md5": "a1ff19ed15659194b09682319a454961",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "07-the-linked-copy",
+      "file": "flux-dark/07-the-linked-copy.png",
+      "md5": "6dd787dddb4d20253910da7c68212d89",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "flux-light",
+      "frame": "01-arm-over-a-rail-thumbnail",
+      "file": "flux-light/01-arm-over-a-rail-thumbnail.png",
+      "md5": "5f66cf20da4c3e1b60aba1a327e10b0c",
+      "sameAsDarkTwin": false
+    },
+    {
+      "combo": "flux-light",
+      "frame": "02-just-after-linking",
+      "file": "flux-light/02-just-after-linking.png",
+      "md5": "d23f4d311c9ffacf3df9104401c5b1fa",
+      "sameAsDarkTwin": false
+    },
+    {
+      "combo": "flux-light",
+      "frame": "03-arm-over-an-already-linked-thumbnail",
+      "file": "flux-light/03-arm-over-an-already-linked-thumbnail.png",
+      "md5": "12d801ea5366227e801cd4a308b37c13",
+      "sameAsDarkTwin": false
+    },
+    {
+      "combo": "flux-light",
+      "frame": "04-grafts-links-tab",
+      "file": "flux-light/04-grafts-links-tab.png",
+      "md5": "ec22008897c5a325432b91361ff3400f",
+      "sameAsDarkTwin": false
+    },
+    {
+      "combo": "flux-light",
+      "frame": "05-remove-graft-dialog",
+      "file": "flux-light/05-remove-graft-dialog.png",
+      "md5": "cf66b2bb2489591e8626d54360ea56ae",
+      "sameAsDarkTwin": false
+    },
+    {
+      "combo": "flux-light",
+      "frame": "06-dragging-a-thumbnail-onto-the-board",
+      "file": "flux-light/06-dragging-a-thumbnail-onto-the-board.png",
+      "md5": "a0b86049c6ca3dca399db0528d062904",
+      "sameAsDarkTwin": false
+    },
+    {
+      "combo": "flux-light",
+      "frame": "07-the-linked-copy",
+      "file": "flux-light/07-the-linked-copy.png",
+      "md5": "445a4442eb1092d9c5c22b20b24395ef",
+      "sameAsDarkTwin": false
+    }
+  ],
+  "lightFramesByteIdenticalToDarkTwin": [
+    "arbor-light/01-arm-over-a-rail-thumbnail",
+    "arbor-light/02-just-after-linking",
+    "arbor-light/03-arm-over-an-already-linked-thumbnail",
+    "arbor-light/04-grafts-links-tab",
+    "arbor-light/05-remove-graft-dialog",
+    "arbor-light/06-dragging-a-thumbnail-onto-the-board",
+    "arbor-light/07-the-linked-copy"
+  ]
+}
