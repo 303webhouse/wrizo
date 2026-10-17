@@ -63,8 +63,14 @@ const pins = (text) => ({
   // ok('S2: a release on a linked card removes the connection, on an unlinked one makes the SAME connection box as ever (no new field - zero schema); a release on empty board after a drag cancels; lines are drawn only inside the mode; targets are same-board cards only; the context menu is suppressed only on the square',
   //   p.toggle && p.cancelOnEmpty && p.linesOnlyInMode && p.sameBoard && p.ctxScoped && p.footersOn, JSON.stringify(p));
   const ctxNew = (text) => /if \(connect \|\| performance\.now\(\) < ctxQuietUntil \|\| t\?\.closest\?\.\('\.board-handle'\)\) \{ e\.preventDefault\(\); return; \}/.test(text);
-  ok('S2 [context-menu successor]: a release on a linked card removes the connection, on an unlinked one makes the SAME connection box as ever (no new field - zero schema); a release on empty board after a drag cancels; lines are drawn only inside the mode; targets are same-board cards only; the browser\'s menu is suppressed in connection mode, on the corner square and for the beat after a right-drag lets go (the handler\'s new shape)',
-    p.toggle && p.cancelOnEmpty && p.linesOnlyInMode && p.sameBoard && ctxNew(be) && p.footersOn, JSON.stringify({ ...p, ctxNew: ctxNew(be) }));
+  // ---- PARKED - SUPERSEDED by ledger 92 (connector-b, Oct 17): the board's capture-phase contextmenu handler now also STOPS the event it suppresses (BoardEditor.tsx - so a held right-release over a rail thumbnail cannot reach the tile's own "Delete board" menu).
+  // The handler's literal text changed again (`{ e.preventDefault(); e.stopPropagation(); return; }`), so the context-menu successor's regex no longer matches. Kept VERBATIM below and no longer run; the successor pins the new shape.
+  //
+  // ok('S2 [context-menu successor]: a release on a linked card removes the connection, on an unlinked one makes the SAME connection box as ever (no new field - zero schema); a release on empty board after a drag cancels; lines are drawn only inside the mode; targets are same-board cards only; the browser\'s menu is suppressed in connection mode, on the corner square and for the beat after a right-drag lets go (the handler\'s new shape)',
+  //   p.toggle && p.cancelOnEmpty && p.linesOnlyInMode && p.sameBoard && ctxNew(be) && p.footersOn, JSON.stringify({ ...p, ctxNew: ctxNew(be) }));
+  const ctxNew2 = (text) => /if \(connect \|\| performance\.now\(\) < ctxQuietUntil \|\| t\?\.closest\?\.\('\.board-handle'\)\) \{ e\.preventDefault\(\); e\.stopPropagation\(\); return; \}/.test(text);
+  ok('S2 [stopPropagation successor]: a release on a linked card removes the connection, on an unlinked one makes the SAME connection box as ever (no new field - zero schema); a release on empty board after a drag cancels; lines are drawn only inside the mode; targets are same-board cards only; the browser\'s menu is suppressed AND STOPPED in connection mode, on the corner square and for the beat after a right-drag lets go (the handler\'s newest shape)',
+    p.toggle && p.cancelOnEmpty && p.linesOnlyInMode && p.sameBoard && ctxNew2(be) && p.footersOn, JSON.stringify({ ...p, ctxNew2: ctxNew2(be) }));
   ok('S3: CSS has no tack rule, no olive dashed preview, no source outline; Sliver has no footer toggle', !/board-pin-grab|data-thread-source|board-thread-preview/.test(live(css)) && !/boardFooterToggle|content\.footer/.test(live(sliver)), '');
   const m1 = be.replace(' && !handleClick.moved', '');
   const m2 = be.replace("if (connect || performance.now() < ctxQuietUntil || t?.closest?.('.board-handle')) e.preventDefault();", 'e.preventDefault();');
@@ -79,8 +85,14 @@ const pins = (text) => ({
   // ok('S (mutants): dropping "nothing moved in between", suppressing the menu everywhere, dropping the cancel-on-empty, dropping the relock return, dropping the unlink branch, or putting the tack back each turn a pin RED, while a history COMMENT naming the tack does not (each mutation landed)',
   //   m1 !== be && !pins(m1).doubleDoor && m2 !== be && !pins(m2).ctxScoped && m3 !== be && !pins(m3).cancelOnEmpty && m4 !== be && !pins(m4).relockKept && m5 !== be && !pins(m5).toggle && m6 !== be && !pins(m6).noTack && m7 !== be && pins(m7).noTack, '');
   const m2b = be.replace("if (connect || performance.now() < ctxQuietUntil || t?.closest?.('.board-handle')) { e.preventDefault(); return; }", 'e.preventDefault();');
-  ok('S (mutants) [context-menu successor]: dropping "nothing moved in between", suppressing the menu everywhere (re-aimed at the rewritten handler), dropping the cancel-on-empty, dropping the relock return, dropping the unlink branch, or putting the tack back each turn a pin RED, while a history COMMENT naming the tack does not (each mutation landed)',
-    m1 !== be && !pins(m1).doubleDoor && m2b !== be && !ctxNew(m2b) && m3 !== be && !pins(m3).cancelOnEmpty && m4 !== be && !pins(m4).relockKept && m5 !== be && !pins(m5).toggle && m6 !== be && !pins(m6).noTack && m7 !== be && pins(m7).noTack, '');
+  const m2c = be.replace("if (connect || performance.now() < ctxQuietUntil || t?.closest?.('.board-handle')) { e.preventDefault(); e.stopPropagation(); return; }", 'e.preventDefault();');
+  // ---- PARKED - SUPERSEDED by ledger 92 (connector-b, Oct 17): the board's capture-phase contextmenu handler now also STOPS the event it suppresses (BoardEditor.tsx - so a held right-release over a rail thumbnail cannot reach the tile's own "Delete board" menu).
+  // Its `m2b` mutation patches the PREVIOUS text of that very line, so it no longer lands (its "each mutation landed" cannot hold). Kept VERBATIM below and no longer run; the successor re-aims the mutation at the line as it now reads.
+  //
+  // ok('S (mutants) [context-menu successor]: dropping "nothing moved in between", suppressing the menu everywhere (re-aimed at the rewritten handler), dropping the cancel-on-empty, dropping the relock return, dropping the unlink branch, or putting the tack back each turn a pin RED, while a history COMMENT naming the tack does not (each mutation landed)',
+  //   m1 !== be && !pins(m1).doubleDoor && m2b !== be && !ctxNew(m2b) && m3 !== be && !pins(m3).cancelOnEmpty && m4 !== be && !pins(m4).relockKept && m5 !== be && !pins(m5).toggle && m6 !== be && !pins(m6).noTack && m7 !== be && pins(m7).noTack, '');
+  ok('S (mutants) [stopPropagation successor]: dropping "nothing moved in between", suppressing the menu everywhere (re-aimed at the handler as it now reads, stop included), dropping the cancel-on-empty, dropping the relock return, dropping the unlink branch, or putting the tack back each turn a pin RED, while a history COMMENT naming the tack does not (each mutation landed)',
+    m1 !== be && !pins(m1).doubleDoor && m2c !== be && !ctxNew2(m2c) && m3 !== be && !pins(m3).cancelOnEmpty && m4 !== be && !pins(m4).relockKept && m5 !== be && !pins(m5).toggle && m6 !== be && !pins(m6).noTack && m7 !== be && pins(m7).noTack, '');
 }
 
 // ---- the box half -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -223,7 +235,7 @@ await withHarness(async (app) => {
 
   // ============================================================ C9 right-click
   f = await fresh(app);
-  await app.evalJs("window.__ctx = []; window.addEventListener('contextmenu', (e) => window.__ctx.push({ prevented: e.defaultPrevented, cls: String(e.target.className && e.target.className.baseVal === undefined ? e.target.className : 'svg').split(' ')[0] }));");
+  await app.evalJs("window.__ctxE = []; window.addEventListener('contextmenu', (e) => window.__ctxE.push({ ev: e, cls: String(e.target.className && e.target.className.baseVal === undefined ? e.target.className : 'svg').split(' ')[0] }), true); window.__ctx = []; window.addEventListener('contextmenu', (e) => window.__ctx.push({ prevented: e.defaultPrevented, cls: String(e.target.className && e.target.className.baseVal === undefined ? e.target.className : 'svg').split(' ')[0] }));");
   // the control: the instrument sees a right-click on a place the menu must NOT be suppressed
   // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15) ----
   // A right-click on EMPTY BOARD opens the board menu now (New Card / Delete board) and is default-prevented - so it can no longer be the control "a right-click the app does not suppress". (It also left that menu open over the card the next step pressed: the first review run's crash at the card's handle.)
@@ -237,15 +249,20 @@ await withHarness(async (app) => {
   ok('C9 (instrument) [context-menu successor]: a right-click OUTSIDE the board (the window\'s corner) reaches the page as a contextmenu event and is NOT suppressed (so a suppressed one below is the product, not a blind instrument)', ctlLog.length >= 1 && ctlLog[ctlLog.length - 1].prevented === false, JSON.stringify(ctlLog));
   await select(app, 'ca-a');
   const h9 = await handleAt(app, 'ca-a'); const b9 = centre(await boxRect(app, 'ca-b'));
-  await app.evalJs('window.__ctx.length = 0');
+  await app.evalJs('window.__ctx.length = 0; window.__ctxE.length = 0');
   const pre9 = await conns(app);
   await rightDown(app, h9.x, h9.y); await sleep(120);
   const midArmed = await armed(app);
   await glide(app, h9, b9, 8, (x, y) => rightMove(app, x, y));
   await rightUp(app, b9.x, b9.y); await sleep(300);
   const post9 = await conns(app); const ctx9 = await app.evalJs('window.__ctx.slice()');
+  const ctx9E = await app.evalJs('window.__ctxE.map((x) => ({ prevented: x.ev.defaultPrevented, cls: x.cls }))');   // read AFTER the gesture: the event objects keep their defaultPrevented
   ok('C9: a right-button press on the square ENTERS the mode held; dragging to a card and letting go there LINKS it (A-B)', midArmed === 'true' && linked(post9, 'ca-a', 'ca-b') && post9.length === pre9.length + 1 && (await armed(app)) === 'false', JSON.stringify({ midArmed, pre: pre9.length, post: post9.length }));
-  ok('C9: the browser\'s context menu is suppressed on the square AND for the beat after a right-drag lets go over another card (every contextmenu event in that gesture was default-prevented, and at least one arrived)', ctx9.length >= 1 && ctx9.every((e) => e.prevented), JSON.stringify(ctx9));
+  // ---- PARKED - SUPERSEDED by ledger 92 (connector-b, Oct 17): the board's capture-phase contextmenu handler now also STOPS the event it suppresses (BoardEditor.tsx - so a held right-release over a rail thumbnail cannot reach the tile's own "Delete board" menu).
+  // Its observer (a bubble-phase listener on the window) sits DOWNSTREAM of that stop, so it never sees the event: it reads `[]` and the check goes blind. Kept VERBATIM below and no longer run; the successor observes from the window's CAPTURE phase, before the board.
+  //
+  // ok('C9: the browser\'s context menu is suppressed on the square AND for the beat after a right-drag lets go over another card (every contextmenu event in that gesture was default-prevented, and at least one arrived)', ctx9.length >= 1 && ctx9.every((e) => e.prevented), JSON.stringify(ctx9));
+  ok('C9 [stopPropagation successor]: the browser\'s context menu is suppressed on the square AND for the beat after a right-drag lets go over another card (every contextmenu event in that gesture - seen by an observer registered EARLIER in the capture phase, so the board\'s stop cannot hide it - was default-prevented, and at least one arrived)', ctx9E.length >= 1 && ctx9E.every((e) => e.prevented), JSON.stringify({ ctx9E, bubbleObserver: ctx9 }));
   await sleep(700);
   await app.evalJs('window.__ctx.length = 0');
   const bm = centre(await boxRect(app, 'ca-d'));
