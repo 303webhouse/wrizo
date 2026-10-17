@@ -22,7 +22,10 @@ export function meterIntensity(idleSec: number, lapFrac: number): number {
 }
 
 /** The wait before an event's next firing: its own jittered span (Signal Loss's), stretched at low intensity (the mockup's
- *  span / max(0.22, 0.22 + 0.78 I)), scaled by the Ambiance dial (brief rule 5), never below 0.4 x its minimum (Signal Loss's own floor). */
+ *  span / max(0.22, 0.22 + 0.78 I)), scaled by the Ambiance dial (brief rule 5), never below 0.4 x its minimum (Signal Loss's own floor).
+ *  The floor is a BELT today, not a catch: the stretch never shortens a span and the dial's fastest multiplier is ~0.55 (dial 100), so the
+ *  scaled gap cannot reach 0.4 x min - a mutant removing it survives every check for that reason. It binds only if the dial's curve changes.
+ *  The flash ceiling itself is store/flashBudget.ts's, whatever the gaps. */
 export function nextGapMs(minMs: number, maxMs: number, intensity: number, dial: number, r: number = Math.random()): number {
   const span = minMs + r * (maxMs - minMs);
   const stretched = span / Math.max(0.22, 0.22 + 0.78 * Math.max(0, Math.min(1, intensity)));
