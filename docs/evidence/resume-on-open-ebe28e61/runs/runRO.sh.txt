@@ -1,0 +1,14 @@
+#!/bin/bash
+# resume-on-open @ ebe28e61 (INK; Fable: resume-on-open.mjs + hb1, hb2, item89, logout-flush-walk, fix-signin-live-double, arrival-signin-walk, splash + core; frames cold boot to a Page / a board / the blank Free Write Page).
+# ro = origin/main @ f4f532c2 + the branch -> a5077e5f. The branch changes runtime-verify's double for ALL harnesses, so a spread of front-door harnesses rides along.
+export WS_BOX_TURN=chat1-ro-20261016
+SD="C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad"
+ST="$SD/ro-status.txt"
+W=/c/Users/nickh/writer-studio/.claude/worktrees
+LOC="C:/Users/nickh/writer-studio/.claude/evidence-local/resume-on-open-ebe28e61"
+mkdir -p "$LOC/frames"
+step() { local name="$1" dir="$2"; shift 2; echo "START $name $(date -u +%H:%M:%SZ)" >> "$ST"; ( cd "$dir" && "$@" ) > "$SD/ro-$name.out" 2>&1; echo "END $name exit=$? $(date -u +%H:%M:%SZ)" >> "$ST"; }
+FILES="resume-on-open.mjs,hb1.mjs,hb2.mjs,item89.mjs,logout-flush-walk.mjs,fix-signin-live-double.mjs,arrival-signin-walk.mjs,arrival-signin.mjs,splash.mjs,writing-r1.mjs,clickhead.mjs,item-storage-full.mjs,sync-generation.mjs,item224a-sync-integrity.mjs,drawers-p1-live.mjs,card-close-x.mjs,item118.mjs,item211.mjs,seed-guard.mjs,ab4.mjs,b3.mjs,fx4.mjs,fx5.mjs,fx7.mjs,pw1.mjs,pw2.mjs,item170.mjs,connector-a.mjs,board-click-create.mjs,card-resize-axis.mjs,th1.mjs,th2.mjs,font-span.mjs,board-context-menu.mjs,faint-text-sweep.mjs,flux-page-ink.mjs"
+step lane "$W/ro/apps/desktop" node scripts/run-suite.mjs --no-rebuild --only "$FILES" --out "$SD/ro-lane"
+step frames "$W/ro/apps/desktop" env WT=ro FRAMES_OUT="$LOC/frames" node "$SD/resumeframes.mjs"
+echo "RO COMPLETE" >> "$ST"

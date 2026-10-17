@@ -1,0 +1,56 @@
+[
+  {
+    "frame": "1-cold-boot-blank-free-write-page",
+    "hash": "#/page/new",
+    "frontDoor": false,
+    "activeTab": "Free Write",
+    "crumb": "Untitled",
+    "editor": true,
+    "board": false,
+    "livePages": 0,
+    "pointer": {
+      "v": 1,
+      "uid": "test-user",
+      "kind": null,
+      "id": null,
+      "at": 1792196445852
+    },
+    "bundle": "index-C9EQOsOE.js"
+  },
+  {
+    "frame": "2-cold-boot-to-the-last-page",
+    "hash": "#/page/rsf-page",
+    "frontDoor": false,
+    "activeTab": "Free Write",
+    "crumb": "The ferry was late, so Ada counted gulls",
+    "editor": true,
+    "board": false,
+    "livePages": 2,
+    "pointer": {
+      "v": 1,
+      "uid": "test-user",
+      "kind": "page",
+      "id": "rsf-page",
+      "at": 1792196447662
+    },
+    "bundle": "index-C9EQOsOE.js"
+  },
+  {
+    "frame": "3-cold-boot-to-the-last-board",
+    "hash": "#/page/rsf-board",
+    "frontDoor": false,
+    "activeTab": null,
+    "crumb": "Harbour board",
+    "editor": false,
+    "board": true,
+    "livePages": 3,
+    "pointer": {
+      "v": 1,
+      "uid": "test-user",
+      "kind": "page",
+      "id": "rsf-board",
+      "at": 1792196449972
+    },
+    "bundle": "index-C9EQOsOE.js"
+  }
+]

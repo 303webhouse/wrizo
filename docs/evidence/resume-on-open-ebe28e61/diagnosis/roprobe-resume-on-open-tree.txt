@@ -1,0 +1,7 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+ROPROBE {"label":"(a) blank page, harness default viewport, read at +900 ms","inner":[756,488],"tabs":[],"hash":"#/page/new"}
+ROPROBE {"label":"(a) ...and at +2.4 s","inner":[756,488],"tabs":[],"hash":"#/page/new"}
+ROPROBE {"label":"(a) after emulateDpr 1280x800","inner":[1280,800],"tabs":[{"text":"Free Write","cls":"desk-mode-tab active","aria":"true"},{"text":"Draft","cls":"desk-mode-tab","aria":"false"},{"text":"Revise","cls":"desk-mode-tab","aria":"false"},{"text":"Workshop","cls":"desk-mode-tab deferred","aria":"false"},{"text":"Publish","cls":"desk-mode-tab","aria":"false"}],"hash":"#/page/new"}
+ROPROBE {"label":"(b) the moment the address reaches the page (hold 2500)","seen":{"ms":1,"hash":"#/page/rop-a","splash":true,"holdAttr":"true","doors":false,"arrival":false}}
+ROPROBE {"label":"(b) html dataset and splash attributes then","htmlDataset":{"theme":"plateau","voice":"serif","page":"light","fade":"on","splashHold":"true"},"splashAttrs":["class=wz-splash","data-leaving=false","data-tone=dark","aria-hidden=true","style=--mark-h: 496.5559381158135px;"]}
