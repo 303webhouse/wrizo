@@ -1951,7 +1951,10 @@ export function BoardEditor({ id }: { id: string }) {
     // a right-click on the square is suppressed ONLY there (the browser's own menu would cover the very thing being asked for) - plus while the mode is on, plus the beat after a right-drag lets go
     const onCtx = (e: Event) => {
       const t = e.target as Element | null;
-      if (connect || performance.now() < ctxQuietUntil || t?.closest?.('.board-handle')) { e.preventDefault(); return; }
+      // THE RAIL TILE'S OWN MENU (ledger 87): a held right-button release over a rail thumbnail fires `contextmenu` ON THAT TILE, whose own onContextMenu opens its "Delete board" menu - a destructive menu under the pointer
+      // right after a link gesture, and the writer's next click is spent dismissing it. preventDefault only stops the browser's own menu; this listener is document-capture, so stopping propagation here keeps the event from
+      // ever reaching the tile's handler. Only in the three cases this gesture owns (the mode is on, the beat after a right-drag lets go, the corner square).        
+      if (connect || performance.now() < ctxQuietUntil || t?.closest?.('.board-handle')) { e.preventDefault(); e.stopPropagation(); return; }
       // BOARD CONTEXT MENU: a right-click ON a card opens the card menu, on empty board the board menu (the corner square and a right-drag are connection mode, handled above). The card pop-up owns
       // its own right-clicks (the browser's spelling menu), and nothing opens while a thread is armed.
       if (popupBoxIdRef.current) return;

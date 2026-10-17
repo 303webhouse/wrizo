@@ -99,11 +99,16 @@ await withHarness(async (app) => {
     await app.evalJs("document.querySelector('.wz-delete-btn:not(.wz-delete-go)')?.click()"); await sleep(300);
     await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(500);
     // 06 / 07 - drag a thumbnail onto the board
+    // The Escape that ended the arm at step 03 also DISMISSES the Drawers panel (Cascade: Esc leaves the category), so the tile measured at the top is no longer there: a press at its old point lands on the empty board and starts
+    // no drag - frame 07 showed three cards and no copy (ledger 87). Re-open the panel if it is closed and measure the drag source NOW; a source that is not there is a named row, never a quiet press on nothing.
+    await app.evalJs("(() => { const b = document.querySelector('.wz-strip-item[data-category=drawers]'); if (b && !b.classList.contains('active')) b.click(); })()"); await sleep(700);
+    const t3b = await tile(app, 'Characters');
+    if (!t3b) { rows.push({ combo: combo.id, frame: '06-07', error: 'the Characters thumbnail is not in the rail (the Drawers panel would not open)' }); continue; }
     const drop = await app.evalJs(`(() => { const c = document.querySelector('.board-canvas'); const r = c.getBoundingClientRect();
       for (let y = r.top + 330; y < Math.min(r.bottom, innerHeight - 140); y += 25) for (let x = r.left + 300; x < r.right - 320; x += 25) if (document.elementFromPoint(x, y) === c) return { x: Math.round(x), y: Math.round(y) };
       return null; })()`);
     if (drop) {
-      const p = centre(t3);
+      const p = centre(t3b);
       await app.mouseMove(p.x, p.y); await mouse(app, 'mousePressed', p.x, p.y);
       await glide(app, p, drop, 12); await sleep(150);
       await shot(app, combo, '06-dragging-a-thumbnail-onto-the-board');

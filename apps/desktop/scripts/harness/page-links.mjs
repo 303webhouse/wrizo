@@ -222,6 +222,16 @@ const pinsOf = (m, s) => ({
   ];
   const swRed = swMut.map(([k, t]) => [k, t !== be && swallowPin(t) === false]);
   ok('S10 (mutants): dropping the swallow, keeping it on the latched path only (the held path then leaks the click), or never removing it turns the pin RED (each landed)', swRed.every(([, v]) => v), JSON.stringify(swRed));
+  // ledger 87: a connector's right-button release over a rail thumbnail fires `contextmenu` on THAT TILE, whose own onContextMenu opens its "Delete board" menu; the board's document-capture handler must STOP the event, not only
+  // preventDefault it (which only stops the browser's own menu), in the three cases the gesture owns
+  const ctxPin = (b) => /if \(connect \|\| performance\.now\(\) < ctxQuietUntil \|\| t\?\.closest\?\.\('\.board-handle'\)\) \{ e\.preventDefault\(\); e\.stopPropagation\(\); return; \}/.test(b) && /document\.addEventListener\('contextmenu', onCtx, true\);/.test(b);
+  ok('S11 (ledger 87): the board\'s capture-phase contextmenu handler STOPS the event while the mode is on, in the beat after a right-drag lets go, and on the corner square - so a right-button release over a rail thumbnail cannot open that thumbnail\'s own menu (Delete board)', ctxPin(be), '');
+  const ctxMut = [
+    ['preventDefault only (the tile\'s own handler still runs)', be.replace('{ e.preventDefault(); e.stopPropagation(); return; }', '{ e.preventDefault(); return; }')],
+    ['bubble phase (the tile\'s handler runs first)', be.replace("document.addEventListener('contextmenu', onCtx, true);", "document.addEventListener('contextmenu', onCtx);")],
+  ];
+  const ctxRed = ctxMut.map(([k, t]) => [k, t !== be && ctxPin(t) === false]);
+  ok('S11 (mutants): preventDefault without stopPropagation, or listening in the bubble phase, turns the pin RED (each landed)', ctxRed.every(([, v]) => v), JSON.stringify(ctxRed));
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : `  [${c.detail}]`}`);

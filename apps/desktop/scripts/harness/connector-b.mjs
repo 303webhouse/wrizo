@@ -86,7 +86,8 @@ const conns = async (app) => ((await app.evalJs('window.wrizoBoard()')) || []).f
 const footer = (app, cardId) => app.evalJs(`document.querySelector('[data-box-id="${cardId}"] .board-card-footer')?.textContent ?? null`);
 const armed = (app) => app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
 const brass = (app) => app.evalJs("(() => { const p = document.createElement('i'); p.style.color = 'var(--brass)'; document.body.appendChild(p); const c = getComputedStyle(p).color; p.remove(); return c; })()");
-const openDrawers = async (app) => { await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]')?.click()"); await sleep(600); };
+// the Drawers entry in the strip is a TOGGLE: pressing it with the panel open CLOSES it (B5 and B9 found the panel gone). Open it only when it is closed.
+const openDrawers = async (app) => { await app.evalJs("(() => { const b = document.querySelector('.wz-strip-item[data-category=drawers]'); if (b && !b.classList.contains('active')) b.click(); })()"); await sleep(600); };
 
 await withHarness(async (app) => {
   let f = await fresh(app);
@@ -108,9 +109,18 @@ await withHarness(async (app) => {
   // ---- PARKED - SUPERSEDED (Fable Oct 17, ledger 86): the original B1 assumed the rail is on the RIGHT of the board. It is on the LEFT. Kept VERBATIM below and no longer run; its successor reads the side.
   //
   // ok('B1: the arm is drawn in a viewport overlay (a portal on body), UNCLIPPED - it ends past the board\'s right edge, over the rail', !!arm1 && arm1.inBody && arm1.display !== 'none' && arm1.x2 > cvR.r, JSON.stringify({ arm1, canvasRight: cvR.r }));
-  // the rail's side is READ from where the thumbnail is, never assumed
-  const railLeft = centre(tb2).x < cvR.l;
-  ok(`B1 [rail-side successor]: the arm is drawn in a viewport overlay (a portal on body), UNCLIPPED - it ends past the board's ${railLeft ? 'LEFT' : 'RIGHT'} edge, on the rail's side, over the rail`, !!arm1 && arm1.inBody && arm1.display !== 'none' && (railLeft ? arm1.x2 < cvR.l : arm1.x2 > cvR.r), JSON.stringify({ arm1, railLeft, canvas: { l: cvR.l, r: cvR.r } }));
+  // ---- PARKED - SUPERSEDED (Fable Oct 17, ledger 87): the rail-side successor compared the thumbnail's centre with the canvas rect's left edge, but the Drawers panel OVERLAYS the canvas (page primacy: the board does not
+  // move - B8 passes), so the thumbnail is INSIDE the canvas rect and the check cannot hold on this layout. Kept VERBATIM below and no longer run; its successor allows for the overlay.
+  //
+  // // the rail's side is READ from where the thumbnail is, never assumed
+  // const railLeft = centre(tb2).x < cvR.l;
+  // ok(`B1 [rail-side successor]: the arm is drawn in a viewport overlay (a portal on body), UNCLIPPED - it ends past the board's ${railLeft ? 'LEFT' : 'RIGHT'} edge, on the rail's side, over the rail`, !!arm1 && arm1.inBody && arm1.display !== 'none' && (railLeft ? arm1.x2 < cvR.l : arm1.x2 > cvR.r), JSON.stringify({ arm1, railLeft, canvas: { l: cvR.l, r: cvR.r } }));
+  // the rail's position is READ, never assumed: the panel overlays the canvas, so a thumbnail may lie inside the canvas rect (then the arm must END ON IT) or outside it (then the arm must also pass that edge)
+  const tcx = centre(tb2).x;
+  const outsideCanvas = tcx < cvR.l || tcx > cvR.r;
+  const onThumb = !!arm1 && arm1.x2 >= tb2.l - 3 && arm1.x2 <= tb2.l + tb2.w + 3 && arm1.y2 >= tb2.t - 3 && arm1.y2 <= tb2.t + tb2.h + 3;
+  const edgeOk = !outsideCanvas || (tcx < cvR.l ? arm1.x2 < cvR.l : arm1.x2 > cvR.r);
+  ok('B1 [overlay successor]: the arm is drawn in a viewport overlay (a portal on body), UNCLIPPED - the Drawers panel overlays the canvas, and the arm still REACHES the thumbnail: its end lies on it (and past the canvas edge on the rail\'s side when the rail is outside the canvas)', !!arm1 && arm1.inBody && arm1.display !== 'none' && onThumb && edgeOk, JSON.stringify({ arm1, tile: { l: tb2.l, t: tb2.t, w: tb2.w, h: tb2.h }, outsideCanvas, canvas: { l: cvR.l, r: cvR.r } }));
   ok('B8: with the arm over the rail the board has not moved - the canvas rect is identical', JSON.stringify(cv0) === JSON.stringify(cvR), '');
 
   // B2
@@ -171,16 +181,16 @@ await withHarness(async (app) => {
   const list = await app.evalJs(`[...document.querySelectorAll('.wz-links-item')].map((li) => ({ via: li.dataset.linkVia, kind: li.dataset.linkKind, label: li.querySelector('.wz-links-label')?.textContent, x: !!li.querySelector('.wz-links-x') }))`);
   ok('B6: the Grafts / Links tab lists the selected card\'s connections - the page-link (a board) AND the same-board connection (the pinned nested board) - each with an X', list.length === 2 && list.every((i) => i.x) && list.some((i) => i.via === 'link' && i.label === 'Research board' && i.kind === 'board') && list.some((i) => i.via === 'card' && i.label === 'Nested board'), JSON.stringify(list));
   await app.evalJs("window.wrizoAskBeforeDelete.set(false)");   // an unlink keeps its OWN confirm, whatever the delete setting says
-  await app.evalJs("[...document.querySelectorAll('.wz-links-item')].find((li) => li.dataset.linkVia === 'link').querySelector('.wz-links-x').click()"); await sleep(400);
+  await app.evalJs("[...document.querySelectorAll('.wz-links-item')].find((li) => li.dataset.linkVia === 'link')?.querySelector('.wz-links-x')?.click()"); await sleep(400);
   const dlg = await app.evalJs("(() => { const d = document.querySelector('.wz-delete-dialog'); if (!d) return null; return { title: d.querySelector('.wz-delete-title')?.textContent, dontAsk: !!d.querySelector('.wz-delete-chk'), buttons: [...d.querySelectorAll('.wz-delete-btn')].map((b) => b.textContent.trim()) }; })()");
   ok('B6: the X asks "Remove graft?" - with Cancel / Delete and NO "Don\'t ask me again" - even with the asking setting OFF (an unlink keeps its own confirm)', !!dlg && dlg.title === 'Remove graft?' && dlg.dontAsk === false && JSON.stringify(dlg.buttons) === JSON.stringify(['Cancel', 'Delete']), JSON.stringify(dlg));
   await app.evalJs("document.querySelector('.wz-delete-btn:not(.wz-delete-go)')?.click()"); await sleep(300);
   ok('B6: Cancel keeps the link', (await linksOf(app, f.id)).length === 1, '');
-  await app.evalJs("[...document.querySelectorAll('.wz-links-item')].find((li) => li.dataset.linkVia === 'link').querySelector('.wz-links-x').click()"); await sleep(400);
+  await app.evalJs("[...document.querySelectorAll('.wz-links-item')].find((li) => li.dataset.linkVia === 'link')?.querySelector('.wz-links-x')?.click()"); await sleep(400);
   await app.evalJs("document.querySelector('.wz-delete-go')?.click()"); await sleep(500);
   const list2 = await app.evalJs("[...document.querySelectorAll('.wz-links-item')].map((li) => li.dataset.linkVia)");
   ok('B6: Delete removes the page-link (tombstoned, gone from the list); the same-board connection is untouched', (await linksOf(app, f.id)).length === 0 && JSON.stringify(list2) === JSON.stringify(['card']), JSON.stringify(list2));
-  await app.evalJs("[...document.querySelectorAll('.wz-links-item')].find((li) => li.dataset.linkVia === 'card').querySelector('.wz-links-x').click()"); await sleep(400);
+  await app.evalJs("[...document.querySelectorAll('.wz-links-item')].find((li) => li.dataset.linkVia === 'card')?.querySelector('.wz-links-x')?.click()"); await sleep(400);
   await app.evalJs("document.querySelector('.wz-delete-go')?.click()"); await sleep(600);
   ok('B6: and the X on a same-board connection removes its connection BOX (through the board)', (await conns(app)).length === 0 && (await app.evalJs("document.querySelectorAll('.wz-links-item').length")) === 0, String((await conns(app)).length));
 
@@ -211,8 +221,41 @@ await withHarness(async (app) => {
     ok('B7: the copy is a real card - selected, and its footer names its original', (await footer(app, copy ? copy.id : 'none')) !== null && /Research board/.test((await footer(app, copy.id)) || ''), String(copy && (await footer(app, copy.id))));
   }
 
-  // B9 - THE HELD PATH (Fable Oct 17, ledger 86): press the corner square, DRAG to a rail thumbnail holding the button, release there. The release toggles the link and the writer STAYS on the board; the beat then
-  // ends, so a later deliberate click on the same thumbnail still travels (the swallow is a beat, not a lock).
+  // ---- PARKED - SUPERSEDED (Fable Oct 17, ledger 87): B9's driver pressed the corner square with the LEFT button and dragged - which is a RESIZE (held connection mode comes from a RIGHT press on the square, or a second press of a
+  // double-press). Kept VERBATIM below and no longer run; the successor drives the right button.
+  //
+  // // B9 - THE HELD PATH (Fable Oct 17, ledger 86): press the corner square, DRAG to a rail thumbnail holding the button, release there. The release toggles the link and the writer STAYS on the board; the beat then
+  // // ends, so a later deliberate click on the same thumbnail still travels (the swallow is a beat, not a lock).
+  // await openDrawers(app);
+  // const tb9 = await tile(app, 'Research board');
+  // const hash9 = await app.evalJs('location.hash');
+  // if (!tb9) ok('B9 fixture: the Research board thumbnail is in the rail', false, 'absent');
+  // else if (!(await selectCard(app, 'cb-a'))) ok('B9 fixture: the card selected', false, JSON.stringify(await R(app, '[data-box-id="cb-a"]')));
+  // else {
+  //   const hr9 = await R(app, '[data-box-id="cb-a"] .board-handle');
+  //   if (!hr9) ok('B9 fixture: the card\'s corner square rendered', false, 'absent');
+  //   else {
+  //     const n9 = (await linksOf(app, f.id)).length;
+  //     const hp = centre(hr9);
+  //     await app.mouseMove(hp.x, hp.y); await mouse(app, 'mousePressed', hp.x, hp.y);
+  //     await glide(app, hp, centre(tb9), 12); await sleep(250);
+  //     const armed9 = await armed(app);
+  //     await mouse(app, 'mouseReleased', ...Object.values(centre(tb9))); await sleep(500);
+  //     const n9b = (await linksOf(app, f.id)).length;
+  //     ok('B9 [held path]: press the corner square, drag onto a rail thumbnail and release there toggles the link (one record more or fewer), the mode having been armed during the drag', armed9 === 'true' && Math.abs(n9b - n9) === 1, JSON.stringify({ armed9, before: n9, after: n9b }));
+  //     ok('B9 [held path]: and the writer is STILL ON THE BOARD (a release is not a click on the thumbnail)', (await app.evalJs('location.hash')) === hash9, String(await app.evalJs('location.hash')));
+  //     await sleep(400);
+  //     const tb9b = await tile(app, 'Research board');
+  //     if (tb9b) { await click(app, ...Object.values(centre(tb9b))); await waitSoft(app, `location.hash === '#/page/${f.b2}'`, { label: 'travel', timeout: 4000 }); }
+  //     ok('B9: after the beat, a deliberate click on the thumbnail travels as it always did (the swallow is a beat, not a lock)', (await app.evalJs('location.hash')) === `#/page/${f.b2}`, String(await app.evalJs('location.hash')));
+  //   }
+  // }
+
+  // B9 [right-button successor] - THE HELD PATH (Fable Oct 17, ledgers 86 and 87): RIGHT-press the corner square, drag to a rail thumbnail holding the button, release there. The release toggles the link and the writer STAYS on the board; no
+  // menu opens under the pointer (the thumbnail has its own, with Delete board in it); and a deliberate click on the thumbnail a beat later still travels (the swallow is a beat, not a lock).
+  const rDown = (x, y) => app.cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'right', buttons: 2, clickCount: 1, pointerType: 'mouse' });
+  const rMove = (x, y) => app.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y, button: 'right', buttons: 2, pointerType: 'mouse' });
+  const rUp = (x, y) => app.cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'right', buttons: 0, clickCount: 1, pointerType: 'mouse' });
   await openDrawers(app);
   const tb9 = await tile(app, 'Research board');
   const hash9 = await app.evalJs('location.hash');
@@ -223,18 +266,20 @@ await withHarness(async (app) => {
     if (!hr9) ok('B9 fixture: the card\'s corner square rendered', false, 'absent');
     else {
       const n9 = (await linksOf(app, f.id)).length;
-      const hp = centre(hr9);
-      await app.mouseMove(hp.x, hp.y); await mouse(app, 'mousePressed', hp.x, hp.y);
-      await glide(app, hp, centre(tb9), 12); await sleep(250);
+      const hp = centre(hr9), tp = centre(tb9);
+      await app.mouseMove(hp.x, hp.y); await rDown(hp.x, hp.y);
+      for (let k = 1; k <= 12; k += 1) { await rMove(Math.round(hp.x + ((tp.x - hp.x) * k) / 12), Math.round(hp.y + ((tp.y - hp.y) * k) / 12)); await sleep(20); }
+      await sleep(250);
       const armed9 = await armed(app);
-      await mouse(app, 'mouseReleased', ...Object.values(centre(tb9))); await sleep(500);
+      await rUp(tp.x, tp.y); await sleep(500);
       const n9b = (await linksOf(app, f.id)).length;
-      ok('B9 [held path]: press the corner square, drag onto a rail thumbnail and release there toggles the link (one record more or fewer), the mode having been armed during the drag', armed9 === 'true' && Math.abs(n9b - n9) === 1, JSON.stringify({ armed9, before: n9, after: n9b }));
+      ok('B9 [held path, right button]: RIGHT-press the corner square, drag onto a rail thumbnail and release there toggles the link (one record more or fewer), the mode having been armed during the drag', armed9 === 'true' && Math.abs(n9b - n9) === 1, JSON.stringify({ armed9, before: n9, after: n9b }));
       ok('B9 [held path]: and the writer is STILL ON THE BOARD (a release is not a click on the thumbnail)', (await app.evalJs('location.hash')) === hash9, String(await app.evalJs('location.hash')));
-      await sleep(400);
+      ok('B9 [held path]: and NO menu opened under the pointer (the right-button release must not reach the thumbnail\'s own context menu - it holds Delete board)', (await app.evalJs("!document.querySelector('.wz-ctx')")) === true, String(await app.evalJs("!!document.querySelector('.wz-ctx')")));
+      await sleep(900);
       const tb9b = await tile(app, 'Research board');
       if (tb9b) { await click(app, ...Object.values(centre(tb9b))); await waitSoft(app, `location.hash === '#/page/${f.b2}'`, { label: 'travel', timeout: 4000 }); }
-      ok('B9: after the beat, a deliberate click on the thumbnail travels as it always did (the swallow is a beat, not a lock)', (await app.evalJs('location.hash')) === `#/page/${f.b2}`, String(await app.evalJs('location.hash')));
+      ok('B9: about a second after the release, a deliberate click on the thumbnail travels as it always did (the swallow is a beat, not a lock; no menu ate the click)', (await app.evalJs('location.hash')) === `#/page/${f.b2}`, String(await app.evalJs('location.hash')));
     }
   }
 });
