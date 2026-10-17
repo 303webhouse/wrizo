@@ -19,10 +19,26 @@
 // Run: node apps/desktop/scripts/harness/th2.mjs   (from apps/desktop, with
 // dist-web freshly built via `pnpm run build:web`).
 import { withHarness } from '../runtime-verify.mjs';
+import { readFile } from 'node:fs/promises';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// -- check 1 (source) [theme-leftovers, Fable Oct 17]: the pen/format bar's
+// own fill no longer reads Arbor's raw --ink-900 under Flux. ModeStage.tsx's
+// .mode-bar ("the PEN toolbar strip above the page") used --ink-900 directly
+// rather than --chrome-surface — the composite chrome token Flux DOES
+// override — so its border (--ink-border, already Flux-themed) read teal
+// while its own fill stayed Arbor-brown. A source check, not a runtime one:
+// this is a static CSS cascade fact, provable without mounting the narrow-
+// shell pen bar (rail.tools === 'pen' && !framed) at all.
+const cssSrc = await readFile(new URL('../../src/index.css', import.meta.url), 'utf8');
+const fluxModeBarRule = (cssSrc.match(/\[data-theme='flux'\]\s*\.mode-bar\s*\{[^}]*\}/) || [''])[0];
+ok('check 1 (source) [theme-leftovers]: a Flux override for .mode-bar exists',
+  !!fluxModeBarRule, fluxModeBarRule || '(no match)');
+ok('check 1 (source) [theme-leftovers]: it points the bar\'s fill at --chrome-surface (Flux\'s own themed token), not the raw --ink-900',
+  /--chrome-surface/.test(fluxModeBarRule) && !/--ink-900/.test(fluxModeBarRule), fluxModeBarRule);
 
 await withHarness(async (app) => {
   await app.reload();

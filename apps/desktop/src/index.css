@@ -2525,6 +2525,13 @@ a:focus-visible,
 /* Format / pen bar — chrome at the top of the page. */
 .mode-bar{ display:flex; align-items:center; gap:4px; background:var(--ink-900);
   border:1px solid var(--ink-border); border-bottom:0; padding:6px 10px; min-height:42px; }
+/* theme-leftovers (Fable, Oct 17) — --ink-900 has no Flux override (it is the
+   raw Arbor surface token, not --chrome-surface, which Flux DOES override),
+   so this bar's own fill stayed Arbor-brown while its --ink-border-derived
+   border already read teal: a half-themed strip. --chrome-surface is the
+   token this comment already calls this bar ("chrome at the top of the
+   page"), so it is the one to reuse here, not a new value. */
+[data-theme='flux'] .mode-bar{ background:var(--chrome-surface); }
 .mode-tlabel{ font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--brass-press); margin-right:6px; }
 /* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above. */
 [data-theme='flux'] .mode-tlabel{ color:var(--text-mid); }
