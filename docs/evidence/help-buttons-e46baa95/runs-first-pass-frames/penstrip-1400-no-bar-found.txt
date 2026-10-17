@@ -1,0 +1,5 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PSF {"theme":"flux","found":false,"bundle":"index-Bu4V2eoP.js"}
+PSF {"theme":"arbor","found":false,"bundle":"index-Bu4V2eoP.js"}
+PSF FRAMES: 2 -> C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/hb2-frames

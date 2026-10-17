@@ -1,0 +1,11 @@
+file:///C:/Users/nickh/writer-studio/.claude/worktrees/ss2/apps/desktop/scripts/runtime-verify.mjs:673
+      throw new Error('waitFor timed out: ' + label + '; diag=' + JSON.stringify(await evalJs('__diag()')));
+            ^
+
+Error: waitFor timed out: S17 settle (flux); diag={"href":"http://127.0.0.1:61421/#/","buttons":["Full screen","Sign out","Write","Open"],"body":"Full screen\nSign out\nFor humans writing\nWrite\nOpen"}
+    at Object.waitFor (file:///C:/Users/nickh/writer-studio/.claude/worktrees/ss2/apps/desktop/scripts/runtime-verify.mjs:673:13)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/ss2/apps/desktop/scripts/harness/splash.mjs:816:5
+    at async withHarness (file:///C:/Users/nickh/writer-studio/.claude/worktrees/ss2/apps/desktop/scripts/runtime-verify.mjs:900:20)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/ss2/apps/desktop/scripts/harness/splash.mjs:105:1
+
+Node.js v24.13.0

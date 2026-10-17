@@ -1,0 +1,13 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+HPROBE2 {"step":"T1 first press on Templates ? after mousedown","btn":true,"expanded":"false","popOpen":false,"popText":null,"focusIsBtn":true,"rect":[295,748,15,15]}
+HPROBE2 {"step":"T1 first press on Templates ? after mouseup","btn":true,"expanded":"true","popOpen":true,"popText":"Ready-made page layouts.","focusIsBtn":true,"rect":[295,748,15,15]}
+HPROBE2 {"step":"T2 SECOND press on the same ? after mousedown","btn":true,"expanded":"false","popOpen":false,"popText":null,"focusIsBtn":true,"rect":[295,748,15,15]}
+HPROBE2 {"step":"T2 SECOND press on the same ? after mouseup","btn":true,"expanded":"true","popOpen":true,"popText":"Ready-made page layouts.","focusIsBtn":true,"rect":[295,748,15,15]}
+HPROBE2 {"step":"O1 press the Outline ? (Templates pop in whatever state T2 left it) after mousedown","btn":true,"expanded":"false","popOpen":true,"popText":"Ready-made page layouts.","focusIsBtn":false,"rect":[293,778,15,15]}
+HPROBE2 {"step":"O1 press the Outline ? (Templates pop in whatever state T2 left it) after mouseup","btn":true,"expanded":"false","popOpen":true,"popText":"Ready-made page layouts.","focusIsBtn":false,"rect":[293,778,15,15]}
+HPROBE2 {"step":"O1b the Outline pop text now","pop":"Ready-made page layouts."}
+HPROBE2 {"step":"O2 press the Outline ? again after mousedown","btn":true,"expanded":"false","popOpen":true,"popText":"Ready-made page layouts.","focusIsBtn":false,"rect":[293,778,15,15]}
+HPROBE2 {"step":"O2 press the Outline ? again after mouseup","btn":true,"expanded":"false","popOpen":true,"popText":"Ready-made page layouts.","focusIsBtn":false,"rect":[293,778,15,15]}
+
+ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one)
