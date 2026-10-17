@@ -570,6 +570,18 @@ await withHarness(async (app) => {
       firstDurationMs(rm.veil) <= 1 && firstDurationMs(rm.mark) <= 1, JSON.stringify(rm));
   }
 
+  // S8 left the browser emulating reduced motion; CDP's media emulation is
+  // sticky across goto/reload (that is WHY S8 didn't need to re-set it per
+  // iteration), so without this reset S12/S13 below inherit it. Under reduced
+  // motion, onFloorReached fires synchronously at mount (Splash.tsx/
+  // SplashMark.tsx's own, correct, by-design behaviour — S17 proves it) —
+  // once `ready` has also resolved, the whole mount-to-unmount lifecycle can
+  // finish in well under a second, a window S12's own `waitFor('.wz-splash')`
+  // can lose the race against (confirmed by source reading: ledger 84's S12
+  // Flux crash). Reset before any scenario that reads the splash's own timed
+  // lifecycle rather than its reduced-motion end state.
+  await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+
   // ==========================================================================
   // S12 — ROUND 6 (Nick, live): THE SOLID BLOCK USES THE WRITER'S OWN THEME,
   // ARBOR BY DEFAULT, AND IT IS THERE BEFORE THE SPLASH'S FIRST PAINT — a
@@ -664,9 +676,8 @@ await withHarness(async (app) => {
   const s13Default = await app.evalJs("!!document.querySelector('.wz-splash-arbor') && !document.querySelector('.wz-splash-flux')");
   ok('S13: with no stored preference, the default mark is Arbor\'s (matches S12\'s own default-theme claim)', s13Default === true, String(s13Default));
 
-  // Real motion from here on — S8 above emulated prefers-reduced-motion:reduce
-  // and never reset it; S14/S16 both need the genuine, time-based animation.
-  await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+  // Already reset above (before S12) — real motion from here on; S14/S16 both
+  // need the genuine, time-based animation.
 
   // ==========================================================================
   // S14/S16 — IDEAS BEFORE FINAL DRAFT, AND THE FLOOR IS THE ANIMATION'S OWN
