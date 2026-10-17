@@ -3919,6 +3919,14 @@ a:focus-visible,
    sits OUTSIDE the tablist. The note opens below the row as an overlay (it displaces nothing). */
 .wz-drawer-tabnotes{ position:absolute; left:14px; right:14px; top:14px; height:26px; display:grid; gap:6px; pointer-events:none; }
 .wz-drawer-tabnote-cell{ display:flex; align-items:center; justify-content:flex-end; padding-right:3px; min-width:0; }
+/* FIX (Fable, Oct 17, ledger 88-90) — "ignores the pointer except on the '?'
+   itself" (comment above) was true for the OLD .wz-drawer-note wrapper (its
+   own pointer-events:auto, below) but never carried over when helpGrafts
+   moved onto the shared .wz-help (HelpButton.tsx) — a bare button with no
+   such restoration. A real press here hit the row's pointer-events:none and
+   landed on nothing underneath; a page-side .click() never noticed, since it
+   bypasses hit-testing entirely. */
+.wz-drawer-tabnotes .wz-help{ pointer-events:auto; }
 /* .wz-drawer-note/-btn/-pop's own GENERAL rules moved below (merge with
    word-diet, 2026-10-14) to the single definition every caller now shares;
    only this row's own stretch-to-the-margins override stays here, scoped

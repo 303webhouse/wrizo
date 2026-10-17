@@ -477,12 +477,21 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
                     looked like the Ink wave's zone. It is not — that zone is
                     Sliver.tsx's, framed-only, and cannot render here. */}
                 <span className="mode-tlabel">{deskT('modeBarPen')}</span>
+                {/* FIX (Fable, Oct 17, ledger 88-90) — PEN_INKS is a fixed,
+                    theme-independent set of IDS (the comparison/stored value
+                    `choosePen`/`pen === ink` needs to keep working against,
+                    unchanged); only the SWATCH'S OWN PAINTED COLOUR must go
+                    through the same effectivePenInk() substitution the actual
+                    ink on the page already gets (render-prop hand-off,
+                    below) — otherwise the chip lies about what tapping it
+                    will write in Flux, same species as splash-sweep's
+                    page-outline fix: paint the theme's own ink, not Arbor's. */}
                 {PEN_INKS.map(ink => (
                   <button
                     key={ink}
                     type="button"
                     className={`mode-swatch${pen === ink ? ' active' : ''}`}
-                    style={{ background: ink }}
+                    style={{ background: effectivePenInk(ink, penTheme, penPageTone) }}
                     aria-label={`Ink ${ink}`}
                     aria-pressed={pen === ink}
                     onClick={() => choosePen(ink)}

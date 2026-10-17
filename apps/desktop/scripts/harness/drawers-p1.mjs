@@ -329,6 +329,19 @@ const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-par
     gated && helpGated && nowStripped === was, `${now ? now.length : 0} (gate ${gated}, help ${helpGated}) vs ${was ? was.length : 0}`);
 }
 
+// (D2d) FIX (Fable, Oct 17, ledger 88-90) — .wz-drawer-tabnotes carries
+// pointer-events:none (the row "ignores the pointer except on the '?'
+// itself" - its own comment's claim); nothing restored pointer-events:auto
+// on the new shared .wz-help once helpGrafts moved onto it, so a real press
+// landed on nothing underneath. A source check, not a runtime one: this is
+// a static cascade fact, same species as th2.mjs's --chrome-surface check.
+const tabnotesRule = (css.match(/\.wz-drawer-tabnotes\s*\{[^}]*\}/) || [''])[0];
+const helpRestoreRule = (css.match(/\.wz-drawer-tabnotes\s+\.wz-help\s*\{[^}]*\}/) || [''])[0];
+ok('(D2d): .wz-drawer-tabnotes still carries pointer-events:none (the row itself stays a non-capturing overlay)',
+  /pointer-events:\s*none/.test(tabnotesRule), tabnotesRule);
+ok('(D2d) [pointer-events fix]: .wz-drawer-tabnotes .wz-help restores pointer-events:auto, so the "?" itself is still reachable by a real press',
+  /pointer-events:\s*auto/.test(helpRestoreRule), helpRestoreRule || '(no match)');
+
 // =============================================================================
 // PART E (S2) - THE TABLE: what the left drawer shows, run for real (store/drawerSet.ts is pure).
 // =============================================================================

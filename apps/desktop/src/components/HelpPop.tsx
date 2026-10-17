@@ -36,8 +36,21 @@ export function HelpPop() {
   useEffect(() => {
     if (!open) return undefined;
     returnFocus.current = document.activeElement as HTMLElement | null;
+    // FIX (Fable, Oct 17, ledger 88-90): this listener only ever excluded the
+    // POPOVER (ref) from "outside" — never the "?" that owns it. A second
+    // press on that SAME "?" landed here on pointerdown (mousedown, before
+    // the button's own click fires), read as outside, and closed the pop —
+    // then the button's own onClick toggled the now-closed store back open.
+    // Net effect: closes on mousedown, reopens on click (never actually
+    // closes). The trigger currently showing this pop always carries
+    // aria-expanded="true" (HelpButton.tsx) while it is open, which is
+    // exactly "the '?' that owns the pop" — exclude it too, and let ITS OWN
+    // click (store/help.ts's toggleHelp) be the one thing that closes it.
     const onDown = (e: PointerEvent) => {
-      if (!ref.current?.contains(e.target as Node)) closeHelp();
+      const target = e.target as Element | null;
+      if (ref.current?.contains(target)) return;
+      if (target?.closest?.('.wz-help[aria-expanded="true"]')) return;
+      closeHelp();
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeHelp(); }
