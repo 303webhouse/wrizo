@@ -332,8 +332,21 @@ for (const m of PIN_MUTANTS) {
 }
 ok(`all ${PIN_MUTANTS.length} pin mutations landed and ${PIN_MUTANTS.length} were killed`, pinLanded === PIN_MUTANTS.length && pinKilled === PIN_MUTANTS.length, `${pinLanded} landed / ${pinKilled} killed`);
 const fo = read('components/ForwardOnlyEditor.tsx');
-ok('R10 the editor carries the lens as data-template and the host\'s key door, and re-draws the lens when the template changes under it (refreshLens on [lens])',
-  /data-template=\{lens \?\? undefined\}/.test(fo) && /if \(onLensKeyRef\.current\?\.\(e\)\) return;/.test(fo) && /useEffect\(\(\) => \{ const h = hostRef\.current; if \(h\) refreshLens\(h\); \}, \[lens\]\);/.test(fo), '');
+// ---- PARKED - SUPERSEDED by ledger 92 (Fable Oct 17, X7): the lens's key door was in onFormatKeyDraft, which runs AFTER onKeyDownDraft's marks.enter had already done the Enter - one Enter was done twice. The door is now the FIRST thing onKeyDownDraft does, and the only call.
+// Kept VERBATIM below and no longer run; the successor pins the new place and that there is exactly one call.
+//
+// ok('R10 the editor carries the lens as data-template and the host\'s key door, and re-draws the lens when the template changes under it (refreshLens on [lens])',
+//   /data-template=\{lens \?\? undefined\}/.test(fo) && /if \(onLensKeyRef\.current\?\.\(e\)\) return;/.test(fo) && /useEffect\(\(\) => \{ const h = hostRef\.current; if \(h\) refreshLens\(h\); \}, \[lens\]\);/.test(fo), '');
+const lensKeyDoor = (text) => /const onKeyDownDraft = \(e: KeyboardEvent\) => \{\s*(?:\/\/[^\n]*\n\s*)+if \(onLensKeyRef\.current\?\.\(e\)\) \{ e\.stopImmediatePropagation\(\); return; \}\s*(?:\/\/[^\n]*\n\s*)+marks\.enter\(e\);/.test(text) && (text.match(/onLensKeyRef\.current\?\.\(e\)/g) || []).length === 1;
+ok('R10 [first-listener successor]: the editor carries the lens as data-template, re-draws it when the template changes under it (refreshLens on [lens]), and the host key door is the FIRST thing onKeyDownDraft does - before the marks controller own Enter - exactly ONCE, stopping the event it handles',
+  /data-template=\{lens \?\? undefined\}/.test(fo) && lensKeyDoor(fo) && /useEffect\(\(\) => \{ const h = hostRef\.current; if \(h\) refreshLens\(h\); \}, \[lens\]\);/.test(fo), '');
+const doorMutants = [
+  ['the door is back in onFormatKeyDraft, after marks.enter (the Enter is done twice)', fo.replace('if (onLensKeyRef.current?.(e)) { e.stopImmediatePropagation(); return; }', '').replace('const fmt = onFormatKeyRef.current;', 'if (onLensKeyRef.current?.(e)) return;\n        const fmt = onFormatKeyRef.current;')],
+  ['the door does not stop the event it handles', fo.replace('{ e.stopImmediatePropagation(); return; }', 'return;')],
+  ['the door is called twice', fo.replace('if (onLensKeyRef.current?.(e)) { e.stopImmediatePropagation(); return; }', 'if (onLensKeyRef.current?.(e)) { e.stopImmediatePropagation(); return; }\n        onLensKeyRef.current?.(e);')],
+];
+const doorRed = doorMutants.map(([k, t]) => [k, t !== fo && lensKeyDoor(t) === false]);
+ok('R10 (mutants): the door back in the format listener after marks.enter, a door that does not stop its event, or a second call each turn the pin RED (each landed)', doorRed.every(([, v]) => v), JSON.stringify(doorRed));
 ok('R11 NOTHING of the lens remains in the string decoration path (store/draftDecoration.ts is byte-identical to main\'s: the rows model owns the page)', !/lensHtml|outlineText/.test(read('store/draftDecoration.ts')), '');
 
 // ============================================================================================================
@@ -526,6 +539,8 @@ async function part2() {
     ok('X10 Title Page on an empty unborn page: the five-field sheet replaces the flowing editor (title, author, word line, contact), and nothing is born', (await app.evalJs("['title', 'author', 'words', 'contact'].every((f) => !!document.querySelector('.wz-title-sheet [data-field=\"' + f + '\"]'))")) === true && (await rows()).length === 0, JSON.stringify({ rows: (await rows()).length }));
     const geo = await app.evalJs("(() => { const g = (f) => { const e = document.querySelector('.wz-title-sheet [data-field=\"' + f + '\"]'); const r = e.getBoundingClientRect(); return { l: Math.round(r.left), t: Math.round(r.top), r: Math.round(r.right), w: Math.round(r.width) }; }; return { contact: g('contact'), words: g('words'), title: g('title'), author: g('author') }; })()");
     ok('X10 the sheet is the manuscript layout: the word line sits to the RIGHT of the contact block on the top row; the title and author sit lower and centred; the author is under the title', geo.words.l > geo.contact.r && Math.abs(geo.words.t - geo.contact.t) < 6 && geo.title.t > geo.contact.t + 60 && geo.author.t > geo.title.t, JSON.stringify(geo));
+    const clip = await app.evalJs("(() => { const c = document.querySelector('.wz-title-sheet [data-field=\"contact\"]'); const w = document.querySelector('.wz-title-sheet [data-field=\"words\"]'); if (!c || !w) return null; let p = c.parentElement; while (p && p !== document.body && !/(auto|scroll|hidden)/.test(getComputedStyle(p).overflowY)) p = p.parentElement; const top = p ? p.getBoundingClientRect().top : 0; return { scrollerTop: Math.round(top), contactTop: Math.round(c.getBoundingClientRect().top), wordsTop: Math.round(w.getBoundingClientRect().top), scrolled: p ? p.scrollTop : 0 }; })()");
+    ok('X10 the sheet\'s FIRST ROW is not clipped: the contact block and the word line start BELOW the top edge of the scroller that holds the sheet (the sheet owns a top margin, and focusing the title does not scroll it)', !!clip && clip.contactTop >= clip.scrollerTop + 8 && clip.wordsTop >= clip.scrollerTop + 8, JSON.stringify(clip));
     await app.evalJs("document.querySelector('.wz-title-sheet [data-field=\"title\"]')?.focus()"); await app.typeKeys('The Late Ferry');
     await waitSoft(`JSON.parse(localStorage.getItem(${JSON.stringify(ROWS)}) || '[]').some((e) => (e.text || '').includes('The Late Ferry'))`, { label: 'birth on the first word', timeout: 5000 }); await sleep(500);
     const tp = (await rows()).find((e) => (e.text || '').includes('The Late Ferry'));
@@ -534,7 +549,14 @@ async function part2() {
     await app.evalJs("document.querySelector('.wz-title-sheet [data-field=\"words\"]')?.focus()"); await app.typeKeys('About 62,000 words');
     await sleep(900);
     const tp2 = (await rows()).find((e) => (e.text || '').includes('The Late Ferry'));
-    ok('X10 author and word line land in the canonical text (the word line right-aligned with ">> ", the author centred under "by")', !!tp2 && tp2.text === '>> About 62,000 words\n\n>< The Late Ferry\n>< by\n>< Ada Marsh', JSON.stringify(tp2 && tp2.text));
+    // ---- PARKED - SUPERSEDED by ledger 92 (Fable Oct 17): this read the store 900ms after typing, before the words field had committed (the very next check, after a reload, finds the word line saved). A settle in the check, not a lost write.
+    // Kept VERBATIM below and no longer run; the successor WAITS for the stored text to reach its value (up to 6s) and then reads it.
+    //
+    // ok('X10 author and word line land in the canonical text (the word line right-aligned with ">> ", the author centred under "by")', !!tp2 && tp2.text === '>> About 62,000 words\n\n>< The Late Ferry\n>< by\n>< Ada Marsh', JSON.stringify(tp2 && tp2.text));
+    const X10_FULL = '>> About 62,000 words\n\n>< The Late Ferry\n>< by\n>< Ada Marsh';
+    await waitSoft(`(JSON.parse(localStorage.getItem(${JSON.stringify(ROWS)}) || '[]').find((e) => (e.text || '').includes('The Late Ferry')) || {}).text === ${JSON.stringify(X10_FULL)}`, { label: 'the words field committed', timeout: 6000 });
+    const tp3 = (await rows()).find((e) => (e.text || '').includes('The Late Ferry'));
+    ok('X10 [commit-wait successor]: author and word line land in the canonical text (the word line right-aligned with ">> ", the author centred under "by") - read AFTER the stored text has reached its value', !!tp3 && tp3.text === X10_FULL, JSON.stringify(tp3 && tp3.text));
     await app.reload(); await waitSoft("!!document.querySelector('.wz-title-sheet')", { label: 'sheet after reload', timeout: 9000 }); await sleep(600);
     const back = await app.evalJs("({ title: document.querySelector('.wz-title-sheet [data-field=\"title\"]')?.value, author: document.querySelector('.wz-title-sheet [data-field=\"author\"]')?.value, words: document.querySelector('.wz-title-sheet [data-field=\"words\"]')?.value })");
     ok('X10 after a reload the fields read back from the text (save, flush and hydrate keep every field)', back.title === 'The Late Ferry' && back.author === 'Ada Marsh' && back.words === 'About 62,000 words', JSON.stringify(back));

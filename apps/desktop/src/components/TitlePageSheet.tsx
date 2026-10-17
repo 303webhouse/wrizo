@@ -35,7 +35,8 @@ export function TitlePageSheet({
   }, [text]);
 
   const titleRef = useRef<HTMLInputElement>(null);
-  useEffect(() => { if (autoFocus) titleRef.current?.focus(); }, [autoFocus]);
+  // preventScroll: focusing the title must not scroll the sheet's scroller - it left the first row (contact and word line) clipped under the page's top edge (ledger 92, frame 04)
+  useEffect(() => { if (autoFocus) titleRef.current?.focus({ preventScroll: true }); }, [autoFocus]);
 
   const commit = (next: TitleSheetFields) => {
     setFields(next);

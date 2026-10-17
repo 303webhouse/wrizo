@@ -5162,11 +5162,13 @@ a:focus-visible,
 /* PAGE TEMPLATES, S5 - THE TITLE PAGE (components/TitlePageSheet.tsx): the standard manuscript sheet, five fields. Contact top-left, the word line top-right, the title, the
    fixed word "by" and the author centred lower (the approved mockup). The fields have no chrome of their own - they take the page's type and ink - so the sheet reads as a page,
    not a form. The title's capitals are drawn here, never stored. Nothing here moves the sheet: it fills the editor's own track. */
-.wz-title-sheet{ position:relative; width:100%; min-height:560px; font:inherit; color:inherit; }
+/* The sheet owns a TOP MARGIN (--ts-top): the contact block and the word line sit that far below the sheet's top edge, so the first row is never cut by the page's own edge or by a scroll of the sheet
+   (ledger 92, frame 04: "Ada Marsh" and "About 62,000 words" were clipped mid-glyph in both themes). The fields are positioned from this margin; the centred block stays at 40% of the sheet. */
+.wz-title-sheet{ --ts-top:1.6em; position:relative; width:100%; min-height:560px; font:inherit; color:inherit; }
 .wz-title-sheet input, .wz-title-sheet textarea{ font:inherit; color:inherit; background:transparent; border:0; outline:none; padding:0; margin:0; resize:none; caret-color:var(--brass); width:100%; }
 .wz-title-sheet input::placeholder, .wz-title-sheet textarea::placeholder{ color:color-mix(in srgb, currentColor 40%, transparent); }
-.wz-ts-contact{ position:absolute; top:0; left:0; width:28ch !important; max-width:50%; white-space:pre-wrap; line-height:1.5; }
-.wz-ts-words{ position:absolute; top:0; right:0; width:40% !important; text-align:right; }
+.wz-ts-contact{ position:absolute; top:var(--ts-top); left:0; width:28ch !important; max-width:50%; white-space:pre-wrap; line-height:1.5; }
+.wz-ts-words{ position:absolute; top:var(--ts-top); right:0; width:40% !important; text-align:right; }
 .wz-ts-mid{ position:absolute; top:40%; left:0; right:0; text-align:center; }
 .wz-ts-title{ text-align:center; text-transform:uppercase; letter-spacing:.12em; }
 .wz-ts-by{ margin:1.1em 0; }

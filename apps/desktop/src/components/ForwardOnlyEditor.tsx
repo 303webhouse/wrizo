@@ -382,8 +382,6 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // WRITING-SURFACE S0 STEP 2 - Ctrl/Cmd+B/I/U: only where the host supplied a formatter, and always owning the keystroke
       // then (so the browser's own contenteditable bold never runs and gets discarded by the next redecorate).
       const onFormatKeyDraft = (e: KeyboardEvent) => {
-        // PAGE TEMPLATES - the lens's own keys come first; a handled key is the lens's, and nothing below sees it.
-        if (onLensKeyRef.current?.(e)) return;
         const fmt = onFormatKeyRef.current;
         if (!fmt) return;
         const action = formatShortcutAction(e);
@@ -434,6 +432,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // preventDefault (not beforeinput) mirrors ScriptEditor.tsx's own
       // proven Enter-handling pattern elsewhere in this codebase.
       const onKeyDownDraft = (e: KeyboardEvent) => {
+        // PAGE TEMPLATES - the lens's own keys (the Outline's Tab / Shift+Tab / Enter) come FIRST, here, and once. They used to be tried in onFormatKeyDraft below, AFTER this listener's marks.enter had
+        // already done the Enter itself - so one Enter was done twice (ledger 92, X7: a blank line, and the next row without its tab). A handled key is the lens's; nothing after it sees it.
+        if (onLensKeyRef.current?.(e)) { e.stopImmediatePropagation(); return; }
         // ITEM 211 — a raw newline inside a styled run would leave each line one unpaired, visible mark, so the text is computed
         // (store/hiddenMarks.ts enterAt): the run closes before the newline and opens again after it. Recorded as a 'boundary' step
         // (FX6 S1: Enter completes a line the way a typed space completes a word).
