@@ -74,8 +74,15 @@ export function UnbornProvider({ children }: { children: (id: string, descriptor
   // happened underneath it. Guarded on `born` and on the slot actually being
   // absent, so it is a no-op on every ordinary render and can never resurrect a
   // slot for a page that now has a real row.
-  if (!born && !getJournalEntry(id)) {
-    setUnbornEntry(unbornEntry(id, descriptor, createdAt));
+  //
+  // PAGE TEMPLATES - the same render-time registration also FOLLOWS the address on the one thing a writer can change on an unborn page without a
+  // word: its template (the picker rewrites `?template=` with a replace-navigation, the route stays /page/new so nothing remounts). The slot
+  // is re-registered when its template no longer matches the descriptor, so the lens and the picker's brass read the choice before the page is born.
+  if (!born) {
+    const cur = getJournalEntry(id);
+    if (!cur || (cur.pageSettings?.template ?? null) !== descriptor.template) {
+      setUnbornEntry(unbornEntry(id, descriptor, createdAt));
+    }
   }
 
   // Leaving an unborn surface is not a cleanup problem — nothing was stored.

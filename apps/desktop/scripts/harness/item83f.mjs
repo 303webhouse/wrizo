@@ -46,6 +46,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+let e4RowsSeen = null;   // E4's picker row count (PAGE TEMPLATES R2), kept for its parked record
 let e4TemplatesSeen = null;   // E4's stand-in count, kept for its parked record (PAGE-TEMPLATES-MOVE)
 let tabFence = null;   // the E3 Tab fence's observation, kept for its parked record below
 const e3 = {};         // the four line-scope E3 observations, kept for their parked records below
@@ -808,6 +809,7 @@ await withHarness(async (app) => {
     kindChips: document.querySelectorAll('[data-page-kind]').length,
     guides: document.querySelectorAll('[data-style-guide]').length,
     templates: document.querySelectorAll('.wz-sliver-templates .wz-template-btn').length,
+    rows: document.querySelectorAll('.wz-sliver-templates .wz-template-row').length,
   })`);
   // E4 [Fable's review successor] — item 114's chips return in one compact "Page kind" row below the Templates. Convert stays out.
   const pk = () => app.evalJs(`(() => {
@@ -830,6 +832,7 @@ await withHarness(async (app) => {
   const pageRect = () => app.evalJs("(() => { const r = document.querySelector('.forward-only-editor').getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round).join(','); })()");
   const pk0 = await pk();
   e4TemplatesSeen = e4Prose.templates;
+  e4RowsSeen = e4Prose.rows;
   // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order: FOUR stand-ins now,
   // not three. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
   //
@@ -843,10 +846,16 @@ await withHarness(async (app) => {
   //   !!pk0 && pk0.heading === 'Page kind' && pk0.afterTemplates && JSON.stringify(pk0.labels) === JSON.stringify(['Normal', 'Screenplay', 'Research'])
   //     && JSON.stringify(pk0.checked) === JSON.stringify(['normal']) && pk0.anyDisabled === false && pk0.group === 'wz-page-kind-label'
   //     && e4Prose.structureZone === false && e4Prose.templates === 4, JSON.stringify({ pk0, e4Prose }));
-  ok('E4 [word-diet successor]: prose Draft carries a "Pages Kind" row directly below the Templates - Normal, Screenplay, Research in that order, Normal preselected, none greyed, one labelled radiogroup - and still no Structure zone; the Templates hold their FOUR stand-ins',
+  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @ 0fc9afef, Fable Oct 16): the four grayed stand-ins retire - the Templates section is a FIVE-row picker (Blank, Screenplay, Outline, Title Page, Bibliography), none disabled, Custom dropped. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
+  //
+  // ok('E4 [word-diet successor]: prose Draft carries a "Pages Kind" row directly below the Templates - Normal, Screenplay, Research in that order, Normal preselected, none greyed, one labelled radiogroup - and still no Structure zone; the Templates hold their FOUR stand-ins',
+  //   !!pk0 && pk0.heading === 'Pages Kind' && pk0.afterTemplates && JSON.stringify(pk0.labels) === JSON.stringify(['Normal', 'Screenplay', 'Research'])
+  //     && JSON.stringify(pk0.checked) === JSON.stringify(['normal']) && pk0.anyDisabled === false && pk0.group === 'wz-page-kind-label'
+  //     && e4Prose.structureZone === false && e4Prose.templates === 4, JSON.stringify({ pk0, e4Prose }));
+  ok('E4 [page-templates-r2 successor]: prose Draft carries a "Pages Kind" row directly below the Templates - Normal, Screenplay, Research in that order, Normal preselected, none greyed, one labelled radiogroup - and still no Structure zone; the Templates hold their FIVE picker rows',
     !!pk0 && pk0.heading === 'Pages Kind' && pk0.afterTemplates && JSON.stringify(pk0.labels) === JSON.stringify(['Normal', 'Screenplay', 'Research'])
       && JSON.stringify(pk0.checked) === JSON.stringify(['normal']) && pk0.anyDisabled === false && pk0.group === 'wz-page-kind-label'
-      && e4Prose.structureZone === false && e4Prose.templates === 4, JSON.stringify({ pk0, e4Prose }));
+      && e4Prose.structureZone === false && e4Prose.rows === 5 && e4Prose.templates === 0, JSON.stringify({ pk0, e4Prose }));
   ok('E4 [Fable\'s review successor]: the style guides are absent before Research, and the drawer offers no Convert row',
     !!pk0 && pk0.guideLabels.length === 0 && pk0.convertRows === 0, JSON.stringify(pk0));
   const rectBefore = await pageRect();
@@ -910,8 +919,13 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   // PAGE-TEMPLATES-MOVE (2026-10-08) - ONE more park: E4's stand-in count, read in the live run above.
-  parkedChecks.push({ name: 'PARKED (was "E4 [Fable\'s review successor]: prose Draft carries a \"Page kind\" row directly below the Templates ... and still no Structure zone" - its e4Prose.templates === 3 clause) - PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order; live successor: E4 [page-templates successor]',
-    pass: e4TemplatesSeen === 4, detail: `templates=${e4TemplatesSeen}` });
+  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (2026-10-16): the stand-in count this record quoted no longer exists. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
+  //
+  // parkedChecks.push({ name: 'PARKED (was "E4 [Fable\'s review successor]: prose Draft carries a \"Page kind\" row directly below the Templates ... and still no Structure zone" - its e4Prose.templates === 3 clause) - PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order; live successor: E4 [page-templates successor]',
+  //   pass: e4TemplatesSeen === 4, detail: `templates=${e4TemplatesSeen}` });
+  // PAGE TEMPLATES R2 (2026-10-16) - E4's picker row count, read in the live run above.
+  parkedChecks.push({ name: 'PARKED (was "E4 [word-diet successor]: ... the Templates hold their FOUR stand-ins") - PAGE TEMPLATES R2 (2026-10-16): the stand-ins retire; the Templates hold a five-row picker; live successor: E4 [page-templates-r2 successor]',
+    pass: e4RowsSeen === 5, detail: `rows=${e4RowsSeen}` });
   // ONE PARK (item 158): the E3 Tab fence, superseded when Tab was built. Otherwise this file is NEW and supersedes nothing of its own.
   // FOUR MORE PARKS (Nick's line-scope ruling of 2026-09-25): the four E3 paragraph-scope checks, each superseded by its "[line-scope successor]".
   const lineParks = [

@@ -19,6 +19,7 @@ import { useFirstLineInvite } from '../components/useFirstLineInvite';
 import { UnbornProvider, useUnborn } from '../components/UnbornSurface';
 import { BeginningsRow, type BeginningDoor } from '../components/BeginningsRow';
 import { unbornHref } from '../store/unbornPage';
+import { TEMPLATE_ORDER, type TemplateKey } from '../components/TemplateSketch';
 import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset, setSelectionOffsets, getCaretOffset, getSelectionOffsets, rangeFromPlainOffsets } from '../store/caretOffset';
 import type { Stroke } from '../types';
@@ -700,6 +701,8 @@ function PageEditorView({ id }: { id: string }) {
   // the enemy (CA1). The title is a plain read; the fallback keeps every
   // pre-existing caller's wording byte-identical.
   const fromBoardTitle = (location.state as { fromBoardTitle?: string } | null)?.fromBoardTitle ?? null;
+  // PAGE TEMPLATES - set by a template pick that opened THIS page (the words never moved): the chip then reads "Opened as a new page · Back".
+  const openedByTemplate = (location.state as { openedByTemplate?: boolean } | null)?.openedByTemplate === true;
   const pageTitle = text.trim() ? firstLine(text).slice(0, 40) : 'Untitled';
 
   // PB1 — the durable-relationship doors (Fable's ruling 2). Pairing, porting
@@ -852,19 +855,34 @@ function PageEditorView({ id }: { id: string }) {
   // opens a NEW screenplay page in the same home through item 104's own `structure` address (the arrival effect above births
   // it), and the new page carries the existing "Back to <title>" chip (state.fromBoardId - the PW1 chip that names the surface
   // actually left), so the departure keeps a one-tap return.
-  const applyScreenplayTemplate = () => {
-    if (wordCount(textRef.current) === 0) { requestScreenplay(); return; }
+  //
+  // PAGE TEMPLATES (docs/plans/page-templates.md, approved Oct 16) GENERALIZES THAT ACT to the five rows of the picker - Blank, Screenplay,
+  // Outline, Title Page, Bibliography - without changing its shape: the host owns it; an EMPTY page (no words, no ink) takes the choice in
+  // place; a page WITH words or ink never moves - the choice opens a NEW page in the same home, and the new page's chip (state.openedByTemplate)
+  // reads "Opened as a new page · Back". Pressing the choice already made changes nothing. A template is a lens on the text, set through the
+  // same patchPageSettings seam `kind` uses; on a page not yet born it rides the address instead (the row is born only by the first word, PB1).
+  const currentTemplate: TemplateKey = entry.pageSettings?.template ?? 'blank';
+  const openTemplatePage = (template: Exclude<TemplateKey, 'blank' | 'screenplay'> | null, structure: 'screenplay' | null = null) => {
     flush(); flushNow();
     const href = unbornHref({
       origin: entry.origin === 'journal' ? 'journal' : 'loose',
       binderId: entry.projectId ?? null,
-      structure: 'screenplay',
+      structure,
+      template,
     });
-    navigate(href, { state: { fromBoardId: id, fromBoardTitle: pageTitle } });
+    navigate(href, { state: { fromBoardId: id, fromBoardTitle: pageTitle, openedByTemplate: true } });
   };
-  const pageTemplates = [
-    { key: 'screenplay' as const, label: dt('beginScreenplay'), onApply: applyScreenplayTemplate },
-  ];
+  const applyTemplate = (key: TemplateKey) => {
+    if (key === currentTemplate) return;
+    const empty = wordCount(textRef.current) === 0 && !(entry.strokes && entry.strokes.length > 0);
+    if (key === 'screenplay') { if (empty) requestScreenplay(); else openTemplatePage(null, 'screenplay'); return; }
+    const template = key === 'blank' ? null : key;
+    if (!empty) { openTemplatePage(template); return; }
+    if (unbornRef.current) { navigate(unbornHref({ ...unbornRef.current.descriptor, template }), { replace: true }); return; }
+    patchPageSettings({ template: template ?? undefined });
+  };
+  const TEMPLATE_TERM = { blank: 'templateBlank', screenplay: 'templateScreenplay', outline: 'templateOutline', title: 'templateTitlePage', bibliography: 'templateBibliography' } as const;
+  const pageTemplates = TEMPLATE_ORDER.map((key) => ({ key, label: dt(TEMPLATE_TERM[key]), selected: key === currentTemplate, onApply: () => applyTemplate(key) }));
 
   // The editor's own render-prop body — identical between the legacy and the
   // AB1-framed ModeStage instance, factored out so the two branches below
@@ -1430,8 +1448,8 @@ function PageEditorView({ id }: { id: string }) {
                 </div>
               )}
               {fromBoard && (
-                <button type="button" className="btn-quiet wz-back-to-board" onClick={() => { flush(); flushNow(); navigate(`/page/${fromBoard}`); }}>
-                  {fromBoardTitle ? `‹ Back to ${fromBoardTitle}` : '‹ Back to the board'}
+                <button type="button" className="btn-quiet wz-back-to-board" aria-label={openedByTemplate && fromBoardTitle ? `Back to ${fromBoardTitle}` : undefined} onClick={() => { flush(); flushNow(); navigate(`/page/${fromBoard}`); }}>
+                  {openedByTemplate ? `‹ ${dt('templateOpenedNewBack')}` : fromBoardTitle ? `‹ Back to ${fromBoardTitle}` : '‹ Back to the board'}
                 </button>
               )}
             </div>}

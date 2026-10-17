@@ -20,14 +20,14 @@
 // PARSE IS BY STRUCTURE, so a merge of any one field survives. It declines (returns null) when the text is not this shape - a
 // stray line after the centred block, say - and the page then draws as plain Draft text. A decline loses nothing.
 
-export interface TitlePageFields {
+export interface TitleSheetFields {
   contact: string[];
   words: string;
   title: string;
   author: string;
 }
 
-export const EMPTY_TITLE_PAGE: TitlePageFields = { contact: [], words: '', title: '', author: '' };
+export const EMPTY_TITLE_PAGE: TitleSheetFields = { contact: [], words: '', title: '', author: '' };
 
 const RIGHT = '>> ';
 const CENTRE = '>< ';
@@ -37,7 +37,7 @@ function plainContactLine(line: string): string {
   return line.replace(/^\s*(?:>>|><)\s?/, '').replace(/\s+$/, '');
 }
 
-export function serializeTitlePage(f: TitlePageFields): string {
+export function serializeTitlePage(f: TitleSheetFields): string {
   const contact = f.contact.map(plainContactLine);
   while (contact.length && !contact[contact.length - 1]) contact.pop();
   const words = f.words.trim();
@@ -53,7 +53,7 @@ const isRight = (l: string) => l === '>>' || l.startsWith(RIGHT);
 const isCentre = (l: string) => l === '><' || l.startsWith(CENTRE);
 const after = (l: string, tok: string) => (l.length <= tok.length - 1 ? '' : l.slice(tok.length));
 
-export function parseTitlePage(text: string): TitlePageFields | null {
+export function parseTitlePage(text: string): TitleSheetFields | null {
   const t = text ?? '';
   if (!t.trim()) return { ...EMPTY_TITLE_PAGE, contact: [] };
   const lines = t.split('\n');

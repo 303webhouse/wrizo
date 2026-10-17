@@ -46,6 +46,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+let s2bRowsSeen = null;   // S2 (b)'s picker row count (PAGE TEMPLATES R2), kept for its parked record
 let s2bTemplatesSeen = null;   // S2 (b)'s stand-in count, kept for its parked record (PAGE-TEMPLATES-MOVE)
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -126,6 +127,7 @@ await withHarness(async (app) => {
   // ----------------------------------------------------------------------
   const draftTemplates = await app.evalJs("document.querySelectorAll('.wz-sliver-templates .wz-template-btn').length");
   s2bTemplatesSeen = draftTemplates;
+  s2bRowsSeen = await app.evalJs("document.querySelectorAll('.wz-sliver-templates .wz-template-row').length");
   // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order: FOUR stand-ins now,
   // not three. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
   //
@@ -133,9 +135,14 @@ await withHarness(async (app) => {
   //   draftMode === 'Draft' && structureInDraft === false && draftTemplates === 3,
   //   `activeMode=${String(draftMode)} structureSectionPresent=${structureInDraft} templates=${draftTemplates}`);
   // ------------------------------------------------------------------
-  ok('S2 (b) [page-templates successor]: Draft has no Structure presets either - the zone left the drawer; its place holds the FOUR Template stand-ins, so the drawer itself is present',
-    draftMode === 'Draft' && structureInDraft === false && draftTemplates === 4,
-    `activeMode=${String(draftMode)} structureSectionPresent=${structureInDraft} templates=${draftTemplates}`);
+  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @ 0fc9afef, Fable Oct 16): the four grayed stand-ins retire - the Templates section is a FIVE-row picker (Blank, Screenplay, Outline, Title Page, Bibliography), none disabled, Custom dropped. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
+  //
+  // ok('S2 (b) [page-templates successor]: Draft has no Structure presets either - the zone left the drawer; its place holds the FOUR Template stand-ins, so the drawer itself is present',
+  //   draftMode === 'Draft' && structureInDraft === false && draftTemplates === 4,
+  //   `activeMode=${String(draftMode)} structureSectionPresent=${structureInDraft} templates=${draftTemplates}`);
+  ok('S2 (b) [page-templates-r2 successor]: Draft has no Structure presets either - the zone left the drawer; its place holds the FIVE picker rows, so the drawer itself is present',
+    draftMode === 'Draft' && structureInDraft === false && s2bRowsSeen === 5 && draftTemplates === 0,
+    `activeMode=${String(draftMode)} structureSectionPresent=${structureInDraft} rows=${s2bRowsSeen} standIns=${draftTemplates}`);
 
   // ==========================================================================
   // S3 — CLAUSE 3: a FRESH Draft page opens with the typewriter OFF, and a page
@@ -239,8 +246,13 @@ const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   // PAGE-TEMPLATES-MOVE (2026-10-08) - S2 (b)'s stand-in count, read in the live run above.
-  pok('PARKED (was "S2 (b) [PR #7 successor]: Draft has no Structure presets either - the zone left the drawer; its place holds the three Template stand-ins, so the drawer itself is present") - PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order; live successor: S2 (b) [page-templates successor]',
-    s2bTemplatesSeen === 4, `templates=${s2bTemplatesSeen}`);
+  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (2026-10-16): the stand-in count this record quoted no longer exists. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
+  //
+  // pok('PARKED (was "S2 (b) [PR #7 successor]: Draft has no Structure presets either - the zone left the drawer; its place holds the three Template stand-ins, so the drawer itself is present") - PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order; live successor: S2 (b) [page-templates successor]',
+  //   s2bTemplatesSeen === 4, `templates=${s2bTemplatesSeen}`);
+  // PAGE TEMPLATES R2 (2026-10-16) - S2 (b)'s picker row count, read in the live run above.
+  pok('PARKED (was "S2 (b) [page-templates successor]: ... its place holds the FOUR Template stand-ins") - PAGE TEMPLATES R2 (2026-10-16): the stand-ins retire; the Templates hold a five-row picker; live successor: S2 (b) [page-templates-r2 successor]',
+    s2bRowsSeen === 5, `rows=${s2bRowsSeen}`);
   // ITEM 87 CLAUSE 1 — PARKED 2026-08-17 on Nick amendment. These four are not
   // wrong about what they measured; the DESIGN they measured has been superseded
   // by a New Page chooser (menus arc). Records byte-frozen. No live successor in

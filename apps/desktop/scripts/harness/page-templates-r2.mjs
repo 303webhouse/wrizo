@@ -234,10 +234,165 @@ ok('P2 both export seams (Copy and the files share them) read pageSettings.templ
 const sync = fs.readFileSync(path.join(DESKTOP, '..', 'server', 'src', 'sync.ts'), 'utf8');
 ok('P3 NO server change: page_settings stays a whole jsonb passthrough, and no template column or mapper exists', /page_settings/.test(sync) && !/template/i.test(fs.readFileSync(path.join(DESKTOP, '..', 'server', 'src', 'migrate.ts'), 'utf8').replace(/\/\/.*$/gm, '').replace(/Templates?/g, '')), '');
 
+// ---- S2 source pins: the picker, the words, the new-page path ------------------------------------------------------------------------
+const sliver = read('components/Sliver.tsx');
+ok('P4 the Templates section is the five-row picker: rows map content.templates (data-template keys, a page sketch, the word), the grayed stand-ins and Custom are gone',
+  /className="wz-template-list"/.test(sliver) && /content\.templates\?\.map/.test(sliver) && /<TemplateSketch kind=\{tpl\.key\} \/>/.test(sliver) && !/wz-template-btn/.test(sliver) && !/templateCustom/.test(sliver), '');
+const sketch = read('components/TemplateSketch.tsx');
+ok('P5 the picker\'s row order is the mockup\'s: Blank, Screenplay, Outline, Title Page, Bibliography', /TEMPLATE_ORDER[^=]*= \['blank', 'screenplay', 'outline', 'title', 'bibliography'\]/.test(sketch), '');
+const lex = read('store/deskLexicon.ts');
+const fluxBlock = lex.slice(lex.indexOf('const OVERRIDES'));
+ok('P6 Arbor\'s words (canonical): Templates / Font, Blank / Screenplay / Outline / Title Page / Bibliography',
+  /railTemplates: 'Templates'/.test(lex) && /railTypeface: 'Font'/.test(lex) && /templateBlank: 'Blank'/.test(lex) && /templateScreenplay: 'Screenplay'/.test(lex) && /templateOutline: 'Outline'/.test(lex) && /templateTitlePage: 'Title Page'/.test(lex) && /templateBibliography: 'Bibliography'/.test(lex), '');
+ok('P7 Flux\'s words (override): Presets / Typeface, Raw / Script / Spine / Cover / Sources',
+  /railTemplates: 'Presets'/.test(fluxBlock) && /railTypeface: 'Typeface'/.test(fluxBlock) && /templateBlank: 'Raw'/.test(fluxBlock) && /templateScreenplay: 'Script'/.test(fluxBlock) && /templateOutline: 'Spine'/.test(fluxBlock) && /templateTitlePage: 'Cover'/.test(fluxBlock) && /templateBibliography: 'Sources'/.test(fluxBlock), '');
+ok('P8 the return chip\'s caption for a template-opened page is "Opened as a new page \u00b7 Back" (the lexicon term), on both editors', /templateOpenedNewBack: 'Opened as a new page \u00b7 Back'/.test(lex) && /dt\('templateOpenedNewBack'\)/.test(read('pages/PageEditor.tsx')) && /dt\('templateOpenedNewBack'\)/.test(read('components/ScriptEditor.tsx')), '');
+const ub = read('store/unbornPage.ts');
+ok('P9 the address carries the template (unbornHref writes ?template=, readDescriptor reads it) and the unborn entry carries it as a page setting; NO birth is triggered by a template (PB1 holds)',
+  /if \(d\.template\) q\.set\('template', d\.template\)/.test(ub) && /rawTemplate === 'outline'/.test(ub) && /base\.pageSettings = \{[^}]*template: d\.template \}/.test(ub), '');
+const pe = read('pages/PageEditor.tsx');
+ok('P10 the host owns the act, one place: applyTemplate - same template is a no-op; an EMPTY page (no words, no ink) takes it in place; a page with words or ink opens a NEW page whose state carries openedByTemplate',
+  /const applyTemplate = \(key: TemplateKey\) => \{\s*if \(key === currentTemplate\) return;/.test(pe) && /wordCount\(textRef\.current\) === 0 && !\(entry\.strokes && entry\.strokes\.length > 0\)/.test(pe) && /openedByTemplate: true/.test(pe), '');
+const se = read('components/ScriptEditor.tsx');
+ok('P11 an EMPTY Screenplay converts in place (Q2): the same row, pageType manuscript, the script cleared, the template set; a Screenplay with words opens a new page', /isScriptEmpty\(\{ v: 1, scenes \}\)\) \{\s*saveScriptDoc\(id[^]*pageType: 'manuscript', script: undefined,[^]*template/.test(se), '');
+
 // ============================================================================================================
-// PART 2 - the real app (a box turn); later slices fill this in
+// PART 2 - the real app (a box turn). Written with the standing driver rules: probe first, never abort, real pointer events, seed through the seams.
+// S2 scenarios here; S3 to S5 append theirs.
 // ============================================================================================================
-// (S2 picker, S3 Outline, S4 Bibliography, S5 Title Page, S6 frames: each slice appends its scenarios here and keeps PART 1 green.)
+async function part2() {
+  const { withHarness } = await import('../runtime-verify.mjs');
+  await withHarness(async (app) => {
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const waitSoft = async (expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
+    const ROWS = 'writer-studio-journal-entries';
+    const rows = () => app.evalJs(`JSON.parse(localStorage.getItem(${JSON.stringify(ROWS)}) || '[]').filter((e) => !e.deletedAt)`);
+    const rowOf = async (id) => (await rows()).find((e) => e.id === id) || null;
+    const hash = () => app.evalJs('location.hash');
+    const WORDS = 'Words already here on this page.';
+    const fresh = async (theme = 'plateau') => {
+      await app.emulateDpr(1, 1400, 900);
+      await app.goto('/');
+      await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)}); localStorage.setItem('wrizo-splash-hold','50');`);
+      await app.reload();
+      await waitSoft("!!document.querySelector('.wz-arrival')", { label: 'front door' });
+      await waitSoft("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 14000 });
+    };
+    const openStrip = async () => {
+      if (await app.evalJs(`!!document.querySelector(".wz-sliver[data-open='true']")`)) return;
+      await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+      await waitSoft(`!!document.querySelector(".wz-sliver[data-open='true']")`, { label: 'strip open', timeout: 3000 });
+      await sleep(500);
+    };
+    const toDraft = async () => { await app.click('Draft'); await sleep(700); };
+    const pickerNames = () => app.evalJs("[...document.querySelectorAll('.wz-sliver-templates .wz-template-row')].map((b) => b.getAttribute('aria-label'))");
+    const chosen = () => app.evalJs("[...document.querySelectorAll('.wz-sliver-templates .wz-template-row[aria-pressed=\"true\"]')].map((b) => b.dataset.template)");
+    const press = async (key) => {
+      const pt = await app.evalJs(`(() => { const b = document.querySelector('.wz-template-row[data-template="${key}"]'); if (!b) return null; b.scrollIntoView({ block: 'center' });
+        const r = b.getBoundingClientRect(); const x = Math.round(r.left + r.width / 2), y = Math.round(r.top + r.height / 2); const h = document.elementFromPoint(x, y); return h && (h === b || b.contains(h)) ? { x, y } : null; })()`);
+      if (!pt) return false;
+      await app.mouseDown(pt.x, pt.y); await sleep(60); await app.mouseUp(pt.x, pt.y); await sleep(500);
+      return true;
+    };
+    const seed = async (id, extra = {}) => {
+      await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: WORDS, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page', ...extra })})`);
+      await app.evalJs('window.wrizoFlushNow()'); await sleep(400);
+      await app.evalJs(`location.hash = '#/page/${id}'`);
+      await waitSoft("!!document.querySelector('.forward-only-editor')", { label: 'seeded page' }); await sleep(600);
+    };
+
+    // ---- X1: the picker, Arbor then Flux (the words are the lexicon's) --------------------------------------------------------------------
+    await fresh('plateau');
+    await app.goto('/page/new'); await waitSoft("!!document.querySelector('.forward-only-editor')", { label: 'unborn page' }); await sleep(600);
+    await toDraft(); await openStrip();
+    ok('X1 Arbor: the Templates section lists Blank, Screenplay, Outline, Title Page, Bibliography', JSON.stringify(await pickerNames()) === JSON.stringify(['Blank', 'Screenplay', 'Outline', 'Title Page', 'Bibliography']), JSON.stringify(await pickerNames()));
+    ok('X1 Arbor: Blank is the current choice (brass at rest, aria-pressed) and no other row is', JSON.stringify(await chosen()) === JSON.stringify(['blank']), JSON.stringify(await chosen()));
+    const heads = await app.evalJs("[...document.querySelectorAll('.wz-sliver-h')].map((h) => h.textContent)");
+    ok('X1 Arbor: the section heads read "Font" and "Templates"', heads.includes('Font') && heads.includes('Templates'), JSON.stringify(heads));
+    ok('X1 no disabled stand-in and no Custom remain', (await app.evalJs("document.querySelectorAll('.wz-sliver-templates [aria-disabled=\"true\"], .wz-template-btn').length")) === 0, '');
+    await fresh('flux');
+    await app.goto('/page/new'); await waitSoft("!!document.querySelector('.forward-only-editor')", { label: 'unborn page (flux)' }); await sleep(600);
+    await toDraft(); await openStrip();
+    ok('X1 Flux: the rows read Raw, Script, Spine, Cover, Sources', JSON.stringify(await pickerNames()) === JSON.stringify(['Raw', 'Script', 'Spine', 'Cover', 'Sources']), JSON.stringify(await pickerNames()));
+    const headsF = await app.evalJs("[...document.querySelectorAll('.wz-sliver-h')].map((h) => h.textContent)");
+    ok('X1 Flux: the section heads read "Typeface" and "Presets"', headsF.includes('Typeface') && headsF.includes('Presets'), JSON.stringify(headsF));
+
+    // ---- X2: an EMPTY (unborn) page takes the choice in place; nothing is born; the first word births it WITH the template ----------------------
+    await fresh('plateau');
+    await app.goto('/page/new'); await waitSoft("!!document.querySelector('.forward-only-editor')", { label: 'unborn page' }); await sleep(600);
+    await toDraft(); await openStrip();
+    const sheetBefore = await app.evalJs("(() => { const e = document.querySelector('.wz-ink-sheet'); if (!e) return null; const r = e.getBoundingClientRect(); return [r.left, r.top, r.width].map(Math.round); })()");
+    ok('X2 the Outline row can be pressed (hit-tested to the row itself)', await press('outline'), '');
+    ok('X2 an empty unborn page takes Outline IN PLACE: the address carries template=outline, the row is brass, and the page is NOT born (zero rows)',
+      /template=outline/.test(await hash()) && JSON.stringify(await chosen()) === JSON.stringify(['outline']) && (await rows()).length === 0, JSON.stringify({ hash: await hash(), chosen: await chosen(), rows: (await rows()).length }));
+    const sheetAfter = await app.evalJs("(() => { const e = document.querySelector('.wz-ink-sheet'); if (!e) return null; const r = e.getBoundingClientRect(); return [r.left, r.top, r.width].map(Math.round); })()");
+    ok('X2 PAGE IS PRIMARY: picking a template moves the page not at all (the sheet\'s rect is identical)', !!sheetBefore && JSON.stringify(sheetBefore) === JSON.stringify(sheetAfter), JSON.stringify({ sheetBefore, sheetAfter }));
+    await app.evalJs("document.querySelector('.forward-only-editor')?.focus()"); await app.typeKeys('First heading');
+    await waitSoft(`JSON.parse(localStorage.getItem(${JSON.stringify(ROWS)}) || '[]').some((e) => (e.text || '').includes('First heading'))`, { label: 'birth', timeout: 5000 });
+    await sleep(400);
+    const born = (await rows()).find((e) => (e.text || '').includes('First heading'));
+    ok('X2 the first word births the page WITH the template stored in its page settings (pageSettings.template === "outline")', !!born && born.pageSettings && born.pageSettings.template === 'outline', JSON.stringify(born && born.pageSettings));
+
+    // ---- X3: a page WITH words opens a NEW page; the words never move; the chip names the way back -----------------------------------------
+    await fresh('plateau');
+    await seed('tpl-r2-words');
+    await toDraft(); await openStrip();
+    const beforeRows = await rows();
+    ok('X3 Bibliography can be pressed on a page with words', await press('bibliography'), '');
+    await waitSoft("/\\/page\\/new/.test(location.hash)", { label: 'new page', timeout: 6000 }); await sleep(700);
+    const orig = await rowOf('tpl-r2-words');
+    ok('X3 the page with words is UNTOUCHED (same text, no template)', !!orig && orig.text === WORDS && !(orig.pageSettings && orig.pageSettings.template), JSON.stringify(orig));
+    ok('X3 a NEW unborn page opened carrying template=bibliography, and nothing was born by it', /template=bibliography/.test(await hash()) && (await rows()).length === beforeRows.length, JSON.stringify({ hash: await hash() }));
+    const chip = await app.evalJs("(() => { const b = document.querySelector('.wz-back-to-board'); return b ? { text: b.textContent.trim(), label: b.getAttribute('aria-label') } : null; })()");
+    ok('X3 the chip reads "Opened as a new page \u00b7 Back" and its accessible name names the page left', !!chip && chip.text.includes('Opened as a new page') && chip.text.includes('Back') && /Back to/.test(chip.label || '') && (chip.label || '').includes(WORDS.slice(0, 20)), JSON.stringify(chip));
+    const cp = await app.evalJs("(() => { const b = document.querySelector('.wz-back-to-board'); if (!b) return null; const r = b.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+    if (cp) { await app.mouseDown(cp.x, cp.y); await app.mouseUp(cp.x, cp.y); }
+    await waitSoft("location.hash === '#/page/tpl-r2-words'", { label: 'back', timeout: 6000 }); await sleep(600);
+    ok('X3 the chip returns to the original page with its words intact', (await hash()) === '#/page/tpl-r2-words' && (await app.evalJs("(document.querySelector('.forward-only-editor')?.textContent || '').includes('Words already here')")) === true, await hash());
+
+    // ---- X4: pressing the choice already made does nothing; an empty BORN page takes a template in place and Blank clears it ---------------------
+    await fresh('plateau');
+    await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'tpl-r2-empty', text: '', createdAt: '2026-04-02T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
+    await app.evalJs('window.wrizoFlushNow()'); await sleep(400);
+    await app.evalJs("location.hash = '#/page/tpl-r2-empty'"); await waitSoft("!!document.querySelector('.forward-only-editor')", { label: 'empty born page' }); await sleep(600);
+    await toDraft(); await openStrip();
+    await press('blank'); await sleep(300);
+    ok('X4 pressing Blank on a Blank page does nothing (no template set, same row)', !((await rowOf('tpl-r2-empty')) || {}).pageSettings?.template && (await hash()) === '#/page/tpl-r2-empty', await hash());
+    await press('title'); await sleep(500);
+    ok('X4 an EMPTY born page takes Title Page IN PLACE: the same row now carries pageSettings.template === "title" and the address did not change',
+      ((await rowOf('tpl-r2-empty')) || {}).pageSettings?.template === 'title' && (await hash()) === '#/page/tpl-r2-empty' && JSON.stringify(await chosen()) === JSON.stringify(['title']), JSON.stringify(await rowOf('tpl-r2-empty')));
+    await press('blank'); await sleep(500);
+    ok('X4 Blank takes it off again (the key is absent, not null)', !('template' in (((await rowOf('tpl-r2-empty')) || {}).pageSettings || {})) || ((await rowOf('tpl-r2-empty')).pageSettings.template === undefined), JSON.stringify(((await rowOf('tpl-r2-empty')) || {}).pageSettings));
+
+    // ---- X5: Screenplay. Empty -> converts in place (Q2); with words -> a new page; its chip carries the same caption ----------------------------
+    await fresh('plateau');
+    await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'tpl-r2-sp-empty', text: '', createdAt: '2026-04-03T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
+    await app.evalJs("window.wrizoPatchEntry('tpl-r2-sp-empty', { pageType: 'script', script: { v: 1, scenes: [{ id: 's1', heading: { id: 's1', t: 'scene', text: '' }, body: [{ id: 'a1', t: 'action', text: '' }] }] } })");
+    await app.evalJs('window.wrizoFlushNow()'); await sleep(400);
+    await app.evalJs("location.hash = '#/page/tpl-r2-sp-empty'"); await waitSoft("!!document.querySelector('.script-sheet, .script-page, .script-el')", { label: 'empty screenplay' }); await sleep(700);
+    await openStrip();
+    ok('X5 on a screenplay page the picker shows Screenplay as the current choice', JSON.stringify(await chosen()) === JSON.stringify(['screenplay']), JSON.stringify(await chosen()));
+    await press('outline'); await sleep(900);
+    const conv = await rowOf('tpl-r2-sp-empty');
+    ok('X5 an EMPTY screenplay converts IN PLACE (Fable Q2): the same row, no longer a script, pageSettings.template === "outline"', !!conv && conv.pageType !== 'script' && conv.pageSettings?.template === 'outline' && (await hash()) === '#/page/tpl-r2-sp-empty', JSON.stringify(conv));
+
+    // ---- X6: the old Screenplay path is intact (page-templates.mjs keeps its own checks; this is the one cross-check) -----------------------------
+    await fresh('plateau');
+    await seed('tpl-r2-words-2');
+    await toDraft(); await openStrip();
+    await press('screenplay');
+    await waitSoft("!!document.querySelector('.script-sheet, .script-page, .script-el')", { label: 'new script page' }); await sleep(900);
+    const chip2 = await app.evalJs("document.querySelector('.wz-back-to-board')?.textContent.trim() || null");
+    ok('X6 Screenplay on a page with words still opens a NEW script page, and its chip now reads the template caption', typeof chip2 === 'string' && chip2.includes('Opened as a new page'), JSON.stringify(chip2));
+    ok('X6 ...and the page left is untouched', ((await rowOf('tpl-r2-words-2')) || {}).text === WORDS, '');
+  });
+}
+
+if (process.env.BROWSERLESS_ONLY !== '1') {
+  try { await part2(); } catch (err) { ok('PART 2 ran to the end', false, String(err && err.stack || err)); }
+} else {
+  console.log('(BROWSERLESS_ONLY: PART 2 skipped - the real-app scenarios need a box turn)');
+}
 
 const failed = checks.filter((c) => !c.pass);
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);

@@ -103,13 +103,26 @@ await withHarness(async (app) => {
   ok('T1 [Draft, blank page]: the beginnings row is NOT drawn (Sprout is the blank Free Write page\'s door)', JSON.stringify(await pageDoors(app)) === '[]', JSON.stringify(await pageDoors(app)));
   await openStrip(app);
   const s = await strip(app);
-  ok('T1 [Draft]: the Templates read Screenplay, Outline, Title page, Bibliography, Custom - in that order, and nothing else',
-    JSON.stringify(s.map((b) => b.name)) === JSON.stringify(['Screenplay', 'Outline', 'Title page', 'Bibliography', 'Custom']), JSON.stringify(s.map((b) => b.name)));
-  ok('T1 [Draft]: Screenplay is the ONE live template (not aria-disabled, keyed screenplay, with its glyph DRAWN at least 12px) - there is no Sprout and no Plan template',
-    JSON.stringify(s.filter((b) => b.live).map((b) => b.key)) === JSON.stringify(['screenplay']) && s.filter((b) => b.live).every((b) => b.disabled === null && b.glyph)
+  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @ 0fc9afef, Fable Oct 16): the picker is FIVE live rows - Blank, Screenplay, Outline, Title Page, Bibliography - and the four grayed stand-ins (and Custom) are gone. Kept VERBATIM and no longer run; its successor follows.
+  //
+  // ok('T1 [Draft]: the Templates read Screenplay, Outline, Title page, Bibliography, Custom - in that order, and nothing else',
+  //   JSON.stringify(s.map((b) => b.name)) === JSON.stringify(['Screenplay', 'Outline', 'Title page', 'Bibliography', 'Custom']), JSON.stringify(s.map((b) => b.name)));
+  ok('T1 [Draft, page-templates-r2 successor]: the Templates read Blank, Screenplay, Outline, Title Page, Bibliography - in that order, and nothing else',
+    JSON.stringify(s.map((b) => b.name)) === JSON.stringify(['Blank', 'Screenplay', 'Outline', 'Title Page', 'Bibliography']), JSON.stringify(s.map((b) => b.name)));
+  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @ 0fc9afef, Fable Oct 16): the picker is FIVE live rows - Blank, Screenplay, Outline, Title Page, Bibliography - and the four grayed stand-ins (and Custom) are gone. Kept VERBATIM and no longer run; its successor follows.
+  //
+  // ok('T1 [Draft]: Screenplay is the ONE live template (not aria-disabled, keyed screenplay, with its glyph DRAWN at least 12px) - there is no Sprout and no Plan template',
+  //   JSON.stringify(s.filter((b) => b.live).map((b) => b.key)) === JSON.stringify(['screenplay']) && s.filter((b) => b.live).every((b) => b.disabled === null && b.glyph)
+  //     && (await app.evalJs("!document.querySelector('[data-template=\"sprout\"], [data-template=\"plan\"]')")), JSON.stringify(s));
+  ok('T1 [Draft, page-templates-r2 successor]: all FIVE rows are live (not aria-disabled, keyed blank, screenplay, outline, title, bibliography, each with its page sketch DRAWN at least 12px) - there is no Sprout and no Plan template',
+    JSON.stringify(s.filter((b) => b.live).map((b) => b.key)) === JSON.stringify(['blank', 'screenplay', 'outline', 'title', 'bibliography']) && s.filter((b) => b.live).every((b) => b.disabled === null && b.glyph)
       && (await app.evalJs("!document.querySelector('[data-template=\"sprout\"], [data-template=\"plan\"]')")), JSON.stringify(s));
-  ok('T1 [Draft]: the four after it are grayed placeholders - aria-disabled, titled "Coming soon", each with its glyph DRAWN at least 12px',
-    s.filter((b) => !b.live).length === 4 && s.filter((b) => !b.live).every((b) => b.disabled === 'true' && b.title === 'Coming soon' && b.glyph), JSON.stringify(s.filter((b) => !b.live)));
+  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @ 0fc9afef, Fable Oct 16): the picker is FIVE live rows - Blank, Screenplay, Outline, Title Page, Bibliography - and the four grayed stand-ins (and Custom) are gone. Kept VERBATIM and no longer run; its successor follows.
+  //
+  // ok('T1 [Draft]: the four after it are grayed placeholders - aria-disabled, titled "Coming soon", each with its glyph DRAWN at least 12px',
+  //   s.filter((b) => !b.live).length === 4 && s.filter((b) => !b.live).every((b) => b.disabled === 'true' && b.title === 'Coming soon' && b.glyph), JSON.stringify(s.filter((b) => !b.live)));
+  ok('T1 [Draft, page-templates-r2 successor]: no grayed placeholder is left - every button in the Templates section is a live row',
+    s.filter((b) => !b.live).length === 0 && s.length === 5, JSON.stringify(s.filter((b) => !b.live)));
   ok('T1 [Draft]: Plan stays on the PLAN bar', (await app.evalJs("!!document.querySelector('.desk-mode-strip [data-page-plan-door]')")) === true);
   const brass = await rgbOf(app, 'var(--brass)');
   const rest = await app.evalJs(`(() => { const b = document.querySelector(${JSON.stringify(SCREENPLAY)}); return b ? { color: getComputedStyle(b).color, pressed: b.getAttribute('aria-pressed') } : null; })()`);
@@ -177,8 +190,13 @@ await withHarness(async (app) => {
   ok('T4 [Screenplay, page with words]: a NEW script page opens (one new row, a script, in the same home) and the writer is on it',
     fresh.length === 1 && !!made && made.origin === 'loose' && where.includes(made.id) && (await app.evalJs(`!!document.querySelector('${SCRIPT}')`)), JSON.stringify({ fresh, where }));
   const chip = await app.evalJs("(() => { const b = document.querySelector('.wz-back-to-board'); return b ? b.textContent.trim() : null; })()");
-  ok(`T4: the new page carries a one-tap way back that names the page left ("Back to ${WORDS.slice(0, 20)}...")`,
-    typeof chip === 'string' && chip.includes('Back to') && chip.includes(WORDS.slice(0, 20)), JSON.stringify(chip));
+  const chipLabel = await app.evalJs("(() => { const b = document.querySelector('.wz-back-to-board'); return b ? b.getAttribute('aria-label') : null; })()");
+  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (Fable Oct 16, Q3): the chip on a page a template pick opened is captioned "Opened as a new page · Back"; the page left is named in its accessible name. Kept VERBATIM and no longer run; its successor follows.
+  //
+  // ok(`T4: the new page carries a one-tap way back that names the page left ("Back to ${WORDS.slice(0, 20)}...")`,
+  //   typeof chip === 'string' && chip.includes('Back to') && chip.includes(WORDS.slice(0, 20)), JSON.stringify(chip));
+  ok(`T4 [page-templates-r2 successor]: the new page carries a one-tap way back captioned "Opened as a new page · Back", whose accessible name still names the page left ("Back to ${WORDS.slice(0, 20)}...")`,
+    typeof chip === 'string' && chip.includes('Opened as a new page') && chip.includes('Back') && typeof chipLabel === 'string' && chipLabel.includes('Back to') && chipLabel.includes(WORDS.slice(0, 20)), JSON.stringify({ chip, chipLabel }));
   const chipPt = await centreOf(app, '.wz-back-to-board');
   if (chipPt) { await app.mouseDown(chipPt.x, chipPt.y); await app.mouseUp(chipPt.x, chipPt.y); }
   await waitSoft(app, `location.hash === '#/page/${id}' && !!document.querySelector('${ED}')`, { label: 'back on the original page' });

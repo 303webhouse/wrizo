@@ -302,8 +302,14 @@ const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-par
   // all; parked word for word.
   // ok('(D2b) H3: the Templates block in Sliver.tsx is unchanged from main (whitespace aside) save the ONE declared table gate allowed(\'pageKind\'); with that gate removed it is identical',
   //   gated && now.replace(GATE, '') === was, `${now ? now.length : 0} (gate ${gated}) vs ${was ? was.length : 0}`);
-  ok('(D2b) [word-diet successor]: the Templates block in Sliver.tsx is BYTE-IDENTICAL to origin/main (whitespace aside) — S2\'s own gate is already in both, and word-diet changed nothing inside this slice',
-    gated && now === was, `${now ? now.length : 0} (gate ${gated}) vs ${was ? was.length : 0}`);
+  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @ 0fc9afef, Fable Oct 16): the Templates block is REBUILT on purpose - the icon buttons and the four grayed stand-ins become a five-row picker.
+  // Kept VERBATIM and no longer run (the block is no longer byte-identical to main by design); its successor follows and pins what must still hold of the block.
+  //
+  // ok('(D2b) [word-diet successor]: the Templates block in Sliver.tsx is BYTE-IDENTICAL to origin/main (whitespace aside) — S2\'s own gate is already in both, and word-diet changed nothing inside this slice',
+  //   gated && now === was, `${now ? now.length : 0} (gate ${gated}) vs ${was ? was.length : 0}`);
+  ok('(D2b) [page-templates-r2 successor]: the Templates block in Sliver.tsx is the five-row picker - it still opens with the section div and the railTemplates heading, maps content.templates into rows keyed by data-template, carries no grayed stand-in (no aria-disabled, no wz-template-btn), and keeps the one declared table gate',
+    gated && !!now && now.includes("t('railTemplates')") && now.includes('content.templates?.map') && now.includes('data-template={tpl.key}') && !now.includes('aria-disabled') && !now.includes('wz-template-btn'),
+    `${now ? now.length : 0} (gate ${gated}) vs main ${was ? was.length : 0}`);
 }
 
 // =============================================================================
