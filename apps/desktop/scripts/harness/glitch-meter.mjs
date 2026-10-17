@@ -7,13 +7,18 @@
 //   G3  x progress: the real lap progress (words toward the goal) calms it; crossing the goal resets the lap
 //   G4  THE FLASH COUNT (the safety floor): at peak, with Signal Loss at Ambiance 100 competing, for 20 s plus three forced bursts - counted
 //       TWICE, by the budget's own log and by an independent observer on both layers; <= 3 in every sliding second, both counts equal, and
-//       the budget really refused (the bursts guarantee it)
+//       the budget really refused (the bursts guarantee it). Ledger 90: Signal Loss never pulsed on its own here (its loops skip while the
+//       writing session reads busy), so it is FORCED through its own seam (window.wrizoFluxFx.fire) - every second, and in every burst beside
+//       the meter's six - and the two-system case is really exercised.
 //   G5  a double dip and a double sync jump each count 2
-//   G6  reduced motion (the OS setting, emulated): no events, the still overlay eases to intensity x 0.42; turning it off resumes
+//   G6  reduced motion (the OS setting, emulated): no events, the still overlay at intensity x 0.42 - appearing with NO easing (Fable, Oct 17:
+//       the global reduced-motion rule, index.css, is honoured); turning it off resumes
 //   G7  the Flicker switch, pressed for real in the "..." panel: off means no meter at all (Signal Loss stays); it survives a reload
 //   G8  page primacy: the page's rect is the same with the meter at peak and off; a click on the page reaches the page
 //   G9  Arbor (plateau): no meter
-// Frames (GM_FRAMES=<dir>): six at peak, one at half progress, one under reduced motion, one with Flicker off.
+// Frames (GM_FRAMES=<dir>): taken ON A PULSE, not on a timer (ledger 90: timed frames caught no meter) - the flash budget's grant calls a CDP
+// binding, and the frame is taken a short per-kind delay later (the pulse at its brightest): six at peak, two at half progress; plus one under
+// reduced motion (a still - no pulse to wait for) and one with Flicker off.
 // Run: node scripts/harness/glitch-meter.mjs   (from apps/desktop, dist-web built, box turn granted)
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -22,10 +27,31 @@ import { trustedDispatch } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
+const parkedChecks = [];
+const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass, detail });
+const gmParks = {};   // ledger 90: G6's reading, for its parked record
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const FRAMES = process.env.GM_FRAMES || null;
 const frame = async (app, name) => { if (!FRAMES) return; mkdirSync(FRAMES, { recursive: true }); writeFileSync(join(FRAMES, `${name}.png`), Buffer.from(await app.screenshot(), 'base64')); };
 const press = (app, expr, what) => trustedDispatch(app, expr, what, { report: ok });
+// FRAMES ON A PULSE: the flash budget calls window.__wzOnFlashGrant(kind) on every grant (harness-only hook); this binds it to a CDP binding
+// and, for each of the meter's grants, takes one frame after a short per-kind delay - when that pulse is brightest (a tear's lines are
+// staggered 45 ms, a shear peaks at ~70 ms, a dip eases in over .28 s). One capture at a time; n frames at most. Returns stop() -> count.
+const PULSE_DELAY = { 'gm-tear': 70, 'gm-shear': 60, 'gm-noise': 60, 'gm-macro': 30, 'gm-sync': 20, 'gm-sync2': 20, 'gm-dip': 260, 'gm-dip2': 200 };
+const armPulseFrames = async (app, prefix, n) => {
+  if (!FRAMES) return { count: () => 0, stop: async () => 0 };
+  try { await app.cdp('Runtime.addBinding', { name: '__wzGrantFrame' }); } catch { /* bound already */ }
+  await app.evalJs("window.__wzOnFlashGrant = (k) => { if (k.indexOf('gm-') === 0 && typeof window.__wzGrantFrame === 'function') window.__wzGrantFrame(k); }");
+  let taken = 0;
+  let busy = false;
+  const off = app.tap((method, params) => {
+    if (method !== 'Runtime.bindingCalled' || !params || params.name !== '__wzGrantFrame' || busy || taken >= n) return;
+    busy = true;
+    const kind = String(params.payload);
+    sleep(PULSE_DELAY[kind] ?? 40).then(() => frame(app, `${prefix}-${taken + 1}-${kind.replace('gm-', '')}`)).then(() => { taken += 1; }, () => {}).finally(() => { busy = false; });
+  });
+  return { count: () => taken, stop: async () => { off(); await app.evalJs('window.__wzOnFlashGrant = null'); while (busy) await sleep(50); return taken; } };
+};
 const ED = '.forward-only-editor';
 const LAYER = '.glitch-meter-layer';
 // the mockup's curve, written out here: the harness checks the app against it, not against itself
@@ -115,7 +141,7 @@ await withHarness(async (app) => {
   const g3a = await state(app);
   ok('G3: the lap progress is read from the page (15 words toward a 10-word goal = half a lap) and halves the intensity at peak (rule 3)',
     !!g3a && Math.abs(g3a.lapFrac - 0.5) < 1e-9 && Math.abs(g3a.I - 0.5) < 1e-6, JSON.stringify(g3a));
-  await frame(app, 'progress-half');
+  { const pf = await armPulseFrames(app, 'progress-half', 2); for (let w = 0; w < 80 && pf.count() < 2; w++) { await M(app, 'm.setIdle(300)'); await sleep(100); } await pf.stop(); }
   await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); })()`);
   await app.typeKeys(' one two three four five');
   await sleep(800);
@@ -131,14 +157,24 @@ await withHarness(async (app) => {
   await app.evalJs('window.__wzVerifyFlashes = true; window.__wzFlashLog = [];');
   await app.evalJs(OBSERVE);
   const t0 = await app.evalJs('performance.now()');
+  const slSeam = await app.evalJs("!!(window.wrizoFluxFx && typeof window.wrizoFluxFx.fire === 'function')");
+  ok('G4 (driver): Signal Loss\'s own seam answers (window.wrizoFluxFx.fire) - it is forced below, since its loops skip while the session reads busy (ledger 90)', slSeam);
+  const SL = ['tear', 'shear', 'noise', 'macro', 'sync', 'dip'];
+  const peakFrames = await armPulseFrames(app, 'peak', 6);
   for (let i = 0; i < 20; i++) {
-    if (i === 4 || i === 10 || i === 16) await M(app, "['tear','shear','noise','macro','sync','dip'].map((k) => m.fire(k))");   // a forced burst: six asks at once
-    if (i === 6 || i === 12) await frame(app, `peak-${i}`);
+    if (i === 4 || i === 10 || i === 16) {
+      // a forced burst: BOTH systems' six asks at once
+      await app.evalJs("(() => { const m = window.wrizoGlitchMeter, f = window.wrizoFluxFx; const out = []; for (const k of ['tear','shear','noise','macro','sync','dip']) { out.push(m ? m.fire(k) : null); out.push(f && f.fire ? f.fire(k) : null); } return out; })()");
+    } else if (slSeam) {
+      await app.evalJs(`window.wrizoFluxFx.fire('${SL[i % SL.length]}')`);   // Signal Loss, once a second, competing with the meter's own schedule
+    }
     await M(app, 'm.setIdle(300)');
     await sleep(1000);
   }
   await sleep(1200);   // let every event in flight land
   const tEnd = await app.evalJs('(() => { window.__wzPulseStop && window.__wzPulseStop(); return performance.now(); })()');
+  const peakTaken = await peakFrames.stop();
+  if (FRAMES) ok('G4 (frames): six frames were taken ON meter pulses at peak (GM_FRAMES)', peakTaken === 6, String(peakTaken));
   const log = (await app.evalJs('window.__wzFlashLog || []')).filter((e) => e.t >= t0 && e.t <= tEnd);
   const pulses = (await app.evalJs('window.__wzPulses || []')).filter((e) => e.t >= t0 && e.t <= tEnd);
   const granted = log.filter((e) => e.ok);
@@ -194,8 +230,15 @@ await withHarness(async (app) => {
   await frame(app, 'reduced-motion');
   ok('G6: under reduced motion the meter fires NOTHING - no pulse on its layer in 6 s at peak, and even a forced event is refused',
     !!s6 && s6.reduced && meterPulses6.length === 0 && Array.isArray(fired6) && fired6.every((f) => f === false), JSON.stringify({ s6, meterPulses6: meterPulses6.length, fired6 }));
-  ok('G6: ...it shows the faint still overlay instead, its opacity following intensity (1 x 0.42 at peak), eased in, not cut',
-    !!still && Math.abs(still.opacity - 0.42) < 0.03 && parseFloat(still.transition) >= 2, JSON.stringify(still));
+  // ---- PARKED - SUPERSEDED (ledger 90; Fable's ruling, Oct 17: honour the global reduced-motion rule, index.css - under reduced motion every
+  // transition is 0.01 ms, so the overlay APPEARS, with no easing; the run read {opacity: 0.42, transition: "1e-05s"}). Kept VERBATIM and no
+  // longer run; successor below.
+  // ok('G6: ...it shows the faint still overlay instead, its opacity following intensity (1 x 0.42 at peak), eased in, not cut',
+  //   !!still && Math.abs(still.opacity - 0.42) < 0.03 && parseFloat(still.transition) >= 2, JSON.stringify(still));
+  // ------------------------------------------------------------------
+  gmParks.g6 = still;
+  ok('G6 [global-rule successor]: ...it shows the faint still overlay instead, its opacity following intensity (1 x 0.42 at peak), appearing with no easing - the global reduced-motion rule honoured (transition <= 0.01 ms)',
+    !!still && Math.abs(still.opacity - 0.42) < 0.03 && parseFloat(still.transition) < 0.001, JSON.stringify(still));
   await app.emulateMedia([]);
   await sleep(600);
   const s6b = await state(app);
@@ -236,6 +279,15 @@ await withHarness(async (app) => {
   ok('G9: under Arbor there is no meter - no layer, and the seam reports it not running', layer9 === 0 && (!s9 || s9.running === false), JSON.stringify({ layer9, s9 }));
 });
 
+if (process.env.HARNESS_PARKED === '1') {
+  // LEDGER 90 (2026-10-17) - ONE park: G6's easing. Its record asserts the ruled truth from the default leg's own reading: no easing.
+  { const g = gmParks.g6 || null; pok('PARKED (was "G6: ...it shows the faint still overlay instead, its opacity following intensity (1 x 0.42 at peak), eased in, not cut") - Fable, Oct 17: honour the global reduced-motion rule (index.css), so the overlay appears with no easing; live successor: G6 [global-rule successor]',
+      !!g && parseFloat(g.transition) < 0.001, JSON.stringify(g)); }
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  console.log(parkedPass ? `\nGLITCH-METER PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed; this FILE parks 1: G6's easing (ledger 90)`
+    : `\nGLITCH-METER PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+}
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nGLITCH-METER VERIFY: PASS (${checks.length} checks)` : `\nGLITCH-METER VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
