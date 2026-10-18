@@ -25,6 +25,8 @@ import { initThemePrefs } from './store/themePrefs';
 // (registerThemeFx side effect). Import-for-effect only; nothing here reads
 // the binding. Harmless on Plateau — registration just sits unused.
 import './store/fluxThemeFx';
+// THE AUTISM ECONOMY SEED: the seed script's few app paths (store/seedSeams.ts), registered once at start like the other window seams
+import './store/seedSeams';
 
 // TH1 — apply the theme + preference attributes to <html> before the first
 // render so there is never a themeless/wrong-voice flash.
