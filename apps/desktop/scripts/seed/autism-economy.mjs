@@ -5,14 +5,18 @@
 // SAFETY, all of it ruled:
 //   - A VISIBLE browser at WS_TARGET_URL; Nick signs in himself. This script never reads, asks for or stores a password.
 //   - --dry-run (the default) prints COUNTS ONLY and changes nothing.
-//   - --apply first EXPORTS the whole account to a local folder through the app's own paths - the server's full record of the account
-//     (/api/sync, a pull from nothing) and the app's own "Everything" markdown export - and refuses to delete if that export fails or
-//     comes back empty while the account is not.
-//   - Then it asks for Nick's typed confirmation IN THE VISIBLE BROWSER (the phrase below), with the counts in front of him. Nick's spoken
-//     word is chat 1's to take at that moment, before this runs; --apply also requires --nick-said-go so the step cannot be skipped by habit.
-//   - Only the app's own paths, never SQL: delete -> Trash -> Delete for good (window.wrizoDelete, which ships with the Delete-for-good
-//     ticket - --apply refuses until it exists); the Import door for the essay (the real /project/:id/import screen); and the store
-//     functions the UI uses for the drawer, binder, board, pin, cards and connectors.
+//   - The order is CONFIRM -> EXPORT -> DELETE (Fable, Oct 18):
+//     1. --apply first asks for Nick's typed confirmation IN THE APP'S OWN DIALOG in the visible browser (window.wrizoDestructive.request;
+//        components/DestructiveConfirm.tsx), with the counts in front of him. Only his own typing and his own press open it - the app refuses
+//        scripted input - and until it is open, window.wrizoDelete and window.wrizoSeed's writes and export refuse. Nick's spoken word is
+//        chat 1's to take at that moment, before this runs; --apply also requires --nick-said-go so the step cannot be skipped by habit.
+//     2. Then it EXPORTS the whole account to a local folder through the app's own paths - the server's full record of the account
+//        (/api/sync, a pull from nothing) and the app's own "Everything" markdown export - and refuses to delete if that export fails or
+//        comes back empty while the account is not.
+//     3. Only then does it delete.
+//   - Only the app's own paths, never SQL: delete -> Trash -> Delete for good (window.wrizoDelete, from the Delete-for-good ticket -
+//     --apply refuses until it exists); the Import door for the essay (the real /project/:id/import screen); and the store functions the UI
+//     uses for the drawer, binder, board, pin, cards and connectors.
 //   - After --apply it re-reads the SERVER's own record and the app's readers, and asserts the brief's final state (README section 6).
 //
 // Run (chat 1, a box turn granted - every browser here goes through runtime-verify's guard):
@@ -110,13 +114,37 @@ await withHarness(async (app) => {
   await frame(app, '00-signed-in');
   if (!APPLY) { log('\nAUTISM-ECONOMY SEED: DRY RUN - nothing was changed. Run with --apply --nick-said-go to do it.'); return; }
 
-  // ---- 3. --apply: the delete paths must exist (they ship with Delete for good)
-  const missing = await app.evalJs(`(() => { const d = window.wrizoDelete; return ${JSON.stringify(DELETE_SEAMS)}.filter((k) => !d || typeof d[k] !== 'function'); })()`);
+  // ---- 3. --apply: the delete paths and the app's own confirmation must exist (they ship with Delete for good)
+  const missing = await app.evalJs(`(() => { const d = window.wrizoDelete; const c = window.wrizoDestructive;
+    return ${JSON.stringify(DELETE_SEAMS)}.filter((k) => !d || typeof d[k] !== 'function').concat(c && typeof c.request === 'function' ? [] : ['wrizoDestructive.request']); })()`);
   if (missing.length) refuse(`Delete for good has not shipped on this deployment (missing: ${missing.join(', ')}). Nothing was changed.`);
   if (before.unsynced > 0) refuse(`${before.unsynced} records are not yet synced - wait for the app to finish, then run again`);
   if (before.builtInPlaceCards > 0) refuse(`${before.builtInPlaceCards} card(s) sit on a built-in place (Journal / Shelf / Trash); the app cannot trash a card there - hand this up before deleting anything`);
 
-  // ---- 4. the export, first - or nothing is deleted
+  // ---- 4. CONFIRM: Nick types the phrase in the app's own dialog, in the browser in front of him (nothing is exported or deleted before)
+  const c = before;
+  const ask = {
+    title: 'Delete everything on this account, for good?',
+    lines: [
+      `${c.documents} documents (${c.pages} pages, ${c.boards} boards with ${c.cards} cards), ${c.binders} binders, ${c.drawers} drawers, ${c.storyPlans} plans, and the Trash (${c.trashPages} pages, ${c.trashCards} cards). This cannot be undone.`,
+      'A full copy is saved on this computer first. If that copy fails or comes back empty, nothing is deleted.',
+      'Then the account gets only The Autism Economy: its Page, its sources board, one drawer.',
+    ],
+    phrase: CONFIRM_PHRASE,
+  };
+  await app.evalJs(`(() => { window.__wzSeedAnswer = null;
+    window.wrizoDestructive.request(${JSON.stringify(ask)}).then((yes) => { window.__wzSeedAnswer = yes ? 'go' : 'cancel'; });
+    return true; })()`);
+  const shown = await app.waitFor("!!document.querySelector('.wz-destructive')", { timeout: 15000, label: 'the app\'s confirmation dialog' }).then(() => true, () => false);
+  if (!shown) refuse('the app\'s confirmation dialog never appeared - nothing was exported or deleted');
+  log(`\nWaiting for the typed confirmation ("${CONFIRM_PHRASE}") in the app's dialog in the browser window...`);
+  await frame(app, '01-confirm');
+  let answer = null;
+  for (let t = 0; t < 30 * 60 * 1000 && !answer; t += 1000) { answer = await app.evalJs('window.__wzSeedAnswer'); if (!answer) await sleep(1000); }
+  if (answer !== 'go') refuse(answer === 'cancel' ? 'Nick pressed Cancel - nothing was exported or deleted' : 'no confirmation within 30 minutes - nothing was exported or deleted');
+  if (!(await app.evalJs('window.wrizoDestructive.unlocked()'))) refuse('the app did not open its delete paths after the confirmation - nothing was exported or deleted');
+
+  // ---- 5. EXPORT, before anything is deleted - or nothing is deleted
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
   const exportDir = arg('--export-dir') || join(homedir(), '.wrizo', 'seed-exports', `autism-economy-${stamp}`);
   let exported = null;
@@ -136,34 +164,7 @@ await withHarness(async (app) => {
   if (accountHolds > 0 && (exported.rows === 0 || exported.bytes < 100)) refuse(`the export came back empty (${JSON.stringify(exported)}) while the account holds ${accountHolds} records - nothing was deleted`);
   log(`\nEXPORTED to ${exported.dir}: ${exported.rows} server rows (${exported.bytes} bytes), and the Everything document (${exported.everythingDocs} documents).`);
 
-  // ---- 5. Nick's typed confirmation, in the browser in front of him
-  await app.evalJs(`(() => {
-    const c = ${JSON.stringify(before)};
-    const box = document.createElement('div'); box.id = 'wz-seed-confirm';
-    box.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(10,10,10,.82);display:flex;align-items:center;justify-content:center;font:16px system-ui;color:#f4f0e8';
-    box.innerHTML = '<div style="max-width:560px;background:#1d1b18;border:1px solid #b08d57;padding:24px 28px;line-height:1.5">'
-      + '<h2 style="margin:0 0 12px;font-size:20px">Delete everything on this account, for good?</h2>'
-      + '<p style="margin:0 0 8px">' + c.documents + ' documents (' + c.pages + ' pages, ' + c.boards + ' boards with ' + c.cards + ' cards), ' + c.binders + ' binders, ' + c.drawers + ' drawers, '
-      + c.storyPlans + ' plans, and the Trash (' + c.trashPages + ' pages, ' + c.trashCards + ' cards). This cannot be undone.</p>'
-      + '<p style="margin:0 0 8px">A copy was saved on this computer first:<br><code style="font-size:13px">' + ${JSON.stringify(exported.dir)}.replace(/</g, '&lt;') + '</code></p>'
-      + '<p style="margin:0 0 12px">Then the account gets only <em>The Autism Economy</em>: its Page, its sources board, one drawer.</p>'
-      + '<p style="margin:0 0 6px">Type <b>${CONFIRM_PHRASE}</b> to go on:</p>'
-      + '<input id="wz-seed-phrase" autocomplete="off" style="width:100%;font:16px monospace;padding:6px;box-sizing:border-box">'
-      + '<div style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end"><button id="wz-seed-cancel">Cancel</button><button id="wz-seed-go" disabled>Delete for good</button></div></div>';
-    document.body.appendChild(box);
-    window.__wzSeedAnswer = null;
-    const input = box.querySelector('#wz-seed-phrase'), go = box.querySelector('#wz-seed-go');
-    input.addEventListener('input', () => { go.disabled = input.value !== ${JSON.stringify(CONFIRM_PHRASE)}; });
-    go.addEventListener('click', () => { if (input.value === ${JSON.stringify(CONFIRM_PHRASE)}) { window.__wzSeedAnswer = 'go'; box.remove(); } });
-    box.querySelector('#wz-seed-cancel').addEventListener('click', () => { window.__wzSeedAnswer = 'cancel'; box.remove(); });
-    input.focus(); return true; })()`);
-  log(`\nWaiting for the typed confirmation ("${CONFIRM_PHRASE}") in the browser window...`);
-  await frame(app, '01-confirm');
-  let answer = null;
-  for (let t = 0; t < 30 * 60 * 1000 && !answer; t += 1000) { answer = await app.evalJs('window.__wzSeedAnswer'); if (!answer) await sleep(1000); }
-  if (answer !== 'go') refuse(answer === 'cancel' ? 'Nick pressed Cancel - nothing was deleted' : 'no confirmation within 30 minutes - nothing was deleted');
-
-  // ---- 6. the wipe: everything to Trash (the app's soft delete), then Delete for good (Empty Trash + the soft-deleted binders, drawers, plans)
+  // ---- 6. DELETE: the wipe: everything to Trash (the app's soft delete), then Delete for good (Empty Trash + the soft-deleted binders, drawers, plans)
   const wiped = await app.evalJs(`(() => {
     const d = window.wrizoDelete;
     return { toTrash: d.softAll(), emptiedTrash: d.emptyTrash(), purgedOther: d.purgeDeleted() }; })()`).catch((e) => ({ error: String(e && e.message) }));

@@ -3,9 +3,13 @@
 // raw storage write - and each mutating one flushes before it returns (the harness rule: a seam-seeded write must reach storage). They
 // live here, not in persistence.ts, because two of them read store/sync.ts and store/pageExport.ts, which import persistence.ts.
 //
-// The DELETE paths (soft delete, Delete for good, Empty Trash) are NOT here: they come with the Delete-for-good ticket
-// (docs/plans/delete-for-good.md), and the seed script refuses --apply until they exist.
+// The DELETE paths (soft delete, Delete for good, Empty Trash) are NOT here: they are window.wrizoDelete (store/deleteSeams.ts).
+//
+// THE LOCK (Fable's change 1, Oct 18): the writes and the export REFUSE unless the writer completed the in-app typed confirmation in this page
+// session (store/destructiveGate.ts), exactly as window.wrizoDelete does. The counts stay open - the dry run prints counts only, and no content
+// crosses through them.
 import type { Box } from '../types';
+import { isDestructiveUnlocked } from './destructiveGate';
 import {
   countDirtyRecords, createBoardPage, flushNow, getAllUserBoards, getDeletedEntries, getDrawers, getJournalEntries, getJournalEntry,
   getJournalPages, getProjects, getShelfEntries, getStoryPlans, getSystemKind, getTrashedCards, saveBoardBoxes,
@@ -39,16 +43,20 @@ export function seedCounts() {
   };
 }
 
+const gate = (): void => {
+  if (!isDestructiveUnlocked()) throw new Error('refused: confirm in the app first - window.wrizoDestructive.request() opens the confirmation, and the writer types the phrase');
+};
+
 if (typeof window !== 'undefined') {
   (window as unknown as { wrizoSeed?: unknown }).wrizoSeed = {
     whenPulled: (capMs: number) => whenFirstPulled(capMs),
     counts: () => seedCounts(),
     unsynced: () => countDirtyRecords(),
-    /** The app's own "Everything" export (Publish -> Download everything): one markdown document, the Trash included. */
-    exportEverything: () => exportEverythingDocument(),
-    /** createBoardPage - the board birth CreateProject and PinToBoardSheet use. */
-    createBoardPage: (binderId: string, title: string) => { const b = createBoardPage(binderId, title); flushNow(); return getJournalEntry(b.id); },
-    /** saveBoardBoxes - the board's own save (its autosave path). */
-    saveBoardBoxes: (id: string, boxes: Box[]) => { saveBoardBoxes(id, boxes); flushNow(); return getJournalEntry(id); },
+    /** The app's own "Everything" export (Publish -> Download everything): one markdown document, the Trash included. Locked. */
+    exportEverything: () => { gate(); return exportEverythingDocument(); },
+    /** createBoardPage - the board birth CreateProject and PinToBoardSheet use. Locked. */
+    createBoardPage: (binderId: string, title: string) => { gate(); const b = createBoardPage(binderId, title); flushNow(); return getJournalEntry(b.id); },
+    /** saveBoardBoxes - the board's own save (its autosave path). Locked. */
+    saveBoardBoxes: (id: string, boxes: Box[]) => { gate(); saveBoardBoxes(id, boxes); flushNow(); return getJournalEntry(id); },
   };
 }
