@@ -63,7 +63,7 @@ export function ContextMenuHost() {
     >
       {menu.items.map((it, i) => (it === null
         ? <div key={`s${i}`} className="wz-ctx-sep" role="separator" />
-        : <button key={`${i}-${it.label}`} type="button" role="menuitem" className="wz-ctx-item" onClick={() => { closeContextMenu(); it.onSelect(); }}>{it.label}</button>))}
+        : <button key={`${i}-${it.label}`} type="button" role="menuitem" className="wz-ctx-item" disabled={it.disabled === true} aria-disabled={it.disabled === true ? 'true' : undefined} onClick={() => { if (it.disabled) return; closeContextMenu(); it.onSelect(); }}>{it.label}</button>))}
     </div>,
     document.body,
   );

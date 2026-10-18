@@ -39,7 +39,18 @@ const handlers = {
     S.currentUser.setCurrentUser(user);
     return { ok: r.ok, id: user.id };
   },
-  async sync({ full = false } = {}) { await S.sync.syncOnce(full); P.flushNow(); return { status: S.sync.getSyncStatus() }; },
+  // a sync that REALLY ran: the app schedules its own background sync after a first pull (sync.ts maybeBackfillJournal), and a syncOnce
+  // that lands while that one is in flight is skipped silently - so this waits for its own request to go out, and for nothing to be pending
+  async sync({ full = false } = {}) {
+    for (let i = 0; i < 40; i++) {
+      const before = globalThis.__deviceFetchCount;
+      await S.sync.syncOnce(full);
+      if (globalThis.__deviceFetchCount > before && S.sync.getSyncStatus() !== 'pending') break;
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    P.flushNow();
+    return { status: S.sync.getSyncStatus() };
+  },
   async skew({ ms }) { skew = ms; return { skew }; },
   async createPage({ text, projectId }) { const e = P.createJournalPage({ text, ...(projectId ? { projectId } : {}) }); P.flushNow(); return { id: e.id }; },
   async edit({ id, text }) { const e = P.getJournalEntry(id); P.patchJournalEntry(id, e ? e.text : '', { text }); P.flushNow(); return { updatedAt: P.getJournalEntry(id)?.updatedAt }; },

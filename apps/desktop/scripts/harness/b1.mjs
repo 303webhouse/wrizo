@@ -120,6 +120,9 @@ const openPageCategory = async (app) => {
   await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open (openPageCategory)' });
 };
 
+// DELETE FOR GOOD: S4's Trash-card menu, read on the default leg, kept for its parked record (declared before the first session uses it)
+let b1TrashMenu = null;
+
 await withHarness(async (app) => {
   // ==========================================================================
   // S1 — system Boards exist: find-or-create idempotent, no project home,
@@ -325,7 +328,13 @@ await withHarness(async (app) => {
   // await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Restore').click()");
   await rightClickAt(app, `[data-box-id="${trashCardAfterDelete.id}"]`);
   const trashMenuLabels = await app.evalJs("[...document.querySelectorAll('.wz-ctx-item')].map((b) => b.textContent.trim())");
-  ok('S4 [context-menu successor]: a Trash card offers Restore in its right-click menu (and no Delete: a deleted Page is restored here, not purged)', trashMenuLabels.includes('Restore') && !trashMenuLabels.includes('Delete'), JSON.stringify(trashMenuLabels));
+  // ---- PARKED - SUPERSEDED by DELETE FOR GOOD (docs/plans/delete-for-good.md, cleared Oct 18 - Nick chose a real Delete for good) ----
+  // A deleted Page CAN now be deleted for good from the Trash, so its menu offers Delete after Restore. Kept VERBATIM and no longer run.
+  // ok('S4 [context-menu successor]: a Trash card offers Restore in its right-click menu (and no Delete: a deleted Page is restored here, not purged)', trashMenuLabels.includes('Restore') && !trashMenuLabels.includes('Delete'), JSON.stringify(trashMenuLabels));
+  // ------------------------------------------------------------------
+  b1TrashMenu = trashMenuLabels;
+  ok('S4 [delete-for-good successor]: a Trash card for a deleted Page offers Restore, then Delete - Delete for good, which always asks (delete-for-good.mjs H4 walks it); Restore is still first',
+    JSON.stringify(trashMenuLabels) === JSON.stringify(['Restore', 'Delete']), JSON.stringify(trashMenuLabels));
   await ctxPick(app, 'Restore');
   await sleep(400);
 
@@ -880,6 +889,9 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED, generation 4 (was the CD3 gated re-assertion pinning Drawers at [3], Settings at [5] and Trash at [7]) — VW1 (item 134): the rail is grouped by kind, so those indices name different tabs. The surviving claim is that the Trash is LAST, asserted by name rather than by position',
       stripShapeParkedTrash.labels[stripShapeParkedTrash.labels.length - 1] === 'Trash',
       JSON.stringify(stripShapeParkedTrash));
+    // DELETE FOR GOOD (2026-10-18) - S4's "no Delete on a deleted Page", parked; its record asserts the new truth from the default leg's reading
+    pok('PARKED (was "S4 [context-menu successor]: a Trash card offers Restore in its right-click menu (and no Delete: a deleted Page is restored here, not purged)") - delete-for-good: a deleted Page can be deleted for good from Trash; live successor: S4 [delete-for-good successor]',
+      Array.isArray(b1TrashMenu) && b1TrashMenu[0] === 'Restore' && b1TrashMenu.includes('Delete'), JSON.stringify(b1TrashMenu));
     return parkedChecks;
   });
   // eslint-disable-next-line no-console

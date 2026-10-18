@@ -212,4 +212,12 @@ export async function runMigrations(): Promise<void> {
     await pool.query(`alter table ${t} add column if not exists synced_at timestamptz not null default now()`);
     await pool.query(`create index if not exists ${t}_user_synced on ${t} (user_id, synced_at)`);
   }
+
+  // DELETE FOR GOOD (docs/plans/delete-for-good.md; Nick picked the column, Oct 18) - ONE nullable timestamptz on the four tables a writer can
+  // delete for good. Null on every existing row (no backfill): nothing has ever been purged. A purged row keeps only its shell - id, user,
+  // times, deleted_at, purged_at - and refuses any later non-purge write (sync.ts), which is what stops an offline device bringing it back.
+  // Same idempotent boot path as every add above.
+  for (const t of ['journal_entries', 'projects', 'drawers', 'story_plans']) {
+    await pool.query(`alter table ${t} add column if not exists purged_at timestamptz`);
+  }
 }

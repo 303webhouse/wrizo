@@ -28,6 +28,9 @@ export interface StoryPlan {
   currentBeatId: string | null;
   createdAt: string;
   updatedAt: string;
+  // DELETE FOR GOOD: the server always had deleted_at for plans; the client names it now, with purgedAt (see Drawer.purgedAt)
+  deletedAt?: string;
+  purgedAt?: string;
 }
 
 // Fragment substrate (DM1) — the keystone data model. Creative writing is a
@@ -80,6 +83,8 @@ export interface Drawer {
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
+  // DELETE FOR GOOD: set when this record was deleted for good - the row is then a shell (no words), kept so nothing can bring it back
+  purgedAt?: string;
 }
 
 // Binder kind (B1 → F4) — the project's form / "what are you writing". Distinct
@@ -126,6 +131,7 @@ export interface Project {
   tutor?: TutorBible;
   // Soft delete — rows that must sync are never hard-deleted (see storage adapter / sync).
   deletedAt?: string;
+  purgedAt?: string;   // DELETE FOR GOOD (see Drawer.purgedAt)
 }
 
 // Autosaved writing buffer (A1). One record per writing surface, keyed by
@@ -206,6 +212,7 @@ export interface JournalEntry {
   createdAt: string; // set once on commit, never mutated
   updatedAt: string;
   deletedAt?: string;
+  purgedAt?: string;   // DELETE FOR GOOD (see Drawer.purgedAt)
   // Emergent organization (J6) — light, optional, never forced. All additive and
   // synced via the existing journalEntries path; the entry's text is never
   // touched. `routedProjectIds` records which projects a scrap has been

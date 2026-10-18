@@ -57,6 +57,7 @@ const trashPage = (text, extra = {}) => { const e = P.createJournalPage({ text, 
     getJournalEntry: () => [P.getJournalEntry(page.id), P.getJournalEntry(loose.id)].filter(Boolean),
     getJournalEntryIncludingDeleted: () => [P.getJournalEntryIncludingDeleted(page.id), P.getJournalEntryIncludingDeleted(loose.id)].filter(Boolean),
   };
+  flush();   // storage is written on a debounce: read it only after the flush
   const leaks = Object.entries(readers).filter(([, r]) => (r() || []).some((e) => e && ids.has(e.id))).map(([k]) => k);
   ok(`P3: no reader lists a purged page - ${Object.keys(readers).length} readers asked: ${Object.keys(readers).join(', ')}`, leaks.length === 0 && !!stored(page.id), JSON.stringify({ leaks }));
 }
@@ -136,11 +137,13 @@ const trashPage = (text, extra = {}) => { const e = P.createJournalPage({ text, 
   P.patchJournalEntry(e.id, 'shared page', { text: 'my unsynced edit' });
   const wasDirty = isDirty('journalEntries', e.id);
   P.applyRemoteRecords({ journalEntries: [{ id: e.id, createdAt: e.createdAt, updatedAt: iso(), deletedAt: iso(), purgedAt: iso(), text: '' }] });
+  flush();
   ok('P9: a PULLED purge wins over a local unsynced edit - the page is gone here too, and the edit is never pushed (its dirty flag cleared)',
     wasDirty && !P.getJournalEntry(e.id) && !isDirty('journalEntries', e.id) && !!stored(e.id) && !!stored(e.id).purgedAt && !stored(e.id).text, JSON.stringify(stored(e.id)));
   const f = P.createJournalPage({ text: 'refused page' });
   P.patchJournalEntry(f.id, 'refused page', { text: 'an edit the server refuses' });
   P.applyAcknowledgedPurged({ journalEntries: [f.id] });
+  flush();
   ok('P10: an ACKNOWLEDGED purge (the server refused this push because the row is purged) does the same - shell here, dirty flag cleared',
     !P.getJournalEntry(f.id) && !isDirty('journalEntries', f.id) && !!stored(f.id) && !!stored(f.id).purgedAt, JSON.stringify(stored(f.id)));
 }

@@ -148,7 +148,8 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'the open page' }).catch(() => {});
   await sleep(700);
   const now = new Date().toISOString();
-  await app.evalJs(`window.wrizoApplyRemoteBoard({ journalEntries: [{ id: 'dfg-open', createdAt: ${JSON.stringify(iso(10))}, updatedAt: ${JSON.stringify(now)}, deletedAt: ${JSON.stringify(now)}, purgedAt: ${JSON.stringify(now)}, text: '' }] })`);
+  // the app's own pull path with one record (wrizoApplyRemoteBoard -> applyRemoteRecords({ journalEntries: [rec] })): the shell another device made
+  await app.evalJs(`window.wrizoApplyRemoteBoard({ id: 'dfg-open', createdAt: ${JSON.stringify(iso(10))}, updatedAt: ${JSON.stringify(now)}, deletedAt: ${JSON.stringify(now)}, purgedAt: ${JSON.stringify(now)}, text: '' })`);
   await sleep(1200);
   const h6 = await app.evalJs("({ hash: location.hash, toast: (document.querySelector('.action-toast') || {}).textContent || null })");
   ok('H6: the open page, purged on another device, leaves for the Desk with one quiet line (Q3)',

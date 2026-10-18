@@ -15,7 +15,7 @@
 //   E10 another account cannot purge this one's page
 //   E11 the migration is idempotent: a second boot adds no second purged_at column
 //   MUTANTS - the compiled server with ONE edit each, every one must turn a case RED: no refusal of a non-purge push onto a shell (E5 red),
-//   the refusal reported as REJECTED instead of acknowledged (E6 red: the device retries), no server-side clearing (E8 red)
+//   the refusal reported as REJECTED instead of acknowledged (E5 red: the server says rejected), no server-side clearing (E8 red)
 // Needs: the server built (pnpm --filter @writer-studio/server build) and EMBEDDED_PG_FROM=<a package.json whose install has embedded-postgres>.
 // Run (repo root): EMBEDDED_PG_FROM=C:/Users/nickh/wrizo-read/package.json node apps/server/scripts/harness/delete-for-good-e2e.mjs
 import { createRequire } from 'node:module';
@@ -112,7 +112,7 @@ const scenario = async (distDir, tag, { quiet = false } = {}) => {
     const r4 = await row('journal_entries', id);
     k('E4', 'A deletes it for good: the server holds a SHELL - purged_at set, every content column cleared',
       purged.done && !!r4 && !!r4.purged_at && r4.text === '' && r4.boxes == null && r4.strokes == null && r4.tutor == null && r4.project_id == null,
-      JSON.stringify(r4 && { purged_at: r4.purged_at, text: r4.text, boxes: r4.boxes }));
+      JSON.stringify({ purged, server: r4 && { purged_at: r4.purged_at, text: r4.text, boxes: r4.boxes }, aState: await A.call('state', { id }) }));
     // E5
     await B.call('sync');
     const b5 = await B.call('state', { id });
@@ -129,7 +129,8 @@ const scenario = async (distDir, tag, { quiet = false } = {}) => {
     await B.call('sync'); await B.call('sync');
     const b6 = await B.call('state', { id });
     const after = b6.wire.filter((w) => (w.pushed.journalEntries || []).includes(id)).length;
-    k('E6', 'B pushed the refused edit exactly ONCE, then synced twice more and never pushed it again - it stopped retrying', before === 1 && after === 1, JSON.stringify({ before, after }));
+    // (B also pushes the page back once on its first sync - the journal backfill - so `before` counts that too; the claim is NO push after the acknowledgement)
+    k('E6', 'after the acknowledgement B syncs twice more and never pushes the page again - it stopped retrying', before >= 1 && after === before, JSON.stringify({ before, after }));
     // E7
     const C = await device(srv.base); devs.push(C);
     await C.call('login', { email, password: 'correct horse battery' });
@@ -189,7 +190,10 @@ try {
   // ---- MUTANTS: the compiled server with ONE edit each (a copy beside the real dist, so its requires resolve the same)
   const MUTANTS = [
     { name: 'no refusal onto a shell', mustRed: 'E5', file: 'sync.js', from: 'if (existingPurged && !incomingPurge)', to: 'if (false && existingPurged && !incomingPurge)' },
-    { name: 'the refusal REJECTED, not acknowledged', mustRed: 'E6', file: 'sync.js', from: 'acked.push(rec.id)', to: 'rejected.push(rec.id)' },
+    // a refusal turned into a REJECTION (the write throws, as a failed insert does): the device still converges - the same sync's pull brings
+    // the shell, and a pulled purge wins - but the server has told it the record was REJECTED, which the app shows the writer as an unsaved
+    // record. E5's "never rejected" is its case; the no-retry-without-a-pull claim is the browserless P15's.
+    { name: 'the refusal REJECTED, not acknowledged', mustRed: 'E5', file: 'sync.js', from: 'acked.push(rec.id);', to: "throw new Error('refused onto a shell');" },
     { name: 'no server-side clearing', mustRed: 'E8', file: 'sync.js', from: "const SHELL_TEXT = '';", to: 'const SHELL_TEXT = null;' },
   ];
   for (const m of MUTANTS) {
