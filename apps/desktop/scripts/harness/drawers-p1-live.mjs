@@ -31,13 +31,31 @@ const realClick = async (app, selector) => {
   // click never assumes the fixture already scrolled the target into the
   // viewport (Recede depth's "?" sat off-screen at y=1351 in a 900px-tall
   // fixture there; kept in sync here for the same risk).
-  const rect = await app.evalJs(`(() => {
+  //
+  // REPAIR (Fable, Oct 18, ledger 92 — the flake): scroll and measure in
+  // SEPARATE ticks, polling the rect until two consecutive reads agree,
+  // rather than reading it in the same evalJs call as the scroll — an
+  // in-flight scroll animation left that read stale. Kept in sync with
+  // help-buttons.mjs's own fix.
+  await app.evalJs(`(() => {
     const el = document.querySelector(${JSON.stringify(selector)});
     if (!el) throw new Error('realClick: no element ' + ${JSON.stringify(selector)});
     el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-    const r = el.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   })()`);
+  const readCentre = () => app.evalJs(`(() => {
+    const el = document.querySelector(${JSON.stringify(selector)});
+    if (!el) throw new Error('realClick: no element ' + ${JSON.stringify(selector)});
+    const r = el.getBoundingClientRect();
+    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+  })()`);
+  let rect = await readCentre();
+  for (let i = 0; i < 10; i++) {
+    await sleep(30);
+    const next = await readCentre();
+    const stable = next.x === rect.x && next.y === rect.y;
+    rect = next;
+    if (stable) break;
+  }
   await app.mouseDown(rect.x, rect.y);
   await app.mouseUp(rect.x, rect.y);
 };

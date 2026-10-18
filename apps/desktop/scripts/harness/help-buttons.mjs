@@ -33,15 +33,38 @@ const realClick = async (app, selector) => {
   // the browser's hit-test at all). scrollIntoView BEFORE measuring the
   // rect, so every caller's click lands on the element's actual, visible
   // position rather than assuming the fixture scrolled it there already.
-  const rect = await app.evalJs(`(() => {
+  //
+  // REPAIR (Fable, Oct 18, ledger 92 — the flake): scrolling and measuring
+  // in the SAME evalJs call read the rect before any scroll ANIMATION had
+  // actually settled — scrollIntoView's default behaviour is instant only
+  // when the browser/CSS agrees it should be; whenever it wasn't (how far
+  // the target already was from view, machine load), getBoundingClientRect
+  // read mid-scroll, a stale rect a real pointer press at that coordinate
+  // then missed. Scroll in its own tick, then POLL the rect across SEPARATE
+  // ticks (a real sleep between each, so an in-flight animation actually
+  // gets to progress) until two consecutive reads agree, rather than
+  // trusting the first read alone.
+  await app.evalJs(`(() => {
     const el = document.querySelector(${JSON.stringify(selector)});
     if (!el) throw new Error('realClick: no element ' + ${JSON.stringify(selector)});
     el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-    const r = el.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   })()`);
-  await app.mouseDown(rect.x, rect.y);
-  await app.mouseUp(rect.x, rect.y);
+  const readCentre = () => app.evalJs(`(() => {
+    const el = document.querySelector(${JSON.stringify(selector)});
+    if (!el) throw new Error('realClick: no element ' + ${JSON.stringify(selector)});
+    const r = el.getBoundingClientRect();
+    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+  })()`);
+  let prev = await readCentre();
+  for (let i = 0; i < 10; i++) {
+    await sleep(30);
+    const next = await readCentre();
+    const stable = next.x === prev.x && next.y === prev.y;
+    prev = next;
+    if (stable) break;
+  }
+  await app.mouseDown(prev.x, prev.y);
+  await app.mouseUp(prev.x, prev.y);
 };
 
 const freshPage = async (app, theme, { width = 1400, id = 'hb-page' } = {}) => {
@@ -84,8 +107,15 @@ const openTutorDrawer = async (app) => {
 // footSettings) — reading the Draft sliver open is not enough to reach it.
 const openDraftSliverSettings = async (app) => {
   await openDraftSliver(app);
-  await app.evalJs("document.querySelector('.wz-sliver-instruments-btn')?.click()");
-  await sleep(300);
+  // REPAIR (Fable, Oct 18, ledger 92) — .wz-sliver-instruments-btn is ALSO a
+  // toggle (aria-expanded), same species as .wz-sliver-grip above: calling
+  // it unconditionally closed the popout right back on any re-entry that
+  // found it already open. Open it only if it is currently closed.
+  const settingsOpen = await app.evalJs("document.querySelector('.wz-sliver-instruments-btn')?.getAttribute('aria-expanded') === 'true'");
+  if (!settingsOpen) {
+    await app.evalJs("document.querySelector('.wz-sliver-instruments-btn')?.click()");
+    await sleep(300);
+  }
 };
 
 // Each location, how to reach it, and the selector of its own "?".
