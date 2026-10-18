@@ -781,12 +781,13 @@ await withHarness(async (app) => {
       let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 40) n += 1;
       return n;
     };
+    // FINAL DRAFT is handled separately below — see that block's own comment
+    // for why its outline/base pair can't share this loop's claim.
     const stages = [
       { name: 'ideas', outline: 'ideas.png', base: 'base.png', x: 1915, y: 1039, w: 608, h: 754 },
       { name: 'text', outline: 'text.png', base: 'base.png', x: 1276, y: 1379, w: 463, h: 351 },
       { name: 'feedback', outline: 'feedback.png', base: 'base.png', x: 478, y: 1185, w: 727, h: 426 },
       { name: 'page', outline: 'page.png', base: 'base.png', x: 1398, y: 481, w: 414, h: 459 },
-      { name: 'final', outline: 'final.png', base: 'final-cream.png', x: 2362, y: 442, w: 395, h: 431 },
     ];
     const out = {};
     for (const s of stages) {
@@ -794,14 +795,52 @@ await withHarness(async (app) => {
       const baseN = await count(s.base, s.x, s.y, s.w, s.h);
       out[s.name] = { outlineN, baseN };
     }
+    // final.png is pre-cropped to its own small canvas (395x431), like every
+    // other outline file — sampled at (0,0), never at the big canvas's own
+    // (x,y) offset (that offset is base.png's language, and final-cream.png
+    // is not base.png: cropping a 395x431 image at (2362,442) reads outside
+    // its own bounds, which is WHY this used to measure zero).
+    out.final = {
+      outlineN: await count('final.png', 0, 0, 395, 431),
+      baseN: await count('final-cream.png', 0, 0, 395, 431),
+    };
     return out;
   })()`);
   for (const [stage, { outlineN, baseN }] of Object.entries(inkCounts)) {
     ok(`S15 (premise) ${stage}: both layers actually have ink to compare (a non-zero population)`,
       outlineN > 0 && baseN > 0, JSON.stringify({ stage, outlineN, baseN }));
+    if (stage === 'final') continue; // handled on its own terms below — see that block's comment
     ok(`S15 [splash-sweep] ${stage}: the brass outline layer's own ink is MEANINGFULLY LESS than the same box's cream ink (outline ${outlineN} < 70% of base ${baseN}) — something besides the outline strokes (the letters) was left out of the brass layer`,
       outlineN < baseN * 0.7, JSON.stringify({ stage, outlineN, baseN, ratio: baseN > 0 ? Math.round((outlineN / baseN) * 100) / 100 : null }));
   }
+  // FINAL DRAFT (ledger 91, Fable's own diagnosis, measured and confirmed):
+  // final-cream.png is not this stage's "letters, no brass outline" twin the
+  // other four's base.png slot supplies — it is pixel-identical to final.png
+  // (diffed byte-for-byte, confirmed), a leftover of the REMOVED backdropTone
+  // era Fable asked to keep ("the light-theme PNG") when its own wiring came
+  // out. FINAL DRAFT's own lettering is baked directly into final.png, with
+  // no separate always-visible cream state — the one stage this is true of,
+  // since it is the one that pops/glows rather than just sweeping a box
+  // outline over letters base.png already carries. So the four-stage ratio
+  // claim ("outline < 70% of base — the letters were left out") has no
+  // premise to test here; what DOES hold, and is asserted instead, is that
+  // final.png's own drawing is not blank (S15's own premise check above
+  // already proves that) and that base.png's generic page art at this same
+  // screen position — unrelated to FINAL DRAFT's own lettering, Fable's
+  // "sample a point outside the FINAL DRAFT box" — is clearly thinner than
+  // final.png's full lettering+outline, the one comparison this stage CAN
+  // honestly make.
+  const finalOutsideBaseN = await app.evalJs(`(async () => {
+    const img = new Image(); img.src = '/brand/splash-arbor/base.png'; await img.decode();
+    const c = document.createElement('canvas'); c.width = 395; c.height = 431;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 2362, 442, 395, 431, 0, 0, 395, 431);
+    const d = ctx.getImageData(0, 0, 395, 431).data;
+    let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 40) n += 1;
+    return n;
+  })()`);
+  ok('S15 [splash-sweep] final: base.png\'s own generic page art at FINAL DRAFT\'s screen position (unrelated to its lettering) is clearly thinner than final.png\'s full lettering+outline drawing — the one honest comparison available for the one stage whose letters are baked into the brass layer itself, not a separate cream twin',
+    finalOutsideBaseN < inkCounts.final.outlineN, JSON.stringify({ finalOutsideBaseN, finalOutlineN: inkCounts.final.outlineN }));
 
   // ==========================================================================
   // S17 — REDUCED MOTION: THE FINISHED DRAWING SHOWS AT ONCE (brief: "the
