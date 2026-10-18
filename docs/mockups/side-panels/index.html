@@ -5,20 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wrizo - Side panels mockup (Arbor)</title>
 <!--
-  docs/mockups/side-panels - Arbor side panels redesign, Draft mode, ~2000 x 940 (Nick's screen).
-  LEFT  = New Page + the page list. One small sort control (Date / Drawer / A-Z). Rows are the title only;
-          the place is a faint mark (nothing for unfiled pages). No Places, no horizontal scroll.
-  PAGE DETAILS (title, Star, place, tags, one "Add to a Board..." that offers Pin or Copy):
-          A = a compact card from the breadcrumb title.  B = a slim strip at the top of the left panel.
-  PAGE SETUP leaves the panel: the page's "..." menu > "Page Setup..." opens a small sheet.
-  RIGHT (Tutor) = Ask box on top, the 3 starter questions as small chips, Selection chip greyed until text
-          is highlighted, Consistency and Fragments as one quiet row each with a count (open on click,
-          hidden when empty). Structure removed. Tutor / Grafts tabs stay.
-  Hierarchy: the page is the brightest thing; one accent per panel (olive); labels smaller and fainter
-  than content. Arbor tokens only. Rail and mode strip drawn as today, unchanged.
+  docs/mockups/side-panels - Arbor side panels redesign, Draft mode, ~2000 x 940 (Nick's screen).  Round 2.
+  FRAME (as live): the strip - Pages, Plan | Drawers | Journal, Shelf, and at the foot Settings, Themes | Trash.
+          The mode strip - FREE WRITE, DRAFT, REVISE, WORKSHOP (deferred), PUBLISH, PLAN ->.
+  LEFT  = New Page + the page list (opened by the strip's Pages). One small sort control (Date / Drawer / A-Z).
+          Rows are the title only; the place is a faint mark (nothing for unfiled pages). No Places, no scroll bar sideways.
+  PAGE DETAILS (Nick picked A): a compact card from the breadcrumb title - title, Star, place, tags,
+          "Add to a Board..." which PINS: a picker of "+ New Board", then "+ [board]" rows, scrollable, sortable past 3.
+  PAGE "..." MENU: only actions that exist today, named after their live controls -
+          Page setup... (the Page panel's Page setup zone), Copy page text, Delete page (the Actions row).
+  PAGE SETUP leaves the panel: a small sheet, the live controls (line spacing stays the live slider, 1.2-2.2).
+  RIGHT (Tutor) = Ask box on top, 3 starter chips, Selection chip greyed until text is highlighted; Consistency,
+          Fragments, The book's Bible and Waiting for you as quiet rows with a count (open on click, hidden when empty).
+          Structure removed. Tutor / Grafts tabs stay.
+  Hierarchy: the page is the brightest thing; one accent per panel (olive); labels smaller and fainter than content.
   Panels sit in fixed tracks: opening or closing one never moves the page (rig prints the page rect).
-  Rig bar = mockup only. Frames: ?frame=both | left | right   extras: &details=card|strip &open=details|menu|setup
-  &sel=1 (a highlight on the page) &lenses=empty.  Branch: cursor/side-panels-mockup.
+  Rig bar = mockup only. Frames: ?frame=both | left | right   extras: &open=details|picker|menu|setup  &sel=1  &lenses=empty
+  Branch: cursor/side-panels-mockup.
 -->
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
@@ -27,14 +30,15 @@
     --ink-950: #110600; --ink-900: #1F1A16; --ink-800: #2A241E;
     --ink-border: #332C25; --ink-border-strong: #453B31;
     --text-hi: #EDE6DA; --text-mid: #B5A998; --text-low: #80766A;
-    --paper: #F3EDE1; --paper-border: #d8c8b4;
+    --paper: #F3EDE1;
     --ink-on-paper: #2B2014; --ink-on-paper-low: #6B5F4E;
     --paper-glow: 0 0 0 1px rgba(243, 237, 225, 0.06), 0 4px 32px rgba(212, 162, 78, 0.10), 0 2px 12px rgba(0, 0, 0, 0.45);
     --brass: #ff9800; --accent-rest: #96a05a;
+    --desk-ground: #1F1A16;
     --font-ui: 'Figtree', system-ui, sans-serif;
     --font-prose: 'Crimson Pro', Georgia, serif;
     --sb: color-mix(in srgb, var(--text-low) 28%, transparent);
-    --rail: 64px; --lt: 272px; --rt: 332px; --gap: 28px;
+    --strip: 84px; --lt: 272px; --rt: 332px; --gap: 28px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; scrollbar-width: thin; scrollbar-color: var(--sb) transparent; }
   html, body { height: 100%; overflow: hidden; }
@@ -51,54 +55,57 @@
   .rig .sp { width: 10px; }
   .rect { margin-left: auto; color: #6a6a6a; font-variant-numeric: tabular-nums; }
 
-  /* ---- the rail: as today ---- */
-  .rail { position: fixed; top: 34px; left: 0; bottom: 0; width: var(--rail); display: flex; flex-direction: column; gap: 2px; padding-top: 64px;
-    background: var(--ink-950); border-right: 1px solid var(--ink-border); }
-  .ri { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 11px 4px; border-left: 2px solid transparent; color: var(--text-low); }
-  .ri b { font-weight: 400; font-size: 18px; line-height: 1; }
-  .ri span { font-size: 9px; letter-spacing: .5px; }
-  .ri.on { color: var(--accent-rest); border-left-color: var(--accent-rest); }
-  .ri.off { color: var(--ink-border-strong); }
+  /* ---- the strip: as live (Cascade.tsx) ---- */
+  .strip { position: fixed; top: 92px; left: 0; bottom: 0; width: var(--strip); z-index: 5; display: flex; flex-direction: column; padding: 8px 0 5vh;
+    background: var(--desk-ground); border: 1px solid var(--ink-border); border-top: none; }
+  .sec { display: flex; flex-direction: column; }
+  .ssep { height: 1px; background: var(--ink-border); margin: 8px 10px; }
+  .sfoot { margin-top: auto; }
+  .si { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; padding: 10px 4px; border-left: 2px solid transparent; color: var(--text-hi); }
+  .si:hover { background: var(--ink-900); }
+  .si:active { color: var(--brass); }
+  .si[aria-pressed='true'] { color: var(--accent-rest); border-left-color: var(--accent-rest); }
+  .si svg { display: block; width: 21.6px; height: 21.6px; }
+  .si span { font-size: 10.8px; letter-spacing: .4px; line-height: 1.2; }
+  .sfoot .si svg { width: 14.5px; height: 14.5px; }
+  .sfoot .si span { font-size: 7.3px; }
 
-  .app { position: fixed; top: 34px; left: var(--rail); right: 0; bottom: 0; display: grid;
+  .app { position: fixed; top: 34px; left: var(--strip); right: 0; bottom: 0; display: grid;
     grid-template-columns: var(--lt) 1fr var(--rt); grid-template-rows: 58px 1fr; column-gap: var(--gap); padding: 0 28px 22px; }
 
-  /* ---- top bar: crumb + "..." on the left, the mode strip as today on the right ---- */
-  .top { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; min-width: 0; }
-  .crumb { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text-low); min-width: 0; }
+  /* ---- top bar: crumb + "..." on the left; the mode strip as live on the right ---- */
+  .top { grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .crumb { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text-low); min-width: 0; margin-right: auto; }
   .crumb .sep { color: var(--ink-border-strong); }
   .here { display: flex; align-items: center; gap: 6px; color: var(--text-mid); font-weight: 600; padding: 4px 6px; margin: -4px -6px; border: 1px solid transparent; }
   .here:hover, .here[aria-expanded='true'] { color: var(--text-hi); border-color: var(--ink-border); }
   .here i { font-style: normal; font-weight: 400; font-size: 9px; color: var(--text-low); }
   .dots { width: 26px; height: 24px; color: var(--text-low); font-size: 15px; letter-spacing: 1px; border: 1px solid transparent; }
   .dots:hover, .dots[aria-expanded='true'] { color: var(--text-hi); border-color: var(--ink-border); }
-  .modes { margin-left: auto; display: flex; align-items: center; }
-  .mt { border: 1px solid var(--ink-border); border-left: 0; padding: 5px 14px; font-size: 13px; font-weight: 500; color: var(--text-mid); text-align: left; }
-  .mt:first-child { border-left: 1px solid var(--ink-border); }
-  .mt small { display: block; font-size: 7.5px; letter-spacing: 1px; text-transform: uppercase; opacity: .5; margin-top: 1px; }
-  .mt.on { color: var(--text-hi); border-color: var(--accent-rest); }
-  .mt.off { color: var(--text-low); opacity: .6; }
-  .msep { width: 1px; height: 26px; background: #3a2613; margin: 0 9px; }
-  .done { margin-left: 28px; padding: 6px 14px; border: 1px solid var(--ink-border); color: var(--text-mid); font-size: 13px; }
+  .modes { display: flex; align-items: center; gap: 1.6px; }
+  .mt { border: 1px solid transparent; padding: 9px 12.8px; font-size: 10.4px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-mid); }
+  .mt:hover { color: var(--text-hi); background: var(--ink-800); }
+  .mt.on { color: var(--text-hi); border-bottom-color: var(--accent-rest); }
+  .mt.off { color: var(--text-low); cursor: not-allowed; }
+  .mt.off:hover { background: none; color: var(--text-low); }
+  .plan { padding: 9px 12.8px; font-size: 10.4px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-rest); }
 
   /* ---- panels: fixed tracks; the page never moves for them ---- */
+  .track { position: relative; min-height: 0; display: flex; flex-direction: column; }
   .panel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; background: var(--ink-900); border: 1px solid var(--ink-border); overflow: hidden; }
   .panel[hidden] { display: flex; visibility: hidden; }
-  .handle { position: absolute; top: 0; width: 18px; height: 40px; display: grid; place-items: center; color: var(--text-low); font-size: 11px;
+  .grip { position: absolute; top: 0; left: -1px; width: 18px; height: 40px; display: grid; place-items: center; color: var(--text-low); font-size: 11px;
     background: var(--ink-900); border: 1px solid var(--ink-border); }
-  .handle:hover { color: var(--text-hi); }
-  .track { position: relative; min-height: 0; display: flex; flex-direction: column; }
-  .track.l .handle { right: -1px; }
-  .track.r .handle { left: -1px; }
-  .track[data-open='true'] .handle { display: none; }
+  .grip:hover { color: var(--text-hi); }
+  .track[data-open='true'] .grip { display: none; }
 
   .lab { font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--text-low); }
+  .sort { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-low); padding: 2px 4px; margin: -2px -4px; }
+  .sort:hover { color: var(--text-mid); }
+  .sort::after { content: ''; width: 5px; height: 5px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: translateY(-2px) rotate(45deg); opacity: .7; }
 
   /* LEFT */
   .lhead { display: flex; align-items: center; justify-content: space-between; padding: 14px 14px 10px; }
-  .sort { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-low); padding: 2px 4px; margin: -2px -4px; }
-  .sort:hover { color: var(--text-mid); }
-  .sort::after { content: ''; width: 5px; height: 5px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: translateY(-2px) rotate(45deg); opacity: .7; }
   .newpage { display: flex; align-items: center; gap: 8px; margin: 0 10px 8px; height: 34px; padding: 0 10px; border: 1px solid var(--ink-border-strong); color: var(--text-mid); font-size: 13px; }
   .newpage:hover { color: var(--text-hi); border-color: var(--text-low); }
   .newpage b { font-weight: 400; font-size: 15px; line-height: 1; color: var(--text-low); }
@@ -110,52 +117,45 @@
   .prow .pl { flex: 0 0 auto; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10.5px; color: var(--text-low); opacity: .6; }
   .prow[aria-current='true'] { color: var(--text-hi); border-left-color: var(--accent-rest); background: color-mix(in srgb, var(--ink-800) 70%, transparent); }
 
-  /* B: the slim details strip */
-  .strip { border-bottom: 1px solid var(--ink-border); }
-  .strip[hidden] { display: none; }
-  .sline { display: flex; align-items: center; gap: 8px; width: 100%; padding: 11px 14px; text-align: left; font-size: 12.5px; color: var(--text-mid); }
-  .sline:hover { color: var(--text-hi); }
-  .sline .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-hi); }
-  .sline .pl { font-size: 10.5px; color: var(--text-low); white-space: nowrap; }
-  .sline::after { content: ''; margin-left: auto; flex: 0 0 auto; width: 5px; height: 5px; border-right: 1px solid var(--text-low); border-bottom: 1px solid var(--text-low); transform: rotate(45deg); }
-  .strip[data-open='true'] .sline::after { transform: rotate(-135deg); }
-  .sbody { padding: 0 14px 14px; }
-  .strip:not([data-open='true']) .sbody { display: none; }
-
-  /* PAGE DETAILS (shared by card A and strip B) */
+  /* PAGE DETAILS card (overlay) */
+  .card { position: fixed; z-index: 70; width: 300px; padding: 14px; background: var(--ink-900); border: 1px solid var(--ink-border-strong); box-shadow: 0 10px 34px rgba(0,0,0,.5); }
+  .card[hidden], .picker[hidden], .menu[hidden], .sheet[hidden] { display: none; }
   .det { display: flex; flex-direction: column; gap: 12px; }
   .det .f { display: flex; flex-direction: column; gap: 5px; }
   .det input.title { width: 100%; height: 30px; padding: 0 8px; border: 1px solid var(--ink-border-strong); color: var(--text-hi); font-size: 14px; font-weight: 500; user-select: text; }
   .det input.title:focus { outline: none; border-color: var(--accent-rest); }
   .det .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .star { display: flex; align-items: center; gap: 6px; height: 26px; padding: 0 9px; border: 1px solid var(--ink-border-strong); color: var(--text-mid); font-size: 12px; }
+  .star, .place { display: flex; align-items: center; gap: 6px; height: 26px; padding: 0 9px; border: 1px solid var(--ink-border-strong); color: var(--text-mid); font-size: 12px; }
   .star b { font-weight: 400; font-size: 13px; }
   .star[aria-pressed='true'] { color: var(--text-hi); }
   .star[aria-pressed='true'] b { color: var(--accent-rest); }
-  .place { display: flex; align-items: center; gap: 6px; height: 26px; padding: 0 9px; border: 1px solid var(--ink-border-strong); color: var(--text-mid); font-size: 12px; }
   .place::after { content: ''; width: 4px; height: 4px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: translateY(-1px) rotate(45deg); opacity: .7; }
   .tag { height: 22px; display: inline-flex; align-items: center; padding: 0 8px; background: var(--ink-800); color: var(--text-mid); font-size: 11.5px; }
   .addtag { height: 22px; padding: 0 6px; color: var(--text-low); font-size: 11.5px; border: 1px dashed var(--ink-border-strong); }
   .addtag:hover { color: var(--text-mid); }
   .addboard { width: 100%; height: 32px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; border: 1px solid var(--ink-border-strong); color: var(--text-mid); font-size: 12.5px; }
   .addboard:hover, .addboard[aria-expanded='true'] { color: var(--text-hi); border-color: var(--text-low); }
-  .choice { display: none; flex-direction: column; border: 1px solid var(--ink-border); border-top: 0; }
-  .choice[data-open='true'] { display: flex; }
-  .choice button { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; text-align: left; color: var(--text-mid); font-size: 12.5px; }
-  .choice button + button { border-top: 1px solid var(--ink-border); }
-  .choice button:hover { background: var(--ink-800); color: var(--text-hi); }
-  .choice small { font-size: 10.5px; color: var(--text-low); }
-  .boards { display: none; flex-direction: column; border: 1px solid var(--ink-border); border-top: 0; }
-  .boards[data-open='true'] { display: flex; }
-  .boards .bh { padding: 7px 10px 3px; }
-  .boards button { padding: 6px 10px; text-align: left; color: var(--text-mid); font-size: 12.5px; }
-  .boards button:hover { background: var(--ink-800); color: var(--text-hi); }
-  .said { font-size: 11.5px; color: var(--text-mid); }
-  .said:empty { display: none; }
+  .pinned { font-size: 11.5px; color: var(--text-low); line-height: 1.5; }
+  .pinned:empty { display: none; }
+  .pinned em { font-style: normal; color: var(--text-mid); }
 
-  /* A: the compact card (overlay) */
-  .card { position: fixed; z-index: 70; width: 300px; padding: 14px; background: var(--ink-900); border: 1px solid var(--ink-border-strong); box-shadow: 0 10px 34px rgba(0,0,0,.5); }
-  .card[hidden], .menu[hidden], .sheet[hidden] { display: none; }
+  /* "Add to a Board..." picker - the filing menu's pattern; picking a board PINS the page */
+  .picker { position: fixed; z-index: 72; width: 240px; display: flex; flex-direction: column; padding: 4px 0; background: var(--ink-900); border: 1px solid var(--ink-border-strong); box-shadow: 0 10px 34px rgba(0,0,0,.5); }
+  .picker .pr { display: flex; align-items: baseline; gap: 8px; width: 100%; padding: 7px 14px; text-align: left; color: var(--text-mid); font-size: 13px; }
+  .picker .pr:hover { background: var(--ink-800); color: var(--text-hi); }
+  .picker .pr b { flex: 0 0 auto; width: 10px; font-weight: 400; color: var(--text-low); }
+  .picker .pr .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .picker .pr[aria-checked='true'] b { color: var(--accent-rest); }
+  .picker .pr[aria-checked='true'] { color: var(--text-hi); }
+  .picker .new { border-bottom: 1px solid var(--ink-border); padding-bottom: 9px; margin-bottom: 2px; }
+  .picker .newin { display: flex; gap: 6px; padding: 6px 10px 8px; border-bottom: 1px solid var(--ink-border); }
+  .picker .newin[hidden] { display: none; }
+  .picker .newin input { flex: 1; min-width: 0; height: 26px; padding: 0 7px; border: 1px solid var(--accent-rest); color: var(--text-hi); font-size: 12.5px; user-select: text; }
+  .picker .newin input:focus { outline: none; }
+  .picker .newin button { height: 26px; padding: 0 9px; border: 1px solid var(--ink-border-strong); color: var(--text-mid); font-size: 11.5px; }
+  .picker .psort { display: flex; justify-content: flex-end; padding: 4px 14px 2px; }
+  .picker .psort[hidden] { display: none; }
+  .picker .plistb { max-height: 236px; overflow-y: auto; overflow-x: hidden; }
 
   /* page "..." menu */
   .menu { position: fixed; z-index: 70; min-width: 200px; padding: 4px 0; background: var(--ink-900); border: 1px solid var(--ink-border-strong); box-shadow: 0 10px 34px rgba(0,0,0,.5); }
@@ -163,29 +163,35 @@
   .menu button:hover { background: var(--ink-800); color: var(--text-hi); }
   .menu hr { border: 0; border-top: 1px solid var(--ink-border); margin: 4px 0; }
 
-  /* PAGE SETUP sheet (overlay) */
+  /* PAGE SETUP sheet (overlay) - the live controls */
   .sheet { position: fixed; z-index: 75; width: 360px; padding: 16px 18px 14px; background: var(--ink-900); border: 1px solid var(--ink-border-strong); box-shadow: 0 14px 44px rgba(0,0,0,.55); }
-  .sheet h2 { font-size: 13px; font-weight: 600; color: var(--text-hi); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .sheet h2 { font-size: 13px; font-weight: 600; color: var(--text-hi); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
   .sheet h2 button { color: var(--text-low); font-size: 16px; line-height: 1; }
   .sheet h2 button:hover { color: var(--text-hi); }
-  .srow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 0; }
-  .srow > span { font-size: 12.5px; color: var(--text-mid); }
+  .srow { display: flex; align-items: center; gap: 12px; padding: 7px 0; }
+  .srow > .sl { flex: 0 0 96px; font-size: 12.5px; color: var(--text-mid); }
   .seg { display: flex; border: 1px solid var(--ink-border-strong); }
-  .seg button { min-width: 52px; height: 26px; padding: 0 8px; font-size: 11.5px; color: var(--text-low); }
+  .seg button, .tog { min-width: 52px; height: 26px; padding: 0 8px; font-size: 11.5px; color: var(--text-low); }
   .seg button + button { border-left: 1px solid var(--ink-border-strong); }
-  .seg button[data-current='true'] { color: var(--brass); background: color-mix(in srgb, var(--brass) 8%, transparent); }
-  .snote { margin-top: 10px; font-size: 10.5px; line-height: 1.45; color: var(--text-low); }
-  .sfoot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
-  .sfoot button { height: 28px; padding: 0 12px; border: 1px solid var(--ink-border-strong); color: var(--text-mid); font-size: 12px; }
-  .sfoot button:hover { color: var(--text-hi); }
+  .seg button[aria-checked='true'], .tog[aria-pressed='true'] { color: var(--brass); background: color-mix(in srgb, var(--brass) 8%, transparent); }
+  .tog { border: 1px solid var(--ink-border-strong); }
+  .sub { padding: 0 0 6px 108px; }
+  .sub[hidden] { display: none; }
+  .sub input { width: 100%; height: 26px; padding: 0 7px; border: 1px solid var(--ink-border-strong); color: var(--text-hi); font-size: 12px; user-select: text; }
+  .sub input::placeholder { color: var(--text-low); }
+  .range { flex: 1; accent-color: var(--brass); }
+  .rval { flex: 0 0 26px; font-size: 12px; color: var(--text-mid); font-variant-numeric: tabular-nums; text-align: right; }
+  .snote { margin-top: 8px; font-size: 10.5px; line-height: 1.45; color: var(--text-low); }
+  .sfootb { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+  .sfootb button { height: 28px; padding: 0 12px; border: 1px solid var(--ink-border-strong); color: var(--text-mid); font-size: 12px; }
+  .sfootb button:hover { color: var(--text-hi); }
 
   /* ---- the page: the brightest thing on screen ---- */
   .pagecol { position: relative; min-height: 0; display: flex; justify-content: center; }
   .page { width: 820px; max-width: 100%; height: 100%; background: var(--paper); box-shadow: var(--paper-glow); overflow: hidden; }
-  .sheetpage { padding: 76px 96px; color: var(--ink-on-paper); font-family: var(--font-prose); font-size: 20px; line-height: 1.7; user-select: text; }
+  .sheetpage { padding: 76px 96px; color: var(--ink-on-paper); font-family: var(--font-prose); font-size: 20px; line-height: var(--lh, 1.7); user-select: text; }
   .sheetpage p + p { margin-top: 1em; }
-  .sheetpage ::selection { background: rgba(150, 160, 90, .32); }
-  .sheetpage mark { background: rgba(150, 160, 90, .32); color: inherit; }
+  .sheetpage ::selection, .sheetpage mark { background: rgba(150, 160, 90, .32); color: inherit; }
 
   /* RIGHT (Tutor) */
   .tabs { display: flex; border-bottom: 1px solid var(--ink-border); flex: 0 0 auto; }
@@ -212,6 +218,7 @@
   .msg { font-size: 13px; line-height: 1.5; color: var(--text-mid); }
   .msg.you { color: var(--text-hi); padding-left: 9px; border-left: 1px solid var(--ink-border-strong); }
   .quiet { margin-top: auto; display: flex; flex-direction: column; border-top: 1px solid var(--ink-border); }
+  .quiet:not(:has(.lens:not([hidden]))) { display: none; }
   .lens[hidden] { display: none; }
   .lens > button { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 10px 0; color: var(--text-low); font-size: 12px; border-bottom: 1px solid var(--ink-border); }
   .lens > button:hover { color: var(--text-mid); }
@@ -235,23 +242,45 @@
   <button class="rev" data-frame="left" type="button">Left only</button>
   <button class="rev" data-frame="right" type="button">Right only</button>
   <span class="sp"></span>
-  <button class="rev" data-det="card" type="button">Details: A card</button>
-  <button class="rev" data-det="strip" type="button">B strip</button>
-  <span class="sp"></span>
   <button class="rev" id="lensbtn" type="button">Empty lenses</button>
   <span class="rect" id="rect"></span>
 </header>
 
-<nav class="rail" aria-label="Places">
-  <div class="ri"><b>＋</b><span>Catch</span></div>
-  <div class="ri"><b>⌂</b><span>Desk</span></div>
-  <div class="ri on"><b>✎</b><span>Pages</span></div>
-  <div class="ri"><b>▦</b><span>Boards</span></div>
-  <div class="ri"><b>❧</b><span>Journal</span></div>
-  <div class="ri"><b>▤</b><span>Shelf</span></div>
-  <div class="ri"><b>▥</b><span>Drawers</span></div>
-  <div class="ri off"><b>▣</b><span>Library</span></div>
-</nav>
+<!-- the strip, as live -->
+<aside class="strip" aria-label="Strip">
+  <div class="sec">
+    <button class="si" id="stripPages" type="button" aria-pressed="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h8"/></svg><span>Pages</span></button>
+    <button class="si" type="button" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.3"/><circle cx="18" cy="6" r="2.3"/><circle cx="12" cy="18" r="2.3"/><path d="M7.9 7.4 10.3 16M16.1 7.4 13.7 16M8.3 6h7.4"/></svg><span>Plan</span></button>
+  </div>
+  <div class="ssep"></div>
+  <div class="sec">
+    <button class="si" type="button" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="8" rx="1"/><rect x="4" y="13" width="16" height="8" rx="1"/><path d="M10 7h4M10 17h4"/></svg><span>Drawers</span></button>
+  </div>
+  <div class="ssep"></div>
+  <div class="sec">
+    <button class="si" type="button" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v16.5A1.5 1.5 0 0 1 17.5 21H6.5A2.5 2.5 0 0 1 4 18.5v-13Z"/><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H19"/></svg><span>Journal</span></button>
+    <button class="si" type="button" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16M20 4v16M4 12h16"/><path d="M7 4v8M11 4v8M15 4v8M17 4v8"/></svg><span>Shelf</span></button>
+  </div>
+  <div class="sfoot">
+    <div class="ssep"></div>
+    <div class="sec">
+      <button class="si" type="button" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.6 3.1-6.5 7-6.5s7 2.9 7 6.5"/></svg><span>Settings</span></button>
+      <button class="si" type="button" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2H17a4 4 0 0 0 4-4c0-4.4-4-7.4-9-7.4Z"/><circle cx="7.5" cy="10.5" r="1" fill="currentColor" stroke="none"/><circle cx="10.5" cy="7" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="7.5" r="1" fill="currentColor" stroke="none"/></svg><span>Themes</span></button>
+    </div>
+    <div class="ssep"></div>
+    <div class="sec">
+      <button class="si" type="button" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M7 7l1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/><path d="M10 11v6M14 11v6"/></svg><span>Trash</span></button>
+    </div>
+  </div>
+</aside>
 
 <div class="app">
   <div class="top">
@@ -260,30 +289,23 @@
       <button class="here" id="here" type="button" aria-haspopup="dialog" aria-expanded="false"><span data-title>Chapter 3</span><i>▾</i></button>
       <button class="dots" id="dots" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Page menu">···</button>
     </div>
-    <div class="modes" role="tablist">
-      <button class="mt" type="button">Free write<small>generate</small></button>
-      <button class="mt on" type="button">Draft<small>mark</small></button>
-      <button class="mt" type="button">Revise<small>dress</small></button>
-      <button class="mt off" type="button">Format<small>convention</small></button>
-      <span class="msep"></span>
-      <button class="mt" type="button">Workshop<small>share</small></button>
-      <button class="mt" type="button">Publish<small>release</small></button>
-      <button class="done" type="button">Done</button>
+    <div class="modes" role="tablist" aria-label="Writing mode">
+      <button class="mt" role="tab" type="button">Free Write</button>
+      <button class="mt on" role="tab" aria-selected="true" type="button">Draft</button>
+      <button class="mt" role="tab" type="button">Revise</button>
+      <button class="mt off" role="tab" aria-disabled="true" type="button">Workshop</button>
+      <button class="mt" role="tab" type="button">Publish</button>
+      <button class="plan" type="button">Plan <span aria-hidden="true">→</span></button>
     </div>
   </div>
 
-  <!-- LEFT track -->
+  <!-- LEFT track (opened by the strip's Pages) -->
   <div class="track l" id="ltrack" data-open="true">
     <aside class="panel" id="lpanel" aria-label="Pages">
-      <section class="strip" id="strip" hidden>
-        <button class="sline" id="sline" type="button" aria-expanded="false"><span class="t" data-title>Chapter 3</span><span class="pl">Night Kitchen</span></button>
-        <div class="sbody" id="stripbody"></div>
-      </section>
-      <div class="lhead"><span class="lab">Pages</span><button class="sort" id="sort" type="button" aria-label="Sort pages">Date</button></div>
+      <div class="lhead"><span class="lab">Pages</span><button class="sort" id="sort" type="button" aria-label="Sort Pages">Date</button></div>
       <button class="newpage" type="button"><b>＋</b>New Page</button>
       <div class="plist" id="plist"></div>
     </aside>
-    <button class="handle" data-toggle="l" type="button" aria-label="Open the Pages panel">›</button>
   </div>
 
   <!-- PAGE -->
@@ -317,8 +339,8 @@
           <button class="chip" id="selchip" type="button" disabled title="Select a stretch on the page first">Selection</button>
         </div>
         <div class="convo" id="convo"></div>
-        <div class="quiet">
-          <div class="lens" id="lcons">
+        <div class="quiet" id="quiet">
+          <div class="lens" data-lens>
             <button type="button"><span>Consistency</span><span class="n">3</span></button>
             <ul>
               <li>“the blue one”<small>also Chapter 1, Chapter 2</small></li>
@@ -326,11 +348,26 @@
               <li>“the ferry sounds”<small>also Kettle notes</small></li>
             </ul>
           </div>
-          <div class="lens" id="lfrag">
+          <div class="lens" data-lens>
             <button type="button"><span>Fragments</span><span class="n">2</span></button>
             <ul>
               <li>Mother’s cups, always in a row.<small>Journal · Oct 9</small></li>
               <li>The second horn that never comes.<small>Catch · Oct 14</small></li>
+            </ul>
+          </div>
+          <div class="lens" data-lens>
+            <button type="button"><span>The book’s Bible</span><span class="n">4</span></button>
+            <ul>
+              <li>Mara is the older sister.</li>
+              <li>The flat is above the ferry office.</li>
+              <li>Their mother died in March.</li>
+              <li>The blue cup was hers.</li>
+            </ul>
+          </div>
+          <div class="lens" data-lens>
+            <button type="button"><span>Waiting for you</span><span class="n">1</span></button>
+            <ul>
+              <li>Chapter 2 ends mid-sentence.<small>Last written Oct 15</small></li>
             </ul>
           </div>
         </div>
@@ -340,63 +377,67 @@
         <div class="graft"><i style="height:22px"></i>Harbour scene<small>Card</small></div>
       </div>
     </aside>
-    <button class="handle" data-toggle="r" type="button" aria-label="Open the Tutor">‹</button>
+    <button class="grip" data-toggle="r" type="button" aria-label="Open the Tutor">‹</button>
   </div>
 </div>
 
-<!-- A: the compact details card -->
-<div class="card" id="card" role="dialog" aria-label="Page details" hidden></div>
-
-<!-- the page's "..." menu -->
-<div class="menu" id="menu" role="menu" hidden>
-  <button type="button" role="menuitem" id="opensetup">Page Setup…</button>
-  <button type="button" role="menuitem">Move to… / Copy to…</button>
-  <button type="button" role="menuitem">Export…</button>
-  <hr>
-  <button type="button" role="menuitem">Delete</button>
-</div>
-
-<!-- PAGE SETUP sheet -->
-<div class="sheet" id="setup" role="dialog" aria-label="Page Setup" hidden>
-  <h2>Page Setup <button type="button" id="setupx" aria-label="Close">×</button></h2>
-  <div class="srow"><span>Margins</span><div class="seg"><button data-current="true" type="button">Normal</button><button type="button">Narrow</button><button type="button">Wide</button></div></div>
-  <div class="srow"><span>Line spacing</span><div class="seg"><button type="button">1</button><button data-current="true" type="button">1.5</button><button type="button">2</button></div></div>
-  <div class="srow"><span>Page numbers</span><div class="seg"><button data-current="true" type="button">Off</button><button type="button">On</button></div></div>
-  <div class="srow"><span>Headers</span><div class="seg"><button data-current="true" type="button">Off</button><button type="button">On</button></div></div>
-  <div class="srow"><span>Footers</span><div class="seg"><button data-current="true" type="button">Off</button><button type="button">On</button></div></div>
-  <p class="snote">Numbers, headers and footers appear on export and print.</p>
-  <div class="sfoot"><button type="button">Make Default</button><button type="button" id="setupdone">Done</button></div>
-</div>
-
-<template id="dettpl">
+<!-- PAGE DETAILS card -->
+<div class="card" id="card" role="dialog" aria-label="Page details" hidden>
   <div class="det">
-    <div class="f"><span class="lab">Title</span><input class="title" value="Chapter 3" aria-label="Title"></div>
+    <div class="f"><span class="lab">Title</span><input class="title" id="titlein" value="Chapter 3" aria-label="Title"></div>
     <div class="row">
-      <button class="star" type="button" aria-pressed="false"><b>☆</b>Star</button>
-      <button class="place" type="button" title="Move to… / Copy to…">Night Kitchen</button>
+      <button class="star" id="star" type="button" aria-pressed="false"><b>☆</b>Star</button>
+      <button class="place" type="button">Night Kitchen</button>
     </div>
     <div class="f"><span class="lab">Tags</span>
       <div class="row"><span class="tag">kitchen</span><span class="tag">second draft</span><button class="addtag" type="button">+ Add a tag</button></div>
     </div>
-    <div>
-      <button class="addboard" type="button" aria-expanded="false">Add to a Board… <span>›</span></button>
-      <div class="choice">
-        <button type="button" data-how="Pinned"><span>Pin</span><small>The page itself, kept in sync.</small></button>
-        <button type="button" data-how="Copied"><span>Copy</span><small>Its words, as cards.</small></button>
-      </div>
-      <div class="boards"><span class="lab bh">Which board?</span>
-        <button type="button">Plot board</button><button type="button">Night Kitchen board</button>
-      </div>
+    <div class="f">
+      <button class="addboard" id="addboard" type="button" aria-haspopup="menu" aria-expanded="false">Add to a Board… <span>›</span></button>
+      <p class="pinned" id="pinned"></p>
     </div>
-    <p class="said"></p>
   </div>
-</template>
+</div>
+
+<!-- "Add to a Board..." picker: + New Board, then the boards. Picking pins. -->
+<div class="picker" id="picker" role="menu" aria-label="Add to a Board" hidden>
+  <button class="pr new" id="newboard" type="button"><b>+</b><span class="t">New Board</span></button>
+  <div class="newin" id="newin" hidden><input id="newname" placeholder="Board name" aria-label="Board name"><button type="button" id="newgo">Create</button></div>
+  <div class="psort" id="psort"><button class="sort" id="bsort" type="button" aria-label="Sort boards">Date</button></div>
+  <div class="plistb" id="blist" role="group"></div>
+</div>
+
+<!-- the page's "..." menu: actions that exist today, named after their live controls -->
+<div class="menu" id="menu" role="menu" hidden>
+  <button type="button" role="menuitem" id="opensetup">Page setup…</button>
+  <button type="button" role="menuitem">Copy page text</button>
+  <hr>
+  <button type="button" role="menuitem">Delete page</button>
+</div>
+
+<!-- PAGE SETUP sheet: the live Page setup controls -->
+<div class="sheet" id="setup" role="dialog" aria-label="Page setup" hidden>
+  <h2>Page setup <button type="button" id="setupx" aria-label="Close">×</button></h2>
+  <div class="srow"><span class="sl">Margins</span><div class="seg" role="radiogroup" aria-label="Margins">
+    <button type="button" role="radio" aria-checked="true">Normal</button><button type="button" role="radio" aria-checked="false">Narrow</button><button type="button" role="radio" aria-checked="false">Wide</button></div></div>
+  <div class="srow"><label class="sl" for="leading">Line spacing</label><input class="range" id="leading" type="range" min="1.2" max="2.2" step="0.1" value="1.7"><span class="rval" id="leadval">1.7</span></div>
+  <div class="srow"><span class="sl">Page numbers</span><button class="tog" type="button" aria-pressed="false" data-sub="numsub">Off</button></div>
+  <div class="sub" id="numsub" hidden><div class="seg" role="radiogroup" aria-label="Page numbers">
+    <button type="button" role="radio" aria-checked="true">Bottom centre</button><button type="button" role="radio" aria-checked="false">Bottom right</button><button type="button" role="radio" aria-checked="false">Top right</button></div></div>
+  <div class="srow"><span class="sl">Headers</span><button class="tog" type="button" aria-pressed="false" data-sub="hsub">Off</button></div>
+  <div class="sub" id="hsub" hidden><input placeholder="Header text" aria-label="Header text"></div>
+  <div class="srow"><span class="sl">Footers</span><button class="tog" type="button" aria-pressed="false" data-sub="fsub">Off</button></div>
+  <div class="sub" id="fsub" hidden><input placeholder="Footer text" aria-label="Footer text"></div>
+  <p class="snote">Numbers, headers and footers appear on export and print.</p>
+  <div class="sfootb"><button type="button">Make Default</button><button type="button" id="setupdone">Done</button></div>
+</div>
 
 <script>
   var qs = new URLSearchParams(location.search);
   var $ = function (s) { return document.querySelector(s); };
-  var state = { frame: qs.get('frame') || 'both', det: qs.get('details') === 'strip' ? 'strip' : 'card', sort: 0, emptyLenses: qs.get('lenses') === 'empty' };
+  var state = { frame: qs.get('frame') || 'both', sort: 0, bsort: 0, emptyLenses: qs.get('lenses') === 'empty' };
   var page = $('#page'), base = null;
+  var SORTS = ['Date', 'Drawer', 'A–Z'];
 
   // ---- fake pages ----
   var PAGES = [
@@ -416,75 +457,118 @@
     { t: 'What she won’t say', p: 'Night Kitchen', d: 3 }
   ];
   var DATES = ['Today', 'This week', 'Earlier this month', 'Older'];
-  var SORTS = ['Date', 'Drawer', 'A–Z'];
+  // ---- fake boards (9) ----
+  var BOARDS = [
+    { t: 'Night Kitchen plot', p: 'Night Kitchen', d: 0 },
+    { t: 'Scene order', p: 'Night Kitchen', d: 1 },
+    { t: 'Characters', p: 'Night Kitchen', d: 2 },
+    { t: 'The ferry', p: '', d: 3 },
+    { t: 'Mood board', p: 'Shelf', d: 4 },
+    { t: 'Ending options', p: 'Night Kitchen', d: 5 },
+    { t: 'Kitchen objects', p: '', d: 6 },
+    { t: 'Short stories', p: 'Short stories', d: 7 },
+    { t: 'Ideas', p: '', d: 8 }
+  ];
+  var pinned = {};
 
-  function row(pg) {
+  function grp(txt) { var g = document.createElement('div'); g.className = 'grp'; g.textContent = txt; return g; }
+  function prow(pg, showPlace) {
     var b = document.createElement('button');
-    b.type = 'button'; b.className = 'prow'; if (pg.cur) b.setAttribute('aria-current', 'true');
-    b.innerHTML = '<span class="t"></span>' + (pg.p ? '<span class="pl"></span>' : '');
+    b.type = 'button'; b.className = 'prow'; if (pg.cur) b.setAttribute('aria-current', 'page');
+    b.innerHTML = '<span class="t"></span>' + (showPlace && pg.p ? '<span class="pl"></span>' : '');
     b.querySelector('.t').textContent = pg.t; b.title = pg.t;
-    if (pg.p) b.querySelector('.pl').textContent = pg.p;
+    if (showPlace && pg.p) b.querySelector('.pl').textContent = pg.p;
     return b;
   }
-  function grp(txt) { var g = document.createElement('div'); g.className = 'grp'; g.textContent = txt; return g; }
   function renderList() {
     var L = $('#plist'); L.innerHTML = ''; var s = SORTS[state.sort]; $('#sort').textContent = s;
     if (s === 'Date') {
-      DATES.forEach(function (lab, i) { var rows = PAGES.filter(function (p) { return p.d === i; }); if (!rows.length) return; L.appendChild(grp(lab)); rows.forEach(function (p) { L.appendChild(row(p)); }); });
+      DATES.forEach(function (lab, i) { var rows = PAGES.filter(function (p) { return p.d === i; }); if (!rows.length) return; L.appendChild(grp(lab)); rows.forEach(function (p) { L.appendChild(prow(p, true)); }); });
     } else if (s === 'Drawer') {
       var keys = []; PAGES.forEach(function (p) { var k = p.p || 'Unfiled'; if (keys.indexOf(k) < 0) keys.push(k); });
       keys.sort(function (a, b) { return a === 'Unfiled' ? 1 : b === 'Unfiled' ? -1 : a.localeCompare(b); });
-      keys.forEach(function (k) { L.appendChild(grp(k)); PAGES.filter(function (p) { return (p.p || 'Unfiled') === k; }).forEach(function (p) { var r = row({ t: p.t, p: '', cur: p.cur }); L.appendChild(r); }); });
+      keys.forEach(function (k) { L.appendChild(grp(k)); PAGES.filter(function (p) { return (p.p || 'Unfiled') === k; }).forEach(function (p) { L.appendChild(prow(p, false)); }); });
     } else {
-      PAGES.slice().sort(function (a, b) { return a.t.localeCompare(b.t); }).forEach(function (p) { L.appendChild(row(p)); });
+      PAGES.slice().sort(function (a, b) { return a.t.localeCompare(b.t); }).forEach(function (p) { L.appendChild(prow(p, true)); });
     }
   }
   $('#sort').addEventListener('click', function () { state.sort = (state.sort + 1) % SORTS.length; renderList(); });
 
-  // ---- page details (one template, used by card A and strip B) ----
-  function wireDetails(root) {
-    var star = root.querySelector('.star'), ab = root.querySelector('.addboard'), ch = root.querySelector('.choice'), bd = root.querySelector('.boards'), said = root.querySelector('.said');
-    var how = '';
-    star.addEventListener('click', function () { var on = star.getAttribute('aria-pressed') !== 'true'; star.setAttribute('aria-pressed', String(on)); star.innerHTML = '<b>' + (on ? '★' : '☆') + '</b>' + (on ? 'Starred' : 'Star'); });
-    ab.addEventListener('click', function () { var on = ab.getAttribute('aria-expanded') !== 'true'; ab.setAttribute('aria-expanded', String(on)); ch.dataset.open = String(on); bd.dataset.open = 'false'; said.textContent = ''; });
-    ch.querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { how = b.dataset.how; ch.dataset.open = 'false'; bd.dataset.open = 'true'; }); });
-    bd.querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { bd.dataset.open = 'false'; ab.setAttribute('aria-expanded', 'false'); said.textContent = how + ' to ' + b.textContent + '.'; }); });
-    root.querySelector('.title').addEventListener('input', function (e) { document.querySelectorAll('[data-title]').forEach(function (n) { n.textContent = e.target.value || 'Untitled'; }); var c = PAGES[0]; c.t = e.target.value || 'Untitled'; renderList(); });
+  // ---- the board picker ----
+  function renderBoards() {
+    var L = $('#blist'); L.innerHTML = '';
+    $('#psort').hidden = BOARDS.length <= 3;
+    var s = SORTS[state.bsort]; $('#bsort').textContent = s;
+    var list = BOARDS.slice();
+    if (s === 'A–Z') list.sort(function (a, b) { return a.t.localeCompare(b.t); });
+    else if (s === 'Drawer') list.sort(function (a, b) { return (a.p || '~').localeCompare(b.p || '~') || a.t.localeCompare(b.t); });
+    else list.sort(function (a, b) { return a.d - b.d; });
+    list.forEach(function (bd) {
+      var on = !!pinned[bd.t];
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'pr'; b.setAttribute('role', 'menuitemcheckbox'); b.setAttribute('aria-checked', String(on));
+      b.innerHTML = '<b>' + (on ? '✓' : '+') + '</b><span class="t"></span>'; b.querySelector('.t').textContent = bd.t; b.title = bd.t;
+      b.addEventListener('click', function () { pin(bd.t); });
+      L.appendChild(b);
+    });
   }
-  var card = $('#card'), here = $('#here');
-  card.appendChild($('#dettpl').content.cloneNode(true)); wireDetails(card);
-  $('#stripbody').appendChild($('#dettpl').content.cloneNode(true)); wireDetails($('#stripbody'));
+  function renderPinned() {
+    var names = Object.keys(pinned);
+    $('#pinned').innerHTML = names.length ? 'Pinned to <em></em>' : '';
+    if (names.length) $('#pinned em').textContent = names.join(', ');
+  }
+  function pin(name) { pinned[name] = true; renderPinned(); closePicker(); }
+  $('#bsort').addEventListener('click', function (e) { e.stopPropagation(); state.bsort = (state.bsort + 1) % SORTS.length; renderBoards(); });
+  $('#newboard').addEventListener('click', function () { $('#newin').hidden = false; $('#newboard').hidden = true; $('#newname').focus(); });
+  function createBoard() {
+    var n = $('#newname').value.trim(); if (!n) return;
+    BOARDS.unshift({ t: n, p: '', d: -1 }); $('#newname').value = ''; $('#newin').hidden = true; $('#newboard').hidden = false; pin(n); renderBoards();
+  }
+  $('#newgo').addEventListener('click', createBoard);
+  $('#newname').addEventListener('keydown', function (e) { if (e.key === 'Enter') createBoard(); });
+  function openPicker() {
+    var p = $('#picker'), r = $('#addboard').getBoundingClientRect();
+    renderBoards(); p.hidden = false; $('#addboard').setAttribute('aria-expanded', 'true');
+    p.style.left = Math.round(r.right + 6) + 'px'; p.style.top = Math.round(r.top - 5) + 'px';
+    var pr = p.getBoundingClientRect(); if (pr.bottom > innerHeight - 8) p.style.top = Math.max(8, innerHeight - 8 - pr.height) + 'px';
+  }
+  function closePicker() { $('#picker').hidden = true; $('#addboard').setAttribute('aria-expanded', 'false'); $('#newin').hidden = true; $('#newboard').hidden = false; }
+  $('#addboard').addEventListener('click', function (e) { e.stopPropagation(); if ($('#picker').hidden) openPicker(); else closePicker(); });
 
-  function closeAll(except) {
-    if (except !== 'card') { card.hidden = true; here.setAttribute('aria-expanded', 'false'); }
-    if (except !== 'menu') { $('#menu').hidden = true; $('#dots').setAttribute('aria-expanded', 'false'); }
-    if (except !== 'setup') { $('#setup').hidden = true; }
+  // ---- details card ----
+  var card = $('#card'), here = $('#here');
+  $('#star').addEventListener('click', function () { var s = this, on = s.getAttribute('aria-pressed') !== 'true'; s.setAttribute('aria-pressed', String(on)); s.innerHTML = '<b>' + (on ? '★' : '☆') + '</b>' + (on ? 'Starred' : 'Star'); });
+  $('#titlein').addEventListener('input', function (e) { var v = e.target.value || 'Untitled'; document.querySelectorAll('[data-title]').forEach(function (n) { n.textContent = v; }); PAGES[0].t = v; renderList(); });
+
+  function closeAll() {
+    card.hidden = true; here.setAttribute('aria-expanded', 'false'); closePicker();
+    $('#menu').hidden = true; $('#dots').setAttribute('aria-expanded', 'false');
+    $('#setup').hidden = true; showRect();
   }
-  function place(el, anchor) { var r = anchor.getBoundingClientRect(); el.style.left = Math.round(r.left) + 'px'; el.style.top = Math.round(r.bottom + 6) + 'px'; }
-  function openDetails() {
-    if (state.det === 'strip') { var s = $('#strip'); var on = s.dataset.open !== 'true'; s.dataset.open = String(on); $('#sline').setAttribute('aria-expanded', String(on)); if (!$('#ltrack').dataset.open || $('#ltrack').dataset.open === 'false') setTrack('l', true); return; }
-    var on2 = card.hidden; closeAll(); if (!on2) return;
-    card.hidden = false; here.setAttribute('aria-expanded', 'true'); place(card, here); showRect();
-  }
+  function below(el, anchor) { var r = anchor.getBoundingClientRect(); el.style.left = Math.round(r.left) + 'px'; el.style.top = Math.round(r.bottom + 6) + 'px'; }
+  function openDetails() { var was = !card.hidden; closeAll(); if (was) return; card.hidden = false; here.setAttribute('aria-expanded', 'true'); below(card, here); showRect(); }
   here.addEventListener('click', function (e) { e.stopPropagation(); openDetails(); });
-  $('#sline').addEventListener('click', function () { var s = $('#strip'); var on = s.dataset.open !== 'true'; s.dataset.open = String(on); this.setAttribute('aria-expanded', String(on)); });
   $('#dots').addEventListener('click', function (e) {
-    e.stopPropagation(); var m = $('#menu'), on = m.hidden; closeAll(); if (!on) return;
-    m.hidden = false; this.setAttribute('aria-expanded', 'true'); place(m, this); showRect();
+    e.stopPropagation(); var m = $('#menu'), was = !m.hidden; closeAll(); if (was) return;
+    m.hidden = false; this.setAttribute('aria-expanded', 'true'); below(m, this); showRect();
   });
   function openSetup() {
-    closeAll('setup'); var s = $('#setup'); s.hidden = false;
+    closeAll(); var s = $('#setup'); s.hidden = false;
     var r = page.getBoundingClientRect(); s.style.left = Math.round(r.left + (r.width - 360) / 2) + 'px'; s.style.top = Math.round(r.top + 70) + 'px'; showRect();
   }
   $('#opensetup').addEventListener('click', function (e) { e.stopPropagation(); openSetup(); });
-  $('#setupx').addEventListener('click', function () { closeAll(); showRect(); });
-  $('#setupdone').addEventListener('click', function () { closeAll(); showRect(); });
-  $('#setup').querySelectorAll('.seg').forEach(function (g) { g.querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { g.querySelectorAll('button').forEach(function (x) { x.dataset.current = 'false'; }); b.dataset.current = 'true'; }); }); });
+  $('#setupx').addEventListener('click', closeAll);
+  $('#setupdone').addEventListener('click', closeAll);
+  $('#setup').querySelectorAll('.seg').forEach(function (g) { g.querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { g.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-checked', 'false'); }); b.setAttribute('aria-checked', 'true'); }); }); });
+  $('#setup').querySelectorAll('.tog').forEach(function (t) { t.addEventListener('click', function () { var on = t.getAttribute('aria-pressed') !== 'true'; t.setAttribute('aria-pressed', String(on)); t.textContent = on ? 'On' : 'Off'; $('#' + t.dataset.sub).hidden = !on; }); });
+  $('#leading').addEventListener('input', function (e) { var v = Number(e.target.value); $('#leadval').textContent = v.toFixed(1); $('#prose').style.setProperty('--lh', v); });
   document.addEventListener('pointerdown', function (e) {
-    if (e.target.closest('#card, #menu, #setup, #here, #dots')) return;
-    closeAll(); showRect();
+    if (e.target.closest('#card, #picker, #menu, #setup, #here, #dots')) return;
+    closeAll();
   }, true);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeAll(); showRect(); } });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (!$('#picker').hidden) { closePicker(); $('#addboard').focus(); } else closeAll();
+  });
 
   // ---- Tutor ----
   var ask = $('#asktext'), send = $('#send'), convo = $('#convo');
@@ -497,12 +581,13 @@
   send.addEventListener('click', function () { if (!ask.value.trim()) return; say(ask.value.trim()); ask.value = ''; send.disabled = true; });
   document.querySelectorAll('.chip').forEach(function (c) { c.addEventListener('click', function () { if (!c.disabled) say(c.id === 'selchip' ? 'Look at just this stretch — what’s it doing?' : c.textContent); }); });
   document.addEventListener('selectionchange', function () {
+    if (qs.get('sel') === '1') return;
     var s = getSelection(), on = s && !s.isCollapsed && s.anchorNode && $('#prose').contains(s.anchorNode);
-    if (qs.get('sel') !== '1') $('#selchip').disabled = !on;
+    $('#selchip').disabled = !on;
   });
   document.querySelectorAll('.lens > button').forEach(function (b) { b.addEventListener('click', function () { var l = b.parentElement; l.dataset.open = String(l.dataset.open !== 'true'); }); });
   function renderLenses() {
-    $('#lcons').hidden = state.emptyLenses; $('#lfrag').hidden = state.emptyLenses;
+    document.querySelectorAll('[data-lens]').forEach(function (l) { l.hidden = state.emptyLenses; });
     $('#lensbtn').dataset.on = String(state.emptyLenses);
   }
   $('#lensbtn').addEventListener('click', function () { state.emptyLenses = !state.emptyLenses; renderLenses(); });
@@ -514,21 +599,19 @@
   // ---- frames: panels open/close inside fixed tracks ----
   function setTrack(side, open) {
     var tr = $(side === 'l' ? '#ltrack' : '#rtrack'), p = $(side === 'l' ? '#lpanel' : '#rpanel');
-    tr.dataset.open = String(open); p.hidden = !open; showRect();
+    tr.dataset.open = String(open); p.hidden = !open;
+    if (side === 'l') $('#stripPages').setAttribute('aria-pressed', String(open));
+    syncFrame(); showRect();
   }
-  document.querySelectorAll('.handle').forEach(function (h) { h.addEventListener('click', function () { setTrack(h.dataset.toggle, true); syncFrame(); }); });
   function syncFrame() {
     var l = $('#ltrack').dataset.open === 'true', r = $('#rtrack').dataset.open === 'true';
     state.frame = l && r ? 'both' : l ? 'left' : r ? 'right' : 'none';
     document.querySelectorAll('.rev[data-frame]').forEach(function (b) { b.dataset.on = String(b.dataset.frame === state.frame); });
   }
-  function setFrame(f) { setTrack('l', f !== 'right'); setTrack('r', f !== 'left'); syncFrame(); }
-  function setDet(d) {
-    state.det = d; $('#strip').hidden = d !== 'strip'; closeAll(); showRect();
-    document.querySelectorAll('.rev[data-det]').forEach(function (b) { b.dataset.on = String(b.dataset.det === d); });
-  }
+  $('#stripPages').addEventListener('click', function () { setTrack('l', $('#ltrack').dataset.open !== 'true'); });
+  document.querySelector('.grip').addEventListener('click', function () { setTrack('r', true); });
+  function setFrame(f) { setTrack('l', f !== 'right'); setTrack('r', f !== 'left'); }
   document.querySelectorAll('.rev[data-frame]').forEach(function (b) { b.addEventListener('click', function () { setFrame(b.dataset.frame); }); });
-  document.querySelectorAll('.rev[data-det]').forEach(function (b) { b.addEventListener('click', function () { setDet(b.dataset.det); }); });
 
   function rk() { var r = page.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round).join(','); }
   function showRect() {
@@ -537,7 +620,7 @@
   }
   addEventListener('resize', function () { base = rk(); if (!qs.get('open')) closeAll(); showRect(); });
 
-  renderList(); renderLenses(); setDet(state.det); setFrame(state.frame); base = rk(); showRect();
+  renderList(); renderLenses(); setFrame(state.frame); base = rk(); showRect();
 
   // stills
   if (qs.get('sel') === '1') {
@@ -545,15 +628,14 @@
     $('#selchip').disabled = false;
   }
   var op = qs.get('open');
-  if (op === 'details') openDetails();
-  if (op === 'menu') $('#dots').click();
-  if (op === 'setup') openSetup();
-  if (op === 'details' && qs.get('board') === '1') (state.det === 'card' ? card : $('#stripbody')).querySelector('.addboard').click();
-  if (document.fonts) document.fonts.ready.then(function () {
-    if (!card.hidden) place(card, here);
-    if (!$('#menu').hidden) place($('#menu'), $('#dots'));
-    if (!$('#setup').hidden) openSetup();
-  });
+  function stills() {
+    if (op === 'details' || op === 'picker') { card.hidden = true; openDetails(); }
+    if (op === 'picker') openPicker();
+    if (op === 'menu') { $('#menu').hidden = true; $('#dots').click(); }
+    if (op === 'setup') openSetup();
+  }
+  stills();
+  if (document.fonts) document.fonts.ready.then(stills);
 </script>
 </body>
 </html>
