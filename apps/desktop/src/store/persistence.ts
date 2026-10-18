@@ -3309,3 +3309,16 @@ export function resetLocalData(): void {
   clearProofingLocal();
   notify();
 }
+
+// ---- DELETE FOR GOOD (docs/plans/delete-for-good.md) - RED-FIRST STUBS: today nothing can be deleted for good ----
+export interface PurgeAck { journalEntries?: string[]; projects?: string[]; drawers?: string[]; storyPlans?: string[] }
+export function isPurged(rec: { purgedAt?: string } | null | undefined): boolean { void rec; return false; }
+export function purgeEntry(id: string): boolean { void id; return false; }
+export function purgeProject(id: string): boolean { void id; return false; }
+export function purgeDrawer(id: string): boolean { void id; return false; }
+export function purgeStoryPlan(id: string): boolean { void id; return false; }
+export function emptyTrash(): number { return 0; }
+export function softDeleteProject(id: string): void { void id; }
+export function softDeleteStoryPlan(id: string): void { void id; }
+export function applyAcknowledgedPurged(ack: PurgeAck | undefined): void { void ack; }
+export function subscribePurgedElsewhere(fn: (ids: string[]) => void): () => void { void fn; return () => {}; }
