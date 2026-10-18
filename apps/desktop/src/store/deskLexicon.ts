@@ -299,7 +299,7 @@ export type DeskTermId =
   // PHASE 1 - the Actions section of the left drawer.
   | 'railActions' | 'actionTags' | 'actionCopy' | 'actionDelete' | 'actionHeaderFooter' | 'actionTagRemove'
   | 'actionDeleteConfirm' | 'actionDeleteYes' | 'actionDeleteKeep'
-  | 'footSettings' | 'footMenuTypewriter' | 'footMenuProgress' | 'footMenuPreferences'
+  | 'footSettings' | 'footMenuTypewriter' | 'footMenuProgress' | 'footMenuPreferences' | 'footMenuFlicker'
   // PHASE 1 (S4) - the two mode toggles beside the drawer's "..." button. Their names are what a screen reader hears; on/off is aria-pressed.
   | 'modeToggleTypewriter' | 'modeToggleProgress' | 'formatLockedByTypewriter'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
@@ -1096,6 +1096,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   modeToggleProgress: 'Progress tracking',
   formatLockedByTypewriter: 'Typewriter Mode is on',
   footMenuPreferences: 'Preferences',
+  footMenuFlicker: 'Flicker',
   draftQuote: 'Block quote',
   draftIndent: 'Indent',
   draftOutdent: 'Outdent',
