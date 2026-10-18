@@ -26,9 +26,17 @@ const ED = '.forward-only-editor';
 // S4 (Esc returns focus) needs closed under a trusted press, not a synthetic
 // one. Missing elements fail loudly (never a silent no-op), per house law.
 const realClick = async (app, selector) => {
+  // REPAIR (Fable, Oct 17, ledger 91) — Recede depth's own "?" sits at y=1351
+  // in this fixture's 900px-tall viewport: a CDP mouse event at that y is
+  // off-screen, so the trusted click found nothing there (a different
+  // failure than the pointer-events gap D2d fixed — this one never reaches
+  // the browser's hit-test at all). scrollIntoView BEFORE measuring the
+  // rect, so every caller's click lands on the element's actual, visible
+  // position rather than assuming the fixture scrolled it there already.
   const rect = await app.evalJs(`(() => {
     const el = document.querySelector(${JSON.stringify(selector)});
     if (!el) throw new Error('realClick: no element ' + ${JSON.stringify(selector)});
+    el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     const r = el.getBoundingClientRect();
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   })()`);
@@ -52,8 +60,17 @@ const freshPage = async (app, theme, { width = 1400, id = 'hb-page' } = {}) => {
 const openDraftSliver = async (app) => {
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft')?.click()");
   await sleep(300);
-  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
-  await sleep(400);
+  // REPAIR (Fable, Oct 17, ledger 91) — .wz-sliver-grip is a TOGGLE: calling
+  // this unconditionally as each LOCATIONS entry's own reach step closed the
+  // sliver right back on the second location of a fixture that had already
+  // opened it on the first. Open it only if it is currently closed, the same
+  // check-before-toggle idiom drawers-p1-live.mjs's own ensureRight already
+  // uses for the Tutor panel.
+  const isOpen = await app.evalJs("document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true'");
+  if (!isOpen) {
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+    await sleep(400);
+  }
 };
 
 const openTutorDrawer = async (app) => {

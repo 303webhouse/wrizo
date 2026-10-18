@@ -26,9 +26,15 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // is a real `pointerdown` (components/HelpPop.tsx), which a page-side click
 // never dispatches at all. Same fix as help-buttons.mjs's own realClick.
 const realClick = async (app, selector) => {
+  // REPAIR (Fable, Oct 17, ledger 91) — help-buttons.mjs's own twin of this
+  // helper got the same fix: scrollIntoView BEFORE measuring, so a trusted
+  // click never assumes the fixture already scrolled the target into the
+  // viewport (Recede depth's "?" sat off-screen at y=1351 in a 900px-tall
+  // fixture there; kept in sync here for the same risk).
   const rect = await app.evalJs(`(() => {
     const el = document.querySelector(${JSON.stringify(selector)});
     if (!el) throw new Error('realClick: no element ' + ${JSON.stringify(selector)});
+    el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     const r = el.getBoundingClientRect();
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   })()`);
