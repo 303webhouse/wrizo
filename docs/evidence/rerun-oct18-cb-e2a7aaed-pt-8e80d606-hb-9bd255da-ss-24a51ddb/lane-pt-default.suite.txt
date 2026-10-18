@@ -1,0 +1,27 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: LIVE RUN PRESENT — BOX IS THEIRS. 4 foreign run(s); NOTHING is reaped, whatever any owner or age reads.
+  live pid=52304 "C:\Program Files\nodejs\node.exe" apps/server/scripts/harness/delete-for-good-e2e.mjs
+  live pid=53628 "C:\Program Files\nodejs\node.exe" C:\Users\nickh\writer-studio-fx17\apps\server\scripts\harness\dfg-device.mjs
+  live pid=46056 "C:\Program Files\nodejs\node.exe" C:\Users\nickh\writer-studio-fx17\apps\server\scripts\harness\dfg-device.mjs
+  live pid=27288 "C:\Program Files\nodejs\node.exe" C:\Users\nickh\writer-studio-fx17\apps\server\scripts\harness\dfg-device.mjs
+  This is the gate in front of both licences: a pathological file keeps its suite alive, so
+  its browsers are never reapable however old they look. It is the box-free test every
+  lane already runs by hand before taking the box, made canonical inside the runner.
+REAPER: survivors=0 (untouched) in 1250ms
+SUITE START HARNESS_PARKED=unset files=12 tree=e2a0eb95 bundle=index-BJHT5BDk.js/725964b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/re-pt-default
+[01/12] OK        exit=0   16s ab2.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; AB2 VERIFY: PASS (27 checks)
+[02/12] OK        exit=0   77s font-span.mjs :: ROWS-SHADOW VERIFY: PASS (32 renders checked, shadow == DOM on every one) ;; FONT-SPAN VERIFY: PASS (38 checks)
+[03/12] OK        exit=0   71s fx5.mjs :: ROWS-SHADOW VERIFY: PASS (131 renders checked, shadow == DOM on every one) ;; FX5 VERIFY: PASS (54 checks)
+[04/12] OK        exit=0  122s in-app-copy-format.mjs :: ROWS-SHADOW VERIFY: PASS (15 renders checked, shadow == DOM on every one) ;; IN-APP-COPY-FORMAT VERIFY: PASS (32 checks)
+[05/12] OK        exit=0   57s item112a.mjs :: ROWS-SHADOW VERIFY: PASS (57 renders checked, shadow == DOM on every one) ;; ITEM112A VERIFY: PASS (57 checks)
+[06/12] OK        exit=0  212s item211.mjs :: ROWS-SHADOW VERIFY: PASS (104 renders checked, shadow == DOM on every one) ;; ITEM211 VERIFY: PASS (78 checks)
+[07/12] OK        exit=0   63s page-templates-r2.mjs :: ROWS-SHADOW VERIFY: PASS (72 renders checked, shadow == DOM on every one) ;; PAGE-TEMPLATES-R2 VERIFY: PASS (134 checks)
+[08/12] OK        exit=0   20s page-templates.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; PAGE-TEMPLATES VERIFY: PASS (20 checks)
+[09/12] OK        exit=0    6s revspell.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; REVSPELL VERIFY: PASS (11 checks)
+[10/12] OK        exit=0  119s typed-literal.mjs :: ROWS-SHADOW VERIFY: PASS (136 renders checked, shadow == DOM on every one) ;; TYPED-LITERAL VERIFY: PASS (31 checks)
+[11/12] OK        exit=0   15s writing-r1.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; WRITING-R1 VERIFY: PASS (25 checks)
+[12/12] OK        exit=0   45s writing-r2.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; WRITING-R2 VERIFY: PASS (13 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 12/12 of 12 returned a passing verdict
+SUITE RESULT: CLEAN — tree=e2a0eb95 bundle=index-BJHT5BDk.js/725964b NO-REBUILD
