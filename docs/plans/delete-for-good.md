@@ -66,6 +66,13 @@ Its dialog names the count: "Delete 37 items for good? This can't be undone." Wh
 - It does NOT add them to Trash's view. That is a design question for the Trash board (how a binder card would look), handed up as Q1 rather than decided here.
 - A deleted drawer's or binder's contents are purged only if they are themselves in Trash.
 
+**The seed's delete paths (a contract with `scripts/seed/autism-economy.mjs`, branch `autism-economy-seed` @ `b710894b`).** This ticket exposes them as `window.wrizoDelete`. Each calls the store functions above and flushes before it returns.
+- `softAll()`: every live page, board, binder, drawer and plan to Trash, by the app's soft deletes. Built-in places are skipped. It returns the counts.
+- `emptyTrash()`: Empty Trash's own function. It returns the count purged.
+- `purgeDeleted()`: every soft-deleted binder, drawer and plan, deleted for good. It returns the counts.
+
+The seed script refuses `--apply` until all three exist.
+
 **Restore after purge.** Restore is not possible. The card is gone from Trash, and no reader lists the shell.
 
 ## 4. Links and pins pointing at a purged item
