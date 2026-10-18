@@ -1,0 +1,10 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=1 files=3 tree=ac67eadf bundle=index-BcPVtmR6.js/710452b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/sg-gm-parked
+[01/3] OK        exit=0   57s glitch-meter.mjs :: ROWS-SHADOW VERIFY: PASS (27 renders checked, shadow == DOM on every one) ;; "name": "PARKED (was \"G6: ...it shows the faint still overlay instead, its opacity following intensity (1 x 0.42 at peak), eased in, not cut\") - Fable, Oct 17: honour the global reduced-motion rule (index.css), so the overlay appears with no easing; live successor: G6 [global-rule successor]", ;; GLITCH-METER PARKED: PASS (1 checks) - HARNESS_PARKED=1 armed; this FILE parks 1: G6's easing (ledger 90) ;; GLITCH-METER VERIFY: PASS (23 checks)
+[02/3] OK        exit=0    5s th1.mjs :: TH1 VERIFY: PASS (27 checks)
+[03/3] OK        exit=0   34s th2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; "name": "PARKED (was \"check 2: canonical route /journal still resolves under Flux (URL stays canonical)\") — B1 S5: pages/Journal.tsx is deleted; '/journal' now redirects to the Journal Board under Flux too — live successor: b1.mjs's own retirement check", ;; TH2 PARKED: PASS (1 checks) — HARNESS_PARKED=1 armed, all retired-check successors green ;; TH2 VERIFY: PASS (42 checks)
+
+SUITE DONE HARNESS_PARKED=1 — 3/3 of 3 returned a passing verdict
+SUITE RESULT: CLEAN — tree=ac67eadf bundle=index-BcPVtmR6.js/710452b NO-REBUILD

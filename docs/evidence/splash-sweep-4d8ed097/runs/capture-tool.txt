@@ -1,0 +1,9 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+  wrote: plateau-ideas-lit.jpg — captured
+  wrote: plateau-mid-sweep.jpg — captured
+  wrote: plateau-final-pop.jpg — captured
+  wrote: flux-ideas-lit.jpg — captured
+  wrote: flux-mid-sweep.jpg — captured
+  wrote: flux-final-pop.jpg — captured
+SPLASH-SWEEP CAPTURE: wrote 6 frames to C:\Users\nickh\writer-studio\.claude\worktrees\ss3\docs\evidence\splash-sweep
