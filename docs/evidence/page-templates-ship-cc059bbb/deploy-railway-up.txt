@@ -1,0 +1,605 @@
+Indexing...
+Uploading...
+  Build Logs: https://railway.com/project/431093f2-7565-459f-bd24-a8da259b97ac/service/d9a7894f-c7a0-415a-9fb5-48a34624fd18?id=adfd989a-c034-4451-bdd8-52d8958063a5&
+CI mode enabled
+scheduling build on Metal builder "builder-fykemi"
+fetched snapshot sha256:ec7742611adf686013cb3fde2302632dc03718f36f4219334ee8b2d77b3735d2 (12 MB bytes)
+fetching snapshot
+unpacking archive
+using build driver nixpacks-v1.41.0
+local://prepare-driver
+local://prepare-context
+docker-image://ghcr.io/railwayapp/railpack-builder:latest
+docker-image://ghcr.io/railwayapp/railpack-builder:latest
+docker-image://ghcr.io/railwayapp/railpack-builder:latest
+[railway] prepare nixpacks-v1.41.0
+local://prepare-context
+local://prepare-driver
+local://prepare-driver
+local://prepare-driver
+local://prepare-context
+scheduling build on Metal builder "builder-fykemi"
+local://prepare-driver
+local://prepare-context
+[railway] prepare nixpacks-v1.41.0
+
+╔══════════════════════════════ Nixpacks v1.41.0 ══════════════════════════════╗
+║ setup      │ nodejs_18, pnpm-10_x                                            ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ install    │ npm install -g corepack@0.24.1 && corepack enable               ║
+║            │ pnpm i --frozen-lockfile                                        ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ build      │ pnpm install --prod=false && pnpm --filter @writer-             ║
+║            │ studio/desktop build:web && pnpm --filter @writer-studio/server ║
+║            │ build                                                           ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ start      │ node apps/server/dist/index.js                                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+
+Saved output to:
+  /out
+
+[railway] prepare nixpacks-v1.41.0
+[internal] load build definition from Dockerfile
+[internal] load build definition from Dockerfile
+[internal] load build definition from Dockerfile
+[internal] load build definition from Dockerfile
+[internal] load metadata for ghcr.io/railwayapp/nixpacks:ubuntu-1745885067
+[internal] load metadata for ghcr.io/railwayapp/nixpacks:ubuntu-1745885067
+[internal] load .dockerignore
+[internal] load .dockerignore
+[internal] load .dockerignore
+[internal] load .dockerignore
+SecretsUsedInArgOrEnv: Do not use ARG or ENV instructions for sensitive data (ARG "SESSION_SECRET") (line 11)(https://docs.docker.com/go/dockerfile/rule/secrets-used-in-arg-or-env/)
+ details: Sensitive data should not be used in the ARG or ENV commands
+
+SecretsUsedInArgOrEnv: Do not use ARG or ENV instructions for sensitive data (ARG "TUTOR_API_KEY") (line 11)(https://docs.docker.com/go/dockerfile/rule/secrets-used-in-arg-or-env/)
+ details: Sensitive data should not be used in the ARG or ENV commands
+
+SecretsUsedInArgOrEnv: Do not use ARG or ENV instructions for sensitive data (ENV "SESSION_SECRET") (line 12)(https://docs.docker.com/go/dockerfile/rule/secrets-used-in-arg-or-env/)
+ details: Sensitive data should not be used in the ARG or ENV commands
+
+SecretsUsedInArgOrEnv: Do not use ARG or ENV instructions for sensitive data (ENV "TUTOR_API_KEY") (line 12)(https://docs.docker.com/go/dockerfile/rule/secrets-used-in-arg-or-env/)
+ details: Sensitive data should not be used in the ARG or ENV commands
+
+UndefinedVar: Usage of undefined variable '$NIXPACKS_PATH' (line 18)(https://docs.docker.com/go/dockerfile/rule/undefined-var/)
+ details: Variables should be defined before their use
+
+[stage-0 10/11] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+[stage-0  9/11] RUN --mount=type=cache,id=s/d9a7894f-c7a0-415a-9fb5-48a34624fd18-node_modules/cache,target=/app/node_modules/.cache pnpm install --prod=false && pnpm --filter @writer-studio/desktop build:web && pnpm --filter @writer-studio/server build
+[stage-0  8/11] COPY . /app/.
+[stage-0  7/11] RUN --mount=type=cache,id=s/d9a7894f-c7a0-415a-9fb5-48a34624fd18-/root/local/share/pnpm/store/v3,target=/root/.local/share/pnpm/store/v3 pnpm i --frozen-lockfile
+[stage-0  6/11] RUN --mount=type=cache,id=s/d9a7894f-c7a0-415a-9fb5-48a34624fd18-/root/local/share/pnpm/store/v3,target=/root/.local/share/pnpm/store/v3 npm install -g corepack@0.24.1 && corepack enable
+[stage-0  5/11] COPY . /app/.
+[stage-0  4/11] RUN nix-env -if .nixpacks/nixpkgs-ffeebf0acf3ae8b29f8c7049cd911b9636efd7e7.nix && nix-collect-garbage -d
+[stage-0  3/11] COPY .nixpacks/nixpkgs-ffeebf0acf3ae8b29f8c7049cd911b9636efd7e7.nix .nixpacks/nixpkgs-ffeebf0acf3ae8b29f8c7049cd911b9636efd7e7.nix
+[internal] load build context
+[stage-0  2/10] WORKDIR /app/
+[stage-0  1/10] FROM ghcr.io/railwayapp/nixpacks:ubuntu-1745885067@sha256:d45c89d80e13d7ad0fd555b5130f22a866d9dd10e861f589932303ef2314c7de
+[stage-0  1/10] FROM ghcr.io/railwayapp/nixpacks:ubuntu-1745885067@sha256:d45c89d80e13d7ad0fd555b5130f22a866d9dd10e861f589932303ef2314c7de
+[stage-0 11/11] COPY . /app
+[internal] load build context
+[internal] load build context
+[internal] load build context
+[stage-0  2/10] WORKDIR /app/
+[stage-0  3/11] COPY .nixpacks/nixpkgs-ffeebf0acf3ae8b29f8c7049cd911b9636efd7e7.nix .nixpacks/nixpkgs-ffeebf0acf3ae8b29f8c7049cd911b9636efd7e7.nix
+[stage-0  4/11] RUN nix-env -if .nixpacks/nixpkgs-ffeebf0acf3ae8b29f8c7049cd911b9636efd7e7.nix && nix-collect-garbage -d
+[stage-0  5/11] COPY . /app/.
+[stage-0  5/11] COPY . /app/.
+[stage-0  6/11] RUN --mount=type=cache,id=s/d9a7894f-c7a0-415a-9fb5-48a34624fd18-/root/local/share/pnpm/store/v3,target=/root/.local/share/pnpm/store/v3 npm install -g corepack@0.24.1 && corepack enable
+npm warn config production Use `--omit=dev` instead.
+
+
+changed 1 package in 1s
+
+[stage-0  6/11] RUN --mount=type=cache,id=s/d9a7894f-c7a0-415a-9fb5-48a34624fd18-/root/local/share/pnpm/store/v3,target=/root/.local/share/pnpm/store/v3 npm install -g corepack@0.24.1 && corepack enable
+[stage-0  7/11] RUN --mount=type=cache,id=s/d9a7894f-c7a0-415a-9fb5-48a34624fd18-/root/local/share/pnpm/store/v3,target=/root/.local/share/pnpm/store/v3 pnpm i --frozen-lockfile
+Scope: all 3 workspace projects
+
+Lockfile is up to date, resolution step is skipped
+
+Progress: resolved 1, reused 0, downloaded 0, added 0
+
+Packages: +290
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Progress: resolved 290, reused 0, downloaded 288, added 287
+
+Progress: resolved 290, reused 0, downloaded 290, added 290, done
+
+
+Done in 2.5s using pnpm v10.28.2
+
+[stage-0  7/11] RUN --mount=type=cache,id=s/d9a7894f-c7a0-415a-9fb5-48a34624fd18-/root/local/share/pnpm/store/v3,target=/root/.local/share/pnpm/store/v3 pnpm i --frozen-lockfile
+[stage-0  8/11] COPY . /app/.
+[stage-0  8/11] COPY . /app/.
+[stage-0  9/11] RUN --mount=type=cache,id=s/d9a7894f-c7a0-415a-9fb5-48a34624fd18-node_modules/cache,target=/app/node_modules/.cache pnpm install --prod=false && pnpm --filter @writer-studio/desktop build:web && pnpm --filter @writer-studio/server build
+Scope: all 3 workspace projects
+
+Lockfile is up to date, resolution step is skipped
+
+Already up to date
+
+
+Done in 965ms using pnpm v10.28.2
+
+
+> @writer-studio/desktop@0.0.1 build:web /app/apps/desktop
+> vite build --outDir dist-web --emptyOutDir
+
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+
+transforming...
+
+[32m✓[39m 262 modules transformed.
+
+rendering chunks...
+
+computing gzip size...
+
+[2mdist-web/[22m[32mindex.html                                                        [39m[1m[2m  0.66 kB[22m[1m[22m[2m │ gzip:   0.36 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-greek-ext-700-normal-BgSZoFxW.woff2                  [39m[1m[2m  4.50 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-greek-ext-400-normal-BJYd2Ub5.woff2                  [39m[1m[2m  4.57 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-vietnamese-400-normal-CervLxD7.woff2                 [39m[1m[2m  4.89 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-vietnamese-700-normal-CLXmNtrB.woff2                 [39m[1m[2m  4.98 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-greek-ext-700-italic-4XN-979I.woff2                  [39m[1m[2m  5.01 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mchakra-petch-vietnamese-400-normal-Cn7ya5On.woff           [39m[1m[2m  5.04 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-greek-ext-400-italic-C2J90c1v.woff2                  [39m[1m[2m  5.12 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mchakra-petch-vietnamese-500-normal-BVzUBLGs.woff           [39m[1m[2m  5.12 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-vietnamese-400-normal-BYl6xqrz.woff                  [39m[1m[2m  5.28 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-vietnamese-700-italic-DUDmEzVB.woff2                 [39m[1m[2m  5.50 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-vietnamese-400-italic-D41JSF8R.woff2                 [39m[1m[2m  5.52 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-vietnamese-700-normal-bKCZ5S7w.woff                  [39m[1m[2m  5.71 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mtinos-greek-ext-400-normal-BY5Lx0CY.woff                   [39m[1m[2m  5.94 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-vietnamese-400-italic-C0nreyLC.woff                  [39m[1m[2m  5.96 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-vietnamese-700-italic-Dl6iR3hy.woff                  [39m[1m[2m  5.96 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-greek-ext-700-normal-CuiwAIqV.woff                   [39m[1m[2m  6.11 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-greek-ext-700-normal-Bu9AJavU.woff                   [39m[1m[2m  6.14 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-greek-ext-400-normal-D-e-OuEk.woff                   [39m[1m[2m  6.18 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-vietnamese-400-normal-6ktFzlmM.woff                  [39m[1m[2m  6.43 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-vietnamese-700-normal--IIq6YJl.woff                  [39m[1m[2m  6.52 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-greek-ext-400-italic-C7FWsVQN.woff                   [39m[1m[2m  6.57 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mtinos-greek-ext-700-italic-zoEBc9cL.woff                   [39m[1m[2m  6.64 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-greek-ext-700-italic-DlTV5Vwg.woff                   [39m[1m[2m  6.74 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-greek-ext-400-italic-BnhXbp6w.woff                   [39m[1m[2m  6.77 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mchakra-petch-thai-400-normal-Bw1Q-fVY.woff2                [39m[1m[2m  7.04 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-vietnamese-400-italic-wTpLdeJw.woff                  [39m[1m[2m  7.17 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-vietnamese-700-italic-CGcJTXz3.woff                  [39m[1m[2m  7.19 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-vietnamese-400-normal-CrJeqB3M.woff2                 [39m[1m[2m  7.30 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-cyrillic-400-normal-CgTchz7I.woff2                   [39m[1m[2m  7.33 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-cyrillic-700-normal-B2FEI9Hm.woff2                   [39m[1m[2m  7.34 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32matkinson-hyperlegible-latin-ext-400-normal-Bbz-b3yf.woff   [39m[1m[2m  7.36 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32matkinson-hyperlegible-latin-ext-700-normal-CKkU2Dpt.woff   [39m[1m[2m  7.36 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mchakra-petch-thai-500-normal-DeexCGiz.woff2                [39m[1m[2m  7.51 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-greek-ext-400-normal-1tgngtmV.woff2                  [39m[1m[2m  7.54 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-hebrew-400-normal-mvtLHX7Y.woff2                     [39m[1m[2m  7.72 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32matkinson-hyperlegible-latin-ext-400-italic-B-Yabllp.woff   [39m[1m[2m  7.78 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-hebrew-700-normal-B1Yomo_n.woff2                     [39m[1m[2m  7.79 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mtinos-vietnamese-700-normal-CmLX0U_H.woff2                 [39m[1m[2m  7.84 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32matkinson-hyperlegible-latin-ext-700-italic-rwP6Wyc0.woff   [39m[1m[2m  7.88 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mtinos-greek-ext-700-normal-nVGGTb9r.woff2                  [39m[1m[2m  7.89 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-vietnamese-700-italic-BPJuDXkI.woff2                 [39m[1m[2m  7.94 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-vietnamese-400-italic-BJdaJnTX.woff2                 [39m[1m[2m  7.95 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-greek-ext-400-italic-QOcg_kQA.woff2                  [39m[1m[2m  8.12 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-hebrew-400-italic-CJ7fOQIG.woff2                     [39m[1m[2m  8.26 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mtinos-greek-ext-700-italic-2QV0uNor.woff2                  [39m[1m[2m  8.27 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-hebrew-700-italic-Cyo39Bks.woff2                     [39m[1m[2m  8.43 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-cyrillic-700-italic-BLVdYOkB.woff2                   [39m[1m[2m  8.52 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-cyrillic-400-italic-4qSNOyNR.woff2                   [39m[1m[2m  8.59 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mchakra-petch-latin-ext-400-normal-C8u6EFkq.woff2           [39m[1m[2m  8.86 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mlora-vietnamese-wght-normal-CfJ7gtf3.woff2                 [39m[1m[2m  8.99 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mchakra-petch-latin-ext-500-normal-gA6791b0.woff2           [39m[1m[2m  9.03 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-latin-ext-500-normal-CyRWJZ5B.woff                [39m[1m[2m  9.03 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-cyrillic-400-normal-BInRL8Bn.woff                    [39m[1m[2m  9.04 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mcourier-prime-latin-ext-400-normal-CKOCNFvK.woff           [39m[1m[2m  9.04 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-greek-700-normal-uph2eQqS.woff2                      [39m[1m[2m  9.05 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-greek-400-normal-BUS6n_W-.woff2                      [39m[1m[2m  9.09 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-latin-ext-700-normal-BPaQ7tlD.woff                [39m[1m[2m  9.15 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mcourier-prime-latin-ext-700-normal-BIFoAzHx.woff           [39m[1m[2m  9.28 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-cyrillic-400-normal-CF2XIQji.woff                    [39m[1m[2m  9.31 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-latin-ext-600-normal-BleIgkPp.woff                [39m[1m[2m  9.34 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mlora-vietnamese-wght-italic-BGkqizij.woff2                 [39m[1m[2m  9.34 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32matkinson-hyperlegible-latin-ext-700-normal-BoVPHkS0.woff2  [39m[1m[2m  9.37 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32matkinson-hyperlegible-latin-ext-400-normal-DRk46D-x.woff2  [39m[1m[2m  9.38 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mchakra-petch-thai-400-normal-KdzBjiWs.woff                 [39m[1m[2m  9.42 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-cyrillic-700-normal-kR-udC20.woff                    [39m[1m[2m  9.42 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-cyrillic-700-normal-HYhic5tl.woff                    [39m[1m[2m  9.62 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-hebrew-400-normal-DuxCN41l.woff                      [39m[1m[2m  9.70 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mchakra-petch-latin-400-normal-SafcrIr2.woff2               [39m[1m[2m  9.76 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32matkinson-hyperlegible-latin-ext-400-italic-3fJ3SmOv.woff2  [39m[1m[2m  9.80 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-hebrew-700-normal-CLPHp7oC.woff                      [39m[1m[2m  9.80 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mchakra-petch-thai-500-normal-CJG_V2_m.woff                 [39m[1m[2m  9.91 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32matkinson-hyperlegible-latin-ext-700-italic-D-Da7Yyr.woff2  [39m[1m[2m  9.92 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mchakra-petch-latin-500-normal-BR1ody1F.woff2               [39m[1m[2m  9.96 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-greek-400-italic-BKYvWEDE.woff2                      [39m[1m[2m 10.12 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-greek-700-italic-n6-Z6Na1.woff2                      [39m[1m[2m 10.13 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mfigtree-latin-ext-wght-normal-DCwSJGxG.woff2               [39m[1m[2m 10.28 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-hebrew-400-italic-MGv1s8Bw.woff                      [39m[1m[2m 10.35 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-hebrew-400-normal-DhGqnHb1.woff                      [39m[1m[2m 10.47 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-cyrillic-400-italic-CUXT6ECP.woff                    [39m[1m[2m 10.48 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-hebrew-700-italic-C6FWkUJF.woff                      [39m[1m[2m 10.48 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mtinos-cyrillic-700-italic-DU6-gZzV.woff                    [39m[1m[2m 10.77 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-cyrillic-700-italic-DOs6_YFL.woff                    [39m[1m[2m 10.83 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-cyrillic-400-italic-BrcGa4Xh.woff                    [39m[1m[2m 10.89 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32meb-garamond-vietnamese-wght-normal-DvUmmjCN.woff2          [39m[1m[2m 10.95 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32meb-garamond-vietnamese-wght-italic-2ii8blLS.woff2          [39m[1m[2m 11.02 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-greek-400-normal-D6DCdDEC.woff                       [39m[1m[2m 11.22 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-greek-700-normal-CAsZoNo7.woff                       [39m[1m[2m 11.36 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-latin-400-normal-Bqnq6eT5.woff2                      [39m[1m[2m 11.46 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32meb-garamond-greek-ext-wght-normal-CW-BywWH.woff2           [39m[1m[2m 11.48 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-latin-700-normal-DhEW593l.woff2                      [39m[1m[2m 11.48 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-greek-400-normal-DOB3qvmW.woff                       [39m[1m[2m 11.50 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-greek-700-normal-C1ZSV25q.woff                       [39m[1m[2m 11.51 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-hebrew-700-normal-B737la7J.woff                      [39m[1m[2m 11.71 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-latin-500-normal-DfvNI-Td.woff                    [39m[1m[2m 11.76 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32meb-garamond-greek-ext-wght-italic-nvsmRjVx.woff2           [39m[1m[2m 11.96 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-hebrew-400-italic-k5xAEjEk.woff                      [39m[1m[2m 11.96 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mchakra-petch-latin-ext-400-normal-MNNNbyh_.woff            [39m[1m[2m 12.04 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-latin-700-normal-e0Uj8ZlN.woff                    [39m[1m[2m 12.06 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-hebrew-700-italic-DuNrcWBH.woff                      [39m[1m[2m 12.07 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-latin-600-normal-Dx02qI2_.woff                    [39m[1m[2m 12.09 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-greek-400-italic-Dc-Zjc_Z.woff                       [39m[1m[2m 12.12 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mchakra-petch-latin-ext-500-normal-BCHeNDEx.woff            [39m[1m[2m 12.18 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-cyrillic-400-normal-kS2dpklR.woff2                   [39m[1m[2m 12.24 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-latin-ext-500-normal-DiyUS11w.woff2               [39m[1m[2m 12.38 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-latin-400-italic-xqrvcx6M.woff2                      [39m[1m[2m 12.38 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-latin-700-italic-B1UitvUd.woff2                      [39m[1m[2m 12.39 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mtinos-greek-700-italic-VKIu6SKO.woff                       [39m[1m[2m 12.48 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-greek-400-italic-DCvteqFY.woff                       [39m[1m[2m 12.64 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-greek-700-italic-u994ojwq.woff                       [39m[1m[2m 12.69 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mcourier-prime-latin-ext-400-normal-B-EsvyE4.woff2          [39m[1m[2m 12.74 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mcourier-prime-latin-ext-700-normal-ByMJlNdM.woff2          [39m[1m[2m 12.93 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-hebrew-400-normal-B17QmYDt.woff2                     [39m[1m[2m 12.96 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-latin-ext-700-normal-S6aYESQK.woff2               [39m[1m[2m 12.96 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mtinos-cyrillic-700-normal-DGklj3DM.woff2                   [39m[1m[2m 13.05 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-latin-ext-600-normal-C9ZjJQAt.woff2               [39m[1m[2m 13.12 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mchakra-petch-latin-400-normal-D7EtbySE.woff                [39m[1m[2m 13.16 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mchakra-petch-latin-500-normal-CnUQnZ4D.woff                [39m[1m[2m 13.41 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32msource-serif-4-vietnamese-wght-normal-D-yuW59g.woff2       [39m[1m[2m 13.45 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-cyrillic-400-italic-D26KjN84.woff2                   [39m[1m[2m 13.67 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mcrimson-pro-vietnamese-wght-normal-Djpar-EE.woff2          [39m[1m[2m 13.72 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-cyrillic-700-italic-CUFPRiVR.woff2                   [39m[1m[2m 13.87 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32msource-serif-4-vietnamese-wght-italic-C3q834ic.woff2       [39m[1m[2m 13.93 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32matkinson-hyperlegible-latin-400-normal-BbWidj28.woff       [39m[1m[2m 14.02 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mtinos-latin-400-normal-B05awSIM.woff                       [39m[1m[2m 14.23 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32matkinson-hyperlegible-latin-700-normal-BK6Glc0m.woff       [39m[1m[2m 14.29 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-hebrew-700-normal-BNVAlJ0i.woff2                     [39m[1m[2m 14.34 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mcourier-prime-latin-400-normal-BAlbUm6l.woff               [39m[1m[2m 14.38 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-hebrew-400-italic-Cp89YzKh.woff2                     [39m[1m[2m 14.49 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mcourier-prime-latin-700-normal-CVvp4Sof.woff               [39m[1m[2m 14.68 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-latin-400-normal-Cd1L7MI3.woff                       [39m[1m[2m 14.77 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-hebrew-700-italic-BSdnwE5c.woff2                     [39m[1m[2m 14.82 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-greek-400-normal-BKmklotr.woff2                      [39m[1m[2m 14.87 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-latin-700-normal-x_huS3KV.woff                       [39m[1m[2m 14.92 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mtinos-latin-700-normal-CjcRkLdR.woff                       [39m[1m[2m 15.06 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-latin-500-normal-ByNUCHrt.woff2                   [39m[1m[2m 15.08 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32matkinson-hyperlegible-latin-400-italic-OoEIrRJc.woff       [39m[1m[2m 15.18 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32matkinson-hyperlegible-latin-700-italic-Ijyzy1lK.woff       [39m[1m[2m 15.36 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-greek-700-normal-DZiY5218.woff2                      [39m[1m[2m 15.42 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-latin-400-italic-HcuZF3H0.woff                       [39m[1m[2m 15.57 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-latin-700-italic-M0H2aQ0O.woff                       [39m[1m[2m 15.60 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-greek-400-italic-CITkaQD8.woff2                      [39m[1m[2m 15.62 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-latin-700-normal-BPDUZo87.woff2                   [39m[1m[2m 15.69 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-latin-600-normal-CXCVEoA9.woff2                   [39m[1m[2m 15.73 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-latin-400-italic-BPT4MgRt.woff                       [39m[1m[2m 15.91 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-latin-700-italic-BPBgY6zg.woff                       [39m[1m[2m 15.95 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mtinos-greek-700-italic-C474ACqK.woff2                      [39m[1m[2m 16.26 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32matkinson-hyperlegible-latin-400-normal-BrHNak5F.woff2      [39m[1m[2m 17.21 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mlora-symbols-wght-normal-DQ5VrUkH.woff2                    [39m[1m[2m 17.25 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32matkinson-hyperlegible-latin-700-normal-GZI4o3u0.woff2      [39m[1m[2m 17.52 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-latin-400-normal-rilFpyjL.woff2                      [39m[1m[2m 17.85 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32msource-serif-4-cyrillic-ext-wght-normal-cHuGMAiY.woff2     [39m[1m[2m 18.06 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32matkinson-hyperlegible-latin-400-italic-D-qjh7ci.woff2      [39m[1m[2m 18.29 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32msource-serif-4-cyrillic-ext-wght-italic-BXuSHrjR.woff2     [39m[1m[2m 18.34 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32matkinson-hyperlegible-latin-700-italic-Bq4J7U7l.woff2      [39m[1m[2m 18.48 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mcourier-prime-latin-400-normal-BbyBr73r.woff2              [39m[1m[2m 18.64 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-latin-400-italic-BYAl0kbZ.woff2                      [39m[1m[2m 18.76 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-latin-700-italic-vJg8Axdx.woff2                      [39m[1m[2m 18.87 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mlora-symbols-wght-italic-BMZuTBzt.woff2                    [39m[1m[2m 18.89 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-latin-700-normal-qGf2y18O.woff2                      [39m[1m[2m 18.90 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mcourier-prime-latin-700-normal-D1YCjmaD.woff2              [39m[1m[2m 19.35 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32meb-garamond-greek-wght-italic-Dc0bJcw6.woff2               [39m[1m[2m 19.59 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32meb-garamond-greek-wght-normal-DCPER7xl.woff2               [39m[1m[2m 19.87 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mlora-latin-ext-wght-normal-C2Wlntb9.woff2                  [39m[1m[2m 20.09 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-cyrillic-ext-400-normal-fkIYAX4U.woff2               [39m[1m[2m 20.13 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mfigtree-latin-wght-normal-D_ZTVpCC.woff2                   [39m[1m[2m 20.16 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32msource-serif-4-greek-wght-normal-ece1310W.woff2            [39m[1m[2m 20.23 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-cyrillic-ext-700-normal-Ce-sRYNJ.woff2               [39m[1m[2m 20.39 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32msource-serif-4-greek-wght-italic-F2ziEGcb.woff2            [39m[1m[2m 20.54 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mlora-latin-ext-wght-italic-BC6VAxdc.woff2                  [39m[1m[2m 21.13 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mlora-cyrillic-wght-normal-UWPuZLjM.woff2                   [39m[1m[2m 21.23 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mlora-cyrillic-wght-italic-BWw7-oF9.woff2                   [39m[1m[2m 22.97 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-cyrillic-ext-700-italic-fRg0wiSQ.woff2               [39m[1m[2m 23.53 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-cyrillic-ext-400-italic-Dx8vO3rx.woff2               [39m[1m[2m 23.56 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mlora-cyrillic-ext-wght-normal-YcVxMP-u.woff2               [39m[1m[2m 23.64 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32meb-garamond-cyrillic-wght-normal-DBa2mnKT.woff2            [39m[1m[2m 26.02 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-cyrillic-ext-400-normal-l41d2z3M.woff                [39m[1m[2m 26.19 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-cyrillic-ext-400-normal-VrsG38ur.woff                [39m[1m[2m 26.29 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-cyrillic-ext-700-normal-D_9gfP4Y.woff                [39m[1m[2m 26.45 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-cyrillic-ext-700-normal-yBtNmQaZ.woff                [39m[1m[2m 26.51 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32meb-garamond-cyrillic-wght-italic-Cini1BOa.woff2            [39m[1m[2m 26.52 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mlora-cyrillic-ext-wght-italic-Cgu7qCFu.woff2               [39m[1m[2m 27.35 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-cyrillic-ext-700-italic-BQu9kgBz.woff                [39m[1m[2m 29.18 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mlora-math-wght-normal-sOy7rEfW.woff2                       [39m[1m[2m 29.24 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-cyrillic-ext-400-italic-CgiySoL2.woff                [39m[1m[2m 29.38 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-cyrillic-ext-700-italic-B4nUvT_t.woff                [39m[1m[2m 30.09 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-cyrillic-ext-400-italic-Bjn7wzij.woff                [39m[1m[2m 30.18 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mlora-math-wght-italic-CnuSFIyO.woff2                       [39m[1m[2m 31.36 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32meb-garamond-cyrillic-ext-wght-normal-Bt3rCdHq.woff2        [39m[1m[2m 33.95 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32msource-serif-4-cyrillic-wght-italic-RLIThRd4.woff2         [39m[1m[2m 35.04 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-cyrillic-ext-400-normal-DdITlKdb.woff2               [39m[1m[2m 35.26 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32meb-garamond-cyrillic-ext-wght-italic-Ba0fXTjv.woff2        [39m[1m[2m 35.42 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32msource-serif-4-cyrillic-wght-normal-DwHjdM4S.woff2         [39m[1m[2m 36.47 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-cyrillic-ext-700-normal-CE86bzrR.woff2               [39m[1m[2m 36.72 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mlora-latin-wght-normal-BiLcIKcI.woff2                      [39m[1m[2m 37.79 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mtinos-cyrillic-ext-400-italic-Bz6A2Xew.woff2               [39m[1m[2m 37.93 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mcrimson-pro-latin-ext-wght-normal-4mBZvMWv.woff2           [39m[1m[2m 37.99 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-cyrillic-ext-700-italic-Ceua-rFl.woff2               [39m[1m[2m 38.08 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mlora-latin-wght-italic-DBI-iqMr.woff2                      [39m[1m[2m 40.77 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32msource-serif-4-latin-ext-wght-normal-CxNHBx-q.woff2        [39m[1m[2m 42.04 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32msource-serif-4-latin-ext-wght-italic-CpkvI5hy.woff2        [39m[1m[2m 44.26 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32meb-garamond-latin-wght-normal-CRpggXlh.woff2               [39m[1m[2m 44.34 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32meb-garamond-latin-wght-italic-AvGrCMCN.woff2               [39m[1m[2m 47.94 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mcrimson-pro-latin-wght-normal-C4R2PX-h.woff2               [39m[1m[2m 48.20 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32msource-serif-4-latin-wght-normal-D9elroTD.woff2            [39m[1m[2m 50.82 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32msource-serif-4-latin-wght-italic-D2yaqPoE.woff2            [39m[1m[2m 51.52 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-latin-ext-700-normal-DDeQOfiM.woff2                  [39m[1m[2m 51.84 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-latin-ext-400-normal-B-XWcJFt.woff2                  [39m[1m[2m 52.13 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-devanagari-700-normal-DBRwWuxA.woff               [39m[1m[2m 53.06 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-devanagari-500-normal-BPH8g_s8.woff               [39m[1m[2m 56.26 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-devanagari-600-normal-BtY48IV_.woff               [39m[1m[2m 56.44 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-latin-ext-400-italic-dVxPyU8p.woff2                  [39m[1m[2m 60.11 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32marimo-latin-ext-700-italic-DtqtKPxT.woff2                  [39m[1m[2m 60.43 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-latin-ext-400-normal-BUQPNqi9.woff                   [39m[1m[2m 66.77 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-latin-ext-700-normal-7mWUsHUR.woff                   [39m[1m[2m 71.19 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-latin-ext-400-normal-CuyoxgRm.woff                   [39m[1m[2m 71.27 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-latin-ext-700-normal-nLvPiDAe.woff                   [39m[1m[2m 71.36 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mtinos-latin-ext-700-italic-Gmi35kWa.woff                   [39m[1m[2m 75.55 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-latin-ext-400-normal-C68eX7xt.woff2                  [39m[1m[2m 76.35 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-latin-ext-400-italic-DKtLLJa2.woff                   [39m[1m[2m 76.96 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-devanagari-700-normal-BQQOj9BB.woff2              [39m[1m[2m 77.14 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-devanagari-500-normal-B_DH_jja.woff2              [39m[1m[2m 77.44 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mrajdhani-devanagari-600-normal-DhS7ScYx.woff2              [39m[1m[2m 79.34 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-latin-ext-400-italic-CMqF1rWm.woff                   [39m[1m[2m 79.64 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32marimo-latin-ext-700-italic-aTDaZMoa.woff                   [39m[1m[2m 80.35 kB[22m[1m[22m
+[2mdist-web/[22m[2massets/[22m[32mtinos-latin-ext-700-normal-CesJqEpY.woff2                  [39m[1m[2m 82.73 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-latin-ext-700-italic-BtLLKPsV.woff2                  [39m[1m[2m 83.94 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32mtinos-latin-ext-400-italic-WsHooD3r.woff2                  [39m[1m[2m 84.14 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32meb-garamond-latin-ext-wght-italic-CYvIfuu9.woff2           [39m[1m[2m 88.58 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[32meb-garamond-latin-ext-wght-normal-B6IpcvL2.woff2           [39m[1m[2m113.93 kB[22m[1m[22m
+
+[2mdist-web/[22m[2massets/[22m[35m400-B5hLbwcr.css                                           [39m[1m[2m  0.88 kB[22m[1m[22m[2m │ gzip:   0.36 kB[22m
+[2mdist-web/[22m[2massets/[22m[35m400-italic-Be90QGmR.css                                    [39m[1m[2m  0.88 kB[22m[1m[22m[2m │ gzip:   0.37 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[35m700-DK59VU6r.css                                           [39m[1m[2m  0.88 kB[22m[1m[22m[2m │ gzip:   0.37 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[35m700-italic-CrFEqA-o.css                                    [39m[1m[2m  0.88 kB[22m[1m[22m[2m │ gzip:   0.37 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[35mwght-Cx-IbfSI.css                                          [39m[1m[2m  1.91 kB[22m[1m[22m[2m │ gzip:   0.58 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[35mwght-italic-Bc-fJTO8.css                                   [39m[1m[2m  1.91 kB[22m[1m[22m[2m │ gzip:   0.59 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[35mwght-CX8xi8A8.css                                          [39m[1m[2m  2.07 kB[22m[1m[22m[2m │ gzip:   0.60 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[35mwght-italic-CgRHvsPU.css                                   [39m[1m[2m  2.07 kB[22m[1m[22m[2m │ gzip:   0.60 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[35m400-By2J9OS6.css                                           [39m[1m[2m  2.53 kB[22m[1m[22m[2m │ gzip:   0.72 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[35m400-italic-CiWQylED.css                                    [39m[1m[2m  2.53 kB[22m[1m[22m[2m │ gzip:   0.73 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[35m700-DyVhL4jt.css                                           [39m[1m[2m  2.53 kB[22m[1m[22m[2m │ gzip:   0.73 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[35m700-italic-CLPW2Wg0.css                                    [39m[1m[2m  2.53 kB[22m[1m[22m[2m │ gzip:   0.73 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[35m400-ChAVjAc3.css                                           [39m[1m[2m  2.53 kB[22m[1m[22m[2m │ gzip:   0.73 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[35m400-italic-Hum2zbWl.css                                    [39m[1m[2m  2.53 kB[22m[1m[22m[2m │ gzip:   0.73 kB[22m
+[2mdist-web/[22m[2massets/[22m[35m700-CWvipITf.css                                           [39m[1m[2m  2.53 kB[22m[1m[22m[2m │ gzip:   0.73 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[35m700-italic-DgMm6uTt.css                                    [39m[1m[2m  2.53 kB[22m[1m[22m[2m │ gzip:   0.73 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[35mwght-w3mrAV2r.css                                          [39m[1m[2m  4.08 kB[22m[1m[22m[2m │ gzip:   1.39 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[35mwght-italic-CE1fYQCo.css                                   [39m[1m[2m  4.08 kB[22m[1m[22m[2m │ gzip:   1.39 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[35mindex-DmJB9W2V.css                                         [39m[1m[2m170.45 kB[22m[1m[22m[2m │ gzip:  36.70 kB[22m
+
+[2mdist-web/[22m[2massets/[22m[36mindex-B1iEpp4h.js                                          [39m[1m[33m736.16 kB[39m[22m[2m │ gzip: 232.39 kB[22m
+
+[33m
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+
+[32m✓ built in 3.50s[39m
+
+
+> @writer-studio/server@0.0.1 build /app/apps/server
+> tsc -p tsconfig.json
+
+
+[stage-0  9/11] RUN --mount=type=cache,id=s/d9a7894f-c7a0-415a-9fb5-48a34624fd18-node_modules/cache,target=/app/node_modules/.cache pnpm install --prod=false && pnpm --filter @writer-studio/desktop build:web && pnpm --filter @writer-studio/server build
+[stage-0 10/11] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+[stage-0 10/11] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+[stage-0 11/11] COPY . /app
+[stage-0 11/11] COPY . /app
+exporting to docker image format
+exporting to docker image format
+containerimage.descriptor: eyJtZWRpYVR5cGUiOiJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLm1hbmlmZXN0LnYxK2pzb24iLCJkaWdlc3QiOiJzaGEyNTY6YWJkOWJhYmM4YTczMDA2MzZmZTQzODhmYjUxZDkyMmU4ZTJlNmNkMzM3YjM2MWMzNDUzMTM3NjI5NGQ1OGZhZCIsInNpemUiOjI5NTgsImFubm90YXRpb25zIjp7Im9yZy5vcGVuY29udGFpbmVycy5pbWFnZS5jcmVhdGVkIjoiMjAyNi0xMC0xOVQwMDoxNDoxMloifSwicGxhdGZvcm0iOnsiYXJjaGl0ZWN0dXJlIjoiYW1kNjQiLCJvcyI6ImxpbnV4In19
+containerimage.config.digest: sha256:7811d57dfbbaf6208cc073215c153a02f769a5d175193128c055afdeac004a5c
+containerimage.digest: sha256:abd9babc8a7300636fe4388fb51d922e8e2e6cd337b361c34531376294d58fad
+image push
+Deploy complete
