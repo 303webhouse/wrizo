@@ -32,6 +32,9 @@ import type { PageFaceSubject } from './PageFace';
 import { PortToBoardSheet } from './PortToBoardSheet';
 import { PinToBoardSheet } from './PinToBoardSheet';
 import { isScriptEmpty } from '../store/structureConvert';
+import { unbornHref } from '../store/unbornPage';
+import { PAGE_SETTINGS_FALLBACK } from '../types';
+import { TEMPLATE_ORDER, type TemplateKey } from './TemplateSketch';
 import { enterPageTypewriter, holdTypewriterPage } from '../store/writingSettings';   // PHASE 1 (S5): per-page typewriter memory
 import type { Scene, ScriptEl, ScriptElType, Project } from '../types';
 import { LocationCrumb } from './LocationCrumb';
@@ -949,6 +952,25 @@ export function ScriptEditor({ id }: { id: string }) {
     if (isScriptEmpty({ v: 1, scenes })) { convertToProse(); return; }
     setStructureConfirm(true);
   };
+  const applyTemplate = (key: TemplateKey) => {
+    if (key === 'screenplay') return;
+    const template = key === 'blank' ? undefined : key;
+    const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
+    if (isScriptEmpty({ v: 1, scenes })) {
+      saveScriptDoc(id, { v: 1 as const, scenes });
+      const latest = getJournalEntry(id);
+      if (!latest) return;
+      saveJournalEntry({
+        ...latest, pageType: 'manuscript', script: undefined,
+        pageSettings: { ...(latest.pageSettings ?? PAGE_SETTINGS_FALLBACK), template },
+        updatedAt: new Date().toISOString(),
+      });
+      return;
+    }
+    flushScriptNow(); flushNow();
+    const href = unbornHref({ origin: initialEntry?.origin === 'journal' ? 'journal' : 'loose', binderId: initialEntry?.projectId ?? null, template: template ?? null });
+    navigate(href, { state: { fromBoardId: id, fromBoardTitle: (liveScriptText().trim().split('\n')[0] || 'Untitled').slice(0, 40), openedByTemplate: true } });
+  };
   const onSwitchStructure = (next: 'prose' | 'screenplay') => {
     if (next === 'screenplay') return; // already screenplay — nothing to do here
     requestProse();
@@ -959,7 +981,15 @@ export function ScriptEditor({ id }: { id: string }) {
     onSwitchStructure,
     // PAGE-TEMPLATES-MOVE (Nick's standing rule: brass marks a choice the writer has made, at rest) - this page IS a screenplay,
     // so its Templates row shows the Screenplay template CHOSEN. Pressing a choice already made changes nothing.
-    templates: [{ key: 'screenplay', label: dt('beginScreenplay'), selected: true, onApply: () => {} }],
+    // PAGE TEMPLATES - the full picker: Screenplay is the current choice here (pressing it changes nothing); any other row on an EMPTY
+    // screenplay converts the page in place (the empty-page rule, Fable Oct 16 Q2 - the same conversion Structure uses, plus the lens), and on a
+    // screenplay WITH words opens a new page (the words never move), whose chip reads "Opened as a new page · Back".
+    templates: TEMPLATE_ORDER.map((key) => ({
+      key,
+      label: dt(({ blank: 'templateBlank', screenplay: 'templateScreenplay', outline: 'templateOutline', title: 'templateTitlePage', bibliography: 'templateBibliography' } as const)[key]),
+      selected: key === 'screenplay',
+      onApply: () => applyTemplate(key),
+    })),
   };
   // CD1 S6 — the goal system's live text for this surface: the script's
   // elements read as lines (matches the deterministic hard-newline
@@ -982,6 +1012,8 @@ export function ScriptEditor({ id }: { id: string }) {
   // the enemy (CA1). The title is a plain read; the fallback keeps every
   // pre-existing caller's wording byte-identical.
   const fromBoardTitle = (location.state as { fromBoardTitle?: string } | null)?.fromBoardTitle ?? null;
+  // PAGE TEMPLATES - a template pick that opened this page sets this: the chip reads "Opened as a new page · Back" (the words never moved).
+  const openedByTemplate = (location.state as { openedByTemplate?: boolean } | null)?.openedByTemplate === true;
 
   // Draft law only (S1, still true below the AB1 gate) — the Screenplay
   // Room's forward-only mode (script Free-write) is AB2, not this ticket;
@@ -1148,8 +1180,8 @@ export function ScriptEditor({ id }: { id: string }) {
               </div>
             )}
             {fromBoard && (
-              <button type="button" className="btn-quiet wz-back-to-board" onClick={() => { flushNow(); navigate(`/page/${fromBoard}`); }}>
-                {fromBoardTitle ? `‹ Back to ${fromBoardTitle}` : '‹ Back to the board'}
+              <button type="button" className="btn-quiet wz-back-to-board" aria-label={openedByTemplate && fromBoardTitle ? `Back to ${fromBoardTitle}` : undefined} onClick={() => { flushNow(); navigate(`/page/${fromBoard}`); }}>
+                {openedByTemplate ? `‹ ${dt('templateOpenedNewBack')}` : fromBoardTitle ? `‹ Back to ${fromBoardTitle}` : '‹ Back to the board'}
               </button>
             )}
           </div>

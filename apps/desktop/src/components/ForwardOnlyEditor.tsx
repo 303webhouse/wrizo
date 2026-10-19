@@ -12,7 +12,7 @@ import { escapeTyped } from '../store/hiddenMarks';
 import { copyPayload, pasteEdit, putOnClipboard, readEnvelope, WRIZO_MIME } from '../store/clipboardFormat';
 import { readEscapes } from '../store/markRuns';
 import { attachHiddenMarkEditing } from '../store/hiddenMarksEditing';
-import { detachRows, editorPlainText, mountRows, noteNativeEdit, readNativeEdit, revealRowsAtCaret, rowsFor, writeRows } from '../store/lineRows';
+import { detachRows, editorPlainText, mountRows, noteNativeEdit, readNativeEdit, refreshLens, revealRowsAtCaret, rowsFor, writeRows } from '../store/lineRows';
 
 // CW2 — the reusable forward-only writing surface. Keyboard-only input on the
 // DM1 Run model: typing appends, backspace walks a short runway and then locks;
@@ -100,10 +100,15 @@ interface Props {
   // WRITING-SURFACE S0 STEP 2 - Ctrl/Cmd+B/I/U in the free-edit branch call this, and the host routes it to the SAME formatter its
   // toolbar buttons use. Absent (Free Write, Revise, or any host with no styling tools) the keys are left alone.
   onFormatKey?: (action: FormatAction) => void;
+  // PAGE TEMPLATES - the Outline or Bibliography lens this page is drawn through (Draft and Revise only; the page's text is untouched). Written to the host element as
+  // data-template: the Bibliography is pure CSS on it, the Outline's numbers are drawn by store/lineRows.ts applyOutlineLens on the ROWS. `onLensKey` is the host's door
+  // for the lens's own keys (the Outline's Tab / Shift+Tab / Enter): it returns true when it handled the key and called preventDefault.
+  lens?: 'outline' | 'bibliography' | null;
+  onLensKey?: (e: KeyboardEvent) => boolean;
 }
 
 export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function ForwardOnlyEditor(
-  { initialText, onChange, mode = 'journal', onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, ariaDescribedBy, penColor, forwardLock = true, style, insertMarkerRef, onFormatKey },
+  { initialText, onChange, mode = 'journal', onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, ariaDescribedBy, penColor, forwardLock = true, style, insertMarkerRef, onFormatKey, lens, onLensKey },
   ref,
 ) {
   // ITEM 112-A — the branch this flag selects is FREE-EDIT vs FORWARD-ONLY, and
@@ -130,6 +135,8 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   onForwardRef.current = onForward;
   const onFormatKeyRef = useRef(onFormatKey);
   onFormatKeyRef.current = onFormatKey;
+  const onLensKeyRef = useRef(onLensKey);
+  onLensKeyRef.current = onLensKey;
   // AB2 S2 — the native listeners below attach once ([] deps), so a toggle
   // flipped mid-session (the rail's forward-lock switch) must reach
   // handleBackspace through a ref, not the closed-over prop value.
@@ -437,6 +444,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // preventDefault (not beforeinput) mirrors ScriptEditor.tsx's own
       // proven Enter-handling pattern elsewhere in this codebase.
       const onKeyDownDraft = (e: KeyboardEvent) => {
+        // PAGE TEMPLATES - the lens's own keys (the Outline's Tab / Shift+Tab / Enter) come FIRST, here, and once. They used to be tried in onFormatKeyDraft below, AFTER this listener's marks.enter had
+        // already done the Enter itself - so one Enter was done twice (ledger 92, X7: a blank line, and the next row without its tab). A handled key is the lens's; nothing after it sees it.
+        if (onLensKeyRef.current?.(e)) { e.stopImmediatePropagation(); return; }
         // ITEM 211 — a raw newline inside a styled run would leave each line one unpaired, visible mark, so the text is computed
         // (store/hiddenMarks.ts enterAt): the run closes before the newline and opens again after it. Recorded as a 'boundary' step
         // (FX6 S1: Enter completes a line the way a typed space completes a word).
@@ -674,6 +684,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // PAGE TEMPLATES - a page's template can change under a mounted editor (the picker): draw or clear the Outline's numbers now.
+  useEffect(() => { const h = hostRef.current; if (h) refreshLens(h); }, [lens]);
+
   // Keep the browser's (invisible) caret at the end after every re-render.
   // React replaces the rendered text nodes on each change, which would otherwise
   // invalidate the selection and stop the next keystroke from firing input.
@@ -752,6 +765,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       <div
         ref={setRefs}
         className="forward-only-editor"
+        data-template={lens ?? undefined}
         contentEditable
         suppressContentEditableWarning
         role="textbox"

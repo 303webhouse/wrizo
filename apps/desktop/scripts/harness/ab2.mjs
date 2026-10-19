@@ -15,6 +15,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+let s4RowsSeen = null;   // S4's picker rows (PAGE TEMPLATES R2), kept for its parked record
 let s4TemplatesSeen = null;   // S4's placeholder roster, kept for its parked record (PAGE-TEMPLATES-MOVE)
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -465,11 +466,14 @@ await withHarness(async (app) => {
     const btns = [...document.querySelectorAll('.wz-sliver-templates .wz-template-btn')];
     return { convertRows: [...document.querySelectorAll('.wz-sliver .wz-cascade-action')].filter(b => /^Convert to/.test(b.textContent || '')).length,
              templates: btns.map(b => b.getAttribute('aria-label')), disabled: btns.every(b => b.getAttribute('aria-disabled') === 'true'),
-             titles: [...new Set(btns.map(b => b.title))] };
+             titles: [...new Set(btns.map(b => b.title))],
+             rows: [...document.querySelectorAll('.wz-sliver-templates .wz-template-row')].map(b => b.getAttribute('aria-label')),
+             rowsDisabled: document.querySelectorAll('.wz-sliver-templates [aria-disabled="true"]').length, placeholders: btns.length };
   })()`);
   ok('S4 [PR #7 successor]: Draft\'s drawer carries no Structure zone and no Convert row',
     proseRowLabel === null && (await structureZone(app)) === false && s4Drawer.convertRows === 0, JSON.stringify({ proseRowLabel, ...s4Drawer }));
   s4TemplatesSeen = s4Drawer.templates;
+  s4RowsSeen = s4Drawer.rows;
   // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order. Kept VERBATIM and no
   // longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
   //
@@ -477,8 +481,13 @@ await withHarness(async (app) => {
   //   JSON.stringify(s4Drawer.templates) === JSON.stringify(['Outline', 'Bibliography', 'Title page']) && s4Drawer.disabled && JSON.stringify(s4Drawer.titles) === JSON.stringify(['Coming soon']),
   //   JSON.stringify(s4Drawer));
   // ------------------------------------------------------------------
-  ok('S4 [page-templates successor]: the zone\'s place holds the Template stand-ins - Outline, Title page, Bibliography, Custom, in that order - each aria-disabled and titled "Coming soon"',
-    JSON.stringify(s4Drawer.templates) === JSON.stringify(['Outline', 'Title page', 'Bibliography', 'Custom']) && s4Drawer.disabled && JSON.stringify(s4Drawer.titles) === JSON.stringify(['Coming soon']),
+  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @ 0fc9afef, Fable Oct 16): the four grayed stand-ins retire - the Templates section is a FIVE-row picker (Blank, Screenplay, Outline, Title Page, Bibliography), none disabled, Custom dropped. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
+  //
+  // ok('S4 [page-templates successor]: the zone\'s place holds the Template stand-ins - Outline, Title page, Bibliography, Custom, in that order - each aria-disabled and titled "Coming soon"',
+  //   JSON.stringify(s4Drawer.templates) === JSON.stringify(['Outline', 'Title page', 'Bibliography', 'Custom']) && s4Drawer.disabled && JSON.stringify(s4Drawer.titles) === JSON.stringify(['Coming soon']),
+  //   JSON.stringify(s4Drawer));
+  ok('S4 [page-templates-r2 successor]: the zone\'s place holds the five-row Template picker - Blank, Screenplay, Outline, Title Page, Bibliography, in that order - none aria-disabled, no "Coming soon", no Custom stand-in left',
+    JSON.stringify(s4Drawer.rows) === JSON.stringify(['Blank', 'Screenplay', 'Outline', 'Title Page', 'Bibliography']) && s4Drawer.rowsDisabled === 0 && s4Drawer.placeholders === 0,
     JSON.stringify(s4Drawer));
 
   // === S2 — the forward lock: an explicit persisted toggle, default ON
@@ -844,8 +853,13 @@ const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   // PAGE-TEMPLATES-MOVE (2026-10-08) - S4's placeholder roster, read in the live run above.
-  pok('PARKED (was "S4 [PR #7 successor]: the zone\'s place holds the Template stand-ins - Outline, Bibliography, Title page - each aria-disabled and titled \"Coming soon\"") - PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order; live successor: S4 [page-templates successor]',
-    JSON.stringify(s4TemplatesSeen) === JSON.stringify(['Outline', 'Title page', 'Bibliography', 'Custom']), JSON.stringify(s4TemplatesSeen));
+  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (2026-10-16): the stand-in roster this record quoted no longer exists. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
+  //
+  // pok('PARKED (was "S4 [PR #7 successor]: the zone\'s place holds the Template stand-ins - Outline, Bibliography, Title page - each aria-disabled and titled \"Coming soon\"") - PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order; live successor: S4 [page-templates successor]',
+  //   JSON.stringify(s4TemplatesSeen) === JSON.stringify(['Outline', 'Title page', 'Bibliography', 'Custom']), JSON.stringify(s4TemplatesSeen));
+  // PAGE TEMPLATES R2 (2026-10-16) - S4's roster again, read in the live run above: the picker's five rows.
+  pok('PARKED (was "S4 [page-templates successor]: the zone\'s place holds the Template stand-ins - Outline, Title page, Bibliography, Custom, in that order - each aria-disabled and titled \"Coming soon\"") - PAGE TEMPLATES R2 (2026-10-16): the four stand-ins retire; the Templates section is a five-row picker; live successor: S4 [page-templates-r2 successor]',
+    JSON.stringify(s4RowsSeen) === JSON.stringify(['Blank', 'Screenplay', 'Outline', 'Title Page', 'Bibliography']), JSON.stringify(s4RowsSeen));
   await withHarness(async (app) => {
     await freshProsePage(app);
     // CD1 S2/S7 — every `.desk-toolrail-*` selector below is updated to its
@@ -1068,10 +1082,20 @@ if (process.env.HARNESS_PARKED === '1') {
     //     && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
     //   JSON.stringify(draftRailClassRenameCheck));
     // ---------------------------------------------------------------------
-    pok('PARKED, generation 7 (was generation 6, the SEVENTEEN-button roster) — PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08) changes the MEMBERSHIP: Screenplay joins the Templates row as a LIVE button ahead of the placeholders, and a fourth placeholder, Custom, joins them, EIGHTEEN in all; the claim is unchanged and re-made at the current membership, in order',
+    // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (Fable Oct 17, ledger 87) - GENERATION 7, quoted VERBATIM and no longer asserted. The claim is unchanged: the Draft rail carries exactly its ruled roster, in order.
+    // The MEMBERSHIP changed again: the Templates section is a five-row PICKER (page sketches and words, components/TemplateSketch.tsx), no longer a row of .mode-tbtn buttons, so the live Screenplay button and the four
+    // "Coming soon" placeholders leave the roster the check counts. Generation 8 below re-makes the claim at that membership, pinned in order.
+    //
+    // pok('PARKED, generation 7 (was generation 6, the SEVENTEEN-button roster) — PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08) changes the MEMBERSHIP: Screenplay joins the Templates row as a LIVE button ahead of the placeholders, and a fourth placeholder, Custom, joins them, EIGHTEEN in all; the claim is unchanged and re-made at the current membership, in order',
+    //   !draftRailClassRenameCheck.ink && draftRailClassRenameCheck.captureItems === 0
+    //     && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure === false
+    //     && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold (Ctrl+B)', 'Italic (Ctrl+I)', 'Underline (Ctrl+U)', 'Strikethrough', 'Heading', 'Round bullet', 'Bullet styles', 'Block quote', 'Outdent', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right', 'Screenplay', 'Coming soon', 'Coming soon', 'Coming soon', 'Coming soon'])
+    //     && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
+    //   JSON.stringify(draftRailClassRenameCheck));
+    pok('PARKED, generation 8 (was generation 7, the NINETEEN-button roster) — PAGE TEMPLATES R2 (Fable Oct 17, ledger 87) changes the MEMBERSHIP: the Templates section is a five-row picker, not .mode-tbtn buttons, so the Screenplay button and the four Coming-soon placeholders leave the roster, FOURTEEN format buttons in all; the claim is unchanged and re-made at the current membership, in order',
       !draftRailClassRenameCheck.ink && draftRailClassRenameCheck.captureItems === 0
         && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure === false
-        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold (Ctrl+B)', 'Italic (Ctrl+I)', 'Underline (Ctrl+U)', 'Strikethrough', 'Heading', 'Round bullet', 'Bullet styles', 'Block quote', 'Outdent', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right', 'Screenplay', 'Coming soon', 'Coming soon', 'Coming soon', 'Coming soon'])
+        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold (Ctrl+B)', 'Italic (Ctrl+I)', 'Underline (Ctrl+U)', 'Strikethrough', 'Heading', 'Round bullet', 'Bullet styles', 'Block quote', 'Outdent', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right'])
         && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
       JSON.stringify(draftRailClassRenameCheck));
 

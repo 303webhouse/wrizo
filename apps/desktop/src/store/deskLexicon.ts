@@ -294,7 +294,7 @@ export type DeskTermId =
   | 'twPageScroll' | 'footProgress' | 'footFullScreen' | 'footTypewriter' | 'footTarget'
   // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
   | 'draftHeading' | 'draftHeadingUp' | 'draftHeadingDown' | 'draftBullet' | 'draftBulletCircle' | 'draftBulletSquare' | 'draftBulletStyles' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
-  | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage' | 'templateCustom'
+  | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage' | 'templateBlank' | 'templateScreenplay' | 'templateOpenedNewBack'
   | 'comingSoon' | 'railTypeface' | 'goalUnitWords' | 'railPageKind'
   // PHASE 1 - the Actions section of the left drawer.
   | 'railActions' | 'actionTags' | 'actionCopy' | 'actionDelete' | 'actionHeaderFooter' | 'actionTagRemove'
@@ -1084,10 +1084,14 @@ const CANONICAL: Record<DeskTermId, string> = {
   railPageKind: 'Pages Kind', // ITEM word-diet, pages-rename bucket (a)
   templateOutline: 'Outline',
   templateBibliography: 'Bibliography',
-  templateTitlePage: 'Title page',
-  templateCustom: 'Custom',
+  templateTitlePage: 'Title Page',
+  // PAGE TEMPLATES (approved mockup cursor/templates @ 0fc9afef) - the five rows of the picker, Arbor's words; Flux's are below. 'Custom' is
+  // dropped with the mockup. templateOpenedNewBack is the return chip's caption on a page a template pick opened (the words never moved).
+  templateBlank: 'Blank',
+  templateScreenplay: 'Screenplay',
+  templateOpenedNewBack: 'Opened as a new page · Back',
   comingSoon: 'Coming soon',
-  railTypeface: 'Typeface',
+  railTypeface: 'Font', // Arbor's word (the approved templates mockup); Flux keeps 'Typeface' below
   goalUnitWords: 'words',
   footSettings: 'Settings',
   footMenuTypewriter: 'Typewriter Mode',
@@ -1453,6 +1457,14 @@ const CANONICAL: Record<DeskTermId, string> = {
 // the same theme, even though they're independent maps.
 const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> = {
   flux: {
+    // PAGE TEMPLATES - Flux's circuit-register words for the picker (the approved templates mockup): Presets, and Raw / Script / Spine / Cover / Sources.
+    railTemplates: 'Presets',
+    railTypeface: 'Typeface',
+    templateBlank: 'Raw',
+    templateScreenplay: 'Script',
+    templateOutline: 'Spine',
+    templateTitlePage: 'Cover',
+    templateBibliography: 'Sources',
     // PHASE 1 (S3) - Flux's word for the same tab. No explainer: an empty term means no "?".
     drawerLinks: 'Links',
     drawerLinksEmpty: 'Nothing linked yet.',

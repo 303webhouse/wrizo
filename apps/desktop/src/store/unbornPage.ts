@@ -1,5 +1,7 @@
 import { generateId, saveJournalEntry, setUnbornEntry, pinPageToBoard } from './persistence';
-import type { Box, JournalEntry } from '../types';
+import type { Box, JournalEntry, PageTemplate } from '../types';
+import { PAGE_SETTINGS_FALLBACK } from '../types';
+import { getUserPageDefaults } from './pageDefaults';
 
 // PB1 — Born on the First Word (docs/wrizo-alpha/p1-wave.md §PB1, item 71;
 // the specification is docs/wrizo-alpha/pb1-unborn-surface.md).
@@ -47,6 +49,10 @@ export interface UnbornDescriptor {
   // durable authorial commitment about what the document IS, not a decoration.
   // Every silent door keeps writing nothing, so PB1's own law is untouched.
   structure: 'prose' | 'screenplay' | null;
+  // PAGE TEMPLATES (docs/plans/page-templates.md section 2) - the Outline, Title Page or Bibliography lens this page opens in. Rides the address like
+  // every other part of the descriptor (reload-safe, no storage). Unlike Screenplay it does NOT birth the page: a template changes how the text is
+  // DRAWN, not what kind of document it is, so PB1 holds - no row until the first word - and the setting is written with that first word.
+  template: PageTemplate | null;
 }
 
 // A malformed or unknown descriptor degrades to a plain loose page rather than
@@ -60,6 +66,7 @@ export function readDescriptor(search: string): UnbornDescriptor {
   const binderId = q.get('binder');
   const pinBoardId = q.get('pin');
   const rawStructure = q.get('structure');
+  const rawTemplate = q.get('template');
   return {
     origin,
     kind,
@@ -68,6 +75,7 @@ export function readDescriptor(search: string): UnbornDescriptor {
     // Anything unrecognised degrades to "no opinion", not to a guess — the
     // address is a hint about a room that does not exist yet.
     structure: rawStructure === 'screenplay' ? 'screenplay' : rawStructure === 'prose' ? 'prose' : null,
+    template: rawTemplate === 'outline' || rawTemplate === 'title' || rawTemplate === 'bibliography' ? rawTemplate : null,
   };
 }
 
@@ -78,6 +86,7 @@ export function unbornHref(d: Partial<UnbornDescriptor> = {}): string {
   if (d.binderId) q.set('binder', d.binderId);
   if (d.pinBoardId) q.set('pin', d.pinBoardId);
   if (d.structure && d.structure !== 'prose') q.set('structure', d.structure);
+  if (d.template) q.set('template', d.template);
   const s = q.toString();
   return `/page/new${s ? `?${s}` : ''}`;
 }
@@ -101,6 +110,9 @@ export function unbornEntry(id: string, d: UnbornDescriptor, createdAt: string):
     base.pageType = 'board';
     base.boxes = [];
   }
+  // PAGE TEMPLATES - the lens is a page setting, so the unborn slot carries it (the lens can draw before the first word) and birth() keeps it
+  // (it spreads this entry). A page with no settings starts from the writer's defaults or the app's floor, as patchPageSettings does.
+  if (d.template) base.pageSettings = { ...(getUserPageDefaults() ?? PAGE_SETTINGS_FALLBACK), template: d.template };
   return base;
 }
 
