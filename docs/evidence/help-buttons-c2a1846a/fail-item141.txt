@@ -1,0 +1,59 @@
+[
+  {
+    "name": "141: no harness reads a window.wrizo* seam before a settle — the waitFor is the proof, navigation is not. 1 file(s) carry the shape",
+    "pass": false,
+    "detail": "{\n \"filesInDir\": 163,\n \"harnessesScanned\": 133,\n \"browserlessSkipped\": 30,\n \"population\": 1,\n \"worklist\": {\n  \"th2.mjs\": [\n   {\n    \"line\": 431,\n    \"seam\": \"window.wrizoCreateJournalPage\"\n   }\n  ]\n }\n}"
+  },
+  {
+    "name": "141 (coverage): the scan actually READ the harnesses — 133 of 163 files classified as browser harnesses. A population of zero means nothing unless this number is right, and a classifier that rejects everything reports a clean tree while looking at none of it",
+    "pass": true,
+    "detail": "{\"filesInDir\":163,\"harnessesScanned\":133,\"browserlessSkipped\":30}"
+  },
+  {
+    "name": "141 FALSIFICATION: goto then a seam read with NO wait is FLAGGED — the exact shape item97 carried, and the one this guard exists for",
+    "pass": true,
+    "detail": "[{\"line\":2,\"seam\":\"window.wrizoCreateJournalPage\"}]"
+  },
+  {
+    "name": "141 (the control): goto, waitFor, THEN the seam read is clean — so the guard is a matcher rather than a wall that reds on every seam it sees",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "141 FALSIFICATION: a waitFor BEFORE the navigation does not settle what comes after it — order is the whole rule, and a guard that merely counted both tokens would pass this file",
+    "pass": true,
+    "detail": "[{\"line\":3,\"seam\":\"window.wrizoCreateJournalPage\"}]"
+  },
+  {
+    "name": "141 FALSIFICATION: a seam read with NO navigation at all is FLAGGED — reading about:blank is the same defect arrived at sooner, and item97 reached its seam with neither a navigation nor a wait",
+    "pass": true,
+    "detail": "[{\"line\":1,\"seam\":\"window.wrizoCreateJournalPage\"}]"
+  },
+  {
+    "name": "141 FALSIFICATION: a sleep() does NOT settle — a fixed pause is a guess about a machine that is sometimes slower than the guess, and it is exactly what gets reached for when a waitFor feels like ceremony",
+    "pass": true,
+    "detail": "[{\"line\":3,\"seam\":\"window.wrizoCreateJournalPage\"}]"
+  },
+  {
+    "name": "141 (the control): a seam named in a COMMENT is not a read — item97 describes its own bug in prose, and a guard that read prose would report the confession as the crime",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "141 (the control): a seam named inside a waitFor CONDITION is the settle itself, not an unguarded probe — counting it would flag item97's own repair and make the guard argue against the thing it enforces",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "141 (the control): a settle reached through a HELPER counts — freshDesk and friends hoist the navigate-and-wait, and resolving one level is what took the manual sweep of this class from 12 apparent instances to 1 real one",
+    "pass": true,
+    "detail": "[]"
+  },
+  {
+    "name": "141 FALSIFICATION: a hash navigation UNSETTLES an already-settled page — location.hash is how these files travel between surfaces, and a guard that only watched goto/reload would miss every one of them",
+    "pass": true,
+    "detail": "[{\"line\":4,\"seam\":\"window.wrizoCreateJournalPage\"}]"
+  }
+]
+
+ITEM141 VERIFY: FAIL — 1/11 failed

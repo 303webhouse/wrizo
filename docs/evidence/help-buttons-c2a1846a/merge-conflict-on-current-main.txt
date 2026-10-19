@@ -1,0 +1,4 @@
+Merging origin/help-buttons @ c2a1846a into origin/main @ e60da38d (apps = delete-for-good d6e03593): ONE conflict hunk, apps/desktop/src/App.tsx - both branches mount an overlay at the same spot:
+  main:         <DestructiveConfirm /> <PurgedElsewhereNotice />   (delete-for-good)
+  help-buttons: <HelpPop />
+The obvious resolution keeps both. The trial merge was aborted; the results in this folder are from a THROWAWAY resolution (keep both), never committed.
