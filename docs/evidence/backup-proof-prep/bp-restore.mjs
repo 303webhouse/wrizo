@@ -24,7 +24,9 @@ const dir = mkdtempSync(join(tmpdir(), 'bp-restore-'));
 const pg = new EmbeddedPostgres({ databaseDir: dir, user: 'postgres', password: 'postgres', port: PORT, persistent: false });
 let ok = false;
 try {
-  await pg.initialise(); await pg.start(); await pg.createDatabase('restoreproof');
+  await pg.initialise(); await pg.start();
+  // The scratch cluster defaults to WIN1252 on this machine; production holds UTF-8 text (curly quotes, dashes, emoji), so the scratch DATABASE is created UTF8 from template0 (a restore into WIN1252 could fail or mangle exactly what is being proved).
+  { const admin = new pgmod.Client({ connectionString: `postgresql://postgres:postgres@127.0.0.1:${PORT}/postgres` }); await admin.connect(); await admin.query("create database restoreproof encoding 'UTF8' template template0 lc_collate 'C' lc_ctype 'C'"); await admin.end(); }
   const t0 = Date.now();
   const r = spawnSync(join(PG_BIN, 'pg_restore.exe'), ['--no-owner', '--no-acl', '--exit-on-error', '-d', `postgresql://postgres:postgres@127.0.0.1:${PORT}/restoreproof`, DUMP], { encoding: 'utf8' });
   const secs = ((Date.now() - t0) / 1000).toFixed(1);
@@ -32,19 +34,25 @@ try {
   if (r.status !== 0) console.log('BPRESTORE-STDERR ' + String(r.stderr || '').split('\n').slice(0, 6).join(' | ').slice(0, 600));
   const c = new pgmod.Client({ connectionString: `postgresql://postgres:postgres@127.0.0.1:${PORT}/restoreproof` });
   await c.connect();
+  await c.query("set time zone 'UTC'");
   const t = await c.query("select table_name from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE' order by table_name");
-  const got = {};
-  for (const { table_name } of t.rows) got[table_name] = Number((await c.query('select count(*)::bigint as c from "public"."' + table_name.replace(/"/g, '""') + '"')).rows[0].c);
+  const got = {}, gotFp = {};
+  for (const { table_name } of t.rows) {
+    const q = '"public"."' + table_name.replace(/"/g, '""') + '"';
+    got[table_name] = Number((await c.query('select count(*)::bigint as c from ' + q)).rows[0].c);
+    gotFp[table_name] = (await c.query("select coalesce(md5(string_agg(md5(t::text), '' order by md5(t::text))), md5('')) as fp from " + q + " t")).rows[0].fp;
+  }
   await c.end();
   const before = JSON.parse(readFileSync(process.env.COUNTS_BEFORE, 'utf8')), after = JSON.parse(readFileSync(process.env.COUNTS_AFTER, 'utf8'));
   const map = (j) => Object.fromEntries(j.rows.map((x) => [x.table, x.rows]));
-  const B = map(before), A = map(after);
+  const fpMap = (j) => Object.fromEntries(j.rows.map((x) => [x.table, x.fp]));
+  const B = map(before), A = map(after), BF = fpMap(before), AF = fpMap(after);
   const names = [...new Set([...Object.keys(B), ...Object.keys(A), ...Object.keys(got)])].sort();
   let allMatchAfter = true, allMatchBefore = true;
   for (const n of names) {
-    const mA = got[n] === A[n], mB = got[n] === B[n];
+    const mA = got[n] === A[n] && gotFp[n] === AF[n], mB = got[n] === B[n] && gotFp[n] === BF[n];
     if (!mA) allMatchAfter = false; if (!mB) allMatchBefore = false;
-    console.log(`BPROW ${n} production-before=${B[n] ?? '-'} production-after=${A[n] ?? '-'} restored=${got[n] ?? '-'} ${mA ? 'MATCH' : (mB ? 'matches-before-only' : 'DIFFERS')}`);
+    console.log(`BPROW ${n} production-before=${B[n] ?? '-'} production-after=${A[n] ?? '-'} restored=${got[n] ?? '-'} content=${gotFp[n] === AF[n] || gotFp[n] === BF[n] ? 'SAME' : 'DIFFERS'} ${mA ? 'MATCH' : (mB ? 'matches-before-only' : 'DIFFERS')}`);
   }
   ok = r.status === 0 && (allMatchAfter || allMatchBefore) && names.length > 0;
   console.log(`BPRESULT restoreExit=${r.status} tables=${names.length} matchAfter=${allMatchAfter} matchBefore=${allMatchBefore} => ${ok ? 'RESTORE-MATCH: YES' : 'RESTORE-MATCH: NO'}`);

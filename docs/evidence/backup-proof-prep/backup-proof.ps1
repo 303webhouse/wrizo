@@ -33,8 +33,20 @@ try {
   Write-Host ''
   Write-Host '1/3  Counting rows in every table (before the backup)...' -ForegroundColor Cyan
   $env:BP_OUT = $before
-  & node (Join-Path $Here 'bp-counts.mjs')
+  $countOut = & node (Join-Path $Here 'bp-counts.mjs')
+  $countOut | ForEach-Object { Write-Host $_ }
   if ($LASTEXITCODE -ne 0) { Write-Host 'The count failed - stopping. Nothing else was run.' -ForegroundColor Red; exit 4 }
+  # VERSION GATE (Fable): the dump tool must be the same major version as the production server, or NEWER. Checked here, before anything is dumped.
+  $serverMajor = $null
+  foreach ($line in $countOut) { if ($line -match 'serverMajor=(\d+)') { $serverMajor = [int]$Matches[1] } }
+  $dumpVersionText = (& (Join-Path $PgBin 'pg_dump.exe') --version)
+  $dumpMajor = $null
+  if ($dumpVersionText -match '(\d+)\.\d+') { $dumpMajor = [int]$Matches[1] }
+  Write-Host ("BPVERSION production server major={0}  pg_dump major={1}  ({2})" -f $serverMajor, $dumpMajor, $dumpVersionText)
+  if ($null -eq $serverMajor -or $null -eq $dumpMajor -or $dumpMajor -lt $serverMajor) {
+    Write-Host 'STOP: pg_dump is older than the production server (or a version could not be read). Nothing was dumped.' -ForegroundColor Red
+    exit 6
+  }
   Write-Host ''
   Write-Host '2/3  Taking the full backup (this reads the database; it changes nothing)...' -ForegroundColor Cyan
   $sw = [Diagnostics.Stopwatch]::StartNew()

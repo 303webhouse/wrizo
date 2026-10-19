@@ -15,6 +15,7 @@ const useTls = process.env.PGSSL === '1' || /rlwy\.net|railway/i.test(addr + (pr
 const client = new pg.Client(addr ? { connectionString: addr, ssl: useTls ? { rejectUnauthorized: false } : undefined } : { ssl: useTls ? { rejectUnauthorized: false } : undefined });
 try {
   await client.connect();
+  await client.query("set time zone 'UTC'");   // row text of timestamps must not depend on the server's zone, or two servers could never fingerprint equal
   const v = await client.query("select current_setting('server_version_num')::int as n");
   const major = Math.floor(v.rows[0].n / 10000);
   const t = await client.query("select table_name from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE' order by table_name");
@@ -22,10 +23,12 @@ try {
   for (const { table_name } of t.rows) {
     const q = 'select count(*)::bigint as c from "public"."' + table_name.replace(/"/g, '""') + '"';
     const r = await client.query(q);
-    rows.push({ table: table_name, rows: Number(r.rows[0].c) });
+    // CONTENT FINGERPRINT: md5 over the md5 of every row's text, order-independent - a hash only, no content leaves the database; equal counts with different content differ here.
+    const f = await client.query("select coalesce(md5(string_agg(md5(t::text), '' order by md5(t::text))), md5('')) as fp from \"public\".\"" + table_name.replace(/"/g, '""') + "\" t");
+    rows.push({ table: table_name, rows: Number(r.rows[0].c), fp: f.rows[0].fp });
   }
   const total = rows.reduce((a, r) => a + r.rows, 0);
-  for (const r of rows) console.log('BPCOUNT ' + r.table + ' ' + r.rows);
+  for (const r of rows) console.log('BPCOUNT ' + r.table + ' ' + r.rows + ' fp=' + r.fp.slice(0, 12));
   console.log('BPCOUNT-SUMMARY serverMajor=' + major + ' tables=' + rows.length + ' totalRows=' + total + ' seconds=' + ((Date.now() - t0) / 1000).toFixed(1));
   if (process.env.BP_OUT) writeFileSync(process.env.BP_OUT, JSON.stringify({ serverMajor: major, rows }, null, 2) + '\n');
 } catch (e) {
