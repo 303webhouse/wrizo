@@ -1,0 +1,47 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=35 tree=bce12067 bundle=index-Dt5atrr0.js/726027b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/dfo-default
+[01/35] OK        exit=0   35s ab3.mjs :: ROWS-SHADOW VERIFY: PASS (63 renders checked, shadow == DOM on every one) ;; AB3 VERIFY: PASS (24 checks)
+[02/35] OK        exit=0   18s arrival-signin-walk.mjs :: ARRIVAL-SIGNIN-WALK VERIFY: PASS (15 checks)
+[03/35] OK        exit=0   31s b1.mjs :: ROWS-SHADOW VERIFY: PASS (97 renders checked, shadow == DOM on every one) ;; B1 VERIFY: PASS (47 checks)
+[04/35] OK        exit=0   16s b2-1.mjs :: ROWS-SHADOW VERIFY: PASS (9 renders checked, shadow == DOM on every one) ;; B2-1 VERIFY: PASS (28 checks)
+[05/35] OK        exit=0   35s b2.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; B2 VERIFY: PASS (84 checks)
+[06/35] OK        exit=0   36s bg1.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; BG1 VERIFY: PASS (36 checks)
+[07/35] OK        exit=0   33s board-click-create.mjs :: BOARD-CLICK-CREATE VERIFY: PASS (30 checks)
+[08/35] FAIL      exit=1   58s board-context-menu.mjs :: BOARD-CONTEXT-MENU VERIFY: FAIL - 3/56 failed
+[09/35] FAIL      exit=1    1s box-tombstones.mjs :: BOX-TOMBSTONES VERIFY: FAIL - 1/31 failed
+[10/35] OK        exit=0   30s card-close-x.mjs :: CARD-CLOSE-X VERIFY: PASS (24 checks)
+[11/35] OK        exit=0   12s cd1.mjs :: ROWS-SHADOW VERIFY: PASS (23 renders checked, shadow == DOM on every one) ;; CD1 VERIFY: PASS (25 checks)
+[12/35] OK        exit=0   31s cd2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; CD2 VERIFY: PASS (50 checks)
+[13/35] OK        exit=0   21s cd4.mjs :: CD4 VERIFY: PASS (27 checks)
+[14/35] OK        exit=0   51s clickhead.mjs :: ROWS-SHADOW VERIFY: PASS (18 renders checked, shadow == DOM on every one) ;; CLICKHEAD VERIFY: PASS (21 checks)
+[15/35] TIMEOUT   exit=null  903s delete-for-good.mjs swept=24976 :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\dfo-default\delete-for-good.mjs.default.txt)
+[16/35] OK        exit=0  125s drawers-p1-live.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; DRAWERS-P1-LIVE VERIFY: PASS (88 checks)
+[17/35] OK        exit=0    1s drawers-p1.mjs :: DRAWERS-P1 VERIFY: PASS (100 checks)
+[18/35] OK        exit=0   29s e1.mjs :: E1 VERIFY: PASS (41 checks)
+[19/35] OK        exit=0   30s fx6.mjs :: ROWS-SHADOW VERIFY: PASS (128 renders checked, shadow == DOM on every one) ;; FX6 VERIFY: PASS (38 checks)
+[20/35] OK        exit=0   23s fx9.mjs :: FX9 VERIFY: PASS (41 checks)
+[21/35] OK        exit=0    9s item-storage-full.mjs :: ITEM-STORAGE-FULL VERIFY: PASS (56 checks)
+[22/35] OK        exit=0    9s item118.mjs :: ITEM118 VERIFY: PASS (10 checks)
+[23/35] OK        exit=0    5s item137.mjs :: ITEM137 VERIFY: PASS (9 checks)
+[24/35] OK        exit=0   19s item170.mjs :: ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one) ;; ITEM170 VERIFY: PASS (19 checks)
+[25/35] OK        exit=0  213s item211.mjs :: ROWS-SHADOW VERIFY: PASS (104 renders checked, shadow == DOM on every one) ;; ITEM211 VERIFY: PASS (78 checks)
+[26/35] NOVERDICT exit=1    1s item224a-sync-integrity.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\dfo-default\item224a-sync-integrity.mjs.default.txt)
+[27/35] OK        exit=0   16s item9192.mjs :: ROWS-SHADOW VERIFY: PASS (29 renders checked, shadow == DOM on every one) ;; ITEM9192 VERIFY: PASS (16 checks)
+[28/35] OK        exit=0    6s item97.mjs :: ITEM97 VERIFY: PASS (7 checks)
+[29/35] OK        exit=0    7s logout-flush-walk.mjs :: LOGOUT-FLUSH-WALK VERIFY: PASS (9 checks)
+[30/35] OK        exit=0   35s pb1.mjs :: ROWS-SHADOW VERIFY: PASS (26 renders checked, shadow == DOM on every one) ;; PB1 VERIFY: PASS (22 checks)
+[31/35] OK        exit=0   47s pw1.mjs :: PW1 VERIFY: PASS (41 checks)
+[32/35] OK        exit=0   20s pw2.mjs :: PW2 VERIFY: PASS (24 checks)
+[33/35] OK        exit=0   37s resume-on-open.mjs :: RESUME-ON-OPEN VERIFY: PASS (57 checks)
+[34/35] NOVERDICT exit=1    0s sync-generation.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\dfo-default\sync-generation.mjs.default.txt)
+[35/35] OK        exit=0    8s vw1.mjs :: VW1 VERIFY: PASS (14 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 30/35 of 35 returned a passing verdict
+  FAIL: board-context-menu.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\dfo-default\board-context-menu.mjs.default.txt
+  FAIL: box-tombstones.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\dfo-default\box-tombstones.mjs.default.txt
+  TIMEOUT: delete-for-good.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\dfo-default\delete-for-good.mjs.default.txt
+  NOVERDICT: item224a-sync-integrity.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\dfo-default\item224a-sync-integrity.mjs.default.txt
+  NOVERDICT: sync-generation.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\dfo-default\sync-generation.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=bce12067 bundle=index-Dt5atrr0.js/726027b NO-REBUILD

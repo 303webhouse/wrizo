@@ -146,6 +146,8 @@ export type DeskTermId =
   | 'ctxDelete' | 'ctxDeleteBoard' | 'ctxUngroup' | 'deleteDialogTitle' | 'deleteDialogPurgeTitle' | 'deleteDialogCancel' | 'deleteDialogConfirm' | 'deleteDialogDontAsk'
   | 'ctxEmptyTrash' | 'emptyTrashQuestionOne' | 'emptyTrashQuestionMany' | 'purgedElsewhere' | 'destructiveTypeToGo' | 'destructiveGo'
   | 'settingsAskBeforeDelete' | 'toastCardDeleted' | 'toastCardRestored' | 'toastBoardTrashed' | 'trashCardBadge'
+  // CONNECTOR-B (Nick's approved connector mockup v6): the right drawer's Grafts / Links tab lists the selected card's connections, each with an X that asks first.
+  | 'linksSelectCard' | 'linksRemoveTitle' | 'linksRemoveAria' | 'linksKindPage' | 'linksKindBoard' | 'linksKindCard'
   // TU1 S2/S3/S4/S5 — the Tutor (components/Tutor.tsx), the sliver's own
   // mirror on the paper's right edge. One seam, all of the Tutor's static
   // chrome — the lenses' own DYNAMIC observation text (Consistency's
@@ -295,7 +297,7 @@ export type DeskTermId =
   | 'twPageScroll' | 'footProgress' | 'footFullScreen' | 'footTypewriter' | 'footTarget'
   // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
   | 'draftHeading' | 'draftHeadingUp' | 'draftHeadingDown' | 'draftBullet' | 'draftBulletCircle' | 'draftBulletSquare' | 'draftBulletStyles' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
-  | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage' | 'templateCustom'
+  | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage' | 'templateBlank' | 'templateScreenplay' | 'templateOpenedNewBack'
   | 'comingSoon' | 'railTypeface' | 'goalUnitWords' | 'railPageKind'
   // PHASE 1 - the Actions section of the left drawer.
   | 'railActions' | 'actionTags' | 'actionCopy' | 'actionDelete' | 'actionHeaderFooter' | 'actionTagRemove'
@@ -858,6 +860,12 @@ const CANONICAL: Record<DeskTermId, string> = {
   toastCardRestored: 'Card restored',
   toastBoardTrashed: 'Board moved to Trash',
   trashCardBadge: 'Card',
+  linksSelectCard: 'Select a card',
+  linksRemoveTitle: 'Remove graft?',
+  linksRemoveAria: 'Remove',
+  linksKindPage: 'Page',
+  linksKindBoard: 'Board',
+  linksKindCard: 'Card',
   tutorOpen: 'Open the Tutor',
   tutorClose: 'Close the Tutor',
   tutorTitle: 'The Tutor',
@@ -1093,10 +1101,14 @@ const CANONICAL: Record<DeskTermId, string> = {
   railPageKind: 'Pages Kind', // ITEM word-diet, pages-rename bucket (a)
   templateOutline: 'Outline',
   templateBibliography: 'Bibliography',
-  templateTitlePage: 'Title page',
-  templateCustom: 'Custom',
+  templateTitlePage: 'Title Page',
+  // PAGE TEMPLATES (approved mockup cursor/templates @ 0fc9afef) - the five rows of the picker, Arbor's words; Flux's are below. 'Custom' is
+  // dropped with the mockup. templateOpenedNewBack is the return chip's caption on a page a template pick opened (the words never moved).
+  templateBlank: 'Blank',
+  templateScreenplay: 'Screenplay',
+  templateOpenedNewBack: 'Opened as a new page · Back',
   comingSoon: 'Coming soon',
-  railTypeface: 'Typeface',
+  railTypeface: 'Font', // Arbor's word (the approved templates mockup); Flux keeps 'Typeface' below
   goalUnitWords: 'words',
   footSettings: 'Settings',
   footMenuTypewriter: 'Typewriter Mode',
@@ -1462,6 +1474,14 @@ const CANONICAL: Record<DeskTermId, string> = {
 // the same theme, even though they're independent maps.
 const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> = {
   flux: {
+    // PAGE TEMPLATES - Flux's circuit-register words for the picker (the approved templates mockup): Presets, and Raw / Script / Spine / Cover / Sources.
+    railTemplates: 'Presets',
+    railTypeface: 'Typeface',
+    templateBlank: 'Raw',
+    templateScreenplay: 'Script',
+    templateOutline: 'Spine',
+    templateTitlePage: 'Cover',
+    templateBibliography: 'Sources',
     // PHASE 1 (S3) - Flux's word for the same tab. No explainer: an empty term means no "?".
     drawerLinks: 'Links',
     drawerLinksEmpty: 'Nothing linked yet.',
@@ -1499,6 +1519,9 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     boardFooterToggle: 'Show links',
     ctxDeleteBoard: 'Delete circuit',
     toastBoardTrashed: 'Circuit moved to Trash',
+    linksRemoveTitle: 'Remove link?',
+    linksKindPage: 'Doc',
+    linksKindBoard: 'Circuit',
     placesBoardsTitle: 'Also linked to…',
     // Round 2: the card footer's own connecting phrase ("— grafted to: <label>"
     // Arbor, composed at BoardEditor.tsx's call site as "— {prefix}: {label}").

@@ -1,0 +1,6 @@
+served js  728570 b  MD5 18f77be4465ff196a142f1863bf77afb  (index-DyF2JSOw.js)
+built  js  728570 b  MD5 18f77be4465ff196a142f1863bf77afb
+served css 168159 b  MD5 944d2a35406d7d567e04d2b3ec25b087  (index-BoNZvWpl.css)
+built  css 168159 b  MD5 944d2a35406d7d567e04d2b3ec25b087
+/healthz 200   /auth/me 401   /auth/signup-status {"open":false}
+brand/splash-arbor/{base,page,text,ideas,feedback,final}.png + layers.json: 200 (base.png 275985 b = the local file)

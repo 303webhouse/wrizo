@@ -1,0 +1,11 @@
+file:///C:/Users/nickh/writer-studio/.claude/worktrees/cbf/apps/desktop/scripts/runtime-verify.mjs:792
+      throw new Error(
+            ^
+
+Error: LIVE FOREIGN RUN PRESENT — refusing to open a browser (pid 52304, pid 53628).
+  Another lane is mid-flight on this box. Starting here would contend for the
+  browser pool and void both runs. Wait for the box, then take it by announcement.
+    at withHarness (file:///C:/Users/nickh/writer-studio/.claude/worktrees/cbf/apps/desktop/scripts/runtime-verify.mjs:792:13)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/cbf/apps/desktop/scripts/evidence/connector-b-frames.mjs:56:1
+
+Node.js v24.13.0

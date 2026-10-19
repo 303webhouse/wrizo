@@ -219,7 +219,8 @@ function rawReads(srcDir, mutate = {}) {
 const RAW_BASELINE = {
   // persistence.ts (30): the write boundary and the three acts (they must see everything stored), the Trash listing and one tombstone read, read-modify-write paths that SPREAD the stored boxes (so they carry
   // tombstones; each takes its geometry / membership decisions from liveBoxes), board-meta lookups, the system-board reconcile (no tombstones live on a system board), the sync merge, the seeding write, and the seams.
-  'store/persistence.ts': 30,
+  'store/persistence.ts': 31,        // 30 + connector-b's describeEnd, which reads the OTHER end's box and refuses a tombstoned / purged one itself
+  'components/ConnectionsDrawerPanel.tsx': 1,   // connector-b: the board's own published snapshot (the editor's LIVE boxes), handed to getLinkPeersOfCard
   'components/BoardEditor.tsx': 2,   // the board-meta lookup on open; a deck result's boxes (not stored ones)
   'pages/CreateProject.tsx': 1,      // a deck result's boxes
   'store/boardStructure.ts': 1,      // a spread of the caller's own list

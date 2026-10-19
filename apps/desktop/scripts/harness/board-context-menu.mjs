@@ -37,7 +37,30 @@ const live = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`\\])\/\
 
 // ---- S: the source pins -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 function walk(dir, out = []) { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const p = path.join(dir, e.name); if (e.isDirectory()) walk(p, out); else if (/\.(ts|tsx)$/.test(e.name)) out.push(p); } return out; }
-const callers = (srcDir, mutate = {}) => {
+// SUPERSEDED (connector-b early read, ledger 78 / Fable Oct 16): the original S1 predicate, kept verbatim below. It asked that
+// `requestDelete(` appear within 8 LINES ABOVE each softDeleteEntry call - a proximity heuristic that passed by coincidence on main
+// (requestDelete(removeSelected) sat 5 lines above deleteThisBoard's call) and went red when connector-b inserted ~80 lines of
+// thumbnail-drag effect between them, with the product still gated (onSelect: () => requestDelete(deleteThisBoard)). Not retired:
+// the 8-line window stays as ONE accepted path in the successor (callers2), which adds the one that was missing - FOLLOW THE CALLEE.
+// const callers = (srcDir, mutate = {}) => {
+//   const bad = [];
+//   for (const f of walk(srcDir)) {
+//     const rel = path.relative(srcDir, f).split('\\').join('/');
+//     if (rel === 'store/persistence.ts') continue;
+//     // a PAGE's delete reaches softDeleteEntry through pageActions.onDelete, which DrawerActions calls ONLY inside requestDelete(...) - S3 pins that
+//     if (rel === 'store/pageActions.ts') continue;
+//     const text = live(mutate[rel] ? mutate[rel](noCR(fs.readFileSync(f, 'utf8'))) : noCR(fs.readFileSync(f, 'utf8')));
+//     // each `softDeleteEntry(` CALL (not an import) must sit inside a `requestDelete(` that opened earlier in the file and has not closed on its own line
+//     const lines = text.split('\n');
+//     lines.forEach((l, i) => {
+//       if (!/softDeleteEntry\(/.test(l) || /^\s*import\b/.test(l)) return;
+//       const window5 = lines.slice(Math.max(0, i - 8), i + 1).join('\n');
+//       if (!/requestDelete\(/.test(window5)) bad.push(`${rel}:${i + 1}`);
+//     });
+//   }
+//   return bad;
+// };
+const callers2 = (srcDir, mutate = {}) => {
   const bad = [];
   for (const f of walk(srcDir)) {
     const rel = path.relative(srcDir, f).split('\\').join('/');
@@ -45,12 +68,27 @@ const callers = (srcDir, mutate = {}) => {
     // a PAGE's delete reaches softDeleteEntry through pageActions.onDelete, which DrawerActions calls ONLY inside requestDelete(...) - S3 pins that
     if (rel === 'store/pageActions.ts') continue;
     const text = live(mutate[rel] ? mutate[rel](noCR(fs.readFileSync(f, 'utf8'))) : noCR(fs.readFileSync(f, 'utf8')));
-    // each `softDeleteEntry(` CALL (not an import) must sit inside a `requestDelete(` that opened earlier in the file and has not closed on its own line
     const lines = text.split('\n');
     lines.forEach((l, i) => {
       if (!/softDeleteEntry\(/.test(l) || /^\s*import\b/.test(l)) return;
-      const window5 = lines.slice(Math.max(0, i - 8), i + 1).join('\n');
-      if (!/requestDelete\(/.test(window5)) bad.push(`${rel}:${i + 1}`);
+      // path 1 (the original rule): the call sits inside a requestDelete( that opened within the 8 lines above
+      if (/requestDelete\(/.test(lines.slice(Math.max(0, i - 8), i + 1).join('\n'))) return;
+      // path 2 (FOLLOW THE CALLEE): the call sits in a NAMED function, and every other reference to that name in the file is
+      // the argument of requestDelete( - so the only way to reach the delete is through the gate, wherever the two sit.
+      let name = null;
+      for (let j = i; j >= 0 && !name; j -= 1) {
+        const m = /^\s*(?:const|let)\s+(\w+)\s*=\s*(?:async\s*)?(?:\([^)]*\)|\w+)\s*=>/.exec(lines[j]) || /^\s*(?:async\s+)?function\s+(\w+)\s*\(/.exec(lines[j]);
+        if (m) name = m[1];
+      }
+      let gated = false;
+      if (name) {
+        const ref = new RegExp('\\b' + name + '\\b');
+        const argOfGate = new RegExp('requestDelete\\(\\s*' + name + '\\b');
+        const decl = new RegExp('^\\s*(?:const|let)\\s+' + name + '\\b|^\\s*(?:async\\s+)?function\\s+' + name + '\\b');
+        const others = lines.filter((t) => ref.test(t) && !decl.test(t));
+        gated = others.length > 0 && others.every((t) => argOfGate.test(t));
+      }
+      if (!gated) bad.push(`${rel}:${i + 1}`);
     });
   }
   return bad;
@@ -58,10 +96,16 @@ const callers = (srcDir, mutate = {}) => {
 {
   const be = noCR(fs.readFileSync(path.join(SRC, 'components/BoardEditor.tsx'), 'utf8'));
   const app = noCR(fs.readFileSync(path.join(SRC, 'App.tsx'), 'utf8'));
-  const bad = callers(SRC);
+  const bad = callers2(SRC);
   ok('S1: every call of softDeleteEntry outside persistence.ts (and a Page\'s own in-page confirm, S3) sits inside requestDelete(...) - the ONE gate: a board (menu, Plan row, Drawers tile) and a card can only be deleted through "Send to Trash?" or with asking turned off', bad.length === 0, JSON.stringify(bad));
-  const mut = callers(SRC, { 'components/CascadePanels.tsx': (t) => t.replace('onClick={() => requestDelete(() => { softDeleteEntry(id); })}', 'onClick={() => { softDeleteEntry(id); }}') });
+  const mut = callers2(SRC, { 'components/CascadePanels.tsx': (t) => t.replace('onClick={() => requestDelete(() => { softDeleteEntry(id); })}', 'onClick={() => { softDeleteEntry(id); }}') });
   ok('S1 (mutant): a delete that skips the gate turns the guard RED (the mutation landed)', mut.length > 0, JSON.stringify(mut));
+  // successor: the callee-following path has its own mutant - deleteThisBoard reached WITHOUT requestDelete must be RED, and the
+  // mutation must have LANDED (the text really changed), else a green here would mean nothing
+  const gateLine = 'onSelect: () => requestDelete(deleteThisBoard)';
+  ok('S1 (callee mutant, setup): BoardEditor.tsx still opens its board menu through the gate, once, by name', be.split(gateLine).length === 2, String(be.split(gateLine).length - 1));
+  const mut2 = callers2(SRC, { 'components/BoardEditor.tsx': (t) => t.replace(gateLine, 'onSelect: () => deleteThisBoard()') });
+  ok('S1 (callee mutant): deleteThisBoard reached without requestDelete turns the guard RED, whatever the distance (the mutation landed)', mut2.some((x) => x.startsWith('components/BoardEditor.tsx')), JSON.stringify(mut2));
   const da = noCR(fs.readFileSync(path.join(SRC, 'components/DrawerActions.tsx'), 'utf8'));
   const pa = noCR(fs.readFileSync(path.join(SRC, 'store/pageActions.ts'), 'utf8'));
   const s3 = { viaGate: /onClick=\{\(\) => requestDelete\(\(\) => actions\.onDelete\(\)\)\}/.test(da), noInPageConfirm: !/data-confirm="delete"|role="alertdialog"/.test(da), oneCall: (da.match(/actions\.onDelete\(\)/g) || []).length === 1, pageActionsPlain: !/requestDelete/.test(pa) && /softDeleteEntry\(entry\.id\);\n\s*flushNow\(\);/.test(pa) };

@@ -1,0 +1,5 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+PAGE-TEMPLATES-FRAMES: 20 frames written to C:\Users\nickh\writer-studio\.claude\worktrees\ptf\docs\evidence\page-templates-r2; light frames byte-identical to their dark twin: arbor-light/01-the-picker, arbor-light/02-outline, arbor-light/03-bibliography, arbor-light/04-title-page, arbor-light/05-new-page-note
+
+ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one)

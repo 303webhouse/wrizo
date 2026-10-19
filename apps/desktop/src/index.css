@@ -3991,8 +3991,18 @@ a:focus-visible,
 .wz-bullet-toggle{ width:16px; min-width:16px; padding:0; font-size:9px; }
 .wz-bullet-menu{ position:absolute; top:100%; left:0; z-index:40; display:flex; flex-direction:column; gap:2px;
   padding:4px; background:var(--ink-900); border:1px solid var(--ink-border); }
-.wz-template-btn{ color:var(--text-low); opacity:.45; cursor:default; }
-.wz-template-btn:hover{ color:var(--text-low); background:none; border-color:transparent; }
+/* PAGE TEMPLATES (approved mockup cursor/templates @ 0fc9afef) - the picker: one row per template, a tiny page sketch and its word. Brass marks the
+   current choice at rest (the standing rule); the row never changes size, so picking moves nothing. (The disabled .wz-template-btn stand-ins retired.) */
+.wz-template-list{ display:flex; flex-direction:column; gap:2px; }
+.wz-template-row{ display:flex; align-items:center; gap:12px; width:100%; min-height:46px; padding:0 12px 0 16px; text-align:left; cursor:pointer;
+  background:none; border:1px solid transparent; color:var(--text-mid); font:inherit; font-size:13px; }
+.wz-template-row:hover{ color:var(--text-hi); background:var(--ink-800); }
+.wz-template-row[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb, var(--brass) 8%, transparent); }
+.wz-template-row svg.wz-template-sketch{ flex:0 0 auto; width:24px; height:32px; display:block; }
+.wz-template-sketch-page{ fill:var(--paper); stroke:var(--ink-border-strong); stroke-width:1; }
+.wz-template-row[aria-pressed='true'] .wz-template-sketch-page{ stroke:var(--brass); }
+.wz-template-sketch-line{ fill:var(--text-low); opacity:.85; }
+.wz-template-word{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 /* PAGE-TEMPLATES-MOVE - brass on the press; and, by Nick's standing rule that brass marks a choice the writer has MADE, brass
    at rest on the template the page already is (a screenplay page's Screenplay template, aria-pressed). */
 .wz-template-live:active, .wz-template-live[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); }
@@ -5156,6 +5166,32 @@ a:focus-visible,
    skipped (the estimate stands in), paint containment always (nothing in a row draws outside it - bullets and quote borders are inside
    its padding). The real editor's innerText and select-all text are checked against its text at 50k by the profile, every run.
    .forward-only-editor .wz-row{ content-visibility:auto; }   <- the removed rule */
+/* PAGE TEMPLATES - THE LENS, on the rows (store/lineRows.ts applyOutlineLens; docs/plans/page-templates.md section 1). It is drawn through the editor's data-template
+   and, for the Outline, two data attributes on the ROW element itself (never in the row's markup, so the kept-row compare and the shadow lines are untouched, and never as
+   text: ::before content is in no innerText, no selection and no copy). OUTLINE: the row leaves a gutter on its left; the derived number sits in it at the row's level, and
+   the leading tabs (the writer's own indent, 2em a step) carry the text to the same level - so number and text step in together, as in the approved mockup. Top-level
+   headings are a touch heavier. BIBLIOGRAPHY: a hanging indent per entry - the first line at the margin, wrapped lines under it - with a gap between entries. Both are
+   decoration on the page's own rows: nothing here moves the sheet. */
+.forward-only-editor[data-template='outline'] .wz-row{ position:relative; padding-left:2.8em; }
+.forward-only-editor[data-template='outline'] .wz-row[data-ol]::before{ content:attr(data-ol); position:absolute; left:0; top:0; text-indent:0; white-space:nowrap; color:color-mix(in srgb, currentColor 55%, transparent); font-variant-numeric:tabular-nums; }
+.forward-only-editor[data-template='outline'] .wz-row[data-lvl='1']::before{ left:2em; }
+.forward-only-editor[data-template='outline'] .wz-row[data-lvl='2']::before{ left:4em; }
+.forward-only-editor[data-template='outline'] .wz-row[data-lvl='0']{ font-weight:500; }
+.forward-only-editor[data-template='bibliography'] .wz-row{ padding-left:2.4em; text-indent:-2.4em; margin-bottom:.6em; }
+/* PAGE TEMPLATES, S5 - THE TITLE PAGE (components/TitlePageSheet.tsx): the standard manuscript sheet, five fields. Contact top-left, the word line top-right, the title, the
+   fixed word "by" and the author centred lower (the approved mockup). The fields have no chrome of their own - they take the page's type and ink - so the sheet reads as a page,
+   not a form. The title's capitals are drawn here, never stored. Nothing here moves the sheet: it fills the editor's own track. */
+/* The sheet owns a TOP MARGIN (--ts-top): the contact block and the word line sit that far below the sheet's top edge, so the first row is never cut by the page's own edge or by a scroll of the sheet
+   (ledger 92, frame 04: "Ada Marsh" and "About 62,000 words" were clipped mid-glyph in both themes). The fields are positioned from this margin; the centred block stays at 40% of the sheet. */
+.wz-title-sheet{ --ts-top:1.6em; position:relative; width:100%; min-height:560px; font:inherit; color:inherit; }
+.wz-title-sheet input, .wz-title-sheet textarea{ font:inherit; color:inherit; background:transparent; border:0; outline:none; padding:0; margin:0; resize:none; caret-color:var(--brass); width:100%; }
+.wz-title-sheet input::placeholder, .wz-title-sheet textarea::placeholder{ color:color-mix(in srgb, currentColor 40%, transparent); }
+.wz-ts-contact{ position:absolute; top:var(--ts-top); left:0; width:28ch !important; max-width:50%; white-space:pre-wrap; line-height:1.5; }
+.wz-ts-words{ position:absolute; top:var(--ts-top); right:0; width:40% !important; text-align:right; }
+.wz-ts-mid{ position:absolute; top:40%; left:0; right:0; text-align:center; }
+.wz-ts-title{ text-align:center; text-transform:uppercase; letter-spacing:.12em; }
+.wz-ts-by{ margin:1.1em 0; }
+.wz-ts-author{ text-align:center; }
 /* STEP 3 - THE INDENT LOOK (Nick's ruling): a leading tab is a FIRST-LINE indent - the first visual line moves in one step per
    tab and wrapped lines return to the margin - so a tab must be one fixed step wide. `tab-size` makes it 2em (the browser default,
    8 characters, varies with the typeface). The WHOLE-PARAGRAPH indent is the separate `>| ` block token below. */
@@ -5930,11 +5966,7 @@ a:focus-visible,
    if the splash were not mounted. The PASSIVE window listeners in Splash.tsx
    stay for the same reason (ITEM splash-hold: they no longer dismiss early,
    below, but input still passes through them untouched), never by this layer
-   catching anything. pointer-events:none is also what lets the backdrop probe
-   read THROUGH the overlay to measure the app's real ground
-   (store/backdropTone.ts) — unaffected by ITEM splash-hold, since that probe
-   uses `elementFromPoint`/DOM traversal, never anything about the veil's own
-   paint.
+   catching anything.
 
    z-index 400 sits above the app's whole existing stack (modals, backdrops
    and toasts top out at 300) — deliberately, because at boot this is the
@@ -5970,14 +6002,18 @@ a:focus-visible,
 .wz-splash-veil{
   position:absolute; inset:0; pointer-events:none;
   background:var(--ink-950);
-  opacity:1; transition:opacity .38s ease;
+  /* splash-sweep (Nick's brief): "a short hold, then a 0.45s fade" — was .38s. */
+  opacity:1; transition:opacity .45s ease;
 }
 /* The emblem is a SIBLING of the veil, not a child, so it paints on top of the
-   blur at full clarity — the interface goes soft, the drawing does not. */
+   blur at full clarity — the interface goes soft, the drawing does not.
+   splash-sweep: now a wrapper around the per-theme SplashMark (ArborMark's
+   layered SVG or FluxMark's schematic), not a single <img> — the class and
+   this rule's own job (position the mark, carry the leaving-fade) unchanged. */
 .wz-splash-mark{
   position:relative; pointer-events:none; user-select:none;
   max-width:none; max-height:none;
-  opacity:1; transition:opacity .38s ease;
+  opacity:1; transition:opacity .45s ease;
 }
 /* ITEM splash-hold ROUND 3 — the cycling loading line, in the theme's own UI
    font and a quiet colour (both already per-theme tokens; no Flux override
@@ -5992,7 +6028,7 @@ a:focus-visible,
   position:absolute; top:50%; left:50%;
   transform:translate(-50%, calc(-50% + var(--mark-h, 0px) / 2 + 14px));
   min-height:1.2em; font-family:var(--font-ui); font-size:13px;
-  color:var(--text-mid); letter-spacing:.01em; opacity:1; transition:opacity .38s ease;
+  color:var(--text-mid); letter-spacing:.01em; opacity:1; transition:opacity .45s ease;
 }
 .wz-splash-loading-text{ display:inline-block; animation:wz-splash-loading-fade .3s ease; }
 @keyframes wz-splash-loading-fade{ from{ opacity:0; } to{ opacity:1; } }
@@ -6010,6 +6046,28 @@ a:focus-visible,
      arriving. */
   .wz-splash-veil, .wz-splash-mark, .wz-splash-loading{ transition:none; }
 }
+
+/* FLUX SCHEMATIC (splash-sweep, SplashMark.tsx's own FluxMark) — colours
+   moved to Flux's own tokens per docs/briefs/splash-build-kit.md §2's own
+   mapping: #2A6A76 -> --ink-border-strong, #1D4A52 -> --ink-border,
+   #E3F1EC -> --text-hi, #8FB4AC -> --text-mid, #00C2FF -> --line-active,
+   brass -> --brass. Static (dim/dot-grid/tree/label) layers use the tokens
+   directly inline on the SVG elements (SplashMark.tsx); these classes are
+   the ones the TIMELINE actually drives (a connector or node's own .lit
+   state) or that need a transition to animate smoothly between states. */
+.fx-dim{ fill:none; stroke:var(--ink-border-strong); stroke-width:3; stroke-linecap:square; stroke-linejoin:miter; }
+.fx-hot{ fill:none; stroke:var(--brass); stroke-width:4; stroke-linecap:square; stroke-linejoin:miter; }
+.fx-box{ fill:#04141A; stroke:var(--ink-border-strong); stroke-width:3; }
+.fx-name{ fill:var(--text-hi); font-family:'Rajdhani','Figtree',sans-serif; font-weight:600; font-size:27px; letter-spacing:.08em; }
+.fx-tag{ fill:var(--line-active); font-family:'Chakra Petch','Figtree',sans-serif; font-size:17px; letter-spacing:.12em; }
+.fx-sub{ fill:var(--text-mid); font-family:'Chakra Petch','Figtree',sans-serif; font-size:19px; letter-spacing:.14em; }
+.fx-tree{ fill:none; stroke:var(--ink-border); stroke-width:2; }
+.fx-grid{ fill:var(--ink-border); }
+.tile rect{ fill:#04141A; stroke:var(--text-mid); stroke-width:3; transition:stroke .3s; }
+.tile text{ fill:var(--text-hi); font-family:'Rajdhani','Figtree',sans-serif; font-weight:600; font-size:28px; text-anchor:middle; transition:fill .3s; }
+.tile.lit rect{ stroke:var(--brass); }
+.fx-node rect, .fx-node circle{ transition:stroke .35s; }
+.fx-node.lit rect, .fx-node.lit circle{ stroke:var(--brass); }
 
 /* BOARD CONTEXT MENU (Nick, Oct 15; cursor/board-context-menu mockup @ 0df8bf30) - the small themed menu, the "Send to Trash?" dialog, and the Settings switch. All overlays (position:fixed in a portal):
    page primacy - none of them moves or resizes anything beneath it. Tokens only, so Arbor and Flux both wear them. */
@@ -6060,3 +6118,37 @@ a:focus-visible,
 .wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track{ border-color:var(--brass); }
 .wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track i{ left:18px; background:var(--brass); }
 @media (prefers-reduced-motion: reduce){ .wz-cascade-switch-track i{ transition:none; } }
+
+/* CONNECTOR-B (Nick's approved connector mockup v6) - the Grafts / Links list in the right drawer; the circles the rail's thumbnails wear while a card is in connection mode; the ghost a thumbnail leaves under the
+   pointer when it is dragged onto a board; and the viewport-level overlay the connector's arm travels in (it must reach the rail, so it cannot live inside the board canvas, which clips). */
+.wz-links-list{ list-style:none; margin:4px 0 0; padding:0; display:flex; flex-direction:column; gap:8px; }
+.wz-links-item{
+  position:relative; display:flex; align-items:center; gap:10px; min-height:44px; padding:0 34px 0 12px;
+  border:1px solid var(--ink-border); color:var(--text-mid); font-family:var(--font-ui); font-size:13px;
+}
+.wz-links-item[data-trashed='true'] .wz-links-label{ opacity:.55; }
+.wz-links-label{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.wz-links-thumb{ flex:none; display:block; background:var(--ink-800); border:1px solid var(--ink-border-strong); position:relative; }
+.wz-links-thumb--page{ width:22px; height:30px; }
+.wz-links-thumb--card{ width:32px; height:22px; background:var(--card-stock); border-color:var(--card-hairline); }
+.wz-links-thumb--board{ width:32px; height:22px; background:var(--paper); border-color:var(--card-hairline); }
+.wz-links-x{
+  position:absolute; top:4px; right:4px; width:18px; height:18px; padding:0; display:flex; align-items:center; justify-content:center;
+  font-size:13px; line-height:1; color:var(--text-mid); background:none; border:1px solid var(--ink-border-strong); border-radius:0; cursor:pointer;
+}
+.wz-links-x:hover, .wz-links-x:focus-visible{ color:var(--brass); border-color:var(--brass); outline:none; }
+
+/* a rail thumbnail that STANDS FOR AN ENTRY (data-link-entry) is a target while a card is in connection mode: its circle is open if the card is not linked to it, solid orange if it is. The state is written onto the element by
+   the board's pointer effect (data-link-target while the arm is over it, data-link-peer for the entries the card is linked to, data-link-flash for the beat after a link/unlink); the circle itself is this ::before. */
+[data-link-entry]{ position:relative; }
+[data-link-entry][data-link-target='true']::before, [data-link-entry][data-link-peer='true']::before, [data-link-entry][data-link-flash]::before{
+  content:''; position:absolute; left:4px; top:50%; width:10px; height:10px; margin-top:-5px; box-sizing:border-box; z-index:6; pointer-events:none;
+  border-radius:50%; background:var(--desk-ground); border:1.5px solid var(--brass);
+}
+[data-link-entry][data-link-solid='true']::before{ background:var(--brass); }
+[data-link-entry][data-link-target='true']{ outline:1px solid var(--brass); outline-offset:-1px; }
+
+.wz-link-ghost{ position:fixed; z-index:9400; pointer-events:none; display:flex; align-items:center; gap:10px; padding:6px 12px; background:var(--desk-ground); border:1px solid var(--brass); color:var(--text-hi); font-family:var(--font-ui); font-size:13px; opacity:.92; }
+body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !important; }
+
+.board-connect-overlay{ position:fixed; inset:0; width:100%; height:100%; z-index:9300; pointer-events:none; overflow:visible; }
