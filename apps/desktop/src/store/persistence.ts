@@ -2206,8 +2206,16 @@ export function flushForReload(): void {
 // entries COUNT: a writer who deleted everything has still written, and is not new. Read from the raw cache (not
 // getJournalEntries, which hides the deleted) and only meaningful once the first whole-account pull has landed.
 export function accountHasWork(): boolean {
-  return cache.journalEntries.some(e => !getSystemKind(e) && !e.purgedAt) || cache.projects.some(p => !p.purgedAt);   // DELETE FOR GOOD: shells are not work
+  return cache.journalEntries.some(e => !getSystemKind(e) && !e.purgedAt) || cache.projects.some(p => !p.purgedAt && !isAutoSet(p));   // DELETE FOR GOOD: shells are not work; BIG PROJECTS: neither is a set the app made for the writer
 }
+
+// BIG PROJECTS 1a - a SET THE APP MADE, not the writer: Top Drawer's one set and the lazy set of an empty Drawer carry these deterministic
+// ids (store/place.ts). They are not work (a new account is still new) and not a resume target (an empty set is never where you left off).
+export function isAutoSet(p: { id: string } | null | undefined): boolean { return !!p && (p.id.startsWith('top-set-') || p.id.startsWith('auto-set-')); }
+
+// BIG PROJECTS 1a - has this account EVER had a Drawer row? Read from the raw cache: a soft-deleted Drawer and a delete-for-good shell both
+// count, so a writer who deleted Top Drawer is never handed another. Only meaningful once the first whole-account pull has landed.
+export function hasAnyDrawerRow(): boolean { return cache.drawers.length > 0; }
 
 export function getJournalEntries(): JournalEntry[] {
   return cache.journalEntries

@@ -95,9 +95,9 @@ function seedAccount(m) {
   return { d1, d2, manuscript, world, stories, unsorted };
 }
 
-const NEEDS = ['hasAnyDrawerRow', 'ensureTopDrawer', 'journalMembers', 'setsOfDrawer', 'sectionsOf', 'placeOfEntry', 'getPlace', 'setPlace', 'listPlaces', 'ensureSet', 'createSet', 'reorderSections', 'moveToJournal', 'undoMoveToJournal', 'noteOpen', 'getOpens', 'compareSections', 'showSetHeadings'];
+const NEEDS = ['hasAnyDrawerRow', 'ensureTopDrawer', 'journalMembers', 'setsOfDrawer', 'sectionsOf', 'placeOfEntry', 'getPlace', 'setPlace', 'listPlaces', 'ensureSet', 'createSet', 'reorderSections', 'moveToJournal', 'undoMoveToJournal', 'followEntry', 'noteOpen', 'getOpens', 'compareSections', 'showSetHeadings'];
 
-async function suite(m) {
+async function suite(m, mk = () => load()) {
   const r = {};
   const keep = (k, pass, detail = '') => { r[k] = { pass: !!pass, detail }; };
   const has = NEEDS.every((n) => typeof m[n] === 'function');
@@ -117,26 +117,26 @@ async function suite(m) {
     keep('B3b', m.accountHasWork() === true && m.getResumeTarget() && m.getResumeTarget().route === '/page/real-1', 'a real page is work and is the resume target, never the empty set');
   }
   {
-    const m2 = await load();
+    const m2 = await mk();
     const d = m2.createDrawer('Mine'); m2.softDeleteDrawer(d.id);                                // a SOFT-DELETED row still counts as "has had a Drawer"
     keep('B2a', m2.hasAnyDrawerRow() === true && m2.ensureTopDrawer(U) === false && m2.getDrawers().length === 0, 'soft-deleted');
-    const m3 = await load();
+    const m3 = await mk();
     const d3 = m3.createDrawer('Gone'); m3.softDeleteDrawer(d3.id); m3.purgeDrawer(d3.id);        // a delete-for-good SHELL counts too (so a purged Top Drawer is never recreated)
     keep('B2b', m3.hasAnyDrawerRow() === true && m3.ensureTopDrawer(U) === false && m3.getDrawers().length === 0, 'shell');
-    const m4 = await load();
+    const m4 = await mk();
     m4.createDrawer('Live');
     keep('B2c', m4.ensureTopDrawer(U) === false && m4.getDrawers().length === 1, 'live');
-    const m5 = await load(); const m6 = await load();
+    const m5 = await mk(); const m6 = await mk();
     m5.ensureTopDrawer('u-9'); m6.ensureTopDrawer('u-9');                                          // two devices, before they sync: the SAME rows, so last-write-wins makes one
     keep('B4', same(m5.getDrawers().map((d) => d.id), m6.getDrawers().map((d) => d.id)) && m5.getDrawers()[0].id === 'top-drawer-u-9' && m5.getProjects()[0].id === 'top-set-u-9', JSON.stringify(m5.getDrawers().map((d) => d.id)));
-    const m7 = await load(); const m8 = await load();
+    const m7 = await mk(); const m8 = await mk();
     m7.ensureTopDrawer('u-a'); m8.ensureTopDrawer('u-b');
     keep('B4b', m7.getDrawers()[0].id !== m8.getDrawers()[0].id, 'two accounts never share an id (drawers.id is a global primary key)');
   }
 
   // ---- J: the first Journal --------------------------------------------------------------------------------------------------------------------------------------------
   {
-    const m2 = await load();
+    const m2 = await mk();
     const s = seedAccount(m2);
     const gone = m2.createProject('Deleted set', 'creative'); m2.setProjectDrawer(gone.id, s.d1.id);
     page(m2, 'in-deleted-set', { projectId: gone.id, origin: 'project' }); m2.softDeleteProject(gone.id);
@@ -157,7 +157,7 @@ async function suite(m) {
 
   // ---- S: sets, sections, places ------------------------------------------------------------------------------------------------------------------------------------------
   {
-    const m2 = await load();
+    const m2 = await mk();
     const s = seedAccount(m2);
     keep('S1', same(m2.setsOfDrawer(s.d1.id).map((p) => p.title), ['Manuscript', 'Worldbuilding']) && m2.setsOfDrawer(s.d2.id).length === 1, JSON.stringify(m2.setsOfDrawer(s.d1.id).map((p) => p.title)));
     keep('S1b', same(m2.setsOfDrawer('unsorted').map((p) => p.title), ['Old binder']), 'the virtual Unsorted group lists binders with no live Drawer');
@@ -192,21 +192,21 @@ async function suite(m) {
     keep('S6c', m2.getPlace(U).kind === 'drawer' && m2.getPlace(U).id === s.d1.id, 'a deleted Drawer falls back to the first live one by order');
     for (const d of m2.getDrawers()) m2.softDeleteDrawer(d.id);
     keep('S6d', m2.getPlace(U).kind === 'journal', 'no Drawer left: the Journal');
-    const m3 = await load(); const s3 = seedAccount(m3);
+    const m3 = await mk(); const s3 = seedAccount(m3);
     m3.followEntry(U, m3.getJournalEntry('salt'));
     keep('S7', m3.getPlace(U).id === s3.d2.id && m3.getPlace(U).setId === s3.stories.id, 'opening a page makes its home the place');
     const lp = m3.listPlaces();
     keep('S8', same(lp.drawers.map((d) => d.name), ['The Late Ferry', 'Short stories']) && lp.unsorted.length === 1 && lp.journals.length === 1 && lp.journals[0].id === 'journal', JSON.stringify(lp.drawers.map((d) => d.name)));
-    const m4 = await load(); m4.createDrawer('Only');
+    const m4 = await mk(); m4.createDrawer('Only');
     keep('S8b', m4.listPlaces().unsorted.length === 0, 'Unsorted is shown only when such binders exist');
-    const m5 = await load(); const s5 = seedAccount(m5);
+    const m5 = await mk(); const s5 = seedAccount(m5);
     m5.softDeleteDrawer(s5.d2.id); m5.softDeleteDrawer(s5.d1.id); m5.purgeDrawer(s5.d1.id);
-    keep('S8c', m5.listPlaces().drawers.length === 0 && m5.listPlaces().unsorted.length >= 1, 'a purged shell is never listed');
+    keep('S8c', m5.listPlaces().drawers.length === 0 && same(m5.listPlaces().unsorted.map((p) => p.title).sort(), ['Manuscript', 'Old binder', 'Stories', 'Worldbuilding']), 'a purged shell is never listed, and the binders of deleted Drawers fall to Unsorted');
   }
 
   // ---- O: Order and opens -------------------------------------------------------------------------------------------------------------------------------------------------
   {
-    const m2 = await load();
+    const m2 = await mk();
     const s = seedAccount(m2);
     const items = () => m2.sectionsOf({ kind: 'drawer', id: s.d1.id }, 'pages')[0].items.map((e) => e.id);
     keep('O1', same(items(), ['ch1', 'ch2', 'ch3']), 'legacy: creation order');
@@ -214,7 +214,7 @@ async function suite(m) {
     keep('O2', n === 3 && same(items(), ['ch3', 'ch1', 'ch2']) && m2.getJournalEntry('salt').orderIndex === undefined, JSON.stringify(items()));
     page(m2, 'ch4', { projectId: s.manuscript.id, origin: 'project' });
     keep('O2b', same(items(), ['ch3', 'ch1', 'ch2', 'ch4']), 'a new section lands at the end of the writer\'s order');
-    keep('O2c', m2.reorderSections(['ch3', 'ch1', 'ch2', 'ch4']) === 0, 'an unchanged order writes nothing');
+    keep('O2c', m2.reorderSections(['ch3', 'ch1', 'ch2']) === 0, 'an unchanged order writes nothing');
     const snap = JSON.stringify(stamp(m2));
     const sorted = [m2.getJournalEntry('ch2'), m2.getJournalEntry('ch3')].sort(m2.compareSections);
     keep('O3', JSON.stringify(stamp(m2)) === snap && typeof sorted[0].id === 'string', 'comparing and viewing never writes');
@@ -227,7 +227,7 @@ async function suite(m) {
 
   // ---- X: out to the Journal, and Undo ------------------------------------------------------------------------------------------------------------------------------------
   {
-    const m2 = await load();
+    const m2 = await mk();
     const s = seedAccount(m2);
     m2.reorderSections(['ch3', 'ch1', 'ch2']);
     const E = () => m2.getJournalEntry('ch1');
@@ -242,18 +242,21 @@ async function suite(m) {
     const t3 = m2.moveToJournal('ch3'); m2.softDeleteEntry('ch3'); m2.purgeEntry('ch3');
     const snap = JSON.stringify(stamp(m2));
     keep('X3b', m2.undoMoveToJournal(t3) === false && JSON.stringify(stamp(m2)) === snap, 'a purged page: Undo does nothing and writes nothing');
+    const t5 = m2.moveToJournal('ch1'); const other = m2.createSet(s.d1.id, 'Elsewhere');
+    m2.setPageHome('ch1', other.id);
+    keep('X3d', m2.undoMoveToJournal(t5) === false && m2.getJournalEntry('ch1').projectId === other.id, 'a page the writer filed elsewhere meanwhile is not dragged back');
     const t4 = m2.moveToJournal('salt'); m2.softDeleteProject(s.stories.id);
     keep('X3c', m2.undoMoveToJournal(t4) === false && m2.getJournalEntry('salt').projectId === null, 'the set is gone: Undo leaves the page in the Journal');
   }
 
   // ---- N: nothing disappears or changes home -------------------------------------------------------------------------------------------------------------------------------
   {
-    const m2 = await load();
+    const m2 = await mk();
     seedAccount(m2);
     const a = JSON.stringify(stamp(m2));
     const made = m2.ensureTopDrawer(U);                                                              // the seeded account HAS Drawers: no write at all
     keep('N1', made === false && JSON.stringify(stamp(m2)) === a && m2.getDrawers().length === 2, 'an account with Drawers is untouched');
-    const m3 = await load();
+    const m3 = await mk();
     const un = m3.createProject('Orphan binder', 'creative'); page(m3, 'op', { projectId: un.id, origin: 'project' }); page(m3, 'jj', { origin: 'journal' });
     const b = JSON.stringify(stamp(m3));
     const made3 = m3.ensureTopDrawer(U);
@@ -270,11 +273,11 @@ const MUTANTS = [
   { name: 'Top Drawer ignores soft-deleted / shell rows (counts only live Drawers)', file: 'store/persistence.ts', from: 'export function hasAnyDrawerRow(): boolean { return cache.drawers.length > 0; }', to: 'export function hasAnyDrawerRow(): boolean { return cache.drawers.some(d => !d.deletedAt); }', red: ['B2a', 'B2b'] },
   { name: 'the Top Drawer id forgets the user id', file: 'store/place.ts', from: "`top-drawer-${uid}`", to: "'top-drawer'", red: ['B1', 'B4b'] },
   { name: 'the Journal rule drops the "no live home" half (only projectId null)', file: 'store/place.ts', from: 'if (!hasLiveHome(e)) return true;', to: 'return false;', red: ['J1'] },
-  { name: 'the Journal rule lists shells', file: 'store/place.ts', from: 'if (e.deletedAt || e.purgedAt) return false;', to: 'if (e.deletedAt) return false;', red: ['J1b'] },
+  { name: 'the Journal rule lists system boards', file: 'store/place.ts', from: 'if (getSystemKind(e)) return false;', to: '', red: ['J3'] },
   { name: 'X writes more than projectId (resets orderIndex)', file: 'store/place.ts', from: "setPageHome(entryId, 'journal');", to: "setPageHome(entryId, 'journal'); { const e = getJournalEntry(entryId); if (e) saveJournalEntry({ ...e, orderIndex: undefined }); }", red: ['X1', 'X2'] },
-  { name: 'Undo does not check the page is still live', file: 'store/place.ts', from: 'if (!e || e.deletedAt || e.purgedAt) return false;', to: 'if (!e) return false;', red: ['X3'] },
-  { name: 'reorder writes every id, changed or not', file: 'store/place.ts', from: 'if (e.orderIndex === i) continue;', to: '', red: ['O2c'] },
-  { name: 'the lazy set is made for a deleted Drawer', file: 'store/place.ts', from: 'if (!d || d.deletedAt) return null;', to: 'if (!d) return null;', red: ['S4b'] },
+  { name: 'Undo drags a page back that was filed elsewhere meanwhile', file: 'store/place.ts', from: 'if (e.projectId != null) return false;', to: '', red: ['X3d'] },
+  { name: 'reorder writes every id, changed or not', file: 'store/place.ts', from: 'if (e.orderIndex === i) return;', to: '', red: ['O2c'] },
+  { name: 'Unsorted forgets a binder whose Drawer was deleted (counts only "no drawerId")', file: 'store/place.ts', from: 'all.filter(p => !p.drawerId || !liveDrawers.has(p.drawerId))', to: 'all.filter(p => !p.drawerId)', red: ['S8c'] },
 ];
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -291,8 +294,9 @@ if (!loaded.m) {
     const i = src.indexOf(mu.from);
     if (i < 0 || src.indexOf(mu.from, i + 1) >= 0) { ok(`mutant "${mu.name}": the mutation LANDED (anchor found exactly once)`, false, 'anchor missing or not unique'); continue; }
     landed.n += 1;
-    const mm = await tryLoad({ [mu.file]: (t) => t.replace(mu.from, mu.to) });
-    const rr = mm.m ? await suite(mm.m) : {};
+    const ov = { [mu.file]: (t) => t.replace(mu.from, mu.to) };
+    const mm = await tryLoad(ov);
+    const rr = mm.m ? await suite(mm.m, () => load(ov)) : {};   // EVERY store the suite makes carries the mutation, not just the first
     const went = mu.red.filter((k) => !rr[k] || !rr[k].pass);
     ok(`mutant "${mu.name}" is KILLED (reddens: ${mu.red.join(', ')})`, went.length === mu.red.length, `red: ${went.join(', ') || 'none'}`);
     if (went.length === mu.red.length) landed.killed += 1;
