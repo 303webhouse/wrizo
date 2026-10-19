@@ -32,6 +32,8 @@ function rowToProject(r: any) {
     lastActivityType: r.last_activity_type ?? undefined,
     lastActivePageId: r.last_active_page_id ?? undefined,
     deletedAt: iso(r.deleted_at) ?? undefined,
+    // DELETE FOR GOOD - the shell's mark, the deleted_at recipe (null -> absent)
+    purgedAt: iso(r.purged_at) ?? undefined,
     // TU5 S1 — the book's Bible: SQL null → JS undefined, never a literal null
     // (the grandfather byte-identity fixed point, the origin/tutor recipe).
     tutor: r.tutor ?? undefined,
@@ -46,6 +48,7 @@ function rowToDrawer(r: any) {
     name: r.name,
     order: r.order ?? 0,
     deletedAt: iso(r.deleted_at) ?? undefined,
+    purgedAt: iso(r.purged_at) ?? undefined,
     createdAt: iso(r.created_at),
     updatedAt: iso(r.updated_at),
   };
@@ -59,6 +62,7 @@ function rowToStoryPlan(r: any) {
     currentBeatId: r.current_beat_id ?? null,
     beatNotes: r.beat_notes ?? [],
     deletedAt: iso(r.deleted_at) ?? undefined,
+    purgedAt: iso(r.purged_at) ?? undefined,
     createdAt: iso(r.created_at),
     updatedAt: iso(r.updated_at),
   };
@@ -118,18 +122,97 @@ export function rowToJournalEntry(r: any) {
     routedProjectIds: r.routed_project_ids ?? undefined,
     strokes: r.strokes ?? undefined,
     deletedAt: iso(r.deleted_at) ?? undefined,
+    purgedAt: iso(r.purged_at) ?? undefined,
     createdAt: iso(r.created_at),
     updatedAt: iso(r.updated_at),
   };
 }
 
+// --- DELETE FOR GOOD (docs/plans/delete-for-good.md, cleared Oct 18) ------
+// A purge travels as an ordinary record carrying `purgedAt`. Three rules, in every upsert below that a writer can purge:
+//   1. A PURGE ALWAYS WINS: an incoming purge writes the SHELL whatever its updated_at says, and THE SERVER clears every content column itself
+//      (it never trusts the client to have emptied them). Another account's row with that id is never touched (the user guard).
+//   2. A PURGE IS FINAL: a non-purge write onto a purged row is REFUSED - and ACKNOWLEDGED (Fable's change 2): its id comes back in
+//      `acknowledgedPurged`, never in `rejected`, so the device clears its dirty flag, takes the shell, and stops retrying. This is what
+//      stops an offline device - with any clock - bringing the record back.
+//   3. Every ordinary upsert also requires `purged_at is null` (a purge landing between the check and the write still wins).
+const SHELL_TEXT = '';
+async function purgedIdsOf(table: string, userId: string, ids: string[]): Promise<Set<string>> {
+  if (ids.length === 0) return new Set();
+  const { rows } = await pool.query(`select id from ${table} where user_id = $1 and id = any($2::text[]) and purged_at is not null`, [userId, ids]);
+  return new Set(rows.map((r: { id: string }) => r.id));
+}
+// 'normal' = go on with the ordinary upsert; 'done' = handled here (a shell written, or a refusal acknowledged)
+async function purgeGate(table: string, userId: string, rec: any, purged: Set<string>, acked: string[]): Promise<'normal' | 'done'> {
+  const incomingPurge = !!rec.purgedAt;
+  const existingPurged = purged.has(rec.id);
+  if (existingPurged && !incomingPurge) { acked.push(rec.id); return 'done'; }
+  if (!incomingPurge) return 'normal';
+  await writeShell(table, userId, rec);
+  return 'done';
+}
+async function writeShell(table: string, userId: string, r: any): Promise<void> {
+  const created = r.createdAt ?? new Date().toISOString();
+  const updated = r.updatedAt ?? new Date().toISOString();
+  const deleted = r.deletedAt ?? null;
+  if (table === 'journal_entries') {
+    await pool.query(
+      `insert into journal_entries (id, user_id, text, deleted_at, purged_at, created_at, updated_at)
+       values ($1,$2,$3,coalesce($4::timestamptz, now()),now(),$5,$6)
+       on conflict (id) do update set
+         text = $3, project_id = null, session_id = null, starred = null, source = null, beat_id = null, page_type = null,
+         order_index = null, imported_at = null, boxes = null, script = null, origin = null, tutor = null, tags = null,
+         routed_project_ids = null, strokes = null, plan_board_id = null, page_settings = null, page_links = null,
+         deleted_at = coalesce(journal_entries.deleted_at, excluded.deleted_at), purged_at = coalesce(journal_entries.purged_at, now()),
+         updated_at = greatest(journal_entries.updated_at, excluded.updated_at), synced_at = now()
+       where journal_entries.user_id = excluded.user_id`,
+      [r.id, userId, SHELL_TEXT, deleted, created, updated]);
+  } else if (table === 'projects') {
+    await pool.query(
+      `insert into projects (id, user_id, title, type, deleted_at, purged_at, created_at, updated_at)
+       values ($1,$2,$3,$4,coalesce($5::timestamptz, now()),now(),$6,$7)
+       on conflict (id) do update set
+         title = $3, sprint_text = null, story_plan_id = null, drawer_id = null, kind = null, last_activity_at = null,
+         last_activity_type = null, last_active_page_id = null, tutor = null,
+         deleted_at = coalesce(projects.deleted_at, excluded.deleted_at), purged_at = coalesce(projects.purged_at, now()),
+         updated_at = greatest(projects.updated_at, excluded.updated_at), synced_at = now()
+       where projects.user_id = excluded.user_id`,
+      [r.id, userId, SHELL_TEXT, r.type ?? 'creative', deleted, created, updated]);
+    // the binder's scratch draft is its words too; its sessions keep their counts and lose the pointer (Q2)
+    await pool.query(`update drafts set text = $3, updated_at = greatest(updated_at, now()), synced_at = now() where id = $1 and user_id = $2`, [r.id, userId, SHELL_TEXT]);
+    await pool.query(`update sessions_log set project_id = null, synced_at = now() where project_id = $1 and user_id = $2`, [r.id, userId]);
+  } else if (table === 'drawers') {
+    await pool.query(
+      `insert into drawers (id, user_id, name, "order", deleted_at, purged_at, created_at, updated_at)
+       values ($1,$2,$3,0,coalesce($4::timestamptz, now()),now(),$5,$6)
+       on conflict (id) do update set
+         name = $3, "order" = 0,
+         deleted_at = coalesce(drawers.deleted_at, excluded.deleted_at), purged_at = coalesce(drawers.purged_at, now()),
+         updated_at = greatest(drawers.updated_at, excluded.updated_at), synced_at = now()
+       where drawers.user_id = excluded.user_id`,
+      [r.id, userId, SHELL_TEXT, deleted, created, updated]);
+  } else if (table === 'story_plans') {
+    await pool.query(
+      `insert into story_plans (id, user_id, project_id, framework_id, beat_notes, deleted_at, purged_at, created_at, updated_at)
+       values ($1,$2,$3,$4,'[]'::jsonb,coalesce($5::timestamptz, now()),now(),$6,$7)
+       on conflict (id) do update set
+         current_beat_id = null, beat_notes = '[]'::jsonb,
+         deleted_at = coalesce(story_plans.deleted_at, excluded.deleted_at), purged_at = coalesce(story_plans.purged_at, now()),
+         updated_at = greatest(story_plans.updated_at, excluded.updated_at), synced_at = now()
+       where story_plans.user_id = excluded.user_id`,
+      [r.id, userId, r.projectId ?? '', r.frameworkId ?? '', deleted, created, updated]);
+  }
+}
+
 // --- upserts (last-write-wins on updated_at, scoped to user) --------------
 
-async function upsertProjects(userId: string, records: any[]): Promise<string[]> {
+async function upsertProjects(userId: string, records: any[], acked: string[] = []): Promise<string[]> {
   const rejected: string[] = [];
+  const purged = await purgedIdsOf('projects', userId, records.filter((x) => x?.id).map((x) => x.id));
   for (const p of records) {
     if (!p?.id || !p?.updatedAt || !p?.createdAt) { if (p?.id) rejected.push(p.id); continue; }
     try {
+      if ((await purgeGate('projects', userId, p, purged, acked)) === 'done') continue;   // DELETE FOR GOOD: a shell written, or a refusal acknowledged
       await pool.query(
         `insert into projects
            (id, user_id, title, type, sprint_text, story_plan_id, drawer_id, kind,
@@ -146,7 +229,8 @@ async function upsertProjects(userId: string, records: any[]): Promise<string[]>
            tutor = excluded.tutor,
            synced_at = now()
          where projects.user_id = excluded.user_id
-           and excluded.updated_at > projects.updated_at`,
+           and excluded.updated_at > projects.updated_at
+           and projects.purged_at is null`,
         // TU5 S1 — tutor rides as the 15th param, `JSON.stringify(p.tutor ?? null)`
         // ($15::jsonb): a project with no bible sends SQL null, so the column
         // stays null and the row is byte-identical to today (grandfather).
@@ -162,11 +246,13 @@ async function upsertProjects(userId: string, records: any[]): Promise<string[]>
   return rejected;
 }
 
-async function upsertStoryPlans(userId: string, records: any[]): Promise<string[]> {
+async function upsertStoryPlans(userId: string, records: any[], acked: string[] = []): Promise<string[]> {
   const rejected: string[] = [];
+  const purged = await purgedIdsOf('story_plans', userId, records.filter((x) => x?.id).map((x) => x.id));
   for (const s of records) {
     if (!s?.id || !s?.updatedAt || !s?.createdAt) { if (s?.id) rejected.push(s.id); continue; }
     try {
+      if ((await purgeGate('story_plans', userId, s, purged, acked)) === 'done') continue;   // DELETE FOR GOOD: a shell written, or a refusal acknowledged
       await pool.query(
         `insert into story_plans
            (id, user_id, project_id, framework_id, current_beat_id, beat_notes,
@@ -178,7 +264,8 @@ async function upsertStoryPlans(userId: string, records: any[]): Promise<string[
            deleted_at = excluded.deleted_at, updated_at = excluded.updated_at,
            synced_at = now()
          where story_plans.user_id = excluded.user_id
-           and excluded.updated_at > story_plans.updated_at`,
+           and excluded.updated_at > story_plans.updated_at
+           and story_plans.purged_at is null`,
         [s.id, userId, s.projectId ?? '', s.frameworkId ?? '', s.currentBeatId ?? null,
          JSON.stringify(s.beatNotes ?? []), s.deletedAt ?? null, s.createdAt, s.updatedAt],
       );
@@ -243,11 +330,13 @@ async function upsertDrafts(userId: string, records: any[]): Promise<string[]> {
   return rejected;
 }
 
-async function upsertDrawers(userId: string, records: any[]): Promise<string[]> {
+async function upsertDrawers(userId: string, records: any[], acked: string[] = []): Promise<string[]> {
   const rejected: string[] = [];
+  const purged = await purgedIdsOf('drawers', userId, records.filter((x) => x?.id).map((x) => x.id));
   for (const d of records) {
     if (!d?.id || !d?.updatedAt || !d?.createdAt) { if (d?.id) rejected.push(d.id); continue; }
     try {
+      if ((await purgeGate('drawers', userId, d, purged, acked)) === 'done') continue;   // DELETE FOR GOOD: a shell written, or a refusal acknowledged
       await pool.query(
         `insert into drawers
            (id, user_id, name, "order", deleted_at, created_at, updated_at)
@@ -257,7 +346,8 @@ async function upsertDrawers(userId: string, records: any[]): Promise<string[]> 
            deleted_at = excluded.deleted_at, updated_at = excluded.updated_at,
            synced_at = now()
          where drawers.user_id = excluded.user_id
-           and excluded.updated_at > drawers.updated_at`,
+           and excluded.updated_at > drawers.updated_at
+           and drawers.purged_at is null`,
         [d.id, userId, d.name ?? '', d.order ?? 0, d.deletedAt ?? null, d.createdAt, d.updatedAt],
       );
     } catch (err) {
@@ -268,11 +358,13 @@ async function upsertDrawers(userId: string, records: any[]): Promise<string[]> 
   return rejected;
 }
 
-export async function upsertJournalEntries(userId: string, records: any[]): Promise<string[]> {
+export async function upsertJournalEntries(userId: string, records: any[], acked: string[] = []): Promise<string[]> {
   const rejected: string[] = [];
+  const purged = await purgedIdsOf('journal_entries', userId, records.filter((x) => x?.id).map((x) => x.id));
   for (const e of records) {
     if (!e?.id || !e?.updatedAt || !e?.createdAt) { if (e?.id) rejected.push(e.id); continue; }
     try {
+      if ((await purgeGate('journal_entries', userId, e, purged, acked)) === 'done') continue;   // DELETE FOR GOOD: a shell written, or a refusal acknowledged
       await pool.query(
         `insert into journal_entries
            (id, user_id, project_id, text, session_id, starred, source, shelved, beat_id, page_type,
@@ -301,7 +393,8 @@ export async function upsertJournalEntries(userId: string, records: any[]): Prom
            end,
            synced_at = now()
          where journal_entries.user_id = excluded.user_id
-           and excluded.updated_at > journal_entries.updated_at`,
+           and excluded.updated_at > journal_entries.updated_at
+           and journal_entries.purged_at is null`,
         [e.id, userId, e.projectId ?? null, e.text ?? '', e.sessionId ?? null,
          e.starred ?? null, e.source ?? null, e.shelved ?? false, e.beatId ?? null, e.pageType ?? null,
          e.orderIndex ?? null, e.importedAt ?? null, JSON.stringify(e.boxes ?? null), JSON.stringify(e.script ?? null), e.origin ?? null, JSON.stringify(e.tutor ?? null), JSON.stringify(e.tags ?? null), JSON.stringify(e.routedProjectIds ?? null), JSON.stringify(e.strokes ?? null),
@@ -445,12 +538,14 @@ syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {
   // those — still dirty.
   const rejected: Partial<Record<string, string[]>> = {};
   const addRejected = (coll: string, ids: string[]) => { if (ids.length) rejected[coll] = ids; };
-  addRejected('projects', await upsertProjects(userId, Array.isArray(push.projects) ? push.projects : []));
-  addRejected('storyPlans', await upsertStoryPlans(userId, Array.isArray(push.storyPlans) ? push.storyPlans : []));
+  // DELETE FOR GOOD - the non-purge writes refused because their record was deleted for good: ACKNOWLEDGED, never rejected (change 2)
+  const acked = { projects: [] as string[], storyPlans: [] as string[], drawers: [] as string[], journalEntries: [] as string[] };
+  addRejected('projects', await upsertProjects(userId, Array.isArray(push.projects) ? push.projects : [], acked.projects));
+  addRejected('storyPlans', await upsertStoryPlans(userId, Array.isArray(push.storyPlans) ? push.storyPlans : [], acked.storyPlans));
   addRejected('sessions', await upsertSessions(userId, Array.isArray(push.sessions) ? push.sessions : []));
   addRejected('drafts', await upsertDrafts(userId, Array.isArray(push.drafts) ? push.drafts : []));
-  addRejected('drawers', await upsertDrawers(userId, Array.isArray(push.drawers) ? push.drawers : []));
-  addRejected('journalEntries', await upsertJournalEntries(userId, Array.isArray(push.journalEntries) ? push.journalEntries : []));
+  addRejected('drawers', await upsertDrawers(userId, Array.isArray(push.drawers) ? push.drawers : [], acked.drawers));
+  addRejected('journalEntries', await upsertJournalEntries(userId, Array.isArray(push.journalEntries) ? push.journalEntries : [], acked.journalEntries));
 
   // ITEM 198 - the cursor is POSTGRES's clock, taken after the pushes and before the pulls (see dbNow).
   const serverTime = await dbNow();
@@ -464,6 +559,9 @@ syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {
     // every optional field; a client that predates this ticket simply
     // never sees the key.
     ...(Object.keys(rejected).length > 0 ? { rejected } : {}),
+    // DELETE FOR GOOD - absent when nothing was refused onto a shell (the ordinary case), the `rejected` shape exactly
+    ...(Object.values(acked).some((ids) => ids.length > 0)
+      ? { acknowledgedPurged: Object.fromEntries(Object.entries(acked).filter(([, ids]) => ids.length > 0)) } : {}),
     pull: wantPull ? {
       projects: (await pull('projects', userId, lastSyncAt)).map(rowToProject),
       storyPlans: (await pull('story_plans', userId, lastSyncAt)).map(rowToStoryPlan),

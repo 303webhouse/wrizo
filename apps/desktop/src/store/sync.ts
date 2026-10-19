@@ -1,4 +1,4 @@
-import { getDirtyRecords, markClean, applyRemoteRecords, markAllJournalEntriesDirty, getJournalEntries, getSystemKind, type DirtyRecords } from './persistence';
+import { getDirtyRecords, markClean, applyRemoteRecords, markAllJournalEntriesDirty, getJournalEntries, getSystemKind, applyAcknowledgedPurged, type DirtyRecords } from './persistence';
 import { getClientBuild, buildIsStale } from './clientBuild';
 import { isStaleClient, markStaleClient } from './staleClient';
 import { apiSync, SyncHttpError, type SyncResponse } from './api';
@@ -399,6 +399,7 @@ async function runSync(fullPull: boolean): Promise<SyncRun> {
         live();
         checkBuild(r);
         cleanBatch(batch, noteRejections(r.rejected));
+        applyAcknowledgedPurged(r.acknowledgedPurged);   // DELETE FOR GOOD: refused onto a shell - take it, stop retrying
       } catch (e) {
         if (e instanceof SyncHttpError && e.status === 413) { live(); await onRefused(batch); return; }
         throw e;
@@ -416,6 +417,7 @@ async function runSync(fullPull: boolean): Promise<SyncRun> {
         applyRemoteRecords(resp.pull);
         maybeBackfillJournal(resp.pull);
         cleanBatch(chunks[0], noteRejections(resp.rejected));
+        applyAcknowledgedPurged(resp.acknowledgedPurged);   // DELETE FOR GOOD: refused onto a shell - take it, stop retrying
       } catch (e) {
         if (!(e instanceof SyncHttpError && e.status === 413)) throw e;
         live();

@@ -21,6 +21,9 @@ export interface SyncResponse {
   // store this push (malformed, or the insert itself failed) — never a
   // single blended count, so the client can keep EXACTLY those ids dirty.
   rejected?: Partial<Record<keyof DirtyRecords, string[]>>;
+  // DELETE FOR GOOD - absent in the ordinary case: the pushed ids the server REFUSED because their record was deleted for good elsewhere.
+  // Acknowledged, never rejected: the client takes the shell and clears the dirty flag (persistence.ts applyAcknowledgedPurged).
+  acknowledgedPurged?: { journalEntries?: string[]; projects?: string[]; drawers?: string[]; storyPlans?: string[] };
   pull: RemoteRecords;
 }
 

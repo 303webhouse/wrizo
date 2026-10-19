@@ -12,6 +12,7 @@ import {
   patchJournalEntry, getBoardsConnecting, generateId, createLooseHomePage, pinPageToBoard,
   getSystemKind, reconcileSystemBoard, restoreEntry, getJournalEntryIncludingDeleted, subscribe,
   stashDeletedBoxes, restoreDeletedBox, purgeDeletedBox, getTombstonedBox, softDeleteEntry,
+  purgeEntry, emptyTrash, getDeletedEntries, getTrashedCards,
   getPairedPageId, pairBoardWithPage,
   setPinDisplayed, toggleEntryLink, isCardLinkedToEntry, livePinFor, getLinkPeersByCard, addPageLink,
   boardNestChain, pinAspectFor } from '../store/persistence';
@@ -2624,13 +2625,24 @@ export function BoardEditor({ id }: { id: string }) {
     if (systemKind === 'shelf' && box.kind === 'page-pin' && box.entryId) items.push({ label: t('pageFacePin'), onSelect: () => setShelfPinEntryId(box.entryId!) });
     const deletable = !isSystemBoard;
     const purgeable = systemKind === 'trash' && !!box.trashedFrom;
-    if (items.length > 0 && (deletable || purgeable)) items.push(null);
+    // DELETE FOR GOOD: a trashed PAGE or board, like a trashed card, can now be deleted for good from Trash - and it always asks
+    const purgeablePage = systemKind === 'trash' && box.kind === 'page-pin' && !!box.entryId && !box.trashedFrom;
+    if (items.length > 0 && (deletable || purgeable || purgeablePage)) items.push(null);
     if (deletable) items.push({ label: t('ctxDelete'), onSelect: () => removeSelectedRef.current() });
     // Trash only: a permanent delete of a trashed CARD leaves an id-only marker. It always asks - it is the one delete that cannot be undone.
     if (purgeable) items.push({ label: t('ctxDelete'), onSelect: () => requestDelete(() => { purgeDeletedBox(box.trashedFrom!.boardId, box.trashedFrom!.boxId); setSelectedId(null); flushNow(); }, { title: t('deleteDialogPurgeTitle'), always: true }) });
+    if (purgeablePage) items.push({ label: t('ctxDelete'), onSelect: () => requestDelete(() => { purgeEntry(box.entryId!); setSelectedId(null); flushNow(); }, { title: t('deleteDialogPurgeTitle'), always: true }) });
     openContextMenu(x, y, items);
   };
   const openBoardMenu = (x: number, y: number) => {
+    // DELETE FOR GOOD: Trash's own menu - Empty Trash, naming the count, always asking; greyed while Trash is empty. Every other built-in
+    // place keeps no board menu, as before.
+    if (systemKind === 'trash') {
+      const n = getDeletedEntries().length + getTrashedCards().length;
+      const title = n === 1 ? t('emptyTrashQuestionOne') : t('emptyTrashQuestionMany').replace('{n}', String(n));
+      openContextMenu(x, y, [{ label: t('ctxEmptyTrash'), disabled: n === 0, onSelect: () => requestDelete(() => { emptyTrash(); setSelectedId(null); flushNow(); }, { title, always: true }) }]);
+      return;
+    }
     if (isSystemBoard) return;
     const items: ContextMenuItem[] = [
       { label: t('beginNewCard'), onSelect: () => {

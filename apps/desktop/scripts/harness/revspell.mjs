@@ -94,8 +94,34 @@ const falseFields = falseSites.map((s) => (/data-field="([a-z]+)"/.exec(s) || []
 const sheetSrc = fs.readFileSync(path.join(SRC, 'components/TitlePageSheet.tsx'), 'utf8').split('\n');
 const titleLine = sheetSrc.find((l) => /data-field="title"/.test(l)) || null;   // the liveness read: the title field is really there, and is read by its own line
 s1Succ = falseSites.length === 3 && falseSites.every((s) => s.startsWith('components/TitlePageSheet.tsx:')) && JSON.stringify(falseFields) === JSON.stringify(['author', 'contact', 'words']) && !!titleLine && !/spellCheck/.test(titleLine);
-ok('S1 [page-templates successor]: no PROSE editor host hardcodes spellCheck={false}; the ONLY hardcoded-off sites are the Title Page sheet AUTHOR, CONTACT and WORD LINE fields (data-field author, contact, words), and its TITLE field carries no spellCheck attribute at all, so spell-check is ON for the title',
-  s1Succ, JSON.stringify({ falseSites, falseFields, titleLine: titleLine && titleLine.trim() }));
+// ---- PARKED, generation 2 - SUPERSEDED by Fable's ruling of Oct 19 (delete-for-good, ledger 109): the in-app typed confirmation's phrase
+// input (components/DestructiveConfirm.tsx, className="wz-destructive-input") is a COMMAND, not writing - the writer types an exact phrase
+// such as DELETE EVERYTHING to unlock a destructive act - so spell-check is OFF there, by name. The successor below allows exactly that one
+// site beside the Title Page sheet's three, and fails any other. Kept VERBATIM and no longer run (s1Succ, its verdict, is still computed above).
+//
+// ok('S1 [page-templates successor]: no PROSE editor host hardcodes spellCheck={false}; the ONLY hardcoded-off sites are the Title Page sheet AUTHOR, CONTACT and WORD LINE fields (data-field author, contact, words), and its TITLE field carries no spellCheck attribute at all, so spell-check is ON for the title',
+//   s1Succ, JSON.stringify({ falseSites, falseFields, titleLine: titleLine && titleLine.trim() }));
+// THE ALLOWED hardcoded-off sites, each matched by NAME in the site's own line (never a whole-file exception):
+const ALLOWED_OFF = [
+  { name: 'the Title Page sheet: author, contact, word line (Fable, Oct 17)', test: (s) => s.startsWith('components/TitlePageSheet.tsx:') && /data-field="(author|contact|words)"/.test(s) },
+  { name: 'the typed-confirmation phrase input (Fable, Oct 19)', test: (s) => s.startsWith('components/DestructiveConfirm.tsx:') && /className="wz-destructive-input"/.test(s) },
+];
+const s1v2 = (all) => {
+  const off = all.filter((x) => /spellCheck=\{false\}/.test(x));
+  const stray = off.filter((x) => !ALLOWED_OFF.some((a) => a.test(x)));
+  const fields = off.map((x) => (/data-field="([a-z]+)"/.exec(x) || [])[1] || null).filter(Boolean).sort();
+  const phrase = off.filter((x) => ALLOWED_OFF[1].test(x));
+  // liveness: each exemption is REALLY there, once per field - an exemption that matches nothing is not proof of anything
+  return { pass: stray.length === 0 && off.length === 4 && JSON.stringify(fields) === JSON.stringify(['author', 'contact', 'words']) && phrase.length === 1 && !!titleLine && !/spellCheck/.test(titleLine), stray, fields, phrase: phrase.length };
+};
+const s1Now = s1v2(sites);
+ok('S1 [delete-for-good successor]: no PROSE editor host hardcodes spellCheck={false}; the ONLY hardcoded-off sites are the Title Page sheet AUTHOR, CONTACT and WORD LINE fields and the typed-confirmation PHRASE input (a command, not writing - Fable, Oct 19), each matched by name and each really there; the Title Page TITLE carries no spellCheck attribute',
+  s1Now.pass, JSON.stringify(s1Now));
+// its mutants: a NEW hardcoded-off site anywhere else, and a SECOND one inside DestructiveConfirm on an unnamed element, must each turn it RED
+const s1MutOther = s1v2([...sites, 'components/SomeNewPanel.tsx:<textarea className="wz-new-notes" spellCheck={false} />']);
+const s1MutSameFile = s1v2([...sites, 'components/DestructiveConfirm.tsx:<textarea className="wz-destructive-note" spellCheck={false} />']);
+ok('S1 (mutants): a new spellCheck={false} in another file, or a second one in DestructiveConfirm.tsx on an element that is not the phrase input, turns the successor RED (both inputs really differ from the census)',
+  s1Now.pass && s1MutOther.pass === false && s1MutSameFile.pass === false && s1MutOther.stray.length === 1 && s1MutSameFile.stray.length === 1, JSON.stringify({ s1MutOther, s1MutSameFile }));
 ok('S2: the only sites that can turn the checker ON are ForwardOnlyEditor (spellCheck={mode === \'revise\'}, gated) and JournalEntry.tsx (a pre-existing, untouched `spellCheck`; see the report — an unmounted component as far as a source search shows) — a THIRD host that enables it fails this run',
   truthy.length === 2
     && truthy.some((s) => s.startsWith('components/ForwardOnlyEditor.tsx:') && s.includes("spellCheck={mode === 'revise'}"))
@@ -143,7 +169,15 @@ if (process.env.HARNESS_PARKED === '1') {
   // ---- PARKED - SUPERSEDED (page-templates, Fable Oct 17): this file now parks ONE check, S1 (above); the claim below, that it parks nothing, is no longer true. Kept VERBATIM.
   //
   // console.log('\nREVSPELL PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; this file parks nothing: nothing ever asserted the spellcheck attribute (it was a hardcoded false), so no earlier check is falsified.');
-  console.log(`\nREVSPELL PARKED: ${s1Succ === true ? 'PASS' : 'FAIL'} (1 check) — HARNESS_PARKED=1 armed; ONE park: S1's "no editor host hardcodes spellCheck={false}" no longer holds for the Title Page sheet's author, contact and word-line fields (spell-check ON for the title, OFF for those three - Fable's ruling, Oct 17); its successor is the live S1 [page-templates successor].`);
+  // ---- PARKED - SUPERSEDED (delete-for-good, Fable Oct 19): this file now parks TWO checks - S1 and its page-templates successor. Kept VERBATIM.
+  //
+  // console.log(`\nREVSPELL PARKED: ${s1Succ === true ? 'PASS' : 'FAIL'} (1 check) — HARNESS_PARKED=1 armed; ONE park: S1's "no editor host hardcodes spellCheck={false}" no longer holds for the Title Page sheet's author, contact and word-line fields (spell-check ON for the title, OFF for those three - Fable's ruling, Oct 17); its successor is the live S1 [page-templates successor].`);
+  const parked = [
+    { name: 'PARKED (was "S1: NO editor host hardcodes spellCheck={false} any more") - the Title Page sheet\'s three fields (Oct 17) and the phrase input (Oct 19) are off by ruling; live successor: S1 [delete-for-good successor]', pass: s1Now.pass === true },
+    { name: 'PARKED (was "S1 [page-templates successor]: ... the ONLY hardcoded-off sites are the Title Page sheet AUTHOR, CONTACT and WORD LINE fields") - the typed-confirmation phrase input is a fourth, by name; live successor: S1 [delete-for-good successor]', pass: s1Succ === false && s1Now.phrase === 1 },
+  ];
+  for (const c of parked) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}`);
+  console.log(`\nREVSPELL PARKED: ${parked.every((c) => c.pass) ? 'PASS' : 'FAIL'} (${parked.length} checks) - HARNESS_PARKED=1 armed; TWO parks: S1 (no hardcoded-off site at all) and its page-templates successor (only the Title Page sheet); the live successor is S1 [delete-for-good successor].`);
 }
 const pass = checks.every((c) => c.pass);
 // eslint-disable-next-line no-console
