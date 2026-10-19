@@ -1,0 +1,133 @@
+# big-projects: plan (no code until Fable clears it)
+
+**SCHEMA CHANGE: NONE.** No new column, table, index or constraint, on the server or in the client's storage shape. Everything below maps onto columns that exist today (`drawers`, `projects.drawer_id`, `projects.kind`, `journal_entries.project_id` / `order_index` / `tags`) and onto per-device `localStorage` keys. The one value that is new is the string `'journal'` in the free-text `projects.kind` column, and only from step 5 (verified: `apps/server/src/migrate.ts` adds `kind text` with no CHECK, and `sync.ts` maps it through untouched). **No one-time re-home is planned**, so no data in an existing account is moved and no migration-class backup is needed. Rows are only ever CREATED, by the writer's own acts, plus one bootstrap row set for an account that has never had a Drawer (section 2.4). If the build finds it needs anything beyond this, it stops and brings it to Fable first (Nick's schema decision, no default).
+
+**Branch:** `big-projects-plan` (off `main` @ a68b527f). **Author:** INK. **Brief:** `docs/briefs/big-projects-build-brief.md`, committed verbatim (the committed blob is byte-identical to the file in Downloads). **Mockups, read-only:** `cursor/big-projects-mockup` @ aab45ec0 (`docs/mockups/big-projects/`) and `cursor/side-panels-mockup` @ 472ab916.
+**Timing (the brief's):** plan now; **building waits until connector-b is deployed and delete-for-good has merged**, because the three touch the same readers (Journal, Trash, Shelf, `getProjects`, the rail's thumbnails). Everything below that names a reader of those is written against `main` plus those two branches (`connector-b-build` @ e2a7aaed, `delete-for-good` @ bce12067); S0 of step 1a re-reads them on the tree it is built on.
+**Drift check (disk, not memory):** every file and function named here was read at `a68b527f` or on the two branches above. Counts of harness files are `grep -l` over all 157 files in `scripts/harness/` and are CANDIDATES for each step's own sweep, not a population.
+
+---
+
+## 1. What exists today (so the plan adds the least)
+
+- **The rail** (`components/Cascade.tsx`, framed pages): `SECTION_A` Page · Plan, `SECTION_B` Drawers, `SECTION_C` Journal · Shelf, then Settings · Theme, Trash at the foot. Category ids: `page, plan, drawers, journal, shelf, settings, theme, trash`; panels in `components/CascadePanels.tsx` (`PagePanel`, `PlanPanel`, `DrawersPanel`, `JournalPanel`, `ShelfPanel`, `TrashPanel`). A second, older rail, `components/DeskRail.tsx`, carries `chrome-fade` and `data-chrome-receded`. **Which rail(s) fade while typing today is an S0 read** (the brief says "still fades"); `DeskFrame.tsx` records that the framed strip carries no `chrome-fade`.
+- **Drawers → binders** (`store/persistence.ts`): `getDrawers()`, `createDrawer(name)` (ids from `generateId()`), `setProjectDrawer(projectId, drawerId)`. A binder is a `Project` with an optional `drawerId` and `kind`. A binder with no live Drawer is shown as a **virtual "Unsorted" group** (`components/DrawersTree.tsx`, never a Drawer row).
+- **Pages and boards** are `journal_entries`; a page's home is `projectId` (null = loose), moved by the one function `setPageHome(pageId, target)`, which writes **only `projectId`** (never `orderIndex`, never `origin`).
+- **Journal and Shelf are DERIVED, not flags.** `inJournalView(e)` (origin and `projectId == null`) decides the Journal; `belongsOnShelf(e)` (T3: no project, not journal-homed, not a paired plan face, **pinned on zero user boards**) decides the Shelf. The legacy `shelved` flag is dormant in storage (zero schema). A loose page that IS pinned on a board is in **neither** list today.
+- **Order**: `orderIndex` exists on entries and is used by the Journal's notebook order (`notebookKey = orderIndex ?? createdAt`); a binder's reading order, and the "This Binder" export, are creation order.
+- **Last place** (`store/lastPlace.ts`, resume-on-open): per device, `wz.lastPlace`, a PAGE pointer. `getResumeTarget()` (`store/resume.ts`) races projects and entries by recency.
+- **Page templates** have shipped (`pageSettings.template`, `unbornHref({ template })`); the pop-outs' **Presets** for Pages are those templates.
+- **connector-b** (branch): page links are `page_links` records keyed by entry ids; the rail's thumbnails declare `data-link-entry`, and `BoardEditor.tsx` finds them with `railEntryAt` for a connector release and for the thumbnail drag-to-copy.
+- **delete-for-good** (branch): a nullable `purged_at` on four tables; a purged row becomes a **shell** (`id`, timestamps, `deletedAt`, `purgedAt`; content cleared); every reader must skip shells through an `isPurged` helper.
+
+## 2. Storage: the mapping, confirmed (the brief's section 2)
+
+**2.1 A set** = a `projects` row with a `drawerId`. **Every Drawer has one set:** created in the same act as the Drawer (`createDrawer` gains it) and, for a Drawer that already exists with no live set, **lazily the first time something is filed into it** (a row created on the writer's act; nothing is created for a Drawer nobody uses). A Drawer with one live set shows no set heading; the word "set" appears once a second set exists. Set order is creation order (there is no order column, and the brief asks for none); sets are not reorderable in this plan.
+
+**2.2 Journals: a READ-TIME rule, not a re-home.** Recommended (and what the plan builds):
+- **The first Journal is implicit.** Its identity is "no project". Its pages and boards are, at read time, **every live, non-system, non-paired-plan-face entry that has no live home**: `projectId == null`, or `projectId` naming a set that is missing, deleted or purged. This is the union the brief calls "Journal pages plus Shelf pages", and it is a strict **superset** of today's `inJournalView` ∪ `belongsOnShelf`: it also takes in the loose pages that are pinned on a board (today in neither list), which is what makes "nothing is ever homeless" true. It is display only: `shelved`, `origin` and `projectId` are never rewritten to produce it.
+- **New Page / New Board in the first Journal** are created exactly as today's Journal door creates them (`projectId` null, `origin: 'journal'`), so the Journal system board, the notebook pager, `inJournalView` and **older clients** still see them as Journal pages.
+- **Additional Journals (step 5 only)** are `projects` rows with `kind: 'journal'` and no `drawerId`; their pages carry that row's id as `projectId`. Nothing else in the data model changes.
+- **The alternative, stated in its strongest form (the brief's literal reading):** a real `kind: 'journal'` row for the FIRST Journal too. Its cost: every account gets a new `projects` row by sync; all 15 `getProjects()` call sites (11 files, section 6) must exclude it from day one or a Journal shows up as a binder; an older client would list it as an "Unsorted" binder named Journal. The implicit first Journal avoids all three, and the first Journal's name ("Journal") is a lexicon constant. **Cost of the lean:** the first Journal cannot be renamed until a row exists. Hand-up Q2.
+
+**2.3 The Shelf merge is display only.** The rail loses its Shelf door and `/shelf` redirects to the Journal place. The **Shelf system board and its reconcile are left exactly as they are** (they write only to a board the writer can no longer reach; removing that work is a persistence change for a later ticket, Q6).
+
+**2.4 Top Drawer.** Made only when the account has **never had a Drawer ROW at all**: zero rows in the raw drawers collection, **counting soft-deleted rows and delete-for-good shells**, evaluated only after the first pull has completed (the B10.1 gate: `firstPullDone()` / `whenFirstPulled`), so a returning writer on a fresh device is never given a second one. Its id is **deterministic and carries the user id** (`top-drawer-<uid>`, set `top-set-<uid>`; `drawers.id` is a global primary key, so the uid has to be in it): two devices that both bootstrap before they sync write the SAME row and last-write-wins merges them instead of making two Top Drawers. Because a purged Top Drawer leaves a shell row, "zero rows" is false afterwards and it is never recreated (no loop with delete-for-good). **An account with existing Drawers is left alone; an account with only Unsorted binders gets Top Drawer and the binders stay Unsorted** (Q1). Anonymous (signed-out) local writers follow the same rule; a sign-in already wipes and re-pulls the cache, and the rule re-evaluates on the new cache.
+
+**2.5 "Where you are"** is per device: `wz.place` = `{ v: 1, uid, kind: 'drawer' | 'journal', id, setId? }`, beside `wz.lastPlace` and never synced. Rule: **while a page or board is open, the place IS that page's home** (so the place block and the breadcrumb cannot disagree); the stored value matters when nothing is open. If the stored place is deleted, purged or gone, fall back to the first live Drawer by `order`, else the first Journal. A switch via the switcher changes only the stored place (no navigation).
+
+**2.6 "Most opened"** is `wz.opens` = `{ uid, counts: { [entryId]: n } }`, per device, incremented where the open page is already recorded (the `LandingGate` recorder that writes `wz.lastPlace`). Pruned to live ids on read. No synced counts.
+
+**2.7 Order.** Order is the writer's own order: `orderIndex ?? createdAt` within a container (a set or the Journal) and kind. Drag-reorder writes `orderIndex` through one new store function (a per-container variant of the existing `notebookIndexAfter` / respread machinery); **Date, Tag, Most opened and Least opened are pure views and never write**. "This Binder" export order follows the same key, so an Order the writer set is the order the export reads (identical for every existing book, since no `orderIndex` is set on them).
+
+**2.8 X on a section** = `setPageHome(id, 'journal')` (writes only `projectId`), with the previous `{ projectId, orderIndex }` kept in the Undo closure (session-scoped). Because `orderIndex` is untouched, Undo returns the page to the same set in the same position. The Undo checks the page is still live (an Empty Trash from delete-for-good may have purged it meanwhile) and does nothing otherwise.
+
+**2.9 File Page… and Add to a Board…** use `setPageHome` and `pinPageToBoard`, both existing. Nothing new in storage.
+
+## 3. The steps, and the files each touches
+
+Internal category ids are kept (`plan`, `page`, `drawers`, `journal`); only labels change, so the existing `data-category` selectors survive (fewer parks). `shelf` is removed.
+
+**Step 1a: the place and the Pages pop-out. FULL PAIR (persistence and readers).**
+- NEW `store/place.ts`: `wz.place` read/write, `placeOfEntry`, the Journal-membership reader (2.2), set readers, the Top Drawer bootstrap (2.4), the lazy set for an empty Drawer, `wz.opens` writer (read in step 4), seams `window.wrizoPlace*`.
+- `store/persistence.ts`: raw-drawer-count accessor that counts deleted rows and shells (`hasEverHadDrawer`), `createDrawer` also creates its set, `createSet`, the per-container reorder function (2.7), and **`accountHasWork` and the readers in section 6** (the bootstrap must not make a brand-new account look like it has work, or the first-run ritual is skipped).
+- `store/sync.ts` or the boot path (`App.tsx`): the post-first-pull hook for the bootstrap.
+- `store/lastPlace.ts` / `components/LandingGate.tsx`: the place follows the open page; `wz.opens` increments beside the pointer.
+- `components/Cascade.tsx` (section lists: Shelf out, place block in at the top, Pages and Boards bracketed under it, divider, Journal, foot unchanged; the rail's recede covers the place block), `components/CascadePanels.tsx` (`PagePanel` becomes the Pages pop-out, `DrawersPanel` becomes the switcher, `ShelfPanel` and the Shelf category removed), NEW `components/PlaceBlock.tsx`, `PlaceSwitcher.tsx`, `SectionsPopout.tsx` (shared with step 2), `components/DeskRail.tsx` (S0 decides whether it changes), `App.tsx` (`/shelf` redirects), `store/deskLexicon.ts` (Arbor terms only: Top Drawer, Boards, Sections, Presets, New set, the Undo line), `index.css`.
+- The Pages pop-out: place name, + New Page, SECTIONS with the sort control (only Order is live in this step) and the rows/grid toggle (grid renders in step 4), set grouping with the current set open and others folded to a row with a count, sets with no pages absent, + New set, PRESETS (the page templates), X to Journal with Undo.
+- **Reorder must not be HTML5 `draggable`.** `BoardEditor.tsx`'s thumbnail drag skips anything inside `[draggable="true"]` ("a draggable survey row keeps its own membership drag"), so draggable rows would silently switch connector-b's drag-to-copy off for them. Build the reorder on pointer events (which is also what the harness can drive with real presses), or add an explicit exemption on the pop-out rows (Q4).
+- **Every row declares `data-link-entry={id}`** (connector-b's rail contract), or the connector's drop targets disappear with the old Drawers and Plan panels.
+
+**Step 1b: the page header. Fast lane unless it touches save or sync.**
+- `components/PageFace.tsx` (the details card: title, Star, tags, Add to a Board…; the place dropdown leaves), `components/PageFileMenu.tsx` + `PlacesPanel.tsx` (File Page… picker: Drawers opening to their sets, then Journals, + New Drawer; the Home zone retires), `components/PinToBoardSheet.tsx` (Add to a Board…: pins only, "+ New Board" then the boards, a ✓ on boards the page is on), `components/DrawerActions.tsx` and `store/pageActions.ts` (Copy Page, Delete), the Page Setup sheet in `CascadePanels.tsx` (`PageSetupZone`) renamed Page Settings, `components/PortToBoardSheet.tsx` and its mount sites removed (`pages/PageEditor.tsx`, `components/ScriptEditor.tsx`, `components/BoardEditor.tsx`, `pages/JournalEntry.tsx`), the breadcrumb in `pages/PageEditor.tsx`, `store/deskLexicon.ts`.
+- `pages/Spread.tsx`'s own "Port N pages…" and `JournalEntry.tsx`'s `entry-port` button: the brief removes "Port to a Board…"; whether the multi-page Spread door goes too is Q5. "Copy to Board" is untouched.
+
+**Step 1c: the Tutor panel clean-up (side-panels round 2). Fast lane; separate files, can run in another lane beside 1a/1b.**
+- `components/Tutor.tsx` (the Ask box on top, three starter chips, the Selection chip greyed until text is selected, lens rows Consistency · Fragments · The book's Bible · Waiting for you with counts and hidden when empty; **no Structure section**), `store/tutorLenses.ts` (`computeStructureFacts` has no remaining reader), `store/deskLexicon.ts`.
+
+**Step 2: the Boards pop-out. Fast lane.**
+- `SectionsPopout.tsx` in its boards mode, `PlanPanel` replaced (label "Boards", id `plan` kept; the PLAN→ mode strip is untouched), `components/BeginningsRow.tsx` (board starter buttons become New Card · Templates · Connect Pages; **no New Page on a board**; "Start Pages" stays and is reviewed here), `store/deskLexicon.ts`.
+
+**Step 3: Grafts as "connected to this page", across places. Needs the connector-b tree.**
+- `components/ConnectionsDrawerPanel.tsx` (headed "Connected to [page]"; groups Cards, Sources, Boards, Pages, each with an X and Undo; then Shared tags with a tag mark and no X; a faint place label on anything from another place), the page-link readers in `store/persistence.ts` (`getPageLinksOf/To`, `getLinkPeersOfCard`), a cross-place shared-tags reader in `store/place.ts`. Links are keyed by entry ids, so File Page and X never break one. **"Sources" has no definition in the code today** (research-kind pages? imports?); S0 of this step settles it with Fable (Q7).
+
+**Step 4: grid view and the Date / Tag / Most opened / Least opened sorts. Fast lane.** `SectionsPopout.tsx`, `store/place.ts` (`wz.opens` read), `index.css`. The views never write `orderIndex`.
+
+**Step 5: multiple Journals. Touches project rows: FULL PAIR unless Fable rules otherwise.** `store/place.ts` + `persistence.ts` (`createJournal`: a `projects` row, `kind: 'journal'`), `components/PlaceSwitcher.tsx` (+ New Journal), the short Journal list on the rail's Journal button when two or more exist, **the audit of all 15 `getProjects()` call sites (section 6) so a Journal row is never listed as a binder**, `types/index.ts` (`Project.kind` widened with a separate `isJournalRow` predicate rather than adding `'journal'` to `BinderKind`, which would leak into `store/kindLabels.ts`). An older client will list a second Journal as an "Unsorted" binder with its pages: a visible degrade, not a loss; client-first rollout is safe (no server change).
+
+## 4. Parks (park, never edit; counted programmatically per file, per step)
+
+Candidates, measured now over all 157 harness files with `grep -l` (each step re-sweeps for what its change DOES, not for the string, and re-sweeps if the slice grows):
+- the rail's Shelf door (`data-category=shelf`, `drawerPlaceShelf`, `#/shelf`): **5** files; the word "Shelf" anywhere (a much wider net, most of it the Shelf board and Places logic that stays): 26;
+- the rail's Plan label (`data-category=plan`, `stripPlan`): **6**; rail grouping and `vw1` assertions: 7 candidates (`vw1.mjs` asserts the old grouping and the Shelf's absence from the Drawers band);
+- "Port to a Board…" / `PortToBoardSheet`: **3**; "Copy page text" (`actionCopy`): **2**; "Page Setup": **1**;
+- the old Pages-panel list (`drawerPage`, `PagePanel`): **3**; `newPageCard` (a board's New Page door): **4**; the Places panel / `setPageHome`: **8**;
+- everything that enumerates projects (`getProjects`, `wrizoCreateProject`): **15** (step 5's audit, and step 1a's).
+- connector-b's own checks that pin the rail thumbnails and the Links tab (`connector-b.mjs`, `page-links.mjs` S6–S9, S10, S11, `connector-a.mjs`) are touched by steps 1a, 2 and 3: **parked, never edited**, with successors that assert the same contract (`data-link-entry` on the new rows; the swallow and the contextmenu stop still hold on them).
+- Each park keeps the original verbatim under a SUPERSEDED header with a live successor, and a counted parked record beside it where the file has a parked leg (the count is the check: a missing record is invisible to a green run).
+
+## 5. Tests (each step: red first, then the build; real pointer presses)
+
+- **New harness per step:** `scripts/harness/big-projects-1a.mjs`, `-1b`, `-1c`, `-2`, `-3`, `-4`, `-5`, each browserless first (the pure `store/place.ts` module bundled with esbuild, golden cases, **mutants whose landing is asserted**), then the real app. Seeding goes through the seams only (`wrizoCreateDrawer`, `wrizoCreateProject`, `wrizoSetProjectDrawer`, `wrizoCreateJournalPage` carrying `origin` and `source` explicitly, `wrizoPinPageToBoard`, `wrizoFlushNow`); never raw collection writes.
+- **The population snapshot (1a, and again in 5):** on a seeded account with Drawers, binders, Journal pages, Shelf pages, loose pages pinned on boards and boards, and on an account with zero Drawers: count pages and boards, and record every `projectId` and `orderIndex`, **before and after first load and after a reload**. Nothing may disappear or change home. The bootstrap writes exactly the Top Drawer rows and nothing else; the zero-Drawers account gets Top Drawer; an account with a deleted Drawer or a purged shell does not; two devices that bootstrap before syncing end with one Top Drawer (the deterministic id).
+- **The first-run guard:** a brand-new account still gets the first-run ritual (the bootstrap must not flip `accountHasWork()`), and `getResumeTarget()` / the resume-on-open seed never lands on an empty auto-created set.
+- **X → Journal → Undo** returns the page to the same set and the same position; Undo after the page was purged does nothing and says nothing.
+- **Order:** a drag-reorder survives a reload and a sync round trip against the harness double; the Date and Tag views leave every `orderIndex` untouched (asserted by comparing the store before and after).
+- **The rail fades while typing and returns the Recede way, place block included; the place block always matches the breadcrumb** (open a page from another place and compare).
+- **connector-b contract on the new rows:** a connector release on a row links and the writer stays on the board; the thumbnail drag still makes a linked copy from a row in Order mode (the draggable trap above).
+- **Pair rules:** 1a full pair (persistence, readers); 5 full pair unless Fable rules; 1b, 1c, 2, 3, 4 fast lane unless they touch save or sync. Browserless guards (`seed-guard`, hooks-order, typing-latency readers) and the park sweep run before each box turn.
+- **Frames for Fable, Arbor dark and light:** the rail and place block; the switcher open; Pages rows with two sets and with one; the Journal place; the X and Undo; the details card; the "…" menu; the File Page picker; Page Settings. Evidence rule: only looked-at frames, JPEG q80, at most 1400 px.
+
+## 6. Risks to delete-for-good's readers and connector-b's links
+
+**Delete-for-good**
+1. **Shells must never surface.** Every reader I add (place, Journal membership, set readers, switcher, Pages pop-out, Grafts) uses the same `isPurged` skip. A purged page is also `deletedAt`-stamped and has `projectId` cleared, which under the 2.2 rule would be "no home, so Journal" if the `!deletedAt` guard were ever dropped; a pin in the harness fails any reader that lists a shell, and a mutant removes the guard.
+2. **The Top Drawer bootstrap counts shells** (2.4) so it never loops against a purged Top Drawer; the server refuses edits to a purged row, so a recreate would be silently dropped and retried forever.
+3. **Pages of a deleted or purged set** fall to the first Journal (2.2), not into limbo; the dormant "binder has no delete UI" case becomes reachable once sets exist, so it is tested.
+4. **Undo and Empty Trash** race (2.8), handled and tested.
+5. Trash's own board and `getDeletedEntries` are unchanged by this plan; a page moved out by X is simply a Journal page.
+
+**connector-b**
+1. **The rail's thumbnails are the connector's drop targets** (`data-link-entry`, `railEntryAt`). Retiring the Drawers, Plan and Shelf panels removes them unless the new rows carry the attribute (step 1a/2 requirement, tested).
+2. **`[draggable="true"]` rows turn drag-to-copy off** (section 3). Pointer-event reorder, or an explicit exemption.
+3. **Scoping changes what the rail can reach.** The old Drawers panel listed every Drawer's boards, so a connector could be released on any board. The pop-outs list the current place only. Linking to a board in another place from the rail now means switching place first, or waiting for step 3's cross-place picker (Q3).
+4. **Links are entry-id records**, so File Page, X, reorder and Journal membership never break one. The tile's own context menu ("Delete board") and the capture-phase `contextmenu` stop from ledger 87 must keep working on the new rows (the stop is on the board, not the tile).
+5. **Step 3 replaces the Grafts list that connector-b built** (`ConnectionsDrawerPanel.tsx`, its "Remove graft?" confirm): the confirm, the tombstone and the X stay; only the grouping, the place labels and the Shared-tags section change.
+
+**Readers of `projects` (the audit, by file, not by count).** `getProjects()` is read in `AddToSheet`, `CascadePanels` (two sites), `DrawersTree`, `PageFileMenu`, `PinToBoardSheet`, `PlacesPanel`, `PortToBoardSheet`, `pages/ImportDraft`, `pages/JournalEntry`, `store/persistence` and `store/resume`; `cache.projects` is read in `persistence.ts` at seven sites, including **`accountHasWork()`** (`cache.projects.length > 0`) and **`getResumeTarget()`**, which pushes every project as a recency candidate (a set created by the bootstrap would be offered as the Open door's target and as the resume-on-open seed). Step 1a guards these two before the bootstrap exists; step 5 audits the rest for `kind: 'journal'`.
+
+## 7. Hand-ups (each with a lean)
+
+- **Q1: legacy Unsorted binders.** The brief is silent. Lean: they stay where they are and appear under a virtual "Unsorted" Drawer entry in the switcher (read-time, no row, matching `DrawersTree` today), never moved into Top Drawer. Rival: adopting them into Top Drawer is kinder to the new model but is a data move behind the writer's back, which the brief forbids.
+- **Q2: the first Journal implicit (lean) vs a real row** (2.2).
+- **Q3: cross-place linking from the rail** (scoping, risk 3 above). Lean: accept the change; step 3's picker is the door.
+- **Q4: reorder on pointer events (lean) vs an exemption on `[draggable]`.**
+- **Q5: Spread's "Port N pages…" and `JournalEntry`'s port button.** Lean: remove with the sheet.
+- **Q6: the Shelf board's reconcile keeps writing with no door.** Lean: leave it; retire it in a later persistence ticket.
+- **Q7: what "Sources" means in Grafts.**
+- **Q8: which rail(s) fade today** (S0), and whether the Cascade strip is brought into the fade.
+- **Q9: step 5's pair rule** (it creates and syncs project rows).
+
+## 8. Not built
+
+No server change, no migration, no column. No Flux or other-theme words (the Arbor layout ships first), no Draft tools panel, no tutorial for new writers. Sets are not reorderable; a Journal cannot be renamed before step 5 unless Q2 goes the other way.
