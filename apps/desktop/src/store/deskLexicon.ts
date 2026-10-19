@@ -148,6 +148,10 @@ export type DeskTermId =
   | 'settingsAskBeforeDelete' | 'toastCardDeleted' | 'toastCardRestored' | 'toastBoardTrashed' | 'trashCardBadge'
   // CONNECTOR-B (Nick's approved connector mockup v6): the right drawer's Grafts / Links tab lists the selected card's connections, each with an X that asks first.
   | 'linksSelectCard' | 'linksRemoveTitle' | 'linksRemoveAria' | 'linksKindPage' | 'linksKindBoard' | 'linksKindCard'
+  // BIG PROJECTS STEP 3 - Grafts across places and the graft doors (docs/plans/big-projects.md step 3; mockup cursor/graft-doors-mockup @ c4f34eb0)
+  | 'graftAdd' | 'graftSearch' | 'graftConnectedTo' | 'graftGroupCards' | 'graftGroupSources' | 'graftGroupBoards' | 'graftGroupPages' | 'graftSharedTags'
+  | 'graftPlanBoard' | 'graftPlanCardsOne' | 'graftPlanCardsMany' | 'graftHideAria' | 'graftHiddenLine' | 'graftRemovedLine' | 'graftUndo' | 'graftCameFrom'
+  | 'graftKnobTip' | 'graftPlaceUnsorted' | 'graftPairedPage'
   // TU1 S2/S3/S4/S5 — the Tutor (components/Tutor.tsx), the sliver's own
   // mirror on the paper's right edge. One seam, all of the Tutor's static
   // chrome — the lenses' own DYNAMIC observation text (Consistency's
@@ -866,6 +870,26 @@ const CANONICAL: Record<DeskTermId, string> = {
   linksKindPage: 'Page',
   linksKindBoard: 'Board',
   linksKindCard: 'Card',
+  // BIG PROJECTS STEP 3 - Grafts across places and the graft doors (the mockup's words, Arbor)
+  graftAdd: 'Graft…',
+  graftSearch: 'Search cards, pages, boards…',
+  graftConnectedTo: 'Connected to',
+  graftGroupCards: 'Cards',
+  graftGroupSources: 'Sources',
+  graftGroupBoards: 'Boards',
+  graftGroupPages: 'Pages',
+  graftSharedTags: 'Shared tags',
+  graftPlanBoard: 'Plan board',
+  graftPlanCardsOne: '1 card',
+  graftPlanCardsMany: '{n} cards',
+  graftHideAria: 'Hide from this page',
+  graftHiddenLine: '{title} hidden from this page.',
+  graftRemovedLine: 'Graft to {title} removed.',
+  graftUndo: 'Undo',
+  graftCameFrom: 'Came from',
+  graftKnobTip: 'Drag to graft',
+  graftPlaceUnsorted: 'Unsorted',
+  graftPairedPage: 'Page',
   tutorOpen: 'Open the Tutor',
   tutorClose: 'Close the Tutor',
   tutorTitle: 'The Tutor',

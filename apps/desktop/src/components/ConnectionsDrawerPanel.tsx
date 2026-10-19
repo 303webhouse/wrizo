@@ -1,45 +1,165 @@
 import { useDeskLexicon } from '../store/deskLexicon';
 import { useBoardSnapshot, getBoardActions } from '../store/boardSelection';
-import { getLinkPeersOfCard, removePageLink, subscribe, type LinkPeer } from '../store/persistence';
+import { getJournalEntry, removePageLink, subscribe } from '../store/persistence';
 import { requestDelete } from '../store/deleteGate';
-import { useEffect, useState } from 'react';
+import { graftsOf, hidePlanCard, pairedPageRow, planGroupOf, restorePageLink, unhidePlanCard, type GraftRow, type GraftSubject } from '../store/grafts';
+import { GraftPicker, type CameFrom } from './GraftPicker';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 // The right drawer's second pane - the GRAFTS tab (Flux: LINKS). Its name is the theme's word, read from the lexicon, never written here.
 //
-// CONNECTOR-B (Nick's approved connector mockup v6): with a board open and a card selected it lists that card's connected THUMBNAILS - every same-board connection and every page / board / card link
-// (store/persistence.ts getLinkPeersOfCard: ONE union) - each with an X. The X asks first ("Remove graft?" / "Remove link?": the one dialog, without the "Don't ask me again" tick - an unlink is exempt from
-// the asking setting and keeps its own confirm), then removes whichever record joins the pair: a connection box (through the board, which owns its own state) or a page-link tombstone.
-// With no board open (a page), or no card selected, it is what it always was: the title and the quiet empty line.
+// CONNECTOR-B (Nick's approved connector mockup v6) built the list: a card's connections - same-board connection boxes and page_links records - each
+// with an X that asks first ("Remove graft?": the one dialog, without the "Don't ask me again" tick - an unlink keeps its own confirm). That stays.
+//
+// BIG PROJECTS STEP 3 ("connected to this page"; Nick's approved graft-doors mockup, cursor/graft-doors-mockup @ c4f34eb0; Fable's build notes):
+//   - THE SUBJECT: the open PAGE; on a board, the SELECTED CARD (or the board itself while no card is selected). Read here, from the route and the
+//     board's published snapshot, so the Tutor's drawer that mounts this pane is untouched.
+//   - "+ Graft..." on top, on pages AND boards: the picker (components/GraftPicker.tsx).
+//   - On a board, its PAIRED PAGE first: a plain row, no X (the plan relation, not a graft).
+//   - "Connected to <subject>", then on a page its PLAN BOARD as ONE folded row, "Plan board · N cards" - the first group; opened, its cards, each
+//     with an X on hover that HIDES the card from this page (pageSettings.hiddenPlanCards; the card stays on its board), with an Undo line.
+//   - Groups Cards, Sources, Boards, Pages, each row with an X (connector-b's confirm, then an Undo line); then Shared tags (a tag mark, no X); a
+//     faint place label on anything from another place.
+//   - NO placeholder text: with nothing grafted, the pane is the "+ Graft..." control alone.
+type Undo = { line: string; run: () => void } | null;
+const titleOf = (text: string | undefined): string => ((text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';
+
 export function ConnectionsDrawerPanel() {
   const { t } = useDeskLexicon();
   const snap = useBoardSnapshot();
+  const location = useLocation();
   const [, setTick] = useState(0);
   useEffect(() => subscribe(() => setTick((n) => n + 1)), []);   // a link added or removed anywhere redraws the list
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [planOpen, setPlanOpen] = useState(false);
+  const [undo, setUndo] = useState<Undo>(null);
+  const addRef = useRef<HTMLButtonElement | null>(null);
 
-  const peers: LinkPeer[] = snap && snap.selectedId ? getLinkPeersOfCard(snap.boardId, snap.selectedId, snap.boxes) : [];
-  const remove = (p: LinkPeer) => requestDelete(() => {
-    if (p.via === 'card' && p.connId) getBoardActions()?.removeConnection(p.connId);
-    else if (p.linkId) removePageLink(p.linkId);
+  // the subject: a board (its selected card, or the board) when a board is open; otherwise the page on the address. An unborn page (/page/new) has
+  // no row yet, so it has no subject: the pane is the control alone (disabled), and nothing can be grafted until the page is born.
+  const pageMatch = /^\/page\/([^/?#]+)/.exec(location.pathname);
+  const pageId = !snap && pageMatch && pageMatch[1] !== 'new' ? decodeURIComponent(pageMatch[1]) : null;
+  const page = pageId ? getJournalEntry(pageId) : null;
+  const subject: GraftSubject | null = snap
+    ? (snap.selectedId ? { entryId: snap.boardId, boxId: snap.selectedId } : { entryId: snap.boardId })
+    : (page ? { entryId: page.id } : null);
+  const subjectKey = subject ? `${subject.entryId}:${subject.boxId ?? ''}` : '';
+  useEffect(() => { setUndo(null); setPickerOpen(false); setPlanOpen(false); }, [subjectKey]);
+  const closePicker = useCallback(() => setPickerOpen(false), []);
+
+  const boxes = snap ? snap.boxes : undefined;
+  const subjectTitle = (() => {
+    if (!subject) return '';
+    if (subject.boxId) { const b = (boxes ?? []).find((x) => x.id === subject.boxId); return b ? (b.kind === 'ink' ? 'A sketch' : titleOf(b.text)) : ''; }
+    return titleOf(getJournalEntry(subject.entryId)?.text);
+  })();
+  const g = subject ? graftsOf(subject, boxes) : null;
+  const paired = snap ? pairedPageRow(snap.boardId) : null;
+  const plan = page ? planGroupOf(page.id) : null;
+  const hasConnected = !!g && (!!plan || g.Cards.length + g.Sources.length + g.Boards.length + g.Pages.length + g.sharedTags.length > 0);
+
+  // "Came from <surface>": the router state the Back chip reads (fromBoardId / fromBoardTitle), on a page only, never the page itself
+  const st = location.state as { fromBoardId?: string; fromBoardTitle?: string } | null;
+  const fromId = page && st?.fromBoardId && st.fromBoardId !== page.id ? st.fromBoardId : null;
+  const fromEntry = fromId ? getJournalEntry(fromId) : null;
+  const cameFrom: CameFrom | null = fromEntry ? { entryId: fromEntry.id, title: st?.fromBoardTitle || titleOf(fromEntry.text) } : null;
+
+  const remove = (r: GraftRow) => requestDelete(() => {
+    if (r.via === 'card' && r.connId) {
+      const c = (boxes ?? []).find((x) => x.id === r.connId);
+      getBoardActions()?.removeConnection(r.connId);
+      if (c?.connA && c.connB) { const a = c.connA, b = c.connB; setUndo({ line: t('graftRemovedLine').replace('{title}', r.title), run: () => { getBoardActions()?.addConnection(a, b); } }); }
+    } else if (r.linkId) {
+      const id = r.linkId;
+      removePageLink(id);
+      setUndo({ line: t('graftRemovedLine').replace('{title}', r.title), run: () => { restorePageLink(id); } });
+    }
   }, { title: t('linksRemoveTitle'), always: true, noDontAsk: true });
-  const kindWord = (k: LinkPeer['kind']) => (k === 'page' ? t('linksKindPage') : k === 'board' ? t('linksKindBoard') : t('linksKindCard'));
+  const hide = (cardId: string, title: string) => {
+    if (!page) return;
+    const pid = page.id;
+    hidePlanCard(pid, cardId);
+    setUndo({ line: t('graftHiddenLine').replace('{title}', title), run: () => unhidePlanCard(pid, cardId) });
+  };
+  const kindOf = (r: GraftRow) => (r.group === 'Cards' ? 'card' : r.group === 'Boards' ? 'board' : 'page');
+  const kindWord = (k: string) => (k === 'page' ? t('linksKindPage') : k === 'board' ? t('linksKindBoard') : t('linksKindCard'));
+  const groups: Array<[GraftRow['group'], string]> = [['Cards', t('graftGroupCards')], ['Sources', t('graftGroupSources')], ['Boards', t('graftGroupBoards')], ['Pages', t('graftGroupPages')]];
+  const planWord = plan ? (plan.count === 1 ? t('graftPlanCardsOne') : t('graftPlanCardsMany').replace('{n}', String(plan.count))) : '';
 
   return (
     <div className="wz-links-pane" data-links-pane="">
-      <div className="wz-tutor-h">{t('drawerLinks')}</div>
-      {snap && !snap.selectedId && <div className="wz-tutor-empty" data-links-state="select">{t('linksSelectCard')}</div>}
-      {snap && snap.selectedId && peers.length === 0 && <div className="wz-tutor-empty" data-links-state="none">{t('drawerLinksEmpty')}</div>}
-      {!snap && <div className="wz-tutor-empty">{t('drawerLinksEmpty')}</div>}
-      {peers.length > 0 && (
-        <ul className="wz-links-list" data-links-list="">
-          {peers.map((p) => (
-            <li key={p.key} className="wz-links-item" data-link-key={p.key} data-link-via={p.via} data-link-kind={p.kind} data-trashed={p.trashed ? 'true' : 'false'}>
-              <span className={`wz-links-thumb wz-links-thumb--${p.kind}`} aria-hidden="true" />
-              <span className="wz-links-label" title={kindWord(p.kind)}>{p.label}</span>
-              <button type="button" className="wz-links-x" aria-label={`${t('linksRemoveAria')}: ${p.label}`} onClick={() => remove(p)}>×</button>
-            </li>
-          ))}
-        </ul>
+      <button ref={addRef} type="button" className="wz-graft-add" data-graft-add="" disabled={!subject} aria-expanded={pickerOpen ? 'true' : 'false'}
+        onClick={() => setPickerOpen((o) => !o)}>
+        <span aria-hidden="true">+</span> {t('graftAdd')}
+      </button>
+      {paired && (
+        <div className="wz-graft-paired" data-graft-paired="" data-graft-entry={paired.entryId}>
+          <span className="wz-links-thumb wz-links-thumb--page" aria-hidden="true" />
+          <span className="wz-graft-from">{t('graftPairedPage')}</span>
+          <span className="wz-graft-title">{paired.title}</span>
+        </div>
       )}
+      {hasConnected && (
+        <div className="wz-graft-connected" data-graft-connected="">{t('graftConnectedTo')} <b>{subjectTitle}</b></div>
+      )}
+      {plan && (
+        <div className="wz-graft-plan-group">
+          <button type="button" className="wz-graft-plan" data-graft-plan="" aria-expanded={planOpen ? 'true' : 'false'} onClick={() => setPlanOpen((o) => !o)}>
+            <span className="wz-graft-chev" aria-hidden="true" />
+            <span className="wz-links-thumb wz-links-thumb--board" aria-hidden="true" />
+            <span>{t('graftPlanBoard')} · {planWord}</span>
+          </button>
+          {planOpen && (
+            <ul className="wz-links-list wz-graft-plan-list">
+              {plan.cards.map((c) => (
+                <li key={c.boxId} className="wz-graft-row" data-graft-plan-card={c.boxId}>
+                  <span className="wz-links-thumb wz-links-thumb--card" aria-hidden="true" />
+                  <span className="wz-graft-title">{c.title}</span>
+                  <button type="button" className="wz-graft-x" data-graft-hide="" aria-label={`${t('graftHideAria')}: ${c.title}`} onClick={() => hide(c.boxId, c.title)}>×</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+      {g && groups.map(([key, label]) => g[key].length > 0 && (
+        <div key={key} className="wz-graft-group" data-graft-group={key}>
+          <div className="wz-graft-gh">{label}</div>
+          <ul className="wz-links-list" data-links-list="">
+            {g[key].map((r) => (
+              <li key={r.key} className="wz-links-item wz-graft-row" data-link-key={r.key} data-link-via={r.via} data-link-kind={kindOf(r)} data-trashed={r.trashed ? 'true' : 'false'}
+                data-graft-entry={r.entryId} {...(r.boxId ? { 'data-graft-box': r.boxId } : {})}>
+                <span className={`wz-links-thumb wz-links-thumb--${kindOf(r)}`} aria-hidden="true" />
+                <span className="wz-links-label wz-graft-title" title={kindWord(kindOf(r))}>{r.title}</span>
+                {r.placeDiffers && r.place && <span className="wz-graft-place">{r.place}</span>}
+                <button type="button" className="wz-links-x wz-graft-x" aria-label={`${t('linksRemoveAria')}: ${r.title}`} onClick={() => remove(r)}>×</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      {g && g.sharedTags.length > 0 && (
+        <div className="wz-graft-group" data-graft-group="SharedTags">
+          <div className="wz-graft-gh">{t('graftSharedTags')}</div>
+          <ul className="wz-links-list">
+            {g.sharedTags.map((r) => (
+              <li key={r.key} className="wz-graft-tagrow" data-graft-tag-entry={r.entryId}>
+                <span className="wz-graft-tagm">#{r.tag}</span>
+                <span className="wz-graft-title">{r.title}</span>
+                {r.placeDiffers && r.place && <span className="wz-graft-place">{r.place}</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {undo && (
+        <div className="wz-graft-undo" data-graft-undo="">
+          <span>{undo.line}</span>
+          <button type="button" onClick={() => { undo.run(); setUndo(null); }}>{t('graftUndo')}</button>
+        </div>
+      )}
+      {pickerOpen && subject && <GraftPicker subject={subject} boxes={boxes} anchor={addRef.current} cameFrom={cameFrom} onClose={closePicker} />}
     </div>
   );
 }

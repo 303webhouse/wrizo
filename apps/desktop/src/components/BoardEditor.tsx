@@ -987,6 +987,8 @@ export function BoardEditor({ id }: { id: string }) {
   // 'connection' Box creation/storage below is UNCHANGED from AB4 — only
   // the gesture that triggers it is new.
   const [threadArmedFrom, setThreadArmedFrom] = useState<string | null>(null);
+  // BIG PROJECTS STEP 3 (3a): connection mode entered from the graft KNOB - the knob is the origin circle, so the corner square does not morph
+  const [connectFromKnob, setConnectFromKnob] = useState(false);
   // CONNECTOR-A (Nick's approved mockup v6): `threadArmedFrom` IS connection mode now - the card whose corner square was double-clicked or right-clicked. These are the rest of its
   // render state: the card the arm is over (its circle shows), and the brief flash after a link or unlink.
   const [connectTarget, setConnectTarget] = useState<string | null>(null);
@@ -1018,6 +1020,7 @@ export function BoardEditor({ id }: { id: string }) {
   // Delete / Backspace on a selected card removes it (the "Remove" row is gone) - the key handler is a [] effect, so it calls the current render's removeSelected through this ref
   const removeSelectedRef = useRef<() => void>(() => {});
   const removeConnectionRef = useRef<(connId: string) => void>(() => {});
+  const addConnectionRef = useRef<(a: string, b: string) => string | null>(() => null);
   // CONNECTOR-B: a thumbnail dropped on the board becomes a LINKED COPY - the pointer effect (a []-ish effect) reaches the board's state through this
   const linkedCopyRef = useRef<(entryId: string, x: number, y: number) => void>(() => {});
   const [linkTick, setLinkTick] = useState(0);
@@ -1433,11 +1436,20 @@ export function BoardEditor({ id }: { id: string }) {
   // (a system board's cards are derived, so a Delete there is the same quiet no-op as ever - it must not even ask)
   removeSelectedRef.current = () => { if (isSystemBoard) return; requestDelete(removeSelected); };
   removeConnectionRef.current = (connId: string) => removeConnection(connId);
+  // BIG PROJECTS STEP 3: the Grafts picker's same-board pick (and its Undo) makes the SAME connection box the corner gesture makes
+  addConnectionRef.current = (a: string, b: string) => {
+    const cur = boxesRef.current;
+    if (a === b || !cur.some(x => x.id === a) || !cur.some(x => x.id === b)) return null;
+    if (cur.some(x => x.kind === 'connection' && ((x.connA === a && x.connB === b) || (x.connA === b && x.connB === a)))) return null;
+    const conn: Box = { id: generateId(), kind: 'connection', x: 0, y: 0, w: 0, h: 0, z: cur.reduce((m, x) => Math.max(m, x.z), 0) + 1, connA: a, connB: b };
+    setBoxes(prev => [...prev, conn]);
+    return conn.id;
+  };
 
   // ---- CONNECTOR-B: the Grafts / Links tab (the right drawer) reads the open board through a small seam ----
   useEffect(() => { publishBoardSnapshot({ boardId: id, boxes, selectedId }); }, [id, boxes, selectedId]);
   useEffect(() => {
-    registerBoardActions({ removeConnection: (connId) => removeConnectionRef.current(connId) });
+    registerBoardActions({ removeConnection: (connId) => removeConnectionRef.current(connId), addConnection: (a, b) => addConnectionRef.current(a, b) });
     return () => { registerBoardActions(null); publishBoardSnapshot(null); };
   }, []);
   // a link made or removed anywhere redraws this board's footers
@@ -1741,7 +1753,9 @@ export function BoardEditor({ id }: { id: string }) {
     //   LINES  shown ONLY in this mode, only this card's own links (clipped to the board by the canvas itself); a click selects one, Delete removes it (the existing key handler).
     // The arm and the target circle move imperatively (no React render per pointermove, the preview line's old discipline); React only hears of the target card changing.
     // ============================================================================================================================================================
-    type Connect = { src: string; held: boolean; right: boolean; ox: number; oy: number; moved: boolean; px: number; py: number; target: string | null; railEntry: string | null; railEl: HTMLElement | null };
+    // BIG PROJECTS STEP 3 (3a): `origin` - the door the mode was entered from. 'corner' is connector-a's square; 'knob' is the brass graft knob on the
+    // card's right edge (the same mode, a second door: the arm and the origin circle sit at the knob instead of the corner).
+    type Connect = { src: string; held: boolean; right: boolean; ox: number; oy: number; moved: boolean; px: number; py: number; target: string | null; railEntry: string | null; railEl: HTMLElement | null; origin: 'corner' | 'knob' };
     let connect: Connect | null = null;
     // the browser's context menu is suppressed ONLY: on the corner square, while the mode is on, and for a beat after a right-button gesture ends (Windows fires `contextmenu` AFTER `pointerup`, by which time the mode is already over)
     let ctxQuietUntil = 0;
@@ -1764,10 +1778,19 @@ export function BoardEditor({ id }: { id: string }) {
       const r = el.getBoundingClientRect();
       return { x: r.right, y: r.bottom };
     };
+    // the mode's origin point in client coordinates: the corner square, or - entered from the graft knob - the card's right edge at mid-height
+    const originClient = () => {
+      if (!connect) return null;
+      if (connect.origin === 'corner') return cornerClient(connect.src);
+      const el = canvas.querySelector(`[data-box-id="${connect.src}"]`) as HTMLElement | null;
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { x: r.right, y: r.top + r.height / 2 };
+    };
     const placeArm = () => {
       const line = previewLineRef.current, tip = armTipRef.current;
       if (!connect || !line) return;
-      const from = cornerClient(connect.src);
+      const from = originClient();
       if (!from) return;
       let to = { x: connect.px, y: connect.py };
       let snapped = false;
@@ -1844,6 +1867,7 @@ export function BoardEditor({ id }: { id: string }) {
       connect = null;
       threadArmedFromRef.current = null;
       setThreadArmedFrom(null);
+      setConnectFromKnob(false);
       setConnectTarget(null);
       setSelectedConnectionId(null);
       const line = previewLineRef.current; if (line) line.style.display = 'none';
@@ -1899,7 +1923,9 @@ export function BoardEditor({ id }: { id: string }) {
     const onModeCircle = (x: number, y: number): boolean => {
       if (!connect) return false;
       const c = canvas.getBoundingClientRect();
-      const ids = [connect.src, ...boxesRef.current.filter(b => b.kind === 'connection' && (b.connA === connect!.src || b.connB === connect!.src)).map(b => (b.connA === connect!.src ? b.connB : b.connA) as string)];
+      const o = originClient();   // the knob's circle, when the mode began there
+      if (o && Math.hypot(x - o.x, y - o.y) <= 14) return true;
+      const ids =[connect.src, ...boxesRef.current.filter(b => b.kind === 'connection' && (b.connA === connect!.src || b.connB === connect!.src)).map(b => (b.connA === connect!.src ? b.connB : b.connA) as string)];
       return ids.some(id => { const p = cornerOf(id); return !!p && Math.hypot(x - c.left - p.x, y - c.top - p.y) <= 14; });
     };
     // THE CLICK THAT FOLLOWS A RELEASE ON A RAIL THUMBNAIL (ledger 86, a real product bug). The browser fires `click` on the tile right after this pointerup, and the tile's own onClick travels
@@ -1940,9 +1966,10 @@ export function BoardEditor({ id }: { id: string }) {
       if (!connect) return;
       e.preventDefault(); e.stopPropagation();
     }
-    const enterConnect = (src: string, held: boolean, e: PointerEvent) => {
+    const enterConnect = (src: string, held: boolean, e: PointerEvent, origin: 'corner' | 'knob' = 'corner') => {
       clearFlashTimers(); setConnectFlash(null);
-      connect = { src, held, right: e.button === 2, ox: e.clientX, oy: e.clientY, moved: false, px: e.clientX, py: e.clientY, target: null, railEntry: null, railEl: null };
+      connect = { src, held, right: e.button === 2, ox: e.clientX, oy: e.clientY, moved: false, px: e.clientX, py: e.clientY, target: null, railEntry: null, railEl: null, origin };
+      setConnectFromKnob(origin === 'knob');
       threadArmedFromRef.current = src;
       setSelectedConnectionId(null);
       setConnectTarget(null);
@@ -2127,6 +2154,20 @@ export function BoardEditor({ id }: { id: string }) {
 
       // Connection mode owns every press (see cDown); this is belt and braces for a press that arrives before its listeners do.
       if (connect) return;
+
+      // BIG PROJECTS STEP 3 (3a) - THE GRAFT KNOB: a second door into the SAME connection mode, from the selected card's right edge. A press on it is
+      // never a resize and never a move (it is a different hit target from the corner square); a press-drag lands on a card (a connection box) or a
+      // rail row / thumbnail (a page link) exactly as the corner's held gesture does.
+      const knobEl = target.closest('.board-graft-knob') as HTMLElement | null;
+      if (knobEl) {
+        const kBox = target.closest('.board-box') as HTMLElement | null;
+        const kId = kBox?.dataset.boxId;
+        if (!kId || kId !== selectedIdRef.current || e.button !== 0) return;
+        e.preventDefault(); e.stopPropagation();
+        clearBoardSelection();
+        enterConnect(kId, true, e, 'knob');
+        return;
+      }
 
       if (handleEl && boxEl) {
         const boxId = boxEl.dataset.boxId!;
@@ -2934,7 +2975,7 @@ export function BoardEditor({ id }: { id: string }) {
           const isFlashB = !inMode && connectFlash != null && connectFlash.b === box.id;
           const hasAnyLink = connections.some(c => c.connA === box.id || c.connB === box.id);
           const circleSolid = isTarget ? linkedToSrc : isPeer ? true : isFlashB ? (connectFlash!.off ? hasAnyLink : true) : false;
-          const handleInMode = inMode && threadArmedFrom === box.id;
+          const handleInMode = inMode && threadArmedFrom === box.id && !connectFromKnob;   // entered from the knob, the KNOB is the origin circle
           const handleInFlash = !inMode && connectFlash != null && connectFlash.a === box.id;
           const handleSolid = (handleInMode && connectTarget != null && connections.some(c => (c.connA === box.id && c.connB === connectTarget) || (c.connB === box.id && c.connA === connectTarget)))
             || (handleInFlash && (connectFlash!.off ? hasAnyLink : true));
@@ -3001,6 +3042,17 @@ export function BoardEditor({ id }: { id: string }) {
                   data-circle={handleInMode || handleInFlash ? 'true' : 'false'}
                   data-solid={handleSolid ? 'true' : 'false'}
                   aria-hidden="true"
+                />
+              )}
+              {/* BIG PROJECTS STEP 3 (3a) - the brass graft knob: on the SELECTED card's right edge at mid-height, apart from the resize corner; a
+                  press-drag from it is connection mode from a second door (the pointerdown handler above). Not on a built-in place's derived cards. */}
+              {selected && box.id === selectedId && !isSystemBoard && (box.kind === 'text' || box.kind === 'ink' || box.kind === 'page-pin') && (
+                <div
+                  className="board-graft-knob"
+                  data-graft-knob="true"
+                  data-active={inMode && threadArmedFrom === box.id && connectFromKnob ? 'true' : 'false'}
+                  title={t('graftKnobTip')}
+                  aria-label={t('graftKnobTip')}
                 />
               )}
               {/* FX5 S4 (c) — the quiet layer-order icon: only a selected
