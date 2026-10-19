@@ -3,617 +3,324 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Flux v2 — Operator, Voight, Arcology</title>
+<title>Flux v2 — Voight</title>
 <!--
-  docs/mockups/flux-v2 — three directions, one page.
-  Layout and words are the approved ones: rail A + place block (big-projects),
-  Pages/Boards pop-outs, Grafts + knob (graft-doors), Tutor, a board.
-  Skin is Flux, closer to RC-2. The shipped Glitch meter is not in this pass.
-  Orange only: prose caret, the mark, the current row's left bar.
-  Sprint surge and Connect are the other two sanctioned orange sites; these
-  frames are mid-lap (lime) and the approved verb on the mode row is Publish.
-  Lime length is 2px per session word. The numeral is that same count.
-  Stills: ?frame=A-page-both-panels (A-|B-|C- × the six names). Rig hides.
-  prefers-reduced-motion: brackets stay acquired, pop-outs stay assembled,
-  caret stays lit, chrome stays up.
+  Round 2. Nick chose B VOIGHT. A and C are gone.
+  Terminal chrome (Chakra Petch, box-drawing rules, a shallow Battle.net bevel)
+  around the ESPER frame. Grid is the page frame only — the text sits on a
+  solid plate. DOC 03 // CH 3 is the chapter. CHK 4/14 is Ch 3's place in the
+  Manuscript set (Title Page, Ch 1–12, Bibliography).
+  Icons: 1-bit, 16px grid, square ends, no curves.
+  flux-light: only the page is light. Chrome stays dark.
+  glitch: the shipped meter frozen mid-pulse (tear storm + shear + noise +
+  macroblocks + a 0.10 dip), over the page. The caret stays above it.
+  Stills: ?frame=page-both-panels|pages-popout|grafts|board|tutor|flux-light|icon-sheet|glitch
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <script>
 (function () {
   var f = new URLSearchParams(location.search).get('frame') || '';
   var m = /^([ABCabc])-(.+)$/.exec(f);
+  if (m) f = m[2];
+  if (!f) f = 'page-both-panels';
   var root = document.documentElement;
-  if (m) {
-    root.dataset.dir = m[1].toLowerCase();
-    root.dataset.frame = m[2];
-    root.dataset.light = m[2] === 'flux-light' ? '1' : '0';
-    root.classList.add('shot');
-  } else {
-    root.dataset.dir = 'a';
-    root.dataset.frame = 'page-both-panels';
-    root.dataset.light = '0';
-  }
+  root.dataset.frame = f;
+  root.dataset.light = f === 'flux-light' ? '1' : '0';
+  if (new URLSearchParams(location.search).has('frame')) root.classList.add('shot');
 })();
 </script>
 <style>
   :root {
-    --bg: #020c10;
-    --cyan: #00C2FF;
-    --cyan-soft: #57D0F5;
-    --lime: #A6FF3D;
-    --line: #1D4A52;
-    --orange: #FF9800;
-    --page: #0B2429;
-    --ink: #E8F7F3;
-    --chrome: rgba(9, 30, 36, 0.94);
-    --rail: rgba(4, 17, 22, 0.96);
-    --panel: #071820;
-    --text: #E7F4F1;
-    --label: #57D0F5;
-    --muted: #8EC9D6;
-    --track: #12333A;
-    --ui: 'Rajdhani', system-ui, sans-serif;
-    --content: 'Chakra Petch', system-ui, sans-serif;
-    --prose: 'Crimson Pro', Georgia, serif;
+    --bg: #020c10; --cyan: #00C2FF; --lime: #A6FF3D; --line: #1D4A52; --orange: #FF9800;
+    --page: #0E1C24; --ink: #E8F6FA; --panel: #101C24; --text: #E7F4F1; --label: #9AD7EA;
+    --muted: #7EB4C4; --ui: 'Chakra Petch', Consolas, monospace; --prose: 'Crimson Pro', Georgia, serif;
     --n: 92;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
-  body {
-    display: flex; flex-direction: column; overflow: hidden;
-    background: var(--bg); color: var(--text);
-    font-family: var(--content); user-select: none;
-  }
+  body { display: flex; flex-direction: column; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--ui); user-select: none; }
   button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; border-radius: 0; }
   svg { display: block; }
-
-  .rig {
-    flex: 0 0 36px; display: flex; align-items: center; gap: 6px;
-    padding: 0 12px; background: #000; border-bottom: 1px solid #1D4A52;
-    font-family: var(--ui); font-size: 12px; letter-spacing: .08em; color: var(--muted);
-    white-space: nowrap; overflow: hidden;
-  }
+  .px { shape-rendering: crispEdges; display: block; }
+  .px rect { fill: currentColor; }
+  .rig { flex: 0 0 36px; display: flex; align-items: center; gap: 6px; padding: 0 12px; background: #000; border-bottom: 1px solid var(--line); font-size: 12px; letter-spacing: .06em; color: var(--muted); white-space: nowrap; overflow: hidden; }
   html.shot .rig { display: none; }
   .rig b { color: var(--text); font-weight: 600; letter-spacing: .14em; }
-  .only { color: #6E958D; letter-spacing: .14em; font-size: 10px; border: 1px solid var(--line); padding: 2px 6px; }
-  .rig button {
-    height: 22px; padding: 0 8px; border: 1px solid #243E46; color: var(--muted);
-    font-family: var(--ui); font-size: 11px; letter-spacing: .1em; font-weight: 600;
-  }
+  .only { font-size: 10px; letter-spacing: .12em; border: 1px solid var(--line); padding: 2px 6px; }
+  .rig button { height: 22px; padding: 0 8px; border: 1px solid #243E46; color: var(--muted); font-size: 11px; letter-spacing: .08em; }
   .rig button[aria-pressed='true'] { border-color: var(--cyan); color: var(--cyan); }
-  .rig .sp { width: 10px; }
-  .rig .fr { margin-left: auto; color: #6E958D; letter-spacing: .12em; font-size: 10px; }
-
-  .room {
-    position: relative; flex: 1; min-height: 0;
-    display: grid; grid-template-columns: 84px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) 36px;
-    background: var(--bg); overflow: hidden;
-  }
-  html[data-dir='c'] .room {
-    background: linear-gradient(180deg, #071833 0%, #020c10 62%);
-  }
-  .room::before {
-    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
-  }
-  html[data-dir='a'] .room::before {
-    background: repeating-linear-gradient(to bottom, transparent 0 3px, rgba(0, 194, 255, 0.045) 3px 4px);
-  }
-  .follow {
-    display: none; position: absolute; z-index: 1; width: 520px; height: 520px;
-    margin: -260px 0 0 -260px; left: 26%; top: 50%; pointer-events: none;
-    background: radial-gradient(circle, rgba(30, 107, 255, 0.42), rgba(0, 194, 255, 0.16) 40%, transparent 68%);
-  }
-  html[data-dir='c'] .follow { display: block; }
-
-  .strip {
-    grid-column: 1; grid-row: 1; z-index: 2;
-    display: flex; flex-direction: column; padding: 8px 0 12px;
-    background: var(--rail); border-right: 1px solid var(--line);
-  }
-  .ssep { height: 1px; background: var(--line); margin: 8px 10px; }
+  .rig .fr { margin-left: auto; font-size: 10px; letter-spacing: .12em; }
+  .room { position: relative; flex: 1; min-height: 0; display: grid; grid-template-columns: 84px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) 36px; background: var(--bg); overflow: hidden; }
+  html[data-frame='icon-sheet'] .room { display: none; }
+  .strip { grid-column: 1; grid-row: 1; z-index: 2; display: flex; flex-direction: column; padding: 8px 0 10px; background: var(--panel); border-right: 1px solid var(--line); box-shadow: inset -1px 0 0 rgba(0, 194, 255, .18), 0.5px 0 0 #ff4d6a, -0.5px 0 0 #00C2FF; }
+  .rule { font-family: Consolas, 'Cascadia Mono', monospace; color: #3E6F79; font-size: 11px; letter-spacing: 0; text-align: center; line-height: 1; padding: 4px 0; }
   .sfoot { margin-top: auto; }
-  .si {
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    width: 100%; padding: 10px 4px; color: var(--text);
-    font-family: var(--ui); font-weight: 600; letter-spacing: .06em;
-  }
-  .si svg { width: 21.6px; height: 21.6px; }
-  .si span { font-size: 11px; line-height: 1.15; }
-  .sfoot .si { padding: 7px 4px; }
-  .sfoot .si svg { width: 14.5px; height: 14.5px; }
-  .sfoot .si span { font-size: 9px; letter-spacing: .08em; color: var(--label); }
-  .si.on, html[data-frame='page-both-panels'] #railPages,
+  .si { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; padding: 8px 4px; color: var(--text); font-size: 11px; font-weight: 500; letter-spacing: .04em; }
+  .si .px { width: 16px; height: 16px; }
+  .sfoot .si { padding: 6px 4px; }
+  .sfoot .si span { color: var(--label); font-size: 10px; }
+  html[data-frame='page-both-panels'] #railPages,
   html[data-frame='pages-popout'] #railPages,
   html[data-frame='flux-light'] #railPages,
+  html[data-frame='tutor'] #railPages,
+  html[data-frame='glitch'] #railPages,
   html[data-frame='board'] #railBoards { color: var(--cyan); }
-  .bracket { position: relative; margin: 2px 0 0; padding-left: 4px; }
-  .bracket::before {
-    content: ''; position: absolute; left: 4px; top: 2px; bottom: 2px; width: 5px;
-    border: 1.5px solid var(--cyan); border-right: none; pointer-events: none;
-  }
-  .place {
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    width: 100%; padding: 10px 6px 8px 10px; color: var(--text);
-  }
-  .place svg { width: 21.6px; height: 21.6px; color: var(--cyan); }
-  .place .nm {
-    max-width: 100%; font-family: var(--content); font-size: 11px; font-weight: 600;
-    line-height: 1.2; text-align: center;
-  }
-  .place .chev { font-family: var(--ui); font-size: 10px; color: var(--label); line-height: 1; }
-
+  .place { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; padding: 8px 6px 6px; color: var(--text); }
+  .place .px { width: 16px; height: 16px; color: var(--cyan); }
+  .place .nm { font-size: 11px; font-weight: 600; line-height: 1.2; text-align: center; }
+  .place .chev { font-size: 10px; color: var(--label); }
   .main { grid-column: 2; grid-row: 1; min-width: 0; min-height: 0; display: flex; z-index: 1; }
-  .app {
-    flex: 1; min-width: 0; min-height: 0;
-    display: grid; grid-template-columns: 304px minmax(0, 1fr) 332px; grid-template-rows: 52px minmax(0, 1fr);
-    column-gap: 28px; padding: 0 28px; position: relative;
-  }
+  .app { flex: 1; min-width: 0; min-height: 0; display: grid; grid-template-columns: 304px minmax(0, 1fr) 332px; grid-template-rows: 52px minmax(0, 1fr); column-gap: 28px; padding: 0 28px; }
   html[data-frame='tutor'] .app, html[data-frame='grafts'] .app { grid-template-columns: minmax(0, 1fr) 332px; }
   html[data-frame='pages-popout'] .app, html[data-frame='board'] .app { grid-template-columns: 304px minmax(0, 1fr); }
   html[data-frame='tutor'] .track-l, html[data-frame='grafts'] .track-l,
   html[data-frame='pages-popout'] .track-r, html[data-frame='board'] .track-r { display: none; }
   html[data-frame='tutor'] .pagecol, html[data-frame='grafts'] .pagecol { grid-column: 1; }
   html[data-frame='tutor'] .track-r, html[data-frame='grafts'] .track-r { grid-column: 2; }
-
-  .top {
-    grid-column: 1 / -1; grid-row: 1; z-index: 2;
-    display: flex; align-items: center; gap: 14px; min-width: 0;
-    background: var(--chrome); border-bottom: 1px solid var(--line); padding: 0 4px 0 2px;
-  }
-  .mark {
-    flex: 0 0 auto; font-family: var(--ui); font-weight: 700; font-size: 16px;
-    letter-spacing: .16em; color: var(--orange); padding: 0 2px;
-  }
-  .crumb { display: flex; align-items: center; gap: 7px; min-width: 0; font-size: 13px; color: var(--label); }
-  .crumb .sep { color: var(--line); }
+  .top { grid-column: 1 / -1; grid-row: 1; z-index: 2; display: flex; align-items: center; gap: 14px; min-width: 0; background: var(--panel); border-bottom: 1px solid var(--line); padding: 0 8px; box-shadow: inset 0 1px 0 rgba(0, 194, 255, .2), 0.5px 0 0 #ff4d6a, -0.5px 0 0 #00C2FF; }
+  .mark { font-weight: 600; font-size: 15px; letter-spacing: .18em; color: var(--orange); }
+  .crumb { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--label); }
   .here { color: var(--text); font-weight: 600; }
-  .dots { width: 26px; height: 24px; color: var(--label); letter-spacing: 1px; font-size: 15px; }
+  .dots { width: 26px; height: 24px; color: var(--label); letter-spacing: 1px; }
   .crumb-board { display: none; }
   html[data-frame='board'] .crumb-page, html[data-frame='grafts'] .crumb-page { display: none; }
   html[data-frame='board'] .crumb-board, html[data-frame='grafts'] .crumb-board { display: flex; }
-  .modes { margin-left: auto; display: flex; align-items: center; gap: 2px; }
-  .mt {
-    border-bottom: 2px solid transparent; padding: 8px 11px 7px;
-    font-family: var(--ui); font-size: 12px; font-weight: 600; letter-spacing: .1em;
-    text-transform: uppercase; color: var(--label);
-  }
-  .mt.on { color: var(--text); border-bottom-color: var(--cyan); }
+  .modes { margin-left: auto; display: flex; align-items: center; gap: 0; }
+  .mt { border-bottom: 2px solid transparent; padding: 8px 10px 6px; font-size: 12px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--label); }
+  .mt.on { color: var(--cyan); border-bottom-color: var(--cyan); }
   .mt.off { color: #5E8E99; }
   .plan { color: var(--cyan); }
   #boardModes { display: none; }
   html[data-frame='board'] #pageModes, html[data-frame='grafts'] #pageModes { display: none; }
   html[data-frame='board'] #boardModes, html[data-frame='grafts'] #boardModes { display: flex; }
-  .carrier {
-    display: none; flex: 0 0 auto; align-items: baseline; gap: 8px;
-    font-family: var(--ui); font-weight: 600; letter-spacing: .16em; font-size: 12px; color: var(--cyan);
-  }
-  .carrier b { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: .08em; }
-  html[data-dir='a'] .carrier { display: flex; }
-
   .track { grid-row: 2; min-height: 0; min-width: 0; display: flex; z-index: 2; }
-  .track-l { grid-column: 1; }
-  .track-r { grid-column: 3; }
+  .track-l { grid-column: 1; } .track-r { grid-column: 3; }
   .pagecol { grid-column: 2; grid-row: 2; min-width: 0; min-height: 0; display: flex; justify-content: center; position: relative; z-index: 1; }
-
-  .panel {
-    flex: 1; min-height: 0; min-width: 0; display: flex; flex-direction: column;
-    background: var(--panel); border: 1px solid var(--line); position: relative; overflow: hidden;
-  }
+  .panel { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--line); position: relative; overflow: hidden; box-shadow: inset 1px 1px 0 rgba(0, 194, 255, .22), inset -1px -1px 0 rgba(0, 0, 0, .7), 0.5px 0 0 #ff4d6a, -0.5px 0 0 #00C2FF; }
   #pop-pages, #pop-boards { display: none; }
-  html[data-frame='page-both-panels'] #pop-pages,
-  html[data-frame='pages-popout'] #pop-pages,
-  html[data-frame='flux-light'] #pop-pages,
+  html[data-frame='page-both-panels'] #pop-pages, html[data-frame='pages-popout'] #pop-pages,
+  html[data-frame='flux-light'] #pop-pages, html[data-frame='glitch'] #pop-pages,
   html[data-frame='board'] #pop-boards { display: flex; }
-  .ch { display: none; }
-  html[data-dir='a'] .ch {
-    display: block; padding: 10px 14px 0;
-    font-family: var(--ui); font-weight: 600; font-size: 12px; letter-spacing: .16em; color: var(--cyan);
-    text-shadow: 0 0 8px rgba(0, 194, 255, 0.5);
-  }
-  html[data-dir='a'] .panel { box-shadow: inset 0 0 0 1px rgba(0, 194, 255, 0.28); }
-  html[data-dir='a'] .ch::before { content: attr(data-ch); }
-  html[data-dir='a'][data-frame='grafts'] #rpanel .ch::before { content: 'CH.04 // GRAFTS'; }
-  .scan {
-    position: absolute; inset: 0; pointer-events: none; opacity: 0;
-    background: linear-gradient(to bottom, transparent, rgba(0, 194, 255, 0.28), transparent);
-  }
-
-  .pophead { padding: 12px 14px 8px; display: flex; align-items: center; gap: 8px; }
-  .pophead svg { width: 15px; height: 15px; color: var(--cyan); flex: 0 0 auto; }
-  .pophead .pn { font-size: 13px; font-weight: 600; color: var(--text); }
-  .newbtn {
-    display: flex; align-items: center; gap: 8px; margin: 0 10px 6px; height: 34px; padding: 0 10px;
-    border: 1px solid var(--line); color: var(--text); font-size: 13px;
-  }
-  .newbtn b { font-weight: 500; color: var(--label); }
-  .tools { display: flex; align-items: center; gap: 12px; padding: 8px 14px 6px; }
+  .pophead { padding: 12px 14px 6px; display: flex; align-items: center; gap: 8px; }
+  .pophead .px { width: 16px; height: 16px; color: var(--cyan); }
+  .pophead .pn { font-size: 13px; font-weight: 600; }
+  .newbtn, .gadd { display: flex; align-items: center; gap: 8px; margin: 0 10px 6px; height: 32px; padding: 0 10px; border: 1px solid var(--line); color: var(--text); font-size: 13px; box-shadow: inset 1px 1px 0 rgba(0, 194, 255, .15); }
+  .tools { display: flex; align-items: center; gap: 12px; padding: 6px 14px; }
   .tools .lab { margin-right: auto; }
-  .lab {
-    font-family: var(--ui); font-size: 11px; font-weight: 600; letter-spacing: .16em;
-    text-transform: uppercase; color: var(--label);
-  }
-  .sort {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-family: var(--content); font-size: 12px; color: var(--label);
-  }
-  .sort::after {
-    content: ''; width: 5px; height: 5px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor;
-    transform: translateY(-2px) rotate(45deg);
-  }
+  .lab { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--label); }
+  .sort { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--label); }
+  .sort::after { content: ''; width: 5px; height: 5px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: translateY(-2px) rotate(45deg); }
   .views { display: flex; border: 1px solid var(--line); }
   .views button { width: 24px; height: 20px; display: grid; place-items: center; color: var(--muted); }
   .views button + button { border-left: 1px solid var(--line); }
   .views button[aria-pressed='true'] { color: var(--cyan); }
   .views svg { width: 12px; height: 12px; }
-  .popbody { flex: 1; min-height: 0; overflow: auto; padding-bottom: 8px; scrollbar-width: thin; scrollbar-color: #1D4A52 transparent; }
+  .popbody, .tbody { flex: 1; min-height: 0; overflow: auto; scrollbar-width: thin; scrollbar-color: #1D4A52 transparent; }
+  .setfold { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 14px 4px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--text); }
   .setfold.open .cv { display: inline-block; transform: rotate(90deg); }
-  .setfold, .sethead {
-    display: flex; align-items: center; gap: 8px; width: 100%; padding: 12px 14px 4px; text-align: left;
-    font-family: var(--ui); font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--text);
-  }
   .cv { color: var(--label); width: 8px; }
   .ctn { margin-left: auto; letter-spacing: 0; font-size: 12px; color: var(--label); text-transform: none; }
-  .row {
-    position: relative; display: flex; align-items: center; gap: 10px; width: 100%;
-    padding: 6px 12px 6px 12px; border-left: 2px solid transparent; text-align: left; color: var(--text);
-  }
-  .row[aria-current='true'] { border-left-color: var(--orange); background: rgba(0, 194, 255, 0.05); }
+  .row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 5px 12px; border-left: 2px solid transparent; text-align: left; color: var(--text); }
+  .row[aria-current='true'] { border-left-color: var(--orange); background: rgba(0, 194, 255, .05); }
   .row .tx { min-width: 0; display: flex; flex-direction: column; }
-  .row .t, .tile .t, .gr .t { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .t, .tile .t, .gr .t { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .row .fl { font-family: var(--prose); font-size: 13px; color: var(--label); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .mini { flex: 0 0 auto; width: 18px; height: 24px; background: #0E2C34; border: 1px solid var(--line); }
-  .minib { flex: 0 0 auto; width: 28px; height: 18px; background: #0E2C34; border: 1px solid var(--line); position: relative; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 8px 14px 4px; }
-  .tile { display: flex; flex-direction: column; gap: 6px; color: var(--text); border-left: 2px solid transparent; padding-left: 6px; }
+  .mini { width: 16px; height: 22px; background: #0E2C34; border: 1px solid var(--line); flex: 0 0 auto; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 8px 14px; }
+  .tile { display: flex; flex-direction: column; gap: 6px; border-left: 2px solid transparent; padding-left: 6px; }
   .tile[aria-current='true'] { border-left-color: var(--orange); }
-  .tile .th { position: relative; width: 100%; aspect-ratio: 16 / 10; background: #0E2C34; border: 1px solid var(--line); }
-  .tile .th i { position: absolute; width: 22%; height: 22%; background: #143842; border: 1px solid var(--cyan-soft); opacity: .8; }
+  .tile .th { position: relative; aspect-ratio: 16/10; background: #0E2C34; border: 1px solid var(--line); }
+  .tile .th i { position: absolute; width: 22%; height: 22%; background: #143842; border: 1px solid var(--label); }
   .popfoot { border-top: 1px solid var(--line); padding: 6px 0 8px; }
-  .lnk {
-    display: flex; align-items: center; gap: 8px; width: 100%; padding: 5px 14px; text-align: left;
-    color: var(--text); font-size: 12.5px;
-  }
+  .lnk { display: flex; align-items: center; gap: 8px; width: 100%; padding: 4px 14px; text-align: left; font-size: 12.5px; }
   .lnk b { color: var(--label); font-weight: 500; width: 10px; }
-  .presets .lab { display: block; padding: 8px 14px 3px; }
-
+  .presets .lab { display: block; padding: 8px 14px 2px; }
   .page, .board { position: relative; height: 100%; }
-  .page {
-    width: 820px; max-width: 100%; background: var(--page); color: var(--ink);
-    border: 1px solid rgba(0, 194, 255, 0.72);
-    box-shadow: 0 0 0 1px rgba(0, 194, 255, 0.28), 0 0 42px rgba(0, 194, 255, 0.22), 0 18px 48px rgba(0, 0, 0, 0.55);
-    overflow: hidden;
-  }
-  .sheet {
-    padding: 72px 88px; font-family: var(--prose); font-size: 20px; line-height: 1.7; color: var(--ink);
-    user-select: text;
-  }
+  .page { width: 820px; max-width: 100%; display: flex; flex-direction: column; background: var(--page); color: var(--ink); border: 1px solid #9AD7EA; box-shadow: 0 0 0 1px rgba(0, 194, 255, .25), 0 0 36px rgba(0, 194, 255, .18); overflow: hidden; padding: 22px; }
+  .frame-grid { position: absolute; inset: 0; z-index: 3; pointer-events: none;
+    background-image: linear-gradient(rgba(154, 215, 234, .55) 1px, transparent 1px), linear-gradient(90deg, rgba(154, 215, 234, .55) 1px, transparent 1px);
+    background-size: 16px 16px;
+    -webkit-mask-image: linear-gradient(#000,#000), linear-gradient(#000,#000), linear-gradient(#000,#000), linear-gradient(#000,#000);
+    -webkit-mask-size: 100% 18px, 100% 18px, 18px 100%, 18px 100%;
+    -webkit-mask-position: top, bottom, left, right;
+    -webkit-mask-repeat: no-repeat;
+    mask-image: linear-gradient(#000,#000), linear-gradient(#000,#000), linear-gradient(#000,#000), linear-gradient(#000,#000);
+    mask-size: 100% 18px, 100% 18px, 18px 100%, 18px 100%;
+    mask-position: top, bottom, left, right;
+    mask-repeat: no-repeat; }
+  .readout, .sheet, .hint { position: relative; z-index: 1; background: var(--page); }
+  .readout { display: flex; justify-content: space-between; padding: 2px 8px 8px; font-size: 12px; font-weight: 500; letter-spacing: .14em; color: var(--muted); }
+  .sheet { flex: 1; min-height: 0; padding: 8px 36px 4px; font-family: var(--prose); font-size: 20px; line-height: 1.7; color: var(--ink); user-select: text; overflow: hidden; }
   .sheet p + p { margin-top: 1em; }
-  .caret {
-    display: inline-block; width: 0.46em; height: 0.82em; background: var(--orange);
-    box-shadow: 0 0 8px rgba(255, 152, 0, 0.65); transform: translateY(0.12em); vertical-align: baseline;
-  }
-  .brackets { display: none; position: absolute; inset: 14px; pointer-events: none; z-index: 3; }
-  html[data-dir='b'] .brackets { display: block; }
-  .brackets i { position: absolute; width: 22px; height: 22px; color: #C5E6F0; }
+  .hint { padding: 8px 8px 2px; text-align: center; font-size: 11px; letter-spacing: .1em; color: var(--muted); }
+  .caret { display: inline-block; width: .46em; height: .82em; background: var(--orange); box-shadow: 0 0 8px rgba(255, 152, 0, .65); transform: translateY(.12em); vertical-align: baseline; position: relative; z-index: 60; }
+  .brackets { position: absolute; inset: 6px; z-index: 3; pointer-events: none; }
+  .brackets i { position: absolute; width: 16px; height: 16px; color: #C5E6F0; }
   .brackets i::before, .brackets i::after { content: ''; position: absolute; background: currentColor; }
-  .brackets i:nth-child(1) { top: 0; left: 0; }
-  .brackets i:nth-child(2) { top: 0; right: 0; }
-  .brackets i:nth-child(3) { bottom: 0; left: 0; }
-  .brackets i:nth-child(4) { bottom: 0; right: 0; }
-  .brackets i::before { width: 22px; height: 1px; top: 0; left: 0; }
-  .brackets i::after { width: 1px; height: 22px; top: 0; left: 0; }
-  .brackets i:nth-child(2)::before { left: auto; right: 0; }
-  .brackets i:nth-child(2)::after { left: auto; right: 0; }
-  .brackets i:nth-child(3)::before { top: auto; bottom: 0; }
-  .brackets i:nth-child(3)::after { top: auto; bottom: 0; }
-  .brackets i:nth-child(4)::before { top: auto; bottom: 0; left: auto; right: 0; }
-  .brackets i:nth-child(4)::after { top: auto; bottom: 0; left: auto; right: 0; }
-  html[data-dir='b'] .page, html[data-dir='b'] .board {
-    background-color: #0E1C24;
-    background-image:
-      linear-gradient(rgba(154, 215, 234, 0.09) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(154, 215, 234, 0.09) 1px, transparent 1px);
-    background-size: 24px 24px;
-    border-color: #9AD7EA;
-  }
-  .board { width: 100%; background: var(--page); border: 1px solid rgba(0, 194, 255, 0.55); overflow: hidden;
-    box-shadow: 0 0 0 1px rgba(0, 194, 255, 0.2), 0 0 36px rgba(0, 194, 255, 0.16); }
-  .page[hidden], .board[hidden] { display: none; }
+  .brackets i:nth-child(1) { top: 0; left: 0; } .brackets i:nth-child(2) { top: 0; right: 0; }
+  .brackets i:nth-child(3) { bottom: 0; left: 0; } .brackets i:nth-child(4) { bottom: 0; right: 0; }
+  .brackets i::before { width: 16px; height: 1px; top: 0; left: 0; }
+  .brackets i::after { width: 1px; height: 16px; top: 0; left: 0; }
+  .brackets i:nth-child(2)::before, .brackets i:nth-child(2)::after { left: auto; right: 0; }
+  .brackets i:nth-child(3)::before, .brackets i:nth-child(3)::after { top: auto; bottom: 0; }
+  .brackets i:nth-child(4)::before, .brackets i:nth-child(4)::after { top: auto; bottom: 0; left: auto; right: 0; }
+  .board { width: 100%; background: var(--page); border: 1px solid #9AD7EA; overflow: hidden; box-shadow: 0 0 0 1px rgba(0, 194, 255, .2), 0 0 28px rgba(0, 194, 255, .14); }
   html[data-frame='grafts'] .page, html[data-frame='board'] .page,
   html[data-frame='page-both-panels'] .board, html[data-frame='pages-popout'] .board,
-  html[data-frame='tutor'] .board, html[data-frame='flux-light'] .board { display: none; }
-  .bcard {
-    position: absolute; width: 210px; min-height: 118px; padding: 14px 16px 16px;
-    background: #0B2429; border: 1px solid var(--line); color: var(--ink);
-    font-family: var(--prose); font-size: 14.5px; line-height: 1.45;
-  }
-  .bcard .ct {
-    font-family: var(--ui); font-size: 12px; font-weight: 600; letter-spacing: .08em;
-    text-transform: uppercase; color: var(--label); margin-bottom: 6px;
-  }
-  .bcard[aria-selected='true'] { border-color: var(--cyan); box-shadow: 0 0 0 1px rgba(0, 194, 255, 0.45); }
-  .resz {
-    position: absolute; right: -5px; bottom: -5px; width: 10px; height: 10px; background: var(--cyan);
-    border: 1px solid #063848; z-index: 2;
-  }
-  .knob {
-    position: absolute; right: -7px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%;
-    background: var(--cyan); border: 1.5px solid #063848; box-shadow: 0 0 0 2px #0B2429; z-index: 3;
-    opacity: 0;
-  }
+  html[data-frame='tutor'] .board, html[data-frame='flux-light'] .board, html[data-frame='glitch'] .board { display: none; }
+  .bcard { position: absolute; width: 210px; min-height: 118px; padding: 14px 16px 16px; background: #0B2429; border: 1px solid var(--line); color: var(--ink); font-family: var(--prose); font-size: 14.5px; line-height: 1.45; z-index: 1; }
+  .bcard .ct { font-family: var(--ui); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--label); margin-bottom: 6px; }
+  .bcard[aria-selected='true'] { border-color: var(--cyan); }
+  .xy { margin-top: 8px; font-family: var(--ui); font-size: 12px; font-weight: 600; letter-spacing: .14em; color: #C5E6F0; }
+  .resz { position: absolute; right: -5px; bottom: -5px; width: 8px; height: 8px; background: var(--cyan); z-index: 2; }
+  .knob { position: absolute; right: -8px; top: 50%; margin-top: -8px; width: 16px; height: 16px; padding: 0; color: var(--cyan); background: #0B2429; z-index: 3; opacity: 0; }
   .bcard[aria-selected='true'] .knob { opacity: 1; }
-  html[data-frame='grafts'] .bcard[aria-selected='true'] .knob {
-    box-shadow: 0 0 0 2px #0B2429, 0 0 0 4px rgba(0, 194, 255, 0.45);
-  }
-  .xy { display: none; margin-top: 8px; font-family: var(--ui); font-size: 12px; font-weight: 600; letter-spacing: .14em; color: #C5E6F0; }
-  html[data-dir='b'] .xy { display: block; }
-  .reticle { display: none; }
-  html[data-dir='b'] .bcard[aria-selected='true'] .reticle {
-    display: block; position: absolute; inset: -9px; pointer-events: none;
-  }
-  html[data-dir='b'] .bcard[aria-selected='true'] .reticle::before {
-    content: ''; position: absolute; inset: 0;
-    background:
-      linear-gradient(#C5E6F0, #C5E6F0) left top / 18px 1px no-repeat,
-      linear-gradient(#C5E6F0, #C5E6F0) left top / 1px 18px no-repeat,
-      linear-gradient(#C5E6F0, #C5E6F0) right top / 18px 1px no-repeat,
-      linear-gradient(#C5E6F0, #C5E6F0) right top / 1px 18px no-repeat,
-      linear-gradient(#C5E6F0, #C5E6F0) left bottom / 18px 1px no-repeat,
-      linear-gradient(#C5E6F0, #C5E6F0) left bottom / 1px 18px no-repeat,
-      linear-gradient(#C5E6F0, #C5E6F0) right bottom / 18px 1px no-repeat,
-      linear-gradient(#C5E6F0, #C5E6F0) right bottom / 1px 18px no-repeat;
-  }
-  html[data-dir='b'] .bcard[aria-selected='true'] .reticle::after {
-    content: ''; position: absolute; top: -16px; right: -16px; width: 13px; height: 13px;
-    border: 1px solid #C5E6F0; border-radius: 50%;
-    background:
-      linear-gradient(#C5E6F0, #C5E6F0) center / 1px 100% no-repeat,
-      linear-gradient(#C5E6F0, #C5E6F0) center / 100% 1px no-repeat;
-  }
-  .tip {
-    display: none; position: absolute; left: 168px; top: 42px; z-index: 5;
-    padding: 4px 8px; background: var(--panel); border: 1px solid var(--line);
-    color: var(--text); font-size: 12px; white-space: nowrap;
-  }
+  .reticle { display: none; position: absolute; inset: -9px; pointer-events: none; }
+  .bcard[aria-selected='true'] .reticle { display: block; }
+  .reticle::before { content: ''; position: absolute; inset: 0; background:
+    linear-gradient(#C5E6F0, #C5E6F0) left top / 14px 1px no-repeat, linear-gradient(#C5E6F0, #C5E6F0) left top / 1px 14px no-repeat,
+    linear-gradient(#C5E6F0, #C5E6F0) right top / 14px 1px no-repeat, linear-gradient(#C5E6F0, #C5E6F0) right top / 1px 14px no-repeat,
+    linear-gradient(#C5E6F0, #C5E6F0) left bottom / 14px 1px no-repeat, linear-gradient(#C5E6F0, #C5E6F0) left bottom / 1px 14px no-repeat,
+    linear-gradient(#C5E6F0, #C5E6F0) right bottom / 14px 1px no-repeat, linear-gradient(#C5E6F0, #C5E6F0) right bottom / 1px 14px no-repeat; }
+  .reticle::after { content: ''; position: absolute; top: -14px; right: -14px; width: 11px; height: 11px; border: 1px solid #C5E6F0;
+    background: linear-gradient(#C5E6F0, #C5E6F0) center / 1px 100% no-repeat, linear-gradient(#C5E6F0, #C5E6F0) center / 100% 1px no-repeat; }
+  .tip { display: none; position: absolute; left: 168px; top: 42px; z-index: 5; padding: 3px 7px; background: var(--panel); border: 1px solid var(--line); font-size: 12px; }
   html[data-frame='grafts'] .tip { display: block; }
-
-  .tabs { display: flex; border-bottom: 1px solid var(--line); flex: 0 0 auto; }
-  .tab {
-    padding: 12px 14px 8px; font-family: var(--ui); font-size: 12px; font-weight: 600;
-    letter-spacing: .16em; text-transform: uppercase; color: var(--label);
-    border-bottom: 2px solid transparent; margin-bottom: -1px;
-  }
-  html[data-frame='grafts'] .tab-tutor, html[data-frame='page-both-panels'] .tab-grafts,
-  html[data-frame='tutor'] .tab-grafts, html[data-frame='flux-light'] .tab-grafts,
-  html[data-frame='pages-popout'] .tab-grafts { color: var(--label); border-bottom-color: transparent; }
+  .tabs { display: flex; border-bottom: 1px solid var(--line); }
+  .tab { padding: 11px 14px 8px; font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--label); border-bottom: 2px solid transparent; margin-bottom: -1px; }
   html[data-frame='grafts'] .tab-grafts, html[data-frame='page-both-panels'] .tab-tutor,
-  html[data-frame='tutor'] .tab-tutor, html[data-frame='flux-light'] .tab-tutor { color: var(--cyan); border-bottom-color: var(--cyan); }
-  .tbody { flex: 1; min-height: 0; overflow: auto; padding: 14px; display: none; flex-direction: column; gap: 12px; scrollbar-width: thin; scrollbar-color: #1D4A52 transparent; }
-  html[data-frame='page-both-panels'] #tutor, html[data-frame='tutor'] #tutor, html[data-frame='flux-light'] #tutor,
+  html[data-frame='tutor'] .tab-tutor, html[data-frame='flux-light'] .tab-tutor,
+  html[data-frame='glitch'] .tab-tutor, html[data-frame='pages-popout'] .tab-tutor { color: var(--cyan); border-bottom-color: var(--cyan); }
+  .tbody { display: none; flex-direction: column; gap: 12px; padding: 14px; }
+  html[data-frame='page-both-panels'] #tutor, html[data-frame='tutor'] #tutor,
+  html[data-frame='flux-light'] #tutor, html[data-frame='glitch'] #tutor,
   html[data-frame='grafts'] #grafts { display: flex; }
-  .ask { display: flex; flex-direction: column; border: 1px solid var(--line); background: #041216; }
-  .ask textarea {
-    height: 64px; resize: none; padding: 10px 11px 4px; border: 0; background: transparent;
-    font-family: var(--content); font-size: 13.5px; line-height: 1.4; color: var(--text);
-  }
+  .ask { position: relative; display: flex; flex-direction: column; border: 1px solid var(--line); background: #041014; box-shadow: inset 2px 2px 0 #000, inset -1px -1px 0 rgba(0, 194, 255, .25); }
+  .ask::before { content: '>'; position: absolute; left: 8px; top: 10px; color: var(--cyan); font-weight: 600; }
+  .ask textarea { height: 64px; resize: none; padding: 10px 11px 4px 22px; border: 0; background: transparent; font-family: var(--ui); font-size: 13px; line-height: 1.4; color: var(--text); }
   .ask textarea::placeholder { color: var(--muted); }
   .ask .bar { display: flex; justify-content: flex-end; padding: 4px 6px 6px; }
-  .send { height: 24px; padding: 0 10px; font-family: var(--ui); font-size: 12px; letter-spacing: .08em; color: var(--muted); border: 1px solid var(--line); }
+  .send { height: 22px; padding: 0 8px; font-size: 11px; letter-spacing: .08em; color: var(--muted); border: 1px solid var(--line); }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip { padding: 4px 9px; border: 1px solid var(--line); color: var(--text); font-size: 12px; line-height: 1.35; text-align: left; }
+  .chip { padding: 4px 8px; border: 1px solid var(--line); color: var(--text); font-size: 12px; text-align: left; }
   .chip:disabled { color: var(--muted); border-style: dashed; }
-  .quiet { margin-top: auto; display: flex; flex-direction: column; border-top: 1px solid var(--line); }
-  .lens > span {
-    display: flex; align-items: center; justify-content: space-between; width: 100%;
-    padding: 10px 0; color: var(--text); font-size: 13px; border-bottom: 1px solid var(--line);
-  }
-  .lens .n { font-family: var(--ui); font-size: 13px; font-weight: 600; color: var(--label); letter-spacing: .06em; }
+  .quiet { margin-top: auto; border-top: 1px solid var(--line); }
+  .lens > span { display: flex; justify-content: space-between; padding: 10px 0; font-size: 13px; border-bottom: 1px solid var(--line); }
+  .lens .n { color: var(--label); font-weight: 600; }
   .gbody { padding: 0; gap: 0; }
-  .gadd {
-    display: flex; align-items: center; gap: 8px; margin: 12px 12px 4px; height: 34px; padding: 0 10px;
-    border: 1px solid var(--line); color: var(--text); font-size: 13px;
-  }
-  .gadd b { color: var(--label); font-weight: 500; }
-  .ghead { display: flex; align-items: center; gap: 10px; padding: 12px 14px 4px; }
+  .ghead { display: flex; align-items: center; gap: 10px; padding: 10px 14px 4px; }
   .ghead .gt { margin-right: auto; font-size: 13px; color: var(--label); }
   .ghead .gt em { font-style: normal; color: var(--text); font-weight: 600; }
-  .gl { padding: 12px 14px 2px; }
-  .gr { display: flex; align-items: center; gap: 10px; padding: 6px 14px; color: var(--text); font-size: 13px; }
+  .gl { padding: 10px 14px 2px; }
+  .gr { display: flex; align-items: center; gap: 10px; padding: 6px 14px; font-size: 13px; }
   .gr .plc { margin-left: auto; font-size: 11px; color: var(--label); }
-  .gk-card { width: 18px; height: 14px; background: #0E2C34; border: 1px solid var(--line); flex: 0 0 auto; }
-  .gk-src { width: 14px; height: 18px; background: #0E2C34; border: 1px solid var(--line); border-left: 3px solid var(--cyan); flex: 0 0 auto; }
-  .tagm { font-family: var(--ui); font-size: 12px; letter-spacing: .06em; color: var(--label); }
+  .gk-src { width: 12px; height: 16px; background: #0E2C34; border: 1px solid var(--line); border-left: 3px solid var(--cyan); flex: 0 0 auto; }
+  .tagm { font-size: 12px; color: var(--label); }
   .tagm::before { content: '#'; }
-
-  .sprint {
-    grid-column: 1 / -1; grid-row: 2; z-index: 3;
-    display: flex; align-items: center; gap: 14px; padding: 0 16px;
-    background: var(--chrome); border-top: 1px solid var(--line);
-  }
-  .trackbar { flex: 1; height: 5px; background: var(--track); position: relative; }
-  .fill { position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--n) * 2px); max-width: 70%; background: var(--lime); box-shadow: 0 0 8px rgba(166, 255, 61, 0.45); }
-  .nocaret { position: absolute; top: -3px; width: 3px; height: 11px; left: calc(var(--n) * 2px - 2px); background: var(--cyan); box-shadow: 0 0 6px rgba(0, 194, 255, 0.7); }
-  .sprint .ct { font-family: var(--ui); font-weight: 700; font-size: 15px; letter-spacing: .08em; color: var(--text); min-width: 2.2em; text-align: right; }
-
-  html[data-dir='b'] .strip, html[data-dir='b'] .panel, html[data-dir='b'] .top, html[data-dir='b'] .sprint {
-    box-shadow: 0.5px 0 0 #ff4d6a, -0.5px 0 0 #00C2FF, 0 0.5px 0 #ff4d6a, 0 -0.5px 0 #00C2FF;
-  }
-  html[data-dir='b'] .room { background: #020c10; }
-  html[data-dir='b'] .panel, html[data-dir='b'] .top, html[data-dir='b'] .sprint, html[data-dir='b'] .strip {
-    background: #101C24;
-  }
-  html[data-dir='c'] .panel {
-    background:
-      linear-gradient(rgba(8, 20, 48, 0.82), rgba(8, 20, 48, 0.82)) padding-box,
-      linear-gradient(145deg, #1E6BFF, #00C2FF) border-box;
-    border: 1px solid transparent;
-    backdrop-filter: blur(14px);
-    clip-path: polygon(22px 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%, 0 22px);
-  }
-  html[data-dir='c'] .page {
-    border: 1px solid transparent;
-    background:
-      linear-gradient(#0B2429, #0B2429) padding-box,
-      linear-gradient(145deg, #1E6BFF, #00C2FF) border-box;
-  }
-  html[data-dir='c'] .mt.on, html[data-dir='c'] .tab-tutor, html[data-dir='c'] .tab-grafts {
-    background-image: none;
-  }
-  html[data-frame='grafts'][data-dir='c'] .tab-grafts,
-  html:not([data-frame='grafts'])[data-dir='c'] .tab-tutor,
-  html[data-dir='c'] .mt.on {
-    border-bottom: 2px solid transparent;
-    border-image: linear-gradient(90deg, #1E6BFF, #00C2FF) 1;
-    background: linear-gradient(90deg, rgba(30, 107, 255, 0.28), rgba(0, 194, 255, 0.12));
-    color: var(--text);
-  }
-  html[data-dir='c'] .lab, html[data-dir='c'] .setfold {
-    align-self: flex-start; width: auto;
-    padding: 3px 14px 3px 8px; margin: 8px 14px 0;
-    background: linear-gradient(90deg, rgba(30, 107, 255, 0.35), rgba(0, 194, 255, 0.05));
-    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 100%, 0 100%);
-  }
-  html[data-dir='c'] .tools .lab, html[data-dir='c'] .presets .lab { margin-top: 0; margin-bottom: 0; }
-  html[data-dir='c'] .lab::before, html[data-dir='c'] .setfold::before {
-    content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--cyan);
-    box-shadow: 0 0 6px var(--cyan); flex: 0 0 auto;
-  }
-  html[data-dir='c'] .setfold { display: inline-flex; }
-
-  /* daylight console — pale blue-grey glass, cyan ink, never mint */
-  html[data-light='1'] {
-    --page: #F7FAFB; --ink: #042632; --panel: #F7FAFB; --rail: #F7FAFB;
-    --chrome: #F7FAFB; --text: #042632; --label: #063848; --muted: #3E6A78;
-    --line: #B7C6CE; --track: #D5E0E6;
-  }
-  html[data-light='1'] body, html[data-light='1'] .room { background: #D5E0E6; color: var(--text); }
-  html[data-light='1'][data-dir='c'] .room { background: linear-gradient(180deg, #E7EEF3 0%, #D0DCE3 100%); }
-  html[data-light='1'] .page {
-    background: #F7FAFB; color: #042632;
-    border: 1px solid #0A6A86;
-    box-shadow: 0 0 0 1px rgba(10, 106, 134, 0.28), 0 0 28px rgba(0, 194, 255, 0.18), 0 16px 36px rgba(20, 40, 55, 0.12);
-  }
-  html[data-light='1'][data-dir='c'] .page {
-    background:
-      linear-gradient(#F7FAFB, #F7FAFB) padding-box,
-      linear-gradient(145deg, #1E6BFF, #00C2FF) border-box;
-  }
-  html[data-light='1'] .mini, html[data-light='1'] .minib, html[data-light='1'] .tile .th,
-  html[data-light='1'] .gk-card, html[data-light='1'] .gk-src, html[data-light='1'] .ask { background: #E7EEF2; }
-  html[data-light='1'] .ask textarea { color: #042632; }
-  html[data-light='1'] .mark { background: #04141A; padding: 2px 7px; }
-  html[data-light='1'][data-dir='a'] .room::before {
-    background: repeating-linear-gradient(to bottom, transparent 0 3px, rgba(4, 38, 50, 0.05) 3px 4px);
-  }
-  html[data-light='1'][data-dir='a'] .ch { color: #063848; text-shadow: 0 0 10px rgba(0, 194, 255, 0.45); }
-  html[data-light='1'][data-dir='a'] .panel { box-shadow: inset 0 0 0 1px rgba(10, 106, 134, 0.35); }
-  html[data-light='1'][data-dir='b'] .page {
-    background-color: #F7FAFB;
-    background-image:
-      linear-gradient(rgba(6, 56, 72, 0.08) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(6, 56, 72, 0.08) 1px, transparent 1px);
-    background-size: 24px 24px;
-    border-color: #0A6A86;
-  }
-  html[data-light='1'][data-dir='b'] .brackets i { color: #063848; }
-  html[data-light='1'][data-dir='b'] .panel,
-  html[data-light='1'][data-dir='b'] .top,
-  html[data-light='1'][data-dir='b'] .sprint,
-  html[data-light='1'][data-dir='b'] .strip { background: #F7FAFB; }
-  html[data-light='1'][data-dir='c'] .panel {
-    background:
-      linear-gradient(rgba(247, 250, 251, 0.9), rgba(247, 250, 251, 0.9)) padding-box,
-      linear-gradient(145deg, #1E6BFF, #00C2FF) border-box;
-    box-shadow: none;
-  }
-  html[data-light='1'] .fill { box-shadow: none; }
-
-  html.typing .strip, html.typing .top, html.typing .panel, html.typing .sprint { opacity: 0.05; }
+  .sprint { grid-column: 1 / -1; grid-row: 2; z-index: 3; display: flex; align-items: center; gap: 14px; padding: 0 16px; background: var(--panel); border-top: 1px solid var(--line); box-shadow: 0.5px 0 0 #ff4d6a, -0.5px 0 0 #00C2FF; }
+  .trackbar { flex: 1; height: 5px; background: #12333A; position: relative; }
+  .fill { position: absolute; inset: 0 auto 0 0; width: calc(var(--n) * 2px); max-width: 70%; background: var(--lime); }
+  .nocaret { position: absolute; top: -3px; width: 3px; height: 11px; left: calc(var(--n) * 2px - 2px); background: var(--cyan); }
+  .sprint .ct { font-weight: 600; font-size: 15px; letter-spacing: .06em; min-width: 2.2em; text-align: right; }
+  html[data-light='1'] .page { background: #F4F7F8; color: #042632; border-color: #00C2FF; box-shadow: 0 0 0 1px rgba(0, 194, 255, .7), 0 0 32px rgba(0, 194, 255, .4); }
+  html[data-light='1'] .readout, html[data-light='1'] .sheet, html[data-light='1'] .hint { background: #F4F7F8; color: #042632; }
+  html[data-light='1'] .readout, html[data-light='1'] .hint { color: #063848; }
+  html[data-light='1'] .brackets i { color: #0A6A86; }
+  html[data-light='1'] .frame-grid { background-image: linear-gradient(rgba(10, 106, 134, .45) 1px, transparent 1px), linear-gradient(90deg, rgba(10, 106, 134, .45) 1px, transparent 1px); }
+  .meter { display: none; position: absolute; inset: 0; z-index: 55; pointer-events: none; overflow: hidden; }
+  html[data-frame='glitch'] .meter { display: block; }
+  .meter .glitch-meter-still { position: absolute; inset: 0; opacity: .34; background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(0, 194, 255, .045) 3px 4px), repeating-linear-gradient(90deg, rgba(227, 241, 236, .03) 0 1px, transparent 1px 3px); }
+  .meter .theme-fx-tear { position: absolute; left: 0; right: 0; height: 2px; opacity: .75; }
+  .meter .theme-fx-shear { position: absolute; left: -4%; right: -4%; height: 26px; background: rgba(0, 194, 255, .08); transform: skewX(-12deg); opacity: .72; }
+  .meter .theme-fx-noise { position: absolute; width: 130px; height: 56px; opacity: .7; background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .06) 0 1px, transparent 1px 3px), repeating-linear-gradient(0deg, rgba(166, 255, 61, .06) 0 1px, transparent 1px 2px); }
+  .meter .theme-fx-macroblock { position: absolute; }
+  .meter .theme-fx-backlight { position: absolute; inset: 0; background: #000; opacity: .1; }
+  .icons { display: none; flex: 1; min-height: 0; overflow: auto; background: #020c10; color: var(--text); padding: 28px 40px 20px; }
+  html[data-frame='icon-sheet'] .icons { display: block; }
+  .icons h1 { font-size: 14px; font-weight: 600; letter-spacing: .18em; color: var(--cyan); }
+  .icons .sub { margin: 6px 0 18px; font-size: 12px; color: var(--muted); letter-spacing: .08em; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .grp { border: 1px solid var(--line); background: #101C24; margin-bottom: 16px; }
+  .grp h2 { font-size: 12px; letter-spacing: .16em; color: var(--label); padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .irow { display: grid; grid-template-columns: 148px 1fr 1fr; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid #143038; }
+  .irow:last-child { border-bottom: 0; }
+  .irow .nm { font-size: 12px; color: var(--text); }
+  .slot { display: flex; align-items: center; justify-content: center; min-height: 48px; color: var(--text); }
+  .slot .px { width: 48px; height: 48px; }
+  .slot .today { width: 32px; height: 32px; }
+  .slot .letter { font-weight: 600; font-size: 22px; width: 32px; text-align: center; }
+  .ih { display: grid; grid-template-columns: 148px 1fr 1fr; padding: 6px 12px 0; font-size: 10px; letter-spacing: .14em; color: var(--muted); }
+  html.typing .strip, html.typing .top, html.typing .panel, html.typing .sprint, html.typing .readout, html.typing .hint { opacity: .05; }
   @media (prefers-reduced-motion: reduce) {
-    html.typing .strip, html.typing .top, html.typing .panel, html.typing .sprint { opacity: 1; }
+    html.typing .strip, html.typing .top, html.typing .panel, html.typing .sprint, html.typing .readout, html.typing .hint { opacity: 1; }
     *, *::before, *::after { animation: none !important; transition: none !important; }
   }
   @media (prefers-reduced-motion: no-preference) {
-    html[data-dir='b']:not(.shot) .brackets { animation: acquire 300ms ease; }
-    html[data-dir='c']:not(.shot) .panel.assemble { animation: popin 120ms linear; }
-    html[data-dir='c']:not(.shot) .panel.assemble .scan { animation: wipe 120ms linear; }
+    html:not(.shot) .brackets { animation: acquire 300ms ease; }
   }
   @keyframes acquire { from { opacity: 0; transform: scale(1.04); } to { opacity: 1; transform: none; } }
-  @keyframes popin { from { transform: scale(0.98); } to { transform: none; } }
-  @keyframes wipe { from { transform: translateY(-100%); opacity: .9; } to { transform: translateY(100%); opacity: 0; } }
 </style>
 </head>
 <body>
 <header class="rig">
-  <b>FLUX V2</b><span class="only">mockup only</span>
-  <button type="button" data-dirbtn="a">A OPERATOR</button>
-  <button type="button" data-dirbtn="b">B VOIGHT</button>
-  <button type="button" data-dirbtn="c">C ARCOLOGY</button>
-  <span class="sp"></span>
+  <b>FLUX V2 · VOIGHT</b><span class="only">mockup only</span>
   <button type="button" data-framebtn="page-both-panels">Both panels</button>
   <button type="button" data-framebtn="pages-popout">Pages</button>
   <button type="button" data-framebtn="grafts">Grafts</button>
   <button type="button" data-framebtn="board">Board</button>
   <button type="button" data-framebtn="tutor">Tutor</button>
   <button type="button" data-framebtn="flux-light">Daylight</button>
+  <button type="button" data-framebtn="icon-sheet">Icons</button>
+  <button type="button" data-framebtn="glitch">Glitch</button>
   <button type="button" id="typing">Typing</button>
-  <span class="fr">Glitch meter untouched</span>
+  <span class="fr">B only · grid on the frame</span>
 </header>
 
 <div class="room" id="room">
-  <div class="follow" id="follow"></div>
   <aside class="strip" aria-label="Strip">
-    <div class="bracket">
-      <div class="place" title="The Late Ferry">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="8"/><rect x="4" y="13" width="16" height="8"/><path d="M10 7h4M10 17h4"/></svg>
-        <span class="nm">The Late Ferry</span><span class="chev">⌄</span>
-      </div>
-      <button class="si" id="railPages" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h8"/></svg><span>Pages</span></button>
-      <button class="si" id="railBoards" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.3"/><circle cx="18" cy="6" r="2.3"/><circle cx="12" cy="18" r="2.3"/><path d="M7.9 7.4 10.3 16M16.1 7.4 13.7 16M8.3 6h7.4"/></svg><span>Boards</span></button>
-    </div>
-    <div class="ssep"></div>
-    <button class="si" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v16.5A1.5 1.5 0 0 1 17.5 21H6.5A2.5 2.5 0 0 1 4 18.5v-13Z"/><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H19"/></svg><span>Journal</span></button>
+    <div class="place" title="The Late Ferry"><span data-px="drawer"></span><span class="nm">The Late Ferry</span><span class="chev">⌄</span></div>
+    <button class="si" id="railPages" type="button"><span data-px="pages"></span><span>Pages</span></button>
+    <button class="si" id="railBoards" type="button"><span data-px="boards"></span><span>Boards</span></button>
+    <div class="rule" aria-hidden="true">├─────┤</div>
+    <button class="si" type="button"><span data-px="journal"></span><span>Journal</span></button>
     <div class="sfoot">
-      <div class="ssep"></div>
-      <button class="si" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.6 3.1-6.5 7-6.5s7 2.9 7 6.5"/></svg><span>Settings</span></button>
-      <button class="si" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2H17a4 4 0 0 0 4-4c0-4.4-4-7.4-9-7.4Z"/><circle cx="7.5" cy="10.5" r="1" fill="currentColor" stroke="none"/><circle cx="10.5" cy="7" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="7.5" r="1" fill="currentColor" stroke="none"/></svg><span>Themes</span></button>
-      <div class="ssep"></div>
-      <button class="si" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M7 7l1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/><path d="M10 11v6M14 11v6"/></svg><span>Trash</span></button>
+      <div class="rule" aria-hidden="true">├─────┤</div>
+      <button class="si" type="button"><span data-px="settings"></span><span>Settings</span></button>
+      <button class="si" type="button"><span data-px="themes"></span><span>Themes</span></button>
+      <div class="rule" aria-hidden="true">├─────┤</div>
+      <button class="si" type="button"><span data-px="trash"></span><span>Trash</span></button>
     </div>
   </aside>
-
   <div class="main">
     <div class="app">
       <div class="top">
         <div class="mark">WRIZO</div>
-        <div class="crumb crumb-page"><span>The Late Ferry</span><span class="sep">›</span><span>Manuscript</span><span class="sep">›</span><span class="here">Ch 3</span><button class="dots" type="button" aria-label="Page menu">···</button></div>
-        <div class="crumb crumb-board"><span>The Late Ferry</span><span class="sep">›</span><span class="here">Chapter map</span></div>
+        <div class="crumb crumb-page"><span>The Late Ferry</span><span>›</span><span>Manuscript</span><span>›</span><span class="here">Ch 3</span><button class="dots" type="button" aria-label="Page menu">···</button></div>
+        <div class="crumb crumb-board"><span>The Late Ferry</span><span>›</span><span class="here">Chapter map</span></div>
         <div class="modes" id="pageModes">
           <button class="mt" type="button">Free Write</button>
           <button class="mt on" type="button">Draft</button>
           <button class="mt" type="button">Revise</button>
           <button class="mt off" type="button">Workshop</button>
           <button class="mt" type="button">Publish</button>
-          <button class="mt plan" type="button">Plan <span aria-hidden="true">→</span></button>
+          <button class="mt plan" type="button">Plan →</button>
         </div>
         <div class="modes" id="boardModes">
           <button class="mt on" type="button">Open</button>
           <button class="mt" type="button">Storyboard</button>
           <button class="mt" type="button">Outline</button>
-          <button class="mt plan" type="button">Pages <span aria-hidden="true">→</span></button>
+          <button class="mt plan" type="button">Pages →</button>
         </div>
-        <div class="carrier"><span>CARRIER</span><b data-words>92</b></div>
       </div>
-
       <div class="track track-l">
         <aside class="panel" id="pop-pages" aria-label="Pages">
-          <div class="scan"></div>
-          <div class="ch" data-ch="CH.02 // PAGES"></div>
-          <div class="pophead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="3" width="16" height="8"/><rect x="4" y="13" width="16" height="8"/><path d="M10 7h4M10 17h4"/></svg><span class="pn">The Late Ferry</span></div>
+          <div class="pophead"><span data-px="drawer"></span><span class="pn">The Late Ferry</span></div>
           <button class="newbtn" type="button"><b>＋</b>New Page</button>
-          <div class="tools"><span class="lab">Sections</span><button class="sort" type="button">Order</button><div class="views"><button type="button" aria-pressed="true" aria-label="Rows"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 2.5h10M1 6h10M1 9.5h10"/></svg></button><button type="button" aria-pressed="false" aria-label="Grid"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="4" height="4"/><rect x="7" y="1" width="4" height="4"/><rect x="1" y="7" width="4" height="4"/><rect x="7" y="7" width="4" height="4"/></svg></button></div></div>
+          <div class="tools"><span class="lab">Sections</span><button class="sort" type="button">Order</button>
+            <div class="views"><button type="button" aria-pressed="true" aria-label="Rows"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 2.5h10M1 6h10M1 9.5h10"/></svg></button><button type="button" aria-pressed="false" aria-label="Grid"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="4" height="4"/><rect x="7" y="1" width="4" height="4"/><rect x="1" y="7" width="4" height="4"/><rect x="7" y="7" width="4" height="4"/></svg></button></div>
+          </div>
           <div class="popbody">
             <div class="setfold open"><span class="cv">›</span><span>Manuscript</span></div>
             <div class="row"><span class="mini"></span><span class="tx"><span class="t">Title Page</span><span class="fl">THE LATE FERRY · a novel</span></span></div>
@@ -630,23 +337,17 @@
             <div class="row"><span class="mini"></span><span class="tx"><span class="t">Ch 11</span><span class="fl">The last crossing was the one they never talked about.</span></span></div>
             <div class="row"><span class="mini"></span><span class="tx"><span class="t">Ch 12</span><span class="fl">In the end it was only water.</span></span></div>
             <div class="row"><span class="mini"></span><span class="tx"><span class="t">Bibliography</span><span class="fl">Ashworth, M. Tides of the Estuary (1987).</span></span></div>
-            <div class="popfoot">
-              <button class="lnk" type="button"><b>+</b>New set</button>
-              <div class="presets"><span class="lab">Presets</span>
-                <button class="lnk" type="button"><b>+</b>Title Page</button>
-                <button class="lnk" type="button"><b>+</b>Screenplay</button>
-                <button class="lnk" type="button"><b>+</b>Outline</button>
-                <button class="lnk" type="button"><b>+</b>Bibliography</button>
-              </div>
-            </div>
+            <div class="popfoot"><button class="lnk" type="button"><b>+</b>New set</button><div class="presets"><span class="lab">Presets</span>
+              <button class="lnk" type="button"><b>+</b>Title Page</button><button class="lnk" type="button"><b>+</b>Screenplay</button>
+              <button class="lnk" type="button"><b>+</b>Outline</button><button class="lnk" type="button"><b>+</b>Bibliography</button></div></div>
           </div>
         </aside>
         <aside class="panel" id="pop-boards" aria-label="Boards">
-          <div class="scan"></div>
-          <div class="ch" data-ch="CH.03 // BOARDS"></div>
-          <div class="pophead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="3" width="16" height="8"/><rect x="4" y="13" width="16" height="8"/><path d="M10 7h4M10 17h4"/></svg><span class="pn">The Late Ferry</span></div>
+          <div class="pophead"><span data-px="drawer"></span><span class="pn">The Late Ferry</span></div>
           <button class="newbtn" type="button"><b>＋</b>New Board</button>
-          <div class="tools"><span class="lab">Sections</span><button class="sort" type="button">Order</button><div class="views"><button type="button" aria-pressed="false" aria-label="Rows"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 2.5h10M1 6h10M1 9.5h10"/></svg></button><button type="button" aria-pressed="true" aria-label="Grid"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="4" height="4"/><rect x="7" y="1" width="4" height="4"/><rect x="1" y="7" width="4" height="4"/><rect x="7" y="7" width="4" height="4"/></svg></button></div></div>
+          <div class="tools"><span class="lab">Sections</span><button class="sort" type="button">Order</button>
+            <div class="views"><button type="button" aria-pressed="false" aria-label="Rows"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 2.5h10M1 6h10M1 9.5h10"/></svg></button><button type="button" aria-pressed="true" aria-label="Grid"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="4" height="4"/><rect x="7" y="1" width="4" height="4"/><rect x="1" y="7" width="4" height="4"/><rect x="7" y="7" width="4" height="4"/></svg></button></div>
+          </div>
           <div class="popbody">
             <div class="setfold open"><span class="cv">›</span><span>Manuscript</span></div>
             <div class="grid">
@@ -654,71 +355,59 @@
               <div class="tile"><span class="th"><i style="left:12%;top:20%"></i><i style="left:40%;top:48%"></i></span><span class="t">Timeline</span></div>
             </div>
             <div class="setfold"><span class="cv">›</span><span>Worldbuilding</span><span class="ctn">4</span></div>
-            <div class="popfoot">
-              <button class="lnk" type="button"><b>+</b>New set</button>
-              <div class="presets"><span class="lab">Presets</span>
-                <button class="lnk" type="button"><b>+</b>Three-Act Structure</button>
-                <button class="lnk" type="button"><b>+</b>Worldbuilding</button>
-                <button class="lnk" type="button"><b>+</b>Feature Screenplay</button>
-                <button class="lnk" type="button"><b>+</b>Thesis / Dissertation</button>
-                <button class="lnk" type="button"><b>+</b>Grant Application</button>
-                <button class="lnk" type="button"><b>+</b>Feature Story</button>
-                <button class="lnk" type="button"><b>+</b>Character Study</button>
-              </div>
-            </div>
+            <div class="popfoot"><button class="lnk" type="button"><b>+</b>New set</button><div class="presets"><span class="lab">Presets</span>
+              <button class="lnk" type="button"><b>+</b>Three-Act Structure</button><button class="lnk" type="button"><b>+</b>Worldbuilding</button>
+              <button class="lnk" type="button"><b>+</b>Feature Screenplay</button><button class="lnk" type="button"><b>+</b>Character Study</button></div></div>
           </div>
         </aside>
       </div>
-
       <div class="pagecol">
         <div class="page" id="page">
+          <div class="frame-grid" aria-hidden="true"></div>
           <div class="brackets" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <div class="readout"><span>DOC 03 // CH 3</span><span>CHK 4/14</span></div>
           <div class="sheet" id="prose">
             <p>The kettle clicks off and she still doesn’t turn around.<span class="caret" aria-hidden="true"></span> Steam writes a short sentence on the window, then forgets it.</p>
             <p>He could say her name. He doesn’t. Instead he lines the cups up by the sink, handles all facing the same way, the way their mother used to, and waits for the room to decide something.</p>
             <p>Outside, the ferry sounds once, low, like a door closing somewhere far off. She counts the seconds before the second horn. There isn’t one.</p>
             <p>“You kept the blue one,” she says, finally. Not a question.</p>
           </div>
+          <div class="hint">TYPE — THE CHROME RECEDES ▪ PASTE MEETS THE FIREWALL ▪ GRID ON THE FRAME</div>
         </div>
         <div class="board" id="board">
+          <div class="frame-grid" aria-hidden="true"></div>
           <div class="brackets" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-          <article class="bcard" style="left:56px;top:70px" aria-selected="true" data-x="56" data-y="70">
+          <article class="bcard" style="left:56px;top:70px" aria-selected="true">
             <div class="reticle"></div>
             <div class="ct">Mara at the window</div>
             <div class="bd">She watches the ferry light before she turns the kettle on.</div>
             <div class="xy">056 · 070</div>
             <span class="resz" aria-hidden="true"></span>
-            <button class="knob" type="button" aria-label="Drag to graft"></button>
+            <button class="knob" type="button" aria-label="Drag to graft" data-px="knob"></button>
           </article>
-          <article class="bcard" style="left:310px;top:58px" data-x="310" data-y="58">
+          <article class="bcard" style="left:310px;top:58px">
             <div class="ct">The blue cup</div>
             <div class="bd">Their mother’s. He won’t say so.</div>
             <div class="xy">310 · 058</div>
             <span class="resz" aria-hidden="true"></span>
-            <button class="knob" type="button" aria-label="Drag to graft"></button>
           </article>
-          <article class="bcard" style="left:180px;top:260px" data-x="180" data-y="260">
+          <article class="bcard" style="left:180px;top:260px">
             <div class="ct">Second horn</div>
             <div class="bd">There isn’t one. She counts anyway.</div>
             <div class="xy">180 · 260</div>
             <span class="resz" aria-hidden="true"></span>
-            <button class="knob" type="button" aria-label="Drag to graft"></button>
           </article>
-          <article class="bcard" style="left:430px;top:250px" data-x="430" data-y="250">
+          <article class="bcard" style="left:430px;top:250px">
             <div class="ct">The ferryman’s coat</div>
             <div class="bd">From Short stories — hangs by the door.</div>
             <div class="xy">430 · 250</div>
             <span class="resz" aria-hidden="true"></span>
-            <button class="knob" type="button" aria-label="Drag to graft"></button>
           </article>
           <div class="tip">Drag to graft</div>
         </div>
       </div>
-
       <div class="track track-r">
-        <aside class="panel" id="rpanel" aria-label="Tutor and grafts">
-          <div class="scan"></div>
-          <div class="ch" data-ch="CH.04 // TUTOR"></div>
+        <aside class="panel" aria-label="Tutor and grafts">
           <div class="tabs">
             <button class="tab tab-tutor" type="button">Tutor</button>
             <button class="tab tab-grafts" type="button">Grafts</button>
@@ -756,73 +445,123 @@
       </div>
     </div>
   </div>
+  <div class="sprint" aria-label="Session words"><div class="trackbar"><div class="fill"></div><div class="nocaret"></div></div><div class="ct" data-words>92</div></div>
+  <div class="meter" aria-hidden="true">
+    <div class="glitch-meter-still"></div>
+    <div class="theme-fx-tear" style="top:34%;background:rgba(0,194,255,.6)"></div>
+    <div class="theme-fx-tear" style="top:36%;background:rgba(166,255,61,.5)"></div>
+    <div class="theme-fx-tear" style="top:39%;background:rgba(0,194,255,.6)"></div>
+    <div class="theme-fx-tear" style="top:41%;background:rgba(0,194,255,.6)"></div>
+    <div class="theme-fx-shear" style="top:46%"></div>
+    <div class="theme-fx-noise" style="left:58%;top:18%"></div>
+    <div class="theme-fx-macroblock" style="left:22%;top:58%;width:22px;height:16px;background:rgba(0,194,255,.14)"></div>
+    <div class="theme-fx-macroblock" style="left:24%;top:61%;width:16px;height:12px;background:rgba(166,255,61,.13)"></div>
+    <div class="theme-fx-macroblock" style="left:20%;top:63%;width:26px;height:14px;background:rgba(0,194,255,.14)"></div>
+    <div class="theme-fx-backlight"></div>
+  </div>
+</div>
 
-  <div class="sprint" aria-label="Session words">
-    <div class="trackbar"><div class="fill"></div><div class="nocaret"></div></div>
-    <div class="ct" data-words>92</div>
+<div class="icons" id="icons">
+  <h1>FLUX ICON SET · 16px · 1-BIT</h1>
+  <p class="sub">SQUARE ENDS · NO CURVES · TODAY BESIDE THE NEW GLYPH</p>
+  <div class="cols">
+    <div>
+      <div class="grp"><h2>RAIL</h2><div class="ih"><span></span><span>TODAY</span><span>FLUX</span></div><div id="railRows"></div></div>
+      <div class="grp"><h2>GRAFT KNOB</h2><div class="ih"><span></span><span>TODAY</span><span>FLUX</span></div><div id="knobRow"></div></div>
+    </div>
+    <div>
+      <div class="grp"><h2>TOOLBAR</h2><div class="ih"><span></span><span>TODAY</span><span>FLUX</span></div><div id="toolRows"></div></div>
+      <div class="grp"><h2>ACTIONS</h2><div class="ih"><span></span><span>TODAY</span><span>FLUX</span></div><div id="actRows"></div></div>
+    </div>
   </div>
 </div>
 
 <script>
 (function () {
+  function px(rects) {
+    return '<svg class="px" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">' +
+      rects.map(function (r) { return '<rect x="' + r[0] + '" y="' + r[1] + '" width="' + r[2] + '" height="' + r[3] + '"/>'; }).join('') + '</svg>';
+  }
+  var R = {
+    drawer: [[3,2,10,1],[3,2,1,5],[12,2,1,5],[3,6,10,1],[6,4,4,1],[3,9,10,1],[3,9,1,5],[12,9,1,5],[3,13,10,1],[6,11,4,1]],
+    pages: [[3,2,7,1],[3,2,1,12],[3,13,9,1],[11,5,1,9],[9,2,1,1],[10,3,1,1],[11,4,1,1],[5,6,5,1],[5,8,5,1],[5,10,4,1]],
+    boards: [[2,2,4,4],[10,2,4,4],[6,10,4,4],[6,3,4,1],[7,6,1,4]],
+    journal: [[3,2,1,12],[4,2,8,1],[12,2,1,12],[4,13,8,1],[6,2,1,12]],
+    settings: [[6,2,4,1],[6,2,1,4],[9,2,1,4],[6,5,4,1],[4,8,8,1],[4,8,1,5],[11,8,1,5],[4,12,8,1]],
+    themes: [[2,2,5,5],[9,2,5,5],[5,9,5,5]],
+    trash: [[6,1,4,1],[7,1,1,2],[3,4,10,1],[4,5,1,8],[11,5,1,8],[4,12,8,1],[6,7,1,4],[9,7,1,4]],
+    B: [[4,2,6,2],[4,2,2,12],[4,7,5,2],[4,12,6,2],[8,4,2,3],[8,9,2,3]],
+    I: [[5,2,6,2],[7,2,2,12],[5,12,6,2]],
+    U: [[4,2,2,10],[10,2,2,10],[4,12,8,2]],
+    S: [[4,2,8,2],[4,2,2,5],[4,6,8,2],[10,6,2,6],[4,12,8,2]],
+    H: [[4,2,2,12],[10,2,2,12],[4,7,8,2]],
+    list: [[3,3,2,2],[3,7,2,2],[3,11,2,2],[7,3,6,1],[7,7,6,1],[7,11,5,1]],
+    left: [[3,3,10,1],[3,6,7,1],[3,9,9,1],[3,12,5,1]],
+    center: [[3,3,10,1],[4,6,8,1],[5,9,6,1],[4,12,8,1]],
+    right: [[3,3,10,1],[6,6,7,1],[4,9,9,1],[8,12,5,1]],
+    tags: [[7,3,6,1],[5,4,1,1],[4,5,1,1],[3,6,1,4],[4,10,1,1],[5,11,1,1],[7,12,6,1],[12,3,1,10],[9,6,2,2]],
+    copy: [[6,2,7,1],[6,2,1,7],[12,2,1,7],[6,8,7,1],[3,5,6,1],[3,5,1,7],[8,5,1,4],[3,11,6,1]],
+    del: [[4,3,8,1],[6,1,4,1],[5,4,1,8],[10,4,1,8],[5,11,6,1],[7,6,1,4]],
+    hf: [[4,2,8,1],[4,2,1,12],[11,2,1,12],[4,13,8,1],[4,5,8,1],[4,10,8,1]],
+    knob: [[4,4,8,1],[4,4,1,8],[11,4,1,8],[4,11,8,1],[6,6,4,4]]
+  };
+  var TODAY = {
+    drawer: '<svg class="today" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="3" width="16" height="8"/><rect x="4" y="13" width="16" height="8"/><path d="M10 7h4M10 17h4"/></svg>',
+    pages: '<svg class="today" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h8"/></svg>',
+    boards: '<svg class="today" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="6" cy="6" r="2.3"/><circle cx="18" cy="6" r="2.3"/><circle cx="12" cy="18" r="2.3"/><path d="M8.3 6h7.4M7.9 7.4 10.6 16M16.1 7.4 13.4 16"/></svg>',
+    journal: '<svg class="today" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v16.5A1.5 1.5 0 0 1 17.5 21H6.5A2.5 2.5 0 0 1 4 18.5v-13Z"/><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H19"/></svg>',
+    settings: '<svg class="today" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.6 3.1-6.5 7-6.5s7 2.9 7 6.5"/></svg>',
+    themes: '<svg class="today" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2H17a4 4 0 0 0 4-4c0-4.4-4-7.4-9-7.4Z"/><circle cx="7.5" cy="10.5" r="1" fill="currentColor" stroke="none"/></svg>',
+    trash: '<svg class="today" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13"/></svg>',
+    B: '<span class="letter"><b>B</b></span>', I: '<span class="letter"><i>I</i></span>', U: '<span class="letter"><u>U</u></span>',
+    S: '<span class="letter"><s>S</s></span>', H: '<span class="letter">H</span>',
+    list: '<svg class="today" viewBox="0 0 16 16"><circle cx="2.4" cy="3" r="1.15" fill="currentColor"/><circle cx="2.4" cy="8" r="1.15" fill="currentColor"/><circle cx="2.4" cy="13" r="1.15" fill="currentColor"/><path d="M6 3h8M6 8h8M6 13h6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+    left: '<svg class="today" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2.5h12M2 6h8M2 9.5h11M2 13h6"/></svg>',
+    center: '<svg class="today" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2.5h12M4 6h8M2.5 9.5h11M4 13h8"/></svg>',
+    right: '<svg class="today" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2.5h12M6 6h8M3 9.5h11M8 13h6"/></svg>',
+    tags: '<svg class="today" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2.4 8.3 8.3 2.4h4.9v4.9l-5.9 5.9a1.3 1.3 0 0 1-1.9 0L2.4 10.2a1.3 1.3 0 0 1 0-1.9z"/><circle cx="10.6" cy="5.4" r=".9"/></svg>',
+    copy: '<svg class="today" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="5.6" y="5.6" width="7.9" height="7.9" rx="1"/><path d="M10.4 3.6V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v6.4a1 1 0 0 0 1 1h.6"/></svg>',
+    del: '<svg class="today" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.6 8.6h6l.6-8.6"/></svg>',
+    hf: '<svg class="today" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="2" width="10" height="12" rx="1"/><path d="M3 5h10M3 11h10"/></svg>',
+    knob: '<svg class="today" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5" fill="currentColor"/></svg>'
+  };
+  var NAMES = {
+    drawer: 'Place', pages: 'Pages', boards: 'Boards', journal: 'Journal', settings: 'Settings', themes: 'Themes', trash: 'Trash',
+    B: 'Bold', I: 'Italic', U: 'Underline', S: 'Strike', H: 'Heading', list: 'List', left: 'Align left', center: 'Align center', right: 'Align right',
+    tags: 'Tags', copy: 'Copy', del: 'Delete', hf: 'Header / Footer', knob: 'Graft knob'
+  };
+  function row(key) {
+    return '<div class="irow"><span class="nm">' + NAMES[key] + '</span><span class="slot">' + TODAY[key] + '</span><span class="slot">' + px(R[key]) + '</span></div>';
+  }
+  document.getElementById('railRows').innerHTML = ['drawer','pages','boards','journal','settings','themes','trash'].map(row).join('');
+  document.getElementById('toolRows').innerHTML = ['B','I','U','S','H','list','left','center','right'].map(row).join('');
+  document.getElementById('actRows').innerHTML = ['tags','copy','del','hf'].map(row).join('');
+  document.getElementById('knobRow').innerHTML = row('knob');
+  document.querySelectorAll('[data-px]').forEach(function (el) { el.innerHTML = px(R[el.dataset.px]); });
   var prose = document.getElementById('prose');
-  var n = (prose.innerText || '').replace(/\u200b/g, '').trim().split(/\s+/).filter(Boolean).length;
+  var n = (prose.innerText || '').trim().split(/\s+/).filter(Boolean).length;
   document.documentElement.style.setProperty('--n', String(n));
   document.querySelectorAll('[data-words]').forEach(function (el) { el.textContent = String(n); });
-
   var root = document.documentElement;
-  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function arm() {
-    if (root.classList.contains('shot') || reduced || root.dataset.dir !== 'c') return;
-    document.querySelectorAll('.panel').forEach(function (p) {
-      p.classList.remove('assemble');
-      void p.offsetWidth;
-      p.classList.add('assemble');
-    });
-  }
   function press() {
-    document.querySelectorAll('[data-dirbtn]').forEach(function (b) {
-      b.setAttribute('aria-pressed', String(b.dataset.dirbtn === root.dataset.dir));
-    });
     document.querySelectorAll('[data-framebtn]').forEach(function (b) {
       b.setAttribute('aria-pressed', String(b.dataset.framebtn === root.dataset.frame));
     });
-    var ch = document.querySelector('#rpanel .ch');
-    if (ch) ch.setAttribute('data-ch', root.dataset.frame === 'grafts' ? 'CH.04 // GRAFTS' : 'CH.04 // TUTOR');
-  }
-  function go(dir, frame) {
-    root.dataset.dir = dir;
-    root.dataset.frame = frame;
-    root.dataset.light = frame === 'flux-light' ? '1' : '0';
-    if (!root.classList.contains('shot')) {
-      history.replaceState(null, '', '?frame=' + dir.toUpperCase() + '-' + frame);
-    }
-    press();
-    arm();
   }
   press();
-  arm();
-  document.querySelectorAll('[data-dirbtn]').forEach(function (b) {
-    b.addEventListener('click', function () { go(b.dataset.dirbtn, root.dataset.frame); });
-  });
   document.querySelectorAll('[data-framebtn]').forEach(function (b) {
-    b.addEventListener('click', function () { go(root.dataset.dir, b.dataset.framebtn); });
+    b.addEventListener('click', function () {
+      root.dataset.frame = b.dataset.framebtn;
+      root.dataset.light = b.dataset.framebtn === 'flux-light' ? '1' : '0';
+      if (!root.classList.contains('shot')) history.replaceState(null, '', '?frame=' + b.dataset.framebtn);
+      press();
+    });
   });
   var typing = document.getElementById('typing');
   typing.addEventListener('click', function () {
     root.classList.toggle('typing');
     typing.setAttribute('aria-pressed', String(root.classList.contains('typing')));
   });
-  if (!root.classList.contains('shot')) {
-    var room = document.getElementById('room');
-    var glow = document.getElementById('follow');
-    room.addEventListener('pointermove', function (e) {
-      if (root.dataset.dir !== 'c') return;
-      var r = room.getBoundingClientRect();
-      glow.style.left = (e.clientX - r.left) + 'px';
-      glow.style.top = (e.clientY - r.top) + 'px';
-    });
-  }
 })();
 </script>
 </body>
