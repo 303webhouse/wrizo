@@ -119,9 +119,16 @@ const openDraftSliverSettings = async (app) => {
 };
 
 // Each location, how to reach it, and the selector of its own "?".
+// SUPERSEDED (help-buttons, Fable Oct 18-19): Outline's own "?" was a single
+// generic LOCATIONS entry, checked identically in both themes (icon-button
+// era). The five-row picker's own theme-unique rule makes that reading
+// wrong on BOTH sides at once: Arbor's Outline row carries no "?" at all
+// now, and Flux's row reads "Spine", not "Outline" - this exact selector
+// can never match in either theme. Kept verbatim, no longer run:
+//   { key: 'helpOutline', subject: 'Outline', reach: openDraftSliver, sel: '.wz-sliver-templates .wz-help[aria-label="What is Outline?"]' },
+// Dedicated per-theme successor: S1b, below the generic loop.
 const LOCATIONS = [
   { key: 'helpTemplates', subject: 'Templates', reach: openDraftSliver, sel: '.wz-sliver-templates .wz-sliver-h .wz-help' },
-  { key: 'helpOutline', subject: 'Outline', reach: openDraftSliver, sel: '.wz-sliver-templates .wz-help[aria-label="What is Outline?"]' },
   { key: 'recedeHint', subject: 'Recede depth', reach: openDraftSliverSettings, sel: '.wz-help[aria-label="What is Recede depth?"]' },
   { key: 'helpFreeWrite', subject: 'Free Write', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Free"]' },
   { key: 'helpPublish', subject: 'Publish', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Publish"]' },
@@ -131,7 +138,6 @@ const LOCATIONS = [
 const SENTENCES = {
   plateau: {
     helpTemplates: 'Ready-made page layouts.',
-    helpOutline: 'Numbered levels. Tab indents.',
     recedeHint: 'Type and the menus fade; pause, reach an edge, or press Esc to bring them back.',
     helpFreeWrite: 'Write forward only. No going back to edit.',
     helpPublish: 'Share a page as a link or a file.',
@@ -139,11 +145,27 @@ const SENTENCES = {
   },
   flux: {
     helpTemplates: 'Ready-made doc layouts.',
-    helpOutline: 'A numbered spine. Tab indents.',
     recedeHint: 'Type to dissolve the chrome; pause, reach an edge, or press Esc to bring it back.',
     helpFreeWrite: 'Write forward only. No editing back.',
     helpPublish: 'Send a doc out as a link or a file.',
     helpGrafts: 'Links join docs, cards and circuits.',
+  },
+};
+
+// S1b (help-buttons successor, Fable Oct 18-19) — the five-row Templates
+// picker's own per-theme rule: Arbor's five words are the canonical
+// baseline (none renamed), so NO row carries a "?"; Flux renames every one
+// (Raw/Script/Spine/Cover/Sources), so EVERY row carries its own, with
+// THIS theme's own sentence (Spine/Cover reuse helpOutline/helpTitlePage's
+// existing Flux text; the other three are new).
+const TEMPLATE_ROW_SENTENCES = {
+  plateau: {},
+  flux: {
+    Raw: 'A raw page. Nothing written yet.',
+    Script: 'The script format: sluglines, dialogue, action.',
+    Spine: 'A numbered spine. Tab indents.',
+    Cover: 'A standard manuscript cover sheet.',
+    Sources: 'Your sources, collected on one page.',
   },
 };
 
@@ -166,6 +188,37 @@ await withHarness(async (app) => {
       await realClick(app, loc.sel);
       await sleep(250);
     }
+  }
+
+  // ==========================================================================
+  // S1b (help-buttons successor) — the picker's own per-theme rule, Outline's
+  // old single-location reading retired above. Arbor (canonical, no row
+  // renamed): zero "?"s on the rows. Flux (every row renamed): one "?" per
+  // row, each opening THIS row's own sentence.
+  // ==========================================================================
+  await freshPage(app, 'plateau', { id: 'hb-s1b-plateau' });
+  await openDraftSliver(app);
+  const arborRowHelps = await app.evalJs("[...document.querySelectorAll('.wz-template-list .wz-template-row-wrap .wz-help')].length");
+  ok('S1b Arbor: none of the five picker rows carry a "?" (Arbor\'s own five words are the canonical baseline, none renamed)',
+    arborRowHelps === 0, String(arborRowHelps));
+
+  await freshPage(app, 'flux', { id: 'hb-s1b-flux' });
+  await openDraftSliver(app);
+  const fluxRows = await app.evalJs(`[...document.querySelectorAll('.wz-template-list .wz-template-row-wrap')].map((wrap) => ({
+    label: wrap.querySelector('.wz-template-row')?.getAttribute('aria-label') ?? null,
+    hasHelp: !!wrap.querySelector('.wz-help'),
+  }))`);
+  ok('S1b Flux: every one of the five picker rows carries its own "?" (every row is renamed)',
+    fluxRows.length === 5 && fluxRows.every((r) => r.hasHelp === true), JSON.stringify(fluxRows));
+  for (const { label } of fluxRows) {
+    const sel = `.wz-template-list .wz-template-row-wrap .wz-help[aria-label="What is ${label}?"]`;
+    await realClick(app, sel);
+    await sleep(250);
+    const text = await app.evalJs("document.querySelector('.wz-help-pop')?.textContent ?? null");
+    const expected = TEMPLATE_ROW_SENTENCES.flux[label];
+    ok(`S1b Flux [${label}]: its own "?" opens the matching sentence`, !!expected && text === expected, JSON.stringify({ label, text, expected }));
+    await realClick(app, sel);
+    await sleep(250);
   }
 
   // ==========================================================================

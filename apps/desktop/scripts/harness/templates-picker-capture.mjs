@@ -36,6 +36,14 @@ await withHarness(async (app) => {
     await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)});`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: `Desk (${theme})` });
+    // FIX (Fable, Oct 18-19) — .wz-splash and .wz-arrival coexist in the DOM
+    // (the splash is an overlay; Arrival's own content is only HIDDEN behind
+    // it, via data-splash-hold, never unmounted) — waiting for .wz-arrival
+    // alone proves nothing about whether the splash has actually cleared.
+    // Without this, the capture could seed/navigate/screenshot while the
+    // hold is still up. Same timeout page-templates-r2.mjs's own fresh()
+    // uses (MAX_HOLD_MS=10000 + buffer).
+    await app.waitFor("!document.querySelector('.wz-splash')", { label: `splash gone (${theme})`, timeout: 14000 });
     await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: `tpc-${theme}`, text: 'A page for the Templates picker frame.', origin: 'loose', source: 'page', createdAt: '2026-05-01T00:00:00.000Z' })})`);
     await sleep(300);
     await app.evalJs(`location.hash = '#/page/tpc-${theme}'`);

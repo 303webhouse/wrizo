@@ -103,12 +103,28 @@ await withHarness(async (app) => {
   ok('T1 [Draft, blank page]: the beginnings row is NOT drawn (Sprout is the blank Free Write page\'s door)', JSON.stringify(await pageDoors(app)) === '[]', JSON.stringify(await pageDoors(app)));
   await openStrip(app);
   const s = await strip(app);
+  // help-buttons (Fable, Oct 18-19) adds a HelpButton (.wz-help) beside the
+  // Templates heading itself, unconditionally in both themes - a real
+  // <button> inside .wz-sliver-templates that strip()'s own query ("every
+  // button in this section") was never written to expect. It carries no
+  // data-template, so strip()'s own `key` field already tells rows (five,
+  // each keyed) apart from it (null) without a new DOM query. Every OTHER
+  // check below filters on `.live` (true only for .wz-template-live rows),
+  // which already excludes it by construction - only the two that read `s`
+  // itself (names, and "every button is a live row") saw the extra entry.
+  const sRows = s.filter((b) => b.key !== null);
   // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @ 0fc9afef, Fable Oct 16): the picker is FIVE live rows - Blank, Screenplay, Outline, Title Page, Bibliography - and the four grayed stand-ins (and Custom) are gone. Kept VERBATIM and no longer run; its successor follows.
   //
   // ok('T1 [Draft]: the Templates read Screenplay, Outline, Title page, Bibliography, Custom - in that order, and nothing else',
   //   JSON.stringify(s.map((b) => b.name)) === JSON.stringify(['Screenplay', 'Outline', 'Title page', 'Bibliography', 'Custom']), JSON.stringify(s.map((b) => b.name)));
-  ok('T1 [Draft, page-templates-r2 successor]: the Templates read Blank, Screenplay, Outline, Title Page, Bibliography - in that order, and nothing else',
-    JSON.stringify(s.map((b) => b.name)) === JSON.stringify(['Blank', 'Screenplay', 'Outline', 'Title Page', 'Bibliography']), JSON.stringify(s.map((b) => b.name)));
+  // SUPERSEDED (help-buttons, Fable Oct 18-19): the Templates heading now
+  // carries its own "?" (HelpButton, unconditional in both themes) - a real
+  // button inside .wz-sliver-templates that `s` (every button in the
+  // section) was never written to expect. Kept verbatim, no longer run:
+  //   ok('T1 [Draft, page-templates-r2 successor]: the Templates read Blank, Screenplay, Outline, Title Page, Bibliography - in that order, and nothing else',
+  //     JSON.stringify(s.map((b) => b.name)) === JSON.stringify(['Blank', 'Screenplay', 'Outline', 'Title Page', 'Bibliography']), JSON.stringify(s.map((b) => b.name)));
+  ok('T1 [Draft, help-buttons successor]: the Templates read Blank, Screenplay, Outline, Title Page, Bibliography - in that order, and nothing else (the heading\'s own "?" is excluded - it is not a template row, keyed null)',
+    JSON.stringify(sRows.map((b) => b.name)) === JSON.stringify(['Blank', 'Screenplay', 'Outline', 'Title Page', 'Bibliography']), JSON.stringify(sRows.map((b) => b.name)));
   // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @ 0fc9afef, Fable Oct 16): the picker is FIVE live rows - Blank, Screenplay, Outline, Title Page, Bibliography - and the four grayed stand-ins (and Custom) are gone. Kept VERBATIM and no longer run; its successor follows.
   //
   // ok('T1 [Draft]: Screenplay is the ONE live template (not aria-disabled, keyed screenplay, with its glyph DRAWN at least 12px) - there is no Sprout and no Plan template',
@@ -121,8 +137,13 @@ await withHarness(async (app) => {
   //
   // ok('T1 [Draft]: the four after it are grayed placeholders - aria-disabled, titled "Coming soon", each with its glyph DRAWN at least 12px',
   //   s.filter((b) => !b.live).length === 4 && s.filter((b) => !b.live).every((b) => b.disabled === 'true' && b.title === 'Coming soon' && b.glyph), JSON.stringify(s.filter((b) => !b.live)));
-  ok('T1 [Draft, page-templates-r2 successor]: no grayed placeholder is left - every button in the Templates section is a live row',
-    s.filter((b) => !b.live).length === 0 && s.length === 5, JSON.stringify(s.filter((b) => !b.live)));
+  // SUPERSEDED (help-buttons, Fable Oct 18-19): same gap as above - "every
+  // button in the Templates section" now also counts the heading's own "?".
+  // Kept verbatim, no longer run:
+  //   ok('T1 [Draft, page-templates-r2 successor]: no grayed placeholder is left - every button in the Templates section is a live row',
+  //     s.filter((b) => !b.live).length === 0 && s.length === 5, JSON.stringify(s.filter((b) => !b.live)));
+  ok('T1 [Draft, help-buttons successor]: no grayed placeholder is left - every TEMPLATE ROW (not counting the heading\'s own "?") is a live row, and there are exactly five',
+    sRows.filter((b) => !b.live).length === 0 && sRows.length === 5, JSON.stringify(sRows.filter((b) => !b.live)));
   ok('T1 [Draft]: Plan stays on the PLAN bar', (await app.evalJs("!!document.querySelector('.desk-mode-strip [data-page-plan-door]')")) === true);
   const brass = await rgbOf(app, 'var(--brass)');
   const rest = await app.evalJs(`(() => { const b = document.querySelector(${JSON.stringify(SCREENPLAY)}); return b ? { color: getComputedStyle(b).color, pressed: b.getAttribute('aria-pressed') } : null; })()`);
