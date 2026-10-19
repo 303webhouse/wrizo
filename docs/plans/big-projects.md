@@ -131,3 +131,15 @@ Candidates, measured now over all 157 harness files with `grep -l` (each step re
 ## 8. Not built
 
 No server change, no migration, no column. No Flux or other-theme words (the Arbor layout ships first), no Draft tools panel, no tutorial for new writers. Sets are not reorderable; a Journal cannot be renamed before step 5 unless Q2 goes the other way.
+
+## 9. Cleared (Fable, Oct 18): the plan @ fca875ba is cleared, and the rulings on the hand-ups
+Schema change: none, confirmed. **Building waits until connector-b is deployed and delete-for-good has merged; then step 1a first, checks in red first.**
+- **Q1:** the virtual "Unsorted" switcher entry, shown only when such binders exist; nothing is moved.
+- **Q2:** the first Journal is implicit; renaming it (step 5) creates its row at that moment.
+- **Q3:** accepted (the rail reaches the current place only; cross-place linking waits for step 3's picker).
+- **Q4:** reorder on pointer events, not HTML5 `draggable`.
+- **Q5:** Spread's "Port N pages…" and `JournalEntry`'s port button are removed with the sheet.
+- **Q6:** the Shelf reconcile is left alone; a later ticket.
+- **Q7:** Sources = linked or pinned items that are imported documents (import stamp set) or Research-kind pages; they show under Sources, not Pages.
+- **Q8:** every visible rail fades while typing, the place block included; the Cascade strip is brought into the fade if it does not fade today.
+- **Q9:** step 5 is a full pair.
