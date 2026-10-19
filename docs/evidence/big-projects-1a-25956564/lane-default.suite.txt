@@ -1,0 +1,39 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=32 tree=8df88614 bundle=index-B-HMk7pS.js/764526b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bp1a-default
+[01/32] OK        exit=0   35s ab3.mjs :: ROWS-SHADOW VERIFY: PASS (63 renders checked, shadow == DOM on every one) ;; AB3 VERIFY: PASS (24 checks)
+[02/32] OK        exit=0   17s arrival-signin-walk.mjs :: ARRIVAL-SIGNIN-WALK VERIFY: PASS (15 checks)
+[03/32] OK        exit=0   31s b1.mjs :: ROWS-SHADOW VERIFY: PASS (97 renders checked, shadow == DOM on every one) ;; B1 VERIFY: PASS (47 checks)
+[04/32] OK        exit=0   49s b101.mjs :: B101 VERIFY: PASS (73 checks)
+[05/32] OK        exit=0   16s b2-1.mjs :: ROWS-SHADOW VERIFY: PASS (9 renders checked, shadow == DOM on every one) ;; B2-1 VERIFY: PASS (28 checks)
+[06/32] OK        exit=0   35s b2.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; B2 VERIFY: PASS (76 checks)
+[07/32] OK        exit=0   39s bg1.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; BG1 VERIFY: PASS (36 checks)
+[08/32] OK        exit=0   42s big-projects-1a.mjs :: ROWS-SHADOW VERIFY: PASS (36 renders checked, shadow == DOM on every one) ;; BIG-PROJECTS-1A VERIFY: PASS (91 checks)
+[09/32] OK        exit=0   58s board-context-menu.mjs :: BOARD-CONTEXT-MENU VERIFY: PASS (56 checks)
+[10/32] OK        exit=0   13s cd1.mjs :: ROWS-SHADOW VERIFY: PASS (23 renders checked, shadow == DOM on every one) ;; CD1 VERIFY: PASS (25 checks)
+[11/32] OK        exit=0   32s cd2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; CD2 VERIFY: PASS (50 checks)
+[12/32] OK        exit=0   21s cd4.mjs :: CD4 VERIFY: PASS (27 checks)
+[13/32] OK        exit=0   29s connector-b.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; CONNECTOR-B VERIFY: PASS (27 checks)
+[14/32] OK        exit=0   29s delete-for-good.mjs :: DELETE-FOR-GOOD VERIFY: PASS (16 checks)
+[15/32] OK        exit=0  128s drawers-p1-live.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; DRAWERS-P1-LIVE VERIFY: PASS (88 checks)
+[16/32] OK        exit=0    1s drawers-p1.mjs :: DRAWERS-P1 VERIFY: PASS (100 checks)
+[17/32] OK        exit=0    8s fx14.mjs :: ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one) ;; FX14 VERIFY: PASS (11 checks)
+[18/32] OK        exit=0   29s fx6.mjs :: ROWS-SHADOW VERIFY: PASS (137 renders checked, shadow == DOM on every one) ;; FX6 VERIFY: PASS (38 checks)
+[19/32] OK        exit=0   33s fx7.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX7 VERIFY (partial): PASS (44 checks)
+[20/32] OK        exit=0    9s fx9.mjs :: FX9 VERIFY: PASS (13 checks)
+[21/32] OK        exit=0   20s item104.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; ITEM104 VERIFY: PASS (15 checks)
+[22/32] OK        exit=0    0s item141.mjs :: ITEM141 VERIFY: PASS (11 checks)
+[23/32] OK        exit=0   19s item170.mjs :: ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one) ;; ITEM170 VERIFY: PASS (19 checks)
+[24/32] OK        exit=0   15s item210.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; ITEM210 VERIFY: PASS (9 checks)
+[25/32] OK        exit=0    9s item87.mjs :: ROWS-SHADOW VERIFY: PASS (31 renders checked, shadow == DOM on every one) ;; ITEM87 VERIFY: PASS (5 checks)
+[26/32] OK        exit=0   10s item88.mjs :: ROWS-SHADOW VERIFY: PASS (19 renders checked, shadow == DOM on every one) ;; ITEM88 VERIFY: PASS (10 checks)
+[27/32] OK        exit=0    1s page-links.mjs :: PAGE-LINKS VERIFY: PASS (28 checks)
+[28/32] OK        exit=0   35s pb1.mjs :: ROWS-SHADOW VERIFY: PASS (26 renders checked, shadow == DOM on every one) ;; PB1 VERIFY: PASS (22 checks)
+[29/32] OK        exit=0   48s pw1.mjs :: PW1 VERIFY: PASS (41 checks)
+[30/32] OK        exit=0   20s pw2.mjs :: PW2 VERIFY: PASS (24 checks)
+[31/32] OK        exit=0   37s resume-on-open.mjs :: RESUME-ON-OPEN VERIFY: PASS (57 checks)
+[32/32] OK        exit=0    8s vw1.mjs :: VW1 VERIFY: PASS (13 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 32/32 of 32 returned a passing verdict
+SUITE RESULT: CLEAN — tree=8df88614 bundle=index-B-HMk7pS.js/764526b NO-REBUILD

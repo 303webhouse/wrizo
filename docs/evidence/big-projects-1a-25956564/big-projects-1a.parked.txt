@@ -1,0 +1,95 @@
+
+ROWS-SHADOW VERIFY: PASS (36 renders checked, shadow == DOM on every one)
+PASS  API
+PASS  B1
+PASS  B1b
+PASS  B3
+PASS  B3b
+PASS  B2a
+PASS  B2b
+PASS  B2c
+PASS  B4
+PASS  B4b
+PASS  J1
+PASS  J1b
+PASS  J2
+PASS  J3
+PASS  S1
+PASS  S1b
+PASS  S2
+PASS  S2b
+PASS  S3
+PASS  S2c
+PASS  S4
+PASS  S4b
+PASS  S4c
+PASS  S5a
+PASS  S5b
+PASS  S5c
+PASS  S5d
+PASS  S6a
+PASS  S6b
+PASS  S6c
+PASS  S6d
+PASS  S7
+PASS  S8
+PASS  S8b
+PASS  S8c
+PASS  O1
+PASS  O2
+PASS  O2b
+PASS  O2c
+PASS  O3
+PASS  O4
+PASS  O4b
+PASS  X1
+PASS  X1b
+PASS  X2
+PASS  X3
+PASS  X3b
+PASS  X3d
+PASS  X3c
+PASS  N1
+PASS  N2
+PASS  N3
+PASS  mutant "Top Drawer ignores soft-deleted / shell rows (counts only live Drawers)" is KILLED (reddens: B2a, B2b)
+PASS  mutant "the Top Drawer id forgets the user id" is KILLED (reddens: B1, B4b)
+PASS  mutant "the Journal rule drops the "no live home" half (only projectId null)" is KILLED (reddens: J1)
+PASS  mutant "the Journal rule lists system boards" is KILLED (reddens: J3)
+PASS  mutant "X writes more than projectId (resets orderIndex)" is KILLED (reddens: X1, X2)
+PASS  mutant "Undo drags a page back that was filed elsewhere meanwhile" is KILLED (reddens: X3d)
+PASS  mutant "reorder writes every id, changed or not" is KILLED (reddens: O2c)
+PASS  mutant "Unsorted forgets a binder whose Drawer was deleted (counts only "no drawerId")" is KILLED (reddens: S8c)
+PASS  all 8 mutations landed and 8 were killed
+PASS  P1 the rail has NO Shelf item: no shelf category spec, no Shelf icon in the sections, and the place block, Pages and Boards come first, then Journal, then the foot
+PASS  P2 "Plan" is renamed Boards in the rail (the lexicon term stripPlan reads Boards; the category id stays plan so the data-category selectors survive)
+PASS  P3 the place block lives INSIDE the strip (so it fades with the rest of the strip: .desk-frame-strip carries chrome-fade desk-dissolve) and is a button named by data-category="drawers"
+PASS  P4 the switcher is two flat groups, Drawers then Journals, then + New Drawer; the virtual Unsorted entry only when such binders exist; no Shelf anywhere in it
+PASS  P5 the Pages pop-out rows declare data-link-entry (connector-b's rail contract) and are NOT HTML5 draggable (a draggable row switches drag-to-copy off)
+PASS  P6 reorder is on POINTER events (the pop-out handles pointerdown / pointermove / pointerup), never HTML5 drag events
+PASS  P7 X is setPageHome(id, "journal") through place.moveToJournal and never a delete: the pop-out calls moveToJournal and imports no delete function
+PASS  P8 the views never write: the pop-out does not import saveJournalEntry or any writer other than reorderSections / moveToJournal / createSet / ensureSet
+PASS  P9 /shelf redirects (the door is gone, the old route does not 404): App.tsx routes /shelf to a Navigate
+PASS  P10 the narrow (<1100px) chrome keeps its way to the Shelf board: DeskRail has a Shelf item pointing at /shelf-board, not at /shelf (which redirects to the Journal), because that chrome has no pop-out to show the Shelf pages in; App.tsx serves the old bridge there
+PASS  P11 the bootstrap is a component mounted once beside the routes, gated on the FIRST PULL, and skipped for a device that signed out
+PASS  P12 the harness double switches the bootstrap OFF by default (window.__wrizoNoBootstrap) so the ~150 other harness accounts are not given a Top Drawer; this file sets WS_PLACE=1
+PASS  P13 the Pages pop-out replaces the OpenPages list in the page panel; the page face, Page Setup and Places stay beneath it until step 1b moves them to the header
+PASS  P14 the connector contract survives on the new rail: BoardEditor still finds rail targets by [data-link-entry] (railEntryAt) and the pop-out is not inside a [draggable] ancestor
+PASS  E1 the rail, top to bottom: the place block, Pages, Boards, Journal, then Settings, Themes, Trash - and NO Shelf
+PASS  E1 the place block names where the open page lives (The Late Ferry, a Drawer), the Plan item reads Boards, the Page item reads Pages
+PASS  E2 tapping the place block opens the switcher: Drawers, then Journals (two flat groups), then + New Drawer
+PASS  E2 choosing the Journal changes the place block (no navigation: the open page stays open)
+PASS  E3 the Pages pop-out for a Drawer with two sets: the place name, the set headings (a set with no pages is absent), the sections in the writer's order, the sort control reads Order
+PASS  E3 a Drawer with only ONE set shows no set heading (the word "set" appears only once a second exists)
+PASS  E3 every row declares data-link-entry and none is HTML5 draggable
+PASS  E4 pressing the X on a section takes it out of the Drawer and into the Journal: only projectId changes, nothing is deleted, an Undo line appears
+PASS  E4 ...stored: projectId null, orderIndex / origin / deletedAt unchanged
+PASS  E4 ...the Undo line names it
+PASS  E4 Undo puts the page back in the same set and the same position
+PASS  E5 a pointer drag on a row reorders it (Order is the default sort)
+PASS  E5 ...and the order survives a reload
+PASS  E6 a brand-new account (zero Drawers) is given Top Drawer and its one set - and nothing else - after the first pull; it still has no work and no resume target
+PASS  E6 a seeded account (Drawers, sets, journal pages) after a reload: nothing disappears and no page changes home, and there is still exactly ONE Top Drawer (the bootstrap is idempotent)
+PASS  E7 while typing, the whole rail - the place block included - recedes (the place block is INSIDE the strip, which drops to the ambient floor and goes inert, as fx10 holds for the strip)
+
+BIG-PROJECTS-1A VERIFY: PASS (91 checks)
