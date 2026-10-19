@@ -52,6 +52,8 @@ async function loadClient(tag, syncSourceOverride) {
     'export function getDirtyRecords() { return { projects: [{ id: "p1", title: "P", type: "creative", createdAt: "x", updatedAt: "x" }], storyPlans: [], sessions: [], drafts: [], journalEntries: [], drawers: [] }; }',
     'export function markClean() { calls.markClean += 1; }',
     'export function applyRemoteRecords() { calls.applyRemote += 1; }',
+    // DELETE FOR GOOD (ledger 107) - sync.ts applies the server's acknowledgement of a refused push; this proof's responses carry none.
+    'export function applyAcknowledgedPurged() {}',
     'export function markAllJournalEntriesDirty() { calls.backfill += 1; }',
     // B10.1 - the safety net reads these two; this proof's pulls carry no journal entries.
     'export function getJournalEntries() { return []; }',

@@ -185,6 +185,8 @@ function loadSyncClient() {
     "export function getDirtyRecords() { return JSON.parse(JSON.stringify(__store)); }",
     "export function markClean(items) { __cleanedIds.push(...items.map((i) => i.id)); }",
     "export function applyRemoteRecords() {}",
+    // DELETE FOR GOOD (ledger 107) - sync.ts applies the server's acknowledgement of a refused push; this proof's responses carry none.
+    "export function applyAcknowledgedPurged() {}",
     "export function markAllJournalEntriesDirty() {}",
     // B10.1 - the safety net reads these two; this proof's fixtures never pull journal entries.
     "export function getJournalEntries() { return []; }",

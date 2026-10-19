@@ -55,7 +55,9 @@ await withHarness(async (app) => {
     Object.values(h1).every((v) => /refused/i.test(v)) && !!h1live && !h1live.deletedAt, JSON.stringify({ h1, deleted: h1live && h1live.deletedAt }));
 
   // ---- H2: the in-app confirmation
-  await app.evalJs(`window.__wzConfirmAnswer = null; window.wrizoDestructive.request({ title: 'Delete everything on this account, for good?', lines: ['3 pages', '1 board'], phrase: ${JSON.stringify(PHRASE)} }).then((a) => { window.__wzConfirmAnswer = a; })`);
+  // ledger 107: the statement ENDS IN null. evalJs awaits a returned promise, and this request is answered only by the NEXT step (the typing), so
+  // returning it deadlocked H2 until the 903 s timeout. The answer is read from window.__wzConfirmAnswer instead.
+  await app.evalJs(`window.__wzConfirmAnswer = null; window.wrizoDestructive.request({ title: 'Delete everything on this account, for good?', lines: ['3 pages', '1 board'], phrase: ${JSON.stringify(PHRASE)} }).then((a) => { window.__wzConfirmAnswer = a; }); null`);
   await sleep(400);
   const dlg = await app.evalJs("(() => { const d = document.querySelector('.wz-destructive'); return d ? { title: (d.querySelector('.wz-destructive-title') || {}).textContent, hasInput: !!d.querySelector('.wz-destructive-input'), go: !!d.querySelector('.wz-destructive-go') } : null; })()");
   ok('H2 (setup): the request opens the in-app confirmation (a title, the phrase field, and a Delete for good button)', !!dlg && dlg.hasInput && dlg.go, JSON.stringify(dlg));

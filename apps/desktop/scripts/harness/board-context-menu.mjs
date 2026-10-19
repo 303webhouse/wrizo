@@ -33,6 +33,10 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
 const noCR = (t) => t.replace(/\r\n?/g, '\n');
+// DELETE FOR GOOD (ledger 107): readings the parked records below re-assert (S1's callers, K16's and K17's Trash-card menus)
+let bcmS1Bad = null;
+let bcmK16Menu = null;
+let bcmK17Menu = null;
 const live = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`\\])\/\/[^\n]*/g, '$1');
 
 // ---- S: the source pins -----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -97,7 +101,18 @@ const callers2 = (srcDir, mutate = {}) => {
   const be = noCR(fs.readFileSync(path.join(SRC, 'components/BoardEditor.tsx'), 'utf8'));
   const app = noCR(fs.readFileSync(path.join(SRC, 'App.tsx'), 'utf8'));
   const bad = callers2(SRC);
-  ok('S1: every call of softDeleteEntry outside persistence.ts (and a Page\'s own in-page confirm, S3) sits inside requestDelete(...) - the ONE gate: a board (menu, Plan row, Drawers tile) and a card can only be deleted through "Send to Trash?" or with asking turned off', bad.length === 0, JSON.stringify(bad));
+  // ---- PARKED - SUPERSEDED by DELETE FOR GOOD (ledger 107) ----
+  // window.wrizoDelete.softAll (store/deleteSeams.ts) sends every live document to Trash for the seed. It does not ask "Send to Trash?": it
+  // asks through its OWN gate first - gate() refuses unless the writer completed the in-app typed confirmation this page session
+  // (store/destructiveGate.ts). Kept VERBATIM and no longer run; its parked record asserts that seam is the one new caller.
+  // ok('S1: every call of softDeleteEntry outside persistence.ts (and a Page\'s own in-page confirm, S3) sits inside requestDelete(...) - the ONE gate: a board (menu, Plan row, Drawers tile) and a card can only be deleted through "Send to Trash?" or with asking turned off', bad.length === 0, JSON.stringify(bad));
+  // ------------------------------------------------------------------
+  bcmS1Bad = bad;
+  const ds = noCR(fs.readFileSync(path.join(SRC, 'store/deleteSeams.ts'), 'utf8'));
+  const seamBad = bad.filter((x) => x.startsWith('store/deleteSeams.ts:'));
+  const seamGated = /softAll: \(\) => \{\n\s*gate\(\);/.test(ds) && (live(ds).match(/softDeleteEntry\(/g) || []).length === 1 && /if \(!isDestructiveUnlocked\(\)\) throw/.test(ds);
+  ok('S1 [delete-for-good successor]: every call of softDeleteEntry outside persistence.ts sits inside requestDelete(...) - except ONE named bypass, window.wrizoDelete.softAll in store/deleteSeams.ts, which first passes its own gate (it refuses unless the in-app typed confirmation happened this page session)',
+    seamBad.length === 1 && bad.length === seamBad.length && seamGated, JSON.stringify({ bad, seamGated }));
   const mut = callers2(SRC, { 'components/CascadePanels.tsx': (t) => t.replace('onClick={() => requestDelete(() => { softDeleteEntry(id); })}', 'onClick={() => { softDeleteEntry(id); }}') });
   ok('S1 (mutant): a delete that skips the gate turns the guard RED (the mutation landed)', mut.length > 0, JSON.stringify(mut));
   // successor: the callee-following path has its own mutant - deleteThisBoard reached WITHOUT requestDelete must be RED, and the
@@ -319,7 +334,12 @@ await withHarness(async (app) => {
         await pick(app, 'Restore'); await sleep(700);
         await app.evalJs('window.wrizoFlushNow()');
         const row16 = await app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(g.id)}) || {})`);
-        ok('K16: its menu offers Restore (and no Delete), and Restore clears deletedAt - the board is back, with every card it had', Array.isArray(m16) && m16.includes('Restore') && !m16.includes('Delete') && !row16.deletedAt && (row16.boxes || []).length === 6, JSON.stringify({ m16, deletedAt: row16.deletedAt, n: (row16.boxes || []).length }));
+        // ---- PARKED - SUPERSEDED by DELETE FOR GOOD (ledger 107): a trashed board can now be deleted for good from Trash, so its menu offers
+        // Delete after Restore and a separator. Kept VERBATIM and no longer run.
+        // ok('K16: its menu offers Restore (and no Delete), and Restore clears deletedAt - the board is back, with every card it had', Array.isArray(m16) && m16.includes('Restore') && !m16.includes('Delete') && !row16.deletedAt && (row16.boxes || []).length === 6, JSON.stringify({ m16, deletedAt: row16.deletedAt, n: (row16.boxes || []).length }));
+        bcmK16Menu = m16;
+        ok('K16 [delete-for-good successor]: its menu offers Restore, a separator, then Delete (for good - it always asks; delete-for-good.mjs H4 walks it), and Restore clears deletedAt - the board is back, with every card it had',
+          JSON.stringify(m16) === JSON.stringify(['Restore', '---', 'Delete']) && !row16.deletedAt && (row16.boxes || []).length === 6, JSON.stringify({ m16, deletedAt: row16.deletedAt, n: (row16.boxes || []).length }));
       }
     }
   }
@@ -461,7 +481,12 @@ await withHarness(async (app) => {
         await pick(app, 'Restore'); await sleep(700);
         await app.evalJs('window.wrizoFlushNow()');
         const back = await rowOf();
-        ok('K17: its menu offers Restore (no Delete) and Restore clears deletedAt - the page is back with every word', Array.isArray(mm) && mm.includes('Restore') && !mm.includes('Delete') && !back.deletedAt && back.text === WORDS, JSON.stringify({ mm, deletedAt: back.deletedAt }));
+        // ---- PARKED - SUPERSEDED by DELETE FOR GOOD (ledger 107): a trashed page can now be deleted for good from Trash, so its menu offers
+        // Delete after Restore and a separator. Kept VERBATIM and no longer run.
+        // ok('K17: its menu offers Restore (no Delete) and Restore clears deletedAt - the page is back with every word', Array.isArray(mm) && mm.includes('Restore') && !mm.includes('Delete') && !back.deletedAt && back.text === WORDS, JSON.stringify({ mm, deletedAt: back.deletedAt }));
+        bcmK17Menu = mm;
+        ok('K17 [delete-for-good successor]: its menu offers Restore, a separator, then Delete (for good - it always asks), and Restore clears deletedAt - the page is back with every word',
+          JSON.stringify(mm) === JSON.stringify(['Restore', '---', 'Delete']) && !back.deletedAt && back.text === WORDS, JSON.stringify({ mm, deletedAt: back.deletedAt }));
       }
       // with asking turned OFF the same icon sends the page to Trash at once
       await ask(app, false);
@@ -481,6 +506,24 @@ await withHarness(async (app) => {
   if (!fx) ok('K15 fixture: an empty point on the Flux board', false, 'none');
   else { await rightClick(app, fx.x, fx.y); ok('K15: Flux wears its own word - "Delete circuit"', JSON.stringify(await menuItems(app)) === JSON.stringify(['New Card', 'Delete circuit']), JSON.stringify(await menuItems(app))); }
 });
+
+// === PARKED - gated behind HARNESS_PARKED=1, skipped by default. First tenants: DELETE FOR GOOD (ledger 107) - three checks, each kept
+// verbatim where it stood with a live successor beside it; each record here re-asserts the new truth from the default leg's own reading.
+const parkedChecks = [];
+if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass, detail });
+  pok('PARKED (was "S1: every call of softDeleteEntry outside persistence.ts (and a Page\'s own in-page confirm, S3) sits inside requestDelete(...) - the ONE gate: a board (menu, Plan row, Drawers tile) and a card can only be deleted through "Send to Trash?" or with asking turned off") - delete-for-good: window.wrizoDelete.softAll is the one caller outside the dialog, behind its own gate; live successor: S1 [delete-for-good successor]',
+    Array.isArray(bcmS1Bad) && bcmS1Bad.length === 1 && bcmS1Bad[0].startsWith('store/deleteSeams.ts:'), JSON.stringify(bcmS1Bad));
+  pok('PARKED (was "K16: its menu offers Restore (and no Delete), and Restore clears deletedAt - the board is back, with every card it had") - delete-for-good: a trashed board can be deleted for good from Trash; live successor: K16 [delete-for-good successor]',
+    Array.isArray(bcmK16Menu) && bcmK16Menu[0] === 'Restore' && bcmK16Menu.includes('Delete'), JSON.stringify(bcmK16Menu));
+  pok('PARKED (was "K17: its menu offers Restore (no Delete) and Restore clears deletedAt - the page is back with every word") - delete-for-good: a trashed page can be deleted for good from Trash; live successor: K17 [delete-for-good successor]',
+    Array.isArray(bcmK17Menu) && bcmK17Menu[0] === 'Restore' && bcmK17Menu.includes('Delete'), JSON.stringify(bcmK17Menu));
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  console.log(parkedPass
+    ? `\nBOARD-CONTEXT-MENU PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nBOARD-CONTEXT-MENU PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+}
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);
 const passed = checks.filter((c) => c.pass).length;

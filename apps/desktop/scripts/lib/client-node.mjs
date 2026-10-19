@@ -65,7 +65,8 @@ export async function loadClientStore(extra = []) {
   if (!esbuildBin || !existsSync(esbuildBin)) throw new Error('esbuild not found under node_modules/.pnpm');
   const tmp = mkdtempSync(join(tmpdir(), 'wz-client-'));
   const entry = join(tmp, 'entry.ts');
-  const store = join(DESKTOP, 'src', 'store').replace(/\\/g, '/');
+  // WZ_CLIENT_SRC: a mutated copy of src (scripts/delete-for-good-mutants.mjs); the real src otherwise
+  const store = join(process.env.WZ_CLIENT_SRC || join(DESKTOP, 'src'), 'store').replace(/\\/g, '/');
   const mods = ['persistence', 'sync', 'destructiveGate', 'currentUser', ...extra];
   writeFileSync(entry, mods.map((m) => `export * as ${m} from '${store}/${m}';`).join('\n') + `\nimport '${store}/deleteSeams';\n`);
   const out = join(tmp, 'bundle.mjs');

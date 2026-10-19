@@ -14,8 +14,13 @@
 //   E9  a purged binder: its row a shell, its scratch draft emptied, its sessions kept with no binder pointer (Q2)
 //   E10 another account cannot purge this one's page
 //   E11 the migration is idempotent: a second boot adds no second purged_at column
+//   E12 connector-b's page_links (ledger 107): a purge tombstones the link another page holds to it - on the server and on device B - and the
+//       purged row keeps no links of its own
+//   (ledger 107, E5's race: B is REALLY offline from E2 to E5 - dfg-device's offline switch - and E5 judges only what B pushed after it
+//   came back: the app's own background sync had pushed the "offline" edit before the purge, so there was nothing to refuse)
 //   MUTANTS - the compiled server with ONE edit each, every one must turn a case RED: no refusal of a non-purge push onto a shell (E5 red),
-//   the refusal reported as REJECTED instead of acknowledged (E5 red: the server says rejected), no server-side clearing (E8 red)
+//   the refusal reported as REJECTED instead of acknowledged (E5 red: the server says rejected), no server-side clearing (E8 red), the shell
+//   keeping its page_links (E12 red)
 // Needs: the server built (pnpm --filter @writer-studio/server build) and EMBEDDED_PG_FROM=<a package.json whose install has embedded-postgres>.
 // Run (repo root): EMBEDDED_PG_FROM=C:/Users/nickh/wrizo-read/package.json node apps/server/scripts/harness/delete-for-good-e2e.mjs
 import { createRequire } from 'node:module';
@@ -100,6 +105,7 @@ const scenario = async (distDir, tag, { quiet = false } = {}) => {
     const b1 = await B.call('state', { id });
     k('E1', 'device A writes a page and device B pulls it', b1.live && b1.stored && b1.stored.text === 'the words that must go', JSON.stringify(b1.stored && b1.stored.text));
     // E2
+    await B.call('offline', { on: true });
     await B.call('skew', { ms: 60 * 60 * 1000 });
     await B.call('edit', { id, text: 'B wrote this offline, clock an hour fast' });
     const b2 = await B.call('state', { id });
@@ -113,17 +119,20 @@ const scenario = async (distDir, tag, { quiet = false } = {}) => {
     k('E4', 'A deletes it for good: the server holds a SHELL - purged_at set, every content column cleared',
       purged.done && !!r4 && !!r4.purged_at && r4.text === '' && r4.boxes == null && r4.strokes == null && r4.tutor == null && r4.project_id == null,
       JSON.stringify({ purged, server: r4 && { purged_at: r4.purged_at, text: r4.text, boxes: r4.boxes }, aState: await A.call('state', { id }) }));
-    // E5
+    // E5 - B comes back online; only what it pushes from here on is judged
+    const mark = (await B.call('state', { id })).wire.length;
+    await B.call('offline', { on: false });
     await B.call('sync');
     const b5 = await B.call('state', { id });
-    const last = b5.wire[b5.wire.length - 1] || {};
-    const pushedIt = b5.wire.some((w) => (w.pushed.journalEntries || []).includes(id));
-    const acked = b5.wire.some((w) => w.ack && (w.ack.journalEntries || []).includes(id));
-    const rejected = b5.wire.some((w) => w.rejected && (w.rejected.journalEntries || []).includes(id));
+    const since = b5.wire.slice(mark);
+    const last = since[since.length - 1] || {};
+    const pushedIt = since.some((w) => (w.pushed.journalEntries || []).includes(id));
+    const acked = since.some((w) => w.ack && (w.ack.journalEntries || []).includes(id));
+    const rejected = since.some((w) => w.rejected && (w.rejected.journalEntries || []).includes(id));
     const r5 = await row('journal_entries', id);
     k('E5', 'B syncs: its push (fast clock and all) is REFUSED and ACKNOWLEDGED, never rejected; the server row is still the shell; B now holds the shell and its dirty flag is clear',
       pushedIt && acked && !rejected && !!r5 && !!r5.purged_at && r5.text === '' && !b5.live && !b5.inTrash && !!b5.stored && !!b5.stored.purgedAt && !(b5.dirty.journalEntries || []).includes(id),
-      JSON.stringify({ pushedIt, acked, rejected, serverText: r5 && r5.text, bLive: b5.live, last }));
+      JSON.stringify({ pushedIt, acked, rejected, serverText: r5 && r5.text, bLive: b5.live, mark, since: since.length, last }));
     // E6
     const before = b5.wire.filter((w) => (w.pushed.journalEntries || []).includes(id)).length;
     await B.call('sync'); await B.call('sync');
@@ -169,6 +178,29 @@ const scenario = async (distDir, tag, { quiet = false } = {}) => {
     await fetch(`${srv.base}/api/sync`, { method: 'POST', headers: { 'Content-Type': 'application/json', cookie: c2 }, body: JSON.stringify({ lastSyncAt: null, push: { journalEntries: [{ id: keep, createdAt: t, updatedAt: t, deletedAt: t, purgedAt: t }] }, pull: false }) });
     const r10 = await row('journal_entries', keep);
     k('E10', 'another account pushing a purge for this page\'s id changes nothing', !!r10 && !r10.purged_at && r10.text === 'nobody else can delete me', JSON.stringify(r10 && { text: r10.text, purged_at: r10.purged_at }));
+    // E12 - connector-b's page_links (plan section 4; ledger 107)
+    const { id: lt } = await A.call('createPage', { text: 'a linked page that goes' });
+    const { id: lo } = await A.call('createPage', { text: 'a page that links to it' });
+    const toIt = await A.call('addLink', { owner: lo, target: lt });
+    // the page that goes owns a link too - to a THIRD page (addPageLink is idempotent in either direction: a link back to lo would only return toIt)
+    const { id: lx } = await A.call('createPage', { text: 'a third page' });
+    const fromIt = await A.call('addLink', { owner: lt, target: lx });
+    await A.call('sync');
+    await B.call('sync');
+    const bBefore = (await B.call('links', { id: lo })).links.find((l) => l.id === toIt.id);
+    const rtBefore = await row('journal_entries', lt);
+    await A.call('softDelete', { id: lt });
+    await A.call('purge', { id: lt });
+    await A.call('sync');
+    const rT = await row('journal_entries', lt);
+    const rO = await row('journal_entries', lo);
+    const serverRec = ((rO && rO.page_links) || []).find((l) => l.id === toIt.id);
+    await B.call('sync');
+    const bAfter = (await B.call('links', { id: lo })).links.find((l) => l.id === toIt.id);
+    k('E12', 'connector-b\'s page_links: a purge tombstones the link another page holds to it - on the SERVER and on device B - and the purged row keeps no links of its own',
+      !!toIt.id && !!fromIt.id && fromIt.id !== toIt.id && !!bBefore && !bBefore.deletedAt && !!rtBefore && Array.isArray(rtBefore.page_links) && rtBefore.page_links.length === 1
+        && !!rT && !!rT.purged_at && rT.page_links == null && !!serverRec && !!serverRec.deletedAt && !!bAfter && !!bAfter.deletedAt,
+      JSON.stringify({ bBefore: !!bBefore, before: rtBefore && rtBefore.page_links, purgedRowLinks: rT && rT.page_links, serverRec, bAfter }));
   } finally {
     for (const d of devs) d.kill();
     srv.proc.kill();
@@ -195,6 +227,7 @@ try {
     // record. E5's "never rejected" is its case; the no-retry-without-a-pull claim is the browserless P15's.
     { name: 'the refusal REJECTED, not acknowledged', mustRed: 'E5', file: 'sync.js', from: 'acked.push(rec.id);', to: "throw new Error('refused onto a shell');" },
     { name: 'no server-side clearing', mustRed: 'E8', file: 'sync.js', from: "const SHELL_TEXT = '';", to: 'const SHELL_TEXT = null;' },
+    { name: 'the shell keeps its page_links', mustRed: 'E12', file: 'sync.js', from: 'page_settings = null, page_links = null,', to: 'page_settings = null,' },
   ];
   for (const m of MUTANTS) {
     const dir = join(SERVER, `.dfg-mutant-${process.pid}`);

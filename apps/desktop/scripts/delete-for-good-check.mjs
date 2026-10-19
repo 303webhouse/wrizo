@@ -10,6 +10,8 @@
 //           the confirmation unlocks only with the exact phrase AND trusted input, and only in memory (a reload forgets it)
 //   P14     a page purged elsewhere is announced (the quiet line's signal, Q3)
 //   P15     the sync loop applies the server's acknowledgement: the refused record's dirty flag clears and it is not pushed again
+//   P16-P17 connector-b's page_links (plan section 4, ledger 107): a purge TOMBSTONES every link record naming the purged entry on its owner
+//           (saved, so it syncs) and leaves the others; the shell keeps none of its own; a stale link still naming a purged entry reads as nothing
 // Run: node apps/desktop/scripts/delete-for-good-check.mjs   (no browser, no box turn)
 import { installClientGlobals, loadClientStore } from './lib/client-node.mjs';
 
@@ -146,6 +148,45 @@ const trashPage = (text, extra = {}) => { const e = P.createJournalPage({ text, 
   flush();
   ok('P10: an ACKNOWLEDGED purge (the server refused this push because the row is purged) does the same - shell here, dirty flag cleared',
     !P.getJournalEntry(f.id) && !isDirty('journalEntries', f.id) && !!stored(f.id) && !!stored(f.id).purgedAt, JSON.stringify(stored(f.id)));
+}
+
+// ---- P16-P17: connector-b's page_links (plan section 4, "Cross-board links"; ledger 107)
+{
+  const target = P.createJournalPage({ text: 'a linked page that goes' });
+  const keep = P.createJournalPage({ text: 'a linked page that stays' });
+  const board = P.createBoardPage(P.createBinder('Links', 'book').id, 'Links board');
+  P.saveBoardBoxes(board.id, [{ id: 'lc1', kind: 'text', x: 0.1, y: 0.1, w: 0.2, h: 0.08, z: 1, text: 'a card' }]);
+  const toGo = P.addPageLink(board.id, { aBoxId: 'lc1', bEntryId: target.id });      // a card on a board -> the page
+  const toStay = P.addPageLink(board.id, { aBoxId: 'lc1', bEntryId: keep.id });     // the control: a link to a page that stays
+  const fromPage = P.addPageLink(keep.id, { bEntryId: target.id });                // page -> page, owned by ANOTHER page
+  // owned BY the page that goes - to a THIRD page: addPageLink is idempotent in either direction, so a link back to `keep` would only
+  // return fromPage, and the page that goes would own nothing (the shell's "none of its own" would then pass on no premise)
+  const third = P.createJournalPage({ text: 'a third page' });
+  const own = P.addPageLink(target.id, { bEntryId: third.id });
+  flush();
+  const ownedBefore = ((stored(target.id) || {}).pageLinks || []).map((l) => l.id);
+  P.markClean([{ collection: 'journalEntries', id: board.id }, { collection: 'journalEntries', id: keep.id }]);   // as if synced: the purge must re-dirty them
+  P.softDeleteEntry(target.id); const done = P.purgeEntry(target.id); flush();
+  const boardLinks = (stored(board.id) || {}).pageLinks || [];
+  const keepLinks = (stored(keep.id) || {}).pageLinks || [];
+  const go = boardLinks.find((l) => l.id === toGo.id), stay = boardLinks.find((l) => l.id === toStay.id), from = keepLinks.find((l) => l.id === fromPage.id);
+  const peers = P.getLinkPeersOfCard(board.id, 'lc1').map((x) => x.entryId);
+  ok('P16: a purge TOMBSTONES every link naming the purged page - on a board card and on another page - and saves each owner to sync; a link to a page that stays is untouched; the shell keeps none of its own',
+    done === true && !!toGo && !!toStay && !!fromPage && !!own && own.id !== fromPage.id && JSON.stringify(ownedBefore) === JSON.stringify([own.id]) && !!go && !!go.deletedAt && !!from && !!from.deletedAt && !!stay && !stay.deletedAt
+      && isDirty('journalEntries', board.id) && isDirty('journalEntries', keep.id) && !(stored(target.id) || {}).pageLinks
+      && !peers.includes(target.id) && peers.includes(keep.id),
+    JSON.stringify({ done, ownedBefore, go, stay: stay && !stay.deletedAt, from, peers, shellLinks: (stored(target.id) || {}).pageLinks }));
+}
+{
+  const gone = trashPage('purged before a stale device heard'); P.purgeEntry(gone);
+  const t = iso();
+  P.applyRemoteRecords({ journalEntries: [{ id: 'stale-board', createdAt: t, updatedAt: t, pageType: 'board', text: 'Stale board',
+    boxes: [{ id: 'sc1', kind: 'text', x: 0.1, y: 0.1, w: 0.2, h: 0.08, z: 1, text: 'a card' }],
+    pageLinks: [{ id: 'stale-link', aEntryId: 'stale-board', aBoxId: 'sc1', bEntryId: gone, createdAt: t, updatedAt: t }] }] });
+  const peers = P.getLinkPeersOfCard('stale-board', 'sc1');
+  const byCard = P.getLinkPeersByCard('stale-board', []).get('sc1') || [];
+  ok('P17: a link that still names a purged entry (from a device that had not heard) reads as NOTHING - never a Trash end, never a way back to the shell',
+    !!P.getJournalEntryIncludingDeleted('stale-board') && peers.length === 0 && byCard.length === 0, JSON.stringify({ peers, byCard }));
 }
 
 // ---- P11-P13: THE GATE

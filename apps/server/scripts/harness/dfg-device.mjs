@@ -16,7 +16,11 @@ globalThis.Date = class extends RealDate {
 // every request this device makes, with what it pushed and what the server acknowledged
 const wire = [];
 const innerFetch = globalThis.fetch;
+// OFFLINE (ledger 107, E5's race): a device the scenario says is offline must really be - the app's own background sync (the journal
+// backfill's zero-delay syncOnce after a first pull) otherwise pushes an "offline" edit before the purge it is meant to follow
+let offline = false;
 globalThis.fetch = async (url, opts = {}) => {
+  if (offline && String(url).includes('/api/')) throw new TypeError('Failed to fetch (this device is offline)');
   const res = await innerFetch(url, opts);
   if (String(url).includes('/api/sync')) {
     let body = {}; try { body = JSON.parse(opts.body || '{}'); } catch { /* not json */ }
@@ -52,6 +56,10 @@ const handlers = {
     return { status: S.sync.getSyncStatus() };
   },
   async skew({ ms }) { skew = ms; return { skew }; },
+  async offline({ on }) { offline = !!on; return { offline }; },
+  // connector-b's page_links: a link OWNED by `owner` to `target` (the app's own addPageLink), and the owner's stored records
+  async addLink({ owner, target }) { const l = P.addPageLink(owner, { bEntryId: target }); P.flushNow(); return { id: l ? l.id : null }; },
+  async links({ id }) { const e = raw('writer-studio-journal-entries', id); return { links: (e && e.pageLinks) || [] }; },
   async createPage({ text, projectId }) { const e = P.createJournalPage({ text, ...(projectId ? { projectId } : {}) }); P.flushNow(); return { id: e.id }; },
   async edit({ id, text }) { const e = P.getJournalEntry(id); P.patchJournalEntry(id, e ? e.text : '', { text }); P.flushNow(); return { updatedAt: P.getJournalEntry(id)?.updatedAt }; },
   async softDelete({ id }) { P.softDeleteEntry(id); P.flushNow(); return {}; },
