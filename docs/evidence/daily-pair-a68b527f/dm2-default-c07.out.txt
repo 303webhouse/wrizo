@@ -1,0 +1,29 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=a68b527f bundle=index-B1iEpp4h.js/736807b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/dm2-default-c07
+[01/19] NOVERDICT exit=0   13s splash-sweep-capture.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\dm2-default-c07\splash-sweep-capture.mjs.default.txt)
+[02/19] OK        exit=0   46s splash.mjs :: SPLASH VERIFY: PASS (90 checks)
+[03/19] OK        exit=0    7s strike.mjs :: STRIKE VERIFY: PASS (7 checks)
+[04/19] OK        exit=0    1s sync-generation.mjs :: SYNC-GENERATION VERIFY: PASS (19 checks)
+[05/19] OK        exit=0    5s th1.mjs :: TH1 VERIFY: PASS (27 checks)
+[06/19] OK        exit=0   31s th2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; TH2 VERIFY: PASS (42 checks)
+[07/19] OK        exit=0    3s tp1.mjs :: TP1 VERIFY: PASS (7 checks)
+[08/19] OK        exit=0   48s tu1.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; TU1 VERIFY: PASS (92 checks)
+[09/19] OK        exit=0   50s tu2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; TU2 VERIFY: PASS (92 checks)
+[10/19] OK        exit=0   37s tu5.mjs :: TU5 VERIFY: PASS (84 checks)
+[11/19] NOVERDICT exit=0   14s tutor-drawer-probe.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\dm2-default-c07\tutor-drawer-probe.mjs.default.txt)
+[12/19] OK        exit=0    0s tutor-mirror.mjs :: TUTOR-MIRROR VERIFY: PASS (5 checks)
+[13/19] OK        exit=0  105s typed-literal.mjs :: ROWS-SHADOW VERIFY: PASS (136 renders checked, shadow == DOM on every one) ;; TYPED-LITERAL VERIFY: PASS (31 checks)
+[14/19] OK        exit=0   12s typewriter-fade.mjs :: TYPEWRITER-FADE VERIFY: PASS (5 checks)
+[15/19] OK        exit=0    1s typewriter-page.mjs :: TYPEWRITER-PAGE VERIFY: PASS (21 checks)
+[16/19] OK        exit=0   28s typing-latency-scroll.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+[17/19] OK        exit=0    6s underline.mjs :: UNDERLINE VERIFY: PASS (7 checks)
+[18/19] OK        exit=0    8s vw1.mjs :: VW1 VERIFY: PASS (14 checks)
+[19/19] OK        exit=0   11s w1.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; W1 VERIFY: PASS (5 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 17/19 of 19 returned a passing verdict
+  NOVERDICT: splash-sweep-capture.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\dm2-default-c07\splash-sweep-capture.mjs.default.txt
+  NOVERDICT: tutor-drawer-probe.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\dm2-default-c07\tutor-drawer-probe.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=a68b527f bundle=index-B1iEpp4h.js/736807b NO-REBUILD
+CHUNK 07 EXIT 1
