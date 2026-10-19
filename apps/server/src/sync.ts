@@ -162,7 +162,7 @@ async function writeShell(table: string, userId: string, r: any): Promise<void> 
        on conflict (id) do update set
          text = $3, project_id = null, session_id = null, starred = null, source = null, beat_id = null, page_type = null,
          order_index = null, imported_at = null, boxes = null, script = null, origin = null, tutor = null, tags = null,
-         routed_project_ids = null, strokes = null, plan_board_id = null, page_settings = null,
+         routed_project_ids = null, strokes = null, plan_board_id = null, page_settings = null, page_links = null,
          deleted_at = coalesce(journal_entries.deleted_at, excluded.deleted_at), purged_at = coalesce(journal_entries.purged_at, now()),
          updated_at = greatest(journal_entries.updated_at, excluded.updated_at), synced_at = now()
        where journal_entries.user_id = excluded.user_id`,

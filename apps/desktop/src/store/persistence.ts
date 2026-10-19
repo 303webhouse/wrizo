@@ -1326,7 +1326,9 @@ export interface LinkPeer {
 
 function describeEnd(entryId: string, boxId: string | undefined): { kind: 'card' | 'page' | 'board'; label: string; trashed: boolean } | null {
   const e = cache.journalEntries.find(x => x.id === entryId);
-  if (!e) return null;                                   // hard-deleted: a dangling end is dropped at read, never "Missing page"
+  // hard-deleted, or deleted for good (a shell - a device that had not heard can still hold a link to it): a dangling end is dropped at read,
+  // never "Missing page", never a Trash end that leads back to an empty shell
+  if (!e || e.purgedAt) return null;
   const trashed = !!e.deletedAt;
   if (boxId) {
     const b = (e.boxes ?? []).find(x => x.id === boxId);
@@ -3538,6 +3540,12 @@ function clearReferencesTo(id: string, now: string): void {
     if (pinIds.size > 0) {
       const next = boxes.map(b => (!b.purgedAt && (pinIds.has(b.id) || (b.kind === 'connection' && (pinIds.has(b.connA ?? '') || pinIds.has(b.connB ?? ''))))) ? purgeMarker(b, now) : b);
       upsert('journalEntries', cache.journalEntries, { ...clone(e), boxes: next });
+    }
+    // connector-b's page_links (ledger 107): a record on another entry that names the purged one is TOMBSTONED and its owner saved - an
+    // unlink's own shape, so it syncs and every device drops it. The purged entry's own records go with its shell.
+    if ((e.pageLinks ?? []).some(l => !l.deletedAt && l.bEntryId === id)) {
+      const cur = clone(cache.journalEntries.find(x => x.id === e.id) as JournalEntry);
+      upsert('journalEntries', cache.journalEntries, { ...cur, pageLinks: (cur.pageLinks ?? []).map(l => (!l.deletedAt && l.bEntryId === id ? { ...l, deletedAt: now, updatedAt: now } : l)) });
     }
     if (e.planBoardId === id) {
       const { planBoardId: _gone, ...rest } = clone(cache.journalEntries.find(x => x.id === e.id) as JournalEntry);
