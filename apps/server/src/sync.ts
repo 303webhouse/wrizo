@@ -83,7 +83,7 @@ function rowToDraft(r: any) {
   return { id: r.id, text: r.text, updatedAt: iso(r.updated_at) };
 }
 
-function rowToJournalEntry(r: any) {
+export function rowToJournalEntry(r: any) {
   return {
     id: r.id,
     text: r.text ?? '',
@@ -112,6 +112,8 @@ function rowToJournalEntry(r: any) {
     // never an empty object, so a page never dressed stays byte-identical to
     // today and the app's own defaults govern it.
     pageSettings: r.page_settings ?? undefined,
+    // CONNECTOR-B - the page's link records. SQL NULL, jsonb null and [] all read as "no links": the key is ABSENT, so a page that never had a link is byte-identical to today (never `pageLinks: []`, never `null`).
+    pageLinks: Array.isArray(r.page_links) && r.page_links.length > 0 ? r.page_links : undefined,
     tags: r.tags ?? undefined,
     routedProjectIds: r.routed_project_ids ?? undefined,
     strokes: r.strokes ?? undefined,
@@ -266,7 +268,7 @@ async function upsertDrawers(userId: string, records: any[]): Promise<string[]> 
   return rejected;
 }
 
-async function upsertJournalEntries(userId: string, records: any[]): Promise<string[]> {
+export async function upsertJournalEntries(userId: string, records: any[]): Promise<string[]> {
   const rejected: string[] = [];
   for (const e of records) {
     if (!e?.id || !e?.updatedAt || !e?.createdAt) { if (e?.id) rejected.push(e.id); continue; }
@@ -274,8 +276,8 @@ async function upsertJournalEntries(userId: string, records: any[]): Promise<str
       await pool.query(
         `insert into journal_entries
            (id, user_id, project_id, text, session_id, starred, source, shelved, beat_id, page_type,
-            order_index, imported_at, boxes, script, origin, tutor, tags, routed_project_ids, strokes, deleted_at, created_at, updated_at, plan_board_id, page_settings)
-         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb,$15,$16::jsonb,$17::jsonb,$18::jsonb,$19::jsonb,$20,$21,$22,$23,$24::jsonb)
+            order_index, imported_at, boxes, script, origin, tutor, tags, routed_project_ids, strokes, deleted_at, created_at, updated_at, plan_board_id, page_settings, page_links)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb,$15,$16::jsonb,$17::jsonb,$18::jsonb,$19::jsonb,$20,$21,$22,$23,$24::jsonb,$25::jsonb)
          on conflict (id) do update set
            project_id = excluded.project_id, text = excluded.text, session_id = excluded.session_id,
            starred = excluded.starred, source = excluded.source, shelved = excluded.shelved,
@@ -288,13 +290,22 @@ async function upsertJournalEntries(userId: string, records: any[]): Promise<str
               last-writer-wins guard (the updated_at comparison below) as
               every column above it. No special-casing: dress is page data. */
            page_settings = excluded.page_settings,
+           /* CONNECTOR-B - THE OLD-CLIENT GUARD (Fable, Oct 14, verbatim). Every other column is "col = excluded.col". An OLD client - one that has never heard of
+              pageLinks - pushes an edited entry with the field ABSENT, which arrives here as $25 = 'null': a plain "page_links = excluded.page_links" would WIPE the
+              stored links the moment that client edits the page. So a sender that does not speak page_links (null / jsonb null) keeps what is stored; a sender that
+              does speak it sends the new WHOLE value ([] clears). Last-writer-wins by updated_at, like boxes: the whole array is replaced; two writers editing
+              different links on one entry inside one sync window do not merge. */
+           page_links = case
+             when excluded.page_links is null or excluded.page_links = 'null'::jsonb then journal_entries.page_links
+             else excluded.page_links
+           end,
            synced_at = now()
          where journal_entries.user_id = excluded.user_id
            and excluded.updated_at > journal_entries.updated_at`,
         [e.id, userId, e.projectId ?? null, e.text ?? '', e.sessionId ?? null,
          e.starred ?? null, e.source ?? null, e.shelved ?? false, e.beatId ?? null, e.pageType ?? null,
          e.orderIndex ?? null, e.importedAt ?? null, JSON.stringify(e.boxes ?? null), JSON.stringify(e.script ?? null), e.origin ?? null, JSON.stringify(e.tutor ?? null), JSON.stringify(e.tags ?? null), JSON.stringify(e.routedProjectIds ?? null), JSON.stringify(e.strokes ?? null),
-         e.deletedAt ?? null, e.createdAt, e.updatedAt, e.planBoardId ?? null, JSON.stringify(e.pageSettings ?? null)],
+         e.deletedAt ?? null, e.createdAt, e.updatedAt, e.planBoardId ?? null, JSON.stringify(e.pageSettings ?? null), JSON.stringify(e.pageLinks ?? null)],
       );
     } catch (err) {
       logError('sync', err, { kind: 'journal_entry', id: e.id });

@@ -132,6 +132,9 @@ function SurveyThumb({ item, onTravel, renderMenu, dragPayload }: { item: Survey
   const menuContent = renderMenu ? renderMenu(item) : null;
   return (
     <div className={`wz-cascade-thumb${item.current ? ' current' : ''}${item.kindShape ? ` wz-thumb-${item.kindShape}` : ''}`}
+      // CONNECTOR-B: this thumbnail STANDS FOR the entry whose id it carries (a page or a board; a card row's id resolves to no entry and is simply not a target - the board checks). While a card is in connection mode
+      // it is a connector target; a thumbnail that is not a draggable membership row can be dragged onto the board for a linked copy.
+      data-link-entry={item.id}
       // PW1 S3 — right-click is the SECOND display act (Nick, Q4), and it is
       // deliberately not a second menu: it opens the one the row already
       // carries. Every act stays reachable by the keyboard and the unfamiliar

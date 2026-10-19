@@ -196,6 +196,18 @@ export async function runMigrations(): Promise<void> {
   // merge was considered and refused for that reason.
   await pool.query(`alter table users add column if not exists proofing jsonb`);
 
+  // CONNECTOR-B (Nick's route (b), Oct 14; plan reviewed and approved by Fable, Oct 14: docs/plans/connector-b-page-links.md) - THE PAGE LINKS. ONE additive column on `journal_entries`:
+  // an ARRAY of link records (jsonb, default '[]'), the pairs a same-board connection box cannot hold because an end is an ENTRY, not a box on this board (a card <-> a page or a board, a card <-> a card on another
+  // board, a page <-> a page...). A same-board card <-> card link stays a 'connection' box inside `boxes`, forever; this column holds only what a box cannot. Shape (types/index.ts PageLink):
+  //   [{ id, aEntryId (the OWNER: this very entry), aBoxId?, bEntryId, bBoxId?, createdAt, updatedAt, deletedAt? }]
+  // A record is stored ONCE, on the entry where the writer started the link; the reverse ("what points AT this page?") is a cache scan on the client. `deletedAt` is a tombstone - a delete is a write, so it syncs.
+  //
+  // No NOT NULL, no CHECK, no backfill, no index. Postgres 11+ applies a constant default to existing rows as METADATA ONLY (no rewrite, no long lock); running this twice changes nothing - the exact recipe of
+  // `boxes` / `script` / `tutor` / `page_settings` above. NULL, jsonb null, [] and "absent" all mean "no links" to the client, and a page with none stays byte-identical to today.
+  //
+  // DEPLOY ORDER IS THE LAW: server FIRST (this migration, then the new /sync verified), the client after - an OLD server silently drops the field in both directions. And NOT before a verified backup.
+  await pool.query(`alter table journal_entries add column if not exists page_links jsonb default '[]'::jsonb`);
+
   // ITEM 198 (Nick's word: "Yes" to a column) - THE SERVER'S OWN SYNC CURSOR, on all six sync tables.
   // `/sync` used to pull by the client-stamped `updated_at`; see pull() in sync.ts for the whole
   // argument. `synced_at` is stamped by Postgres and never by a client: the column DEFAULT covers an
