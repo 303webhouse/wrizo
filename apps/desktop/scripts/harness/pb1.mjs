@@ -263,7 +263,7 @@ await withHarness(async (app) => {
   await app.goto('/page/new?origin=loose');
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'unborn page (absences)' });
   await sleep(500);
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted' });
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
   await sleep(500);
   const absences = await app.evalJs(`({

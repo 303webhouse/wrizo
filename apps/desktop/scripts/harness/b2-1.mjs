@@ -67,7 +67,7 @@ const freshDesk = async (app, width = 1400, height = 900) => {
 // b1.mjs's/b2.mjs's own openPageCategory helper, copied verbatim: index 1
 // in the strip is the Page category.
 const openPageCategory = async (app) => {
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPageCategory)' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (openPageCategory)' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
   if (alreadyOpen) return;
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
@@ -77,7 +77,7 @@ const openPageCategory = async (app) => {
 // Cascade.tsx's own strip order (SECTION_A/B/C/D): journal(0), page(1),
 // plan(2), drawers(3), shelf(4), trash(5), settings(6), theme(7).
 const openPlanCategory = async (app) => {
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPlanCategory)' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (openPlanCategory)' });
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=plan]').click()");
   await sleep(150);
 };
@@ -233,7 +233,7 @@ await withHarness(async (app) => {
   ok('S6b [word-diet successor]: the Trash Board\'s own Page face now reads the bare place name, "Trash"',
     trashHomeLabel === 'Trash', String(trashHomeLabel));
 
-  await app.goto('/shelf');
+  await app.goto('/shelf-board');
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf Board mounted' });
   await sleep(250);
   await openPageCategory(app);

@@ -176,7 +176,7 @@ const openDrawersOn = async (app, boardId) => {
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(boardId)}`);
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'FX9 fixture board framed' });
   await sleep(250);
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'strip mounted (FX9 fixture)' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'strip mounted (FX9 fixture)' });
   await clickCategory(app, 'drawers'); // Drawers
   await app.waitFor("!!document.querySelector('.wz-drawers-tiles')", { label: 'Drawers panel open (FX9 fixture)' });
   await sleep(200);
@@ -208,126 +208,169 @@ await withHarness(async (app) => {
   // ==========================================================================
   // s1Ids maps the fixture's own project ids to the ones createProject generated
   // — S2's rename below needs one of them, after a reload.
-  const s1Ids = await seedFixture(app, {
-    projects: [project('fx9-s1-project', 'S1 Grammar Project'), project('fx9-s1-anchor-project', 'S1 Anchor Project')],
-    boards: [
-      board('fx9-s1-board-a', 'fx9-s1-project', 'Alpha Board', 0),
-      board('fx9-s1-board-b', 'fx9-s1-project', 'Beta Board', 1),
-      board('fx9-s1-anchor-board', 'fx9-s1-anchor-project', 'Anchor Board', 1000),
-    ],
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): S1 - presence, grammar, keyboard, chevron colour, reduced motion, on the Drawers panel's project cluster.
+  // Kept VERBATIM below and no longer run; the live successor follows. FX9's subject - the fold on the Drawers panel's project clusters and its Loose group - retired with the tiles: the Drawers tab is the place switcher now and the Shelf is merged into the Journal. The fold PRIMITIVE (FoldSection, useSectionFold) is unchanged and still serves the Journal panel's Recent list; the successor below holds that, and a source pin holds the count rule.
+  //
+  // const s1Ids = await seedFixture(app, {
+  //   projects: [project('fx9-s1-project', 'S1 Grammar Project'), project('fx9-s1-anchor-project', 'S1 Anchor Project')],
+  //   boards: [
+  //     board('fx9-s1-board-a', 'fx9-s1-project', 'Alpha Board', 0),
+  //     board('fx9-s1-board-b', 'fx9-s1-project', 'Beta Board', 1),
+  //     board('fx9-s1-anchor-board', 'fx9-s1-anchor-project', 'Anchor Board', 1000),
+  //   ],
+  // }, LAPTOP_W, 900);
+  // await openDrawersOn(app, 'fx9-s1-board-a');
+
+  // const presence = await app.evalJs(`(() => {
+  //   const clusterFold = ${foldByTitle('S1 Grammar Project')};
+  //   if (!clusterFold) return null;
+  //   const header = clusterFold.querySelector('.wz-fold-header');
+  //   return {
+  //     isButton: header?.tagName === 'BUTTON',
+  //     ariaExpanded: header?.getAttribute('aria-expanded'),
+  //     dataCollapsed: clusterFold.dataset.collapsed,
+  //     hasChevron: !!header?.querySelector('.wz-fold-chevron'),
+  //     childCount: header?.children.length,
+  //     tileCount: clusterFold.querySelector('.wz-fold-body-inner')?.querySelectorAll('.wz-drawers-tile').length,
+  //   };
+  // })()`);
+  // ok('S1: a project cluster fold header exists, is a real <button>, has aria-expanded + a chevron, carries its own 2 boards, and opens EXPANDED by default (2 items, under the six-item ceiling)',
+  //   presence && presence.isButton && presence.ariaExpanded === 'true' && presence.dataCollapsed === 'false' && presence.hasChevron && presence.tileCount === 2,
+  //   JSON.stringify(presence));
+  // ok('S3 (structural): the header carries EXACTLY two children — the title span and the chevron span, nothing else (no third, count-shaped element)',
+  //   presence?.childCount === 2, String(presence?.childCount));
+
+  // // The whole header is the hit target — a genuinely trusted click at the
+  // // header's own horizontal CENTER (clear of both the short title text at
+  // // the left edge and the small chevron glyph at the right edge) toggles
+  // // it, proving the full row responds, not just the chevron.
+  // const headerRect = await headerRectOf(app, 'S1 Grammar Project');
+  // await clickAt(app, Math.round(headerRect.x + headerRect.width / 2), Math.round(headerRect.y + headerRect.height / 2));
+  // await sleep(250);
+  // const afterCenterClick = await app.evalJs(`(() => {
+  //   const el = ${foldByTitle('S1 Grammar Project')};
+  //   return { dataCollapsed: el.dataset.collapsed, ariaExpanded: el.querySelector('.wz-fold-header').getAttribute('aria-expanded') };
+  // })()`);
+  // ok('S1: a genuinely trusted click at the header\'s own CENTER (clear of the title text and the chevron glyph both) collapses it — the whole row is the hit target, not the chevron alone',
+  //   afterCenterClick.dataCollapsed === 'true' && afterCenterClick.ariaExpanded === 'false', JSON.stringify(afterCenterClick));
+
+  // // A second click, this time deliberately at the header's FAR LEFT edge
+  // // (the title's own start, the farthest point on the row from the
+  // // chevron sitting at the far right) — re-expands it, the same proof from
+  // // the opposite end of the row.
+  // await clickAt(app, Math.round(headerRect.x + 4), Math.round(headerRect.y + headerRect.height / 2));
+  // await sleep(250);
+  // const afterFarLeftClick = await app.evalJs(`(() => {
+  //   const el = ${foldByTitle('S1 Grammar Project')};
+  //   return { dataCollapsed: el.dataset.collapsed, ariaExpanded: el.querySelector('.wz-fold-header').getAttribute('aria-expanded') };
+  // })()`);
+  // ok('S1: a click at the header\'s FAR LEFT edge (farthest point on the row from the chevron) re-expands it too',
+  //   afterFarLeftClick.dataCollapsed === 'false' && afterFarLeftClick.ariaExpanded === 'true', JSON.stringify(afterFarLeftClick));
+
+  // // Keyboard: focus the header, a real trusted Enter keypress toggles it —
+  // // native <button> activation semantics, not a synthetic click() call.
+  // // Uses app.typeKeys('\n') rather than app.key('Enter'): empirically
+  // // verified live against this exact button (disclosed in the build
+  // // report) — app.key's own rawKeyDown+keyUp pair (no `text` field) does
+  // // NOT trigger Chromium's native Enter-activates-a-focused-button default
+  // // action in this harness's headless build, while typeKeys's fuller
+  // // keyDown (WITH a `text` field) + keyUp pair does. Both are genuinely
+  // // trusted CDP Input.dispatchKeyEvent sequences (never a synthetic
+  // // KeyboardEvent dispatch) — this is a choice between two already-trusted
+  // // helpers, not a downgrade to an untrusted one.
+  // await app.evalJs(`${foldByTitle('S1 Grammar Project')}.querySelector('.wz-fold-header').focus()`);
+  // const focusedIsHeader = await app.evalJs(`document.activeElement === ${foldByTitle('S1 Grammar Project')}.querySelector('.wz-fold-header')`);
+  // ok('S1: the header is genuinely focusable (a real <button>, reachable via .focus())', focusedIsHeader === true, String(focusedIsHeader));
+  // await app.typeKeys('\n');
+  // await sleep(250);
+  // const afterEnter = await app.evalJs(`(() => {
+  //   const el = ${foldByTitle('S1 Grammar Project')};
+  //   return { dataCollapsed: el.dataset.collapsed, ariaExpanded: el.querySelector('.wz-fold-header').getAttribute('aria-expanded') };
+  // })()`);
+  // ok('S1: a genuinely trusted Enter keypress, while the header holds focus, collapses it — keyboard-operable, aria-expanded flips in step',
+  //   afterEnter.dataCollapsed === 'true' && afterEnter.ariaExpanded === 'false', JSON.stringify(afterEnter));
+
+  // // Chevron: quiet olive at rest AND on hover, never brass/orange either
+  // // way. A real trusted hover-move (FX5 S8's own genuinely-trusted
+  // // pointer-move discipline) over the header, then read the chevron's OWN
+  // // computed color both before and during the hover.
+  // const chevronRestColor = await app.evalJs(`getComputedStyle(${foldByTitle('S1 Grammar Project')}.querySelector('.wz-fold-chevron')).color`);
+  // await app.mouseMove(Math.round(headerRect.x + headerRect.width / 2), Math.round(headerRect.y + headerRect.height / 2));
+  // await sleep(150);
+  // const chevronHoverColor = await app.evalJs(`getComputedStyle(${foldByTitle('S1 Grammar Project')}.querySelector('.wz-fold-chevron')).color`);
+  // const OLIVE = 'rgb(150, 160, 90)'; // --accent-rest: #96a05a
+  // const BRASS = 'rgb(255, 152, 0)'; // --brass
+  // ok('S1: the chevron reads quiet olive (--accent-rest) AT REST — never brass/orange',
+  //   chevronRestColor === OLIVE && chevronRestColor !== BRASS, chevronRestColor);
+  // ok('S1: the chevron STAYS olive ON HOVER too — "nothing brass, nothing orange, at rest or on hover" (S1\'s own words)',
+  //   chevronHoverColor === OLIVE && chevronHoverColor !== BRASS, chevronHoverColor);
+  // // Restore to expanded for the checks that follow (focus is still on the
+  // // header from the keyboard test above).
+  // await app.typeKeys('\n');
+  // await sleep(250);
+
+  // // Nothing brass anywhere in the panel AT REST (no hover, no focus).
+  // await app.evalJs("document.activeElement && document.activeElement.blur && document.activeElement.blur()");
+  // await app.mouseMove(5, 5); // move the pointer well away from any panel chrome
+  // await sleep(150);
+  // const restColors = await app.evalJs(`[...document.querySelectorAll('.wz-fold-header, .wz-fold-chevron')].map(el => getComputedStyle(el).color)`);
+  // ok('S1: nothing in the fold chrome reads brass at rest (no hover, no focus) — the whole roster of header/chevron computed colors',
+  //   Array.isArray(restColors) && restColors.length > 0 && restColors.every((c) => c !== BRASS), JSON.stringify(restColors));
+
+  // // Reduced motion: the height transition (and the chevron's own rotation)
+  // // both drop to ~0s — no animated frame, an instant snap.
+  // await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  // const reducedDurations = await app.evalJs(`(() => {
+  //   const wrap = ${foldByTitle('S1 Grammar Project')}.querySelector('.wz-fold-body-wrap');
+  //   const chevron = ${foldByTitle('S1 Grammar Project')}.querySelector('.wz-fold-chevron');
+  //   return { wrap: getComputedStyle(wrap).transitionDuration, chevron: getComputedStyle(chevron).transitionDuration };
+  // })()`);
+  // const parseDur = (s) => Math.max(...String(s).split(',').map((x) => parseFloat(x)));
+  // ok('S1: under prefers-reduced-motion, the fold body\'s own height transition collapses to ~0s (no height animation)',
+  //   parseDur(reducedDurations.wrap) < 0.001, JSON.stringify(reducedDurations));
+  // ok('S1: under prefers-reduced-motion, the chevron\'s own rotation transition collapses to ~0s too',
+  //   parseDur(reducedDurations.chevron) < 0.001, JSON.stringify(reducedDurations));
+  // await app.emulateMedia([]);
+  // The fold primitive's surviving consumer: the Journal panel's Recent list.
+  const jdoc = (id, title, offset) => ({ id, text: title, projectId: null, source: 'page', origin: 'journal', createdAt: t(offset), updatedAt: t(offset) });
+  await seedFixture(app, {
+    projects: [project('fx9-s1-project', 'S1 Grammar Project')],
+    boards: [board('fx9-s1-board-a', 'fx9-s1-project', 'Alpha Board', 0)],
+    docs: [jdoc('fx9-j1', 'Journal Alpha', 1), jdoc('fx9-j2', 'Journal Bravo', 2)],
   }, LAPTOP_W, 900);
-  await openDrawersOn(app, 'fx9-s1-board-a');
-
-  const presence = await app.evalJs(`(() => {
-    const clusterFold = ${foldByTitle('S1 Grammar Project')};
-    if (!clusterFold) return null;
-    const header = clusterFold.querySelector('.wz-fold-header');
-    return {
-      isButton: header?.tagName === 'BUTTON',
-      ariaExpanded: header?.getAttribute('aria-expanded'),
-      dataCollapsed: clusterFold.dataset.collapsed,
-      hasChevron: !!header?.querySelector('.wz-fold-chevron'),
-      childCount: header?.children.length,
-      tileCount: clusterFold.querySelector('.wz-fold-body-inner')?.querySelectorAll('.wz-drawers-tile').length,
-    };
-  })()`);
-  ok('S1: a project cluster fold header exists, is a real <button>, has aria-expanded + a chevron, carries its own 2 boards, and opens EXPANDED by default (2 items, under the six-item ceiling)',
-    presence && presence.isButton && presence.ariaExpanded === 'true' && presence.dataCollapsed === 'false' && presence.hasChevron && presence.tileCount === 2,
-    JSON.stringify(presence));
-  ok('S3 (structural): the header carries EXACTLY two children — the title span and the chevron span, nothing else (no third, count-shaped element)',
-    presence?.childCount === 2, String(presence?.childCount));
-
-  // The whole header is the hit target — a genuinely trusted click at the
-  // header's own horizontal CENTER (clear of both the short title text at
-  // the left edge and the small chevron glyph at the right edge) toggles
-  // it, proving the full row responds, not just the chevron.
-  const headerRect = await headerRectOf(app, 'S1 Grammar Project');
-  await clickAt(app, Math.round(headerRect.x + headerRect.width / 2), Math.round(headerRect.y + headerRect.height / 2));
+  await app.evalJs("location.hash = '#/page/fx9-s1-board-a'");
+  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'FX9 successor board framed' });
   await sleep(250);
-  const afterCenterClick = await app.evalJs(`(() => {
-    const el = ${foldByTitle('S1 Grammar Project')};
-    return { dataCollapsed: el.dataset.collapsed, ariaExpanded: el.querySelector('.wz-fold-header').getAttribute('aria-expanded') };
-  })()`);
-  ok('S1: a genuinely trusted click at the header\'s own CENTER (clear of the title text and the chevron glyph both) collapses it — the whole row is the hit target, not the chevron alone',
-    afterCenterClick.dataCollapsed === 'true' && afterCenterClick.ariaExpanded === 'false', JSON.stringify(afterCenterClick));
-
-  // A second click, this time deliberately at the header's FAR LEFT edge
-  // (the title's own start, the farthest point on the row from the
-  // chevron sitting at the far right) — re-expands it, the same proof from
-  // the opposite end of the row.
-  await clickAt(app, Math.round(headerRect.x + 4), Math.round(headerRect.y + headerRect.height / 2));
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'strip mounted (FX9 successor)' });
+  await clickCategory(app, 'journal');
   await sleep(250);
-  const afterFarLeftClick = await app.evalJs(`(() => {
-    const el = ${foldByTitle('S1 Grammar Project')};
-    return { dataCollapsed: el.dataset.collapsed, ariaExpanded: el.querySelector('.wz-fold-header').getAttribute('aria-expanded') };
+  const recentFold = await app.evalJs(`(() => {
+    const fold = document.querySelector('.wz-cascade-panel .wz-fold');
+    const header = fold ? fold.querySelector('.wz-fold-header') : null;
+    return fold ? { isButton: header?.tagName === 'BUTTON', ariaExpanded: header?.getAttribute('aria-expanded'), dataCollapsed: fold.dataset.collapsed, hasChevron: !!header?.querySelector('.wz-fold-chevron'), childCount: header?.children.length } : null;
   })()`);
-  ok('S1: a click at the header\'s FAR LEFT edge (farthest point on the row from the chevron) re-expands it too',
-    afterFarLeftClick.dataCollapsed === 'false' && afterFarLeftClick.ariaExpanded === 'true', JSON.stringify(afterFarLeftClick));
-
-  // Keyboard: focus the header, a real trusted Enter keypress toggles it —
-  // native <button> activation semantics, not a synthetic click() call.
-  // Uses app.typeKeys('\n') rather than app.key('Enter'): empirically
-  // verified live against this exact button (disclosed in the build
-  // report) — app.key's own rawKeyDown+keyUp pair (no `text` field) does
-  // NOT trigger Chromium's native Enter-activates-a-focused-button default
-  // action in this harness's headless build, while typeKeys's fuller
-  // keyDown (WITH a `text` field) + keyUp pair does. Both are genuinely
-  // trusted CDP Input.dispatchKeyEvent sequences (never a synthetic
-  // KeyboardEvent dispatch) — this is a choice between two already-trusted
-  // helpers, not a downgrade to an untrusted one.
-  await app.evalJs(`${foldByTitle('S1 Grammar Project')}.querySelector('.wz-fold-header').focus()`);
-  const focusedIsHeader = await app.evalJs(`document.activeElement === ${foldByTitle('S1 Grammar Project')}.querySelector('.wz-fold-header')`);
-  ok('S1: the header is genuinely focusable (a real <button>, reachable via .focus())', focusedIsHeader === true, String(focusedIsHeader));
-  await app.typeKeys('\n');
+  ok('S1 [big-projects-1a successor]: the Journal panel\'s Recent list keeps its fold - a real <button> header with aria-expanded and a chevron, exactly two children (the title and the chevron, no count), expanded by default (five or fewer items)',
+    !!recentFold && recentFold.isButton && recentFold.ariaExpanded === 'true' && recentFold.dataCollapsed === 'false' && recentFold.hasChevron && recentFold.childCount === 2, JSON.stringify(recentFold));
+  const recentRect = await app.evalJs("(() => { const h = document.querySelector('.wz-cascade-panel .wz-fold-header'); if (!h) return null; const r = h.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height }; })()");
+  if (recentRect) { await clickAt(app, Math.round(recentRect.x + recentRect.w / 2), Math.round(recentRect.y + recentRect.h / 2)); await sleep(250); }
+  const recentAfterClick = await app.evalJs("(document.querySelector('.wz-cascade-panel .wz-fold') || {dataset: {}}).dataset.collapsed");
+  ok('S1 [big-projects-1a successor]: a genuinely trusted click at the Recent header\'s CENTER collapses it - the whole row is the hit target', recentAfterClick === 'true', String(recentAfterClick));
+  const recentChevron = await app.evalJs("getComputedStyle(document.querySelector('.wz-cascade-panel .wz-fold-chevron')).color");
+  ok('S1 [big-projects-1a successor]: the chevron reads quiet olive (--accent-rest) at rest, never brass', recentChevron === 'rgb(150, 160, 90)', String(recentChevron));
+  await clickCategory(app, 'journal'); await sleep(200); await clickCategory(app, 'journal'); await sleep(250);
+  const recentAfterReopen = await app.evalJs("(document.querySelector('.wz-cascade-panel .wz-fold') || {dataset: {}}).dataset.collapsed");
+  ok('S2 [big-projects-1a successor]: the collapsed Recent fold survives a cascade close and reopen (no reload)', recentAfterReopen === 'true', String(recentAfterReopen));
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'FX9 successor board after reload' });
   await sleep(250);
-  const afterEnter = await app.evalJs(`(() => {
-    const el = ${foldByTitle('S1 Grammar Project')};
-    return { dataCollapsed: el.dataset.collapsed, ariaExpanded: el.querySelector('.wz-fold-header').getAttribute('aria-expanded') };
-  })()`);
-  ok('S1: a genuinely trusted Enter keypress, while the header holds focus, collapses it — keyboard-operable, aria-expanded flips in step',
-    afterEnter.dataCollapsed === 'true' && afterEnter.ariaExpanded === 'false', JSON.stringify(afterEnter));
-
-  // Chevron: quiet olive at rest AND on hover, never brass/orange either
-  // way. A real trusted hover-move (FX5 S8's own genuinely-trusted
-  // pointer-move discipline) over the header, then read the chevron's OWN
-  // computed color both before and during the hover.
-  const chevronRestColor = await app.evalJs(`getComputedStyle(${foldByTitle('S1 Grammar Project')}.querySelector('.wz-fold-chevron')).color`);
-  await app.mouseMove(Math.round(headerRect.x + headerRect.width / 2), Math.round(headerRect.y + headerRect.height / 2));
-  await sleep(150);
-  const chevronHoverColor = await app.evalJs(`getComputedStyle(${foldByTitle('S1 Grammar Project')}.querySelector('.wz-fold-chevron')).color`);
-  const OLIVE = 'rgb(150, 160, 90)'; // --accent-rest: #96a05a
-  const BRASS = 'rgb(255, 152, 0)'; // --brass
-  ok('S1: the chevron reads quiet olive (--accent-rest) AT REST — never brass/orange',
-    chevronRestColor === OLIVE && chevronRestColor !== BRASS, chevronRestColor);
-  ok('S1: the chevron STAYS olive ON HOVER too — "nothing brass, nothing orange, at rest or on hover" (S1\'s own words)',
-    chevronHoverColor === OLIVE && chevronHoverColor !== BRASS, chevronHoverColor);
-  // Restore to expanded for the checks that follow (focus is still on the
-  // header from the keyboard test above).
-  await app.typeKeys('\n');
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'strip mounted (FX9 successor, after reload)' });
+  await clickCategory(app, 'journal');
   await sleep(250);
-
-  // Nothing brass anywhere in the panel AT REST (no hover, no focus).
-  await app.evalJs("document.activeElement && document.activeElement.blur && document.activeElement.blur()");
-  await app.mouseMove(5, 5); // move the pointer well away from any panel chrome
-  await sleep(150);
-  const restColors = await app.evalJs(`[...document.querySelectorAll('.wz-fold-header, .wz-fold-chevron')].map(el => getComputedStyle(el).color)`);
-  ok('S1: nothing in the fold chrome reads brass at rest (no hover, no focus) — the whole roster of header/chevron computed colors',
-    Array.isArray(restColors) && restColors.length > 0 && restColors.every((c) => c !== BRASS), JSON.stringify(restColors));
-
-  // Reduced motion: the height transition (and the chevron's own rotation)
-  // both drop to ~0s — no animated frame, an instant snap.
-  await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
-  const reducedDurations = await app.evalJs(`(() => {
-    const wrap = ${foldByTitle('S1 Grammar Project')}.querySelector('.wz-fold-body-wrap');
-    const chevron = ${foldByTitle('S1 Grammar Project')}.querySelector('.wz-fold-chevron');
-    return { wrap: getComputedStyle(wrap).transitionDuration, chevron: getComputedStyle(chevron).transitionDuration };
-  })()`);
-  const parseDur = (s) => Math.max(...String(s).split(',').map((x) => parseFloat(x)));
-  ok('S1: under prefers-reduced-motion, the fold body\'s own height transition collapses to ~0s (no height animation)',
-    parseDur(reducedDurations.wrap) < 0.001, JSON.stringify(reducedDurations));
-  ok('S1: under prefers-reduced-motion, the chevron\'s own rotation transition collapses to ~0s too',
-    parseDur(reducedDurations.chevron) < 0.001, JSON.stringify(reducedDurations));
-  await app.emulateMedia([]);
+  const recentAfterReload = await app.evalJs("(document.querySelector('.wz-cascade-panel .wz-fold') || {dataset: {}}).dataset.collapsed");
+  ok('S2 [big-projects-1a successor]: and survives a FULL reload', recentAfterReload === 'true', String(recentAfterReload));
+  const foldSrc = (await import('node:fs')).readFileSync(new URL('../../src/store/sectionFold.ts', import.meta.url), 'utf8');
+  ok('S2 [big-projects-1a successor]: the count rule is unchanged - six or fewer items open expanded, seven or more collapsed (FOLD_DEFAULT_THRESHOLD = 6, collapsed when itemCount > threshold); the Drawers Loose group that exercised it live is retired, so the rule is pinned at its source',
+    /export const FOLD_DEFAULT_THRESHOLD = 6;/.test(foldSrc) && /itemCount > FOLD_DEFAULT_THRESHOLD/.test(foldSrc), '');
 
   // ==========================================================================
   // Non-goals — PagePanel/PlanPanel/CascadeSettingsPanel/CascadeThemePanel
@@ -357,11 +400,16 @@ await withHarness(async (app) => {
   // (B2 S1/S3 retired the Shelf's old list whole; B1 S5 built Trash minimal
   // from the start). Proven live here rather than just asserted from
   // reading the source, so this is a checked fact, not a guess.
-  await clickCategory(app, 'shelf'); // Shelf
-  await sleep(200);
-  const shelfShape = await app.evalJs("({ hasFold: !!document.querySelector('.wz-cascade-panel .wz-fold'), buttonCount: document.querySelectorAll('.wz-cascade-panel-body button').length })");
-  ok('DISCLOSED DISCREPANCY: ShelfPanel currently renders no list at all (one plain door button, B2 S1/S3) — no fold was added; the brief\'s own "ShelfPanel... render[s] ... lists" premise does not match current source',
-    shelfShape.hasFold === false && shelfShape.buttonCount === 1, JSON.stringify(shelfShape));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): there is no Shelf tab (clickCategory throws for an absent category, which would abort this whole file).
+  // Kept VERBATIM below and no longer run; the live successor follows. FX9's subject - the fold on the Drawers panel's project clusters and its Loose group - retired with the tiles: the Drawers tab is the place switcher now and the Shelf is merged into the Journal. The fold PRIMITIVE (FoldSection, useSectionFold) is unchanged and still serves the Journal panel's Recent list; the successor below holds that, and a source pin holds the count rule.
+  //
+  // await clickCategory(app, 'shelf'); // Shelf
+  // await sleep(200);
+  // const shelfShape = await app.evalJs("({ hasFold: !!document.querySelector('.wz-cascade-panel .wz-fold'), buttonCount: document.querySelectorAll('.wz-cascade-panel-body button').length })");
+  // ok('DISCLOSED DISCREPANCY: ShelfPanel currently renders no list at all (one plain door button, B2 S1/S3) — no fold was added; the brief\'s own "ShelfPanel... render[s] ... lists" premise does not match current source',
+  //   shelfShape.hasFold === false && shelfShape.buttonCount === 1, JSON.stringify(shelfShape));
+  const shelfTabGoneFx9 = await app.evalJs("!document.querySelector('.wz-strip-item[data-category=shelf]')");
+  ok('DISCLOSED DISCREPANCY [big-projects-1a successor]: there is no Shelf panel at all - the Shelf is merged into the Journal (display only), so no ShelfPanel can grow a fold', shelfTabGoneFx9 === true, String(shelfTabGoneFx9));
   await clickCategory(app, 'trash'); // Trash
   await sleep(200);
   const trashShape = await app.evalJs("({ hasFold: !!document.querySelector('.wz-cascade-panel .wz-fold'), buttonCount: document.querySelectorAll('.wz-cascade-panel-body button').length })");
@@ -372,245 +420,249 @@ await withHarness(async (app) => {
   // S2 — persistence: close/reopen the cascade (no reload), a full reload,
   // and the id-keyed rename proof.
   // ==========================================================================
-  await clickCategory(app, 'drawers'); // back to Drawers
-  await sleep(200);
-  // Collapse the cluster.
-  await app.evalJs(`${foldByTitle('S1 Grammar Project')}.querySelector('.wz-fold-header').click()`);
-  await sleep(250);
-  const collapsedBeforeDockClose = await app.evalJs(`${foldByTitle('S1 Grammar Project')}.dataset.collapsed`);
-  ok('S2 setup: the cluster is genuinely collapsed before the close/reopen probe', collapsedBeforeDockClose === 'true', collapsedBeforeDockClose);
-  // Close the cascade panel (the dock's own quiet close, T5) — NOT a
-  // reload; DrawersPanel fully unmounts.
-  await app.evalJs("document.querySelector('.wz-cascade-dock-btn')?.click()");
-  await sleep(250);
-  // Drawers never opens a survey (B2 S7 — a large-tile view, tiles travel
-  // directly, no nested survey column), so closePanel() always takes its
-  // "nothing to dock" branch (Cascade.tsx) and returns to REST outright —
-  // `layers` renders null, so `.wz-cascade-panel` is genuinely ABSENT from
-  // the DOM here, not merely data-visible='false' (that attribute is the
-  // DOCKED-survey case specifically, a different state this fixture never
-  // reaches).
-  const panelClosedAfterDock = await app.evalJs("!document.querySelector('.wz-cascade-panel')");
-  ok('S2 setup: the cascade panel genuinely closed — DrawersPanel unmounted whole (no survey to dock, so closePanel() returns to REST)', panelClosedAfterDock === true, String(panelClosedAfterDock));
-  // Reopen the SAME category — a fresh DrawersPanel mount, no page reload.
-  await clickCategory(app, 'drawers');
-  await sleep(250);
-  const collapsedAfterReopen = await app.evalJs(`${foldByTitle('S1 Grammar Project')}.dataset.collapsed`);
-  ok('S2: a fold survives closing and reopening the cascade (no page reload) — read fresh off the shared store on remount, not stale component state',
-    collapsedAfterReopen === 'true', collapsedAfterReopen);
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): S2 persistence and the id-keyed rename proof, the count-based first-ever default, the S3 negative assertion and the S4 geometry - all on the Drawers clusters and the Loose group, which retired with the tiles.
+  // Kept VERBATIM below and no longer run; the live successor follows. FX9's subject - the fold on the Drawers panel's project clusters and its Loose group - retired with the tiles: the Drawers tab is the place switcher now and the Shelf is merged into the Journal. The fold PRIMITIVE (FoldSection, useSectionFold) is unchanged and still serves the Journal panel's Recent list; the successor below holds that, and a source pin holds the count rule.
+  //
+  // await clickCategory(app, 'drawers'); // back to Drawers
+  // await sleep(200);
+  // // Collapse the cluster.
+  // await app.evalJs(`${foldByTitle('S1 Grammar Project')}.querySelector('.wz-fold-header').click()`);
+  // await sleep(250);
+  // const collapsedBeforeDockClose = await app.evalJs(`${foldByTitle('S1 Grammar Project')}.dataset.collapsed`);
+  // ok('S2 setup: the cluster is genuinely collapsed before the close/reopen probe', collapsedBeforeDockClose === 'true', collapsedBeforeDockClose);
+  // // Close the cascade panel (the dock's own quiet close, T5) — NOT a
+  // // reload; DrawersPanel fully unmounts.
+  // await app.evalJs("document.querySelector('.wz-cascade-dock-btn')?.click()");
+  // await sleep(250);
+  // // Drawers never opens a survey (B2 S7 — a large-tile view, tiles travel
+  // // directly, no nested survey column), so closePanel() always takes its
+  // // "nothing to dock" branch (Cascade.tsx) and returns to REST outright —
+  // // `layers` renders null, so `.wz-cascade-panel` is genuinely ABSENT from
+  // // the DOM here, not merely data-visible='false' (that attribute is the
+  // // DOCKED-survey case specifically, a different state this fixture never
+  // // reaches).
+  // const panelClosedAfterDock = await app.evalJs("!document.querySelector('.wz-cascade-panel')");
+  // ok('S2 setup: the cascade panel genuinely closed — DrawersPanel unmounted whole (no survey to dock, so closePanel() returns to REST)', panelClosedAfterDock === true, String(panelClosedAfterDock));
+  // // Reopen the SAME category — a fresh DrawersPanel mount, no page reload.
+  // await clickCategory(app, 'drawers');
+  // await sleep(250);
+  // const collapsedAfterReopen = await app.evalJs(`${foldByTitle('S1 Grammar Project')}.dataset.collapsed`);
+  // ok('S2: a fold survives closing and reopening the cascade (no page reload) — read fresh off the shared store on remount, not stale component state',
+  //   collapsedAfterReopen === 'true', collapsedAfterReopen);
 
-  // A full reload.
-  await app.reload();
-  await openDrawersOn(app, 'fx9-s1-board-a');
-  const collapsedAfterReload = await app.evalJs(`${foldByTitle('S1 Grammar Project')}.dataset.collapsed`);
-  ok('S2: a fold survives a FULL reload too', collapsedAfterReload === 'true', collapsedAfterReload);
+  // // A full reload.
+  // await app.reload();
+  // await openDrawersOn(app, 'fx9-s1-board-a');
+  // const collapsedAfterReload = await app.evalJs(`${foldByTitle('S1 Grammar Project')}.dataset.collapsed`);
+  // ok('S2: a fold survives a FULL reload too', collapsedAfterReload === 'true', collapsedAfterReload);
 
-  // The id-keyed rename proof — rename the project (a raw localStorage
-  // mutation from the Desk, the same "seed from the Desk, never a mounted
-  // editor" discipline every other seed in this file already follows),
-  // reload, and confirm the fold state survived under the NEW title.
-  await app.goto('/');
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before rename' });
-  await app.evalJs(`(() => {
-    // ITEM 85-C — the rename goes through wrizoPatchProject, addressed by the
-    // GENERATED id that seedFixture handed back. This is the fixture whose whole
-    // point is that folds are keyed by id and survive a title change, so the id
-    // has to be the real one.
-    window.wrizoPatchProject(${JSON.stringify(s1Ids['fx9-s1-project'])}, { title: 'Renamed Grammar Project' });
-  })()`);
-  await app.reload();
-  await openDrawersOn(app, 'fx9-s1-board-a');
-  const renamedFoldState = await app.evalJs(`(() => {
-    const el = ${foldByTitle('Renamed Grammar Project')};
-    const oldNameStillPresent = ${foldByTitle('S1 Grammar Project')};
-    return { found: !!el, collapsed: el?.dataset.collapsed, oldNameGone: !oldNameStillPresent };
-  })()`);
-  ok('S2 (the id-keyed proof): the cluster now renders under its NEW title, and its fold — collapsed before the rename — is STILL collapsed after it. The key rides the project\'s id, never its title.',
-    renamedFoldState.found && renamedFoldState.collapsed === 'true' && renamedFoldState.oldNameGone, JSON.stringify(renamedFoldState));
+  // // The id-keyed rename proof — rename the project (a raw localStorage
+  // // mutation from the Desk, the same "seed from the Desk, never a mounted
+  // // editor" discipline every other seed in this file already follows),
+  // // reload, and confirm the fold state survived under the NEW title.
+  // await app.goto('/');
+  // await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before rename' });
+  // await app.evalJs(`(() => {
+  //   // ITEM 85-C — the rename goes through wrizoPatchProject, addressed by the
+  //   // GENERATED id that seedFixture handed back. This is the fixture whose whole
+  //   // point is that folds are keyed by id and survive a title change, so the id
+  //   // has to be the real one.
+  //   window.wrizoPatchProject(${JSON.stringify(s1Ids['fx9-s1-project'])}, { title: 'Renamed Grammar Project' });
+  // })()`);
+  // await app.reload();
+  // await openDrawersOn(app, 'fx9-s1-board-a');
+  // const renamedFoldState = await app.evalJs(`(() => {
+  //   const el = ${foldByTitle('Renamed Grammar Project')};
+  //   const oldNameStillPresent = ${foldByTitle('S1 Grammar Project')};
+  //   return { found: !!el, collapsed: el?.dataset.collapsed, oldNameGone: !oldNameStillPresent };
+  // })()`);
+  // ok('S2 (the id-keyed proof): the cluster now renders under its NEW title, and its fold — collapsed before the rename — is STILL collapsed after it. The key rides the project\'s id, never its title.',
+  //   renamedFoldState.found && renamedFoldState.collapsed === 'true' && renamedFoldState.oldNameGone, JSON.stringify(renamedFoldState));
 
-  // ==========================================================================
-  // S2 — the count-based first-ever default, and explicit-toggle sovereignty.
-  // The Loose docs group is the target (not a project cluster): the
-  // Drawers panel's own single "last-opened" anchor slot pulls ONE item out
-  // of the pooled board+doc list — seeding an anchor-claiming BOARD (a
-  // later updatedAt than every doc) means the anchor is always claimed by
-  // that board, leaving the Loose docs cluster's own count untouched by
-  // anchor removal (its own kind is filtered separately — see
-  // DrawersPanel's own `restDocs` derivation in CascadePanels.tsx).
-  // ==========================================================================
-  const sevenDocs = Array.from({ length: 7 }, (_, i) => doc(`fx9-doc7-${i}`, `Doc Seven ${i}`, i));
-  await seedFixture(app, {
-    projects: [project('fx9-anchor-project', 'Anchor Project')],
-    boards: [board('fx9-anchor-board-7', 'fx9-anchor-project', 'Anchor Board', 1000)],
-    docs: sevenDocs,
-  }, LAPTOP_W, 900);
-  await openDrawersOn(app, 'fx9-anchor-board-7');
-  const sevenDocState = await app.evalJs(`(() => {
-    const el = ${foldByTitle('Loose')};
-    const body = el?.querySelector('.wz-fold-body-inner');
-    return {
-      collapsed: el?.dataset.collapsed,
-      ariaExpanded: el?.querySelector('.wz-fold-header').getAttribute('aria-expanded'),
-      docTileCount: body?.querySelectorAll('.wz-drawers-tile').length,
-    };
-  })()`);
-  ok('S2 default rule: a seeded SEVEN-item section (the Loose docs group, anchor claimed by a separate board) opens COLLAPSED on first-ever view',
-    sevenDocState.collapsed === 'true' && sevenDocState.ariaExpanded === 'false' && sevenDocState.docTileCount === 7,
-    JSON.stringify(sevenDocState));
+  // // ==========================================================================
+  // // S2 — the count-based first-ever default, and explicit-toggle sovereignty.
+  // // The Loose docs group is the target (not a project cluster): the
+  // // Drawers panel's own single "last-opened" anchor slot pulls ONE item out
+  // // of the pooled board+doc list — seeding an anchor-claiming BOARD (a
+  // // later updatedAt than every doc) means the anchor is always claimed by
+  // // that board, leaving the Loose docs cluster's own count untouched by
+  // // anchor removal (its own kind is filtered separately — see
+  // // DrawersPanel's own `restDocs` derivation in CascadePanels.tsx).
+  // // ==========================================================================
+  // const sevenDocs = Array.from({ length: 7 }, (_, i) => doc(`fx9-doc7-${i}`, `Doc Seven ${i}`, i));
+  // await seedFixture(app, {
+  //   projects: [project('fx9-anchor-project', 'Anchor Project')],
+  //   boards: [board('fx9-anchor-board-7', 'fx9-anchor-project', 'Anchor Board', 1000)],
+  //   docs: sevenDocs,
+  // }, LAPTOP_W, 900);
+  // await openDrawersOn(app, 'fx9-anchor-board-7');
+  // const sevenDocState = await app.evalJs(`(() => {
+  //   const el = ${foldByTitle('Loose')};
+  //   const body = el?.querySelector('.wz-fold-body-inner');
+  //   return {
+  //     collapsed: el?.dataset.collapsed,
+  //     ariaExpanded: el?.querySelector('.wz-fold-header').getAttribute('aria-expanded'),
+  //     docTileCount: body?.querySelectorAll('.wz-drawers-tile').length,
+  //   };
+  // })()`);
+  // ok('S2 default rule: a seeded SEVEN-item section (the Loose docs group, anchor claimed by a separate board) opens COLLAPSED on first-ever view',
+  //   sevenDocState.collapsed === 'true' && sevenDocState.ariaExpanded === 'false' && sevenDocState.docTileCount === 7,
+  //   JSON.stringify(sevenDocState));
 
-  // Explicit toggle beats the count rule on the next view: expand it by
-  // hand, then reload with the SAME seven-item fixture still in storage —
-  // it must now open EXPANDED, the writer's own choice overriding the
-  // default this time.
-  await app.evalJs(`${foldByTitle('Loose')}.querySelector('.wz-fold-header').click()`);
-  await sleep(250);
-  const sevenDocExpandedByHand = await app.evalJs(`${foldByTitle('Loose')}.dataset.collapsed`);
-  ok('S2 setup: the seven-item Loose group was genuinely expanded by hand', sevenDocExpandedByHand === 'false', sevenDocExpandedByHand);
-  await app.reload();
-  await openDrawersOn(app, 'fx9-anchor-board-7');
-  const sevenDocAfterExplicitReload = await app.evalJs(`${foldByTitle('Loose')}.dataset.collapsed`);
-  ok('S2: a writer\'s explicit toggle beats the count rule on the NEXT view — the same seven-item section now opens EXPANDED after a reload, because the writer touched it',
-    sevenDocAfterExplicitReload === 'false', sevenDocAfterExplicitReload);
+  // // Explicit toggle beats the count rule on the next view: expand it by
+  // // hand, then reload with the SAME seven-item fixture still in storage —
+  // // it must now open EXPANDED, the writer's own choice overriding the
+  // // default this time.
+  // await app.evalJs(`${foldByTitle('Loose')}.querySelector('.wz-fold-header').click()`);
+  // await sleep(250);
+  // const sevenDocExpandedByHand = await app.evalJs(`${foldByTitle('Loose')}.dataset.collapsed`);
+  // ok('S2 setup: the seven-item Loose group was genuinely expanded by hand', sevenDocExpandedByHand === 'false', sevenDocExpandedByHand);
+  // await app.reload();
+  // await openDrawersOn(app, 'fx9-anchor-board-7');
+  // const sevenDocAfterExplicitReload = await app.evalJs(`${foldByTitle('Loose')}.dataset.collapsed`);
+  // ok('S2: a writer\'s explicit toggle beats the count rule on the NEXT view — the same seven-item section now opens EXPANDED after a reload, because the writer touched it',
+  //   sevenDocAfterExplicitReload === 'false', sevenDocAfterExplicitReload);
 
-  // The six-item default (a FRESH fixture — never-touched key), expanded.
-  const sixDocs = Array.from({ length: 6 }, (_, i) => doc(`fx9-doc6-${i}`, `Doc Six ${i}`, i));
-  await seedFixture(app, {
-    projects: [project('fx9-anchor-project-6', 'Anchor Project Six')],
-    boards: [board('fx9-anchor-board-6', 'fx9-anchor-project-6', 'Anchor Board Six', 1000)],
-    docs: sixDocs,
-  }, LAPTOP_W, 900);
-  await openDrawersOn(app, 'fx9-anchor-board-6');
-  const sixDocState = await app.evalJs(`(() => {
-    const el = ${foldByTitle('Loose')};
-    const body = el?.querySelector('.wz-fold-body-inner');
-    return {
-      collapsed: el?.dataset.collapsed,
-      ariaExpanded: el?.querySelector('.wz-fold-header').getAttribute('aria-expanded'),
-      docTileCount: body?.querySelectorAll('.wz-drawers-tile').length,
-    };
-  })()`);
-  ok('S2 default rule: a seeded SIX-item section opens EXPANDED on first-ever view — "six or fewer opens expanded" (S2\'s own words)',
-    sixDocState.collapsed === 'false' && sixDocState.ariaExpanded === 'true' && sixDocState.docTileCount === 6,
-    JSON.stringify(sixDocState));
+  // // The six-item default (a FRESH fixture — never-touched key), expanded.
+  // const sixDocs = Array.from({ length: 6 }, (_, i) => doc(`fx9-doc6-${i}`, `Doc Six ${i}`, i));
+  // await seedFixture(app, {
+  //   projects: [project('fx9-anchor-project-6', 'Anchor Project Six')],
+  //   boards: [board('fx9-anchor-board-6', 'fx9-anchor-project-6', 'Anchor Board Six', 1000)],
+  //   docs: sixDocs,
+  // }, LAPTOP_W, 900);
+  // await openDrawersOn(app, 'fx9-anchor-board-6');
+  // const sixDocState = await app.evalJs(`(() => {
+  //   const el = ${foldByTitle('Loose')};
+  //   const body = el?.querySelector('.wz-fold-body-inner');
+  //   return {
+  //     collapsed: el?.dataset.collapsed,
+  //     ariaExpanded: el?.querySelector('.wz-fold-header').getAttribute('aria-expanded'),
+  //     docTileCount: body?.querySelectorAll('.wz-drawers-tile').length,
+  //   };
+  // })()`);
+  // ok('S2 default rule: a seeded SIX-item section opens EXPANDED on first-ever view — "six or fewer opens expanded" (S2\'s own words)',
+  //   sixDocState.collapsed === 'false' && sixDocState.ariaExpanded === 'true' && sixDocState.docTileCount === 6,
+  //   JSON.stringify(sixDocState));
 
-  // ==========================================================================
-  // S3 — mandatory negative assertion, proven by DOM query: no collapsed
-  // header anywhere renders a numeral or a badge element. Re-seed the
-  // seven-doc (collapsed-by-default) fixture and query the COLLAPSED
-  // header's own subtree directly, rather than eyeballing a screenshot.
-  // Every seeded title here is deliberately DIGIT-FREE (letters, not
-  // numbers) — the panel-wide "no digit anywhere" sweep below has to prove
-  // the FOLD MECHANISM never adds a count, which a numeral-bearing WRITER
-  // title (a legitimate thing a real title could contain) would falsely
-  // implicate; digit-free fixture titles keep the assertion honest.
-  // ==========================================================================
-  // NOTE: every DISPLAY title below is digit-free, deliberately including
-  // the fixture's own name — an earlier draft of this exact fixture used
-  // "S3 ..." titles and the digit in "S3" itself broke this very
-  // assertion (a real, disclosed authoring mistake caught by the
-  // assertion doing its job — not the product's own text).
-  const LETTERS = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf'];
-  await seedFixture(app, {
-    projects: [project('fx9-s3-project', 'Negative Assertion Project')],
-    boards: [board('fx9-s3-anchor', 'fx9-s3-project', 'Negative Assertion Anchor', 1000)],
-    docs: LETTERS.map((word, i) => doc(`fx9-s3-doc-${word.toLowerCase()}`, `Doc ${word}`, i)),
-  }, LAPTOP_W, 900);
-  await openDrawersOn(app, 'fx9-s3-anchor');
-  // Digit-testing runs NODE-side (matching cd2.mjs's/b2.mjs's own existing
-  // "!/\d/.test(bodyText)" convention exactly) — the browser side just
-  // returns the raw text, no regex escaping through the eval-string
-  // boundary to reason about.
-  const negativeAssertion = await app.evalJs(`(() => {
-    const fold = ${foldByTitle('Loose')};
-    const header = fold.querySelector('.wz-fold-header');
-    return {
-      collapsed: fold.dataset.collapsed,
-      headerChildCount: header.children.length,
-      headerText: header.textContent || '',
-      headerHasBadgeClassedElement: !!header.querySelector('[class*="badge" i], [class*="count" i], [class*="dot" i]'),
-      // The mandatory negative sweep the brief itself names — not just
-      // this ONE header, the panel's entire rendered text: no digit
-      // anywhere (every seeded title in this fixture is deliberately
-      // digit-free text, so any digit found here could only have come
-      // from a count/badge this ticket must never add).
-      panelBodyText: document.querySelector('.wz-cascade-panel-body')?.innerText ?? '',
-    };
-  })()`);
-  ok('S3 MANDATORY negative assertion: the collapsed Loose header carries EXACTLY its title + chevron (2 children), no numeral in its own text, and no element with a badge/count/dot-shaped class — queried live in the DOM, not assumed',
-    negativeAssertion.collapsed === 'true' && negativeAssertion.headerChildCount === 2
-      && !/\d/.test(negativeAssertion.headerText) && negativeAssertion.headerHasBadgeClassedElement === false,
-    JSON.stringify(negativeAssertion));
-  ok('S3 MANDATORY negative assertion: no digit anywhere in the WHOLE Drawers panel\'s rendered text, collapsed sections included — zero counts/badges anywhere in this ticket\'s own chrome',
-    !/\d/.test(negativeAssertion.panelBodyText), JSON.stringify(negativeAssertion));
+  // // ==========================================================================
+  // // S3 — mandatory negative assertion, proven by DOM query: no collapsed
+  // // header anywhere renders a numeral or a badge element. Re-seed the
+  // // seven-doc (collapsed-by-default) fixture and query the COLLAPSED
+  // // header's own subtree directly, rather than eyeballing a screenshot.
+  // // Every seeded title here is deliberately DIGIT-FREE (letters, not
+  // // numbers) — the panel-wide "no digit anywhere" sweep below has to prove
+  // // the FOLD MECHANISM never adds a count, which a numeral-bearing WRITER
+  // // title (a legitimate thing a real title could contain) would falsely
+  // // implicate; digit-free fixture titles keep the assertion honest.
+  // // ==========================================================================
+  // // NOTE: every DISPLAY title below is digit-free, deliberately including
+  // // the fixture's own name — an earlier draft of this exact fixture used
+  // // "S3 ..." titles and the digit in "S3" itself broke this very
+  // // assertion (a real, disclosed authoring mistake caught by the
+  // // assertion doing its job — not the product's own text).
+  // const LETTERS = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf'];
+  // await seedFixture(app, {
+  //   projects: [project('fx9-s3-project', 'Negative Assertion Project')],
+  //   boards: [board('fx9-s3-anchor', 'fx9-s3-project', 'Negative Assertion Anchor', 1000)],
+  //   docs: LETTERS.map((word, i) => doc(`fx9-s3-doc-${word.toLowerCase()}`, `Doc ${word}`, i)),
+  // }, LAPTOP_W, 900);
+  // await openDrawersOn(app, 'fx9-s3-anchor');
+  // // Digit-testing runs NODE-side (matching cd2.mjs's/b2.mjs's own existing
+  // // "!/\d/.test(bodyText)" convention exactly) — the browser side just
+  // // returns the raw text, no regex escaping through the eval-string
+  // // boundary to reason about.
+  // const negativeAssertion = await app.evalJs(`(() => {
+  //   const fold = ${foldByTitle('Loose')};
+  //   const header = fold.querySelector('.wz-fold-header');
+  //   return {
+  //     collapsed: fold.dataset.collapsed,
+  //     headerChildCount: header.children.length,
+  //     headerText: header.textContent || '',
+  //     headerHasBadgeClassedElement: !!header.querySelector('[class*="badge" i], [class*="count" i], [class*="dot" i]'),
+  //     // The mandatory negative sweep the brief itself names — not just
+  //     // this ONE header, the panel's entire rendered text: no digit
+  //     // anywhere (every seeded title in this fixture is deliberately
+  //     // digit-free text, so any digit found here could only have come
+  //     // from a count/badge this ticket must never add).
+  //     panelBodyText: document.querySelector('.wz-cascade-panel-body')?.innerText ?? '',
+  //   };
+  // })()`);
+  // ok('S3 MANDATORY negative assertion: the collapsed Loose header carries EXACTLY its title + chevron (2 children), no numeral in its own text, and no element with a badge/count/dot-shaped class — queried live in the DOM, not assumed',
+  //   negativeAssertion.collapsed === 'true' && negativeAssertion.headerChildCount === 2
+  //     && !/\d/.test(negativeAssertion.headerText) && negativeAssertion.headerHasBadgeClassedElement === false,
+  //   JSON.stringify(negativeAssertion));
+  // ok('S3 MANDATORY negative assertion: no digit anywhere in the WHOLE Drawers panel\'s rendered text, collapsed sections included — zero counts/badges anywhere in this ticket\'s own chrome',
+  //   !/\d/.test(negativeAssertion.panelBodyText), JSON.stringify(negativeAssertion));
 
-  // ==========================================================================
-  // S4 — geometry at the 1100px floor (mandatory), 1280, and 2200: the
-  // cascade's own rect and the paper's own rect are unchanged by any fold
-  // or unfold. Lands on a fresh PROSE page each time (cd2.mjs's own proven
-  // `.mode-pagecol` selector) rather than a board page — Drawers is a
-  // GLOBAL view, unscoped to the current page's own project, so the
-  // fixture's project/board/docs are seeded separately and the prose page
-  // itself is just "some real framed page underfoot."
-  // ==========================================================================
-  const paperSel = '.mode-pagecol, .entry-full';
-  for (const width of [FLOOR_W, LAPTOP_W, WIDE_W]) {
-    await freshProsePage(app, width, 900);
-    // The 300ms debounced-flush window (persistence.ts's FLUSH_DELAY) —
-    // read the freshly-created page's own id only after it has genuinely
-    // reached localStorage (cd2.mjs's own freshProsePageWithBoards fixture,
-    // same discipline).
-    await sleep(400);
-    const pageId = await app.evalJs("location.hash.split('/page/')[1]");
-    // Seed from the Desk (the flushNow-race law), then return to the SAME
-    // prose page.
-    await app.goto('/');
-    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: `S4 @ ${width}px Desk before seed` });
-    await app.evalJs(`(() => {
-      // ITEM 85-C — the generated project id is used only to home the anchor
-      // board below, so it stays local to this block.
-      const p = window.wrizoCreateProject('S4 Geometry Project');
-      // board() already carries source:'page', so it is NOT overridden here — an
-      // explicit source: null after the spread would have REMOVED it and turned
-      // an authored board into a raw capture. origin IS absent from board(), so
-      // origin: null is the faithful value.
-      window.wrizoCreateJournalPage({ ...${JSON.stringify(board('fx9-s4-anchor', 'fx9-s4-project', 'S4 Anchor Board', 1000))}, projectId: p.id, origin: null });
-      ${JSON.stringify(Array.from({ length: 7 }, (_, i) => doc(`fx9-s4-doc-${i}`, `S4 Doc ${i}`, i)))}
-        .forEach((d) => window.wrizoCreateJournalPage({ ...d, origin: 'origin' in d ? d.origin : null, source: 'source' in d ? d.source : null }));
-      // ITEM 85-C — the same touch the shared seedFixture performs, in the same
-      // seeded-recency order: the docs (offsets 0..6) first, then the anchor
-      // board (offset 1000) LAST, so the board stays newest and the seven docs
-      // stay in Loose — which is the count the collapse rule reads.
-      window.wrizoTouchInOrder([...${JSON.stringify(Array.from({ length: 7 }, (_, i) => `fx9-s4-doc-${i}`))}, 'fx9-s4-anchor']);
-    })()`);
-    await app.reload();
-    await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);
-    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: `S4 @ ${width}px prose page reloaded` });
-    await sleep(250);
-    await app.emulateDpr(1, width, 900);
-    await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: `S4 @ ${width}px strip mounted` });
-    // Paper rect + cascade presence with the panel CLOSED (no category selected).
-    const paperClosed = await rectOf(app, paperSel);
-    const cascadeAbsentWhenClosed = await app.evalJs("!document.querySelector('.wz-cascade-panel')");
-    ok(`S4 @ ${width}px setup: the cascade panel is genuinely absent with no category selected`, cascadeAbsentWhenClosed === true, String(cascadeAbsentWhenClosed));
-    // Open Drawers — the fixture's own Loose group opens collapsed by default (7 docs).
-    await clickCategory(app, 'drawers');
-    await app.waitFor("!!document.querySelector('.wz-drawers-tiles')", { label: `S4 @ ${width}px Drawers open` });
-    await sleep(200);
-    const paperOpenCollapsed = await rectOf(app, paperSel);
-    const cascadeOpenCollapsed = await rectOf(app, '.wz-cascade-panel');
-    const collapsedBeforeUnfold = await app.evalJs(`${foldByTitle('Loose')}.dataset.collapsed`);
-    ok(`S4 @ ${width}px setup: the Loose section is genuinely collapsed before the geometry probe`, collapsedBeforeUnfold === 'true', collapsedBeforeUnfold);
-    // Unfold it.
-    await app.evalJs(`${foldByTitle('Loose')}.querySelector('.wz-fold-header').click()`);
-    await sleep(250);
-    const paperOpenExpanded = await rectOf(app, paperSel);
-    const cascadeOpenExpanded = await rectOf(app, '.wz-cascade-panel');
-    ok(`S4 @ ${width}px: the paper's own rect is BYTE-IDENTICAL closed vs. panel-open-collapsed vs. panel-open-expanded — folding a list never moves the paper`,
-      JSON.stringify(paperClosed) === JSON.stringify(paperOpenCollapsed) && JSON.stringify(paperOpenCollapsed) === JSON.stringify(paperOpenExpanded),
-      JSON.stringify({ paperClosed, paperOpenCollapsed, paperOpenExpanded }));
-    ok(`S4 @ ${width}px: the cascade panel's own rect is BYTE-IDENTICAL collapsed vs. expanded — folding/unfolding a list never resizes or moves the panel itself (it scrolls internally, per .wz-cascade-panel's own fixed width/height + overflow-y:auto)`,
-      JSON.stringify(cascadeOpenCollapsed) === JSON.stringify(cascadeOpenExpanded), JSON.stringify({ cascadeOpenCollapsed, cascadeOpenExpanded }));
-  }
+  // // ==========================================================================
+  // // S4 — geometry at the 1100px floor (mandatory), 1280, and 2200: the
+  // // cascade's own rect and the paper's own rect are unchanged by any fold
+  // // or unfold. Lands on a fresh PROSE page each time (cd2.mjs's own proven
+  // // `.mode-pagecol` selector) rather than a board page — Drawers is a
+  // // GLOBAL view, unscoped to the current page's own project, so the
+  // // fixture's project/board/docs are seeded separately and the prose page
+  // // itself is just "some real framed page underfoot."
+  // // ==========================================================================
+  // const paperSel = '.mode-pagecol, .entry-full';
+  // for (const width of [FLOOR_W, LAPTOP_W, WIDE_W]) {
+  //   await freshProsePage(app, width, 900);
+  //   // The 300ms debounced-flush window (persistence.ts's FLUSH_DELAY) —
+  //   // read the freshly-created page's own id only after it has genuinely
+  //   // reached localStorage (cd2.mjs's own freshProsePageWithBoards fixture,
+  //   // same discipline).
+  //   await sleep(400);
+  //   const pageId = await app.evalJs("location.hash.split('/page/')[1]");
+  //   // Seed from the Desk (the flushNow-race law), then return to the SAME
+  //   // prose page.
+  //   await app.goto('/');
+  //   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: `S4 @ ${width}px Desk before seed` });
+  //   await app.evalJs(`(() => {
+  //     // ITEM 85-C — the generated project id is used only to home the anchor
+  //     // board below, so it stays local to this block.
+  //     const p = window.wrizoCreateProject('S4 Geometry Project');
+  //     // board() already carries source:'page', so it is NOT overridden here — an
+  //     // explicit source: null after the spread would have REMOVED it and turned
+  //     // an authored board into a raw capture. origin IS absent from board(), so
+  //     // origin: null is the faithful value.
+  //     window.wrizoCreateJournalPage({ ...${JSON.stringify(board('fx9-s4-anchor', 'fx9-s4-project', 'S4 Anchor Board', 1000))}, projectId: p.id, origin: null });
+  //     ${JSON.stringify(Array.from({ length: 7 }, (_, i) => doc(`fx9-s4-doc-${i}`, `S4 Doc ${i}`, i)))}
+  //       .forEach((d) => window.wrizoCreateJournalPage({ ...d, origin: 'origin' in d ? d.origin : null, source: 'source' in d ? d.source : null }));
+  //     // ITEM 85-C — the same touch the shared seedFixture performs, in the same
+  //     // seeded-recency order: the docs (offsets 0..6) first, then the anchor
+  //     // board (offset 1000) LAST, so the board stays newest and the seven docs
+  //     // stay in Loose — which is the count the collapse rule reads.
+  //     window.wrizoTouchInOrder([...${JSON.stringify(Array.from({ length: 7 }, (_, i) => `fx9-s4-doc-${i}`))}, 'fx9-s4-anchor']);
+  //   })()`);
+  //   await app.reload();
+  //   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);
+  //   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: `S4 @ ${width}px prose page reloaded` });
+  //   await sleep(250);
+  //   await app.emulateDpr(1, width, 900);
+  //   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: `S4 @ ${width}px strip mounted` });
+  //   // Paper rect + cascade presence with the panel CLOSED (no category selected).
+  //   const paperClosed = await rectOf(app, paperSel);
+  //   const cascadeAbsentWhenClosed = await app.evalJs("!document.querySelector('.wz-cascade-panel')");
+  //   ok(`S4 @ ${width}px setup: the cascade panel is genuinely absent with no category selected`, cascadeAbsentWhenClosed === true, String(cascadeAbsentWhenClosed));
+  //   // Open Drawers — the fixture's own Loose group opens collapsed by default (7 docs).
+  //   await clickCategory(app, 'drawers');
+  //   await app.waitFor("!!document.querySelector('.wz-drawers-tiles')", { label: `S4 @ ${width}px Drawers open` });
+  //   await sleep(200);
+  //   const paperOpenCollapsed = await rectOf(app, paperSel);
+  //   const cascadeOpenCollapsed = await rectOf(app, '.wz-cascade-panel');
+  //   const collapsedBeforeUnfold = await app.evalJs(`${foldByTitle('Loose')}.dataset.collapsed`);
+  //   ok(`S4 @ ${width}px setup: the Loose section is genuinely collapsed before the geometry probe`, collapsedBeforeUnfold === 'true', collapsedBeforeUnfold);
+  //   // Unfold it.
+  //   await app.evalJs(`${foldByTitle('Loose')}.querySelector('.wz-fold-header').click()`);
+  //   await sleep(250);
+  //   const paperOpenExpanded = await rectOf(app, paperSel);
+  //   const cascadeOpenExpanded = await rectOf(app, '.wz-cascade-panel');
+  //   ok(`S4 @ ${width}px: the paper's own rect is BYTE-IDENTICAL closed vs. panel-open-collapsed vs. panel-open-expanded — folding a list never moves the paper`,
+  //     JSON.stringify(paperClosed) === JSON.stringify(paperOpenCollapsed) && JSON.stringify(paperOpenCollapsed) === JSON.stringify(paperOpenExpanded),
+  //     JSON.stringify({ paperClosed, paperOpenCollapsed, paperOpenExpanded }));
+  //   ok(`S4 @ ${width}px: the cascade panel's own rect is BYTE-IDENTICAL collapsed vs. expanded — folding/unfolding a list never resizes or moves the panel itself (it scrolls internally, per .wz-cascade-panel's own fixed width/height + overflow-y:auto)`,
+  //     JSON.stringify(cascadeOpenCollapsed) === JSON.stringify(cascadeOpenExpanded), JSON.stringify({ cascadeOpenCollapsed, cascadeOpenExpanded }));
+  // }
+  // (the fold's persistence is held above on the Recent list; the count rule is pinned at its source; the fold chrome carries no count - held above by the two-children check; the paper and the panel never move when the cascade opens - held by cd2.mjs and w1.mjs.)
 
   // ==========================================================================
   // Legacy (<1100px) — DeskFrame (and therefore the whole cascade, and

@@ -52,7 +52,7 @@ await withHarness(async (app) => {
   // The Desk and the Drawers page were in this list and passed on the OLD code too (falsification run on ef64554): neither showed
   // these pages at this point, so neither tested anything. The Drawers page is DROPPED (it lists drawers, not loose pages), and so is
   // the Desk - see the note at the end of the page section for the measurement.
-  const surfaces = [['the Journal board', '#/journal'], ['the Shelf board', '#/shelf'], ['the Spread', '#/journal/spread']];
+  const surfaces = [['the Journal board', '#/journal'], ['the Shelf board', '#/shelf-board'], ['the Spread', '#/journal/spread']];
   for (const [label, hash] of surfaces) {
     await app.evalJs(`location.hash = ${JSON.stringify(hash.startsWith('#') ? hash : '#/')}`);
     await sleep(1400);

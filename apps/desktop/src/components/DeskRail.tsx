@@ -22,6 +22,7 @@ import { useDeskFrameMounted } from '../store/deskFrameActive';
 interface RailItem { key: string; term?: TermId; plural?: boolean; label: string; glyph: string; to: string; live: boolean }
 const ITEMS: RailItem[] = [
   { key: 'journal', term: 'journal', label: 'Journal', glyph: '❧', to: '/journal', live: true },
+  { key: 'shelf', term: 'shelf', label: 'Shelf', glyph: '▤', to: '/shelf-board', live: true },   // BIG PROJECTS 1a: the narrow chrome keeps its way to the Shelf board ('/shelf' now redirects to the Journal)
   { key: 'drawers', term: 'drawer', plural: true, label: 'Drawers', glyph: '▥', to: '/drawers', live: true },
   { key: 'library', label: 'Library', glyph: '▣', to: '/library', live: false },
 ];

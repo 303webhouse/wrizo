@@ -92,7 +92,7 @@ const freshBoard = async (app, boardId, boxes, width = 1400, height = 900) => {
 const openPageCategory = async (app) => {
   // B1 S5 — eight categories now (Trash joins section C at the foot,
   // after index 4/Shelf); a plain mount gate, not a roster-shape assertion.
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPageCategory)' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (openPageCategory)' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
   if (alreadyOpen) return;
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
@@ -452,8 +452,14 @@ await withHarness(async (app) => {
   // flow started on and would return before the new row landed.
   await app.waitFor(`JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').some(e => e.id === ${JSON.stringify(newCascadePageId)})`, { label: 'cascade New Page row flushed' });
   const newCascadePageEntry = await app.evalJs(`JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === ${JSON.stringify(newCascadePageId)})`);
-  ok('S2 (a): the created page\'s own homing laws — loose, exactly like Arrival\'s own Write door (createLooseHomePage) — never filed, never journal-membered, "just a page, from wherever you are"',
-    !!newCascadePageEntry && newCascadePageEntry.origin === 'loose' && newCascadePageEntry.projectId == null, JSON.stringify(newCascadePageEntry));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): New Page and New Board file into wherever you are - the door in the Pages pop-out files the new page into the writer's current place (here: the SAME set as the page it was made from), not loose.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('S2 (a): the created page\'s own homing laws — loose, exactly like Arrival\'s own Write door (createLooseHomePage) — never filed, never journal-membered, "just a page, from wherever you are"',
+  //   !!newCascadePageEntry && newCascadePageEntry.origin === 'loose' && newCascadePageEntry.projectId == null, JSON.stringify(newCascadePageEntry));
+  const startPageRow = await app.evalJs(`JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === ${JSON.stringify(hashBeforeNewPage.split('/page/')[1])})`);
+  ok('S2 (a) [big-projects-1a successor]: the created page files into WHERE THE WRITER IS - the same set as the page it was made from (not loose): nothing is ever homeless',
+    !!newCascadePageEntry && !!startPageRow && !!startPageRow.projectId && newCascadePageEntry.projectId === startPageRow.projectId, JSON.stringify({ newCascadePageEntry, startProject: startPageRow && startPageRow.projectId }));
 
   // ==========================================================================
   // S2 (b) — on a Board, "New page card": a real page, created AND pinned
@@ -535,7 +541,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'loose page framed (Plan pointer)' });
   await sleep(300);
   await app.emulateDpr(1, LAPTOP_W, 900);
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (Plan pointer)' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (Plan pointer)' });
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=plan]').click()"); // Plan category (index 2)
   await app.waitFor("!!document.querySelector('.wz-cascade-panel-body')", { label: 'Plan panel open (Plan pointer)' });
   await sleep(150);

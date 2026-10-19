@@ -19,6 +19,9 @@ import type { JournalEntry } from '../types';
 //
 // WHAT THIS FILE WILL NOT DO. It never deletes (X is store/place.moveToJournal: one write, projectId). It never writes an order except from a
 // deliberate reorder (a drag or the arrow keys on a grip) - the sort control is Order, the writer's own order, and nothing here sorts and saves.
+// The old list's hooks are kept on purpose (wz-open-pages on the root, wz-place-page-list on the rows, data-page-id on a row, wz-open-pages-open / -more / -menu / -place):
+// item 170's harness - a click on a row opens its page, the more-menu places it on a board, the menu opens inside the list - still holds on the pop-out, so only
+// what really changed (the heading, the A-Z / Date sorts, the three-row viewport) is parked, with successors.
 // Every row declares data-link-entry (the connector's rail drop target, ledger 87/107). The rows use no native drag-and-drop: a row marked for it
 // switches the board's thumbnail drag-to-copy off. Reorder is pointer events on a grip, and the grip is exempted from that copy-drag by name.
 
@@ -167,7 +170,7 @@ export function SectionsPopout({ currentId, navigate, boardId, journalLabel }: {
 
   const renderRow = (group: SectionGroup, e: JournalEntry, i: number) => (
     <div key={e.id} className={`wz-section-row wz-open-pages-row${drag?.id === e.id ? ' dragging' : ''}${drag && drag.id !== e.id && drag.over === i ? ' drop-here' : ''}`}
-      role="listitem" data-entry-id={e.id} data-link-entry={e.id}>
+      role="listitem" data-entry-id={e.id} data-page-id={e.id} data-link-entry={e.id}>
       <button type="button" className="wz-section-grip" data-reorder-grip="true" aria-label={t('sectionsReorder')} title={t('sectionsReorder')}
         onPointerDown={(ev) => startDrag(ev, group, i)} onKeyDown={(ev) => nudge(ev, group, i)}>{'⠿'}</button>
       <button type="button" className="wz-section-open wz-place-page-row wz-open-pages-open"
@@ -190,7 +193,7 @@ export function SectionsPopout({ currentId, navigate, boardId, journalLabel }: {
   );
 
   return (
-    <div className="wz-cascade-panel-body wz-sections" data-kind="pages">
+    <div className="wz-cascade-panel-body wz-sections wz-open-pages" data-kind="pages">
       <div className="wz-sections-place">{placeName}</div>
       <button type="button" className="wz-cascade-action wz-cascade-action-door" onClick={newPage}>{t('cascadePageNewPage')}</button>
       <div className="wz-sections-bar">
@@ -220,7 +223,7 @@ export function SectionsPopout({ currentId, navigate, boardId, journalLabel }: {
               </button>
             )}
             {isOpen && (
-              <div className="wz-sections-rows" role="list">
+              <div className="wz-sections-rows wz-place-page-list" role="list">
                 {group.items.map((e, i) => renderRow(group, e, i))}
               </div>
             )}

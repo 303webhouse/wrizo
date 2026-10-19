@@ -783,7 +783,7 @@ await withHarness(async (app) => {
   ]);
   // Reaching the Shelf board is what DERIVES its membership — the pin only
   // exists once the board has reconciled, so the fixture visits it first.
-  await app.evalJs("location.hash = '#/shelf'");
+  await app.evalJs("location.hash = '#/shelf-board'");
   await waitOr(app, "!!document.querySelector('.board-canvas')", 'the Shelf board mounts and reconciles its derived membership');
   await sleep(600);
   const shelfPinned = await app.evalJs(`(() => {

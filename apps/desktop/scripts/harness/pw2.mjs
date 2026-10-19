@@ -280,7 +280,7 @@ await withHarness(async (app) => {
   // on the TARGET side. The built guard tested getSystemKind on the SOURCE
   // only. So this is not a hypothetical refusal being asserted — it is a live
   // gap being closed, and the check exists to keep it closed.
-  await app.evalJs("location.hash = '#/shelf'");
+  await app.evalJs("location.hash = '#/shelf-board'");
   await waitOr(app, "!!document.querySelector('.board-canvas')", 'the Shelf board mounts (a condition board to aim at)');
   await sleep(500);
   const shelfId = await app.evalJs("location.hash.split('/page/')[1] || (JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => (e.boxes||[]).some(b => b.kind === 'board-meta' && b.systemKind === 'shelf'))||{}).id");

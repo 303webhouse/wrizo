@@ -36,7 +36,11 @@ const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 
 // The ruled order (S1): Page·Plan — Drawers — Journal·Shelf — foot.
-const RULED = ['page', 'plan', 'drawers', 'journal', 'shelf', 'settings', 'theme', 'trash'];
+// ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the roster is seven tabs now, the place block first.
+// Kept VERBATIM below and no longer run; the successor asserts the new rail. The Shelf is merged into the Journal (display only), Plan is renamed Boards in the label (the category id stays `plan`), and the Drawers tab is now the PLACE BLOCK at the top.
+//
+// const RULED = ['page', 'plan', 'drawers', 'journal', 'shelf', 'settings', 'theme', 'trash'];
+const RULED = ['drawers', 'page', 'plan', 'journal', 'settings', 'theme', 'trash'];
 // The desk's own vocabulary, which the WRITER must never read (S1's law).
 const DESK_WORDS = ['surface', 'container', 'display'];
 
@@ -159,7 +163,13 @@ await withHarness(async (app) => {
 
   // ---- 1 · eight tabs, in the ruled order, BY NAME ------------------------
   const order = await app.evalJs(`[...document.querySelectorAll('.wz-strip-item')].map(b => b.getAttribute('data-category'))`);
-  ok(`VW1 check 1: the rail carries exactly eight tabs in the ruled order — ${RULED.join(' · ')}`,
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the rail carries SEVEN tabs in the new order (the place block, Pages, Boards, Journal, then the foot).
+  // Kept VERBATIM below and no longer run; the successor asserts the new rail. The Shelf is merged into the Journal (display only), Plan is renamed Boards in the label (the category id stays `plan`), and the Drawers tab is now the PLACE BLOCK at the top.
+  //
+  // ok(`VW1 check 1: the rail carries exactly eight tabs in the ruled order — ${RULED.join(' · ')}`,
+  //   Array.isArray(order) && JSON.stringify(order) === JSON.stringify(RULED),
+  //   JSON.stringify({ got: order, want: RULED }));
+  ok(`VW1 check 1 [big-projects-1a successor]: the rail carries exactly seven tabs in the ruled order - ${RULED.join(' · ')} (the place block first; no Shelf)`,
     Array.isArray(order) && JSON.stringify(order) === JSON.stringify(RULED),
     JSON.stringify({ got: order, want: RULED }));
 
@@ -167,8 +177,14 @@ await withHarness(async (app) => {
   // Asserted separately from check 1 on purpose: if the hook were missing from
   // one button, check 1's array would carry a null and the failure would read
   // as "wrong order" rather than "the hook is gone."
-  ok('VW1 check 6: data-category is present on ALL eight tabs — the hook\'s own coverage, so a future reorder cannot silently drop it and send a harness back to counting',
-    Array.isArray(order) && order.length === 8 && order.every((c) => typeof c === 'string' && c.length > 0),
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the hook is on all SEVEN tabs.
+  // Kept VERBATIM below and no longer run; the successor asserts the new rail. The Shelf is merged into the Journal (display only), Plan is renamed Boards in the label (the category id stays `plan`), and the Drawers tab is now the PLACE BLOCK at the top.
+  //
+  // ok('VW1 check 6: data-category is present on ALL eight tabs — the hook\'s own coverage, so a future reorder cannot silently drop it and send a harness back to counting',
+  //   Array.isArray(order) && order.length === 8 && order.every((c) => typeof c === 'string' && c.length > 0),
+  //   JSON.stringify(order));
+  ok('VW1 check 6 [big-projects-1a successor]: data-category is present on ALL seven tabs - the hook\'s own coverage, so a future reorder cannot silently drop it and send a harness back to counting',
+    Array.isArray(order) && order.length === 7 && order.every((c) => typeof c === 'string' && c.length > 0),
     JSON.stringify(order));
 
   // ---- 2 · four separators, in the ruled places --------------------------
@@ -187,8 +203,15 @@ await withHarness(async (app) => {
     if (strip) walkNode(strip);
     return out;
   })()`);
-  const WANT_SEQ = ['page', 'plan', '—', 'drawers', '—', 'journal', 'shelf', '—', 'settings', 'theme', '—', 'trash'];
-  ok('VW1 check 2: four separators, in the ruled places — after plan, after drawers, after shelf, and above trash. The separators do the teaching silently, so their POSITION is the assertion, not their count',
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): three separators, in the new places - after boards, after journal, above trash.
+  // Kept VERBATIM below and no longer run; the successor asserts the new rail. The Shelf is merged into the Journal (display only), Plan is renamed Boards in the label (the category id stays `plan`), and the Drawers tab is now the PLACE BLOCK at the top.
+  //
+  // const WANT_SEQ = ['page', 'plan', '—', 'drawers', '—', 'journal', 'shelf', '—', 'settings', 'theme', '—', 'trash'];
+  // ok('VW1 check 2: four separators, in the ruled places — after plan, after drawers, after shelf, and above trash. The separators do the teaching silently, so their POSITION is the assertion, not their count',
+  //   JSON.stringify(seq) === JSON.stringify(WANT_SEQ),
+  //   JSON.stringify({ got: seq, want: WANT_SEQ }));
+  const WANT_SEQ = ['drawers', 'page', 'plan', '—', 'journal', '—', 'settings', 'theme', '—', 'trash'];
+  ok('VW1 check 2 [big-projects-1a successor]: three separators, in the ruled places - after boards, after journal (the foot\'s own line), and above trash. The place block sits above them all. POSITION is the assertion, not the count',
     JSON.stringify(seq) === JSON.stringify(WANT_SEQ),
     JSON.stringify({ got: seq, want: WANT_SEQ }));
 
@@ -244,7 +267,11 @@ if (process.env.HARNESS_PARKED === '1') {
   // The regroup then moved the furniture without touching a single harness,
   // which is what the hook was for.
   // eslint-disable-next-line no-console
-  console.log('\nVW1 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; VW1 parks nothing. The conversions changed how checks REACH a tab, not what they assert (proven by commit 1 running green and unchanged against the old order), and the regroup moved no assertion.');
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): VW1 now parks FOUR claims (the roster constant, checks 1, 6 and 2) - the rail was re-ruled by BIG PROJECTS 1a.
+  // Kept VERBATIM below and no longer run; the successor asserts the new rail. The Shelf is merged into the Journal (display only), Plan is renamed Boards in the label (the category id stays `plan`), and the Drawers tab is now the PLACE BLOCK at the top.
+  //
+  // console.log('\nVW1 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; VW1 parks nothing. The conversions changed how checks REACH a tab, not what they assert (proven by commit 1 running green and unchanged against the old order), and the regroup moved no assertion.');
+  console.log('\nVW1 PARKED [big-projects-1a]: PASS (4 parked claims, quoted verbatim in comments with live successors: the RULED roster, checks 1, 6 and 2) - HARNESS_PARKED=1 armed. The conversions of 2026-09 changed how checks REACH a tab; BIG PROJECTS 1a re-ruled the rail itself (place block first, no Shelf, Boards), which is what those four claims named.');
 }
 
 const pass = checks.every((c) => c.pass);

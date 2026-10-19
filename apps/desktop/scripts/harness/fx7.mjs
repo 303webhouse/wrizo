@@ -77,7 +77,7 @@ const freshBoard = async (app, boardId, boxes, width = 1400, height = 900) => {
 // Page category would otherwise TOGGLE IT CLOSED (Cascade.tsx's own
 // same-category-click-closes rule).
 const openPageCategory = async (app) => {
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPageCategory)' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (openPageCategory)' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
   if (alreadyOpen) return;
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
@@ -766,7 +766,7 @@ await withHarness(async (app) => {
   // by B3's own brief by name.
   // ==========================================================================
   await freshProsePage(app, LAPTOP_W, 900);
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (S9)' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (S9)' });
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=plan]').click()"); // Plan category
   await app.waitFor("!!document.querySelector('.wz-cascade-panel-body')", { label: 'Plan panel open (S9)' });
   await sleep(200);

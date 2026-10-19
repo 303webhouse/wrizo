@@ -266,11 +266,18 @@ await withHarness(async (app) => {
   //     && JSON.stringify([...scriptCascade.stripLabels].sort())
   //        === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
   //   JSON.stringify(scriptCascade));
-  ok('VW1 successor of the CD3 script-cascade check [word-diet successor]: ScriptEditor mounts the SAME cascade as prose — all eight categories present, compared as a SET rather than a sequence',
-    scriptCascade.stripItemCount === 8
-      && JSON.stringify([...scriptCascade.stripLabels].sort())
-         === JSON.stringify(['Drawers', 'Journal', 'Pages', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
-    JSON.stringify(scriptCascade));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): ScriptEditor mounts the SAME cascade as prose - all SEVEN categories.
+  // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now (the place block, Pages, Boards, Journal, Settings, Themes, Trash): the Shelf is merged into the Journal, Plan is Boards, and the place block's label is the place itself, so the strip is compared as a SET by data-category, not by label.
+  //
+  // ok('VW1 successor of the CD3 script-cascade check [word-diet successor]: ScriptEditor mounts the SAME cascade as prose — all eight categories present, compared as a SET rather than a sequence',
+  //   scriptCascade.stripItemCount === 8
+  //     && JSON.stringify([...scriptCascade.stripLabels].sort())
+  //        === JSON.stringify(['Drawers', 'Journal', 'Pages', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
+  //   JSON.stringify(scriptCascade));
+  const scriptCats = await app.evalJs("[...document.querySelectorAll('.wz-strip-item')].map(b => b.getAttribute('data-category')).sort()");
+  ok('VW1 successor of the CD3 script-cascade check [big-projects-1a successor]: ScriptEditor mounts the SAME cascade as prose - all seven categories present, compared as a SET by data-category',
+    scriptCascade.stripItemCount === 7 && JSON.stringify(scriptCats) === JSON.stringify(['drawers', 'journal', 'page', 'plan', 'settings', 'theme', 'trash']),
+    JSON.stringify({ ...scriptCascade, scriptCats }));
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
   await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open on script' });
   const scriptPageFacePresent = await app.evalJs("!!document.querySelector('.wz-pageface-star') && !!document.querySelector('.wz-pageface-home')");
@@ -687,11 +694,18 @@ if (process.env.HARNESS_PARKED === '1') {
     //        === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
     //   JSON.stringify(scriptCascadeParked));
     // ------------------------------------------------------------------
-    pok('PARKED, generation 5 (was generation 4\'s re-assertion with "Page" in the sorted set) — item word-diet: drawerPage reads "Pages"',
-      scriptCascadeParked.stripItemCount === 8
-        && JSON.stringify([...scriptCascadeParked.stripLabels].sort())
-           === JSON.stringify(['Drawers', 'Journal', 'Pages', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
-      JSON.stringify(scriptCascadeParked));
+    // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): generation 6 - the SEVEN categories.
+    // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now (the place block, Pages, Boards, Journal, Settings, Themes, Trash): the Shelf is merged into the Journal, Plan is Boards, and the place block's label is the place itself, so the strip is compared as a SET by data-category, not by label.
+    //
+    // pok('PARKED, generation 5 (was generation 4\'s re-assertion with "Page" in the sorted set) — item word-diet: drawerPage reads "Pages"',
+    //   scriptCascadeParked.stripItemCount === 8
+    //     && JSON.stringify([...scriptCascadeParked.stripLabels].sort())
+    //        === JSON.stringify(['Drawers', 'Journal', 'Pages', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
+    //   JSON.stringify(scriptCascadeParked));
+    const scriptCatsParked = await app.evalJs("[...document.querySelectorAll('.wz-strip-item')].map(b => b.getAttribute('data-category')).sort()");
+    pok('PARKED, generation 6 (was generation 5\'s re-assertion of the eight labels as a sorted set) - BIG PROJECTS 1a: the SEVEN categories, compared as a SET by data-category',
+      scriptCascadeParked.stripItemCount === 7 && JSON.stringify(scriptCatsParked) === JSON.stringify(['drawers', 'journal', 'page', 'plan', 'settings', 'theme', 'trash']),
+      JSON.stringify({ ...scriptCascadeParked, scriptCatsParked }));
 
     // ORIGINAL (this file's own live S1/cd1.1 section, pre-CD3):
     //

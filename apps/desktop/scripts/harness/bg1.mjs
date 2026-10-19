@@ -291,14 +291,14 @@ await withHarness(async (app) => {
   // S1 — system boards render NO row, and keep their own declarative lines.
   // ==========================================================================
   await freshDesk(app, LAPTOP_W, 900);
-  for (const [route, label] of [['/shelf', 'Shelf'], ['/journal', 'Journal'], ['/trash', 'Trash']]) {
+  for (const [route, label] of [['/shelf-board', 'Shelf'], ['/journal', 'Journal'], ['/trash', 'Trash']]) {
     await app.evalJs(`location.hash = '#${route}'`);
     await app.waitFor("!!document.querySelector('.board-canvas, .desk-frame')", { label: `${label} Board mounted` });
     await sleep(350);
     const sys = await app.evalJs(`({ row: !!document.querySelector('.wz-beginnings'), line: document.querySelector('.board-canvas-empty')?.textContent ?? null })`);
     ok(`S1: the ${label} Board renders NO Beginnings row — a system board's cards are derived, so there is nothing here for a writer to begin (absent whole, the absent-not-disabled law)`,
       sys.row === false, JSON.stringify(sys));
-    if (route === '/shelf') {
+    if (route === '/shelf-board') {
       ok('S1: the Shelf Board\'s own declarative empty line is untouched by BG1 ("Nothing waiting." — B2 S2\'s one quiet fact)',
         sys.line === 'Nothing waiting.', String(sys.line));
     }
