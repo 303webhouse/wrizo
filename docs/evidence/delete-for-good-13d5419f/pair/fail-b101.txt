@@ -1,0 +1,75 @@
+PASS (A1) a web tab reads its build out of its entry script ("./assets/index-X.js" and an absolute one with a query)
+PASS (A2) ELECTRON is exempt: file:// has no build, and neither has Electron's http dev renderer (by its user-agent token)
+PASS (A3) a script from another origin, a dev tab (no hashed entry), no script and a non-entry chunk all yield NO build
+PASS (A4) stale means BOTH builds are known and they differ; an absent or malformed side never makes a tab stale
+PASS (B1) a build mismatch marks the tab stale on the sync that reveals it
+PASS (B2) and the pull that carried the news is NOT applied (an old client never merges a newer server's records)
+PASS (B2b) the same on the other request shape: with nothing to push, the final pull checks the build too
+PASS (B3) it stops: no further request goes out from sync, a forced pull or a restart, and no timer or listener is installed
+PASS (B4) READ-ONLY: a page typed into a stale tab stays in memory and its flush is HELD — storage is untouched (no clobbering the live tab)
+PASS (B5) the explicit Reload is the one write: flushForReload puts the page and its dirty mark on disk so the new build can send it
+PASS (B9a) the Reload is a MERGE: a row the LIVE tab wrote (one this stale tab never saw) survives it
+PASS (B9b) and where both tabs hold the same row, the FRESHER stored copy wins (the stale tab's older edit does not replace it)
+PASS (B9c) the dirty ids are UNIONED, not replaced: the live tab's unsynced id and this tab's both stay in the id journal
+PASS (B6) CONTROL: the SAME build keeps syncing — not stale, records applied, the timer installed, writes flow
+PASS (B7) CONTROL: a tab with NO known build (dev, tests) never goes stale, whatever the server reports
+PASS (B8) CONTROL: Electron's renderer never goes stale even when its script name differs from the server's
+PASS (C1) before the pull lands the session is not done, and the wait gives up at its cap ("capped") without marking it done
+PASS (C2) when the pull lands the waiter resolves "pulled", the session is done, and a later wait answers at once
+PASS (C3) PER SESSION: a sign-out ends it (not done, no session), and the next sign-in starts pending — it never resolves from the first session's pull
+PASS (C3b) a writer waits for the cap ONCE per session: after it has been spent, a second wait answers "capped" at once - and a pull that lands later is still seen
+PASS (C4) a wait caught by a sign-out is released as "failed" (never left hanging)
+PASS (C5) a failed first pull is "failed" and the session is NOT done
+PASS (D1) a device whose flag is already set is never first run; a signed-out writer is decided by the flag alone (first run when unset)
+PASS (D2) a sign-in whose first pull has NOT landed waits to the cap and is NOT first run — and does not set the flag
+PASS (D3) a FAILED first pull is NOT first run, and does not set the flag
+PASS (D4) a completed pull of an EMPTY account IS first run
+PASS (D5) any non-system entry (or any project) means NOT first run, and the flag is set so the gate cannot return
+PASS (D6) a system board alone is not work (a brand-new account mints one) — still first run
+PASS (D7) a SOFT-DELETED entry still counts as work: a writer who deleted everything is not new
+PASS (D8) a successful REGISTER is a first run regardless of the local flag: it resets a used device's flag, and the empty new account gets the ritual
+PASS (D9) a JUST-REGISTERED account is first run WITHOUT waiting: it is empty by definition, so it returns at once even while its first pull is outstanding
+PASS (D10) it is remembered for THAT account only (another account signing in on the device is judged on its own pull), and dropped when the ritual completes
+PASS (D11) firstRunWillWait is true exactly when the Write door would really wait (signed in, flag unset, not just registered, first pull outstanding and its wait not yet spent)
+PASS (E1) a sign-out DURING the boot sync leaves no timer and no listeners behind when the answer arrives
+PASS (E2) and the next sign-in then gets exactly one timer and one pair of listeners (not two timers)
+PASS (E3) CONTROL: with no sign-out the same timeline DOES install them
+PASS (F1) FORCED EMPTY: a full pull carrying 3 live pages that never reach the cache is retried ONCE through a full pull, then recorded as counts only
+PASS (F2) the sync notice carries the counts and nothing else
+PASS (F3) when the retry fixes it there is no diagnostic and the pages are there
+PASS (F4) CONTROL: a healthy pull makes ONE request and raises nothing
+PASS (F5) a pull of only SOFT-DELETED pages, or only SYSTEM boards, is not a miss: no retry, no diagnostic
+PASS (G1) the stale banner is mounted by App itself, beside the routes (every route and auth state), and is a portal outside #root
+PASS (G2) READ-ONLY: the app root is made inert while stale and restored after; the focused element is blurred
+PASS (G3) Reload runs flushAll(), then flushForReload(), then reloads — in that order
+PASS (G4b) persistence holds BOTH its collection flush and its dirty-set write while stale; flushForReload never lifts that hold - it MERGES (overlayDirty over what storage holds now, dirty ids united) and never writes the whole cache
+PASS (G5) sync checks the build on EVERY response path (push-only chunks, the combined push+pull, the final pull) before applying anything
+PASS (G6) a stale tab never (re)starts sync and syncOnce is a no-op for it
+PASS (G7) the exemptions live in one place: non-http(s), Electron by user-agent, and non-same-origin scripts
+PASS (G8) Arrival's sign-in waits for the first pull (capped) before opening, shows a quiet loading line, and the Write door asks resolveFirstRun
+PASS (G13) the Write door shows the SAME loading state and disables the doors while resolveFirstRun really waits (and only then)
+PASS (G9) a successful REGISTER marks the device first-run before it opens
+PASS (G10) the server reports its build in /api/sync and /healthz, and never refuses a request over it (report-only)
+PASS (G11) the server's parser names the ENTRY bundle (not the css, not a chunk) in the shape Vite emits
+PASS (G12) the SAME name the client reads: client parser and server parser agree on that html
+PASS (M) checkBuild removed from the combined push+pull path: the proof goes RED
+PASS (M) checkBuild removed from the final-pull path: the proof goes RED
+PASS (M) writesHeld() always false (a stale tab keeps writing): the proof goes RED
+PASS (M) the Reload writes the whole cache over storage (the clobber): the proof goes RED
+PASS (M) the Reload lets this tab's older copy replace a fresher stored one: the proof goes RED
+PASS (M) the Reload replaces the id journal instead of uniting with it: the proof goes RED
+PASS (M) startSync loses its generation check: the proof goes RED
+PASS (M) stopSync no longer retires the first-pull session: the proof goes RED
+PASS (M) a just-registered account still waits for its pull: the proof goes RED
+PASS (M) the Write door never learns it will wait (firstRunWillWait always false): the proof goes RED
+PASS (M) a capped wait is paid again at the next door: the proof goes RED
+PASS (M) a capped/failed pull counts as first run: the proof goes RED
+PASS (M) first run ignores the account (flag only): the proof goes RED
+PASS (M) register no longer resets the flag: the proof goes RED
+FAIL (M) accountHasWork forgets projects: THE MUTATION LANDED | anchor missing
+PASS (M) the safety net never retries: the proof goes RED
+PASS (M) the safety net counts system boards as pages: the proof goes RED
+PASS (M) Electron exemption removed from the client build: the proof goes RED
+PASS (M) same-origin check removed from the client build: the proof goes RED
+
+B101 VERIFY: FAIL — 1/73
