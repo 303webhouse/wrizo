@@ -5,7 +5,9 @@ import type { Box } from '../types';
 // drawer). So the board PUBLISHES a snapshot - its id, its live boxes, the selected card - and the actions the tab may ask of it (removing a connection box is an edit of the board's own state, so it goes through
 // the board, not around it). Nothing here persists anything; it is a small seam, the wrizoBoard() pattern, and it is `null` whenever no board is open.
 export interface BoardSnapshot { boardId: string; boxes: Box[]; selectedId: string | null }
-export interface BoardActions { removeConnection: (connId: string) => void }
+// BIG PROJECTS STEP 3: addConnection - a graft picked for a card that lands on ANOTHER card of the same board is a connection box (the one-truth
+// rule), made through the board like its removal; restoring one (Undo) is the same act. Returns the new box's id, or null if the pair is joined.
+export interface BoardActions { removeConnection: (connId: string) => void; addConnection: (a: string, b: string) => string | null }
 
 let snap: BoardSnapshot | null = null;
 let actions: BoardActions | null = null;

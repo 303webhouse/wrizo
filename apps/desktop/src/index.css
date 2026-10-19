@@ -6220,6 +6220,55 @@ a:focus-visible,
 }
 .wz-links-x:hover, .wz-links-x:focus-visible{ color:var(--brass); border-color:var(--brass); outline:none; }
 
+/* BIG PROJECTS STEP 3 - Grafts across places and the graft doors (Nick's approved mockup, cursor/graft-doors-mockup @ c4f34eb0). "+ Graft..." on top,
+   the paired page and "Connected to", the plan board's ONE folded row, the groups with a faint place label, Shared tags, the Undo line, the picker (an
+   overlay on body - it displaces nothing), and the brass graft knob on a selected card's right edge (a rect on the card's own edge: no card or board
+   rect changes). The X on a row shows on hover (and on keyboard focus). */
+.wz-graft-add{ display:flex; align-items:center; gap:8px; height:34px; padding:0 10px; border:1px solid var(--ink-border-strong); background:none;
+  color:var(--text-mid); font-family:var(--font-ui); font-size:13px; text-align:left; cursor:pointer; border-radius:0; }
+.wz-graft-add:hover, .wz-graft-add:focus-visible, .wz-graft-add[aria-expanded='true']{ color:var(--text-hi); border-color:var(--text-low); outline:none; }
+.wz-graft-add:disabled{ opacity:.45; cursor:default; }
+.wz-graft-paired{ display:flex; align-items:center; gap:10px; min-height:32px; color:var(--text-hi); font-family:var(--font-ui); font-size:13px; }
+.wz-graft-from{ font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-low); }
+.wz-graft-connected{ margin-top:4px; color:var(--text-mid); font-family:var(--font-ui); font-size:13px; }
+.wz-graft-connected b{ color:var(--text-hi); font-weight:600; }
+.wz-graft-plan{ display:flex; align-items:center; gap:10px; width:100%; padding:6px 0; background:none; border:0; color:var(--text-mid);
+  font-family:var(--font-ui); font-size:13px; text-align:left; cursor:pointer; }
+.wz-graft-plan:hover, .wz-graft-plan:focus-visible{ color:var(--text-hi); outline:none; }
+.wz-graft-chev{ width:6px; height:6px; border-right:1px solid currentColor; border-bottom:1px solid currentColor; transform:rotate(-45deg); opacity:.7; flex:none; }
+.wz-graft-plan[aria-expanded='true'] .wz-graft-chev{ transform:rotate(45deg); }
+.wz-graft-gh{ margin-top:6px; font-family:var(--font-ui); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-low); }
+.wz-graft-row{ position:relative; display:flex; align-items:center; gap:10px; min-height:32px; padding:0 30px 0 0; color:var(--text-mid); font-family:var(--font-ui); font-size:13px; }
+.wz-graft-row.wz-links-item{ border:0; padding-left:0; min-height:32px; }
+.wz-graft-title{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.wz-graft-place{ margin-left:auto; flex:none; font-size:10.5px; color:var(--text-low); opacity:.7; white-space:nowrap; }
+.wz-graft-x{ position:absolute; right:2px; top:50%; transform:translateY(-50%); width:18px; height:18px; padding:0; display:flex; align-items:center;
+  justify-content:center; background:none; border:0; color:var(--text-low); font-size:16px; line-height:1; cursor:pointer; opacity:0; }
+.wz-graft-row:hover .wz-graft-x, .wz-graft-x:focus-visible{ opacity:1; color:var(--text-hi); outline:none; }
+.wz-graft-row .wz-links-x.wz-graft-x{ top:50%; right:2px; border:0; }
+.wz-graft-tagrow{ display:flex; align-items:center; gap:10px; min-height:28px; color:var(--text-mid); font-family:var(--font-ui); font-size:13px; }
+.wz-graft-tagm{ flex:none; font-size:11px; color:var(--text-low); }
+.wz-graft-undo{ display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--ink-border-strong); color:var(--text-mid); font-family:var(--font-ui); font-size:12px; }
+.wz-graft-undo button{ background:none; border:0; padding:0; color:var(--text-hi); text-decoration:underline; text-underline-offset:2px; cursor:pointer; font:inherit; }
+.wz-graft-picker{ position:fixed; z-index:72; width:300px; max-height:min(560px, calc(100vh - 60px)); display:flex; flex-direction:column; background:var(--ink-900);
+  border:1px solid var(--ink-border-strong); box-shadow:0 14px 44px rgba(0,0,0,.55); font-family:var(--font-ui); }
+.wz-graft-picker-h{ padding:12px 14px 8px; font-size:13px; font-weight:600; color:var(--text-hi); }
+.wz-graft-search{ margin:0 14px 8px; height:32px; padding:0 10px; border:1px solid var(--ink-border-strong); background:none; color:var(--text-hi); font:inherit; font-size:13px; border-radius:0; }
+.wz-graft-search:focus{ outline:none; border-color:var(--accent-rest); }
+.wz-graft-picker-body{ overflow-y:auto; padding:0 0 8px; }
+.wz-graft-picker .wz-graft-gh{ padding:0 14px; }
+.wz-graft-came, .wz-graft-pick{ display:flex; align-items:center; gap:9px; width:100%; padding:6px 14px; background:none; border:0; color:var(--text-mid);
+  font:inherit; font-size:13px; text-align:left; cursor:pointer; }
+.wz-graft-came{ padding:9px 14px; color:var(--text-hi); border-bottom:1px solid var(--ink-border); }
+.wz-graft-came .wz-graft-title{ font-weight:600; }
+.wz-graft-came:hover, .wz-graft-pick:hover, .wz-graft-came:focus-visible, .wz-graft-pick:focus-visible{ background:var(--ink-800); outline:none; }
+.wz-graft-pick[aria-checked='true'], .wz-graft-came[aria-checked='true']{ color:var(--text-hi); cursor:default; }
+.wz-graft-pick .wz-graft-title{ flex:1; }
+.wz-graft-ck{ flex:none; width:12px; color:var(--accent-rest); font-size:12px; }
+.board-graft-knob{ position:absolute; right:-7px; top:50%; width:12px; height:12px; margin-top:-6px; border-radius:50%; background:var(--brass);
+  border:1.5px solid color-mix(in srgb, var(--brass) 55%, #7a3a00); box-shadow:0 0 0 2px var(--paper); cursor:grab; z-index:3; box-sizing:border-box; }
+.board-graft-knob[data-active='true']{ background:var(--paper); border-color:var(--brass); cursor:default; }
+
 /* a rail thumbnail that STANDS FOR AN ENTRY (data-link-entry) is a target while a card is in connection mode: its circle is open if the card is not linked to it, solid orange if it is. The state is written onto the element by
    the board's pointer effect (data-link-target while the arm is over it, data-link-peer for the entries the card is linked to, data-link-flash for the beat after a link/unlink); the circle itself is this ::before. */
 [data-link-entry]{ position:relative; }

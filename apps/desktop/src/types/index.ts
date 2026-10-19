@@ -460,6 +460,10 @@ export interface PageSettings {
   // truth and the template only a lens, so losing this key leaves a readable Draft page. NOT dress: like `kind` it is a fact about THIS
   // page, so store/pageDefaults.ts strips it from the per-user default.
   template?: PageTemplate;
+  // BIG PROJECTS STEP 3 (3c) - the plan-board cards this page HIDES from its Grafts list (box ids on its plan board; the cards stay on the
+  // board). A type only: the existing whole-blob page_settings jsonb carries it (schema change: none). A fact about THIS page, never dress:
+  // store/pageDefaults.ts strips it from the per-user default. Stale ids are pruned on read (store/grafts.ts), never written back.
+  hiddenPlanCards?: string[];
 }
 
 export type PageTemplate = 'outline' | 'title' | 'bibliography';

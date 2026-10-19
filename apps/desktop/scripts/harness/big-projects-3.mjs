@@ -19,8 +19,8 @@
 //      N drops, the card is still on its board - and the Undo line brings it back
 //   L3 a hidden card stays hidden after the writer types on the page and the app reloads
 //   B1 a board's paired page is shown at the top of its Grafts, a plain row with no X
-//   C1 a page opened from a board shows "Came from <board>" as the picker's FIRST row; opening wrote no link; pressing it grafts; after a
-//      reload the row is gone
+//   C1 a page opened from a board shows "Came from <board>" as the picker's FIRST row; opening wrote no link; pressing it grafts; the same
+//      page opened by its address (no surface state) has no such row
 //   E1 a page with nothing grafted shows only "+ Graft..." - no placeholder text
 //
 // Seeding goes through the app's seams (never raw storage); input is trusted CDP mouse and key events. Needs a box turn.
@@ -289,10 +289,13 @@ await withHarness(async (app) => {
       const l = await linksOf(app, IDS.ch2);
       ok('C1: pressing it grafts - one record owned by the page, to the board', pressed && l.length === linksBefore + 1 && l.some((x) => x.bEntryId === IDS.map && !x.bBoxId), JSON.stringify(l));
       await app.keyCombo('Escape'); await sleep(300);
-      await app.reload(); await waitSoft(app, onPage, { label: 'Ch 2 after a reload', timeout: 12000 }); await sleep(600);
+      // the same page opened another way - by its address, with no surface state (the HashRouter keeps history state across a reload, so a
+      // reload is NOT that case: the plan's "a reload that has lost the state" is conditional, and the Back chip relies on it surviving)
+      await app.evalJs("location.hash = '#/'"); await sleep(500);
+      await open(app, IDS.ch2, onPage); await sleep(600);
       await openGrafts(app); await pressSel(app, '[data-graft-add]');
       const came2 = await app.evalJs("!!document.querySelector('[data-graft-picker] [data-graft-came]')");
-      ok('C1: after a reload (the surface state is gone) there is no "Came from" row', came2 === false, '');
+      ok('C1: the same page opened by its address (no surface state) shows no "Came from" row', came2 === false, '');
       await app.keyCombo('Escape'); await sleep(300);
     } else ok('C1 fixture: the pin card for Ch 2 on the board', false, JSON.stringify(pin || null));
   } else ok('C1 fixture: the board reopened', false, await hash(app));
