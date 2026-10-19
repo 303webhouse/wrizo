@@ -1,7 +1,8 @@
 import { useSyncExternalStore } from 'react';
 
 // BOARD CONTEXT MENU - the one small theme-styled menu (components/ContextMenuHost.tsx renders it). `openContextMenu(x, y, items)` is how a surface asks for one at the pointer; `null` is a separator.
-export type ContextMenuItem = { label: string; onSelect: () => void } | null;
+// `disabled` greys an item that has nothing to act on yet (Empty Trash on an empty Trash) - shown, never pressable
+export type ContextMenuItem = { label: string; onSelect: () => void; disabled?: boolean } | null;
 export interface OpenMenu { x: number; y: number; items: ContextMenuItem[] }
 
 let open: OpenMenu | null = null;

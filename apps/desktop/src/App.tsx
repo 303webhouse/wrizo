@@ -22,6 +22,8 @@ import { FluxBlockCaret } from './components/FluxBlockCaret';
 import { ContextMenuHost } from './components/ContextMenuHost';
 import { HelpPop } from './components/HelpPop';
 import { DeleteDialog } from './components/DeleteDialog';
+import { DestructiveConfirm } from './components/DestructiveConfirm';
+import { PurgedElsewhereNotice } from './components/PurgedElsewhereNotice';
 import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
 import { subscribe, resetLocalData, getOrCreateSystemBoard, countDirtyRecords, getDirtyRecords } from './store/persistence';
 import { apiMe, apiLogout, type AuthUser } from './store/api';
@@ -355,6 +357,10 @@ export function App() {
         <DeleteDialog />
         {/* HELP BUTTONS: the one shared "?" sentence overlay, mounted once - every HelpButton asks for it through store/help.ts. An overlay beside the routes, never inside one: it cannot move or resize the page. */}
         <HelpPop />
+        {/* DELETE FOR GOOD: the in-app typed confirmation for the account-wide paths (change 1), and the quiet line when a page open here was
+            deleted for good on another device (Q3) - both portals or a toast line, mounted once, displacing nothing */}
+        <DestructiveConfirm />
+        <PurgedElsewhereNotice />
         <SignedOutRouteGuard authState={authState} />
         {/* RESUME ON OPEN: remembers the open Page/board and, on the first signed-in boot, lands there instead of the front door. Renders nothing. */}
         <LandingGate authState={authState} />

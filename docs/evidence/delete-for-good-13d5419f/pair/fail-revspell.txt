@@ -1,0 +1,61 @@
+
+ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one)
+[
+  {
+    "name": "S0: COVERAGE — the census read the whole client (> 100 source files), so the site list below means something and not blindness",
+    "pass": true,
+    "detail": "files=211"
+  },
+  {
+    "name": "S1 [page-templates successor]: no PROSE editor host hardcodes spellCheck={false}; the ONLY hardcoded-off sites are the Title Page sheet AUTHOR, CONTACT and WORD LINE fields (data-field author, contact, words), and its TITLE field carries no spellCheck attribute at all, so spell-check is ON for the title",
+    "pass": false,
+    "detail": "{\"falseSites\":[\"components/DestructiveConfirm.tsx:<input ref={inputRef} className=\\\"wz-destructive-input\\\" autoComplete=\\\"off\\\" spellCheck={false} value={value}\",\"components/TitlePageSheet.tsx:className=\\\"wz-ts-contact\\\" data-field=\\\"contact\\\" rows={4} spellCheck={false}\",\"components/TitlePageSheet.tsx:className=\\\"wz-ts-words\\\" data-field=\\\"words\\\" type=\\\"text\\\" spellCheck={false}\",\"components/TitlePageSheet.tsx:className=\\\"wz-ts-author\\\" data-field=\\\"author\\\" type=\\\"text\\\" spellCheck={false}\"],\"falseFields\":[\"author\",\"contact\",null,\"words\"],\"titleLine\":\"className=\\\"wz-ts-title\\\" data-field=\\\"title\\\" type=\\\"text\\\"\"}"
+  },
+  {
+    "name": "S2: the only sites that can turn the checker ON are ForwardOnlyEditor (spellCheck={mode === 'revise'}, gated) and JournalEntry.tsx (a pre-existing, untouched `spellCheck`; see the report — an unmounted component as far as a source search shows) — a THIRD host that enables it fails this run",
+    "pass": true,
+    "detail": "[\"components/ForwardOnlyEditor.tsx:spellCheck={mode === 'revise'}\",\"pages/JournalEntry.tsx:spellCheck\"]"
+  },
+  {
+    "name": "S3 CONTROL: the Free Write tab exists and the switch LANDED (tab active + aria-selected) — so the reads below are about Free Write and not about a page that never moved",
+    "pass": true,
+    "detail": "{\"fwHad\":true,\"fw\":{\"tabActive\":true,\"editorPresent\":true,\"attr\":\"false\",\"prop\":false,\"editable\":true}}"
+  },
+  {
+    "name": "S4: Free Write — spellcheck is OFF (attribute \"false\", property false) — a forward-only draft does not nag",
+    "pass": true,
+    "detail": "{\"tabActive\":true,\"editorPresent\":true,\"attr\":\"false\",\"prop\":false,\"editable\":true}"
+  },
+  {
+    "name": "S5 CONTROL: the Draft tab exists and the switch LANDED",
+    "pass": true,
+    "detail": "{\"drHad\":true,\"dr\":{\"tabActive\":true,\"editorPresent\":true,\"attr\":\"false\",\"prop\":false,\"editable\":true}}"
+  },
+  {
+    "name": "S6: Draft — spellcheck is OFF (Nick scoped the squiggle to Revise only)",
+    "pass": true,
+    "detail": "{\"tabActive\":true,\"editorPresent\":true,\"attr\":\"false\",\"prop\":false,\"editable\":true}"
+  },
+  {
+    "name": "S7 CONTROL: the Revise tab exists and the switch LANDED",
+    "pass": true,
+    "detail": "{\"rvHad\":true,\"rv\":{\"tabActive\":true,\"editorPresent\":true,\"attr\":\"true\",\"prop\":true,\"editable\":true}}"
+  },
+  {
+    "name": "S8: Revise — spellcheck is ON (attribute \"true\", property true, surface still editable) — the browser paints its own red squiggle",
+    "pass": true,
+    "detail": "{\"tabActive\":true,\"editorPresent\":true,\"attr\":\"true\",\"prop\":true,\"editable\":true}"
+  },
+  {
+    "name": "S9: leaving Revise turns it OFF again (Revise -> Draft) — it is per-mode, not a sticky page setting",
+    "pass": true,
+    "detail": "{\"tabActive\":true,\"editorPresent\":true,\"attr\":\"false\",\"prop\":false,\"editable\":true}"
+  },
+  {
+    "name": "S10: and Revise -> Draft -> Free Write is off at the end too — the round trip ends where it began",
+    "pass": true,
+    "detail": "{\"tabActive\":true,\"editorPresent\":true,\"attr\":\"false\",\"prop\":false,\"editable\":true}"
+  }
+]
+
+REVSPELL VERIFY: FAIL — 1/11 failed

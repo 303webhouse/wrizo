@@ -25,6 +25,8 @@ import { initThemePrefs } from './store/themePrefs';
 // (registerThemeFx side effect). Import-for-effect only; nothing here reads
 // the binding. Harmless on Plateau — registration just sits unused.
 import './store/fluxThemeFx';
+// DELETE FOR GOOD: window.wrizoDelete + window.wrizoDestructive (store/deleteSeams.ts), registered once at start like the other seams
+import './store/deleteSeams';
 
 // TH1 — apply the theme + preference attributes to <html> before the first
 // render so there is never a themeless/wrong-voice flash.

@@ -144,6 +144,7 @@ export type DeskTermId =
   | 'boardThreadGrab' | 'boardThreadPrefix' | 'boardThreadUntitled' | 'boardFooterToggle'
   // BOARD CONTEXT MENU (Nick, Oct 15) - the right-click menus, the "Send to Trash?" dialog, the Settings row, and the toasts.
   | 'ctxDelete' | 'ctxDeleteBoard' | 'ctxUngroup' | 'deleteDialogTitle' | 'deleteDialogPurgeTitle' | 'deleteDialogCancel' | 'deleteDialogConfirm' | 'deleteDialogDontAsk'
+  | 'ctxEmptyTrash' | 'emptyTrashQuestionOne' | 'emptyTrashQuestionMany' | 'purgedElsewhere' | 'destructiveTypeToGo' | 'destructiveGo'
   | 'settingsAskBeforeDelete' | 'toastCardDeleted' | 'toastCardRestored' | 'toastBoardTrashed' | 'trashCardBadge'
   // CONNECTOR-B (Nick's approved connector mockup v6): the right drawer's Grafts / Links tab lists the selected card's connections, each with an X that asks first.
   | 'linksSelectCard' | 'linksRemoveTitle' | 'linksRemoveAria' | 'linksKindPage' | 'linksKindBoard' | 'linksKindCard'
@@ -852,6 +853,14 @@ const CANONICAL: Record<DeskTermId, string> = {
   deleteDialogCancel: 'Cancel',
   deleteDialogConfirm: 'Delete',
   deleteDialogDontAsk: "Don't ask me again",
+  // DELETE FOR GOOD (docs/plans/delete-for-good.md): Trash's Empty Trash, its question, the quiet line when a page open here was deleted
+  // for good on another device (Q3), and the in-app typed confirmation that opens the account-wide paths (change 1)
+  ctxEmptyTrash: 'Empty Trash',
+  emptyTrashQuestionOne: 'Delete 1 item for good?',
+  emptyTrashQuestionMany: 'Delete {n} items for good?',
+  purgedElsewhere: 'This page was deleted for good on another device.',
+  destructiveTypeToGo: 'Type {phrase} to go on:',
+  destructiveGo: 'Delete for good',
   settingsAskBeforeDelete: 'Ask before deleting',
   toastCardDeleted: 'Card deleted',
   toastCardRestored: 'Card restored',

@@ -1,0 +1,30 @@
+STAMP: tree=7ca2c7dd bundle=index-CJUvGF3Y.js/756612b
+default c00: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c00 - continuing to collect all reds
+default c01: CLEAN same stamp (verified not VOID)
+default c02: CLEAN same stamp (verified not VOID)
+default c03: CLEAN same stamp (verified not VOID)
+default c04: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c04 - continuing to collect all reds
+default c05: CLEAN same stamp (verified not VOID)
+default c06: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c06 - continuing to collect all reds
+default c07: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c07 - continuing to collect all reds
+default c08: CLEAN same stamp (verified not VOID)
+DEFAULT LEG COMPLETE
+parked c00: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c00 - continuing to collect all reds
+parked c01: CLEAN same stamp (verified not VOID)
+parked c02: CLEAN same stamp (verified not VOID)
+parked c03: CLEAN same stamp (verified not VOID)
+parked c04: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c04 - continuing to collect all reds
+parked c05: CLEAN same stamp (verified not VOID)
+parked c06: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c06 - continuing to collect all reds
+parked c07: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c07 - continuing to collect all reds
+parked c08: CLEAN same stamp (verified not VOID)
+PAIR COMPLETE
+released (mine)

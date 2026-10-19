@@ -1,0 +1,19 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=12 tree=5239972c bundle=index-CJUvGF3Y.js/756612b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/dgf-default
+[01/12] OK        exit=0   31s b1.mjs :: ROWS-SHADOW VERIFY: PASS (97 renders checked, shadow == DOM on every one) ;; B1 VERIFY: PASS (47 checks)
+[02/12] OK        exit=0   45s b101.mjs :: B101 VERIFY: PASS (73 checks)
+[03/12] OK        exit=0   35s board-click-create.mjs :: BOARD-CLICK-CREATE VERIFY: PASS (30 checks)
+[04/12] OK        exit=0   60s board-context-menu.mjs :: BOARD-CONTEXT-MENU VERIFY: PASS (58 checks)
+[05/12] OK        exit=0    1s box-tombstones.mjs :: BOX-TOMBSTONES VERIFY: PASS (31 checks)
+[06/12] OK        exit=0   29s delete-for-good.mjs :: DELETE-FOR-GOOD VERIFY: PASS (16 checks)
+[07/12] OK        exit=0    1s drawers-p1.mjs :: DRAWERS-P1 VERIFY: PASS (100 checks)
+[08/12] OK        exit=0    0s item141.mjs :: ITEM141 VERIFY: PASS (11 checks)
+[09/12] OK        exit=0    3s item224a-sync-integrity.mjs :: ITEM224A VERIFY: PASS (15 checks)
+[10/12] OK        exit=0   48s pw1.mjs :: PW1 VERIFY: PASS (41 checks)
+[11/12] OK        exit=0    6s revspell.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; REVSPELL VERIFY: PASS (12 checks)
+[12/12] OK        exit=0    1s sync-generation.mjs :: SYNC-GENERATION VERIFY: PASS (19 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 12/12 of 12 returned a passing verdict
+SUITE RESULT: CLEAN — tree=5239972c bundle=index-CJUvGF3Y.js/756612b NO-REBUILD

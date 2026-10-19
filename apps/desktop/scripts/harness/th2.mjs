@@ -428,7 +428,19 @@ await withHarness(async (app) => {
   // unchanged; only the mount vehicle moved. Not a park. wrizoCreateJournalPage
   // still authors a journal-origin page; opened on THE Page it renders the same
   // contenteditable the block caret and firewall attach to.
-  await app.evalJs("location.hash = '#/page/' + window.wrizoCreateJournalPage().id");
+  //
+  // item141 (Fable, Oct 19) — split the seam read out of the hash-navigation
+  // line it used to share. Same runtime order either way (an assignment's
+  // RHS evaluates before the assignment itself, so the seam call always ran
+  // on the ALREADY-loaded page, never racing the hash change that followed
+  // it) — but item141 reads SOURCE TEXT order, not JS evaluation order, and
+  // on one line `location.hash = ... + window.wrizoCreateJournalPage()` reads
+  // as a nav immediately followed by an unsettled seam read. Two statements
+  // now say in text what was always true at runtime: the seam read first,
+  // its OWN evalJs call, no nav pattern on that line; the hash change after,
+  // a separate call, carrying the id it returned.
+  const fx14PageId = await app.evalJs('window.wrizoCreateJournalPage().id');
+  await app.evalJs(`location.hash = '#/page/${fx14PageId}'`);
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'authored page for VW/caret checks (THE Page)' });
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('a');
