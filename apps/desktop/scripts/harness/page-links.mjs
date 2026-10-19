@@ -191,7 +191,11 @@ const pinsOf = (m, s) => ({
   const rd = (rel) => noCR(fs.readFileSync(path.join(SRC, rel), 'utf8'));
   const be = rd('components/BoardEditor.tsx'), panels = rd('components/CascadePanels.tsx'), survey = rd('components/CascadeSurvey.tsx'), links = rd('components/ConnectionsDrawerPanel.tsx'), dlg = rd('components/DeleteDialog.tsx');
   const ui = (b, p, s, l, d) => ({
-    railTagged: /data-link-entry=\{item\.id\}/.test(s) && (p.match(/data-link-entry=\{(anchor|b|d)\.id\}/g) || []).length === 3 && /data-link-entry=\{row\.id\}/.test(p),
+    // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the Drawers panel's three tiles retired; the rail's entries are the rows of the Pages pop-out (and the survey items, and the Plan board row).
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // railTagged: /data-link-entry=\{item\.id\}/.test(s) && (p.match(/data-link-entry=\{(anchor|b|d)\.id\}/g) || []).length === 3 && /data-link-entry=\{row\.id\}/.test(p),
+    railTagged: /data-link-entry=\{item\.id\}/.test(s) && /data-link-entry=\{row\.id\}/.test(p) && /data-link-entry=\{e\.id\}/.test(rd('components/SectionsPopout.tsx')),
     oneTruthAtTheDoor: /const pin = livePinFor\(id, entryId\);\n\s*if \(pin\) \{ commit\(pin\.id\); return; \}\n\s*const src = connect\.src;\n\s*const res = toggleEntryLink\(id, src, entryId\);/.test(b),
     armOverlay: /createPortal\(\n\s*<svg className="board-connect-overlay" aria-hidden="true">/.test(b) && /document\.body,\n\s*\)\}/.test(b),
     footerReadsLinks: /const boxLinkPeers = footerOn \? \(linkPeersByCard\.get\(box\.id\) \?\? \[\]\) : \[\];/.test(b) && /data-link-peer-line=\{p\.kind\}/.test(b),
@@ -200,7 +204,11 @@ const pinsOf = (m, s) => ({
     dialogNoTick: /\{!pending\.noDontAsk && \(/.test(d),
   });
   const u = ui(be, panels, survey, links, dlg);
-  ok('S6-S9: the rail\'s thumbnails declare their entry (CascadeSurvey, the three Drawers tiles, the Plan board row); the release consults livePinFor BEFORE toggling a record (one truth at the door); the arm travels in a body portal; the footers read page links; a dropped thumbnail saves the card BEFORE the record that names it; the tab\'s X asks first without the "Don\'t ask me again" tick', Object.values(u).every(Boolean), JSON.stringify(u));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the wording names the retired Drawers tiles.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('S6-S9: the rail\'s thumbnails declare their entry (CascadeSurvey, the three Drawers tiles, the Plan board row); the release consults livePinFor BEFORE toggling a record (one truth at the door); the arm travels in a body portal; the footers read page links; a dropped thumbnail saves the card BEFORE the record that names it; the tab\'s X asks first without the "Don\'t ask me again" tick', Object.values(u).every(Boolean), JSON.stringify(u));
+  ok('S6-S9 [big-projects-1a successor]: the rail\'s thumbnails declare their entry (CascadeSurvey, the Plan board row, and the Pages pop-out\'s rows); the release consults livePinFor BEFORE toggling a record (one truth at the door); the arm travels in a body portal; the footers read page links; a dropped thumbnail saves the card BEFORE the record that names it; the tab\'s X asks first without the "Don\'t ask me again" tick', Object.values(u).every(Boolean), JSON.stringify(u));
   const um = [
     ['railTagged', () => ui(be, panels, survey.replace('data-link-entry={item.id}', ''), links, dlg)],
     ['oneTruthAtTheDoor', () => ui(be.replace('if (pin) { commit(pin.id); return; }', ''), panels, survey, links, dlg)],

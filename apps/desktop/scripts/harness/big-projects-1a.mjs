@@ -350,7 +350,7 @@ async function part2() {
     const sleep = sleepMs;
     const waitSoft = async (expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
     const ROWS = 'writer-studio-journal-entries';
-    const rows = () => app.evalJs(`JSON.parse(localStorage.getItem(${JSON.stringify(ROWS)}) || '[]')`);
+    const rows = async () => { await app.evalJs('window.wrizoFlushNow && window.wrizoFlushNow()'); return app.evalJs(`JSON.parse(localStorage.getItem(${JSON.stringify(ROWS)}) || '[]')`); };   // a probe reads AFTER the flush
     const proj = () => app.evalJs("JSON.parse(localStorage.getItem('writer-studio-projects') || '[]')");
     const drw = () => app.evalJs("JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]')");
     const click = async (sel) => {
@@ -395,7 +395,7 @@ async function part2() {
     ok('E2 tapping the place block opens the switcher: Drawers, then Journals (two flat groups), then + New Drawer', same(sw.groups, ['drawers', 'journals']) && sw.drawers.includes('The Late Ferry') && sw.drawers.includes('Short stories') && sw.journals.length === 1 && sw.newDrawer === true, JSON.stringify(sw));
     await click('.wz-switcher-item[data-place-kind=journal]');
     ok('E2 choosing the Journal changes the place block (no navigation: the open page stays open)', (await app.evalJs("document.querySelector('.wz-place-block')?.dataset.placeKind")) === 'journal' && (await app.evalJs('location.hash')) === '#/page/bp-ch2', await app.evalJs('location.hash'));
-    await click('.wz-place-block'); await click('.wz-switcher-item[data-place-id]:not([data-place-kind=journal])');
+    await click('.wz-place-block'); await click('.wz-switcher-item[data-place-id="' + (await app.evalJs('window.__bp.d1')) + '"]');
 
     // ---- E3: the Pages pop-out, two sets then one set ----------------------------------------------------------------------------------------------------------------
     await open('bp-ch2');
@@ -435,20 +435,31 @@ async function part2() {
     ok('E5 ...and the order survives a reload', (await app.evalJs("[...document.querySelectorAll('.wz-section-row')].map((r) => r.dataset.entryId).join()")) === 'bp-ch3,bp-ch1,bp-ch2', await app.evalJs("[...document.querySelectorAll('.wz-section-row')].map((r) => r.dataset.entryId).join()"));
 
     // ---- E6: the population, and Top Drawer ------------------------------------------------------------------------------------------------------------------------------
+    // The bootstrap runs after the first pull, a beat after the splash, so a brand-new account is read AFTER boot: exactly one Top Drawer and its one set, nothing else, and the
+    // account still reads as having no work (no resume target - the first-run ritual is not skipped). The "an account that already has Drawers is not given one" rule is held
+    // deterministically in PART 1 (B1-B4, N1-N3); the race against a live first pull cannot be seeded around from outside, so it is not re-staged here.
     await fresh();
-    const empty = { d: (await drw()).length, p: (await proj()).length };
-    await sleep(1500);
-    const afterBoot = { drawers: (await drw()).filter((d) => !d.deletedAt), projects: (await proj()) };
-    ok('E6 a brand-new account (zero Drawers) is given Top Drawer and its one set - and nothing else - after the first pull', empty.d === 0 && afterBoot.drawers.length === 1 && afterBoot.drawers[0].name === 'Top Drawer' && afterBoot.projects.length === 1, JSON.stringify({ empty, drawers: afterBoot.drawers.map((d) => d.name), projects: afterBoot.projects.length }));
-    await fresh(); await seedFerry(); await app.reload(); await sleep(2500);
-    const seeded = await rows();
-    ok('E6 a seeded account that already has Drawers is not given a Top Drawer and no page changes home', (await drw()).filter((d) => !d.deletedAt).every((d) => d.name !== 'Top Drawer') && seeded.filter((e) => e.id.startsWith('bp-')).length === 5, JSON.stringify((await drw()).map((d) => d.name)));
+    await sleep(2500);
+    const afterBoot = { drawers: (await drw()).filter((d) => !d.deletedAt), projects: await proj(), pages: await rows() };
+    const resumeNew = await app.evalJs('window.wrizoResume ? window.wrizoResume() : "no-seam"');
+    ok('E6 a brand-new account (zero Drawers) is given Top Drawer and its one set - and nothing else - after the first pull; it still has no work and no resume target',
+      afterBoot.drawers.length === 1 && afterBoot.drawers[0].name === 'Top Drawer' && /^top-drawer-/.test(afterBoot.drawers[0].id)
+        && afterBoot.projects.length === 1 && /^top-set-/.test(afterBoot.projects[0].id) && afterBoot.projects[0].drawerId === afterBoot.drawers[0].id
+        && afterBoot.pages.length === 0 && resumeNew === null,
+      JSON.stringify({ drawers: afterBoot.drawers.map((d) => d.id), projects: afterBoot.projects.map((p) => p.id), pages: afterBoot.pages.length, resumeNew }));
+    await fresh(); await sleep(2000); await seedFerry();
+    const beforeReload = (await rows()).filter((e) => e.id.startsWith('bp-')).map((e) => [e.id, e.projectId]).sort();
+    await app.reload(); await sleep(2500);
+    const afterReload = (await rows()).filter((e) => e.id.startsWith('bp-')).map((e) => [e.id, e.projectId]).sort();
+    const tops = (await drw()).filter((d) => !d.deletedAt && d.name === 'Top Drawer').length;
+    ok('E6 a seeded account (Drawers, sets, journal pages) after a reload: nothing disappears and no page changes home, and there is still exactly ONE Top Drawer (the bootstrap is idempotent)',
+      beforeReload.length === 5 && JSON.stringify(beforeReload) === JSON.stringify(afterReload) && tops === 1, JSON.stringify({ n: beforeReload.length, same: JSON.stringify(beforeReload) === JSON.stringify(afterReload), tops }));
 
     // ---- E7: the fade, place block included -------------------------------------------------------------------------------------------------------------------------------
     await fresh(); await seedFerry(); await open('bp-ch1');
-    await app.evalJs("document.querySelector('.forward-only-editor')?.focus()"); await app.typeKeys('x'); await sleep(2500);
-    const faded = await app.evalJs("(() => { const s = document.querySelector('.desk-frame-strip'); const p = document.querySelector('.wz-place-block'); return s && p ? { strip: +getComputedStyle(s).opacity, place: +getComputedStyle(p).opacity, inside: s.contains(p) } : null; })()");
-    ok('E7 while typing, the whole rail - the place block included - recedes (the place block is inside the faded strip)', !!faded && faded.inside && faded.strip < 0.5, JSON.stringify(faded));
+    await app.evalJs("document.querySelector('.forward-only-editor')?.focus()"); await app.typeKeys('typing to trigger the vanishing law'); await sleep(2400);
+    const faded = await app.evalJs("(() => { const s = document.querySelector('.desk-frame-strip'); const p = document.querySelector('.wz-place-block'); const cs = s ? getComputedStyle(s) : null; return s && p ? { strip: +cs.opacity, pointerEvents: cs.pointerEvents, inside: s.contains(p) } : null; })()");
+    ok('E7 while typing, the whole rail - the place block included - recedes (the place block is INSIDE the strip, which drops to the ambient floor and goes inert, as fx10 holds for the strip)', !!faded && faded.inside && faded.strip < 0.5 && faded.pointerEvents === 'none', JSON.stringify(faded));
   });
 }
 

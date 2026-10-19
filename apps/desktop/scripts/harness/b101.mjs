@@ -564,8 +564,14 @@ await mutant('register no longer resets the flag',
 if (false) await mutant('accountHasWork forgets projects',
   { 'store/persistence.ts': swap('cache.journalEntries.some(e => !getSystemKind(e)) || cache.projects.length > 0', 'cache.journalEntries.some(e => !getSystemKind(e))') },
   (o) => partD(o), (r) => r.hasProject !== false);
-await mutant('accountHasWork forgets projects [delete-for-good successor]',
-  { 'store/persistence.ts': swap('cache.journalEntries.some(e => !getSystemKind(e) && !e.purgedAt) || cache.projects.some(p => !p.purgedAt)', 'cache.journalEntries.some(e => !getSystemKind(e) && !e.purgedAt)') },
+// ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): accountHasWork now also excludes a set the app made (isAutoSet: Top Drawer's set and an empty Drawer's lazy set), so the anchor moved.
+// Kept VERBATIM below and no longer run; the live successor follows.
+//
+// await mutant('accountHasWork forgets projects [delete-for-good successor]',
+//   { 'store/persistence.ts': swap('cache.journalEntries.some(e => !getSystemKind(e) && !e.purgedAt) || cache.projects.some(p => !p.purgedAt)', 'cache.journalEntries.some(e => !getSystemKind(e) && !e.purgedAt)') },
+//   (o) => partD(o), (r) => r.hasProject !== false);
+await mutant('accountHasWork forgets projects [big-projects-1a successor]',
+  { 'store/persistence.ts': swap('cache.journalEntries.some(e => !getSystemKind(e) && !e.purgedAt) || cache.projects.some(p => !p.purgedAt && !isAutoSet(p))', 'cache.journalEntries.some(e => !getSystemKind(e) && !e.purgedAt)') },
   (o) => partD(o), (r) => r.hasProject !== false);
 await mutant('the safety net never retries',
   { 'store/sync.ts': swap('    setTimeout(() => { if (gen === generation) void syncOnce(true); }, 0);\n    return;', '    return;') },
