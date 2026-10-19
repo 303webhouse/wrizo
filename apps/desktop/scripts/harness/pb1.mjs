@@ -339,7 +339,11 @@ await withHarness(async (app) => {
   await app.evalJs("location.hash = '#/page/pb1-board'");
   await app.waitFor("!!document.querySelector('.wz-beginnings')", { label: 'seeded board with row' });
   await sleep(400);
-  await app.evalJs("document.querySelector('[data-beginning=\"newPageCard\"]').click()");
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): the New Page card is the sliver's tool; the starter row has no such door to press (a bare click on it would throw and abort the file).
+  // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
+  //
+  // await app.evalJs("document.querySelector('[data-beginning=\"newPageCard\"]').click()");
+  await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-sliver-item-btn')].find(n => n.textContent.trim() === 'New Page'); if (!b) return false; b.click(); return true; })()");
   await sleep(900);
   const pageCardRows = await liveRows(app);
   const pinned = pageCardRows.find((r) => r.id === 'pb1-board');

@@ -843,8 +843,13 @@ await withHarness(async (app) => {
   await sleep(400);
   if (await openPlan(app)) {
     const leadBare = await app.evalJs("(document.querySelector('.wz-cascade-panel-body')?.innerText ?? '')");
-    ok('ERRATUM 2 (the other direction): with NO connections the sentence still speaks — it was never wrong, only wrong BENEATH a listed board, so it is withheld by state rather than deleted',
-      leadBare.includes('File this page to a drawer first'), JSON.stringify(leadBare.slice(0, 160)));
+    // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): the lead sentence is retired with the no-project branch (it is absent in both states now).
+    // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
+    //
+    // ok('ERRATUM 2 (the other direction): with NO connections the sentence still speaks — it was never wrong, only wrong BENEATH a listed board, so it is withheld by state rather than deleted',
+    //   leadBare.includes('File this page to a drawer first'), JSON.stringify(leadBare.slice(0, 160)));
+    ok('ERRATUM 2 (the other direction) [big-projects-2 successor]: with NO connections the Boards tab carries no lead sentence either - the sentence retired with the no-project branch (a board files into wherever the writer is)',
+      !leadBare.includes('File this page to a drawer first'), JSON.stringify(leadBare.slice(0, 160)));
   }
 
   // ERRATUM 3 — THE LOCATION PHRASE NEVER ELIDES. Measured against the RENDERED

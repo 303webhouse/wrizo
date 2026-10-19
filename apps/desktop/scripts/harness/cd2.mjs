@@ -1224,9 +1224,15 @@ if (process.env.HARNESS_PARKED === '1') {
       hasOpenLink: !!document.querySelector('.wz-cascade-panel .wz-cascade-link'),
       hasZone: !!document.querySelector('.wz-cascade-plan-zone'),
     })`);
-    pok('PARKED (was "S3: Plan on a loose (project-less) page still offers Create a Board / Plot a Story, but Open… is silently absent (nothing to survey yet)") — PW1 S1 + Fable\'s ruling 2: the two creation doors stand unchanged, "Open…" is absent because it RETIRED (not because there is nothing to survey — the reason changed even though the observation did not), and an unconnected loose page shows NO zone at all (PW9). Live successor: pw1.mjs\'s own loose-page section, which pins one and proves the zone then appears ABOVE the doors',
-      loosePanel.hasCreateBoard && loosePanel.hasPlotStory && !loosePanel.hasOpenLink && !loosePanel.hasZone,
-      JSON.stringify(loosePanel));
+    // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): the loose page's Boards tab has no Create a Board / Plot a Story; it has the New Board door.
+    // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
+    //
+    // pok('PARKED (was "S3: Plan on a loose (project-less) page still offers Create a Board / Plot a Story, but Open… is silently absent (nothing to survey yet)") — PW1 S1 + Fable\'s ruling 2: the two creation doors stand unchanged, "Open…" is absent because it RETIRED (not because there is nothing to survey — the reason changed even though the observation did not), and an unconnected loose page shows NO zone at all (PW9). Live successor: pw1.mjs\'s own loose-page section, which pins one and proves the zone then appears ABOVE the doors',
+    //   loosePanel.hasCreateBoard && loosePanel.hasPlotStory && !loosePanel.hasOpenLink && !loosePanel.hasZone,
+    //   JSON.stringify(loosePanel));
+    const loosePanelNow = await app.evalJs(`({ hasNewBoard: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'New Board'), hasOld: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'Create a Board' || b.textContent === 'Plot a Story'), hasOpenLink: !!document.querySelector('.wz-cascade-panel .wz-cascade-link'), hasZone: !!document.querySelector('.wz-cascade-plan-zone') })`);
+    pok('PARKED, generation 2 (was PW1\'s "the two creation doors stand unchanged") - BIG PROJECTS step 2: the doors are the New Board door and the presets; Open... stays absent and the zone stays absent with nothing connected',
+      loosePanelNow.hasNewBoard && !loosePanelNow.hasOld && !loosePanelNow.hasOpenLink && !loosePanelNow.hasZone, JSON.stringify(loosePanelNow));
   }
 
     await freshProsePage(app, LAPTOP_W, 900);

@@ -255,9 +255,14 @@ await withHarness(async (app) => {
   await sleep(300);
   await app.emulateDpr(1, LAPTOP_W, 900);
   await openPlanCategory(app);
-  const planNoProjectLine = await app.evalJs("document.querySelector('.wz-cascade-panel-body .wz-cascade-empty')?.textContent");
-  ok('S6c: the Plan panel\'s own no-project branch now reads "File this page to a drawer first..." — never the word "project"',
-    planNoProjectLine === 'File this page to a drawer first to plan around it.', String(planNoProjectLine));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): the Boards tab has no no-project branch: a board is filed into wherever the writer is.
+  // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
+  //
+  // const planNoProjectLine = await app.evalJs("document.querySelector('.wz-cascade-panel-body .wz-cascade-empty')?.textContent");
+  // ok('S6c: the Plan panel\'s own no-project branch now reads "File this page to a drawer first..." — never the word "project"',
+  //   planNoProjectLine === 'File this page to a drawer first to plan around it.', String(planNoProjectLine));
+  const boardsPanelText = await app.evalJs("document.querySelector('.wz-cascade-panel-body')?.innerText ?? ''");
+  ok('S6c [big-projects-2 successor]: the Boards tab has no no-project lead at all (the file-this-page-to-a-drawer-first line is gone) - and never the word project', !boardsPanelText.includes('File this page to a drawer first') && !/project/i.test(boardsPanelText), boardsPanelText.slice(0, 160));
 
   // ==========================================================================
   // S6e — CreateProject.tsx: the eyebrow, the title aria-label, and the

@@ -552,8 +552,14 @@ await withHarness(async (app) => {
   // ORIGINAL claim parked verbatim:
   // ok('S2 (c): the Plan panel\'s own no-project branch quietly points at the Page section\'s New Page door — a writer who just wants a page is told where the plainer door is, not just handed board/plan-creation buttons',
   //   !!planPanelText && planPanelText.includes('New Page') && planPanelText.includes('Page section'), planPanelText);
-  ok('S2 (c) [word-diet successor]: the Plan panel\'s own no-project branch carries no "just a page" pointer at all now (REMOVE) — only the truthful lead sentence and the two board/plan-creation buttons',
-    !!planPanelText && !planPanelText.includes('Page section') && planPanelText.includes('File this page to a drawer first') && planPanelText.includes('Create a Board') && planPanelText.includes('Plot a Story'),
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): the Boards tab carries New Board and presets - no lead sentence, no Create a Board / Plot a Story.
+  // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
+  //
+  // ok('S2 (c) [word-diet successor]: the Plan panel\'s own no-project branch carries no "just a page" pointer at all now (REMOVE) — only the truthful lead sentence and the two board/plan-creation buttons',
+  //   !!planPanelText && !planPanelText.includes('Page section') && planPanelText.includes('File this page to a drawer first') && planPanelText.includes('Create a Board') && planPanelText.includes('Plot a Story'),
+  //   planPanelText);
+  ok('S2 (c) [big-projects-2 successor]: the Boards tab on a loose page carries no "just a page" pointer, no no-project lead and none of the old creation buttons - it carries the New Board door and the presets',
+    !!planPanelText && !planPanelText.includes('Page section') && !planPanelText.includes('File this page to a drawer first') && !planPanelText.includes('Create a Board') && !planPanelText.includes('Plot a Story') && planPanelText.includes('New Board') && planPanelText.includes('Three-Act Structure'),
     planPanelText);
 
   // ==========================================================================
@@ -721,9 +727,15 @@ if (process.env.HARNESS_PARKED === '1') {
     //   emptyBoardNow.doors.includes('New Card') && emptyBoardNow.doors.includes('New Pages Card'),
     //   JSON.stringify(emptyBoardNow));
     // ------------------------------------------------------------------
-    pok('PARKED [word-diet-layouts successor] — no `.board-canvas-empty` on an ordinary board, the Beginnings row instead, still naming both tools (New Card, New Page) among its four doors; live successor: bg1.mjs',
-      emptyBoardNow.oldCopy === false && emptyBoardNow.row === true &&
-      emptyBoardNow.doors.includes('New Card') && emptyBoardNow.doors.includes('New Page'),
+    // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): the row carries three doors; New Page is the sliver's.
+    // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
+    //
+    // pok('PARKED [word-diet-layouts successor] — no `.board-canvas-empty` on an ordinary board, the Beginnings row instead, still naming both tools (New Card, New Page) among its four doors; live successor: bg1.mjs',
+    //   emptyBoardNow.oldCopy === false && emptyBoardNow.row === true &&
+    //   emptyBoardNow.doors.includes('New Card') && emptyBoardNow.doors.includes('New Page'),
+    //   JSON.stringify(emptyBoardNow));
+    pok('PARKED [big-projects-2 successor] - no `.board-canvas-empty` on an ordinary board, the Beginnings row instead, naming New Card among its three doors (no New Page); live successor: bg1.mjs',
+      emptyBoardNow.oldCopy === false && emptyBoardNow.row === true && emptyBoardNow.doors.includes('New Card') && !emptyBoardNow.doors.includes('New Page'),
       JSON.stringify(emptyBoardNow));
     return parkedChecks;
   });
