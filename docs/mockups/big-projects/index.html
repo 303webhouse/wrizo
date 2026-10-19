@@ -8,12 +8,13 @@
   docs/mockups/big-projects - organizing big projects, Arbor, ~2000 x 940.
   MODEL: you are always IN a place - a DRAWER (a project) or a JOURNAL (writing with no project).
          Drawer > SET (today's binder) > SECTION (one page or board). Set headings appear only with 2+ sets.
-  RAIL A: a place block (icon + name + chevron, brass bracket over Pages and Boards), a divider, Journal; foot Settings,
-         Themes, Trash. No Shelf; Plan is renamed Boards.  RAIL B: the same, slim (icons + bracket), with the place
-         name large at the top of each pop-out.  The place block opens the switcher: Drawers, then Journals, + New Drawer,
+  RAIL (Nick picked A): a place block (icon + name + chevron, brass bracket over Pages and Boards), a divider, Journal;
+         foot Settings, Themes, Trash. No Shelf; Plan is renamed Boards. The WHOLE rail, place block included, still fades
+         while typing, the Recede way (unchanged behaviour; not animated in this mockup).  The place block opens the switcher: Drawers, then Journals, + New Drawer,
          + New Journal.  With 2+ Journals the Journal button opens a short list; with one it just goes there.
   PAGES / BOARDS pop-outs mirror each other, scoped to the place: name, + New Page / + New Board, SECTIONS with a sort
-         (Order - drag to reorder, only here - Date, Tag, Most opened, Least opened), a rows / grid toggle, X = out of the
+         (Order - drag to reorder, only here - Date, Tag, Most opened, Least opened), a rows / grid toggle. A set with no pages
+         is absent from Pages (no boards: absent from Boards); a non-current set folds to one row with a count. X = out of the
          drawer into the Journal with an Undo line (never delete), + New set, then PRESETS.
   GRAFTS: "Connected to <page>" from any place, grouped Cards / Sources / Boards / Pages (X + Undo), then Shared tags.
          Items from another place carry a faint place label.
@@ -40,7 +41,6 @@
     --sb: color-mix(in srgb, var(--text-low) 28%, transparent);
     --strip: 84px; --lt: 304px; --rt: 332px; --gap: 28px;
   }
-  html[data-rail='B'] { --strip: 56px; }
   * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; scrollbar-width: thin; scrollbar-color: var(--sb) transparent; }
   html, body { height: 100%; overflow: hidden; }
   body { background: var(--ink-950); color: var(--text-hi); font-family: var(--font-ui); user-select: none; }
@@ -79,9 +79,6 @@
   .place .nm { max-width: 100%; font-size: 11px; font-weight: 600; line-height: 1.2; text-align: center;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .place .chev { font-size: 8px; color: var(--text-low); line-height: 1; }
-  html[data-rail='B'] .si span, html[data-rail='B'] .place .nm { display: none; }
-  html[data-rail='B'] .si { padding: 12px 4px; }
-  html[data-rail='B'] .place { padding: 12px 4px 10px 8px; }
 
   .app { position: fixed; top: 34px; left: var(--strip); right: 0; bottom: 0; display: grid;
     grid-template-columns: var(--lt) 1fr var(--rt); grid-template-rows: 58px 1fr; column-gap: var(--gap); padding: 0 28px 22px; }
@@ -131,9 +128,6 @@
   .pophead { padding: 14px 14px 10px; display: flex; align-items: center; gap: 8px; }
   .pophead svg { width: 15px; height: 15px; color: var(--brass); flex: 0 0 auto; }
   .pophead .pn { font-size: 13px; font-weight: 600; color: var(--text-hi); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  html[data-rail='B'] .pophead { padding: 16px 14px 12px; }
-  html[data-rail='B'] .pophead .pn { font-size: 22px; letter-spacing: -.01em; }
-  html[data-rail='B'] .pophead svg { width: 20px; height: 20px; }
   .newbtn { display: flex; align-items: center; gap: 8px; margin: 0 10px 6px; height: 34px; padding: 0 10px; border: 1px solid var(--ink-border-strong); color: var(--text-mid); font-size: 13px; }
   .newbtn:hover { color: var(--text-hi); border-color: var(--text-low); }
   .newbtn b { font-weight: 400; font-size: 15px; line-height: 1; color: var(--text-low); }
@@ -141,10 +135,15 @@
   .tools .lab { margin-right: auto; }
   .popbody { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 0 0 10px; }
   .sethead { padding: 14px 14px 5px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-mid); }
+  .setfold { display: flex; align-items: center; gap: 8px; width: 100%; padding: 12px 14px 5px; text-align: left; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-mid); }
+  .setfold:hover { color: var(--text-hi); }
+  .setfold .cv { font-size: 9px; color: var(--text-low); width: 8px; transition: transform .12s; }
+  .setfold[aria-expanded='true'] .cv { transform: rotate(90deg); }
+  .setfold .ct { margin-left: auto; letter-spacing: 0; font-size: 11px; color: var(--text-low); }
   .taghead { padding: 10px 14px 3px; font-size: 10.5px; color: var(--text-low); }
   .taghead::before, .tagm::before { content: '#'; margin-right: 3px; opacity: .7; }
   .row { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 30px 6px 12px; border-left: 2px solid transparent; text-align: left; color: var(--text-mid); }
-  .row:hover { background: var(--ink-800); color: var(--text-hi); }
+  .row:hover, .row.hover { background: var(--ink-800); color: var(--text-hi); }
   .row[aria-current='true'] { color: var(--text-hi); border-left-color: var(--accent-rest); background: color-mix(in srgb, var(--ink-800) 70%, transparent); }
   .row .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   .row .t { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -152,8 +151,8 @@
   .row[data-drag='true'] { cursor: grab; }
   .row.dragging { opacity: .4; }
   .row.over { box-shadow: inset 0 2px 0 var(--accent-rest); }
-  .x { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; display: grid; place-items: center; color: var(--text-low); font-size: 13px; opacity: 0; }
-  .row:hover .x, .tile:hover .x, .x:focus-visible, .gr:hover .x { opacity: 1; }
+  .x { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; display: grid; place-items: center; color: var(--text-mid); font-size: 16px; line-height: 1; opacity: 0; }
+  .row:hover .x, .row.hover .x, .tile:hover .x, .x:focus-visible, .gr:hover .x { opacity: 1; }
   .x:hover { color: var(--text-hi); }
   .mini { flex: 0 0 auto; width: 20px; height: 27px; background: var(--paper); border: 1px solid var(--ink-border-strong); position: relative; }
   .mini::before { content: ''; position: absolute; left: 4px; right: 4px; top: 6px; height: 9px; background: repeating-linear-gradient(to bottom, var(--ink-on-paper-low) 0 1px, transparent 1px 3px); opacity: .55; }
@@ -302,49 +301,19 @@
   .tagm { flex: 0 0 auto; font-size: 11px; color: var(--text-low); }
   .gr.tagged { padding-right: 14px; }
 
-  /* ---- brief 2 (Fable's second relay, Oct 18 5:55): Drawers rail item, switcher in the pop-out head, folded sets, place chip ---- */
-  #railDrawers, .b2only { display: none; }
-  html[data-brief='2'] #railDrawers { display: flex; }
-  html[data-brief='2'] .b2only { display: block; }
-  html[data-brief='2'] .b1only, html[data-brief='2'] #placeBtn { display: none; }
-  html[data-brief='2'] .bracket::before { display: none; }
-  html[data-brief='2'] .bracket { padding-left: 0; }
-  .pswitch { display: flex; align-items: center; gap: 8px; max-width: 100%; padding: 4px 6px; margin: -4px -6px; border: 1px solid transparent; color: var(--text-hi); font-size: 13px; font-weight: 600; }
-  .pswitch:hover, .pswitch[aria-expanded='true'] { border-color: var(--ink-border-strong); }
-  .pswitch svg { width: 15px; height: 15px; color: var(--text-low); flex: 0 0 auto; }
-  .pswitch .pn { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .pswitch i { font-style: normal; font-weight: 400; font-size: 9px; color: var(--text-low); }
-  .setfold { display: flex; align-items: center; gap: 8px; width: 100%; padding: 12px 14px 5px; text-align: left; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-mid); }
-  .setfold:hover { color: var(--text-hi); }
-  .setfold .cv { font-size: 9px; color: var(--text-low); width: 8px; transition: transform .12s; }
-  .setfold[aria-expanded='true'] .cv { transform: rotate(90deg); }
-  .setfold .ct { margin-left: auto; letter-spacing: 0; font-size: 11px; color: var(--text-low); }
-  .pchip { position: absolute; top: 26px; left: 96px; display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px;
-    border: 1px solid color-mix(in srgb, var(--ink-on-paper-low) 45%, transparent); color: var(--ink-on-paper-low); font-size: 11.5px; font-family: var(--font-ui); background: var(--paper); }
-  .pchip:hover, .pchip[aria-expanded='true'] { color: var(--ink-on-paper); border-color: var(--ink-on-paper-low); }
-  .pchip[hidden] { display: none; }
-  .pchip i { font-style: normal; font-size: 9px; }
-  .page { position: relative; }
-  .ph { color: var(--ink-on-paper-low); opacity: .55; }
-
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
 <body>
 <header class="rig">
   <b>BIG PROJECTS</b><span class="only">mockup only</span>
-  <button class="rev" data-rail="A" type="button">Rail A</button>
-  <button class="rev" data-rail="B" type="button">Rail B</button>
-  <span class="sp"></span>
   <button class="rev" id="onej" type="button">One Journal</button>
   <button class="rev" id="boardsurf" type="button">Empty board</button>
   <button class="rev" id="reset" type="button">Reset</button>
-  <span class="fr" id="frname"></span>
+  <span class="fr">The whole rail, place block included, fades while typing (Recede).</span><span class="fr" id="frname" style="margin-left:14px"></span>
 </header>
 
 <aside class="strip" aria-label="Strip">
-  <button class="si" id="railDrawers" type="button" aria-pressed="false" title="Drawers" aria-haspopup="menu" aria-expanded="false">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="8" rx="1"/><rect x="4" y="13" width="16" height="8" rx="1"/><path d="M10 7h4M10 17h4"/></svg><span>Drawers</span></button>
   <div class="bracket">
     <button class="place" id="placeBtn" type="button" aria-haspopup="menu" aria-expanded="false"><span id="placeIcon"></span><span class="nm" id="placeName"></span><span class="chev">⌄</span></button>
     <button class="si" id="railPages" type="button" aria-pressed="false" title="Pages">
@@ -383,7 +352,6 @@
 
   <div class="pagecol">
     <div class="page" id="page">
-      <button class="pchip" id="pchip" type="button" aria-haspopup="menu" aria-expanded="false" hidden><span></span><i>⌄</i></button>
       <div class="sheetpage" id="prose"></div>
     </div>
     <div class="board" id="board" hidden>
@@ -453,24 +421,16 @@
 
 <!-- the page's "..." menu -->
 <div class="menu" id="menu" role="menu" hidden>
-  <div class="b1only">
-    <button type="button" role="menuitem">Copy Page</button>
-    <button type="button" role="menuitem" id="openfile">File Page…</button>
-    <button type="button" role="menuitem" class="opensettings">Page Settings…</button>
-    <hr>
-    <button type="button" role="menuitem">Delete</button>
-  </div>
-  <div class="b2only">
-    <button type="button" role="menuitem" class="opensettings">Page setup…</button>
-    <button type="button" role="menuitem">Copy page text</button>
-    <hr>
-    <button type="button" role="menuitem">Delete page</button>
-  </div>
+  <button type="button" role="menuitem">Copy Page</button>
+  <button type="button" role="menuitem" id="openfile">File Page…</button>
+  <button type="button" role="menuitem" id="opensettings">Page Settings…</button>
+  <hr>
+  <button type="button" role="menuitem">Delete</button>
 </div>
 
 <!-- Page Settings sheet (round 2's Page Setup, renamed) -->
 <div class="sheet" id="settings" role="dialog" aria-label="Page Settings" hidden>
-  <h2><span class="b1only">Page Settings</span><span class="b2only">Page setup</span> <button type="button" data-close aria-label="Close">×</button></h2>
+  <h2>Page Settings <button type="button" data-close aria-label="Close">×</button></h2>
   <div class="srow"><span class="sl">Margins</span><div class="seg" role="radiogroup"><button type="button" role="radio" aria-checked="true">Normal</button><button type="button" role="radio" aria-checked="false">Narrow</button><button type="button" role="radio" aria-checked="false">Wide</button></div></div>
   <div class="srow"><label class="sl" for="leading">Line spacing</label><input class="range" id="leading" type="range" min="1.2" max="2.2" step="0.1" value="1.7"><span class="rval" id="leadval">1.7</span></div>
   <div class="srow"><span class="sl">Page numbers</span><button class="tog" type="button" aria-pressed="false">Off</button></div>
@@ -510,8 +470,8 @@
       drawers: [
         { id: 'ferry', name: 'The Late Ferry', sets: [
           { name: 'Manuscript', pages: manuscript, boards: [bd('Chapter map', 14, 'structure', 3, 11), bd('Timeline', 22, 'structure', 8, 4)] },
-          { name: 'Worldbuilding', pages: [pg('The Marsh family', 'Four generations on the same strip of marsh.', 'people', 20, 6), pg('The Quay families', 'Six names, and none of them forgive.', 'people', 18, 3)],
-            boards: [bd('Locations', 9, 'places', 15, 5), bd('Mood', 16, 'mood', 30, 2)] }
+          { name: 'Worldbuilding', pages: [],
+            boards: [bd('The Marsh family', 12, 'people', 20, 6), bd('The Quay families', 8, 'people', 18, 3), bd('Locations', 9, 'places', 15, 5), bd('Mood', 16, 'mood', 30, 2)] }
         ] },
         { id: 'short', name: 'Short stories', sets: [
           { name: 'Stories', pages: [pg('The Lighthouse Keeper', 'He counted ships the way other men counted sheep.', 'draft', 5, 7), pg('Salt', 'The sea came in through the kitchen.', 'ferry', 9, 4),
@@ -531,13 +491,11 @@
   }
   fresh();
 
-  var B2 = qs.get('brief') === '2';
-  document.documentElement.dataset.brief = B2 ? '2' : '1';
   var S = { rail: 'A', folded: {}, pop: null, view: { pages: 'rows', boards: 'grid' }, sort: { pages: 'Order', boards: 'Order', pagesJ: 'Date', boardsJ: 'Date', grafts: 'Order' }, oneJournal: false, surface: 'page', undo: null, gundo: null, tab: 'tutor' };
   var SORTS = ['Order', 'Date', 'Tag', 'Most opened', 'Least opened'];
 
   function placeObj() { return PLACE.kind === 'drawer' ? DATA.drawers.find(function (d) { return d.id === PLACE.id; }) : DATA.journals.find(function (j) { return j.id === PLACE.id; }); }
-  function journals() { return (S.oneJournal || B2) ? DATA.journals.slice(0, 1) : DATA.journals; }
+  function journals() { return S.oneJournal ? DATA.journals.slice(0, 1) : DATA.journals; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function findHome(item) {
     var out = null;
@@ -555,8 +513,6 @@
     $('#railPages').setAttribute('aria-pressed', String(S.pop === 'pages'));
     $('#railBoards').setAttribute('aria-pressed', String(S.pop === 'boards'));
     $('#railJournal').setAttribute('aria-pressed', String(PLACE.kind === 'journal'));
-    document.documentElement.dataset.rail = S.rail;
-    document.querySelectorAll('.rev[data-rail]').forEach(function (b) { b.dataset.on = String(b.dataset.rail === S.rail); });
     $('#onej').dataset.on = String(S.oneJournal);
     $('#boardsurf').dataset.on = String(S.surface === 'board');
   }
@@ -574,10 +530,7 @@
     $('#dots').addEventListener('click', function (e) { e.stopPropagation(); toggleOverlay('menu', this); });
   }
   var CH3TEXT = '<p>The kettle clicks off and she still doesn’t turn around. Steam writes a short sentence on the window, then forgets it.</p><p>He could say her name. He doesn’t. Instead he lines the cups up by the sink, handles all facing the same way, the way their mother used to, and waits for the room to decide something.</p><p>Outside, the ferry sounds once, low, like a door closing somewhere far off. She counts the seconds before the second horn. There isn’t one.</p><p>“You kept the blue one,” she says, finally. Not a question.</p>';
-  function homeLabel(it) { var h = findHome(it); if (!h) return 'Journal'; if (h.journal) return h.journal.name; return h.drawer.sets.length > 1 ? h.drawer.name + ' · ' + h.set.name : h.drawer.name; }
-  function renderChip() { var c = $('#pchip'), h = findHome(cur); var show = B2 && S.surface === 'page' && (cur.isNew || (h && h.journal)); c.hidden = !show; if (show) c.querySelector('span').textContent = homeLabel(cur); }
-  function newPage() { var it = pg('Untitled', '', 'new', 0, 0); it.isNew = true; var p = placeObj(); if (PLACE.kind === 'drawer') { var h = findHome(cur); var set = (h && h.drawer === p) ? h.set : p.sets[0]; set.pages.push(it); } else p.pages.unshift(it); cur = it; $('#titlein').value = it.t; render(); }
-  function renderSurface() { renderChip(); $('#prose').innerHTML = cur === ch3 ? CH3TEXT : cur.isNew ? '<p class="ph">Start anywhere.</p>' : '<p>' + esc(cur.fl) + '</p>'; $('#page').hidden = S.surface !== 'page'; $('#board').hidden = S.surface !== 'board'; $('#modes').hidden = S.surface !== 'page'; }
+  function renderSurface() { $('#prose').innerHTML = cur === ch3 ? CH3TEXT : '<p>' + esc(cur.fl) + '</p>'; $('#page').hidden = S.surface !== 'page'; $('#board').hidden = S.surface !== 'board'; $('#modes').hidden = S.surface !== 'page'; }
 
   // ---------------- sort ----------------
   function sorted(list, how) {
@@ -643,15 +596,13 @@
     if (!S.pop) { pop.hidden = true; pop.innerHTML = ''; return; }
     var kind = S.pop, p = placeObj(), isDrawer = PLACE.kind === 'drawer', view = S.view[kind], skey = isDrawer ? kind : kind + 'J';
     pop.hidden = false; pop.setAttribute('aria-label', kind === 'pages' ? 'Pages' : 'Boards');
-    pop.innerHTML = (B2 ? '<div class="pophead"><button class="pswitch" id="pswitch" type="button" aria-haspopup="menu" aria-expanded="false">' + (isDrawer ? ICON.drawer : ICON.journal) + '<span class="pn"></span><i>⌄</i></button></div>' : '<div class="pophead">' + (isDrawer ? ICON.drawer : ICON.journal) + '<span class="pn"></span></div>') +
+    pop.innerHTML = '<div class="pophead">' + (isDrawer ? ICON.drawer : ICON.journal) + '<span class="pn"></span></div>' +
       '<button class="newbtn" type="button"><b>＋</b>' + (kind === 'pages' ? 'New Page' : 'New Board') + '</button>' +
       '<div class="tools"><span class="lab">' + (isDrawer ? 'Sections' : 'Pages') + '</span><span id="sortslot"></span><div class="views" role="group" aria-label="View">' +
       '<button type="button" data-v="rows" aria-label="Rows" aria-pressed="' + (view === 'rows') + '">' + ICON.rows + '</button>' +
       '<button type="button" data-v="grid" aria-label="Grid" aria-pressed="' + (view === 'grid') + '">' + ICON.grid + '</button></div></div>' +
       '<div class="popbody" id="popbody"></div><div class="undo" id="undo" hidden></div>';
     pop.querySelector('.pn').textContent = p.name;
-    if (B2) pop.querySelector('#pswitch').addEventListener('click', function (e) { e.stopPropagation(); toggleOverlay('switcher', this); });
-    pop.querySelector('.newbtn').addEventListener('click', function () { if (kind === 'pages') newPage(); });
     pop.querySelector('#sortslot').replaceWith(sortControl(skey, isDrawer ? SORTS : SORTS.slice(1)));
     pop.querySelectorAll('.views button').forEach(function (b) { b.addEventListener('click', function () { S.view[kind] = b.dataset.v; render(); }); });
     var body = pop.querySelector('#popbody'), how = S.sort[skey];
@@ -660,15 +611,15 @@
       p.sets.forEach(function (set) {
         var list = set[kind]; if (!list.length) return; any = true;
         var folded = false;
-        if (showSets && B2) {
-          var home = findHome(cur), isCurSet = home && home.set === set;
-          folded = S.folded[set.name] != null ? S.folded[set.name] : !isCurSet;
+        if (showSets) {
+          var home = findHome(cur), key = kind + ':' + set.name;
+          folded = S.folded[key] != null ? S.folded[key] : !(home && home.set === set);
           var fb = document.createElement('button'); fb.type = 'button'; fb.className = 'setfold'; fb.setAttribute('aria-expanded', String(!folded));
           fb.innerHTML = '<span class="cv">›</span><span></span>' + (folded ? '<span class="ct">' + list.length + '</span>' : '');
           fb.children[1].textContent = set.name;
-          fb.addEventListener('click', function () { S.folded[set.name] = !folded; render(); });
+          fb.addEventListener('click', function () { S.folded[key] = !folded; render(); });
           body.appendChild(fb);
-        } else if (showSets) { var h = document.createElement('div'); h.className = 'sethead'; h.textContent = set.name; body.appendChild(h); }
+        }
         if (folded) return;
         var items = sorted(list, how);
         if (how === 'Tag') {
@@ -698,7 +649,7 @@
       body.appendChild(f2);
     }
     var u = pop.querySelector('#undo');
-    if (S.undo) { u.hidden = false; u.innerHTML = '<span></span><button type="button">Undo</button>'; u.querySelector('span').textContent = S.undo.it.t + (B2 ? ' is back in the Journal.' : ' moved to the Journal.');
+    if (S.undo) { u.hidden = false; u.innerHTML = '<span></span><button type="button">Undo</button>'; u.querySelector('span').textContent = S.undo.it.t + ' moved to the Journal.';
       u.querySelector('button').addEventListener('click', function () { undoMove(); }); }
   }
   function toJournal(it, list) {
@@ -717,8 +668,8 @@
     GRAFTS = {
       Cards: [{ t: 'The ferryman’s coat', plc: 'Short stories', d: 4, op: 3 }, { t: 'Mara at the window', plc: '', d: 1, op: 6 }],
       Sources: [{ t: 'Tides of the Estuary', plc: '', d: 12, op: 2 }, { t: 'Harbour photo, 1962', plc: 'Journal', d: 6, op: 2 }],
-      Boards: [{ t: 'Chapter map', plc: '', d: 3, op: 11 }, { t: 'Locations', plc: '', d: 15, op: 5 }],
-      Pages: [{ t: 'Ch 2', plc: '', d: 2, op: 9 }, { t: 'The Marsh family', plc: '', d: 20, op: 6 }, { t: 'Kettle notes', plc: 'Journal', d: 0, op: 3 }]
+      Boards: [{ t: 'Chapter map', plc: '', d: 3, op: 11 }, { t: 'The Marsh family', plc: '', d: 20, op: 6 }, { t: 'Locations', plc: '', d: 15, op: 5 }],
+      Pages: [{ t: 'Ch 2', plc: '', d: 2, op: 9 }, { t: 'Kettle notes', plc: 'Journal', d: 0, op: 3 }]
     };
   }
   freshGrafts();
@@ -768,8 +719,8 @@
   function renderSwitcher() {
     var m = $('#switcher');
     m.innerHTML = '<span class="lab">Drawers</span>' + DATA.drawers.map(function (d) { return prRow(ICON.drawer, d.name, PLACE.kind === 'drawer' && PLACE.id === d.id, ' data-d="' + d.id + '"'); }).join('') +
-      (B2 ? '<hr>' : '<span class="lab">Journals</span>') + journals().map(function (j) { return prRow(ICON.journal, j.name, PLACE.kind === 'journal' && PLACE.id === j.id, ' data-j="' + j.id + '"'); }).join('') +
-      '<hr><button class="pr add" type="button"><b>+</b><span class="t">New Drawer</span></button>' + (B2 ? '' : '<button class="pr add" type="button"><b>+</b><span class="t">New Journal</span></button>');
+      '<span class="lab">Journals</span>' + journals().map(function (j) { return prRow(ICON.journal, j.name, PLACE.kind === 'journal' && PLACE.id === j.id, ' data-j="' + j.id + '"'); }).join('') +
+      '<hr><button class="pr add" type="button"><b>+</b><span class="t">New Drawer</span></button><button class="pr add" type="button"><b>+</b><span class="t">New Journal</span></button>';
     m.querySelectorAll('[data-d]').forEach(function (b) { b.addEventListener('click', function () { go({ kind: 'drawer', id: b.dataset.d }); }); });
     m.querySelectorAll('[data-j]').forEach(function (b) { b.addEventListener('click', function () { go({ kind: 'journal', id: b.dataset.j }); }); });
   }
@@ -826,8 +777,6 @@
     el.hidden = false; if (anchor) { anchor.setAttribute('aria-expanded', 'true'); placeAt(el, anchor, side); }
   }
   $('#placeBtn').addEventListener('click', function (e) { e.stopPropagation(); toggleOverlay('switcher', this, 'right'); });
-  $('#railDrawers').addEventListener('click', function (e) { e.stopPropagation(); toggleOverlay('switcher', this, 'right'); });
-  $('#pchip').addEventListener('click', function (e) { e.stopPropagation(); var a = this; closeAll(); openDrawerInFiler = 'ferry'; renderFiler(); $('#filer').hidden = false; a.setAttribute('aria-expanded', 'true'); placeAt($('#filer'), a); });
   $('#railPages').addEventListener('click', function () { S.pop = S.pop === 'pages' ? null : 'pages'; render(); });
   $('#railBoards').addEventListener('click', function () { S.pop = S.pop === 'boards' ? null : 'boards'; render(); });
   $('#railJournal').addEventListener('click', function (e) {
@@ -835,7 +784,7 @@
     if (journals().length > 1) toggleOverlay('jlist', this, 'right'); else go({ kind: 'journal', id: journals()[0].id });
   });
   $('#openfile').addEventListener('click', function (e) { e.stopPropagation(); var a = $('#dots'); closeAll(); openDrawerInFiler = 'ferry'; renderFiler(); $('#filer').hidden = false; placeAt($('#filer'), a); });
-  document.querySelectorAll('.opensettings').forEach(function (o) { o.addEventListener('click', function (e) { e.stopPropagation(); closeAll(); var s = $('#settings'), r = $('#page').getBoundingClientRect(); s.hidden = false; s.style.left = Math.round(r.left + (r.width - 360) / 2) + 'px'; s.style.top = Math.round(r.top + 70) + 'px'; }); });
+  $('#opensettings').addEventListener('click', function (e) { e.stopPropagation(); closeAll(); var s = $('#settings'), r = $('#page').getBoundingClientRect(); s.hidden = false; s.style.left = Math.round(r.left + (r.width - 360) / 2) + 'px'; s.style.top = Math.round(r.top + 70) + 'px'; });
   $('#settings').querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', closeAll); });
   $('#settings').querySelectorAll('.seg').forEach(function (g) { g.querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { g.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-checked', 'false'); }); b.setAttribute('aria-checked', 'true'); }); }); });
   $('#settings').querySelectorAll('.tog').forEach(function (t) { t.addEventListener('click', function () { var on = t.getAttribute('aria-pressed') !== 'true'; t.setAttribute('aria-pressed', String(on)); t.textContent = on ? 'On' : 'Off'; }); });
@@ -853,13 +802,12 @@
     p.hidden = false; this.setAttribute('aria-expanded', 'true'); placeAt(p, this, 'right');
   });
   document.addEventListener('pointerdown', function (e) {
-    if (e.target.closest('.pick, .card, .picker, .menu, .sheet, .sortw, #placeBtn, #railJournal, #railDrawers, #pswitch, #pchip, #here, #dots')) return;
+    if (e.target.closest('.pick, .card, .picker, .menu, .sheet, .sortw, #placeBtn, #railJournal, #here, #dots')) return;
     closeAll();
   }, true);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
 
   // ---------------- rig ----------------
-  document.querySelectorAll('.rev[data-rail]').forEach(function (b) { b.addEventListener('click', function () { S.rail = b.dataset.rail; closeAll(); render(); }); });
   $('#onej').addEventListener('click', function () { S.oneJournal = !S.oneJournal; if (S.oneJournal && PLACE.kind === 'journal') PLACE = { kind: 'journal', id: 'journal' }; closeAll(); render(); });
   $('#boardsurf').addEventListener('click', function () { S.surface = S.surface === 'board' ? 'page' : 'board'; closeAll(); render(); });
   $('#reset').addEventListener('click', function () { location.search = ''; });
@@ -869,7 +817,6 @@
   // ---------------- frames ----------------
   var FRAMES = {
     'rail-A':          function () { S.rail = 'A'; },
-    'rail-B':          function () { S.rail = 'B'; S.pop = 'pages'; },
     'switcher-open':   function () { S.pop = 'pages'; return function () { toggleOverlay('switcher', $('#placeBtn'), 'right'); }; },
     'pages-rows':      function () { S.pop = 'pages'; },
     'pages-grid':      function () { S.pop = 'pages'; S.view.pages = 'grid'; },
@@ -882,21 +829,12 @@
     'file-page-picker':function () { S.pop = 'pages'; return function () { $('#dots').click(); $('#openfile').click(); }; },
     'page-menu':       function () { S.pop = 'pages'; return function () { $('#dots').click(); }; },
     'undo-line':       function () { S.pop = 'pages'; var set = DATA.drawers[0].sets[0]; toJournal(set.pages[7], set.pages); },
-    'empty-board':     function () { S.surface = 'board'; S.pop = 'boards'; }
+    'empty-board':     function () { S.surface = 'board'; S.pop = 'boards'; },
+    'row-hover':       function () { S.pop = 'pages'; return function () { document.querySelectorAll('#pop .row').forEach(function (r) { if (r.querySelector('.t').textContent === 'Ch 4') r.classList.add('hover'); }); }; }
   };
-  var FRAMES2 = {
-    'pages-rows':     function () { S.pop = 'pages'; },
-    'pages-grid':     function () { S.pop = 'pages'; S.view.pages = 'grid'; },
-    'pages-sort-tag': function () { S.pop = 'pages'; S.sort.pages = 'Tag'; },
-    'boards-grid':    function () { S.pop = 'boards'; },
-    'grafts':         function () { S.pop = 'pages'; S.tab = 'grafts'; },
-    'journal-page':   function () { PLACE = { kind: 'journal', id: 'journal' }; cur = DATA.journals[0].pages[1]; $('#titlein').value = cur.t; S.pop = 'pages'; },
-    'new-page-chip':  function () { PLACE = { kind: 'journal', id: 'journal' }; S.pop = 'pages'; newPage(); return function () { $('#pchip').click(); }; },
-    'undo-line':      function () { S.pop = 'pages'; var set = DATA.drawers[0].sets[0]; toJournal(set.pages[7], set.pages); }
-  };
-  var frame = qs.get('frame'), after = null, FR = B2 ? FRAMES2 : FRAMES;
-  if (frame && FR[frame]) after = FR[frame]();
-  $('#frname').textContent = (B2 ? 'brief 2 · ' : '') + (frame ? 'frame: ' + frame : '');
+  var frame = qs.get('frame'), after = null;
+  if (frame && FRAMES[frame]) after = FRAMES[frame]();
+  $('#frname').textContent = frame ? 'frame: ' + frame : '';
   render();
   if (after) after();
   if (document.fonts && after) document.fonts.ready.then(function () { closeAll(); after(); });
