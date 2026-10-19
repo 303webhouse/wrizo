@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrizo - Graft doors mockup (Arbor)</title>
+<!--
+  docs/mockups/graft-doors - grafting made findable, Arbor, ~2000 x 940.
+  Reuses big-projects @ aab45ec0: rail A (place block + Pages / Boards bracket, Journal; foot Settings,
+  Themes, Trash), Pages/Boards pop-outs, Grafts tab grouped Cards / Sources / Boards / Pages + Shared tags.
+  TODAY: the only graft door is a double-click or right-press-hold on a card's orange RESIZE corner, then a
+  drop on a rail tile. A page can't start a graft; its Grafts tab is always empty.
+  TWO DOORS (Nick said yes):
+  (1) GRAFT KNOB - a small brass dot on a selected card's right edge (mid-height), separate from the resize
+      corner. Hover tip "Drag to graft". Press-drag draws the line; it lands on a card, or on a page/board
+      row in the Pages/Boards pop-outs.
+  (2) "+ Graft..." at the top of the Grafts tab, on a page AND on a board. Opens a picker: search field, then
+      Cards / Pages / Boards from any Drawer or Journal, each with a faint place label and a check on ones
+      already grafted.
+  Frames: ?frame=knob-hover | knob-dragging | knob-landed | graft-picker-page | graft-picker-board | grafts-page-filled
+  Branch: cursor/graft-doors-mockup. Rig bar = mockup only.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+
+  :root {
+    --ink-950: #110600; --ink-900: #1F1A16; --ink-800: #2A241E;
+    --ink-border: #332C25; --ink-border-strong: #453B31;
+    --text-hi: #EDE6DA; --text-mid: #B5A998; --text-low: #80766A;
+    --paper: #F3EDE1; --paper-dim: #E9E1D2;
+    --ink-on-paper: #2B2014; --ink-on-paper-low: #6B5F4E;
+    --paper-glow: 0 0 0 1px rgba(243, 237, 225, 0.06), 0 4px 32px rgba(212, 162, 78, 0.10), 0 2px 12px rgba(0, 0, 0, 0.45);
+    --brass: #ff9800; --accent-rest: #96a05a;
+    --desk-ground: #1F1A16;
+    --font-ui: 'Figtree', system-ui, sans-serif;
+    --font-prose: 'Crimson Pro', Georgia, serif;
+    --sb: color-mix(in srgb, var(--text-low) 28%, transparent);
+    --strip: 84px; --lt: 304px; --rt: 332px; --gap: 28px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; scrollbar-width: thin; scrollbar-color: var(--sb) transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--ink-950); color: var(--text-hi); font-family: var(--font-ui); user-select: none; }
+  button, input, textarea { font: inherit; color: inherit; background: none; border: 0; }
+  button { cursor: pointer; }
+  svg { display: block; }
+
+  .rig { position: fixed; inset: 0 0 auto 0; z-index: 90; height: 34px; display: flex; align-items: center; gap: 6px;
+    padding: 0 12px; background: #000; border-bottom: 1px solid #222; font-size: 11px; color: #9a9a9a; overflow: hidden; white-space: nowrap; }
+  .rig b { color: #d8d8d8; letter-spacing: .06em; }
+  .only { color: #6e6e6e; letter-spacing: .12em; text-transform: uppercase; font-size: 9px; border: 1px solid #333; padding: 2px 6px; }
+  .rev { height: 22px; padding: 0 8px; border: 1px solid #333; color: #c8c8c8; background: #141414; font-size: 11px; }
+  .rev[data-on='true'] { border-color: var(--accent-rest); color: var(--accent-rest); }
+  .rig .sp { width: 8px; }
+  .rig .fr { margin-left: auto; color: #6a6a6a; }
+
+  /* ---- the rail (big-projects rail A) ---- */
+  .strip { position: fixed; top: 92px; left: 0; bottom: 0; width: var(--strip); z-index: 5; display: flex; flex-direction: column; padding: 8px 0 5vh;
+    background: var(--desk-ground); border: 1px solid var(--ink-border); border-top: none; }
+  .ssep { height: 1px; background: var(--ink-border); margin: 8px 10px; }
+  .sfoot { margin-top: auto; }
+  .si { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; padding: 10px 4px; color: var(--text-hi); }
+  .si:hover { background: var(--ink-900); }
+  .si:active { color: var(--brass); }
+  .si[aria-pressed='true'] { color: var(--accent-rest); }
+  .si svg { width: 21.6px; height: 21.6px; }
+  .si span { font-size: 10.8px; letter-spacing: .4px; line-height: 1.2; }
+  .sfoot .si svg { width: 14.5px; height: 14.5px; }
+  .sfoot .si span { font-size: 7.3px; }
+  .bracket { position: relative; margin: 2px 0 0; padding-left: 4px; }
+  .bracket::before { content: ''; position: absolute; left: 4px; top: 2px; bottom: 2px; width: 5px; border: 1.5px solid var(--brass); border-right: none; pointer-events: none; }
+  .place { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; padding: 10px 6px 10px 8px; color: var(--text-hi); }
+  .place:hover, .place[aria-expanded='true'] { background: var(--ink-900); }
+  .place svg { width: 21.6px; height: 21.6px; color: var(--brass); }
+  .place .nm { max-width: 100%; font-size: 11px; font-weight: 600; line-height: 1.2; text-align: center;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .place .chev { font-size: 8px; color: var(--text-low); line-height: 1; }
+
+  .app { position: fixed; top: 34px; left: var(--strip); right: 0; bottom: 0; display: grid;
+    grid-template-columns: var(--lt) 1fr var(--rt); grid-template-rows: 58px 1fr; column-gap: var(--gap); padding: 0 28px 22px; }
+
+  .top { grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .crumb { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text-low); min-width: 0; margin-right: auto; }
+  .crumb .sep { color: var(--ink-border-strong); }
+  .here { color: var(--text-mid); font-weight: 600; }
+  .modes { display: flex; align-items: center; gap: 1.6px; }
+  .mt { border: 1px solid transparent; padding: 9px 12.8px; font-size: 10.4px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-mid); }
+  .mt:hover { color: var(--text-hi); background: var(--ink-800); }
+  .mt.on { color: var(--text-hi); border-bottom-color: var(--accent-rest); }
+  .mt.off { color: var(--text-low); cursor: not-allowed; }
+  .plan { padding: 9px 12.8px; font-size: 10.4px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-rest); }
+
+  .track { position: relative; min-height: 0; display: flex; flex-direction: column; }
+  .panel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; background: var(--ink-900); border: 1px solid var(--ink-border); overflow: hidden; }
+  .panel[hidden] { display: flex; visibility: hidden; }
+  .lab { font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--text-low); }
+
+  .sortw { position: relative; }
+  .sort { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-low); padding: 2px 4px; margin: -2px -4px; }
+  .sort:hover { color: var(--text-mid); }
+  .sort::after { content: ''; width: 5px; height: 5px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: translateY(-2px) rotate(45deg); opacity: .7; }
+  .views { display: flex; border: 1px solid var(--ink-border); }
+  .views button { width: 24px; height: 20px; display: grid; place-items: center; color: var(--text-low); }
+  .views button + button { border-left: 1px solid var(--ink-border); }
+  .views button[aria-pressed='true'] { color: var(--accent-rest); }
+  .views svg { width: 12px; height: 12px; }
+
+  .pophead { padding: 14px 14px 10px; display: flex; align-items: center; gap: 8px; }
+  .pophead svg { width: 15px; height: 15px; color: var(--brass); flex: 0 0 auto; }
+  .pophead .pn { font-size: 13px; font-weight: 600; color: var(--text-hi); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .newbtn { display: flex; align-items: center; gap: 8px; margin: 0 10px 6px; height: 34px; padding: 0 10px; border: 1px solid var(--ink-border-strong); color: var(--text-mid); font-size: 13px; }
+  .newbtn:hover { color: var(--text-hi); border-color: var(--text-low); }
+  .newbtn b { font-weight: 400; font-size: 15px; line-height: 1; color: var(--text-low); }
+  .tools { display: flex; align-items: center; gap: 12px; padding: 10px 14px 6px; }
+  .tools .lab { margin-right: auto; }
+  .popbody { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 0 0 10px; }
+  .setfold { display: flex; align-items: center; gap: 8px; width: 100%; padding: 12px 14px 5px; text-align: left; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-mid); }
+  .setfold .cv { font-size: 9px; color: var(--text-low); width: 8px; }
+  .setfold[aria-expanded='true'] .cv { transform: rotate(90deg); }
+  .setfold .ct { margin-left: auto; letter-spacing: 0; font-size: 11px; color: var(--text-low); }
+  .row { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 14px 6px 12px; border-left: 2px solid transparent; text-align: left; color: var(--text-mid); }
+  .row:hover { background: var(--ink-800); color: var(--text-hi); }
+  .row[aria-current='true'] { color: var(--text-hi); border-left-color: var(--accent-rest); background: color-mix(in srgb, var(--ink-800) 70%, transparent); }
+  .row.drop { background: color-mix(in srgb, var(--brass) 14%, var(--ink-800)); color: var(--text-hi); outline: 1px solid var(--brass); outline-offset: -1px; }
+  .row .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .row .t { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .fl { font-family: var(--font-prose); font-size: 12.5px; color: var(--text-low); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mini { flex: 0 0 auto; width: 20px; height: 27px; background: var(--paper); border: 1px solid var(--ink-border-strong); position: relative; }
+  .mini::before { content: ''; position: absolute; left: 4px; right: 4px; top: 6px; height: 9px; background: repeating-linear-gradient(to bottom, var(--ink-on-paper-low) 0 1px, transparent 1px 3px); opacity: .55; }
+  .minib { flex: 0 0 auto; width: 36px; height: 23px; background: var(--paper-dim); border: 1px solid var(--ink-border-strong); position: relative; }
+  .grid { display: grid; gap: 10px; padding: 6px 14px; }
+  .grid.b { grid-template-columns: repeat(2, 1fr); }
+  .tile { position: relative; display: flex; flex-direction: column; gap: 6px; text-align: left; color: var(--text-mid); }
+  .tile:hover { color: var(--text-hi); }
+  .tile.drop { outline: 1px solid var(--brass); outline-offset: 1px; color: var(--text-hi); }
+  .tile .th { position: relative; width: 100%; background: var(--paper-dim); border: 1px solid var(--ink-border-strong); aspect-ratio: 16 / 10; overflow: hidden; }
+  .tile .th i { position: absolute; width: 22%; height: 22%; background: var(--paper); border: 1px solid var(--ink-on-paper-low); opacity: .7; }
+  .tile .t { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ---- the page / the board ---- */
+  .pagecol { position: relative; min-height: 0; display: flex; justify-content: center; }
+  .page { width: 820px; max-width: 100%; height: 100%; background: var(--paper); box-shadow: var(--paper-glow); overflow: hidden; }
+  .page[hidden], .board[hidden] { display: none; }
+  .sheetpage { padding: 76px 96px; color: var(--ink-on-paper); font-family: var(--font-prose); font-size: 20px; line-height: 1.7; user-select: text; }
+  .sheetpage p + p { margin-top: 1em; }
+
+  .board { position: relative; width: 100%; height: 100%; background: var(--paper-dim); box-shadow: var(--paper-glow); overflow: hidden; }
+  .bcards { position: absolute; inset: 0; }
+  .bcard { position: absolute; width: 210px; min-height: 118px; padding: 14px 16px 18px; background: var(--paper); border: 1px solid var(--ink-on-paper-low);
+    color: var(--ink-on-paper); font-family: var(--font-prose); font-size: 14.5px; line-height: 1.45; box-shadow: 0 2px 10px rgba(0,0,0,.08); cursor: pointer; }
+  .bcard .ct { font-family: var(--font-ui); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-on-paper-low); margin-bottom: 6px; }
+  .bcard[aria-selected='true'] { outline: 1.5px solid var(--brass); outline-offset: 0; }
+  .resz { position: absolute; right: -5px; bottom: -5px; width: 10px; height: 10px; background: var(--brass); border: 1px solid color-mix(in srgb, var(--brass) 60%, #7a3a00); cursor: nwse-resize; z-index: 2; }
+  .knob { position: absolute; right: -7px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: var(--brass);
+    border: 1.5px solid color-mix(in srgb, var(--brass) 55%, #7a3a00); box-shadow: 0 0 0 2px var(--paper); cursor: grab; z-index: 3; opacity: 0; pointer-events: none; }
+  .bcard[aria-selected='true'] .knob { opacity: 1; pointer-events: auto; }
+  .knob:hover, .knob.tip { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px color-mix(in srgb, var(--brass) 35%, transparent); }
+  .knob.dragging { cursor: grabbing; opacity: 1; }
+  .tip { position: fixed; z-index: 80; padding: 4px 8px; background: var(--ink-900); border: 1px solid var(--ink-border-strong); color: var(--text-hi); font-size: 11.5px; pointer-events: none; white-space: nowrap; }
+  .tip[hidden] { display: none; }
+  .layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; overflow: visible; }
+  .layer line { stroke: var(--brass); stroke-width: 1.5; fill: none; }
+  .layer circle { fill: var(--brass); }
+  .bcard.drop { outline: 1.5px solid var(--brass); background: color-mix(in srgb, var(--brass) 8%, var(--paper)); }
+
+  /* ---- right: Tutor + Grafts ---- */
+  .tabs { display: flex; border-bottom: 1px solid var(--ink-border); flex: 0 0 auto; }
+  .tab { padding: 13px 14px 9px; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-low); border-bottom: 1px solid transparent; margin-bottom: -1px; }
+  .tab:hover { color: var(--text-mid); }
+  .tab[aria-selected='true'] { color: var(--accent-rest); border-bottom-color: var(--accent-rest); }
+  .tbody { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .tbody[hidden] { display: none; }
+  .ask { display: flex; flex-direction: column; border: 1px solid var(--ink-border-strong); background: var(--ink-950); }
+  .ask textarea { height: 64px; resize: none; padding: 10px 11px 4px; font-size: 13.5px; line-height: 1.4; color: var(--text-hi); }
+  .ask textarea::placeholder { color: var(--text-low); }
+  .ask .bar { display: flex; justify-content: flex-end; padding: 4px 6px 6px; }
+  .send { height: 24px; padding: 0 10px; font-size: 11.5px; color: var(--text-low); border: 1px solid var(--ink-border); opacity: .5; cursor: default; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { max-width: 100%; padding: 4px 9px; border: 1px solid var(--ink-border); color: var(--text-mid); font-size: 11.5px; line-height: 1.35; text-align: left; }
+  .chip:disabled { color: var(--ink-border-strong); border-style: dashed; cursor: default; }
+  .quiet { margin-top: auto; display: flex; flex-direction: column; border-top: 1px solid var(--ink-border); }
+  .lens > button { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 10px 0; color: var(--text-low); font-size: 12px; border-bottom: 1px solid var(--ink-border); }
+  .lens .n { font-size: 11px; color: var(--text-low); }
+
+  .gbody { padding: 0; gap: 0; }
+  .gadd { display: flex; align-items: center; gap: 8px; margin: 12px 14px 4px; height: 34px; padding: 0 10px; border: 1px solid var(--ink-border-strong); color: var(--text-mid); font-size: 13px; }
+  .gadd:hover { color: var(--text-hi); border-color: var(--text-low); }
+  .gadd b { font-weight: 400; font-size: 15px; line-height: 1; color: var(--text-low); }
+  .ghead { display: flex; align-items: center; gap: 10px; padding: 12px 14px 6px; }
+  .ghead .gt { margin-right: auto; font-size: 12.5px; color: var(--text-mid); }
+  .ghead .gt em { font-style: normal; color: var(--text-hi); font-weight: 600; }
+  .gl { padding: 12px 14px 3px; }
+  .gr { position: relative; display: flex; align-items: center; gap: 10px; padding: 6px 30px 6px 14px; color: var(--text-mid); font-size: 13px; }
+  .gr:hover { background: var(--ink-800); color: var(--text-hi); }
+  .gr .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gr .plc { margin-left: auto; flex: 0 0 auto; font-size: 10.5px; color: var(--text-low); opacity: .7; }
+  .gr .x { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; display: grid; place-items: center; color: var(--text-low); font-size: 16px; opacity: 0; }
+  .gr:hover .x { opacity: 1; }
+  .gk-card { width: 18px; height: 14px; background: var(--paper); border: 1px solid var(--ink-border-strong); flex: 0 0 auto; }
+  .gk-src { width: 14px; height: 18px; background: var(--paper-dim); border: 1px solid var(--ink-border-strong); border-left-width: 3px; flex: 0 0 auto; }
+  .tagm { flex: 0 0 auto; font-size: 11px; color: var(--text-low); }
+  .gr.tagged { padding-right: 14px; }
+  .gempty { padding: 18px 14px; font-size: 12.5px; color: var(--text-low); line-height: 1.45; }
+
+  /* ---- graft picker ---- */
+  .gpick { position: fixed; z-index: 75; width: 300px; max-height: min(560px, calc(100vh - 80px)); display: flex; flex-direction: column;
+    background: var(--ink-900); border: 1px solid var(--ink-border-strong); box-shadow: 0 14px 44px rgba(0,0,0,.55); }
+  .gpick[hidden] { display: none; }
+  .gpick .gh { padding: 12px 14px 8px; font-size: 13px; font-weight: 600; color: var(--text-hi); }
+  .gpick .search { margin: 0 14px 8px; height: 32px; padding: 0 10px; border: 1px solid var(--ink-border-strong); color: var(--text-hi); font-size: 13px; }
+  .gpick .search:focus { outline: none; border-color: var(--accent-rest); }
+  .gpick .search::placeholder { color: var(--text-low); }
+  .gpick .glist { flex: 1; min-height: 0; overflow-y: auto; padding: 0 0 10px; }
+  .gpick .lab { padding: 10px 14px 3px; }
+  .gpick .pr { display: flex; align-items: center; gap: 9px; width: 100%; padding: 7px 14px; text-align: left; color: var(--text-mid); font-size: 13px; }
+  .gpick .pr:hover { background: var(--ink-800); color: var(--text-hi); }
+  .gpick .pr .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gpick .pr .plc { font-size: 10.5px; color: var(--text-low); opacity: .7; }
+  .gpick .pr .ck { width: 14px; color: var(--accent-rest); font-size: 12px; flex: 0 0 auto; }
+  .gpick .pr[aria-checked='true'] { color: var(--text-hi); }
+  .gpick .pr .k { flex: 0 0 auto; }
+
+  .pick { position: fixed; z-index: 72; width: 248px; display: flex; flex-direction: column; padding: 4px 0; background: var(--ink-900); border: 1px solid var(--ink-border-strong); box-shadow: 0 10px 34px rgba(0,0,0,.5); }
+  .pick[hidden] { display: none; }
+  .pick .lab { padding: 9px 14px 4px; }
+  .pick .pr { display: flex; align-items: center; gap: 9px; width: 100%; padding: 7px 14px; text-align: left; color: var(--text-mid); font-size: 13px; }
+  .pick .pr:hover { background: var(--ink-800); color: var(--text-hi); }
+  .pick .pr svg { width: 14px; height: 14px; flex: 0 0 auto; color: var(--text-low); }
+  .pick .pr .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pick .pr[aria-current='true'] { color: var(--text-hi); }
+  .pick .pr[aria-current='true'] svg { color: var(--brass); }
+  .pick .pr[aria-current='true']::after { content: '✓'; color: var(--accent-rest); font-size: 12px; }
+  .pick hr { border: 0; border-top: 1px solid var(--ink-border); margin: 4px 0; }
+  .pick .add b { font-weight: 400; color: var(--text-low); width: 14px; text-align: center; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<header class="rig">
+  <b>GRAFT DOORS</b><span class="only">mockup only</span>
+  <button class="rev" data-surf="board" type="button">Board</button>
+  <button class="rev" data-surf="page" type="button">Page</button>
+  <span class="sp"></span>
+  <button class="rev" id="reset" type="button">Reset</button>
+  <span class="fr" id="frname"></span>
+</header>
+
+<aside class="strip" aria-label="Strip">
+  <div class="bracket">
+    <button class="place" id="placeBtn" type="button" aria-haspopup="menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="8" rx="1"/><rect x="4" y="13" width="16" height="8" rx="1"/><path d="M10 7h4M10 17h4"/></svg>
+      <span class="nm">The Late Ferry</span><span class="chev">⌄</span>
+    </button>
+    <button class="si" id="railPages" type="button" aria-pressed="false" title="Pages">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h8"/></svg><span>Pages</span></button>
+    <button class="si" id="railBoards" type="button" aria-pressed="false" title="Boards">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.3"/><circle cx="18" cy="6" r="2.3"/><circle cx="12" cy="18" r="2.3"/><path d="M7.9 7.4 10.3 16M16.1 7.4 13.7 16M8.3 6h7.4"/></svg><span>Boards</span></button>
+  </div>
+  <div class="ssep"></div>
+  <button class="si" id="railJournal" type="button" aria-pressed="false" title="Journal">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v16.5A1.5 1.5 0 0 1 17.5 21H6.5A2.5 2.5 0 0 1 4 18.5v-13Z"/><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H19"/></svg><span>Journal</span></button>
+  <div class="sfoot">
+    <div class="ssep"></div>
+    <button class="si" type="button" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.6 3.1-6.5 7-6.5s7 2.9 7 6.5"/></svg><span>Settings</span></button>
+    <button class="si" type="button" title="Themes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2H17a4 4 0 0 0 4-4c0-4.4-4-7.4-9-7.4Z"/><circle cx="7.5" cy="10.5" r="1" fill="currentColor" stroke="none"/><circle cx="10.5" cy="7" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="7.5" r="1" fill="currentColor" stroke="none"/></svg><span>Themes</span></button>
+    <div class="ssep"></div>
+    <button class="si" type="button" title="Trash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M7 7l1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/><path d="M10 11v6M14 11v6"/></svg><span>Trash</span></button>
+  </div>
+</aside>
+
+<div class="app">
+  <div class="top">
+    <div class="crumb" id="crumb"></div>
+    <div class="modes" id="modes" role="tablist" aria-label="Writing mode">
+      <button class="mt" role="tab" type="button">Free Write</button>
+      <button class="mt on" role="tab" aria-selected="true" type="button">Draft</button>
+      <button class="mt" role="tab" type="button">Revise</button>
+      <button class="mt off" role="tab" aria-disabled="true" type="button">Workshop</button>
+      <button class="mt" role="tab" type="button">Publish</button>
+      <button class="plan" type="button">Plan <span aria-hidden="true">→</span></button>
+    </div>
+  </div>
+
+  <div class="track l">
+    <aside class="panel" id="pop" aria-label="Pages" hidden></aside>
+  </div>
+
+  <div class="pagecol">
+    <div class="page" id="page" hidden>
+      <div class="sheetpage" id="prose">
+        <p>The kettle clicks off and she still doesn’t turn around. Steam writes a short sentence on the window, then forgets it.</p>
+        <p>He could say her name. He doesn’t. Instead he lines the cups up by the sink, handles all facing the same way, the way their mother used to, and waits for the room to decide something.</p>
+        <p>Outside, the ferry sounds once, low, like a door closing somewhere far off. She counts the seconds before the second horn. There isn’t one.</p>
+        <p>“You kept the blue one,” she says, finally. Not a question.</p>
+      </div>
+    </div>
+    <div class="board" id="board">
+      <div class="bcards" id="bcards"></div>
+      <svg class="layer" id="layer" aria-hidden="true"></svg>
+    </div>
+  </div>
+
+  <div class="track r">
+    <aside class="panel" id="rpanel" aria-label="Tutor and grafts">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="false" data-tab="tutor" type="button">Tutor</button>
+        <button class="tab" role="tab" aria-selected="true" data-tab="grafts" type="button">Grafts</button>
+      </div>
+      <div class="tbody" id="tutor" hidden>
+        <div class="ask">
+          <textarea placeholder="Ask a question…" aria-label="Ask the Tutor"></textarea>
+          <div class="bar"><button class="send" type="button" disabled>Send</button></div>
+        </div>
+        <div class="chips">
+          <button class="chip" type="button">Where does this drag?</button>
+          <button class="chip" type="button">What’s load-bearing here — and what could go?</button>
+          <button class="chip" type="button">Where does the thread slip?</button>
+          <button class="chip" type="button" disabled>Selection</button>
+        </div>
+        <div class="quiet">
+          <div class="lens"><button type="button"><span>Consistency</span><span class="n">3</span></button></div>
+          <div class="lens"><button type="button"><span>Fragments</span><span class="n">2</span></button></div>
+          <div class="lens"><button type="button"><span>The book’s Bible</span><span class="n">4</span></button></div>
+          <div class="lens"><button type="button"><span>Waiting for you</span><span class="n">1</span></button></div>
+        </div>
+      </div>
+      <div class="tbody gbody" id="grafts"></div>
+    </aside>
+  </div>
+</div>
+
+<div class="pick" id="switcher" role="menu" aria-label="Places" hidden></div>
+<div class="tip" id="tip" hidden>Drag to graft</div>
+<div class="gpick" id="gpick" role="dialog" aria-label="Graft" hidden>
+  <div class="gh">Graft…</div>
+  <input class="search" id="gsearch" type="search" placeholder="Search cards, pages, boards…" aria-label="Search">
+  <div class="glist" id="glist"></div>
+</div>
+
+<script>
+  var $ = function (s) { return document.querySelector(s); };
+  var qs = new URLSearchParams(location.search);
+  var ICON = {
+    drawer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="8" rx="1"/><rect x="4" y="13" width="16" height="8" rx="1"/><path d="M10 7h4M10 17h4"/></svg>',
+    rows: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 2.5h10M1 6h10M1 9.5h10"/></svg>',
+    grid: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="4" height="4"/><rect x="7" y="1" width="4" height="4"/><rect x="1" y="7" width="4" height="4"/><rect x="7" y="7" width="4" height="4"/></svg>'
+  };
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  // ---- sample: Late Ferry (big-projects) + board cards ----
+  function pg(t, fl) { return { kind: 'page', t: t, fl: fl, id: 'p-' + t.replace(/\s+/g, '-').toLowerCase() }; }
+  function bd(t) { return { kind: 'board', t: t, id: 'b-' + t.replace(/\s+/g, '-').toLowerCase() }; }
+  var PAGES_MS = [
+    pg('Title Page', 'THE LATE FERRY · a novel'),
+    pg('Ch 1', 'The ferry was late the night Mara came home.'),
+    pg('Ch 2', 'Nobody on the quay would say her brother’s name.'),
+    pg('Ch 3', 'The kettle clicks off and she still doesn’t turn around.'),
+    pg('Ch 4', 'Morning, and the marsh had moved again.'),
+    pg('Ch 5', 'Their mother’s coat still hung by the door.'),
+    pg('Bibliography', 'Ashworth, M. Tides of the Estuary (1987).')
+  ];
+  var ch3 = PAGES_MS[3];
+  var BOARDS_MS = [bd('Chapter map'), bd('Timeline')];
+  var BOARDS_WB = [bd('The Marsh family'), bd('The Quay families'), bd('Locations'), bd('Mood')];
+  var SETS = [
+    { name: 'Manuscript', pages: PAGES_MS, boards: BOARDS_MS },
+    { name: 'Worldbuilding', pages: [], boards: BOARDS_WB }
+  ];
+  var CARDS = [
+    { id: 'c1', t: 'Mara at the window', body: 'She watches the ferry light before she turns the kettle on.', x: 56, y: 70, selected: true },
+    { id: 'c2', t: 'The blue cup', body: 'Their mother’s. He won’t say so.', x: 310, y: 58, selected: false },
+    { id: 'c3', t: 'Second horn', body: 'There isn’t one. She counts anyway.', x: 180, y: 260, selected: false },
+    { id: 'c4', t: 'The ferryman’s coat', body: 'From Short stories — hangs by the door.', x: 430, y: 250, selected: false, plc: 'Short stories' }
+  ];
+
+  // grafts keyed by subject id (card or page)
+  var GRAFTS = {};
+  function emptyG() { return { Cards: [], Sources: [], Boards: [], Pages: [] }; }
+  function ensureG(id) { if (!GRAFTS[id]) GRAFTS[id] = emptyG(); return GRAFTS[id]; }
+  // board card "Mara" starts with one graft already (Ch 2) so the list isn't empty before a landing
+  ensureG('c1').Pages.push({ t: 'Ch 2', plc: '', id: 'p-ch-2' });
+  ensureG('c1').Sources.push({ t: 'Harbour photo, 1962', plc: 'Journal', id: 's-harbour' });
+  // page Ch 3 filled for grafts-page-filled
+  ensureG(ch3.id).Cards.push({ t: 'Mara at the window', plc: '', id: 'c1' }, { t: 'The ferryman’s coat', plc: 'Short stories', id: 'c4' });
+  ensureG(ch3.id).Sources.push({ t: 'Tides of the Estuary', plc: '', id: 's-tides' }, { t: 'Harbour photo, 1962', plc: 'Journal', id: 's-harbour' });
+  ensureG(ch3.id).Boards.push({ t: 'Chapter map', plc: '', id: 'b-chapter-map' }, { t: 'Locations', plc: '', id: 'b-locations' });
+  ensureG(ch3.id).Pages.push({ t: 'Ch 2', plc: '', id: 'p-ch-2' }, { t: 'Kettle notes', plc: 'Journal', id: 'p-kettle' });
+  var SHARED = {
+    c1: [{ t: 'Ch 4', tag: 'revised', plc: '' }, { t: 'Salt', tag: 'ferry', plc: 'Short stories' }],
+    [ch3.id]: [{ t: 'Ch 4', tag: 'revised', plc: '' }, { t: 'Salt', tag: 'ferry', plc: 'Short stories' }, { t: 'Ferry dream', tag: 'ferry', plc: 'Journal' }]
+  };
+
+  // picker catalogue: Cards / Pages / Boards from any place
+  var CATALOG = [
+    { grp: 'Cards', t: 'Mara at the window', plc: '', id: 'c1' },
+    { grp: 'Cards', t: 'The blue cup', plc: '', id: 'c2' },
+    { grp: 'Cards', t: 'Second horn', plc: '', id: 'c3' },
+    { grp: 'Cards', t: 'The ferryman’s coat', plc: 'Short stories', id: 'c4' },
+    { grp: 'Cards', t: 'Salt — opening', plc: 'Short stories', id: 'c-salt' },
+    { grp: 'Pages', t: 'Title Page', plc: 'The Late Ferry', id: 'p-title-page' },
+    { grp: 'Pages', t: 'Ch 1', plc: 'The Late Ferry', id: 'p-ch-1' },
+    { grp: 'Pages', t: 'Ch 2', plc: 'The Late Ferry', id: 'p-ch-2' },
+    { grp: 'Pages', t: 'Ch 3', plc: 'The Late Ferry', id: 'p-ch-3' },
+    { grp: 'Pages', t: 'Ch 4', plc: 'The Late Ferry', id: 'p-ch-4' },
+    { grp: 'Pages', t: 'Kettle notes', plc: 'Journal', id: 'p-kettle' },
+    { grp: 'Pages', t: 'Ferry dream', plc: 'Journal', id: 'p-ferry-dream' },
+    { grp: 'Pages', t: 'Salt', plc: 'Short stories', id: 'p-salt' },
+    { grp: 'Boards', t: 'Chapter map', plc: 'The Late Ferry', id: 'b-chapter-map' },
+    { grp: 'Boards', t: 'Timeline', plc: 'The Late Ferry', id: 'b-timeline' },
+    { grp: 'Boards', t: 'Locations', plc: 'The Late Ferry', id: 'b-locations' },
+    { grp: 'Boards', t: 'Mood', plc: 'The Late Ferry', id: 'b-mood' },
+    { grp: 'Boards', t: 'Story ideas', plc: 'Short stories', id: 'b-story-ideas' }
+  ];
+
+  var S = { surface: 'board', pop: 'pages', tab: 'grafts', subject: 'c1', lines: [], gundo: null };
+  var SORTS = ['Order', 'Date', 'Tag', 'Most opened', 'Least opened'];
+
+  function subjectTitle() {
+    if (S.surface === 'page') return ch3.t;
+    var c = CARDS.find(function (x) { return x.id === S.subject; });
+    return c ? c.t : 'Untitled';
+  }
+  function subjectId() { return S.surface === 'page' ? ch3.id : S.subject; }
+
+  // ---- rail / crumb / surface ----
+  function renderRail() {
+    $('#railPages').setAttribute('aria-pressed', String(S.pop === 'pages'));
+    $('#railBoards').setAttribute('aria-pressed', String(S.pop === 'boards'));
+    document.querySelectorAll('.rev[data-surf]').forEach(function (b) { b.dataset.on = String(b.dataset.surf === S.surface); });
+  }
+  function renderCrumb() {
+    if (S.surface === 'board') {
+      $('#crumb').innerHTML = '<span>The Late Ferry</span><span class="sep">›</span><span class="here">Chapter map</span>';
+      $('#modes').hidden = true;
+    } else {
+      $('#crumb').innerHTML = '<span>The Late Ferry</span><span class="sep">›</span><span>Manuscript</span><span class="sep">›</span><span class="here">Ch 3</span>';
+      $('#modes').hidden = false;
+    }
+  }
+  function renderSurface() {
+    $('#page').hidden = S.surface !== 'page';
+    $('#board').hidden = S.surface !== 'board';
+  }
+
+  // ---- Pages / Boards pop-outs (big-projects, slimmed) ----
+  function renderPop() {
+    var pop = $('#pop');
+    if (!S.pop) { pop.hidden = true; pop.innerHTML = ''; return; }
+    var kind = S.pop, view = kind === 'pages' ? 'rows' : 'grid';
+    pop.hidden = false;
+    pop.setAttribute('aria-label', kind === 'pages' ? 'Pages' : 'Boards');
+    pop.innerHTML = '<div class="pophead">' + ICON.drawer + '<span class="pn">The Late Ferry</span></div>' +
+      '<button class="newbtn" type="button"><b>＋</b>' + (kind === 'pages' ? 'New Page' : 'New Board') + '</button>' +
+      '<div class="tools"><span class="lab">Sections</span><button class="sort" type="button">Order</button>' +
+      '<div class="views"><button type="button" aria-pressed="' + (view === 'rows') + '" aria-label="Rows">' + ICON.rows + '</button>' +
+      '<button type="button" aria-pressed="' + (view === 'grid') + '" aria-label="Grid">' + ICON.grid + '</button></div></div>' +
+      '<div class="popbody" id="popbody"></div>';
+    var body = $('#popbody');
+    SETS.forEach(function (set) {
+      var list = set[kind]; if (!list.length) return;
+      var isCur = set.name === 'Manuscript';
+      var folded = !isCur;
+      var fb = document.createElement('button'); fb.type = 'button'; fb.className = 'setfold'; fb.setAttribute('aria-expanded', String(!folded));
+      fb.innerHTML = '<span class="cv">›</span><span></span>' + (folded ? '<span class="ct">' + list.length + '</span>' : '');
+      fb.children[1].textContent = set.name;
+      body.appendChild(fb);
+      if (folded) return;
+      if (kind === 'pages') {
+        list.forEach(function (it) {
+          var r = document.createElement('div'); r.className = 'row'; r.dataset.gid = it.id; r.dataset.gt = it.t; r.dataset.ggrp = 'Pages';
+          if (it === ch3 && S.surface === 'page') r.setAttribute('aria-current', 'true');
+          r.innerHTML = '<span class="mini"></span><span class="tx"><span class="t"></span><span class="fl"></span></span>';
+          r.querySelector('.t').textContent = it.t; r.querySelector('.fl').textContent = it.fl;
+          body.appendChild(r);
+        });
+      } else {
+        var g = document.createElement('div'); g.className = 'grid b';
+        list.forEach(function (it) {
+          var t = document.createElement('div'); t.className = 'tile'; t.dataset.gid = it.id; t.dataset.gt = it.t; t.dataset.ggrp = 'Boards';
+          t.innerHTML = '<span class="th"><i style="left:8%;top:14%"></i><i style="left:38%;top:42%"></i><i style="left:68%;top:12%"></i></span><span class="t"></span>';
+          t.querySelector('.t').textContent = it.t;
+          g.appendChild(t);
+        });
+        body.appendChild(g);
+      }
+    });
+  }
+
+  // ---- board cards + graft knob ----
+  function renderCards() {
+    var box = $('#bcards'); box.innerHTML = '';
+    CARDS.forEach(function (c) {
+      var el = document.createElement('div');
+      el.className = 'bcard'; el.id = 'card-' + c.id; el.dataset.gid = c.id; el.dataset.gt = c.t; el.dataset.ggrp = 'Cards';
+      el.style.left = c.x + 'px'; el.style.top = c.y + 'px';
+      el.setAttribute('aria-selected', String(!!c.selected));
+      el.innerHTML = '<div class="ct"></div><div class="bd"></div><span class="resz" title="Resize" aria-hidden="true"></span><button class="knob" type="button" aria-label="Drag to graft" title="Drag to graft"></button>';
+      el.querySelector('.ct').textContent = c.t; el.querySelector('.bd').textContent = c.body;
+      el.addEventListener('click', function (e) {
+        if (e.target.closest('.knob') || e.target.closest('.resz')) return;
+        CARDS.forEach(function (x) { x.selected = x.id === c.id; });
+        S.subject = c.id; render();
+      });
+      var knob = el.querySelector('.knob');
+      knob.addEventListener('pointerdown', function (e) { e.preventDefault(); e.stopPropagation(); startDrag(c, knob, e); });
+      knob.addEventListener('pointerenter', function (e) { if (drag) return; showTip(e); knob.classList.add('tip'); });
+      knob.addEventListener('pointerleave', function () { if (drag) return; hideTip(); knob.classList.remove('tip'); });
+      box.appendChild(el);
+    });
+    drawLines();
+  }
+
+  var drag = null;
+  function showTip(e) {
+    var tip = $('#tip'); tip.hidden = false;
+    tip.style.left = Math.round(e.clientX + 12) + 'px'; tip.style.top = Math.round(e.clientY - 10) + 'px';
+  }
+  function hideTip() { $('#tip').hidden = true; }
+
+  function startDrag(card, knob, e) {
+    hideTip();
+    var br = $('#board').getBoundingClientRect();
+    var kr = knob.getBoundingClientRect();
+    drag = {
+      from: card.id, fromTitle: card.t,
+      x0: kr.left + kr.width / 2 - br.left,
+      y0: kr.top + kr.height / 2 - br.top,
+      x1: e.clientX - br.left, y1: e.clientY - br.top,
+      target: null
+    };
+    knob.classList.add('dragging');
+    knob.setPointerCapture(e.pointerId);
+    document.body.style.cursor = 'grabbing';
+    drawLines();
+  }
+  function onMove(e) {
+    if (!drag) return;
+    var br = $('#board').getBoundingClientRect();
+    drag.x1 = e.clientX - br.left; drag.y1 = e.clientY - br.top;
+    // hit-test: cards on the board, then pop-out rows/tiles
+    clearDrop();
+    var hit = document.elementFromPoint(e.clientX, e.clientY);
+    var card = hit && hit.closest('.bcard');
+    var row = hit && hit.closest('#pop .row, #pop .tile');
+    if (card && card.dataset.gid !== drag.from) {
+      card.classList.add('drop'); drag.target = { grp: 'Cards', t: card.dataset.gt, id: card.dataset.gid, plc: '' };
+    } else if (row) {
+      row.classList.add('drop'); drag.target = { grp: row.dataset.ggrp, t: row.dataset.gt, id: row.dataset.gid, plc: '' };
+    } else drag.target = null;
+    drawLines();
+  }
+  function onUp(e) {
+    if (!drag) return;
+    var d = drag; drag = null;
+    document.body.style.cursor = '';
+    document.querySelectorAll('.knob.dragging').forEach(function (k) { k.classList.remove('dragging'); });
+    clearDrop();
+    if (d.target) {
+      addGraft(d.from, d.target);
+      // keep a lasting line on the board for card→card; for pop-out landings, go to the Grafts list only
+      if (d.target.grp === 'Cards') {
+        S.lines = S.lines.filter(function (L) { return !(L.from === d.from && L.to === d.target.id); });
+        S.lines.push({ from: d.from, to: d.target.id });
+      }
+      S.tab = 'grafts'; S.subject = d.from;
+      CARDS.forEach(function (c) { c.selected = c.id === d.from; });
+    }
+    drawLines(); render();
+  }
+  function clearDrop() {
+    document.querySelectorAll('.drop').forEach(function (n) { n.classList.remove('drop'); });
+  }
+  document.addEventListener('pointermove', onMove);
+  document.addEventListener('pointerup', onUp);
+  document.addEventListener('pointercancel', onUp);
+
+  function cardCentre(id) {
+    var el = $('#card-' + id); if (!el) return null;
+    var br = $('#board').getBoundingClientRect(), r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2 - br.left, y: r.top + r.height / 2 - br.top };
+  }
+  function knobCentre(id) {
+    var el = $('#card-' + id); if (!el) return null;
+    var k = el.querySelector('.knob'); if (!k) return null;
+    var br = $('#board').getBoundingClientRect(), r = k.getBoundingClientRect();
+    return { x: r.left + r.width / 2 - br.left, y: r.top + r.height / 2 - br.top };
+  }
+  function drawLines() {
+    var svg = $('#layer'), br = $('#board').getBoundingClientRect();
+    svg.setAttribute('viewBox', '0 0 ' + Math.round(br.width) + ' ' + Math.round(br.height));
+    var parts = [];
+    S.lines.forEach(function (L) {
+      var a = knobCentre(L.from) || cardCentre(L.from), b = cardCentre(L.to);
+      if (!a || !b) return;
+      parts.push('<line x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y + '"/>');
+      parts.push('<circle cx="' + b.x + '" cy="' + b.y + '" r="4"/>');
+    });
+    if (drag) {
+      parts.push('<line x1="' + drag.x0 + '" y1="' + drag.y0 + '" x2="' + drag.x1 + '" y2="' + drag.y1 + '"/>');
+      parts.push('<circle cx="' + drag.x1 + '" cy="' + drag.y1 + '" r="4"/>');
+    }
+    svg.innerHTML = parts.join('');
+  }
+
+  function addGraft(fromId, target) {
+    var g = ensureG(fromId), list = g[target.grp];
+    if (!list) return;
+    if (list.some(function (x) { return x.id === target.id; })) return;
+    list.push({ t: target.t, plc: target.plc || '', id: target.id });
+  }
+  function alreadyGrafted(subj, id) {
+    var g = ensureG(subj);
+    return ['Cards', 'Sources', 'Boards', 'Pages'].some(function (k) { return g[k].some(function (x) { return x.id === id; }); });
+  }
+
+  // ---- Grafts tab ----
+  function renderGrafts() {
+    var g = $('#grafts'); g.innerHTML = '';
+    var add = document.createElement('button'); add.type = 'button'; add.className = 'gadd'; add.id = 'gadd';
+    add.innerHTML = '<b>＋</b>Graft…';
+    add.addEventListener('click', function (e) { e.stopPropagation(); openPicker(); });
+    g.appendChild(add);
+
+    var sid = subjectId(), data = ensureG(sid);
+    var h = document.createElement('div'); h.className = 'ghead';
+    h.innerHTML = '<span class="gt">Connected to <em></em></span><button class="sort" type="button">Order</button>';
+    h.querySelector('em').textContent = subjectTitle();
+    g.appendChild(h);
+
+    var any = false;
+    ['Cards', 'Sources', 'Boards', 'Pages'].forEach(function (grp) {
+      var list = data[grp]; if (!list.length) return; any = true;
+      var l = document.createElement('div'); l.className = 'lab gl'; l.textContent = grp; g.appendChild(l);
+      list.forEach(function (it) {
+        var r = document.createElement('div'); r.className = 'gr';
+        var k = grp === 'Cards' ? '<span class="gk-card"></span>' : grp === 'Sources' ? '<span class="gk-src"></span>' : grp === 'Boards' ? '<span class="minib" style="width:22px;height:15px"></span>' : '<span class="mini" style="width:14px;height:18px"></span>';
+        r.innerHTML = k + '<span class="t"></span>' + (it.plc ? '<span class="plc"></span>' : '') + '<button class="x" type="button">×</button>';
+        r.querySelector('.t').textContent = it.t; if (it.plc) r.querySelector('.plc').textContent = it.plc;
+        r.querySelector('.x').setAttribute('aria-label', 'Remove graft to ' + it.t);
+        r.querySelector('.x').addEventListener('click', function () {
+          var i = list.indexOf(it); list.splice(i, 1); S.gundo = { it: it, list: list, i: i };
+          S.lines = S.lines.filter(function (L) { return !(L.from === sid && L.to === it.id) && !(L.to === sid && L.from === it.id); });
+          render();
+        });
+        g.appendChild(r);
+      });
+    });
+    var shared = SHARED[sid] || [];
+    if (shared.length) {
+      any = true;
+      var l2 = document.createElement('div'); l2.className = 'lab gl'; l2.textContent = 'Shared tags'; g.appendChild(l2);
+      shared.forEach(function (it) {
+        var r = document.createElement('div'); r.className = 'gr tagged';
+        r.innerHTML = '<span class="tagm"></span><span class="t"></span>' + (it.plc ? '<span class="plc"></span>' : '');
+        r.querySelector('.tagm').textContent = '#' + it.tag; r.querySelector('.t').textContent = it.t;
+        if (it.plc) r.querySelector('.plc').textContent = it.plc;
+        g.appendChild(r);
+      });
+    }
+    if (!any) {
+      var n = document.createElement('p'); n.className = 'gempty';
+      n.textContent = S.surface === 'page'
+        ? 'Nothing grafted yet. Use + Graft… to connect this page to a card, page or board.'
+        : 'Nothing grafted yet. Drag the brass knob on a card, or use + Graft….';
+      g.appendChild(n);
+    }
+    if (S.gundo) {
+      var sp = document.createElement('div'); sp.style.flex = '1'; g.appendChild(sp);
+      var u = document.createElement('div'); u.className = 'undo'; u.style.cssText = 'display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--ink-border-strong);background:var(--ink-800);font-size:12px;color:var(--text-mid);margin-top:auto;';
+      u.innerHTML = '<span></span><button type="button" style="color:var(--text-hi);text-decoration:underline;text-underline-offset:2px">Undo</button>';
+      u.querySelector('span').textContent = 'Graft to ' + S.gundo.it.t + ' removed.';
+      u.querySelector('button').addEventListener('click', function () { S.gundo.list.splice(S.gundo.i, 0, S.gundo.it); S.gundo = null; render(); });
+      g.appendChild(u);
+    }
+  }
+  function renderTabs() {
+    document.querySelectorAll('.tab').forEach(function (x) { x.setAttribute('aria-selected', String(x.dataset.tab === S.tab)); });
+    $('#tutor').hidden = S.tab !== 'tutor'; $('#grafts').hidden = S.tab !== 'grafts';
+  }
+  document.querySelectorAll('.tab').forEach(function (t) { t.addEventListener('click', function () { S.tab = t.dataset.tab; render(); }); });
+
+  // ---- + Graft… picker ----
+  function openPicker() {
+    closeAll();
+    renderPicker();
+    var p = $('#gpick'); p.hidden = false;
+    var a = $('#gadd').getBoundingClientRect();
+    p.style.left = Math.max(8, Math.round(a.left - 4)) + 'px';
+    p.style.top = Math.round(a.bottom + 6) + 'px';
+    var pr = p.getBoundingClientRect();
+    if (pr.bottom > innerHeight - 8) p.style.top = Math.max(40, innerHeight - 8 - pr.height) + 'px';
+    if (pr.right > innerWidth - 8) p.style.left = Math.max(8, innerWidth - 8 - pr.width) + 'px';
+    $('#gsearch').value = ''; $('#gsearch').focus();
+  }
+  function renderPicker() {
+    var q = ($('#gsearch').value || '').trim().toLowerCase();
+    var sid = subjectId(), box = $('#glist'); box.innerHTML = '';
+    ['Cards', 'Pages', 'Boards'].forEach(function (grp) {
+      var items = CATALOG.filter(function (c) {
+        if (c.grp !== grp) return false;
+        if (c.id === sid) return false;
+        if (q && c.t.toLowerCase().indexOf(q) < 0 && (c.plc || '').toLowerCase().indexOf(q) < 0) return false;
+        return true;
+      });
+      if (!items.length) return;
+      var l = document.createElement('div'); l.className = 'lab'; l.textContent = grp; box.appendChild(l);
+      items.forEach(function (it) {
+        var on = alreadyGrafted(sid, it.id);
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'pr';
+        b.setAttribute('aria-checked', String(on));
+        var k = grp === 'Cards' ? '<span class="k gk-card"></span>' : grp === 'Boards' ? '<span class="k minib" style="width:22px;height:15px"></span>' : '<span class="k mini" style="width:14px;height:18px"></span>';
+        b.innerHTML = k + '<span class="t"></span>' + (it.plc ? '<span class="plc"></span>' : '') + '<span class="ck">' + (on ? '✓' : '') + '</span>';
+        b.querySelector('.t').textContent = it.t; if (it.plc) b.querySelector('.plc').textContent = it.plc;
+        b.addEventListener('click', function () {
+          if (on) return;
+          addGraft(sid, { grp: grp, t: it.t, id: it.id, plc: it.plc || '' });
+          if (S.surface === 'board' && grp === 'Cards') {
+            S.lines = S.lines.filter(function (L) { return !(L.from === sid && L.to === it.id); });
+            S.lines.push({ from: sid, to: it.id });
+          }
+          closeAll(); render();
+        });
+        box.appendChild(b);
+      });
+    });
+  }
+  $('#gsearch').addEventListener('input', renderPicker);
+
+  // ---- switcher (place block) ----
+  function renderSwitcher() {
+    var m = $('#switcher');
+    m.innerHTML = '<span class="lab">Drawers</span>' +
+      '<button class="pr" type="button" aria-current="true">' + ICON.drawer + '<span class="t">The Late Ferry</span></button>' +
+      '<button class="pr" type="button">' + ICON.drawer + '<span class="t">Short stories</span></button>' +
+      '<span class="lab">Journals</span>' +
+      '<button class="pr" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v16.5A1.5 1.5 0 0 1 17.5 21H6.5A2.5 2.5 0 0 1 4 18.5v-13Z"/><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H19"/></svg><span class="t">Journal</span></button>' +
+      '<hr><button class="pr add" type="button"><b>+</b><span class="t">New Drawer</span></button><button class="pr add" type="button"><b>+</b><span class="t">New Journal</span></button>';
+  }
+  function closeAll() {
+    $('#switcher').hidden = true; $('#gpick').hidden = true; $('#placeBtn').setAttribute('aria-expanded', 'false');
+  }
+  function placeAt(el, anchor, side) {
+    var r = anchor.getBoundingClientRect();
+    if (side === 'right') { el.style.left = Math.round(r.right + 6) + 'px'; el.style.top = Math.round(r.top) + 'px'; }
+    else { el.style.left = Math.round(r.left) + 'px'; el.style.top = Math.round(r.bottom + 6) + 'px'; }
+  }
+  $('#placeBtn').addEventListener('click', function (e) {
+    e.stopPropagation(); var was = !$('#switcher').hidden; closeAll(); if (was) return;
+    renderSwitcher(); $('#switcher').hidden = false; this.setAttribute('aria-expanded', 'true'); placeAt($('#switcher'), this, 'right');
+  });
+  $('#railPages').addEventListener('click', function () { S.pop = S.pop === 'pages' ? null : 'pages'; render(); });
+  $('#railBoards').addEventListener('click', function () { S.pop = S.pop === 'boards' ? null : 'boards'; render(); });
+  document.addEventListener('pointerdown', function (e) {
+    if (e.target.closest('.pick, .gpick, #placeBtn, #gadd, .knob')) return;
+    closeAll();
+  }, true);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeAll(); if (drag) onUp(e); } });
+
+  document.querySelectorAll('.rev[data-surf]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      S.surface = b.dataset.surf;
+      S.subject = S.surface === 'page' ? ch3.id : 'c1';
+      S.pop = S.surface === 'board' ? 'pages' : 'pages';
+      S.tab = 'grafts';
+      closeAll(); render();
+    });
+  });
+  $('#reset').addEventListener('click', function () { location.search = ''; });
+
+  function render() {
+    renderRail(); renderCrumb(); renderSurface(); renderPop();
+    if (S.surface === 'board') renderCards(); else $('#layer').innerHTML = '';
+    renderGrafts(); renderTabs();
+  }
+
+  // ---- frames ----
+  var FRAMES = {
+    'knob-hover': function () {
+      S.surface = 'board'; S.pop = 'pages'; S.tab = 'grafts'; S.subject = 'c1';
+      CARDS.forEach(function (c) { c.selected = c.id === 'c1'; });
+      return function () {
+        var k = $('#card-c1 .knob'); if (!k) return;
+        k.classList.add('tip');
+        var r = k.getBoundingClientRect();
+        var tip = $('#tip'); tip.hidden = false;
+        tip.style.left = Math.round(r.right + 10) + 'px'; tip.style.top = Math.round(r.top - 2) + 'px';
+      };
+    },
+    'knob-dragging': function () {
+      S.surface = 'board'; S.pop = 'pages'; S.tab = 'grafts'; S.subject = 'c1';
+      CARDS.forEach(function (c) { c.selected = c.id === 'c1'; });
+      return function () {
+        var k = $('#card-c1 .knob'), t = document.querySelector('#pop .row[data-gid="p-ch-4"]');
+        if (!k || !t) return;
+        var br = $('#board').getBoundingClientRect(), kr = k.getBoundingClientRect(), tr = t.getBoundingClientRect();
+        drag = {
+          from: 'c1', fromTitle: 'Mara at the window',
+          x0: kr.left + kr.width / 2 - br.left, y0: kr.top + kr.height / 2 - br.top,
+          x1: tr.left + 40 - br.left, y1: tr.top + tr.height / 2 - br.top,
+          target: { grp: 'Pages', t: 'Ch 4', id: 'p-ch-4', plc: '' }
+        };
+        k.classList.add('dragging'); t.classList.add('drop'); drawLines();
+      };
+    },
+    'knob-landed': function () {
+      S.surface = 'board'; S.pop = 'pages'; S.tab = 'grafts'; S.subject = 'c1';
+      CARDS.forEach(function (c) { c.selected = c.id === 'c1'; });
+      addGraft('c1', { grp: 'Pages', t: 'Ch 4', id: 'p-ch-4', plc: '' });
+      addGraft('c1', { grp: 'Cards', t: 'The blue cup', id: 'c2', plc: '' });
+      S.lines = [{ from: 'c1', to: 'c2' }];
+    },
+    'graft-picker-page': function () {
+      S.surface = 'page'; S.pop = 'pages'; S.tab = 'grafts'; S.subject = ch3.id;
+      // start empty so the door is the story
+      GRAFTS[ch3.id] = emptyG(); SHARED[ch3.id] = [];
+      return function () { openPicker(); };
+    },
+    'graft-picker-board': function () {
+      S.surface = 'board'; S.pop = 'boards'; S.tab = 'grafts'; S.subject = 'c1';
+      CARDS.forEach(function (c) { c.selected = c.id === 'c1'; });
+      return function () { openPicker(); };
+    },
+    'grafts-page-filled': function () {
+      S.surface = 'page'; S.pop = 'pages'; S.tab = 'grafts'; S.subject = ch3.id;
+      // restore the filled Ch 3 grafts (in case another frame emptied them)
+      ensureG(ch3.id).Cards = [{ t: 'Mara at the window', plc: '', id: 'c1' }, { t: 'The ferryman’s coat', plc: 'Short stories', id: 'c4' }];
+      ensureG(ch3.id).Sources = [{ t: 'Tides of the Estuary', plc: '', id: 's-tides' }, { t: 'Harbour photo, 1962', plc: 'Journal', id: 's-harbour' }];
+      ensureG(ch3.id).Boards = [{ t: 'Chapter map', plc: '', id: 'b-chapter-map' }, { t: 'Locations', plc: '', id: 'b-locations' }];
+      ensureG(ch3.id).Pages = [{ t: 'Ch 2', plc: '', id: 'p-ch-2' }, { t: 'Kettle notes', plc: 'Journal', id: 'p-kettle' }];
+      SHARED[ch3.id] = [{ t: 'Ch 4', tag: 'revised', plc: '' }, { t: 'Salt', tag: 'ferry', plc: 'Short stories' }, { t: 'Ferry dream', tag: 'ferry', plc: 'Journal' }];
+    }
+  };
+
+  var frame = qs.get('frame'), after = null;
+  if (frame && FRAMES[frame]) after = FRAMES[frame]();
+  $('#frname').textContent = frame ? 'frame: ' + frame : '';
+  render();
+  if (after) after();
+  if (document.fonts && after) document.fonts.ready.then(function () { closeAll(); if (FRAMES[frame]) { var a2 = FRAMES[frame](); render(); if (a2) a2(); } });
+  addEventListener('resize', function () { if (S.surface === 'board') drawLines(); });
+</script>
+</body>
+</html>
