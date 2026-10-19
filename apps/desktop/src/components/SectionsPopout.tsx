@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useRef, useState, type ReactNode, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { flushNow, getDrawer, pinPageToBoard } from '../store/persistence';
@@ -11,11 +11,13 @@ import { unbornHref } from '../store/unbornPage';
 import { routeForEntry } from '../store/routeForEntry';
 import { firstLine } from '../store/entryText';
 import { TEMPLATE_ORDER, TemplateSketch, type TemplateKey } from './TemplateSketch';
+import { DECKS } from '../decks/library';
 import type { JournalEntry } from '../types';
 
 // BIG PROJECTS 1a (docs/plans/big-projects.md) - THE PAGES POP-OUT. Where you are (a Drawer or a Journal), the sections in it in the writer's
 // own order, set headings once a second set exists, + New set, Presets, and X (out to the Journal, with Undo). It replaces the Open Pages list;
-// step 2 reuses it for Boards.
+// BIG PROJECTS step 2: the SAME component in `boards` mode is the Boards tab (the pop-outs mirror each other): the place's boards instead of its pages, + New Board,
+// and PRESETS that are the deck library (a preset opens a new board in the place with that deck's wizard already on its first question).
 //
 // WHAT THIS FILE WILL NOT DO. It never deletes (X is store/place.moveToJournal: one write, projectId). It never writes an order except from a
 // deliberate reorder (a drag or the arrow keys on a grip) - the sort control is Order, the writer's own order, and nothing here sorts and saves.
@@ -29,7 +31,7 @@ const TEMPLATE_TERM = { blank: 'templateBlank', screenplay: 'templateScreenplay'
 
 function titleOf(entry: JournalEntry): string {
   const hasInk = (entry.strokes?.length ?? 0) > 0;
-  if (!entry.text.trim()) return hasInk ? 'A sketch' : 'Untitled';
+  if (!entry.text.trim()) return hasInk ? 'A sketch' : entry.pageType === 'board' ? 'Untitled board' : 'Untitled';
   return firstLine(entry.text).slice(0, 60);
 }
 
@@ -42,14 +44,19 @@ function targetSetId(place: Place): string | null {
   return place.id === UNSORTED ? null : ensureSet(place.id)?.id ?? null;
 }
 
-export function SectionsPopout({ currentId, navigate, boardId, journalLabel }: {
+export function SectionsPopout({ view, currentId, navigate, boardId, journalLabel, zone }: {
+  /** pages: the Pages tab. boards: the Boards tab. */
+  view?: 'pages' | 'boards';
   currentId: string;
   navigate: NavigateFunction;
   /** On a board, a row's secondary act places the page on it (PW1 S3, kept from the list this replaces). */
   boardId?: string;
   journalLabel: string;
+  /** Boards mode only, until step 3 gives it a home in Grafts: the boards this page is connected to (PW1), shown above the sections when there are any. */
+  zone?: ReactNode;
 }) {
   const { t } = useDeskLexicon();
+  const mode: 'pages' | 'boards' = view === 'boards' ? 'boards' : 'pages';
   const place = usePlace();
   const [, setTick] = useState(0);
   const force = () => setTick(n => n + 1);
@@ -77,7 +84,7 @@ export function SectionsPopout({ currentId, navigate, boardId, journalLabel }: {
   const isJournal = place.kind === 'journal';
   const drawer = place.kind === 'drawer' && place.id !== UNSORTED ? getDrawer(place.id) : null;
   const placeName = isJournal ? journalLabel : place.id === UNSORTED ? t('switcherUnsorted') : drawer?.name ?? '';
-  const groups: SectionGroup[] = sectionsOf(place, 'pages');
+  const groups: SectionGroup[] = sectionsOf(place, mode);
   const headings = showSetHeadings(place);
   const currentSet = place.setId ?? groups[0]?.set?.id ?? null;
 
@@ -86,6 +93,14 @@ export function SectionsPopout({ currentId, navigate, boardId, journalLabel }: {
   const newPage = () => {
     const setId = targetSetId(place);
     navigate(unbornHref(setId ? { binderId: setId } : { origin: isJournal ? 'journal' : 'loose' }));
+  };
+  const newBoard = () => {
+    const setId = targetSetId(place);
+    navigate(unbornHref({ kind: 'board', ...(setId ? { binderId: setId } : { origin: isJournal ? 'journal' as const : 'loose' as const }) }));
+  };
+  const deckPreset = (deckId: string) => {
+    const setId = targetSetId(place);
+    navigate(unbornHref({ kind: 'board', deck: deckId, ...(setId ? { binderId: setId } : { origin: isJournal ? 'journal' as const : 'loose' as const }) }));
   };
   const preset = (key: TemplateKey) => {
     const setId = targetSetId(place);
@@ -177,11 +192,11 @@ export function SectionsPopout({ currentId, navigate, boardId, journalLabel }: {
         aria-current={e.id === currentId ? 'page' : undefined} onClick={() => open(e)}>
         <span className="wz-place-page-title">{titleOf(e)}</span>
       </button>
-      {boardId && (
+      {mode === 'pages' && boardId && (
         <button type="button" className="wz-open-pages-more" aria-label={t('openPagesMore')} aria-haspopup="menu" aria-expanded={menuFor === e.id}
           onClick={() => setMenuFor(menuFor === e.id ? null : e.id)}>{'⋯'}</button>
       )}
-      {boardId && menuFor === e.id && (
+      {mode === 'pages' && boardId && menuFor === e.id && (
         <div className="wz-open-pages-menu" role="menu">
           <button type="button" role="menuitem" className="wz-open-pages-place" onClick={() => placeOnBoard(e.id)}>{t('openPagesPlace')}</button>
         </div>
@@ -193,9 +208,10 @@ export function SectionsPopout({ currentId, navigate, boardId, journalLabel }: {
   );
 
   return (
-    <div className="wz-cascade-panel-body wz-sections wz-open-pages" data-kind="pages">
+    <div className={`wz-cascade-panel-body wz-sections${mode === 'pages' ? ' wz-open-pages' : ''}`} data-kind={mode}>
       <div className="wz-sections-place">{placeName}</div>
-      <button type="button" className="wz-cascade-action wz-cascade-action-door" onClick={newPage}>{t('cascadePageNewPage')}</button>
+      <button type="button" className="wz-cascade-action wz-cascade-action-door" onClick={mode === 'boards' ? newBoard : newPage}>{mode === 'boards' ? t('sectionsNewBoard') : t('cascadePageNewPage')}</button>
+      {mode === 'boards' && zone}
       <div className="wz-sections-bar">
         <span className="wz-sections-heading">{t('sectionsHeading')}</span>
         <span className="wz-sections-sort" aria-label={`${t('openPagesSort')}: ${t('sectionsOrder')}`}>{t('sectionsOrder')}</span>
@@ -206,7 +222,7 @@ export function SectionsPopout({ currentId, navigate, boardId, journalLabel }: {
           <button type="button" onClick={undoTake}>{t('sectionsUndo')}</button>
         </div>
       )}
-      {groups.length === 0 && <p className="wz-page-setup-note">{t('sectionsEmpty')}</p>}
+      {groups.length === 0 && <p className="wz-page-setup-note">{mode === 'boards' ? t('sectionsEmptyBoards') : t('sectionsEmpty')}</p>}
       {groups.map((group, gi) => {
         const set = group.set;
         const isOpen = !headings || !set || (folded[set.id] === undefined ? (set.id === currentSet || (currentSet == null && gi === 0)) : !folded[set.id]);
@@ -237,12 +253,18 @@ export function SectionsPopout({ currentId, navigate, boardId, journalLabel }: {
       )}
       <div className="wz-sections-presets">
         <div className="wz-sections-heading">{t('sectionsPresets')}</div>
-        {TEMPLATE_ORDER.filter(k => k !== 'blank').map(k => (
-          <button key={k} type="button" className="wz-sections-preset" data-preset={k} onClick={() => preset(k)}>
-            <TemplateSketch kind={k} />
-            <span>{t(TEMPLATE_TERM[k])}</span>
-          </button>
-        ))}
+        {mode === 'boards'
+          ? DECKS.map(deck => (
+            <button key={deck.id} type="button" className="wz-sections-preset" data-preset={deck.id} onClick={() => deckPreset(deck.id)}>
+              <span>{t(deck.nameTerm)}</span>
+            </button>
+          ))
+          : TEMPLATE_ORDER.filter(k => k !== 'blank').map(k => (
+            <button key={k} type="button" className="wz-sections-preset" data-preset={k} onClick={() => preset(k)}>
+              <TemplateSketch kind={k} />
+              <span>{t(TEMPLATE_TERM[k])}</span>
+            </button>
+          ))}
       </div>
     </div>
   );

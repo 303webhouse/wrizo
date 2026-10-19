@@ -281,7 +281,7 @@ function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: 
       {/* A Fragment, not a second `.wz-cascade-panel-body` wrapper -
           PageFace already carries its own `.wz-pageface` padding, so
           nesting a second panel-body around both would double it up. */}
-      <SectionsPopout currentId={subject.entry.id} navigate={navigate} boardId={onBoard ? subject.entry.id : undefined} journalLabel={t('drawerPlaceJournal')} />
+      <SectionsPopout view="pages" currentId={subject.entry.id} navigate={navigate} boardId={onBoard ? subject.entry.id : undefined} journalLabel={t('drawerPlaceJournal')} />
       <PageFace subject={subject} />
       {/* ITEM 83 M3 (R6) — the Page menu's charter: general page options
           governing the OPEN page. Sits between the page's own face and its
@@ -596,75 +596,18 @@ function PlanPanel({ subject, project, navigate, openSurvey, travelFromCascade }
     </div>
   ) : null;
 
-  if (!project) {
-    const seedTitle = firstLine(subject.entry.text).slice(0, 60) || 'Untitled';
-    const promote = () => createQuickSprintProject(subject.entry.text, seedTitle);
-    // PB1 (item 71) — an UNTITLED board is the duplicate-empty-board source named
-    // in the door census: no row until it has a box. (A titled board is born at
-    // once — a name is content, ruling 3 — and does not come through here.)
-    const createBoard = () => { const proj = promote(); navigate(unbornHref({ kind: 'board', binderId: proj.id })); };
-    const plotStory = () => { const proj = promote(); navigate(`/project/${proj.id}/wizard`); };
-    return (
-      <div className="wz-cascade-panel-body">
-        {/* PW1, Fable's ruling 2 — a LOOSE page's real connections come FIRST,
-            above the creation doors. A page with no drawer can still own a plan
-            board (minted projectId: null) and can still be pinned; answering
-            "which boards is this page on" with "make a project first" was the
-            panel telling a writer to build what they had already built. */}
-        {zone}
-        {/* PW1 ERRATUM 2 (Nick's live sitting, 2026-09-09) — THE LEAD SENTENCE
-            IS FALSE BENEATH A LISTED PLAN BOARD. "File this page to a drawer
-            first to plan around it" is a true and useful thing to say to a page
-            with nowhere to plan; said directly under a plan board the writer is
-            already looking at, it contradicts the row above it and tells them
-            to build what they have built. The sentence is not reworded — it is
-            simply ABSENT in the state where it would lie, which is the same
-            law the zone itself obeys (PW9: absent, never empty). Nothing
-            announces a prerequisite the writer has already met. */}
-        {!zone && <div className="wz-cascade-empty" style={{ padding: 0 }}>{t('cascadePlanNoProject')}</div>}
-        <button type="button" className="wz-cascade-action" onClick={createBoard}>{t('cascadePlanCreateBoard')}</button>
-        <button type="button" className="wz-cascade-action" onClick={plotStory}>{t('cascadePlanPlotStory')}</button>
-        {/* ITEM word-diet (Nick, Oct 13): REMOVE — this pointer's own line
-            is gone whole; cascadePlanJustAPage's lexicon entry is
-            untouched, simply never rendered here now. */}
-      </div>
-    );
-  }
-
-  // PB1 (item 71) — no row until the board has a box (see the door census).
-  const createBoard = () => navigate(unbornHref({ kind: 'board', binderId: project.id }));
-  const plotStory = () => navigate(`/project/${project.id}/wizard`);
-
-  // PW1 S1/PW3 — THE PANEL *IS* THE LIST, and "Open…" retires with the zone
-  // that replaces it. That footer link was the arc's most expensive press: it
-  // bought nothing, and it was the reason the geography read as absent. The
-  // creation doors move BELOW the connections under a rule — travel is the
-  // common act, creation the rare one, and the panel's order now says so.
+  // BIG PROJECTS step 2 - THE BOARDS TAB. The panel is the Pages pop-out's mirror (components/SectionsPopout.tsx, boards mode): where you are, New Board, the place's
+  // boards in the writer's own order, New set, and PRESETS (the deck library). The creation doors this panel carried - Create a Board, Plot a Story - and the "file this
+  // page to a drawer first" lead are GONE: a board is filed into wherever the writer is (nothing is homeless), and the presets are the decks.
   //
-  // PARKED, quoted verbatim so the retirement is legible (A4). Its own set was
-  // the wrong subject; both it and the "No boards yet." empty state go:
-  //   const boards = getBinderPages(project.id).filter((p) => p.pageType === 'board');
-  //   <div className="wz-cascade-panel-footer">
-  //     <button type="button" className="wz-cascade-link" onClick={() => openSurvey({ category: 'plan', projectId: project.id })}>
-  //       {t('cascadePlanOpen')}
-  //     </button>
-  //     {boards.length === 0 && <div className="wz-cascade-empty">{t('cascadePlanEmpty')}</div>}
-  //   </div>
+  // THE ZONE STAYS, AS A BRIDGE: "Boards grafted" (the boards THIS page is connected to, PW1) keeps its rows and its stickiness here until step 3 gives it its home in
+  // Grafts ("Connected to [page]"), where it becomes the Boards group. It is absent when there is nothing to show, as it always was.
   //
-  // PW1 S1, Fable's ruling 3 — THE `Open the drawer →` FOOT ROW IS ABSENT IN
-  // THIS SLICE, and this is where it would sit. Nick's Q17 word was that the
-  // row is COMPOSED, and it stands; what it opens does not exist yet. S0
-  // measured it: there is no drawer-board surface anywhere in src — no
-  // drawerBoardId, no drawer-board kind; `/drawers` is the drawers LIST page,
-  // not a drawer's own board. G3 binds: absent, never a door onto nothing. The
-  // row arrives in PW2 together with the surface it opens. Sequenced, not
-  // dropped.
+  // PARKED so the retirement is legible (A4) - this panel used to end with two action buttons (create a board, plot a story) and, when nothing was connected, the lead
+  // sentence telling a page with no drawer to file itself first. The lexicon keeps those terms; nothing renders them now.
+  void project;
   return (
-    <div className="wz-cascade-panel-body">
-      {zone}
-      <button type="button" className="wz-cascade-action" onClick={createBoard}>{t('cascadePlanCreateBoard')}</button>
-      <button type="button" className="wz-cascade-action" onClick={plotStory}>{t('cascadePlanPlotStory')}</button>
-    </div>
+    <SectionsPopout view="boards" currentId={subject.entry.id} navigate={navigate} journalLabel={t('drawerPlaceJournal')} zone={zone} />
   );
 }
 

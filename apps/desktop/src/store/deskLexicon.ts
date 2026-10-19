@@ -330,6 +330,7 @@ export type DeskTermId =
   | 'placeSortDate' | 'placeSortDrawer'
   // BIG PROJECTS 1a - the place block, the switcher and the Pages pop-out (Arbor words; Flux follows in its own words pass).
   | 'sectionsHeading' | 'sectionsOrder' | 'sectionsRows' | 'sectionsGrid' | 'sectionsNewSet' | 'sectionsNewSetName' | 'sectionsPresets'
+  | 'sectionsNewBoard' | 'sectionsEmptyBoards'
   | 'sectionsMoved' | 'sectionsUndo' | 'sectionsTakeOut' | 'sectionsEmpty' | 'sectionsReorder'
   | 'switcherHeading' | 'switcherDrawers' | 'switcherJournals' | 'switcherNewDrawer' | 'switcherNewDrawerName' | 'switcherUnsorted'
   | 'placeSortAZ' | 'placePageEmpty' | 'planNewCard' | 'planFitToContent'
@@ -1168,6 +1169,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   sectionsNewSet: '＋ New set',
   sectionsNewSetName: 'Name the set',
   sectionsPresets: 'Presets',
+  sectionsNewBoard: 'New Board',
+  sectionsEmptyBoards: 'No boards here yet.',
   sectionsMoved: 'Moved to the Journal.',
   sectionsUndo: 'Undo',
   sectionsTakeOut: 'Take out of this Drawer',
