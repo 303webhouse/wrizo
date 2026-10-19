@@ -17,7 +17,11 @@
   (2) "+ Graft..." at the top of the Grafts tab, on a page AND on a board. Opens a picker: search field, then
       Cards / Pages / Boards from any Drawer or Journal, each with a faint place label and a check on ones
       already grafted.
+  Nick: a page's Grafts shows its paired plan board as ONE folded row, "Plan board · 12 cards", opening to its cards
+  (each with an X: "hide from this page"). A board's Grafts shows its paired page at the top. A brand-new page's
+  picker shows "Came from: Ch 3" as its top row (one tap; no auto-link, no question).
   Frames: ?frame=knob-hover | knob-dragging | knob-landed | graft-picker-page | graft-picker-board | grafts-page-filled
+          | grafts-plan-group | grafts-plan-group-open | picker-came-from
   Branch: cursor/graft-doors-mockup. Rig bar = mockup only.
 -->
 <style>
@@ -83,6 +87,7 @@
   .crumb .sep { color: var(--ink-border-strong); }
   .here { color: var(--text-mid); font-weight: 600; }
   .modes { display: flex; align-items: center; gap: 1.6px; }
+  .modes[hidden] { display: none; }
   .mt { border: 1px solid transparent; padding: 9px 12.8px; font-size: 10.4px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-mid); }
   .mt:hover { color: var(--text-hi); background: var(--ink-800); }
   .mt.on { color: var(--text-hi); border-bottom-color: var(--accent-rest); }
@@ -200,6 +205,18 @@
   .tagm { flex: 0 0 auto; font-size: 11px; color: var(--text-low); }
   .gr.tagged { padding-right: 14px; }
   .gempty { padding: 18px 14px; font-size: 12.5px; color: var(--text-low); line-height: 1.45; }
+  .planrow { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 14px; text-align: left; color: var(--text-mid); font-size: 13px; border-top: 1px solid var(--ink-border); }
+  .planrow:hover { background: var(--ink-800); color: var(--text-hi); }
+  .planrow .cv { font-size: 9px; color: var(--text-low); width: 8px; }
+  .planrow[aria-expanded='true'] .cv { transform: rotate(90deg); }
+  .planrow .n { margin-left: auto; font-size: 11px; color: var(--text-low); }
+  .pair { display: flex; align-items: center; gap: 10px; padding: 8px 14px 6px; color: var(--text-mid); font-size: 13px; }
+  .pair .k { flex: 0 0 auto; }
+  .pair .lab2 { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-low); margin-right: 4px; }
+  .came { display: flex; align-items: center; gap: 9px; width: 100%; padding: 9px 14px; text-align: left; color: var(--text-hi); font-size: 13px; border-bottom: 1px solid var(--ink-border); }
+  .came:hover { background: var(--ink-800); }
+  .came .from { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-low); }
+  .came .t { font-weight: 600; }
 
   /* ---- graft picker ---- */
   .gpick { position: fixed; z-index: 75; width: 300px; max-height: min(560px, calc(100vh - 80px)); display: flex; flex-direction: column;
@@ -271,13 +288,19 @@
 <div class="app">
   <div class="top">
     <div class="crumb" id="crumb"></div>
-    <div class="modes" id="modes" role="tablist" aria-label="Writing mode">
+    <div class="modes" id="pageModes" role="tablist" aria-label="Writing mode">
       <button class="mt" role="tab" type="button">Free Write</button>
       <button class="mt on" role="tab" aria-selected="true" type="button">Draft</button>
       <button class="mt" role="tab" type="button">Revise</button>
       <button class="mt off" role="tab" aria-disabled="true" type="button">Workshop</button>
       <button class="mt" role="tab" type="button">Publish</button>
       <button class="plan" type="button">Plan <span aria-hidden="true">→</span></button>
+    </div>
+    <div class="modes" id="boardModes" role="tablist" aria-label="Board mode" hidden>
+      <button class="mt on" role="tab" aria-selected="true" type="button">Open</button>
+      <button class="mt" role="tab" type="button">Storyboard</button>
+      <button class="mt" role="tab" type="button">Outline</button>
+      <button class="plan" type="button">Pages <span aria-hidden="true">→</span></button>
     </div>
   </div>
 
@@ -412,15 +435,21 @@
     { grp: 'Boards', t: 'Story ideas', plc: 'Short stories', id: 'b-story-ideas' }
   ];
 
-  var S = { surface: 'board', pop: 'pages', tab: 'grafts', subject: 'c1', lines: [], gundo: null };
+  var PLAN_CARDS = [
+    { id: 'pc1', t: 'Mara at the window' }, { id: 'pc2', t: 'The blue cup' }, { id: 'pc3', t: 'Second horn' },
+    { id: 'pc4', t: 'The ferryman’s coat' }, { id: 'pc5', t: 'Cups at the sink' }, { id: 'pc6', t: 'The ferry light' },
+    { id: 'pc7', t: 'Mother’s coat' }, { id: 'pc8', t: 'The ledger' }, { id: 'pc9', t: 'Harbour office' },
+    { id: 'pc10', t: 'Marsh at morning' }, { id: 'pc11', t: 'Quay families' }, { id: 'pc12', t: 'The last crossing' }
+  ];
+  var S = { surface: 'board', pop: 'pages', tab: 'grafts', subject: 'c1', lines: [], gundo: null, planOpen: false, cameFrom: null, newPage: false };
   var SORTS = ['Order', 'Date', 'Tag', 'Most opened', 'Least opened'];
 
   function subjectTitle() {
-    if (S.surface === 'page') return ch3.t;
+    if (S.surface === 'page') return S.newPage ? 'Untitled' : ch3.t;
     var c = CARDS.find(function (x) { return x.id === S.subject; });
     return c ? c.t : 'Untitled';
   }
-  function subjectId() { return S.surface === 'page' ? ch3.id : S.subject; }
+  function subjectId() { return S.surface === 'page' ? (S.newPage ? 'p-new' : ch3.id) : S.subject; }
 
   // ---- rail / crumb / surface ----
   function renderRail() {
@@ -431,15 +460,22 @@
   function renderCrumb() {
     if (S.surface === 'board') {
       $('#crumb').innerHTML = '<span>The Late Ferry</span><span class="sep">›</span><span class="here">Chapter map</span>';
-      $('#modes').hidden = true;
+      $('#pageModes').hidden = true; $('#boardModes').hidden = false;
     } else {
-      $('#crumb').innerHTML = '<span>The Late Ferry</span><span class="sep">›</span><span>Manuscript</span><span class="sep">›</span><span class="here">Ch 3</span>';
-      $('#modes').hidden = false;
+      $('#crumb').innerHTML = S.newPage
+        ? '<span>The Late Ferry</span><span class="sep">›</span><span>Manuscript</span><span class="sep">›</span><span class="here">Untitled</span>'
+        : '<span>The Late Ferry</span><span class="sep">›</span><span>Manuscript</span><span class="sep">›</span><span class="here">Ch 3</span>';
+      $('#pageModes').hidden = false; $('#boardModes').hidden = true;
     }
   }
   function renderSurface() {
     $('#page').hidden = S.surface !== 'page';
     $('#board').hidden = S.surface !== 'board';
+    if (S.surface === 'page') {
+      $('#prose').innerHTML = S.newPage
+        ? '<p style="color:var(--ink-on-paper-low)">Start anywhere.</p>'
+        : '<p>The kettle clicks off and she still doesn’t turn around. Steam writes a short sentence on the window, then forgets it.</p><p>He could say her name. He doesn’t. Instead he lines the cups up by the sink, handles all facing the same way, the way their mother used to, and waits for the room to decide something.</p><p>Outside, the ferry sounds once, low, like a door closing somewhere far off. She counts the seconds before the second horn. There isn’t one.</p><p>“You kept the blue one,” she says, finally. Not a question.</p>';
+    }
   }
 
   // ---- Pages / Boards pop-outs (big-projects, slimmed) ----
@@ -622,6 +658,32 @@
     g.appendChild(add);
 
     var sid = subjectId(), data = ensureG(sid);
+    if (S.surface === 'page' && !S.newPage) {
+      var pr = document.createElement('button'); pr.type = 'button'; pr.className = 'planrow';
+      pr.setAttribute('aria-expanded', String(!!S.planOpen));
+      pr.innerHTML = '<span class="cv">›</span><span class="minib" style="width:22px;height:15px"></span><span class="t">Plan board · ' + PLAN_CARDS.length + ' cards</span>';
+      pr.addEventListener('click', function () { S.planOpen = !S.planOpen; render(); });
+      g.appendChild(pr);
+      if (S.planOpen) {
+        PLAN_CARDS.forEach(function (it, idx) {
+          var r = document.createElement('div'); r.className = 'gr';
+          r.innerHTML = '<span class="gk-card"></span><span class="t"></span><button class="x" type="button" title="Hide from this page">×</button>';
+          r.querySelector('.t').textContent = it.t;
+          r.querySelector('.x').setAttribute('aria-label', 'Hide from this page');
+          r.querySelector('.x').addEventListener('click', function () {
+            PLAN_CARDS.splice(idx, 1);
+            S.gundo = { it: it, list: PLAN_CARDS, i: idx, hide: true };
+            render();
+          });
+          g.appendChild(r);
+        });
+      }
+    }
+    if (S.surface === 'board') {
+      var pair = document.createElement('div'); pair.className = 'pair';
+      pair.innerHTML = '<span class="mini" style="width:14px;height:18px"></span><span class="lab2">Page</span><span class="t">Ch 3</span>';
+      g.appendChild(pair);
+    }
     var h = document.createElement('div'); h.className = 'ghead';
     h.innerHTML = '<span class="gt">Connected to <em></em></span><button class="sort" type="button">Order</button>';
     h.querySelector('em').textContent = subjectTitle();
@@ -668,7 +730,7 @@
       var sp = document.createElement('div'); sp.style.flex = '1'; g.appendChild(sp);
       var u = document.createElement('div'); u.className = 'undo'; u.style.cssText = 'display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--ink-border-strong);background:var(--ink-800);font-size:12px;color:var(--text-mid);margin-top:auto;';
       u.innerHTML = '<span></span><button type="button" style="color:var(--text-hi);text-decoration:underline;text-underline-offset:2px">Undo</button>';
-      u.querySelector('span').textContent = 'Graft to ' + S.gundo.it.t + ' removed.';
+      u.querySelector('span').textContent = S.gundo.hide ? (S.gundo.it.t + ' hidden from this page.') : ('Graft to ' + S.gundo.it.t + ' removed.');
       u.querySelector('button').addEventListener('click', function () { S.gundo.list.splice(S.gundo.i, 0, S.gundo.it); S.gundo = null; render(); });
       g.appendChild(u);
     }
@@ -695,6 +757,17 @@
   function renderPicker() {
     var q = ($('#gsearch').value || '').trim().toLowerCase();
     var sid = subjectId(), box = $('#glist'); box.innerHTML = '';
+    if (S.cameFrom) {
+      var came = document.createElement('button'); came.type = 'button'; came.className = 'came';
+      came.innerHTML = '<span class="from">Came from</span><span class="t"></span>';
+      came.querySelector('.t').textContent = S.cameFrom;
+      came.addEventListener('click', function () {
+        addGraft(sid, { grp: 'Pages', t: S.cameFrom, id: 'p-ch-3', plc: 'The Late Ferry' });
+        S.cameFrom = null;
+        closeAll(); render();
+      });
+      box.appendChild(came);
+    }
     ['Cards', 'Pages', 'Boards'].forEach(function (grp) {
       var items = CATALOG.filter(function (c) {
         if (c.grp !== grp) return false;
@@ -760,8 +833,9 @@
     b.addEventListener('click', function () {
       S.surface = b.dataset.surf;
       S.subject = S.surface === 'page' ? ch3.id : 'c1';
-      S.pop = S.surface === 'board' ? 'pages' : 'pages';
+      S.pop = 'pages';
       S.tab = 'grafts';
+      S.newPage = false; S.cameFrom = null; S.planOpen = false;
       closeAll(); render();
     });
   });
@@ -783,7 +857,9 @@
         k.classList.add('tip');
         var r = k.getBoundingClientRect();
         var tip = $('#tip'); tip.hidden = false;
-        tip.style.left = Math.round(r.right + 10) + 'px'; tip.style.top = Math.round(r.top - 2) + 'px';
+        var left = Math.round(r.right + 10), top = Math.round(r.top - 4);
+        if (left + 110 > innerWidth - 8) left = Math.round(r.left - 110);
+        tip.style.left = left + 'px'; tip.style.top = top + 'px';
       };
     },
     'knob-dragging': function () {
@@ -810,9 +886,8 @@
       S.lines = [{ from: 'c1', to: 'c2' }];
     },
     'graft-picker-page': function () {
-      S.surface = 'page'; S.pop = 'pages'; S.tab = 'grafts'; S.subject = ch3.id;
-      // start empty so the door is the story
-      GRAFTS[ch3.id] = emptyG(); SHARED[ch3.id] = [];
+      S.surface = 'page'; S.pop = 'pages'; S.tab = 'grafts'; S.subject = ch3.id; S.newPage = false; S.cameFrom = null;
+      fillCh3();
       return function () { openPicker(); };
     },
     'graft-picker-board': function () {
@@ -821,15 +896,31 @@
       return function () { openPicker(); };
     },
     'grafts-page-filled': function () {
-      S.surface = 'page'; S.pop = 'pages'; S.tab = 'grafts'; S.subject = ch3.id;
-      // restore the filled Ch 3 grafts (in case another frame emptied them)
-      ensureG(ch3.id).Cards = [{ t: 'Mara at the window', plc: '', id: 'c1' }, { t: 'The ferryman’s coat', plc: 'Short stories', id: 'c4' }];
-      ensureG(ch3.id).Sources = [{ t: 'Tides of the Estuary', plc: '', id: 's-tides' }, { t: 'Harbour photo, 1962', plc: 'Journal', id: 's-harbour' }];
-      ensureG(ch3.id).Boards = [{ t: 'Chapter map', plc: '', id: 'b-chapter-map' }, { t: 'Locations', plc: '', id: 'b-locations' }];
-      ensureG(ch3.id).Pages = [{ t: 'Ch 2', plc: '', id: 'p-ch-2' }, { t: 'Kettle notes', plc: 'Journal', id: 'p-kettle' }];
-      SHARED[ch3.id] = [{ t: 'Ch 4', tag: 'revised', plc: '' }, { t: 'Salt', tag: 'ferry', plc: 'Short stories' }, { t: 'Ferry dream', tag: 'ferry', plc: 'Journal' }];
+      S.surface = 'page'; S.pop = 'pages'; S.tab = 'grafts'; S.subject = ch3.id; S.newPage = false; S.planOpen = false;
+      fillCh3();
+    },
+    'grafts-plan-group': function () {
+      S.surface = 'page'; S.pop = 'pages'; S.tab = 'grafts'; S.subject = ch3.id; S.newPage = false; S.planOpen = false;
+      fillCh3();
+    },
+    'grafts-plan-group-open': function () {
+      S.surface = 'page'; S.pop = 'pages'; S.tab = 'grafts'; S.subject = ch3.id; S.newPage = false; S.planOpen = true;
+      fillCh3();
+    },
+    'picker-came-from': function () {
+      S.surface = 'page'; S.pop = 'pages'; S.tab = 'grafts'; S.newPage = true; S.cameFrom = 'Ch 3'; S.planOpen = false;
+      GRAFTS['p-new'] = emptyG(); SHARED['p-new'] = [];
+      return function () { openPicker(); };
     }
   };
+
+  function fillCh3() {
+    ensureG(ch3.id).Cards = [{ t: 'Mara at the window', plc: '', id: 'c1' }, { t: 'The ferryman’s coat', plc: 'Short stories', id: 'c4' }];
+    ensureG(ch3.id).Sources = [{ t: 'Tides of the Estuary', plc: '', id: 's-tides' }, { t: 'Harbour photo, 1962', plc: 'Journal', id: 's-harbour' }];
+    ensureG(ch3.id).Boards = [{ t: 'Locations', plc: '', id: 'b-locations' }];
+    ensureG(ch3.id).Pages = [{ t: 'Ch 2', plc: '', id: 'p-ch-2' }, { t: 'Kettle notes', plc: 'Journal', id: 'p-kettle' }];
+    SHARED[ch3.id] = [{ t: 'Ch 4', tag: 'revised', plc: '' }, { t: 'Salt', tag: 'ferry', plc: 'Short stories' }, { t: 'Ferry dream', tag: 'ferry', plc: 'Journal' }];
+  }
 
   var frame = qs.get('frame'), after = null;
   if (frame && FRAMES[frame]) after = FRAMES[frame]();
