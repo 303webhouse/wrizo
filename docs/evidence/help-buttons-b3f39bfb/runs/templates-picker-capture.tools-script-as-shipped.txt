@@ -1,0 +1,8 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: profile dirs — 1 found, 1 removed (owner verified dead, unheld), 0 kept.
+REAPER: nothing to reap.
+  wrote: plateau-templates-picker.jpg — captured
+  wrote: flux-templates-picker.jpg — captured
+
+ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one)
+TEMPLATES-PICKER CAPTURE: wrote 2 frames to C:\Users\nickh\writer-studio\.claude\worktrees\hbm\docs\evidence\templates-picker

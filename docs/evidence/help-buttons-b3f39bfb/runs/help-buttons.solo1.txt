@@ -1,0 +1,23 @@
+
+ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one)
+PASS  S1 [plateau] Templates: the "?" opens THIS theme's own sentence  [{"text":"Ready-made page layouts.","expected":"Ready-made page layouts."}]
+FAIL  S1 [plateau] Outline: the "?" exists  [not found]
+PASS  S1 [plateau] Recede depth: the "?" opens THIS theme's own sentence  [{"text":"Type and the menus fade; pause, reach an edge, or press Esc to bring them back.","expected":"Type and the menus fade; pause, reach an edge, or press Esc to bring them back."}]
+PASS  S1 [plateau] Free Write: the "?" opens THIS theme's own sentence  [{"text":"Write forward only. No going back to edit.","expected":"Write forward only. No going back to edit."}]
+PASS  S1 [plateau] Publish: the "?" opens THIS theme's own sentence  [{"text":"Share a page as a link or a file.","expected":"Share a page as a link or a file."}]
+PASS  S1 [plateau] Grafts/Links: the "?" opens THIS theme's own sentence  [{"text":"Grafts join pages, cards and boards.","expected":"Grafts join pages, cards and boards."}]
+PASS  S1 [flux] Templates: the "?" opens THIS theme's own sentence  [{"text":"Ready-made doc layouts.","expected":"Ready-made doc layouts."}]
+FAIL  S1 [flux] Outline: the "?" exists  [not found]
+PASS  S1 [flux] Recede depth: the "?" opens THIS theme's own sentence  [{"text":"Type to dissolve the chrome; pause, reach an edge, or press Esc to bring it back.","expected":"Type to dissolve the chrome; pause, reach an edge, or press Esc to bring it back."}]
+PASS  S1 [flux] Free Write: the "?" opens THIS theme's own sentence  [{"text":"Write forward only. No editing back.","expected":"Write forward only. No editing back."}]
+PASS  S1 [flux] Publish: the "?" opens THIS theme's own sentence  [{"text":"Send a doc out as a link or a file.","expected":"Send a doc out as a link or a file."}]
+PASS  S1 [flux] Grafts/Links: the "?" opens THIS theme's own sentence  [{"text":"Links join docs, cards and circuits.","expected":"Links join docs, cards and circuits."}]
+PASS  S2: a second tap of the SAME "?" closes it  [{"s2Open":"true","s2Closed":"false"}]
+PASS  S3: a press outside the "?" and its popover closes it  [false]
+PASS  S4: Esc closes it AND returns focus to the "?" that opened it  [{"expanded":"false","focused":true}]
+PASS  S5: left alone, the popover stays open — NO auto-close timer  [true]
+PASS  S6 THE CLAIM: the page's own rect never moves or resizes while a "?" opens and closes — it is an overlay, never part of the layout  [{"r0":"431,138,537,29","r1":"431,138,537,29","r2":"431,138,537,29"}]
+PASS  S7: the "?" is never brass when open (the --help token, not --brass)  [.wz-help[aria-expanded="true"] { color: var(--help-hi); border-color: var(--help-hi); background: color-mix(in srgb,var(--help) 16%,transparent); }]
+PASS  S7: the popover is position:fixed — one shared overlay, never position:absolute  [.wz-help-pop { position: fixed; z-index: 9000; width: max-content; max-width: 240px; padding: 9px 12px; background: var(--desk-ground); border-top-color: ; bord]
+
+HELP-BUTTONS VERIFY: FAIL - 2/19 failed
