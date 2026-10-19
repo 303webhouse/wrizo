@@ -7,6 +7,8 @@ import { getJournalEntry, getDraft } from '../store/persistence';
 import { firstLine, snippet } from '../store/entryText';
 import { useLexicon, type TermId } from '../store/themeLexicon';
 import { useDeskFrameMounted } from '../store/deskFrameActive';
+import { setPlace, JOURNAL } from '../store/place';
+import { placeUid } from '../store/usePlace';
 
 // Writing-screen redesign (Slice 2) — the slim left rail of desk-area LOCATIONS,
 // replacing D1/D2's top-bar nav. Global nav and a WritingSession reader: it
@@ -22,7 +24,6 @@ import { useDeskFrameMounted } from '../store/deskFrameActive';
 interface RailItem { key: string; term?: TermId; plural?: boolean; label: string; glyph: string; to: string; live: boolean }
 const ITEMS: RailItem[] = [
   { key: 'journal', term: 'journal', label: 'Journal', glyph: '❧', to: '/journal', live: true },
-  { key: 'shelf', term: 'shelf', label: 'Shelf', glyph: '▤', to: '/shelf-board', live: true },   // BIG PROJECTS 1a: the narrow chrome keeps its way to the Shelf board ('/shelf' now redirects to the Journal)
   { key: 'drawers', term: 'drawer', plural: true, label: 'Drawers', glyph: '▥', to: '/drawers', live: true },
   { key: 'library', label: 'Library', glyph: '▣', to: '/library', live: false },
 ];
@@ -139,7 +140,12 @@ export function DeskRail() {
             aria-current={active ? 'page' : undefined}
             aria-disabled={!it.live}
             title={it.live ? label : `${label} — coming soon`}
-            onClick={() => { if (it.live) navigate(it.to); }}
+            onClick={() => {
+              if (!it.live) return;
+              // BIG PROJECTS 1a: the Journal item opens the Journal PLACE too (the narrow chrome has no switcher; this is how a writer there is "in" the Journal)
+              if (it.key === 'journal') setPlace(placeUid(), { kind: 'journal', id: JOURNAL, setId: null });
+              navigate(it.to);
+            }}
           >
             <span className="desk-rail-glyph" aria-hidden="true">{it.glyph}</span>
             <span className="desk-rail-label">{label}</span>

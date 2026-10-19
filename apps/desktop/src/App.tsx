@@ -87,9 +87,8 @@ function TrashBoardGate() {
 // BIG PROJECTS 1a - the Shelf is merged into the Journal (display only; the flag stays in storage). '/shelf' pre-dates that and every old link,
 // bookmark and 'Send to the Shelf' door still resolves: it redirects to the Journal.
 //
-// The Shelf's own system board is still derived and still a board, and the narrow (<1100px) chrome has no pop-out to show its pages in, so DeskRail's
-// Shelf item keeps its way there: '/shelf-board', the old '/shelf' bridge unchanged in shape (find-or-create, idempotent, no router state). B2 S1/S3's
-// description of that bridge stands: JournalBoardGate proved the shape for '/journal'.
+// The Shelf's own system board is still derived and still a board, and a harness mounts it to hold its derived membership: '/shelf-board' is the old '/shelf'
+// bridge unchanged in shape (find-or-create, idempotent, no router state). NO chrome links to it (Fable, Oct 19: no door from chrome, narrow DeskRail included).
 function ShelfBoardGate() {
   const board = getOrCreateSystemBoard('shelf');
   return <Navigate to={`/page/${board.id}`} replace />;

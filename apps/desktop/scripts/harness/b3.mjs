@@ -367,8 +367,13 @@ await withHarness(async (app) => {
   ok(`@${LEGACY_W}px (one below the 1100 floor): the board renders via its LEGACY branch — no DeskFrame, no sliver, so door 2 is structurally UNREACHABLE (not merely hidden)`,
     legacyFloorShape.deskFrameGone && legacyFloorShape.sliverGone && legacyFloorShape.wizardGone && legacyFloorShape.boardCanvasPresent && legacyFloorShape.ordinaryCardPresent,
     JSON.stringify(legacyFloorShape));
-  ok(`@${LEGACY_W}px: DeskRail's own roster stays BYTE-IDENTICAL — Catch, Journal, Shelf, Drawers, Library — completely untouched by this ticket`,
-    JSON.stringify(legacyFloorShape.railLabels) === JSON.stringify(['Catch', 'Journal', 'Shelf', 'Drawers', 'Library']), JSON.stringify(legacyFloorShape.railLabels));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (Fable's ruling Oct 19: no Shelf door from chrome, the narrow DeskRail included): the narrow DeskRail carries Catch, Journal, Drawers, Library.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok(`@${LEGACY_W}px: DeskRail's own roster stays BYTE-IDENTICAL — Catch, Journal, Shelf, Drawers, Library — completely untouched by this ticket`,
+  //   JSON.stringify(legacyFloorShape.railLabels) === JSON.stringify(['Catch', 'Journal', 'Shelf', 'Drawers', 'Library']), JSON.stringify(legacyFloorShape.railLabels));
+  ok(`@${LEGACY_W}px [big-projects-1a successor]: DeskRail's roster is Catch, Journal, Drawers, Library - the Shelf item is gone`,
+    JSON.stringify(legacyFloorShape.railLabels) === JSON.stringify(['Catch', 'Journal', 'Drawers', 'Library']), JSON.stringify(legacyFloorShape.railLabels));
 
   // ==========================================================================
   // S4 — the blank path through CreateProject, proven COMPLETELY unchanged

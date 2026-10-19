@@ -751,8 +751,14 @@ await withHarness(async (app) => {
   })`);
   ok(`S6 @ ${LEGACY_W}px (one below the 1100 floor): the Journal Board renders via its LEGACY branch — no DeskFrame, no strip at all`,
     legacyFloorShape.deskFrameGone && legacyFloorShape.stripGone && legacyFloorShape.boardCanvasPresent, JSON.stringify(legacyFloorShape));
-  ok(`S6 @ ${LEGACY_W}px: DeskRail's own roster is BYTE-IDENTICAL — Catch, Journal, Shelf, Drawers, Library — no Trash item, no new legacy chrome`,
-    JSON.stringify(legacyFloorShape.railLabels) === JSON.stringify(['Catch', 'Journal', 'Shelf', 'Drawers', 'Library']),
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (Fable's ruling Oct 19: no Shelf door from chrome, the narrow DeskRail included): the narrow DeskRail carries Catch, Journal, Drawers, Library - the Shelf item is gone.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok(`S6 @ ${LEGACY_W}px: DeskRail's own roster is BYTE-IDENTICAL — Catch, Journal, Shelf, Drawers, Library — no Trash item, no new legacy chrome`,
+  //   JSON.stringify(legacyFloorShape.railLabels) === JSON.stringify(['Catch', 'Journal', 'Shelf', 'Drawers', 'Library']),
+  //   JSON.stringify(legacyFloorShape.railLabels));
+  ok(`S6 @ ${LEGACY_W}px [big-projects-1a successor]: DeskRail's roster is Catch, Journal, Drawers, Library - the Shelf item is gone (the Shelf is merged into the Journal) - no Trash item, no new legacy chrome`,
+    JSON.stringify(legacyFloorShape.railLabels) === JSON.stringify(['Catch', 'Journal', 'Drawers', 'Library']),
     JSON.stringify(legacyFloorShape.railLabels));
 
   return checks;

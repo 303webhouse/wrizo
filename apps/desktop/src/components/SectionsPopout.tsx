@@ -199,10 +199,6 @@ export function SectionsPopout({ currentId, navigate, boardId, journalLabel }: {
       <div className="wz-sections-bar">
         <span className="wz-sections-heading">{t('sectionsHeading')}</span>
         <span className="wz-sections-sort" aria-label={`${t('openPagesSort')}: ${t('sectionsOrder')}`}>{t('sectionsOrder')}</span>
-        <span className="wz-sections-views" role="group">
-          <button type="button" data-v="rows" aria-pressed="true">{t('sectionsRows')}</button>
-          <button type="button" data-v="grid" aria-pressed="false" disabled>{t('sectionsGrid')}</button>
-        </span>
       </div>
       {undo && (
         <div className="wz-sections-undo" role="status">

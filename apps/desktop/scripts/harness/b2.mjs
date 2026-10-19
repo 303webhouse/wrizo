@@ -1039,17 +1039,30 @@ await withHarness(async (app) => {
   ok(`S8 @ ${LEGACY_W}px (one below the 1100 floor): the Shelf Board renders via its LEGACY branch — no DeskFrame, no strip, no tile leak, no Places leak`,
     legacyFloorShapeB2.deskFrameGone && legacyFloorShapeB2.stripGone && legacyFloorShapeB2.tilesGone && legacyFloorShapeB2.placesGone && legacyFloorShapeB2.boardCanvasPresent,
     JSON.stringify(legacyFloorShapeB2));
-  ok(`S8 @ ${LEGACY_W}px: DeskRail's own roster is BYTE-IDENTICAL — Catch, Journal, Shelf, Drawers, Library — completely untouched by this ticket`,
-    JSON.stringify(legacyFloorShapeB2.railLabels) === JSON.stringify(['Catch', 'Journal', 'Shelf', 'Drawers', 'Library']),
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (Fable's ruling Oct 19: no Shelf door from chrome, the narrow DeskRail included): the narrow DeskRail carries Catch, Journal, Drawers, Library.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok(`S8 @ ${LEGACY_W}px: DeskRail's own roster is BYTE-IDENTICAL — Catch, Journal, Shelf, Drawers, Library — completely untouched by this ticket`,
+  //   JSON.stringify(legacyFloorShapeB2.railLabels) === JSON.stringify(['Catch', 'Journal', 'Shelf', 'Drawers', 'Library']),
+  //   JSON.stringify(legacyFloorShapeB2.railLabels));
+  ok(`S8 @ ${LEGACY_W}px [big-projects-1a successor]: DeskRail's roster is Catch, Journal, Drawers, Library - the Shelf item is gone`,
+    JSON.stringify(legacyFloorShapeB2.railLabels) === JSON.stringify(['Catch', 'Journal', 'Drawers', 'Library']),
     JSON.stringify(legacyFloorShapeB2.railLabels));
 
   // DeskRail's own 'shelf' nav item still bridges correctly at the legacy
   // width too (it's a plain navigate('/shelf') call, untouched code).
-  await app.evalJs("[...document.querySelectorAll('.desk-rail-item')].find(b => b.textContent.includes('Shelf')).click()");
-  await app.waitFor("!!document.querySelector('.board-page, .board-canvas')", { label: 'DeskRail Shelf item lands on the Board (legacy)' });
-  const deskRailShelfRoute = await app.evalJs('location.hash');
-  ok('S8: DeskRail\'s own "Shelf" nav item — untouched code, same navigate(\'/shelf\') call — now lands on the Shelf Board',
-    deskRailShelfRoute.startsWith('#/page/'), deskRailShelfRoute);
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (Fable's ruling Oct 19: no Shelf door from chrome, the narrow DeskRail included): there is no Shelf item to press; the narrow DeskRail's Journal item opens the Journal place and lands on the Journal board.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // await app.evalJs("[...document.querySelectorAll('.desk-rail-item')].find(b => b.textContent.includes('Shelf')).click()");
+  // await app.waitFor("!!document.querySelector('.board-page, .board-canvas')", { label: 'DeskRail Shelf item lands on the Board (legacy)' });
+  // const deskRailShelfRoute = await app.evalJs('location.hash');
+  // ok('S8: DeskRail\'s own "Shelf" nav item — untouched code, same navigate(\'/shelf\') call — now lands on the Shelf Board',
+  //   deskRailShelfRoute.startsWith('#/page/'), deskRailShelfRoute);
+  await app.evalJs("[...document.querySelectorAll('.desk-rail-item')].find(b => b.textContent.includes('Journal')).click()");
+  await app.waitFor("!!document.querySelector('.board-page, .board-canvas')", { label: 'DeskRail Journal item lands on the Board (legacy)' });
+  const deskRailJournalRoute = await app.evalJs('location.hash');
+  ok('S8 [big-projects-1a successor]: DeskRail\'s "Journal" nav item lands on the Journal board (and opens the Journal place)', deskRailJournalRoute.startsWith('#/page/'), deskRailJournalRoute);
 
   return checks;
 });
