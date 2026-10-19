@@ -1,0 +1,84 @@
+{
+  "rows": [
+    {
+      "combo": "arbor-dark",
+      "frame": "01-arm-over-a-rail-thumbnail",
+      "file": "arbor-dark/01-arm-over-a-rail-thumbnail.png",
+      "md5": "574d269f20d54f6dc3b4c8b3db8aa7c2",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "02-just-after-linking",
+      "file": "arbor-dark/02-just-after-linking.png",
+      "md5": "45b96df534d2efd243b19fb57f32f62a",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "FIXTURE",
+      "error": "the card did not select (a click on it lands on a panel tile?)"
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "01-arm-over-a-rail-thumbnail",
+      "file": "arbor-light/01-arm-over-a-rail-thumbnail.png",
+      "md5": "574d269f20d54f6dc3b4c8b3db8aa7c2",
+      "sameAsDarkTwin": true
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "02-just-after-linking",
+      "file": "arbor-light/02-just-after-linking.png",
+      "md5": "45b96df534d2efd243b19fb57f32f62a",
+      "sameAsDarkTwin": true
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "FIXTURE",
+      "error": "the card did not select (a click on it lands on a panel tile?)"
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "01-arm-over-a-rail-thumbnail",
+      "file": "flux-dark/01-arm-over-a-rail-thumbnail.png",
+      "md5": "8dacb1dcea5c8abb752683b8407e9957",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "02-just-after-linking",
+      "file": "flux-dark/02-just-after-linking.png",
+      "md5": "839e10bcb863f402f841f06ce989caca",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "FIXTURE",
+      "error": "the card did not select (a click on it lands on a panel tile?)"
+    },
+    {
+      "combo": "flux-light",
+      "frame": "01-arm-over-a-rail-thumbnail",
+      "file": "flux-light/01-arm-over-a-rail-thumbnail.png",
+      "md5": "5f66cf20da4c3e1b60aba1a327e10b0c",
+      "sameAsDarkTwin": false
+    },
+    {
+      "combo": "flux-light",
+      "frame": "02-just-after-linking",
+      "file": "flux-light/02-just-after-linking.png",
+      "md5": "9bf3bd9a3d0dd8861bd44713ccb7e8d1",
+      "sameAsDarkTwin": false
+    },
+    {
+      "combo": "flux-light",
+      "frame": "FIXTURE",
+      "error": "the card did not select (a click on it lands on a panel tile?)"
+    }
+  ],
+  "lightFramesByteIdenticalToDarkTwin": [
+    "arbor-light/01-arm-over-a-rail-thumbnail",
+    "arbor-light/02-just-after-linking"
+  ]
+}

@@ -1,0 +1,17 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+S12DBG {"theme":"flux","ms":0,"state":{"splash":false,"holdAttr":null,"dataTheme":"flux","ls":["wrizo-theme","wrizo-first-run-complete","writer-studio-last-sync","writer-studio-dirty-v1","writer-studio-journal-resync-v1"],"ss":["wrizo-way-back"],"hash":"#/","body":"Full screen\nSign out\nFor humans writing\nWrite\nOpen","api":true}}
+S12DBG {"theme":"flux","ms":150,"state":{"splash":false,"holdAttr":null,"dataTheme":"flux","ls":["wrizo-theme","wrizo-first-run-complete","writer-studio-last-sync","writer-studio-dirty-v1","writer-studio-journal-resync-v1"],"ss":["wrizo-way-back"],"hash":"#/","body":"Full screen\nSign out\nFor humans writing\nWrite\nOpen","api":true}}
+S12DBG {"theme":"flux","ms":600,"state":{"splash":false,"holdAttr":null,"dataTheme":"flux","ls":["wrizo-theme","wrizo-first-run-complete","writer-studio-last-sync","writer-studio-dirty-v1","writer-studio-journal-resync-v1"],"ss":["wrizo-way-back"],"hash":"#/","body":"Full screen\nSign out\nFor humans writing\nWrite\nOpen","api":true}}
+S12DBG {"theme":"flux","ms":1500,"state":{"splash":false,"holdAttr":null,"dataTheme":"flux","ls":["wrizo-theme","wrizo-first-run-complete","writer-studio-last-sync","writer-studio-dirty-v1","writer-studio-journal-resync-v1"],"ss":["wrizo-way-back"],"hash":"#/","body":"Full screen\nSign out\nFor humans writing\nWrite\nOpen","api":true}}
+file:///C:/Users/nickh/writer-studio/.claude/worktrees/ss/apps/desktop/scripts/runtime-verify.mjs:673
+      throw new Error('waitFor timed out: ' + label + '; diag=' + JSON.stringify(await evalJs('__diag()')));
+            ^
+
+Error: waitFor timed out: S12 settle (flux); diag={"href":"http://127.0.0.1:57669/#/","buttons":["Full screen","Sign out","Write","Open"],"body":"Full screen\nSign out\nFor humans writing\nWrite\nOpen"}
+    at Object.waitFor (file:///C:/Users/nickh/writer-studio/.claude/worktrees/ss/apps/desktop/scripts/runtime-verify.mjs:673:13)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/ss/apps/desktop/scripts/harness/splash-dbg.mjs:599:5
+    at async withHarness (file:///C:/Users/nickh/writer-studio/.claude/worktrees/ss/apps/desktop/scripts/runtime-verify.mjs:900:20)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/ss/apps/desktop/scripts/harness/splash-dbg.mjs:105:1
+
+Node.js v24.13.0

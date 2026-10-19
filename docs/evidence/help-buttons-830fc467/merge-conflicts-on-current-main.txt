@@ -1,0 +1,7 @@
+Merging origin/help-buttons @ 830fc467 into origin/main @ c8851735 (apps identical to 15dbd991) - CONFLICTS in 4 files:
+  apps/desktop/scripts/harness/drawers-p1.mjs      1 hunk
+  apps/desktop/scripts/harness/item211.mjs         1 hunk
+  apps/desktop/src/components/Sliver.tsx           3 hunks
+  apps/desktop/src/store/deskLexicon.ts            3 hunks
+merge base of the two: 48aa17e1 (resume-on-open). Landed on main since, touching deskLexicon.ts: connector-b (links tab, lexicon), glitch-meter, page-templates (the five-row picker).
+The trial merge was aborted; nothing committed. The same branch merged CLEANLY onto b452d7d6 (before page-templates and connector-b shipped).

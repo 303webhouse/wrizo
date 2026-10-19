@@ -1,0 +1,10 @@
+START lane 06:06:21Z
+END lane exit=1 06:24:41Z
+START capture-after 06:24:41Z
+END capture-after exit=1 06:24:53Z
+START capture-before 06:24:53Z
+END capture-before exit=1 06:25:05Z
+START helpframes 06:25:05Z
+END helpframes exit=1 06:25:05Z
+released (mine)
+HB COMPLETE

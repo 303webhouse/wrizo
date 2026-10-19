@@ -19,6 +19,10 @@ import { useFirstLineInvite } from '../components/useFirstLineInvite';
 import { UnbornProvider, useUnborn } from '../components/UnbornSurface';
 import { BeginningsRow, type BeginningDoor } from '../components/BeginningsRow';
 import { unbornHref } from '../store/unbornPage';
+import { TEMPLATE_ORDER, type TemplateKey } from '../components/TemplateSketch';
+import { outlineNextRowPrefix, outlineShift } from '../store/outlineText';
+import { isTitlePageText } from '../store/titlePage';
+import { TitlePageSheet } from '../components/TitlePageSheet';
 import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset, setSelectionOffsets, getCaretOffset, getSelectionOffsets, rangeFromPlainOffsets } from '../store/caretOffset';
 import type { Stroke } from '../types';
@@ -610,6 +614,11 @@ function PageEditorView({ id }: { id: string }) {
   // level per press of the 1 (Shift+Tab held + 1 one back). A tap is applied on release; a quick Tab-then-1 (a numbered list) types
   // its 1. Draft and Revise act everywhere; Free Write acts on a BLANK line only and never outdents (a deletion), and there a 1 is
   // always just typed unless the chord may act.
+  // PAGE TEMPLATES - an OUTLINE owns Tab in Draft: each row is a heading with its own level (store/outlineText.ts, the lens's onLensKey), while this machine indents
+  // the whole PARAGRAPH - and an outline is one unbroken paragraph. So while an Outline is in Draft this machine stands aside (a ref, read at press time: the template
+  // can change under a mounted editor; this hook sits above the early return, deliberately, like its neighbours). Esc still leaves the surface.
+  const outlineKeysRef = useRef(false);
+  outlineKeysRef.current = mode === 'drafting' && realEntry?.pageSettings?.template === 'outline';
   useEffect(() => {
     const el = editorRef.current;
     if (!el) return;
@@ -633,11 +642,13 @@ function PageEditorView({ id }: { id: string }) {
       // A1 (accessibility audit): Tab indents here, so Esc is the way OUT - to the current mode tab, after any open popup has
       // closed on its own Esc (store/escapeExit.ts). Every mode, the same key.
       if (escapeFromEditor(e, el)) return;
+      if (outlineKeysRef.current && !getWritingSettings().typewriter) return;   // PAGE TEMPLATES: the Outline's own Tab (onLensKey) acts instead
       const step = chord.keydown(e);
       if (step.preventDefault) e.preventDefault();
       step.acts.forEach(perform);
     };
     const onKeyUp = (e: KeyboardEvent) => {
+      if (outlineKeysRef.current && !getWritingSettings().typewriter) return;
       const step = chord.keyup(e);
       if (step.preventDefault) e.preventDefault();
       step.acts.forEach(perform);
@@ -700,6 +711,8 @@ function PageEditorView({ id }: { id: string }) {
   // the enemy (CA1). The title is a plain read; the fallback keeps every
   // pre-existing caller's wording byte-identical.
   const fromBoardTitle = (location.state as { fromBoardTitle?: string } | null)?.fromBoardTitle ?? null;
+  // PAGE TEMPLATES - set by a template pick that opened THIS page (the words never moved): the chip then reads "Opened as a new page · Back".
+  const openedByTemplate = (location.state as { openedByTemplate?: boolean } | null)?.openedByTemplate === true;
   const pageTitle = text.trim() ? firstLine(text).slice(0, 40) : 'Untitled';
 
   // PB1 — the durable-relationship doors (Fable's ruling 2). Pairing, porting
@@ -852,19 +865,34 @@ function PageEditorView({ id }: { id: string }) {
   // opens a NEW screenplay page in the same home through item 104's own `structure` address (the arrival effect above births
   // it), and the new page carries the existing "Back to <title>" chip (state.fromBoardId - the PW1 chip that names the surface
   // actually left), so the departure keeps a one-tap return.
-  const applyScreenplayTemplate = () => {
-    if (wordCount(textRef.current) === 0) { requestScreenplay(); return; }
+  //
+  // PAGE TEMPLATES (docs/plans/page-templates.md, approved Oct 16) GENERALIZES THAT ACT to the five rows of the picker - Blank, Screenplay,
+  // Outline, Title Page, Bibliography - without changing its shape: the host owns it; an EMPTY page (no words, no ink) takes the choice in
+  // place; a page WITH words or ink never moves - the choice opens a NEW page in the same home, and the new page's chip (state.openedByTemplate)
+  // reads "Opened as a new page · Back". Pressing the choice already made changes nothing. A template is a lens on the text, set through the
+  // same patchPageSettings seam `kind` uses; on a page not yet born it rides the address instead (the row is born only by the first word, PB1).
+  const currentTemplate: TemplateKey = entry.pageSettings?.template ?? 'blank';
+  const openTemplatePage = (template: Exclude<TemplateKey, 'blank' | 'screenplay'> | null, structure: 'screenplay' | null = null) => {
     flush(); flushNow();
     const href = unbornHref({
       origin: entry.origin === 'journal' ? 'journal' : 'loose',
       binderId: entry.projectId ?? null,
-      structure: 'screenplay',
+      structure,
+      template,
     });
-    navigate(href, { state: { fromBoardId: id, fromBoardTitle: pageTitle } });
+    navigate(href, { state: { fromBoardId: id, fromBoardTitle: pageTitle, openedByTemplate: true } });
   };
-  const pageTemplates = [
-    { key: 'screenplay' as const, label: dt('beginScreenplay'), onApply: applyScreenplayTemplate },
-  ];
+  const applyTemplate = (key: TemplateKey) => {
+    if (key === currentTemplate) return;
+    const empty = wordCount(textRef.current) === 0 && !(entry.strokes && entry.strokes.length > 0);
+    if (key === 'screenplay') { if (empty) requestScreenplay(); else openTemplatePage(null, 'screenplay'); return; }
+    const template = key === 'blank' ? null : key;
+    if (!empty) { openTemplatePage(template); return; }
+    if (unbornRef.current) { navigate(unbornHref({ ...unbornRef.current.descriptor, template }), { replace: true }); return; }
+    patchPageSettings({ template: template ?? undefined });
+  };
+  const TEMPLATE_TERM = { blank: 'templateBlank', screenplay: 'templateScreenplay', outline: 'templateOutline', title: 'templateTitlePage', bibliography: 'templateBibliography' } as const;
+  const pageTemplates = TEMPLATE_ORDER.map((key) => ({ key, label: dt(TEMPLATE_TERM[key]), selected: key === currentTemplate, onApply: () => applyTemplate(key) }));
 
   // The editor's own render-prop body — identical between the legacy and the
   // AB1-framed ModeStage instance, factored out so the two branches below
@@ -884,6 +912,17 @@ function PageEditorView({ id }: { id: string }) {
       className="wz-ink-sheet"
       style={{ position: 'relative', width: '100%', minHeight: '100%' }}
     >
+      {titleSheet ? (
+        <TitlePageSheet
+          key={`${id}-title`}
+          text={text}
+          autoFocus={initialText.trim() === ''}
+          onChange={onTextChange}
+          onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); invite.dismiss(); setBeginningsDismissed(true); }}
+          onFocus={() => setFocused(true)}
+          onBlur={() => { setFocused(false); flush(); }}
+        />
+      ) : (
       <ForwardOnlyEditor
         key={`${id}-${mode}`}
         ref={editorRef}
@@ -893,6 +932,8 @@ function PageEditorView({ id }: { id: string }) {
         autoFocus={initialText.trim() === ''}
         onChange={onTextChange}
         onFormatKey={mode === 'drafting' ? applyRailFormat : undefined}
+        lens={lensActive}
+        onLensKey={applyLensKey}
         onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); invite.dismiss(); setBeginningsDismissed(true); }}
         onFocus={() => setFocused(true)}
         onBlur={() => { setFocused(false); flush(); }}
@@ -915,6 +956,7 @@ function PageEditorView({ id }: { id: string }) {
           fontSize: typeStyle.fontSize ?? 'calc(17px * var(--paper-scale))', lineHeight: 1.7,
         }}
       />
+      )}
       {/* HB1 S3 — the gate's instruction is the threshold's one sanctioned
           utterance; the first-line invite (F6) would speak a second one on
           this exact (empty) page. gateActive is only ever true when framed
@@ -1060,6 +1102,43 @@ function PageEditorView({ id }: { id: string }) {
     setText(next);
     // TYPING-LATENCY x FONT-SPAN: through the rows (the same repair as applyFontAt's)
     if (!writeRows(el, next, caret, null)) decorateEditorFor(el, next, caret, setCaretOffset, t => decorateMarkdownForCard(t, null));
+  };
+  // PAGE TEMPLATES - THE LENS (docs/plans/page-templates.md section 1). An Outline or a Bibliography is the page's ordinary text drawn through one more wrapper
+  // (store/draftDecoration.ts lensHtml, in the one decoration funnel); it applies in Draft and Revise, never in Free Write's forward-only runway. The Outline also
+  // owns three keys in Draft: Tab / Shift+Tab change the level of the rows the selection touches (clamped, store/outlineText.ts), Enter opens the next row at the
+  // same level. Each is ONE atomic undo step, written through the same road a format press takes. Typewriter still blocks them, as it blocks the Format group.
+  // The Title Page is not a lens on the flowing editor: in Draft its five fields are a small structured editor over the same text (components/TitlePageSheet.tsx),
+  // mounted only while the text parses as a Title Page (otherwise the page draws as plain Draft text and nothing is lost). Free Write and Revise draw the text plain.
+  const titleSheet = mode === 'drafting' && entry.pageSettings?.template === 'title' && isTitlePageText(text);
+  const lensActive: 'outline' | 'bibliography' | null = mode !== 'journal' && (entry.pageSettings?.template === 'outline' || entry.pageSettings?.template === 'bibliography') ? entry.pageSettings.template : null;
+  const applyLensKey = (e: KeyboardEvent): boolean => {
+    if (lensActive !== 'outline' || mode !== 'drafting' || e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return false;
+    if (e.key !== 'Tab' && !(e.key === 'Enter' && !e.shiftKey)) return false;
+    if (getWritingSettings().typewriter) return false;
+    const el = editorRef.current;
+    if (!el) return false;
+    const sel = getSelectionOffsets(el);
+    if (!sel) return false;
+    const cur = textRef.current;
+    const start = Math.min(sel.start, cur.length);
+    const end = Math.min(sel.end, cur.length);
+    let result: { text: string; start: number; end: number };
+    if (e.key === 'Tab') {
+      result = outlineShift(cur, start, end, e.shiftKey ? -1 : 1);
+    } else {
+      const prefix = outlineNextRowPrefix(cur, start);
+      const caret = start + 1 + prefix.length;
+      result = { text: cur.slice(0, start) + '\n' + prefix + cur.slice(end), start: caret, end: caret };
+    }
+    e.preventDefault();
+    if (result.text !== cur) {
+      getRegisteredUndoStack(el)?.record({ text: result.text, caret: result.start }, 'atomic');
+      setText(result.text);
+      // TYPING-LATENCY: on the rows only the changed lines are rewritten (store/lineRows.ts), and the Outline's numbers are re-derived in the same write (applyOutlineLens)
+      if (!writeRows(el, result.text, result.start, null)) decorateEditorFor(el, result.text, result.start, setCaretOffset, t => decorateMarkdownForCard(t, null));
+      if (result.end > result.start) setSelectionOffsets(el, result.start, result.end);
+    }
+    return true;
   };
   const applyRailFormat = (action: FormatAction) => {
     if (mode !== 'drafting') return;   // 112-A's guard, unchanged in scope
@@ -1430,8 +1509,8 @@ function PageEditorView({ id }: { id: string }) {
                 </div>
               )}
               {fromBoard && (
-                <button type="button" className="btn-quiet wz-back-to-board" onClick={() => { flush(); flushNow(); navigate(`/page/${fromBoard}`); }}>
-                  {fromBoardTitle ? `‹ Back to ${fromBoardTitle}` : '‹ Back to the board'}
+                <button type="button" className="btn-quiet wz-back-to-board" aria-label={openedByTemplate && fromBoardTitle ? `Back to ${fromBoardTitle}` : undefined} onClick={() => { flush(); flushNow(); navigate(`/page/${fromBoard}`); }}>
+                  {openedByTemplate ? `‹ ${dt('templateOpenedNewBack')}` : fromBoardTitle ? `‹ Back to ${fromBoardTitle}` : '‹ Back to the board'}
                 </button>
               )}
             </div>}
@@ -1510,7 +1589,7 @@ function PageEditorView({ id }: { id: string }) {
           // rhizome OR the bar (two styles, one location, SV15) plus the
           // goal flare (SV16). The gate rule above is unchanged and now
           // covers both styles — the threshold stays pure either way.
-          rhizome={gateActive || unborn ? undefined : <DeskInstrument unitCount={wordCount(text)} text={text} seedKey={entry.id} paperRef={surfaceRef} />}
+          rhizome={gateActive || unborn ? undefined : <DeskInstrument unitCount={wordCount(text)} text={text} seedKey={entry.id} paperRef={surfaceRef} glitch />}
           dissolved={receded}
         >
           <ModeStage

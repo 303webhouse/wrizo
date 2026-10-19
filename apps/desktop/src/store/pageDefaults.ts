@@ -75,8 +75,10 @@ function writeLocal(v: PageSettings | null): void {
 // barred from the per-user default.
 function dressOnly(v: PageSettings | null): PageSettings | null {
   if (!v) return v;
-  const { kind, styleGuide, ...dress } = v as PageSettings & Record<string, unknown>;
-  void kind; void styleGuide;
+  // PAGE TEMPLATES - the template is the same kind of fact as the kind: "Set as my default" on an Outline page must not make every
+  // future page an Outline. Found in S0 by reading every writer of pageSettings, before the key existed.
+  const { kind, styleGuide, template, ...dress } = v as PageSettings & Record<string, unknown>;
+  void kind; void styleGuide; void template;
   return dress as PageSettings;
 }
 

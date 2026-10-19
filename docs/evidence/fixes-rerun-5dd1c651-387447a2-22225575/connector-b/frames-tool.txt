@@ -1,0 +1,3 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+CONNECTOR-B-FRAMES: 28 frames written to C:\Users\nickh\writer-studio\.claude\worktrees\fxt1\docs\evidence\connector-b; light frames byte-identical to their dark twin: arbor-light/01-arm-over-a-rail-thumbnail, arbor-light/02-just-after-linking, arbor-light/03-arm-over-an-already-linked-thumbnail, arbor-light/04-grafts-links-tab, arbor-light/05-remove-graft-dialog, arbor-light/06-dragging-a-thumbnail-onto-the-board, arbor-light/07-the-linked-copy

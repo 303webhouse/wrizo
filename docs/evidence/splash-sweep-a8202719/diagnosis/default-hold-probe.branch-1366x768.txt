@@ -1,0 +1,5 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SPROBE {"wt":"ss","theme":"plateau","firstSeenMs":1,"lastSeenMs":3721,"polls":136,"tone":null,"structures":["[\"wz-splash-veil\",\"wz-splash-mark\",\"wz-splash-loading\"]"]}
+SPROBE {"wt":"ss","theme":"flux","firstSeenMs":1,"lastSeenMs":3446,"polls":130,"tone":null,"structures":["[\"wz-splash-veil\",\"wz-splash-mark\",\"wz-splash-loading\"]"]}
+SPROBE {"wt":"ss","theme":"flux","firstSeenMs":0,"lastSeenMs":3421,"polls":139,"tone":null,"structures":["[\"wz-splash-veil\",\"wz-splash-mark\",\"wz-splash-loading\"]"]}

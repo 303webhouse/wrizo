@@ -20,6 +20,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
 
+let s1Succ = null;   // S1's successor verdict, kept for its parked record (PAGE TEMPLATES, Fable Oct 17)
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -82,8 +83,19 @@ for (const f of srcFiles) {
 const truthy = sites.filter((s) => !/spellCheck=\{false\}/.test(s));
 ok('S0: COVERAGE — the census read the whole client (> 100 source files), so the site list below means something and not blindness',
   srcFiles.length > 100, `files=${srcFiles.length}`);
-ok('S1: NO editor host hardcodes spellCheck={false} any more — the one that did (ForwardOnlyEditor) is now mode-driven, so nothing forces the checker off in Revise',
-  !sites.some((s) => /spellCheck=\{false\}/.test(s)), JSON.stringify(sites));
+// ---- PARKED - SUPERSEDED by Fable's ruling of Oct 17 (page-templates, ledger 87): the Title Page sheet (components/TitlePageSheet.tsx) is a form of short fields, not a prose editor host. Spell-check is ON for its TITLE (the writer's own words,
+// like the page) and OFF for its AUTHOR, CONTACT and WORD LINE (names, addresses, a count). The claim "no editor host hardcodes it off" still holds for every PROSE host; it does not hold for those three fields, by design.
+// Kept VERBATIM below and no longer run; the successor says exactly that.
+//
+// ok('S1: NO editor host hardcodes spellCheck={false} any more — the one that did (ForwardOnlyEditor) is now mode-driven, so nothing forces the checker off in Revise',
+//   !sites.some((s) => /spellCheck=\{false\}/.test(s)), JSON.stringify(sites));
+const falseSites = sites.filter((s) => /spellCheck=\{false\}/.test(s));
+const falseFields = falseSites.map((s) => (/data-field="([a-z]+)"/.exec(s) || [])[1] || null).sort();
+const sheetSrc = fs.readFileSync(path.join(SRC, 'components/TitlePageSheet.tsx'), 'utf8').split('\n');
+const titleLine = sheetSrc.find((l) => /data-field="title"/.test(l)) || null;   // the liveness read: the title field is really there, and is read by its own line
+s1Succ = falseSites.length === 3 && falseSites.every((s) => s.startsWith('components/TitlePageSheet.tsx:')) && JSON.stringify(falseFields) === JSON.stringify(['author', 'contact', 'words']) && !!titleLine && !/spellCheck/.test(titleLine);
+ok('S1 [page-templates successor]: no PROSE editor host hardcodes spellCheck={false}; the ONLY hardcoded-off sites are the Title Page sheet AUTHOR, CONTACT and WORD LINE fields (data-field author, contact, words), and its TITLE field carries no spellCheck attribute at all, so spell-check is ON for the title',
+  s1Succ, JSON.stringify({ falseSites, falseFields, titleLine: titleLine && titleLine.trim() }));
 ok('S2: the only sites that can turn the checker ON are ForwardOnlyEditor (spellCheck={mode === \'revise\'}, gated) and JournalEntry.tsx (a pre-existing, untouched `spellCheck`; see the report — an unmounted component as far as a source search shows) — a THIRD host that enables it fails this run',
   truthy.length === 2
     && truthy.some((s) => s.startsWith('components/ForwardOnlyEditor.tsx:') && s.includes("spellCheck={mode === 'revise'}"))
@@ -128,7 +140,10 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 if (process.env.HARNESS_PARKED === '1') {
   // eslint-disable-next-line no-console
-  console.log('\nREVSPELL PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; this file parks nothing: nothing ever asserted the spellcheck attribute (it was a hardcoded false), so no earlier check is falsified.');
+  // ---- PARKED - SUPERSEDED (page-templates, Fable Oct 17): this file now parks ONE check, S1 (above); the claim below, that it parks nothing, is no longer true. Kept VERBATIM.
+  //
+  // console.log('\nREVSPELL PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; this file parks nothing: nothing ever asserted the spellcheck attribute (it was a hardcoded false), so no earlier check is falsified.');
+  console.log(`\nREVSPELL PARKED: ${s1Succ === true ? 'PASS' : 'FAIL'} (1 check) — HARNESS_PARKED=1 armed; ONE park: S1's "no editor host hardcodes spellCheck={false}" no longer holds for the Title Page sheet's author, contact and word-line fields (spell-check ON for the title, OFF for those three - Fable's ruling, Oct 17); its successor is the live S1 [page-templates successor].`);
 }
 const pass = checks.every((c) => c.pass);
 // eslint-disable-next-line no-console

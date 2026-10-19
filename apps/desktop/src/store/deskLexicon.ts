@@ -145,6 +145,8 @@ export type DeskTermId =
   // BOARD CONTEXT MENU (Nick, Oct 15) - the right-click menus, the "Send to Trash?" dialog, the Settings row, and the toasts.
   | 'ctxDelete' | 'ctxDeleteBoard' | 'ctxUngroup' | 'deleteDialogTitle' | 'deleteDialogPurgeTitle' | 'deleteDialogCancel' | 'deleteDialogConfirm' | 'deleteDialogDontAsk'
   | 'settingsAskBeforeDelete' | 'toastCardDeleted' | 'toastCardRestored' | 'toastBoardTrashed' | 'trashCardBadge'
+  // CONNECTOR-B (Nick's approved connector mockup v6): the right drawer's Grafts / Links tab lists the selected card's connections, each with an X that asks first.
+  | 'linksSelectCard' | 'linksRemoveTitle' | 'linksRemoveAria' | 'linksKindPage' | 'linksKindBoard' | 'linksKindCard'
   // TU1 S2/S3/S4/S5 — the Tutor (components/Tutor.tsx), the sliver's own
   // mirror on the paper's right edge. One seam, all of the Tutor's static
   // chrome — the lenses' own DYNAMIC observation text (Consistency's
@@ -294,13 +296,13 @@ export type DeskTermId =
   | 'twPageScroll' | 'footProgress' | 'footFullScreen' | 'footTypewriter' | 'footTarget'
   // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
   | 'draftHeading' | 'draftHeadingUp' | 'draftHeadingDown' | 'draftBullet' | 'draftBulletCircle' | 'draftBulletSquare' | 'draftBulletStyles' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
-  | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage' | 'templateCustom'
-  | 'helpOutline' | 'helpTitlePage'
+  | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage' | 'templateBlank' | 'templateScreenplay' | 'templateOpenedNewBack'
+  | 'helpOutline' | 'helpTitlePage' | 'helpTemplateBlank' | 'helpTemplateScreenplay' | 'helpTemplateBibliography'
   | 'comingSoon' | 'railTypeface' | 'goalUnitWords' | 'railPageKind'
   // PHASE 1 - the Actions section of the left drawer.
   | 'railActions' | 'actionTags' | 'actionCopy' | 'actionDelete' | 'actionHeaderFooter' | 'actionTagRemove'
   | 'actionDeleteConfirm' | 'actionDeleteYes' | 'actionDeleteKeep'
-  | 'footSettings' | 'footMenuTypewriter' | 'footMenuProgress' | 'footMenuPreferences'
+  | 'footSettings' | 'footMenuTypewriter' | 'footMenuProgress' | 'footMenuPreferences' | 'footMenuFlicker'
   // PHASE 1 (S4) - the two mode toggles beside the drawer's "..." button. Their names are what a screen reader hears; on/off is aria-pressed.
   | 'modeToggleTypewriter' | 'modeToggleProgress' | 'formatLockedByTypewriter'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
@@ -855,6 +857,12 @@ const CANONICAL: Record<DeskTermId, string> = {
   toastCardRestored: 'Card restored',
   toastBoardTrashed: 'Board moved to Trash',
   trashCardBadge: 'Card',
+  linksSelectCard: 'Select a card',
+  linksRemoveTitle: 'Remove graft?',
+  linksRemoveAria: 'Remove',
+  linksKindPage: 'Page',
+  linksKindBoard: 'Board',
+  linksKindCard: 'Card',
   tutorOpen: 'Open the Tutor',
   tutorClose: 'Close the Tutor',
   tutorTitle: 'The Tutor',
@@ -1090,8 +1098,12 @@ const CANONICAL: Record<DeskTermId, string> = {
   railPageKind: 'Pages Kind', // ITEM word-diet, pages-rename bucket (a)
   templateOutline: 'Outline',
   templateBibliography: 'Bibliography',
-  templateTitlePage: 'Title page',
-  templateCustom: 'Custom',
+  templateTitlePage: 'Title Page',
+  // PAGE TEMPLATES (approved mockup cursor/templates @ 0fc9afef) - the five rows of the picker, Arbor's words; Flux's are below. 'Custom' is
+  // dropped with the mockup. templateOpenedNewBack is the return chip's caption on a page a template pick opened (the words never moved).
+  templateBlank: 'Blank',
+  templateScreenplay: 'Screenplay',
+  templateOpenedNewBack: 'Opened as a new page · Back',
   comingSoon: 'Coming soon',
   // theme-leftovers (Nick approved Oct 12, "Flux Word Picker"; never built
   // until now) — Arbor's own word for the Sliver's type section is "Font",
@@ -1105,6 +1117,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   modeToggleProgress: 'Progress tracking',
   formatLockedByTypewriter: 'Typewriter Mode is on',
   footMenuPreferences: 'Preferences',
+  footMenuFlicker: 'Flicker',
   draftQuote: 'Block quote',
   draftIndent: 'Indent',
   draftOutdent: 'Outdent',
@@ -1439,6 +1452,13 @@ const CANONICAL: Record<DeskTermId, string> = {
   helpPublish: 'Share a page as a link or a file.',
   helpOutline: 'Numbered levels. Tab indents.',
   helpTitlePage: 'A standard manuscript title page.',
+  // help-buttons (Fable, Oct 18) — the three row names Arbor's own picker
+  // never renames (Blank/Screenplay/Bibliography stay plain English on this
+  // theme, so no "?" shows here at all) — only Flux's own three remaining
+  // renamed rows (plus Outline/Title Page above) carry an explainer.
+  helpTemplateBlank: 'A blank page. Nothing written yet.',
+  helpTemplateScreenplay: 'Sluglines, dialogue, action — the screenplay format.',
+  helpTemplateBibliography: 'A sources and citations page.',
 
   // E1 S2 — Publish's copy path.
   // ITEM word-diet.
@@ -1474,7 +1494,15 @@ const CANONICAL: Record<DeskTermId, string> = {
 // the same theme, even though they're independent maps.
 const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> = {
   flux: {
-    // PHASE 1 (S3) - Flux's word for the same tab.
+    // PAGE TEMPLATES - Flux's circuit-register words for the picker (the approved templates mockup): Presets, and Raw / Script / Spine / Cover / Sources.
+    // railTypeface's own Flux override already lives below (theme-leftovers) - not duplicated here.
+    railTemplates: 'Presets',
+    templateBlank: 'Raw',
+    templateScreenplay: 'Script',
+    templateOutline: 'Spine',
+    templateTitlePage: 'Cover',
+    templateBibliography: 'Sources',
+    // PHASE 1 (S3) - Flux's word for the same tab. No explainer: an empty term means no "?".
     drawerLinks: 'Links',
     drawerLinksEmpty: 'Nothing linked yet.',
     drawerRightTabsLabel: 'Tutor and links',
@@ -1509,6 +1537,9 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     boardFooterToggle: 'Show links',
     ctxDeleteBoard: 'Delete circuit',
     toastBoardTrashed: 'Circuit moved to Trash',
+    linksRemoveTitle: 'Remove link?',
+    linksKindPage: 'Doc',
+    linksKindBoard: 'Circuit',
     placesBoardsTitle: 'Also linked to…',
     // Round 2: the card footer's own connecting phrase ("— grafted to: <label>"
     // Arbor, composed at BoardEditor.tsx's call site as "— {prefix}: {label}").
@@ -1530,6 +1561,11 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     helpPublish: 'Send a doc out as a link or a file.',
     helpOutline: 'A numbered spine. Tab indents.',
     helpTitlePage: 'A standard manuscript cover sheet.',
+    // help-buttons (Fable, Oct 18) — the picker's own three remaining
+    // renamed rows (Blank->Raw, Screenplay->Script, Bibliography->Sources).
+    helpTemplateBlank: 'A raw page. Nothing written yet.',
+    helpTemplateScreenplay: 'The script format: sluglines, dialogue, action.',
+    helpTemplateBibliography: 'Your sources, collected on one page.',
     recedeHint: 'Type to dissolve the chrome; pause, reach an edge, or press Esc to bring it back.',
     // ITEM splash-hold, ROUND 3 — Flux's own circuit-register voice for the
     // splash's cycling loading line (Nick's ruling).

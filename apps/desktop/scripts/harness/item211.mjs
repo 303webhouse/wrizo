@@ -22,6 +22,8 @@ const ED = '.forward-only-editor';
 let r1CardShown = null;   // R1's card readings, kept for its parked record
 let clickPast = null;   // the WALK click reading, kept for its parked record
 const checks = [];
+let c2RowsSeen = null;   // C2's picker rows (PAGE TEMPLATES R2), kept for its parked record
+let c3HeadSeen = null;   // C3's heading text (PAGE TEMPLATES R2), kept for its parked record
 let c2Seen = null;   // C2's reading of the placeholders, kept for its parked record (PAGE-TEMPLATES-MOVE)
 const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass, detail }); console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? `  [${detail}]` : ''}`); };
 
@@ -230,24 +232,36 @@ await withHarness(async (app) => {
     await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(250);
     const tpl = await app.evalJs(`[...document.querySelectorAll('.wz-sliver-templates .wz-template-btn')].map(b => ({ name: b.getAttribute('aria-label'), title: b.title, disabled: b.getAttribute('aria-disabled'), opacity: getComputedStyle(b).opacity }))`);
     c2Seen = tpl.map((b) => b.name);
+    c2RowsSeen = await app.evalJs("[...document.querySelectorAll('.wz-sliver-templates .wz-template-row')].map(b => ({ name: b.getAttribute('aria-label'), disabled: b.getAttribute('aria-disabled') }))");
     // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order. Kept VERBATIM and no
     // longer run; its parked record is in the HARNESS_PARKED block at the foot of this file, and its successor follows.
     //
     // ok('C2: Outline, Bibliography and Title page are dimmed stand-ins - aria-disabled, tooltip "Coming soon"',
     //   tpl.map((b) => b.name).join(',') === 'Outline,Bibliography,Title page' && tpl.every((b) => b.disabled === 'true' && b.title === 'Coming soon' && Number(b.opacity) < 1), JSON.stringify(tpl));
     // ------------------------------------------------------------------
-    ok('C2 [page-templates successor]: Outline, Title page, Bibliography and Custom are dimmed stand-ins, in that order - aria-disabled, tooltip "Coming soon"',
-      tpl.map((b) => b.name).join(',') === 'Outline,Title page,Bibliography,Custom' && tpl.every((b) => b.disabled === 'true' && b.title === 'Coming soon' && Number(b.opacity) < 1), JSON.stringify(tpl));
+    // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @ 0fc9afef, Fable Oct 16): the four grayed stand-ins retire - the Templates section is a FIVE-row picker (Blank, Screenplay, Outline, Title Page, Bibliography), none disabled, Custom dropped. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
+    //
+    // ok('C2 [page-templates successor]: Outline, Title page, Bibliography and Custom are dimmed stand-ins, in that order - aria-disabled, tooltip "Coming soon"',
+    //   tpl.map((b) => b.name).join(',') === 'Outline,Title page,Bibliography,Custom' && tpl.every((b) => b.disabled === 'true' && b.title === 'Coming soon' && Number(b.opacity) < 1), JSON.stringify(tpl));
+    ok('C2 [page-templates-r2 successor]: the Templates hold the five-row picker - Blank, Screenplay, Outline, Title Page, Bibliography, in that order - none disabled, and no dimmed stand-in is left',
+      c2RowsSeen.map((b) => b.name).join(',') === 'Blank,Screenplay,Outline,Title Page,Bibliography' && c2RowsSeen.every((b) => b.disabled === null) && tpl.length === 0, JSON.stringify({ c2RowsSeen, standIns: tpl.length }));
     const textBefore = await stored(app, id);
     await app.evalJs("document.querySelectorAll('.wz-sliver-templates .wz-template-btn').forEach(b => b.click())"); await sleep(300);
-    ok('C2: pressing them does nothing to the page', (await stored(app, id)) === textBefore && (await app.evalJs(`!!document.querySelector('${ED}')`)));
+    // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (2026-10-16): there are no stand-ins to press; the rows are live, and the one that is a no-op is the choice already made. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
+    //
+    // ok('C2: pressing them does nothing to the page', (await stored(app, id)) === textBefore && (await app.evalJs(`!!document.querySelector('${ED}')`)));
+    await app.evalJs("document.querySelector('.wz-template-row[data-template=\"blank\"]')?.click()"); await sleep(300);
+    ok('C2 [page-templates-r2 successor]: pressing the choice already made (Blank) does nothing to the page', (await stored(app, id)) === textBefore && (await app.evalJs(`!!document.querySelector('${ED}')`)));
     const typeHead = await app.evalJs("(() => { const s = document.querySelector('.wz-sliver-type'); const h = s && s.firstElementChild; return h ? { cls: h.className, text: h.textContent, next: h.nextElementSibling && h.nextElementSibling.className } : null; })()");
-    // SUPERSEDED (theme-leftovers, Nick approved Oct 12, built Oct 16): this
-    // file never switches theme, so it runs on Arbor's own default - which
-    // now reads "Font" ("Flux Word Picker": Arbor "Font", Flux "Typeface").
-    // Kept verbatim, no longer run:
+    // SUPERSEDED (two tickets converged on the same fact from two directions
+    // - theme-leftovers, Nick approved Oct 12, built Oct 16: this file never
+    // switches theme, so it runs on Arbor's own default, which now reads
+    // "Font"; and PAGE TEMPLATES R2, the approved mockup, which names the
+    // same word as part of the same table - railTypeface). Kept verbatim,
+    // no longer run:
     //   ok('C3: a "Typeface" heading sits directly above the font controls', typeHead && typeHead.cls === 'wz-sliver-h' && typeHead.text === 'Typeface' && /wz-type/.test(typeHead.next || ''), JSON.stringify(typeHead));
-    ok('C3 [theme-leftovers successor]: a "Font" heading (Arbor\'s own word) sits directly above the font controls',
+    c3HeadSeen = typeHead;
+    ok('C3 [theme-leftovers + page-templates-r2 successor]: a "Font" heading (Arbor\'s own word) sits directly above the font controls',
       typeHead && typeHead.cls === 'wz-sliver-h' && typeHead.text === 'Font' && /wz-type/.test(typeHead.next || ''), JSON.stringify(typeHead));
     await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Settings\"]').click()"); await sleep(200);
     const heads = await app.evalJs(`(() => {
@@ -337,9 +351,16 @@ if (process.env.HARNESS_PARKED === '1') {
     pass: !!r1CardShown && [6, 8, 12, 14].every((o) => r1CardShown[o].length === 0), detail: JSON.stringify(r1CardShown) });
   checks.push({ name: 'PARKED (was "WALK: a real click just past the bold word lands after its last visible letter (12), inside the pair") - the click rule (Nick, 2026-10-06): a click keeps the side of the closing marks it landed on, so it lands at 14, outside',
     pass: clickPast === 14, detail: String(clickPast) });
-  checks.push({ name: 'PARKED (was "C2: Outline, Bibliography and Title page are dimmed stand-ins - aria-disabled, tooltip \"Coming soon\"") - PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order; live successor: C2 [page-templates successor]',
-    pass: JSON.stringify(c2Seen) === JSON.stringify(['Outline', 'Title page', 'Bibliography', 'Custom']), detail: JSON.stringify(c2Seen) });
-  console.log('\nITEM211 PARKED: 3 checks (R1 card reveal; the WALK click park; C2, the placeholder roster)');
+  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (2026-10-16): the stand-in roster this record quoted no longer exists. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
+  //
+  // checks.push({ name: 'PARKED (was "C2: Outline, Bibliography and Title page are dimmed stand-ins - aria-disabled, tooltip \"Coming soon\"") - PAGE-TEMPLATES-MOVE (Nick\'s rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order; live successor: C2 [page-templates successor]',
+  //   pass: JSON.stringify(c2Seen) === JSON.stringify(['Outline', 'Title page', 'Bibliography', 'Custom']), detail: JSON.stringify(c2Seen) });
+  // PAGE TEMPLATES R2 (2026-10-16) - C2's roster and C3's heading, read in the live run above.
+  checks.push({ name: 'PARKED (was "C2 [page-templates successor]: Outline, Title page, Bibliography and Custom are dimmed stand-ins") - PAGE TEMPLATES R2 (2026-10-16): the stand-ins retire; the Templates hold a five-row picker; live successor: C2 [page-templates-r2 successor]',
+    pass: !!c2RowsSeen && c2RowsSeen.map((b) => b.name).join(',') === 'Blank,Screenplay,Outline,Title Page,Bibliography', detail: JSON.stringify(c2RowsSeen) });
+  checks.push({ name: 'PARKED (was "C3: a \"Typeface\" heading sits directly above the font controls") - PAGE TEMPLATES R2 (the approved mockup): Arbor\'s heading reads "Font"; live successor: C3 [page-templates-r2 successor]',
+    pass: !!c3HeadSeen && c3HeadSeen.text === 'Font', detail: JSON.stringify(c3HeadSeen) });
+  console.log('\nITEM211 PARKED: 4 checks (R1 card reveal; the WALK click park; C2, the picker rows [page-templates R2]; C3, the Font heading [page-templates R2])');
 }
 const failed = checks.filter((c) => !c.pass);
 console.log(`\nITEM211 VERIFY: ${failed.length ? `FAIL — ${failed.length}/${checks.length} failed` : `PASS (${checks.length} checks)`}`);

@@ -1,0 +1,8 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=1 tree=7bac9b71+4dirty bundle=index-BEKxX3ap.js/716997b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/ca-e2617f58
+[01/1] OK        exit=0   44s connector-a.mjs :: CONNECTOR-A VERIFY: PASS (37 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict
+SUITE RESULT: CLEAN — tree=7bac9b71+4dirty bundle=index-BEKxX3ap.js/716997b NO-REBUILD

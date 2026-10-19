@@ -1,0 +1,27 @@
+STAMP: tree=a68b527f bundle=index-B1iEpp4h.js/736807b
+default c00: CLEAN same stamp (verified not VOID)
+default c01: CLEAN same stamp (verified not VOID)
+default c02: CLEAN same stamp (verified not VOID)
+default c03: CLEAN same stamp (verified not VOID)
+default c04: CLEAN same stamp (verified not VOID)
+default c05: CLEAN same stamp (verified not VOID)
+default c06: CLEAN same stamp (verified not VOID)
+default c07: NOT CLEAN; non-launch-crash failures=2
+RED (real) at default c07 - continuing to collect all reds
+STAMP MISMATCH at default c08: [tree=a68b527f+1dirty bundle=index-B1iEpp4h.js/736807b] vs [tree=a68b527f bundle=index-B1iEpp4h.js/736807b]
+STOP: stamp mismatch
+default c08: CLEAN same stamp (verified not VOID)
+RESUMED from default c08 on the SAME tree and stamp (tree cleaned of the capture tool's frames; splash-sweep-capture.mjs removed from the chunk list - it is an evidence tool that arrived with the splash merge); c00-c07 as recorded above
+DEFAULT LEG COMPLETE
+parked c00: CLEAN same stamp (verified not VOID)
+parked c01: CLEAN same stamp (verified not VOID)
+parked c02: CLEAN same stamp (verified not VOID)
+parked c03: CLEAN same stamp (verified not VOID)
+parked c04: CLEAN same stamp (verified not VOID)
+parked c05: CLEAN same stamp (verified not VOID)
+parked c06: CLEAN same stamp (verified not VOID)
+parked c07: NOT CLEAN; non-launch-crash failures=1
+RED (real) at parked c07 - continuing to collect all reds
+parked c08: CLEAN same stamp (verified not VOID)
+PAIR COMPLETE
+released (mine)

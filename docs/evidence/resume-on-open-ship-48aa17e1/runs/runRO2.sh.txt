@@ -1,0 +1,14 @@
+#!/bin/bash
+# resume-on-open @ 0e55de94 (INK's fixture repair, harness-only) merged onto origin/main @ a6d56181 -> ro2 b5c9766c.
+# Fable: ship when resume-on-open.mjs re-runs at 56/56 with a VERIFY line (no need to re-run the rest). runtime-verify.mjs auto-merged with typing-latency's edits, so a few quick neighbours ride along.
+SD="C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad"
+TOK=chat1-ro2-20261016
+node "$SD/grantsafe.mjs" take $TOK || { echo "GRANT HELD BY ANOTHER - NOT RUNNING" > "$SD/ro2-status.txt"; exit 1; }
+export WS_BOX_TURN=$TOK
+cd /c/Users/nickh/writer-studio/.claude/worktrees/ro2/apps/desktop
+FILES="resume-on-open.mjs,hb1.mjs,hb2.mjs,item89.mjs,logout-flush-walk.mjs,fix-signin-live-double.mjs,arrival-signin-walk.mjs,splash.mjs,font-span.mjs,typing-latency-scroll.mjs,seed-guard.mjs"
+echo "START lane $(date -u +%H:%M:%SZ)" > "$SD/ro2-status.txt"
+node scripts/run-suite.mjs --no-rebuild --only "$FILES" --out "$SD/ro2-lane" > "$SD/ro2-lane.out" 2>&1
+echo "END lane exit=$? $(date -u +%H:%M:%SZ)" >> "$SD/ro2-status.txt"
+node "$SD/grantsafe.mjs" release $TOK >> "$SD/ro2-status.txt" 2>&1
+echo "RO2 COMPLETE" >> "$SD/ro2-status.txt"

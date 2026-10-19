@@ -38,6 +38,7 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const parkedChecks = [];
 const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
 const i112aParks = {};   // item112a-deterministic: the default leg's observation, for the parked record
+const tlParks = {};   // TYPED-LITERAL: the default leg's S2/§3 readings, for the parked records
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // THE TWO REFERENCE WIDTHS, and they are law for this ticket (brief §5): the frame's
@@ -274,8 +275,16 @@ await withHarness(async (app) => {
     await app.typeKeys(' **bold** done');
     await sleep(350);
     const md = await app.evalJs("(() => ({ bold: document.querySelectorAll('.md-bold').length, marks: document.querySelectorAll('.md-mark').length }))()");
-    ok("S2/§3 S0: Revise's rendered text RUNS THROUGH `decorateEditorFor` — markdown decorates live (`.md-bold`/`.md-mark` present), which is the recorded answer the parked error lens needs: its flag decorator is an ARGUMENT to a seam that already exists, not new routing",
-      md.bold >= 1 && md.marks >= 2, JSON.stringify(md));
+    // ---- PARKED - SUPERSEDED by typed-literal (Nick's ruling, Oct 16: typed `**` is LITERAL, stored escaped; Revise has no styling tools) ----
+    // Kept VERBATIM and no longer run: typed ` **bold** done` makes no `.md-bold` now. What it recorded - Revise's text runs through the
+    // decorator, the seam the parked error lens will use - is shown by the decorator rendering the typed stars' ESCAPES (`.md-escape`).
+    // ok("S2/§3 S0: Revise's rendered text RUNS THROUGH `decorateEditorFor` — markdown decorates live (`.md-bold`/`.md-mark` present), which is the recorded answer the parked error lens needs: its flag decorator is an ARGUMENT to a seam that already exists, not new routing",
+    //   md.bold >= 1 && md.marks >= 2, JSON.stringify(md));
+    // ------------------------------------------------------------------
+    const mdLit = await app.evalJs("(() => ({ bold: document.querySelectorAll('.forward-only-editor .md-bold').length, escapes: document.querySelectorAll('.forward-only-editor .md-escape.md-mark-hidden').length }))()");
+    tlParks.s0 = { md, mdLit };
+    ok("S2/§3 S0 [typed-literal successor]: Revise's rendered text RUNS THROUGH the decorator - the four typed stars render as literal stars with their escapes hidden (`.md-escape`), and nothing is bold: typed formatting characters are literal",
+      md.marks >= 4 && mdLit.escapes === 4 && mdLit.bold === 0, JSON.stringify({ md, mdLit }));
 
     const plain = await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); return e ? e.innerText.replace(/\\u200b/g, '') : null; })()");
     // ---- PARKED - SUPERSEDED (item112a-deterministic, Oct 16; chat 1's ledgers 64 and 67) ----
@@ -289,13 +298,23 @@ await withHarness(async (app) => {
     // ok("S2/§3: and `entry.text` stays PLAIN — the convention characters are still real characters in the surface (count preserved 1:1 through decoration), which is the constraint that makes the caret restore valid and the CSS-only flag law the only lawful one",
     //   typeof plain === 'string' && plain.includes('**bold**'), JSON.stringify({ plain }));
     // ------------------------------------------------------------------
-    const typedRun = ' **bold** done';
-    const words = typeof plain === 'string' ? plain.replace(/\*/g, '') : null;
-    const countOk = typeof plain === 'string' && plain.length === 'Alpha beta gamma'.length + typedRun.length
-      && (plain.match(/\*/g) || []).length === 4 && words === 'Alpha beta gamma bold done';
-    i112aParks.s2s3 = { plain, countOk };
-    ok("S2/§3 [deterministic successor]: and `entry.text` stays PLAIN — every convention character typed is still a REAL character in the surface: the four `*` all present and the count preserved 1:1 (wherever the 211 rules' reabsorb puts the closing pair)",
-      countOk, JSON.stringify({ plain, length: plain && plain.length, want: 'Alpha beta gamma'.length + typedRun.length }));
+    // ---- PARKED - SUPERSEDED by typed-literal (Oct 16; Nick: a typed formatting character is LITERAL, stored escaped) ----
+    // Kept VERBATIM and no longer run: the deterministic successor counted four `*` and a length of 16 + 14, and read the words with the
+    // stars taken out - the typed stars are now stored `\*`, four backslashes longer, and the closing pair is literal text, so nothing is
+    // reabsorbed: the text is the same at any typing speed. Successor below: the exact escaped text.
+    // const typedRun = ' **bold** done';
+    // const words = typeof plain === 'string' ? plain.replace(/\*/g, '') : null;
+    // const countOk = typeof plain === 'string' && plain.length === 'Alpha beta gamma'.length + typedRun.length
+    //   && (plain.match(/\*/g) || []).length === 4 && words === 'Alpha beta gamma bold done';
+    // i112aParks.s2s3 = { plain, countOk };
+    // ok("S2/§3 [deterministic successor]: and `entry.text` stays PLAIN — every convention character typed is still a REAL character in the surface: the four `*` all present and the count preserved 1:1 (wherever the 211 rules' reabsorb puts the closing pair)",
+    //   countOk, JSON.stringify({ plain, length: plain && plain.length, want: 'Alpha beta gamma'.length + typedRun.length }));
+    // ------------------------------------------------------------------
+    const B = String.fromCharCode(92);
+    const wantLit = `Alpha beta gamma ${B}*${B}*bold${B}*${B}* done`;
+    tlParks.s23 = { plain, wantLit };   // also the record of the deterministic successor's park, and of the original's
+    ok("S2/§3 [typed-literal successor]: and `entry.text` stays PLAIN — every typed character is a real character in the surface, the typed stars stored ESCAPED (literal, count preserved 1:1 through decoration), deterministic at any typing speed",
+      plain === wantLit, JSON.stringify({ plain, wantLit }));
   }
 
   // =========================================================================
@@ -783,16 +802,27 @@ console.log(JSON.stringify(checks, null, 2));
 // now carries the Type control, exactly the tenant 112-A said 112-C would bring. Each keeps its text VERBATIM in its parked record.
 // ---------------------------------------------------------------------------
 if (process.env.HARNESS_PARKED === '1') {
-  // item112a-deterministic (Oct 16): S2/§3's literal `**bold**` placement, parked - the record re-verifies the claim on the default leg's text
-  { const o = i112aParks.s2s3 || {};
-    pok('PARKED (was "S2/§3: and `entry.text` stays PLAIN — the convention characters are still real characters in the surface (count preserved 1:1 through decoration), which is the constraint that makes the caret restore valid and the CSS-only flag law the only lawful one", asserted as `includes(\'**bold**\')`) - timing-dependent placement of the closing pair (the 211 reabsorb vs a fast typist); live successor: S2/§3 [deterministic successor]',
-      !!o.countOk, JSON.stringify(o)); }
+  // ---- PARKED RECORD - SUPERSEDED by typed-literal (Oct 16): item112a-deterministic's record re-verified its successor's count, which
+  // escaping falsifies (that successor is parked above). Kept VERBATIM and no longer run; successor record directly below.
+  // // item112a-deterministic (Oct 16): S2/§3's literal `**bold**` placement, parked - the record re-verifies the claim on the default leg's text
+  // { const o = i112aParks.s2s3 || {};
+  //   pok('PARKED (was "S2/§3: and `entry.text` stays PLAIN — the convention characters are still real characters in the surface (count preserved 1:1 through decoration), which is the constraint that makes the caret restore valid and the CSS-only flag law the only lawful one", asserted as `includes(\'**bold**\')`) - timing-dependent placement of the closing pair (the 211 reabsorb vs a fast typist); live successor: S2/§3 [deterministic successor]',
+  //     !!o.countOk, JSON.stringify(o)); }
+  // ------------------------------------------------------------------
+  { const b = tlParks.s23 || {}; pok('PARKED (was "S2/§3: and `entry.text` stays PLAIN — the convention characters are still real characters in the surface (count preserved 1:1 through decoration), which is the constraint that makes the caret restore valid and the CSS-only flag law the only lawful one", asserted as `includes(\'**bold**\')`) - timing-dependent placement of the closing pair (item112a-deterministic), and then typed-literal: typed stars are stored escaped; live successor: S2/§3 [typed-literal successor]',
+      typeof b.plain === 'string' && b.plain === b.wantLit, JSON.stringify(b)); }
+  // TYPED-LITERAL (2026-10-16) - TWO parks: S2/§3 S0's `.md-bold` from typed stars, and item112a-deterministic's S2/§3 successor (its
+  // count of the typed stars). Records frozen; each re-verifies the new truth from the default leg's own readings (tlParks).
+  { const a = tlParks.s0 || {}; pok('PARKED (was "S2/§3 S0: Revise\'s rendered text RUNS THROUGH `decorateEditorFor` — markdown decorates live (`.md-bold`/`.md-mark` present) ...") - typed-literal: typed stars are literal; live successor: S2/§3 S0 [typed-literal successor]',
+      !!a.mdLit && a.mdLit.escapes === 4 && a.mdLit.bold === 0, JSON.stringify(a)); }
+  { const b = tlParks.s23 || {}; pok('PARKED (was "S2/§3 [deterministic successor]: and `entry.text` stays PLAIN — every convention character typed is still a REAL character in the surface: the four `*` all present and the count preserved 1:1 (wherever the 211 rules\' reabsorb puts the closing pair)") - typed-literal: typed stars are stored escaped; live successor: S2/§3 [typed-literal successor]',
+      typeof b.plain === 'string' && b.plain === b.wantLit, JSON.stringify(b)); }
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nITEM112A PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; this FILE parks 4: 3 since ITEM 207 (S7 at the two reference widths, S8 once) and S2/§3's placement (item112a-deterministic) - and, before it, 0 of its own; the ticket's ONE original park is in item84b.mjs (the file that owns the assertion): "the Revise tab is inert", superseded by Revise standing up. See this file's park block for why the first sweep counted 0 and how the suite corrected it.`
+    ? `\nITEM112A PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; this FILE parks 6: S2/§3 S0 and S2/§3's deterministic successor (typed-literal), S2/§3's placement (item112a-deterministic), and 3 since ITEM 207 (S7 at the two reference widths, S8 once) - and, before it, 0 of its own; the ticket's ONE original park is in item84b.mjs (the file that owns the assertion): "the Revise tab is inert", superseded by Revise standing up. See this file's park block for why the first sweep counted 0 and how the suite corrected it.`
     : `\nITEM112A PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);

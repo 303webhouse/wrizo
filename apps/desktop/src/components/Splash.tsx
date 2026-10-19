@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import { measureBackdropTone, type BackdropTone } from '../store/backdropTone';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
+import { useTheme } from '../store/theme';
+import { SplashMark, prefersReducedMotion } from './SplashMark';
 
 // THE SPLASH (item 187) — Nick's own hand-drawn Wrizo, over the live app, dimmed behind.
 //
@@ -60,9 +61,25 @@ import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 //    enforce that at extreme shapes - the ink height never exceeds 60% of the
 //    viewport, its width never 70% - and both only ever make it smaller.
 //
-// 4. THE ASSET FOLLOWS THE MEASURED BACKDROP, not a theme map. See
-//    store/backdropTone.ts for why a `data-theme` map would have been the
-//    stale-list failure this arc keeps naming.
+// 4. THE MARK FOLLOWS THE LAST-PICKED THEME (splash-sweep, docs/briefs/
+//    splash-brief.md). Each theme draws its own animation — Arbor sweeps
+//    Nick's hand-drawn sketch brass from IDEAS to FINAL DRAFT (SplashMark.tsx's
+//    own ArborMark, cut by splash-build-kit.md's own script); Flux sweeps a
+//    vector schematic of the same five steps (FluxMark). Both draw cream
+//    lines/tokens on the veil's own (always-dark) ground by construction, so
+//    there is no backdrop to measure any more — store/backdropTone.ts
+//    (fix/splash-tone) is REMOVED here on Fable's own word: it existed to
+//    choose between a cream and a warm-ink copy of ONE asset, a choice that
+//    no longer exists once every theme ships its own built animation.
+//
+// splash-sweep ROUND 4 (Nick, live): "every [mockup] time below is multiplied
+// by 0.7" and "the old 5s minimum hold is replaced by the animation's own
+// length." SplashMark.tsx computes each theme's own total (reduced motion:
+// instant) and calls `onFloorReached` at that point — see `holdMs()`/
+// `onFloorReached` below for how that replaces the old fixed floor while
+// keeping the same localStorage override (test speed) and the same 10s
+// ceiling (now also this effect's floor backstop, in case a theme's
+// animation never signals — belt, not the expected path).
 //
 // SHOWS ON EVERY OPEN (Fable's ruling), not first-run-only — `store/firstRun.ts`
 // is a different concept (founding defaults, the unlock ceremony) and is
@@ -86,16 +103,6 @@ const MAX_INK_HEIGHT_FRACTION = 0.6;
 const MAX_INK_WIDTH_FRACTION = 0.7;
 
 /**
- * How long the emblem holds, AT LEAST. ITEM splash-hold round 3 (Nick, live):
- * "Minimum 5s per app load, longer if the app isn't ready yet" — raised from
- * round 1's 3s floor. Nothing shortens it (the old early-dismiss-on-input
- * retired whole in round 1). Overridable through localStorage (read at call
- * time), so a capture pass can hold the emblem for a different span instead
- * of racing this one.
- */
-const DEFAULT_HOLD_MS = 5000;
-
-/**
  * ITEM splash-hold round 4 (Fable's review): `/auth/me` carries no time limit
  * (apps/desktop/src/store/api.ts) — a hung network would keep `ready` false
  * forever, and the floor+ready gate alone would hold the splash up forever
@@ -105,6 +112,14 @@ const DEFAULT_HOLD_MS = 5000;
  * over signalling "still working" from there. Only matters once the floor has
  * ALSO passed (tryEnd's own gate, below) — a capture pass's longer explicit
  * hold override is never cut short by this.
+ *
+ * splash-sweep reuses this SAME value as the floor's own backstop (`holdMs()`
+ * below): the normal floor trigger is SplashMark's `onFloorReached`, fired
+ * at its own per-theme computed end (Nick's round 4: "the old 5s minimum
+ * hold is replaced by the animation's own length") — this timer only matters
+ * if that callback never fires at all (a bug, not the expected path), so it
+ * is pinned to the same "something is wrong" horizon the readiness ceiling
+ * already uses rather than inventing a second one.
  */
 const MAX_HOLD_MS = 10000;
 
@@ -114,15 +129,24 @@ const LOADING_LINE_CYCLE_MS = 1400;
 
 let alreadyShown = false;
 
-/** The hold, with the capture override applied. Unset in every real launch. */
-function holdMs(): number {
+/** The capture-pass override (test speed — e.g. '50' to skip past the splash
+ *  fast), read at call time. `null` in every real launch, which is what lets
+ *  `holdMs()` fall through to the backstop instead. */
+function holdOverrideMs(): number | null {
   try {
     const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('wrizo-splash-hold') : null;
     const n = raw === null ? NaN : Number(raw);
-    return Number.isFinite(n) && n > 0 ? n : DEFAULT_HOLD_MS;
+    return Number.isFinite(n) && n > 0 ? n : null;
   } catch {
-    return DEFAULT_HOLD_MS;
+    return null;
   }
+}
+
+/** The floor's own backstop timer value: the override if a capture pass set
+ *  one, else MAX_HOLD_MS (see its own comment — this almost never actually
+ *  fires; SplashMark's `onFloorReached` is the normal trigger). */
+function holdMs(): number {
+  return holdOverrideMs() ?? MAX_HOLD_MS;
 }
 
 /** Test-only seam (round 4's own ceiling check): forces `ready` to read as false
@@ -157,7 +181,6 @@ export function Splash({ ready }: { ready: boolean }) {
     return true;
   });
   const [leaving, setLeaving] = useState(false);
-  const [tone, setTone] = useState<BackdropTone>('dark');
   const [box, setBox] = useState(() => (typeof window === 'undefined'
     ? { width: 0, height: 0 }
     : splashSizeFor(window.innerWidth, window.innerHeight)));
@@ -173,16 +196,26 @@ export function Splash({ ready }: { ready: boolean }) {
   const readyRef = useRef(ready);
   readyRef.current = ready && !forcedNotReady();
   const { t } = useDeskLexicon();
+  const theme = useTheme();
+  // Checked once per mount (the same one-shot idiom this codebase already
+  // uses — HomeFlow.tsx/RhizomeField.tsx/UnlockCeremony.tsx — nobody flips
+  // the OS setting mid-splash), not a reactive subscription.
+  const [reduced] = useState(prefersReducedMotion);
+
+  // splash-sweep: SplashMark's own per-theme timeline calls this once, at
+  // the point its animation reaches the brief's "a short hold, then the
+  // fade" — the NEW floor trigger (Nick's round 4), replacing the old fixed
+  // 5s timer. A stable identity (refs, not the effect's own `tryEnd`
+  // closure) so SplashMark's mount effect never needs to re-run when this
+  // component re-renders.
+  const tryEndRef = useRef<(() => void) | null>(null);
+  const onFloorReached = useCallback(() => {
+    floorPassedRef.current = true;
+    tryEndRef.current?.();
+  }, []);
 
   useEffect(() => {
     if (!live) return undefined;
-
-    // Measured AFTER mount, deliberately: the veil (`.wz-splash-veil`, this
-    // very overlay) has to actually exist in the DOM for the probe to read
-    // its own painted background — see backdropTone.ts's header comment for
-    // why that is the right thing to read now (fix/splash-tone), not what is
-    // logically behind the overlay.
-    setTone(measureBackdropTone());
 
     const resize = () => setBox(splashSizeFor(window.innerWidth, window.innerHeight));
     resize();
@@ -194,6 +227,7 @@ export function Splash({ ready }: { ready: boolean }) {
       delete document.documentElement.dataset.splashHold;
       setLeaving(true);
     };
+    tryEndRef.current = tryEnd;
 
     // ITEM splash-hold, SUPERSEDED: the hold used to be a MAXIMUM, ended early by
     // the first keydown/pointerdown/wheel/touchstart (dismiss() called from each).
@@ -225,6 +259,7 @@ export function Splash({ ready }: { ready: boolean }) {
       window.clearInterval(lineCycle);
       events.forEach((e) => window.removeEventListener(e, noop, opts));
       window.removeEventListener('resize', resize);
+      tryEndRef.current = null;
       // Defensive, not the normal path (tryEnd already clears this when leaving
       // starts): an unmount with the hold never having ended must not leave the
       // front door's content hidden forever.
@@ -250,21 +285,21 @@ export function Splash({ ready }: { ready: boolean }) {
   // floor. Whichever lands first wins; neither is trusted alone.
   useEffect(() => {
     if (!leaving) return undefined;
-    const t = window.setTimeout(() => setLive(false), 420);
+    // splash-sweep: the brief's own fade is 0.45s (index.css's .wz-splash-veil/
+    // -mark/-loading transitions moved from .38s to match) — this timer stays a
+    // touch above it (the same ~40ms buffer the old 380/420 pair kept), the
+    // floor this component trusts when reduced motion drops `transitionend`.
+    const t = window.setTimeout(() => setLive(false), 490);
     return () => window.clearTimeout(t);
   }, [leaving]);
 
   if (!live) return null;
 
-  const src = tone === 'dark'
-    ? '/brand/wrizo-sketch-for-dark-theme.png'
-    : '/brand/wrizo-sketch-for-light-theme.png';
-
   return (
     <div
       className="wz-splash"
       data-leaving={leaving ? 'true' : 'false'}
-      data-tone={tone}
+      data-splash-theme={theme}
       aria-hidden="true"
       // ROUND 5 — `--mark-h` lets index.css's own .wz-splash-loading anchor itself
       // just below the drawing's own measured edge (CSS has no sibling-height
@@ -273,14 +308,13 @@ export function Splash({ ready }: { ready: boolean }) {
       style={{ ['--mark-h' as unknown as string]: `${box.height}px` } as React.CSSProperties}
     >
       <div className="wz-splash-veil" />
-      <img
+      <div
         className="wz-splash-mark"
-        src={src}
-        alt=""
-        draggable={false}
         style={{ width: `${box.width}px`, height: `${box.height}px` }}
         onTransitionEnd={() => { if (leaving) setLive(false); }}
-      />
+      >
+        <SplashMark theme={theme} reduced={reduced} width={box.width} height={box.height} onFloorReached={onFloorReached} />
+      </div>
       {/* role="status" (Nick's ruling): announced politely, never interrupting.
           `key` forces a remount on every line change, restarting the CSS fade —
           reduced motion drops that animation entirely (index.css), an instant swap. */}
@@ -291,12 +325,16 @@ export function Splash({ ready }: { ready: boolean }) {
   );
 }
 
-/** Test/inspection seam — the frame pass and splash.mjs read THIS code's sizing. */
+/** Test/inspection seam — the frame pass and splash.mjs read THIS code's sizing.
+ *  `HOLD_MS` SUPERSEDED (splash-sweep): there is no longer one fixed floor to
+ *  report — `holdMs()` now returns the override-or-backstop (see its own
+ *  comment), not a per-theme animation length, so splash.mjs measures the
+ *  real floor empirically (elapsed time to `data-leaving`) instead of
+ *  comparing against a reported constant. */
 if (typeof window !== 'undefined') {
   (window as unknown as { wrizoSplash?: unknown }).wrizoSplash = {
     sizeFor: splashSizeFor,
     reset: () => { alreadyShown = false; },
-    HOLD_MS: DEFAULT_HOLD_MS,
     MAX_HOLD_MS,
     holdMs,
     INK,

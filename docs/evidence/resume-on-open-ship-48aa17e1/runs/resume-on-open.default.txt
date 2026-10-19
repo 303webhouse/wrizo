@@ -1,0 +1,59 @@
+PASS  U1 a recorded place reads back and lands on its route
+PASS  U2 another account's pointer is treated as absent
+PASS  U2b ...and that account seeds from its own edited race
+PASS  U3 the unborn id (new) and a non-row id are never recorded
+PASS  U4 the Journal board and the Trash board are never recorded
+PASS  U5 a deleted/Trashed target lands on the blank Page (ruling 1), not on the edited race's page
+PASS  U5b ...and the stale pointer becomes the "decided: none" record
+PASS  U6 ...so the NEXT cold open is still the blank Page (never re-seeded from the edited race)
+PASS  U7 no record at all: seeded once from the edited race (ruling 2), written for this account
+PASS  U7b ...and once seeded the pointer decides; the edited race is not asked again
+PASS  U8 no record and nothing edited: the blank Page, recorded as decided-none
+PASS  U9 a project pointer lands on /project/:id
+PASS  U9b a deleted project lands on the blank Page
+PASS  U10 a malformed stored value is "absent" (seeds), never a throw
+PASS  U11 blocked storage: nothing throws, the blank Page
+PASS  mutant "drop the uid guard" is KILLED (reddens: uidGuard, uidGuardSeedsOwn)
+PASS  mutant "stale pointer returns its route anyway" is KILLED (reddens: deletedGoesBlank, projectDeletedBlank)
+PASS  mutant "forget "decided: none" (no write on a stale pointer)" is KILLED (reddens: deletedRecordsNone)
+PASS  mutant "record anything (skip the rememberable check)" is KILLED (reddens: unbornNotRecorded, systemBoardsNotRecorded)
+PASS  mutant "system boards count as rememberable" is KILLED (reddens: systemBoardsNotRecorded)
+PASS  mutant "never seed" is KILLED (reddens: seedsFromEditedRace)
+PASS  mutant "seed every time (ignore the pointer)" is KILLED (reddens: seedIsOnce)
+PASS  mutant "writes throw on blocked storage" is KILLED (reddens: blockedStorageQuiet)
+PASS  all 8 mutations landed and 8 were killed
+PASS  P1 no landing logic in Splash.tsx (TOOLS owns it): it names neither lastPlace nor LandingGate
+PASS  P2 the gate is mounted once in App.tsx, beside the routes (not inside a route)
+PASS  P3 sign-out clears the pointer (right after the signed-out flag is marked, so "mark first" still holds)
+PASS  P4 the landing is first-boot only: a non-authed first boot, signed out here, or a deep link spends the latch
+PASS  P5 the latch is set AT the navigate (bail-out Navigate to "/" and Home links reach the door, no loop)
+PASS  P6 the blank Page is the Write door's own entry: unbornHref({ origin: 'loose' }) in both, with the same first-run forced defaults
+PASS  P7 no cleanup cancels the landing (StrictMode runs the effect twice in dev; the second run is a no-op by the latch)
+PASS  P8 the runtime-verify double switches the landing OFF unless WS_LANDING=1 (so the ~120 front-door harnesses keep their door)
+PASS  E1 first open with no history: the address is the unborn Page (/page/new), not the front door
+PASS  E1 ...the Free Write tab is active (Nick 12:53pm)
+PASS  E1 ...nothing is born yet: zero live pages saved
+PASS  E1 ...the front door is gone (no .wz-arrival)
+PASS  E2 typing a word births exactly one page
+PASS  E2 ...and it is remembered as the last place (the recorder follows the silent address change)
+PASS  E3 signed-in cold boot lands on the remembered Page (roo-a), not the newer roo-b
+PASS  E3 ...and the address LEFT the front door while the splash hold was still on (data-splash-hold set, splash mounted): it navigated under the veil, not after it
+PASS  E3 ...and the front door's doors never showed: whenever they existed their opacity was 0 (the hold hides them)
+PASS  E3 ...and the front door is already unmounted, so it left while the hold (which hides its doors) was on: it never painted
+PASS  E3 ...the Page's words are on it
+PASS  E4 once per load: the front door is reachable afterwards and does not bounce back
+PASS  E5 a deep link (reload on roo-b) stays on roo-b although the pointer says roo-a... then the recorder moves it to roo-b
+PASS  E6 the last place can be a board: lands on it and the board canvas mounts
+PASS  E7 no pointer: seeded once from the edited race (the newest edit)
+PASS  E8 the remembered Page was deleted/Trashed: the blank Page opens (not roo-b, not the front door)
+PASS  E8 ...in Free Write
+PASS  E8 ...and nothing was born by the landing
+PASS  E8 ...the pointer now records "decided: none"
+PASS  E8b the NEXT cold open is still the blank Page (not re-seeded from the edited race)
+PASS  E9 opening the Trash board does not move the pointer
+PASS  E10 a pointer written for another account does not steer this one (it seeds from its own edited race instead)
+PASS  E11 signed out here: the front door stays (no landing)
+PASS  E11 ...and the pointer is untouched
+PASS  E12 anonymous (no session): the front door, Write and Open doors as always
+
+RESUME-ON-OPEN VERIFY: PASS (57 checks)

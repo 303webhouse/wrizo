@@ -1,0 +1,5 @@
+served js  748047 b  MD5 4307a46310f0a8e04a59d7ac5192fb3c  (index-BkpPwwwO.js)
+built  js  748047 b  MD5 4307a46310f0a8e04a59d7ac5192fb3c
+served css 172702 b  MD5 165d22364f6aa28f67947dd8fbe24225  (index-DN0BAZcZ.css)
+built  css 172702 b  MD5 165d22364f6aa28f67947dd8fbe24225
+/healthz 200   /auth/me 401   /auth/signup-status {"open":false}   "Writer Studio server listening on :8080" in the boot log

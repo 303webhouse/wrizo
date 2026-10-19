@@ -1,0 +1,12 @@
+[sync] code=HARNESS_FAIL kind=project id=bad-project
+[sync] code=HARNESS_FAIL kind=project id=mutant-bad
+file:///C:/Users/nickh/writer-studio/.claude/worktrees/dfo/apps/desktop/.item224a-harness-scratch/store/sync.mjs?t=1792386402617:1
+import { getDirtyRecords, markClean, applyRemoteRecords, markAllJournalEntriesDirty, getJournalEntries, getSystemKind, applyAcknowledgedPurged } from './persistence.mjs';
+                                                                                                                       ^^^^^^^^^^^^^^^^^^^^^^^
+SyntaxError: The requested module './persistence.mjs' does not provide an export named 'applyAcknowledgedPurged'
+    at #asyncInstantiate (node:internal/modules/esm/module_job:302:21)
+    at async ModuleJob.run (node:internal/modules/esm/module_job:405:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/dfo/apps/desktop/scripts/harness/item224a-sync-integrity.mjs:216:19
+
+Node.js v24.13.0

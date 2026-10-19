@@ -1,0 +1,2 @@
+Merging origin/delete-for-good @ bce12067 into origin/main @ 6b1ab519 (apps = connector-b 15dbd991): one conflict hunk, apps/server/src/sync.ts, the signature of upsertJournalEntries - main exports it (connector-b added export for its harness), the branch adds a third parameter `acked: string[] = []`. The trial merge was aborted; nothing committed.
+Semantic gap (not a textual conflict): the branch has no handling of connector-b page_links on purge; its plan section 4 said that ticket would take it on if connector-b shipped first.

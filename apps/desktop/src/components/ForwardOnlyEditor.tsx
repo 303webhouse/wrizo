@@ -3,13 +3,16 @@ import type { Run } from '../types';
 import { append, derivedText, eraseTail, isBoundary, seedContent, strikeStep } from '../store/forwardOnly';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { formatShortcutAction, type FormatAction } from '../store/draftFormat';
-import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
+import { decorateEditorFor, decorateMarkdownForCard, EOF_GUARD, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
 import { getCaretOffset as getPlainOffset, setCaretOffset as setPlainOffset } from '../store/caretOffset';
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, registerUndoStack, unregisterUndoStack, type EditKind } from '../store/textUndo';
 import { placeCaret } from '../store/hiddenMarksDom';
+import { escapeTyped } from '../store/hiddenMarks';
+import { copyPayload, pasteEdit, putOnClipboard, readEnvelope, WRIZO_MIME } from '../store/clipboardFormat';
+import { readEscapes } from '../store/markRuns';
 import { attachHiddenMarkEditing } from '../store/hiddenMarksEditing';
-import { detachRows, editorPlainText, mountRows, noteNativeEdit, readNativeEdit, revealRowsAtCaret, rowsFor, writeRows } from '../store/lineRows';
+import { detachRows, editorPlainText, mountRows, noteNativeEdit, readNativeEdit, refreshLens, revealRowsAtCaret, rowsFor, writeRows } from '../store/lineRows';
 
 // CW2 — the reusable forward-only writing surface. Keyboard-only input on the
 // DM1 Run model: typing appends, backspace walks a short runway and then locks;
@@ -97,10 +100,15 @@ interface Props {
   // WRITING-SURFACE S0 STEP 2 - Ctrl/Cmd+B/I/U in the free-edit branch call this, and the host routes it to the SAME formatter its
   // toolbar buttons use. Absent (Free Write, Revise, or any host with no styling tools) the keys are left alone.
   onFormatKey?: (action: FormatAction) => void;
+  // PAGE TEMPLATES - the Outline or Bibliography lens this page is drawn through (Draft and Revise only; the page's text is untouched). Written to the host element as
+  // data-template: the Bibliography is pure CSS on it, the Outline's numbers are drawn by store/lineRows.ts applyOutlineLens on the ROWS. `onLensKey` is the host's door
+  // for the lens's own keys (the Outline's Tab / Shift+Tab / Enter): it returns true when it handled the key and called preventDefault.
+  lens?: 'outline' | 'bibliography' | null;
+  onLensKey?: (e: KeyboardEvent) => boolean;
 }
 
 export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function ForwardOnlyEditor(
-  { initialText, onChange, mode = 'journal', onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, ariaDescribedBy, penColor, forwardLock = true, style, insertMarkerRef, onFormatKey },
+  { initialText, onChange, mode = 'journal', onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, ariaDescribedBy, penColor, forwardLock = true, style, insertMarkerRef, onFormatKey, lens, onLensKey },
   ref,
 ) {
   // ITEM 112-A — the branch this flag selects is FREE-EDIT vs FORWARD-ONLY, and
@@ -127,6 +135,8 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   onForwardRef.current = onForward;
   const onFormatKeyRef = useRef(onFormatKey);
   onFormatKeyRef.current = onFormatKey;
+  const onLensKeyRef = useRef(onLensKey);
+  onLensKeyRef.current = onLensKey;
   // AB2 S2 — the native listeners below attach once ([] deps), so a toggle
   // flipped mid-session (the rail's forward-lock switch) must reach
   // handleBackspace through a ref, not the closed-over prop value.
@@ -155,6 +165,15 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     resetRunway();
     onForwardRef.current?.();
     changed();
+  };
+
+  // TYPED-LITERAL (Nick, Oct 16): what the writer TYPES (or pastes, or composes) on the runway is literal - its formatting characters
+  // escaped for where they land on the page's text (store/hiddenMarks.ts escapeTyped). The rail's own insertion (insertMarkerRef) is a
+  // tool, not typing, and keeps calling handleInput directly.
+  const handleTyped = (data: string) => {
+    if (!/[\\*_~#\->[\]]/.test(data)) { handleInput(data); return; }
+    const now = derivedText(contentRef.current) + wordRef.current;
+    handleInput(escapeTyped(data, now, now.length));
   };
 
   // FX7 S2 — populate the rail's own insertion escape hatch (see this
@@ -425,6 +444,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // preventDefault (not beforeinput) mirrors ScriptEditor.tsx's own
       // proven Enter-handling pattern elsewhere in this codebase.
       const onKeyDownDraft = (e: KeyboardEvent) => {
+        // PAGE TEMPLATES - the lens's own keys (the Outline's Tab / Shift+Tab / Enter) come FIRST, here, and once. They used to be tried in onFormatKeyDraft below, AFTER this listener's marks.enter had
+        // already done the Enter itself - so one Enter was done twice (ledger 92, X7: a blank line, and the next row without its tab). A handled key is the lens's; nothing after it sees it.
+        if (onLensKeyRef.current?.(e)) { e.stopImmediatePropagation(); return; }
         // ITEM 211 — a raw newline inside a styled run would leave each line one unpaired, visible mark, so the text is computed
         // (store/hiddenMarks.ts enterAt): the run closes before the newline and opens again after it. Recorded as a 'boundary' step
         // (FX6 S1: Enter completes a line the way a typed space completes a word).
@@ -432,10 +454,13 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       };
       // ITEM 211 rules 2 and 3 — the arrows move by visible characters, and Backspace and Delete never take a lone hidden mark.
       const onMarkKeyDraft = (e: KeyboardEvent) => { marks.markKey(e); };
-      const onCompStartDraft = () => { noteNativeEdit(el); composingDraft = true; marks.reset(); };
+      // TYPED-LITERAL: a composition's committed text is typed text too - captured at its start, escaped at its end
+      const onCompStartDraft = () => { noteNativeEdit(el); marks.reset(); marks.noteComposition(); composingDraft = true; };
       const onCompEndDraft = () => {
         composingDraft = false;
-        const { plain, caret } = readNative();
+        let { plain, caret } = readNative();
+        const lit = marks.repairInput(plain);
+        if (lit) { plain = lit.text; caret = lit.caret; }
         // FX6 S1 — an IME-composed insertion is one atomic undo step (no
         // per-candidate-update recording happens above — onInput returns
         // early while composingDraft is true, so the stack's own `current`
@@ -445,7 +470,8 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         redecorate(plain, caret);
       };
       const blockPaste = (e: Event) => {
-        if (shadowAllows(extractIncomingText(e))) return;
+        // IN-APP-COPY-FORMAT: own ink passes the wall; Wrizo's own markup is then pasted when its envelope can be trusted
+        if (shadowAllows(extractIncomingText(e))) { if (e.type === 'paste') marks.paste(e as ClipboardEvent); return; }
         e.preventDefault(); notePasteBlocked();
       };
       // REVEAL-ON-CLICK — the page surface had NO caret-move reveal at all:
@@ -515,13 +541,13 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         // VW Slice 4 — own ink: route through the SAME append path typed input
         // uses (forward-only's law holds — text still enters at the runway tip).
         const text = extractIncomingText(e);
-        if (shadowAllows(text)) { handleInput(text); return; }
+        if (shadowAllows(text)) { handleTyped(text); return; }
         notePasteBlocked();
         return;
       }
       if (it.startsWith('insert')) {
         const data = e.data ?? ((it === 'insertParagraph' || it === 'insertLineBreak') ? '\n' : '');
-        if (data) handleInput(data);
+        if (data) handleTyped(data);
       }
     };
     const onKeyDown = (e: KeyboardEvent) => {
@@ -536,9 +562,18 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       composingRef.current = false;
       if (skipCompEndRef.current) { skipCompEndRef.current = false; return; } // a delete aborted this composition
       const data = e.data || '';
-      if (data) handleInput(data); // commit the finalized text; the re-render replaces the browser's draft
+      if (data) handleTyped(data); // commit the finalized text; the re-render replaces the browser's draft
     };
     const block = (e: Event) => e.preventDefault(); // cut: block (removes committed text). Copy-out is NOT blocked.
+    // IN-APP-COPY-FORMAT: copy-out writes the plain characters and Wrizo's markup of the DERIVED text - the struck letters are history, not
+    // prose, so they are left out of both (Q3, Nick, Oct 16), as Copy My Words leaves them out.
+    const onCopyFree = (e: ClipboardEvent) => {
+      if (!e.clipboardData) return;
+      const o = liveSelection(el);
+      if (!o || o.s === o.e) return;
+      e.preventDefault();
+      putOnClipboard(e.clipboardData, copyPayload(derivedText(contentRef.current) + wordRef.current, o.s, o.e));
+    };
     // Paste + drop are the foreign-voice wall — block AND whisper (belt-and-
     // suspenders alongside the beforeinput branch, for any browser that fires the
     // event without a beforeinput). The once-per-session gate dedups. Own ink
@@ -548,7 +583,17 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     const blockPaste = (e: Event) => {
       e.preventDefault();
       const text = extractIncomingText(e);
-      if (shadowAllows(text)) { handleInput(text); return; }
+      if (shadowAllows(text)) {
+        // IN-APP-COPY-FORMAT: Wrizo's own markup, when its envelope can be trusted, enters at the runway's tip like any typed text
+        const fragment = e.type === 'paste' ? readEnvelope((e as ClipboardEvent).clipboardData?.getData(WRIZO_MIME), text) : null;
+        if (fragment !== null) {
+          const now = derivedText(contentRef.current) + wordRef.current;
+          const r = pasteEdit(now, now.length, now.length, fragment, text);
+          if (r.formatted && r.text.startsWith(now)) { handleInput(r.text.slice(now.length)); return; }
+        }
+        handleTyped(text);
+        return;
+      }
       notePasteBlocked();
     };
 
@@ -559,7 +604,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     el.addEventListener('paste', blockPaste);
     el.addEventListener('drop', blockPaste);
     el.addEventListener('cut', block);
+    el.addEventListener('copy', onCopyFree);
     return () => {
+      el.removeEventListener('copy', onCopyFree);
       el.removeEventListener('beforeinput', onBeforeInput as EventListener);
       el.removeEventListener('keydown', onKeyDown);
       el.removeEventListener('compositionstart', onCompStart);
@@ -637,6 +684,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // PAGE TEMPLATES - a page's template can change under a mounted editor (the picker): draw or clear the Outline's numbers now.
+  useEffect(() => { const h = hostRef.current; if (h) refreshLens(h); }, [lens]);
+
   // Keep the browser's (invisible) caret at the end after every re-render.
   // React replaces the rendered text nodes on each change, which would otherwise
   // invalidate the selection and stop the next keystroke from firing input.
@@ -706,15 +756,16 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // an unstruck run is decorated with a null caret (the runway owns the caret, so nothing is ever revealed here). The
       // `.fo-run` wrapper is kept, so a reader of its textContent still gets every character.
       : content.map(run => run.struck
-        ? `<span class="fo-run fo-struck">${escHtml(run.text)}</span>`
+        ? `<span class="fo-run fo-struck">${typedHtml(run.text)}</span>`
         : `<span class="fo-run">${decorateMarkdownForCard(run.text, null)}</span>`).join('')
-        + `<span class="fo-word">${escHtml(word)}</span>`;
+        + `<span class="fo-word">${typedHtml(word)}</span>`;
 
   return (
     <div className="forward-only-editor-wrap" style={{ position: 'relative', display: 'flex', flexDirection: 'column', ...style }}>
       <div
         ref={setRefs}
         className="forward-only-editor"
+        data-template={lens ?? undefined}
         contentEditable
         suppressContentEditableWarning
         role="textbox"
@@ -746,4 +797,44 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
 
 function escHtml(s: string): string {
   return s.replace(/[&<>]/g, c => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'));
+}
+
+// TYPED-LITERAL: a struck run and the word still being typed show the writer's characters as typed - an escape's backslash is hidden
+// there as it is in a live run (the word in progress drew it raw, so `*on` read `\*on` until the space)
+// IN-APP-COPY-FORMAT: Free Write's selection as offsets into its DERIVED text (runs, then the word in progress): every text node counts
+// except a struck run's (and the EOF guard character). The page renders each unstruck run's characters exactly once, in order, so the
+// count is the derived offset.
+function liveSelection(el: HTMLElement): { s: number; e: number } | null {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return null;
+  const R = sel.getRangeAt(0);
+  if (!el.contains(R.startContainer) || !el.contains(R.endContainer)) return null;
+  // characters of `t` before the boundary point (node, offset): all of them when the point is past the node, none when it is before
+  const upTo = (t: Text, node: Node, offset: number): number => {
+    if (node === t) return offset;
+    const p = document.createRange();
+    p.setStart(node, offset);
+    return p.comparePoint(t, 0) >= 0 ? 0 : t.data.length;
+  };
+  const live = (t: Text, n: number) => n - (t.data.slice(0, n).split(EOF_GUARD).length - 1);
+  const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  let s = 0;
+  let e = 0;
+  let n: Node | null;
+  while ((n = w.nextNode())) {
+    const t = n as Text;
+    if (t.parentElement && t.parentElement.closest('.fo-struck')) continue;
+    s += live(t, upTo(t, R.startContainer, R.startOffset));
+    e += live(t, upTo(t, R.endContainer, R.endOffset));
+  }
+  return { s, e };
+}
+
+function typedHtml(text: string): string {
+  const esc = readEscapes(text);
+  if (!esc.length) return escHtml(text);
+  let out = '';
+  let from = 0;
+  for (const x of esc) { out += escHtml(text.slice(from, x)) + '<span class="md-mark md-mark-hidden md-escape">\\</span>'; from = x + 1; }
+  return out + escHtml(text.slice(from));
 }

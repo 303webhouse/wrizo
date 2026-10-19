@@ -1,0 +1,13 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+HPROBE3 {"step":"O0 Outline ? before any press","exists":true,"rect":[293,778,15,15],"vh":900,"atCentre":"BUTTON.wz-help (THE BUTTON)","expanded":"false","popOpen":false,"popText":null,"clip":{"cls":"wz-sliver-panel chrome-fade desk-dissolv","top":107,"bottom":840,"btnTop":778,"btnBottom":793}}
+HPROBE3 {"step":"O1 after ONE real press on Outline ? (nothing else open)","exists":true,"rect":[293,778,15,15],"vh":900,"atCentre":"BUTTON.wz-help (THE BUTTON)","expanded":"true","popOpen":true,"popText":"Numbered levels. Tab indents.","clip":{"cls":"wz-sliver-panel chrome-fade desk-dissolv","top":107,"bottom":840,"btnTop":778,"btnBottom":793}}
+HPROBE3 {"step":"O2 after a SECOND real press","exists":true,"rect":[293,778,15,15],"vh":900,"atCentre":"BUTTON.wz-help (THE BUTTON)","expanded":"false","popOpen":false,"popText":null,"clip":{"cls":"wz-sliver-panel chrome-fade desk-dissolv","top":107,"bottom":840,"btnTop":778,"btnBottom":793}}
+HPROBE3 {"step":"T1 Templates ? pressed","exists":true,"rect":[295,748,15,15],"vh":900,"atCentre":"BUTTON.wz-help (THE BUTTON)","expanded":"true","popOpen":true,"popText":"Ready-made page layouts.","clip":{"cls":"wz-sliver-panel chrome-fade desk-dissolv","top":107,"bottom":840,"btnTop":748,"btnBottom":763}}
+HPROBE3 {"step":"T2 Templates ? pressed again (closes)","exists":true,"rect":[295,748,15,15],"vh":900,"atCentre":"BUTTON.wz-help (THE BUTTON)","expanded":"false","popOpen":false,"popText":null,"clip":{"cls":"wz-sliver-panel chrome-fade desk-dissolv","top":107,"bottom":840,"btnTop":748,"btnBottom":763}}
+HPROBE3 {"step":"O3 Outline ? pressed after T was opened and closed (the S1 loop order)","exists":true,"rect":[293,778,15,15],"vh":900,"atCentre":"BUTTON.wz-help (THE BUTTON)","expanded":"true","popOpen":true,"popText":"Numbered levels. Tab indents.","clip":{"cls":"wz-sliver-panel chrome-fade desk-dissolv","top":107,"bottom":840,"btnTop":778,"btnBottom":793}}
+HPROBE3 {"step":"R0 Recede depth ? (footer popout closed)","exists":false}
+HPROBE3 {"step":"R1 Recede depth ? after opening the footer popout","exists":true,"rect":[249,1351,15,15],"vh":900,"atCentre":null,"expanded":"false","popOpen":true,"popText":"Numbered levels. Tab indents.","clip":{"cls":"wz-sliver-panel chrome-fade desk-dissolv","top":107,"bottom":840,"btnTop":1351,"btnBottom":1366}}
+HPROBE3 {"step":"R2 after a real press on Recede depth ?","exists":true,"rect":[249,1351,15,15],"vh":900,"atCentre":null,"expanded":"false","popOpen":false,"popText":null,"clip":{"cls":"wz-sliver-panel chrome-fade desk-dissolv","top":107,"bottom":840,"btnTop":1351,"btnBottom":1366}}
+
+ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one)

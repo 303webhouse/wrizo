@@ -198,6 +198,20 @@ export interface Stroke {
 // rewritten afterward (the project gets its own working copy; the entry stays
 // whole). `sessionId` links the A9 session row when the sprint was also saved.
 // Soft-deleted and sync-eligible by inheriting the adapter machinery exactly.
+// CONNECTOR-B - ONE LINK between two things a board's own `boxes` cannot join: an end that is an ENTRY (a page or a board), or a card on ANOTHER board. A same-board card <-> card link is NOT one of these - it is a
+// 'connection' box inside the board's boxes, forever. Stored ONCE, on the entry where the writer started the link (the owner, aEntryId); the reverse is read by scanning the cache. `deletedAt` is a tombstone: a delete is a write,
+// so it syncs and cannot resurrect. Rides the entry as the additive jsonb array `page_links` (server: migrate.ts / sync.ts); an entry with none has NO `pageLinks` key at all.
+export interface PageLink {
+  id: string;              // stable, never reused
+  aEntryId: string;        // ALWAYS the entry that OWNS this record (the one whose pageLinks holds it)
+  aBoxId?: string;         // a card on entry A (A is a board and this end is a card)
+  bEntryId: string;        // the other end: a page or a board
+  bBoxId?: string;         // a card on entry B
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
 export interface JournalEntry {
   id: string;
   text: string; // same serialization Quick Sprint writes to the drafts buffer
@@ -305,6 +319,8 @@ export interface JournalEntry {
   // grandfather fixed point planBoardId/tutor/origin keep, so an untouched
   // page reads undefined and the app's own PAGE_SETTINGS_FALLBACK governs.
   pageSettings?: PageSettings;
+  // CONNECTOR-B - this entry's own link records (see PageLink). Absent on every entry that never had one.
+  pageLinks?: PageLink[];
 }
 
 // ITEM 83 M2 (R6) — the sheet's dimension: what a page IS as paper, as
@@ -432,7 +448,14 @@ export interface PageSettings {
   // NOT added to PAGE_SETTINGS_FALLBACK, for the reason kind and styleGuide are not. `size` is the number of POINTS.
   face?: StoredFace;
   size?: number;
+  // PAGE TEMPLATES (docs/plans/page-templates.md) - which lens draws this page's text: an Outline, a Bibliography or a Title Page.
+  // Absent, never null, on every page that never chose (Blank takes no setting; a Screenplay is `pageType: 'script'`). The TEXT is the
+  // truth and the template only a lens, so losing this key leaves a readable Draft page. NOT dress: like `kind` it is a fact about THIS
+  // page, so store/pageDefaults.ts strips it from the per-user default.
+  template?: PageTemplate;
 }
+
+export type PageTemplate = 'outline' | 'title' | 'bibliography';
 
 // The app's own floor, used wherever a page carries no settings and no user
 // default exists. Deliberately the values the app already renders today, so

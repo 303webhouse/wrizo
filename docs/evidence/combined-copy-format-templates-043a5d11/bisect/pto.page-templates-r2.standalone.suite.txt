@@ -1,0 +1,10 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=2 tree=f0e0b311 bundle=index-jMZlTeV4.js/714058b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bis2
+[01/2] FAIL      exit=1   13s page-templates-r2.mjs :: PAGE-TEMPLATES-R2 VERIFY: FAIL - 1/91 failed
+[02/2] OK        exit=0   20s page-templates.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; PAGE-TEMPLATES VERIFY: PASS (20 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 1/2 of 2 returned a passing verdict
+  FAIL: page-templates-r2.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bis2\page-templates-r2.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=f0e0b311 bundle=index-jMZlTeV4.js/714058b NO-REBUILD

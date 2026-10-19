@@ -12,7 +12,7 @@
 // WHAT IS HIDDEN, exactly as the decorator hides it: every marker of every run readMarks accepts on a line's text, and the lead
 // tokens of kind bullet / bullet-circle / bullet-square / heading. Tabs are the indent itself, and the alignment, quote and block
 // tokens still show while the caret touches them, so the caret treats those as visible characters.
-import { closeMark, readLead, readMarks, type LeadToken } from './markRuns';
+import { closeMark, readEscapes, readLead, readMarks, type LeadToken } from './markRuns';
 
 // FONT-SPAN: `cmark` is the run's CLOSING mark - the same string as `mark` for emphasis, `]{.font-<slug>}` for a font span. Every
 // length or identity below that concerns the closing side reads `cmark`; the opening side reads `mark`.
@@ -44,6 +44,9 @@ function lineAt(text: string, p: number): LineInfo {
     for (let k = 0; k < r.mark.length; k++) hidden[r.open - start + k] = 2;
     for (let k = 0; k < r.cmark.length; k++) hidden[r.close - start + k] = 2;
   }
+  // TYPED-LITERAL: an escape's backslash is hidden like a marker (the page shows the typed character alone), so the caret never stops
+  // between the two and the arrows step the pair as one visible character
+  for (const e of readEscapes(line)) hidden[e] = 2;
   return { start, end, leadEnd: start + lead.length, tokens, runs, hidden };
 }
 
@@ -61,6 +64,26 @@ function allRuns(text: string): AbsRun[] {
 
 const hid = (li: LineInfo, i: number) => (i >= li.start && i < li.end ? li.hidden[i - li.start] : 0);
 const isEmptyInterior = (li: LineInfo, p: number) => li.runs.some(r => r.close === r.open + r.mark.length && p === r.close);
+
+/** TYPED-LITERAL (Nick's ruling, Oct 16; docs/typed-literal-plan.md): `ins`, text the writer TYPED or PASTED at `at` in `text`, with every
+ *  character the reader could read as markup escaped (`\\*`), so typed formatting characters are literal and never become markup.
+ *  `\\` `*` `_` `~` anywhere; `#` `-` `>` only where a line's TEXT begins (after nothing but its structure tokens) - a heading, bullet or
+ *  quote token can only form there, so a mid-line hyphen stays bare. (`[` joins the first set when font-span's spans are on this branch.) */
+export function escapeTyped(ins: string, text: string, at: number): string {
+  const ls = at <= 0 ? 0 : text.lastIndexOf('\n', at - 1) + 1;
+  const prefix = text.slice(ls, at);
+  let atStart = readLead(prefix).length === prefix.length;
+  let out = '';
+  for (const c of ins) {
+    if (c === '\n') { out += c; atStart = true; continue; }
+    // FONT-SPAN: `[` opens a font span and a bare `]` closes one (store/markRuns.ts fontRuns), so a typed bracket is escaped too
+    if (c === '\\' || c === '*' || c === '_' || c === '~' || c === '[' || c === ']') out += '\\' + c;
+    else if (atStart && (c === '#' || c === '-' || c === '>')) out += '\\' + c;
+    else out += c;
+    atStart = false;
+  }
+  return out;
+}
 
 /** Rule 1. The caret sits directly after the nearest visible character to its left, or at the line's start - where "start" is
  *  after the line's hidden bullet or heading token, since typing in front of it would turn the token into text. The one other
@@ -204,9 +227,16 @@ function repair(doc: Doc): void {
  *  broke is re-closed with the space outside it. The caret lands after the inserted text. */
 function replaceRangeCore(text: string, s: number, e: number, ins: string): EditResult {
   const runs = allRuns(text);
-  // a marker the range cuts through is taken whole, never one star of it
+  // TYPED-LITERAL: every escape on the text, as an absolute position of its backslash
+  const escapes: number[] = [];
+  { let ls = 0; for (const line of text.split('\n')) { for (const x of readEscapes(line)) escapes.push(ls + x); ls += line.length + 1; } }
+  // a marker the range cuts through is taken whole, never one star of it - and an escape the same (a typed `\*` goes as one character)
   for (let moved = true; moved;) {
     moved = false;
+    for (const x of escapes) {
+      if (s > x && s < x + 2) { s = x; moved = true; }
+      if (e > x && e < x + 2) { e = x + 2; moved = true; }
+    }
     for (const r of runs) for (const m of [r.open, r.close]) {
       const me = m + (m === r.open ? r.mark.length : r.cmark.length);
       if (s > m && s < me) { s = m; moved = true; }

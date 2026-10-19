@@ -51,8 +51,11 @@ const FONT_CLOSE = /^\]\{\.font-([a-z0-9]+(?:-[a-z0-9]+)*)\}/;
 function fontRuns(line: string): MarkRun[] {
   const out: MarkRun[] = [];
   const stack: number[] = [];
+  // TYPED-LITERAL: a typed bracket is stored escaped (`\[`, `\]`) - text, so it neither opens a span nor closes one
+  const escaped = new Set(readEscapes(line).map((e) => e + 1));
   for (let i = 0; i < line.length; i++) {
     const c = line[i];
+    if (escaped.has(i)) continue;
     if (c === '[') { stack.push(i); continue; }
     if (c !== ']') continue;
     const o = stack.pop();
@@ -66,16 +69,35 @@ interface Tok { ch: string; pos: number; len: number; canOpen: boolean; canClose
 
 const isSpace = (c: string | undefined): boolean => c === undefined || /\s/.test(c);
 
+// ---- TYPED-LITERAL (Nick's ruling, Oct 16; docs/typed-literal-plan.md): a formatting character the writer TYPES (or pastes) has no
+// formatting meaning. It is stored with Markdown's own escape - a backslash before it - so it never becomes markup, and a .md export
+// shows the literal character in any Markdown reader. An ESCAPE is a backslash followed by one of these; the backslash is the escape's
+// hidden mark (the page shows the character alone), and the character is plain text. `\\` is an escaped backslash, so in `\\*` the star
+// is real markup again (Markdown's own rule). Saved text from before the ruling holds no escapes and reads exactly as it did.
+export const ESCAPABLE = new Set(['\\', '*', '_', '~', '#', '-', '>', '[', ']']);
+
+/** The positions of the escape backslashes on one line (each escapes the character right after it). */
+export function readEscapes(line: string): number[] {
+  const out: number[] = [];
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '\\' && i + 1 < line.length && ESCAPABLE.has(line[i + 1])) { out.push(i); i++; }
+  }
+  return out;
+}
+
 function tokenize(line: string): Tok[] {
   const toks: Tok[] = [];
+  // TYPED-LITERAL: an escaped character is text - never a marker, and never part of a marker run beside it
+  const escaped = new Set(readEscapes(line).map((e) => e + 1));
   const push = (ch: string, pos: number, len: number) => {
     toks.push({ ch, pos, len, canOpen: !isSpace(line[pos + len]), canClose: pos > 0 && !isSpace(line[pos - 1]) });
   };
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
     if (ch !== '*' && ch !== '_' && ch !== '~') continue;
+    if (escaped.has(i)) continue;
     let j = i;
-    while (j < line.length && line[j] === ch) j++;
+    while (j < line.length && line[j] === ch && !escaped.has(j)) j++;
     const n = j - i;
     if (ch === '*') {
       if (n >= 1 && n <= 3) push(ch, i, n);
@@ -182,8 +204,8 @@ export function readLead(line: string, opts: { headings?: boolean } = {}): { tok
 }
 
 /** `text` with the markers of `runs` taken out (positions from readMarks on that same text): what the page SHOWS, as plain text. */
-export function removeMarkers(text: string, runs: MarkRun[]): string {
-  const cut = new Set<number>();
+export function removeMarkers(text: string, runs: MarkRun[], escapes: number[] = []): string {
+  const cut = new Set<number>(escapes);
   for (const r of runs) {
     for (let k = 0; k < r.mark.length; k++) cut.add(r.open + k);
     const cm = closeMark(r);
@@ -198,7 +220,22 @@ export function removeMarkers(text: string, runs: MarkRun[]): string {
  *  "2 * 3 * 4" exports exactly as it is shown. (Copy My Words uses this; the decorator paints from the same two readers.) */
 export function stripLine(line: string): string {
   const rest = line.slice(readLead(line).length);
-  return removeMarkers(rest, readMarks(rest));
+  // TYPED-LITERAL: the escapes' backslashes go too - the reader sees the typed character itself
+  return removeMarkers(rest, readMarks(rest), readEscapes(rest));
+}
+
+/** TYPED-LITERAL: the text with every escape's backslash taken out and EVERYTHING else kept (marks, structure) - the words a reader of the
+ *  page's text is given (the Tutor's prompts, Consistency). */
+export function unescapeTyped(text: string): string {
+  if (!text.includes('\\')) return text;
+  return text.split('\n').map((line) => {
+    const esc = readEscapes(line);
+    if (!esc.length) return line;
+    const cut = new Set(esc);
+    let out = '';
+    for (let i = 0; i < line.length; i++) if (!cut.has(i)) out += line[i];
+    return out;
+  }).join('\n');
 }
 
 /** FONT-SPAN (Fable's addition 1, Oct 15): the text with every font span's two marks taken out and EVERYTHING else kept exactly - the

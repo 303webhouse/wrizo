@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
+import { useTheme, type ThemeId } from '../store/theme';
 import { TypeControl, type TypeControlProps } from './TypeControl';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
@@ -16,6 +17,7 @@ import { useWritingGoal, setWritingGoal, goalCount, goalFraction, DEFAULT_GOAL_L
 import { Seg } from './ModeStage';
 import { HelpButton } from './HelpButton';
 import { BEGINNING_GLYPH } from './BeginningsRow';
+import { TemplateSketch, type TemplateKey } from './TemplateSketch';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import type { FormatAction, StructureKind } from '../store/draftFormat';
 import type { PageKindSetting, StyleGuide } from '../types';
@@ -154,7 +156,9 @@ export type SliverContent =
       // stays the blank Free Write page's door; Plan stays on the PLAN bar). The host owns what it does (on an empty page it
       // applies in place; on a page with words it opens a new page), so the strip only renders and calls.
       // `selected`: the page already IS this template (a screenplay page) - drawn chosen, brass at rest, aria-pressed.
-      templates?: { key: 'screenplay'; label: string; selected?: boolean; onApply: () => void }[];
+      // PAGE TEMPLATES (approved mockup cursor/templates @ 0fc9afef): the picker is five rows now - Blank, Screenplay, Outline, Title Page, Bibliography -
+      // each a tiny page sketch and its word. Same contract: the host decides what a press does (empty page: in place; a page with words: a new page).
+      templates?: { key: TemplateKey; label: string; selected?: boolean; onApply: () => void }[];
     }
   // AB4 S5 — the Board's own hand tool(s). FX4 S6 — the Connect toggle
   // RETIRES (replaced by BoardEditor.tsx's own handle-drag thread gesture:
@@ -598,23 +602,28 @@ function BulletControl({ onFormat, t }: { onFormat: (action: FormatAction) => vo
   );
 }
 
-function TemplateIcon({ kind }: { kind: 'outline' | 'bibliography' | 'title' | 'custom' }) {
-  const svg = { width: 16, height: 16, viewBox: '0 0 16 16', 'aria-hidden': true as const, fill: 'none', stroke: 'currentColor', strokeWidth: 1.3, strokeLinecap: 'round' as const, className: 'wz-format-mark' };
-  if (kind === 'outline') {
-    return <svg {...svg}><path d="M3 3h10M5 7h8M7 11h6M3 15h8" /></svg>;
-  }
-  if (kind === 'bibliography') {
-    return <svg {...svg}><path d="M3 2.5v11M4.2 2.5h8.3v11H4.2zM6.2 5.5h4.5M6.2 8h4.5M6.2 10.5h3" /></svg>;
-  }
-  if (kind === 'custom') {
-    // a page with a plus: a template the writer makes
-    return <svg {...svg}><path d="M3.5 2.5h6l3 3v8h-9zM8 7.2v4M6 9.2h4" /></svg>;
-  }
-  return <svg {...svg}><path d="M3.5 2.5h9v11h-9zM6 6.2h4" /></svg>;
-}
+// help-buttons (Fable, Oct 18) — only a ROW NAME this theme renamed away from
+// the canonical word needs a "?"; Arbor's own five words ARE the canonical
+// ones (deskLexicon.ts's own CANONICAL), so none of its rows get one — Flux
+// overrides every one of them (Raw/Script/Spine/Cover/Sources), so all five
+// of its rows do. Named here, not derived from the lexicon's own internals
+// (OVERRIDES isn't exported, and the override list is already the one place
+// this fact lives — deskLexicon.ts's OVERRIDES.flux block, template* keys).
+const THEME_UNIQUE_TEMPLATES: Record<ThemeId, ReadonlySet<TemplateKey>> = {
+  plateau: new Set(),
+  flux: new Set(['blank', 'screenplay', 'outline', 'title', 'bibliography']),
+};
+const TEMPLATE_HELP_KEYS: Record<TemplateKey, DeskTermId> = {
+  blank: 'helpTemplateBlank',
+  screenplay: 'helpTemplateScreenplay',
+  outline: 'helpOutline',
+  title: 'helpTitlePage',
+  bibliography: 'helpTemplateBibliography',
+};
 
 function SliverToolsBody({ content }: { content: SliverContent }) {
   const { t } = useDeskLexicon();
+  const theme = useTheme();
   // PHASE 1 (S4) - while Typewriter is on the whole Format group is greyed and unusable (Nick). Read here, above the early return, so the hook order holds.
   // THE SETTING IS THE RUNNING STATE HERE, so it is not narrowed further: FORMAT is mounted only by PageEditor's `mode === 'drafting'` content (ScriptEditor passes
   // no `format`), and ModeStage runs the typewriter as `(mode === 'journal' || mode === 'drafting') && settings.typewriter` - for drafting, exactly the setting.
@@ -784,19 +793,18 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
       {content.kind === 'draft' && allowed('templates') && (
         <div className="wz-sliver-section wz-sliver-templates">
           <div className="wz-sliver-h">{t('railTemplates')} <HelpButton helpKey="helpTemplates" subjectLabel={t('railTemplates')} /></div>
-          <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
+          <div className="wz-template-list" onMouseDown={e => e.preventDefault()}>
             {content.templates?.map(tpl => (
-              <button key={tpl.key} type="button" className="mode-tbtn wz-template-live" data-template={tpl.key} aria-pressed={!!tpl.selected} title={tpl.label} aria-label={tpl.label} onClick={tpl.onApply}>
-                <span className="wz-format-mark" aria-hidden="true">{BEGINNING_GLYPH[tpl.key]}</span>
-              </button>
+              <div key={tpl.key} className="wz-template-row-wrap">
+                <button type="button" className="wz-template-row wz-template-live" data-template={tpl.key} aria-pressed={!!tpl.selected} title={tpl.label} aria-label={tpl.label} onClick={tpl.onApply}>
+                  <TemplateSketch kind={tpl.key} />
+                  <span className="wz-template-word">{tpl.label}</span>
+                </button>
+                {THEME_UNIQUE_TEMPLATES[theme].has(tpl.key) && (
+                  <HelpButton helpKey={TEMPLATE_HELP_KEYS[tpl.key]} subjectLabel={tpl.label} />
+                )}
+              </div>
             ))}
-            {/* Nick's order (2026-10-08): Screenplay, then Outline, Title Page, Bibliography and Custom, still coming soon. */}
-            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateOutline')}><TemplateIcon kind="outline" /></button>
-            <HelpButton helpKey="helpOutline" subjectLabel={t('templateOutline')} />
-            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateTitlePage')}><TemplateIcon kind="title" /></button>
-            <HelpButton helpKey="helpTitlePage" subjectLabel={t('templateTitlePage')} />
-            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateBibliography')}><TemplateIcon kind="bibliography" /></button>
-            <button type="button" className="mode-tbtn wz-template-btn" aria-disabled="true" title={t('comingSoon')} aria-label={t('templateCustom')}><TemplateIcon kind="custom" /></button>
           </div>
         </div>
       )}
@@ -1022,6 +1030,7 @@ function countPeriods(text: string): number {
 function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, goalText, onPopoutHold }: { hasMilestones?: boolean; target: WritingGoal | null; typewriterAvailable?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
+  const theme = useTheme();
 
   // The foot is one three-dot menu. Typewriter, progress, and the remaining
   // preferences open together, under those three headings. Full screen is
@@ -1115,6 +1124,16 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
             <section className="wz-foot-settings-block">
               <h4>{t('footMenuTypewriter')}</h4>
               <TypewriterFields />
+            </section>
+          )}
+          {/* GLITCH METER (Fable, Oct 17: "the Flicker switch goes in the '...' settings panel beside Typewriter"). Flux only: the meter is
+              Flux's, and a switch with nothing to switch would teach a writer it does something. */}
+          {theme === 'flux' && (
+            <section className="wz-foot-settings-block">
+              <h4>{t('footMenuFlicker')}</h4>
+              <Seg label={t('footMenuFlicker')} value={settings.flicker ? 'on' : 'off'}
+                opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
+                onPick={v => setWritingSettings({ flicker: v === 'on' })} />
             </section>
           )}
           <section className="wz-foot-settings-block">

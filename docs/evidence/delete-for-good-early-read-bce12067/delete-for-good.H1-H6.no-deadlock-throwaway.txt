@@ -1,0 +1,18 @@
+PASS  (setup) a live page, seeded through the app's own seam
+PASS  H1: a BARE console call to each of window.wrizoDelete's paths REFUSES (no in-app confirmation this session) and the page is untouched  [{"h1":{"softAll":"refused: confirm in the app first - window.wrizoDestructive.request() opens the confirmation, and the writer types the phrase","emptyTrash":"refused: confirm in the app first - window.wrizoDestructive.request() opens the confirmation, and the writer types the phrase","purgeDeleted":"refused: confirm in the app first - window.wrizoDestructive.request() opens the confirmation, and the writer types the phrase"}}]
+PASS  H2 (setup): the request opens the in-app confirmation (a title, the phrase field, and a Delete for good button)  [{"title":"Delete everything on this account, for good?","hasInput":true,"go":true}]
+PASS  H2: a page-made (untrusted) fill of the phrase and a page-made press do NOT unlock - the dialog stays, nothing answered  [{"unlocked":false,"answer":null,"open":true}]
+PASS  H2: the writer typing the exact phrase and pressing Delete for good unlocks, answers the request, and closes the dialog  [{"unlocked":true,"answer":true,"open":false}]
+PASS  H2: the unlock lasts this page session only - a reload locks it again  [false]
+PASS  H3: the harness's own test unlock works on this local host  [true]
+PASS  H4 (setup): the trashed page shows on the Trash board  [{"cardId":"mveu1mphtj4z4n2oq","at":{"l":205.390625,"t":167.265625,"w":239.359375,"h":108.796875}}]
+PASS  H4: a trashed page's card menu offers Restore, then Delete  [[{"label":"Restore","disabled":false},"---",{"label":"Delete","disabled":false}]]
+PASS  H4: it always asks, in the purge words: "Delete for good?"  [{"title":"Delete for good?"}]
+PASS  H4: the page is gone from Trash, and its record is a shell (purgedAt, no words)  [{"gone":true,"r4":{"id":"dfg-t1","createdAt":"2026-04-01T00:00:02.000Z","updatedAt":"2026-10-19T05:47:35.145Z","deletedAt":"2026-04-01T00:00:03.000Z","purgedAt":"2026-10-19T05:47:35.105Z","text":""}}]
+PASS  H5: the Trash board's own menu offers Empty Trash  [[{"label":"Empty Trash","disabled":false}]]
+PASS  H5: it names the count and asks: "Delete 3 items for good?"  [{"title":"Delete 3 items for good?"}]
+PASS  H5: Trash is empty - both pages are shells and the trashed card is purged  [{"left":0,"t2":"2026-10-19T05:47:43.177Z","card":{"id":"dfg-card","kind":"text","x":0,"y":0,"w":0,"h":0,"z":0,"purgedAt":"2026-10-19T05:47:43.393Z"}}]
+PASS  H5: with Trash empty, Empty Trash is greyed  [[{"label":"Empty Trash","disabled":true}]]
+PASS  H6: the open page, purged on another device, leaves for the Desk with one quiet line (Q3)  [{"hash":"#/","toast":"This page was deleted for good on another device."}]
+
+DELETE-FOR-GOOD VERIFY: PASS (16 checks)

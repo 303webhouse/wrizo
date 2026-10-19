@@ -1,0 +1,21 @@
+#!/bin/bash
+# theme-leftovers @ 18624468 + help-buttons @ a02f9296 (stacked; Fable's overnight item 1). hb = origin/main @ abef6c20 + help-buttons -> 0aec900a. Fast lane + frames. One grant, grantsafe take/release.
+SD="C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad"
+TOK=chat1-hb-20261017
+node "$SD/grantsafe.mjs" take $TOK || { echo "GRANT HELD BY ANOTHER - NOT RUNNING" > "$SD/hb-status.txt"; exit 1; }
+export WS_BOX_TURN=$TOK
+W=/c/Users/nickh/writer-studio/.claude/worktrees
+ST="$SD/hb-status.txt"; : > "$ST"
+LOC="C:/Users/nickh/writer-studio/.claude/evidence-local/help-buttons-theme-leftovers-0aec900a"
+mkdir -p "$LOC/help" "$LOC/before-main-capture"
+step() { local name="$1" dir="$2"; shift 2; echo "START $name $(date -u +%H:%M:%SZ)" >> "$ST"; ( cd "$dir" && "$@" ) > "$SD/hb-$name.out" 2>&1; echo "END $name exit=$? $(date -u +%H:%M:%SZ)" >> "$ST"; }
+FILES="help-buttons.mjs,drawers-p1-live.mjs,drawers-p1.mjs,flux-page-ink.mjs,faint-text-sweep.mjs,flux-card-ink.mjs,th1.mjs,th2.mjs,cd2.mjs,item211.mjs,resume-on-open.mjs,splash.mjs,arrival-signin-walk.mjs,font-span.mjs,pw1.mjs,pw2.mjs,item170.mjs,b3.mjs,fx7.mjs,fx10.mjs,writing-r1.mjs,clickhead.mjs,logout-flush-walk.mjs,item-storage-full.mjs,sync-generation.mjs,item224a-sync-integrity.mjs,card-close-x.mjs,item118.mjs,seed-guard.mjs"
+step lane "$W/hb/apps/desktop" node scripts/run-suite.mjs --no-rebuild --only "$FILES" --out "$SD/hb-lane"
+step capture-after "$W/hb/apps/desktop" node scripts/harness/theme-leftovers-capture.mjs
+# BEFORE: the same capture tool on main's own product (ro2 = main + resume-on-open = production's bundle); a throwaway copy of the tool, removed after
+cp "$W/hb/apps/desktop/scripts/harness/theme-leftovers-capture.mjs" "$W/ro2/apps/desktop/scripts/harness/theme-leftovers-capture.mjs"
+step capture-before "$W/ro2/apps/desktop" node scripts/harness/theme-leftovers-capture.mjs
+rm -f "$W/ro2/apps/desktop/scripts/harness/theme-leftovers-capture.mjs"
+step helpframes "$W/hb/apps/desktop" env WT=hb FRAMES_OUT="$LOC/help" node "$SD/helpframes.mjs"
+node "$SD/grantsafe.mjs" release $TOK >> "$ST" 2>&1
+echo "HB COMPLETE" >> "$ST"

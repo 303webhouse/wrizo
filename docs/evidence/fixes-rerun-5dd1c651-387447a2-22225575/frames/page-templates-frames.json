@@ -1,0 +1,151 @@
+{
+  "rows": [
+    {
+      "combo": "arbor-dark",
+      "frame": "01-the-picker",
+      "file": "arbor-dark/01-the-picker.png",
+      "md5": "bd0d3380bfa560ea5360ca5dbc2e40e5",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "02-outline",
+      "file": "arbor-dark/02-outline.png",
+      "md5": "05e898e002a967da3a569c14fad42793",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "03-bibliography",
+      "file": "arbor-dark/03-bibliography.png",
+      "md5": "e44f722ef59010bbd9feb3c2639be359",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "04-title-page",
+      "file": "arbor-dark/04-title-page.png",
+      "md5": "b45a0a9583c25e24cf99a80e1dd31ad9",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "arbor-dark",
+      "frame": "05-new-page-note",
+      "file": "arbor-dark/05-new-page-note.png",
+      "md5": "66db642e0f6ab8eb0802f48a8b686d21",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "01-the-picker",
+      "file": "arbor-light/01-the-picker.png",
+      "md5": "bd0d3380bfa560ea5360ca5dbc2e40e5",
+      "sameAsDarkTwin": true
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "02-outline",
+      "file": "arbor-light/02-outline.png",
+      "md5": "05e898e002a967da3a569c14fad42793",
+      "sameAsDarkTwin": true
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "03-bibliography",
+      "file": "arbor-light/03-bibliography.png",
+      "md5": "e44f722ef59010bbd9feb3c2639be359",
+      "sameAsDarkTwin": true
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "04-title-page",
+      "file": "arbor-light/04-title-page.png",
+      "md5": "b45a0a9583c25e24cf99a80e1dd31ad9",
+      "sameAsDarkTwin": true
+    },
+    {
+      "combo": "arbor-light",
+      "frame": "05-new-page-note",
+      "file": "arbor-light/05-new-page-note.png",
+      "md5": "66db642e0f6ab8eb0802f48a8b686d21",
+      "sameAsDarkTwin": true
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "01-the-picker",
+      "file": "flux-dark/01-the-picker.png",
+      "md5": "d8d891d6aeae34b18889424f29eac03f",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "02-outline",
+      "file": "flux-dark/02-outline.png",
+      "md5": "8725cbabd555f304b428edb7ab1e2cf0",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "03-bibliography",
+      "file": "flux-dark/03-bibliography.png",
+      "md5": "9f7b75422e0d251638de318ba985bd0c",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "04-title-page",
+      "file": "flux-dark/04-title-page.png",
+      "md5": "2fa7ddaeb60386c36f6d477974f15809",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "flux-dark",
+      "frame": "05-new-page-note",
+      "file": "flux-dark/05-new-page-note.png",
+      "md5": "226577364b38e09fd5b7dd7666bcbce8",
+      "sameAsDarkTwin": null
+    },
+    {
+      "combo": "flux-light",
+      "frame": "01-the-picker",
+      "file": "flux-light/01-the-picker.png",
+      "md5": "507e746ff420e149127cd7c039e9d605",
+      "sameAsDarkTwin": false
+    },
+    {
+      "combo": "flux-light",
+      "frame": "02-outline",
+      "file": "flux-light/02-outline.png",
+      "md5": "37fa84bd9a17d736777207d5c2d486d1",
+      "sameAsDarkTwin": false
+    },
+    {
+      "combo": "flux-light",
+      "frame": "03-bibliography",
+      "file": "flux-light/03-bibliography.png",
+      "md5": "00fa15acb9d8cba0cfee334e4c9299a9",
+      "sameAsDarkTwin": false
+    },
+    {
+      "combo": "flux-light",
+      "frame": "04-title-page",
+      "file": "flux-light/04-title-page.png",
+      "md5": "e0e9f601fd93819cd01360131f9a74a3",
+      "sameAsDarkTwin": false
+    },
+    {
+      "combo": "flux-light",
+      "frame": "05-new-page-note",
+      "file": "flux-light/05-new-page-note.png",
+      "md5": "8b3ce8c2d0336270f51fe1712b80b7b9",
+      "sameAsDarkTwin": false
+    }
+  ],
+  "lightFramesByteIdenticalToDarkTwin": [
+    "arbor-light/01-the-picker",
+    "arbor-light/02-outline",
+    "arbor-light/03-bibliography",
+    "arbor-light/04-title-page",
+    "arbor-light/05-new-page-note"
+  ]
+}

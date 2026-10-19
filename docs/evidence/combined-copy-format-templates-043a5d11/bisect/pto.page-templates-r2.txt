@@ -1,0 +1,97 @@
+PASS  O1 Outline: a line's level is its leading-tab count, capped at three levels and at previous + 1
+PASS  O1b ...and a read never rewrites the stored tabs
+PASS  O2 Outline: a row cannot skip a level
+PASS  O3 Outline: the first row is level 0 whatever its tabs
+PASS  O4 Outline: the numbers are derived (1. / 1.1 / 1.1.1 / 1.1.2 / 1.2 / 2.)
+PASS  O4a Outline: a skipped level is numbered as the level it is clamped to
+PASS  O4b ...and deeper counters reset under a new parent (the mockup's seed outline)
+PASS  O5 Tab indents the caret's row one level and carries the caret
+PASS  O5b ...never past previous + 1, never past three levels
+PASS  O5c ...and the first row cannot be indented
+PASS  O5d ...a second Tab on a row already one under its parent goes no deeper than previous + 1
+PASS  O6 Shift+Tab outdents and carries the caret
+PASS  O6b ...and does nothing at the top level
+PASS  O7 a selection over several rows indents each, re-clamped as it goes
+PASS  O7b ...a selection ending exactly on a row's first character has not touched that row
+PASS  O8 no number is ever written into the text by an indent
+PASS  O9 Enter opens the next row at the same level
+PASS  X1 Outline .txt / Copy My Words: numbered, two spaces per level (golden)
+PASS  X2 Outline .md / Copy Formatted: each row its own list item with its number
+PASS  X3 neither body carries a leading tab (a tab line is a code block in Markdown)
+PASS  X4 an empty row is not an entry
+PASS  X5 the plain body strips the dialect's marks
+PASS  T1 Title Page: five fields serialize to the canonical text (golden)
+PASS  T2 ...and the canonical text parses back to the same five fields
+PASS  T3 a fresh Title Page is the empty string (no words, no "by")
+PASS  T4 a title alone writes the word line empty, the centred block, and round-trips
+PASS  T5 contact alone is just its lines
+PASS  T6 "by" appears only once a title or author does
+PASS  T7 serialize(parse(serialize(f))) === serialize(f) for every field set
+PASS  T8 a contact line cannot be taken for the word line (its directive token is dropped)
+PASS  T9 text that is not this shape is declined (null), so the page draws as plain Draft text
+PASS  T9b ...including a centred block whose middle line is not "by"
+PASS  T10 a token an editor trimmed (">>", "><") still parses
+PASS  T11 isTitlePageText says whether the lens can draw it
+PASS  B1 Bibliography: the entries are the non-blank lines, trailing space trimmed
+PASS  B2 .md body: a blank line between entries, italics kept
+PASS  B3 .txt body: a blank line between entries, italics stripped
+PASS  E1 the page export / copy bodies pick the Outline branch by pageSettings.template
+PASS  E2 ...and the Bibliography branch
+PASS  E3 a Title Page's .md keeps the dialect (as any page)
+PASS  E4 ...and its .txt drops the alignment tokens but keeps every field
+PASS  E5 an ordinary page's bodies are byte-identical to before
+PASS  E6 a tabbed ORDINARY page is not numbered (the branch is the template's, not the tab's)
+PASS  D1 "Set as my default" still keeps the dress
+PASS  D2 ...and never carries the template (or the kind) into the per-user default
+PASS  mutant "Outline: no previous+1 clamp" is KILLED (reddens: noSkippedLevel, numbersWithSkip)
+PASS  mutant "Outline: deeper counters never reset" is KILLED (reddens: numbersResetDeeper)
+PASS  mutant "Outline: a read rewrites the level" is KILLED (reddens: levelsKeepStoredTabs)
+PASS  mutant "Outline: the export writes a leading tab" is KILLED (reddens: noTabInEitherBody, plainGolden)
+PASS  mutant "Outline: Shift+Tab goes the wrong way" is KILLED (reddens: outdent)
+PASS  mutant "Title Page: no blank line before the centred block" is KILLED (reddens: titleGolden)
+PASS  mutant "Title Page: parse accepts a stray line" is KILLED (reddens: titleDeclinesStrayLine)
+PASS  mutant "Title Page: "by" always written" is KILLED (reddens: byOnlyWithTitleOrAuthor)
+PASS  mutant "Bibliography: entries not blank-line separated" is KILLED (reddens: bibFormatted, bibPlainStripsItalics)
+PASS  mutant "Export: the Outline branch is gone" is KILLED (reddens: exportOutline)
+PASS  mutant "Defaults: the template is not stripped" is KILLED (reddens: defaultsStripTemplate)
+PASS  all 11 mutations landed and 11 were killed
+PASS  P1 PageSettings carries an OPTIONAL template (absent, never null) typed outline | title | bibliography
+PASS  P2 both export seams (Copy and the files share them) read pageSettings.template, in the same place as the script and board branches
+PASS  P3 NO server change: page_settings stays a whole jsonb passthrough, and no template column or mapper exists
+PASS  P4 the Templates section is the five-row picker: rows map content.templates (data-template keys, a page sketch, the word), the grayed stand-ins and Custom are gone
+PASS  P5 the picker's row order is the mockup's: Blank, Screenplay, Outline, Title Page, Bibliography
+PASS  P6 Arbor's words (canonical): Templates / Font, Blank / Screenplay / Outline / Title Page / Bibliography
+PASS  P7 Flux's words (override): Presets / Typeface, Raw / Script / Spine / Cover / Sources
+PASS  P8 the return chip's caption for a template-opened page is "Opened as a new page · Back" (the lexicon term), on both editors
+PASS  P9 the address carries the template (unbornHref writes ?template=, readDescriptor reads it) and the unborn entry carries it as a page setting; NO birth is triggered by a template (PB1 holds)
+PASS  P10 the host owns the act, one place: applyTemplate - same template is a no-op; an EMPTY page (no words, no ink) takes it in place; a page with words or ink opens a NEW page whose state carries openedByTemplate
+PASS  P11 an EMPTY Screenplay converts in place (Q2): the same row, pageType manuscript, the script cleared, the template set; a Screenplay with words opens a new page
+PASS  P12 the Title Page sheet writes ONLY the canonical text: every field edit goes serializeTitlePage -> the host's one onChange; it keeps no second model and touches no storage
+PASS  P13 the host mounts the sheet ONLY in Draft, for template "title", while the text parses (otherwise plain Draft text - a decline loses nothing)
+PASS  P14 the paragraph-indent Tab machine (item 158) stands aside while an Outline is in Draft, so Tab acts on the row and not on the whole one-paragraph outline
+PASS  R1 the Outline's number and level are attributes on the ROW element, never inside the row's markup (so the kept-row compare and the shadow lines are untouched)
+PASS  R2 they are derived by store/outlineText.ts (outlineRows + outlineNumbers), the one place, never stored
+PASS  R3 the lens does nothing on a page that is not an Outline (an early return)
+PASS  R4 and clears its attributes when the lens goes off (a template switched under a mounted editor)
+PASS  R5 it is applied when the rows are mounted
+PASS  R6 ...and after EVERY writeRows (a Tab changes the numbers of rows whose own text did not change)
+PASS  R7 the number is drawn by ::before from the attribute (so it is in no text, no selection, no copy)
+PASS  R8 the Bibliography is pure CSS on the rows: a hanging indent per entry
+PASS  R9 the Outline's Tab / Enter write through writeRows, like every format press (decorateEditorFor only as the no-rows fallback)
+PASS  pin mutant "the number is written into the row markup" is KILLED (reddens: attrsOnRowNotMarkup)
+PASS  pin mutant "the lens is not applied after a write" is KILLED (reddens: appliedOnEveryWrite)
+PASS  pin mutant "the lens is not applied at mount" is KILLED (reddens: appliedOnMount)
+PASS  pin mutant "the lens runs on every page" is KILLED (reddens: onlyOnAnOutline)
+PASS  pin mutant "the attributes are not cleared when the lens goes off" is KILLED (reddens: clearsWhenOff)
+PASS  pin mutant "the Outline Tab bypasses writeRows" is KILLED (reddens: outlineTabThroughWriteRows)
+PASS  pin mutant "the number is drawn from text, not the attribute" is KILLED (reddens: cssNumberFromAttribute)
+PASS  all 7 pin mutations landed and 7 were killed
+PASS  R10 the editor carries the lens as data-template and the host's key door, and re-draws the lens when the template changes under it (refreshLens on [lens])
+PASS  R11 NOTHING of the lens remains in the string decoration path (store/draftDecoration.ts is byte-identical to main's: the rows model owns the page)
+FAIL  PART 2 ran to the end  -- Error: CDP page target never appeared
+    at pageWsUrl (file:///C:/Users/nickh/writer-studio/.claude/worktrees/pto/apps/desktop/scripts/runtime-verify.mjs:355:9)
+    at async withHarness (file:///C:/Users/nickh/writer-studio/.claude/worktrees/pto/apps/desktop/scripts/runtime-verify.mjs:872:19)
+    at async part2 (file:///C:/Users/nickh/writer-studio/.claude/worktrees/pto/apps/desktop/scripts/harness/page-templates-r2.mjs:331:3)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/pto/apps/desktop/scripts/harness/page-templates-r2.mjs:539:9
+
+PAGE-TEMPLATES-R2 VERIFY: FAIL - 1/91 failed

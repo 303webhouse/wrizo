@@ -309,24 +309,34 @@ const baseRef = sh('git merge-base origin/main HEAD')?.trim() || sh('git rev-par
   // for Outline/Title Page). Kept verbatim, no longer run:
   //   ok('(D2b) [word-diet successor]: the Templates block in Sliver.tsx is BYTE-IDENTICAL to origin/main (whitespace aside) — S2\'s own gate is already in both, and word-diet changed nothing inside this slice',
   //     gated && now === was, `${now ? now.length : 0} (gate ${gated}) vs ${was ? was.length : 0}`);
-  // Successor (D2c): the SAME strip-named-deltas-then-compare technique,
-  // with help-buttons' own three insertions added as named gates alongside
-  // pageKind's. Anything OUTSIDE these four named deltas must still match.
-  const HELP_GATES = [
-    ' <HelpButton helpKey="helpTemplates" subjectLabel={t(\'railTemplates\')} />',
-    ' <HelpButton helpKey="helpOutline" subjectLabel={t(\'templateOutline\')} />',
-    ' <HelpButton helpKey="helpTitlePage" subjectLabel={t(\'templateTitlePage\')} />',
-  ];
-  const helpGated = HELP_GATES.every((g) => !!now && now.split(g).length === 2);
-  // D2b's own established reading (comment above, SUPERSEDED block): origin/
-  // main ALREADY carries the pageKind gate (phase1-drawers long merged), so
-  // `was` has it too - stripping GATE from `now` before comparing would be
-  // the artificial-mismatch mistake that comment names. Only help-buttons'
-  // OWN three new insertions are stripped; the pageKind gate is left in
-  // both sides, where it already agrees.
-  const nowStripped = HELP_GATES.reduce((t, g) => t.replace(g, ''), now ?? '');
-  ok('(D2c) [help-buttons successor]: the Templates block in Sliver.tsx is BYTE-IDENTICAL to origin/main (whitespace aside, pageKind gate already in both) save help-buttons\' own three named insertions; nothing else inside this slice moved',
-    gated && helpGated && nowStripped === was, `${now ? now.length : 0} (gate ${gated}, help ${helpGated}) vs ${was ? was.length : 0}`);
+  // SUPERSEDED (help-buttons' own D2c, byte-identical-save-three-gates):
+  // PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @
+  // 0fc9afef, Fable Oct 16) rebuilds this block on purpose - the icon
+  // buttons and the four grayed stand-ins become a five-row picker - so
+  // "byte-identical save help-buttons' own three insertions" stopped being
+  // true for a reason that has nothing to do with help-buttons. Kept
+  // verbatim, no longer run:
+  //   const HELP_GATES = [
+  //     ' <HelpButton helpKey="helpTemplates" subjectLabel={t(\'railTemplates\')} />',
+  //     ' <HelpButton helpKey="helpOutline" subjectLabel={t(\'templateOutline\')} />',
+  //     ' <HelpButton helpKey="helpTitlePage" subjectLabel={t(\'templateTitlePage\')} />',
+  //   ];
+  //   const helpGated = HELP_GATES.every((g) => !!now && now.split(g).length === 2);
+  //   const nowStripped = HELP_GATES.reduce((t, g) => t.replace(g, ''), now ?? '');
+  //   ok('(D2c) [help-buttons successor]: the Templates block in Sliver.tsx is BYTE-IDENTICAL to origin/main (whitespace aside, pageKind gate already in both) save help-buttons\' own three named insertions; nothing else inside this slice moved',
+  //     gated && helpGated && nowStripped === was, `${now ? now.length : 0} (gate ${gated}, help ${helpGated}) vs ${was ? was.length : 0}`);
+  // Successor (D2d... renumbered below to avoid colliding with the pointer-
+  // events D2d that already exists past this block): page-templates-r2's own
+  // structural claim, PLUS help-buttons' own per-row "?" placement merged in
+  // on top of it - the two tickets touched the exact same slice for two
+  // unrelated reasons, so one check now carries both.
+  ok('(D2e) [page-templates-r2 + help-buttons, merged successors]: the Templates block in Sliver.tsx is the five-row picker - it still opens with the section div and the railTemplates heading (carrying its own "?"), maps content.templates into rows keyed by data-template, carries no grayed stand-in (no aria-disabled, no wz-template-btn), keeps the one declared table gate, and places a HelpButton only beside a theme-unique row name (THEME_UNIQUE_TEMPLATES/TEMPLATE_HELP_KEYS)',
+    gated && !!now
+      && now.includes("t('railTemplates')") && now.includes('<HelpButton helpKey="helpTemplates"')
+      && now.includes('content.templates?.map') && now.includes('data-template={tpl.key}')
+      && !now.includes('aria-disabled') && !now.includes('wz-template-btn')
+      && now.includes('THEME_UNIQUE_TEMPLATES[theme].has(tpl.key)') && now.includes('TEMPLATE_HELP_KEYS[tpl.key]'),
+    `${now ? now.length : 0} (gate ${gated}) vs main ${was ? was.length : 0}`);
 }
 
 // (D2d) FIX (Fable, Oct 17, ledger 88-90) — .wz-drawer-tabnotes carries
