@@ -341,7 +341,7 @@ ok('P14 the connector contract survives on the new rail: BoardEditor still finds
 //   rail          [data-category] page (Pages) / plan (Boards) / journal / settings / theme / trash; NO [data-category="shelf"]
 //   switcher      .wz-switcher > .wz-switcher-group[data-group="drawers"|"journals"] > .wz-switcher-item[data-place-kind][data-place-id]; button.wz-switcher-new[data-new="drawer"]
 //   Pages pop-out .wz-sections[data-kind="pages"]: .wz-sections-place, button.wz-sections-new, button.wz-sections-sort, .wz-sections-views button[data-v], .wz-set[data-set-id] (> button.wz-set-head[aria-expanded] > .wz-set-count),
-//                 .wz-section-row[data-entry-id][data-link-entry] > button.wz-section-open + button.wz-section-x, button.wz-sections-newset, .wz-sections-presets button[data-preset], .wz-sections-undo > button
+//                 .wz-section-row[data-entry-id][data-link-entry] > button.wz-section-grip[data-reorder-grip] + button.wz-section-open + button.wz-section-x, button.wz-sections-newset, .wz-sections-presets button[data-preset], .wz-sections-undo > button
 // ================================================================================================================================================================================
 async function part2() {
   process.env.WS_PLACE = '1';
@@ -420,7 +420,8 @@ async function part2() {
     ok('E4 Undo puts the page back in the same set and the same position', back.projectId === before.projectId && back.orderIndex === before.orderIndex && (await app.evalJs("[...document.querySelectorAll('.wz-section-row')].map((r) => r.dataset.entryId).join()")) === 'bp-ch1,bp-ch2,bp-ch3', JSON.stringify({ p: back.projectId }));
 
     // ---- E5: a pointer drag-reorder survives a reload ----------------------------------------------------------------------------------------------------------------
-    const rect = (id) => app.evalJs(`(() => { const r = document.querySelector('.wz-section-row[data-entry-id="${id}"]'); if (!r) return null; const b = r.getBoundingClientRect(); return { x: Math.round(b.left + 30), y: Math.round(b.top + b.height / 2), h: b.height }; })()`);
+    // the reorder GRIP is the handle (a row's body opens the page, and a press on it must stay a press): the grip is exempted by name from the board's thumbnail copy-drag
+    const rect = (id) => app.evalJs(`(() => { const r = document.querySelector('.wz-section-row[data-entry-id="${id}"] .wz-section-grip'); if (!r) return null; const b = r.getBoundingClientRect(); return { x: Math.round(b.left + b.width / 2), y: Math.round(b.top + b.height / 2), h: b.height }; })()`);
     const a = await rect('bp-ch3'); const t = await rect('bp-ch1');
     if (a && t) {
       await app.mouseMove(a.x, a.y); await app.mouseDown(a.x, a.y);

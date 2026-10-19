@@ -3,6 +3,7 @@ import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { CascadeSurvey } from './CascadeSurvey';
+import { PlaceBlock } from './PlaceBlock';
 import { renderCategoryPanel, buildSurvey, resolveStickyPlanSurvey, type CategoryId, type CascadeSurveyKind, type CascadeContext } from './CascadePanels';
 import type { PageFaceSubject } from './PageFace';
 import type { JournalEntry, Project } from '../types';
@@ -74,37 +75,22 @@ export interface CascadeProps {
 
 interface CategorySpec { id: CategoryId; labelTerm: DeskTermId; icon: ReactNode }
 
-// VW1 (item 134) — THE RAIL, GROUPED BY KIND. The separators do the teaching,
-// silently; no heading, label or tooltip ever names a kind to the writer.
+// BIG PROJECTS 1a - THE RAIL, top to bottom: the PLACE BLOCK (where you are; it opens the switcher), Pages and Boards bracketed under it, a divider,
+// Journal, then the foot (Settings, Themes, Trash). THERE IS NO SHELF: its pages are shown in the Journal (store/place.ts journalMembers), and
+// /shelf redirects. Internal category ids are unchanged (`drawers` is the place block, `plan` is Boards) so every data-category selector survives;
+// only the labels moved. The place block is rendered by <PlaceBlock>, inside the strip, so it fades with the rest of the rail while typing.
 //
-//   A  Page · Plan        where I am, and what holds it
-//   B  Drawers            where things live — the foundational container
-//   C  Journal · Shelf    what the app shows me (by date · unfiled)
-//   foot  Settings · Theme · Trash   (unchanged)
-//
-// ARRAY MEMBERSHIP IS THE WHOLE CHANGE. Same eight ids, same lexicon terms,
-// same icons, same renderSection, same four separators — so if anything goes
-// red after this, the reorder is the only candidate. That is why it lands in
-// its own commit, AFTER the 39 index selectors were retired and the suite
-// came back green and unchanged against the OLD order.
-//
-// THE SHELF LEAVES THE DRAWERS BAND ON PURPOSE. A condition (unfiled) sitting
-// beside the foundational container was erratum 131(a)'s category blur
-// rendered in furniture; moving it is the point of the ticket, not a side
-// effect of the regroup. vw1.mjs check 3 asserts the absence.
+// (History: VW1, item 134, grouped the rail by kind - Page and Plan; Drawers; Journal and Shelf. The Shelf left that band on purpose, and now leaves
+// the rail altogether.)
 const SECTION_A: CategorySpec[] = [
   { id: 'page', labelTerm: 'drawerPage', icon: <PageIcon /> },
   { id: 'plan', labelTerm: 'stripPlan', icon: <PlanIcon /> },
-];
-const SECTION_B: CategorySpec[] = [
-  { id: 'drawers', labelTerm: 'drawerPlaceDrawers', icon: <DrawersIcon /> },
 ];
 // B1 S5 (superseded by Nick's own placement) — the Trash NO LONGER lives in
 // section C; it sits at the very foot of the strip (SECTION_TRASH below), the
 // last place of all, a thin line above it.
 const SECTION_C: CategorySpec[] = [
   { id: 'journal', labelTerm: 'drawerPlaceJournal', icon: <JournalIcon /> },
-  { id: 'shelf', labelTerm: 'drawerPlaceShelf', icon: <ShelfIcon /> },
 ];
 const SECTION_D: CategorySpec[] = [
   { id: 'settings', labelTerm: 'stripSettings', icon: <SettingsIcon /> },
@@ -125,7 +111,6 @@ function panelTitleTerm(category: CategoryId): DeskTermId {
     case 'page': return 'drawerPage';
     case 'plan': return 'stripPlan';
     case 'drawers': return 'drawerPlaceDrawers';
-    case 'shelf': return 'drawerPlaceShelf';
     case 'trash': return 'drawerPlaceTrash';
     case 'settings': return 'cascadeSettingsTitle';
     case 'theme': return 'cascadeThemeTitle';
@@ -286,13 +271,12 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
     navigate(routeForEntry(entry), { state: { fromBoardId: subject.entry.id, fromBoardTitle: originTitle(subject.entry) } });
   };
 
-  const ctx: CascadeContext = { subject, project, navigate, openSurvey, closeSurvey, travelFromCascade };
+  const ctx: CascadeContext = { subject, project, navigate, openSurvey, closeSurvey, travelFromCascade, closeCascade: () => setState(REST) };
 
   const strip = (
     <div className="wz-strip">
-      {renderSection(SECTION_A, state, toggleCategory, t)}
-      <div className="wz-strip-sep" role="separator" aria-orientation="horizontal" />
-      {renderSection(SECTION_B, state, toggleCategory, t)}
+      <PlaceBlock active={state.category === 'drawers'} onToggle={() => toggleCategory('drawers')} drawerIcon={<DrawersIcon />} journalIcon={<JournalIcon />} />
+      {renderSection(SECTION_A, state, toggleCategory, t, 'wz-strip-section--bracketed')}
       <div className="wz-strip-sep" role="separator" aria-orientation="horizontal" />
       {renderSection(SECTION_C, state, toggleCategory, t)}
       {/* Settings, Themes and Trash pin to the window corner. The
@@ -341,9 +325,10 @@ function renderSection(
   state: CascadeState,
   toggle: (id: CategoryId) => void,
   t: (id: DeskTermId) => string,
+  extraClass = '',
 ): ReactNode {
   return (
-    <div className="wz-strip-section">
+    <div className={`wz-strip-section${extraClass ? ` ${extraClass}` : ''}`}>
       {items.map((item) => (
         <button
           key={item.id}
@@ -407,14 +392,6 @@ function DrawersIcon() {
       <rect x="4" y="3" width="16" height="8" rx="1" />
       <rect x="4" y="13" width="16" height="8" rx="1" />
       <path d="M10 7h4M10 17h4" />
-    </svg>
-  );
-}
-function ShelfIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4 4v16M20 4v16M4 12h16" />
-      <path d="M7 4v8M11 4v8M15 4v8M17 4v8" />
     </svg>
   );
 }

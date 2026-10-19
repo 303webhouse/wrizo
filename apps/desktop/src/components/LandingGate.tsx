@@ -10,6 +10,9 @@ import { setWritingSettings } from '../store/writingSettings';
 import { unbornHref } from '../store/unbornPage';
 import { recordLastPlace, resolveLanding, type PlaceKind } from '../store/lastPlace';
 import { useDeskFrameViewport } from './DeskFrame';
+import { getJournalEntries } from '../store/persistence';
+import { followEntry, noteOpen } from '../store/place';
+import { placeUid } from '../store/usePlace';
 
 // RESUME ON OPEN (docs/plans/resume-on-open.md). Two jobs, one invisible component, mounted once beside the
 // routes. It renders nothing and owns no layout.
@@ -30,6 +33,21 @@ import { useDeskFrameViewport } from './DeskFrame';
 // landed page). Waiting for the hold to end first would flash the door for a frame — a new ghost.
 
 type AuthState = 'loading' | 'anon' | 'authed';
+
+// BIG PROJECTS 1a - THE PLACE FOLLOWS THE PAGE. When the writer opens a page, where they are becomes that page's home (a Drawer or the Journal) and the
+// open is counted on this device (wz.opens, read by the Most opened sort in step 4). Once per open: switching place in the switcher while a page stays
+// open is the writer's choice and is not undone by the next render. An unborn page has no home yet and is skipped.
+let followedPage: string | null = null;
+function followOpenPage(p: { kind: PlaceKind; id: string } | null): void {
+  if (!p || p.kind !== 'page') { followedPage = null; return; }
+  if (followedPage === p.id) return;
+  const e = getJournalEntries().find(x => x.id === p.id);
+  if (!e) return;
+  followedPage = p.id;
+  const uid = placeUid();
+  followEntry(uid, e);
+  noteOpen(uid, e.id);
+}
 
 let bootResolved = false;   // the first non-loading authState has been seen (module-level: once per app load)
 let landed = false;         // the landing has been spent (or ruled out) for this load
@@ -60,9 +78,10 @@ export function LandingGate({ authState }: { authState: AuthState }) {
 
   // 1. THE RECORDER — every render, cheap: the in-memory comparison inside recordLastPlace avoids a write per render.
   useEffect(() => {
+    const p = placeInAddress();
+    followOpenPage(p);
     const user = getCurrentUser();
     if (!user) return;
-    const p = placeInAddress();
     if (p) recordLastPlace(user.id, p.kind, p.id);
   });
 

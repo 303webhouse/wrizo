@@ -1497,7 +1497,7 @@ export function BoardEditor({ id }: { id: string }) {
       if (e.button !== 0 || e.pointerType === 'touch' || threadArmedFromRef.current != null || popupBoxIdRef.current) return;
       const el = (e.target as Element | null)?.closest?.('[data-link-entry]') as HTMLElement | null;
       if (!el || canvasRef.current?.contains(el)) return;
-      if (el.closest('[draggable="true"]') || (e.target as Element).closest('.wz-cascade-thumb-menu-btn, .wz-cascade-thumb-menu')) return;   // a draggable survey row keeps its own (membership) drag
+      if (el.closest('[draggable="true"]') || (e.target as Element).closest('.wz-cascade-thumb-menu-btn, .wz-cascade-thumb-menu, [data-reorder-grip]')) return;   // BIG PROJECTS 1a: a Pages pop-out row's reorder grip keeps its own drag   // a draggable survey row keeps its own (membership) drag
       const eid = el.dataset.linkEntry!;
       if (eid === id || !getJournalEntryIncludingDeleted(eid)) return;
       press = { x: e.clientX, y: e.clientY, entryId: eid, label: (el.textContent ?? '').trim().split('\n')[0].slice(0, 60) || 'Untitled' };

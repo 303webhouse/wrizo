@@ -180,8 +180,16 @@ export function getPlace(uid: string): Place {
   return first ? { kind: 'drawer', id: first.id, setId: null } : { kind: 'journal', id: JOURNAL, setId: null };
 }
 
+const placeListeners = new Set<() => void>();
+/** The place is not a collection, so the store's own subscribe never hears it change; this is the one channel that does. */
+export function onPlaceChange(fn: () => void): () => void { placeListeners.add(fn); return () => { placeListeners.delete(fn); }; }
+
 export function setPlace(uid: string, place: Place): void {
-  writeJson(placeKey(uid), { kind: place.kind, id: place.id, setId: place.setId ?? null });
+  const next = { kind: place.kind, id: place.id, setId: place.setId ?? null };
+  const cur = readJson<Place>(placeKey(uid));
+  if (cur && cur.kind === next.kind && cur.id === next.id && (cur.setId ?? null) === next.setId) return;   // already here: no write, no re-render
+  writeJson(placeKey(uid), next);
+  placeListeners.forEach(fn => { try { fn(); } catch { /* a listener must never break a place change */ } });
 }
 
 /** The place follows the page the writer opens. A system board (Journal, Trash) has no place of its own and leaves it where it is. */
