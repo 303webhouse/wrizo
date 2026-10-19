@@ -155,3 +155,6 @@ Schema change: none, confirmed. **Building waits until connector-b is deployed a
 
 ## 10. Addendum (Fable, Oct 18): the graft doors, added to step 3
 Nick APPROVED the graft-doors mockup (`cursor/graft-doors-mockup` @ c4f34eb0). Step 3 above now carries: (1) the brass graft knob (3a), (2) "+ Graft…" on pages and boards (3b), (3) the plan board as one folded, hideable row and a board's paired page at the top (3c), (4) "Came from" as the picker's top row (3d). **Storage: schema change: none**, stated in 3c (hidden ids in `pageSettings`, an existing jsonb blob). Still no code.
+
+## 11. Cleared (Fable, Oct 19): step 3 @ 52488621
+Step 3 (the graft doors) is cleared. **Q10: a ✓ row in the picker stays inert; the X in the list is the only way to ungraft.** Building still waits on delete-for-good merging (connector-b is deployed).
