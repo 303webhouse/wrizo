@@ -111,7 +111,7 @@ const callers2 = (srcDir, mutate = {}) => {
   const ds = noCR(fs.readFileSync(path.join(SRC, 'store/deleteSeams.ts'), 'utf8'));
   const seamBad = bad.filter((x) => x.startsWith('store/deleteSeams.ts:'));
   const seamGated = /softAll: \(\) => \{\n\s*gate\(\);/.test(ds) && (live(ds).match(/softDeleteEntry\(/g) || []).length === 1 && /if \(!isDestructiveUnlocked\(\)\) throw/.test(ds);
-  ok('S1 [delete-for-good successor]: every call of softDeleteEntry outside persistence.ts sits inside requestDelete(...) - except ONE named bypass, window.wrizoDelete.softAll in store/deleteSeams.ts, which first passes its own gate (it refuses unless the in-app typed confirmation happened this page session)',
+  ok('S1 [delete-for-good successor]: every call of softDeleteEntry outside persistence.ts sits inside requestDelete(...) - except ONE named bypass, softAll on the delete seam (store/deleteSeams.ts), which first passes its own gate (it refuses unless the in-app typed confirmation happened this page session)',
     seamBad.length === 1 && bad.length === seamBad.length && seamGated, JSON.stringify({ bad, seamGated }));
   const mut = callers2(SRC, { 'components/CascadePanels.tsx': (t) => t.replace('onClick={() => requestDelete(() => { softDeleteEntry(id); })}', 'onClick={() => { softDeleteEntry(id); }}') });
   ok('S1 (mutant): a delete that skips the gate turns the guard RED (the mutation landed)', mut.length > 0, JSON.stringify(mut));

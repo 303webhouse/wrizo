@@ -558,8 +558,14 @@ await mutant('first run ignores the account (flag only)',
 await mutant('register no longer resets the flag',
   { 'store/firstRun.ts': swap('  justRegisteredFor = userId;\n  setFirstRunComplete(false);', '  justRegisteredFor = userId;') },
   (o) => partD(o), (r) => r.registerOnUsedDevice !== true);
-await mutant('accountHasWork forgets projects',
+// SUPERSEDED (DELETE FOR GOOD, ledger 109) - by the mutant below. accountHasWork no longer counts a purged shell as work (pages:
+// !e.purgedAt; binders: cache.projects.some(p => !p.purgedAt) in place of .length > 0), so this anchor is gone from the source. Parked, not
+// deleted; `if (false)` keeps it out of the verdict - this file's own precedent, (G4) above.
+if (false) await mutant('accountHasWork forgets projects',
   { 'store/persistence.ts': swap('cache.journalEntries.some(e => !getSystemKind(e)) || cache.projects.length > 0', 'cache.journalEntries.some(e => !getSystemKind(e))') },
+  (o) => partD(o), (r) => r.hasProject !== false);
+await mutant('accountHasWork forgets projects [delete-for-good successor]',
+  { 'store/persistence.ts': swap('cache.journalEntries.some(e => !getSystemKind(e) && !e.purgedAt) || cache.projects.some(p => !p.purgedAt)', 'cache.journalEntries.some(e => !getSystemKind(e) && !e.purgedAt)') },
   (o) => partD(o), (r) => r.hasProject !== false);
 await mutant('the safety net never retries',
   { 'store/sync.ts': swap('    setTimeout(() => { if (gen === generation) void syncOnce(true); }, 0);\n    return;', '    return;') },
