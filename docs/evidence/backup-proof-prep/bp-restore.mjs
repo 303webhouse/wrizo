@@ -36,6 +36,8 @@ try {
   await c.connect();
   await c.query("set time zone 'UTC'");
   const t = await c.query("select table_name from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE' order by table_name");
+  // WRONG-DATABASE GUARD (Fable, Oct 18): a restore of anything that lacks BOTH `users` and `journal_entries` is not Wrizo's database - print ONLY "wrong database, stopped" (no table names, no counts) and fail.
+  { const have = new Set(t.rows.map((x) => x.table_name)); if (!have.has('users') || !have.has('journal_entries')) { await c.end(); console.log('wrong database, stopped'); throw Object.assign(new Error('wrong database'), { bpWrongDb: true }); } }
   const got = {}, gotFp = {};
   for (const { table_name } of t.rows) {
     const q = '"public"."' + table_name.replace(/"/g, '""') + '"';
@@ -56,6 +58,6 @@ try {
   }
   ok = r.status === 0 && (allMatchAfter || allMatchBefore) && names.length > 0;
   console.log(`BPRESULT restoreExit=${r.status} tables=${names.length} matchAfter=${allMatchAfter} matchBefore=${allMatchBefore} => ${ok ? 'RESTORE-MATCH: YES' : 'RESTORE-MATCH: NO'}`);
-} catch (e) { console.log('BPRESTORE-ERROR ' + String((e && e.message) || e).slice(0, 300)); }
+} catch (e) { if (!(e && e.bpWrongDb)) console.log('BPRESTORE-ERROR ' + String((e && e.message) || e).slice(0, 300)); }
 finally { try { await pg.stop(); } catch { /* gone */ } try { rmSync(dir, { recursive: true, force: true }); } catch { /* best effort */ } }
 process.exit(ok ? 0 : 1);

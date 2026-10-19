@@ -19,6 +19,10 @@ try {
   const v = await client.query("select current_setting('server_version_num')::int as n");
   const major = Math.floor(v.rows[0].n / 10000);
   const t = await client.query("select table_name from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE' order by table_name");
+  // WRONG-DATABASE GUARD (Fable, Oct 18, after a first run reached another system's database): Wrizo's database always has BOTH `users` and `journal_entries`. If either is missing this is not Wrizo's database:
+  // print ONLY "wrong database, stopped" - no table name, no count, no version - write nothing, count nothing, and exit non-zero so the caller stops before any dump.
+  const have = new Set(t.rows.map((x) => x.table_name));
+  if (!have.has('users') || !have.has('journal_entries')) { console.log('wrong database, stopped'); process.exitCode = 3; throw Object.assign(new Error('wrong database'), { bpWrongDb: true }); }
   const rows = [];
   for (const { table_name } of t.rows) {
     const q = 'select count(*)::bigint as c from "public"."' + table_name.replace(/"/g, '""') + '"';
@@ -32,6 +36,9 @@ try {
   console.log('BPCOUNT-SUMMARY serverMajor=' + major + ' tables=' + rows.length + ' totalRows=' + total + ' seconds=' + ((Date.now() - t0) / 1000).toFixed(1));
   if (process.env.BP_OUT) writeFileSync(process.env.BP_OUT, JSON.stringify({ serverMajor: major, rows }, null, 2) + '\n');
 } catch (e) {
-  console.log('BPCOUNT-ERROR ' + redact(e && e.code ? e.code + ' ' + (e.message || '') : (e && e.message) || e));
-  process.exitCode = 1;
+  if (e && e.bpWrongDb) { /* already said "wrong database, stopped" with exit code 3; say nothing more */ }
+  else {
+    console.log('BPCOUNT-ERROR ' + redact(e && e.code ? e.code + ' ' + (e.message || '') : (e && e.message) || e));
+    process.exitCode = 1;
+  }
 } finally { try { await client.end(); } catch { /* gone */ } }
