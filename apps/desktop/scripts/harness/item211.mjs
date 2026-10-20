@@ -253,11 +253,16 @@ await withHarness(async (app) => {
     await app.evalJs("document.querySelector('.wz-template-row[data-template=\"blank\"]')?.click()"); await sleep(300);
     ok('C2 [page-templates-r2 successor]: pressing the choice already made (Blank) does nothing to the page', (await stored(app, id)) === textBefore && (await app.evalJs(`!!document.querySelector('${ED}')`)));
     const typeHead = await app.evalJs("(() => { const s = document.querySelector('.wz-sliver-type'); const h = s && s.firstElementChild; return h ? { cls: h.className, text: h.textContent, next: h.nextElementSibling && h.nextElementSibling.className } : null; })()");
-    // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (the approved mockup): the Arbor heading reads "Font" (Flux keeps "Typeface"); the lexicon term railTypeface carries both. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
-    //
-    // ok('C3: a "Typeface" heading sits directly above the font controls', typeHead && typeHead.cls === 'wz-sliver-h' && typeHead.text === 'Typeface' && /wz-type/.test(typeHead.next || ''), JSON.stringify(typeHead));
+    // SUPERSEDED (two tickets converged on the same fact from two directions
+    // - theme-leftovers, Nick approved Oct 12, built Oct 16: this file never
+    // switches theme, so it runs on Arbor's own default, which now reads
+    // "Font"; and PAGE TEMPLATES R2, the approved mockup, which names the
+    // same word as part of the same table - railTypeface). Kept verbatim,
+    // no longer run:
+    //   ok('C3: a "Typeface" heading sits directly above the font controls', typeHead && typeHead.cls === 'wz-sliver-h' && typeHead.text === 'Typeface' && /wz-type/.test(typeHead.next || ''), JSON.stringify(typeHead));
     c3HeadSeen = typeHead;
-    ok('C3 [page-templates-r2 successor]: a "Font" heading (Arbor\'s word) sits directly above the font controls', typeHead && typeHead.cls === 'wz-sliver-h' && typeHead.text === 'Font' && /wz-type/.test(typeHead.next || ''), JSON.stringify(typeHead));
+    ok('C3 [theme-leftovers + page-templates-r2 successor]: a "Font" heading (Arbor\'s own word) sits directly above the font controls',
+      typeHead && typeHead.cls === 'wz-sliver-h' && typeHead.text === 'Font' && /wz-type/.test(typeHead.next || ''), JSON.stringify(typeHead));
     await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Settings\"]').click()"); await sleep(200);
     const heads = await app.evalJs(`(() => {
       const panel = document.querySelector('.wz-sliver-instruments-panel');

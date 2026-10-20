@@ -119,6 +119,17 @@
      selectors. Working value only. */
   --accent-rest: #96a05a;
 
+  /* help-buttons (Nick approved Oct 12, cursor/help-buttons @ d4d1c835) —
+     the "?" affordance's own token, never brass (brass means "current
+     choice", this means "more words available"). Arbor's own value is
+     identical to --accent-rest's (both olive, this theme's one affordance
+     colour), so it aliases rather than duplicating the literal; Flux does
+     NOT share --accent-rest for this (that token has no Flux override at
+     all today), so its own value is set explicitly, below. --help-hi is
+     the hover/expanded step, lighter along the same hue. */
+  --help: var(--accent-rest);
+  --help-hi: #B9C47A;
+
   /* BG2 S1 (SV19/SV20, Nick's walk of the deployed P1 tree) — the DOOR olive.
      `--accent-rest` is tuned to mark "where you are" on dark chrome; on cream
      paper it measures 2.4:1 against `--paper`, which is exactly Nick's "can
@@ -457,12 +468,23 @@
    out of TH2's scope. */
 :root[data-theme='flux'] {
   --ink-950: #04141A;             /* ground */
+  /* theme-leftovers (Nick approved Oct 16) — the teal twin of --lamp-glow's
+     own brown gradient: the SAME stop positions/lightness/saturation ramp,
+     hue shifted to this theme's own register (~194deg, between --ink-950's
+     196.4deg and the dark page's own --paper 190deg). Was unset, so body's
+     backdrop stayed Arbor-brown under Flux wherever a route's own content
+     doesn't paint full-bleed over it (the unframed page view, Journal/Shelf). */
+  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #0F2D36 0%, #102025 38%, #0A1417 70%, #070E10 100%);
   --chrome-surface: rgba(9, 30, 36, .9);
   --rail-surface: rgba(4, 17, 22, .78);
   --ink-border: #1D4A52;          /* line */
   --ink-border-strong: #2A6A76;   /* a brighter line tier — the dark page's own border value, reused */
   --line-active: #00C2FF;         /* canon §3 new slot */
   --signal-live: #A6FF3D;         /* canon §3 new slot */
+  /* help-buttons (Nick approved Oct 12) — Flux's own "?" affordance colour,
+     teal (never brass, never Arbor's olive --accent-rest). */
+  --help: #5E9E98;
+  --help-hi: #86C9C1;
 
   --text-hi: #E3F1EC;             /* chrome high-contrast text — the canon table has no explicit row for this tier; reusing the page-dark ink value for visual consistency */
   --text-mid: #8FB4AC;            /* canon's "text muted" */
@@ -602,7 +624,10 @@
 }
 
 html {
-  background-color: #110600;
+  /* theme-leftovers (Nick approved Oct 16) — was a hardcoded Arbor literal,
+     never themed (the one place --ink-950 existed to prevent exactly this).
+     Themed now, matching .wz-splash-veil's own identical move. */
+  background-color: var(--ink-950);
 }
 
 body {
@@ -2534,6 +2559,13 @@ a:focus-visible,
 /* Format / pen bar — chrome at the top of the page. */
 .mode-bar{ display:flex; align-items:center; gap:4px; background:var(--ink-900);
   border:1px solid var(--ink-border); border-bottom:0; padding:6px 10px; min-height:42px; }
+/* theme-leftovers (Fable, Oct 17) — --ink-900 has no Flux override (it is the
+   raw Arbor surface token, not --chrome-surface, which Flux DOES override),
+   so this bar's own fill stayed Arbor-brown while its --ink-border-derived
+   border already read teal: a half-themed strip. --chrome-surface is the
+   token this comment already calls this bar ("chrome at the top of the
+   page"), so it is the one to reuse here, not a new value. */
+[data-theme='flux'] .mode-bar{ background:var(--chrome-surface); }
 .mode-tlabel{ font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--brass-press); margin-right:6px; }
 /* ITEM arbor-quiet-brass — same heading-colour law as .mode-rail-h above. */
 [data-theme='flux'] .mode-tlabel{ color:var(--text-mid); }
@@ -3794,6 +3826,11 @@ a:focus-visible,
 .desk-mode-tab.deferred{ color:var(--text-low); cursor:not-allowed; }
 .desk-mode-tab.deferred:hover{ background:none; color:var(--text-low); }
 .desk-mode-soon{ margin-left:10px; font-family:var(--font-ui); font-size:11px; color:var(--text-mid); font-style:italic; }
+/* help-buttons (Nick approved Oct 12) — the "?" sits beside a tab, never
+   inside it (ModeStrip.tsx's own comment says why: a <button> cannot nest
+   another <button>). A plain inline-flex wrapper so the pair reads as one
+   unit without disturbing the strip's own tight gap between every OTHER tab. */
+.desk-mode-tab-wrap{ display:inline-flex; align-items:center; gap:4px; }
 /* PHASE 1 - the band's Free Write hover menu (TEXT | INK) is RETIRED: the same choice is the first tab of the left drawer (DrawerTabs). One control for one state. */
 
 /* CD1 S2/S7 — the sliver (components/Sliver.tsx). ToolRail's retired
@@ -3901,6 +3938,14 @@ a:focus-visible,
    sits OUTSIDE the tablist. The note opens below the row as an overlay (it displaces nothing). */
 .wz-drawer-tabnotes{ position:absolute; left:14px; right:14px; top:14px; height:26px; display:grid; gap:6px; pointer-events:none; }
 .wz-drawer-tabnote-cell{ display:flex; align-items:center; justify-content:flex-end; padding-right:3px; min-width:0; }
+/* FIX (Fable, Oct 17, ledger 88-90) — "ignores the pointer except on the '?'
+   itself" (comment above) was true for the OLD .wz-drawer-note wrapper (its
+   own pointer-events:auto, below) but never carried over when helpGrafts
+   moved onto the shared .wz-help (HelpButton.tsx) — a bare button with no
+   such restoration. A real press here hit the row's pointer-events:none and
+   landed on nothing underneath; a page-side .click() never noticed, since it
+   bypasses hit-testing entirely. */
+.wz-drawer-tabnotes .wz-help{ pointer-events:auto; }
 /* .wz-drawer-note/-btn/-pop's own GENERAL rules moved below (merge with
    word-diet, 2026-10-14) to the single definition every caller now shares;
    only this row's own stretch-to-the-margins override stays here, scoped
@@ -3994,6 +4039,12 @@ a:focus-visible,
 /* PAGE TEMPLATES (approved mockup cursor/templates @ 0fc9afef) - the picker: one row per template, a tiny page sketch and its word. Brass marks the
    current choice at rest (the standing rule); the row never changes size, so picking moves nothing. (The disabled .wz-template-btn stand-ins retired.) */
 .wz-template-list{ display:flex; flex-direction:column; gap:2px; }
+/* help-buttons (Fable, Oct 18) — a theme-unique row name's own "?" sits
+   beside its row, never inside it (the row itself stays exactly the
+   rect/hit-target it already was). The wrap is the flex row; .wz-template-row
+   keeps filling it. */
+.wz-template-row-wrap{ display:flex; align-items:center; gap:4px; }
+.wz-template-row-wrap .wz-template-row{ flex:1 1 auto; min-width:0; }
 .wz-template-row{ display:flex; align-items:center; gap:12px; width:100%; min-height:46px; padding:0 12px 0 16px; text-align:left; cursor:pointer;
   background:none; border:1px solid transparent; color:var(--text-mid); font:inherit; font-size:13px; }
 .wz-template-row:hover{ color:var(--text-hi); background:var(--ink-800); }
@@ -4371,6 +4422,37 @@ a:focus-visible,
    from the button's right edge instead, opening leftward, so the pop stays
    inside the viewport near any edge. */
 .wz-drawer-note-pop--left{ left:auto; right:0; }
+
+/* HELP BUTTONS (Nick approved Oct 12, cursor/help-buttons @ d4d1c835;
+   docs/mockups/help-buttons/index.html is the approved reference). A
+   SEPARATE component from DrawerNote (store/help.ts, HelpButton/HelpPop),
+   not a re-skin of it: DrawerNote's own "?" is per-instance and
+   position:absolute (brass when expanded — the thing this ticket says
+   never to do); this is ONE shared overlay, position:fixed in a body
+   portal, so it can never move or resize the page it sits over (page
+   primacy holds by construction, not by convention) — the mockup's own
+   mechanism, carried over exactly. The --help token (not brass) marks it
+   as "more words available", distinct from --accent-rest's "where you
+   are" and --brass's "current choice". */
+.wz-help{
+  flex:0 0 auto; width:15px; height:15px; padding:0; display:inline-flex; align-items:center; justify-content:center;
+  background:none; border:1px solid color-mix(in srgb, var(--help) 55%, transparent); border-radius:0; color:var(--help);
+  font-family:var(--font-ui); font-size:9.5px; line-height:1; cursor:pointer;
+  transition:color .15s ease, border-color .15s ease, background-color .15s ease;
+}
+.wz-help:hover{ color:var(--help-hi); border-color:var(--help); }
+.wz-help[aria-expanded='true']{ color:var(--help-hi); border-color:var(--help-hi); background:color-mix(in srgb, var(--help) 16%, transparent); }
+.wz-help:focus-visible{ outline:2px solid var(--help-hi); outline-offset:1px; }
+.wz-help-pop{
+  position:fixed; z-index:9000; width:max-content; max-width:240px; padding:9px 12px;
+  background:var(--desk-ground); border:1px solid var(--ink-border-strong); border-left:2px solid var(--help);
+  color:var(--text-hi); font-family:var(--font-ui); font-size:12.5px; line-height:1.45; text-transform:none;
+  pointer-events:auto;
+}
+@media (prefers-reduced-motion:no-preference){
+  .wz-help-pop{ animation:wz-help-popin .12s ease-out; }
+}
+@keyframes wz-help-popin{ from{ opacity:0; } to{ opacity:1; } }
 
 .wz-tutor-section{ display:flex; flex-direction:column; gap:6px; }
 .wz-tutor-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }

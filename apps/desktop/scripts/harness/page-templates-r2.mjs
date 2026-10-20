@@ -401,14 +401,23 @@ async function part2() {
     ok('X1 Arbor: the Templates section lists Blank, Screenplay, Outline, Title Page, Bibliography', JSON.stringify(await pickerNames()) === JSON.stringify(['Blank', 'Screenplay', 'Outline', 'Title Page', 'Bibliography']), JSON.stringify(await pickerNames()));
     ok('X1 Arbor: Blank is the current choice (brass at rest, aria-pressed) and no other row is', JSON.stringify(await chosen()) === JSON.stringify(['blank']), JSON.stringify(await chosen()));
     const heads = await app.evalJs("[...document.querySelectorAll('.wz-sliver-h')].map((h) => h.textContent)");
-    ok('X1 Arbor: the section heads read "Font" and "Templates"', heads.includes('Font') && heads.includes('Templates'), JSON.stringify(heads));
+    // SUPERSEDED (help-buttons, Fable Oct 18-19): the Templates heading now
+    // carries its own "?" (HelpButton, unconditional in both themes), so its
+    // own textContent reads "Templates ?", not the bare exact word. Kept
+    // verbatim, no longer run:
+    //   ok('X1 Arbor: the section heads read "Font" and "Templates"', heads.includes('Font') && heads.includes('Templates'), JSON.stringify(heads));
+    ok('X1 Arbor: the section heads read "Font" and "Templates" (the latter now carrying its own "?")', heads.includes('Font') && heads.some((h) => h.startsWith('Templates')), JSON.stringify(heads));
     ok('X1 no disabled stand-in and no Custom remain', (await app.evalJs("document.querySelectorAll('.wz-sliver-templates [aria-disabled=\"true\"], .wz-template-btn').length")) === 0, '');
     await fresh('flux');
     await app.goto('/page/new'); await waitSoft("!!document.querySelector('.forward-only-editor')", { label: 'unborn page (flux)' }); await sleep(600);
     await toDraft(); await openStrip();
     ok('X1 Flux: the rows read Raw, Script, Spine, Cover, Sources', JSON.stringify(await pickerNames()) === JSON.stringify(['Raw', 'Script', 'Spine', 'Cover', 'Sources']), JSON.stringify(await pickerNames()));
     const headsF = await app.evalJs("[...document.querySelectorAll('.wz-sliver-h')].map((h) => h.textContent)");
-    ok('X1 Flux: the section heads read "Typeface" and "Presets"', headsF.includes('Typeface') && headsF.includes('Presets'), JSON.stringify(headsF));
+    // SUPERSEDED (help-buttons, Fable Oct 18-19): same gap as the Arbor check
+    // above - "Presets" now carries its own "?" too. Kept verbatim, no
+    // longer run:
+    //   ok('X1 Flux: the section heads read "Typeface" and "Presets"', headsF.includes('Typeface') && headsF.includes('Presets'), JSON.stringify(headsF));
+    ok('X1 Flux: the section heads read "Typeface" and "Presets" (the latter now carrying its own "?")', headsF.includes('Typeface') && headsF.some((h) => h.startsWith('Presets')), JSON.stringify(headsF));
 
     // ---- X2: an EMPTY (unborn) page takes the choice in place; nothing is born; the first word births it WITH the template ----------------------
     await fresh('plateau');

@@ -139,6 +139,20 @@ await withHarness(async (app) => {
       ok(`${T} P3 swatch ${i}: the chosen pen ink carries against Flux dark's page (computed ${c?.ratio}:1, >= ${FLOOR})`, !!c && c.ratio >= FLOOR, JSON.stringify(c));
     }
   }
+
+  // P4 — theme-leftovers (Fable, Oct 16): "Flux light Free Write's default
+  // pen ink is Arbor's #1A0F06; use Flux's ink instead." NOT a contrast gap —
+  // P1 above already proves Arbor's black-brown carries fine on Flux light's
+  // own paper, so it never caught this — it is an IDENTITY gap: the default
+  // swatch was never re-pointed to Flux's own ink there at all. Asserts the
+  // actual rendered colour, not just that it carries.
+  {
+    const T = '[flux/light default ink]';
+    await freshPage(app, 'flux', 'light', { id: 'fpi-p4' });
+    const c = await contrastOf(app, ED);
+    ok(`${T} P4: Free Write's default pen ink is Flux's OWN ink (--ink-on-paper #14231F = rgb(20, 35, 31)), never Arbor's literal #1A0F06 (computed ${c?.fg})`,
+      !!c && c.fg === 'rgb(20, 35, 31)', JSON.stringify(c));
+  }
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);

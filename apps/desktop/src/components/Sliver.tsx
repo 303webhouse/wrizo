@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
-import { useTheme } from '../store/theme';
+import { useTheme, type ThemeId } from '../store/theme';
 import { TypeControl, type TypeControlProps } from './TypeControl';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
@@ -15,7 +15,8 @@ import { useWritingGoal, setWritingGoal, goalCount, goalFraction, DEFAULT_GOAL_L
 // repositioning their popover to sit inline in the sliver's own scrolling
 // panel instead of ModeStage's absolute stage-corner placement.
 import { Seg } from './ModeStage';
-import { DrawerNote } from './DrawerNote';
+import { HelpButton } from './HelpButton';
+import { BEGINNING_GLYPH } from './BeginningsRow';
 import { TemplateSketch, type TemplateKey } from './TemplateSketch';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import type { FormatAction, StructureKind } from '../store/draftFormat';
@@ -601,8 +602,28 @@ function BulletControl({ onFormat, t }: { onFormat: (action: FormatAction) => vo
   );
 }
 
+// help-buttons (Fable, Oct 18) — only a ROW NAME this theme renamed away from
+// the canonical word needs a "?"; Arbor's own five words ARE the canonical
+// ones (deskLexicon.ts's own CANONICAL), so none of its rows get one — Flux
+// overrides every one of them (Raw/Script/Spine/Cover/Sources), so all five
+// of its rows do. Named here, not derived from the lexicon's own internals
+// (OVERRIDES isn't exported, and the override list is already the one place
+// this fact lives — deskLexicon.ts's OVERRIDES.flux block, template* keys).
+const THEME_UNIQUE_TEMPLATES: Record<ThemeId, ReadonlySet<TemplateKey>> = {
+  plateau: new Set(),
+  flux: new Set(['blank', 'screenplay', 'outline', 'title', 'bibliography']),
+};
+const TEMPLATE_HELP_KEYS: Record<TemplateKey, DeskTermId> = {
+  blank: 'helpTemplateBlank',
+  screenplay: 'helpTemplateScreenplay',
+  outline: 'helpOutline',
+  title: 'helpTitlePage',
+  bibliography: 'helpTemplateBibliography',
+};
+
 function SliverToolsBody({ content }: { content: SliverContent }) {
   const { t } = useDeskLexicon();
+  const theme = useTheme();
   // PHASE 1 (S4) - while Typewriter is on the whole Format group is greyed and unusable (Nick). Read here, above the early return, so the hook order holds.
   // THE SETTING IS THE RUNNING STATE HERE, so it is not narrowed further: FORMAT is mounted only by PageEditor's `mode === 'drafting'` content (ScriptEditor passes
   // no `format`), and ModeStage runs the typewriter as `(mode === 'journal' || mode === 'drafting') && settings.typewriter` - for drafting, exactly the setting.
@@ -771,13 +792,18 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
 
       {content.kind === 'draft' && allowed('templates') && (
         <div className="wz-sliver-section wz-sliver-templates">
-          <div className="wz-sliver-h">{t('railTemplates')}</div>
+          <div className="wz-sliver-h">{t('railTemplates')} <HelpButton helpKey="helpTemplates" subjectLabel={t('railTemplates')} /></div>
           <div className="wz-template-list" onMouseDown={e => e.preventDefault()}>
             {content.templates?.map(tpl => (
-              <button key={tpl.key} type="button" className="wz-template-row wz-template-live" data-template={tpl.key} aria-pressed={!!tpl.selected} title={tpl.label} aria-label={tpl.label} onClick={tpl.onApply}>
-                <TemplateSketch kind={tpl.key} />
-                <span className="wz-template-word">{tpl.label}</span>
-              </button>
+              <div key={tpl.key} className="wz-template-row-wrap">
+                <button type="button" className="wz-template-row wz-template-live" data-template={tpl.key} aria-pressed={!!tpl.selected} title={tpl.label} aria-label={tpl.label} onClick={tpl.onApply}>
+                  <TemplateSketch kind={tpl.key} />
+                  <span className="wz-template-word">{tpl.label}</span>
+                </button>
+                {THEME_UNIQUE_TEMPLATES[theme].has(tpl.key) && (
+                  <HelpButton helpKey={TEMPLATE_HELP_KEYS[tpl.key]} subjectLabel={tpl.label} />
+                )}
+              </div>
             ))}
           </div>
         </div>
@@ -1119,7 +1145,7 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
             {/* ITEM word-diet (Nick, Oct 13) — same fix as ModeStage.tsx's
                 own copy of this row: the standing hint retires, moved
                 behind a "?" beside the label. */}
-            <Seg label={<>Recede depth <DrawerNote label="About Recede depth">{t('recedeHint')}</DrawerNote></>} value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
+            <Seg label={<>Recede depth <HelpButton helpKey="recedeHint" subjectLabel="Recede depth" /></>} value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
           </section>
         </div>
       )}

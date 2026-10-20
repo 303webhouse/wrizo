@@ -19,10 +19,26 @@
 // Run: node apps/desktop/scripts/harness/th2.mjs   (from apps/desktop, with
 // dist-web freshly built via `pnpm run build:web`).
 import { withHarness } from '../runtime-verify.mjs';
+import { readFile } from 'node:fs/promises';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// -- check 1 (source) [theme-leftovers, Fable Oct 17]: the pen/format bar's
+// own fill no longer reads Arbor's raw --ink-900 under Flux. ModeStage.tsx's
+// .mode-bar ("the PEN toolbar strip above the page") used --ink-900 directly
+// rather than --chrome-surface — the composite chrome token Flux DOES
+// override — so its border (--ink-border, already Flux-themed) read teal
+// while its own fill stayed Arbor-brown. A source check, not a runtime one:
+// this is a static CSS cascade fact, provable without mounting the narrow-
+// shell pen bar (rail.tools === 'pen' && !framed) at all.
+const cssSrc = await readFile(new URL('../../src/index.css', import.meta.url), 'utf8');
+const fluxModeBarRule = (cssSrc.match(/\[data-theme='flux'\]\s*\.mode-bar\s*\{[^}]*\}/) || [''])[0];
+ok('check 1 (source) [theme-leftovers]: a Flux override for .mode-bar exists',
+  !!fluxModeBarRule, fluxModeBarRule || '(no match)');
+ok('check 1 (source) [theme-leftovers]: it points the bar\'s fill at --chrome-surface (Flux\'s own themed token), not the raw --ink-900',
+  /--chrome-surface/.test(fluxModeBarRule) && !/--ink-900/.test(fluxModeBarRule), fluxModeBarRule);
 
 await withHarness(async (app) => {
   await app.reload();
@@ -98,7 +114,11 @@ await withHarness(async (app) => {
   await app.click('Start writing');
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted under Flux' });
   const tabLabel = await app.evalJs("document.querySelector('.mode-tab.active .mode-tab__label')?.textContent");
-  ok('check 2: the Free-write tab renders Flux\'s "Overclock" (ModeSwitcher sweep)', tabLabel === 'Overclock', String(tabLabel));
+  // SUPERSEDED (theme-leftovers, Nick approved Oct 16): "Overclock" retired
+  // for "Wire In" (themeLexicon.ts's own Flux freewrite override). Kept
+  // verbatim, no longer run:
+  //   ok('check 2: the Free-write tab renders Flux\'s "Overclock" (ModeSwitcher sweep)', tabLabel === 'Overclock', String(tabLabel));
+  ok('check 2 [theme-leftovers successor]: the Free-write tab renders Flux\'s "Wire In" (ModeSwitcher sweep)', tabLabel === 'Wire In', String(tabLabel));
   // Two .mode-tab--action tabs render (Workshop, then Publish/Connect) —
   // target the second explicitly rather than the ambiguous first match.
   await app.evalJs("[...document.querySelectorAll('.mode-tab--action')][1]?.click()");
@@ -408,7 +428,19 @@ await withHarness(async (app) => {
   // unchanged; only the mount vehicle moved. Not a park. wrizoCreateJournalPage
   // still authors a journal-origin page; opened on THE Page it renders the same
   // contenteditable the block caret and firewall attach to.
-  await app.evalJs("location.hash = '#/page/' + window.wrizoCreateJournalPage().id");
+  //
+  // item141 (Fable, Oct 19) — split the seam read out of the hash-navigation
+  // line it used to share. Same runtime order either way (an assignment's
+  // RHS evaluates before the assignment itself, so the seam call always ran
+  // on the ALREADY-loaded page, never racing the hash change that followed
+  // it) — but item141 reads SOURCE TEXT order, not JS evaluation order, and
+  // on one line `location.hash = ... + window.wrizoCreateJournalPage()` reads
+  // as a nav immediately followed by an unsettled seam read. Two statements
+  // now say in text what was always true at runtime: the seam read first,
+  // its OWN evalJs call, no nav pattern on that line; the hash change after,
+  // a separate call, carrying the id it returned.
+  const fx14PageId = await app.evalJs('window.wrizoCreateJournalPage().id');
+  await app.evalJs(`location.hash = '#/page/${fx14PageId}'`);
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'authored page for VW/caret checks (THE Page)' });
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('a');

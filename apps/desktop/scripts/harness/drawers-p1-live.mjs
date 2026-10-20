@@ -20,6 +20,45 @@ import { withHarness } from '../runtime-verify.mjs';
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// REPAIR (Fable, Oct 17, ledger 85) — L9's help-buttons successor used a
+// page-side el.click(), never trusted; the "?"'s own outside-close listener
+// is a real `pointerdown` (components/HelpPop.tsx), which a page-side click
+// never dispatches at all. Same fix as help-buttons.mjs's own realClick.
+const realClick = async (app, selector) => {
+  // REPAIR (Fable, Oct 17, ledger 91) — help-buttons.mjs's own twin of this
+  // helper got the same fix: scrollIntoView BEFORE measuring, so a trusted
+  // click never assumes the fixture already scrolled the target into the
+  // viewport (Recede depth's "?" sat off-screen at y=1351 in a 900px-tall
+  // fixture there; kept in sync here for the same risk).
+  //
+  // REPAIR (Fable, Oct 18, ledger 92 — the flake): scroll and measure in
+  // SEPARATE ticks, polling the rect until two consecutive reads agree,
+  // rather than reading it in the same evalJs call as the scroll — an
+  // in-flight scroll animation left that read stale. Kept in sync with
+  // help-buttons.mjs's own fix.
+  await app.evalJs(`(() => {
+    const el = document.querySelector(${JSON.stringify(selector)});
+    if (!el) throw new Error('realClick: no element ' + ${JSON.stringify(selector)});
+    el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  })()`);
+  const readCentre = () => app.evalJs(`(() => {
+    const el = document.querySelector(${JSON.stringify(selector)});
+    if (!el) throw new Error('realClick: no element ' + ${JSON.stringify(selector)});
+    const r = el.getBoundingClientRect();
+    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+  })()`);
+  let rect = await readCentre();
+  for (let i = 0; i < 10; i++) {
+    await sleep(30);
+    const next = await readCentre();
+    const stable = next.x === rect.x && next.y === rect.y;
+    rect = next;
+    if (stable) break;
+  }
+  await app.mouseDown(rect.x, rect.y);
+  await app.mouseUp(rect.x, rect.y);
+};
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
 const guard = async (name, fn) => { try { await fn(); } catch (e) { ok(`${name}: THE DRIVER THREW (not a product finding)`, false, String(e).slice(0, 240)); } };
 
@@ -379,28 +418,36 @@ await withHarness(async (app) => {
         const t3 = await app.evalJs(`document.querySelector('${sel}')?.getAttribute('aria-pressed') ?? null`);
         ok(`L9 ${T}: and Space flips it back`, t3 != null && t3 !== t2, JSON.stringify({ t2, t3 }));
       }
-      // the "?" note (Arbor only): opens on press, is reported, closes on Escape.
-      // SUPERSEDED (item word-diet, Fable, review fix) — a bare
-      // '.wz-drawer-note-btn' query is DOCUMENT-WIDE, and word-diet's own
-      // "?" notes (the Tutor's Ask box, its Fragments lens, Recede depth,
-      // etc.) are NOT Arbor-exclusive, so on Flux this fixture (the right
-      // drawer defaults to the Tutor tab, per K5) now finds one of THOSE
-      // regardless of theme — a false "has a note" reading that was never
-      // the tab row's own claim. Scope to the tab row's own overlay
-      // (.wz-drawer-tabnotes), matching the CSS's own scoping anchor.
-      // const hasNote = await app.evalJs("!!document.querySelector('.wz-drawer-note-btn')");
-      const hasNote = await app.evalJs("!!document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')");
-      if (th.id === 'arbor') {
-        await ensureRight(app, true);
-        const n0 = await app.evalJs(`document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.getAttribute('aria-expanded') ?? null`);
-        await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.click()"); await sleep(300);
-        const n1 = await app.evalJs(`({ expanded: document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.getAttribute('aria-expanded'), role: document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-pop')?.getAttribute('role') ?? null })`);
-        await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.focus()"); await app.key('Escape'); await sleep(300);
-        const n2 = await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.getAttribute('aria-expanded') ?? null");
-        ok(`L9 ${T}: the Arbor "?" note is a button that reports aria-expanded, opens a role=note panel on press, and closes on Escape`, n0 === 'false' && n1.expanded === 'true' && n1.role === 'note' && n2 === 'false', JSON.stringify({ n0, n1, n2 }));
-      } else {
-        ok(`L9 ${T} [word-diet successor]: Flux's own tab row has NO "?" note (its word explains itself - by ruling)`, hasNote === false, String(hasNote));
-      }
+      // SUPERSEDED WHOLE (help-buttons, Nick approved Oct 12): the Grafts/
+      // Links tab's own "?" moved off DrawerNote (.wz-drawer-note-btn) onto
+      // the new shared HelpButton (.wz-help, store/help.ts) - AND the
+      // Arbor-only/Flux-empty ruling this Flux branch asserted is ITSELF
+      // retired: helpGrafts now carries a real sentence in BOTH themes, so
+      // Flux gets a "?" too. Kept verbatim, no longer run:
+      //   const hasNote = await app.evalJs("!!document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')");
+      //   if (th.id === 'arbor') {
+      //     await ensureRight(app, true);
+      //     const n0 = await app.evalJs(`document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.getAttribute('aria-expanded') ?? null`);
+      //     await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.click()"); await sleep(300);
+      //     const n1 = await app.evalJs(`({ expanded: document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.getAttribute('aria-expanded'), role: document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-pop')?.getAttribute('role') ?? null })`);
+      //     await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.focus()"); await app.key('Escape'); await sleep(300);
+      //     const n2 = await app.evalJs("document.querySelector('.wz-drawer-tabnotes .wz-drawer-note-btn')?.getAttribute('aria-expanded') ?? null");
+      //     ok(`L9 ${T}: the Arbor "?" note is a button that reports aria-expanded, opens a role=note panel on press, and closes on Escape`, n0 === 'false' && n1.expanded === 'true' && n1.role === 'note' && n2 === 'false', JSON.stringify({ n0, n1, n2 }));
+      //   } else {
+      //     ok(`L9 ${T} [word-diet successor]: Flux's own tab row has NO "?" note (its word explains itself - by ruling)`, hasNote === false, String(hasNote));
+      //   }
+      // Successor: BOTH themes now carry the same claim - a "?" that reports
+      // aria-expanded, opens the SHARED fixed overlay (role=note), and closes
+      // on Escape, returning focus to the "?" itself.
+      await ensureRight(app, true);
+      const hn0 = await app.evalJs(`document.querySelector('.wz-drawer-tabnotes .wz-help')?.getAttribute('aria-expanded') ?? null`);
+      await realClick(app, '.wz-drawer-tabnotes .wz-help'); await sleep(300);
+      const hn1 = await app.evalJs(`({ expanded: document.querySelector('.wz-drawer-tabnotes .wz-help')?.getAttribute('aria-expanded'), role: document.querySelector('.wz-help-pop')?.getAttribute('role') ?? null, text: document.querySelector('.wz-help-pop')?.textContent ?? null })`);
+      await app.key('Escape'); await sleep(300);
+      const hn2 = await app.evalJs(`({ expanded: document.querySelector('.wz-drawer-tabnotes .wz-help')?.getAttribute('aria-expanded') ?? null, focused: document.activeElement === document.querySelector('.wz-drawer-tabnotes .wz-help') })`);
+      ok(`L9 ${T} [help-buttons successor]: the Grafts/Links tab's own "?" is a button that reports aria-expanded, opens the shared role=note overlay with THIS theme's own sentence, closes on Escape, and returns focus to itself`,
+        hn0 === 'false' && hn1.expanded === 'true' && hn1.role === 'note' && !!hn1.text && hn2.expanded === 'false' && hn2.focused === true,
+        JSON.stringify({ hn0, hn1, hn2 }));
     });
   }
 });

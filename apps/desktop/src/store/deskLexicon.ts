@@ -156,7 +156,7 @@ export type DeskTermId =
   // flat lexicon lookup; only the surrounding labels/disclosures live here.
   | 'tutorOpen' | 'tutorClose' | 'tutorTitle'
   // PHASE 1 (S3) - the right drawer's tab row. 'drawerLinks' is the per-theme word that replaces "Connections" (Arbor: Grafts, Flux: Links).
-  | 'tutorTabTutor' | 'drawerLinks' | 'drawerLinksEmpty' | 'drawerLinksNote' | 'drawerLinksNoteLabel' | 'drawerRightTabsLabel'
+  | 'tutorTabTutor' | 'drawerLinks' | 'drawerLinksEmpty' | 'drawerRightTabsLabel'
   | 'tutorDockClose' | 'tutorDockReopen'
   | 'tutorLensConsistency' | 'tutorLensStructure' | 'tutorLensFragments'
   | 'tutorLensConsistencyEmpty' | 'tutorLensFragmentsEmpty' | 'tutorLensFragmentsNote'
@@ -298,6 +298,7 @@ export type DeskTermId =
   // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
   | 'draftHeading' | 'draftHeadingUp' | 'draftHeadingDown' | 'draftBullet' | 'draftBulletCircle' | 'draftBulletSquare' | 'draftBulletStyles' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
   | 'railTemplates' | 'templateOutline' | 'templateBibliography' | 'templateTitlePage' | 'templateBlank' | 'templateScreenplay' | 'templateOpenedNewBack'
+  | 'helpOutline' | 'helpTitlePage' | 'helpTemplateBlank' | 'helpTemplateScreenplay' | 'helpTemplateBibliography'
   | 'comingSoon' | 'railTypeface' | 'goalUnitWords' | 'railPageKind'
   // PHASE 1 - the Actions section of the left drawer.
   | 'railActions' | 'actionTags' | 'actionCopy' | 'actionDelete' | 'actionHeaderFooter' | 'actionTagRemove'
@@ -550,6 +551,11 @@ export type DeskTermId =
   // option strings inline (the FX3 S5 precedent, left as-is — this ticket
   // adds a new control, it does not retrofit its neighbors).
   | 'progressStyleLabel' | 'progressStyleBar' | 'progressStyleRhizome' | 'recedeHint'
+  // help-buttons (Nick approved Oct 12, cursor/help-buttons @ d4d1c835) —
+  // one plain sentence per themed word, shown behind its own "?" (store/
+  // help.ts, components/HelpButton.tsx). recedeHint (above) is the seventh;
+  // it already existed (DrawerNote), gaining only a Flux override here.
+  | 'helpGrafts' | 'helpTemplates' | 'helpFreeWrite' | 'helpPublish'
   | 'tutorConversationRetry' | 'pageHomeLoose' | 'pageHomeJournal' | 'pageHomeProject' | 'pageHomeAlso'
   // E1 S2 — Publish's copy path, working and legible. A brief confirmation
   // (the existing ActionToast quiet-line pattern) after a genuine copy
@@ -869,13 +875,13 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorOpen: 'Open the Tutor',
   tutorClose: 'Close the Tutor',
   tutorTitle: 'The Tutor',
-  // PHASE 1 (S3) - Nick's words. Arbor is the default (canonical) theme; Flux overrides below. The note is Arbor-only: a theme whose term is
-  // empty gets no "?" (Flux's word explains itself). The note's copy is Nick's draft and his to edit here, in one place.
+  // PHASE 1 (S3) - Nick's words. Arbor is the default (canonical) theme; Flux overrides below.
+  // help-buttons (Nick approved Oct 12) - drawerLinksNote/-NoteLabel RETIRED:
+  // the "?" beside this tab now reads helpGrafts (below), which carries both
+  // themes' own sentences, through the shared HelpButton (Tutor.tsx).
   tutorTabTutor: 'Tutor',
   drawerLinks: 'Grafts',
   drawerLinksEmpty: 'Nothing grafted yet.',
-  drawerLinksNote: 'Grafts join pages, cards and boards so your ideas can grow together.',
-  drawerLinksNoteLabel: 'What are grafts?',
   drawerRightTabsLabel: 'Tutor and grafts',
   tutorDockClose: 'Close, keep dock',
   tutorDockReopen: 'Reopen',
@@ -1108,7 +1114,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   templateScreenplay: 'Screenplay',
   templateOpenedNewBack: 'Opened as a new page · Back',
   comingSoon: 'Coming soon',
-  railTypeface: 'Font', // Arbor's word (the approved templates mockup); Flux keeps 'Typeface' below
+  // theme-leftovers (Nick approved Oct 12, "Flux Word Picker"; never built
+  // until now) — Arbor's own word for the Sliver's type section is "Font",
+  // not "Typeface". Flux keeps "Typeface" (its own OVERRIDES entry, below).
+  railTypeface: 'Font',
   goalUnitWords: 'words',
   footSettings: 'Settings',
   footMenuTypewriter: 'Typewriter Mode',
@@ -1438,7 +1447,27 @@ const CANONICAL: Record<DeskTermId, string> = {
   // moves into the lexicon AND behind a "?" (DrawerNote.tsx): the full
   // explanation lives here now; the Settings panel itself carries no
   // standing text for it at all.
+  // help-buttons — now behind the NEW shared "?" (store/help.ts), not
+  // DrawerNote (whose own "?" goes brass when open — this ticket's own
+  // reason not to reuse it). Arbor's sentence is unchanged byte-for-byte;
+  // Flux's own is new, below.
   recedeHint: 'Type and the menus fade; pause, reach an edge, or press Esc to bring them back.',
+
+  // help-buttons (Nick approved Oct 12) — one plain sentence per themed
+  // word, Arbor's own forms. Flux's are in OVERRIDES, below.
+  helpGrafts: 'Grafts join pages, cards and boards.',
+  helpTemplates: 'Ready-made page layouts.',
+  helpFreeWrite: 'Write forward only. No going back to edit.',
+  helpPublish: 'Share a page as a link or a file.',
+  helpOutline: 'Numbered levels. Tab indents.',
+  helpTitlePage: 'A standard manuscript title page.',
+  // help-buttons (Fable, Oct 18) — the three row names Arbor's own picker
+  // never renames (Blank/Screenplay/Bibliography stay plain English on this
+  // theme, so no "?" shows here at all) — only Flux's own three remaining
+  // renamed rows (plus Outline/Title Page above) carry an explainer.
+  helpTemplateBlank: 'A blank page. Nothing written yet.',
+  helpTemplateScreenplay: 'Sluglines, dialogue, action — the screenplay format.',
+  helpTemplateBibliography: 'A sources and citations page.',
 
   // E1 S2 — Publish's copy path.
   // ITEM word-diet.
@@ -1475,8 +1504,8 @@ const CANONICAL: Record<DeskTermId, string> = {
 const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> = {
   flux: {
     // PAGE TEMPLATES - Flux's circuit-register words for the picker (the approved templates mockup): Presets, and Raw / Script / Spine / Cover / Sources.
+    // railTypeface's own Flux override already lives below (theme-leftovers) - not duplicated here.
     railTemplates: 'Presets',
-    railTypeface: 'Typeface',
     templateBlank: 'Raw',
     templateScreenplay: 'Script',
     templateOutline: 'Spine',
@@ -1485,8 +1514,6 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     // PHASE 1 (S3) - Flux's word for the same tab. No explainer: an empty term means no "?".
     drawerLinks: 'Links',
     drawerLinksEmpty: 'Nothing linked yet.',
-    drawerLinksNote: '',
-    drawerLinksNoteLabel: '',
     drawerRightTabsLabel: 'Tutor and links',
     corkboardJournalTab: 'Log',
     // AB3 — the Places face's Journal pull, kept in step with the corkboard
@@ -1531,6 +1558,24 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     // `theme === 'plateau'` gate already renders nothing under Flux, so this
     // is a label-only fix (see that component's header comment).
     progressStyleRhizome: 'Glitch',
+    // theme-leftovers (Nick approved Oct 12) — Flux keeps "Typeface" for the
+    // Sliver's type section; Arbor's own CANONICAL word changed to "Font"
+    // above, so this is now an explicit override rather than a shared default.
+    railTypeface: 'Typeface',
+    // help-buttons (Nick approved Oct 12) — Flux's own forms of the same
+    // seven sentences (docs/mockups/help-buttons/index.html's own SAY table).
+    helpGrafts: 'Links join docs, cards and circuits.',
+    helpTemplates: 'Ready-made doc layouts.',
+    helpFreeWrite: 'Write forward only. No editing back.',
+    helpPublish: 'Send a doc out as a link or a file.',
+    helpOutline: 'A numbered spine. Tab indents.',
+    helpTitlePage: 'A standard manuscript cover sheet.',
+    // help-buttons (Fable, Oct 18) — the picker's own three remaining
+    // renamed rows (Blank->Raw, Screenplay->Script, Bibliography->Sources).
+    helpTemplateBlank: 'A raw page. Nothing written yet.',
+    helpTemplateScreenplay: 'The script format: sluglines, dialogue, action.',
+    helpTemplateBibliography: 'Your sources, collected on one page.',
+    recedeHint: 'Type to dissolve the chrome; pause, reach an edge, or press Esc to bring it back.',
     // ITEM splash-hold, ROUND 3 — Flux's own circuit-register voice for the
     // splash's cycling loading line (Nick's ruling).
     splashLoading1: 'Booting the terminal…',
