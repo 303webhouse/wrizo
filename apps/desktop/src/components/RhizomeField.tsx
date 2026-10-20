@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useWritingSettings } from '../store/writingSettings';
 import { useWritingGoal, goalCount } from '../store/writingGoal';
 import { useTheme } from '../store/theme';
-import { lapPlan, segmentsFor, geometryKey, type GrowthGeometry, type GrowthSegment, type Rect } from '../store/rhizomeGrowth';
+import { lapPlan, segmentsFor, geometryKey, pickSurvivor, hashSeed, type GrowthGeometry, type GrowthSegment, type Rect } from '../store/rhizomeGrowth';
 
 // THE GOAL RHIZOME (rewritten by Fable, 2026-10-08; growth model in store/rhizomeGrowth.ts).
 //
@@ -10,8 +10,8 @@ import { lapPlan, segmentsFor, geometryKey, type GrowthGeometry, type GrowthSegm
 //   - A weed in the dark ground around the page. The goal in progress when the page is opened sprouts at the centre and
 //     the shoots wander out in a spread of directions; some run longer than others. It does not carpet the ground.
 //   - Every new piece grows OUT of an existing stem, and draws itself on along its length (the "growing" animation).
-//   - At the goal the whole network flashes brass, then fades. One root segment persists. The next rhizome branches
-//     from that segment, and one of those branches heads back toward the page.
+//   - At the goal the whole network flashes brass, then the finished plant fades out and leaves its seed: one root
+//     segment, from which the next rhizome branches. One of those branches heads back toward the page.
 //   - Roots grow BEHIND the page, right up to its edge, and are never drawn over it. They also never paint on the rail,
 //     the strip, the header or an open menu (clip + mask). They pass under the page (unpainted) to reach the other margin.
 //
@@ -176,7 +176,8 @@ export function RhizomeField({ text, seedKey, paperRef }: {
     return () => { if (raf) cancelAnimationFrame(raf); clearTimeout(settle); ro?.disconnect(); mo.disconnect(); };
   }, [active, paperRef, sync, seedKey]);
 
-  // Crossing the goal: hold the finished lap whole and brass for FLASH_MS, then fade and leave the next lap.
+  // Crossing the goal: hold the finished lap whole and brass for FLASH_MS, then fade that plant out. The seed root
+  // stays on screen through the fade; the next lap is that same segment.
   const countKey = `${seedKey}|${goalKey}`;
   useEffect(() => {
     const prev = prevCount.current;
@@ -231,6 +232,12 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   for (const [id, b] of born) if (b.until < now) born.delete(id);
   const animated = segs.filter(s => born.has(s.id));
   const settled = animated.length ? segs.filter(s => !born.has(s.id)) : segs;
+  // While the finished plant fades, the one root the next lap will grow from stays put. It is the same segment
+  // lapPlan will draw first on the following visit, so the handoff does not cut.
+  const seedRoot = flashFading && plan ? pickSurvivor(plan, hashSeed(`${pageSeed}:survivor:${shownVisit}`)) : null;
+  const isSeed = (s: GrowthSegment) => !!seedRoot && seedRoot.some(r => r.x1 === s.x1 && r.y1 === s.y1 && r.x2 === s.x2 && r.y2 === s.y2);
+  const fadingSettled = seedRoot ? settled.filter(s => !isSeed(s)) : settled;
+  const seedSettled = seedRoot ? settled.filter(isSeed) : [];
 
   if (!active) return null;
 
@@ -265,8 +272,9 @@ export function RhizomeField({ text, seedKey, paperRef }: {
         </>
       )}
       <g clipPath={m ? 'url(#wz-rhizome-ground)' : undefined} mask={m ? 'url(#wz-rhizome-mask)' : undefined}>
-        <path className="wz-rhizome-seg" d={pathOf(settled, false)} />
-        <path className="wz-rhizome-seg" data-thick="true" d={pathOf(settled, true)} />
+        <path className="wz-rhizome-seg" d={pathOf(fadingSettled, false)} />
+        <path className="wz-rhizome-seg" data-thick="true" d={pathOf(fadingSettled, true)} />
+        {seedSettled.length > 0 && <path className="wz-rhizome-seg" data-thick="true" data-seed="true" d={pathOf(seedSettled, true)} />}
         {animated.map(s => (
           <line
             key={`${drawKey}:${s.id}`}

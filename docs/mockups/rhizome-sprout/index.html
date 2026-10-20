@@ -25,11 +25,10 @@
   svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
   .seg { stroke: var(--ink); stroke-width: 1px; stroke-linecap: round; fill: none; opacity: .85; }
   .seg.thick { stroke-width: 1px; opacity: 1; }
-  .stage[data-flash='true'] svg,
-  .stage[data-flash='fading'] svg { filter: drop-shadow(0 0 3px var(--brass)); }
-  .stage[data-flash='true'] svg { animation: rhizome-pop 420ms ease-out; }
+  .stage[data-flash='true'] svg { filter: drop-shadow(0 0 3px var(--brass)); animation: rhizome-pop 420ms ease-out; }
   .stage[data-flash='true'] .seg { stroke: var(--brass); opacity: 1; stroke-width: 2px; }
-  .stage[data-flash='fading'] .seg { stroke: var(--brass); opacity: 0; stroke-width: 2px; transition: opacity 2.2s ease; }
+  .stage[data-flash='fading'] .seg { stroke: var(--brass); stroke-width: 2px; }
+  .stage[data-flash='fading'] .seg.seed { stroke: var(--ink); opacity: 1; stroke-width: 1px; }
   @keyframes rhizome-pop {
     from { filter: drop-shadow(0 0 12px var(--brass)) drop-shadow(0 0 3px var(--brass)); }
     to { filter: drop-shadow(0 0 3px var(--brass)); }
@@ -195,7 +194,7 @@
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (frame) document.documentElement.classList.add('shot');
 
-  var lap = 0, frac = 0, playing = !reduced && !frame, flash = null;
+  var lap = 0, frac = 0, playing = !reduced && !frame, flash = null, fadeAt = 0;
   var FRAMES = { early: [0, 0.18], mid: [0, 0.55], full: [0, 1], next: [1, 0.45] };
   if (FRAMES[frame]) { lap = FRAMES[frame][0]; frac = FRAMES[frame][1]; }
 
@@ -261,8 +260,14 @@
       }
     }
     field.setAttribute('viewBox', '0 0 ' + geo.width + ' ' + geo.height);
+    var seed = flash === 'fading' ? pickSurvivor(plan, hashSeed('sprout:survivor:' + lap)) : null;
+    var fadeT = flash === 'fading' ? Math.min(1, (performance.now() - fadeAt) / 2200) : 0;
     field.innerHTML = show.map(function (s) {
-      return '<line class="seg' + (s.thick || s.order === 0 ? ' thick' : '') + '" x1="' + s.x1.toFixed(1) + '" y1="' + s.y1.toFixed(1) + '" x2="' + s.x2.toFixed(1) + '" y2="' + s.y2.toFixed(1) + '"/>';
+      var kept = seed && seed.some(function (r) { return r.x1 === s.x1 && r.y1 === s.y1 && r.x2 === s.x2 && r.y2 === s.y2; });
+      var cls = 'seg' + (s.thick || s.order === 0 ? ' thick' : '') + (kept ? ' seed' : '');
+      var style = '';
+      if (flash === 'fading' && !kept) style = ' style="opacity:' + Math.max(0, 1 - fadeT).toFixed(3) + '"';
+      return '<line class="' + cls + '"' + style + ' x1="' + s.x1.toFixed(1) + '" y1="' + s.y1.toFixed(1) + '" x2="' + s.x2.toFixed(1) + '" y2="' + s.y2.toFixed(1) + '"/>';
     }).join('');
     stage.dataset.flash = flash || 'false';
     read.textContent = 'Lap ' + (lap + 1) + '  ·  ' + Math.round(frac * 100) + '% of the goal';
@@ -282,7 +287,7 @@
       if (frac >= 1) {
         frac = 1;
         flash = 'true';
-        setTimeout(function () { flash = 'fading'; draw(); }, reduced ? 0 : 900);
+        setTimeout(function () { flash = 'fading'; fadeAt = performance.now(); draw(); }, reduced ? 0 : 900);
         setTimeout(function () { flash = null; frac = 0; lap += 1; draw(); }, reduced ? 0 : 3100);
       }
     }
