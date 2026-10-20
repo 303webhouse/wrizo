@@ -96,21 +96,21 @@
   body[data-idea='ledger'] .meta .fig { color: var(--ink); font-size: 12px; letter-spacing: .14em; }
   body[data-idea='ledger'][data-closed='true'] .meta .fig { color: var(--accent); }
   .rule {
-    display: none; position: absolute; top: 36px; bottom: 56px; width: 18px;
-    border-right: 1px solid var(--line-strong);
+    display: none; position: absolute; left: 50%; top: -1px; transform: translateX(-50%);
+    width: 280px; height: 16px; border-top: 1px solid var(--line-strong);
   }
   body[data-idea='rule'] .rule { display: block; }
   .rule i {
-    position: absolute; right: -1px; width: 7px; height: 1px; background: var(--line-strong);
+    position: absolute; top: 0; width: 1px; height: 6px; margin-left: -1px; background: var(--line-strong);
   }
-  .rule i.major { width: 12px; background: var(--live); }
+  .rule i.major { height: 11px; background: var(--live); }
   .rule .notch {
-    position: absolute; right: -2px; width: 2px; height: 11px; margin-top: -5px;
+    position: absolute; top: 0; width: 2px; height: 16px; margin-left: -1px;
     background: var(--accent); animation: npulse 1.8s ease-in-out infinite;
   }
   body[data-closed='true'] .rule .notch { animation: none; opacity: 1; }
   .bottom {
-    grid-column: 1 / -1; background: var(--chrome); border-top: 1px solid var(--line);
+    grid-column: 1 / -1; position: relative; background: var(--chrome); border-top: 1px solid var(--line);
     display: flex; align-items: center; gap: 16px; padding: 0 20px;
     font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500;
     letter-spacing: .09em; color: var(--muted);
@@ -127,7 +127,10 @@
   }
   body[data-closed='true'] .run b { background: var(--accent); }
   body[data-closed='true'] .run b.here::after { animation: none; }
-  .foot-run { margin-left: auto; display: none; align-items: center; gap: 14px; }
+  .foot-run {
+    display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    align-items: center; gap: 14px;
+  }
   body[data-idea='run'] .foot-run { display: flex; }
   .count { color: var(--meta); }
   @media (prefers-reduced-motion: reduce) {
@@ -167,11 +170,11 @@
     <p>The committee asked for a record, not a case. What follows is the sequence as it stands: the brief, the objection, the revision, and the line we are willing to send.</p>
     <p>Nothing here argues. The draft keeps the terms the reader already uses, and it stops when the terms run out.<span class="caret"></span></p>
   </article>
-  <div class="rule" id="rule" aria-hidden="true"><span class="notch" id="rnotch"></span></div>
   <div class="meta" id="meta"></div>
 </main>
 <footer class="bottom">
   <span id="rest">COOL</span>
+  <div class="rule" id="rule" aria-hidden="true"><span class="notch" id="rnotch"></span></div>
   <div class="foot-run">
     <span class="count" id="count"></span>
     <div class="run" id="run"></div>
@@ -182,7 +185,7 @@
   var GOAL = 1000, WORDS = 430, frac = WORDS / GOAL, closed = false, timer = 0;
   var NOTES = {
     ledger: 'The count is the instrument. No bar, no metaphor. Orange only when the books close.',
-    rule: 'The page is a part being measured. A dimension line, and the orange notch is where the draft stands.',
+    rule: 'A ruler on the top edge of the footer, centered. The orange notch is where the draft stands.',
     run: 'The goal is a batch of identical units. Gray fills them. Orange marks the unit you are in, and the close.'
   };
   var note = document.getElementById('note');
@@ -191,28 +194,19 @@
   var run = document.getElementById('run');
   var rule = document.getElementById('rule');
   var rnotch = document.getElementById('rnotch');
-  var page = document.getElementById('page');
 
   for (var i = 0; i <= 10; i++) {
     var tick = document.createElement('i');
     if (i % 5 === 0) tick.className = 'major';
-    tick.style.top = (i * 10) + '%';
+    tick.style.left = (i * 10) + '%';
     rule.appendChild(tick);
   }
+  rule.appendChild(rnotch);
   var cells = [];
   for (var c = 0; c < 20; c++) {
     var b = document.createElement('b');
     run.appendChild(b);
     cells.push(b);
-  }
-
-  function placeRule() {
-    var r = page.getBoundingClientRect();
-    var host = page.parentElement.getBoundingClientRect();
-    rule.style.left = (r.right - host.left + 14) + 'px';
-    rule.style.top = (r.top - host.top) + 'px';
-    rule.style.height = r.height + 'px';
-    rule.style.bottom = 'auto';
   }
 
   function pad(n) { return String(n).padStart(4, '0'); }
@@ -230,7 +224,7 @@
     cells.forEach(function (el, i) {
       el.className = (frac >= 1 || i < idx) ? 'filled' : (i === idx ? 'here' : '');
     });
-    rnotch.style.top = (frac * 100) + '%';
+    rnotch.style.left = (frac * 100) + '%';
   }
 
   function setIdea(name) {
@@ -239,7 +233,6 @@
       b.setAttribute('aria-pressed', b.dataset.idea === name ? 'true' : 'false');
     });
     note.textContent = NOTES[name];
-    placeRule();
   }
 
   document.querySelectorAll('.rig button[data-idea]').forEach(function (b) {
@@ -268,7 +261,6 @@
   var q = new URLSearchParams(location.search).get('idea');
   setIdea(NOTES[q] ? q : 'ledger');
   paint();
-  window.addEventListener('resize', placeRule);
 })();
 </script>
 </body>
