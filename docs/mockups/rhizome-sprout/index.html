@@ -6,8 +6,9 @@
 <title>Rhizome sprout — mockup</title>
 <!--
   The weed from cursor/rhizome-sprout, drawn so it can be watched.
-  Same rules as store/rhizomeGrowth.ts: one sprout, shoots of uneven length,
-  the kept shoot is the next clump's centre. Strokes under the page are hidden.
+  Same rules as store/rhizomeGrowth.ts: one sprout at the page centre, shoots of
+  uneven length. Every lap, including the one after a goal, starts there again.
+  Strokes under the page are hidden.
   ?frame=early|mid|full|next  — stills. prefers-reduced-motion does not autoplay.
 -->
 <style>
@@ -52,7 +53,7 @@
 <script>
 (function () {
   var CELL = 28, STEP_MIN = 10, STEP_MAX = 22, MAX_TURN = 24 * Math.PI / 180, WANDER = 9 * Math.PI / 180;
-  var SURVIVOR_STEPS = 7, SHOOTS = 7, SHORT_EXTRA = 12, MID_EXTRA = 28, LONG_EXTRA = 128, SPLIT_CHANCE = 0.07;
+  var SHOOTS = 7, SHORT_EXTRA = 12, MID_EXTRA = 28, LONG_EXTRA = 128, SPLIT_CHANCE = 0.07;
   var BRANCH_MIN = 35 * Math.PI / 180, BRANCH_MAX = 70 * Math.PI / 180, EDGE_PAD = 3, LAP_CAP = 4200;
 
   function mulberry32(seed) {
@@ -116,51 +117,22 @@
         tips.push({ x: x, y: y, angle: angle, order: order, stem: nextStem++, left: clearSteps(x, y, angle) + extraSteps(), cx: x, cy: y });
       }
     }
-    function fromStem(kept) {
-      var last = kept[kept.length - 1];
-      var heading = Math.atan2(last.y2 - last.y1, last.x2 - last.x1);
-      var back = Math.atan2(geo.origin.y - last.y2, geo.origin.x - last.x2);
-      var aim = back + clamp(angleDiff(back, heading), -0.7, 0.7) * 0.25;
-      tips.push({
-        x: last.x2, y: last.y2, angle: aim, order: 0, stem: nextStem++,
-        left: clearSteps(last.x2, last.y2, aim) + LONG_EXTRA + Math.floor(rng() * 8),
-        cx: last.x2, cy: last.y2
-      });
-      for (var i = 1; i < SHOOTS; i++) {
-        var s = kept[Math.floor(rng() * kept.length)];
-        var home = Math.atan2(geo.origin.y - s.y2, geo.origin.x - s.x2);
-        var spread = (rng() - 0.5) * 1.5;
-        tips.push({
-          x: s.x2, y: s.y2, angle: home + spread, order: 1, stem: nextStem++,
-          left: clearSteps(s.x2, s.y2, home + spread) + extraSteps(), cx: s.x2, cy: s.y2
-        });
-      }
-    }
-    if (start && start.length) {
-      var stem = nextStem++;
-      start.forEach(function (s) { push(s.x1, s.y1, s.x2, s.y2, 0, stem, true); });
-      fromStem(start);
-    } else {
-      var ox = clamp(geo.origin.x, EDGE_PAD, geo.width - EDGE_PAD);
-      var oy = clamp(geo.origin.y, EDGE_PAD, geo.height - EDGE_PAD);
-      var a0 = rng() * Math.PI * 2;
-      var len = STEP_MIN + rng() * (STEP_MAX - STEP_MIN);
-      var x2 = clamp(ox + Math.cos(a0) * len, EDGE_PAD, geo.width - EDGE_PAD);
-      var y2 = clamp(oy + Math.sin(a0) * len, EDGE_PAD, geo.height - EDGE_PAD);
-      push(ox, oy, x2, y2, 0, nextStem++, true);
-      fan(x2, y2, 0);
-    }
-    var firstCount = start && start.length ? start.length : 1;
+    var ox = clamp(geo.origin.x, EDGE_PAD, geo.width - EDGE_PAD);
+    var oy = clamp(geo.origin.y, EDGE_PAD, geo.height - EDGE_PAD);
+    var a0 = rng() * Math.PI * 2;
+    var len = STEP_MIN + rng() * (STEP_MAX - STEP_MIN);
+    var x2 = clamp(ox + Math.cos(a0) * len, EDGE_PAD, geo.width - EDGE_PAD);
+    var y2 = clamp(oy + Math.sin(a0) * len, EDGE_PAD, geo.height - EDGE_PAD);
+    push(ox, oy, x2, y2, 0, nextStem++, true);
+    fan(x2, y2, 0);
+    var firstCount = 1;
+    void start;
     var guard = 0;
     while (tips.length && segments.length < LAP_CAP && guard++ < LAP_CAP * 4) {
       var ti = Math.floor(rng() * tips.length);
       var tip = tips[ti];
-      var sproutFar = Math.hypot(tip.cx - geo.origin.x, tip.cy - geo.origin.y) > 140;
       var angle = tip.angle;
-      if (sproutFar) {
-        var toward = Math.atan2(geo.origin.y - tip.y, geo.origin.x - tip.x);
-        angle += clamp(angleDiff(angle, toward), -MAX_TURN, MAX_TURN) * 0.85;
-      } else if (Math.hypot(tip.x - tip.cx, tip.y - tip.cy) > STEP_MAX) {
+      if (Math.hypot(tip.x - tip.cx, tip.y - tip.cy) > STEP_MAX) {
         var outward = Math.atan2(tip.y - tip.cy, tip.x - tip.cx);
         angle += clamp(angleDiff(angle, outward), -MAX_TURN, MAX_TURN) * 0.4;
       }
@@ -178,32 +150,6 @@
       if (tip.left <= 0) tips.splice(tips.indexOf(tip), 1);
     }
     return { segments: segments, firstCount: firstCount };
-  }
-
-  function pickSurvivor(plan, seed) {
-    var byStem = {};
-    plan.segments.forEach(function (s) { (byStem[s.stem] = byStem[s.stem] || []).push(s); });
-    var runs = [];
-    Object.keys(byStem).forEach(function (k) {
-      var run = [];
-      byStem[k].forEach(function (s) {
-        var joins = !run.length || (run[run.length - 1].x2 === s.x1 && run[run.length - 1].y2 === s.y1);
-        if (s.visible && joins) run.push(s); else run = s.visible ? [s] : [];
-        if (run.length === SURVIVOR_STEPS) { runs.push(run.slice()); run = []; }
-      });
-    });
-    var rng = mulberry32(seed ^ 0x5bd1e995);
-    var mains = runs.filter(function (r) { return r[0].order === 0; });
-    var pool = mains.length ? mains : runs;
-    if (!pool.length) {
-      var vis = plan.segments.filter(function (s) { return s.visible; });
-      if (!vis.length) return null;
-      var one = vis[Math.floor(rng() * vis.length)];
-      return [{ x1: one.x1, y1: one.y1, x2: one.x2, y2: one.y2, order: 0, thick: true, stem: 0, visible: true }];
-    }
-    return pool[Math.floor(rng() * pool.length)].map(function (s) {
-      return { x1: s.x1, y1: s.y1, x2: s.x2, y2: s.y2, order: 0, thick: true, stem: s.stem, visible: true };
-    });
   }
 
   var stage = document.getElementById('stage');
@@ -235,8 +181,7 @@
   var plans = [];
   function planFor(geo, n) {
     while (plans.length <= n) {
-      var prev = plans.length ? pickSurvivor(plans[plans.length - 1], hashSeed('sprout:' + (plans.length - 1))) : null;
-      plans.push(planLap(geo, hashSeed('sprout:lap:' + plans.length), prev));
+      plans.push(planLap(geo, hashSeed('sprout:lap:' + plans.length), null));
     }
     return plans[n];
   }

@@ -177,11 +177,11 @@ ok('R2: the first lap\'s starting stroke is one segment',
 const surv = E.pickSurvivor(plan, E.hashSeed('page:sess:24:lines:0:survivor'));
 const lap1 = E.planLap(geo, E.hashSeed('page:sess:24:lines:1'), surv);
 ok('R2: the next lap still has no free-standing segment',
-  lap1.segments.length > surv.length && freeStanding(lap1.segments) === 0,
+  lap1.segments.length > 20 && freeStanding(lap1.segments) === 0,
   JSON.stringify({ n: lap1.segments.length, free: freeStanding(lap1.segments) }));
-ok('R2: lap 2\'s first new segment touches the survivor',
-  lap1.segments.length > lap1.firstCount && lap1.segments.slice(lap1.firstCount).some(s => surv.some(r => touch(s, r))),
-  String(lap1.firstCount));
+ok('R2: lap 2 also sprouts at the page centre',
+  Math.hypot(lap1.segments[0].x1 - geo.origin.x, lap1.segments[0].y1 - geo.origin.y) < 2,
+  JSON.stringify({ x1: lap1.segments[0].x1, y1: lap1.segments[0].y1 }));
 const tight = E.planLap(tightGeo(), E.hashSeed('tight:0'), null);
 ok('R2: a tight margin still grows one connected network',
   tight.segments.length > 20 && freeStanding(tight.segments) === 0,
@@ -250,11 +250,9 @@ const again = E.pickSurvivor(plan, E.hashSeed('page:sess:24:lines:0:survivor'));
 ok('R5: the same seed keeps the same survivor',
   surv && again && surv.length === again.length && surv[0].x1 === again[0].x1 && surv[0].y1 === again[0].y1,
   JSON.stringify(again && { x1: again[0].x1 }));
-ok('R5: lap 2 starts from that survivor (firstCount matches)',
-  lap1.firstCount === surv.length, String(lap1.firstCount));
-ok('R5: lap 2\'s opening stroke matches the survivor geometry',
-  surv.every((s, i) => eq(s.x1, s.y1, lap1.segments[i].x1, lap1.segments[i].y1)
-    && eq(s.x2, s.y2, lap1.segments[i].x2, lap1.segments[i].y2)),
+ok('R5: lap 2 starts at the page centre, not from the survivor',
+  lap1.firstCount === 1
+    && Math.hypot(lap1.segments[0].x1 - geo.origin.x, lap1.segments[0].y1 - geo.origin.y) < 2,
   String(lap1.firstCount));
 // ---- PARKED - SUPERSEDED by the flash fade (Nick, 2026-10-10: "a bit brighter and fade back out slower"). Kept VERBATIM and no
 // longer run: data-flash now carries a third state, 'fading', between the hold and the clear. Its record is in the HARNESS_PARKED
@@ -277,12 +275,12 @@ ok('R5 [fade successor]: the flash is BRIGHTER (full opacity, a heavier stroke) 
   'fade css');
 ok('R5: the flash paints brass on every segment',
   /\.wz-rhizome-field\[data-flash='true'\] \.wz-rhizome-seg\{ stroke:var\(--brass\)/.test(css), 'brass');
-ok('R5: lapPlan(1) replays from lap 0\'s survivor',
-  E.lapPlan(geo, 'page-r5', 1).firstCount === E.SURVIVOR_STEPS
-    || E.lapPlan(geo, 'page-r5', 1).firstCount === 1,
+ok('R5: lapPlan(1) is its own plant from the centre',
+  E.lapPlan(geo, 'page-r5', 1).firstCount === 1
+    && Math.hypot(E.lapPlan(geo, 'page-r5', 1).segments[0].x1 - geo.origin.x, E.lapPlan(geo, 'page-r5', 1).segments[0].y1 - geo.origin.y) < 2,
   String(E.lapPlan(geo, 'page-r5', 1).firstCount));
-ok('R5: a new lap at fraction 0 shows only the survivor',
-  E.segmentsFor(lap1, 0) === lap1.firstCount, String(E.segmentsFor(lap1, 0)));
+ok('R5: a new lap at fraction 0 shows only the opening stroke',
+  E.segmentsFor(lap1, 0) === 1, String(E.segmentsFor(lap1, 0)));
 
 // ---- R6 determinism / memo / field ambient --------------------------------------
 const replay = E.planLap(geo, seed0, null);

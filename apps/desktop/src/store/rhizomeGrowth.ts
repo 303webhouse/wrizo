@@ -7,10 +7,10 @@
 //      extending) or at an earlier segment's end point (a side branch). No free-standing origins after the first.
 //   3. Stems, not scratches. Each step is short (STEP_MIN..STEP_MAX px) and turns only a little from the one before
 //      (MAX_TURN plus a small wander), so a root is a chain of short, gently curving steps.
-//   4. One sprout. The first lap starts at the page's centre and the shoots leave in a spread of directions. They may pass
+//   4. One sprout. Every lap starts at the page's centre and the shoots leave in a spread of directions. They may pass
 //      under the page (hidden, never painted). Some shoots are given more steps than others.
-//   5. Laps. At the goal the whole network flashes brass, then everything clears except one stem from that lap, drawn
-//      thick. The next rhizome grows out of that stem. Only the first rhizome of a page sprouts at the page's centre.
+//   5. Laps. At the goal the whole network flashes brass, then clears. The next rhizome sprouts again at the page's
+//      centre. Every lap of a page starts there.
 //
 // Nothing here touches the DOM. RhizomeField.tsx measures the geometry and renders; this file decides what grows.
 
@@ -21,7 +21,7 @@ export interface GrowthGeometry {
   height: number;
   /** Where growth may pass but is never painted or counted: the sheet (roots grow behind it, never over it), the rail, the strip, the header. */
   hidden: Rect[];
-  /** The sprout. The first lap starts here (the page's centre). Later laps sprout from the survivor's tip. */
+  /** The sprout. Every lap starts here (the page's centre). */
   origin: { x: number; y: number };
 }
 
@@ -44,7 +44,7 @@ export interface LapPlan {
   coverAt: number[];
   /** Visible cells in this geometry (the denominator of "coverage"). */
   visibleCells: number;
-  /** How many leading segments are the lap's starting stroke (the survivor), shown even at 0% of the goal. */
+  /** How many leading segments are the opening stroke at the page centre, shown even at 0% of the goal. */
   firstCount: number;
 }
 
@@ -164,10 +164,11 @@ function inStage(geo: GrowthGeometry, x: number, y: number): boolean {
 }
 
 /**
- * Grow one whole lap. `start` is the previous lap's surviving stroke (null on the first lap). The same (geo, seed, start)
- * always yields the same plan, so a resize or a reload replays it exactly.
+ * Grow one whole lap from the page's centre. A previous stem is ignored: every refresh sprouts there again.
+ * The same (geo, seed) always yields the same plan, so a resize or a reload replays it exactly.
  */
 export function planLap(geo: GrowthGeometry, seed: number, start: GrowthSegment[] | null): LapPlan {
+  void start;
   const rng = mulberry32(seed);
   const g = makeGrid(geo);
   const segments: GrowthSegment[] = [];
@@ -214,54 +215,22 @@ export function planLap(geo: GrowthGeometry, seed: number, start: GrowthSegment[
       });
     }
   };
-  // Later laps grow out of the stem that survived. If that stem is out in the margin, the new
-  // shoots head back toward the page's centre instead of carrying on away from it.
-  const fromStem = (kept: GrowthSegment[]) => {
-    const last = kept[kept.length - 1];
-    const heading = Math.atan2(last.y2 - last.y1, last.x2 - last.x1);
-    const back = Math.atan2(geo.origin.y - last.y2, geo.origin.x - last.x2);
-    const aim = back + clamp(angleDiff(back, heading), -0.7, 0.7) * 0.25;
-    tips.push({
-      x: last.x2, y: last.y2, angle: aim, order: 0, stem: nextStem++,
-      left: clearSteps(last.x2, last.y2, aim) + LONG_EXTRA + Math.floor(rng() * 8),
-      cx: last.x2, cy: last.y2,
-    });
-    for (let i = 1; i < SHOOTS; i++) {
-      const s = kept[Math.floor(rng() * kept.length)];
-      const home = Math.atan2(geo.origin.y - s.y2, geo.origin.x - s.x2);
-      const spread = (rng() - 0.5) * 1.5;
-      tips.push({
-        x: s.x2, y: s.y2, angle: home + spread, order: 1, stem: nextStem++,
-        left: clearSteps(s.x2, s.y2, home + spread) + extraSteps(), cx: s.x2, cy: s.y2,
-      });
-    }
-  };
-
-  if (start && start.length > 0) {
-    const stem = nextStem++;
-    for (const s of start) push(s.x1, s.y1, s.x2, s.y2, 0, stem, true);
-    fromStem(start);
-  } else {
-    const o = place(geo.origin.x, geo.origin.y);
-    const a0 = rng() * Math.PI * 2;
-    const len = STEP_MIN + rng() * (STEP_MAX - STEP_MIN);
-    const x2 = clamp(o.x + Math.cos(a0) * len, EDGE_PAD, geo.width - EDGE_PAD);
-    const y2 = clamp(o.y + Math.sin(a0) * len, EDGE_PAD, geo.height - EDGE_PAD);
-    push(o.x, o.y, x2, y2, 0, nextStem++, true);
-    fan(x2, y2, 0);
-  }
-  const firstCount = start && start.length > 0 ? start.length : 1;
+  // Every lap sprouts at the page's centre.
+  const o = place(geo.origin.x, geo.origin.y);
+  const a0 = rng() * Math.PI * 2;
+  const heart = STEP_MIN + rng() * (STEP_MAX - STEP_MIN);
+  const x2 = clamp(o.x + Math.cos(a0) * heart, EDGE_PAD, geo.width - EDGE_PAD);
+  const y2 = clamp(o.y + Math.sin(a0) * heart, EDGE_PAD, geo.height - EDGE_PAD);
+  push(o.x, o.y, x2, y2, 0, nextStem++, true);
+  fan(x2, y2, 0);
+  const firstCount = 1;
 
   let guard = 0;
   while (tips.length && segments.length < LAP_CAP && guard++ < LAP_CAP * 4) {
     const ti = Math.floor(rng() * tips.length);
     const tip = tips[ti];
-    const sproutFar = Math.hypot(tip.cx - geo.origin.x, tip.cy - geo.origin.y) > 140;
     let angle = tip.angle;
-    if (sproutFar) {
-      const toward = Math.atan2(geo.origin.y - tip.y, geo.origin.x - tip.x);
-      angle += clamp(angleDiff(angle, toward), -MAX_TURN, MAX_TURN) * 0.85;
-    } else if (Math.hypot(tip.x - tip.cx, tip.y - tip.cy) > STEP_MAX) {
+    if (Math.hypot(tip.x - tip.cx, tip.y - tip.cy) > STEP_MAX) {
       const outward = Math.atan2(tip.y - tip.cy, tip.x - tip.cx);
       angle += clamp(angleDiff(angle, outward), -MAX_TURN, MAX_TURN) * 0.4;
     }
@@ -291,7 +260,7 @@ export function planLap(geo: GrowthGeometry, seed: number, start: GrowthSegment[
 export function segmentsFor(plan: LapPlan, f: number): number {
   const n = plan.segments.length;
   if (n === 0) return 0;
-  if (f <= 0) return plan.firstCount; // the lap's starting stroke (the survivor, or the very first stem) is always there
+  if (f <= 0) return plan.firstCount; // the opening stroke at the page centre is always there
   if (f >= 1) return n;
   const want = f * plan.coverAt[n - 1];
   // binary search the first index whose coverage reaches `want`
@@ -305,7 +274,7 @@ export function segmentsFor(plan: LapPlan, f: number): number {
 
 /**
  * The stroke that survives a lap: SURVIVOR_STEPS consecutive, visible segments of one main stem (a visible little root,
- * not a speck), chosen by the seed. Drawn thick. The next lap continues that stem and forks off it.
+ * not a speck), chosen by the seed. Drawn thick. The next lap does not grow from it; it sprouts at the page centre again.
  */
 export function pickSurvivor(plan: LapPlan, seed: number): GrowthSegment[] | null {
   const byStem = new Map<number, GrowthSegment[]>();
@@ -339,8 +308,8 @@ export function geometryKey(geo: GrowthGeometry): string {
 }
 
 /**
- * The plan for lap `lap` (0-based) of this page in this geometry. Lap n starts from lap n-1's survivor, so a lap is replayed
- * from the first one; plans are memoised (per page seed + geometry), so this costs one plan per lap per geometry.
+ * The plan for lap `lap` (0-based) of this page in this geometry. Every lap sprouts at the page centre, from its own
+ * seed. Plans are memoised (per page seed + geometry), so this costs one plan per lap per geometry.
  */
 const memo = new Map<string, LapPlan>();
 export function lapPlan(geo: GrowthGeometry, pageSeed: string, lap: number): LapPlan {
@@ -348,8 +317,7 @@ export function lapPlan(geo: GrowthGeometry, pageSeed: string, lap: number): Lap
   const key = `${pageSeed}#${lap}#${gk}`;
   const hit = memo.get(key);
   if (hit) return hit;
-  const start = lap > 0 ? pickSurvivor(lapPlan(geo, pageSeed, lap - 1), hashSeed(`${pageSeed}:survivor:${lap - 1}`)) : null;
-  const plan = planLap(geo, hashSeed(`${pageSeed}:lap:${lap}`), start);
+  const plan = planLap(geo, hashSeed(`${pageSeed}:lap:${lap}`), null);
   if (memo.size > 24) memo.clear(); // a long session on many pages: drop the cache rather than grow it forever
   memo.set(key, plan);
   return plan;
