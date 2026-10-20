@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nomad — three ways the day goes</title>
+<!--
+  STEPPE day. Nomad has no fences and no page. The locked sprint bar
+  draws the road ahead. These three do not: the trail exists only where
+  the writing has been. Drift, Horizon, Cairns.
+  Orange is the writer (the caret, the active mark), never the land.
+-->
+<link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:ital,wght@0,400;0,500;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Julius+Sans+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ground: #F5F4E6;
+    --ink: #333A24;
+    --muted: #6E754F;
+    --faint: #A7AC85;
+    --dim: #7E8C5F;
+    --hair: rgba(51, 58, 36, .16);
+    --accent: #FF9800;
+    --mark: #6E754F;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    display: grid; grid-template-rows: 40px 60px 1fr 78px; grid-template-columns: 220px 1fr;
+    background: var(--ground); color: var(--ink);
+    font-family: "Alegreya Sans", sans-serif; overflow: hidden;
+  }
+  .rig {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 0 18px;
+    background: #E7E6D4; color: var(--muted);
+    font-family: "Julius Sans One", sans-serif; font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+  }
+  .rig b { color: var(--ink); font-weight: 400; }
+  .rig button {
+    font: inherit; letter-spacing: .14em; text-transform: uppercase;
+    background: none; border: 1px solid transparent; color: var(--muted); padding: 3px 8px; cursor: pointer;
+  }
+  .rig button[aria-pressed='true'] { color: var(--ink); border-color: var(--dim); }
+  .rig .note { margin-left: auto; letter-spacing: .04em; text-transform: none; font-family: "Alegreya Sans", sans-serif; font-size: 13px; }
+  header { grid-column: 1 / -1; display: flex; align-items: flex-end; gap: 28px; padding: 0 26px 10px; }
+  .brand { font-family: "Alegreya Sans", sans-serif; font-size: 18px; letter-spacing: .08em; color: var(--mark); }
+  .tabs { margin-left: auto; display: flex; gap: 28px; }
+  .tab { font-family: "Julius Sans One", sans-serif; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); position: relative; padding-bottom: 8px; }
+  .tab.on { color: var(--ink); }
+  .tab.on::after {
+    content: ""; position: absolute; left: -2px; right: -4px; bottom: 0; height: 2px; background: var(--accent);
+    border-radius: 2px; transform: rotate(-1deg);
+  }
+  nav { padding: 22px 0 20px 26px; display: flex; flex-direction: column; gap: 16px; }
+  nav .gap { height: 22px; }
+  .item { font-family: "Julius Sans One", sans-serif; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .item.on { color: var(--ink); }
+  main { position: relative; }
+  .glow {
+    position: fixed; left: 50%; bottom: 78px; transform: translateX(-50%);
+    width: 132vw; height: 46vh; pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse at 50% 100%, rgba(190, 170, 100, .28), transparent 62%);
+  }
+  .horizon {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 46vh; pointer-events: none; z-index: 0;
+    opacity: 0;
+  }
+  body[data-idea='horizon'] .horizon { opacity: 1; }
+  .sheet { position: relative; z-index: 1; max-width: 60ch; margin: 0 auto; padding: 6vh 28px 12vh; }
+  .tag { font-family: "Julius Sans One", sans-serif; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin-bottom: 28px; }
+  .prose { font-family: "Crimson Pro", Georgia, serif; font-size: 21px; line-height: 1.75; }
+  .prose p + p { margin-top: 1.1em; }
+  .caret { display: inline-block; width: 1px; height: .95em; background: var(--accent); vertical-align: -0.08em; margin-left: 2px; }
+  footer {
+    grid-column: 1 / -1; position: relative; z-index: 2;
+    display: flex; align-items: center; padding: 0 28px;
+  }
+  .trail { width: min(760px, 70%); height: 64px; margin: 0 auto; display: none; }
+  body[data-idea='drift'] .trail, body[data-idea='cairns'] .trail { display: block; }
+  .trail path { fill: none; stroke: var(--dim); stroke-width: 1.7; stroke-linecap: round; }
+  .stone { fill: none; stroke: var(--dim); stroke-width: 1.5; }
+  .stone.kindled { fill: var(--dim); }
+  @media (prefers-reduced-motion: reduce) { .glow { } }
+</style>
+</head>
+<body data-idea="drift">
+<header class="rig">
+  <b>Nomad</b>
+  <button type="button" data-idea="drift" aria-pressed="true">Drift</button>
+  <button type="button" data-idea="horizon">Horizon</button>
+  <button type="button" data-idea="cairns">Cairns</button>
+  <button type="button" id="goal">To the goal</button>
+  <span class="note" id="note"></span>
+</header>
+<header>
+  <div class="brand">wrizo</div>
+  <div class="tabs">
+    <div class="tab on">Drift</div>
+    <div class="tab">Workshop</div>
+    <div class="tab">Relay</div>
+  </div>
+</header>
+<nav>
+  <div class="item">Camp</div>
+  <div class="item on">Fireside</div>
+  <div class="item">Leaves</div>
+  <div class="item">Route</div>
+  <div class="gap"></div>
+  <div class="item">Waybook</div>
+  <div class="item">Clearing</div>
+  <div class="item">Cairn</div>
+</nav>
+<main>
+  <div class="sheet">
+    <div class="tag">Fireside · the long crossing</div>
+    <div class="prose">
+      <p>The steppe does not ask where you are going. It offers distance, and the page keeps none of it fenced.</p>
+      <p>You write the way the herder moves, by the shape of the land underfoot. Whatever is worth carrying is already with you. The rest the wind can have.<span class="caret"></span></p>
+    </div>
+  </div>
+</main>
+<div class="glow" id="glow"></div>
+<div class="horizon" id="horizon"></div>
+<footer>
+  <svg class="trail" id="trail" viewBox="0 0 760 64" aria-hidden="true"></svg>
+</footer>
+<script>
+(function () {
+  var NOTES = {
+    drift: 'One line, as long as the writing. It wanders. Nothing is drawn ahead of it.',
+    horizon: 'The day is the instrument. Noon walks toward fire on the sandstone. The next journey is morning.',
+    cairns: 'Stones are left where you have been. The path does not show its destination.'
+  };
+  var frac = 0.46, timer = 0;
+  var trail = document.getElementById('trail');
+  var note = document.getElementById('note');
+  var glow = document.getElementById('glow');
+  var horizon = document.getElementById('horizon');
+
+  function pts() {
+    var out = [];
+    for (var i = 0; i <= 80; i++) {
+      var t = i / 80;
+      var y = 34
+        + Math.sin(t * 6.4 + 0.6) * 12
+        + Math.sin(t * 2.1) * 7
+        + Math.sin(t * 13) * 2.2;
+      out.push([24 + t * 712, y]);
+    }
+    return out;
+  }
+  var PATH = pts();
+
+  function dTo(f) {
+    var n = Math.max(1, Math.round(f * (PATH.length - 1)));
+    var d = 'M ' + PATH[0][0].toFixed(1) + ' ' + PATH[0][1].toFixed(1);
+    for (var i = 1; i <= n; i++) d += ' L ' + PATH[i][0].toFixed(1) + ' ' + PATH[i][1].toFixed(1);
+    return d;
+  }
+
+  function mix(a, b, t) {
+    return 'rgb(' + a.map(function (v, i) { return Math.round(v + (b[i] - v) * t); }).join(',') + ')';
+  }
+
+  function paint() {
+    var idea = document.body.dataset.idea;
+    var f = Math.max(0, Math.min(1, frac));
+    var dusk = idea === 'horizon' ? f : f * 0.18;
+    document.body.style.background = mix([245, 244, 230], [232, 206, 168], dusk * 0.55);
+    glow.style.background = 'radial-gradient(ellipse at 50% 100%, ' + mix([190, 170, 100], [176, 78, 52], dusk) + ', transparent 62%)';
+    glow.style.opacity = String(0.35 + dusk * 0.65);
+    horizon.style.background = 'linear-gradient(to top, ' + mix([232, 196, 140], [120, 42, 36], dusk) + ' 0%, transparent 72%)';
+    horizon.style.opacity = idea === 'horizon' ? String(0.25 + f * 0.75) : '0';
+
+    var show = idea === 'drift' || idea === 'cairns';
+    trail.style.display = show ? 'block' : 'none';
+    if (!show) { trail.innerHTML = ''; return; }
+    var html = '<path d="' + dTo(f) + '"/>';
+    if (idea === 'cairns') {
+      var step = 0.11;
+      for (var m = step; m <= f + 0.001; m += step) {
+        var i = Math.round(Math.min(1, m) * (PATH.length - 1));
+        var p = PATH[i];
+        var last = m + step > f + 0.001;
+        html += '<circle class="stone' + (last ? ' kindled' : '') + '" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (last ? 3.2 : 2.4) + '"/>';
+      }
+    }
+    trail.innerHTML = html;
+  }
+
+  function setIdea(name) {
+    document.body.dataset.idea = name;
+    document.querySelectorAll('.rig button[data-idea]').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.dataset.idea === name ? 'true' : 'false');
+    });
+    note.textContent = NOTES[name];
+    paint();
+  }
+
+  document.querySelectorAll('.rig button[data-idea]').forEach(function (b) {
+    b.addEventListener('click', function () { setIdea(b.dataset.idea); });
+  });
+  document.getElementById('goal').addEventListener('click', function () {
+    if (timer) cancelAnimationFrame(timer);
+    var start = frac, t0 = performance.now();
+    function step(t) {
+      var u = Math.min(1, (t - t0) / 2200);
+      frac = start + (1 - start) * u;
+      paint();
+      if (u < 1) timer = requestAnimationFrame(step);
+      else setTimeout(function () { frac = 0.08; paint(); }, 1600);
+    }
+    timer = requestAnimationFrame(step);
+  });
+
+  var q = new URLSearchParams(location.search).get('idea');
+  setIdea(NOTES[q] ? q : 'drift');
+})();
+</script>
+</body>
+</html>
