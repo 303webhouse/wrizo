@@ -214,23 +214,25 @@ export function planLap(geo: GrowthGeometry, seed: number, start: GrowthSegment[
       });
     }
   };
-  // Later laps: keep growing out of the stem that survived. One shoot continues it; the others fork off it.
+  // Later laps grow out of the stem that survived. If that stem is out in the margin, the new
+  // shoots head back toward the page's centre instead of carrying on away from it.
   const fromStem = (kept: GrowthSegment[]) => {
     const last = kept[kept.length - 1];
     const heading = Math.atan2(last.y2 - last.y1, last.x2 - last.x1);
+    const back = Math.atan2(geo.origin.y - last.y2, geo.origin.x - last.x2);
+    const aim = back + clamp(angleDiff(back, heading), -0.7, 0.7) * 0.25;
     tips.push({
-      x: last.x2, y: last.y2, angle: heading, order: 0, stem: nextStem++,
-      left: clearSteps(last.x2, last.y2, heading) + LONG_EXTRA + Math.floor(rng() * 8),
-      cx: last.x1, cy: last.y1,
+      x: last.x2, y: last.y2, angle: aim, order: 0, stem: nextStem++,
+      left: clearSteps(last.x2, last.y2, aim) + LONG_EXTRA + Math.floor(rng() * 8),
+      cx: last.x2, cy: last.y2,
     });
     for (let i = 1; i < SHOOTS; i++) {
       const s = kept[Math.floor(rng() * kept.length)];
-      const a = Math.atan2(s.y2 - s.y1, s.x2 - s.x1);
-      const side = rng() < 0.5 ? -1 : 1;
-      const turn = BRANCH_MIN + rng() * (BRANCH_MAX - BRANCH_MIN);
+      const home = Math.atan2(geo.origin.y - s.y2, geo.origin.x - s.x2);
+      const spread = (rng() - 0.5) * 1.5;
       tips.push({
-        x: s.x2, y: s.y2, angle: a + side * turn, order: 1, stem: nextStem++,
-        left: clearSteps(s.x2, s.y2, a + side * turn) + extraSteps(), cx: s.x1, cy: s.y1,
+        x: s.x2, y: s.y2, angle: home + spread, order: 1, stem: nextStem++,
+        left: clearSteps(s.x2, s.y2, home + spread) + extraSteps(), cx: s.x2, cy: s.y2,
       });
     }
   };
@@ -254,9 +256,13 @@ export function planLap(geo: GrowthGeometry, seed: number, start: GrowthSegment[
   while (tips.length && segments.length < LAP_CAP && guard++ < LAP_CAP * 4) {
     const ti = Math.floor(rng() * tips.length);
     const tip = tips[ti];
-    const outward = Math.atan2(tip.y - tip.cy, tip.x - tip.cx);
+    const sproutFar = Math.hypot(tip.cx - geo.origin.x, tip.cy - geo.origin.y) > 140;
     let angle = tip.angle;
-    if (Math.hypot(tip.x - tip.cx, tip.y - tip.cy) > STEP_MAX) {
+    if (sproutFar) {
+      const toward = Math.atan2(geo.origin.y - tip.y, geo.origin.x - tip.x);
+      angle += clamp(angleDiff(angle, toward), -MAX_TURN, MAX_TURN) * 0.85;
+    } else if (Math.hypot(tip.x - tip.cx, tip.y - tip.cy) > STEP_MAX) {
+      const outward = Math.atan2(tip.y - tip.cy, tip.x - tip.cx);
       angle += clamp(angleDiff(angle, outward), -MAX_TURN, MAX_TURN) * 0.4;
     }
     angle += gauss(rng) * WANDER;
