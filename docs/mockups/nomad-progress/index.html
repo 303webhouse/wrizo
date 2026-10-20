@@ -21,6 +21,18 @@
     --hair: rgba(51, 58, 36, .16);
     --accent: #FF9800;
     --mark: #6E754F;
+    --kindle: #5E6C45;
+    --rig: #E7E6D4;
+  }
+  body[data-field='night'] {
+    --ground: #140708;
+    --ink: #F0E9D6;
+    --muted: #C9A98A;
+    --faint: #8A6450;
+    --dim: #C46B5A;
+    --mark: #B7BC9A;
+    --kindle: #E7C4A8;
+    --rig: #1A0A0B;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
@@ -31,7 +43,7 @@
   }
   .rig {
     grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 0 18px;
-    background: #E7E6D4; color: var(--muted);
+    background: var(--rig); color: var(--muted);
     font-family: "Julius Sans One", sans-serif; font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
   }
   .rig b { color: var(--ink); font-weight: 400; }
@@ -78,7 +90,7 @@
   body[data-idea='drift'] .trail, body[data-idea='cairns'] .trail { display: block; }
   .trail path { fill: none; stroke: var(--dim); stroke-width: 1.7; stroke-linecap: round; }
   .stone { fill: none; stroke: var(--dim); stroke-width: 1.5; }
-  .stone.kindled { fill: var(--dim); }
+  .stone.kindled { fill: var(--kindle); }
   @media (prefers-reduced-motion: reduce) { .glow { } }
 </style>
 </head>
@@ -88,6 +100,8 @@
   <button type="button" data-idea="drift" aria-pressed="true">Drift</button>
   <button type="button" data-idea="horizon">Horizon</button>
   <button type="button" data-idea="cairns">Cairns</button>
+  <button type="button" data-field="day" aria-pressed="true">Day</button>
+  <button type="button" data-field="night">Night</button>
   <button type="button" id="goal">To the goal</button>
   <span class="note" id="note"></span>
 </header>
@@ -164,12 +178,22 @@
   function paint() {
     var idea = document.body.dataset.idea;
     var f = Math.max(0, Math.min(1, frac));
-    var dusk = idea === 'horizon' ? f : f * 0.18;
-    document.body.style.background = mix([245, 244, 230], [232, 206, 168], dusk * 0.55);
-    glow.style.background = 'radial-gradient(ellipse at 50% 100%, ' + mix([190, 170, 100], [176, 78, 52], dusk) + ', transparent 62%)';
-    glow.style.opacity = String(0.35 + dusk * 0.65);
-    horizon.style.background = 'linear-gradient(to top, ' + mix([232, 196, 140], [120, 42, 36], dusk) + ' 0%, transparent 72%)';
-    horizon.style.opacity = idea === 'horizon' ? String(0.25 + f * 0.75) : '0';
+    var night = document.body.dataset.field === 'night';
+    if (night) {
+      document.body.style.background = '#140708';
+      var fire = idea === 'horizon' ? 0.28 + f * 0.62 : 0.34;
+      glow.style.background = 'radial-gradient(ellipse at 50% 100%, rgba(200,70,60,' + fire.toFixed(2) + '), transparent 62%)';
+      glow.style.opacity = '1';
+      horizon.style.background = 'linear-gradient(to top, rgba(140,47,63,' + (0.35 + f * 0.55).toFixed(2) + ') 0%, transparent 70%)';
+      horizon.style.opacity = idea === 'horizon' ? '1' : '0';
+    } else {
+      var dusk = idea === 'horizon' ? f : f * 0.18;
+      document.body.style.background = mix([245, 244, 230], [232, 206, 168], dusk * 0.55);
+      glow.style.background = 'radial-gradient(ellipse at 50% 100%, ' + mix([190, 170, 100], [176, 78, 52], dusk) + ', transparent 62%)';
+      glow.style.opacity = String(0.35 + dusk * 0.65);
+      horizon.style.background = 'linear-gradient(to top, ' + mix([232, 196, 140], [120, 42, 36], dusk) + ' 0%, transparent 72%)';
+      horizon.style.opacity = idea === 'horizon' ? String(0.25 + f * 0.75) : '0';
+    }
 
     var show = idea === 'drift' || idea === 'cairns';
     trail.style.display = show ? 'block' : 'none';
@@ -196,8 +220,19 @@
     paint();
   }
 
+  function setField(name) {
+    document.body.dataset.field = name;
+    document.querySelectorAll('.rig button[data-field]').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.dataset.field === name ? 'true' : 'false');
+    });
+    paint();
+  }
+
   document.querySelectorAll('.rig button[data-idea]').forEach(function (b) {
     b.addEventListener('click', function () { setIdea(b.dataset.idea); });
+  });
+  document.querySelectorAll('.rig button[data-field]').forEach(function (b) {
+    b.addEventListener('click', function () { setField(b.dataset.field); });
   });
   document.getElementById('goal').addEventListener('click', function () {
     if (timer) cancelAnimationFrame(timer);
@@ -212,8 +247,10 @@
     timer = requestAnimationFrame(step);
   });
 
-  var q = new URLSearchParams(location.search).get('idea');
+  var params = new URLSearchParams(location.search);
+  var q = params.get('idea');
   setIdea(NOTES[q] ? q : 'drift');
+  setField(params.get('field') === 'night' ? 'night' : 'day');
 })();
 </script>
 </body>
