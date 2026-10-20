@@ -9,8 +9,8 @@
 //      (MAX_TURN plus a small wander), so a root is a chain of short, gently curving steps.
 //   4. One sprout. The first lap starts at the page's centre and the shoots leave in a spread of directions. They may pass
 //      under the page (hidden, never painted). Some shoots are given more steps than others.
-//   5. Laps. At the goal the whole network flashes brass, then everything clears except one short stem, drawn thick. That
-//      stem's tip is the centre of the next lap's shoots.
+//   5. Laps. At the goal the whole network flashes brass, then everything clears except one stem from that lap, drawn
+//      thick. The next rhizome grows out of that stem. Only the first rhizome of a page sprouts at the page's centre.
 //
 // Nothing here touches the DOM. RhizomeField.tsx measures the geometry and renders; this file decides what grows.
 
@@ -199,16 +199,38 @@ export function planLap(geo: GrowthGeometry, seed: number, start: GrowthSegment[
     return 12;
   };
   const tips: Tip[] = [];
+  const extraSteps = () => {
+    const roll = rng();
+    return roll < 0.28 ? SHORT_EXTRA + Math.floor(rng() * 4)
+      : roll < 0.72 ? MID_EXTRA + Math.floor(rng() * 6)
+      : LONG_EXTRA + Math.floor(rng() * 8);
+  };
   const fan = (x: number, y: number, order: number) => {
     const base = rng() * Math.PI * 2;
     for (let i = 0; i < SHOOTS; i++) {
       const angle = base + (i * 2 * Math.PI) / SHOOTS + (rng() - 0.5) * 0.85;
-      const roll = rng();
-      const extra = roll < 0.28 ? SHORT_EXTRA + Math.floor(rng() * 4)
-        : roll < 0.72 ? MID_EXTRA + Math.floor(rng() * 6)
-        : LONG_EXTRA + Math.floor(rng() * 8);
       tips.push({
-        x, y, angle, order, stem: nextStem++, left: clearSteps(x, y, angle) + extra, cx: x, cy: y,
+        x, y, angle, order, stem: nextStem++, left: clearSteps(x, y, angle) + extraSteps(), cx: x, cy: y,
+      });
+    }
+  };
+  // Later laps: keep growing out of the stem that survived. One shoot continues it; the others fork off it.
+  const fromStem = (kept: GrowthSegment[]) => {
+    const last = kept[kept.length - 1];
+    const heading = Math.atan2(last.y2 - last.y1, last.x2 - last.x1);
+    tips.push({
+      x: last.x2, y: last.y2, angle: heading, order: 0, stem: nextStem++,
+      left: clearSteps(last.x2, last.y2, heading) + LONG_EXTRA + Math.floor(rng() * 8),
+      cx: last.x1, cy: last.y1,
+    });
+    for (let i = 1; i < SHOOTS; i++) {
+      const s = kept[Math.floor(rng() * kept.length)];
+      const a = Math.atan2(s.y2 - s.y1, s.x2 - s.x1);
+      const side = rng() < 0.5 ? -1 : 1;
+      const turn = BRANCH_MIN + rng() * (BRANCH_MAX - BRANCH_MIN);
+      tips.push({
+        x: s.x2, y: s.y2, angle: a + side * turn, order: 1, stem: nextStem++,
+        left: clearSteps(s.x2, s.y2, a + side * turn) + extraSteps(), cx: s.x1, cy: s.y1,
       });
     }
   };
@@ -216,8 +238,7 @@ export function planLap(geo: GrowthGeometry, seed: number, start: GrowthSegment[
   if (start && start.length > 0) {
     const stem = nextStem++;
     for (const s of start) push(s.x1, s.y1, s.x2, s.y2, 0, stem, true);
-    const last = start[start.length - 1];
-    fan(last.x2, last.y2, 0);
+    fromStem(start);
   } else {
     const o = place(geo.origin.x, geo.origin.y);
     const a0 = rng() * Math.PI * 2;
@@ -278,7 +299,7 @@ export function segmentsFor(plan: LapPlan, f: number): number {
 
 /**
  * The stroke that survives a lap: SURVIVOR_STEPS consecutive, visible segments of one main stem (a visible little root,
- * not a speck), chosen by the seed. Drawn thick, and the next lap grows from both of its ends.
+ * not a speck), chosen by the seed. Drawn thick. The next lap continues that stem and forks off it.
  */
 export function pickSurvivor(plan: LapPlan, seed: number): GrowthSegment[] | null {
   const byStem = new Map<number, GrowthSegment[]>();

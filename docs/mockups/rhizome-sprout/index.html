@@ -103,21 +103,42 @@
       return 12;
     }
     var tips = [];
+    function extraSteps() {
+      var roll = rng();
+      return roll < 0.28 ? SHORT_EXTRA + Math.floor(rng() * 4)
+        : roll < 0.72 ? MID_EXTRA + Math.floor(rng() * 6)
+        : LONG_EXTRA + Math.floor(rng() * 8);
+    }
     function fan(x, y, order) {
       var base = rng() * Math.PI * 2;
       for (var i = 0; i < SHOOTS; i++) {
         var angle = base + (i * 2 * Math.PI) / SHOOTS + (rng() - 0.5) * 0.85;
-        var roll = rng();
-        var extra = roll < 0.28 ? SHORT_EXTRA + Math.floor(rng() * 4)
-          : roll < 0.72 ? MID_EXTRA + Math.floor(rng() * 6)
-          : LONG_EXTRA + Math.floor(rng() * 8);
-        tips.push({ x: x, y: y, angle: angle, order: order, stem: nextStem++, left: clearSteps(x, y, angle) + extra, cx: x, cy: y });
+        tips.push({ x: x, y: y, angle: angle, order: order, stem: nextStem++, left: clearSteps(x, y, angle) + extraSteps(), cx: x, cy: y });
+      }
+    }
+    function fromStem(kept) {
+      var last = kept[kept.length - 1];
+      var heading = Math.atan2(last.y2 - last.y1, last.x2 - last.x1);
+      tips.push({
+        x: last.x2, y: last.y2, angle: heading, order: 0, stem: nextStem++,
+        left: clearSteps(last.x2, last.y2, heading) + LONG_EXTRA + Math.floor(rng() * 8),
+        cx: last.x1, cy: last.y1
+      });
+      for (var i = 1; i < SHOOTS; i++) {
+        var s = kept[Math.floor(rng() * kept.length)];
+        var a = Math.atan2(s.y2 - s.y1, s.x2 - s.x1);
+        var side = rng() < 0.5 ? -1 : 1;
+        var turn = BRANCH_MIN + rng() * (BRANCH_MAX - BRANCH_MIN);
+        tips.push({
+          x: s.x2, y: s.y2, angle: a + side * turn, order: 1, stem: nextStem++,
+          left: clearSteps(s.x2, s.y2, a + side * turn) + extraSteps(), cx: s.x1, cy: s.y1
+        });
       }
     }
     if (start && start.length) {
       var stem = nextStem++;
       start.forEach(function (s) { push(s.x1, s.y1, s.x2, s.y2, 0, stem, true); });
-      fan(start[start.length - 1].x2, start[start.length - 1].y2, 0);
+      fromStem(start);
     } else {
       var ox = clamp(geo.origin.x, EDGE_PAD, geo.width - EDGE_PAD);
       var oy = clamp(geo.origin.y, EDGE_PAD, geo.height - EDGE_PAD);
@@ -217,13 +238,19 @@
     var geo = layout();
     if (geo.width < 20) return;
     var plan = planFor(geo, lap);
-    var visibleN = plan.segments.filter(function (s) { return s.visible; }).length;
-    var want = frac <= 0 ? 0 : frac >= 1 ? visibleN : Math.round(frac * visibleN);
-    var show = [], seen = 0;
-    for (var i = 0; i < plan.segments.length; i++) {
-      show.push(plan.segments[i]);
-      if (plan.segments[i].visible) seen++;
-      if (frac > 0 && seen >= want) break;
+    var show;
+    if (frac <= 0) show = plan.segments.slice(0, plan.firstCount);
+    else if (frac >= 1) show = plan.segments;
+    else {
+      var visibleN = plan.segments.filter(function (s) { return s.visible; }).length;
+      var want = Math.max(1, Math.round(frac * visibleN));
+      show = [];
+      var seen = 0;
+      for (var i = 0; i < plan.segments.length; i++) {
+        show.push(plan.segments[i]);
+        if (plan.segments[i].visible) seen++;
+        if (seen >= want) break;
+      }
     }
     field.setAttribute('viewBox', '0 0 ' + geo.width + ' ' + geo.height);
     field.innerHTML = show.map(function (s) {

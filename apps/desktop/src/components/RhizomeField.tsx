@@ -10,8 +10,8 @@ import { lapPlan, segmentsFor, geometryKey, type GrowthGeometry, type GrowthSegm
 //   - A weed in the dark ground around the page. It sprouts at the page's centre and the shoots wander out in a spread of
 //     directions; some run longer than others. The goal reveals that plant. It does not carpet the ground.
 //   - Every new piece grows OUT of an existing stem, and draws itself on along its length (the "growing" animation).
-//   - At the goal the whole network flashes brass, then clears, leaving one short root (drawn heavier). The next lap's
-//     shoots leave from that root's tip, so the new shoot is the centre of a new clump.
+//   - At the goal the whole network flashes brass, then clears, leaving one stem from that lap (drawn heavier). The next
+//     rhizome grows out of that stem. Only the first rhizome of a page sprouts at the centre.
 //   - Roots grow BEHIND the page, right up to its edge, and are never drawn over it. They also never paint on the rail,
 //     the strip, the header or an open menu (clip + mask). They pass under the page (unpainted) to reach the other margin.
 //
