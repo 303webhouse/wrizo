@@ -127,9 +127,9 @@
   }
   body[data-closed='true'] .run b { background: var(--accent); }
   body[data-closed='true'] .run b.here::after { animation: none; }
-  .count { color: var(--meta); min-width: 92px; }
-  body[data-idea='ledger'] .count { visibility: hidden; }
-  body[data-idea='rule'] .count { visibility: hidden; }
+  .foot-run { margin-left: auto; display: none; align-items: center; gap: 14px; }
+  body[data-idea='run'] .foot-run { display: flex; }
+  .count { color: var(--meta); }
   @media (prefers-reduced-motion: reduce) {
     .caret, .rule .notch, .run b.here::after { animation: none; }
   }
@@ -171,9 +171,11 @@
   <div class="meta" id="meta"></div>
 </main>
 <footer class="bottom">
-  <div class="run" id="run"></div>
-  <span class="count" id="count"></span>
-  <span id="rest" style="margin-left:auto">COOL</span>
+  <span id="rest">COOL</span>
+  <div class="foot-run">
+    <span class="count" id="count"></span>
+    <div class="run" id="run"></div>
+  </div>
 </footer>
 <script>
 (function () {
