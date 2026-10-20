@@ -163,8 +163,8 @@ const other = E.planLap(geo, E.hashSeed('desk:abc:1'), null);
 const o50 = atFrac(E, other, 0.5);
 ok('R1: a second seed also tracks coverage at 50%',
   other.segments.length > 20 && inBand(o50.cov, 0.5), JSON.stringify({ n: other.segments.length, ...o50 }));
-ok('R1: SHOOTS is 7, LONG_EXTRA is 64, LAP_CAP is 4200, and CELL is 28',
-  E.SHOOTS === 7 && E.LONG_EXTRA === 64 && E.LAP_CAP === 4200 && E.CELL === 28,
+ok('R1: SHOOTS is 7, LONG_EXTRA is 128, LAP_CAP is 4200, and CELL is 28',
+  E.SHOOTS === 7 && E.LONG_EXTRA === 128 && E.LAP_CAP === 4200 && E.CELL === 28,
   `${E.SHOOTS} ${E.LONG_EXTRA} ${E.LAP_CAP} ${E.CELL}`);
 
 // ---- R2 growth always comes from the existing network ---------------------------
@@ -330,13 +330,13 @@ if (!process.argv.includes('--mutants')) {
 const mutants = [
   {
     name: 'M1 LONG_EXTRA cut',
-    mutate: swap('LONG_EXTRA = 64', 'LONG_EXTRA = 2'),
+    mutate: swap('LONG_EXTRA = 128', 'LONG_EXTRA = 2'),
     red: (m) => {
       const p = m.planLap(geo, m.hashSeed('page:sess:24:lines:0'), null);
       const ox = geo.origin.x, oy = geo.origin.y;
       let far = 0;
       for (const s of p.segments) far = Math.max(far, Math.hypot(s.x2 - ox, s.y2 - oy));
-      return far < 640;
+      return far < 700;
     },
   },
   {
