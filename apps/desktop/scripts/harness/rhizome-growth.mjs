@@ -269,7 +269,8 @@ ok('R5 [fade successor]: FLASH_MS is 1200 (the hold), FADE_MS is 1500 (the fade,
     && /if \(reducedMotion\(\)\) \{ setFlashLap\(null\); return; \}/.test(fieldSrc),
   'flash');
 ok('R5 [fade successor]: the flash is BRIGHTER (full opacity, a heavier stroke) and the fading state fades the brass out over 1500ms; reduced motion has no fade transition',
-  /\.wz-rhizome-field\[data-flash='true'\] \.wz-rhizome-seg\{ stroke:var\(--brass\); opacity:1; stroke-width:0\.9px;/.test(css)
+  /\.wz-rhizome-field\[data-flash='true'\] \.wz-rhizome-seg\{ stroke:var\(--brass\); opacity:1; stroke-width:1\.35px;/.test(css)
+    && /@keyframes wz-rhizome-pop\{[^}]*drop-shadow\(0 0 12px var\(--brass\)\)/.test(css)
     && /\.wz-rhizome-field\[data-flash='fading'\] \.wz-rhizome-seg\{ stroke:var\(--brass\); opacity:0;[^}]*transition:opacity 1500ms/.test(css)
     && /prefers-reduced-motion: reduce\)\{[\s\S]*?\.wz-rhizome-field\[data-flash='fading'\] \.wz-rhizome-seg\{ transition:none; \}/.test(css),
   'fade css');
