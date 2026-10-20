@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nomad — three ways the day goes</title>
 <!--
-  STEPPE, day and night. The trail exists only where the writing has been.
-  Scrub, Horizon, Cairns. Orange is the writer, never the land.
+  Horizon first. As it brightens, footprints wander through the footer
+  sand toward that light. At the goal the wind takes the tracks.
 -->
 <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:ital,wght@0,400;0,500;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Julius+Sans+One&display=swap" rel="stylesheet">
 <style>
@@ -84,26 +84,26 @@
     grid-column: 1 / -1; position: relative; z-index: 2;
     display: flex; align-items: center; padding: 0 28px;
   }
-  .trail { width: min(760px, 70%); height: 64px; margin: 0 auto; display: none; }
-  body[data-idea='scrub'] .trail, body[data-idea='cairns'] .trail { display: block; }
-  .trail path { fill: none; stroke: var(--dim); stroke-width: 1.7; stroke-linecap: round; }
-  .tuft { fill: none; stroke: var(--dim); stroke-width: 1.35; stroke-linecap: round; }
-  .tuft.fresh { stroke: var(--kindle); }
-  .stone { fill: none; stroke: var(--dim); stroke-width: 1.5; }
-  .stone.kindled { fill: var(--kindle); }
-  @media (prefers-reduced-motion: reduce) { .glow { } }
+  .trail { width: min(820px, 78%); height: 72px; margin: 0 auto; overflow: visible; }
+  .trail.blown { animation: blow 1.7s ease-in forwards; }
+  @keyframes blow {
+    0% { transform: none; opacity: 1; }
+    100% { transform: translate(140px, -16px); opacity: 0; }
+  }
+  .foot { fill: rgba(92, 74, 42, .42); }
+  body[data-field='night'] .foot { fill: rgba(240, 214, 186, .4); }
+  @media (prefers-reduced-motion: reduce) {
+    .trail.blown { animation: none; opacity: 0; }
+  }
 </style>
 </head>
-<body data-idea="scrub">
+<body>
 <header class="rig">
   <b>Nomad</b>
-  <button type="button" data-idea="scrub" aria-pressed="true">Scrub</button>
-  <button type="button" data-idea="horizon">Horizon</button>
-  <button type="button" data-idea="cairns">Cairns</button>
   <button type="button" data-field="day" aria-pressed="true">Day</button>
   <button type="button" data-field="night">Night</button>
   <button type="button" id="goal">To the goal</button>
-  <span class="note" id="note"></span>
+  <span class="note" id="note">The light comes first. Tracks wander toward it. At the goal, the wind takes them.</span>
 </header>
 <header>
   <div class="brand">wrizo</div>
@@ -139,102 +139,98 @@
 </footer>
 <script>
 (function () {
-  var NOTES = {
-    scrub: 'Green comes up where it will. It is not a path, and it does not lead anywhere.',
-    horizon: 'The day is the instrument. Noon walks toward fire on the sandstone. The next journey is morning.',
-    cairns: 'Stones are left where you have been. The path does not show its destination.'
-  };
-  var frac = 0.46, timer = 0;
+  var frac = 0.12, timer = 0, blowing = false;
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var trail = document.getElementById('trail');
-  var note = document.getElementById('note');
   var glow = document.getElementById('glow');
   var horizon = document.getElementById('horizon');
-
-  function pts() {
-    var out = [];
-    for (var i = 0; i <= 80; i++) {
-      var t = i / 80;
-      var y = 34
-        + Math.sin(t * 6.4 + 0.6) * 12
-        + Math.sin(t * 2.1) * 7
-        + Math.sin(t * 13) * 2.2;
-      out.push([24 + t * 712, y]);
-    }
-    return out;
-  }
-  var PATH = pts();
-
-  function dTo(f) {
-    var n = Math.max(1, Math.round(f * (PATH.length - 1)));
-    var d = 'M ' + PATH[0][0].toFixed(1) + ' ' + PATH[0][1].toFixed(1);
-    for (var i = 1; i <= n; i++) d += ' L ' + PATH[i][0].toFixed(1) + ' ' + PATH[i][1].toFixed(1);
-    return d;
-  }
 
   function mix(a, b, t) {
     return 'rgb(' + a.map(function (v, i) { return Math.round(v + (b[i] - v) * t); }).join(',') + ')';
   }
+  function rnd(i) {
+    var x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
+    return x - Math.floor(x);
+  }
+  var STEPS = (function () {
+    var x = 240 + rnd(1) * 220;
+    var y = 66;
+    var out = [];
+    for (var i = 0; i < 26; i++) {
+      var drift = (rnd(i + 2) - 0.5) * 78;
+      x += drift;
+      y -= 1.5 + rnd(i + 9) * 1.4;
+      x = Math.max(24, Math.min(736, x));
+      y = Math.max(8, y);
+      var ang = Math.atan2(-1.8, drift || 0.01);
+      out.push({ x: x, y: y, ang: ang, left: i % 2 === 0 });
+    }
+    return out;
+  })();
 
-  function paint() {
-    var idea = document.body.dataset.idea;
-    var f = Math.max(0, Math.min(1, frac));
-    var night = document.body.dataset.field === 'night';
-    if (night) {
-      document.body.style.background = '#140708';
-      var fire = idea === 'horizon' ? 0.28 + f * 0.62 : 0.34;
-      glow.style.background = 'radial-gradient(ellipse at 50% 100%, rgba(200,70,60,' + fire.toFixed(2) + '), transparent 62%)';
-      glow.style.opacity = '1';
-      horizon.style.background = 'linear-gradient(to top, rgba(140,47,63,' + (0.35 + f * 0.55).toFixed(2) + ') 0%, transparent 70%)';
-      horizon.style.opacity = idea === 'horizon' ? '1' : '0';
-    } else {
-      var dusk = idea === 'horizon' ? f : f * 0.18;
-      document.body.style.background = mix([245, 244, 230], [232, 206, 168], dusk * 0.55);
-      glow.style.background = 'radial-gradient(ellipse at 50% 100%, ' + mix([190, 170, 100], [176, 78, 52], dusk) + ', transparent 62%)';
-      glow.style.opacity = String(0.35 + dusk * 0.65);
-      horizon.style.background = 'linear-gradient(to top, ' + mix([232, 196, 140], [120, 42, 36], dusk) + ' 0%, transparent 72%)';
-      horizon.style.opacity = idea === 'horizon' ? String(0.25 + f * 0.75) : '0';
+  function prints(f) {
+    var n = Math.round(f * STEPS.length);
+    var html = '';
+    for (var i = 0; i < n; i++) {
+      var s = STEPS[i];
+      var side = s.left ? 1 : -1;
+      var ox = Math.cos(s.ang + side * Math.PI / 2) * 5;
+      var oy = Math.sin(s.ang + side * Math.PI / 2) * 5;
+      var deg = (s.ang * 180 / Math.PI + 90).toFixed(1);
+      html += '<ellipse class="foot" cx="' + (s.x + ox).toFixed(1) + '" cy="' + (s.y + oy).toFixed(1) + '" rx="3.1" ry="6.2" transform="rotate(' + deg + ' ' + (s.x + ox).toFixed(1) + ' ' + (s.y + oy).toFixed(1) + ')"/>';
     }
-
-    var show = idea === 'cairns' || idea === 'scrub';
-    trail.style.display = show ? 'block' : 'none';
-    if (!show) { trail.innerHTML = ''; return; }
-    if (idea === 'scrub') {
-      var total = 16;
-      var n = Math.max(1, Math.round(f * total));
-      var html = '';
-      for (var s = 0; s < n; s++) {
-        var x = 28 + ((s * 149 + 53) % 700);
-        var y = 16 + ((s * 61) % 22);
-        var lean = ((s * 5) % 9) - 4;
-        var h = 10 + (s % 4) * 4;
-        var fresh = s === n - 1 ? ' fresh' : '';
-        html += '<path class="tuft' + fresh + '" d="M ' + x + ' ' + (y + h) + ' Q ' + (x + lean) + ' ' + (y + h * 0.45) + ' ' + (x + lean * 0.35) + ' ' + y + '"/>';
-        html += '<path class="tuft' + fresh + '" d="M ' + (x + 4) + ' ' + (y + h - 2) + ' Q ' + (x + 4 - lean * 0.7) + ' ' + (y + 5) + ' ' + (x + 3) + ' ' + (y + 1) + '"/>';
-        html += '<path class="tuft' + fresh + '" d="M ' + (x - 3) + ' ' + (y + h) + ' Q ' + (x - 3 + lean * 0.5) + ' ' + (y + 7) + ' ' + (x - 1) + ' ' + (y + 3) + '"/>';
-      }
-      trail.innerHTML = html;
-      return;
-    }
-    var html = '<path d="' + dTo(f) + '"/>';
-    if (idea === 'cairns') {
-      var step = 0.11;
-      for (var m = step; m <= f + 0.001; m += step) {
-        var i = Math.round(Math.min(1, m) * (PATH.length - 1));
-        var p = PATH[i];
-        var last = m + step > f + 0.001;
-        html += '<circle class="stone' + (last ? ' kindled' : '') + '" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (last ? 3.2 : 2.4) + '"/>';
-      }
-    }
-    trail.innerHTML = html;
+    return html;
   }
 
-  function setIdea(name) {
-    document.body.dataset.idea = name;
-    document.querySelectorAll('.rig button[data-idea]').forEach(function (b) {
-      b.setAttribute('aria-pressed', b.dataset.idea === name ? 'true' : 'false');
-    });
-    note.textContent = NOTES[name];
-    paint();
+  function paint() {
+    var f = Math.max(0, Math.min(1, frac));
+    var night = document.body.dataset.field === 'night';
+    horizon.style.opacity = '1';
+    if (night) {
+      document.body.style.background = '#140708';
+      var fire = 0.22 + f * 0.7;
+      glow.style.background = 'radial-gradient(ellipse at 50% 100%, rgba(200,70,60,' + fire.toFixed(2) + '), transparent 62%)';
+      glow.style.opacity = '1';
+      horizon.style.background = 'linear-gradient(to top, rgba(140,47,63,' + (0.2 + f * 0.7).toFixed(2) + ') 0%, transparent 70%)';
+    } else {
+      document.body.style.background = mix([245, 244, 230], [232, 206, 168], f * 0.55);
+      glow.style.background = 'radial-gradient(ellipse at 50% 100%, ' + mix([190, 170, 100], [176, 78, 52], f) + ', transparent 62%)';
+      glow.style.opacity = String(0.3 + f * 0.7);
+      horizon.style.background = 'linear-gradient(to top, ' + mix([232, 196, 140], [120, 42, 36], f) + ' 0%, transparent 72%)';
+    }
+    if (!blowing) trail.innerHTML = prints(f);
+  }
+
+  function blowAway() {
+    blowing = true;
+    if (reduced) {
+      frac = 0.08;
+      blowing = false;
+      paint();
+      return;
+    }
+    trail.classList.add('blown');
+    setTimeout(function () {
+      trail.classList.remove('blown');
+      blowing = false;
+      frac = 0.08;
+      paint();
+    }, 1750);
+  }
+
+  function toGoal() {
+    if (timer) cancelAnimationFrame(timer);
+    blowing = false;
+    trail.classList.remove('blown');
+    var start = frac, t0 = performance.now();
+    function step(t) {
+      var u = Math.min(1, (t - t0) / 2800);
+      frac = start + (1 - start) * u;
+      paint();
+      if (u < 1) timer = requestAnimationFrame(step);
+      else blowAway();
+    }
+    timer = requestAnimationFrame(step);
   }
 
   function setField(name) {
@@ -245,29 +241,13 @@
     paint();
   }
 
-  document.querySelectorAll('.rig button[data-idea]').forEach(function (b) {
-    b.addEventListener('click', function () { setIdea(b.dataset.idea); });
-  });
   document.querySelectorAll('.rig button[data-field]').forEach(function (b) {
     b.addEventListener('click', function () { setField(b.dataset.field); });
   });
-  document.getElementById('goal').addEventListener('click', function () {
-    if (timer) cancelAnimationFrame(timer);
-    var start = frac, t0 = performance.now();
-    function step(t) {
-      var u = Math.min(1, (t - t0) / 2200);
-      frac = start + (1 - start) * u;
-      paint();
-      if (u < 1) timer = requestAnimationFrame(step);
-      else setTimeout(function () { frac = 0.08; paint(); }, 1600);
-    }
-    timer = requestAnimationFrame(step);
-  });
+  document.getElementById('goal').addEventListener('click', toGoal);
 
-  var params = new URLSearchParams(location.search);
-  var q = params.get('idea');
-  setIdea(NOTES[q] ? q : 'scrub');
-  setField(params.get('field') === 'night' ? 'night' : 'day');
+  setField(new URLSearchParams(location.search).get('field') === 'night' ? 'night' : 'day');
+  if (!reduced) setTimeout(toGoal, 700);
 })();
 </script>
 </body>
