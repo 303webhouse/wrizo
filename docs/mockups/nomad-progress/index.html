@@ -5,10 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nomad — three ways the day goes</title>
 <!--
-  STEPPE day. Nomad has no fences and no page. The locked sprint bar
-  draws the road ahead. These three do not: the trail exists only where
-  the writing has been. Drift, Horizon, Cairns.
-  Orange is the writer (the caret, the active mark), never the land.
+  STEPPE, day and night. The trail exists only where the writing has been.
+  Scrub, Horizon, Cairns. Orange is the writer, never the land.
 -->
 <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:ital,wght@0,400;0,500;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Julius+Sans+One&display=swap" rel="stylesheet">
 <style>
@@ -87,17 +85,19 @@
     display: flex; align-items: center; padding: 0 28px;
   }
   .trail { width: min(760px, 70%); height: 64px; margin: 0 auto; display: none; }
-  body[data-idea='drift'] .trail, body[data-idea='cairns'] .trail { display: block; }
+  body[data-idea='scrub'] .trail, body[data-idea='cairns'] .trail { display: block; }
   .trail path { fill: none; stroke: var(--dim); stroke-width: 1.7; stroke-linecap: round; }
+  .tuft { fill: none; stroke: var(--dim); stroke-width: 1.35; stroke-linecap: round; }
+  .tuft.fresh { stroke: var(--kindle); }
   .stone { fill: none; stroke: var(--dim); stroke-width: 1.5; }
   .stone.kindled { fill: var(--kindle); }
   @media (prefers-reduced-motion: reduce) { .glow { } }
 </style>
 </head>
-<body data-idea="drift">
+<body data-idea="scrub">
 <header class="rig">
   <b>Nomad</b>
-  <button type="button" data-idea="drift" aria-pressed="true">Drift</button>
+  <button type="button" data-idea="scrub" aria-pressed="true">Scrub</button>
   <button type="button" data-idea="horizon">Horizon</button>
   <button type="button" data-idea="cairns">Cairns</button>
   <button type="button" data-field="day" aria-pressed="true">Day</button>
@@ -140,7 +140,7 @@
 <script>
 (function () {
   var NOTES = {
-    drift: 'One line, as long as the writing. It wanders. Nothing is drawn ahead of it.',
+    scrub: 'Green comes up where it will. It is not a path, and it does not lead anywhere.',
     horizon: 'The day is the instrument. Noon walks toward fire on the sandstone. The next journey is morning.',
     cairns: 'Stones are left where you have been. The path does not show its destination.'
   };
@@ -195,9 +195,26 @@
       horizon.style.opacity = idea === 'horizon' ? String(0.25 + f * 0.75) : '0';
     }
 
-    var show = idea === 'drift' || idea === 'cairns';
+    var show = idea === 'cairns' || idea === 'scrub';
     trail.style.display = show ? 'block' : 'none';
     if (!show) { trail.innerHTML = ''; return; }
+    if (idea === 'scrub') {
+      var total = 16;
+      var n = Math.max(1, Math.round(f * total));
+      var html = '';
+      for (var s = 0; s < n; s++) {
+        var x = 28 + ((s * 149 + 53) % 700);
+        var y = 16 + ((s * 61) % 22);
+        var lean = ((s * 5) % 9) - 4;
+        var h = 10 + (s % 4) * 4;
+        var fresh = s === n - 1 ? ' fresh' : '';
+        html += '<path class="tuft' + fresh + '" d="M ' + x + ' ' + (y + h) + ' Q ' + (x + lean) + ' ' + (y + h * 0.45) + ' ' + (x + lean * 0.35) + ' ' + y + '"/>';
+        html += '<path class="tuft' + fresh + '" d="M ' + (x + 4) + ' ' + (y + h - 2) + ' Q ' + (x + 4 - lean * 0.7) + ' ' + (y + 5) + ' ' + (x + 3) + ' ' + (y + 1) + '"/>';
+        html += '<path class="tuft' + fresh + '" d="M ' + (x - 3) + ' ' + (y + h) + ' Q ' + (x - 3 + lean * 0.5) + ' ' + (y + 7) + ' ' + (x - 1) + ' ' + (y + 3) + '"/>';
+      }
+      trail.innerHTML = html;
+      return;
+    }
     var html = '<path d="' + dTo(f) + '"/>';
     if (idea === 'cairns') {
       var step = 0.11;
@@ -249,7 +266,7 @@
 
   var params = new URLSearchParams(location.search);
   var q = params.get('idea');
-  setIdea(NOTES[q] ? q : 'drift');
+  setIdea(NOTES[q] ? q : 'scrub');
   setField(params.get('field') === 'night' ? 'night' : 'day');
 })();
 </script>
