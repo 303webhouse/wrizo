@@ -9,8 +9,8 @@
 //      (MAX_TURN plus a small wander), so a root is a chain of short, gently curving steps.
 //   4. One sprout. The goal in progress when a page is opened starts at the page's centre, and the shoots leave in a
 //      spread of directions. They may pass under the page (hidden, never painted). Some shoots run longer than others.
-//   5. Laps. At the goal the whole network flashes brass, then fades. One main branch persists. The next rhizome grows
-//      off that branch — not as another centred spread — and one offshoot heads back toward the page.
+//   5. Laps. At the goal the whole network flashes brass, then fades. One root segment persists. The next rhizome
+//      branches from that segment, and one of those branches heads back toward the page.
 //
 // Nothing here touches the DOM. RhizomeField.tsx measures the geometry and renders; this file decides what grows.
 
@@ -44,7 +44,7 @@ export interface LapPlan {
   coverAt: number[];
   /** Visible cells in this geometry (the denominator of "coverage"). */
   visibleCells: number;
-  /** Leading segments shown at 0% of the goal: the centre sprout, or the main branch kept from the last goal. */
+  /** Leading segments shown at 0% of the goal: the centre sprout, or the one root segment kept from the last goal. */
   firstCount: number;
 }
 
@@ -56,7 +56,7 @@ export const MAX_TURN = (24 * Math.PI) / 180;   // steering limit per step, towa
 export const WANDER = (9 * Math.PI) / 180;      // random wobble per step (gaussian sigma)
 export const LOOK = 5;             // cells a tip looks ahead when choosing where to grow
 export const HIDDEN_PULL = 0.7;    // how much hidden ground (under the page) invites growth, vs 1 for open ground
-export const SURVIVOR_STEPS = 7;   // the stroke kept between laps: this many consecutive segments of one stem
+export const SURVIVOR_STEPS = 1;   // the root kept between laps: one segment, and the next rhizome branches from it
 export const FULL_COVER = 0.86;    // kept: the old "fill the ground" target. A lap no longer grows toward it.
 export const LAP_CAP = 4200;       // hard cap on segments per lap (safety)
 export const SHOOTS = 7;           // strands leaving the sprout, spread around it
@@ -217,30 +217,27 @@ export function planLap(geo: GrowthGeometry, seed: number, start: GrowthSegment[
   };
   let firstCount = 1;
   if (start && start.length > 0) {
-    // The main branch that survived the last goal. New shoots leave it; they are not another centred fan.
-    const stem = nextStem++;
-    for (const s of start) push(s.x1, s.y1, s.x2, s.y2, 0, stem, true);
-    const last = start[start.length - 1];
-    const heading = Math.atan2(last.y2 - last.y1, last.x2 - last.x1);
-    const back = Math.atan2(geo.origin.y - last.y2, geo.origin.x - last.x2);
+    // One root segment from the last goal. Every new shoot leaves its end.
+    const root = start[start.length - 1];
+    push(root.x1, root.y1, root.x2, root.y2, 0, nextStem++, true);
+    const heading = Math.atan2(root.y2 - root.y1, root.x2 - root.x1);
+    const back = Math.atan2(geo.origin.y - root.y2, geo.origin.x - root.x2);
     tips.push({
-      x: last.x2, y: last.y2, angle: back, order: 0, stem: nextStem++,
-      left: clearSteps(last.x2, last.y2, back) + 8 + Math.floor(rng() * 10),
-      cx: last.x2, cy: last.y2, home: true,
+      x: root.x2, y: root.y2, angle: back, order: 0, stem: nextStem++,
+      left: clearSteps(root.x2, root.y2, back) + 8 + Math.floor(rng() * 10),
+      cx: root.x2, cy: root.y2, home: true,
     });
-    const spots = [0, Math.floor((start.length - 1) / 2), start.length - 1, Math.min(start.length - 1, 3)];
-    const offsets = [-1.15, 0.72, 1.9, -2.2];
+    const offsets = [-0.95, 0.6, 1.65, -2.35, 2.5];
     for (let i = 0; i < offsets.length; i++) {
-      const s = start[spots[i]];
-      const angle = heading + offsets[i] + (rng() - 0.5) * 0.35;
-      const order = i < 2 ? 0 : 1;
+      const angle = heading + offsets[i] + (rng() - 0.5) * 0.3;
+      const order = i < 3 ? 0 : 1;
       tips.push({
-        x: s.x2, y: s.y2, angle, order, stem: nextStem++,
-        left: clearSteps(s.x2, s.y2, angle) + extraSteps(),
-        cx: s.x2, cy: s.y2, home: false,
+        x: root.x2, y: root.y2, angle, order, stem: nextStem++,
+        left: clearSteps(root.x2, root.y2, angle) + extraSteps(),
+        cx: root.x2, cy: root.y2, home: false,
       });
     }
-    firstCount = start.length;
+    firstCount = 1;
   } else {
     const o = place(geo.origin.x, geo.origin.y);
     const a0 = rng() * Math.PI * 2;
@@ -290,7 +287,7 @@ export function planLap(geo: GrowthGeometry, seed: number, start: GrowthSegment[
 export function segmentsFor(plan: LapPlan, f: number): number {
   const n = plan.segments.length;
   if (n === 0) return 0;
-  if (f <= 0) return plan.firstCount; // the opening stroke (centre sprout, or the kept branch) is always there
+  if (f <= 0) return plan.firstCount; // the opening stroke (centre sprout, or the one kept root) is always there
   if (f >= 1) return n;
   const want = f * plan.coverAt[n - 1];
   // binary search the first index whose coverage reaches `want`
@@ -303,8 +300,8 @@ export function segmentsFor(plan: LapPlan, f: number): number {
 }
 
 /**
- * The main branch that persists after a goal: SURVIVOR_STEPS consecutive, visible segments of one stem, chosen by the
- * seed. Drawn thick. The next lap grows off this branch instead of sprouting a new centred spread.
+ * The root that persists after a goal: one visible segment of a main stem, chosen by the seed. Drawn thick.
+ * The next rhizome branches from the end of that segment.
  */
 export function pickSurvivor(plan: LapPlan, seed: number): GrowthSegment[] | null {
   const byStem = new Map<number, GrowthSegment[]>();
@@ -339,7 +336,7 @@ export function geometryKey(geo: GrowthGeometry): string {
 
 /**
  * The plan for lap `lap` (0-based) since this page was opened. Lap 0 sprouts at the page centre. Later laps keep one
- * main branch from the lap before and grow off it. Plans are memoised per page seed + geometry.
+ * root segment from the lap before and branch from its end. Plans are memoised per page seed + geometry.
  */
 const memo = new Map<string, LapPlan>();
 export function lapPlan(geo: GrowthGeometry, pageSeed: string, lap: number): LapPlan {

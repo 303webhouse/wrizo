@@ -179,7 +179,7 @@ const lap1 = E.planLap(geo, E.hashSeed('page:sess:24:lines:1'), surv);
 ok('R2: the next lap still has no free-standing segment',
   lap1.segments.length > surv.length && freeStanding(lap1.segments) === 0,
   JSON.stringify({ n: lap1.segments.length, free: freeStanding(lap1.segments) }));
-ok('R2: lap 2 keeps the main branch and does not sprout at the page centre',
+ok('R2: lap 2 keeps one root segment and does not sprout at the page centre',
   lap1.firstCount === surv.length
     && Math.hypot(lap1.segments[0].x1 - geo.origin.x, lap1.segments[0].y1 - geo.origin.y) > 40,
   JSON.stringify({ first: lap1.firstCount, x1: lap1.segments[0].x1, y1: lap1.segments[0].y1 }));
@@ -212,8 +212,8 @@ ok('R3: a new segment draws on over 360ms and the line carries pathLength 1',
 ok('R3: settled hairlines are 0.4px / .45 and stems are 0.8px / .75',
   /stroke-width:0\.4px/.test(css) && /opacity:\.45/.test(css)
     && /stroke-width:0\.8px/.test(css) && /opacity:\.75/.test(css), 'weights');
-ok('R3: WANDER is 9° and SURVIVOR_STEPS is 7',
-  Math.abs(E.WANDER - (9 * Math.PI) / 180) < 1e-9 && E.SURVIVOR_STEPS === 7, `${E.WANDER} ${E.SURVIVOR_STEPS}`);
+ok('R3: WANDER is 9° and SURVIVOR_STEPS is 1',
+  Math.abs(E.WANDER - (9 * Math.PI) / 180) < 1e-9 && E.SURVIVOR_STEPS === 1, `${E.WANDER} ${E.SURVIVOR_STEPS}`);
 
 // ---- R4 one network, both margins; paint never on the page ----------------------
 const hiddenN = plan.segments.filter(s => !s.visible).length;
@@ -251,7 +251,7 @@ const again = E.pickSurvivor(plan, E.hashSeed('page:sess:24:lines:0:survivor'));
 ok('R5: the same seed keeps the same survivor',
   surv && again && surv.length === again.length && surv[0].x1 === again[0].x1 && surv[0].y1 === again[0].y1,
   JSON.stringify(again && { x1: again[0].x1 }));
-ok('R5: lap 2\'s opening stroke matches the persisted branch',
+ok('R5: lap 2\'s opening stroke is that one root segment',
   surv.every((s, i) => eq(s.x1, s.y1, lap1.segments[i].x1, lap1.segments[i].y1)
     && eq(s.x2, s.y2, lap1.segments[i].x2, lap1.segments[i].y2)),
   String(lap1.firstCount));
@@ -276,6 +276,15 @@ ok('R5: lap 2\'s opening stroke matches the persisted branch',
     if (Math.abs(turn) < 0.7 && gained >= 40) headed = { turn: +(turn * 180 / Math.PI).toFixed(1), gained: +gained.toFixed(0) };
   }
   ok('R5: one offshoot of the next lap heads back toward the page', !!headed, JSON.stringify(headed));
+  const root = lap1.segments[0];
+  const firstOf = new Map();
+  for (const s of lap1.segments.slice(lap1.firstCount)) {
+    if (!firstOf.has(s.stem)) firstOf.set(s.stem, s);
+  }
+  const mains = [...firstOf.values()].filter(s => s.order === 0);
+  ok('R5: the new rhizome branches from the end of that one root',
+    mains.length >= 2 && mains.every(s => eq(s.x1, s.y1, root.x2, root.y2)),
+    String(mains.length));
 }
 // ---- PARKED - SUPERSEDED by the flash fade (Nick, 2026-10-10: "a bit brighter and fade back out slower"). Kept VERBATIM and no
 // longer run: data-flash now carries a third state, 'fading', between the hold and the clear. Its record is in the HARNESS_PARKED
@@ -299,14 +308,14 @@ ok('R5 [fade successor]: the flash is BRIGHTER (full opacity, a heavier stroke) 
   'fade css');
 ok('R5: the flash paints brass on every segment',
   /\.wz-rhizome-field\[data-flash='true'\] \.wz-rhizome-seg\{ stroke:var\(--brass\)/.test(css), 'brass');
-ok('R5: lapPlan(0) is the centred spread and lapPlan(1) keeps the branch',
+ok('R5: lapPlan(0) is the centred spread and lapPlan(1) keeps one root',
   E.lapPlan(geo, 'page-r5', 0).firstCount === 1
     && Math.hypot(E.lapPlan(geo, 'page-r5', 0).segments[0].x1 - geo.origin.x, E.lapPlan(geo, 'page-r5', 0).segments[0].y1 - geo.origin.y) < 2
     && E.lapPlan(geo, 'page-r5', 1).firstCount === E.SURVIVOR_STEPS,
   String(E.lapPlan(geo, 'page-r5', 1).firstCount));
 ok('R5: a freshly opened page draws the goal in progress as the centred spread',
   /opened\.current = \{ key: openKey, lap \}/.test(fieldSrc) && /shownVisit/.test(fieldSrc), 'visit');
-ok('R5: a new lap at fraction 0 shows only the persisted branch',
+ok('R5: a new lap at fraction 0 shows only the one root segment',
   E.segmentsFor(lap1, 0) === lap1.firstCount && lap1.firstCount === surv.length, String(E.segmentsFor(lap1, 0)));
 
 // ---- R6 determinism / memo / field ambient --------------------------------------
@@ -389,12 +398,12 @@ const mutants = [
     red: (m) => m.planLap(geo, m.hashSeed('page:sess:24:lines:0'), null).segments.filter(s => s.visible).length < 8,
   },
   {
-    name: 'M6 SURVIVOR_STEPS cut to 1',
-    mutate: swap('SURVIVOR_STEPS = 7', 'SURVIVOR_STEPS = 1'),
+    name: 'M6 SURVIVOR_STEPS lengthened',
+    mutate: swap('SURVIVOR_STEPS = 1', 'SURVIVOR_STEPS = 4'),
     red: (m) => {
       const p = m.planLap(geo, m.hashSeed('page:sess:24:lines:0'), null);
       const s = m.pickSurvivor(p, m.hashSeed('page:sess:24:lines:0:survivor'));
-      return !s || s.length !== 7;
+      return !s || s.length !== 1;
     },
   },
   {

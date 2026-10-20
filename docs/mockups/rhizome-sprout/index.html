@@ -7,8 +7,8 @@
 <!--
   The weed from cursor/rhizome-sprout, drawn so it can be watched.
   Same rules as store/rhizomeGrowth.ts: the first goal sprouts at the page centre.
-  After the goal, one main branch persists and the next growth comes off it,
-  with one offshoot heading back toward the page. Strokes under the page are hidden.
+  After the goal, one root segment persists and the next rhizome branches from
+  its end, with one branch heading back toward the page. Strokes under the page are hidden.
   ?frame=early|mid|full|next  — stills. prefers-reduced-motion does not autoplay.
 -->
 <style>
@@ -61,7 +61,7 @@
 <script>
 (function () {
   var CELL = 28, STEP_MIN = 10, STEP_MAX = 22, MAX_TURN = 24 * Math.PI / 180, WANDER = 9 * Math.PI / 180;
-  var SURVIVOR_STEPS = 7, SHOOTS = 7, SHORT_EXTRA = 12, MID_EXTRA = 28, LONG_EXTRA = 128, SPLIT_CHANCE = 0.07;
+  var SURVIVOR_STEPS = 1, SHOOTS = 7, SHORT_EXTRA = 12, MID_EXTRA = 28, LONG_EXTRA = 128, SPLIT_CHANCE = 0.07;
   var BRANCH_MIN = 35 * Math.PI / 180, BRANCH_MAX = 70 * Math.PI / 180, EDGE_PAD = 3, LAP_CAP = 4200;
 
   function mulberry32(seed) {
@@ -127,28 +127,25 @@
     }
     var firstCount = 1;
     if (start && start.length) {
-      var stem = nextStem++;
-      start.forEach(function (s) { push(s.x1, s.y1, s.x2, s.y2, 0, stem, true); });
-      var last = start[start.length - 1];
-      var heading = Math.atan2(last.y2 - last.y1, last.x2 - last.x1);
-      var back = Math.atan2(geo.origin.y - last.y2, geo.origin.x - last.x2);
+      var root = start[start.length - 1];
+      push(root.x1, root.y1, root.x2, root.y2, 0, nextStem++, true);
+      var heading = Math.atan2(root.y2 - root.y1, root.x2 - root.x1);
+      var back = Math.atan2(geo.origin.y - root.y2, geo.origin.x - root.x2);
       tips.push({
-        x: last.x2, y: last.y2, angle: back, order: 0, stem: nextStem++,
-        left: clearSteps(last.x2, last.y2, back) + 8 + Math.floor(rng() * 10),
-        cx: last.x2, cy: last.y2, home: true
+        x: root.x2, y: root.y2, angle: back, order: 0, stem: nextStem++,
+        left: clearSteps(root.x2, root.y2, back) + 8 + Math.floor(rng() * 10),
+        cx: root.x2, cy: root.y2, home: true
       });
-      var spots = [0, Math.floor((start.length - 1) / 2), start.length - 1, Math.min(start.length - 1, 3)];
-      var offsets = [-1.15, 0.72, 1.9, -2.2];
+      var offsets = [-0.95, 0.6, 1.65, -2.35, 2.5];
       for (var i = 0; i < offsets.length; i++) {
-        var s = start[spots[i]];
-        var angle = heading + offsets[i] + (rng() - 0.5) * 0.35;
-        var order = i < 2 ? 0 : 1;
+        var angle = heading + offsets[i] + (rng() - 0.5) * 0.3;
+        var order = i < 3 ? 0 : 1;
         tips.push({
-          x: s.x2, y: s.y2, angle: angle, order: order, stem: nextStem++,
-          left: clearSteps(s.x2, s.y2, angle) + extraSteps(), cx: s.x2, cy: s.y2, home: false
+          x: root.x2, y: root.y2, angle: angle, order: order, stem: nextStem++,
+          left: clearSteps(root.x2, root.y2, angle) + extraSteps(), cx: root.x2, cy: root.y2, home: false
         });
       }
-      firstCount = start.length;
+      firstCount = 1;
     } else {
       var ox = clamp(geo.origin.x, EDGE_PAD, geo.width - EDGE_PAD);
       var oy = clamp(geo.origin.y, EDGE_PAD, geo.height - EDGE_PAD);

@@ -10,8 +10,8 @@ import { lapPlan, segmentsFor, geometryKey, type GrowthGeometry, type GrowthSegm
 //   - A weed in the dark ground around the page. The goal in progress when the page is opened sprouts at the centre and
 //     the shoots wander out in a spread of directions; some run longer than others. It does not carpet the ground.
 //   - Every new piece grows OUT of an existing stem, and draws itself on along its length (the "growing" animation).
-//   - At the goal the whole network flashes brass, then fades. One main branch persists. The next rhizome grows off that
-//     branch, and one offshoot heads back toward the page.
+//   - At the goal the whole network flashes brass, then fades. One root segment persists. The next rhizome branches
+//     from that segment, and one of those branches heads back toward the page.
 //   - Roots grow BEHIND the page, right up to its edge, and are never drawn over it. They also never paint on the rail,
 //     the strip, the header or an open menu (clip + mask). They pass under the page (unpainted) to reach the other margin.
 //
@@ -140,7 +140,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const goalKey = goal ? `${goal.n}:${goal.unit}` : 'none';
   const pageSeed = `${seedKey}:${SESSION_START}:${goalKey}`;
   // The goal already in progress when this page is opened is drawn as the centred spread. Goals reached after that
-  // open grow off the branch the last one left behind. Navigating to another page starts its own centred spread.
+  // open branch from the one root segment the last one left behind. Navigating to another page starts its own centred spread.
   const openKey = `${seedKey}|${goalKey}`;
   const opened = useRef<{ key: string; lap: number }>({ key: '', lap: 0 });
   if (opened.current.key !== openKey) opened.current = { key: openKey, lap };
