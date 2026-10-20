@@ -35,7 +35,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
   body {
-    display: grid; grid-template-rows: 40px 60px 1fr 78px; grid-template-columns: 220px 1fr;
+    display: grid; grid-template-rows: 40px 60px 1fr 150px; grid-template-columns: 220px 1fr;
     background: var(--ground); color: var(--ink);
     font-family: "Alegreya Sans", sans-serif; overflow: hidden;
   }
@@ -66,7 +66,7 @@
   .item.on { color: var(--ink); }
   main { position: relative; }
   .glow {
-    position: fixed; left: 50%; bottom: 78px; transform: translateX(-50%);
+    position: fixed; left: 50%; bottom: 150px; transform: translateX(-50%);
     width: 132vw; height: 46vh; pointer-events: none; z-index: 0;
     background: radial-gradient(ellipse at 50% 100%, rgba(190, 170, 100, .28), transparent 62%);
   }
@@ -81,19 +81,35 @@
   .prose p + p { margin-top: 1.1em; }
   .caret { display: inline-block; width: 1px; height: .95em; background: var(--accent); vertical-align: -0.08em; margin-left: 2px; }
   footer {
-    grid-column: 1 / -1; position: relative; z-index: 2;
-    display: flex; align-items: center; padding: 0 28px;
+    grid-column: 1 / -1; position: relative; z-index: 2; overflow: hidden;
+    display: flex; align-items: flex-end; padding: 0;
   }
-  .trail { width: min(820px, 78%); height: 72px; margin: 0 auto; overflow: visible; }
-  .trail.blown { animation: blow 1.7s ease-in forwards; }
-  @keyframes blow {
-    0% { transform: none; opacity: 1; }
-    100% { transform: translate(140px, -16px); opacity: 0; }
+  .trail { width: 100%; height: 150px; display: block; }
+  .trail.cover { animation: bury 1.8s ease-out forwards; }
+  @keyframes bury { to { opacity: 0; } }
+  .foot { fill: #D2C09A; }
+  body[data-field='night'] .foot { fill: #8C4A46; }
+  .wind {
+    position: absolute; left: -30%; top: 0; width: 160%; height: 100%;
+    pointer-events: none; opacity: 0;
+    background:
+      repeating-linear-gradient(102deg, transparent 0 14px, rgba(245, 236, 214, .55) 14px 18px),
+      linear-gradient(90deg, transparent, rgba(236, 220, 186, .92) 40%, transparent 78%);
   }
-  .foot { fill: rgba(92, 74, 42, .42); }
-  body[data-field='night'] .foot { fill: rgba(240, 214, 186, .4); }
+  body[data-field='night'] .wind {
+    background:
+      repeating-linear-gradient(102deg, transparent 0 14px, rgba(90, 36, 40, .45) 14px 18px),
+      linear-gradient(90deg, transparent, rgba(28, 10, 12, .94) 42%, transparent 80%);
+  }
+  .wind.on { animation: sand 1.8s ease-out forwards; }
+  @keyframes sand {
+    0% { opacity: 0; transform: translateX(-12%); }
+    28% { opacity: 1; }
+    100% { opacity: 1; transform: translateX(18%); }
+  }
   @media (prefers-reduced-motion: reduce) {
-    .trail.blown { animation: none; opacity: 0; }
+    .trail.cover { animation: none; opacity: 0; }
+    .wind.on { animation: none; }
   }
 </style>
 </head>
@@ -103,7 +119,7 @@
   <button type="button" data-field="day" aria-pressed="true">Day</button>
   <button type="button" data-field="night">Night</button>
   <button type="button" id="goal">To the goal</button>
-  <span class="note" id="note">The light comes first. Tracks wander toward it. At the goal, the wind takes them.</span>
+  <span class="note" id="note">The light comes first. One track wanders toward it. At the goal, sand blows over the steps.</span>
 </header>
 <header>
   <div class="brand">wrizo</div>
@@ -135,38 +151,48 @@
 <div class="glow" id="glow"></div>
 <div class="horizon" id="horizon"></div>
 <footer>
-  <svg class="trail" id="trail" viewBox="0 0 760 64" aria-hidden="true"></svg>
+  <svg class="trail" id="trail" viewBox="0 0 900 150" aria-hidden="true"></svg>
+  <div class="wind" id="wind"></div>
 </footer>
 <script>
 (function () {
   var frac = 0.12, timer = 0, blowing = false;
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var trail = document.getElementById('trail');
+  var wind = document.getElementById('wind');
   var glow = document.getElementById('glow');
   var horizon = document.getElementById('horizon');
+  var STEPS = [];
 
   function mix(a, b, t) {
     return 'rgb(' + a.map(function (v, i) { return Math.round(v + (b[i] - v) * t); }).join(',') + ')';
   }
-  function rnd(i) {
-    var x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
+  function rnd(seed, i) {
+    var x = Math.sin((i + 1) * 127.1 + seed) * 43758.5453;
     return x - Math.floor(x);
   }
-  var STEPS = (function () {
-    var x = 240 + rnd(1) * 220;
-    var y = 66;
-    var out = [];
-    for (var i = 0; i < 26; i++) {
-      var drift = (rnd(i + 2) - 0.5) * 78;
-      x += drift;
-      y -= 1.5 + rnd(i + 9) * 1.4;
-      x = Math.max(24, Math.min(736, x));
-      y = Math.max(8, y);
-      var ang = Math.atan2(-1.8, drift || 0.01);
-      out.push({ x: x, y: y, ang: ang, left: i % 2 === 0 });
+  function beginWalk() {
+    var seed = Math.random() * 1000;
+    var x = 260 + rnd(seed, 0) * 380;
+    var y = 138;
+    var heading = -Math.PI / 2 + (rnd(seed, 1) - 0.5) * 0.4;
+    STEPS = [];
+    for (var i = 0; i < 12; i++) {
+      heading += (rnd(seed, i + 2) - 0.5) * 0.7;
+      var up = -Math.PI / 2;
+      var diff = heading - up;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      if (Math.abs(diff) > 0.75) heading -= diff * 0.4;
+      if (x < 80) heading = -Math.PI / 2 + 0.3;
+      if (x > 820) heading = -Math.PI / 2 - 0.3;
+      var stride = 14;
+      x += Math.cos(heading) * stride;
+      y += Math.sin(heading) * 11;
+      x = Math.max(40, Math.min(860, x));
+      STEPS.push({ x: x, y: y, ang: heading, left: i % 2 === 0, near: i / 11 });
     }
-    return out;
-  })();
+  }
 
   function prints(f) {
     var n = Math.round(f * STEPS.length);
@@ -174,10 +200,13 @@
     for (var i = 0; i < n; i++) {
       var s = STEPS[i];
       var side = s.left ? 1 : -1;
-      var ox = Math.cos(s.ang + side * Math.PI / 2) * 5;
-      var oy = Math.sin(s.ang + side * Math.PI / 2) * 5;
+      var scale = 1.15 - s.near * 0.5;
+      var ox = Math.cos(s.ang + side * Math.PI / 2) * 7 * scale;
+      var oy = Math.sin(s.ang + side * Math.PI / 2) * 7 * scale;
       var deg = (s.ang * 180 / Math.PI + 90).toFixed(1);
-      html += '<ellipse class="foot" cx="' + (s.x + ox).toFixed(1) + '" cy="' + (s.y + oy).toFixed(1) + '" rx="3.1" ry="6.2" transform="rotate(' + deg + ' ' + (s.x + ox).toFixed(1) + ' ' + (s.y + oy).toFixed(1) + ')"/>';
+      var cx = (s.x + ox).toFixed(1);
+      var cy = (s.y + oy).toFixed(1);
+      html += '<ellipse class="foot" cx="' + cx + '" cy="' + cy + '" rx="' + (3.4 * scale).toFixed(2) + '" ry="' + (6.6 * scale).toFixed(2) + '" transform="rotate(' + deg + ' ' + cx + ' ' + cy + ')"/>';
     }
     return html;
   }
@@ -204,28 +233,36 @@
   function blowAway() {
     blowing = true;
     if (reduced) {
-      frac = 0.08;
+      frac = 0;
       blowing = false;
+      beginWalk();
       paint();
       return;
     }
-    trail.classList.add('blown');
+    trail.classList.add('cover');
+    wind.classList.add('on');
     setTimeout(function () {
-      trail.classList.remove('blown');
+      trail.classList.remove('cover');
+      wind.classList.remove('on');
       blowing = false;
-      frac = 0.08;
+      frac = 0;
+      beginWalk();
       paint();
-    }, 1750);
+    }, 1850);
   }
 
   function toGoal() {
     if (timer) cancelAnimationFrame(timer);
-    blowing = false;
-    trail.classList.remove('blown');
-    var start = frac, t0 = performance.now();
+    if (blowing) return;
+    trail.classList.remove('cover');
+    wind.classList.remove('on');
+    beginWalk();
+    frac = 0;
+    paint();
+    var t0 = performance.now();
     function step(t) {
-      var u = Math.min(1, (t - t0) / 2800);
-      frac = start + (1 - start) * u;
+      var u = Math.min(1, (t - t0) / 4200);
+      frac = u;
       paint();
       if (u < 1) timer = requestAnimationFrame(step);
       else blowAway();
@@ -247,7 +284,9 @@
   document.getElementById('goal').addEventListener('click', toGoal);
 
   setField(new URLSearchParams(location.search).get('field') === 'night' ? 'night' : 'day');
-  if (!reduced) setTimeout(toGoal, 700);
+  beginWalk();
+  paint();
+  if (!reduced) setTimeout(toGoal, 900);
 })();
 </script>
 </body>
