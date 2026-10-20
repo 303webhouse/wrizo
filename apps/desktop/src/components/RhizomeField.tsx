@@ -7,11 +7,11 @@ import { lapPlan, segmentsFor, geometryKey, type GrowthGeometry, type GrowthSegm
 // THE GOAL RHIZOME (rewritten by Fable, 2026-10-08; growth model in store/rhizomeGrowth.ts).
 //
 // What the writer sees:
-//   - A root network in the dark ground around the page that fills as they approach their goal (words or lines, whatever
-//     they set). Half the goal, about half the ground; the goal, the ground is full.
+//   - A weed in the dark ground around the page. It sprouts at the page's centre and the shoots wander out in a spread of
+//     directions; some run longer than others. The goal reveals that plant. It does not carpet the ground.
 //   - Every new piece grows OUT of an existing stem, and draws itself on along its length (the "growing" animation).
-//   - At the goal the whole network flashes brass, then clears, leaving one short root (drawn heavier). The next lap grows
-//     from that root.
+//   - At the goal the whole network flashes brass, then clears, leaving one short root (drawn heavier). The next lap's
+//     shoots leave from that root's tip, so the new shoot is the centre of a new clump.
 //   - Roots grow BEHIND the page, right up to its edge, and are never drawn over it. They also never paint on the rail,
 //     the strip, the header or an open menu (clip + mask). They pass under the page (unpainted) to reach the other margin.
 //
@@ -86,7 +86,7 @@ function measure(svg: SVGSVGElement, paper: HTMLElement): Measured | null {
       width: stage.width,
       height: stage.height,
       hidden: [kept, ...stable],
-      origin: { x: (p.left + p.right) / 2 - stage.left, y: p.bottom - stage.top + PAGE_CLEAR + 12 },
+      origin: { x: (p.left + p.right) / 2 - stage.left, y: (p.top + p.bottom) / 2 - stage.top },
     },
     // Paint holes: the same, plus whatever menu is open right now.
     holes: [kept, ...stable, ...rectsInStage(LIVE_CHROME, stage)],

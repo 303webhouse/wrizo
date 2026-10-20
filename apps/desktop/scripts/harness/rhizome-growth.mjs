@@ -40,7 +40,7 @@ function deskGeo() {
   return {
     width: 1320, height: 733,
     hidden: [paper, { left: 0, top: 0, right: 64, bottom: 733 }, { left: 0, top: 0, right: 1320, bottom: 44 }],
-    origin: { x: (paper.left + paper.right) / 2, y: paper.bottom + 12 },
+    origin: { x: (paper.left + paper.right) / 2, y: (paper.top + paper.bottom) / 2 },
   };
 }
 
@@ -49,7 +49,7 @@ function tightGeo() {
   return {
     width: 1000, height: 700,
     hidden: [paper, { left: 0, top: 0, right: 56, bottom: 700 }, { left: 0, top: 0, right: 1000, bottom: 40 }],
-    origin: { x: (paper.left + paper.right) / 2, y: paper.bottom + 12 },
+    origin: { x: (paper.left + paper.right) / 2, y: (paper.top + paper.bottom) / 2 },
   };
 }
 
@@ -137,9 +137,9 @@ const n = plan.segments.length;
 const final = plan.coverAt[n - 1];
 
 // ---- R1 coverage tracks the goal ------------------------------------------------
-ok('R1: a full lap covers FULL_COVER of the visible cells, or hits LAP_CAP',
-  plan.visibleCells > 0 && (final / plan.visibleCells >= E.FULL_COVER - 1e-9 || n === E.LAP_CAP),
-  JSON.stringify({ final, visible: plan.visibleCells, frac: final / plan.visibleCells, n, cap: E.LAP_CAP }));
+ok('R1: a full lap is a weed, not a carpet of the ground',
+  plan.visibleCells > 0 && final / plan.visibleCells < 0.55 && n > 40 && n < E.LAP_CAP,
+  JSON.stringify({ final, visible: plan.visibleCells, frac: final / plan.visibleCells, n }));
 ok('R1: coverAt is non-decreasing',
   plan.coverAt.every((c, i) => i === 0 || c >= plan.coverAt[i - 1]), String(plan.coverAt.length));
 ok('R1: segmentsFor(0) is the starting stroke',
@@ -163,8 +163,9 @@ const other = E.planLap(geo, E.hashSeed('desk:abc:1'), null);
 const o50 = atFrac(E, other, 0.5);
 ok('R1: a second seed also tracks coverage at 50%',
   other.segments.length > 20 && inBand(o50.cov, 0.5), JSON.stringify({ n: other.segments.length, ...o50 }));
-ok('R1: FULL_COVER is 0.86, LAP_CAP is 4200, and CELL is 28',
-  E.FULL_COVER === 0.86 && E.LAP_CAP === 4200 && E.CELL === 28, `${E.FULL_COVER} ${E.LAP_CAP} ${E.CELL}`);
+ok('R1: SHOOTS is 7, LONG_EXTRA is 32, LAP_CAP is 4200, and CELL is 28',
+  E.SHOOTS === 7 && E.LONG_EXTRA === 32 && E.LAP_CAP === 4200 && E.CELL === 28,
+  `${E.SHOOTS} ${E.LONG_EXTRA} ${E.LAP_CAP} ${E.CELL}`);
 
 // ---- R2 growth always comes from the existing network ---------------------------
 ok('R2: every segment after the first starts on an earlier endpoint',
@@ -328,11 +329,14 @@ if (!process.argv.includes('--mutants')) {
 
 const mutants = [
   {
-    name: 'M1 FULL_COVER lowered',
-    mutate: swap('FULL_COVER = 0.86', 'FULL_COVER = 0.2'),
+    name: 'M1 LONG_EXTRA cut',
+    mutate: swap('LONG_EXTRA = 32', 'LONG_EXTRA = 2'),
     red: (m) => {
       const p = m.planLap(geo, m.hashSeed('page:sess:24:lines:0'), null);
-      return p.coverAt[p.coverAt.length - 1] / p.visibleCells < 0.5;
+      const ox = geo.origin.x, oy = geo.origin.y;
+      let far = 0;
+      for (const s of p.segments) far = Math.max(far, Math.hypot(s.x2 - ox, s.y2 - oy));
+      return far < 640;
     },
   },
   {
@@ -357,7 +361,7 @@ const mutants = [
       if (!t.includes(from)) throw new Error('mutation anchor missing: inStage');
       return t.replace(from, 'return x >= EDGE_PAD && y >= EDGE_PAD && x <= geo.width - EDGE_PAD && y <= geo.height - EDGE_PAD && !isHidden(geo, x, y);');
     },
-    red: (m) => m.planLap(geo, m.hashSeed('page:sess:24:lines:0'), null).segments.every(s => s.visible),
+    red: (m) => m.planLap(geo, m.hashSeed('page:sess:24:lines:0'), null).segments.filter(s => s.visible).length < 8,
   },
   {
     name: 'M6 SURVIVOR_STEPS cut to 1',
