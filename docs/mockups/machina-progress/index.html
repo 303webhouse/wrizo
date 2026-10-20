@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Machina — three progress instruments</title>
+<!--
+  Machina, cool cast, dark page. The locked room has a sprint bar and an
+  orange notch, and no stylized tracker. These three stay inside that law:
+  grayscale machine, orange only where the human is, no texture, no rename.
+  A Ledger, a Rule, a Run. ?idea=ledger|rule|run
+-->
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ground: #0A0B0E;
+    --chrome: #12141A;
+    --rail: #0E1015;
+    --line: #252933;
+    --line-strong: #343A46;
+    --steel: #7FA0BC;
+    --live: #9DA5B4;
+    --page: #16181F;
+    --page-border: #2F3541;
+    --ink: #E6E9F1;
+    --meta: #878E9C;
+    --muted: #6C7482;
+    --accent: #FF9800;
+    --goal: 1000;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--ground); color: var(--ink);
+    display: grid; grid-template-rows: 40px 52px 1fr 56px; grid-template-columns: 176px 1fr;
+    font-family: 'IBM Plex Sans', sans-serif; overflow: hidden;
+  }
+  button { background: none; border: 0; color: inherit; font: inherit; cursor: pointer; }
+  .rig {
+    grid-column: 1 / -1; z-index: 5;
+    display: flex; align-items: center; gap: 10px; padding: 0 16px;
+    background: #07080b; border-bottom: 1px solid var(--line);
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+  }
+  .rig b { color: var(--ink); font-weight: 500; }
+  .rig button { border: 1px solid var(--line); padding: 3px 8px; color: var(--muted); }
+  .rig button[aria-pressed='true'] { color: var(--ink); border-color: var(--steel); }
+  .rig .note { margin-left: auto; letter-spacing: .04em; text-transform: none; color: var(--meta); }
+  .topbar {
+    grid-column: 1 / -1; background: var(--chrome); border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 26px; padding: 0 20px;
+  }
+  .wordmark { font-weight: 600; letter-spacing: .06em; font-size: 13.5px; }
+  .oq {
+    display: inline-block; width: 9.5px; height: 9.5px; margin-left: 2px;
+    border: 2px solid var(--accent); vertical-align: baseline;
+  }
+  .tabs { display: flex; gap: 22px; margin-left: 8px; }
+  .tab {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+    padding: 18px 0 15px; border-bottom: 1px solid transparent;
+  }
+  .tab.on { color: var(--ink); border-bottom-color: var(--steel); }
+  .rail {
+    background: var(--rail); border-right: 1px solid var(--line);
+    padding: 18px 14px; display: flex; flex-direction: column; gap: 2px;
+  }
+  .ritem {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 500;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+    text-align: left; padding: 8px 9px; border-left: 1px solid transparent;
+  }
+  .ritem.on { color: var(--ink); border-left-color: var(--steel); }
+  main { position: relative; padding: 36px 24px 28px; overflow: hidden; }
+  .page {
+    max-width: 720px; margin: 0 auto; background: var(--page); color: var(--ink);
+    border: 1px solid var(--page-border); padding: 58px 66px 70px; min-height: 520px;
+    font-family: 'IBM Plex Serif', serif; font-size: 11pt; line-height: 1.75;
+  }
+  .page h1 { font-weight: 500; font-size: 17pt; margin-bottom: 26px; }
+  .page p { margin: 0 0 1em; }
+  .caret {
+    display: inline-block; width: 1px; height: 1.05em; background: var(--accent);
+    vertical-align: -0.12em; margin-left: 1px;
+    animation: npulse 1.8s ease-in-out infinite;
+  }
+  @keyframes npulse { 50% { opacity: .4; } }
+  .meta {
+    max-width: 720px; margin: 12px auto 0; text-align: right;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500;
+    letter-spacing: .08em; color: var(--muted); min-height: 16px;
+  }
+  .meta .fig { color: var(--meta); }
+  body[data-idea='ledger'] .meta .fig { color: var(--ink); font-size: 12px; letter-spacing: .14em; }
+  body[data-idea='ledger'][data-closed='true'] .meta .fig { color: var(--accent); }
+  .rule {
+    display: none; position: absolute; top: 36px; bottom: 56px; width: 18px;
+    border-right: 1px solid var(--line-strong);
+  }
+  body[data-idea='rule'] .rule { display: block; }
+  .rule i {
+    position: absolute; right: -1px; width: 7px; height: 1px; background: var(--line-strong);
+  }
+  .rule i.major { width: 12px; background: var(--live); }
+  .rule .notch {
+    position: absolute; right: -2px; width: 2px; height: 11px; margin-top: -5px;
+    background: var(--accent); animation: npulse 1.8s ease-in-out infinite;
+  }
+  body[data-closed='true'] .rule .notch { animation: none; opacity: 1; }
+  .bottom {
+    grid-column: 1 / -1; background: var(--chrome); border-top: 1px solid var(--line);
+    display: flex; align-items: center; gap: 16px; padding: 0 20px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500;
+    letter-spacing: .09em; color: var(--muted);
+  }
+  .run { display: none; align-items: center; gap: 3px; width: 240px; height: 12px; }
+  body[data-idea='run'] .run { display: flex; }
+  .run b {
+    flex: 1; height: 4px; background: var(--line); position: relative;
+  }
+  .run b.filled { background: var(--live); }
+  .run b.here::after {
+    content: ''; position: absolute; left: -1px; top: -3px; bottom: -3px; width: 2px;
+    background: var(--accent); animation: npulse 1.8s ease-in-out infinite;
+  }
+  body[data-closed='true'] .run b { background: var(--accent); }
+  body[data-closed='true'] .run b.here::after { animation: none; }
+  .count { color: var(--meta); min-width: 92px; }
+  body[data-idea='ledger'] .count { visibility: hidden; }
+  body[data-idea='rule'] .count { visibility: hidden; }
+  @media (prefers-reduced-motion: reduce) {
+    .caret, .rule .notch, .run b.here::after { animation: none; }
+  }
+</style>
+</head>
+<body data-idea="ledger" data-cast="cool">
+<header class="rig">
+  <b>Machina</b>
+  <button type="button" data-idea="ledger" aria-pressed="true">Ledger</button>
+  <button type="button" data-idea="rule">Rule</button>
+  <button type="button" data-idea="run">Run</button>
+  <button type="button" id="goal">To the goal</button>
+  <span class="note" id="note"></span>
+</header>
+<header class="topbar">
+  <div class="wordmark">WRIZ<span class="oq" aria-hidden="true"></span></div>
+  <nav class="tabs">
+    <span class="tab on">Free write</span>
+    <span class="tab">Draft</span>
+    <span class="tab">Revise</span>
+    <span class="tab">Workshop</span>
+    <span class="tab">Publish</span>
+  </nav>
+</header>
+<aside class="rail">
+  <div class="ritem on">Pages</div>
+  <div class="ritem">Plan</div>
+  <div class="ritem">Board</div>
+  <div class="ritem">Journal</div>
+  <div class="ritem">Shelf</div>
+</aside>
+<main>
+  <article class="page" id="page">
+    <h1>Q3 memorandum</h1>
+    <p>The committee asked for a record, not a case. What follows is the sequence as it stands: the brief, the objection, the revision, and the line we are willing to send.</p>
+    <p>Nothing here argues. The draft keeps the terms the reader already uses, and it stops when the terms run out.<span class="caret"></span></p>
+  </article>
+  <div class="rule" id="rule" aria-hidden="true"><span class="notch" id="rnotch"></span></div>
+  <div class="meta" id="meta"></div>
+</main>
+<footer class="bottom">
+  <div class="run" id="run"></div>
+  <span class="count" id="count"></span>
+  <span id="rest" style="margin-left:auto">COOL</span>
+</footer>
+<script>
+(function () {
+  var GOAL = 1000, WORDS = 430, frac = WORDS / GOAL, closed = false, timer = 0;
+  var NOTES = {
+    ledger: 'The count is the instrument. No bar, no metaphor. Orange only when the books close.',
+    rule: 'The page is a part being measured. A dimension line, and the orange notch is where the draft stands.',
+    run: 'The goal is a batch of identical units. Gray fills them. Orange marks the unit you are in, and the close.'
+  };
+  var note = document.getElementById('note');
+  var meta = document.getElementById('meta');
+  var count = document.getElementById('count');
+  var run = document.getElementById('run');
+  var rule = document.getElementById('rule');
+  var rnotch = document.getElementById('rnotch');
+  var page = document.getElementById('page');
+
+  for (var i = 0; i <= 10; i++) {
+    var tick = document.createElement('i');
+    if (i % 5 === 0) tick.className = 'major';
+    tick.style.top = (i * 10) + '%';
+    rule.appendChild(tick);
+  }
+  var cells = [];
+  for (var c = 0; c < 20; c++) {
+    var b = document.createElement('b');
+    run.appendChild(b);
+    cells.push(b);
+  }
+
+  function placeRule() {
+    var r = page.getBoundingClientRect();
+    var host = page.parentElement.getBoundingClientRect();
+    rule.style.left = (r.right - host.left + 14) + 'px';
+    rule.style.top = (r.top - host.top) + 'px';
+    rule.style.height = r.height + 'px';
+    rule.style.bottom = 'auto';
+  }
+
+  function pad(n) { return String(n).padStart(4, '0'); }
+
+  function paint() {
+    var words = Math.round(frac * GOAL);
+    document.body.dataset.closed = closed ? 'true' : 'false';
+    var idea = document.body.dataset.idea;
+    meta.innerHTML = idea === 'ledger'
+      ? '<span class="fig">' + pad(words) + ' / ' + pad(GOAL) + '</span>'
+      : 'PAGE 1';
+    count.textContent = words + ' / ' + GOAL;
+    var idx = Math.min(19, Math.floor(frac * 20));
+    if (frac >= 1) idx = 19;
+    cells.forEach(function (el, i) {
+      el.className = (frac >= 1 || i < idx) ? 'filled' : (i === idx ? 'here' : '');
+    });
+    rnotch.style.top = (frac * 100) + '%';
+  }
+
+  function setIdea(name) {
+    document.body.dataset.idea = name;
+    document.querySelectorAll('.rig button[data-idea]').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.dataset.idea === name ? 'true' : 'false');
+    });
+    note.textContent = NOTES[name];
+    placeRule();
+  }
+
+  document.querySelectorAll('.rig button[data-idea]').forEach(function (b) {
+    b.addEventListener('click', function () { setIdea(b.dataset.idea); });
+  });
+
+  document.getElementById('goal').addEventListener('click', function () {
+    if (timer) cancelAnimationFrame(timer);
+    closed = false;
+    var start = frac, t0 = performance.now();
+    function step(t) {
+      var u = Math.min(1, (t - t0) / 1600);
+      frac = start + (1 - start) * u;
+      paint();
+      if (u < 1) timer = requestAnimationFrame(step);
+      else {
+        closed = true;
+        frac = 1;
+        paint();
+        setTimeout(function () { closed = false; frac = 0.06; paint(); }, 2200);
+      }
+    }
+    timer = requestAnimationFrame(step);
+  });
+
+  var q = new URLSearchParams(location.search).get('idea');
+  setIdea(NOTES[q] ? q : 'ledger');
+  paint();
+  window.addEventListener('resize', placeRule);
+})();
+</script>
+</body>
+</html>
