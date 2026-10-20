@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flux — Glitch on</title>
+<!--
+  The shipped Flux writing desk with Glitch as the progress style.
+  Same rules as GlitchMeter.tsx: silent for 30s after a key, ramp to a
+  peak at 5 minutes idle, calmer as the goal fills. Signal Loss plays
+  over the page, because it never runs while you are typing.
+  ?frame=peak — a still of the peak. prefers-reduced-motion shows the
+  still scan overlay and does not fire events.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=Rajdhani:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ground: #04141A;
+    --chrome: rgba(9, 30, 36, .92);
+    --rail: rgba(4, 17, 22, .88);
+    --line: #1D4A52;
+    --line-active: #00C2FF;
+    --live: #A6FF3D;
+    --brass: #ff9800;
+    --paper: #0B2429;
+    --paper-edge: #2A6A76;
+    --ink: #E3F1EC;
+    --meta: #57D0F5;
+    --muted: #8FB4AC;
+    --dim: #6E958D;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--ground); color: var(--ink); }
+  body {
+    font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+    background: radial-gradient(135% 95% at 50% -8%, #0F2D36 0%, #102025 38%, #0A1417 70%, #070E10 100%);
+    overflow: hidden;
+  }
+  .rig {
+    position: relative; z-index: 80;
+    height: 40px; display: flex; align-items: center; gap: 12px;
+    padding: 0 14px; background: #061014; border-bottom: 1px solid var(--line);
+    font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+  }
+  html.shot .rig { display: none; }
+  .rig b { color: var(--ink); font-weight: 600; letter-spacing: .14em; }
+  .rig button, .rig label { font: inherit; letter-spacing: .08em; text-transform: uppercase; }
+  .rig button {
+    color: var(--muted); background: transparent; border: 1px solid var(--line);
+    padding: 3px 8px; cursor: pointer;
+  }
+  .rig button[aria-pressed='true'] { color: var(--line-active); border-color: var(--line-active); }
+  .rig input[type='range'] { width: 92px; accent-color: var(--line-active); }
+  .rig .read { margin-left: auto; color: var(--dim); }
+  .desk { position: absolute; inset: 40px 0 0 0; display: grid; grid-template-columns: 76px 1fr; }
+  html.shot .desk { inset: 0; }
+  .rail {
+    background: var(--rail); border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; align-items: center; padding: 18px 0 12px; gap: 2px;
+  }
+  .rail .gap { flex: 1; }
+  .rail button {
+    width: 64px; background: none; border: 0; color: var(--dim); cursor: default;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    font: 500 11px/1 'Rajdhani', sans-serif; letter-spacing: .04em; padding: 8px 0;
+  }
+  .rail svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.4; }
+  .rail .rule { width: 36px; height: 1px; background: var(--line); margin: 8px 0; }
+  .stage { position: relative; min-width: 0; display: flex; flex-direction: column; }
+  .strip {
+    height: 46px; display: flex; align-items: center; gap: 18px;
+    padding: 0 16px 0 18px; border-bottom: 1px solid var(--line);
+    color: var(--muted); font-size: 13px; letter-spacing: .12em;
+  }
+  .crumb { color: var(--dim); letter-spacing: .04em; text-transform: none; font-family: 'Chakra Petch', 'Segoe UI', sans-serif; font-size: 13px; }
+  .crumb em { font-style: normal; color: var(--muted); }
+  .modes { margin-left: auto; display: flex; gap: 18px; }
+  .modes span { position: relative; padding-bottom: 4px; }
+  .modes .on { color: var(--ink); }
+  .modes .on::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -8px; height: 1px; background: var(--line-active);
+  }
+  .dots {
+    width: 28px; height: 22px; border: 1px solid var(--line); color: var(--muted);
+    display: grid; place-items: center; letter-spacing: 2px; font-size: 14px;
+  }
+  .sheet {
+    position: relative; flex: 1; display: grid; place-items: center;
+  }
+  .ambient, .meter, .dip, .still {
+    position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+  }
+  .ambient { z-index: 1; }
+  .page {
+    position: relative; z-index: 2;
+    width: min(640px, 68%); height: min(760px, 78%);
+    background: var(--paper); border: 1px solid var(--paper-edge);
+    box-shadow: 0 0 0 1px rgba(0, 194, 255, .04), 0 24px 60px rgba(0, 0, 0, .35);
+    padding: 72px 64px; color: var(--ink);
+    font-family: 'Crimson Pro', Georgia, serif; font-size: 21px; line-height: 1.55;
+  }
+  .page p { margin: 0 0 .9em; }
+  .page p:last-child { margin: 0; }
+  .caret {
+    display: inline-block; width: .55em; height: 1.05em; vertical-align: -0.12em; margin-left: 1px;
+    background: rgba(255, 152, 0, .82); box-shadow: 0 0 8px rgba(255, 152, 0, .55);
+    animation: blink 1.05s steps(2, start) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .chev {
+    position: absolute; z-index: 3; top: 50%; width: 22px; height: 36px; margin-top: -18px;
+    border: 1px solid var(--line); background: rgba(4, 20, 26, .55); color: var(--dim);
+    display: grid; place-items: center; font-size: 14px;
+  }
+  .chev.l { left: calc(50% - min(320px, 34%) - 36px); }
+  .chev.r { left: calc(50% + min(320px, 34%) + 14px); }
+  .mark {
+    position: absolute; right: 28px; bottom: 16px; z-index: 3;
+    font-family: 'Segoe Script', 'Brush Script MT', cursive; font-size: 28px;
+    color: #3d6e66; opacity: .8; letter-spacing: .02em;
+  }
+  .meter { z-index: 30; }
+  .meter.jmp { transform: translateY(4px); }
+  .meter.jmp2 { transform: translateY(-4px); }
+  .dip { background: #000; opacity: 0; transition: opacity .3s linear; }
+  .still {
+    z-index: 31; opacity: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 3px, rgba(0, 194, 255, .045) 3px 4px),
+      repeating-linear-gradient(90deg, rgba(227, 241, 236, .03) 0 1px, transparent 1px 3px);
+  }
+  .tear { position: absolute; left: 0; right: 0; height: 2px; opacity: 0; }
+  .tear.on { animation: tear .15s linear; }
+  @keyframes tear { 40% { opacity: var(--op, .75); } }
+  .shear {
+    position: absolute; left: -4%; right: -4%; height: 26px;
+    background: rgba(0, 194, 255, .08); transform: skewX(-12deg); opacity: 0;
+  }
+  .shear.on { animation: shear .16s linear; }
+  @keyframes shear { 45% { opacity: var(--op, 1); } }
+  .noise {
+    position: absolute; width: 130px; height: 56px; opacity: 0;
+    background:
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, .06) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(0deg, rgba(166, 255, 61, .06) 0 1px, transparent 1px 2px);
+  }
+  .noise.on { animation: noise .15s linear; }
+  @keyframes noise { 45% { opacity: var(--op, 1); } }
+  .block { position: absolute; }
+  @media (prefers-reduced-motion: reduce) {
+    .caret { animation: none; opacity: 1; }
+    .tear.on, .shear.on, .noise.on { animation: none; opacity: 0; }
+    .meter.jmp, .meter.jmp2 { transform: none; }
+    .dip { transition: none; opacity: 0 !important; }
+  }
+</style>
+</head>
+<body>
+<header class="rig">
+  <b>Flux · Glitch</b>
+  <button type="button" data-idle="0" data-lap="0.2">Quiet</button>
+  <button type="button" data-idle="45" data-lap="0.2">Waking</button>
+  <button type="button" data-idle="180" data-lap="0.2" aria-pressed="true">Working</button>
+  <button type="button" data-idle="300" data-lap="0">Peak</button>
+  <label>Idle <input id="idle" type="range" min="0" max="300" value="180"></label>
+  <label>Goal <input id="lap" type="range" min="0" max="100" value="20"></label>
+  <span id="read" class="read"></span>
+</header>
+<div class="desk">
+  <nav class="rail" aria-hidden="true">
+    <button type="button"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Pages</button>
+    <button type="button"><svg viewBox="0 0 24 24"><path d="M5 6h14M5 12h14M5 18h8"/><circle cx="18" cy="18" r="2"/></svg>Plan</button>
+    <div class="rule"></div>
+    <button type="button"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="12"/><path d="M3 12h18M8 8V5h8v3"/></svg>Drawers</button>
+    <button type="button"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18"/><path d="M9 8h6"/></svg>Log</button>
+    <button type="button"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Shelf</button>
+    <div class="gap"></div>
+    <div class="rule"></div>
+    <button type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>Settings</button>
+    <button type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Themes</button>
+    <div class="rule"></div>
+    <button type="button"><svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V5h6v2M7 7l1 14h8l1-14"/></svg>Trash</button>
+  </nav>
+  <div class="stage">
+    <header class="strip">
+      <div class="crumb">Untitled <em>/ A loose page with a few words in it, and</em></div>
+      <div class="modes">
+        <span class="on">Free write</span><span>Draft</span><span>Revise</span><span>Workshop</span><span>Publish</span><span>Plan →</span>
+      </div>
+      <div class="dots">···</div>
+    </header>
+    <div class="sheet">
+      <div class="ambient" id="ambient"></div>
+      <article class="page">
+        <p>The kettle clicks off and she still doesn’t turn around. Steam writes a short sentence on the window, then forgets it.</p>
+        <p>He could say her name. He doesn’t. The room keeps its own counsel, and the city outside keeps dropping its signal.<span class="caret"></span></p>
+      </article>
+      <div class="chev l">‹</div>
+      <div class="chev r">›</div>
+      <div class="mark">wrizo</div>
+    </div>
+  </div>
+</div>
+<div class="meter" id="meter"><div class="dip" id="dip"></div></div>
+<div class="still" id="still"></div>
+<script>
+(function () {
+  var SPANS = {
+    tear: [7000, 12000], shear: [9000, 15000], noise: [8000, 14000],
+    macro: [2600, 4800], sync: [9000, 15000], dip: [10000, 17000]
+  };
+  var KINDS = Object.keys(SPANS);
+  var frame = new URLSearchParams(location.search).get('frame');
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (frame) document.documentElement.classList.add('shot');
+
+  var idleBase = 180, lap = 0.2, origin = performance.now(), typing = false;
+  var meter = document.getElementById('meter');
+  var ambient = document.getElementById('ambient');
+  var dip = document.getElementById('dip');
+  var still = document.getElementById('still');
+  var read = document.getElementById('read');
+  var idleInput = document.getElementById('idle');
+  var lapInput = document.getElementById('lap');
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+  function intensity(idle, p) {
+    if (idle < 30) return 0;
+    var u = Math.min(1, (idle - 30) / 270);
+    return (u * u * 0.4 + u * 0.6) * (1 - Math.max(0, Math.min(1, p)));
+  }
+  function bright(I, lo, hi) { return lo + (hi - lo) * I; }
+  function gap(min, max, I) {
+    var span = min + Math.random() * (max - min);
+    return span / Math.max(0.22, 0.22 + 0.78 * I);
+  }
+
+  function tear(host, op) {
+    var n = 3 + Math.floor(Math.random() * 3);
+    var base = rand(8, 82);
+    for (var i = 0; i < n; i++) {
+      (function (i) {
+        setTimeout(function () {
+          var el = document.createElement('div');
+          el.className = 'tear';
+          el.style.top = (base + rand(-7, 7)) + '%';
+          var lime = Math.random() < 0.35;
+          el.style.background = lime ? 'rgba(166,255,61,' + op + ')' : 'rgba(0,194,255,' + op + ')';
+          el.style.setProperty('--op', op);
+          host.appendChild(el);
+          void el.offsetWidth;
+          el.classList.add('on');
+          setTimeout(function () { el.remove(); }, 200);
+        }, i * 45);
+      })(i);
+    }
+  }
+  function band(host, cls, op) {
+    var el = document.createElement('div');
+    el.className = cls;
+    el.style.top = rand(10, 78) + '%';
+    if (cls === 'noise') el.style.left = rand(0, 76) + '%';
+    el.style.setProperty('--op', op);
+    host.appendChild(el);
+    void el.offsetWidth;
+    el.classList.add('on');
+    setTimeout(function () { el.remove(); }, 220);
+  }
+  function macros(host, alpha) {
+    var ax = rand(6, 88), ay = rand(8, 80);
+    var n = 5 + Math.floor(Math.random() * 5);
+    for (var i = 0; i < n; i++) {
+      var el = document.createElement('div');
+      el.className = 'block';
+      el.style.left = (ax + rand(-6.5, 6.5)) + '%';
+      el.style.top = (ay + rand(-6.5, 6.5)) + '%';
+      el.style.width = rand(10, 30) + 'px';
+      el.style.height = rand(8, 23) + 'px';
+      el.style.background = Math.random() < 0.35
+        ? 'rgba(166,255,61,' + alpha + ')'
+        : 'rgba(0,194,255,' + alpha + ')';
+      host.appendChild(el);
+      setTimeout(function (node) { node.remove(); }, rand(80, 210), el);
+    }
+  }
+  function jump(host) {
+    host.classList.add('jmp');
+    setTimeout(function () {
+      host.classList.remove('jmp');
+      if (Math.random() > 0.4) return;
+      setTimeout(function () {
+        host.classList.add('jmp2');
+        setTimeout(function () { host.classList.remove('jmp2'); }, 70);
+      }, 60);
+    }, 80);
+  }
+  function backlight(peak) {
+    dip.style.opacity = String(peak);
+    setTimeout(function () {
+      dip.style.opacity = '0';
+      if (Math.random() > 0.5) return;
+      setTimeout(function () {
+        dip.style.opacity = String(peak * 0.7);
+        setTimeout(function () { dip.style.opacity = '0'; }, 250);
+      }, 350);
+    }, 400);
+  }
+  function fire(host, kind, I, ambient) {
+    var scale = ambient ? 0.45 : 1;
+    if (kind === 'tear') tear(host, (ambient ? 0.45 : bright(I, 0.28, 0.72)) * (ambient ? 1 : scale));
+    else if (kind === 'shear') band(host, 'shear', ambient ? 0.55 : bright(I, 0.35, 0.85));
+    else if (kind === 'noise') band(host, 'noise', ambient ? 0.6 : bright(I, 0.4, 1));
+    else if (kind === 'macro') macros(host, ambient ? 0.1 : bright(I, 0.08, 0.16));
+    else if (kind === 'sync') jump(host);
+    else if (kind === 'dip' && !ambient) backlight(bright(I, 0.05, 0.14));
+  }
+
+  function hold(el) {
+    el.style.animation = 'none';
+    el.style.opacity = '1';
+  }
+  function paint(host, cls, top, extra) {
+    var el = document.createElement('div');
+    el.className = cls;
+    el.style.top = top;
+    if (extra) extra(el);
+    host.appendChild(el);
+    hold(el);
+    return el;
+  }
+  function composePeak() {
+    idleBase = 300; lap = 0; typing = true;
+    [18, 22, 27, 63].forEach(function (top, i) {
+      paint(meter, 'tear', top + '%', function (el) {
+        el.style.background = i === 2 ? 'rgba(166,255,61,.72)' : 'rgba(0,194,255,.72)';
+        el.style.setProperty('--op', '0.72');
+      });
+    });
+    paint(meter, 'shear', '41%');
+    paint(meter, 'noise', '18%', function (el) { el.style.left = '62%'; el.style.setProperty('--op', '1'); });
+    [[58, 24, 22, 14], [64, 28, 16, 18], [61, 31, 26, 11], [70, 22, 14, 16]].forEach(function (b, i) {
+      paint(meter, 'block', b[1] + '%', function (el) {
+        el.style.left = b[0] + '%';
+        el.style.width = b[2] + 'px';
+        el.style.height = b[3] + 'px';
+        el.style.background = i === 1 ? 'rgba(166,255,61,.16)' : 'rgba(0,194,255,.16)';
+      });
+    });
+    dip.style.opacity = '0.08';
+    paint(ambient, 'tear', '12%', function (el) { el.style.background = 'rgba(0,194,255,.45)'; });
+    paint(ambient, 'tear', '78%', function (el) { el.style.background = 'rgba(166,255,61,.4)'; });
+  }
+
+  var next = {}, nextA = {};
+  var last = 0;
+  function tick(t) {
+    var idle = typing ? idleBase : idleBase + (t - origin) / 1000;
+    var I = intensity(idle, lap);
+    if (read) {
+      var state = I <= 0 ? 'silent — a key was pressed' : (I > 0.72 ? 'peak' : I > 0.28 ? 'working' : 'waking');
+      read.textContent = state + '  ·  idle ' + Math.round(idle) + 's  ·  ' + Math.round(lap * 100) + '% of the goal';
+    }
+    still.style.opacity = reduced ? String(I * 0.42) : '0';
+    if (!reduced && !frame) {
+      KINDS.forEach(function (k) {
+        if (I <= 0) { delete next[k]; return; }
+        if (next[k] == null) next[k] = t + 350 + KINDS.indexOf(k) * 520;
+        if (t >= next[k]) {
+          fire(meter, k, I, false);
+          next[k] = t + gap(SPANS[k][0], SPANS[k][1], I);
+        }
+      });
+      var damp = idle < 30 ? 0.12 : 1;
+      if (damp > 0.5) {
+        KINDS.forEach(function (k) {
+          if (k === 'dip') return;
+          if (nextA[k] == null) nextA[k] = t + 2000 + KINDS.indexOf(k) * 900;
+          if (t >= nextA[k]) {
+            fire(ambient, k, 0.4, true);
+            nextA[k] = t + gap(SPANS[k][0], SPANS[k][1], 0.35);
+          }
+        });
+      }
+    }
+    last = t;
+    if (!frame) requestAnimationFrame(tick);
+  }
+
+  function setScene(idle, p, btn) {
+    idleBase = idle; lap = p; origin = performance.now(); typing = true;
+    idleInput.value = String(idle);
+    lapInput.value = String(Math.round(p * 100));
+    document.querySelectorAll('.rig button').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+    if (btn) btn.setAttribute('aria-pressed', 'true');
+    next = {};
+  }
+  document.querySelectorAll('.rig button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      setScene(Number(b.dataset.idle), Number(b.dataset.lap), b);
+    });
+  });
+  idleInput.addEventListener('input', function () {
+    setScene(Number(idleInput.value), lap, null);
+  });
+  lapInput.addEventListener('input', function () {
+    setScene(typing ? idleBase : idleBase, Number(lapInput.value) / 100, null);
+    lap = Number(lapInput.value) / 100;
+  });
+
+  if (frame === 'peak') composePeak();
+  else if (!reduced) requestAnimationFrame(tick);
+  else requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
