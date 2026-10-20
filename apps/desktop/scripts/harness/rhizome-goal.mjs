@@ -265,15 +265,15 @@ await withHarness(async (app) => {
       && nearBrass(bright.thin.stroke) && (!bright.thick || (px(bright.thick.width) >= 1.8 && px(bright.thick.width) <= 2.15)), JSON.stringify(bright));
   let fadingSeen = true;
   try { await app.waitFor("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'fading'", { label: 'the fade begins', timeout: 2500 }); } catch { fadingSeen = false; }
-  await sleep(600);   // inside the 1500ms fade
+  await sleep(600);   // inside the 2200ms fade
   const midFade = await segLook(app);
   ok('Live [flash fade]: after the hold the brass FADES out, not a cut - mid-fade a segment is still brass and partly transparent',
     fadingSeen && !!midFade && midFade.flash === 'fading' && !!midFade.thin && midFade.thin.stroke === 'rgb(255, 152, 0)' && midFade.thin.opacity > 0.05 && midFade.thin.opacity < 0.95,
     JSON.stringify({ fadingSeen, midFade }));
   try { await app.waitFor("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'false'", { label: 'the fade ends', timeout: 3000 }); } catch { /* reported below */ }
   const phases = flashPhases(await app.evalJs('window.__flashLog'));
-  ok('Live [flash fade]: the hold is ~1.2s and the fade ~1.5s - data-flash goes true -> fading -> false',
-    phases.hold != null && phases.hold >= 1100 && phases.hold <= 1500 && phases.fade != null && phases.fade >= 1400 && phases.fade <= 1900 && /true>fading>false/.test(phases.seq),
+  ok('Live [flash fade]: the hold is ~1.2s and the fade ~2.2s - data-flash goes true -> fading -> false',
+    phases.hold != null && phases.hold >= 1100 && phases.hold <= 1500 && phases.fade != null && phases.fade >= 2000 && phases.fade <= 2700 && /true>fading>false/.test(phases.seq),
     JSON.stringify(phases));
   const reset = await field(app);
   // PARKED 2026-10-08, rhizome-growth.mjs R5. The survivor is SURVIVOR_STEPS

@@ -7,10 +7,11 @@ import { lapPlan, segmentsFor, geometryKey, type GrowthGeometry, type GrowthSegm
 // THE GOAL RHIZOME (rewritten by Fable, 2026-10-08; growth model in store/rhizomeGrowth.ts).
 //
 // What the writer sees:
-//   - A weed in the dark ground around the page. It sprouts at the page's centre and the shoots wander out in a spread of
-//     directions; some run longer than others. The goal reveals that plant. It does not carpet the ground.
+//   - A weed in the dark ground around the page. The goal in progress when the page is opened sprouts at the centre and
+//     the shoots wander out in a spread of directions; some run longer than others. It does not carpet the ground.
 //   - Every new piece grows OUT of an existing stem, and draws itself on along its length (the "growing" animation).
-//   - At the goal the whole network flashes brass, then clears. The next rhizome sprouts again at the centre of the page.
+//   - At the goal the whole network flashes brass, then fades. One main branch persists. The next rhizome grows off that
+//     branch, and one offshoot heads back toward the page.
 //   - Roots grow BEHIND the page, right up to its edge, and are never drawn over it. They also never paint on the rail,
 //     the strip, the header or an open menu (clip + mask). They pass under the page (unpainted) to reach the other margin.
 //
@@ -21,7 +22,7 @@ const SESSION_START = Date.now(); // the pattern is session-scoped (M2 S2)
 const FLASH_MS = 1200;   // the brass reward
 // Nick (2026-10-10): "a bit brighter and fade back out slower" - after the hold the brass network FADES over FADE_MS instead of
 // cutting. Under reduced motion there is no fade: the hold stays and the lap clears at its end.
-const FADE_MS = 1500;
+const FADE_MS = 2200;
 const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PAGE_CLEAR = 0;    // no clear band: roots grow behind the page, right up to its edge, never over it
 const DRAW_MS = 360;     // one segment drawing itself on
@@ -138,6 +139,11 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const frac = n > 0 ? (count % n) / n : 0;
   const goalKey = goal ? `${goal.n}:${goal.unit}` : 'none';
   const pageSeed = `${seedKey}:${SESSION_START}:${goalKey}`;
+  // The goal already in progress when this page is opened is drawn as the centred spread. Goals reached after that
+  // open grow off the branch the last one left behind. Navigating to another page starts its own centred spread.
+  const openKey = `${seedKey}|${goalKey}`;
+  const opened = useRef<{ key: string; lap: number }>({ key: '', lap: 0 });
+  if (opened.current.key !== openKey) opened.current = { key: openKey, lap };
 
   const svgRef = useRef<SVGSVGElement>(null);
   const [m, setM] = useState<Measured | null>(null);
@@ -170,7 +176,7 @@ export function RhizomeField({ text, seedKey, paperRef }: {
     return () => { if (raf) cancelAnimationFrame(raf); clearTimeout(settle); ro?.disconnect(); mo.disconnect(); };
   }, [active, paperRef, sync, seedKey]);
 
-  // Crossing the goal: hold the finished lap whole and brass for FLASH_MS, then show the new lap from the page centre.
+  // Crossing the goal: hold the finished lap whole and brass for FLASH_MS, then fade and leave the next lap.
   const countKey = `${seedKey}|${goalKey}`;
   useEffect(() => {
     const prev = prevCount.current;
@@ -196,7 +202,8 @@ export function RhizomeField({ text, seedKey, paperRef }: {
 
   // What to draw. During the flash: the finished lap, whole. Otherwise: the current lap up to the goal fraction.
   const shownLap = flashLap ?? lap;
-  const plan = useMemo(() => (m ? lapPlan(m.geo, pageSeed, shownLap) : null), [m, pageSeed, shownLap]);
+  const shownVisit = Math.max(0, shownLap - opened.current.lap);
+  const plan = useMemo(() => (m ? lapPlan(m.geo, pageSeed, shownVisit) : null), [m, pageSeed, shownVisit]);
   const k = plan ? (flashLap != null ? plan.segments.length : segmentsFor(plan, frac)) : 0;
 
   // Which segments are still GROWING. A segment that appears gets its own start time (staggered within its burst) and stays

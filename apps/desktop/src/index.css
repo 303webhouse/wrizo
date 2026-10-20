@@ -3703,13 +3703,13 @@ a:focus-visible,
 @keyframes wz-rhizome-draw{ from{ stroke-dashoffset:1; } to{ stroke-dashoffset:0; } }
 
 /* The reward: at the goal the whole network turns brass (#ff9800, the locked theme orange) and pops — a short
-   bloom, then a heavier brass stroke holds (1200 ms, RhizomeField) and fades out over 1500 ms. */
+   bloom, then a heavier brass stroke holds (1200 ms, RhizomeField) and fades out over 2200 ms. */
 .wz-rhizome-field[data-flash='true'],
 .wz-rhizome-field[data-flash='fading']{ filter:drop-shadow(0 0 3px var(--brass)); }
 .wz-rhizome-field[data-flash='true']{ animation:wz-rhizome-pop 420ms ease-out; }
 .wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ stroke:var(--brass); opacity:1; stroke-width:1.35px; transition:stroke 80ms ease-out, opacity 80ms ease-out, stroke-width 80ms ease-out; }
 .wz-rhizome-field[data-flash='true'] .wz-rhizome-seg[data-thick='true']{ stroke-width:2.1px; }
-.wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg{ stroke:var(--brass); opacity:0; stroke-width:1.35px; transition:opacity 1500ms ease-out; }
+.wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg{ stroke:var(--brass); opacity:0; stroke-width:1.35px; transition:opacity 2200ms ease-out; }
 .wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg[data-thick='true']{ stroke-width:2.1px; }
 @keyframes wz-rhizome-pop{
   from{ filter:drop-shadow(0 0 12px var(--brass)) drop-shadow(0 0 3px var(--brass)); }
