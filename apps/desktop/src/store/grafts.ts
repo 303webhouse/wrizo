@@ -57,7 +57,8 @@ const isShell = (e: JournalEntry | null | undefined): boolean => !!(e as { purge
 /** The place an entry lives in, as its label: its binder's Drawer name; "Unsorted" for a binder with no live Drawer; the Journal for an
  *  entry with no live home (no binder, or a binder that is gone). Read from the names directly until step 1a's placeOfEntry lands. */
 export function placeLabelOf(entryId: string): string {
-  const e = getJournalEntryIncludingDeleted(entryId);
+  // getJournalEntry first: it also resolves a brand-new page's unborn slot (its binder from the door), so its place is right before birth
+  const e = getJournalEntry(entryId) ?? getJournalEntryIncludingDeleted(entryId);
   if (!e) return '';
   const project = e.projectId ? getProject(e.projectId) : null;
   if (!project || (project as { purgedAt?: string }).purgedAt) return deskTerm('drawerPlaceJournal');

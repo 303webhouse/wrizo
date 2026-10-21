@@ -7,16 +7,17 @@ import { graftTo, isGrafted, searchGraftables, type GraftRow, type GraftSubject 
 import type { Box } from '../types';
 
 // BIG PROJECTS STEP 3 (3b, 3d) - "+ Graft...": the picker (Nick's approved mockup, cursor/graft-doors-mockup @ c4f34eb0, frames graft-picker-page,
-// graft-picker-board, picker-came-from). A search field, then Cards / Pages / Boards from ANY place, each row with its place label and a check mark
-// on anything already grafted. A press on an unchecked row grafts it (store/grafts.ts graftTo: a page_links record owned by the subject, or - a
+// graft-picker-board, picker-came-from). A search field, then Cards / Pages / Boards from ANY place, and a check mark on anything already grafted.
+// RULING (Fable, Oct 21): a place label appears ONLY on a row from another Drawer or the Journal - a row from the subject's own place has none. A press on an unchecked row grafts it (store/grafts.ts graftTo: a page_links record owned by the subject, or - a
 // card on the same board - a connection box made through the board); a press on a checked row does nothing (Q10: the X in the list is the only way
 // to ungraft). "Came from <surface>" is the top row only when the page was just opened from a surface (the router state the Back chip reads):
 // an offered row like any other - nothing is written when the page opens.
 // An OVERLAY portalled to <body> and anchored under the "+ Graft..." control: it displaces nothing (page primacy). Esc or a press outside closes it.
 export interface CameFrom { entryId: string; title: string }
 
-// `boxes`: the open board's LIVE boxes (the editor's own, ahead of its autosave), handed down by the Grafts pane that already reads the board's snapshot
-export function GraftPicker({ subject, boxes, anchor, cameFrom, onClose }: { subject: GraftSubject; boxes?: readonly Box[]; anchor: HTMLElement | null; cameFrom: CameFrom | null; onClose: () => void }) {
+// `boxes`: the open board's LIVE boxes (the editor's own, ahead of its autosave), handed down by the Grafts pane that already reads the board's snapshot.
+// `beforePick`: on a brand-new page, the pane's birth of the page (ruling, Oct 21: a pick CREATES the page) - run before the graft is written.
+export function GraftPicker({ subject, boxes, anchor, cameFrom, onClose, beforePick }: { subject: GraftSubject; boxes?: readonly Box[]; anchor: HTMLElement | null; cameFrom: CameFrom | null; onClose: () => void; beforePick?: () => void }) {
   const { t } = useDeskLexicon();
   const [query, setQuery] = useState('');
   const [, setTick] = useState(0);
@@ -50,6 +51,7 @@ export function GraftPicker({ subject, boxes, anchor, cameFrom, onClose }: { sub
 
   const res = searchGraftables(query, subject, boxes);
   const pick = (r: { entryId: string; boxId?: string }) => {
+    beforePick?.();
     const made = graftTo(subject, { entryId: r.entryId, ...(r.boxId ? { boxId: r.boxId } : {}) }, boxes);
     if (made && made.made === 'connection') getBoardActions()?.addConnection(made.a, made.b);
     setTick((n) => n + 1);
@@ -81,7 +83,7 @@ export function GraftPicker({ subject, boxes, anchor, cameFrom, onClose }: { sub
                 onClick={() => { if (!r.checked) pick(r); }}>
                 <span className={`wz-links-thumb wz-links-thumb--${g === 'Cards' ? 'card' : g === 'Boards' ? 'board' : 'page'}`} aria-hidden="true" />
                 <span className="wz-graft-title">{r.title}</span>
-                {r.place && <span className="wz-graft-place">{r.place}</span>}
+                {r.placeDiffers && r.place && <span className="wz-graft-place">{r.place}</span>}
                 <span className="wz-graft-ck" aria-hidden="true">{r.checked ? '✓' : ''}</span>
               </button>
             ))}
