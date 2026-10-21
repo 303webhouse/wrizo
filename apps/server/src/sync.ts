@@ -25,6 +25,28 @@ function wordCount(text: unknown): number {
   return m ? m.length : 0;
 }
 
+// THEME-UNLOCK-COUNT (Fable's review ruling, Oct 21) - a theme is open once ANY of: its
+// words_written threshold is met, it's already in themes_opened, or it's the theme in use right
+// now. The first two are server-knowable and reported below; the third is pure client state (the
+// writer's own current theme) and needs no server signal - "no new signal needed" is the ruling's
+// own words, since the client already knows this without asking. words_written only ever grows
+// (sync.ts's own counter above), so "threshold met" can only ever flip open, never closed: that
+// alone is what makes this "once open, always open" for the count-based path, with no separate
+// flag required.
+//
+// ONE SHARED CONSTANT, not one hand-copied into a future picker: reported on every GET below so a
+// client never needs its own hard-coded copy. 'plateau' is Arbor's own theme id (ThemeId in
+// apps/desktop/src/store/theme.ts, which today only lists 'plateau' | 'flux' - machina/nomad/
+// volant are future theme ids, named here ahead of their own ThemeId entries since this constant
+// is the thresholds' only home, not a mirror of a client type that doesn't cover them yet).
+export const THEME_UNLOCK_THRESHOLDS: Readonly<Record<string, number>> = Object.freeze({
+  plateau: 100,
+  machina: 100,
+  flux: 1000,
+  nomad: 5000,
+  volant: 20000,
+});
+
 // --- row <-> client mappers ----------------------------------------------
 
 function rowToProject(r: any) {
@@ -382,6 +404,19 @@ export async function upsertJournalEntries(userId: string, records: any[], acked
       // the purged-row case this SELECT also naturally excludes nothing special for (a purged
       // row's shell still has its last text; the acceptance check below is what actually gates
       // it, via purgeGate's own earlier `continue` and the upsert's own `purged_at is null`).
+      //
+      // SCREENPLAY PAGES ARE ALREADY COVERED BY `text` ALONE - VERIFIED, NOT ASSUMED. A
+      // screenplay page's prose lives in `script` (jsonb: scenes of elements), not `text` - but
+      // `text` is never the writer's own column for that page type either: apps/desktop/src/
+      // store/persistence.ts's saveScriptDoc is the ONLY seam that ever sets `script`, and it
+      // writes `text: serializeScriptDoc(doc)` - every one of that doc's words, in order - in the
+      // SAME call (canon §2.4, "the derived prose shadow"; `git log -S saveScriptDoc` shows this
+      // pairing in the Screenplay Room's very first commit, 28c3f51f - there is no historical
+      // window where a page ever held `script` without its `text` shadow). So `wordCount(e.text)`
+      // already counts every screenplay word for any page saved through the app; reading `script`
+      // here too would DOUBLE-COUNT it, not fill a gap. Board-card text (`boxes[].text`) is a
+      // third, unrelated jsonb field no word count here or in the backfill ever reads - board
+      // cards don't count, by never being asked about.
       const before = await pool.query(`select text from journal_entries where id = $1 and user_id = $2`, [e.id, userId]);
       const oldWords = wordCount(before.rows[0]?.text);
       const result = await pool.query(
@@ -561,7 +596,11 @@ syncRouter.put('/proofing', asyncHandler(async (req: Request, res: Response) => 
 syncRouter.get('/theme-unlock', asyncHandler(async (req: Request, res: Response) => {
   const userId = req.session.userId as string;
   const { rows } = await pool.query(`select words_written, themes_opened from users where id = $1`, [userId]);
-  res.json({ wordsWritten: rows[0]?.words_written ?? 0, themesOpened: rows[0]?.themes_opened ?? {} });
+  res.json({
+    wordsWritten: rows[0]?.words_written ?? 0,
+    themesOpened: rows[0]?.themes_opened ?? {},
+    thresholds: THEME_UNLOCK_THRESHOLDS,
+  });
 }));
 
 syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {

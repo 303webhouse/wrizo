@@ -22,6 +22,13 @@
 //   T10 a push to a page DELETE-FOR-GOOD has already purged adds nothing (purgeGate's own
 //       earlier `continue` means the counter code never runs for it)
 //   T11 OWNERSHIP: user A's push never changes user B's words_written
+//   T12 Fable's review ruling (Oct 21): a SCREENPLAY page counts via its `text` shadow alone - a
+//       push carrying BOTH a serialized `text` and the `script` jsonb it was derived from counts
+//       exactly the shadow's own words, not double (proves the save path never reads `script`)
+//   T13 Fable's review ruling: a page's `boxes` (board cards) never contribute to the count, even
+//       when a box carries its own `text` field (proves board cards don't count on the save path)
+//   T14 Fable's review ruling: the unlock thresholds live in ONE exported constant
+//       (THEME_UNLOCK_THRESHOLDS) and are reported by GET /theme-unlock's own query shape
 //   MUTANTS (each is the compiled server with ONE edit, and must turn its case RED):
 //       the per-record delta dropping its "- oldWords" term (T7 + T8 red)
 //       the per-record delta dropping its max(0, ...) floor (T8 red)
@@ -90,6 +97,11 @@ try {
   const wwCol = cols.find((c) => c.column_name === 'words_written');
   const toCol = cols.find((c) => c.column_name === 'themes_opened');
   ok('T1: words_written is int, themes_opened is jsonb', wwCol?.data_type === 'integer' && toCol?.data_type === 'jsonb', JSON.stringify(cols));
+
+  // ---- T14: the thresholds live in ONE exported constant, not hand-copied anywhere -----------
+  const TH = real.sync.THEME_UNLOCK_THRESHOLDS;
+  const expectThresholds = { plateau: 100, machina: 100, flux: 1000, nomad: 5000, volant: 20000 };
+  ok('T14: THEME_UNLOCK_THRESHOLDS carries the five locked thresholds', TH && JSON.stringify(TH) === JSON.stringify(expectThresholds), JSON.stringify(TH));
 
   // ---- T2 / T3: backfill sums non-purged pages, excludes a purged one -------------------------
   const uT2 = await newUser('t2@example.com');
@@ -160,6 +172,32 @@ try {
     // T11: OWNERSHIP - user A's pushes above never touched user B's own total
     const w11 = await wordsOf(uB);
     k('T11', w11.words_written === null || w11.words_written === 0, JSON.stringify(w11));
+
+    // T12: a SCREENPLAY page - `text` (the save-time shadow, 11 words) AND `script` (a scenes
+    // blob whose own element text sums to a DIFFERENT count, 3 words) in the SAME push. A correct
+    // count adds exactly 11 (text alone); 14 would mean script got added on top, 3 would mean
+    // script was read INSTEAD of text - either is wrong.
+    const before12 = (await wordsOf(uA)).words_written;
+    await S.sync.upsertJournalEntries(uA, [{
+      id: id('p12'),
+      text: 'INT ROOM DAY A writer sits down to type here now',   // 11 words - the "shadow"
+      script: { v: 1, scenes: [{ id: 'sc1', heading: { id: 'h1', t: 'scene', text: 'ignored anyway' }, body: [{ id: 'b1', t: 'action', text: 'too' }] }] },   // 3 words if ever read
+      createdAt: iso(1), updatedAt: iso(1),
+    }]);
+    const w12 = await wordsOf(uA);
+    k('T12', w12.words_written === before12 + 11, JSON.stringify({ before: before12, after: w12.words_written }));
+
+    // T13: a page with a board card (`boxes`, a text-kind box carrying its OWN text) alongside a
+    // plain 3-word `text`. A correct count adds exactly 3 - board cards never count.
+    const before13 = (await wordsOf(uA)).words_written;
+    await S.sync.upsertJournalEntries(uA, [{
+      id: id('p13'),
+      text: 'three word page',
+      boxes: [{ id: 'c1', kind: 'text', text: 'ten extra words here that must never ever count' }],
+      createdAt: iso(1), updatedAt: iso(1),
+    }]);
+    const w13 = await wordsOf(uA);
+    k('T13', w13.words_written === before13 + 3, JSON.stringify({ before: before13, after: w13.words_written }));
 
     return out;
   };

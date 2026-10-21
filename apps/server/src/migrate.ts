@@ -268,6 +268,14 @@ export async function runMigrations(): Promise<void> {
   // The word count matches the client's own convention (whitespace-run tokens after trimming,
   // so an all-blank page counts zero, not one empty token) - the same regex family as
   // `((text||'').trim().match(/\S+/g)||[]).length`, done here in SQL over every non-purged page.
+  //
+  // `text` ALONE IS ALREADY COMPLETE - screenplay pages included, board cards excluded. A
+  // screenplay's prose lives in `script` (jsonb), but `apps/desktop/src/store/persistence.ts`'s
+  // saveScriptDoc is the only seam that ever writes it, and it always writes `text:
+  // serializeScriptDoc(doc)` - every word, in order - in the SAME call (canon §2.4; true since
+  // the Screenplay Room's first commit, 28c3f51f). Summing `script` here too would double-count
+  // it. `boxes[].text` (board-card content) is a separate field this query never reads - board
+  // cards don't count, by design (sync.ts's own counter carries the identical reasoning).
   await pool.query(`alter table users add column if not exists words_written int`);
   await pool.query(`alter table users add column if not exists themes_opened jsonb`);
   await pool.query(`
