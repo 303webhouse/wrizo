@@ -17,6 +17,14 @@ function iso(value: unknown): string | null {
   return value instanceof Date ? value.toISOString() : new Date(value as string).toISOString();
 }
 
+// THEME-UNLOCK-COUNT (Fable, Oct 21; Nick's schema word "B") - the exact count the client's own
+// first-line-invite style logic already uses (`((text||'').trim().match(/\S+/g)||[]).length`):
+// whitespace-run tokens after trimming, so an all-blank string counts zero, not one empty token.
+function wordCount(text: unknown): number {
+  const m = (typeof text === 'string' ? text : '').trim().match(/\S+/g);
+  return m ? m.length : 0;
+}
+
 // --- row <-> client mappers ----------------------------------------------
 
 function rowToProject(r: any) {
@@ -361,11 +369,22 @@ async function upsertDrawers(userId: string, records: any[], acked: string[] = [
 export async function upsertJournalEntries(userId: string, records: any[], acked: string[] = []): Promise<string[]> {
   const rejected: string[] = [];
   const purged = await purgedIdsOf('journal_entries', userId, records.filter((x) => x?.id).map((x) => x.id));
+  // THEME-UNLOCK-COUNT: summed across this whole push, one update at the end (see below) rather
+  // than one per record - the per-record max(0, new-old) floor is what "never subtracts" means;
+  // summing several already-floored deltas can only grow the total, never shrink it.
+  let wordsDelta = 0;
   for (const e of records) {
     if (!e?.id || !e?.updatedAt || !e?.createdAt) { if (e?.id) rejected.push(e.id); continue; }
     try {
       if ((await purgeGate('journal_entries', userId, e, purged, acked)) === 'done') continue;   // DELETE FOR GOOD: a shell written, or a refusal acknowledged
-      await pool.query(
+      // THEME-UNLOCK-COUNT: read the OLD text before the upsert below can overwrite it. A row
+      // that doesn't exist yet (a brand-new page) reads back no row - zero old words, same as
+      // the purged-row case this SELECT also naturally excludes nothing special for (a purged
+      // row's shell still has its last text; the acceptance check below is what actually gates
+      // it, via purgeGate's own earlier `continue` and the upsert's own `purged_at is null`).
+      const before = await pool.query(`select text from journal_entries where id = $1 and user_id = $2`, [e.id, userId]);
+      const oldWords = wordCount(before.rows[0]?.text);
+      const result = await pool.query(
         `insert into journal_entries
            (id, user_id, project_id, text, session_id, starred, source, shelved, beat_id, page_type,
             order_index, imported_at, boxes, script, origin, tutor, tags, routed_project_ids, strokes, deleted_at, created_at, updated_at, plan_board_id, page_settings, page_links)
@@ -400,10 +419,23 @@ export async function upsertJournalEntries(userId: string, records: any[], acked
          e.orderIndex ?? null, e.importedAt ?? null, JSON.stringify(e.boxes ?? null), JSON.stringify(e.script ?? null), e.origin ?? null, JSON.stringify(e.tutor ?? null), JSON.stringify(e.tags ?? null), JSON.stringify(e.routedProjectIds ?? null), JSON.stringify(e.strokes ?? null),
          e.deletedAt ?? null, e.createdAt, e.updatedAt, e.planBoardId ?? null, JSON.stringify(e.pageSettings ?? null), JSON.stringify(e.pageLinks ?? null)],
       );
+      // THEME-UNLOCK-COUNT: `rowCount` is 0 when the on-conflict WHERE clause above didn't match
+      // (a stale updated_at, or a purged row) - the same signal every other reader of this
+      // statement's acceptance would use. Only an ACCEPTED write's delta counts.
+      if ((result.rowCount ?? 0) > 0) {
+        wordsDelta += Math.max(0, wordCount(e.text) - oldWords);
+      }
     } catch (err) {
       logError('sync', err, { kind: 'journal_entry', id: e.id });
       rejected.push(e.id);
     }
+  }
+  if (wordsDelta > 0) {
+    // THEME-UNLOCK-COUNT: the only statement outside the migration's own one-time backfill that
+    // ever writes `words_written` - scoped to this session's own userId (never a client-supplied
+    // id), and always additive (`coalesce(...,0) + wordsDelta`, and wordsDelta is itself a sum of
+    // already-floored-at-0 per-page deltas), so it can only grow.
+    await pool.query(`update users set words_written = coalesce(words_written, 0) + $2 where id = $1`, [userId, wordsDelta]);
   }
   return rejected;
 }
@@ -518,6 +550,18 @@ syncRouter.put('/proofing', asyncHandler(async (req: Request, res: Response) => 
   await pool.query(`update users set proofing = $2::jsonb where id = $1`,
     [userId, next == null ? null : JSON.stringify(next)]);
   res.json({ proofing: next });
+}));
+
+// THEME-UNLOCK-COUNT (Fable, Oct 21) - a plain read of the two singleton values, same shape as
+// page-defaults/proofing above. No PUT: a client never writes these directly. Only an accepted
+// page save (upsertJournalEntries' own wordsDelta above) and the migration's own one-time
+// backfill ever move them, so there is no "replace the whole value" hazard to guard against the
+// way page_defaults's own PUT has to. No picker UI reads this yet - it exists so the count is
+// verifiable (this ticket's own harness reads it) ahead of the picker that will.
+syncRouter.get('/theme-unlock', asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.session.userId as string;
+  const { rows } = await pool.query(`select words_written, themes_opened from users where id = $1`, [userId]);
+  res.json({ wordsWritten: rows[0]?.words_written ?? 0, themesOpened: rows[0]?.themes_opened ?? {} });
 }));
 
 syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {

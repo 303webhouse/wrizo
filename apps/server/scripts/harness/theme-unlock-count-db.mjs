@@ -133,21 +133,29 @@ try {
     const w7 = await wordsOf(uA);
     k('T7', w7.words_written === 5, JSON.stringify(w7));
 
-    // T8: editing the SAME page DOWN (5 -> 2 words) leaves the total UNCHANGED (never subtracts)
-    await S.sync.upsertJournalEntries(uA, [{ id: id('p1'), text: 'one two', createdAt: iso(1), updatedAt: iso(3) }]);
+    // T8: ONE push, TWO records - p1 shrinks (5 -> 2 words) WHILE a brand-new p2 grows (0 -> 4
+    // words). The floor is PER RECORD, not on the batch sum: a correct total adds only p2's 4
+    // (p1's shrink floors to 0), landing at 5 + 4 = 9 - never 5 + (-3 + 4) = 6, which is what a
+    // batch dropping the per-record floor would produce. A single-record shrink alone cannot
+    // tell these apart, because the batch-level "only write if the sum is positive" guard
+    // happens to also hide a lone negative delta - this is why two records in the one push.
+    await S.sync.upsertJournalEntries(uA, [
+      { id: id('p1'), text: 'one two', createdAt: iso(1), updatedAt: iso(3) },
+      { id: id('p2'), text: 'alpha beta gamma delta', createdAt: iso(1), updatedAt: iso(1) },
+    ]);
     const w8 = await wordsOf(uA);
-    k('T8', w8.words_written === 5, JSON.stringify(w8));
+    k('T8', w8.words_written === 9, JSON.stringify(w8));
 
     // T9: a REJECTED push (an OLDER updated_at than what's already stored) adds nothing
     await S.sync.upsertJournalEntries(uA, [{ id: id('p1'), text: 'one two three four five six seven eight nine ten', createdAt: iso(1), updatedAt: iso(1) }]);
     const w9 = await wordsOf(uA);
-    k('T9', w9.words_written === 5, JSON.stringify(w9));
+    k('T9', w9.words_written === 9, JSON.stringify(w9));
 
     // T10: a push that targets an ALREADY-PURGED page adds nothing (purgeGate's own `continue`)
     await admin.query(`update journal_entries set purged_at = $2 where id = $1`, [id('p1'), iso(5)]);
     await S.sync.upsertJournalEntries(uA, [{ id: id('p1'), text: 'this push should never be counted at all, ten extra words here', createdAt: iso(1), updatedAt: iso(99) }], [id('p1')]);
     const w10 = await wordsOf(uA);
-    k('T10', w10.words_written === 5, JSON.stringify(w10));
+    k('T10', w10.words_written === 9, JSON.stringify(w10));
 
     // T11: OWNERSHIP - user A's pushes above never touched user B's own total
     const w11 = await wordsOf(uB);
@@ -182,8 +190,9 @@ try {
     mutate('the backfill drops its "words_written is null" guard (re-sums every boot)', 'migrate.js',
       (s) => s.replace(/\s*and u\.words_written is null/, ''),
       ['T5']),
+    // dist is CRLF (tsc emits the source's own line endings) - splice on \r\n, not \n.
     mutate('the backfill\'s sub-select drops its "purged_at is null" filter (counts purged pages too)', 'migrate.js',
-      (s) => s.replace('from journal_entries\n      where purged_at is null\n      group by user_id', 'from journal_entries\n      group by user_id'),
+      (s) => s.replace('      where purged_at is null\r\n      group by user_id', '      group by user_id'),
       ['T3']),
   ];
   for (const m of MUT) {

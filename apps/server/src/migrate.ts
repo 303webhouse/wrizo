@@ -232,4 +232,69 @@ export async function runMigrations(): Promise<void> {
   for (const t of ['journal_entries', 'projects', 'drawers', 'story_plans']) {
     await pool.query(`alter table ${t} add column if not exists purged_at timestamptz`);
   }
+
+  // THEME-UNLOCK-COUNT (Fable, Oct 21; Nick's schema word "B" - a lifetime words-written count
+  // plus the opened themes, the same on every device and never going backwards). Two additive
+  // nullable columns on `users`. No picker UI yet - this just starts the count accruing; a
+  // future picker reads these two values against static per-theme thresholds.
+  //
+  //   words_written  int   - a lifetime total, server-maintained. Every ACCEPTED page save in
+  //                          upsertJournalEntries() (sync.ts) adds max(0, newWords - oldWords)
+  //                          for that one page and sums across a push; it never subtracts, so
+  //                          trimming or deleting a page can only ever hold the total steady.
+  //   themes_opened  jsonb - { "<themeId>": true, ... }, an append-only set. A theme a writer
+  //                          has already used stays open forever, independent of word count
+  //                          (the brief's own grandfather clause: "once open, always open").
+  //
+  // THE BACKFILL BELOW IS REAL, UNLIKE EVERY OTHER COLUMN ABOVE. Every other `add column` in
+  // this file deliberately has NO backfill (null means "never set"; a legacy row stays
+  // byte-identical to today). This ticket's own spec asks for the opposite: "an idempotent
+  // backfill from current non-purged pages, also opening the current theme" - existing writers
+  // start with real credit instead of zero. Idempotent means ONE-TIME-BUT-SAFE-TO-RERUN, not
+  // "recomputed every boot": the `words_written is null` guard below touches a row only once -
+  // the first boot after this ships - and never again, so a page written or deleted after that
+  // first boot changes nothing the backfill itself does; only the counter in sync.ts moves the
+  // number from then on.
+  //
+  // THE CURRENT THEME IS A GAP, FLAGGED HERE RATHER THAN GUESSED SILENTLY. Theme selection has
+  // never been synced to the server - there is no `theme` column and sync.ts never mentions one
+  // - so the server cannot know a writer's actual current theme, only that Arbor ('plateau') is
+  // the one theme every account has necessarily used, being the only theme that has ever
+  // shipped broadly. The backfill grandfathers 'plateau' for exactly that reason. A writer who
+  // has also used Flux gets no grandfather credit for it from this backfill alone - that needs
+  // a real client -> server signal this ticket does not add (no picker UI yet). Raised for
+  // Fable/Nick, not invented.
+  //
+  // The word count matches the client's own convention (whitespace-run tokens after trimming,
+  // so an all-blank page counts zero, not one empty token) - the same regex family as
+  // `((text||'').trim().match(/\S+/g)||[]).length`, done here in SQL over every non-purged page.
+  await pool.query(`alter table users add column if not exists words_written int`);
+  await pool.query(`alter table users add column if not exists themes_opened jsonb`);
+  await pool.query(`
+    update users u
+    set words_written = coalesce(sub.wc, 0),
+        themes_opened = jsonb_build_object('plateau', true)
+    from (
+      select user_id,
+             sum(
+               case when trim(both from coalesce(text, '')) = '' then 0
+                    else array_length(regexp_split_to_array(trim(both from text), '\\s+'), 1)
+               end
+             ) as wc
+      from journal_entries
+      where purged_at is null
+      group by user_id
+    ) sub
+    where u.id = sub.user_id
+      and u.words_written is null
+  `);
+  // A user with NO non-purged pages at all never appears in the `sub` aggregate above (the join
+  // misses them entirely, not zero-sums them), so they need their own pass: zero words, Arbor
+  // grandfathered the same as every writer who does have pages.
+  await pool.query(`
+    update users
+    set words_written = 0,
+        themes_opened = jsonb_build_object('plateau', true)
+    where words_written is null
+  `);
 }
