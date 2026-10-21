@@ -9,6 +9,20 @@ isn't built twice) and **(b)** Nick approves Cursor's own Machina mockups.
 Runs in parallel with the Flux v2 build (INK), on separate branches, with
 `theme.ts`/the lexicons/`index.css` rebased carefully between them.
 
+**THE BUILD QUEUE (Fable, Oct 21 4:36pm), updated Oct 21 evening.** TOOLS'
+Machina-arc work is now FOUR separately-branched steps, not one build:
+**1. theme-unlock-count** — shipped separately (`theme-unlock-count` @
+`815e0bc2`/`36e18bad`; accepted, queued on Chat 1's box — not this doc's
+subject). **2. The theme picker** (brand cards, unlock states, per-theme
+menu names, Flux's wordmark in Silkscreen) — **§8 below**. **3. Arbor's
+garden icons + Arbor's "BOARDS →" tab** — **§9 below**. **4. Machina
+itself** (CAST, tokens, lexicon, effects, Run) — **§§1-7, this plan's
+original and still primary subject.** Steps 2-4 each start only after
+big-projects step 3 merges; each is its own branch. Where §§1-7 below
+describe the picker or Arbor's icons as "landing WITH" Machina's own
+build, that framing is now superseded by this queue — see §8/§9 for the
+current, authoritative scope of those two steps.
+
 **Sources, read in full:**
 - `docs/theme-foundations/machina/machina-foundations.md` — LOCKED 2026-07-14,
   design source. Section numbers below (`§n`) refer to this document.
@@ -22,8 +36,10 @@ Runs in parallel with the Flux v2 build (INK), on separate branches, with
 - `C:\Users\nickh\Downloads\machina-build-brief.md` — Nick's arming brief,
   2026-10-21 (the "what's new since July" list this plan integrates).
 - `C:\Users\nickh\Downloads\theme-menu-brief.md` — the theme-picker redesign
-  (brand cards), which lands *with* this build because Machina is the third
-  card.
+  (brand cards, unlock states, hover animations). Read in full across its
+  four dated updates (10:35am menu labels, 11:57am mockup review, 12:16pm
+  unlock-states spec, 12:34pm icon note). **No longer "lands with this
+  build"** — ships as its own branch, step 2 of the queue above (§8).
 - `C:\Users\nickh\Downloads\machina-words-pass.md` — Nick, Oct 21 12:16pm.
   **Overrules the foundations' own §9** ("zero renames") — Machina's real
   lexicon map (§1c below).
@@ -279,9 +295,12 @@ Nick's look — not yet "approved" the way Flux's icons v2 were:
   Boards, Journal, **Mood** — the already-locked theme-menu label, Settings,
   Trash, Graft, Set) — nine glyphs, one-for-one with Arbor's own current
   rail roster. This is Arbor's FIRST theme-specific icon set (it has used a
-  generic/shared glyph set until now); wiring it in is the same per-theme
-  icon-swap mechanism Machina's own set needs, built once and reused by
-  both, not two separate mechanisms.
+  generic/shared glyph set until now — in fact a plain UNICODE CHARACTER per
+  rail item today, not even an SVG; see §9a). **SUPERSEDED — wiring this in
+  ships as its own branch (step 3 of the build queue above, §9), ahead of
+  Machina's own build, not WITH it:** step 3 builds the per-theme icon-swap
+  mechanism from scratch (none exists yet, §9a) and Machina's own step 4
+  inherits it rather than building it twice.
 
 ### 1d. Effects registration (§10)
 
@@ -401,8 +420,9 @@ surface):
    "page ink is independent of room ink" law.
 4. **Per-theme icon set:** drawn (`icons-v3.html`/`.png` — §1c-icons above,
    both the Machina set and Arbor's new garden set), pending Nick's look.
-   Not specified further here; the build's own job once it's cleared is
-   wiring a per-theme icon-swap seam, not drawing.
+   **The icon-swap seam itself is step 3's job (§9), not Machina's own
+   build's** — Machina's step 4 just adds its own svg set onto the seam
+   step 3 builds.
 5. **Per-theme splash:** **mocked first** (Cursor), same gate. Prior art:
    this exact seam was just built for Flux/Arbor (`SplashMark.tsx`,
    `ArborMark`/`FluxMark`) — Machina adds a third mark function to the same
@@ -422,21 +442,24 @@ surface):
    (where the sprint bar/`TypewriterToggle`/celebration live today) gains a
    Machina-conditional render path, not a parallel component (canon §1: "no
    parallel components").
-7. **Theme menu "Theme" label + brand cards:** per
-   `theme-menu-brief.md` — lands WITH this build (Machina is the third
-   card). Scope: the rail-foot label resolves through the lexicon seam
-   already (§1c's own mechanism — this is just another entry in the
-   identity/label map, labelled "Theme" for Machina specifically, "Mood"
-   for Arbor, "Skin" for Flux per the brief's own table); the picker itself
-   becomes brand cards (large, palette+mark+small world-detail, never a UI
-   screenshot) — a new presentational component replacing the current
-   button-list picker, built once (not per-theme), reading each theme's own
-   new "card" assets. Machina's own card: "steel instrument lines, with
-   Run's orange notch" (brief's own description) — needs its own small
-   illustration asset, likely from the SAME mockup pass as the icon
-   set/splash (item 4/5 above) rather than a fourth separate asset request;
-   raise this consolidation opportunity to Fable rather than silently
-   deciding it.
+7. **Theme menu "Theme" label + brand cards:** **SUPERSEDED — ships as its
+   own branch (step 2 of the build queue above, §8), not WITH this build.**
+   Machina's OWN lexicon entry ("Theme") and card illustration are still
+   specified here since they're Machina's own data; the picker component,
+   unlock states, hover animations and the other themes' cards are §8's
+   scope, not this section's. Per `theme-menu-brief.md`: the rail-foot
+   label resolves through the lexicon seam already (§1c's own mechanism —
+   this is just another entry in the identity/label map, labelled "Theme"
+   for Machina specifically, "Mood" for Arbor, "Skin" for Flux per the
+   brief's own table); the picker itself becomes brand cards (large,
+   palette+mark+small world-detail, never a UI screenshot) — a new
+   presentational component (§8b) replacing the current button-list
+   picker, built once (not per-theme), reading each theme's own new "card"
+   assets. Machina's own card: "steel instrument lines, with Run's orange
+   notch" (brief's own description) — needs its own small illustration
+   asset, likely from the SAME mockup pass as the icon set/splash (item
+   4/5 above) rather than a fourth separate asset request; raise this
+   consolidation opportunity to Fable rather than silently deciding it.
 8. **Brass through-line + word-diet/minimal-interface laws:** standing,
    cross-theme, already enforced generically — nothing Machina-specific to
    add; confirm Machina's own token choices don't accidentally violate the
@@ -514,12 +537,12 @@ build time — this is a plan, not a diff)
 | `apps/desktop/src/index.css` | `[data-theme="machina"]` token block (§1a), nested CAST sub-blocks, page-pair blocks, spark CSS (§1e) |
 | `apps/desktop/src/store/deskLexicon.ts` | `OVERRIDES.machina` real-word entries (§1c — locked map, not identity) |
 | `apps/desktop/src/store/themeLexicon.ts` | `OVERRIDES.machina` real-word entries (§1c), including the rail-foot "Theme" label (§3.7) and the mode-tab words (Build/Edit/Sprint) |
-| `apps/desktop/src/components/<icon component(s)>` (name TBD — confirm current file) | per-theme icon-swap seam serving BOTH the Machina set and Arbor's new garden set (§1c-icons) |
+| `apps/desktop/src/components/DeskRail.tsx` (+ other render sites, §9c) | **built in step 3 (§9), not here** — Machina's own build consumes the icon-swap seam step 3 builds, adding only its own svg set |
 | `apps/desktop/src/store/themeCast.ts` (new, name TBD — see §2) | CAST storage seam |
 | `apps/desktop/src/components/ThemeEffectsLayer.tsx` / `store/fluxThemeFx.ts`-equivalent | confirm empty-registration is already a supported shape for Machina; register the one celebration's Machina-specific constants |
 | `apps/desktop/src/components/WritingIncentives.tsx` | Run (Machina-conditional, §3.6); celebration skin constants |
 | `apps/desktop/src/components/SplashMark.tsx` | third mark function, once the splash mockup lands (§3.5) |
-| theme-picker component (name TBD — confirm current file) | brand-card redesign (§3.7, shared with the theme-menu-brief work) |
+| `apps/desktop/src/components/CascadePanels.tsx` / a new `ThemePicker.tsx` (§8b) | **built in step 2 (§8), not here** — Machina's own build supplies only its own card illustration + lexicon entry |
 | `apps/desktop/package.json` | four fontsource packages |
 | `apps/desktop/src/main.tsx` | CAST reflected onto the DOM before first render, alongside `initTheme()` |
 | `apps/desktop/scripts/harness/th-machina.mjs` (new) | §4 |
@@ -529,12 +552,20 @@ build time — this is a plan, not a diff)
 
 ## 6. Sequencing (restated from the brief, as the gate this plan itself respects)
 
+**Superseded by the build queue (header, Oct 21 4:36pm):** this section
+described Machina's OWN sequencing only, written before the picker and
+Arbor's icons were split into their own separately-branched steps. It
+still governs step 4 (Machina itself) correctly; steps 2/3 have their own
+sequencing in §8/§9.
+
 1. Cursor mocks Machina on the current shell (frames, icon sheet, splash) —
    Fable clears, Nick approves. *(Independent of this plan's own review.)*
 2. **This plan** — written now, reviewed by Fable.
-3. Build starts only after big-projects 1a/2/3 merge AND item 1's approval
-   lands. Runs parallel to Flux v2 (INK) on a separate branch; `theme.ts`/
-   the lexicons/`index.css` rebase carefully against whichever lands first.
+3. Machina's OWN build (step 4 of the queue) starts only after big-projects
+   1a/2/3 merge AND item 1's approval lands AND steps 2/3 have landed their
+   own icon-swap seam (§9a) for step 4 to consume. Runs parallel to Flux v2
+   (INK) on a separate branch; `theme.ts`/the lexicons/`index.css` rebase
+   carefully against whichever lands first.
 4. Box: PART 2s, the touched harnesses, a full pair; Fable's clear; Nick's
    word — standard ship gate, nothing Machina-specific.
 
@@ -565,3 +596,213 @@ build time — this is a plan, not a diff)
   printed words are behind the latest lock.
 - **The eleven locked words with no drawn glyph yet** (§1c-icons) — confirm
   which reuse an existing icon concept vs. need their own ask.
+- Step 2's own open questions are in §8e; step 3's are in §9e — not
+  repeated here since they're that step's own build-time confirms, not
+  Machina's.
+
+---
+
+## 8. Step 2 — the theme picker (brand cards, unlock states, Silkscreen)
+
+Ships as its OWN branch, per the build queue (header) — independent of
+Machina's own CAST/token build (§§1-7), even though Machina supplies the
+picker's third card (§3.7). Gated the same way: starts after big-projects
+step 3 merges.
+
+### 8a. Scope
+
+Sources: `theme-menu-brief.md` in full (its four dated updates: the
+10:35am menu-label table, the 11:57am mockup review, the 12:16pm
+unlock-states spec, the 12:34pm icon note), plus theme-unlock-count's
+already-shipped schema (`theme-unlock-count` @ `815e0bc2`/`36e18bad` —
+`words_written`, `themes_opened`, `THEME_UNLOCK_THRESHOLDS`, `GET
+/theme-unlock`, all live and accepted).
+
+- **Per-theme menu names** resolve through the lexicon seam (§1c's own
+  mechanism, already proven): Arbor "Mood", Machina "Theme", Flux "Skin"
+  (supersedes its own earlier "Skins" lock), Nomad "Vibe" (on hold until
+  built), Volant a wordless symbol with a hidden accessible name "Themes"
+  (on hold until built).
+- **Brand cards, not buttons**: large, one per BUILT theme — the
+  absent-not-grayed law (`CascadePanels.tsx`'s own `THEME_OPTS` comment,
+  §8b) already governs this and must keep governing it: Nomad/Volant
+  never appear before they ship, never grayed-as-a-promise. Narrative
+  order Arbor → Machina → Flux → Nomad → Volant. Each card: palette +
+  materials + signature mark + a small world-detail, NEVER a UI
+  screenshot. Wordmark in the theme's own type face — **Flux's wordmark is
+  Silkscreen** (Nick's pick, this round); Arbor's and Machina's own
+  wordmark faces are NOT yet specified — confirm before build rather than
+  guessing one (§8e).
+- **Unlock states**, the picker's first real consumer of theme-unlock-
+  count's own schema: a theme is OPEN if ANY of —
+  (1) `wordsWritten >= THEME_UNLOCK_THRESHOLDS[id]` (both already shipped,
+  readable from `GET /theme-unlock`);
+  (2) `themesOpened[id]` (ditto);
+  (3) it's the theme CURRENTLY in use (pure client state, `useTheme()`'s
+  own return value — no new server signal, per Fable's own ruling on the
+  schema ticket: "it closes your Flux grandfather gap; no new signal
+  needed"). Confirm at build time whether the client already has a
+  fetch/cache seam for a GET-only account endpoint to extend
+  (`page-defaults`/`proofing`'s own pattern in `sync.ts`) or whether this
+  step builds the first one.
+  - **Locked cards**: grayed, with a quiet note computed from the gap to
+    threshold — e.g. "612 more words to open Flux" — never a toast, nag or
+    badge (M1's "never a visible locked door" law is explicitly carved out
+    for the picker ONLY, per Nick's own canon note in the brief; it still
+    governs everywhere else).
+  - **Hover** (unlocked cards only), each animating the theme's OWN
+    progress idiom: Arbor's rhizome grows across the card and over the
+    word "Arbor" (fuller/messier than the existing rhizome mark — Nick's
+    own correction); Machina's Run units fill and the notch advances;
+    Flux's Glitch tick fires. Reduced-motion/Ambiance 0: a still frame of
+    the grown state, no animation.
+  - **Once open, always open** needs no re-lock logic: both
+    `themesOpened` and the threshold comparison only ever grow, already
+    proven server-side (theme-unlock-count's own harness, its T5/"never
+    subtracts" checks).
+- **Interaction**: current theme marked by the brass outline (Flux keeps
+  its own exception: cyan card + a thin orange bar on the LEFT edge, per
+  Fable's round-1 mockup fix — not the bottom); the Dark/Light toggle
+  stays BESIDE the picker, not inside a card; click = switch (unchanged);
+  keyboard + focus work; 44px targets; each card a real `<button>` whose
+  accessible name is the theme's own name (Volant: symbol + a hidden
+  accessible name).
+
+### 8b. Where this lands (confirmed at plan time, not "TBD")
+
+`CascadePanels.tsx`'s own `CascadeThemePanel()` (≈ line 1083) is TODAY'S
+button-list picker: `THEME_OPTS: [ThemeId, string][]` (≈ line 1081) mapped
+to plain `<button>` rows, with its own absent-not-grayed comment already
+in place (≈ line 1078: "future themes are ABSENT, not grayed... there is
+no third entry to hide") — the law this step's own card list must keep.
+Given the card redesign's own surface area (an illustration, a hover
+animation and a locked/grayed state per theme), this plan recommends
+EXTRACTING a new dedicated component (e.g. `components/ThemePicker.tsx`)
+rather than growing `CascadeThemePanel()` in place — confirm this call at
+build time against `CascadePanels.tsx`'s own size and convention (it is
+already a large, multi-panel file).
+
+### 8c. File list (best current estimate; confirm each against the tree at build time)
+
+| File | Change |
+|---|---|
+| `apps/desktop/src/components/CascadePanels.tsx` | `CascadeThemePanel()` replaced by a call into the new picker component (§8b) |
+| `apps/desktop/src/components/ThemePicker.tsx` (new, name TBD) | the brand-card grid: cards, per-theme hover animation, locked/grayed state + note text, Dark/Light toggle placement |
+| per-theme card illustration assets (new) | Arbor "warm paper and the brass rhizome", Flux "cyan terminal glass, grid, glitch tick", Machina "steel instrument lines, Run's orange notch" (brief's own descriptions) — confirm these ride the SAME mockup pass as each theme's own icon set/splash rather than a separate ask |
+| a `GET /theme-unlock` client read seam (new, name TBD) | fetch + cache the already-shipped endpoint; confirm against `page-defaults`/`proofing`'s existing client pattern (§8a) before inventing a new one |
+| `apps/desktop/src/store/deskLexicon.ts` / `themeLexicon.ts` | the five per-theme menu-label entries (Mood/Theme/Skin/Vibe/symbol) |
+| Flux wordmark font asset | Silkscreen — confirm fontsource package vs. static asset against this codebase's existing font-loading convention before adding a new package for a single wordmark use |
+
+### 8d. Harness
+
+A new `scripts/harness/theme-picker.mjs`. The unlock-state OR-logic and
+the locked-note text are pure data/string computations, testable
+browserless (no grant needed) following `theme-unlock-count-db.mjs`'s own
+pattern; the card render, hover animation and keyboard/focus checks need
+a real DOM, following `th2.mjs`/`fx16.mjs`'s own CDP convention. Checks:
+absent-not-grayed (Nomad/Volant never render before they ship); grayed
+cards show the correct word-gap note and are not clickable; the current-
+card marks (brass outline; Flux's own cyan+left-bar exception); the hover
+animation per theme (and its reduced-motion stillframe); keyboard
+reachability + 44px targets; the three-way OR opens a theme via EACH path
+independently (threshold alone, `themesOpened` alone, current-theme
+alone) — mirroring `theme-unlock-count-db.mjs`'s own T-numbered proof
+style.
+
+### 8e. Open questions for Fable (this step, not Machina's — §7 is Machina's own)
+
+- Arbor's and Machina's own wordmark type faces (Flux's alone is locked:
+  Silkscreen).
+- Whether the per-theme card illustrations ride the icon-set/splash
+  mockup pass or need their own ask (already an open question for
+  Machina's own card specifically in §7; this is the same question for
+  Arbor's and Flux's cards).
+- Whether a GET-only account-endpoint client fetch/cache seam already
+  exists to extend, or needs to be built fresh for this step.
+
+---
+
+## 9. Step 3 — Arbor's garden icons, plus Arbor's "BOARDS →" tab
+
+Ships as its OWN branch, per the build queue (header), after big-projects
+step 3 and independent of both the picker (step 2) and Machina (step 4) —
+though it builds the ONE per-theme icon-swap mechanism both this step and
+Machina's own icon set (§1c-icons, §3.4) will use, so step 4 inherits a
+seam rather than building one twice.
+
+### 9a. The actual mechanism — confirmed at plan time, not assumed
+
+**There is no existing per-theme icon-swap seam to "wire into."**
+`DeskRail.tsx`'s own rail items (`RailItem[]`, ≈ line 22-27) carry
+`glyph: string` — literal UNICODE CHARACTERS (`❧`, `▤`, `▥`, `▣`), not SVG
+components, rendered inline (`<span
+className="desk-rail-glyph">{it.glyph}</span>`, ≈ line 144). Nothing in
+this codebase today renders a per-theme SVG glyph set for the rail.
+`BeginningsRow.tsx`'s own `GLYPH: Record<BeginningKey, ReactNode>` (a
+per-key map of inline `<svg>` elements, each inheriting `currentColor`) is
+the closest existing SHAPE to copy — this step should widen `RailItem`'s
+`glyph` field (or add a parallel field) to accept a per-theme
+`Record<ThemeId, ReactNode>` the same way, rather than inventing a
+different pattern. Confirm the exact widening at build time against
+`DeskRail.tsx`'s full current contents (this plan read only the rail-item
+list and the render line, not the whole file) and against whether
+anything else already reads `RailItem.glyph` expecting a plain string.
+
+### 9b. Scope
+
+- **Arbor · Garden set** (`icons-v3.html`/`.png`, §1c-icons — the glyphs
+  themselves are already drawn and need no further design work here):
+  soft hand-drawn strokes, nine glyphs — Drawer, Pages, Boards, Journal,
+  **Mood** (the already-locked theme-menu label, not "Themes"), Settings,
+  Trash, Graft, Set — one-for-one with Arbor's current rail roster.
+  Confirm each icon's actual render site before wiring: §9a's own reading
+  only confirmed `DeskRail.tsx`'s four rail items (journal/shelf/drawers/
+  library); Settings/Trash/Graft/Set/Boards/Pages are NOT all in that one
+  file (some may be pop-out headers or settings-panel rows) — locate each
+  at build time rather than assuming they share a site.
+- **"Plan →" → "Boards →"**: a rename of ARBOR'S OWN CANONICAL mode-tab
+  word — not an override. Arbor IS the canonical lexicon, so this edits
+  the CANONICAL table directly, the one place §1c's own Machina section
+  explicitly does NOT touch (Machina's own entry there reads "inherits
+  canonical, no override" specifically because of this rename). Confirm
+  the exact canonical key/string at build time (likely in
+  `deskLexicon.ts`'s or `themeLexicon.ts`'s own `CANONICAL` object,
+  alongside the other mode-tab words AGENTS.md's own "Pages⟷Plan"
+  navigation reference names) and rename it in the ONE place canonical
+  strings live, per the CANONICAL/OVERRIDES pattern §1c's own
+  registration note already establishes — every theme that does NOT
+  override this key picks up "Boards →" automatically the moment this
+  lands.
+
+### 9c. File list (best current estimate; confirm each against the tree at build time)
+
+| File | Change |
+|---|---|
+| `apps/desktop/src/components/DeskRail.tsx` | `RailItem.glyph` widened to accept a per-theme svg map (§9a); Arbor's own rail-item glyphs (journal/shelf/drawers/library) |
+| wherever Settings/Trash/Graft/Set/Boards/Pages render their own current (non-rail) icon (name TBD — confirm each site; §9a/§9b flag these are NOT all in `DeskRail.tsx`) | same per-theme svg-map treatment |
+| `apps/desktop/src/store/deskLexicon.ts` / `themeLexicon.ts` | the CANONICAL "Plan →" → "Boards →" rename (§9b) |
+| wherever glyph sizing/color is themed (confirm site) | confirm the new svg glyphs inherit `currentColor` the same way `BeginningsRow.tsx`'s own glyphs already do (§9a), so no new per-theme color rule is needed |
+| `apps/desktop/scripts/harness/arbor-garden-icons.mjs` (new) | §9d |
+
+### 9d. Harness
+
+A new `scripts/harness/arbor-garden-icons.mjs` (CDP — rendering a real
+glyph needs a DOM): the Arbor rail (and Settings/Trash/Graft/Set,
+wherever they render) shows the NEW svg glyphs, not the old unicode
+characters, under `data-theme="plateau"`; the mode tab reads "Boards →"
+everywhere it used to read "Plan →". A check that a Machina-themed page
+ALSO reads "Boards →" with no Machina-specific override (proving §1c's
+own "inherits canonical" design actually resolves this way, not just in
+prose) can only run once Machina's own `ThemeId` entry exists in code
+(§5's own `theme.ts` row) — decide at build time whether to write it now
+and leave it red-pending-Machina, or defer it to step 4's own harness
+with a cross-reference back here; either is honest, silence about the
+gap is not.
+
+### 9e. Open questions for Fable (this step, not Machina's — §7 is Machina's own)
+
+- Confirm the full render-site list for Arbor's nine garden glyphs
+  (§9a/§9c) — this plan's own read only confirmed `DeskRail.tsx`'s four
+  rail items; the other five need their own site located at build time.
+- Whether widening `RailItem.glyph` (string → per-theme ReactNode map) is
+  a breaking change for any OTHER current consumer of that field/type.
