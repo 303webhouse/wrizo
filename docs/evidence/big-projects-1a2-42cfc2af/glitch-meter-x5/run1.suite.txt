@@ -1,0 +1,14 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: LIVE RUN PRESENT — BOX IS THEIRS. 1 foreign run(s); NOTHING is reaped, whatever any owner or age reads.
+  live pid=42964 "C:\Program Files\nodejs\node.exe" apps/server/scripts/harness/delete-for-good-e2e.mjs
+  This is the gate in front of both licences: a pathological file keeps its suite alive, so
+  its browsers are never reapable however old they look. It is the box-free test every
+  lane already runs by hand before taking the box, made canonical inside the runner.
+REAPER: survivors=0 (untouched) in 1869ms
+SUITE START HARNESS_PARKED=unset files=1 tree=569e13ba bundle=index-Bys9KEcO.js/768187b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bp2b-gm1
+[01/1] FAIL      exit=1   58s glitch-meter.mjs :: ROWS-SHADOW VERIFY: PASS (27 renders checked, shadow == DOM on every one) ;; GLITCH-METER VERIFY: FAIL - 1/22 failed
+
+SUITE DONE HARNESS_PARKED=unset — 0/1 of 1 returned a passing verdict
+  FAIL: glitch-meter.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bp2b-gm1\glitch-meter.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=569e13ba bundle=index-Bys9KEcO.js/768187b NO-REBUILD
