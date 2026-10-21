@@ -67,12 +67,10 @@ await withHarness(async (app) => {
   ok('check 1: line token is Flux\'s #1D4A52', tokenSpots.line.toLowerCase() === '#1d4a52', tokenSpots.line);
   ok('check 1: line-active is Flux\'s electric blue #00C2FF', tokenSpots.lineActive.toLowerCase() === '#00c2ff', tokenSpots.lineActive);
   ok('check 1: signal-live is Flux\'s lime #A6FF3D', tokenSpots.signalLive.toLowerCase() === '#a6ff3d', tokenSpots.signalLive);
-  // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): selection under Flux is CYAN: --brass (the generic selection token) is #00C2FF inside the Flux scope; the Wrizo orange lives on as --orange and is named only where it is allowed (caret, sprint surge, Uplink, the mark, the current item's left bar). Arbor's --brass is untouched (check 7 below restores it).
-  // Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // ok('check 1: the accent invariant (--brass) is untouched by the theme switch', tokenSpots.accent.toLowerCase() === '#ff9800', tokenSpots.accent);
-  const orangeToken = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--orange').trim()");
-  ok('check 1 [flux-v2 successor]: selection (--brass) is Flux\'s cyan #00C2FF, and the Wrizo orange #FF9800 lives on as --orange', tokenSpots.accent.toLowerCase() === '#00c2ff' && orangeToken.toLowerCase() === '#ff9800', JSON.stringify({ accent: tokenSpots.accent, orange: orangeToken }));
+  ok('check 1: the accent invariant (--brass) is untouched by the theme switch', tokenSpots.accent.toLowerCase() === '#ff9800', tokenSpots.accent);
+  // FLUX V2 (Fable's ruling Oct 21): brass stays the locked orange; a CHOSEN state reads --choice, which is brass in Arbor and Flux's cyan under Flux. New check, beside the invariant.
+  const choiceToken = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--choice').trim()");
+  ok('check 1 [flux-v2]: the choice token (--choice) is the Flux cyan #00C2FF while --brass stays #FF9800', choiceToken.toLowerCase() === '#00c2ff' && tokenSpots.accent.toLowerCase() === '#ff9800', JSON.stringify({ choice: choiceToken, brass: tokenSpots.accent }));
   ok('check 1: chromeLabel font slot is Rajdhani', tokenSpots.chromeLabel.includes('Rajdhani'), tokenSpots.chromeLabel);
   ok('check 1: contentLabel font slot is Chakra Petch', tokenSpots.contentLabel.includes('Chakra Petch'), tokenSpots.contentLabel);
   ok('check 1: proseSerif stays Crimson Pro (voice continuity, canon §4)', tokenSpots.proseSerif.includes('Crimson Pro'), tokenSpots.proseSerif);

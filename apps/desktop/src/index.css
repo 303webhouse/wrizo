@@ -101,6 +101,8 @@
      #ff9800 is locked and invariant — never recolor or remove. (Token name kept
      as --brass to avoid a global rename; this is a paint, not a refactor.) */
   --brass: #ff9800;
+  /* FLUX V2 (Fable's ruling): brass stays locked. CHOICE is the colour of a chosen / pressed / selected state: the same brass in Arbor, cyan under Flux. The selection selectors point here. */
+  --choice: var(--brass);
   --brass-hover: #ffab33;
   --brass-press: #e88900;
   --on-brass: #1C1610;
@@ -481,11 +483,10 @@
   --ink-border-strong: #2A6A76;   /* a brighter line tier — the dark page's own border value, reused */
   --line-active: #00C2FF;         /* canon §3 new slot */
   --signal-live: #A6FF3D;         /* canon §3 new slot */
-  /* FLUX V2 - selection is CYAN. --brass is the generic selection token (Arbor's orange), so overriding it here turns every "chosen" rule cyan with no component edit; the
-     orange survives only where --orange is named (the caret, the sprint surge, Uplink, the mark, the current list item's left bar). */
-  --brass: #00C2FF;
-  --brass-hover: #57D0F5;
-  --orange: #FF9800;
+  /* FLUX V2 - a CHOSEN state is cyan. --brass stays Arbor's locked orange; --choice (the colour of every selected / pressed / current state, root block) is overridden here, and the orange
+     survives only where --orange is named (the caret, the sprint surge, Uplink, the mark, the current list item's left bar). */
+  --choice: #00C2FF;
+  --orange: var(--brass);
   --text-accent: #57D0F5;
   --accent-rest: #00C2FF;   /* "where you are" (the chosen tab, a current row's cue) is cyan in Flux; Arbor's is olive */
   /* the chromatic offset: a faint cyan/blue hairline (never red) */
@@ -1546,7 +1547,7 @@ a:focus-visible,
 .spread-cell-paper{ width:104px; height:104px; box-sizing:border-box;
   border:1px solid var(--ink-border); border-radius:0; background:var(--paper);
   display:flex; align-items:center; justify-content:center; overflow:hidden; transition:box-shadow .15s; }
-.spread-cell[data-selected="true"] .spread-cell-paper{ border:2px solid var(--brass); }
+.spread-cell[data-selected="true"] .spread-cell-paper{ border:2px solid var(--choice); }
 .spread-cell[data-lifted="true"] .spread-cell-paper{ box-shadow:0 8px 20px rgba(0,0,0,.45); }
 @media (prefers-reduced-motion:no-preference){
   .spread-cell[data-lifted="true"] .spread-cell-paper{ transform:scale(1.06); }
@@ -1628,7 +1629,7 @@ a:focus-visible,
   pointer-events:none; text-align:center; white-space:nowrap;
 }
 .board-box{ border-radius:0; box-sizing:border-box; touch-action:none; }
-.board-box[data-selected="true"]{ outline:2px solid var(--brass); outline-offset:1px; }
+.board-box[data-selected="true"]{ outline:2px solid var(--choice); outline-offset:1px; }
 .board-text{
   width:100%; height:100%; overflow:auto; padding:6px 8px; box-sizing:border-box;
   border:1px solid var(--card-hairline); border-radius:0; background:var(--card-stock);
@@ -1696,7 +1697,7 @@ a:focus-visible,
 }
 .board-tcircle[data-solid='true']{ background:var(--brass); }
 .board-box[data-target='true'] > .board-tcircle, .board-box[data-peer='true'] > .board-tcircle{ display:block; }
-.board-box[data-target='true']{ outline:1.5px solid var(--brass); outline-offset:0; }
+.board-box[data-target='true']{ outline:1.5px solid var(--choice); outline-offset:0; }
 /* AB4 S2 — a page-pin card: a MEMBERSHIP card, not a copy. Shares
    .board-text's own look (now Stacked, S7); the badge is the only
    decoration (quiet olive, never brass — "nothing orange at rest" holds
@@ -1939,7 +1940,7 @@ a:focus-visible,
   border:1px solid var(--ink-border); border-radius:0; background:none;
   color:var(--text-mid); cursor:pointer;
 }
-.spread-lens-chip[data-active="true"]{ border-color:var(--brass); color:var(--brass); }
+.spread-lens-chip[data-active="true"]{ border-color:var(--choice); color:var(--choice); }
 .spread-lens-note{ color:var(--text-low); font-size:13px; margin:-4px 0 16px; }
 
 /* J5 — Add to… sheet: verb tags (the two-verb law made visible) + the toast. */
@@ -2156,7 +2157,7 @@ a:focus-visible,
   font-family:var(--font-ui); font-size:13px;
 }
 .script-autocomplete-opt{ padding:4px 10px; color:var(--text-mid); white-space:nowrap; }
-.script-autocomplete-opt[data-highlighted="true"]{ color:var(--brass); background:var(--ink-800); }
+.script-autocomplete-opt[data-highlighted="true"]{ color:var(--choice); background:var(--ink-800); }
 
 .wz-gate{ position:absolute; inset:0; display:flex; align-items:flex-start; justify-content:center; padding:15vh 8vw 12vh;
   opacity:0; pointer-events:none; transition:opacity .9s ease; z-index:4; }
@@ -2402,9 +2403,9 @@ a:focus-visible,
   background:var(--ink-900); border:1px solid var(--ink-border); border-radius:var(--radius-md);
   padding:.7rem .9rem; cursor:pointer; font-family:var(--font-ui); transition:border-color .2s; }
 .import-kind:hover{ border-color:var(--text-mid); }
-.import-kind.sel{ border-color:var(--brass); }
+.import-kind.sel{ border-color:var(--choice); }
 .import-kind-label{ font-size:.9rem; font-weight:600; color:var(--text-hi); }
-.import-kind.sel .import-kind-label{ color:var(--brass); }
+.import-kind.sel .import-kind-label{ color:var(--choice); }
 .import-kind-hint{ font-size:.72rem; color:var(--text-low); line-height:1.4; }
 .import-kind:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
 .import-actions{ margin-top:1.4rem; display:flex; justify-content:flex-end; }
@@ -2643,7 +2644,7 @@ a:focus-visible,
 .mode-tdiv{ width:1px; height:18px; background:var(--ink-border); margin:0 5px; }
 .mode-tmore{ margin-left:auto; color:var(--text-low); font-size:12px; }
 .mode-swatch{ width:22px; height:22px; border:1px solid var(--ink-border-strong); cursor:pointer; padding:0; }
-.mode-swatch.active{ outline:2px solid var(--brass); outline-offset:1px; }
+.mode-swatch.active{ outline:2px solid var(--choice); outline-offset:1px; }
 /* SWEPT (the narrow shell's rename, 2026-09-09) — `.mode-nib` styled the
    unframed pen bar's `nib · fine ▾` button, which was `title="Nib styles —
    coming soon"`: a control promising a capability the narrow shell does not
@@ -2864,7 +2865,7 @@ a:focus-visible,
 /* ITEM arbor-quiet-brass — brass outline, no fill, theme-invariant (brass is always
    available). An inset box-shadow stands in for a border here so the flush, divider-
    separated segments don't reflow when one becomes selected. */
-.mode-seg button.on{ background:none; color:var(--brass); box-shadow:inset 0 0 0 1px var(--brass); }
+.mode-seg button.on{ background:none; color:var(--choice); box-shadow:inset 0 0 0 1px var(--choice); }
 .mode-seg button.mode-seg-soon{ color:var(--text-low); opacity:.45; cursor:default; }
 .mode-settings-hint{ margin-top:9px; font-size:9.5px; color:var(--text-low); line-height:1.5; }
 
@@ -3847,7 +3848,7 @@ a:focus-visible,
 /* Orange fires once, here — the instant a human actually chooses (S4's own
    law). A transient, single-valued flash, never a resting brass button, so
    this never becomes a second .btn-brass on the same screen. */
-.hb1-territory-offered.chosen{ background:var(--brass); border-color:var(--brass); color:var(--on-brass); }
+.hb1-territory-offered.chosen{ background:var(--choice); border-color:var(--choice); color:var(--on-brass); }
 .hb1-territory-offered:disabled{ cursor:default; }
 .hb1-ceremony-future-label{ font-family:var(--font-ui); font-size:11px; letter-spacing:.12em;
   text-transform:uppercase; color:var(--text-low); margin-top:.5rem; }
@@ -4032,7 +4033,7 @@ a:focus-visible,
 .wz-action-btn{ flex:1; height:28px; display:flex; align-items:center; justify-content:center; background:none;
   border:1px solid var(--ink-border); border-radius:0; color:var(--text-mid); cursor:pointer; transition:color .15s ease, border-color .15s ease; }
 .wz-action-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
-.wz-action-btn[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:none; }
+.wz-action-btn[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); background:none; }
 .wz-action-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
 .wz-actions-tags{ display:flex; flex-wrap:wrap; gap:4px 6px; align-items:center; }
 .wz-actions-tag{ display:inline-flex; align-items:center; gap:4px; padding:2px 6px; border:1px solid var(--ink-border); color:var(--text-mid); font-size:12px; }
@@ -4120,15 +4121,15 @@ a:focus-visible,
 .wz-template-row{ display:flex; align-items:center; gap:12px; width:100%; min-height:46px; padding:0 12px 0 16px; text-align:left; cursor:pointer;
   background:none; border:1px solid transparent; color:var(--text-mid); font:inherit; font-size:13px; }
 .wz-template-row:hover{ color:var(--text-hi); background:var(--ink-800); }
-.wz-template-row[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:color-mix(in srgb, var(--brass) 8%, transparent); }
+.wz-template-row[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); background:color-mix(in srgb, var(--choice) 8%, transparent); }
 .wz-template-row svg.wz-template-sketch{ flex:0 0 auto; width:24px; height:32px; display:block; }
 .wz-template-sketch-page{ fill:var(--paper); stroke:var(--ink-border-strong); stroke-width:1; }
-.wz-template-row[aria-pressed='true'] .wz-template-sketch-page{ stroke:var(--brass); }
+.wz-template-row[aria-pressed='true'] .wz-template-sketch-page{ stroke:var(--choice); }
 .wz-template-sketch-line{ fill:var(--text-low); opacity:.85; }
 .wz-template-word{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 /* PAGE-TEMPLATES-MOVE - brass on the press; and, by Nick's standing rule that brass marks a choice the writer has MADE, brass
    at rest on the template the page already is (a screenplay page's Screenplay template, aria-pressed). */
-.wz-template-live:active, .wz-template-live[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); }
+.wz-template-live:active, .wz-template-live[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); }
 /* The Beginnings glyphs carry only a viewBox - the row sizes them (.wz-beginning-glyph svg) - so in the strip they are given the
    strip's own icon size, the TemplateIcon 16px, or they render at zero (the 43839ae frames showed an empty Screenplay slot). */
 .wz-template-live svg{ width:16px; height:16px; display:block; }
@@ -4154,11 +4155,11 @@ a:focus-visible,
 .wz-type-scope{ flex:1 1 auto; padding:6px 4px; font-family:var(--font-label, var(--font-ui)); font-size:12px; color:var(--text-mid);
   background:none; border:1px solid var(--ink-border-strong); border-radius:0; text-align:center; white-space:nowrap; cursor:pointer; }
 .wz-type-scope:hover{ color:var(--text-hi); }
-.wz-type-scope[data-on='true']{ color:var(--brass); border-color:var(--brass); }
+.wz-type-scope[data-on='true']{ color:var(--choice); border-color:var(--choice); }
 .wz-type-scope[aria-disabled='true']{ opacity:.4; cursor:default; }
 .wz-type-scope[aria-disabled='true']:hover{ color:var(--text-mid); }
 .wz-type[data-scoped='true'] .wz-type-list-inline{ border:none; padding:0; }
-.wz-type[data-scoped='true'] .wz-type-row[data-current='true']{ color:var(--brass); }
+.wz-type[data-scoped='true'] .wz-type-row[data-current='true']{ color:var(--choice); }
 .wz-type-size{ display:flex; align-items:center; gap:2px; }
 .wz-type-step[aria-disabled='true']{ opacity:.35; cursor:default; }
 .wz-type-num{ width:3.2em; text-align:center; padding:3px 2px; background:none; color:var(--text-hi);
@@ -4289,7 +4290,7 @@ a:focus-visible,
 .wz-sliver-mode-btn{ width:26px; height:26px; display:flex; align-items:center; justify-content:center; padding:0;
   background:none; border:1px solid var(--ink-border); color:var(--text-low); cursor:pointer; transition:.15s; }
 .wz-sliver-mode-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
-.wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); background:none; }
+.wz-sliver-mode-btn[aria-pressed='true']{ color:var(--choice); background:none; }
 .wz-sliver-mode-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
 .wz-sliver-mode-btn svg{ display:block; }
 /* PHASE 1 (S4) - GREYED = unusable. A Seg row (or the goal number) whose mode is off, and the Format group while Typewriter is on. These are real
@@ -4479,7 +4480,7 @@ a:focus-visible,
   border:1px solid var(--ink-border); border-radius:0; color:var(--text-low); font-family:var(--font-ui); font-size:9.5px; line-height:1; cursor:pointer;
   transition:color .15s ease, border-color .15s ease; }
 .wz-drawer-note-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
-.wz-drawer-note-btn[aria-expanded='true']{ color:var(--brass); border-color:var(--brass); background:none; }
+.wz-drawer-note-btn[aria-expanded='true']{ color:var(--choice); border-color:var(--choice); background:none; }
 .wz-drawer-note-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
 .wz-drawer-note-pop{ position:absolute; left:0; top:calc(100% + 4px); z-index:5; width:max-content; max-width:260px; padding:10px 12px; background:var(--desk-ground);
   border:1px solid var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-ui); font-size:12.5px; line-height:1.45; pointer-events:auto;
@@ -4928,7 +4929,7 @@ a:focus-visible,
    olive (S3's original "current marked olive"), but Fable's ruling makes this a
    CHOICE, not a where-you-are tab state — brass outline, theme-invariant, same as
    every other choice in this ticket (the segmented options, the page-setup chips). */
-.wz-cascade-action.active{ color:var(--brass); border-color:var(--brass); }
+.wz-cascade-action.active{ color:var(--choice); border-color:var(--choice); }
 /* FX6 S2a — the New Page door: unmissable at the head of the cascade's Page
    section. Olive (--accent-rest) at rest, not brass — "nothing orange at
    rest" (the olive/orange lane law) still holds; this reads unmissable via
@@ -6250,7 +6251,7 @@ a:focus-visible,
 .wz-delete-chk{ display:flex; align-items:center; gap:9px; margin-bottom:18px; cursor:pointer; font-family:var(--font-ui); font-size:12px; color:var(--text-mid); }
 .wz-delete-chk input{ position:absolute; opacity:0; width:1px; height:1px; }
 .wz-delete-box{ width:13px; height:13px; box-sizing:border-box; border:1px solid var(--ink-border-strong); background:none; flex:none; }
-.wz-delete-chk input:checked + .wz-delete-box{ background:var(--brass); border-color:var(--brass); }
+.wz-delete-chk input:checked + .wz-delete-box{ background:var(--choice); border-color:var(--choice); }
 .wz-delete-chk input:focus-visible + .wz-delete-box{ outline:1px solid var(--brass); outline-offset:2px; }
 .wz-delete-btns{ display:flex; justify-content:flex-end; gap:8px; }
 .wz-delete-btn{
@@ -6269,8 +6270,8 @@ a:focus-visible,
 .wz-cascade-switch:hover, .wz-cascade-switch:focus-visible{ color:var(--text-hi); outline:none; }
 .wz-cascade-switch-track{ position:relative; width:30px; height:14px; box-sizing:border-box; border:1px solid var(--ink-border-strong); flex:none; }
 .wz-cascade-switch-track i{ position:absolute; top:2px; left:2px; width:8px; height:8px; background:var(--text-low); transition:left .15s ease, background-color .15s ease; }
-.wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track{ border-color:var(--brass); }
-.wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track i{ left:18px; background:var(--brass); }
+.wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track{ border-color:var(--choice); }
+.wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track i{ left:18px; background:var(--choice); }
 @media (prefers-reduced-motion: reduce){ .wz-cascade-switch-track i{ transition:none; } }
 
 /* CONNECTOR-B (Nick's approved connector mockup v6) - the Grafts / Links list in the right drawer; the circles the rail's thumbnails wear while a card is in connection mode; the ghost a thumbnail leaves under the
@@ -6360,9 +6361,9 @@ body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !imp
    BIG PROJECTS 1a - the place block, the switcher and the Pages pop-out (docs/plans/big-projects.md). Tokens only; nothing here changes a rect of the page:
    the block lives in the strip (a fixed grid track that already recedes while typing) and the pop-out lives in the cascade panel (a stage overlay).
    ========================================================================================================================================================== */
-.wz-place-section{ border-left:2px solid var(--brass, var(--accent-rest)); margin-bottom:2px; }
+.wz-place-section{ border-left:2px solid var(--choice, var(--accent-rest)); margin-bottom:2px; }
 .wz-place-block .wz-place-name{ font-size:11.5px; font-weight:600; letter-spacing:.2px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-hi); }
-.wz-place-block .wz-place-icon{ color:var(--brass, var(--accent-rest)); }
+.wz-place-block .wz-place-icon{ color:var(--choice, var(--accent-rest)); }
 .wz-strip-section--bracketed{ border-left:1px solid var(--ink-border); margin-left:1px; }
 .wz-strip-section--bracketed .wz-strip-item.active{ border-left-color:var(--accent-rest); }
 
@@ -6373,13 +6374,13 @@ body[data-link-drag='true'], body[data-link-drag='true'] *{ cursor:grabbing !imp
   padding:7px 2px; color:var(--text-mid, var(--text-hi)); font:inherit; font-size:13px; }
 .wz-switcher-item:last-child{ border-bottom:0; }
 .wz-switcher-item:hover{ color:var(--text-hi); }
-.wz-switcher-item[aria-current='true']{ color:var(--text-hi); border-left:2px solid var(--brass, var(--accent-rest)); padding-left:8px; }
+.wz-switcher-item[aria-current='true']{ color:var(--text-hi); border-left:2px solid var(--choice, var(--accent-rest)); padding-left:8px; }
 .wz-switcher-item:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
 .wz-switcher-new, .wz-switcher-new-input{ align-self:flex-start; }
 .wz-switcher-new-input{ width:100%; background:transparent; border:0; border-bottom:1px solid var(--accent-rest); color:var(--text-hi); font:inherit; font-size:13px; padding:4px 2px; outline:none; }
 
 .wz-sections{ display:flex; flex-direction:column; gap:8px; }
-.wz-sections-place{ font-size:15px; font-weight:600; color:var(--text-hi); border-left:2px solid var(--brass, var(--accent-rest)); padding-left:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wz-sections-place{ font-size:15px; font-weight:600; color:var(--text-hi); border-left:2px solid var(--choice, var(--accent-rest)); padding-left:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .wz-sections-bar{ display:flex; align-items:center; gap:8px; }
 .wz-sections-heading{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-low); flex:1 1 auto; }
 .wz-sections-sort{ font-size:11px; color:var(--text-mid, var(--text-hi)); border:1px solid var(--ink-border); border-radius:3px; padding:1px 7px; }

@@ -177,7 +177,9 @@ async function suite(M, mk = () => load()) {
 const CSS_MUT = [
   { name: 'the ground token drifts back to the old teal', edit: (c) => c.replace('--ink-950: #020c10;', '--ink-950: #04141A;'), red: ['TK1'] },
   { name: 'the structure line loses its steel blue', edit: (c) => c.replace("--ink-border: #1D4A52;", "--ink-border: #2A6A76;"), red: ['TK1'] },
-  { name: 'selection falls back to brass orange', edit: (c) => c.replace("--brass: #00C2FF;", "--brass: #FF9800;"), red: ['TK2', 'OR1'] },
+  { name: 'selection falls back to brass orange', edit: (c) => c.replace("--choice: #00C2FF;", "--choice: #FF9800;"), red: ['TK2', 'OR1'] },
+  { name: 'a segmented control goes back to pointing at brass', edit: (c) => c.replace(".mode-seg button.on{ background:none; color:var(--choice); box-shadow:inset 0 0 0 1px var(--choice); }", ".mode-seg button.on{ background:none; color:var(--brass); box-shadow:inset 0 0 0 1px var(--brass); }"), red: ['SEL1'] },
+  { name: 'Flux overrides the locked brass', edit: (c) => c.replace("  --choice: #00C2FF;" + String.fromCharCode(10), "  --choice: #00C2FF;" + String.fromCharCode(10) + "  --brass: #00C2FF;" + String.fromCharCode(10)), red: ['TK2'] },
   { name: 'orange leaks onto the active rail item', edit: (c) => `${c}\n[data-theme='flux'] .wz-strip-item.active{ color:var(--orange); border-left-color:var(--orange); }\n`, red: ['OR1'] },
   { name: 'the dark page text loses contrast', edit: (c) => c.replace('--ink-on-paper: #E8F6FA;', '--ink-on-paper: #6E8A93;'), red: ['CT1'] },
   { name: 'a label tier drops under 4.5:1', edit: (c) => c.replace('--ink-on-paper-low: #57D0F5;', '--ink-on-paper-low: #1D4A52;'), red: ['CT2'] },
@@ -208,11 +210,16 @@ function cssChecks(css) {
   const T = (n) => tok(B.root, n);
   keep('TK1', T('ink-950') === '#020c10' && /rgba\(\s*9\s*,\s*30\s*,\s*36\s*,\s*\.9\s*\)/.test(T('chrome-surface') || '') && T('ink-border') === '#1D4A52' && T('line-active') === '#00C2FF' && T('signal-live') === '#A6FF3D' && tok(B.root, 'text-accent') === '#57D0F5',
     JSON.stringify({ ground: T('ink-950'), panel: T('chrome-surface'), line: T('ink-border'), active: T('line-active'), lime: T('signal-live'), accent: tok(B.root, 'text-accent') }));
-  keep('TK2', T('brass') === '#00C2FF' && T('orange') === '#FF9800', `selection (--brass) = ${T('brass')}, --orange = ${T('orange')}`);
+  keep('TK2', T('choice') === '#00C2FF' && T('brass') === null && /--choice:\s*var\(--brass\);/.test(css) && /--brass:\s*#ff9800;/.test(css) && T('orange') === 'var(--brass)', `Flux --choice = ${T('choice')}, Flux overrides --brass: ${T('brass') !== null}, --orange = ${T('orange')}`);
+  // SEL - the selection selectors point at --choice (never at the locked brass): a chosen / pressed / selected state is cyan under Flux, the same brass in Arbor
+  const SEL = ['.mode-seg button.on', ".wz-template-row[aria-pressed='true']", '.board-box[data-selected="true"]', '.wz-cascade-action.active', ".wz-cascade-switch[aria-checked='true'] .wz-cascade-switch-track{", ".wz-sliver-mode-btn[aria-pressed='true']", '.import-kind.sel{', '.hb1-territory-offered.chosen', ".wz-action-btn[aria-pressed='true']", ".wz-switcher-item[aria-current='true']"];
+  const usesBrass = (body) => /var\(--brass(?![-\w])/.test(body);
+  const selMissing = SEL.filter((f) => { const rs = rules(css).filter((x) => x.sel.includes(f.replace(/\{$/, ''))); return !rs.length || !rs.some((x) => /var\(--choice/.test(x.body)) || rs.some((x) => usesBrass(x.body)); });
+  keep('SEL1', selMissing.length === 0, `still on brass (or missing): ${selMissing.join(' | ')}`);
   keep('TK3', tok(B.dark, 'paper') === '#0E1C24' && /rgba?\(0,\s*194,\s*255|#00C2FF/i.test(tok(B.dark, 'paper-edge') || ''), JSON.stringify({ paper: tok(B.dark, 'paper'), edge: tok(B.dark, 'paper-edge') }));
   // OR - orange only where allowed, in rules that apply under Flux
   const bad = rules(css).filter((x) => /data-theme='flux'|data-theme="flux"/.test(x.sel) && ORANGE_RE.test(x.body.replace(/--orange\s*:[^;]+;/g, '')) && !ORANGE_OK.some((re) => re.test(x.sel))).map((x) => x.sel.slice(0, 90));
-  keep('OR1', bad.length === 0 && /--brass:\s*#00C2FF/i.test(B.root), bad.slice(0, 4).join(' | '));
+  keep('OR1', bad.length === 0 && /--choice:\s*#00C2FF/i.test(B.root), bad.slice(0, 4).join(' | '));
   // CT - contrast, computed from the tokens
   const ground = hex(T('ink-950') || '#000000');
   const chrome = rgbaOver(T('chrome-surface') || '#000', ground);
