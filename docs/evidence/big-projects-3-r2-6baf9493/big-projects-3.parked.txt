@@ -1,0 +1,35 @@
+
+ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one)
+[
+  {
+    "name": "PARKED (was \"P1: it opens the picker - a search field (focused), then Cards / Pages / Boards from every place, each with its place label, never the page itself\") - ruling 3: a label only for another place; live successor: P1 [ruling-3 successor]",
+    "pass": false,
+    "detail": "{\"ch2\":null,\"salt\":null,\"kettle\":null}"
+  }
+]
+
+BIG-PROJECTS-3 PARKED: FAIL - 1/1 failed
+PASS  fixture: two Drawers with a binder each, the pages, the boards and the plan board, seeded through the seams  [{"ms":"mviqtm2f9rpby1bna","sh":"mviqtm2gcgey51g5d"}]
+PASS  fixture: the page titles came through the seam as two lines (the newline is real)  [Ch 3]
+PASS  K1: the graft knob sits on the SELECTED card's right edge at mid-height - apart from the resize corner - and tips "Drag to graft"; an unselected card has none  [{"c1":{"l":338.03125,"t":171.265625,"r":555.625,"b":301.8125,"w":217.59375,"h":130.546875},"knob":{"l":550.625,"t":230.53125,"r":562.625,"b":242.53125,"w":12,"h":12},"corner":{"l":550.625,"t":296.8125,"r":560.625,"b":306.8125,"w":10,"h":10},"tip":"Drag to graft","c2Knob":false}]
+PASS  K2: a knob drag released on another card makes the connection box; the writer stays on the board; the card is not resized  [{"conns":1,"hash":"#/page/bp3-map","c1After":{"l":338.03125,"t":171.265625,"r":555.625,"b":301.8125,"w":217.59375,"h":130.546875},"size0":{"w":217.59375,"h":130.546875}}]
+PASS  K3: a knob drag released on empty board makes nothing and NEVER resizes the card  [{"c1k3":{"l":338.03125,"t":171.265625,"r":555.625,"b":301.8125,"w":217.59375,"h":130.546875},"size0":{"w":217.59375,"h":130.546875}}]
+PASS  K4: the corner square still RESIZES (the knob is a different hit target)  [{"c1k4":{"l":338.03125,"t":171.265625,"r":615.625,"b":331.8125,"w":277.59375,"h":160.546875},"size0":{"w":217.59375,"h":130.546875}}]
+PASS  K4: ...and its double-press still enters connection mode (the old door stays)
+FAIL  K5 fixture: a Pages pop-out row for Ch 3, and the knob on the selected card, uncovered  [{"th":{"l":98,"t":279,"r":359,"b":306,"w":261,"h":27},"k5":null,"k5Top":false}]
+FAIL  P4: on a board with a card selected the subject is the CARD - "Connected to Mara at the window"; the picker leaves that card out; a pick is a record owned by the board with aBoxId = the card  [{"head":null,"n":0,"l4":[]}]
+PASS  fixture: the right drawer's Grafts tab is open on the page
+PASS  P1: "+ Graft..." is the top of Grafts on a page  [{"first":true,"text":"+ Graft…"}]
+FAIL  P1 [ruling-3 successor]: it opens the picker - a search field (focused), then Cards / Pages / Boards from every place, never the page itself; a place label ONLY on a row from another place (Salt: Short stories, Kettle notes: Journal) and none on a same-place row (Ch 2)  [{"search":null,"n":0}]
+PASS  P1: opening the picker moved nothing on the page (page primacy: the page rect is identical)
+PASS  L1: the plan board is ONE folded row, "Plan board · 3 cards", the FIRST group under "Connected to Ch 3"  [{"planRow":{"text":"Plan board · 3 cards","expanded":"false"},"order":["connected","plan"]}]
+FAIL  L2 fixture: the plan card row and its X  [{"row2":null}]
+PASS  B1: a board's paired page is shown at the TOP of its Grafts - a plain row naming Ch 3, with no X  [{"text":"PageCh 3","x":false,"first":true}]
+FAIL  C1: a page opened from a board shows "Came from Chapter map" as the picker's FIRST row, and opening it wrote no link  [{"there":true,"came":null,"wrote":false}]
+FAIL  C1: pressing it grafts - one record owned by the page, to the board  [[]]
+PASS  C1: the same page opened by its address (no surface state) shows no "Came from" row
+FAIL  E1: a page with nothing grafted shows only "+ Graft..." - no placeholder text  [{"text":"","empties":0,"add":true}]
+FAIL  N1: a pick in "+ Graft..." on a brand-new page CREATES the page - its row is stored (no words yet) and owns exactly ONE record, to the pick; the address names the page  [{"unbornBefore":"#/page/new","enabled":true,"picked":false,"bornHash":"#/page/new","row":null,"links":[]}]
+FAIL  N1 fixture: the editor on the new page, and its row  [{"ed":{"l":531.3125,"t":138,"r":1068.671875,"b":166.890625,"w":537.359375,"h":28.890625},"row":false}]
+
+BIG-PROJECTS-3 VERIFY: FAIL - 9/22 failed

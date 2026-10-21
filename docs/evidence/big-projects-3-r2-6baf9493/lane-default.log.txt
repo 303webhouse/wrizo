@@ -1,0 +1,14 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=6 tree=4e695a56 bundle=index-CtsW3vyD.js/782998b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bp3l-default
+[01/6] FAIL      exit=1   28s big-projects-3.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; BIG-PROJECTS-3 VERIFY: FAIL - 9/22 failed
+[02/6] OK        exit=0   58s board-context-menu.mjs :: BOARD-CONTEXT-MENU VERIFY: PASS (56 checks)
+[03/6] OK        exit=0   46s connector-a.mjs :: CONNECTOR-A VERIFY: PASS (37 checks)
+[04/6] OK        exit=0   30s connector-b.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; CONNECTOR-B VERIFY: PASS (27 checks)
+[05/6] OK        exit=0    0s item141.mjs :: ITEM141 VERIFY: PASS (11 checks)
+[06/6] OK        exit=0    1s page-links.mjs :: PAGE-LINKS VERIFY: PASS (29 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 5/6 of 6 returned a passing verdict
+  FAIL: big-projects-3.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bp3l-default\big-projects-3.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=4e695a56 bundle=index-CtsW3vyD.js/782998b NO-REBUILD
