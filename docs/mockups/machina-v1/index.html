@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Machina — v1 mockup</title>
 <!--
-  Machina on today's layout. Cool cast. Plain words.
-  Rail A: place, Pages, Boards, Journal; foot Settings, Theme, Trash. No Shelf.
-  Run replaces the sprint bar: 20 units, count once, after the bar.
-  ?frame=both|pages|grafts|board|tutor|light|run|icons|splash
-  RC wins: steel active lines, orange only at the caret, the notch, the close, Publish, and the mark.
+  Round 2. Today's desk, Machina words, icons-v3 paths (not redrawn).
+  No PLACE label. Breadcrumb and the file menu. Consultant chips. Full pop-outs.
+  COOL is the default. ?frame=neutral is the NEUTRAL cast.
+  Splash is the Run strip from IDEAS to FINAL DRAFT.
+  ?frame=both|files|assets|plans|consultant|light|neutral|run|icons|splash
 -->
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <script>
@@ -18,140 +18,171 @@
   var root = document.documentElement;
   root.dataset.frame = f;
   root.dataset.light = f === 'light' ? '1' : '0';
+  root.dataset.cast = f === 'neutral' ? 'neutral' : 'cool';
   if (new URLSearchParams(location.search).has('frame')) root.classList.add('shot');
 })();
 </script>
 <style>
   :root {
     --ground: #0A0B0E; --chrome: #12141A; --rail: #0E1015; --line: #252933; --strong: #343A46;
-    --steel: #7FA0BC; --live: #9DA5B4; --ink: #E6E9F1; --meta: #878E9C; --muted: #6C7482;
-    --page: #16181F; --edge: #2F3541; --accent: #FF9800;
+    --active: #7FA0BC; --live: #9DA5B4; --ink: #E6E9F1; --meta: #878E9C; --muted: #6C7482;
+    --page: #16181F; --edge: #2F3541; --pageink: #E6E9F1; --accent: #FF9800;
     --ui: 'IBM Plex Sans', sans-serif; --mono: 'IBM Plex Mono', monospace; --prose: 'IBM Plex Serif', serif;
   }
+  html[data-cast='neutral'] {
+    --ground: #0A0A0A; --chrome: #121212; --rail: #0E0E0E; --line: #242424; --strong: #333333;
+    --active: #FF9800; --live: #A3A3A3; --ink: #E9E9E9; --meta: #8A8A8A; --muted: #6F6F6F;
+    --page: #161616; --edge: #2E2E2E; --pageink: #E9E9E9;
+  }
+  html[data-light='1'] { --page: #F8F9FC; --edge: #D3D8E1; --pageink: #13161C; }
   * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; }
   html, body { height: 100%; }
   body { display: flex; flex-direction: column; overflow: hidden; background: var(--ground); color: var(--ink); font-family: var(--ui); }
   button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
   svg { display: block; }
-  .rig { flex: 0 0 36px; display: flex; gap: 6px; align-items: center; padding: 0 12px; background: #000; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+  .rig { flex: 0 0 36px; display: flex; gap: 6px; align-items: center; padding: 0 12px; background: #000; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; overflow: hidden; }
   html.shot .rig { display: none; }
   .rig b { color: var(--ink); font-weight: 500; }
   .rig button { height: 22px; padding: 0 8px; border: 1px solid var(--line); }
-  .rig button[aria-pressed='true'] { border-color: var(--steel); color: var(--ink); }
+  .rig button[aria-pressed='true'] { border-color: var(--active); color: var(--ink); }
   .room { flex: 1; min-height: 0; display: grid; grid-template-columns: 168px minmax(0, 1fr); }
-  .main { grid-column: 2; min-width: 0; min-height: 0; display: grid; grid-template-columns: 280px minmax(0, 1fr) 300px; grid-template-rows: 48px minmax(0, 1fr) 48px; }
-  .place { padding: 8px 8px 12px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
-  .place .k { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; color: var(--muted); }
-  .place .n { font-size: 13px; margin-top: 4px; }
-  .ri { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 7px 8px; border-left: 1px solid transparent; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
-  .ri svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.15; }
-  .ri.on { color: var(--ink); border-left-color: var(--steel); }
-  .foot { margin-top: auto; border-top: 1px solid var(--line); padding-top: 8px; }
   html[data-frame='icons'] .room, html[data-frame='splash'] .room { display: none; }
-  .rail { background: var(--rail); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 14px 10px; gap: 2px; }
-  html[data-frame='tutor'] .main, html[data-frame='grafts'] .main { grid-template-columns: minmax(0, 1fr) 300px; }
-  html[data-frame='pages'] .main, html[data-frame='board'] .main { grid-template-columns: 280px minmax(0, 1fr); }
-  html[data-frame='tutor'] .pop, html[data-frame='grafts'] .pop,
-  html[data-frame='pages'] .side, html[data-frame='board'] .side { display: none; }
-  .top { grid-column: 1 / -1; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: var(--chrome); border-bottom: 1px solid var(--line); }
+  .rail { background: var(--rail); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 10px 8px; gap: 2px; }
+  .place { display: flex; align-items: center; gap: 8px; padding: 8px 8px 12px; border-bottom: 1px solid var(--line); margin-bottom: 6px; text-align: left; }
+  .place svg { width: 18px; height: 18px; stroke: var(--active); flex: 0 0 auto; }
+  .place .nm { font-size: 13px; line-height: 1.25; }
+  .ri { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 36px; text-align: left; padding: 6px 8px; border-left: 1px solid transparent; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+  .ri svg { width: 16px; height: 16px; stroke: currentColor; flex: 0 0 auto; }
+  .ri.on { color: var(--ink); border-left-color: var(--active); }
+  .foot { margin-top: auto; border-top: 1px solid var(--line); padding-top: 8px; }
+  .main { min-width: 0; min-height: 0; display: grid; grid-template-columns: 304px minmax(0, 1fr) 320px; grid-template-rows: 52px minmax(0, 1fr) 48px; }
+  html[data-frame='consultant'] .main, html[data-frame='assets'] .main { grid-template-columns: minmax(0, 1fr) 320px; }
+  html[data-frame='files'] .main, html[data-frame='plans'] .main { grid-template-columns: 304px minmax(0, 1fr); }
+  html[data-frame='consultant'] .track-l, html[data-frame='assets'] .track-l,
+  html[data-frame='files'] .track-r, html[data-frame='plans'] .track-r { display: none; }
+  .top { grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; padding: 0 14px; background: var(--chrome); border-bottom: 1px solid var(--line); min-width: 0; }
   .mark { font-weight: 600; letter-spacing: .08em; font-size: 13px; }
-  .oq { display: inline-block; width: 9px; height: 9px; border: 1.5px solid var(--accent); margin-left: 1px; vertical-align: -1px; }
-  .modes { margin-left: auto; display: flex; gap: 16px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-  .modes .on { color: var(--ink); box-shadow: inset 0 -1px 0 var(--steel); padding-bottom: 4px; }
-  .modes .pub { color: var(--accent); }
-  html[data-frame='board'] .page-modes, html[data-frame='grafts'] .page-modes { display: none; }
-  .board-modes { display: none; }
-  html[data-frame='board'] .board-modes, html[data-frame='grafts'] .board-modes { display: flex; }
-  #boards { display: none; }
-  html[data-frame='board'] #pages { display: none; }
-  html[data-frame='board'] #boards { display: flex; }
-  .panel { height: 100%; background: var(--chrome); border: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
-  .ph { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 13px; }
-  .ph .k { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; color: var(--meta); }
-  .body { padding: 8px 0; overflow: auto; }
-  .row, .fold { display: flex; gap: 8px; align-items: center; padding: 6px 12px; font-size: 13px; color: var(--ink); }
-  .row[aria-current='true'] { box-shadow: inset 1px 0 0 var(--steel); }
-  .lab { padding: 8px 12px 2px; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-  .pagecol { min-width: 0; min-height: 0; padding: 16px; display: flex; }
-  .sheet, .board {
-    flex: 1; min-height: 0; background: var(--page); border: 1px solid var(--edge); color: var(--ink);
-    position: relative; overflow: hidden;
-  }
-  html[data-light='1'] .sheet, html[data-light='1'] .board { background: #F8F9FC; color: #13161C; border-color: #D3D8E1; }
-  html[data-frame='grafts'] .sheet, html[data-frame='board'] .sheet,
-  html[data-frame='both'] .board, html[data-frame='pages'] .board,
-  html[data-frame='tutor'] .board, html[data-frame='light'] .board, html[data-frame='run'] .board { display: none; }
+  .oq { display: inline-block; width: .7em; height: .7em; border: 1.5px solid var(--accent); margin-left: 1px; vertical-align: -1px; }
+  .crumb { display: flex; align-items: center; gap: 7px; min-width: 0; font-size: 13px; color: var(--meta); }
+  .crumb .here { color: var(--ink); }
+  .dots { width: 28px; height: 28px; letter-spacing: 1px; color: var(--meta); }
+  .back { display: none; color: var(--meta); font-size: 13px; }
+  html[data-cast='neutral'] .back { display: inline; color: var(--accent); }
+  .crumb-board { display: none; }
+  html[data-frame='plans'] .crumb-file, html[data-frame='assets'] .crumb-file { display: none; }
+  html[data-frame='plans'] .crumb-board, html[data-frame='assets'] .crumb-board { display: flex; }
+  .modes { margin-left: auto; display: flex; align-items: center; }
+  .mt { padding: 8px 9px 6px; border-bottom: 1px solid transparent; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .mt.on { color: var(--ink); border-bottom-color: var(--active); }
+  .mt.fin { color: var(--accent); }
+  #boardModes { display: none; }
+  html[data-frame='plans'] #pageModes, html[data-frame='assets'] #pageModes { display: none; }
+  html[data-frame='plans'] #boardModes, html[data-frame='assets'] #boardModes { display: flex; }
+  .track { min-height: 0; min-width: 0; padding: 12px; display: flex; }
+  .pagecol { min-width: 0; min-height: 0; padding: 12px; display: flex; }
+  .panel { flex: 1; min-height: 0; background: var(--chrome); border: 1px solid var(--line); display: none; flex-direction: column; }
+  html[data-frame='both'] #pop-files, html[data-frame='files'] #pop-files,
+  html[data-frame='light'] #pop-files, html[data-frame='neutral'] #pop-files,
+  html[data-frame='run'] #pop-files, html[data-frame='plans'] #pop-plans { display: flex; }
+  .ph { display: flex; align-items: center; gap: 8px; padding: 12px 12px 4px; font-size: 13px; font-weight: 600; }
+  .ph svg { width: 16px; height: 16px; stroke: var(--active); }
+  .newbtn { display: flex; align-items: center; gap: 8px; margin: 6px 10px; height: 32px; padding: 0 10px; border: 1px solid var(--line); text-align: left; font-size: 13px; }
+  .tools { display: flex; align-items: center; gap: 10px; padding: 4px 12px 6px; }
+  .lab { margin-right: auto; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--meta); }
+  .sort { font-size: 12px; color: var(--meta); }
+  .body { flex: 1; min-height: 0; overflow: auto; }
+  .fold, .row { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 12px; text-align: left; font-size: 13px; }
+  .fold { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding-top: 10px; }
+  .fold svg { width: 14px; height: 14px; stroke: var(--meta); }
+  .row[aria-current='true'] { box-shadow: inset 1px 0 0 var(--active); }
+  .row .fl { display: block; color: var(--meta); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .footlinks { border-top: 1px solid var(--line); padding: 6px 0 8px; }
+  .lnk { display: flex; gap: 8px; width: 100%; padding: 4px 12px; text-align: left; font-size: 13px; color: var(--meta); }
+  .sheet, .board { flex: 1; min-height: 0; background: var(--page); color: var(--pageink); border: 1px solid var(--edge); position: relative; overflow: hidden; }
+  html[data-frame='assets'] .sheet, html[data-frame='plans'] .sheet,
+  html[data-frame='both'] .board, html[data-frame='files'] .board,
+  html[data-frame='consultant'] .board, html[data-frame='light'] .board,
+  html[data-frame='neutral'] .board, html[data-frame='run'] .board { display: none; }
   .prose { max-width: 62ch; margin: 0 auto; padding: 48px 40px; font-family: var(--prose); font-size: 11pt; line-height: 1.75; }
-  .prose h1 { font-size: 17pt; font-weight: 500; margin-bottom: 22px; }
+  .prose h1 { font-size: 17pt; font-weight: 500; margin-bottom: 18px; }
   .caret { display: inline-block; width: 1px; height: .95em; background: var(--accent); vertical-align: -0.1em; }
-  .bcard { position: absolute; width: 200px; min-height: 108px; padding: 12px 14px; background: var(--chrome); border: 1px solid var(--line); font-size: 13px; }
-  html[data-light='1'] .bcard { background: #fff; }
-  .bcard.on { border-color: var(--steel); }
+  .sel { background: transparent; }
+  html[data-cast='neutral'] .sel { background: rgba(255, 152, 0, .22); }
+  .bcard { position: absolute; width: 210px; min-height: 108px; padding: 12px 14px; background: var(--chrome); border: 1px solid var(--line); font-size: 13px; color: var(--ink); }
+  html[data-light='1'] .bcard { background: #fff; color: #141414; }
+  .bcard.on { border-color: var(--active); }
   .bcard .ct { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--meta); margin-bottom: 6px; }
-  .knob { position: absolute; right: -9px; top: 50%; margin-top: -8px; width: 16px; height: 16px; border: 1px solid var(--steel); background: var(--chrome); color: var(--steel); }
-  .bcard.on .knob { opacity: 1; }
-  .knob svg { width: 14px; height: 14px; margin: 0 auto; }
-  .tip { display: none; position: absolute; left: 12px; bottom: calc(100% + 8px); top: auto; white-space: nowrap; padding: 3px 6px; border: 1px solid var(--line); background: var(--chrome); font-family: var(--mono); font-size: 10px; letter-spacing: .08em; }
-  html[data-frame='grafts'] .bcard.on .tip { display: block; }
+  .knob { position: absolute; right: -9px; top: 50%; margin-top: -9px; width: 18px; height: 18px; border: 1px solid var(--active); background: var(--chrome); color: var(--active); padding: 1px; }
+  .knob svg { width: 14px; height: 14px; }
+  .tip { display: none; position: absolute; right: 0; bottom: calc(100% + 8px); padding: 3px 6px; border: 1px solid var(--line); background: var(--chrome); color: var(--ink); font-family: var(--mono); font-size: 10px; letter-spacing: .06em; white-space: nowrap; }
+  html[data-frame='assets'] .bcard.on .tip { display: block; }
+  .side { min-height: 0; }
+  .side .panel { display: flex; }
   .tabs { display: flex; border-bottom: 1px solid var(--line); }
   .tab { padding: 10px 12px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid transparent; }
-  .tab.on { color: var(--ink); border-bottom-color: var(--steel); }
+  .tab.on { color: var(--ink); border-bottom-color: var(--active); }
   .ask { margin: 12px; border: 1px solid var(--line); }
   .ask textarea { width: 100%; height: 64px; border: 0; background: transparent; color: inherit; font: inherit; padding: 8px; resize: none; }
-  .lens { display: flex; justify-content: space-between; padding: 8px 12px; border-top: 1px solid var(--line); font-size: 13px; color: var(--meta); }
-  .bar {
-    grid-column: 1 / -1; grid-row: 3; display: flex; align-items: center; gap: 14px; padding: 0 16px;
-    background: var(--chrome); border-top: 1px solid var(--line);
-    font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--meta);
-  }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 12px; }
+  .chip { padding: 4px 8px; border: 1px solid var(--line); font-size: 12px; text-align: left; }
+  .chip:disabled { color: var(--muted); border-style: dashed; }
+  .lens { display: flex; justify-content: space-between; margin: 0 12px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 13px; color: var(--meta); }
+  #consultant, #assets { display: none; flex-direction: column; min-height: 0; flex: 1; }
+  html[data-frame='assets'] #assets { display: flex; }
+  html[data-frame='both'] #consultant, html[data-frame='consultant'] #consultant,
+  html[data-frame='files'] #consultant, html[data-frame='light'] #consultant,
+  html[data-frame='neutral'] #consultant, html[data-frame='run'] #consultant { display: flex; }
+  .bar { grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; padding: 0 16px; background: var(--chrome); border-top: 1px solid var(--line); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--meta); }
   .run { margin-left: auto; width: 240px; height: 16px; display: flex; align-items: center; gap: 3px; }
   .run i { flex: 1; height: 4px; background: var(--line); position: relative; }
   .run i.on { background: var(--live); }
   .run i.here::after { content: ''; position: absolute; left: -1px; top: -6px; width: 3px; height: 16px; background: var(--accent); }
   html[data-frame='run'] .run i { background: var(--accent); }
-  html[data-frame='run'] .run i.here::after { background: var(--accent); }
   .count { min-width: 92px; text-align: right; }
   .icons, .splash { display: none; flex: 1; min-height: 0; }
   html[data-frame='icons'] .icons { display: block; padding: 28px 36px; overflow: auto; }
-  .icons h1 { font-family: var(--mono); font-size: 12px; letter-spacing: .16em; color: var(--steel); }
+  .icons h1 { font-family: var(--mono); font-size: 12px; letter-spacing: .16em; color: var(--active); }
   .icons p { color: var(--muted); margin: 8px 0 18px; font-size: 13px; }
-  .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 180px)); gap: 12px; }
-  .ic { border: 1px solid var(--line); padding: 14px; background: var(--chrome); }
-  .ic svg { width: 28px; height: 28px; stroke: var(--ink); fill: none; stroke-width: 1.15; }
-  .ic b { display: block; margin-top: 10px; font-family: var(--mono); font-size: 11px; letter-spacing: .12em; font-weight: 500; }
-  html[data-frame='splash'] .splash { display: grid; place-items: center; background: var(--ground); }
-  .splash .lock { text-align: center; }
+  .igrid { display: grid; grid-template-columns: repeat(5, minmax(0, 160px)); gap: 12px; }
+  .ic { border: 1px solid var(--line); padding: 16px 12px; background: var(--chrome); }
+  .ic svg { width: 36px; height: 36px; stroke: var(--ink); }
+  .ic b { display: block; margin-top: 12px; font-family: var(--mono); font-size: 11px; letter-spacing: .12em; font-weight: 500; }
+  html[data-frame='splash'] .splash { display: grid; place-items: center; }
+  .lock { text-align: center; }
   .splash .mark { font-size: 28px; letter-spacing: .14em; }
-  .travel { margin-top: 28px; width: min(520px, 70vw); }
-  .travel .ends { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; letter-spacing: .16em; color: var(--muted); }
-  .travel .ends .to { color: var(--ink); }
-  .line { position: relative; height: 1px; margin-top: 10px; background: var(--strong); }
-  .line span { position: absolute; left: 0; top: -5px; width: 3px; height: 11px; background: var(--accent); animation: walk 2.4s ease-in-out infinite alternate; }
-  @keyframes walk { from { left: 0; } to { left: calc(100% - 3px); } }
-  @media (prefers-reduced-motion: reduce) { .line span { animation: none; left: calc(100% - 3px); } }
+  .travel { margin-top: 28px; width: min(560px, 72vw); }
+  .ends { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; letter-spacing: .16em; color: var(--muted); }
+  .ends .to { color: var(--ink); }
+  .splash .run { width: 100%; margin: 12px 0 0; }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px 12px; }
+  .tile { border: 1px solid var(--line); padding: 8px; font-size: 12px; }
+  .tile[aria-current='true'] { box-shadow: inset 1px 0 0 var(--active); }
+  .th { height: 36px; border: 1px solid var(--line); margin-bottom: 6px; position: relative; }
+  .th i { position: absolute; width: 28%; height: 40%; border: 1px solid var(--strong); }
 </style>
 </head>
 <body>
 <header class="rig">
   <b>MACHINA</b>
   <button type="button" data-frame="both">Both panels</button>
-  <button type="button" data-frame="pages">Pages</button>
-  <button type="button" data-frame="grafts">Grafts</button>
-  <button type="button" data-frame="board">Board</button>
-  <button type="button" data-frame="tutor">Tutor</button>
+  <button type="button" data-frame="files">Files</button>
+  <button type="button" data-frame="assets">Assets</button>
+  <button type="button" data-frame="plans">Plans</button>
+  <button type="button" data-frame="consultant">Consultant</button>
   <button type="button" data-frame="light">Light</button>
+  <button type="button" data-frame="neutral">Neutral</button>
   <button type="button" data-frame="run">Run closed</button>
   <button type="button" data-frame="icons">Icons</button>
   <button type="button" data-frame="splash">Splash</button>
 </header>
 <div class="room">
   <aside class="rail">
-    <div class="place"><div class="k">PLACE</div><div class="n">Q3 memorandum</div></div>
-    <button class="ri on" id="navPages" type="button"></button>
-    <button class="ri" id="navBoards" type="button"></button>
-    <button class="ri" type="button" data-icon="journal">Journal</button>
+    <div class="place"><span data-icon="project"></span><span class="nm">Project ▸ Q3 memorandum</span></div>
+    <button class="ri on" id="navFiles" type="button" data-icon="files">Files</button>
+    <button class="ri" id="navPlans" type="button" data-icon="plans">Plans</button>
+    <button class="ri" type="button" data-icon="notebook">Notebook</button>
     <div class="foot">
-      <button class="ri" type="button" data-icon="settings">Settings</button>
+      <button class="ri" type="button" data-icon="controls">Controls</button>
       <button class="ri" type="button" data-icon="theme">Theme</button>
       <button class="ri" type="button" data-icon="trash">Trash</button>
     </div>
@@ -159,27 +190,70 @@
   <div class="main">
     <header class="top">
       <div class="mark">WRIZ<span class="oq"></span></div>
-      <div class="modes page-modes"><span>Free write</span><span class="on">Draft</span><span>Revise</span><span>Workshop</span><span class="pub">Publish</span></div>
-      <div class="modes board-modes"><span class="on">Open</span><span>Storyboard</span><span>Outline</span><span>Pages →</span></div>
+      <div class="crumb crumb-file">
+        <button class="back" type="button" aria-label="Return">◂</button>
+        <span>Q3 memorandum</span><span>›</span><span>Brief</span><span>›</span><span class="here">Findings</span>
+        <button class="dots" type="button" aria-label="File menu">···</button>
+      </div>
+      <div class="crumb crumb-board">
+        <span>Q3 memorandum</span><span>›</span><span class="here">Argument</span>
+        <button class="dots" type="button" aria-label="File menu">···</button>
+      </div>
+      <div class="modes" id="pageModes">
+        <button class="mt" type="button">Sprint</button>
+        <button class="mt on" type="button">Build</button>
+        <button class="mt" type="button">Edit</button>
+        <button class="mt" type="button">Workshop</button>
+        <button class="mt fin" type="button">Finalize</button>
+        <button class="mt" type="button">Plan →</button>
+      </div>
+      <div class="modes" id="boardModes">
+        <button class="mt on" type="button">Open</button>
+        <button class="mt" type="button">Storyboard</button>
+        <button class="mt" type="button">Outline</button>
+        <button class="mt" type="button">Files →</button>
+      </div>
     </header>
-    <div class="pop">
-      <aside class="panel" id="pages" aria-label="Pages">
-        <div class="ph"><span class="k">PLACE</span><span>Q3 memorandum</span></div>
-        <div class="lab">Sections</div>
+    <div class="track track-l">
+      <aside class="panel" id="pop-files" aria-label="Files">
+        <div class="ph"><span data-icon="project"></span><span>Project ▸ Q3 memorandum</span></div>
+        <button class="newbtn" type="button">+ New file</button>
+        <div class="tools"><span class="lab">Parts</span><button class="sort" type="button">Order</button></div>
         <div class="body">
-          <div class="fold">Brief</div>
-          <div class="row">Charge</div>
-          <div class="row" aria-current="true">Findings</div>
-          <div class="row">The line we will send</div>
+          <div class="fold" data-icon="folder">Inbox</div>
+          <div class="fold" data-icon="folder">Brief</div>
+          <div class="row"><span class="tx"><span>Charge</span><span class="fl">What the committee asked for.</span></span></div>
+          <div class="row"><span class="tx"><span>Method</span><span class="fl">How the record was kept.</span></span></div>
+          <div class="row" aria-current="true"><span class="tx"><span>Findings</span><span class="fl">The sequence as it stands.</span></span></div>
+          <div class="row"><span class="tx"><span>The line we will send</span><span class="fl">One paragraph, no argument.</span></span></div>
+          <div class="row"><span class="tx"><span>Appendix</span><span class="fl">Dates, names, the minute.</span></span></div>
+          <div class="row"><span class="tx"><span>Sources</span><span class="fl">Committee minute, 12 March.</span></span></div>
+        </div>
+        <div class="footlinks">
+          <button class="lnk" type="button">+ New folder</button>
+          <div class="lab" style="padding:8px 12px 2px">Forms</div>
+          <button class="lnk" type="button">+ Memorandum</button>
+          <button class="lnk" type="button">+ Report</button>
+          <button class="lnk" type="button">+ Minutes</button>
         </div>
       </aside>
-      <aside class="panel" id="boards" aria-label="Boards">
-        <div class="ph"><span class="k">PLACE</span><span>Q3 memorandum</span></div>
-        <div class="lab">Sections</div>
+      <aside class="panel" id="pop-plans" aria-label="Plans">
+        <div class="ph"><span data-icon="project"></span><span>Project ▸ Q3 memorandum</span></div>
+        <button class="newbtn" type="button">+ New plan</button>
+        <div class="tools"><span class="lab">Parts</span><button class="sort" type="button">Order</button></div>
         <div class="body">
-          <div class="row" aria-current="true">Argument</div>
-          <div class="row">Evidence</div>
-          <div class="row">What we will not claim</div>
+          <div class="fold" data-icon="folder">Brief</div>
+          <div class="tiles">
+            <div class="tile" aria-current="true"><div class="th"><i style="left:8%;top:20%"></i><i style="left:42%;top:28%"></i></div>Argument</div>
+            <div class="tile"><div class="th"><i style="left:12%;top:24%"></i></div>Evidence</div>
+          </div>
+          <div class="fold" data-icon="folder">What we will not claim</div>
+        </div>
+        <div class="footlinks">
+          <button class="lnk" type="button">+ New folder</button>
+          <div class="lab" style="padding:8px 12px 2px">Forms</div>
+          <button class="lnk" type="button">+ Org chart</button>
+          <button class="lnk" type="button">+ Timeline</button>
         </div>
       </aside>
     </div>
@@ -188,37 +262,44 @@
         <div class="prose">
           <h1>Findings</h1>
           <p>The committee asked for a record, not a case. What follows is the sequence as it stands.<span class="caret"></span></p>
-          <p>Nothing here argues. The draft keeps the terms the reader already uses.</p>
+          <p>Nothing here argues. The draft keeps the terms the reader <span class="sel">already uses</span>.</p>
         </div>
       </article>
       <div class="board">
-        <article class="bcard on" style="left:48px;top:48px">
-          <div class="ct">The record</div>
+        <article class="bcard on" style="left:36px;top:56px">
+          <div class="ct">Block</div>
           <div>Sequence, not argument.</div>
-          <button class="knob" type="button" aria-label="Drag to graft" data-icon="knob"></button>
-          <div class="tip">Drag to graft</div>
+          <button class="knob" type="button" aria-label="Asset" data-icon="assets"></button>
+          <div class="tip">Drag to asset</div>
         </article>
         <article class="bcard" style="left:280px;top:72px">
-          <div class="ct">The line</div>
+          <div class="ct">Block</div>
           <div>What we will send.</div>
         </article>
       </div>
     </div>
-    <div class="side">
-      <aside class="panel">
+    <div class="track track-r side">
+      <aside class="panel" style="display:flex">
         <div class="tabs">
-          <button class="tab" id="tabTutor" type="button">Tutor</button>
-          <button class="tab" id="tabGrafts" type="button">Grafts</button>
+          <button class="tab" id="tabConsultant" type="button">Consultant</button>
+          <button class="tab" id="tabAssets" type="button">Assets</button>
         </div>
-        <div id="tutor">
-          <div class="ask"><textarea aria-label="Ask the Tutor" placeholder="Ask a question…"></textarea></div>
+        <div id="consultant">
+          <div class="ask"><textarea aria-label="Ask the Consultant" placeholder="Ask a question…"></textarea></div>
+          <div class="chips">
+            <button class="chip" type="button">Where does this drag?</button>
+            <button class="chip" type="button">What is load-bearing — and what could go?</button>
+            <button class="chip" type="button">Where does the line slip?</button>
+            <button class="chip" type="button" disabled>Selection</button>
+          </div>
           <div class="lens"><span>Consistency</span><span>2</span></div>
           <div class="lens"><span>Waiting for you</span><span>1</span></div>
         </div>
-        <div id="grafts" hidden>
-          <div class="lab">Pages</div>
+        <div id="assets">
+          <button class="newbtn" type="button">+ New asset</button>
+          <div class="lab" style="padding:8px 12px 2px">Files</div>
           <div class="row">Findings</div>
-          <div class="lab">Sources</div>
+          <div class="lab" style="padding:8px 12px 2px">Sources</div>
           <div class="row">Committee minute, 12 March</div>
         </div>
       </aside>
@@ -230,58 +311,60 @@
   </div>
 </div>
 <div class="icons">
-  <h1>MACHINA ICONS · THIN · PLAIN WORDS</h1>
-  <p>Technical drawing. Square ends. The noun is the picture. No rename.</p>
-  <div class="grid" id="iconGrid"></div>
+  <h1>MACHINA ICONS · SQUARE CUT · LOCKED PATHS</h1>
+  <p>The icons-v3 drawings, unchanged. The words are Nick’s.</p>
+  <div class="igrid" id="iconGrid"></div>
 </div>
 <div class="splash">
   <div class="lock">
     <div class="mark">WRIZ<span class="oq"></span></div>
     <div class="travel">
       <div class="ends"><span>IDEAS</span><span class="to">FINAL DRAFT</span></div>
-      <div class="line"><span></span></div>
+      <div class="run" id="splashRun"></div>
     </div>
   </div>
 </div>
 <script>
 (function () {
   var I = {
-    pages: '<svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
-    boards: '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="5"/><rect x="14" y="4" width="7" height="5"/><rect x="8.5" y="15" width="7" height="5"/><path d="M6.5 9v3h11V9M12 12v3"/></svg>',
-    journal: '<svg viewBox="0 0 24 24"><path d="M7 3h11v18H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M5 18h13M9 8h6M9 12h6"/></svg>',
-    settings: '<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/><rect x="7" y="5.2" width="3.2" height="3.6"/><rect x="13" y="10.2" width="3.2" height="3.6"/><rect x="9" y="15.2" width="3.2" height="3.6"/></svg>',
-    theme: '<svg viewBox="0 0 24 24"><rect x="4" y="6" width="10" height="12"/><rect x="10" y="4" width="10" height="12"/></svg>',
-    trash: '<svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13"/></svg>',
-    knob: '<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="5"/><path d="M8 3.5v9M3.5 8h9"/></svg>',
-    place: '<svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="6"/><rect x="4" y="10" width="16" height="6"/><rect x="4" y="17" width="16" height="4"/><path d="M8 6h2M8 13h2"/></svg>'
+    project: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="8" width="18" height="12"/><path d="M9 8V5.5h6V8"/><path d="M3 13h18"/><rect x="11" y="12" width="2" height="2.6"/></svg>',
+    files: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="square" stroke-linejoin="miter"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 11h6M9 14h6M9 17h3.5"/></svg>',
+    plans: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="square" stroke-linejoin="miter"><rect x="9" y="3" width="6" height="4"/><rect x="3" y="16" width="6" height="4"/><rect x="15" y="16" width="6" height="4"/><path d="M12 7v4.5M6 16v-4.5h12V16"/></svg>',
+    notebook: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="square" stroke-linejoin="miter"><rect x="4" y="3" width="16" height="18"/><path d="M4 7.5h16M9.5 7.5V21M4 11.8h16M4 16.2h16"/></svg>',
+    controls: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="square" stroke-linejoin="miter"><path d="M5.2 17.2A7.5 7.5 0 1 1 18.8 17.2"/><path d="M12 6v1.4M6.6 8.3l1 1M17.4 8.3l-1 1M4.5 13h1.4M18.1 13h1.4"/><path d="M12 13l3.6-3.4"/><rect x="11" y="12" width="2" height="2"/><path d="M8 20h8"/></svg>',
+    theme: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="6" width="18" height="12"/><rect x="5" y="8" width="4" height="8" fill="currentColor"/><rect x="10" y="8" width="4" height="8" fill="currentColor" fill-opacity=".45"/><rect x="15" y="8" width="4" height="8"/></svg>',
+    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="square" stroke-linejoin="miter"><path d="M4.5 7h15"/><path d="M10 7V4.5h4V7"/><path d="M6.5 7l1 14h9l1-14"/><path d="M10 10.5v7M14 10.5v7"/></svg>',
+    assets: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg>',
+    folder: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 6h6l2 2h10v11H3z"/><path d="M3 10.5h18"/></svg>'
   };
-  document.getElementById('navPages').innerHTML = I.pages + 'Pages';
-  document.getElementById('navBoards').innerHTML = I.boards + 'Boards';
   document.querySelectorAll('[data-icon]').forEach(function (el) {
     el.insertAdjacentHTML('afterbegin', I[el.dataset.icon] || '');
   });
-  var names = [['Pages', 'pages'], ['Boards', 'boards'], ['Journal', 'journal'], ['Settings', 'settings'], ['Theme', 'theme'], ['Trash', 'trash'], ['Graft', 'knob']];
+  var names = [['Project','project'],['Files','files'],['Plans','plans'],['Notebook','notebook'],['Controls','controls'],['Theme','theme'],['Trash','trash'],['Assets','assets'],['Folder','folder']];
   document.getElementById('iconGrid').innerHTML = names.map(function (n) {
     return '<div class="ic">' + I[n[1]] + '<b>' + n[0] + '</b></div>';
   }).join('');
-  var run = document.getElementById('run');
   var frame = document.documentElement.dataset.frame;
   var closed = frame === 'run';
-  for (var i = 0; i < 20; i++) {
-    var cell = document.createElement('i');
-    if (closed || i < 8) cell.className = 'on';
-    if (!closed && i === 8) cell.className = 'here';
-    if (closed && i === 19) cell.className = 'on here';
-    run.appendChild(cell);
+  function fill(host, count, here) {
+    for (var i = 0; i < 20; i++) {
+      var cell = document.createElement('i');
+      if (closed || i < count) cell.className = 'on';
+      if (!closed && i === here) cell.className = 'here';
+      if (closed && i === 19) cell.className = 'on here';
+      host.appendChild(cell);
+    }
   }
+  fill(document.getElementById('run'), 8, 8);
+  var splash = document.getElementById('splashRun');
+  fill(splash, 12, 12);
   document.getElementById('count').textContent = closed ? '1000 / 1000' : '430 / 1000';
-  var showGrafts = frame === 'grafts';
-  document.getElementById('grafts').hidden = !showGrafts;
-  document.getElementById('tutor').hidden = showGrafts;
-  document.getElementById('tabGrafts').classList.toggle('on', showGrafts);
-  document.getElementById('tabTutor').classList.toggle('on', !showGrafts);
-  document.getElementById('navPages').classList.toggle('on', frame !== 'board' && frame !== 'grafts');
-  document.getElementById('navBoards').classList.toggle('on', frame === 'board' || frame === 'grafts');
+  var assetsOn = frame === 'assets';
+  document.getElementById('tabAssets').classList.toggle('on', assetsOn);
+  document.getElementById('tabConsultant').classList.toggle('on', !assetsOn);
+  var plansOn = frame === 'plans' || frame === 'assets';
+  document.getElementById('navFiles').classList.toggle('on', !plansOn);
+  document.getElementById('navPlans').classList.toggle('on', plansOn);
   document.querySelectorAll('.rig button').forEach(function (b) {
     b.setAttribute('aria-pressed', b.dataset.frame === frame ? 'true' : 'false');
     b.addEventListener('click', function () {
