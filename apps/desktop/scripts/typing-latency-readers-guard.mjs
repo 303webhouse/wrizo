@@ -23,7 +23,7 @@ const CLASSIFIED = [
     'readNativeEdit FALLBACK: the browser edited the DOM, and this is where the MODEL learns what it now says (textContent - independent of what is rendered); every save/count/copy/export/Tutor path then reads the model'],
   ['store/lineRows.ts', "const dom = readEditorPlainText(R.el.textContent ?? '', null).plain;", 'harness only',
     'verifyRows: the shadow-vs-DOM check, armed only by window.__wzVerifyRows (runtime-verify.mjs)'],
-  ['store/lineRows.ts', 'row.textContent !== R.lines[i]', 'harness only', 'verifyRows, row by row'],
+  ['store/lineRows.ts', "(row.textContent ?? '').split(EOF_GUARD).join('') !== R.lines[i]", 'harness only', 'verifyRows, row by row (the row now holds the end-of-file guard, so it is stripped before the compare)'],
   ['store/hiddenMarksDom.ts', 'const raw = el.innerText;', 'page rows (editing) + the board card',
     'selectionEnds FALLBACK: caret offsets for the 211 rules while the rows map is stale, and on the card (no rows); an offset, not a saved text'],
   ['store/draftDecoration.ts', 'readEditorPlainText(el.innerText, getCaret(el));', 'the board card',

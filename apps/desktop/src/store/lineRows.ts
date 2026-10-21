@@ -7,8 +7,8 @@
 // variant F measured (docs/evidence/latency-profile-eb27ea7c): textContent, innerText and the text a writer copies out are all
 // byte-identical to the one-block page, so every reader of the editor - the product's and the 88 harness files' - reads the same
 // characters it always did. (E's display:block rows were the other candidate: the innerText rules put a line break at every block
-// boundary, so a writer's copied text would have gained a blank line per paragraph.) The EOF guard (draftDecoration.ts) is kept as
-// the editor's last child, as before.
+// boundary, so a writer's copied text would have gained a blank line per paragraph.) The EOF guard (draftDecoration.ts) lives INSIDE
+// the trailing empty row, not after it: a guard after a width:100% inline-block is laid out at the right edge, so Enter paints the caret there.
 //
 // THE SHADOW LINES. `lines` mirrors the page's text, one string per row; `starts` holds each line's offset. A keystroke reads ONLY
 // the rows its edit touched (the selection's lines, captured at beforeinput), and a caret offset is the edited row's own local walk
@@ -74,6 +74,11 @@ export function lineOf(R: Rows, p: number): number {
 }
 
 const rowHtml = (line: string, local: number | null) => decorateLineForCard(line, local);
+// The trailing empty line is where Enter leaves the caret. The guard has to be IN that row: after the row, Chrome draws it at the right margin.
+const lineHtml = (lines: string[], i: number, local: number | null) => {
+  const body = rowHtml(lines[i] ?? '', local);
+  return i === lines.length - 1 && lines.length > 1 && lines[i] === '' ? body + GUARD_HTML : body;
+};
 // (content-visibility and the per-row size estimates it needed were REMOVED on Fable's ruling of Oct 16 - see index.css: a skipped row
 // carries no text for innerText, Ctrl+End left the caret off screen, and the way-back restored the scroll over re-estimated rows.)
 const rowSpan = (html: string) => `<span class="wz-row">${html}</span>`;
@@ -90,9 +95,10 @@ export function mountRows(el: HTMLElement, text: string, caret: number | null): 
   const R: Rows = { el, lines, starts: [], rows: [], text, revealLine: -1, dirty: null, stale: false, hint: null, keep: null, lensDrawn: false };
   recomputeStarts(R);
   const at = caret === null ? -1 : lineOf(R, caret);
-  el.innerHTML = lines.map((l, i) => rowSpan(rowHtml(l, i === at ? localCaret(R, i, caret) : null))).join('\n') + (text.endsWith('\n') ? GUARD_HTML : '');
+  const bodies = lines.map((l, i) => lineHtml(lines, i, i === at ? localCaret(R, i, caret) : null));
+  el.innerHTML = bodies.map(rowSpan).join('\n');
   R.rows = [...el.children].filter((c) => c.classList.contains('wz-row')) as HTMLElement[];
-  R.rows.forEach((row, i) => written.set(row!, rowHtml(lines[i], i === at ? localCaret(R, i, caret) : null)));
+  R.rows.forEach((row, i) => written.set(row!, bodies[i]!));
   R.revealLine = at;
   ROWS.set(el, R);
   applyOutlineLens(R);
@@ -137,11 +143,8 @@ function replaceRegion(R: Rows, a: number, b: number, mid: string[], caret: numb
   const next = b < L - 1 ? R.rows[b + 1] : null;
   R.lines.splice(a, b - a + 1, ...mid);
   recomputeStarts(R, a);
-  const lastLine = R.lines.length - 1;
-  const inner = mid.map((l, k) => rowHtml(l, localCaret(R, a + k, caret)));
-  const html = (prev ? '\n' : '')
-    + inner.map(rowSpan).join('\n')
-    + (next ? '\n' : (lastLine > 0 && R.lines[lastLine] === '' ? GUARD_HTML : ''));   // the guard: a text ENDING IN A NEWLINE only
+  const inner = mid.map((l, k) => lineHtml(R.lines, a + k, localCaret(R, a + k, caret)));
+  const html = (prev ? '\n' : '') + inner.map(rowSpan).join('\n') + (next ? '\n' : '');
   const range = document.createRange();
   if (prev) range.setStartAfter(prev); else range.setStart(el, 0);
   if (next) range.setEndBefore(next); else range.setEnd(el, el.childNodes.length);
@@ -185,7 +188,7 @@ export function writeRows(el: HTMLElement, text: string, caret: number | null, r
     const i = R.keep;
     const row = R.rows[i]!;
     const atK = revealAt === null ? -1 : lineOf(R, revealAt);
-    const want = rowHtml(R.lines[i], i === atK ? localCaret(R, i, revealAt) : null);
+    const want = lineHtml(R.lines, i, i === atK ? localCaret(R, i, revealAt) : null);
     if (row.innerHTML === want) { written.set(row, want); keptAsIs = true; }
     else { row.innerHTML = want; written.set(row, want); }
     R.dirty = null;
@@ -210,7 +213,7 @@ export function writeRows(el: HTMLElement, text: string, caret: number | null, r
   for (const i of new Set([R.revealLine, at])) {
     if (i < 0 || i >= R.lines.length) continue;
     const row = R.rows[i];
-    if (row) writeRow(row, rowHtml(R.lines[i], i === at ? localCaret(R, i, revealAt) : null));
+    if (row) writeRow(row, lineHtml(R.lines, i, i === at ? localCaret(R, i, revealAt) : null));
   }
   R.revealLine = at;
   applyOutlineLens(R);
@@ -233,7 +236,7 @@ export function revealRowsAtCaret(el: HTMLElement): boolean {
   for (const i of new Set([R.revealLine, at])) {
     if (i < 0 || i >= R.lines.length) continue;
     const row = R.rows[i];
-    if (row && writeRow(row, rowHtml(R.lines[i], i === at ? localCaret(R, i, caret) : null))) changed = true;
+    if (row && writeRow(row, lineHtml(R.lines, i, i === at ? localCaret(R, i, caret) : null))) changed = true;
   }
   R.revealLine = at;
   if (changed) placeRowsCaret(R, caret);
@@ -285,9 +288,10 @@ export function rowsPointFor(R: Rows, target: number): { node: Node; offset: num
   const { el } = R;
   const t = Math.max(0, Math.min(target, R.text.length));
   if (t === R.text.length && R.text.endsWith('\n')) {
-    const g = el.lastElementChild;
-    const gt = g && g.classList.contains('md-eof-guard') ? (g.firstChild as Text | null) : null;
-    if (gt) return { node: gt, offset: gt.data.length };
+    const last = R.rows[R.rows.length - 1];
+    const g = last?.querySelector('.md-eof-guard');
+    const gt = g?.firstChild;
+    if (gt && gt.nodeType === 3) return { node: gt, offset: 0 };
   }
   const i = lineOf(R, t);
   const local = t - R.starts[i];
@@ -492,7 +496,7 @@ export function verifyRows(R: Rows): void {
   else for (let i = 0; i < R.rows.length; i++) {
     const row = R.rows[i];
     if (!row || row.parentNode !== R.el) { why = `row ${i} missing or detached`; break; }
-    if (row.textContent !== R.lines[i]) { why = `row ${i} text`; break; }
+    if ((row.textContent ?? '').split(EOF_GUARD).join('') !== R.lines[i]) { why = `row ${i} text`; break; }
   }
   if (!why) return;
   const msg = `WZ-ROWS-MISMATCH ${why} (shadow ${R.text.length} chars, dom ${dom.length})`;
