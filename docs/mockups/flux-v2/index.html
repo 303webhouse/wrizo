@@ -167,6 +167,7 @@
   .brackets i:nth-child(3)::before, .brackets i:nth-child(3)::after { top: auto; bottom: 0; }
   .brackets i:nth-child(4)::before, .brackets i:nth-child(4)::after { top: auto; bottom: 0; left: auto; right: 0; }
   .board { width: 100%; background: var(--page); border: 1px solid #9AD7EA; overflow: hidden; box-shadow: 0 0 0 1px rgba(0, 194, 255, .2), 0 0 28px rgba(0, 194, 255, .14); }
+  html[data-frame='grafts'] .shared { display: none; }
   html[data-frame='grafts'] .page, html[data-frame='board'] .page,
   html[data-frame='page-both-panels'] .board, html[data-frame='pages-popout'] .board,
   html[data-frame='tutor'] .board, html[data-frame='flux-light'] .board, html[data-frame='glitch'] .board { display: none; }
@@ -184,10 +185,14 @@
     linear-gradient(#C5E6F0, #C5E6F0) right top / 14px 1px no-repeat, linear-gradient(#C5E6F0, #C5E6F0) right top / 1px 14px no-repeat,
     linear-gradient(#C5E6F0, #C5E6F0) left bottom / 14px 1px no-repeat, linear-gradient(#C5E6F0, #C5E6F0) left bottom / 1px 14px no-repeat,
     linear-gradient(#C5E6F0, #C5E6F0) right bottom / 14px 1px no-repeat, linear-gradient(#C5E6F0, #C5E6F0) right bottom / 1px 14px no-repeat; }
-  .reticle::after { content: ''; position: absolute; top: -14px; right: -14px; width: 11px; height: 11px; border: 1px solid #C5E6F0;
-    background: linear-gradient(#C5E6F0, #C5E6F0) center / 1px 100% no-repeat, linear-gradient(#C5E6F0, #C5E6F0) center / 100% 1px no-repeat; }
-  .tip { display: none; position: absolute; left: 168px; top: 42px; z-index: 5; padding: 3px 7px; background: var(--panel); border: 1px solid var(--line); font-size: 12px; }
-  html[data-frame='grafts'] .tip { display: block; }
+  .tip { display: none; }
+  html[data-frame='grafts'] .bcard[aria-selected='true'] .knob::after {
+    content: 'Drag to link';
+    position: absolute; right: 22px; top: -6px; z-index: 6;
+    padding: 3px 7px; background: var(--panel); border: 1px solid var(--line);
+    font-family: var(--ui); font-size: 12px; letter-spacing: 0; text-transform: none;
+    font-weight: 400; color: var(--text); white-space: nowrap;
+  }
   .tabs { display: flex; border-bottom: 1px solid var(--line); }
   .tab { padding: 11px 14px 8px; font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--label); border-bottom: 2px solid transparent; margin-bottom: -1px; }
   html[data-frame='grafts'] .tab-grafts, html[data-frame='page-both-panels'] .tab-tutor,
@@ -403,7 +408,6 @@
             <div class="xy">430 · 250</div>
             <span class="resz" aria-hidden="true"></span>
           </article>
-          <div class="tip">Drag to link</div>
         </div>
       </div>
       <div class="track track-r">
@@ -437,9 +441,11 @@
             <div class="gr"><span class="mini" style="width:14px;height:18px"></span><span class="t">Ch 2</span></div>
             <div class="lab gl">Sources</div>
             <div class="gr"><span class="gk-src"></span><span class="t">Harbour photo, 1962</span><span class="plc">Log</span></div>
+            <div class="shared">
             <div class="lab gl">Shared tags</div>
             <div class="gr"><span class="tagm">revised</span><span class="t">Ch 4</span></div>
             <div class="gr"><span class="tagm">ferry</span><span class="t">Salt</span><span class="plc">Short stories</span></div>
+            </div>
           </div>
         </aside>
       </div>
