@@ -1,0 +1,16 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=8 tree=e0164c28 bundle=index-DjWsoGk8.js/767118b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/rz-default
+[01/8] OK        exit=0   29s j6.mjs :: ROWS-SHADOW VERIFY: PASS (9 renders checked, shadow == DOM on every one) ;; J6 VERIFY: PASS (33 checks)
+[02/8] OK        exit=0   34s m2.mjs :: M2 VERIFY: PASS (26 checks)
+[03/8] OK        exit=0   28s m3.mjs :: M3 VERIFY: PASS (6 checks)
+[04/8] OK        exit=0   28s m4.mjs :: M4 VERIFY: PASS (35 checks)
+[05/8] OK        exit=0    1s rhizome-goal-core.mjs :: RHIZOME-GOAL-CORE VERIFY: PASS (33 checks)
+[06/8] OK        exit=0   21s rhizome-goal.mjs :: RHIZOME-GOAL-CORE VERIFY: PASS (33 checks) ;; RHIZOME-GOAL VERIFY: PASS (10 checks)
+[07/8] OK        exit=0    0s rhizome-growth.mjs :: RHIZOME-GROWTH VERIFY: PASS (51 checks)
+[08/8] FAIL      exit=1   13s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: FAIL - 6/13 failed
+
+SUITE DONE HARNESS_PARKED=unset — 7/8 of 8 returned a passing verdict
+  FAIL: rhizome-latency.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\rz-default\rhizome-latency.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=e0164c28 bundle=index-DjWsoGk8.js/767118b NO-REBUILD

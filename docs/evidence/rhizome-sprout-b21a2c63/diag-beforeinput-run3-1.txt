@@ -1,0 +1,15 @@
+PASS  P1 the drop-shadow lives ONLY in the flash-true rule and the pop keyframes - never on the field at rest, in the fading hold, or on the seed root
+PASS  P2 the flash rule is the one that carries it (filter, then the 420 ms pop), and under prefers-reduced-motion the pop is off
+PASS  P3 the flash states change no geometry (no transform, size, position or margin on the field in any flash state) - only filter, opacity and stroke
+PASS  P4 (mutant, landed) a drop-shadow on the field AT REST turns P1 red
+PASS  P5 FULL_COVER is gone from the growth module (it was kept "for the old fill-the-ground target" and nothing reads it)
+PASS  A the rest numbers: 24 keys with the field at rest are measured (the baseline every flash number is held against)  [{"n":24,"median":26.4,"p95":31.7,"max":31.8}]
+PASS  A at rest the field carries NO filter (the drop-shadow is the flash's alone)
+PASS  B premise: the goal was crossed and the flash is HOLDING with the drop-shadow actually applied to the full field
+PASS  B premise: at least 5 of the keys typed during the hold were painted while data-flash was still true (a flash over before the keys landed certifies nothing)  [{"n":14,"median":25.8,"p95":32.6,"max":32.6}]
+PASS  B typing inside the flash is as fast as typing at rest: median within 10 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms  [rest {"n":24,"median":26.4,"p95":31.7,"max":31.8} | flash {"n":14,"median":25.8,"p95":32.6,"max":32.6}]
+PASS  C premise: at least 5 keys were painted during the fade  [{"n":12,"median":26,"p95":53.3,"max":53.3}]
+PASS  C typing inside the fade is as fast as at rest (same budgets)  [rest {"n":24,"median":26.4,"p95":31.7,"max":31.8} | fade {"n":12,"median":26,"p95":53.3,"max":53.3}]
+FAIL  D no key was dropped across the crossing: the stored text ends with " tail" followed by every typed "a" (22 of them)  -- word0 word1 word2 word3 word4 word5 word6
+
+RHIZOME-LATENCY VERIFY: FAIL - 1/13 failed

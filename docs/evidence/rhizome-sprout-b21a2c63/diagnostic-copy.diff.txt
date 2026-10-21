@@ -1,0 +1,26 @@
+diff --git a/scripts/harness/rhizome-latency.mjs b/scripts/harness/rhizome-latency-dbg.mjs
+index 0b362a2f..1fd38639 100644
+--- a/scripts/harness/rhizome-latency.mjs
++++ b/scripts/harness/rhizome-latency-dbg.mjs
+@@ -105,8 +105,8 @@ async function part2() {
+       if (window.__latOff) window.__latOff();
+       const kd = () => { t0 = performance.now(); };
+       const inp = () => { const t = t0; requestAnimationFrame(() => requestAnimationFrame(() => { const f = document.querySelector('.wz-rhizome-field'); window.__lat.push({ ms: performance.now() - t, flash: f ? f.dataset.flash : null }); })); };
+-      document.addEventListener('keydown', kd, true); document.addEventListener('input', inp, true);
+-      window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('input', inp, true); };
++      document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', inp, true);
++      window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', inp, true); };
+       return true; })()`);
+     const typeSteady = async (n, gap = 90) => { for (let i = 0; i < n; i += 1) { await app.typeKeys('a'); await sleep(gap); } };
+     const lat = (flash) => app.evalJs(`window.__lat.filter((x) => ${flash === 'any' ? 'true' : `x.flash === ${JSON.stringify(flash)}`}).map((x) => x.ms)`);
+@@ -145,7 +145,9 @@ async function part2() {
+     ok('C typing inside the fade is as fast as at rest (same budgets)', fadeSt.n >= 5 && fadeSt.median <= restSt.median + 10 && fadeSt.p95 <= restSt.p95 + 25 && fadeSt.max <= 100, `rest ${show(restSt)} | fade ${show(fadeSt)}`);
+ 
+     // D) nothing was lost: every key is in the stored page
+-    await sleep(900);
++    const t0D = Date.now();
++    const settled = await waitSoft(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(pageId)}) || {}).text?.includes(' tail' + 'a'.repeat(22))`, { label: 'stored text settles', timeout: 8000 });
++    console.log('DBG-D settled=' + settled + ' afterMs=' + (Date.now() - t0D));
+     await app.evalJs('window.wrizoFlushNow && window.wrizoFlushNow()');
+     const text = await app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(pageId)}) || {}).text ?? ''`);
+     const typedA = 10 + 12;   // the characters typed after ' tail' in this page's second session

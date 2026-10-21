@@ -1,0 +1,1 @@
+DBG {"latLen":0,"c":{"kd":24,"inp":0,"bi":24,"raf":164},"flashes":[],"vis":"visible","hasFocus":true,"active":"forward-only-editor","editorText":"word0 word1 word2 word3 word4 word5 word6aaaaaaaaaaaaaaaaaaaaaaaa"}
