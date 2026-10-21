@@ -9,8 +9,9 @@
 //   PART 2 (a box turn)   the real app, real keys, one character every ~90 ms, the latency of each key read IN the page (keydown -> the frame after the one that painted its input (hooked on `beforeinput`: this editor never fires `input` on a key)):
 //                         A) before the goal (the field at rest), B) while the flash is HOLDING (data-flash='true', drop-shadow applied, pop animation running), C) during the fade.
 //                         The flash samples are only counted when the flash was on at the frame - a flash that was over before the keys landed does not certify anything.
-//                         The budgets are RELATIVE to this machine's own rest numbers (a drop-shadow cost is a difference, not an absolute): median within 10 ms and p95 within 25 ms
-//                         of rest, and no key slower than 100 ms. The first box run prints every number; if the box shows a real cost the field's filter is the suspect, not the budget.
+//                         The budgets (Fable's final, ledger 120 ruling) are RELATIVE to this machine's own rest numbers (a drop-shadow cost is a difference, not an absolute), over AT LEAST 40
+//                         painted keys per phase (the crossing is repeated in rounds until each phase has them): median within 5 ms and p95 within 25 ms of rest, and no key slower than 100 ms.
+//                         Every slow fade key is logged against the fade's start: Fable's suspect is the full-field drop-shadow FILTER being dropped at the instant the fade begins (one big repaint).
 //
 // Run: node scripts/harness/rhizome-latency.mjs   (from apps/desktop; PART 2 needs a box turn)      BROWSERLESS_ONLY=1 runs PART 1 alone
 import fs from 'node:fs';
@@ -123,50 +124,69 @@ async function part2() {
     const stored = (id) => app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(id)}) || {}).text ?? ''`);
 
     const pageId = await openPage();
+    // Fable's final budgets (ledger 120 ruling, Oct 21): AT LEAST 40 keys per phase (a percentile over a dozen is just the worst key), and against this machine's own rest numbers:
+    // median within 5 ms, p95 within 25 ms of the rest p95, and no key over 100 ms.
+    const MIN_KEYS = 40, MEDIAN_SLACK = 5, P95_SLACK = 25, MAX_MS = 100;
     // A) REST: a goal far away, the field drawn, nothing flashing
     await seedAndReopen(pageId, 7, { n: 1000, unit: 'words' });
     await arm();
-    await typeSteady(24);
+    await typeSteady(MIN_KEYS + 4);
     const restSt = stat(await lat('false'));
-    ok('A the rest numbers: 24 keys with the field at rest are measured (the baseline every flash number is held against)', restSt.n >= 20, show(restSt));
+    ok(`A the rest numbers: ${MIN_KEYS}+ keys with the field at rest are measured (the baseline every flash number is held against)`, restSt.n >= MIN_KEYS, show(restSt));
     const restFilter = await app.evalJs("getComputedStyle(document.querySelector('.wz-rhizome-field')).filter");
     ok('A at rest the field carries NO filter (the drop-shadow is the flash\'s alone)', restFilter === 'none', String(restFilter));
 
-    // B) the crossing: the 8th word lands, the flash HOLDS (about 1.2 s); keys typed inside the hold are the ones counted
-    await seedAndReopen(pageId, 7, { n: 8, unit: 'words' });
-    await arm();
-    await app.typeKeys(' tail');
-    const flashOn = await waitSoft("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'true'", { label: 'brass flash on goal', timeout: 4000 });
-    const flashFilter = flashOn ? await app.evalJs("getComputedStyle(document.querySelector('.wz-rhizome-field')).filter") : null;
-    ok('B premise: the goal was crossed and the flash is HOLDING with the drop-shadow actually applied to the full field', flashOn && /drop-shadow/.test(String(flashFilter)), String(flashFilter));
-    await typeSteady(10, 85);
-    const holdSt = stat(await lat('true'));
-    ok('B premise: at least 5 of the keys typed during the hold were painted while data-flash was still true (a flash over before the keys landed certifies nothing)', holdSt.n >= 5, show(holdSt));
-    ok('B typing inside the flash is as fast as typing at rest: median within 10 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms',
-      holdSt.n >= 5 && restSt.n >= 20 && holdSt.median <= restSt.median + 10 && holdSt.p95 <= restSt.p95 + 25 && holdSt.max <= 100, `rest ${show(restSt)} | flash ${show(holdSt)}`);
-
-    // C) the fade: the finished plant fades over ~2.2 s while the seed root stays. MORE KEYS than the hold (a percentile over twelve is just the worst key): typed as fast as the box takes
-    // them from the moment the fade begins, so most of the ~2.2 s is covered. Every key's place against the fade's start and end is kept, to say WHICH frame was slow.
-    await waitSoft("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'fading'", { label: 'the fade begins', timeout: 3000 });
-    await typeSteady(40, 25);
-    const fadeSt = stat(await lat('fading'));
-    ok('C premise: at least 20 keys were painted during the fade (enough that a percentile means something)', fadeSt.n >= 20, show(fadeSt));
-    ok('C typing inside the fade is as fast as at rest (same budgets)', fadeSt.n >= 20 && fadeSt.median <= restSt.median + 10 && fadeSt.p95 <= restSt.p95 + 25 && fadeSt.max <= 100, `rest ${show(restSt)} | fade ${show(fadeSt)}`);
-    // WHERE the slow frames fell: a key whose latency is 20 ms over the fade's own median, with its offset from the moment the fade began (tFade) and from the moment it ended (tEnd)
-    const att = await app.evalJs(`(() => {
-      const fl = window.__fl, tF = (fl.find((x) => x[1] === 'fading') || [null])[0], iT = fl.findIndex((x) => x[1] === 'true');
-      const tE = iT >= 0 ? (fl.slice(iT).find((x) => x[1] === 'false') || [null])[0] : null;
-      const f = window.__lat.filter((x) => x.flash === 'fading'); const ms = f.map((x) => x.ms).sort((a, b) => a - b); const med = ms.length ? ms[Math.floor(ms.length / 2)] : null;
-      const slow = f.filter((x) => med !== null && x.ms > med + 20).map((x) => ({ ms: Math.round(x.ms * 10) / 10, sinceFadeStart: tF === null ? null : Math.round(x.key - tF), beforeFadeEnd: tE === null ? null : Math.round(tE - x.at) }));
-      return { fadeMs: tF !== null && tE !== null ? Math.round(tE - tF) : null, median: med === null ? null : Math.round(med * 10) / 10, slowKeys: slow };
-    })()`);
-    ok('C attribution (information, never a verdict): the slow frames of the fade, placed against its start and end - median ' + JSON.stringify(att && att.median), true, JSON.stringify(att));
-
-    // D) nothing was lost: every key is in the stored page. The stored text is read AFTER the debounced save lands (the standing lesson: wait on the STORED value, not on a flush call)
-    const typedA = 10 + 40;   // the characters typed after ' tail' in this page's second session
-    await waitSoft(`(((JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(pageId)})) || {}).text || '').includes(${JSON.stringify(' tail' + 'a'.repeat(typedA))})`, { label: 'the typed text has been saved', timeout: 10000 });
-    const text = await stored(pageId);
-    ok(`D no key was dropped across the crossing: the stored text ends with " tail" followed by every typed "a" (${typedA} of them)`, text.includes(' tail' + 'a'.repeat(typedA)), String(text).slice(-60));
+    // B + C) the crossing, in ROUNDS: the 8th word lands, the flash HOLDS (about 1.2 s) and then the finished plant FADES (2.2 s). One crossing gives a dozen keys per phase at best, so the
+    // crossing is repeated (the page is re-seeded to 7 words each time) until each phase has MIN_KEYS painted samples. A key only counts for the phase its frame was painted in (the flash
+    // attribute is read at the frame), so a flash that was over before a key landed certifies nothing. Every round types HOLD_KEYS inside the hold, then FADE_KEYS as fast as the box takes them.
+    const HOLD_KEYS = 14, FADE_KEYS = 22, MAX_ROUNDS = 8;
+    const holdAll = [], fadeAll = [], slowAll = [], rounds = [];
+    let flashPremise = true, filterPremise = true, savedAll = true, lastSaved = '';
+    for (let round = 1; round <= MAX_ROUNDS && (holdAll.length < MIN_KEYS || fadeAll.length < MIN_KEYS); round += 1) {
+      await seedAndReopen(pageId, 7, { n: 8, unit: 'words' });
+      await arm();
+      await app.typeKeys(' tail');
+      const flashOn = await waitSoft("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'true'", { label: 'brass flash on goal', timeout: 4000 });
+      const flashFilter = flashOn ? await app.evalJs("getComputedStyle(document.querySelector('.wz-rhizome-field')).filter") : null;
+      if (!(flashOn && /drop-shadow/.test(String(flashFilter)))) { flashPremise = false; filterPremise = false; rounds.push({ round, flashOn, flashFilter }); break; }
+      await typeSteady(HOLD_KEYS, 85);
+      await waitSoft("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'fading'", { label: 'the fade begins', timeout: 3000 });
+      await typeSteady(FADE_KEYS, 25);
+      // wait for the page to settle (the fade's end), then read this round's samples out of the page
+      await waitSoft("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'false'", { label: 'the fade ends', timeout: 5000 });
+      const h = await lat('true'), f = await lat('fading');
+      holdAll.push(...h); fadeAll.push(...f);
+      // WHERE the slow frames fell: a fade key more than 20 ms over that round's fade median (or over 50 ms outright), with its offset from the moment the fade began and from the moment it ended
+      const att = await app.evalJs(`(() => {
+        const fl = window.__fl, tF = (fl.find((x) => x[1] === 'fading') || [null])[0], iT = fl.findIndex((x) => x[1] === 'true');
+        const tE = iT >= 0 ? (fl.slice(iT).find((x) => x[1] === 'false') || [null])[0] : null;
+        const f = window.__lat.filter((x) => x.flash === 'fading'); const ms = f.map((x) => x.ms).sort((a, b) => a - b); const med = ms.length ? ms[Math.floor(ms.length / 2)] : null;
+        const slow = f.filter((x) => med !== null && (x.ms > med + 20 || x.ms > 50)).map((x) => ({ ms: Math.round(x.ms * 10) / 10, sinceFadeStart: tF === null ? null : Math.round(x.key - tF), beforeFadeEnd: tE === null ? null : Math.round(tE - x.at) }));
+        const holdSlow = window.__lat.filter((x) => x.flash === 'true' && x.ms > 50).map((x) => ({ ms: Math.round(x.ms * 10) / 10, phase: 'hold' }));
+        return { fadeMs: tF !== null && tE !== null ? Math.round(tE - tF) : null, median: med === null ? null : Math.round(med * 10) / 10, slow, holdSlow };
+      })()`);
+      for (const k of att.slow || []) slowAll.push({ round, ...k });
+      rounds.push({ round, hold: h.length, fade: f.length, fadeMs: att.fadeMs, fadeMedian: att.median, holdSlow: att.holdSlow });
+      // D, per round) nothing was lost: every key is in the stored page. Read AFTER the debounced save lands (wait on the STORED value, never on a flush call)
+      const typedA = HOLD_KEYS + FADE_KEYS;
+      const want = ' tail' + 'a'.repeat(typedA);
+      const saved = await waitSoft(`(((JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(pageId)})) || {}).text || '').includes(${JSON.stringify(want)})`, { label: 'the typed text has been saved', timeout: 10000 });
+      lastSaved = String(await stored(pageId)).slice(-60);
+      if (!saved) savedAll = false;
+    }
+    const holdSt = stat(holdAll), fadeSt = stat(fadeAll);
+    ok('B premise: every round crossed the goal and the flash was HOLDING with the drop-shadow actually applied to the full field', flashPremise && filterPremise, JSON.stringify(rounds.slice(-1)));
+    ok(`B premise: at least ${MIN_KEYS} keys were painted while data-flash was true (${rounds.length} round(s); a flash that was over before the keys landed certifies nothing)`, holdSt.n >= MIN_KEYS, show(holdSt));
+    ok(`B typing inside the flash is as fast as typing at rest: median within ${MEDIAN_SLACK} ms and p95 within ${P95_SLACK} ms of the rest numbers, and no key over ${MAX_MS} ms`,
+      holdSt.n >= MIN_KEYS && restSt.n >= MIN_KEYS && holdSt.median <= restSt.median + MEDIAN_SLACK && holdSt.p95 <= restSt.p95 + P95_SLACK && holdSt.max <= MAX_MS, `rest ${show(restSt)} | flash ${show(holdSt)}`);
+    ok(`C premise: at least ${MIN_KEYS} keys were painted during the fade (enough that a percentile means something)`, fadeSt.n >= MIN_KEYS, show(fadeSt));
+    ok('C typing inside the fade is as fast as at rest (same budgets)', fadeSt.n >= MIN_KEYS && restSt.n >= MIN_KEYS && fadeSt.median <= restSt.median + MEDIAN_SLACK && fadeSt.p95 <= restSt.p95 + P95_SLACK && fadeSt.max <= MAX_MS, `rest ${show(restSt)} | fade ${show(fadeSt)}`);
+    // The slow keys against the fade's start (information, never a verdict). Fable's suspect: the full-field drop-shadow FILTER is dropped at the instant the fade begins, forcing one big repaint.
+    // If the slow keys line up here (sinceFadeStart near 0), the filter is the cause.
+    const near = slowAll.filter((k) => k.sinceFadeStart !== null && Math.abs(k.sinceFadeStart) <= 150);
+    ok(`C attribution (information, never a verdict): ${slowAll.length} slow fade key(s) over ${rounds.length} round(s), ${near.length} within 150 ms of the fade's start - ${slowAll.length ? (near.length === slowAll.length ? 'ALL line up with the fade start (the filter drop is the suspect)' : near.length ? 'SOME line up with the fade start' : 'NONE line up with the fade start (not the filter drop)') : 'none slow'}`,
+      true, JSON.stringify({ perKey: slowAll.map((k) => `r${k.round}: ${k.ms} ms @ ${k.sinceFadeStart} ms after the fade began (${k.beforeFadeEnd} ms before it ended)`), rounds }));
+    ok(`D no key was dropped across the crossing: in every round the stored text ends with " tail" followed by every typed "a" (${HOLD_KEYS + FADE_KEYS} of them)`, savedAll, lastSaved);
   });
 }
 
