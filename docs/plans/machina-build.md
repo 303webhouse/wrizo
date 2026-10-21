@@ -216,14 +216,17 @@ instruction):
   override.** Nick's locked list names it literally as `"Plan →"` — read as
   "no change for Machina" rather than a literal word, because the SAME
   instruction batch separately renames the Arbor-canonical term for this tab
-  from **"Plan →" to "Boards →"** (ledger note: this is exactly why that
-  canonical rename exists — Machina's own Boards-content-type word just
-  became **"Plans"** in this same pass, and leaving the MODE TAB as
-  "Plan →" next to a content type called "Plans" is the collision the
-  rename resolves). Once the Arbor-canonical rename lands, Machina's own tab
-  reads **"Boards →"** automatically, with no Machina-specific entry
-  required. This is this plan's own reasoned reading of a terse relay, not
-  a quote — confirm before building if there is any doubt.
+  from **"Plan →" to "Boards →"** (this reading was this plan's own inference
+  the first time it was written down; it is now a DIRECT instruction, not an
+  inference — Fable's second relay states it outright: "Also add Arbor's mode
+  tab 'PLAN →' → 'BOARDS →' to your Machina/picker plan — it's a lexicon
+  change, so it rides that build"). The reasoning still stands and is worth
+  keeping: this is exactly why that canonical rename exists — Machina's own
+  Boards-content-type word just became **"Plans"** in this same pass, and
+  leaving the MODE TAB as "Plan →" next to a content type called "Plans" is
+  the collision the rename resolves. Once the Arbor-canonical rename lands,
+  Machina's own tab reads **"Boards →"** automatically, with no
+  Machina-specific entry required. **Confirmed, not open — drop from §7.**
 
 **Registration**, same two files Flux already proved, now carrying REAL
 deltas instead of identity no-ops:
@@ -546,10 +549,10 @@ build time — this is a plan, not a diff)
   pair or guessed from Flux's analogous value.
 - Whether the theme-card illustration (§3.7) rides the same mockup pass as
   the icon set/splash, or needs its own ask.
-- **Confirm this plan's own reading of "Plan →" in the locked word list**
-  (§1c) — that it means "no Machina-specific override; inherits whatever
-  Arbor's canonical says, which this same pass renames to 'Boards →'" —
-  before the lexicon ships. A terse relay, read carefully, but not a quote.
+- ~~Confirm this plan's own reading of "Plan →" in the locked word list~~ —
+  **RESOLVED**: Fable's second relay confirms it directly (§1c) — Arbor's
+  mode tab renames "Plan →" → "Boards →" lexicon-wide, riding this build;
+  Machina's own tab inherits "Boards →" with no separate override.
 - **Confirm Free Write → "Sprint"** is deliberate (§1c flags the name
   collision with the existing `QuickSprint` feature) rather than carried
   over from a different list by mistake.
