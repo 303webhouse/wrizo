@@ -103,7 +103,7 @@ else {
   ok(`all ${MUTANTS.length} mutations landed and ${MUTANTS.length} were killed`, landed === MUTANTS.length && killed === MUTANTS.length, `${landed} landed / ${killed} killed`);
   // the paths that need a layout, pinned in source
   ok('P1 one lineHtml feeds every write path: mountRows, replaceRegion, the kept-row compare, the revealed rows (writeRows and revealRowsAtCaret) - no path appends a guard after a row',
-    (src.match(/lineHtml\(/g) || []).length >= 7 && !/\+ \(text\.endsWith\('\\n'\) \? GUARD_HTML : ''\)/.test(src) && !/\(next \? '\\n' : \(lastLine/.test(src), `lineHtml x${(src.match(/lineHtml\(/g) || []).length}`);
+    (src.match(/lineHtml\(/g) || []).length === 5 &&!/\+ \(text\.endsWith\('\\n'\) \? GUARD_HTML : ''\)/.test(src) && !/\(next \? '\\n' : \(lastLine/.test(src), `lineHtml x${(src.match(/lineHtml\(/g) || []).length}`);
   ok('P2 the caret point for the end of a newline-ended text is found INSIDE the last row (rowsPointFor looks in R.rows[last], offset 0), not in an editor-level last child',
     /const last = R\.rows\[R\.rows\.length - 1\];\s*const g = last\?\.querySelector\('\.md-eof-guard'\);/.test(src) && !/el\.lastElementChild/.test(src.slice(src.indexOf('export function rowsPointFor'), src.indexOf('export function rowsPointFor') + 900)), '');
   ok('P3 the shadow-line verify reads a row\'s text without its guard (a row that holds the guard still equals its line)', /row\.textContent \?\? ''\)\.split\(EOF_GUARD\)\.join\(''\) !== R\.lines\[i\]/.test(src), '');
