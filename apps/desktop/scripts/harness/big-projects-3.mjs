@@ -22,6 +22,8 @@
 //   C1 a page opened from a board shows "Came from <board>" as the picker's FIRST row; opening wrote no link; pressing it grafts; the same
 //      page opened by its address (no surface state) has no such row
 //   E1 a page with nothing grafted shows only "+ Graft..." - no placeholder text
+//   N1 (Fable's ruling 1, Oct 21) a pick in "+ Graft..." on a brand-new page CREATES the page with that one graft; typing then saves as ever
+//   (ruling 3, Oct 21: P1's labels parked - a place label only for another place)
 //
 // Seeding goes through the app's seams (never raw storage); input is trusted CDP mouse and key events. Needs a box turn.
 // Run: WS_BOX_TURN=<token> node scripts/harness/big-projects-3.mjs   (from apps/desktop, dist-web built)
@@ -29,6 +31,7 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
+let bp3P1Labels = null;   // P1's place labels, read on the default leg, re-asserted by its parked record (ruling 3)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
 const R = (app, sel) => app.evalJs(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height }; })()`);
@@ -201,9 +204,16 @@ await withHarness(async (app) => {
   const search = await app.evalJs("(() => { const s = document.querySelector('[data-graft-picker] [data-graft-search]'); return s ? { tag: s.tagName, ph: s.getAttribute('placeholder'), focused: document.activeElement === s } : null; })()");
   const lbl = (id) => (rows1.find((r) => r.entry === id && !r.box) || {}).place;
   ok('P1: "+ Graft..." is the top of Grafts on a page', !!addTop && addTop.first && /Graft/.test(addTop.text), JSON.stringify(addTop));
-  ok('P1: it opens the picker - a search field (focused), then Cards / Pages / Boards from every place, each with its place label, never the page itself',
+  // ---- PARKED - SUPERSEDED by Fable's ruling 3 (Oct 21): place labels appear ONLY on items from another Drawer or the Journal - a same-place row
+  // (Ch 2, in The Late Ferry like Ch 3) carries none. Kept VERBATIM and no longer run; its parked record is below, its successor beside it.
+  // ok('P1: it opens the picker - a search field (focused), then Cards / Pages / Boards from every place, each with its place label, never the page itself',
+  //   opened1 && !!search && search.focused && rows1.some((r) => r.group === 'Cards') && rows1.some((r) => r.group === 'Pages') && rows1.some((r) => r.group === 'Boards')
+  //     && lbl(IDS.ch2) === 'The Late Ferry' && lbl(IDS.salt) === 'Short stories' && lbl(IDS.kettle) === 'Journal' && !rows1.some((r) => r.entry === IDS.ch3),
+  //   JSON.stringify({ search, n: rows1.length, ch2: lbl(IDS.ch2), salt: lbl(IDS.salt), kettle: lbl(IDS.kettle) }));
+  bp3P1Labels = { ch2: lbl(IDS.ch2) ?? null, salt: lbl(IDS.salt) ?? null, kettle: lbl(IDS.kettle) ?? null };
+  ok('P1 [ruling-3 successor]: it opens the picker - a search field (focused), then Cards / Pages / Boards from every place, never the page itself; a place label ONLY on a row from another place (Salt: Short stories, Kettle notes: Journal) and none on a same-place row (Ch 2)',
     opened1 && !!search && search.focused && rows1.some((r) => r.group === 'Cards') && rows1.some((r) => r.group === 'Pages') && rows1.some((r) => r.group === 'Boards')
-      && lbl(IDS.ch2) === 'The Late Ferry' && lbl(IDS.salt) === 'Short stories' && lbl(IDS.kettle) === 'Journal' && !rows1.some((r) => r.entry === IDS.ch3),
+      && lbl(IDS.ch2) === null && lbl(IDS.salt) === 'Short stories' && lbl(IDS.kettle) === 'Journal' && !rows1.some((r) => r.entry === IDS.ch3),
     JSON.stringify({ search, n: rows1.length, ch2: lbl(IDS.ch2), salt: lbl(IDS.salt), kettle: lbl(IDS.kettle) }));
   ok('P1: opening the picker moved nothing on the page (page primacy: the page rect is identical)', JSON.stringify(page0) === JSON.stringify(await R(app, '.forward-only-editor')), '');
   if (opened1 && search) {
@@ -307,7 +317,52 @@ await withHarness(async (app) => {
     const pane = await app.evalJs("(() => { const p = document.querySelector('.wz-links-pane'); if (!p) return null; return { text: p.innerText.replace(/\\s+/g, ' ').trim(), empties: p.querySelectorAll('.wz-tutor-empty').length, add: !!p.querySelector('[data-graft-add]') }; })()");
     ok('E1: a page with nothing grafted shows only "+ Graft..." - no placeholder text', !!pane && pane.add && pane.empties === 0 && /^\+?\s*Graft…?$/.test(pane.text.replace(/^Grafts\s*/, '')), JSON.stringify(pane));
   } else ok('E1 fixture: the bare page opened', false, await hash(app));
+
+  // ================================================================== N1 - a pick on a BRAND-NEW page creates it (Fable's ruling 1, Oct 21)
+  await app.evalJs("location.hash = '#/'"); await sleep(400);
+  await app.evalJs("location.hash = '#/page/new'");
+  if (await waitSoft(app, onPage, { label: 'a brand-new page', timeout: 9000 })) {
+    await sleep(700);
+    const unbornBefore = await hash(app);
+    await openGrafts(app);
+    const enabled = await app.evalJs("(() => { const a = document.querySelector('[data-graft-add]'); return a ? !a.disabled : null; })()");
+    const opened = enabled && (await pressSel(app, '[data-graft-add]'));
+    const picked = opened && (await pressPick(app, IDS.kettle));
+    await sleep(400);
+    const bornHash = await hash(app);
+    const newId = /^#\/page\/([^/?#]+)$/.exec(bornHash || '')?.[1] ?? null;
+    await app.evalJs('window.wrizoFlushNow()'); await sleep(300);
+    const row = newId && newId !== 'new' ? await stored(app, newId) : null;
+    const links = newId && newId !== 'new' ? await linksOf(app, newId) : [];
+    ok('N1: a pick in "+ Graft..." on a brand-new page CREATES the page - its row is stored (no words yet) and owns exactly ONE record, to the pick; the address names the page',
+      unbornBefore === '#/page/new' && enabled === true && picked && !!row && !(row.text || '').trim() && links.length === 1 && links[0].bEntryId === IDS.kettle,
+      JSON.stringify({ unbornBefore, enabled, picked, bornHash, row: row && { id: row.id, text: row.text }, links }));
+    await app.keyCombo('Escape'); await sleep(300);
+    const ed = await R(app, '.forward-only-editor');
+    if (ed && row) {
+      await click(app, Math.round(ed.l + ed.w * 0.5), Math.round(ed.t + 60));
+      await app.typeKeys('Born by a graft');
+      await sleep(1600); await app.evalJs('window.wrizoFlushNow()'); await sleep(300);
+      const row2 = await stored(app, newId);
+      ok('N1: typing then saves on that same page as ever (born-on-first-word is untouched; the words land on the row the graft made)',
+        !!row2 && /Born by a graft/.test(row2.text || '') && (await linksOf(app, newId)).length === 1, JSON.stringify({ text: row2 && row2.text }));
+    } else ok('N1 fixture: the editor on the new page, and its row', false, JSON.stringify({ ed, row: !!row }));
+  } else ok('N1 fixture: a brand-new page opened at #/page/new', false, await hash(app));
 });
+
+// === PARKED - gated behind HARNESS_PARKED=1, skipped by default. One park: P1's labels (Fable's ruling 3, Oct 21). Its record re-asserts the new
+// truth from the default leg's own reading.
+const parkedChecks = [];
+if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass, detail });
+  pok('PARKED (was "P1: it opens the picker - a search field (focused), then Cards / Pages / Boards from every place, each with its place label, never the page itself") - ruling 3: a label only for another place; live successor: P1 [ruling-3 successor]',
+    !!bp3P1Labels && bp3P1Labels.ch2 === null && bp3P1Labels.salt === 'Short stories' && bp3P1Labels.kettle === 'Journal', JSON.stringify(bp3P1Labels));
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  console.log(parkedPass
+    ? `\nBIG-PROJECTS-3 PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nBIG-PROJECTS-3 PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+}
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 600)}]` : ''}`);
 const passed = checks.filter((c) => c.pass).length;

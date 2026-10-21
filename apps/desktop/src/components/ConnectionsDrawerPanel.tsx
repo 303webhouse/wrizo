@@ -1,9 +1,10 @@
 import { useDeskLexicon } from '../store/deskLexicon';
 import { useBoardSnapshot, getBoardActions } from '../store/boardSelection';
-import { getJournalEntry, removePageLink, subscribe } from '../store/persistence';
+import { getJournalEntry, getUnbornEntry, removePageLink, subscribe } from '../store/persistence';
 import { requestDelete } from '../store/deleteGate';
 import { graftsOf, hidePlanCard, pairedPageRow, planGroupOf, restorePageLink, unhidePlanCard, type GraftRow, type GraftSubject } from '../store/grafts';
 import { GraftPicker, type CameFrom } from './GraftPicker';
+import { useUnborn } from './UnbornSurface';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -36,11 +37,20 @@ export function ConnectionsDrawerPanel() {
   const [undo, setUndo] = useState<Undo>(null);
   const addRef = useRef<HTMLButtonElement | null>(null);
 
-  // the subject: a board (its selected card, or the board) when a board is open; otherwise the page on the address. An unborn page (/page/new) has
-  // no row yet, so it has no subject: the pane is the control alone (disabled), and nothing can be grafted until the page is born.
+  // the subject: a board (its selected card, or the board) when a board is open; otherwise the page on the address.
+  // A BRAND-NEW page (/page/new) has no row yet. RULING (Fable, Oct 21): a pick in "+ Graft..." CREATES it - through the unborn surface's own
+  // birth (birthWith, the act a first word performs: the row, any pin its door asked for, the address) - and typing still follows
+  // born-on-first-word. Birth swaps the address with replaceState, which the router never hears, so the route still reads /page/new after
+  // it: the pane remembers the id it saw unborn and keeps following that page once it has a row.
   const pageMatch = /^\/page\/([^/?#]+)/.exec(location.pathname);
-  const pageId = !snap && pageMatch && pageMatch[1] !== 'new' ? decodeURIComponent(pageMatch[1]) : null;
+  const isNew = !snap && !!pageMatch && pageMatch[1] === 'new';
+  const lastUnbornRef = useRef<string | null>(null);
+  const slotId = isNew ? (getUnbornEntry()?.id ?? null) : null;
+  if (slotId) lastUnbornRef.current = slotId;
+  const unborn = useUnborn(isNew ? (slotId ?? lastUnbornRef.current ?? '') : '');
+  const pageId = !snap && pageMatch ? (isNew ? (slotId ?? lastUnbornRef.current) : decodeURIComponent(pageMatch[1])) : null;
   const page = pageId ? getJournalEntry(pageId) : null;
+  const birthFirst = unborn ? () => { unborn.birthWith({ text: '' }); } : undefined;
   const subject: GraftSubject | null = snap
     ? (snap.selectedId ? { entryId: snap.boardId, boxId: snap.selectedId } : { entryId: snap.boardId })
     : (page ? { entryId: page.id } : null);
@@ -159,7 +169,7 @@ export function ConnectionsDrawerPanel() {
           <button type="button" onClick={() => { undo.run(); setUndo(null); }}>{t('graftUndo')}</button>
         </div>
       )}
-      {pickerOpen && subject && <GraftPicker subject={subject} boxes={boxes} anchor={addRef.current} cameFrom={cameFrom} onClose={closePicker} />}
+      {pickerOpen && subject && <GraftPicker subject={subject} boxes={boxes} anchor={addRef.current} cameFrom={cameFrom} onClose={closePicker} beforePick={birthFirst} />}
     </div>
   );
 }
