@@ -115,15 +115,15 @@
     font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500;
     letter-spacing: .09em; color: var(--muted);
   }
-  .run { display: none; align-items: center; gap: 3px; width: 240px; height: 12px; }
+  .run { display: none; align-items: center; gap: 3px; width: 240px; height: 16px; overflow: visible; }
   body[data-idea='run'] .run { display: flex; }
   .run b {
-    flex: 1; height: 4px; background: var(--line); position: relative;
+    flex: 1; height: 4px; background: var(--line); position: relative; overflow: visible;
   }
   .run b.filled { background: var(--live); }
   .run b.here::after {
-    content: ''; position: absolute; left: -1px; top: -3px; bottom: -3px; width: 2px;
-    background: var(--accent); animation: npulse 1.8s ease-in-out infinite;
+    content: ''; position: absolute; left: -1px; top: -6px; width: 3px; height: 16px;
+    background: var(--accent); z-index: 2;
   }
   body[data-closed='true'] .run b { background: var(--accent); }
   body[data-closed='true'] .run b.here::after { animation: none; }
@@ -140,9 +140,9 @@
 <body data-idea="ledger" data-cast="cool">
 <header class="rig">
   <b>Machina</b>
-  <button type="button" data-idea="ledger" aria-pressed="true">Ledger</button>
+  <button type="button" data-idea="ledger">Ledger</button>
   <button type="button" data-idea="rule">Rule</button>
-  <button type="button" data-idea="run">Run</button>
+  <button type="button" data-idea="run" aria-pressed="true">Run</button>
   <button type="button" id="goal">To the goal</button>
   <span class="note" id="note"></span>
 </header>
@@ -161,7 +161,6 @@
   <div class="ritem">Plan</div>
   <div class="ritem">Board</div>
   <div class="ritem">Journal</div>
-  <div class="ritem">Shelf</div>
 </aside>
 <main>
   <article class="page" id="page">
@@ -185,7 +184,7 @@
   var NOTES = {
     ledger: 'The count is the instrument. No bar, no metaphor. Orange only when the books close.',
     rule: 'A ruler on the top edge of the footer, centered. The orange notch is where the draft stands.',
-    run: 'The goal is a batch of identical units. Gray fills them. Orange marks the unit you are in, and the close.'
+    run: 'Twenty units in the bar. Each unit is one twentieth of the goal — 50 words when the goal is 1000. The count is shown once, after the bar.'
   };
   var note = document.getElementById('note');
   var meta = document.getElementById('meta');
@@ -216,7 +215,7 @@
     var idea = document.body.dataset.idea;
     meta.innerHTML = idea === 'ledger'
       ? '<span class="fig">' + pad(words) + ' / ' + pad(GOAL) + '</span>'
-      : 'PAGE 1';
+      : (idea === 'run' ? '' : 'PAGE 1');
     count.textContent = words + ' / ' + GOAL;
     var idx = Math.min(19, Math.floor(frac * 20));
     if (frac >= 1) idx = 19;
@@ -258,7 +257,7 @@
   });
 
   var q = new URLSearchParams(location.search).get('idea');
-  setIdea(NOTES[q] ? q : 'ledger');
+  setIdea(NOTES[q] ? q : 'run');
   paint();
 })();
 </script>
