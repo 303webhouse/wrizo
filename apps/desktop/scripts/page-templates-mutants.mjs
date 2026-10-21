@@ -22,9 +22,15 @@ const MUTANTS = [
   { id: 'M1', file: join(desktop, 'src', 'components', 'ScriptEditor.tsx'),
     from: "templates: [{ key: 'screenplay', label: dt('beginScreenplay'), selected: true, onApply: () => {} }],",
     to: "templates: [{ key: 'screenplay', label: dt('beginScreenplay'), selected: false, onApply: () => {} }]," },
-  { id: 'M2', file: join(desktop, 'src', 'index.css'),
-    from: ".wz-template-live:active, .wz-template-live[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); }",
-    to: ".wz-template-live:active{ color:var(--brass); border-color:var(--brass); }" },
+  // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's ruling Oct 21: brass is locked; a chosen / pressed state reads --choice, which is brass in Arbor): its mutation anchor is the --choice rule.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // { id: 'M2', file: join(desktop, 'src', 'index.css'),
+  //   from: ".wz-template-live:active, .wz-template-live[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); }",
+  //   to: ".wz-template-live:active{ color:var(--brass); border-color:var(--brass); }" },
+  { id: 'M2' /* flux-v2 successor */, file: join(desktop, 'src', 'index.css'),
+      from: ".wz-template-live:active, .wz-template-live[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); }",
+      to: ".wz-template-live:active{ color:var(--choice); border-color:var(--choice); }" },
   { id: 'M3', file: join(desktop, 'src', 'index.css'), claim: GLYPH_CLAIM,
     from: ".wz-template-live svg{ width:16px; height:16px; display:block; }",
     to: "/* M3: the template svg's size removed */" },

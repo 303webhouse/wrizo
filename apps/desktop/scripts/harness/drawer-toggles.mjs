@@ -155,6 +155,10 @@ function claims(s = { sliver: sliverSrc, stage: stageSrc, lex: lexSrc, pe: peSrc
   const fres = rule('.wz-sliver-fieldset');
   out.look = {
     // Fable, Oct 11: ONLY the icon changes colour - the square's border is the same quiet line in both states, and there is no fill.
+    // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's ruling Oct 21: brass is locked; a chosen / pressed state reads --choice, which is brass in Arbor): the ON state's rule now says var(--choice).
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // onBrassNoFill: !!pressed && /color:var\(--brass\)/.test(pressed) && /background:none/.test(pressed) && !/border/.test(pressed) && !/color-mix|rgba?\(|#[0-9a-f]{3}/i.test(pressed),
     onBrassNoFill: !!pressed && /color:var\(--brass\)/.test(pressed) && /background:none/.test(pressed) && !/border/.test(pressed) && !/color-mix|rgba?\(|#[0-9a-f]{3}/i.test(pressed),
     offQuiet: !!btn && /color:var\(--text-low\)/.test(btn) && /background:none/.test(btn),
     focusRing: /^\.wz-sliver-mode-btn:focus-visible\{[^}]*outline:2px solid var\(--brass\)/m.test(s.css),
@@ -319,11 +323,23 @@ mutant('the settings hook is read AFTER the early return (hook order breach)', '
 mutant('the shortcuts are no longer blocked', 'pe', (t) => mutate(t, "    if (typewriterForPage(id, textRef.current.trim().length === 0)) return;   // PHASE 1 (S4)", '    // PHASE 1 (S4)'), 'shortcutsPP');
 const GUARD = "    if (typewriterForPage(id, textRef.current.trim().length === 0)) return;   // PHASE 1 (S4) / typewriter-scope: Format is greyed while THIS page's own Typewriter is on, and its shortcuts (Ctrl/Cmd+B/I/U) are blocked with it";
 mutant('the shortcut guard runs AFTER the format is applied', 'pe', (t) => mutate(t, GUARD + '\n    applyFormatAt(action);', '    applyFormatAt(action);\n' + GUARD), 'shortcutsPP');
-mutant('the ON state gets a fill', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }"), 'look');
-mutant('the ON state gets a brass border (Fable: only the icon changes)', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:none; }"), 'look');
+// ---- PARKED - SUPERSEDED by FLUX V2 (Fable's ruling Oct 21: brass is locked; a chosen / pressed state reads --choice, which is brass in Arbor): its mutation anchor is the --choice rule.
+// Kept VERBATIM below and no longer run; the live successor follows.
+//
+// mutant('the ON state gets a fill', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); background:color-mix(in srgb,var(--brass) 14%,transparent); }"), 'look');
+mutant('the ON state gets a fill [flux-v2 successor]', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--choice); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--choice); background:color-mix(in srgb,var(--choice) 14%,transparent); }"), 'look');
+// ---- PARKED - SUPERSEDED by FLUX V2 (Fable's ruling Oct 21: brass is locked; a chosen / pressed state reads --choice, which is brass in Arbor): its mutation anchor is the --choice rule.
+// Kept VERBATIM below and no longer run; the live successor follows.
+//
+// mutant('the ON state gets a brass border (Fable: only the icon changes)', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); border-color:var(--brass); background:none; }"), 'look');
+mutant('the ON state gets a brass border (Fable: only the icon changes) [flux-v2 successor]', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--choice); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); background:none; }"), 'look');
 mutant('the greyed Format group loses its tooltip', 'sliver', (t) => mutate(t, " title={formatLocked ? t('formatLockedByTypewriter') : undefined}>", '>'), 'format');
 mutant('the greyed Format buttons swallow the pointer (the group tooltip can never show)', 'css', (t) => mutate(t, '.wz-sliver-fieldset:disabled button{ cursor:default; pointer-events:none; }', '.wz-sliver-fieldset:disabled button{ cursor:default; }'), 'format');
-mutant('the ON state is a hard-coded colour (would not follow the theme)', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:#c8a24a; background:none; }"), 'look');
+// ---- PARKED - SUPERSEDED by FLUX V2 (Fable's ruling Oct 21: brass is locked; a chosen / pressed state reads --choice, which is brass in Arbor): its mutation anchor is the --choice rule.
+// Kept VERBATIM below and no longer run; the live successor follows.
+//
+// mutant('the ON state is a hard-coded colour (would not follow the theme)', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--brass); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:#c8a24a; background:none; }"), 'look');
+mutant('the ON state is a hard-coded colour (would not follow the theme) [flux-v2 successor]', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--choice); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:#c8a24a; background:none; }"), 'look');
 mutant('the fieldset keeps the browser border and padding', 'css', (t) => mutate(t, '.wz-sliver-fieldset{ border:0; margin:0; padding:0; min-width:0;', '.wz-sliver-fieldset{ margin:0;'), 'look');
 
 mutant('the narrow bar\'s Bold ignores the lock', 'stage', (t) => mutate(t, '<button type="button" disabled={typewriterOn} className="mode-tbtn" title="Bold"', '<button type="button" className="mode-tbtn" title="Bold"'), 'barPP');
