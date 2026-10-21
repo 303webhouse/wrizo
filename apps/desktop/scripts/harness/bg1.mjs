@@ -192,8 +192,13 @@ await withHarness(async (app) => {
 
   // "No grid" — one row, one line: every door shares a top edge.
   const doorTops = await app.evalJs("[...document.querySelectorAll('.wz-beginning')].map(b => Math.round(b.getBoundingClientRect().top))");
-  ok('S1: the doors sit on ONE line — a row, never a grid (identical top edge across all four)',
-    doorTops.length === 4 && new Set(doorTops).size === 1, JSON.stringify(doorTops));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a + step 2 (Fable's rulings Oct 19; chat 1's ledger 114 routed this): a board's starters are three doors (New Page left them; the sliver keeps that tool).
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('S1: the doors sit on ONE line — a row, never a grid (identical top edge across all four)',
+  //   doorTops.length === 4 && new Set(doorTops).size === 1, JSON.stringify(doorTops));
+  ok('S1 [big-projects-2 successor]: the doors sit on ONE line - a row, never a grid (identical top edge across all three)',
+    doorTops.length === 3 && new Set(doorTops).size === 1, JSON.stringify(doorTops));
 
   const openLang = await rowLanguageClean(app);
   ok('S1/S3: the board row counts nothing and claims no completion — no digits, no checkmark, no "get started"/step/progress language',
@@ -203,8 +208,13 @@ await withHarness(async (app) => {
   const doorShape = await app.evalJs(`[...document.querySelectorAll('.wz-beginning')].map(b => ({
     glyph: !!b.querySelector('.wz-beginning-glyph svg'), label: (b.querySelector('.wz-beginning-label')?.textContent || '').trim(),
   }))`);
-  ok('S1: every door is an icon+label door (a glyph and a word, per the brief)',
-    doorShape.length === 4 && doorShape.every((d) => d.glyph && d.label.length > 0), JSON.stringify(doorShape));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a + step 2 (Fable's rulings Oct 19; chat 1's ledger 114 routed this): three doors.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('S1: every door is an icon+label door (a glyph and a word, per the brief)',
+  //   doorShape.length === 4 && doorShape.every((d) => d.glyph && d.label.length > 0), JSON.stringify(doorShape));
+  ok('S1 [big-projects-2 successor]: every door is an icon+label door (a glyph and a word, per the brief) - all three',
+    doorShape.length === 3 && doorShape.every((d) => d.glyph && d.label.length > 0), JSON.stringify(doorShape));
 
   // STORYBOARD's own three.
   await setBoardMode(app, 'storyboard');

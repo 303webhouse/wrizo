@@ -145,8 +145,13 @@ await withHarness(async (app) => {
   ok('S1: the hit target grew with it — each door is a genuine target (>=44px on both axes), not a word to aim at',
     m.doorW >= 44 && m.doorH >= 44, JSON.stringify({ doorW: m.doorW, doorH: m.doorH }));
 
-  ok('S1: the row is still ONE line, never a grid — every door shares a top edge at the new size (the wrap this ticket had to fix)',
-    m.oneLine === true && m.doorCount === 4, JSON.stringify({ oneLine: m.oneLine, doorCount: m.doorCount }));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a + step 2 (Fable's rulings Oct 19; chat 1's ledger 114 routed this): a board's row has three doors.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('S1: the row is still ONE line, never a grid — every door shares a top edge at the new size (the wrap this ticket had to fix)',
+  //   m.oneLine === true && m.doorCount === 4, JSON.stringify({ oneLine: m.oneLine, doorCount: m.doorCount }));
+  ok('S1 [big-projects-2 successor]: the row is still ONE line, never a grid - every door shares a top edge at the new size (the wrap this ticket had to fix) - with the board\'s three doors',
+    m.oneLine === true && m.doorCount === 3, JSON.stringify({ oneLine: m.oneLine, doorCount: m.doorCount }));
 
   // --- the colour law, measured ---------------------------------------------
   const boardContrast = await app.evalJs(CONTRAST_JS);
