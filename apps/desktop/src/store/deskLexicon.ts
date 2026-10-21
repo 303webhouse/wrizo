@@ -151,7 +151,7 @@ export type DeskTermId =
   // BIG PROJECTS STEP 3 - Grafts across places and the graft doors (docs/plans/big-projects.md step 3; mockup cursor/graft-doors-mockup @ c4f34eb0)
   | 'graftAdd' | 'graftSearch' | 'graftConnectedTo' | 'graftGroupCards' | 'graftGroupSources' | 'graftGroupBoards' | 'graftGroupPages' | 'graftSharedTags'
   | 'graftPlanBoard' | 'graftPlanCardsOne' | 'graftPlanCardsMany' | 'graftHideAria' | 'graftHiddenLine' | 'graftRemovedLine' | 'graftUndo' | 'graftCameFrom'
-  | 'graftKnobTip' | 'graftPlaceUnsorted' | 'graftPairedPage'
+  | 'graftKnobTip' | 'graftPairedPage'
   // TU1 S2/S3/S4/S5 — the Tutor (components/Tutor.tsx), the sliver's own
   // mirror on the paper's right edge. One seam, all of the Tutor's static
   // chrome — the lenses' own DYNAMIC observation text (Consistency's
@@ -899,7 +899,6 @@ const CANONICAL: Record<DeskTermId, string> = {
   graftUndo: 'Undo',
   graftCameFrom: 'Came from',
   graftKnobTip: 'Drag to graft',
-  graftPlaceUnsorted: 'Unsorted',
   graftPairedPage: 'Page',
   tutorOpen: 'Open the Tutor',
   tutorClose: 'Close the Tutor',

@@ -208,7 +208,17 @@ const pinsOf = (m, s) => ({
   // Kept VERBATIM below and no longer run; the live successor follows.
   //
   // ok('S6-S9: the rail\'s thumbnails declare their entry (CascadeSurvey, the three Drawers tiles, the Plan board row); the release consults livePinFor BEFORE toggling a record (one truth at the door); the arm travels in a body portal; the footers read page links; a dropped thumbnail saves the card BEFORE the record that names it; the tab\'s X asks first without the "Don\'t ask me again" tick', Object.values(u).every(Boolean), JSON.stringify(u));
-  ok('S6-S9 [big-projects-1a successor]: the rail\'s thumbnails declare their entry (CascadeSurvey, the Plan board row, and the Pages pop-out\'s rows); the release consults livePinFor BEFORE toggling a record (one truth at the door); the arm travels in a body portal; the footers read page links; a dropped thumbnail saves the card BEFORE the record that names it; the tab\'s X asks first without the "Don\'t ask me again" tick', Object.values(u).every(Boolean), JSON.stringify(u));
+  // ---- PARKED, generation 2 - SUPERSEDED by BIG PROJECTS STEP 3 (Grafts across places; Fable cleared step 3 Oct 19): the Grafts pane is rewritten
+  // around GROUPED rows (store/grafts.ts) - its X still asks first through the same dialog, without the tick, and still removes whichever record joins
+  // the pair, but it reads the ROW (`r.linkId` -> removePageLink(id), getBoardActions()?.removeConnection(r.connId)), so tabAsksFirst's text
+  // no longer matches. Kept VERBATIM and no longer run; the successor keeps every other predicate and pins the tab on its new text.
+  // ok('S6-S9 [big-projects-1a successor]: the rail\'s thumbnails declare their entry (CascadeSurvey, the Plan board row, and the Pages pop-out\'s rows); the release consults livePinFor BEFORE toggling a record (one truth at the door); the arm travels in a body portal; the footers read page links; a dropped thumbnail saves the card BEFORE the record that names it; the tab\'s X asks first without the "Don\'t ask me again" tick', Object.values(u).every(Boolean), JSON.stringify(u));
+  const tabPin = (l) => /requestDelete\(\(\) => \{[\s\S]*?\}, \{ title: t\('linksRemoveTitle'\), always: true, noDontAsk: true \}\)/.test(l)
+    && /const id = r\.linkId;\n\s*removePageLink\(id\);/.test(l) && /getBoardActions\(\)\?\.removeConnection\(r\.connId\)/.test(l);
+  const u3 = { ...u, tabAsksFirst: tabPin(links) };
+  ok('S6-S9 [big-projects-3 successor]: the rail\'s thumbnails declare their entry (CascadeSurvey, the Plan board row, and the Pages pop-out\'s rows); the release consults livePinFor BEFORE toggling a record (one truth at the door); the arm travels in a body portal; the footers read page links; a dropped thumbnail saves the card BEFORE the record that names it; the Grafts tab\'s X (on a grouped row) asks first without the "Don\'t ask me again" tick and removes the row\'s own record or box', Object.values(u3).every(Boolean), JSON.stringify(u3));
+  const tabMut = links.replace('always: true, noDontAsk: true', 'always: false');
+  ok('S (UI mutant, big-projects-3): letting the Grafts tab\'s X skip its confirm turns the new tab pin RED (the mutation landed)', tabMut !== links && tabPin(links) && tabPin(tabMut) === false, '');
   const um = [
     ['railTagged', () => ui(be, panels, survey.replace('data-link-entry={item.id}', ''), links, dlg)],
     ['oneTruthAtTheDoor', () => ui(be.replace('if (pin) { commit(pin.id); return; }', ''), panels, survey, links, dlg)],
@@ -217,6 +227,8 @@ const pinsOf = (m, s) => ({
     ['tabAsksFirst', () => ui(be, panels, survey, links.replace('always: true, noDontAsk: true', 'always: false'), dlg)],
     ['dialogNoTick', () => ui(be, panels, survey, links, dlg.replace('{!pending.noDontAsk && (', '{true && ('))],
   ];
+  // BIG PROJECTS STEP 3: the 'tabAsksFirst' entry here now judges the PARKED predicate (already false on the rewritten pane), so its "red" is no
+  // evidence any more; the tab's live mutant is "S (UI mutant, big-projects-3)" above. The other five entries are unaffected.
   const ured = um.map(([k, fn]) => [k, fn()[k] === false]);
   ok('S (UI mutants): untagging a thumbnail, dropping the one-truth door, moving the arm back into the clipped canvas svg, dropping the link on a copy, letting the tab\'s X skip its confirm, or showing the tick on an unlink each turn their OWN pin RED (each landed)', ured.every(([, v]) => v), JSON.stringify(ured));
   // ledger 86: a release on a rail thumbnail swallows the click that follows it, on BOTH paths (latched and held), BEFORE the held / latched split; the swallow is a beat that removes itself

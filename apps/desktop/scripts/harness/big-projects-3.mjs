@@ -61,8 +61,9 @@ const openGrafts = async (app) => {
 const pickerRows = (app) => app.evalJs(`[...document.querySelectorAll('[data-graft-picker] [data-graft-pick]')].map((b) => ({ group: b.dataset.graftGroup, entry: b.dataset.graftEntry, box: b.dataset.graftBox || null,
   title: b.querySelector('.wz-graft-title')?.textContent, place: b.querySelector('.wz-graft-place')?.textContent ?? null, checked: b.getAttribute('aria-checked') }))`);
 const pressPick = async (app, entryId, boxId) => pressSel(app, `[data-graft-picker] [data-graft-pick][data-graft-entry="${entryId}"]${boxId ? `[data-graft-box="${boxId}"]` : ':not([data-graft-box])'}`);
-const openDrawers = async (app) => { await app.evalJs("(() => { const b = document.querySelector('.wz-strip-item[data-category=drawers]'); if (b && !b.classList.contains('active')) b.click(); })()"); await sleep(600); };
-const tile = (app, entryId) => R(app, `.wz-drawers-tile[data-link-entry="${entryId}"]`);
+// BIG PROJECTS 1a (rebased): the rail's Pages pop-out (data-category=page, as connector-b's retargeted driver opens it) and its rows
+const openPagesPopout = async (app) => { await app.evalJs("(() => { const b = document.querySelector('.wz-strip-item[data-category=page]'); if (b && !b.classList.contains('active')) b.click(); })()"); await sleep(600); };
+const row = (app, entryId) => R(app, `.wz-section-row[data-link-entry="${entryId}"]`);
 
 // the fixture, through the seams: two Drawers (The Late Ferry, Short stories), the Journal, a board with two cards, a page with a plan board
 const IDS = { ch2: 'bp3-ch2', ch3: 'bp3-ch3', kettle: 'bp3-kettle', salt: 'bp3-salt', map: 'bp3-map', plan: 'bp3-plan', ideas: 'bp3-ideas', bare: 'bp3-bare' };
@@ -160,18 +161,22 @@ await withHarness(async (app) => {
       ok('K4: ...and its double-press still enters connection mode (the old door stays)', (await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed")) === 'true', '');
       await app.keyCombo('Escape'); await sleep(300);
     } else ok('K4 fixture: the corner square on the selected card', false, 'none');
-    // K5 - the rail
-    await openDrawers(app);
-    const th = await tile(app, IDS.ideas);
-    await selectCard(app, 'c1');
-    const k5 = await R(app, '[data-box-id="c1"] .board-graft-knob');
-    if (th && k5) {
+    // K5 - the rail. BIG PROJECTS 1a (rebased): the rail's connector targets are the PAGES POP-OUT's rows (.wz-section-row[data-link-entry]),
+    // and a pop-out lists the CURRENT place only (Q3) - so the target is Ch 3, in this board's own place and not pinned on it (a pinned page
+    // would be a connection box, the one-truth rule). The card is c2 (mid-board): the pop-out overlays the board's left edge, so c1's knob could
+    // lie under it - the card is selected FIRST, and the knob must be the top element at its own point before it is pressed.
+    await selectCard(app, 'c2');
+    await openPagesPopout(app);
+    const th = await row(app, IDS.ch3);
+    const k5 = await R(app, '[data-box-id="c2"] .board-graft-knob');
+    const k5Top = k5 ? await app.evalJs(`(() => { const e = document.elementFromPoint(${centre(k5).x}, ${centre(k5).y}); return !!e && !!e.closest('.board-graft-knob'); })()`) : false;
+    if (th && k5 && k5Top) {
       await drag(app, centre(k5), centre(th));
       await sleep(300);
-      const l5 = (await linksOf(app, IDS.map)).filter((l) => l.bEntryId === IDS.ideas);
+      const l5 = (await linksOf(app, IDS.map)).filter((l) => l.bEntryId === IDS.ch3);
       ok('K5: a knob drag released on a rail thumbnail makes a page link owned by the board (aBoxId = the card); the writer stays on the board',
-        l5.length === 1 && l5[0].aBoxId === 'c1' && (await hash(app)) === `#/page/${IDS.map}`, JSON.stringify({ l5, hash: await hash(app) }));
-    } else ok('K5 fixture: a rail thumbnail for another board, and the knob on the selected card', false, JSON.stringify({ th, k5 }));
+        l5.length === 1 && l5[0].aBoxId === 'c2' && (await hash(app)) === `#/page/${IDS.map}`, JSON.stringify({ l5, hash: await hash(app) }));
+    } else ok('K5 fixture: a Pages pop-out row for Ch 3, and the knob on the selected card, uncovered', false, JSON.stringify({ th, k5, k5Top }));
   } else ok('K2-K5 fixture: the knob exists to press', false, 'no knob');
 
   // ================================================================== P4 - a card subject on a board

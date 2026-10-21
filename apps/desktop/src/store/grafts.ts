@@ -5,8 +5,8 @@
 // is an id in pageSettings.hiddenPlanCards (the existing whole-blob jsonb, the way pageSettings.template shipped).
 //
 // THE FILE SPLIT (docs/plans/big-projects-3-file-split.md, agreed with INK): this lives here, not in store/place.ts (INK's step 1a) or
-// persistence.ts. PLACE LABELS read the Drawer and binder names directly until 1a lands; then placeLabelOf becomes a call to 1a's
-// placeOfEntry - this function is the one site.
+// persistence.ts. PLACE LABELS come from 1a's own reader, placeOfEntry (rebased onto 1a+2 @ 4913a47f), named in the place block's own words -
+// this function is the one site.
 //
 // EVERY reader skips a built-in place (a system board) and a delete-for-good shell; a trashed entry shows only where connector-b already
 // shows one (a graft's other end, flagged `trashed`), never in the search.
@@ -14,10 +14,11 @@ import type { Box, JournalEntry } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
 import {
   addPageLink, getDrawer, getJournalEntries, getJournalEntry, getJournalEntryIncludingDeleted, getLinkPeersOfCard, getPageLinksOf,
-  getPageLinksTo, getPairedPageId, getPlanBoardId, getProject, getSystemKind, livePinFor, saveJournalEntry,
+  getPageLinksTo, getPairedPageId, getPlanBoardId, getSystemKind, livePinFor, saveJournalEntry,
 } from './persistence';
 import { liveBoxes } from './boxTombstones';
 import { deskTerm } from './deskLexicon';
+import { UNSORTED, placeOfEntry } from './place';
 
 /** What Grafts is about: a page or a board (an entry), or a card on a board (the entry is the board, `boxId` the card). */
 export interface GraftSubject { entryId: string; boxId?: string }
@@ -54,16 +55,16 @@ const titleOf = (text: string | undefined): string => ((text ?? '').trim().split
 const cardTitle = (b: Box): string => (b.kind === 'ink' ? 'A sketch' : titleOf(b.text));
 const isShell = (e: JournalEntry | null | undefined): boolean => !!(e as { purgedAt?: string } | null | undefined)?.purgedAt;
 
-/** The place an entry lives in, as its label: its binder's Drawer name; "Unsorted" for a binder with no live Drawer; the Journal for an
- *  entry with no live home (no binder, or a binder that is gone). Read from the names directly until step 1a's placeOfEntry lands. */
+/** The place an entry lives in, as its label: its set's Drawer name; "Unsorted" for a set with no live Drawer; the Journal for an entry with
+ *  no live home. 1a's placeOfEntry decides the place; the words are the place block's own (components/PlaceBlock.tsx). */
 export function placeLabelOf(entryId: string): string {
   // getJournalEntry first: it also resolves a brand-new page's unborn slot (its binder from the door), so its place is right before birth
   const e = getJournalEntry(entryId) ?? getJournalEntryIncludingDeleted(entryId);
   if (!e) return '';
-  const project = e.projectId ? getProject(e.projectId) : null;
-  if (!project || (project as { purgedAt?: string }).purgedAt) return deskTerm('drawerPlaceJournal');
-  const drawer = project.drawerId ? getDrawer(project.drawerId) : null;
-  return drawer && !(drawer as { purgedAt?: string }).purgedAt ? drawer.name : deskTerm('graftPlaceUnsorted');
+  const place = placeOfEntry(e);
+  if (place.kind === 'journal') return deskTerm('drawerPlaceJournal');
+  if (place.id === UNSORTED) return deskTerm('switcherUnsorted');
+  return getDrawer(place.id)?.name ?? '';
 }
 
 const boxesOf = (boardId: string, boxes?: readonly Box[]): Box[] => liveBoxes((boxes as Box[] | undefined) ?? getJournalEntry(boardId)?.boxes ?? []);
