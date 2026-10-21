@@ -162,7 +162,7 @@ async function part2() {
     // line box's bottom - one half-leading below the caret's own glyph bottom (the guard span used to BE the caret's box). fx1 reads only line-to-line deltas of it, so a constant offset leaves
     // its checks standing; this holds the two claims that make that true: the offset is bounded by half a line, and it does not change from one Enter to the next.
     const off1 = c1 && c1.rowBottom - c1.caretBottom, off2 = c2 && c2.rowBottom - c2.caretBottom;
-    ok('E4 the last row's bottom (what fx1.mjs's lastElementChild proxy now reads) is the caret line's bottom to within half a line-height, and the offset is the SAME after a second Enter (so line-to-line deltas of the proxy are unchanged)',
+    ok('E4 the last row bottom (what the lastElementChild proxy in fx1.mjs now reads) is the caret line bottom to within half a line-height, and the offset is the SAME after a second Enter (so line-to-line deltas of the proxy are unchanged)',
       !!c1 && !!c2 && c1.lh > 0 && off1 >= -1 && off1 <= c1.lh / 2 + 1 && Math.abs(off2 - off1) <= 1, JSON.stringify({ off1, off2, lh: c1 && c1.lh }));
     await app.typeKeys('Next');
     await sleep(500);
