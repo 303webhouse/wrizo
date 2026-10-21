@@ -564,8 +564,13 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
   // Successor: the SAME core claim (the word itself), against the union's
   // own current, accurate shape.
   const inUnionNow = /'tutorTabTutor' \| 'drawerLinks' \| 'drawerLinksEmpty' \| 'drawerRightTabsLabel'/.test(lexSrc);
-  ok('(K1 [help-buttons successor]) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Links in Flux',
-    k.arborWord === 'Grafts' && k.fluxWord === 'Links' && inUnionNow, JSON.stringify({ ...k, inUnionNow }));
+  // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): the right drawer's second tab is INPUTS in Flux (the knob is an Input; the verb is connect).
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('(K1 [help-buttons successor]) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Links in Flux',
+  //   k.arborWord === 'Grafts' && k.fluxWord === 'Links' && inUnionNow, JSON.stringify({ ...k, inUnionNow }));
+  ok('(K1 [flux-v2 successor]) the right drawer\'s second tab word is the THEME\'S, from the lexicon: Grafts in Arbor (the canonical theme), Inputs in Flux',
+    k.arborWord === 'Grafts' && k.fluxWord === 'Inputs' && inUnionNow, JSON.stringify({ ...k, inUnionNow }));
 
   // SUPERSEDED WHOLE (help-buttons): drawerLinksNote/-NoteLabel are DELETED
   // (not emptied) - the Arbor-only/Flux-empty explainer model this check
@@ -584,7 +589,11 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
     noteKeysGone && !!helpGraftsArbor && !!helpGraftsFlux && helpGraftsArbor !== helpGraftsFlux,
     JSON.stringify({ noteKeysGone, helpGraftsArbor, helpGraftsFlux }));
 
-  ok('(K3) the empty pane\'s line follows the theme too (grafted / linked)', k.arborEmpty === 'Nothing grafted yet.' && k.fluxEmpty === 'Nothing linked yet.', JSON.stringify(k));
+  // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): the empty pane reads "Nothing connected yet." in Flux.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('(K3) the empty pane\'s line follows the theme too (grafted / linked)', k.arborEmpty === 'Nothing grafted yet.' && k.fluxEmpty === 'Nothing linked yet.', JSON.stringify(k));
+  ok('(K3 [flux-v2 successor]) the empty pane\'s line follows the theme too (grafted / connected)', k.arborEmpty === 'Nothing grafted yet.' && k.fluxEmpty === 'Nothing connected yet.', JSON.stringify(k));
   const l = await partL();
   ok('(K4) the right drawer\'s tabs are TUTOR then the links tab, from one constant', JSON.stringify(l.tabs) === JSON.stringify(['tutor', 'links']), JSON.stringify(l));
   const m = partM();
@@ -735,8 +744,17 @@ await mutant('the Sliver renders Actions without asking the table', async () => 
 //   await mutant('Flux gets the explainer too', async () => partK(mutate(lexSrc, "    drawerLinksNote: '',\n", "    drawerLinksNote: 'x',\n")), (k) => k.fluxNote !== '');
 // Successor: the SAME claim against helpGrafts's own Flux override - mutate
 // it to empty and the K2 successor's "never empty in either theme" must go red.
-await mutant('Flux\'s helpGrafts goes empty [help-buttons successor]', async () => {
-  const mutated = mutate(lexSrc, "helpGrafts: 'Links join docs, cards and circuits.',", "helpGrafts: '',");
+// ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): its mutation anchor is the Flux sentence, now "Inputs join docs, nodes and circuits."
+// Kept VERBATIM below and no longer run; the live successor follows.
+//
+// await mutant('Flux\'s helpGrafts goes empty [help-buttons successor]', async () => {
+//   const mutated = mutate(lexSrc, "helpGrafts: 'Links join docs, cards and circuits.',", "helpGrafts: '',");
+//   const over = mutated.slice(mutated.indexOf('const OVERRIDES'));
+//   const fluxVal = (new RegExp("helpGrafts:\\s*'([^']*)'").exec(over) || [])[1] ?? null;
+//   return { fluxVal };
+// }, (r) => !r.fluxVal);
+await mutant('Flux\'s helpGrafts goes empty [flux-v2 successor]', async () => {
+  const mutated = mutate(lexSrc, "helpGrafts: 'Inputs join docs, nodes and circuits.',", "helpGrafts: '',");
   const over = mutated.slice(mutated.indexOf('const OVERRIDES'));
   const fluxVal = (new RegExp("helpGrafts:\\s*'([^']*)'").exec(over) || [])[1] ?? null;
   return { fluxVal };

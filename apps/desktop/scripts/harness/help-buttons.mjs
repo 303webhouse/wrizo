@@ -148,7 +148,11 @@ const SENTENCES = {
     recedeHint: 'Type to dissolve the chrome; pause, reach an edge, or press Esc to bring it back.',
     helpFreeWrite: 'Write forward only. No editing back.',
     helpPublish: 'Send a doc out as a link or a file.',
-    helpGrafts: 'Links join docs, cards and circuits.',
+    // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): Flux's Grafts help sentence now speaks Inputs and nodes ("the knob is an Input; the verb is connect").
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // helpGrafts: 'Links join docs, cards and circuits.',
+        helpGrafts: 'Inputs join docs, nodes and circuits.',
   },
 };
 
@@ -161,11 +165,19 @@ const SENTENCES = {
 const TEMPLATE_ROW_SENTENCES = {
   plateau: {},
   flux: {
-    Raw: 'A raw page. Nothing written yet.',
+    // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): every Flux string that said Page says Doc.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // Raw: 'A raw page. Nothing written yet.',
+        Raw: 'A raw doc. Nothing written yet.',
     Script: 'The script format: sluglines, dialogue, action.',
     Spine: 'A numbered spine. Tab indents.',
     Cover: 'A standard manuscript cover sheet.',
-    Sources: 'Your sources, collected on one page.',
+    // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): every Flux string that said Page says Doc.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // Sources: 'Your sources, collected on one page.',
+        Sources: 'Your sources, collected on one doc.',
   },
 };
 

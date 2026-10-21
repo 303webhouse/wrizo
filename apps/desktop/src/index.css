@@ -487,6 +487,7 @@
   --brass-hover: #57D0F5;
   --orange: #FF9800;
   --text-accent: #57D0F5;
+  --accent-rest: #00C2FF;   /* "where you are" (the chosen tab, a current row's cue) is cyan in Flux; Arbor's is olive */
   /* the chromatic offset: a faint cyan/blue hairline (never red) */
   --flux-offset: 0.5px 0 0 rgba(0, 194, 255, .35);
   /* help-buttons (Nick approved Oct 12) — Flux's own "?" affordance colour,
@@ -594,6 +595,8 @@
 
 /* the pixel icons: 16 x 16, square, never smoothed */
 .theme-icon-pixels{ display:block; image-rendering:pixelated; shape-rendering:crispEdges; }
+/* the rail sizes its stroke icons at 21.6 px (and 14.5 px in the foot): a pixel map is drawn at its own 16 px, one screen pixel per map pixel, in both places */
+[data-theme='flux'] .wz-strip-glyph .theme-icon-pixels{ width:16px; height:16px; }
 [data-theme='flux'] .wz-sections-place{ display:flex; align-items:center; gap:8px; }
 [data-theme='flux'] .wz-set-head .theme-icon{ margin-right:6px; flex:none; }
 
@@ -1429,7 +1432,7 @@ a:focus-visible,
    (5.67:1 / 5.19:1), --text-mid clears it easily for the brighter --wz-ink-dim tier
    (8.30:1 / 7.60:1), --text-hi clears it by a wide margin for --wz-ink (16.12:1). */
 [data-theme='flux'] .wz-home {
-  --wz-ground:#04141A; --wz-lift:rgba(9,30,36,.9); --wz-ink:#E3F1EC; --wz-ink-dim:#8FB4AC;
+  --wz-ground:#020c10; --wz-lift:rgba(9,30,36,.9); --wz-ink:#E3F1EC; --wz-ink-dim:#8FB4AC;
   --wz-whisper:#1D4A52; --wz-hint:#6E958D;
 }
 .wz-ambient{ position:absolute; inset:0; z-index:0; pointer-events:none; transition:opacity 1.1s ease;
@@ -6202,23 +6205,23 @@ a:focus-visible,
    moved to Flux's own tokens per docs/briefs/splash-build-kit.md §2's own
    mapping: #2A6A76 -> --ink-border-strong, #1D4A52 -> --ink-border,
    #E3F1EC -> --text-hi, #8FB4AC -> --text-mid, #00C2FF -> --line-active,
-   brass -> --brass. Static (dim/dot-grid/tree/label) layers use the tokens
+   brass -> --brass (FLUX V2: the lit state is the MARK, one of orange's few places, so it names --orange). Static (dim/dot-grid/tree/label) layers use the tokens
    directly inline on the SVG elements (SplashMark.tsx); these classes are
    the ones the TIMELINE actually drives (a connector or node's own .lit
    state) or that need a transition to animate smoothly between states. */
 .fx-dim{ fill:none; stroke:var(--ink-border-strong); stroke-width:3; stroke-linecap:square; stroke-linejoin:miter; }
-.fx-hot{ fill:none; stroke:var(--brass); stroke-width:4; stroke-linecap:square; stroke-linejoin:miter; }
-.fx-box{ fill:#04141A; stroke:var(--ink-border-strong); stroke-width:3; }
+.fx-hot{ fill:none; stroke:var(--orange, var(--brass)); stroke-width:4; stroke-linecap:square; stroke-linejoin:miter; }
+.fx-box{ fill:var(--ink-950, #04141A); stroke:var(--ink-border-strong); stroke-width:3; }
 .fx-name{ fill:var(--text-hi); font-family:'Rajdhani','Figtree',sans-serif; font-weight:600; font-size:27px; letter-spacing:.08em; }
 .fx-tag{ fill:var(--line-active); font-family:'Chakra Petch','Figtree',sans-serif; font-size:17px; letter-spacing:.12em; }
 .fx-sub{ fill:var(--text-mid); font-family:'Chakra Petch','Figtree',sans-serif; font-size:19px; letter-spacing:.14em; }
 .fx-tree{ fill:none; stroke:var(--ink-border); stroke-width:2; }
 .fx-grid{ fill:var(--ink-border); }
-.tile rect{ fill:#04141A; stroke:var(--text-mid); stroke-width:3; transition:stroke .3s; }
+.tile rect{ fill:var(--ink-950, #04141A); stroke:var(--text-mid); stroke-width:3; transition:stroke .3s; }
 .tile text{ fill:var(--text-hi); font-family:'Rajdhani','Figtree',sans-serif; font-weight:600; font-size:28px; text-anchor:middle; transition:fill .3s; }
-.tile.lit rect{ stroke:var(--brass); }
+.tile.lit rect{ stroke:var(--orange, var(--brass)); }
 .fx-node rect, .fx-node circle{ transition:stroke .35s; }
-.fx-node.lit rect, .fx-node.lit circle{ stroke:var(--brass); }
+.fx-node.lit rect, .fx-node.lit circle{ stroke:var(--orange, var(--brass)); }
 
 /* BOARD CONTEXT MENU (Nick, Oct 15; cursor/board-context-menu mockup @ 0df8bf30) - the small themed menu, the "Send to Trash?" dialog, and the Settings switch. All overlays (position:fixed in a portal):
    page primacy - none of them moves or resizes anything beneath it. Tokens only, so Arbor and Flux both wear them. */

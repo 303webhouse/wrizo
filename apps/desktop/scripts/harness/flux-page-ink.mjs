@@ -150,8 +150,13 @@ await withHarness(async (app) => {
     const T = '[flux/light default ink]';
     await freshPage(app, 'flux', 'light', { id: 'fpi-p4' });
     const c = await contrastOf(app, ED);
-    ok(`${T} P4: Free Write's default pen ink is Flux's OWN ink (--ink-on-paper #14231F = rgb(20, 35, 31)), never Arbor's literal #1A0F06 (computed ${c?.fg})`,
-      !!c && c.fg === 'rgb(20, 35, 31)', JSON.stringify(c));
+    // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): Flux light's --ink-on-paper is now #042632 (rgb(4, 38, 50)); the default pen ink still IS that ink - the identity claim is unchanged, the value moved.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // ok(`${T} P4: Free Write's default pen ink is Flux's OWN ink (--ink-on-paper #14231F = rgb(20, 35, 31)), never Arbor's literal #1A0F06 (computed ${c?.fg})`,
+    //   !!c && c.fg === 'rgb(20, 35, 31)', JSON.stringify(c));
+    ok(`${T} P4 [flux-v2 successor]: Free Write's default pen ink is Flux's OWN ink (--ink-on-paper #042632 = rgb(4, 38, 50)), never Arbor's literal #1A0F06 (computed ${c?.fg})`,
+      !!c && c.fg === 'rgb(4, 38, 50)', JSON.stringify(c));
   }
 });
 

@@ -59,11 +59,20 @@ await withHarness(async (app) => {
       proseSerif: g('--font-proseSerif'), proseSans: g('--font-proseSans'),
     };
   })()`);
-  ok('check 1: ground token is Flux\'s #04141A', tokenSpots.ground.toLowerCase() === '#04141a', tokenSpots.ground);
+  // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): the ground is now #020c10 (the blue-black of the new shell).
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('check 1: ground token is Flux\'s #04141A', tokenSpots.ground.toLowerCase() === '#04141a', tokenSpots.ground);
+  ok('check 1 [flux-v2 successor]: ground token is Flux\'s #020c10', tokenSpots.ground.toLowerCase() === '#020c10', tokenSpots.ground);
   ok('check 1: line token is Flux\'s #1D4A52', tokenSpots.line.toLowerCase() === '#1d4a52', tokenSpots.line);
   ok('check 1: line-active is Flux\'s electric blue #00C2FF', tokenSpots.lineActive.toLowerCase() === '#00c2ff', tokenSpots.lineActive);
   ok('check 1: signal-live is Flux\'s lime #A6FF3D', tokenSpots.signalLive.toLowerCase() === '#a6ff3d', tokenSpots.signalLive);
-  ok('check 1: the accent invariant (--brass) is untouched by the theme switch', tokenSpots.accent.toLowerCase() === '#ff9800', tokenSpots.accent);
+  // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): selection under Flux is CYAN: --brass (the generic selection token) is #00C2FF inside the Flux scope; the Wrizo orange lives on as --orange and is named only where it is allowed (caret, sprint surge, Uplink, the mark, the current item's left bar). Arbor's --brass is untouched (check 7 below restores it).
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('check 1: the accent invariant (--brass) is untouched by the theme switch', tokenSpots.accent.toLowerCase() === '#ff9800', tokenSpots.accent);
+  const orangeToken = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--orange').trim()");
+  ok('check 1 [flux-v2 successor]: selection (--brass) is Flux\'s cyan #00C2FF, and the Wrizo orange #FF9800 lives on as --orange', tokenSpots.accent.toLowerCase() === '#00c2ff' && orangeToken.toLowerCase() === '#ff9800', JSON.stringify({ accent: tokenSpots.accent, orange: orangeToken }));
   ok('check 1: chromeLabel font slot is Rajdhani', tokenSpots.chromeLabel.includes('Rajdhani'), tokenSpots.chromeLabel);
   ok('check 1: contentLabel font slot is Chakra Petch', tokenSpots.contentLabel.includes('Chakra Petch'), tokenSpots.contentLabel);
   ok('check 1: proseSerif stays Crimson Pro (voice continuity, canon §4)', tokenSpots.proseSerif.includes('Crimson Pro'), tokenSpots.proseSerif);
@@ -72,10 +81,18 @@ await withHarness(async (app) => {
   // Page dark/light pairs (canon §3 + §11).
   await app.evalJs("window.wrizoThemePrefs.set({ page: 'dark' })");
   const pageDark = await app.evalJs("(() => { const cs = getComputedStyle(document.documentElement); return { paper: cs.getPropertyValue('--paper').trim(), ink: cs.getPropertyValue('--ink-on-paper').trim() }; })()");
-  ok('check 1: Page:dark applies Flux\'s dark pair (#0B2429 / #E3F1EC)', pageDark.paper.toLowerCase() === '#0b2429' && pageDark.ink.toLowerCase() === '#e3f1ec', JSON.stringify(pageDark));
+  // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): the dark page is the dark glass #0E1C24 with text #E8F6FA.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('check 1: Page:dark applies Flux\'s dark pair (#0B2429 / #E3F1EC)', pageDark.paper.toLowerCase() === '#0b2429' && pageDark.ink.toLowerCase() === '#e3f1ec', JSON.stringify(pageDark));
+  ok('check 1 [flux-v2 successor]: Page:dark applies Flux\'s dark-glass pair (#0E1C24 / #E8F6FA)', pageDark.paper.toLowerCase() === '#0e1c24' && pageDark.ink.toLowerCase() === '#e8f6fa', JSON.stringify(pageDark));
   await app.evalJs("window.wrizoThemePrefs.set({ page: 'light' })");
   const pageLight = await app.evalJs("(() => { const cs = getComputedStyle(document.documentElement); return { paper: cs.getPropertyValue('--paper').trim(), ink: cs.getPropertyValue('--ink-on-paper').trim() }; })()");
-  ok('check 1: Page:light applies Flux\'s light pair (#EDF6F3 / #14231F)', pageLight.paper.toLowerCase() === '#edf6f3' && pageLight.ink.toLowerCase() === '#14231f', JSON.stringify(pageLight));
+  // ---- PARKED - SUPERSEDED by FLUX V2 (Fable's brief, Nick Oct 21): the light page is #F4F7F8 with text #042632 (the chrome stays dark).
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('check 1: Page:light applies Flux\'s light pair (#EDF6F3 / #14231F)', pageLight.paper.toLowerCase() === '#edf6f3' && pageLight.ink.toLowerCase() === '#14231f', JSON.stringify(pageLight));
+  ok('check 1 [flux-v2 successor]: Page:light applies Flux\'s light pair (#F4F7F8 / #042632)', pageLight.paper.toLowerCase() === '#f4f7f8' && pageLight.ink.toLowerCase() === '#042632', JSON.stringify(pageLight));
 
   // -- check 2: lexicon renders on key surfaces; canonical routes resolve ----
   // B1 S5 — '/journal' now bridges to the Journal Board (pages/Journal.tsx

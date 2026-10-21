@@ -54,8 +54,9 @@ export const PEN_INKS = ['#1a0f06', '#b8231f', '#1f4fb8']; // black-brown, red, 
 // swatch keeps its hue family; only lightness moves, enough to clear 7:1
 // against #0B2429 (black-brown reuses --ink-on-paper itself, ~13.9:1; red and
 // blue are hand-lightened, ~7.4:1 and ~7.7:1).
+// FLUX V2: the dark page is now #0E1C24 with --ink-on-paper #E8F6FA, so the default swatch follows it (still ~15:1; red and blue only gain contrast on the darker glass).
 const PEN_INKS_FLUX_DARK: Record<string, string> = {
-  '#1a0f06': '#E3F1EC',
+  '#1a0f06': '#E8F6FA',
   '#b8231f': '#FF9088',
   '#1f4fb8': '#8AB4FF',
 };
@@ -68,8 +69,9 @@ const PEN_INKS_FLUX_DARK: Record<string, string> = {
 // (index.css), the same "reuse the theme's own ink" move the dark case
 // already makes. Scoped to the default swatch only, per the ticket's own
 // wording — red/blue aren't named and aren't touched.
+// FLUX V2: Flux light's --ink-on-paper is now #042632, and the default swatch is still that ink.
 const PEN_INKS_FLUX_LIGHT: Record<string, string> = {
-  '#1a0f06': '#14231F',
+  '#1a0f06': '#042632',
 };
 
 function effectivePenInk(ink: string, theme: ThemeId, pageTone: PageTone): string {
