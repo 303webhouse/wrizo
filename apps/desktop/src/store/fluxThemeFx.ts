@@ -87,8 +87,10 @@ function mount(container: HTMLDivElement, getDial: () => number, isBusy: () => b
     shear: () => { if (!tryFlash('sl-shear')) return false; shearBand(shear); return true; },
     noise: () => { if (!tryFlash('sl-noise')) return false; noisePatch(noise); return true; },
     macro: () => { if (!tryFlash('sl-macro')) return false; macroCluster(container); return true; },
-    sync: () => { if (!tryFlash('sl-sync')) return false; syncJump(container, Math.random() < 0.4, () => tryFlash('sl-sync2')); return true; },
-    dip: () => { if (!tryFlash('sl-dip')) return false; backlightDip(dip, 0.13, 0.09, Math.random() < 0.5, () => tryFlash('sl-dip2')); return true; },
+    // LEDGER 114: a second jump / dip comes 140 / 750 ms after the first - it asks this texture's own gate again at ITS moment (the dial, which
+    // reads 0 under reduced motion: the loops' own test), so an event under way when motion is turned off draws no new flash
+    sync: () => { if (!tryFlash('sl-sync')) return false; syncJump(container, Math.random() < 0.4, () => getDial() > 0 && tryFlash('sl-sync2')); return true; },
+    dip: () => { if (!tryFlash('sl-dip')) return false; backlightDip(dip, 0.13, 0.09, Math.random() < 0.5, () => getDial() > 0 && tryFlash('sl-dip2')); return true; },
   };
   slFire = (kind) => (fires[kind] ? fires[kind]() : false);
   stops.push(() => { slFire = null; });

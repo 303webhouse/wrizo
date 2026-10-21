@@ -60,6 +60,10 @@ export function GlitchMeter({ text }: { text: string }) {
     const isStill = () => prefersReducedMotion() || getAmbianceDial() === 0;
     const double = (p: number) => meterSeam.forceDouble || Math.random() < p;
     let I = 0;
+    // LEDGER 114 (G6 intermittent): a double dip's second pulse comes 750 ms after its first, a double jump's 140 ms after - long enough for
+    // reduced motion (or Ambiance 0) to land in between. The second pulse is a NEW flash, so it asks the same question fire() asks, at ITS
+    // moment, before it asks the budget: under reduced motion nothing new reaches the screen, even from an event already under way.
+    const second = (kind: string) => () => !isStill() && tryFlash(kind);
     const fire = (kind: MeterKind): boolean => {
       if (I <= 0 || isStill()) return false;
       if (!tryFlash(`gm-${kind}`)) return false;
@@ -68,8 +72,8 @@ export function GlitchMeter({ text }: { text: string }) {
         case 'shear': shearBand(shear, bright(I, 0.35, 0.85)); break;
         case 'noise': noisePatch(noise, bright(I, 0.4, 1)); break;
         case 'macro': macroCluster(layer, bright(I, 0.08, 0.16)); break;
-        case 'sync': syncJump(layer, double(0.4), () => tryFlash('gm-sync2')); break;
-        case 'dip': { const peak = bright(I, 0.05, 0.14); backlightDip(dip, peak, peak * 0.7, double(0.5), () => tryFlash('gm-dip2')); break; }
+        case 'sync': syncJump(layer, double(0.4), second('gm-sync2')); break;
+        case 'dip': { const peak = bright(I, 0.05, 0.14); backlightDip(dip, peak, peak * 0.7, double(0.5), second('gm-dip2')); break; }
       }
       return true;
     };
