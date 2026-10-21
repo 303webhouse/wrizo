@@ -6,7 +6,7 @@
 //   PART 1 (browserless)  source pins: the drop-shadow lives ONLY in the flash-true rule and its pop keyframes (never on the field at rest, never in the fading hold, never on the
 //                         seed root); the flash is a transform-free, layout-free effect (filter + opacity + stroke only); FULL_COVER is gone from the growth module.
 //                         One mutant, landing asserted: a drop-shadow on the field AT REST turns the pin red.
-//   PART 2 (a box turn)   the real app, real keys, one character every ~90 ms, the latency of each key read IN the page (keydown -> the frame after the one that painted its input):
+//   PART 2 (a box turn)   the real app, real keys, one character every ~90 ms, the latency of each key read IN the page (keydown -> the frame after the one that painted its input (hooked on `beforeinput`: this editor never fires `input` on a key)):
 //                         A) before the goal (the field at rest), B) while the flash is HOLDING (data-flash='true', drop-shadow applied, pop animation running), C) during the fade.
 //                         The flash samples are only counted when the flash was on at the frame - a flash that was over before the keys landed does not certify anything.
 //                         The budgets are RELATIVE to this machine's own rest numbers (a drop-shadow cost is a difference, not an absolute): median within 10 ms and p95 within 25 ms
@@ -99,20 +99,28 @@ async function part2() {
       await sleep(800);
       await app.evalJs("document.querySelector('.forward-only-editor').focus()");
     };
-    // the in-page meter: a key's latency is keydown -> the SECOND animation frame after its input (the first runs before the paint that shows it; the second starts after that paint)
+    // the in-page meter: a key's latency is keydown -> the SECOND animation frame after its input. The editor handles insertion at `beforeinput` and never fires `input` on a key (measured
+    // on the box, ledger 120: keydown 24, beforeinput 24, input 0), so the hook is `beforeinput`: the DOM changes in that same task, the first frame after it paints it, the second starts after.
+    // Every sample also carries WHEN it was taken, and the flash's own phase changes are timestamped, so a slow frame can be placed against the fade's start and end.
     const arm = () => app.evalJs(`(() => {
-      window.__lat = []; let t0 = 0;
+      window.__lat = []; window.__fl = []; let t0 = 0, last = null;
       if (window.__latOff) window.__latOff();
+      const note = () => { const f = document.querySelector('.wz-rhizome-field'); const v = f ? f.dataset.flash : null; if (v !== last) { last = v; window.__fl.push([performance.now(), v]); } };
+      note();
+      if (window.__flObs) window.__flObs.disconnect();
+      window.__flObs = new MutationObserver(note);
+      window.__flObs.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-flash'] });
       const kd = () => { t0 = performance.now(); };
-      const inp = () => { const t = t0; requestAnimationFrame(() => requestAnimationFrame(() => { const f = document.querySelector('.wz-rhizome-field'); window.__lat.push({ ms: performance.now() - t, flash: f ? f.dataset.flash : null }); })); };
-      document.addEventListener('keydown', kd, true); document.addEventListener('input', inp, true);
-      window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('input', inp, true); };
+      const bi = () => { const t = t0; requestAnimationFrame(() => requestAnimationFrame(() => { const f = document.querySelector('.wz-rhizome-field'); const now = performance.now(); window.__lat.push({ ms: now - t, flash: f ? f.dataset.flash : null, key: t, at: now }); })); };
+      document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', bi, true);
+      window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); };
       return true; })()`);
     const typeSteady = async (n, gap = 90) => { for (let i = 0; i < n; i += 1) { await app.typeKeys('a'); await sleep(gap); } };
     const lat = (flash) => app.evalJs(`window.__lat.filter((x) => ${flash === 'any' ? 'true' : `x.flash === ${JSON.stringify(flash)}`}).map((x) => x.ms)`);
     const stat = (xs) => { const s = (xs || []).slice().sort((a, b) => a - b); const q = (p) => (s.length ? s[Math.min(s.length - 1, Math.floor(p * s.length))] : null); return { n: s.length, median: q(0.5), p95: q(0.95), max: s.length ? s[s.length - 1] : null }; };
     const r1 = (x) => (x === null ? null : Math.round(x * 10) / 10);
     const show = (st) => JSON.stringify({ n: st.n, median: r1(st.median), p95: r1(st.p95), max: r1(st.max) });
+    const stored = (id) => app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(id)}) || {}).text ?? ''`);
 
     const pageId = await openPage();
     // A) REST: a goal far away, the field drawn, nothing flashing
@@ -137,19 +145,28 @@ async function part2() {
     ok('B typing inside the flash is as fast as typing at rest: median within 10 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms',
       holdSt.n >= 5 && restSt.n >= 20 && holdSt.median <= restSt.median + 10 && holdSt.p95 <= restSt.p95 + 25 && holdSt.max <= 100, `rest ${show(restSt)} | flash ${show(holdSt)}`);
 
-    // C) the fade: the finished plant fades over ~2.2 s while the seed root stays; keys here too
+    // C) the fade: the finished plant fades over ~2.2 s while the seed root stays. MORE KEYS than the hold (a percentile over twelve is just the worst key): typed as fast as the box takes
+    // them from the moment the fade begins, so most of the ~2.2 s is covered. Every key's place against the fade's start and end is kept, to say WHICH frame was slow.
     await waitSoft("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'fading'", { label: 'the fade begins', timeout: 3000 });
-    await typeSteady(12, 100);
+    await typeSteady(40, 25);
     const fadeSt = stat(await lat('fading'));
-    ok('C premise: at least 5 keys were painted during the fade', fadeSt.n >= 5, show(fadeSt));
-    ok('C typing inside the fade is as fast as at rest (same budgets)', fadeSt.n >= 5 && fadeSt.median <= restSt.median + 10 && fadeSt.p95 <= restSt.p95 + 25 && fadeSt.max <= 100, `rest ${show(restSt)} | fade ${show(fadeSt)}`);
+    ok('C premise: at least 20 keys were painted during the fade (enough that a percentile means something)', fadeSt.n >= 20, show(fadeSt));
+    ok('C typing inside the fade is as fast as at rest (same budgets)', fadeSt.n >= 20 && fadeSt.median <= restSt.median + 10 && fadeSt.p95 <= restSt.p95 + 25 && fadeSt.max <= 100, `rest ${show(restSt)} | fade ${show(fadeSt)}`);
+    // WHERE the slow frames fell: a key whose latency is 20 ms over the fade's own median, with its offset from the moment the fade began (tFade) and from the moment it ended (tEnd)
+    const att = await app.evalJs(`(() => {
+      const fl = window.__fl, tF = (fl.find((x) => x[1] === 'fading') || [null])[0], iT = fl.findIndex((x) => x[1] === 'true');
+      const tE = iT >= 0 ? (fl.slice(iT).find((x) => x[1] === 'false') || [null])[0] : null;
+      const f = window.__lat.filter((x) => x.flash === 'fading'); const ms = f.map((x) => x.ms).sort((a, b) => a - b); const med = ms.length ? ms[Math.floor(ms.length / 2)] : null;
+      const slow = f.filter((x) => med !== null && x.ms > med + 20).map((x) => ({ ms: Math.round(x.ms * 10) / 10, sinceFadeStart: tF === null ? null : Math.round(x.key - tF), beforeFadeEnd: tE === null ? null : Math.round(tE - x.at) }));
+      return { fadeMs: tF !== null && tE !== null ? Math.round(tE - tF) : null, median: med === null ? null : Math.round(med * 10) / 10, slowKeys: slow };
+    })()`);
+    ok('C attribution (information, never a verdict): the slow frames of the fade, placed against its start and end - median ' + JSON.stringify(att && att.median), true, JSON.stringify(att));
 
-    // D) nothing was lost: every key is in the stored page
-    await sleep(900);
-    await app.evalJs('window.wrizoFlushNow && window.wrizoFlushNow()');
-    const text = await app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(pageId)}) || {}).text ?? ''`);
-    const typedA = 10 + 12;   // the characters typed after ' tail' in this page's second session
-    ok('D no key was dropped across the crossing: the stored text ends with " tail" followed by every typed "a" (22 of them)', text.includes(' tail' + 'a'.repeat(typedA)), String(text).slice(-60));
+    // D) nothing was lost: every key is in the stored page. The stored text is read AFTER the debounced save lands (the standing lesson: wait on the STORED value, not on a flush call)
+    const typedA = 10 + 40;   // the characters typed after ' tail' in this page's second session
+    await waitSoft(`(((JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(pageId)})) || {}).text || '').includes(${JSON.stringify(' tail' + 'a'.repeat(typedA))})`, { label: 'the typed text has been saved', timeout: 10000 });
+    const text = await stored(pageId);
+    ok(`D no key was dropped across the crossing: the stored text ends with " tail" followed by every typed "a" (${typedA} of them)`, text.includes(' tail' + 'a'.repeat(typedA)), String(text).slice(-60));
   });
 }
 
