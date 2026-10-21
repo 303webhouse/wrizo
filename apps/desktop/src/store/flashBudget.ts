@@ -10,7 +10,9 @@
 //   THE FIX: the window is a second PLUS a margin, so a pulse reaching the screen up to DRAW_MARGIN_MS after its grant can never share a real
 //   second with more than FLASH_LIMIT others. glitch-meter-check proves it against jittered draws; glitch-meter G4 measures grant -> draw ->
 //   observed for every pulse.
-export const FLASH_LIMIT = 2;
+// THE PROOF BRANCH (glitch-g6-limit3): the brief's 3 restored WITH the draw margin - to be merged only if glitch-meter x5 shows the observer
+// never above 3 (Fable, Oct 21: "restore 3 per second only if the check proves it")
+export const FLASH_LIMIT = 3;
 export const DRAW_MARGIN_MS = 100;
 export const WINDOW_MS = 1000 + DRAW_MARGIN_MS;
 const granted: number[] = [];

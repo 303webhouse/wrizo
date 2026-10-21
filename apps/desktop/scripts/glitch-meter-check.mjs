@@ -77,7 +77,7 @@ const curve = (t) => { if (t < 30) return 0; const u = Math.min(1, (t - 30) / 27
   const seq2 = [...Array.from({ length: L }, (_, i) => [i * 10, true]), [L * 10, false], [W - 1, false], [W, true], [W + 5, false], [W + 10, true]];
   const got2 = seq2.map(([t]) => fb.tryFlash('t', t));
   ok(`BUDGET [ledger-117 successor]: FLASH_LIMIT (${L}) flashes, then refused until the oldest leaves the window (WINDOW_MS ${W} = 1000 + DRAW_MARGIN_MS); a refusal is SKIPPED, never queued for later`,
-    seq2.every(([, want], i) => got2[i] === want) && L === 2 && W === 1000 + fb.DRAW_MARGIN_MS && fb.DRAW_MARGIN_MS >= 50, JSON.stringify({ L, W, got2 }));
+    seq2.every(([, want], i) => got2[i] === want) && L === 3 && W === 1000 + fb.DRAW_MARGIN_MS && fb.DRAW_MARGIN_MS >= 50, JSON.stringify({ L, W, got2 }));   // the proof branch: the brief's 3, restored with the margin
   fb.__resetFlashBudget();
   let seed = 20261017;
   const rnd = () => { seed = (seed + 0x6D2B79F5) | 0; let x = seed; x = Math.imul(x ^ (x >>> 15), x | 1); x ^= x + Math.imul(x ^ (x >>> 7), x | 61); return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
