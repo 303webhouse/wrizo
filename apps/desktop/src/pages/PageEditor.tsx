@@ -849,10 +849,16 @@ function PageEditorView({ id }: { id: string }) {
   // decks onto BOARDS; drawing one first line onto a PAGE is this mechanism).
   // So the door calls FX15's own on-request seam rather than inventing a
   // page-side deck entry: deck-drawn, never model-drawn, never insertable.
+  // SPROUT-INVITE-SCOPE (page-readiness survey item 1, Oct 21) — the Sprout door offers to
+  // turn the first-line invite ON; once `invite`'s own pref is no longer 'off' (opted in
+  // already, or permanently declined), there is nothing left to offer, so the door stops
+  // showing. This reads the invite's OWN pref state, not a new completion flag on the
+  // beginnings row — BG1's row stays exactly as stateless as Nick's Oct 8 ruling made it;
+  // the row simply renders zero doors (BeginningsRow already returns null for that).
   const takeBeginning = (open: () => void) => () => { setBeginningsDismissed(true); open(); };
-  const beginningDoors: BeginningDoor[] = [
-    { key: 'sprout', label: dt('beginSprout'), onOpen: takeBeginning(() => invite.optIn()) },
-  ];
+  const beginningDoors: BeginningDoor[] = invite.canOffer
+    ? [{ key: 'sprout', label: dt('beginSprout'), onOpen: takeBeginning(() => invite.optIn()) }]
+    : [];
   const beginningsVisible = !beginningsDismissed && !gateActive && mode === 'journal' && wordCount(text) === 0;
   const beginningsRow = beginningsVisible
     ? <BeginningsRow surface="page" doors={beginningDoors} onDismiss={() => setBeginningsDismissed(true)} />
