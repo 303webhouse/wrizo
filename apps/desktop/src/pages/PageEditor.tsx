@@ -29,7 +29,6 @@ import type { Stroke } from '../types';
 import { projectMilestones } from '../store/milestones';
 import { copyText } from '../store/clipboard';
 import { buildPageActions } from '../store/pageActions';
-import { getWritingSettings } from '../store/writingSettings';
 import { BoardEditor } from '../components/BoardEditor';
 import { ScriptEditor } from '../components/ScriptEditor';
 import { useLexicon } from '../store/themeLexicon';
@@ -67,7 +66,7 @@ import { setFirstRunGateActive } from '../store/firstRunGateActive';
 import { useMonotonicWordCount, FirstRunVeil, FirstRunGateBanner, FirstRunGlow } from '../components/FirstRunGate';
 import { UnlockCeremony } from '../components/UnlockCeremony';
 import type { ThemeId } from '../store/theme';
-import { enterPageTypewriter, holdTypewriterPage } from '../store/writingSettings';   // PHASE 1 (S5): per-page typewriter memory
+import { enterPageTypewriter, holdTypewriterPage, typewriterForPage } from '../store/writingSettings';   // PHASE 1 (S5) / typewriter-scope: per-page typewriter memory
 import { countLineEquivalents } from '../store/lineEquivalents';
 
 import { registerFlush } from '../store/flushRegistry';
@@ -642,13 +641,13 @@ function PageEditorView({ id }: { id: string }) {
       // A1 (accessibility audit): Tab indents here, so Esc is the way OUT - to the current mode tab, after any open popup has
       // closed on its own Esc (store/escapeExit.ts). Every mode, the same key.
       if (escapeFromEditor(e, el)) return;
-      if (outlineKeysRef.current && !getWritingSettings().typewriter) return;   // PAGE TEMPLATES: the Outline's own Tab (onLensKey) acts instead
+      if (outlineKeysRef.current && !typewriterForPage(id, textRef.current.trim().length === 0)) return;   // PAGE TEMPLATES: the Outline's own Tab (onLensKey) acts instead; typewriter-scope: THIS page's own value, never the shared mirror
       const step = chord.keydown(e);
       if (step.preventDefault) e.preventDefault();
       step.acts.forEach(perform);
     };
     const onKeyUp = (e: KeyboardEvent) => {
-      if (outlineKeysRef.current && !getWritingSettings().typewriter) return;
+      if (outlineKeysRef.current && !typewriterForPage(id, textRef.current.trim().length === 0)) return;
       const step = chord.keyup(e);
       if (step.preventDefault) e.preventDefault();
       step.acts.forEach(perform);
@@ -1114,7 +1113,7 @@ function PageEditorView({ id }: { id: string }) {
   const applyLensKey = (e: KeyboardEvent): boolean => {
     if (lensActive !== 'outline' || mode !== 'drafting' || e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return false;
     if (e.key !== 'Tab' && !(e.key === 'Enter' && !e.shiftKey)) return false;
-    if (getWritingSettings().typewriter) return false;
+    if (typewriterForPage(id, textRef.current.trim().length === 0)) return false;   // typewriter-scope: THIS page's own value
     const el = editorRef.current;
     if (!el) return false;
     const sel = getSelectionOffsets(el);
@@ -1142,7 +1141,7 @@ function PageEditorView({ id }: { id: string }) {
   };
   const applyRailFormat = (action: FormatAction) => {
     if (mode !== 'drafting') return;   // 112-A's guard, unchanged in scope
-    if (getWritingSettings().typewriter) return;   // PHASE 1 (S4): Format is greyed while Typewriter is on, and its shortcuts (Ctrl/Cmd+B/I/U) are blocked with it
+    if (typewriterForPage(id, textRef.current.trim().length === 0)) return;   // PHASE 1 (S4) / typewriter-scope: Format is greyed while THIS page's own Typewriter is on, and its shortcuts (Ctrl/Cmd+B/I/U) are blocked with it
     applyFormatAt(action);
   };
 
@@ -1285,6 +1284,11 @@ function PageEditorView({ id }: { id: string }) {
       : mode === 'drafting'
         ? {
             kind: 'draft',
+            // typewriter-scope: THIS page's own id/emptiness, so Sliver's own
+            // formatLocked read (SliverToolsBody) can ask typewriterForPage
+            // directly instead of the shared `typewriter` mirror.
+            pageId: id,
+            pageEmpty: textRef.current.trim().length === 0,
             structure: 'prose',
             onSwitchStructure,
             type: typeMember('full', true),
@@ -1595,6 +1599,7 @@ function PageEditorView({ id }: { id: string }) {
           <ModeStage
             mode={mode}
             words={wordCount(text)}
+            pageId={id}
             surfaceRef={surfaceRef}
             focused={focused}
             onDissolveChange={setReceded}
@@ -1679,6 +1684,7 @@ function PageEditorView({ id }: { id: string }) {
       <ModeStage
         mode={mode}
         words={wordCount(text)}
+        pageId={id}
         surfaceRef={surfaceRef}
         focused={focused}
         onDissolveChange={setReceded}

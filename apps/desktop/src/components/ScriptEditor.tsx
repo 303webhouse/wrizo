@@ -35,7 +35,7 @@ import { isScriptEmpty } from '../store/structureConvert';
 import { unbornHref } from '../store/unbornPage';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
 import { TEMPLATE_ORDER, type TemplateKey } from './TemplateSketch';
-import { enterPageTypewriter, holdTypewriterPage } from '../store/writingSettings';   // PHASE 1 (S5): per-page typewriter memory
+import { enterPageTypewriter, holdTypewriterPage } from '../store/writingSettings';   // PHASE 1 (S5) / typewriter-scope: per-page typewriter memory
 import type { Scene, ScriptEl, ScriptElType, Project } from '../types';
 import { LocationCrumb } from './LocationCrumb';
 
@@ -977,6 +977,11 @@ export function ScriptEditor({ id }: { id: string }) {
   };
   const sliverContent: SliverContent = {
     kind: 'draft',
+    // typewriter-scope (Fable Oct 21) - same signal enterPageTypewriter's own
+    // mount call already used (below), so Sliver's own formatLocked/toggle
+    // read THIS page's own value, never the shared `typewriter` mirror.
+    pageId: id,
+    pageEmpty: !initialEntry?.script || isScriptEmpty(initialEntry.script),
     structure: 'screenplay',
     onSwitchStructure,
     // PAGE-TEMPLATES-MOVE (Nick's standing rule: brass marks a choice the writer has made, at rest) - this page IS a screenplay,

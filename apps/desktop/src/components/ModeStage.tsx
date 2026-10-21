@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { DrawerNote } from './DrawerNote';
 import { useChromeDissolve } from './useChromeDissolve';
-import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
+import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewriterForPage } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { useAssistResponse } from '../store/aiAssist';
@@ -163,10 +163,16 @@ interface Props {
   // Absent/false (every existing caller) is byte-identical to pre-HB1
   // behavior.
   firstRunGateActive?: boolean;
+  // typewriter-scope (Fable Oct 21) — THIS page's own id, so the 'drafting'
+  // branch of `typewriterOn` below can ask typewriterForPage directly instead
+  // of the shared `typewriter` mirror. Optional: absent (QuickSprint, which
+  // has no durable per-page memory of its own — a scratch surface) falls
+  // through to the shared field exactly as every caller did before this.
+  pageId?: string;
   children: (api: { noteWrite: () => void; penColor?: string }) => React.ReactNode;
 }
 
-export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, penColor: penColorProp, instrument, inkPermission, firstRunGateActive, children }: Props) {
+export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, penColor: penColorProp, instrument, inkPermission, firstRunGateActive, children }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const settings = useWritingSettings();
@@ -185,7 +191,13 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   // returns it from parking — the EFFECT now engages framed too (its own
   // toggle button moves to the sliver, a DeskFrame sibling reading/writing
   // the same shared store — CD1: components/Sliver.tsx), independent of framed.
-  const typewriterOn = (mode === 'journal' || mode === 'drafting') && settings.typewriter;
+  // typewriter-scope (Fable Oct 21) — Draft reads THIS page's own value
+  // (never the shared mirror another page could have left behind); Free
+  // Write and every pageId-less caller (QuickSprint) keep reading the
+  // shared field exactly as before.
+  const typewriterOn = mode === 'drafting' && pageId != null
+    ? typewriterForPage(pageId, words === 0)
+    : (mode === 'journal' || mode === 'drafting') && settings.typewriter;
   // AB1 S3 fix (found while generalizing the vanishing law to DeskFrame,
   // pre-existing on this surface too — not new here) — this array literal
   // was previously rebuilt on every ModeStage render, so useChromeDissolve's
@@ -436,7 +448,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
           <button type="button" className="mode-iconbtn mode-gear" aria-label="Writing settings" aria-expanded={gearOpen} onClick={() => setGearOpen(o => !o)}>
             <GearIcon />
           </button>
-          {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter, progressStyle: settings.progressStyle }} hasMilestones={!!milestones && milestones.beats.length > 0} />}
+          {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: typewriterOn, progressStyle: settings.progressStyle }} hasMilestones={!!milestones && milestones.beats.length > 0} />}
           {gearOpen && <ThemePanel />}
         </div>
       </FirstRunVeil>
@@ -605,7 +617,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
                 // FX2 S2 — a hand-click here must outrank any later
                 // Draft-open seed for the rest of the session (see
                 // setTypewriterExplicit's own comment).
-                <TypewriterToggle on={settings.typewriter} onToggle={() => setTypewriterExplicit(!settings.typewriter)} />
+                <TypewriterToggle on={typewriterOn} onToggle={() => setTypewriterExplicit(!typewriterOn)} />
               )}
             </div>
           )}
