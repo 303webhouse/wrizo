@@ -298,9 +298,10 @@ Nick's look — not yet "approved" the way Flux's icons v2 were:
   generic/shared glyph set until now — in fact a plain UNICODE CHARACTER per
   rail item today, not even an SVG; see §9a). **SUPERSEDED — wiring this in
   ships as its own branch (step 3 of the build queue above, §9), ahead of
-  Machina's own build, not WITH it:** step 3 builds the per-theme icon-swap
-  mechanism from scratch (none exists yet, §9a) and Machina's own step 4
-  inherits it rather than building it twice.
+  Machina's own build, not WITH it:** the icon-swap mechanism itself is
+  INK's own `themeIcons.ts`/`ThemeIcon.tsx` registry (Flux v2, §9a); step 3
+  registers Arbor's set into it and Machina's own step 4 registers its set
+  the same way — neither builds a seam.
 
 ### 1d. Effects registration (§10)
 
@@ -420,9 +421,10 @@ surface):
    "page ink is independent of room ink" law.
 4. **Per-theme icon set:** drawn (`icons-v3.html`/`.png` — §1c-icons above,
    both the Machina set and Arbor's new garden set), pending Nick's look.
-   **The icon-swap seam itself is step 3's job (§9), not Machina's own
-   build's** — Machina's step 4 just adds its own svg set onto the seam
-   step 3 builds.
+   **The icon-swap mechanism is INK's `themeIcons.ts`/`ThemeIcon.tsx`
+   registry (Flux v2, §9a), not something either step 3 or Machina's own
+   build constructs** — Machina's step 4 just registers its own svg set
+   into it, the same way step 3 registers Arbor's.
 5. **Per-theme splash:** **mocked first** (Cursor), same gate. Prior art:
    this exact seam was just built for Flux/Arbor (`SplashMark.tsx`,
    `ArborMark`/`FluxMark`) — Machina adds a third mark function to the same
@@ -537,7 +539,7 @@ build time — this is a plan, not a diff)
 | `apps/desktop/src/index.css` | `[data-theme="machina"]` token block (§1a), nested CAST sub-blocks, page-pair blocks, spark CSS (§1e) |
 | `apps/desktop/src/store/deskLexicon.ts` | `OVERRIDES.machina` real-word entries (§1c — locked map, not identity) |
 | `apps/desktop/src/store/themeLexicon.ts` | `OVERRIDES.machina` real-word entries (§1c), including the rail-foot "Theme" label (§3.7) and the mode-tab words (Build/Edit/Sprint) |
-| `apps/desktop/src/components/DeskRail.tsx` (+ other render sites, §9c) | **built in step 3 (§9), not here** — Machina's own build consumes the icon-swap seam step 3 builds, adding only its own svg set |
+| `apps/desktop/src/store/themeIcons.ts` (INK's registry, Flux v2) | **not built here** — Machina registers its own corporate-instrument set into INK's registry (§9a); no seam of its own |
 | `apps/desktop/src/store/themeCast.ts` (new, name TBD — see §2) | CAST storage seam |
 | `apps/desktop/src/components/ThemeEffectsLayer.tsx` / `store/fluxThemeFx.ts`-equivalent | confirm empty-registration is already a supported shape for Machina; register the one celebration's Machina-specific constants |
 | `apps/desktop/src/components/WritingIncentives.tsx` | Run (Machina-conditional, §3.6); celebration skin constants |
@@ -725,28 +727,32 @@ style.
 ## 9. Step 3 — Arbor's garden icons, plus Arbor's "BOARDS →" tab
 
 Ships as its OWN branch, per the build queue (header), after big-projects
-step 3 and independent of both the picker (step 2) and Machina (step 4) —
-though it builds the ONE per-theme icon-swap mechanism both this step and
-Machina's own icon set (§1c-icons, §3.4) will use, so step 4 inherits a
-seam rather than building one twice.
+step 3 and independent of both the picker (step 2) and Machina (step 4).
+**The icon-swap mechanism itself is INK's, not this step's (§9a)** —
+`store/themeIcons.ts` + `components/ThemeIcon.tsx`, built as part of
+INK's Flux v2 work. This step and Machina's own step 4 each ADD a set to
+that one registry; neither builds a seam.
 
-### 9a. The actual mechanism — confirmed at plan time, not assumed
+### 9a. The actual mechanism — SUPERSEDED (Fable, Oct 21 evening)
 
-**There is no existing per-theme icon-swap seam to "wire into."**
-`DeskRail.tsx`'s own rail items (`RailItem[]`, ≈ line 22-27) carry
-`glyph: string` — literal UNICODE CHARACTERS (`❧`, `▤`, `▥`, `▣`), not SVG
-components, rendered inline (`<span
-className="desk-rail-glyph">{it.glyph}</span>`, ≈ line 144). Nothing in
-this codebase today renders a per-theme SVG glyph set for the rail.
-`BeginningsRow.tsx`'s own `GLYPH: Record<BeginningKey, ReactNode>` (a
-per-key map of inline `<svg>` elements, each inheriting `currentColor`) is
-the closest existing SHAPE to copy — this step should widen `RailItem`'s
-`glyph` field (or add a parallel field) to accept a per-theme
-`Record<ThemeId, ReactNode>` the same way, rather than inventing a
-different pattern. Confirm the exact widening at build time against
-`DeskRail.tsx`'s full current contents (this plan read only the rail-item
-list and the render line, not the whole file) and against whether
-anything else already reads `RailItem.glyph` expecting a plain string.
+**Correction, after this section was first written and the plan already
+accepted:** this section originally found NO existing per-theme icon-swap
+seam in the codebase (`DeskRail.tsx`'s own rail items render a literal
+UNICODE CHARACTER per glyph today, `RailItem.glyph: string` — not even an
+SVG — confirmed by reading the file directly, ≈ line 22-27/144) and
+proposed building one here, modeled on `BeginningsRow.tsx`'s own
+`GLYPH: Record<BeginningKey, ReactNode>` shape.
+
+**That proposal is now moot: INK's Flux v2 build creates the GENERIC
+registry this whole arc needs** — `store/themeIcons.ts` +
+`components/ThemeIcon.tsx` (not yet merged at the time of this note;
+confirm its exact shape when it lands before building against it). This
+step does NOT build a seam. It ADDS Arbor's garden set to INK's registry,
+the same way Machina's own step 4 adds its own corporate set to it —
+**one registry, two themes' data, never two mechanisms.** The unicode-
+character finding above still stands as the reason a seam was needed at
+all; it's kept here as the diagnosis, not as this step's own build
+target anymore.
 
 ### 9b. Scope
 
@@ -755,11 +761,11 @@ anything else already reads `RailItem.glyph` expecting a plain string.
   soft hand-drawn strokes, nine glyphs — Drawer, Pages, Boards, Journal,
   **Mood** (the already-locked theme-menu label, not "Themes"), Settings,
   Trash, Graft, Set — one-for-one with Arbor's current rail roster.
-  Confirm each icon's actual render site before wiring: §9a's own reading
-  only confirmed `DeskRail.tsx`'s four rail items (journal/shelf/drawers/
-  library); Settings/Trash/Graft/Set/Boards/Pages are NOT all in that one
-  file (some may be pop-out headers or settings-panel rows) — locate each
-  at build time rather than assuming they share a site.
+  Registered as data into INK's `themeIcons.ts` registry (§9a) and
+  rendered through `ThemeIcon.tsx` wherever each of the nine already has
+  (or gains) a render call — confirm the full call-site list against
+  INK's own registry once it merges, rather than the pre-registry
+  per-file hunt this section used to describe.
 - **"Plan →" → "Boards →"**: a rename of ARBOR'S OWN CANONICAL mode-tab
   word — not an override. Arbor IS the canonical lexicon, so this edits
   the CANONICAL table directly, the one place §1c's own Machina section
@@ -778,10 +784,9 @@ anything else already reads `RailItem.glyph` expecting a plain string.
 
 | File | Change |
 |---|---|
-| `apps/desktop/src/components/DeskRail.tsx` | `RailItem.glyph` widened to accept a per-theme svg map (§9a); Arbor's own rail-item glyphs (journal/shelf/drawers/library) |
-| wherever Settings/Trash/Graft/Set/Boards/Pages render their own current (non-rail) icon (name TBD — confirm each site; §9a/§9b flag these are NOT all in `DeskRail.tsx`) | same per-theme svg-map treatment |
+| `apps/desktop/src/store/themeIcons.ts` (INK's, Flux v2) | Arbor's nine garden glyphs registered as data, reading INK's own registry shape (confirm it once merged — not built here) |
+| `apps/desktop/src/components/ThemeIcon.tsx` (INK's, Flux v2) | consumed, not built — confirm every render site this step's own icons need (rail, Settings/Trash/Graft/Set/Boards/Pages) already routes through it once INK's build lands; if a site doesn't yet, that's a gap to raise, not silently route around |
 | `apps/desktop/src/store/deskLexicon.ts` / `themeLexicon.ts` | the CANONICAL "Plan →" → "Boards →" rename (§9b) |
-| wherever glyph sizing/color is themed (confirm site) | confirm the new svg glyphs inherit `currentColor` the same way `BeginningsRow.tsx`'s own glyphs already do (§9a), so no new per-theme color rule is needed |
 | `apps/desktop/scripts/harness/arbor-garden-icons.mjs` (new) | §9d |
 
 ### 9d. Harness
@@ -801,8 +806,8 @@ gap is not.
 
 ### 9e. Open questions for Fable (this step, not Machina's — §7 is Machina's own)
 
-- Confirm the full render-site list for Arbor's nine garden glyphs
-  (§9a/§9c) — this plan's own read only confirmed `DeskRail.tsx`'s four
-  rail items; the other five need their own site located at build time.
-- Whether widening `RailItem.glyph` (string → per-theme ReactNode map) is
-  a breaking change for any OTHER current consumer of that field/type.
+- None of this step's own — **RESOLVED** (Fable, Oct 21 evening): the
+  icon-swap mechanism is INK's `themeIcons.ts`/`ThemeIcon.tsx` (Flux v2),
+  not a seam this step builds (§9a). The only remaining build-time task
+  is confirming that registry's exact shape once it merges and registering
+  Arbor's nine glyphs into it — not a design question for Fable.
