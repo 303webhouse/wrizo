@@ -8,8 +8,8 @@
   Round 2. Nick chose B VOIGHT. A and C are gone.
   Terminal chrome (Chakra Petch, box-drawing rules, a shallow Battle.net bevel)
   around the ESPER frame. Grid is the page frame only — the text sits on a
-  solid plate. DOC 03 // CH 3 is the chapter. CHK 4/14 is Ch 3's place in the
-  Manuscript set (Title Page, Ch 1–12, Bibliography).
+  solid plate. DOC 03 // Ch 3 is the open doc. TRK 3/14 is its place in the
+  Manuscript cartridge (Ch 1–12, Notes, Bibliography).
   Icons: 1-bit, 16px grid, square ends, no curves.
   flux-light: only the page is light. Chrome stays dark.
   glitch: the shipped meter frozen mid-pulse (tear storm + shear + noise +
@@ -54,7 +54,7 @@
   .rig .fr { margin-left: auto; font-size: 10px; letter-spacing: .12em; }
   .room { position: relative; flex: 1; min-height: 0; display: grid; grid-template-columns: 84px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) 36px; background: var(--bg); overflow: hidden; }
   html[data-frame='icon-sheet'] .room { display: none; }
-  .strip { grid-column: 1; grid-row: 1; z-index: 2; display: flex; flex-direction: column; padding: 8px 0 10px; background: var(--panel); border-right: 1px solid var(--line); box-shadow: inset -1px 0 0 rgba(0, 194, 255, .18), 0.5px 0 0 #ff4d6a, -0.5px 0 0 #00C2FF; }
+  .strip { grid-column: 1; grid-row: 1; z-index: 2; display: flex; flex-direction: column; padding: 8px 0 10px; background: var(--panel); border-right: 1px solid var(--line); box-shadow: inset -1px 0 0 rgba(0, 194, 255, .18), 0.5px 0 0 rgba(0, 194, 255, .35), -0.5px 0 0 #00C2FF; }
   .rule { font-family: Consolas, 'Cascadia Mono', monospace; color: #3E6F79; font-size: 11px; letter-spacing: 0; text-align: center; line-height: 1; padding: 4px 0; }
   .sfoot { margin-top: auto; }
   .si { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; padding: 8px 4px; color: var(--text); font-size: 11px; font-weight: 500; letter-spacing: .04em; }
@@ -79,7 +79,7 @@
   html[data-frame='pages-popout'] .track-r, html[data-frame='board'] .track-r { display: none; }
   html[data-frame='tutor'] .pagecol, html[data-frame='grafts'] .pagecol { grid-column: 1; }
   html[data-frame='tutor'] .track-r, html[data-frame='grafts'] .track-r { grid-column: 2; }
-  .top { grid-column: 1 / -1; grid-row: 1; z-index: 2; display: flex; align-items: center; gap: 14px; min-width: 0; background: var(--panel); border-bottom: 1px solid var(--line); padding: 0 8px; box-shadow: inset 0 1px 0 rgba(0, 194, 255, .2), 0.5px 0 0 #ff4d6a, -0.5px 0 0 #00C2FF; }
+  .top { grid-column: 1 / -1; grid-row: 1; z-index: 2; display: flex; align-items: center; gap: 14px; min-width: 0; background: var(--panel); border-bottom: 1px solid var(--line); padding: 0 8px; box-shadow: inset 0 1px 0 rgba(0, 194, 255, .2), 0.5px 0 0 rgba(0, 194, 255, .35), -0.5px 0 0 #00C2FF; }
   .mark { font-weight: 600; font-size: 15px; letter-spacing: .18em; color: var(--orange); }
   .crumb { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--label); }
   .here { color: var(--text); font-weight: 600; }
@@ -98,7 +98,7 @@
   .track { grid-row: 2; min-height: 0; min-width: 0; display: flex; z-index: 2; }
   .track-l { grid-column: 1; } .track-r { grid-column: 3; }
   .pagecol { grid-column: 2; grid-row: 2; min-width: 0; min-height: 0; display: flex; justify-content: center; position: relative; z-index: 1; }
-  .panel { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--line); position: relative; overflow: hidden; box-shadow: inset 1px 1px 0 rgba(0, 194, 255, .22), inset -1px -1px 0 rgba(0, 0, 0, .7), 0.5px 0 0 #ff4d6a, -0.5px 0 0 #00C2FF; }
+  .panel { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--line); position: relative; overflow: hidden; box-shadow: inset 1px 1px 0 rgba(0, 194, 255, .22), inset -1px -1px 0 rgba(0, 0, 0, .7), 0.5px 0 0 rgba(0, 194, 255, .35), -0.5px 0 0 #00C2FF; }
   #pop-pages, #pop-boards { display: none; }
   html[data-frame='page-both-panels'] #pop-pages, html[data-frame='pages-popout'] #pop-pages,
   html[data-frame='flux-light'] #pop-pages, html[data-frame='glitch'] #pop-pages,
@@ -219,7 +219,7 @@
   .gk-src { width: 12px; height: 16px; background: #0E2C34; border: 1px solid var(--line); border-left: 3px solid var(--cyan); flex: 0 0 auto; }
   .tagm { font-size: 12px; color: var(--label); }
   .tagm::before { content: '#'; }
-  .sprint { grid-column: 1 / -1; grid-row: 2; z-index: 3; display: flex; align-items: center; gap: 14px; padding: 0 16px; background: var(--panel); border-top: 1px solid var(--line); box-shadow: 0.5px 0 0 #ff4d6a, -0.5px 0 0 #00C2FF; }
+  .sprint { grid-column: 1 / -1; grid-row: 2; z-index: 3; display: flex; align-items: center; gap: 14px; padding: 0 16px; background: var(--panel); border-top: 1px solid var(--line); box-shadow: 0.5px 0 0 rgba(0, 194, 255, .35), -0.5px 0 0 #00C2FF; }
   .trackbar { flex: 1; height: 5px; background: #12333A; position: relative; }
   .fill { position: absolute; inset: 0 auto 0 0; width: calc(var(--n) * 2px); max-width: 70%; background: var(--lime); }
   .nocaret { position: absolute; top: -3px; width: 3px; height: 11px; left: calc(var(--n) * 2px - 2px); background: var(--cyan); }
@@ -267,10 +267,10 @@
 <header class="rig">
   <b>FLUX V2 · VOIGHT</b><span class="only">mockup only</span>
   <button type="button" data-framebtn="page-both-panels">Both panels</button>
-  <button type="button" data-framebtn="pages-popout">Pages</button>
-  <button type="button" data-framebtn="grafts">Grafts</button>
-  <button type="button" data-framebtn="board">Board</button>
-  <button type="button" data-framebtn="tutor">Tutor</button>
+  <button type="button" data-framebtn="pages-popout">Docs</button>
+  <button type="button" data-framebtn="grafts">Links</button>
+  <button type="button" data-framebtn="board">Circuits</button>
+  <button type="button" data-framebtn="tutor">Operator</button>
   <button type="button" data-framebtn="flux-light">Daylight</button>
   <button type="button" data-framebtn="icon-sheet">Icons</button>
   <button type="button" data-framebtn="glitch">Glitch</button>
@@ -280,15 +280,15 @@
 
 <div class="room" id="room">
   <aside class="strip" aria-label="Strip">
-    <div class="place" title="The Late Ferry"><span data-px="drawer"></span><span class="nm">The Late Ferry</span><span class="chev">⌄</span></div>
-    <button class="si" id="railPages" type="button"><span data-px="pages"></span><span>Pages</span></button>
-    <button class="si" id="railBoards" type="button"><span data-px="boards"></span><span>Boards</span></button>
+    <div class="place" title="The Late Ferry"><span data-px="drawer"></span><span class="nm">RACK ▸ The Late Ferry</span><span class="chev">⌄</span></div>
+    <button class="si" id="railPages" type="button"><span data-px="pages"></span><span>Docs</span></button>
+    <button class="si" id="railBoards" type="button"><span data-px="boards"></span><span>Circuits</span></button>
     <div class="rule" aria-hidden="true">├─────┤</div>
-    <button class="si" type="button"><span data-px="journal"></span><span>Journal</span></button>
+    <button class="si" type="button"><span data-px="journal"></span><span>Log</span></button>
     <div class="sfoot">
       <div class="rule" aria-hidden="true">├─────┤</div>
-      <button class="si" type="button"><span data-px="settings"></span><span>Settings</span></button>
-      <button class="si" type="button"><span data-px="themes"></span><span>Themes</span></button>
+      <button class="si" type="button"><span data-px="settings"></span><span>Config</span></button>
+      <button class="si" type="button"><span data-px="themes"></span><span>Skins</span></button>
       <div class="rule" aria-hidden="true">├─────┤</div>
       <button class="si" type="button"><span data-px="trash"></span><span>Trash</span></button>
     </div>
@@ -300,30 +300,29 @@
         <div class="crumb crumb-page"><span>The Late Ferry</span><span>›</span><span>Manuscript</span><span>›</span><span class="here">Ch 3</span><button class="dots" type="button" aria-label="Page menu">···</button></div>
         <div class="crumb crumb-board"><span>The Late Ferry</span><span>›</span><span class="here">Chapter map</span></div>
         <div class="modes" id="pageModes">
-          <button class="mt" type="button">Free Write</button>
+          <button class="mt" type="button">Wire In</button>
           <button class="mt on" type="button">Draft</button>
           <button class="mt" type="button">Revise</button>
           <button class="mt off" type="button">Workshop</button>
-          <button class="mt" type="button">Publish</button>
-          <button class="mt plan" type="button">Plan →</button>
+          <button class="mt" type="button">Uplink</button>
+          <button class="mt plan" type="button">Schematic →</button>
         </div>
         <div class="modes" id="boardModes">
           <button class="mt on" type="button">Open</button>
           <button class="mt" type="button">Storyboard</button>
           <button class="mt" type="button">Outline</button>
-          <button class="mt plan" type="button">Pages →</button>
+          <button class="mt plan" type="button">Docs →</button>
         </div>
       </div>
       <div class="track track-l">
-        <aside class="panel" id="pop-pages" aria-label="Pages">
-          <div class="pophead"><span data-px="drawer"></span><span class="pn">The Late Ferry</span></div>
-          <button class="newbtn" type="button"><b>＋</b>New Page</button>
-          <div class="tools"><span class="lab">Sections</span><button class="sort" type="button">Order</button>
+        <aside class="panel" id="pop-pages" aria-label="Docs">
+          <div class="pophead"><span data-px="drawer"></span><span class="pn">RACK ▸ The Late Ferry</span></div>
+          <button class="newbtn" type="button"><b>＋</b>New Doc</button>
+          <div class="tools"><span class="lab">Tracks</span><button class="sort" type="button">Order</button>
             <div class="views"><button type="button" aria-pressed="true" aria-label="Rows"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 2.5h10M1 6h10M1 9.5h10"/></svg></button><button type="button" aria-pressed="false" aria-label="Grid"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="4" height="4"/><rect x="7" y="1" width="4" height="4"/><rect x="1" y="7" width="4" height="4"/><rect x="7" y="7" width="4" height="4"/></svg></button></div>
           </div>
           <div class="popbody">
             <div class="setfold open"><span class="cv">›</span><span>Manuscript</span></div>
-            <div class="row"><span class="mini"></span><span class="tx"><span class="t">Title Page</span><span class="fl">THE LATE FERRY · a novel</span></span></div>
             <div class="row"><span class="mini"></span><span class="tx"><span class="t">Ch 1</span><span class="fl">The ferry was late the night Mara came home.</span></span></div>
             <div class="row"><span class="mini"></span><span class="tx"><span class="t">Ch 2</span><span class="fl">Nobody on the quay would say her brother’s name.</span></span></div>
             <div class="row" aria-current="true"><span class="mini"></span><span class="tx"><span class="t">Ch 3</span><span class="fl">The kettle clicks off and she still doesn’t turn around.</span></span></div>
@@ -336,16 +335,17 @@
             <div class="row"><span class="mini"></span><span class="tx"><span class="t">Ch 10</span><span class="fl">Nobody had seen the ferryman since March.</span></span></div>
             <div class="row"><span class="mini"></span><span class="tx"><span class="t">Ch 11</span><span class="fl">The last crossing was the one they never talked about.</span></span></div>
             <div class="row"><span class="mini"></span><span class="tx"><span class="t">Ch 12</span><span class="fl">In the end it was only water.</span></span></div>
+            <div class="row"><span class="mini"></span><span class="tx"><span class="t">Notes</span><span class="fl">Quay names, tide times, the coat.</span></span></div>
             <div class="row"><span class="mini"></span><span class="tx"><span class="t">Bibliography</span><span class="fl">Ashworth, M. Tides of the Estuary (1987).</span></span></div>
-            <div class="popfoot"><button class="lnk" type="button"><b>+</b>New set</button><div class="presets"><span class="lab">Presets</span>
+            <div class="popfoot"><button class="lnk" type="button"><b>+</b>New cartridge</button><div class="presets"><span class="lab">Presets</span>
               <button class="lnk" type="button"><b>+</b>Title Page</button><button class="lnk" type="button"><b>+</b>Screenplay</button>
               <button class="lnk" type="button"><b>+</b>Outline</button><button class="lnk" type="button"><b>+</b>Bibliography</button></div></div>
           </div>
         </aside>
-        <aside class="panel" id="pop-boards" aria-label="Boards">
-          <div class="pophead"><span data-px="drawer"></span><span class="pn">The Late Ferry</span></div>
-          <button class="newbtn" type="button"><b>＋</b>New Board</button>
-          <div class="tools"><span class="lab">Sections</span><button class="sort" type="button">Order</button>
+        <aside class="panel" id="pop-boards" aria-label="Circuits">
+          <div class="pophead"><span data-px="drawer"></span><span class="pn">RACK ▸ The Late Ferry</span></div>
+          <button class="newbtn" type="button"><b>＋</b>New Circuit</button>
+          <div class="tools"><span class="lab">Tracks</span><button class="sort" type="button">Order</button>
             <div class="views"><button type="button" aria-pressed="false" aria-label="Rows"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 2.5h10M1 6h10M1 9.5h10"/></svg></button><button type="button" aria-pressed="true" aria-label="Grid"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="4" height="4"/><rect x="7" y="1" width="4" height="4"/><rect x="1" y="7" width="4" height="4"/><rect x="7" y="7" width="4" height="4"/></svg></button></div>
           </div>
           <div class="popbody">
@@ -355,7 +355,7 @@
               <div class="tile"><span class="th"><i style="left:12%;top:20%"></i><i style="left:40%;top:48%"></i></span><span class="t">Timeline</span></div>
             </div>
             <div class="setfold"><span class="cv">›</span><span>Worldbuilding</span><span class="ctn">4</span></div>
-            <div class="popfoot"><button class="lnk" type="button"><b>+</b>New set</button><div class="presets"><span class="lab">Presets</span>
+            <div class="popfoot"><button class="lnk" type="button"><b>+</b>New cartridge</button><div class="presets"><span class="lab">Presets</span>
               <button class="lnk" type="button"><b>+</b>Three-Act Structure</button><button class="lnk" type="button"><b>+</b>Worldbuilding</button>
               <button class="lnk" type="button"><b>+</b>Feature Screenplay</button><button class="lnk" type="button"><b>+</b>Character Study</button></div></div>
           </div>
@@ -365,14 +365,14 @@
         <div class="page" id="page">
           <div class="frame-grid" aria-hidden="true"></div>
           <div class="brackets" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-          <div class="readout"><span>DOC 03 // CH 3</span><span>CHK 4/14</span></div>
+          <div class="readout"><span>DOC 03 // Ch 3</span><span>TRK 3/14</span></div>
           <div class="sheet" id="prose">
             <p>The kettle clicks off and she still doesn’t turn around.<span class="caret" aria-hidden="true"></span> Steam writes a short sentence on the window, then forgets it.</p>
             <p>He could say her name. He doesn’t. Instead he lines the cups up by the sink, handles all facing the same way, the way their mother used to, and waits for the room to decide something.</p>
             <p>Outside, the ferry sounds once, low, like a door closing somewhere far off. She counts the seconds before the second horn. There isn’t one.</p>
             <p>“You kept the blue one,” she says, finally. Not a question.</p>
           </div>
-          <div class="hint">TYPE — THE CHROME RECEDES ▪ PASTE MEETS THE FIREWALL ▪ GRID ON THE FRAME</div>
+          <div class="hint">TYPE — THE CHROME RECEDES ▪ PASTE MEETS THE FIREWALL</div>
         </div>
         <div class="board" id="board">
           <div class="frame-grid" aria-hidden="true"></div>
@@ -383,7 +383,7 @@
             <div class="bd">She watches the ferry light before she turns the kettle on.</div>
             <div class="xy">056 · 070</div>
             <span class="resz" aria-hidden="true"></span>
-            <button class="knob" type="button" aria-label="Drag to graft" data-px="knob"></button>
+            <button class="knob" type="button" aria-label="Drag to link" data-px="knob"></button>
           </article>
           <article class="bcard" style="left:310px;top:58px">
             <div class="ct">The blue cup</div>
@@ -403,18 +403,18 @@
             <div class="xy">430 · 250</div>
             <span class="resz" aria-hidden="true"></span>
           </article>
-          <div class="tip">Drag to graft</div>
+          <div class="tip">Drag to link</div>
         </div>
       </div>
       <div class="track track-r">
-        <aside class="panel" aria-label="Tutor and grafts">
+        <aside class="panel" aria-label="Operator and links">
           <div class="tabs">
-            <button class="tab tab-tutor" type="button">Tutor</button>
-            <button class="tab tab-grafts" type="button">Grafts</button>
+            <button class="tab tab-tutor" type="button">Operator</button>
+            <button class="tab tab-grafts" type="button">Links</button>
           </div>
           <div class="tbody" id="tutor">
             <div class="ask">
-              <textarea placeholder="Ask a question…" aria-label="Ask the Tutor"></textarea>
+              <textarea placeholder="Ask a question…" aria-label="Ask the Operator"></textarea>
               <div class="bar"><button class="send" type="button" disabled>Send</button></div>
             </div>
             <div class="chips">
@@ -431,12 +431,12 @@
             </div>
           </div>
           <div class="tbody gbody" id="grafts">
-            <button class="gadd" type="button"><b>＋</b>Graft…</button>
+            <button class="gadd" type="button"><b>＋</b>Link…</button>
             <div class="ghead"><span class="gt">Connected to <em>Mara at the window</em></span><button class="sort" type="button">Order</button></div>
-            <div class="lab gl">Pages</div>
+            <div class="lab gl">Docs</div>
             <div class="gr"><span class="mini" style="width:14px;height:18px"></span><span class="t">Ch 2</span></div>
             <div class="lab gl">Sources</div>
-            <div class="gr"><span class="gk-src"></span><span class="t">Harbour photo, 1962</span><span class="plc">Journal</span></div>
+            <div class="gr"><span class="gk-src"></span><span class="t">Harbour photo, 1962</span><span class="plc">Log</span></div>
             <div class="lab gl">Shared tags</div>
             <div class="gr"><span class="tagm">revised</span><span class="t">Ch 4</span></div>
             <div class="gr"><span class="tagm">ferry</span><span class="t">Salt</span><span class="plc">Short stories</span></div>
@@ -526,10 +526,156 @@
     knob: '<svg class="today" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5" fill="currentColor"/></svg>'
   };
   var NAMES = {
-    drawer: 'Place', pages: 'Pages', boards: 'Boards', journal: 'Journal', settings: 'Settings', themes: 'Themes', trash: 'Trash',
+    drawer: 'Rack', pages: 'Docs', boards: 'Circuits', journal: 'Log', settings: 'Config', themes: 'Skins', trash: 'Trash',
     B: 'Bold', I: 'Italic', U: 'Underline', S: 'Strike', H: 'Heading', list: 'List', left: 'Align left', center: 'Align center', right: 'Align right',
-    tags: 'Tags', copy: 'Copy', del: 'Delete', hf: 'Header / Footer', knob: 'Graft knob'
+    tags: 'Tags', copy: 'Copy', del: 'Delete', hf: 'Header / Footer', knob: 'Link'
   };
+  function fromRows(rows) {
+    var rects = [];
+    rows.forEach(function (row, y) {
+      for (var x = 0; x < row.length; x++) if (row.charAt(x) === '#') rects.push([x, y, 1, 1]);
+    });
+    return rects;
+  }
+  var MAPS = {
+    drawer: [
+'................',
+'.##############.',
+'.#............#.',
+'.#.######..##.#.',
+'.#............#.',
+'.##############.',
+'.#............#.',
+'.#.######..##.#.',
+'.#............#.',
+'.##############.',
+'.#............#.',
+'.#.######..##.#.',
+'.#............#.',
+'.##############.',
+'..##........##..',
+'................'],
+    pages: [
+'................',
+'.##############.',
+'.##############.',
+'.#............#.',
+'.#.#..........#.',
+'.#..#.........#.',
+'.#.#..###.....#.',
+'.#............#.',
+'.#.#########..#.',
+'.#............#.',
+'.#.######.....#.',
+'.#............#.',
+'.#.########...#.',
+'.#............#.',
+'.##############.',
+'................'],
+    boards: [
+'................',
+'.####...........',
+'.#..#######.....',
+'.#..#.....#.....',
+'.####.....#.....',
+'..........#.....',
+'.........####...',
+'.........#..####',
+'.........#..#...',
+'.........####...',
+'..........#.....',
+'.####.....#.....',
+'.#..#######.....',
+'.#..#...........',
+'.####...........',
+'................'],
+    journal: [
+'................',
+'................',
+'.##.##########..',
+'................',
+'.##.#######.....',
+'................',
+'.##.###########.',
+'................',
+'.##.######......',
+'................',
+'.##.#########...',
+'................',
+'.##.##..........',
+'.##.##..........',
+'................',
+'................'],
+    settings: [
+'................',
+'....##..........',
+'....##..........',
+'.##############.',
+'....##..........',
+'....##..........',
+'..........##....',
+'..........##....',
+'.##############.',
+'..........##....',
+'..........##....',
+'.......##.......',
+'.......##.......',
+'.##############.',
+'.......##.......',
+'.......##.......'],
+    themes: [
+'................',
+'.##############.',
+'.#............#.',
+'.#.#####.#.#..#.',
+'.#.#####..#.#.#.',
+'.#.#####.#.#..#.',
+'.#.#####..#.#.#.',
+'.#.#####.#.#..#.',
+'.#.#####..#.#.#.',
+'.#............#.',
+'.##############.',
+'.......##.......',
+'.......##.......',
+'....########....',
+'................',
+'................'],
+    trash: [
+'................',
+'......####......',
+'......#..#......',
+'.##############.',
+'................',
+'..############..',
+'..#..........#..',
+'..#..#..#..#.#..',
+'..#..#..#..#.#..',
+'..#..#..#..#.#..',
+'..#..#..#..#.#..',
+'..#..#..#..#.#..',
+'..#..........#..',
+'..############..',
+'................',
+'................'],
+    knob: [
+'................',
+'................',
+'................',
+'..#######.......',
+'.#.......#......',
+'.#.......#.###..',
+'.#....#..#....#.',
+'.#....#..#....#.',
+'..###.#.......#.',
+'......#.......#.',
+'.......#######..',
+'................',
+'................',
+'................',
+'................',
+'................']
+  };
+  Object.keys(MAPS).forEach(function (key) { R[key] = fromRows(MAPS[key]); });
   function row(key) {
     return '<div class="irow"><span class="nm">' + NAMES[key] + '</span><span class="slot">' + TODAY[key] + '</span><span class="slot">' + px(R[key]) + '</span></div>';
   }
