@@ -1,0 +1,31 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=1b68e0de bundle=index-Bys9KEcO.js/768187b out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bpp-default-c00
+(node:11308) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[01/19] OK        exit=0    5s a11y-signin.mjs :: A11Y-SIGNIN VERIFY: PASS (15 checks)
+[02/19] OK        exit=0    5s a11y-tutor-live-region.mjs :: A11Y-TUTOR-LIVE-REGION VERIFY: PASS (13 checks)
+[03/19] OK        exit=0   11s ab1.mjs :: ROWS-SHADOW VERIFY: PASS (34 renders checked, shadow == DOM on every one) ;; AB1 VERIFY: PASS (29 checks)
+[04/19] OK        exit=0   16s ab2.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; AB2 VERIFY: PASS (27 checks)
+[05/19] OK        exit=0   35s ab3.mjs :: ROWS-SHADOW VERIFY: PASS (63 renders checked, shadow == DOM on every one) ;; AB3 VERIFY: PASS (24 checks)
+[06/19] OK        exit=0   19s ab4.mjs :: AB4 VERIFY: PASS (19 checks)
+[07/19] OK        exit=0   16s arrival-signin-walk.mjs :: ARRIVAL-SIGNIN-WALK VERIFY: PASS (15 checks)
+[08/19] OK        exit=0   15s arrival-signin.mjs :: ARRIVAL-SIGNIN VERIFY: PASS (103 checks) — screenshots and live walk not run (box turn)
+[09/19] OK        exit=0   30s b1.mjs :: ROWS-SHADOW VERIFY: PASS (97 renders checked, shadow == DOM on every one) ;; B1 VERIFY: PASS (47 checks)
+[10/19] OK        exit=0   45s b101.mjs :: B101 VERIFY: PASS (73 checks)
+[11/19] OK        exit=0   15s b2-1.mjs :: ROWS-SHADOW VERIFY: PASS (9 renders checked, shadow == DOM on every one) ;; B2-1 VERIFY: PASS (28 checks)
+[12/19] OK        exit=0   34s b2.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; B2 VERIFY: PASS (76 checks)
+[13/19] OK        exit=0   19s b3.mjs :: B3 VERIFY: PASS (63 checks)
+[14/19] FAIL      exit=1   36s bg1.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; BG1 VERIFY: FAIL — 2/36 failed
+[15/19] FAIL      exit=1   10s bg2.mjs :: BG2 VERIFY: FAIL — 1/23 failed
+[16/19] OK        exit=0   40s big-projects-1a.mjs :: ROWS-SHADOW VERIFY: PASS (36 renders checked, shadow == DOM on every one) ;; BIG-PROJECTS-1A VERIFY: PASS (92 checks)
+[17/19] OK        exit=0   21s big-projects-2.mjs :: BIG-PROJECTS-2 VERIFY: PASS (43 checks)
+[18/19] OK        exit=0   17s bm1.mjs :: BM1 VERIFY: PASS (36 checks)
+[19/19] OK        exit=0   33s board-click-create.mjs :: BOARD-CLICK-CREATE VERIFY: PASS (30 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 17/19 of 19 returned a passing verdict
+  FAIL: bg1.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bpp-default-c00\bg1.mjs.default.txt
+  FAIL: bg2.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bpp-default-c00\bg2.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=1b68e0de bundle=index-Bys9KEcO.js/768187b
+CHUNK 00 EXIT 1

@@ -1,0 +1,29 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=1b68e0de bundle=index-Bys9KEcO.js/768187b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bpp-default-c07
+[01/19] OK        exit=0   19s rhizome-goal.mjs :: RHIZOME-GOAL-CORE VERIFY: PASS (33 checks) ;; RHIZOME-GOAL VERIFY: PASS (10 checks)
+[02/19] OK        exit=0    2s rhizome-growth.mjs :: RHIZOME-GROWTH VERIFY: PASS (49 checks)
+[03/19] OK        exit=0   14s s1.mjs :: S1 VERIFY: PASS (86 checks)
+[04/19] OK        exit=0   39s sc1.mjs :: SC1 VERIFY: PASS (71 checks)
+[05/19] OK        exit=0   38s sc2.mjs :: SC2 VERIFY: PASS (72 checks)
+[06/19] OK        exit=0    1s seed-guard.mjs :: SEED-GUARD VERIFY: PASS (36 checks)
+[07/19] OK        exit=0   46s splash.mjs :: SPLASH VERIFY: PASS (90 checks)
+[08/19] OK        exit=0    7s strike.mjs :: STRIKE VERIFY: PASS (7 checks)
+[09/19] OK        exit=0    1s sync-generation.mjs :: SYNC-GENERATION VERIFY: PASS (19 checks)
+[10/19] FAIL      exit=1    5s th1.mjs :: TH1 VERIFY: FAIL — 1/27 failed
+[11/19] OK        exit=0   30s th2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; TH2 VERIFY: PASS (44 checks)
+[12/19] OK        exit=0    3s tp1.mjs :: TP1 VERIFY: PASS (7 checks)
+[13/19] OK        exit=0   47s tu1.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; TU1 VERIFY: PASS (92 checks)
+[14/19] OK        exit=0   50s tu2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; TU2 VERIFY: PASS (92 checks)
+[15/19] OK        exit=0   37s tu5.mjs :: TU5 VERIFY: PASS (84 checks)
+[16/19] NOVERDICT exit=0   14s tutor-drawer-probe.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bpp-default-c07\tutor-drawer-probe.mjs.default.txt)
+[17/19] OK        exit=0    0s tutor-mirror.mjs :: TUTOR-MIRROR VERIFY: PASS (5 checks)
+[18/19] OK        exit=0  106s typed-literal.mjs :: ROWS-SHADOW VERIFY: PASS (136 renders checked, shadow == DOM on every one) ;; TYPED-LITERAL VERIFY: PASS (31 checks)
+[19/19] OK        exit=0   12s typewriter-fade.mjs :: TYPEWRITER-FADE VERIFY: PASS (5 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 17/19 of 19 returned a passing verdict
+  FAIL: th1.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bpp-default-c07\th1.mjs.default.txt
+  NOVERDICT: tutor-drawer-probe.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bpp-default-c07\tutor-drawer-probe.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=1b68e0de bundle=index-Bys9KEcO.js/768187b NO-REBUILD
+CHUNK 07 EXIT 1

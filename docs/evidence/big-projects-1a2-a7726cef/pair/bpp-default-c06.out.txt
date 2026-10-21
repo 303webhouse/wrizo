@@ -1,0 +1,27 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=1b68e0de bundle=index-Bys9KEcO.js/768187b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bpp-default-c06
+[01/19] OK        exit=0    0s logout-flush.mjs :: LOGOUT-FLUSH VERIFY: PASS (39 checks) — live walk not run (box turn)
+[02/19] OK        exit=0   14s m1.mjs :: ROWS-SHADOW VERIFY: PASS (29 renders checked, shadow == DOM on every one) ;; M1 VERIFY: PASS (29 checks)
+[03/19] OK        exit=0   31s m2.mjs :: M2 VERIFY: PASS (26 checks)
+[04/19] OK        exit=0   26s m3.mjs :: M3 VERIFY: PASS (6 checks)
+[05/19] OK        exit=0   26s m4.mjs :: M4 VERIFY: PASS (35 checks)
+[06/19] OK        exit=0    0s one-drawer.mjs :: ONE-DRAWER VERIFY: PASS (13 checks)
+[07/19] OK        exit=0    7s outdent.mjs :: ROWS-SHADOW VERIFY: PASS (32 renders checked, shadow == DOM on every one) ;; OUTDENT VERIFY: PASS (10 checks)
+[08/19] OK        exit=0    1s page-links.mjs :: PAGE-LINKS VERIFY: PASS (28 checks)
+[09/19] OK        exit=0   15s page-scroll-return.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; PAGE-SCROLL-RETURN VERIFY: PASS (9 checks)
+[10/19] OK        exit=0   64s page-templates-r2.mjs :: ROWS-SHADOW VERIFY: PASS (72 renders checked, shadow == DOM on every one) ;; PAGE-TEMPLATES-R2 VERIFY: PASS (134 checks)
+[11/19] OK        exit=0   21s page-templates.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; PAGE-TEMPLATES VERIFY: PASS (20 checks)
+[12/19] OK        exit=0   35s pb1.mjs :: ROWS-SHADOW VERIFY: PASS (26 renders checked, shadow == DOM on every one) ;; PB1 VERIFY: PASS (22 checks)
+[13/19] OK        exit=0   47s pw1.mjs :: PW1 VERIFY: PASS (41 checks)
+[14/19] OK        exit=0   19s pw2.mjs :: PW2 VERIFY: PASS (24 checks)
+[15/19] OK        exit=0   36s resume-on-open.mjs :: RESUME-ON-OPEN VERIFY: PASS (57 checks)
+[16/19] OK        exit=0   18s reveal.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; REVEAL VERIFY: PASS (19 checks)
+[17/19] OK        exit=0   26s revealmark.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; REVEALMARK VERIFY: PASS (16 checks)
+[18/19] OK        exit=0    6s revspell.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; REVSPELL VERIFY: PASS (12 checks)
+[19/19] OK        exit=0    0s rhizome-goal-core.mjs :: RHIZOME-GOAL-CORE VERIFY: PASS (33 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 19/19 of 19 returned a passing verdict
+SUITE RESULT: CLEAN — tree=1b68e0de bundle=index-Bys9KEcO.js/768187b NO-REBUILD
+CHUNK 06 EXIT 0

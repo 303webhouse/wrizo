@@ -1,0 +1,139 @@
+[
+  {
+    "name": "boot applies data-theme=\"plateau\" to <html> with no flash",
+    "pass": true,
+    "detail": "plateau"
+  },
+  {
+    "name": "check 1: re-applying the registered theme leaves every slot value unchanged",
+    "pass": true,
+    "detail": "{\"--brass\":\"#ff9800\",\"--ink-950\":\"#110600\",\"--paper\":\"#F3EDE1\",\"--font-display\":\"\\\"Figtree Variable\\\", system-ui, sans-serif\",\"--font-prose\":\"\\\"Crimson Pro Variable\\\", Georgia, serif\",\"--font-ui\":\"\\\"Figtree Variable\\\", system-ui, sans-serif\",\"--line-active\":\"#453B31\",\"--signal-live\":\"#93B08C\"} vs {\"--brass\":\"#ff9800\",\"--ink-950\":\"#110600\",\"--paper\":\"#F3EDE1\",\"--font-display\":\"\\\"Figtree Variable\\\", system-ui, sans-serif\",\"--font-prose\":\"\\\"Crimson Pro Variable\\\", Georgia, serif\",\"--font-ui\":\"\\\"Figtree Variable\\\", system-ui, sans-serif\",\"--line-active\":\"#453B31\",\"--signal-live\":\"#93B08C\"}"
+  },
+  {
+    "name": "check 1: setting an unregistered theme id is rejected (root stays plateau, never blank)",
+    "pass": true,
+    "detail": "plateau"
+  },
+  {
+    "name": "check 2: every canonical term ID maps to a non-empty display string",
+    "pass": true,
+    "detail": "[[\"page\",\"Pages\"],[\"shelf\",\"Shelf\"],[\"drawer\",\"Drawer\"],[\"binder\",\"Binder\"],[\"box\",\"Box\"],[\"board\",\"Board\"],[\"notebook\",\"Notebook\"],[\"journal\",\"Journal\"],[\"plan\",\"Plan\"],[\"milestone\",\"Milestone\"],[\"freewrite\",\"Free write\"],[\"home\",\"Home\"],[\"voicewall\",\"Voice Wall\"],[\"publish\",\"Publish\"],[\"script\",\"Script\"]]"
+  },
+  {
+    "name": "check 2: an unregistered theme id falls through to the canonical noun (t/one)",
+    "pass": true,
+    "detail": "Journal"
+  },
+  {
+    "name": "check 2 (R1): an unregistered theme id falls through to the canonical plural (tMany/many)",
+    "pass": true,
+    "detail": "Drawers"
+  },
+  {
+    "name": "check 2 (R1) [word-diet successor]: t() and tMany() resolve distinct, correct number forms for the same term (shelf)",
+    "pass": true,
+    "detail": "{\"mapped\":[[\"page\",\"Pages\"],[\"shelf\",\"Shelf\"],[\"drawer\",\"Drawer\"],[\"binder\",\"Binder\"],[\"box\",\"Box\"],[\"board\",\"Board\"],[\"notebook\",\"Notebook\"],[\"journal\",\"Journal\"],[\"plan\",\"Plan\"],[\"milestone\",\"Milestone\"],[\"freewrite\",\"Free write\"],[\"home\",\"Home\"],[\"voicewall\",\"Voice Wall\"],[\"publish\",\"Publish\"],[\"script\",\"Script\"]],\"allNonEmpty\":true,\"fallThrough\":\"Journal\",\"fallThroughMany\":\"Drawers\",\"pageOne\":\"Pages\",\"pageMany\":\"Pages\",\"shelfOne\":\"Shelf\",\"shelfMany\":\"Shelves\"}"
+  },
+  {
+    "name": "check 2 (R1) [word-diet successor]: \"page\" itself is now invariant — t() and tMany() return the SAME form (\"Pages\"), the Pages-rename grammar ruling",
+    "pass": true,
+    "detail": "{\"mapped\":[[\"page\",\"Pages\"],[\"shelf\",\"Shelf\"],[\"drawer\",\"Drawer\"],[\"binder\",\"Binder\"],[\"box\",\"Box\"],[\"board\",\"Board\"],[\"notebook\",\"Notebook\"],[\"journal\",\"Journal\"],[\"plan\",\"Plan\"],[\"milestone\",\"Milestone\"],[\"freewrite\",\"Free write\"],[\"home\",\"Home\"],[\"voicewall\",\"Voice Wall\"],[\"publish\",\"Publish\"],[\"script\",\"Script\"]],\"allNonEmpty\":true,\"fallThrough\":\"Journal\",\"fallThroughMany\":\"Drawers\",\"pageOne\":\"Pages\",\"pageMany\":\"Pages\",\"shelfOne\":\"Shelf\",\"shelfMany\":\"Shelves\"}"
+  },
+  {
+    "name": "check 2: DeskRail label renders exactly the lexicon projection for its term",
+    "pass": true,
+    "detail": "Journal vs Journal"
+  },
+  {
+    "name": "check 2 (R1): DeskRail's Drawers item now renders via tMany('drawer') — matches the lexicon projection exactly",
+    "pass": false,
+    "detail": "Library vs Drawers"
+  },
+  {
+    "name": "check 2: the Drawers route's own page heading renders the canonical literal on Plateau",
+    "pass": true,
+    "detail": "Drawers"
+  },
+  {
+    "name": "check 3: Voice/Fade prefs persist across a reload",
+    "pass": true,
+    "detail": "{\"voice\":\"sans\",\"page\":\"light\",\"fade\":\"off\"}"
+  },
+  {
+    "name": "check 3: the data-voice attribute reflects the persisted pref pre-paint",
+    "pass": true,
+    "detail": "sans"
+  },
+  {
+    "name": "check 3: prefs survive a theme switch",
+    "pass": true,
+    "detail": "{\"voice\":\"sans\",\"page\":\"light\",\"fade\":\"off\"}"
+  },
+  {
+    "name": "check 4: with no reduced-motion, the effective dial matches the stored value",
+    "pass": true,
+    "detail": "{\"stored\":80,\"effective\":80}"
+  },
+  {
+    "name": "check 4: prefers-reduced-motion forces the effective dial to 0 without erasing the stored preference",
+    "pass": true,
+    "detail": "{\"stored\":80,\"effective\":0,\"reduced\":true}"
+  },
+  {
+    "name": "check 5: the effects layer is mounted once, globally",
+    "pass": true,
+    "detail": "{\"present\":true,\"childCount\":0,\"position\":\"fixed\",\"inset\":\"0px,0px,0px,0px\",\"pointerEvents\":\"none\"}"
+  },
+  {
+    "name": "check 5: the layer is position:fixed (out of flow — zero layout participation)",
+    "pass": true,
+    "detail": "fixed"
+  },
+  {
+    "name": "check 5: the layer never intercepts pointer events",
+    "pass": true,
+    "detail": "none"
+  },
+  {
+    "name": "check 4: Plateau schedules zero effects-layer events (empty FX_REGISTRY entry)",
+    "pass": true,
+    "detail": "0"
+  },
+  {
+    "name": "check 5 (R2): registerThemeFx registers a theme's handlers without throwing",
+    "pass": true,
+    "detail": "{\"threw\":false}"
+  },
+  {
+    "name": "check 5 (R2): registering a DIFFERENT theme id leaves Plateau's active effects layer empty",
+    "pass": true,
+    "detail": "0"
+  },
+  {
+    "name": "check 5: .mode-row (W1 fixed-track grid) rect is unaffected by the effects layer",
+    "pass": true,
+    "detail": "{\"x\":96,\"y\":111.59375,\"width\":618,\"height\":372.796875,\"top\":111.59375,\"right\":714,\"bottom\":484.390625,\"left\":96} -> {\"x\":96,\"y\":111.59375,\"width\":618,\"height\":372.796875,\"top\":111.59375,\"right\":714,\"bottom\":484.390625,\"left\":96}"
+  },
+  {
+    "name": "check 5: the fixed-track column template itself is untouched by the effects layer/ambiance dial",
+    "pass": true,
+    "detail": "620px -> 620px"
+  },
+  {
+    "name": "check 2/6 (CD4 S2 successor): the theme lexicon \"plan\" term still renders exactly \"Plan\" on Plateau (verified directly — the elder Plan flight tab that displayed it is retired)",
+    "pass": true,
+    "detail": "Plan"
+  },
+  {
+    "name": "check 2/6 (R1): the Pages toggle now renders via tMany('page') — matches the lexicon projection and stays byte-equal to \"Pages\"",
+    "pass": true,
+    "detail": "Pages vs Pages"
+  },
+  {
+    "name": "check 6: Plateau default token values are byte-equal to pre-TH1 main",
+    "pass": true,
+    "detail": "{\"expected\":{\"--brass\":\"#ff9800\",\"--ink-950\":\"#110600\",\"--paper\":\"#F3EDE1\",\"--font-display\":\"\\\"Figtree Variable\\\", system-ui, sans-serif\",\"--font-prose\":\"\\\"Crimson Pro Variable\\\", Georgia, serif\",\"--font-ui\":\"\\\"Figtree Variable\\\", system-ui, sans-serif\"},\"actual\":{\"--brass\":\"#ff9800\",\"--ink-950\":\"#110600\",\"--paper\":\"#F3EDE1\",\"--font-display\":\"\\\"Figtree Variable\\\", system-ui, sans-serif\",\"--font-prose\":\"\\\"Crimson Pro Variable\\\", Georgia, serif\",\"--font-ui\":\"\\\"Figtree Variable\\\", system-ui, sans-serif\"}}"
+  }
+]
+
+TH1 VERIFY: FAIL — 1/27 failed
