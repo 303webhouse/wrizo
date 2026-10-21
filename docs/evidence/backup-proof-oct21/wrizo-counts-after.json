@@ -1,0 +1,45 @@
+{
+  "serverMajor": 18,
+  "rows": [
+    {
+      "table": "drafts",
+      "rows": 0,
+      "fp": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table": "drawers",
+      "rows": 1,
+      "fp": "a06f82f18041421836048d32262e40ca"
+    },
+    {
+      "table": "journal_entries",
+      "rows": 203,
+      "fp": "58f0a85fa0314ae6f72502883fd2d035"
+    },
+    {
+      "table": "projects",
+      "rows": 32,
+      "fp": "4655dacda519f94f604f500d8b5fb137"
+    },
+    {
+      "table": "session",
+      "rows": 7,
+      "fp": "c3e687282be2d34d6acf60dd98849a3a"
+    },
+    {
+      "table": "sessions_log",
+      "rows": 117,
+      "fp": "8cf2b328ce26155c010b4ac6852c6ee2"
+    },
+    {
+      "table": "story_plans",
+      "rows": 0,
+      "fp": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table": "users",
+      "rows": 14,
+      "fp": "74db694d236308e09ae082e9fb987cc1"
+    }
+  ]
+}
