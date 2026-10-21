@@ -73,6 +73,16 @@ function mount(container: HTMLDivElement, getDial: () => number, isBusy: () => b
   }, 250);
   stops.push(() => clearInterval(poll));
 
+  // Fable, Oct 21: the moment reduced motion lands, a tear storm's lines still on screen go (the media query's own change event - not the
+  // 250 ms poll); a storm under way lays no more (tearStorm's `alive`, below). Ambiance 0 stops the loops as before.
+  const clearTears = () => container.querySelectorAll('.theme-fx-tear').forEach((el) => el.remove());
+  if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onMq = (e: MediaQueryListEvent) => { if (e.matches) clearTears(); };
+    mq.addEventListener('change', onMq);
+    stops.push(() => mq.removeEventListener('change', onMq));
+  }
+
   // GLITCH METER (plan docs/plans/glitch-meter.md sections 1 and 3): the six events now come from store/signalLossEvents.ts - lifted from
   // here unchanged in DOM, class and timing (called with no brightness, a builder draws this texture's own fixed look) - so the Glitch meter
   // draws the same vocabulary from one implementation. And EVERY flash here asks the global budget first (store/flashBudget.ts: never more than
@@ -83,7 +93,7 @@ function mount(container: HTMLDivElement, getDial: () => number, isBusy: () => b
   // Each event is ONE named fire, asked of the budget: its loop calls it, and so does the harness seam below (ledger 90 - the loops skip
   // while the session reads busy, so a check that must see this texture pulse beside the meter forces it here, through the same code).
   const fires: Record<SignalLossKind, () => boolean> = {
-    tear: () => { if (!tryFlash('sl-tear')) return false; tearStorm(container); return true; },
+    tear: () => { if (!tryFlash('sl-tear')) return false; tearStorm(container, undefined, () => getDial() > 0); return true; },
     shear: () => { if (!tryFlash('sl-shear')) return false; shearBand(shear); return true; },
     noise: () => { if (!tryFlash('sl-noise')) return false; noisePatch(noise); return true; },
     macro: () => { if (!tryFlash('sl-macro')) return false; macroCluster(container); return true; },

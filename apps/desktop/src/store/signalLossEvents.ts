@@ -20,15 +20,21 @@ let pulseSeq = 0;
 function markPulse(el: Element, kind: string): void {
   pulseSeq += 1;
   el.setAttribute('data-pulse', `${kind}:${pulseSeq}`);
+  // LEDGER 117, harness mode only (the budget's own flag, read at call time): the DRAW time of every pulse, beside the budget's grant log, so
+  // glitch-meter G4 can pair grant -> draw -> observed. Plain data; unset, nothing happens.
+  const w = typeof window !== 'undefined' ? (window as unknown as { __wzVerifyFlashes?: boolean; __wzDrawLog?: Array<{ t: number; kind: string; seq: number }> }) : null;
+  if (w && w.__wzVerifyFlashes) (w.__wzDrawLog ??= []).push({ t: performance.now(), kind, seq: pulseSeq });
 }
 
-/** Tear-line storm: 3-5 lines, ~45 ms stagger, ~150 ms each, ~35% lime. One flash. */
-export function tearStorm(container: HTMLElement, op?: number): void {
+/** Tear-line storm: 3-5 lines, ~45 ms stagger, ~150 ms each, ~35% lime. One flash. `alive` (optional): asked before each staggered line - a
+ *  storm under way when motion is turned off lays no more lines (Fable, Oct 21: cut the leftover lines the moment reduced motion lands). */
+export function tearStorm(container: HTMLElement, op?: number, alive?: () => boolean): void {
   markPulse(container, 'tear');
   const n = 3 + Math.floor(Math.random() * 3);
   const base = rand(8, 82);
   for (let i = 0; i < n; i++) {
     setTimeout(() => {
+      if (alive && !alive()) return;
       const el = document.createElement('div');
       el.className = 'theme-fx-tear';
       el.style.top = `${base + rand(-7, 7)}%`;

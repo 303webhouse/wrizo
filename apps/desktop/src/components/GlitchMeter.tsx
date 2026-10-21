@@ -68,7 +68,7 @@ export function GlitchMeter({ text }: { text: string }) {
       if (I <= 0 || isStill()) return false;
       if (!tryFlash(`gm-${kind}`)) return false;
       switch (kind) {
-        case 'tear': tearStorm(layer, bright(I, 0.28, 0.72)); break;
+        case 'tear': tearStorm(layer, bright(I, 0.28, 0.72), () => !isStill()); break;   // a storm under way lays no more lines once still
         case 'shear': shearBand(shear, bright(I, 0.35, 0.85)); break;
         case 'noise': noisePatch(noise, bright(I, 0.4, 1)); break;
         case 'macro': macroCluster(layer, bright(I, 0.08, 0.16)); break;
@@ -91,6 +91,9 @@ export function GlitchMeter({ text }: { text: string }) {
       I = flicker ? meterIntensity(idle, lap) : 0;
       meterState.I = I; meterState.idleSec = idle; meterState.lapFrac = lap; meterState.reduced = reduced; meterState.flicker = flicker; meterState.running = true;
       still.style.opacity = reduced ? String(I * 0.42) : '0';
+      // Fable, Oct 21: the moment motion is turned off, a tear storm's lines still on screen go too (the first still frame; they are its only
+      // pieces that outlive the flash's own instant)
+      if (reduced) layer.querySelectorAll('.theme-fx-tear').forEach((el) => el.remove());
       if (reduced || I <= 0) { for (const k of KINDS) delete next[k]; return; }
       const dial = getAmbianceDial();
       for (const k of KINDS) {
