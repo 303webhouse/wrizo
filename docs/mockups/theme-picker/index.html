@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Theme picker — brand cards</title>
+<!--
+  The theme menu as brand cards, not UI screenshots.
+  Arbor calls it Mood. Flux calls it Skin. Machina's card is here;
+  Machina's own menu name, Theme, lands with that build.
+  Order: Arbor, Machina, Flux. Current = brass outline.
+  Flux's current card is cyan, with a thin orange bar.
+  ?frame=arbor-dark|arbor-light|flux-dark|flux-light
+-->
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=Crimson+Pro:ital,wght@0,500;1,400&family=IBM+Plex+Sans:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --brass: #ff9800; --cyan: #00C2FF; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { overflow: hidden; font-family: "Crimson Pro", Georgia, serif; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; border-radius: 0; }
+  .rig { height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 12px; background: #000; color: #c8c8c8; font-family: "Chakra Petch", sans-serif; font-size: 12px; letter-spacing: .08em; }
+  html.shot .rig { display: none; }
+  .rig button { height: 24px; padding: 0 8px; border: 1px solid #333; }
+  .rig button[aria-pressed="true"] { border-color: var(--brass); color: var(--brass); }
+  .desk { height: calc(100% - 36px); display: grid; grid-template-columns: 88px 1fr; position: relative; }
+  html.shot .desk { height: 100%; }
+  body[data-host="arbor"] { background: #1c1612; color: #f4efe4; }
+  body[data-host="arbor"][data-field="light"] { background: #f4efe4; color: #2b2418; }
+  body[data-host="flux"] { background: #04141a; color: #e3f1ec; }
+  body[data-host="flux"][data-field="light"] { background: #e7f2f0; color: #042632; }
+  .rail { display: flex; flex-direction: column; align-items: center; padding: 16px 0 12px; gap: 18px; border-right: 1px solid transparent; }
+  body[data-host="arbor"] .rail { background: #14110e; border-color: #3a3228; color: #d9cbb8; }
+  body[data-host="arbor"][data-field="light"] .rail { background: #2a241c; color: #f4efe4; }
+  body[data-host="flux"] .rail { background: #101c24; border-color: #1d4a52; color: #9ad7ea; font-family: "Chakra Petch", sans-serif; }
+  .rail .gap { flex: 1; }
+  .rail span { font-size: 11px; letter-spacing: .06em; }
+  .mood {
+    width: 100%; padding: 10px 0; text-align: center; font-size: 11px; letter-spacing: .08em;
+    border-top: 1px solid transparent;
+  }
+  body[data-host="arbor"] .mood { color: var(--brass); border-color: #3a3228; }
+  body[data-host="flux"] .mood { color: var(--cyan); border-color: #1d4a52; }
+  .stage { position: relative; padding: 48px 40px; }
+  .page {
+    max-width: 640px; margin: 0 auto; min-height: 420px; padding: 56px 48px;
+    font-size: 20px; line-height: 1.6;
+  }
+  body[data-host="arbor"] .page { background: #f4efe4; color: #2b2418; box-shadow: 0 18px 50px rgba(0,0,0,.35); }
+  body[data-host="arbor"][data-field="light"] .page { background: #fffaf3; color: #2b2418; box-shadow: none; border: 1px solid #e4d8c8; }
+  body[data-host="flux"] .page { background: #0e1c24; color: #e8f6fa; border: 1px solid #1d4a52; }
+  body[data-host="flux"][data-field="light"] .page { background: #f4f7f8; color: #042632; border-color: #00c2ff; }
+  .picker {
+    position: absolute; left: 96px; bottom: 28px; z-index: 3;
+    display: flex; flex-direction: column; gap: 14px; padding: 16px;
+    min-width: min(920px, calc(100% - 120px));
+  }
+  body[data-host="arbor"] .picker { background: #1a1612; border: 1px solid #3a3228; color: #f4efe4; }
+  body[data-host="arbor"][data-field="light"] .picker { background: #fffaf3; border-color: #e4d8c8; color: #2b2418; }
+  body[data-host="flux"] .picker { background: #101c24; border: 1px solid #1d4a52; color: #e7f4f1; font-family: "Chakra Petch", sans-serif; }
+  .picker head, .phead { display: flex; align-items: center; gap: 16px; }
+  .phead b { font-weight: 500; letter-spacing: .16em; font-size: 13px; text-transform: uppercase; }
+  .field { margin-left: auto; display: flex; gap: 6px; }
+  .field button { height: 28px; min-width: 64px; padding: 0 10px; border: 1px solid currentColor; opacity: .7; font-size: 12px; letter-spacing: .08em; }
+  .field button[aria-pressed="true"] { opacity: 1; }
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .card {
+    display: flex; flex-direction: column; min-height: 260px; text-align: left; padding: 0;
+    border: 2px solid transparent; position: relative; overflow: hidden;
+  }
+  .card:focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; }
+  body[data-host="arbor"] .card[aria-pressed="true"] { border-color: var(--brass); }
+  body[data-host="flux"] .card[aria-pressed="true"] { border-color: var(--cyan); }
+  body[data-host="flux"] .card[aria-pressed="true"]::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--brass); z-index: 4;
+  }
+  body[data-host="flux"][data-field="light"] .rail { background: #d5e4e8; border-color: #b7d0d6; color: #042632; }
+  body[data-host="flux"][data-field="light"] .mood { color: #007a9e; border-color: #b7d0d6; }
+  body[data-host="flux"][data-field="light"] .picker { background: #f4f7f8; border-color: #b7d0d6; color: #042632; }
+  .plate { flex: 1; position: relative; min-height: 240px; }
+  .wm {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+    padding: 28px 14px 16px; font-size: 26px; letter-spacing: .04em;
+    background: linear-gradient(transparent, rgba(0,0,0,.55));
+  }
+  .arbor .plate { background: radial-gradient(120% 80% at 50% 0%, #3a2e24, #1c1612 70%); }
+  .arbor .wm { font-family: "Crimson Pro", Georgia, serif; color: #f4efe4; }
+  .rhizome { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .mach .plate { background: #0a0b0e; }
+  .mach .wm { font-family: "IBM Plex Sans", sans-serif; font-weight: 600; letter-spacing: .14em; font-size: 22px; color: #e6e9f1; }
+  .mach .oq { position: absolute; top: 14px; right: 14px; width: 12px; height: 12px; border: 2px solid var(--brass); }
+  .rules { position: absolute; inset: 18px 16px auto 16px; height: 70px; }
+  .runline { position: absolute; left: 16px; right: 16px; bottom: 72px; height: 4px; display: flex; gap: 3px; }
+  .runline i { flex: 1; background: #343a46; }
+  .runline i.on { background: #9da5b4; }
+  .runline i.here { background: #9da5b4; box-shadow: -1px 0 0 var(--brass), 2px 0 0 var(--brass); }
+  .flux .plate { background: #04141a; }
+  .flux .wm { font-family: "Chakra Petch", sans-serif; font-weight: 600; letter-spacing: .18em; color: #00c2ff; font-size: 20px; }
+  .grid {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(0,194,255,.18) 1px, transparent 1px), linear-gradient(90deg, rgba(0,194,255,.18) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+  .tear { position: absolute; left: 0; right: 0; height: 2px; background: rgba(0,194,255,.75); }
+  .tear.l { top: 42%; background: rgba(166,255,61,.55); }
+</style>
+</head>
+<body data-host="arbor" data-field="dark">
+<header class="rig">
+  <b>THEME PICKER</b>
+  <button type="button" data-frame="arbor-dark">Arbor dark</button>
+  <button type="button" data-frame="arbor-light">Arbor light</button>
+  <button type="button" data-frame="flux-dark">Flux dark</button>
+  <button type="button" data-frame="flux-light">Flux light</button>
+</header>
+<div class="desk">
+  <aside class="rail">
+    <span>Pages</span>
+    <span>Plan</span>
+    <div class="gap"></div>
+    <div class="mood" id="mood">Mood</div>
+  </aside>
+  <div class="stage">
+    <article class="page" id="page">The room changes. The page does not ask to.</article>
+    <div class="picker" role="dialog" aria-labelledby="mood">
+      <div class="phead">
+        <b id="ptitle">Mood</b>
+        <div class="field" role="group" aria-label="Page">
+          <button type="button" id="dark" aria-pressed="true">Dark</button>
+          <button type="button" id="light" aria-pressed="false">Light</button>
+        </div>
+      </div>
+      <div class="cards">
+        <button class="card arbor" type="button" data-theme="arbor" aria-pressed="true">
+          <div class="plate" aria-hidden="true">
+            <svg class="rhizome" viewBox="0 0 280 150">
+              <g fill="none" stroke="#96a05a" stroke-width="1.2" stroke-linecap="round">
+                <path d="M140 78 C120 60 90 70 70 40"/>
+                <path d="M140 78 C160 50 190 55 220 28"/>
+                <path d="M140 78 C150 100 180 110 210 128"/>
+                <path d="M140 78 C110 100 80 108 48 120"/>
+                <path d="M100 58 C80 48 60 52 40 36"/>
+              </g>
+            </svg>
+          </div>
+          <div class="wm">Arbor</div>
+        </button>
+        <button class="card mach" type="button" data-theme="machina" aria-pressed="false">
+          <div class="plate" aria-hidden="true">
+            <svg class="rules" viewBox="0 0 240 70" fill="none" stroke="#7FA0BC" stroke-width="1">
+              <path d="M8 14 H232 M8 32 H180 M8 50 H210"/>
+              <path d="M40 8 V58 M120 8 V58 M200 8 V58" stroke="#343a46"/>
+            </svg>
+            <div class="runline" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="here"></i><i></i><i></i><i></i></div>
+          </div>
+          <span class="oq" aria-hidden="true"></span>
+          <div class="wm">MACHINA</div>
+        </button>
+        <button class="card flux" type="button" data-theme="flux" aria-pressed="false">
+          <div class="plate" aria-hidden="true">
+            <div class="grid"></div>
+            <div class="tear" style="top:36%"></div>
+            <div class="tear l"></div>
+            <div class="tear" style="top:58%"></div>
+          </div>
+          <div class="wm">FLUX</div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  var body = document.body;
+  var frames = {
+    'arbor-dark': ['arbor', 'dark'],
+    'arbor-light': ['arbor', 'light'],
+    'flux-dark': ['flux', 'dark'],
+    'flux-light': ['flux', 'light']
+  };
+  function apply(name) {
+    var pair = frames[name];
+    body.dataset.host = pair[0];
+    body.dataset.field = pair[1];
+    var label = pair[0] === 'flux' ? 'Skin' : 'Mood';
+    document.getElementById('mood').textContent = label;
+    document.getElementById('ptitle').textContent = label;
+    document.getElementById('dark').setAttribute('aria-pressed', pair[1] === 'dark' ? 'true' : 'false');
+    document.getElementById('light').setAttribute('aria-pressed', pair[1] === 'light' ? 'true' : 'false');
+    document.querySelectorAll('.card').forEach(function (card) {
+      card.setAttribute('aria-pressed', card.dataset.theme === pair[0] ? 'true' : 'false');
+    });
+    document.querySelectorAll('.rig button').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.dataset.frame === name ? 'true' : 'false');
+    });
+    var page = document.getElementById('page');
+    page.textContent = pair[0] === 'flux'
+      ? 'The glass holds. The grid is the room’s, not the sentence’s.'
+      : 'The lamp stays. The page is the only thing that has to.';
+  }
+  var q = new URLSearchParams(location.search).get('frame') || 'arbor-dark';
+  if (!frames[q]) q = 'arbor-dark';
+  if (new URLSearchParams(location.search).has('frame')) document.documentElement.classList.add('shot');
+  apply(q);
+  document.querySelectorAll('.rig button').forEach(function (b) {
+    b.addEventListener('click', function () { apply(b.dataset.frame); });
+  });
+  document.getElementById('dark').addEventListener('click', function () {
+    apply(body.dataset.host + '-dark');
+  });
+  document.getElementById('light').addEventListener('click', function () {
+    apply(body.dataset.host + '-light');
+  });
+})();
+</script>
+</body>
+</html>
