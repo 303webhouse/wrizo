@@ -20,6 +20,7 @@
   root.dataset.light = f === 'light' ? '1' : '0';
   root.dataset.cast = f === 'neutral' ? 'neutral' : 'cool';
   if (new URLSearchParams(location.search).has('frame')) root.classList.add('shot');
+  if (new URLSearchParams(location.search).get('view') === 'grid') root.dataset.files = 'grid';
 })();
 </script>
 <style>
@@ -90,6 +91,12 @@
   .tools { display: flex; align-items: center; gap: 10px; padding: 4px 12px 6px; }
   .lab { margin-right: auto; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--meta); }
   .sort { font-size: 12px; color: var(--meta); }
+  .views { display: flex; border: 1px solid var(--line); }
+  .views button { width: 28px; height: 24px; display: grid; place-items: center; color: var(--muted); }
+  .views button + button { border-left: 1px solid var(--line); }
+  .views button[aria-pressed='true'] { color: var(--active); }
+  .views svg { width: 12px; height: 12px; }
+  .filegrid { display: none; }
   .body { flex: 1; min-height: 0; overflow: auto; }
   .fold, .row { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 12px; text-align: left; font-size: 13px; }
   .fold { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding-top: 10px; }
@@ -155,6 +162,9 @@
   .ends .to { color: var(--ink); }
   .splash .run { width: 100%; margin: 12px 0 0; }
   .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px 12px; }
+  #pop-files .filegrid { display: none; }
+  html[data-files='grid'] #pop-files .filerows { display: none; }
+  html[data-files='grid'] #pop-files .filegrid { display: grid; }
   .tile { border: 1px solid var(--line); padding: 8px; font-size: 12px; }
   .tile[aria-current='true'] { box-shadow: inset 1px 0 0 var(--active); }
   .th { height: 36px; border: 1px solid var(--line); margin-bottom: 6px; position: relative; }
@@ -218,16 +228,32 @@
       <aside class="panel" id="pop-files" aria-label="Files">
         <div class="ph"><span data-icon="project"></span><span>Project ▸ Q3 memorandum</span></div>
         <button class="newbtn" type="button">+ New file</button>
-        <div class="tools"><span class="lab">Parts</span><button class="sort" type="button">Order</button></div>
+        <div class="tools">
+          <span class="lab">Parts</span>
+          <button class="sort" type="button">Order</button>
+          <div class="views" role="group" aria-label="Layout">
+            <button type="button" data-view="rows" aria-pressed="true" aria-label="Rows"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="square"><path d="M1 2.5h10M1 6h10M1 9.5h10"/></svg></button>
+            <button type="button" data-view="grid" aria-pressed="false" aria-label="Grid"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"><rect x="1" y="1" width="4" height="4"/><rect x="7" y="1" width="4" height="4"/><rect x="1" y="7" width="4" height="4"/><rect x="7" y="7" width="4" height="4"/></svg></button>
+          </div>
+        </div>
         <div class="body">
-          <div class="fold" data-icon="folder">Inbox</div>
           <div class="fold" data-icon="folder">Brief</div>
+          <div class="filerows">
           <div class="row"><span class="tx"><span>Charge</span><span class="fl">What the committee asked for.</span></span></div>
           <div class="row"><span class="tx"><span>Method</span><span class="fl">How the record was kept.</span></span></div>
           <div class="row" aria-current="true"><span class="tx"><span>Findings</span><span class="fl">The sequence as it stands.</span></span></div>
           <div class="row"><span class="tx"><span>The line we will send</span><span class="fl">One paragraph, no argument.</span></span></div>
           <div class="row"><span class="tx"><span>Appendix</span><span class="fl">Dates, names, the minute.</span></span></div>
           <div class="row"><span class="tx"><span>Sources</span><span class="fl">Committee minute, 12 March.</span></span></div>
+          </div>
+          <div class="filegrid tiles">
+            <div class="tile" aria-current="true"><div class="th"></div>Charge</div>
+            <div class="tile"><div class="th"></div>Method</div>
+            <div class="tile"><div class="th"></div>Findings</div>
+            <div class="tile"><div class="th"></div>The line we will send</div>
+            <div class="tile"><div class="th"></div>Appendix</div>
+            <div class="tile"><div class="th"></div>Sources</div>
+          </div>
         </div>
         <div class="footlinks">
           <button class="lnk" type="button">+ New folder</button>
@@ -337,6 +363,19 @@
     assets: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg>',
     folder: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 6h6l2 2h10v11H3z"/><path d="M3 10.5h18"/></svg>'
   };
+  document.querySelectorAll('.views button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.views button').forEach(function (x) {
+        x.setAttribute('aria-pressed', x === b ? 'true' : 'false');
+      });
+      document.documentElement.dataset.files = b.dataset.view;
+    });
+  });
+  if (document.documentElement.dataset.files === 'grid') {
+    document.querySelectorAll('.views button').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.dataset.view === 'grid' ? 'true' : 'false');
+    });
+  }
   document.querySelectorAll('[data-icon]').forEach(function (el) {
     el.insertAdjacentHTML('afterbegin', I[el.dataset.icon] || '');
   });
