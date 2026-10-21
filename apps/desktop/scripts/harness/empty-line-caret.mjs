@@ -141,7 +141,7 @@ async function part2() {
       const rows = [...document.querySelectorAll('${ED} .wz-row')]; const last = rows[rows.length - 1]; if (!last) return null;
       const rects = r.getClientRects(); const rc = rects.length ? rects[0] : r.getBoundingClientRect();
       const lr = last.getBoundingClientRect(); const pad = parseFloat(getComputedStyle(last).paddingLeft) || 0;
-      return { x: Math.round(rc.left * 10) / 10, rowLeft: Math.round(lr.left * 10) / 10, pad, rowRight: Math.round(lr.right * 10) / 10, inLast: last.contains(r.startContainer), rows: rows.length, guards: document.querySelectorAll('${ED} .md-eof-guard').length };
+      return { x: Math.round(rc.left * 10) / 10, rowLeft: Math.round(lr.left * 10) / 10, pad, rowRight: Math.round(lr.right * 10) / 10, caretBottom: Math.round(rc.bottom * 10) / 10, rowBottom: Math.round(lr.bottom * 10) / 10, lh: parseFloat(getComputedStyle(last).lineHeight) || null, inLast: last.contains(r.startContainer), rows: rows.length, guards: document.querySelectorAll('${ED} .md-eof-guard').length };
     })()`);
     const stored = (id) => app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(id)}) || {}).text ?? null`);
 
@@ -158,6 +158,12 @@ async function part2() {
     await sleep(400);
     const c2 = await caret();
     ok('E2 a second Enter (a blank line, then the empty last row): the caret is again at the left padding of the last row', !!c2 && c2.inLast === true && Math.abs(c2.x - (c2.rowLeft + c2.pad)) <= 2 && c2.rows === 3 && c2.guards === 1, JSON.stringify(c2));
+    // fx1.mjs tracks the caret line by `ed.lastElementChild`'s bottom (its stand-in for what useTypewriterFade reads). With the guard inside the last row that child is the LAST ROW, whose bottom is the
+    // line box's bottom - one half-leading below the caret's own glyph bottom (the guard span used to BE the caret's box). fx1 reads only line-to-line deltas of it, so a constant offset leaves
+    // its checks standing; this holds the two claims that make that true: the offset is bounded by half a line, and it does not change from one Enter to the next.
+    const off1 = c1 && c1.rowBottom - c1.caretBottom, off2 = c2 && c2.rowBottom - c2.caretBottom;
+    ok('E4 the last row's bottom (what fx1.mjs's lastElementChild proxy now reads) is the caret line's bottom to within half a line-height, and the offset is the SAME after a second Enter (so line-to-line deltas of the proxy are unchanged)',
+      !!c1 && !!c2 && c1.lh > 0 && off1 >= -1 && off1 <= c1.lh / 2 + 1 && Math.abs(off2 - off1) <= 1, JSON.stringify({ off1, off2, lh: c1 && c1.lh }));
     await app.typeKeys('Next');
     await sleep(500);
     const c3 = await caret();
