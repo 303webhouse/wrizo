@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { createDrawer } from '../store/persistence';
-import { UNSORTED, JOURNAL, listPlaces, setPlace, type Place } from '../store/place';
+import { UNSORTED, JOURNAL, isDefaultRoot, listPlaces, setPlace, type Place } from '../store/place';
 import { placeUid, usePlace } from '../store/usePlace';
 
 // BIG PROJECTS 1a - THE SWITCHER. Opened by the place block. Two flat groups - Drawers, then Journals - then + New Drawer. A virtual group for
@@ -27,7 +27,7 @@ export function PlaceSwitcher({ onChosen }: { onChosen: () => void }) {
         <div className="wz-switcher-label">{t('switcherDrawers')}</div>
         {drawers.map(d => (
           <button key={d.id} type="button" className="wz-switcher-item" data-place-kind="drawer" data-place-id={d.id} aria-current={current('drawer', d.id)}
-            onClick={() => choose({ kind: 'drawer', id: d.id, setId: null })}>{d.name}</button>
+            onClick={() => choose({ kind: 'drawer', id: d.id, setId: null })}>{isDefaultRoot(d) ? t('placeRootName') : d.name}</button>
         ))}
         {unsorted.length > 0 && (
           <button type="button" className="wz-switcher-item" data-place-kind="drawer" data-place-id={UNSORTED} aria-current={current('drawer', UNSORTED)}

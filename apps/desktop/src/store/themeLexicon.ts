@@ -58,14 +58,13 @@ const CANONICAL: Record<TermId, TermForms> = {
 const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForms>>>>> = {
   flux: {
     page: { one: 'Doc', many: 'Docs' },
-    shelf: { one: 'Cache', many: 'Caches' },
     drawer: { one: 'Rack', many: 'Racks' },
     binder: { one: 'Cartridge', many: 'Cartridges' },
     box: { one: 'Node', many: 'Nodes' },
     board: { one: 'Circuit', many: 'Circuits' },
     notebook: { one: 'Deck', many: 'Decks' },
     journal: { one: 'Log', many: 'Logs' },
-    plan: { one: 'Schematic', many: 'Schematics' },
+    plan: { one: 'Circuit', many: 'Circuits' },   // FLUX V2: the mode strip's door reads CIRCUITS (was Schematic)
     milestone: { one: 'Checkpoint', many: 'Checkpoints' },
     // theme-leftovers (Nick approved Oct 16) — "Overclock" retired for
     // "Wire In" (plural "Wire-ins"), Fable's own exact forms.
