@@ -57,7 +57,6 @@ export const WANDER = (9 * Math.PI) / 180;      // random wobble per step (gauss
 export const LOOK = 5;             // cells a tip looks ahead when choosing where to grow
 export const HIDDEN_PULL = 0.7;    // how much hidden ground (under the page) invites growth, vs 1 for open ground
 export const SURVIVOR_STEPS = 1;   // the root kept between laps: one segment, and the next rhizome branches from it
-export const FULL_COVER = 0.86;    // kept: the old "fill the ground" target. A lap no longer grows toward it.
 export const LAP_CAP = 4200;       // hard cap on segments per lap (safety)
 export const SHOOTS = 7;           // strands leaving the sprout, spread around it
 export const SHORT_EXTRA = 12;     // steps a short shoot grows after it clears the page
