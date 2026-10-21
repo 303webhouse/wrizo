@@ -48,15 +48,32 @@ const dbl = async (app, x, y) => {
 // a node is LOOKED FOR, never assumed: a press on something missing is a named failure at the caller, not a crash
 const pressSel = async (app, sel) => { const r = await R(app, sel); if (!r || r.w === 0) return false; const c = centre(r); await click(app, c.x, c.y); await sleep(350); return true; };
 const cardRect = async (app, cardId, patience = 40) => { for (let i = 0; i < patience; i += 1) { const r = await R(app, `[data-box-id="${cardId}"]`); if (r && r.w > 0) return r; await sleep(150); } return null; };
-const selectCard = async (app, cardId) => { const r = await cardRect(app, cardId); if (!r) return null; await click(app, Math.round(r.l + r.w * 0.3), Math.round(r.t + r.h * 0.3)); await sleep(500); return r; };
+// LEDGER 121 (K5's fixture: k5 null): after K4 resized c1 it overlapped the fixed 30% point of c2, and the "select c2" press selected c1. The press
+// now goes to a point inside the card that genuinely hit-tests to THAT card (never to a card lying over it).
+const selectCard = async (app, cardId) => {
+  const r = await cardRect(app, cardId); if (!r) return null;
+  const p = await app.evalJs(`(() => { const el = document.querySelector('[data-box-id="${cardId}"]'); if (!el) return null; const b = el.getBoundingClientRect();
+    for (const fy of [0.3, 0.5, 0.7, 0.15, 0.85]) for (const fx of [0.3, 0.5, 0.7, 0.15, 0.85]) { const x = b.left + b.width * fx, y = b.top + b.height * fy;
+      const hit = document.elementFromPoint(x, y); const box = hit && hit.closest('.board-box'); if (box && box.dataset.boxId === '${cardId}') return { x: Math.round(x), y: Math.round(y) }; }
+    return null; })()`);
+  if (!p) return null;
+  await click(app, p.x, p.y); await sleep(500); return r;
+};
 const stored = (app, id) => app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(id)}) || null)`);
 const linksOf = (app, id) => app.evalJs(`window.wrizoPageLinksOf(${JSON.stringify(id)})`);
 const conns = async (app) => ((await app.evalJs('window.wrizoBoard()')) || []).filter((b) => b.kind === 'connection');
 const hash = (app) => app.evalJs('location.hash');
+// LEDGER 121 (P1/P4/L2/C1/E1/N1: the picker never opened; E1 read the pane's innerText as ""): on this tree the Links TAB is in the DOM while the
+// right drawer is CLOSED, so "is the tab there?" said open when it was not, and every press then found a zero-size control. The drawer's own
+// grip says whether it is open (data-open); the pane counts as open only when its "+ Graft..." control has a real size.
 const openGrafts = async (app) => {
-  if (!(await app.evalJs("!!document.querySelector('#wz-tutor-tab-links')"))) { await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(700); }
-  await app.evalJs("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(500);
-  return app.evalJs("!!document.querySelector('.wz-links-pane')");
+  for (let i = 0; i < 2; i += 1) {
+    if ((await app.evalJs("document.querySelector('.wz-tutor-grip')?.getAttribute('data-open') ?? null")) !== 'true') { await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(700); }
+    await app.evalJs("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(500);
+    const r = await R(app, '.wz-links-pane [data-graft-add]');
+    if (r && r.w > 0 && r.h > 0) return true;
+  }
+  return false;
 };
 const pickerRows = (app) => app.evalJs(`[...document.querySelectorAll('[data-graft-picker] [data-graft-pick]')].map((b) => ({ group: b.dataset.graftGroup, entry: b.dataset.graftEntry, box: b.dataset.graftBox || null,
   title: b.querySelector('.wz-graft-title')?.textContent, place: b.querySelector('.wz-graft-place')?.textContent ?? null, checked: b.getAttribute('aria-checked') }))`);
