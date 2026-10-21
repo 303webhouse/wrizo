@@ -1,0 +1,24 @@
+
+ROWS-SHADOW VERIFY: PASS (7 renders checked, shadow == DOM on every one)
+PASS  G1
+PASS  G1b
+PASS  G2
+PASS  G3
+PASS  G4
+PASS  G5
+PASS  G6
+PASS  mutant "the guard is back AFTER the trailing row (the bug)" is KILLED by a check, not a crash (reddens: G1, G1b)
+PASS  mutant "a guard in EVERY empty row" is KILLED by a check, not a crash (reddens: G3, G4)
+PASS  mutant "a guard on a one-line empty page" is KILLED by a check, not a crash (reddens: G5)
+PASS  all 3 mutations landed and 3 were killed
+PASS  P1 one lineHtml feeds every write path: mountRows, replaceRegion, the kept-row compare, the revealed rows (writeRows and revealRowsAtCaret) - no path appends a guard after a row
+PASS  P2 the caret point for the end of a newline-ended text is found INSIDE the last row (rowsPointFor looks in R.rows[last], offset 0), not in an editor-level last child
+PASS  P3 the shadow-line verify reads a row's text without its guard (a row that holds the guard still equals its line)
+PASS  premise: the page opens in Draft as rows
+PASS  E1 after Enter on a title the caret is INSIDE the new last row, at its left padding - not at the right edge (the bug put it at the row's right end)
+PASS  E1 and exactly one guard exists, inside that row
+PASS  E2 a second Enter (a blank line, then the empty last row): the caret is again at the left padding of the last row
+PASS  E4 the last row bottom (what the lastElementChild proxy in fx1.mjs now reads) is the caret line bottom to within half a line-height, and the offset is the SAME after a second Enter (so line-to-line deltas of the proxy are unchanged)
+FAIL  E3 typing carries on from the left (the guard is gone once the row has a letter) and the stored text is exactly what was typed (no guard character stored)  -- {"c3":{"x":463.1,"rowLeft":431.3,"pad":0,"rowRight":968.7,"caretBottom":218.8,"rowBottom":224.7,"lh":28.9,"inLast":true,"rows":3,"guards":0},"text":"A title"}
+
+EMPTY-LINE-CARET VERIFY: FAIL - 1/20 failed

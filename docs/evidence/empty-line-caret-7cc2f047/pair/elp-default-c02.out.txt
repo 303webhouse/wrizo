@@ -1,0 +1,28 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=ec5a1a0b bundle=index-D4luNe4K.js/760408b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/elp-default-c02
+[01/19] OK        exit=0    7s e3.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; E3 VERIFY: PASS (10 checks)
+[02/19] OK        exit=0   10s e4.mjs :: E4 VERIFY: PASS (19 checks)
+[03/19] FAIL      exit=1   11s empty-line-caret.mjs :: ROWS-SHADOW VERIFY: PASS (7 renders checked, shadow == DOM on every one) ;; EMPTY-LINE-CARET VERIFY: FAIL - 1/20 failed
+[04/19] OK        exit=0   29s escexit.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; ESCEXIT VERIFY: PASS (31 checks)
+[05/19] OK        exit=0   51s faint-text-sweep.mjs :: FAINT-TEXT-SWEEP VERIFY: PASS (15 checks)
+[06/19] OK        exit=0    0s fix-signin-live-double.mjs :: FIX-SIGNIN-LIVE-DOUBLE VERIFY: PASS (5 checks) — live walk not run (box turn)
+[07/19] OK        exit=0   40s flux-card-ink.mjs :: FLUX-CARD-INK VERIFY: PASS (51 checks)
+[08/19] OK        exit=0   48s flux-page-ink.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; FLUX-PAGE-INK VERIFY: PASS (30 checks)
+[09/19] OK        exit=0   71s font-span.mjs :: ROWS-SHADOW VERIFY: PASS (32 renders checked, shadow == DOM on every one) ;; FONT-SPAN VERIFY: PASS (38 checks)
+[10/19] OK        exit=0   21s fx1.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; FX1 VERIFY: PASS (23 checks)
+[11/19] OK        exit=0   61s fx10.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX10 VERIFY: PASS (121 checks)
+[12/19] OK        exit=0   16s fx11.mjs :: FX11 VERIFY: PASS (19 checks)
+[13/19] OK        exit=0    8s fx12.mjs :: FX12 VERIFY: PASS (5 checks)
+[14/19] OK        exit=0    8s fx13.mjs :: FX13 VERIFY: PASS (10 checks)
+[15/19] OK        exit=0    8s fx14.mjs :: ROWS-SHADOW VERIFY: PASS (11 renders checked, shadow == DOM on every one) ;; FX14 VERIFY: PASS (11 checks)
+[16/19] OK        exit=0   11s fx15.mjs :: FX15 VERIFY: PASS (13 checks)
+[17/19] OK        exit=0    7s fx16.mjs :: FX16 VERIFY: PASS (6 checks)
+[18/19] OK        exit=0   20s fx17.mjs :: FX17 VERIFY: PASS (18 checks)
+[19/19] OK        exit=0   19s fx18.mjs :: FX18 VERIFY: PASS (16 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 18/19 of 19 returned a passing verdict
+  FAIL: empty-line-caret.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\elp-default-c02\empty-line-caret.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=ec5a1a0b bundle=index-D4luNe4K.js/760408b NO-REBUILD
+CHUNK 02 EXIT 1
