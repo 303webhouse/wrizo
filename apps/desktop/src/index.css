@@ -467,20 +467,28 @@
    anywhere in the brief or canon, and Journal ink is its own sealed domain,
    out of TH2's scope. */
 :root[data-theme='flux'] {
-  --ink-950: #04141A;             /* ground */
+  --ink-950: #020c10;             /* ground (Flux v2: was #04141A) */
   /* theme-leftovers (Nick approved Oct 16) — the teal twin of --lamp-glow's
      own brown gradient: the SAME stop positions/lightness/saturation ramp,
      hue shifted to this theme's own register (~194deg, between --ink-950's
      196.4deg and the dark page's own --paper 190deg). Was unset, so body's
      backdrop stayed Arbor-brown under Flux wherever a route's own content
      doesn't paint full-bleed over it (the unframed page view, Journal/Shelf). */
-  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #0F2D36 0%, #102025 38%, #0A1417 70%, #070E10 100%);
+  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #0A242B 0%, #071A1F 38%, #041218 70%, #020c10 100%);
   --chrome-surface: rgba(9, 30, 36, .9);
   --rail-surface: rgba(4, 17, 22, .78);
   --ink-border: #1D4A52;          /* line */
   --ink-border-strong: #2A6A76;   /* a brighter line tier — the dark page's own border value, reused */
   --line-active: #00C2FF;         /* canon §3 new slot */
   --signal-live: #A6FF3D;         /* canon §3 new slot */
+  /* FLUX V2 - selection is CYAN. --brass is the generic selection token (Arbor's orange), so overriding it here turns every "chosen" rule cyan with no component edit; the
+     orange survives only where --orange is named (the caret, the sprint surge, Uplink, the mark, the current list item's left bar). */
+  --brass: #00C2FF;
+  --brass-hover: #57D0F5;
+  --orange: #FF9800;
+  --text-accent: #57D0F5;
+  /* the chromatic offset: a faint cyan/blue hairline (never red) */
+  --flux-offset: 0.5px 0 0 rgba(0, 194, 255, .35);
   /* help-buttons (Nick approved Oct 12) — Flux's own "?" affordance colour,
      teal (never brass, never Arbor's olive --accent-rest). */
   --help: #5E9E98;
@@ -502,10 +510,11 @@
    canon §11). --paper-dim and the light page's border are this author's
    interpolation — not given explicit values by the canon's token table. */
 :root[data-theme='flux'][data-page='dark'] {
-  --paper: #0B2429;
-  --paper-dim: #091E23;
+  --paper: #0E1C24;
+  --paper-dim: #0A1620;
   --paper-border: #2A6A76;
-  --ink-on-paper: #E3F1EC;
+  --paper-edge: rgba(0, 194, 255, .55);   /* FLUX V2: the dark-glass page's thin cyan edge */
+  --ink-on-paper: #E8F6FA;
   --ink-on-paper-low: #57D0F5;    /* canon's "meta" slot, dark */
   /* BG2 S1 — the one theme whose paper is DARK, so the door olive steps back
      UP the same ramp rather than down: #4F5730 would measure 1.3:1 here. This
@@ -528,17 +537,70 @@
   --ink-on-card-low: #0A6B86;
 }
 :root[data-theme='flux'][data-page='light'] {
-  --paper: #EDF6F3;
-  --paper-dim: #E3EFEC;
+  --paper: #F4F7F8;
+  --paper-dim: #E9EFF1;
   --paper-border: #B7D4CE;
-  --ink-on-paper: #14231F;
+  --paper-edge: rgba(0, 150, 200, .5);    /* FLUX V2: the light page's edge (chrome stays dark) */
+  --ink-on-paper: #042632;
   /* faint-text-sweep (Fable, Oct 16: "the -low tier you flagged") — #0B7C9E
      measured 4.34:1 against this theme's own --paper and 4.43:1 against
      --card-stock, both under the 4.5:1 floor (the flux-dark override above
      quotes the same defect). Darkened one step down the same teal ramp to
      clear both: 5.65:1 on --paper, 5.77:1 on --card-stock. */
-  --ink-on-paper-low: #096986;    /* canon's "meta" slot, light */
+  --ink-on-paper-low: #063848;    /* canon's "meta" slot, light (Flux v2: was #096986) */
 }
+
+/* ============================================================================
+   FLUX V2 (Fable's brief, Nick Oct 21) - the new shell. Tokens above; this block is the rules that are not just a token.
+   ORANGE IS SCARCE: the caret (.flux-block-caret, above), the sprint surge (.mode-pfill.celebrate), Uplink, the mark, and the thin LEFT bar on the current list item.
+   Every other "selected" is cyan - and that comes for free, because --brass (the generic selection token) is cyan under Flux.
+   The page frame: a thin cyan edge, a faint grid and four corner brackets on the FRAME only (an overlay ring - never under text), and the readouts, all of which carry chrome-fade
+   and so recede with the chrome while the writer types. Nothing here changes the page's size or position: the readouts sit in the paper's own padding.
+   ========================================================================== */
+[data-theme='flux'] .mode-page{ border-color:var(--paper-edge); box-shadow:0 0 0 1px rgba(0, 194, 255, .08), 0 10px 44px rgba(0, 0, 0, .55); }
+[data-theme='flux'] .mode-page.focused{ box-shadow:0 0 0 1px rgba(0, 194, 255, .14), 0 0 26px rgba(0, 194, 255, .09), 0 10px 44px rgba(0, 0, 0, .55); }
+/* the chromatic offset: a faint cyan hairline beside the page edge, never red */
+[data-theme='flux'] .mode-page::after{ content:''; position:absolute; inset:0; pointer-events:none; box-shadow:inset var(--flux-offset); z-index:0; }
+
+.flux-readouts{ position:absolute; inset:0; z-index:1; pointer-events:none; font-family:var(--font-chromeLabel); }
+.flux-frame{ position:absolute; inset:0; pointer-events:none; box-sizing:border-box; padding:20px;
+  background-image:linear-gradient(rgba(0, 194, 255, .09) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 194, 255, .09) 1px, transparent 1px);
+  background-size:12px 12px;
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.flux-brackets{ --flux-bracket:var(--line-active); position:absolute; inset:5px; pointer-events:none;
+  background:
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) top left / 14px 1px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) top left / 1px 14px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) top right / 14px 1px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) top right / 1px 14px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) bottom left / 14px 1px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) bottom left / 1px 14px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) bottom right / 14px 1px no-repeat,
+    linear-gradient(var(--flux-bracket), var(--flux-bracket)) bottom right / 1px 14px no-repeat; }
+:root[data-theme='flux'][data-page='light'] .flux-brackets{ --flux-bracket:var(--ink-on-paper-low); }
+/* the acquire: once per page open, 300 ms, transform and opacity only - and it has a still state (the brackets simply sit there) under reduced motion and at Ambiance 0 */
+.flux-brackets[data-acquire='true']{ animation:flux-acquire 300ms cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes flux-acquire{
+  0%{ opacity:0; transform:scale(1.045); }
+  100%{ opacity:1; transform:none; }
+}
+@media (prefers-reduced-motion: reduce){ .flux-brackets[data-acquire='true']{ animation:none } }
+.flux-readout{ position:absolute; left:16px; right:16px; display:flex; justify-content:space-between; gap:12px; font-size:10.5px; line-height:1; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink-on-paper-low); white-space:nowrap; }
+.flux-readout > span{ background:var(--paper); padding:0 6px; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.flux-readout-head{ top:8px; }
+.flux-readout-hint{ bottom:8px; left:50%; right:auto; transform:translateX(-50%); max-width:calc(100% - 32px); justify-content:center; background:var(--paper); padding:0 8px; overflow:hidden; text-overflow:ellipsis; }
+
+/* the pixel icons: 16 x 16, square, never smoothed */
+.theme-icon-pixels{ display:block; image-rendering:pixelated; shape-rendering:crispEdges; }
+[data-theme='flux'] .wz-sections-place{ display:flex; align-items:center; gap:8px; }
+[data-theme='flux'] .wz-set-head .theme-icon{ margin-right:6px; flex:none; }
+
+/* the current list item: a thin orange bar on its LEFT edge, and nothing else orange about it */
+[data-theme='flux'] .wz-section-open[aria-current='page']{ box-shadow:inset 2px 0 0 var(--orange); }
+/* the sprint surge is orange (Flux's selection is cyan, so the surge names its colour) */
+[data-theme='flux'] .mode-pfill-spark:not(.lime){ background:var(--orange); }
 
 /* Slice 4 — the effects compositor scaffold (canon §6, ThemeEffectsLayer.tsx).
    One layer, absolutely positioned behind everything painted, pointer-events
@@ -2695,7 +2757,7 @@ a:focus-visible,
    lime straight through the celebrate window (ignition sweep, orange
    notch, and sparks all rendering over a lime bar). A three-selector rule
    (attribute + two classes) beats both cleanly regardless of source order. */
-[data-theme='flux'] .mode-pfill.celebrate{ background:var(--brass); }
+[data-theme='flux'] .mode-pfill.celebrate{ background:var(--orange); }
 [data-theme='flux'] .mode-pfill::after{
   background:var(--line-active); box-shadow:0 0 4px 1px rgba(0,194,255,.55); }
 [data-theme='flux'] .mode-pfill.started::after{ animation:flux-caret-pulse 1.8s ease-in-out infinite; }
@@ -2703,11 +2765,11 @@ a:focus-visible,
   0%,100%{ opacity:.55; transform:translate(50%,-50%) scale(1); }
   50%{ opacity:1; transform:translate(50%,-50%) scale(1.35); }
 }
-[data-theme='flux'] .mode-pfill.celebrate::after{ animation:none; opacity:1; background:var(--brass-hover); box-shadow:0 0 8px 2px rgba(255,152,0,.7); }
+[data-theme='flux'] .mode-pfill.celebrate::after{ animation:none; opacity:1; background:#FFAB33; box-shadow:0 0 8px 2px rgba(255,152,0,.7); }
 /* Ignition sweep — white-to-orange gradient racing across the fill once, .55s. */
 [data-theme='flux'] .mode-pfill.celebrate::before{
   content:''; position:absolute; inset:0;
-  background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,.95) 45%, var(--brass) 60%, transparent 100%);
+  background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,.95) 45%, var(--orange) 60%, transparent 100%);
   background-size:250% 100%; background-position:-100% 0;
   animation:flux-ignition-sweep .55s ease-out; pointer-events:none; }
 @keyframes flux-ignition-sweep{

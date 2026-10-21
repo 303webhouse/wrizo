@@ -211,7 +211,7 @@ function cssChecks(css) {
   keep('TK2', T('brass') === '#00C2FF' && T('orange') === '#FF9800', `selection (--brass) = ${T('brass')}, --orange = ${T('orange')}`);
   keep('TK3', tok(B.dark, 'paper') === '#0E1C24' && /rgba?\(0,\s*194,\s*255|#00C2FF/i.test(tok(B.dark, 'paper-edge') || ''), JSON.stringify({ paper: tok(B.dark, 'paper'), edge: tok(B.dark, 'paper-edge') }));
   // OR - orange only where allowed, in rules that apply under Flux
-  const bad = rules(css).filter((x) => /data-theme='flux'|data-theme="flux"/.test(x.sel) && ORANGE_RE.test(x.body) && !ORANGE_OK.some((re) => re.test(x.sel))).map((x) => x.sel.slice(0, 90));
+  const bad = rules(css).filter((x) => /data-theme='flux'|data-theme="flux"/.test(x.sel) && ORANGE_RE.test(x.body.replace(/--orange\s*:[^;]+;/g, '')) && !ORANGE_OK.some((re) => re.test(x.sel))).map((x) => x.sel.slice(0, 90));
   keep('OR1', bad.length === 0 && /--brass:\s*#00C2FF/i.test(B.root), bad.slice(0, 4).join(' | '));
   // CT - contrast, computed from the tokens
   const ground = hex(T('ink-950') || '#000000');

@@ -130,8 +130,18 @@ export function sectionsOf(place: Pick<Place, 'kind' | 'id'>, view: SectionView)
 export function trackOf(e: JournalEntry): { n: number; m: number } | null {
   const view: SectionView = isBoard(e) ? 'boards' : 'pages';
   for (const g of sectionsOf(placeOfEntry(e), view)) {
-    const i = g.items.findIndex((x) => x.id === e.id);
-    if (i >= 0) return { n: i + 1, m: g.items.length };
+    const items = g.items;
+    const i = items.findIndex((x) => x.id === e.id);
+    if (i >= 0) return { n: i + 1, m: items.length };
+  }
+  return null;
+}
+
+/** FLUX V2 - DOC nn: a page's number in its place - its 1-based position across every page the place lists (all its sets, in order; the Journal's pages for a Journal page). Null when no pop-out lists it. */
+export function docNumberOf(e: JournalEntry): number | null {
+  let n = 0;
+  for (const g of sectionsOf(placeOfEntry(e), 'pages')) {
+    for (const x of g.items) { n += 1; if (x.id === e.id) return n; }
   }
   return null;
 }

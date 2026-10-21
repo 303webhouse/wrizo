@@ -169,10 +169,12 @@ interface Props {
   // has no durable per-page memory of its own — a scratch surface) falls
   // through to the shared field exactly as every caller did before this.
   pageId?: string;
+  // FLUX V2 - the theme's frame readouts (components/FluxReadouts.tsx), drawn inside the lit page in its own padding. Absent for every host that passes none, so nothing changes there.
+  readouts?: React.ReactNode;
   children: (api: { noteWrite: () => void; penColor?: string }) => React.ReactNode;
 }
 
-export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, penColor: penColorProp, instrument, inkPermission, firstRunGateActive, children }: Props) {
+export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, penColor: penColorProp, instrument, inkPermission, firstRunGateActive, readouts, children }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const settings = useWritingSettings();
@@ -566,6 +568,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
               className="sprint-warmth-overlay"
               style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', borderRadius: 'var(--radius-md)', background: 'var(--ember)', opacity: 'calc(var(--sprint-warmth, 0) * var(--ambient-intensity))' }}
             />
+            {readouts}
             {pageTitle && <div className="mode-page-title">{pageTitle}</div>}
             <div
               ref={scrollRef}
