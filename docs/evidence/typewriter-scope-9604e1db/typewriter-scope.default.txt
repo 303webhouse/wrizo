@@ -1,0 +1,5 @@
+FAIL  S1 baseline: Ctrl+B on the Draft page works BEFORE any Screenplay page has ever been opened  [0]
+PASS  S2 (premise): the new, empty Screenplay page opens with ITS OWN Typewriter on (Arbor default) — the state this bug depends on existing at all  [true]
+FAIL  S3 THE REPRO: after opening a new empty Screenplay page (Typewriter on there), the ORIGINAL Draft page's own Ctrl+B still works — its own per-page memory, never a shared mirror a different page's open could leave behind  [0]
+
+TYPEWRITER-SCOPE VERIFY: FAIL - 2/3 failed

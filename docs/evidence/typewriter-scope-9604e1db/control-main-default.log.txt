@@ -1,0 +1,9 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=2 tree=7eaf839d bundle=index-gBI37QFa.js/768255b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/twc-default
+[01/2] OK        exit=0   65s page-templates-r2.mjs :: ROWS-SHADOW VERIFY: PASS (72 renders checked, shadow == DOM on every one) ;; PAGE-TEMPLATES-R2 VERIFY: PASS (134 checks)
+[02/2] OK        exit=0    1s typewriter-page.mjs :: TYPEWRITER-PAGE VERIFY: PASS (21 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 2/2 of 2 returned a passing verdict
+SUITE RESULT: CLEAN — tree=7eaf839d bundle=index-gBI37QFa.js/768255b NO-REBUILD
