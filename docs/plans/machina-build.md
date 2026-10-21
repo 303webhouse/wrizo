@@ -24,6 +24,12 @@ Runs in parallel with the Flux v2 build (INK), on separate branches, with
 - `C:\Users\nickh\Downloads\theme-menu-brief.md` — the theme-picker redesign
   (brand cards), which lands *with* this build because Machina is the third
   card.
+- `C:\Users\nickh\Downloads\machina-words-pass.md` — Nick, Oct 21 12:16pm.
+  **Overrules the foundations' own §9** ("zero renames") — Machina's real
+  lexicon map (§1c below).
+- `C:\Users\nickh\Downloads\icons-v3.html` / `.png` — the Machina corporate-
+  instrument icon set AND Arbor's own new garden set, drawn directly by
+  Fable (§1c-icons below), pending Nick's look.
 - `e7d50613` (`cursor/machina-theme-644d`) — **prior art only, never
   approved, not merged, not a base.** Its own file list (`index.css`,
   `theme.ts`, `themePrefs.ts`, `themeLexicon.ts`, `deskLexicon.ts`,
@@ -55,10 +61,14 @@ mid-build:
    file list (§2) targets the shell as it exists after big-projects 2/3,
    not the RC's own `<aside class="rail">`.
 3. **Two deliverables are "mocked first" and gate the build, not follow it**
-   (brief §1): the per-theme icon set and the per-theme splash. Both need
-   Cursor's own mockup + Fable's clearance + Nick's approval *before* TOOLS
-   builds them — unlike the token pack, lexicon, and effects, which this
-   plan specifies directly from the locked foundations.
+   (brief §1): the per-theme icon set and the per-theme splash. The icon set
+   is further along than "mocked" already suggests — Fable drew it directly
+   (`icons-v3.html`/`.png`, §1c-icons below), skipping the Cursor-redraw step
+   the brief originally named; it still needs Nick's own look before this
+   plan treats it as locked. The splash has not moved past "to be mocked."
+   Neither blocks writing THIS plan (the token pack, lexicon, and effects are
+   specified directly from the locked foundations + the locked words pass),
+   but both block the BUILD itself reaching those two surfaces.
 
 ---
 
@@ -150,30 +160,125 @@ theme's own practice): `@fontsource/ibm-plex-mono`, `@fontsource/ibm-plex-sans`,
 Google-CDN `<link>` is a standalone-demo-only convenience and is never
 carried into the build.
 
-### 1c. Lexicon registration (identity map, §9)
+### 1c. Lexicon registration — SUPERSEDED: a real override map, not identity
 
-**Zero renames, zero verbs.** Every canonical noun (Journal, Pages, Plan,
-Board, Shelf, Milestones, Publish, Voice Wall, …) resolves to itself under
-Machina — but per the foundations' own instruction, **the identity map must
-still be registered explicitly**, not skipped, in BOTH lexicon files this
-codebase already splits the work across:
+**§9 of the foundations is overruled.** Nick, Oct 21 12:16pm
+(`machina-words-pass.md`): *"The menu labels are all supposed to be
+different for Machina, too (wherever possible)."* Machina gets its own
+corporate/mechanical vocabulary, the same shape as Flux's — this plan no
+longer treats §9's "zero renames" as governing; it is superseded in full,
+the way `docs/plans/typewriter-scope-plan.md` superseded a stale comment
+mid-arc rather than silently drifting from it.
 
-- `store/deskLexicon.ts` — `OVERRIDES.machina` gets an entry for every key
-  Flux overrides, each set to the SAME string CANONICAL already carries (an
-  explicit no-op, not an absent key — the distinction this codebase's own
-  CANONICAL/OVERRIDES pattern already depends on elsewhere, e.g. "an empty
-  term means no '?'" in the help-buttons work).
-- `store/themeLexicon.ts` — same treatment for the terms Flux renames there
-  (`Pages`→Docs-equivalent, `Publish`→Connect-equivalent, etc. — Machina's
-  own row is the identity for every one of them).
+**The locked map** (`machina-words-pass.md`'s own proposal table, as
+AMENDED by Nick's later same-day locking pass — the two are reconciled
+below, item by item, since the file on disk still shows Fable's proposal
+and the lock arrived as a terse verbal list; where they differ, Nick's
+locked list wins and the reconciliation is shown so it can be checked):
 
-The Voice Wall speaks canonically on its blocking event
-(`VOICE WALL · PASTE BLOCKED`, verbatim — no rename, guard-speaks-when-it-
-acts, no persistent chip): confirm the EXISTING chip component already
-reads its copy through the lexicon seam (it should, per Flux's own
-"FIREWALL · PASTE BLOCKED" precedent) rather than hardcoding Plateau's
-string, so Machina's identity row is sufficient on its own with no
-component edit.
+| Canonical (Arbor) | Machina | Locked, changed from the proposal? |
+|---|---|---|
+| Drawer (place) | **Project** | — |
+| Top Drawer | **Inbox** | — |
+| Set | **Folder** | — |
+| Section | **Part** | — |
+| Pages | **Files** | — |
+| Boards | **Plans** | **changed** (proposal: Charts) |
+| Box / card (on a board) | **Block** / **Blocks** | — |
+| Journal | **Notebook** | **changed** (proposal: Ledger) |
+| Milestone | **Deliverable** | — |
+| Home | **HQ** | — |
+| Voice Wall | **Compliance** | — |
+| Publish | **Finalize** | **changed** (proposal: Release) |
+| Templates / Presets | **Forms** | — |
+| Grafts / the knob | **Assets** / **Asset** | — (Nick, Oct 21, already locked ahead of this pass) |
+| Settings | **Controls** | — |
+| Theme menu | **Theme** | — (Nick, Oct 21, already locked) |
+| Tutor | **Consultant** | **changed** (proposal: Analyst) |
+| Progress | **Run** | — (cleared Oct 21) |
+| Trash, Delete for good | plain | — (destructive places stay plain everywhere) |
+
+**Mode tabs** (not in the proposal table at all — a separate, same-day
+instruction):
+- **Draft → Build**, **Revise → Edit** (Nick's locked list: "modes: Build /
+  Edit"). **Workshop has no given Machina word** — left plain pending Nick's
+  word; do not guess one into existence.
+- **Free Write → Sprint.** Reconciled against the proposal the same way as
+  the table above: Fable's proposal was "First Pass"; Nick's locked list
+  says "Sprint" instead. **Flagged, not silently accepted:** this reuses an
+  EXISTING, different app concept's name (`QuickSprint`, the sprint-bar/
+  goal-tracking feature, already present in every theme) for Machina's own
+  Free Write mode label. This may be deliberate (Machina's whole register is
+  "output," and Free Write *is* a sprint in that register) or may be an
+  oversight worth a one-line confirm before the lexicon ships — naming it
+  here rather than building it silently either way.
+- **Plan (the mode tab) → inherits canonical, does not get a Machina-specific
+  override.** Nick's locked list names it literally as `"Plan →"` — read as
+  "no change for Machina" rather than a literal word, because the SAME
+  instruction batch separately renames the Arbor-canonical term for this tab
+  from **"Plan →" to "Boards →"** (ledger note: this is exactly why that
+  canonical rename exists — Machina's own Boards-content-type word just
+  became **"Plans"** in this same pass, and leaving the MODE TAB as
+  "Plan →" next to a content type called "Plans" is the collision the
+  rename resolves). Once the Arbor-canonical rename lands, Machina's own tab
+  reads **"Boards →"** automatically, with no Machina-specific entry
+  required. This is this plan's own reasoned reading of a terse relay, not
+  a quote — confirm before building if there is any doubt.
+
+**Registration**, same two files Flux already proved, now carrying REAL
+deltas instead of identity no-ops:
+- `store/deskLexicon.ts` — `OVERRIDES.machina` gets every key above that
+  deskLexicon owns (the desk-rail/chrome-facing terms).
+- `store/themeLexicon.ts` — `OVERRIDES.machina` gets every key above that
+  themeLexicon owns (the content-noun terms: Pages/Boards/Journal/Publish/
+  etc., matching the shape Flux's own `Docs`/`Circuits`/`Logs`/`Uplink` rows
+  already take there).
+- **Clean-up parallel to Flux's own words-pass (`flux-words-pass.md` §C):**
+  any string that still says "Board"/"Journal"/"Page" literally inside a
+  big-projects surface (`sectionsNewBoard`, `sectionsEmptyBoards`, "Moved to
+  the Journal…", etc.) needs a Machina row too, not just the rail-level
+  terms — audit these call sites the same way the Flux pass did rather than
+  assuming the rail alone covers it.
+
+The Voice Wall's own blocking copy becomes **"COMPLIANCE ▪ PASTE BLOCKED"**
+(canonical event-name format, Machina's own noun substituted) — confirm the
+chip component already reads its copy through the lexicon seam (it should,
+per Flux's "FIREWALL ▪ PASTE BLOCKED" precedent) rather than hardcoding
+Plateau's string.
+
+#### Icons (`icons-v3.html`/`.png`, read directly — the source of record, not a description of it)
+
+Two sets ship in this same build, both already drawn (Fable), pending
+Nick's look — not yet "approved" the way Flux's icons v2 were:
+
+- **Machina · Corporate Instrument set** — a precise square-cut line
+  register. **Nine of the twenty locked words have a drawn glyph today:**
+  Project (briefcase), Files (spec sheet), **Charts** (org chart), **Ledger**
+  (ruled ledger book), Controls (gauge), Theme (calibration swatch), Assets
+  (cube), Folder (hanging folder), Trash (plain bin — kept recognizable
+  cross-theme, same as every other theme's Trash glyph).
+  **Two of those nine are now stale labels, not stale glyphs:** the sheet
+  reads "Charts" and "Ledger" because it was drawn against Fable's
+  *proposal*, before Nick's same-day locking pass changed Boards→**Plans**
+  and Journal→**Notebook** (§1c above). The words-pass doc's own closing
+  line governs: *"If a word changes, that icon is redrawn."* This is a
+  relabel-the-sheet ask back to Fable/Cursor, not a build-time code fix —
+  flagging it here so it isn't silently built against the stale word.
+  **Eleven locked words have no drawn glyph yet** (Inbox, Part, Block(s),
+  Deliverable, HQ, Compliance, Finalize, Sprint, Consultant, and the two mode
+  tabs Build/Edit) — confirm with Fable whether these reuse an existing
+  rail-icon concept (several already exist cross-theme: Trash, the graft/
+  Asset knob) or need their own ask before the build's own icon-wiring step
+  is called done.
+- **Arbor · Garden set** (new, same sheet, same build — Fable's instruction
+  this round, approved by Nick per `theme-menu-brief.md`'s 12:34pm note):
+  soft hand-drawn strokes, Arbor's own PLAIN words unchanged (Drawer, Pages,
+  Boards, Journal, **Mood** — the already-locked theme-menu label, Settings,
+  Trash, Graft, Set) — nine glyphs, one-for-one with Arbor's own current
+  rail roster. This is Arbor's FIRST theme-specific icon set (it has used a
+  generic/shared glyph set until now); wiring it in is the same per-theme
+  icon-swap mechanism Machina's own set needs, built once and reused by
+  both, not two separate mechanisms.
 
 ### 1d. Effects registration (§10)
 
@@ -291,9 +396,10 @@ surface):
    dark") — i.e. the Page pref must be scoped to `--paper`/`--ink-on-paper`
    only, never to `--chrome-surface`/`--rail-surface`, matching §4's own
    "page ink is independent of room ink" law.
-4. **Per-theme icon set:** **mocked first** (Cursor), gates this item of the
-   build. Not specified further here; the build plan's own job once the
-   mockup lands is wiring, not design.
+4. **Per-theme icon set:** drawn (`icons-v3.html`/`.png` — §1c-icons above,
+   both the Machina set and Arbor's new garden set), pending Nick's look.
+   Not specified further here; the build's own job once it's cleared is
+   wiring a per-theme icon-swap seam, not drawing.
 5. **Per-theme splash:** **mocked first** (Cursor), same gate. Prior art:
    this exact seam was just built for Flux/Arbor (`SplashMark.tsx`,
    `ArborMark`/`FluxMark`) — Machina adds a third mark function to the same
@@ -374,11 +480,13 @@ Machina-specific additions:
   active edge) computes to 1px — the foundations' own explicit ruling
   (§8), worth a literal assertion since it's a single, easily-regressed
   number.
-- **Lexicon identity assertions:** a representative sweep of canonical
-  terms (Journal, Pages, Plan, Publish, Voice Wall's own chip copy) render
-  verbatim under Machina — proving the "explicit identity registration,
-  not a skipped lookup" requirement actually took effect, not merely that
-  nothing crashed.
+- **Lexicon override assertions:** a representative sweep of the LOCKED
+  words (Journal→Notebook, Pages→Files, Boards→Plans, Publish→Finalize,
+  Tutor→Consultant, the Voice Wall chip reading "COMPLIANCE ▪ PASTE
+  BLOCKED") render verbatim under Machina — proving the real override map
+  actually took effect, not merely that nothing crashed. This supersedes
+  what an earlier draft of this plan called "identity assertions," written
+  before §9's "zero renames" was itself overruled (§1c).
 - **CAST persistence/zero-schema guard:** confirms CAST never reaches
   `apps/server/src/sync.ts` (a static source check, same shape as this
   codebase's own sync-completeness law elsewhere) — if the build ever
@@ -401,8 +509,9 @@ build time — this is a plan, not a diff)
 |---|---|
 | `apps/desktop/src/store/theme.ts` | `ThemeId` gains `'machina'`; `REGISTERED` gains it; `THEME_CONFIG.machina` already has its own marked slot (`typewriterDefault: false`) waiting — confirmed present on main today, no guess needed |
 | `apps/desktop/src/index.css` | `[data-theme="machina"]` token block (§1a), nested CAST sub-blocks, page-pair blocks, spark CSS (§1e) |
-| `apps/desktop/src/store/deskLexicon.ts` | `OVERRIDES.machina` identity entries (§1c) |
-| `apps/desktop/src/store/themeLexicon.ts` | `OVERRIDES.machina` identity entries (§1c), including the rail-foot "Theme" label (§3.7) |
+| `apps/desktop/src/store/deskLexicon.ts` | `OVERRIDES.machina` real-word entries (§1c — locked map, not identity) |
+| `apps/desktop/src/store/themeLexicon.ts` | `OVERRIDES.machina` real-word entries (§1c), including the rail-foot "Theme" label (§3.7) and the mode-tab words (Build/Edit/Sprint) |
+| `apps/desktop/src/components/<icon component(s)>` (name TBD — confirm current file) | per-theme icon-swap seam serving BOTH the Machina set and Arbor's new garden set (§1c-icons) |
 | `apps/desktop/src/store/themeCast.ts` (new, name TBD — see §2) | CAST storage seam |
 | `apps/desktop/src/components/ThemeEffectsLayer.tsx` / `store/fluxThemeFx.ts`-equivalent | confirm empty-registration is already a supported shape for Machina; register the one celebration's Machina-specific constants |
 | `apps/desktop/src/components/WritingIncentives.tsx` | Run (Machina-conditional, §3.6); celebration skin constants |
@@ -437,3 +546,19 @@ build time — this is a plan, not a diff)
   pair or guessed from Flux's analogous value.
 - Whether the theme-card illustration (§3.7) rides the same mockup pass as
   the icon set/splash, or needs its own ask.
+- **Confirm this plan's own reading of "Plan →" in the locked word list**
+  (§1c) — that it means "no Machina-specific override; inherits whatever
+  Arbor's canonical says, which this same pass renames to 'Boards →'" —
+  before the lexicon ships. A terse relay, read carefully, but not a quote.
+- **Confirm Free Write → "Sprint"** is deliberate (§1c flags the name
+  collision with the existing `QuickSprint` feature) rather than carried
+  over from a different list by mistake.
+- **Workshop's own Machina word** — the locked list gives Build (Draft) and
+  Edit (Revise) but names no third mode word; confirm whether Workshop
+  stays plain or still needs one.
+- **The two stale icon labels** ("Charts"/"Ledger" in `icons-v3.html`, §1c-
+  icons) need a relabel pass back to Fable/Cursor before the sheet is
+  treated as locked — the glyphs likely still read correctly; only the two
+  printed words are behind the latest lock.
+- **The eleven locked words with no drawn glyph yet** (§1c-icons) — confirm
+  which reuse an existing icon concept vs. need their own ask.
