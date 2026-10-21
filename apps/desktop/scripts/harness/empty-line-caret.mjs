@@ -165,7 +165,9 @@ async function part2() {
     ok('E4 the last row bottom (what the lastElementChild proxy in fx1.mjs now reads) is the caret line bottom to within half a line-height, and the offset is the SAME after a second Enter (so line-to-line deltas of the proxy are unchanged)',
       !!c1 && !!c2 && c1.lh > 0 && off1 >= -1 && off1 <= c1.lh / 2 + 1 && Math.abs(off2 - off1) <= 1, JSON.stringify({ off1, off2, lh: c1 && c1.lh }));
     await app.typeKeys('Next');
-    await sleep(500);
+    await sleep(300);
+    // the stored text is read AFTER the debounced save lands (the standing lesson: wait on the STORED value, never on elapsed time) - up to 8 s, then read whatever is there
+    await waitSoft(`(((JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === 'elc1')) || {}).text) === ${JSON.stringify('A title\n\nNext')}`, { label: 'the typed text has been saved', timeout: 8000 });
     const c3 = await caret();
     const text = await stored('elc1');
     ok('E3 typing carries on from the left (the guard is gone once the row has a letter) and the stored text is exactly what was typed (no guard character stored)', !!c3 && c3.inLast === true && c3.x > c3.rowLeft + c3.pad && c3.x < c3.rowLeft + 200 && c3.guards === 0 && text === 'A title\n\nNext', JSON.stringify({ c3, text }));
