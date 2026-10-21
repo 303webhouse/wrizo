@@ -12,7 +12,10 @@
 //       the meter's six - and the two-system case is really exercised.
 //   G5  a double dip and a double sync jump each count 2
 //   G6  reduced motion (the OS setting, emulated): no events, the still overlay at intensity x 0.42 - appearing with NO easing (Fable, Oct 17:
-//       the global reduced-motion rule, index.css, is honoured); turning it off resumes
+//       the global reduced-motion rule, index.css, is honoured); turning it off resumes. Its detail logs every pulse against the switch's
+//       landing (the media change event) - the ledger-114 instrument
+//   G6d (ledger 114) the tail of an event under way: a double dip / double jump fired at peak, then reduced motion switched on during their
+//       first pulses - no SECOND pulse reaches the screen after the switch lands
 //   G7  the Flicker switch, pressed for real in the "..." panel: off means no meter at all (Signal Loss stays); it survives a reload
 //   G8  page primacy: the page's rect is the same with the meter at peak and off; a click on the page reaches the page
 //   G9  Arbor (plateau): no meter
@@ -213,7 +216,48 @@ await withHarness(async (app) => {
     return { reachesPage: !!el && ed.contains(el), layerPE: layer ? getComputedStyle(layer).pointerEvents : null, layerFixed: layer ? getComputedStyle(layer).position : null }; })()`);
   ok('G8: the meter takes no input - a point on the page finds the page beneath it; the layer is fixed and pointer-events:none', hit.reachesPage && hit.layerPE === 'none' && hit.layerFixed === 'fixed', JSON.stringify(hit));
 
+  // ---- G6d (ledger 114 - G6 went red ONCE in a full pair, 1 pulse in its window, 8 solo greens): THE TAIL OF AN EVENT ALREADY UNDER WAY.
+  // fire() re-checks reduced motion at fire time, so no event can START after the switch; but a DOUBLE dip draws its second pulse 750 ms after
+  // its first (400 up + 350 gap), and a double jump 140 ms after - through a callback that asked only the flash budget. An event fired just
+  // before the switch could put a fresh flash on screen after it. This forces exactly that, every run: at peak, a double dip and a double jump,
+  // then reduced motion switched on during their first pulses. THE INSTRUMENT: the switch's landing is the media query's own `change` event
+  // (performance.now()); every pulse on both layers is logged against it (dt < 0 before the switch, dt > 0 after).
+  const SWITCH_WATCH = `(() => { window.__wzReducedAt = null; const mq = matchMedia('(prefers-reduced-motion: reduce)');
+    const on = (e) => { if (e.matches && window.__wzReducedAt == null) window.__wzReducedAt = performance.now(); };
+    if (window.__wzReducedWatch) mq.removeEventListener('change', window.__wzReducedWatch);
+    window.__wzReducedWatch = on; mq.addEventListener('change', on); return true; })()`;
+  const pulseLog = async (app) => {
+    const at = await app.evalJs('window.__wzReducedAt');
+    return { reducedAt: at, log: ((await app.evalJs('window.__wzPulses || []')) || []).map((p) => ({ kind: p.kind, layer: p.layer, dt: at == null ? null : Math.round(p.t - at) })) };
+  };
+  await M(app, 'm.setForceDouble(true)');
+  await M(app, 'm.setIdle(300)');
+  await sleep(300);
+  await app.evalJs(SWITCH_WATCH);
+  await app.evalJs(OBSERVE);
+  // at peak the meter's own events share the 3-per-second budget, so a forced pair can be refused: try again once the budget's second has passed
+  let firedD = null;
+  for (let i = 0; i < 6; i += 1) {
+    firedD = await M(app, "[m.fire('dip'), m.fire('sync')]");
+    if (Array.isArray(firedD) && firedD.every((f) => f === true)) break;
+    await sleep(1100);
+  }
+  await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  await sleep(1300);   // past the second dip's 750 ms
+  await app.evalJs('window.__wzPulseStop && window.__wzPulseStop()');
+  const gd = await pulseLog(app);
+  const afterD = gd.log.filter((p) => p.layer === 'meter' && p.dt !== null && p.dt > 0);
+  ok('G6d (premise): the forced double dip and double jump were granted and drew their FIRST pulses before reduced motion landed, and the switch\'s landing was seen (the media change event)',
+    Array.isArray(firedD) && firedD.every((f) => f === true) && gd.reducedAt != null && gd.log.some((p) => p.layer === 'meter' && p.kind === 'dip' && p.dt < 0) && gd.log.some((p) => p.layer === 'meter' && p.kind === 'sync' && p.dt < 0),
+    JSON.stringify({ firedD, ...gd }));
+  ok('G6d: once reduced motion has landed the meter puts NO pulse on screen - the SECOND dip and the second jump of events already under way are refused',
+    gd.reducedAt != null && afterD.length === 0, JSON.stringify({ afterD, ...gd }));
+  await app.emulateMedia([]);
+  await M(app, 'm.setForceDouble(false)');
+  await sleep(800);
+
   // ---- G6: reduced motion
+  await app.evalJs(SWITCH_WATCH);   // the instrument (ledger 114): the switch's landing, for G6's detail
   await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
   await M(app, 'm.setIdle(300)');
   await sleep(300);
@@ -227,9 +271,10 @@ await withHarness(async (app) => {
   const still = await app.evalJs(`(() => { const s = document.querySelector('${LAYER} .glitch-meter-still'); return s ? { opacity: Number(getComputedStyle(s).opacity), transition: getComputedStyle(s).transitionDuration } : null; })()`);
   await app.evalJs('window.__wzPulseStop && window.__wzPulseStop()');
   const meterPulses6 = (await app.evalJs('window.__wzPulses || []')).filter((p) => p.layer === 'meter');
+  const g6log = await pulseLog(app);   // the instrument: each pulse's kind and its time against the switch's landing (detail only)
   await frame(app, 'reduced-motion');
   ok('G6: under reduced motion the meter fires NOTHING - no pulse on its layer in 6 s at peak, and even a forced event is refused',
-    !!s6 && s6.reduced && meterPulses6.length === 0 && Array.isArray(fired6) && fired6.every((f) => f === false), JSON.stringify({ s6, meterPulses6: meterPulses6.length, fired6 }));
+    !!s6 && s6.reduced && meterPulses6.length === 0 && Array.isArray(fired6) && fired6.every((f) => f === false), JSON.stringify({ s6, meterPulses6: meterPulses6.length, fired6, pulsesVsSwitch: g6log }));
   // ---- PARKED - SUPERSEDED (ledger 90; Fable's ruling, Oct 17: honour the global reduced-motion rule, index.css - under reduced motion every
   // transition is 0.01 ms, so the overlay APPEARS, with no easing; the run read {opacity: 0.42, transition: "1e-05s"}). Kept VERBATIM and no
   // longer run; successor below.
