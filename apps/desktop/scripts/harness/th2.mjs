@@ -87,8 +87,14 @@ await withHarness(async (app) => {
   const railLabels = await app.evalJs("[...document.querySelectorAll('.desk-rail-item .desk-rail-label')].map(el => el.textContent)");
   // Journal/Shelf render via t() (singular — "Log"/"Cache"); only the
   // Drawers item is flagged plural and renders via tMany() ("Racks").
-  ok('check 2: DeskRail renders Flux terms (Journal->Log, Shelf->Cache, Drawers->Racks)',
-    railLabels.includes('Log') && railLabels.includes('Cache') && railLabels.includes('Racks'),
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (Fable's ruling Oct 19: no Shelf door from chrome, the narrow DeskRail included): the Shelf item is gone, so Cache no longer renders in DeskRail.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('check 2: DeskRail renders Flux terms (Journal->Log, Shelf->Cache, Drawers->Racks)',
+  //   railLabels.includes('Log') && railLabels.includes('Cache') && railLabels.includes('Racks'),
+  //   JSON.stringify(railLabels));
+  ok('check 2 [big-projects-1a successor]: DeskRail renders Flux terms (Journal->Log, Drawers->Racks) and carries no Shelf/Cache item',
+    railLabels.includes('Log') && !railLabels.includes('Cache') && railLabels.includes('Racks'),
     JSON.stringify(railLabels));
   // B1 park sweep — "canonical route /journal still resolves ... (URL stays
   // canonical)" is PARKED below (A4, quoted verbatim): retirement-by-

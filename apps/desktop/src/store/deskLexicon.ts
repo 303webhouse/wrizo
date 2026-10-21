@@ -329,6 +329,11 @@ export type DeskTermId =
   // what the list IS; the put it still offers is named by its own verb.
   | 'openPagesHeading' | 'openPagesSort' | 'openPagesMore' | 'openPagesPlace'
   | 'placeSortDate' | 'placeSortDrawer'
+  // BIG PROJECTS 1a - the place block, the switcher and the Pages pop-out (Arbor words; Flux follows in its own words pass).
+  | 'sectionsHeading' | 'sectionsOrder' | 'sectionsRows' | 'sectionsGrid' | 'sectionsNewSet' | 'sectionsNewSetName' | 'sectionsPresets'
+  | 'sectionsNewBoard' | 'sectionsEmptyBoards'
+  | 'sectionsMoved' | 'sectionsUndo' | 'sectionsTakeOut' | 'sectionsEmpty' | 'sectionsReorder'
+  | 'switcherHeading' | 'switcherDrawers' | 'switcherJournals' | 'switcherNewDrawer' | 'switcherNewDrawerName' | 'switcherUnsorted'
   | 'placeSortAZ' | 'placePageEmpty' | 'planNewCard' | 'planFitToContent'
   // ITEM 83 M7 (PP1) — the Home zone's heading, which until now existed only
   // as an aria-label the eye could not hear.
@@ -757,7 +762,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   sliverInstruments: 'Instruments',
   sliverInstrumentsShow: 'Show',
   sliverInstrumentsUnit: 'Unit',
-  stripPlan: 'Plan',
+  stripPlan: 'Boards', // BIG PROJECTS 1a: the rail's Plan item is Boards (the category id stays `plan`)
   stripSettings: 'Settings',
   stripChangeTheme: 'Themes',
   cascadeJournalOpen: 'Open the Journal',
@@ -1166,6 +1171,26 @@ const CANONICAL: Record<DeskTermId, string> = {
   openPagesSort: 'Sort Pages',
   openPagesMore: 'More for this Page',
   openPagesPlace: 'Place on this board',
+  sectionsHeading: 'Sections',
+  sectionsOrder: 'Order',
+  sectionsRows: 'Rows',
+  sectionsGrid: 'Grid',
+  sectionsNewSet: '＋ New set',
+  sectionsNewSetName: 'Name the set',
+  sectionsPresets: 'Presets',
+  sectionsNewBoard: 'New Board',
+  sectionsEmptyBoards: 'No boards here yet.',
+  sectionsMoved: 'Moved to the Journal.',
+  sectionsUndo: 'Undo',
+  sectionsTakeOut: 'Take out of this Drawer',
+  sectionsEmpty: 'No pages here yet.',
+  sectionsReorder: 'Drag to reorder',
+  switcherHeading: 'Where you are',
+  switcherDrawers: 'Drawers',
+  switcherJournals: 'Journals',
+  switcherNewDrawer: '＋ New Drawer',
+  switcherNewDrawerName: 'Name the Drawer',
+  switcherUnsorted: 'Unsorted',
   placeSortDate: 'Date',
   placeSortDrawer: 'Drawer',
   placeSortAZ: 'A–Z',

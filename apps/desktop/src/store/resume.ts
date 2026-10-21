@@ -1,6 +1,6 @@
 import type { Project, JournalEntry, BinderKind } from '../types';
 import {
-  getProjects, getJournalEntries, getJournalEntry, getProject,
+  getProjects, getJournalEntries, getJournalEntry, getProject, isAutoSet,
   getBinderPages, getStoryPlanByProjectId, getSystemKind, inJournalView,
 } from './persistence';
 import { getFramework } from './frameworks';
@@ -111,6 +111,7 @@ export function getResumeTarget(): ResumeTarget | null {
   // Projects (binder pointer / legacy sprint). Also catches pre-F1 binder pages
   // via the direct entry candidates below.
   for (const p of projects) {
+    if (isAutoSet(p)) continue;   // BIG PROJECTS 1a: a set the app made is empty by construction - its pages race as entries
     const at = new Date(p.lastActivityAt || p.updatedAt).getTime();
     cands.push({ at, build: () => fromProject(p, at) });
   }

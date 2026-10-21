@@ -146,13 +146,21 @@ await withHarness(async (app) => {
   await openBoard(app, USER_BOARD.id);
 
   await app.waitFor("!!document.querySelector('.wz-beginnings')", { label: 'Beginnings row on a user board' });
-  const doorPresent = await app.evalJs(
-    "[...document.querySelectorAll('.wz-beginning')].map(n => n.dataset.beginning)");
-  ok('S1 (a) — the board offers its New-page-card door',
-    Array.isArray(doorPresent) && doorPresent.includes('newPageCard'),
-    `doors=${JSON.stringify(doorPresent)}`);
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): the New-page-card door is the sliver's tool now; the starter row does not offer it.
+  // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
+  //
+  // const doorPresent = await app.evalJs(
+  //   "[...document.querySelectorAll('.wz-beginning')].map(n => n.dataset.beginning)");
+  // ok('S1 (a) — the board offers its New-page-card door',
+  //   Array.isArray(doorPresent) && doorPresent.includes('newPageCard'),
+  //   `doors=${JSON.stringify(doorPresent)}`);
 
-  await clickBeginning(app, 'newPageCard');
+  // await clickBeginning(app, 'newPageCard');
+  const doorPresent = await app.evalJs("[...document.querySelectorAll('.wz-beginning')].map(n => n.dataset.beginning)");
+  const sliverHasIt = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].some(n => n.textContent.trim() === 'New Page')");
+  ok('S1 (a) [big-projects-2 successor] - the board offers its New-page-card door in the SLIVER, not in the starter row',
+    Array.isArray(doorPresent) && !doorPresent.includes('newPageCard') && sliverHasIt === true, `doors=${JSON.stringify(doorPresent)} sliver=${sliverHasIt}`);
+  await clickSliver(app, 'New Page');
   await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'travelled to the new page' });
   const madePageId = await app.evalJs("location.hash.split('/page/')[1] || ''");
 

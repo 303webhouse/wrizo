@@ -53,6 +53,9 @@ export interface UnbornDescriptor {
   // every other part of the descriptor (reload-safe, no storage). Unlike Screenplay it does NOT birth the page: a template changes how the text is
   // DRAWN, not what kind of document it is, so PB1 holds - no row until the first word - and the setting is written with that first word.
   template: PageTemplate | null;
+  // BIG PROJECTS step 2 - a PRESET on the Boards tab opens a new board with this deck's wizard already on its first question (components/BoardEditor.tsx reads it while the board is unborn). A deck id from decks/library; unknown
+  // ids are harmless (the wizard finds no such deck and opens at the library). Rides the address like the rest of the descriptor, so nothing is stored.
+  deck: string | null;
 }
 
 // A malformed or unknown descriptor degrades to a plain loose page rather than
@@ -67,6 +70,7 @@ export function readDescriptor(search: string): UnbornDescriptor {
   const pinBoardId = q.get('pin');
   const rawStructure = q.get('structure');
   const rawTemplate = q.get('template');
+  const rawDeck = q.get('deck');
   return {
     origin,
     kind,
@@ -76,6 +80,7 @@ export function readDescriptor(search: string): UnbornDescriptor {
     // address is a hint about a room that does not exist yet.
     structure: rawStructure === 'screenplay' ? 'screenplay' : rawStructure === 'prose' ? 'prose' : null,
     template: rawTemplate === 'outline' || rawTemplate === 'title' || rawTemplate === 'bibliography' ? rawTemplate : null,
+    deck: rawDeck && rawDeck.trim() ? rawDeck.trim() : null,
   };
 }
 
@@ -87,6 +92,7 @@ export function unbornHref(d: Partial<UnbornDescriptor> = {}): string {
   if (d.pinBoardId) q.set('pin', d.pinBoardId);
   if (d.structure && d.structure !== 'prose') q.set('structure', d.structure);
   if (d.template) q.set('template', d.template);
+  if (d.deck) q.set('deck', d.deck);
   const s = q.toString();
   return `/page/new${s ? `?${s}` : ''}`;
 }

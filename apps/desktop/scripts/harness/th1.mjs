@@ -105,13 +105,26 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.desk-rail')", { label: 'DeskRail mounted (canonical route resolves)' });
   // Rail order is [Catch, Journal, Shelf, Drawers, Library] with no way-back
   // chip present (fresh state) — indices 1/3 (Catch is 0).
-  const journalRailLabel = await app.evalJs("document.querySelectorAll('.desk-rail-item .desk-rail-label')[1]?.textContent");
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a + step 2 (Fable's rulings Oct 19; chat 1's ledger 114 routed this): DeskRail's items are found BY NAME - the rail lost its Shelf item, so every position below it moved, and an index goes green about something else.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // const journalRailLabel = await app.evalJs("document.querySelectorAll('.desk-rail-item .desk-rail-label')[1]?.textContent");
+  // const journalLexiconVal = await app.evalJs("window.wrizoLexicon.t('journal')");
+  // ok('check 2: DeskRail label renders exactly the lexicon projection for its term', journalRailLabel === journalLexiconVal, `${journalRailLabel} vs ${journalLexiconVal}`);
+  const railLabelsByName = await app.evalJs("[...document.querySelectorAll('.desk-rail-item .desk-rail-label')].map(el => el.textContent)");
   const journalLexiconVal = await app.evalJs("window.wrizoLexicon.t('journal')");
-  ok('check 2: DeskRail label renders exactly the lexicon projection for its term', journalRailLabel === journalLexiconVal, `${journalRailLabel} vs ${journalLexiconVal}`);
+  ok('check 2 [big-projects-1a successor]: DeskRail has a Journal item whose label is exactly the lexicon projection for its term - found by NAME, not by position', railLabelsByName.includes(journalLexiconVal), `${JSON.stringify(railLabelsByName)} vs ${journalLexiconVal}`);
 
-  const drawersRailLabel = await app.evalJs("document.querySelectorAll('.desk-rail-item .desk-rail-label')[3]?.textContent");
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a + step 2 (Fable's rulings Oct 19; chat 1's ledger 114 routed this): the Drawers item is found by NAME (position 3 now holds Library).
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // const drawersRailLabel = await app.evalJs("document.querySelectorAll('.desk-rail-item .desk-rail-label')[3]?.textContent");
+  // const drawersLexiconMany = await app.evalJs("window.wrizoLexicon.tMany('drawer')");
+  // ok('check 2 (R1): DeskRail\'s Drawers item now renders via tMany(\'drawer\') — matches the lexicon projection exactly', drawersRailLabel === drawersLexiconMany, `${drawersRailLabel} vs ${drawersLexiconMany}`);
   const drawersLexiconMany = await app.evalJs("window.wrizoLexicon.tMany('drawer')");
-  ok('check 2 (R1): DeskRail\'s Drawers item now renders via tMany(\'drawer\') — matches the lexicon projection exactly', drawersRailLabel === drawersLexiconMany, `${drawersRailLabel} vs ${drawersLexiconMany}`);
+  const drawersLexiconOne = await app.evalJs("window.wrizoLexicon.t('drawer')");
+  ok('check 2 (R1) [big-projects-1a successor]: DeskRail\'s Drawers item renders via tMany(\'drawer\') - an item whose label is exactly the plural projection exists (found by NAME), and none renders the singular',
+    railLabelsByName.includes(drawersLexiconMany) && !railLabelsByName.includes(drawersLexiconOne), `${JSON.stringify(railLabelsByName)} vs ${drawersLexiconMany} / ${drawersLexiconOne}`);
 
   await app.goto('/drawers');
   await app.waitFor("!!document.querySelector('.dz-pagetitle')", { label: 'Drawers route resolves (canonical path segment)' });

@@ -113,7 +113,7 @@ const pinIds = (boxes) => boxes.filter((b) => b.kind === 'page-pin').map((b) => 
 // page[1], plan[2]) — Trash now sits at the strip's foot (index 7), AFTER
 // Page/Plan, so this index is untouched.
 const openPageCategory = async (app) => {
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPageCategory)' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (openPageCategory)' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
   if (alreadyOpen) return;
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
@@ -656,7 +656,7 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
   await app.click('Start writing');
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted (S5 cascade check)' });
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (S5 cascade check)' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (S5 cascade check)' });
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=journal]').click()"); // Journal category
   await app.waitFor("!!document.querySelector('.wz-cascade-action')", { label: 'Journal panel open (S5 cascade check)' });
   await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].find(b => b.textContent === 'Open the Journal').click()");
@@ -720,8 +720,14 @@ await withHarness(async (app) => {
       stripCount: document.querySelectorAll('.wz-strip-item').length,
       boardCanvasPresent: !!document.querySelector('.board-canvas'),
     })`);
-    ok(`S6 @ ${width}px: the Journal Board mounts framed (DeskFrame + the 8-category strip, Trash included) — the same chrome any other Board already gets`,
-      framedShape.deskFramePresent && framedShape.stripPresent && framedShape.stripCount === 8 && framedShape.boardCanvasPresent,
+    // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the strip carries SEVEN categories.
+    // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now (the place block first, no Shelf tab), the Drawers tab is the PLACE SWITCHER and its tiles retired (boards are listed by the Boards pop-out, step 2), and the Shelf is merged into the Journal.
+    //
+    // ok(`S6 @ ${width}px: the Journal Board mounts framed (DeskFrame + the 8-category strip, Trash included) — the same chrome any other Board already gets`,
+    //   framedShape.deskFramePresent && framedShape.stripPresent && framedShape.stripCount === 8 && framedShape.boardCanvasPresent,
+    //   JSON.stringify(framedShape));
+    ok(`S6 @ ${width}px [big-projects-1a successor]: the Journal Board mounts framed (DeskFrame + the 7-category strip, Trash included) - the same chrome any other Board already gets`,
+      framedShape.deskFramePresent && framedShape.stripPresent && framedShape.stripCount === 7 && framedShape.boardCanvasPresent,
       JSON.stringify(framedShape));
     await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
     await sleep(150);
@@ -745,8 +751,14 @@ await withHarness(async (app) => {
   })`);
   ok(`S6 @ ${LEGACY_W}px (one below the 1100 floor): the Journal Board renders via its LEGACY branch — no DeskFrame, no strip at all`,
     legacyFloorShape.deskFrameGone && legacyFloorShape.stripGone && legacyFloorShape.boardCanvasPresent, JSON.stringify(legacyFloorShape));
-  ok(`S6 @ ${LEGACY_W}px: DeskRail's own roster is BYTE-IDENTICAL — Catch, Journal, Shelf, Drawers, Library — no Trash item, no new legacy chrome`,
-    JSON.stringify(legacyFloorShape.railLabels) === JSON.stringify(['Catch', 'Journal', 'Shelf', 'Drawers', 'Library']),
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (Fable's ruling Oct 19: no Shelf door from chrome, the narrow DeskRail included): the narrow DeskRail carries Catch, Journal, Drawers, Library - the Shelf item is gone.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok(`S6 @ ${LEGACY_W}px: DeskRail's own roster is BYTE-IDENTICAL — Catch, Journal, Shelf, Drawers, Library — no Trash item, no new legacy chrome`,
+  //   JSON.stringify(legacyFloorShape.railLabels) === JSON.stringify(['Catch', 'Journal', 'Shelf', 'Drawers', 'Library']),
+  //   JSON.stringify(legacyFloorShape.railLabels));
+  ok(`S6 @ ${LEGACY_W}px [big-projects-1a successor]: DeskRail's roster is Catch, Journal, Drawers, Library - the Shelf item is gone (the Shelf is merged into the Journal) - no Trash item, no new legacy chrome`,
+    JSON.stringify(legacyFloorShape.railLabels) === JSON.stringify(['Catch', 'Journal', 'Drawers', 'Library']),
     JSON.stringify(legacyFloorShape.railLabels));
 
   return checks;
@@ -794,7 +806,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.evalJs("location.hash = '#/page/b1-parked-system-probe'");
     await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'PARKED system board framed' });
     await sleep(250);
-    await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'PARKED cascade strip mounted' });
+    await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'PARKED cascade strip mounted' });
     await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()"); // Page category
     await app.waitFor("!!document.querySelector('.wz-pageface-verb-pin')", { label: 'PARKED Page face (system board)' });
     const movecopyGone = await app.evalJs("!document.querySelector('.wz-pageface-verb-movecopy')");
@@ -841,7 +853,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.evalJs("location.hash = '#/page/b1-parked-journal-probe'");
     await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'PARKED journal system board framed' });
     await sleep(250);
-    await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'PARKED cascade strip mounted (journal)' });
+    await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'PARKED cascade strip mounted (journal)' });
     await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
     await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'PARKED Page face (journal system board)' });
     const journalBoardHomeLabelNow = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
@@ -867,7 +879,7 @@ if (process.env.HARNESS_PARKED === '1') {
     // Live successor: this file's own live S4 section, above.
     await journalBoardBoxes(app); // any framed page carries the same strip
     await sleep(150);
-    await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'PARKED strip mounted (Trash-position sweep)' });
+    await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'PARKED strip mounted (Trash-position sweep)' });
     const stripShapeParkedTrash = await app.evalJs(`(() => {
       const items = [...document.querySelectorAll('.wz-strip-item')];
       return { count: items.length, labels: items.map(b => b.querySelector('.wz-strip-label')?.textContent) };

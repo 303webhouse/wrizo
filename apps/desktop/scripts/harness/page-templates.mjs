@@ -232,8 +232,13 @@ await withHarness(async (app) => {
   await app.evalJs("location.hash = '#/page/tpl-board'");
   await waitSoft(app, "!!document.querySelector('.wz-beginnings')", { label: 'board row' });
   const doors = await app.evalJs("[...document.querySelectorAll('.wz-beginning')].map(n => n.dataset.beginning)");
-  ok('T5: an empty user board still shows its Beginnings row with its own four doors (newCard, newPageCard, loadDeck, connectPage)',
-    JSON.stringify(doors) === JSON.stringify(['newCard', 'newPageCard', 'loadDeck', 'connectPage']), JSON.stringify(doors));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): three starters.
+  // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
+  //
+  // ok('T5: an empty user board still shows its Beginnings row with its own four doors (newCard, newPageCard, loadDeck, connectPage)',
+  //   JSON.stringify(doors) === JSON.stringify(['newCard', 'newPageCard', 'loadDeck', 'connectPage']), JSON.stringify(doors));
+  ok('T5 [big-projects-2 successor]: an empty user board still shows its Beginnings row, now with three doors (newCard, loadDeck, connectPage) - no New Page',
+    JSON.stringify(doors) === JSON.stringify(['newCard', 'loadDeck', 'connectPage']), JSON.stringify(doors));
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);

@@ -14,6 +14,14 @@
 //
 // Seeding goes through the app's seams; input is trusted CDP mouse events. Needs a box turn (withHarness refuses without WS_BOX_TURN).
 // Run: WS_BOX_TURN=<token> node scripts/harness/connector-b.mjs   (from apps/desktop, dist-web built)
+// ---- BIG PROJECTS 1a RETARGET (docs/plans/big-projects.md, cleared by Fable 2026-10-18) -------------------------------------------------------------------------------------------
+// The rail's thumbnails the connector aims at were the Drawers panel's board tiles. The Drawers tab is the place switcher now and those tiles retired, so the rail's entries are the
+// rows of the PAGES POP-OUT (components/SectionsPopout.tsx), each declaring data-link-entry exactly as the tiles did - the contract this file holds (a target under the arm, a release
+// that links or unlinks, the swallowed follow-up click, the held path, the linked-copy drag) is unchanged and is asserted below on the new rows. The two entries the connector aims at
+// are therefore PAGES here (same words as before), seeded in the Journal place beside the board; board rows return with the Boards pop-out (step 2), which re-runs this file against
+// them. Where a claim named the Drawers panel or the target's kind it is parked below with its successor; the rest of the words still read "board" for the entry and are left as
+// they were - the entry is now a page. This is a retarget of the DRIVER (seed, finder, opener); no assertion was weakened to fit it.
+// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
@@ -38,8 +46,8 @@ const fresh = async (app) => {
   ];
   for (const row of [
     { id, text: 'Link board', pageType: 'board', boxes, createdAt: now(), origin: null, source: null },
-    { id: b2, text: 'Research board', pageType: 'board', boxes: [], createdAt: now(), origin: null, source: null },
-    { id: nest, text: 'Nested board', pageType: 'board', boxes: [], createdAt: now(), origin: null, source: null },
+    { id: b2, text: 'Research board', createdAt: now(), origin: null, source: 'page' },   // BIG PROJECTS 1a: a PAGE (the pop-out lists pages)
+    { id: nest, text: 'Nested board', createdAt: now(), origin: null, source: 'page' },   // BIG PROJECTS 1a: a PAGE
   ]) await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify(row)})`);
   await app.evalJs(`window.wrizoPinPageToBoard(${JSON.stringify(nest)}, ${JSON.stringify(id)}, { display: true })`);   // a pin card on the board: the one-truth case
   await app.evalJs('window.wrizoFlushNow()');
@@ -78,7 +86,7 @@ const selectCard = async (app, cardId) => {
   return true;
 };
 const enterMode = async (app, cardId) => { if (!(await selectCard(app, cardId))) return null; const h = await R(app, `[data-box-id="${cardId}"] .board-handle`); if (!h) return null; const p = centre(h); await dbl(app, p.x, p.y); return p; };   // null, never a crash: a missing handle is a failed check
-const tile = (app, title) => app.evalJs(`(() => { const t = [...document.querySelectorAll('.wz-drawers-tile[data-link-entry]')].find((b) => b.textContent.includes(${JSON.stringify(title)})); if (!t) return null; const r = t.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height, entry: t.dataset.linkEntry }; })()`);
+const tile = (app, title) => app.evalJs(`(() => { const t = [...document.querySelectorAll('.wz-section-row[data-link-entry]')].find((b) => b.textContent.includes(${JSON.stringify(title)})); if (!t) return null; const r = t.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height, entry: t.dataset.linkEntry }; })()`);
 const tileState = (app, entry) => app.evalJs(`(() => { const t = document.querySelector('[data-link-entry="${entry}"]'); if (!t) return null; const cs = getComputedStyle(t, '::before'); return { target: t.getAttribute('data-link-target'), peer: t.getAttribute('data-link-peer'), solid: t.getAttribute('data-link-solid'), flash: t.getAttribute('data-link-flash'), circle: cs.content !== 'none' && cs.width === '10px', radius: cs.borderTopLeftRadius, bg: cs.backgroundColor }; })()`);
 const armGeo = (app) => app.evalJs(`(() => { const l = document.querySelector('.board-connect-arm'); const o = document.querySelector('.board-connect-overlay'); if (!l || !o) return null; return { x1: +l.getAttribute('x1'), y1: +l.getAttribute('y1'), x2: +l.getAttribute('x2'), y2: +l.getAttribute('y2'), inBody: o.parentElement === document.body, display: getComputedStyle(l).display }; })()`);
 const linksOf = (app, id) => app.evalJs(`window.wrizoPageLinksOf(${JSON.stringify(id)})`);
@@ -87,14 +95,18 @@ const footer = (app, cardId) => app.evalJs(`document.querySelector('[data-box-id
 const armed = (app) => app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
 const brass = (app) => app.evalJs("(() => { const p = document.createElement('i'); p.style.color = 'var(--brass)'; document.body.appendChild(p); const c = getComputedStyle(p).color; p.remove(); return c; })()");
 // the Drawers entry in the strip is a TOGGLE: pressing it with the panel open CLOSES it (B5 and B9 found the panel gone). Open it only when it is closed.
-const openDrawers = async (app) => { await app.evalJs("(() => { const b = document.querySelector('.wz-strip-item[data-category=drawers]'); if (b && !b.classList.contains('active')) b.click(); })()"); await sleep(600); };
+const openDrawers = async (app) => { await app.evalJs("(() => { const b = document.querySelector('.wz-strip-item[data-category=page]'); if (b && !b.classList.contains('active')) b.click(); })()"); await sleep(600); };   // BIG PROJECTS 1a: the rail's entries are the Pages pop-out's rows (the name stays so the call sites do)
 
 await withHarness(async (app) => {
   let f = await fresh(app);
   ok('fixture: the board opened with two cards and a nested board pinned on it; two more boards exist', f.there, JSON.stringify(f));
   await openDrawers(app);
   const tb2 = await tile(app, 'Research board');
-  ok('fixture: the rail\'s Drawers panel shows the other board as a thumbnail that declares its entry (data-link-entry)', !!tb2 && tb2.entry === f.b2, JSON.stringify(tb2));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the entries are rows of the Pages pop-out, not tiles of the Drawers panel.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('fixture: the rail\'s Drawers panel shows the other board as a thumbnail that declares its entry (data-link-entry)', !!tb2 && tb2.entry === f.b2, JSON.stringify(tb2));
+  ok('fixture [big-projects-1a successor]: the rail\'s Pages pop-out shows the other entry as a row that declares its entry (data-link-entry) - the connector\'s target', !!tb2 && tb2.entry === f.b2, JSON.stringify(tb2));
   if (!tb2) return;
   const cv0 = await R(app, '.board-canvas');
   const BR = await brass(app);
@@ -179,7 +191,11 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(700);
   await app.evalJs("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(500);
   const list = await app.evalJs(`[...document.querySelectorAll('.wz-links-item')].map((li) => ({ via: li.dataset.linkVia, kind: li.dataset.linkKind, label: li.querySelector('.wz-links-label')?.textContent, x: !!li.querySelector('.wz-links-x') }))`);
-  ok('B6: the Grafts / Links tab lists the selected card\'s connections - the page-link (a board) AND the same-board connection (the pinned nested board) - each with an X', list.length === 2 && list.every((i) => i.x) && list.some((i) => i.via === 'link' && i.label === 'Research board' && i.kind === 'board') && list.some((i) => i.via === 'card' && i.label === 'Nested board'), JSON.stringify(list));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the targets are pages, so the page-link's kind reads "page".
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('B6: the Grafts / Links tab lists the selected card\'s connections - the page-link (a board) AND the same-board connection (the pinned nested board) - each with an X', list.length === 2 && list.every((i) => i.x) && list.some((i) => i.via === 'link' && i.label === 'Research board' && i.kind === 'board') && list.some((i) => i.via === 'card' && i.label === 'Nested board'), JSON.stringify(list));
+  ok('B6 [big-projects-1a successor]: the Grafts / Links tab lists the selected card\'s connections - the page-link (to a page) AND the same-board connection (the pinned nested page) - each with an X', list.length === 2 && list.every((i) => i.x) && list.some((i) => i.via === 'link' && i.label === 'Research board' && i.kind === 'page') && list.some((i) => i.via === 'card' && i.label === 'Nested board'), JSON.stringify(list));
   await app.evalJs("window.wrizoAskBeforeDelete.set(false)");   // an unlink keeps its OWN confirm, whatever the delete setting says
   await app.evalJs("[...document.querySelectorAll('.wz-links-item')].find((li) => li.dataset.linkVia === 'link')?.querySelector('.wz-links-x')?.click()"); await sleep(400);
   const dlg = await app.evalJs("(() => { const d = document.querySelector('.wz-delete-dialog'); if (!d) return null; return { title: d.querySelector('.wz-delete-title')?.textContent, dontAsk: !!d.querySelector('.wz-delete-chk'), buttons: [...d.querySelectorAll('.wz-delete-btn')].map((b) => b.textContent.trim()) }; })()");

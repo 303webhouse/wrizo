@@ -176,8 +176,13 @@ await withHarness(async (app) => {
   // Deck" -> "Templates", "+ Filed Pages" -> "Connect Pages".
   // ok('S1 (OPEN) [word-diet successor]: an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Pages Card · Load a Deck · + Filed Pages',
   //   JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Pages Card', 'Load a Deck', '+ Filed Pages']), JSON.stringify(openDoors));
-  ok('S1 (OPEN) [word-diet-layouts successor]: an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Page · Templates · Connect Pages',
-    JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Page', 'Templates', 'Connect Pages']), JSON.stringify(openDoors));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): the starters are New Card, Templates, Connect Pages.
+  // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
+  //
+  // ok('S1 (OPEN) [word-diet-layouts successor]: an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Page · Templates · Connect Pages',
+  //   JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Page', 'Templates', 'Connect Pages']), JSON.stringify(openDoors));
+  ok('S1 (OPEN) [big-projects-2 successor]: an empty ordinary board renders the Beginnings row with exactly its three doors - New Card · Templates · Connect Pages (no New Page)',
+    JSON.stringify(openDoors) === JSON.stringify(['New Card', 'Templates', 'Connect Pages']), JSON.stringify(openDoors));
 
   // Quiet olive — the brief's own word for the doors' color, and the hue the
   // house reserves for "this is a door" (--accent-rest, #96a05a).
@@ -187,8 +192,13 @@ await withHarness(async (app) => {
 
   // "No grid" — one row, one line: every door shares a top edge.
   const doorTops = await app.evalJs("[...document.querySelectorAll('.wz-beginning')].map(b => Math.round(b.getBoundingClientRect().top))");
-  ok('S1: the doors sit on ONE line — a row, never a grid (identical top edge across all four)',
-    doorTops.length === 4 && new Set(doorTops).size === 1, JSON.stringify(doorTops));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a + step 2 (Fable's rulings Oct 19; chat 1's ledger 114 routed this): a board's starters are three doors (New Page left them; the sliver keeps that tool).
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('S1: the doors sit on ONE line — a row, never a grid (identical top edge across all four)',
+  //   doorTops.length === 4 && new Set(doorTops).size === 1, JSON.stringify(doorTops));
+  ok('S1 [big-projects-2 successor]: the doors sit on ONE line - a row, never a grid (identical top edge across all three)',
+    doorTops.length === 3 && new Set(doorTops).size === 1, JSON.stringify(doorTops));
 
   const openLang = await rowLanguageClean(app);
   ok('S1/S3: the board row counts nothing and claims no completion — no digits, no checkmark, no "get started"/step/progress language',
@@ -198,8 +208,13 @@ await withHarness(async (app) => {
   const doorShape = await app.evalJs(`[...document.querySelectorAll('.wz-beginning')].map(b => ({
     glyph: !!b.querySelector('.wz-beginning-glyph svg'), label: (b.querySelector('.wz-beginning-label')?.textContent || '').trim(),
   }))`);
-  ok('S1: every door is an icon+label door (a glyph and a word, per the brief)',
-    doorShape.length === 4 && doorShape.every((d) => d.glyph && d.label.length > 0), JSON.stringify(doorShape));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a + step 2 (Fable's rulings Oct 19; chat 1's ledger 114 routed this): three doors.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok('S1: every door is an icon+label door (a glyph and a word, per the brief)',
+  //   doorShape.length === 4 && doorShape.every((d) => d.glyph && d.label.length > 0), JSON.stringify(doorShape));
+  ok('S1 [big-projects-2 successor]: every door is an icon+label door (a glyph and a word, per the brief) - all three',
+    doorShape.length === 3 && doorShape.every((d) => d.glyph && d.label.length > 0), JSON.stringify(doorShape));
 
   // STORYBOARD's own three.
   await setBoardMode(app, 'storyboard');
@@ -279,26 +294,38 @@ await withHarness(async (app) => {
     await app.evalJs("document.body.innerText.slice(0, 120)"));
 
   await freshBoard(app, 'bg1-pagecard-board', [], LAPTOP_W, 900);
-  await clickDoor(app, 'newPageCard');
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): the starter row has no New Page door; the same act (a page born AND pinned to this board, travelled to) is the sliver's New Page tool.
+  // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
+  //
+  // await clickDoor(app, 'newPageCard');
+  // const pageCardHash = await app.evalJs('location.hash');
+  // await sleep(400);
+  // const pageCardPin = await app.evalJs("(JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'bg1-pagecard-board')?.boxes || []).filter(b => b.kind === 'page-pin').length");
+  // ok('S1: New Page Card births a linked page and travels to it, pinning its card to this board in one act',
+  //   /^#\/page\/[^/]+$/.test(pageCardHash) && !pageCardHash.includes('bg1-pagecard-board') && pageCardPin === 1,
+  //   JSON.stringify({ pageCardHash, pageCardPin }));
+  const rowHasNewPage = await app.evalJs("!!document.querySelector('[data-beginning=\"newPageCard\"]')");
+  const sliverNewPage = await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-sliver-item-btn')].find(n => n.textContent.trim() === 'New Page'); if (!b) return false; b.click(); return true; })()");
+  await sleep(500);
   const pageCardHash = await app.evalJs('location.hash');
   await sleep(400);
   const pageCardPin = await app.evalJs("(JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'bg1-pagecard-board')?.boxes || []).filter(b => b.kind === 'page-pin').length");
-  ok('S1: New Page Card births a linked page and travels to it, pinning its card to this board in one act',
-    /^#\/page\/[^/]+$/.test(pageCardHash) && !pageCardHash.includes('bg1-pagecard-board') && pageCardPin === 1,
-    JSON.stringify({ pageCardHash, pageCardPin }));
+  ok('S1 [big-projects-2 successor]: the starter row offers NO New Page door, and the sliver\'s New Page tool births a linked page and travels to it, pinning its card to this board in one act',
+    rowHasNewPage === false && sliverNewPage === true && /^#\/page\/[^/]+$/.test(pageCardHash) && !pageCardHash.includes('bg1-pagecard-board') && pageCardPin === 1,
+    JSON.stringify({ rowHasNewPage, sliverNewPage, pageCardHash, pageCardPin }));
 
   // ==========================================================================
   // S1 — system boards render NO row, and keep their own declarative lines.
   // ==========================================================================
   await freshDesk(app, LAPTOP_W, 900);
-  for (const [route, label] of [['/shelf', 'Shelf'], ['/journal', 'Journal'], ['/trash', 'Trash']]) {
+  for (const [route, label] of [['/shelf-board', 'Shelf'], ['/journal', 'Journal'], ['/trash', 'Trash']]) {
     await app.evalJs(`location.hash = '#${route}'`);
     await app.waitFor("!!document.querySelector('.board-canvas, .desk-frame')", { label: `${label} Board mounted` });
     await sleep(350);
     const sys = await app.evalJs(`({ row: !!document.querySelector('.wz-beginnings'), line: document.querySelector('.board-canvas-empty')?.textContent ?? null })`);
     ok(`S1: the ${label} Board renders NO Beginnings row — a system board's cards are derived, so there is nothing here for a writer to begin (absent whole, the absent-not-disabled law)`,
       sys.row === false, JSON.stringify(sys));
-    if (route === '/shelf') {
+    if (route === '/shelf-board') {
       ok('S1: the Shelf Board\'s own declarative empty line is untouched by BG1 ("Nothing waiting." — B2 S2\'s one quiet fact)',
         sys.line === 'Nothing waiting.', String(sys.line));
     }
@@ -330,8 +357,13 @@ await withHarness(async (app) => {
   // SUPERSEDED (item word-diet-layouts, Fable Oct 15) — the same OPEN-row rework as S1 (OPEN) above.
   // ok('S1 [word-diet successor]: a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
   //   JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Pages Card', 'Load a Deck', '+ Filed Pages']), JSON.stringify(planBoardDoors));
-  ok('S1 [word-diet-layouts successor]: a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
-    JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Page', 'Templates', 'Connect Pages']), JSON.stringify(planBoardDoors));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): the starters are New Card, Templates, Connect Pages.
+  // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
+  //
+  // ok('S1 [word-diet-layouts successor]: a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
+  //   JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Page', 'Templates', 'Connect Pages']), JSON.stringify(planBoardDoors));
+  ok('S1 [big-projects-2 successor]: a paired plan board takes OPEN\'s row - an ordinary board with the ordinary three doors',
+    JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'Templates', 'Connect Pages']), JSON.stringify(planBoardDoors));
 
   // ==========================================================================
   // S2 — the page's row. THE load-bearing check first: the page is already

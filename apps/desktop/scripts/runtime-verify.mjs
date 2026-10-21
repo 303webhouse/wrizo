@@ -51,8 +51,13 @@ const DEFAULT_DIST = path.resolve(HERE, '..', 'dist-web');
 // scripts/harness/resume-on-open.mjs sets. Served in the HTML itself, not injected after launch, so even the very first
 // document is covered; a localStorage.clear() in a harness cannot undo it.
 function noLandingIndex(body) {
-  if (process.env.WS_LANDING === '1') return body;
-  return Buffer.from(String(body).replace('<head>', '<head><script>window.__wrizoNoLanding=true</script>'));
+  // BIG PROJECTS 1a: the same for the Top Drawer bootstrap (window.__wrizoNoBootstrap, read by components/PlaceBootstrap.tsx) - ~150 harnesses seed their own accounts and
+  // must not be handed a Drawer. WS_PLACE=1 (scripts/harness/big-projects-1a.mjs) leaves it on.
+  let flags = '';
+  if (process.env.WS_LANDING !== '1') flags += 'window.__wrizoNoLanding=true;';
+  if (process.env.WS_PLACE !== '1') flags += 'window.__wrizoNoBootstrap=true;';
+  if (!flags) return body;
+  return Buffer.from(String(body).replace('<head>', `<head><script>${flags}</script>`));
 }
 
 const MIME = {

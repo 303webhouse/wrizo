@@ -77,7 +77,7 @@ const freshBoard = async (app, boardId, boxes, width = 1400, height = 900) => {
 // Page category would otherwise TOGGLE IT CLOSED (Cascade.tsx's own
 // same-category-click-closes rule).
 const openPageCategory = async (app) => {
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPageCategory)' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (openPageCategory)' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
   if (alreadyOpen) return;
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
@@ -766,19 +766,24 @@ await withHarness(async (app) => {
   // by B3's own brief by name.
   // ==========================================================================
   await freshProsePage(app, LAPTOP_W, 900);
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (S9)' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (S9)' });
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=plan]').click()"); // Plan category
   await app.waitFor("!!document.querySelector('.wz-cascade-panel-body')", { label: 'Plan panel open (S9)' });
   await sleep(200);
   const planButtons = await app.evalJs("[...document.querySelectorAll('.wz-cascade-panel-body button')].map(b => b.textContent.trim())");
-  ok('S9: the OLDER, pre-existing "Plot a Story" button lives in the Cascade\'s own Plan panel — a genuinely different doorway from either of B3\'s own two "…a deck…" doors',
-    planButtons.includes('Plot a Story'), JSON.stringify(planButtons));
-  await app.evalJs("[...document.querySelectorAll('.wz-cascade-panel-body button')].find(b => b.textContent.trim() === 'Plot a Story')?.click()");
-  await sleep(400);
-  const oldWizardHash = await app.evalJs('location.hash');
-  const oldWizardBody = await app.evalJs('document.body.innerText.slice(0, 200)');
-  ok('S9 CONFIRMED: "Plot a Story" navigates to the OLD /project/:id/wizard route (StructureWizard.tsx) — a full-PAGE route change, never DeckWizard\'s own pop-out-over-blur — matching Nick\'s own "leading back to the old, deprecated wizard" verdict exactly',
-    oldWizardHash.endsWith('/wizard') && oldWizardBody.includes('STRUCTURE WIZARD'), JSON.stringify({ oldWizardHash, oldWizardBody }));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): "Plot a Story" has no door in the rail any more (the deck presets are the Boards tab's way in); the /project/:id/wizard route is untouched.
+  // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
+  //
+  // ok('S9: the OLDER, pre-existing "Plot a Story" button lives in the Cascade\'s own Plan panel — a genuinely different doorway from either of B3\'s own two "…a deck…" doors',
+  //   planButtons.includes('Plot a Story'), JSON.stringify(planButtons));
+  // await app.evalJs("[...document.querySelectorAll('.wz-cascade-panel-body button')].find(b => b.textContent.trim() === 'Plot a Story')?.click()");
+  // await sleep(400);
+  // const oldWizardHash = await app.evalJs('location.hash');
+  // const oldWizardBody = await app.evalJs('document.body.innerText.slice(0, 200)');
+  // ok('S9 CONFIRMED: "Plot a Story" navigates to the OLD /project/:id/wizard route (StructureWizard.tsx) — a full-PAGE route change, never DeckWizard\'s own pop-out-over-blur — matching Nick\'s own "leading back to the old, deprecated wizard" verdict exactly',
+  //   oldWizardHash.endsWith('/wizard') && oldWizardBody.includes('STRUCTURE WIZARD'), JSON.stringify({ oldWizardHash, oldWizardBody }));
+  ok('S9 [big-projects-2 successor]: the Boards tab no longer carries a "Plot a Story" button - it carries New Board and the deck presets (the old wizard route itself is untouched, with no door in the rail)',
+    !planButtons.includes('Plot a Story') && planButtons.includes('New Board') && planButtons.includes('Three-Act Structure'), JSON.stringify(planButtons));
 
   // B3's own door 1 (CreateProject.tsx, "Start from a deck…") — genuinely
   // launches DeckWizard's own pop-out-over-blur, no bug, already proven

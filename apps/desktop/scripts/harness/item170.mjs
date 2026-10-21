@@ -158,8 +158,13 @@ await withHarness(async (app) => {
     openedOnPage, String(openedOnPage));
 
   const onPage = await listState(app);
-  ok('S1: the section is named for what it does — "Open Pages", not "Place page on board"',
-    onPage.heading === 'Open Pages', JSON.stringify({ heading: onPage.heading }));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the heading is "Sections" (the section is the place's sections), not "Open Pages".
+  // Kept VERBATIM below and no longer run; the live successor follows. The Open Pages list became the PAGES POP-OUT (components/SectionsPopout.tsx): scoped to where the writer is, in the writer's own ORDER (the sort control reads Order; Date / A-Z / recency / star-first are views that arrive in step 4 and never write). What item 170 held shut - a click on a row OPENS the page, the more-menu PLACES it on a board, every page of the place is a row, uncapped - still holds and is still asserted below, unparked.
+  //
+  // ok('S1: the section is named for what it does — "Open Pages", not "Place page on board"',
+  //   onPage.heading === 'Open Pages', JSON.stringify({ heading: onPage.heading }));
+  const popoutHeading = await app.evalJs("(document.querySelector('.wz-open-pages .wz-sections-heading') || {}).textContent || null");
+  ok('S1 [big-projects-1a successor]: the section is named for what it is - "Sections" - and the Pages pop-out still carries the list on a page surface', popoutHeading === 'Sections', JSON.stringify({ popoutHeading }));
 
   const listed = new Set(onPage.ids || []);
   ok('S1 FAULT 3: a LOOSE page is listed — the origin New Page and the Desk create, which getJournalPages() could never return, so the list most likely to be searched for a new page could not show it',
@@ -177,11 +182,18 @@ await withHarness(async (app) => {
 
   // A–Z must order ALL pages. 'Aardvark oldest' is the OLDEST page, so the old
   // cap (newest 30 first) dropped it before A–Z ever saw it.
-  await app.evalJs(`[...document.querySelectorAll('.wz-open-pages .wz-page-setup-chip')].find(b => b.textContent.trim() === 'A–Z')?.click()`);
-  await sleep(300);
-  const az = await listState(app);
-  ok('S1: sorted A–Z, the oldest page leads — sorting runs over every page, not over a capped slice of the newest',
-    az.firstTitle === OLDEST.text, JSON.stringify({ firstTitle: az.firstTitle }));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): there is no A-Z chip - the list is in the writer's own Order, and sorting never runs over a capped slice (it does not run at all).
+  // Kept VERBATIM below and no longer run; the live successor follows. The Open Pages list became the PAGES POP-OUT (components/SectionsPopout.tsx): scoped to where the writer is, in the writer's own ORDER (the sort control reads Order; Date / A-Z / recency / star-first are views that arrive in step 4 and never write). What item 170 held shut - a click on a row OPENS the page, the more-menu PLACES it on a board, every page of the place is a row, uncapped - still holds and is still asserted below, unparked.
+  //
+  // await app.evalJs(`[...document.querySelectorAll('.wz-open-pages .wz-page-setup-chip')].find(b => b.textContent.trim() === 'A–Z')?.click()`);
+  // await sleep(300);
+  // const az = await listState(app);
+  // ok('S1: sorted A–Z, the oldest page leads — sorting runs over every page, not over a capped slice of the newest',
+  //   az.firstTitle === OLDEST.text, JSON.stringify({ firstTitle: az.firstTitle }));
+  const orderView = await listState(app);
+  const sortLabel = await app.evalJs("(document.querySelector('.wz-open-pages .wz-sections-sort') || {}).textContent || null");
+  ok('S1 [big-projects-1a successor]: the list is in the writer\'s own ORDER (the sort control reads Order; nothing was reordered, so creation order stands) - the oldest page leads, over EVERY page of the place, not a capped slice',
+    sortLabel === 'Order' && orderView.firstTitle === OLDEST.text, JSON.stringify({ sortLabel, firstTitle: orderView.firstTitle }));
 
   ok('S1: on a page there is no board to place onto, so the secondary act is ABSENT rather than present and inert',
     onPage.moreButtons === 0, JSON.stringify({ moreButtons: onPage.moreButtons }));
@@ -304,8 +316,14 @@ await withHarness(async (app) => {
     const whole = rows.filter(r => { const a = r.getBoundingClientRect(); return a.top >= b.top - 0.5 && a.bottom <= b.bottom + 0.5; });
     return { list: true, wholeRows: whole.length, totalRows: rows.length, scrolls: list.scrollHeight > list.clientHeight + 1 };
   })()`);
-  ok('S5: OPEN PAGES shows THREE rows and scrolls through the rest — a viewport, not a population cap, so no page is ever out of reach',
-    viewport.list === true && viewport.wholeRows === 3 && viewport.scrolls === true && viewport.totalRows > 3,
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the pop-out is a scrolling list of every section of the place (a taller viewport than three rows), not a three-row window.
+  // Kept VERBATIM below and no longer run; the live successor follows. The Open Pages list became the PAGES POP-OUT (components/SectionsPopout.tsx): scoped to where the writer is, in the writer's own ORDER (the sort control reads Order; Date / A-Z / recency / star-first are views that arrive in step 4 and never write). What item 170 held shut - a click on a row OPENS the page, the more-menu PLACES it on a board, every page of the place is a row, uncapped - still holds and is still asserted below, unparked.
+  //
+  // ok('S5: OPEN PAGES shows THREE rows and scrolls through the rest — a viewport, not a population cap, so no page is ever out of reach',
+  //   viewport.list === true && viewport.wholeRows === 3 && viewport.scrolls === true && viewport.totalRows > 3,
+  //   JSON.stringify(viewport));
+  ok('S5 [big-projects-1a successor]: the Pages pop-out scrolls through the place\'s sections - every one of the 36 pages is a row, reachable by scrolling, none capped',
+    viewport.list === true && viewport.totalRows === 36 && viewport.scrolls === true,
     JSON.stringify(viewport));
 
   // (b) recency by EDIT: type into the OLDEST page and it comes to the top.
@@ -318,8 +336,13 @@ await withHarness(async (app) => {
   await openPageHand(app);
   await sortBy('Date');
   const afterEdit = await listState(app);
-  ok('S5: the last EDITED page leads the list, not the last created — a page written long ago and revised this morning is what a writer reaching for recent work means',
-    (afterEdit.ids || [])[0] === OLDEST.id, JSON.stringify({ first: (afterEdit.ids || [])[0], expected: OLDEST.id }));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): Order is the writer's own - editing a page never moves it (recency is a view, step 4).
+  // Kept VERBATIM below and no longer run; the live successor follows. The Open Pages list became the PAGES POP-OUT (components/SectionsPopout.tsx): scoped to where the writer is, in the writer's own ORDER (the sort control reads Order; Date / A-Z / recency / star-first are views that arrive in step 4 and never write). What item 170 held shut - a click on a row OPENS the page, the more-menu PLACES it on a board, every page of the place is a row, uncapped - still holds and is still asserted below, unparked.
+  //
+  // ok('S5: the last EDITED page leads the list, not the last created — a page written long ago and revised this morning is what a writer reaching for recent work means',
+  //   (afterEdit.ids || [])[0] === OLDEST.id, JSON.stringify({ first: (afterEdit.ids || [])[0], expected: OLDEST.id }));
+  ok('S5 [big-projects-1a successor]: editing a page does NOT move it - Order is the writer\'s own order, never recency; the whole list stands exactly as it was before the edit',
+    (afterEdit.ids || []).length === 36 && JSON.stringify(afterEdit.ids) === JSON.stringify(orderView.ids), JSON.stringify({ before: (orderView.ids || []).slice(0, 3), after: (afterEdit.ids || []).slice(0, 3) }));
 
   // (c) starred first, under the same sort.
   await app.evalJs(`location.hash = '#/page/${JOURNAL.id}'`);
@@ -330,9 +353,14 @@ await withHarness(async (app) => {
   await sleep(700);
   await sortBy('Date');
   const afterStar = await listState(app);
-  ok('S5: a STARRED page sorts first, above the most recently edited one — a star is the writer saying "this one", and an ordering that ignored it would make them say it twice',
-    starred && (afterStar.ids || [])[0] === JOURNAL.id && (afterStar.ids || [])[1] === OLDEST.id,
-    JSON.stringify({ first: (afterStar.ids || [])[0], second: (afterStar.ids || [])[1] }));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): a star is not a sort - it does not reorder the writer's own order.
+  // Kept VERBATIM below and no longer run; the live successor follows. The Open Pages list became the PAGES POP-OUT (components/SectionsPopout.tsx): scoped to where the writer is, in the writer's own ORDER (the sort control reads Order; Date / A-Z / recency / star-first are views that arrive in step 4 and never write). What item 170 held shut - a click on a row OPENS the page, the more-menu PLACES it on a board, every page of the place is a row, uncapped - still holds and is still asserted below, unparked.
+  //
+  // ok('S5: a STARRED page sorts first, above the most recently edited one — a star is the writer saying "this one", and an ordering that ignored it would make them say it twice',
+  //   starred && (afterStar.ids || [])[0] === JOURNAL.id && (afterStar.ids || [])[1] === OLDEST.id,
+  //   JSON.stringify({ first: (afterStar.ids || [])[0], second: (afterStar.ids || [])[1] }));
+  ok('S5 [big-projects-1a successor]: starring a page does NOT reorder the list - Order is the writer\'s own order; a star is marked, not sorted',
+    starred && (afterStar.ids || []).length === 36 && JSON.stringify(afterStar.ids) === JSON.stringify(orderView.ids), JSON.stringify({ first: (afterStar.ids || [])[0], second: (afterStar.ids || [])[1] }));
 });
 
 for (const c of checks) {

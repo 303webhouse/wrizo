@@ -182,9 +182,16 @@ await withHarness(async (app) => {
     // foot (below Settings/Themes, a thin line above it); a separator now
     // closes off Drawers/Shelf too (five groups, 4 separators, still eight
     // categories); "Change Theme" is renamed "Themes".
-    ok(`CD3 successor of "S1 @ ${width}px: the strip is present with four sections (3 hairline separators) and EIGHT categories (B1 adds Trash to section C), icon+label, focusable (real <button>s)": the strip is present with five groups (4 hairline separators) and EIGHT categories (Trash pinned to the foot below Settings/Themes), icon+label, focusable (real <button>s)`,
-      stripShape.present && stripShape.sepCount === 4 && stripShape.itemCount === 8 && stripShape.focusable,
-      JSON.stringify(stripShape));
+    // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): seven categories, three separators.
+    // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now - the place block (data-category=drawers, the switcher) first, then Pages, Boards, Journal and the foot - the Shelf is merged into the Journal, and the Drawers tiles are gone.
+    //
+    // ok(`CD3 successor of "S1 @ ${width}px: the strip is present with four sections (3 hairline separators) and EIGHT categories (B1 adds Trash to section C), icon+label, focusable (real <button>s)": the strip is present with five groups (4 hairline separators) and EIGHT categories (Trash pinned to the foot below Settings/Themes), icon+label, focusable (real <button>s)`,
+    //   stripShape.present && stripShape.sepCount === 4 && stripShape.itemCount === 8 && stripShape.focusable,
+    //   JSON.stringify(stripShape));
+    const stripCats = await app.evalJs("[...document.querySelectorAll('.wz-strip-item')].map(b => b.getAttribute('data-category'))");
+    ok(`BIG PROJECTS 1a successor of the CD3 strip-shape check @ ${width}px: the strip is present with four groups (3 hairline separators) and SEVEN categories (the place block, Pages, Boards, Journal, Settings, Themes, Trash), icon+label, focusable (real <button>s)`,
+      stripShape.present && stripShape.sepCount === 3 && stripShape.itemCount === 7 && stripShape.focusable,
+      JSON.stringify({ ...stripShape, stripCats }));
     // ---- PARKED — SUPERSEDED by VW1 (item 134), 2026-09-17 --------------
     // GENERATION 4, quoted VERBATIM and no longer asserted. It pinned the
     // strip's labels in the OLD flat sequence, at both reference widths. VW1
@@ -202,11 +209,17 @@ await withHarness(async (app) => {
     //     && JSON.stringify([...stripShape.labels].sort())
     //        === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
     //   JSON.stringify(stripShape.labels));
-    ok(`VW1 successor of the CD3 roster check @ ${width}px [word-diet successor]: the strip carries the SAME eight categories as ever, compared as a SET rather than a sequence`,
-      stripShape.itemCount === 8
-        && JSON.stringify([...stripShape.labels].sort())
-           === JSON.stringify(['Drawers', 'Journal', 'Pages', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
-      JSON.stringify(stripShape.labels));
+    // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the strip carries the SAME seven categories at both widths, compared as a SET by name (the place block's label is the place - a Drawer, the Journal or Unsorted - so the labels are no longer a fixed roster).
+    // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now - the place block (data-category=drawers, the switcher) first, then Pages, Boards, Journal and the foot - the Shelf is merged into the Journal, and the Drawers tiles are gone.
+    //
+    // ok(`VW1 successor of the CD3 roster check @ ${width}px [word-diet successor]: the strip carries the SAME eight categories as ever, compared as a SET rather than a sequence`,
+    //   stripShape.itemCount === 8
+    //     && JSON.stringify([...stripShape.labels].sort())
+    //        === JSON.stringify(['Drawers', 'Journal', 'Pages', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
+    //   JSON.stringify(stripShape.labels));
+    ok(`BIG PROJECTS 1a successor of the VW1 roster-as-a-set check @ ${width}px: the strip carries the SAME seven categories at both widths, compared as a SET by data-category (order is vw1.mjs's to rule)`,
+      stripShape.itemCount === 7 && JSON.stringify([...stripCats].sort()) === JSON.stringify(['drawers', 'journal', 'page', 'plan', 'settings', 'theme', 'trash']),
+      JSON.stringify(stripCats));
   }
 
   // ==========================================================================
@@ -348,10 +361,15 @@ await withHarness(async (app) => {
   const drawersPanelEmpty = await app.evalJs("document.querySelector('.wz-cascade-panel-title')?.textContent");
   ok('S3: clicking Drawers opens layer 2, titled "Drawers"', drawersPanelEmpty === 'Drawers', String(drawersPanelEmpty));
 
-  await clickCategory(app, 'shelf'); // Shelf
-  await sleep(200);
-  const shelfPanelEmpty = await app.evalJs("document.querySelector('.wz-cascade-panel-title')?.textContent");
-  ok('S3: clicking Shelf opens layer 2, titled "Shelf"', shelfPanelEmpty === 'Shelf', String(shelfPanelEmpty));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): there is no Shelf tab (clickCategory THROWS for a category that is absent, which would abort this whole file).
+  // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now - the place block (data-category=drawers, the switcher) first, then Pages, Boards, Journal and the foot - the Shelf is merged into the Journal, and the Drawers tiles are gone.
+  //
+  // await clickCategory(app, 'shelf'); // Shelf
+  // await sleep(200);
+  // const shelfPanelEmpty = await app.evalJs("document.querySelector('.wz-cascade-panel-title')?.textContent");
+  // ok('S3: clicking Shelf opens layer 2, titled "Shelf"', shelfPanelEmpty === 'Shelf', String(shelfPanelEmpty));
+  const shelfTabGone = await app.evalJs("!document.querySelector('.wz-strip-item[data-category=shelf]')");
+  ok('S3 [big-projects-1a successor]: there is no Shelf tab - the Shelf is merged into the Journal (display only)', shelfTabGone === true, String(shelfTabGone));
 
   await clickCategory(app, 'settings'); // Settings (Trash left for the foot; Settings is now index 5)
   await sleep(200);
@@ -555,22 +573,40 @@ await withHarness(async (app) => {
   await freshProsePageWithBoards(app, LAPTOP_W, 900);
   await clickCategory(app, 'drawers'); // Drawers
   await sleep(200);
-  const drawersTiles = await app.evalJs(`({
-    titles: [...document.querySelectorAll('.wz-drawers-tile-title')].map(t => t.textContent),
-    clusterTitles: [...document.querySelectorAll('.wz-drawers-cluster-title')].map(t => t.textContent),
-    firstTile: document.querySelector('.wz-drawers-tile .wz-drawers-tile-title')?.textContent,
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the Drawers tab is the PLACE SWITCHER (Drawers, Journals, + New Drawer); the tiles retire (boards are listed by the Boards pop-out, step 2).
+  // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now - the place block (data-category=drawers, the switcher) first, then Pages, Boards, Journal and the foot - the Shelf is merged into the Journal, and the Drawers tiles are gone.
+  //
+  // const drawersTiles = await app.evalJs(`({
+  //   titles: [...document.querySelectorAll('.wz-drawers-tile-title')].map(t => t.textContent),
+  //   clusterTitles: [...document.querySelectorAll('.wz-drawers-cluster-title')].map(t => t.textContent),
+  //   firstTile: document.querySelector('.wz-drawers-tile .wz-drawers-tile-title')?.textContent,
+  //   bodyText: document.querySelector('.wz-cascade-panel-body')?.innerText ?? '',
+  // })`);
+  // ok('B2 S7 successor of "S3: the Drawers panel lists the drawer entities (not a flat page list)" / "S3/S4: choosing a drawer opens ITS survey": the panel now shows large tiles, Shelf first, a project cluster with both board titles, and NO count/badge/timestamp anywhere in its text',
+  //   drawersTiles.firstTile === 'Shelf' && drawersTiles.clusterTitles.includes('Untitled')
+  //     && drawersTiles.titles.includes('First Board') && drawersTiles.titles.includes('Second Board')
+  //     && !/\d/.test(drawersTiles.bodyText),
+  //   JSON.stringify(drawersTiles));
+  // // A tile tap travels.
+  // await app.evalJs("[...document.querySelectorAll('.wz-drawers-tile')].find(b => b.textContent.includes('First Board')).click()");
+  // await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Drawers tile travel (First Board)' });
+  // const drawersTileRoute = await app.evalJs('location.hash');
+  // ok('B2 S7: a Drawers tile tap travels — the board tile lands on that real board page', drawersTileRoute.startsWith('#/page/'), drawersTileRoute);
+  const switcherShape = await app.evalJs(`({
+    groups: [...document.querySelectorAll('.wz-switcher-group')].map(g => g.getAttribute('data-group')),
+    hasNewDrawer: !!document.querySelector('.wz-switcher-new[data-new=drawer]'),
+    tilesGone: !document.querySelector('.wz-drawers-tile'),
     bodyText: document.querySelector('.wz-cascade-panel-body')?.innerText ?? '',
   })`);
-  ok('B2 S7 successor of "S3: the Drawers panel lists the drawer entities (not a flat page list)" / "S3/S4: choosing a drawer opens ITS survey": the panel now shows large tiles, Shelf first, a project cluster with both board titles, and NO count/badge/timestamp anywhere in its text',
-    drawersTiles.firstTile === 'Shelf' && drawersTiles.clusterTitles.includes('Untitled')
-      && drawersTiles.titles.includes('First Board') && drawersTiles.titles.includes('Second Board')
-      && !/\d/.test(drawersTiles.bodyText),
-    JSON.stringify(drawersTiles));
-  // A tile tap travels.
-  await app.evalJs("[...document.querySelectorAll('.wz-drawers-tile')].find(b => b.textContent.includes('First Board')).click()");
-  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Drawers tile travel (First Board)' });
-  const drawersTileRoute = await app.evalJs('location.hash');
-  ok('B2 S7: a Drawers tile tap travels — the board tile lands on that real board page', drawersTileRoute.startsWith('#/page/'), drawersTileRoute);
+  ok('BIG PROJECTS 1a successor of "B2 S7 ...": the Drawers tab is the place switcher - Drawers then Journals, + New Drawer, no tiles, and NO count/badge/timestamp anywhere in its text',
+    JSON.stringify(switcherShape.groups) === JSON.stringify(['drawers', 'journals']) && switcherShape.hasNewDrawer && switcherShape.tilesGone && !/\d/.test(switcherShape.bodyText),
+    JSON.stringify(switcherShape));
+  await clickCategory(app, 'page'); // the Pages pop-out
+  await sleep(250);
+  const sectionRowTap = await app.evalJs("(() => { const b = document.querySelector('.wz-section-row .wz-section-open'); if (!b) return false; b.click(); return true; })()");
+  await sleep(300);
+  const sectionRowRoute = await app.evalJs('location.hash');
+  ok('BIG PROJECTS 1a successor of "B2 S7: a Drawers tile tap travels": a section row in the Pages pop-out opens its page (the row is where the tile was)', sectionRowTap === true && sectionRowRoute.startsWith('#/page/'), JSON.stringify({ sectionRowTap, sectionRowRoute }));
 
   // ==========================================================================
   // S2 — THE DOCK. Closing layer 2 slides it shut and layer 3 occupies its
@@ -868,8 +904,15 @@ await withHarness(async (app) => {
     }));
     return { textHi, brass, items };
   })()`);
-  ok('CD3 canon (a): every one of the EIGHT strip items reads its resting color as --text-hi (never --brass), no hover/force applied — a real sweep, not the audit\'s own single-item (Journal) spot check',
-    stripRestSweep.items.length === 8
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): every one of the SEVEN strip items.
+  // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now - the place block (data-category=drawers, the switcher) first, then Pages, Boards, Journal and the foot - the Shelf is merged into the Journal, and the Drawers tiles are gone.
+  //
+  // ok('CD3 canon (a): every one of the EIGHT strip items reads its resting color as --text-hi (never --brass), no hover/force applied — a real sweep, not the audit\'s own single-item (Journal) spot check',
+  //   stripRestSweep.items.length === 8
+  //     && stripRestSweep.items.every((it) => !it.active && it.color === stripRestSweep.textHi && it.color !== stripRestSweep.brass),
+  //   JSON.stringify(stripRestSweep));
+  ok('CD3 canon (a) [big-projects-1a successor]: every one of the SEVEN strip items reads its resting color as --text-hi (never --brass), no hover/force applied - the place block included',
+    stripRestSweep.items.length === 7
       && stripRestSweep.items.every((it) => !it.active && it.color === stripRestSweep.textHi && it.color !== stripRestSweep.brass),
     JSON.stringify(stripRestSweep));
 
@@ -1181,9 +1224,15 @@ if (process.env.HARNESS_PARKED === '1') {
       hasOpenLink: !!document.querySelector('.wz-cascade-panel .wz-cascade-link'),
       hasZone: !!document.querySelector('.wz-cascade-plan-zone'),
     })`);
-    pok('PARKED (was "S3: Plan on a loose (project-less) page still offers Create a Board / Plot a Story, but Open… is silently absent (nothing to survey yet)") — PW1 S1 + Fable\'s ruling 2: the two creation doors stand unchanged, "Open…" is absent because it RETIRED (not because there is nothing to survey — the reason changed even though the observation did not), and an unconnected loose page shows NO zone at all (PW9). Live successor: pw1.mjs\'s own loose-page section, which pins one and proves the zone then appears ABOVE the doors',
-      loosePanel.hasCreateBoard && loosePanel.hasPlotStory && !loosePanel.hasOpenLink && !loosePanel.hasZone,
-      JSON.stringify(loosePanel));
+    // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): the loose page's Boards tab has no Create a Board / Plot a Story; it has the New Board door.
+    // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
+    //
+    // pok('PARKED (was "S3: Plan on a loose (project-less) page still offers Create a Board / Plot a Story, but Open… is silently absent (nothing to survey yet)") — PW1 S1 + Fable\'s ruling 2: the two creation doors stand unchanged, "Open…" is absent because it RETIRED (not because there is nothing to survey — the reason changed even though the observation did not), and an unconnected loose page shows NO zone at all (PW9). Live successor: pw1.mjs\'s own loose-page section, which pins one and proves the zone then appears ABOVE the doors',
+    //   loosePanel.hasCreateBoard && loosePanel.hasPlotStory && !loosePanel.hasOpenLink && !loosePanel.hasZone,
+    //   JSON.stringify(loosePanel));
+    const loosePanelNow = await app.evalJs(`({ hasNewBoard: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'New Board'), hasOld: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'Create a Board' || b.textContent === 'Plot a Story'), hasOpenLink: !!document.querySelector('.wz-cascade-panel .wz-cascade-link'), hasZone: !!document.querySelector('.wz-cascade-plan-zone') })`);
+    pok('PARKED, generation 2 (was PW1\'s "the two creation doors stand unchanged") - BIG PROJECTS step 2: the doors are the New Board door and the presets; Open... stays absent and the zone stays absent with nothing connected',
+      loosePanelNow.hasNewBoard && !loosePanelNow.hasOld && !loosePanelNow.hasOpenLink && !loosePanelNow.hasZone, JSON.stringify(loosePanelNow));
   }
 
     await freshProsePage(app, LAPTOP_W, 900);
@@ -1238,11 +1287,18 @@ if (process.env.HARNESS_PARKED === '1') {
     //        === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
     //   JSON.stringify(stripShapeParked));
     // ------------------------------------------------------------------
-    pok('PARKED, generation 6 (was generation 5\'s re-assertion with "Page" in the sorted set) — item word-diet: drawerPage reads "Pages"',
-      stripShapeParked.itemCount === 8
-        && JSON.stringify([...stripShapeParked.labels].sort())
-           === JSON.stringify(['Drawers', 'Journal', 'Pages', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
-      JSON.stringify(stripShapeParked));
+    // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): generation 7 - the strip carries SEVEN categories.
+    // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now - the place block (data-category=drawers, the switcher) first, then Pages, Boards, Journal and the foot - the Shelf is merged into the Journal, and the Drawers tiles are gone.
+    //
+    // pok('PARKED, generation 6 (was generation 5\'s re-assertion with "Page" in the sorted set) — item word-diet: drawerPage reads "Pages"',
+    //   stripShapeParked.itemCount === 8
+    //     && JSON.stringify([...stripShapeParked.labels].sort())
+    //        === JSON.stringify(['Drawers', 'Journal', 'Pages', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
+    //   JSON.stringify(stripShapeParked));
+    const stripCatsParked = await app.evalJs("[...document.querySelectorAll('.wz-strip-item')].map(b => b.getAttribute('data-category')).sort()");
+    pok('PARKED, generation 7 (was generation 6\'s re-assertion of the eight labels as a sorted set) - BIG PROJECTS 1a: the strip carries SEVEN categories, compared as a SET by data-category (the place block\'s label is the place, not a fixed word)',
+      stripShapeParked.itemCount === 7 && JSON.stringify(stripCatsParked) === JSON.stringify(['drawers', 'journal', 'page', 'plan', 'settings', 'theme', 'trash']),
+      JSON.stringify({ itemCount: stripShapeParked.itemCount, stripCatsParked }));
 
     // B2 (2026-07-20) — two more checks this file's own live sections
     // supersede, quoted verbatim:
@@ -1270,8 +1326,14 @@ if (process.env.HARNESS_PARKED === '1') {
 
     await clickCategory(app, 'drawers'); // Drawers
     await sleep(200);
-    const oldDrawerSurveyGone = await app.evalJs("!document.querySelector('.wz-cascade-survey') && !!document.querySelector('.wz-drawers-tiles')");
-    pok('PARKED (was "S3: the Drawers panel lists the drawer entities (not a flat page list)" + "S3/S4: choosing a drawer opens ITS survey (the filed pages inside that specific drawer)") — B2 S7: the old Drawer-entity list/survey is GONE whole, replaced by the large-tile Drawers panel — live successor: this file\'s own live S3/S4 section, rebuilt',
+    // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the Drawers tab is the place switcher, not the large-tile panel (and there is still no survey column).
+    // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now - the place block (data-category=drawers, the switcher) first, then Pages, Boards, Journal and the foot - the Shelf is merged into the Journal, and the Drawers tiles are gone.
+    //
+    // const oldDrawerSurveyGone = await app.evalJs("!document.querySelector('.wz-cascade-survey') && !!document.querySelector('.wz-drawers-tiles')");
+    // pok('PARKED (was "S3: the Drawers panel lists the drawer entities (not a flat page list)" + "S3/S4: choosing a drawer opens ITS survey (the filed pages inside that specific drawer)") — B2 S7: the old Drawer-entity list/survey is GONE whole, replaced by the large-tile Drawers panel — live successor: this file\'s own live S3/S4 section, rebuilt',
+    //   oldDrawerSurveyGone === true, String(oldDrawerSurveyGone));
+    const oldDrawerSurveyGone = await app.evalJs("!document.querySelector('.wz-cascade-survey') && !!document.querySelector('.wz-switcher') && !document.querySelector('.wz-drawers-tiles')");
+    pok('PARKED, generation 2 (was B2 S7\'s "the old Drawer-entity list/survey is GONE whole, replaced by the large-tile Drawers panel") - BIG PROJECTS 1a: still no survey column; the Drawers tab is now the place switcher and the tiles are gone',
       oldDrawerSurveyGone === true, String(oldDrawerSurveyGone));
 
     // FX10 (2026-07-21) — CD2 S1's own "never dissolving" law for the strip

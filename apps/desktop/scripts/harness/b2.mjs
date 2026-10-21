@@ -97,7 +97,7 @@ const selectBox = (app, boxId) => app.evalJs(`window.__pointerSeq('[data-box-id=
 // App.tsx's own bridge route ('/shelf'), find-or-create + mount, exactly
 // as a real writer would arrive.
 const shelfBoardBoxes = async (app) => {
-  await app.goto('/shelf');
+  await app.goto('/shelf-board');
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf Board mounted' });
   await sleep(250);
   return (await app.evalJs('window.wrizoBoard()')) || [];
@@ -113,7 +113,7 @@ const pinIds = (boxes) => boxes.filter((b) => b.kind === 'page-pin').map((b) => 
 // b1.mjs's own openPageCategory helper, copied verbatim: index 1 in the
 // strip is the Page category.
 const openPageCategory = async (app) => {
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPageCategory)' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (openPageCategory)' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
   if (alreadyOpen) return;
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
@@ -138,12 +138,12 @@ await withHarness(async (app) => {
   // different record from the Journal/Trash Boards.
   // ==========================================================================
   await freshDesk(app, LAPTOP_W, 900);
-  await app.goto('/shelf');
+  await app.goto('/shelf-board');
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf Board, first approach' });
   await sleep(250);
   const shelfIdFirst = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
   await app.reload();
-  await app.evalJs("location.hash = '#/shelf'");
+  await app.evalJs("location.hash = '#/shelf-board'");
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf Board, second approach' });
   await sleep(250);
   const shelfIdSecond = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
@@ -421,7 +421,7 @@ await withHarness(async (app) => {
 
   // Excluded from resume.
   await freshDesk(app, LAPTOP_W, 900);
-  await app.goto('/shelf');
+  await app.goto('/shelf-board');
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf Board mounted (resume probe)' });
   await sleep(300);
   const resumeTargetAfterShelfVisit = await app.evalJs('window.wrizoResume ? window.wrizoResume() : null');
@@ -852,62 +852,77 @@ await withHarness(async (app) => {
   await app.evalJs("location.hash = '#/page/b2-drawers-board-z2'");
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'framed page for Drawers panel' });
   await sleep(250);
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'strip mounted (Drawers seed)' });
-  await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]').click()"); // Drawers (index 3: A[0] + B[1,2] + C[3,4,5])
-  await app.waitFor("!!document.querySelector('.wz-drawers-tiles')", { label: 'Drawers panel open' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'strip mounted (Drawers seed)' });
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): S7 - the Drawers panel's large tiles (Shelf first, last-opened anchor, project clusters, loose docs, tile travel, no system boards as tiles).
+  // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now (the place block first, no Shelf tab), the Drawers tab is the PLACE SWITCHER and its tiles retired (boards are listed by the Boards pop-out, step 2), and the Shelf is merged into the Journal.
+  //
+  // await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]').click()"); // Drawers (index 3: A[0] + B[1,2] + C[3,4,5])
+  // await app.waitFor("!!document.querySelector('.wz-drawers-tiles')", { label: 'Drawers panel open' });
+  // await sleep(200);
+  // const drawersState = await app.evalJs(`(() => {
+  //   const tiles = [...document.querySelectorAll('.wz-drawers-tile')];
+  //   return {
+  //     firstTileTitle: tiles[0]?.querySelector('.wz-drawers-tile-title')?.textContent,
+  //     anchorTitle: document.querySelector('.wz-drawers-tile-anchor .wz-drawers-tile-title')?.textContent,
+  //     clusterTitles: [...document.querySelectorAll('.wz-drawers-cluster-title')].map(t => t.textContent),
+  //     allTileTitles: tiles.map(t => t.querySelector('.wz-drawers-tile-title')?.textContent),
+  //     bodyText: document.querySelector('.wz-cascade-panel-body')?.innerText ?? '',
+  //     manuscriptLeaked: [...document.querySelectorAll('.wz-drawers-tile-title')].some(t => t.textContent === 'Filed Manuscript'),
+  //   };
+  // })()`);
+  // ok('S7: the Shelf renders as the FIRST tile, always', drawersState.firstTileTitle === 'Shelf', JSON.stringify(drawersState.firstTileTitle));
+  // ok('S7: last-opened (most recently touched) anchors first — the loose doc, touched most recently of everything seeded, occupies the anchor slot',
+  //   drawersState.anchorTitle === 'Loose Doc', JSON.stringify(drawersState.anchorTitle));
+  // ok('S7: grouping is DERIVED by project — Zeta Project and Alpha Project both render as cluster headers, by their OWN titles (no new entity)',
+  //   drawersState.clusterTitles.includes('Zeta Project') && drawersState.clusterTitles.includes('Alpha Project'), JSON.stringify(drawersState.clusterTitles));
+  // ok('S7: clusters are ordered deterministically by project name — Alpha before Zeta',
+  //   drawersState.clusterTitles.indexOf('Alpha Project') < drawersState.clusterTitles.indexOf('Zeta Project'), JSON.stringify(drawersState.clusterTitles));
+  // ok('S7: within a cluster, boards are ordered deterministically by title — Yankee before Zulu',
+  //   drawersState.allTileTitles.indexOf('Yankee Board') < drawersState.allTileTitles.indexOf('Zulu Board'), JSON.stringify(drawersState.allTileTitles));
+  // ok('S7: a filed, non-board page NEVER renders as its own tile — only boards + loose docs do',
+  //   drawersState.manuscriptLeaked === false, JSON.stringify(drawersState.manuscriptLeaked));
+  // ok('S7: no digit anywhere in the Drawers panel\'s own text — zero counts/badges/timestamps', !/\d/.test(drawersState.bodyText), drawersState.bodyText);
+
+  // // A tile tap travels (board tile) — same panel state as the checks above.
+  // await app.evalJs("[...document.querySelectorAll('.wz-drawers-tile')].find(b => b.textContent.includes('Alpha Board')).click()");
+  // await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Drawers tile travel (Alpha Board)' });
+  // const alphaBoardRoute = await app.evalJs('location.hash');
+  // ok('S7: a board tile tap travels to that real board', alphaBoardRoute === '#/page/b2-drawers-board-a1', alphaBoardRoute);
+
+  // // A tile tap travels (doc tile) — re-open Drawers on this new host, wait
+  // // for the tiles to genuinely render before clicking (a fresh BoardEditor
+  // // mount, useCascade's own state starts closed).
+  // await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'strip remounted on Alpha Board' });
+  // await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]').click()"); // Drawers
+  // await app.waitFor("!!document.querySelector('.wz-drawers-tile-anchor')", { label: 'Drawers panel reopened (doc-tile travel)' });
+  // await app.evalJs("document.querySelector('.wz-drawers-tile-anchor').click()"); // the anchor (Loose Doc)
+  // await sleep(400);
+  // const looseDocRoute = await app.evalJs('location.hash');
+  // ok('S7: a doc tile tap travels to that real page', looseDocRoute.includes('b2-drawers-loose-doc'), looseDocRoute);
+
+  // // System boards otherwise absent from the tile roster (Journal/Trash
+  // // never appear as tiles, even though they genuinely exist).
+  // await app.goto('/journal'); // find-or-create the Journal Board so it genuinely exists
+  // await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board exists (Drawers roster probe)' });
+  // await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'strip mounted on Journal Board' });
+  // await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]').click()"); // Drawers
+  // await app.waitFor("!!document.querySelector('.wz-drawers-tiles')", { label: 'Drawers panel open (system-board-absence probe)' });
+  // await sleep(200);
+  // const drawersNoSystemTiles = await app.evalJs("[...document.querySelectorAll('.wz-drawers-tile-title')].map(t => t.textContent)");
+  // ok('S7: system boards OTHER than the Shelf never render as tiles — the Journal Board (which genuinely exists now) is absent by name',
+  //   !drawersNoSystemTiles.includes('Journal') && drawersNoSystemTiles.filter((t) => t === 'Shelf').length === 1, JSON.stringify(drawersNoSystemTiles));
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]').click()"); // the place block opens the switcher
+  await app.waitFor("!!document.querySelector('.wz-switcher')", { label: 'place switcher open' });
   await sleep(200);
-  const drawersState = await app.evalJs(`(() => {
-    const tiles = [...document.querySelectorAll('.wz-drawers-tile')];
-    return {
-      firstTileTitle: tiles[0]?.querySelector('.wz-drawers-tile-title')?.textContent,
-      anchorTitle: document.querySelector('.wz-drawers-tile-anchor .wz-drawers-tile-title')?.textContent,
-      clusterTitles: [...document.querySelectorAll('.wz-drawers-cluster-title')].map(t => t.textContent),
-      allTileTitles: tiles.map(t => t.querySelector('.wz-drawers-tile-title')?.textContent),
-      bodyText: document.querySelector('.wz-cascade-panel-body')?.innerText ?? '',
-      manuscriptLeaked: [...document.querySelectorAll('.wz-drawers-tile-title')].some(t => t.textContent === 'Filed Manuscript'),
-    };
-  })()`);
-  ok('S7: the Shelf renders as the FIRST tile, always', drawersState.firstTileTitle === 'Shelf', JSON.stringify(drawersState.firstTileTitle));
-  ok('S7: last-opened (most recently touched) anchors first — the loose doc, touched most recently of everything seeded, occupies the anchor slot',
-    drawersState.anchorTitle === 'Loose Doc', JSON.stringify(drawersState.anchorTitle));
-  ok('S7: grouping is DERIVED by project — Zeta Project and Alpha Project both render as cluster headers, by their OWN titles (no new entity)',
-    drawersState.clusterTitles.includes('Zeta Project') && drawersState.clusterTitles.includes('Alpha Project'), JSON.stringify(drawersState.clusterTitles));
-  ok('S7: clusters are ordered deterministically by project name — Alpha before Zeta',
-    drawersState.clusterTitles.indexOf('Alpha Project') < drawersState.clusterTitles.indexOf('Zeta Project'), JSON.stringify(drawersState.clusterTitles));
-  ok('S7: within a cluster, boards are ordered deterministically by title — Yankee before Zulu',
-    drawersState.allTileTitles.indexOf('Yankee Board') < drawersState.allTileTitles.indexOf('Zulu Board'), JSON.stringify(drawersState.allTileTitles));
-  ok('S7: a filed, non-board page NEVER renders as its own tile — only boards + loose docs do',
-    drawersState.manuscriptLeaked === false, JSON.stringify(drawersState.manuscriptLeaked));
-  ok('S7: no digit anywhere in the Drawers panel\'s own text — zero counts/badges/timestamps', !/\d/.test(drawersState.bodyText), drawersState.bodyText);
-
-  // A tile tap travels (board tile) — same panel state as the checks above.
-  await app.evalJs("[...document.querySelectorAll('.wz-drawers-tile')].find(b => b.textContent.includes('Alpha Board')).click()");
-  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Drawers tile travel (Alpha Board)' });
-  const alphaBoardRoute = await app.evalJs('location.hash');
-  ok('S7: a board tile tap travels to that real board', alphaBoardRoute === '#/page/b2-drawers-board-a1', alphaBoardRoute);
-
-  // A tile tap travels (doc tile) — re-open Drawers on this new host, wait
-  // for the tiles to genuinely render before clicking (a fresh BoardEditor
-  // mount, useCascade's own state starts closed).
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'strip remounted on Alpha Board' });
-  await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]').click()"); // Drawers
-  await app.waitFor("!!document.querySelector('.wz-drawers-tile-anchor')", { label: 'Drawers panel reopened (doc-tile travel)' });
-  await app.evalJs("document.querySelector('.wz-drawers-tile-anchor').click()"); // the anchor (Loose Doc)
-  await sleep(400);
-  const looseDocRoute = await app.evalJs('location.hash');
-  ok('S7: a doc tile tap travels to that real page', looseDocRoute.includes('b2-drawers-loose-doc'), looseDocRoute);
-
-  // System boards otherwise absent from the tile roster (Journal/Trash
-  // never appear as tiles, even though they genuinely exist).
-  await app.goto('/journal'); // find-or-create the Journal Board so it genuinely exists
-  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board exists (Drawers roster probe)' });
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'strip mounted on Journal Board' });
-  await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]').click()"); // Drawers
-  await app.waitFor("!!document.querySelector('.wz-drawers-tiles')", { label: 'Drawers panel open (system-board-absence probe)' });
-  await sleep(200);
-  const drawersNoSystemTiles = await app.evalJs("[...document.querySelectorAll('.wz-drawers-tile-title')].map(t => t.textContent)");
-  ok('S7: system boards OTHER than the Shelf never render as tiles — the Journal Board (which genuinely exists now) is absent by name',
-    !drawersNoSystemTiles.includes('Journal') && drawersNoSystemTiles.filter((t) => t === 'Shelf').length === 1, JSON.stringify(drawersNoSystemTiles));
+  const switcherState = await app.evalJs(`({
+    groups: [...document.querySelectorAll('.wz-switcher-group')].map(g => g.getAttribute('data-group')),
+    items: [...document.querySelectorAll('.wz-switcher-item')].map(b => b.textContent.trim()),
+    tiles: document.querySelectorAll('.wz-drawers-tile').length,
+    bodyText: document.querySelector('.wz-cascade-panel-body')?.innerText ?? '',
+  })`);
+  ok('S7 [big-projects-1a successor]: the Drawers tab is the place switcher - Drawers then Journals; the Zeta and Alpha projects sit in no Drawer, so they surface as the virtual Unsorted entry; the Journal is listed; there is NO Shelf entry and no tile anywhere',
+    JSON.stringify(switcherState.groups) === JSON.stringify(['drawers', 'journals']) && switcherState.items.includes('Unsorted') && switcherState.items.includes('Journal') && !switcherState.items.includes('Shelf') && switcherState.tiles === 0, JSON.stringify(switcherState));
+  ok('S7 [big-projects-1a successor]: no digit anywhere in the switcher\'s own text - zero counts/badges/timestamps', !/\d/.test(switcherState.bodyText), switcherState.bodyText);
 
   // ==========================================================================
   // S8 — lexicon discipline: every new string this ticket introduces
@@ -976,7 +991,7 @@ await withHarness(async (app) => {
   // ==========================================================================
   for (const width of [LAPTOP_W, WIDE_W]) {
     await freshDesk(app, width, 900);
-    await app.goto('/shelf');
+    await app.goto('/shelf-board');
     await app.waitFor("!!document.querySelector('.board-canvas')", { label: `Shelf Board @ ${width}px` });
     await sleep(200);
     await app.emulateDpr(1, width, 900);
@@ -987,19 +1002,30 @@ await withHarness(async (app) => {
       stripCount: document.querySelectorAll('.wz-strip-item').length,
       boardCanvasPresent: !!document.querySelector('.board-canvas'),
     })`);
-    ok(`S8 @ ${width}px: the Shelf Board mounts framed (DeskFrame + the 8-category strip) — the same chrome any other Board already gets`,
-      shelfFramedShape.deskFramePresent && shelfFramedShape.stripPresent && shelfFramedShape.stripCount === 8 && shelfFramedShape.boardCanvasPresent,
+    // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the strip carries SEVEN categories.
+    // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now (the place block first, no Shelf tab), the Drawers tab is the PLACE SWITCHER and its tiles retired (boards are listed by the Boards pop-out, step 2), and the Shelf is merged into the Journal.
+    //
+    // ok(`S8 @ ${width}px: the Shelf Board mounts framed (DeskFrame + the 8-category strip) — the same chrome any other Board already gets`,
+    //   shelfFramedShape.deskFramePresent && shelfFramedShape.stripPresent && shelfFramedShape.stripCount === 8 && shelfFramedShape.boardCanvasPresent,
+    //   JSON.stringify(shelfFramedShape));
+    ok(`S8 @ ${width}px [big-projects-1a successor]: the Shelf Board mounts framed (DeskFrame + the 7-category strip) - the same chrome any other Board already gets`,
+      shelfFramedShape.deskFramePresent && shelfFramedShape.stripPresent && shelfFramedShape.stripCount === 7 && shelfFramedShape.boardCanvasPresent,
       JSON.stringify(shelfFramedShape));
 
     await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]').click()"); // Drawers
     await sleep(200);
-    const drawersAtWidth = await app.evalJs("!!document.querySelector('.wz-drawers-tiles')");
-    ok(`S8 @ ${width}px: the Drawers panel mounts correctly too (large tiles, same chrome at both reference widths)`, drawersAtWidth === true, String(drawersAtWidth));
+    // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the Drawers tab mounts the place switcher at both widths (no tiles).
+    // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now (the place block first, no Shelf tab), the Drawers tab is the PLACE SWITCHER and its tiles retired (boards are listed by the Boards pop-out, step 2), and the Shelf is merged into the Journal.
+    //
+    // const drawersAtWidth = await app.evalJs("!!document.querySelector('.wz-drawers-tiles')");
+    // ok(`S8 @ ${width}px: the Drawers panel mounts correctly too (large tiles, same chrome at both reference widths)`, drawersAtWidth === true, String(drawersAtWidth));
+    const switcherAtWidth = await app.evalJs("!!document.querySelector('.wz-switcher')");
+    ok(`S8 @ ${width}px [big-projects-1a successor]: the Drawers tab (the place switcher) mounts correctly too - same chrome at both reference widths`, switcherAtWidth === true, String(switcherAtWidth));
   }
 
   // The 1100px floor: legacy chrome stays byte-identical.
   await freshDesk(app, LEGACY_W, 900);
-  await app.goto('/shelf');
+  await app.goto('/shelf-board');
   await app.waitFor("!!document.querySelector('.board-page, .board-canvas')", { label: 'Shelf Board at the 1100px floor' });
   await sleep(250);
   const legacyFloorShapeB2 = await app.evalJs(`({
@@ -1013,17 +1039,30 @@ await withHarness(async (app) => {
   ok(`S8 @ ${LEGACY_W}px (one below the 1100 floor): the Shelf Board renders via its LEGACY branch — no DeskFrame, no strip, no tile leak, no Places leak`,
     legacyFloorShapeB2.deskFrameGone && legacyFloorShapeB2.stripGone && legacyFloorShapeB2.tilesGone && legacyFloorShapeB2.placesGone && legacyFloorShapeB2.boardCanvasPresent,
     JSON.stringify(legacyFloorShapeB2));
-  ok(`S8 @ ${LEGACY_W}px: DeskRail's own roster is BYTE-IDENTICAL — Catch, Journal, Shelf, Drawers, Library — completely untouched by this ticket`,
-    JSON.stringify(legacyFloorShapeB2.railLabels) === JSON.stringify(['Catch', 'Journal', 'Shelf', 'Drawers', 'Library']),
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (Fable's ruling Oct 19: no Shelf door from chrome, the narrow DeskRail included): the narrow DeskRail carries Catch, Journal, Drawers, Library.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // ok(`S8 @ ${LEGACY_W}px: DeskRail's own roster is BYTE-IDENTICAL — Catch, Journal, Shelf, Drawers, Library — completely untouched by this ticket`,
+  //   JSON.stringify(legacyFloorShapeB2.railLabels) === JSON.stringify(['Catch', 'Journal', 'Shelf', 'Drawers', 'Library']),
+  //   JSON.stringify(legacyFloorShapeB2.railLabels));
+  ok(`S8 @ ${LEGACY_W}px [big-projects-1a successor]: DeskRail's roster is Catch, Journal, Drawers, Library - the Shelf item is gone`,
+    JSON.stringify(legacyFloorShapeB2.railLabels) === JSON.stringify(['Catch', 'Journal', 'Drawers', 'Library']),
     JSON.stringify(legacyFloorShapeB2.railLabels));
 
   // DeskRail's own 'shelf' nav item still bridges correctly at the legacy
   // width too (it's a plain navigate('/shelf') call, untouched code).
-  await app.evalJs("[...document.querySelectorAll('.desk-rail-item')].find(b => b.textContent.includes('Shelf')).click()");
-  await app.waitFor("!!document.querySelector('.board-page, .board-canvas')", { label: 'DeskRail Shelf item lands on the Board (legacy)' });
-  const deskRailShelfRoute = await app.evalJs('location.hash');
-  ok('S8: DeskRail\'s own "Shelf" nav item — untouched code, same navigate(\'/shelf\') call — now lands on the Shelf Board',
-    deskRailShelfRoute.startsWith('#/page/'), deskRailShelfRoute);
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (Fable's ruling Oct 19: no Shelf door from chrome, the narrow DeskRail included): there is no Shelf item to press; the narrow DeskRail's Journal item opens the Journal place and lands on the Journal board.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // await app.evalJs("[...document.querySelectorAll('.desk-rail-item')].find(b => b.textContent.includes('Shelf')).click()");
+  // await app.waitFor("!!document.querySelector('.board-page, .board-canvas')", { label: 'DeskRail Shelf item lands on the Board (legacy)' });
+  // const deskRailShelfRoute = await app.evalJs('location.hash');
+  // ok('S8: DeskRail\'s own "Shelf" nav item — untouched code, same navigate(\'/shelf\') call — now lands on the Shelf Board',
+  //   deskRailShelfRoute.startsWith('#/page/'), deskRailShelfRoute);
+  await app.evalJs("[...document.querySelectorAll('.desk-rail-item')].find(b => b.textContent.includes('Journal')).click()");
+  await app.waitFor("!!document.querySelector('.board-page, .board-canvas')", { label: 'DeskRail Journal item lands on the Board (legacy)' });
+  const deskRailJournalRoute = await app.evalJs('location.hash');
+  ok('S8 [big-projects-1a successor]: DeskRail\'s "Journal" nav item lands on the Journal board (and opens the Journal place)', deskRailJournalRoute.startsWith('#/page/'), deskRailJournalRoute);
 
   return checks;
 });
@@ -1045,7 +1084,7 @@ if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   await withHarness(async (app) => {
     await freshDesk(app, LAPTOP_W, 900);
-    await app.goto('/shelf');
+    await app.goto('/shelf-board');
     await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf Board mounted (PARKED)' });
     await sleep(250);
     await openPageCategory(app);
@@ -1190,7 +1229,7 @@ if (process.env.HARNESS_PARKED === '1') {
     // their probes re-verify the NEW truth (door present, no Done; door lands
     // backTo '/'). Live successors: this file's own live S1 section above.
     await freshDesk(app, LAPTOP_W, 900);
-    await app.goto('/shelf');
+    await app.goto('/shelf-board');
     await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf Board mounted (CD4 park re-verify)' });
     await sleep(200);
     const shelfDoorNow = await app.evalJs(`(() => {

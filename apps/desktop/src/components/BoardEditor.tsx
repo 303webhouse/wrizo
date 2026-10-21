@@ -950,7 +950,10 @@ export function BoardEditor({ id }: { id: string }) {
   // would race that same debounced autosave (the harness seeding/flushNow
   // race this project has already diagnosed once, generalized) — see
   // decks/engine.ts's own header comment for the full reasoning.
-  const [deckWizardOpen, setDeckWizardOpen] = useState(false);
+  const [deckWizardOpen, setDeckWizardOpen] = useState(() => !!unborn?.descriptor.deck);
+  // BIG PROJECTS step 2 - a PRESET on the Boards tab opens a new board with its deck's wizard already running: the deck id rides the address (descriptor.deck), is read once while
+  // the board is unborn, and is dropped when the wizard closes (so a later Templates press opens the library as it always did).
+  const [startDeckId, setStartDeckId] = useState<string | null>(() => unborn?.descriptor.deck ?? null);
   // B3 S1 — the "Start Here" hint's own id (store/deckHint.ts, keyed per
   // board, never schema). Read fresh on every mount of THIS board (the
   // lazy initializer re-runs whenever `id` changes — PageEditor.tsx's own
@@ -1497,7 +1500,7 @@ export function BoardEditor({ id }: { id: string }) {
       if (e.button !== 0 || e.pointerType === 'touch' || threadArmedFromRef.current != null || popupBoxIdRef.current) return;
       const el = (e.target as Element | null)?.closest?.('[data-link-entry]') as HTMLElement | null;
       if (!el || canvasRef.current?.contains(el)) return;
-      if (el.closest('[draggable="true"]') || (e.target as Element).closest('.wz-cascade-thumb-menu-btn, .wz-cascade-thumb-menu')) return;   // a draggable survey row keeps its own (membership) drag
+      if (el.closest('[draggable="true"]') || (e.target as Element).closest('.wz-cascade-thumb-menu-btn, .wz-cascade-thumb-menu, [data-reorder-grip]')) return;   // BIG PROJECTS 1a: a Pages pop-out row's reorder grip keeps its own drag   // a draggable survey row keeps its own (membership) drag
       const eid = el.dataset.linkEntry!;
       if (eid === id || !getJournalEntryIncludingDeleted(eid)) return;
       press = { x: e.clientX, y: e.clientY, entryId: eid, label: (el.textContent ?? '').trim().split('\n')[0].slice(0, 60) || 'Untitled' };
@@ -2572,8 +2575,9 @@ export function BoardEditor({ id }: { id: string }) {
             { key: 'loadDeck', label: t('beginLoadDeck'), onOpen: onAddFromDeck },
           ]
         : [
+            // BIG PROJECTS step 2: New Card, Templates, Connect Pages - NO New Page on a board (a page is made from the Pages tab; this door's old act is parked below, verbatim):
+            //   (the New Page door: label beginNewPageCard, handler onAddPageCard - still the sliver's own tool)
             { key: 'newCard', label: t('beginNewCard'), onOpen: onAddCard },
-            { key: 'newPageCard', label: t('beginNewPageCard'), onOpen: onAddPageCard },
             { key: 'loadDeck', label: t('beginLoadDeck'), onOpen: onAddFromDeck },
             { key: 'connectPage', label: t('beginConnectPage'), onOpen: () => setExistingPageOpen(true) },
           ]
@@ -3083,7 +3087,7 @@ export function BoardEditor({ id }: { id: string }) {
         />
       )}
       {deckWizardOpen && (
-        <DeckWizard decks={DECKS} onDeal={onDeckDealt} onClose={() => setDeckWizardOpen(false)} />
+        <DeckWizard decks={DECKS} startDeckId={startDeckId ?? undefined} onDeal={onDeckDealt} onClose={() => { setDeckWizardOpen(false); setStartDeckId(null); }} />
       )}
     </>
   );

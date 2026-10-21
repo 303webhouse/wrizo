@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { decksByRoom } from '../decks/library';
@@ -31,6 +31,8 @@ export interface DeckWizardProps {
   decks: DeckDefinition[];
   onDeal: (deck: DeckDefinition, answers: DeckAnswers) => void;
   onClose: () => void;
+  // BIG PROJECTS step 2 - open straight on this deck's first question (a preset on the Boards tab); a deck with no questions deals at once. An unknown id opens the library.
+  startDeckId?: string;
 }
 
 type Step =
@@ -46,9 +48,17 @@ const ROOM_TERM: Record<DeckRoom, DeskTermId> = {
   newsroom: 'deckRoomNewsroom',
 };
 
-export function DeckWizard({ decks, onDeal, onClose }: DeckWizardProps) {
+export function DeckWizard({ decks, onDeal, onClose, startDeckId }: DeckWizardProps) {
   const { t } = useDeskLexicon();
-  const [step, setStep] = useState<Step>({ kind: 'library' });
+  const startDeck = startDeckId ? decks.find(d => d.id === startDeckId) ?? null : null;
+  const [step, setStep] = useState<Step>(() => (startDeck && startDeck.questions.length > 0
+    ? { kind: 'question', deck: startDeck, index: 0, answers: {}, note: null }
+    : { kind: 'library' }));
+  const dealtAtOnce = useRef(false);
+  useEffect(() => {
+    if (startDeck && startDeck.questions.length === 0 && !dealtAtOnce.current) { dealtAtOnce.current = true; onDeal(startDeck, {}); onClose(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const chooseDeck = (deck: DeckDefinition) => {
     if (deck.questions.length === 0) {

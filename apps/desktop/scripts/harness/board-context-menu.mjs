@@ -348,18 +348,23 @@ await withHarness(async (app) => {
   f = await fresh(app);
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]')?.click()");
   await sleep(500);
-  const tile = await app.evalJs(`(() => { const t = [...document.querySelectorAll('.wz-drawers-tile')].find((b) => b.textContent.includes('Menu board')); if (!t) return null; const r = t.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
-  if (!tile) ok('K12 fixture: the board\'s tile is in the Drawers panel', false, 'absent');
-  else {
-    await rightClick(app, tile.x, tile.y);
-    const mt = await menuItems(app);
-    ok('K12: a board tile\'s right-click offers Delete board', JSON.stringify(mt) === JSON.stringify(['Delete board']), JSON.stringify(mt));
-    await pick(app, 'Delete board'); await sleep(350);
-    ok('K12: and asks "Send to Trash?"', !!(await dialog(app)), '');
-    await dlgClick(app, 'go'); await sleep(700);
-    const row2 = await app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(f.id)}) || {})`);
-    ok('K12: the board is soft-deleted and its tile is gone from the panel', !!row2.deletedAt && !(await app.evalJs("[...document.querySelectorAll('.wz-drawers-tile')].some((b) => b.textContent.includes('Menu board'))")), JSON.stringify({ deletedAt: row2.deletedAt }));
-  }
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): K12 - a board TILE in the Drawers panel and its right-click "Delete board". The Drawers tab is the place switcher; board entries in the rail return with the Boards pop-out (step 2), which carries this same menu (the delete-for-good plan's connector risk 4).
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // const tile = await app.evalJs(`(() => { const t = [...document.querySelectorAll('.wz-drawers-tile')].find((b) => b.textContent.includes('Menu board')); if (!t) return null; const r = t.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
+  // if (!tile) ok('K12 fixture: the board\'s tile is in the Drawers panel', false, 'absent');
+  // else {
+  //   await rightClick(app, tile.x, tile.y);
+  //   const mt = await menuItems(app);
+  //   ok('K12: a board tile\'s right-click offers Delete board', JSON.stringify(mt) === JSON.stringify(['Delete board']), JSON.stringify(mt));
+  //   await pick(app, 'Delete board'); await sleep(350);
+  //   ok('K12: and asks "Send to Trash?"', !!(await dialog(app)), '');
+  //   await dlgClick(app, 'go'); await sleep(700);
+  //   const row2 = await app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(f.id)}) || {})`);
+  //   ok('K12: the board is soft-deleted and its tile is gone from the panel', !!row2.deletedAt && !(await app.evalJs("[...document.querySelectorAll('.wz-drawers-tile')].some((b) => b.textContent.includes('Menu board'))")), JSON.stringify({ deletedAt: row2.deletedAt }));
+  // }
+  const k12 = await app.evalJs(`({ tiles: document.querySelectorAll('.wz-drawers-tile').length, switcher: !!document.querySelector('.wz-switcher'), items: [...document.querySelectorAll('.wz-switcher-item')].map((b) => b.textContent.trim()) })`);
+  ok('K12 [big-projects-1a successor]: the Drawers tab is the place switcher - there is no board TILE to right-click (board entries return with the Boards pop-out, step 2); the board\'s own right-click "Delete board" on its canvas is held by K1-K11 above', k12.tiles === 0 && k12.switcher === true && !k12.items.includes('Shelf'), JSON.stringify(k12));
 
   // ============================================================ K13 the Trash
   f = await fresh(app);

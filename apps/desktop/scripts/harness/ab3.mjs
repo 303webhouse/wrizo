@@ -137,7 +137,7 @@ const freshLoosePage = async (app) => {
 const openPageCategory = async (app) => {
   // B1 S5 — eight categories now (Trash joins section C); this is a plain
   // mount gate, not an assertion about the roster's own shape.
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPageCategory)' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (openPageCategory)' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
   if (alreadyOpen) return;
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
@@ -764,8 +764,14 @@ if (process.env.HARNESS_PARKED === '1') {
     // in a comment, execute only the CURRENT generation's own condition),
     // generation 2's own text is preserved verbatim above, unexecuted; this
     // is the only live pok() for this claim now.
-    pok('PARKED (was "S1: the rail carries the Page pull above a separator, three Places below", then CD2 S1-superseded to "the drawer\'s own two-item nav shape is gone; the strip carries four sections (3 separators) and eight categories instead, B1\'s Trash included") — CD3: the strip reorganizes into five groups (4 separators) — Trash leaves section C for the strip\'s own foot, below Settings/Themes (successor in cd2.mjs)',
-      navShapeGoneNow.drawerNavGone && navShapeGoneNow.stripSepCount === 4 && navShapeGoneNow.stripItemCount === 8,
+    // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): GENERATION 4 - the strip carries SEVEN items and THREE separators (the place block, Pages, Boards | Journal | Settings, Themes | Trash; the Shelf is merged into the Journal and the place block is outside the separators).
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // pok('PARKED (was "S1: the rail carries the Page pull above a separator, three Places below", then CD2 S1-superseded to "the drawer\'s own two-item nav shape is gone; the strip carries four sections (3 separators) and eight categories instead, B1\'s Trash included") — CD3: the strip reorganizes into five groups (4 separators) — Trash leaves section C for the strip\'s own foot, below Settings/Themes (successor in cd2.mjs)',
+    //   navShapeGoneNow.drawerNavGone && navShapeGoneNow.stripSepCount === 4 && navShapeGoneNow.stripItemCount === 8,
+    //   JSON.stringify(navShapeGoneNow));
+    pok('PARKED, generation 4 (was generation 3\'s "four separators and eight items") - BIG PROJECTS 1a: the drawer\'s own nav stays gone, replaced by the strip, which now carries three separators and seven items (live successor: cd2.mjs\'s strip-shape check)',
+      navShapeGoneNow.drawerNavGone && navShapeGoneNow.stripSepCount === 3 && navShapeGoneNow.stripItemCount === 7,
       JSON.stringify(navShapeGoneNow));
 
     // ORIGINAL (S6): ok('S6: the Journal place face lists the current page,

@@ -18,6 +18,7 @@ import { VoiceWallWhisper } from './components/VoiceWallWhisper';
 import { ThemeEffectsLayer } from './components/ThemeEffectsLayer';
 import { Splash } from './components/Splash';
 import { LandingGate } from './components/LandingGate';
+import { PlaceBootstrap } from './components/PlaceBootstrap';
 import { FluxBlockCaret } from './components/FluxBlockCaret';
 import { ContextMenuHost } from './components/ContextMenuHost';
 import { HelpPop } from './components/HelpPop';
@@ -84,15 +85,11 @@ function TrashBoardGate() {
   return <Navigate to={`/page/${board.id}`} replace />;
 }
 
-// B2 S1/S3 — the Shelf Board's own stable, bookmark-able URL, the SAME
-// bridge shape TrashBoardGate established (find-or-create, idempotent, no
-// router state to carry through). '/shelf' pre-dates this ticket (the old
-// pages/Shelf.tsx, the `shelved`-flag list — now RETIRED whole, S3's own
-// mandate, since the Shelf is derived (T3) and never filed-into) — DeskRail
-// (<1100px chrome) keeps its own unchanged 'shelf' nav item pointing at
-// this SAME literal string, so legacy stays byte-identical and every old
-// link/bookmark still resolves, exactly as JournalBoardGate proved for
-// '/journal' in B1.
+// BIG PROJECTS 1a - the Shelf is merged into the Journal (display only; the flag stays in storage). '/shelf' pre-dates that and every old link,
+// bookmark and 'Send to the Shelf' door still resolves: it redirects to the Journal.
+//
+// The Shelf's own system board is still derived and still a board, and a harness mounts it to hold its derived membership: '/shelf-board' is the old '/shelf'
+// bridge unchanged in shape (find-or-create, idempotent, no router state). NO chrome links to it (Fable, Oct 19: no door from chrome, narrow DeskRail included).
 function ShelfBoardGate() {
   const board = getOrCreateSystemBoard('shelf');
   return <Navigate to={`/page/${board.id}`} replace />;
@@ -364,6 +361,8 @@ export function App() {
         <SignedOutRouteGuard authState={authState} />
         {/* RESUME ON OPEN: remembers the open Page/board and, on the first signed-in boot, lands there instead of the front door. Renders nothing. */}
         <LandingGate authState={authState} />
+        {/* BIG PROJECTS 1a: Top Drawer for an account that has never had a Drawer - after the first pull, once. Renders nothing. */}
+        <PlaceBootstrap authState={authState} />
         {/* LOGOUT SAFETY — an overlay beside the routes, never inside one: it cannot unmount the page. */}
         <LogoutBlockedSheet />
         {/* B10.1 - the stale-client banner: App level, every route and auth state; a portal, so it displaces nothing. */}
@@ -372,7 +371,8 @@ export function App() {
         <Routes>
         <Route path="/" element={<Arrival authState={authState} onAuthed={handleAuthed} />} />
         <Route path="/drawers" element={<DrawersPage />} />
-        <Route path="/shelf" element={<ShelfBoardGate />} />
+        <Route path="/shelf" element={<Navigate to="/journal" replace />} />
+        <Route path="/shelf-board" element={<ShelfBoardGate />} />
         <Route path="/project/new" element={<CreateProject />} />
         <Route path="/project/:id" element={<ProjectHome />} />
         <Route path="/project/:id/import" element={<ImportDraft />} />

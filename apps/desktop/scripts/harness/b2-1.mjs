@@ -67,7 +67,7 @@ const freshDesk = async (app, width = 1400, height = 900) => {
 // b1.mjs's/b2.mjs's own openPageCategory helper, copied verbatim: index 1
 // in the strip is the Page category.
 const openPageCategory = async (app) => {
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPageCategory)' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (openPageCategory)' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
   if (alreadyOpen) return;
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
@@ -77,7 +77,7 @@ const openPageCategory = async (app) => {
 // Cascade.tsx's own strip order (SECTION_A/B/C/D): journal(0), page(1),
 // plan(2), drawers(3), shelf(4), trash(5), settings(6), theme(7).
 const openPlanCategory = async (app) => {
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPlanCategory)' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (openPlanCategory)' });
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=plan]').click()");
   await sleep(150);
 };
@@ -233,7 +233,7 @@ await withHarness(async (app) => {
   ok('S6b [word-diet successor]: the Trash Board\'s own Page face now reads the bare place name, "Trash"',
     trashHomeLabel === 'Trash', String(trashHomeLabel));
 
-  await app.goto('/shelf');
+  await app.goto('/shelf-board');
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf Board mounted' });
   await sleep(250);
   await openPageCategory(app);
@@ -255,9 +255,14 @@ await withHarness(async (app) => {
   await sleep(300);
   await app.emulateDpr(1, LAPTOP_W, 900);
   await openPlanCategory(app);
-  const planNoProjectLine = await app.evalJs("document.querySelector('.wz-cascade-panel-body .wz-cascade-empty')?.textContent");
-  ok('S6c: the Plan panel\'s own no-project branch now reads "File this page to a drawer first..." — never the word "project"',
-    planNoProjectLine === 'File this page to a drawer first to plan around it.', String(planNoProjectLine));
+  // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): the Boards tab has no no-project branch: a board is filed into wherever the writer is.
+  // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
+  //
+  // const planNoProjectLine = await app.evalJs("document.querySelector('.wz-cascade-panel-body .wz-cascade-empty')?.textContent");
+  // ok('S6c: the Plan panel\'s own no-project branch now reads "File this page to a drawer first..." — never the word "project"',
+  //   planNoProjectLine === 'File this page to a drawer first to plan around it.', String(planNoProjectLine));
+  const boardsPanelText = await app.evalJs("document.querySelector('.wz-cascade-panel-body')?.innerText ?? ''");
+  ok('S6c [big-projects-2 successor]: the Boards tab has no no-project lead at all (the file-this-page-to-a-drawer-first line is gone) - and never the word project', !boardsPanelText.includes('File this page to a drawer first') && !/project/i.test(boardsPanelText), boardsPanelText.slice(0, 160));
 
   // ==========================================================================
   // S6e — CreateProject.tsx: the eyebrow, the title aria-label, and the

@@ -26,6 +26,8 @@ import { useSigningOut } from '../store/useSigningOut';
 import { useTheme, setTheme, type ThemeId } from '../store/theme';
 import { FullscreenToggle, SyncIndicator } from './ChromeControls';
 import { PageFace, type PageFaceSubject } from './PageFace';
+import { SectionsPopout } from './SectionsPopout';
+import { PlaceSwitcher } from './PlaceSwitcher';
 import { PlacesPanel } from './PlacesPanel';
 import { AddToSheet } from './AddToSheet';
 import { PinToBoardSheet } from './PinToBoardSheet';
@@ -43,7 +45,8 @@ import type { SurveyItem, SurveyProps } from './CascadeSurvey';
 // this whole subtree on every write; nothing here needs its own refresh
 // plumbing on top of that established house pattern).
 // B1 S5 — 'trash' joins the roster: section C's own quiet foot entry.
-export type CategoryId = 'journal' | 'page' | 'plan' | 'drawers' | 'shelf' | 'trash' | 'settings' | 'theme';
+// BIG PROJECTS 1a: 'shelf' leaves the roster (its pages are shown in the Journal); 'drawers' is now the PLACE BLOCK's switcher.
+export type CategoryId = 'journal' | 'page' | 'plan' | 'drawers' | 'trash' | 'settings' | 'theme';
 
 // B1 S5 — find-or-create + travel, straight to the Board (no intermediate
 // hop through the '/journal' bridge route — App.tsx's own header comment
@@ -115,6 +118,8 @@ export interface CascadeContext {
   // navigates. Every travel originated from inside the cascade goes through
   // here; ordinary navigation elsewhere is untouched.
   travelFromCascade: (entry: JournalEntry) => void;
+  // BIG PROJECTS 1a - close the whole cascade (the switcher closes after a choice).
+  closeCascade: () => void;
 }
 
 function itemTitle(entry: JournalEntry): string {
@@ -266,33 +271,17 @@ function JournalPanel({ navigate, openSurvey }: CascadeContext) {
 // face, then Places.
 function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: NavigateFunction }) {
   const { t } = useDeskLexicon();
-  // PB1 (item 71) — no row until the first word.
-  // ITEM 87 (clause 1) — this door SAYS Draft. It and Arrival's Write door both
-  // open a loose-origin surface, so origin cannot tell them apart; the
-  // difference is what they mean. "New Page" means a page to work on; Write
-  // means the front-door writing posture, and CD1 S8's Free Write default for it
-  // is deliberate and untouched.
-  const newPage = () => navigate(unbornHref({ origin: 'loose' }));
-  // ITEM 83 M6 (R13.i/ii) — on a BOARD, the Page face is the board's own
-  // page-side hand: the sliver does not mount here (R13.iv), so New page and
-  // Place-page live in this drawer instead.
+  // BIG PROJECTS 1a - THE PAGES POP-OUT (components/SectionsPopout.tsx) replaces the New Page door and the Open Pages list: the place's sections in
+  // the writer's own order, + New Page (into where you are), + New set, Presets, and X out to the Journal. The Page face, Page Setup and Places stay
+  // beneath it until step 1b moves them into the page header.
+  // ITEM 83 M6 (R13.i/ii) - on a BOARD the pop-out's rows keep their secondary act, "Place on this board" (PW1 S3).
   const onBoard = subject.entry.pageType === 'board';
   return (
     <>
-      {/* A Fragment, not a second `.wz-cascade-panel-body` wrapper —
+      {/* A Fragment, not a second `.wz-cascade-panel-body` wrapper -
           PageFace already carries its own `.wz-pageface` padding, so
           nesting a second panel-body around both would double it up. */}
-      <div style={{ padding: '10px 14px 0' }}>
-        <button type="button" className="wz-cascade-action wz-cascade-action-door" onClick={newPage}>
-          {t('cascadePageNewPage')}
-        </button>
-      </div>
-      {/* ITEM 170 — on EVERY surface, not only a board: this is the way to
-          open a page, and a way that only exists while standing on a board is
-          not the way. The place act rides along only where there is a board to
-          place onto. */}
-      <OpenPages navigate={navigate} currentId={subject.entry.id}
-        boardId={onBoard ? subject.entry.id : undefined} />
+      <SectionsPopout view="pages" currentId={subject.entry.id} navigate={navigate} boardId={onBoard ? subject.entry.id : undefined} journalLabel={t('drawerPlaceJournal')} />
       <PageFace subject={subject} />
       {/* ITEM 83 M3 (R6) — the Page menu's charter: general page options
           governing the OPEN page. Sits between the page's own face and its
@@ -307,172 +296,10 @@ function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: 
   );
 }
 
-// ITEM 170 (P0) — YOUR PAGES: THE WAY TO OPEN A PAGE.
-//
-// Nick, verbatim: "the app currently has no clear or intuitive way of opening
-// pages. Bug that needs to be fixed immediately."
-//
-// WHAT S0 FOUND. Pages COULD be opened — the Journal's Recent (capped at 5),
-// the Journal survey, the Drawers panel's tiles, a board card's double-click.
-// Every one of those is named for where a page LIVES, and none lists all of
-// them. The one list in the app that looked like "your pages" — sortable by
-// Date · Drawer · A–Z — did the opposite of what it looked like: clicking
-// a row silently PLACED the page on the board. And it had three more faults,
-// each of which would have survived a relabel:
-//
-//   1. IT EXISTED ONLY ON A BOARD. PagePanel mounted it under `onBoard`, so on
-//      a page surface there was no list of pages at all.
-//   2. IT COULD NOT SEE THE PAGES WRITERS MAKE MOST. It read getJournalPages(),
-//      and `inJournalView` returns FALSE for every `origin: 'loose'` page —
-//      which is precisely what New Page and the Desk create. A writer's newest
-//      page was missing from the list most likely to be looked in.
-//   3. IT CAPPED BEFORE IT SORTED. `.slice(0, 30)` ran first, so A–Z ordered
-//      thirty pages rather than all of them, and a thirty-first was
-//      unreachable from here by any sort.
-//
-// THE FIX, as Fable ruled it: clicking a row OPENS the page; placing it on a
-// board becomes the row's SECONDARY act, behind its ⋯; the heading says what
-// the list IS. One list, every live page that is not a board, uncapped (the
-// list already scrolls at its own max-height, so nothing is pushed off), and
-// ONE name derivation — `itemTitle`, the Journal lists' own, so a page is
-// called the same thing here as everywhere else it is listed.
-//
-// ON S13's PRECEDENT, which the lexicon cites against a bare noun heading:
-// "a bare noun list in a drawer reproduces the GO-versus-PUT confusion". That
-// confusion came from a noun heading over a click that PUT. The click now
-// GOES — which is what a noun list promises — and the put is named by its
-// own verb ("Place on this board"). So the heading can be a noun without
-// reopening the confusion S13 closed. Flagged for Nick's veto all the same.
-//
-// MEMBERSHIP, NEVER FILING — unchanged from the list this replaces: placing
-// changes where a page APPEARS, never where it LIVES. Nothing writes
-// projectId or origin.
-type PageSort = 'date' | 'drawer' | 'az';
-
-function OpenPages({ navigate, currentId, boardId }: {
-  navigate: NavigateFunction;
-  currentId: string;
-  boardId?: string;
-}) {
-  const { t } = useDeskLexicon();
-  const [sort, setSort] = useState<PageSort>('date');
-  const [menuFor, setMenuFor] = useState<string | null>(null);
-  const [, force] = useReducer((n: number) => n + 1, 0);
-
-  // An open menu closes when the writer presses anywhere outside its row, or
-  // presses Escape — otherwise the only way to dismiss it was to find the ⋯
-  // again, which is the kind of small stuck state this ticket exists to remove.
-  useEffect(() => {
-    if (!menuFor) return;
-    const onDown = (e: MouseEvent) => {
-      const row = (e.target as Element | null)?.closest?.('.wz-open-pages-row');
-      if (!row || row.getAttribute('data-page-id') !== menuFor) setMenuFor(null);
-    };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuFor(null); };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
-  }, [menuFor]);
-
-  // Every live page that is not a board — journal, loose, binder and shelf
-  // alike. Boards are opened from their own doors and can never be placed on
-  // a board, so neither act applies to them here.
-  const pages = getJournalEntries().filter(p => p.pageType !== 'board');
-
-  // Where a page lives, in the words the rest of the app already uses for it.
-  // The population now mixes Journal and Loose pages, so the old single
-  // 'Loose' fallback would have mislabelled every Journal page and made the
-  // Drawer sort interleave two different homes.
-  const homeOf = (p: JournalEntry): string => {
-    const proj = p.projectId ? getProjects().find(x => x.id === p.projectId) : null;
-    if (proj) return proj.title || t('placesLoose');
-    // ITEM word-diet (Fable, review fix, Oct 14) — a loose page's own tag
-    // here used placesLoose ("Loose"), the Places panel's destination-picker
-    // word; pageHomeLoose ("Unfiled") is the actual place-line word this
-    // list should match, for the SAME state.
-    return inJournalView(p) ? t('drawerPlaceJournal') : t('pageHomeLoose');
-  };
-
-  // SORT FIRST, AND NEVER CAP THE POPULATION: every page must be reachable by
-  // every sort. The section shows three rows and SCROLLS through the rest (see
-  // index.css) — a viewport, not a cap. A population of three would re-create
-  // S0's fault 4 in miniature, and "sortable" means nothing over three items.
-  //
-  // RECENCY IS BY EDIT, NOT BY BIRTH — "the last pages created OR EDITED". The
-  // list this replaced ordered by createdAt alone, so a page written yesterday
-  // and revised this morning sat below one created after it and never touched
-  // again, which is the opposite of what a writer reaching for recent work
-  // means.
-  const recency = (e: JournalEntry) => e.updatedAt || e.createdAt;
-  // STARRED PAGES SORT FIRST, under every sort. A star is the writer saying
-  // "this one", and an ordering that ignores it would make them say it twice.
-  const starRank = (e: JournalEntry) => (e.starred ? 0 : 1);
-  const sorted = [...pages].sort((a, b) => {
-    const s = starRank(a) - starRank(b);
-    if (s !== 0) return s;
-    if (sort === 'az') return itemTitle(a).localeCompare(itemTitle(b));
-    if (sort === 'drawer') return homeOf(a).localeCompare(homeOf(b)) || itemTitle(a).localeCompare(itemTitle(b));
-    return recency(b).localeCompare(recency(a));
-  });
-
-  // THE PRIMARY ACT. flushNow first, as every other door that leaves a surface
-  // does, so the writer's last keystrokes land before the page underfoot
-  // changes.
-  const open = (p: JournalEntry) => { flushNow(); navigate(routeForEntry(p)); };
-
-  // THE SECONDARY ACT, board-side only. PW1 S3's board-side law, kept exactly:
-  // the writer is on the board putting a page ON it, so it lands on the wall
-  // rather than becoming an invisible membership they would display twice.
-  const place = (pageId: string) => {
-    if (!boardId) return;
-    pinPageToBoard(pageId, boardId, { display: true });
-    setMenuFor(null);
-    force();
-  };
-
-  return (
-    <div className="wz-cascade-panel-body wz-place-page wz-open-pages">
-      <div className="wz-cascade-panel-title">{t('openPagesHeading')}</div>
-      <div className="wz-page-setup-seg" role="radiogroup" aria-label={t('openPagesSort')}>
-        {(['date', 'drawer', 'az'] as const).map(s => (
-          <button key={s} type="button" role="radio" aria-checked={sort === s}
-            className="wz-page-setup-chip" onClick={() => setSort(s)}>
-            {t(s === 'date' ? 'placeSortDate' : s === 'drawer' ? 'placeSortDrawer' : 'placeSortAZ')}
-          </button>
-        ))}
-      </div>
-      <div className="wz-place-page-list" role="list">
-        {sorted.length === 0 && <p className="wz-page-setup-note">{t('placePageEmpty')}</p>}
-        {sorted.map(p => (
-          <div key={p.id} className="wz-open-pages-row" role="listitem" data-page-id={p.id}>
-            <button type="button" className="wz-place-page-row wz-open-pages-open"
-              aria-current={p.id === currentId ? 'page' : undefined}
-              onClick={() => open(p)}>
-              <span className="wz-place-page-title">{itemTitle(p)}</span>
-              <span className="wz-place-page-home">{homeOf(p)}</span>
-            </button>
-            {/* ITEM word-diet (Nick, Oct 13): REMOVE — the only visible
-                trace of this label was the hover tooltip (`title`); the
-                accessible name (`aria-label`) stays, full, per the "screen-
-                reader text may stay" carve-out. */}
-            {boardId && (
-              <button type="button" className="wz-open-pages-more"
-                aria-label={t('openPagesMore')}
-                aria-haspopup="menu" aria-expanded={menuFor === p.id}
-                onClick={() => setMenuFor(menuFor === p.id ? null : p.id)}>{'\u22ef'}</button>
-            )}
-            {boardId && menuFor === p.id && (
-              <div className="wz-open-pages-menu" role="menu">
-                <button type="button" role="menuitem" className="wz-open-pages-place"
-                  onClick={() => place(p.id)}>{t('openPagesPlace')}</button>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+// ITEM 170 (P0), kept as history: the list that used to stand here (Open Pages) was the way to OPEN a page - a click on a row GOES, placing it on a
+// board is the row's secondary act, one list of every live page that is not a board, uncapped. BIG PROJECTS 1a replaced the list with
+// SectionsPopout, which keeps all three properties (the row opens the page; "Place on this board" stays behind the row's more-menu on a board;
+// nothing is capped) and scopes it to where the writer is.
 
 // ITEM 83 M3 (R6) — PAGE SETUP.
 //
@@ -769,75 +596,18 @@ function PlanPanel({ subject, project, navigate, openSurvey, travelFromCascade }
     </div>
   ) : null;
 
-  if (!project) {
-    const seedTitle = firstLine(subject.entry.text).slice(0, 60) || 'Untitled';
-    const promote = () => createQuickSprintProject(subject.entry.text, seedTitle);
-    // PB1 (item 71) — an UNTITLED board is the duplicate-empty-board source named
-    // in the door census: no row until it has a box. (A titled board is born at
-    // once — a name is content, ruling 3 — and does not come through here.)
-    const createBoard = () => { const proj = promote(); navigate(unbornHref({ kind: 'board', binderId: proj.id })); };
-    const plotStory = () => { const proj = promote(); navigate(`/project/${proj.id}/wizard`); };
-    return (
-      <div className="wz-cascade-panel-body">
-        {/* PW1, Fable's ruling 2 — a LOOSE page's real connections come FIRST,
-            above the creation doors. A page with no drawer can still own a plan
-            board (minted projectId: null) and can still be pinned; answering
-            "which boards is this page on" with "make a project first" was the
-            panel telling a writer to build what they had already built. */}
-        {zone}
-        {/* PW1 ERRATUM 2 (Nick's live sitting, 2026-09-09) — THE LEAD SENTENCE
-            IS FALSE BENEATH A LISTED PLAN BOARD. "File this page to a drawer
-            first to plan around it" is a true and useful thing to say to a page
-            with nowhere to plan; said directly under a plan board the writer is
-            already looking at, it contradicts the row above it and tells them
-            to build what they have built. The sentence is not reworded — it is
-            simply ABSENT in the state where it would lie, which is the same
-            law the zone itself obeys (PW9: absent, never empty). Nothing
-            announces a prerequisite the writer has already met. */}
-        {!zone && <div className="wz-cascade-empty" style={{ padding: 0 }}>{t('cascadePlanNoProject')}</div>}
-        <button type="button" className="wz-cascade-action" onClick={createBoard}>{t('cascadePlanCreateBoard')}</button>
-        <button type="button" className="wz-cascade-action" onClick={plotStory}>{t('cascadePlanPlotStory')}</button>
-        {/* ITEM word-diet (Nick, Oct 13): REMOVE — this pointer's own line
-            is gone whole; cascadePlanJustAPage's lexicon entry is
-            untouched, simply never rendered here now. */}
-      </div>
-    );
-  }
-
-  // PB1 (item 71) — no row until the board has a box (see the door census).
-  const createBoard = () => navigate(unbornHref({ kind: 'board', binderId: project.id }));
-  const plotStory = () => navigate(`/project/${project.id}/wizard`);
-
-  // PW1 S1/PW3 — THE PANEL *IS* THE LIST, and "Open…" retires with the zone
-  // that replaces it. That footer link was the arc's most expensive press: it
-  // bought nothing, and it was the reason the geography read as absent. The
-  // creation doors move BELOW the connections under a rule — travel is the
-  // common act, creation the rare one, and the panel's order now says so.
+  // BIG PROJECTS step 2 - THE BOARDS TAB. The panel is the Pages pop-out's mirror (components/SectionsPopout.tsx, boards mode): where you are, New Board, the place's
+  // boards in the writer's own order, New set, and PRESETS (the deck library). The creation doors this panel carried - Create a Board, Plot a Story - and the "file this
+  // page to a drawer first" lead are GONE: a board is filed into wherever the writer is (nothing is homeless), and the presets are the decks.
   //
-  // PARKED, quoted verbatim so the retirement is legible (A4). Its own set was
-  // the wrong subject; both it and the "No boards yet." empty state go:
-  //   const boards = getBinderPages(project.id).filter((p) => p.pageType === 'board');
-  //   <div className="wz-cascade-panel-footer">
-  //     <button type="button" className="wz-cascade-link" onClick={() => openSurvey({ category: 'plan', projectId: project.id })}>
-  //       {t('cascadePlanOpen')}
-  //     </button>
-  //     {boards.length === 0 && <div className="wz-cascade-empty">{t('cascadePlanEmpty')}</div>}
-  //   </div>
+  // THE ZONE STAYS, AS A BRIDGE: "Boards grafted" (the boards THIS page is connected to, PW1) keeps its rows and its stickiness here until step 3 gives it its home in
+  // Grafts ("Connected to [page]"), where it becomes the Boards group. It is absent when there is nothing to show, as it always was.
   //
-  // PW1 S1, Fable's ruling 3 — THE `Open the drawer →` FOOT ROW IS ABSENT IN
-  // THIS SLICE, and this is where it would sit. Nick's Q17 word was that the
-  // row is COMPOSED, and it stands; what it opens does not exist yet. S0
-  // measured it: there is no drawer-board surface anywhere in src — no
-  // drawerBoardId, no drawer-board kind; `/drawers` is the drawers LIST page,
-  // not a drawer's own board. G3 binds: absent, never a door onto nothing. The
-  // row arrives in PW2 together with the surface it opens. Sequenced, not
-  // dropped.
+  // PARKED so the retirement is legible (A4) - this panel used to end with two action buttons (create a board, plot a story) and, when nothing was connected, the lead
+  // sentence telling a page with no drawer to file itself first. The lexicon keeps those terms; nothing renders them now.
+  void project;
   return (
-    <div className="wz-cascade-panel-body">
-      {zone}
-      <button type="button" className="wz-cascade-action" onClick={createBoard}>{t('cascadePlanCreateBoard')}</button>
-      <button type="button" className="wz-cascade-action" onClick={plotStory}>{t('cascadePlanPlotStory')}</button>
-    </div>
+    <SectionsPopout view="boards" currentId={subject.entry.id} navigate={navigate} journalLabel={t('drawerPlaceJournal')} zone={zone} />
   );
 }
 
@@ -872,153 +642,11 @@ function BoardRowMenu({ id }: { id: string }) {
 // still have their own strip categories) — only the Shelf ALSO earns a
 // tile here.
 // ---------------------------------------------------------------------------
-function drawersItemTitle(e: JournalEntry): string {
-  const hasInk = (e.strokes?.length ?? 0) > 0;
-  if (!e.text.trim()) return hasInk ? 'A sketch' : 'Untitled';
-  return firstLine(e.text).slice(0, 60);
-}
-
-interface DrawerTile { kind: 'board' | 'doc'; id: string; title: string; updatedAt: string; projectId?: string; entry?: JournalEntry }
-
-// A quiet, abstract kind mark — square vs. round, non-literal (the brief's
-// own words: "abstract, non-literal"). aria-label carries the real word for
-// assistive tech; nothing here is a count, a badge, or a timestamp.
-function TileKindMark({ kind }: { kind: 'board' | 'doc' }) {
-  const { t } = useDeskLexicon();
-  return (
-    <span className="wz-drawers-tile-kind" data-kind={kind} aria-label={t(kind === 'board' ? 'drawersKindBoard' : 'drawersKindDoc')} />
-  );
-}
-
-function DrawersPanel({ navigate }: CascadeContext) {
-  const { t } = useDeskLexicon();
-  const projects = getProjects();
-  const projectTitle = (id?: string) => projects.find((p) => p.id === id)?.title || 'Untitled';
-
-  const boards: DrawerTile[] = getAllUserBoards().map((b) => ({ kind: 'board', id: b.id, title: drawersItemTitle(b), updatedAt: b.updatedAt, projectId: b.projectId ?? undefined }));
-  // T3's own derivation, reused verbatim — "one definition, two consumers".
-  const docs: DrawerTile[] = getShelfEntries().map((e) => ({ kind: 'doc', id: e.id, title: drawersItemTitle(e), updatedAt: e.updatedAt, entry: e }));
-  const all = [...boards, ...docs];
-
-  // Last-opened anchors first (Nick's word) — approximated by `updatedAt`
-  // (last touched), the SAME recency proxy this file's own `byRecent`
-  // already uses elsewhere; this app has no separate "opened-at" stamp to
-  // read, and adding one would be schema this ticket doesn't get to spend.
-  const anchor = all.length > 0 ? all.slice().sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0] : null;
-  const rest = anchor ? all.filter((tItem) => !(tItem.kind === anchor.kind && tItem.id === anchor.id)) : all;
-
-  const restBoards = rest.filter((tItem) => tItem.kind === 'board');
-  const restDocs = rest.filter((tItem) => tItem.kind === 'doc');
-  const clusterMap = new Map<string, DrawerTile[]>();
-  for (const b of restBoards) {
-    const key = b.projectId ?? '';
-    if (!clusterMap.has(key)) clusterMap.set(key, []);
-    clusterMap.get(key)!.push(b);
-  }
-  // Ordering beneath the anchor is deterministic: project name, then board title.
-  const clusters = [...clusterMap.entries()]
-    .map(([projectId, items]) => ({ projectId, title: projectTitle(projectId), items: items.slice().sort((a, b) => a.title.localeCompare(b.title)) }))
-    .sort((a, b) => a.title.localeCompare(b.title));
-  const sortedDocs = restDocs.slice().sort((a, b) => a.title.localeCompare(b.title));
-
-  const travel = (tItem: DrawerTile) => {
-    if (tItem.kind === 'board') { navigate(`/page/${tItem.id}`); return; }
-    if (tItem.entry) navigate(routeForEntry(tItem.entry));
-  };
-  // BOARD CONTEXT MENU: a board's tile in the Drawers panel takes the same right-click as a board's empty canvas - "Delete board" -> the one dialog -> the Trash (and, if that board is the one open,
-  // away from it, the way a Page's own delete leaves).
-  const boardMenu = (e: { clientX: number; clientY: number; preventDefault: () => void }, tItem: DrawerTile) => {
-    if (tItem.kind !== 'board') return;
-    e.preventDefault();
-    openContextMenu(e.clientX, e.clientY, [{ label: t('ctxDeleteBoard'), onSelect: () => requestDelete(() => {
-      softDeleteEntry(tItem.id);
-      if (window.location.hash.endsWith(`/page/${tItem.id}`)) navigate('/', { replace: true });
-    }) }]);
-  };
-
-  return (
-    <div className="wz-cascade-panel-body">
-      <div className="wz-drawers-tiles">
-        <button type="button" className="wz-drawers-tile" onClick={() => openShelfBoard(navigate)}>
-          <TileKindMark kind="board" />
-          <span className="wz-drawers-tile-title">{t('drawerPlaceShelf')}</span>
-        </button>
-        {anchor && (
-          <button type="button" className="wz-drawers-tile wz-drawers-tile-anchor" data-link-entry={anchor.id} onClick={() => travel(anchor)} onContextMenu={(e) => boardMenu(e, anchor)}>
-            <TileKindMark kind={anchor.kind} />
-            <span className="wz-drawers-tile-title">{anchor.title}</span>
-          </button>
-        )}
-        {/* FX9 S1/S2 — each project cluster gains the fold. Keyed by
-            `drawersProject:<id>` — the project's OWN id, never its title
-            (S2's own explicit ruling: a rename must not forget the fold).
-            `c.projectId` is already the stable identity DrawerTile's own
-            clusterMap grouped by, above — this reuses it verbatim rather
-            than deriving a second one from `c.title`. */}
-        {clusters.map((c) => (
-          <FoldSection
-            key={c.projectId}
-            sectionKey={`drawersProject:${c.projectId}`}
-            title={c.title}
-            itemCount={c.items.length}
-            headerVariant="drawers"
-            titleClassName="wz-drawers-cluster-title"
-          >
-            <div className="wz-drawers-cluster">
-              {c.items.map((b) => (
-                <button key={b.id} type="button" className="wz-drawers-tile" data-link-entry={b.id} onClick={() => travel(b)} onContextMenu={(e) => boardMenu(e, b)}>
-                  <TileKindMark kind="board" />
-                  <span className="wz-drawers-tile-title">{b.title}</span>
-                </button>
-              ))}
-            </div>
-          </FoldSection>
-        ))}
-        {/* FX9 S1/S2 — the Loose docs group gains the fold too. A single,
-            content-independent fixed key ('drawersLoose') — there is only
-            ever one such group, no per-entity identity to ride. */}
-        {sortedDocs.length > 0 && (
-          <FoldSection
-            sectionKey="drawersLoose"
-            title={t('drawersLooseGroup')}
-            itemCount={sortedDocs.length}
-            headerVariant="drawers"
-            titleClassName="wz-drawers-cluster-title"
-          >
-            <div className="wz-drawers-cluster">
-              {sortedDocs.map((d) => (
-                <button key={d.id} type="button" className="wz-drawers-tile" data-link-entry={d.id} onClick={() => travel(d)}>
-                  <TileKindMark kind="doc" />
-                  <span className="wz-drawers-tile-title">{d.title}</span>
-                </button>
-              ))}
-            </div>
-          </FoldSection>
-        )}
-      </div>
-      {/* Genuine miniature board/doc previews are a named future refinement
-          (A17's own text), NOT built here — every tile above is title +
-          the abstract kind mark only. */}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Shelf (B2 S1/S3) — joins Trash's own minimal shape: one plain button,
-// nothing else — no row list, no preview, no count (T3's own membership
-// list lives on the Shelf BOARD itself, reached by this one door; a
-// SEPARATE short-list preview here would be a second, competing surface
-// for the same truth). The old getShelfPages()-based list (the legacy
-// `shelved` flag's own UI) retires whole — S3's mandate — replaced by the
-// derived Shelf Board this same button opens.
-// ---------------------------------------------------------------------------
-function ShelfPanel({ navigate }: CascadeContext) {
-  const { t } = useDeskLexicon();
-  return (
-    <div className="wz-cascade-panel-body">
-      <button type="button" className="wz-cascade-action" onClick={() => openShelfBoard(navigate)}>{t('cascadeShelfOpen')}</button>
-    </div>
-  );
+// BIG PROJECTS 1a - the `drawers` category is the PLACE SWITCHER now (components/PlaceSwitcher.tsx): Drawers, Journals, + New Drawer. The tiles
+// that used to stand here (every board of every Drawer, the Shelf door) retire with it; boards are listed by the Boards pop-out (step 2), and
+// every row carries data-link-entry so the connector can still land on it.
+function DrawersPanel({ closeCascade }: CascadeContext) {
+  return <PlaceSwitcher onChosen={closeCascade} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -1108,7 +736,6 @@ export function renderCategoryPanel(category: CategoryId, ctx: CascadeContext): 
     case 'page': return <PagePanel subject={ctx.subject} navigate={ctx.navigate} />;
     case 'plan': return <PlanPanel {...ctx} />;
     case 'drawers': return <DrawersPanel {...ctx} />;
-    case 'shelf': return <ShelfPanel {...ctx} />;
     case 'trash': return <TrashPanel navigate={ctx.navigate} />;
     case 'settings': return <CascadeSettingsPanel navigate={ctx.navigate} />;
     case 'theme': return <CascadeThemePanel />;

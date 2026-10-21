@@ -123,7 +123,7 @@ await withHarness(async (app) => {
   ok('S1: a user board (framed) carries the PAGE → door and NO "Done" button', uboard.hasDoor === true && uboard.hasDone === false, JSON.stringify(uboard));
 
   // Every SYSTEM board (Shelf, Trash, Journal) framed: the door is present, no Done.
-  for (const [route, name] of [['/shelf', 'Shelf'], ['/trash', 'Trash'], ['/journal', 'Journal']]) {
+  for (const [route, name] of [['/shelf-board', 'Shelf'], ['/trash', 'Trash'], ['/journal', 'Journal']]) {
     await freshDesk(app, LAPTOP_W);
     const ex = await systemBoardExit(app, route);
     ok(`S1 (Fable's ruling): the ${name} Board (framed) mounts the SAME PAGE → door and NO "Done"`,
@@ -138,7 +138,7 @@ await withHarness(async (app) => {
   // The Shelf Board's door is present across ALL THREE framed widths + legacy.
   for (const [w, tag] of [[FLOOR_W, 'floor 1100'], [WIDE_W, 'wide 2200'], [LEGACY_W, 'legacy 1000']]) {
     await freshDesk(app, w);
-    const ex = await systemBoardExit(app, '/shelf');
+    const ex = await systemBoardExit(app, '/shelf-board');
     ok(`S1 @${tag}px: the Shelf Board carries the PAGE → door and NO "Done" (framed+legacy consistent)`,
       ex.hasDoor === true && ex.hasDone === false, JSON.stringify(ex));
   }
@@ -146,7 +146,7 @@ await withHarness(async (app) => {
   // Trusted pointer — the SYSTEM-board (cold-load) path: reached directly, the
   // door's unpaired branch lands backTo '/' (Arrival, itself a page — HB1).
   await freshDesk(app, LAPTOP_W);
-  await app.evalJs("location.hash = '#/shelf'");
+  await app.evalJs("location.hash = '#/shelf-board'");
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf Board (trusted exit)' });
   await sleep(220);
   // ITEM 91 (2026-08-03) — Nick's S11 verdict overrules the exit: an unpaired
@@ -338,7 +338,7 @@ await withHarness(async (app) => {
 
   // (c) the surfaces CD4 already cleared stay clear.
   const sweepSurfaces = [
-    ['a system board (Shelf)', async () => { await freshDesk(app, LAPTOP_W); await app.evalJs("location.hash = '#/shelf'"); await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf (sweep)' }); }],
+    ['a system board (Shelf)', async () => { await freshDesk(app, LAPTOP_W); await app.evalJs("location.hash = '#/shelf-board'"); await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf (sweep)' }); }],
     ['a prose project page', async () => { await freshProject(app, 'book', LAPTOP_W); }],
     ['a script project page', async () => { await freshProject(app, 'screenplay', LAPTOP_W); }],
   ];
@@ -366,7 +366,7 @@ if (process.env.HARNESS_PARKED === '1') {
   // what it measured; the behaviour it measured has been overruled.
   await withHarness(async (app) => {
     await freshDesk(app, LAPTOP_W);
-    await app.evalJs("location.hash = '#/shelf'");
+    await app.evalJs("location.hash = '#/shelf-board'");
     await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf Board (item 91 park)' });
     await sleep(220);
     await trustedClick(app, '.board-door[data-board-door="page"]');
