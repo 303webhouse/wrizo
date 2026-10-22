@@ -140,6 +140,12 @@ next. Whatever runs here, on whatever tool:
   file (`~/.wrizo/box-turn.json`, `apps/desktop/scripts/box-grant.mjs`) is the
   only announcement; a browserless check (`tsc`, `seed-guard.mjs`) needs no
   grant.
+- **Chat 1 owns the grant file; a lane may take a FREE box only through the
+  one-command guard** (`node apps/desktop/scripts/box-take.mjs take <lane>
+  <token>` — it writes the grant only if none exists and says who holds it
+  otherwise; `release <token>` removes it only if the token is yours). Never
+  overwrite or clear a grant that is not yours, and name the turn (start and
+  end, UTC) in your report. (Ratified 2026-10-22, Fable.)
 - **The ledger (`docs/open-threads.md`) is chat 1's.** Report your work to it
   through chat 1, not by editing it yourself.
 - **Fable reviews; Nick's ship word comes to chat 1.** Build lanes don't
