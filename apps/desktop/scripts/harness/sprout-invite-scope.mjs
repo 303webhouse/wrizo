@@ -131,8 +131,14 @@ await withHarness(async (app) => {
     ok('E4 [successor]: clicking Sprout shows the live prompt immediately and persists "on" (at its currently-effective key)',
       afterClick.invitePrompt === true && afterClick.prefAtKey === 'on', JSON.stringify(afterClick));
     if (process.env.HARNESS_PARKED === '1') {
-      pok('PARKED (was "E4: clicking Sprout... persists on" via the bare key) - the write ALWAYS lands correctly (prefAtKey is "on"); the bare key is either ALSO "on" (signed out) or still its PRE-click "off" (signed in - optIn() correctly wrote the scoped key, never touching the bare one)',
-        afterClick.invitePrompt === true && afterClick.prefAtKey === 'on' && (afterClick.pref === 'on' || afterClick.pref === 'off'), JSON.stringify(afterClick));
+      // Fable's review (ledger 124): "accept null as 'nothing to migrate'" - a signed-in
+      // session can have the bare key already consumed by migrateToScopedKey (readPref()'s own
+      // subscription-triggered re-run, SOMETIME before this read) BEFORE this click even fires,
+      // same reasoning as pok #1 above. Still narrow: 'never'/anything else stays rejected, so a
+      // genuinely stuck, unmigrated-but-present value cannot slip through (proven by a mutant,
+      // not just asserted - see sprout-invite-scope-logic.mjs's own S9).
+      pok('PARKED (was "E4: clicking Sprout... persists on" via the bare key) - the write ALWAYS lands correctly (prefAtKey is "on"); the bare key is either ALSO "on" (signed out), still its PRE-click "off" (signed in, not yet migrated), or already consumed to null (signed in, migrated already)',
+        afterClick.invitePrompt === true && afterClick.prefAtKey === 'on' && (afterClick.pref === 'on' || afterClick.pref === 'off' || afterClick.pref == null), JSON.stringify(afterClick));
     }
 
     await openWithPref(app, 'sprout-click-2', undefined, { clear: false }); // a SECOND blank page, SAME device, no wipe — pref left exactly as E4's click set it

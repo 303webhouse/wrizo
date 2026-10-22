@@ -221,6 +221,23 @@ try {
       replace: 'return PREF_KEY_BASE;',
       expectRed: ['S3'],
     },
+    // Fable's review (ledger 124): sprout-invite-scope.mjs's own PARKED checks now accept a
+    // null bare key as "nothing to migrate" (a signed-in session can legitimately find it
+    // already consumed by an earlier readPref() call). This mutant proves that loosening did
+    // NOT also make the mechanism blind to a bare value that genuinely never migrates at all -
+    // seed the bare key, break the migration completely (not just its own cleanup step, which
+    // the first mutant above already covers), confirm red: with the move disabled outright, the
+    // FIRST account to sign in never inherits the bare key's value at all (S2 fails), which is
+    // what the PARKED check's own leniency relies on NEVER happening undetected - the successor
+    // (reading the real resolved value, not the bare key) is what actually catches this, and
+    // this mutant is the proof that it does.
+    {
+      name: 'migrateToScopedKey is a complete no-op (seed the bare key, break the migration entirely)',
+      fn: 'migrateToScopedKey',
+      find: 'bare != null && localStorage.getItem(scopedKey) == null',
+      replace: 'false',
+      expectRed: ['S2'],
+    },
   ];
 
   for (const m of mutantRuns) {
@@ -234,6 +251,13 @@ try {
     try {
       const mutMod = await import(pathToFileURL(mutPath).href + `?t=${Date.now()}-${Math.random()}`);
       const { invite: mInvite, currentUser: mCurrentUser } = mutMod;
+
+      // S2's own scenario, against the mutant - "seed the bare key, break the migration -> red"
+      globalThis.localStorage = memoryStorage();
+      localStorage.setItem(mInvite.MIGRATED_KEY, '1');
+      localStorage.setItem(mInvite.PREF_KEY_BASE, 'on');
+      mCurrentUser.setCurrentUser({ id: 'user-A', email: 'a@example.com' });
+      if (mInvite.readPref() !== 'on') red.push('S2'); // the first account must still inherit the bare key's value
 
       // S3's own scenario, against the mutant
       globalThis.localStorage = memoryStorage();
