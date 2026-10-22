@@ -159,7 +159,7 @@ function claims(s = { sliver: sliverSrc, stage: stageSrc, lex: lexSrc, pe: peSrc
     // Kept VERBATIM below and no longer run; the live successor follows.
     //
     // onBrassNoFill: !!pressed && /color:var\(--brass\)/.test(pressed) && /background:none/.test(pressed) && !/border/.test(pressed) && !/color-mix|rgba?\(|#[0-9a-f]{3}/i.test(pressed),
-    onBrassNoFill: !!pressed && /color:var\(--brass\)/.test(pressed) && /background:none/.test(pressed) && !/border/.test(pressed) && !/color-mix|rgba?\(|#[0-9a-f]{3}/i.test(pressed),
+    onBrassNoFill: !!pressed && /color:var\(--choice\)/.test(pressed) && /background:none/.test(pressed) && !/border/.test(pressed) && !/color-mix|rgba?\(|#[0-9a-f]{3}/i.test(pressed),
     offQuiet: !!btn && /color:var\(--text-low\)/.test(btn) && /background:none/.test(btn),
     focusRing: /^\.wz-sliver-mode-btn:focus-visible\{[^}]*outline:2px solid var\(--brass\)/m.test(s.css),
     greyRows: !!grey && /opacity:\.4/.test(grey), greyFormat: !!fgrey && /opacity:\.4/.test(fgrey),
