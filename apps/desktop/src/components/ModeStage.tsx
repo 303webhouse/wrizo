@@ -17,6 +17,8 @@ import { useThemePrefs, setThemePrefs, type PageTone } from '../store/themePrefs
 import { useAmbianceDial, setAmbianceDial } from '../store/ambianceDial';
 import { FirstRunVeil } from './FirstRunGate';
 import { usePageDress, dressVars } from '../store/pageDress';
+import { setCaretOffset } from '../store/caretOffset';
+import { editorPlainText } from '../store/lineRows';
 
 const ASSIST_INTRO_KEY = 'wrizo-assist-introduced';      // first pop-out fired (once)
 const ASSIST_COLLAPSED_KEY = 'wrizo-assist-collapsed';   // persisted panel state
@@ -391,6 +393,20 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   const elapsedClock = `${Math.floor(es / 60)}:${String(es % 60).padStart(2, '0')}`;
 
   const focusEditor = () => (scrollRef.current?.querySelector('.forward-only-editor') as HTMLElement | null)?.focus();
+  // BLANK-PAGE CLICK (Fable, Oct 22; ledger 134 - "just let me write"): a press on the PAPER (the scroller, outside the text) puts the caret at the
+  // END of the text. A bare focus() left a Draft page's caret at the START, so the next letter landed before the first word (Free Write was spared
+  // only by its forward lock). A press ON the text is the browser's own (never moved); a press on a control keeps exactly the old plain focus.
+  // The end is the editor's own (editorPlainText: the rows shadow, the EOF guard removed) and is set by its own setCaretOffset on the NEXT frame -
+  // the editor's own placement on focus lands after a synchronous set and would overwrite it (PageEditor's onReachName, measured, same law).
+  const onPaperPress = (e: React.MouseEvent<HTMLDivElement>) => {
+    const ed = scrollRef.current?.querySelector('.forward-only-editor') as HTMLElement | null;
+    if (!ed) return;
+    const target = e.target as HTMLElement | null;
+    if (target && ed.contains(target)) return;
+    if (target?.closest?.('button, a, input, textarea, select, [role="button"], [role="option"]')) { focusEditor(); return; }
+    ed.focus();
+    requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, editorPlainText(ed).length); });
+  };
   const exec = (cmd: string) => { focusEditor(); try { document.execCommand(cmd, false); } catch { /* execCommand unsupported */ } };
   const choosePen = (ink: string) => { setPen(ink); focusEditor(); };
 
@@ -571,7 +587,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
               ref={scrollRef}
               className="mode-scroll"
               data-typewriter={typewriterOn ? 'true' : 'false'}
-              onClick={focusEditor}
+              onClick={onPaperPress}
             >
               {children({ noteWrite, penColor: rail.tools === 'pen' ? effectivePenInk(penColorProp ?? pen, penTheme, penPageTone) : undefined })}
             </div>
