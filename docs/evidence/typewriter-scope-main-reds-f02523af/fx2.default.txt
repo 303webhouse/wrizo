@@ -1,0 +1,176 @@
+
+ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one)
+[
+  {
+    "name": "S1 @ 1280px: the grip rect and the text-column rect never intersect, sliver CLOSED",
+    "pass": true,
+    "detail": "{\"gripClosed\":{\"left\":316.3125,\"top\":123,\"width\":16,\"height\":34,\"right\":332.3125,\"bottom\":157},\"paperClosed\":{\"left\":332.3125,\"top\":107,\"width\":615.359375,\"height\":733,\"right\":947.671875,\"bottom\":840}}"
+  },
+  {
+    "name": "S1 @ 1280px: the grip persists VISIBLE while the sliver is closed (persistent chrome, never dissolves on its own)",
+    "pass": true,
+    "detail": "{\"opacity\":\"1\",\"display\":\"flex\",\"visibility\":\"visible\"}"
+  },
+  {
+    "name": "S1 @ 1280px: the grip rect and the text-column rect never intersect, sliver OPEN",
+    "pass": true,
+    "detail": "{\"gripOpen\":{\"left\":316.3125,\"top\":123,\"width\":16,\"height\":34,\"right\":332.3125,\"bottom\":157},\"paperOpen\":{\"left\":332.3125,\"top\":107,\"width\":615.359375,\"height\":733,\"right\":947.671875,\"bottom\":840}}"
+  },
+  {
+    "name": "S1 @ 1280px: the grip persists VISIBLE while the sliver is open too",
+    "pass": true,
+    "detail": "{\"opacity\":\"1\",\"display\":\"flex\",\"visibility\":\"visible\"}"
+  },
+  {
+    "name": "S1 @ 1280px [Phase 1 successor]: the OPEN drawer is opaque (alpha=1), never see-through onto the paper - read on its sliding layer, where the look lives (the panel around it is the clip and is transparent by design)",
+    "pass": true,
+    "detail": "{\"backgroundColor\":\"rgb(31, 26, 22)\",\"alpha\":1,\"panelBackground\":\"rgba(0, 0, 0, 0)\"}"
+  },
+  {
+    "name": "S1 @ 1280px: the paper rect is byte-identical open vs. closed (extends cd1.mjs's own law to this width)",
+    "pass": true,
+    "detail": "{\"paperClosed\":{\"left\":332.3125,\"top\":107,\"width\":615.359375,\"height\":733,\"right\":947.671875,\"bottom\":840},\"paperOpen\":{\"left\":332.3125,\"top\":107,\"width\":615.359375,\"height\":733,\"right\":947.671875,\"bottom\":840}}"
+  },
+  {
+    "name": "S1 @ 2200px: the grip rect and the text-column rect never intersect, sliver CLOSED",
+    "pass": true,
+    "detail": "{\"gripClosed\":{\"left\":714.78125,\"top\":123,\"width\":16,\"height\":34,\"right\":730.78125,\"bottom\":157},\"paperClosed\":{\"left\":730.78125,\"top\":107,\"width\":738.421875,\"height\":733,\"right\":1469.203125,\"bottom\":840}}"
+  },
+  {
+    "name": "S1 @ 2200px: the grip persists VISIBLE while the sliver is closed (persistent chrome, never dissolves on its own)",
+    "pass": true,
+    "detail": "{\"opacity\":\"1\",\"display\":\"flex\",\"visibility\":\"visible\"}"
+  },
+  {
+    "name": "S1 @ 2200px: the grip rect and the text-column rect never intersect, sliver OPEN",
+    "pass": true,
+    "detail": "{\"gripOpen\":{\"left\":714.78125,\"top\":123,\"width\":16,\"height\":34,\"right\":730.78125,\"bottom\":157},\"paperOpen\":{\"left\":730.78125,\"top\":107,\"width\":738.421875,\"height\":733,\"right\":1469.203125,\"bottom\":840}}"
+  },
+  {
+    "name": "S1 @ 2200px: the grip persists VISIBLE while the sliver is open too",
+    "pass": true,
+    "detail": "{\"opacity\":\"1\",\"display\":\"flex\",\"visibility\":\"visible\"}"
+  },
+  {
+    "name": "S1 @ 2200px [Phase 1 successor]: the OPEN drawer is opaque (alpha=1), never see-through onto the paper - read on its sliding layer, where the look lives (the panel around it is the clip and is transparent by design)",
+    "pass": true,
+    "detail": "{\"backgroundColor\":\"rgb(31, 26, 22)\",\"alpha\":1,\"panelBackground\":\"rgba(0, 0, 0, 0)\"}"
+  },
+  {
+    "name": "S1 @ 2200px: the paper rect is byte-identical open vs. closed (extends cd1.mjs's own law to this width)",
+    "pass": true,
+    "detail": "{\"paperClosed\":{\"left\":730.78125,\"top\":107,\"width\":738.421875,\"height\":733,\"right\":1469.203125,\"bottom\":840},\"paperOpen\":{\"left\":730.78125,\"top\":107,\"width\":738.421875,\"height\":733,\"right\":1469.203125,\"bottom\":840}}"
+  },
+  {
+    "name": "S1 @ 1100px (DESKFRAME_MIN_WIDTH floor, independent-review addition): the grip rect and the TRUE text column (paper inset by its own live padding) never intersect, sliver CLOSED",
+    "pass": true,
+    "detail": "{\"gripFloor\":{\"left\":256,\"top\":123,\"width\":16,\"height\":34,\"right\":272,\"bottom\":157},\"textColFloor\":{\"left\":280.3125,\"top\":107,\"width\":577.359375,\"height\":693,\"right\":857.671875,\"bottom\":800}}"
+  },
+  {
+    "name": "S1 @ 1100px (independent-review addition): the sliver anchor never overlaps the strip track — the actual mechanism S1's fix clamps, unexercised by the brief's own 1280px/2200px checkpoints",
+    "pass": true,
+    "detail": "{\"drawerFloor\":{\"left\":1,\"top\":103,\"width\":82,\"height\":796,\"right\":83,\"bottom\":899},\"anchorFloor\":{\"left\":112,\"top\":107,\"width\":160,\"height\":733,\"right\":272,\"bottom\":840}}"
+  },
+  {
+    "name": "S1 @ 1100px (independent-review addition): the strip stays clear with the sliver OPEN too (the opaque panel is the visible half of the original complaint)",
+    "pass": true,
+    "detail": "{\"drawerFloor\":{\"left\":1,\"top\":103,\"width\":82,\"height\":796,\"right\":83,\"bottom\":899},\"anchorFloorOpen\":{\"left\":112,\"top\":107,\"width\":160,\"height\":733,\"right\":272,\"bottom\":840}}"
+  },
+  {
+    "name": "S1 @ 1100px (independent-review addition): the true text-column disjointness law holds at the floor width with the sliver OPEN",
+    "pass": true,
+    "detail": "{\"gripFloorOpen\":{\"left\":256,\"top\":123,\"width\":16,\"height\":34,\"right\":272,\"bottom\":157},\"textColFloorOpen\":{\"left\":280.3125,\"top\":107,\"width\":577.359375,\"height\":693,\"right\":857.671875,\"bottom\":800}}"
+  },
+  {
+    "name": "S2: an untyped support page defaults to Draft on open (the fixture itself, sanity-checked)",
+    "pass": true,
+    "detail": "Draft"
+  },
+  {
+    "name": "S5 successor: a ~3-line page that holds text and has no saved value opens Draft with typewriter OFF (the 1-9-line seed is gone) - DOM (.mode-scroll[data-typewriter])",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "S5 successor: a ~3-line page opens Draft with typewriter OFF — the stored setting itself",
+    "pass": false,
+    "detail": "true"
+  },
+  {
+    "name": "S2: a ~15-line page also opens in Draft (the fixture itself, sanity-checked)",
+    "pass": true,
+    "detail": "Draft"
+  },
+  {
+    "name": "S2: a ~15-line page (at/above the 10-line threshold) opens Draft with typewriter OFF — DOM",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "S2: a ~15-line page opens Draft with typewriter OFF — the stored setting itself",
+    "pass": false,
+    "detail": "true"
+  },
+  {
+    "name": "S2: the sliver's typewriter toggle actually flips it ON by hand, overriding the ~15-line OFF seed",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S2: Draft -> Free Write -> Draft within the SAME mount does not re-run the seed — the explicit ON survives the round trip",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S2: ...and the stored setting itself reflects the same explicit ON, not a reverted OFF",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S5 successor (cross-page): page A (short, holds text, nothing saved) opens Draft with typewriter OFF - fixture sanity",
+    "pass": true,
+    "detail": "{\"pageAMode\":\"Draft\",\"pageASeed\":\"false\"}"
+  },
+  {
+    "name": "S5 successor (cross-page): explicit click on page A actually flips it ON by hand (it opened OFF)",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S2 (cross-page, independent-review addition): page B (a DIFFERENT page/mount, also short) is Draft, sanity",
+    "pass": true,
+    "detail": "Draft"
+  },
+  {
+    "name": "S5 successor (cross-page): page B keeps its OWN setting - it opens OFF (text, nothing saved); page A's explicit ON did not leak across the page/mount boundary",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "S5 successor (cross-page): ...and the stored setting itself is OFF for page B",
+    "pass": false,
+    "detail": "true"
+  },
+  {
+    "name": "S5 (cross-page): page A, turned ON by hand, is still ON when the writer returns to it - per-page memory, not a session flag",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S2: a fresh loose page opens in Free Write (the fixture itself, sanity-checked)",
+    "pass": true,
+    "detail": "Free Write"
+  },
+  {
+    "name": "S2: a fresh Free Write page opens with typewriter ON, unchanged from today — DOM",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S2: a fresh Free Write page opens with typewriter ON — the stored (default) setting itself",
+    "pass": true,
+    "detail": "true"
+  }
+]
+
+FX2 VERIFY: FAIL — 3/34 failed

@@ -1,0 +1,15 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=8 tree=c305ad2a bundle=index-DHPKHeBr.js/768174b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/rz2l-default
+[01/8] OK        exit=0   29s j6.mjs :: ROWS-SHADOW VERIFY: PASS (9 renders checked, shadow == DOM on every one) ;; J6 VERIFY: PASS (33 checks)
+[02/8] OK        exit=0   33s m2.mjs :: M2 VERIFY: PASS (26 checks)
+[03/8] OK        exit=0   27s m3.mjs :: M3 VERIFY: PASS (6 checks)
+[04/8] OK        exit=0   28s m4.mjs :: M4 VERIFY: PASS (35 checks)
+[05/8] OK        exit=0    1s rhizome-goal-core.mjs :: RHIZOME-GOAL-CORE VERIFY: PASS (33 checks)
+[06/8] OK        exit=0   20s rhizome-goal.mjs :: RHIZOME-GOAL-CORE VERIFY: PASS (33 checks) ;; RHIZOME-GOAL VERIFY: PASS (10 checks)
+[07/8] OK        exit=0    0s rhizome-growth.mjs :: RHIZOME-GROWTH VERIFY: PASS (51 checks)
+[08/8] OK        exit=0   34s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (14 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 8/8 of 8 returned a passing verdict
+SUITE RESULT: CLEAN — tree=c305ad2a bundle=index-DHPKHeBr.js/768174b NO-REBUILD

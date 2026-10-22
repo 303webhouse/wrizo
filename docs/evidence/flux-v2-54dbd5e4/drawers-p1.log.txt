@@ -1,0 +1,104 @@
+PASS (A1) the arrow: left open ›, left closed ‹; right open ‹, right closed › - the two hands are mirrors, and these are the literals each file wrote by hand before
+PASS (A2) a closed drawer is made inert, an open one is not, repeats change nothing, and a missing element is harmless
+PASS (B1) the dedicated tokens exist: --drawer-dur .2s, --drawer-ease ease, --drawer-dur-reduced .12s
+PASS (B2) the sliding layer slides on transform with the dedicated tokens, from behind the tab: left starts at +100%, right at -100%, open is `none`
+PASS (B3) the slide NEVER rides --fade-dur (the vanish engine writes that at runtime, up to minutes): no --fade-dur anywhere in the sliding layer's rules
+PASS (B4) the panels (clip + scroller) keep the FADE and the dissolve exactly as before: opacity on --fade-dur with the .2s fallback, closed 0 / open 1, pointer-events none / auto
+PASS (B5) the old 6px settle is gone from both panels, and neither panel still draws the box (background and border moved to the sliding layer)
+PASS (B6) REDUCED MOTION is fade-only and short: the panels keep an opacity transition on --drawer-dur-reduced, the sliding layer has no transform and no transition, and the two old `transition:none` opt-outs are gone
+PASS (B6b) the short reduced-motion FADE survives the global floor: both panels carry `transition-duration: var(--drawer-dur-reduced) !important`, and that token is > 0 and <= 150 ms
+PASS (B7) the dissolve classes stay ON the panel (one element carries open/close fade AND dissolve, as today - the popout-hold law needs it)
+PASS (C1) both tabs get their glyph from drawerArrow (left / right) and neither keeps a hand-written literal
+PASS (C2) both closed panels are inert (setDrawerInert on the panel element, the current open state)
+PASS (D1a) [post-merge successor]: on main, ForwardOnlyEditor.tsx (the typing surface) has no diff against the merge base; on a branch the diff is reported, not judged (typing-path branches take the full pair)
+PASS (D1c) [post-merge successor]: PageEditor.tsx still carries word-diet's two changes - the framed Page panel's saved-silently footer is gone (footer: undefined) and the button reads "Copy text"
+PASS (D1c) [post-merge successor]: on main, PageEditor.tsx has no diff against the merge base (nothing has touched the typing page since word-diet); on a branch the diff is reported, not judged (typing-path branches take the full pair)
+PASS (D1c-mutants) the successor refuses a diff that removes any OTHER line, or adds one that is not declared
+PASS (D2e) [page-templates-r2 + help-buttons, merged successors]: the Templates block in Sliver.tsx is the five-row picker - it still opens with the section div and the railTemplates heading (carrying its own "?"), maps content.templates into rows keyed by data-template, carries no grayed stand-in (no aria-disabled, no wz-template-btn), keeps the one declared table gate, and places a HelpButton only beside a theme-unique row name (THEME_UNIQUE_TEMPLATES/TEMPLATE_HELP_KEYS)
+PASS (D2d): .wz-drawer-tabnotes still carries pointer-events:none (the row itself stays a non-capturing overlay)
+PASS (D2d) [pointer-events fix]: .wz-drawer-tabnotes .wz-help restores pointer-events:auto, so the "?" itself is still reachable by a real press
+PASS (E1) only Free Write has a tab row, and only with an instrument: TEXT then INK; no instrument, or Draft/Revise/Board/empty: none (never a lone tab)
+PASS (E2) Free Write TEXT = Typeface, Forward Lock, Capture; INK = the ink zone, Forward Lock, Capture - and NEVER Format or Templates (Nick Q1: B/I/U wait for the typing-path work)
+PASS (E3) Draft = Typeface, Format, ACTIONS, Templates, Page kind - in Nick's order, and no ink zone; Revise = Typeface only (no Actions); Board = its tools
+PASS (F1) the tab row's keys: Right/Down next, Left/Up previous (both wrap), Home first, End last, anything else nothing, no tabs nothing
+PASS (F2) the row is a real tablist: tab roles, aria-selected, and a roving tabindex (only the chosen tab is in the Tab order)
+PASS (F3) [tutor-drawer-mirror round 2 successor] the chosen tab is an OLIVE OUTLINE and nothing else (no fill, no color-mix) - the same "where you are" signal the drawer's own arrow tab already carries, not a one-off action (brass)
+PASS (H1) both hands render through <SideDrawer> (left carries the TEXT|INK config and the foot; right carries the TUTOR|links config) - the S1 hand-written wrappers are gone
+PASS (H2) EVERY Sliver section asks the table first (ink, typeface, forwardLock, format, templates, pageKind, capture, boardTools) - the table is not decorative
+PASS (H3) the tab words are the theme's own lexicon terms (Text / Ink and the row's name), not literals
+PASS (I1) Header/Footer is ONE switch: on only when both are; either alone off reads off; unset reads the default (off); and toggling keeps each one's own text
+PASS (I2) the four actions are Tags, Copy, Delete, Header/Footer - in that order
+PASS (I3) [one-dialog successor]: DELETE ASKS FIRST, through the ONE standard dialog: the Delete icon calls requestDelete(...), the module's one onDelete call sits inside it, and no in-page confirm survives (Esc still cancels the Tags editor)
+PASS (I4) DELETE IS SOFT: softDeleteEntry (to the Trash) then flush, then the writer goes to their resume target or the front door - and no hard-delete call exists in the module
+PASS (I5) the Actions section sits between Format and Templates in the Sliver and is gated by both the data and the table
+PASS (I6) a pressed/open action is a BRASS OUTLINE and nothing else (no fill)
+PASS (I7) THE INSTRUMENT MARK: a tiny pen on the arrow tab only in INK; it is quiet (no brass, 10px) and the tab keeps its 16 x 34 box
+PASS (K1 [flux-v2 successor]) the right drawer's second tab word is the THEME'S, from the lexicon: Grafts in Arbor (the canonical theme), Inputs in Flux
+PASS (K2 [help-buttons successor]) drawerLinksNote/-NoteLabel are retired whole; helpGrafts carries BOTH themes' own sentences now, never empty in either
+PASS (K3 [flux-v2 successor]) the empty pane's line follows the theme too (grafted / connected)
+PASS (K4) the right drawer's tabs are TUTOR then the links tab, from one constant
+PASS (K5) the Tutor opens on the TUTOR tab; its body renders ONLY there and the empty links pane only on the other; the tab words are lexicon terms
+PASS (K6 [help-buttons successor]) the "?" renders unconditionally now - helpGrafts always has words in both themes, so there is no longer a theme that gets none
+PASS (K7) the note is PRESSABLE, not a hover tooltip: a real button with aria-expanded/aria-controls and a role=note panel, no hover handlers; Escape, a press outside, or focus leaving closes it
+PASS (K8 [help-buttons successor]) the "?" still displaces nothing: the note overlay is NOT part of the tab (sibling to the tab button, per DrawerTabsConfig's own notes slot) and is now ONE shared position:fixed overlay in a body portal (never per-instance, never position:absolute) - and it is never brass
+PASS (N1) the drawer's sliding layer takes NO pointer input while it slides: a keyframe holds pointer-events:none until the last 1% of --drawer-dur, then hands control back; it hangs on [data-open=true] so it restarts on every open, and it does not pin the end state (no fill-mode)
+PASS (N2) under reduced motion the guard keeps the short fade's length (--drawer-dur-reduced, !important, so the global 0.01ms floor cannot hand the controls back at once)
+PASS (O1) the band's Free Write hover menu and its TEXT|INK switch are RETIRED: InkSwitch.tsx is gone; ModeStrip, the CSS and PageEditor carry no trace (no component, no props, no .wz-ink-menu / .desk-mode-freewrite / .wz-ink-switch rules); the drawer's first tab pair is the one control left
+PASS (M) the left arrow is not mirrored from the right: the proof goes RED
+PASS (M) a closed drawer is not made inert: the proof goes RED
+PASS (M) the slide rides --fade-dur: the proof goes RED
+PASS (M) the 6px settle comes back on the sliver panel: the proof goes RED
+PASS (M) reduced motion goes back to no transition at all: the proof goes RED
+PASS (M) the global floor wins again (the panels lose their !important duration): the proof goes RED
+PASS (M) the reduced-motion fade is no longer short (.3s): the proof goes RED
+PASS (M) reduced motion keeps the slide: the proof goes RED
+PASS (M) the Tutor panel loses its inert ref: the proof goes RED
+PASS (M) the Sliver keeps a hand-written arrow: the proof goes RED
+PASS (M) Free Write grows a Format group: the proof goes RED
+PASS (M) INK loses its ink zone: the proof goes RED
+PASS (M) Draft gets a tab row: the proof goes RED
+PASS (M) Revise grows Templates: the proof goes RED
+PASS (M) the tab row does not wrap: the proof goes RED
+PASS (M) the chosen tab gets a fill: the proof goes RED
+PASS (M) the arrow tab turns brass when open: the proof goes RED
+PASS (M) the Sliver stops asking the table for the Typeface: the proof goes RED
+PASS (M) the Tutor goes back to a hand-written wrapper: the proof goes RED
+PASS (M) PageEditor.tsx is changed outside the declared hunk: the proof goes RED
+PASS (M) PageEditor.tsx loses a line outside the declared hunk: the proof goes RED
+PASS (M) Revise grows Actions: the proof goes RED
+PASS (M) Actions slips ahead of Format in the table: the proof goes RED
+PASS (M) Header/Footer turns only the header: the proof goes RED
+PASS (M) Header/Footer reads on when EITHER is on: the proof goes RED
+PASS (M) the Delete button deletes at once (skips the gate) [one-dialog successor]: the proof goes RED
+PASS (M) Esc no longer cancels the confirm: the proof goes RED
+PASS (M) Delete hard-deletes: the proof goes RED
+PASS (M) Delete forgets to flush before leaving: the proof goes RED
+PASS (M) the pressed action gets a fill [flux-v2 successor]: the proof goes RED
+PASS (M) the instrument mark shows in TEXT too: the proof goes RED
+PASS (M) the instrument mark turns brass: the proof goes RED
+PASS (M) the Sliver renders Actions without asking the table: the proof goes RED
+PASS (M) Flux's helpGrafts goes empty [flux-v2 successor]: the proof goes RED
+PASS (M) Arbor's word changes: the proof goes RED
+PASS (M) Arbor's helpGrafts copy is edited [help-buttons successor]: the proof goes RED
+PASS (M) the right drawer gains a third tab: the proof goes RED
+PASS (M) the Tutor opens on the links tab: the proof goes RED
+PASS (M) the Tutor body shows on both tabs: the proof goes RED
+PASS (M) the "?" is dropped from the tab entirely [help-buttons successor]: the proof goes RED
+PASS (M) Escape no longer closes the note: the proof goes RED
+PASS (M) a press outside no longer closes the note: the proof goes RED
+PASS (M) the note opens on hover: the proof goes RED
+PASS (M) the notes move inside the tablist: the proof goes RED
+PASS (M) the open note takes room (static, not an overlay): the proof goes RED
+PASS (M) the open "?" gets a fill [flux-v2 successor]: the proof goes RED
+PASS (M) the layer stays live during the slide (the keyframe holds auto): the proof goes RED
+PASS (M) the guard is not applied to the open drawer: the proof goes RED
+PASS (M) the guard rides --fade-dur (which the vanish engine rewrites): the proof goes RED
+PASS (M) the guard pins the dead state forever (fill-mode forwards): the proof goes RED
+PASS (M) reduced motion loses the guard's length (the floor wins): the proof goes RED
+PASS (M) the hover menu comes back in the CSS: the proof goes RED
+PASS (M) ModeStrip renders the switch again: the proof goes RED
+PASS (M) PageEditor passes the band an instrument again: the proof goes RED
+PASS (M) the component file is still there: the proof goes RED
+PASS (M) the drawer loses its TEXT|INK tabs: the proof goes RED
+
+DRAWERS-P1 VERIFY: PASS (102 checks)

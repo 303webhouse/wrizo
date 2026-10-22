@@ -1,0 +1,9 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=1 files=2 tree=7eaf839d bundle=index-gBI37QFa.js/768255b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/fx2c-parked
+[01/2] OK        exit=0    0s drawer-toggles.mjs :: DRAWER-TOGGLES VERIFY: PASS (34 checks)
+[02/2] OK        exit=0   17s fx2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; "name": "PARKED (was \"...the sliver anchor never overlaps the Drawer track...\") — CD2 S5: .wz-drawer retired outright, .wz-strip fills the same track (live successor: this file's own S1-floor section)", ;; "name": "PARKED (was \"...the Drawer stays clear with the sliver OPEN too...\") — CD2 S5: .wz-drawer retired outright, live successor is this file's own S1-floor section (now .wz-strip)", ;; FX2 PARKED: PASS (2 checks) — HARNESS_PARKED=1 armed, all retired-check successors green ;; FX2 VERIFY: PASS (36 checks)
+
+SUITE DONE HARNESS_PARKED=1 — 2/2 of 2 returned a passing verdict
+SUITE RESULT: CLEAN — tree=7eaf839d bundle=index-gBI37QFa.js/768255b NO-REBUILD

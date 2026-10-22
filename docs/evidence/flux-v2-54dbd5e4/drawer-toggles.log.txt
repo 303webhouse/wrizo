@@ -1,0 +1,36 @@
+FAIL (T0) the sources this harness reads all exist (a missing function would make every other check vacuous) | {"row":true,"tw":false,"pr":true,"tools":true,"seg":true}
+FAIL (T1) TYPEWRITER MODE and PROGRESS TRACKING are two icon-only native buttons in the head beside the "..." (which stays alone in its own row); the typewriter one only where the surface offers a typewriter | 
+FAIL (T2) each button reports on/off with aria-pressed from the stored value, and carries a lexicon name that does not change with the state; the two names differ | {}
+FAIL (T3b) the toggles flip the SAME values the old rows flipped (typewriter through setTypewriterExplicit, instrumentsOn through setWritingSettings) and the persisted shape is main's: forwardLock.ts and writingGoal.ts byte-identical, and writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key | {}
+FAIL (T4) the Typewriter on/off row and the Progress "Show" row are gone from the "..." menu | 
+FAIL (T5) when a mode is off every row that stays is disabled: Typewriter -> Forward Lock, Line Fade, Page Scroll (3 of 3); Progress -> Unit, Progress, Progress style, Timer (4 of 4) and the Goal number | 
+FAIL (T6) "disabled" is real: Seg marks the row (data-disabled) and disables its option buttons, so a greyed row cannot be focused or pressed | 
+FAIL (T7) the whole FORMAT group sits inside ONE native disabled fieldset bound to Typewriter-on (so B/I/U/S/H, bullets, quote, indent, spacing and alignment all grey and lock together); the setting is read above the early return so the hook order holds | 
+FAIL (T8) the formatting SHORTCUTS are blocked with it: applyRailFormat (which the Ctrl/Cmd+B/I/U key handler and the rail share) returns while Typewriter is on, after the Draft-only guard and before anything is applied | 
+FAIL (T9) the look: ON = the ICON turns brass and nothing else (same quiet border as the "...", no fill); OFF = quiet; a focus ring; greyed = 40% opacity; the fieldset resets the browser border/padding/min-width; theme TOKENS only (no literal colours), so Arbor and Flux, light and dark, read their own brass | 
+FAIL (T10) the NARROW-SCREEN format bar (ModeStage, unframed: below 1100px and QuickSprint) follows the same rule on the RUNNING typewriter: all nine of its buttons are disabled while typewriterOn, the bar carries the same lexicon tooltip, locked buttons grey and let the pointer fall through to it; Revise (no typewriter running) stays usable | 
+FAIL (M) the typewriter button stops reporting its state: THE MUTATION LANDED | anchor missing
+FAIL (M) the progress button flips a different value: the proof goes RED | a source function went missing, which is not evidence
+FAIL (M) the typewriter button bypasses setTypewriterExplicit: THE MUTATION LANDED | anchor missing
+FAIL (M) a button grows a visible text label (not icon-only): the proof goes RED | a source function went missing, which is not evidence
+FAIL (M) the old Typewriter row comes back in the menu: THE MUTATION LANDED | anchor missing
+FAIL (M) Forward Lock stays usable while Typewriter is off: the proof goes RED | a source function went missing, which is not evidence
+FAIL (M) the Timer row stays usable while Progress Tracking is off [flux-words successor]: the proof goes RED | a source function went missing, which is not evidence
+FAIL (M) the Goal number stays editable while Progress Tracking is off: the proof goes RED | a source function went missing, which is not evidence
+FAIL (M) Seg ignores disabled: the proof goes RED | a source function went missing, which is not evidence
+FAIL (M) the Format fieldset is not disabled: the proof goes RED | a source function went missing, which is not evidence
+FAIL (M) the Format setting is read AFTER the early return (hook order breach): THE MUTATION LANDED | anchor missing
+FAIL (M) the shortcuts are no longer blocked: THE MUTATION LANDED | anchor missing
+FAIL (M) the shortcut guard runs AFTER the format is applied: THE MUTATION LANDED | anchor missing
+FAIL (M) the ON state gets a fill [flux-v2 successor]: the proof goes RED | a source function went missing, which is not evidence
+FAIL (M) the ON state gets a brass border (Fable: only the icon changes) [flux-v2 successor]: the proof goes RED | a source function went missing, which is not evidence
+FAIL (M) the greyed Format group loses its tooltip: the proof goes RED | a source function went missing, which is not evidence
+FAIL (M) the greyed Format buttons swallow the pointer (the group tooltip can never show): the proof goes RED | a source function went missing, which is not evidence
+FAIL (M) the ON state is a hard-coded colour (would not follow the theme) [flux-v2 successor]: the proof goes RED | a source function went missing, which is not evidence
+FAIL (M) the fieldset keeps the browser border and padding: the proof goes RED | a source function went missing, which is not evidence
+FAIL (M) the narrow bar's Bold ignores the lock: the proof goes RED | a source function went missing, which is not evidence
+FAIL (M) the narrow bar locks on the stored setting, not the running typewriter: the proof goes RED | a source function went missing, which is not evidence
+FAIL (M) the narrow bar loses its tooltip: the proof goes RED | a source function went missing, which is not evidence
+FAIL (M) the narrow bar's locked buttons swallow the pointer: the proof goes RED | a source function went missing, which is not evidence
+
+DRAWER-TOGGLES VERIFY: FAIL — 34/34

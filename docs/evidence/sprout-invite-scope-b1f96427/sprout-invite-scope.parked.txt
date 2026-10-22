@@ -1,0 +1,68 @@
+[
+  {
+    "name": "E1: pref \"off\" — the Sprout door IS present (nothing decided yet)",
+    "pass": true,
+    "detail": "{\"sproutDoor\":true,\"invitePrompt\":false,\"pref\":null,\"prefAtKey\":\"off\"}"
+  },
+  {
+    "name": "E1: pref \"off\" — the live invite prompt is NOT showing",
+    "pass": true,
+    "detail": "{\"sproutDoor\":true,\"invitePrompt\":false,\"pref\":null,\"prefAtKey\":\"off\"}"
+  },
+  {
+    "name": "E2 (the whole ticket): pref \"on\" — the Sprout door is ABSENT (stops offering what is already on)",
+    "pass": true,
+    "detail": "{\"sproutDoor\":false,\"invitePrompt\":true,\"pref\":null,\"prefAtKey\":\"on\"}"
+  },
+  {
+    "name": "E2: pref \"on\" — the live invite prompt IS showing (the invite itself is unaffected by this fix)",
+    "pass": true,
+    "detail": "{\"sproutDoor\":false,\"invitePrompt\":true,\"pref\":null,\"prefAtKey\":\"on\"}"
+  },
+  {
+    "name": "E3: pref \"never\" — the Sprout door is ABSENT (withdrawn, not re-offered)",
+    "pass": true,
+    "detail": "{\"sproutDoor\":false,\"invitePrompt\":false,\"pref\":null,\"prefAtKey\":\"never\"}"
+  },
+  {
+    "name": "E3: pref \"never\" — the live invite prompt is NOT showing",
+    "pass": true,
+    "detail": "{\"sproutDoor\":false,\"invitePrompt\":false,\"pref\":null,\"prefAtKey\":\"never\"}"
+  },
+  {
+    "name": "E4 [successor]: starts with Sprout present, pref \"off\" (at its currently-effective key)",
+    "pass": true,
+    "detail": "{\"sproutDoor\":true,\"invitePrompt\":false,\"pref\":null,\"prefAtKey\":\"off\"}"
+  },
+  {
+    "name": "E4 [successor]: clicking Sprout shows the live prompt immediately and persists \"on\" (at its currently-effective key)",
+    "pass": true,
+    "detail": "{\"sproutDoor\":false,\"invitePrompt\":true,\"pref\":null,\"prefAtKey\":\"on\"}"
+  },
+  {
+    "name": "E4 [successor]: a second fresh blank page after the click shows NO Sprout door (decided) and the live prompt instead (at its currently-effective key)",
+    "pass": true,
+    "detail": "{\"sproutDoor\":false,\"invitePrompt\":true,\"pref\":null,\"prefAtKey\":\"on\"}"
+  }
+]
+[
+  {
+    "name": "PARKED (was \"E4: starts with Sprout present, pref off\" via the bare key) - the bare key is either ALSO \"off\" (signed out) or absent/unmigrated yet (signed in, nothing has written there yet)",
+    "pass": true,
+    "detail": "{\"sproutDoor\":true,\"invitePrompt\":false,\"pref\":null,\"prefAtKey\":\"off\"}"
+  },
+  {
+    "name": "PARKED (was \"E4: clicking Sprout... persists on\" via the bare key) - the write ALWAYS lands correctly (prefAtKey is \"on\"); the bare key is either ALSO \"on\" (signed out) or still its PRE-click \"off\" (signed in - optIn() correctly wrote the scoped key, never touching the bare one)",
+    "pass": false,
+    "detail": "{\"sproutDoor\":false,\"invitePrompt\":true,\"pref\":null,\"prefAtKey\":\"on\"}"
+  },
+  {
+    "name": "PARKED (was \"E4: a second fresh page... pref on\" via the bare key) - the decision ALWAYS persists correctly (prefAtKey is \"on\") and the door/prompt state agree; the bare key itself no longer governs this once signed in, so it is not re-asserted here",
+    "pass": true,
+    "detail": "{\"sproutDoor\":false,\"invitePrompt\":true,\"pref\":null,\"prefAtKey\":\"on\"}"
+  }
+]
+
+SPROUT-INVITE-SCOPE PARKED: FAIL — 1/3 failed
+
+SPROUT-INVITE-SCOPE VERIFY: PASS (9 checks)

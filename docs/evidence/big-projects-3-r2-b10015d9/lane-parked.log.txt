@@ -1,0 +1,14 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=1 files=6 tree=1a5806ab bundle=index-CAg53Zks.js/784052b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bp3b-parked
+[01/6] FAIL      exit=1   38s big-projects-3.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; "name": "PARKED (was \"P1: it opens the picker - a search field (focused), then Cards / Pages / Boards from every place, each with its place label, never the page itself\") - ruling 3: a label only for another place; live successor: P1 [ruling-3 successor]", ;; BIG-PROJECTS-3 PARKED: PASS (1 checks) - HARNESS_PARKED=1 armed, all retired-check successors green ;; BIG-PROJECTS-3 VERIFY: FAIL - 4/25 failed
+[02/6] OK        exit=0   60s board-context-menu.mjs :: "name": "PARKED (was \"S1: every call of softDeleteEntry outside persistence.ts (and a Page's own in-page confirm, S3) sits inside requestDelete(...) - the ONE gate: a board (menu, Plan row, Drawers tile) and a card can only be deleted through \"Send to Trash?\" or with asking turned off\") - delete-for-good: window.wrizoDelete.softAll is the one caller outside the dialog, behind its own gate; live successor: S1 [delete-for-good successor]", ;; "name": "PARKED (was \"K16: its menu offers Restore (and no Delete), and Restore clears deletedAt - the board is back, with every card it had\") - delete-for-good: a trashed board can be deleted for good from Trash; live successor: K16 [delete-for-good successor]", ;; "name": "PARKED (was \"K17: its menu offers Restore (no Delete) and Restore clears deletedAt - the page is back with every word\") - delete-for-good: a trashed page can be deleted for good from Trash; live successor: K17 [delete-for-good successor]", ;; BOARD-CONTEXT-MENU PARKED: PASS (3 checks) - HARNESS_PARKED=1 armed, all retired-check successors green ;; BOARD-CONTEXT-MENU VERIFY: PASS (56 checks)
+[03/6] OK        exit=0   46s connector-a.mjs :: CONNECTOR-A VERIFY: PASS (37 checks)
+[04/6] OK        exit=0   30s connector-b.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; CONNECTOR-B VERIFY: PASS (27 checks)
+[05/6] OK        exit=0    0s item141.mjs :: ITEM141 VERIFY: PASS (11 checks)
+[06/6] OK        exit=0    1s page-links.mjs :: PAGE-LINKS VERIFY: PASS (29 checks)
+
+SUITE DONE HARNESS_PARKED=1 — 5/6 of 6 returned a passing verdict
+  FAIL: big-projects-3.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bp3b-parked\big-projects-3.mjs.parked.txt
+SUITE RESULT: NOT CLEAN — tree=1a5806ab bundle=index-CAg53Zks.js/784052b NO-REBUILD

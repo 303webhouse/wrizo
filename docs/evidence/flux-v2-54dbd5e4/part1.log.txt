@@ -1,0 +1,68 @@
+(BROWSERLESS_ONLY: PART 2 skipped - the live checks need a box turn)
+PASS  LX1
+PASS  LX2
+PASS  LX3
+PASS  LX4
+PASS  LX5
+PASS  LX6
+PASS  IC1
+PASS  IC2
+PASS  IC3
+PASS  IC4  [[{"x":0,"y":0,"w":1},{"x":2,"y":0,"w":1},{"x":0,"y":1,"w":3}]]
+PASS  RO1
+PASS  RO2
+PASS  RO3
+PASS  RO4
+PASS  RO5
+PASS  RO6
+PASS  RO7
+PASS  RO8
+PASS  RO9  [[{"n":3,"m":5},{"n":1,"m":5},{"n":1,"m":1}]]
+PASS  RO9b  [the position follows the writer's own Order: [{"n":1,"m":5},{"n":4,"m":5}]]
+PASS  RO9c  [the Log: position among its pages [{"n":1,"m":2},{"n":2,"m":2}]]
+PASS  RO9d  [a board counts among boards, not pages: {"n":1,"m":1}]
+PASS  TK1
+PASS  TK2
+PASS  SEL1
+PASS  TK3
+PASS  OR1
+PASS  CT1  [dark page text 15.69:1 (floor 13.9)]
+PASS  CT2
+PASS  CT3  [LIGHT pair (measured, reported): ink 14.68:1, meta 11.70:1]
+PASS  CH1
+PASS  RC1
+PASS  RC2
+PASS  RC3
+PASS  P1 the icon seam is generic: ThemeIcon reads the theme and the icon id, asks themeIcon(), and falls back to the caller's own icon when the theme has no set
+PASS  P2 the rail, the place block and the pop-out all draw through ThemeIcon (TOOLS adds Arbor and Machina sets to the seam later)
+PASS  P3 the readouts recede with the rest of the chrome: they carry chrome-fade
+PASS  P4 the readouts speak only from the readout module: DOC / TRK / RACK / hint strings are built by docReadout, trackReadout, rackReadout and hintFor - no string literal of its own
+PASS  P5 the acquire runs once per page open and only above Ambiance 0 (shouldAcquire + effectiveAmbianceDial)
+PASS  P6 the Root substitution is render-time only: PlaceBlock and the pop-out name the place through isDefaultRoot + placeRootName, and nothing writes the drawer's name
+PASS  P8 the Recede-depth and Timer rows name themselves through the lexicon on both surfaces (the framed sliver and the settings panel) - no inline word
+PASS  P7 a Flux frame ring: the grid and brackets are an overlay on the page FRAME (pointer-events none, masked to a ring) - never a background of the text area
+PASS  mutant "the ground token drifts back to the old teal" is KILLED (reddens: TK1)
+PASS  mutant "the structure line loses its steel blue" is KILLED (reddens: TK1)
+PASS  mutant "selection falls back to brass orange" is KILLED (reddens: TK2, OR1)
+PASS  mutant "a segmented control goes back to pointing at brass" is KILLED (reddens: SEL1)
+PASS  mutant "Flux overrides the locked brass" is KILLED (reddens: TK2)
+PASS  mutant "orange leaks onto the active rail item" is KILLED (reddens: OR1)
+PASS  mutant "the dark page text loses contrast" is KILLED (reddens: CT1)
+PASS  mutant "a label tier drops under 4.5:1" is KILLED (reddens: CT2)
+PASS  mutant "the chromatic offset turns red" is KILLED (reddens: CH1)
+PASS  mutant "the acquire loses its still state under reduced motion" is KILLED (reddens: RC2)
+PASS  mutant "trackOf is off by one" is KILLED by a check, not a crash (reddens: RO9, RO9b)
+PASS  mutant "the acquire fires on every render" is KILLED by a check, not a crash (reddens: RO7)
+PASS  mutant "the board gets a hint before step 3" is KILLED by a check, not a crash (reddens: RO6)
+PASS  mutant "DOC loses its zero padding" is KILLED by a check, not a crash (reddens: RO1)
+PASS  mutant "a coordinate is not clamped at 999" is KILLED by a check, not a crash (reddens: RO3)
+PASS  mutant "Root replaces a renamed top drawer" is KILLED by a check, not a crash (reddens: RO8)
+PASS  mutant "one pixel of the Rack icon flips" is KILLED by a check, not a crash (reddens: IC1)
+PASS  mutant "the Flux word for Settings is lost" is KILLED by a check, not a crash (reddens: LX1, LX2)
+PASS  mutant "the Clock word is lost" is KILLED by a check, not a crash (reddens: LX1)
+PASS  mutant "the Flux Draft tab falls back to Draft" is KILLED by a check, not a crash (reddens: LX1, LX6)
+PASS  mutant "Delete turns into Purge" is KILLED by a check, not a crash (reddens: LX6)
+PASS  mutant "a big-projects string falls back to Arbor" is KILLED by a check, not a crash (reddens: LX2)
+PASS  all 22 mutations landed and 22 were killed
+
+FLUX-V2 VERIFY: PASS (65 checks)

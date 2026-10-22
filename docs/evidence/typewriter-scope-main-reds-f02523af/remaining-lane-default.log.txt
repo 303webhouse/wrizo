@@ -1,0 +1,22 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=14 tree=6432f28b bundle=index-Sko0ToyP.js/769310b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/twr-default
+[01/14] OK        exit=0   12s ab1.mjs :: ROWS-SHADOW VERIFY: PASS (34 renders checked, shadow == DOM on every one) ;; AB1 VERIFY: PASS (29 checks)
+[02/14] OK        exit=0   18s ab2.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; AB2 VERIFY: PASS (27 checks)
+[03/14] OK        exit=0   31s b1.mjs :: ROWS-SHADOW VERIFY: PASS (97 renders checked, shadow == DOM on every one) ;; B1 VERIFY: PASS (47 checks)
+[04/14] OK        exit=0  129s drawers-p1-live.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; DRAWERS-P1-LIVE VERIFY: PASS (88 checks)
+[05/14] FAIL      exit=1   13s fx2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; FX2 VERIFY: FAIL — 3/34 failed
+[06/14] OK        exit=0   15s fx3.mjs :: FX3 VERIFY: PASS (28 checks)
+[07/14] OK        exit=0   35s fx4.mjs :: FX4 VERIFY: PASS (42 checks)
+[08/14] OK        exit=0   40s item121.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; ITEM121 VERIFY: PASS (44 checks)
+[09/14] OK        exit=0   41s item158.mjs :: ROWS-SHADOW VERIFY: PASS (7 renders checked, shadow == DOM on every one) ;; ITEM158 VERIFY: PASS (12 checks)
+[10/14] OK        exit=0   45s item207.mjs :: ROWS-SHADOW VERIFY: PASS (8 renders checked, shadow == DOM on every one) ;; ITEM207 VERIFY: PASS (41 checks)
+[11/14] OK        exit=0   31s item83f.mjs :: ROWS-SHADOW VERIFY: PASS (45 renders checked, shadow == DOM on every one) ;; ITEM83F VERIFY: PASS (33 checks)
+[12/14] OK        exit=0    8s item87.mjs :: ROWS-SHADOW VERIFY: PASS (31 renders checked, shadow == DOM on every one) ;; ITEM87 VERIFY: PASS (5 checks)
+[13/14] OK        exit=0   32s m2.mjs :: M2 VERIFY: PASS (26 checks)
+[14/14] OK        exit=0   26s m4.mjs :: M4 VERIFY: PASS (35 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 13/14 of 14 returned a passing verdict
+  FAIL: fx2.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\twr-default\fx2.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=6432f28b bundle=index-Sko0ToyP.js/769310b NO-REBUILD
