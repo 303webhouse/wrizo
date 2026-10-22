@@ -228,21 +228,31 @@ instruction):
   "output," and Free Write *is* a sprint in that register) or may be an
   oversight worth a one-line confirm before the lexicon ships — naming it
   here rather than building it silently either way.
-- **Plan (the mode tab) → inherits canonical, does not get a Machina-specific
-  override.** Nick's locked list names it literally as `"Plan →"` — read as
-  "no change for Machina" rather than a literal word, because the SAME
-  instruction batch separately renames the Arbor-canonical term for this tab
-  from **"Plan →" to "Boards →"** (this reading was this plan's own inference
-  the first time it was written down; it is now a DIRECT instruction, not an
-  inference — Fable's second relay states it outright: "Also add Arbor's mode
-  tab 'PLAN →' → 'BOARDS →' to your Machina/picker plan — it's a lexicon
-  change, so it rides that build"). The reasoning still stands and is worth
-  keeping: this is exactly why that canonical rename exists — Machina's own
-  Boards-content-type word just became **"Plans"** in this same pass, and
-  leaving the MODE TAB as "Plan →" next to a content type called "Plans" is
-  the collision the rename resolves. Once the Arbor-canonical rename lands,
-  Machina's own tab reads **"Boards →"** automatically, with no
-  Machina-specific entry required. **Confirmed, not open — drop from §7.**
+- **Plan (the mode tab) → CORRECTED (Fable, Oct 22): a Machina-specific
+  OVERRIDE keeping the literal word "Plan →", NOT an inherit-canonical that
+  resolves to "Boards →".** This plan's own earlier reading (quoted below,
+  struck, for the record) reasoned itself into the wrong answer from the
+  same evidence it had: it read Nick's locked list naming it literally as
+  `"Plan →"` as "no change FOR MACHINA" (i.e., Machina just inherits
+  whatever Arbor's canonical tab says), on the theory that once Arbor's own
+  canonical term renames "Plan →" → "Boards →" (§9b), Machina's tab would
+  follow automatically with no override needed. **That inference is
+  falsified by direct, approved build evidence**: `machina-build-brief.md`'s
+  own Oct 21 round-3 mockup entry (`cursor/machina-v1-mockup` @ `360f3db3`,
+  CLEARED by Fable, APPROVED by Nick 4:13pm, named as THE build reference)
+  quotes the rendered strip verbatim — *"the mode strip SPRINT · BUILD ·
+  EDIT · WORKSHOP · FINALIZE · PLAN →"* — Machina's own tab is **literally,
+  approvedly, "PLAN →"**, not "Boards →" and not "Plans →" (its own
+  Boards-content-type word, per §1c's locked map). If Machina genuinely
+  inherited Arbor's canonical rename, the approved mockup would show
+  "BOARDS →" or "PLANS →" here; it shows neither. So: Machina's `OVERRIDES`
+  entry for this key is `'Plan →'`, explicit, keeping the pre-rename word on
+  purpose even as Arbor's own canonical entry moves away from it — the
+  opposite of "no override needed." **Confirmed, not open — drop from §7.**
+  (Struck, kept for the record: ~~"Plan (the mode tab) → inherits canonical,
+  does not get a Machina-specific override... Once the Arbor-canonical
+  rename lands, Machina's own tab reads 'Boards →' automatically, with no
+  Machina-specific entry required."~~)
 
 **Registration**, same two files Flux already proved, now carrying REAL
 deltas instead of identity no-ops:
@@ -768,26 +778,35 @@ target anymore.
   per-file hunt this section used to describe.
 - **"Plan →" → "Boards →"**: a rename of ARBOR'S OWN CANONICAL mode-tab
   word — not an override. Arbor IS the canonical lexicon, so this edits
-  the CANONICAL table directly, the one place §1c's own Machina section
-  explicitly does NOT touch (Machina's own entry there reads "inherits
-  canonical, no override" specifically because of this rename). Confirm
+  the CANONICAL table directly. **CORRECTED (Fable, Oct 22): Machina's own
+  entry does NOT inherit this rename** — §1c now carries a Machina-specific
+  `OVERRIDES.machina` entry keeping the literal word `'Plan →'`, confirmed
+  against the approved build mockup (`cursor/machina-v1-mockup` @
+  `360f3db3`, §1c's own corrected note). So this step's rename is scoped
+  to Arbor's canonical row alone; it must NOT remove or weaken Machina's
+  own override, and this step's own harness (§9d) should confirm Machina
+  still reads "Plan →" (not "Boards →") AFTER this rename lands, precisely
+  because an override sitting on TOP of a canonical rename is exactly the
+  shape a careless CANONICAL-table edit could silently break. Confirm
   the exact canonical key/string at build time (likely in
   `deskLexicon.ts`'s or `themeLexicon.ts`'s own `CANONICAL` object,
   alongside the other mode-tab words AGENTS.md's own "Pages⟷Plan"
   navigation reference names) and rename it in the ONE place canonical
   strings live, per the CANONICAL/OVERRIDES pattern §1c's own
   registration note already establishes — every theme that does NOT
-  override this key picks up "Boards →" automatically the moment this
+  override this key (every theme but Machina) picks up "Boards →"
+  automatically the moment this
   lands.
 
 ### 9c. File list (best current estimate; confirm each against the tree at build time)
 
 | File | Change |
 |---|---|
-| `apps/desktop/src/store/themeIcons.ts` (INK's, Flux v2) | Arbor's nine garden glyphs registered as data, reading INK's own registry shape (confirm it once merged — not built here) |
-| `apps/desktop/src/components/ThemeIcon.tsx` (INK's, Flux v2) | consumed, not built — confirm every render site this step's own icons need (rail, Settings/Trash/Graft/Set/Boards/Pages) already routes through it once INK's build lands; if a site doesn't yet, that's a gap to raise, not silently route around |
-| `apps/desktop/src/store/deskLexicon.ts` / `themeLexicon.ts` | the CANONICAL "Plan →" → "Boards →" rename (§9b) |
-| `apps/desktop/scripts/harness/arbor-garden-icons.mjs` (new) | §9d |
+| `apps/desktop/src/store/themeIcons.ts` (INK's, Flux v2) | Arbor's nine garden glyphs registered as data (`THEME_ICONS.plateau`, `kind: 'svg'` — confirmed shape, read directly off flux-v2 @ `b4c38659`: `ThemeIconSpec = {kind:'pixels',rows} \| {kind:'svg',viewBox,paths}`), reading INK's own registry shape (confirm it once merged — not built here) |
+| `apps/desktop/src/components/ThemeIcon.tsx` (INK's, Flux v2) | consumed, not built — **CONFIRMED (Fable Oct 22, read directly off flux-v2 @ `b4c38659`), not a future unknown:** six of this step's nine render sites already route through it (Cascade.tsx's strip: page/docs, plan/circuits, journal/log, settings/config, theme/skin, trash/trash; PlaceBlock.tsx's rack/log; SectionsPopout.tsx's rack/log and cartridge) — only Graft ('input') has **zero render sites anywhere today** (GraftPicker.tsx's dialog header renders text only, no icon) — a real gap, not a guess, raised to Fable/INK rather than silently routed around (see `arbor-garden-icons.mjs`'s own T9) |
+| `apps/desktop/src/store/deskLexicon.ts` / `themeLexicon.ts` | the CANONICAL "Plan →" → "Boards →" rename, exact key confirmed: `pagePlanDoor: 'Plan'` (§9b) — the arrow itself is a decorative sibling span in `PageEditor.tsx` (`{dt('pagePlanDoor')} <span aria-hidden="true">→</span>`, two render sites), never part of the lexicon string |
+| `apps/desktop/scripts/harness/arbor-garden-icons-source.mjs` (new, WRITTEN AND GREEN TODAY) | §9d's fast-lane half — browserless, no grant, proves the pre-rename baseline (`pagePlanDoor` is `'Plan'` today), the arrow's decorative-span shape, that no theme has an OVERRIDES entry for this key yet, and the CANONICAL/OVERRIDES resolver itself — 6/6 green, one mutant proving the rename-sequencing hazard this step must not fall into |
+| `apps/desktop/scripts/harness/arbor-garden-icons.mjs` (new, WRITTEN, UNRUN) | §9d's CDP half — written against flux-v2's confirmed registry shape, syntax-checked only; cannot run until flux-v2 merges and Arbor's nine glyphs are actually registered (this step's own build work) |
 
 ### 9d. Harness
 
@@ -795,19 +814,39 @@ A new `scripts/harness/arbor-garden-icons.mjs` (CDP — rendering a real
 glyph needs a DOM): the Arbor rail (and Settings/Trash/Graft/Set,
 wherever they render) shows the NEW svg glyphs, not the old unicode
 characters, under `data-theme="plateau"`; the mode tab reads "Boards →"
-everywhere it used to read "Plan →". A check that a Machina-themed page
-ALSO reads "Boards →" with no Machina-specific override (proving §1c's
-own "inherits canonical" design actually resolves this way, not just in
-prose) can only run once Machina's own `ThemeId` entry exists in code
-(§5's own `theme.ts` row) — decide at build time whether to write it now
-and leave it red-pending-Machina, or defer it to step 4's own harness
-with a cross-reference back here; either is honest, silence about the
-gap is not.
+everywhere it used to read "Plan →". **CORRECTED (Fable, Oct 22):** the
+Machina-side check is no longer "Machina ALSO reads Boards →" — it is
+the opposite, and arguably the more important half, since an override
+sitting on top of a freshly-renamed canonical is exactly the shape a
+careless edit silently breaks: a check that a Machina-themed page STILL
+reads **"Plan →"**, unchanged, specifically BECAUSE of its own
+`OVERRIDES.machina` entry and despite Arbor's canonical row renaming out
+from under it (§9b's own corrected note; §1c). This can only run once
+Machina's own `ThemeId` entry exists in code (§5's own `theme.ts` row) —
+decide at build time whether to write it now and leave it red-pending-
+Machina, or defer it to step 4's own harness with a cross-reference back
+here; either is honest, silence about the gap is not. (Browserless prep
+for this exact pair — the lexicon's own OVERRIDES/CANONICAL source shape,
+before any DOM exists to render it — is written now in
+`scripts/harness/arbor-garden-icons-source.mjs`, this step's own fast-lane
+half; see that file's own header for what it proves today vs. what waits
+on Machina's `ThemeId`.)
 
 ### 9e. Open questions for Fable (this step, not Machina's — §7 is Machina's own)
 
-- None of this step's own — **RESOLVED** (Fable, Oct 21 evening): the
-  icon-swap mechanism is INK's `themeIcons.ts`/`ThemeIcon.tsx` (Flux v2),
-  not a seam this step builds (§9a). The only remaining build-time task
-  is confirming that registry's exact shape once it merges and registering
-  Arbor's nine glyphs into it — not a design question for Fable.
+- The icon-swap mechanism itself — **RESOLVED** (Fable, Oct 21 evening): it
+  is INK's `themeIcons.ts`/`ThemeIcon.tsx` (Flux v2), not a seam this step
+  builds (§9a). The only remaining build-time task is confirming that
+  registry's exact shape once it merges and registering Arbor's nine
+  glyphs into it — not a design question for Fable.
+- **NEW (Fable Oct 22, found while writing this step's harness):** Graft's
+  own icon id (`'input'`) has ZERO render sites anywhere in flux-v2 @
+  `b4c38659` — `GraftPicker.tsx`'s dialog header renders text only, no
+  icon at all. Arbor's ninth garden glyph (Graft) has nowhere to register
+  INTO until one exists. Ask Fable/INK: does flux-v2 add this render site
+  before step 3's own build starts, or does step 3 add it as its own small
+  addition (a few lines in `GraftPicker.tsx`, following the exact
+  `<ThemeIcon id="..." fallback={...} />` pattern the other eight sites
+  already use)? Either is small; deciding silently is not — `arbor-garden-
+  icons.mjs`'s own T9 documents the gap's current shape (0 render sites)
+  rather than guessing a selector that doesn't exist yet.
