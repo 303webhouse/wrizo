@@ -1,0 +1,10 @@
+START 23:57:47Z
+glitch1 exit=1 [01/1] FAIL      exit=1   68s glitch-meter.mjs :: GLITCH-METER VERIFY: FAIL - 1/28 failed
+glitch2 exit=0 [01/1] OK        exit=0   64s glitch-meter.mjs :: GLITCH-METER VERIFY: PASS (28 checks)
+glitch3 exit=0 [01/1] OK        exit=0   63s glitch-meter.mjs :: GLITCH-METER VERIFY: PASS (28 checks)
+glitch4 exit=1 [01/1] FAIL      exit=1   68s glitch-meter.mjs :: GLITCH-METER VERIFY: FAIL - 1/28 failed
+glitch5 exit=0 [01/1] OK        exit=0   67s glitch-meter.mjs :: GLITCH-METER VERIFY: PASS (28 checks)
+default done exit=1 00:08:47Z
+parked done exit=1 00:14:23Z
+gg COMPLETE
+released (mine)

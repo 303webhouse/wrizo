@@ -1,0 +1,17 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=9 tree=804b678c bundle=index-DglJcZVG.js/768832b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/gg-default
+[01/9] OK        exit=0   18s ab2.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; AB2 VERIFY: PASS (27 checks)
+[02/9] OK        exit=0   40s flux-card-ink.mjs :: FLUX-CARD-INK VERIFY: PASS (51 checks)
+[03/9] OK        exit=0   48s flux-page-ink.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; FLUX-PAGE-INK VERIFY: PASS (30 checks)
+[04/9] OK        exit=0   22s fx1.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; FX1 VERIFY: PASS (23 checks)
+[05/9] FAIL      exit=1   69s glitch-meter.mjs :: ROWS-SHADOW VERIFY: PASS (27 renders checked, shadow == DOM on every one) ;; GLITCH-METER VERIFY: FAIL - 1/28 failed
+[06/9] OK        exit=0   18s hb1.mjs :: HB1 VERIFY: PASS (32 checks)
+[07/9] OK        exit=0    6s th1.mjs :: TH1 VERIFY: PASS (27 checks)
+[08/9] OK        exit=0   34s th2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; TH2 VERIFY: PASS (44 checks)
+[09/9] OK        exit=0   28s typing-latency-scroll.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 8/9 of 9 returned a passing verdict
+  FAIL: glitch-meter.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\gg-default\glitch-meter.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=804b678c bundle=index-DglJcZVG.js/768832b NO-REBUILD
