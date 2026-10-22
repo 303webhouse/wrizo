@@ -1,0 +1,11 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=3 tree=a3f3ffa9 bundle=index-Cr9iPM2-.js/783995b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bpc-default
+[01/3] FAIL      exit=1   48s blank-page-click.mjs :: ROWS-SHADOW VERIFY: PASS (29 renders checked, shadow == DOM on every one) ;; BLANK-PAGE-CLICK VERIFY: FAIL - 2/20 failed
+[02/3] OK        exit=0   15s page-scroll-return.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; PAGE-SCROLL-RETURN VERIFY: PASS (9 checks)
+[03/3] OK        exit=0   29s typing-latency-scroll.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 2/3 of 3 returned a passing verdict
+  FAIL: blank-page-click.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bpc-default\blank-page-click.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=a3f3ffa9 bundle=index-Cr9iPM2-.js/783995b NO-REBUILD

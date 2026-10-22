@@ -1,0 +1,24 @@
+
+ROWS-SHADOW VERIFY: PASS (29 renders checked, shadow == DOM on every one)
+PASS  fixture: eight pages seeded through the seams (four modes, blank and with text)
+PASS  Free Write B (premise): the press point lies on the paper BELOW the last line of text  [{"x":800,"y":497,"lineBottom":361,"paperBottom":527}]
+PASS  Free Write B [heading-case successor]: a press on the EMPTY PAPER of a blank page, then typing - the words land on the page (a Screenplay's scene heading in its own capitals)  [{"focus":true,"stored":"Hello paper","p":{"x":800,"y":497,"lineBottom":361,"paperBottom":527}}]
+PASS  Free Write T (premise): the press point lies on the paper BELOW the last line of text  [{"x":800,"y":497,"lineBottom":361,"paperBottom":527}]
+PASS  Free Write T: a press BELOW THE LAST LINE of a page with text puts the caret at the END - one letter lands after the last word  [{"focus":true,"stored":"First line\nSecond line\nThird lineZ","want":"Third lineZ","p":{"x":800,"y":497,"lineBottom":361,"paperBottom":527}}]
+PASS  Draft B (premise): the press point lies on the paper BELOW the last line of text  [{"x":800,"y":308,"lineBottom":168,"paperBottom":527}]
+PASS  Draft B [heading-case successor]: a press on the EMPTY PAPER of a blank page, then typing - the words land on the page (a Screenplay's scene heading in its own capitals)  [{"focus":true,"stored":"Hello paper","p":{"x":800,"y":308,"lineBottom":168,"paperBottom":527}}]
+PASS  Draft T (premise): the press point lies on the paper BELOW the last line of text  [{"x":800,"y":365,"lineBottom":225,"paperBottom":527}]
+FAIL  Draft T: a press BELOW THE LAST LINE of a page with text puts the caret at the END - one letter lands after the last word  [{"focus":true,"stored":"ZFirst line\nSecond line\nThird line","want":"Third lineZ","p":{"x":800,"y":365,"lineBottom":225,"paperBottom":527}}]
+PASS  Draft with the typewriter B (premise): the press point lies on the paper BELOW the last line of text  [{"x":800,"y":497,"lineBottom":361,"paperBottom":527}]
+PASS  Draft with the typewriter B [heading-case successor]: a press on the EMPTY PAPER of a blank page, then typing - the words land on the page (a Screenplay's scene heading in its own capitals)  [{"focus":true,"stored":"Hello paper","p":{"x":800,"y":497,"lineBottom":361,"paperBottom":527}}]
+PASS  Draft with the typewriter T (premise): the press point lies on the paper BELOW the last line of text  [{"x":800,"y":497,"lineBottom":418,"paperBottom":527}]
+FAIL  Draft with the typewriter T: a press BELOW THE LAST LINE of a page with text puts the caret at the END - one letter lands after the last word  [{"focus":true,"stored":"ZFirst line\nSecond line\nThird line","want":"Third lineZ","p":{"x":800,"y":497,"lineBottom":418,"paperBottom":527}}]
+PASS  Screenplay B (premise): the press point lies on the paper BELOW the last line of text  [{"x":800,"y":341,"lineBottom":221,"paperBottom":940}]
+PASS  Screenplay B [heading-case successor]: a press on the EMPTY PAPER of a blank page, then typing - the words land on the page (a Screenplay's scene heading in its own capitals)  [{"focus":true,"stored":"HELLO PAPER","p":{"x":800,"y":341,"lineBottom":221,"paperBottom":940}}]
+PASS  Screenplay T (premise): the press point lies on the paper BELOW the last line of text  [{"x":800,"y":373,"lineBottom":253,"paperBottom":940}]
+PASS  Screenplay T: a press BELOW THE LAST LINE of a page with text puts the caret at the END - one letter lands after the last word  [{"focus":true,"stored":"INT. KITCHEN - NIGHT\n\nShe waits.Z","want":"She waits.Z","p":{"x":800,"y":373,"lineBottom":253,"paperBottom":940}}]
+PASS  Screenplay U: a press on the paper BESIDE an element (not below the last one) activates nothing - presses anywhere else are unchanged  [{"side":{"x":398,"y":213,"aboveLastBottom":true,"onElement":false},"focusSide":false}]
+PASS  MS (mutant): with the press on bare script paper swallowed before the app sees it (the swallow LANDED: counted), a press below the last element no longer activates it - the Screenplay checks depend on the fix  [{"swallowed":1,"reached":false,"p":{"x":800,"y":341,"lineBottom":221,"paperBottom":940}}]
+PASS  M2 (mutant): with the scroller's own click swallowed before the app sees it (the swallow LANDED: counted), a press on the blank paper no longer reaches the editor - the prose checks depend on ModeStage's focusEditor  [{"swallowed":1,"reached":false,"p":{"x":800,"y":308,"lineBottom":168,"paperBottom":527}}]
+
+BLANK-PAGE-CLICK VERIFY: FAIL - 2/20 failed

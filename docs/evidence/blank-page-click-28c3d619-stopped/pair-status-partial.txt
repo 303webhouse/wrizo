@@ -1,0 +1,7 @@
+STAMP: tree=a3f3ffa9 bundle=index-Cr9iPM2-.js/783995b
+default c00: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c00 - continuing to collect all reds
+default c01: CLEAN same stamp (verified not VOID)
+default c02: NOT CLEAN; non-launch-crash failures=1
+RED (real) at default c02 - continuing to collect all reds
+default c03: CLEAN same stamp (verified not VOID)
