@@ -1,0 +1,9 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=1 files=1 tree=8f0d2842 bundle=index-B3dNDLw7.js/782929b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bp3c-parked
+[01/1] FAIL      exit=1   39s big-projects-3.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; "name": "PARKED (was \"P1: it opens the picker - a search field (focused), then Cards / Pages / Boards from every place, each with its place label, never the page itself\") - ruling 3: a label only for another place; live successor: P1 [ruling-3 successor]", ;; BIG-PROJECTS-3 PARKED: PASS (1 checks) - HARNESS_PARKED=1 armed, all retired-check successors green ;; BIG-PROJECTS-3 VERIFY: FAIL - 1/27 failed
+
+SUITE DONE HARNESS_PARKED=1 — 0/1 of 1 returned a passing verdict
+  FAIL: big-projects-3.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bp3c-parked\big-projects-3.mjs.parked.txt
+SUITE RESULT: NOT CLEAN — tree=8f0d2842 bundle=index-B3dNDLw7.js/782929b NO-REBUILD

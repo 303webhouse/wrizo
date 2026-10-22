@@ -1,0 +1,21 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=13 tree=6659b638 bundle=index-BZlltq-5.js/772015b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/tp-default
+[01/13] OK        exit=0   15s arrival-signin.mjs :: ARRIVAL-SIGNIN VERIFY: PASS (103 checks) — screenshots and live walk not run (box turn)
+[02/13] OK        exit=0   16s b2-1.mjs :: ROWS-SHADOW VERIFY: PASS (9 renders checked, shadow == DOM on every one) ;; B2-1 VERIFY: PASS (28 checks)
+[03/13] OK        exit=0   41s big-projects-1a.mjs :: ROWS-SHADOW VERIFY: PASS (36 renders checked, shadow == DOM on every one) ;; BIG-PROJECTS-1A VERIFY: PASS (92 checks)
+[04/13] OK        exit=0   22s big-projects-2.mjs :: BIG-PROJECTS-2 VERIFY: PASS (43 checks)
+[05/13] OK        exit=0   58s board-context-menu.mjs :: BOARD-CONTEXT-MENU VERIFY: PASS (56 checks)
+[06/13] OK        exit=0   29s fx6.mjs :: ROWS-SHADOW VERIFY: PASS (137 renders checked, shadow == DOM on every one) ;; FX6 VERIFY: PASS (38 checks)
+[07/13] OK        exit=0   32s fx7.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX7 VERIFY (partial): PASS (43 checks)
+[08/13] OK        exit=0    8s fx9.mjs :: FX9 VERIFY: PASS (13 checks)
+[09/13] OK        exit=0   31s item83f.mjs :: ROWS-SHADOW VERIFY: PASS (45 renders checked, shadow == DOM on every one) ;; ITEM83F VERIFY: PASS (33 checks)
+[10/13] OK        exit=0   27s j6.mjs :: ROWS-SHADOW VERIFY: PASS (9 renders checked, shadow == DOM on every one) ;; J6 VERIFY: PASS (33 checks)
+[11/13] OK        exit=0    1s page-links.mjs :: PAGE-LINKS VERIFY: PASS (28 checks)
+[12/13] OK        exit=0    0s theme-picker-logic.mjs :: THEME-PICKER-LOGIC VERIFY: PASS (20 checks)
+[13/13] NOVERDICT exit=1   10s theme-picker.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\tp-default\theme-picker.mjs.default.txt)
+
+SUITE DONE HARNESS_PARKED=unset — 12/13 of 13 returned a passing verdict
+  NOVERDICT: theme-picker.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\tp-default\theme-picker.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=6659b638 bundle=index-BZlltq-5.js/772015b NO-REBUILD

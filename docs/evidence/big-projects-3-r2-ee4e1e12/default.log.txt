@@ -1,0 +1,9 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=1 tree=8f0d2842 bundle=index-B3dNDLw7.js/782929b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/bp3c-default
+[01/1] FAIL      exit=1   39s big-projects-3.mjs :: ROWS-SHADOW VERIFY: PASS (4 renders checked, shadow == DOM on every one) ;; BIG-PROJECTS-3 VERIFY: FAIL - 1/27 failed
+
+SUITE DONE HARNESS_PARKED=unset — 0/1 of 1 returned a passing verdict
+  FAIL: big-projects-3.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\bp3c-default\big-projects-3.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=8f0d2842 bundle=index-B3dNDLw7.js/782929b NO-REBUILD
