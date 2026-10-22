@@ -145,6 +145,12 @@ const typewriterDom = (app) => app.evalJs("document.querySelector('.mode-scroll'
 const typewriterSetting = (app) => app.evalJs(
   "(() => { try { const raw = localStorage.getItem('wrizo-writing-settings'); const parsed = raw ? JSON.parse(raw) : {}; return 'typewriter' in parsed ? parsed.typewriter : true; } catch { return null; } })()",
 );
+// typewriter-scope (Fable Oct 21) - the PER-PAGE stored value (store/writingSettings.ts's own
+// pageKey, `wrizo-typewriter-page-<id>`), the key enterPageTypewriter actually writes now.
+// typewriterSetting above reads the SHARED `wrizo-writing-settings` blob, which
+// enterPageTypewriter no longer mirrors into on purpose (the cross-page leak this ticket exists
+// to close) - so it is no longer a reliable read of "what did this page's own open resolve to."
+const typewriterPageSetting = (app, id) => app.evalJs(`localStorage.getItem('wrizo-typewriter-page-${id}')`);
 const activeModeTab = (app) => app.evalJs("document.querySelector('.desk-mode-tab.active')?.textContent");
 const clickModeTab = (app, label) =>
   app.evalJs(`[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === ${JSON.stringify(label)})?.click()`);
@@ -287,13 +293,24 @@ await withHarness(async (app) => {
   ok('S5 successor: a ~3-line page that holds text and has no saved value opens Draft with typewriter OFF (the 1-9-line seed is gone) - DOM (.mode-scroll[data-typewriter])',
     shortDom === 'false', String(shortDom));
   // ---- PARKED - SUPERSEDED by Phase 1 S5 (the typewriter is remembered per page: a page that holds text and has no saved value opens OFF, a new empty page takes its theme's default; Nick, Oct 11), 2026-10-11 ----
-  // Kept VERBATIM and no longer run. The successor follows the parked lines.
+  // GENERATION 1, kept VERBATIM and no longer run.
   //
   // ok('S2: a ~3-line page opens Draft with typewriter ON — the stored setting itself',
   // shortSetting === true, String(shortSetting));
   // ----------------------------------------------------------------------
-  ok('S5 successor: a ~3-line page opens Draft with typewriter OFF — the stored setting itself',
-    shortSetting === false, String(shortSetting));
+  // ---- PARKED - SUPERSEDED by typewriter-scope (Fable Oct 21), 2026-10-21 ----
+  // GENERATION 2, kept VERBATIM and no longer run: `shortSetting` reads the SHARED
+  // `wrizo-writing-settings` blob, which enterPageTypewriter no longer mirrors into (the
+  // cross-page leak this ticket exists to close) - so it can no longer stand in for "what did
+  // THIS page's own open resolve to." Generation 3 (the live check) reads the per-page key
+  // directly instead.
+  //
+  // ok('S5 successor: a ~3-line page opens Draft with typewriter OFF — the stored setting itself',
+  // shortSetting === false, String(shortSetting));
+  // ----------------------------------------------------------------------
+  const shortPageSetting = await typewriterPageSetting(app, 'fx2-draft');
+  ok('typewriter-scope successor: a ~3-line page opens Draft with typewriter OFF — THIS page\'s own stored value (wrizo-typewriter-page-fx2-draft), not the retired shared mirror',
+    shortPageSetting === 'off', String(shortPageSetting));
 
   await freshDraftPage(app, longDraftText);
   const longMode = await activeModeTab(app);
@@ -302,8 +319,17 @@ await withHarness(async (app) => {
   ok('S2: a ~15-line page also opens in Draft (the fixture itself, sanity-checked)', longMode === 'Draft', String(longMode));
   ok('S2: a ~15-line page (at/above the 10-line threshold) opens Draft with typewriter OFF — DOM',
     longDom === 'false', String(longDom));
-  ok('S2: a ~15-line page opens Draft with typewriter OFF — the stored setting itself',
-    longSetting === false, String(longSetting));
+  // ---- PARKED - SUPERSEDED by typewriter-scope (Fable Oct 21), 2026-10-21 ----
+  // Kept VERBATIM and no longer run: `longSetting` reads the SHARED `wrizo-writing-settings`
+  // blob, which enterPageTypewriter no longer mirrors into (the cross-page leak this ticket
+  // exists to close). The successor reads the per-page key directly instead.
+  //
+  // ok('S2: a ~15-line page opens Draft with typewriter OFF — the stored setting itself',
+  // longSetting === false, String(longSetting));
+  // ----------------------------------------------------------------------
+  const longPageSetting = await typewriterPageSetting(app, 'fx2-draft');
+  ok('typewriter-scope successor: a ~15-line page opens Draft with typewriter OFF — THIS page\'s own stored value (wrizo-typewriter-page-fx2-draft), not the retired shared mirror',
+    longPageSetting === 'off', String(longPageSetting));
 
   // ==========================================================================
   // S2 — the explicit toggle wins for the rest of the session: still on the
@@ -449,13 +475,23 @@ await withHarness(async (app) => {
   ok('S5 successor (cross-page): page B keeps its OWN setting - it opens OFF (text, nothing saved); page A\'s explicit ON did not leak across the page/mount boundary',
     pageBDom === 'false', String(pageBDom));
   // ---- PARKED - SUPERSEDED by Phase 1 S5 (the typewriter is remembered per page: a page that holds text and has no saved value opens OFF, a new empty page takes its theme's default; Nick, Oct 11), 2026-10-11 ----
-  // Kept VERBATIM and no longer run. The successor follows the parked lines.
+  // GENERATION 1, kept VERBATIM and no longer run.
   //
   // ok('S2 (cross-page, independent-review addition): ...and the stored setting itself is OFF, not reverted by page B\'s own seed',
   // pageBSetting === false, String(pageBSetting));
   // ----------------------------------------------------------------------
-  ok('S5 successor (cross-page): ...and the stored setting itself is OFF for page B',
-    pageBSetting === false, String(pageBSetting));
+  // ---- PARKED - SUPERSEDED by typewriter-scope (Fable Oct 21), 2026-10-21 ----
+  // GENERATION 2, kept VERBATIM and no longer run: `pageBSetting` reads the SHARED
+  // `wrizo-writing-settings` blob, which enterPageTypewriter no longer mirrors into (the
+  // cross-page leak this ticket exists to close). Generation 3 (the live check) reads page B's
+  // own per-page key directly instead.
+  //
+  // ok('S5 successor (cross-page): ...and the stored setting itself is OFF for page B',
+  // pageBSetting === false, String(pageBSetting));
+  // ----------------------------------------------------------------------
+  const pageBPageSetting = await typewriterPageSetting(app, 'fx2-draft-b');
+  ok('typewriter-scope successor (cross-page): ...and page B\'s OWN stored value (wrizo-typewriter-page-fx2-draft-b) is OFF, never touched by page A\'s explicit ON or the retired shared mirror',
+    pageBPageSetting === 'off', String(pageBPageSetting));
 
   // S5 (new): and A, turned ON by hand, is still ON when the writer comes back to it - the page remembers.
   await gotoPage(app, 'fx2-draft-a');
