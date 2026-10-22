@@ -191,14 +191,43 @@ const pe = src('pages/PageEditor.tsx');
 // ok('FORMS: Free Write passes the SMALL form (and none in INK), Draft and Revise pass the FULL form',
 //   /type: instrument === 'ink' \? undefined : typeMember\('small'\)/.test(pe) && /kind: 'draft',[\s\S]{0,200}type: typeMember\('full'\)/.test(pe) && /kind: 'revise', type: typeMember\('full'\)/.test(pe), '');
 // ------------------------------------------------------------------
+// ---- PARKED - SUPERSEDED by typewriter-scope (Fable Oct 21/22) ----
+// Kept VERBATIM and no longer run. The 200-char window between `kind: 'draft',` and
+// `type: typeMember('full', true)` was outrun, not broken: typewriter-scope inserted a comment
+// plus `pageId: id,` / `pageEmpty: textRef.current.trim().length === 0,` between them (PageEditor.tsx's
+// own per-page typewriter read, store/writingSettings.ts's new `typewriterForPage`) - the actual gap
+// grew to 383 chars. Draft's own form (`type: typeMember('full', true)`) is untouched; only this
+// regex's own fixed window needed widening (unbounded lazy, matching MOUNT's own style above),
+// which the live successor below does.
+//
+// ok('FORMS [font-span successor]: Free Write passes the SMALL form (and none in INK); Draft passes the FULL form WITH the Selection scope; Revise passes the FULL form WITHOUT it (no styling tools there by ruling)',
+//   formsNow.freeWriteSmall && formsNow.draftFullScoped && formsNow.reviseFullUnscoped, JSON.stringify(formsNow));
+// ------------------------------------------------------------------
 const formsNow = {
   freeWriteSmall: /type: instrument === 'ink' \? undefined : typeMember\('small'\)/.test(pe),
-  draftFullScoped: /kind: 'draft',[\s\S]{0,200}type: typeMember\('full', true\)/.test(pe),
+  draftFullScoped: /kind: 'draft',[\s\S]*?type: typeMember\('full', true\)/.test(pe),
   reviseFullUnscoped: /kind: 'revise', type: typeMember\('full'\)/.test(pe),
 };
 coreParks.forms = formsNow;
-ok('FORMS [font-span successor]: Free Write passes the SMALL form (and none in INK); Draft passes the FULL form WITH the Selection scope; Revise passes the FULL form WITHOUT it (no styling tools there by ruling)',
-  formsNow.freeWriteSmall && formsNow.draftFullScoped && formsNow.reviseFullUnscoped, JSON.stringify(formsNow));
+ok('FORMS [typewriter-scope successor]: Draft still passes the FULL form WITH the Selection scope regardless of Typewriter\'s own state - the Typeface section is a sibling of the Format fieldset `formatLocked` disables, never inside it',
+  formsNow.freeWriteSmall && formsNow.draftFullScoped && formsNow.reviseFullUnscoped
+  && mountC3 && !/fieldset|formatLocked/.test(mountC3[0]), JSON.stringify(formsNow));
+
+// FORMAT LOCK [typewriter-scope successor]: a new, empty Arbor Draft page opens with Typewriter
+// ON (the theme's own default for an empty page) and the Format section is disabled while it is.
+const ws = src('store/writingSettings.ts');
+const th = src('store/theme.ts');
+const formatLockNow = {
+  arborDefaultOn: /plateau: \{ typewriterDefault: true \}/.test(th),
+  pureRead: /export function typewriterForPage\(id: string, empty: boolean\): boolean \{\s*const saved = readPageTypewriter\(id\);\s*return saved \?\? \(empty \? THEME_CONFIG\[getTheme\(\)\]\.typewriterDefault : false\);\s*\}/.test(ws),
+  pageIdEmptyWired: /pageId: id,\s*pageEmpty: textRef\.current\.trim\(\)\.length === 0,/.test(pe),
+  formatLockedReadsPerPage: /const formatLocked = content\.kind === 'draft' \? typewriterForPage\(content\.pageId, content\.pageEmpty\) : settings\.typewriter;/.test(sliverSrc),
+  fieldsetGatedByIt: /disabled=\{formatLocked\}/.test(sliverSrc),
+};
+ok('FORMAT LOCK [typewriter-scope successor]: a new, empty Arbor Draft page opens with Typewriter ON (the theme\'s own default for an empty page) and the Format section is disabled while it is',
+  formatLockNow.arborDefaultOn && formatLockNow.pureRead && formatLockNow.pageIdEmptyWired
+  && formatLockNow.formatLockedReadsPerPage && formatLockNow.fieldsetGatedByIt, JSON.stringify(formatLockNow));
+coreParks.formatLock = formatLockNow;
 ok('SCREENPLAY: absent, not greyed — the screenplay editor passes no `type` to its sliver content (its face is the format\'s)',
   !/\btype:\s*(typeMember|\{)/.test(noComments(src('components/ScriptEditor.tsx'))), '');
 const be = src('components/BoardEditor.tsx');
@@ -247,6 +276,11 @@ if (process.env.HARNESS_PARKED === '1') {
   // re-verifies the new truth from the default leg's observation (coreParks.forms).
   { const f = coreParks.forms; parkedChecks.push({ name: 'PARKED (was "FORMS: Free Write passes the SMALL form (and none in INK), Draft and Revise pass the FULL form") - font-span: Draft passes the full form with its scope flag; live successor: FORMS [font-span successor]',
     pass: !!f && f.freeWriteSmall && f.draftFullScoped && f.reviseFullUnscoped, detail: JSON.stringify(f) }); }
+  // TYPEWRITER-SCOPE (Fable Oct 21/22) - a FOURTH park: FORMS [font-span successor]'s own fixed-window regex was outrun by
+  // typewriter-scope's pageId/pageEmpty insertion (the claim itself never broke). Record frozen; it re-verifies the new truth
+  // from the default leg's observation (coreParks.forms, now read with an unbounded lazy match).
+  { const f = coreParks.forms; parkedChecks.push({ name: 'PARKED (was "FORMS [font-span successor]: Free Write passes the SMALL form (and none in INK); Draft passes the FULL form WITH the Selection scope; Revise passes the FULL form WITHOUT it (no styling tools there by ruling)") - typewriter-scope: the gap between `kind: \'draft\',` and `type: typeMember(...)` grew past the regex\'s 200-char window when pageId/pageEmpty + a comment were inserted; live successors: FORMAT LOCK [typewriter-scope successor] + FORMS [typewriter-scope successor]',
+    pass: !!f && f.freeWriteSmall && f.draftFullScoped && f.reviseFullUnscoped, detail: JSON.stringify(f) }); }
   // FONT-SPAN (2026-10-15) - a SECOND park: MINIMAL's three buttons, superseded by the scope pair. Record frozen; it re-verifies the new
   // truth from the default leg's observation (coreParks.minimal).
   { const m = coreParks.minimal; parkedChecks.push({ name: 'PARKED (was "MINIMAL (his law): the control is exactly a face button and a `-` `+` pair (3 buttons) plus ONE number input, and that input exists only in the full form") - font-span: 5 buttons in source, the scope pair only under `scope`; live successor: MINIMAL [font-span successor]',
@@ -256,7 +290,7 @@ if (process.env.HARNESS_PARKED === '1') {
   parkedChecks.push({ name: 'PARKED (was "MOUNT [C3 successor]: the sliver mounts the control on the Free Write, Draft and Revise arms only, in one section headed \\"Typeface\\" ...") - its literal `content.type && (` match read any further guard (phase1-drawers\' `&& allowed(\'typeface\')`) as a missing mount; live successor: MOUNT [C3 successor, guard-tolerant]',
     pass: !!mountC3, detail: mountC3 ? 'found' : 'mount block not found' });
   console.log(parkedChecks.every((c) => c.pass)
-    ? `\nITEM207-CORE PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; THREE parks: MOUNT [C3 successor]'s literal-shape match, MINIMAL's three buttons and FORMS' literal Draft form (font-span)`
+    ? `\nITEM207-CORE PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; FOUR parks: MOUNT [C3 successor]'s literal-shape match, MINIMAL's three buttons, FORMS' literal Draft form (font-span), and FORMS [font-span successor]'s own fixed-window regex (typewriter-scope)`
     : `\nITEM207-CORE PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const all = checks.concat(parkedChecks);
