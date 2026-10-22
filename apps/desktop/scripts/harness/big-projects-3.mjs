@@ -45,6 +45,18 @@ const dbl = async (app, x, y) => {
   await mouse(app, 'mousePressed', x, y, { clickCount: 1 }); await mouse(app, 'mouseReleased', x, y, { clickCount: 1 }); await sleep(60);
   await mouse(app, 'mousePressed', x, y, { clickCount: 2 }); await mouse(app, 'mouseReleased', x, y, { clickCount: 2 }); await sleep(250);
 };
+// LEDGER 128: a REAL Escape. `app.keyCombo` is the Ctrl+<letter> helper - keyCombo('Escape') sent Ctrl + a key named "escape" with key code 'E',
+// so connection mode never ended after K4 (K5's "select c2" press then UNLINKED K2's c1-c2 connection: no c2 knob, and P4's card had nothing
+// grafted, so no "Connected to" line) and the picker never closed after P3 (it lay over the plan row: L2). The key escexit.mjs sends.
+const ESC = { key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27, nativeVirtualKeyCode: 27 };
+const esc = async (app) => { await app.cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...ESC }); await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', ...ESC }); };
+// a press INSIDE the editor that leaves it focused (ledger 128, N1: a fixed ed.t + 60 fell below a new page's 29 px editor) - true if it took focus
+const focusEditor = async (app) => {
+  const ed = await R(app, '.forward-only-editor');
+  if (!ed || ed.w === 0 || ed.h === 0) return false;
+  await click(app, Math.round(ed.l + ed.w * 0.5), Math.round(ed.t + ed.h / 2)); await sleep(250);
+  return app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); return !!ed && !!document.activeElement && ed.contains(document.activeElement); })()");
+};
 // a node is LOOKED FOR, never assumed: a press on something missing is a named failure at the caller, not a crash
 const pressSel = async (app, sel) => { const r = await R(app, sel); if (!r || r.w === 0) return false; const c = centre(r); await click(app, c.x, c.y); await sleep(350); return true; };
 const cardRect = async (app, cardId, patience = 40) => { for (let i = 0; i < patience; i += 1) { const r = await R(app, `[data-box-id="${cardId}"]`); if (r && r.w > 0) return r; await sleep(150); } return null; };
@@ -176,7 +188,11 @@ await withHarness(async (app) => {
       const h4b = await R(app, '[data-box-id="c1"] .board-handle');
       if (h4b) { await dbl(app, centre(h4b).x, centre(h4b).y); }
       ok('K4: ...and its double-press still enters connection mode (the old door stays)', (await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed")) === 'true', '');
-      await app.keyCombo('Escape'); await sleep(300);
+      await esc(app); await sleep(300);
+      // ledger 128: the mode must really be OVER before K5 presses c2 (a press in the mode on a linked card UNLINKS it), and K2's link must still stand
+      const armedAfter = await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
+      const k2Still = (await conns(app)).some((c) => (c.connA === 'c1' && c.connB === 'c2') || (c.connA === 'c2' && c.connB === 'c1'));
+      ok('K4 (driver): Escape ends connection mode, and K2\'s connection still stands', armedAfter === 'false' && k2Still, JSON.stringify({ armedAfter, k2Still }));
     } else ok('K4 fixture: the corner square on the selected card', false, 'none');
     // K5 - the rail. BIG PROJECTS 1a (rebased): the rail's connector targets are the PAGES POP-OUT's rows (.wz-section-row[data-link-entry]),
     // and a pop-out lists the CURRENT place only (Q3) - so the target is Ch 3, in this board's own place and not pinned on it (a pinned page
@@ -211,7 +227,7 @@ await withHarness(async (app) => {
       head === 'Connected to Mara at the window' && rows.length > 0 && !rows.some((r) => r.entry === IDS.map && r.box === 'c1') && rows.some((r) => r.box === 'c2')
         && picked && l4.length === 1 && l4[0].aBoxId === 'c1' && (await linksOf(app, IDS.map)).length === before + 1,
       JSON.stringify({ head, n: rows.length, l4 }));
-    await app.keyCombo('Escape'); await sleep(300);
+    await esc(app); await sleep(300);
   } else ok('P4 fixture: the board reopened', false, await hash(app));
 
   // ================================================================== P1-P3, L1-L3 - a page
@@ -250,7 +266,7 @@ await withHarness(async (app) => {
     ok('P3: a press on a row makes exactly ONE record owned by the page and checks the row', p3 && after3.length === before3 + 1 && after3.some((l) => l.bEntryId === IDS.salt && l.aEntryId === IDS.ch3) && !!rowNow && rowNow.checked === 'true',
       JSON.stringify({ before3, after: after3.length, rowNow }));
     ok('P3: a press on a CHECKED row writes nothing (Q10: inert; the X in the list ungrafts)', p3b && (await linksOf(app, IDS.ch3)).length === after3.length, '');
-    await app.keyCombo('Escape'); await sleep(300);
+    await esc(app); await sleep(300);
   }
   // L1-L2
   const order = await app.evalJs("(() => { const p = document.querySelector('.wz-links-pane'); if (!p) return null; const all = [...p.querySelectorAll('[data-graft-connected], [data-graft-plan], [data-graft-group]')]; return all.map((e) => e.hasAttribute('data-graft-connected') ? 'connected' : e.hasAttribute('data-graft-plan') ? 'plan' : 'group:' + e.dataset.graftGroup); })()");
@@ -283,7 +299,10 @@ await withHarness(async (app) => {
       // L3 - hide again, type, reload
       await pressSel(app, '[data-graft-plan-card="p2"] [data-graft-hide]');
       const ed = await R(app, '.forward-only-editor');
-      if (ed) { await click(app, Math.round(ed.l + ed.w * 0.5), Math.round(ed.t + 60)); await app.keyCombo('End'); await app.typeKeys(' more'); }
+      // ledger 128: a press INSIDE the editor (not a fixed +60 px) and a real End key (keyCombo('End') sent Ctrl+'end'); the focus is a named premise
+      const l3Focus = ed ? await focusEditor(app) : false;
+      ok('L3 (driver): the press focused the page\'s editor before typing', l3Focus === true, JSON.stringify({ ed }));
+      if (l3Focus) { await app.key('End'); await app.typeKeys(' more'); }
       await sleep(1600); await app.evalJs('window.wrizoFlushNow()'); await sleep(300);
       await app.reload(); await waitSoft(app, onPage, { label: 'the page after a reload', timeout: 12000 }); await sleep(600);
       const s3 = await stored(app, IDS.ch3);
@@ -320,7 +339,7 @@ await withHarness(async (app) => {
       const pressed = await pressSel(app, '[data-graft-picker] [data-graft-came]');
       const l = await linksOf(app, IDS.ch2);
       ok('C1: pressing it grafts - one record owned by the page, to the board', pressed && l.length === linksBefore + 1 && l.some((x) => x.bEntryId === IDS.map && !x.bBoxId), JSON.stringify(l));
-      await app.keyCombo('Escape'); await sleep(300);
+      await esc(app); await sleep(300);
       // the same page opened another way - by its address, with no surface state (the HashRouter keeps history state across a reload, so a
       // reload is NOT that case: the plan's "a reload that has lost the state" is conditional, and the Back chip relies on it surviving)
       await app.evalJs("location.hash = '#/'"); await sleep(500);
@@ -328,7 +347,7 @@ await withHarness(async (app) => {
       await openGrafts(app); await pressSel(app, '[data-graft-add]');
       const came2 = await app.evalJs("!!document.querySelector('[data-graft-picker] [data-graft-came]')");
       ok('C1: the same page opened by its address (no surface state) shows no "Came from" row', came2 === false, '');
-      await app.keyCombo('Escape'); await sleep(300);
+      await esc(app); await sleep(300);
     } else ok('C1 fixture: the pin card for Ch 2 on the board', false, JSON.stringify(pin || null));
   } else ok('C1 fixture: the board reopened', false, await hash(app));
 
@@ -359,15 +378,22 @@ await withHarness(async (app) => {
     ok('N1: a pick in "+ Graft..." on a brand-new page CREATES the page - its row is stored (no words yet) and owns exactly ONE record, to the pick; the address names the page',
       unbornBefore === '#/page/new' && enabled === true && picked && !!row && !(row.text || '').trim() && links.length === 1 && links[0].bEntryId === IDS.kettle,
       JSON.stringify({ unbornBefore, enabled, picked, bornHash, row: row && { id: row.id, text: row.text }, links }));
-    await app.keyCombo('Escape'); await sleep(300);
+    await esc(app); await sleep(300);
     const ed = await R(app, '.forward-only-editor');
     if (ed && row) {
-      await click(app, Math.round(ed.l + ed.w * 0.5), Math.round(ed.t + 60));
+      // ledger 128 (N1 typing read text ""): the old press was a fixed ed.t + 60 - BELOW this new page's editor (29 px tall in the run), so the
+      // typing had no target. The press now lands inside the editor, and the focus is a NAMED premise: if the editor has focus and the words still
+      // do not save, that is the product (a typing-path regression), not the driver. The editor's own DOM text is in the detail beside the stored
+      // text, so a save failure and a typing failure read differently.
+      const n1Focus = await focusEditor(app);
+      ok('N1 (driver): the press focused the new page\'s editor before typing', n1Focus === true, JSON.stringify({ ed }));
       await app.typeKeys('Born by a graft');
-      await sleep(1600); await app.evalJs('window.wrizoFlushNow()'); await sleep(300);
-      const row2 = await stored(app, newId);
+      // the editor saves on its own debounce: wait on the STORED text, never on a flush call
+      let row2 = null;
+      for (let i = 0; i < 20; i += 1) { row2 = await stored(app, newId); if (row2 && /Born by a graft/.test(row2.text || '')) break; await sleep(250); }
+      const domText = await app.evalJs("document.querySelector('.forward-only-editor')?.textContent ?? null");
       ok('N1: typing then saves on that same page as ever (born-on-first-word is untouched; the words land on the row the graft made)',
-        !!row2 && /Born by a graft/.test(row2.text || '') && (await linksOf(app, newId)).length === 1, JSON.stringify({ text: row2 && row2.text }));
+        !!row2 && /Born by a graft/.test(row2.text || '') && (await linksOf(app, newId)).length === 1, JSON.stringify({ text: row2 && row2.text, domText, focus: n1Focus, hash: await hash(app) }));
     } else ok('N1 fixture: the editor on the new page, and its row', false, JSON.stringify({ ed, row: !!row }));
   } else ok('N1 fixture: a brand-new page opened at #/page/new', false, await hash(app));
 });
