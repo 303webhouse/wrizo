@@ -1778,7 +1778,7 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     timerLabel: 'Clock',
     actionCopy: 'Clone doc text',
     // STEP 3 (grafts, merged 19d31fc2): the Inputs panel's own words in Flux - the knob is an Input, the verb is connect, a card is a node, a board a circuit, a page a doc, a tag a flag.
-    graftAdd: '+ Input…',
+    graftAdd: 'Input…',
     graftSearch: 'Search nodes, docs, circuits…',
     graftGroupCards: 'Nodes',
     graftGroupBoards: 'Circuits',
