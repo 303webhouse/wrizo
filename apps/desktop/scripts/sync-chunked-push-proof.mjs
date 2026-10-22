@@ -382,7 +382,11 @@ function mutantList() {
   out.push({ name: 'P5: a lower limit is not learned (the second big page is sent to be refused too)', o: { csync: (t) => must(t, 'if (batch.length === 1 && isTooLarge(batch[0])) { quarantined.push(batch[0]); return; }', '') } });
   out.push({ name: 'P5: a refused lone record is not remembered as too large (it is dropped from the list)', o: { csync: (t) => must(t, "setTooLarge([...big, ...quarantined].map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));", 'setTooLarge(big.map(i => ({ id: i.rec.id, title: titleFor(i), bytes: i.bytes })));') } });
   out.push({ name: 'P5: the notice splices the title with a replacement STRING (a title of "$&" is mangled)', o: { cnotice: (t) => must(t, "() => tooLarge[0].title", "tooLarge[0].title") } });
-  out.push({ name: 'P5: the plural names them "pages" again (a project or drawer is not a page)', o: { lex: (t) => must(t, '{n} items are too large', '{n} pages are too large') } });
+  // ---- PARKED - SUPERSEDED by ITEM word-diet (the plural is "{n} items too large to sync. Saved on this device."): this mutant's anchor was the pre-word-diet "{n} items are too large", which no longer exists (the --mutants run crashed with MUTANT DID NOT LAND).
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // out.push({ name: 'P5: the plural names them "pages" again (a project or drawer is not a page)', o: { lex: (t) => must(t, '{n} items are too large', '{n} pages are too large') } });
+  out.push({ name: 'P5 [word-diet successor]: the plural names them "pages" again (a project or drawer is not a page)', o: { lex: (t) => must(t, '{n} items too large', '{n} pages too large') } });
   // Re-anchored for item 213, which restructured syncNoticeText (storage states first, then offline, then `if (tooLarge.length > 0)`);
   // the mutant is the same lie: a too-large record reported as "Offline".
   out.push({ name: 'P5: the notice calls a too-large page "Offline" again (the old lie)', o: { cnotice: (t) => must(t, '  if (tooLarge.length > 0) {\n', "  if (tooLarge.length > 0) {\n    return 'Offline \u2014 saved here';\n") } });
