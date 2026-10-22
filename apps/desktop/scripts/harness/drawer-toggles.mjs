@@ -304,7 +304,11 @@ mutant('the typewriter button bypasses setTypewriterExplicit', 'sliver', (t) => 
 mutant('a button grows a visible text label (not icon-only)', 'sliver', (t) => mutate(t, '<ProgressModeIcon />', '<ProgressModeIcon /> Progress'), 'buttonsPP');
 mutant('the old Typewriter row comes back in the menu', 'sliver', (t) => mutate(t, "  const off = !(pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter);\n  return (\n    <>\n", "  const off = !(pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter);\n  return (\n    <>\n      <Seg label={t('footTypewriter')} value=\"on\" opts={[]} onPick={() => {}} />\n"), 'rowsGone');
 mutant('Forward Lock stays usable while Typewriter is off', 'sliver', (t) => mutate(t, "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'} disabled={off}", "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'}"), 'greyedPP');
-mutant('the Timer row stays usable while Progress Tracking is off', 'sliver', (t) => mutate(t, '<Seg label="Timer" value={settings.timer ? \'on\' : \'off\'} disabled={off}', '<Seg label="Timer" value={settings.timer ? \'on\' : \'off\'}'), 'greyedPP');
+// ---- PARKED - SUPERSEDED by FLUX WORDS (Nick's Oct 12 pass, folded into flux-v2): the Timer row's label now comes from the lexicon (t('timerLabel')), so the mutation anchor moved.
+// Kept VERBATIM below and no longer run; the live successor follows.
+//
+// mutant('the Timer row stays usable while Progress Tracking is off', 'sliver', (t) => mutate(t, '<Seg label="Timer" value={settings.timer ? \'on\' : \'off\'} disabled={off}', '<Seg label="Timer" value={settings.timer ? \'on\' : \'off\'}'), 'greyedPP');
+mutant('the Timer row stays usable while Progress Tracking is off [flux-words successor]', 'sliver', (t) => mutate(t, "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'} disabled={off}", "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'}"), 'greyedPP');
 mutant('the Goal number stays editable while Progress Tracking is off', 'sliver', (t) => mutate(t, 'aria-label={t(\'goalLabel\')} disabled={off}', "aria-label={t('goalLabel')}"), 'greyedPP');
 mutant('Seg ignores disabled', 'stage', (t) => mutate(t, "className={value === v ? 'on' : ''} disabled={disabled} onClick", "className={value === v ? 'on' : ''} onClick"), 'seg');
 mutant('the Format fieldset is not disabled', 'sliver', (t) => mutate(t, '<fieldset className="wz-sliver-fieldset" disabled={formatLocked}', '<fieldset className="wz-sliver-fieldset"'), 'format');
