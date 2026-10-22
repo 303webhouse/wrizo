@@ -5962,7 +5962,7 @@ a:focus-visible,
    reads brass, not olive's where-you-are treatment (R7's original reasoning, kept here
    as the reason this diverges from the tab/segmented-option law elsewhere in this file). */
 .wz-page-setup-chip[aria-checked='true'], .wz-page-setup-chip[aria-pressed='true']{
-  color:var(--brass); border-color:var(--brass); }
+  color:var(--choice); border-color:var(--choice); }
 .wz-page-setup-chip:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
 .wz-page-setup-range{ flex:1 1 auto; accent-color:var(--accent-rest); }
 .wz-page-setup-text{ width:100%; background:var(--ink-950);

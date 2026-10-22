@@ -133,7 +133,11 @@ const openDraftSliverSettings = async (app) => {
 // Dedicated per-theme successor: S1b, below the generic loop.
 const LOCATIONS = [
   { key: 'helpTemplates', subject: 'Templates', reach: openDraftSliver, sel: '.wz-sliver-templates .wz-sliver-h .wz-help' },
-  { key: 'recedeHint', subject: 'Recede depth', reach: openDraftSliverSettings, sel: '.wz-help[aria-label="What is Recede depth?"]' },
+  // ---- PARKED - SUPERSEDED by FLUX WORDS / the templates rows (box run b96e7cd1, Fable's ruling Oct 21): the "?" names its row, and Flux's row is Dissolve ("What is Dissolve?") - the product is right (the label comes from the lexicon); the selector takes either theme's own word.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // { key: 'recedeHint', subject: 'Recede depth', reach: openDraftSliverSettings, sel: '.wz-help[aria-label="What is Recede depth?"]' },
+    { key: 'recedeHint', subject: 'Recede depth', reach: openDraftSliverSettings, sel: '.wz-help[aria-label="What is Recede depth?"], .wz-help[aria-label="What is Dissolve?"]' },
   // ---- PARKED - SUPERSEDED by FLUX WORDS (Nick's Oct 12 pass, folded into flux-v2): the "?" names its tab, and Flux's tab is Wire In - the selector takes either theme's own word.
   // Kept VERBATIM below and no longer run; the live successor follows.
   //

@@ -103,15 +103,22 @@ export async function part2({ ok, sleepMs }) {
       await click('.forward-only-editor');
       await app.typeKeys('word ');
       await waitSoft("document.querySelector('[data-chrome-receded]')?.getAttribute('data-chrome-receded') === 'true'", { label: 'chrome receded', timeout: 8000 });
-      await sleep(900);
-      const rec = await q("(() => { const r = document.querySelector('.flux-readouts'); const rail = document.querySelector('.wz-strip'); return { readouts: r ? parseFloat(getComputedStyle(r).opacity) : null, rail: rail ? parseFloat(getComputedStyle(rail).opacity) : null }; })()");
-      ok('F5 while typing the chrome recedes AND the readouts go with it (their opacity falls to match the rail\'s, near 0)', rec.readouts !== null && rec.readouts <= 0.15, JSON.stringify(rec));
+      // EFFECTIVE opacity: an element's own computed opacity says nothing about a fade that lives on an ancestor (the rail's track dissolves, the strip inside it reads 1). Multiply up the chain.
+      const effOpacity = "(sel) => { let e = document.querySelector(sel); if (!e) return null; let o = 1; while (e && e !== document.documentElement) { o *= parseFloat(getComputedStyle(e).opacity); e = e.parentElement; } return Math.round(o * 1000) / 1000; }";
+      let rec = null;
+      for (let i = 0; i < 24; i += 1) {   // the recede is a slow transition: poll up to ~6 s for it to settle
+        rec = await q(`(() => { const eff = ${effOpacity}; return { readouts: eff('.flux-readouts'), rail: eff('.wz-strip') }; })()`);
+        if (rec.readouts !== null && rec.rail !== null && rec.readouts <= 0.1 && rec.rail <= 0.2) break;
+        await sleep(250);
+      }
+      ok('F5 while typing the chrome recedes AND the readouts go with it: the EFFECTIVE opacity of the rail and of the readouts both fall near 0 (all chrome fades together)', rec.readouts !== null && rec.rail !== null && rec.readouts <= 0.1 && rec.rail <= 0.2, JSON.stringify(rec));
 
       // ---- F6: orange is scarce: a computed-style scan of the Flux page with the rail open ---------------------------------------------------------------------------------------
       await fresh(); await seed(); await open('fx-m2');
       await click('[data-category="page"]');
       const scan = await q(`(() => { const O = /rgba?\\(\\s*255,\\s*152,\\s*0/; const bad = [];
-        const allowed = (e) => e.closest('.flux-block-caret, .mode-pfill, .mode-pfill-sparks, [data-uplink], [data-flux-mark], .wz-logo, .wz-mark, .splash-mark') || (e.getAttribute && e.getAttribute('aria-current'));
+        /* .brand-mark is SANCTIONED orange: the brief names the caret, the sprint surge, Uplink, the mark and the left bar (Fable, ledger 129) */
+        const allowed = (e) => e.closest('.flux-block-caret, .mode-pfill, .mode-pfill-sparks, [data-uplink], [data-flux-mark], .wz-logo, .wz-mark, .splash-mark, .brand-mark') || (e.getAttribute && e.getAttribute('aria-current'));
         for (const e of document.querySelectorAll('body *')) { const cs = getComputedStyle(e); const vals = [cs.color, cs.backgroundColor, cs.borderTopColor, cs.borderLeftColor, cs.outlineColor, cs.boxShadow, cs.caretColor, cs.fill, cs.stroke];
           if (vals.some((v) => v && O.test(v)) && !allowed(e)) bad.push((e.tagName + '.' + String(e.className).split(' ').slice(0, 2).join('.')).slice(0, 60)); }
         return bad.slice(0, 12); })()`);
@@ -138,10 +145,23 @@ export async function part2({ ok, sleepMs }) {
       ok('F8 the Docs pop-out header reads RACK ▸ <the rack\'s name>', head === 'RACK ▸ The Late Ferry', String(head));
       const trackHd = await txt('.wz-sections-heading');
       ok('F8 the list heading reads Tracks', trackHd === 'Tracks', String(trackHd));
+      // The default drawer is flagged by its born-with id (top-drawer-<uid>, deterministic); it reads Root until the writer renames it. The rail only shows a place on a page, so a page is filed in the top drawer's own set first.
       await fresh();
-      const rootName = await q("(() => { const e = document.querySelector('.wz-place-block .wz-place-name'); return e ? e.textContent : null; })()");
-      const stored = await q("(JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]').find((d) => /^top-drawer-/.test(d.id)) || {}).name ?? null");
-      ok('F8 a fresh account\'s top drawer is shown as Root while its stored name is still "Top Drawer" (render-time only: nothing was renamed)', rootName === 'Root' && stored === 'Top Drawer', `${rootName} / stored ${stored}`);
+      const topIds = await q("(() => { const d = JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]').find((x) => /^top-drawer-/.test(x.id)); const p = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]').find((x) => d && x.drawerId === d.id); return d && p ? { drawer: d.id, set: p.id, name: d.name } : null; })()");
+      ok('F8 premise: a fresh account was given its top drawer and its one set (the default flag is its id)', !!topIds, JSON.stringify(topIds));
+      if (topIds) {
+        await q(`window.wrizoCreateJournalPage({ id: 'fx-root', text: 'Words of fx-root', projectId: ${JSON.stringify(topIds.set)}, origin: 'project', source: 'page', createdAt: '2026-01-01T00:00:01.000Z' }); window.wrizoFlushNow()`);
+        await sleep(400); await open('fx-root');
+        const placeName = () => q("(() => { const e = document.querySelector('.wz-place-block .wz-place-name'); return e ? e.textContent : null; })()");
+        const storedName = () => q("(JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]').find((d) => /^top-drawer-/.test(d.id)) || {}).name ?? null");
+        const rootName = await placeName();
+        ok('F8 the default (flagged) top drawer is shown as Root, render-time only: its stored name is untouched', rootName === 'Root' && (await storedName()) === 'Top Drawer', `${rootName} / stored ${await storedName()}`);
+        await q(`window.wrizoRenameDrawer(${JSON.stringify(topIds.drawer)}, 'My Novel'); window.wrizoFlushNow()`);
+        await sleep(700);
+        const renamed = await placeName();
+        ok('F8 a top drawer the writer RENAMED keeps its own name (not Root)', renamed === 'My Novel' && (await storedName()) === 'My Novel', `${renamed} / stored ${await storedName()}`);
+        await q(`window.wrizoRenameDrawer(${JSON.stringify(topIds.drawer)}, 'Top Drawer'); window.wrizoFlushNow()`);
+      }
 
       // ---- F9: light mode: page light, chrome dark; the readouts follow the page ---------------------------------------------------------------------------------------------
       await fresh({ page: 'light' }); await seed(); await open('fx-m2');
