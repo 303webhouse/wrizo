@@ -277,8 +277,15 @@ ok('P12 the Title Page sheet writes ONLY the canonical text: every field edit go
   /serializeTitlePage\(next\)/.test(tps) && /onChange\(t\)/.test(tps) && !/localStorage|saveJournalEntry|persistence/.test(tps), '');
 ok('P13 the host mounts the sheet ONLY in Draft, for template "title", while the text parses (otherwise plain Draft text - a decline loses nothing)',
   /const titleSheet = mode === 'drafting' && entry\.pageSettings\?\.template === 'title' && isTitlePageText\(text\);/.test(pe) && /\{titleSheet \? \(\s*<TitlePageSheet/.test(pe), '');
+// typewriter-scope (Fable, Oct 21) - P14's own gate-text match read the shared `typewriter`
+// field directly (`!getWritingSettings().typewriter`); that ticket's fix moves this exact gate
+// (among others) onto typewriterForPage(id, ...) - THIS page's own per-page memory, never a
+// mirror a different page's open could have left behind. The real claim (the outline Tab gate
+// stands aside exactly twice, while Typewriter is on) is unchanged and still holds; only the
+// SIGNAL it reads moved. Parked verbatim below (HARNESS_PARKED=1 re-asserts the field is no
+// longer read there at all - the new, opposite truth), successor is the live check right here.
 ok('P14 the paragraph-indent Tab machine (item 158) stands aside while an Outline is in Draft, so Tab acts on the row and not on the whole one-paragraph outline',
-  /outlineKeysRef\.current = mode === 'drafting' && realEntry\?\.pageSettings\?\.template === 'outline';/.test(pe) && (pe.match(/if \(outlineKeysRef\.current && !getWritingSettings\(\)\.typewriter\) return;/g) || []).length === 2, '');
+  /outlineKeysRef\.current = mode === 'drafting' && realEntry\?\.pageSettings\?\.template === 'outline';/.test(pe) && (pe.match(/if \(outlineKeysRef\.current && !typewriterForPage\(id, textRef\.current\.trim\(\)\.length === 0\)\) return;/g) || []).length === 2, '');
 
 // ---- the lens on main's row model (typing-latency's lineRows): the Outline's numbers are attributes on the ROW element, applied on every write -------------------------------
 const lineRows = read('store/lineRows.ts');
@@ -348,6 +355,29 @@ const doorMutants = [
 const doorRed = doorMutants.map(([k, t]) => [k, t !== fo && lensKeyDoor(t) === false]);
 ok('R10 (mutants): the door back in the format listener after marks.enter, a door that does not stop its event, or a second call each turn the pin RED (each landed)', doorRed.every(([, v]) => v), JSON.stringify(doorRed));
 ok('R11 NOTHING of the lens remains in the string decoration path (store/draftDecoration.ts is byte-identical to main\'s: the rows model owns the page)', !/lensHtml|outlineText/.test(read('store/draftDecoration.ts')), '');
+
+// ---- PARKED - SUPERSEDED by typewriter-scope (Fable, Oct 21) ------------------------------------------------------------------------
+// P14's ORIGINAL gate-text match, quoted VERBATIM and no longer asserted (the successor lives at
+// P14's own spot above, now reading typewriterForPage instead):
+//
+//   ok('P14 the paragraph-indent Tab machine (item 158) stands aside while an Outline is in Draft, so Tab acts on the row and not on the whole one-paragraph outline',
+//     /outlineKeysRef\.current = mode === 'drafting' && realEntry\?\.pageSettings\?\.template === 'outline';/.test(pe) && (pe.match(/if \(outlineKeysRef\.current && !getWritingSettings\(\)\.typewriter\) return;/g) || []).length === 2, '');
+//
+// Re-asserted against its NEW, opposite truth: that exact shared-field read is GONE from the
+// gate, not merely wrong - this block stays green under HARNESS_PARKED=1, proving the retirement.
+const parkedChecks = [];
+if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass, detail });
+  pok('PARKED (was "P14 the paragraph-indent Tab machine... stands aside" via the shared field) - the outline Tab gate no longer reads the shared `typewriter` field at all (zero occurrences of the retired pattern); typewriterForPage is what it reads now',
+    !/if \(outlineKeysRef\.current && !getWritingSettings\(\)\.typewriter\) return;/.test(pe));
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nPAGE-TEMPLATES-R2 PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed; P14's old shared-field probe retired on purpose, successor above.`
+    : `\nPAGE-TEMPLATES-R2 PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+}
 
 // ============================================================================================================
 // PART 2 - the real app (a box turn). Written with the standing driver rules: probe first, never abort, real pointer events, seed through the seams.

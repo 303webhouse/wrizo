@@ -64,7 +64,19 @@ await withHarness(async (app) => {
   // explicitly toggled — enterPageTypewriter's own rule (non-empty, no
   // saved value -> OFF) resolves and SAVES it OFF the instant it is first
   // opened, below.
-  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'tws-draft', text: 'Some existing words already here.', pageType: 'manuscript', origin: 'loose', source: 'page', createdAt: '2026-05-01T00:00:00.000Z' })})`);
+  //
+  // FIX (Fable's review: "S1's baseline reads ZERO") — this fixture originally set
+  // `pageType: 'manuscript', origin: 'loose'`, which PageEditor.tsx's own mode-resolution
+  // ternary (`entry?.pageType === 'manuscript' || entry?.origin === 'loose' ? 'journal' :
+  // 'drafting'`) reads as JOURNAL mode, not Draft — the opposite of what this fixture's own
+  // name and comments describe. In 'journal' mode, typewriterOn falls through to the SHARED
+  // `settings.typewriter` field (this ticket's fix only scopes Draft, by design — Free Write/
+  // Journal is untouched), which on a freshly-cleared profile defaults to `true`
+  // (writingSettings.ts's own DEFAULTS.typewriter) — so the page opened with format LOCKED and
+  // Ctrl+B was a no-op, reading 0 bolded runs regardless of this ticket's own fix. Matching
+  // fx2.mjs's own established Draft-page seeding shape (`origin: null`, no pageType) resolves
+  // correctly to 'drafting' mode, where this ticket's per-page typewriterForPage read applies.
+  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'tws-draft', text: 'Some existing words already here.', origin: null, source: null, createdAt: '2026-05-01T00:00:00.000Z' })})`);
   // A brand-new, EMPTY Screenplay page — established seeding shape (ab1.mjs/
   // ab2.mjs/cd1.mjs/cd2.mjs/fx1.mjs: a single scene, empty heading, no body).
   // Arbor's own default seeds ITS OWN Typewriter ON the instant it opens.
