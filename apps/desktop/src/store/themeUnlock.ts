@@ -7,29 +7,36 @@ import type { ThemeId } from './theme';
 // use — the third clause is pure client state and needs no server round-trip (Fable's own
 // ruling on the schema ticket: "no new signal needed").
 //
-// "Once open, always open" falls out for free: `wordsWritten` only ever grows
-// (theme-unlock-count's own counter) and `themesOpened` is append-only, so neither clause can
-// ever un-open a theme once it has.
+// SUPERSEDED (Fable's review of this ticket, Oct 21 1:09pm ruling): the first two clauses used
+// to be computed HERE, client-side, from the raw wordsWritten/themesOpened/thresholds the server
+// sent. Openness now DERIVES SERVER-SIDE (apps/server/src/sync.ts's own GET /theme-unlock) - the
+// server returns a precomputed `open` map, and this module only adds the one clause the server
+// cannot know (the current theme). No client write to themes_opened was ever added (confirmed:
+// this file only ever reads).
+//
+// "Once open, always open" still falls out for free: wordsWritten only ever grows and
+// themesOpened is append-only, so the server's own `open` map can never flip back to false once
+// true for a given id.
 
 export interface ThemeUnlockStatus {
   wordsWritten: number;
   themesOpened: Record<string, boolean>;
   thresholds: Record<string, number>;
+  open: Record<string, boolean>;   // server-derived: threshold met OR themesOpened
 }
 
-const EMPTY: ThemeUnlockStatus = { wordsWritten: 0, themesOpened: {}, thresholds: {} };
-
-export function isThemeOpen(id: ThemeId, status: ThemeUnlockStatus, currentTheme: ThemeId): boolean {
+export function isThemeOpen(id: ThemeId, status: ThemeUnlockStatus | null, currentTheme: ThemeId): boolean {
   if (id === currentTheme) return true;
-  if (status.themesOpened?.[id]) return true;
-  const threshold = status.thresholds?.[id];
-  return threshold != null && status.wordsWritten >= threshold;
+  return !!status?.open?.[id];
 }
 
-/** 0 once open — never negative, never shown once the threshold is already met. */
-export function wordsToUnlock(id: ThemeId, status: ThemeUnlockStatus): number {
-  const threshold = status.thresholds?.[id] ?? 0;
-  return Math.max(0, threshold - (status.wordsWritten ?? 0));
+// Readouts state only true things (theme-rules.md §A.6): `null` means "no real number to show"
+// - either the fetch hasn't resolved/failed (status is null), or this theme has no threshold
+// entry at all yet. Callers must render NO note in that case, never a guessed/zero count.
+export function wordsToUnlock(id: ThemeId, status: ThemeUnlockStatus | null): number | null {
+  const threshold = status?.thresholds?.[id];
+  if (threshold == null) return null;
+  return Math.max(0, threshold - (status?.wordsWritten ?? 0));
 }
 
 // GET-only: nothing here ever writes words_written/themes_opened from the client - only an
@@ -37,25 +44,30 @@ export function wordsToUnlock(id: ThemeId, status: ThemeUnlockStatus): number {
 // own house law). Fetched lazily when the picker itself mounts, not hydrated at boot like
 // page-defaults/proofing — "once open, always open" and a lifetime word count don't need
 // split-second freshness, and the picker is the only consumer today.
-export async function fetchThemeUnlockStatus(): Promise<ThemeUnlockStatus> {
+//
+// Returns null (not an EMPTY-but-truthy object) on any failure or non-ok response, so a caller
+// can tell "no data yet" apart from "the server said nothing is open" - the distinction note
+// (a) needs: a locked card with no data shows no number at all, never "0 more words".
+export async function fetchThemeUnlockStatus(): Promise<ThemeUnlockStatus | null> {
   try {
     const r = await fetch('/api/theme-unlock', { credentials: 'include' });
-    if (!r.ok) return EMPTY;   // signed out (no session) or offline — the picker falls back to current-theme-only
+    if (!r.ok) return null;   // signed out (no session) or a server error
     const body = await r.json();
     return {
       wordsWritten: typeof body?.wordsWritten === 'number' ? body.wordsWritten : 0,
       themesOpened: body?.themesOpened && typeof body.themesOpened === 'object' ? body.themesOpened : {},
       thresholds: body?.thresholds && typeof body.thresholds === 'object' ? body.thresholds : {},
+      open: body?.open && typeof body.open === 'object' ? body.open : {},
     };
   } catch {
-    return EMPTY;   // offline — the picker falls back to current-theme-only until it can ask again
+    return null;   // offline
   }
 }
 
-/** Fetches once per mount. While loading (or signed out/offline), callers see EMPTY — every
- *  theme but the current one reads locked, never a stale "open" flash. */
-export function useThemeUnlockStatus(): ThemeUnlockStatus {
-  const [status, setStatus] = useState<ThemeUnlockStatus>(EMPTY);
+/** Fetches once per mount. While loading (or signed out/offline), callers see null - every
+ *  theme but the current one reads locked with no note, never a stale "open" or a guessed count. */
+export function useThemeUnlockStatus(): ThemeUnlockStatus | null {
+  const [status, setStatus] = useState<ThemeUnlockStatus | null>(null);
   useEffect(() => {
     let active = true;
     void fetchThemeUnlockStatus().then((s) => { if (active) setStatus(s); });

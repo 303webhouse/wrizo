@@ -593,14 +593,23 @@ syncRouter.put('/proofing', asyncHandler(async (req: Request, res: Response) => 
 // backfill ever move them, so there is no "replace the whole value" hazard to guard against the
 // way page_defaults's own PUT has to. No picker UI reads this yet - it exists so the count is
 // verifiable (this ticket's own harness reads it) ahead of the picker that will.
+// THEME PICKER (Fable's review, Oct 21 1:09pm ruling) - openness now DERIVES here, not in the
+// client: `open[id]` is true once wordsWritten reaches that theme's own threshold OR the id is
+// already in themesOpened - the two clauses this endpoint can actually answer. The THIRD clause
+// ("it's the theme currently in use") is pure client state this endpoint has no way to know and
+// still computes client-side; the client ORs `open[id]` with that one fact, never re-deriving
+// the first two itself. One shared constant (THEME_UNLOCK_THRESHOLDS, above) is the only place
+// a threshold number lives - the client reads it from here too, never its own copy.
 syncRouter.get('/theme-unlock', asyncHandler(async (req: Request, res: Response) => {
   const userId = req.session.userId as string;
   const { rows } = await pool.query(`select words_written, themes_opened from users where id = $1`, [userId]);
-  res.json({
-    wordsWritten: rows[0]?.words_written ?? 0,
-    themesOpened: rows[0]?.themes_opened ?? {},
-    thresholds: THEME_UNLOCK_THRESHOLDS,
-  });
+  const wordsWritten = rows[0]?.words_written ?? 0;
+  const themesOpened = rows[0]?.themes_opened ?? {};
+  const open: Record<string, boolean> = {};
+  for (const id of Object.keys(THEME_UNLOCK_THRESHOLDS)) {
+    open[id] = wordsWritten >= THEME_UNLOCK_THRESHOLDS[id] || !!themesOpened[id];
+  }
+  res.json({ wordsWritten, themesOpened, thresholds: THEME_UNLOCK_THRESHOLDS, open });
 }));
 
 syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {

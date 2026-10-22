@@ -4996,21 +4996,31 @@ a:focus-visible,
   font-size:18px; color:var(--tp-cyan); letter-spacing:.08em; }
 .wz-theme-plate-tick{ position:absolute; left:18%; right:18%; top:22%; height:2px; background:var(--tp-cyan); }
 .wz-theme-plate-tick-lime{ top:30%; background:var(--tp-lime); opacity:.8; }
-.wz-theme-card-flux:hover .wz-theme-plate-tick, .wz-theme-card-flux:focus-visible .wz-theme-plate-tick{
-  animation:wz-theme-glitch .45s steps(2, end) infinite; }
+/* note (e) (Fable's review, Oct 21): the hover Glitch is a FLASH (theme-rules.md §A.8's 3/sec
+   budget), so it can no longer be a plain CSS `:hover -> infinite` loop a sustained hover runs
+   forever — ThemePicker.tsx's own FluxCardGlitchController (store/fluxCardGlitch.ts) asks the
+   shared global flash budget first and toggles this class for exactly one iteration
+   (`animation-iteration-count:1`, not `infinite`); a refused or mid-pulse re-trigger (quick
+   hover out/in) never stacks a second one on top. */
+.wz-theme-plate-tick.wz-theme-glitching{ animation:wz-theme-glitch .45s steps(2, end) 1; }
 @keyframes wz-theme-glitch{
   0%{ transform:none; opacity:1; }
   40%{ transform:translateX(10px); opacity:.35; }
   70%{ transform:translateX(-6px); opacity:.9; }
   100%{ transform:none; }
 }
+/* note (d): the still frame applies to reduced motion AND Ambiance 0 — the OS/media fact below,
+   and ThemePicker.tsx's own `data-still` attribute (the dial is pure JS state no @media rule can
+   see; same combination as GlitchMeter.tsx's own `prefersReducedMotion() || getAmbianceDial() ===
+   0`). Both land on the identical still rules, so the two signals can never visually disagree. */
 @media (prefers-reduced-motion:reduce){
   .wz-theme-plate-grow{ opacity:1; }
   .wz-theme-plate-grow path{ stroke-dashoffset:0; transition:none; }
   .wz-theme-plate-tick{ animation:none; }
-  .wz-theme-card-flux:hover .wz-theme-plate-tick, .wz-theme-card-flux:focus-visible .wz-theme-plate-tick{
-    animation:none; transform:translateX(6px); }
 }
+.wz-theme-picker[data-still='true'] .wz-theme-plate-grow{ opacity:1; }
+.wz-theme-picker[data-still='true'] .wz-theme-plate-grow path{ stroke-dashoffset:0; transition:none; }
+.wz-theme-picker[data-still='true'] .wz-theme-plate-tick{ animation:none; transform:translateX(6px); }
 /* ITEM arbor-quiet-brass, round 2 — SUPERSEDED: the theme list's own selection was
    olive (S3's original "current marked olive"), but Fable's ruling makes this a
    CHOICE, not a where-you-are tab state — brass outline, theme-invariant, same as

@@ -1,7 +1,9 @@
-import type { ReactNode } from 'react';
+import { useRef, useState } from 'react';
 import { useTheme, setTheme, type ThemeId } from '../store/theme';
 import { useThemePrefs, setThemePrefs } from '../store/themePrefs';
 import { useThemeUnlockStatus, isThemeOpen, wordsToUnlock } from '../store/themeUnlock';
+import { useAmbianceDial, prefersReducedMotion } from '../store/ambianceDial';
+import { createFluxCardGlitchController, FLUX_CARD_GLITCH_MS } from '../store/fluxCardGlitch';
 import { Seg } from './ModeStage';
 
 // THEME PICKER (step 2 of the Oct 21 build queue; theme-menu-brief.md / theme-rules.md §C,
@@ -25,7 +27,6 @@ interface ThemeCardDef {
   name: string;
   cardClass: string;      // the CARD's OWN theme, independent of the ambient active theme
   wordmarkClass: string;  // the wordmark's own type face (per theme-rules.md B.4)
-  plate: ReactNode;       // the aria-hidden illustration + hover/focus-visible animation
 }
 
 // Arbor — the rhizome. Base strokes always visible; the "grow" layer reveals on hover/focus
@@ -65,28 +66,48 @@ function ArborPlate() {
 }
 
 // Flux — the glitch. A terminal prompt plus two scanlines that tick sideways on hover/focus.
-function FluxPlate() {
+// `glitching` plays exactly ONE animation iteration (never `infinite`) — the rate-limited pulse
+// a FluxCardGlitchController grants, note (e) below.
+function FluxPlate({ glitching }: { glitching: boolean }) {
   return (
     <>
       <div className="wz-theme-plate-prompt" aria-hidden="true">&gt;_</div>
-      <div className="wz-theme-plate-tick wz-theme-plate-tick-cyan" aria-hidden="true" />
-      <div className="wz-theme-plate-tick wz-theme-plate-tick-lime" aria-hidden="true" />
+      <div className={`wz-theme-plate-tick wz-theme-plate-tick-cyan${glitching ? ' wz-theme-glitching' : ''}`} aria-hidden="true" />
+      <div className={`wz-theme-plate-tick wz-theme-plate-tick-lime${glitching ? ' wz-theme-glitching' : ''}`} aria-hidden="true" />
     </>
   );
 }
 
 const THEME_CARDS: ThemeCardDef[] = [
-  { id: 'plateau', name: 'Arbor', cardClass: 'wz-theme-card-arbor', wordmarkClass: 'wz-theme-wm-arbor', plate: <ArborPlate /> },
-  { id: 'flux', name: 'Flux', cardClass: 'wz-theme-card-flux', wordmarkClass: 'wz-theme-wm-flux', plate: <FluxPlate /> },
+  { id: 'plateau', name: 'Arbor', cardClass: 'wz-theme-card-arbor', wordmarkClass: 'wz-theme-wm-arbor' },
+  { id: 'flux', name: 'Flux', cardClass: 'wz-theme-card-flux', wordmarkClass: 'wz-theme-wm-flux' },
 ];
 
 export function ThemePicker() {
   const current = useTheme();
   const prefs = useThemePrefs();
   const status = useThemeUnlockStatus();
+  const ambianceDial = useAmbianceDial();
+  // note (d): the still frame applies to reduced motion AND Ambiance 0 — the first is an OS/CSS
+  // fact the existing @media rule already sees; Ambiance is pure JS state, so it needs this
+  // data attribute (same combination GlitchMeter.tsx:60 already uses: `prefersReducedMotion() ||
+  // getAmbianceDial() === 0`).
+  const stillFrame = ambianceDial === 0 || prefersReducedMotion();
+
+  // note (e): one controller for the Flux card's own hover/focus glitch, gated by the shared
+  // global flash budget (store/flashBudget.ts) plus its own mid-pulse refusal, so a quick hover
+  // in/out can't stack pulses. Never triggers while still.
+  const glitchController = useRef(createFluxCardGlitchController());
+  const [fluxGlitching, setFluxGlitching] = useState(false);
+  const triggerFluxGlitch = () => {
+    if (stillFrame) return;
+    if (!glitchController.current.requestPulse()) return;
+    setFluxGlitching(true);
+    setTimeout(() => setFluxGlitching(false), FLUX_CARD_GLITCH_MS);
+  };
 
   return (
-    <div className="wz-cascade-panel-body wz-theme-picker">
+    <div className="wz-cascade-panel-body wz-theme-picker" data-still={stillFrame ? 'true' : 'false'}>
       <div className="wz-theme-picker-field">
         <Seg label="Page" value={prefs.page} opts={[['light', 'Light'], ['dark', 'Dark']]} onPick={(v) => setThemePrefs({ page: v as 'dark' | 'light' })} />
       </div>
@@ -94,6 +115,7 @@ export function ThemePicker() {
         {THEME_CARDS.map((card) => {
           const open = isThemeOpen(card.id, status, current);
           const remaining = wordsToUnlock(card.id, status);
+          const isFlux = card.id === 'flux';
           return (
             <button
               key={card.id}
@@ -102,11 +124,16 @@ export function ThemePicker() {
               disabled={!open}
               aria-pressed={open && current === card.id}
               onClick={() => setTheme(card.id)}
+              onMouseEnter={isFlux ? triggerFluxGlitch : undefined}
+              onFocus={isFlux ? triggerFluxGlitch : undefined}
             >
-              <div className="wz-theme-plate" aria-hidden="true">{card.plate}</div>
+              <div className="wz-theme-plate" aria-hidden="true">{card.id === 'plateau' ? <ArborPlate /> : <FluxPlate glitching={fluxGlitching} />}</div>
               <div className="wz-theme-nameblock">
                 <div className={`wz-theme-wm ${card.wordmarkClass}`}>{card.name}</div>
-                {!open && (
+                {/* note (a): readouts state only true things — a null `remaining` (no fetch yet,
+                    a failed fetch, or no threshold entry at all) renders NO number, never "0" or
+                    a guess. */}
+                {!open && remaining != null && (
                   <div className="wz-theme-note">{remaining.toLocaleString('en-US')} more words to open {card.name}</div>
                 )}
               </div>
