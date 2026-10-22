@@ -38,21 +38,28 @@
 //      switching AFTER Flux is unlocked (seeded via a direct theme set, proving the click handler
 //      itself) actually changes the active theme
 //   D5 the panel title reads "Mood" on Arbor; re-opening after switching to Flux reads "Skin"
-//   D6 keyboard, note (c): runs after D5 (Flux is now current, Arbor locked) - the current card
-//      is focusable and Tab-reachable; the LOCKED (Arbor) card is a real `disabled` button, so
-//      it is never in the Tab order and a synthesized Enter/click on it changes nothing - the
-//      active theme stays Flux
+//   D6 keyboard, note (c), FIXED: runs after D5 (Flux is now current, Arbor locked). A disabled
+//      button's `.tabIndex` property reads 0 (the earlier version of this check wrongly asserted
+//      -1), so the real proof is a TRUSTED Tab press (CDP input, native tab-traversal) - it
+//      skips the disabled Arbor card entirely and lands on Flux - plus a direct `.focus()`
+//      attempt on Arbor, which real browsers refuse outright for a disabled element; a trusted
+//      Enter/Space afterward changes nothing
 //   D7 reduced motion AND Ambiance 0 (note d): the CSS carries the SAME still-frame override for
 //      both the OS media query and ThemePicker.tsx's own `data-still` attribute (a static source
 //      read of index.css - matching this house's established technique for proving a
 //      reduced-motion rule exists, since prefers-reduced-motion cannot be toggled by this
 //      harness's emulateDpr-only viewport control); the DOM-level half is proven live: setting
 //      the Ambiance dial to 0 makes the panel carry `data-still="true"`
-//   D8 note (e): the Flux card's hover glitch plays as a single, rate-limited pulse - hovering it
-//      adds `wz-theme-glitching` to its ticks; hovering again immediately (quick out/in, inside
-//      the pulse's own window) does NOT add a second one on top (no stacking); the CSS animation
-//      itself is a single iteration (`steps(2, end) 1`, not `infinite`) - a static source check,
-//      since this CSS class is JS-driven, not a pure `:hover` rule, so there is no `infinite`
+//   D8 note (e), FIXED: a real (CDP-trusted) pointer move onto the Flux card grants a pulse
+//      (`wz-theme-glitching`), which ends on its own after its own duration - one-shot, never
+//      `infinite`. The earlier version dispatched a page-side `new MouseEvent('mouseenter', ...)`
+//      directly - a HARNESS bug, not a product one: React derives onMouseEnter/onMouseLeave from
+//      native mouseover/mouseout (mouseenter/mouseleave don't bubble, so React can't delegate
+//      them), so a synthetic mouseenter dispatched at the target was always invisible to it. The
+//      "no stacking" refusal itself is proven at the logic level (theme-picker-logic.mjs
+//      T11/T12, against the exact same controller module); the CSS animation itself is a single
+//      iteration (`steps(2, end) 1`, not `infinite`) - a static source check, since this CSS
+//      class is JS-driven, not a pure `:hover` rule, so there is no `infinite`
 //      hover-loop left to find at all
 // Run: node apps/desktop/scripts/harness/theme-picker.mjs  (from apps/desktop, dist-web freshly built).
 import { readFileSync } from 'node:fs';
@@ -149,26 +156,40 @@ await withHarness(async (app) => {
   ok('D5: Arbor, no longer current, now reads LOCKED (no server data, not the active theme) - and shows NO note (note a: no real data, no guessed count)',
     arborNowLocked && arborNowLocked.locked === true && arborNowLocked.note === null, JSON.stringify(arborNowLocked));
 
-  // D6 — keyboard, note (c): the current card is Tab-reachable; the LOCKED card is a real
-  // `disabled` button - never in the Tab order, and a synthesized activation on it does nothing.
-  const keyboardState = await app.evalJs(`(() => {
-    const cards = [...document.querySelectorAll('.wz-theme-card')];
-    const current = cards.find((b) => b.getAttribute('aria-pressed') === 'true');
-    const locked = cards.find((b) => b.disabled);
-    locked?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
-    locked?.click();   // disabled buttons refuse even a synthetic .click(); confirms no handler fires
-    return {
-      currentFocusable: current ? current.tagName === 'BUTTON' && current.tabIndex !== -1 : null,
-      lockedTabIndex: locked ? locked.tabIndex : null,
-      lockedDisabled: locked ? locked.disabled : null,
-      themeAfter: localStorage.getItem('wrizo-theme'),
-    };
+  // D6 — keyboard, note (c), FIXED (Fable's review): a disabled <button>'s `.tabIndex` property
+  // reads 0, not -1 (the IDL default tabIndex computation and real focusability are separate
+  // things) - the original version of this check asserted `tabIndex === -1` and that assumption
+  // was simply wrong, not a reliable signal of anything. The real test is a TRUSTED Tab press
+  // (CDP's own input layer, native tab-traversal semantics) and a real `.focus()` attempt, not a
+  // property read.
+  //
+  // Tab order at this point: the Page toggle's Light/Dark buttons, then Arbor (locked), then
+  // Flux (unlocked, current). Focus the LAST button before the cards and press Tab once - a
+  // native Tab walk must skip the disabled Arbor card entirely and land straight on Flux.
+  await app.evalJs("document.querySelectorAll('.wz-theme-picker-field .mode-seg button')[1]?.focus()");
+  const focusedBeforeTab = await app.evalJs("document.activeElement?.textContent ?? null");
+  await app.key('Tab');
+  const afterTab = await app.evalJs(`(() => {
+    const a = document.activeElement;
+    return { tag: a?.tagName ?? null, isArbor: !!a?.classList?.contains('wz-theme-card-arbor'), isFlux: !!a?.classList?.contains('wz-theme-card-flux') };
   })()`);
-  ok('D6: the current card is a real, Tab-reachable <button>',
-    keyboardState.currentFocusable === true, JSON.stringify(keyboardState));
-  ok('D6: the LOCKED card is `disabled` (tabIndex -1, out of the Tab order) - keyboard activation (Enter/click on it) changes nothing',
-    keyboardState.lockedDisabled === true && keyboardState.lockedTabIndex === -1 && keyboardState.themeAfter === 'flux',
-    JSON.stringify(keyboardState));
+  ok('D6: a real (CDP-trusted) Tab press from the Page toggle skips the disabled Arbor card entirely and lands on Flux - a real Tab walk never lands on a locked card',
+    focusedBeforeTab === 'Dark' && afterTab.isArbor === false && afterTab.isFlux === true, JSON.stringify({ focusedBeforeTab, afterTab }));
+
+  // Separately: a disabled element refuses focus outright (stronger than any tabIndex reading),
+  // and a trusted Enter/Space in that state changes nothing.
+  const trustedKey = async (key, code, vk, text) => {
+    const p = { key, code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk, text };
+    await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', ...p });
+    await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', ...p });
+  };
+  await app.evalJs("[...document.querySelectorAll('.wz-theme-card')].find((b) => b.classList.contains('wz-theme-card-arbor'))?.focus()");
+  const focusedArbor = await app.evalJs("!!document.activeElement?.classList?.contains('wz-theme-card-arbor')");
+  await trustedKey('Enter', 'Enter', 13, '\r');
+  await trustedKey(' ', 'Space', 32, ' ');
+  const themeAfter = await app.evalJs("localStorage.getItem('wrizo-theme')");
+  ok('D6: the disabled Arbor card refuses focus outright (`.focus()` does not move document.activeElement onto it), and a trusted Enter/Space afterward changes nothing',
+    focusedArbor === false && themeAfter === 'flux', JSON.stringify({ focusedArbor, themeAfter }));
 
   // D8 — note (e): the Flux card's hover glitch is a single, rate-limited pulse, not an infinite
   // loop. Flux is the CURRENT theme at this point in the scenario (set via D5 above), so it is
@@ -176,13 +197,29 @@ await withHarness(async (app) => {
   // level (theme-picker-logic.mjs T11/T12, against the exact same module) - a class toggle is
   // not independently observable in the DOM either way, so this half only proves the WIRING: a
   // hover grants a pulse, and the pulse ends on its own (one-shot, never `infinite`).
-  const fluxCardSel = "[...document.querySelectorAll('.wz-theme-card')].find((b) => b.textContent.includes('Flux'))";
-  await app.evalJs(`${fluxCardSel}?.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }))`);
-  await sleep(30);
-  const glitchingAfterHover = await app.evalJs(`${fluxCardSel}?.querySelector('.wz-theme-plate-tick')?.classList.contains('wz-theme-glitching') ?? null`);
+  //
+  // FIXED (Fable's review): the original version dispatched a page-side `new MouseEvent
+  // ('mouseenter', {bubbles:true})` directly at the element - this was the HARNESS'S OWN bug,
+  // not a product one. React does not attach a native listener for 'mouseenter'/'mouseleave' at
+  // all (they don't bubble, so React can't delegate them); it derives `onMouseEnter`/
+  // `onMouseLeave` from the native 'mouseover'/'mouseout' events it DOES listen for. A
+  // synthetic 'mouseenter' dispatched straight at the target is invisible to that machinery, so
+  // the old check could only have ever failed - not because ThemePicker.tsx's hover wiring was
+  // broken, but because the harness never produced an event React's enter/leave plugin
+  // recognizes. A real (CDP-trusted) pointer move produces genuine native mouseover/mouseout,
+  // which IS what React's plugin watches.
+  const fluxRect = await app.evalJs(`(() => {
+    const el = [...document.querySelectorAll('.wz-theme-card')].find((b) => b.textContent.includes('Flux'));
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  })()`);
+  await app.mouseMove(fluxRect.x, fluxRect.y);
+  await sleep(60);
+  const fluxTickGlitching = () => app.evalJs("[...document.querySelectorAll('.wz-theme-card')].find((b) => b.textContent.includes('Flux'))?.querySelector('.wz-theme-plate-tick')?.classList.contains('wz-theme-glitching') ?? null");
+  const glitchingAfterHover = await fluxTickGlitching();
   await sleep(600);   // past FLUX_CARD_GLITCH_MS (450ms)
-  const glitchingAfterPulseEnds = await app.evalJs(`${fluxCardSel}?.querySelector('.wz-theme-plate-tick')?.classList.contains('wz-theme-glitching') ?? null`);
-  ok('D8: hovering the Flux card grants a pulse (wz-theme-glitching added)',
+  const glitchingAfterPulseEnds = await fluxTickGlitching();
+  ok('D8: a real pointer move onto the Flux card grants a pulse (wz-theme-glitching added)',
     glitchingAfterHover === true, String(glitchingAfterHover));
   ok('D8: the pulse ends on its own after its own duration - one-shot, never an infinite loop',
     glitchingAfterPulseEnds === false, String(glitchingAfterPulseEnds));
