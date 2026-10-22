@@ -87,3 +87,11 @@ The offer's base is 4d3c84e2. Since then `main` has made **15 commits to `persis
 ## 9. Not in this ticket
 
 No change to the 300 ms debounce. No `strict` IndexedDB durability unless the experiment says `relaxed` loses writes. No move of the small per-device keys. No deletion of old IndexedDB data. No Library/volumes work (214).
+
+## 10. Cleared (Fable, Oct 22): the plan @ 2df44a4d, and the rulings
+
+Schema change: none, confirmed. **Start after blank-page (`fix/blank-page-click` @ 7becdf3a) merges. The FULL PAIR runs before merge.**
+- **Q1:** FIX ports TOOLS' build onto main; TOOLS reviews the port.
+- **Q2 (amends section 3.3):** a signed-in writer's legacy copy is cleared when the dirty set is empty **OR** after a second verified boot, **whichever comes first** - safety, without leaving a full device full.
+- **Q3:** one database and a storage epoch (section 4), **with its mutant**.
+- **Q4:** no rollback past this build without **Nick's** word; the deploy note says so.
