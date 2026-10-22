@@ -1,0 +1,13 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=5 tree=7dec7bb5 bundle=index-DHPKHeBr.js/768174b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/fvc-default
+[01/5] OK        exit=0   41s big-projects-1a.mjs :: ROWS-SHADOW VERIFY: PASS (36 renders checked, shadow == DOM on every one) ;; BIG-PROJECTS-1A VERIFY: PASS (92 checks)
+[02/5] OK        exit=0   71s font-span.mjs :: ROWS-SHADOW VERIFY: PASS (32 renders checked, shadow == DOM on every one) ;; FONT-SPAN VERIFY: PASS (38 checks)
+[03/5] OK        exit=0   17s hb1.mjs :: HB1 VERIFY: PASS (32 checks)
+[04/5] FAIL      exit=1    4s item207-core.mjs :: ITEM207-CORE VERIFY: FAIL — 1/47 failed
+[05/5] OK        exit=0    8s vw1.mjs :: VW1 VERIFY: PASS (13 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 4/5 of 5 returned a passing verdict
+  FAIL: item207-core.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\fvc-default\item207-core.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=7dec7bb5 bundle=index-DHPKHeBr.js/768174b NO-REBUILD

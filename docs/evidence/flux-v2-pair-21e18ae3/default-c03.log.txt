@@ -1,0 +1,28 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=19 tree=062bbb46 bundle=index-cNAYuJwI.js/779686b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/fvp-default-c03
+[01/19] OK        exit=0   11s fx15.mjs :: FX15 VERIFY: PASS (13 checks)
+[02/19] OK        exit=0    7s fx16.mjs :: FX16 VERIFY: PASS (6 checks)
+[03/19] OK        exit=0   20s fx17.mjs :: FX17 VERIFY: PASS (18 checks)
+[04/19] OK        exit=0   20s fx18.mjs :: FX18 VERIFY: PASS (16 checks)
+[05/19] OK        exit=0   13s fx2.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; FX2 VERIFY: PASS (34 checks)
+[06/19] OK        exit=0   15s fx3.mjs :: FX3 VERIFY: PASS (28 checks)
+[07/19] OK        exit=0   35s fx4.mjs :: FX4 VERIFY: PASS (42 checks)
+[08/19] OK        exit=0   74s fx5.mjs :: ROWS-SHADOW VERIFY: PASS (131 renders checked, shadow == DOM on every one) ;; FX5 VERIFY: PASS (54 checks)
+[09/19] OK        exit=0   29s fx6.mjs :: ROWS-SHADOW VERIFY: PASS (137 renders checked, shadow == DOM on every one) ;; FX6 VERIFY: PASS (38 checks)
+[10/19] OK        exit=0   31s fx7.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX7 VERIFY (partial): PASS (43 checks)
+[11/19] OK        exit=0   10s fx8.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX8 VERIFY: PASS (20 checks)
+[12/19] OK        exit=0    8s fx9.mjs :: FX9 VERIFY: PASS (13 checks)
+[13/19] OK        exit=0   62s glitch-meter.mjs :: ROWS-SHADOW VERIFY: PASS (27 renders checked, shadow == DOM on every one) ;; GLITCH-METER VERIFY: PASS (28 checks)
+[14/19] NOVERDICT exit=1    8s hb1.mjs :: (no verdict — see C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\fvp-default-c03\hb1.mjs.default.txt)
+[15/19] OK        exit=0    9s hb2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; HB2 VERIFY: PASS (10 checks)
+[16/19] OK        exit=0   31s help-buttons.mjs :: ROWS-SHADOW VERIFY: PASS (5 renders checked, shadow == DOM on every one) ;; HELP-BUTTONS VERIFY: PASS (24 checks)
+[17/19] OK        exit=0    1s hooks-order-ast.mjs :: HOOKS-ORDER-AST VERIFY: PASS (7 checks)
+[18/19] OK        exit=0    0s hooks-order.mjs :: HOOKS-ORDER VERIFY: PASS (2 checks)
+[19/19] OK        exit=0  107s in-app-copy-format.mjs :: ROWS-SHADOW VERIFY: PASS (15 renders checked, shadow == DOM on every one) ;; IN-APP-COPY-FORMAT VERIFY: PASS (32 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 18/19 of 19 returned a passing verdict
+  NOVERDICT: hb1.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\fvp-default-c03\hb1.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=062bbb46 bundle=index-cNAYuJwI.js/779686b NO-REBUILD
+CHUNK 03 EXIT 1

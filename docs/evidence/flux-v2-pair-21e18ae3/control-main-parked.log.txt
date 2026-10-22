@@ -1,0 +1,13 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=1 files=5 tree=7dec7bb5 bundle=index-DHPKHeBr.js/768174b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/fvc-parked
+[01/5] OK        exit=0   41s big-projects-1a.mjs :: ROWS-SHADOW VERIFY: PASS (36 renders checked, shadow == DOM on every one) ;; BIG-PROJECTS-1A VERIFY: PASS (92 checks)
+[02/5] OK        exit=0   71s font-span.mjs :: ROWS-SHADOW VERIFY: PASS (32 renders checked, shadow == DOM on every one) ;; FONT-SPAN VERIFY: PASS (38 checks)
+[03/5] OK        exit=0   25s hb1.mjs :: "name": "PARKED (was \"S3: the veil wraps... the settings gear — all inert\", counting >=5 wrappers) — FX3 S5: only 4 named wrappers exist now (the gear's own wrapper is gone; it lives in the sliver, already counted)", ;; "name": "PARKED (was \"S4: post-unlock chrome (Done) is reachable again — not still wrapped in an inert ancestor\") — CD3: Done is scrapped from the Page/Script top bars whole (no button left to find); live successor: this file's own live S4 section (the Publish tab, present + not inert + function-tested)", ;; HB1 PARKED: PASS (2 checks) — HARNESS_PARKED=1 armed, all retired-check successors green ;; HB1 VERIFY: PASS (34 checks)
+[04/5] FAIL      exit=1    4s item207-core.mjs :: ITEM207-CORE PARKED: FAIL — 1/3 failed ;; ITEM207-CORE VERIFY: FAIL — 2/50 failed
+[05/5] OK        exit=0    8s vw1.mjs :: VW1 PARKED [big-projects-1a]: PASS (4 parked claims, quoted verbatim in comments with live successors: the RULED roster, checks 1, 6 and 2) - HARNESS_PARKED=1 armed. The conversions of 2026-09 changed how checks REACH a tab; BIG PROJECTS 1a re-ruled the rail itself (place block first, no Shelf, Boards), which is what those four claims named. ;; VW1 VERIFY: PASS (13 checks)
+
+SUITE DONE HARNESS_PARKED=1 — 4/5 of 5 returned a passing verdict
+  FAIL: item207-core.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\fvc-parked\item207-core.mjs.parked.txt
+SUITE RESULT: NOT CLEAN — tree=7dec7bb5 bundle=index-DHPKHeBr.js/768174b NO-REBUILD

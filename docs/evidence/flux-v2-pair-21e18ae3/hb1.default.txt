@@ -1,0 +1,11 @@
+file:///C:/Users/nickh/writer-studio/.claude/worktrees/fv2/apps/desktop/scripts/runtime-verify.mjs:436
+    if (r.exceptionDetails) throw new Error('page eval: ' + JSON.stringify(r.exceptionDetails));
+                                  ^
+
+Error: page eval: {"exceptionId":1,"text":"Uncaught","lineNumber":0,"columnNumber":104,"scriptId":"33","stackTrace":{"callFrames":[{"functionName":"","scriptId":"33","url":"","lineNumber":0,"columnNumber":104}]},"exception":{"type":"object","subtype":"error","className":"TypeError","description":"TypeError: Cannot read properties of undefined (reading 'click')\n    at <anonymous>:1:105","objectId":"-2002736586100591384.3.2"}}
+    at Object.evalJs (file:///C:/Users/nickh/writer-studio/.claude/worktrees/fv2/apps/desktop/scripts/runtime-verify.mjs:436:35)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/fv2/apps/desktop/scripts/harness/hb1.mjs:245:3
+    at async withHarness (file:///C:/Users/nickh/writer-studio/.claude/worktrees/fv2/apps/desktop/scripts/runtime-verify.mjs:905:20)
+    at async file:///C:/Users/nickh/writer-studio/.claude/worktrees/fv2/apps/desktop/scripts/harness/hb1.mjs:45:1
+
+Node.js v24.13.0
