@@ -1,0 +1,79 @@
+[
+  {
+    "name": "D1: exactly two cards render (Arbor, Flux) - today's only built themes, nothing grayed in their place",
+    "pass": true,
+    "detail": "[{\"name\":\"Arbor\",\"locked\":false,\"disabled\":false,\"pressed\":\"true\",\"note\":null},{\"name\":\"Flux\",\"locked\":true,\"disabled\":true,\"pressed\":\"false\",\"note\":null}]"
+  },
+  {
+    "name": "D2: Arbor (the current theme) reads unlocked - not locked, not disabled, aria-pressed=\"true\"",
+    "pass": true,
+    "detail": "{\"name\":\"Arbor\",\"locked\":false,\"disabled\":false,\"pressed\":\"true\",\"note\":null}"
+  },
+  {
+    "name": "D3: Flux (not current; the test-double has no /api/theme-unlock route, so status falls back to null) reads LOCKED - disabled, aria-pressed=\"false\", and shows NO note (readouts state only true things)",
+    "pass": true,
+    "detail": "{\"name\":\"Flux\",\"locked\":true,\"disabled\":true,\"pressed\":\"false\",\"note\":null}"
+  },
+  {
+    "name": "D4: clicking a LOCKED card does nothing - the panel title stays \"Mood\" (still Arbor)",
+    "pass": true,
+    "detail": "Mood"
+  },
+  {
+    "name": "D5: the panel title reads \"Skin\" once Flux is the active theme (Mood/Skin resolve per theme, not hardcoded)",
+    "pass": true,
+    "detail": "Skin"
+  },
+  {
+    "name": "D5: Flux, now the CURRENT theme, reads unlocked even though the server is still unreachable (the \"current theme\" OR-clause needs no server data)",
+    "pass": true,
+    "detail": "{\"name\":\"Flux\",\"locked\":false,\"disabled\":false,\"pressed\":\"true\",\"note\":null}"
+  },
+  {
+    "name": "D5: Arbor, no longer current, now reads LOCKED (no server data, not the active theme) - and shows NO note (note a: no real data, no guessed count)",
+    "pass": true,
+    "detail": "{\"name\":\"Arbor\",\"locked\":true,\"disabled\":true,\"pressed\":\"false\",\"note\":null}"
+  },
+  {
+    "name": "D6: the current card is a real, Tab-reachable <button>",
+    "pass": true,
+    "detail": "{\"currentFocusable\":true,\"lockedTabIndex\":0,\"lockedDisabled\":true,\"themeAfter\":\"flux\"}"
+  },
+  {
+    "name": "D6: the LOCKED card is `disabled` (tabIndex -1, out of the Tab order) - keyboard activation (Enter/click on it) changes nothing",
+    "pass": false,
+    "detail": "{\"currentFocusable\":true,\"lockedTabIndex\":0,\"lockedDisabled\":true,\"themeAfter\":\"flux\"}"
+  },
+  {
+    "name": "D8: hovering the Flux card grants a pulse (wz-theme-glitching added)",
+    "pass": false,
+    "detail": "false"
+  },
+  {
+    "name": "D8: the pulse ends on its own after its own duration - one-shot, never an infinite loop",
+    "pass": true,
+    "detail": "false"
+  },
+  {
+    "name": "D7: the reduced-motion block holds the rhizome grown (opacity 1, no transition) and disables the Flux tick animation",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "D7: the SAME still rules exist under the `[data-still=\"true\"]` attribute (Ambiance 0, no @media involved)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "D7: the hover-triggered glitch is no longer a plain CSS `:hover -> infinite` rule (note e moved it to a JS-driven, rate-limited one-shot class)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "D9: Ambiance dial at 0 makes the theme picker carry data-still=\"true\" (the still frame applies to Ambiance 0, not only OS reduced motion)",
+    "pass": true,
+    "detail": "true"
+  }
+]
+
+THEME-PICKER VERIFY: FAIL — 2/15 failed
