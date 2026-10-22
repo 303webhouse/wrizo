@@ -23,8 +23,8 @@ import type { Box } from '../types';
 import { getCurrentUser } from '../store/currentUser';
 import { requestLogout } from '../store/logoutRequest';
 import { useSigningOut } from '../store/useSigningOut';
-import { useTheme, setTheme, type ThemeId } from '../store/theme';
 import { FullscreenToggle, SyncIndicator } from './ChromeControls';
+import { ThemePicker } from './ThemePicker';
 import { PageFace, type PageFaceSubject } from './PageFace';
 import { SectionsPopout } from './SectionsPopout';
 import { PlaceSwitcher } from './PlaceSwitcher';
@@ -702,32 +702,6 @@ function CascadeSettingsPanel({ navigate }: { navigate: NavigateFunction }) {
 }
 
 // ---------------------------------------------------------------------------
-// Change Theme — the writer's AVAILABLE themes only (S3's own words);
-// future themes are ABSENT, not grayed. `themeOpts` below IS the full
-// available list — there is no third entry to hide.
-// ---------------------------------------------------------------------------
-const THEME_OPTS: [ThemeId, string][] = [['plateau', 'Arbor'], ['flux', 'Flux']];
-
-function CascadeThemePanel() {
-  const theme = useTheme();
-  return (
-    <div className="wz-cascade-panel-body wz-cascade-theme">
-      {THEME_OPTS.map(([id, label]) => (
-        <button
-          key={id}
-          type="button"
-          className={`wz-cascade-action${theme === id ? ' active' : ''}`}
-          aria-pressed={theme === id}
-          onClick={() => setTheme(id)}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Dispatch
 // ---------------------------------------------------------------------------
 export function renderCategoryPanel(category: CategoryId, ctx: CascadeContext): ReactNode {
@@ -738,7 +712,7 @@ export function renderCategoryPanel(category: CategoryId, ctx: CascadeContext): 
     case 'drawers': return <DrawersPanel {...ctx} />;
     case 'trash': return <TrashPanel navigate={ctx.navigate} />;
     case 'settings': return <CascadeSettingsPanel navigate={ctx.navigate} />;
-    case 'theme': return <CascadeThemePanel />;
+    case 'theme': return <ThemePicker />;
     default: return null;
   }
 }
