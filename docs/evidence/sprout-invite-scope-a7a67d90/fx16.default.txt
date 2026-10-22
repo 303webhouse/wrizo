@@ -1,0 +1,34 @@
+[
+  {
+    "name": "S3 (the escaped case, the whole ticket): a profile carrying the legacy invite value (\"on\", no migration marker) renders NO invite after load — the one-time migration retires the stale value so the new silent default governs",
+    "pass": true,
+    "detail": "{\"prompt\":false,\"invite\":false,\"placeholder\":null,\"pref\":null,\"marker\":\"1\"}"
+  },
+  {
+    "name": "S2/S3: the migration retired the stale \"on\" (pref cleared → default off) AND set the marker so it runs exactly once",
+    "pass": true,
+    "detail": "{\"prompt\":false,\"invite\":false,\"placeholder\":null,\"pref\":null,\"marker\":\"1\"}"
+  },
+  {
+    "name": "S2: a deliberate opt-in made under FX15/FX16 (\"on\" WITH the migration marker) SURVIVES — the migration is one-time and never a silent overwrite; the prompt still shows and the pref stays \"on\"",
+    "pass": false,
+    "detail": "{\"prompt\":true,\"invite\":true,\"placeholder\":null,\"pref\":null,\"marker\":\"1\"}"
+  },
+  {
+    "name": "S2: an explicit withdrawal (\"never\") survives the migration untouched — no invite, and the pref stays \"never\" (the migration marks itself run but never rewrites a deliberate withdrawal)",
+    "pass": false,
+    "detail": "{\"prompt\":false,\"invite\":false,\"placeholder\":null,\"pref\":null,\"marker\":\"1\"}"
+  },
+  {
+    "name": "S1 (regression): a fresh profile (no stored value) stays silent — the migration is a no-op on it (nothing to retire), only marking itself run; FX15 for new users is unchanged",
+    "pass": true,
+    "detail": "{\"prompt\":false,\"invite\":false,\"placeholder\":null,\"pref\":null,\"marker\":\"1\"}"
+  },
+  {
+    "name": "SV31: the empty page renders NO placeholder text at all — .fo-placeholder is absent (the \"Write…\" placeholder is removed; the caret + the beginnings row are sufficient)",
+    "pass": true,
+    "detail": "{\"prompt\":false,\"invite\":false,\"placeholder\":null,\"pref\":null,\"marker\":\"1\"}"
+  }
+]
+
+FX16 VERIFY: FAIL — 2/6 failed

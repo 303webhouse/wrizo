@@ -1,0 +1,49 @@
+[
+  {
+    "name": "E1: pref \"off\" — the Sprout door IS present (nothing decided yet)",
+    "pass": true,
+    "detail": "{\"sproutDoor\":true,\"invitePrompt\":false,\"pref\":null}"
+  },
+  {
+    "name": "E1: pref \"off\" — the live invite prompt is NOT showing",
+    "pass": true,
+    "detail": "{\"sproutDoor\":true,\"invitePrompt\":false,\"pref\":null}"
+  },
+  {
+    "name": "E2 (the whole ticket): pref \"on\" — the Sprout door is ABSENT (stops offering what is already on)",
+    "pass": true,
+    "detail": "{\"sproutDoor\":false,\"invitePrompt\":true,\"pref\":null}"
+  },
+  {
+    "name": "E2: pref \"on\" — the live invite prompt IS showing (the invite itself is unaffected by this fix)",
+    "pass": true,
+    "detail": "{\"sproutDoor\":false,\"invitePrompt\":true,\"pref\":null}"
+  },
+  {
+    "name": "E3: pref \"never\" — the Sprout door is ABSENT (withdrawn, not re-offered)",
+    "pass": true,
+    "detail": "{\"sproutDoor\":false,\"invitePrompt\":false,\"pref\":null}"
+  },
+  {
+    "name": "E3: pref \"never\" — the live invite prompt is NOT showing",
+    "pass": true,
+    "detail": "{\"sproutDoor\":false,\"invitePrompt\":false,\"pref\":null}"
+  },
+  {
+    "name": "E4: starts with Sprout present, pref \"off\"",
+    "pass": false,
+    "detail": "{\"sproutDoor\":true,\"invitePrompt\":false,\"pref\":null}"
+  },
+  {
+    "name": "E4: clicking Sprout shows the live prompt immediately and persists \"on\"",
+    "pass": false,
+    "detail": "{\"sproutDoor\":false,\"invitePrompt\":true,\"pref\":null}"
+  },
+  {
+    "name": "E4: a second fresh blank page after the click shows NO Sprout door (decided) and the live prompt instead",
+    "pass": false,
+    "detail": "{\"sproutDoor\":false,\"invitePrompt\":true,\"pref\":null}"
+  }
+]
+
+SPROUT-INVITE-SCOPE VERIFY: FAIL — 3/9 failed

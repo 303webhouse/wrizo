@@ -1,0 +1,69 @@
+[
+  {
+    "name": "S1: a fresh page renders NO first-line invite by default — no .fl-invite, no .fl-prompt, and the retired \"invite a first line?\" affordance (.fl-affordance) is gone entirely",
+    "pass": true,
+    "detail": "{\"invite\":false,\"prompt\":false,\"affordance\":false}"
+  },
+  {
+    "name": "S1 [FX16 SV31]: the empty page renders NO placeholder text at all — .fo-placeholder is absent (the caret + the beginnings row are sufficient)",
+    "pass": true,
+    "detail": "{\"placeholder\":null}"
+  },
+  {
+    "name": "S1: the first word lands immediately on a default page — typing works with no invite to intercept or dismiss",
+    "pass": true,
+    "detail": "{\"typed\":\"Hello\"}"
+  },
+  {
+    "name": "S2: once opted in (pref \"on\"), the invitation appears — a single quiet .fl-prompt on the empty page",
+    "pass": true,
+    "detail": "{\"prompt\":\"someone’s coat still on the chair\"}"
+  },
+  {
+    "name": "S2: the prompt is DECK-DRAWN, never model-drawn — the rendered line is a verbatim member of the local NUDGE_POOL deck (no send on page load)",
+    "pass": true,
+    "detail": "{\"poolLen\":25,\"member\":true}"
+  },
+  {
+    "name": "S2 (A13): the prompt is decoration OUTSIDE the editable surface — a <span>, aria-hidden, and NOT a descendant of .forward-only-editor — so it can never become the writer's text",
+    "pass": true,
+    "detail": "{\"insideEditor\":false,\"tag\":\"SPAN\",\"ariaHidden\":\"true\"}"
+  },
+  {
+    "name": "S2 (A13): pressing Tab does NOT fill the line — the editor takes no content and the prompt text is never inserted (no accept, no tab-fill)",
+    "pass": true,
+    "detail": "{\"promptBefore\":\"no one is reading this but you.\",\"afterTab\":\"\\t\"}"
+  },
+  {
+    "name": "S2: precondition — the opted-in prompt is showing on the empty page before the keystroke",
+    "pass": true,
+    "detail": "{\"promptBefore\":\"write it badly, on purpose, fast.\"}"
+  },
+  {
+    "name": "S2: the invitation VANISHES on the first keystroke — .fl-prompt / .fl-invite are gone the instant the writer types (and so can never overlap typed text)",
+    "pass": true,
+    "detail": "true"
+  },
+  {
+    "name": "S2: only the real keystroke lands — the editor holds the typed \"x\" and NEVER the prompt text (no insertion, no accept)",
+    "pass": true,
+    "detail": "{\"after\":\"x\"}"
+  },
+  {
+    "name": "S2: while shown, the invitation is a pointer-events:none overlay above the paper — it can never intercept a click or block the caret (no collision with typing)",
+    "pass": true,
+    "detail": "{\"overlay\":\"none\"}"
+  },
+  {
+    "name": "S2: \"don't offer again\" withdraws the invitation at once — the prompt disappears and the pref becomes \"never\"",
+    "pass": false,
+    "detail": "{\"prompt\":false,\"pref\":null}"
+  },
+  {
+    "name": "S2: the withdrawal PERSISTS — after a reload the empty page still renders no invitation, and the pref is still \"never\"",
+    "pass": false,
+    "detail": "{\"prompt\":false,\"invite\":false,\"pref\":null}"
+  }
+]
+
+FX15 VERIFY: FAIL — 2/13 failed
