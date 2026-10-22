@@ -862,9 +862,31 @@ export function ScriptEditor({ id }: { id: string }) {
   // objects per render, which is the S5 memoization seam; (b) the index it reads
   // is the DOCUMENT index off the DOM, so it cannot drift from the flat element
   // array that `activateAt` addresses, however the pages above it break.
+  // BLANK-PAGE CLICK (Fable, Oct 22 - Page-readiness, "just let me write"; the Screenplay half, her ruling): a press on the empty paper BELOW the
+  // last script element activates that element with the caret at its END - on a blank script that is its first (only) element, focused. The
+  // re-seed (moveActive -> a new seedNonce key) remounts the active element, which focuses itself on mount, so this works even when the last
+  // element is already the active one and has merely lost focus. The active element's DOM text is committed first, exactly as activateAt does.
+  const activateLastAtEnd = () => {
+    const last = elements.length - 1;
+    if (last < 0) return;
+    const domText = activeElRef.current?.textContent;
+    setElements(prev => commitElement(
+      domText != null ? prev.map((el, i) => (i === activeIndex ? { ...el, text: domText } : el)) : prev,
+      activeIndex,
+    ));
+    moveActive(last, 'end');
+  };
   const onSequenceClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = (e.target as HTMLElement | null)?.closest?.('.script-el[data-doc-index]');
-    if (!target) return;
+    if (!target) {
+      // presses anywhere else are unchanged: only a press on bare paper LOWER than the last element's bottom edge is handled here - never one on
+      // the autocomplete list (it renders just below the active element, which may be the last) or any other control
+      if ((e.target as HTMLElement | null)?.closest?.('.script-autocomplete, button, input, textarea, select, a, [role="option"], [role="listbox"]')) return;
+      const els = e.currentTarget.querySelectorAll('.script-el[data-doc-index]');
+      const lastEl = els.length ? (els[els.length - 1] as HTMLElement) : null;
+      if (lastEl && e.clientY > lastEl.getBoundingClientRect().bottom) activateLastAtEnd();
+      return;
+    }
     const index = Number(target.getAttribute('data-doc-index'));
     if (!Number.isInteger(index) || index < 0 || index >= elements.length) return;
     activateAt(index, e.clientX, e.clientY);
