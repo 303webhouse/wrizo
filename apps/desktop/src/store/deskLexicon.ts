@@ -1777,6 +1777,21 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     fadeDepthFull: 'Void',
     timerLabel: 'Clock',
     actionCopy: 'Clone doc text',
+    // STEP 3 (grafts, merged 19d31fc2): the Inputs panel's own words in Flux - the knob is an Input, the verb is connect, a card is a node, a board a circuit, a page a doc, a tag a flag.
+    graftAdd: 'Connect…',
+    graftSearch: 'Search nodes, docs, circuits…',
+    graftGroupCards: 'Nodes',
+    graftGroupBoards: 'Circuits',
+    graftGroupPages: 'Docs',
+    graftSharedTags: 'Shared flags',
+    graftPlanBoard: 'Circuit',
+    graftPlanCardsOne: '1 node',
+    graftPlanCardsMany: '{n} nodes',
+    graftHideAria: 'Hide from this doc',
+    graftHiddenLine: '{title} hidden from this doc.',
+    graftRemovedLine: 'Input to {title} removed.',
+    graftKnobTip: 'Drag to connect',
+    graftPairedPage: 'Doc',
   },
 };
 

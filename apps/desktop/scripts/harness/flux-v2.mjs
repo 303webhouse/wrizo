@@ -106,6 +106,7 @@ const WORDS = {
   footMenuTypewriter: 'Terminal Mode', twPageScroll: 'Screen Scroll', footMenuProgress: 'Meter', sliverInstrumentsUnit: 'Scale', goalLabel: 'Quota', footProgress: 'Load', footMenuPreferences: 'Config',
   fadeDepthLabel: 'Dissolve', fadeDepthPartial: 'Soft', fadeDepthFull: 'Void', timerLabel: 'Clock', boardModeOpen: 'Live', boardModeStoryboard: 'Sequence', boardModeOutline: 'Spine', boardAddCard: 'Add node',
   boardPortedBadge: 'From a doc', boardThreadUntitled: 'Unnamed', pageFaceAddTag: 'Add a flag', deskMenuGlyph: 'Terminal menu',
+  graftAdd: 'Connect…', graftGroupCards: 'Nodes', graftGroupBoards: 'Circuits', graftGroupPages: 'Docs', graftSharedTags: 'Shared flags', graftPlanBoard: 'Circuit', graftRemovedLine: 'Input to {title} removed.', graftKnobTip: 'Drag to connect',
 };
 // strings that are deliberately NOT renamed in Flux, each with its reason (the census treats these as reviewed)
 const KEEP = {
