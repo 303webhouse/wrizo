@@ -1,0 +1,40 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=33 tree=fc7ab8ed bundle=index-etABQdFk.js/795417b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/fv3-default
+[01/33] OK        exit=0   21s ab4.mjs :: AB4 VERIFY: PASS (19 checks)
+[02/33] OK        exit=0   32s b1.mjs :: ROWS-SHADOW VERIFY: PASS (97 renders checked, shadow == DOM on every one) ;; B1 VERIFY: PASS (47 checks)
+[03/33] OK        exit=0   36s b2.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; B2 VERIFY: PASS (76 checks)
+[04/33] OK        exit=0   20s b3.mjs :: B3 VERIFY: PASS (63 checks)
+[05/33] OK        exit=0   38s bg1.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; BG1 VERIFY: PASS (36 checks)
+[06/33] OK        exit=0   42s big-projects-1a.mjs :: ROWS-SHADOW VERIFY: PASS (36 renders checked, shadow == DOM on every one) ;; BIG-PROJECTS-1A VERIFY: PASS (92 checks)
+[07/33] OK        exit=0   22s big-projects-2.mjs :: BIG-PROJECTS-2 VERIFY: PASS (43 checks)
+[08/33] OK        exit=0   45s big-projects-3.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; BIG-PROJECTS-3 VERIFY: PASS (32 checks)
+[09/33] OK        exit=0   59s board-context-menu.mjs :: BOARD-CONTEXT-MENU VERIFY: PASS (56 checks)
+[10/33] OK        exit=0    1s box-tombstones.mjs :: BOX-TOMBSTONES VERIFY: PASS (31 checks)
+[11/33] OK        exit=0   46s connector-a.mjs :: CONNECTOR-A VERIFY: PASS (37 checks)
+[12/33] OK        exit=0   30s connector-b.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; CONNECTOR-B VERIFY: PASS (27 checks)
+[13/33] OK        exit=0    0s drawer-toggles.mjs :: DRAWER-TOGGLES VERIFY: PASS (34 checks)
+[14/33] OK        exit=0  130s drawers-p1-live.mjs :: ROWS-SHADOW VERIFY: PASS (20 renders checked, shadow == DOM on every one) ;; DRAWERS-P1-LIVE VERIFY: PASS (88 checks)
+[15/33] OK        exit=0    1s drawers-p1.mjs :: DRAWERS-P1 VERIFY: PASS (102 checks)
+[16/33] OK        exit=0   49s flux-page-ink.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; FLUX-PAGE-INK VERIFY: PASS (30 checks)
+[17/33] OK        exit=0   45s flux-v2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FLUX-V2 VERIFY: PASS (93 checks)
+[18/33] OK        exit=0   71s font-span.mjs :: ROWS-SHADOW VERIFY: PASS (32 renders checked, shadow == DOM on every one) ;; FONT-SPAN VERIFY: PASS (38 checks)
+[19/33] OK        exit=0   62s fx10.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX10 VERIFY: PASS (121 checks)
+[20/33] OK        exit=0   37s fx4.mjs :: FX4 VERIFY: PASS (42 checks)
+[21/33] OK        exit=0   80s fx5.mjs :: ROWS-SHADOW VERIFY: PASS (131 renders checked, shadow == DOM on every one) ;; FX5 VERIFY: PASS (54 checks)
+[22/33] OK        exit=0   30s fx6.mjs :: ROWS-SHADOW VERIFY: PASS (137 renders checked, shadow == DOM on every one) ;; FX6 VERIFY: PASS (38 checks)
+[23/33] OK        exit=0   19s hb1.mjs :: HB1 VERIFY: PASS (32 checks)
+[24/33] OK        exit=0   31s help-buttons.mjs :: ROWS-SHADOW VERIFY: PASS (5 renders checked, shadow == DOM on every one) ;; HELP-BUTTONS VERIFY: PASS (24 checks)
+[25/33] OK        exit=0    4s item207-core.mjs :: ITEM207-CORE VERIFY: PASS (48 checks)
+[26/33] OK        exit=0   31s item83f.mjs :: ROWS-SHADOW VERIFY: PASS (45 renders checked, shadow == DOM on every one) ;; ITEM83F VERIFY: PASS (33 checks)
+[27/33] OK        exit=0    1s page-links.mjs :: PAGE-LINKS VERIFY: PASS (29 checks)
+[28/33] OK        exit=0   65s page-templates-r2.mjs :: ROWS-SHADOW VERIFY: PASS (72 renders checked, shadow == DOM on every one) ;; PAGE-TEMPLATES-R2 VERIFY: PASS (134 checks)
+[29/33] OK        exit=0   48s pw1.mjs :: PW1 VERIFY: PASS (41 checks)
+[30/33] OK        exit=0   33s th2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; TH2 VERIFY: PASS (45 checks)
+[31/33] OK        exit=0   49s tu1.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; TU1 VERIFY: PASS (92 checks)
+[32/33] OK        exit=0   28s typing-latency-scroll.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+[33/33] OK        exit=0    8s vw1.mjs :: VW1 VERIFY: PASS (13 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 33/33 of 33 returned a passing verdict
+SUITE RESULT: CLEAN — tree=fc7ab8ed bundle=index-etABQdFk.js/795417b NO-REBUILD
