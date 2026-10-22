@@ -256,6 +256,12 @@ await withHarness(async (app) => {
   ok('P1: opening the picker moved nothing on the page (page primacy: the page rect is identical)', JSON.stringify(page0) === JSON.stringify(await R(app, '.forward-only-editor')), '');
   if (opened1 && search) {
     await app.typeKeys('salt'); await sleep(400);
+    // LEDGER 131 (L2's row2 null, read): the right drawer closes on any keystroke OUTSIDE its `.wz-tutor-zone` while undocked ("the writer resumed
+    // writing", Tutor.tsx) - and the picker is portalled to <body>, outside that zone, so typing in its search closed the Grafts panel under it.
+    // L1 reads the DOM and passed on the hidden pane; L2's press found a zero-size row. A writer sees the same: search, and the panel vanishes.
+    const p2Open = await app.evalJs("(() => { const g = document.querySelector('.wz-tutor-grip'); const a = document.querySelector('.wz-links-pane [data-graft-add]'); const r = a && a.getBoundingClientRect(); return { grip: g ? g.getAttribute('data-open') : null, addVisible: !!r && r.width > 0 && r.height > 0 }; })()");
+    ok('P2: typing in the picker\'s search does NOT close the right drawer - the Grafts panel stays open under it (the picker is part of the drawer\'s zone)',
+      !!p2Open && p2Open.grip === 'true' && p2Open.addVisible === true, JSON.stringify(p2Open));
     const rows2 = await pickerRows(app);
     ok('P2: the search filters as the writer types - "salt" leaves only Salt', rows2.length >= 1 && rows2.every((r) => /salt/i.test(r.title) || /salt/i.test(r.place || '')) && rows2.some((r) => r.entry === IDS.salt), JSON.stringify(rows2.map((r) => r.title)));
     const before3 = (await linksOf(app, IDS.ch3)).length;
