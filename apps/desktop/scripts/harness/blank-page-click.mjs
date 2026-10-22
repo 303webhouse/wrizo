@@ -9,6 +9,11 @@
 //   Each press point is PROVEN to lie below the last line of text (a named premise), so a press that happened to land on a line proves nothing.
 //   M  THE MUTANT (runtime): with the sheet's flex column taken away by an injected style (asserted to have LANDED - the computed display is
 //      'block'), the Draft blank-page press no longer reaches the editor.
+//   SCREENPLAY (Fable's ruling, Oct 22: include it - a press BELOW the last script element activates it with the caret at its end; a blank
+//   script gets its first element, focused; presses anywhere else are unchanged): B and T above, plus
+//   U  a press on the paper BESIDE an element (not below the last) activates nothing
+//   MS the Screenplay mutant (runtime): the click on bare script paper swallowed before the app sees it (counted, so its landing is asserted) -
+//      the press below the last element no longer activates it.
 //
 // Seeding goes through the app's seams; the per-page mode and typewriter keys are this device's own UI keys (not collections). Input is trusted
 // CDP mouse and key events. Needs a box turn.
@@ -127,6 +132,38 @@ await withHarness(async (app) => {
     await runCase(app, m, 'blank');
     await runCase(app, m, 'text');
   }
+
+  // ---- U (Fable's ruling: "presses anywhere else are unchanged"): on the Screenplay with text, a press on the paper BESIDE an element - in the
+  // sheet's margin, level with the scene heading, so NOT below the last element - activates nothing
+  const sp = MODES[3];
+  if (await openPage(app, sp, 'text')) {
+    const side = await app.evalJs(`(() => { const sheet = document.querySelector('.script-sheet'); const els = [...document.querySelectorAll('.script-sequence .script-el')];
+      if (!sheet || els.length < 2) return null; const s = sheet.getBoundingClientRect(); const first = els[0].getBoundingClientRect(); const last = els[els.length - 1].getBoundingClientRect();
+      const x = Math.round(s.left + 6), y = Math.round(first.top + first.height / 2); const hit = document.elementFromPoint(x, y);
+      return { x, y, aboveLastBottom: y < last.bottom, onElement: !!(hit && hit.closest('.script-el')) }; })()`);
+    if (side && side.aboveLastBottom && !side.onElement) {
+      await click(app, side.x, side.y); await sleep(300);
+      const focusSide = await focusedIn(app, true);
+      ok('Screenplay U: a press on the paper BESIDE an element (not below the last one) activates nothing - presses anywhere else are unchanged', focusSide === false, JSON.stringify({ side, focusSide }));
+    } else ok('Screenplay U fixture: a margin point level with the heading, off every element, above the last element\'s bottom', false, JSON.stringify(side));
+  } else ok('Screenplay U fixture: the Screenplay with text opened', false, '');
+
+  // ---- MS: the Screenplay mutant - the press on bare script paper is swallowed before the app's handler (a document capture listener that stops
+  // exactly the clicks this fix handles: inside .script-sequence, not on an element; it COUNTS what it swallowed, so its landing is asserted).
+  // The blank Screenplay press then no longer reaches an element - the Screenplay checks depend on the fix's branch.
+  await app.evalJs(`window.wrizoPatchEntry(${JSON.stringify(pageId(sp, 'blank'))}, { text: '', script: ${JSON.stringify(scriptDoc(false))} })`);
+  await app.evalJs('window.wrizoFlushNow()');
+  await sleep(300);
+  if (await openPage(app, sp, 'blank')) {
+    await app.evalJs(`(() => { window.__bpcSwallowed = 0; window.__bpcMut = (e) => { const t = e.target; if (t && t.closest && t.closest('.script-sequence') && !t.closest('.script-el')) { window.__bpcSwallowed += 1; e.stopPropagation(); } };
+      document.addEventListener('click', window.__bpcMut, true); return true; })()`);
+    const p = await pressPoint(app, true);
+    let reached = null;
+    if (p && p.y > p.lineBottom + 10) { await click(app, p.x, p.y); await sleep(300); reached = await focusedIn(app, true); }
+    const swallowed = await app.evalJs('(() => { document.removeEventListener(\'click\', window.__bpcMut, true); return window.__bpcSwallowed; })()');
+    ok('MS (mutant): with the press on bare script paper swallowed before the app sees it (the swallow LANDED: counted), a press below the last element no longer activates it - the Screenplay checks depend on the fix',
+      swallowed >= 1 && reached === false, JSON.stringify({ swallowed, reached, p }));
+  } else ok('MS fixture: the blank Screenplay reopened', false, '');
 
   // ---- M: the mutant - the sheet's flex column taken away (asserted to have landed), the Draft blank-page press no longer reaches the editor
   const mm = MODES[1];
