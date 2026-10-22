@@ -1,0 +1,28 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=21 tree=6432f28b bundle=index-Sko0ToyP.js/769310b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/tw2-default
+[01/21] OK        exit=0   10s e4.mjs :: E4 VERIFY: PASS (19 checks)
+[02/21] OK        exit=0   12s empty-line-caret.mjs :: ROWS-SHADOW VERIFY: PASS (7 renders checked, shadow == DOM on every one) ;; EMPTY-LINE-CARET VERIFY: PASS (20 checks)
+[03/21] OK        exit=0   48s flux-page-ink.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; FLUX-PAGE-INK VERIFY: PASS (30 checks)
+[04/21] OK        exit=0   22s fx1.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; FX1 VERIFY: PASS (23 checks)
+[05/21] OK        exit=0   73s fx5.mjs :: ROWS-SHADOW VERIFY: PASS (131 renders checked, shadow == DOM on every one) ;; FX5 VERIFY: PASS (54 checks)
+[06/21] OK        exit=0   30s fx6.mjs :: ROWS-SHADOW VERIFY: PASS (137 renders checked, shadow == DOM on every one) ;; FX6 VERIFY: PASS (38 checks)
+[07/21] OK        exit=0   32s fx7.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FX7 VERIFY (partial): PASS (43 checks)
+[08/21] OK        exit=0   18s hb1.mjs :: HB1 VERIFY: PASS (32 checks)
+[09/21] OK        exit=0    9s hb2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; HB2 VERIFY: PASS (10 checks)
+[10/21] OK        exit=0    7s outdent.mjs :: ROWS-SHADOW VERIFY: PASS (32 renders checked, shadow == DOM on every one) ;; OUTDENT VERIFY: PASS (10 checks)
+[11/21] OK        exit=0   65s page-templates-r2.mjs :: ROWS-SHADOW VERIFY: PASS (72 renders checked, shadow == DOM on every one) ;; PAGE-TEMPLATES-R2 VERIFY: PASS (134 checks)
+[12/21] OK        exit=0   37s resume-on-open.mjs :: RESUME-ON-OPEN VERIFY: PASS (57 checks)
+[13/21] OK        exit=0   40s sc1.mjs :: SC1 VERIFY: PASS (71 checks)
+[14/21] OK        exit=0   39s sc2.mjs :: SC2 VERIFY: PASS (72 checks)
+[15/21] OK        exit=0   14s typewriter-fade.mjs :: TYPEWRITER-FADE VERIFY: PASS (5 checks)
+[16/21] OK        exit=0    1s typewriter-page.mjs :: TYPEWRITER-PAGE VERIFY: PASS (22 checks)
+[17/21] OK        exit=0    7s typewriter-scope.mjs :: ROWS-SHADOW VERIFY: PASS (5 renders checked, shadow == DOM on every one) ;; TYPEWRITER-SCOPE VERIFY: PASS (3 checks)
+[18/21] OK        exit=0   28s typing-latency-scroll.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+[19/21] OK        exit=0   14s w1.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; W1 VERIFY: PASS (5 checks)
+[20/21] OK        exit=0   16s writing-r1.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; WRITING-R1 VERIFY: PASS (25 checks)
+[21/21] OK        exit=0   47s writing-r2.mjs :: ROWS-SHADOW VERIFY: PASS (10 renders checked, shadow == DOM on every one) ;; WRITING-R2 VERIFY: PASS (13 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 21/21 of 21 returned a passing verdict
+SUITE RESULT: CLEAN — tree=6432f28b bundle=index-Sko0ToyP.js/769310b NO-REBUILD
