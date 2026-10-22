@@ -3,6 +3,18 @@
 // box-turn grant (Chat 1's) to run - this lane wrote it browserless-only and could not execute
 // it itself.
 //
+// FIXED (Fable's review, Oct 22): freshDesk() used to stop at `.wz-arrival` and expect
+// [data-category="theme"] to already exist there. It never can - the cascade rail (every
+// [data-category], "theme" included) only mounts from useCascade(), which is only ever called
+// by PageEditor/JournalEntry/BoardEditor/ScriptEditor, never by Arrival.tsx itself (confirmed:
+// zero useCascade call sites outside those four). Arrival is the door screen (Full screen /
+// Sign out are GlobalHeader's corner cluster, present on every route; Write / Open are
+// Arrival's own two buttons) - not a page. freshDesk() now also opens the Write door and waits
+// for the editor, the same house convention cd1.mjs's own freshLoosePage (and ab3.mjs, b2.mjs,
+// fx1.mjs, fx2.mjs) already use before touching any data-category. This was a harness bug, not
+// a product gap - the theme picker has no shipped path that skips opening a page/board/journal
+// entry/script first, and that is this ticket's own intended scope, not an omission.
+//
 // SUPERSEDED mid-ticket (Fable's review, Oct 21 1:09pm ruling): openness and the unlock count now
 // derive SERVER-SIDE (apps/server/src/sync.ts's GET /theme-unlock). runtime-verify.mjs's own
 // auth/sync test-double has no route for it (it only serves /auth/me and /api/sync) - every
@@ -61,6 +73,13 @@ const freshDesk = async (app) => {
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1')");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+  // Fable's review: Arrival is the door, not a page - the cascade rail (and [data-category]
+  // generally, including "theme") only mounts from useCascade(), which is only ever called from
+  // PageEditor/JournalEntry/BoardEditor/ScriptEditor, never from Arrival itself. Open the Write
+  // door first (the house convention - cd1.mjs's own freshLoosePage, ab3.mjs, b2.mjs, fx1.mjs,
+  // fx2.mjs all do the same before touching data-category) so the rail actually exists.
+  await app.evalJs("document.querySelector('.wz-arrival-write')?.click()");
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted' });
 };
 
 const openThemePanel = async (app) => {
@@ -112,9 +131,12 @@ await withHarness(async (app) => {
 
   // D5 — the panel title resolves through the lexicon per theme. Switch directly (theme.ts's
   // own storage key) to prove Skin shows once Flux IS current, independent of the click path.
+  // The app RESUMES the last route on reload (fx15.mjs's own established note) - a page is
+  // already open at this point in the scenario, so reloading lands straight back on the editor,
+  // never on Arrival; wait for the editor, not the door.
   await app.evalJs("localStorage.setItem('wrizo-theme', 'flux')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after theme switch' });
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted after theme switch' });
   await openThemePanel(app);
   const titleOnFlux = await app.evalJs("document.querySelector('.wz-cascade-panel-title')?.textContent ?? null");
   ok('D5: the panel title reads "Skin" once Flux is the active theme (Mood/Skin resolve per theme, not hardcoded)',
@@ -193,9 +215,13 @@ await withHarness(async (app) => {
 // even with no OS reduced-motion preference in play.
 await withHarness(async (app) => {
   await freshDesk(app);
+  // the dial's module-level `current` only re-reads localStorage at module init (store/
+  // ambianceDial.ts's own `let current = load()`), so a reload is needed for the new value to
+  // take effect; a page is already open (freshDesk's own Write-door step), so the reload resumes
+  // straight onto the editor, same as D5 above - wait for the editor, not Arrival.
   await app.evalJs("localStorage.setItem('wrizo-ambiance-dial', '0')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk, Ambiance 0' });
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, Ambiance 0' });
   await openThemePanel(app);
   const stillAttr = await app.evalJs("document.querySelector('.wz-theme-picker')?.getAttribute('data-still') ?? null");
   ok('D9: Ambiance dial at 0 makes the theme picker carry data-still="true" (the still frame applies to Ambiance 0, not only OS reduced motion)',
