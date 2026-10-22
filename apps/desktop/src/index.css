@@ -5285,6 +5285,14 @@ a:focus-visible,
    tab and wrapped lines return to the margin - so a tab must be one fixed step wide. `tab-size` makes it 2em (the browser default,
    8 characters, varies with the typeface). The WHOLE-PARAGRAPH indent is the separate `>| ` block token below. */
 .forward-only-editor, .board-popup-editor{ tab-size:2em; }
+/* BLANK-PAGE CLICK (Fable, Oct 22 - Page-readiness, "just let me write"; the CSS route approved). THE SHEET IS A FLEX COLUMN, so the editor FILLS
+   THE PAPER. Before: the editor's wrap asked for min-height:100% of .wz-ink-sheet (PageEditor.tsx), which has a min-height but no height, so the
+   percentage resolved to 0 and a blank page's editor was one line tall - a press on the empty paper below it landed on the sheet and the writer
+   lost the caret. As a flex column the sheet's own min-height (the scroller's height) is what its children grow into: the wrap takes flex 1, the
+   editor inside it already does, and the browser places the caret natively - a press below the last line lands at the END of the text. The ink
+   canvas is absolutely positioned (unaffected); the sheet's other children stack as they did, at full width (stretch). */
+.wz-ink-sheet{ display:flex; flex-direction:column; }
+.wz-ink-sheet > .forward-only-editor-wrap{ flex:1 1 auto; }
 /* one `>| ` = one block level: the paragraph's lines (wrapped ones too) sit 2em further in. Levels stack, each a wrapper. */
 .md-block{ padding-left:2em; }
 .md-align-center{ text-align:center; }
