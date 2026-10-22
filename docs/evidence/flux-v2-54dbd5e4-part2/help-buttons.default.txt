@@ -1,0 +1,28 @@
+
+ROWS-SHADOW VERIFY: PASS (5 renders checked, shadow == DOM on every one)
+PASS  S1 [plateau] Templates: the "?" opens THIS theme's own sentence  [{"text":"Ready-made page layouts.","expected":"Ready-made page layouts."}]
+PASS  S1 [plateau] Recede depth: the "?" opens THIS theme's own sentence  [{"text":"Type and the menus fade; pause, reach an edge, or press Esc to bring them back.","expected":"Type and the menus fade; pause, reach an edge, or press Esc to bring them back."}]
+PASS  S1 [plateau] Free Write: the "?" opens THIS theme's own sentence  [{"text":"Write forward only. No going back to edit.","expected":"Write forward only. No going back to edit."}]
+PASS  S1 [plateau] Publish: the "?" opens THIS theme's own sentence  [{"text":"Share a page as a link or a file.","expected":"Share a page as a link or a file."}]
+PASS  S1 [plateau] Grafts/Links: the "?" opens THIS theme's own sentence  [{"text":"Grafts join pages, cards and boards.","expected":"Grafts join pages, cards and boards."}]
+PASS  S1 [flux] Templates: the "?" opens THIS theme's own sentence  [{"text":"Ready-made doc layouts.","expected":"Ready-made doc layouts."}]
+FAIL  S1 [flux] Recede depth: the "?" exists  [not found]
+PASS  S1 [flux] Free Write: the "?" opens THIS theme's own sentence  [{"text":"Write forward only. No editing back.","expected":"Write forward only. No editing back."}]
+PASS  S1 [flux] Publish: the "?" opens THIS theme's own sentence  [{"text":"Send a doc out as a link or a file.","expected":"Send a doc out as a link or a file."}]
+PASS  S1 [flux] Grafts/Links: the "?" opens THIS theme's own sentence  [{"text":"Inputs join docs, nodes and circuits.","expected":"Inputs join docs, nodes and circuits."}]
+PASS  S1b Arbor: none of the five picker rows carry a "?" (Arbor's own five words are the canonical baseline, none renamed)  [0]
+PASS  S1b Flux: every one of the five picker rows carries its own "?" (every row is renamed)  [[{"label":"Raw","hasHelp":true},{"label":"Script","hasHelp":true},{"label":"Spine","hasHelp":true},{"label":"Cover","hasHelp":true},{"label":"Sources","hasHelp":true}]]
+PASS  S1b Flux [Raw]: its own "?" opens the matching sentence  [{"label":"Raw","text":"A raw doc. Nothing written yet.","expected":"A raw doc. Nothing written yet."}]
+PASS  S1b Flux [Script]: its own "?" opens the matching sentence  [{"label":"Script","text":"The script format: sluglines, dialogue, action.","expected":"The script format: sluglines, dialogue, action."}]
+PASS  S1b Flux [Spine]: its own "?" opens the matching sentence  [{"label":"Spine","text":"A numbered spine. Tab indents.","expected":"A numbered spine. Tab indents."}]
+PASS  S1b Flux [Cover]: its own "?" opens the matching sentence  [{"label":"Cover","text":"A standard manuscript cover sheet.","expected":"A standard manuscript cover sheet."}]
+PASS  S1b Flux [Sources]: its own "?" opens the matching sentence  [{"label":"Sources","text":"Your sources, collected on one doc.","expected":"Your sources, collected on one doc."}]
+PASS  S2: a second tap of the SAME "?" closes it  [{"s2Open":"true","s2Closed":"false"}]
+PASS  S3: a press outside the "?" and its popover closes it  [false]
+PASS  S4: Esc closes it AND returns focus to the "?" that opened it  [{"expanded":"false","focused":true}]
+PASS  S5: left alone, the popover stays open — NO auto-close timer  [true]
+PASS  S6 THE CLAIM: the page's own rect never moves or resizes while a "?" opens and closes — it is an overlay, never part of the layout  [{"r0":"431,138,537,29","r1":"431,138,537,29","r2":"431,138,537,29"}]
+PASS  S7: the "?" is never brass when open (the --help token, not --brass)  [.wz-help[aria-expanded="true"] { color: var(--help-hi); border-color: var(--help-hi); background: color-mix(in srgb,var(--help) 16%,transparent); }]
+PASS  S7: the popover is position:fixed — one shared overlay, never position:absolute  [.wz-help-pop { position: fixed; z-index: 9000; width: max-content; max-width: 240px; padding: 9px 12px; background: var(--desk-ground); border-top-color: ; bord]
+
+HELP-BUTTONS VERIFY: FAIL - 1/24 failed

@@ -1,0 +1,8 @@
+START 04:57:11Z
+run1 exit=0 SUITE RESULT: CLEAN — tree=c305ad2a+1dirty bundle=index-DHPKHeBr.js/768174b NO-REBUILD
+run2 exit=0 SUITE RESULT: CLEAN — tree=c305ad2a+1dirty bundle=index-DHPKHeBr.js/768174b NO-REBUILD
+run3 exit=0 SUITE RESULT: CLEAN — tree=c305ad2a+1dirty bundle=index-DHPKHeBr.js/768174b NO-REBUILD
+run4 exit=1 SUITE RESULT: NOT CLEAN — tree=c305ad2a+1dirty bundle=index-DHPKHeBr.js/768174b NO-REBUI
+run5 exit=1 SUITE RESULT: NOT CLEAN — tree=c305ad2a+1dirty bundle=index-DHPKHeBr.js/768174b NO-REBUI
+RZRAW COMPLETE
+released (mine)

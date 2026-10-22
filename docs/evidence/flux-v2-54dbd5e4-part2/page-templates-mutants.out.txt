@@ -1,0 +1,6 @@
+M1: ANCHOR x0 - DID NOT LAND
+M2: SURVIVED
+    PASS  T2 [chosen]: on a screenplay page the Screenplay template is drawn CHOSEN - aria-pressed, and brass AT REST (no press: not :active)  [{"chosen":{"pressed":"true","color":"rgb(255, 152, 0)","border":"rgb(255, 152, 0
+M3: NO CLAIM LINE (crash?)
+
+PAGE-TEMPLATES MUTANTS: FAIL (0/3 killed); tree clean after restore: true

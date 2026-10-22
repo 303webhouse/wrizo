@@ -1,0 +1,5 @@
+RHIZOME-FLASH FRAME: c305ad2a-1-hold.png {"flash":"true","stroke":"rgb(255, 152, 0)","opacity":1,"width":"1.35px"}
+RHIZOME-FLASH FRAME: c305ad2a-2-mid-fade.png {"flash":"fading","stroke":"rgb(255, 152, 0)","opacity":0.560756,"width":"1.35px"}
+RHIZOME-FLASH FRAME: c305ad2a-3-after.png {"flash":"false","stroke":"rgb(150, 160, 90)","opacity":0.45,"width":"0.4px"}
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.

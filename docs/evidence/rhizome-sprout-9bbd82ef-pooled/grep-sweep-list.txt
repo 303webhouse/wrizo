@@ -1,0 +1,13 @@
+scripts/harness/glitch-meter.mjs
+scripts/harness/j6.mjs
+scripts/harness/m2.mjs
+scripts/harness/m3.mjs
+scripts/harness/m4.mjs
+scripts/harness/rhizome-goal-core.mjs
+scripts/harness/rhizome-goal.mjs
+scripts/harness/rhizome-growth.mjs
+scripts/harness/rhizome-latency-rawdump.mjs
+scripts/harness/rhizome-latency.mjs
+scripts/rhizome-flash-frames.mjs
+scripts/rhizome-flash-verify.mjs
+scripts/rhizome-theme-mutant.mjs

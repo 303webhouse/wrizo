@@ -1,0 +1,12 @@
+RHIZOME-FLASH VERIFY RUN @ c305ad2a in C:/Users/nickh/writer-studio/.claude/worktrees/rz2
+1 rhizome-growth default: exit 0 :: RHIZOME-GROWTH VERIFY: PASS (51 checks)
+1 rhizome-growth PARKED : exit 0 :: RHIZOME-GROWTH PARKED: 1 check (R5 data-flash expression) | RHIZOME-GROWTH VERIFY: PASS (52 checks)
+1 rhizome-growth --mutants: exit 0 :: RHIZOME-GROWTH VERIFY: PASS (51 checks) | RHIZOME-GROWTH MUTANTS: PASS (7/7 RED)
+1 rhizome-goal-core: exit 0 :: RHIZOME-GOAL-CORE VERIFY: PASS (33 checks)
+2 rhizome-goal default: exit 0 :: RHIZOME-GOAL-CORE VERIFY: PASS (33 checks) | RHIZOME-GOAL VERIFY: PASS (10 checks)
+2 rhizome-goal PARKED : exit 0 :: RHIZOME-GOAL-CORE VERIFY: PASS (33 checks) | RHIZOME-GOAL VERIFY: PASS (10 checks)
+2 m2 default: exit 0 :: M2 VERIFY: PASS (26 checks)
+2 m3 default: exit 0 :: M3 VERIFY: PASS (6 checks)
+2 frames: exit 0 - 3 of 3 shot
+
+RHIZOME-FLASH RUN: PASS - every check green, tree clean=true

@@ -1,0 +1,3 @@
+M-gate (drop theme === 'plateau'): RED (killed)
+
+RHIZOME THEME MUTANT: PASS - RED (killed); tree clean after restore: true

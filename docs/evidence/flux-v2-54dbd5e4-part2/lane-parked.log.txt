@@ -1,0 +1,13 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=1 files=4 tree=9f1ea163 bundle=index-DoKvPG1X.js/780761b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/fv-parked
+[01/4] OK        exit=0   49s flux-page-ink.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; FLUX-PAGE-INK VERIFY: PASS (30 checks)
+[02/4] FAIL      exit=1   42s flux-v2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FLUX-V2 VERIFY: FAIL - 3/91 failed
+[03/4] FAIL      exit=1   30s help-buttons.mjs :: ROWS-SHADOW VERIFY: PASS (5 renders checked, shadow == DOM on every one) ;; HELP-BUTTONS VERIFY: FAIL - 1/24 failed
+[04/4] OK        exit=0   37s th2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; "name": "PARKED (was \"check 2: canonical route /journal still resolves under Flux (URL stays canonical)\") — B1 S5: pages/Journal.tsx is deleted; '/journal' now redirects to the Journal Board under Flux too — live successor: b1.mjs's own retirement check", ;; TH2 PARKED: PASS (1 checks) — HARNESS_PARKED=1 armed, all retired-check successors green ;; TH2 VERIFY: PASS (45 checks)
+
+SUITE DONE HARNESS_PARKED=1 — 2/4 of 4 returned a passing verdict
+  FAIL: flux-v2.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\fv-parked\flux-v2.mjs.parked.txt
+  FAIL: help-buttons.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\fv-parked\help-buttons.mjs.parked.txt
+SUITE RESULT: NOT CLEAN — tree=9f1ea163 bundle=index-DoKvPG1X.js/780761b NO-REBUILD

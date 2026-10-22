@@ -1,0 +1,13 @@
+BOX TURN: granted to lane "chat1" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=4 tree=9f1ea163 bundle=index-DoKvPG1X.js/780761b NO-REBUILD out=C:/Users/nickh/AppData/Local/Temp/claude/c--Users-nickh-writer-studio/f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4/scratchpad/fv-default
+[01/4] OK        exit=0   50s flux-page-ink.mjs :: ROWS-SHADOW VERIFY: PASS (6 renders checked, shadow == DOM on every one) ;; FLUX-PAGE-INK VERIFY: PASS (30 checks)
+[02/4] FAIL      exit=1   42s flux-v2.mjs :: ROWS-SHADOW VERIFY: PASS (1 renders checked, shadow == DOM on every one) ;; FLUX-V2 VERIFY: FAIL - 3/91 failed
+[03/4] FAIL      exit=1   31s help-buttons.mjs :: ROWS-SHADOW VERIFY: PASS (5 renders checked, shadow == DOM on every one) ;; HELP-BUTTONS VERIFY: FAIL - 1/24 failed
+[04/4] OK        exit=0   33s th2.mjs :: ROWS-SHADOW VERIFY: PASS (2 renders checked, shadow == DOM on every one) ;; TH2 VERIFY: PASS (45 checks)
+
+SUITE DONE HARNESS_PARKED=unset — 2/4 of 4 returned a passing verdict
+  FAIL: flux-v2.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\fv-default\flux-v2.mjs.default.txt
+  FAIL: help-buttons.mjs — full output at C:\Users\nickh\AppData\Local\Temp\claude\c--Users-nickh-writer-studio\f1a2ee78-3ca4-459c-a8bc-9aa1df8d26b4\scratchpad\fv-default\help-buttons.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=9f1ea163 bundle=index-DoKvPG1X.js/780761b NO-REBUILD
