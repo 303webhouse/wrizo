@@ -1,0 +1,7 @@
+scripts/harness/connector-a.mjs
+scripts/harness/fx15.mjs
+scripts/harness/fx16.mjs
+scripts/harness/fx5.mjs
+scripts/harness/sprout-invite-scope-logic.mjs
+scripts/harness/sprout-invite-scope.mjs
+scripts/orphan-reaper.mjs
