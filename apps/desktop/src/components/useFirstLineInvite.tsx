@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { NUDGE_POOL } from '../store/idleNudges';
-import { getCurrentUser } from '../store/currentUser';
+import { getCurrentUser, subscribeCurrentUser } from '../store/currentUser';
 
 // F6 — the first-line invitation (opt-in). FX15 (the Quiet Page): the invitation
 // SLEEPS by default. A fresh page says nothing until the writer asks — no affordance,
@@ -114,6 +114,22 @@ export function useFirstLineInvite(isEmpty: () => boolean): FirstLineInvite {
   const [dismissed, setDismissed] = useState(false);
   const [prompt, setPrompt] = useState<string>(pickPrompt);
 
+  // SPROUT-INVITE-SCOPE (Fable's review, ledger 124) - THE RACE readPref()'s own mount-time
+  // read cannot see: getCurrentUser() is synchronous, and App.tsx's own sign-in check
+  // (apiMe(), a fetch) only resolves in a LATER effect - so the useState initializer above
+  // always resolves against the BARE key on first render, even on a device that IS signed in;
+  // the real user simply isn't known yet at that instant. A later optIn()/neverAgain() (a
+  // click, always after the page is interactive) correctly asks getCurrentUser() fresh and so
+  // can land on the NOW-known signed-in user's own SCOPED key - a different key than the one
+  // `pref` was born reading, with nothing left to ever reconcile them for the rest of this
+  // mount. Subscribing to the same currentUser seam App.tsx itself populates re-resolves
+  // `pref` (and, inside readPref(), re-runs the one-time migration - which could otherwise
+  // never fire at all, since nothing else ever calls readPref() a second time) the MOMENT the
+  // real user becomes known, before any click could happen - so a read born before auth
+  // resolved is never stale by the time a write can occur. A signed-out device never sees a
+  // second, different user, so this never fires a second time there.
+  useEffect(() => subscribeCurrentUser(() => setPref(readPref())), []);
+
   const dismiss = useCallback(() => setDismissed(true), []);
 
   const optIn = useCallback(() => {
@@ -147,6 +163,15 @@ export function useFirstLineInvite(isEmpty: () => boolean): FirstLineInvite {
 // Test/inspection seam (the wrizoDeskLexicon / wrizoBoard convention) — exposes the
 // invitation's prompt DECK so fx15.mjs can prove a rendered prompt is deck-drawn (a
 // verbatim member of this local pool), never model-drawn. Never read by app code.
+//
+// SPROUT-INVITE-SCOPE (Fable's review, ledger 124) - also exposes the SAME key-resolution
+// the hook itself uses (prefKeyFor + the live signed-in id), so a live harness can check
+// "the stored pref" correctly regardless of sign-in state, instead of hardcoding the bare
+// key - which is exactly what fx15.mjs/fx16.mjs's own pre-existing checks did, and why they
+// started failing once a signed-in device's pref could legitimately live elsewhere.
 if (typeof window !== 'undefined') {
-  (window as unknown as { wrizoFirstLineInvite?: unknown }).wrizoFirstLineInvite = { POOL: NUDGE_POOL };
+  (window as unknown as { wrizoFirstLineInvite?: unknown }).wrizoFirstLineInvite = {
+    POOL: NUDGE_POOL,
+    prefKey: () => prefKeyFor(getCurrentUser()?.id ?? null),
+  };
 }

@@ -22,6 +22,12 @@
 //      bare-key leftover (the migration's "scoped key is empty" guard)
 //   S7 FX16 regression: a stale pre-FX15 bare 'on' (no migration marker) is still retired before
 //      any scoping decision, migrating or not — unchanged by this ticket
+//   S8 Fable's review (ledger 124), THE RACE: a read taken BEFORE a sign-in resolves (the
+//      useFirstLineInvite hook's own mount-time readPref() call, which always runs before
+//      App.tsx's async apiMe() can possibly have resolved) must not permanently strand a later
+//      write on the wrong key. Re-running readPref() AFTER the user becomes known - what the
+//      hook's own currentUser subscription (added in response to this review) does - correctly
+//      migrates/resolves to the SAME key a subsequent write would land on.
 //   MUTANTS (each is the bundle with ONE text edit, must turn its named case RED):
 //       migrateToScopedKey not removing the bare key after the move (S3 red — the leak this
 //       ticket exists to fix)
@@ -163,6 +169,21 @@ try {
   currentUser.setCurrentUser(null);
   ok('S7: FX16 unchanged — a stale pre-FX15 "on" with no marker is retired to "off" for a signed-out read',
     invite.readPref() === 'off', JSON.stringify({ bare: localStorage.getItem(invite.PREF_KEY_BASE), marker: localStorage.getItem(invite.MIGRATED_KEY) }));
+
+  // S8 — THE RACE (Fable's review, ledger 124): a read taken BEFORE sign-in resolves, then a
+  // sign-in, then a SECOND read (what the hook's own currentUser subscription now performs) -
+  // the second read must land on the SAME key a write made after it would use.
+  freshStorage();
+  localStorage.setItem(invite.MIGRATED_KEY, '1');
+  localStorage.setItem(invite.PREF_KEY_BASE, 'on');
+  currentUser.setCurrentUser(null);                      // the hook's own mount: auth not resolved yet
+  const earlyRead = invite.readPref();
+  currentUser.setCurrentUser({ id: 'user-D', email: 'd@example.com' });  // auth resolves moments later
+  const lateRead = invite.readPref();                     // the subscription's own re-read
+  const writeKey = invite.prefKeyFor(currentUser.getCurrentUser()?.id ?? null);  // what a click (optIn) would target NOW
+  ok('S8: a read taken before sign-in and a read taken after sign-in are consistent once re-run - the later read correctly reflects the signed-in user\'s own (now-migrated) key, matching where a write would land',
+    earlyRead === 'on' && lateRead === 'on' && writeKey === invite.prefKeyFor('user-D') && localStorage.getItem(invite.prefKeyFor('user-D')) === 'on',
+    JSON.stringify({ earlyRead, lateRead, writeKey, scopedD: localStorage.getItem(invite.prefKeyFor('user-D')), bare: localStorage.getItem(invite.PREF_KEY_BASE) }));
 
   // ── mutants (string-splice the REAL bundle's own output, one edit each) ──────────────────
   // Each mutant edits ONE function's body in isolation (sliced out by name, so a replace that
