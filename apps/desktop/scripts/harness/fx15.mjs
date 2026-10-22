@@ -24,8 +24,22 @@ import { withHarness } from '../runtime-verify.mjs';
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// SPROUT-INVITE-SCOPE (Fable's review, ledger 124) - declared here (not at the foot, where
+// FX15 used to have nothing to park) so the two parks below can sit right next to the
+// successors they park, inside the SAME withHarness run, reusing its own click/reload data
+// rather than a second pass.
+const parkedChecks = [];
+const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
 
 const PREF_KEY = 'wrizo-first-line-invite';
+// SPROUT-INVITE-SCOPE (Fable's review, ledger 124) - the two checks below that read "the
+// stored pref" AFTER a write ("don't offer again") now read it through
+// `window.wrizoFirstLineInvite.prefKey()` (the hook's own test seam, evaluated IN the page)
+// instead of the bare PREF_KEY: signed out it resolves to the bare key (unchanged); signed in
+// it resolves to that account's own scoped key - the SAME key the write itself targets. The
+// SEEDING above (and the rendering checks it feeds) is untouched: the seed and its own first
+// read both land inside the same pre-auth-resolution window and so still agree on the bare
+// key either way, whether or not the device is signed in.
 
 const freshDesk = async (app, width = 1400, height = 900) => {
   await app.goto('/');
@@ -179,9 +193,31 @@ await withHarness(async (app) => {
     const immediate = await app.evalJs(`(() => ({
       prompt: !!document.querySelector('.fl-prompt'),
       pref: localStorage.getItem(${JSON.stringify(PREF_KEY)}),
+      prefAtKey: localStorage.getItem(window.wrizoFirstLineInvite.prefKey()),
     }))()`);
-    ok('S2: "don\'t offer again" withdraws the invitation at once — the prompt disappears and the pref becomes "never"',
-      immediate.prompt === false && immediate.pref === 'never', JSON.stringify(immediate));
+    // SPROUT-INVITE-SCOPE (Fable's review, ledger 124) - SUPERSEDED. ORIGINAL, quoted verbatim
+    // (now parked at the foot of this file, HARNESS_PARKED=1): `immediate.pref` read the BARE
+    // key directly, which is only the EFFECTIVE key while signed out. A signed-in device's
+    // "don't offer again" click correctly writes that account's own SCOPED key instead - a
+    // real, intentional behavior change this ticket introduced, not a bug - so the bare key
+    // alone is no longer a reliable read of "the pref". Successor below reads prefAtKey (the
+    // hook's own test seam), the SAME key the write itself targets either way.
+    //
+    //   ok('S2: "don\'t offer again" withdraws the invitation at once — the prompt disappears and the pref becomes "never"',
+    //     immediate.prompt === false && immediate.pref === 'never', JSON.stringify(immediate));
+    ok('S2 [successor]: "don\'t offer again" withdraws the invitation at once — the prompt disappears and the pref (at its CURRENTLY-EFFECTIVE key) becomes "never"',
+      immediate.prompt === false && immediate.prefAtKey === 'never', JSON.stringify(immediate));
+    if (process.env.HARNESS_PARKED === '1') {
+      // Fable's review (ledger 124): accept null as "nothing to migrate" - a signed-in session
+      // can have the bare key already consumed by migrateToScopedKey() (readPref()'s own
+      // subscription-triggered re-run, sometime before this click) before this read even fires.
+      // Still narrow: anything other than 'never'/'on'/null stays rejected (matches fx16.mjs's
+      // own Case 2/3 parks and sprout-invite-scope.mjs's own fixed E4 park); a genuinely stuck,
+      // unmigrated value cannot slip through - proven by sprout-invite-scope-logic.mjs's own S2
+      // mutant ("migrateToScopedKey is a complete no-op"), which exercises this exact code path.
+      pok('PARKED (was "S2: don\'t offer again withdraws... pref becomes never" via the bare key) - the write ALWAYS lands correctly (prefAtKey is "never"); the bare key itself is either ALSO "never" (signed out - the original claim literally still holds), UNCHANGED from its pre-click seed, "on" (signed in, not yet migrated), or already consumed to null (signed in, migrated already)',
+        immediate.prefAtKey === 'never' && (immediate.pref === 'never' || immediate.pref === 'on' || immediate.pref == null), JSON.stringify(immediate));
+    }
 
     // Reload (NOT freshDesk — the pref must survive) and re-open the same empty
     // page: the withdrawal is permanent. The app RESUMES the last route on reload
@@ -196,9 +232,20 @@ await withHarness(async (app) => {
       prompt: !!document.querySelector('.fl-prompt'),
       invite: !!document.querySelector('.fl-invite'),
       pref: localStorage.getItem(${JSON.stringify(PREF_KEY)}),
+      prefAtKey: localStorage.getItem(window.wrizoFirstLineInvite.prefKey()),
     }))()`);
-    ok('S2: the withdrawal PERSISTS — after a reload the empty page still renders no invitation, and the pref is still "never"',
-      afterReload.prompt === false && afterReload.invite === false && afterReload.pref === 'never', JSON.stringify(afterReload));
+    // SPROUT-INVITE-SCOPE (Fable's review, ledger 124) - SUPERSEDED, same reasoning as above.
+    // ORIGINAL, quoted verbatim (parked at the foot of this file):
+    //
+    //   ok('S2: the withdrawal PERSISTS — after a reload the empty page still renders no invitation, and the pref is still "never"',
+    //     afterReload.prompt === false && afterReload.invite === false && afterReload.pref === 'never', JSON.stringify(afterReload));
+    ok('S2 [successor]: the withdrawal PERSISTS — after a reload the empty page still renders no invitation, and the pref (at its CURRENTLY-EFFECTIVE key) is still "never"',
+      afterReload.prompt === false && afterReload.invite === false && afterReload.prefAtKey === 'never', JSON.stringify(afterReload));
+    if (process.env.HARNESS_PARKED === '1') {
+      // Same null-acceptance reasoning as the pok() above.
+      pok('PARKED (was "S2: the withdrawal PERSISTS... pref is still never" via the bare key) - the write ALWAYS persists correctly (prefAtKey is "never" after a reload too); the bare key itself is either ALSO "never" (signed out), still UNCHANGED "on" (signed in, not yet migrated), or already consumed to null (signed in, migrated already)',
+        afterReload.prefAtKey === 'never' && (afterReload.pref === 'never' || afterReload.pref === 'on' || afterReload.pref == null), JSON.stringify(afterReload));
+    }
   }
 
   return checks;
@@ -206,18 +253,17 @@ await withHarness(async (app) => {
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
-// FX15's harness parks nothing of its own — it ADDS the first-line invite's first
-// live coverage (F6 shipped un-harnessed). The A4 parks for FX15 S3 (the retired
-// "New Journal Entry" door + its dead string) live in b2.mjs / fx14.mjs, verified
-// under HARNESS_PARKED=1 by those files' own runs.
-const parkedChecks = [];
+// FX15's own A4 parks (S3, the retired "New Journal Entry" door) live in b2.mjs / fx14.mjs,
+// verified under HARNESS_PARKED=1 by those files' own runs. The two SPROUT-INVITE-SCOPE parks
+// above (collected into parkedChecks via pok(), declared near the top of this file) are FX15's
+// own first parks.
 if (process.env.HARNESS_PARKED === '1') {
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nFX15 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; FX15 parks nothing of its own (its S3 parks live in b2.mjs / fx14.mjs).`
+    ? `\nFX15 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; the bare-key reads retired by SPROUT-INVITE-SCOPE re-assert their new, opposite truth; S3's own parks live in b2.mjs / fx14.mjs.`
     : `\nFX15 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);
