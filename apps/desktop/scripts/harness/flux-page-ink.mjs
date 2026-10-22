@@ -96,7 +96,11 @@ await withHarness(async (app) => {
     // Kept VERBATIM below and no longer run; the live successor follows.
     //
     // for (const modeLabel of ['Free Write', 'Draft', 'Revise']) {
-    const modeLabels = theme === 'flux' ? ['Wire In', 'Draft', 'Patch'] : ['Free Write', 'Draft', 'Revise'];
+    // ---- PARKED - SUPERSEDED by Nick's answer (Oct 21): Flux's Draft tab reads "Text": the tab is found by its text.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // const modeLabels = theme === 'flux' ? ['Wire In', 'Draft', 'Patch'] : ['Free Write', 'Draft', 'Revise'];
+    const modeLabels = theme === 'flux' ? ['Wire In', 'Text', 'Patch'] : ['Free Write', 'Draft', 'Revise'];
     for (const modeLabel of modeLabels) {
       await switchMode(app, modeLabel);
       const active = await app.evalJs("document.querySelector('.desk-mode-tab.active')?.textContent");

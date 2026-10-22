@@ -81,7 +81,11 @@ const freshPage = async (app, theme, { width = 1400, id = 'hb-page' } = {}) => {
 };
 
 const openDraftSliver = async (app) => {
-  await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft')?.click()");
+  // ---- PARKED - SUPERSEDED by Nick's answer (Oct 21): Flux's Draft tab reads "Text": found by its text; the successor finds it by its key, whatever the theme calls it.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft')?.click()");
+  await app.evalJs("document.querySelector('.desk-mode-tab[data-mode-key=\"draft\"]')?.click()");
   await sleep(300);
   // REPAIR (Fable, Oct 17, ledger 91) — .wz-sliver-grip is a TOGGLE: calling
   // this unconditionally as each LOCATIONS entry's own reach step closed the

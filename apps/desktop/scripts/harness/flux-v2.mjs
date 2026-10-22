@@ -101,7 +101,7 @@ const WORDS = {
   helpGrafts: 'Inputs join docs, nodes and circuits.', beginNewPageCard: 'New Doc', cascadePageNewPage: 'New Doc', cascadeJournalNewPage: 'New Doc', ctxDeleteBoard: 'Delete circuit',
   drawerPlaceTrash: 'Trash', cascadeJournalOpen: 'Open the Log',
   // Nick's Oct 12 Flux word pass (flux-words, folded in on Fable's correction; Oct 21 wins where they clash)
-  modeFreeWrite: 'Wire In', modePublish: 'Uplink', modeRevise: 'Patch', modeWorkshop: 'Relay', railTypeface: 'Typeface', railFormat: 'Markup', railActions: 'Commands', actionTags: 'Flags', actionCopy: 'Clone doc text',
+  modeFreeWrite: 'Wire In', modeDraft: 'Text', modePublish: 'Uplink', modeRevise: 'Patch', modeWorkshop: 'Relay', railTypeface: 'Typeface', railFormat: 'Markup', railActions: 'Commands', actionTags: 'Flags', actionCopy: 'Clone doc text',
   actionHeaderFooter: 'Frame', railTemplates: 'Presets', templateOutline: 'Spine', templateBibliography: 'Sources', templateTitlePage: 'Cover', kindNormal: 'Plain', kindScreenplay: 'Script', kindResearch: 'Intel',
   footMenuTypewriter: 'Terminal Mode', twPageScroll: 'Screen Scroll', footMenuProgress: 'Meter', sliverInstrumentsUnit: 'Scale', goalLabel: 'Quota', footProgress: 'Load', footMenuPreferences: 'Config',
   fadeDepthLabel: 'Dissolve', fadeDepthPartial: 'Soft', fadeDepthFull: 'Void', timerLabel: 'Clock', boardModeOpen: 'Live', boardModeStoryboard: 'Sequence', boardModeOutline: 'Spine', boardAddCard: 'Add node',
@@ -137,9 +137,9 @@ async function suite(M, mk = () => load()) {
   keep('LX3', M.formsFor('flux', 'plan').one === 'Circuit' && M.formsFor('flux', 'plan').many === 'Circuits' && M.formsFor('flux', 'freewrite').one === 'Wire In' && M.formsFor('flux', 'publish').one === 'Uplink', JSON.stringify(M.formsFor('flux', 'plan')));
   keep('LX4', M.deskTerm('placeRootName', 'flux') === 'Root' && M.deskTerm('placeRootName', 'plateau') === 'Top Drawer', `${M.deskTerm('placeRootName', 'flux')} / ${M.deskTerm('placeRootName', 'plateau')}`);
   keep('LX5', M.deskTerm('tutorTabTutor', 'plateau') === 'Tutor' && M.deskTerm('drawerLinks', 'plateau') === 'Grafts' && M.deskTerm('stripPlan', 'plateau') === 'Boards' && M.deskTerm('modeRevise', 'plateau') === 'Revise' && M.deskTerm('fadeDepthLabel', 'plateau') === 'Recede depth' && M.deskTerm('timerLabel', 'plateau') === 'Timer' && M.deskTerm('railTypeface', 'plateau') === 'Font', 'Arbor is untouched');
-  // LX6 - the two words HELD for Fable's confirmation of Nick's answer stay as they were: Flux's Draft tab (default Compile - Machina owns Build) and Flux's Delete (default plain Delete, not Purge)
+  // LX6 - Nick's two answers (Oct 21): Flux's Draft tab reads "Text" (not Compile, not Build - Machina owns Build) and Delete stays plain "Delete" in every theme (no Purge)
   const held = deskIdsFromSource().filter((id) => /(Purge|Compile|Build)/.test(FLUX(id) || ''));
-  keep('LX6', FLUX('modeDraft') === 'Draft' && FLUX('actionDelete') === 'Delete doc' && held.length === 0, held.join(', ') || 'Draft and Delete are unchanged');
+  keep('LX6', FLUX('modeDraft') === 'Text' && M.deskTerm('modeDraft', 'plateau') === 'Draft' && FLUX('actionDelete') === 'Delete doc' && M.deskTerm('actionDelete', 'plateau') === 'Delete page' && held.length === 0, held.join(', ') || 'Flux Draft = Text, Delete plain, no Purge / Compile / Build');
 
   // IC - icons
   const ref = await refIcons();
@@ -205,7 +205,8 @@ const SRC_MUT = [
   { name: 'one pixel of the Rack icon flips', file: 'store/themeIcons.ts', find: /\n'\.##############\.',\n'\.#\.\.\.\.\.\.\.\.\.\.\.\.#\.',\n'\.#\.######\.\.##\.#\.',/, to: "\n'.##############.',\n'.#............#.',\n'.#.#######.##.#.',", red: ['IC1'] },
   { name: 'the Flux word for Settings is lost', file: 'store/deskLexicon.ts', find: /stripSettings: 'Config',/, to: "stripSettings: 'Settings',", red: ['LX1', 'LX2'] },
   { name: 'the Clock word is lost', file: 'store/deskLexicon.ts', find: /timerLabel: 'Clock',/, to: '', red: ['LX1'] },
-  { name: 'a held word ships early (Purge)', file: 'store/deskLexicon.ts', find: /actionCopy: 'Clone doc text',/, to: "actionCopy: 'Clone doc text', actionDelete: 'Purge doc',", red: ['LX6'] },
+  { name: 'the Flux Draft tab falls back to Draft', file: 'store/deskLexicon.ts', find: /modeDraft: 'Text',/, to: '', red: ['LX1', 'LX6'] },
+  { name: 'Delete turns into Purge', file: 'store/deskLexicon.ts', find: /actionCopy: 'Clone doc text',/, to: "actionCopy: 'Clone doc text', actionDelete: 'Purge doc',", red: ['LX6'] },
   { name: 'a big-projects string falls back to Arbor', file: 'store/deskLexicon.ts', find: /sectionsEmptyBoards: 'No circuits here yet\.',/, to: '', red: ['LX2'] },
 ];
 

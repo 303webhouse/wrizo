@@ -1744,7 +1744,8 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     tutorTitle: 'The Operator',
     zoneStage: 'Docs',
     // FLUX WORDS (Nick's Oct 12 pass, approved; folded into flux-v2 on Fable's correction, Oct 21). Where it clashes with Oct 21, Oct 21 wins (Links -> Inputs, Circuits).
-    // HELD until Fable confirms Nick's answer: Flux's Draft tab (default Compile - Machina owns Build) and Flux's Delete (default plain Delete, not Purge). Neither is set here: Draft and Delete stay as they were.
+    // Nick's two answers (Oct 21): Flux's Draft tab reads "Text" (not Compile - Machina owns Build); Delete stays plain "Delete" in every theme (no Purge).
+    modeDraft: 'Text',
     modeFreeWrite: 'Wire In',
     modePublish: 'Uplink',
     modeRevise: 'Patch',

@@ -65,7 +65,7 @@ export async function part2({ ok, sleepMs }) {
       await sleep(500);
       const hintW = await txt('.flux-readout-hint');
       ok('F1 the hint line in Wire In (Free Write) reads the ruled string', hintW === HINT_WIRE, String(hintW));
-      await q("[...document.querySelectorAll('.desk-mode-tab')].find((b) => b.textContent === 'Draft')?.click()");
+      await q("[...document.querySelectorAll('.desk-mode-tab')].find((b) => b.textContent === 'Text')?.click()");
       await sleep(400);
 
       // ---- F2: the readouts are an overlay: the page does not move or resize ---------------------------------------------------------------------------------------------
