@@ -40,9 +40,16 @@ const MUTANTS = [
   // { id: 'M2' /* flux-v2 successor */, file: join(desktop, 'src', 'index.css'),
   //     from: ".wz-template-live:active, .wz-template-live[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); }",
   //     to: ".wz-template-live:active{ color:var(--choice); border-color:var(--choice); }" },
+  // ---- PARKED - SUPERSEDED by the box run on b00fab60 (M2 SURVIVED, 2/3 killed): the chosen row is painted by TWO rules - the row rule and the shared .wz-template-live rule - so removing one leaves it brass; the mutant removes both (an `extra` edit).
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // { id: 'M2', file: join(desktop, 'src', 'index.css'),
+  //   from: ".wz-template-row[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); background:color-mix(in srgb, var(--choice) 8%, transparent); }",
+  //   to: ".wz-template-row[aria-pressed='true']{ background:color-mix(in srgb, var(--choice) 8%, transparent); }" },
   { id: 'M2', file: join(desktop, 'src', 'index.css'),
     from: ".wz-template-row[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); background:color-mix(in srgb, var(--choice) 8%, transparent); }",
-    to: ".wz-template-row[aria-pressed='true']{ background:color-mix(in srgb, var(--choice) 8%, transparent); }" },
+    to: ".wz-template-row[aria-pressed='true']{ background:color-mix(in srgb, var(--choice) 8%, transparent); }",
+    extra: [{ from: ".wz-template-live:active, .wz-template-live[aria-pressed='true']{ color:var(--choice); border-color:var(--choice); }", to: ".wz-template-live:active{ color:var(--choice); border-color:var(--choice); }" }] },
   // ---- PARKED - SUPERSEDED by FLUX WORDS / the templates rows (box run b96e7cd1, Fable's ruling Oct 21): the picker is five .wz-template-row rows now (page-templates-r2), so the old anchors (ScriptEditor's selected: true literal, the .wz-template-live rules) no longer exist or no longer paint the chosen row; each mutant is re-anchored on the live source.
   // Kept VERBATIM below and no longer run; the live successor follows.
   //
@@ -72,7 +79,13 @@ try {
     if (n !== 1) { results.push({ id: m.id, verdict: `ANCHOR x${n} - DID NOT LAND` }); continue; }
     const eol = orig.includes('\r\n') ? '\r\n' : '\n';
     try {
-      writeFileSync(m.file, norm.replace(m.from, m.to).replace(/\n/g, eol));
+      // ---- PARKED - SUPERSEDED by the box run on b00fab60 (M2 SURVIVED, 2/3 killed): a mutant may carry `extra` edits (each asserted to occur once) applied with the first.
+      // Kept VERBATIM below and no longer run; the live successor follows.
+      //
+      // writeFileSync(m.file, norm.replace(m.from, m.to).replace(/\n/g, eol));
+      let mutated = norm.replace(m.from, () => m.to);
+      for (const x of m.extra || []) { if (mutated.split(x.from).length - 1 !== 1) throw new Error(`extra anchor of ${m.id} did not land exactly once`); mutated = mutated.replace(x.from, () => x.to); }
+      writeFileSync(m.file, mutated.replace(/\n/g, eol));
       const landed = readFileSync(m.file, 'utf8').replace(/\r\n/g, '\n').includes(m.to) && !readFileSync(m.file, 'utf8').replace(/\r\n/g, '\n').includes(m.from);
       if (!landed) { results.push({ id: m.id, verdict: 'DID NOT LAND' }); continue; }
       build();
