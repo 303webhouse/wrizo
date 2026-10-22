@@ -839,14 +839,16 @@ on Machina's `ThemeId`.)
   builds (§9a). The only remaining build-time task is confirming that
   registry's exact shape once it merges and registering Arbor's nine
   glyphs into it — not a design question for Fable.
-- **NEW (Fable Oct 22, found while writing this step's harness):** Graft's
-  own icon id (`'input'`) has ZERO render sites anywhere in flux-v2 @
-  `b4c38659` — `GraftPicker.tsx`'s dialog header renders text only, no
-  icon at all. Arbor's ninth garden glyph (Graft) has nowhere to register
-  INTO until one exists. Ask Fable/INK: does flux-v2 add this render site
-  before step 3's own build starts, or does step 3 add it as its own small
-  addition (a few lines in `GraftPicker.tsx`, following the exact
-  `<ThemeIcon id="..." fallback={...} />` pattern the other eight sites
-  already use)? Either is small; deciding silently is not — `arbor-garden-
-  icons.mjs`'s own T9 documents the gap's current shape (0 render sites)
-  rather than guessing a selector that doesn't exist yet.
+- The Graft/knob render-site gap (found writing this step's harness: `'input'`
+  has ZERO render sites in flux-v2 @ `b4c38659`, `GraftPicker.tsx` renders
+  text only) — **RESOLVED** (Fable, Oct 22): INK's NEXT Flux branch adds one
+  theme-generic render site via `ThemeIcon`; Arbor's ninth glyph registers
+  into it there, not built by this step. **Sequencing, if that branch hasn't
+  merged when this step builds: ship the other eight glyphs first** (Drawer,
+  Pages, Boards, Journal, Mood, Settings, Trash, Set), leave Graft on its own
+  fallback a little longer, and register the ninth once the site exists —
+  not a reason to hold the whole step. `arbor-garden-icons.mjs`'s own T9
+  (the "0 render sites" assertion) becomes a trip-wire for exactly this: it
+  should flip to 1 the moment INK's site lands, at which point Arbor's own
+  ninth glyph gets registered and T9 updated to assert the real glyph
+  renders, not just that the count moved.
