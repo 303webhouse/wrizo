@@ -125,7 +125,7 @@ export async function part2({ ok, sleepMs }) {
       ok('F6 no element outside the allowed places paints in orange (caret, sprint surge, Uplink, the mark, the current item\'s left bar)', Array.isArray(scan) && scan.length === 0, JSON.stringify(scan));
       const cur = await q("(() => { const b = document.querySelector('.wz-section-open[aria-current=\"page\"]'); return b ? getComputedStyle(b).boxShadow : null; })()");
       ok('F6 the current list item wears the thin orange LEFT bar (and only that)', typeof cur === 'string' && /rgb\(255, 152, 0\)\s+2px 0px 0px 0px inset|inset/.test(cur) && /255, 152, 0/.test(cur), String(cur));
-      const sel = await q("(() => { const b = document.querySelector('.wz-strip-item.active'); if (!b) return null; const cs = getComputedStyle(b); return [cs.color, cs.borderLeftColor, cs.backgroundColor].join(' | '); })()");
+      const sel = await q("(() => { const b = document.querySelector('.wz-strip [data-category].active'); if (!b) return null; const cs = getComputedStyle(b); return [cs.color, cs.borderLeftColor, cs.backgroundColor].join(' | '); })()");
       ok('F6 the selected rail item is cyan, not orange', typeof sel === 'string' && !/255, 152, 0/.test(sel), String(sel));
 
       // ---- F7: the rail and place block draw the pixel icons (16 px, 44 px targets) -------------------------------------------------------------------------------------------

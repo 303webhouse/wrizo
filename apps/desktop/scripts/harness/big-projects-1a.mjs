@@ -271,7 +271,11 @@ async function suite(m, mk = () => load()) {
 // MUTANTS: each is applied to the source of store/place.ts (or persistence.ts) before bundling; the mutation must LAND and must redden its named checks
 const MUTANTS = [
   { name: 'Top Drawer ignores soft-deleted / shell rows (counts only live Drawers)', file: 'store/persistence.ts', from: 'export function hasAnyDrawerRow(): boolean { return cache.drawers.length > 0; }', to: 'export function hasAnyDrawerRow(): boolean { return cache.drawers.some(d => !d.deletedAt); }', red: ['B2a', 'B2b'] },
-  { name: 'the Top Drawer id forgets the user id', file: 'store/place.ts', from: "`top-drawer-${uid}`", to: "'top-drawer'", red: ['B1', 'B4b'] },
+  // ---- PARKED - SUPERSEDED by FLUX V2 (the full pair on 21e18ae3, Fable's ruling Oct 22): place.ts builds the id from TOP_DRAWER_PREFIX now (the prefix is shared with isDefaultRoot), so the mutation anchor moved with it.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // { name: 'the Top Drawer id forgets the user id', file: 'store/place.ts', from: "`top-drawer-${uid}`", to: "'top-drawer'", red: ['B1', 'B4b'] },
+  { name: 'the Top Drawer id forgets the user id', file: 'store/place.ts', from: "`${TOP_DRAWER_PREFIX}${uid}`", to: "'top-drawer'", red: ['B1', 'B4b'] },
   { name: 'the Journal rule drops the "no live home" half (only projectId null)', file: 'store/place.ts', from: 'if (!hasLiveHome(e)) return true;', to: 'return false;', red: ['J1'] },
   { name: 'the Journal rule lists system boards', file: 'store/place.ts', from: 'if (getSystemKind(e)) return false;', to: '', red: ['J3'] },
   { name: 'X writes more than projectId (resets orderIndex)', file: 'store/place.ts', from: "setPageHome(entryId, 'journal');", to: "setPageHome(entryId, 'journal'); { const e = getJournalEntry(entryId); if (e) saveJournalEntry({ ...e, orderIndex: undefined }); }", red: ['X1', 'X2'] },
