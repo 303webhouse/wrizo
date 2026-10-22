@@ -130,8 +130,16 @@ const openDraftSliverSettings = async (app) => {
 const LOCATIONS = [
   { key: 'helpTemplates', subject: 'Templates', reach: openDraftSliver, sel: '.wz-sliver-templates .wz-sliver-h .wz-help' },
   { key: 'recedeHint', subject: 'Recede depth', reach: openDraftSliverSettings, sel: '.wz-help[aria-label="What is Recede depth?"]' },
-  { key: 'helpFreeWrite', subject: 'Free Write', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Free"]' },
-  { key: 'helpPublish', subject: 'Publish', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Publish"]' },
+  // ---- PARKED - SUPERSEDED by FLUX WORDS (Nick's Oct 12 pass, folded into flux-v2): the "?" names its tab, and Flux's tab is Wire In - the selector takes either theme's own word.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // { key: 'helpFreeWrite', subject: 'Free Write', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Free"]' },
+    { key: 'helpFreeWrite', subject: 'Free Write', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Free"], .desk-mode-tab-wrap .wz-help[aria-label^="What is Wire"]' },
+  // ---- PARKED - SUPERSEDED by FLUX WORDS (Nick's Oct 12 pass, folded into flux-v2): the "?" names its tab, and Flux's tab is Uplink - the selector takes either theme's own word.
+  // Kept VERBATIM below and no longer run; the live successor follows.
+  //
+  // { key: 'helpPublish', subject: 'Publish', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Publish"]' },
+    { key: 'helpPublish', subject: 'Publish', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Publish"], .desk-mode-tab-wrap .wz-help[aria-label^="What is Uplink"]' },
   { key: 'helpGrafts', subject: 'Grafts/Links', reach: openTutorDrawer, sel: '.wz-drawer-tabnotes .wz-help' },
 ];
 

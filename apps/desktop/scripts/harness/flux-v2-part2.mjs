@@ -61,7 +61,7 @@ export async function part2({ ok, sleepMs }) {
       await open('fx-m2');
       const hintP = await txt('.flux-readout-hint');
       ok('F1 the hint line on a prose page reads the ruled string', hintP === HINT_PROSE, String(hintP));
-      await q("[...document.querySelectorAll('.desk-mode-tab')].find((b) => b.textContent === 'Free Write')?.click()");
+      await q("[...document.querySelectorAll('.desk-mode-tab')].find((b) => b.textContent === 'Wire In')?.click()");
       await sleep(500);
       const hintW = await txt('.flux-readout-hint');
       ok('F1 the hint line in Wire In (Free Write) reads the ruled string', hintW === HINT_WIRE, String(hintW));

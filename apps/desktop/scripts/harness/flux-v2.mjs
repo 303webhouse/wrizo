@@ -100,6 +100,12 @@ const WORDS = {
   boardThreadGrab: 'Drag to connect', linksRemoveTitle: 'Remove input?', pageFacePinnedTo: 'Also connected to', beginConnectPage: 'Connect Docs', cascadePlanBoardsConnected: 'Circuits connected',
   helpGrafts: 'Inputs join docs, nodes and circuits.', beginNewPageCard: 'New Doc', cascadePageNewPage: 'New Doc', cascadeJournalNewPage: 'New Doc', ctxDeleteBoard: 'Delete circuit',
   drawerPlaceTrash: 'Trash', cascadeJournalOpen: 'Open the Log',
+  // Nick's Oct 12 Flux word pass (flux-words, folded in on Fable's correction; Oct 21 wins where they clash)
+  modeFreeWrite: 'Wire In', modePublish: 'Uplink', modeRevise: 'Patch', modeWorkshop: 'Relay', railTypeface: 'Typeface', railFormat: 'Markup', railActions: 'Commands', actionTags: 'Flags', actionCopy: 'Clone doc text',
+  actionHeaderFooter: 'Frame', railTemplates: 'Presets', templateOutline: 'Spine', templateBibliography: 'Sources', templateTitlePage: 'Cover', kindNormal: 'Plain', kindScreenplay: 'Script', kindResearch: 'Intel',
+  footMenuTypewriter: 'Terminal Mode', twPageScroll: 'Screen Scroll', footMenuProgress: 'Meter', sliverInstrumentsUnit: 'Scale', goalLabel: 'Quota', footProgress: 'Load', footMenuPreferences: 'Config',
+  fadeDepthLabel: 'Dissolve', fadeDepthPartial: 'Soft', fadeDepthFull: 'Void', timerLabel: 'Clock', boardModeOpen: 'Live', boardModeStoryboard: 'Sequence', boardModeOutline: 'Spine', boardAddCard: 'Add node',
+  boardPortedBadge: 'From a doc', boardThreadUntitled: 'Unnamed', pageFaceAddTag: 'Add a flag', deskMenuGlyph: 'Terminal menu',
 };
 // strings that are deliberately NOT renamed in Flux, each with its reason (the census treats these as reviewed)
 const KEEP = {
@@ -130,7 +136,10 @@ async function suite(M, mk = () => load()) {
   keep('LX2', census.length === 0, `${census.length} still name an Arbor noun: ${census.slice(0, 8).join(', ')}`);
   keep('LX3', M.formsFor('flux', 'plan').one === 'Circuit' && M.formsFor('flux', 'plan').many === 'Circuits' && M.formsFor('flux', 'freewrite').one === 'Wire In' && M.formsFor('flux', 'publish').one === 'Uplink', JSON.stringify(M.formsFor('flux', 'plan')));
   keep('LX4', M.deskTerm('placeRootName', 'flux') === 'Root' && M.deskTerm('placeRootName', 'plateau') === 'Top Drawer', `${M.deskTerm('placeRootName', 'flux')} / ${M.deskTerm('placeRootName', 'plateau')}`);
-  keep('LX5', M.deskTerm('tutorTabTutor', 'plateau') === 'Tutor' && M.deskTerm('drawerLinks', 'plateau') === 'Grafts' && M.deskTerm('stripPlan', 'plateau') === 'Boards', 'Arbor is untouched');
+  keep('LX5', M.deskTerm('tutorTabTutor', 'plateau') === 'Tutor' && M.deskTerm('drawerLinks', 'plateau') === 'Grafts' && M.deskTerm('stripPlan', 'plateau') === 'Boards' && M.deskTerm('modeRevise', 'plateau') === 'Revise' && M.deskTerm('fadeDepthLabel', 'plateau') === 'Recede depth' && M.deskTerm('timerLabel', 'plateau') === 'Timer' && M.deskTerm('railTypeface', 'plateau') === 'Font', 'Arbor is untouched');
+  // LX6 - the two words HELD for Fable's confirmation of Nick's answer stay as they were: Flux's Draft tab (default Compile - Machina owns Build) and Flux's Delete (default plain Delete, not Purge)
+  const held = deskIdsFromSource().filter((id) => /(Purge|Compile|Build)/.test(FLUX(id) || ''));
+  keep('LX6', FLUX('modeDraft') === 'Draft' && FLUX('actionDelete') === 'Delete doc' && held.length === 0, held.join(', ') || 'Draft and Delete are unchanged');
 
   // IC - icons
   const ref = await refIcons();
@@ -195,6 +204,8 @@ const SRC_MUT = [
   { name: 'Root replaces a renamed top drawer', file: 'store/place.ts', find: /&& d\.name === DEFAULT_TOP_NAME/, to: '', red: ['RO8'] },
   { name: 'one pixel of the Rack icon flips', file: 'store/themeIcons.ts', find: /\n'\.##############\.',\n'\.#\.\.\.\.\.\.\.\.\.\.\.\.#\.',\n'\.#\.######\.\.##\.#\.',/, to: "\n'.##############.',\n'.#............#.',\n'.#.#######.##.#.',", red: ['IC1'] },
   { name: 'the Flux word for Settings is lost', file: 'store/deskLexicon.ts', find: /stripSettings: 'Config',/, to: "stripSettings: 'Settings',", red: ['LX1', 'LX2'] },
+  { name: 'the Clock word is lost', file: 'store/deskLexicon.ts', find: /timerLabel: 'Clock',/, to: '', red: ['LX1'] },
+  { name: 'a held word ships early (Purge)', file: 'store/deskLexicon.ts', find: /actionCopy: 'Clone doc text',/, to: "actionCopy: 'Clone doc text', actionDelete: 'Purge doc',", red: ['LX1', 'LX6'] },
   { name: 'a big-projects string falls back to Arbor', file: 'store/deskLexicon.ts', find: /sectionsEmptyBoards: 'No circuits here yet\.',/, to: '', red: ['LX2'] },
 ];
 
@@ -263,6 +274,8 @@ ok('P3 the readouts recede with the rest of the chrome: they carry chrome-fade',
 ok('P4 the readouts speak only from the readout module: DOC / TRK / RACK / hint strings are built by docReadout, trackReadout, rackReadout and hintFor - no string literal of its own', /docReadout\(/.test(readoutsSrc) && /trackReadout\(/.test(readoutsSrc) && /hintFor\(/.test(readoutsSrc) && !/'TYPE —|'FORWARD ONLY/.test(readoutsSrc), '');
 ok('P5 the acquire runs once per page open and only above Ambiance 0 (shouldAcquire + effectiveAmbianceDial)', /shouldAcquire\(/.test(readoutsSrc) && /effectiveAmbianceDial\(/.test(readoutsSrc), '');
 ok('P6 the Root substitution is render-time only: PlaceBlock and the pop-out name the place through isDefaultRoot + placeRootName, and nothing writes the drawer\'s name', /isDefaultRoot\(/.test(placeBlock) && /placeRootName/.test(placeBlock) && /isDefaultRoot\(/.test(popout), '');
+const sliverSrc = rd('components/Sliver.tsx'), modeStageSrc = rd('components/ModeStage.tsx');
+ok('P8 the Recede-depth and Timer rows name themselves through the lexicon on both surfaces (the framed sliver and the settings panel) - no inline word', /fadeDepthLabel/.test(sliverSrc) && /timerLabel/.test(sliverSrc) && /fadeDepthLabel/.test(modeStageSrc) && /timerLabel/.test(modeStageSrc) && !/label="Timer"/.test(sliverSrc + modeStageSrc), '');
 ok('P7 a Flux frame ring: the grid and brackets are an overlay on the page FRAME (pointer-events none, masked to a ring) - never a background of the text area', /\.flux-frame\{[^}]*pointer-events:\s*none/.test(cssNow) && /\.flux-frame\{[^}]*mask/.test(cssNow), '');
 
 // mutants

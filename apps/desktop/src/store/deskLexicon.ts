@@ -562,6 +562,8 @@ export type DeskTermId =
   // option strings inline (the FX3 S5 precedent, left as-is — this ticket
   // adds a new control, it does not retrofit its neighbors).
   | 'progressStyleLabel' | 'progressStyleBar' | 'progressStyleRhizome' | 'recedeHint'
+  // FLUX WORDS (Nick's Oct 12 pass, folded into flux-v2): the Recede-depth and Timer rows' own words, moved out of the inline Seg strings so a theme can name them.
+  | 'fadeDepthLabel' | 'fadeDepthPartial' | 'fadeDepthFull' | 'timerLabel'
   // help-buttons (Nick approved Oct 12, cursor/help-buttons @ d4d1c835) —
   // one plain sentence per themed word, shown behind its own "?" (store/
   // help.ts, components/HelpButton.tsx). recedeHint (above) is the seventh;
@@ -1503,6 +1505,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   // reason not to reuse it). Arbor's sentence is unchanged byte-for-byte;
   // Flux's own is new, below.
   recedeHint: 'Type and the menus fade; pause, reach an edge, or press Esc to bring them back.',
+  fadeDepthLabel: 'Recede depth',
+  fadeDepthPartial: 'Partial',
+  fadeDepthFull: 'Full',
+  timerLabel: 'Timer',
 
   // help-buttons (Nick approved Oct 12) — one plain sentence per themed
   // word, Arbor's own forms. Flux's are in OVERRIDES, below.
@@ -1620,7 +1626,6 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     splashLoading4: 'Patching the uplink…',
     // FLUX V2 (Fable's words pass, Nick Oct 21): the Flux words for the new shell. Rack, Cartridge, Track, Circuit, Doc, Log, Config, Skin, Operator, Inputs; the verb is "connect".
     // Every desk string that still named an Arbor noun is re-worded here, or sits on harness/flux-v2.mjs's reviewed keep-list (the printed page, the retired Shelf, story-craft prose, a web link).
-    actionCopy: 'Copy doc text',
     actionDelete: 'Delete doc',
     actionDeleteConfirm: 'Send this doc to Trash?',
     backToDrawer: 'Back to Rack',
@@ -1630,7 +1635,6 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     boardFooterToggle: 'Show inputs',
     boardHomeLabelJournal: 'Log',
     boardPageDoor: 'Docs',
-    boardPortedBadge: 'From Docs',
     boardRenameLabel: 'Rename this circuit',
     boardTelos: 'The circuit serves the doc.',
     boardThreadGrab: 'Drag to connect',
@@ -1739,6 +1743,39 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
     tutorTabTutor: 'Operator',
     tutorTitle: 'The Operator',
     zoneStage: 'Docs',
+    // FLUX WORDS (Nick's Oct 12 pass, approved; folded into flux-v2 on Fable's correction, Oct 21). Where it clashes with Oct 21, Oct 21 wins (Links -> Inputs, Circuits).
+    // HELD until Fable confirms Nick's answer: Flux's Draft tab (default Compile - Machina owns Build) and Flux's Delete (default plain Delete, not Purge). Neither is set here: Draft and Delete stay as they were.
+    modeFreeWrite: 'Wire In',
+    modePublish: 'Uplink',
+    modeRevise: 'Patch',
+    modeWorkshop: 'Relay',
+    railFormat: 'Markup',
+    railActions: 'Commands',
+    actionTags: 'Flags',
+    actionHeaderFooter: 'Frame',
+    kindNormal: 'Plain',
+    kindScreenplay: 'Script',
+    kindResearch: 'Intel',
+    footMenuTypewriter: 'Terminal Mode',
+    twPageScroll: 'Screen Scroll',
+    footMenuProgress: 'Meter',
+    sliverInstrumentsUnit: 'Scale',
+    goalLabel: 'Quota',
+    footProgress: 'Load',
+    footMenuPreferences: 'Config',
+    boardModeOpen: 'Live',
+    boardModeStoryboard: 'Sequence',
+    boardModeOutline: 'Spine',
+    boardAddCard: 'Add node',
+    boardPortedBadge: 'From a doc',
+    boardThreadUntitled: 'Unnamed',
+    pageFaceAddTag: 'Add a flag',
+    deskMenuGlyph: 'Terminal menu',
+    fadeDepthLabel: 'Dissolve',
+    fadeDepthPartial: 'Soft',
+    fadeDepthFull: 'Void',
+    timerLabel: 'Clock',
+    actionCopy: 'Clone doc text',
   },
 };
 

@@ -92,7 +92,12 @@ await withHarness(async (app) => {
     const now = await app.evalJs("(() => ({ theme: document.documentElement.getAttribute('data-theme') || 'plateau', page: document.documentElement.getAttribute('data-page') || 'light' }))()");
     ok(`${T} (premise) the page is in theme=${theme} page=${page}`, now.theme === theme && now.page === page, JSON.stringify(now));
 
-    for (const modeLabel of ['Free Write', 'Draft', 'Revise']) {
+    // ---- PARKED - SUPERSEDED by FLUX WORDS (Nick's Oct 12 pass, folded into flux-v2): under Flux the mode tabs read Wire In / Draft / Patch (Draft is held for Fable's confirmation and still reads Draft); Arbor keeps Free Write / Draft / Revise.
+    // Kept VERBATIM below and no longer run; the live successor follows.
+    //
+    // for (const modeLabel of ['Free Write', 'Draft', 'Revise']) {
+    const modeLabels = theme === 'flux' ? ['Wire In', 'Draft', 'Patch'] : ['Free Write', 'Draft', 'Revise'];
+    for (const modeLabel of modeLabels) {
       await switchMode(app, modeLabel);
       const active = await app.evalJs("document.querySelector('.desk-mode-tab.active')?.textContent");
       ok(`${T} (premise) ${modeLabel} tab is active after switching`, active === modeLabel, JSON.stringify({ active }));

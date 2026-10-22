@@ -739,8 +739,8 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
       {/* ITEM word-diet (Nick, Oct 13) — the standing hint below retires;
           its explanation moves here, behind a "?" beside this row's own
           label, one plain sentence (recedeHint, deskLexicon.ts). */}
-      <Seg label={<>Recede depth <DrawerNote label="About Recede depth">{deskLex('recedeHint')}</DrawerNote></>} value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
-      <Seg label="Timer" value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
+      <Seg label={<>{deskLex('fadeDepthLabel')} <DrawerNote label={`About ${deskLex('fadeDepthLabel')}`}>{deskLex('recedeHint')}</DrawerNote></>} value={settings.fadeDepth} opts={[['partial', deskLex('fadeDepthPartial')], ['full', deskLex('fadeDepthFull')]]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
+      <Seg label={deskLex('timerLabel')} value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
       {/* FX2 S2 — routes through setTypewriterExplicit, not the bare
           setter: the gear is the OTHER hand-click surface (beside the
           sliver's own TypewriterToggle), and both must arm the same
