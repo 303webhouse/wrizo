@@ -158,13 +158,19 @@ export function useWritingSettings(): WritingSettings {
 // ("opens ON under 10 line-equivalents", with item 87's empty-page amendment) and its session-only `explicitlySetThisSession` flag. The pattern is item
 // 112-A's `wrizo-mode-page-<id>`: a plain localStorage key per page, WRITTEN ON EVERY TOGGLE and READ ONCE AT MOUNT. No database, no schema, no server.
 //
-// `typewriter` above stays the ONE global, persisted, live value every consumer reads; what is new is what puts a value INTO it when a page opens:
-//   · a saved value for this page      -> that;
-//   · none, and the page is EMPTY      -> the theme's default (store/theme.ts THEME_CONFIG: Arbor on, Flux off) - a new page;
-//   · none, and the page holds text    -> OFF (a page that existed before this shipped is not surprised);
-// and whichever applied is then saved, so the page remembers from its first open. FREE WRITE IS UNCHANGED: it never calls this and a toggle there writes no page value.
-// Prose Draft and Screenplay pages both call it (ScriptEditor reads it too; that surface does not run the fade, per SC1 S3, but the toggle and the Format lock read the
-// same value). Tab still indents - this touches nothing but the one boolean.
+// SUPERSEDED (typewriter-scope, Fable Oct 21) - what follows used to read:
+// "`typewriter` above stays the ONE global, persisted, live value every consumer reads; what is new is what puts a
+// value INTO it when a page opens" - i.e. enterPageTypewriter MIRRORED this page's own resolved value into the one
+// shared `typewriter` field on every mount. That mirror is what let one page's seed outlive its own mount: Draft and
+// Screenplay both remount fresh per page (key={id}) and correctly reseed the mirror on their OWN open, but nothing
+// stopped a DIFFERENT concurrent reader (or the brief window before the next page's own effect ran) from reading
+// whatever the PREVIOUS page last wrote there - a new empty Screenplay page (Arbor default: on) could leave the
+// shared mirror "on" for a Ctrl+B gate asking about an unrelated Draft page that never asked for Typewriter at all.
+// Draft/Screenplay's per-page memory below (pageKey/readPageTypewriter/writePageTypewriter) was always correct; the
+// bug was mirroring it into a field OTHER pages' readers could also see. `typewriterForPage` is the fix: the exact
+// same resolution, as a PURE READ callers can ask for their OWN page directly, never through the shared mirror.
+// FREE WRITE IS UNCHANGED: it never calls any of this, and its own toggle still only touches the shared `typewriter`
+// field - by Nick's own standing ruling, Free Write has no per-page memory at all.
 const pageKey = (id: string) => `wrizo-typewriter-page-${id}`;
 
 export function readPageTypewriter(id: string): boolean | null {
@@ -175,6 +181,21 @@ export function readPageTypewriter(id: string): boolean | null {
 }
 function writePageTypewriter(id: string, on: boolean): void {
   try { localStorage.setItem(pageKey(id), on ? 'on' : 'off'); } catch { /* ignore */ }
+}
+
+/**
+ * typewriter-scope (Fable Oct 21) - THE PURE READ every Draft/Screenplay
+ * consumer should ask instead of the shared `typewriter` field: this page's
+ * own saved value, else the theme's default for an empty page, else off.
+ * Exactly enterPageTypewriter's own resolution, without the side effect of
+ * writing anywhere - safe to call on every render, from any component that
+ * already knows this page's id. `empty` only matters before this page has
+ * ever saved a value (every call after its own first mount is answered by
+ * `saved` alone).
+ */
+export function typewriterForPage(id: string, empty: boolean): boolean {
+  const saved = readPageTypewriter(id);
+  return saved ?? (empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);
 }
 
 // The page whose Draft surface is mounted right now (set by holdTypewriterPage). The shared toggles (Sliver, ModeStage, JournalEntry) call
@@ -191,10 +212,10 @@ export function setTypewriterExplicit(on: boolean): void {
   if (heldPageId != null) writePageTypewriter(heldPageId, on);
 }
 
-/** Once per page mount (PageEditor / ScriptEditor, when the page opens into Draft). `empty` = the page holds no text yet. */
+/** Once per page mount (PageEditor / ScriptEditor, when the page opens into Draft). `empty` = the page holds no
+ *  text yet. Resolves and SAVES this page's own value (first open seeds its memory for every later typewriterForPage
+ *  read) but no longer mirrors it into the shared `typewriter` field - see the SUPERSEDED comment above pageKey. */
 export function enterPageTypewriter(id: string, empty: boolean): void {
   const saved = readPageTypewriter(id);
-  const on = saved ?? (empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);
-  setWritingSettings({ typewriter: on });
-  if (saved == null) writePageTypewriter(id, on);
+  if (saved == null) writePageTypewriter(id, empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);
 }

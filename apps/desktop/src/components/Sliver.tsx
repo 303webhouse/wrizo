@@ -3,7 +3,7 @@ import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useTheme, type ThemeId } from '../store/theme';
 import { TypeControl, type TypeControlProps } from './TypeControl';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
-import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
+import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewriterForPage } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
 import { useWritingGoal, setWritingGoal, goalCount, goalFraction, DEFAULT_GOAL_LINES, type WritingGoal, type GoalUnit } from '../store/writingGoal';
 // FX3 S5 — the writing-settings gear leaves the paper entirely and moves to
@@ -113,6 +113,13 @@ export type SliverContent =
     }
   | {
       kind: 'draft';
+      // typewriter-scope (Fable Oct 21) - THIS page's own id/emptiness, so
+      // formatLocked (SliverToolsBody, below) and the foot's own toggle
+      // (SliverInstrumentRow) can ask typewriterForPage directly instead of
+      // the shared `typewriter` mirror. Required: every 'draft' caller
+      // (PageEditor, ScriptEditor) already has both in scope.
+      pageId: string;
+      pageEmpty: boolean;
       // PHASE 1 - the Actions section (Tags, Copy, Delete, Header/Footer). Present only on a born prose page; a screenplay host and an
       // unborn page pass none, and then the section is absent from the DOM, never greyed.
       actions?: PageActions;
@@ -387,6 +394,8 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
             page-writing surfaces' (prose and screenplay), not everything's. */}
         <SliverInstrumentRow
           hasMilestones={hasMilestones}
+          pageId={content.kind === 'draft' ? content.pageId : undefined}
+          pageEmpty={content.kind === 'draft' ? content.pageEmpty : undefined}
           target={target}
           typewriterAvailable
           goalText={goalText}
@@ -625,11 +634,14 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
   const { t } = useDeskLexicon();
   const theme = useTheme();
   // PHASE 1 (S4) - while Typewriter is on the whole Format group is greyed and unusable (Nick). Read here, above the early return, so the hook order holds.
-  // THE SETTING IS THE RUNNING STATE HERE, so it is not narrowed further: FORMAT is mounted only by PageEditor's `mode === 'drafting'` content (ScriptEditor passes
-  // no `format`), and ModeStage runs the typewriter as `(mode === 'journal' || mode === 'drafting') && settings.typewriter` - for drafting, exactly the setting.
-  const formatLocked = useWritingSettings().typewriter;
+  // typewriter-scope (Fable Oct 21) - the hook call stays unconditional (hook-order law, unchanged); its RESULT is
+  // only the fallback now. FORMAT is mounted only on 'draft' content (ScriptEditor passes none), which is the one
+  // kind carrying its own pageId/pageEmpty (Sliver.tsx's own SliverContent type) - formatLocked asks THIS page's own
+  // typewriterForPage there, never the shared mirror a different page's open could have left behind.
+  const settings = useWritingSettings();
 
   if (content.kind === 'empty') return null;
+  const formatLocked = content.kind === 'draft' ? typewriterForPage(content.pageId, content.pageEmpty) : settings.typewriter;
   // PHASE 1 - store/drawerSet.ts is the one statement of what each surface and tab may show. The host still decides whether a section
   // has data (a screenplay passes no type member); this decides whether it may appear here at all.
   const tab: LeftTab = content.kind === 'freewrite' && content.instrument ? content.instrument.value : 'text';
@@ -1027,10 +1039,15 @@ function countPeriods(text: string): number {
   return n;
 }
 
-function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, goalText, onPopoutHold }: { hasMilestones?: boolean; target: WritingGoal | null; typewriterAvailable?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
+function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, pageId, pageEmpty, goalText, onPopoutHold }: { hasMilestones?: boolean; target: WritingGoal | null; typewriterAvailable?: boolean; pageId?: string; pageEmpty?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const theme = useTheme();
+  // typewriter-scope (Fable Oct 21) — a Draft/Screenplay page (pageId given)
+  // asks typewriterForPage directly; Free Write (no pageId — this same foot
+  // is universal across page-writing surfaces, ITEM 83 M8's own ruling)
+  // keeps reading the shared field exactly as before.
+  const typewriterOn = pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter;
 
   // The foot is one three-dot menu. Typewriter, progress, and the remaining
   // preferences open together, under those three headings. Full screen is
@@ -1105,8 +1122,8 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
         {typewriterAvailable && (
           <button type="button" className="wz-sliver-mode-btn" data-mode-toggle="typewriter"
             aria-label={t('modeToggleTypewriter')} title={t('modeToggleTypewriter')}
-            aria-pressed={settings.typewriter}
-            onClick={() => setTypewriterExplicit(!settings.typewriter)}>
+            aria-pressed={typewriterOn}
+            onClick={() => setTypewriterExplicit(!typewriterOn)}>
             <TypewriterModeIcon />
           </button>
         )}
@@ -1123,7 +1140,7 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
           {typewriterAvailable && (
             <section className="wz-foot-settings-block">
               <h4>{t('footMenuTypewriter')}</h4>
-              <TypewriterFields />
+              <TypewriterFields pageId={pageId} pageEmpty={pageEmpty} />
             </section>
           )}
           {/* GLITCH METER (Fable, Oct 17: "the Flicker switch goes in the '...' settings panel beside Typewriter"). Flux only: the meter is
@@ -1157,14 +1174,16 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
 // beyond the panel (G4's ceiling, met by the ruling's own shape — "the
 // Typewriter icon opens"). Each behaviour carries its toggle AND its
 // adjustments, disclosed IN PLACE beneath it, so the depth never grows.
-function TypewriterFields() {
+function TypewriterFields({ pageId, pageEmpty }: { pageId?: string; pageEmpty?: boolean }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const forwardLock = useForwardLock();
 
   // PHASE 1 (S4) - the Typewriter on/off row LEFT this menu for the icon toggle beside the "...". What stays is greyed and unusable while the mode is
   // off (the values are kept; they simply cannot be changed until it is back on).
-  const off = !settings.typewriter;
+  // typewriter-scope (Fable Oct 21) - same pageId fallback as SliverInstrumentRow's own typewriterOn, so this menu
+  // never disagrees with the icon toggle it lives beneath.
+  const off = !(pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter);
   return (
     <>
 
