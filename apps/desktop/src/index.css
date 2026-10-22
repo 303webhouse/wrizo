@@ -479,6 +479,9 @@
   --lamp-glow: radial-gradient(135% 95% at 50% -8%, #0A242B 0%, #071A1F 38%, #041218 70%, #020c10 100%);
   --chrome-surface: rgba(9, 30, 36, .9);
   --rail-surface: rgba(4, 17, 22, .78);
+  /* the Arbor ink surfaces are espresso browns (#1F1A16 / #2A241E) and ~60 rules + every input read them: the Flux glass replaces both (panel #0E2C32 for the raised tier) */
+  --ink-900: #091E24;
+  --ink-800: #0E2C32;
   --ink-border: #1D4A52;          /* line */
   --ink-border-strong: #2A6A76;   /* a brighter line tier — the dark page's own border value, reused */
   --line-active: #00C2FF;         /* canon §3 new slot */
@@ -605,6 +608,25 @@
 [data-theme='flux'] .wz-section-open[aria-current='page']{ box-shadow:inset 2px 0 0 var(--orange); }
 /* the sprint surge is orange (Flux's selection is cyan, so the surge names its colour) */
 [data-theme='flux'] .mode-pfill-spark:not(.lime){ background:var(--orange); }
+
+/* ---- FLUX V2 - the screens against the mockup (Fable, Oct 22) ---------------------------------------------------------------------------------------------------------------
+   (1) the Ask box, Add Note, the search fields and every other input read --ink-800 / --ink-900 / --color-surface: Arbor's espresso browns. The Flux root block now carries the Flux glass
+       for both, so no input (dark page or light) can paint Arbor brown.
+   (2) Arbor's hand-drawn watermark is a PNG mask painted brass at the bottom right. Flux shows its own WRIZO mark: orange (one of orange's few homes), top left, set in the chrome label face.
+   (3) A board card is a dark-glass NODE: glass fill, a thin cyan edge, a cyan uppercase first line (its title), and the card tokens re-pointed INSIDE the canvas only (a card's popup and the
+       deck wizard keep their own sheet). The board's frame carries the same grid ring and corner brackets as the page's.
+   (4) The rail's place block wraps ("RACK ▸ The Late Ferry") instead of truncating. */
+[data-theme='flux'] .brand-mark{ top:10px; left:14px; bottom:auto; right:auto; width:auto; aspect-ratio:auto; opacity:1; -webkit-mask:none; mask:none; background:none; filter:none;
+  color:var(--orange); font-family:var(--font-chromeLabel); font-weight:700; font-size:15px; letter-spacing:.32em; line-height:1; }
+[data-theme='flux'] .brand-mark::before{ content:'WRIZO'; }
+
+[data-theme='flux'] .board-canvas{ --card-stock:#0E2C32; --card-hairline:rgba(0, 194, 255, .55); --ink-on-card:#E8F6FA; --ink-on-card-low:#57D0F5; --ink-on-card-meta:#8FD6EE; --badge-on-card:#57D0F5; }
+[data-theme='flux'] .board-text, [data-theme='flux'] .board-ink-canvas{ border:1px solid var(--card-hairline); box-shadow:0 0 0 1px rgba(0, 194, 255, .08), 0 6px 18px rgba(0, 0, 0, .45); }
+[data-theme='flux'] .board-text::first-line{ color:var(--text-accent); text-transform:uppercase; letter-spacing:.12em; font-family:var(--font-chromeLabel); font-weight:600; }
+[data-theme='flux'] .board-canvas-blur-wrap{ position:relative; }
+.flux-board-frame .flux-frame{ padding:12px; }
+
+[data-theme='flux'] .wz-place-block .wz-place-name{ overflow:visible; text-overflow:clip; white-space:normal; overflow-wrap:anywhere; text-align:center; line-height:1.2; }
 
 /* Slice 4 — the effects compositor scaffold (canon §6, ThemeEffectsLayer.tsx).
    One layer, absolutely positioned behind everything painted, pointer-events

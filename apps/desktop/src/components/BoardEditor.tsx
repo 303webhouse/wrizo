@@ -1,3 +1,4 @@
+import { FluxBoardFrame } from './FluxReadouts';
 import { liveBoxes } from '../store/boxTombstones';
 import { openContextMenu, type ContextMenuItem } from '../store/contextMenu';
 import { requestDelete } from '../store/deleteGate';
@@ -3115,6 +3116,7 @@ export function BoardEditor({ id }: { id: string }) {
     <>
       <div className={`board-canvas-blur-wrap${(popupBox || deckWizardOpen) ? ' board-canvas-blurred' : ''}`}>
         {boardCanvas}
+        <FluxBoardFrame />
       </div>
       {popupBox && (
         <BoardCardPopup

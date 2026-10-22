@@ -155,13 +155,52 @@ export async function part2({ ok, sleepMs }) {
         const placeName = () => q("(() => { const e = document.querySelector('.wz-place-block .wz-place-name'); return e ? e.textContent : null; })()");
         const storedName = () => q("(JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]').find((d) => /^top-drawer-/.test(d.id)) || {}).name ?? null");
         const rootName = await placeName();
-        ok('F8 the default (flagged) top drawer is shown as Root, render-time only: its stored name is untouched', rootName === 'Root' && (await storedName()) === 'Top Drawer', `${rootName} / stored ${await storedName()}`);
+        ok('F8 the default (flagged) top drawer is shown as Root, render-time only: its stored name is untouched', rootName === 'RACK ▸ Root' && (await storedName()) === 'Top Drawer', `${rootName} / stored ${await storedName()}`);
         await q(`window.wrizoRenameDrawer(${JSON.stringify(topIds.drawer)}, 'My Novel'); window.wrizoFlushNow()`);
         await sleep(700);
         const renamed = await placeName();
-        ok('F8 a top drawer the writer RENAMED keeps its own name (not Root)', renamed === 'My Novel' && (await storedName()) === 'My Novel', `${renamed} / stored ${await storedName()}`);
+        ok('F8 a top drawer the writer RENAMED keeps its own name (not Root)', renamed === 'RACK ▸ My Novel' && (await storedName()) === 'My Novel', `${renamed} / stored ${await storedName()}`);
         await q(`window.wrizoRenameDrawer(${JSON.stringify(topIds.drawer)}, 'Top Drawer'); window.wrizoFlushNow()`);
       }
+
+      // ---- F11: no Arbor brown in any Flux input (the Ask box, Add Note, search fields) - dark page AND light --------------------------------------------------------------------------
+      const warmScan = `(() => { const vis = (e) => { const r = e.getBoundingClientRect(); const cs = getComputedStyle(e); return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none'; };
+        const out = []; for (const e of document.querySelectorAll('input, textarea, select')) { if (!vis(e)) continue; const m = /rgba?\\(([^)]+)\\)/.exec(getComputedStyle(e).backgroundColor); if (!m) continue; const p = m[1].split(',').map((x) => parseFloat(x)); const a = p.length > 3 ? p[3] : 1;
+          if (a > 0.3 && p[0] - p[2] >= 6 && p[0] >= p[1]) out.push({ cls: String(e.className).slice(0, 40), bg: getComputedStyle(e).backgroundColor }); }
+        return { warm: out, ask: !!document.querySelector('.wz-tutor-convo-input'), note: !!document.querySelector('.wz-tutor-bible-input'), total: document.querySelectorAll('input, textarea, select').length }; })()`;
+      for (const pg of ['dark', 'light']) {
+        await fresh({ page: pg }); await seed(); await open('fx-m2');
+        await q("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900);
+        const w = await q(warmScan);
+        ok(`F11 [${pg}] the Tutor drawer's Ask box${w.note ? ' and Add Note are' : ' is'} Flux glass: NO input, textarea or select paints an Arbor brown (checked ${w.total} fields)`, !!w && w.ask && w.warm.length === 0, JSON.stringify(w));
+      }
+
+      // ---- F12: no Arbor mark in Flux: the PNG watermark is off and Flux's own WRIZO mark (orange) sits top left ---------------------------------------------------------------------------
+      await fresh(); await seed(); await open('fx-m2');
+      const mk = await q(`(() => { const m = document.querySelector('.brand-mark'); if (!m) return null; const cs = getComputedStyle(m); const r = m.getBoundingClientRect();
+        const bad = [...document.querySelectorAll('body *')].filter((e) => { const c = getComputedStyle(e); return /wrizo-logo|wrizo-sketch/.test(c.maskImage + c.webkitMaskImage + c.backgroundImage) || (e.tagName === 'IMG' && /wrizo-logo|wrizo-sketch/.test(e.getAttribute('src') || '') && e.getBoundingClientRect().width > 0); }).map((e) => e.className || e.tagName).slice(0, 4);
+        return { word: getComputedStyle(m, '::before').content, color: cs.color, mask: cs.webkitMaskImage || cs.maskImage, top: Math.round(r.top), left: Math.round(r.left), right: Math.round(r.right), vw: innerWidth, bad }; })()`);
+      ok('F12 Flux shows its own WRIZO mark (orange, top left, text) and no element paints Arbor\'s wrizo PNG', !!mk && /WRIZO/.test(mk.word) && mk.color === 'rgb(255, 152, 0)' && (mk.mask === 'none' || mk.mask === '') && mk.top < 60 && mk.left < 160 && mk.right < mk.vw / 2 && mk.bad.length === 0, JSON.stringify(mk));
+
+      // ---- F13: a board card is a dark-glass node with a cyan edge and a cyan uppercase title, inside a framed board ---------------------------------------------------------------------------
+      await q(`(() => { const d = JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]').find((x) => x.name === 'The Late Ferry'); const p = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]').find((x) => d && x.drawerId === d.id);
+        window.wrizoCreateJournalPage({ id: 'fx-board', text: 'Chapter map', pageType: 'board', projectId: p ? p.id : null, origin: 'project', source: 'page', createdAt: '2026-01-01T00:00:05.000Z',
+          boxes: [{ id: 'fxb1', kind: 'text', x: 0.05, y: 0.05, w: 0.22, h: 0.12, z: 1, text: 'Mara at the window' }, { id: 'fxb2', kind: 'text', x: 0.4, y: 0.05, w: 0.22, h: 0.12, z: 2, text: 'The blue cup' }] }); window.wrizoFlushNow(); })()`);
+      await sleep(500);
+      await q("location.hash = '#/page/fx-board'");
+      const boardUp = await waitSoft("!!document.querySelector('.board-canvas .board-text')", { label: 'board cards', timeout: 9000 }); await sleep(800);
+      const nd = boardUp ? await q(`(() => { const c = document.querySelector('.board-canvas .board-text'); const cs = getComputedStyle(c); const fl = getComputedStyle(c, '::first-line'); const f = document.querySelector('.flux-board-frame');
+        const m = /rgba?\\(([^)]+)\\)/.exec(cs.backgroundColor); const p = m ? m[1].split(',').map((x) => parseFloat(x)) : [255, 255, 255];
+        return { bg: cs.backgroundColor, lum: (0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]) / 255, border: cs.borderTopColor, color: cs.color, titleColor: fl.color, titleCase: fl.textTransform,
+          frame: !!f, grid: !!(f && f.querySelector('.flux-frame')), brackets: !!(f && f.querySelector('.flux-brackets')), frameClick: f ? getComputedStyle(f).pointerEvents : null }; })()`) : null;
+      ok('F13 a board card is a dark-glass node: dark fill (not Arbor cream), a thin cyan edge, light ink, and a cyan UPPERCASE first line', !!nd && nd.lum < 0.15 && /0,\s*194,\s*255/.test(nd.border) && nd.titleColor === 'rgb(87, 208, 245)' && nd.titleCase === 'uppercase', JSON.stringify(nd));
+      ok('F13 the board wears the frame: the grid ring and the corner brackets, click-through', !!nd && nd.frame && nd.grid && nd.brackets && nd.frameClick === 'none', JSON.stringify(nd));
+
+      // ---- F14: the rail's place block reads RACK ▸ <name> and WRAPS - never truncated -----------------------------------------------------------------------------------------------------
+      await open('fx-m2');
+      const pbk = await q(`(() => { const e = document.querySelector('.wz-place-block .wz-place-name'); if (!e) return null; const cs = getComputedStyle(e); return { text: e.textContent, ws: cs.whiteSpace, overflow: cs.textOverflow, clipped: e.scrollWidth > e.clientWidth + 1, h: Math.round(e.getBoundingClientRect().height) }; })()`);
+      ok('F14 the place block reads "RACK ▸ The Late Ferry", wraps (white-space normal, no ellipsis) and nothing is clipped', !!pbk && pbk.text === 'RACK ▸ The Late Ferry' && pbk.ws === 'normal' && pbk.overflow !== 'ellipsis' && !pbk.clipped, JSON.stringify(pbk));
+
 
       // ---- F9: light mode: page light, chrome dark; the readouts follow the page ---------------------------------------------------------------------------------------------
       await fresh({ page: 'light' }); await seed(); await open('fx-m2');

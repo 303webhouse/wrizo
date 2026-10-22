@@ -42,3 +42,15 @@ export function FluxReadouts({ entry, surface }: { entry: JournalEntry | null; s
     </div>
   );
 }
+
+// FLUX V2 - the board's frame: the same grid ring and corner brackets the page wears, over the board's own canvas (no readouts - X / Y wait for the Inputs branch). Flux only.
+export function FluxBoardFrame() {
+  const theme = useTheme();
+  if (theme !== 'flux') return null;
+  return (
+    <div className="flux-readouts flux-board-frame chrome-fade" data-flux-board-frame="true" aria-hidden="true">
+      <div className="flux-frame" />
+      <div className="flux-brackets" data-acquire="false" />
+    </div>
+  );
+}

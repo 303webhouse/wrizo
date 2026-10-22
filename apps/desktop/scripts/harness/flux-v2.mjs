@@ -194,6 +194,9 @@ const CSS_MUT = [
   { name: 'the dark page text loses contrast', edit: (c) => c.replace('--ink-on-paper: #E8F6FA;', '--ink-on-paper: #6E8A93;'), red: ['CT1'] },
   { name: 'a label tier drops under 4.5:1', edit: (c) => c.replace('--ink-on-paper-low: #57D0F5;', '--ink-on-paper-low: #1D4A52;'), red: ['CT2'] },
   { name: 'the chromatic offset turns red', edit: (c) => c.replace(/--flux-offset:\s*[^;]+;/, '--flux-offset: 0.5px 0 0 rgba(255, 40, 40, .4);'), red: ['CH1'] },
+  { name: 'an Arbor brown surface returns to the Flux root', edit: (c) => c.replace('--ink-800: #0E2C32;', '--ink-800: #2A241E;'), red: ['TK4'] },
+  { name: 'Arbor\'s PNG mark paints again under Flux', edit: (c) => c.replace('-webkit-mask:none; mask:none; background:none;', 'background:var(--brass);'), red: ['BR1'] },
+  { name: 'a board card goes back to cream stock', edit: (c) => c.replace('--card-stock:#0E2C32; --card-hairline:rgba(0, 194, 255, .55);', '--card-stock:#FBF6EA; --card-hairline:rgba(0, 194, 255, .55);'), red: ['BD1'] },
   { name: 'the acquire loses its still state under reduced motion', edit: (c) => c.replace(/@media \(prefers-reduced-motion:\s*reduce\)\s*\{\s*\.flux-brackets[^}]*\}\s*\}?/, ''), red: ['RC2'] },
 ];
 const SRC_MUT = [
@@ -230,6 +233,20 @@ function cssChecks(css) {
   const selMissing = SEL.filter((f) => { const rs = rules(css).filter((x) => x.sel.includes(f.replace(/\{$/, ''))); return !rs.length || !rs.some((x) => /var\(--choice/.test(x.body)) || rs.some((x) => usesBrass(x.body)); });
   keep('SEL1', selMissing.length === 0, `still on brass (or missing): ${selMissing.join(' | ')}`);
   keep('TK3', tok(B.dark, 'paper') === '#0E1C24' && /rgba?\(0,\s*194,\s*255|#00C2FF/i.test(tok(B.dark, 'paper-edge') || ''), JSON.stringify({ paper: tok(B.dark, 'paper'), edge: tok(B.dark, 'paper-edge') }));
+  // TK4 - no Arbor brown in Flux: the two surface tiers every input and panel reads (--ink-900 / --ink-800) are Flux glass (teal-family: blue above red)
+  const teal = (h) => !!h && /^#[0-9a-f]{6}$/i.test(h) && (() => { const [r, , b] = hex(h); return b > r + 8; })();
+  keep('TK4', teal(T('ink-900')) && teal(T('ink-800')), `--ink-900 ${T('ink-900')}, --ink-800 ${T('ink-800')}`);
+  // BR1 - Flux shows its own WRIZO mark (orange, top left); Arbor's PNG mask is switched off under Flux
+  const brand = rules(css).find((x) => x.sel === "[data-theme='flux'] .brand-mark");
+  keep('BR1', !!brand && /-webkit-mask:\s*none/.test(brand.body) && /mask:\s*none/.test(brand.body) && /color:\s*var\(--orange\)/.test(brand.body) && /top:\s*\d+px/.test(brand.body) && /left:\s*\d+px/.test(brand.body)
+    && /\[data-theme='flux'\] \.brand-mark::before\{\s*content:\s*'WRIZO'/.test(css), brand ? brand.body.slice(0, 120) : 'no Flux .brand-mark rule');
+  // BD1 - a board card is a dark-glass node inside the canvas: dark stock, a cyan edge, light ink, a cyan uppercase first line (its title)
+  const nodeTok = rules(css).find((x) => x.sel === "[data-theme='flux'] .board-canvas");
+  const nodeStock = nodeTok && /--card-stock:\s*(#[0-9a-f]{6})/i.exec(nodeTok.body);
+  const nodeInk = nodeTok && /--ink-on-card:\s*(#[0-9a-f]{6})/i.exec(nodeTok.body);
+  const firstLine = rules(css).find((x) => x.sel === "[data-theme='flux'] .board-text::first-line");
+  keep('BD1', !!nodeStock && lum(hex(nodeStock[1])) < 0.05 && !!nodeInk && ratio(hex(nodeInk[1]), hex(nodeStock[1])) >= 7 && /--card-hairline:\s*rgba\(0,\s*194,\s*255/.test(nodeTok.body)
+    && !!firstLine && /text-transform:\s*uppercase/.test(firstLine.body) && /color:\s*var\(--text-accent\)/.test(firstLine.body), nodeTok ? nodeTok.body.slice(0, 120) : 'no Flux board-canvas token rule');
   // OR - orange only where allowed, in rules that apply under Flux
   const bad = rules(css).filter((x) => /data-theme='flux'|data-theme="flux"/.test(x.sel) && ORANGE_RE.test(x.body.replace(/--orange\s*:[^;]+;/g, '')) && !ORANGE_OK.some((re) => re.test(x.sel))).map((x) => x.sel.slice(0, 90));
   keep('OR1', bad.length === 0 && /--choice:\s*#00C2FF/i.test(B.root), bad.slice(0, 4).join(' | '));
@@ -277,6 +294,8 @@ ok('P4 the readouts speak only from the readout module: DOC / TRK / RACK / hint 
 ok('P5 the acquire runs once per page open and only above Ambiance 0 (shouldAcquire + effectiveAmbianceDial)', /shouldAcquire\(/.test(readoutsSrc) && /effectiveAmbianceDial\(/.test(readoutsSrc), '');
 ok('P6 the Root substitution is render-time only: PlaceBlock and the pop-out name the place through isDefaultRoot + placeRootName, and nothing writes the drawer\'s name', /isDefaultRoot\(/.test(placeBlock) && /placeRootName/.test(placeBlock) && /isDefaultRoot\(/.test(popout), '');
 const sliverSrc = rd('components/Sliver.tsx'), modeStageSrc = rd('components/ModeStage.tsx');
+const boardSrc = rd('components/BoardEditor.tsx');
+ok('P9 the board wears the Flux frame (grid ring + brackets) through FluxBoardFrame, and the rail\'s place block reads the rack readout in Flux', /<FluxBoardFrame/.test(boardSrc) && /export function FluxBoardFrame/.test(readoutsSrc) && /rackReadout\(/.test(placeBlock), '');
 ok('P8 the Recede-depth and Timer rows name themselves through the lexicon on both surfaces (the framed sliver and the settings panel) - no inline word', /fadeDepthLabel/.test(sliverSrc) && /timerLabel/.test(sliverSrc) && /fadeDepthLabel/.test(modeStageSrc) && /timerLabel/.test(modeStageSrc) && !/label="Timer"/.test(sliverSrc + modeStageSrc), '');
 ok('P7 a Flux frame ring: the grid and brackets are an overlay on the page FRAME (pointer-events none, masked to a ring) - never a background of the text area', /\.flux-frame\{[^}]*pointer-events:\s*none/.test(cssNow) && /\.flux-frame\{[^}]*mask/.test(cssNow), '');
 
