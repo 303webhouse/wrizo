@@ -143,6 +143,71 @@ await withHarness(async (app) => {
     await runCase(app, m, 'text');
   }
 
+  // ---- PROSE, Fable's correction (Oct 22, on 0e713e7a): ONLY a press BELOW the last line goes to the END (T, above). A press in a SIDE MARGIN
+  // beside a line goes to the nearest spot on THAT line (the browser's caret-from-point), never the end of the document; a press ON the text is
+  // unchanged. Each on the Draft page with text, re-seeded fresh; each press point a named premise. The margins are the PAPER's (.mode-page's
+  // padding): the left one lies outside the scroller, the right one inside its padding - both are tested.
+  const dm = MODES[1];
+  const dId = pageId(dm, 'text');
+  const fresh = async () => {
+    await app.evalJs("location.hash = '#/'"); await sleep(300);
+    await app.evalJs(`window.wrizoPatchEntry(${JSON.stringify(dId)}, { text: ${JSON.stringify(PROSE_TEXT)} })`);
+    await app.evalJs('window.wrizoFlushNow()'); await sleep(250);
+    return openPage(app, dm, 'text');
+  };
+  // a point level with row `i` (0-based): in the paper's LEFT margin, its RIGHT margin, or ON the text `frac` of the way along the row's own text
+  const rowPoint = (i, where, frac = 0.5) => app.evalJs(`(() => {
+    const ed = document.querySelector('.forward-only-editor'); const page = ed && ed.closest('.mode-page'); if (!ed || !page) return null;
+    const rows = [...ed.querySelectorAll('.wz-row')].filter((r) => r.getBoundingClientRect().height > 0); const row = rows[${i}]; if (!row) return null;
+    const rr = row.getBoundingClientRect(); const er = ed.getBoundingClientRect(); const pr = page.getBoundingClientRect(); const y = Math.round(rr.top + rr.height / 2);
+    const where = ${JSON.stringify(where)}; let x;
+    if (where === 'left') x = Math.round(Math.max(pr.left + 4, er.left - 14));
+    else if (where === 'right') x = Math.round(Math.min(pr.right - 4, er.right + 14));
+    else { const range = document.createRange(); range.selectNodeContents(row); const tr = [...range.getClientRects()].filter((r) => r.width > 0); const t = tr.length ? tr[0] : rr;
+      x = Math.round(t.left + (t.right - t.left) * ${frac}); }
+    const hit = document.elementFromPoint(x, y);
+    return { x, y, onEditor: !!hit && ed.contains(hit), onPaper: !!hit && page.contains(hit), hit: hit ? hit.className || hit.tagName : null };
+  })()`);
+  const lineAt = (text, n) => (text || '').split('\n')[n];
+  // S-left: a press in the LEFT margin beside "Second line" -> the start of THAT line
+  if (await fresh()) {
+    const p = await rowPoint(1, 'left');
+    const okL = !!p && !p.onEditor && p.onPaper;
+    ok('Draft S-left (premise): the press point is in the paper\'s LEFT margin, off the editor, level with "Second line"', okL, JSON.stringify(p));
+    if (okL) {
+      await click(app, p.x, p.y); await sleep(300); await app.typeKeys('Q');
+      const row = await waitStored(app, dId, (t) => t.includes('Q'));
+      ok('Draft S-left: a press in the left margin beside a line puts the caret on THAT line at its nearest spot (its start) - never the end of the document',
+        !!row && lineAt(row.text, 1) === 'QSecond line' && lineAt(row.text, 2) === 'Third line', JSON.stringify({ stored: row && row.text, p }));
+    }
+  } else ok('Draft S-left fixture: the Draft page with text reopened', false, '');
+  // S-right: a press in the RIGHT margin beside "First line" -> the end of THAT line
+  if (await fresh()) {
+    const p = await rowPoint(0, 'right');
+    const okR = !!p && !p.onEditor && p.onPaper;
+    ok('Draft S-right (premise): the press point is in the paper\'s RIGHT margin, off the editor, level with "First line"', okR, JSON.stringify(p));
+    if (okR) {
+      await click(app, p.x, p.y); await sleep(300); await app.typeKeys('R');
+      const row = await waitStored(app, dId, (t) => t.includes('R'));
+      ok('Draft S-right: a press in the right margin beside a line puts the caret on THAT line at its nearest spot (its end) - never the end of the document',
+        !!row && lineAt(row.text, 0) === 'First lineR' && lineAt(row.text, 2) === 'Third line', JSON.stringify({ stored: row && row.text, p }));
+    }
+  } else ok('Draft S-right fixture: the Draft page with text reopened', false, '');
+  // O: a press ON the text, a little before the middle of "Third line" -> the browser's own caret, unchanged (not its end, not its start)
+  if (await fresh()) {
+    const p = await rowPoint(2, 'on', 0.45);
+    const okO = !!p && p.onEditor;
+    ok('Draft O (premise): the press point is ON the text, part-way along "Third line"', okO, JSON.stringify(p));
+    if (okO) {
+      await click(app, p.x, p.y); await sleep(300); await app.typeKeys('X');
+      const row = await waitStored(app, dId, (t) => t.includes('X'));
+      const l3 = lineAt(row && row.text, 2) || '';
+      ok('Draft O: a press ON the text is unchanged - the letter lands where it was pressed, inside "Third line" (not at its end, not at its start)',
+        !!row && l3.length === 'Third line'.length + 1 && !l3.endsWith('X') && !l3.startsWith('X') && lineAt(row.text, 0) === 'First line',
+        JSON.stringify({ stored: row && row.text, p }));
+    }
+  } else ok('Draft O fixture: the Draft page with text reopened', false, '');
+
   // ---- U (Fable's ruling: "presses anywhere else are unchanged"): on the Screenplay with text, a press on the paper BESIDE an element - in the
   // sheet's margin, level with the scene heading, so NOT below the last element - activates nothing
   const sp = MODES[3];
