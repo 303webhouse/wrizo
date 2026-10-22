@@ -8,7 +8,7 @@
 //   DOUBLE   a double backlight dip asks the budget for its SECOND pulse too (a fake element and fake timers): it counts 2
 // Run: node apps/desktop/scripts/glitch-meter-check.mjs   (no browser, no box turn)
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -30,7 +30,8 @@ rmSync(tmp, { recursive: true, force: true });
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
-const near = (a, b, eps = 1e-9) => Math.abs(a - b) <= eps;
+const parkedReads = {};   // ledger 117: the parked checks' readings, re-asserted by their parked records (HARNESS_PARKED=1)
+const near =(a, b, eps = 1e-9) => Math.abs(a - b) <= eps;
 // the mockup's own curve (docs/mockups/flux-flicker @ 0eb36a6a, intensityFromIdle), written out here so the module is checked against it
 const curve = (t) => { if (t < 30) return 0; const u = Math.min(1, (t - 30) / 270); return u * u * 0.4 + u * 0.6; };
 
@@ -66,8 +67,17 @@ const curve = (t) => { if (t < 30) return 0; const u = Math.min(1, (t - 30) / 27
   fb.__resetFlashBudget();
   const seq = [[0, true], [10, true], [20, true], [30, false], [999, false], [1000, true], [1005, false], [1010, true], [1020, true], [1021, false]];
   const got = seq.map(([t]) => fb.tryFlash('t', t));
-  ok('BUDGET: three flashes, then refused until the oldest leaves the 1 s window; a refusal is SKIPPED, never queued for later',
-    seq.every(([, want], i) => got[i] === want) && fb.FLASH_LIMIT === 3, JSON.stringify(got));
+  // ---- PARKED - SUPERSEDED by ledger 117 (Fable, Oct 21: the interim limit is 2, and the window is a second PLUS a draw margin). Kept VERBATIM
+  // and no longer run; its record is in the parked leg below; the successor is derived from the module's own exported constants.
+  // ok('BUDGET: three flashes, then refused until the oldest leaves the 1 s window; a refusal is SKIPPED, never queued for later',
+  //   seq.every(([, want], i) => got[i] === want) && fb.FLASH_LIMIT === 3, JSON.stringify(got));
+  parkedReads.budgetSeq = got;
+  fb.__resetFlashBudget();
+  const L = fb.FLASH_LIMIT, W = fb.WINDOW_MS;
+  const seq2 = [...Array.from({ length: L }, (_, i) => [i * 10, true]), [L * 10, false], [W - 1, false], [W, true], [W + 5, false], [W + 10, true]];
+  const got2 = seq2.map(([t]) => fb.tryFlash('t', t));
+  ok(`BUDGET [ledger-117 successor]: FLASH_LIMIT (${L}) flashes, then refused until the oldest leaves the window (WINDOW_MS ${W} = 1000 + DRAW_MARGIN_MS); a refusal is SKIPPED, never queued for later`,
+    seq2.every(([, want], i) => got2[i] === want) && L === 3 && W === 1000 + fb.DRAW_MARGIN_MS && fb.DRAW_MARGIN_MS >= 50, JSON.stringify({ L, W, got2 }));   // the proof branch: the brief's 3, restored with the margin
   fb.__resetFlashBudget();
   let seed = 20261017;
   const rnd = () => { seed = (seed + 0x6D2B79F5) | 0; let x = seed; x = Math.imul(x ^ (x >>> 15), x | 1); x ^= x + Math.imul(x ^ (x >>> 7), x | 61); return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
@@ -82,8 +92,78 @@ const curve = (t) => { if (t < 30) return 0; const u = Math.min(1, (t - 30) / 27
   for (let i = 0, j = 0; i < grants.length; i++) { while (grants[i] - grants[j] >= 1000) j++; worst = Math.max(worst, i - j + 1); }
   // every refusal was forced: at that moment 3 grants were already in (t - 1000, t]
   const forced = refusals.every((r) => grants.filter((g) => g <= r && r - g < 1000).length >= 3);
-  ok('BUDGET: on 10,000 random attempts no sliding second ever holds more than 3 grants, and every refusal had 3 already in its window (it refuses only when it must)',
-    worst <= 3 && forced && refusals.length > 100 && grants.length > 100, JSON.stringify({ worst, grants: grants.length, refusals: refusals.length, forced }));
+  // ---- PARKED - SUPERSEDED by ledger 117 (the interim limit 2, the window 1000 + margin). Kept VERBATIM and no longer run; successor below.
+  // ok('BUDGET: on 10,000 random attempts no sliding second ever holds more than 3 grants, and every refusal had 3 already in its window (it refuses only when it must)',
+  //   worst <= 3 && forced && refusals.length > 100 && grants.length > 100, JSON.stringify({ worst, grants: grants.length, refusals: refusals.length, forced }));
+  parkedReads.budgetRandom = { worst, forced };
+  const forced2= refusals.every((r) => grants.filter((g) => g <= r && r - g < W).length >= L);
+  ok(`BUDGET [ledger-117 successor]: on 10,000 random attempts no sliding SECOND ever holds more than FLASH_LIMIT (${L}) grants, and every refusal had ${L} already in its window (${W} ms) - it refuses only when it must`,
+    worst <= L && forced2 && refusals.length > 100 && grants.length > 100, JSON.stringify({ worst, L, W, grants: grants.length, refusals: refusals.length, forced2 }));
+}
+// ---- MARGIN (ledger 117 - the observer saw 4 in a second where the budget granted 3): a pulse reaches the screen a little AFTER its grant (the
+// next paint, a busy thread). With every draw delayed by a random 0..DRAW_MARGIN_MS after its grant, no real second (1000 ms) may ever hold more
+// than FLASH_LIMIT DRAWS. Proven against the real budget; and a copy of the budget with the margin set to 0 (the old 1000 ms window) must fail it,
+// or the check proves nothing.
+{
+  const drawnWorst = (budget) => {
+    budget.__resetFlashBudget();
+    let s = 20261021;
+    const rnd = () => { s = (s + 0x6D2B79F5) | 0; let x = s; x = Math.imul(x ^ (x >>> 15), x | 1); x ^= x + Math.imul(x ^ (x >>> 7), x | 61); return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
+    let t = 0;
+    const draws = [];
+    for (let i = 0; i < 20000; i++) {
+      t += rnd() < 0.4 ? rnd() * 3 : rnd() * 300;
+      if (budget.tryFlash('m', t)) draws.push(t + rnd() * budget.DRAW_MARGIN_MS_FOR_CHECK);
+    }
+    draws.sort((a, b) => a - b);
+    let worst = 0;
+    for (let i = 0, j = 0; i < draws.length; i++) { while (draws[i] - draws[j] >= 1000) j++; worst = Math.max(worst, i - j + 1); }
+    return { worst, draws: draws.length };
+  };
+  const real = drawnWorst({ ...fb, DRAW_MARGIN_MS_FOR_CHECK: fb.DRAW_MARGIN_MS });
+  // the mutant: the budget's own source with the margin set to 0, bundled alone (it imports nothing); its draws keep the REAL margin's jitter
+  const src = readFileSync(join(here, '..', 'src', 'store', 'flashBudget.ts'), 'utf8');
+  const mutatedSrc = src.replace('export const DRAW_MARGIN_MS = 100;', 'export const DRAW_MARGIN_MS = 0;');
+  const landed = mutatedSrc !== src;
+  let mutant = null;
+  if (landed) {
+    const mt = mkdtempSync(join(tmpdir(), 'wz-glitch-m-'));
+    try {
+      writeFileSync(join(mt, 'flashBudget.ts'), mutatedSrc);
+      execFileSync(process.execPath, [esbuildBin, join(mt, 'flashBudget.ts'), '--bundle', '--format=esm', '--platform=neutral', `--outfile=${join(mt, 'fb.mjs')}`, '--log-level=error'], { stdio: 'pipe' });
+      const mfb = await import(pathToFileURL(join(mt, 'fb.mjs')).href);
+      mutant = drawnWorst({ ...mfb, DRAW_MARGIN_MS_FOR_CHECK: fb.DRAW_MARGIN_MS });
+    } finally { rmSync(mt, { recursive: true, force: true }); }
+  }
+  ok(`MARGIN: with every draw up to DRAW_MARGIN_MS (${fb.DRAW_MARGIN_MS} ms) after its grant, no real second ever holds more than FLASH_LIMIT (${fb.FLASH_LIMIT}) draws - over 20,000 attempts`,
+    real.worst <= fb.FLASH_LIMIT && real.draws > 1000, JSON.stringify(real));
+  ok('MARGIN (mutant): the same budget with the margin set to 0 (the old 1000 ms window) LANDED and lets a real second hold more than FLASH_LIMIT draws - the ledger-117 slip, reproduced',
+    landed && !!mutant && mutant.worst > fb.FLASH_LIMIT, JSON.stringify({ landed, mutant }));
+}
+// ---- TEAR (Fable, Oct 21: cut the leftover lines the moment reduced motion lands): a storm under way asks `alive` before each staggered line;
+// once it answers no, no more lines are laid (fake timers that run at once, a fake document)
+{
+  const realST = globalThis.setTimeout;
+  const hadDoc = 'document' in globalThis;
+  const prevDoc = globalThis.document;
+  const laid = [];
+  const fakeEl = () => ({ className: '', style: { setProperty() {} }, classList: { add() {}, remove() {} }, remove() {}, get offsetWidth() { return 0; } });
+  const container = { setAttribute() {}, appendChild: (el) => { if (el.className === 'theme-fx-tear') laid.push(el); } };
+  globalThis.setTimeout = (fn, ms) => { if (!ms || ms < 200) fn(); return 0; };   // the stagger runs at once; each line's own 200 ms removal never fires
+  globalThis.document = { createElement: () => fakeEl() };
+  try {
+    let asks = 0;
+    sl.tearStorm(container, 0.5, () => { asks += 1; return asks <= 1; });   // alive for the first line only
+    const cut = laid.length;
+    laid.length = 0;
+    sl.tearStorm(container, 0.5);   // no `alive`: the ambient default - every line laid
+    const whole = laid.length;
+    ok('TEAR: a storm under way asks `alive` before each line - once it answers no, no more lines are laid (1 line, not the storm\'s 3-5); with no `alive` every line is laid',
+      cut === 1 && asks >= 2 && whole >= 3 && whole <= 5, JSON.stringify({ cut, asks, whole }));
+  } finally {
+    globalThis.setTimeout = realST;
+    if (hadDoc) globalThis.document = prevDoc; else delete globalThis.document;
+  }
 }
 // ---- THE GRANT HOOK (ledger 90: glitch-meter.mjs takes its frames ON a granted pulse) - called on every grant, never on a refusal, and absent
 // it is nothing at all
@@ -97,9 +177,16 @@ const curve = (t) => { if (t < 30) return 0; const u = Math.min(1, (t - 30) / 27
     const res = [0, 1, 2, 3, 4].map((i) => fb.tryFlash(`k${i}`, 5000 + i));
     globalThis.window = {};
     const quiet = fb.tryFlash('after', 9000);
-    ok('HOOK: the harness grant hook is called once per GRANTED flash and never for a refused one; unset, a grant goes on without it',
-      JSON.stringify(res) === JSON.stringify([true, true, true, false, false]) && JSON.stringify(seen) === JSON.stringify(['k0', 'k1', 'k2']) && quiet === true,
-      JSON.stringify({ res, seen, quiet }));
+    // ---- PARKED - SUPERSEDED by ledger 117 (the interim limit is 2: the third ask is refused). Kept VERBATIM and no longer run; successor below.
+    // ok('HOOK: the harness grant hook is called once per GRANTED flash and never for a refused one; unset, a grant goes on without it',
+    //   JSON.stringify(res) === JSON.stringify([true, true, true, false, false]) && JSON.stringify(seen) === JSON.stringify(['k0', 'k1', 'k2']) && quiet === true,
+    //   JSON.stringify({ res, seen, quiet }));
+    parkedReads.hook = { res, seen };
+    const L = fb.FLASH_LIMIT;
+    const want = [0, 1, 2, 3, 4].map((i) => i < L);
+    ok(`HOOK [ledger-117 successor]: the harness grant hook is called once per GRANTED flash (the first FLASH_LIMIT = ${L}) and never for a refused one; unset, a grant goes on without it`,
+      JSON.stringify(res) === JSON.stringify(want) && JSON.stringify(seen) === JSON.stringify(want.map((w, i) => (w ? `k${i}` : null)).filter(Boolean)) && quiet === true,
+      JSON.stringify({ res, seen, quiet, L }));
   } finally {
     if (hadWindow) globalThis.window = prev; else delete globalThis.window;
     fb.__resetFlashBudget();
@@ -125,6 +212,22 @@ const curve = (t) => { if (t < 30) return 0; const u = Math.min(1, (t - 30) / 27
     ok('DOUBLE: ...and a second pulse the budget refuses is not drawn (the dip rises once, not twice)',
       refused.length === 1 && seen.filter((v) => Number(v) > 0).length === 1, JSON.stringify(seen));
   } finally { globalThis.setTimeout = realST; }
+}
+
+// === PARKED - gated behind HARNESS_PARKED=1, skipped by default. THREE parks (ledger 117: the interim limit 2, the window 1000 + margin); each
+// record re-asserts the new truth from the default run's own reading.
+if (process.env.HARNESS_PARKED === '1') {
+  const parked = [];
+  const pok = (name, pass, detail = '') => parked.push({ name, pass: !!pass, detail });
+  const r = parkedReads;
+  pok('PARKED (was "BUDGET: three flashes, then refused until the oldest leaves the 1 s window; a refusal is SKIPPED, never queued for later") - ledger 117: the third flash is now refused (limit 2); live successor: BUDGET [ledger-117 successor]',
+    Array.isArray(r.budgetSeq) && r.budgetSeq[0] === true && r.budgetSeq[1] === true && r.budgetSeq[2] === false, JSON.stringify(r.budgetSeq));
+  pok('PARKED (was "BUDGET: on 10,000 random attempts no sliding second ever holds more than 3 grants, and every refusal had 3 already in its window") - ledger 117: at most 2 now; live successor: BUDGET [ledger-117 successor]',
+    !!r.budgetRandom && r.budgetRandom.worst <= 2, JSON.stringify(r.budgetRandom));
+  pok('PARKED (was "HOOK: the harness grant hook is called once per GRANTED flash and never for a refused one; unset, a grant goes on without it") - ledger 117: two grants, then refusals; live successor: HOOK [ledger-117 successor]',
+    !!r.hook && JSON.stringify(r.hook.res) === JSON.stringify([true, true, false, false, false]), JSON.stringify(r.hook));
+  for (const c of parked) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);
+  console.log(parked.every((c) => c.pass) ? `\nGLITCH-METER-CHECK PARKED: PASS (${parked.length} checks)` : `\nGLITCH-METER-CHECK PARKED: FAIL - ${parked.filter((c) => !c.pass).length}/${parked.length} failed`);
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);

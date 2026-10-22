@@ -12,7 +12,12 @@
 //       the meter's six - and the two-system case is really exercised.
 //   G5  a double dip and a double sync jump each count 2
 //   G6  reduced motion (the OS setting, emulated): no events, the still overlay at intensity x 0.42 - appearing with NO easing (Fable, Oct 17:
-//       the global reduced-motion rule, index.css, is honoured); turning it off resumes
+//       the global reduced-motion rule, index.css, is honoured); turning it off resumes. Its detail logs every pulse against the switch's
+//       landing (the media change event) - the ledger-114 instrument
+//   G6d (ledger 114) the tail of an event under way: a double dip / double jump fired at peak, then reduced motion switched on during their
+//       first pulses - no SECOND pulse reaches the screen after the switch lands
+//   G6t (Fable, Oct 21) a tear storm under way when reduced motion lands: its lines on screen are cut within two frames, none laid after
+//   G4 (ledger 117) the instrument - every pulse's grant -> draw -> observed, paired; and the INTERIM ceiling (FLASH_LIMIT, read from the source)
 //   G7  the Flicker switch, pressed for real in the "..." panel: off means no meter at all (Signal Loss stays); it survives a reload
 //   G8  page primacy: the page's rect is the same with the meter at peak and off; a click on the page reaches the page
 //   G9  Arbor (plateau): no meter
@@ -20,8 +25,9 @@
 // binding, and the frame is taken a short per-kind delay later (the pulse at its brightest): six at peak, two at half progress; plus one under
 // reduced motion (a still - no pulse to wait for) and one with Flicker off.
 // Run: node scripts/harness/glitch-meter.mjs   (from apps/desktop, dist-web built, box turn granted)
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
 import { trustedDispatch } from '../trusted-point.mjs';
 
@@ -54,6 +60,8 @@ const armPulseFrames = async (app, prefix, n) => {
 };
 const ED = '.forward-only-editor';
 const LAYER = '.glitch-meter-layer';
+// LEDGER 117: the budget's own ceiling, READ from its source (the interim limit is 2; the brief's is 3) - the checks follow the constant
+const FLASH_LIMIT = Number((/export const FLASH_LIMIT = (\d+);/.exec(readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'src', 'store', 'flashBudget.ts'), 'utf8')) || [])[1]);
 // the mockup's curve, written out here: the harness checks the app against it, not against itself
 const curve = (t) => { if (t < 30) return 0; const u = Math.min(1, (t - 30) / 270); return u * u * 0.4 + u * 0.6; };
 const words = (n) => Array.from({ length: n }, (_, i) => ['rain', 'wire', 'neon', 'relay', 'ash'][i % 5]).join(' ') + '.';
@@ -97,7 +105,7 @@ const OBSERVE = `(() => {
   const layerOf = (n) => (n.closest('${LAYER}') ? 'meter' : n.closest('.theme-fx-layer') ? 'signal' : null);
   const mo = new MutationObserver((recs) => { for (const r of recs) {
     const el = r.target; const v = el.getAttribute('data-pulse'); if (!v) continue;
-    const layer = layerOf(el); if (layer) pulses.push({ t: performance.now(), kind: v.split(':')[0], layer }); } });
+    const layer = layerOf(el); if (layer) pulses.push({ t: performance.now(), kind: v.split(':')[0], seq: Number(v.split(':')[1]), layer }); } });
   for (const root of [document.querySelector('${LAYER}'), document.querySelector('.theme-fx-layer')]) if (root) mo.observe(root, { subtree: true, attributes: true, attributeFilter: ['data-pulse'] });
   window.__wzPulseStop = () => mo.disconnect();
   return true; })()`;
@@ -154,7 +162,7 @@ await withHarness(async (app) => {
   // ---- G4: THE FLASH COUNT
   await M(app, 'm.setLapFrac(0)');
   await M(app, 'm.setIdle(300)');
-  await app.evalJs('window.__wzVerifyFlashes = true; window.__wzFlashLog = [];');
+  await app.evalJs('window.__wzVerifyFlashes = true; window.__wzFlashLog = []; window.__wzDrawLog = [];');
   await app.evalJs(OBSERVE);
   const t0 = await app.evalJs('performance.now()');
   const slSeam = await app.evalJs("!!(window.wrizoFluxFx && typeof window.wrizoFluxFx.fire === 'function')");
@@ -189,6 +197,34 @@ await withHarness(async (app) => {
   ok('G4: ...and by the budget\'s own log (the two instruments agree on the ceiling)', detail.worstGranted <= 3, JSON.stringify(detail));
   ok('G4: the observer saw exactly the flashes the budget granted - neither instrument is blind (counts equal)', pulses.length === granted.length, JSON.stringify(detail));
   ok('G4: the budget really refused flashes (the three forced bursts guarantee pressure) - a limiter that never refuses proves nothing', refused.length >= 9, JSON.stringify(detail));
+  // LEDGER 117 - THE INSTRUMENT (Fable, Oct 21): each pulse's GRANT (the budget's log) -> DRAW (markPulse's own stamp, store/signalLossEvents.ts)
+  // -> OBSERVED (the mutation observer), paired. A draw pairs with the latest unused grant of its kind at or before it (a builder draws in the
+  // task that was granted); an observed pulse pairs with its draw by the pulse's own sequence stamp. This separates "granted, then drawn late
+  // across a window edge" (a large grant -> draw lag) from "an unmetered path" (a draw with no grant, or an observed pulse with no draw).
+  const draws = ((await app.evalJs('window.__wzDrawLog || []')) || []).filter((e) => e.t >= t0 - 1 && e.t <= tEnd);
+  const baseKind = (k) => k.replace(/^(gm|sl)-/, '');
+  const pool = granted.map((g) => ({ ...g, used: false }));
+  const lags = [];
+  let unpairedDraws = 0;
+  for (const d of [...draws].sort((a, b) => a.t - b.t)) {
+    const g = pool.filter((x) => !x.used && baseKind(x.kind) === d.kind && x.t <= d.t + 0.01).sort((a, b) => b.t - a.t)[0];
+    if (!g) { unpairedDraws += 1; continue; }
+    g.used = true; lags.push(d.t - g.t);
+  }
+  const drawBySeq = new Map(draws.map((d) => [d.seq, d]));
+  const obsLags = [];
+  let unpairedObserved = 0;
+  for (const p of pulses) { const d = drawBySeq.get(p.seq); if (!d) unpairedObserved += 1; else obsLags.push(p.t - d.t); }
+  const inst = {
+    FLASH_LIMIT, draws: draws.length, granted: granted.length, unpairedDraws, unpairedObserved,
+    maxGrantToDrawMs: lags.length ? Math.round(Math.max(...lags) * 100) / 100 : null,
+    maxDrawToObservedMs: obsLags.length ? Math.round(Math.max(...obsLags) * 100) / 100 : null,
+    worstGranted: detail.worstGranted, worstDraws: worstWindow(draws.map((e) => e.t)), worstObserved: detail.worstPulses,
+  };
+  ok('G4 (instrument, ledger 117): every drawn pulse had its own grant at most 5 ms before it (granted and drawn in the same moment), and every observed pulse is a drawn one (paired by its stamp) - no unmetered path',
+    draws.length > 0 && draws.length === granted.length && unpairedDraws === 0 && unpairedObserved === 0 && inst.maxGrantToDrawMs !== null && inst.maxGrantToDrawMs <= 5, JSON.stringify(inst));
+  ok(`G4 [interim limit, ledger 117]: never more than FLASH_LIMIT (${FLASH_LIMIT}) flashes in any one second - by the budget's grants, by the draws, AND by the independent observer`,
+    Number.isFinite(FLASH_LIMIT) && FLASH_LIMIT >= 1 && inst.worstGranted <= FLASH_LIMIT && inst.worstDraws <= FLASH_LIMIT && inst.worstObserved <= FLASH_LIMIT, JSON.stringify(inst));
 
   // ---- G5: double events count 2
   await M(app, 'm.setForceDouble(true)');
@@ -213,7 +249,74 @@ await withHarness(async (app) => {
     return { reachesPage: !!el && ed.contains(el), layerPE: layer ? getComputedStyle(layer).pointerEvents : null, layerFixed: layer ? getComputedStyle(layer).position : null }; })()`);
   ok('G8: the meter takes no input - a point on the page finds the page beneath it; the layer is fixed and pointer-events:none', hit.reachesPage && hit.layerPE === 'none' && hit.layerFixed === 'fixed', JSON.stringify(hit));
 
+  // ---- G6d (ledger 114 - G6 went red ONCE in a full pair, 1 pulse in its window, 8 solo greens): THE TAIL OF AN EVENT ALREADY UNDER WAY.
+  // fire() re-checks reduced motion at fire time, so no event can START after the switch; but a DOUBLE dip draws its second pulse 750 ms after
+  // its first (400 up + 350 gap), and a double jump 140 ms after - through a callback that asked only the flash budget. An event fired just
+  // before the switch could put a fresh flash on screen after it. This forces exactly that, every run: at peak, a double dip and a double jump,
+  // then reduced motion switched on during their first pulses. THE INSTRUMENT: the switch's landing is the media query's own `change` event
+  // (performance.now()); every pulse on both layers is logged against it (dt < 0 before the switch, dt > 0 after).
+  const SWITCH_WATCH = `(() => { window.__wzReducedAt = null; const mq = matchMedia('(prefers-reduced-motion: reduce)');
+    const on = (e) => { if (e.matches && window.__wzReducedAt == null) window.__wzReducedAt = performance.now(); };
+    if (window.__wzReducedWatch) mq.removeEventListener('change', window.__wzReducedWatch);
+    window.__wzReducedWatch = on; mq.addEventListener('change', on); return true; })()`;
+  const pulseLog = async (app) => {
+    const at = await app.evalJs('window.__wzReducedAt');
+    return { reducedAt: at, log: ((await app.evalJs('window.__wzPulses || []')) || []).map((p) => ({ kind: p.kind, layer: p.layer, dt: at == null ? null : Math.round(p.t - at) })) };
+  };
+  await M(app, 'm.setForceDouble(true)');
+  await M(app, 'm.setIdle(300)');
+  await sleep(300);
+  await app.evalJs(SWITCH_WATCH);
+  await app.evalJs(OBSERVE);
+  // at peak the meter's own events share the 3-per-second budget, so a forced pair can be refused: try again once the budget's second has passed
+  let firedD = null;
+  for (let i = 0; i < 6; i += 1) {
+    firedD = await M(app, "[m.fire('dip'), m.fire('sync')]");
+    if (Array.isArray(firedD) && firedD.every((f) => f === true)) break;
+    await sleep(1100);
+  }
+  await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  await sleep(1300);   // past the second dip's 750 ms
+  await app.evalJs('window.__wzPulseStop && window.__wzPulseStop()');
+  const gd = await pulseLog(app);
+  const afterD = gd.log.filter((p) => p.layer === 'meter' && p.dt !== null && p.dt > 0);
+  ok('G6d (premise): the forced double dip and double jump were granted and drew their FIRST pulses before reduced motion landed, and the switch\'s landing was seen (the media change event)',
+    Array.isArray(firedD) && firedD.every((f) => f === true) && gd.reducedAt != null && gd.log.some((p) => p.layer === 'meter' && p.kind === 'dip' && p.dt < 0) && gd.log.some((p) => p.layer === 'meter' && p.kind === 'sync' && p.dt < 0),
+    JSON.stringify({ firedD, ...gd }));
+  ok('G6d: once reduced motion has landed the meter puts NO pulse on screen - the SECOND dip and the second jump of events already under way are refused',
+    gd.reducedAt != null && afterD.length === 0, JSON.stringify({ afterD, ...gd }));
+  await app.emulateMedia([]);
+  await M(app, 'm.setForceDouble(false)');
+  await sleep(800);
+
+  // ---- G6t (Fable, Oct 21: cut the leftover tear-storm lines the moment reduced motion lands): a tear storm fired at peak, reduced motion switched
+  // on while its staggered lines are still being laid. At the switch's own change event the lines on screen are counted (the premise: there ARE
+  // some); two frames later there must be none, and no line may be ADDED after the switch landed.
+  await M(app, 'm.setIdle(300)');
+  await sleep(300);
+  await app.evalJs(SWITCH_WATCH);
+  await app.evalJs(`(() => { const layer = document.querySelector('${LAYER}'); window.__wzTearAdds = []; window.__wzTearsAtSwitch = null; window.__wzTearsAfter = null;
+    const mo = new MutationObserver((recs) => { for (const r of recs) for (const n of r.addedNodes) if (n.classList && n.classList.contains('theme-fx-tear')) window.__wzTearAdds.push(performance.now()); });
+    if (layer) mo.observe(layer, { childList: true }); window.__wzTearStop = () => mo.disconnect();
+    const mq = matchMedia('(prefers-reduced-motion: reduce)');
+    const on = (e) => { if (!e.matches || window.__wzTearsAtSwitch != null) return; window.__wzTearsAtSwitch = layer ? layer.querySelectorAll('.theme-fx-tear').length : -1;
+      requestAnimationFrame(() => requestAnimationFrame(() => { window.__wzTearsAfter = layer ? layer.querySelectorAll('.theme-fx-tear').length : -1; })); mq.removeEventListener('change', on); };
+    mq.addEventListener('change', on); return true; })()`);
+  let firedT = false;
+  for (let i = 0; i < 6 && !firedT; i += 1) { firedT = await M(app, "m.fire('tear')"); if (!firedT) await sleep(1100); }
+  await sleep(20);   // the first line is laid (its own setTimeout 0)
+  await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  await sleep(500);
+  const gt = await app.evalJs('(() => { window.__wzTearStop && window.__wzTearStop(); return { reducedAt: window.__wzReducedAt, atSwitch: window.__wzTearsAtSwitch, after: window.__wzTearsAfter, adds: window.__wzTearAdds }; })()');
+  const addsAfter = (gt.adds || []).filter((t) => gt.reducedAt != null && t > gt.reducedAt);
+  ok('G6t (premise): a tear storm was granted and its lines were on screen when reduced motion landed (the media change event)', firedT === true && gt.reducedAt != null && gt.atSwitch > 0, JSON.stringify(gt));
+  ok('G6t: the moment reduced motion lands the storm\'s lines on screen are CUT (none two frames later) and no further line is laid',
+    gt.reducedAt != null && gt.after === 0 && addsAfter.length === 0, JSON.stringify({ ...gt, addsAfter: addsAfter.map((t) => Math.round(t - gt.reducedAt)) }));
+  await app.emulateMedia([]);
+  await sleep(800);
+
   // ---- G6: reduced motion
+  await app.evalJs(SWITCH_WATCH);   // the instrument (ledger 114): the switch's landing, for G6's detail
   await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
   await M(app, 'm.setIdle(300)');
   await sleep(300);
@@ -227,9 +330,10 @@ await withHarness(async (app) => {
   const still = await app.evalJs(`(() => { const s = document.querySelector('${LAYER} .glitch-meter-still'); return s ? { opacity: Number(getComputedStyle(s).opacity), transition: getComputedStyle(s).transitionDuration } : null; })()`);
   await app.evalJs('window.__wzPulseStop && window.__wzPulseStop()');
   const meterPulses6 = (await app.evalJs('window.__wzPulses || []')).filter((p) => p.layer === 'meter');
+  const g6log = await pulseLog(app);   // the instrument: each pulse's kind and its time against the switch's landing (detail only)
   await frame(app, 'reduced-motion');
   ok('G6: under reduced motion the meter fires NOTHING - no pulse on its layer in 6 s at peak, and even a forced event is refused',
-    !!s6 && s6.reduced && meterPulses6.length === 0 && Array.isArray(fired6) && fired6.every((f) => f === false), JSON.stringify({ s6, meterPulses6: meterPulses6.length, fired6 }));
+    !!s6 && s6.reduced && meterPulses6.length === 0 && Array.isArray(fired6) && fired6.every((f) => f === false), JSON.stringify({ s6, meterPulses6: meterPulses6.length, fired6, pulsesVsSwitch: g6log }));
   // ---- PARKED - SUPERSEDED (ledger 90; Fable's ruling, Oct 17: honour the global reduced-motion rule, index.css - under reduced motion every
   // transition is 0.01 ms, so the overlay APPEARS, with no easing; the run read {opacity: 0.42, transition: "1e-05s"}). Kept VERBATIM and no
   // longer run; successor below.
