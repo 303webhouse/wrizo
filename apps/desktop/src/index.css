@@ -3702,16 +3702,23 @@ a:focus-visible,
 .wz-rhizome-new{ stroke-dasharray:1; stroke-dashoffset:1; animation:wz-rhizome-draw 360ms ease-out both; }
 @keyframes wz-rhizome-draw{ from{ stroke-dashoffset:1; } to{ stroke-dashoffset:0; } }
 
-/* The reward: at the goal the whole network turns brass for the flash (1200 ms, held by RhizomeField). Nick (2026-10-10): "a bit
-   brighter and fade back out slower" - full opacity and a heavier stroke while it holds, then (data-flash="fading") the brass
-   fades out over 1500 ms instead of cutting, and the lap clears at the fade's end. */
-.wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ stroke:var(--brass); opacity:1; stroke-width:0.9px; transition:stroke 160ms ease, opacity 160ms ease, stroke-width 160ms ease; }
-.wz-rhizome-field[data-flash='true'] .wz-rhizome-seg[data-thick='true']{ stroke-width:1.4px; }
-.wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg{ stroke:var(--brass); opacity:0; stroke-width:0.9px; transition:opacity 1500ms ease-out; }
-.wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg[data-thick='true']{ stroke-width:1.4px; }
+/* The reward: at the goal the whole network turns brass (#ff9800, the locked theme orange) and pops — a short
+   bloom, then a heavier brass stroke holds (1200 ms, RhizomeField). The finished plant then fades out over 2200 ms
+   and leaves the seed root, which settles back to the resting ink. */
+.wz-rhizome-field[data-flash='true']{ filter:drop-shadow(0 0 3px var(--brass)); animation:wz-rhizome-pop 420ms ease-out; }
+.wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ stroke:var(--brass); opacity:1; stroke-width:1.35px; transition:stroke 80ms ease-out, opacity 80ms ease-out, stroke-width 80ms ease-out; }
+.wz-rhizome-field[data-flash='true'] .wz-rhizome-seg[data-thick='true']{ stroke-width:2.1px; }
+.wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg{ stroke:var(--brass); opacity:0; stroke-width:1.35px; transition:opacity 2200ms ease-out; }
+.wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg[data-thick='true']{ stroke-width:2.1px; }
+.wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg[data-seed='true']{ stroke:var(--rhizome-ink); opacity:.75; stroke-width:0.8px; transition:stroke 2200ms ease-out, opacity 2200ms ease-out, stroke-width 2200ms ease-out; }
+@keyframes wz-rhizome-pop{
+  from{ filter:drop-shadow(0 0 12px var(--brass)) drop-shadow(0 0 3px var(--brass)); }
+  to{ filter:drop-shadow(0 0 3px var(--brass)); }
+}
 
 @media (prefers-reduced-motion: reduce){
   .wz-rhizome-new{ stroke-dasharray:none; stroke-dashoffset:0; animation:wz-rhizome-appear 200ms ease both; }
+  .wz-rhizome-field[data-flash='true']{ animation:none; }
   .wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ transition:none; }
   .wz-rhizome-field[data-flash='fading'] .wz-rhizome-seg{ transition:none; }
 }

@@ -40,7 +40,7 @@ function deskGeo() {
   return {
     width: 1320, height: 733,
     hidden: [paper, { left: 0, top: 0, right: 64, bottom: 733 }, { left: 0, top: 0, right: 1320, bottom: 44 }],
-    origin: { x: (paper.left + paper.right) / 2, y: paper.bottom + 12 },
+    origin: { x: (paper.left + paper.right) / 2, y: (paper.top + paper.bottom) / 2 },
   };
 }
 
@@ -49,7 +49,7 @@ function tightGeo() {
   return {
     width: 1000, height: 700,
     hidden: [paper, { left: 0, top: 0, right: 56, bottom: 700 }, { left: 0, top: 0, right: 1000, bottom: 40 }],
-    origin: { x: (paper.left + paper.right) / 2, y: paper.bottom + 12 },
+    origin: { x: (paper.left + paper.right) / 2, y: (paper.top + paper.bottom) / 2 },
   };
 }
 
@@ -137,9 +137,9 @@ const n = plan.segments.length;
 const final = plan.coverAt[n - 1];
 
 // ---- R1 coverage tracks the goal ------------------------------------------------
-ok('R1: a full lap covers FULL_COVER of the visible cells, or hits LAP_CAP',
-  plan.visibleCells > 0 && (final / plan.visibleCells >= E.FULL_COVER - 1e-9 || n === E.LAP_CAP),
-  JSON.stringify({ final, visible: plan.visibleCells, frac: final / plan.visibleCells, n, cap: E.LAP_CAP }));
+ok('R1: a full lap is a weed, not a carpet of the ground',
+  plan.visibleCells > 0 && final / plan.visibleCells < 0.55 && n > 40 && n < E.LAP_CAP,
+  JSON.stringify({ final, visible: plan.visibleCells, frac: final / plan.visibleCells, n }));
 ok('R1: coverAt is non-decreasing',
   plan.coverAt.every((c, i) => i === 0 || c >= plan.coverAt[i - 1]), String(plan.coverAt.length));
 ok('R1: segmentsFor(0) is the starting stroke',
@@ -163,8 +163,9 @@ const other = E.planLap(geo, E.hashSeed('desk:abc:1'), null);
 const o50 = atFrac(E, other, 0.5);
 ok('R1: a second seed also tracks coverage at 50%',
   other.segments.length > 20 && inBand(o50.cov, 0.5), JSON.stringify({ n: other.segments.length, ...o50 }));
-ok('R1: FULL_COVER is 0.86, LAP_CAP is 4200, and CELL is 28',
-  E.FULL_COVER === 0.86 && E.LAP_CAP === 4200 && E.CELL === 28, `${E.FULL_COVER} ${E.LAP_CAP} ${E.CELL}`);
+ok('R1: SHOOTS is 7, LONG_EXTRA is 128, LAP_CAP is 4200, and CELL is 28',
+  E.SHOOTS === 7 && E.LONG_EXTRA === 128 && E.LAP_CAP === 4200 && E.CELL === 28,
+  `${E.SHOOTS} ${E.LONG_EXTRA} ${E.LAP_CAP} ${E.CELL}`);
 
 // ---- R2 growth always comes from the existing network ---------------------------
 ok('R2: every segment after the first starts on an earlier endpoint',
@@ -178,9 +179,10 @@ const lap1 = E.planLap(geo, E.hashSeed('page:sess:24:lines:1'), surv);
 ok('R2: the next lap still has no free-standing segment',
   lap1.segments.length > surv.length && freeStanding(lap1.segments) === 0,
   JSON.stringify({ n: lap1.segments.length, free: freeStanding(lap1.segments) }));
-ok('R2: lap 2\'s first new segment touches the survivor',
-  lap1.segments.length > lap1.firstCount && lap1.segments.slice(lap1.firstCount).some(s => surv.some(r => touch(s, r))),
-  String(lap1.firstCount));
+ok('R2: lap 2 keeps one root segment and does not sprout at the page centre',
+  lap1.firstCount === surv.length
+    && Math.hypot(lap1.segments[0].x1 - geo.origin.x, lap1.segments[0].y1 - geo.origin.y) > 40,
+  JSON.stringify({ first: lap1.firstCount, x1: lap1.segments[0].x1, y1: lap1.segments[0].y1 }));
 const tight = E.planLap(tightGeo(), E.hashSeed('tight:0'), null);
 ok('R2: a tight margin still grows one connected network',
   tight.segments.length > 20 && freeStanding(tight.segments) === 0,
@@ -210,8 +212,8 @@ ok('R3: a new segment draws on over 360ms and the line carries pathLength 1',
 ok('R3: settled hairlines are 0.4px / .45 and stems are 0.8px / .75',
   /stroke-width:0\.4px/.test(css) && /opacity:\.45/.test(css)
     && /stroke-width:0\.8px/.test(css) && /opacity:\.75/.test(css), 'weights');
-ok('R3: WANDER is 9° and SURVIVOR_STEPS is 7',
-  Math.abs(E.WANDER - (9 * Math.PI) / 180) < 1e-9 && E.SURVIVOR_STEPS === 7, `${E.WANDER} ${E.SURVIVOR_STEPS}`);
+ok('R3: WANDER is 9° and SURVIVOR_STEPS is 1',
+  Math.abs(E.WANDER - (9 * Math.PI) / 180) < 1e-9 && E.SURVIVOR_STEPS === 1, `${E.WANDER} ${E.SURVIVOR_STEPS}`);
 
 // ---- R4 one network, both margins; paint never on the page ----------------------
 const hiddenN = plan.segments.filter(s => !s.visible).length;
@@ -249,12 +251,41 @@ const again = E.pickSurvivor(plan, E.hashSeed('page:sess:24:lines:0:survivor'));
 ok('R5: the same seed keeps the same survivor',
   surv && again && surv.length === again.length && surv[0].x1 === again[0].x1 && surv[0].y1 === again[0].y1,
   JSON.stringify(again && { x1: again[0].x1 }));
-ok('R5: lap 2 starts from that survivor (firstCount matches)',
-  lap1.firstCount === surv.length, String(lap1.firstCount));
-ok('R5: lap 2\'s opening stroke matches the survivor geometry',
+ok('R5: lap 2\'s opening stroke is that one root segment',
   surv.every((s, i) => eq(s.x1, s.y1, lap1.segments[i].x1, lap1.segments[i].y1)
     && eq(s.x2, s.y2, lap1.segments[i].x2, lap1.segments[i].y2)),
   String(lap1.firstCount));
+{
+  const byStem = new Map();
+  for (const s of lap1.segments.slice(lap1.firstCount)) {
+    if (!byStem.has(s.stem)) byStem.set(s.stem, []);
+    byStem.get(s.stem).push(s);
+  }
+  let headed = null;
+  for (const segs of byStem.values()) {
+    const a = segs[0];
+    const aim = Math.atan2(geo.origin.y - a.y1, geo.origin.x - a.x1);
+    const head = Math.atan2(a.y2 - a.y1, a.x2 - a.x1);
+    let turn = head - aim;
+    while (turn > Math.PI) turn -= 2 * Math.PI;
+    while (turn < -Math.PI) turn += 2 * Math.PI;
+    const d0 = Math.hypot(a.x1 - geo.origin.x, a.y1 - geo.origin.y);
+    let near = d0;
+    for (const s of segs) near = Math.min(near, Math.hypot(s.x2 - geo.origin.x, s.y2 - geo.origin.y));
+    const gained = d0 - near;
+    if (Math.abs(turn) < 0.7 && gained >= 40) headed = { turn: +(turn * 180 / Math.PI).toFixed(1), gained: +gained.toFixed(0) };
+  }
+  ok('R5: one offshoot of the next lap heads back toward the page', !!headed, JSON.stringify(headed));
+  const root = lap1.segments[0];
+  const firstOf = new Map();
+  for (const s of lap1.segments.slice(lap1.firstCount)) {
+    if (!firstOf.has(s.stem)) firstOf.set(s.stem, s);
+  }
+  const mains = [...firstOf.values()].filter(s => s.order === 0);
+  ok('R5: the new rhizome branches from the end of that one root',
+    mains.length >= 2 && mains.every(s => eq(s.x1, s.y1, root.x2, root.y2)),
+    String(mains.length));
+}
 // ---- PARKED - SUPERSEDED by the flash fade (Nick, 2026-10-10: "a bit brighter and fade back out slower"). Kept VERBATIM and no
 // longer run: data-flash now carries a third state, 'fading', between the hold and the clear. Its record is in the HARNESS_PARKED
 // block at the foot; the successor follows.
@@ -265,23 +296,29 @@ ok('R5: lap 2\'s opening stroke matches the survivor geometry',
 // ------------------------------------------------------------------
 const r5FlashSeen = { hold: /const FLASH_MS = 1200/.test(fieldSrc), oldExpr: fieldSrc.includes("data-flash={flashLap != null ? 'true' : 'false'}") };
 ok('R5 [fade successor]: FLASH_MS is 1200 (the hold), FADE_MS is 1500 (the fade, not a cut), the field holds data-flash true -> fading -> false, and reduced motion skips the fade',
-  /const FLASH_MS = 1200/.test(fieldSrc) && /const FADE_MS = 1500/.test(fieldSrc)
+  /const FLASH_MS = 1200/.test(fieldSrc) && /const FADE_MS = 2200/.test(fieldSrc)
     && fieldSrc.includes("data-flash={flashLap != null ? (flashFading ? 'fading' : 'true') : 'false'}")
     && /if \(reducedMotion\(\)\) \{ setFlashLap\(null\); return; \}/.test(fieldSrc),
   'flash');
-ok('R5 [fade successor]: the flash is BRIGHTER (full opacity, a heavier stroke) and the fading state fades the brass out over 1500ms; reduced motion has no fade transition',
-  /\.wz-rhizome-field\[data-flash='true'\] \.wz-rhizome-seg\{ stroke:var\(--brass\); opacity:1; stroke-width:0\.9px;/.test(css)
-    && /\.wz-rhizome-field\[data-flash='fading'\] \.wz-rhizome-seg\{ stroke:var\(--brass\); opacity:0;[^}]*transition:opacity 1500ms/.test(css)
+ok('R5 [fade successor]: the flash is BRIGHTER (full opacity, a heavier stroke), the plant fades over 2200ms, and the seed root stays; reduced motion has no fade transition',
+  /\.wz-rhizome-field\[data-flash='true'\] \.wz-rhizome-seg\{ stroke:var\(--brass\); opacity:1; stroke-width:1\.35px;/.test(css)
+    && /@keyframes wz-rhizome-pop\{[^}]*drop-shadow\(0 0 12px var\(--brass\)\)/.test(css)
+    && /\.wz-rhizome-field\[data-flash='fading'\] \.wz-rhizome-seg\{ stroke:var\(--brass\); opacity:0;[^}]*transition:opacity 2200ms/.test(css)
+    && /\.wz-rhizome-field\[data-flash='fading'\] \.wz-rhizome-seg\[data-seed='true'\]\{ stroke:var\(--rhizome-ink\); opacity:\.75;/.test(css)
+    && fieldSrc.includes('data-seed="true"')
     && /prefers-reduced-motion: reduce\)\{[\s\S]*?\.wz-rhizome-field\[data-flash='fading'\] \.wz-rhizome-seg\{ transition:none; \}/.test(css),
   'fade css');
 ok('R5: the flash paints brass on every segment',
   /\.wz-rhizome-field\[data-flash='true'\] \.wz-rhizome-seg\{ stroke:var\(--brass\)/.test(css), 'brass');
-ok('R5: lapPlan(1) replays from lap 0\'s survivor',
-  E.lapPlan(geo, 'page-r5', 1).firstCount === E.SURVIVOR_STEPS
-    || E.lapPlan(geo, 'page-r5', 1).firstCount === 1,
+ok('R5: lapPlan(0) is the centred spread and lapPlan(1) keeps one root',
+  E.lapPlan(geo, 'page-r5', 0).firstCount === 1
+    && Math.hypot(E.lapPlan(geo, 'page-r5', 0).segments[0].x1 - geo.origin.x, E.lapPlan(geo, 'page-r5', 0).segments[0].y1 - geo.origin.y) < 2
+    && E.lapPlan(geo, 'page-r5', 1).firstCount === E.SURVIVOR_STEPS,
   String(E.lapPlan(geo, 'page-r5', 1).firstCount));
-ok('R5: a new lap at fraction 0 shows only the survivor',
-  E.segmentsFor(lap1, 0) === lap1.firstCount, String(E.segmentsFor(lap1, 0)));
+ok('R5: a freshly opened page draws the goal in progress as the centred spread',
+  /opened\.current = \{ key: openKey, lap \}/.test(fieldSrc) && /shownVisit/.test(fieldSrc), 'visit');
+ok('R5: a new lap at fraction 0 shows only the one root segment',
+  E.segmentsFor(lap1, 0) === lap1.firstCount && lap1.firstCount === surv.length, String(E.segmentsFor(lap1, 0)));
 
 // ---- R6 determinism / memo / field ambient --------------------------------------
 const replay = E.planLap(geo, seed0, null);
@@ -328,11 +365,14 @@ if (!process.argv.includes('--mutants')) {
 
 const mutants = [
   {
-    name: 'M1 FULL_COVER lowered',
-    mutate: swap('FULL_COVER = 0.86', 'FULL_COVER = 0.2'),
+    name: 'M1 LONG_EXTRA cut',
+    mutate: swap('LONG_EXTRA = 128', 'LONG_EXTRA = 2'),
     red: (m) => {
       const p = m.planLap(geo, m.hashSeed('page:sess:24:lines:0'), null);
-      return p.coverAt[p.coverAt.length - 1] / p.visibleCells < 0.5;
+      const ox = geo.origin.x, oy = geo.origin.y;
+      let far = 0;
+      for (const s of p.segments) far = Math.max(far, Math.hypot(s.x2 - ox, s.y2 - oy));
+      return far < 700;
     },
   },
   {
@@ -357,15 +397,15 @@ const mutants = [
       if (!t.includes(from)) throw new Error('mutation anchor missing: inStage');
       return t.replace(from, 'return x >= EDGE_PAD && y >= EDGE_PAD && x <= geo.width - EDGE_PAD && y <= geo.height - EDGE_PAD && !isHidden(geo, x, y);');
     },
-    red: (m) => m.planLap(geo, m.hashSeed('page:sess:24:lines:0'), null).segments.every(s => s.visible),
+    red: (m) => m.planLap(geo, m.hashSeed('page:sess:24:lines:0'), null).segments.filter(s => s.visible).length < 8,
   },
   {
-    name: 'M6 SURVIVOR_STEPS cut to 1',
-    mutate: swap('SURVIVOR_STEPS = 7', 'SURVIVOR_STEPS = 1'),
+    name: 'M6 SURVIVOR_STEPS lengthened',
+    mutate: swap('SURVIVOR_STEPS = 1', 'SURVIVOR_STEPS = 4'),
     red: (m) => {
       const p = m.planLap(geo, m.hashSeed('page:sess:24:lines:0'), null);
       const s = m.pickSurvivor(p, m.hashSeed('page:sess:24:lines:0:survivor'));
-      return !s || s.length !== 7;
+      return !s || s.length !== 1;
     },
   },
   {

@@ -2,16 +2,16 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useWritingSettings } from '../store/writingSettings';
 import { useWritingGoal, goalCount } from '../store/writingGoal';
 import { useTheme } from '../store/theme';
-import { lapPlan, segmentsFor, geometryKey, type GrowthGeometry, type GrowthSegment, type Rect } from '../store/rhizomeGrowth';
+import { lapPlan, segmentsFor, geometryKey, pickSurvivor, hashSeed, type GrowthGeometry, type GrowthSegment, type Rect } from '../store/rhizomeGrowth';
 
 // THE GOAL RHIZOME (rewritten by Fable, 2026-10-08; growth model in store/rhizomeGrowth.ts).
 //
 // What the writer sees:
-//   - A root network in the dark ground around the page that fills as they approach their goal (words or lines, whatever
-//     they set). Half the goal, about half the ground; the goal, the ground is full.
+//   - A weed in the dark ground around the page. The goal in progress when the page is opened sprouts at the centre and
+//     the shoots wander out in a spread of directions; some run longer than others. It does not carpet the ground.
 //   - Every new piece grows OUT of an existing stem, and draws itself on along its length (the "growing" animation).
-//   - At the goal the whole network flashes brass, then clears, leaving one short root (drawn heavier). The next lap grows
-//     from that root.
+//   - At the goal the whole network flashes brass, then the finished plant fades out and leaves its seed: one root
+//     segment, from which the next rhizome branches. One of those branches heads back toward the page.
 //   - Roots grow BEHIND the page, right up to its edge, and are never drawn over it. They also never paint on the rail,
 //     the strip, the header or an open menu (clip + mask). They pass under the page (unpainted) to reach the other margin.
 //
@@ -22,7 +22,7 @@ const SESSION_START = Date.now(); // the pattern is session-scoped (M2 S2)
 const FLASH_MS = 1200;   // the brass reward
 // Nick (2026-10-10): "a bit brighter and fade back out slower" - after the hold the brass network FADES over FADE_MS instead of
 // cutting. Under reduced motion there is no fade: the hold stays and the lap clears at its end.
-const FADE_MS = 1500;
+const FADE_MS = 2200;
 const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PAGE_CLEAR = 0;    // no clear band: roots grow behind the page, right up to its edge, never over it
 const DRAW_MS = 360;     // one segment drawing itself on
@@ -86,7 +86,7 @@ function measure(svg: SVGSVGElement, paper: HTMLElement): Measured | null {
       width: stage.width,
       height: stage.height,
       hidden: [kept, ...stable],
-      origin: { x: (p.left + p.right) / 2 - stage.left, y: p.bottom - stage.top + PAGE_CLEAR + 12 },
+      origin: { x: (p.left + p.right) / 2 - stage.left, y: (p.top + p.bottom) / 2 - stage.top },
     },
     // Paint holes: the same, plus whatever menu is open right now.
     holes: [kept, ...stable, ...rectsInStage(LIVE_CHROME, stage)],
@@ -139,6 +139,11 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const frac = n > 0 ? (count % n) / n : 0;
   const goalKey = goal ? `${goal.n}:${goal.unit}` : 'none';
   const pageSeed = `${seedKey}:${SESSION_START}:${goalKey}`;
+  // The goal already in progress when this page is opened is drawn as the centred spread. Goals reached after that
+  // open branch from the one root segment the last one left behind. Navigating to another page starts its own centred spread.
+  const openKey = `${seedKey}|${goalKey}`;
+  const opened = useRef<{ key: string; lap: number }>({ key: '', lap: 0 });
+  if (opened.current.key !== openKey) opened.current = { key: openKey, lap };
 
   const svgRef = useRef<SVGSVGElement>(null);
   const [m, setM] = useState<Measured | null>(null);
@@ -171,7 +176,8 @@ export function RhizomeField({ text, seedKey, paperRef }: {
     return () => { if (raf) cancelAnimationFrame(raf); clearTimeout(settle); ro?.disconnect(); mo.disconnect(); };
   }, [active, paperRef, sync, seedKey]);
 
-  // Crossing the goal: hold the finished lap whole and brass for FLASH_MS, then show the new lap (its survivor first).
+  // Crossing the goal: hold the finished lap whole and brass for FLASH_MS, then fade that plant out. The seed root
+  // stays on screen through the fade; the next lap is that same segment.
   const countKey = `${seedKey}|${goalKey}`;
   useEffect(() => {
     const prev = prevCount.current;
@@ -197,7 +203,8 @@ export function RhizomeField({ text, seedKey, paperRef }: {
 
   // What to draw. During the flash: the finished lap, whole. Otherwise: the current lap up to the goal fraction.
   const shownLap = flashLap ?? lap;
-  const plan = useMemo(() => (m ? lapPlan(m.geo, pageSeed, shownLap) : null), [m, pageSeed, shownLap]);
+  const shownVisit = Math.max(0, shownLap - opened.current.lap);
+  const plan = useMemo(() => (m ? lapPlan(m.geo, pageSeed, shownVisit) : null), [m, pageSeed, shownVisit]);
   const k = plan ? (flashLap != null ? plan.segments.length : segmentsFor(plan, frac)) : 0;
 
   // Which segments are still GROWING. A segment that appears gets its own start time (staggered within its burst) and stays
@@ -225,6 +232,12 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   for (const [id, b] of born) if (b.until < now) born.delete(id);
   const animated = segs.filter(s => born.has(s.id));
   const settled = animated.length ? segs.filter(s => !born.has(s.id)) : segs;
+  // While the finished plant fades, the one root the next lap will grow from stays put. It is the same segment
+  // lapPlan will draw first on the following visit, so the handoff does not cut.
+  const seedRoot = flashFading && plan ? pickSurvivor(plan, hashSeed(`${pageSeed}:survivor:${shownVisit}`)) : null;
+  const isSeed = (s: GrowthSegment) => !!seedRoot && seedRoot.some(r => r.x1 === s.x1 && r.y1 === s.y1 && r.x2 === s.x2 && r.y2 === s.y2);
+  const fadingSettled = seedRoot ? settled.filter(s => !isSeed(s)) : settled;
+  const seedSettled = seedRoot ? settled.filter(isSeed) : [];
 
   if (!active) return null;
 
@@ -259,8 +272,9 @@ export function RhizomeField({ text, seedKey, paperRef }: {
         </>
       )}
       <g clipPath={m ? 'url(#wz-rhizome-ground)' : undefined} mask={m ? 'url(#wz-rhizome-mask)' : undefined}>
-        <path className="wz-rhizome-seg" d={pathOf(settled, false)} />
-        <path className="wz-rhizome-seg" data-thick="true" d={pathOf(settled, true)} />
+        <path className="wz-rhizome-seg" d={pathOf(fadingSettled, false)} />
+        <path className="wz-rhizome-seg" data-thick="true" d={pathOf(fadingSettled, true)} />
+        {seedSettled.length > 0 && <path className="wz-rhizome-seg" data-thick="true" data-seed="true" d={pathOf(seedSettled, true)} />}
         {animated.map(s => (
           <line
             key={`${drawKey}:${s.id}`}
