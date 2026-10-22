@@ -208,8 +208,15 @@ await withHarness(async (app) => {
     ok('S2 [successor]: "don\'t offer again" withdraws the invitation at once — the prompt disappears and the pref (at its CURRENTLY-EFFECTIVE key) becomes "never"',
       immediate.prompt === false && immediate.prefAtKey === 'never', JSON.stringify(immediate));
     if (process.env.HARNESS_PARKED === '1') {
-      pok('PARKED (was "S2: don\'t offer again withdraws... pref becomes never" via the bare key) - the write ALWAYS lands correctly (prefAtKey is "never"); the bare key itself is either ALSO "never" (signed out - the original claim literally still holds) or UNCHANGED from its pre-click seed, "on" (signed in - the click correctly wrote the scoped key instead and never touched the bare one)',
-        immediate.prefAtKey === 'never' && (immediate.pref === 'never' || immediate.pref === 'on'), JSON.stringify(immediate));
+      // Fable's review (ledger 124): accept null as "nothing to migrate" - a signed-in session
+      // can have the bare key already consumed by migrateToScopedKey() (readPref()'s own
+      // subscription-triggered re-run, sometime before this click) before this read even fires.
+      // Still narrow: anything other than 'never'/'on'/null stays rejected (matches fx16.mjs's
+      // own Case 2/3 parks and sprout-invite-scope.mjs's own fixed E4 park); a genuinely stuck,
+      // unmigrated value cannot slip through - proven by sprout-invite-scope-logic.mjs's own S2
+      // mutant ("migrateToScopedKey is a complete no-op"), which exercises this exact code path.
+      pok('PARKED (was "S2: don\'t offer again withdraws... pref becomes never" via the bare key) - the write ALWAYS lands correctly (prefAtKey is "never"); the bare key itself is either ALSO "never" (signed out - the original claim literally still holds), UNCHANGED from its pre-click seed, "on" (signed in, not yet migrated), or already consumed to null (signed in, migrated already)',
+        immediate.prefAtKey === 'never' && (immediate.pref === 'never' || immediate.pref === 'on' || immediate.pref == null), JSON.stringify(immediate));
     }
 
     // Reload (NOT freshDesk — the pref must survive) and re-open the same empty
@@ -235,8 +242,9 @@ await withHarness(async (app) => {
     ok('S2 [successor]: the withdrawal PERSISTS — after a reload the empty page still renders no invitation, and the pref (at its CURRENTLY-EFFECTIVE key) is still "never"',
       afterReload.prompt === false && afterReload.invite === false && afterReload.prefAtKey === 'never', JSON.stringify(afterReload));
     if (process.env.HARNESS_PARKED === '1') {
-      pok('PARKED (was "S2: the withdrawal PERSISTS... pref is still never" via the bare key) - the write ALWAYS persists correctly (prefAtKey is "never" after a reload too); the bare key itself is either ALSO "never" (signed out) or still UNCHANGED, "on" (signed in - never touched by this ticket\'s scoped write)',
-        afterReload.prefAtKey === 'never' && (afterReload.pref === 'never' || afterReload.pref === 'on'), JSON.stringify(afterReload));
+      // Same null-acceptance reasoning as the pok() above.
+      pok('PARKED (was "S2: the withdrawal PERSISTS... pref is still never" via the bare key) - the write ALWAYS persists correctly (prefAtKey is "never" after a reload too); the bare key itself is either ALSO "never" (signed out), still UNCHANGED "on" (signed in, not yet migrated), or already consumed to null (signed in, migrated already)',
+        afterReload.prefAtKey === 'never' && (afterReload.pref === 'never' || afterReload.pref === 'on' || afterReload.pref == null), JSON.stringify(afterReload));
     }
   }
 
