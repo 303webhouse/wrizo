@@ -59,8 +59,11 @@ export function GraftPicker({ subject, boxes, anchor, cameFrom, onClose, beforeP
   const cameChecked = cameFrom ? isGrafted(subject, { entryId: cameFrom.entryId }, boxes) : false;
   const groups: Array<[GraftRow['group'], GraftRow[], string]> = [['Cards', res.Cards, t('graftGroupCards')], ['Pages', res.Pages, t('graftGroupPages')], ['Boards', res.Boards, t('graftGroupBoards')]];
 
+  // `wz-tutor-zone` (ledger 131): the picker is portalled to <body>, so without the drawer's own marker class a keystroke in its search reads to
+  // the Tutor drawer as "the writer resumed writing" and CLOSES the Grafts panel under it. With the marker it is part of the drawer's zone - the
+  // mechanism Tutor.tsx's keydown listener already uses for both of its anchors.
   return createPortal(
-    <div ref={boxRef} className="wz-graft-picker" data-graft-picker="" role="dialog" aria-label={t('graftAdd')}
+    <div ref={boxRef} className="wz-graft-picker wz-tutor-zone" data-graft-picker="" role="dialog" aria-label={t('graftAdd')}
       style={pos ? { left: pos.left, top: pos.top } : { visibility: 'hidden' }}>
       <div className="wz-graft-picker-h">{t('graftAdd')}</div>
       <input ref={inputRef} className="wz-graft-search" data-graft-search="" type="search" placeholder={t('graftSearch')} aria-label={t('graftSearch')}
