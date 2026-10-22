@@ -18,7 +18,7 @@ import { useAmbianceDial, setAmbianceDial } from '../store/ambianceDial';
 import { FirstRunVeil } from './FirstRunGate';
 import { usePageDress, dressVars } from '../store/pageDress';
 import { setCaretOffset } from '../store/caretOffset';
-import { editorPlainText } from '../store/lineRows';
+import { editorPlainText, rowsFor, rowsOffsetOf } from '../store/lineRows';
 
 const ASSIST_INTRO_KEY = 'wrizo-assist-introduced';      // first pop-out fired (once)
 const ASSIST_COLLAPSED_KEY = 'wrizo-assist-collapsed';   // persisted panel state
@@ -393,19 +393,44 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   const elapsedClock = `${Math.floor(es / 60)}:${String(es % 60).padStart(2, '0')}`;
 
   const focusEditor = () => (scrollRef.current?.querySelector('.forward-only-editor') as HTMLElement | null)?.focus();
-  // BLANK-PAGE CLICK (Fable, Oct 22; ledger 134 - "just let me write"): a press on the PAPER (the scroller, outside the text) puts the caret at the
-  // END of the text. A bare focus() left a Draft page's caret at the START, so the next letter landed before the first word (Free Write was spared
-  // only by its forward lock). A press ON the text is the browser's own (never moved); a press on a control keeps exactly the old plain focus.
-  // The end is the editor's own (editorPlainText: the rows shadow, the EOF guard removed) and is set by its own setCaretOffset on the NEXT frame -
-  // the editor's own placement on focus lands after a synchronous set and would overwrite it (PageEditor's onReachName, measured, same law).
+  // BLANK-PAGE CLICK (Fable, Oct 22; ledger 134 and her correction on 0e713e7a - "just let me write"). A press on the PAPER, off the text:
+  //   - BELOW the last line (or on an empty page)  -> the caret at the END of the text;
+  //   - BESIDE a line (a side margin, or the page's top padding) -> the NEAREST SPOT ON THAT LINE, by the browser's own caret-from-point at the
+  //     press, clamped into the editor's box - never the end of the document;
+  //   - ON the text -> the browser's own, never touched.
+  // Why here: a bare focus() left a Draft page's caret at the START (Free Write was spared only by its forward lock). This handler sits on the
+  // PAPER (.mode-page), not the scroller, because the paper's LEFT margin is .mode-page's padding, outside the scroller. A press on a control keeps
+  // exactly what it did before (inside the scroller a plain focus, outside it nothing), and so does a press on any other element of the page.
+  // The point is read at PRESS time (before focus can scroll a typewriter page) and turned into the editor's own plain offset (rowsOffsetOf), so a
+  // re-render on focus cannot detach it; it is applied by the editor's own setCaretOffset on the NEXT frame, because the editor's own placement on
+  // focus lands after a synchronous set and would overwrite it (PageEditor's onReachName, measured). If the browser cannot resolve the point, the
+  // press is a plain focus - never the end.
   const onPaperPress = (e: React.MouseEvent<HTMLDivElement>) => {
-    const ed = scrollRef.current?.querySelector('.forward-only-editor') as HTMLElement | null;
-    if (!ed) return;
+    const scroll = scrollRef.current;
+    const ed = scroll?.querySelector('.forward-only-editor') as HTMLElement | null;
+    if (!scroll || !ed) return;
     const target = e.target as HTMLElement | null;
     if (target && ed.contains(target)) return;
-    if (target?.closest?.('button, a, input, textarea, select, [role="button"], [role="option"]')) { focusEditor(); return; }
+    const inScroll = !!target && scroll.contains(target);
+    if (target?.closest?.('button, a, input, textarea, select, [role="button"], [role="option"]')) { if (inScroll) focusEditor(); return; }
+    if (!inScroll && target !== e.currentTarget) return;
+    const rows = [...ed.querySelectorAll<HTMLElement>('.wz-row')].filter(r => r.getBoundingClientRect().height > 0);
+    const lastBottom = rows.length ? rows[rows.length - 1].getBoundingClientRect().bottom : -Infinity;
+    let offset: number | null;
+    if (!rows.length || e.clientY > lastBottom) offset = editorPlainText(ed).length;
+    else {
+      const er = ed.getBoundingClientRect();
+      const firstTop = rows[0].getBoundingClientRect().top;
+      const x = Math.min(Math.max(e.clientX, er.left + 1), er.right - 1);
+      const y = Math.min(Math.max(e.clientY, firstTop + 1), lastBottom - 1);
+      const fromPoint = (document as unknown as { caretRangeFromPoint?: (x: number, y: number) => Range | null }).caretRangeFromPoint;
+      let range: Range | null = null;
+      try { range = fromPoint ? fromPoint.call(document, x, y) : null; } catch { range = null; }
+      const R = rowsFor(ed);
+      offset = range && R && ed.contains(range.startContainer) ? rowsOffsetOf(R, range.startContainer, range.startOffset) : null;
+    }
     ed.focus();
-    requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, editorPlainText(ed).length); });
+    if (offset != null) { const at = offset; requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, at); }); }
   };
   const exec = (cmd: string) => { focusEditor(); try { document.execCommand(cmd, false); } catch { /* execCommand unsupported */ } };
   const choosePen = (ink: string) => { setPen(ink); focusEditor(); };
@@ -576,6 +601,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
                so index.css's own values govern and the sheet renders exactly as
                it did before M3. */
             style={dressVars(pageDress)}
+            onClick={onPaperPress}
           >
             <div
               aria-hidden="true"
@@ -587,7 +613,6 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
               ref={scrollRef}
               className="mode-scroll"
               data-typewriter={typewriterOn ? 'true' : 'false'}
-              onClick={onPaperPress}
             >
               {children({ noteWrite, penColor: rail.tools === 'pen' ? effectivePenInk(penColorProp ?? pen, penTheme, penPageTone) : undefined })}
             </div>
