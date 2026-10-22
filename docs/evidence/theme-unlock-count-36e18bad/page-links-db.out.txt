@@ -1,0 +1,107 @@
+The files belonging to this database system will be owned by user "nickh".
+This user must also own the server process.
+
+
+The database cluster will be initialized with this locale configuration:
+  locale provider:   libc
+  LC_COLLATE:  English_United States.1252
+  LC_CTYPE:    English_United States.1252
+  LC_MESSAGES: C
+  LC_MONETARY: English_United States.1252
+  LC_NUMERIC:  English_United States.1252
+  LC_TIME:     English_United States.1252
+The default database encoding has accordingly been set to "WIN1252".
+The default text search configuration will be set to "english".
+
+Data page checksums are enabled.
+
+
+
+creating directory C:/Users/nickh/AppData/Local/Temp/plinks-pg-GRZagv/data ... 
+ok
+
+creating subdirectories ... 
+ok
+
+selecting dynamic shared memory implementation ... windows
+selecting default "max_connections" ... 
+100
+selecting default "shared_buffers" ... 
+128MB
+selecting default time zone ... 
+America/Denver
+creating configuration files ...
+ 
+ok
+running bootstrap script ... 
+ok
+
+performing post-bootstrap initialization ... 
+ok
+syncing data to disk ... 
+ok
+
+
+Success. You can now start the database server using:
+
+    ^"C^:^\Users^\nickh^\wrizo^-read^\node^_modules^\^.pnpm^\^@embedded^-postgres^+windows^-x64^@18^.4^.0^-beta^.17^\node^_modules^\^@embedded^-postgres^\windows^-x64^\native^\bin^\pg^_ctl^" -D ^"C^:^\Users^\nickh^\AppData^\Local^\Temp^\plinks^-pg^-GRZagv^\data^" -l logfile start
+
+
+2026-10-21 18:53:01.663 MDT [60372] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-21 18:53:01.667 MDT [60372] LOG:  listening on IPv6 address "::1", port 61449
+
+2026-10-21 18:53:01.667 MDT [60372] LOG:  listening on IPv4 address "127.0.0.1", port 61449
+
+2026-10-21 18:53:01.731 MDT [47556] LOG:  database system was shut down at 2026-10-21 18:52:59 MDT
+
+2026-10-21 18:53:01.739 MDT [60372] LOG:  database system is ready to accept connections
+
+[migrate] applied 001_init.sql
+PASS D1: the column is jsonb with default '[]'  {"data_type":"jsonb","column_default":"'[]'::jsonb"}
+PASS D2: an EXISTING row (one that predates the column) reads back as an empty array after the migration - metadata-only default, no backfill  {"page_links":[]}
+PASS D1: running the migration again changes nothing (idempotent): exactly one page_links column  1
+PASS D3 (the server's own code)  [{"aBoxId":"c1","aEntryId":"e1","bEntryId":"p1","createdAt":"2026-10-01T00:00:02.000Z","id":"L1","updatedAt":"2026-10-01T00:00:02.000Z"},{"aBoxId":"c2","aEntryId":"e1","bEntryId":"p2","createdAt":"2026-10-01T00:00:03.000Z","deletedAt":"2026-10-01T00:00:04.000Z","id":"L2","updatedAt":"2026-10-01T00:00:03.000Z"}]
+PASS D4 (the server's own code)  {"links":[{"aBoxId":"c1","aEntryId":"e1","bEntryId":"p1","createdAt":"2026-10-01T00:00:02.000Z","id":"L1","updatedAt":"2026-10-01T00:00:02.000Z"},{"aBoxId":"c2","aEntryId":"e1","bEntryId":"p2","createdAt":"2026-10-01T00:00:03.000Z","deletedAt":"2026-10-01T00:00:04.000Z","id":"L2","updatedAt":"2026-10-01T00:00:03.000Z"}],"text":"edited by an OLD client"}
+PASS D5 (the server's own code)  []
+PASS D6 (the server's own code)  [{"aBoxId":"c1","aEntryId":"e1","bEntryId":"p1","createdAt":"2026-10-01T00:00:02.000Z","id":"L1","updatedAt":"2026-10-01T00:00:02.000Z"}]
+PASS D7 (the server's own code)  {"text":"x"}
+PASS D8 (the server's own code)  undefined
+PASS D9 (the server's own code)  null
+PASS MUTANT "the guard is the plain "page_links = excluded.page_links"": the edit landed and turns D4 RED  {"landed":true,"red":["D4"]}
+2026-10-21 18:53:03.499 MDT [41888] ERROR:  bind message supplies 24 parameters, but prepared statement "" requires 25
+2026-10-21 18:53:03.499 MDT [41888] STATEMENT:  insert into journal_entries
+	           (id, user_id, project_id, text, session_id, starred, source, shelved, beat_id, page_type,
+	            order_index, imported_at, boxes, script, origin, tutor, tags, routed_project_ids, strokes, deleted_at, created_at, updated_at, plan_board_id, page_settings, page_links)
+	         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb,$15,$16::jsonb,$17::jsonb,$18::jsonb,$19::jsonb,$20,$21,$22,$23,$24::jsonb,$25::jsonb)
+	         on conflict (id) do update set
+	           project_id = excluded.project_id, text = excluded.text, session_id = excluded.session_id,
+	           starred = excluded.starred, source = excluded.source, shelved = excluded.shelved,
+	           beat_id = excluded.beat_id, page_type = excluded.page_type, order_index = excluded.order_index,
+	           imported_at = excluded.imported_at, boxes = excluded.boxes, script = excluded.script,
+	           origin = excluded.origin, tutor = excluded.tutor, tags = excluded.tags, routed_project_ids = excluded.routed_project_ids,
+	           strokes = excluded.strokes, deleted_at = excluded.deleted_at, updated_at = excluded.updated_at,
+	           plan_board_id = excluded.plan_board_id,
+	           /* ITEM 83 M2 (R6) � the page's own sheet dress, riding the same
+	              last-writer-wins guard (the updated_at comparison below) as
+	              every column above it. No special-casing: dress is page data. */
+	           page_settings = excluded.page_settings,
+	           /* CONNECTOR-B - THE OLD-CLIENT GUARD (Fable, Oct 14, verbatim). Every other column is "col = excluded.col". An OLD client - one that has never heard of
+	              pageLinks - pushes an edited entry with the field ABSENT, which arrives here as $25 = 'null': a plain "page_links = excluded.page_links" would WIPE the
+	              stored links the moment that client edits the page. So a sender that does not speak page_links (null / jsonb null) keeps what is stored; a sender that
+	              does speak it sends the new WHOLE value ([] clears). Last-writer-wins by updated_at, like boxes: the whole array is replaced; two writers editing
+	              different links on one entry inside one sync window do not merge. */
+	           page_links = case
+	             when excluded.page_links is null or excluded.page_links = 'null'::jsonb then journal_entries.page_links
+	             else excluded.page_links
+	           end,
+	           synced_at = now()
+	         where journal_entries.user_id = excluded.user_id
+	           and excluded.updated_at > journal_entries.updated_at
+	           and journal_entries.purged_at is null
+
+[sync] code=08P01 kind=journal_entry id=m2-e1
+PASS MUTANT "the parameter is dropped (the field never reaches the row: the bind fails or the links are lost)": the edit landed and turns D3 RED  {"landed":true,"red":["THREW: TypeError: Cannot read properties of undefined (reading 'id')"]}
+PASS MUTANT "the read mapper is dropped (the field never comes back)": the edit landed and turns D3 RED  {"landed":true,"red":["D3"]}
+
+PAGE-LINKS-DB VERIFY: PASS (13 checks)

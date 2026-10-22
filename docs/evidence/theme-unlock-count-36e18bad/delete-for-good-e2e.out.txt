@@ -1,0 +1,254 @@
+The files belonging to this database system will be owned by user "nickh".
+This user must also own the server process.
+
+
+The database cluster will be initialized with this locale configuration:
+  locale provider:   libc
+  LC_COLLATE:  English_United States.1252
+  LC_CTYPE:    English_United States.1252
+  LC_MESSAGES: C
+  LC_MONETARY: English_United States.1252
+  LC_NUMERIC:  English_United States.1252
+  LC_TIME:     English_United States.1252
+The default database encoding has accordingly been set to "WIN1252".
+The default text search configuration will be set to "english".
+
+Data page checksums are enabled.
+
+
+creating directory C:/Users/nickh/AppData/Local/Temp/dfg-pg-OOGqSH/data ... 
+ok
+
+creating subdirectories ... 
+ok
+
+selecting dynamic shared memory implementation ... windows
+selecting default "max_connections" ... 
+100
+selecting default "shared_buffers" ... 
+128MB
+selecting default time zone ... 
+America/Denver
+creating configuration files ... 
+ok
+running bootstrap script ... 
+ok
+
+performing post-bootstrap initialization ... 
+ok
+syncing data to disk ... 
+ok
+
+
+Success. You can now start the database server using:
+
+    ^"C^:^\Users^\nickh^\wrizo^-read^\node^_modules^\^.pnpm^\^@embedded^-postgres^+windows^-x64^@18^.4^.0^-beta^.17^\node^_modules^\^@embedded^-postgres^\windows^-x64^\native^\bin^\pg^_ctl^" -D ^"C^:^\Users^\nickh^\AppData^\Local^\Temp^\dfg^-pg^-OOGqSH^\data^" -l logfile start
+
+
+2026-10-21 18:52:32.517 MDT [44752] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-21 18:52:32.521 MDT [44752] LOG:  listening on IPv6 address "::1", port 61335
+
+2026-10-21 18:52:32.521 MDT [44752] LOG:  listening on IPv4 address "127.0.0.1", port 61335
+
+2026-10-21 18:52:32.586 MDT [9724] LOG:  database system was shut down at 2026-10-21 18:52:30 MDT
+
+2026-10-21 18:52:32.597 MDT [44752] LOG:  database system is ready to accept connections
+
+PASS  E1: device A writes a page and device B pulls it  ["the words that must go"]
+PASS  E2: B edits it offline with a fast clock - the edit is dirty and stamped later than anything else  [{"projects":[],"storyPlans":[],"sessions":[],"drafts":[],"journalEntries":["mvittw19i5hmaahbt"],"drawers":[]}]
+PASS  E4: A deletes it for good: the server holds a SHELL - purged_at set, every content column cleared  [{"purged":{"done":true},"server":{"purged_at":"2026-10-22T00:52:37.194Z","text":"","boxes":null},"aState":{"live":false,"inTrash":false,"stored":{"id":"mvittw19i5hmaahbt","createdAt":"2026-10-22T00:52:37.100Z","updatedAt":"2026-10-22T00:52:37.190Z","deletedAt":"2026-10-22T00:52:37.189Z","purgedAt":"2026-10-22T00:52:37.189Z","text":""},"dirty":{"projects":[],"storyPlans":[],"sessions":[],"drafts":[],"journalEntries":[],"drawers":[]},"wire":[{"pushed":{"journalEntries":["mvittw19i5hmaahbt"]}},{"pu]
+PASS  E5: B syncs: its push (fast clock and all) is REFUSED and ACKNOWLEDGED, never rejected; the server row is still the shell; B now holds the shell and its dirty flag is clear  [{"pushedIt":true,"acked":true,"rejected":false,"serverText":"","bLive":false,"mark":2,"since":1,"last":{"pushed":{"journalEntries":["mvittw19i5hmaahbt"]},"ack":{"journalEntries":["mvittw19i5hmaahbt"]}}}]
+PASS  E6: after the acknowledgement B syncs twice more and never pushes the page again - it stopped retrying  [{"before":2,"after":2}]
+PASS  E7: a third device, signing in fresh, never lists the page - not live, not in Trash  [{"id":"mvittw19i5hmaahbt","text":"","projectId":null,"shelved":false,"deletedAt":"2026-10-22T00:52:37.189Z","purgedAt":"2026-10-22T00:52:37.194Z","createdAt":"2026-10-22T00:52:37.100Z","updatedAt":"2026-10-22T00:52:37.190Z"}]
+PASS  E8: the server clears content ITSELF: a purge pushed WITH words and boxes stores none of them  [{"text":"","boxes":null}]
+PASS  E9: a purged binder: its row a shell (title cleared), its scratch draft emptied, its session row kept with no binder pointer (Q2)  [{"p9":{"title":"","purged_at":"2026-10-22T00:52:37.962Z"},"d9":"","s9":{"project_id":null}}]
+PASS  E10: another account pushing a purge for this page's id changes nothing  [{"text":"nobody else can delete me","purged_at":null}]
+PASS  E12: connector-b's page_links: a purge tombstones the link another page holds to it - on the SERVER and on device B - and the purged row keeps no links of its own  [{"bBefore":true,"before":[{"id":"mvittx3fvgp37uc86","aEntryId":"mvittx3e423mrjh0p","bEntryId":"mvittx3furmijp8gt","createdAt":"2026-10-22T00:52:38.475Z","updatedAt":"2026-10-22T00:52:38.475Z"}],"purgedRowLinks":null,"serverRec":{"id":"mvittx3fllpky3071","aEntryId":"mvittx3f8kmr9uzy7","bEntryId":"mvittx3e423mrjh0p","createdAt":"2026-10-22T00:52:38.475Z","deletedAt":"2026-10-22T00:52:38.491Z","updatedAt":"2026-10-22T00:52:38.491Z"},"bAfter":{"id":"mvittx3fllpky3071","aEntryId":"mvittx3f8kmr9uzy7",]
+2026-10-21 18:52:38.509 MDT [7692] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-10-21 18:52:38.509 MDT [32332] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+
+2026-10-21 18:52:39.648 MDT [44632] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+
+PASS  E11: the migration is idempotent - after a second boot each of the four tables has exactly ONE purged_at column  [[{"table_name":"drawers","n":1},{"table_name":"journal_entries","n":1},{"table_name":"projects","n":1},{"table_name":"story_plans","n":1}]]
+2026-10-21 18:52:43.782 MDT [52740] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-10-21 18:52:43.782 MDT [55508] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+
+2026-10-21 18:52:47.596 MDT [56980] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-10-21 18:52:47.597 MDT [31996] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+
+2026-10-21 18:52:50.111 MDT [53084] ERROR:  null value in column "text" of relation "journal_entries" violates not-null constraint
+2026-10-21 18:52:50.111 MDT [53084] DETAIL:  Failing row contains (mvitu5yfrqfood29t, 6ad3c175-ab5b-43de-bd90-12d02c456fab, null, null, null, null, null, f, null, null, null, null, 2026-10-21 18:52:49.995-06, 2026-10-21 18:52:49.959-06, 2026-10-21 18:52:49.996-06, null, null, null, null, null, null, null, null, null, [], 2026-10-21 18:52:50.107995-06, 2026-10-21 18:52:50.107995-06).
+2026-10-21 18:52:50.111 MDT [53084] STATEMENT:  insert into journal_entries (id, user_id, text, deleted_at, purged_at, created_at, updated_at)
+	       values ($1,$2,$3,coalesce($4::timestamptz, now()),now(),$5,$6)
+	       on conflict (id) do update set
+	         text = $3, project_id = null, session_id = null, starred = null, source = null, beat_id = null, page_type = null,
+	         order_index = null, imported_at = null, boxes = null, script = null, origin = null, tutor = null, tags = null,
+	         routed_project_ids = null, strokes = null, plan_board_id = null, page_settings = null, page_links = null,
+	         deleted_at = coalesce(journal_entries.deleted_at, excluded.deleted_at), purged_at = coalesce(journal_entries.purged_at, now()),
+	         updated_at = greatest(journal_entries.updated_at, excluded.updated_at), synced_at = now()
+	       where journal_entries.user_id = excluded.user_id
+
+2026-10-21 18:52:50.916 MDT [59516] ERROR:  null value in column "text" of relation "journal_entries" violates not-null constraint
+2026-10-21 18:52:50.916 MDT [59516] DETAIL:  Failing row contains (raw-m2, 6ad3c175-ab5b-43de-bd90-12d02c456fab, null, null, null, null, null, f, null, null, null, null, 2026-10-21 18:52:51.913-06, 2026-10-21 18:52:50.908-06, 2026-10-21 18:52:51.913-06, null, null, null, null, null, null, null, null, null, [], 2026-10-21 18:52:50.916256-06, 2026-10-21 18:52:50.916256-06).
+2026-10-21 18:52:50.916 MDT [59516] STATEMENT:  insert into journal_entries (id, user_id, text, deleted_at, purged_at, created_at, updated_at)
+	       values ($1,$2,$3,coalesce($4::timestamptz, now()),now(),$5,$6)
+	       on conflict (id) do update set
+	         text = $3, project_id = null, session_id = null, starred = null, source = null, beat_id = null, page_type = null,
+	         order_index = null, imported_at = null, boxes = null, script = null, origin = null, tutor = null, tags = null,
+	         routed_project_ids = null, strokes = null, plan_board_id = null, page_settings = null, page_links = null,
+	         deleted_at = coalesce(journal_entries.deleted_at, excluded.deleted_at), purged_at = coalesce(journal_entries.purged_at, now()),
+	         updated_at = greatest(journal_entries.updated_at, excluded.updated_at), synced_at = now()
+	       where journal_entries.user_id = excluded.user_id
+
+2026-10-21 18:52:50.971 MDT [12684] ERROR:  null value in column "text" of relation "journal_entries" violates not-null constraint
+2026-10-21 18:52:50.971 MDT [12684] DETAIL:  Failing row contains (mvitu5yfrqfood29t, 6ad3c175-ab5b-43de-bd90-12d02c456fab, null, null, null, null, null, f, null, null, null, null, 2026-10-21 18:52:49.995-06, 2026-10-21 18:52:49.959-06, 2026-10-21 18:52:49.996-06, null, null, null, null, null, null, null, null, null, [], 2026-10-21 18:52:50.970927-06, 2026-10-21 18:52:50.970927-06).
+2026-10-21 18:52:50.971 MDT [12684] STATEMENT:  insert into journal_entries (id, user_id, text, deleted_at, purged_at, created_at, updated_at)
+	       values ($1,$2,$3,coalesce($4::timestamptz, now()),now(),$5,$6)
+	       on conflict (id) do update set
+	         text = $3, project_id = null, session_id = null, starred = null, source = null, beat_id = null, page_type = null,
+	         order_index = null, imported_at = null, boxes = null, script = null, origin = null, tutor = null, tags = null,
+	         routed_project_ids = null, strokes = null, plan_board_id = null, page_settings = null, page_links = null,
+	         deleted_at = coalesce(journal_entries.deleted_at, excluded.deleted_at), purged_at = coalesce(journal_entries.purged_at, now()),
+	         updated_at = greatest(journal_entries.updated_at, excluded.updated_at), synced_at = now()
+	       where journal_entries.user_id = excluded.user_id
+
+2026-10-21 18:52:50.990 MDT [39072] ERROR:  null value in column "title" of relation "projects" violates not-null constraint
+2026-10-21 18:52:50.990 MDT [39072] DETAIL:  Failing row contains (mvitu6qbgep9jscth, 6ad3c175-ab5b-43de-bd90-12d02c456fab, null, creative, null, null, null, null, 2026-10-21 18:52:50.987-06, 2026-10-21 18:52:50.963-06, 2026-10-21 18:52:50.987-06, null, null, null, null, 2026-10-21 18:52:50.990494-06, 2026-10-21 18:52:50.990494-06).
+2026-10-21 18:52:50.990 MDT [39072] STATEMENT:  insert into projects (id, user_id, title, type, deleted_at, purged_at, created_at, updated_at)
+	       values ($1,$2,$3,$4,coalesce($5::timestamptz, now()),now(),$6,$7)
+	       on conflict (id) do update set
+	         title = $3, sprint_text = null, story_plan_id = null, drawer_id = null, kind = null, last_activity_at = null,
+	         last_activity_type = null, last_active_page_id = null, tutor = null,
+	         deleted_at = coalesce(projects.deleted_at, excluded.deleted_at), purged_at = coalesce(projects.purged_at, now()),
+	         updated_at = greatest(projects.updated_at, excluded.updated_at), synced_at = now()
+	       where projects.user_id = excluded.user_id
+
+2026-10-21 18:52:51.035 MDT [22360] ERROR:  null value in column "text" of relation "journal_entries" violates not-null constraint
+2026-10-21 18:52:51.035 MDT [22360] DETAIL:  Failing row contains (mvitu5yfrqfood29t, 6ad3c175-ab5b-43de-bd90-12d02c456fab, null, null, null, null, null, f, null, null, null, null, 2026-10-21 18:52:49.995-06, 2026-10-21 18:52:49.959-06, 2026-10-21 18:52:49.996-06, null, null, null, null, null, null, null, null, null, [], 2026-10-21 18:52:51.034871-06, 2026-10-21 18:52:51.034871-06).
+2026-10-21 18:52:51.035 MDT [22360] STATEMENT:  insert into journal_entries (id, user_id, text, deleted_at, purged_at, created_at, updated_at)
+	       values ($1,$2,$3,coalesce($4::timestamptz, now()),now(),$5,$6)
+	       on conflict (id) do update set
+	         text = $3, project_id = null, session_id = null, starred = null, source = null, beat_id = null, page_type = null,
+	         order_index = null, imported_at = null, boxes = null, script = null, origin = null, tutor = null, tags = null,
+	         routed_project_ids = null, strokes = null, plan_board_id = null, page_settings = null, page_links = null,
+	         deleted_at = coalesce(journal_entries.deleted_at, excluded.deleted_at), purged_at = coalesce(journal_entries.purged_at, now()),
+	         updated_at = greatest(journal_entries.updated_at, excluded.updated_at), synced_at = now()
+	       where journal_entries.user_id = excluded.user_id
+
+2026-10-21 18:52:51.104 MDT [23588] ERROR:  null value in column "title" of relation "projects" violates not-null constraint
+2026-10-21 18:52:51.104 MDT [23588] DETAIL:  Failing row contains (mvitu6qbgep9jscth, 6ad3c175-ab5b-43de-bd90-12d02c456fab, null, creative, null, null, null, null, 2026-10-21 18:52:50.987-06, 2026-10-21 18:52:50.963-06, 2026-10-21 18:52:50.987-06, null, null, null, null, 2026-10-21 18:52:51.104281-06, 2026-10-21 18:52:51.104281-06).
+2026-10-21 18:52:51.104 MDT [23588] STATEMENT:  insert into projects (id, user_id, title, type, deleted_at, purged_at, created_at, updated_at)
+	       values ($1,$2,$3,$4,coalesce($5::timestamptz, now()),now(),$6,$7)
+	       on conflict (id) do update set
+	         title = $3, sprint_text = null, story_plan_id = null, drawer_id = null, kind = null, last_activity_at = null,
+	         last_activity_type = null, last_active_page_id = null, tutor = null,
+	         deleted_at = coalesce(projects.deleted_at, excluded.deleted_at), purged_at = coalesce(projects.purged_at, now()),
+	         updated_at = greatest(projects.updated_at, excluded.updated_at), synced_at = now()
+	       where projects.user_id = excluded.user_id
+
+2026-10-21 18:52:51.148 MDT [35248] ERROR:  null value in column "text" of relation "journal_entries" violates not-null constraint
+2026-10-21 18:52:51.148 MDT [35248] DETAIL:  Failing row contains (mvitu5yfrqfood29t, 6ad3c175-ab5b-43de-bd90-12d02c456fab, null, null, null, null, null, f, null, null, null, null, 2026-10-21 18:52:49.995-06, 2026-10-21 18:52:49.959-06, 2026-10-21 18:52:49.996-06, null, null, null, null, null, null, null, null, null, [], 2026-10-21 18:52:51.147691-06, 2026-10-21 18:52:51.147691-06).
+2026-10-21 18:52:51.148 MDT [35248] STATEMENT:  insert into journal_entries (id, user_id, text, deleted_at, purged_at, created_at, updated_at)
+	       values ($1,$2,$3,coalesce($4::timestamptz, now()),now(),$5,$6)
+	       on conflict (id) do update set
+	         text = $3, project_id = null, session_id = null, starred = null, source = null, beat_id = null, page_type = null,
+	         order_index = null, imported_at = null, boxes = null, script = null, origin = null, tutor = null, tags = null,
+	         routed_project_ids = null, strokes = null, plan_board_id = null, page_settings = null, page_links = null,
+	         deleted_at = coalesce(journal_entries.deleted_at, excluded.deleted_at), purged_at = coalesce(journal_entries.purged_at, now()),
+	         updated_at = greatest(journal_entries.updated_at, excluded.updated_at), synced_at = now()
+	       where journal_entries.user_id = excluded.user_id
+
+2026-10-21 18:52:51.697 MDT [58036] ERROR:  null value in column "text" of relation "journal_entries" violates not-null constraint
+2026-10-21 18:52:51.697 MDT [58036] DETAIL:  Failing row contains (mvitu6u4un2av0him, f21db816-1afa-45a6-bb2a-08c353df25cd, null, null, null, null, null, f, null, null, null, null, 2026-10-21 18:52:56.694-06, 2026-10-21 18:52:56.694-06, 2026-10-21 18:52:56.694-06, null, null, null, null, null, null, null, null, null, [], 2026-10-21 18:52:51.697417-06, 2026-10-21 18:52:51.697417-06).
+2026-10-21 18:52:51.697 MDT [58036] STATEMENT:  insert into journal_entries (id, user_id, text, deleted_at, purged_at, created_at, updated_at)
+	       values ($1,$2,$3,coalesce($4::timestamptz, now()),now(),$5,$6)
+	       on conflict (id) do update set
+	         text = $3, project_id = null, session_id = null, starred = null, source = null, beat_id = null, page_type = null,
+	         order_index = null, imported_at = null, boxes = null, script = null, origin = null, tutor = null, tags = null,
+	         routed_project_ids = null, strokes = null, plan_board_id = null, page_settings = null, page_links = null,
+	         deleted_at = coalesce(journal_entries.deleted_at, excluded.deleted_at), purged_at = coalesce(journal_entries.purged_at, now()),
+	         updated_at = greatest(journal_entries.updated_at, excluded.updated_at), synced_at = now()
+	       where journal_entries.user_id = excluded.user_id
+
+2026-10-21 18:52:51.788 MDT [20768] ERROR:  null value in column "title" of relation "projects" violates not-null constraint
+2026-10-21 18:52:51.788 MDT [20768] DETAIL:  Failing row contains (mvitu6qbgep9jscth, 6ad3c175-ab5b-43de-bd90-12d02c456fab, null, creative, null, null, null, null, 2026-10-21 18:52:50.987-06, 2026-10-21 18:52:50.963-06, 2026-10-21 18:52:50.987-06, null, null, null, null, 2026-10-21 18:52:51.788332-06, 2026-10-21 18:52:51.788332-06).
+2026-10-21 18:52:51.788 MDT [20768] STATEMENT:  insert into projects (id, user_id, title, type, deleted_at, purged_at, created_at, updated_at)
+	       values ($1,$2,$3,$4,coalesce($5::timestamptz, now()),now(),$6,$7)
+	       on conflict (id) do update set
+	         title = $3, sprint_text = null, story_plan_id = null, drawer_id = null, kind = null, last_activity_at = null,
+	         last_activity_type = null, last_active_page_id = null, tutor = null,
+	         deleted_at = coalesce(projects.deleted_at, excluded.deleted_at), purged_at = coalesce(projects.purged_at, now()),
+	         updated_at = greatest(projects.updated_at, excluded.updated_at), synced_at = now()
+	       where projects.user_id = excluded.user_id
+
+2026-10-21 18:52:51.798 MDT [53624] ERROR:  null value in column "text" of relation "journal_entries" violates not-null constraint
+2026-10-21 18:52:51.798 MDT [53624] DETAIL:  Failing row contains (mvitu5yfrqfood29t, 6ad3c175-ab5b-43de-bd90-12d02c456fab, null, null, null, null, null, f, null, null, null, null, 2026-10-21 18:52:49.995-06, 2026-10-21 18:52:49.959-06, 2026-10-21 18:52:49.996-06, null, null, null, null, null, null, null, null, null, [], 2026-10-21 18:52:51.79824-06, 2026-10-21 18:52:51.79824-06).
+2026-10-21 18:52:51.798 MDT [53624] STATEMENT:  insert into journal_entries (id, user_id, text, deleted_at, purged_at, created_at, updated_at)
+	       values ($1,$2,$3,coalesce($4::timestamptz, now()),now(),$5,$6)
+	       on conflict (id) do update set
+	         text = $3, project_id = null, session_id = null, starred = null, source = null, beat_id = null, page_type = null,
+	         order_index = null, imported_at = null, boxes = null, script = null, origin = null, tutor = null, tags = null,
+	         routed_project_ids = null, strokes = null, plan_board_id = null, page_settings = null, page_links = null,
+	         deleted_at = coalesce(journal_entries.deleted_at, excluded.deleted_at), purged_at = coalesce(journal_entries.purged_at, now()),
+	         updated_at = greatest(journal_entries.updated_at, excluded.updated_at), synced_at = now()
+	       where journal_entries.user_id = excluded.user_id
+
+2026-10-21 18:52:51.877 MDT [25112] ERROR:  null value in column "title" of relation "projects" violates not-null constraint
+2026-10-21 18:52:51.877 MDT [25112] DETAIL:  Failing row contains (mvitu6qbgep9jscth, 6ad3c175-ab5b-43de-bd90-12d02c456fab, null, creative, null, null, null, null, 2026-10-21 18:52:50.987-06, 2026-10-21 18:52:50.963-06, 2026-10-21 18:52:50.987-06, null, null, null, null, 2026-10-21 18:52:51.876968-06, 2026-10-21 18:52:51.876968-06).
+2026-10-21 18:52:51.877 MDT [25112] STATEMENT:  insert into projects (id, user_id, title, type, deleted_at, purged_at, created_at, updated_at)
+	       values ($1,$2,$3,$4,coalesce($5::timestamptz, now()),now(),$6,$7)
+	       on conflict (id) do update set
+	         title = $3, sprint_text = null, story_plan_id = null, drawer_id = null, kind = null, last_activity_at = null,
+	         last_activity_type = null, last_active_page_id = null, tutor = null,
+	         deleted_at = coalesce(projects.deleted_at, excluded.deleted_at), purged_at = coalesce(projects.purged_at, now()),
+	         updated_at = greatest(projects.updated_at, excluded.updated_at), synced_at = now()
+	       where projects.user_id = excluded.user_id
+
+2026-10-21 18:52:51.919 MDT [39648] ERROR:  null value in column "text" of relation "journal_entries" violates not-null constraint
+2026-10-21 18:52:51.919 MDT [39648] DETAIL:  Failing row contains (mvitu5yfrqfood29t, 6ad3c175-ab5b-43de-bd90-12d02c456fab, null, null, null, null, null, f, null, null, null, null, 2026-10-21 18:52:49.995-06, 2026-10-21 18:52:49.959-06, 2026-10-21 18:52:49.996-06, null, null, null, null, null, null, null, null, null, [], 2026-10-21 18:52:51.919083-06, 2026-10-21 18:52:51.919083-06).
+2026-10-21 18:52:51.919 MDT [39648] STATEMENT:  insert into journal_entries (id, user_id, text, deleted_at, purged_at, created_at, updated_at)
+	       values ($1,$2,$3,coalesce($4::timestamptz, now()),now(),$5,$6)
+	       on conflict (id) do update set
+	         text = $3, project_id = null, session_id = null, starred = null, source = null, beat_id = null, page_type = null,
+	         order_index = null, imported_at = null, boxes = null, script = null, origin = null, tutor = null, tags = null,
+	         routed_project_ids = null, strokes = null, plan_board_id = null, page_settings = null, page_links = null,
+	         deleted_at = coalesce(journal_entries.deleted_at, excluded.deleted_at), purged_at = coalesce(journal_entries.purged_at, now()),
+	         updated_at = greatest(journal_entries.updated_at, excluded.updated_at), synced_at = now()
+	       where journal_entries.user_id = excluded.user_id
+
+2026-10-21 18:52:51.961 MDT [61244] ERROR:  null value in column "text" of relation "journal_entries" violates not-null constraint
+2026-10-21 18:52:51.961 MDT [61244] DETAIL:  Failing row contains (mvitu7bv4coyl09zk, 6ad3c175-ab5b-43de-bd90-12d02c456fab, null, null, null, null, null, f, null, null, null, null, 2026-10-21 18:52:51.872-06, 2026-10-21 18:52:51.739-06, 2026-10-21 18:52:51.873-06, null, null, null, null, null, null, null, null, null, [], 2026-10-21 18:52:51.960424-06, 2026-10-21 18:52:51.960424-06).
+2026-10-21 18:52:51.961 MDT [61244] STATEMENT:  insert into journal_entries (id, user_id, text, deleted_at, purged_at, created_at, updated_at)
+	       values ($1,$2,$3,coalesce($4::timestamptz, now()),now(),$5,$6)
+	       on conflict (id) do update set
+	         text = $3, project_id = null, session_id = null, starred = null, source = null, beat_id = null, page_type = null,
+	         order_index = null, imported_at = null, boxes = null, script = null, origin = null, tutor = null, tags = null,
+	         routed_project_ids = null, strokes = null, plan_board_id = null, page_settings = null, page_links = null,
+	         deleted_at = coalesce(journal_entries.deleted_at, excluded.deleted_at), purged_at = coalesce(journal_entries.purged_at, now()),
+	         updated_at = greatest(journal_entries.updated_at, excluded.updated_at), synced_at = now()
+	       where journal_entries.user_id = excluded.user_id
+
+2026-10-21 18:52:52.034 MDT [58548] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+
+2026-10-21 18:52:55.906 MDT [19844] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-10-21 18:52:55.906 MDT [61508] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-10-21 18:52:55.907 MDT [27884] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+
+PASS  MUTANT (no refusal onto a shell): the edit LANDED and turned its case RED  [{"name":"no refusal onto a shell","landed":true,"red":true}]
+PASS  MUTANT (the refusal REJECTED, not acknowledged): the edit LANDED and turned its case RED  [{"name":"the refusal REJECTED, not acknowledged","landed":true,"red":true}]
+PASS  MUTANT (no server-side clearing): the edit LANDED and turned its case RED  [{"name":"no server-side clearing","landed":true,"red":true}]
+PASS  MUTANT (the shell keeps its page_links): the edit LANDED and turned its case RED  [{"name":"the shell keeps its page_links","landed":true,"red":true}]
+
+DELETE-FOR-GOOD-E2E VERIFY: PASS (15 checks)

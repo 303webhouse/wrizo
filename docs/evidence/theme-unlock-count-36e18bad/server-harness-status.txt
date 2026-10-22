@@ -1,0 +1,9 @@
+START 00:52:16Z
+theme-unlock-count-db exit=0  THEME-UNLOCK-COUNT-DB VERIFY: PASS (20 checks) 
+delete-for-good-e2e exit=0  DELETE-FOR-GOOD-E2E VERIFY: PASS (15 checks) 
+page-links-db exit=0  PAGE-LINKS-DB VERIFY: PASS (13 checks) 
+smoke-account-db exit=0 PASS assertSafeBase accepts https and loopback http, refuses the rest SMOKE-ACCOUNT TEST: PASS (31 checks) 
+set-password-db exit=0 PASS if ending sessions fails, the password change is rolled back too (one transaction) SETPW TEST: PASS (12 checks) 
+item224-server-hardening exit=0  ITEM224 VERIFY: PASS (64 checks) 
+tutor20-max-messages exit=1  Node.js v24.13.0 
+TUDB COMPLETE 00:53:29Z

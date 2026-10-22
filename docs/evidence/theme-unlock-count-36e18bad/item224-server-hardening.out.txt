@@ -1,0 +1,336 @@
+[tutor] code=Error
+[tutor] code=Error
+[tutor] code=Error
+[tutor] code=Error
+[tutor] code=Error
+[tutor] code=Error
+[tutor] code=Error
+[tutor] code=Error
+[tutor] code=Error
+[tutor] code=Error
+[tutor] code=Error
+[tutor] code=Error
+[
+  {
+    "name": "(a) CLOSED: no INVITE_CODES configured -> 503 \"Registration is not open right now\", and the database is NEVER touched (fails before the expensive path)",
+    "pass": true,
+    "detail": "{\"status\":503,\"body\":{\"error\":\"Registration is not open right now\"},\"dbCalls\":[]}"
+  },
+  {
+    "name": "(a) WRONG CODE: a configured list rejects a non-matching code with 403, DB still untouched",
+    "pass": true,
+    "detail": "{\"status\":403,\"dbCalls\":[]}"
+  },
+  {
+    "name": "(a) RIGHT CODE: the second configured code succeeds (201) and DOES reach the database",
+    "pass": true,
+    "detail": "{\"status\":201,\"body\":{\"id\":\"user-1\",\"email\":\"c@example.com\",\"name\":\"C\"}}"
+  },
+  {
+    "name": "(a) MUTATION KILLED: with the invite-code check removed (in memory only — the real file is untouched), the SAME wrong-code request now succeeds (201) instead of 403 — confirms the real check is what blocks it",
+    "pass": true,
+    "detail": "{\"status\":201,\"body\":{\"id\":\"user-1\",\"email\":\"mutant@example.com\",\"name\":\"M\"},\"session\":{\"id\":\"efa3800c-d69f-46ac-9f20-1dea7bd15a42\",\"userId\":\"user-1\"}}"
+  },
+  {
+    "name": "(d) a 7-character password is REFUSED (400) before the database is touched",
+    "pass": true,
+    "detail": "{\"status\":400,\"body\":{\"error\":\"Password must be at least 8 characters\"},\"dbCalls\":[]}"
+  },
+  {
+    "name": "(d) an exactly-8-character password clears the length check (the boundary itself, not just \"long enough\")",
+    "pass": true,
+    "detail": "{\"status\":201,\"body\":{\"id\":\"user-1\",\"email\":\"exact8@example.com\",\"name\":null},\"session\":{\"id\":\"5b4d288a-2f81-4b88-8795-3a0b5c9a7e45\",\"userId\":\"user-1\"}}"
+  },
+  {
+    "name": "(d) EXISTING PASSWORDS UNAFFECTED: /login's own handler contains no length check at all (source-level — it never re-validates a stored password's length, so an old short password keeps working)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(d) MUTATION KILLED: with the length check removed, the SAME 7-character password now succeeds (201) — confirms the real check is what refuses it",
+    "pass": true,
+    "detail": "{\"status\":201,\"body\":{\"id\":\"user-1\",\"email\":\"mut-short@example.com\",\"name\":null},\"session\":{\"id\":\"b89dcd68-b3e3-4f9d-9e76-4a2143fde765\",\"userId\":\"user-1\"}}"
+  },
+  {
+    "name": "(c) REGISTER: a fresh session id is issued (not the pre-auth id) AND userId is set, in that order being provable by both having happened",
+    "pass": true,
+    "detail": "{\"idBefore\":\"b797071f-1a86-4c4e-8a32-4927bac46101\",\"idAfter\":\"f9be97a2-4332-47a4-89dd-919ca6e0811a\",\"userId\":\"user-1\"}"
+  },
+  {
+    "name": "(c) LOGIN: a fresh session id is issued on a SUCCESSFUL sign-in",
+    "pass": true,
+    "detail": "{\"idBefore\":\"42c2454f-7d24-451c-8f63-0949f423daa4\",\"idAfter\":\"20e1d841-d554-479b-8064-6fa183218037\"}"
+  },
+  {
+    "name": "(c) A FAILED sign-in regenerates NOTHING — the session id is untouched and userId stays unset (regenerate only follows a genuine success)",
+    "pass": true,
+    "detail": "{\"status\":401,\"idBefore\":\"861f108c-0aa9-41f2-b40f-f474ff701cf6\",\"idAfter\":\"861f108c-0aa9-41f2-b40f-f474ff701cf6\"}"
+  },
+  {
+    "name": "(c) MUTATION KILLED: with the login regenerate call removed, a successful sign-in now keeps the SAME pre-auth session id — confirms the real call is what changes it",
+    "pass": true,
+    "detail": "{\"idBefore\":\"ac358c81-f3ff-46d2-8832-56d7b3e3bc40\",\"idAfter\":\"ac358c81-f3ff-46d2-8832-56d7b3e3bc40\"}"
+  },
+  {
+    "name": "(b) the first TWO sends (the configured budget) for one person both clear the budget gate (never 429 for THIS reason)",
+    "pass": true,
+    "detail": "{\"r1\":502,\"r2\":502}"
+  },
+  {
+    "name": "(b) the THIRD send for the SAME person, same day, is refused: 429 \"Daily Tutor limit reached — try again tomorrow.\"",
+    "pass": true,
+    "detail": "{\"status\":429,\"body\":{\"error\":\"Daily Tutor limit reached — try again tomorrow.\"},\"session\":{\"userId\":\"budget-user-1\"}}"
+  },
+  {
+    "name": "(b) a DIFFERENT person, same moment, has their OWN separate budget — not 429 (per-person, not a shared/global counter)",
+    "pass": true,
+    "detail": "{\"status\":502,\"body\":{\"configured\":true,\"error\":\"The Tutor could not be reached right now.\"},\"session\":{\"userId\":\"budget-user-2\"}}"
+  },
+  {
+    "name": "(b) MUTATION KILLED: with the budget check removed, a THIRD send for the same person in the same day is no longer 429 — confirms the real check is what refuses it",
+    "pass": true,
+    "detail": "{\"m1\":502,\"m2\":502,\"m3\":502}"
+  },
+  {
+    "name": "(e) nosniff is set on every response",
+    "pass": true,
+    "detail": "{\"X-Content-Type-Options\":\"nosniff\",\"X-Frame-Options\":\"DENY\",\"Referrer-Policy\":\"strict-origin-when-cross-origin\"}"
+  },
+  {
+    "name": "(e) X-Frame-Options: DENY is set on every response",
+    "pass": true,
+    "detail": "{\"X-Content-Type-Options\":\"nosniff\",\"X-Frame-Options\":\"DENY\",\"Referrer-Policy\":\"strict-origin-when-cross-origin\"}"
+  },
+  {
+    "name": "(e) Referrer-Policy is set to a cross-origin-safe default",
+    "pass": true,
+    "detail": "{\"X-Content-Type-Options\":\"nosniff\",\"X-Frame-Options\":\"DENY\",\"Referrer-Policy\":\"strict-origin-when-cross-origin\"}"
+  },
+  {
+    "name": "(e) HSTS is ABSENT in development (no HTTPS to assert) — not a bug, the stated scope",
+    "pass": true,
+    "detail": "{\"X-Content-Type-Options\":\"nosniff\",\"X-Frame-Options\":\"DENY\",\"Referrer-Policy\":\"strict-origin-when-cross-origin\"}"
+  },
+  {
+    "name": "(e) the chain always calls next() — this middleware never ends the response itself",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(e) no Content-Security-Policy header is set — explicitly out of THIS ticket's scope (its own measured ticket, per the ruling)",
+    "pass": true,
+    "detail": "{\"X-Content-Type-Options\":\"nosniff\",\"X-Frame-Options\":\"DENY\",\"Referrer-Policy\":\"strict-origin-when-cross-origin\"}"
+  },
+  {
+    "name": "(e) HSTS IS present in production, with includeSubDomains and a real max-age",
+    "pass": true,
+    "detail": "{\"X-Content-Type-Options\":\"nosniff\",\"X-Frame-Options\":\"DENY\",\"Referrer-Policy\":\"strict-origin-when-cross-origin\",\"Strict-Transport-Security\":\"max-age=31536000; includeSubDomains\"}"
+  },
+  {
+    "name": "(e) MUTATION KILLED: with the nosniff line removed, the header is genuinely absent — confirms the check reads the real header, not a hardcoded pass",
+    "pass": true,
+    "detail": "{\"X-Frame-Options\":\"DENY\",\"Referrer-Policy\":\"strict-origin-when-cross-origin\"}"
+  },
+  {
+    "name": "(1) no codes configured -> { open: false }",
+    "pass": true,
+    "detail": "{\"open\":false}"
+  },
+  {
+    "name": "(1) codes configured -> { open: true }",
+    "pass": true,
+    "detail": "{\"open\":true}"
+  },
+  {
+    "name": "(1) MUTATION KILLED: with the status route hardcoded to true, the no-codes case now reads open:true — confirms the real route reads env.inviteCodes",
+    "pass": true,
+    "detail": "{\"open\":true}"
+  },
+  {
+    "name": "(2a) default (no keyFn) behaviour is UNCHANGED: a 3rd request from the same IP within the window is blocked, a different IP is not",
+    "pass": true,
+    "detail": "{\"ipThird\":{\"status\":429,\"body\":{\"error\":\"Too many requests. Try again shortly.\"},\"next\":false},\"ipOther\":{\"status\":200,\"next\":true}}"
+  },
+  {
+    "name": "(2a) ACCOUNT-KEYED: two different accounts sharing the SAME ip each get their OWN window — account-1 is exhausted, account-2 is not",
+    "pass": true,
+    "detail": "{\"acct1Third\":{\"status\":429,\"body\":{\"error\":\"Too many requests. Try again shortly.\"},\"next\":false},\"acct2First\":{\"status\":200,\"next\":true}}"
+  },
+  {
+    "name": "(2a) MUTATION KILLED: with the keyFn ignored (always keys by ip), account-2 now shares account-1's exhausted window on the same ip — confirms the real keyFn is what separates them",
+    "pass": true,
+    "detail": "{\"status\":429,\"body\":{\"error\":\"Too many requests. Try again shortly.\"},\"next\":false}"
+  },
+  {
+    "name": "(2a) STRUCTURAL: tutor.ts's own wiring line actually passes an account keyFn (req.session.userId), not left at the IP default",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(2a) STRUCTURAL (memory): the pruning sweep (deleting every OTHER expired key, not just the one being checked) is present in the shipped file — not observable black-box, since a Map's get/set cost does not depend on its size at this scale",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(2b) the first TWO sends, from DIFFERENT accounts, clear the global gate",
+    "pass": true,
+    "detail": "{\"g1\":502,\"g2\":502}"
+  },
+  {
+    "name": "(2b) a THIRD distinct account — nowhere near their OWN 50/day budget — is refused by the GLOBAL cap, with its own distinct message",
+    "pass": true,
+    "detail": "{\"status\":429,\"body\":{\"error\":\"The Tutor has reached today's overall limit — try again tomorrow.\"},\"session\":{\"userId\":\"global-user-3\"}}"
+  },
+  {
+    "name": "(2b) MUTATION KILLED: with the global check removed, a third distinct account is no longer refused — confirms the real check is what refuses it",
+    "pass": true,
+    "detail": "{\"status\":502,\"body\":{\"configured\":true,\"error\":\"The Tutor could not be reached right now.\"},\"session\":{\"userId\":\"mutant-global-3\"}}"
+  },
+  {
+    "name": "(2c) TUTOR_DISABLED=1 answers { configured: false } — the SAME shape an unset API key already produces, no new error shape for the client to learn",
+    "pass": true,
+    "detail": "{\"configured\":false}"
+  },
+  {
+    "name": "(2c) MUTATION KILLED: with the kill switch removed, TUTOR_DISABLED=1 no longer short-circuits — the request proceeds past it (a different response than the plain not-configured shape)",
+    "pass": true,
+    "detail": "{\"configured\":true,\"error\":\"The Tutor could not be reached right now.\"}"
+  },
+  {
+    "name": "(3a) a login for a KNOWN email runs exactly one bcrypt.compare",
+    "pass": true,
+    "detail": "1"
+  },
+  {
+    "name": "(3a) a login for an UNKNOWN email ALSO runs exactly one bcrypt.compare, against the fixed dummy hash — previously this was skipped entirely (0 calls), the exact timing tell this closes",
+    "pass": true,
+    "detail": "1"
+  },
+  {
+    "name": "(3a) MUTATION KILLED: with the short-circuit restored, an unknown email calls bcrypt.compare ZERO times — confirms the real \"always compare\" line is what closes the gap",
+    "pass": true,
+    "detail": "0"
+  },
+  {
+    "name": "(3b) the duplicate attempt is refused with a NEUTRAL message — it does not say \"already exists,\" and shares the same 400 status family as every other register refusal",
+    "pass": true,
+    "detail": "{\"first\":201,\"second\":400,\"body\":{\"error\":\"Could not create an account with that information.\"}}"
+  },
+  {
+    "name": "(3b) MUTATION KILLED: with the old wording restored, a duplicate email is confirmed again (409, \"already exists\") — proves the neutral reply is what suppresses it",
+    "pass": true,
+    "detail": "{\"status\":409,\"body\":{\"error\":\"An account with that email already exists\"},\"session\":{\"id\":\"6f2169a2-5944-4f74-9bbd-ec1198e4050b\"}}"
+  },
+  {
+    "name": "(3c) STATIC: the real file's threshold is 8 failures",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(3c) STATIC: the real file's throttle interval is 60 * 1000 (one attempt per minute)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(3c) STATIC: the real file's quiet-clear window is 15 * 60 * 1000 (15 minutes)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(3c) the first 8 failures are never throttled — each is a genuine 401, not 429 (the door is \"AFTER 8\", not before or at 8)",
+    "pass": true,
+    "detail": "[401,401,401,401,401,401,401,401]"
+  },
+  {
+    "name": "(3c) CLAIM 1 — after 8 failures, the 9th and a following immediate attempt are both THROTTLED (429), slowing the attacker",
+    "pass": true,
+    "detail": "{\"ninth\":429,\"tenthImmediate\":429}"
+  },
+  {
+    "name": "(3c) once the throttle interval has genuinely passed, the NEXT attempt is let through (401 for a wrong password, never blocked outright) — this is a slowdown, not a stop",
+    "pass": true,
+    "detail": "{\"status\":401,\"body\":{\"error\":\"Invalid email or password\"},\"session\":{\"id\":\"2cab9088-c3b1-41f9-a19e-5ae810d8b5f1\"}}"
+  },
+  {
+    "name": "(3c) the throttle immediately re-engages after that one allowed attempt — the NEXT one, right after, is throttled again",
+    "pass": true,
+    "detail": "{\"status\":429,\"body\":{\"error\":\"Too many attempts. Try again in a moment.\"},\"session\":{\"id\":\"9b6023cd-c5eb-4072-90b8-7afa02040dff\"}}"
+  },
+  {
+    "name": "(3c) CLAIM 2 — after a genuinely QUIET window (no attempts at all), the account's own owner signs in on the first try — never an indefinite lock",
+    "pass": true,
+    "detail": "{\"status\":200,\"body\":{\"id\":\"user-1\",\"email\":\"throttled@example.com\",\"name\":null},\"session\":{\"id\":\"93debdf0-092e-44a9-acea-7ab3c2a40a6b\",\"userId\":\"user-1\"}}"
+  },
+  {
+    "name": "(3c) a DIFFERENT account, with no prior failures, was never throttled at any point above — per-account, not a global lockout",
+    "pass": true,
+    "detail": "{\"status\":200,\"body\":{\"id\":\"user-2\",\"email\":\"never-failed@example.com\",\"name\":null},\"session\":{\"id\":\"07ca2fee-61c5-4439-b5a8-633dcae85e22\",\"userId\":\"user-2\"}}"
+  },
+  {
+    "name": "(3c) MUTATION KILLED: with the throttle check removed, the SAME shape (9+ failures, back-to-back) never produces a 429 — confirms the real check is what throttles it",
+    "pass": true,
+    "detail": "{\"status\":401,\"body\":{\"error\":\"Invalid email or password\"},\"session\":{\"id\":\"012b1319-b094-4d35-95f7-1f09701a2df5\"}}"
+  },
+  {
+    "name": "(4a) a POST whose Origin matches this app's own host clears the check",
+    "pass": true,
+    "detail": "{\"status\":200,\"next\":true}"
+  },
+  {
+    "name": "(4a) a POST whose Origin does NOT match is REFUSED (403) — the shape a forged cross-site request actually carries",
+    "pass": true,
+    "detail": "{\"status\":403,\"body\":{\"error\":\"Forbidden\"},\"next\":false}"
+  },
+  {
+    "name": "(4a) a POST with NO Origin header fails OPEN — some legitimate clients never send one, and this app sets no CORS header for a cross-origin browser request to read anyway",
+    "pass": true,
+    "detail": "{\"status\":200,\"next\":true}"
+  },
+  {
+    "name": "(4a) GET is exempt regardless of Origin — nothing state-changing ever rides one in this app",
+    "pass": true,
+    "detail": "{\"status\":200,\"next\":true}"
+  },
+  {
+    "name": "(4a) MUTATION KILLED: with the mismatch check removed, the SAME forged Origin now clears — confirms the real check is what refuses it",
+    "pass": true,
+    "detail": "{\"status\":200,\"next\":true}"
+  },
+  {
+    "name": "(4b) app.disable('x-powered-by') is present, AFTER the app is created and BEFORE the first route is registered",
+    "pass": true,
+    "detail": "{\"appCreateIdx\":523,\"disableIdx\":719,\"firstRouteIdx\":5503}"
+  },
+  {
+    "name": "(5) tutor.ts has no remaining console.*(…, err) call printing a raw error object",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(5) index.ts has no remaining console.*(…, err) call printing a raw error object",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(5) sync.ts has no remaining console.*(…, err) call printing a raw error object",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(5) logError(...) is used at every one of the 9 sites this round touched (1 tutor.ts + 2 index.ts + 6 sync.ts)",
+    "pass": true,
+    "detail": "9"
+  },
+  {
+    "name": "(5) dotenv is configured quiet (env.ts)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "(6) docs/deploy.md names INVITE_CODES (3 sites) and the old singular INVITE_CODE no longer appears anywhere",
+    "pass": true,
+    "detail": "{\"bareOld\":0,\"renamed\":3}"
+  }
+]
+
+ITEM224 VERIFY: PASS (64 checks)
