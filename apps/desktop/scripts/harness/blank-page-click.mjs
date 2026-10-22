@@ -1,14 +1,18 @@
-// BLANK-PAGE CLICK (Fable, Oct 22 - Page-readiness, "just let me write"; the CSS route approved: .wz-ink-sheet becomes a flex column so the
-// editor fills the paper). On main a new blank page's editor is ONE LINE tall (29 px measured, ledger 128): its wrap asks for min-height:100% of
-// .wz-ink-sheet, which has a min-height but no height, so the percentage resolves to 0. A press on the empty paper below the line lands on the
-// sheet - nothing hands it to the editor, the editor loses focus, and typing goes nowhere.
+// BLANK-PAGE CLICK (Fable, Oct 22 - Page-readiness, "just let me write").
+// CORRECTED (ledger: the lane on 28c3d619, the CSS mutant SURVIVED): the prose half was NEVER broken. A blank page's editor IS one line tall
+// (29 px), but ModeStage's scroller (.mode-scroll, which holds the whole sheet) has onClick={focusEditor} - a press anywhere on the paper focuses
+// the editor, which collapses its caret to the END. FIX's read-only answer missed that handler; the flex column built on it (52fb2be6) was not
+// needed and is REMOVED. The prose B and T checks stay as regression guards, and the mutant now removes what really works: the scroller's click.
+// The SCREENPLAY half is real (ScriptEditor's click handler ignored a press that missed every element) and its fix stays.
 //
 //   For each of FREE WRITE, DRAFT, DRAFT WITH THE TYPEWRITER and SCREENPLAY:
 //   B  a BLANK page: a real press on the empty paper below the first line, then typing - the words land on the page (stored)
 //   T  a page WITH TEXT: a real press below the LAST line, then one letter - it lands at the END of the text (the caret went to the end)
 //   Each press point is PROVEN to lie below the last line of text (a named premise), so a press that happened to land on a line proves nothing.
-//   M  THE MUTANT (runtime): with the sheet's flex column taken away by an injected style (asserted to have LANDED - the computed display is
-//      'block'), the Draft blank-page press no longer reaches the editor.
+//   M  (PARKED - the flex column it tested is gone) THE MUTANT (runtime): with the sheet's flex column taken away by an injected style (asserted
+//      to have LANDED - the computed display is 'block'), the Draft blank-page press no longer reaches the editor.
+//   M2 its successor: the scroller's own click swallowed before the app sees it (a document capture listener; it COUNTS what it swallowed, so its
+//      landing is asserted) - the Draft blank-page press no longer reaches the editor.
 //   SCREENPLAY (Fable's ruling, Oct 22: include it - a press BELOW the last script element activates it with the caret at its end; a blank
 //   script gets its first element, focused; presses anywhere else are unchanged): B and T above, plus
 //   U  a press on the paper BESIDE an element (not below the last) activates nothing
@@ -92,9 +96,15 @@ const runCase = async (app, m, kind) => {
   const focus = await focusedIn(app, !!m.script);
   if (kind === 'blank') {
     await app.typeKeys('Hello paper');
-    const row = await waitStored(app, id, (t) => /Hello paper/.test(t));
-    ok(`${m.name} B: a press on the EMPTY PAPER of a blank page, then typing - the words land on the page`,
-      focus && !!row && /Hello paper/.test(row.text || ''), JSON.stringify({ focus, stored: row && row.text, p }));
+    // a blank Screenplay's one element is a SCENE HEADING, which capitalises what it is given ("HELLO PAPER", ledger: the lane on 28c3d619)
+    const said = m.script ? /hello paper/i : /Hello paper/;
+    const row = await waitStored(app, id, (t) => said.test(t));
+    // ---- PARKED - SUPERSEDED (the lane on 28c3d619): the words LANDED on the Screenplay ("HELLO PAPER", focus true) - this expected the typed case
+    // on a scene heading. Kept VERBATIM and no longer run; the successor reads a Screenplay heading case-insensitively, prose exactly as before.
+    // ok(`${m.name} B: a press on the EMPTY PAPER of a blank page, then typing - the words land on the page`,
+    //   focus && !!row && /Hello paper/.test(row.text || ''), JSON.stringify({ focus, stored: row && row.text, p }));
+    ok(`${m.name} B [heading-case successor]: a press on the EMPTY PAPER of a blank page, then typing - the words land on the page (a Screenplay's scene heading in its own capitals)`,
+      focus && !!row && said.test(row.text || ''), JSON.stringify({ focus, stored: row && row.text, p }));
   } else {
     await app.typeKeys('Z');
     const want = m.script ? 'She waits.Z' : 'Third lineZ';
@@ -165,22 +175,40 @@ await withHarness(async (app) => {
       swallowed >= 1 && reached === false, JSON.stringify({ swallowed, reached, p }));
   } else ok('MS fixture: the blank Screenplay reopened', false, '');
 
-  // ---- M: the mutant - the sheet's flex column taken away (asserted to have landed), the Draft blank-page press no longer reaches the editor
+  // ---- PARKED - SUPERSEDED (the lane on 28c3d619: M SURVIVED - the press reached the editor with the flex column gone, because ModeStage's
+  // scroller hands every press on the paper to the editor). The flex column is removed; M is kept VERBATIM below and no longer run. Its successor,
+  // M2, removes what really makes the prose half work: the scroller's click.
+  // const mm = MODES[1];
+  // await app.evalJs(`window.wrizoPatchEntry(${JSON.stringify(pageId(mm, 'blank'))}, { text: '' })`);
+  // await app.evalJs('window.wrizoFlushNow()');
+  // await sleep(300);
+  // if (await openPage(app, mm, 'blank')) {
+  //   await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'bpc-mutant'; s.textContent = '.wz-ink-sheet{ display:block !important; }'; document.head.appendChild(s); return true; })()");
+  //   await sleep(300);
+  //   const landed = await app.evalJs("(() => { const s = document.querySelector('.wz-ink-sheet'); return !!s && getComputedStyle(s).display === 'block'; })()");
+  //   const p = await pressPoint(app, false);
+  //   let reached = null;
+  //   if (p && p.y > p.lineBottom + 10) { await click(app, p.x, p.y); await sleep(300); reached = await focusedIn(app, false); }
+  //   ok('M (mutant): with the sheet\'s flex column taken away (the injected style LANDED: display block), a press on the blank paper no longer reaches the editor - the check depends on the fix',
+  //     landed === true && reached === false, JSON.stringify({ landed, reached, p }));
+  //   await app.evalJs("document.getElementById('bpc-mutant')?.remove()");
+  // } else ok('M fixture: the Draft blank page reopened', false, '');
+  // ---- M2: the scroller's click swallowed before the app sees it (a document capture listener on clicks inside .mode-scroll but outside the
+  // editor; it COUNTS them, so its landing is asserted) - the Draft blank-page press must then no longer reach the editor
   const mm = MODES[1];
   await app.evalJs(`window.wrizoPatchEntry(${JSON.stringify(pageId(mm, 'blank'))}, { text: '' })`);
   await app.evalJs('window.wrizoFlushNow()');
   await sleep(300);
   if (await openPage(app, mm, 'blank')) {
-    await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'bpc-mutant'; s.textContent = '.wz-ink-sheet{ display:block !important; }'; document.head.appendChild(s); return true; })()");
-    await sleep(300);
-    const landed = await app.evalJs("(() => { const s = document.querySelector('.wz-ink-sheet'); return !!s && getComputedStyle(s).display === 'block'; })()");
+    await app.evalJs(`(() => { window.__bpcScrollSwallowed = 0; window.__bpcScrollMut = (e) => { const t = e.target; if (t && t.closest && t.closest('.mode-scroll') && !t.closest('.forward-only-editor')) { window.__bpcScrollSwallowed += 1; e.stopPropagation(); } };
+      document.addEventListener('click', window.__bpcScrollMut, true); return true; })()`);
     const p = await pressPoint(app, false);
     let reached = null;
     if (p && p.y > p.lineBottom + 10) { await click(app, p.x, p.y); await sleep(300); reached = await focusedIn(app, false); }
-    ok('M (mutant): with the sheet\'s flex column taken away (the injected style LANDED: display block), a press on the blank paper no longer reaches the editor - the check depends on the fix',
-      landed === true && reached === false, JSON.stringify({ landed, reached, p }));
-    await app.evalJs("document.getElementById('bpc-mutant')?.remove()");
-  } else ok('M fixture: the Draft blank page reopened', false, '');
+    const swallowed = await app.evalJs('(() => { document.removeEventListener(\'click\', window.__bpcScrollMut, true); return window.__bpcScrollSwallowed; })()');
+    ok('M2 (mutant): with the scroller\'s own click swallowed before the app sees it (the swallow LANDED: counted), a press on the blank paper no longer reaches the editor - the prose checks depend on ModeStage\'s focusEditor',
+      swallowed >= 1 && reached === false, JSON.stringify({ swallowed, reached, p }));
+  } else ok('M2 fixture: the Draft blank page reopened', false, '');
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 500)}]` : ''}`);
