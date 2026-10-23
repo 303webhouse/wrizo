@@ -12,154 +12,201 @@
   body { overflow: hidden; font-family: Figtree, system-ui, sans-serif; background: var(--desk); color: var(--ink); display: flex; flex-direction: column; }
   html[data-theme='arbor'][data-mode='dark'] {
     --desk: #110600; --chrome: #1F1A16; --ink: #EDE6DA; --muted: #B5A998; --low: #80766A; --line: #3A3128;
-    --card: #FBF6EA; --card-ink: #2B2014; --card-faint: #6B5F4E; --card-line: #D9CFB6;
-    --stage: #1A140F; --choice: #ff9800; --lane: rgba(0,0,0,.28);
+    --card: #FBF6EA; --card-ink: #2B2014; --card-line: #D9CFB6; --olive: #4F5730;
+    --stage: #1A140F; --choice: #ff9800; --lane: rgba(0,0,0,.28); --lime: #A6FF3D;
   }
   html[data-theme='arbor'][data-mode='light'] {
     --desk: #E7DFD2; --chrome: #F3EDE1; --ink: #2B2014; --muted: #6E6256; --low: #8A7C68; --line: #D8C8B4;
-    --card: #FBF7EF; --card-ink: #2B2014; --card-faint: #6B5F4E; --card-line: #E4D9C6;
-    --stage: #EFE6D8; --choice: #ff9800; --lane: rgba(43,32,20,.05);
+    --card: #FBF7EF; --card-ink: #2B2014; --card-line: #E4D9C6; --olive: #4F5730;
+    --stage: #EFE6D8; --choice: #ff9800; --lane: rgba(43,32,20,.05); --lime: #4E8C12;
   }
   html[data-theme='flux'][data-mode='dark'] {
     --desk: #050c15; --chrome: #0b141e; --ink: #E7EEF6; --muted: #8BA3BB; --low: #6E86A0; --line: #26374a;
-    --card: #192838; --card-ink: #E7EEF6; --card-faint: #8BA3BB; --card-line: #34506f;
-    --stage: #101b28; --choice: #00C2FF; --orange: #ff9800; --lane: rgba(0,0,0,.28);
+    --card: #122033; --card-ink: #E7EEF6; --card-line: #34506f; --olive: #8BA3BB;
+    --stage: #101b28; --choice: #00C2FF; --lane: rgba(0,0,0,.28); --lime: #A6FF3D; --grid: rgba(0,194,255,.1);
   }
-  .top { height: 52px; flex: none; display: flex; align-items: center; gap: 16px; padding: 0 16px; background: var(--desk); border-bottom: 1px solid var(--line); }
+  html[data-theme='flux'][data-mode='light'] {
+    --desk: #D5DEE8; --chrome: #F3F6F9; --ink: #14202E; --muted: #4E5C6C; --low: #6A7A8C; --line: #B7C3D0;
+    --card: #F7F9FB; --card-ink: #14202E; --card-line: #C5D0DC; --olive: #4E5C6C;
+    --stage: #E6ECF2; --choice: #00C2FF; --lane: rgba(20,32,46,.05); --lime: #3E8C14; --grid: rgba(0,120,170,.16);
+  }
+  .top { height: 52px; flex: none; display: flex; align-items: center; gap: 14px; padding: 0 16px; background: var(--desk); border-bottom: 1px solid var(--line); }
   .brand { font-weight: 500; }
   .where { color: var(--muted); }
-  .top-right { margin-left: auto; display: flex; align-items: center; gap: 18px; }
-  .modes { display: flex; gap: 14px; align-items: flex-end; font-size: 13px; color: var(--muted); text-transform: uppercase; }
+  .gaps { font-size: 12px; color: var(--low); }
+  .top-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+  .modes { display: flex; gap: 14px; align-items: flex-end; font-size: 13px; color: var(--muted); text-transform: uppercase; white-space: nowrap; }
   .modes .on { color: var(--ink); border-bottom: 2px solid var(--choice); padding-bottom: 4px; }
   html[data-theme='flux'] body { font-family: Rajdhani, sans-serif; }
-  html[data-theme='flux'] .modes { font-family: 'Chakra Petch', sans-serif; text-transform: none; letter-spacing: 0; font-size: 13px; }
-  html[data-theme='flux'] .brand, html[data-theme='flux'] .where { font-family: Rajdhani, sans-serif; letter-spacing: .06em; }
+  html[data-theme='flux'] .modes { font-family: 'Chakra Petch', sans-serif; text-transform: none; letter-spacing: 0; }
+  html[data-theme='flux'] .brand, html[data-theme='flux'] .where, html[data-theme='flux'] .gaps { font-family: Rajdhani, sans-serif; letter-spacing: .06em; }
   .shell { flex: 1; min-height: 0; display: grid; grid-template-columns: 140px 1fr 156px; background: var(--stage); }
   .rail, .pop { display: none; }
   .tools, .side { background: var(--chrome); color: var(--muted); padding: 16px 14px; }
   .tools { border-right: 1px solid var(--line); }
   .side { border-left: 1px solid var(--line); }
   .tools h2, .side h2, .pop h2 { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 500; color: var(--low); margin: 0 0 12px; }
-  .side h2 + .gap { margin-top: 26px; }
+  .side h2.gap { margin-top: 26px; }
   .tool, .graft { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 7px 0; color: var(--ink); font-size: 14px; }
   html[data-theme='flux'] .tool, html[data-theme='flux'] .graft { font-family: 'Chakra Petch', sans-serif; font-size: 13px; }
   .stage { position: relative; min-width: 0; min-height: 0; }
-  html[data-frame='listing'] .shell { grid-template-columns: 72px 328px 1fr 156px; }
+  html[data-theme='flux'] .stage { background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 16px 16px; }
+  html[data-frame='listing'] .shell { grid-template-columns: 72px 300px 1fr 156px; }
   html[data-frame='listing'] .rail, html[data-frame='listing'] .pop { display: flex; }
   html[data-frame='listing'] .tools { display: none; }
   .rail { flex-direction: column; gap: 4px; background: var(--desk); border-right: 1px solid var(--line); padding: 12px 8px; }
-  .rail .place { font-size: 12px; color: var(--muted); padding: 6px 4px 12px; line-height: 1.3; }
+  .rail .place { font-size: 12px; color: var(--muted); padding: 6px 4px 12px; }
   .rail button { text-align: left; font-size: 13px; color: var(--muted); padding: 8px 6px; border-radius: 7px; }
   .rail button.on { color: var(--ink); box-shadow: inset 0 0 0 1px var(--choice); }
-  .pop { flex-direction: column; background: var(--chrome); border-right: 1px solid var(--line); padding: 16px 14px; gap: 4px; }
-  .brow { display: grid; grid-template-columns: 78px 1fr; gap: 12px; align-items: center; width: 100%; text-align: left; padding: 8px 4px; color: var(--ink); }
-  .brow b { display: block; font-weight: 500; }
-  .brow em { display: block; font-style: normal; color: var(--low); font-size: 12px; margin-top: 2px; }
+  .pop { flex-direction: column; background: var(--chrome); border-right: 1px solid var(--line); padding: 16px 14px; gap: 2px; }
+  .brow { display: grid; grid-template-columns: 78px 1fr; gap: 12px; align-items: center; width: 100%; text-align: left; padding: 10px 4px; color: var(--ink); }
+  .brow b { font-weight: 500; }
+  .brow em { font-style: normal; color: var(--low); font-size: 12px; margin-left: 8px; }
   .wide { width: 72px; height: 40px; border-radius: 3px; background: var(--card); border: 1px solid var(--card-line); }
-  .tallth { width: 40px; height: 58px; border-radius: 3px; background: var(--card); border: 1px solid var(--card-line); margin: 0 auto; }
-  .stack { position: relative; width: 74px; height: 52px; }
-  .stack i { position: absolute; width: 58px; height: 30px; border-radius: 3px; background: var(--card); border: 1px solid var(--card-line); }
+  .tallth { width: 40px; height: 58px; border-radius: 3px; background: var(--card); border: 1px solid var(--card-line); }
+  .stack { position: relative; width: 78px; height: 58px; }
+  .stack i { position: absolute; width: 62px; height: 28px; border-radius: 3px; background: var(--card); border: 1px solid var(--card-line); }
   .stack i:nth-child(1) { left: 16px; top: 0; }
-  .stack i:nth-child(2) { left: 8px; top: 8px; }
-  .stack i:nth-child(3) { left: 0; top: 16px; }
-  .showas-btn { width: 34px; height: 34px; display: grid; place-items: center; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); border-radius: 8px; }
+  .stack i:nth-child(2) { left: 8px; top: 12px; }
+  .stack i:nth-child(3) { left: 0; top: 24px; }
+  html[data-theme='flux'] .stack i { border-radius: 0; background: var(--card); }
   .showas { display: flex; align-items: center; gap: 8px; }
+  .showas-btn { width: 34px; height: 34px; display: grid; place-items: center; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); border-radius: 8px; }
   .showas-name { font-size: 12px; color: var(--low); }
   .showas-row { display: flex; gap: 4px; }
-  .showas-row button { display: flex; align-items: center; gap: 5px; padding: 5px 8px; border-radius: 8px; color: var(--muted); font-size: 12px; }
+  .showas-row button { display: flex; align-items: center; gap: 5px; padding: 5px 8px; border-radius: 8px; color: var(--muted); font-size: 12px; white-space: nowrap; }
   .showas-row button.on { color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--choice); }
   html[data-theme='flux'] .showas-name, html[data-theme='flux'] .showas-row button { font-family: 'Chakra Petch', sans-serif; }
-  .walk { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 24px 22px; }
-  .walk-name { font-size: 13px; color: var(--low); margin-bottom: 12px; }
-  html[data-theme='flux'] .walk-name, html[data-theme='flux'] .nodes, html[data-theme='flux'] .readout { font-family: Rajdhani, sans-serif; letter-spacing: .14em; }
-  .card { position: relative; width: min(520px, 100%); min-height: 268px; padding: 26px 28px 32px; background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 5px; box-shadow: 0 18px 48px rgba(0,0,0,.28); }
+  .walk { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 18px 8px 16px; }
+  .deckhead { display: flex; flex-direction: column; align-items: center; gap: 3px; margin-bottom: 14px; }
+  .walk-name { font-size: 13px; color: var(--low); }
+  .walkrow { display: flex; align-items: center; gap: 18px; }
+  .edge { color: var(--low); font-size: 13px; width: 72px; }
+  .stackwrap { position: relative; width: min(520px, 72vw); padding-bottom: 22px; }
+  .under { position: absolute; height: 12px; background: var(--card); border: 1px solid var(--card-line); border-top: 0; border-radius: 0 0 4px 4px; }
+  .under.a { left: 16px; right: 16px; bottom: -10px; }
+  .under.b { left: 32px; right: 32px; bottom: -20px; }
+  .card { position: relative; z-index: 1; width: 100%; min-height: 250px; padding: 26px 28px 36px; background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 5px; box-shadow: 0 18px 48px rgba(0,0,0,.28); }
   html[data-mode='light'] .card { box-shadow: 0 12px 32px rgba(43,32,20,.1); }
   .card.choice { box-shadow: 0 0 0 1.5px var(--choice), 0 18px 48px rgba(0,0,0,.28); }
   html[data-mode='light'] .card.choice { box-shadow: 0 0 0 1.5px var(--choice), 0 12px 32px rgba(43,32,20,.1); }
-  html[data-theme='flux'] .card { border-radius: 0; box-shadow: none; }
-  html[data-theme='flux'] .card.choice { box-shadow: none; border: 1px solid var(--choice); border-left: 3px solid var(--orange); }
+  html[data-theme='flux'] .card { border-radius: 0; box-shadow: none; border: 0; color: var(--ink); }
+  html[data-theme='flux'] .card.choice { box-shadow: none; }
+  html[data-theme='flux'] .card.choice .obar { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #ff9800; }
+  .brackets { position: absolute; inset: 7px; pointer-events: none; background:
+    linear-gradient(var(--choice), var(--choice)) top left / 16px 1px no-repeat,
+    linear-gradient(var(--choice), var(--choice)) top left / 1px 16px no-repeat,
+    linear-gradient(var(--choice), var(--choice)) top right / 16px 1px no-repeat,
+    linear-gradient(var(--choice), var(--choice)) top right / 1px 16px no-repeat,
+    linear-gradient(var(--choice), var(--choice)) bottom left / 16px 1px no-repeat,
+    linear-gradient(var(--choice), var(--choice)) bottom left / 1px 16px no-repeat,
+    linear-gradient(var(--choice), var(--choice)) bottom right / 16px 1px no-repeat,
+    linear-gradient(var(--choice), var(--choice)) bottom right / 1px 16px no-repeat; }
   .card h1 { font-family: 'Crimson Pro', Georgia, serif; font-weight: 500; font-size: 30px; display: flex; align-items: center; gap: 8px; }
-  .ph { margin-top: 20px; font-family: 'Crimson Pro', Georgia, serif; font-style: italic; font-size: 20px; line-height: 1.45; color: var(--card-faint); max-width: 28em; }
-  .ask { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--card-faint); color: var(--card-faint); font-family: Figtree, sans-serif; font-size: 12px; }
-  .ask.on { box-shadow: inset 0 0 0 1.5px var(--choice); color: var(--choice); }
-  .readout { position: absolute; top: 14px; right: 16px; font-size: 14px; color: var(--muted); }
-  .doors { display: flex; gap: 6px; margin-top: 18px; align-items: center; }
-  .doors button { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; padding: 6px 8px; border-radius: 8px; }
+  html[data-theme='flux'] .card h1 { font-family: Rajdhani, sans-serif; font-weight: 600; letter-spacing: .06em; font-size: 26px; }
+  .q { margin-top: 18px; font-family: 'Crimson Pro', Georgia, serif; font-style: italic; font-size: 20px; line-height: 1.4; color: var(--olive); }
+  html[data-theme='flux'] .q { font-family: Rajdhani, sans-serif; font-style: normal; font-size: 18px; letter-spacing: .03em; color: var(--muted); }
+  .caret { display: inline-block; width: 9px; height: .85em; background: #ff9800; vertical-align: -2px; }
+  .readout { position: absolute; top: 16px; right: 18px; font-family: Rajdhani, sans-serif; letter-spacing: .14em; font-size: 14px; color: var(--muted); }
+  .askwrap { position: relative; display: inline-flex; }
+  .ask { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; box-shadow: inset 0 0 0 1px currentColor; color: var(--olive); font-family: Figtree, sans-serif; font-size: 12px; }
+  html[data-theme='flux'] .ask { color: var(--muted); border-radius: 2px; }
+  .ask.on { color: var(--choice); }
+  .pophelp { position: absolute; top: calc(100% + 8px); left: 0; width: 228px; z-index: 4; background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 5px; padding: 12px 12px 10px; box-shadow: 0 12px 28px rgba(0,0,0,.28); font-family: Figtree, sans-serif; font-size: 13px; line-height: 1.4; text-align: left; }
+  .pophelp em { display: block; margin-top: 8px; font-family: 'Crimson Pro', Georgia, serif; font-style: italic; font-size: 15px; color: var(--olive); }
+  .pophelp .more { display: inline-block; margin-top: 10px; color: var(--choice); font-size: 13px; }
+  .doors { display: flex; gap: 8px; margin-top: 22px; }
+  .doors button { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; padding: 6px 10px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--line); }
+  .doors button.on { color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--choice); }
   .doors button svg { width: 16px; height: 16px; }
-  .doors button.on { color: var(--ink); box-shadow: inset 0 0 0 1px var(--choice); }
-  .nodes { margin-top: 18px; font-size: 12px; color: var(--low); text-transform: uppercase; }
-  .dots { display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 10px; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--low); display: block; }
-  .dot.kindled { background: var(--muted); border-color: var(--muted); }
-  .dot.lit { background: var(--choice); border-color: var(--choice); }
-  .dot.now { width: 13px; height: 13px; border: 1.5px solid var(--choice); background: transparent; }
-  .dot.now.lit { background: var(--choice); }
-  .dot.now.kindled { background: var(--muted); }
-  .pager { width: min(520px, 100%); display: flex; justify-content: space-between; margin-top: 14px; }
-  .pager button { color: var(--low); font-size: 13px; }
-  .help { position: absolute; top: 18%; right: 22px; width: 232px; background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 5px; padding: 14px 14px 12px; box-shadow: 0 14px 36px rgba(0,0,0,.28); font-size: 13.5px; line-height: 1.45; }
-  .help em { display: block; margin-top: 8px; font-family: 'Crimson Pro', Georgia, serif; font-style: italic; font-size: 15px; color: var(--card-faint); }
-  .help .more { display: inline-block; margin-top: 12px; color: var(--choice); font-size: 13px; }
+  .marks, .ticks { display: flex; gap: 16px; align-items: flex-start; justify-content: center; margin-top: 18px; }
+  .mark { display: flex; flex-direction: column; align-items: center; width: 18px; color: var(--muted); }
+  .mark small { margin-top: 4px; font-size: 10px; color: var(--low); white-space: nowrap; width: 64px; text-align: center; }
+  .glyph { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; color: var(--low); }
+  .mark.kindled .glyph, .mark.lit .glyph { color: var(--olive); }
+  .mark.lit .glyph, .mark.now .glyph { box-shadow: 0 0 0 1.5px var(--choice); }
+  .ticks { gap: 12px; }
+  .tick { width: 10px; height: 10px; border: 1px solid var(--low); display: block; }
+  .tick.kindled { background: var(--lime); border-color: var(--lime); }
+  .tick.lit { background: var(--lime); border-color: var(--lime); box-shadow: 0 0 0 1px var(--choice); }
+  .tick.now { background: var(--choice); border-color: var(--choice); box-shadow: -3px 0 0 #ff9800; }
   .table { position: absolute; inset: 0; }
-  .tcard { position: absolute; width: 196px; min-height: 84px; padding: 12px 14px; background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 4px; box-shadow: 0 10px 26px rgba(0,0,0,.2); }
+  .tcard { position: absolute; width: 210px; padding: 12px 14px 14px; background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 4px; box-shadow: 0 10px 24px rgba(0,0,0,.18); }
   html[data-mode='light'] .tcard { box-shadow: 0 8px 18px rgba(43,32,20,.08); }
-  .tcard strong { font-family: 'Crimson Pro', Georgia, serif; font-weight: 500; font-size: 17px; display: block; padding-right: 12px; }
-  .tcard span { display: block; margin-top: 6px; color: var(--card-faint); font-family: 'Crimson Pro', Georgia, serif; font-size: 13.5px; line-height: 1.35; }
-  .tcard .pip { position: absolute; top: 12px; right: 10px; width: 7px; height: 7px; border-radius: 50%; }
-  .pip.lit { background: var(--choice); }
-  .pip.kindled { background: var(--muted); }
-  .lanes { height: 100%; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; padding: 22px; align-items: start; }
+  .tcard strong, .lcard strong { font-family: 'Crimson Pro', Georgia, serif; font-weight: 500; font-size: 16px; display: block; }
+  .tcard .q, .lcard .q { font-size: 13.5px; margin-top: 6px; }
+  .lanes { height: 100%; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; padding: 20px; align-items: start; }
   .lane { background: var(--lane); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
   .lane h3 { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--low); font-weight: 500; }
-  .lcard { position: relative; background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 4px; padding: 10px 12px; }
-  .lcard strong { font-family: 'Crimson Pro', Georgia, serif; font-weight: 500; font-size: 16px; display: block; padding-right: 12px; }
-  .lcard span { display: block; margin-top: 4px; color: var(--card-faint); font-family: 'Crimson Pro', Georgia, serif; font-size: 13px; line-height: 1.35; }
-  .lcard .pip { position: absolute; top: 12px; right: 8px; width: 7px; height: 7px; border-radius: 50%; }
+  .lcard { background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 4px; padding: 10px 12px 12px; }
   .flip { height: 100%; display: flex; align-items: center; justify-content: center; gap: 22px; }
   .turn { color: var(--low); font-size: 28px; width: 36px; }
-  .sheet { width: 440px; height: min(620px, 86%); background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 4px; padding: 54px 46px; box-shadow: 0 18px 48px rgba(0,0,0,.28); position: relative; }
-  html[data-mode='light'] .sheet { box-shadow: 0 12px 32px rgba(43,32,20,.1); }
-  .sheet.choice { box-shadow: 0 0 0 1.5px var(--choice), 0 18px 48px rgba(0,0,0,.28); }
+  .sheet { width: 420px; height: min(600px, 84%); background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 3px; padding: 52px 44px; position: relative; box-shadow: 0 0 0 1.5px var(--choice), 0 18px 48px rgba(0,0,0,.28); }
   .sheet h1 { font-family: 'Crimson Pro', Georgia, serif; font-weight: 500; font-size: 32px; }
-  .sheet p { font-family: 'Crimson Pro', Georgia, serif; font-size: 19px; line-height: 1.55; margin-top: 18px; }
-  .sheet .num { position: absolute; bottom: 22px; right: 28px; color: var(--card-faint); font-size: 12px; }
+  .sheet p { font-family: 'Crimson Pro', Georgia, serif; font-size: 19px; line-height: 1.55; margin-top: 16px; }
+  .sheet .num { position: absolute; bottom: 20px; right: 26px; color: var(--olive); font-size: 12px; }
   .thumbs { height: 100%; display: flex; gap: 14px; align-items: center; justify-content: center; }
-  .pthumb { width: 118px; height: 168px; background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 3px; padding: 12px; }
+  .pthumb { width: 112px; height: 164px; background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 3px; padding: 12px; }
   .pthumb.on { box-shadow: 0 0 0 1.5px var(--choice); }
   .pthumb b { font-family: 'Crimson Pro', Georgia, serif; font-weight: 500; font-size: 14px; }
-  .story { height: 100%; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; padding: 18px 18px 20px; }
-  .story article { min-width: 0; display: flex; flex-direction: column; }
-  .door-name { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; margin-bottom: 10px; border-radius: 8px; color: var(--ink); box-shadow: inset 0 0 0 1px var(--choice); font-size: 14px; }
-  .mini { flex: 1; min-height: 0; background: var(--stage); border: 1px solid var(--line); border-radius: 6px; position: relative; overflow: hidden; }
+  .story { height: 100%; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; padding: 18px; }
+  .door-name { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; margin-bottom: 10px; border-radius: 8px; color: var(--ink); box-shadow: inset 0 0 0 1px var(--choice); font-size: 14px; }
+  .mini { height: calc(100% - 46px); background: var(--stage); border: 1px solid var(--line); border-radius: 6px; position: relative; overflow: hidden; }
   .mini-as { position: absolute; top: 10px; right: 10px; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--choice); border-radius: 7px; padding: 4px; }
-  .ghost { position: absolute; border: 1px solid var(--low); border-radius: 3px; width: 42%; height: 16%; background: var(--card); opacity: .35; }
-  .ghost.a { left: 10%; top: 26%; }
-  .ghost.b { left: 44%; top: 46%; }
-  .ghost.c { left: 16%; top: 66%; }
-  .mini-card { position: absolute; left: 12%; right: 12%; top: 18%; background: var(--card); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 4px; padding: 14px 14px 28px; box-shadow: 0 0 0 1.5px var(--choice); }
+  .ghost { position: absolute; width: 42%; height: 16%; border: 1px solid var(--low); border-radius: 3px; background: var(--card); opacity: .45; }
+  .ghost.a { left: 10%; top: 28%; } .ghost.b { left: 44%; top: 48%; } .ghost.c { left: 16%; top: 68%; }
+  .mini-card { position: absolute; left: 10%; right: 10%; top: 16%; background: var(--card); color: var(--card-ink); border-radius: 4px; padding: 12px 12px 22px; box-shadow: 0 0 0 1.5px var(--choice); }
   .mini-card b { font-family: 'Crimson Pro', Georgia, serif; font-weight: 500; font-size: 18px; }
-  .mini-card em { display: block; margin-top: 8px; font-family: 'Crimson Pro', Georgia, serif; font-size: 13px; color: var(--card-faint); line-height: 1.35; }
-  .mini .dots { position: absolute; left: 0; right: 0; bottom: 16px; }
-  .mini-flip { height: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
-  .mini-page { width: 46%; height: 74%; background: var(--card); border: 1px solid var(--card-line); border-radius: 3px; box-shadow: 0 0 0 1.5px var(--choice); position: relative; }
-  .mini-page i { position: absolute; left: 16px; top: 22px; width: 1px; height: 18px; background: var(--choice); }
+  .mini-card .q { font-size: 13px; }
+  .mini .marks { position: absolute; left: 0; right: 0; bottom: 18px; }
+  .mini-flip { height: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .mini-page { width: 42%; height: 72%; background: var(--card); border-radius: 2px; box-shadow: 0 0 0 1.5px var(--choice); position: relative; }
+  .mini-page i { position: absolute; left: 14px; top: 20px; width: 1px; height: 16px; background: var(--choice); }
+  .presets { height: 100%; padding: 22px 28px; }
+  .presets h2 { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--low); font-weight: 500; margin-bottom: 0; }
+  .drawer { margin-top: 0; background: linear-gradient(#C4956A, #8A5A32 40%, #6B4423); border: 1px solid #3E2814; border-top: 0; border-radius: 0 0 12px 12px; padding: 8px 16px 18px; box-shadow: 0 18px 40px rgba(0,0,0,.35); }
+  .lip { height: 14px; margin: 0 40px 14px; background: #4E3018; border-radius: 0 0 6px 6px; box-shadow: inset 0 -2px 0 #C6A15A; }
+  .icats { display: flex; gap: 12px; align-items: stretch; }
+  .icat { flex: 1; background: var(--card); color: var(--card-ink); border-radius: 3px; padding: 12px 12px 14px; min-height: 148px; box-shadow: 0 6px 16px rgba(0,0,0,.2); }
+  .icat.on { box-shadow: 0 0 0 1.5px var(--choice), 0 6px 16px rgba(0,0,0,.2); }
+  .icat b { font-family: 'Crimson Pro', Georgia, serif; font-weight: 500; font-size: 16px; display: block; }
+  .icat p { margin-top: 10px; font-family: 'Crimson Pro', Georgia, serif; font-size: 15px; }
+  .icat .ph { font-style: italic; color: var(--olive); }
+  .catalog { width: min(460px, 100%); margin: 8px auto 4px; background: #FBF6EA; color: #2B2014; padding: 22px 22px 16px; border: 1px solid #C6A15A; box-shadow: inset 0 0 0 4px #FBF6EA, inset 0 0 0 5px #C6A15A; }
+  .catalog .stamp { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #8A6230; }
+  .catalog h3 { font-family: 'Crimson Pro', Georgia, serif; font-weight: 500; font-size: 26px; margin-top: 6px; }
+  .catalog p { font-family: 'Crimson Pro', Georgia, serif; font-size: 16px; margin-top: 8px; line-height: 1.4; }
+  .catalog .or { color: #6B5F4E; }
+  .catalog .browse { margin-top: 12px; font-family: Figtree, sans-serif; font-size: 12px; color: #8A6230; }
+  .shelves { display: flex; gap: 12px; margin-top: 22px; }
+  .shelf { flex: 1; border: 1px solid var(--line); border-radius: 6px; padding: 14px; color: var(--muted); background: rgba(0,0,0,.04); }
+  .term { width: min(680px, 92%); margin: 40px auto; padding: 22px 22px 18px; background: var(--card); color: var(--ink); border: 1px solid var(--line); font-family: Consolas, ui-monospace, monospace; font-size: 14px; line-height: 1.7; position: relative; }
+  .term h2 { font-family: Rajdhani, sans-serif; letter-spacing: .16em; font-weight: 600; font-size: 16px; margin-bottom: 12px; }
+  .term .ans { color: var(--choice); }
+  .bar { display: flex; gap: 4px; margin: 14px 0; }
+  .bar i { flex: 1; height: 8px; background: var(--lime); }
+  .term .hit { border-left: 3px solid #ff9800; padding-left: 8px; }
+  .term .dim { color: var(--muted); }
   html[data-frame='phone'] .shell { display: block; }
-  html[data-frame='phone'] .tools, html[data-frame='phone'] .side, html[data-frame='phone'] .modes { display: none; }
+  html[data-frame='phone'] .tools, html[data-frame='phone'] .side, html[data-frame='phone'] .modes, html[data-frame='phone'] .gaps { display: none; }
   html[data-frame='phone'] .top { height: 48px; }
-  html[data-frame='phone'] .walk { justify-content: flex-start; padding: 18px 0 12px; }
-  html[data-frame='phone'] .swipe { display: flex; flex-wrap: nowrap; gap: 14px; width: 100%; align-self: stretch; overflow: hidden; padding: 0 0 0 16px; }
-  html[data-frame='phone'] .card { width: 300px; min-width: 300px; max-width: 300px; flex: 0 0 300px; min-height: 250px; padding: 20px 18px 24px; }
-  html[data-frame='phone'] .card h1 { font-size: 24px; }
-  html[data-frame='phone'] .ph { font-size: 16px; }
-  html[data-frame='phone'] .doors { gap: 2px; }
-  html[data-frame='phone'] .doors button { font-size: 12px; padding: 6px; }
-  html[data-frame='phone'] .pager { display: none; }
+  html[data-frame='phone'] .walk { justify-content: flex-start; padding: 12px 0 8px; }
+  html[data-frame='phone'] .swipe { display: flex; gap: 14px; width: 100%; align-self: stretch; overflow: hidden; padding-left: 12px; }
+  html[data-frame='phone'] .stackwrap, html[data-frame='phone'] .peek { width: 300px; flex: 0 0 300px; }
+  html[data-frame='phone'] .card { min-height: 220px; padding: 18px 16px 22px; }
+  html[data-frame='phone'] .card h1 { font-size: 22px; }
+  html[data-frame='phone'] .q { font-size: 15px; }
+  html[data-frame='phone'] .doors { gap: 4px; margin-top: 20px; }
+  html[data-frame='phone'] .doors button { font-size: 11px; padding: 5px 6px; }
+  html[data-frame='phone'] .edge { display: none; }
+  html[data-frame='phone'] .marks { gap: 8px; }
 </style>
 </head>
 <body>
 <header class="top">
   <strong class="brand" id="brand"></strong>
   <span class="where" id="where"></span>
+  <span class="gaps" id="gaps"></span>
   <div class="top-right">
     <div id="showslot"></div>
     <nav class="modes" id="modes"></nav>
@@ -183,45 +230,42 @@
   root.dataset.theme = theme;
   root.dataset.mode = mode;
   var flux = theme === 'flux';
-  var W = {
-    show: flux ? 'Display' : 'Show as',
-    notes: flux ? 'Node' : 'Notes',
-    write: flux ? 'Compile this' : 'Write this',
-    place: flux ? 'Port a doc' : 'Place a page\u2026',
-    walk: 'Walk',
-    nodes: flux ? 'Nodes' : '',
-    board: flux ? 'Circuit' : 'Board',
-    book: flux ? 'Log' : 'Book',
-    pages: flux ? 'Docs' : 'Pages',
-    boards: flux ? 'Circuits' : 'Boards',
-    journal: flux ? 'Log' : 'Journal'
-  };
   var I = {
-    deck: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 7h13M5 10.5h13"/><rect x="4" y="13" width="14" height="7" rx="1.2"/></svg>',
-    table: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="8" height="6" rx="1"/><rect x="13" y="4" width="8" height="6" rx="1"/><rect x="3" y="13" width="8" height="6" rx="1"/><rect x="13" y="13" width="8" height="6" rx="1"/></svg>',
-    lanes: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="16" rx="1"/><rect x="17" y="4" width="5" height="16" rx="1"/></svg>',
-    outline: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M4 12h11M8 17h12"/></svg>',
-    flip: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3.5h8.5L19 8v12.5H6z"/><path d="M14.5 3.5V8H19"/></svg>',
-    thumbs: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="3" width="6.5" height="18" rx="1"/><rect x="13" y="3" width="6.5" height="18" rx="1"/></svg>',
-    notes: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3.5" width="14" height="17" rx="1.2"/><path d="M8 8.5h8M8 12.5h6"/></svg>',
-    write: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 19.5l2.2-.5L18.2 7.5 16 5.2 4.5 16.8z"/></svg>',
-    place: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3h7.5L19 7.5V21H7z"/><path d="M14.5 3V8H19M12 12v6M9 15h6"/></svg>',
-    pen: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 4l6 6-9.5 9.5H4.5V13z"/></svg>',
-    card: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="6" width="18" height="12" rx="1.5"/></svg>',
+    open: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="8" height="6" rx="1"/><rect x="13" y="4" width="8" height="6" rx="1"/><rect x="3" y="13" width="8" height="6" rx="1"/><rect x="13" y="13" width="8" height="6" rx="1"/></svg>',
+    storyboard: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="16" rx="1"/><rect x="17" y="4" width="5" height="16" rx="1"/></svg>',
+    outline: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M4 12h11M8 17h12"/></svg>',
+    walk: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 16c3-7 6-7 8 0s5 7 8 0"/><circle cx="6" cy="16" r="1.2" fill="currentColor"/><circle cx="18" cy="16" r="1.2" fill="currentColor"/></svg>',
+    flip: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3.5h8.5L19 8v12.5H6z"/><path d="M14.5 3.5V8H19"/></svg>',
+    thumbs: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="3" width="6.5" height="18" rx="1"/><rect x="13.5" y="3" width="6.5" height="18" rx="1"/></svg>',
+    live: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="16" height="16"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>',
+    sequence: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="8" width="5" height="8"/><rect x="10" y="8" width="5" height="8"/><rect x="17" y="8" width="5" height="8"/></svg>',
+    spine: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v18M12 7h6M12 12h6M12 17h6"/></svg>',
+    trace: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="5" cy="17" r="1.4"/><circle cx="12" cy="7" r="1.4"/><circle cx="19" cy="14" r="1.4"/><path d="M5 17l7-10 7 7"/></svg>',
+    playback: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16"/><path d="M10 9l6 3-6 3z"/></svg>',
+    index: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="3" width="6" height="18"/><rect x="14" y="3" width="6" height="18"/></svg>',
+    seed: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="14" rx="4.2" ry="5"/></svg>',
+    leaf: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20V9"/><path d="M12 13c-4-1-5-5-4-7 4 0 5 4 4 7z"/><path d="M12 11c4-1 6-4 5-7-4 .2-6 4-5 7z"/></svg>',
+    pen: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 4l6 6-9.5 9.5H4.5V13z"/></svg>',
+    note: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="15" rx="4" ry="4.5"/><path d="M12 11V5"/></svg>',
+    write: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 19l2-.4L17 8.5 14.5 6 4.5 16z"/><path d="M12 14c2-3 4-4 6-4"/></svg>',
+    place: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M12 14c2-2 3-3 4-3"/></svg>',
+    card: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="6" width="18" height="12" rx="1.4"/></svg>',
     ink: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg>',
     wide: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="6" width="19" height="12" rx="1.2"/></svg>',
-    tall: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="7" y="2.5" width="10" height="19" rx="1.2"/></svg>'
+    tall: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="7" y="2.5" width="10" height="19" rx="1.2"/></svg>',
+    deck: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 8h12M6 11h12"/><rect x="4" y="13.5" width="13" height="6" rx="1"/></svg>'
   };
+  I.live = I.open; I.sequence = I.storyboard; I.spine = I.outline; I.trace = I.walk; I.playback = I.flip; I.index = I.thumbs;
   var STEPS = [
-    { t: 'Hook', s: 'lit', note: 'The rope was already on the stone.' },
-    { t: 'Inciting incident', s: 'kindled', note: 'The bucket came up colder than the morning.' },
-    { t: 'Threshold', s: 'kindled', note: 'They went down anyway.' },
-    { t: 'Midpoint', s: 'empty', q: 'What do they learn here that changes the goal?' },
-    { t: 'Pressure', s: 'empty' },
-    { t: 'Crisis', s: 'empty' },
-    { t: 'Climax', s: 'kindled', note: 'The well', placed: true },
-    { t: 'Resolution', s: 'empty' },
-    { t: 'Last image', s: 'empty' }
+    { t: 'Hook', q: 'What starts this story?', s: 'kindled' },
+    { t: 'Inciting incident', q: 'What knocks the ordinary world off balance?', s: 'lit' },
+    { t: 'First threshold', q: 'What commits them, past the point of no return?', s: 'kindled' },
+    { t: 'Complications', q: 'What keeps getting harder, and why can\u2019t they just walk away?', s: 'now' },
+    { t: 'Midpoint', q: 'What do they learn here that changes the goal?', s: 'empty' },
+    { t: 'Darkest point', q: 'What does defeat look like here?', s: 'empty' },
+    { t: 'Climax', q: 'What is actually being decided?', s: 'empty' },
+    { t: 'Resolution', q: 'What settles, and what is different now?', s: 'empty' },
+    { t: 'Final image', q: 'How has the world changed?', s: 'empty' }
   ];
   var ACTS = [['Act I', [0, 1, 2]], ['Act II', [3, 4, 5]], ['Act III', [6, 7, 8]]];
   var PAGES = [
@@ -232,104 +276,149 @@
     ['The light', 'We walked until the light went thin and the path forgot its name.'],
     ['After', 'Whatever is worth carrying is already with you.']
   ];
-  var POS = [[6, 8], [38, 16], [66, 7], [12, 38], [42, 40], [70, 34], [8, 66], [40, 64], [68, 62]];
+  var POS = [[4, 5], [36, 8], [66, 4], [7, 36], [38, 34], [67, 38], [5, 67], [37, 66], [66, 68]];
+  var GAPS = flux
+    ? 'NO SIGNAL: Midpoint, Darkest point, Climax, Resolution, Final image'
+    : 'Nothing yet: Midpoint, Darkest point, Climax, Resolution, Final image';
 
   function showAs(kind, open, current) {
-    var items = kind === 'book'
-      ? [['flip', 'Flip'], ['thumbs', 'Thumbnails']]
-      : [['deck', 'Deck'], ['table', 'Table'], ['lanes', 'Lanes'], ['outline', 'Outline']];
+    var items = flux
+      ? (kind === 'book' ? [['playback', 'Playback'], ['index', 'Index']] : [['live', 'Live'], ['sequence', 'Sequence'], ['spine', 'Spine'], ['trace', 'Trace']])
+      : (kind === 'book' ? [['flip', 'Flip'], ['thumbs', 'Thumbnails']] : [['open', 'Open'], ['storyboard', 'Storyboard'], ['outline', 'Outline'], ['walk', 'Walk']]);
+    var label = flux ? 'Render' : 'Show as';
     if (!open) {
       var cur = items.filter(function (it) { return it[0] === current; })[0] || items[0];
-      return '<div class="showas"><button class="showas-btn" type="button" title="' + W.show + '">' + I[cur[0]] + '</button></div>';
+      return '<div class="showas"><button class="showas-btn" type="button" title="' + label + '">' + I[cur[0]] + '</button></div>';
     }
-    return '<div class="showas"><span class="showas-name">' + W.show + '</span><div class="showas-row">' + items.map(function (it) {
+    return '<div class="showas"><span class="showas-name">' + label + '</span><div class="showas-row">' + items.map(function (it) {
       return '<button type="button" class="' + (it[0] === current ? 'on' : '') + '">' + I[it[0]] + '<span>' + it[1] + '</span></button>';
     }).join('') + '</div></div>';
   }
-  function dots(current) {
-    var label = W.nodes ? '<div class="nodes">' + W.nodes + '</div>' : '<div class="nodes" style="height:8px"></div>';
-    return label + '<div class="dots">' + STEPS.map(function (s, i) {
-      return '<i class="dot ' + s.s + (i === current ? ' now' : '') + '"></i>';
+  function askBtn(open) {
+    var pop = '';
+    if (open) {
+      pop = '<aside class="pophelp"><p>The stretch where each try makes the next one harder.</p><em>Each time they haul the bucket, the rope comes back shorter.</em><button class="more" type="button">more \u2192 ' + (flux ? 'Operator' : 'Tutor') + '</button></aside>';
+    }
+    return '<span class="askwrap"><button class="ask' + (open ? ' on' : '') + '" type="button" aria-label="About this step">?</button>' + pop + '</span>';
+  }
+  function marks() {
+    if (flux) {
+      return '<div class="ticks">' + STEPS.map(function (s) { return '<i class="tick ' + s.s + '"></i>'; }).join('') + '</div>';
+    }
+    return '<div class="marks">' + STEPS.map(function (s, i) {
+      var icon = (s.s === 'kindled' || s.s === 'lit') ? I.leaf : I.seed;
+      var cap = i === 0 ? '<small>Start Here</small>' : '';
+      return '<div class="mark ' + s.s + '"><span class="glyph">' + icon + '</span>' + cap + '</div>';
     }).join('') + '</div>';
   }
   function doors() {
-    return '<div class="doors"><button type="button" class="on">' + I.notes + '<span>' + W.notes + '</span></button><button type="button">' + I.write + '<span>' + W.write + '</span></button><button type="button">' + I.place + '<span>' + W.place + '</span></button></div>';
+    if (flux) {
+      return '<div class="doors"><button type="button" class="on">[NOTE]</button><button type="button">[BOOT DOC]</button><button type="button">[INPUT DOC]</button><button type="button">[?]</button></div>';
+    }
+    return '<div class="doors"><button type="button" class="on">' + I.note + '<span>Notes</span></button><button type="button">' + I.write + '<span>Write this</span></button><button type="button">' + I.place + '<span>Place a page\u2026</span></button></div>';
   }
-  function card(i, choice) {
+  function card(i, choice, help) {
     var s = STEPS[i];
-    var body = s.s === 'empty' && s.q ? '<p class="ph">' + s.q + '</p>' : '';
-    var read = flux && i === 3 ? '<div class="readout">TRK 4/9</div>' : '';
-    return '<article class="card' + (choice ? ' choice' : '') + '">' + read + '<h1>' + s.t + ' <button class="ask' + (frame === 'help' ? ' on' : '') + '" type="button" aria-label="About this step">?</button></h1>' + body + '</article>';
+    var read = flux ? '<div class="readout">TRK 4/9</div>' : '';
+    var bars = flux ? '<i class="brackets"></i><i class="obar"></i>' : '';
+    var body = flux
+      ? '<p class="q">&gt; ' + s.q + ' <i class="caret"></i></p>'
+      : '<p class="q">' + s.q + '</p>';
+    return '<article class="card' + (choice ? ' choice' : '') + '">' + bars + read + '<h1>' + s.t + ' ' + askBtn(help) + '</h1>' + body + '</article>';
   }
-  function pip(s) { return s.s === 'empty' ? '' : '<i class="pip ' + s.s + '"></i>'; }
-  function note(s) {
-    if (!s.note) return '';
-    return '<span>' + (s.placed ? 'Page · ' : '') + s.note + '</span>';
+  function unders() { return flux ? '' : '<i class="under a"></i><i class="under b"></i>'; }
+  function deckHead() {
+    if (flux) {
+      return '<div class="deckhead"><div class="walk-name">STACK \u00b7 THREE-ACT \u00b7 4/9</div><div class="walk-name">Trace</div><div class="gaps">' + GAPS + '</div></div>';
+    }
+    return '<div class="deckhead"><div class="walk-name">Walk</div></div>';
   }
 
   var stage = '';
   var show = '';
+  var gaps = '';
+  var where = 'Three-Act';
   if (frame === 'listing') {
+    where = 'The well';
     var rows = [
-      ['<i class="wide"></i>', 'The second well', W.board],
-      ['<span class="stack"><i></i><i></i><i></i></span>', 'Three-Act', 'Deck'],
-      ['<i class="tallth"></i>', 'Journal', W.book]
+      ['<i class="wide"></i>', 'The second well', ''],
+      ['<span class="stack"><i></i><i></i><i></i></span>', 'Three-Act', '<em>4 of 9</em>'],
+      ['<i class="tallth"></i>', 'Journal', '']
     ];
-    document.getElementById('pop').innerHTML = '<h2>' + W.boards + '</h2>' + rows.map(function (r) {
-      return '<button class="brow" type="button">' + r[0] + '<span><b>' + r[1] + '</b><em>' + r[2] + '</em></span></button>';
+    document.getElementById('pop').innerHTML = '<h2>' + (flux ? 'Circuits' : 'Boards') + '</h2>' + rows.map(function (r) {
+      return '<button class="brow" type="button">' + r[0] + '<span><b>' + r[1] + '</b>' + r[2] + '</span></button>';
     }).join('');
-    document.getElementById('rail').innerHTML = '<div class="place">The well</div><button type="button">' + W.pages + '</button><button type="button" class="on">' + W.boards + '</button><button type="button">' + W.journal + '</button>';
+    document.getElementById('rail').innerHTML = '<div class="place">The well</div><button type="button">' + (flux ? 'Docs' : 'Pages') + '</button><button type="button" class="on">' + (flux ? 'Circuits' : 'Boards') + '</button><button type="button">' + (flux ? 'Log' : 'Journal') + '</button>';
   } else if (frame === 'walk' || frame === 'walk-open' || frame === 'help') {
-    show = showAs('deck', frame === 'walk-open', 'deck');
-    stage = '<div class="walk"><div class="walk-name">' + W.walk + '</div>' + card(3, true) + doors() + dots(3) + '<div class="pager"><button type="button">Previous</button><button type="button">Next</button></div></div>';
-    if (frame === 'help') {
-      stage += '<aside class="help"><p>The middle of the story. What they learn here makes the old goal the wrong one.</p><em>She learns the well is a door, not a way out.</em><button class="more" type="button">more \u2192 Tutor</button></aside>';
-    }
-  } else if (frame === 'table') {
-    show = showAs('deck', false, 'table');
+    show = showAs('deck', frame === 'walk-open', flux ? 'trace' : 'walk');
+    gaps = flux ? '' : GAPS;
+    stage = '<div class="walk">' + deckHead() + '<div class="walkrow"><button class="edge" type="button">Previous</button><div class="stackwrap">' + unders() + card(3, true, frame === 'help') + '</div><button class="edge" type="button">Next</button></div>' + doors() + marks() + '</div>';
+  } else if (frame === 'open') {
+    show = showAs('deck', false, flux ? 'live' : 'open');
+    gaps = GAPS;
     stage = '<div class="table">' + STEPS.map(function (s, i) {
       var p = POS[i];
-      return '<article class="tcard" style="left:' + p[0] + '%;top:' + p[1] + '%">' + pip(s) + '<strong>' + s.t + '</strong>' + note(s) + '</article>';
+      return '<article class="tcard" style="left:' + p[0] + '%;top:' + p[1] + '%"><strong>' + s.t + '</strong><p class="q">' + s.q + '</p></article>';
     }).join('') + '</div>';
-  } else if (frame === 'lanes') {
-    show = showAs('deck', false, 'lanes');
+  } else if (frame === 'storyboard') {
+    show = showAs('deck', false, flux ? 'sequence' : 'storyboard');
+    gaps = GAPS;
     stage = '<div class="lanes">' + ACTS.map(function (act) {
       return '<section class="lane"><h3>' + act[0] + '</h3>' + act[1].map(function (i) {
         var s = STEPS[i];
-        return '<article class="lcard">' + pip(s) + '<strong>' + s.t + '</strong>' + note(s) + '</article>';
+        return '<article class="lcard"><strong>' + s.t + '</strong><p class="q">' + s.q + '</p></article>';
       }).join('') + '</section>';
     }).join('') + '</div>';
   } else if (frame === 'flip') {
-    show = showAs('book', false, 'flip');
+    show = showAs('book', false, flux ? 'playback' : 'flip');
+    where = 'Journal';
     var page = PAGES[1];
-    stage = '<div class="flip"><button class="turn" type="button" aria-label="Previous">\u2039</button><article class="sheet choice"><h1>' + page[0] + '</h1><p>' + page[1] + '</p><span class="num">2</span></article><button class="turn" type="button" aria-label="Next">\u203a</button></div>';
+    stage = '<div class="flip"><button class="turn" type="button">\u2039</button><article class="sheet"><h1>' + page[0] + '</h1><p>' + page[1] + '</p><span class="num">2</span></article><button class="turn" type="button">\u203a</button></div>';
   } else if (frame === 'thumbs') {
-    show = showAs('book', true, 'thumbs');
+    show = showAs('book', true, flux ? 'index' : 'thumbs');
+    where = 'Journal';
     stage = '<div class="thumbs">' + PAGES.map(function (p, i) {
       return '<article class="pthumb' + (i === 1 ? ' on' : '') + '"><b>' + p[0] + '</b></article>';
     }).join('') + '</div>';
   } else if (frame === 'doors') {
+    where = 'The well';
     stage = '<div class="story">'
-      + '<article><div class="door-name">' + I.wide + '<span>New Board</span></div><div class="mini"><div class="mini-as">' + I.table + '</div><i class="ghost a"></i><i class="ghost b"></i><i class="ghost c"></i></div></article>'
-      + '<article><div class="door-name">' + I.deck + '<span>Three-Act</span></div><div class="mini"><div class="mini-card"><b>Hook</b><em>What is the first thing that makes this world feel off?</em></div><div class="dots"><i class="dot now"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i></div></div></article>'
+      + '<article><div class="door-name">' + I.wide + '<span>New Board</span></div><div class="mini"><div class="mini-as">' + I.open + '</div><i class="ghost a"></i><i class="ghost b"></i><i class="ghost c"></i></div></article>'
+      + '<article><div class="door-name">' + I.deck + '<span>Three-Act</span></div><div class="mini"><div class="mini-card"><b>Hook</b><p class="q">What starts this story?</p></div><div class="marks"><div class="mark now"><span class="glyph">' + I.seed + '</span><small>Start Here</small></div>' + STEPS.slice(1).map(function () { return '<div class="mark"><span class="glyph">' + I.seed + '</span></div>'; }).join('') + '</div></div></article>'
       + '<article><div class="door-name">' + I.tall + '<span>New Journal</span></div><div class="mini"><div class="mini-flip"><span class="turn">\u2039</span><div class="mini-page"><i></i></div><span class="turn">\u203a</span></div></div></article>'
       + '</div>';
   } else if (frame === 'phone') {
-    stage = '<div class="walk"><div class="walk-name">' + W.walk + '</div><div class="swipe">' + card(3, true) + '<article class="card"><h1>Pressure</h1></article></div>' + doors() + dots(3) + '</div>';
+    stage = '<div class="walk">' + deckHead() + '<div class="swipe"><div class="stackwrap">' + unders() + card(3, true, false) + '</div><article class="card peek"><h1>Midpoint</h1><p class="q">What do they learn here that changes the goal?</p></article></div>' + doors() + marks() + '</div>';
+  } else if (frame === 'ask' || frame === 'ask-result') {
+    where = 'Presets';
+    var inner = frame === 'ask'
+      ? '<div class="icats"><article class="icat"><b>What are you making?</b><p>A novel</p></article><article class="icat on"><b>What carries it?</b><p>One person <i class="caret"></i></p></article><article class="icat"><b>How much do you want to know before you start?</b></article></div>'
+      : '<article class="catalog"><div class="stamp">The librarian\u2019s pick</div><h3>Three-Act Structure</h3><p>A person and a turn, and you asked for the shape before the details.</p><p class="or">or: Story Circle</p><div class="browse">Browse the shelves</div></article>';
+    stage = '<div class="presets"><h2>Presets</h2><div class="drawer"><div class="lip"></div>' + inner + '</div><div class="shelves"><div class="shelf">Three-Act</div><div class="shelf">Story Circle</div><div class="shelf">Character Study</div></div></div>';
+  } else if (frame === 'diag') {
+    where = flux ? 'Stacks' : 'Presets';
+    stage = '<div class="term"><i class="brackets"></i><h2>DIAGNOSTIC v1</h2>'
+      + '<div>&gt; WHAT ARE YOU MAKING? <span class="ans">[A NOVEL]</span></div>'
+      + '<div>&gt; WHAT CARRIES IT? <span class="ans">[ONE PERSON]</span></div>'
+      + '<div>&gt; HOW MUCH BEFORE YOU START? <span class="ans">[THE SHAPE]</span></div>'
+      + '<div class="bar"><i></i><i></i><i></i></div>'
+      + '<div class="hit">RESULT: THREE-ACT .... [LOAD]</div>'
+      + '<div>ALT: STORY CIRCLE .... [LOAD]</div>'
+      + '<div class="dim">BROWSE ALL STACKS</div></div>';
   }
 
   document.getElementById('stage').innerHTML = stage;
   document.getElementById('showslot').innerHTML = show;
   document.getElementById('brand').textContent = flux ? 'Flux' : 'Arbor';
-  var where = (frame === 'listing' || frame === 'doors') ? 'The well' : (frame === 'flip' || frame === 'thumbs' ? 'Journal' : 'Three-Act');
   document.getElementById('where').textContent = where;
-  var modes = flux ? ['Wire In', 'Text', 'Patch', 'Relay', 'Uplink', 'Circuits'] : ['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish', 'Boards'];
+  document.getElementById('gaps').textContent = gaps;
+  var modes = flux ? ['Wire In', 'Text', 'Patch', 'Uplink', 'Circuits'] : ['Free Write', 'Draft', 'Revise', 'Publish', 'Boards'];
   var onMode = flux ? 'Circuits' : 'Boards';
   document.getElementById('modes').innerHTML = modes.map(function (n) {
     return '<span' + (n === onMode ? ' class="on"' : '') + '>' + n + '</span>';
   }).join('');
-  document.getElementById('tools').innerHTML = '<h2>Tools</h2><button class="tool" type="button">' + I.pen + 'Pen</button><button class="tool" type="button">' + I.card + 'Card</button><button class="tool" type="button">' + I.ink + 'Ink</button>';
-  document.getElementById('side').innerHTML = '<h2>Tutor</h2><h2 class="gap">Grafts</h2><button class="graft" type="button">The rope</button><button class="graft" type="button">The map</button>';
+  document.getElementById('tools').innerHTML = '<h2>Tools</h2><button class="tool" type="button">' + I.pen + ' Pen</button><button class="tool" type="button">' + I.card + ' Card</button><button class="tool" type="button">' + I.ink + ' Ink</button>';
+  document.getElementById('side').innerHTML = '<h2>' + (flux ? 'Operator' : 'Tutor') + '</h2><h2 class="gap">Grafts</h2><button class="graft" type="button">The rope</button><button class="graft" type="button">The map</button>';
 })();
 </script>
 </body>
