@@ -83,6 +83,28 @@ const scrollCapMatch = css.match(/\.desk-frame-scroll-cap\{[^}]*\}/);
 ok('T4: .desk-frame-scroll-cap\'s own rule is unchanged by this ticket (no margin-right/padding-right cancellation added)',
   !!scrollCapMatch && !/margin-right|padding-right/.test(scrollCapMatch[0]), scrollCapMatch?.[0] ?? null);
 
+// T5 - ONE MECHANISM (Fable Oct 23, after the first box run was red 24/32): Chromium >= 121 (Electron 31 = Chromium 126) IGNORES
+// ::-webkit-scrollbar on any element whose scrollbar-width/scrollbar-color is set, and the systemic `*` rule sets both on every
+// element - so any ::-webkit-scrollbar rule in the app is dead code AND a second, lying source of truth (the old 8px rule was why
+// the harness expected 8 and the bar rendered 10). The standard properties are the only mechanism; no webkit scrollbar selector
+// may exist anywhere in index.css.
+// (comments stripped first: the explanatory notes in index.css name the selector in prose; only RULES count)
+const cssRules = css.replace(/\/\*[\s\S]*?\*\//g, '');
+const webkitScrollbarRules = (cssRules.match(/::-webkit-scrollbar[\w-]*/g) || []);
+ok('T5: ONE mechanism - index.css carries NO ::-webkit-scrollbar rule (they are dead under Chromium >= 121 wherever the standard properties are set, and the `*` rule sets them everywhere)',
+  webkitScrollbarRules.length === 0, JSON.stringify(webkitScrollbarRules));
+ok('T5: ...and the standard mechanism IS present: the systemic `*` rule sets scrollbar-width:thin and a theme-token scrollbar-color',
+  /\*\{\s*scrollbar-width: thin;\s*scrollbar-color: var\(--ink-border-strong\) transparent;\s*\}/.test(css), '');
+ok('T5: ...and the paper-toned group (.mode-scroll, .desk-frame-scroll-cap, .board-canvas-wrap) and the card text keep their scrollbar-color',
+  /\.mode-scroll, \.desk-frame-scroll-cap, \.board-canvas-wrap\{\s*scrollbar-color: var\(--ink-on-paper-low\) transparent;\s*\}/.test(css) && /\.board-text\{ scrollbar-color: var\(--ink-on-card-low\) transparent; \}/.test(css), '');
+
+// MUTANT - the dead webkit width rule comes back (the old 8px) - T5 must go RED
+{
+  const mutated = (css + '\n::-webkit-scrollbar{ width:8px; height:8px; }\n').replace(/\/\*[\s\S]*?\*\//g, '');
+  ok('MUTANT: the ::-webkit-scrollbar{width:8px} rule is re-added - T5 must go RED',
+    mutated !== cssRules && (mutated.match(/::-webkit-scrollbar[\w-]*/g) || []).length > 0, '');
+}
+
 // MUTANT - revert to the exact pre-fix regression (the hardcoded literal ITEM 83 M3 silently broke)
 {
   const mutated = css.replace(
