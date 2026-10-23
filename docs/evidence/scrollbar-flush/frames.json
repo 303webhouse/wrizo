@@ -1,0 +1,82 @@
+[
+  {
+    "combo": "arbor-light",
+    "frame": "page-narrow-mid-scroll",
+    "file": "arbor-light/page-narrow-mid-scroll.jpg",
+    "margin": "narrow",
+    "gapFromPageEdge": 1,
+    "barWidth": 10,
+    "scrollbarWidth": "thin",
+    "scrollbarColor": "rgb(107, 95, 78) rgba(0, 0, 0, 0)"
+  },
+  {
+    "combo": "arbor-light",
+    "frame": "page-normal-mid-scroll",
+    "file": "arbor-light/page-normal-mid-scroll.jpg",
+    "margin": "normal",
+    "gapFromPageEdge": 1,
+    "barWidth": 10,
+    "scrollbarWidth": "thin",
+    "scrollbarColor": "rgb(107, 95, 78) rgba(0, 0, 0, 0)"
+  },
+  {
+    "combo": "arbor-light",
+    "frame": "page-wide-mid-scroll",
+    "file": "arbor-light/page-wide-mid-scroll.jpg",
+    "margin": "wide",
+    "gapFromPageEdge": 1,
+    "barWidth": 10,
+    "scrollbarWidth": "thin",
+    "scrollbarColor": "rgb(107, 95, 78) rgba(0, 0, 0, 0)"
+  },
+  {
+    "combo": "arbor-light",
+    "frame": "board-mid-scroll",
+    "file": "arbor-light/board-mid-scroll.jpg",
+    "vBar": 10,
+    "hBar": 10,
+    "scrollbarWidth": "thin",
+    "scrollbarColor": "rgb(107, 95, 78) rgba(0, 0, 0, 0)",
+    "canvasBackground": "rgb(243, 237, 225)"
+  },
+  {
+    "combo": "flux-light",
+    "frame": "page-narrow-mid-scroll",
+    "file": "flux-light/page-narrow-mid-scroll.jpg",
+    "margin": "narrow",
+    "gapFromPageEdge": 1,
+    "barWidth": 10,
+    "scrollbarWidth": "thin",
+    "scrollbarColor": "rgb(6, 56, 72) rgba(0, 0, 0, 0)"
+  },
+  {
+    "combo": "flux-light",
+    "frame": "page-normal-mid-scroll",
+    "file": "flux-light/page-normal-mid-scroll.jpg",
+    "margin": "normal",
+    "gapFromPageEdge": 1,
+    "barWidth": 10,
+    "scrollbarWidth": "thin",
+    "scrollbarColor": "rgb(6, 56, 72) rgba(0, 0, 0, 0)"
+  },
+  {
+    "combo": "flux-light",
+    "frame": "page-wide-mid-scroll",
+    "file": "flux-light/page-wide-mid-scroll.jpg",
+    "margin": "wide",
+    "gapFromPageEdge": 1,
+    "barWidth": 10,
+    "scrollbarWidth": "thin",
+    "scrollbarColor": "rgb(6, 56, 72) rgba(0, 0, 0, 0)"
+  },
+  {
+    "combo": "flux-light",
+    "frame": "board-mid-scroll",
+    "file": "flux-light/board-mid-scroll.jpg",
+    "vBar": 10,
+    "hBar": 10,
+    "scrollbarWidth": "thin",
+    "scrollbarColor": "rgb(6, 56, 72) rgba(0, 0, 0, 0)",
+    "canvasBackground": "rgb(244, 247, 248)"
+  }
+]
