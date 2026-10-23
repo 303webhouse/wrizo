@@ -219,6 +219,18 @@ instruction):
 - **Draft → Build**, **Revise → Edit** (Nick's locked list: "modes: Build /
   Edit"). **Workshop has no given Machina word** — left plain pending Nick's
   word; do not guess one into existence.
+  **AND THE TAB IS HIDDEN (Nick, Oct 23 11:01 am; branch `hide-workshop`):
+  the Workshop tab is absent in EVERY theme until Workshop is built — Arbor
+  Workshop, Flux Relay, Machina Workshop, Nomad Commune, Volant's glyph. Machina
+  (and Nomad/Volant when they ship) MUST ship with it hidden too. The four
+  render sites (`ModeStrip.tsx`'s item list, `PageEditor.tsx`/`QuickSprint.tsx`'s
+  `ModeSwitcher` actions, `JournalEntry.tsx`'s legacy row) are theme-agnostic and
+  already omit it, and `deskLexicon.modeWorkshop` is read by no render site, so a
+  new theme inherits the hide with NO extra work — the build's job is to NOT
+  re-add it: Machina's strip is SPRINT · BUILD · EDIT · FINALIZE · PLAN → (the
+  approved mockup's "WORKSHOP" slot is dropped, not greyed), and the Machina
+  harness asserts the Workshop tab's absence (`hide-workshop-source.mjs`'s T1-T4
+  already cover the sites; add the Machina cell to the DOM-level successors).**
 - **Free Write → Sprint.** Reconciled against the proposal the same way as
   the table above: Fable's proposal was "First Pass"; Nick's locked list
   says "Sprint" instead. **Flagged, not silently accepted:** this reuses an
@@ -599,9 +611,11 @@ sequencing in §8/§9.
 - **Confirm Free Write → "Sprint"** is deliberate (§1c flags the name
   collision with the existing `QuickSprint` feature) rather than carried
   over from a different list by mistake.
-- **Workshop's own Machina word** — the locked list gives Build (Draft) and
+- ~~**Workshop's own Machina word** — the locked list gives Build (Draft) and
   Edit (Revise) but names no third mode word; confirm whether Workshop
-  stays plain or still needs one.
+  stays plain or still needs one.~~ **MOOT for now (Nick, Oct 23):** the
+  Workshop tab is hidden in every theme until it is built (§1c); its Machina
+  word is decided when Workshop is.
 - **The two stale icon labels** ("Charts"/"Ledger" in `icons-v3.html`, §1c-
   icons) need a relabel pass back to Fable/Cursor before the sheet is
   treated as locked — the glyphs likely still read correctly; only the two
